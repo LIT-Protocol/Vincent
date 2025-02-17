@@ -4,6 +4,8 @@ import {
   BaseProvider,
   LitRelay,
   StytchAuthFactorOtpProvider,
+  GoogleProvider,
+  DiscordProvider,
 } from '@lit-protocol/lit-auth-client';
 import { LitNodeClient } from '@lit-protocol/lit-node-client';
 import {
@@ -301,4 +303,51 @@ export async function mintPKP(authMethod: AuthMethod): Promise<IRelayPKP> {
   };
 
   return newPKP;
+}
+
+let googleProvider: GoogleProvider;
+let discordProvider: DiscordProvider;
+
+/**
+ * Get auth method object from redirect
+ */
+export async function authenticateWithGoogle(
+  redirectUri: string
+): Promise<AuthMethod> {
+  const googleProvider = getGoogleProvider(redirectUri);
+  const authMethod = await googleProvider.authenticate();
+  return authMethod;
+}
+function getGoogleProvider(redirectUri: string) {
+  if (!googleProvider) {
+    googleProvider = new GoogleProvider({
+      relay: litRelay,
+      litNodeClient,
+      redirectUri,
+    });
+  }
+
+  return googleProvider;
+}
+
+/**
+ * Get auth method object from redirect
+ */
+export async function authenticateWithDiscord(
+  redirectUri: string
+): Promise<AuthMethod> {
+  const discordProvider = getDiscordProvider(redirectUri);
+  const authMethod = await discordProvider.authenticate();
+  return authMethod;
+}
+function getDiscordProvider(redirectUri: string) {
+  if (!discordProvider) {
+    discordProvider = new DiscordProvider({
+      relay: litRelay,
+      litNodeClient,
+      redirectUri,
+    });
+  }
+
+  return discordProvider;
 }

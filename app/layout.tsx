@@ -10,10 +10,13 @@ import { injected } from "wagmi/connectors";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { StytchProvider } from "@stytch/nextjs";
 import { createStytchUIClient } from "@stytch/nextjs/ui";
+import { StytchUIClient } from '@stytch/vanilla-js';
+import { useState } from "react";
+import { useEffect } from "react";
 
 const inter = Inter({ subsets: ["latin"] });
 
-export const config = createConfig({
+export const wagmiConfig = createConfig({
     chains: [mainnet, sepolia],
     connectors: [injected()],
     transports: {
@@ -24,18 +27,28 @@ export const config = createConfig({
 
 const queryClient = new QueryClient();
 
-const stytch = createStytchUIClient(
-    process.env.NEXT_PUBLIC_STYTCH_PUBLIC_TOKEN || ""
-);
-
 export default function RootLayout({
     children,
 }: Readonly<{
     children: React.ReactNode;
 }>) {
+    const [stytchClient, setStytchClient] = useState<StytchUIClient | null>(
+        null
+      );
+    
+      useEffect(() => {
+        const client = createStytchUIClient(
+          process.env.NEXT_PUBLIC_STYTCH_PUBLIC_TOKEN || ''
+        );
+        setStytchClient(client);
+      }, []);
+    
+      if (!stytchClient) {
+        return null; // or a loading state
+      }
     return (
-        <StytchProvider stytch={stytch}>
-            <WagmiProvider config={config}>
+        <StytchProvider stytch={stytchClient}>
+            <WagmiProvider config={wagmiConfig}>
                 <QueryClientProvider client={queryClient}>
                     <html lang="en">
                         <body

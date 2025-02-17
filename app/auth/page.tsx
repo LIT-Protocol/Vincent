@@ -112,7 +112,8 @@ export default function AuthView() {
         return (
             // <Dashboard currentAccount={currentAccount} sessionSigs={sessionSigs} />
             <div>
-                <p>Hey</p>
+                <p>You are logged in!</p>
+                <p>Current account: {currentAccount.ethAddress}</p>
             </div>
         );
     }
