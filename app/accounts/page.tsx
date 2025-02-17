@@ -84,6 +84,40 @@ export default function Accounts() {
                   <Badge variant="default">Active</Badge>
                 </div>
               </div>
+              
+              {/* Transaction Input Section */}
+              <div className="mt-6 space-y-4">
+                <div>
+                  <label htmlFor="txInput" className="block text-sm font-medium mb-2">
+                    Transaction Object
+                  </label>
+                  <textarea
+                    id="txInput"
+                    className="w-full min-h-[100px] p-2 border rounded-md"
+                    placeholder="Paste your transaction object here (JSON format)"
+                    onChange={(e) => {
+                      // You'll need to add state management here
+                      // setTxInput(e.target.value);
+                    }}
+                  />
+                </div>
+                <button
+                  className="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md"
+                  onClick={async () => {
+                    // Add your transaction signing and broadcasting logic here
+                    // Example:
+                    // try {
+                    //   const txObj = JSON.parse(txInput);
+                    //   const signedTx = await activeWallet.signTransaction(txObj);
+                    //   const result = await broadcastTransaction(signedTx);
+                    // } catch (error) {
+                    //   console.error('Transaction failed:', error);
+                    // }
+                  }}
+                >
+                  Send from Agent
+                </button>
+              </div>
             </div>
           ) : (
             <p className="text-muted-foreground">No active wallet selected</p>

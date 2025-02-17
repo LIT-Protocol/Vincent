@@ -10,24 +10,94 @@ import { useForm } from "react-hook-form"
 import * as z from "zod"
 import { useState } from "react"
 
+// URL normalization helpers
+const normalizeURL = (url: string): string => {
+  if (!url) return url
+  url = url.trim()
+  if (!url.startsWith('http://') && !url.startsWith('https://')) {
+    url = 'https://' + url
+  }
+  if (url.startsWith('http://')) {
+    url = 'https://' + url.slice(7)
+  }
+  return url
+}
+
+const normalizeGitHubURL = (url: string): string => {
+  if (!url) return url
+  url = url.trim()
+  if (!url.includes('github.com') && url.includes('/')) {
+    url = 'https://github.com/' + url
+  }
+  if (!url.includes('github.com') && !url.includes('/')) {
+    url = 'https://github.com/' + url
+  }
+  return normalizeURL(url)
+}
+
 const formSchema = z.object({
-  appName: z.string().min(2).max(50),
-  description: z.string().min(10).max(500),
+  appName: z.string()
+    .min(2, "App name must be at least 2 characters")
+    .max(50, "App name cannot exceed 50 characters"),
+  
+  description: z.string()
+    .min(10, "Description must be at least 10 characters")
+    .max(500, "Description cannot exceed 500 characters"),
+  
   managerDelegatees: z.array(z.string()).optional(),
+  
   logo: z.string().optional(),
-  supportEmail: z.string().email().optional(),
-  githubLink: z.string().url().optional(),
-  discordLink: z.string().optional().refine((val) => !val || z.string().url().safeParse(val).success, {
-    message: "Invalid URL format",
-  }),
-  websiteUrl: z.string().optional().refine((val) => !val || z.string().url().safeParse(val).success, {
-    message: "Invalid URL format",
-  }),
+  
+  supportEmail: z.string()
+    .email("Please enter a valid email address")
+    .optional()
+    .transform(val => val || undefined),
+  
+  githubLink: z.string()
+    .transform(normalizeGitHubURL)
+    .pipe(
+      z.string()
+        .url("Please enter a valid GitHub URL")
+        .refine(
+          (url) => {
+            try {
+              const parsed = new URL(url)
+              return parsed.hostname === 'github.com'
+            } catch {
+              return false
+            }
+          },
+          "Must be a GitHub URL (e.g., github.com/username/repo)"
+        )
+    )
+    .optional()
+    .transform(val => val || undefined),
+  
+  websiteUrl: z.string()
+    .transform(normalizeURL)
+    .pipe(
+      z.string()
+        .url("Please enter a valid website URL")
+        .refine(
+          (url) => {
+            try {
+              const parsed = new URL(url)
+              return parsed.protocol === 'https:'
+            } catch {
+              return false
+            }
+          },
+          "Website URL must use HTTPS"
+        )
+    )
+    .optional()
+    .transform(val => val || undefined),
 })
 
 export default function Registry() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -37,7 +107,6 @@ export default function Registry() {
       managerDelegatees: [],
       logo: "",
       supportEmail: "",
-      discordLink: "",
       githubLink: "",
       websiteUrl: ""
     },
@@ -48,14 +117,17 @@ export default function Registry() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
       setIsSubmitting(true)
-      // TODO: Implement contract interaction
-      console.log(values)
+      setError(null)
       
-      // Simulate API call
+      // Log the normalized values
+      console.log('Submitting form with values:', values)
+      
+      // TODO: Implement contract interaction
       await new Promise(resolve => setTimeout(resolve, 1500))
       setIsSuccess(true)
     } catch (error) {
       console.error("Error submitting form:", error)
+      setError(error instanceof Error ? error.message : "An error occurred while submitting the form")
     } finally {
       setIsSubmitting(false)
     }
@@ -74,6 +146,7 @@ export default function Registry() {
           <Button
             onClick={() => {
               setIsSuccess(false)
+              setError(null)
               form.reset()
             }}
           >
@@ -99,6 +172,12 @@ export default function Registry() {
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+              {error && (
+                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative">
+                  {error}
+                </div>
+              )}
+              
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-6">
                   <FormField
@@ -161,7 +240,7 @@ export default function Registry() {
                         <FormLabel>GitHub Repository</FormLabel>
                         <FormControl>
                           <Input 
-                            placeholder="https://github.com/..." 
+                            placeholder="github.com/username/repo" 
                             {...field} 
                           />
                         </FormControl>
@@ -178,7 +257,7 @@ export default function Registry() {
                         <FormLabel>Website URL (Optional)</FormLabel>
                         <FormControl>
                           <Input 
-                            placeholder="https://..." 
+                            placeholder="example.com" 
                             {...field} 
                           />
                         </FormControl>
@@ -204,4 +283,4 @@ export default function Registry() {
       </Card>
     </div>
   )
-} 
+}
