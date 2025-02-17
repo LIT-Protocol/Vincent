@@ -11,10 +11,10 @@ export default function Header() {
     const pathname = usePathname();
 
     return (
-        <div className="max-w-screen-xl mx-auto p-6 flex justify-between">
-            <div>
-                <NavigationMenu className="max-w-screen-xl mx-auto">
-                    <NavigationMenuList className="flex flex-row gap-4">
+        <div className="max-w-screen-xl mx-auto p-6">
+            <NavigationMenu className="max-w-screen-xl mx-auto">
+                <NavigationMenuList className="flex justify-between">
+                    <div className="flex flex-row gap-4">
                         <NavigationMenuItem>
                             <NavigationMenuLink asChild>
                                 <Link
@@ -85,12 +85,26 @@ export default function Header() {
                                 </Link>
                             </NavigationMenuLink>
                         </NavigationMenuItem>
-                    </NavigationMenuList>
-                </NavigationMenu>
-            </div>
-            <div>
-                <Button>Login</Button>
-            </div>
+                    </div>
+                    <div className="flex flex-row gap-4">
+                        <Button>Login</Button>
+                        <NavigationMenuItem>
+                            <NavigationMenuLink asChild>
+                                <Link
+                                    href="/accounts"
+                                    className={`group inline-flex h-10 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors ${
+                                        pathname === "/accounts"
+                                            ? "bg-black text-white"
+                                            : "bg-background hover:bg-accent hover:text-accent-foreground"
+                                    }`}
+                                >
+                                    Accounts
+                                </Link>
+                            </NavigationMenuLink>
+                        </NavigationMenuItem>
+                    </div>
+                </NavigationMenuList>
+            </NavigationMenu>
         </div>
     );
 }
