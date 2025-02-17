@@ -32,6 +32,34 @@ export default function Header() {
                         <NavigationMenuItem>
                             <NavigationMenuLink asChild>
                                 <Link
+                                    href="/explore"
+                                    className={`group inline-flex h-10 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors ${
+                                        pathname === "/explore"
+                                            ? "bg-black text-white"
+                                            : "bg-background hover:bg-accent hover:text-accent-foreground"
+                                    }`}
+                                >
+                                    Vincent Apps
+                                </Link>
+                            </NavigationMenuLink>
+                        </NavigationMenuItem>
+                        <NavigationMenuItem>
+                            <NavigationMenuLink asChild>
+                                <Link
+                                    href="/aw-management"
+                                    className={`group inline-flex h-10 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors ${
+                                        pathname === "/aw-management"
+                                            ? "bg-black text-white"
+                                            : "bg-background hover:bg-accent hover:text-accent-foreground"
+                                    }`}
+                                >
+                                    AW Management
+                                </Link>
+                            </NavigationMenuLink>
+                        </NavigationMenuItem>
+                        <NavigationMenuItem>
+                            <NavigationMenuLink asChild>
+                                <Link
                                     href="/registry"
                                     className={`group inline-flex h-10 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors ${
                                         pathname === "/registry"
@@ -46,28 +74,14 @@ export default function Header() {
                         <NavigationMenuItem>
                             <NavigationMenuLink asChild>
                                 <Link
-                                    href="/apps"
+                                    href="/apps-management"
                                     className={`group inline-flex h-10 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors ${
-                                        pathname === "/apps"
+                                        pathname === "/apps-management"
                                             ? "bg-black text-white"
                                             : "bg-background hover:bg-accent hover:text-accent-foreground"
                                     }`}
                                 >
-                                    Vincent Apps
-                                </Link>
-                            </NavigationMenuLink>
-                        </NavigationMenuItem>
-                        <NavigationMenuItem>
-                            <NavigationMenuLink asChild>
-                                <Link
-                                    href="/management"
-                                    className={`group inline-flex h-10 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors ${
-                                        pathname === "/management"
-                                            ? "bg-black text-white"
-                                            : "bg-background hover:bg-accent hover:text-accent-foreground"
-                                    }`}
-                                >
-                                    AW Management
+                                    Apps Management
                                 </Link>
                             </NavigationMenuLink>
                         </NavigationMenuItem>

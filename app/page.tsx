@@ -53,9 +53,9 @@ export default function Home() {
         console.log("details", details);
     }
 
-    useEffect(() => {
-        fetchDetails();
-    }, []);
+    // useEffect(() => {
+    //     fetchDetails();
+    // }, []);
 
     return (
         <div className="space-y-8">
