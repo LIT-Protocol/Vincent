@@ -59,7 +59,7 @@ export default function AppsManagement() {
           <CardHeader>
             <CardTitle>No Apps Found</CardTitle>
             <CardDescription>
-              You haven't created any Vincent applications yet.
+              You haven&apos;t created any Vincent applications yet.
             </CardDescription>
           </CardHeader>
         </Card>

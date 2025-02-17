@@ -64,10 +64,6 @@ const mockPermissions: AppPermission[] = [
 
 export default function Management() {
   const [permissions, setPermissions] = useState<AppPermission[]>([])
-  const [availablePolicies] = useState([
-    "QmaLAZCJEk5B4BW962pjENxCDHvwGtPptCamhckk9GJxJe",
-    "QmZbVUwomfUfCa38ia69LrSfH1k8JNK3BHeSUKm5tGMWgv"
-  ])
 
   useEffect(() => {
     // Mock data - replace with actual API call
