@@ -139,7 +139,7 @@ export default function Management() {
     <div className="space-y-8">
       <Card>
         <CardHeader>
-          <CardTitle>AW Management Dashboard</CardTitle>
+          <CardTitle>Agent Wallet Management Dashboard</CardTitle>
           <CardDescription>Manage your application permissions and settings</CardDescription>
         </CardHeader>
         <CardContent>

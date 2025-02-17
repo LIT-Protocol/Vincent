@@ -51,42 +51,53 @@ export default function AppsManagement() {
   return (
     <div className="space-y-8">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">My Applications</h1>
+        <h1 className="text-3xl font-bold">My Apps</h1>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {apps.map((app) => (
-          <Card key={app.id}>
-            <CardHeader>
-              <div className="flex items-start justify-between">
-                <div>
-                  <CardTitle>{app.appName}</CardTitle>
-                  <CardDescription className="mt-2">{app.description}</CardDescription>
+      {apps.length === 0 ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>No Apps Found</CardTitle>
+            <CardDescription>
+              You haven't created any Vincent applications yet.
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {apps.map((app) => (
+            <Card key={app.id}>
+              <CardHeader>
+                <div className="flex items-start justify-between">
+                  <div>
+                    <CardTitle>{app.appName}</CardTitle>
+                    <CardDescription className="mt-2">{app.description}</CardDescription>
+                  </div>
+                  <Badge variant={app.status === "enabled" ? "default" : "secondary"}>
+                    {app.status}
+                  </Badge>
                 </div>
-                <Badge variant={app.status === "enabled" ? "default" : "secondary"}>
-                  {app.status}
-                </Badge>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="text-sm">
-                  <span className="font-medium">App ID:</span> {app.appId}
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="text-sm">
+                    <span className="font-medium">App ID:</span> {app.appId}
+                  </div>
+                  <div className="text-sm">
+                    <span className="font-medium">Manager:</span> {app.appManager}
+                  </div>
+                  <Button 
+                    className="w-full"
+                    onClick={() => setSelectedAppId(app.id)}
+                  >
+                    Manage App <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
                 </div>
-                <div className="text-sm">
-                  <span className="font-medium">Manager:</span> {app.appManager}
-                </div>
-                <Button 
-                  className="w-full"
-                  onClick={() => setSelectedAppId(app.id)}
-                >
-                  Manage App <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   )
 } 

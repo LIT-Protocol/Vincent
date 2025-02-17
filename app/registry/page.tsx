@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
+import { useState } from "react"
 
 const formSchema = z.object({
   appName: z.string().min(2).max(50),
@@ -15,13 +16,19 @@ const formSchema = z.object({
   managerDelegatees: z.array(z.string()).optional(),
   logo: z.string().optional(),
   supportEmail: z.string().email().optional(),
-  discordLink: z.string().url().optional(),
   githubLink: z.string().url().optional(),
-  websiteUrl: z.string().url().optional(),
-  gasSponsorship: z.string().optional(),
+  discordLink: z.string().optional().refine((val) => !val || z.string().url().safeParse(val).success, {
+    message: "Invalid URL format",
+  }),
+  websiteUrl: z.string().optional().refine((val) => !val || z.string().url().safeParse(val).success, {
+    message: "Invalid URL format",
+  }),
 })
 
 export default function Registry() {
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isSuccess, setIsSuccess] = useState(false)
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -32,8 +39,7 @@ export default function Registry() {
       supportEmail: "",
       discordLink: "",
       githubLink: "",
-      websiteUrl: "",
-      gasSponsorship: "",
+      websiteUrl: ""
     },
   })
 
@@ -41,18 +47,48 @@ export default function Registry() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
+      setIsSubmitting(true)
       // TODO: Implement contract interaction
       console.log(values)
+      
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1500))
+      setIsSuccess(true)
     } catch (error) {
       console.error("Error submitting form:", error)
+    } finally {
+      setIsSubmitting(false)
     }
+  }
+
+  if (isSuccess) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Application Submitted!</CardTitle>
+          <CardDescription>
+            Thank you for submitting your application. We will review it shortly.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button
+            onClick={() => {
+              setIsSuccess(false)
+              form.reset()
+            }}
+          >
+            Submit Another Application
+          </Button>
+        </CardContent>
+      </Card>
+    )
   }
 
   return (
     <div className="space-y-8">
       <Card>
         <CardHeader>
-          <CardTitle>Register New Application</CardTitle>
+          <CardTitle>Register New Vincent App</CardTitle>
           <CardDescription>
             Submit your application to the Vincent registry
             <div className="mt-2 text-sm">
@@ -104,7 +140,7 @@ export default function Registry() {
                     name="supportEmail"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Support Email</FormLabel>
+                        <FormLabel>Contact Email</FormLabel>
                         <FormControl>
                           <Input 
                             type="email" 
@@ -122,7 +158,7 @@ export default function Registry() {
                     name="githubLink"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>GitHub Repository (Optional)</FormLabel>
+                        <FormLabel>GitHub Repository</FormLabel>
                         <FormControl>
                           <Input 
                             placeholder="https://github.com/..." 
@@ -154,7 +190,13 @@ export default function Registry() {
               </div>
 
               <div className="mt-6">
-                <Button type="submit" className="w-full">Submit Application</Button>
+                <Button 
+                  type="submit" 
+                  className="w-full"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? "Submitting..." : "Submit Application"}
+                </Button>
               </div>
             </form>
           </Form>

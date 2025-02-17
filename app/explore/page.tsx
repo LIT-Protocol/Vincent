@@ -24,7 +24,7 @@ export default function Apps() {
         allowedTools: ["QmZbVUwomfUfCa38ia69LrSfH1k8JNK3BHeSUKm5tGMWgv", "QmaLAZCJEk5B4BW962pjENxCDHvwGtPptCamhckk9GJxJe"],
         // logo: "/sample-logo.png",
         supportEmail: "support@sample1.com",
-        discordLink: "https://discord.gg/sample1",
+        // discordLink: "https://discord.gg/sample1",
         githubLink: "https://github.com/sample1",
         websiteUrl: "https://sample1.com"
       },

@@ -1,57 +1,59 @@
 "use client";
-import {
-    DEFAULT_REGISTRY_CONFIG,
-    getPkpToolRegistryContract,
-    getRegisteredToolsAndDelegatees,
-} from "@lit-protocol/aw-contracts-sdk";
-import { useEffect } from "react";
-import { LitContracts } from "@lit-protocol/contracts-sdk";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
+// import {
+//     DEFAULT_REGISTRY_CONFIG,
+//     getPkpToolRegistryContract,
+//     getRegisteredToolsAndDelegatees,
+// } from "@lit-protocol/aw-contracts-sdk";
+// import { useEffect } from "react";
+// import { LitContracts } from "@lit-protocol/contracts-sdk";
 
 export default function Home() {
-    const network = "datil-test";
-    function getPKPToolRegistryContract() {
-        const contract = getPkpToolRegistryContract({
-            rpcUrl: DEFAULT_REGISTRY_CONFIG[network].rpcUrl,
-            contractAddress: DEFAULT_REGISTRY_CONFIG[network].contractAddress,
-        });
-        console.log("registry", contract);
-        return contract;
-    }
 
-    async function getTokenIdByPkpEthAddress(pkpEthAddress: string) {
-        const litContracts = new LitContracts({
-            network,
-            debug: false,
-        });
-        await litContracts.connect();
-        const contract = litContracts.pubkeyRouterContract.read;
-        const tokenId = await contract.ethAddressToPkpId(pkpEthAddress);
-        console.log("tokenId", tokenId);
-        return tokenId;
-    }
+    // const network = "datil-test";
+    // function getPKPToolRegistryContract() {
+    //     const contract = getPkpToolRegistryContract({
+    //         rpcUrl: DEFAULT_REGISTRY_CONFIG[network].rpcUrl,
+    //         contractAddress: DEFAULT_REGISTRY_CONFIG[network].contractAddress,
+    //     });
+    //     console.log("registry", contract);
+    //     return contract;
+    // }
 
-    async function fetchDetails() {
-        const tokenId = await getTokenIdByPkpEthAddress(
-            "0x9bb681f026e31DB3693C05129a36E00da6418898"
-        );
+    // async function getTokenIdByPkpEthAddress(pkpEthAddress: string) {
+    //     const litContracts = new LitContracts({
+    //         network,
+    //         debug: false,
+    //     });
+    //     await litContracts.connect();
+    //     const contract = litContracts.pubkeyRouterContract.read;
+    //     const tokenId = await contract.ethAddressToPkpId(pkpEthAddress);
+    //     console.log("tokenId", tokenId);
+    //     return tokenId;
+    // }
 
-        const litContracts = new LitContracts({
-            network,
-            debug: false,
-        });
-        await litContracts.connect();
-        const registryContract = getPKPToolRegistryContract();
-        const details = await getRegisteredToolsAndDelegatees(
-            registryContract,
-            litContracts,
-            tokenId.toString()
-        );
-        console.log("details", details);
-    }
+    // async function fetchDetails() {
+    //     const tokenId = await getTokenIdByPkpEthAddress(
+    //         "0x9bb681f026e31DB3693C05129a36E00da6418898"
+    //     );
+
+    //     const litContracts = new LitContracts({
+    //         network,
+    //         debug: false,
+    //     });
+    //     await litContracts.connect();
+    //     const registryContract = getPKPToolRegistryContract();
+    //     const details = await getRegisteredToolsAndDelegatees(
+    //         registryContract,
+    //         litContracts,
+    //         tokenId.toString()
+    //     );
+    //     console.log("details", details);
+    // }
 
     // useEffect(() => {
     //     fetchDetails();
@@ -62,7 +64,7 @@ export default function Home() {
             <section className="text-center space-y-4">
                 <h1 className="text-4xl font-bold">Welcome to VINCENT</h1>
                 <p className="text-lg text-muted-foreground">
-                    Your gateway to decentralized application management
+                    Free the web!
                 </p>
             </section>
 
@@ -70,7 +72,7 @@ export default function Home() {
                 <Card>
                     <CardHeader>
                         <CardTitle>App Registry</CardTitle>
-                        <CardDescription>Register and manage your applications</CardDescription>
+                        <CardDescription>Register and manage your Vincent apps</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <Link href="/registry">
@@ -84,7 +86,7 @@ export default function Home() {
                 <Card>
                     <CardHeader>
                         <CardTitle>Vincent Apps</CardTitle>
-                        <CardDescription>Browse all registered applications</CardDescription>
+                        <CardDescription>Browse all applications</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <Link href="/apps">
@@ -98,7 +100,7 @@ export default function Home() {
                 <Card>
                     <CardHeader>
                         <CardTitle>AW Management</CardTitle>
-                        <CardDescription>Manage your AW permissions and settings</CardDescription>
+                        <CardDescription>Manage your Agent Wallet permissions</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <Link href="/management">
