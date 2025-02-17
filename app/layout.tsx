@@ -16,7 +16,7 @@ import { useEffect } from "react";
 
 const inter = Inter({ subsets: ["latin"] });
 
-export const wagmiConfig = createConfig({
+const wagmiConfig = createConfig({
     chains: [mainnet, sepolia],
     connectors: [injected()],
     transports: {
