@@ -27,7 +27,7 @@ interface AppManagerProps {
   onBack: () => void;
 }
 
-export default function AppManager({ appId, onBack }: AppManagerProps) {
+export default function AppManagerScreen({ appId, onBack }: AppManagerProps) {
   const [app, setApp] = useState<VincentApp | null>(null)
 
   const form = useForm<z.infer<typeof formSchema>>({

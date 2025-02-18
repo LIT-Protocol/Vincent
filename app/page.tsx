@@ -85,7 +85,7 @@ export default function Home() {
 
                 <Card>
                     <CardHeader>
-                        <CardTitle>Vincent Apps</CardTitle>
+                        <CardTitle>Explore Vincent Apps</CardTitle>
                         <CardDescription>Browse all applications</CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -99,7 +99,7 @@ export default function Home() {
 
                 <Card>
                     <CardHeader>
-                        <CardTitle>Library</CardTitle>
+                        <CardTitle>Checkout Library</CardTitle>
                         <CardDescription>Manage your app permissions</CardDescription>
                     </CardHeader>
                     <CardContent>

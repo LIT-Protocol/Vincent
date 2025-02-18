@@ -94,7 +94,11 @@ const formSchema = z.object({
     .transform(val => val || undefined),
 })
 
-export default function Registry() {
+interface CreateAppScreenProps {
+  onBack: () => void;
+}
+
+export default function CreateAppScreen({ onBack }: CreateAppScreenProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -159,6 +163,16 @@ export default function Registry() {
 
   return (
     <div className="space-y-8">
+      <div className="flex items-center mb-4">
+        <Button
+          variant="outline"
+          onClick={onBack}
+          className="mr-4"
+        >
+          ← Back
+        </Button>
+        <h1 className="text-3xl font-bold">Create New App</h1>
+      </div>
       <Card>
         <CardHeader>
           <CardTitle>Register New Vincent App</CardTitle>

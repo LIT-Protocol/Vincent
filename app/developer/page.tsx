@@ -12,15 +12,19 @@ import { Badge } from "@/components/ui/badge";
 import { useEffect, useState } from "react";
 import { VincentApp } from "@/types/vincent";
 import { ArrowRight, Plus } from "lucide-react";
-import AppManager from "@/components/developer/AppManager";
 import Link from "next/link";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import "@rainbow-me/rainbowkit/styles.css";
 import { useAccount } from "wagmi";
+import AppManagerScreen from "@/components/developer/AppManagerScreen";
+import CreateAppScreen from "@/components/developer/CreateAppScreen";
+import DelegateeManagerScreen from "@/components/developer/DelegateeManagerScreen";
 
-export default function AppsManagement() {
+export default function Developer() {
     const [apps, setApps] = useState<VincentApp[]>([]);
     const [selectedAppId, setSelectedAppId] = useState<string | null>(null);
+    const [showCreateApp, setShowCreateApp] = useState(false);
+    const [showDelegateeManager, setShowDelegateeManager] = useState(false);
     const { isConnected } = useAccount();
 
     useEffect(() => {
@@ -28,7 +32,7 @@ export default function AppsManagement() {
         setApps([
             {
                 id: "1",
-                appName: "Sample App 1",
+                appName: "Sample Role 1",
                 description:
                     "This is a sample application with full integration capabilities",
                 status: "enabled",
@@ -45,7 +49,7 @@ export default function AppsManagement() {
             },
             {
                 id: "2",
-                appName: "Sample App 2",
+                appName: "Sample Role 2",
                 description: "Another sample application with basic features",
                 status: "disabled",
                 appManager: "0x8765...4321",
@@ -76,9 +80,25 @@ export default function AppsManagement() {
         return <ConnectWalletScreen />;
     }
 
+    if (showCreateApp) {
+        return (
+            <CreateAppScreen
+                onBack={() => setShowCreateApp(false)}
+            />
+        );
+    }
+
+    if (showDelegateeManager) {
+        return (
+            <DelegateeManagerScreen
+                onBack={() => setShowDelegateeManager(false)}
+            />
+        );
+    }
+
     if (selectedAppId) {
         return (
-            <AppManager
+            <AppManagerScreen
                 appId={selectedAppId}
                 onBack={() => setSelectedAppId(null)}
             />
@@ -90,12 +110,14 @@ export default function AppsManagement() {
             <div className="flex justify-between items-center">
                 <h1 className="text-3xl font-bold">My Apps</h1>
                 <div className="flex gap-2 items-center">
-                    <Link href="/create">
-                        <Button variant="default">
-                            <Plus className="h-4 w-4 mr-2" />
-                            Create New App
-                        </Button>
-                    </Link>
+                    <Button variant="default" onClick={() => setShowCreateApp(true)}>
+                        <Plus className="h-4 w-4 mr-2" />
+                        Create New App
+                    </Button>
+                    <Button variant="default" onClick={() => setShowDelegateeManager(true)}>
+                        <Plus className="h-4 w-4 mr-2" />
+                        Create New Delegatee
+                    </Button>
                     <ConnectButton.Custom>
                         {({
                             account,
@@ -196,7 +218,7 @@ export default function AppsManagement() {
                                 <div className="space-y-4">
                                     <div className="text-sm">
                                         <span className="font-medium">
-                                            App ID:
+                                            Role:
                                         </span>{" "}
                                         {app.appId}
                                     </div>

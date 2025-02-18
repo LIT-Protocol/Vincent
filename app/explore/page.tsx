@@ -7,7 +7,7 @@ import { VincentApp } from "@/types/vincent"
 import { ExternalLink, Github, Mail, MessageSquare } from "lucide-react"
 import Image from "next/image"
 
-export default function Apps() {
+export default function Explore() {
   const [apps, setApps] = useState<(VincentApp & { access: boolean })[]>([])
 
   useEffect(() => {
@@ -54,7 +54,6 @@ export default function Apps() {
     <div className="space-y-8">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Vincent Applications</h1>
-        <Button variant="outline">Filter Apps</Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

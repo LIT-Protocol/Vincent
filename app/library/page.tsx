@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import Link from "next/link"
 
-export default function Apps() {
+export default function Library() {
   const [apps, setApps] = useState<(VincentApp & { tools: { cid: string; status: string; policies: { cid: string; status: string }[] }[] })[]>([])
   const [mockAddress] = useState("0x1234567890123456789012345678901234567890")
 
