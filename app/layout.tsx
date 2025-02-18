@@ -10,9 +10,23 @@ import { injected } from "wagmi/connectors";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { StytchProvider } from "@stytch/nextjs";
 import { createStytchUIClient } from "@stytch/nextjs/ui";
-import { StytchUIClient } from '@stytch/vanilla-js';
+import { StytchUIClient } from "@stytch/vanilla-js";
 import { useState } from "react";
 import { useEffect } from "react";
+import {
+    RainbowKitProvider,
+    getDefaultWallets,
+    connectorsForWallets,
+    cssStringFromTheme,
+    lightTheme,
+    darkTheme,
+} from "@rainbow-me/rainbowkit";
+import {
+    argentWallet,
+    trustWallet,
+    ledgerWallet,
+} from "@rainbow-me/rainbowkit/wallets";
+import "@rainbow-me/rainbowkit/styles.css";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -27,6 +41,10 @@ const wagmiConfig = createConfig({
 
 const queryClient = new QueryClient();
 
+const demoAppInfo = {
+    appName: "Vincent",
+};
+
 export default function RootLayout({
     children,
 }: Readonly<{
@@ -34,35 +52,41 @@ export default function RootLayout({
 }>) {
     const [stytchClient, setStytchClient] = useState<StytchUIClient | null>(
         null
-      );
-    
-      useEffect(() => {
+    );
+
+    useEffect(() => {
         const client = createStytchUIClient(
-          process.env.NEXT_PUBLIC_STYTCH_PUBLIC_TOKEN || ''
+            process.env.NEXT_PUBLIC_STYTCH_PUBLIC_TOKEN || ""
         );
         setStytchClient(client);
-      }, []);
-    
-      if (!stytchClient) {
+    }, []);
+
+    if (!stytchClient) {
         return null; // or a loading state
-      }
+    }
     return (
         <StytchProvider stytch={stytchClient}>
             <WagmiProvider config={wagmiConfig}>
                 <QueryClientProvider client={queryClient}>
-                    <html lang="en">
-                        <body
-                            className={cn(
-                                inter.className,
-                                "min-h-screen bg-background"
-                            )}
-                        >
-                            <Header />
-                            <main className="max-w-screen-xl mx-auto p-6">
-                                {children}
-                            </main>
-                        </body>
-                    </html>
+                    <RainbowKitProvider
+                        theme={darkTheme()}
+                        initialChain={mainnet}
+                        appInfo={demoAppInfo}
+                    >
+                        <html lang="en">
+                            <body
+                                className={cn(
+                                    inter.className,
+                                    "min-h-screen bg-background"
+                                )}
+                            >
+                                <Header />
+                                <main className="max-w-screen-xl mx-auto p-6">
+                                    {children}
+                                </main>
+                            </body>
+                        </html>
+                    </RainbowKitProvider>
                 </QueryClientProvider>
             </WagmiProvider>
         </StytchProvider>
