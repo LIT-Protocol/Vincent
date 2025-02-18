@@ -5,8 +5,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { useEffect, useState } from "react"
 import { VincentApp } from "@/types/vincent"
-import { ArrowRight } from "lucide-react"
-import AppManager from "@/components/app-management/AppManager"
+import { ArrowRight, Plus } from "lucide-react"
+import AppManager from "@/components/developer/AppManager"
+import Link from "next/link"
 
 export default function AppsManagement() {
   const [apps, setApps] = useState<VincentApp[]>([])
@@ -52,6 +53,14 @@ export default function AppsManagement() {
     <div className="space-y-8">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">My Apps</h1>
+        <div className="flex gap-2">
+          <Link href="/create">
+            <Button variant="default">
+              <Plus className="h-4 w-4 mr-2" />
+              Create New App
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {apps.length === 0 ? (

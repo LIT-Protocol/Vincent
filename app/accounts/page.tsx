@@ -5,9 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { useEffect, useState } from "react"
 import { Plus, Wallet } from "lucide-react"
+import Link from "next/link"
 
 interface AgentWallet {
-  id: string;
   address: string;
   isActive: boolean;
   name: string;
@@ -22,28 +22,24 @@ export default function Accounts() {
     // Mock data - replace with actual API call
     const mockWallets: AgentWallet[] = [
       {
-        id: "1",
         address: "0xC7CdAb64849B303846406F4231Dbe6ea8270fD86",
         isActive: true,
         name: "Wallet",
         balance: 0.1 
       },
       {
-        id: "2",
         address: "0xD98eE99d46d7A0e33ac4dA720035c5729F36d3d3",
         isActive: false,
         name: "Wallet",
         balance: 0.2
       },
       {
-        id: "3",
         address: "0xFAE415b6660730f7d3c9c96391aC6b54ddcf1e39",
         isActive: false,
         name: "Wallet",
         balance: 0.3
       },
       {
-        id: "4",
         address: "0x212d49debE509F8cB0c306EE4F7F72C27D203b77",
         isActive: false,
         name: "Wallet",
@@ -58,7 +54,7 @@ export default function Accounts() {
     // Update active wallet logic here
     setWallets(prev => prev.map(w => ({
       ...w,
-      isActive: w.id === wallet.id
+      isActive: w.address === wallet.address
     })))
     setActiveWallet(wallet)
   }
@@ -135,7 +131,7 @@ export default function Accounts() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {wallets.map((wallet) => (
-            <Card key={wallet.id} className={wallet.isActive ? 'border-primary' : ''}>
+            <Card key={wallet.address} className={wallet.isActive ? 'border-primary' : ''}>
               <CardHeader>
                 <div className="flex justify-between items-start">
                   <div>
@@ -162,6 +158,13 @@ export default function Accounts() {
                 <p className="text-sm text-muted-foreground break-all">
                   Balance: {wallet.balance} TSTLPX
                 </p>
+                <div className="mt-4">
+                  <Link href={`/accounts/${wallet.address}/settings`}>
+                    <Button variant="secondary" size="sm" className="w-full">
+                      Manage Wallet
+                    </Button>
+                  </Link>
+                </div>
               </CardContent>
             </Card>
           ))}

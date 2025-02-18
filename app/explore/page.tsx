@@ -8,7 +8,7 @@ import { ExternalLink, Github, Mail, MessageSquare } from "lucide-react"
 import Image from "next/image"
 
 export default function Apps() {
-  const [apps, setApps] = useState<VincentApp[]>([])
+  const [apps, setApps] = useState<(VincentApp & { access: boolean })[]>([])
 
   useEffect(() => {
     // Mock data - replace with actual API call
@@ -26,7 +26,8 @@ export default function Apps() {
         supportEmail: "support@sample1.com",
         // discordLink: "https://discord.gg/sample1",
         githubLink: "https://github.com/sample1",
-        websiteUrl: "https://sample1.com"
+        websiteUrl: "https://sample1.com",
+        access: true
       },
       {
         id: "2",
@@ -39,9 +40,15 @@ export default function Apps() {
         allowedTools: ["QmZbVUwomfUfCa38ia69LrSfH1k8JNK3BHeSUKm5tGMWgv"],
         supportEmail: "support@sample2.com",
         githubLink: "https://github.com/sample2",
+        access: false
       }
     ])
   }, [])
+
+  const handleUseApp = (appId: string) => {
+    // Will implement actual functionality later
+    console.log(`Using app ${appId}`)
+  }
 
   return (
     <div className="space-y-8">
@@ -70,9 +77,9 @@ export default function Apps() {
                     <CardDescription className="mt-2">{app.description}</CardDescription>
                   </div>
                 </div>
-                <Badge variant={app.status === "enabled" ? "default" : "secondary"}>
+                {/* <Badge variant={app.status === "enabled" ? "default" : "secondary"}>
                   {app.status}
-                </Badge>
+                </Badge> */}
               </div>
             </CardHeader>
 
@@ -126,7 +133,15 @@ export default function Apps() {
             </CardContent>
 
             <CardFooter className="mt-auto">
-              <Button className="w-full">Grant Access</Button>
+              {app.access ? (
+                <Button className="w-full" variant="secondary" disabled>
+                  In-use
+                </Button>
+              ) : (
+                <Button className="w-full" onClick={() => handleUseApp(app.id)}>
+                  Use this App
+                </Button>
+              )}
             </CardFooter>
           </Card>
         ))}

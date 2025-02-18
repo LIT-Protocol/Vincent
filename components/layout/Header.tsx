@@ -39,11 +39,25 @@ export default function Header() {
                                             : "bg-background hover:bg-accent hover:text-accent-foreground"
                                     }`}
                                 >
-                                    Vincent Apps
+                                    Explore
                                 </Link>
                             </NavigationMenuLink>
                         </NavigationMenuItem>
                         <NavigationMenuItem>
+                            <NavigationMenuLink asChild>
+                                <Link
+                                    href="/library"
+                                    className={`group inline-flex h-10 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors ${
+                                        pathname === "/library"
+                                            ? "bg-black text-white"
+                                            : "bg-background hover:bg-accent hover:text-accent-foreground"
+                                    }`}
+                                >
+                                    Library
+                                </Link>
+                            </NavigationMenuLink>
+                        </NavigationMenuItem>
+                        {/* <NavigationMenuItem>
                             <NavigationMenuLink asChild>
                                 <Link
                                     href="/aw-management"
@@ -56,32 +70,18 @@ export default function Header() {
                                     AW Management
                                 </Link>
                             </NavigationMenuLink>
-                        </NavigationMenuItem>
+                        </NavigationMenuItem> */}
                         <NavigationMenuItem>
                             <NavigationMenuLink asChild>
                                 <Link
-                                    href="/registry"
-                                    className={`group inline-flex h-10 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors ${
-                                        pathname === "/registry"
-                                            ? "bg-black text-white"
-                                            : "bg-background hover:bg-accent hover:text-accent-foreground"
-                                    }`}
-                                >
-                                    App Registry
-                                </Link>
-                            </NavigationMenuLink>
-                        </NavigationMenuItem>
-                        <NavigationMenuItem>
-                            <NavigationMenuLink asChild>
-                                <Link
-                                    href="/apps-management"
+                                    href="/developer"
                                     className={`group inline-flex h-10 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors ${
                                         pathname === "/apps-management"
                                             ? "bg-black text-white"
                                             : "bg-background hover:bg-accent hover:text-accent-foreground"
                                     }`}
                                 >
-                                    Apps Management
+                                    Developer
                                 </Link>
                             </NavigationMenuLink>
                         </NavigationMenuItem>

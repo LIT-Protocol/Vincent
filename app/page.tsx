@@ -71,11 +71,11 @@ export default function Home() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <Card>
                     <CardHeader>
-                        <CardTitle>App Registry</CardTitle>
+                        <CardTitle>Register your app</CardTitle>
                         <CardDescription>Register and manage your Vincent apps</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <Link href="/registry">
+                        <Link href="/developer">
                             <Button className="w-full">
                                 Get Started <ArrowRight className="ml-2 h-4 w-4" />
                             </Button>
@@ -89,7 +89,7 @@ export default function Home() {
                         <CardDescription>Browse all applications</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <Link href="/apps">
+                        <Link href="/explore">
                             <Button className="w-full">
                                 View Apps <ArrowRight className="ml-2 h-4 w-4" />
                             </Button>
@@ -99,13 +99,13 @@ export default function Home() {
 
                 <Card>
                     <CardHeader>
-                        <CardTitle>AW Management</CardTitle>
-                        <CardDescription>Manage your Agent Wallet permissions</CardDescription>
+                        <CardTitle>Library</CardTitle>
+                        <CardDescription>Manage your app permissions</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <Link href="/management">
+                        <Link href="/library">
                             <Button className="w-full">
-                                Manage AW <ArrowRight className="ml-2 h-4 w-4" />
+                                Manage App <ArrowRight className="ml-2 h-4 w-4" />
                             </Button>
                         </Link>
                     </CardContent>
