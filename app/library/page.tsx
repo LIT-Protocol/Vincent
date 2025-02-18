@@ -13,6 +13,7 @@ import Link from "next/link"
 
 export default function Apps() {
   const [apps, setApps] = useState<(VincentApp & { tools: { cid: string; status: string; policies: { cid: string; status: string }[] }[] })[]>([])
+  const [mockAddress] = useState("0x1234567890123456789012345678901234567890")
 
   useEffect(() => {
     // Mock data - replace with actual API call
@@ -119,7 +120,7 @@ export default function Apps() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Apps Library</h1>
         <Button variant="outline" size="sm" asChild>
-          <Link href="/library/settings">
+          <Link href={`/accounts/${mockAddress}/settings`}>
             <Settings className="h-4 w-4" />
             Settings
           </Link>
