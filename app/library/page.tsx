@@ -55,7 +55,7 @@ export default function Apps() {
         appManager: "0x8765...4321",
         managerDelegatees: ["0xwxyz...abcd"],
         appId: 2,
-        status: "enabled",
+        status: "disabled",
         allowedTools: ["QmZbVUwomfUfCa38ia69LrSfH1k8JNK3BHeSUKm5tGMWgv"],
         tools: [
           // Add tools array for second app
@@ -134,7 +134,7 @@ export default function Apps() {
           <TabsTrigger value="disabled">Disabled</TabsTrigger>
         </TabsList>
         <ScrollArea className="h-[calc(100vh-20rem)]">
-          <TabsContent value="all" className="space-y-4 mt-2">
+          <TabsContent value="all" className="space-y-4 mt-6">
             {apps.map((app) => (
               <Card key={app.id}>
                 <CardHeader>
@@ -252,8 +252,8 @@ export default function Apps() {
               </Card>
             ))}
           </TabsContent>
-          <TabsContent value="active" className="space-y-4 mt-2">
-            {apps.filter(app => app.status === 'enabled').map((app) => (
+          <TabsContent value="active" className="space-y-4 mt-6">
+            {apps.filter(app => app.status === "enabled").map((app) => (
               <Card key={app.id}>
                 <CardHeader>
                   <div className="flex items-start justify-between">
@@ -370,8 +370,8 @@ export default function Apps() {
               </Card>
             ))}
           </TabsContent>
-          <TabsContent value="disabled" className="space-y-4 mt-2">
-            {apps.filter(app => app.status === 'disabled').map((app) => (
+          <TabsContent value="disabled" className="space-y-4 mt-6">
+            {apps.filter(app => app.status === "disabled").map((app) => (
               <Card key={app.id}>
                 <CardHeader>
                   <div className="flex items-start justify-between">

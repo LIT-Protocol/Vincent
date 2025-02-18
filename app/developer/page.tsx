@@ -16,10 +16,12 @@ import AppManager from "@/components/developer/AppManager";
 import Link from "next/link";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import "@rainbow-me/rainbowkit/styles.css";
+import { useAccount } from "wagmi";
 
 export default function AppsManagement() {
     const [apps, setApps] = useState<VincentApp[]>([]);
     const [selectedAppId, setSelectedAppId] = useState<string | null>(null);
+    const { isConnected } = useAccount();
 
     useEffect(() => {
         // Mock data - replace with actual API call
@@ -58,6 +60,22 @@ export default function AppsManagement() {
         ]);
     }, []);
 
+    const ConnectWalletScreen = () => {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
+                <h1 className="text-3xl font-bold">Connect Wallet</h1>
+                <p className="text-muted-foreground">
+                    Please connect your wallet to manage your apps
+                </p>
+                <ConnectButton />
+            </div>
+        );
+    };
+
+    if (!isConnected) {
+        return <ConnectWalletScreen />;
+    }
+
     if (selectedAppId) {
         return (
             <AppManager
@@ -85,15 +103,18 @@ export default function AppsManagement() {
                             openConnectModal,
                             openChainModal,
                             openAccountModal,
-                            mounted
+                            mounted,
                         }) => {
                             const ready = mounted;
                             if (!ready) return null;
-                            
+
                             return (
                                 <div>
                                     {!account && (
-                                        <Button variant="outline" onClick={openConnectModal}>
+                                        <Button
+                                            variant="outline"
+                                            onClick={openConnectModal}
+                                        >
                                             Connect Wallet
                                         </Button>
                                     )}
@@ -104,11 +125,22 @@ export default function AppsManagement() {
                                                 onClick={openChainModal}
                                                 className="flex gap-2 items-center"
                                             >
-                                                {chain && <div className="h-4 w-4">
-                                                    {chain.hasIcon && chain.iconUrl && 
-                                                        <img alt={chain.name} src={chain.iconUrl} className="h-full w-full" />
-                                                    }
-                                                </div>}
+                                                {chain && (
+                                                    <div className="h-4 w-4">
+                                                        {chain.hasIcon &&
+                                                            chain.iconUrl && (
+                                                                <img
+                                                                    alt={
+                                                                        chain.name
+                                                                    }
+                                                                    src={
+                                                                        chain.iconUrl
+                                                                    }
+                                                                    className="h-full w-full"
+                                                                />
+                                                            )}
+                                                    </div>
+                                                )}
                                                 {chain?.name || "Unknown Chain"}
                                             </Button>
                                             <Button
