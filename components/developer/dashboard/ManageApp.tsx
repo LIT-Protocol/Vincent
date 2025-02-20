@@ -21,7 +21,16 @@ const formSchema = z.object({
   appName: z.string().min(2, "App name must be at least 2 characters").max(50, "App name cannot exceed 50 characters"),
   appDescription: z.string().min(10, "Description must be at least 10 characters").max(500, "Description cannot exceed 500 characters"),
   email: z.string().email("Must be a valid email address"),
-  domain: z.string().url("Must be a valid URL").optional(),
+  domain: z.string()
+    .transform((val) => {
+      if (!val) return val;
+      if (!val.startsWith('http://') && !val.startsWith('https://')) {
+        return `https://${val}`;
+      }
+      return val;
+    })
+    .pipe(z.string().url("Must be a valid URL"))
+    .optional(),
 })
 
 interface AppManagerProps {
@@ -197,7 +206,7 @@ export default function ManageAppScreen({ onBack, dashboard }: AppManagerProps) 
                   name="domain"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Website URL</FormLabel>
+                      <FormLabel>Website Domain</FormLabel>
                       <FormControl>
                         <Input {...field} />
                       </FormControl>
