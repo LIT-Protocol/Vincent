@@ -246,8 +246,8 @@ export default function ManageAppScreen({ onBack, dashboard }: AppManagerProps) 
             <CardContent>
               <div className="space-y-2">
                 {dashboard.roles.map((role) => (
-                  <div key={role.roleId} className="text-sm break-all">
-                    {role.roleId}
+                  <div key={role.roleName} className="text-sm break-all">
+                    {role.roleName}
                   </div>
                 ))}
               </div>

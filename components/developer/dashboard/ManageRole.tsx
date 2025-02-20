@@ -25,6 +25,8 @@ import { useState } from "react";
 import { SiweMessage } from "siwe";
 import { useSignMessage } from "wagmi";
 import { VincentApp } from "@/types";
+import { ArrowLeft } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 const formSchema = z.object({
     roleVersion: z.string().min(1, "Role version is required"),
@@ -54,14 +56,14 @@ const formSchema = z.object({
 
 interface ManageRoleScreenProps {
     onBack: () => void;
-    dashboard?: VincentApp;
+    dashboard: VincentApp;
     roleId: number;
 }
 
 export default function ManageRoleScreen({
     onBack,
     dashboard,
-    roleId,
+    roleId
 }: ManageRoleScreenProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
@@ -80,8 +82,11 @@ export default function ManageRoleScreen({
 
     const address = "0x..."; // TODO: Replace with actual wallet connection logic
 
-    // Now you can find the role directly from the dashboard
-    const role = dashboard?.roles.find((r) => parseInt(r.roleId) === roleId);
+    const role = dashboard.roles.find(r => r.roleId === roleId.toString());
+
+    if (!role) {
+        return <div>Role not found</div>;
+    }
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
         try {
@@ -100,7 +105,7 @@ export default function ManageRoleScreen({
                 // Include form data in the message
                 resources: [
                     JSON.stringify({
-                        appId: dashboard?.appMetadata.appId,
+                        appId: dashboard.appMetadata.appId,
                         roleId,
                         roleVersion: values.roleVersion,
                         roleName: values.roleName,
@@ -129,7 +134,7 @@ export default function ManageRoleScreen({
                 },
                 body: JSON.stringify({
                     signedMessage: signature,
-                    appId: dashboard?.appMetadata.appId,
+                    appId: dashboard.appMetadata.appId,
                     roleId,
                     roleVersion: values.roleVersion,
                     roleName: values.roleName,
@@ -182,12 +187,71 @@ export default function ManageRoleScreen({
 
     return (
         <div className="space-y-8">
-            <div className="flex items-center mb-4">
-                <Button variant="outline" onClick={onBack} className="mr-4">
-                    ← Back
+            <div className="flex items-center gap-4">
+                <Button variant="ghost" onClick={onBack}>
+                    <ArrowLeft className="h-4 w-4 mr-2" />
+                    Back
                 </Button>
-                <h1 className="text-3xl font-bold">Manage Roles</h1>
+                <h1 className="text-3xl font-bold">{role.roleName}</h1>
             </div>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle>Role Details</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div>
+                        <p className="font-medium">Role Description</p>
+                        <p className="text-muted-foreground">{role.roleDescription}</p>
+                    </div>
+                    <div>
+                        <p className="font-medium">Role Version</p>
+                        <p className="text-muted-foreground">{role.roleVersion}</p>
+                    </div>
+                    <div>
+                        <p className="font-medium">Status</p>
+                        <Badge variant={role.enabled ? "default" : "secondary"}>
+                            {role.enabled ? "Enabled" : "Disabled"}
+                        </Badge>
+                    </div>
+                </CardContent>
+            </Card>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle>Tools and Policies</CardTitle>
+                    <CardDescription>
+                        List of tools and their associated policies for this role
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    {role.toolPolicy.length === 0 ? (
+                        <p className="text-muted-foreground">No tools or policies configured for this role</p>
+                    ) : (
+                        <div className="space-y-4">
+                            {role.toolPolicy.map((tp, index) => (
+                                <div key={index} className="border rounded-lg p-4">
+                                    <div className="space-y-2">
+                                        <div>
+                                            <p className="font-medium">Tool CID</p>
+                                            <p className="text-sm text-muted-foreground break-all">
+                                                {tp.toolCId}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <p className="font-medium">Policy CID</p>
+                                            <p className="text-sm text-muted-foreground break-all">
+                                                {tp.policyCId}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
+
             <Card>
                 <CardHeader>
                     <CardTitle>Update Role</CardTitle>
@@ -197,7 +261,7 @@ export default function ManageRoleScreen({
                             Management Wallet Address: <code>{address}</code>
                         </div>
                         <div className="mt-2 text-sm">
-                            App ID: <code>{dashboard?.appMetadata.appId}</code>{" "}
+                            App ID: <code>{dashboard.appMetadata.appId}</code>{" "}
                             | Role ID: <code>{roleId}</code>
                         </div>
                     </CardDescription>

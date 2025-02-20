@@ -30,8 +30,8 @@ export default function CreateRoleScreen({ onBack, dashboard }: CreateRoleProps)
     const [tools, setTools] = useState<Tool[]>([]);
 
     // Mock available tools and policies - replace with actual data
-    const availableTools = ["Uniswap Swap", "Uniswap Add Liquidity", "Token Transfer"];
-    const availablePolicies = ["Max Amount", "Time Lock", "Token Whitelist"];
+    const availableTools = ["Uniswap Swap", "ERC20 Token Transfer", "Solana Token Transfer"];
+    const availablePolicies = ["Max Amount", "Max Transactions"];
 
     const handleAddTool = () => {
         const newTool = {

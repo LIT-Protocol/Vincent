@@ -1,0 +1,155 @@
+import { getAppMetadata } from "@/services/api";
+import { VincentApp } from "@/types";
+import { useEffect, useState } from "react";
+import { useAccount } from "wagmi";
+import ManageAppScreen from "./dashboard/ManageApp";
+import CreateRoleScreen from "./dashboard/CreateRole";
+import ManageRoleScreen from "./dashboard/ManageRole";
+import DelegateeManagerScreen from "./dashboard/ManageDelegatee";
+import { ArrowRight } from "lucide-react";
+import { Plus, Settings } from "lucide-react";
+import { Button } from "../ui/button";
+import { Badge } from "../ui/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
+
+
+export default function DashboardScreen({vincentApp}: {vincentApp: VincentApp}) {
+    const { address } = useAccount();
+    const [dashboard, setDashboard] = useState<VincentApp>();
+    const [selectedRoleId, setSelectedRoleId] = useState<string | null>(null);
+    const [showManageApp, setShowManageApp] = useState(false);
+    const [showDelegateeManager, setShowDelegateeManager] = useState(false);
+    const [showCreateRole, setShowCreateRole] = useState(false);
+
+    useEffect(() => {
+        if (vincentApp) {
+            setDashboard(vincentApp)
+        }
+    }, [vincentApp]);
+
+    if (!dashboard) {
+        return <div>Loading...</div>;
+    }
+
+    if (showManageApp) {
+        return <ManageAppScreen 
+            onBack={() => setShowManageApp(false)} 
+            dashboard={dashboard}
+        />;
+    }
+
+    if (showDelegateeManager) {
+        return (
+            <DelegateeManagerScreen
+                onBack={() => setShowDelegateeManager(false)}
+                dashboard={dashboard}
+            />
+        );
+    }
+
+    if (showCreateRole) {
+        return <CreateRoleScreen 
+            onBack={() => setShowCreateRole(false)} 
+            dashboard={dashboard}
+        />;
+    }
+
+    if (selectedRoleId && dashboard) {
+        return <ManageRoleScreen 
+            onBack={() => setSelectedRoleId(null)} 
+            dashboard={dashboard}
+            roleId={parseInt(selectedRoleId)}
+        />;
+    }
+    
+    return (
+        <div className="space-y-8">
+            <div className="flex justify-between items-center">
+                <h1 className="text-3xl font-bold">{dashboard.appMetadata.appName}</h1>
+                <div className="flex gap-2 items-center">
+                    <Button
+                        variant="default"
+                        onClick={() => setShowManageApp(true)}
+                    >
+                        <Settings className="h-4 w-4 mr-2" />
+                        Manage App
+                    </Button>
+                    <Button
+                        variant="default"
+                        onClick={() => setShowCreateRole(true)}
+                    >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Create New Role
+                    </Button>
+                    <Button
+                        variant="default"
+                        onClick={() => setShowDelegateeManager(true)}
+                    >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Create New Delegatee
+                    </Button>
+                </div>
+            </div>
+
+            {dashboard?.roles.length === 0 ? (
+                <Card>
+                    <CardHeader>
+                        <CardTitle>No Roles Found</CardTitle>
+                        <CardDescription>
+                            You haven&apos;t created any roles yet.
+                        </CardDescription>
+                    </CardHeader>
+                </Card>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {dashboard?.roles.map((role) => (
+                        <Card key={role.roleId}>
+                            <CardHeader>
+                                <div className="flex items-start justify-between">
+                                    <div>
+                                        <CardTitle>{role.roleName}</CardTitle>
+                                        <CardDescription className="mt-2">
+                                            {role.roleDescription}
+                                        </CardDescription>
+                                    </div>
+                                    <Badge
+                                        variant={
+                                            role.enabled
+                                                ? "default"
+                                                : "secondary"
+                                        }
+                                    >
+                                        {role.enabled ? "Enabled" : "Disabled"}
+                                    </Badge>
+                                </div>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="space-y-4">
+                                    <div className="text-sm">
+                                        <span className="font-medium">
+                                            Role ID:
+                                        </span>{" "}
+                                        {role.roleId}
+                                    </div>
+                                    <div className="text-sm">
+                                        <span className="font-medium">
+                                            Role Version:
+                                        </span>{" "}
+                                        {role.roleVersion}
+                                    </div>
+                                    <Button
+                                        className="w-full"
+                                        onClick={() => setSelectedRoleId(role.roleId)}
+                                    >
+                                        Manage Role{" "}
+                                        <ArrowRight className="ml-2 h-4 w-4" />
+                                    </Button>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+}
