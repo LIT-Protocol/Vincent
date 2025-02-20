@@ -54,7 +54,7 @@ export default function WalletSettings() {
         ]
       },
       {
-        id: "1",
+        id: "2",
         appName: "Sample App 2",
         tools: [
           {
@@ -72,7 +72,7 @@ export default function WalletSettings() {
     ]);
   }, [walletAddress]);
 
-  // Reuse the same toggle functions from aw-management
+  // Updated toggle functions
   const toggleTool = (appId: string, toolCid: string) => {
     setPermissions(prev => prev.map(app => {
       if (app.id === appId) {
@@ -81,6 +81,32 @@ export default function WalletSettings() {
           tools: app.tools.map(tool => {
             if (tool.cid === toolCid) {
               return { ...tool, enabled: !tool.enabled }
+            }
+            return tool
+          })
+        }
+      }
+      return app
+    }));
+  };
+
+  // Add new toggle function for policies
+  const togglePolicy = (appId: string, toolCid: string, policyCid: string) => {
+    setPermissions(prev => prev.map(app => {
+      if (app.id === appId) {
+        return {
+          ...app,
+          tools: app.tools.map(tool => {
+            if (tool.cid === toolCid) {
+              return {
+                ...tool,
+                policies: tool.policies.map(policy => {
+                  if (policy.cid === policyCid) {
+                    return { ...policy, enabled: !policy.enabled }
+                  }
+                  return policy
+                })
+              }
             }
             return tool
           })
@@ -145,7 +171,10 @@ export default function WalletSettings() {
                         <div className="space-y-2">
                           {tool.policies.map((policy) => (
                             <div key={policy.cid} className="flex items-center gap-2">
-                              <Switch checked={policy.enabled} />
+                              <Switch 
+                                checked={policy.enabled}
+                                onCheckedChange={() => togglePolicy(app.id, tool.cid, policy.cid)}
+                              />
                               <Link 
                                 href={`/ipfs/${policy.cid}`}
                                 className="flex items-center hover:underline text-sm"

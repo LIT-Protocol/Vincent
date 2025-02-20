@@ -16,18 +16,15 @@ import { ArrowLeft } from "lucide-react"
 const formSchema = z.object({
   appName: z.string().min(2).max(50),
   description: z.string().min(10).max(500),
-  supportEmail: z.string().email().optional(),
-  discordLink: z.string().url().optional(),
-  githubLink: z.string().url().optional(),
-  websiteUrl: z.string().url().optional(),
+  email: z.string().email().optional(),
+  domain: z.string().url().optional(),
 })
 
 interface AppManagerProps {
-  appId: string;
   onBack: () => void;
 }
 
-export default function AppManagerScreen({ appId, onBack }: AppManagerProps) {
+export default function AppManagerScreen({ onBack }: AppManagerProps) {
   const [app, setApp] = useState<VincentApp | null>(null)
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -35,39 +32,37 @@ export default function AppManagerScreen({ appId, onBack }: AppManagerProps) {
     defaultValues: {
       appName: "",
       description: "",
-      supportEmail: "",
-      discordLink: "",
-      githubLink: "",
-      websiteUrl: "",
+      email: "",
+      domain: "",
     },
   })
 
   useEffect(() => {
     // Mock data - replace with actual API call
     const mockApp: VincentApp = {
-      id: appId,
-      appName: "Sample App 1",
+      appId: "1",
+      appName: "Uniswap Watcher",
       description: "This is a sample application with full integration capabilities",
-      status: "enabled",
-      appManager: "0x1234...5678",
+      enabled: true,
+      roleVersion: "1",
       managerDelegatees: ["0xabcd...efgh"],
-      appId: 1,
-      allowedTools: ["QmZbVUwomfUfCa38ia69LrSfH1k8JNK3BHeSUKm5tGMWgv"],
-      supportEmail: "support@sample1.com",
-      discordLink: "https://discord.gg/sample1",
-      githubLink: "https://github.com/sample1",
-      websiteUrl: "https://sample1.com"
+      toolPolicy: [
+        {
+          toolCId: "QmZbVUwomfUfCa38ia69LrSfH1k8JNK3BHeSUKm5tGMWgv",
+          policyCId: "QmZbVUwomfUfCa38ia69LrSfH1k8JNK3BHeSUKm5tGMWgv",
+        },
+      ],
+      appCreator: "0xabcd...efgh",
+      roleIds: [1],
     }
     setApp(mockApp)
     form.reset({
       appName: mockApp.appName,
       description: mockApp.description,
-      supportEmail: mockApp.supportEmail,
-      discordLink: mockApp.discordLink,
-      githubLink: mockApp.githubLink,
-      websiteUrl: mockApp.websiteUrl,
+      email: mockApp.email,
+      domain: mockApp.domain,
     })
-  }, [appId, form])
+  }, [form])
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
@@ -137,7 +132,7 @@ export default function AppManagerScreen({ appId, onBack }: AppManagerProps) {
 
                 <FormField
                   control={form.control}
-                  name="supportEmail"
+                  name="email"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Support Email</FormLabel>
@@ -149,7 +144,7 @@ export default function AppManagerScreen({ appId, onBack }: AppManagerProps) {
                   )}
                 />
 
-                <FormField
+                {/* <FormField
                   control={form.control}
                   name="discordLink"
                   render={({ field }) => (
@@ -175,11 +170,11 @@ export default function AppManagerScreen({ appId, onBack }: AppManagerProps) {
                       <FormMessage />
                     </FormItem>
                   )}
-                />
+                /> */}
 
                 <FormField
                   control={form.control}
-                  name="websiteUrl"
+                  name="domain"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Website URL</FormLabel>
@@ -205,8 +200,8 @@ export default function AppManagerScreen({ appId, onBack }: AppManagerProps) {
             <CardContent>
               <div className="space-y-4">
                 <div>
-                  <Badge variant={app.status === "enabled" ? "default" : "secondary"}>
-                    {app.status}
+                  <Badge variant={app.enabled ? "default" : "secondary"}>
+                    {app.enabled ? "Enabled" : "Disabled"}
                   </Badge>
                 </div>
                 <div className="text-sm">
@@ -215,7 +210,7 @@ export default function AppManagerScreen({ appId, onBack }: AppManagerProps) {
                 </div>
                 <div className="text-sm">
                   <div className="font-medium">Manager Address</div>
-                  <div className="mt-1 break-all">{app.appManager}</div>
+                  <div className="mt-1 break-all">{app.managerDelegatees[0]}</div>
                 </div>
                 <Button variant="destructive" className="w-full">
                   Disable Application
@@ -230,9 +225,9 @@ export default function AppManagerScreen({ appId, onBack }: AppManagerProps) {
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
-                {app.allowedTools.map((tool) => (
-                  <div key={tool} className="text-sm break-all">
-                    {tool}
+                {app.toolPolicy.map((tool) => (
+                  <div key={tool.toolCId} className="text-sm break-all">
+                    {tool.toolCId}
                   </div>
                 ))}
               </div>

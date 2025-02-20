@@ -11,55 +11,64 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { useEffect, useState } from "react";
 import { VincentApp } from "@/types/vincent";
-import { ArrowRight, Plus } from "lucide-react";
+import { ArrowRight, Plus, Settings } from "lucide-react";
 import Link from "next/link";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import "@rainbow-me/rainbowkit/styles.css";
 import { useAccount } from "wagmi";
-import AppManagerScreen from "@/components/developer/AppManagerScreen";
 import CreateAppScreen from "@/components/developer/CreateAppScreen";
+import ManageAppScreen from "@/components/developer/ManageAppScreen";
+import CreateRoleScreen from "@/components/developer/CreateRoleScreen";
 import DelegateeManagerScreen from "@/components/developer/DelegateeManagerScreen";
+import ManageRoleScreen from "@/components/developer/ManageRoleScreen";
 
 export default function Developer() {
     const [apps, setApps] = useState<VincentApp[]>([]);
     const [selectedAppId, setSelectedAppId] = useState<string | null>(null);
-    const [showCreateApp, setShowCreateApp] = useState(false);
+    const [showManageApp, setShowManageApp] = useState(false);
     const [showDelegateeManager, setShowDelegateeManager] = useState(false);
+    const [showCreateRole, setShowCreateRole] = useState(false);
     const { isConnected } = useAccount();
 
     useEffect(() => {
         // Mock data - replace with actual API call
         setApps([
             {
-                id: "1",
-                appName: "Sample Role 1",
+                appId: "1",
+                appName: "Uniswap Watcher",
                 description:
                     "This is a sample application with full integration capabilities",
-                status: "enabled",
-                appManager: "0x1234...5678",
+                enabled: true,
+                roleVersion: "1",
+                appCreator: "0xabcd...efgh",
+                roleIds: [1],
                 managerDelegatees: ["0xabcd...efgh"],
-                appId: 1,
-                allowedTools: [
-                    "QmZbVUwomfUfCa38ia69LrSfH1k8JNK3BHeSUKm5tGMWgv",
+                toolPolicy: [
+                    {
+                        toolCId: "QmZbVUwomfUfCa38ia69LrSfH1k8JNK3BHeSUKm5tGMWgv",
+                        policyCId: "QmZbVUwomfUfCa38ia69LrSfH1k8JNK3BHeSUKm5tGMWgv",
+                    },
                 ],
-                supportEmail: "support@sample1.com",
-                discordLink: "https://discord.gg/sample1",
-                githubLink: "https://github.com/sample1",
-                websiteUrl: "https://sample1.com",
+                email: "support@sample1.com",
+                domain: "https://sample1.com",
             },
             {
-                id: "2",
-                appName: "Sample Role 2",
+                appId: "2",
+                appName: "Uniswap Trader",
                 description: "Another sample application with basic features",
-                status: "disabled",
-                appManager: "0x8765...4321",
+                enabled: false,
+                roleVersion: "3",
+                appCreator: "0xabcd...efgh",
+                roleIds: [2],
                 managerDelegatees: [],
-                appId: 2,
-                allowedTools: [
-                    "QmZbVUwomfUfCa38ia69LrSfH1k8JNK3BHeSUKm5tGMWgv",
+                toolPolicy: [
+                    {
+                        toolCId: "QmZbVUwomfUfCa38ia69LrSfH1k8JNK3BHeSUKm5tGMWgv",
+                        policyCId: "QmZbVUwomfUfCa38ia69LrSfH1k8JNK3BHeSUKm5tGMWgv",
+                    },
                 ],
-                supportEmail: "support@sample2.com",
-                githubLink: "https://github.com/sample2",
+                email: "support@sample2.com",
+                domain: "https://sample2.com",
             },
         ]);
     }, []);
@@ -72,6 +81,15 @@ export default function Developer() {
                     Please connect your wallet to manage your apps
                 </p>
                 <ConnectButton />
+                <p className="text-muted-foreground">
+                    Get some funds through the faucet
+                </p>
+                <Link
+                    href="https://chronicle-yellowstone-faucet.getlit.dev"
+                    target="_blank"
+                >
+                    Faucet
+                </Link>
             </div>
         );
     };
@@ -80,12 +98,8 @@ export default function Developer() {
         return <ConnectWalletScreen />;
     }
 
-    if (showCreateApp) {
-        return (
-            <CreateAppScreen
-                onBack={() => setShowCreateApp(false)}
-            />
-        );
+    if (showManageApp) {
+        return <ManageAppScreen onBack={() => setShowManageApp(false)} />;
     }
 
     if (showDelegateeManager) {
@@ -96,25 +110,41 @@ export default function Developer() {
         );
     }
 
+    if (showCreateRole) {
+        return <CreateRoleScreen onBack={() => setShowCreateRole(false)} />;
+    }
+
     if (selectedAppId) {
-        return (
-            <AppManagerScreen
-                appId={selectedAppId}
-                onBack={() => setSelectedAppId(null)}
-            />
-        );
+        return <ManageRoleScreen 
+            onBack={() => setSelectedAppId(null)} 
+            appId={parseInt(selectedAppId)}
+            roleId={apps.find(app => app.appId === selectedAppId)?.roleIds[0] || 0}
+        />;
     }
 
     return (
         <div className="space-y-8">
             <div className="flex justify-between items-center">
-                <h1 className="text-3xl font-bold">My Apps</h1>
+                <h1 className="text-3xl font-bold">Swapping App</h1>
                 <div className="flex gap-2 items-center">
-                    <Button variant="default" onClick={() => setShowCreateApp(true)}>
-                        <Plus className="h-4 w-4 mr-2" />
-                        Create New App
+                    <Button
+                        variant="default"
+                        onClick={() => setShowCreateRole(true)}
+                    >
+                        <Settings className="h-4 w-4 mr-2" />
+                        Manage App
                     </Button>
-                    <Button variant="default" onClick={() => setShowDelegateeManager(true)}>
+                    <Button
+                        variant="default"
+                        onClick={() => setShowCreateRole(true)}
+                    >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Create New Role
+                    </Button>
+                    <Button
+                        variant="default"
+                        onClick={() => setShowDelegateeManager(true)}
+                    >
                         <Plus className="h-4 w-4 mr-2" />
                         Create New Delegatee
                     </Button>
@@ -194,7 +224,7 @@ export default function Developer() {
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {apps.map((app) => (
-                        <Card key={app.id}>
+                        <Card key={app.appId}>
                             <CardHeader>
                                 <div className="flex items-start justify-between">
                                     <div>
@@ -205,12 +235,12 @@ export default function Developer() {
                                     </div>
                                     <Badge
                                         variant={
-                                            app.status === "enabled"
+                                            app.enabled
                                                 ? "default"
                                                 : "secondary"
                                         }
                                     >
-                                        {app.status}
+                                        {app.enabled ? "Enabled" : "Disabled"}
                                     </Badge>
                                 </div>
                             </CardHeader>
@@ -218,21 +248,21 @@ export default function Developer() {
                                 <div className="space-y-4">
                                     <div className="text-sm">
                                         <span className="font-medium">
-                                            Role:
+                                            Role ID:
                                         </span>{" "}
                                         {app.appId}
                                     </div>
                                     <div className="text-sm">
                                         <span className="font-medium">
-                                            Manager:
+                                            Role Version:
                                         </span>{" "}
-                                        {app.appManager}
+                                        {app.roleVersion}
                                     </div>
                                     <Button
                                         className="w-full"
-                                        onClick={() => setSelectedAppId(app.id)}
+                                        onClick={() => setSelectedAppId(app.appId)}
                                     >
-                                        Manage App{" "}
+                                        Manage Role{" "}
                                         <ArrowRight className="ml-2 h-4 w-4" />
                                     </Button>
                                 </div>

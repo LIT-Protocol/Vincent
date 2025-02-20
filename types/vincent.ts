@@ -1,16 +1,24 @@
 export interface VincentApp {
-  appManager: string; // Ethereum address
-  appId: number; // uint256 from AppRegistry contract
-  managerDelegatees: string[]; // Array of Ethereum addresses
-  allowedTools: string[]; // List of tool IDs/addresses
+  // On-chain data
+  enabled: boolean;
+  roleIds: number[];
+  managerDelegatees: string[];
+  appCreator: string;
+
+  // For Each Role Id
+  roleVersion: string;
+  toolPolicy: ToolPolicy[];
+
   // Off-chain data
-  id: string;
+  appId: string;
   appName: string;
   description: string;
-  status: "enabled" | "disabled";
   logo?: string;
-  supportEmail?: string;
-  discordLink?: string;
-  githubLink?: string;
-  websiteUrl?: string;
+  email?: string;
+  domain?: string;
 } 
+
+export interface ToolPolicy {
+  toolCId: string;
+  policyCId: string;
+}

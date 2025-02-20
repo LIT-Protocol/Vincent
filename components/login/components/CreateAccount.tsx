@@ -1,5 +1,3 @@
-import "../styles/login.css";
-
 interface CreateAccountProp {
   signUp: any;
   error?: Error;

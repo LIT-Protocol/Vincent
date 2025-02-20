@@ -1,5 +1,3 @@
-import "../styles/login.css";
-
 interface AuthMethodsProps {
   setView: React.Dispatch<React.SetStateAction<string>>;
 }

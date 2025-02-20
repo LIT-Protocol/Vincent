@@ -1,61 +1,59 @@
-"use client"
+"use client";
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { ArrowLeft, Plus, Copy, Check } from "lucide-react"
-import { useState, useEffect } from "react"
-import { Wallet } from "ethers"
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ArrowLeft, Plus, Copy, Check } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Wallet } from "ethers";
 import {
     Dialog,
     DialogContent,
     DialogHeader,
     DialogTitle,
     DialogDescription,
-} from "@/components/ui/dialog"
+} from "@/components/ui/dialog";
 
 interface DelegateeManagerProps {
     onBack: () => void;
 }
 
-export default function DelegateeManagerScreen({ onBack }: DelegateeManagerProps) {
-    const [delegatees, setDelegatees] = useState<string[]>([])
-    const [showKeyDialog, setShowKeyDialog] = useState(false)
-    const [newPrivateKey, setNewPrivateKey] = useState("")
-    const [newAddress, setNewAddress] = useState("")
-    const [copying, setCopying] = useState(false)
+export default function DelegateeManagerScreen({
+    onBack,
+}: DelegateeManagerProps) {
+    const [delegatees, setDelegatees] = useState<string[]>([]);
+    const [showKeyDialog, setShowKeyDialog] = useState(false);
+    const [newPrivateKey, setNewPrivateKey] = useState("");
+    const [newAddress, setNewAddress] = useState("");
+    const [copying, setCopying] = useState(false);
 
     useEffect(() => {
         // Mock data - replace with actual API call
         setDelegatees([
             "0x1234567890abcdef1234567890abcdef12345678",
             "0xabcdef1234567890abcdef1234567890abcdef12",
-            "0x7890abcdef1234567890abcdef1234567890abcd"
-        ])
-    }, [])
+            "0x7890abcdef1234567890abcdef1234567890abcd",
+        ]);
+    }, []);
 
     const handleGenerateDelegatee = () => {
-        const wallet = Wallet.createRandom()
-        setNewPrivateKey(wallet.privateKey)
-        setNewAddress(wallet.address)
-        setShowKeyDialog(true)
-    }
+        const wallet = Wallet.createRandom();
+        setNewPrivateKey(wallet.privateKey);
+        setNewAddress(wallet.address);
+        setShowKeyDialog(true);
+    };
 
     const handleConfirmSaved = () => {
-        setDelegatees(prev => [...prev, newAddress])
-        setShowKeyDialog(false)
-        setNewPrivateKey("")
-        setNewAddress("")
-    }
+        setDelegatees((prev) => [...prev, newAddress]);
+        setShowKeyDialog(false);
+        setNewPrivateKey("");
+        setNewAddress("");
+    };
 
     return (
         <div className="space-y-8">
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={onBack}
-                    >
+                    <Button variant="outline" size="sm" onClick={onBack}>
                         <ArrowLeft className="h-4 w-4 mr-2" />
                         Back
                     </Button>
@@ -72,17 +70,28 @@ export default function DelegateeManagerScreen({ onBack }: DelegateeManagerProps
                     <DialogHeader>
                         <DialogTitle>Save Private Key</DialogTitle>
                         <DialogDescription>
-                            WARNING: Save this private key securely. It will never be shown again!
+                            WARNING: Save this private key securely. It will
+                            never be shown again!
                         </DialogDescription>
                     </DialogHeader>
+
                     <div className="space-y-4">
-                        <div className="p-4 bg-muted rounded-lg">
-                            <div className="font-mono text-sm break-all">{newPrivateKey}</div>
+                        <div className="text-sm text-muted-foreground mb-2">
+                            Eth Address: <span className="font-mono">{newAddress}</span>
                         </div>
+                        <div className="p-4 bg-muted rounded-lg">
+                            <div className="font-mono text-sm break-all">
+                                <div className="text-muted-foreground mb-1">
+                                    Private Key:
+                                </div>
+                                {newPrivateKey}
+                            </div>
+                        </div>
+
                         <div className="flex gap-2">
-                            <Button 
-                                className="flex-1" 
-                                onClick={e => setCopying(true)}
+                            <Button
+                                className="flex-1"
+                                onClick={(e) => setCopying(true)}
                                 disabled={copying}
                             >
                                 {copying ? (
@@ -99,8 +108,8 @@ export default function DelegateeManagerScreen({ onBack }: DelegateeManagerProps
                             </Button>
                         </div>
                         <div className="border-t pt-4">
-                            <Button 
-                                className="w-full" 
+                            <Button
+                                className="w-full"
                                 variant="default"
                                 onClick={handleConfirmSaved}
                             >
@@ -118,9 +127,16 @@ export default function DelegateeManagerScreen({ onBack }: DelegateeManagerProps
                 <CardContent>
                     <div className="space-y-4">
                         {delegatees.map((address) => (
-                            <div key={address} className="flex justify-between items-center p-4 border rounded-lg">
-                                <div className="font-mono text-sm break-all">{address}</div>
-                                <Button variant="destructive" size="sm">Remove</Button>
+                            <div
+                                key={address}
+                                className="flex justify-between items-center p-4 border rounded-lg"
+                            >
+                                <div className="font-mono text-sm break-all">
+                                    {address}
+                                </div>
+                                <Button variant="destructive" size="sm">
+                                    Remove
+                                </Button>
                             </div>
                         ))}
                         {delegatees.length === 0 && (
@@ -132,5 +148,5 @@ export default function DelegateeManagerScreen({ onBack }: DelegateeManagerProps
                 </CardContent>
             </Card>
         </div>
-    )
+    );
 }

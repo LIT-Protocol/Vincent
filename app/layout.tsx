@@ -13,6 +13,7 @@ import { createStytchUIClient } from "@stytch/nextjs/ui";
 import { StytchUIClient } from "@stytch/vanilla-js";
 import { useState } from "react";
 import { useEffect } from "react";
+import { defineChain, type Chain } from 'viem'
 import {
     RainbowKitProvider,
     getDefaultWallets,
@@ -30,12 +31,23 @@ import "@rainbow-me/rainbowkit/styles.css";
 
 const inter = Inter({ subsets: ["latin"] });
 
+export const yellowstone = defineChain({
+    id: 175188,
+    name: 'Yellowstone',
+    nativeCurrency: { name: 'Yellowstone', symbol: 'YSL', decimals: 18 },
+    rpcUrls: {
+      default: { http: ['https://yellowstone-rpc.litprotocol.com'] },
+    },
+    blockExplorers: {
+      default: { name: 'Yellowstone Explorer', url: 'https://yellowstone-explorer.litprotocol.com/' },
+    }
+})
+
 const wagmiConfig = createConfig({
-    chains: [mainnet, sepolia],
+    chains: [yellowstone],
     connectors: [injected()],
     transports: {
-        [mainnet.id]: http(),
-        [sepolia.id]: http(),
+        [yellowstone.id]: http(),
     },
 });
 
@@ -70,7 +82,7 @@ export default function RootLayout({
                 <QueryClientProvider client={queryClient}>
                     <RainbowKitProvider
                         theme={darkTheme()}
-                        initialChain={mainnet}
+                        initialChain={yellowstone}
                         appInfo={demoAppInfo}
                     >
                         <html lang="en">

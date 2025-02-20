@@ -1,4 +1,3 @@
-import "../styles/login.css";
 import { useState, Dispatch, SetStateAction } from 'react';
 import AuthMethods from './AuthMethods';
 import WalletMethods from './WalletMethods';
@@ -37,10 +36,10 @@ export default function SignUpMethods({
         )}
         {view === 'default' && (
           <>
-            <h1>Lit Agent Wallet Management</h1>
-            <p>
+            <h1>Sign Up</h1>
+            {/* <p>
               Create a Lit Agent Wallet that is secured by accounts you already have.
-            </p>
+            </p> */}
             <AuthMethods setView={setView as Dispatch<SetStateAction<string>>} />
             <div className="buttons-container">
               <button

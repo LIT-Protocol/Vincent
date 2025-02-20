@@ -1,6 +1,5 @@
 import * as RadioGroup from '@radix-ui/react-radio-group';
 
-import "../styles/login.css";
 import { IRelayPKP } from '@lit-protocol/types';
 import { useState } from 'react';
 interface AccountSelectionProp {

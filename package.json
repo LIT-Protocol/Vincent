@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^4.1.0",
+    "@lit-protocol/aw-contracts-sdk": "^0.1.0-23",
     "@lit-protocol/contracts-sdk": "^7.0.6",
     "@lit-protocol/lit-auth-client": "^7.0.6",
     "@lit-protocol/lit-node-client": "^7.0.6",
