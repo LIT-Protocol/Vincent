@@ -12,9 +12,11 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import { VincentApp } from "@/types"
 
 interface CreateRoleProps {
     onBack: () => void;
+    dashboard?: VincentApp;
 }
 
 interface Tool {
@@ -23,7 +25,7 @@ interface Tool {
     policy: string;
 }
 
-export default function CreateRoleScreen({ onBack }: CreateRoleProps) {
+export default function CreateRoleScreen({ onBack, dashboard }: CreateRoleProps) {
     const [roleName, setRoleName] = useState("");
     const [tools, setTools] = useState<Tool[]>([]);
 

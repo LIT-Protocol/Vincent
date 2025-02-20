@@ -7,73 +7,93 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { useEffect, useState } from "react"
-import { VincentApp } from "@/types/vincent"
+import { AppMetadata } from "@/types"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
 import { ArrowLeft } from "lucide-react"
+import { VincentApp } from "@/types"
+import { useSignMessage } from "wagmi"
+import { useAccount } from "wagmi"
+import { SiweMessage } from "siwe"
 
 const formSchema = z.object({
-  appName: z.string().min(2).max(50),
-  description: z.string().min(10).max(500),
-  email: z.string().email().optional(),
-  domain: z.string().url().optional(),
+  appName: z.string().min(2, "App name must be at least 2 characters").max(50, "App name cannot exceed 50 characters"),
+  appDescription: z.string().min(10, "Description must be at least 10 characters").max(500, "Description cannot exceed 500 characters"),
+  email: z.string().email("Must be a valid email address"),
+  domain: z.string().url("Must be a valid URL").optional(),
 })
 
 interface AppManagerProps {
   onBack: () => void;
+  dashboard?: VincentApp;
 }
 
-export default function AppManagerScreen({ onBack }: AppManagerProps) {
-  const [app, setApp] = useState<VincentApp | null>(null)
+export default function ManageAppScreen({ onBack, dashboard }: AppManagerProps) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const { signMessageAsync } = useSignMessage();
+  const { address } = useAccount();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      appName: "",
-      description: "",
-      email: "",
-      domain: "",
+      appName: dashboard?.appMetadata.appName || "",
+      appDescription: dashboard?.appMetadata.description || "",
+      email: dashboard?.appMetadata.email || "",
+      domain: dashboard?.appMetadata.domain || "",
     },
-  })
-
-  useEffect(() => {
-    // Mock data - replace with actual API call
-    const mockApp: VincentApp = {
-      appId: "1",
-      appName: "Uniswap Watcher",
-      description: "This is a sample application with full integration capabilities",
-      enabled: true,
-      roleVersion: "1",
-      managerDelegatees: ["0xabcd...efgh"],
-      toolPolicy: [
-        {
-          toolCId: "QmZbVUwomfUfCa38ia69LrSfH1k8JNK3BHeSUKm5tGMWgv",
-          policyCId: "QmZbVUwomfUfCa38ia69LrSfH1k8JNK3BHeSUKm5tGMWgv",
-        },
-      ],
-      appCreator: "0xabcd...efgh",
-      roleIds: [1],
-    }
-    setApp(mockApp)
-    form.reset({
-      appName: mockApp.appName,
-      description: mockApp.description,
-      email: mockApp.email,
-      domain: mockApp.domain,
-    })
-  }, [form])
+  });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      // TODO: Implement API call to update app info
-      console.log(values)
+      setIsSubmitting(true);
+      setError(null);
+
+      // Create SIWE message
+      const message = new SiweMessage({
+        domain: window.location.host,
+        address: address || "",
+        statement: 'Sign to update app metadata',
+        uri: window.location.origin,
+        version: '1',
+        chainId: 1, // Replace with your chain ID
+        nonce: '1234', // Should be generated server-side
+        resources: [JSON.stringify(values)],
+      });
+
+      const messageToSign = message.prepareMessage();
+      const signature = await signMessageAsync({
+        message: messageToSign,
+      });
+
+      const response = await fetch('/api/v1/updateApp', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          signedMessage: signature,
+          appId: dashboard?.appMetadata.appId,
+          ...values
+        }),
+      });
+
+      const data = await response.json();
+      if (!data.success) {
+        throw new Error(data.message || 'Failed to update app');
+      }
+
+      // Show success message or redirect
     } catch (error) {
-      console.error("Error updating app:", error)
+      console.error("Error updating app:", error);
+      setError(error instanceof Error ? error.message : "An error occurred");
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
-  if (!app) {
+  if (!dashboard) {
     return <div>Loading...</div>
   }
 
@@ -118,7 +138,7 @@ export default function AppManagerScreen({ onBack }: AppManagerProps) {
 
                 <FormField
                   control={form.control}
-                  name="description"
+                  name="appDescription"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Description</FormLabel>
@@ -186,7 +206,7 @@ export default function AppManagerScreen({ onBack }: AppManagerProps) {
                   )}
                 />
 
-                <Button type="submit" className="w-full">Update Application</Button>
+                <Button type="submit" className="w-full" disabled={isSubmitting}>Update Application</Button>
               </form>
             </Form>
           </CardContent>
@@ -200,17 +220,17 @@ export default function AppManagerScreen({ onBack }: AppManagerProps) {
             <CardContent>
               <div className="space-y-4">
                 <div>
-                  <Badge variant={app.enabled ? "default" : "secondary"}>
-                    {app.enabled ? "Enabled" : "Disabled"}
+                  <Badge variant={dashboard.enabled ? "default" : "secondary"}>
+                    {dashboard.enabled ? "Enabled" : "Disabled"}
                   </Badge>
                 </div>
                 <div className="text-sm">
                   <div className="font-medium">App ID</div>
-                  <div className="mt-1">{app.appId}</div>
+                  <div className="mt-1">{dashboard.appMetadata.appId}</div>
                 </div>
                 <div className="text-sm">
                   <div className="font-medium">Manager Address</div>
-                  <div className="mt-1 break-all">{app.managerDelegatees[0]}</div>
+                  <div className="mt-1 break-all">{dashboard.delegatees[0]}</div>
                 </div>
                 <Button variant="destructive" className="w-full">
                   Disable Application
@@ -221,13 +241,13 @@ export default function AppManagerScreen({ onBack }: AppManagerProps) {
 
           <Card>
             <CardHeader>
-              <CardTitle>Allowed Tools</CardTitle>
+              <CardTitle>Allowed Roles</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
-                {app.toolPolicy.map((tool) => (
-                  <div key={tool.toolCId} className="text-sm break-all">
-                    {tool.toolCId}
+                {dashboard.roles.map((role) => (
+                  <div key={role.roleId} className="text-sm break-all">
+                    {role.roleId}
                   </div>
                 ))}
               </div>

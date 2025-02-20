@@ -12,15 +12,18 @@ import {
     DialogTitle,
     DialogDescription,
 } from "@/components/ui/dialog";
+import { VincentApp } from "@/types";
 
 interface DelegateeManagerProps {
     onBack: () => void;
+    dashboard?: VincentApp;
 }
 
 export default function DelegateeManagerScreen({
     onBack,
+    dashboard
 }: DelegateeManagerProps) {
-    const [delegatees, setDelegatees] = useState<string[]>([]);
+    const [delegatees, setDelegatees] = useState<string[]>(dashboard?.delegatees || []);
     const [showKeyDialog, setShowKeyDialog] = useState(false);
     const [newPrivateKey, setNewPrivateKey] = useState("");
     const [newAddress, setNewAddress] = useState("");
