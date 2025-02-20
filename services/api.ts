@@ -1,4 +1,5 @@
 import { VincentApp } from "@/types";
+import { SiweMessage } from "siwe";
 
 const API_BASE_URL =
     process.env.NEXT_PUBLIC_BE_BASE_URL || "http://localhost:3000/api/v1";
@@ -9,9 +10,31 @@ export interface ApiResponse<T> {
     error?: string;
 }
 
+async function createSiweMessage(address: string, action: string, params: any): Promise<string> {
+    const paramsString = Object.entries(params)
+    .map(([key, value]) => `${key}: ${JSON.stringify(value)}`)
+    .join('\n');
+
+    const message = new SiweMessage({
+        domain: window.location.host,
+        address,
+        statement: `Sign in to perform action: ${action}\n\nParameters:\n${paramsString}`,
+        uri: window.location.origin,
+        version: '1',
+        chainId: 1,
+        nonce: Math.random().toString(36).slice(2),
+        issuedAt: new Date().toISOString(),
+    });
+    const messageToSign = message.prepareMessage();
+    const signedMessage = await window.ethereum.request({
+        method: 'personal_sign',
+        params: [messageToSign, address],
+    });
+    return signedMessage;
+}
+
 // Register new app
 export async function registerApp(params: {
-    signedMessage: string;
     appName: string;
     appDescription: string;
     email: string;
@@ -42,7 +65,6 @@ export async function getAppMetadata(appId: string): Promise<ApiResponse<any>> {
 
 // Update app metadata
 export async function updateApp(params: {
-    signedMessage: string;
     appId: string;
     appName: string;
     appDescription: string;
@@ -60,7 +82,6 @@ export async function updateApp(params: {
 
 // Create new role
 export async function createRole(params: {
-    signedMessage: string;
     appId: string;
     roleName: string;
     roleDescription: string;
@@ -109,7 +130,7 @@ export async function getRole(params: {
 
 // Update role
 export async function updateRole(params: {
-    signedMessage: string;
+    address: string;
     appId: string;
     roleId: string;
     roleVersion: string;
@@ -123,6 +144,10 @@ export async function updateRole(params: {
         roleVersion: string;
     }>
 > {
+    
+    const message = await createSiweMessage(params.address, 'update_role', params);
+    console.log(message);
+    await new Promise(resolve => setTimeout(resolve, 2000));
     // Mock data for now
     return {
         success: true,
@@ -136,10 +161,10 @@ export async function updateRole(params: {
 
 // Form complete vincent app for frontend
 export async function formCompleteVincentApp( address: string): Promise<VincentApp> {
-  await new Promise(resolve => setTimeout(resolve, 1000));
+  await new Promise(resolve => setTimeout(resolve, 200));
     // Mock data for now
     return {
-      appCreator: "0xabcd...efgh",
+      appCreator: "0xc881ab7ED4346636D610571c63aBbeE6F24e6953",
         appMetadata: {
             appId: "24",
             appName: "Swapping App",

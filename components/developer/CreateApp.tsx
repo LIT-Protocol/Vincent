@@ -159,7 +159,6 @@ export default function CreateAppScreen() {
             const signature = await signMessageAsync({ message: messageToSign });
 
             const response = await registerApp({
-                signedMessage: signature,
                 appName: values.appName,
                 appDescription: values.description,
                 email: values.supportEmail || "",

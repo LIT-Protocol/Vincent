@@ -22,11 +22,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { useState } from "react";
-import { SiweMessage } from "siwe";
-import { useSignMessage } from "wagmi";
 import { VincentApp } from "@/types";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Plus, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { removeToolPolicy, addToolPolicy } from "@/services/contract";
+import { updateRole } from "@/services/api";
+import { useAccount } from "wagmi";
 
 const formSchema = z.object({
     roleVersion: z.string().min(1, "Role version is required"),
@@ -43,13 +45,8 @@ const formSchema = z.object({
 
     toolPolicy: z.array(
         z.object({
-            tool: z.object({
-                ipfsCid: z.string().min(1, "Tool IPFS CID is required"),
-            }),
-            policy: z.object({
-                ipfsCid: z.string().min(1, "Policy IPFS CID is required"),
-                policyVarsSchema: z.record(z.any()),
-            }),
+            toolCId: z.string().min(1, "Tool CID is required"),
+            policyCId: z.string().min(1, "Policy CID is required"),
         })
     ),
 });
@@ -63,89 +60,53 @@ interface ManageRoleScreenProps {
 export default function ManageRoleScreen({
     onBack,
     dashboard,
-    roleId
+    roleId,
 }: ManageRoleScreenProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const { signMessageAsync } = useSignMessage();
+    const [isLoading, setIsLoading] = useState(false);
 
-    const form = useForm<z.infer<typeof formSchema>>({
-        resolver: zodResolver(formSchema),
-        defaultValues: {
-            roleVersion: "",
-            roleName: "",
-            roleDescription: "",
-            toolPolicy: [],
-        },
-    });
+    const role = dashboard.roles.find((r) => r.roleId === roleId.toString());
 
-    const address = "0x..."; // TODO: Replace with actual wallet connection logic
-
-    const role = dashboard.roles.find(r => r.roleId === roleId.toString());
+    const { address } = useAccount();
 
     if (!role) {
         return <div>Role not found</div>;
     }
 
-    async function onSubmit(values: z.infer<typeof formSchema>) {
+    const form = useForm<z.infer<typeof formSchema>>({
+        resolver: zodResolver(formSchema),
+        defaultValues: {
+            roleVersion: role.roleVersion || "",
+            roleName: role.roleName || "",
+            roleDescription: role.roleDescription || "",
+            toolPolicy: role.toolPolicy || [],
+        },
+    });
+
+    async function handleUpdateRoleMetadata(
+        values: z.infer<typeof formSchema>
+    ) {
         try {
             setIsSubmitting(true);
             setError(null);
+            setIsLoading(true);
 
-            // Create SIWE message
-            const message = new SiweMessage({
-                domain: window.location.host,
-                address: address,
-                statement: "Sign to update role",
-                uri: window.location.origin,
-                version: "1",
-                chainId: 1, // Replace with your chain ID
-                nonce: "1234", // You should generate this server-side
-                // Include form data in the message
-                resources: [
-                    JSON.stringify({
-                        appId: dashboard.appMetadata.appId,
-                        roleId,
-                        roleVersion: values.roleVersion,
-                        roleName: values.roleName,
-                        roleDescription: values.roleDescription,
-                        toolPolicy: values.toolPolicy,
-                    }),
-                ],
+            if (!address) {
+                throw new Error("No wallet connected");
+            }
+
+            // Send to your API
+            const response = await updateRole({
+                address: address.toString(),
+                appId: dashboard.appMetadata.appId,
+                roleId: roleId.toString(),
+                ...values,
             });
 
-            // Convert the message to string
-            const messageToSign = message.prepareMessage();
-
-            // Request signature from user
-            const signature = await signMessageAsync({
-                message: messageToSign,
-            });
-
-            // Log the values
-            console.log("Submitting form with values:", values);
-
-            // Send to your API with the signed message
-            const response = await fetch("/api/v1/updateRole", {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    signedMessage: signature,
-                    appId: dashboard.appMetadata.appId,
-                    roleId,
-                    roleVersion: values.roleVersion,
-                    roleName: values.roleName,
-                    roleDescription: values.roleDescription,
-                    toolPolicy: values.toolPolicy,
-                }),
-            });
-
-            const data = await response.json();
-            if (!data.success) {
-                throw new Error(data.message || "Failed to update role");
+            if (!response.success) {
+                throw new Error(response.error || "Failed to update role");
             }
 
             setIsSuccess(true);
@@ -158,8 +119,65 @@ export default function ManageRoleScreen({
             );
         } finally {
             setIsSubmitting(false);
+            setIsLoading(false);
         }
     }
+
+    const handleAddToolPolicy = async (
+        toolCId: string,
+        policyCId: string
+    ) => {};
+
+    const handleRemoveToolPolicy = async (
+        toolCId: string,
+        policyCId: string
+    ) => {
+        try {
+            setIsLoading(true);
+            setError(null);
+
+            // Call contract function
+            await removeToolPolicy(roleId.toString(), toolCId, policyCId);
+
+            // Create updated tool-policy array
+            const updatedRole = {
+                ...role,
+                toolPolicy: role.toolPolicy.filter(
+                    (tp) =>
+                        !(tp.toolCId === toolCId && tp.policyCId === policyCId)
+                ),
+            };
+
+            if (!address) {
+                throw new Error("No wallet connected");
+            }
+
+            // Call API to update role
+            await updateRole({
+                address: address.toString(),
+                appId: dashboard.appMetadata.appId,
+                roleId: roleId.toString(),
+                roleVersion: role.roleVersion,
+                roleName: role.roleName,
+                roleDescription: role.roleDescription,
+                toolPolicy: updatedRole.toolPolicy,
+            });
+
+            // Update local ui state
+            dashboard.roles = dashboard.roles.map((r) =>
+                r.roleId === roleId.toString() ? updatedRole : r
+            );
+        } catch (error) {
+            console.error("Error removing tool policy:", error);
+            setError(
+                error instanceof Error
+                    ? error.message
+                    : "An error occurred while removing the tool policy"
+            );
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     if (isSuccess) {
         return (
@@ -171,185 +189,268 @@ export default function ManageRoleScreen({
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <Button
-                        onClick={() => {
-                            setIsSuccess(false);
-                            setError(null);
-                            form.reset();
-                        }}
-                    >
-                        Update Another Role
-                    </Button>
+                    {isLoading ? (
+                        <div className="flex items-center justify-center">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900" />
+                        </div>
+                    ) : (
+                        <Button
+                            onClick={() => {
+                                setIsSuccess(false);
+                                setError(null);
+                                form.reset();
+                            }}
+                        >
+                            Update Another Role
+                        </Button>
+                    )}
                 </CardContent>
             </Card>
         );
     }
 
     return (
-        <div className="space-y-8">
-            <div className="flex items-center gap-4">
-                <Button variant="ghost" onClick={onBack}>
-                    <ArrowLeft className="h-4 w-4 mr-2" />
-                    Back
-                </Button>
-                <h1 className="text-3xl font-bold">{role.roleName}</h1>
-            </div>
+        <div className="flex-1 h-screen">
+            {isLoading ? (
+                <div className="flex items-center justify-center h-full">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900" />
+                </div>
+            ) : (
+                <ScrollArea className="h-full">
+                    <div className="space-y-8 p-8">
+                        <div className="flex items-center gap-4">
+                            <Button variant="outline" onClick={onBack}>
+                                <ArrowLeft className="h-4 w-4 mr-2" />
+                                Back
+                            </Button>
+                            <h1 className="text-3xl font-bold">{role.roleName}</h1>
+                            <Badge variant={role.enabled ? "default" : "secondary"}>
+                                {role.enabled ? "Enabled" : "Disabled"}
+                            </Badge>
+                        </div>
 
-            <Card>
-                <CardHeader>
-                    <CardTitle>Role Details</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                    <div>
-                        <p className="font-medium">Role Description</p>
-                        <p className="text-muted-foreground">{role.roleDescription}</p>
-                    </div>
-                    <div>
-                        <p className="font-medium">Role Version</p>
-                        <p className="text-muted-foreground">{role.roleVersion}</p>
-                    </div>
-                    <div>
-                        <p className="font-medium">Status</p>
-                        <Badge variant={role.enabled ? "default" : "secondary"}>
-                            {role.enabled ? "Enabled" : "Disabled"}
-                        </Badge>
-                    </div>
-                </CardContent>
-            </Card>
-
-            <Card>
-                <CardHeader>
-                    <CardTitle>Tools and Policies</CardTitle>
-                    <CardDescription>
-                        List of tools and their associated policies for this role
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    {role.toolPolicy.length === 0 ? (
-                        <p className="text-muted-foreground">No tools or policies configured for this role</p>
-                    ) : (
-                        <div className="space-y-4">
-                            {role.toolPolicy.map((tp, index) => (
-                                <div key={index} className="border rounded-lg p-4">
-                                    <div className="space-y-2">
-                                        <div>
-                                            <p className="font-medium">Tool CID</p>
-                                            <p className="text-sm text-muted-foreground break-all">
-                                                {tp.toolCId}
-                                            </p>
-                                        </div>
-                                        <div>
-                                            <p className="font-medium">Policy CID</p>
-                                            <p className="text-sm text-muted-foreground break-all">
-                                                {tp.policyCId}
-                                            </p>
-                                        </div>
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Manage Role</CardTitle>
+                                <CardDescription>
+                                    Update role details and manage tool policies
+                                    <div className="mt-2 text-sm">
+                                        Management Wallet Address:{" "}
+                                        <code>{address}</code>
                                     </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </CardContent>
-            </Card>
-
-            <Card>
-                <CardHeader>
-                    <CardTitle>Update Role</CardTitle>
-                    <CardDescription>
-                        Update an existing role in the Vincent registry
-                        <div className="mt-2 text-sm">
-                            Management Wallet Address: <code>{address}</code>
-                        </div>
-                        <div className="mt-2 text-sm">
-                            App ID: <code>{dashboard.appMetadata.appId}</code>{" "}
-                            | Role ID: <code>{roleId}</code>
-                        </div>
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <Form {...form}>
-                        <form
-                            onSubmit={form.handleSubmit(onSubmit)}
-                            className="space-y-8"
-                        >
-                            {error && (
-                                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative">
-                                    {error}
-                                </div>
-                            )}
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="space-y-6">
-                                    <FormField
-                                        control={form.control}
-                                        name="roleVersion"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>
-                                                    Role Version
-                                                </FormLabel>
-                                                <FormControl>
-                                                    <Input {...field} />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
+                                    <div className="mt-2 text-sm">
+                                        App ID:{" "}
+                                        <code>{dashboard.appMetadata.appId}</code> |
+                                        Role ID: <code>{roleId}</code>
+                                    </div>
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <Form {...form}>
+                                    <form
+                                        onSubmit={form.handleSubmit(
+                                            handleUpdateRoleMetadata
                                         )}
-                                    />
-
-                                    <FormField
-                                        control={form.control}
-                                        name="roleName"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Role Name</FormLabel>
-                                                <FormControl>
-                                                    <Input {...field} />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
+                                        className="space-y-8"
+                                    >
+                                        {error && (
+                                            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative">
+                                                {error}
+                                            </div>
                                         )}
-                                    />
-                                </div>
 
-                                <div className="space-y-6">
-                                    <FormField
-                                        control={form.control}
-                                        name="roleDescription"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>
-                                                    Role Description
-                                                </FormLabel>
-                                                <FormControl>
-                                                    <Textarea
-                                                        rows={4}
-                                                        {...field}
-                                                    />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                </div>
-                            </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            <div className="space-y-6">
+                                                <FormField
+                                                    control={form.control}
+                                                    name="roleVersion"
+                                                    render={({ field }) => (
+                                                        <FormItem>
+                                                            <FormLabel>
+                                                                Role Version
+                                                            </FormLabel>
+                                                            <FormControl>
+                                                                <Input {...field} />
+                                                            </FormControl>
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                    )}
+                                                />
 
-                            {/* TODO: Add Tool-Policy pair interface */}
+                                                <FormField
+                                                    control={form.control}
+                                                    name="roleName"
+                                                    render={({ field }) => (
+                                                        <FormItem>
+                                                            <FormLabel>
+                                                                Role Name
+                                                            </FormLabel>
+                                                            <FormControl>
+                                                                <Input {...field} />
+                                                            </FormControl>
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                            </div>
 
-                            <div className="mt-6">
-                                <Button
-                                    type="submit"
-                                    className="w-full"
-                                    disabled={isSubmitting}
-                                >
-                                    {isSubmitting
-                                        ? "Updating..."
-                                        : "Update Role"}
-                                </Button>
-                            </div>
-                        </form>
-                    </Form>
-                </CardContent>
-            </Card>
+                                            <div className="space-y-6">
+                                                <FormField
+                                                    control={form.control}
+                                                    name="roleDescription"
+                                                    render={({ field }) => (
+                                                        <FormItem>
+                                                            <FormLabel>
+                                                                Role Description
+                                                            </FormLabel>
+                                                            <FormControl>
+                                                                <Textarea
+                                                                    rows={4}
+                                                                    {...field}
+                                                                />
+                                                            </FormControl>
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <Card>
+                                            <CardHeader>
+                                                <CardTitle>
+                                                    Tool-Policy Pairs
+                                                </CardTitle>
+                                            </CardHeader>
+                                            <CardContent>
+                                                <div className="space-y-4">
+                                                    {form
+                                                        .watch("toolPolicy")
+                                                        .map((_, index) => (
+                                                            <div
+                                                                key={index}
+                                                                className="flex gap-4 items-start"
+                                                            >
+                                                                <div className="flex-1 space-y-4">
+                                                                    <FormField
+                                                                        control={
+                                                                            form.control
+                                                                        }
+                                                                        name={`toolPolicy.${index}.toolCId`}
+                                                                        render={({
+                                                                            field,
+                                                                        }) => (
+                                                                            <FormItem>
+                                                                                <FormLabel>
+                                                                                    Tool
+                                                                                    CID
+                                                                                </FormLabel>
+                                                                                <FormControl>
+                                                                                    <Input
+                                                                                        {...field}
+                                                                                        placeholder="Enter Tool CID"
+                                                                                    />
+                                                                                </FormControl>
+                                                                                <FormMessage />
+                                                                            </FormItem>
+                                                                        )}
+                                                                    />
+                                                                    <FormField
+                                                                        control={
+                                                                            form.control
+                                                                        }
+                                                                        name={`toolPolicy.${index}.policyCId`}
+                                                                        render={({
+                                                                            field,
+                                                                        }) => (
+                                                                            <FormItem>
+                                                                                <FormLabel>
+                                                                                    Policy
+                                                                                    CID
+                                                                                </FormLabel>
+                                                                                <FormControl>
+                                                                                    <Input
+                                                                                        {...field}
+                                                                                        placeholder="Enter Policy CID"
+                                                                                    />
+                                                                                </FormControl>
+                                                                                <FormMessage />
+                                                                            </FormItem>
+                                                                        )}
+                                                                    />
+                                                                </div>
+                                                                <Button
+                                                                    type="button"
+                                                                    variant="destructive"
+                                                                    size="icon"
+                                                                    onClick={() => {
+                                                                        const currentToolPolicy =
+                                                                            form.getValues(
+                                                                                "toolPolicy"
+                                                                            );
+                                                                        form.setValue(
+                                                                            "toolPolicy",
+                                                                            currentToolPolicy.filter(
+                                                                                (
+                                                                                    _,
+                                                                                    i
+                                                                                ) =>
+                                                                                    i !==
+                                                                                    index
+                                                                            )
+                                                                        );
+                                                                    }}
+                                                                >
+                                                                    <Trash2 className="h-4 w-4" />
+                                                                </Button>
+                                                            </div>
+                                                        ))}
+
+                                                    <Button
+                                                        type="button"
+                                                        variant="outline"
+                                                        onClick={() => {
+                                                            const currentToolPolicy =
+                                                                form.getValues(
+                                                                    "toolPolicy"
+                                                                );
+                                                            form.setValue(
+                                                                "toolPolicy",
+                                                                [
+                                                                    ...currentToolPolicy,
+                                                                    {
+                                                                        toolCId: "",
+                                                                        policyCId:
+                                                                            "",
+                                                                    },
+                                                                ]
+                                                            );
+                                                        }}
+                                                        className="w-full"
+                                                    >
+                                                        <Plus className="h-4 w-4 mr-2" />
+                                                        Add Tool-Policy Pair
+                                                    </Button>
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+
+                                        <Button
+                                            type="submit"
+                                            className="w-full"
+                                            disabled={isSubmitting}
+                                        >
+                                            {isSubmitting
+                                                ? "Updating..."
+                                                : "Update Role"}
+                                        </Button>
+                                    </form>
+                                </Form>
+                            </CardContent>
+                        </Card>
+                    </div>
+                </ScrollArea>
+            )}
         </div>
     );
 }

@@ -1,11 +1,9 @@
 "use client";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { cn } from "@/lib/utils";
 import Header from "@/components/layout/Header";
 import { WagmiProvider } from "wagmi";
 import { http, createConfig } from "wagmi";
-import { mainnet, sepolia } from "wagmi/chains";
 import { injected } from "wagmi/connectors";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { StytchProvider } from "@stytch/nextjs";
@@ -13,20 +11,11 @@ import { createStytchUIClient } from "@stytch/nextjs/ui";
 import { StytchUIClient } from "@stytch/vanilla-js";
 import { useState } from "react";
 import { useEffect } from "react";
-import { defineChain, type Chain } from 'viem'
+import { defineChain } from 'viem'
 import {
     RainbowKitProvider,
-    getDefaultWallets,
-    connectorsForWallets,
-    cssStringFromTheme,
-    lightTheme,
     darkTheme,
 } from "@rainbow-me/rainbowkit";
-import {
-    argentWallet,
-    trustWallet,
-    ledgerWallet,
-} from "@rainbow-me/rainbowkit/wallets";
 import "@rainbow-me/rainbowkit/styles.css";
 
 const inter = Inter({ subsets: ["latin"] });
