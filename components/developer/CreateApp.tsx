@@ -25,7 +25,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAccount } from "wagmi";
 import { useSignMessage } from "wagmi";
-import { SiweMessage } from "siwe";
 import { registerApp } from "@/services/api";
 
 // URL normalization helpers
@@ -135,30 +134,13 @@ export default function CreateAppScreen() {
     });
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
-        if (!address) {
-            setError("Please connect your wallet first");
-            return;
-        }
+        if (!address) return;
         
         try {
             setIsSubmitting(true);
             setError(null);
 
-            const message = new SiweMessage({
-                domain: window.location.host,
-                address: address!,
-                statement: "Sign to create app",
-                uri: window.location.origin,
-                version: "1",
-                chainId: 1,
-                nonce: "1234", // Should be generated server-side
-                resources: [JSON.stringify(values)],
-            });
-
-            const messageToSign = message.prepareMessage();
-            const signature = await signMessageAsync({ message: messageToSign });
-
-            const response = await registerApp({
+            const response = await registerApp(address, {
                 appName: values.appName,
                 appDescription: values.description,
                 email: values.supportEmail || "",

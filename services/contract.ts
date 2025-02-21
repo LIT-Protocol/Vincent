@@ -1,9 +1,16 @@
 import { ethers } from "ethers";
 
-export async function removeToolPolicy(roleId: string, toolCId: string, policyCId: string) {
+export async function addDelegatee(appId: string, delegateeAddress: string) {
+    await new Promise((resolve) => setTimeout(resolve, 2000));
     // TODO: Implement
 }
 
-export async function addToolPolicy(roleId: string, toolCId: string, policyCId: string) {
+export async function getDelegatees(appId: string) {
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+    // TODO: Implement
+}
+
+export async function getAddressToAppId(address: string) {
+    await new Promise((resolve) => setTimeout(resolve, 2000));
     // TODO: Implement
 }

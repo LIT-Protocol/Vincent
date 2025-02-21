@@ -13,7 +13,8 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { VincentApp } from "@/types"
-
+import { useAccount } from "wagmi";
+import { createRole } from "@/services/api";
 interface CreateRoleProps {
     onBack: () => void;
     dashboard?: VincentApp;
@@ -27,11 +28,15 @@ interface Tool {
 
 export default function CreateRoleScreen({ onBack, dashboard }: CreateRoleProps) {
     const [roleName, setRoleName] = useState("");
+    const [roleDescription, setRoleDescription] = useState("");
     const [tools, setTools] = useState<Tool[]>([]);
+    const [isLoading, setIsLoading] = useState(false);
 
     // Mock available tools and policies - replace with actual data
     const availableTools = ["Uniswap Swap", "ERC20 Token Transfer", "Solana Token Transfer"];
     const availablePolicies = ["Max Amount", "Max Transactions"];
+
+    const { address } = useAccount();
 
     const handleAddTool = () => {
         const newTool = {
@@ -52,12 +57,25 @@ export default function CreateRoleScreen({ onBack, dashboard }: CreateRoleProps)
         ));
     };
 
-    const handleCreateRole = () => {
-        // Implement role creation logic
-        console.log({
-            name: roleName,
-            tools: tools
-        });
+    async function handleCreateRole() {
+        if (!address) return;
+
+        try {
+            setIsLoading(true);
+            await createRole(address, {
+                appId: dashboard?.appMetadata.appId || "",
+                roleName: roleName,
+                roleDescription: roleDescription,
+                toolPolicy: tools.map(tool => ({
+                    toolCId: tool.id,
+                    policyCId: tool.policy
+                }))
+            });
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -83,6 +101,15 @@ export default function CreateRoleScreen({ onBack, dashboard }: CreateRoleProps)
                             placeholder="Enter role name..."
                             value={roleName}
                             onChange={(e) => setRoleName(e.target.value)}
+                        />
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium">Role Description</label>
+                        <Input
+                            placeholder="Enter role description..."
+                            value={roleDescription}
+                            onChange={(e) => setRoleDescription(e.target.value)}
                         />
                     </div>
 
@@ -153,9 +180,9 @@ export default function CreateRoleScreen({ onBack, dashboard }: CreateRoleProps)
                     <Button
                         className="w-full"
                         onClick={handleCreateRole}
-                        disabled={!roleName || tools.length === 0}
+                        disabled={!roleName || tools.length === 0 || isLoading}
                     >
-                        Create Role
+                        {isLoading ? "Creating..." : "Create Role"}
                     </Button>
                 </CardContent>
             </Card>

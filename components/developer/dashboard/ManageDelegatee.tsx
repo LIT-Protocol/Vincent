@@ -13,29 +13,25 @@ import {
     DialogDescription,
 } from "@/components/ui/dialog";
 import { VincentApp } from "@/types";
+import { addDelegatee } from "@/services/contract";
 
 interface DelegateeManagerProps {
     onBack: () => void;
-    dashboard?: VincentApp;
+    dashboard: VincentApp;
 }
 
 export default function DelegateeManagerScreen({
     onBack,
     dashboard
 }: DelegateeManagerProps) {
-    const [delegatees, setDelegatees] = useState<string[]>(dashboard?.delegatees || []);
+    const [delegatees, setDelegatees] = useState<string[]>(dashboard.delegatees || []);
     const [showKeyDialog, setShowKeyDialog] = useState(false);
     const [newPrivateKey, setNewPrivateKey] = useState("");
     const [newAddress, setNewAddress] = useState("");
     const [copying, setCopying] = useState(false);
 
     useEffect(() => {
-        // Mock data - replace with actual API call
-        setDelegatees([
-            "0x1234567890abcdef1234567890abcdef12345678",
-            "0xabcdef1234567890abcdef1234567890abcdef12",
-            "0x7890abcdef1234567890abcdef1234567890abcd",
-        ]);
+        setDelegatees(dashboard.delegatees || []);
     }, []);
 
     const handleGenerateDelegatee = () => {
@@ -45,7 +41,8 @@ export default function DelegateeManagerScreen({
         setShowKeyDialog(true);
     };
 
-    const handleConfirmSaved = () => {
+    async function handleConfirmSaved() {
+        await addDelegatee(dashboard.appMetadata.appId, newAddress);
         setDelegatees((prev) => [...prev, newAddress]);
         setShowKeyDialog(false);
         setNewPrivateKey("");
@@ -137,9 +134,9 @@ export default function DelegateeManagerScreen({
                                 <div className="font-mono text-sm break-all">
                                     {address}
                                 </div>
-                                <Button variant="destructive" size="sm">
+                                {/* <Button variant="destructive" size="sm">
                                     Remove
-                                </Button>
+                                </Button> */}
                             </div>
                         ))}
                         {delegatees.length === 0 && (

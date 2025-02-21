@@ -1,7 +1,5 @@
-import { getAppMetadata } from "@/services/api";
 import { VincentApp } from "@/types";
 import { useEffect, useState } from "react";
-import { useAccount } from "wagmi";
 import ManageAppScreen from "./dashboard/ManageApp";
 import CreateRoleScreen from "./dashboard/CreateRole";
 import ManageRoleScreen from "./dashboard/ManageRole";
@@ -14,7 +12,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui
 
 
 export default function DashboardScreen({vincentApp}: {vincentApp: VincentApp}) {
-    const { address } = useAccount();
     const [dashboard, setDashboard] = useState<VincentApp>();
     const [selectedRoleId, setSelectedRoleId] = useState<string | null>(null);
     const [showManageApp, setShowManageApp] = useState(false);
