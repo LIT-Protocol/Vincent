@@ -1,5 +1,5 @@
 import { VincentApp } from "@/types";
-import { getDelegatees } from "./contract";
+import { getAddressToAppId, getDelegatees } from "./contract";
 import { getAppMetadata, getRoleByAppId, getRole } from "./api";
 
 // GET complete vincent app for frontend
@@ -58,5 +58,31 @@ export async function formCompleteVincentApp(
             "0x7890abcdef1234567890abcdef1234567890abcd",
         ],
         enabled: true,
+    };
+}
+
+
+export async function getVincentAppForUser(appId: string): Promise<any> {
+    await new Promise((resolve) => setTimeout(resolve, 200));
+    // Mock data for now
+    return {
+        appId: "24",
+        appName: "Swapping App",
+        description: "This is a sample application with full integration capabilities",
+        enabled: true,
+        roles: [
+            {
+                roleId: "1",
+                roleName: "Uniswap Watcher",
+                roleDescription: "This is a sample application with full integration capabilities",
+                enabled: true,
+                toolPolicy: [
+                    {
+                        toolCId: "QmZbVUwomfUfCa38ia69LrSfH1k8JNK3BHeSUKm5tGMWgv",
+                        policyCId: "QmZbVUwomfUfCa38ia69LrSfH1k8JNK3BHeSUKm5tGMWgv",
+                    },
+                ],
+            },
+        ],
     };
 }

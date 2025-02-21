@@ -104,7 +104,7 @@ export default function ManageRoleScreen({
 
     return (
         <div className="flex-1 h-screen">
-            <ScrollArea className="h-full">
+            <ScrollArea className="h-[calc(125vh-20rem)]">
                 <div className="space-y-8 p-8">
                     <div className="flex items-center gap-4">
                         <Button variant="outline" onClick={onBack}>
