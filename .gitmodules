@@ -4,3 +4,6 @@
 [submodule "packages/vincent-contracts/lib/openzeppelin-contracts"]
 	path = packages/vincent-contracts/lib/openzeppelin-contracts
 	url = https://github.com/OpenZeppelin/openzeppelin-contracts
+[submodule "packages/vincent-contracts/lib/solidstate-solidity"]
+	path = packages/vincent-contracts/lib/solidstate-solidity
+	url = https://github.com/solidstate-network/solidstate-solidity
