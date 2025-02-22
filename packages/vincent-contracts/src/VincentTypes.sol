@@ -12,8 +12,6 @@ library VincentTypes {
         bool enabled;
         // Set of parameter names (stored as keccak256 hashes)
         EnumerableSet.Bytes32Set parameterNameHashes;
-        // Maps hash of parameter name to User PKP Token ID to parameter value
-        mapping(bytes32 => mapping(uint256 => string)) userParameterValues;
     }
 
     struct Role {
@@ -21,7 +19,6 @@ library VincentTypes {
         bool enabled;
         string name;
         string description;
-        
         EnumerableSet.Bytes32Set toolIpfsCidHashes;
         mapping(bytes32 => Tool) toolIpfsCidHashToTool;
     }
@@ -39,7 +36,6 @@ library VincentTypes {
     struct App {
         address manager;
         bool enabled;
-
         EnumerableSet.UintSet roleIds;
         // Role ID to Active Role Version
         mapping(uint256 => uint256) activeRoleVersions;

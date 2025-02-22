@@ -27,9 +27,6 @@ contract VincentAppRegistry {
     // Delegatee to App Manager
     mapping(uint256 => mapping(address => address)) private appToDelegateeToManager;
 
-    // Role ID to App Role
-    mapping(uint256 => VincentTypes.Role) private roleIdToRole;
-
     /// @notice Maps hashed tool CIDs to their original IPFS CID strings
     mapping(bytes32 => string) hashedToolCidToCid;
     /// @notice Maps hashed parameter names to their original string names
@@ -142,17 +139,20 @@ contract VincentAppRegistry {
         string calldata description,
         string[] calldata toolIpfsCids,
         string[][] calldata parameterNames
-    ) external onlyRegisteredApp(appId) returns (uint256 roleId) {
+    ) external onlyRegisteredApp(appId) onlyAppManager(appId) returns (uint256 roleId) {
         if (toolIpfsCids.length != parameterNames.length) {
             revert ToolArraysLengthMismatch();
         }
 
         roleId = roleIdCounter++;
-        VincentTypes.Role storage newRole = roleIdToRole[roleId];
+        VincentTypes.App storage app = apps[appId];
+        VincentTypes.Role storage role = app.versionedRoles[roleId][1];
 
-        newRole.version = 1;
-        newRole.name = name;
-        newRole.description = description;
+        // Set role metadata
+        role.version = 1;
+        role.name = name;
+        role.description = description;
+        role.enabled = true;
 
         // Hash and store each tool CID with its parameters
         for (uint256 i = 0; i < toolIpfsCids.length; i++) {
@@ -160,28 +160,23 @@ contract VincentAppRegistry {
             bytes32 hashedCid = keccak256(abi.encodePacked(toolIpfsCids[i]));
             hashedToolCidToCid[hashedCid] = toolIpfsCids[i];
 
-            newRole.toolIpfsCidHashes.add(hashedCid);
-            VincentTypes.Tool storage newTool = newRole.toolIpfsCidHashToTool[hashedCid];
-            newTool.enabled = true;
+            role.toolIpfsCidHashes.add(hashedCid);
+            VincentTypes.Tool storage tool = role.toolIpfsCidHashToTool[hashedCid];
+            tool.enabled = false;
 
             // Store parameter names for this tool
             for (uint256 j = 0; j < parameterNames[i].length; j++) {
                 bytes32 paramHash = keccak256(abi.encodePacked(parameterNames[i][j]));
                 hashedParameterNameToName[paramHash] = parameterNames[i][j];
-                newTool.parameterNameHashes.add(paramHash);
+                tool.parameterNameHashes.add(paramHash);
             }
         }
 
         registeredRoles.add(roleId);
-
-        VincentTypes.App storage app = apps[appId];
         app.roleIds.add(roleId);
-        app.activeRoleVersions[roleId] = newRole.version;
+        app.activeRoleVersions[roleId] = 1;
 
-        VincentTypes.Role storage versionedRole = apps[appId].versionedRoles[roleId][newRole.version];
-        versionedRole = newRole;
-
-        emit RoleRegistered(appId, roleId, newRole.version);
+        emit RoleRegistered(appId, roleId, 1);
     }
 
     function updateRole(
@@ -200,25 +195,28 @@ contract VincentAppRegistry {
         uint256 updatedRoleVersion = app.activeRoleVersions[roleId] + 1;
 
         // Create new version of the role
-        VincentTypes.Role storage newVersionedRole = app.versionedRoles[roleId][updatedRoleVersion];
-        newVersionedRole.version = updatedRoleVersion;
-        newVersionedRole.name = name;
-        newVersionedRole.description = description;
+        VincentTypes.Role storage role = app.versionedRoles[roleId][updatedRoleVersion];
+
+        // Set role metadata
+        role.version = updatedRoleVersion;
+        role.name = name;
+        role.description = description;
+        role.enabled = true;
 
         // Add new tools and their parameters
         for (uint256 i = 0; i < toolIpfsCids.length; i++) {
             bytes32 hashedCid = keccak256(abi.encodePacked(toolIpfsCids[i]));
             hashedToolCidToCid[hashedCid] = toolIpfsCids[i];
 
-            newVersionedRole.toolIpfsCidHashes.add(hashedCid);
-            VincentTypes.Tool storage newTool = newVersionedRole.toolIpfsCidHashToTool[hashedCid];
-            newTool.enabled = true;
+            role.toolIpfsCidHashes.add(hashedCid);
+            VincentTypes.Tool storage tool = role.toolIpfsCidHashToTool[hashedCid];
+            tool.enabled = false;
 
             // Store parameter names for this tool
             for (uint256 j = 0; j < parameterNames[i].length; j++) {
                 bytes32 paramHash = keccak256(abi.encodePacked(parameterNames[i][j]));
                 hashedParameterNameToName[paramHash] = parameterNames[i][j];
-                newTool.parameterNameHashes.add(paramHash);
+                tool.parameterNameHashes.add(paramHash);
             }
         }
 
@@ -391,19 +389,115 @@ contract VincentAppRegistry {
         return name;
     }
 
-    function getToolDetails(uint256 appId, uint256 roleId, uint256 version, bytes32 toolIpfsCidHash)
-        external
+    function getToolDetails(uint256 appId, uint256 roleId, uint256 roleVersion, bytes32 toolIpfsCidHash)
+        public
         view
-        onlyRegisteredApp(appId)
-        onlyRegisteredRole(appId, roleId)
-        roleVersionExists(appId, roleId, version)
         returns (bool enabled, bytes32[] memory parameterNameHashes)
     {
-        VincentTypes.Role storage role = apps[appId].versionedRoles[roleId][version];
+        if (!registeredApps.contains(appId)) revert AppNotRegistered(appId);
+        if (!registeredRoles.contains(roleId)) revert RoleNotRegistered(appId, roleId);
+
+        VincentTypes.App storage app = apps[appId];
+        VincentTypes.Role storage role = app.versionedRoles[roleId][roleVersion];
+        if (bytes(role.name).length == 0) revert RoleVersionNotFound(appId, roleId, roleVersion);
         if (!role.toolIpfsCidHashes.contains(toolIpfsCidHash)) {
-            revert ToolNotFoundForRole(appId, roleId, version, hashedToolCidToCid[toolIpfsCidHash]);
+            revert ToolNotFoundForRole(appId, roleId, roleVersion, hashedToolCidToCid[toolIpfsCidHash]);
         }
+
         VincentTypes.Tool storage tool = role.toolIpfsCidHashToTool[toolIpfsCidHash];
-        return (tool.enabled, tool.parameterNameHashes.values());
+        enabled = tool.enabled;
+        parameterNameHashes = tool.parameterNameHashes.values();
+    }
+
+    function getToolDetails(uint256 appId, uint256 roleId, uint256 roleVersion, string calldata toolIpfsCid)
+        external
+        view
+        returns (bool enabled, bytes32[] memory parameterNameHashes)
+    {
+        bytes32 toolIpfsCidHash = keccak256(abi.encodePacked(toolIpfsCid));
+        return getToolDetails(appId, roleId, roleVersion, toolIpfsCidHash);
+    }
+
+    function isToolInRole(uint256 appId, uint256 roleId, uint256 roleVersion, bytes32 toolIpfsCidHash)
+        public
+        view
+        returns (bool exists, bool enabled)
+    {
+        if (!registeredApps.contains(appId)) return (false, false);
+        if (!registeredRoles.contains(roleId)) return (false, false);
+
+        VincentTypes.App storage app = apps[appId];
+        VincentTypes.Role storage role = app.versionedRoles[roleId][roleVersion];
+        if (bytes(role.name).length == 0) return (false, false);
+
+        exists = role.toolIpfsCidHashes.contains(toolIpfsCidHash);
+        if (!exists) return (false, false);
+
+        enabled = role.toolIpfsCidHashToTool[toolIpfsCidHash].enabled;
+        return (exists, enabled);
+    }
+
+    function isToolInRole(uint256 appId, uint256 roleId, uint256 roleVersion, string calldata toolIpfsCid)
+        external
+        view
+        returns (bool exists, bool enabled)
+    {
+        bytes32 toolIpfsCidHash = keccak256(abi.encodePacked(toolIpfsCid));
+        return isToolInRole(appId, roleId, roleVersion, toolIpfsCidHash);
+    }
+
+    function isToolEnabled(uint256 appId, uint256 roleId, uint256 roleVersion, bytes32 toolIpfsCidHash)
+        public
+        view
+        returns (bool)
+    {
+        if (!registeredApps.contains(appId)) return false;
+        if (!registeredRoles.contains(roleId)) return false;
+
+        VincentTypes.App storage app = apps[appId];
+        VincentTypes.Role storage role = app.versionedRoles[roleId][roleVersion];
+        if (bytes(role.name).length == 0) return false;
+        if (!role.toolIpfsCidHashes.contains(toolIpfsCidHash)) return false;
+
+        return role.toolIpfsCidHashToTool[toolIpfsCidHash].enabled;
+    }
+
+    function isToolEnabled(uint256 appId, uint256 roleId, uint256 roleVersion, string calldata toolIpfsCid)
+        external
+        view
+        returns (bool)
+    {
+        bytes32 toolIpfsCidHash = keccak256(abi.encodePacked(toolIpfsCid));
+        return isToolEnabled(appId, roleId, roleVersion, toolIpfsCidHash);
+    }
+
+    function isParameterNameForTool(
+        uint256 appId,
+        uint256 roleId,
+        uint256 roleVersion,
+        bytes32 toolIpfsCidHash,
+        bytes32 parameterNameHash
+    ) public view returns (bool) {
+        if (!registeredApps.contains(appId)) return false;
+        if (!registeredRoles.contains(roleId)) return false;
+
+        VincentTypes.App storage app = apps[appId];
+        VincentTypes.Role storage role = app.versionedRoles[roleId][roleVersion];
+        if (bytes(role.name).length == 0) return false;
+        if (!role.toolIpfsCidHashes.contains(toolIpfsCidHash)) return false;
+
+        return role.toolIpfsCidHashToTool[toolIpfsCidHash].parameterNameHashes.contains(parameterNameHash);
+    }
+
+    function isParameterNameForTool(
+        uint256 appId,
+        uint256 roleId,
+        uint256 roleVersion,
+        string calldata toolIpfsCid,
+        string calldata parameterName
+    ) external view returns (bool) {
+        bytes32 toolIpfsCidHash = keccak256(abi.encodePacked(toolIpfsCid));
+        bytes32 parameterNameHash = keccak256(abi.encodePacked(parameterName));
+        return isParameterNameForTool(appId, roleId, roleVersion, toolIpfsCidHash, parameterNameHash);
     }
 }
