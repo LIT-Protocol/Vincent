@@ -9,35 +9,44 @@ contract VincentAppRegistry {
     using EnumerableSet for EnumerableSet.Bytes32Set;
     using EnumerableSet for EnumerableSet.UintSet;
 
-    struct App {
-        uint256 id;
-        address manager;
-        bool enabled;
-    }
-
     uint256 private appIdCounter;
+    uint256 private roleIdCounter;
+
     EnumerableSet.AddressSet private registeredManagers;
     EnumerableSet.UintSet private registeredApps;
+    EnumerableSet.UintSet private registeredRoles;
 
     // App Manager to registered apps
     mapping(address => EnumerableSet.UintSet) private managerToApps;
 
     // App ID to App
-    mapping(uint256 => App) private apps;
+    mapping(uint256 => VincentTypes.App) private apps;
 
     // App Manager to App ID to Delegatees
     mapping(address => mapping(uint256 => EnumerableSet.AddressSet)) private managerToAppToDelegatees;
     // Delegatee to App Manager
     mapping(uint256 => mapping(address => address)) private appToDelegateeToManager;
 
-    event ManagerRegistered(address manager);
-    event AppRegistered(uint256 appId, address manager);
-    event AppEnabled(uint256 appId);
-    event AppDisabled(uint256 appId);
+    // Role ID to App Role
+    mapping(uint256 => VincentTypes.Role) private roleIdToRole;
 
+    /// @notice Maps hashed tool CIDs to their original IPFS CID strings
+    mapping(bytes32 => string) hashedToolCidToOriginalCid;
+    /// @notice Maps hashed parameter names to their original string names
+    mapping(bytes32 => string) hashedParameterNameToOriginalName;
+
+    event ManagerRegistered(address indexed manager);
+    event AppRegistered(uint256 indexed appId, address indexed manager);
+    event AppEnabled(uint256 indexed appId);
+    event AppDisabled(uint256 indexed appId);
+    event RoleRegistered(uint256 indexed appId, uint256 indexed roleId, uint256 version);
+    event RoleUpdated(uint256 indexed appId, uint256 indexed roleId, uint256 version);
     error NotAppManager(uint256 appId);
     error AppNotRegistered(uint256 appId);
     error InvalidDelegatee(address delegatee);
+    error ToolArraysLengthMismatch();
+    error ToolParameterLengthMismatch(uint256 toolIndex);
+    error RoleNotRegistered(uint256 appId, uint256 roleId);
 
     modifier onlyAppManager(uint256 appId) {
         if (apps[appId].manager != msg.sender) revert NotAppManager(appId);
@@ -65,11 +74,9 @@ contract VincentAppRegistry {
         managerToApps[msg.sender].add(appId);
 
         // Register the app
-        apps[appId] = App({
-            id: appId,
-            manager: msg.sender,
-            enabled: false
-        });
+        VincentTypes.App storage app = apps[appId];
+        app.manager = msg.sender;
+        app.enabled = false;
 
         emit AppRegistered(appId, msg.sender);
     }
@@ -110,11 +117,133 @@ contract VincentAppRegistry {
     }
 
     /**
+     * App Role Controls
+     */
+
+    function registerRole(
+        uint256 appId,
+        string calldata name,
+        string calldata description,
+        string[] calldata toolIpfsCids,
+        string[][] calldata parameterNames
+    ) external returns (uint256 roleId) {
+        if (!registeredApps.contains(appId)) revert AppNotRegistered(appId);
+        if (toolIpfsCids.length != parameterNames.length) {
+            revert ToolArraysLengthMismatch();
+        }
+
+        roleId = roleIdCounter++;
+        VincentTypes.Role storage newRole = roleIdToRole[roleId];
+        
+        newRole.version = 1;
+        newRole.name = name;
+        newRole.description = description;
+
+        // Hash and store each tool CID with its parameters
+        for (uint256 i = 0; i < toolIpfsCids.length; i++) {
+            // Add Tool to Role
+            bytes32 hashedCid = keccak256(abi.encodePacked(toolIpfsCids[i]));
+            hashedToolCidToOriginalCid[hashedCid] = toolIpfsCids[i];
+            
+            newRole.toolIpfsCidHashes.add(hashedCid);
+            VincentTypes.Tool storage newTool = newRole.toolIpfsCidHashToTool[hashedCid];
+            newTool.enabled = true;
+
+            // Store parameter names for this tool
+            for (uint256 j = 0; j < parameterNames[i].length; j++) {
+                bytes32 paramHash = keccak256(abi.encodePacked(parameterNames[i][j]));
+                hashedParameterNameToOriginalName[paramHash] = parameterNames[i][j];
+                newTool.parameterNameHashes.add(paramHash);
+            }
+        }
+
+        registeredRoles.add(roleId);
+
+        VincentTypes.App storage app = apps[appId];
+        app.roleIds.add(roleId);
+        app.activeRoleVersions[roleId] = newRole.version;
+
+        VincentTypes.Role storage versionedRole = apps[appId].versionedRoles[roleId][newRole.version];
+        versionedRole = newRole;
+
+        emit RoleRegistered(appId, roleId, newRole.version);
+    }
+
+    function updateRole(
+        uint256 appId,
+        uint256 roleId,
+        string calldata name,
+        string calldata description,
+        string[] calldata toolIpfsCids,
+        string[][] calldata parameterNames
+    ) external onlyAppManager(appId) {
+        if (!registeredApps.contains(appId)) revert AppNotRegistered(appId);
+        if (!registeredRoles.contains(roleId)) revert RoleNotRegistered(appId, roleId);
+        if (toolIpfsCids.length != parameterNames.length) {
+            revert ToolArraysLengthMismatch();
+        }
+
+        VincentTypes.App storage app = apps[appId];
+        uint256 updatedRoleVersion = app.activeRoleVersions[roleId] + 1;
+        
+        // Create new version of the role
+        VincentTypes.Role storage newVersionedRole = app.versionedRoles[roleId][updatedRoleVersion];
+        newVersionedRole.version = updatedRoleVersion;
+        newVersionedRole.name = name;
+        newVersionedRole.description = description;
+
+        // Add new tools and their parameters
+        for (uint256 i = 0; i < toolIpfsCids.length; i++) {
+            bytes32 hashedCid = keccak256(abi.encodePacked(toolIpfsCids[i]));
+            hashedToolCidToOriginalCid[hashedCid] = toolIpfsCids[i];
+            
+            newVersionedRole.toolIpfsCidHashes.add(hashedCid);
+            VincentTypes.Tool storage newTool = newVersionedRole.toolIpfsCidHashToTool[hashedCid];
+            newTool.enabled = true;
+
+            // Store parameter names for this tool
+            for (uint256 j = 0; j < parameterNames[i].length; j++) {
+                bytes32 paramHash = keccak256(abi.encodePacked(parameterNames[i][j]));
+                hashedParameterNameToOriginalName[paramHash] = parameterNames[i][j];
+                newTool.parameterNameHashes.add(paramHash);
+            }
+        }
+
+        // Update the active version
+        app.activeRoleVersions[roleId] = updatedRoleVersion;
+
+        emit RoleUpdated(appId, roleId, updatedRoleVersion);
+    }
+
+    function enableRole(uint256 appId, uint256 roleId) external onlyAppManager(appId) {
+        if (!registeredApps.contains(appId)) revert AppNotRegistered(appId);
+        if (!registeredRoles.contains(roleId)) revert RoleNotRegistered(appId, roleId);
+
+        VincentTypes.App storage app = apps[appId];
+        uint256 currentVersion = app.activeRoleVersions[roleId];
+        app.versionedRoles[roleId][currentVersion].enabled = true;
+    }
+
+    function disableRole(uint256 appId, uint256 roleId) external onlyAppManager(appId) {
+        if (!registeredApps.contains(appId)) revert AppNotRegistered(appId);
+        if (!registeredRoles.contains(roleId)) revert RoleNotRegistered(appId, roleId);
+
+        VincentTypes.App storage app = apps[appId];
+        uint256 currentVersion = app.activeRoleVersions[roleId];
+        app.versionedRoles[roleId][currentVersion].enabled = false;
+    }
+
+    /**
      * App View Functions
      */
 
-    function getApp(uint256 appId) external view returns (App memory) {
-        return apps[appId];
+    function getApp(uint256 appId) external view returns (VincentTypes.AppView memory) {
+        VincentTypes.App storage app = apps[appId];
+        return VincentTypes.AppView({
+            manager: app.manager,
+            enabled: app.enabled,
+            roleIds: app.roleIds.values()
+        });
     }
     
     function getRegisteredAppManagers() external view returns (address[] memory) {
@@ -164,5 +293,12 @@ contract VincentAppRegistry {
     function isDelegateeForApp(uint256 appId, address delegatee) external view returns (bool) {
         address manager = apps[appId].manager;
         return managerToAppToDelegatees[manager][appId].contains(delegatee);
+    }
+
+    /**
+     * Tool View Functions
+     */
+    function getOriginalToolCid(bytes32 hashedCid) external view returns (string memory) {
+        return hashedToolCidToOriginalCid[hashedCid];
     }
 }

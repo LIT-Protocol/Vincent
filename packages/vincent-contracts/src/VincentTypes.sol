@@ -8,23 +8,42 @@ library VincentTypes {
     using EnumerableSet for EnumerableSet.Bytes32Set;
     using EnumerableSet for EnumerableSet.UintSet;
 
-    struct ToolPolicy {
+    struct Tool {
         bool enabled;
-        string ipfsCid;
-        EnumerableSet.Bytes32Set policyParams;
-        mapping(bytes32 => bytes) policyValues;
+        // Set of parameter names (stored as keccak256 hashes)
+        EnumerableSet.Bytes32Set parameterNameHashes;
+        // Maps hash of parameter name to User PKP Token ID to parameter value
+        mapping(bytes32 => mapping(uint256 => string)) userParameterValues;
+    }
+
+    struct Role {
+        uint256 version;
+        bool enabled;
+        string name;
+        string description;
+        
+        EnumerableSet.Bytes32Set toolIpfsCidHashes;
+        mapping(bytes32 => Tool) toolIpfsCidHashToTool;
+    }
+
+    /**
+     * Structs containing mappings cannot be used as return types,
+     * so we use this struct to return a view of the app.
+     */
+    struct AppView {
+        address manager;
+        bool enabled;
+        uint256[] roleIds;
     }
 
     struct App {
+        address manager;
         bool enabled;
-        EnumerableSet.Bytes32Set roleIds;
-        mapping(bytes32 => string) roleVersions;
-        EnumerableSet.Bytes32Set toolIds;
-        mapping(bytes32 => ToolPolicy) toolPolicies;
-    }
 
-    struct AgentPkp {
-        EnumerableSet.AddressSet appAddresses;
-        mapping(address => App) apps;
+        EnumerableSet.UintSet roleIds;
+        // Role ID to Active Role Version
+        mapping(uint256 => uint256) activeRoleVersions;
+        // Role ID to Role Version to Role
+        mapping(uint256 => mapping(uint256 => Role)) versionedRoles;
     }
-} 
+}
