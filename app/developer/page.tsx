@@ -22,8 +22,9 @@ export default function Developer() {
                 return;
             }
             try {
-                const response = await formCompleteVincentApp(address);
-                setApp(response);
+                // const response = await formCompleteVincentApp(address);
+                // setApp(response);
+                setApp(null);
             } catch (error) {
                 console.error("Error fetching app:", error);
                 setApp(null);
