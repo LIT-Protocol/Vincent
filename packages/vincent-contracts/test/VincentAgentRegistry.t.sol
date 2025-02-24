@@ -486,6 +486,97 @@ contract VincentAgentRegistryTest is Test {
         vm.stopPrank();
     }
 
+    function testSetToolPoliciesEnabled() public {
+        // Setup multiple tools
+        string[] memory toolIpfsCids = new string[](3);
+        toolIpfsCids[0] = "QmTool1";
+        toolIpfsCids[1] = "QmTool2";
+        toolIpfsCids[2] = "QmTool3";
+
+        bytes32[][] memory policyParams = new bytes32[][](3);
+        bytes[][] memory policyValues = new bytes[][](3);
+        for (uint256 i = 0; i < 3; i++) {
+            policyParams[i] = new bytes32[](0);
+            policyValues[i] = new bytes[](0);
+        }
+
+        vm.startPrank(PKP_OWNER);
+
+        // Add role with tools
+        registry.addRole(PKP_TOKEN_ID, APP_MANAGER, ROLE_ID, ROLE_VERSION, toolIpfsCids, policyParams, policyValues);
+
+        // Test bulk disable
+        registry.setToolPoliciesEnabled(PKP_TOKEN_ID, APP_MANAGER, toolIpfsCids, false);
+
+        // Verify all tools are disabled
+        for (uint256 i = 0; i < toolIpfsCids.length; i++) {
+            bytes32 toolId = registry.getToolId(toolIpfsCids[i]);
+            assertFalse(registry.isToolEnabled(PKP_TOKEN_ID, APP_MANAGER, toolId));
+        }
+
+        // Test bulk enable
+        registry.setToolPoliciesEnabled(PKP_TOKEN_ID, APP_MANAGER, toolIpfsCids, true);
+
+        // Verify all tools are enabled
+        for (uint256 i = 0; i < toolIpfsCids.length; i++) {
+            bytes32 toolId = registry.getToolId(toolIpfsCids[i]);
+            assertTrue(registry.isToolEnabled(PKP_TOKEN_ID, APP_MANAGER, toolId));
+        }
+
+        vm.stopPrank();
+    }
+
+    function testSetToolPoliciesEnabledEmptyArray() public {
+        string[] memory toolIpfsCids = new string[](1);
+        toolIpfsCids[0] = TOOL_IPFS_CID;
+
+        bytes32[][] memory policyParams = new bytes32[][](1);
+        policyParams[0] = new bytes32[](0);
+
+        bytes[][] memory policyValues = new bytes[][](1);
+        policyValues[0] = new bytes[](0);
+
+        vm.startPrank(PKP_OWNER);
+
+        // Add role with tool
+        registry.addRole(PKP_TOKEN_ID, APP_MANAGER, ROLE_ID, ROLE_VERSION, toolIpfsCids, policyParams, policyValues);
+
+        // Test with empty array
+        registry.setToolPoliciesEnabled(PKP_TOKEN_ID, APP_MANAGER, new string[](0), false);
+
+        // Original tool should remain unchanged
+        bytes32 toolId = registry.getToolId(TOOL_IPFS_CID);
+        assertTrue(registry.isToolEnabled(PKP_TOKEN_ID, APP_MANAGER, toolId));
+
+        vm.stopPrank();
+    }
+
+    function testSetToolPoliciesEnabledNonexistentTool() public {
+        string[] memory toolIpfsCids = new string[](1);
+        toolIpfsCids[0] = TOOL_IPFS_CID;
+
+        bytes32[][] memory policyParams = new bytes32[][](1);
+        policyParams[0] = new bytes32[](0);
+
+        bytes[][] memory policyValues = new bytes[][](1);
+        policyValues[0] = new bytes[](0);
+
+        vm.startPrank(PKP_OWNER);
+
+        // Add role with tool
+        registry.addRole(PKP_TOKEN_ID, APP_MANAGER, ROLE_ID, ROLE_VERSION, toolIpfsCids, policyParams, policyValues);
+
+        // Try to enable nonexistent tool
+        string[] memory invalidTools = new string[](2);
+        invalidTools[0] = TOOL_IPFS_CID; // Valid tool
+        invalidTools[1] = "NonexistentTool"; // Invalid tool
+
+        vm.expectRevert("VincentAgentRegistry: tool not found");
+        registry.setToolPoliciesEnabled(PKP_TOKEN_ID, APP_MANAGER, invalidTools, true);
+
+        vm.stopPrank();
+    }
+
     function testComplexPolicyValues() public {
         string[] memory toolIpfsCids = new string[](1);
         toolIpfsCids[0] = TOOL_IPFS_CID;

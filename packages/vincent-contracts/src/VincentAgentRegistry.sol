@@ -3,7 +3,7 @@ pragma solidity ^0.8.20;
 
 import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import {IPKPNFTFacet} from "./interfaces/IPKPNFTFacet.sol";
-import {IVincentAppRegistry} from "./interfaces/IVincentAppRegistry.sol";
+import {IVincentAppDelegationRegistry} from "./interfaces/IVincentAppDelegationRegistry.sol";
 
 /**
  * @title VincentAgentRegistry
@@ -27,13 +27,13 @@ contract VincentAgentRegistry {
     // =============================================================
 
     IPKPNFTFacet public immutable PKP_NFT_FACET;
-    IVincentAppRegistry public immutable appRegistry;
+    IVincentAppDelegationRegistry public immutable appDelegationRegistry;
 
     // =============================================================
     //                            STORAGE
     // =============================================================
 
-    struct ToolPolicy {
+    struct Tool {
         bool enabled;
         string toolIpfsCid;
         EnumerableSet.Bytes32Set policyParams;
@@ -45,7 +45,7 @@ contract VincentAgentRegistry {
         EnumerableSet.Bytes32Set roleIds;
         mapping(bytes32 => string) roleVersions;
         EnumerableSet.Bytes32Set toolIds;
-        mapping(bytes32 => ToolPolicy) toolPolicies;
+        mapping(bytes32 => Tool) tools;
     }
 
     struct AgentPkp {
@@ -56,6 +56,15 @@ contract VincentAgentRegistry {
     EnumerableSet.UintSet private _agentPkps;
     // Agent PKP token ID => Agent PKP data
     mapping(uint256 => AgentPkp) private _agents;
+
+    // App management wallet => Set of agent PKPs that approved the app
+    mapping(address => EnumerableSet.UintSet) private _permittedAgentPkpsForApp;
+
+    // Tool IPFS CID hash => Tool IPFS CID string
+    mapping(bytes32 => string) private _toolIpfsCids;
+
+    // Policy param hash => Policy param name string
+    mapping(bytes32 => string) private _policyParamNames;
 
     // =============================================================
     //                            EVENTS
@@ -84,11 +93,11 @@ contract VincentAgentRegistry {
     //                          CONSTRUCTOR
     // =============================================================
 
-    constructor(address pkpContract_, address appRegistry_) {
+    constructor(address pkpContract_, address appDelegationRegistry_) {
         require(pkpContract_ != address(0), "VincentAgentRegistry: zero address");
-        require(appRegistry_ != address(0), "VincentAgentRegistry: zero address");
+        require(appDelegationRegistry_ != address(0), "VincentAgentRegistry: zero address");
         PKP_NFT_FACET = IPKPNFTFacet(pkpContract_);
-        appRegistry = IVincentAppRegistry(appRegistry_);
+        appDelegationRegistry = IVincentAppDelegationRegistry(appDelegationRegistry_);
     }
 
     // =============================================================
@@ -113,7 +122,7 @@ contract VincentAgentRegistry {
      * @param roleId The role ID
      * @param roleVersion The role version
      * @param toolIpfsCids Array of tool IPFS CIDs
-     * @param policyParams Array of policy parameter arrays for each tool
+     * @param policyParamNames Array of policy parameter name arrays for each tool
      * @param policyValues Array of policy value arrays for each tool
      */
     function addRole(
@@ -122,30 +131,30 @@ contract VincentAgentRegistry {
         bytes32 roleId,
         string calldata roleVersion,
         string[] calldata toolIpfsCids,
-        bytes32[][] calldata policyParams,
+        string[][] calldata policyParamNames,
         bytes[][] calldata policyValues
     ) external onlyPkpOwner(agentPkpTokenId) {
         require(appManager != address(0), "VincentAgentRegistry: zero address");
         require(
-            appRegistry.isAppPermittedForAgentPkp(appManager, agentPkpTokenId),
-            "VincentAgentRegistry: app not permitted"
-        );
-        require(
-            toolIpfsCids.length == policyParams.length && policyParams.length == policyValues.length,
+            toolIpfsCids.length == policyParamNames.length && policyParamNames.length == policyValues.length,
             "VincentAgentRegistry: array length mismatch"
         );
 
         AgentPkp storage agent = _agents[agentPkpTokenId];
         App storage app = agent.apps[appManager];
 
-        // Add agent PKP to registry
-        _agentPkps.add(agentPkpTokenId);
-
-        // Enable app if first role
+        // Do these things if app is not already permitted for the agent PKP
         if (!agent.appAddresses.contains(appManager)) {
+            // Add app to agent PKP, and enable it
             agent.appAddresses.add(appManager);
             app.enabled = true;
             emit AppAdded(agentPkpTokenId, appManager, true);
+
+            // Add agent PKP to registry
+            _agentPkps.add(agentPkpTokenId);
+
+            // Add agent PKP to app's permitted agent PKPs
+            _permittedAgentPkpsForApp[appManager].add(agentPkpTokenId);
         }
 
         // Add role
@@ -156,22 +165,32 @@ contract VincentAgentRegistry {
         // Add tool-policies with their parameters and values
         for (uint256 i = 0; i < toolIpfsCids.length; i++) {
             require(
-                policyParams[i].length == policyValues[i].length,
+                policyParamNames[i].length == policyValues[i].length,
                 "VincentAgentRegistry: param and value length mismatch"
             );
 
             bytes32 toolId = keccak256(abi.encodePacked(toolIpfsCids[i]));
             app.toolIds.add(toolId);
 
-            ToolPolicy storage toolPolicy = app.toolPolicies[toolId];
+            Tool storage toolPolicy = app.tools[toolId];
             toolPolicy.enabled = true;
             toolPolicy.toolIpfsCid = toolIpfsCids[i];
 
+            // Store the tool IPFS CID mapping
+            _toolIpfsCids[toolId] = toolIpfsCids[i];
+
             // Add policy parameters and values for this tool
-            for (uint256 j = 0; j < policyParams[i].length; j++) {
-                toolPolicy.policyParams.add(policyParams[i][j]);
-                toolPolicy.policyValues[policyParams[i][j]] = policyValues[i][j];
-                emit PolicyValueSet(agentPkpTokenId, appManager, toolId, policyParams[i][j], policyValues[i][j]);
+            for (uint256 j = 0; j < policyParamNames[i].length; j++) {
+                bytes32 paramNameHash = keccak256(abi.encodePacked(policyParamNames[i][j]));
+                toolPolicy.policyParams.add(paramNameHash);
+                toolPolicy.policyValues[paramNameHash] = policyValues[i][j];
+
+                // Store the policy param name if it doesn't exist yet
+                if (bytes(_policyParamNames[paramNameHash]).length == 0) {
+                    _policyParamNames[paramNameHash] = policyParamNames[i][j];
+                }
+
+                emit PolicyValueSet(agentPkpTokenId, appManager, toolId, paramNameHash, policyValues[i][j]);
             }
         }
     }
@@ -219,8 +238,35 @@ contract VincentAgentRegistry {
             _agents[agentPkpTokenId].apps[appManager].toolIds.contains(toolId), "VincentAgentRegistry: tool not found"
         );
 
-        _agents[agentPkpTokenId].apps[appManager].toolPolicies[toolId].enabled = enabled;
+        _agents[agentPkpTokenId].apps[appManager].tools[toolId].enabled = enabled;
         emit ToolPolicyEnabled(agentPkpTokenId, appManager, toolId, enabled);
+    }
+
+    /**
+     * @notice Enable or disable multiple tool-policies at once
+     * @param agentPkpTokenId The agent PKP token ID
+     * @param appManager The app management wallet address
+     * @param toolIpfsCids Array of tool IPFS CIDs
+     * @param enabled Whether to enable or disable the tool-policies
+     */
+    function setToolPoliciesEnabled(
+        uint256 agentPkpTokenId,
+        address appManager,
+        string[] calldata toolIpfsCids,
+        bool enabled
+    ) external onlyPkpOwner(agentPkpTokenId) {
+        require(appManager != address(0), "VincentAgentRegistry: zero address");
+        require(_agents[agentPkpTokenId].appAddresses.contains(appManager), "VincentAgentRegistry: app not found");
+
+        App storage app = _agents[agentPkpTokenId].apps[appManager];
+
+        for (uint256 i = 0; i < toolIpfsCids.length; i++) {
+            bytes32 toolId = keccak256(abi.encodePacked(toolIpfsCids[i]));
+            require(app.toolIds.contains(toolId), "VincentAgentRegistry: tool not found");
+
+            app.tools[toolId].enabled = enabled;
+            emit ToolPolicyEnabled(agentPkpTokenId, appManager, toolId, enabled);
+        }
     }
 
     /**
@@ -247,7 +293,7 @@ contract VincentAgentRegistry {
             _agents[agentPkpTokenId].apps[appManager].toolIds.contains(toolId), "VincentAgentRegistry: tool not found"
         );
 
-        ToolPolicy storage toolPolicy = _agents[agentPkpTokenId].apps[appManager].toolPolicies[toolId];
+        Tool storage toolPolicy = _agents[agentPkpTokenId].apps[appManager].tools[toolId];
         require(toolPolicy.policyParams.contains(paramId), "VincentAgentRegistry: param not found");
 
         toolPolicy.policyValues[paramId] = value;
@@ -277,6 +323,27 @@ contract VincentAgentRegistry {
         return _agentPkps.values();
     }
 
+    // ------------------------- PKP Permission Queries -------------------------
+
+    /**
+     * @notice Check if an app is permitted to use an agent PKP
+     * @param appManager The app management wallet address
+     * @param agentPkpTokenId The agent PKP token ID
+     * @return bool True if the app is permitted to use the PKP
+     */
+    function isAppPermittedForAgentPkp(address appManager, uint256 agentPkpTokenId) external view returns (bool) {
+        return _permittedAgentPkpsForApp[appManager].contains(agentPkpTokenId);
+    }
+
+    /**
+     * @notice Get all agent PKPs that permitted an app
+     * @param appManager The app management wallet address
+     * @return uint256[] Array of agent PKP token IDs
+     */
+    function getPermittedAgentPkpsForApp(address appManager) external view returns (uint256[] memory) {
+        return _permittedAgentPkpsForApp[appManager].values();
+    }
+
     // ------------------------- App Queries -------------------------
 
     /**
@@ -298,6 +365,67 @@ contract VincentAgentRegistry {
     function isAppEnabled(uint256 agentPkpTokenId, address appManager) external view returns (bool) {
         require(_agents[agentPkpTokenId].appAddresses.contains(appManager), "VincentAgentRegistry: app not found");
         return _agents[agentPkpTokenId].apps[appManager].enabled;
+    }
+
+    /**
+     * @notice Get the complete app information for a given delegatee and agent PKP
+     * @param delegatee The delegatee address
+     * @param agentPkpTokenId The agent PKP token ID
+     * @return appManager The app manager address that the delegatee belongs to
+     * @return isEnabled Whether the app is enabled
+     * @return toolIpfsCids Array of tool IPFS CIDs
+     * @return toolEnabled Array of booleans indicating if each tool is enabled
+     * @return policyParamNames Array of arrays of policy parameter names for each tool
+     * @return policyValues Array of arrays of policy values for each tool
+     */
+    function getAppByDelegateeForAgentPkp(address delegatee, uint256 agentPkpTokenId)
+        external
+        view
+        returns (
+            address appManager,
+            bool isEnabled,
+            string[] memory toolIpfsCids,
+            bool[] memory toolEnabled,
+            string[][] memory policyParamNames,
+            bytes[][] memory policyValues
+        )
+    {
+        require(delegatee != address(0), "VincentAgentRegistry: zero address");
+        require(_agentPkps.contains(agentPkpTokenId), "VincentAgentRegistry: agent PKP not found");
+
+        appManager = appDelegationRegistry.getAppManagerByDelegatee(delegatee);
+        require(appManager != address(0), "VincentAgentRegistry: delegatee not found");
+        require(
+            _agents[agentPkpTokenId].appAddresses.contains(appManager), "VincentAgentRegistry: app not found for PKP"
+        );
+
+        App storage app = _agents[agentPkpTokenId].apps[appManager];
+
+        // Get app enabled status
+        isEnabled = app.enabled;
+
+        // Get tools information
+        bytes32[] memory toolIds = app.toolIds.values();
+        toolIpfsCids = new string[](toolIds.length);
+        toolEnabled = new bool[](toolIds.length);
+        policyParamNames = new string[][](toolIds.length);
+        policyValues = new bytes[][](toolIds.length);
+
+        for (uint256 i = 0; i < toolIds.length; i++) {
+            Tool storage tool = app.tools[toolIds[i]];
+            toolIpfsCids[i] = tool.toolIpfsCid;
+            toolEnabled[i] = tool.enabled;
+
+            // Get policy parameters and values
+            bytes32[] memory paramIds = tool.policyParams.values();
+            policyParamNames[i] = new string[](paramIds.length);
+            policyValues[i] = new bytes[](paramIds.length);
+
+            for (uint256 j = 0; j < paramIds.length; j++) {
+                policyParamNames[i][j] = _policyParamNames[paramIds[j]];
+                policyValues[i][j] = tool.policyValues[paramIds[j]];
+            }
+        }
     }
 
     // ------------------------- Role Queries -------------------------
@@ -412,7 +540,7 @@ contract VincentAgentRegistry {
         require(
             _agents[agentPkpTokenId].apps[appManager].toolIds.contains(toolId), "VincentAgentRegistry: tool not found"
         );
-        return _agents[agentPkpTokenId].apps[appManager].toolPolicies[toolId].enabled;
+        return _agents[agentPkpTokenId].apps[appManager].tools[toolId].enabled;
     }
 
     /**
@@ -431,7 +559,7 @@ contract VincentAgentRegistry {
         require(
             _agents[agentPkpTokenId].apps[appManager].toolIds.contains(toolId), "VincentAgentRegistry: tool not found"
         );
-        return _agents[agentPkpTokenId].apps[appManager].toolPolicies[toolId].toolIpfsCid;
+        return _agents[agentPkpTokenId].apps[appManager].tools[toolId].toolIpfsCid;
     }
 
     /**
@@ -453,7 +581,7 @@ contract VincentAgentRegistry {
         ipfsCids = new string[](toolIds.length);
 
         for (uint256 i = 0; i < toolIds.length; i++) {
-            ipfsCids[i] = app.toolPolicies[toolIds[i]].toolIpfsCid;
+            ipfsCids[i] = app.tools[toolIds[i]].toolIpfsCid;
         }
     }
 
@@ -475,7 +603,7 @@ contract VincentAgentRegistry {
         require(
             _agents[agentPkpTokenId].apps[appManager].toolIds.contains(toolId), "VincentAgentRegistry: tool not found"
         );
-        return _agents[agentPkpTokenId].apps[appManager].toolPolicies[toolId].policyParams.values();
+        return _agents[agentPkpTokenId].apps[appManager].tools[toolId].policyParams.values();
     }
 
     /**
@@ -496,7 +624,7 @@ contract VincentAgentRegistry {
             _agents[agentPkpTokenId].apps[appManager].toolIds.contains(toolId), "VincentAgentRegistry: tool not found"
         );
 
-        ToolPolicy storage toolPolicy = _agents[agentPkpTokenId].apps[appManager].toolPolicies[toolId];
+        Tool storage toolPolicy = _agents[agentPkpTokenId].apps[appManager].tools[toolId];
         require(toolPolicy.policyParams.contains(paramId), "VincentAgentRegistry: param not found");
 
         return toolPolicy.policyValues[paramId];
@@ -520,7 +648,7 @@ contract VincentAgentRegistry {
             _agents[agentPkpTokenId].apps[appManager].toolIds.contains(toolId), "VincentAgentRegistry: tool not found"
         );
 
-        ToolPolicy storage toolPolicy = _agents[agentPkpTokenId].apps[appManager].toolPolicies[toolId];
+        Tool storage toolPolicy = _agents[agentPkpTokenId].apps[appManager].tools[toolId];
         paramIds = toolPolicy.policyParams.values();
         values = new bytes[](paramIds.length);
 
@@ -538,5 +666,27 @@ contract VincentAgentRegistry {
      */
     function getToolId(string calldata toolIpfsCid) external pure returns (bytes32) {
         return keccak256(abi.encodePacked(toolIpfsCid));
+    }
+
+    /**
+     * @notice Get the name for a policy parameter
+     * @param paramId The parameter ID (hash)
+     * @return string The parameter name
+     */
+    function getPolicyParamName(bytes32 paramId) external view returns (string memory) {
+        string memory name = _policyParamNames[paramId];
+        require(bytes(name).length > 0, "VincentAgentRegistry: param name not found");
+        return name;
+    }
+
+    /**
+     * @notice Get the IPFS CID for a tool
+     * @param toolId The tool ID (hash)
+     * @return string The IPFS CID
+     */
+    function getToolIpfsCidByHash(bytes32 toolId) external view returns (string memory) {
+        string memory ipfsCid = _toolIpfsCids[toolId];
+        require(bytes(ipfsCid).length > 0, "VincentAgentRegistry: IPFS CID not found");
+        return ipfsCid;
     }
 }

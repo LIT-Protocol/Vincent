@@ -5,7 +5,7 @@ import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet
 import {IPKPNFTFacet} from "./interfaces/IPKPNFTFacet.sol";
 
 /**
- * @title VincentAppRegistry
+ * @title VincentAppDelegationRegistry
  * @notice Registry for Vincent apps and their delegatees
  * @dev Manages app permissions and delegatee relationships
  *
@@ -14,7 +14,7 @@ import {IPKPNFTFacet} from "./interfaces/IPKPNFTFacet.sol";
  * - Agent PKP permissions (which PKPs an app can use)
  * - Relationships between apps and their authorized entities
  */
-contract VincentAppRegistry {
+contract VincentAppDelegationRegistry {
     using EnumerableSet for EnumerableSet.AddressSet;
     using EnumerableSet for EnumerableSet.UintSet;
 
@@ -31,8 +31,8 @@ contract VincentAppRegistry {
     // App management wallet => Set of delegatee addresses
     mapping(address => EnumerableSet.AddressSet) private _appDelegatees;
 
-    // App management wallet => Set of agent PKPs that approved the app
-    mapping(address => EnumerableSet.UintSet) private _appAgentPkps;
+    // App Delegatee address => App Manager address
+    mapping(address => address) private _appDelegateesToAppManager;
 
     // =============================================================
     //                            EVENTS
@@ -74,6 +74,7 @@ contract VincentAppRegistry {
     function addDelegatee(address delegatee) external {
         require(delegatee != address(0), "VincentAppRegistry: zero address");
         require(_appDelegatees[msg.sender].add(delegatee), "VincentAppRegistry: delegatee already exists");
+        _appDelegateesToAppManager[delegatee] = msg.sender;
         emit DelegateeAdded(msg.sender, delegatee);
     }
 
@@ -83,38 +84,8 @@ contract VincentAppRegistry {
      */
     function removeDelegatee(address delegatee) external {
         require(_appDelegatees[msg.sender].remove(delegatee), "VincentAppRegistry: delegatee does not exist");
+        _appDelegateesToAppManager[delegatee] = address(0);
         emit DelegateeRemoved(msg.sender, delegatee);
-    }
-
-    // ------------------------- PKP Permission Management -------------------------
-
-    /**
-     * @notice Permit an app to use an agent PKP
-     * @param appManager The app management wallet address
-     * @param agentPkpTokenId The agent PKP token ID
-     * @dev Only the PKP owner can call this
-     */
-    function permitAppForAgentPkp(address appManager, uint256 agentPkpTokenId) external onlyPkpOwner(agentPkpTokenId) {
-        require(
-            _appAgentPkps[appManager].add(agentPkpTokenId), "VincentAppRegistry: agent PKP already permitted for app"
-        );
-        emit AppPermitted(appManager, agentPkpTokenId);
-    }
-
-    /**
-     * @notice Revoke an app's permission to use an agent PKP
-     * @param appManager The app management wallet address
-     * @param agentPkpTokenId The agent PKP token ID
-     * @dev Only the PKP owner can call this
-     */
-    function unpermitAppForAgentPkp(address appManager, uint256 agentPkpTokenId)
-        external
-        onlyPkpOwner(agentPkpTokenId)
-    {
-        require(
-            _appAgentPkps[appManager].remove(agentPkpTokenId), "VincentAppRegistry: agent PKP not permitted for app"
-        );
-        emit AppUnpermitted(appManager, agentPkpTokenId);
     }
 
     // =============================================================
@@ -142,24 +113,14 @@ contract VincentAppRegistry {
         return _appDelegatees[appManager].values();
     }
 
-    // ------------------------- PKP Permission Queries -------------------------
+    // ------------------------- App Management -------------------------
 
     /**
-     * @notice Check if an app is permitted to use an agent PKP
-     * @param appManager The app management wallet address
-     * @param agentPkpTokenId The agent PKP token ID
-     * @return bool True if the app is permitted to use the PKP
+     * @notice Get the app manager for a delegatee
+     * @param delegatee The delegatee address
+     * @return address The app manager address
      */
-    function isAppPermittedForAgentPkp(address appManager, uint256 agentPkpTokenId) external view returns (bool) {
-        return _appAgentPkps[appManager].contains(agentPkpTokenId);
-    }
-
-    /**
-     * @notice Get all agent PKPs that permitted an app
-     * @param appManager The app management wallet address
-     * @return uint256[] Array of agent PKP token IDs
-     */
-    function getPermittedAgentPkpsForApp(address appManager) external view returns (uint256[] memory) {
-        return _appAgentPkps[appManager].values();
+    function getAppManagerByDelegatee(address delegatee) external view returns (address) {
+        return _appDelegateesToAppManager[delegatee];
     }
 }

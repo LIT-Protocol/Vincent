@@ -2,10 +2,10 @@
 pragma solidity ^0.8.20;
 
 /**
- * @title IVincentAppRegistry
+ * @title IVincentAppDelegationRegistry
  * @notice Interface for Vincent App Registry contract
  */
-interface IVincentAppRegistry {
+interface IVincentAppDelegationRegistry {
     /**
      * @notice Check if an address is a delegatee for an app
      * @param appManager The app management wallet address
@@ -21,4 +21,11 @@ interface IVincentAppRegistry {
      * @return bool True if the app is permitted to use the PKP
      */
     function isAppPermittedForAgentPkp(address appManager, uint256 agentPkpTokenId) external view returns (bool);
+
+    /**
+     * @notice Get the app manager address for a given delegatee
+     * @param delegatee The delegatee address
+     * @return address The app manager address
+     */
+    function getAppManagerByDelegatee(address delegatee) external view returns (address);
 }
