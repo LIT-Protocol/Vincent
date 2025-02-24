@@ -63,7 +63,7 @@ The Vincent Agent Wallet system is a decentralized permission management framewo
 1. Developers register an App with a unique Management Wallet and define metadata (name, description, etc.)
 2. They create Tools (with IPFS-hosted Lit Actions and Policy schemas) and compose them into Roles
 3. Role and Tool versions are tracked off-chain; updates create new versions without altering existing ones
-4. The App integrates with the Consent Page, passing appId and roleIds in URL parameters
+4. The App integrates with the Consent Page, passing appManagementAddress and roleIds in URL parameters
 
 ### User Flow
 1. Users access the Consent Page via an App, review requested Tools/Policies, and adjust Policy variables
@@ -89,7 +89,7 @@ The Vincent Agent Wallet system is a decentralized permission management framewo
 - **Decentralized**: Keys are split across a network of nodes using threshold cryptography
 - **Flexibility**: Supports programmable Lit Actions for custom logic (e.g., Tools + Policies)
 - **Security**: No single entity controls keys; user PKPs are user-owned and managed via AuthMethods
-- **Cost**: Requires Lit payments, offset by Relayer sponsorship in this system
+- **Cost**: Requires Lit payments, offset by Relayer sponsorship in this system for the user
 
 ### Turnkey
 - **Centralized**: Relies on a trusted third-party service to manage keys
@@ -120,7 +120,7 @@ Response:
 {
   "success": true,
   "data": {
-    "appId": "string",
+    "appManagementAddress": "string",
     "appName": "string",
     "logo": "string"
   }
@@ -134,14 +134,14 @@ GET /api/v1/appMetadata
 Description: Retrieves metadata for an App, used in Consent Page or dashboards.
 
 Parameters:
-- `appId` (string, required): Unique App identifier
+- `appManagementAddress` (string, required): Unique App identifier
 
 Response:
 ```json
 {
   "success": true,
   "data": {
-    "appId": "string",
+    "appManagementAddress": "string",
     "appName": "string",
     "logo": "string"
   }
@@ -156,7 +156,7 @@ Description: Updates App metadata.
 
 Parameters:
 - `signedMessage` (string, required): SIWE-signed message with Management Wallet
-- `appId` (string, required): Must match registered appId
+- `appManagementAddress` (string, required): Must match registered appId
 - `appName` (string, required)
 - `appDescription` (string, required)
 - `email` (string, required)
@@ -168,7 +168,7 @@ Response:
 {
   "success": true,
   "data": {
-    "appId": "string"
+    "appManagementAddress": "string"
   }
 }
 ```
@@ -181,7 +181,7 @@ Description: Creates a new Role for an App with Tool-Policy pairs.
 
 Parameters:
 - `signedMessage` (string, required): SIWE-signed message with Management Wallet
-- `appId` (string, required): Must match registered appId
+- `appManagementAddress` (string, required): Must match registered appId
 - `roleName` (string, required): Name of the Role
 - `roleDescription` (string, required): Description of the Role
 - `toolPolicy` (JSON array, required):
@@ -193,7 +193,7 @@ Response:
 {
   "success": true,
   "data": {
-    "appId": "string",
+    "appManagementAddress": "string",
     "roleId": "string",
     "roleVersion": "init",
     "lastUpdated": "ISODate"
@@ -208,7 +208,7 @@ GET /api/v1/role
 Description: Retrieves details of a specific Role.
 
 Parameters:
-- `appId` (string, required)
+- `appManagementAddress` (string, required)
 - `roleId` (string, required)
 
 Response:
@@ -247,7 +247,7 @@ Response:
 {
   "success": true,
   "data": {
-    "appId": "string",
+    "appManagementAddress": "string",
     "roleId": "string",
     "roleVersion": "string"
   }
@@ -316,7 +316,7 @@ function addDelegatee(address delegatee) public {
 
 1. **Initialize Database**:
    - Store App Management Wallet, delegatee addresses, and payment delegation records
-   - Schema: `{ appId: string, managementWallet: address, delegatees: address[], paymentDetails: { gasLimit: uint, litPayment: uint } }`
+   - Schema: `{ appManagementAddress: string, managementWallet: address, delegatees: address[], paymentDetails: { gasLimit: uint, litPayment: uint } }`
 
 2. **Relayer Integration**:
    - Configure Relayer to read from the DB and sponsor gas/Lit payments for delegatee actions
