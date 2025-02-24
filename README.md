@@ -13,13 +13,13 @@ npm i
 npm run dev
 ```
 
-## Vincent Agent Wallet System Documentation
+# Vincent Agent Wallet System Documentation
 
-#Architecture Overview
+## Architecture Overview
 
 The Vincent Agent Wallet system is a decentralized permission management framework designed to allow applications (Apps) to request and manage user permissions securely using an on-chain AgentPKP (Public Key Pair) registry and an off-chain App Registry backend. It leverages blockchain technology (Yellowstone) and Lit Protocol for secure key management and execution, ensuring users maintain control over their permissions while developers can manage their Apps efficiently.
 
-# Key Components
+## Key Components
 
 AgentPKP (On-Chain Agent Registry)
 Manages user-approved permissions for Apps.
@@ -60,7 +60,7 @@ Execution
 Delegatees (approved by the App) use session signatures to execute Tools, validated against the Agent Registry.
 Lit Protocol ensures secure signing and execution of Tool Lit Actions.
 
-Why It’s Secure
+## Why It’s Secure
 
 User Control: The User PKP is the sole admin of the Agent Registry, ensuring only the user can approve or revoke permissions.
 Immutable Permissions: On-chain data is flattened and immutable once written, preventing unauthorized changes.
@@ -68,7 +68,8 @@ Lit Protocol: Uses threshold cryptography and decentralized key management, elim
 Delegatee Verification: Only addresses approved by the App’s Management Wallet can execute Tools, enforced on-chain.
 Versioning: Off-chain versioning ensures transparency and allows users to review updates, with notifications for changes.
 Gas Sponsorship: The Relayer’s JIT sponsorship prevents users from needing to manage gas, reducing attack vectors while maintaining security via capability delegation.
-Lit vs. Turnkey
+
+## Lit vs. Turnkey
 
 Lit Protocol
 
@@ -83,11 +84,12 @@ Security Trade-off: Centralized control introduces a single point of failure and
 Cost: Typically subscription-based, potentially higher for complex workflows.
 Why Lit?: Vincent prioritizes decentralization, user sovereignty, and programmable flexibility, making Lit the better fit over Turnkey’s centralized model.
 
-Public APIs
+## Public APIs
 
 App Registration
-
+```bash
 POST /api/v1/registerApp
+```
 Description: Registers a new App with a unique Management Wallet.
 Parameters:
 signedMessage (string, required): SIWE-signed message with App Management Wallet.
@@ -97,7 +99,7 @@ email (string, required): Contact email for the developer team.
 domain (string, optional): App domain (v2).
 logo (string, optional): App logo URL (v2).
 Response:
-
+```bash
 json
 {
   "success": true,
@@ -107,12 +109,16 @@ json
     "logo": "string"
   }
 }
+```
 Fetch App Metadata
+```bash
 GET /api/v1/appMetadata
+```
 Description: Retrieves metadata for an App, used in Consent Page or dashboards.
 Parameters:
 appId (string, required): Unique App identifier.
 Response:
+```bash
 json
 {
   "success": true,
@@ -122,9 +128,11 @@ json
     "logo": "string"
   }
 }
-
+```
 Update App Metadata
+```bash
 PUT /api/v1/updateApp
+```
 Description: Updates App metadata.
 Parameters:
 signedMessage (string, required): SIWE-signed message with Management Wallet.
@@ -136,6 +144,7 @@ domain (string, optional, v2).
 logo (string, optional, v2).
 
 Response:
+```bash
 json
 {
   "success": true,
@@ -143,8 +152,11 @@ json
     "appId": "string"
   }
 }
+```
 Create Role
+```bash
 POST /api/v1/createRole
+```
 Description: Creates a new Role for an App with Tool-Policy pairs.
 Parameters:
 signedMessage (string, required): SIWE-signed message with Management Wallet.
@@ -155,6 +167,7 @@ toolPolicy (JSON array, required):
 tool: { toolId: string, ipfsCid: string }.
 policy: { policyId: string, ipfsCid: string, schema: [{ paramId: string, paramName: string, type: string, defaultValue: any }] }.
 Response:
+```bash
 json
 {
   "success": true,
@@ -165,6 +178,7 @@ json
     "lastUpdated": "ISODate"
   }
 }
+```
 Get Role
 GET /api/v1/role
 Description: Retrieves details of a specific Role.
@@ -237,6 +251,7 @@ email (string, required): Contact email for the developer team.
 domain (string, optional): App domain (v2).
 logo (string, optional): App logo URL (v2).
 Response:
+```bash
 json
 {
   "success": true,
@@ -246,12 +261,16 @@ json
     "logo": "string"
   }
 }
+```
 Fetch App Metadata
+```bash
 GET /api/v1/appMetadata
+```
 Description: Retrieves metadata for an App, used in Consent Page or dashboards.
 Parameters:
 appId (string, required): Unique App identifier.
 Response:
+```bash
 json
 {
   "success": true,
@@ -261,8 +280,11 @@ json
     "logo": "string"
   }
 }
+```
 Update App Metadata
+```bash
 PUT /api/v1/updateApp
+```
 Description: Updates App metadata.
 Parameters:
 signedMessage (string, required): SIWE-signed message with Management Wallet.
@@ -273,6 +295,7 @@ email (string, required).
 domain (string, optional, v2).
 logo (string, optional, v2).
 Response:
+```bash
 json
 {
   "success": true,
@@ -280,8 +303,11 @@ json
     "appId": "string"
   }
 }
+```
 Create Role
+```bash
 POST /api/v1/createRole
+```
 Description: Creates a new Role for an App with Tool-Policy pairs.
 Parameters:
 signedMessage (string, required): SIWE-signed message with Management Wallet.
@@ -292,6 +318,7 @@ toolPolicy (JSON array, required):
 tool: { toolId: string, ipfsCid: string }.
 policy: { policyId: string, ipfsCid: string, schema: [{ paramId: string, paramName: string, type: string, defaultValue: any }] }.
 Response:
+```bash
 json
 {
   "success": true,
@@ -302,6 +329,7 @@ json
     "lastUpdated": "ISODate"
   }
 }
+```
 Get Role
 GET /api/v1/role
 Description: Retrieves details of a specific Role.
@@ -309,6 +337,7 @@ Parameters:
 appId (string, required).
 roleId (string, required).
 Response:
+```bash
 json
 {
   "success": true,
@@ -327,6 +356,7 @@ json
     ]
   }
 }
+```
 Update Role
 PUT /api/v1/updateRole
 Description: Updates a Role with a new version.
@@ -334,6 +364,7 @@ Parameters: Same as POST /api/v1/createRole, plus:
 roleId (string, required).
 roleVersion (string, required): Developer-defined version name.
 Response:
+```bash
 json
 {
   "success": true,
@@ -343,6 +374,137 @@ json
     "roleVersion": "string"
   }
 }
+```
+Fetch All Roles for an App
+```bash
+GET /api/v1/roles
+```
+Description: Retrieves all Roles for an App.
+Parameters:
+appId (string, required).
+Response: Array of Role objects (see GET /api/v1/role response).
+Consent Page Implementation
+Integration Steps
+Button Setup:
+Add a "Sign with Vincent" or "Create Vincent Agent Wallet" button in your App.
+On click, open a new tab with the Consent Page URL:
+https://consent.vincent.xyz/?appId={appId}&roleIds={roleId1},{roleId2}.
+
+## Data Fetching:
+
+The Consent Page queries:
+GET /api/v1/appMetadata for App info.
+GET /api/v1/role for each roleId to display Tools/Policies.
+User Interaction:
+Users review Tools and adjust Policy variables (default values from schema).
+(v2) Users can disable specific Tools.
+Transaction Signing:
+User selects an AuthMethod to generate a pkpSessionSig.
+The Consent Page crafts an addRole() transaction, estimates gas, and signs it with pkpSign.
+Relayer provides capabilityDelegationAuthSig and calls /send-txsponsorAndBroadcast to execute.
+On-Chain Update:
+Permissions are written to the Agent Registry as flattened Tool-Policy pairs.
+App Management Functions
+Add/Remove Delegatees
+On-Chain (App Registry):
+Management Wallet calls AppRegistry.addDelegatee(address) or AppRegistry.removeDelegatee(address) to update delegateeAddresses.
+
+Solidity Example:
+```bash
+solidity
+function addDelegatee(address delegatee) public {
+  require(msg.sender == managementWallet, "Only management wallet");
+  delegateeAddresses.add(delegatee);
+}
+```
+
+Disable Apps/Roles/Tools
+User Dashboard:
+Query AgentRegistry.agents[agentPkpTokenId].appAddresses and set enabled=false for an App.
+Disable specific Roles or Tools via signed transactions updating enabled fields.
+Payment Delegation DB Setup
+(Copied from existing docs, assuming standard Lit Protocol/Yellowstone setup)
+Initialize Database:
+Store App Management Wallet, delegatee addresses, and payment delegation records.
+Schema: { appId: string, managementWallet: address, delegatees: address[], paymentDetails: { gasLimit: uint, litPayment: uint } }.
+Relayer Integration:
+Configure Relayer to read from the DB and sponsor gas/Lit payments for delegatee actions.
+Use capabilityDelegationAuthSig for JIT sponsorship.
+Management:
+Management Wallet updates delegatee payment records via signed transactions.
+Setting Up the Backend for an API
+Prerequisites
+Node.js, MongoDB (or similar DB), IPFS client, Yellowstone RPC endpoint, Lit SDK.
+Steps
+Database Setup:
+Define schemas for App, Role, RoleVersion, Tool, ToolVersion (see interfaces above).
+Enforce unique constraints on managementWallet and appId.
+API Routes:
+Use Express.js (or similar) to implement the public APIs.
+Validate signedMessage with SIWE library to authenticate Management Wallet.
+IPFS Integration:
+Store Tool and Policy code in IPFS, return CIDs in API responses.
+Notifications:
+On Role/Tool version updates, queue push notifications (e.g., via Firebase) to affected users.
+Security:
+Rate-limit APIs, validate all inputs, and use HTTPS.
+Example (Pseudo-code)
+```bash
+javascript
+const express = require('express');
+const { siwe } = require('siwe');
+const app = express();
+
+app.post('/api/v1/registerApp', async (req, res) => {
+  const { signedMessage, appName, appDescription, email } = req.body;
+  const { address } = await siwe.verify(signedMessage);
+  const appId = generateAppId();
+  await db.apps.insert({ appId, managementWallet: address, name: appName, description: appDescription, email });
+  res.json({ success: true, data: { appId, appName } });
+});
+
+app.listen(3000);
+```
+Response:
+```bash
+json
+{
+  "success": true,
+  "data": {
+    "roleId": "string",
+    "roleVersion": "string",
+    "toolPolicy": [
+      {
+        "tool": { "toolId": "string", "ipfsCid": "string" },
+        "policy": {
+          "policyId": "string",
+          "ipfsCid": "string",
+          "schema": [{ "paramId": "string", "paramName": "string", "type": "string", "defaultValue": "any" }]
+        }
+      }
+    ]
+  }
+}
+```
+
+Update Role
+PUT /api/v1/updateRole
+Description: Updates a Role with a new version.
+Parameters: Same as POST /api/v1/createRole, plus:
+roleId (string, required).
+roleVersion (string, required): Developer-defined version name.
+Response:
+```bash
+json
+{
+  "success": true,
+  "data": {
+    "appId": "string",
+    "roleId": "string",
+    "roleVersion": "string"
+  }
+}
+```
 Fetch All Roles for an App
 GET /api/v1/roles
 Description: Retrieves all Roles for an App.
@@ -409,6 +571,7 @@ On Role/Tool version updates, queue push notifications (e.g., via Firebase) to a
 Security:
 Rate-limit APIs, validate all inputs, and use HTTPS.
 Example (Pseudo-code)
+```bash
 javascript
 const express = require('express');
 const { siwe } = require('siwe');
@@ -421,120 +584,5 @@ app.post('/api/v1/registerApp', async (req, res) => {
   await db.apps.insert({ appId, managementWallet: address, name: appName, description: appDescription, email });
   res.json({ success: true, data: { appId, appName } });
 });
-
 app.listen(3000);
-Response:
-json
-{
-  "success": true,
-  "data": {
-    "roleId": "string",
-    "roleVersion": "string",
-    "toolPolicy": [
-      {
-        "tool": { "toolId": "string", "ipfsCid": "string" },
-        "policy": {
-          "policyId": "string",
-          "ipfsCid": "string",
-          "schema": [{ "paramId": "string", "paramName": "string", "type": "string", "defaultValue": "any" }]
-        }
-      }
-    ]
-  }
-}
-Update Role
-PUT /api/v1/updateRole
-Description: Updates a Role with a new version.
-Parameters: Same as POST /api/v1/createRole, plus:
-roleId (string, required).
-roleVersion (string, required): Developer-defined version name.
-Response:
-json
-{
-  "success": true,
-  "data": {
-    "appId": "string",
-    "roleId": "string",
-    "roleVersion": "string"
-  }
-}
-Fetch All Roles for an App
-GET /api/v1/roles
-Description: Retrieves all Roles for an App.
-Parameters:
-appId (string, required).
-Response: Array of Role objects (see GET /api/v1/role response).
-Consent Page Implementation
-Integration Steps
-Button Setup:
-Add a "Sign with Vincent" or "Create Vincent Agent Wallet" button in your App.
-On click, open a new tab with the Consent Page URL:
-https://consent.vincent.xyz/?appId={appId}&roleIds={roleId1},{roleId2}.
-Data Fetching:
-The Consent Page queries:
-GET /api/v1/appMetadata for App info.
-GET /api/v1/role for each roleId to display Tools/Policies.
-User Interaction:
-Users review Tools and adjust Policy variables (default values from schema).
-(v2) Users can disable specific Tools.
-Transaction Signing:
-User selects an AuthMethod to generate a pkpSessionSig.
-The Consent Page crafts an addRole() transaction, estimates gas, and signs it with pkpSign.
-Relayer provides capabilityDelegationAuthSig and calls /send-txsponsorAndBroadcast to execute.
-On-Chain Update:
-Permissions are written to the Agent Registry as flattened Tool-Policy pairs.
-App Management Functions
-Add/Remove Delegatees
-On-Chain (App Registry):
-Management Wallet calls AppRegistry.addDelegatee(address) or AppRegistry.removeDelegatee(address) to update delegateeAddresses.
-Solidity Example:
-solidity
-function addDelegatee(address delegatee) public {
-  require(msg.sender == managementWallet, "Only management wallet");
-  delegateeAddresses.add(delegatee);
-}
-Disable Apps/Roles/Tools
-User Dashboard:
-Query AgentRegistry.agents[agentPkpTokenId].appAddresses and set enabled=false for an App.
-Disable specific Roles or Tools via signed transactions updating enabled fields.
-Payment Delegation DB Setup
-(Copied from existing docs, assuming standard Lit Protocol/Yellowstone setup)
-Initialize Database:
-Store App Management Wallet, delegatee addresses, and payment delegation records.
-Schema: { appId: string, managementWallet: address, delegatees: address[], paymentDetails: { gasLimit: uint, litPayment: uint } }.
-Relayer Integration:
-Configure Relayer to read from the DB and sponsor gas/Lit payments for delegatee actions.
-Use capabilityDelegationAuthSig for JIT sponsorship.
-Management:
-Management Wallet updates delegatee payment records via signed transactions.
-Setting Up the Backend for an API
-Prerequisites
-Node.js, MongoDB (or similar DB), IPFS client, Yellowstone RPC endpoint, Lit SDK.
-Steps
-Database Setup:
-Define schemas for App, Role, RoleVersion, Tool, ToolVersion (see interfaces above).
-Enforce unique constraints on managementWallet and appId.
-API Routes:
-Use Express.js (or similar) to implement the public APIs.
-Validate signedMessage with SIWE library to authenticate Management Wallet.
-IPFS Integration:
-Store Tool and Policy code in IPFS, return CIDs in API responses.
-Notifications:
-On Role/Tool version updates, queue push notifications (e.g., via Firebase) to affected users.
-Security:
-Rate-limit APIs, validate all inputs, and use HTTPS.
-Example (Pseudo-code)
-javascript
-const express = require('express');
-const { siwe } = require('siwe');
-const app = express();
-
-app.post('/api/v1/registerApp', async (req, res) => {
-  const { signedMessage, appName, appDescription, email } = req.body;
-  const { address } = await siwe.verify(signedMessage);
-  const appId = generateAppId();
-  await db.apps.insert({ appId, managementWallet: address, name: appName, description: appDescription, email });
-  res.json({ success: true, data: { appId, appName } });
-});
-
-app.listen(3000);
+```
