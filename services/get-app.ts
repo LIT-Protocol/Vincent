@@ -230,7 +230,7 @@ export async function getVincentAppForUser(address: string): Promise<any> {
                 toolPolicy: [
                     {
                         toolCId:
-                            "QmZbVUwomfUfCa38ia69LrSfH1k8JNK3BHeSUKm5tGMWgv",
+                            "Qmap3Qadj4FBPhSEor1rbnNdbZSE56ptFS7KH4XS716oJg",
                         policyVarsSchema: [
                             {
                                 paramName: "Maximum Transaction Amount",
