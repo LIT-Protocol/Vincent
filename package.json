@@ -2,6 +2,10 @@
   "name": "@lit-protocol/vincent",
   "version": "0.0.0",
   "license": "MIT",
+  "engines": {
+    "node": "^18.19.1",
+    "pnpm": "8.15.5"
+  },
   "scripts": {
     "build": "npx nx run-many -t build",
     "clean": "node tools/clean.js",
