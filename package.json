@@ -26,7 +26,7 @@
     "@radix-ui/react-tabs": "^1.1.3",
     "@radix-ui/react-toast": "^1.2.6",
     "@rainbow-me/rainbowkit": "^2.2.3",
-    "@simplewebauthn/browser": "^13.1.0",
+    "@simplewebauthn/browser": "^7.2.0",
     "@tanstack/react-query": "^5.66.7",
     "axios": "^1.7.9",
     "browserify-fs": "^1.0.0",
@@ -48,6 +48,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@simplewebauthn/typescript-types": "^7.4.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
