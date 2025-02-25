@@ -10,7 +10,7 @@
     "build": "npx nx run-many -t build",
     "clean": "node tools/clean.js",
     "lint": "npx nx run-many -t lint",
-    "start-dca-backend": "pnpm build;nx run vincent-service-dca:start"
+    "start-dca-backend": "nx run vincent-service-dca:start"
   },
   "devDependencies": {
     "@eslint/js": "^9.8.0",

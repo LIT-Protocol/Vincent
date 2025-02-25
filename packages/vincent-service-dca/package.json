@@ -4,7 +4,9 @@
   "scripts": {
     "init-db": "node --loader ts-node/esm src/lib/init-db.ts",
     "dev": "node --loader ts-node/esm src/lib/server.ts",
-    "test": "jest --config jest.config.mjs"
+    "start": "node ./dist/server.cjs",
+    "test": "jest --config jest.config.mjs",
+    "build": "node esbuild.js"
   },
   "dependencies": {
     "@dotenvx/dotenvx": "^1.36.0",
@@ -27,6 +29,7 @@
     "@types/node-fetch": "^2.6.11",
     "babel-jest": "^29.7.0",
     "commander": "^13.1.0",
+    "esbuild": "^0.25.0",
     "jest": "^29.7.0",
     "mongodb-memory-server": "^9.1.6",
     "node-fetch": "2"
