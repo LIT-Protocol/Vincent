@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "@dotenvx/dotenvx": "^1.36.0",
+    "@fastify/cors": "^10.1.0",
     "agenda": "^5.0.0",
     "fastify": "^5.2.1",
     "mongoose": "^8.10.1",

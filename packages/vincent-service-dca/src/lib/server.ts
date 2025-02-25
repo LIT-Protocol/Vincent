@@ -1,6 +1,7 @@
-import Fastify from 'fastify';
-import type { FastifyInstance } from 'fastify';
 import type { Agenda } from 'agenda';
+import Fastify from 'fastify';
+import cors from '@fastify/cors';
+import type { FastifyInstance } from 'fastify';
 
 import { userRoutes } from './routes/user.routes';
 import { purchaseRoutes } from './routes/purchase.routes';
@@ -16,6 +17,27 @@ export interface ServerConfig {
   dbUri?: string;
   debug?: boolean;
 }
+
+const corsOptions = {
+  optionsSuccessStatus: 200,
+  origin: async (origin: string | undefined): Promise<boolean> => {
+    if (!origin) {
+      return true;
+    }
+
+    const allowedOrigins = [
+      /^https?:\/\/localhost(:\d+)?$/, // localhost with any port
+      // eslint-disable-next-line no-useless-escape
+      new RegExp(`^https?:\/\/${process.env.DOMAIN}$`),
+    ];
+
+    if (allowedOrigins.some((regex) => regex.test(origin))) {
+      return true;
+    } else {
+      throw new Error('Not allowed by CORS');
+    }
+  },
+};
 
 export class Server {
   protected fastify: FastifyInstance;
@@ -38,6 +60,8 @@ export class Server {
   async start() {
     // Wait for agenda to be ready and start the scheduler
     await startScheduler();
+
+    await this.fastify.register(cors, corsOptions);
 
     // Register routes
     await this.fastify.register(userRoutes);
