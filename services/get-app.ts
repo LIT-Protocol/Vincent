@@ -1,5 +1,8 @@
 import { VincentApp } from "@/types";
 import { getAppMetadata, getAllRoles, getRoleToolPolicy } from "./api";
+import { LitContracts } from "@lit-protocol/contracts-sdk";
+import { getProviderOrSignerForAppRegistry } from "./config";
+import { getAppsPermittedForAgentPkp, isAppEnabled, getRolesPermittedForApp } from "./contract";
 
 export async function checkIfAppExists(address: string): Promise<Boolean> {
     const app = await getAppMetadata(address);
@@ -27,7 +30,7 @@ export async function formCompleteVincentAppForDev(
                 roleId: roleData.roleId,
                 toolPolicy: roleData.toolPolicy.map((id: any) => ({
                     toolCId: id.ipfsCid,
-                    policyVarsSchema: id.policyVarsSchema
+                    policyVarsSchema: id.policyVarsSchema,
                 })),
             };
         })
@@ -42,7 +45,7 @@ export async function formCompleteVincentAppForDev(
             email: appMetadata.contactEmail,
         },
         roles: roles,
-        delegatees: []
+        delegatees: [],
     };
 
     console.log("completeVincentApp", completeVincentApp);
@@ -109,11 +112,88 @@ export async function formCompleteVincentAppForDev(
 //     };
 // }
 
+interface Tool {
+    // Add Tool properties here when needed
+}
+
+export async function getVincentAppForUserr(
+    userPkpEthAddress: string
+): Promise<any> {
+    const litContracts = new LitContracts();
+    await litContracts.connect();
+    const pkpTokenIds =
+        await litContracts.pkpPermissionsContract.read.getTokenIdsForAuthMethod(
+            1,
+            userPkpEthAddress
+        );
+    console.log("pkpTokenIds", pkpTokenIds);
+
+    const vincentAgentRegistry = await getProviderOrSignerForAppRegistry();
+    let count = 0;
+    let awTokenIds: any[] = [];
+    
+    while (count < pkpTokenIds.length) {
+        if (vincentAgentRegistry.hasAgentPkp(pkpTokenIds[count])) {
+            awTokenIds.push(pkpTokenIds[count]);
+        }
+        count++;
+    }
+
+    // Get all permitted apps for each agent PKP and flatten the results
+    const allAppsWithDetails = await Promise.all(
+        awTokenIds.map(async (agentTokenId) => {
+            const permittedApps: string[] = await getAppsPermittedForAgentPkp(agentTokenId);
+            
+            // For each permitted app of this agent, get the details
+            const appsWithDetails: any[] = await Promise.all(
+                permittedApps.map(async (appManager) => {
+                    const enabled = await isAppEnabled(agentTokenId, appManager);
+                    const appMetadata = await getAppMetadata(appManager);
+                    const roleIds = await getRolesPermittedForApp(agentTokenId, appManager);
+
+                    // Get tool policies for each role
+                    const roles = await Promise.all(
+                        roleIds.map(async (roleId: any) => {
+                            const roleData = await getRoleToolPolicy({
+                                managementWallet: appManager,
+                                roleId: roleId,
+                            });
+                            return {
+                                roleId: roleData.roleId,
+                                toolPolicy: roleData.toolPolicy.map((policy: any) => ({
+                                    toolCId: policy.ipfsCid,
+                                    policyVarsSchema: policy.policyVarsSchema,
+                                })),
+                            };
+                        })
+                    );
+
+                    return {
+                        awTokenId: agentTokenId,
+                        appManager,
+                        appMetadata: {
+                            appName: appMetadata.name,
+                            description: appMetadata.description,
+                            email: appMetadata.contactEmail,
+                        },
+                        enabled,
+                        roles,
+                    };
+                })
+            );
+            
+            return appsWithDetails;
+        })
+    );
+
+    return allAppsWithDetails;
+}
+
 export async function getVincentAppForUser(appId: string): Promise<any> {
     await new Promise((resolve) => setTimeout(resolve, 200));
     // Mock data for now
     return {
-        appId: "24",
+        appCreatorAddress: "0xc881ab7ED4346636D610571c63aBbeE6F24e6953",
         appName: "Swapping App",
         description:
             "This is a sample application with full integration capabilities",
@@ -124,13 +204,17 @@ export async function getVincentAppForUser(appId: string): Promise<any> {
                 roleName: "Uniswap Watcher",
                 roleDescription:
                     "This is a sample application with full integration capabilities",
-                enabled: true,
                 toolPolicy: [
                     {
                         toolCId:
                             "QmZbVUwomfUfCa38ia69LrSfH1k8JNK3BHeSUKm5tGMWgv",
-                        policyCId:
-                            "QmZbVUwomfUfCa38ia69LrSfH1k8JNK3BHeSUKm5tGMWgv",
+                        policyVarsSchema: [
+                            {
+                                paramName: "Uniswap Watcher",
+                                type: "string",
+                                defaultValue: "Uniswap Watcher",
+                            },
+                        ],
                     },
                 ],
             },

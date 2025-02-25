@@ -1,29 +1,59 @@
 import { ethers } from "ethers";
-import { getProviderOrSigner } from "./config";
-
-export async function registerApp(appId: string) {
-    const contract = await getProviderOrSigner(true);
-    const tx = await contract.registerApp(appId);
-    await tx.wait();
-}
-
-export async function getAppIdFromManagerAddress(address: string) {
-    const contract = await getProviderOrSigner();
-    const addressToAppId = await contract.managerToApps(address);
-    return addressToAppId;
-}
-
-export async function registerRole(appId: string) {}
+import {
+    getProviderOrSignerForAppRegistry,
+    getProviderOrSignerForUserRegistry,
+} from "./config";
 
 export async function addDelegatee(appId: string, delegateeAddress: string) {
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    // TODO: Implement
+    const contract = await getProviderOrSignerForAppRegistry(true);
+    const tx = await contract.addDelegatee(appId, delegateeAddress);
+    await tx.wait();
+    return tx;
 }
 
 export async function getDelegatees(appId: string) {
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    // TODO: Implement
+    const contract = await getProviderOrSignerForAppRegistry();
+    const delegatees = await contract.getDelegatees(appId);
+    return delegatees;
 }
 
-// TODO: Later
-export async function removeDelegatee(appId: string, delegateeAddress: string) {}
+export async function removeDelegatee(appId: string, delegateeAddress: string) {
+    const contract = await getProviderOrSignerForAppRegistry(true);
+    const tx = await contract.removeDelegatee(appId, delegateeAddress);
+    await tx.wait();
+    return tx;
+}
+
+// export async function addRole(appId: string, enabled: boolean) {
+//     const contract = await getProviderOrSignerForUserRegistry(true);
+//     const tx = await contract.addRole(appId, enabled);
+//     await tx.wait();
+//     return tx;
+// }
+
+export async function getAppsPermittedForAgentPkp(agentPkpTokenId: string) {
+    const contract = await getProviderOrSignerForUserRegistry();
+    const apps = await contract.getAppsPermittedForAgentPkp(agentPkpTokenId);
+    return apps;
+}
+
+export async function isAppEnabled(
+    agentPkpTokenId: string,
+    appManager: string
+) {
+    const contract = await getProviderOrSignerForUserRegistry();
+    const isEnabled = await contract.isAppEnabled(agentPkpTokenId, appManager);
+    return isEnabled;
+}
+
+export async function getRolesPermittedForApp(
+    agentPkpTokenId: string,
+    appManager: string
+) {
+    const contract = await getProviderOrSignerForUserRegistry();
+    const app = await contract.getRolesPermittedForApp(
+        agentPkpTokenId,
+        appManager
+    );
+    return app;
+}
