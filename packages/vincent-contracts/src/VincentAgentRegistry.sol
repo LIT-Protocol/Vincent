@@ -217,42 +217,16 @@ contract VincentAgentRegistry {
     // ------------------------- Tool Management -------------------------
 
     /**
-     * @notice Enable or disable a tool
-     * @param agentPkpTokenId The agent PKP token ID
-     * @param appManager The app management wallet address
-     * @param toolIpfsCid The tool IPFS CID
-     * @param enabled Whether to enable or disable the tool
-     */
-    function setToolEnabled(uint256 agentPkpTokenId, address appManager, string calldata toolIpfsCid, bool enabled)
-        external
-        onlyPkpOwner(agentPkpTokenId)
-    {
-        require(appManager != address(0), "VincentAgentRegistry: zero address");
-        require(_agents[agentPkpTokenId].appAddresses.contains(appManager), "VincentAgentRegistry: app not found");
-
-        bytes32 toolId = keccak256(abi.encodePacked(toolIpfsCid));
-
-        require(
-            _agents[agentPkpTokenId].apps[appManager].toolIds.contains(toolId), "VincentAgentRegistry: tool not found"
-        );
-
-        _agents[agentPkpTokenId].apps[appManager].tools[toolId].enabled = enabled;
-        emit ToolEnabled(agentPkpTokenId, appManager, toolId, enabled);
-    }
-
-    /**
-     * @notice Enable or disable multiple tool-policies at once
+     * @notice Enable or disable one or more tools
      * @param agentPkpTokenId The agent PKP token ID
      * @param appManager The app management wallet address
      * @param toolIpfsCids Array of tool IPFS CIDs
-     * @param enabled Whether to enable or disable the tool-policies
+     * @param enabled Whether to enable or disable the tools
      */
-    function setToolPoliciesEnabled(
-        uint256 agentPkpTokenId,
-        address appManager,
-        string[] calldata toolIpfsCids,
-        bool enabled
-    ) external onlyPkpOwner(agentPkpTokenId) {
+    function setToolsEnabled(uint256 agentPkpTokenId, address appManager, string[] calldata toolIpfsCids, bool enabled)
+        external
+        onlyPkpOwner(agentPkpTokenId)
+    {
         require(appManager != address(0), "VincentAgentRegistry: zero address");
         require(_agents[agentPkpTokenId].appAddresses.contains(appManager), "VincentAgentRegistry: app not found");
 
