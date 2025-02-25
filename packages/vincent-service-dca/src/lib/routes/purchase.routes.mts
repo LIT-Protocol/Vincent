@@ -13,9 +13,11 @@ export async function purchaseRoutes(fastify: FastifyInstance) {
       return;
     }
 
-    const purchases = await PurchasedCoin.find({ userId: user._id }).sort({
-      purchasedAt: -1,
-    });
+    const purchases = await PurchasedCoin.find({ userId: user._id })
+      .lean()
+      .sort({
+        purchasedAt: -1,
+      });
 
     return purchases;
   });
@@ -23,7 +25,7 @@ export async function purchaseRoutes(fastify: FastifyInstance) {
   // Get latest purchase for a wallet address
   fastify.get('/purchases/:walletAddress/latest', async (request, reply) => {
     const { walletAddress } = request.params as { walletAddress: string };
-    const user = await User.findOne({ walletAddress });
+    const user = await User.findOne({ walletAddress }).lean();
 
     if (!user) {
       reply.code(404).send({ error: 'User not found' });
@@ -32,7 +34,9 @@ export async function purchaseRoutes(fastify: FastifyInstance) {
 
     const latestPurchase = await PurchasedCoin.findOne({
       userId: user._id,
-    }).sort({ purchasedAt: -1 });
+    })
+      .lean()
+      .sort({ purchasedAt: -1 });
 
     if (!latestPurchase) {
       reply.code(404).send({ error: 'No purchases found for this user' });

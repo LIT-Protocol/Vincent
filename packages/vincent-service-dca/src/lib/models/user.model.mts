@@ -1,11 +1,22 @@
-import mongoose from 'mongoose';
+import { model, Schema } from 'mongoose';
 
-const userSchema = new mongoose.Schema({
-  walletAddress: { type: String, unique: true, required: true },
-  purchaseIntervalSeconds: { type: Number, required: true },
-  registeredAt: { type: Date, required: true, default: Date.now },
-  createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now },
-});
+export interface IUser {
+  walletAddress: string;
+  purchaseIntervalSeconds: number;
+  registeredAt: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
-export const User = mongoose.model('User', userSchema);
+// Schema is scoped to the IUser TS interface
+const userSchema = new Schema<IUser>(
+  {
+    walletAddress: { type: String, unique: true, required: true },
+    purchaseIntervalSeconds: { type: Number, required: true },
+    registeredAt: { type: Date, required: true, default: Date.now },
+  },
+  { timestamps: true }
+);
+
+// Model needs type hint generic for autocomplete to work on `.toObject()` results
+export const User = model<IUser>('User', userSchema);
