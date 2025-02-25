@@ -6,26 +6,26 @@ import {
   StytchAuthFactorOtpProvider,
   GoogleProvider,
   DiscordProvider,
-} from '@lit-protocol/lit-auth-client';
-import { LitNodeClient } from '@lit-protocol/lit-node-client';
+} from "@lit-protocol/lit-auth-client";
+import { LitNodeClient } from "@lit-protocol/lit-node-client";
 import {
   AUTH_METHOD_SCOPE,
   AUTH_METHOD_TYPE,
   LIT_ABILITY,
   LIT_NETWORK,
-} from '@lit-protocol/constants';
+} from "@lit-protocol/constants";
 import {
   AuthMethod,
   GetSessionSigsProps,
   IRelayPKP,
   SessionSigs,
   LIT_NETWORKS_KEYS,
-} from '@lit-protocol/types';
-import { LitPKPResource } from '@lit-protocol/auth-helpers';
+} from "@lit-protocol/types";
+import { LitPKPResource } from "@lit-protocol/auth-helpers";
 
-export const DOMAIN = process.env.NEXT_PUBLIC_DOMAIN || 'localhost';
+export const DOMAIN = process.env.NEXT_PUBLIC_DOMAIN || "localhost";
 export const ORIGIN =
-  process.env.NEXT_PUBLIC_VERCEL_ENV === 'production'
+  process.env.NEXT_PUBLIC_VERCEL_ENV === "production"
     ? `https://${DOMAIN}`
     : `http://${DOMAIN}:3000`;
 
@@ -43,7 +43,7 @@ litNodeClient.connect();
 
 const litRelay = new LitRelay({
   relayUrl: LitRelay.getRelayUrl(SELECTED_LIT_NETWORK),
-  relayApiKey: 'test-api-key',
+  relayApiKey: "test-api-key",
 });
 
 /**
@@ -51,8 +51,8 @@ const litRelay = new LitRelay({
  */
 let ethWalletProvider: EthWalletProvider;
 let webAuthnProvider: WebAuthnProvider;
-let stytchEmailOtpProvider: StytchAuthFactorOtpProvider<'email'>;
-let stytchSmsOtpProvider: StytchAuthFactorOtpProvider<'sms'>;
+let stytchEmailOtpProvider: StytchAuthFactorOtpProvider<"email">;
+let stytchSmsOtpProvider: StytchAuthFactorOtpProvider<"sms">;
 
 /**
  * Get the provider that is authenticated with the given auth method
@@ -68,7 +68,9 @@ function getAuthenticatedProvider(authMethod: AuthMethod): BaseProvider {
     case AUTH_METHOD_TYPE.StytchSmsFactorOtp:
       return getStytchSmsOtpProvider();
     default:
-      throw new Error(`No provider found for auth method type: ${authMethod.authMethodType}`);
+      throw new Error(
+        `No provider found for auth method type: ${authMethod.authMethodType}`,
+      );
   }
 }
 
@@ -96,13 +98,13 @@ function getWebAuthnProvider() {
 }
 function getStytchEmailOtpProvider() {
   if (!stytchEmailOtpProvider) {
-    stytchEmailOtpProvider = new StytchAuthFactorOtpProvider<'email'>(
+    stytchEmailOtpProvider = new StytchAuthFactorOtpProvider<"email">(
       {
         relay: litRelay,
         litNodeClient,
       },
       { appId: process.env.NEXT_PUBLIC_STYTCH_PROJECT_ID! },
-      'email',
+      "email",
     );
   }
 
@@ -110,13 +112,13 @@ function getStytchEmailOtpProvider() {
 }
 function getStytchSmsOtpProvider() {
   if (!stytchSmsOtpProvider) {
-    stytchSmsOtpProvider = new StytchAuthFactorOtpProvider<'sms'>(
+    stytchSmsOtpProvider = new StytchAuthFactorOtpProvider<"sms">(
       {
         relay: litRelay,
         litNodeClient,
       },
       { appId: process.env.NEXT_PUBLIC_STYTCH_PROJECT_ID! },
-      'sms',
+      "sms",
     );
   }
 
@@ -128,7 +130,7 @@ function getStytchSmsOtpProvider() {
  */
 export async function authenticateWithEthWallet(
   address?: string,
-  signMessage?: (message: string) => Promise<string>
+  signMessage?: (message: string) => Promise<string>,
 ): Promise<AuthMethod> {
   const ethWalletProvider = getEthWalletProvider();
   return await ethWalletProvider.authenticate({
@@ -149,6 +151,7 @@ export async function registerWebAuthn(): Promise<IRelayPKP> {
     options.user.displayName = "Lit Protocol User";
     options.user.name = "lit-protocol-user";
   } else {
+    // @ts-ignore
     options.user = {
       displayName: "Lit Protocol User",
       name: "lit-protocol-user",
@@ -157,9 +160,15 @@ export async function registerWebAuthn(): Promise<IRelayPKP> {
 
   // Verify registration and mint PKP through relay server
   const txHash = await webAuthnProvider.verifyAndMintPKPThroughRelayer(options);
-  const response = await webAuthnProvider.relay.pollRequestUntilTerminalState(txHash);
-  if (response.status !== 'Succeeded' || !response.pkpTokenId || !response.pkpPublicKey || !response.pkpEthAddress) {
-    throw new Error('Minting failed: Invalid response data');
+  const response =
+    await webAuthnProvider.relay.pollRequestUntilTerminalState(txHash);
+  if (
+    response.status !== "Succeeded" ||
+    !response.pkpTokenId ||
+    !response.pkpPublicKey ||
+    !response.pkpEthAddress
+  ) {
+    throw new Error("Minting failed: Invalid response data");
   }
   const newPKP: IRelayPKP = {
     tokenId: response.pkpTokenId,
@@ -183,11 +192,14 @@ export async function authenticateWithWebAuthn(): Promise<AuthMethod> {
 export async function authenticateWithStytch(
   accessToken: string,
   userId?: string,
-  method?: 'email' | 'sms'
+  method?: "email" | "sms",
 ): Promise<AuthMethod> {
-  const provider = method === 'email' ? getStytchEmailOtpProvider() : getStytchSmsOtpProvider();
+  const provider =
+    method === "email"
+      ? getStytchEmailOtpProvider()
+      : getStytchSmsOtpProvider();
   if (!provider) {
-    throw new Error('Failed to initialize Stytch provider');
+    throw new Error("Failed to initialize Stytch provider");
   }
   return await provider.authenticate({ accessToken, userId });
 }
@@ -211,7 +223,7 @@ export async function getSessionSigs({
     authMethods: [authMethod],
     resourceAbilityRequests: [
       {
-        resource: new LitPKPResource('*'),
+        resource: new LitPKPResource("*"),
         ability: LIT_ABILITY.PKPSigning,
       },
     ],
@@ -221,7 +233,7 @@ export async function getSessionSigs({
 }
 
 export async function updateSessionSigs(
-  params: GetSessionSigsProps
+  params: GetSessionSigsProps,
 ): Promise<SessionSigs> {
   const sessionSigs = await litNodeClient.getSessionSigs(params);
   return sessionSigs;
@@ -255,7 +267,10 @@ export async function mintPKP(authMethod: AuthMethod): Promise<IRelayPKP> {
     const webAuthnInfo = await webAuthnProvider.register();
 
     // Verify registration and mint PKP through relay server
-    txHash = await webAuthnProvider.verifyAndMintPKPThroughRelayer(webAuthnInfo, options);
+    txHash = await webAuthnProvider.verifyAndMintPKPThroughRelayer(
+      webAuthnInfo,
+      options,
+    );
   } else {
     // Mint PKP through relay server
     txHash = await provider.mintPKPThroughRelayer(authMethod, options);
@@ -266,11 +281,12 @@ export async function mintPKP(authMethod: AuthMethod): Promise<IRelayPKP> {
 
   while (attempts > 0) {
     try {
-      const tempResponse = await provider.relay.pollRequestUntilTerminalState(txHash);
+      const tempResponse =
+        await provider.relay.pollRequestUntilTerminalState(txHash);
       if (
-        tempResponse.status === 'Succeeded' && 
-        tempResponse.pkpTokenId && 
-        tempResponse.pkpPublicKey && 
+        tempResponse.status === "Succeeded" &&
+        tempResponse.pkpTokenId &&
+        tempResponse.pkpPublicKey &&
         tempResponse.pkpEthAddress
       ) {
         response = {
@@ -281,19 +297,19 @@ export async function mintPKP(authMethod: AuthMethod): Promise<IRelayPKP> {
         };
         break;
       }
-      throw new Error('Invalid response data');
+      throw new Error("Invalid response data");
     } catch (err) {
-      console.warn('Minting failed, retrying...', err);
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      console.warn("Minting failed, retrying...", err);
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       attempts--;
       if (attempts === 0) {
-        throw new Error('Minting failed after all attempts');
+        throw new Error("Minting failed after all attempts");
       }
     }
   }
 
   if (!response) {
-    throw new Error('Minting failed');
+    throw new Error("Minting failed");
   }
 
   const newPKP: IRelayPKP = {
@@ -312,7 +328,7 @@ let discordProvider: DiscordProvider;
  * Get auth method object from redirect
  */
 export async function authenticateWithGoogle(
-  redirectUri: string
+  redirectUri: string,
 ): Promise<AuthMethod> {
   const googleProvider = getGoogleProvider(redirectUri);
   const authMethod = await googleProvider.authenticate();
@@ -334,7 +350,7 @@ function getGoogleProvider(redirectUri: string) {
  * Get auth method object from redirect
  */
 export async function authenticateWithDiscord(
-  redirectUri: string
+  redirectUri: string,
 ): Promise<AuthMethod> {
   const discordProvider = getDiscordProvider(redirectUri);
   const authMethod = await discordProvider.authenticate();
