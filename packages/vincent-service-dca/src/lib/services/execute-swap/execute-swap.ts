@@ -151,18 +151,43 @@ export async function executeSwap({
       coinAddress: topCoin.coinAddress,
       price: topCoin.price,
       purchaseAmount,
-      txHash: swapResult.swapHash,
       success,
       purchasedAt,
+      // Only set txHash if the swap was successful
+      ...(success && { txHash: swapResult.swapHash }),
+      // Store error information if the swap failed
+      ...(!success && swapResult.error && { error: swapResult.error }),
     });
     await purchase.save();
 
     logger.debug(
-      `Successfully created purchase record for ${topCoin.symbol} with tx hash ${swapResult.swapHash}`
+      `Successfully created purchase record for ${topCoin.symbol}${
+        success ? ` with tx hash ${swapResult.swapHash}` : ' (failed)'
+      }`
     );
     return purchase;
   } catch (error) {
     logger.error('Purchase failed:', error);
-    return null;
+
+    // Create a failed purchase record with error information
+    try {
+      const purchase = new PurchasedCoin({
+        scheduleId,
+        walletAddress,
+        name: 'Unknown', // We failed before getting coin info
+        symbol: 'Unknown',
+        coinAddress: '0x0000000000000000000000000000000000000000',
+        price: '0',
+        purchaseAmount,
+        success: false,
+        purchasedAt,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      await purchase.save();
+      return purchase;
+    } catch (saveError) {
+      logger.error('Failed to save failed purchase record:', saveError);
+      return null;
+    }
   }
 }
