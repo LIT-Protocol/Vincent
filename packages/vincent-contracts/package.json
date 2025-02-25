@@ -1,0 +1,19 @@
+{
+  "name": "@lit-protocol/vincent-contracts",
+  "version": "0.0.1",
+  "dependencies": {
+    "tslib": "^2.3.0"
+  },
+  "type": "commonjs",
+  "main": "./dist/index.js",
+  "typings": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "!**/*.tsbuildinfo"
+  ],
+  "nx": {
+    "sourceRoot": "packages/vincent-contracts/src",
+    "projectType": "library",
+    "name": "vincent-contracts"
+  }
+}

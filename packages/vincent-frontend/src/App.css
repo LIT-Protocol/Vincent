@@ -1,0 +1,488 @@
+/*! modern-normalize v2.0.0 | MIT License | https://github.com/sindresorhus/modern-normalize */
+
+/* Document
+   ======== */
+   *, ::before, ::after {
+    box-sizing: border-box;
+  }
+  
+  html {
+    font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
+    line-height: 1.15;
+    -webkit-text-size-adjust: 100%;
+    tab-size: 4;
+  }
+  
+  /* Sections
+     ======== */
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: linear-gradient(45deg, #ffffff, #ffae4d, #ffffff);
+    background-size: 200% 200%;
+    animation: gradient 15s ease infinite;
+    color: #171923;
+  }
+  
+  /* Gradient Animation */
+  @keyframes gradient {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+  
+  /* Container & Card Layout */
+  .container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    min-height: 100vh;
+  }
+  
+  .card {
+    background-color: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    padding: 2rem;
+    max-width: 800px;
+    width: 100%;
+    text-align: center;
+  }
+  
+  /* Header Styling */
+  header {
+    margin-bottom: 1.5rem;
+  }
+  
+  h1 {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #000000, #FFE66D);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  
+  h2 {
+    color: #2d3748;
+    font-size: 1.5rem;
+    margin: 0 0 1.5rem 0;
+  }
+  
+  /* PKP Address View */
+  .pkp-address {
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin: 1rem 0;
+  }
+  
+  .pkp-address p {
+    margin: 0 0 0.75rem 0;
+    font-weight: 600;
+    color: #4a5568;
+  }
+  
+  .pkp-address code {
+    display: block;
+    font-family: 'Monaco', 'Consolas', monospace;
+    font-size: 0.9rem;
+    background: rgba(0, 0, 0, 0.05);
+    padding: 0.75rem;
+    border-radius: 6px;
+    word-break: break-all;
+    color: #2d3748;
+  }
+  
+  /* DCA Management View */
+  .dca-management header {
+    margin-bottom: 2rem;
+  }
+  
+  .tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 1rem;
+  }
+  
+  .tab-btn {
+    background: transparent;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #718096;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-radius: 6px;
+  }
+  
+  .tab-btn:hover {
+    background: #f7fafc;
+    color: #2d3748;
+  }
+  
+  .tab-btn.active {
+    background: linear-gradient(135deg, #FF6B6B, #FFE66D);
+    color: white;
+  }
+  
+  .tab-content {
+    padding: 1rem 0;
+    min-height: 300px;
+  }
+  
+  /* Button Styles */
+  .approve-btn {
+    display: inline-block;
+    background: linear-gradient(135deg, #FF6B6B, #FFE66D);
+    color: #fff;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+  
+  .approve-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(255, 107, 107, 0.3);
+  }
+  
+  /* Dark Mode Adjustments */
+  @media (prefers-color-scheme: dark) {
+    body {
+      background: linear-gradient(45deg, #1a1a1a, #2a2a2a, #1a1a1a);
+      color: #f7fafc;
+    }
+    .card {
+      background-color: #2d3748;
+      border: 1px solid #4a5568;
+    }
+    
+    .pkp-address {
+      background: rgba(255, 255, 255, 0.1);
+    }
+    
+    .pkp-address p {
+      color: #e2e8f0;
+    }
+    
+    .pkp-address code {
+      background: rgba(255, 255, 255, 0.05);
+      color: #e2e8f0;
+    }
+    
+    h2 {
+      color: #e2e8f0;
+    }
+    
+    .tab-btn {
+      color: #a0aec0;
+    }
+    
+    .tab-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #f7fafc;
+    }
+    
+    .tabs {
+      border-bottom-color: #4a5568;
+    }
+  }
+  
+  /* Transaction List Styles */
+  .transactions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    max-height: 500px;
+    overflow-y: auto;
+    padding-right: 1rem;
+  }
+  
+  .transaction-item {
+    background: rgba(255, 255, 255, 0.5);
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: left;
+    transition: transform 0.2s;
+  }
+  
+  .transaction-item:hover {
+    transform: translateY(-2px);
+  }
+  
+  .transaction-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  
+  .transaction-date {
+    color: #718096;
+    font-size: 0.875rem;
+  }
+  
+  .transaction-link {
+    color: #FF6B6B;
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+  
+  .transaction-link:hover {
+    text-decoration: underline;
+  }
+  
+  .transaction-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: #4a5568;
+  }
+  
+  .loading {
+    color: #718096;
+    font-size: 0.875rem;
+    padding: 2rem;
+  }
+  
+  .error {
+    color: #FF6B6B;
+    font-size: 0.875rem;
+    padding: 2rem;
+  }
+  
+  /* Dark mode adjustments for transactions */
+  @media (prefers-color-scheme: dark) {
+    .transaction-item {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: #4a5568;
+    }
+    
+    .transaction-header {
+      border-bottom-color: #4a5568;
+    }
+    
+    .transaction-date {
+      color: #a0aec0;
+    }
+    
+    .transaction-details {
+      color: #e2e8f0;
+    }
+    
+    .loading {
+      color: #a0aec0;
+    }
+  }
+  
+  /* Scrollbar styles for transaction list */
+  .transactions-list::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .transactions-list::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .transactions-list::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 3px;
+  }
+  
+  @media (prefers-color-scheme: dark) {
+    .transactions-list::-webkit-scrollbar-thumb {
+      background-color: rgba(255, 255, 255, 0.2);
+    }
+  }
+  
+  .no-transactions {
+    text-align: center;
+    padding: 2rem;
+    color: #718096;
+    font-size: 0.875rem;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 8px;
+    border: 1px dashed #e2e8f0;
+  }
+  
+  @media (prefers-color-scheme: dark) {
+    .no-transactions {
+      background: rgba(255, 255, 255, 0.05);
+      color: #a0aec0;
+      border-color: #4a5568;
+    }
+  }
+  
+  /* DCA Form Styles */
+  .dca-form {
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 1rem;
+  }
+  
+  .form-group {
+    margin-bottom: 1.5rem;
+  }
+  
+  .form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #4a5568;
+    font-weight: 500;
+  }
+  
+  .input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+  
+  .form-input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 1rem;
+    transition: all 0.2s;
+    background: white;
+    color: #2d3748;
+  }
+  
+  .form-input:focus {
+    outline: none;
+    border-color: #FF6B6B;
+    box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.1);
+  }
+  
+  .input-suffix {
+    position: absolute;
+    right: 1rem;
+    color: #718096;
+    pointer-events: none;
+  }
+  
+  .form-select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 1rem;
+    background: white;
+    color: #2d3748;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23718096' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 1rem;
+  }
+  
+  .form-select:focus {
+    outline: none;
+    border-color: #FF6B6B;
+    box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.1);
+  }
+  
+  .form-error {
+    color: #FF6B6B;
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  .submit-btn {
+    width: 100%;
+    padding: 0.75rem;
+    background: linear-gradient(135deg, #FF6B6B, #FFE66D);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  
+  .submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 107, 107, 0.2);
+  }
+  
+  /* Dark mode adjustments for form */
+  @media (prefers-color-scheme: dark) {
+    .form-group label {
+      color: #e2e8f0;
+    }
+    
+    .form-input,
+    .form-select {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: #4a5568;
+      color: #e2e8f0;
+    }
+    
+    .form-input:focus,
+    .form-select:focus {
+      border-color: #FF6B6B;
+      box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.2);
+    }
+    
+    .input-suffix {
+      color: #a0aec0;
+    }
+    
+    .form-select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23a0aec0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    }
+  }
+  
+  .no-dcas {
+    text-align: center;
+    padding: 2rem;
+    color: #718096;
+    font-size: 0.875rem;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 8px;
+    border: 1px dashed #e2e8f0;
+    margin: 1rem 0;
+  }
+  
+  @media (prefers-color-scheme: dark) {
+    .no-dcas {
+      background: rgba(255, 255, 255, 0.05);
+      color: #a0aec0;
+      border-color: #4a5568;
+    }
+  }
+  
+  .input-prefix {
+    position: absolute;
+    left: 1rem;
+    color: #718096;
+    pointer-events: none;
+  }
+  
+  .form-input.with-prefix {
+    padding-left: 2rem;
+  }
+  
+  @media (prefers-color-scheme: dark) {
+    .input-prefix {
+      color: #a0aec0;
+    }
+  }
+  

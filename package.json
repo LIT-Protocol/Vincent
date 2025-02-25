@@ -5,7 +5,8 @@
   "scripts": {
     "build": "npx nx run-many -t build",
     "clean": "node tools/clean.js",
-    "lint": "npx nx run-many -t lint"
+    "lint": "npx nx run-many -t lint",
+    "dev": "npx nx run vincent-frontend:dev"
   },
   "devDependencies": {
     "@eslint/js": "^9.8.0",
