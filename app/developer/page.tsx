@@ -9,12 +9,14 @@ import { useIsMounted } from "@/components/login/hooks/useIsMounted";
 import { VincentApp } from "@/types";
 import CreateAppScreen from "@/components/developer/CreateApp";
 import ConnectWalletScreen from "@/components/developer/ConnectWallet";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 export default function Developer() {
     const [hasApp, setHasApp] = useState<Boolean>(false);
     const [app, setApp] = useState<VincentApp | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const isMounted = useIsMounted();
+    const [refetchApp, setRefetchApp] = useState(0);
 
     const { address, isConnected } = useAccount();
 
@@ -44,7 +46,7 @@ export default function Developer() {
         if (isMounted && isConnected) {
             checkAndFetchApp();
         }
-    }, [address, isMounted, isConnected]);
+    }, [address, isMounted, isConnected, refetchApp]);
 
     if (!isMounted) return null;
 
@@ -68,11 +70,14 @@ export default function Developer() {
 
     return (
         <div className="min-h-screen">
+             <ScrollArea className="h-[calc(123vh-20rem)]">
+
             {hasApp ? (
-                <DashboardScreen vincentApp={app!} />
+                <DashboardScreen onRefetch={() => setRefetchApp(refetchApp + 1)} vincentApp={app!} />
             ) : (
                 <CreateAppScreen />
             )}
+            </ScrollArea>
         </div>
     );
 }

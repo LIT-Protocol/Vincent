@@ -29,9 +29,10 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { updateRole } from "@/services/api";
 import { useAccount } from "wagmi";
 import { toast } from "sonner";
+import ToolsAndPolicies from "./ToolsAndPolicies";
 
 const formSchema = z.object({
-    roleVersion: z.string().min(1, "Role version is required"),
+    // roleVersion: z.string().min(1, "Role version is required"),
 
     roleName: z
         .string()
@@ -39,14 +40,24 @@ const formSchema = z.object({
         .max(50, "Role name cannot exceed 50 characters"),
 
     roleDescription: z
-        .string()
-        .min(10, "Description must be at least 10 characters")
-        .max(500, "Description cannot exceed 500 characters"),
+        .string(),
 
-    toolPolicy: z.array(
+    toolPolicy2: z.array(
         z.object({
             toolId: z.string().min(1, "Tool ID is required"),
             policyId: z.string().min(1, "Policy ID is required"),
+        })
+    ),
+    toolPolicy: z.array(
+        z.object({
+            id: z.string().min(1, "Tool ID is required"),
+            toolIpfsCid: z.string().min(1, "Tool IPFS CID is required"),
+            policyVars: z.array(z.object({
+                id: z.string().min(1, "Policy Variable ID is required"),
+                paramName: z.string().min(1, "Policy Variable Name is required"),
+                valueType: z.string().min(1, "Policy Variable Type is required"),
+                defaultValue: z.string().min(1, "Policy Variable Default Value is required"),
+            }))
         })
     ),
 });
@@ -54,7 +65,7 @@ const formSchema = z.object({
 interface ManageRoleScreenProps {
     onBack: () => void;
     dashboard: VincentApp;
-    roleId: number;
+    roleId: string;
 }
 
 export default function ManageRoleScreen({
@@ -62,6 +73,7 @@ export default function ManageRoleScreen({
     dashboard,
     roleId,
 }: ManageRoleScreenProps) {
+
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -72,27 +84,48 @@ export default function ManageRoleScreen({
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            toolPolicy: role?.toolPolicy?.map(tp => ({
+            roleName: role?.roleName,
+            roleDescription: role?.roleDescription,
+            toolPolicy2: role?.toolPolicy?.map(tp => ({
                 toolId: tp.toolCId,
                 policyVarsSchema: tp.policyVarsSchema.map(p => ({
                     paramName: p.paramName,
-                    type: p.type,
+                    valueType: p.valueType,
+                    defaultValue: p.defaultValue
+                }))
+            })) || [],
+            toolPolicy: role?.toolPolicy?.map(tp => ({
+                id: tp.toolCId,
+                toolIpfsCid: tp.toolCId,
+                policyVars: tp.policyVarsSchema.map(p => ({
+                    paramName: p.paramName,
+                    valueType: p.valueType,
                     defaultValue: p.defaultValue
                 }))
             })) || [],
         },
     });
 
+ 
+
     async function handleRoleUpdate(values: z.infer<typeof formSchema>) {
+        console.log("values", values, address);
         if (!address) return;
 
         try {
             setIsSubmitting(true);
+          
             await updateRole(address, {
-                roleId: roleId.toString(),
-                toolPolicy: values.toolPolicy.map(tp => ({
-                    toolId: tp.toolId,
-                    
+                roleId: roleId,
+                name: values.roleName,
+                description: values.roleDescription,
+                toolPolicy: values.toolPolicy.map((tp) => ({
+                    toolIpfsCid: tp.toolIpfsCid,
+                    policyVarsSchema: tp.policyVars.map((p) => ({
+                        paramName: p.paramName,
+                        valueType: p.valueType,
+                        defaultValue: p.defaultValue,
+                    })),
                 })),
             });
             toast.success("Role updated successfully");
@@ -151,9 +184,9 @@ export default function ManageRoleScreen({
                                         </div>
                                     )}
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
                                         <div className="space-y-6">
-                                            <FormField
+                                            {/* <FormField
                                                 control={form.control}
                                                 name="roleVersion"
                                                 render={({ field }) => (
@@ -169,7 +202,8 @@ export default function ManageRoleScreen({
                                                         <FormMessage />
                                                     </FormItem>
                                                 )}
-                                            />
+                                            /> */}
+
 
                                             <FormField
                                                 control={form.control}
@@ -212,123 +246,13 @@ export default function ManageRoleScreen({
                                         </div>
                                     </div>
 
-                                    <Card>
-                                        <CardHeader>
-                                            <CardTitle>
-                                                Tool-Policy Pairs
-                                            </CardTitle>
-                                        </CardHeader>
-                                        <CardContent>
-                                            <div className="space-y-4">
-                                                {form
-                                                    .watch("toolPolicy")
-                                                    .map((_, index) => (
-                                                        <div
-                                                            key={index}
-                                                            className="flex gap-4 items-start"
-                                                        >
-                                                            <div className="flex-1 space-y-4">
-                                                                <FormField
-                                                                    control={
-                                                                        form.control
-                                                                    }
-                                                                    name={`toolPolicy.${index}.toolId`}
-                                                                    render={({
-                                                                        field,
-                                                                    }) => (
-                                                                        <FormItem>
-                                                                            <FormLabel>
-                                                                                Tool ID
-                                                                            </FormLabel>
-                                                                            <FormControl>
-                                                                                <Input
-                                                                                    {...field}
-                                                                                    placeholder="Enter Tool ID"
-                                                                                />
-                                                                            </FormControl>
-                                                                            <FormMessage />
-                                                                        </FormItem>
-                                                                    )}
-                                                                />
-                                                                <FormField
-                                                                    control={
-                                                                        form.control
-                                                                    }
-                                                                    name={`toolPolicy.${index}.policyId`}
-                                                                    render={({
-                                                                        field,
-                                                                    }) => (
-                                                                        <FormItem>
-                                                                            <FormLabel>
-                                                                                Policy ID
-                                                                            </FormLabel>
-                                                                            <FormControl>
-                                                                                <Input
-                                                                                    {...field}
-                                                                                    placeholder="Enter Policy ID"
-                                                                                />
-                                                                            </FormControl>
-                                                                            <FormMessage />
-                                                                        </FormItem>
-                                                                    )}
-                                                                />
-                                                            </div>
-                                                            <Button
-                                                                type="button"
-                                                                variant="destructive"
-                                                                size="icon"
-                                                                onClick={() => {
-                                                                    const currentToolPolicy =
-                                                                        form.getValues(
-                                                                            "toolPolicy"
-                                                                        );
-                                                                    form.setValue(
-                                                                        "toolPolicy",
-                                                                        currentToolPolicy.filter(
-                                                                            (
-                                                                                _,
-                                                                                i
-                                                                            ) =>
-                                                                                i !==
-                                                                                index
-                                                                        )
-                                                                    );
-                                                                }}
-                                                            >
-                                                                <Trash2 className="h-4 w-4" />
-                                                            </Button>
-                                                        </div>
-                                                    ))}
 
-                                                <Button
-                                                    type="button"
-                                                    variant="outline"
-                                                    onClick={() => {
-                                                        const currentToolPolicy =
-                                                            form.getValues(
-                                                                "toolPolicy"
-                                                            );
-                                                        form.setValue(
-                                                            "toolPolicy",
-                                                            [
-                                                                ...currentToolPolicy,
-                                                                {
-                                                                    toolId:
-                                                                        "",
-                                                                    policyId:
-                                                                        "",
-                                                                },
-                                                            ]
-                                                        );
-                                                    }}
-                                                    className="w-full"
-                                                >
-                                                    <Plus className="h-4 w-4 mr-2" />
-                                                    Add Tool-Policy Pair
-                                                </Button>
-                                            </div>
-                                        </CardContent>
-                                    </Card>
+                                    <ToolsAndPolicies
+                                        tools={form.watch("toolPolicy")}
+                                        onToolsChange={(tools) => {
+                                            form.setValue("toolPolicy", tools);
+                                        }}
+                                    />
 
                                     <Button
                                         type="submit"

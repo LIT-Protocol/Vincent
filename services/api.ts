@@ -131,7 +131,16 @@ export async function updateRole(
     address: string,
     params: {
         roleId: string;
-        toolPolicy: any[];
+        name: string;
+        description: string;
+        toolPolicy: {
+            toolIpfsCid: string;
+            policyVarsSchema: {
+                paramName: string;
+                valueType: string;
+                defaultValue: string;
+            }[];
+        }[];
     }
 ) {
     const signedMessage = await createSiweMessage(
@@ -171,6 +180,5 @@ export async function getRoleToolPolicy(params: {
     const response = await axios.get(
         `${API_BASE_URL}/role/${params.managementWallet}/${params.roleId}`
     );
-    console.log("getRoleToolPolicy response", response.data.data);
     return response.data.data;
 }

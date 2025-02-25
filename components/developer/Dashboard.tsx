@@ -9,9 +9,10 @@ import { Plus, Settings } from "lucide-react";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
+import { ScrollArea } from "../ui/scroll-area";
 
 
-export default function DashboardScreen({vincentApp}: {vincentApp: VincentApp}) {
+export default function DashboardScreen({vincentApp, onRefetch}: {vincentApp: VincentApp, onRefetch: () => void}) {
     const [dashboard, setDashboard] = useState<VincentApp>();
     const [selectedRoleId, setSelectedRoleId] = useState<string | null>(null);
     const [showManageApp, setShowManageApp] = useState(false);
@@ -48,6 +49,10 @@ export default function DashboardScreen({vincentApp}: {vincentApp: VincentApp}) 
         return <CreateRoleScreen 
             onBack={() => setShowCreateRole(false)} 
             dashboard={dashboard}
+            onSuccess={() => {
+                setShowCreateRole(false);
+                onRefetch();
+            }}
         />;
     }
 
@@ -55,7 +60,7 @@ export default function DashboardScreen({vincentApp}: {vincentApp: VincentApp}) 
         return <ManageRoleScreen 
             onBack={() => setSelectedRoleId(null)} 
             dashboard={dashboard}
-            roleId={parseInt(selectedRoleId)}
+            roleId={selectedRoleId}
         />;
     }
     
@@ -128,12 +133,12 @@ export default function DashboardScreen({vincentApp}: {vincentApp: VincentApp}) 
                                         </span>{" "}
                                         {role.roleId}
                                     </div>
-                                    <div className="text-sm">
+                                    {/* <div className="text-sm">
                                         <span className="font-medium">
                                             Role Version:
                                         </span>{" "}
-                                        {role.roleVersion}
-                                    </div>
+                                        {role.roleId}
+                                    </div> */}
                                     <Button
                                         className="w-full"
                                         onClick={() => setSelectedRoleId(role.roleId)}

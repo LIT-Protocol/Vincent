@@ -69,7 +69,6 @@ export default function ManageAppScreen({
             appName: dashboard?.appMetadata.appName || "",
             appDescription: dashboard?.appMetadata.description || "",
             email: dashboard?.appMetadata.email || "",
-            domain: dashboard?.appMetadata.domain || "",
         },
     });
 
@@ -150,7 +149,7 @@ export default function ManageAppScreen({
                                     name="email"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Support Email</FormLabel>
+                                            <FormLabel>Contact Email</FormLabel>
                                             <FormControl>
                                                 <Input
                                                     type="email"
@@ -190,7 +189,7 @@ export default function ManageAppScreen({
                   )}
                 /> */}
 
-                                <FormField
+                                {/* <FormField
                                     control={form.control}
                                     name="domain"
                                     render={({ field }) => (
@@ -211,8 +210,10 @@ export default function ManageAppScreen({
                                     className="w-full"
                                     disabled={isSubmitting}
                                 >
-                                    {isSubmitting ? "Updating..." : "Update Application"}
-                                </Button>
+                                    {isSubmitting
+                                        ? "Updating..."
+                                        : "Update Application"}
+                                </Button> */}
                             </form>
                         </Form>
                     </CardContent>
@@ -226,9 +227,9 @@ export default function ManageAppScreen({
                         <CardContent>
                             <div className="space-y-4">
                                 <div>
-                                    <Badge
+                                    {/* <Badge
                                         variant={
-                                            dashboard.enabled
+                                            dashboard.appMetadata
                                                 ? "default"
                                                 : "secondary"
                                         }
@@ -236,17 +237,20 @@ export default function ManageAppScreen({
                                         {dashboard.enabled
                                             ? "Enabled"
                                             : "Disabled"}
-                                    </Badge>
+                                    </Badge> */}
                                 </div>
                                 <div className="text-sm">
-                                    <div className="font-medium">App ID</div>
+                                    <div className="font-medium">App Name</div>
                                     <div className="mt-1">
-                                        {dashboard.appMetadata.appId}
+                                        {dashboard.appMetadata.appName}
                                     </div>
                                 </div>
                                 <div className="text-sm">
                                     <div className="font-medium">
                                         Manager Address
+                                    </div>
+                                    <div className="mt-1">
+                                        {dashboard.appCreator}
                                     </div>
                                     <div className="mt-1 break-all">
                                         {dashboard.delegatees[0]}

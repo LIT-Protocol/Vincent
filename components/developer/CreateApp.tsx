@@ -73,7 +73,11 @@ const formSchema = z.object({
 
     githubLink: z
         .string()
-        .transform(normalizeGitHubURL)
+        .optional()
+        .transform((val) => {
+            if (!val) return undefined;
+            return normalizeGitHubURL(val);
+        })
         .pipe(
             z
                 .string()
@@ -86,9 +90,8 @@ const formSchema = z.object({
                         return false;
                     }
                 }, "Must be a GitHub URL (e.g., github.com/username/repo)")
-        )
-        .optional()
-        .transform((val) => val || undefined),
+                .optional()
+        ),
 
     websiteUrl: z
         .string()

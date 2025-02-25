@@ -6,7 +6,6 @@ import { getAppsPermittedForAgentPkp, isAppEnabled, getRolesPermittedForApp } fr
 
 export async function checkIfAppExists(address: string): Promise<Boolean> {
     const app = await getAppMetadata(address);
-    console.log("app", app);
     return app ? true : false;
 }
 
@@ -14,27 +13,27 @@ export async function formCompleteVincentAppForDev(
     managementWallet: string
 ): Promise<VincentApp> {
     const appMetadata = await getAppMetadata(managementWallet);
-    console.log("appMetadata", appMetadata);
     const response = await getAllRoles(managementWallet);
-    const array = response.roles;
-    console.log("1", array);
+    const array = response?.roles || [];
 
     const roles = await Promise.all(
         array.map(async (id: any) => {
-            console.log("roleId", id);
             const roleData = await getRoleToolPolicy({
                 managementWallet,
                 roleId: id.roleId,
             });
+
             return {
                 roleId: roleData.roleId,
+                roleDescription: roleData.roleDescription,
+                roleName: roleData.roleName,
                 toolPolicy: roleData.toolPolicy.map((id: any) => ({
-                    toolCId: id.ipfsCid,
-                    policyVarsSchema: id.policyVarsSchema,
+                    toolCId: id.toolIpfsCid,
+                    policyVarsSchema: id.policyVarsSchema
                 })),
             };
         })
-    );
+    );    
 
     // Construct the complete Vincent App
     const completeVincentApp: VincentApp = {
@@ -45,10 +44,8 @@ export async function formCompleteVincentAppForDev(
             email: appMetadata.contactEmail,
         },
         roles: roles,
-        delegatees: [],
+        delegatees: []
     };
-
-    console.log("completeVincentApp", completeVincentApp);
 
     return completeVincentApp;
 }
