@@ -39,6 +39,13 @@
       "options": {
         "targetName": "test"
       }
+    },
+    {
+      "plugin": "@nx/next/plugin",
+      "options": {
+        "buildTargetName": "build",
+        "devTargetName": "serve"
+      }
     }
   ],
   "targetDefaults": {

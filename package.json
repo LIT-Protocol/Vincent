@@ -16,11 +16,12 @@
     "@nx/eslint-plugin": "20.3.0",
     "@nx/jest": "20.3.0",
     "@nx/js": "20.3.0",
+    "@nx/next": "20.3.0",
     "@swc-node/register": "~1.9.1",
     "@swc/core": "~1.5.7",
     "@swc/helpers": "~0.5.11",
     "@types/jest": "^29.5.12",
-    "@types/node": "18.16.9",
+    "@types/node": "^20.0.0",
     "@types/prompts": "^2.4.9",
     "eslint": "^9.8.0",
     "eslint-config-prettier": "^9.0.0",
@@ -53,6 +54,8 @@
     }
   },
   "dependencies": {
-    "next": "^15.1.7"
+    "next": "^14.0.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
   }
 }
