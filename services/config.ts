@@ -1,6 +1,6 @@
 import { ethers } from "ethers";
 
-const providerURL = "yellowstone-rpc.litprotocol.com";
+const providerURL = "https://yellowstone-rpc.litprotocol.com";
 
 export const VINCENT_APP_REGISTRY_ADDRESS =
     "0xD4383c15158B11a4Fa51F489ABCB3D4E43511b0a";
@@ -76,32 +76,42 @@ export const VINCENT_USER_REGISTRY_ABI = [
     "function appDelegationRegistry() external view returns (address)",
 ];
 
-export const getProviderOrSignerForAppRegistry = async (isSigner = false) => {
-    const provider = new ethers.providers.JsonRpcProvider(providerURL);
-    const contract = new ethers.Contract(
-        VINCENT_APP_REGISTRY_ADDRESS,
-        VINCENT_APP_REGISTRY_ABI,
-        provider
-    );
+export const getProviderOrSignerForAppRegistry = (isSigner = false) => {
     if (isSigner) {
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
         const signer = provider.getSigner();
-        const contractWithSigner = contract.connect(signer);
-        return contractWithSigner;
+        return new ethers.Contract(
+            VINCENT_APP_REGISTRY_ADDRESS,
+            VINCENT_APP_REGISTRY_ABI,
+            signer
+        );
     }
-    return contract;
+    else {
+        const provider = new ethers.providers.JsonRpcProvider(providerURL);
+        return new ethers.Contract(
+            VINCENT_APP_REGISTRY_ADDRESS,
+            VINCENT_APP_REGISTRY_ABI,
+            provider
+        );
+    }
 };
 
-export const getProviderOrSignerForUserRegistry = async (isSigner = false) => {
-    const provider = new ethers.providers.JsonRpcProvider(providerURL);
-    const contract = new ethers.Contract(
-        VINCENT_USER_REGISTRY_ADDRESS,
-        VINCENT_USER_REGISTRY_ABI,
-        provider
-    );
+export const getProviderOrSignerForUserRegistry = (isSigner = false) => {
     if (isSigner) {
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
         const signer = provider.getSigner();
-        const contractWithSigner = contract.connect(signer);
-        return contractWithSigner;
+        return new ethers.Contract(
+            VINCENT_APP_REGISTRY_ADDRESS,
+            VINCENT_APP_REGISTRY_ABI,
+            signer
+        );
     }
-    return contract;
+    else {
+        const provider = new ethers.providers.JsonRpcProvider(providerURL);
+        return new ethers.Contract(
+            VINCENT_APP_REGISTRY_ADDRESS,
+            VINCENT_APP_REGISTRY_ABI,
+            provider
+        );
+    }
 };

@@ -2,7 +2,12 @@ import { VincentApp } from "@/types";
 import { getAppMetadata, getAllRoles, getRoleToolPolicy } from "./api";
 import { LitContracts } from "@lit-protocol/contracts-sdk";
 import { getProviderOrSignerForAppRegistry } from "./config";
-import { getAppsPermittedForAgentPkp, isAppEnabled, getRolesPermittedForApp } from "./contract";
+import {
+    getAppsPermittedForAgentPkp,
+    isAppEnabled,
+    getRolesPermittedForApp,
+    getDelegatees,
+} from "./contract";
 
 export async function checkIfAppExists(address: string): Promise<Boolean> {
     const app = await getAppMetadata(address);
@@ -29,11 +34,13 @@ export async function formCompleteVincentAppForDev(
                 roleName: roleData.roleName,
                 toolPolicy: roleData.toolPolicy.map((id: any) => ({
                     toolCId: id.toolIpfsCid,
-                    policyVarsSchema: id.policyVarsSchema
+                    policyVarsSchema: id.policyVarsSchema,
                 })),
             };
         })
-    );    
+    );
+
+    const delegatees = await getDelegatees();
 
     // Construct the complete Vincent App
     const completeVincentApp: VincentApp = {
@@ -44,7 +51,8 @@ export async function formCompleteVincentAppForDev(
             email: appMetadata.contactEmail,
         },
         roles: roles,
-        delegatees: []
+        delegatees: delegatees,
+        // delegatees: delegate/es,
     };
 
     return completeVincentApp;
@@ -128,7 +136,7 @@ export async function getVincentAppForUserr(
     const vincentAgentRegistry = await getProviderOrSignerForAppRegistry();
     let count = 0;
     let awTokenIds: any[] = [];
-    
+
     while (count < pkpTokenIds.length) {
         if (vincentAgentRegistry.hasAgentPkp(pkpTokenIds[count])) {
             awTokenIds.push(pkpTokenIds[count]);
@@ -139,14 +147,21 @@ export async function getVincentAppForUserr(
     // Get all permitted apps for each agent PKP and flatten the results
     const allAppsWithDetails = await Promise.all(
         awTokenIds.map(async (agentTokenId) => {
-            const permittedApps: string[] = await getAppsPermittedForAgentPkp(agentTokenId);
-            
+            const permittedApps: string[] =
+                await getAppsPermittedForAgentPkp(agentTokenId);
+
             // For each permitted app of this agent, get the details
             const appsWithDetails: any[] = await Promise.all(
                 permittedApps.map(async (appManager) => {
-                    const enabled = await isAppEnabled(agentTokenId, appManager);
+                    const enabled = await isAppEnabled(
+                        agentTokenId,
+                        appManager
+                    );
                     const appMetadata = await getAppMetadata(appManager);
-                    const roleIds = await getRolesPermittedForApp(agentTokenId, appManager);
+                    const roleIds = await getRolesPermittedForApp(
+                        agentTokenId,
+                        appManager
+                    );
 
                     // Get tool policies for each role
                     const roles = await Promise.all(
@@ -157,10 +172,13 @@ export async function getVincentAppForUserr(
                             });
                             return {
                                 roleId: roleData.roleId,
-                                toolPolicy: roleData.toolPolicy.map((policy: any) => ({
-                                    toolCId: policy.ipfsCid,
-                                    policyVarsSchema: policy.policyVarsSchema,
-                                })),
+                                toolPolicy: roleData.toolPolicy.map(
+                                    (policy: any) => ({
+                                        toolCId: policy.ipfsCid,
+                                        policyVarsSchema:
+                                            policy.policyVarsSchema,
+                                    })
+                                ),
                             };
                         })
                     );
@@ -178,7 +196,7 @@ export async function getVincentAppForUserr(
                     };
                 })
             );
-            
+
             return appsWithDetails;
         })
     );

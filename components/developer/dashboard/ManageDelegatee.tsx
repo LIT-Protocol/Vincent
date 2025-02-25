@@ -22,9 +22,11 @@ interface DelegateeManagerProps {
 
 export default function DelegateeManagerScreen({
     onBack,
-    dashboard
+    dashboard,
 }: DelegateeManagerProps) {
-    const [delegatees, setDelegatees] = useState<string[]>(dashboard.delegatees || []);
+    const [delegatees, setDelegatees] = useState<string[]>(
+        dashboard.delegatees || []
+    );
     const [showKeyDialog, setShowKeyDialog] = useState(false);
     const [newPrivateKey, setNewPrivateKey] = useState("");
     const [newAddress, setNewAddress] = useState("");
@@ -42,12 +44,13 @@ export default function DelegateeManagerScreen({
     };
 
     async function handleConfirmSaved() {
-        await addDelegatee(dashboard.appCreator, newAddress);
+        console.log(newAddress);
+        await addDelegatee(newAddress);
         setDelegatees((prev) => [...prev, newAddress]);
         setShowKeyDialog(false);
         setNewPrivateKey("");
         setNewAddress("");
-    };
+    }
 
     return (
         <div className="space-y-8">
@@ -77,7 +80,8 @@ export default function DelegateeManagerScreen({
 
                     <div className="space-y-4">
                         <div className="text-sm text-muted-foreground mb-2">
-                            Eth Address: <span className="font-mono">{newAddress}</span>
+                            Eth Address:{" "}
+                            <span className="font-mono">{newAddress}</span>
                         </div>
                         <div className="p-4 bg-muted rounded-lg">
                             <div className="font-mono text-sm break-all">

@@ -6,31 +6,11 @@ import { WagmiProvider } from "wagmi";
 import { http, createConfig } from "wagmi";
 import { injected } from "wagmi/connectors";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-// import { StytchProvider } from "@stytch/nextjs";
-// import { createStytchUIClient } from "@stytch/nextjs/ui";
-// import { StytchUIClient } from "@stytch/vanilla-js";
-// import { useState } from "react";
-// import { useEffect } from "react";
-import { defineChain } from "viem";
 import { RainbowKitProvider, darkTheme } from "@rainbow-me/rainbowkit";
 import "@rainbow-me/rainbowkit/styles.css";
+import { yellowstone } from "./config/chains";
 
 const inter = Inter({ subsets: ["latin"] });
-
-export const yellowstone = defineChain({
-    id: 175188,
-    name: "Yellowstone",
-    nativeCurrency: { name: "Yellowstone", symbol: "YSL", decimals: 18 },
-    rpcUrls: {
-        default: { http: ["https://yellowstone-rpc.litprotocol.com"] },
-    },
-    blockExplorers: {
-        default: {
-            name: "Yellowstone Explorer",
-            url: "https://yellowstone-explorer.litprotocol.com/",
-        },
-    },
-});
 
 const wagmiConfig = createConfig({
     chains: [yellowstone],
@@ -51,22 +31,8 @@ export default function RootLayout({
 }: Readonly<{
     children: React.ReactNode;
 }>) {
-    // const [stytchClient, setStytchClient] = useState<StytchUIClient | null>(
-    //     null
-    // );
 
-    // useEffect(() => {
-    //     const client = createStytchUIClient(
-    //         process.env.NEXT_PUBLIC_STYTCH_PUBLIC_TOKEN || ""
-    //     );
-    //     setStytchClient(client);
-    // }, []);
-
-    // if (!stytchClient) {
-    //     return null; // or a loading state
-    // }
     return (
-        // <StytchProvider stytch={stytchClient}>
         <html>
             <body>
                 <WagmiProvider config={wagmiConfig}>
@@ -85,6 +51,5 @@ export default function RootLayout({
                 </WagmiProvider>
             </body>
         </html>
-        // </StytchProvider>
     );
 }
