@@ -78,7 +78,7 @@ contract VincentAgentRegistry {
     event ToolPolicyAdded(
         uint256 indexed agentPkpTokenId, address indexed appManager, bytes32 indexed toolId, string ipfsCid
     );
-    event ToolPolicyEnabled(
+    event ToolEnabled(
         uint256 indexed agentPkpTokenId, address indexed appManager, bytes32 indexed toolId, bool enabled
     );
     event PolicyValueSet(
@@ -169,28 +169,28 @@ contract VincentAgentRegistry {
                 "VincentAgentRegistry: param and value length mismatch"
             );
 
-            bytes32 toolId = keccak256(abi.encodePacked(toolIpfsCids[i]));
-            app.toolIds.add(toolId);
+            bytes32 toolIpfsCidHash = keccak256(abi.encodePacked(toolIpfsCids[i]));
+            app.toolIds.add(toolIpfsCidHash);
 
-            Tool storage toolPolicy = app.tools[toolId];
-            toolPolicy.enabled = true;
-            toolPolicy.toolIpfsCid = toolIpfsCids[i];
+            Tool storage tool = app.tools[toolIpfsCidHash];
+            tool.enabled = true;
+            tool.toolIpfsCid = toolIpfsCids[i];
 
             // Store the tool IPFS CID mapping
-            _toolIpfsCids[toolId] = toolIpfsCids[i];
+            _toolIpfsCids[toolIpfsCidHash] = toolIpfsCids[i];
 
             // Add policy parameters and values for this tool
             for (uint256 j = 0; j < policyParamNames[i].length; j++) {
                 bytes32 paramNameHash = keccak256(abi.encodePacked(policyParamNames[i][j]));
-                toolPolicy.policyParams.add(paramNameHash);
-                toolPolicy.policyValues[paramNameHash] = policyValues[i][j];
+                tool.policyParams.add(paramNameHash);
+                tool.policyValues[paramNameHash] = policyValues[i][j];
 
                 // Store the policy param name if it doesn't exist yet
                 if (bytes(_policyParamNames[paramNameHash]).length == 0) {
                     _policyParamNames[paramNameHash] = policyParamNames[i][j];
                 }
 
-                emit PolicyValueSet(agentPkpTokenId, appManager, toolId, paramNameHash, policyValues[i][j]);
+                emit PolicyValueSet(agentPkpTokenId, appManager, toolIpfsCidHash, paramNameHash, policyValues[i][j]);
             }
         }
     }
@@ -217,18 +217,16 @@ contract VincentAgentRegistry {
     // ------------------------- Tool Management -------------------------
 
     /**
-     * @notice Enable or disable a tool-policy
+     * @notice Enable or disable a tool
      * @param agentPkpTokenId The agent PKP token ID
      * @param appManager The app management wallet address
      * @param toolIpfsCid The tool IPFS CID
-     * @param enabled Whether to enable or disable the tool-policy
+     * @param enabled Whether to enable or disable the tool
      */
-    function setToolPolicyEnabled(
-        uint256 agentPkpTokenId,
-        address appManager,
-        string calldata toolIpfsCid,
-        bool enabled
-    ) external onlyPkpOwner(agentPkpTokenId) {
+    function setToolEnabled(uint256 agentPkpTokenId, address appManager, string calldata toolIpfsCid, bool enabled)
+        external
+        onlyPkpOwner(agentPkpTokenId)
+    {
         require(appManager != address(0), "VincentAgentRegistry: zero address");
         require(_agents[agentPkpTokenId].appAddresses.contains(appManager), "VincentAgentRegistry: app not found");
 
@@ -239,7 +237,7 @@ contract VincentAgentRegistry {
         );
 
         _agents[agentPkpTokenId].apps[appManager].tools[toolId].enabled = enabled;
-        emit ToolPolicyEnabled(agentPkpTokenId, appManager, toolId, enabled);
+        emit ToolEnabled(agentPkpTokenId, appManager, toolId, enabled);
     }
 
     /**
@@ -265,7 +263,7 @@ contract VincentAgentRegistry {
             require(app.toolIds.contains(toolId), "VincentAgentRegistry: tool not found");
 
             app.tools[toolId].enabled = enabled;
-            emit ToolPolicyEnabled(agentPkpTokenId, appManager, toolId, enabled);
+            emit ToolEnabled(agentPkpTokenId, appManager, toolId, enabled);
         }
     }
 
