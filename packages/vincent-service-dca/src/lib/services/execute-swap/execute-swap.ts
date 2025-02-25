@@ -1,16 +1,16 @@
 import { Types } from 'mongoose';
 
-import { PurchasedCoin } from '../../models/purchased-coin.model.mjs';
-import { fetchTopBaseMemeCoins } from '../fetch-base-meme-coins.mjs';
-import { logger } from '../../logger.mjs';
+import { PurchasedCoin } from '../../models/purchased-coin.model';
+import { fetchTopBaseMemeCoins } from '../fetch-base-meme-coins';
+import { logger } from '../../logger';
 
 interface ExecuteSwapParams {
-  userId: Types.ObjectId;
+  user: Types.ObjectId;
   purchasedAt: Date;
 }
 
 export async function executeSwap({
-  userId,
+  user,
   purchasedAt,
 }: ExecuteSwapParams): Promise<InstanceType<typeof PurchasedCoin> | null> {
   try {
@@ -20,7 +20,7 @@ export async function executeSwap({
 
     // Create a purchase record
     const purchase = new PurchasedCoin({
-      userId,
+      user,
       coinAddress: topCoin.coinAddress,
       symbol: topCoin.symbol,
       amount: 100, // Mock amount for testing

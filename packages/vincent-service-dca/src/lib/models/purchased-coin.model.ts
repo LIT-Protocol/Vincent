@@ -1,5 +1,5 @@
 import { model, type PopulatedDoc, Schema } from 'mongoose';
-import type { IUser } from './user.model.mjs';
+import type { IUser } from './user.model';
 
 interface IPurchasedCoin {
   user: PopulatedDoc<IUser>;

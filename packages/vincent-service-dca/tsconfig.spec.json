@@ -2,15 +2,15 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "outDir": "./out-tsc/jest",
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
+    "module": "esnext",
+    "moduleResolution": "Bundler",
     "types": ["jest", "node"]
   },
   "include": [
     "jest.config.mjs",
-    "test/**/*.mts",
-    "test/**/*.test.mts",
-    "src/**/*.mts"
+    "test/**/*.ts",
+    "test/**/*.test.ts",
+    "src/**/*.ts"
   ],
   "references": [
     {

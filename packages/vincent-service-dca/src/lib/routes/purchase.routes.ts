@@ -1,6 +1,6 @@
 import type { FastifyInstance } from 'fastify';
-import { User } from '../models/user.model.mjs';
-import { PurchasedCoin } from '../models/purchased-coin.model.mjs';
+import { User } from '../models/user.model';
+import { PurchasedCoin } from '../models/purchased-coin.model';
 
 export async function purchaseRoutes(fastify: FastifyInstance) {
   // Get all purchases for a wallet address
@@ -13,11 +13,9 @@ export async function purchaseRoutes(fastify: FastifyInstance) {
       return;
     }
 
-    const purchases = await PurchasedCoin.find({ userId: user._id })
-      .lean()
-      .sort({
-        purchasedAt: -1,
-      });
+    const purchases = await PurchasedCoin.find({ user: user._id }).lean().sort({
+      purchasedAt: -1,
+    });
 
     return purchases;
   });
@@ -33,7 +31,7 @@ export async function purchaseRoutes(fastify: FastifyInstance) {
     }
 
     const latestPurchase = await PurchasedCoin.findOne({
-      userId: user._id,
+      user: user._id,
     })
       .lean()
       .sort({ purchasedAt: -1 });

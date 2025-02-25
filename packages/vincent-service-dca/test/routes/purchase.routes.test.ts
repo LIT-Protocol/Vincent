@@ -1,10 +1,10 @@
 import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
 import fetch from 'node-fetch';
 
-import '../setup.mts';
-import { TestServer } from '../helpers/test-server.mjs';
-import { User } from '../../src/lib/models/user.model.mjs';
-import { PurchasedCoin } from '../../src/lib/models/purchased-coin.model.mjs';
+import '../setup.ts';
+import { TestServer } from '../helpers/test-server';
+import { User } from '../../src/lib/models/user.model';
+import { PurchasedCoin } from '../../src/lib/models/purchased-coin.model';
 
 describe('Purchase Routes', () => {
   let server: TestServer;
@@ -34,7 +34,7 @@ describe('Purchase Routes', () => {
     // Create some test purchases with relative timestamps
     const purchases = [
       {
-        userId: testUser._id,
+        user: testUser._id,
         coinAddress: '0xCoin1',
         symbol: 'MEME1',
         amount: 100,
@@ -43,7 +43,7 @@ describe('Purchase Routes', () => {
         purchasedAt: new Date(now.getTime() - 7200000), // 2 hours ago
       },
       {
-        userId: testUser._id,
+        user: testUser._id,
         coinAddress: '0xCoin2',
         symbol: 'MEME2',
         amount: 200,

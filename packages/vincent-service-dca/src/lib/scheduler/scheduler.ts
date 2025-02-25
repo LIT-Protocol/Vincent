@@ -1,9 +1,9 @@
 import { Agenda, Job } from 'agenda';
 
-import { User } from '../models/user.model.mjs';
-import { PurchasedCoin } from '../models/purchased-coin.model.mjs';
-import { logger } from '../logger.mjs';
-import { executeSwap } from '../services/execute-swap/execute-swap.mjs';
+import { User } from '../models/user.model';
+import { PurchasedCoin } from '../models/purchased-coin.model';
+import { logger } from '../logger';
+import { executeSwap } from '../services/execute-swap/execute-swap';
 
 // Export a singleton agenda instance that will be configured by the server
 export let agenda: Agenda | null = null;
@@ -32,7 +32,7 @@ export function createAgenda(dbUri: string, debug = false): Agenda {
       logger.debug(`Purchase interval: ${user.purchaseIntervalSeconds}s`);
 
       const lastPurchase = await PurchasedCoin.findOne({
-        userId: user._id,
+        user: user._id,
       }).sort({ purchasedAt: -1 });
 
       const now = new Date();
@@ -82,7 +82,7 @@ export function createAgenda(dbUri: string, debug = false): Agenda {
       if (shouldPurchase) {
         try {
           const purchase = await executeSwap({
-            userId: user._id,
+            user: user._id,
             purchasedAt: now,
           });
 

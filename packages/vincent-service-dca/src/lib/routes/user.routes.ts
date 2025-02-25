@@ -1,5 +1,5 @@
 import { type FastifyInstance } from 'fastify';
-import { User } from '../models/user.model.mjs';
+import { User } from '../models/user.model';
 
 export async function userRoutes(fastify: FastifyInstance) {
   // Get all users

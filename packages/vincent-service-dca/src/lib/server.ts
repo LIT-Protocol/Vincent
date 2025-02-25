@@ -2,13 +2,13 @@ import Fastify from 'fastify';
 import type { FastifyInstance } from 'fastify';
 import type { Agenda } from 'agenda';
 
-import { userRoutes } from './routes/user.routes.mjs';
-import { purchaseRoutes } from './routes/purchase.routes.mjs';
+import { userRoutes } from './routes/user.routes';
+import { purchaseRoutes } from './routes/purchase.routes';
 import {
   createAgenda,
   startScheduler,
   stopScheduler,
-} from './scheduler/scheduler.mjs';
+} from './scheduler/scheduler';
 
 export interface ServerConfig {
   port?: number;

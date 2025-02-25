@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
 import fetch from 'node-fetch';
 
-import '../setup.mts';
-import { TestServer } from '../helpers/test-server.mjs';
+import '../setup.ts';
+import { TestServer } from '../helpers/test-server';
 
 describe('Scheduler', () => {
   let server: TestServer;

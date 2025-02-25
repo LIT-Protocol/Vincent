@@ -24,8 +24,8 @@ export default {
   },
   moduleFileExtensions: ['ts', 'mts', 'js', 'mjs', 'html'],
   coverageDirectory: '../../coverage/packages/vincent-service-dca',
-  setupFilesAfterEnv: ['<rootDir>/test/setup.mts'],
-  testMatch: ['**/test/**/*.test.mts'],
+  setupFilesAfterEnv: ['<rootDir>/test/setup.ts'],
+  testMatch: ['**/test/**/*.test.ts'],
   transformIgnorePatterns: [
     'node_modules/(?!(node-fetch|data-uri-to-buffer|fetch-blob|formdata-polyfill|mongodb-memory-server)/)',
   ],

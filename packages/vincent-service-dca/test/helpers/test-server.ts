@@ -1,4 +1,4 @@
-import { Server } from '../../src/lib/server.mjs';
+import { Server } from '../../src/lib/server';
 
 export class TestServer extends Server {
   constructor() {

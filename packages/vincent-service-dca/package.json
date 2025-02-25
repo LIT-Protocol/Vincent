@@ -2,8 +2,8 @@
   "name": "@lit-protocol/vincent-service-dca",
   "version": "0.0.1",
   "scripts": {
-    "init-db": "node --loader ts-node/esm src/lib/init-db.mts",
-    "start": "node --loader ts-node/esm src/lib/server.mts",
+    "init-db": "node --loader ts-node/esm src/lib/init-db.ts",
+    "dev": "node --loader ts-node/esm src/lib/server.ts",
     "test": "jest --config jest.config.mjs"
   },
   "dependencies": {
