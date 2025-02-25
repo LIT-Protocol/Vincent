@@ -4,9 +4,6 @@
   "include": [],
   "references": [
     {
-      "path": "./packages/vincent-app-dca"
-    },
-    {
       "path": "./packages/vincent-contracts"
     }
   ]
