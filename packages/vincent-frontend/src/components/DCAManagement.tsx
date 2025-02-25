@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { RegisterDCA } from './RegisterDCA';
 import { ActiveDCAs } from './ActiveDCAs';
 
 // Base Mainnet Etherscan API
 const BASE_API_URL = 'https://api.basescan.org/api';
-const API_KEY = import.meta.env.VITE_BASESCAN_API_KEY;
+const API_KEY = process.env.NEXT_PUBLIC_BASESCAN_API_KEY;
 
 interface Transaction {
   hash: string;
@@ -63,13 +63,7 @@ export function DCAManagementView({ address }: DCAManagementViewProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (activeTab === 'transactions') {
-      fetchTransactions();
-    }
-  }, [activeTab, address]);
-
-  const fetchTransactions = async () => {
+  const fetchTransactions = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
@@ -89,7 +83,13 @@ export function DCAManagementView({ address }: DCAManagementViewProps) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [address]);
+
+  useEffect(() => {
+    if (activeTab === 'transactions') {
+      fetchTransactions();
+    }
+  }, [activeTab, fetchTransactions]);
 
   const handleDCASubmit = async (amount: number, frequency: string) => {
     // TODO: Implement DCA creation logic
