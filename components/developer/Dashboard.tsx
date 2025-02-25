@@ -116,12 +116,15 @@ export default function DashboardScreen({vincentApp, onRefetch}: {vincentApp: Vi
                                     </div>
                                     <Badge
                                         variant={
-                                            role.enabled
-                                                ? "default"
-                                                : "secondary"
+                                            // role.enabled
+                                            //     ? "default"
+                                            //     : "secondary"
+ 
+                                                "secondary"
                                         }
                                     >
-                                        {role.enabled ? "Enabled" : "Disabled"}
+                                        {/* {role.enabled ? "Enabled" : "Disabled"} */}
+                                        {"Enabled"}
                                     </Badge>
                                 </div>
                             </CardHeader>

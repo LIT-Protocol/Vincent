@@ -3,7 +3,7 @@ import { ethers } from "ethers";
 const providerURL = "https://yellowstone-rpc.litprotocol.com";
 
 export const VINCENT_APP_REGISTRY_ADDRESS =
-    "0xD4383c15158B11a4Fa51F489ABCB3D4E43511b0a";
+    "0x9B9cfE712a738BC8885a16F63240cCfE17959aF3";
 
 export const VINCENT_APP_REGISTRY_ABI = [
     "constructor(address pkpNftFacet)",
@@ -24,7 +24,7 @@ export const VINCENT_APP_REGISTRY_ABI = [
 ];
 
 export const VINCENT_USER_REGISTRY_ADDRESS =
-    "0x03250ce6245ea69Cd70557F206923A49003771b9";
+    "0xaE7C442E8d8A6dc07C02A6f41333C2480F28b430";
 
 export const VINCENT_USER_REGISTRY_ABI = [
     "constructor(address pkpContract_, address appDelegationRegistry_)",
@@ -101,16 +101,16 @@ export const getProviderOrSignerForUserRegistry = (isSigner = false) => {
         const provider = new ethers.providers.Web3Provider(window.ethereum);
         const signer = provider.getSigner();
         return new ethers.Contract(
-            VINCENT_APP_REGISTRY_ADDRESS,
-            VINCENT_APP_REGISTRY_ABI,
+            VINCENT_USER_REGISTRY_ADDRESS,
+            VINCENT_USER_REGISTRY_ABI,
             signer
         );
     }
     else {
         const provider = new ethers.providers.JsonRpcProvider(providerURL);
         return new ethers.Contract(
-            VINCENT_APP_REGISTRY_ADDRESS,
-            VINCENT_APP_REGISTRY_ABI,
+            VINCENT_USER_REGISTRY_ADDRESS,
+            VINCENT_USER_REGISTRY_ABI,
             provider
         );
     }

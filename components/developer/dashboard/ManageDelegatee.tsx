@@ -44,7 +44,6 @@ export default function DelegateeManagerScreen({
     };
 
     async function handleConfirmSaved() {
-        console.log(newAddress);
         await addDelegatee(newAddress);
         setDelegatees((prev) => [...prev, newAddress]);
         setShowKeyDialog(false);

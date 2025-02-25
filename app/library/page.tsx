@@ -8,13 +8,24 @@ import { ExternalLink, Mail, Settings } from "lucide-react"
 import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { getVincentAppForUser } from "@/services/get-app"
+import { getVincentAppForUser, getVincentAppForUserr } from "@/services/get-app"
 import { useAccount } from "wagmi"
+import useAccounts from "@/components/login/hooks/useAccounts";
 
 export default function Library() {
   const [apps, setApps] = useState<any[]>([])
   const { address } = useAccount()
   const [isLoading, setIsLoading] = useState(true)
+
+  const {
+    fetchAccounts,
+    createAccount,
+    setCurrentAccount,
+    currentAccount,
+    accounts,
+    loading: accountsLoading,
+    error: accountsError,
+} = useAccounts();
 
   useEffect(() => {
     async function fetchApps() {
@@ -24,7 +35,8 @@ export default function Library() {
       }
       try {
         // Fetch app data using the same method as dashboard
-        const app = await getVincentAppForUser(address)
+        console.log("user add", currentAccount)
+        const app = await getVincentAppForUserr(address)
         // Transform the data to match the expected VincentApp type
         const transformedApp = {
           appMetadata: {
@@ -33,7 +45,7 @@ export default function Library() {
             appId: address, // Using address as appId for now
           },
           appCreator: app.appCreatorAddress,
-          roles: app.roles.map((role: any) => ({
+          roles: app.roles?.map((role: any) => ({
             ...role,
             enabled: false // Default to false since it's not in the API response
           }))
@@ -96,8 +108,8 @@ export default function Library() {
         </TabsList>
         <ScrollArea className="h-[calc(100vh-20rem)]">
           <TabsContent value="all" className="space-y-4 mt-6">
-            {apps.map((app) => (
-              <Card key={app.appMetadata.appName}>
+            {apps.map((app, index) => (
+              <Card key={index}>
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div>
@@ -122,7 +134,7 @@ export default function Library() {
                     <div>
                       <h4 className="text-sm font-semibold mb-3">Roles</h4>
                       <div className="space-y-3">
-                        {app.roles.map((role: any) => (
+                        {app.roles?.map((role: any) => (
                           <div key={role.roleId} className="border rounded-lg p-4">
                             <div className="flex items-center justify-between mb-2">
                               <div>

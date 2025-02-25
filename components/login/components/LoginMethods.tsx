@@ -38,7 +38,7 @@ export default function LoginMethods({
           <>
             <h1>Log In</h1>
             {/* <p>Access your Lit Agent Wallet.</p> */}
-            {/* <AuthMethods setView={setView as Dispatch<SetStateAction<string>>} /> */}
+            <AuthMethods setView={setView as Dispatch<SetStateAction<string>>} />
             <div className="buttons-container">
               <button type="button" className="btn btn--link" onClick={signUp}>
                 Need an account? Sign up

@@ -1,7 +1,7 @@
 import { VincentApp } from "@/types";
 import { getAppMetadata, getAllRoles, getRoleToolPolicy } from "./api";
 import { LitContracts } from "@lit-protocol/contracts-sdk";
-import { getProviderOrSignerForAppRegistry } from "./config";
+import { getProviderOrSignerForAppRegistry, getProviderOrSignerForUserRegistry } from "./config";
 import {
     getAppsPermittedForAgentPkp,
     isAppEnabled,
@@ -40,7 +40,7 @@ export async function formCompleteVincentAppForDev(
         })
     );
 
-    const delegatees = await getDelegatees();
+    const delegatees = await getDelegatees(managementWallet);
 
     // Construct the complete Vincent App
     const completeVincentApp: VincentApp = {
@@ -52,7 +52,7 @@ export async function formCompleteVincentAppForDev(
         },
         roles: roles,
         delegatees: delegatees,
-        // delegatees: delegate/es,
+        // delegatees: [],
     };
 
     return completeVincentApp;
@@ -117,36 +117,40 @@ export async function formCompleteVincentAppForDev(
 //     };
 // }
 
-interface Tool {
-    // Add Tool properties here when needed
-}
-
 export async function getVincentAppForUserr(
     userPkpEthAddress: string
 ): Promise<any> {
+
+    userPkpEthAddress = "0x47E653894A33efE1f61Cb1a4AEc7bD779E06E3BE"
+    console.log("userPkpEthAddress", userPkpEthAddress)
     const litContracts = new LitContracts();
     await litContracts.connect();
-    const pkpTokenIds =
+    let pkpTokenIds =
         await litContracts.pkpPermissionsContract.read.getTokenIdsForAuthMethod(
             1,
             userPkpEthAddress
         );
-    console.log("pkpTokenIds", pkpTokenIds);
 
-    const vincentAgentRegistry = await getProviderOrSignerForAppRegistry();
+    console.log("user pkpTokenIds", pkpTokenIds);
+
+    const vincentAgentRegistry = getProviderOrSignerForUserRegistry();
     let count = 0;
     let awTokenIds: any[] = [];
 
     while (count < pkpTokenIds.length) {
-        if (vincentAgentRegistry.hasAgentPkp(pkpTokenIds[count])) {
+        const check = await vincentAgentRegistry.hasAgentPkp(pkpTokenIds[count]);
+        console.log("check for aw ", count);
+        if (check) {
             awTokenIds.push(pkpTokenIds[count]);
         }
         count++;
     }
 
+    console.log("awTokenIds", awTokenIds);
+
     // Get all permitted apps for each agent PKP and flatten the results
     const allAppsWithDetails = await Promise.all(
-        awTokenIds.map(async (agentTokenId) => {
+        awTokenIds?.map(async (agentTokenId) => {
             const permittedApps: string[] =
                 await getAppsPermittedForAgentPkp(agentTokenId);
 
@@ -165,7 +169,7 @@ export async function getVincentAppForUserr(
 
                     // Get tool policies for each role
                     const roles = await Promise.all(
-                        roleIds.map(async (roleId: any) => {
+                        roleIds?.map(async (roleId: any) => {
                             const roleData = await getRoleToolPolicy({
                                 managementWallet: appManager,
                                 roleId: roleId,
