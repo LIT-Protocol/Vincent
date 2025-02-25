@@ -121,126 +121,126 @@ export async function formCompleteVincentAppForDev(
 //     };
 // }
 
-export async function getVincentAppForUserr(
-    userPkpEthAddress: string
-): Promise<any> {
+// export async function getVincentAppForUserr(
+//     userPkpEthAddress: string
+// ): Promise<any> {
 
-    userPkpEthAddress = "0x47E653894A33efE1f61Cb1a4AEc7bD779E06E3BE"
-    console.log("userPkpEthAddress", userPkpEthAddress)
-    const litContracts = new LitContracts();
-    await litContracts.connect();
-    let pkpTokenIds =
-        await litContracts.pkpPermissionsContract.read.getTokenIdsForAuthMethod(
-            1,
-            userPkpEthAddress
-        );
+//     userPkpEthAddress = "0x47E653894A33efE1f61Cb1a4AEc7bD779E06E3BE"
+//     console.log("userPkpEthAddress", userPkpEthAddress)
+//     const litContracts = new LitContracts();
+//     await litContracts.connect();
+//     let pkpTokenIds =
+//         await litContracts.pkpPermissionsContract.read.getTokenIdsForAuthMethod(
+//             1,
+//             userPkpEthAddress
+//         );
 
-    console.log("user pkpTokenIds", pkpTokenIds);
+//     console.log("user pkpTokenIds", pkpTokenIds);
 
-    const vincentAgentRegistry = getProviderOrSignerForUserRegistry();
-    let count = 0;
-    let awTokenIds: any[] = [];
+//     const vincentAgentRegistry = getProviderOrSignerForUserRegistry();
+//     let count = 0;
+//     let awTokenIds: any[] = [];
 
-    while (count < pkpTokenIds.length) {
-        const check = await vincentAgentRegistry.hasAgentPkp(pkpTokenIds[count]);
-        console.log("check for aw ", count);
-        if (check) {
-            awTokenIds.push(pkpTokenIds[count]);
-        }
-        count++;
-    }
+//     while (count < pkpTokenIds.length) {
+//         const check = await vincentAgentRegistry.hasAgentPkp(pkpTokenIds[count]);
+//         console.log("check for aw ", count);
+//         if (check) {
+//             awTokenIds.push(pkpTokenIds[count]);
+//         }
+//         count++;
+//     }
 
-    console.log("awTokenIds", awTokenIds);
+//     console.log("awTokenIds", awTokenIds);
 
-    // Get all permitted apps for each agent PKP and flatten the results
-    const allAppsWithDetails = await Promise.all(
-        awTokenIds?.map(async (agentTokenId) => {
-            const permittedApps: string[] =
-                await getAppsPermittedForAgentPkp(agentTokenId);
+//     // Get all permitted apps for each agent PKP and flatten the results
+//     const allAppsWithDetails = await Promise.all(
+//         awTokenIds?.map(async (agentTokenId) => {
+//             const permittedApps: string[] =
+//                 await getAppsPermittedForAgentPkp(agentTokenId);
 
-            // For each permitted app of this agent, get the details
-            const appsWithDetails: any[] = await Promise.all(
-                permittedApps.map(async (appManager) => {
-                    const enabled = await isAppEnabled(
-                        agentTokenId,
-                        appManager
-                    );
-                    const appMetadata = await getAppMetadata(appManager);
-                    const roleIds = await getRolesPermittedForApp(
-                        agentTokenId,
-                        appManager
-                    );
+//             // For each permitted app of this agent, get the details
+//             const appsWithDetails: any[] = await Promise.all(
+//                 permittedApps.map(async (appManager) => {
+//                     const enabled = await isAppEnabled(
+//                         agentTokenId,
+//                         appManager
+//                     );
+//                     const appMetadata = await getAppMetadata(appManager);
+//                     const roleIds = await getRolesPermittedForApp(
+//                         agentTokenId,
+//                         appManager
+//                     );
 
-                    // Get tool policies for each role
-                    const roles = await Promise.all(
-                        roleIds?.map(async (roleId: any) => {
-                            const roleData = await getRoleToolPolicy({
-                                managementWallet: appManager,
-                                roleId: roleId,
-                            });
-                            return {
-                                roleId: roleData.roleId,
-                                toolPolicy: roleData.toolPolicy.map(
-                                    (policy: any) => ({
-                                        toolCId: policy.ipfsCid,
-                                        policyVarsSchema:
-                                            policy.policyVarsSchema,
-                                    })
-                                ),
-                            };
-                        })
-                    );
+//                     // Get tool policies for each role
+//                     const roles = await Promise.all(
+//                         roleIds?.map(async (roleId: any) => {
+//                             const roleData = await getRoleToolPolicy({
+//                                 managementWallet: appManager,
+//                                 roleId: roleId,
+//                             });
+//                             return {
+//                                 roleId: roleData.roleId,
+//                                 toolPolicy: roleData.toolPolicy.map(
+//                                     (policy: any) => ({
+//                                         toolCId: policy.ipfsCid,
+//                                         policyVarsSchema:
+//                                             policy.policyVarsSchema,
+//                                     })
+//                                 ),
+//                             };
+//                         })
+//                     );
 
-                    return {
-                        awTokenId: agentTokenId,
-                        appManager,
-                        appMetadata: {
-                            appName: appMetadata.name,
-                            description: appMetadata.description,
-                            email: appMetadata.contactEmail,
-                        },
-                        enabled,
-                        roles,
-                    };
-                })
-            );
+//                     return {
+//                         awTokenId: agentTokenId,
+//                         appManager,
+//                         appMetadata: {
+//                             appName: appMetadata.name,
+//                             description: appMetadata.description,
+//                             email: appMetadata.contactEmail,
+//                         },
+//                         enabled,
+//                         roles,
+//                     };
+//                 })
+//             );
 
-            return appsWithDetails;
-        })
-    );
+//             return appsWithDetails;
+//         })
+//     );
 
-    return allAppsWithDetails;
-}
+//     return allAppsWithDetails;
+// }
 
-export async function getVincentAppForUser(appId: string): Promise<any> {
+export async function getVincentAppForUser(address: string): Promise<any> {
     await new Promise((resolve) => setTimeout(resolve, 200));
     // Mock data for now
-    return {
+    return [{
         appCreatorAddress: "0xc881ab7ED4346636D610571c63aBbeE6F24e6953",
-        appName: "Swapping App",
+        appName: "Base DCA Demo",
         description:
-            "This is a sample application with full integration capabilities",
+            "A demo DCA application from Lit Protocol. DCA is done for the top token on Base provided a purchase amount and frequency.",
         enabled: true,
         roles: [
             {
                 roleId: "1",
-                roleName: "Uniswap Watcher",
+                roleName: "Uniswap Base Swap",
                 roleDescription:
-                    "This is a sample application with full integration capabilities",
+                    "Allow Swapping with Uniswap on Base. Swapping is limited by a user-defined policy, restricting the amount that can be swapped in a single transaction.",
                 toolPolicy: [
                     {
                         toolCId:
                             "QmZbVUwomfUfCa38ia69LrSfH1k8JNK3BHeSUKm5tGMWgv",
                         policyVarsSchema: [
                             {
-                                paramName: "Uniswap Watcher",
-                                type: "string",
-                                defaultValue: "Uniswap Watcher",
+                                paramName: "Maximum Transaction Amount",
+                                typeValue: "string",
+                                defaultValue: "0",
                             },
                         ],
                     },
                 ],
             },
         ],
-    };
+    }];
 }

@@ -9,75 +9,18 @@ import { usePathname } from "next/navigation";
 import { Button } from "../ui/button";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import "@rainbow-me/rainbowkit/styles.css";
+import { usePKPAccount } from "@/hooks/usePKPAccount";
+import { shortenAddress } from "@/lib/utils";
 
 export default function Header() {
     const pathname = usePathname();
-
-    const CustomConnectButton = () => {
-        return (
-        <ConnectButton.Custom>
-            {({
-                account,
-                chain,
-                openConnectModal,
-                openChainModal,
-                openAccountModal,
-                mounted,
-            }) => {
-                const ready = mounted;
-                if (!ready) return null;
-
-                return (
-                    <div>
-                        {!account && (
-                            <Button
-                                variant="outline"
-                                onClick={openConnectModal}
-                            >
-                                Connect Wallet
-                            </Button>
-                        )}
-                        {account && (
-                            <div className="flex gap-2">
-                                <Button
-                                    variant="outline"
-                                    onClick={openChainModal}
-                                    className="flex gap-2 items-center"
-                                >
-                                    {chain && (
-                                        <div className="h-4 w-4">
-                                            {chain.hasIcon && chain.iconUrl && (
-                                                <img
-                                                    alt={chain.name}
-                                                    src={chain.iconUrl}
-                                                    className="h-full w-full"
-                                                />
-                                            )}
-                                        </div>
-                                    )}
-                                    {chain?.name || "Unknown Chain"}
-                                </Button>
-                                <Button
-                                    variant="outline"
-                                    onClick={openAccountModal}
-                                    className="flex gap-2 items-center"
-                                >
-                                    {account.displayName}
-                                </Button>
-                            </div>
-                        )}
-                    </div>
-                );
-            }}
-        </ConnectButton.Custom>
-        );
-    };
+    const { currentAccount } = usePKPAccount();
 
     return (
-        <div className="max-w-screen-xl mx-auto p-6">
-            <NavigationMenu className="max-w-screen-xl mx-auto">
-                <NavigationMenuList className="flex justify-between">
-                    <div className="flex flex-row gap-4">
+        <div className="border-b">
+            <NavigationMenu className="max-w-screen-xl mx-auto p-6">
+                <NavigationMenuList className="flex justify-between items-center">
+                    <div className="flex items-center space-x-6">
                         <NavigationMenuItem>
                             <NavigationMenuLink asChild>
                                 <Link
@@ -152,22 +95,22 @@ export default function Header() {
                     <div className="flex flex-row gap-4">
                         {pathname === "/developer" ? (
                             <NavigationMenuItem>
-                                <CustomConnectButton />
+                                <ConnectButton />
                             </NavigationMenuItem>
                         ) : (
                             <NavigationMenuItem>
-                                <NavigationMenuLink asChild>
-                                    <Link
-                                        href="/auth"
-                                        className={`group inline-flex h-10 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors ${
-                                            pathname === "/auth"
-                                                ? "bg-black text-white"
-                                                : "bg-background hover:bg-accent hover:text-accent-foreground"
-                                        }`}
+                                {currentAccount ? (
+                                    <Button variant="outline">
+                                        {shortenAddress(currentAccount.ethAddress)}
+                                    </Button>
+                                ) : (
+                                    <Button
+                                        onClick={() => window.location.href = '/auth'}
+                                        variant="default"
                                     >
                                         Login
-                                    </Link>
-                                </NavigationMenuLink>
+                                    </Button>
+                                )}
                             </NavigationMenuItem>
                         )}
                         {/* <NavigationMenuItem>

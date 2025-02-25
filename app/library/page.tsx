@@ -8,49 +8,23 @@ import { ExternalLink, Mail, Settings } from "lucide-react"
 import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { getVincentAppForUser, getVincentAppForUserr } from "@/services/get-app"
-import { useAccount } from "wagmi"
-import useAccounts from "@/components/login/hooks/useAccounts";
+import { getVincentAppForUser } from "@/services/get-app"
+import { usePKPAccount } from "@/hooks/usePKPAccount"
 
 export default function Library() {
   const [apps, setApps] = useState<any[]>([])
-  const { address } = useAccount()
+  const { currentAccount } = usePKPAccount()
   const [isLoading, setIsLoading] = useState(true)
-
-  const {
-    fetchAccounts,
-    createAccount,
-    setCurrentAccount,
-    currentAccount,
-    accounts,
-    loading: accountsLoading,
-    error: accountsError,
-} = useAccounts();
 
   useEffect(() => {
     async function fetchApps() {
-      if (!address) {
+      if (!currentAccount) {
         setIsLoading(false)
         return
       }
       try {
-        // Fetch app data using the same method as dashboard
-        console.log("user add", currentAccount)
-        const app = await getVincentAppForUserr(address)
-        // Transform the data to match the expected VincentApp type
-        const transformedApp = {
-          appMetadata: {
-            appName: app.appName,
-            description: app.description,
-            appId: address, // Using address as appId for now
-          },
-          appCreator: app.appCreatorAddress,
-          roles: app.roles?.map((role: any) => ({
-            ...role,
-            enabled: false // Default to false since it's not in the API response
-          }))
-        }
-        setApps([transformedApp])
+        const app = await getVincentAppForUser(currentAccount.ethAddress)
+        setApps(app)
       } catch (error) {
         console.error("Error fetching apps:", error)
       } finally {
@@ -59,7 +33,7 @@ export default function Library() {
     }
 
     fetchApps()
-  }, [address])
+  }, [currentAccount])
 
   const toggleRoleStatus = async (appName: string, roleId: string) => {
     // Implement role toggle functionality using contract calls
@@ -113,9 +87,9 @@ export default function Library() {
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div>
-                      <CardTitle>{app.appMetadata.appName}</CardTitle>
+                      <CardTitle>{app.appName}</CardTitle>
                       <CardDescription className="mt-1">
-                        {app.appMetadata.description}
+                        {app.description}
                       </CardDescription>
                     </div>
                     {/* <Badge variant={app.enabled ? "default" : "secondary"}>
@@ -142,9 +116,9 @@ export default function Library() {
                                 <p className="text-sm text-gray-600">{role.roleDescription}</p>
                               </div>
                               <div className="flex items-center gap-2">
-                                <span className="text-sm text-gray-600">
+                                {/* <span className="text-sm text-gray-600">
                                   {role.enabled ? "Enabled" : "Disabled"}
-                                </span>
+                                </span> */}
                                 {/* <Switch
                                   checked={role.enabled}
                                   onCheckedChange={() => toggleRoleStatus(app.appMetadata.appId, role.roleId)}
@@ -159,7 +133,7 @@ export default function Library() {
                 </CardContent>
 
                 <CardFooter className="flex gap-2 border-t pt-4">
-                  {app.appMetadata.email && (
+                  {app.contactEmail && (
                     <Button variant="outline" size="sm">
                       <Mail className="w-4 h-4 mr-2" />
                       Support

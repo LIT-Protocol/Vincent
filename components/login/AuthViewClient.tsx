@@ -15,6 +15,7 @@ import LoginMethods from "@/components/login/components/LoginMethods";
 import SignUpMethods from "@/components/login/components/SignUpMethods";
 import AccountSelection from "@/components/login/components/AccountSelection";
 import CreateAccount from "@/components/login/components/CreateAccount";
+import { usePKPAccount } from "@/hooks/usePKPAccount";
 
 export default function AuthViewClient() {
     const [isLogin, setIsLogin] = useState(true);
@@ -47,6 +48,8 @@ export default function AuthViewClient() {
         loading: sessionLoading,
         error: sessionError,
     } = useSession();
+
+    const { setCurrentAccount: setPKPAccount } = usePKPAccount();
 
     const error = authError || accountsError || sessionError;
 
@@ -81,6 +84,12 @@ export default function AuthViewClient() {
             initSession(authMethod, currentAccount);
         }
     }, [authMethod, currentAccount, initSession]);
+
+    useEffect(() => {
+        if (currentAccount) {
+            setPKPAccount(currentAccount);
+        }
+    }, [currentAccount, setPKPAccount]);
 
     if (authLoading) {
         return (

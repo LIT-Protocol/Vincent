@@ -31,12 +31,11 @@ export default function RootLayout({
 }: Readonly<{
     children: React.ReactNode;
 }>) {
-
     return (
-        <html>
-            <body>
-                <WagmiProvider config={wagmiConfig}>
-                    <QueryClientProvider client={queryClient}>
+        <WagmiProvider config={wagmiConfig}>
+            <QueryClientProvider client={queryClient}>
+                <html>
+                    <body>
                         <RainbowKitProvider
                             theme={darkTheme()}
                             initialChain={yellowstone}
@@ -47,9 +46,9 @@ export default function RootLayout({
                                 {children}
                             </main>
                         </RainbowKitProvider>
-                    </QueryClientProvider>
-                </WagmiProvider>
-            </body>
-        </html>
+                    </body>
+                </html>
+            </QueryClientProvider>
+        </WagmiProvider>
     );
 }
