@@ -254,7 +254,7 @@ export default function ManageRoleScreen({
                                         }}
                                     />
 
-                                    <Button
+                                    {/* <Button
                                         type="submit"
                                         className="w-full"
                                         disabled={isSubmitting}
@@ -267,7 +267,7 @@ export default function ManageRoleScreen({
                                         ) : (
                                             "Update Role"
                                         )}
-                                    </Button>
+                                    </Button> */}
                                 </form>
                             </Form>
                         </CardContent>

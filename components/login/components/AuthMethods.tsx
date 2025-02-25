@@ -7,7 +7,7 @@ const AuthMethods = ({
 }: AuthMethodsProps) => {
   return (
       <div className="buttons-container login-page">
-        <button
+        {/* <button
           type="button"
           className="btn btn--outline"
           onClick={() => setView('email')}
@@ -28,8 +28,8 @@ const AuthMethods = ({
             </svg>
           </div>
           <span className="btn__label">Continue with email</span>
-        </button>
-        <button
+        </button> */}
+        {/* <button
           type="button"
           className="btn btn--outline"
           onClick={() => setView('phone')}
@@ -50,8 +50,8 @@ const AuthMethods = ({
             </svg>
           </div>
           <span className="btn__label">Continue with phone</span>
-        </button>
-        <button
+        </button> */}
+        {/* <button
           type="button"
           className="btn btn--outline"
           onClick={() => setView('wallet')}
@@ -72,7 +72,7 @@ const AuthMethods = ({
             </svg>
           </div>
           <span className="btn__label">Connect your web3 wallet</span>
-        </button>
+        </button> */}
         <button
           type="button"
           className="btn btn--outline"

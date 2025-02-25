@@ -42,7 +42,7 @@ export default function DelegateeManagerScreen({
     };
 
     async function handleConfirmSaved() {
-        await addDelegatee(dashboard.appMetadata.appId, newAddress);
+        await addDelegatee(dashboard.appCreator, newAddress);
         setDelegatees((prev) => [...prev, newAddress]);
         setShowKeyDialog(false);
         setNewPrivateKey("");

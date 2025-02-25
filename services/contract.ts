@@ -4,22 +4,22 @@ import {
     getProviderOrSignerForUserRegistry,
 } from "./config";
 
-export async function addDelegatee(appId: string, delegateeAddress: string) {
+export async function addDelegatee(appCreator: string, delegateeAddress: string) {
     const contract = await getProviderOrSignerForAppRegistry(true);
-    const tx = await contract.addDelegatee(appId, delegateeAddress);
+    const tx = await contract.addDelegatee(appCreator, delegateeAddress);
     await tx.wait();
     return tx;
 }
 
-export async function getDelegatees(appId: string) {
+export async function getDelegatees(appCreator: string) {
     const contract = await getProviderOrSignerForAppRegistry();
-    const delegatees = await contract.getDelegatees(appId);
+    const delegatees = await contract.getDelegatees(appCreator);
     return delegatees;
 }
 
-export async function removeDelegatee(appId: string, delegateeAddress: string) {
+export async function removeDelegatee(appCreator: string, delegateeAddress: string) {
     const contract = await getProviderOrSignerForAppRegistry(true);
-    const tx = await contract.removeDelegatee(appId, delegateeAddress);
+    const tx = await contract.removeDelegatee(appCreator, delegateeAddress);
     await tx.wait();
     return tx;
 }
