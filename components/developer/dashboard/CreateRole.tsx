@@ -125,7 +125,7 @@ export default function CreateRoleScreen({ onBack, dashboard, onSuccess  }: Crea
                 }))
             });
             setIsLoading(false);
-            // onSuccess();
+            onSuccess();
         } catch (error) {
             console.error(error);
         } finally {

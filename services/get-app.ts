@@ -10,8 +10,12 @@ import {
 } from "./contract";
 
 export async function checkIfAppExists(address: string): Promise<Boolean> {
-    const app = await getAppMetadata(address);
-    return app ? true : false;
+    try {
+        const app = await getAppMetadata(address);
+        return app ? true : false;
+    } catch (error) {
+        return false;
+    }
 }
 
 export async function formCompleteVincentAppForDev(
