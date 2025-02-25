@@ -63,9 +63,8 @@ export default function CreateRoleScreen({ onBack, dashboard }: CreateRoleProps)
         try {
             setIsLoading(true);
             await createRole(address, {
-                appId: dashboard?.appMetadata.appId || "",
-                roleName: roleName,
-                roleDescription: roleDescription,
+                name: roleName,
+                description: roleDescription,
                 toolPolicy: tools.map(tool => ({
                     toolCId: tool.id,
                     policyCId: tool.policy

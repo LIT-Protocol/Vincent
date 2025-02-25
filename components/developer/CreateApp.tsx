@@ -22,10 +22,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { useAccount } from "wagmi";
-import { useSignMessage } from "wagmi";
-import { registerApp } from "@/services/api";
+import { registerApp as registerAppApi } from "@/services/api";
 
 // URL normalization helpers
 const normalizeURL = (url: string): string => {
@@ -115,9 +113,7 @@ const formSchema = z.object({
 export default function CreateAppScreen() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const router = useRouter();
     const { address } = useAccount();
-    const { signMessageAsync } = useSignMessage();
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -140,20 +136,23 @@ export default function CreateAppScreen() {
             setIsSubmitting(true);
             setError(null);
 
-            const response = await registerApp(address, {
-                appName: values.appName,
-                appDescription: values.description,
-                email: values.supportEmail || "",
-                domain: values.websiteUrl,
+            const response = await registerAppApi(address, {
+                name: values.appName,
+                description: values.description,
+                contactEmail: values.supportEmail || "",
             });
 
+            console.log(response);
+            
+            if (!response.success || !response.data?.app) {
+                throw new Error(response.error || "Failed to create app");
+            }
+            
             if (!response.success) {
                 throw new Error(response.error || "Failed to create app");
             }
-
-            // Redirect to dashboard
-            router.push("/developer");
-            router.refresh();
+            
+            window.location.reload();
             
         } catch (err) {
             setError(err instanceof Error ? err.message : "Failed to create app");

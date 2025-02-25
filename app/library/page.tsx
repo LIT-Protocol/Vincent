@@ -66,14 +66,14 @@ export default function Library() {
     <div className="container mx-auto py-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Apps Library</h1>
-        {address && (
+        {/* {address && (
           <Button variant="outline" size="sm" asChild>
             <Link href={`/accounts/${address}/settings`}>
               <Settings className="h-4 w-4 mr-2" />
               Settings
             </Link>
           </Button>
-        )}
+        )} */}
       </div>
 
       <Tabs defaultValue="all">

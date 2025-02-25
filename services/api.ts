@@ -1,96 +1,72 @@
 import { SiweMessage } from "siwe";
 import axios from "axios";
+import { verifyMessage } from "ethers/lib/utils";
+import { Role } from "@/types";
 
 const API_BASE_URL =
-    process.env.NEXT_PUBLIC_BE_BASE_URL || "http://localhost:3000/api/v1";
-
+    process.env.NEXT_PUBLIC_BE_BASE_URL || "http://localhost:8000/api/v1";
 export interface ApiResponse<T> {
     success: boolean;
     data?: T;
     error?: string;
 }
-
-// convert to authsig?
-async function createSiweMessage(
-    address: string,
-    action: string,
-    params: any
-): Promise<string> {
-    const paramsString = Object.entries(params)
-        .map(([key, value]) => `${key}: ${JSON.stringify(value)}`)
-        .join("\n");
-
+async function createSiweMessage(address: string, action: string, params = {}) {
     const message = new SiweMessage({
-        domain: window.location.host,
+        domain: "localhost", // Use actual domain from window
         address,
-        statement: `Sign in to perform action: ${action}\n\nParameters:\n${paramsString}`,
-        uri: window.location.origin,
+        statement: "Log in to App Registry with your Admin Wallet",
+        uri: "https://localhost/*", // Use actual origin from window
         version: "1",
         chainId: 1,
         nonce: Math.random().toString(36).slice(2),
         issuedAt: new Date().toISOString(),
+        expirationTime: new Date(Date.now() + 1000 * 60 * 5).toISOString(),
     });
-    const messageToSign = message.prepareMessage();
-    const signedMessage = await window.ethereum.request({
+
+    const preparedMessage = message.prepareMessage();
+
+    const signature = await window.ethereum.request({
         method: "personal_sign",
-        params: [messageToSign, address],
+        params: [preparedMessage, address],
     });
-    return signedMessage;
+
+    const signerAddress = verifyMessageWithEthers(preparedMessage, signature);
+    console.log("signerAddress", signerAddress);
+
+    return {
+        message: preparedMessage,
+        signature,
+    };
+}
+
+function verifyMessageWithEthers(message: any, signature: string) {
+    const signerAddress = verifyMessage(message, signature);
+    return signerAddress;
 }
 
 // Register new app
 export async function registerApp(
     address: string,
     params: {
-        appName: string;
-        appDescription: string;
-        email: string;
+        name: string;
+        description: string;
+        contactEmail: string;
         // domain?: string;
     }
-): Promise<ApiResponse<{ appId: string; appName: string; logo?: string }>> {
-    const signedMessage = await createSiweMessage(address, "register_app", params);
-    
-    // Keep mock data as comment
-    /* Mock data
-    return {
-        success: true,
-        data: {
-            appId: "1",
-            appName: params.appName,
-        },
-    };
-    */
+) {
+    const signedMessage = await createSiweMessage(
+        address,
+        "register_app",
+        params
+    );
 
-    const config = {
-        headers: {
-            "Content-Type": "application/json",
-        },
+    const body = {
+        ...params,
+        signedMessage: JSON.stringify(signedMessage),
     };
-    
-    const response = await axios.post(`${API_BASE_URL}/registerApp`, {
-        signedMessage,
-        ...params
-    });
-    console.log(response.data);
-    return response.data;
-}
 
-// Get app metadata
-export async function getAppMetadata(appId: string): Promise<ApiResponse<any>> {
-    /* Mock data
-    return {
-        success: true,
-        data: {
-            appId: appId,
-            appName: "Sample App",
-            appLogo: "https://example.com/logo.png",
-        },
-    };
-    */
-    
-    const response = await axios.get(`${API_BASE_URL}/appMetadata`, {
-        params: { appId }
-    });
+    const response = await axios.post(`${API_BASE_URL}/registerApp`, body);
+    console.log("registerApp response", response);
     return response.data;
 }
 
@@ -98,15 +74,17 @@ export async function getAppMetadata(appId: string): Promise<ApiResponse<any>> {
 export async function updateApp(
     address: string,
     params: {
-        appId: string;
-        appName: string;
-        appDescription: string;
-        email: string;
-        domain?: string;
+        contactEmail: string;
+        description: string;
+        name: string;
     }
-): Promise<ApiResponse<{ appId: string }>> {
-    const signedMessage = await createSiweMessage(address, "update_app", params);
-    
+) {
+    const signedMessage = await createSiweMessage(
+        address,
+        "update_app",
+        params
+    );
+
     /* Mock data
     return {
         success: true,
@@ -115,10 +93,10 @@ export async function updateApp(
         },
     };
     */
-    
+
     const response = await axios.put(`${API_BASE_URL}/updateApp`, {
+        ...params,
         signedMessage,
-        ...params
     });
     return response.data;
 }
@@ -127,19 +105,21 @@ export async function updateApp(
 export async function createRole(
     address: string,
     params: {
-        appId: string;
-        roleName: string;
-        roleDescription: string;
+        name: string;
+        description: string;
         toolPolicy: any[];
     }
-): Promise<ApiResponse<{
-    appId: string;
-    roleId: string;
-    roleVersion: string;
-    lastUpdated: string;
-}>> {
-    const signedMessage = await createSiweMessage(address, "create_role", params);
-    
+): Promise<
+    ApiResponse<{
+        role: any;
+    }>
+> {
+    const signedMessage = await createSiweMessage(
+        address,
+        "create_role",
+        params
+    );
+
     /* Mock data
     return {
         success: true,
@@ -151,54 +131,10 @@ export async function createRole(
         },
     };
     */
-    
+
     const response = await axios.post(`${API_BASE_URL}/createRole`, {
+        ...params,
         signedMessage,
-        ...params
-    });
-    return response.data;
-}
-
-export async function getRoleByAppId(appId: string) {
-    /* Mock data
-    return {
-        success: true,
-        data: {
-            roleId: "1",
-            roleVersion: "init",
-            lastUpdated: new Date().toISOString(),
-        },
-    };
-    */
-    
-    const response = await axios.get(`${API_BASE_URL}/roles`, {
-        params: { appId }
-    });
-    return response.data;
-}
-
-// Get role details
-export async function getRole(params: {
-    appId: string;
-    roleId: string;
-}): Promise<ApiResponse<{
-    roleId: string;
-    roleVersion: string;
-    toolPolicy: any[];
-}>> {
-    /* Mock data
-    return {
-        success: true,
-        data: {
-            roleId: params.roleId,
-            roleVersion: "1.0",
-            toolPolicy: [],
-        },
-    };
-    */
-    
-    const response = await axios.get(`${API_BASE_URL}/role`, {
-        params
     });
     return response.data;
 }
@@ -207,20 +143,18 @@ export async function getRole(params: {
 export async function updateRole(
     address: string,
     params: {
-        appId: string;
+        description: string;
+        name: string;
         roleId: string;
-        roleVersion: string;
-        roleName: string;
-        roleDescription: string;
         toolPolicy: any[];
     }
-): Promise<ApiResponse<{
-    appId: string;
-    roleId: string;
-    roleVersion: string;
-}>> {
-    const signedMessage = await createSiweMessage(address, "update_role", params);
-    
+) {
+    const signedMessage = await createSiweMessage(
+        address,
+        "update_role",
+        params
+    );
+
     /* Mock data
     return {
         success: true,
@@ -231,10 +165,59 @@ export async function updateRole(
         },
     };
     */
-    
+
     const response = await axios.put(`${API_BASE_URL}/updateRole`, {
         signedMessage,
-        ...params
+        ...params,
+    });
+    return response.data;
+}
+
+// Get app metadata
+export async function getAppMetadata(address: string) {
+    const response = await axios.get(`${API_BASE_URL}/appMetadata/${address}`);
+    return response.data.data;
+}
+
+// Get all roles for an app
+export async function getAllRoles(managementWallet: string) {
+    /* Mock data
+    return {
+        success: true,
+        data: {
+            roleId: "1",
+            roleVersion: "init",
+            lastUpdated: new Date().toISOString(),
+        },
+    };
+    */
+
+    const response = await axios.get(`${API_BASE_URL}/getAllRoles`, {
+        params: {
+            managementWallet: managementWallet,
+        },
+    });
+    return response.data.data;
+}
+
+// Get role details
+export async function getRoleToolPolicy(params: {
+    managementWallet: string;
+    roleId: string;
+}) {
+    /* Mock data
+    return {
+        success: true,
+        data: {
+            roleId: params.roleId,
+            roleVersion: "1.0",
+            toolPolicy: [],
+        },
+    };
+    */
+
+    const response = await axios.get(`${API_BASE_URL}/role`, {
+        params,
     });
     return response.data;
 }

@@ -1,6 +1,55 @@
 import { VincentApp } from "@/types";
-import { getAddressToAppId, getDelegatees } from "./contract";
-import { getAppMetadata, getRoleByAppId, getRole } from "./api";
+import { getAppMetadata, getAllRoles, getRoleToolPolicy } from "./api";
+
+export async function checkIfAppExists(address: string): Promise<Boolean> {
+    const app = await getAppMetadata(address);
+    console.log("app", app);
+    return app ? true : false;
+}
+
+export async function formCompleteVincentAppForDev(
+    managementWallet: string
+): Promise<VincentApp> {
+    
+    const appMetadata = await getAppMetadata(managementWallet);
+    console.log("appMetadata", appMetadata);
+    const roleIds = await getAllRoles(managementWallet);
+    console.log("roleIds", roleIds);
+    
+    const roles = await Promise.all(
+        roleIds.map(async (roleId: any) => {
+            const roleData = await getRoleToolPolicy({managementWallet, roleId});
+            return {
+                roleId: roleData.roleId,
+                roleVersion: roleData.data.roleVersion,
+                toolPolicy: roleData.data.toolPolicy.map((policy: any) => ({
+                    toolCId: policy.tool.ipfsCid,
+                    policyCId: policy.policy.schema[0].defaultValue, // Assuming this is where the CID is stored
+                })),
+                enabled: true, // Default to true, adjust if needed
+                roleName: `Role ${roleData.data.roleId}`, // Add proper role name if available
+                roleDescription: "Role description" // Add proper description if available
+            };
+        })
+    );
+
+    // Construct the complete Vincent App
+    const completeVincentApp: VincentApp = {
+        appCreator: managementWallet,
+        appMetadata: {
+            appId: appMetadata._id,
+            appName: appMetadata.name,
+            description: appMetadata.description,
+            email: appMetadata.contactEmail,
+            domain: undefined // Optional field
+        },
+        roles: roles,
+        delegatees: [], // Add delegatees if available from somewhere
+        enabled: true // Default to true, adjust if needed
+    };
+
+    return completeVincentApp;
+}
 
 // GET complete vincent app for frontend
 export async function formCompleteVincentApp(

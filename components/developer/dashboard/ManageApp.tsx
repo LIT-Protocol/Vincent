@@ -80,11 +80,9 @@ export default function ManageAppScreen({
             if (!address) return;
 
             await updateApp(address, {
-                appId: dashboard?.appMetadata.appId || "",
-                appName: values.appName,
-                appDescription: values.appDescription,
-                email: values.email,
-                domain: values.domain,
+                name: values.appName,
+                description: values.appDescription,
+                contactEmail: values.email,
             });
         } catch (error) {
             console.error("Error updating app:", error);

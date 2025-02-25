@@ -14,8 +14,7 @@ export default function Explore() {
     // Mock data - replace with actual API call
     setApps([
       {
-        id: "1",
-        appName: "Sample App 1",
+        name: "Sample App 1",
         description: "This is a sample application with full integration capabilities",
         status: "enabled",
         appManager: "0x1234...5678",

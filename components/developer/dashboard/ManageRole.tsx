@@ -85,11 +85,9 @@ export default function ManageRoleScreen({
         try {
             setIsSubmitting(true);
             await updateRole(address, {
-                appId: dashboard.appMetadata.appId,
+                description: values.roleDescription,
+                name: values.roleName,
                 roleId: roleId.toString(),
-                roleVersion: values.roleVersion,
-                roleName: values.roleName,
-                roleDescription: values.roleDescription,
                 toolPolicy: values.toolPolicy,
             });
             toast.success("Role updated successfully");

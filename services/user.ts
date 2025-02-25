@@ -14,7 +14,7 @@ async function fetchAWForUserPKP(network: any, userPKPAddress: string) {
         "datil-dev": "0x80ac58cd",
         "datil-test": "0x80ac58cd",
     } as { [key: string]: string };
-    
+
     try {
         const provider = new ethers.providers.JsonRpcProvider(
             process.env.RPC_URL
@@ -92,10 +92,7 @@ async function fetchDetails(network: any, pkpEthAddress: string) {
     // const network = "datil-test";
     // const pkpEthAddress = "0x9bb681f026e31DB3693C05129a36E00da6418898";
 
-    const tokenId = await getTokenIdByPkpEthAddress(
-        network,
-        pkpEthAddress
-    );
+    const tokenId = await getTokenIdByPkpEthAddress(network, pkpEthAddress);
 
     const litContracts = new LitContracts({
         network,
@@ -110,3 +107,7 @@ async function fetchDetails(network: any, pkpEthAddress: string) {
     );
     console.log("details", details);
 }
+
+async function getUserPKP() {}
+
+async function getUserPKPSign() {}
