@@ -18,6 +18,11 @@ export interface ServerConfig {
   debug?: boolean;
 }
 
+export const DOMAIN =
+  process.env.DOMAIN ||
+  process.env.HEROKU_APP_DEFAULT_DOMAIN_NAME ||
+  (`localhost:${process.env.PORT}` as const);
+
 const corsOptions = {
   optionsSuccessStatus: 200,
   origin: async (origin: string | undefined): Promise<boolean> => {
@@ -25,10 +30,11 @@ const corsOptions = {
       return true;
     }
 
+    // FIXME: Don't allow localhost to hit production instances of this service.
     const allowedOrigins = [
       /^https?:\/\/localhost(:\d+)?$/, // localhost with any port
       // eslint-disable-next-line no-useless-escape
-      new RegExp(`^https?:\/\/${process.env.DOMAIN}$`),
+      new RegExp(`^https?:\/\/${DOMAIN}$`),
     ];
 
     if (allowedOrigins.some((regex) => regex.test(origin))) {
