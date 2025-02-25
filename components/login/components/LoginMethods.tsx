@@ -4,12 +4,12 @@ import "../styles/login.css";
 import AuthMethods from './AuthMethods';
 import WalletMethods from './WalletMethods';
 import WebAuthn from './WebAuthn';
-import StytchOTP from './StytchOTP';
+// import StytchOTP from './StytchOTP';
 
 interface LoginProps {
   authWithEthWallet: (address: string) => Promise<void>;
   authWithWebAuthn: (credentialId: string, userId: string) => Promise<void>;
-  authWithStytch: (sessionJwt: string, userId: string, method: 'email' | 'phone') => Promise<void>;
+  // authWithStytch: (sessionJwt: string, userId: string, method: 'email' | 'phone') => Promise<void>;
   signUp: () => void;
   error?: Error;
 }
@@ -20,7 +20,7 @@ type SetViewFunction = Dispatch<SetStateAction<AuthView>>;
 export default function LoginMethods({
   authWithEthWallet,
   authWithWebAuthn,
-  authWithStytch,
+  // authWithStytch,
   signUp,
   error,
 }: LoginProps) {
@@ -38,7 +38,7 @@ export default function LoginMethods({
           <>
             <h1>Log In</h1>
             {/* <p>Access your Lit Agent Wallet.</p> */}
-            <AuthMethods setView={setView as Dispatch<SetStateAction<string>>} />
+            {/* <AuthMethods setView={setView as Dispatch<SetStateAction<string>>} /> */}
             <div className="buttons-container">
               <button type="button" className="btn btn--link" onClick={signUp}>
                 Need an account? Sign up
@@ -46,20 +46,20 @@ export default function LoginMethods({
             </div>
           </>
         )}
-        {view === 'email' && (
+        {/* {view === 'email' && (
           <StytchOTP
             method="email"
-            authWithStytch={authWithStytch}
+            // authWithStytch={authWithStytch}
             setView={setView as Dispatch<SetStateAction<string>>}
           />
         )}
         {view === 'phone' && (
           <StytchOTP
             method="phone"
-            authWithStytch={authWithStytch}
+            // authWithStytch={authWithStytch}
             setView={setView as Dispatch<SetStateAction<string>>}
           />
-        )}
+        )} */}
         {view === 'wallet' && (
           <WalletMethods
             authWithEthWallet={authWithEthWallet}

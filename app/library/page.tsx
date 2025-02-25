@@ -8,12 +8,11 @@ import { ExternalLink, Mail, Settings } from "lucide-react"
 import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import Link from "next/link"
-import { formCompleteVincentApp } from "@/services/get-app"
+import { getVincentAppForUser } from "@/services/get-app"
 import { useAccount } from "wagmi"
 
 export default function Library() {
-  const [apps, setApps] = useState<VincentApp[]>([])
+  const [apps, setApps] = useState<any[]>([])
   const { address } = useAccount()
   const [isLoading, setIsLoading] = useState(true)
 
@@ -25,8 +24,21 @@ export default function Library() {
       }
       try {
         // Fetch app data using the same method as dashboard
-        const app = await formCompleteVincentApp(address)
-        setApps([app]) // For now we're just showing one app, expand this later
+        const app = await getVincentAppForUser(address)
+        // Transform the data to match the expected VincentApp type
+        const transformedApp = {
+          appMetadata: {
+            appName: app.appName,
+            description: app.description,
+            appId: address, // Using address as appId for now
+          },
+          appCreator: app.appCreatorAddress,
+          roles: app.roles.map((role: any) => ({
+            ...role,
+            enabled: false // Default to false since it's not in the API response
+          }))
+        }
+        setApps([transformedApp])
       } catch (error) {
         console.error("Error fetching apps:", error)
       } finally {
@@ -37,13 +49,13 @@ export default function Library() {
     fetchApps()
   }, [address])
 
-  const toggleRoleStatus = async (appId: string, roleId: string) => {
+  const toggleRoleStatus = async (appName: string, roleId: string) => {
     // Implement role toggle functionality using contract calls
     setApps(apps.map(app => {
-      if (app.appMetadata.appId === appId) {
+      if (app.appMetadata.appName === appName) {
         return {
           ...app,
-          roles: app.roles.map(role => {
+          roles: app.roles.map((role: any) => {
             if (role.roleId === roleId) {
               return {
                 ...role,
@@ -85,16 +97,18 @@ export default function Library() {
         <ScrollArea className="h-[calc(100vh-20rem)]">
           <TabsContent value="all" className="space-y-4 mt-6">
             {apps.map((app) => (
-              <Card key={app.appMetadata.appId}>
+              <Card key={app.appMetadata.appName}>
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div>
                       <CardTitle>{app.appMetadata.appName}</CardTitle>
-                      <CardDescription className="mt-1">{app.appMetadata.description}</CardDescription>
+                      <CardDescription className="mt-1">
+                        {app.appMetadata.description}
+                      </CardDescription>
                     </div>
-                    <Badge variant={app.enabled ? "default" : "secondary"}>
+                    {/* <Badge variant={app.enabled ? "default" : "secondary"}>
                       {app.enabled ? "Enabled" : "Disabled"}
-                    </Badge>
+                    </Badge> */}
                   </div>
                 </CardHeader>
 
@@ -108,7 +122,7 @@ export default function Library() {
                     <div>
                       <h4 className="text-sm font-semibold mb-3">Roles</h4>
                       <div className="space-y-3">
-                        {app.roles.map((role) => (
+                        {app.roles.map((role: any) => (
                           <div key={role.roleId} className="border rounded-lg p-4">
                             <div className="flex items-center justify-between mb-2">
                               <div>
@@ -139,12 +153,12 @@ export default function Library() {
                       Support
                     </Button>
                   )}
-                  {app.appMetadata.domain && (
+                  {/* {app.appMetadata.domain && (
                     <Button variant="outline" size="sm">
                       <ExternalLink className="w-4 h-4 mr-2" />
                       Website
                     </Button>
-                  )}
+                  )} */}
                 </CardFooter>
               </Card>
             ))}

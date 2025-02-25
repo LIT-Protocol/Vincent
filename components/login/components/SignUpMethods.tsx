@@ -2,12 +2,12 @@ import { useState, Dispatch, SetStateAction } from 'react';
 import AuthMethods from './AuthMethods';
 import WalletMethods from './WalletMethods';
 import WebAuthn from './WebAuthn';
-import StytchOTP from './StytchOTP';
+// import StytchOTP from './StytchOTP';
 
 interface SignUpProps {
   authWithEthWallet: (address: string) => Promise<void>;
   authWithWebAuthn: (credentialId: string, userId: string) => Promise<void>;
-  authWithStytch: (sessionJwt: string, userId: string, method: 'email' | 'phone') => Promise<void>;
+  // authWithStytch: (sessionJwt: string, userId: string, method: 'email' | 'phone') => Promise<void>;
   registerWithWebAuthn: (credentialId: string) => Promise<void>;
   goToLogin: () => void;
   error?: Error;
@@ -19,7 +19,7 @@ type SetViewFunction = Dispatch<SetStateAction<AuthView>>;
 export default function SignUpMethods({
   authWithEthWallet,
   authWithWebAuthn,
-  authWithStytch,
+  // authWithStytch,
   registerWithWebAuthn,
   goToLogin,
   error,
@@ -52,7 +52,7 @@ export default function SignUpMethods({
             </div>
           </>
         )}
-        {view === 'email' && (
+        {/* {view === 'email' && (
           <StytchOTP
             method="email"
             authWithStytch={authWithStytch}
@@ -65,7 +65,7 @@ export default function SignUpMethods({
             authWithStytch={authWithStytch}
             setView={setView as Dispatch<SetStateAction<string>>}
           />
-        )}
+        )} */}
         {view === 'wallet' && (
           <WalletMethods
             authWithEthWallet={authWithEthWallet}

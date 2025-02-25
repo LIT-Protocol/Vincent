@@ -141,7 +141,7 @@ export default function AuthView() {
                 <LoginMethods
                     authWithEthWallet={authWithEthWallet}
                     authWithWebAuthn={authWithWebAuthn}
-                    authWithStytch={authWithStytch}
+                    // authWithStytch={authWithStytch}
                     signUp={() => setIsLogin(false)}
                     error={error}
                 />
@@ -156,7 +156,7 @@ export default function AuthView() {
                 authWithEthWallet={authWithEthWallet}
                 registerWithWebAuthn={registerWithWebAuthn}
                 authWithWebAuthn={authWithWebAuthn}
-                authWithStytch={authWithStytch}
+                // authWithStytch={authWithStytch}
                 goToLogin={() => setIsLogin(true)}
                 error={error}
             />
