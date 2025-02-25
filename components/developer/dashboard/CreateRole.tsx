@@ -15,6 +15,8 @@ import {
 import { VincentApp } from "@/types"
 import { useAccount } from "wagmi";
 import { createRole } from "@/services/api";
+import { ScrollArea } from "@/components/ui/scroll-area";
+
 interface CreateRoleProps {
     onBack: () => void;
     dashboard?: VincentApp;
@@ -23,7 +25,16 @@ interface CreateRoleProps {
 interface Tool {
     id: string;
     name: string;
-    policy: string;
+    description: string;
+    toolIpfsCid: string;
+    policyVars: PolicyVar[];
+}
+
+interface PolicyVar {
+    id: string;
+    paramName: string;
+    valueType: string;
+    defaultValue: string;
 }
 
 export default function CreateRoleScreen({ onBack, dashboard }: CreateRoleProps) {
@@ -42,9 +53,47 @@ export default function CreateRoleScreen({ onBack, dashboard }: CreateRoleProps)
         const newTool = {
             id: crypto.randomUUID(),
             name: "",
-            policy: "",
+            description: "",
+            toolIpfsCid: "",
+            policyVars: [{
+                id: crypto.randomUUID(),
+                paramName: "",
+                valueType: "",
+                defaultValue: ""
+            }]
         };
         setTools([...tools, newTool]);
+    };
+
+    const handleAddPolicyVar = (toolId: string) => {
+        setTools(tools.map(tool => {
+            if (tool.id === toolId) {
+                return {
+                    ...tool,
+                    policyVars: [...tool.policyVars, {
+                        id: crypto.randomUUID(),
+                        paramName: "",
+                        valueType: "",
+                        defaultValue: ""
+                    }]
+                };
+            }
+            return tool;
+        }));
+    };
+
+    const updatePolicyVar = (toolId: string, varId: string, field: keyof PolicyVar, value: string) => {
+        setTools(tools.map(tool => {
+            if (tool.id === toolId) {
+                return {
+                    ...tool,
+                    policyVars: tool.policyVars.map(pVar => 
+                        pVar.id === varId ? { ...pVar, [field]: value } : pVar
+                    )
+                };
+            }
+            return tool;
+        }));
     };
 
     const handleRemoveTool = (toolId: string) => {
@@ -65,9 +114,14 @@ export default function CreateRoleScreen({ onBack, dashboard }: CreateRoleProps)
             await createRole(address, {
                 name: roleName,
                 description: roleDescription,
+                managementWallet: address,
                 toolPolicy: tools.map(tool => ({
-                    toolCId: tool.id,
-                    policyCId: tool.policy
+                    toolIpfsCid: tool.toolIpfsCid,
+                    policyVarsSchema: tool.policyVars.map(({ paramName, valueType, defaultValue }) => ({
+                        paramName,
+                        valueType,
+                        defaultValue
+                    }))
                 }))
             });
         } catch (error) {
@@ -79,6 +133,7 @@ export default function CreateRoleScreen({ onBack, dashboard }: CreateRoleProps)
 
     return (
         <div className="space-y-8">
+            <ScrollArea className="h-[calc(123vh-20rem)]">
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                     <Button variant="outline" size="sm" onClick={onBack}>
@@ -127,37 +182,55 @@ export default function CreateRoleScreen({ onBack, dashboard }: CreateRoleProps)
                                 className="flex gap-4 items-start p-4 border rounded-lg"
                             >
                                 <div className="flex-1 space-y-4">
-                                    <Select
-                                        value={tool.name}
-                                        onValueChange={(value) => updateTool(tool.id, "name", value)}
-                                    >
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Select Tool" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {availableTools.map((t) => (
-                                                <SelectItem key={t} value={t}>
-                                                    {t}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
+                                    <Input
+                                        placeholder="Tool IPFS CID"
+                                        value={tool.toolIpfsCid}
+                                        onChange={(e) => updateTool(tool.id, "toolIpfsCid", e.target.value)}
+                                    />
+                                    
+                                    <Input
+                                        placeholder="Tool Description"
+                                        value={tool.description}
+                                        onChange={(e) => updateTool(tool.id, "description", e.target.value)}
+                                    />
 
-                                    <Select
-                                        value={tool.policy}
-                                        onValueChange={(value) => updateTool(tool.id, "policy", value)}
-                                    >
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Select Policy" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {availablePolicies.map((p) => (
-                                                <SelectItem key={p} value={p}>
-                                                    {p}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
+                                    <div className="space-y-4">
+                                        <div className="flex items-center justify-between">
+                                            <h4 className="text-sm font-medium">Policy Variables</h4>
+                                            <Button 
+                                                variant="outline" 
+                                                size="sm" 
+                                                onClick={() => handleAddPolicyVar(tool.id)}
+                                            >
+                                                <Plus className="h-4 w-4 mr-2" />
+                                                Add Variable
+                                            </Button>
+                                        </div>
+
+                                        
+                                            <div className="space-y-4">
+                                                {tool.policyVars.map((pVar, index) => (
+                                                    <div key={pVar.id} className="grid grid-cols-3 gap-2">
+                                                        <Input
+                                                            placeholder="Parameter Name"
+                                                            value={pVar.paramName}
+                                                            onChange={(e) => updatePolicyVar(tool.id, pVar.id, "paramName", e.target.value)}
+                                                        />
+                                                        <Input
+                                                            placeholder="Value Type"
+                                                            value={pVar.valueType}
+                                                            onChange={(e) => updatePolicyVar(tool.id, pVar.id, "valueType", e.target.value)}
+                                                        />
+                                                        <Input
+                                                            placeholder="Default Value"
+                                                            value={pVar.defaultValue}
+                                                            onChange={(e) => updatePolicyVar(tool.id, pVar.id, "defaultValue", e.target.value)}
+                                                        />
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        
+                                    </div>
                                 </div>
                                 <Button
                                     variant="destructive"
@@ -185,6 +258,7 @@ export default function CreateRoleScreen({ onBack, dashboard }: CreateRoleProps)
                     </Button>
                 </CardContent>
             </Card>
+            </ScrollArea>
         </div>
     );
 }   

@@ -3,30 +3,30 @@ export interface VincentApp {
     appMetadata: AppMetadata;
     roles: Role[];
     delegatees: string[];
-    enabled: boolean;
 }
 
 export interface Role {
     roleId: string;
-    roleName: string;
-    roleDescription: string;
     toolPolicy: ToolPolicy[];
-    roleVersion: string;
-    enabled: boolean;
 }
 
 export interface AppMetadata {
-    appId: string;
     appName: string;
     description: string;
     email: string;
-    domain?: string;
 }
 
 export interface ToolPolicy {
     toolCId: string;
-    policyCId: string;
+    policyVarsSchema: PolicyParamSchema[];
 }
+
+export interface PolicyParamSchema {
+    paramName: string;
+    type: string;
+    defaultValue: any;
+}
+
 
 export interface Tool {
     toolId: string;
@@ -37,13 +37,6 @@ export interface Policy {
     policyId: string;
     ipfsCid: string;
     schema: PolicyParamSchema[];
-}
-
-export interface PolicyParamSchema {
-    paramId: string;
-    paramName: string;
-    type: string;
-    defaultValue: any;
 }
 
 export interface RegisterAppRequest {

@@ -33,10 +33,11 @@ async function createSiweMessage(address: string, action: string, params = {}) {
     const signerAddress = verifyMessageWithEthers(preparedMessage, signature);
     console.log("signerAddress", signerAddress);
 
-    return {
+    const signedMessage = {
         message: preparedMessage,
         signature,
     };
+    return JSON.stringify(signedMessage);
 }
 
 function verifyMessageWithEthers(message: any, signature: string) {
@@ -51,7 +52,6 @@ export async function registerApp(
         name: string;
         description: string;
         contactEmail: string;
-        // domain?: string;
     }
 ) {
     const signedMessage = await createSiweMessage(
@@ -62,7 +62,7 @@ export async function registerApp(
 
     const body = {
         ...params,
-        signedMessage: JSON.stringify(signedMessage),
+        signedMessage,
     };
 
     const response = await axios.post(`${API_BASE_URL}/registerApp`, body);
@@ -85,20 +85,11 @@ export async function updateApp(
         params
     );
 
-    /* Mock data
-    return {
-        success: true,
-        data: {
-            appId: params.appId,
-        },
-    };
-    */
-
     const response = await axios.put(`${API_BASE_URL}/updateApp`, {
         ...params,
         signedMessage,
     });
-    return response.data;
+    return response.data.data;
 }
 
 // Create new role
@@ -107,44 +98,38 @@ export async function createRole(
     params: {
         name: string;
         description: string;
-        toolPolicy: any[];
+        managementWallet: string;
+        toolPolicy: {
+            toolIpfsCid: string;
+            policyVarsSchema: {
+                paramName: string;
+                valueType: string;
+                defaultValue: string;
+            }[];
+        }[];
     }
-): Promise<
-    ApiResponse<{
-        role: any;
-    }>
-> {
+) {
     const signedMessage = await createSiweMessage(
         address,
         "create_role",
         params
     );
 
-    /* Mock data
-    return {
-        success: true,
-        data: {
-            appId: params.appId,
-            roleId: "1",
-            roleVersion: "init",
-            lastUpdated: new Date().toISOString(),
-        },
-    };
-    */
-
-    const response = await axios.post(`${API_BASE_URL}/createRole`, {
+    const body = {
         ...params,
         signedMessage,
-    });
-    return response.data;
+    };
+
+    console.log("body", body);
+    const response = await axios.post(`${API_BASE_URL}/createRole`, body);
+    console.log("createRole response", response.data.data);
+    return response.data.data;
 }
 
 // Update role
 export async function updateRole(
     address: string,
     params: {
-        description: string;
-        name: string;
         roleId: string;
         toolPolicy: any[];
     }
@@ -154,17 +139,6 @@ export async function updateRole(
         "update_role",
         params
     );
-
-    /* Mock data
-    return {
-        success: true,
-        data: {
-            appId: params.appId,
-            roleId: params.roleId,
-            roleVersion: params.roleVersion,
-        },
-    };
-    */
 
     const response = await axios.put(`${API_BASE_URL}/updateRole`, {
         signedMessage,
@@ -181,20 +155,9 @@ export async function getAppMetadata(address: string) {
 
 // Get all roles for an app
 export async function getAllRoles(managementWallet: string) {
-    /* Mock data
-    return {
-        success: true,
-        data: {
-            roleId: "1",
-            roleVersion: "init",
-            lastUpdated: new Date().toISOString(),
-        },
-    };
-    */
-
     const response = await axios.get(`${API_BASE_URL}/getAllRoles`, {
         params: {
-            managementWallet: managementWallet,
+            managementWallet,
         },
     });
     return response.data.data;
@@ -205,19 +168,9 @@ export async function getRoleToolPolicy(params: {
     managementWallet: string;
     roleId: string;
 }) {
-    /* Mock data
-    return {
-        success: true,
-        data: {
-            roleId: params.roleId,
-            roleVersion: "1.0",
-            toolPolicy: [],
-        },
-    };
-    */
-
-    const response = await axios.get(`${API_BASE_URL}/role`, {
-        params,
-    });
-    return response.data;
+    const response = await axios.get(
+        `${API_BASE_URL}/role/${params.managementWallet}/${params.roleId}`
+    );
+    console.log("getRoleToolPolicy response", response.data.data);
+    return response.data.data;
 }

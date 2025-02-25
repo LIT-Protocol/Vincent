@@ -45,8 +45,8 @@ const formSchema = z.object({
 
     toolPolicy: z.array(
         z.object({
-            toolCId: z.string().min(1, "Tool CID is required"),
-            policyCId: z.string().min(1, "Policy CID is required"),
+            toolId: z.string().min(1, "Tool ID is required"),
+            policyId: z.string().min(1, "Policy ID is required"),
         })
     ),
 });
@@ -72,10 +72,14 @@ export default function ManageRoleScreen({
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            roleVersion: role!.roleVersion || "",
-            roleName: role!.roleName || "",
-            roleDescription: role!.roleDescription || "",
-            toolPolicy: role!.toolPolicy || [],
+            toolPolicy: role?.toolPolicy?.map(tp => ({
+                toolId: tp.toolCId,
+                policyVarsSchema: tp.policyVarsSchema.map(p => ({
+                    paramName: p.paramName,
+                    type: p.type,
+                    defaultValue: p.defaultValue
+                }))
+            })) || [],
         },
     });
 
@@ -85,13 +89,14 @@ export default function ManageRoleScreen({
         try {
             setIsSubmitting(true);
             await updateRole(address, {
-                description: values.roleDescription,
-                name: values.roleName,
                 roleId: roleId.toString(),
-                toolPolicy: values.toolPolicy,
+                toolPolicy: values.toolPolicy.map(tp => ({
+                    toolId: tp.toolId,
+                    
+                })),
             });
             toast.success("Role updated successfully");
-            form.reset();
+            onBack();
         } catch (error) {
             toast.error("Failed to update role");
             setError("Failed to update role");
@@ -102,7 +107,7 @@ export default function ManageRoleScreen({
 
     return (
         <div className="flex-1 h-screen">
-            <ScrollArea className="h-[calc(125vh-20rem)]">
+            <ScrollArea className="h-[calc(123vh-20rem)]">
                 <div className="space-y-8 p-8">
                     <div className="flex items-center gap-4">
                         <Button variant="outline" onClick={onBack}>
@@ -110,13 +115,13 @@ export default function ManageRoleScreen({
                             Back
                         </Button>
                         <h1 className="text-3xl font-bold">
-                            {role?.roleName}
+                            {role?.roleId}
                         </h1>
-                        <Badge
+                        {/* <Badge
                             variant={role?.enabled ? "default" : "secondary"}
                         >
                             {role?.enabled ? "Enabled" : "Disabled"}
-                        </Badge>
+                        </Badge> */}
                     </div>
 
                     <Card>
@@ -131,7 +136,7 @@ export default function ManageRoleScreen({
                                 <div className="mt-2 text-sm">
                                     App ID:{" "}
                                     <code>
-                                        {dashboard.appMetadata.appId}
+                                        {dashboard.appMetadata.appName}
                                     </code>{" "}
                                     | Role ID: <code>{roleId}</code>
                                 </div>
@@ -227,19 +232,18 @@ export default function ManageRoleScreen({
                                                                     control={
                                                                         form.control
                                                                     }
-                                                                    name={`toolPolicy.${index}.toolCId`}
+                                                                    name={`toolPolicy.${index}.toolId`}
                                                                     render={({
                                                                         field,
                                                                     }) => (
                                                                         <FormItem>
                                                                             <FormLabel>
-                                                                                Tool
-                                                                                CID
+                                                                                Tool ID
                                                                             </FormLabel>
                                                                             <FormControl>
                                                                                 <Input
                                                                                     {...field}
-                                                                                    placeholder="Enter Tool CID"
+                                                                                    placeholder="Enter Tool ID"
                                                                                 />
                                                                             </FormControl>
                                                                             <FormMessage />
@@ -250,19 +254,18 @@ export default function ManageRoleScreen({
                                                                     control={
                                                                         form.control
                                                                     }
-                                                                    name={`toolPolicy.${index}.policyCId`}
+                                                                    name={`toolPolicy.${index}.policyId`}
                                                                     render={({
                                                                         field,
                                                                     }) => (
                                                                         <FormItem>
                                                                             <FormLabel>
-                                                                                Policy
-                                                                                CID
+                                                                                Policy ID
                                                                             </FormLabel>
                                                                             <FormControl>
                                                                                 <Input
                                                                                     {...field}
-                                                                                    placeholder="Enter Policy CID"
+                                                                                    placeholder="Enter Policy ID"
                                                                                 />
                                                                             </FormControl>
                                                                             <FormMessage />
@@ -310,9 +313,9 @@ export default function ManageRoleScreen({
                                                             [
                                                                 ...currentToolPolicy,
                                                                 {
-                                                                    toolCId:
+                                                                    toolId:
                                                                         "",
-                                                                    policyCId:
+                                                                    policyId:
                                                                         "",
                                                                 },
                                                             ]
