@@ -18,7 +18,7 @@
   body {
     margin: 0;
     min-height: 100vh;
-    background: linear-gradient(45deg, #ffffff, #ffae4d, #ffffff);
+    background: linear-gradient(45deg, #ffffff, #000000, #ffffff);
     background-size: 200% 200%;
     animation: gradient 15s ease infinite;
     color: #171923;
@@ -60,7 +60,7 @@
     margin: 0;
     font-size: 2rem;
     font-weight: 800;
-    background: linear-gradient(135deg, #000000, #FFE66D);
+    background: linear-gradient(135deg, #000000, #ffffff);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
   }
@@ -127,7 +127,7 @@
   }
   
   .tab-btn.active {
-    background: linear-gradient(135deg, #FF6B6B, #FFE66D);
+    background: linear-gradient(135deg, #000000, #4a5568);
     color: white;
   }
   
@@ -139,7 +139,7 @@
   /* Button Styles */
   .approve-btn {
     display: inline-block;
-    background: linear-gradient(135deg, #FF6B6B, #FFE66D);
+    background: linear-gradient(135deg, #000000, #4a5568);
     color: #fff;
     border: none;
     padding: 0.75rem 1.5rem;
@@ -158,7 +158,7 @@
   /* Dark Mode Adjustments */
   @media (prefers-color-scheme: dark) {
     body {
-      background: linear-gradient(45deg, #1a1a1a, #2a2a2a, #1a1a1a);
+      background: linear-gradient(45deg, #000000, #4a5568, #000000);
       color: #f7fafc;
     }
     .card {
@@ -194,6 +194,22 @@
     
     .tabs {
       border-bottom-color: #4a5568;
+    }
+    
+    h1 {
+      background: linear-gradient(135deg, #ffffff, #a0aec0);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    
+    .tab-btn.active {
+      background: linear-gradient(135deg, #ffffff, #a0aec0);
+      color: #000000;
+    }
+    
+    .approve-btn {
+      background: linear-gradient(135deg, #ffffff, #a0aec0);
+      color: #000000;
     }
   }
   
@@ -407,7 +423,7 @@
   .submit-btn {
     width: 100%;
     padding: 0.75rem;
-    background: linear-gradient(135deg, #FF6B6B, #FFE66D);
+    background: linear-gradient(135deg, #000000, #4a5568);
     color: white;
     border: none;
     border-radius: 6px;

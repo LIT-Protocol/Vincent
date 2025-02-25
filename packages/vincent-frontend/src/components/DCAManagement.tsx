@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { RegisterDCA } from './RegisterDCA';
 import { ActiveDCAs } from './ActiveDCAs';
 
 // Base Mainnet Etherscan API
 const BASE_API_URL = 'https://api.basescan.org/api';
-const API_KEY = '74SP8BPBES459I4C3WJWGQ92I6S91DZAGSY';
+const API_KEY = import.meta.env.VITE_BASESCAN_API_KEY;
 
 interface Transaction {
   hash: string;
