@@ -26,14 +26,12 @@ import { VincentApp } from "@/types";
 import { ArrowLeft, Plus, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { updateRole } from "@/services/api";
+import { updateRole, createRole } from "@/services/api";
 import { useAccount } from "wagmi";
 import { toast } from "sonner";
 import ToolsAndPolicies from "./ToolsAndPolicies";
 
 const formSchema = z.object({
-    // roleVersion: z.string().min(1, "Role version is required"),
-
     roleName: z
         .string()
         .min(2, "Role name must be at least 2 characters")
@@ -42,18 +40,13 @@ const formSchema = z.object({
     roleDescription: z
         .string(),
 
-    toolPolicy2: z.array(
-        z.object({
-            toolId: z.string().min(1, "Tool ID is required"),
-            policyId: z.string().min(1, "Policy ID is required"),
-        })
-    ),
     toolPolicy: z.array(
         z.object({
-            id: z.string().min(1, "Tool ID is required"),
+            _id: z.string().optional(),
             toolIpfsCid: z.string().min(1, "Tool IPFS CID is required"),
+            description: z.string(),
             policyVars: z.array(z.object({
-                id: z.string().min(1, "Policy Variable ID is required"),
+                _id: z.string().optional(),
                 paramName: z.string().min(1, "Policy Variable Name is required"),
                 valueType: z.string().min(1, "Policy Variable Type is required"),
                 defaultValue: z.string().min(1, "Policy Variable Default Value is required"),
@@ -65,39 +58,35 @@ const formSchema = z.object({
 interface ManageRoleScreenProps {
     onBack: () => void;
     dashboard: VincentApp;
+    onSuccess: () => void;
     roleId: string;
 }
 
 export default function ManageRoleScreen({
     onBack,
     dashboard,
+    onSuccess,
     roleId,
 }: ManageRoleScreenProps) {
-
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
-
-    const role = dashboard.roles.find((r) => r.roleId === roleId.toString());
-
     const { address } = useAccount();
+
+    // Determine if this is a new role or an existing one
+    const isNewRole = roleId === "new";
+    const role = isNewRole ? null : dashboard.roles.find((r) => r.roleId === roleId.toString());
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            roleName: role?.roleName,
-            roleDescription: role?.roleDescription,
-            toolPolicy2: role?.toolPolicy?.map(tp => ({
-                toolId: tp.toolCId,
-                policyVarsSchema: tp.policyVarsSchema.map(p => ({
-                    paramName: p.paramName,
-                    valueType: p.valueType,
-                    defaultValue: p.defaultValue
-                }))
-            })) || [],
+            roleName: role?.roleName || "",
+            roleDescription: role?.roleDescription || "",
             toolPolicy: role?.toolPolicy?.map(tp => ({
-                id: tp.toolCId,
-                toolIpfsCid: tp.toolCId,
+                _id: crypto.randomUUID(),
+                toolIpfsCid: tp.toolIpfsCid,
+                description: "",
                 policyVars: tp.policyVarsSchema.map(p => ({
+                    _id: crypto.randomUUID(),
                     paramName: p.paramName,
                     valueType: p.valueType,
                     defaultValue: p.defaultValue
@@ -106,33 +95,51 @@ export default function ManageRoleScreen({
         },
     });
 
- 
-
     async function handleRoleUpdate(values: z.infer<typeof formSchema>) {
-        console.log("meowww");
         if (!address) return;
 
         try {
             setIsSubmitting(true);
-          
-            await updateRole(address, {
-                roleId: roleId,
-                name: values.roleName,
-                description: values.roleDescription,
-                toolPolicy: values.toolPolicy.map((tp) => ({
-                    toolIpfsCid: tp.toolIpfsCid,
-                    policyVarsSchema: tp.policyVars.map((p) => ({
-                        paramName: p.paramName,
-                        valueType: p.valueType,
-                        defaultValue: p.defaultValue,
+            
+            if (isNewRole) {
+                // Handle new role creation
+                await createRole(address, {
+                    name: values.roleName,
+                    description: values.roleDescription,
+                    managementWallet: address,
+                    toolPolicy: values.toolPolicy.map((tp) => ({
+                        toolIpfsCid: tp.toolIpfsCid,
+                        description: tp.description || "",
+                        policyVarsSchema: tp.policyVars.map((p) => ({
+                            paramName: p.paramName,
+                            valueType: p.valueType,
+                            defaultValue: p.defaultValue,
+                        })),
                     })),
-                })),
-            });
-            toast.success("Role updated successfully");
-            onBack();
+                });
+            } else {
+                // Handle role update
+                await updateRole(address, {
+                    roleId: roleId,
+                    name: values.roleName,
+                    description: values.roleDescription,
+                    toolPolicy: values.toolPolicy.map((tp) => ({
+                        toolIpfsCid: tp.toolIpfsCid,
+                        description: tp.description || "",
+                        policyVarsSchema: tp.policyVars.map((p) => ({
+                            paramName: p.paramName,
+                            valueType: p.valueType,
+                            defaultValue: p.defaultValue,
+                        })),
+                    })),
+                });
+            }
+            onSuccess();
+            // onBack();
         } catch (error) {
-            toast.error("Failed to update role");
-            setError("Failed to update role");
+            const action = isNewRole ? "create" : "update";
+            toast.error(`Failed to ${action} role`);
+            setError(`Failed to ${action} role`);
         } finally {
             setIsSubmitting(false);
         }
@@ -148,7 +155,7 @@ export default function ManageRoleScreen({
                             Back
                         </Button>
                         <h1 className="text-3xl font-bold">
-                            {role?.roleId}
+                            {role?.roleName}
                         </h1>
                         {/* <Badge
                             variant={role?.enabled ? "default" : "secondary"}
@@ -159,20 +166,22 @@ export default function ManageRoleScreen({
 
                     <Card>
                         <CardHeader>
-                            <CardTitle>Manage Role</CardTitle>
+                            <CardTitle>{isNewRole ? "Create Role" : "Manage Role"}</CardTitle>
                             <CardDescription>
-                                Update role details and manage tool policies
+                                {isNewRole ? "Create a new role" : "Update role details and manage tool policies"}
                                 <div className="mt-2 text-sm">
                                     Management Wallet Address:{" "}
                                     <code>{address}</code>
                                 </div>
-                                <div className="mt-2 text-sm">
-                                    App ID:{" "}
-                                    <code>
-                                        {dashboard.appMetadata.appName}
-                                    </code>{" "}
-                                    | Role ID: <code>{roleId}</code>
-                                </div>
+                                {!isNewRole && (
+                                    <div className="mt-2 text-sm">
+                                        App ID:{" "}
+                                        <code>
+                                            {dashboard.appMetadata.appName}
+                                        </code>{" "}
+                                        | Role ID: <code>{roleId}</code>
+                                    </div>
+                                )}
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
@@ -186,25 +195,6 @@ export default function ManageRoleScreen({
 
                                     <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
                                         <div className="space-y-6">
-                                            {/* <FormField
-                                                control={form.control}
-                                                name="roleVersion"
-                                                render={({ field }) => (
-                                                    <FormItem>
-                                                        <FormLabel>
-                                                            Role Version
-                                                        </FormLabel>
-                                                        <FormControl>
-                                                            <Input
-                                                                {...field}
-                                                            />
-                                                        </FormControl>
-                                                        <FormMessage />
-                                                    </FormItem>
-                                                )}
-                                            /> */}
-
-
                                             <FormField
                                                 control={form.control}
                                                 name="roleName"
@@ -246,7 +236,6 @@ export default function ManageRoleScreen({
                                         </div>
                                     </div>
 
-
                                     <ToolsAndPolicies
                                         tools={form.watch("toolPolicy")}
                                         onToolsChange={(tools) => {
@@ -262,10 +251,10 @@ export default function ManageRoleScreen({
                                         {isSubmitting ? (
                                             <div className="flex items-center gap-2">
                                                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
-                                                Updating...
+                                                {isNewRole ? "Creating..." : "Updating..."}
                                             </div>
                                         ) : (
-                                            "Update Role"
+                                            isNewRole ? "Create Role" : "Update Role"
                                         )}
                                     </Button>
                                 </form>

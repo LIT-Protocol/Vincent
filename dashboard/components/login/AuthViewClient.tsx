@@ -116,8 +116,6 @@ export default function AuthViewClient() {
     if (sessionLoading) {
         return <Loading copy={"Securing your session..."} error={error} />;
     }
-
-    console.log("meow", currentAccount, sessionSigs);
     if (currentAccount && sessionSigs) {
         return (
             // <Dashboard currentAccount={currentAccount} sessionSigs={sessionSigs} />

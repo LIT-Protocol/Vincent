@@ -31,7 +31,6 @@ async function createSiweMessage(address: string, action: string, params = {}) {
     });
 
     const signerAddress = verifyMessageWithEthers(preparedMessage, signature);
-    console.log("signerAddress", signerAddress);
 
     const signedMessage = {
         message: preparedMessage,
@@ -66,7 +65,6 @@ export async function registerApp(
     };
 
     const response = await axios.post(`${API_BASE_URL}/registerApp`, body);
-    console.log("registerApp response", response);
     return response.data.data;
 }
 
@@ -120,9 +118,7 @@ export async function createRole(
         signedMessage,
     };
 
-    console.log("body", body);
     const response = await axios.post(`${API_BASE_URL}/createRole`, body);
-    console.log("createRole response", response.data.data);
     return response.data.data;
 }
 
@@ -130,21 +126,21 @@ export async function createRole(
 export async function updateRole(
     address: string,
     params: {
-        roleId: string;
-        name: string;
         description: string;
+        name: string;
+        roleId: string;
         toolPolicy: {
             toolIpfsCid: string;
+            description: string;
             policyVarsSchema: {
+                defaultValue: string;
                 paramName: string;
                 valueType: string;
-                defaultValue: string;
             }[];
         }[];
     }
 ) {
 
-    console.log("updating..", params);
     const signedMessage = await createSiweMessage(
         address,
         "update_role",

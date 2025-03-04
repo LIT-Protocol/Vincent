@@ -144,8 +144,6 @@ export default function CreateAppScreen() {
                 description: values.description,
                 contactEmail: values.supportEmail || "",
             });
-
-            console.log(response);
             
             if (!response.success || !response.data?.app) {
                 throw new Error(response.error || "Failed to create app");

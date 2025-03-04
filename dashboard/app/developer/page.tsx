@@ -26,8 +26,6 @@ export default function Developer() {
 
             try {
                 const exists = await checkIfAppExists(address);
-                console.log("exists", exists);
-                // const exists = true;
                 setHasApp(exists);
 
                 if (exists) {

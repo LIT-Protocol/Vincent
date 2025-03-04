@@ -7,10 +7,9 @@ export interface VincentApp {
 
 export interface Role {
     roleId: string;
-    toolPolicy: ToolPolicy[];
     roleName: string;
     roleDescription: string;
-    enabled: boolean;
+    toolPolicy: ToolPolicy[];
 }
 
 export interface AppMetadata {
@@ -20,7 +19,8 @@ export interface AppMetadata {
 }
 
 export interface ToolPolicy {
-    toolCId: string;
+    description: any;
+    toolIpfsCid: any;
     policyVarsSchema: PolicyParamSchema[];
 }
 

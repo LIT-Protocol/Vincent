@@ -37,7 +37,8 @@ export async function formCompleteVincentAppForDev(
                 roleDescription: roleData.roleDescription,
                 roleName: roleData.roleName,
                 toolPolicy: roleData.toolPolicy.map((id: any) => ({
-                    toolCId: id.toolIpfsCid,
+                    toolIpfsCid: id.toolIpfsCid,
+                    description: id.description,
                     policyVarsSchema: id.policyVarsSchema,
                 })),
             };

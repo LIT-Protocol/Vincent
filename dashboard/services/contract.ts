@@ -8,16 +8,12 @@ export async function addDelegatee(delegateeAddress: string) {
     const contract = getProviderOrSignerForAppRegistry(true);
     const tx = await contract.addDelegatee(delegateeAddress);
     await tx.wait();
-    console.log("tx", tx);
     return tx;
 }
 
 export async function getDelegatees(appCreator: string) {
-    // const appCreator = "0x66E724376D3F33c8FBCb0B7dB76acCfc0AE8D39F";
     const contract = getProviderOrSignerForAppRegistry();
-    // console.log("contract", contract);
     const delegatees = await contract.getDelegatees(appCreator);
-    // console.log("delegatees", delegatees);
     return delegatees;
 }
 
