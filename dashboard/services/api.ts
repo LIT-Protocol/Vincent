@@ -67,7 +67,7 @@ export async function registerApp(
 
     const response = await axios.post(`${API_BASE_URL}/registerApp`, body);
     console.log("registerApp response", response);
-    return response.data;
+    return response.data.data;
 }
 
 // Update app metadata
@@ -143,6 +143,8 @@ export async function updateRole(
         }[];
     }
 ) {
+
+    console.log("updating..", params);
     const signedMessage = await createSiweMessage(
         address,
         "update_role",
@@ -153,7 +155,7 @@ export async function updateRole(
         signedMessage,
         ...params,
     });
-    return response.data;
+    return response.data.data;
 }
 
 // Get app metadata

@@ -23,7 +23,6 @@ interface ToolsAndPoliciesProps {
 }
 
 export default function ToolsAndPolicies({ tools, onToolsChange }: ToolsAndPoliciesProps) {
-    console.log("tools", tools);
     const handleAddTool = () => {
         const newTool = {
             id: crypto.randomUUID(),
@@ -116,8 +115,8 @@ export default function ToolsAndPolicies({ tools, onToolsChange }: ToolsAndPolic
                             </div>
 
                             <div className="space-y-4">
-                                {tool.policyVars.map((pVar) => (
-                                    <div key={pVar.id} className="grid grid-cols-3 gap-2">
+                                {tool.policyVars.map((pVar, index) => (
+                                    <div key={index} className="grid grid-cols-3 gap-2">
                                         <Input
                                             placeholder="Parameter Name"
                                             value={pVar.paramName}

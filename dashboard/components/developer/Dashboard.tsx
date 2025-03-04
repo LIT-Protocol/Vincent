@@ -18,21 +18,39 @@ export default function DashboardScreen({vincentApp, onRefetch}: {vincentApp: Vi
     const [showManageApp, setShowManageApp] = useState(false);
     const [showDelegateeManager, setShowDelegateeManager] = useState(false);
     const [showCreateRole, setShowCreateRole] = useState(false);
+    const [isRefetching, setIsRefetching] = useState(false);
 
     useEffect(() => {
         if (vincentApp) {
             setDashboard(vincentApp)
+            setIsRefetching(false);
         }
     }, [vincentApp]);
 
-    if (!dashboard) {
-        return <div>Loading...</div>;
+    const handleRefetch = async () => {
+        setIsRefetching(true);
+        await onRefetch();
+    };
+
+    if (!dashboard || isRefetching) {
+        return (
+            <div className="flex items-center justify-center h-[50vh]">
+                <div className="space-y-4 text-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
+                    <p className="text-sm text-gray-600">{isRefetching ? "Refreshing..." : "Loading..."}</p>
+                </div>
+            </div>
+        );
     }
 
     if (showManageApp) {
         return <ManageAppScreen 
             onBack={() => setShowManageApp(false)} 
             dashboard={dashboard}
+            onSuccess={() => {
+                setShowManageApp(false);
+                handleRefetch();
+            }}
         />;
     }
 
@@ -51,7 +69,7 @@ export default function DashboardScreen({vincentApp, onRefetch}: {vincentApp: Vi
             dashboard={dashboard}
             onSuccess={() => {
                 setShowCreateRole(false);
-                onRefetch();
+                handleRefetch();
             }}
         />;
     }
@@ -63,7 +81,7 @@ export default function DashboardScreen({vincentApp, onRefetch}: {vincentApp: Vi
             roleId={selectedRoleId}
         />;
     }
-    
+
     return (
         <div className="space-y-8">
             <div className="flex justify-between items-center">
