@@ -1,13 +1,46 @@
 interface AuthMethodsProps {
-  setView: React.Dispatch<React.SetStateAction<string>>;
+  handleGoogleLogin: () => Promise<void>;
+  handleDiscordLogin: () => Promise<void>;
+  setView: React.Dispatch<React.SetStateAction<'default' | 'email' | 'phone' | 'wallet' | 'webauthn'>>;
 }
 
 const AuthMethods = ({
+  handleGoogleLogin,
+  handleDiscordLogin,
   setView,
 }: AuthMethodsProps) => {
   return (
-      <div className="buttons-container login-page">
-        {/* <button
+    <>
+      <div className="buttons-container">
+        <div className="social-container">
+          {/* <button
+            type="button"
+            className="btn btn--outline"
+            onClick={handleGoogleLogin}
+          >
+            <div className="btn__icon">
+              <Image src="/google.png" alt="Google logo" fill={true}></Image>
+            </div>
+            <span className="btn__label">Google</span>
+          </button>
+          <button
+            type="button"
+            className="btn btn--outline"
+            onClick={handleDiscordLogin}
+          >
+            <div className="btn__icon">
+              <Image src="/discord.png" alt="Discord logo" fill={true}></Image>
+            </div>
+            <span className="btn__label">Discord</span>
+          </button> */}
+          {/* <button type="button" className="btn btn--outline">
+            <div className="btn__icon">
+              <Image src="/apple.png" alt="Apple logo" fill={true}></Image>
+            </div>
+            <span className="btn__label">Apple</span>
+          </button> */}
+        </div>
+        <button
           type="button"
           className="btn btn--outline"
           onClick={() => setView('email')}
@@ -28,8 +61,8 @@ const AuthMethods = ({
             </svg>
           </div>
           <span className="btn__label">Continue with email</span>
-        </button> */}
-        {/* <button
+        </button>
+        <button
           type="button"
           className="btn btn--outline"
           onClick={() => setView('phone')}
@@ -50,7 +83,7 @@ const AuthMethods = ({
             </svg>
           </div>
           <span className="btn__label">Continue with phone</span>
-        </button> */}
+        </button>
         {/* <button
           type="button"
           className="btn btn--outline"
@@ -96,6 +129,7 @@ const AuthMethods = ({
           <span className="btn__label">Use a passkey</span>
         </button>
       </div>
+    </>
   );
 };
 

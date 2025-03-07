@@ -8,22 +8,24 @@ import { ExternalLink, Mail, Settings } from "lucide-react"
 import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { getVincentAppForUser } from "@/services/get-app"
-import { usePKPAccount } from "@/hooks/usePKPAccount"
+import { loadUserApps } from "@/services/get-app"
+import useAccounts from "@/components/login/hooks/useAccounts"
 
 export default function Library() {
   const [apps, setApps] = useState<any[]>([])
-  const { currentAccount } = usePKPAccount()
+  const { currentAccount } = useAccounts('login')
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     async function fetchApps() {
       if (!currentAccount) {
+        console.log("Pls login to continue")
         setIsLoading(false)
         return
       }
       try {
-        const app = await getVincentAppForUser(currentAccount.ethAddress)
+        console.log("Fetching apps for user:", currentAccount.ethAddress)
+        const app = await loadUserApps(currentAccount.ethAddress)
         setApps(app)
       } catch (error) {
         console.error("Error fetching apps:", error)

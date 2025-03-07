@@ -1,28 +1,33 @@
 import * as RadioGroup from '@radix-ui/react-radio-group';
 
-import { IRelayPKP } from '@lit-protocol/types';
+import { AuthMethod, IRelayPKP } from '@lit-protocol/types';
 import { useState } from 'react';
+import { storeSession } from '../utils/lit';
+
 interface AccountSelectionProp {
   accounts: IRelayPKP[];
   setCurrentAccount: any;
   error?: Error;
+  authMethod: AuthMethod
 }
 
 export default function AccountSelection({
   accounts,
   setCurrentAccount,
   error,
+  authMethod
 }: AccountSelectionProp) {
   const [selectedValue, setSelectedValue] = useState<string>('0');
 
   async function handleSubmit(event: any) {
     event.preventDefault();
     const account = accounts[parseInt(selectedValue)];
+    storeSession(authMethod, account);
     return setCurrentAccount(account);
   }
 
   return (
-    <div className="container login-page">
+    <div className="container">
       <div className="wrapper">
         {error && (
           <div className="alert alert--error">

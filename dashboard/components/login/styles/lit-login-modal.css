@@ -1,0 +1,206 @@
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  opacity: 0;
+  animation: fadeIn 0.2s ease-in-out forwards;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  width: 100%;
+  max-width: 480px;
+  position: relative;
+  transform: translateY(20px);
+  opacity: 0;
+  animation: slideUp 0.3s ease-in-out forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.modal-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  color: #666;
+}
+
+.modal-close:hover {
+  color: #333;
+}
+
+/* Connect Button Styles */
+.connect-button {
+  background: #1F2937;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.connect-button:hover {
+  background: #111827;
+}
+
+.connect-button:active {
+  transform: translateY(1px);
+}
+
+.connect-button.connected {
+  background: #1F2937;
+}
+
+.connect-button .address {
+  font-family: monospace;
+  font-size: 14px;
+}
+
+.connect-button .dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 8px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  padding: 8px;
+  min-width: 160px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all 0.2s ease;
+}
+
+.connect-button .dropdown.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.connect-button .dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  color: #374151;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background 0.2s ease;
+}
+
+.connect-button .dropdown-item:hover {
+  background: #F3F4F6;
+}
+
+.connect-button .dropdown-item.logout {
+  color: #EF4444;
+}
+
+.connect-button .dropdown-item.logout:hover {
+  background: #FEE2E2;
+}
+
+.logout-modal-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.logout-modal-content h2 {
+  margin: 0;
+  font-size: 20px;
+  color: #1F2937;
+}
+
+.address-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #F3F4F6;
+  padding: 12px;
+  border-radius: 8px;
+}
+
+.full-address {
+  font-family: monospace;
+  font-size: 14px;
+  color: #374151;
+  word-break: break-all;
+}
+
+.copy-button {
+  background: #1F2937;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.copy-button:hover:not(:disabled) {
+  background: #111827;
+}
+
+.copy-button:disabled {
+  cursor: default;
+}
+
+.copy-button--copied {
+  background: #111827;
+}
+
+.logout-button {
+  background: #1F2937;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.logout-button:hover {
+  background: #111827;
+} 

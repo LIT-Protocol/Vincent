@@ -5,7 +5,7 @@ interface CreateAccountProp {
 
 export default function CreateAccount({ signUp, error }: CreateAccountProp) {
   return (
-    <div className="container login-page">
+    <div className="container">
       <div className="wrapper">
         {error && (
           <div className="alert alert--error">

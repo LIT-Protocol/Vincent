@@ -5,7 +5,7 @@ import "@rainbow-me/rainbowkit/styles.css";
 import { useAccount } from "wagmi";
 import DashboardScreen from "@/components/developer/Dashboard";
 import { checkIfAppExists, formCompleteVincentAppForDev } from "@/services/get-app";
-import { useIsMounted } from "@/components/login/hooks/useIsMounted";
+import { useIsMounted } from "@/hooks/useIsMounted";
 import { VincentApp } from "@/types";
 import CreateAppScreen from "@/components/developer/CreateApp";
 import ConnectWalletScreen from "@/components/developer/ConnectWallet";

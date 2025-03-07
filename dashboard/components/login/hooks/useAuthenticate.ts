@@ -10,6 +10,7 @@ import {
   authenticateWithEthWallet,
   authenticateWithWebAuthn,
   authenticateWithStytch,
+  getStoredSession,
 } from '../utils/lit';
 import { useConnect, useSignMessage, useAccount } from 'wagmi';
 
@@ -23,6 +24,20 @@ export default function useAuthenticate(redirectUri?: string) {
   const { signMessageAsync } = useSignMessage();
   const { address } = useAccount();
 
+  // Load stored session on mount
+  useEffect(() => {
+    const storedSession = getStoredSession();
+    if (storedSession) {
+      setAuthMethod(storedSession.authMethod);
+    }
+  }, []);
+
+  const updateAuthMethod = (newAuthMethod: AuthMethod) => {
+    setAuthMethod(newAuthMethod);
+    // We'll store the session when we have both authMethod and PKP
+    // This happens in the useAccounts hook
+  };
+
   /**
    * Handle redirect from Google OAuth
    */
@@ -35,7 +50,7 @@ export default function useAuthenticate(redirectUri?: string) {
       const result: AuthMethod = (await authenticateWithGoogle(
         redirectUri as any
       )) as any;
-      setAuthMethod(result);
+      updateAuthMethod(result);
     } catch (err) {
       setError(err as Error);
     } finally {
@@ -55,7 +70,7 @@ export default function useAuthenticate(redirectUri?: string) {
       const result: AuthMethod = (await authenticateWithDiscord(
         redirectUri as any
       )) as any;
-      setAuthMethod(result);
+      updateAuthMethod(result);
     } catch (err) {
       setError(err as Error);
     } finally {
@@ -88,7 +103,7 @@ export default function useAuthenticate(redirectUri?: string) {
           address,
           signMessage
         );
-        setAuthMethod(result);
+        updateAuthMethod(result);
       } catch (err) {
         setError(err as Error);
       } finally {
@@ -109,7 +124,7 @@ export default function useAuthenticate(redirectUri?: string) {
 
       try {
         const result: AuthMethod = await authenticateWithWebAuthn();
-        setAuthMethod(result);
+        updateAuthMethod(result);
       } catch (err) {
         setError(err as Error);
       } finally {
@@ -132,9 +147,9 @@ export default function useAuthenticate(redirectUri?: string) {
         const result: AuthMethod = (await authenticateWithStytch(
           accessToken,
           userId,
-          method as 'email' | 'sms'
+          method
         )) as any;
-        setAuthMethod(result);
+        updateAuthMethod(result);
       } catch (err) {
         setError(err as Error);
       } finally {

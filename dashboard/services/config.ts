@@ -23,10 +23,31 @@ export const VINCENT_APP_REGISTRY_ABI = [
     "event AppUnpermitted(address indexed appManager, uint256 indexed agentPkpTokenId)",
 ];
 
-export const VINCENT_USER_REGISTRY_ADDRESS =
+export const getProviderOrSignerForAppRegistry = (isSigner = false) => {
+    if (isSigner) {
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        const signer = provider.getSigner();
+        return new ethers.Contract(
+            VINCENT_APP_REGISTRY_ADDRESS,
+            VINCENT_APP_REGISTRY_ABI,
+            signer
+        );
+    }
+    else {
+        const provider = new ethers.providers.JsonRpcProvider(providerURL);
+        return new ethers.Contract(
+            VINCENT_APP_REGISTRY_ADDRESS,
+            VINCENT_APP_REGISTRY_ABI,
+            provider
+        );
+    }
+};
+
+
+export const VINCENT_AGENT_REGISTRY_ADDRESS =
     "0xaE7C442E8d8A6dc07C02A6f41333C2480F28b430";
 
-export const VINCENT_USER_REGISTRY_ABI = [
+export const VINCENT_AGENT_REGISTRY_ABI = [
     "constructor(address pkpContract_, address appDelegationRegistry_)",
 
     "function addRole(uint256 agentPkpTokenId, address appManager, bytes32 roleId, string calldata roleVersion, string[] calldata toolIpfsCids, string[][] calldata policyParamNames, bytes[][] calldata policyValues) external",
@@ -76,41 +97,21 @@ export const VINCENT_USER_REGISTRY_ABI = [
     "function appDelegationRegistry() external view returns (address)",
 ];
 
-export const getProviderOrSignerForAppRegistry = (isSigner = false) => {
+export const getProviderOrSignerForAgentRegistry = (isSigner = false) => {
     if (isSigner) {
         const provider = new ethers.providers.Web3Provider(window.ethereum);
         const signer = provider.getSigner();
         return new ethers.Contract(
-            VINCENT_APP_REGISTRY_ADDRESS,
-            VINCENT_APP_REGISTRY_ABI,
+            VINCENT_AGENT_REGISTRY_ADDRESS,
+            VINCENT_AGENT_REGISTRY_ABI,
             signer
         );
     }
     else {
         const provider = new ethers.providers.JsonRpcProvider(providerURL);
         return new ethers.Contract(
-            VINCENT_APP_REGISTRY_ADDRESS,
-            VINCENT_APP_REGISTRY_ABI,
-            provider
-        );
-    }
-};
-
-export const getProviderOrSignerForUserRegistry = (isSigner = false) => {
-    if (isSigner) {
-        const provider = new ethers.providers.Web3Provider(window.ethereum);
-        const signer = provider.getSigner();
-        return new ethers.Contract(
-            VINCENT_USER_REGISTRY_ADDRESS,
-            VINCENT_USER_REGISTRY_ABI,
-            signer
-        );
-    }
-    else {
-        const provider = new ethers.providers.JsonRpcProvider(providerURL);
-        return new ethers.Contract(
-            VINCENT_USER_REGISTRY_ADDRESS,
-            VINCENT_USER_REGISTRY_ABI,
+            VINCENT_AGENT_REGISTRY_ADDRESS,
+            VINCENT_AGENT_REGISTRY_ABI,
             provider
         );
     }
