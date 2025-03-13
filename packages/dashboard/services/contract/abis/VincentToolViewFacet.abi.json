@@ -1,0 +1,34 @@
+[
+  {
+    "type": "function",
+    "name": "getAllRegisteredTools",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "toolIpfsCids",
+        "type": "string[]",
+        "internalType": "string[]"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getToolIpfsCidByHash",
+    "inputs": [
+      {
+        "name": "toolIpfsCidHash",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "string",
+        "internalType": "string"
+      }
+    ],
+    "stateMutability": "view"
+  }
+]

@@ -1,0 +1,356 @@
+[
+  {
+    "type": "function",
+    "name": "getAppByDelegatee",
+    "inputs": [
+      {
+        "name": "delegatee",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "appView",
+        "type": "tuple",
+        "internalType": "struct VincentAppViewFacet.AppView",
+        "components": [
+          {
+            "name": "name",
+            "type": "string",
+            "internalType": "string"
+          },
+          {
+            "name": "description",
+            "type": "string",
+            "internalType": "string"
+          },
+          {
+            "name": "manager",
+            "type": "address",
+            "internalType": "address"
+          },
+          {
+            "name": "latestVersion",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "delegatees",
+            "type": "address[]",
+            "internalType": "address[]"
+          },
+          {
+            "name": "authorizedDomains",
+            "type": "string[]",
+            "internalType": "string[]"
+          },
+          {
+            "name": "authorizedRedirectUris",
+            "type": "string[]",
+            "internalType": "string[]"
+          }
+        ]
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getAppById",
+    "inputs": [
+      {
+        "name": "appId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "appView",
+        "type": "tuple",
+        "internalType": "struct VincentAppViewFacet.AppView",
+        "components": [
+          {
+            "name": "name",
+            "type": "string",
+            "internalType": "string"
+          },
+          {
+            "name": "description",
+            "type": "string",
+            "internalType": "string"
+          },
+          {
+            "name": "manager",
+            "type": "address",
+            "internalType": "address"
+          },
+          {
+            "name": "latestVersion",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "delegatees",
+            "type": "address[]",
+            "internalType": "address[]"
+          },
+          {
+            "name": "authorizedDomains",
+            "type": "string[]",
+            "internalType": "string[]"
+          },
+          {
+            "name": "authorizedRedirectUris",
+            "type": "string[]",
+            "internalType": "string[]"
+          }
+        ]
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getAppVersion",
+    "inputs": [
+      {
+        "name": "appId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "version",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "versionedAppView",
+        "type": "tuple",
+        "internalType": "struct VincentAppViewFacet.VersionedAppView",
+        "components": [
+          {
+            "name": "name",
+            "type": "string",
+            "internalType": "string"
+          },
+          {
+            "name": "description",
+            "type": "string",
+            "internalType": "string"
+          },
+          {
+            "name": "manager",
+            "type": "address",
+            "internalType": "address"
+          },
+          {
+            "name": "version",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "enabled",
+            "type": "bool",
+            "internalType": "bool"
+          },
+          {
+            "name": "authorizedDomains",
+            "type": "string[]",
+            "internalType": "string[]"
+          },
+          {
+            "name": "authorizedRedirectUris",
+            "type": "string[]",
+            "internalType": "string[]"
+          },
+          {
+            "name": "toolIpfsCidHashes",
+            "type": "string[]",
+            "internalType": "string[]"
+          },
+          {
+            "name": "delegatedAgentPkpTokenIds",
+            "type": "uint256[]",
+            "internalType": "uint256[]"
+          }
+        ]
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getAppsByManager",
+    "inputs": [
+      {
+        "name": "manager",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "appViews",
+        "type": "tuple[]",
+        "internalType": "struct VincentAppViewFacet.AppView[]",
+        "components": [
+          {
+            "name": "name",
+            "type": "string",
+            "internalType": "string"
+          },
+          {
+            "name": "description",
+            "type": "string",
+            "internalType": "string"
+          },
+          {
+            "name": "manager",
+            "type": "address",
+            "internalType": "address"
+          },
+          {
+            "name": "latestVersion",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "delegatees",
+            "type": "address[]",
+            "internalType": "address[]"
+          },
+          {
+            "name": "authorizedDomains",
+            "type": "string[]",
+            "internalType": "string[]"
+          },
+          {
+            "name": "authorizedRedirectUris",
+            "type": "string[]",
+            "internalType": "string[]"
+          }
+        ]
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getAuthorizedDomainByHash",
+    "inputs": [
+      {
+        "name": "domainHash",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "domain",
+        "type": "string",
+        "internalType": "string"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getAuthorizedDomainsAndRedirectUrisByAppId",
+    "inputs": [
+      {
+        "name": "appId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "domains",
+        "type": "string[]",
+        "internalType": "string[]"
+      },
+      {
+        "name": "redirectUris",
+        "type": "string[]",
+        "internalType": "string[]"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getAuthorizedRedirectUriByHash",
+    "inputs": [
+      {
+        "name": "redirectUriHash",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "redirectUri",
+        "type": "string",
+        "internalType": "string"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getRegisteredManagers",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "managers",
+        "type": "address[]",
+        "internalType": "address[]"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getTotalAppCount",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "error",
+    "name": "AppNotRegistered",
+    "inputs": [
+      {
+        "name": "appId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "InvalidAppVersion",
+    "inputs": [
+      {
+        "name": "appId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "appVersion",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  }
+]
