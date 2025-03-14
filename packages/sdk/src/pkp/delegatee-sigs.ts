@@ -9,12 +9,6 @@ import {
 import { LIT_ABILITY } from '@lit-protocol/constants';
 import { LIT_NETWORKS_KEYS } from '@lit-protocol/types';
 
-declare global {
-  interface Window {
-    ethereum: any;
-  }
-}
-
 export class DelegateeSigs {
   private litNodeClient: LitNodeClient;
 

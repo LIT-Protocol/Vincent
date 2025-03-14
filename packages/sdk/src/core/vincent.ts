@@ -3,10 +3,9 @@ import { ethers } from 'ethers';
 import { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
 import { DelegateeSigs } from '../pkp';
 import { createPKPSigner, createPKPSignedJWT, verifyJWTSignature, createJWTConfig, decodeJWT, DecodedJWT } from '../auth';
-import { IStorage, Storage } from '../auth';
+import { Storage } from '../auth';
 
 export interface VincentSDKConfig {
-  storage?: IStorage;
   consentPageUrl?: string;
   network?: LIT_NETWORKS_KEYS;
 }
@@ -17,7 +16,7 @@ export class VincentSDK {
   private network: LIT_NETWORKS_KEYS;
 
   constructor(config: VincentSDKConfig = {}) {
-    this.storage = new Storage(config.storage);
+    this.storage = new Storage();
     this.consentPageUrl = config.consentPageUrl || 'https://demo.vincent.com';
     this.network = config.network || 'datil';
   }
