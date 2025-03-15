@@ -1,0 +1,41 @@
+[
+  {
+    "type": "function",
+    "name": "registerTool",
+    "inputs": [
+      {
+        "name": "toolIpfsCid",
+        "type": "string",
+        "internalType": "string"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "registerTools",
+    "inputs": [
+      {
+        "name": "toolIpfsCids",
+        "type": "string[]",
+        "internalType": "string[]"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "event",
+    "name": "NewToolRegistered",
+    "inputs": [
+      {
+        "name": "toolIpfsCidHash",
+        "type": "bytes32",
+        "indexed": true,
+        "internalType": "bytes32"
+      }
+    ],
+    "anonymous": false
+  }
+]
