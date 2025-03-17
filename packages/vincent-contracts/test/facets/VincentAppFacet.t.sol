@@ -53,6 +53,7 @@ contract VincentAppFacetTest is VincentTestHelper {
         assertEq(app.description, TEST_APP_DESCRIPTION, "App description doesn't match");
         assertEq(app.manager, deployer, "App manager doesn't match");
         assertEq(app.latestVersion, 0, "App latest version should be 0 since no versions were created");
+        assertEq(app.id, appId, "App id doesn't match the expected appId");
 
         // Verify authorized domains
         assertEq(app.authorizedDomains.length, 2, "Should have 2 authorized domains");
@@ -126,6 +127,7 @@ contract VincentAppFacetTest is VincentTestHelper {
         assertEq(app.description, TEST_APP_DESCRIPTION, "App description doesn't match");
         assertEq(app.manager, deployer, "App manager doesn't match");
         assertEq(app.latestVersion, 1, "App latest version should be 1");
+        assertEq(app.id, appId, "App id doesn't match the expected appId");
 
         // Verify authorized domains
         assertEq(app.authorizedDomains.length, 1, "Should have 1 authorized domain");
@@ -231,6 +233,7 @@ contract VincentAppFacetTest is VincentTestHelper {
         // Check first app
         assertEq(appsWithVersions[0].app.name, TEST_APP_NAME, "App name should match");
         assertEq(appsWithVersions[0].app.latestVersion, 1, "App should have 1 version");
+        assertEq(appsWithVersions[0].app.id, appId, "First app id should match");
         assertEq(appsWithVersions[0].versions.length, 1, "App should have 1 version in the versions array");
         assertEq(appsWithVersions[0].versions[0].version, 1, "App version should be 1");
         assertEq(appsWithVersions[0].versions[0].enabled, true, "App version should be enabled");
@@ -581,10 +584,12 @@ contract VincentAppFacetTest is VincentTestHelper {
         // Verify app data
         assertEq(app.name, TEST_APP_NAME, "App name doesn't match");
         assertEq(app.manager, deployer, "App manager doesn't match");
+        assertEq(app.id, appId, "App id doesn't match the expected appId");
 
         // Test with non-delegatee address - should return an empty app with default values
         app = wrappedAppViewFacet.getAppByDelegatee(TEST_DELEGATEE_2);
         assertEq(app.name, "", "Name should be empty for non-delegatee");
+        assertEq(app.id, 0, "ID should be 0 for non-delegatee");
     }
 
     function testGetAppsByManager() public {
@@ -649,6 +654,7 @@ contract VincentAppFacetTest is VincentTestHelper {
         // Check first app
         assertEq(appsWithVersions[0].app.name, TEST_APP_NAME, "First app name should match");
         assertEq(appsWithVersions[0].app.latestVersion, 1, "First app should have 1 version");
+        assertEq(appsWithVersions[0].app.id, appId, "First app id should match");
         assertEq(appsWithVersions[0].versions.length, 1, "First app should have 1 version in the versions array");
         assertEq(appsWithVersions[0].versions[0].version, 1, "First app version should be 1");
         assertEq(appsWithVersions[0].versions[0].enabled, true, "First app version should be enabled");
@@ -656,6 +662,7 @@ contract VincentAppFacetTest is VincentTestHelper {
         // Check second app
         assertEq(appsWithVersions[1].app.name, "Test App 2", "Second app name should match");
         assertEq(appsWithVersions[1].app.latestVersion, 1, "Second app should have 1 version");
+        assertEq(appsWithVersions[1].app.id, appId2, "Second app id should match");
         assertEq(appsWithVersions[1].versions.length, 1, "Second app should have 1 version in the versions array");
         assertEq(appsWithVersions[1].versions[0].version, 1, "First version should be 1");
 

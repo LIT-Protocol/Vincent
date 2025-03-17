@@ -29,6 +29,7 @@ contract VincentAppViewFacet {
      * @dev Used for returning app data in view functions
      */
     struct App {
+        uint256 id;
         string name;
         string description;
         address manager;
@@ -93,6 +94,7 @@ contract VincentAppViewFacet {
         VincentAppStorage.AppStorage storage as_ = VincentAppStorage.appStorage();
         VincentAppStorage.App storage storedApp = as_.appIdToApp[appId];
 
+        app.id = appId;
         app.name = storedApp.name;
         app.description = storedApp.description;
         app.manager = storedApp.manager;

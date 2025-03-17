@@ -16,6 +16,11 @@
         "internalType": "struct VincentAppViewFacet.App",
         "components": [
           {
+            "name": "id",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
             "name": "name",
             "type": "string",
             "internalType": "string"
@@ -71,6 +76,11 @@
         "type": "tuple",
         "internalType": "struct VincentAppViewFacet.App",
         "components": [
+          {
+            "name": "id",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
           {
             "name": "name",
             "type": "string",
@@ -132,6 +142,11 @@
         "type": "tuple",
         "internalType": "struct VincentAppViewFacet.App",
         "components": [
+          {
+            "name": "id",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
           {
             "name": "name",
             "type": "string",
@@ -220,6 +235,11 @@
             "type": "tuple",
             "internalType": "struct VincentAppViewFacet.App",
             "components": [
+              {
+                "name": "id",
+                "type": "uint256",
+                "internalType": "uint256"
+              },
               {
                 "name": "name",
                 "type": "string",
