@@ -63,6 +63,16 @@ const formSchema = z.object({
     .min(10, 'Description must be at least 10 characters')
     .max(500, 'Description cannot exceed 500 characters'),
 
+  authorizedRedirectUris: z.string().transform((val) => {
+    if (!val) return [];
+    return val
+      .split(',')
+      .map((uri) => normalizeURL(uri.trim()))
+      .filter(Boolean);
+  }),
+
+  logo: z.string().optional(),
+
   authorizedDomains: z
     .string()
     .transform((val) => {
@@ -71,19 +81,8 @@ const formSchema = z.object({
         .split(',')
         .map((domain) => domain.trim())
         .filter(Boolean);
-    }),
-
-  authorizedRedirectUris: z
-    .string()
-    .transform((val) => {
-      if (!val) return [];
-      return val
-        .split(',')
-        .map((uri) => normalizeURL(uri.trim()))
-        .filter(Boolean);
-    }),
-
-  logo: z.string().optional(),
+    })
+    .optional(),
 
   githubLink: z
     .string()
@@ -134,7 +133,10 @@ interface CreateAppScreenProps {
   onSuccess?: () => void;
 }
 
-export default function CreateAppScreen({ onBack, onSuccess }: CreateAppScreenProps) {
+export default function CreateAppScreen({
+  onBack,
+  onSuccess,
+}: CreateAppScreenProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { address } = useAccount();
@@ -145,7 +147,6 @@ export default function CreateAppScreen({ onBack, onSuccess }: CreateAppScreenPr
     defaultValues: {
       appName: '',
       description: '',
-      authorizedDomains: [],
       authorizedRedirectUris: [],
     },
     mode: 'onBlur',
@@ -179,8 +180,11 @@ export default function CreateAppScreen({ onBack, onSuccess }: CreateAppScreenPr
       const receipt = await contracts.registerApp(
         values.appName,
         values.description,
-        values.authorizedDomains,
         values.authorizedRedirectUris,
+        [],
+        [],
+        [],
+        [],
         []
       );
       console.log('receipt', receipt);
@@ -258,7 +262,7 @@ export default function CreateAppScreen({ onBack, onSuccess }: CreateAppScreenPr
                     )}
                   />
 
-                  <FormField
+                  {/* <FormField
                     control={form.control}
                     name="authorizedDomains"
                     render={({ field }) => (
@@ -273,7 +277,7 @@ export default function CreateAppScreen({ onBack, onSuccess }: CreateAppScreenPr
                         <FormMessage />
                       </FormItem>
                     )}
-                  />
+                  /> */}
                 </div>
 
                 <div className="space-y-6">

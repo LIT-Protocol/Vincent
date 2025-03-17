@@ -21,17 +21,23 @@ export class VincentContracts {
   async registerApp(
     appName: string,
     appDescription: string,
-    authorizedDomains: any,
-    authorizedRedirectUris: any,
-    delegatees: any
+    authorizedRedirectUris: string[],
+    delegatees: string[],
+    toolIpfsCids: string[],
+    toolPolicies: string[][],
+    toolPolicySchemaIpfsCids: string[][],
+    toolPolicyParameterNames: string[][][]
   ) {
     const contract = await getContract(this.network, 'App', true, this.signer);
     const tx = await contract.registerApp(
       appName,
       appDescription,
-      authorizedDomains,
       authorizedRedirectUris,
-      delegatees
+      delegatees,
+      toolIpfsCids,
+      toolPolicies,
+      toolPolicySchemaIpfsCids,
+      toolPolicyParameterNames
     );
     await tx.wait();
     return tx;

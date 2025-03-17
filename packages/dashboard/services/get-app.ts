@@ -8,36 +8,30 @@ export async function formCompleteVincentAppForDev(address: string): Promise<Vin
     const apps = await contracts.getAppsByManager(address);
     console.log('apps', apps);
 
-    return apps.map((appData: [any[], any[]], index: number) => {
-        const [app, versions] = appData;
-        const [
-            id,
-            name,
-            description,
-            manager,
-            latestVersion,
-            delegatees,
-            authorizedDomains,
-            authorizedRedirectUris
-        ] = app;
-
-        const latestVersionData = versions[versions.length - 1]
-        const isEnabled = latestVersionData ? latestVersionData.enabled : false;
+    return apps.map((appWithVersions: any) => {
+        // The contract returns a struct containing app and versions
+        const { app, versions } = appWithVersions;
+        
+        // Now we can safely access the latest version
+        const latestVersionIndex = app.latestVersion > 0 ? app.latestVersion - 1 : 0;
+        const latestVersionedAppData = app.latestVersion > 0 ? versions[latestVersionIndex] : null;
+        const isEnabled = latestVersionedAppData ? latestVersionedAppData.enabled : false;
 
         return {
-            appId: BigNumber.from(id).toNumber(),
-            appName: name,
-            description: description,
-            authorizedDomains: authorizedDomains,
-            authorizedRedirectUris: authorizedRedirectUris,
-            delegatees: delegatees,
-            toolPolicies: versions,
-            managementWallet: manager,
+            appId: BigNumber.from(app.id).toNumber(),
+            appName: app.name,
+            description: app.description,
+            managementWallet: app.manager,
+            currentVersion: app.latestVersion,
+            delegatees: app.delegatees,
+            authorizedDomains: app.authorizedDomains,
+            authorizedRedirectUris: app.authorizedRedirectUris,
             isEnabled: isEnabled,
+            toolPolicies: latestVersionedAppData.tools,
+            delegatedAgentPKPs: latestVersionedAppData ? latestVersionedAppData.delegatedAgentPkpTokenIds : [],
             appMetadata: {
                 email: "", // Not fetching off-chain data for now
             },
-            currentVersion: BigNumber.from(latestVersion).toNumber(),
         };
     });
 }

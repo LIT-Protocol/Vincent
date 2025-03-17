@@ -1,24 +1,6 @@
 [
   {
     "type": "function",
-    "name": "addAuthorizedDomain",
-    "inputs": [
-      {
-        "name": "appId",
-        "type": "uint256",
-        "internalType": "uint256"
-      },
-      {
-        "name": "domain",
-        "type": "string",
-        "internalType": "string"
-      }
-    ],
-    "outputs": [],
-    "stateMutability": "nonpayable"
-  },
-  {
-    "type": "function",
     "name": "addAuthorizedRedirectUri",
     "inputs": [
       {
@@ -91,50 +73,6 @@
         "internalType": "string"
       },
       {
-        "name": "authorizedDomains",
-        "type": "string[]",
-        "internalType": "string[]"
-      },
-      {
-        "name": "authorizedRedirectUris",
-        "type": "string[]",
-        "internalType": "string[]"
-      },
-      {
-        "name": "delegatees",
-        "type": "address[]",
-        "internalType": "address[]"
-      }
-    ],
-    "outputs": [
-      {
-        "name": "newAppId",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ],
-    "stateMutability": "nonpayable"
-  },
-  {
-    "type": "function",
-    "name": "registerAppWithVersion",
-    "inputs": [
-      {
-        "name": "name",
-        "type": "string",
-        "internalType": "string"
-      },
-      {
-        "name": "description",
-        "type": "string",
-        "internalType": "string"
-      },
-      {
-        "name": "authorizedDomains",
-        "type": "string[]",
-        "internalType": "string[]"
-      },
-      {
         "name": "authorizedRedirectUris",
         "type": "string[]",
         "internalType": "string[]"
@@ -151,6 +89,11 @@
       },
       {
         "name": "toolPolicies",
+        "type": "string[][]",
+        "internalType": "string[][]"
+      },
+      {
+        "name": "toolPolicySchemaIpfsCids",
         "type": "string[][]",
         "internalType": "string[][]"
       },
@@ -194,6 +137,11 @@
         "internalType": "string[][]"
       },
       {
+        "name": "toolPolicySchemaIpfsCids",
+        "type": "string[][]",
+        "internalType": "string[][]"
+      },
+      {
         "name": "toolPolicyParameterNames",
         "type": "string[][][]",
         "internalType": "string[][][]"
@@ -206,24 +154,6 @@
         "internalType": "uint256"
       }
     ],
-    "stateMutability": "nonpayable"
-  },
-  {
-    "type": "function",
-    "name": "removeAuthorizedDomain",
-    "inputs": [
-      {
-        "name": "appId",
-        "type": "uint256",
-        "internalType": "uint256"
-      },
-      {
-        "name": "domain",
-        "type": "string",
-        "internalType": "string"
-      }
-    ],
-    "outputs": [],
     "stateMutability": "nonpayable"
   },
   {
@@ -283,44 +213,6 @@
         "type": "bool",
         "indexed": true,
         "internalType": "bool"
-      }
-    ],
-    "anonymous": false
-  },
-  {
-    "type": "event",
-    "name": "AuthorizedDomainAdded",
-    "inputs": [
-      {
-        "name": "appId",
-        "type": "uint256",
-        "indexed": true,
-        "internalType": "uint256"
-      },
-      {
-        "name": "domain",
-        "type": "string",
-        "indexed": true,
-        "internalType": "string"
-      }
-    ],
-    "anonymous": false
-  },
-  {
-    "type": "event",
-    "name": "AuthorizedDomainRemoved",
-    "inputs": [
-      {
-        "name": "appId",
-        "type": "uint256",
-        "indexed": true,
-        "internalType": "uint256"
-      },
-      {
-        "name": "domain",
-        "type": "string",
-        "indexed": true,
-        "internalType": "string"
       }
     ],
     "anonymous": false
@@ -408,19 +300,6 @@
     "anonymous": false
   },
   {
-    "type": "event",
-    "name": "NewManagerRegistered",
-    "inputs": [
-      {
-        "name": "manager",
-        "type": "address",
-        "indexed": true,
-        "internalType": "address"
-      }
-    ],
-    "anonymous": false
-  },
-  {
     "type": "error",
     "name": "AppNotRegistered",
     "inputs": [
@@ -444,38 +323,6 @@
         "name": "appVersion",
         "type": "uint256",
         "internalType": "uint256"
-      }
-    ]
-  },
-  {
-    "type": "error",
-    "name": "AuthorizedDomainNotRegistered",
-    "inputs": [
-      {
-        "name": "appId",
-        "type": "uint256",
-        "internalType": "uint256"
-      },
-      {
-        "name": "hashedDomain",
-        "type": "bytes32",
-        "internalType": "bytes32"
-      }
-    ]
-  },
-  {
-    "type": "error",
-    "name": "AuthorizedRedirectUriNotRegistered",
-    "inputs": [
-      {
-        "name": "appId",
-        "type": "uint256",
-        "internalType": "uint256"
-      },
-      {
-        "name": "hashedRedirectUri",
-        "type": "bytes32",
-        "internalType": "bytes32"
       }
     ]
   },
@@ -513,6 +360,11 @@
   },
   {
     "type": "error",
+    "name": "NoRedirectUrisProvided",
+    "inputs": []
+  },
+  {
+    "type": "error",
     "name": "NotAppManager",
     "inputs": [
       {
@@ -524,6 +376,38 @@
         "name": "msgSender",
         "type": "address",
         "internalType": "address"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "PolicySchemaMissing",
+    "inputs": [
+      {
+        "name": "appId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "policyIpfsCid",
+        "type": "string",
+        "internalType": "string"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "RedirectUriNotRegisteredToApp",
+    "inputs": [
+      {
+        "name": "appId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "hashedRedirectUri",
+        "type": "bytes32",
+        "internalType": "bytes32"
       }
     ]
   },

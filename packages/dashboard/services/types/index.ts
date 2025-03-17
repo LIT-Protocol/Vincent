@@ -1,36 +1,29 @@
 export interface VincentApp {
-    appId: number;
-    appName: string;
-    description: string;
-    authorizedDomains: string[];
-    authorizedRedirectUris: string[];
-    delegatees: string[];
-    toolPolicies: ToolPolicy[];
-    managementWallet: string;
-    isEnabled: boolean;
-    appMetadata?: AppMetadata; // off-chain
-    currentVersion: number;
+  appId: number;
+  appName: string;
+  description: string;
+  managementWallet: string;
+  currentVersion: number;
+  delegatees: string[];
+  authorizedDomains: string[];
+  authorizedRedirectUris: string[];
+  isEnabled: boolean;
+  toolPolicies: ToolPolicy[];
+  delegatedAgentPKPs: string[];
+  appMetadata?: AppMetadata; // off-chain
 }
 
 export interface AppMetadata {
-    email: string;
+  email: string;
 }
 
 export interface ToolPolicy {
-    description: string;
-    toolIpfsCid: string;
-    policyVarsSchema: PolicyParamSchema[];
+  toolIpfsCid: string;
+  policies: Policy[];
 }
 
-export interface PolicyParamSchema {
-    paramName: string;
-    valueType: string;
-    defaultValue: any;
-}
-
-export interface Tool {
-    toolId: string;
-    ipfsCid: string;
-    name: string;
-    description: string;
+export interface Policy {
+  policyIpfsCid: string;
+  policySchemaIpfsCid: string;
+  parameterNames: string[];
 }
