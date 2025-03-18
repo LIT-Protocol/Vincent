@@ -4,7 +4,7 @@ import ManageAppScreen from './dashboard/ManageApp';
 import DelegateeManagerScreen from './dashboard/ManageDelegatee';
 import ManageToolPoliciesScreen from './dashboard/ManageToolPolicies';
 import CreateAppScreen from './CreateApp';
-import { ArrowRight, Plus, Settings } from 'lucide-react';
+import { ArrowRight, Plus, Settings, ExternalLink } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 import {
@@ -141,6 +141,21 @@ export default function DashboardScreen({
           setShowToolPolicies(false);
           handleRefetch();
         }}
+        onUpdateToolPolicies={(newToolPolicies) => {
+          // Update selected app state
+          const updatedApp = {
+            ...selectedApp,
+            toolPolicies: newToolPolicies
+          };
+          setSelectedApp(updatedApp);
+          
+          // Update dashboard state
+          setDashboard(prevDashboard => 
+            prevDashboard.map(app => 
+              app.appId === selectedApp.appId ? updatedApp : app
+            )
+          );
+        }}
       />
     );
   }
@@ -239,14 +254,20 @@ export default function DashboardScreen({
                       <CardHeader>
                         <CardTitle>Tool Policy {index + 1}</CardTitle>
                         <CardDescription>
-                          {toolPolicy.toolIpfsCid}
                         </CardDescription>
                       </CardHeader>
                       <CardContent>
                         <div className="space-y-2">
                           <div className="text-sm">
                             <span className="font-medium">Tool IPFS CID:</span>{' '}
-                            {toolPolicy.toolIpfsCid}
+                            <a 
+                              href={`/ipfs/${toolPolicy.toolIpfsCid}`}
+                              className="text-black hover:text-gray-800 hover:underline cursor-pointer inline-flex items-center gap-1"
+                              rel="noopener noreferrer"
+                            >
+                              {toolPolicy.toolIpfsCid}
+                              <ExternalLink className="h-3 w-3" />
+                            </a>
                           </div>
                           <div className="text-sm">
                             {toolPolicy.policies.length == 0
@@ -254,7 +275,14 @@ export default function DashboardScreen({
                               : toolPolicy.policies.map((policy, index) => (
                                 <div key={index}>
                                   <span className="font-medium">Policy {index + 1}:</span>{' '}
-                                  {policy.policyIpfsCid}
+                                  <a 
+                                    href={`/ipfs/${policy.policyIpfsCid}`}
+                                    className="text-black hover:text-gray-800 hover:underline cursor-pointer inline-flex items-center gap-1"
+                                    rel="noopener noreferrer"
+                                  >
+                                    {policy.policyIpfsCid}
+                                    <ExternalLink className="h-3 w-3" />
+                                  </a>
                                 </div>
                               ))}
                           </div>

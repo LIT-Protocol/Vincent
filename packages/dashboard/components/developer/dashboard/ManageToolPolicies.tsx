@@ -21,12 +21,14 @@ interface ToolPolicyManagerProps {
     onBack: () => void;
     dashboard: VincentApp;
     onSuccess: () => void;
+    onUpdateToolPolicies: (toolPolicies: ToolPolicy[]) => void;
 }
 
 export default function ManageToolPoliciesScreen({
     onBack,
     dashboard,
     onSuccess,
+    onUpdateToolPolicies,
 }: ToolPolicyManagerProps) {
     const [toolPolicies, setToolPolicies] = useState<ToolPolicyWithId[]>(
         (dashboard.toolPolicies || []).map(policy => ({
@@ -131,6 +133,8 @@ export default function ManageToolPoliciesScreen({
                 toolPolicyParameterNames
             );
 
+            // Update parent's state with new tool policies
+            onUpdateToolPolicies(toolPolicies.map(({ _id, ...tool }) => tool));
             onSuccess();
             setIsSubmitting(false);
         } catch (error) {
