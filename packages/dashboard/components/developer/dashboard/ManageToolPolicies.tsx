@@ -5,33 +5,35 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ArrowLeft, Plus, Trash2 } from "lucide-react";
 import { useState, useEffect } from "react";
-import { VincentApp, ToolPolicy, PolicyParamSchema } from "@/services/types";
+import { VincentApp, ToolPolicy, Policy } from "@/services/types";
 import { VincentContracts } from "@/services";
+
+interface PolicyWithId extends Policy {
+    _id?: string; // Frontend-only ID for mapping
+}
 
 interface ToolPolicyWithId extends ToolPolicy {
     _id?: string; // Frontend-only ID for mapping
-    policyVarsSchema: PolicyParamSchemaWithId[];
-}
-
-interface PolicyParamSchemaWithId extends PolicyParamSchema {
-    _id?: string; // Frontend-only ID for mapping
+    policies: PolicyWithId[];
 }
 
 interface ToolPolicyManagerProps {
     onBack: () => void;
     dashboard: VincentApp;
+    onSuccess: () => void;
 }
 
 export default function ManageToolPoliciesScreen({
     onBack,
     dashboard,
+    onSuccess,
 }: ToolPolicyManagerProps) {
     const [toolPolicies, setToolPolicies] = useState<ToolPolicyWithId[]>(
         (dashboard.toolPolicies || []).map(policy => ({
             ...policy,
             _id: crypto.randomUUID(),
-            policyVarsSchema: policy.policyVarsSchema.map(schema => ({
-                ...schema,
+            policies: policy.policies.map(p => ({
+                ...p,
                 _id: crypto.randomUUID()
             }))
         }))
@@ -42,52 +44,51 @@ export default function ManageToolPoliciesScreen({
         setToolPolicies((dashboard.toolPolicies || []).map(policy => ({
             ...policy,
             _id: crypto.randomUUID(),
-            policyVarsSchema: policy.policyVarsSchema.map(schema => ({
-                ...schema,
+            policies: policy.policies.map(p => ({
+                ...p,
                 _id: crypto.randomUUID()
             }))
         })));
-    }, []);
+    }, [dashboard.toolPolicies]);
 
     const handleAddTool = () => {
         const newTool: ToolPolicyWithId = {
             _id: crypto.randomUUID(),
             toolIpfsCid: "",
-            description: "",
-            policyVarsSchema: [{
+            policies: [{
                 _id: crypto.randomUUID(),
-                paramName: "",
-                valueType: "",
-                defaultValue: ""
-            } as PolicyParamSchemaWithId]
+                policyIpfsCid: "",
+                policySchemaIpfsCid: "",
+                parameterNames: []
+            }]
         };
         setToolPolicies([...toolPolicies, newTool]);
     };
 
-    const handleAddPolicyVar = (toolId: string) => {
+    const handleAddPolicy = (toolId: string) => {
         setToolPolicies(toolPolicies.map(tool => {
             if (tool._id === toolId) {
                 return {
                     ...tool,
-                    policyVarsSchema: [...tool.policyVarsSchema, {
+                    policies: [...tool.policies, {
                         _id: crypto.randomUUID(),
-                        paramName: "",
-                        valueType: "",
-                        defaultValue: ""
-                    } as PolicyParamSchemaWithId]
+                        policyIpfsCid: "",
+                        policySchemaIpfsCid: "",
+                        parameterNames: []
+                    }]
                 };
             }
             return tool;
         }));
     };
 
-    const updatePolicyVar = (toolId: string, varId: string, field: keyof PolicyParamSchemaWithId, value: string) => {
+    const updatePolicy = (toolId: string, policyId: string, field: keyof Policy, value: string | string[]) => {
         setToolPolicies(toolPolicies.map(tool => {
             if (tool._id === toolId) {
                 return {
                     ...tool,
-                    policyVarsSchema: tool.policyVarsSchema.map(pVar => 
-                        pVar._id === varId ? { ...pVar, [field]: value } : pVar
+                    policies: tool.policies.map(policy => 
+                        policy._id === policyId ? { ...policy, [field]: value } : policy
                     )
                 };
             }
@@ -113,19 +114,24 @@ export default function ManageToolPoliciesScreen({
             // Prepare the data for the contract call
             const toolIpfsCids = toolPolicies.map(tool => tool.toolIpfsCid);
             const toolPoliciesData = toolPolicies.map(tool => 
-                tool.policyVarsSchema.map(schema => schema.defaultValue)
+                tool.policies.map(policy => policy.policyIpfsCid)
+            );
+            const toolPolicySchemaIpfsCids = toolPolicies.map(tool => 
+                tool.policies.map(policy => policy.policySchemaIpfsCid)
             );
             const toolPolicyParameterNames = toolPolicies.map(tool => 
-                tool.policyVarsSchema.map(schema => [schema.paramName])
+                tool.policies.map(policy => policy.parameterNames)
             );
 
             await contracts.registerNextAppVersion(
                 dashboard.appId,
                 toolIpfsCids,
                 toolPoliciesData,
+                toolPolicySchemaIpfsCids,
                 toolPolicyParameterNames
             );
 
+            onSuccess();
             setIsSubmitting(false);
         } catch (error) {
             console.error('Error saving tool policies:', error);
@@ -166,42 +172,37 @@ export default function ManageToolPoliciesScreen({
                                         value={tool.toolIpfsCid}
                                         onChange={(e) => updateTool(tool._id!, "toolIpfsCid", e.target.value)}
                                     />
-                                    <Input
-                                        placeholder="Description"
-                                        value={tool.description}
-                                        onChange={(e) => updateTool(tool._id!, "description", e.target.value)}
-                                    />
 
                                     <div className="space-y-4">
                                         <div className="flex items-center justify-between">
-                                            <h4 className="text-sm font-medium">Policy Variables</h4>
+                                            <h4 className="text-sm font-medium">Policies</h4>
                                             <Button 
                                                 variant="outline" 
                                                 size="sm" 
-                                                onClick={() => handleAddPolicyVar(tool._id!)}
+                                                onClick={() => handleAddPolicy(tool._id!)}
                                             >
                                                 <Plus className="h-4 w-4 mr-2" />
-                                                Add Variable
+                                                Add Policy
                                             </Button>
                                         </div>
 
                                         <div className="space-y-4">
-                                            {tool.policyVarsSchema.map((pVar) => (
-                                                <div key={pVar._id} className="grid grid-cols-3 gap-2">
+                                            {tool.policies.map((policy) => (
+                                                <div key={policy._id} className="grid grid-cols-3 gap-2">
                                                     <Input
-                                                        placeholder="Parameter Name"
-                                                        value={pVar.paramName}
-                                                        onChange={(e) => updatePolicyVar(tool._id!, pVar._id!, "paramName", e.target.value)}
+                                                        placeholder="Policy IPFS CID"
+                                                        value={policy.policyIpfsCid}
+                                                        onChange={(e) => updatePolicy(tool._id!, policy._id!, "policyIpfsCid", e.target.value)}
                                                     />
                                                     <Input
-                                                        placeholder="Value Type"
-                                                        value={pVar.valueType}
-                                                        onChange={(e) => updatePolicyVar(tool._id!, pVar._id!, "valueType", e.target.value)}
+                                                        placeholder="Policy Schema IPFS CID"
+                                                        value={policy.policySchemaIpfsCid}
+                                                        onChange={(e) => updatePolicy(tool._id!, policy._id!, "policySchemaIpfsCid", e.target.value)}
                                                     />
                                                     <Input
-                                                        placeholder="Default Value"
-                                                        value={pVar.defaultValue}
-                                                        onChange={(e) => updatePolicyVar(tool._id!, pVar._id!, "defaultValue", e.target.value)}
+                                                        placeholder="Parameter Names (comma-separated)"
+                                                        value={policy.parameterNames.join(',')}
+                                                        onChange={(e) => updatePolicy(tool._id!, policy._id!, "parameterNames", e.target.value.split(',').map(s => s.trim()))}
                                                     />
                                                 </div>
                                             ))}

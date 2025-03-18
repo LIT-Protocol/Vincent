@@ -49,11 +49,30 @@ export default function DashboardScreen({
 
   async function handleToggleEnabled() {
     if (!address || !selectedApp) return;
-    
+
     try {
       setIsToggling(true);
       const contracts = new VincentContracts('datil');
-      await contracts.enableAppVersion(selectedApp.appId, selectedApp.currentVersion, !selectedApp.isEnabled);
+      await contracts.enableAppVersion(
+        selectedApp.appId,
+        selectedApp.currentVersion,
+        !selectedApp.isEnabled
+      );
+
+      // Update the local state immediately to reflect the change
+      const updatedApp = {
+        ...selectedApp,
+        isEnabled: !selectedApp.isEnabled,
+      };
+      setSelectedApp(updatedApp);
+
+      // Update the dashboard state as well
+      setDashboard((prevDashboard) =>
+        prevDashboard.map((app) =>
+          app.appId === selectedApp.appId ? updatedApp : app
+        )
+      );
+
       await handleRefetch();
     } catch (error) {
       console.error('Error toggling app status:', error);
@@ -105,6 +124,10 @@ export default function DashboardScreen({
       <DelegateeManagerScreen
         onBack={() => setShowDelegateeManager(false)}
         dashboard={selectedApp}
+        onSuccess={() => {
+          setShowDelegateeManager(false);
+          handleRefetch();
+        }}
       />
     );
   }
@@ -114,6 +137,10 @@ export default function DashboardScreen({
       <ManageToolPoliciesScreen
         onBack={() => setShowToolPolicies(false)}
         dashboard={selectedApp}
+        onSuccess={() => {
+          setShowToolPolicies(false);
+          handleRefetch();
+        }}
       />
     );
   }
@@ -133,13 +160,17 @@ export default function DashboardScreen({
             <h1 className="text-3xl font-bold">{selectedApp.appName}</h1>
           </div>
           <div className="flex gap-2 items-center">
-            <Button 
+            <Button
               variant="default"
               className="bg-black text-white"
               onClick={handleToggleEnabled}
               disabled={isToggling}
             >
-              {isToggling ? 'Updating...' : selectedApp.isEnabled ? 'Disable App' : 'Enable App'}
+              {isToggling
+                ? 'Updating...'
+                : selectedApp.isEnabled
+                ? 'Disable App'
+                : 'Enable App'}
             </Button>
             {/* <Button variant="default" onClick={() => setShowManageApp(true)}>
               <Settings className="h-4 w-4 mr-2" />
@@ -152,10 +183,7 @@ export default function DashboardScreen({
               <Plus className="h-4 w-4 mr-2" />
               Manage Delegatees
             </Button>
-            <Button
-              variant="default"
-              onClick={() => setShowToolPolicies(true)}
-            >
+            <Button variant="default" onClick={() => setShowToolPolicies(true)}>
               <Plus className="h-4 w-4 mr-2" />
               Manage Tool Policies
             </Button>
@@ -171,7 +199,8 @@ export default function DashboardScreen({
             <CardContent>
               <div className="space-y-4">
                 <div className="text-sm">
-                  <span className="font-medium">App ID:</span> {selectedApp.appId}
+                  <span className="font-medium">App ID:</span>{' '}
+                  {selectedApp.appId}
                 </div>
                 <div className="text-sm">
                   <span className="font-medium">Management Wallet:</span>{' '}
@@ -179,7 +208,9 @@ export default function DashboardScreen({
                 </div>
                 <div className="text-sm">
                   <span className="font-medium">Status:</span>{' '}
-                  <Badge variant={selectedApp.isEnabled ? 'default' : 'secondary'}>
+                  <Badge
+                    variant={selectedApp.isEnabled ? 'default' : 'secondary'}
+                  >
                     {selectedApp.isEnabled ? 'Enabled' : 'Disabled'}
                   </Badge>
                 </div>
@@ -199,27 +230,33 @@ export default function DashboardScreen({
             <CardContent>
               {selectedApp.toolPolicies.length === 0 ? (
                 <div className="text-center py-4">
-                  <p className="text-sm text-gray-600">
-                    No Tool Policies Yet
-                  </p>
+                  <p className="text-sm text-gray-600">No Tool Policies Yet</p>
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {selectedApp.toolPolicies.map((policy, index) => (
+                  {selectedApp.toolPolicies.map((toolPolicy, index) => (
                     <Card key={index}>
                       <CardHeader>
                         <CardTitle>Tool Policy {index + 1}</CardTitle>
-                        <CardDescription>{policy.description}</CardDescription>
+                        <CardDescription>
+                          {toolPolicy.toolIpfsCid}
+                        </CardDescription>
                       </CardHeader>
                       <CardContent>
                         <div className="space-y-2">
                           <div className="text-sm">
                             <span className="font-medium">Tool IPFS CID:</span>{' '}
-                            {policy.toolIpfsCid}
+                            {toolPolicy.toolIpfsCid}
                           </div>
                           <div className="text-sm">
-                            <span className="font-medium">Policy Variables:</span>{' '}
-                            {policy.policyVarsSchema.length} configured
+                            {toolPolicy.policies.length == 0
+                              ? 'No policies configured'
+                              : toolPolicy.policies.map((policy, index) => (
+                                <div key={index}>
+                                  <span className="font-medium">Policy {index + 1}:</span>{' '}
+                                  {policy.policyIpfsCid}
+                                </div>
+                              ))}
                           </div>
                         </div>
                       </CardContent>
@@ -250,7 +287,9 @@ export default function DashboardScreen({
                 <div className="space-y-2">
                   {selectedApp.delegatees.map((delegatee, index) => (
                     <div key={index} className="text-sm">
-                      <span className="font-medium">Delegatee {index + 1}:</span>{' '}
+                      <span className="font-medium">
+                        Delegatee {index + 1}:
+                      </span>{' '}
                       {delegatee}
                     </div>
                   ))}
@@ -275,7 +314,11 @@ export default function DashboardScreen({
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {dashboard.map((app, index) => (
-          <Card key={`${index}`} className="cursor-pointer hover:bg-gray-50" onClick={() => setSelectedApp(app)}>
+          <Card
+            key={`${index}`}
+            className="cursor-pointer hover:bg-gray-50"
+            onClick={() => setSelectedApp(app)}
+          >
             <CardHeader>
               <div className="flex items-start justify-between">
                 <div>
@@ -292,9 +335,7 @@ export default function DashboardScreen({
                   <span>{app.toolPolicies.length} Tool Policies</span>
                   <span>{app.delegatees?.length} Delegatees</span>
                 </div>
-                <div className="text-sm text-center">
-                  Manage App
-                </div>
+                <div className="text-sm text-center">Manage App</div>
               </div>
             </CardContent>
           </Card>

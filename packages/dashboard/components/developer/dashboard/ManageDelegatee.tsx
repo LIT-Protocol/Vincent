@@ -18,11 +18,13 @@ import { VincentContracts } from "@/services";
 interface DelegateeManagerProps {
     onBack: () => void;
     dashboard: VincentApp;
+    onSuccess: () => void;
 }
 
 export default function DelegateeManagerScreen({
     onBack,
     dashboard,
+    onSuccess,
 }: DelegateeManagerProps) {
     const [delegatees, setDelegatees] = useState<string[]>(
         dashboard.delegatees || []
@@ -31,10 +33,11 @@ export default function DelegateeManagerScreen({
     const [newPrivateKey, setNewPrivateKey] = useState("");
     const [newAddress, setNewAddress] = useState("");
     const [copying, setCopying] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
 
     useEffect(() => {
         setDelegatees(dashboard.delegatees || []);
-    }, []);
+    }, [dashboard.delegatees]);
 
     const handleGenerateDelegatee = () => {
         const wallet = Wallet.createRandom();
@@ -44,17 +47,22 @@ export default function DelegateeManagerScreen({
     };
 
     async function handleConfirmSaved() {
-        const contracts = new VincentContracts('datil');
-        await contracts.registerNextAppVersion(
-            dashboard.appId,
-            dashboard.toolPolicies.map(tool => tool.toolIpfsCid),
-            dashboard.toolPolicies.map(tool => tool.policyVarsSchema.map(schema => schema.defaultValue)),
-            dashboard.toolPolicies.map(tool => tool.policyVarsSchema.map(schema => [schema.paramName]))
-        );
-        setDelegatees((prev) => [...prev, newAddress]);
-        setShowKeyDialog(false);
-        setNewPrivateKey("");
-        setNewAddress("");
+        try {
+            setIsSaving(true);
+            const contracts = new VincentContracts('datil');
+            await contracts.addDelegatee(
+                dashboard.appId,
+                newAddress,
+            );
+            onSuccess();
+            setShowKeyDialog(false);
+            setNewPrivateKey("");
+            setNewAddress("");
+        } catch (error) {
+            console.error('Error adding delegatee:', error);
+        } finally {
+            setIsSaving(false);
+        }
     }
 
     return (
@@ -121,8 +129,9 @@ export default function DelegateeManagerScreen({
                                 className="w-full"
                                 variant="default"
                                 onClick={handleConfirmSaved}
+                                disabled={isSaving}
                             >
-                                I have saved the private key
+                                {isSaving ? 'Adding Delegatee...' : 'I have saved the private key'}
                             </Button>
                         </div>
                     </div>

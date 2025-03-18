@@ -61,6 +61,7 @@ export class VincentContracts {
     appId: number,
     toolIpfsCids: string[],
     toolPolicies: string[][],
+    toolPolicySchemaIpfsCids: string[][],
     toolPolicyParameterNames: string[][][]
   ) {
     const contract = await getContract(this.network, 'App', true, this.signer);
@@ -68,6 +69,7 @@ export class VincentContracts {
       appId,
       toolIpfsCids,
       toolPolicies,
+      toolPolicySchemaIpfsCids,
       toolPolicyParameterNames
     );
     await tx.wait();
