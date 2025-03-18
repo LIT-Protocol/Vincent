@@ -269,22 +269,48 @@ export default function DashboardScreen({
                               <ExternalLink className="h-3 w-3" />
                             </a>
                           </div>
-                          <div className="text-sm">
-                            {toolPolicy.policies.length == 0
-                              ? 'No policies configured'
-                              : toolPolicy.policies.map((policy, index) => (
-                                <div key={index}>
-                                  <span className="font-medium">Policy {index + 1}:</span>{' '}
-                                  <a 
-                                    href={`/ipfs/${policy.policyIpfsCid}`}
-                                    className="text-black hover:text-gray-800 hover:underline cursor-pointer inline-flex items-center gap-1"
-                                    rel="noopener noreferrer"
-                                  >
-                                    {policy.policyIpfsCid}
-                                    <ExternalLink className="h-3 w-3" />
-                                  </a>
+                          <div className="text-sm space-y-2">
+                            {toolPolicy.policies.length === 0 ? (
+                              <div className="text-gray-600">No policies configured</div>
+                            ) : (
+                              toolPolicy.policies.map((policy, index) => (
+                                <div key={index} className="border rounded-lg p-3 space-y-2">
+                                  {/* <div className="font-medium">Policy {index + 1}</div> */}
+                                  <div className="space-y-1">
+                                    <div>
+                                      <span className="font-medium">Policy IPFS CID:</span>{' '}
+                                      <a 
+                                        href={`/ipfs/${policy.policyIpfsCid}`}
+                                        className="text-black hover:text-gray-800 hover:underline cursor-pointer inline-flex items-center gap-1"
+                                        rel="noopener noreferrer"
+                                      >
+                                        {policy.policyIpfsCid}
+                                        <ExternalLink className="h-3 w-3" />
+                                      </a>
+                                    </div>
+                                    <div>
+                                      <span className="font-medium">Schema IPFS CID:</span>{' '}
+                                      <a 
+                                        href={`/ipfs/${policy.policySchemaIpfsCid}`}
+                                        className="text-black hover:text-gray-800 hover:underline cursor-pointer inline-flex items-center gap-1"
+                                        rel="noopener noreferrer"
+                                      >
+                                        {policy.policySchemaIpfsCid}
+                                        <ExternalLink className="h-3 w-3" />
+                                      </a>
+                                    </div>
+                                    <div>
+                                      <span className="font-medium">Parameter Names:</span>{' '}
+                                      {policy.parameterNames.length === 0 ? (
+                                        <span className="text-gray-600">None</span>
+                                      ) : (
+                                        <span className="text-black">{policy.parameterNames.join(', ')}</span>
+                                      )}
+                                    </div>
+                                  </div>
                                 </div>
-                              ))}
+                              ))
+                            )}
                           </div>
                         </div>
                       </CardContent>
