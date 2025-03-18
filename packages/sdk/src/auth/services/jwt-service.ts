@@ -1,7 +1,7 @@
 import * as didJWT from 'did-jwt';
 import * as secp256k1 from '@noble/secp256k1';
 import { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
-import { ethers } from 'ethers';
+import * as ethers from 'ethers';
 import { Buffer } from 'buffer';
 import { isJWTExpired, validateJWTTime, splitJWT, processJWTSignature } from '../utils';
 import { createJWTConfig } from '../interfaces/create-jwt';

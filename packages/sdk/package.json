@@ -4,7 +4,6 @@
   "description": "Vincent SDK for browser and backend",
   "author": "Lit Protocol",
   "license": "ISC",
-  "type": "commonjs",
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",

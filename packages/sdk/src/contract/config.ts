@@ -1,4 +1,4 @@
-import { ethers } from 'ethers';
+import * as ethers from 'ethers';
 
 export type Network = 'datil-dev' | 'datil-test' | 'datil';
 

@@ -1,5 +1,5 @@
 import { LIT_NETWORKS_KEYS } from '@lit-protocol/types';
-import { ethers } from 'ethers';
+import * as ethers from 'ethers';
 import { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
 import { DelegateeSigs } from '../pkp';
 import {
