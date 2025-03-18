@@ -11,6 +11,12 @@ export interface VincentApp {
   toolPolicies: ToolPolicy[];
   delegatedAgentPKPs: string[];
   appMetadata?: AppMetadata; // off-chain
+  versions: {
+    version: number;
+    enabled: boolean;
+    toolPolicies: ToolPolicy[];
+    delegatedAgentPKPs: string[];
+  }[];
 }
 
 export interface AppMetadata {

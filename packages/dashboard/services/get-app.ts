@@ -1,12 +1,11 @@
 import { VincentApp } from "@/services/types";
 import { VincentContracts } from "./contract/contracts";
-import { BigNumber } from "ethers";
+import { BigNumber, ethers } from "ethers";
 
 export async function formCompleteVincentAppForDev(address: string): Promise<VincentApp[]> {
     const contracts = new VincentContracts('datil');
-    console.log('address', address);
     const apps = await contracts.getAppsByManager(address);
-    console.log('apps', apps);
+    console.log('apps from contract', apps);
 
     return apps.map((appWithVersions: any) => {
         // The contract returns a struct containing app and versions
@@ -22,7 +21,7 @@ export async function formCompleteVincentAppForDev(address: string): Promise<Vin
             appName: app.name,
             description: app.description,
             managementWallet: app.manager,
-            currentVersion: app.latestVersion,
+            currentVersion: BigNumber.from(app.latestVersion).toNumber(),
             delegatees: app.delegatees,
             authorizedDomains: app.authorizedDomains,
             authorizedRedirectUris: app.authorizedRedirectUris,
@@ -32,6 +31,12 @@ export async function formCompleteVincentAppForDev(address: string): Promise<Vin
             appMetadata: {
                 email: "", // Not fetching off-chain data for now
             },
+            versions: versions.map((version: any) => ({
+                version: BigNumber.from(version.version).toNumber(),
+                enabled: version.enabled,
+                tools: version.tools,
+                delegatedAgentPKPs: version.delegatedAgentPkpTokenIds,
+            })),
         };
     });
 }

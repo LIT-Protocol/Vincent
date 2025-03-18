@@ -78,9 +78,6 @@ export class VincentContracts {
 
   async enableAppVersion(appId: number, version: number, isEnabled: boolean) {
     const contract = await getContract(this.network, 'App', true, this.signer);
-    console.log('appId', appId);
-    console.log('version', version);
-    console.log('isEnabled', isEnabled);
     const tx = await contract.enableAppVersion(appId, version, isEnabled);
     await tx.wait();
     return tx;
@@ -106,9 +103,9 @@ export class VincentContracts {
     return app;
   }
 
-  async getAppVersion(appId: number, version: number) {
-    const contract = await getContract(this.network, 'AppView');
-    const appVersion = await contract.getAppVersion(appId, version);
-    return appVersion;
+  async getAppWithVersions(appId: number) {
+    const contract = await getContract(this.network, 'AppView', false);
+    const appData = await contract.getAppWithVersions(appId);
+    return appData;
   }
 }

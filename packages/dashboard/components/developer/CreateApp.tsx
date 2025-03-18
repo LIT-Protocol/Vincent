@@ -165,9 +165,6 @@ export default function CreateAppScreen({
   };
 
   async function onSubmit(values: FormValues) {
-    console.log('Form submitted with values:', values);
-    console.log('address', address);
-    console.log('chainId', chainId);
     if (!address || !chainId) {
       console.log('Missing address or chainId:', { address, chainId });
       return;
@@ -187,7 +184,6 @@ export default function CreateAppScreen({
         [],
         []
       );
-      console.log('receipt', receipt);
       onSuccess?.();
       window.location.reload();
     } catch (err) {

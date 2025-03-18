@@ -3,8 +3,9 @@ import { useEffect, useState } from 'react';
 import ManageAppScreen from './dashboard/ManageApp';
 import DelegateeManagerScreen from './dashboard/ManageDelegatee';
 import ManageToolPoliciesScreen from './dashboard/ManageToolPolicies';
+import PreviousVersionsScreen from './dashboard/PreviousVersions';
 import CreateAppScreen from './CreateApp';
-import { ArrowRight, Plus, Settings, ExternalLink } from 'lucide-react';
+import { ArrowRight, Plus, Settings, ExternalLink, History } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 import {
@@ -29,6 +30,7 @@ export default function DashboardScreen({
   const [showManageApp, setShowManageApp] = useState(false);
   const [showDelegateeManager, setShowDelegateeManager] = useState(false);
   const [showToolPolicies, setShowToolPolicies] = useState(false);
+  const [showPreviousVersions, setShowPreviousVersions] = useState(false);
   const [showCreateApp, setShowCreateApp] = useState(false);
   const [isRefetching, setIsRefetching] = useState(false);
   const [selectedApp, setSelectedApp] = useState<VincentApp | null>(null);
@@ -160,6 +162,19 @@ export default function DashboardScreen({
     );
   }
 
+  if (showPreviousVersions && selectedApp) {
+    return (
+      <PreviousVersionsScreen
+        onBack={() => setShowPreviousVersions(false)}
+        dashboard={selectedApp}
+        onSuccess={() => {
+          setShowPreviousVersions(false);
+          handleRefetch();
+        }}
+      />
+    );
+  }
+
   if (selectedApp) {
     return (
       <div className="space-y-8">
@@ -174,7 +189,7 @@ export default function DashboardScreen({
             </Button>
             <h1 className="text-3xl font-bold">{selectedApp.appName}</h1>
           </div>
-          <div className="flex gap-2 items-center">
+          <div className="flex gap-4 items-center mr-4">
             <Button
               variant="default"
               className="bg-black text-white"
@@ -187,10 +202,6 @@ export default function DashboardScreen({
                 ? 'Disable App'
                 : 'Enable App'}
             </Button>
-            {/* <Button variant="default" onClick={() => setShowManageApp(true)}>
-              <Settings className="h-4 w-4 mr-2" />
-              Manage App
-            </Button> */}
             <Button
               variant="default"
               onClick={() => setShowDelegateeManager(true)}
@@ -201,6 +212,13 @@ export default function DashboardScreen({
             <Button variant="default" onClick={() => setShowToolPolicies(true)}>
               <Plus className="h-4 w-4 mr-2" />
               Manage Tool Policies
+            </Button>
+            <Button
+              variant="default"
+              onClick={() => setShowPreviousVersions(true)}
+            >
+              <History className="h-4 w-4 mr-2" />
+              Previous Versions
             </Button>
           </div>
         </div>
@@ -220,6 +238,10 @@ export default function DashboardScreen({
                 <div className="text-sm">
                   <span className="font-medium">Management Wallet:</span>{' '}
                   {selectedApp.managementWallet}
+                </div>
+                <div className="text-sm">
+                  <span className="font-medium">Current Version:</span>{' '}
+                  {selectedApp.currentVersion}
                 </div>
                 <div className="text-sm">
                   <span className="font-medium">Status:</span>{' '}
