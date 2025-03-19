@@ -228,16 +228,8 @@ export async function getSessionSigs({
 }): Promise<SessionSigs> {
   await litNodeClient.connect();
 
-  const ethersWallet = new ethers.Wallet("0x867266a73bfc47cf6d739d9732824441f060f042ea912f0043a87d28077193d2");
-  const { capacityDelegationAuthSig } =
-  await litNodeClient.createCapacityDelegationAuthSig({
-    dAppOwnerWallet: ethersWallet,
-    capacityTokenId: "142580",
-  });
-
   const sessionSigs = await litNodeClient.getPkpSessionSigs({
     chain: 'ethereum',
-    capabilityAuthSigs: [capacityDelegationAuthSig],
     expiration: new Date(
       Date.now() + 1000 * 60 * 15
     ).toISOString(), // 15 minutes

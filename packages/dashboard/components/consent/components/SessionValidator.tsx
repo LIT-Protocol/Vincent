@@ -101,17 +101,8 @@ const SessionValidator: React.FC = () => {
           }
 
           if (walletSig) {
-            const ethersWallet = new ethers.Wallet(
-              '0x867266a73bfc47cf6d739d9732824441f060f042ea912f0043a87d28077193d2'
-            );
-            const { capacityDelegationAuthSig } =
-              await litNodeClient.createCapacityDelegationAuthSig({
-                dAppOwnerWallet: ethersWallet,
-                capacityTokenId: '142580',
-              });
-
             const attemptedSessionSigs = await litNodeClient.getSessionSigs({
-              capabilityAuthSigs: [walletSig, capacityDelegationAuthSig],
+              capabilityAuthSigs: [walletSig],
               resourceAbilityRequests: [
                 {
                   resource: new LitActionResource('*'),
