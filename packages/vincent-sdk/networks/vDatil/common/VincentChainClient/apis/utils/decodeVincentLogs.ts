@@ -32,8 +32,6 @@ export const decodeVincentLogs = async (
     vincentToolViewFacetContract,
     vincentUserFacetContract,
     vincentUserViewFacetContract,
-    publicClient,
-    walletClient,
   } = createVincentContracts(networkCtx, {
     useDiamondAddress: false,
   });
@@ -65,22 +63,11 @@ export const decodeVincentLogs = async (
     vincentUserViewFacetContract.abi
   );
 
-  const allAbis = Array.from(contractABIs.values());
-
-  const flattenedAbis = allAbis.flat();
+  const flattenedAbis = Array.from(contractABIs.values()).flat();
 
   // Decode each log
   const decodedLogs = logs.map((log) => {
     try {
-      // const abi = contractABIs.get(log.address.toLowerCase());
-      // if (!abi) {
-      //   return {
-      //     ...log,
-      //     decoded: null,
-      //     error: 'No matching ABI found for address',
-      //   };
-      // }
-
       const decoded = decodeEventLog({
         abi: flattenedAbis,
         data: log.data,

@@ -4,7 +4,12 @@
   "license": "MIT",
   "scripts": {},
   "private": true,
-  "dependencies": {},
+  "dependencies": {
+    "cid": "github:multiformats/cid",
+    "multiformats": "^13.3.2",
+    "viem": "^2.23.11",
+    "wagmi": "^2.14.13"
+  },
   "devDependencies": {
     "@nx/js": "20.4.6",
     "@swc-node/register": "~1.9.1",
