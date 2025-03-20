@@ -14,8 +14,6 @@ import {
   CardHeader,
   CardTitle,
 } from '../ui/card';
-import { useAccount } from 'wagmi';
-import { VincentContracts } from '@/services';
 
 export default function DashboardScreen({
   vincentApp,
@@ -33,7 +31,6 @@ export default function DashboardScreen({
   const [isRefetching, setIsRefetching] = useState(false);
   const [selectedApp, setSelectedApp] = useState<AppView | null>(null);
   const selectedAppIdRef = useRef<number | null>(null);
-  const { address } = useAccount();
 
   useEffect(() => {
     if (vincentApp) {
