@@ -1,0 +1,5 @@
+- [] getAllPermittedAppIdsForPkp
+- [] getAllRegisteredAgentPkps
+- [] getAllToolsAndPoliciesForApp
+- [] getPermittedAppVersionForPkp
+- [] validateToolExecutionAndGetPolicies

@@ -1,0 +1,52 @@
+{
+  "name": "vincent-contracts",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/vincent-contracts/src.ts",
+  "projectType": "library",
+  "targets": {
+    "pre-build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          {
+            "command": "echo '🪝 Running pre-build script' && bun run ./packages/vincent-contracts/src.ts/scripts/cast-any-to-create-contracts.ts"
+          }
+        ]
+      }
+    },
+    "build:tsc": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "dependsOn": ["pre-build"],
+      "options": {
+        "outputPath": "packages/vincent-contracts/dist",
+        "main": "packages/vincent-contracts/index.ts",
+        "tsConfig": "packages/vincent-contracts/tsconfig.lib.json",
+        "assets": ["packages/vincent-contracts/*.md"],
+        "target": "es2020",
+        "formats": ["cjs"]
+      }
+    },
+    "post-build": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build:tsc"],
+      "options": {
+        "commands": [
+          {
+            "command": "echo '🪝 Running post-build script' && bun run ./packages/vincent-contracts/src.ts/scripts/revert-any-from-create-contracts.ts"
+          }
+        ]
+      }
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "nx run vincent-contracts:build:tsc",
+          "nx run vincent-contracts:post-build"
+        ]
+      }
+    }
+  },
+  "tags": []
+}

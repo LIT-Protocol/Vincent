@@ -1,0 +1,4 @@
+- [] getAllApprovedTools
+- [] getApprovedToolsManager
+- [] getToolIpfsCidByHash
+- [] isToolApproved

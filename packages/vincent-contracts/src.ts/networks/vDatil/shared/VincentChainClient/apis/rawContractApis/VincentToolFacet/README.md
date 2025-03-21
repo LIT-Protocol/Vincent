@@ -1,0 +1,4 @@
+- [] approveTools
+- [] registerTools
+- [] removeToolApprovals
+- [] updateApprovedToolsManager
