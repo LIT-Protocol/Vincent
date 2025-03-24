@@ -27,6 +27,7 @@ import { VincentContracts } from '@/services';
 import { Network } from '@/services';
 import { ArrowLeft, Plus, Trash2 } from 'lucide-react';
 import { mapTypeToEnum } from '@/services/types';
+import ChainManager from './example/ChainManager';
 
 // URL normalization helpers
 const normalizeURL = (url: string): string => {
@@ -336,6 +337,7 @@ export default function CreateAppScreen({ onBack, onSuccess }: CreateAppScreenPr
           </Button>
         )}
         <h1 className="text-3xl font-bold text-black">Create New App</h1>
+        <ChainManager />
       </div>
       <Card>
         <CardHeader>
