@@ -1,14 +1,13 @@
+import { LogManager } from '@lit-protocol/logger';
 import { createDatilChainManager } from '@lit-protocol/vincent-contracts';
 import {
-  getWalletClient,
   getAccount,
+  getWalletClient,
   reconnect,
   watchAccount,
 } from '@wagmi/core';
-import { useContext, useEffect, useState, useRef } from 'react';
-import { createContext } from 'react';
+import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { useConfig } from 'wagmi';
-import { LogManager, Logger } from '@lit-protocol/logger';
 
 const DEFAULT_CATEGORY = '[LitContext]';
 
@@ -28,12 +27,14 @@ interface LitContextConfig {
   chainManager: ReturnType<typeof createDatilChainManager> | null;
   isConnected: boolean;
   error: Error | null;
+  connectedAddress: string | null;
 }
 
 export const LitContext = createContext<LitContextConfig>({
   chainManager: null,
   isConnected: false,
   error: null,
+  connectedAddress: null,
 });
 
 export const useLitContext = () => useContext(LitContext);
@@ -49,6 +50,7 @@ export const LitContextProvider = ({
   const [isConnected, setIsConnected] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const unwatch = useRef<() => void>(() => {});
+  const [connectedAddress, setConnectedAddress] = useState<string | null>(null);
 
   // Config for wagmi interactions
   const config = useConfig();
@@ -65,6 +67,8 @@ export const LitContextProvider = ({
         setIsConnected(false);
         return;
       }
+
+      setConnectedAddress(account.address ?? null);
 
       // Only attempt to get wallet client if we have a connected wallet
       const walletClient = await getWalletClient(config);
@@ -138,6 +142,7 @@ export const LitContextProvider = ({
     chainManager,
     isConnected,
     error,
+    connectedAddress,
   };
 
   return (
