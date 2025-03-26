@@ -12,6 +12,7 @@ import '@rainbow-me/rainbowkit/styles.css';
 import { yellowstone } from './config/chains';
 import { usePathname } from 'next/navigation';
 import { ErrorPopupProvider } from '@/providers/error-popup';
+import { LitContextProvider } from '@/providers/LitContext';
 
 const wagmiConfig = createConfig({
   chains: [yellowstone],
@@ -33,30 +34,34 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const pathname = usePathname();
-  
+
   // Don't apply this layout to consent pages - let them use their own layout
   if (pathname?.startsWith('/consent')) {
     return <>{children}</>;
   }
-  
+
   return (
     <WagmiProvider config={wagmiConfig}>
       <QueryClientProvider client={queryClient}>
-          <html>
-            <body>
-              <RainbowKitProvider
-                theme={darkTheme()}
-                initialChain={yellowstone}
-                appInfo={demoAppInfo}
-              >
+        <html>
+          <body>
+            <RainbowKitProvider
+              theme={darkTheme()}
+              initialChain={yellowstone}
+              appInfo={demoAppInfo}
+            >
+              <LitContextProvider>
                 <ErrorPopupProvider>
                   <Header />
-                  <main className="max-w-screen-xl mx-auto p-6">{children}</main>
+                  <main className="max-w-screen-xl mx-auto p-6">
+                    {children}
+                  </main>
                 </ErrorPopupProvider>
-              </RainbowKitProvider>
-            </body>
-          </html>
-        </QueryClientProvider>
-      </WagmiProvider>
+              </LitContextProvider>
+            </RainbowKitProvider>
+          </body>
+        </html>
+      </QueryClientProvider>
+    </WagmiProvider>
   );
 }
