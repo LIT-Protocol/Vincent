@@ -14,8 +14,8 @@ import "./diamond-base/interfaces/IERC165.sol";
 import "./diamond-base/interfaces/IERC173.sol";
 import "./facets/VincentAppFacet.sol";
 import "./facets/VincentAppViewFacet.sol";
-import "./facets/VincentToolFacet.sol";
-import "./facets/VincentToolViewFacet.sol";
+import "./facets/VincentLitActionFacet.sol";
+import "./facets/VincentLitActionViewFacet.sol";
 import "./facets/VincentUserFacet.sol";
 import "./facets/VincentUserViewFacet.sol";
 
@@ -37,9 +37,9 @@ contract VincentDiamond {
     error InvalidFacetAddress();
 
     /**
-     * @notice Thrown when an invalid (zero address) approved tools manager is provided
+     * @notice Thrown when an invalid (zero address) approved litActions manager is provided
      */
-    error InvalidApprovedToolsManagerAddress();
+    error InvalidApprovedLitActionsManagerAddress();
 
     /**
      * @notice Thrown when ETH is sent directly to the contract without a function call
@@ -59,10 +59,10 @@ contract VincentDiamond {
         address vincentAppFacet;
         // The facet implementing app viewing functions
         address vincentAppViewFacet;
-        // The facet implementing tool registration and management functions
-        address vincentToolFacet;
-        // The facet implementing tool viewing functions
-        address vincentToolViewFacet;
+        // The facet implementing lit action registration and management functions
+        address vincentLitActionFacet;
+        // The facet implementing lit action viewing functions
+        address vincentLitActionViewFacet;
         // The facet implementing user management functions
         address vincentUserFacet;
         // The facet implementing user data viewing functions
@@ -76,25 +76,25 @@ contract VincentDiamond {
      * @param _diamondCutFacet Address of the facet implementing diamond cut functionality
      * @param _facets Struct containing addresses of all other facets
      * @param _pkpNFTContract Address of the PKP NFT contract used for sourcing PKP ownership
-     * @param _approvedToolsManager Address authorized to manage list of approved tools
+     * @param _approvedLitActionsManager Address authorized to manage list of approved litActions
      */
     constructor(
         address _contractOwner,
         address _diamondCutFacet,
         FacetAddresses memory _facets,
         address _pkpNFTContract,
-        address _approvedToolsManager
+        address _approvedLitActionsManager
     ) payable {
         // Validate inputs
         if (_pkpNFTContract == address(0)) revert InvalidPKPNFTContract();
         if (_diamondCutFacet == address(0)) revert InvalidFacetAddress();
-        if (_approvedToolsManager == address(0)) revert InvalidApprovedToolsManagerAddress();
+        if (_approvedLitActionsManager == address(0)) revert InvalidApprovedLitActionsManagerAddress();
 
         // Validate all facet addresses
         if (
             _facets.diamondLoupeFacet == address(0) || _facets.ownershipFacet == address(0)
                 || _facets.vincentAppFacet == address(0) || _facets.vincentAppViewFacet == address(0)
-                || _facets.vincentToolFacet == address(0) || _facets.vincentToolViewFacet == address(0)
+                || _facets.vincentLitActionFacet == address(0) || _facets.vincentLitActionViewFacet == address(0)
                 || _facets.vincentUserFacet == address(0) || _facets.vincentUserViewFacet == address(0)
         ) {
             revert InvalidFacetAddress();
@@ -103,9 +103,9 @@ contract VincentDiamond {
         // Set the contract owner
         LibDiamond.setContractOwner(_contractOwner);
 
-        // Initialize the approvedToolsManager
-        VincentToolStorage.ToolStorage storage ts = VincentToolStorage.toolStorage();
-        ts.approvedToolsManager = _approvedToolsManager;
+        // Initialize the approvedLitActionsManager
+        VincentLitActionStorage.LitActionStorage storage ls = VincentLitActionStorage.litActionStorage();
+        ls.approvedLitActionsManager = _approvedLitActionsManager;
 
         // Initialize Vincent storage with PKP NFT contract (inlined)
         VincentUserStorage.UserStorage storage us = VincentUserStorage.userStorage();
@@ -160,18 +160,18 @@ contract VincentDiamond {
             functionSelectors: getVincentAppViewFacetSelectors()
         });
 
-        // Add VincentToolFacet
+        // Add VincentLitActionFacet
         cuts[4] = IDiamondCut.FacetCut({
-            facetAddress: _facets.vincentToolFacet,
+            facetAddress: _facets.vincentLitActionFacet,
             action: IDiamondCut.FacetCutAction.Add,
-            functionSelectors: getVincentToolFacetSelectors()
+            functionSelectors: getVincentLitActionFacetSelectors()
         });
 
-        // Add VincentToolViewFacet
+        // Add VincentLitActionViewFacet
         cuts[5] = IDiamondCut.FacetCut({
-            facetAddress: _facets.vincentToolViewFacet,
+            facetAddress: _facets.vincentLitActionViewFacet,
             action: IDiamondCut.FacetCutAction.Add,
-            functionSelectors: getVincentToolViewFacetSelectors()
+            functionSelectors: getVincentLitActionViewFacetSelectors()
         });
 
         // Add VincentUserFacet
@@ -238,21 +238,20 @@ contract VincentDiamond {
         return selectors;
     }
 
-    function getVincentToolFacetSelectors() internal pure returns (bytes4[] memory) {
-        bytes4[] memory selectors = new bytes4[](4);
-        selectors[0] = VincentToolFacet.registerTools.selector;
-        selectors[1] = VincentToolFacet.approveTools.selector;
-        selectors[2] = VincentToolFacet.removeToolApprovals.selector;
-        selectors[3] = VincentToolFacet.updateApprovedToolsManager.selector;
+    function getVincentLitActionFacetSelectors() internal pure returns (bytes4[] memory) {
+        bytes4[] memory selectors = new bytes4[](3);
+        selectors[0] = VincentLitActionFacet.approveLitActions.selector;
+        selectors[1] = VincentLitActionFacet.removeLitActionApprovals.selector;
+        selectors[2] = VincentLitActionFacet.updateApprovedLitActionsManager.selector;
         return selectors;
     }
 
-    function getVincentToolViewFacetSelectors() internal pure returns (bytes4[] memory) {
+    function getVincentLitActionViewFacetSelectors() internal pure returns (bytes4[] memory) {
         bytes4[] memory selectors = new bytes4[](4);
-        selectors[0] = VincentToolViewFacet.getToolIpfsCidByHash.selector;
-        selectors[1] = VincentToolViewFacet.getAllApprovedTools.selector;
-        selectors[2] = VincentToolViewFacet.isToolApproved.selector;
-        selectors[3] = VincentToolViewFacet.getApprovedToolsManager.selector;
+        selectors[0] = VincentLitActionViewFacet.getLitActionIpfsCidByHash.selector;
+        selectors[1] = VincentLitActionViewFacet.getAllApprovedLitActions.selector;
+        selectors[2] = VincentLitActionViewFacet.isLitActionApproved.selector;
+        selectors[3] = VincentLitActionViewFacet.getApprovedLitActionsManager.selector;
         return selectors;
     }
 

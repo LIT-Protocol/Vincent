@@ -8,8 +8,8 @@ import { Anvil } from '../networks/shared/chains/Anvil';
 import { ChrnoicleYellowstone } from '../networks/shared/chains/ChrnoicleYellowstone';
 import * as VincentAppFacet from '../networks/vDatil/shared/VincentChainClient/apis/rawContractApis/VincentAppFacet';
 import * as VincentAppViewFacet from '../networks/vDatil/shared/VincentChainClient/apis/rawContractApis/VincentAppViewFacet';
-import * as VincentToolFacet from '../networks/vDatil/shared/VincentChainClient/apis/rawContractApis/VincentToolFacet';
-import * as VincentToolViewFacet from '../networks/vDatil/shared/VincentChainClient/apis/rawContractApis/VincentToolViewFacet';
+import * as VincentLitActionFacet from '../networks/vDatil/shared/VincentChainClient/apis/rawContractApis/VincentLitActionFacet';
+import * as VincentLitActionViewFacet from '../networks/vDatil/shared/VincentChainClient/apis/rawContractApis/VincentLitActionFacetViewFacet';
 import * as VincentUserFacet from '../networks/vDatil/shared/VincentChainClient/apis/rawContractApis/VincentUserFacet';
 import * as VincentUserViewFacet from '../networks/vDatil/shared/VincentChainClient/apis/rawContractApis/VincentUserViewFacet';
 
@@ -54,10 +54,12 @@ export function createDatilChainManager(config: DatilChainManagerConfig) {
           consentPage: {
             getAppById: bindContext(VincentAppViewFacet.getAppById),
             getAppVersion: bindContext(VincentAppViewFacet.getAppVersion),
-            isToolApproved: bindContext(VincentToolViewFacet.isToolApproved),
+            isLitActionApproved: bindContext(
+              VincentLitActionViewFacet.isLitActionApproved,
+            ),
             permitAppVersion: bindContext(VincentUserFacet.permitAppVersion),
-            removeToolPolicyParameters: bindContext(
-              VincentUserFacet.removeToolPolicyParameters,
+            removeLitActionApprovals: bindContext(
+              VincentLitActionFacet.removeLitActionApprovals,
             ),
             setToolPolicyParameters: bindContext(
               VincentUserFacet.setToolPolicyParameters,
@@ -73,12 +75,13 @@ export function createDatilChainManager(config: DatilChainManagerConfig) {
             addDelegatee: bindContext(VincentAppFacet.addDelegatee),
             enableAppVersion: bindContext(VincentAppFacet.enableAppVersion),
             getAppsByManager: bindContext(VincentAppViewFacet.getAppsByManager),
-            isToolApproved: bindContext(VincentToolViewFacet.isToolApproved),
+            isLitActionApproved: bindContext(
+              VincentLitActionViewFacet.isLitActionApproved,
+            ),
             registerApp: bindContext(VincentAppFacet.registerApp),
             registerNextAppVersion: bindContext(
               VincentAppFacet.registerNextAppVersion,
             ),
-            registerTools: bindContext(VincentToolFacet.registerTools),
             removeAuthorizedRedirectUri: bindContext(
               VincentAppFacet.removeAuthorizedRedirectUri,
             ),
@@ -90,16 +93,15 @@ export function createDatilChainManager(config: DatilChainManagerConfig) {
             ),
           },
           litManager: {
-            approveTools: bindContext(VincentToolFacet.approveTools),
-            getAllApprovedTools: VincentToolViewFacet.getAllApprovedTools,
-            getApprovedToolsManager:
-              VincentToolViewFacet.getApprovedToolsManager,
-            registerTools: bindContext(VincentToolFacet.registerTools),
-            removeToolApprovals: bindContext(
-              VincentToolFacet.removeToolApprovals,
+            getAllApprovedLitActions:
+              VincentLitActionViewFacet.getAllApprovedLitActions,
+            getApprovedLitActionsManager:
+              VincentLitActionViewFacet.getApprovedLitActionsManager,
+            removeLitActionApprovals: bindContext(
+              VincentLitActionFacet.removeLitActionApprovals,
             ),
-            updateApprovedToolsManager: bindContext(
-              VincentToolFacet.updateApprovedToolsManager,
+            updateApprovedLitActionsManager: bindContext(
+              VincentLitActionFacet.updateApprovedLitActionsManager,
             ),
           },
           userDashboard: {
@@ -139,8 +141,8 @@ export function createDatilChainManager(config: DatilChainManagerConfig) {
               VincentAppViewFacet.getAuthorizedRedirectUrisByAppId,
             ),
             getTotalAppCount: bindContext(VincentAppViewFacet.getTotalAppCount),
-            getToolIpfsCidByHash: bindContext(
-              VincentToolViewFacet.getToolIpfsCidByHash,
+            getLitActionIpfsCidByHash: bindContext(
+              VincentLitActionViewFacet.getLitActionIpfsCidByHash,
             ),
           },
         },

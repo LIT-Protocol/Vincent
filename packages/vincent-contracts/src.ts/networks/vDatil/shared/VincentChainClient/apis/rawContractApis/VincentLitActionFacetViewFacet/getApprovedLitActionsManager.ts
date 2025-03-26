@@ -4,7 +4,7 @@ import { createVincentContracts } from '../../utils/createVincentContracts';
 
 type RawContractMethod = ReturnType<
   typeof createVincentContracts
->['vincentToolViewFacetContract']['read']['getApprovedToolsManager'];
+>['vincentLitActionViewFacetContract']['read']['getApprovedLitActionsManager'];
 // type RawContractParams = Parameters<RawContractMethod>;
 type RawContractResponse = Awaited<ReturnType<RawContractMethod>>;
 
@@ -14,15 +14,15 @@ type RawContractResponse = Awaited<ReturnType<RawContractMethod>>;
  * @param ctx The Vincent network context
  * @returns The address of the current approved tools manager
  */
-export async function getApprovedToolsManager(
+export async function getApprovedLitActionsManager(
   ctx: VincentNetworkContext,
 ): Promise<{ manager: RawContractResponse }> {
-  logger.debug('Getting approved tools manager');
+  logger.debug('Getting approved lit actions manager');
 
-  const { vincentToolViewFacetContract } = createVincentContracts(ctx);
+  const { vincentLitActionViewFacetContract } = createVincentContracts(ctx);
 
   const manager =
-    await vincentToolViewFacetContract.read.getApprovedToolsManager();
+    await vincentLitActionViewFacetContract.read.getApprovedLitActionsManager();
 
   logger.debug({ manager });
 

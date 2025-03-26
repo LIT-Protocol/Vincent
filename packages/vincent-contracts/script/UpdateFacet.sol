@@ -14,8 +14,8 @@ import {OwnershipFacet} from "../src/diamond-base/facets/OwnershipFacet.sol";
 // Vincent-specific facets - these are the only ones that can be updated through this script
 import {VincentAppFacet} from "../src/facets/VincentAppFacet.sol";
 import {VincentAppViewFacet} from "../src/facets/VincentAppViewFacet.sol";
-import {VincentToolFacet} from "../src/facets/VincentToolFacet.sol";
-import {VincentToolViewFacet} from "../src/facets/VincentToolViewFacet.sol";
+import {VincentLitActionFacet} from "../src/facets/VincentLitActionFacet.sol";
+import {VincentLitActionViewFacet} from "../src/facets/VincentLitActionViewFacet.sol";
 import {VincentUserFacet} from "../src/facets/VincentUserFacet.sol";
 import {VincentUserViewFacet} from "../src/facets/VincentUserViewFacet.sol";
 
@@ -119,10 +119,10 @@ contract UpdateFacet is Script {
             return address(new VincentAppFacet());
         } else if (compareStrings(facetName, "VincentAppViewFacet")) {
             return address(new VincentAppViewFacet());
-        } else if (compareStrings(facetName, "VincentToolFacet")) {
-            return address(new VincentToolFacet());
-        } else if (compareStrings(facetName, "VincentToolViewFacet")) {
-            return address(new VincentToolViewFacet());
+        } else if (compareStrings(facetName, "VincentLitActionFacet")) {
+            return address(new VincentLitActionFacet());
+        } else if (compareStrings(facetName, "VincentLitActionViewFacet")) {
+            return address(new VincentLitActionViewFacet());
         } else if (compareStrings(facetName, "VincentUserFacet")) {
             return address(new VincentUserFacet());
         } else if (compareStrings(facetName, "VincentUserViewFacet")) {
@@ -160,14 +160,14 @@ contract UpdateFacet is Script {
                 // Check for a common selector in VincentAppViewFacet - using a selector from the library
                 bytes4 getAppSelector = VincentAppViewFacet.getAppById.selector;
                 isTargetFacet = isSameFacetType(facetAddress, getAppSelector);
-            } else if (compareStrings(facetName, "VincentToolFacet")) {
-                // Check for a common selector in VincentToolFacet - using a selector from the library
-                bytes4 registerToolsSelector = VincentToolFacet.registerTools.selector;
-                isTargetFacet = isSameFacetType(facetAddress, registerToolsSelector);
-            } else if (compareStrings(facetName, "VincentToolViewFacet")) {
-                // Check for a common selector in VincentToolViewFacet - using a selector from the library
-                bytes4 getToolSelector = VincentToolViewFacet.getToolIpfsCidByHash.selector;
-                isTargetFacet = isSameFacetType(facetAddress, getToolSelector);
+            } else if (compareStrings(facetName, "VincentLitActionFacet")) {
+                // Check for a common selector in VincentLitActionFacet - using a selector from the library
+                bytes4 approveLitActionsSelector = VincentLitActionFacet.approveLitActions.selector;
+                isTargetFacet = isSameFacetType(facetAddress, approveLitActionsSelector);
+            } else if (compareStrings(facetName, "VincentLitActionViewFacet")) {
+                // Check for a common selector in VincentLitActionViewFacet - using a selector from the library
+                bytes4 getLitActionSelector = VincentLitActionViewFacet.getLitActionIpfsCidByHash.selector;
+                isTargetFacet = isSameFacetType(facetAddress, getLitActionSelector);
             } else if (compareStrings(facetName, "VincentUserFacet")) {
                 // Check for a common selector in VincentUserFacet - using a selector from the library
                 bytes4 registerUserSelector = VincentUserFacet.permitAppVersion.selector;
@@ -214,10 +214,10 @@ contract UpdateFacet is Script {
             return getVincentAppFacetSelectors();
         } else if (compareStrings(facetName, "VincentAppViewFacet")) {
             return getVincentAppViewFacetSelectors();
-        } else if (compareStrings(facetName, "VincentToolFacet")) {
-            return getVincentToolFacetSelectors();
-        } else if (compareStrings(facetName, "VincentToolViewFacet")) {
-            return getVincentToolViewFacetSelectors();
+        } else if (compareStrings(facetName, "VincentLitActionFacet")) {
+            return getVincentLitActionFacetSelectors();
+        } else if (compareStrings(facetName, "VincentLitActionViewFacet")) {
+            return getVincentLitActionViewFacetSelectors();
         } else if (compareStrings(facetName, "VincentUserFacet")) {
             return getVincentUserFacetSelectors();
         } else if (compareStrings(facetName, "VincentUserViewFacet")) {
@@ -255,23 +255,22 @@ contract UpdateFacet is Script {
         return selectors;
     }
 
-    /// @dev Get VincentToolFacet selectors
-    function getVincentToolFacetSelectors() internal pure returns (bytes4[] memory) {
-        bytes4[] memory selectors = new bytes4[](4);
-        selectors[0] = VincentToolFacet.registerTools.selector;
-        selectors[1] = VincentToolFacet.approveTools.selector;
-        selectors[2] = VincentToolFacet.removeToolApprovals.selector;
-        selectors[3] = VincentToolFacet.updateApprovedToolsManager.selector;
+    /// @dev Get VincentLitActionFacet selectors
+    function getVincentLitActionFacetSelectors() internal pure returns (bytes4[] memory) {
+        bytes4[] memory selectors = new bytes4[](3);
+        selectors[0] = VincentLitActionFacet.approveLitActions.selector;
+        selectors[1] = VincentLitActionFacet.removeLitActionApprovals.selector;
+        selectors[2] = VincentLitActionFacet.updateApprovedLitActionsManager.selector;
         return selectors;
     }
 
-    /// @dev Get VincentToolViewFacet selectors
-    function getVincentToolViewFacetSelectors() internal pure returns (bytes4[] memory) {
+    /// @dev Get VincentLitActionViewFacet selectors
+    function getVincentLitActionViewFacetSelectors() internal pure returns (bytes4[] memory) {
         bytes4[] memory selectors = new bytes4[](4);
-        selectors[0] = VincentToolViewFacet.getToolIpfsCidByHash.selector;
-        selectors[1] = VincentToolViewFacet.getAllApprovedTools.selector;
-        selectors[2] = VincentToolViewFacet.isToolApproved.selector;
-        selectors[3] = VincentToolViewFacet.getApprovedToolsManager.selector;
+        selectors[0] = VincentLitActionViewFacet.getLitActionIpfsCidByHash.selector;
+        selectors[1] = VincentLitActionViewFacet.getAllApprovedLitActions.selector;
+        selectors[2] = VincentLitActionViewFacet.isLitActionApproved.selector;
+        selectors[3] = VincentLitActionViewFacet.getApprovedLitActionsManager.selector;
         return selectors;
     }
 
@@ -304,7 +303,7 @@ contract UpdateFacet is Script {
     function isValidFacetName(string memory facetName) internal pure returns (bool) {
         // Only allow Vincent-specific facets
         return compareStrings(facetName, "VincentAppFacet") || compareStrings(facetName, "VincentAppViewFacet")
-            || compareStrings(facetName, "VincentToolFacet") || compareStrings(facetName, "VincentToolViewFacet")
+            || compareStrings(facetName, "VincentLitActionFacet") || compareStrings(facetName, "VincentLitActionViewFacet")
             || compareStrings(facetName, "VincentUserFacet") || compareStrings(facetName, "VincentUserViewFacet");
     }
 

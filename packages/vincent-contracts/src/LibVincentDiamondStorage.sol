@@ -82,26 +82,26 @@ library VincentAppStorage {
     }
 }
 
-library VincentToolStorage {
+library VincentLitActionStorage {
     using EnumerableSet for EnumerableSet.Bytes32Set;
 
-    bytes32 internal constant TOOL_STORAGE_SLOT = keccak256("lit.vincent.tool.storage");
+    bytes32 internal constant LITACTION_STORAGE_SLOT = keccak256("lit.vincent.litaction.storage");
 
-    struct ToolStorage {
-        // A list of approved/reviewed Tool IPFS CID Hashes
+    struct LitActionStorage {
+        // A list of approved/reviewed Lit Action IPFS CID Hashes
         EnumerableSet.Bytes32Set approvedIpfsCidHashes;
         // Policy Parameter Name Hash => Policy Parameter Name
         mapping(bytes32 => string) policyParameterNameHashToName;
-        // Tool and Policy IPFS CID Hash => IPFS CID
+        // Lit Action IPFS CID Hash => IPFS CID
         mapping(bytes32 => string) ipfsCidHashToIpfsCid;
-        // Address of the manager who can add/remove tools from the approved list
-        address approvedToolsManager;
+        // Address of the manager who can add/remove Lit Actions from the approved list
+        address approvedLitActionsManager;
     }
 
-    function toolStorage() internal pure returns (ToolStorage storage ts) {
-        bytes32 slot = TOOL_STORAGE_SLOT;
+    function litActionStorage() internal pure returns (LitActionStorage storage ls) {
+        bytes32 slot = LITACTION_STORAGE_SLOT;
         assembly {
-            ts.slot := slot
+            ls.slot := slot
         }
     }
 }

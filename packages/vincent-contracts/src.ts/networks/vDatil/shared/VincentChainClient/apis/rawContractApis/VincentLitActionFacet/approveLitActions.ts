@@ -5,11 +5,11 @@ import { callWithAdjustedOverrides } from '../../utils/callWithAdjustedOverrides
 import { createVincentContracts } from '../../utils/createVincentContracts';
 import { decodeVincentLogs } from '../../utils/decodeVincentLogs';
 
-const ApproveToolsRequest = z.object({
-  toolIpfsCids: z.array(z.string()),
+const ApproveLitActionsRequest = z.object({
+  litActionIpfsCids: z.array(z.string()),
 });
 
-type ApproveToolsRequest = z.input<typeof ApproveToolsRequest>;
+type ApproveLitActionsRequest = z.input<typeof ApproveLitActionsRequest>;
 
 /**
  * Approves tools for use on the Vincent network
@@ -17,20 +17,20 @@ type ApproveToolsRequest = z.input<typeof ApproveToolsRequest>;
  * @param ctx The Vincent network context
  * @returns Object containing transaction hash, receipt, and decoded logs
  */
-export async function approveTools(
-  request: ApproveToolsRequest,
+export async function approveLitActions(
+  request: ApproveLitActionsRequest,
   ctx: VincentNetworkContext,
 ) {
-  const validatedRequest = ApproveToolsRequest.parse(request);
+  const validatedRequest = ApproveLitActionsRequest.parse(request);
   logger.debug({ validatedRequest });
 
-  const { vincentToolFacetContract, publicClient } =
+  const { vincentLitActionFacetContract, publicClient } =
     createVincentContracts(ctx);
 
   const hash = await callWithAdjustedOverrides(
-    vincentToolFacetContract,
-    'approveTools',
-    [validatedRequest.toolIpfsCids],
+    vincentLitActionFacetContract,
+    'approveLitActions',
+    [validatedRequest.litActionIpfsCids],
   );
 
   logger.info({ hash });

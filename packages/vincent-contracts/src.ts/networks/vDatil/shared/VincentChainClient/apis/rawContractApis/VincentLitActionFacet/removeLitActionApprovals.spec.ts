@@ -1,7 +1,6 @@
 import { getTestContext } from '../testContext';
-import { approveTools } from './approveTools';
-import { registerTools } from './registerTools';
-import { removeToolApprovals } from './removeToolApprovals';
+import { approveLitActions } from './approveLitActions';
+import { removeLitActionApprovals } from './removeLitActionApprovals';
 
 describe('removeToolApprovals', () => {
   let testContext: Awaited<ReturnType<typeof getTestContext>>;
@@ -12,27 +11,19 @@ describe('removeToolApprovals', () => {
   beforeAll(async () => {
     testContext = await getTestContext();
 
-    // Register the tool
-    await registerTools(
-      {
-        toolIpfsCids: randomIpfsCids,
-      },
-      testContext.networkContext,
-    );
-
     // Approve the tool
-    await approveTools(
+    await approveLitActions(
       {
-        toolIpfsCids: randomIpfsCids,
+        litActionIpfsCids: randomIpfsCids,
       },
       testContext.networkContext,
     );
   });
 
   it('should remove approvals for tools on the Vincent network', async () => {
-    const res = await removeToolApprovals(
+    const res = await removeLitActionApprovals(
       {
-        toolIpfsCids: randomIpfsCids,
+        litActionIpfsCids: randomIpfsCids,
       },
       testContext.networkContext,
     );
@@ -41,12 +32,12 @@ describe('removeToolApprovals', () => {
     expect(res.receipt).toBeDefined();
     expect(res.decodedLogs).toBeDefined();
 
-    // Find the ToolApprovalRemoved event for each tool
-    for (const toolIpfsCid of randomIpfsCids) {
+    // Find the LitActionApprovalRemoved event for each tool
+    for (const _ of randomIpfsCids) {
       const event = res.decodedLogs.find(
         (log) =>
-          log.eventName === 'ToolApprovalRemoved' &&
-          log.args.toolIpfsCidHash !== undefined,
+          log.eventName === 'LitActionApprovalRemoved' &&
+          log.args.litActionIpfsCidHash !== undefined,
       );
       expect(event).toBeDefined();
     }

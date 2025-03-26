@@ -16,7 +16,7 @@ export type DecodedLog = {
  */
 export const decodeVincentLogs = async (
   logs: Log[],
-  networkCtx: VincentNetworkContext
+  networkCtx: VincentNetworkContext,
 ): Promise<DecodedLog[]> => {
   // Get network context for contract ABIs
   const networkContext = networkCtx.chainConfig.contractData;
@@ -28,8 +28,8 @@ export const decodeVincentLogs = async (
   const {
     vincentAppFacetContract,
     vincentAppViewFacetContract,
-    vincentToolFacetContract,
-    vincentToolViewFacetContract,
+    vincentLitActionFacetContract,
+    vincentLitActionViewFacetContract,
     vincentUserFacetContract,
     vincentUserViewFacetContract,
   } = createVincentContracts(networkCtx, {
@@ -40,27 +40,27 @@ export const decodeVincentLogs = async (
   const contractABIs = new Map<string, any>();
   contractABIs.set(
     vincentAppFacetContract.address.toLowerCase(),
-    vincentAppFacetContract.abi
+    vincentAppFacetContract.abi,
   );
   contractABIs.set(
     vincentAppViewFacetContract.address.toLowerCase(),
-    vincentAppViewFacetContract.abi
+    vincentAppViewFacetContract.abi,
   );
   contractABIs.set(
-    vincentToolFacetContract.address.toLowerCase(),
-    vincentToolFacetContract.abi
+    vincentLitActionFacetContract.address.toLowerCase(),
+    vincentLitActionFacetContract.abi,
   );
   contractABIs.set(
-    vincentToolViewFacetContract.address.toLowerCase(),
-    vincentToolViewFacetContract.abi
+    vincentLitActionViewFacetContract.address.toLowerCase(),
+    vincentLitActionViewFacetContract.abi,
   );
   contractABIs.set(
     vincentUserFacetContract.address.toLowerCase(),
-    vincentUserFacetContract.abi
+    vincentUserFacetContract.abi,
   );
   contractABIs.set(
     vincentUserViewFacetContract.address.toLowerCase(),
-    vincentUserViewFacetContract.abi
+    vincentUserViewFacetContract.abi,
   );
 
   const flattenedAbis = Array.from(contractABIs.values()).flat();
@@ -73,10 +73,10 @@ export const decodeVincentLogs = async (
         return {
           eventName: 'Unknown',
           args: {},
-          error: 'Log entry does not contain topics property'
+          error: 'Log entry does not contain topics property',
         };
       }
-      
+
       const decoded = decodeEventLog({
         abi: flattenedAbis,
         data: log.data,

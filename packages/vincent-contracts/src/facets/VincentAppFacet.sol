@@ -71,10 +71,10 @@ contract VincentAppFacet is VincentBase {
     event DelegateeRemoved(uint256 indexed appId, address indexed delegatee);
 
     /**
-     * @notice Emitted when a new tool is registered
-     * @param toolIpfsCidHash The keccak256 hash of the tool's IPFS CID that was registered
+     * @notice Emitted when a new lit action is registered
+     * @param litActionIpfsCidHash The keccak256 hash of the lit action's IPFS CID that was registered
      */
-    event NewToolRegistered(bytes32 indexed toolIpfsCidHash);
+    event NewLitActionRegistered(bytes32 indexed litActionIpfsCidHash);
 
     /**
      * @notice Error thrown when a non-manager attempts to modify an app
@@ -193,6 +193,78 @@ contract VincentAppFacet is VincentBase {
      * @param paramIndex Index of the parameter in the parameters array
      */
     error EmptyParameterNameNotAllowed(uint256 appId, uint256 toolIndex, uint256 policyIndex, uint256 paramIndex);
+
+    /**
+     * @notice Error thrown when duplicate tool IPFS CIDs are detected in the same app version
+     * @param appId ID of the app
+     * @param toolIpfsCid The duplicate tool IPFS CID
+     * @param firstIndex Index of the first occurrence of the tool
+     * @param duplicateIndex Index of the duplicate occurrence of the tool
+     */
+    error DuplicateToolIpfsCidNotAllowed(uint256 appId, string toolIpfsCid, uint256 firstIndex, uint256 duplicateIndex);
+
+    /**
+     * @notice Error thrown when duplicate policy IPFS CIDs are detected for a single tool
+     * @param appId ID of the app
+     * @param toolIndex Index of the tool in the tools array
+     * @param policyIpfsCid The duplicate policy IPFS CID
+     * @param firstIndex Index of the first occurrence of the policy
+     * @param duplicateIndex Index of the duplicate occurrence of the policy
+     */
+    error DuplicatePolicyIpfsCidNotAllowed(
+        uint256 appId, uint256 toolIndex, string policyIpfsCid, uint256 firstIndex, uint256 duplicateIndex
+    );
+
+    /**
+     * @notice Error thrown when duplicate parameter names are detected for a single policy
+     * @param appId ID of the app
+     * @param toolIndex Index of the tool in the tools array
+     * @param policyIndex Index of the policy in the policies array
+     * @param paramName The duplicate parameter name
+     * @param firstIndex Index of the first occurrence of the parameter
+     * @param duplicateIndex Index of the duplicate occurrence of the parameter
+     */
+    error DuplicateParameterNameNotAllowed(
+        uint256 appId,
+        uint256 toolIndex,
+        uint256 policyIndex,
+        string paramName,
+        uint256 firstIndex,
+        uint256 duplicateIndex
+    );
+
+    /**
+     * @notice Error thrown when the top-level tool arrays have mismatched lengths
+     * @param toolsLength Length of the tools array
+     * @param policiesLength Length of the policies array
+     * @param paramNamesLength Length of the parameter names array
+     * @param paramTypesLength Length of the parameter types array
+     */
+    error ToolArrayDimensionMismatch(
+        uint256 toolsLength, uint256 policiesLength, uint256 paramNamesLength, uint256 paramTypesLength
+    );
+
+    /**
+     * @notice Error thrown when policy-related arrays for a specific tool have mismatched lengths
+     * @param toolIndex Index of the tool in the tools array
+     * @param policiesLength Length of the policies array for this tool
+     * @param paramNamesLength Length of the parameter names array for this tool
+     * @param paramTypesLength Length of the parameter types array for this tool
+     */
+    error PolicyArrayLengthMismatch(
+        uint256 toolIndex, uint256 policiesLength, uint256 paramNamesLength, uint256 paramTypesLength
+    );
+
+    /**
+     * @notice Error thrown when parameter arrays for a specific policy have mismatched lengths
+     * @param toolIndex Index of the tool in the tools array
+     * @param policyIndex Index of the policy in the policies array
+     * @param paramNamesLength Length of the parameter names array for this policy
+     * @param paramTypesLength Length of the parameter types array for this policy
+     */
+    error ParameterArrayLengthMismatch(
+        uint256 toolIndex, uint256 policyIndex, uint256 paramNamesLength, uint256 paramTypesLength
+    );
 
     /**
      * @notice Modifier to restrict function access to the app manager only
@@ -479,21 +551,93 @@ contract VincentAppFacet is VincentBase {
             revert NoToolsProvided(appId);
         }
 
-        // Step 2: Validate input array lengths to ensure all tools have corresponding policies and parameters.
+        // Check array lengths at top level
         uint256 toolCount = toolIpfsCids.length;
         if (
             toolCount != toolPolicies.length || toolCount != toolPolicyParameterNames.length
                 || toolCount != toolPolicyParameterTypes.length
         ) {
-            revert ToolsAndPoliciesLengthMismatch();
+            revert ToolArrayDimensionMismatch(
+                toolCount, toolPolicies.length, toolPolicyParameterNames.length, toolPolicyParameterTypes.length
+            );
         }
 
-        // Step 3: Fetch necessary storage references.
+        // Then check nested arrays for each tool
+        for (uint256 i = 0; i < toolCount; i++) {
+            string memory toolIpfsCid = toolIpfsCids[i];
+
+            // Validate tool IPFS CID is not empty
+            if (bytes(toolIpfsCid).length == 0) {
+                revert EmptyToolIpfsCidNotAllowed(appId, i);
+            }
+
+            // Check nested array lengths
+            uint256 policyCount = toolPolicies[i].length;
+            if (policyCount != toolPolicyParameterNames[i].length || policyCount != toolPolicyParameterTypes[i].length)
+            {
+                revert PolicyArrayLengthMismatch(
+                    i, policyCount, toolPolicyParameterNames[i].length, toolPolicyParameterTypes[i].length
+                );
+            }
+
+            // Check parameter names and types match for each policy
+            for (uint256 j = 0; j < policyCount; j++) {
+                if (toolPolicyParameterNames[i][j].length != toolPolicyParameterTypes[i][j].length) {
+                    revert ParameterArrayLengthMismatch(
+                        i, j, toolPolicyParameterNames[i][j].length, toolPolicyParameterTypes[i][j].length
+                    );
+                }
+
+                string memory policyIpfsCid = toolPolicies[i][j];
+
+                // Validate non-empty policy IPFS CID
+                if (bytes(policyIpfsCid).length == 0) {
+                    revert EmptyPolicyIpfsCidNotAllowed(appId, i);
+                }
+
+                // Check for duplicate policies within the same tool
+                for (uint256 k = j + 1; k < policyCount; k++) {
+                    if (keccak256(abi.encodePacked(policyIpfsCid)) == keccak256(abi.encodePacked(toolPolicies[i][k]))) {
+                        revert DuplicatePolicyIpfsCidNotAllowed(appId, i, policyIpfsCid, j, k);
+                    }
+                }
+
+                // Check for duplicate parameter names within this policy
+                uint256 paramCount = toolPolicyParameterNames[i][j].length;
+                for (uint256 k = 0; k < paramCount; k++) {
+                    string memory paramName = toolPolicyParameterNames[i][j][k];
+
+                    // Check for empty parameter name
+                    if (bytes(paramName).length == 0) {
+                        revert EmptyParameterNameNotAllowed(appId, i, j, k);
+                    }
+
+                    // Check for duplicate parameter names within the same policy
+                    for (uint256 l = k + 1; l < paramCount; l++) {
+                        if (
+                            keccak256(abi.encodePacked(paramName))
+                                == keccak256(abi.encodePacked(toolPolicyParameterNames[i][j][l]))
+                        ) {
+                            revert DuplicateParameterNameNotAllowed(appId, i, j, paramName, k, l);
+                        }
+                    }
+                }
+            }
+
+            // Check for duplicates against all subsequent tools
+            for (uint256 j = i + 1; j < toolCount; j++) {
+                if (keccak256(abi.encodePacked(toolIpfsCid)) == keccak256(abi.encodePacked(toolIpfsCids[j]))) {
+                    revert DuplicateToolIpfsCidNotAllowed(appId, toolIpfsCid, i, j);
+                }
+            }
+        }
+
+        // Step 4: Fetch necessary storage references.
         VincentAppStorage.AppStorage storage as_ = VincentAppStorage.appStorage();
         VincentAppStorage.App storage app = as_.appIdToApp[appId];
-        VincentToolStorage.ToolStorage storage ts = VincentToolStorage.toolStorage();
+        VincentLitActionStorage.LitActionStorage storage ls = VincentLitActionStorage.litActionStorage();
 
-        // Step 4: Create a new app version.
+        // Step 5: Create a new app version.
         app.versionedApps.push();
         newAppVersion = app.versionedApps.length;
 
@@ -503,85 +647,69 @@ contract VincentAppFacet is VincentBase {
         // Store this once outside the loop instead of repeatedly accessing it
         EnumerableSet.Bytes32Set storage toolIpfsCidHashes = versionedApp.toolIpfsCidHashes;
 
-        // Step 5: Iterate through each tool to register it with the new app version.
+        // Step 6: Iterate through each tool to register it with the new app version.
         for (uint256 i = 0; i < toolCount; i++) {
             string memory toolIpfsCid = toolIpfsCids[i]; // Cache calldata value
 
-            // Validate tool IPFS CID is not empty
-            if (bytes(toolIpfsCid).length == 0) {
-                revert EmptyToolIpfsCidNotAllowed(appId, i);
-            }
-
             bytes32 hashedToolCid = keccak256(abi.encodePacked(toolIpfsCid));
 
-            // Step 5.1: Register the tool IPFS CID globally if it hasn't been added already.
-            if (!toolIpfsCidHashes.contains(hashedToolCid)) {
-                toolIpfsCidHashes.add(hashedToolCid);
+            // Step 6.1: Register the tool IPFS CID globally if it hasn't been added already.
+            // Since we already checked for duplicates, each tool is unique within this version
+            toolIpfsCidHashes.add(hashedToolCid);
 
-                // First check if the tool is already registered in global storage
-                // before trying to register it again
-                if (bytes(ts.ipfsCidHashToIpfsCid[hashedToolCid]).length == 0) {
-                    ts.ipfsCidHashToIpfsCid[hashedToolCid] = toolIpfsCid;
-                    emit NewToolRegistered(hashedToolCid);
-                }
-                // If tool is already registered globally, just continue
-                // without trying to register it again
+            // First check if the tool is already registered in global storage
+            // before trying to register it again
+            if (bytes(ls.ipfsCidHashToIpfsCid[hashedToolCid]).length == 0) {
+                ls.ipfsCidHashToIpfsCid[hashedToolCid] = toolIpfsCid;
+                emit NewLitActionRegistered(hashedToolCid);
             }
+            // If tool is already registered globally, just continue
+            // without trying to register it again
 
-            // Step 5.2: Fetch the tool policies storage for this tool.
+            // Step 6.2: Fetch the tool policies storage for this tool.
             VincentAppStorage.ToolPolicies storage toolPoliciesStorage =
                 versionedApp.toolIpfsCidHashToToolPolicies[hashedToolCid];
 
-            // Step 6: Iterate through policies linked to this tool.
+            // Step 7: Iterate through policies linked to this tool.
             uint256 policyCount = toolPolicies[i].length;
 
             for (uint256 j = 0; j < policyCount; j++) {
                 string memory policyIpfsCid = toolPolicies[i][j]; // Cache calldata value
 
-                // Validate non-empty policy IPFS CID
-                if (bytes(policyIpfsCid).length == 0) {
-                    revert EmptyPolicyIpfsCidNotAllowed(appId, i);
-                }
-
                 bytes32 hashedToolPolicy = keccak256(abi.encodePacked(policyIpfsCid));
 
-                // Step 6.1: Add the policy hash to the ToolPolicies
+                // Step 7.1: Add the policy hash to the ToolPolicies
                 toolPoliciesStorage.policyIpfsCidHashes.add(hashedToolPolicy);
 
-                // Step 6.2: Store the policy IPFS CID globally if it's not already stored.
-                if (bytes(ts.ipfsCidHashToIpfsCid[hashedToolPolicy]).length == 0) {
-                    ts.ipfsCidHashToIpfsCid[hashedToolPolicy] = policyIpfsCid;
+                // Step 7.2: Store the policy IPFS CID globally if it's not already stored.
+                if (bytes(ls.ipfsCidHashToIpfsCid[hashedToolPolicy]).length == 0) {
+                    ls.ipfsCidHashToIpfsCid[hashedToolPolicy] = policyIpfsCid;
                 }
 
                 // Create a new Policy storage structure for this policy in the current app version
                 VincentAppStorage.Policy storage policy =
                     toolPoliciesStorage.policyIpfsCidHashToPolicy[hashedToolPolicy];
 
-                // Step 7: Get the Policy parameter name hashes for this policy
+                // Step 8: Get the Policy parameter name hashes for this policy
                 EnumerableSet.Bytes32Set storage policyParameterNameHashes = policy.policyParameterNameHashes;
 
-                // Step 8: Iterate through policy parameters.
+                // Step 9: Iterate through policy parameters.
                 uint256 paramCount = toolPolicyParameterNames[i][j].length;
 
                 for (uint256 k = 0; k < paramCount; k++) {
                     string memory paramName = toolPolicyParameterNames[i][j][k]; // Cache calldata value
 
-                    // Check for empty parameter name
-                    if (bytes(paramName).length == 0) {
-                        revert EmptyParameterNameNotAllowed(appId, i, j, k);
-                    }
-
                     bytes32 hashedPolicyParameterName = keccak256(abi.encodePacked(paramName));
 
-                    // Step 8.1: Register the policy parameter.
+                    // Step 9.1: Register the policy parameter.
                     policyParameterNameHashes.add(hashedPolicyParameterName);
 
-                    // Step 8.2: Store the parameter name if not already stored.
-                    if (bytes(ts.policyParameterNameHashToName[hashedPolicyParameterName]).length == 0) {
-                        ts.policyParameterNameHashToName[hashedPolicyParameterName] = paramName;
+                    // Step 9.2: Store the parameter name if not already stored.
+                    if (bytes(ls.policyParameterNameHashToName[hashedPolicyParameterName]).length == 0) {
+                        ls.policyParameterNameHashToName[hashedPolicyParameterName] = paramName;
                     }
 
-                    // Step 8.3: Store the parameter type
+                    // Step 9.3: Store the parameter type
                     VincentAppStorage.ParameterType paramType = toolPolicyParameterTypes[i][j][k];
                     policy.policyParameterNameHashToType[hashedPolicyParameterName] = paramType;
                 }

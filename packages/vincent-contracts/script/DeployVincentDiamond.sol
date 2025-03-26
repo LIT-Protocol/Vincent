@@ -6,8 +6,8 @@ import "../src/VincentDiamond.sol";
 import "../src/diamond-base/facets/DiamondCutFacet.sol";
 import "../src/diamond-base/facets/DiamondLoupeFacet.sol";
 import "../src/diamond-base/facets/OwnershipFacet.sol";
-import "../src/facets/VincentToolFacet.sol";
-import "../src/facets/VincentToolViewFacet.sol";
+import "../src/facets/VincentLitActionFacet.sol";
+import "../src/facets/VincentLitActionViewFacet.sol";
 import "../src/facets/VincentAppFacet.sol";
 import "../src/facets/VincentAppViewFacet.sol";
 import "../src/facets/VincentUserFacet.sol";
@@ -38,8 +38,8 @@ contract DeployVincentDiamond is Script {
         DiamondCutFacet diamondCutFacet = new DiamondCutFacet();
         DiamondLoupeFacet diamondLoupeFacet = new DiamondLoupeFacet();
         OwnershipFacet ownershipFacet = new OwnershipFacet();
-        VincentToolFacet toolFacet = new VincentToolFacet();
-        VincentToolViewFacet toolViewFacet = new VincentToolViewFacet();
+        VincentLitActionFacet litActionFacet = new VincentLitActionFacet();
+        VincentLitActionViewFacet litActionViewFacet = new VincentLitActionViewFacet();
         VincentAppFacet appFacet = new VincentAppFacet();
         VincentAppViewFacet appViewFacet = new VincentAppViewFacet();
         VincentUserFacet userFacet = new VincentUserFacet();
@@ -51,8 +51,8 @@ contract DeployVincentDiamond is Script {
             ownershipFacet: address(ownershipFacet),
             vincentAppFacet: address(appFacet),
             vincentAppViewFacet: address(appViewFacet),
-            vincentToolFacet: address(toolFacet),
-            vincentToolViewFacet: address(toolViewFacet),
+            vincentLitActionFacet: address(litActionFacet),
+            vincentLitActionViewFacet: address(litActionViewFacet),
             vincentUserFacet: address(userFacet),
             vincentUserViewFacet: address(userViewFacet)
         });
@@ -66,24 +66,24 @@ contract DeployVincentDiamond is Script {
     /// @param network Network name
     /// @param diamond Diamond contract address
     /// @param pkpNFTAddress PKP NFT contract address
-    /// @param approvedToolsManager Approved tools manager address
+    /// @param approvedLitActionsManager Approved lit actions manager address
     /// @param facets Struct containing deployed facet addresses
     function logDeployment(
         string memory network,
         address diamond,
         address pkpNFTAddress,
-        address approvedToolsManager,
+        address approvedLitActionsManager,
         VincentDiamond.FacetAddresses memory facets
     ) internal view {
         console.log("Vincent Diamond deployed for", network, "to:", address(diamond));
         console.log("Using PKP NFT contract:", pkpNFTAddress);
-        console.log("Approved Tools Manager:", approvedToolsManager);
+        console.log("Approved Lit Actions Manager:", approvedLitActionsManager);
         console.log("DiamondLoupeFacet:", facets.diamondLoupeFacet);
         console.log("OwnershipFacet:", facets.ownershipFacet);
         console.log("VincentAppFacet:", facets.vincentAppFacet);
         console.log("VincentAppViewFacet:", facets.vincentAppViewFacet);
-        console.log("VincentToolFacet:", facets.vincentToolFacet);
-        console.log("VincentToolViewFacet:", facets.vincentToolViewFacet);
+        console.log("VincentLitActionFacet:", facets.vincentLitActionFacet);
+        console.log("VincentLitActionViewFacet:", facets.vincentLitActionViewFacet);
         console.log("VincentUserFacet:", facets.vincentUserFacet);
         console.log("VincentUserViewFacet:", facets.vincentUserViewFacet);
     }
@@ -107,17 +107,17 @@ contract DeployVincentDiamond is Script {
         // Get the deployer address
         address deployerAddress = vm.addr(deployerPrivateKey);
 
-        // Get approved tools manager address - this is required
-        address approvedToolsManager;
-        try vm.envAddress("APPROVED_TOOLS_MANAGER_ADDRESS") returns (address managedAddress) {
+        // Get approved lit actions manager address - this is required
+        address approvedLitActionsManager;
+        try vm.envAddress("APPROVED_LIT_ACTIONS_MANAGER_ADDRESS") returns (address managedAddress) {
             if (managedAddress != address(0)) {
-                approvedToolsManager = managedAddress;
-                console.log("Using approved tools manager:", approvedToolsManager);
+                approvedLitActionsManager = managedAddress;
+                console.log("Using approved lit actions manager:", approvedLitActionsManager);
             } else {
-                revert MissingEnvironmentVariable("APPROVED_TOOLS_MANAGER_ADDRESS (zero address provided)");
+                revert MissingEnvironmentVariable("APPROVED_LIT_ACTIONS_MANAGER_ADDRESS (zero address provided)");
             }
         } catch {
-            revert MissingEnvironmentVariable("APPROVED_TOOLS_MANAGER_ADDRESS");
+            revert MissingEnvironmentVariable("APPROVED_LIT_ACTIONS_MANAGER_ADDRESS");
         }
 
         // Start broadcasting transactions
@@ -132,14 +132,14 @@ contract DeployVincentDiamond is Script {
             diamondCutFacetAddress, // diamond cut facet
             facets, // all other facets
             pkpNFTAddress, // PKP NFT contract address - set immutably
-            approvedToolsManager // approved tools manager
+            approvedLitActionsManager // approved lit actions manager
         );
 
         // Stop broadcasting transactions
         vm.stopBroadcast();
 
         // Log deployment details
-        logDeployment(network, address(diamond), pkpNFTAddress, approvedToolsManager, facets);
+        logDeployment(network, address(diamond), pkpNFTAddress, approvedLitActionsManager, facets);
 
         return address(diamond);
     }

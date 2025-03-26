@@ -1,12 +1,5 @@
 // @ts-nocheck
-import {
-  createPublicClient,
-  createWalletClient,
-  getContract,
-  http,
-  PublicClient,
-} from 'viem';
-import { privateKeyToAccount } from 'viem/accounts';
+import { createPublicClient, getContract, http, PublicClient } from 'viem';
 import { VincentNetworkContext } from '../../vincentNetworkContext';
 
 interface CreateVincentContractsOptions {
@@ -16,15 +9,12 @@ interface CreateVincentContractsOptions {
 
 export const createVincentContracts = (
   networkCtx: VincentNetworkContext,
-  opts?: CreateVincentContractsOptions
+  opts?: CreateVincentContractsOptions,
 ) => { // ts-expect-error TS7056
   const useDiamondAddress = opts?.useDiamondAddress ?? true;
 
   // 1. Fallback to env-based private key if user doesn't supply a wagmi walletClient
   const fallbackTransport = http(networkCtx.rpcUrl);
-  // const fallbackAccount = privateKeyToAccount(
-  //   networkCtx.privateKey as `0x${string}`
-  // );
 
   // 2. Decide which publicClient to use
   const publicClient =
@@ -35,21 +25,14 @@ export const createVincentContracts = (
     });
 
   // 3. Decide which walletClient to use
-  const walletClient =
-    networkCtx?.walletClient 
-    // ??
-    // createWalletClient({
-    //   chain: networkCtx.chainConfig.chain,
-    //   transport: fallbackTransport,
-    //   account: fallbackAccount,
-    // });
+  const walletClient = networkCtx?.walletClient;
 
   // 4. Get the contract data
   const contractData = networkCtx.chainConfig.contractData;
 
   if (!contractData) {
     throw new Error(
-      `Contract data not found for network: ${networkCtx.network}`
+      `Contract data not found for network: ${networkCtx.network}`,
     );
   }
 
@@ -90,32 +73,33 @@ export const createVincentContracts = (
     client: { public: publicClient, wallet: walletClient },
   });
 
-  const vincentToolFacetContract = getContract({
+  const vincentLitActionFacetContract = getContract({
     address: useDiamondAddress
       ? networkCtx.chainConfig.diamondAddress
-      : contractData.VincentToolFacet.address,
+      : contractData.VincentLitActionFacet.address,
     abi: [
-      contractData.VincentToolFacet.methods.approveTools,
-      contractData.VincentToolFacet.methods.registerTools,
-      contractData.VincentToolFacet.methods.removeToolApprovals,
-      contractData.VincentToolFacet.methods.updateApprovedToolsManager,
-      ...contractData.VincentToolFacet.events,
-      ...contractData.VincentToolFacet.errors,
+      contractData.VincentLitActionFacet.methods.approveLitActions,
+      contractData.VincentLitActionFacet.methods.removeLitActionApprovals,
+      contractData.VincentLitActionFacet.methods
+        .updateApprovedLitActionsManager,
+      ...contractData.VincentLitActionFacet.events,
+      ...contractData.VincentLitActionFacet.errors,
     ],
     client: { public: publicClient, wallet: walletClient },
   });
 
-  const vincentToolViewFacetContract = getContract({
+  const vincentLitActionViewFacetContract = getContract({
     address: useDiamondAddress
       ? networkCtx.chainConfig.diamondAddress
-      : contractData.VincentToolViewFacet.address,
+      : contractData.VincentLitActionViewFacet.address,
     abi: [
-      contractData.VincentToolViewFacet.methods.getAllApprovedTools,
-      contractData.VincentToolViewFacet.methods.getApprovedToolsManager,
-      contractData.VincentToolViewFacet.methods.getToolIpfsCidByHash,
-      contractData.VincentToolViewFacet.methods.isToolApproved,
-      ...contractData.VincentToolViewFacet.events,
-      ...contractData.VincentToolViewFacet.errors,
+      contractData.VincentLitActionViewFacet.methods.getAllApprovedLitActions,
+      contractData.VincentLitActionViewFacet.methods
+        .getApprovedLitActionsManager,
+      contractData.VincentLitActionViewFacet.methods.getLitActionIpfsCidByHash,
+      contractData.VincentLitActionViewFacet.methods.isLitActionApproved,
+      ...contractData.VincentLitActionViewFacet.events,
+      ...contractData.VincentLitActionViewFacet.errors,
     ],
     client: { public: publicClient, wallet: walletClient },
   });
@@ -156,8 +140,8 @@ export const createVincentContracts = (
   return {
     vincentAppFacetContract,
     vincentAppViewFacetContract,
-    vincentToolFacetContract,
-    vincentToolViewFacetContract,
+    vincentLitActionFacetContract,
+    vincentLitActionViewFacetContract,
     vincentUserFacetContract,
     vincentUserViewFacetContract,
     publicClient,

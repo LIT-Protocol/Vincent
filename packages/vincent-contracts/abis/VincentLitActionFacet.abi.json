@@ -1,0 +1,175 @@
+[
+  {
+    "type": "function",
+    "name": "approveLitActions",
+    "inputs": [
+      {
+        "name": "litActionIpfsCids",
+        "type": "string[]",
+        "internalType": "string[]"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "removeLitActionApprovals",
+    "inputs": [
+      {
+        "name": "litActionIpfsCids",
+        "type": "string[]",
+        "internalType": "string[]"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "updateApprovedLitActionsManager",
+    "inputs": [
+      {
+        "name": "newManager",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "event",
+    "name": "ApprovedLitActionsManagerUpdated",
+    "inputs": [
+      {
+        "name": "previousManager",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      },
+      {
+        "name": "newManager",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "LitActionApprovalRemoved",
+    "inputs": [
+      {
+        "name": "litActionIpfsCidHash",
+        "type": "bytes32",
+        "indexed": true,
+        "internalType": "bytes32"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "LitActionApproved",
+    "inputs": [
+      {
+        "name": "litActionIpfsCidHash",
+        "type": "bytes32",
+        "indexed": true,
+        "internalType": "bytes32"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "NewLitActionRegistered",
+    "inputs": [
+      {
+        "name": "litActionIpfsCidHash",
+        "type": "bytes32",
+        "indexed": true,
+        "internalType": "bytes32"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "error",
+    "name": "EmptyLitActionIpfsCid",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "EmptyLitActionIpfsCidsArray",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "InvalidApprovedLitActionsManager",
+    "inputs": [
+      {
+        "name": "manager",
+        "type": "address",
+        "internalType": "address"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "LitActionAlreadyApproved",
+    "inputs": [
+      {
+        "name": "litActionIpfsCidHash",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "LitActionAlreadyRegistered",
+    "inputs": [
+      {
+        "name": "litActionIpfsCidHash",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "LitActionNotApproved",
+    "inputs": [
+      {
+        "name": "litActionIpfsCidHash",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "LitActionNotRegistered",
+    "inputs": [
+      {
+        "name": "litActionIpfsCidHash",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "NotApprovedLitActionsManager",
+    "inputs": [
+      {
+        "name": "caller",
+        "type": "address",
+        "internalType": "address"
+      }
+    ]
+  }
+]

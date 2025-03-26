@@ -1,8 +1,7 @@
 import { getTestContext } from '../testContext';
-import { approveTools } from './approveTools';
-import { registerTools } from './registerTools';
+import { approveLitActions } from './approveLitActions';
 
-describe('approveTools', () => {
+describe('approveLitActions', () => {
   let testContext: Awaited<ReturnType<typeof getTestContext>>;
 
   // Register the tool with a single-item array
@@ -10,21 +9,13 @@ describe('approveTools', () => {
 
   beforeAll(async () => {
     testContext = await getTestContext();
-
-    // Register a tool first
-    await registerTools(
-      {
-        toolIpfsCids: randomIpfsCids,
-      },
-      testContext.networkContext,
-    );
   });
 
   it('should approve tools for use on the Vincent network', async () => {
-    // Call the approveTools function with the original array structure
-    const res = await approveTools(
+    // Call the approveLitActions function with the original array structure
+    const res = await approveLitActions(
       {
-        toolIpfsCids: randomIpfsCids,
+        litActionIpfsCids: randomIpfsCids,
       },
       testContext.networkContext,
     );
@@ -35,11 +26,11 @@ describe('approveTools', () => {
     expect(res.receipt).toBeDefined();
     expect(res.decodedLogs).toBeDefined();
 
-    // Find the ToolApproved event for each tool
+    // Find the LitActionApproved event for each tool
     const event = res.decodedLogs.find(
       (log) =>
-        log.eventName === 'ToolApproved' &&
-        log.args.toolIpfsCidHash !== undefined,
+        log.eventName === 'LitActionApproved' &&
+        log.args.litActionIpfsCidHash !== undefined,
     );
     expect(event).toBeDefined();
   });

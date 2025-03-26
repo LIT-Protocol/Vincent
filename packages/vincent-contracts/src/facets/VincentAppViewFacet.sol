@@ -198,7 +198,7 @@ contract VincentAppViewFacet is VincentBase {
         appVersion.delegatedAgentPkpTokenIds = storedVersionedApp.delegatedAgentPkps.values();
 
         // Step 5: Prepare to access tool data
-        VincentToolStorage.ToolStorage storage ts = VincentToolStorage.toolStorage();
+        VincentLitActionStorage.LitActionStorage storage ls = VincentLitActionStorage.litActionStorage();
 
         // Step 6: Get the number of tools for this version
         uint256 toolIpfsCidHashesLength = storedVersionedApp.toolIpfsCidHashes.length();
@@ -210,7 +210,7 @@ contract VincentAppViewFacet is VincentBase {
         for (uint256 i = 0; i < toolIpfsCidHashesLength; i++) {
             // Step 8.1: Get the tool hash and resolve to the actual IPFS CID
             bytes32 toolIpfsCidHash = storedVersionedApp.toolIpfsCidHashes.at(i);
-            string memory toolIpfsCid = ts.ipfsCidHashToIpfsCid[toolIpfsCidHash];
+            string memory toolIpfsCid = ls.ipfsCidHashToIpfsCid[toolIpfsCidHash];
 
             // Step 8.2: Set the tool IPFS CID in the return structure
             appVersion.tools[i].toolIpfsCid = toolIpfsCid;
@@ -227,7 +227,7 @@ contract VincentAppViewFacet is VincentBase {
             for (uint256 j = 0; j < policyCount; j++) {
                 // Step 10.1: Get the policy hash and resolve to the actual IPFS CID
                 bytes32 policyIpfsCidHash = toolPolicies.policyIpfsCidHashes.at(j);
-                string memory policyIpfsCid = ts.ipfsCidHashToIpfsCid[policyIpfsCidHash];
+                string memory policyIpfsCid = ls.ipfsCidHashToIpfsCid[policyIpfsCidHash];
 
                 // Step 10.2: Set the policy IPFS CID in the return structure
                 appVersion.tools[i].policies[j].policyIpfsCid = policyIpfsCid;
@@ -249,7 +249,7 @@ contract VincentAppViewFacet is VincentBase {
                     bytes32 paramNameHash = policyParamNameHashes.at(k);
 
                     // Step 12.2.2: Get and set the parameter name
-                    appVersion.tools[i].policies[j].parameterNames[k] = ts.policyParameterNameHashToName[paramNameHash];
+                    appVersion.tools[i].policies[j].parameterNames[k] = ls.policyParameterNameHashToName[paramNameHash];
 
                     // Step 12.2.3: Get and set the parameter type
                     appVersion.tools[i].policies[j].parameterTypes[k] =

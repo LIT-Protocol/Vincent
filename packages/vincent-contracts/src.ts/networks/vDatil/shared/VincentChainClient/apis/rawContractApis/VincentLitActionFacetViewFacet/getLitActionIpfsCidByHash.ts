@@ -6,46 +6,48 @@ import { createVincentContracts } from '../../utils/createVincentContracts';
 // Define raw types from the contract
 type RawContractMethod = ReturnType<
   typeof createVincentContracts
->['vincentToolViewFacetContract']['read']['getToolIpfsCidByHash'];
+>['vincentLitActionViewFacetContract']['read']['getLitActionIpfsCidByHash'];
 type RawContractParams = Parameters<RawContractMethod>[0];
 type RawContractResponse = Awaited<ReturnType<RawContractMethod>>;
 
 const ExpectedParams = z
   .object({
-    toolIpfsCidHash: z
+    litActionIpfsCidHash: z
       .string()
       .refine((val) => /^0x[a-fA-F0-9]{64}$/.test(val), {
         message:
-          'toolIpfsCidHash must be a valid 32-byte hex string starting with 0x',
+          'litActionIpfsCidHash must be a valid 32-byte hex string starting with 0x',
       }),
   })
   .transform(
-    (params): RawContractParams => [params.toolIpfsCidHash as `0x${string}`],
+    (params): RawContractParams => [
+      params.litActionIpfsCidHash as `0x${string}`,
+    ],
   );
 
 type ExpectedParams = z.input<typeof ExpectedParams>;
 
 /**
- * Retrieves a tool's IPFS CID by its hash
- * @param request The request containing the tool IPFS CID hash to look up
+ * Retrieves a lit action's IPFS CID by its hash
+ * @param request The request containing the lit action IPFS CID hash to look up
  * @param ctx The Vincent network context
- * @returns The tool's IPFS CID
+ * @returns The lit action's IPFS CID
  */
-export async function getToolIpfsCidByHash(
+export async function getLitActionIpfsCidByHash(
   request: ExpectedParams,
   ctx: VincentNetworkContext,
-): Promise<{ toolIpfsCid: RawContractResponse }> {
+): Promise<{ litActionIpfsCid: RawContractResponse }> {
   const validatedRequest = ExpectedParams.parse(request);
   logger.debug({ validatedRequest });
 
-  const { vincentToolViewFacetContract } = createVincentContracts(ctx);
+  const { vincentLitActionViewFacetContract } = createVincentContracts(ctx);
 
-  const toolIpfsCid =
-    await vincentToolViewFacetContract.read.getToolIpfsCidByHash(
+  const litActionIpfsCid =
+    await vincentLitActionViewFacetContract.read.getLitActionIpfsCidByHash(
       validatedRequest,
     );
 
-  logger.debug({ toolIpfsCid });
+  logger.debug({ litActionIpfsCid });
 
-  return { toolIpfsCid };
+  return { litActionIpfsCid };
 }

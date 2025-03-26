@@ -3,7 +3,10 @@ import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts';
 import { vincentMainnetNetworkContext } from '../../../../datil-mainnet/vincentContext';
 import { createVincentNetworkContext } from '../../vincentNetworkContext';
 import { registerApp } from './VincentAppFacet/registerApp';
-import { ParameterTypeInput, PolicyParameterValues } from './VincentAppFacet/schemas/ParameterType';
+import {
+  ParameterTypeInput,
+  PolicyParameterValues,
+} from './VincentAppFacet/schemas/ParameterType';
 
 export const getTestContext = async (opts?: {
   registerApp?: boolean;
@@ -56,23 +59,25 @@ export const getTestContext = async (opts?: {
     APP_NAME: 'Test App',
     APP_DESCRIPTION: 'Test Description',
     AUTHORIZED_REDIRECT_URIS: ['http://localhost:3000'],
-    DELEGATEES: [randomDelegateeAccount.address],
+    DELEGATEES: [masterTestAccount.address, randomDelegateeAccount.address],
     TOOL_IPFS_CIDS: ['QmUT4Ke8cPtJYRZiWrkoG9RZc77hmRETNQjvDYfLtrMUEY'],
     TOOL_POLICIES: [['QmcLbQPohPURMuNdhYYa6wyDp9pm6eHPdHv9TRgFkPVebE']],
     TOOL_POLICY_PARAMETER_NAMES: [
       [
-        ['param1'],
-        ['param2'],
-        ['param3'],
-        ['param4'],
-        ['param5'],
-        ['param6'],
-        ['param7'],
-        ['param8'],
-        ['param9'],
-        ['param10'],
-        ['param11'],
-        ['param12'],
+        [
+          'param1',
+          'param2',
+          'param3',
+          'param4',
+          'param5',
+          'param6',
+          'param7',
+          'param8',
+          'param9',
+          'param10',
+          'param11',
+          'param12',
+        ],
       ],
     ],
     TOOL_POLICY_PARAMETER_TYPES: [
@@ -96,7 +101,12 @@ export const getTestContext = async (opts?: {
     TOOL_POLICY_PARAMETER_VALUES: [
       [
         [{ type: 'int256', value: '-1000000000000000000' }], // INT256
-        [{ type: 'int256[]', value: '-1000000000000000000,2000000000000000000' }], // INT256_ARRAY
+        [
+          {
+            type: 'int256[]',
+            value: '-1000000000000000000,2000000000000000000',
+          },
+        ], // INT256_ARRAY
         [{ type: 'uint256', value: '1000000000000000000' }], // UINT256
         [{ type: 'uint256[]', value: '1000000000000000000,2000000000000000000' }], // UINT256_ARRAY
         [{ type: 'bool', value: 'true' }], // BOOL

@@ -6,12 +6,12 @@ import { callWithAdjustedOverrides } from '../../utils/callWithAdjustedOverrides
 import { createVincentContracts } from '../../utils/createVincentContracts';
 import { decodeVincentLogs } from '../../utils/decodeVincentLogs';
 
-const UpdateApprovedToolsManagerRequest = z.object({
+const UpdateApprovedLitActionsManagerRequest = z.object({
   newManager: toEthAddress,
 });
 
-type UpdateApprovedToolsManagerRequest = z.input<
-  typeof UpdateApprovedToolsManagerRequest
+type UpdateApprovedLitActionsManagerRequest = z.input<
+  typeof UpdateApprovedLitActionsManagerRequest
 >;
 
 /**
@@ -20,19 +20,20 @@ type UpdateApprovedToolsManagerRequest = z.input<
  * @param ctx The Vincent network context
  * @returns Object containing transaction hash, receipt, and decoded logs
  */
-export async function updateApprovedToolsManager(
-  request: UpdateApprovedToolsManagerRequest,
+export async function updateApprovedLitActionsManager(
+  request: UpdateApprovedLitActionsManagerRequest,
   ctx: VincentNetworkContext,
 ) {
-  const validatedRequest = UpdateApprovedToolsManagerRequest.parse(request);
+  const validatedRequest =
+    UpdateApprovedLitActionsManagerRequest.parse(request);
   logger.debug({ validatedRequest });
 
-  const { vincentToolFacetContract, publicClient } =
+  const { vincentLitActionFacetContract, publicClient } =
     createVincentContracts(ctx);
 
   const hash = await callWithAdjustedOverrides(
-    vincentToolFacetContract,
-    'updateApprovedToolsManager',
+    vincentLitActionFacetContract,
+    'updateApprovedLitActionsManager',
     [validatedRequest.newManager],
   );
 

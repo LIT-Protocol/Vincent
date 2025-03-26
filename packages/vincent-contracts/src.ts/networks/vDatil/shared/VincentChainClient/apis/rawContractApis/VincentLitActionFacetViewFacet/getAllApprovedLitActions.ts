@@ -5,7 +5,7 @@ import { createVincentContracts } from '../../utils/createVincentContracts';
 // Define raw types from the contract
 type RawContractMethod = ReturnType<
   typeof createVincentContracts
->['vincentToolViewFacetContract']['read']['getAllApprovedTools'];
+>['vincentLitActionViewFacetContract']['read']['getAllApprovedLitActions'];
 // type RawContractParams = Parameters<RawContractMethod>[0];
 type RawContractResponse = Awaited<ReturnType<RawContractMethod>>;
 
@@ -14,17 +14,17 @@ type RawContractResponse = Awaited<ReturnType<RawContractMethod>>;
  * @param ctx The Vincent network context
  * @returns Array of approved tool IPFS CIDs
  */
-export async function getAllApprovedTools(
+export async function getAllApprovedLitActions(
   ctx: VincentNetworkContext,
-): Promise<{ toolIpfsCids: RawContractResponse }> {
-  logger.debug('Getting all approved tools');
+): Promise<{ litActionIpfsCids: RawContractResponse }> {
+  logger.debug('Getting all approved lit actions');
 
-  const { vincentToolViewFacetContract } = createVincentContracts(ctx);
+  const { vincentLitActionViewFacetContract } = createVincentContracts(ctx);
 
-  const toolIpfsCids =
-    await vincentToolViewFacetContract.read.getAllApprovedTools();
+  const litActionIpfsCids =
+    await vincentLitActionViewFacetContract.read.getAllApprovedLitActions();
 
-  logger.debug({ toolIpfsCids });
+  logger.debug({ litActionIpfsCids });
 
-  return { toolIpfsCids };
+  return { litActionIpfsCids };
 }

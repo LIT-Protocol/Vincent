@@ -110,6 +110,28 @@ contract VincentUserFacet is VincentBase {
     error ToolsAndPoliciesLengthMismatch();
 
     /**
+     * @notice Error thrown when policy-related arrays for a specific tool have mismatched lengths
+     * @param toolIndex Index of the tool in the tools array
+     * @param policiesLength Length of the policies array for this tool
+     * @param paramNamesLength Length of the parameter names array for this tool
+     * @param paramValuesLength Length of the parameter values array for this tool
+     */
+    error PolicyArrayLengthMismatch(
+        uint256 toolIndex, uint256 policiesLength, uint256 paramNamesLength, uint256 paramValuesLength
+    );
+
+    /**
+     * @notice Error thrown when parameter arrays for a specific policy have mismatched lengths
+     * @param toolIndex Index of the tool in the tools array
+     * @param policyIndex Index of the policy in the policies array
+     * @param paramNamesLength Length of the parameter names array for this policy
+     * @param paramValuesLength Length of the parameter values array for this policy
+     */
+    error ParameterArrayLengthMismatch(
+        uint256 toolIndex, uint256 policyIndex, uint256 paramNamesLength, uint256 paramValuesLength
+    );
+
+    /**
      * @notice Error thrown when a tool is not registered for an app version
      * @param appId The ID of the app
      * @param appVersion The version of the app
@@ -178,6 +200,31 @@ contract VincentUserFacet is VincentBase {
     error EmptyParameterName();
 
     /**
+     * @notice Error thrown when duplicate parameter names are detected for a single policy
+     * @param appId ID of the app
+     * @param toolIndex Index of the tool in the tools array
+     * @param policyIndex Index of the policy in the policies array
+     * @param paramName The duplicate parameter name
+     * @param firstIndex Index of the first occurrence of the parameter
+     * @param duplicateIndex Index of the duplicate occurrence of the parameter
+     */
+    error DuplicateParameterNameNotAllowed(
+        uint256 appId,
+        uint256 toolIndex,
+        uint256 policyIndex,
+        string paramName,
+        uint256 firstIndex,
+        uint256 duplicateIndex
+    );
+
+    /**
+     * @notice Error thrown when not all registered tools for an app version are provided
+     * @param appId The ID of the app
+     * @param appVersion The version of the app
+     */
+    error NotAllRegisteredToolsProvided(uint256 appId, uint256 appVersion);
+
+    /**
      * @notice Modifier to verify that the caller is the owner of the specified PKP
      * @param pkpTokenId The token ID of the PKP
      */
@@ -244,6 +291,41 @@ contract VincentUserFacet is VincentBase {
 
         // Check if the App Manager has disabled the App
         if (!newVersionedApp.enabled) revert AppVersionNotEnabled(appId, appVersion);
+
+        // Check if all registered tools for this app version are provided
+        if (
+            newVersionedApp.toolIpfsCidHashes.length() > 0
+                && toolIpfsCids.length != newVersionedApp.toolIpfsCidHashes.length()
+        ) {
+            revert NotAllRegisteredToolsProvided(appId, appVersion);
+        }
+
+        // Verify that every tool provided is registered and every registered tool is provided
+        if (toolIpfsCids.length > 0) {
+            bytes32[] memory providedToolHashes = new bytes32[](toolIpfsCids.length);
+            for (uint256 i = 0; i < toolIpfsCids.length; i++) {
+                providedToolHashes[i] = keccak256(abi.encodePacked(toolIpfsCids[i]));
+                if (!newVersionedApp.toolIpfsCidHashes.contains(providedToolHashes[i])) {
+                    revert ToolNotRegisteredForAppVersion(appId, appVersion, toolIpfsCids[i]);
+                }
+            }
+
+            // Ensure all registered tools are in the provided tools array
+            uint256 registeredToolCount = newVersionedApp.toolIpfsCidHashes.length();
+            for (uint256 i = 0; i < registeredToolCount; i++) {
+                bytes32 registeredToolHash = newVersionedApp.toolIpfsCidHashes.at(i);
+                bool found = false;
+                for (uint256 j = 0; j < providedToolHashes.length; j++) {
+                    if (registeredToolHash == providedToolHashes[j]) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    revert NotAllRegisteredToolsProvided(appId, appVersion);
+                }
+            }
+        }
 
         // Check if User has permitted a previous app version,
         // if so, remove the PKP Token ID from the previous VersionedApp's delegated agent PKPs
@@ -349,6 +431,47 @@ contract VincentUserFacet is VincentBase {
             revert InvalidInput();
         }
 
+        // Check for empty tool IPFS CIDs first
+        for (uint256 i = 0; i < toolIpfsCids.length; i++) {
+            if (bytes(toolIpfsCids[i]).length == 0) {
+                revert EmptyToolIpfsCid();
+            }
+        }
+
+        // Get the app version to check registered tools
+        VincentAppStorage.VersionedApp storage versionedApp =
+            VincentAppStorage.appStorage().appIdToApp[appId].versionedApps[getVersionedAppIndex(appVersion)];
+
+        // Check if all registered tools for this app version are provided
+        if (versionedApp.toolIpfsCidHashes.length() != toolIpfsCids.length) {
+            revert NotAllRegisteredToolsProvided(appId, appVersion);
+        }
+
+        // Verify that every tool provided is registered and every registered tool is provided
+        bytes32[] memory providedToolHashes = new bytes32[](toolIpfsCids.length);
+        for (uint256 i = 0; i < toolIpfsCids.length; i++) {
+            providedToolHashes[i] = keccak256(abi.encodePacked(toolIpfsCids[i]));
+            if (!versionedApp.toolIpfsCidHashes.contains(providedToolHashes[i])) {
+                revert ToolNotRegisteredForAppVersion(appId, appVersion, toolIpfsCids[i]);
+            }
+        }
+
+        // Ensure all registered tools are in the provided tools array
+        uint256 registeredToolCount = versionedApp.toolIpfsCidHashes.length();
+        for (uint256 i = 0; i < registeredToolCount; i++) {
+            bytes32 registeredToolHash = versionedApp.toolIpfsCidHashes.at(i);
+            bool found = false;
+            for (uint256 j = 0; j < providedToolHashes.length; j++) {
+                if (registeredToolHash == providedToolHashes[j]) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                revert NotAllRegisteredToolsProvided(appId, appVersion);
+            }
+        }
+
         _setToolPolicyParameters(
             appId, pkpTokenId, appVersion, toolIpfsCids, policyIpfsCids, policyParameterNames, policyParameterValues
         );
@@ -398,6 +521,12 @@ contract VincentUserFacet is VincentBase {
                 revert EmptyToolIpfsCid();
             }
 
+            // Check nested array lengths at policy level
+            uint256 policyCount = policyIpfsCids[i].length;
+            if (policyCount != policyParameterNames[i].length) {
+                revert PolicyArrayLengthMismatch(i, policyCount, policyParameterNames[i].length, 0);
+            }
+
             bytes32 hashedToolIpfsCid = keccak256(abi.encodePacked(toolIpfsCid));
 
             // Step 3.1: Validate that the tool exists for the specified app version.
@@ -416,7 +545,6 @@ contract VincentUserFacet is VincentBase {
                 us_.agentPkpTokenIdToAgentStorage[pkpTokenId].toolPolicyStorage[appId][hashedToolIpfsCid];
 
             // Step 4: Iterate through each policy associated with the tool.
-            uint256 policyCount = policyIpfsCids[i].length;
             for (uint256 j = 0; j < policyCount; j++) {
                 string memory policyIpfsCid = policyIpfsCids[i][j]; // Cache calldata value
 
@@ -444,6 +572,16 @@ contract VincentUserFacet is VincentBase {
                     // Validate parameter name is not empty
                     if (bytes(paramName).length == 0) {
                         revert EmptyParameterName();
+                    }
+
+                    // Check for duplicate parameter names within the same policy
+                    for (uint256 l = k + 1; l < paramCount; l++) {
+                        if (
+                            keccak256(abi.encodePacked(paramName))
+                                == keccak256(abi.encodePacked(policyParameterNames[i][j][l]))
+                        ) {
+                            revert DuplicateParameterNameNotAllowed(appId, i, j, paramName, k, l);
+                        }
                     }
 
                     bytes32 hashedPolicyParameterName = keccak256(abi.encodePacked(paramName));
@@ -514,6 +652,14 @@ contract VincentUserFacet is VincentBase {
                 revert EmptyToolIpfsCid();
             }
 
+            // Check nested array lengths at policy level
+            uint256 policyCount = policyIpfsCids[i].length;
+            if (policyCount != policyParameterNames[i].length || policyCount != policyParameterValues[i].length) {
+                revert PolicyArrayLengthMismatch(
+                    i, policyCount, policyParameterNames[i].length, policyParameterValues[i].length
+                );
+            }
+
             bytes32 hashedToolIpfsCid = keccak256(abi.encodePacked(toolIpfsCid));
 
             // Step 3.1: Validate that the tool exists in the specified app version.
@@ -531,7 +677,6 @@ contract VincentUserFacet is VincentBase {
                 us_.agentPkpTokenIdToAgentStorage[pkpTokenId].toolPolicyStorage[appId][hashedToolIpfsCid];
 
             // Step 4: Iterate through each policy associated with the tool.
-            uint256 policyCount = policyIpfsCids[i].length;
             for (uint256 j = 0; j < policyCount; j++) {
                 string memory policyIpfsCid = policyIpfsCids[i][j]; // Cache calldata value
 
@@ -553,6 +698,12 @@ contract VincentUserFacet is VincentBase {
 
                 // Step 5: Iterate through each parameter associated with the policy.
                 uint256 paramCount = policyParameterNames[i][j].length;
+
+                // Check parameter names and values match in length
+                if (paramCount != policyParameterValues[i][j].length) {
+                    revert ParameterArrayLengthMismatch(i, j, paramCount, policyParameterValues[i][j].length);
+                }
+
                 for (uint256 k = 0; k < paramCount; k++) {
                     string memory paramName = policyParameterNames[i][j][k];
                     bytes memory paramValue = policyParameterValues[i][j][k];
@@ -560,6 +711,16 @@ contract VincentUserFacet is VincentBase {
                     // Validate parameter name is not empty
                     if (bytes(paramName).length == 0) {
                         revert EmptyParameterName();
+                    }
+
+                    // Check for duplicate parameter names within the same policy
+                    for (uint256 l = k + 1; l < paramCount; l++) {
+                        if (
+                            keccak256(abi.encodePacked(paramName))
+                                == keccak256(abi.encodePacked(policyParameterNames[i][j][l]))
+                        ) {
+                            revert DuplicateParameterNameNotAllowed(appId, i, j, paramName, k, l);
+                        }
                     }
 
                     // Validate parameter value is not empty

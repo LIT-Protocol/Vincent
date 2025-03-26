@@ -1,8 +1,8 @@
+import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts';
 import { getTestContext } from '../testContext';
-import { updateApprovedToolsManager } from './updateApprovedToolsManager';
-import { Address } from 'viem';
-import { privateKeyToAccount, generatePrivateKey } from 'viem/accounts';
-describe('updateApprovedToolsManager', () => {
+import { updateApprovedLitActionsManager } from './updateApprovedLitActionsManager';
+
+describe('updateApprovedLitActionsManager', () => {
   let testContext: Awaited<ReturnType<typeof getTestContext>>;
 
   // Generate a random wallet address as the new manager
@@ -13,7 +13,7 @@ describe('updateApprovedToolsManager', () => {
   });
 
   it('should update the approved tools manager on the Vincent network', async () => {
-    const res = await updateApprovedToolsManager(
+    const res = await updateApprovedLitActionsManager(
       {
         newManager: newManagerAddress,
       },
@@ -26,10 +26,10 @@ describe('updateApprovedToolsManager', () => {
     expect(res.receipt).toBeDefined();
     expect(res.decodedLogs).toBeDefined();
 
-    // Find the ApprovedToolsManagerUpdated event
+    // Find the ApprovedLitActionsManagerUpdated event
     const event = res.decodedLogs.find(
       (log) =>
-        log.eventName === 'ApprovedToolsManagerUpdated' &&
+        log.eventName === 'ApprovedLitActionsManagerUpdated' &&
         log.args.newManager !== undefined,
     );
     expect(event).toBeDefined();

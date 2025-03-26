@@ -1,35 +1,330 @@
-
-╭----------+-------------------------------------------------------------------------------------------------------------------------+------------╮
-| Type     | Signature                                                                                                               | Selector   |
-+=================================================================================================================================================+
-| error    | AppNotRegistered(uint256)                                                                                               | 0x95585167 |
-|----------+-------------------------------------------------------------------------------------------------------------------------+------------|
-| error    | AppVersionNotRegistered(uint256,uint256)                                                                                | 0x89f59185 |
-|----------+-------------------------------------------------------------------------------------------------------------------------+------------|
-| error    | DelegateeNotAssociatedWithApp(address)                                                                                  | 0x895da0a3 |
-|----------+-------------------------------------------------------------------------------------------------------------------------+------------|
-| error    | EmptyToolIpfsCid()                                                                                                      | 0xceda0ab1 |
-|----------+-------------------------------------------------------------------------------------------------------------------------+------------|
-| error    | InvalidAppId()                                                                                                          | 0x6470515b |
-|----------+-------------------------------------------------------------------------------------------------------------------------+------------|
-| error    | InvalidPkpTokenId()                                                                                                     | 0x1ab380b6 |
-|----------+-------------------------------------------------------------------------------------------------------------------------+------------|
-| error    | NoRegisteredPkpsFound(address)                                                                                          | 0x24801e39 |
-|----------+-------------------------------------------------------------------------------------------------------------------------+------------|
-| error    | PkpNotPermittedForAppVersion(uint256,uint256,uint256)                                                                   | 0xb5410254 |
-|----------+-------------------------------------------------------------------------------------------------------------------------+------------|
-| error    | PolicyParameterNotSetForPkp(uint256,uint256,uint256,string,string)                                                      | 0x249a0de5 |
-|----------+-------------------------------------------------------------------------------------------------------------------------+------------|
-| error    | ZeroAddressNotAllowed()                                                                                                 | 0x8579befe |
-|----------+-------------------------------------------------------------------------------------------------------------------------+------------|
-| function | getAllPermittedAppIdsForPkp(uint256) view returns (uint256[])                                                           | 0x1078e0d6 |
-|----------+-------------------------------------------------------------------------------------------------------------------------+------------|
-| function | getAllRegisteredAgentPkps(address) view returns (uint256[])                                                             | 0xbc8d39fb |
-|----------+-------------------------------------------------------------------------------------------------------------------------+------------|
-| function | getAllToolsAndPoliciesForApp(uint256,uint256) view returns (VincentUserViewFacet.ToolWithPolicies[])                    | 0x8e75f580 |
-|----------+-------------------------------------------------------------------------------------------------------------------------+------------|
-| function | getPermittedAppVersionForPkp(uint256,uint256) view returns (uint256)                                                    | 0xe60acb08 |
-|----------+-------------------------------------------------------------------------------------------------------------------------+------------|
-| function | validateToolExecutionAndGetPolicies(address,uint256,string) view returns (VincentUserViewFacet.ToolExecutionValidation) | 0xff8ec4c7 |
-╰----------+-------------------------------------------------------------------------------------------------------------------------+------------╯
-
+[
+  {
+    "type": "function",
+    "name": "getAllPermittedAppIdsForPkp",
+    "inputs": [
+      {
+        "name": "pkpTokenId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256[]",
+        "internalType": "uint256[]"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getAllRegisteredAgentPkps",
+    "inputs": [
+      {
+        "name": "userAddress",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256[]",
+        "internalType": "uint256[]"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getAllToolsAndPoliciesForApp",
+    "inputs": [
+      {
+        "name": "pkpTokenId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "appId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "tools",
+        "type": "tuple[]",
+        "internalType": "struct VincentUserViewFacet.ToolWithPolicies[]",
+        "components": [
+          {
+            "name": "toolIpfsCid",
+            "type": "string",
+            "internalType": "string"
+          },
+          {
+            "name": "policies",
+            "type": "tuple[]",
+            "internalType": "struct VincentUserViewFacet.PolicyWithParameters[]",
+            "components": [
+              {
+                "name": "policyIpfsCid",
+                "type": "string",
+                "internalType": "string"
+              },
+              {
+                "name": "parameters",
+                "type": "tuple[]",
+                "internalType": "struct VincentUserViewFacet.PolicyParameter[]",
+                "components": [
+                  {
+                    "name": "name",
+                    "type": "string",
+                    "internalType": "string"
+                  },
+                  {
+                    "name": "paramType",
+                    "type": "uint8",
+                    "internalType": "enum VincentAppStorage.ParameterType"
+                  },
+                  {
+                    "name": "value",
+                    "type": "bytes",
+                    "internalType": "bytes"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getPermittedAppVersionForPkp",
+    "inputs": [
+      {
+        "name": "pkpTokenId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "appId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "validateToolExecutionAndGetPolicies",
+    "inputs": [
+      {
+        "name": "delegatee",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "pkpTokenId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "toolIpfsCid",
+        "type": "string",
+        "internalType": "string"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "validation",
+        "type": "tuple",
+        "internalType": "struct VincentUserViewFacet.ToolExecutionValidation",
+        "components": [
+          {
+            "name": "isPermitted",
+            "type": "bool",
+            "internalType": "bool"
+          },
+          {
+            "name": "appId",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "appVersion",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "policies",
+            "type": "tuple[]",
+            "internalType": "struct VincentUserViewFacet.PolicyWithParameters[]",
+            "components": [
+              {
+                "name": "policyIpfsCid",
+                "type": "string",
+                "internalType": "string"
+              },
+              {
+                "name": "parameters",
+                "type": "tuple[]",
+                "internalType": "struct VincentUserViewFacet.PolicyParameter[]",
+                "components": [
+                  {
+                    "name": "name",
+                    "type": "string",
+                    "internalType": "string"
+                  },
+                  {
+                    "name": "paramType",
+                    "type": "uint8",
+                    "internalType": "enum VincentAppStorage.ParameterType"
+                  },
+                  {
+                    "name": "value",
+                    "type": "bytes",
+                    "internalType": "bytes"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "error",
+    "name": "AppNotRegistered",
+    "inputs": [
+      {
+        "name": "appId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "AppVersionNotRegistered",
+    "inputs": [
+      {
+        "name": "appId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "appVersion",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "DelegateeNotAssociatedWithApp",
+    "inputs": [
+      {
+        "name": "delegatee",
+        "type": "address",
+        "internalType": "address"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "EmptyToolIpfsCid",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "InvalidAppId",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "InvalidPkpTokenId",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "NoRegisteredPkpsFound",
+    "inputs": [
+      {
+        "name": "userAddress",
+        "type": "address",
+        "internalType": "address"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "PkpNotPermittedForAppVersion",
+    "inputs": [
+      {
+        "name": "pkpTokenId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "appId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "appVersion",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "PolicyParameterNotSetForPkp",
+    "inputs": [
+      {
+        "name": "pkpTokenId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "appId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "appVersion",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "policyIpfsCid",
+        "type": "string",
+        "internalType": "string"
+      },
+      {
+        "name": "parameterName",
+        "type": "string",
+        "internalType": "string"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "ZeroAddressNotAllowed",
+    "inputs": []
+  }
+]

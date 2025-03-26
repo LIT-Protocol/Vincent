@@ -1,7 +1,7 @@
 import { getTestContext } from '../testContext';
-import { getAllApprovedTools } from './getAllApprovedTools';
+import { getAllApprovedLitActions } from './getAllApprovedLitActions';
 
-describe('getAllApprovedTools', () => {
+describe('getAllApprovedLitActions', () => {
   let testContext: Awaited<ReturnType<typeof getTestContext>>;
 
   beforeAll(async () => {
@@ -9,16 +9,16 @@ describe('getAllApprovedTools', () => {
   });
 
   it('should retrieve all approved tools from the Vincent network', async () => {
-    const result = await getAllApprovedTools(testContext.networkContext);
+    const result = await getAllApprovedLitActions(testContext.networkContext);
 
     // Log the result for debugging
     console.log(JSON.stringify(result, null, 2));
 
     // Verify structure of the response
-    expect(result).toHaveProperty('toolIpfsCids');
+    expect(result).toHaveProperty('litActionIpfsCids');
 
-    // Verify that toolIpfsCids is an array
-    expect(Array.isArray(result.toolIpfsCids)).toBe(true);
+    // Verify that litActionIpfsCids is an array
+    expect(Array.isArray(result.litActionIpfsCids)).toBe(true);
 
     // Since we're using a mocked context in tests, we can't verify exact content,
     // but we can verify the structure is correct

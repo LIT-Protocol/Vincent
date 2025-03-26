@@ -6,11 +6,11 @@ import "../../../src/VincentBase.sol";
 import "../../../src/LibVincentDiamondStorage.sol";
 
 /**
- * @title VincentAppFacetTest
+ * @title VincentAppFacetTestRegisterApp
  * @notice Test contract for VincentAppFacet
  * @dev Tests functions related to app registration and management
  */
-contract VincentAppFacetTest is VincentTestHelper {
+contract VincentAppFacetTestRegisterApp is VincentTestHelper {
     function setUp() public override {
         // Call parent setUp to deploy the diamond and initialize standard test data
         super.setUp();
@@ -378,8 +378,10 @@ contract VincentAppFacetTest is VincentTestHelper {
         extraTools[0] = TEST_TOOL_IPFS_CID_1;
         extraTools[1] = TEST_TOOL_IPFS_CID_2;
 
-        // Expect the call to revert with ToolsAndPoliciesLengthMismatch error
-        vm.expectRevert(abi.encodeWithSignature("ToolsAndPoliciesLengthMismatch()"));
+        // Expect the call to revert with ToolArrayDimensionMismatch error
+        vm.expectRevert(
+            abi.encodeWithSignature("ToolArrayDimensionMismatch(uint256,uint256,uint256,uint256)", 2, 1, 1, 1)
+        );
 
         // Call registerApp with mismatched arrays
         wrappedAppFacet.registerApp(
@@ -391,6 +393,104 @@ contract VincentAppFacetTest is VincentTestHelper {
             testToolPolicies, // 1 policy array
             testToolPolicyParameterNames,
             testToolPolicyParameterTypes
+        );
+
+        vm.stopPrank();
+    }
+
+    /**
+     * @notice Test registering an app with mismatched policy and parameter arrays for a tool
+     * @dev Verifies that app registration fails when policy array lengths don't match parameter arrays
+     */
+    function testRegisterAppWithMismatchedPolicyArrays() public {
+        vm.startPrank(deployer);
+
+        // Create tool array with one tool
+        string[] memory toolsArray = new string[](1);
+        toolsArray[0] = TEST_TOOL_IPFS_CID_1;
+
+        // Create policies array with 2 policies
+        string[][] memory policies = new string[][](1);
+        policies[0] = new string[](2);
+        policies[0][0] = TEST_POLICY_1;
+        policies[0][1] = TEST_POLICY_2;
+
+        // But only create parameter names for 1 policy
+        string[][][] memory parameterNames = new string[][][](1);
+        parameterNames[0] = new string[][](1);
+        parameterNames[0][0] = new string[](1);
+        parameterNames[0][0][0] = TEST_POLICY_PARAM_1;
+
+        // Match the parameter types to parameter names
+        VincentAppStorage.ParameterType[][][] memory parameterTypes = new VincentAppStorage.ParameterType[][][](1);
+        parameterTypes[0] = new VincentAppStorage.ParameterType[][](1);
+        parameterTypes[0][0] = new VincentAppStorage.ParameterType[](1);
+        parameterTypes[0][0][0] = VincentAppStorage.ParameterType.STRING;
+
+        // Expect the call to revert with PolicyArrayLengthMismatch error
+        vm.expectRevert(
+            abi.encodeWithSignature("PolicyArrayLengthMismatch(uint256,uint256,uint256,uint256)", 0, 2, 1, 1)
+        );
+
+        // Call registerApp with mismatched policy arrays
+        wrappedAppFacet.registerApp(
+            TEST_APP_NAME,
+            TEST_APP_DESCRIPTION,
+            testRedirectUris,
+            testDelegatees,
+            toolsArray,
+            policies,
+            parameterNames,
+            parameterTypes
+        );
+
+        vm.stopPrank();
+    }
+
+    /**
+     * @notice Test registering an app with mismatched parameter name and type arrays
+     * @dev Verifies that app registration fails when parameter name and type array lengths don't match
+     */
+    function testRegisterAppWithMismatchedParameterArrays() public {
+        vm.startPrank(deployer);
+
+        // Create tool array with one tool
+        string[] memory toolsArray = new string[](1);
+        toolsArray[0] = TEST_TOOL_IPFS_CID_1;
+
+        // Create policies array with 1 policy
+        string[][] memory policies = new string[][](1);
+        policies[0] = new string[](1);
+        policies[0][0] = TEST_POLICY_1;
+
+        // Create parameter names with 2 parameters
+        string[][][] memory parameterNames = new string[][][](1);
+        parameterNames[0] = new string[][](1);
+        parameterNames[0][0] = new string[](2);
+        parameterNames[0][0][0] = TEST_POLICY_PARAM_1;
+        parameterNames[0][0][1] = TEST_POLICY_PARAM_2;
+
+        // But only create parameter types for 1 parameter
+        VincentAppStorage.ParameterType[][][] memory parameterTypes = new VincentAppStorage.ParameterType[][][](1);
+        parameterTypes[0] = new VincentAppStorage.ParameterType[][](1);
+        parameterTypes[0][0] = new VincentAppStorage.ParameterType[](1);
+        parameterTypes[0][0][0] = VincentAppStorage.ParameterType.STRING;
+
+        // Expect the call to revert with ParameterArrayLengthMismatch error
+        vm.expectRevert(
+            abi.encodeWithSignature("ParameterArrayLengthMismatch(uint256,uint256,uint256,uint256)", 0, 0, 2, 1)
+        );
+
+        // Call registerApp with mismatched parameter arrays
+        wrappedAppFacet.registerApp(
+            TEST_APP_NAME,
+            TEST_APP_DESCRIPTION,
+            testRedirectUris,
+            testDelegatees,
+            toolsArray,
+            policies,
+            parameterNames,
+            parameterTypes
         );
 
         vm.stopPrank();
@@ -750,8 +850,10 @@ contract VincentAppFacetTest is VincentTestHelper {
         extraTools[0] = TEST_TOOL_IPFS_CID_1;
         extraTools[1] = TEST_TOOL_IPFS_CID_2;
 
-        // Expect the call to revert with ToolsAndPoliciesLengthMismatch error
-        vm.expectRevert(abi.encodeWithSignature("ToolsAndPoliciesLengthMismatch()"));
+        // Expect the call to revert with ToolArrayDimensionMismatch error
+        vm.expectRevert(
+            abi.encodeWithSignature("ToolArrayDimensionMismatch(uint256,uint256,uint256,uint256)", 2, 1, 1, 1)
+        );
 
         // Try to register a new app version with mismatched arrays
         wrappedAppFacet.registerNextAppVersion(
@@ -766,55 +868,87 @@ contract VincentAppFacetTest is VincentTestHelper {
     }
 
     /**
-     * @notice Test registering a new app version with an empty tool IPFS CID
-     * @dev Verifies that registration fails with EmptyToolIpfsCidNotAllowed error
+     * @notice Test registering a new app version with mismatched policy and parameter arrays for a tool
+     * @dev Verifies that version registration fails when policy array lengths don't match parameter arrays
      */
-    function testRegisterNextAppVersionWithEmptyToolIpfsCid() public {
+    function testRegisterNextAppVersionWithMismatchedPolicyArrays() public {
         vm.startPrank(deployer);
 
         // First register an app
         (uint256 appId, uint256 firstVersionNumber) = _registerTestApp();
 
-        // Create tool array with an empty IPFS CID
-        string[] memory emptyToolCids = new string[](1);
-        emptyToolCids[0] = "";
+        // Create tool array with one tool
+        string[] memory toolsArray = new string[](1);
+        toolsArray[0] = TEST_TOOL_IPFS_CID_1;
 
-        // Create matching policy arrays
+        // Create policies array with 2 policies
         string[][] memory policies = new string[][](1);
-        policies[0] = new string[](1);
+        policies[0] = new string[](2);
         policies[0][0] = TEST_POLICY_1;
+        policies[0][1] = TEST_POLICY_2;
 
-        vm.expectRevert(abi.encodeWithSignature("EmptyToolIpfsCidNotAllowed(uint256,uint256)", appId, 0));
+        // But only create parameter names for 1 policy
+        string[][][] memory parameterNames = new string[][][](1);
+        parameterNames[0] = new string[][](1);
+        parameterNames[0][0] = new string[](1);
+        parameterNames[0][0][0] = TEST_POLICY_PARAM_1;
 
-        // Try to register a new app version with an empty tool IPFS CID
-        wrappedAppFacet.registerNextAppVersion(
-            appId, emptyToolCids, policies, testToolPolicyParameterNames, testToolPolicyParameterTypes
+        // Match the parameter types to parameter names
+        VincentAppStorage.ParameterType[][][] memory parameterTypes = new VincentAppStorage.ParameterType[][][](1);
+        parameterTypes[0] = new VincentAppStorage.ParameterType[][](1);
+        parameterTypes[0][0] = new VincentAppStorage.ParameterType[](1);
+        parameterTypes[0][0][0] = VincentAppStorage.ParameterType.STRING;
+
+        // Expect the call to revert with PolicyArrayLengthMismatch error
+        vm.expectRevert(
+            abi.encodeWithSignature("PolicyArrayLengthMismatch(uint256,uint256,uint256,uint256)", 0, 2, 1, 1)
         );
+
+        // Try to register a new app version with mismatched policy arrays
+        wrappedAppFacet.registerNextAppVersion(appId, toolsArray, policies, parameterNames, parameterTypes);
 
         vm.stopPrank();
     }
 
     /**
-     * @notice Test registering a new app version with an empty policy IPFS CID
-     * @dev Verifies that registration fails with EmptyPolicyIpfsCidNotAllowed error
+     * @notice Test registering a new app version with mismatched parameter name and type arrays
+     * @dev Verifies that version registration fails when parameter name and type array lengths don't match
      */
-    function testRegisterNextAppVersionWithEmptyPolicyIpfsCid() public {
+    function testRegisterNextAppVersionWithMismatchedParameterArrays() public {
         vm.startPrank(deployer);
 
         // First register an app
         (uint256 appId, uint256 firstVersionNumber) = _registerTestApp();
 
-        // Create policy array with an empty IPFS CID
-        string[][] memory emptyPolicies = new string[][](1);
-        emptyPolicies[0] = new string[](1);
-        emptyPolicies[0][0] = "";
+        // Create tool array with one tool
+        string[] memory toolsArray = new string[](1);
+        toolsArray[0] = TEST_TOOL_IPFS_CID_1;
 
-        vm.expectRevert(abi.encodeWithSignature("EmptyPolicyIpfsCidNotAllowed(uint256,uint256)", appId, 0));
+        // Create policies array with 1 policy
+        string[][] memory policies = new string[][](1);
+        policies[0] = new string[](1);
+        policies[0][0] = TEST_POLICY_1;
 
-        // Try to register a new app version with an empty policy IPFS CID
-        wrappedAppFacet.registerNextAppVersion(
-            appId, testToolIpfsCids, emptyPolicies, testToolPolicyParameterNames, testToolPolicyParameterTypes
+        // Create parameter names with 2 parameters
+        string[][][] memory parameterNames = new string[][][](1);
+        parameterNames[0] = new string[][](1);
+        parameterNames[0][0] = new string[](2);
+        parameterNames[0][0][0] = TEST_POLICY_PARAM_1;
+        parameterNames[0][0][1] = TEST_POLICY_PARAM_2;
+
+        // But only create parameter types for 1 parameter
+        VincentAppStorage.ParameterType[][][] memory parameterTypes = new VincentAppStorage.ParameterType[][][](1);
+        parameterTypes[0] = new VincentAppStorage.ParameterType[][](1);
+        parameterTypes[0][0] = new VincentAppStorage.ParameterType[](1);
+        parameterTypes[0][0][0] = VincentAppStorage.ParameterType.STRING;
+
+        // Expect the call to revert with ParameterArrayLengthMismatch error
+        vm.expectRevert(
+            abi.encodeWithSignature("ParameterArrayLengthMismatch(uint256,uint256,uint256,uint256)", 0, 0, 2, 1)
         );
+
+        // Try to register a new app version with mismatched parameter arrays
+        wrappedAppFacet.registerNextAppVersion(appId, toolsArray, policies, parameterNames, parameterTypes);
 
         vm.stopPrank();
     }
@@ -1068,6 +1202,765 @@ contract VincentAppFacetTest is VincentTestHelper {
             policies,
             parameterNames,
             parameterTypes
+        );
+
+        vm.stopPrank();
+    }
+
+    /**
+     * @notice Test registering an app with duplicate tool IPFS CIDs
+     * @dev Verifies that app registration fails when duplicate tool IPFS CIDs are provided
+     */
+    function testRegisterAppWithDuplicateToolIpfsCids() public {
+        vm.startPrank(deployer);
+
+        // Create tool array with duplicate IPFS CIDs
+        string[] memory duplicateToolIpfsCids = new string[](2);
+        duplicateToolIpfsCids[0] = TEST_TOOL_IPFS_CID_1;
+        duplicateToolIpfsCids[1] = TEST_TOOL_IPFS_CID_1; // Same as the first one
+
+        // Create matching policy arrays
+        string[][] memory duplicatePolicies = new string[][](2);
+        duplicatePolicies[0] = new string[](1);
+        duplicatePolicies[0][0] = TEST_POLICY_1;
+        duplicatePolicies[1] = new string[](1);
+        duplicatePolicies[1][0] = TEST_POLICY_1;
+
+        // Create matching parameter arrays
+        string[][][] memory duplicateParamNames = new string[][][](2);
+        duplicateParamNames[0] = new string[][](1);
+        duplicateParamNames[0][0] = new string[](1);
+        duplicateParamNames[0][0][0] = TEST_POLICY_PARAM_1;
+        duplicateParamNames[1] = new string[][](1);
+        duplicateParamNames[1][0] = new string[](1);
+        duplicateParamNames[1][0][0] = TEST_POLICY_PARAM_1;
+
+        // Create matching parameter type arrays
+        VincentAppStorage.ParameterType[][][] memory duplicateParamTypes = new VincentAppStorage.ParameterType[][][](2);
+        duplicateParamTypes[0] = new VincentAppStorage.ParameterType[][](1);
+        duplicateParamTypes[0][0] = new VincentAppStorage.ParameterType[](1);
+        duplicateParamTypes[0][0][0] = VincentAppStorage.ParameterType.STRING;
+        duplicateParamTypes[1] = new VincentAppStorage.ParameterType[][](1);
+        duplicateParamTypes[1][0] = new VincentAppStorage.ParameterType[](1);
+        duplicateParamTypes[1][0][0] = VincentAppStorage.ParameterType.STRING;
+
+        // Expect the call to revert with DuplicateToolIpfsCidNotAllowed error
+        vm.expectRevert(
+            abi.encodeWithSignature(
+                "DuplicateToolIpfsCidNotAllowed(uint256,string,uint256,uint256)", 1, TEST_TOOL_IPFS_CID_1, 0, 1
+            )
+        );
+
+        // Call registerApp with duplicate tool IPFS CIDs
+        wrappedAppFacet.registerApp(
+            TEST_APP_NAME,
+            TEST_APP_DESCRIPTION,
+            testRedirectUris,
+            testDelegatees,
+            duplicateToolIpfsCids,
+            duplicatePolicies,
+            duplicateParamNames,
+            duplicateParamTypes
+        );
+
+        vm.stopPrank();
+    }
+
+    /**
+     * @notice Test registering a new app version with duplicate tool IPFS CIDs
+     * @dev Verifies that app version registration fails when duplicate tool IPFS CIDs are provided
+     */
+    function testRegisterNextAppVersionWithDuplicateToolIpfsCids() public {
+        vm.startPrank(deployer);
+
+        // First register an app
+        (uint256 appId, uint256 firstVersionNumber) = _registerTestApp();
+
+        // Create tool array with duplicate IPFS CIDs
+        string[] memory duplicateToolIpfsCids = new string[](3);
+        duplicateToolIpfsCids[0] = TEST_TOOL_IPFS_CID_1;
+        duplicateToolIpfsCids[1] = TEST_TOOL_IPFS_CID_2;
+        duplicateToolIpfsCids[2] = TEST_TOOL_IPFS_CID_1; // Duplicate of first tool
+
+        // Create matching policy arrays
+        string[][] memory duplicatePolicies = new string[][](3);
+        duplicatePolicies[0] = new string[](1);
+        duplicatePolicies[0][0] = TEST_POLICY_1;
+        duplicatePolicies[1] = new string[](1);
+        duplicatePolicies[1][0] = TEST_POLICY_2;
+        duplicatePolicies[2] = new string[](1);
+        duplicatePolicies[2][0] = TEST_POLICY_1; // Can reuse the same policy for the duplicate tool
+
+        // Create matching parameter arrays
+        string[][][] memory duplicateParamNames = new string[][][](3);
+        duplicateParamNames[0] = new string[][](1);
+        duplicateParamNames[0][0] = new string[](1);
+        duplicateParamNames[0][0][0] = TEST_POLICY_PARAM_1;
+        duplicateParamNames[1] = new string[][](1);
+        duplicateParamNames[1][0] = new string[](1);
+        duplicateParamNames[1][0][0] = TEST_POLICY_PARAM_2;
+        duplicateParamNames[2] = new string[][](1);
+        duplicateParamNames[2][0] = new string[](1);
+        duplicateParamNames[2][0][0] = TEST_POLICY_PARAM_1;
+
+        VincentAppStorage.ParameterType[][][] memory duplicateParamTypes = new VincentAppStorage.ParameterType[][][](3);
+        duplicateParamTypes[0] = new VincentAppStorage.ParameterType[][](1);
+        duplicateParamTypes[0][0] = new VincentAppStorage.ParameterType[](1);
+        duplicateParamTypes[0][0][0] = VincentAppStorage.ParameterType.STRING;
+        duplicateParamTypes[1] = new VincentAppStorage.ParameterType[][](1);
+        duplicateParamTypes[1][0] = new VincentAppStorage.ParameterType[](1);
+        duplicateParamTypes[1][0][0] = VincentAppStorage.ParameterType.BOOL;
+        duplicateParamTypes[2] = new VincentAppStorage.ParameterType[][](1);
+        duplicateParamTypes[2][0] = new VincentAppStorage.ParameterType[](1);
+        duplicateParamTypes[2][0][0] = VincentAppStorage.ParameterType.STRING;
+
+        // Expect the call to revert with DuplicateToolIpfsCidNotAllowed error
+        vm.expectRevert(
+            abi.encodeWithSignature(
+                "DuplicateToolIpfsCidNotAllowed(uint256,string,uint256,uint256)", 1, TEST_TOOL_IPFS_CID_1, 0, 2
+            )
+        );
+
+        // Attempt to register a new version with duplicate tool IPFS CIDs
+        wrappedAppFacet.registerNextAppVersion(
+            appId, duplicateToolIpfsCids, duplicatePolicies, duplicateParamNames, duplicateParamTypes
+        );
+
+        vm.stopPrank();
+    }
+
+    /**
+     * @notice Test registering a new app version with an empty tool IPFS CID
+     * @dev Verifies that registration fails with EmptyToolIpfsCid error
+     */
+    function testRegisterNextAppVersionWithEmptyToolIpfsCid() public {
+        vm.startPrank(deployer);
+
+        // First register an app
+        (uint256 appId, uint256 firstVersionNumber) = _registerTestApp();
+
+        // Create tool array with an empty IPFS CID
+        string[] memory emptyToolCids = new string[](1);
+        emptyToolCids[0] = "";
+
+        // Create matching policy arrays
+        string[][] memory policies = new string[][](1);
+        policies[0] = new string[](1);
+        policies[0][0] = TEST_POLICY_1;
+
+        vm.expectRevert(abi.encodeWithSignature("EmptyToolIpfsCidNotAllowed(uint256,uint256)", appId, 0));
+
+        // Try to register a new app version with an empty tool IPFS CID
+        wrappedAppFacet.registerNextAppVersion(
+            appId, emptyToolCids, policies, testToolPolicyParameterNames, testToolPolicyParameterTypes
+        );
+
+        vm.stopPrank();
+    }
+
+    /**
+     * @notice Test registering a new app version with an empty policy IPFS CID
+     * @dev Verifies that registration fails with EmptyPolicyIpfsCid error
+     */
+    function testRegisterNextAppVersionWithEmptyPolicyIpfsCid() public {
+        vm.startPrank(deployer);
+
+        // First register an app
+        (uint256 appId, uint256 firstVersionNumber) = _registerTestApp();
+
+        // Create policy array with an empty IPFS CID
+        string[][] memory emptyPolicies = new string[][](1);
+        emptyPolicies[0] = new string[](1);
+        emptyPolicies[0][0] = "";
+
+        vm.expectRevert(abi.encodeWithSignature("EmptyPolicyIpfsCidNotAllowed(uint256,uint256)", appId, 0));
+
+        // Try to register a new app version with an empty policy IPFS CID
+        wrappedAppFacet.registerNextAppVersion(
+            appId, testToolIpfsCids, emptyPolicies, testToolPolicyParameterNames, testToolPolicyParameterTypes
+        );
+
+        vm.stopPrank();
+    }
+
+    /**
+     * @notice Test registering a new app version with duplicate policy IPFS CIDs
+     * @dev Verifies that app version registration fails when duplicate policy IPFS CIDs are provided for a tool
+     */
+    function testRegisterAppWithDuplicatePolicyIpfsCids() public {
+        vm.startPrank(deployer);
+
+        // Create tool array with one tool
+        string[] memory toolsArray = new string[](1);
+        toolsArray[0] = TEST_TOOL_IPFS_CID_1;
+
+        // Create policies array with duplicate policies
+        string[][] memory policies = new string[][](1);
+        policies[0] = new string[](2);
+        policies[0][0] = TEST_POLICY_1;
+        policies[0][1] = TEST_POLICY_1; // Same as the first one
+
+        // Create matching parameter arrays
+        string[][][] memory parameterNames = new string[][][](1);
+        parameterNames[0] = new string[][](2);
+        parameterNames[0][0] = new string[](1);
+        parameterNames[0][0][0] = TEST_POLICY_PARAM_1;
+        parameterNames[0][1] = new string[](1);
+        parameterNames[0][1][0] = TEST_POLICY_PARAM_2;
+
+        VincentAppStorage.ParameterType[][][] memory parameterTypes = new VincentAppStorage.ParameterType[][][](1);
+        parameterTypes[0] = new VincentAppStorage.ParameterType[][](2);
+        parameterTypes[0][0] = new VincentAppStorage.ParameterType[](1);
+        parameterTypes[0][0][0] = VincentAppStorage.ParameterType.STRING;
+        parameterTypes[0][1] = new VincentAppStorage.ParameterType[](1);
+        parameterTypes[0][1][0] = VincentAppStorage.ParameterType.BOOL;
+
+        // Expect the call to revert with DuplicatePolicyIpfsCidNotAllowed error
+        vm.expectRevert(
+            abi.encodeWithSignature(
+                "DuplicatePolicyIpfsCidNotAllowed(uint256,uint256,string,uint256,uint256)", 1, 0, TEST_POLICY_1, 0, 1
+            )
+        );
+
+        // Call registerApp with duplicate policy IPFS CIDs
+        wrappedAppFacet.registerApp(
+            TEST_APP_NAME,
+            TEST_APP_DESCRIPTION,
+            testRedirectUris,
+            testDelegatees,
+            toolsArray,
+            policies,
+            parameterNames,
+            parameterTypes
+        );
+
+        vm.stopPrank();
+    }
+
+    /**
+     * @notice Test registering a new app version with duplicate policy IPFS CIDs
+     * @dev Verifies that app version registration fails when duplicate policy IPFS CIDs are provided for a tool
+     */
+    function testRegisterNextAppVersionWithDuplicatePolicyIpfsCids() public {
+        vm.startPrank(deployer);
+
+        // First register an app
+        (uint256 appId, uint256 firstVersionNumber) = _registerTestApp();
+
+        // Create tool array with one tool
+        string[] memory toolsArray = new string[](1);
+        toolsArray[0] = TEST_TOOL_IPFS_CID_2;
+
+        // Create policies array with duplicate policies
+        string[][] memory policies = new string[][](1);
+        policies[0] = new string[](2);
+        policies[0][0] = TEST_POLICY_1;
+        policies[0][1] = TEST_POLICY_1; // Same as the first one
+
+        // Create matching parameter arrays
+        string[][][] memory parameterNames = new string[][][](1);
+        parameterNames[0] = new string[][](2);
+        parameterNames[0][0] = new string[](1);
+        parameterNames[0][0][0] = TEST_POLICY_PARAM_1;
+        parameterNames[0][1] = new string[](1);
+        parameterNames[0][1][0] = TEST_POLICY_PARAM_2;
+
+        VincentAppStorage.ParameterType[][][] memory parameterTypes = new VincentAppStorage.ParameterType[][][](1);
+        parameterTypes[0] = new VincentAppStorage.ParameterType[][](2);
+        parameterTypes[0][0] = new VincentAppStorage.ParameterType[](1);
+        parameterTypes[0][0][0] = VincentAppStorage.ParameterType.STRING;
+        parameterTypes[0][1] = new VincentAppStorage.ParameterType[](1);
+        parameterTypes[0][1][0] = VincentAppStorage.ParameterType.BOOL;
+
+        // Expect the call to revert with DuplicatePolicyIpfsCidNotAllowed error
+        vm.expectRevert(
+            abi.encodeWithSignature(
+                "DuplicatePolicyIpfsCidNotAllowed(uint256,uint256,string,uint256,uint256)",
+                appId,
+                0,
+                TEST_POLICY_1,
+                0,
+                1
+            )
+        );
+
+        // Attempt to register a new version with duplicate policy IPFS CIDs
+        wrappedAppFacet.registerNextAppVersion(appId, toolsArray, policies, parameterNames, parameterTypes);
+
+        vm.stopPrank();
+    }
+
+    /**
+     * @notice Test registering an app with duplicate parameter names
+     * @dev Verifies that app registration fails when duplicate parameter names are provided for a policy
+     */
+    function testRegisterAppWithDuplicateParameterNames() public {
+        vm.startPrank(deployer);
+
+        // Create tool array with one tool
+        string[] memory toolsArray = new string[](1);
+        toolsArray[0] = TEST_TOOL_IPFS_CID_1;
+
+        // Create policies array with one policy
+        string[][] memory policies = new string[][](1);
+        policies[0] = new string[](1);
+        policies[0][0] = TEST_POLICY_1;
+
+        // Create parameter names with duplicate names
+        string[][][] memory parameterNames = new string[][][](1);
+        parameterNames[0] = new string[][](1);
+        parameterNames[0][0] = new string[](2);
+        parameterNames[0][0][0] = TEST_POLICY_PARAM_1;
+        parameterNames[0][0][1] = TEST_POLICY_PARAM_1; // Same as the first one
+
+        // Create matching parameter types
+        VincentAppStorage.ParameterType[][][] memory parameterTypes = new VincentAppStorage.ParameterType[][][](1);
+        parameterTypes[0] = new VincentAppStorage.ParameterType[][](1);
+        parameterTypes[0][0] = new VincentAppStorage.ParameterType[](2);
+        parameterTypes[0][0][0] = VincentAppStorage.ParameterType.STRING;
+        parameterTypes[0][0][1] = VincentAppStorage.ParameterType.STRING;
+
+        // Expect the call to revert with DuplicateParameterNameNotAllowed error
+        vm.expectRevert(
+            abi.encodeWithSignature(
+                "DuplicateParameterNameNotAllowed(uint256,uint256,uint256,string,uint256,uint256)",
+                1,
+                0,
+                0,
+                TEST_POLICY_PARAM_1,
+                0,
+                1
+            )
+        );
+
+        // Call registerApp with duplicate parameter names
+        wrappedAppFacet.registerApp(
+            TEST_APP_NAME,
+            TEST_APP_DESCRIPTION,
+            testRedirectUris,
+            testDelegatees,
+            toolsArray,
+            policies,
+            parameterNames,
+            parameterTypes
+        );
+
+        vm.stopPrank();
+    }
+
+    /**
+     * @notice Test registering a new app version with duplicate parameter names
+     * @dev Verifies that app version registration fails when duplicate parameter names are provided for a policy
+     */
+    function testRegisterNextAppVersionWithDuplicateParameterNames() public {
+        vm.startPrank(deployer);
+
+        // First register an app
+        (uint256 appId, uint256 firstVersionNumber) = _registerTestApp();
+
+        // Create tool array with one tool
+        string[] memory toolsArray = new string[](1);
+        toolsArray[0] = TEST_TOOL_IPFS_CID_2;
+
+        // Create policies array with one policy
+        string[][] memory policies = new string[][](1);
+        policies[0] = new string[](1);
+        policies[0][0] = TEST_POLICY_1;
+
+        // Create parameter names with duplicate names
+        string[][][] memory parameterNames = new string[][][](1);
+        parameterNames[0] = new string[][](1);
+        parameterNames[0][0] = new string[](2);
+        parameterNames[0][0][0] = TEST_POLICY_PARAM_1;
+        parameterNames[0][0][1] = TEST_POLICY_PARAM_1; // Same as the first one
+
+        // Create matching parameter types
+        VincentAppStorage.ParameterType[][][] memory parameterTypes = new VincentAppStorage.ParameterType[][][](1);
+        parameterTypes[0] = new VincentAppStorage.ParameterType[][](1);
+        parameterTypes[0][0] = new VincentAppStorage.ParameterType[](2);
+        parameterTypes[0][0][0] = VincentAppStorage.ParameterType.STRING;
+        parameterTypes[0][0][1] = VincentAppStorage.ParameterType.STRING;
+
+        // Expect the call to revert with DuplicateParameterNameNotAllowed error
+        vm.expectRevert(
+            abi.encodeWithSignature(
+                "DuplicateParameterNameNotAllowed(uint256,uint256,uint256,string,uint256,uint256)",
+                appId,
+                0,
+                0,
+                TEST_POLICY_PARAM_1,
+                0,
+                1
+            )
+        );
+
+        // Attempt to register a new version with duplicate parameter names
+        wrappedAppFacet.registerNextAppVersion(appId, toolsArray, policies, parameterNames, parameterTypes);
+
+        vm.stopPrank();
+    }
+
+    /**
+     * @notice Test registering an app with duplicate tool CIDs
+     * @dev Verifies that app registration fails when duplicate tool CIDs are provided
+     */
+    function testRegisterAppWithDuplicateToolCids() public {
+        vm.startPrank(deployer);
+
+        // Create data with duplicate tool CIDs
+        string[] memory duplicateToolCids = new string[](2);
+        duplicateToolCids[0] = TEST_TOOL_IPFS_CID_1;
+        duplicateToolCids[1] = TEST_TOOL_IPFS_CID_1; // Same as first one
+
+        // Create matching policy arrays
+        string[][] memory duplicatePolicies = new string[][](2);
+        duplicatePolicies[0] = new string[](1);
+        duplicatePolicies[0][0] = TEST_POLICY_1;
+        duplicatePolicies[1] = new string[](1);
+        duplicatePolicies[1][0] = TEST_POLICY_1;
+
+        // Create matching parameter name arrays
+        string[][][] memory duplicateParamNames = new string[][][](2);
+        duplicateParamNames[0] = new string[][](1);
+        duplicateParamNames[0][0] = new string[](1);
+        duplicateParamNames[0][0][0] = TEST_POLICY_PARAM_1;
+        duplicateParamNames[1] = new string[][](1);
+        duplicateParamNames[1][0] = new string[](1);
+        duplicateParamNames[1][0][0] = TEST_POLICY_PARAM_1;
+
+        // Create matching parameter type arrays
+        VincentAppStorage.ParameterType[][][] memory duplicateParamTypes = new VincentAppStorage.ParameterType[][][](2);
+        duplicateParamTypes[0] = new VincentAppStorage.ParameterType[][](1);
+        duplicateParamTypes[0][0] = new VincentAppStorage.ParameterType[](1);
+        duplicateParamTypes[0][0][0] = VincentAppStorage.ParameterType.STRING;
+        duplicateParamTypes[1] = new VincentAppStorage.ParameterType[][](1);
+        duplicateParamTypes[1][0] = new VincentAppStorage.ParameterType[](1);
+        duplicateParamTypes[1][0][0] = VincentAppStorage.ParameterType.STRING;
+
+        // Expect the call to revert with DuplicateToolIpfsCidNotAllowed error
+        vm.expectRevert(
+            abi.encodeWithSignature(
+                "DuplicateToolIpfsCidNotAllowed(uint256,string,uint256,uint256)", 1, TEST_TOOL_IPFS_CID_1, 0, 1
+            )
+        );
+
+        // Call registerApp with duplicate tool CIDs
+        wrappedAppFacet.registerApp(
+            TEST_APP_NAME,
+            TEST_APP_DESCRIPTION,
+            testRedirectUris,
+            testDelegatees,
+            duplicateToolCids,
+            duplicatePolicies,
+            duplicateParamNames,
+            duplicateParamTypes
+        );
+
+        vm.stopPrank();
+    }
+
+    /**
+     * @notice Test using NotAllRegisteredToolsProvided check in VincentUserFacet
+     * @dev This tests the integration with VincentUserFacet to ensure all registered tools must be provided
+     */
+    function testUserFacetRequiresAllTools() public {
+        vm.startPrank(deployer);
+
+        // First register an app with multiple tools
+        string[] memory multiToolIpfsCids = new string[](2);
+        multiToolIpfsCids[0] = TEST_TOOL_IPFS_CID_1;
+        multiToolIpfsCids[1] = TEST_TOOL_IPFS_CID_2;
+
+        // Prepare policies for each tool
+        string[][] memory multiToolPolicies = new string[][](2);
+        multiToolPolicies[0] = new string[](1);
+        multiToolPolicies[0][0] = TEST_POLICY_1;
+        multiToolPolicies[1] = new string[](1);
+        multiToolPolicies[1][0] = TEST_POLICY_1;
+
+        // Prepare parameter names for each policy
+        string[][][] memory multiToolParamNames = new string[][][](2);
+        multiToolParamNames[0] = new string[][](1);
+        multiToolParamNames[0][0] = new string[](1);
+        multiToolParamNames[0][0][0] = TEST_POLICY_PARAM_1;
+        multiToolParamNames[1] = new string[][](1);
+        multiToolParamNames[1][0] = new string[](1);
+        multiToolParamNames[1][0][0] = TEST_POLICY_PARAM_1;
+
+        // Prepare parameter types for each parameter
+        VincentAppStorage.ParameterType[][][] memory multiToolParamTypes = new VincentAppStorage.ParameterType[][][](2);
+        multiToolParamTypes[0] = new VincentAppStorage.ParameterType[][](1);
+        multiToolParamTypes[0][0] = new VincentAppStorage.ParameterType[](1);
+        multiToolParamTypes[0][0][0] = VincentAppStorage.ParameterType.STRING;
+        multiToolParamTypes[1] = new VincentAppStorage.ParameterType[][](1);
+        multiToolParamTypes[1][0] = new VincentAppStorage.ParameterType[](1);
+        multiToolParamTypes[1][0][0] = VincentAppStorage.ParameterType.STRING;
+
+        // Register app with multiple tools
+        (uint256 appId, uint256 versionNumber) = wrappedAppFacet.registerApp(
+            TEST_APP_NAME,
+            TEST_APP_DESCRIPTION,
+            testRedirectUris,
+            testDelegatees,
+            multiToolIpfsCids,
+            multiToolPolicies,
+            multiToolParamNames,
+            multiToolParamTypes
+        );
+
+        // Create parameter values for UserFacet tests
+        bytes[][][] memory multiToolParamValues = new bytes[][][](2);
+        multiToolParamValues[0] = new bytes[][](1);
+        multiToolParamValues[0][0] = new bytes[](1);
+        multiToolParamValues[0][0][0] = abi.encode(TEST_POLICY_PARAM_STRING_VALUE);
+        multiToolParamValues[1] = new bytes[][](1);
+        multiToolParamValues[1][0] = new bytes[](1);
+        multiToolParamValues[1][0][0] = abi.encode(TEST_POLICY_PARAM_STRING_VALUE);
+
+        // Now try to permit the app version with only one tool (missing the second tool)
+        string[] memory incompleteToolIpfsCids = new string[](1);
+        incompleteToolIpfsCids[0] = TEST_TOOL_IPFS_CID_1;
+
+        string[][] memory incompleteToolPolicies = new string[][](1);
+        incompleteToolPolicies[0] = new string[](1);
+        incompleteToolPolicies[0][0] = TEST_POLICY_1;
+
+        string[][][] memory incompleteToolParamNames = new string[][][](1);
+        incompleteToolParamNames[0] = new string[][](1);
+        incompleteToolParamNames[0][0] = new string[](1);
+        incompleteToolParamNames[0][0][0] = TEST_POLICY_PARAM_1;
+
+        bytes[][][] memory incompleteToolParamValues = new bytes[][][](1);
+        incompleteToolParamValues[0] = new bytes[][](1);
+        incompleteToolParamValues[0][0] = new bytes[](1);
+        incompleteToolParamValues[0][0][0] = abi.encode(TEST_POLICY_PARAM_STRING_VALUE);
+
+        // Expect the call to revert with NotAllRegisteredToolsProvided error
+        vm.expectRevert(abi.encodeWithSignature("NotAllRegisteredToolsProvided(uint256,uint256)", appId, versionNumber));
+
+        // Try to permit app version with incomplete tools
+        wrappedUserFacet.permitAppVersion(
+            TEST_PKP_TOKEN_ID_1,
+            appId,
+            versionNumber,
+            incompleteToolIpfsCids,
+            incompleteToolPolicies,
+            incompleteToolParamNames,
+            incompleteToolParamValues
+        );
+
+        // Now try with all tools but in a different order
+        string[] memory allToolsReordered = new string[](2);
+        allToolsReordered[0] = TEST_TOOL_IPFS_CID_2; // Swapped order
+        allToolsReordered[1] = TEST_TOOL_IPFS_CID_1;
+
+        string[][] memory allToolsPolicies = new string[][](2);
+        allToolsPolicies[0] = new string[](1);
+        allToolsPolicies[0][0] = TEST_POLICY_1;
+        allToolsPolicies[1] = new string[](1);
+        allToolsPolicies[1][0] = TEST_POLICY_1;
+
+        string[][][] memory allToolsParamNames = new string[][][](2);
+        allToolsParamNames[0] = new string[][](1);
+        allToolsParamNames[0][0] = new string[](1);
+        allToolsParamNames[0][0][0] = TEST_POLICY_PARAM_1;
+        allToolsParamNames[1] = new string[][](1);
+        allToolsParamNames[1][0] = new string[](1);
+        allToolsParamNames[1][0][0] = TEST_POLICY_PARAM_1;
+
+        bytes[][][] memory allToolsParamValues = new bytes[][][](2);
+        allToolsParamValues[0] = new bytes[][](1);
+        allToolsParamValues[0][0] = new bytes[](1);
+        allToolsParamValues[0][0][0] = abi.encode(TEST_POLICY_PARAM_STRING_VALUE);
+        allToolsParamValues[1] = new bytes[][](1);
+        allToolsParamValues[1][0] = new bytes[](1);
+        allToolsParamValues[1][0][0] = abi.encode(TEST_POLICY_PARAM_STRING_VALUE);
+
+        // This should succeed because we're providing all tools, even if in different order
+        wrappedUserFacet.permitAppVersion(
+            TEST_PKP_TOKEN_ID_1,
+            appId,
+            versionNumber,
+            allToolsReordered,
+            allToolsPolicies,
+            allToolsParamNames,
+            allToolsParamValues
+        );
+
+        // Verify the app version was permitted
+        uint256 permittedVersion = wrappedUserViewFacet.getPermittedAppVersionForPkp(TEST_PKP_TOKEN_ID_1, appId);
+        assertEq(permittedVersion, versionNumber, "App version should be permitted");
+
+        vm.stopPrank();
+    }
+
+    /**
+     * @notice Test using NotAllRegisteredToolsProvided check in setToolPolicyParameters
+     * @dev Tests that setToolPolicyParameters also requires all registered tools
+     */
+    function testSetToolPolicyParametersRequiresAllTools() public {
+        vm.startPrank(deployer);
+
+        // First register an app with multiple tools
+        string[] memory multiToolIpfsCids = new string[](2);
+        multiToolIpfsCids[0] = TEST_TOOL_IPFS_CID_1;
+        multiToolIpfsCids[1] = TEST_TOOL_IPFS_CID_2;
+
+        // Prepare policies for each tool
+        string[][] memory multiToolPolicies = new string[][](2);
+        multiToolPolicies[0] = new string[](1);
+        multiToolPolicies[0][0] = TEST_POLICY_1;
+        multiToolPolicies[1] = new string[](1);
+        multiToolPolicies[1][0] = TEST_POLICY_1;
+
+        // Prepare parameter names for each policy
+        string[][][] memory multiToolParamNames = new string[][][](2);
+        multiToolParamNames[0] = new string[][](1);
+        multiToolParamNames[0][0] = new string[](1);
+        multiToolParamNames[0][0][0] = TEST_POLICY_PARAM_1;
+        multiToolParamNames[1] = new string[][](1);
+        multiToolParamNames[1][0] = new string[](1);
+        multiToolParamNames[1][0][0] = TEST_POLICY_PARAM_1;
+
+        // Prepare parameter types for each parameter
+        VincentAppStorage.ParameterType[][][] memory multiToolParamTypes = new VincentAppStorage.ParameterType[][][](2);
+        multiToolParamTypes[0] = new VincentAppStorage.ParameterType[][](1);
+        multiToolParamTypes[0][0] = new VincentAppStorage.ParameterType[](1);
+        multiToolParamTypes[0][0][0] = VincentAppStorage.ParameterType.STRING;
+        multiToolParamTypes[1] = new VincentAppStorage.ParameterType[][](1);
+        multiToolParamTypes[1][0] = new VincentAppStorage.ParameterType[](1);
+        multiToolParamTypes[1][0][0] = VincentAppStorage.ParameterType.STRING;
+
+        // Register app with multiple tools
+        (uint256 appId, uint256 versionNumber) = wrappedAppFacet.registerApp(
+            TEST_APP_NAME,
+            TEST_APP_DESCRIPTION,
+            testRedirectUris,
+            testDelegatees,
+            multiToolIpfsCids,
+            multiToolPolicies,
+            multiToolParamNames,
+            multiToolParamTypes
+        );
+
+        // First permit app version with all tools
+        bytes[][][] memory multiToolParamValues = new bytes[][][](2);
+        multiToolParamValues[0] = new bytes[][](1);
+        multiToolParamValues[0][0] = new bytes[](1);
+        multiToolParamValues[0][0][0] = abi.encode(TEST_POLICY_PARAM_STRING_VALUE);
+        multiToolParamValues[1] = new bytes[][](1);
+        multiToolParamValues[1][0] = new bytes[](1);
+        multiToolParamValues[1][0][0] = abi.encode(TEST_POLICY_PARAM_STRING_VALUE);
+
+        wrappedUserFacet.permitAppVersion(
+            TEST_PKP_TOKEN_ID_1,
+            appId,
+            versionNumber,
+            multiToolIpfsCids,
+            multiToolPolicies,
+            multiToolParamNames,
+            multiToolParamValues
+        );
+
+        // Now try to set tool policy parameters with only one tool
+        string[] memory incompleteToolIpfsCids = new string[](1);
+        incompleteToolIpfsCids[0] = TEST_TOOL_IPFS_CID_1;
+
+        string[][] memory incompleteToolPolicies = new string[][](1);
+        incompleteToolPolicies[0] = new string[](1);
+        incompleteToolPolicies[0][0] = TEST_POLICY_1;
+
+        string[][][] memory incompleteToolParamNames = new string[][][](1);
+        incompleteToolParamNames[0] = new string[][](1);
+        incompleteToolParamNames[0][0] = new string[](1);
+        incompleteToolParamNames[0][0][0] = TEST_POLICY_PARAM_1;
+
+        bytes[][][] memory incompleteToolParamValues = new bytes[][][](1);
+        incompleteToolParamValues[0] = new bytes[][](1);
+        incompleteToolParamValues[0][0] = new bytes[](1);
+        incompleteToolParamValues[0][0][0] = abi.encode("updated-value");
+
+        // Expect the call to revert with NotAllRegisteredToolsProvided error
+        vm.expectRevert(abi.encodeWithSignature("NotAllRegisteredToolsProvided(uint256,uint256)", appId, versionNumber));
+
+        // Try to set parameters with incomplete tools
+        wrappedUserFacet.setToolPolicyParameters(
+            TEST_PKP_TOKEN_ID_1,
+            appId,
+            versionNumber,
+            incompleteToolIpfsCids,
+            incompleteToolPolicies,
+            incompleteToolParamNames,
+            incompleteToolParamValues
+        );
+
+        // Try with all tools but in different order - this should succeed
+        string[] memory allToolsReordered = new string[](2);
+        allToolsReordered[0] = TEST_TOOL_IPFS_CID_2; // Swapped order
+        allToolsReordered[1] = TEST_TOOL_IPFS_CID_1;
+
+        string[][] memory allToolsPolicies = new string[][](2);
+        allToolsPolicies[0] = new string[](1);
+        allToolsPolicies[0][0] = TEST_POLICY_1;
+        allToolsPolicies[1] = new string[](1);
+        allToolsPolicies[1][0] = TEST_POLICY_1;
+
+        string[][][] memory allToolsParamNames = new string[][][](2);
+        allToolsParamNames[0] = new string[][](1);
+        allToolsParamNames[0][0] = new string[](1);
+        allToolsParamNames[0][0][0] = TEST_POLICY_PARAM_1;
+        allToolsParamNames[1] = new string[][](1);
+        allToolsParamNames[1][0] = new string[](1);
+        allToolsParamNames[1][0][0] = TEST_POLICY_PARAM_1;
+
+        bytes[][][] memory updatedParamValues = new bytes[][][](2);
+        updatedParamValues[0] = new bytes[][](1);
+        updatedParamValues[0][0] = new bytes[](1);
+        updatedParamValues[0][0][0] = abi.encode("updated-value-1");
+        updatedParamValues[1] = new bytes[][](1);
+        updatedParamValues[1][0] = new bytes[](1);
+        updatedParamValues[1][0][0] = abi.encode("updated-value-2");
+
+        // This should succeed because we're providing all tools
+        wrappedUserFacet.setToolPolicyParameters(
+            TEST_PKP_TOKEN_ID_1,
+            appId,
+            versionNumber,
+            allToolsReordered,
+            allToolsPolicies,
+            allToolsParamNames,
+            updatedParamValues
+        );
+
+        vm.stopPrank();
+    }
+
+    /**
+     * @notice Test registering an app with no tools and then permitting it
+     * @dev Verifies that app registration fails with NoToolsProvided error when no tools are provided
+     */
+    function testRegisterAndPermitAppVersionWithNoTools() public {
+        vm.startPrank(deployer);
+
+        // Create empty arrays for tools
+        string[] memory emptyToolIpfsCids = new string[](0);
+        string[][] memory emptyToolPolicies = new string[][](0);
+        string[][][] memory emptyToolParamNames = new string[][][](0);
+        VincentAppStorage.ParameterType[][][] memory emptyToolParamTypes = new VincentAppStorage.ParameterType[][][](0);
+
+        // Expect the call to revert with NoToolsProvided error
+        vm.expectRevert(abi.encodeWithSignature("NoToolsProvided(uint256)", 1));
+
+        // Register app with no tools - this should fail
+        wrappedAppFacet.registerApp(
+            TEST_APP_NAME,
+            TEST_APP_DESCRIPTION,
+            testRedirectUris,
+            testDelegatees,
+            emptyToolIpfsCids,
+            emptyToolPolicies,
+            emptyToolParamNames,
+            emptyToolParamTypes
         );
 
         vm.stopPrank();

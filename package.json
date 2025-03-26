@@ -27,6 +27,7 @@
     "lint:dashboard": "nx lint dashboard",
     "install:contracts": "cd packages/vincent-contracts && forge install",
     "make:contracts": "cd packages/vincent-contracts && make",
+    "gen:contracts": "bun run make:contracts get-abis run-postbuild-scripts",
     "build:contracts": "nx build vincent-contracts",
     "clean": "rimraf bun.lock node_modules"
   },

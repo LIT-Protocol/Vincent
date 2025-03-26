@@ -6,8 +6,8 @@ import "../../script/DeployVincentDiamond.sol";
 import "../../src/VincentDiamond.sol";
 import "../../src/facets/VincentAppFacet.sol";
 import "../../src/facets/VincentAppViewFacet.sol";
-import "../../src/facets/VincentToolFacet.sol";
-import "../../src/facets/VincentToolViewFacet.sol";
+import "../../src/facets/VincentLitActionFacet.sol";
+import "../../src/facets/VincentLitActionViewFacet.sol";
 import "../../src/facets/VincentUserFacet.sol";
 import "../../src/facets/VincentUserViewFacet.sol";
 import "../mocks/MockPKPNftFacet.sol";
@@ -64,11 +64,11 @@ abstract contract VincentTestHelper is Test {
     /// @notice App view facet - provides read-only access to app data
     VincentAppViewFacet public wrappedAppViewFacet;
 
-    /// @notice Tool management facet - handles tool registration and approval
-    VincentToolFacet public wrappedToolFacet;
+    /// @notice LitAction management facet - handles litAction registration and approval
+    VincentLitActionFacet public wrappedLitActionFacet;
 
-    /// @notice Tool view facet - provides read-only access to tool data
-    VincentToolViewFacet public wrappedToolViewFacet;
+    /// @notice LitAction view facet - provides read-only access to litAction data
+    VincentLitActionViewFacet public wrappedLitActionViewFacet;
 
     /// @notice User management facet - handles user settings and permissions
     VincentUserFacet public wrappedUserFacet;
@@ -163,11 +163,11 @@ abstract contract VincentTestHelper is Test {
     event DelegateeAdded(uint256 indexed appId, address indexed delegatee);
     event DelegateeRemoved(uint256 indexed appId, address indexed delegatee);
 
-    // Tool-related events
-    event NewToolRegistered(bytes32 indexed toolIpfsCidHash);
-    event ToolApproved(bytes32 indexed toolIpfsCidHash);
-    event ToolApprovalRemoved(bytes32 indexed toolIpfsCidHash);
-    event ApprovedToolsManagerUpdated(address indexed previousManager, address indexed newManager);
+    // LitAction-related events
+    event NewLitActionRegistered(bytes32 indexed litActionIpfsCidHash);
+    event LitActionApproved(bytes32 indexed litActionIpfsCidHash);
+    event LitActionApprovalRemoved(bytes32 indexed litActionIpfsCidHash);
+    event ApprovedLitActionsManagerUpdated(address indexed previousManager, address indexed newManager);
 
     // User-related errors
     error NotPkpOwner(uint256 pkpTokenId, address msgSender);
@@ -206,7 +206,7 @@ abstract contract VincentTestHelper is Test {
 
         // Set the approved tools manager as the deployer for testing
         // In production, this would be a separate secure account
-        vm.setEnv("APPROVED_TOOLS_MANAGER_ADDRESS", vm.toString(deployer));
+        vm.setEnv("APPROVED_LIT_ACTIONS_MANAGER_ADDRESS", vm.toString(deployer));
 
         // Deploy mock dependencies first
         deployScript = new DeployVincentDiamond();
@@ -225,8 +225,8 @@ abstract contract VincentTestHelper is Test {
         // In the Diamond pattern, all calls route through the Diamond but execute code from different facets
         wrappedAppFacet = VincentAppFacet(address(diamond));
         wrappedAppViewFacet = VincentAppViewFacet(address(diamond));
-        wrappedToolFacet = VincentToolFacet(address(diamond));
-        wrappedToolViewFacet = VincentToolViewFacet(address(diamond));
+        wrappedLitActionFacet = VincentLitActionFacet(address(diamond));
+        wrappedLitActionViewFacet = VincentLitActionViewFacet(address(diamond));
         wrappedUserFacet = VincentUserFacet(address(diamond));
         wrappedUserViewFacet = VincentUserViewFacet(address(diamond));
 

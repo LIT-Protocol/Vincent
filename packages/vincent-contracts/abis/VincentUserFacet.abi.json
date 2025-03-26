@@ -1,57 +1,627 @@
-
-╭----------+----------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------╮
-| Type     | Signature                                                                                                | Selector                                                           |
-+==========================================================================================================================================================================================+
-| event    | AppVersionPermitted(uint256,uint256,uint256)                                                             | 0xc6d15e09ac3bc9530bce497423e6d6ebf5baf4818e9a3c70248c1e7be95c1863 |
-|----------+----------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------|
-| event    | AppVersionUnPermitted(uint256,uint256,uint256)                                                           | 0xf7ceb0aa63bb7bb7e34270f71c28c746c9e547edf4deab070561cfdfdc9faba1 |
-|----------+----------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------|
-| event    | NewUserAgentPkpRegistered(address,uint256)                                                               | 0x22539c00248c9a678cfacd0a9f517c255238b9aefbf0763f78a443cb660505f1 |
-|----------+----------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------|
-| event    | ToolPolicyParameterRemoved(uint256,uint256,uint256,bytes32,bytes32)                                      | 0xc1c931b434ed59aae1adc621d4e1b437cf38d812ea0e3590e2363e26b351c155 |
-|----------+----------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------|
-| event    | ToolPolicyParameterSet(uint256,uint256,uint256,bytes32,bytes32)                                          | 0x271b416055633750a0135fa10d4677d978fa1a3dd73f1c9fd118f10a8238e8de |
-|----------+----------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------|
-| error    | AppNotRegistered(uint256)                                                                                | 0x95585167                                                         |
-|----------+----------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------|
-| error    | AppVersionAlreadyPermitted(uint256,uint256,uint256)                                                      | 0xcfa321d0                                                         |
-|----------+----------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------|
-| error    | AppVersionNotEnabled(uint256,uint256)                                                                    | 0x387dea51                                                         |
-|----------+----------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------|
-| error    | AppVersionNotPermitted(uint256,uint256,uint256)                                                          | 0x50a5fa34                                                         |
-|----------+----------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------|
-| error    | AppVersionNotRegistered(uint256,uint256)                                                                 | 0x89f59185                                                         |
-|----------+----------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------|
-| error    | EmptyParameterName()                                                                                     | 0x6f34c972                                                         |
-|----------+----------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------|
-| error    | EmptyParameterValue(string)                                                                              | 0x15022058                                                         |
-|----------+----------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------|
-| error    | EmptyPolicyIpfsCid()                                                                                     | 0xe10fd8e7                                                         |
-|----------+----------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------|
-| error    | EmptyToolIpfsCid()                                                                                       | 0xceda0ab1                                                         |
-|----------+----------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------|
-| error    | InvalidInput()                                                                                           | 0xb4fa3fb3                                                         |
-|----------+----------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------|
-| error    | NotPkpOwner(uint256,address)                                                                             | 0x3bddcd23                                                         |
-|----------+----------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------|
-| error    | PkpTokenDoesNotExist(uint256)                                                                            | 0x0e41d757                                                         |
-|----------+----------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------|
-| error    | PolicyParameterNameNotRegisteredForAppVersion(uint256,uint256,string,string,string)                      | 0xbf62cad6                                                         |
-|----------+----------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------|
-| error    | ToolNotRegisteredForAppVersion(uint256,uint256,string)                                                   | 0xc687dcb2                                                         |
-|----------+----------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------|
-| error    | ToolPolicyNotRegisteredForAppVersion(uint256,uint256,string,string)                                      | 0xa9ae0ac7                                                         |
-|----------+----------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------|
-| error    | ToolsAndPoliciesLengthMismatch()                                                                         | 0x6055242f                                                         |
-|----------+----------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------|
-| error    | ZeroPkpTokenId()                                                                                         | 0xe40b6fbf                                                         |
-|----------+----------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------|
-| function | permitAppVersion(uint256,uint256,uint256,string[],string[][],string[][][],bytes[][][]) nonpayable        | 0x63fd4195                                                         |
-|----------+----------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------|
-| function | removeToolPolicyParameters(uint256,uint256,uint256,string[],string[][],string[][][]) nonpayable          | 0x9756aa43                                                         |
-|----------+----------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------|
-| function | setToolPolicyParameters(uint256,uint256,uint256,string[],string[][],string[][][],bytes[][][]) nonpayable | 0x2b231362                                                         |
-|----------+----------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------|
-| function | unPermitAppVersion(uint256,uint256,uint256) nonpayable                                                   | 0x4ad66cfb                                                         |
-╰----------+----------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------╯
-
+[
+  {
+    "type": "function",
+    "name": "permitAppVersion",
+    "inputs": [
+      {
+        "name": "pkpTokenId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "appId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "appVersion",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "toolIpfsCids",
+        "type": "string[]",
+        "internalType": "string[]"
+      },
+      {
+        "name": "policyIpfsCids",
+        "type": "string[][]",
+        "internalType": "string[][]"
+      },
+      {
+        "name": "policyParameterNames",
+        "type": "string[][][]",
+        "internalType": "string[][][]"
+      },
+      {
+        "name": "policyParameterValues",
+        "type": "bytes[][][]",
+        "internalType": "bytes[][][]"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "removeToolPolicyParameters",
+    "inputs": [
+      {
+        "name": "appId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "pkpTokenId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "appVersion",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "toolIpfsCids",
+        "type": "string[]",
+        "internalType": "string[]"
+      },
+      {
+        "name": "policyIpfsCids",
+        "type": "string[][]",
+        "internalType": "string[][]"
+      },
+      {
+        "name": "policyParameterNames",
+        "type": "string[][][]",
+        "internalType": "string[][][]"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "setToolPolicyParameters",
+    "inputs": [
+      {
+        "name": "pkpTokenId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "appId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "appVersion",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "toolIpfsCids",
+        "type": "string[]",
+        "internalType": "string[]"
+      },
+      {
+        "name": "policyIpfsCids",
+        "type": "string[][]",
+        "internalType": "string[][]"
+      },
+      {
+        "name": "policyParameterNames",
+        "type": "string[][][]",
+        "internalType": "string[][][]"
+      },
+      {
+        "name": "policyParameterValues",
+        "type": "bytes[][][]",
+        "internalType": "bytes[][][]"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "unPermitAppVersion",
+    "inputs": [
+      {
+        "name": "pkpTokenId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "appId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "appVersion",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "event",
+    "name": "AppVersionPermitted",
+    "inputs": [
+      {
+        "name": "pkpTokenId",
+        "type": "uint256",
+        "indexed": true,
+        "internalType": "uint256"
+      },
+      {
+        "name": "appId",
+        "type": "uint256",
+        "indexed": true,
+        "internalType": "uint256"
+      },
+      {
+        "name": "appVersion",
+        "type": "uint256",
+        "indexed": true,
+        "internalType": "uint256"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "AppVersionUnPermitted",
+    "inputs": [
+      {
+        "name": "pkpTokenId",
+        "type": "uint256",
+        "indexed": true,
+        "internalType": "uint256"
+      },
+      {
+        "name": "appId",
+        "type": "uint256",
+        "indexed": true,
+        "internalType": "uint256"
+      },
+      {
+        "name": "appVersion",
+        "type": "uint256",
+        "indexed": true,
+        "internalType": "uint256"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "NewUserAgentPkpRegistered",
+    "inputs": [
+      {
+        "name": "userAddress",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      },
+      {
+        "name": "pkpTokenId",
+        "type": "uint256",
+        "indexed": true,
+        "internalType": "uint256"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "ToolPolicyParameterRemoved",
+    "inputs": [
+      {
+        "name": "pkpTokenId",
+        "type": "uint256",
+        "indexed": true,
+        "internalType": "uint256"
+      },
+      {
+        "name": "appId",
+        "type": "uint256",
+        "indexed": true,
+        "internalType": "uint256"
+      },
+      {
+        "name": "appVersion",
+        "type": "uint256",
+        "indexed": true,
+        "internalType": "uint256"
+      },
+      {
+        "name": "hashedToolIpfsCid",
+        "type": "bytes32",
+        "indexed": false,
+        "internalType": "bytes32"
+      },
+      {
+        "name": "hashedPolicyParameterName",
+        "type": "bytes32",
+        "indexed": false,
+        "internalType": "bytes32"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "ToolPolicyParameterSet",
+    "inputs": [
+      {
+        "name": "pkpTokenId",
+        "type": "uint256",
+        "indexed": true,
+        "internalType": "uint256"
+      },
+      {
+        "name": "appId",
+        "type": "uint256",
+        "indexed": true,
+        "internalType": "uint256"
+      },
+      {
+        "name": "appVersion",
+        "type": "uint256",
+        "indexed": true,
+        "internalType": "uint256"
+      },
+      {
+        "name": "hashedToolIpfsCid",
+        "type": "bytes32",
+        "indexed": false,
+        "internalType": "bytes32"
+      },
+      {
+        "name": "hashedPolicyParameterName",
+        "type": "bytes32",
+        "indexed": false,
+        "internalType": "bytes32"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "error",
+    "name": "AppNotRegistered",
+    "inputs": [
+      {
+        "name": "appId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "AppVersionAlreadyPermitted",
+    "inputs": [
+      {
+        "name": "pkpTokenId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "appId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "appVersion",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "AppVersionNotEnabled",
+    "inputs": [
+      {
+        "name": "appId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "appVersion",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "AppVersionNotPermitted",
+    "inputs": [
+      {
+        "name": "pkpTokenId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "appId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "appVersion",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "AppVersionNotRegistered",
+    "inputs": [
+      {
+        "name": "appId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "appVersion",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "DuplicateParameterNameNotAllowed",
+    "inputs": [
+      {
+        "name": "appId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "toolIndex",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "policyIndex",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "paramName",
+        "type": "string",
+        "internalType": "string"
+      },
+      {
+        "name": "firstIndex",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "duplicateIndex",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "EmptyParameterName",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "EmptyParameterValue",
+    "inputs": [
+      {
+        "name": "parameterName",
+        "type": "string",
+        "internalType": "string"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "EmptyPolicyIpfsCid",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "EmptyToolIpfsCid",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "InvalidInput",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "NotAllRegisteredToolsProvided",
+    "inputs": [
+      {
+        "name": "appId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "appVersion",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "NotPkpOwner",
+    "inputs": [
+      {
+        "name": "pkpTokenId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "msgSender",
+        "type": "address",
+        "internalType": "address"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "ParameterArrayLengthMismatch",
+    "inputs": [
+      {
+        "name": "toolIndex",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "policyIndex",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "paramNamesLength",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "paramValuesLength",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "PkpTokenDoesNotExist",
+    "inputs": [
+      {
+        "name": "pkpTokenId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "PolicyArrayLengthMismatch",
+    "inputs": [
+      {
+        "name": "toolIndex",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "policiesLength",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "paramNamesLength",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "paramValuesLength",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "PolicyParameterNameNotRegisteredForAppVersion",
+    "inputs": [
+      {
+        "name": "appId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "appVersion",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "toolIpfsCid",
+        "type": "string",
+        "internalType": "string"
+      },
+      {
+        "name": "toolPolicyIpfsCid",
+        "type": "string",
+        "internalType": "string"
+      },
+      {
+        "name": "policyParameterName",
+        "type": "string",
+        "internalType": "string"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "ToolNotRegisteredForAppVersion",
+    "inputs": [
+      {
+        "name": "appId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "appVersion",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "toolIpfsCid",
+        "type": "string",
+        "internalType": "string"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "ToolPolicyNotRegisteredForAppVersion",
+    "inputs": [
+      {
+        "name": "appId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "appVersion",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "toolIpfsCid",
+        "type": "string",
+        "internalType": "string"
+      },
+      {
+        "name": "toolPolicyIpfsCid",
+        "type": "string",
+        "internalType": "string"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "ToolsAndPoliciesLengthMismatch",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "ZeroPkpTokenId",
+    "inputs": []
+  }
+]
