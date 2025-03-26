@@ -15,6 +15,7 @@ import {
 } from '../ui/card';
 import { mapEnumToTypeName } from '@/services/types';
 import { useErrorPopup } from '@/providers/error-popup';
+import { GetAppsByManager } from '../contracts/GetAppsByManager';
 // The styles are now included in the main dashboard.css imported in layout.tsx
 
 // Status message component
@@ -468,6 +469,8 @@ export default function DashboardScreen({
   // Main dashboard view when no app is selected
   return (
     <div className="space-y-6">
+    <GetAppsByManager/>
+
       {/* Show status message at the top of the dashboard */}
       {statusMessage && <StatusMessage message={statusMessage} type={statusType} />}
       
