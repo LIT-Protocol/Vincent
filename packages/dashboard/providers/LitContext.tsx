@@ -16,13 +16,6 @@ const logger = LogManager.Instance.get();
 
 const NETWORK = 'datil';
 
-// declare empty object to get types
-const { vincentApi: vincentApiType } = createDatilChainManager({
-  account: {} as any,
-  network: NETWORK,
-});
-
-// [from user]
 interface LitContextConfig {
   chainManager: ReturnType<typeof createDatilChainManager> | null;
   isConnected: boolean;
