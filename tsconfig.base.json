@@ -17,7 +17,7 @@
     "strict": true,
     "target": "es2022",
     "paths": {
-      "@lit-protocol/*": ["packages/*/src"]
+      "@lit-protocol/*": ["packages/*/src", "packages/*/src.ts"],
     }
   }
 }

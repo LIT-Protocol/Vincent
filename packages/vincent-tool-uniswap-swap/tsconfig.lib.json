@@ -10,8 +10,8 @@
     "declaration": true,
     "declarationMap": true,
     "types": ["node"],
-    "moduleResolution": "node",
-    "module": "commonjs",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     "paths": {
       "@lit-protocol/vincent-tool": ["../vincent-tool/src"]
     }

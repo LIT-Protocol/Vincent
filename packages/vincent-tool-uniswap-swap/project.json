@@ -1,0 +1,63 @@
+{
+  "name": "vincent-tool-uniswap-swap",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/vincent-tool-uniswap-swap/src",
+  "projectType": "library",
+  "implicitDependencies": ["vincent-tool"],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "packages/vincent-tool-uniswap-swap/dist",
+        "main": "packages/vincent-tool-uniswap-swap/src/index.ts",
+        "tsConfig": "packages/vincent-tool-uniswap-swap/tsconfig.lib.json",
+        "assets": ["packages/vincent-tool-uniswap-swap/*.md"],
+        "formats": ["cjs"],
+        "skipTypeCheck": true,
+        "updateBuildableProjectDepsInPackageJson": true,
+        "buildableProjectDepsInPackageJsonType": "dependencies"
+      },
+      "dependsOn": [
+        {
+          "projects": ["vincent-tool"],
+          "target": "build",
+          "params": "forward"
+        }
+      ]
+    },
+    "lint": {
+      "executor": "@nx/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["packages/vincent-tool-uniswap-swap/**/*.ts"]
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "packages/vincent-tool-uniswap-swap/jest.config.js"
+      }
+    },
+    "build:action": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build"],
+      "options": {
+        "commands": ["node tools/scripts/build-lit-action.js"],
+        "cwd": "packages/vincent-tool-uniswap-swap",
+        "parallel": false
+      },
+      "outputs": ["{workspaceRoot}/packages/vincent-tool-uniswap-swap/dist/deployed-lit-action.js"]
+    },
+    "deploy": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build:action"],
+      "options": {
+        "commands": ["node tools/scripts/deploy-lit-action.js"],
+        "cwd": "packages/vincent-tool-uniswap-swap"
+      }
+    }
+  },
+  "tags": []
+} 

@@ -47,3 +47,4 @@ packages/examples
 **/.env
 **/.env.*
 !.env.example
+packages/vincent-contracts/out
