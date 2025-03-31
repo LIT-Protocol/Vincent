@@ -144,7 +144,6 @@ export async function createPKPSignedJWT(config: createJWTConfig): Promise<strin
  * @param jwt - The JWT string to verify
  * @param expectedAudience - Domain that should be in the audience claim
  * @returns boolean indicating if the JWT is completely valid
- * @throws {Error} if the JWT is invalid or expired
  * @example
  * ```typescript
  * if (verifyJWTSignature(jwt, 'myapp.com')) {
