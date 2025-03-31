@@ -1,5 +1,7 @@
+import type { JWTDecoded, JWTPayload } from 'did-jwt/lib/JWT';
+
 /**
- * Interface representing a decoded JWT
+ * Interface representing a decoded Vincent JWT
  *
  * This interface defines the structure of a decoded JWT, including the header, payload, and signature
  *
@@ -8,20 +10,11 @@
  * @property {Object} payload - The payload of the JWT
  * @property {string} signature - The signature of the JWT
  */
-export interface DecodedJWT {
-  header: {
-    typ?: string;
-    alg: string;
-    [key: string]: unknown;
+export type DecodedJWT = JWTDecoded;
+
+export interface DecodedVincentJWT extends JWTDecoded {
+  payload: JWTPayload & {
+    pkpPublicKey: string;
+    pkpAddress: string;
   };
-  payload: {
-    iss?: string;
-    sub?: string;
-    aud?: string | string[];
-    iat?: number;
-    exp?: number;
-    nbf?: number;
-    [key: string]: unknown;
-  };
-  signature: string;
 }

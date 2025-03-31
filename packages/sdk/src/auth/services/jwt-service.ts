@@ -5,7 +5,7 @@ import { ethers } from 'ethers';
 import { Buffer } from 'buffer';
 import { isJWTExpired, validateJWTTime, splitJWT, processJWTSignature } from '../utils';
 import { createJWTConfig } from '../interfaces/create-jwt';
-import { DecodedJWT } from '../interfaces/decode-jwt';
+import { DecodedVincentJWT } from '../interfaces/decode-jwt';
 
 /**
  * Creates a signer function compatible with did-jwt that uses a PKP wallet for signing
@@ -93,9 +93,10 @@ export function createPKPSigner(pkpWallet: PKPEthersWallet) {
  * ```
  */
 export async function createPKPSignedJWT(config: createJWTConfig): Promise<string> {
-  const { pkpWallet, pkp, payload, expiresInMinutes = 10, audience } = config;
+  const { pkpWallet, pkp, payload, expiresInMinutes, audience } = config;
   const signer = createPKPSigner(pkpWallet);
 
+  // iat and exp are expressed in seconds https://datatracker.ietf.org/doc/html/rfc7519
   const iat = Math.floor(Date.now() / 1000);
   const exp = iat + expiresInMinutes * 60;
 
@@ -104,28 +105,29 @@ export async function createPKPSignedJWT(config: createJWTConfig): Promise<strin
   const fullPayload: {
     iat: number;
     exp: number;
-    timestamp: number;
     iss: string;
     pkpPublicKey: string;
     aud?: string | string[];
     [key: string]: unknown;
   } = {
     ...payload,
+    aud: audience,
     iat,
     exp,
-    timestamp: Date.now(),
     iss: `did:ethr:${walletAddress}`,
     pkpPublicKey: pkp.publicKey,
   };
 
-  // Always set the audience claim
-  fullPayload.aud = audience;
-
-  const jwt = await didJWT.createJWT(fullPayload, {
-    issuer: `did:ethr:${walletAddress}`,
-    signer,
-    alg: 'ES256K',
-  });
+  const jwt = await didJWT.createJWT(
+    fullPayload,
+    {
+      issuer: `did:ethr:${walletAddress}`,
+      signer,
+    },
+    {
+      alg: 'ES256K',
+    }
+  );
 
   return jwt;
 }
@@ -142,16 +144,17 @@ export async function createPKPSignedJWT(config: createJWTConfig): Promise<strin
  * @param jwt - The JWT string to verify
  * @param expectedAudience - Domain that should be in the audience claim
  * @returns boolean indicating if the JWT is completely valid
+ * @throws {Error} if the JWT is invalid or expired
  * @example
  * ```typescript
- * if (await verifyJWTSignature(jwt, 'myapp.com')) {
+ * if (verifyJWTSignature(jwt, 'myapp.com')) {
  *   // JWT is valid and intended for myapp.com - process the request
  * } else {
  *   // JWT is invalid - reject the request
  * }
  * ```
  */
-export async function verifyJWTSignature(jwt: string, expectedAudience: string): Promise<boolean> {
+export function verifyJWTSignature(jwt: string, expectedAudience: string): boolean {
   try {
     const decoded = didJWT.decodeJWT(jwt);
 
@@ -258,17 +261,17 @@ export async function verifyJWTSignature(jwt: string, expectedAudience: string):
 /**
  * Decodes a JWT string into its payload
  *
- * This function uses the did-jwt library to decode a JWT string into its payload
+ * This function uses the did-jwt library to decode a JWT string into its payload adding any extra Vincent fields
  *
  * @param jwt - The JWT string to decode
- * @returns The decoded payload of the JWT
- * @example
- * ```typescript
- * const payload = decodeJWT(jwt);
- * console.log(payload);
- * ```
+ * @returns The decoded Vincent JWT fields
  */
-export function decodeJWT(jwt: string): DecodedJWT {
+export function decodeJWT(jwt: string): DecodedVincentJWT {
   const decoded = didJWT.decodeJWT(jwt);
-  return decoded;
+
+  // JWT only has the public key, compute and add the address
+  const pkpPublicKey = decoded.payload.pkpPublicKey;
+  decoded.payload.pkpAddress = ethers.utils.computeAddress(pkpPublicKey);
+
+  return decoded as DecodedVincentJWT;
 }
