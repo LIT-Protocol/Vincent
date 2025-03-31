@@ -7,24 +7,20 @@ import {
   createPKPSigner,
   DecodedJWT,
   decodeJWT,
-  IStorage, Storage,
   verifyJWTSignature,
 } from '../auth';
 import { DelegateeSigs } from '../pkp';
 
 export interface VincentSDKConfig {
-  storage?: IStorage;
   consentPageUrl?: string;
   network?: LIT_NETWORKS_KEYS;
 }
 
 export class VincentSDK {
-  private storage: Storage;
-  private consentPageUrl: string;
-  private network: LIT_NETWORKS_KEYS;
+  private readonly consentPageUrl: string;
+  private readonly network: LIT_NETWORKS_KEYS;
 
   constructor(config: VincentSDKConfig = {}) {
-    this.storage = new Storage(config.storage);
     this.consentPageUrl = config.consentPageUrl || 'https://demo.vincent.com';
     this.network = config.network || 'datil';
   }
@@ -37,43 +33,15 @@ export class VincentSDK {
   }
 
   async createSignedJWT(config: createJWTConfig): Promise<string> {
-    this.clearJWT();
-    const jwt = await createPKPSignedJWT(config);
-    this.storeJWT(jwt);
-    return jwt;
+    return createPKPSignedJWT(config);
   }
 
-  async decodeJWT(): Promise<DecodedJWT> {
-    const jwt = await this.getJWT();
-    if (!jwt) {
-      throw new Error('No JWT found');
-    }
+  decodeJWT(jwt: string) {
     return decodeJWT(jwt);
   }
 
-  async verifyJWT(expectedAudience: string): Promise<boolean> {
-    const jwt = await this.getJWT();
-    if (!jwt) {
-      throw new Error('No JWT found');
-    }
+  verifyJWT(jwt: string, expectedAudience: string) {
     return verifyJWTSignature(jwt, expectedAudience);
-  }
-
-  // Storage Management
-  async storeJWT(jwt: string): Promise<void> {
-    await this.storage.storeJWT(jwt);
-  }
-
-  async getJWT(): Promise<string | null> {
-    return this.storage.getJWT();
-  }
-
-  async clearJWT(): Promise<void> {
-    await this.storage.clearJWT();
-  }
-
-  async clearAll(): Promise<void> {
-    await this.storage.clearAll();
   }
 
   // Lit Action Invocation for App Owner through Delegatee Wallet
