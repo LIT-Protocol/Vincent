@@ -9,14 +9,8 @@ import {
 import { LIT_ABILITY } from '@lit-protocol/constants';
 import { LIT_NETWORKS_KEYS } from '@lit-protocol/types';
 
-declare global {
-  interface Window {
-    ethereum: ethers.providers.ExternalProvider;
-  }
-}
-
 export class DelegateeSigs {
-  private litNodeClient: LitNodeClient;
+  private readonly litNodeClient: LitNodeClient;
 
   constructor(litNetwork: LIT_NETWORKS_KEYS) {
     this.litNodeClient = new LitNodeClient({
@@ -24,8 +18,10 @@ export class DelegateeSigs {
     });
   }
 
-  async generateSessionSigs(signer: ethers.Signer) {
-    await this.litNodeClient.connect();
+  private async generateSessionSigs(signer: ethers.Signer) {
+    if (!this.litNodeClient.ready) {
+      await this.litNodeClient.connect();
+    }
 
     const sessionSigs = await this.litNodeClient.getSessionSigs({
       chain: 'ethereum',
@@ -39,13 +35,18 @@ export class DelegateeSigs {
           ability: LIT_ABILITY.LitActionExecution,
         },
       ],
-      authNeededCallback: async ({ resourceAbilityRequests }) => {
+      authNeededCallback: async ({ resourceAbilityRequests, uri }) => {
+        const [walletAddress, nonce] = await Promise.all([
+          signer.getAddress(),
+          this.litNodeClient.getLatestBlockhash(),
+        ]);
+
         const toSign = await createSiweMessageWithRecaps({
-          uri: 'http://localhost:3000',
+          uri: uri || 'http://localhost:3000',
           expiration: new Date(Date.now() + 1000 * 60 * 10).toISOString(), // 10 minutes,
           resources: resourceAbilityRequests || [],
-          walletAddress: await signer.getAddress(),
-          nonce: await this.litNodeClient.getLatestBlockhash(),
+          walletAddress,
+          nonce,
           litNodeClient: this.litNodeClient,
         });
 
@@ -64,8 +65,6 @@ export class DelegateeSigs {
     litActionCID: string,
     params: Record<string, unknown>
   ) {
-    await this.litNodeClient.connect();
-
     const sessionSigs = await this.generateSessionSigs(signer);
 
     const results = await this.litNodeClient.executeJs({
