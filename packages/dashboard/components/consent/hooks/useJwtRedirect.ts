@@ -12,9 +12,9 @@ interface UseJwtRedirectProps {
   onStatusChange?: (message: string, type: 'info' | 'warning' | 'success' | 'error') => void;
 }
 
-export const useJwtRedirect = ({ 
-  agentPKP, 
-  sessionSigs, 
+export const useJwtRedirect = ({
+  agentPKP,
+  sessionSigs,
   redirectUri,
   onStatusChange
 }: UseJwtRedirectProps) => {
@@ -32,7 +32,7 @@ export const useJwtRedirect = ({
       setIsGenerating(true);
       onStatusChange?.('Initializing agent PKP wallet for JWT creation...', 'info');
       console.log('Initializing agent PKP wallet for JWT creation...');
-      
+
       const agentPkpWallet = new PKPEthersWallet({
         controllerSessionSigs: sessionSigs,
         pkpPubKey: agentPKP.publicKey,
@@ -44,7 +44,7 @@ export const useJwtRedirect = ({
       console.log('Creating signed JWT...');
       const vincent = new VincentSDK();
       const jwt = await vincent.createSignedJWT({
-        pkpWallet: agentPkpWallet as any,
+        pkpWallet: agentPkpWallet,
         pkp: agentPKP,
         payload: {},
         expiresInMinutes: 2160,
@@ -81,9 +81,9 @@ export const useJwtRedirect = ({
       try {
         const redirectUrl = new URL(redirectUri);
         redirectUrl.searchParams.set('jwt', jwtToUse);
-        
+
         const finalUrl = redirectUrl.toString();
-        
+
         window.location.href = finalUrl;
       } catch (error) {
         console.error('Error creating redirect URL:', error);
@@ -103,4 +103,4 @@ export const useJwtRedirect = ({
     generateJWT,
     redirectWithJWT
   };
-}; 
+};
