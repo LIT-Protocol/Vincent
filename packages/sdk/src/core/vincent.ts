@@ -1,11 +1,11 @@
 import { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
+import { LIT_NETWORK } from '@lit-protocol/constants';
 import { LIT_NETWORKS_KEYS } from '@lit-protocol/types';
 import { ethers } from 'ethers';
 import {
   createJWTConfig,
   createPKPSignedJWT,
   createPKPSigner,
-  DecodedJWT,
   decodeJWT,
   verifyJWTSignature,
 } from '../auth';
@@ -22,7 +22,7 @@ export class VincentSDK {
 
   constructor(config: VincentSDKConfig = {}) {
     this.consentPageUrl = config.consentPageUrl || 'https://demo.vincent.com';
-    this.network = config.network || 'datil';
+    this.network = config.network || LIT_NETWORK.Datil;
   }
 
   // JWT Management
