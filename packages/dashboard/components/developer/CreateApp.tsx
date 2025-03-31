@@ -38,7 +38,15 @@ const toolSchema = z.object({
       name: z.string().min(1, "Parameter name is required"),
       type: z.string().default("string")
     })).min(1, "At least one parameter is required")
+    .refine(parameters => {
+      const names = parameters.map(p => p.name);
+      return new Set(names).size === names.length;
+    }, { message: "Parameter names must be unique within a policy" })
   })).min(1, "At least one policy is required")
+  .refine(policies => {
+    const cids = policies.map(p => p.policyIpfsCid);
+    return new Set(cids).size === cids.length;
+  }, { message: "Policy IPFS CIDs must be unique within a tool" })
 });
 
 const formSchema = z.object({
@@ -55,7 +63,25 @@ const formSchema = z.object({
   authorizedRedirectUris: z.array(z.string().min(1, "Redirect URI cannot be empty"))
     .min(1, 'At least one redirect URI is required'),
   
-  tools: z.array(toolSchema).min(1, "At least one tool is required"),
+  tools: z.array(toolSchema).min(1, "At least one tool is required")
+  .refine(tools => {
+    const cids = tools.map(t => t.toolIpfsCid);
+    return new Set(cids).size === cids.length;
+  }, { message: "Tool IPFS CIDs must be unique" })
+  .refine(tools => {
+    // Check that parameter names are unique across all policies
+    const allParamNames: string[] = [];
+    
+    for (const tool of tools) {
+      for (const policy of tool.policies) {
+        for (const param of policy.parameters) {
+          allParamNames.push(param.name);
+        }
+      }
+    }
+    
+    return new Set(allParamNames).size === allParamNames.length;
+  }, { message: "Parameter names must be unique across all policies" })
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -200,6 +226,34 @@ export default function CreateAppScreen({ onBack, onSuccess }: CreateAppScreenPr
       setIsSubmitting(true);
       setError(null);
 
+      // Check for duplicate tool CIDs
+      const toolCids = values.tools.map(tool => tool.toolIpfsCid);
+      if (new Set(toolCids).size !== toolCids.length) {
+        setError("Duplicate Tool IPFS CIDs found. Each tool must have a unique CID.");
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Check for duplicate policy CIDs within each tool
+      for (let i = 0; i < values.tools.length; i++) {
+        const policyCids = values.tools[i].policies.map(policy => policy.policyIpfsCid);
+        if (new Set(policyCids).size !== policyCids.length) {
+          setError(`Duplicate Policy IPFS CIDs found in Tool ${i + 1}. Each policy within a tool must have a unique CID.`);
+          setIsSubmitting(false);
+          return;
+        }
+
+        // Check for duplicate parameter names within each policy
+        for (let j = 0; j < values.tools[i].policies.length; j++) {
+          const paramNames = values.tools[i].policies[j].parameters.map(param => param.name);
+          if (new Set(paramNames).size !== paramNames.length) {
+            setError(`Duplicate parameter names found in Tool ${i + 1}, Policy ${j + 1}. Each parameter must have a unique name.`);
+            setIsSubmitting(false);
+            return;
+          }
+        }
+      }
+
       const toolIpfsCids = values.tools.map(tool => tool.toolIpfsCid);
       const toolPolicies = values.tools.map(tool => 
         tool.policies.map(policy => policy.policyIpfsCid)
@@ -225,7 +279,19 @@ export default function CreateAppScreen({ onBack, onSuccess }: CreateAppScreenPr
         toolPolicies,
         toolPolicyParameterTypes,
         toolPolicyParameterNames
-      );
+      ).catch((err) => {
+        // Handle user rejection specifically
+        console.error('Transaction rejected:', err);
+        setIsSubmitting(false);
+        setError(err.message && err.message.includes('user rejected') 
+          ? 'Transaction was rejected by the user' 
+          : 'Failed to create app - user rejected the transaction');
+        return null;
+      });
+      
+      // If receipt is null, the transaction was rejected or failed
+      if (!receipt) return;
+      
       console.log('receipt', receipt);
       if (onSuccess) {
         onSuccess();
@@ -386,6 +452,12 @@ export default function CreateAppScreen({ onBack, onSuccess }: CreateAppScreenPr
                       </Button>
                     </div>
 
+                    {form.formState.errors.tools?.message && (
+                      <p className="text-sm font-medium text-destructive mt-2">
+                        {form.formState.errors.tools.message}
+                      </p>
+                    )}
+
                     {toolFields.map((toolField, toolIndex) => {
                       const tool = watchTools?.[toolIndex];
                       const policies = tool?.policies || [];
@@ -435,6 +507,12 @@ export default function CreateAppScreen({ onBack, onSuccess }: CreateAppScreenPr
                               </Button>
                             </div>
 
+                            {form.formState.errors.tools?.[toolIndex]?.policies?.message && (
+                              <p className="text-sm font-medium text-destructive mb-2">
+                                {form.formState.errors.tools[toolIndex].policies.message}
+                              </p>
+                            )}
+
                             {policies.map((policy: any, policyIndex: number) => {
                               const parameters = policy?.parameters || [];
                               
@@ -482,6 +560,12 @@ export default function CreateAppScreen({ onBack, onSuccess }: CreateAppScreenPr
                                         <Plus className="h-4 w-4 mr-2" /> Add Parameter
                                       </Button>
                                     </div>
+
+                                    {form.formState.errors.tools?.[toolIndex]?.policies?.[policyIndex]?.parameters?.message && (
+                                      <p className="text-sm font-medium text-destructive mb-2">
+                                        {form.formState.errors.tools[toolIndex].policies[policyIndex].parameters.message}
+                                      </p>
+                                    )}
 
                                     {parameters.map((param: any, paramIndex: number) => (
                                       <div key={`param-${toolIndex}-${policyIndex}-${paramIndex}`} className="flex items-center gap-2 mb-2">
@@ -553,6 +637,17 @@ export default function CreateAppScreen({ onBack, onSuccess }: CreateAppScreenPr
               </div>
 
               <div className="mt-6">
+                {form.getValues().tools.length > 0 && (
+                  <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded mb-4">
+                    <p className="font-medium">Warning:</p>
+                    <ul className="list-disc ml-5 text-sm">
+                      <li>Each Tool IPFS CID must be unique across the entire application</li>
+                      <li>Each Policy IPFS CID must be unique across the entire application</li>
+                      <li>Each Parameter name must be unique across ALL policies in the application</li>
+                    </ul>
+                    <p className="mt-2 text-sm">Duplicate values will prevent the form from submitting.</p>
+                  </div>
+                )}
                 <Button
                   type="submit"
                   className="w-full text-black"
