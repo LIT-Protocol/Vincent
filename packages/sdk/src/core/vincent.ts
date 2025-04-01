@@ -44,13 +44,13 @@ export class VincentSDK {
   }
 
   // Lit Action Invocation for App Owner through Delegatee Wallet
-  async invokeLitAction(
+  async executeTool(
     signer: ethers.Signer,
-    litActionCID: string,
+    vincentToolCID: string,
     params: Record<string, unknown>
   ) {
     const sessionSigs = new DelegateeSigs(this.network);
-    return sessionSigs.invokeLitAction(signer, litActionCID, params);
+    return sessionSigs.invokeLitAction(signer, vincentToolCID, params);
   }
 
   // Consent Page Management
