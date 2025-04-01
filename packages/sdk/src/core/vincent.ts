@@ -53,14 +53,9 @@ export class VincentSDK {
     return sessionSigs.invokeLitAction(signer, vincentToolCID, params);
   }
 
-  // Consent Page Management
-  openSignInConsentPage(): void {
-    const url = new URL('/signin', this.consentPageUrl);
-    window.open(url.toString(), '_blank');
-  }
-
-  openDelegationControlConsentPage(): void {
-    const url = new URL('/delegate', this.consentPageUrl);
-    window.open(url.toString(), '_blank');
+  // Redirect user to Vincent Auth consent page to get a jwt
+  redirectConsentPage(appId: string, redirectUri: string): void {
+    const url = new URL(`/appId/${appId}/consent?redirectUri=${redirectUri}`, this.consentPageUrl);
+    window.open(url.toString(), '_self');
   }
 }
