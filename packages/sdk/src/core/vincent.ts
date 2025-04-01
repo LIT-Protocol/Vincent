@@ -13,7 +13,6 @@ import { DelegateeSigs } from '../pkp';
 
 export interface VincentSDKConfig {
   consentPageUrl?: string;
-  network?: LIT_NETWORKS_KEYS;
 }
 
 export class VincentSDK {
@@ -22,7 +21,7 @@ export class VincentSDK {
 
   constructor(config: VincentSDKConfig = {}) {
     this.consentPageUrl = config.consentPageUrl || 'https://dashboard.heyvincent.ai/';
-    this.network = config.network || LIT_NETWORK.Datil;
+    this.network = LIT_NETWORK.Datil;
   }
 
   // JWT Management
