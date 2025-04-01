@@ -1,5 +1,6 @@
 import React from 'react';
 import { AppView } from '../../types';
+import { checkForDuplicates } from '../../utils/hasDuplicates';
 import { IRelayPKP } from '@lit-protocol/types';
 
 interface AppInfoProps {
@@ -15,6 +16,8 @@ const AppInfo = ({
   versionInfo,
   showIPFSDetails = true
 }: AppInfoProps) => {
+  const duplicateInfo = checkForDuplicates(versionInfo);
+  const hasDuplicates = duplicateInfo.hasDuplicates;
   return (
     <div className='app-info'>
       <h2>App Information</h2>
@@ -34,6 +37,36 @@ const AppInfo = ({
           <strong>Version:</strong>{' '}
           {appInfo.latestVersion ? appInfo.latestVersion.toString() : '1'}
         </p>
+        
+        {hasDuplicates && (
+          <div style={{ 
+            marginTop: '15px', 
+            padding: '10px 15px', 
+            backgroundColor: '#fef2f2', 
+            border: '1px solid #f87171', 
+            borderRadius: '6px',
+            color: '#b91c1c'
+          }}>
+            <p style={{ fontWeight: 'bold', marginBottom: '5px' }}>⚠️ Warning: Suspicious Application Configuration</p>
+            <p style={{ fontSize: '14px' }}>
+              This application contains duplicate identifiers which is suspicious and could indicate malicious behavior:
+            </p>
+            <ul style={{ marginLeft: '20px', marginTop: '5px', fontSize: '14px' }}>
+              {duplicateInfo.hasDuplicateTools && (
+                <li>Duplicate Tool IPFS CIDs</li>
+              )}
+              {duplicateInfo.hasDuplicatePolicies && (
+                <li>Duplicate Policy IPFS CIDs</li>
+              )}
+              {duplicateInfo.hasDuplicateParams && (
+                <li>Duplicate Parameter names</li>
+              )}
+            </ul>
+            <p style={{ fontSize: '14px', marginTop: '5px' }}>
+              Please verify this application carefully before consenting.
+            </p>
+          </div>
+        )}
         
         {showIPFSDetails && versionInfo && (
           <div className="ipfs-cids-container" style={{ marginTop: '10px' }}>
