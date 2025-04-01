@@ -21,7 +21,7 @@ export class VincentSDK {
   private readonly network: LIT_NETWORKS_KEYS;
 
   constructor(config: VincentSDKConfig = {}) {
-    this.consentPageUrl = config.consentPageUrl || 'https://demo.vincent.com';
+    this.consentPageUrl = config.consentPageUrl || 'https://dashboard.heyvincent.ai/';
     this.network = config.network || LIT_NETWORK.Datil;
   }
 
