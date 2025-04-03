@@ -4,6 +4,19 @@
   "sourceRoot": "packages/sdk/src",
   "projectType": "library",
   "targets": {
+    "dev": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "packages/sdk/dist",
+        "main": "packages/sdk/src/index.ts",
+        "tsConfig": "packages/sdk/tsconfig.lib.json",
+        "assets": ["packages/sdk/*.md"],
+        "formats": ["cjs"],
+        "updateBuildableProjectDepsInPackageJson": true,
+        "watch": true
+      }
+    },
     "build": {
       "executor": "@nx/js:tsc",
       "outputs": ["{options.outputPath}"],
