@@ -4,6 +4,14 @@
   "sourceRoot": "packages/sdk/src",
   "projectType": "library",
   "targets": {
+    "typedoc": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": ["pnpm typedoc --watch", "node ./typedocServer.mjs"],
+        "cwd": "{projectRoot}",
+        "tty": true
+      }
+    },
     "dev": {
       "executor": "@nx/js:tsc",
       "outputs": ["{options.outputPath}"],

@@ -1,7 +1,8 @@
-import { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
-import { JWTConfig } from '../types';
 import * as didJWT from 'did-jwt';
 import { ethers } from 'ethers';
+
+import type { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
+import type { JWTConfig } from '../types';
 
 /**
  * Creates a signer function compatible with did-jwt that uses a PKP wallet for signing

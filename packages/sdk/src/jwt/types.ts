@@ -1,5 +1,5 @@
-import { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
-import { IRelayPKP } from '@lit-protocol/types';
+import type { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
+import type { IRelayPKP } from '@lit-protocol/types';
 import type { JWTDecoded, JWTPayload } from 'did-jwt/lib/JWT';
 
 /**
