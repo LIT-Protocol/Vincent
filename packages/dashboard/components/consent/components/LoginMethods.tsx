@@ -1,4 +1,5 @@
 import { useState, Dispatch, SetStateAction } from 'react';
+import Image from 'next/image';
 
 import AuthMethods from './AuthMethods';
 import WalletMethods from './WalletMethods';
@@ -27,8 +28,18 @@ export default function LoginMethods({
       <div className="wrapper">
         {view === 'default' && (
           <>
-            <h1>Vincent Agent Wallet Management</h1>
-            <p>Access or create your Lit Agent Wallet.</p>
+            <h1 className="flex flex-col items-center text-center">
+              <Image 
+                src="/logo.png" 
+                alt="Vincent Logo" 
+                width={120}
+                height={36}
+                priority
+                className="mb-2"
+              />
+              <span>Agent Wallet Management</span>
+            </h1>
+            <p>Access or create your Vincent Agent Wallet.</p>
             <AuthMethods setView={setView as Dispatch<SetStateAction<string>>} />
           </>
         )}

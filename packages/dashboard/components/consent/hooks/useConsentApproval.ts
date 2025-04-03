@@ -988,6 +988,14 @@ export const useConsentApproval = ({
             authMethodScopes: [AUTH_METHOD_SCOPE.SignAnything],
           });
 
+          if(ipfsCid === process.env.NEXT_PUBLIC_DCA_TOOL_IPFS_CID) {
+            await litContracts.addPermittedAction({
+              ipfsId: process.env.NEXT_PUBLIC_DCA_POLICY_IPFS_CID!,
+              pkpTokenId: agentPKP.tokenId,
+              authMethodScopes: [AUTH_METHOD_SCOPE.SignAnything],
+            });
+          }
+
           console.log(`Added permission for ${ipfsCid} - Transaction hash: ${tx}`);
         } catch (error) {
           console.error(

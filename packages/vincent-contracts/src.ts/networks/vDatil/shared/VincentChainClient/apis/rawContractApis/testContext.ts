@@ -1,9 +1,9 @@
-// @ts-nocheck
-import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts';
-import { createVincentNetworkContext } from '../../vincentNetworkContext';
-import { registerApp } from './VincentAppFacet/registerApp';
-import { vincentMainnetNetworkContext } from '../../../../datil-mainnet/vincentContext';
 import { Account, createWalletClient, http, parseEther } from 'viem';
+import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts';
+import { vincentMainnetNetworkContext } from '../../../../datil-mainnet/vincentContext';
+import { createVincentNetworkContext } from '../../NetworkContextManager';
+import { registerApp } from './VincentAppFacet/registerApp';
+import { ParameterTypeInput, PolicyParameterValues } from './VincentAppFacet/schemas/ParameterType';
 
 export const getTestContext = async (opts?: {
   registerApp?: boolean;
@@ -59,9 +59,56 @@ export const getTestContext = async (opts?: {
     DELEGATEES: [randomDelegateeAccount.address],
     TOOL_IPFS_CIDS: ['QmUT4Ke8cPtJYRZiWrkoG9RZc77hmRETNQjvDYfLtrMUEY'],
     TOOL_POLICIES: [['QmcLbQPohPURMuNdhYYa6wyDp9pm6eHPdHv9TRgFkPVebE']],
-    TOOL_POLICY_PARAMETER_NAMES: [[['param1']]],
-    TOOL_POLICY_PARAMETER_TYPES: [[['BYTES']]] as any, // This is an enum type in the contract, so we need to cast it to any
-    TOOL_POLICY_PARAMETER_VALUES: [[['test']]],
+    TOOL_POLICY_PARAMETER_NAMES: [
+      [
+        ['param1'],
+        ['param2'],
+        ['param3'],
+        ['param4'],
+        ['param5'],
+        ['param6'],
+        ['param7'],
+        ['param8'],
+        ['param9'],
+        ['param10'],
+        ['param11'],
+        ['param12'],
+      ],
+    ],
+    TOOL_POLICY_PARAMETER_TYPES: [
+      [
+        [
+          'INT256',
+          'INT256_ARRAY',
+          'UINT256',
+          'UINT256_ARRAY',
+          'BOOL',
+          'BOOL_ARRAY',
+          'ADDRESS',
+          'ADDRESS_ARRAY',
+          'STRING',
+          'STRING_ARRAY',
+          'BYTES',
+          'BYTES_ARRAY',
+        ],
+      ],
+    ] as ParameterTypeInput[][][],
+    TOOL_POLICY_PARAMETER_VALUES: [
+      [
+        [{ type: 'int256', value: '-1000000000000000000' }], // INT256
+        [{ type: 'int256[]', value: '-1000000000000000000,2000000000000000000' }], // INT256_ARRAY
+        [{ type: 'uint256', value: '1000000000000000000' }], // UINT256
+        [{ type: 'uint256[]', value: '1000000000000000000,2000000000000000000' }], // UINT256_ARRAY
+        [{ type: 'bool', value: 'true' }], // BOOL
+        [{ type: 'bool[]', value: 'true,false,true' }], // BOOL_ARRAY
+        [{ type: 'address', value: '0x1234567890123456789012345678901234567890' }], // ADDRESS
+        [{ type: 'address[]', value: '0x1234567890123456789012345678901234567890,0x0987654321098765432109876543210987654321' }], // ADDRESS_ARRAY
+        [{ type: 'string', value: 'Hello World' }], // STRING
+        [{ type: 'string[]', value: 'Hello,World' }], // STRING_ARRAY
+        [{ type: 'bytes', value: '0x1234' }], // BYTES
+        [{ type: 'bytes[]', value: '0x1234,0x5678' }], // BYTES_ARRAY
+      ],
+    ] as PolicyParameterValues,
     // approving (random ipfs cids)
     TOOL_IPFS_CIDS_TO_APPROVE: [
       'QmWxywr4ASXzr68NapmoHteaTCparjnBT7Y3u9PrYajxAA',

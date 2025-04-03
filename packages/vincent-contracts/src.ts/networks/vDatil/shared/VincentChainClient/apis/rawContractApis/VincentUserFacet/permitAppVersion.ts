@@ -1,10 +1,13 @@
-import { toHex } from 'viem';
 import { z } from 'zod';
 import { logger } from '../../../../../../shared/logger';
-import { VincentNetworkContext } from '../../../vincentNetworkContext';
+import { VincentNetworkContext } from '../../../NetworkContextManager';
 import { callWithAdjustedOverrides } from '../../utils/callWithAdjustedOverrides';
-import { createVincentContracts } from '../../utils/createVincentContracts';
+import { createVincentContracts } from '../../../ContractDataManager';
 import { decodeVincentLogs } from '../../utils/decodeVincentLogs';
+import {
+  hexEncodedParameterValueSchema,
+  rawParameterValueSchema,
+} from '../VincentAppFacet/schemas/ParameterType';
 
 const PermitAppVersionRequest = z.object({
   pkpTokenId: z.coerce.bigint(),
@@ -13,7 +16,7 @@ const PermitAppVersionRequest = z.object({
   toolIpfsCids: z.array(z.string()),
   policyIpfsCids: z.array(z.array(z.string())),
   policyParameterNames: z.array(z.array(z.array(z.string()))),
-  policyParameterValues: z.array(z.array(z.array(z.string()))),
+  policyParameterValues: rawParameterValueSchema,
 });
 
 type PermitAppVersionRequest = z.input<typeof PermitAppVersionRequest>;
@@ -34,11 +37,12 @@ export async function permitAppVersion(
   const { vincentUserFacetContract, publicClient } =
     createVincentContracts(ctx);
 
-  // Convert string arrays to hex strings for parameter values
-  const policyParameterValues = validatedRequest.policyParameterValues.map(
-    (toolPolicies) =>
-      toolPolicies.map((policies) => policies.map((value) => toHex(value))),
+  // Convert values to bytes format for parameter values
+  const policyParameterValues = hexEncodedParameterValueSchema.parse(
+    validatedRequest.policyParameterValues,
   );
+
+  logger.debug({ policyParameterValues });
 
   const hash = await callWithAdjustedOverrides(
     vincentUserFacetContract,

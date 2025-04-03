@@ -12,6 +12,7 @@ import ConsentActions from './authForm/ConsentActions';
 import RedirectMessage from './authForm/RedirectMessage';
 import VersionUpgradePrompt from './authForm/VersionUpgradePrompt';
 import UntrustedUriError from './authForm/UntrustedUriError';
+import DeletedAppError from './DeletedAppError';
 import { useUrlAppId } from '../hooks/useUrlAppId';
 import { useUrlRedirectUri } from '../hooks/useUrlRedirectUri';
 import { useStatusMessage } from '../hooks/useStatusMessage';
@@ -89,7 +90,8 @@ export default function AuthenticatedConsentForm({
     continueWithExistingPermission,
     handleUpgrade,
     updateState,
-    useCurrentVersionOnly
+    useCurrentVersionOnly,
+    isAppDeleted
   } = useAppPermissionCheck({
     appId,
     agentPKP,
@@ -445,7 +447,7 @@ export default function AuthenticatedConsentForm({
    * 3. Permission checking takes too long
    */
   useEffect(() => {
-    let timer: NodeJS.Timeout;
+    let timer: ReturnType<typeof setTimeout>;
 
     if ((checkingPermissions || isLoading) && appInfo) {
       timer = setTimeout(() => {
@@ -455,7 +457,6 @@ export default function AuthenticatedConsentForm({
         });
       }, 3000); // 3 seconds timeout with appInfo
     } else if (checkingPermissions || isLoading) {
-      // Longer timeout if we don't even have appInfo
       timer = setTimeout(() => {
         updateState({
           checkingPermissions: false,
@@ -497,6 +498,16 @@ export default function AuthenticatedConsentForm({
       <UntrustedUriError
         redirectUri={redirectUri}
         appInfo={appInfo}
+        statusMessage={statusMessage}
+        statusType={statusType}
+      />
+    );
+  }
+
+  // If app is deleted, show an error message
+  if (isAppDeleted) {
+    return (
+      <DeletedAppError
         statusMessage={statusMessage}
         statusType={statusType}
       />
@@ -595,7 +606,7 @@ export default function AuthenticatedConsentForm({
         {showSuccess && <StatusAnimation type="success" />}
         {showDisapproval && <StatusAnimation type="disapproval" />}
 
-        <h1>Vincent Consent Notice</h1>
+        <h1 className="text-center">Vincent Consent Notice</h1>
 
         {appInfo && (
           <>

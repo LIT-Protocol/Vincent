@@ -1,7 +1,7 @@
 import {
   createVincentNetworkContext,
   ExpectedAccountOrWalletClient,
-} from '../networks/vDatil/shared/VincentChainClient/vincentNetworkContext';
+} from '../networks/vDatil/shared/VincentChainClient/NetworkContextManager';
 
 // Import all the APIs
 import { Anvil } from '../networks/shared/chains/Anvil';

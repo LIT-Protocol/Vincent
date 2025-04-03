@@ -1,9 +1,7 @@
-import { vincentNetworkContext } from '../../../vincentNetworkContext';
 import { getTestContext } from '../testContext';
 import { getAuthorizedRedirectUrisByAppId } from './getAuthorizedRedirectUrisByAppId';
 
 describe('getAuthorizedRedirectUrisByAppId', () => {
-
   let testContext: Awaited<ReturnType<typeof getTestContext>>;
 
   beforeAll(async () => {
@@ -11,14 +9,17 @@ describe('getAuthorizedRedirectUrisByAppId', () => {
       registerApp: true,
     });
   });
-  
+
   it('should fetch all authorized redirect URIs for an app', async () => {
     const { appId } = testContext.registerAppRes;
-    
+
     // Test getAuthorizedRedirectUrisByAppId
-    const result = await getAuthorizedRedirectUrisByAppId({ 
-      appId
-    }, vincentNetworkContext);
+    const result = await getAuthorizedRedirectUrisByAppId(
+      {
+        appId,
+      },
+      testContext.networkContext,
+    );
 
     // Verify that all redirect URIs are returned
     expect(result).toEqual(testContext.AUTHORIZED_REDIRECT_URIS);
@@ -26,8 +27,13 @@ describe('getAuthorizedRedirectUrisByAppId', () => {
   });
 
   it('should handle non-existent app', async () => {
-    await expect(getAuthorizedRedirectUrisByAppId({ 
-      appId: testContext.failCase.nonExistentAppId
-    }, vincentNetworkContext)).rejects.toThrow();
+    await expect(
+      getAuthorizedRedirectUrisByAppId(
+        {
+          appId: testContext.failCase.nonExistentAppId,
+        },
+        testContext.networkContext,
+      ),
+    ).rejects.toThrow();
   });
-}); 
+});

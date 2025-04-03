@@ -1,23 +1,28 @@
 import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts';
 import { registerApp } from './registerApp';
-import { vincentNetworkContext } from '../../../vincentNetworkContext';
+import { vincentNetworkContext } from '../../../NetworkContextManager';
+import { getTestContext } from '../testContext';
 
 describe('registerApp', () => {
-  it('should register a new app with test parameters', async () => {
-    const account = privateKeyToAccount(generatePrivateKey());
+  let testContext: Awaited<ReturnType<typeof getTestContext>>;
 
+  beforeEach(async () => {
+    testContext = await getTestContext();
+  });
+
+  it('should register a new app with test parameters', async () => {
     const res = await registerApp(
       {
-        appName: 'Test App',
-        appDescription: 'Test Description',
-        authorizedRedirectUris: ['http://localhost:3000'],
-        delegatees: [account.address],
-        toolIpfsCids: ['QmUT4Ke8cPtJYRZiWrkoG9RZc77hmRETNQjvDYfLtrMUEY'],
-        toolPolicies: [['QmcLbQPohPURMuNdhYYa6wyDp9pm6eHPdHv9TRgFkPVebE']],
-        toolPolicyParameterNames: [[['param1']]],
-        toolPolicyParameterTypes: [[['BYTES']]],
+        appName: testContext.APP_NAME,
+        appDescription: testContext.APP_DESCRIPTION,
+        authorizedRedirectUris: testContext.AUTHORIZED_REDIRECT_URIS,
+        delegatees: testContext.DELEGATEES,
+        toolIpfsCids: testContext.TOOL_IPFS_CIDS,
+        toolPolicies: testContext.TOOL_POLICIES,
+        toolPolicyParameterNames: testContext.TOOL_POLICY_PARAMETER_NAMES,
+        toolPolicyParameterTypes: testContext.TOOL_POLICY_PARAMETER_TYPES,
       },
-      vincentNetworkContext,
+      testContext.networkContext,
     );
 
     console.log(res);

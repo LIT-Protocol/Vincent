@@ -1,5 +1,5 @@
 import { addAuthorizedRedirectUri } from './addAuthorizedRedirectUri';
-import { vincentNetworkContext } from '../../../vincentNetworkContext';
+import { vincentNetworkContext } from '../../../NetworkContextManager';
 import { getTestContext } from '../testContext';
 
 describe('addAuthorizedRedirectUri', () => {

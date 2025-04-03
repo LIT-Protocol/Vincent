@@ -77,130 +77,112 @@ export default function ManageToolPoliciesScreen({
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [statusMessage, setStatusMessage] = useState<{ message: string; type: 'info' | 'warning' | 'success' | 'error' } | null>(null);
     const { showError } = useErrorPopup();
+    const [isFetching, setIsFetching] = useState(false);
 
     useEffect(() => {
-        async function fetchAppVersion() {
-            if (dashboard?.appId) {
-                try {
-                    setIsLoading(true);
-                    const contracts = new VincentContracts('datil');
-                    const appVersion = await contracts.getAppVersion(dashboard.appId, dashboard.currentVersion);
-                    console.log("Fetched app version:", appVersion);
+        if (dashboard?.appId && !isFetching) {
+            fetchAppVersion();
+        }
+    }, [dashboard?.appId]);
+
+    const fetchAppVersion = async () => {
+        if (!dashboard?.appId) {
+            return;
+        }
+        setIsFetching(true);
+
+        try {
+            const contracts = new VincentContracts('datil');
+            const appVersion = await contracts.getAppVersion(dashboard.appId, dashboard.currentVersion);
+            console.log("Fetched app version:", appVersion);
+            
+            let toolsData = [];
+            
+            if (appVersion?.appVersion?.tools) {
+                toolsData = appVersion.appVersion.tools;
+            } else if (appVersion?.[1]?.[3]) {
+                toolsData = appVersion[1][3];
+            } else if (Array.isArray(appVersion) && appVersion.length >= 2 && appVersion[1] && Array.isArray(appVersion[1])) {
+                const appVersionArr = appVersion[1];
+                if (appVersionArr.length >= 4 && Array.isArray(appVersionArr[3])) {
+                    toolsData = appVersionArr[3];
+                }
+            }
+            
+            const formattedTools = toolsData.map((tool: any) => {
+                let toolIpfsCid = "";
+                let rawPolicies = [];
+                let parameterNames = [];
+                let parameterTypes = [];
+                
+                if (Array.isArray(tool)) {
+                    toolIpfsCid = tool[0] || "";
                     
-                    let toolsData = [];
-                    
-                    if (appVersion?.appVersion?.tools) {
-                        toolsData = appVersion.appVersion.tools;
-                    } else if (appVersion?.[1]?.[3]) {
-                        toolsData = appVersion[1][3];
-                    } else if (Array.isArray(appVersion) && appVersion.length >= 2 && appVersion[1] && Array.isArray(appVersion[1])) {
-                        const appVersionArr = appVersion[1];
-                        if (appVersionArr.length >= 4 && Array.isArray(appVersionArr[3])) {
-                            toolsData = appVersionArr[3];
-                        }
+                    if (tool.length > 1 && Array.isArray(tool[1])) {
+                        rawPolicies = tool[1] || [];
                     }
                     
-                    const formattedTools = toolsData.map((tool: any) => {
-                        let toolIpfsCid = "";
-                        let rawPolicies = [];
-                        let parameterNames = [];
-                        let parameterTypes = [];
+                    if (tool.length > 2 && Array.isArray(tool[2])) {
+                        parameterNames = tool[2];
+                    }
+                    
+                    if (tool.length > 3 && Array.isArray(tool[3])) {
+                        parameterTypes = tool[3];
+                    }
+                    
+                    console.log("Processing array tool:", { 
+                        toolIpfsCid, 
+                        policiesLength: rawPolicies.length,
+                        parameterNames,
+                        parameterTypes
+                    });
+                } else if (typeof tool === 'object') {
+                    toolIpfsCid = tool.toolIpfsCid || "";
+                    rawPolicies = tool.policies || [];
+                    parameterNames = tool.parameterNames || [];
+                    parameterTypes = tool.parameterTypes || [];
+                    console.log("Processing object tool:", { 
+                        toolIpfsCid, 
+                        policiesLength: rawPolicies.length,
+                        parameterNames,
+                        parameterTypes
+                    });
+                }
+                
+                const formattedTool: ToolPolicyWithId = {
+                    _id: crypto.randomUUID(),
+                    toolIpfsCid: toolIpfsCid,
+                    policies: []
+                };
+                
+                if (rawPolicies && rawPolicies.length > 0) {
+                    console.log("Processing rawPolicies:", rawPolicies);
+                    
+                    rawPolicies.forEach((policyData: any) => {
+                        let policyIpfsCid = "";
+                        let policyParamNames: string[] = [];
+                        let policyParamTypes: number[] = [];
                         
-                        if (Array.isArray(tool)) {
-                            toolIpfsCid = tool[0] || "";
-                            
-                            if (tool.length > 1 && Array.isArray(tool[1])) {
-                                rawPolicies = tool[1] || [];
-                            }
-                            
-                            if (tool.length > 2 && Array.isArray(tool[2])) {
-                                parameterNames = tool[2];
-                            }
-                            
-                            if (tool.length > 3 && Array.isArray(tool[3])) {
-                                parameterTypes = tool[3];
-                            }
-                            
-                            console.log("Processing array tool:", { 
-                                toolIpfsCid, 
-                                policiesLength: rawPolicies.length,
-                                parameterNames,
-                                parameterTypes
-                            });
-                        } else if (typeof tool === 'object') {
-                            toolIpfsCid = tool.toolIpfsCid || "";
-                            rawPolicies = tool.policies || [];
-                            parameterNames = tool.parameterNames || [];
-                            parameterTypes = tool.parameterTypes || [];
-                            console.log("Processing object tool:", { 
-                                toolIpfsCid, 
-                                policiesLength: rawPolicies.length,
-                                parameterNames,
-                                parameterTypes
-                            });
+                        if (Array.isArray(policyData)) {
+                            policyIpfsCid = policyData[0] || '';
+                            policyParamNames = Array.isArray(policyData[1]) ? policyData[1] : [];
+                            policyParamTypes = Array.isArray(policyData[2]) ? policyData[2] : [];
+                        } else if (typeof policyData === 'object') {
+                            policyIpfsCid = policyData.policyIpfsCid || '';
+                            policyParamNames = policyData.parameterNames || [];
+                            policyParamTypes = policyData.parameterTypes || [];
                         }
                         
-                        const formattedTool: ToolPolicyWithId = {
+                        const policy: PolicyWithId = {
                             _id: crypto.randomUUID(),
-                            toolIpfsCid: toolIpfsCid,
-                            policies: []
+                            policyIpfsCid: policyIpfsCid,
+                            parameters: []
                         };
                         
-                        if (rawPolicies && rawPolicies.length > 0) {
-                            console.log("Processing rawPolicies:", rawPolicies);
-                            
-                            rawPolicies.forEach((policyData: any) => {
-                                let policyIpfsCid = "";
-                                let policyParamNames: string[] = [];
-                                let policyParamTypes: number[] = [];
-                                
-                                if (Array.isArray(policyData)) {
-                                    policyIpfsCid = policyData[0] || '';
-                                    policyParamNames = Array.isArray(policyData[1]) ? policyData[1] : [];
-                                    policyParamTypes = Array.isArray(policyData[2]) ? policyData[2] : [];
-                                } else if (typeof policyData === 'object') {
-                                    policyIpfsCid = policyData.policyIpfsCid || '';
-                                    policyParamNames = policyData.parameterNames || [];
-                                    policyParamTypes = policyData.parameterTypes || [];
-                                }
-                                
-                                const policy: PolicyWithId = {
-                                    _id: crypto.randomUUID(),
-                                    policyIpfsCid: policyIpfsCid,
-                                    parameters: []
-                                };
-                                
-                                if (policyParamNames && policyParamNames.length > 0) {
-                                    policyParamNames.forEach((name: string, index: number) => {
-                                        const typeValue = policyParamTypes[index] !== undefined ? 
-                                            policyParamTypes[index] : 
-                                            ParameterType.STRING;
-                                        
-                                        const typeName = mapEnumToTypeName(Number(typeValue)) || "string";
-                                        
-                                        policy.parameters.push({
-                                            _id: crypto.randomUUID(),
-                                            name: name,
-                                            type: typeName
-                                        });
-                                    });
-                                }
-                                
-                                formattedTool.policies.push(policy);
-                            });
-                        } 
-                        else if (parameterNames && parameterNames.length > 0 && parameterTypes && parameterTypes.length > 0) {
-                            console.log("Processing direct parameters:", { parameterNames, parameterTypes });
-                            
-                            const policy: PolicyWithId = {
-                                _id: crypto.randomUUID(),
-                                policyIpfsCid: "",
-                                parameters: []
-                            };
-                            
-                            parameterNames.forEach((name: string, index: number) => {
-                                const typeValue = parameterTypes[index] !== undefined ? 
-                                    parameterTypes[index] : 
+                        if (policyParamNames && policyParamNames.length > 0) {
+                            policyParamNames.forEach((name: string, index: number) => {
+                                const typeValue = policyParamTypes[index] !== undefined ? 
+                                    policyParamTypes[index] : 
                                     ParameterType.STRING;
                                 
                                 const typeName = mapEnumToTypeName(Number(typeValue)) || "string";
@@ -211,57 +193,63 @@ export default function ManageToolPoliciesScreen({
                                     type: typeName
                                 });
                             });
-                            
-                            formattedTool.policies.push(policy);
                         }
                         
-                        if (toolIpfsCid && formattedTool.policies.length === 0) {
-                            formattedTool.policies.push({
-                                _id: crypto.randomUUID(),
-                                policyIpfsCid: "",
-                                parameters: [{
-                                    _id: crypto.randomUUID(),
-                                    name: "",
-                                    type: "string"
-                                }]
-                            });
-                        }
+                        formattedTool.policies.push(policy);
+                    });
+                } 
+                else if (parameterNames && parameterNames.length > 0 && parameterTypes && parameterTypes.length > 0) {
+                    console.log("Processing direct parameters:", { parameterNames, parameterTypes });
+                    
+                    const policy: PolicyWithId = {
+                        _id: crypto.randomUUID(),
+                        policyIpfsCid: "",
+                        parameters: []
+                    };
+                    
+                    parameterNames.forEach((name: string, index: number) => {
+                        const typeValue = parameterTypes[index] !== undefined ? 
+                            parameterTypes[index] : 
+                            ParameterType.STRING;
                         
-                        return formattedTool;
+                        const typeName = mapEnumToTypeName(Number(typeValue)) || "string";
+                        
+                        policy.parameters.push({
+                            _id: crypto.randomUUID(),
+                            name: name,
+                            type: typeName
+                        });
                     });
                     
-                    const validTools = formattedTools.filter((tool: ToolPolicyWithId) => !!tool.toolIpfsCid);
-                    console.log("Formatted tools:", validTools);
-                    
-                    if (validTools.length === 0) {
-                        validTools.push(createEmptyToolPolicy());
-                    }
-                    
-                    setToolPolicies(validTools);
-                } catch (error) {
-                    console.error("Error fetching app version:", error);
-                } finally {
-                    setIsLoading(false);
+                    formattedTool.policies.push(policy);
                 }
+                
+                return formattedTool;
+            });
+            
+            const validTools = formattedTools.filter((tool: ToolPolicyWithId) => !!tool.toolIpfsCid);
+            console.log("Formatted tools:", validTools);
+            
+            if (validTools.length === 0) {
+                validTools.push(createEmptyToolPolicy());
             }
+            
+            setToolPolicies(validTools);
+            setIsLoading(false);
+        } catch (error) {
+            console.error("Error fetching app version:", error);
+            setToolPolicies([createEmptyToolPolicy()]);
+            setIsLoading(false);
+        } finally {
+            setIsFetching(false);
         }
-        
-        fetchAppVersion();
-    }, [dashboard]);
+    };
 
     function createEmptyToolPolicy(): ToolPolicyWithId {
         return {
             _id: crypto.randomUUID(),
             toolIpfsCid: "",
-            policies: [{
-                _id: crypto.randomUUID(),
-                policyIpfsCid: "",
-                parameters: [{
-                    _id: crypto.randomUUID(),
-                    name: "",
-                    type: "string"
-                }]
-            }]
+            policies: []
         };
     }
 
@@ -270,7 +258,12 @@ export default function ManageToolPoliciesScreen({
     };
 
     const handleRemoveTool = (toolId: string) => {
-        setToolPolicies(prev => prev.filter(tool => tool._id !== toolId));
+        setToolPolicies(prev => {
+            if (prev.length <= 1) {
+                return prev;
+            }
+            return prev.filter(tool => tool._id !== toolId);
+        });
     };
 
     const handleToolChange = (toolId: string, field: string, value: string) => {
@@ -438,13 +431,17 @@ export default function ManageToolPoliciesScreen({
             
             try {
                 setStatusMessage({ message: "Preparing transaction...", type: "info" });
-                const args = [
-                    dashboard.appId,
-                    toolIpfsCids,
-                    toolPolicyPolicies,
-                    toolPolicyParameterNames,
-                    toolPolicyParameterTypes
-                ];
+                
+                // Create the versionTools tuple argument as expected by the contract
+                const versionTools = {
+                    toolIpfsCids: toolIpfsCids,
+                    toolPolicies: toolPolicyPolicies,
+                    toolPolicyParameterNames: toolPolicyParameterNames,
+                    toolPolicyParameterTypes: toolPolicyParameterTypes
+                };
+                
+                // Use tuple parameters as expected by the contract
+                const args = [dashboard.appId, versionTools];
                 
                 try {
                     setStatusMessage({ message: "Estimating gas...", type: "info" });
@@ -629,14 +626,16 @@ export default function ManageToolPoliciesScreen({
                             onChange={(e) => handleToolChange(tool._id, "toolIpfsCid", e.target.value)}
                         />
                     </div>
-                    <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => handleRemoveTool(tool._id)}
-                        className="text-white"
-                    >
-                        <Trash2 className="h-4 w-4" />
-                    </Button>
+                    {toolPolicies.length > 1 && (
+                        <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => handleRemoveTool(tool._id)}
+                            className="text-white"
+                        >
+                            <Trash2 className="h-4 w-4" />
+                        </Button>
+                    )}
                 </div>
 
                 <div className="space-y-4">

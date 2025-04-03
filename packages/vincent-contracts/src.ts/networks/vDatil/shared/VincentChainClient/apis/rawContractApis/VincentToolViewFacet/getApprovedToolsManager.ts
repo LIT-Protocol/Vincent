@@ -1,6 +1,6 @@
 import { logger } from '../../../../../../shared/logger';
-import { VincentNetworkContext } from '../../../vincentNetworkContext';
-import { createVincentContracts } from '../../utils/createVincentContracts';
+import { VincentNetworkContext } from '../../../NetworkContextManager';
+import { createVincentContracts } from '../../../ContractDataManager';
 
 type RawContractMethod = ReturnType<
   typeof createVincentContracts

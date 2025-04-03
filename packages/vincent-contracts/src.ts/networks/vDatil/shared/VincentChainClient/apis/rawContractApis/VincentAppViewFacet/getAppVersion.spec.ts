@@ -1,9 +1,7 @@
-import { vincentNetworkContext } from '../../../vincentNetworkContext';
 import { getTestContext } from '../testContext';
 import { getAppVersion } from './getAppVersion';
 
 describe('getAppVersion', () => {
-
   let testContext: Awaited<ReturnType<typeof getTestContext>>;
 
   beforeAll(async () => {
@@ -16,21 +14,26 @@ describe('getAppVersion', () => {
     const { appId } = testContext.registerAppRes;
 
     // Now test getAppVersion
-    const result = await getAppVersion({ 
-      appId,
-      version: 1 // First version
-    }, vincentNetworkContext);
+    const result = await getAppVersion(
+      {
+        appId,
+        version: 1, // First version
+      },
+      testContext.networkContext,
+    );
 
     // Verify the response structure
     expect(result[0]).toBeDefined(); // app details
     expect(result[1]).toBeDefined(); // version details
-    
+
     // Verify app details
     expect(result[0].id).toBe(appId);
     expect(result[0].name).toBe(testContext.APP_NAME);
     expect(result[0].description).toBe(testContext.APP_DESCRIPTION);
     expect(result[0].manager).toBeDefined();
-    expect(result[0].authorizedRedirectUris).toEqual(testContext.AUTHORIZED_REDIRECT_URIS);
+    expect(result[0].authorizedRedirectUris).toEqual(
+      testContext.AUTHORIZED_REDIRECT_URIS,
+    );
     expect(result[0].delegatees).toContain(testContext.DELEGATEES[0]);
 
     // Verify version details
@@ -42,9 +45,14 @@ describe('getAppVersion', () => {
   });
 
   it('should handle non-existent app version', async () => {
-    await expect(getAppVersion({ 
-      appId: testContext.failCase.nonExistentAppId,
-      version: 1
-    }, vincentNetworkContext)).rejects.toThrow();
+    await expect(
+      getAppVersion(
+        {
+          appId: testContext.failCase.nonExistentAppId,
+          version: 1,
+        },
+        testContext.networkContext,
+      ),
+    ).rejects.toThrow();
   });
-}); 
+});

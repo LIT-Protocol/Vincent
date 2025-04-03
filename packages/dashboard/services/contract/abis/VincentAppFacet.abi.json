@@ -37,6 +37,19 @@
   },
   {
     "type": "function",
+    "name": "deleteApp",
+    "inputs": [
+      {
+        "name": "appId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
     "name": "enableAppVersion",
     "inputs": [
       {
@@ -63,44 +76,63 @@
     "name": "registerApp",
     "inputs": [
       {
-        "name": "name",
-        "type": "string",
-        "internalType": "string"
+        "name": "appInfo",
+        "type": "tuple",
+        "internalType": "struct VincentAppFacet.AppInfo",
+        "components": [
+          {
+            "name": "name",
+            "type": "string",
+            "internalType": "string"
+          },
+          {
+            "name": "description",
+            "type": "string",
+            "internalType": "string"
+          },
+          {
+            "name": "deploymentStatus",
+            "type": "uint8",
+            "internalType": "enum VincentAppStorage.DeploymentStatus"
+          },
+          {
+            "name": "authorizedRedirectUris",
+            "type": "string[]",
+            "internalType": "string[]"
+          },
+          {
+            "name": "delegatees",
+            "type": "address[]",
+            "internalType": "address[]"
+          }
+        ]
       },
       {
-        "name": "description",
-        "type": "string",
-        "internalType": "string"
-      },
-      {
-        "name": "authorizedRedirectUris",
-        "type": "string[]",
-        "internalType": "string[]"
-      },
-      {
-        "name": "delegatees",
-        "type": "address[]",
-        "internalType": "address[]"
-      },
-      {
-        "name": "toolIpfsCids",
-        "type": "string[]",
-        "internalType": "string[]"
-      },
-      {
-        "name": "toolPolicies",
-        "type": "string[][]",
-        "internalType": "string[][]"
-      },
-      {
-        "name": "toolPolicyParameterNames",
-        "type": "string[][][]",
-        "internalType": "string[][][]"
-      },
-      {
-        "name": "toolPolicyParameterTypes",
-        "type": "uint8[][][]",
-        "internalType": "enum VincentAppStorage.ParameterType[][][]"
+        "name": "versionTools",
+        "type": "tuple",
+        "internalType": "struct VincentAppFacet.AppVersionTools",
+        "components": [
+          {
+            "name": "toolIpfsCids",
+            "type": "string[]",
+            "internalType": "string[]"
+          },
+          {
+            "name": "toolPolicies",
+            "type": "string[][]",
+            "internalType": "string[][]"
+          },
+          {
+            "name": "toolPolicyParameterNames",
+            "type": "string[][][]",
+            "internalType": "string[][][]"
+          },
+          {
+            "name": "toolPolicyParameterTypes",
+            "type": "uint8[][][]",
+            "internalType": "enum VincentAppStorage.ParameterType[][][]"
+          }
+        ]
       }
     ],
     "outputs": [
@@ -127,24 +159,31 @@
         "internalType": "uint256"
       },
       {
-        "name": "toolIpfsCids",
-        "type": "string[]",
-        "internalType": "string[]"
-      },
-      {
-        "name": "toolPolicies",
-        "type": "string[][]",
-        "internalType": "string[][]"
-      },
-      {
-        "name": "toolPolicyParameterNames",
-        "type": "string[][][]",
-        "internalType": "string[][][]"
-      },
-      {
-        "name": "toolPolicyParameterTypes",
-        "type": "uint8[][][]",
-        "internalType": "enum VincentAppStorage.ParameterType[][][]"
+        "name": "versionTools",
+        "type": "tuple",
+        "internalType": "struct VincentAppFacet.AppVersionTools",
+        "components": [
+          {
+            "name": "toolIpfsCids",
+            "type": "string[]",
+            "internalType": "string[]"
+          },
+          {
+            "name": "toolPolicies",
+            "type": "string[][]",
+            "internalType": "string[][]"
+          },
+          {
+            "name": "toolPolicyParameterNames",
+            "type": "string[][][]",
+            "internalType": "string[][][]"
+          },
+          {
+            "name": "toolPolicyParameterTypes",
+            "type": "uint8[][][]",
+            "internalType": "enum VincentAppStorage.ParameterType[][][]"
+          }
+        ]
       }
     ],
     "outputs": [
@@ -193,6 +232,111 @@
     "stateMutability": "nonpayable"
   },
   {
+    "type": "function",
+    "name": "updateAppDeploymentStatus",
+    "inputs": [
+      {
+        "name": "appId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "deploymentStatus",
+        "type": "uint8",
+        "internalType": "enum VincentAppStorage.DeploymentStatus"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "updateAppDescription",
+    "inputs": [
+      {
+        "name": "appId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "newDescription",
+        "type": "string",
+        "internalType": "string"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "updateAppName",
+    "inputs": [
+      {
+        "name": "appId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "newName",
+        "type": "string",
+        "internalType": "string"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "event",
+    "name": "AppDeleted",
+    "inputs": [
+      {
+        "name": "appId",
+        "type": "uint256",
+        "indexed": true,
+        "internalType": "uint256"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "AppDeploymentStatusUpdated",
+    "inputs": [
+      {
+        "name": "appId",
+        "type": "uint256",
+        "indexed": true,
+        "internalType": "uint256"
+      },
+      {
+        "name": "deploymentStatus",
+        "type": "uint8",
+        "indexed": true,
+        "internalType": "uint8"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "AppDescriptionUpdated",
+    "inputs": [
+      {
+        "name": "appId",
+        "type": "uint256",
+        "indexed": true,
+        "internalType": "uint256"
+      },
+      {
+        "name": "newDescription",
+        "type": "string",
+        "indexed": false,
+        "internalType": "string"
+      }
+    ],
+    "anonymous": false
+  },
+  {
     "type": "event",
     "name": "AppEnabled",
     "inputs": [
@@ -213,6 +357,25 @@
         "type": "bool",
         "indexed": true,
         "internalType": "bool"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "AppNameUpdated",
+    "inputs": [
+      {
+        "name": "appId",
+        "type": "uint256",
+        "indexed": true,
+        "internalType": "uint256"
+      },
+      {
+        "name": "newName",
+        "type": "string",
+        "indexed": false,
+        "internalType": "string"
       }
     ],
     "anonymous": false
@@ -339,16 +502,43 @@
   },
   {
     "type": "event",
-    "name": "NewToolRegistered",
+    "name": "NewLitActionRegistered",
     "inputs": [
       {
-        "name": "toolIpfsCidHash",
+        "name": "litActionIpfsCidHash",
         "type": "bytes32",
         "indexed": true,
         "internalType": "bytes32"
       }
     ],
     "anonymous": false
+  },
+  {
+    "type": "error",
+    "name": "AppAlreadyInRequestedDeploymentStatus",
+    "inputs": [
+      {
+        "name": "appId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "deploymentStatus",
+        "type": "uint8",
+        "internalType": "uint8"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "AppHasBeenDeleted",
+    "inputs": [
+      {
+        "name": "appId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
   },
   {
     "type": "error",
@@ -379,6 +569,22 @@
         "name": "enabled",
         "type": "bool",
         "internalType": "bool"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "AppVersionHasDelegatedAgents",
+    "inputs": [
+      {
+        "name": "appId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "appVersion",
+        "type": "uint256",
+        "internalType": "uint256"
       }
     ]
   },
@@ -516,22 +722,6 @@
   },
   {
     "type": "error",
-    "name": "NoPoliciesProvidedForTool",
-    "inputs": [
-      {
-        "name": "appId",
-        "type": "uint256",
-        "internalType": "uint256"
-      },
-      {
-        "name": "toolIndex",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ]
-  },
-  {
-    "type": "error",
     "name": "NoRedirectUrisProvided",
     "inputs": []
   },
@@ -559,6 +749,58 @@
         "name": "msgSender",
         "type": "address",
         "internalType": "address"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "ParameterArrayLengthMismatch",
+    "inputs": [
+      {
+        "name": "toolIndex",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "policyIndex",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "paramNamesLength",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "paramTypesLength",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "PolicyArrayLengthMismatch",
+    "inputs": [
+      {
+        "name": "toolIndex",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "policiesLength",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "paramNamesLength",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "paramTypesLength",
+        "type": "uint256",
+        "internalType": "uint256"
       }
     ]
   },
@@ -596,8 +838,29 @@
   },
   {
     "type": "error",
-    "name": "ToolsAndPoliciesLengthMismatch",
-    "inputs": []
+    "name": "ToolArrayDimensionMismatch",
+    "inputs": [
+      {
+        "name": "toolsLength",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "policiesLength",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "paramNamesLength",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "paramTypesLength",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
   },
   {
     "type": "error",

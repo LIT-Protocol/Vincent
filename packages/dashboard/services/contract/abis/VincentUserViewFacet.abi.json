@@ -208,6 +208,17 @@
   },
   {
     "type": "error",
+    "name": "AppHasBeenDeleted",
+    "inputs": [
+      {
+        "name": "appId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
     "name": "AppNotRegistered",
     "inputs": [
       {

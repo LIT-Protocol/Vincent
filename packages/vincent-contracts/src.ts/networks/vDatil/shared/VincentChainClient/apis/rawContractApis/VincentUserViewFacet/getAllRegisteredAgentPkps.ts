@@ -1,8 +1,8 @@
 import { z } from 'zod';
 import { logger } from '../../../../../../shared/logger';
 import { toEthAddress } from '../../../../../../shared/utils/z-transformers';
-import { VincentNetworkContext } from '../../../vincentNetworkContext';
-import { createVincentContracts } from '../../utils/createVincentContracts';
+import { VincentNetworkContext } from '../../../NetworkContextManager';
+import { createVincentContracts } from '../../../ContractDataManager';
 
 // Define raw types from the contract
 type RawContractMethod = ReturnType<

@@ -9,6 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from '../ui/card';
+import { StatusFilterDropdown, FilterOption } from '../ui/status-filter-dropdown';
 import { useErrorPopup } from '@/providers/error-popup';
 import { useRouter } from 'next/navigation';
 // The styles are now included in the main dashboard.css imported in layout.tsx
@@ -34,19 +35,27 @@ const StatusMessage = ({ message, type = 'info' }: { message: string, type?: 'in
   );
 };
 
+// Deployment status names
+const deploymentStatusNames = ['DEV', 'TEST', 'PROD'];
+
+// Define filter options
+const statusFilterOptions: FilterOption[] = [
+  { id: 'all', label: 'All Applications' },
+  { id: 'dev', label: 'DEV' },
+  { id: 'test', label: 'TEST' },
+  { id: 'prod', label: 'PROD' },
+];
+
 export default function DashboardScreen({
   vincentApp,
-  onRefetch,
 }: {
   vincentApp: AppView[];
-  onRefetch: () => void;
 }) {
   const router = useRouter();
   const [dashboard, setDashboard] = useState<AppView[]>([]);
-  const [showManageApp, setShowManageApp] = useState(false);
   const [isRefetching, setIsRefetching] = useState(false);
+  const [sortOption, setSortOption] = useState<string>('all');
   
-  // Add status message state
   const [statusMessage, setStatusMessage] = useState<string>('');
   const [statusType, setStatusType] = useState<'info' | 'warning' | 'success' | 'error'>('info');
   
@@ -57,11 +66,6 @@ export default function DashboardScreen({
   const showStatus = useCallback((message: string, type: 'info' | 'warning' | 'success' | 'error' = 'info') => {
     setStatusMessage(message);
     setStatusType(type);
-  }, []);
-  
-  // Clear status message
-  const clearStatus = useCallback(() => {
-    setStatusMessage('');
   }, []);
   
   // Create enhanced error function that shows both popup and status error
@@ -85,18 +89,16 @@ export default function DashboardScreen({
     }
   }, [vincentApp, showErrorWithStatus]);
 
-  const handleRefetch = async () => {
-    setIsRefetching(true);
-    showStatus('Refreshing dashboard...', 'info');
-    try {
-      await onRefetch();
-      clearStatus();
-    } catch (error) {
-      console.error('Failed to refresh dashboard:', error);
-      showErrorWithStatus(error instanceof Error ? error.message : 'Failed to refresh dashboard', 'Refresh Error');
-      setIsRefetching(false);
+  // Function to sort applications based on deployment status
+  const getFilteredApps = useCallback(() => {
+    if (sortOption === 'all') {
+      return dashboard;
     }
-  };
+    
+    // Sort based on deployment status (0: DEV, 1: TEST, 2: PROD)
+    const statusValue = sortOption === 'dev' ? 0 : sortOption === 'test' ? 1 : 2;
+    return dashboard.filter(app => app.deploymentStatus === statusValue);
+  }, [dashboard, sortOption]);
 
   if (!dashboard || isRefetching) {
     return (
@@ -111,6 +113,8 @@ export default function DashboardScreen({
     );
   }
 
+  const filteredApps = getFilteredApps();
+
   // Main dashboard view
   return (
     <div className="space-y-6">
@@ -119,21 +123,32 @@ export default function DashboardScreen({
       
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold text-black">Dashboard</h1>
-        <Button
-          variant="default"
-          className="text-black"
-          onClick={() => router.push('/create-app')}
-        >
-          <Plus className="h-4 w-4 mr-2 font-bold text-black" />
-          Create App
-        </Button>
+        <div className="flex gap-3">
+          <StatusFilterDropdown 
+            options={statusFilterOptions}
+            selectedOptionId={sortOption}
+            onChange={setSortOption}
+          />
+          <Button
+            variant="default"
+            className="text-black"
+            onClick={() => router.push('/create-app')}
+          >
+            <Plus className="h-4 w-4 mr-2 font-bold text-black" />
+            Create App
+          </Button>
+        </div>
       </div>
 
-      {dashboard.length === 0 ? (
+      {filteredApps.length === 0 ? (
         <div className="border rounded-lg p-8 text-center">
-          <h2 className="text-xl font-semibold mb-4 text-black">No Apps Yet</h2>
+          <h2 className="text-xl font-semibold mb-4 text-black">
+            {dashboard.length === 0 ? "No Apps Yet" : "No apps match the selected filter"}
+          </h2>
           <p className="text-gray-600 mb-6">
-            Create your first app to get started with Lit Protocol.
+            {dashboard.length === 0 
+              ? "Create your first app to get started with Lit Protocol."
+              : "Try a different filter or create a new app."}
           </p>
           <Button
             variant="default"
@@ -146,7 +161,7 @@ export default function DashboardScreen({
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {dashboard.map((app, index) => (
+          {filteredApps.map((app, index) => (
             <Card
               key={index}
               className="cursor-pointer hover:shadow-md transition-shadow"
@@ -155,6 +170,11 @@ export default function DashboardScreen({
               <CardHeader>
                 <CardTitle className="flex justify-between items-center text-black">
                   <span>{app.appName}</span>
+                  <span className="text-xs px-2 py-1 rounded-full bg-gray-100">
+                    {app.deploymentStatus !== undefined && app.deploymentStatus >= 0 && app.deploymentStatus < deploymentStatusNames.length
+                      ? deploymentStatusNames[app.deploymentStatus]
+                      : 'DEV'}
+                  </span>
                 </CardTitle>
                 <CardDescription className="text-black">
                   {app.description}
@@ -167,8 +187,10 @@ export default function DashboardScreen({
                   </div>
                   <div className="mb-2">
                     <span className="font-medium">Management Wallet:</span>{' '}
-                    {app.managementWallet?.substring(0, 8)}...
-                    {app.managementWallet?.substring(app.managementWallet.length - 6)}
+                    {typeof app.managementWallet === 'string' && app.managementWallet ? 
+                      `${app.managementWallet.substring(0, 8)}...${app.managementWallet.substring(app.managementWallet.length - 6)}` : 
+                      'N/A'
+                    }
                   </div>
                   <div>
                     <span className="font-medium">Tool Policies:</span>{' '}

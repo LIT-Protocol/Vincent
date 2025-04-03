@@ -2,14 +2,21 @@
 
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function Header() {
   return (
     <div className="border-b">
       <div className="max-w-screen-xl mx-auto p-6">
         <div className="flex justify-between items-center">
-          <Link href="/" className="text-xl font-bold">
-            Vincent App Dashboard
+          <Link href="/" className="flex items-center">
+            <Image 
+              src="/logo.png" 
+              alt="Vincent Logo" 
+              width={150}
+              height={40}
+              priority
+            />
           </Link>
           <ConnectButton.Custom>
             {({

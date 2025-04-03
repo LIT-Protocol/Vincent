@@ -1,4 +1,4 @@
-import { vincentNetworkContext } from '../../../vincentNetworkContext';
+import { vincentNetworkContext } from '../../../NetworkContextManager';
 import { getTestContext } from '../testContext';
 import { getTotalAppCount } from './getTotalAppCount';
 

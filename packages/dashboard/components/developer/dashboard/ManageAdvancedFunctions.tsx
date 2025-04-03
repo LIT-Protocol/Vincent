@@ -72,6 +72,15 @@ export default function ManageAdvancedFunctionsScreen({
   // Add the error popup hook
   const { showError } = useErrorPopup();
   
+  // Add these new state variables after the other states in the component
+  const [showUpdateDeploymentStatusDialog, setShowUpdateDeploymentStatusDialog] = useState(false);
+  const [newDeploymentStatus, setNewDeploymentStatus] = useState<number>(dashboard.deploymentStatus || 0);
+  const deploymentStatusNames = ['DEV', 'TEST', 'PROD'];
+  
+  // Add state for delete app dialog
+  const [showDeleteAppDialog, setShowDeleteAppDialog] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  
   // Helper function to set status messages
   const showStatus = useCallback((message: string, type: 'info' | 'warning' | 'success' | 'error' = 'info') => {
     setStatusMessage(message);
@@ -254,6 +263,75 @@ export default function ManageAdvancedFunctionsScreen({
     }
   }
 
+  // Add this new function before the return statement
+  async function handleUpdateDeploymentStatus() {
+    try {
+      setIsProcessing(true);
+      showStatus(`Updating deployment status to ${deploymentStatusNames[newDeploymentStatus]}...`, "info");
+      
+      const { VincentContracts } = await import('@/services');
+      const contracts = new VincentContracts('datil' as Network);
+      
+      showStatus("Sending transaction...", "info");
+      const tx = await contracts.updateAppDeploymentStatus(dashboard.appId, newDeploymentStatus);
+      
+      showStatus("Waiting for confirmation...", "info");
+      await tx.wait();
+      
+      showStatus(`Deployment status updated to ${deploymentStatusNames[newDeploymentStatus]} successfully`, "success");
+      setShowUpdateDeploymentStatusDialog(false);
+      
+      // Refresh app data after a delay
+      setTimeout(() => {
+        clearStatus();
+        onSuccess?.();
+      }, 2000);
+    } catch (error: any) {
+      console.error("Error updating deployment status:", error);
+      showErrorWithStatus(`Failed to update deployment status: ${error.message || "Unknown error"}`, "Transaction Error");
+    } finally {
+      setIsProcessing(false);
+    }
+  }
+
+  // Handler for deleting an app
+  async function handleDeleteApp() {
+    const appName = dashboard.appName || `App ${dashboard.appId}`;
+    if (deleteConfirmText !== appName) {
+      showErrorWithStatus("Please type the app name correctly to confirm deletion", "Confirmation Error");
+      return;
+    }
+
+    try {
+      setIsProcessing(true);
+      showStatus("Deleting app...", "info");
+      
+      const { VincentContracts } = await import('@/services');
+      const contracts = new VincentContracts('datil' as Network);
+      
+      showStatus("Sending transaction...", "info");
+      const tx = await contracts.deleteApp(dashboard.appId);
+      
+      showStatus("Waiting for confirmation...", "info");
+      await tx.wait();
+      
+      showStatus("App deleted successfully", "success");
+      setShowDeleteAppDialog(false);
+      
+      // Refresh app data after a delay
+      setTimeout(() => {
+        clearStatus();
+        // Redirect to apps list after deletion
+        window.location.href = '/';
+      }, 2000);
+    } catch (error: any) {
+      console.error("Error deleting app:", error);
+      showErrorWithStatus(`Failed to delete app: ${error.message || "Unknown error"}`, "Transaction Error");
+    } finally {
+      setIsProcessing(false);
+    }
+  }
+
   return (
     <div className="space-y-8">
       {/* Display status message */}
@@ -345,6 +423,57 @@ export default function ManageAdvancedFunctionsScreen({
                 <div className="font-mono text-black">{dashboard.appId}</div>
                 <div className="text-muted-foreground">Current Version:</div>
                 <div className="font-mono text-black">{dashboard.currentVersion}</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-black">Deployment Status</CardTitle>
+            <CardDescription className="text-black">
+              Update the deployment status of your application
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Button
+              variant="default"
+              onClick={() => setShowUpdateDeploymentStatusDialog(true)}
+              className="text-black w-full"
+            >
+              <Settings className="h-4 w-4 mr-2" />
+              Update Status
+            </Button>
+            
+            <div className="p-2 border rounded-md">
+              <div className="text-sm font-semibold mb-2 text-black">Current Status:</div>
+              <div className="text-lg font-semibold text-black">{deploymentStatusNames[dashboard.deploymentStatus || 0]}</div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Delete App Card */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-black">Delete App</CardTitle>
+            <CardDescription className="text-black text-red-500">
+              Permanently delete this application and all its versions
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Button
+              variant="destructive"
+              onClick={() => setShowDeleteAppDialog(true)}
+              className="w-full"
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Delete App
+            </Button>
+            
+            <div className="p-2 border rounded-md">
+              <div className="text-sm font-semibold mb-2 text-black">Warning:</div>
+              <div className="text-sm text-red-500">
+                This action cannot be undone. All app data will be permanently deleted.
               </div>
             </div>
           </CardContent>
@@ -505,6 +634,101 @@ export default function ManageAdvancedFunctionsScreen({
                 className="text-black"
               >
                 {isProcessing ? "Updating..." : isVersionEnabled ? "Disable Version" : "Enable Version"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Deployment Status Update Dialog */}
+      <Dialog open={showUpdateDeploymentStatusDialog} onOpenChange={setShowUpdateDeploymentStatusDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Update Deployment Status</DialogTitle>
+            <DialogDescription>
+              Change the deployment status of your application. This affects how your app appears to users.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <label htmlFor="deploymentStatus" className="text-sm font-medium">
+                Select New Status
+              </label>
+              <Select
+                disabled={isProcessing}
+                value={newDeploymentStatus.toString()}
+                onValueChange={(value) => setNewDeploymentStatus(parseInt(value))}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="0">DEV</SelectItem>
+                  <SelectItem value="1">TEST</SelectItem>
+                  <SelectItem value="2">PROD</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setShowUpdateDeploymentStatusDialog(false)}
+                disabled={isProcessing}
+                className="text-black"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleUpdateDeploymentStatus}
+                disabled={isProcessing || newDeploymentStatus === dashboard.deploymentStatus}
+                className="text-black"
+              >
+                {isProcessing ? "Updating..." : "Update Status"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showDeleteAppDialog} onOpenChange={setShowDeleteAppDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Confirm Deletion</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this application and all its versions?
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <label htmlFor="confirmText" className="text-sm font-medium">
+                Type the app name to confirm:
+              </label>
+              <Input
+                id="confirmText"
+                placeholder={dashboard.appName || "App Name"}
+                value={deleteConfirmText}
+                onChange={(e) => setDeleteConfirmText(e.target.value)}
+              />
+            </div>
+
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setShowDeleteAppDialog(false)}
+                className="text-black"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleDeleteApp}
+                disabled={isProcessing || deleteConfirmText !== dashboard.appName}
+                className="text-black"
+                variant="destructive"
+              >
+                {isProcessing ? "Deleting..." : "Delete App"}
               </Button>
             </div>
           </div>

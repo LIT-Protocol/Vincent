@@ -1,8 +1,9 @@
 import { z } from 'zod';
 import { logger } from '../../../../../../shared/logger';
-import { VincentNetworkContext } from '../../../vincentNetworkContext';
+import { VincentNetworkContext } from '../../../NetworkContextManager';
 import { callWithAdjustedOverrides } from '../../utils/callWithAdjustedOverrides';
-import { createVincentContracts } from '../../utils/createVincentContracts';
+import { createVincentContracts } from '../../../ContractDataManager';
+// '../../../ContractDataManager'
 import { decodeVincentLogs } from '../../utils/decodeVincentLogs';
 
 const AddAuthorizedRedirectUriRequest = z.object({

@@ -1,12 +1,10 @@
 import { useCallback, useState, useRef } from 'react';
 import { IRelayPKP } from '@lit-protocol/types';
-import * as ethers from 'ethers';
 
 import { 
   getAppViewRegistryContract, 
   getUserViewRegistryContract 
 } from '../utils/contracts';
-import { ParameterType } from '@/services/types/parameterTypes';
 import { 
   AppView, 
   VersionParameter, 

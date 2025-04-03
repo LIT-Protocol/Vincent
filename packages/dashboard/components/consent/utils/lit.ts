@@ -148,7 +148,7 @@ export async function registerWebAuthn(): Promise<IRelayPKP> {
   const options = await webAuthnProvider.register();
 
   if (options.user) {
-    const displayName = prompt("Enter display name for your passkey:", "Lit Protocol User") || "Lit Protocol User";
+    const displayName = prompt("Enter display name for your passkey:", "Vincent User") || "Vincent User";
     options.user.displayName = displayName;
     options.user.name = displayName.toLowerCase().replace(/\s+/g, '-');
     // Make sure id exists - use name as id if missing
@@ -156,7 +156,7 @@ export async function registerWebAuthn(): Promise<IRelayPKP> {
       options.user.id = options.user.name;
     }
   } else {
-    const displayName = prompt("Enter display name for your passkey:", "Lit Protocol User") || "Lit Protocol User";
+    const displayName = prompt("Enter display name for your passkey:", "Vincent User") || "Vincent User";
     const userName = displayName.toLowerCase().replace(/\s+/g, '-');
     options.user = {
       displayName: displayName,

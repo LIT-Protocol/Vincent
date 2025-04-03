@@ -10,9 +10,9 @@ interface AppInfoProps {
   showIPFSDetails?: boolean;
 }
 
-const AppInfo = ({ 
-  appInfo, 
-  agentPKP, 
+const AppInfo = ({
+  appInfo,
+  agentPKP,
   versionInfo,
   showIPFSDetails = true
 }: AppInfoProps) => {
@@ -28,15 +28,10 @@ const AppInfo = ({
         <p>
           <strong>Description:</strong> {appInfo.description}
         </p>
-        {agentPKP && (
-          <p>
-            <strong>Account Address:</strong> {agentPKP.ethAddress}
-          </p>
-        )}
         <p>
           <strong>Version:</strong>{' '}
           {appInfo.latestVersion ? appInfo.latestVersion.toString() : '1'}
-        </p>
+        </p> 
         
         {hasDuplicates && (
           <div style={{ 
@@ -67,24 +62,31 @@ const AppInfo = ({
             </p>
           </div>
         )}
-        
+        <p>
+          <strong>Deployment Status:</strong>{' '}
+          {appInfo.deploymentStatus !== undefined ? 
+            (appInfo.deploymentStatus === 0 ? 'DEV' : 
+             appInfo.deploymentStatus === 1 ? 'TEST' : 
+             appInfo.deploymentStatus === 2 ? 'PROD' : 'Unknown') 
+            : 'DEV'}
+        </p>
         {showIPFSDetails && versionInfo && (
           <div className="ipfs-cids-container" style={{ marginTop: '10px' }}>
             <strong>IPFS CIDs:</strong>
             <div style={{ marginTop: '8px' }}>
               {(() => {
                 const toolsData = versionInfo.appVersion?.tools || versionInfo[1]?.[3];
-                
+
                 if (!toolsData || !Array.isArray(toolsData) || toolsData.length === 0) {
                   return <p style={{ fontStyle: 'italic' }}>No tools configured</p>;
                 }
-                
+
                 return toolsData.map((tool: any, toolIndex: number) => {
                   if (!tool || !Array.isArray(tool) || !tool[0]) return null;
-                  
+
                   const toolIpfsCid = tool[0];
                   const policies = tool[1];
-                  
+
                   return (
                     <div key={`tool-${toolIndex}`} style={{ marginBottom: '10px' }}>
                       <div>
@@ -93,14 +95,14 @@ const AppInfo = ({
                           {toolIpfsCid}
                         </span>
                       </div>
-                      
+
                       {Array.isArray(policies) && policies.length > 0 && (
                         <div style={{ marginTop: '5px', paddingLeft: '20px' }}>
                           {policies.map((policy: any, policyIndex: number) => {
                             if (!policy || !Array.isArray(policy) || !policy[0]) return null;
-                            
+
                             const policyIpfsCid = policy[0];
-                            
+
                             return (
                               <div key={`policy-${toolIndex}-${policyIndex}`} style={{ marginTop: '5px' }}>
                                 <strong>Policy:</strong>{' '}
@@ -118,6 +120,11 @@ const AppInfo = ({
               })()}
             </div>
           </div>
+        )}
+        {agentPKP && (
+          <p>
+            <strong>Your Account Address:</strong> {agentPKP.ethAddress}
+          </p>
         )}
       </div>
     </div>

@@ -1,6 +1,5 @@
 import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts';
 import { addDelegatee } from './addDelegatee';
-import { vincentNetworkContext } from '../../../vincentNetworkContext';
 import { getTestContext } from '../testContext';
 import { getAppById } from '../VincentAppViewFacet/getAppById';
 
@@ -20,9 +19,9 @@ describe('addDelegatee', () => {
     const res = await addDelegatee(
       {
         appId: appId,
-        delegatee: newDelegatee.address
+        delegatee: newDelegatee.address,
       },
-      vincentNetworkContext
+      testContext.networkContext,
     );
 
     console.log(res);
@@ -30,16 +29,20 @@ describe('addDelegatee', () => {
     expect(res.hash).toBeDefined();
     expect(res.receipt).toBeDefined();
     expect(res.decodedLogs).toBeDefined();
-    
+
     // Find the DelegateeAdded event
-    const event = res.decodedLogs.find((log) => log.eventName === 'DelegateeAdded');
+    const event = res.decodedLogs.find(
+      (log) => log.eventName === 'DelegateeAdded',
+    );
     expect(event).toBeDefined();
     expect(event?.args.appId).toEqual(appId);
-    expect(event?.args.delegatee.toLowerCase()).toEqual(newDelegatee.address.toLowerCase());
+    expect(event?.args.delegatee.toLowerCase()).toEqual(
+      newDelegatee.address.toLowerCase(),
+    );
 
     // Verify the delegatee was added to the app
-    const app = await getAppById({ appId }, vincentNetworkContext);
-    console.log("app.delegatees:", app.delegatees);
+    const app = await getAppById({ appId }, testContext.networkContext);
+    console.log('app.delegatees:', app.delegatees);
     expect(app.delegatees).toContain(newDelegatee.address);
   });
-}); 
+});

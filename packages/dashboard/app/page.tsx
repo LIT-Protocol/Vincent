@@ -21,20 +21,23 @@ export default function Developer() {
     const [app, setApp] = useState<AppView[] | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const isMounted = useIsMounted();
-    const [refetchApp, setRefetchApp] = useState(0);
 
     const { address, isConnected } = useAccount();
 
     useEffect(() => {
         async function checkAndFetchApp() {
             if (!address) return;
-
+            setIsLoading(true);
             try {
                 const appData = await formCompleteVincentAppForDev(address);
                 const exists = appData && appData.length > 0;
-                setHasApp(exists);
+              
                 if (exists) {
                     setApp(appData);
+                    setHasApp(true);
+                } else {
+                    setHasApp(false);
+                    setApp(null);
                 }
             } catch (error) {
                 // Check if this is the NoAppsFoundForManager error
@@ -44,10 +47,12 @@ export default function Developer() {
                     // This is expected when the user hasn't created any apps yet
                     console.log("No apps found for this address");
                     setHasApp(false);
+                    setApp(null);
                 } else {
                     // Log other unexpected errors
                     console.error("Error fetching app:", error);
                     setHasApp(false);
+                    setApp(null);
                 }
             } finally {
                 setIsLoading(false);
@@ -60,7 +65,7 @@ export default function Developer() {
             // If mounted but not connected, stop loading state
             setIsLoading(false);
         }
-    }, [address, isMounted, isConnected, refetchApp]);
+    }, [address, isMounted, isConnected]);
 
     // Return null while client-side is initializing to prevent hydration mismatch
     if (!isMounted) return null;
@@ -86,7 +91,7 @@ export default function Developer() {
     return (
         <div className="min-h-screen">
             {hasApp ? (
-                <DashboardScreen onRefetch={() => setRefetchApp(refetchApp + 1)} vincentApp={app!} />
+                <DashboardScreen vincentApp={app!} />
             ) : (
                 // Only render the CreateAppScreen once we're client-side 
                 <CreateAppScreen />

@@ -10,4 +10,9 @@ export const vincentContractData = {
   },
 } as const;
 
-export { createDatilChainManager, getChain } from './LitChainManager/createChainManager';
+export {
+  createDatilChainManager,
+  getChain,
+} from './LitChainManager/createChainManager';
+
+export { createPolicyParameterValue } from './networks/vDatil/shared/VincentChainClient/apis/rawContractApis/VincentAppFacet/schemas/ParameterType';

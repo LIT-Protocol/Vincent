@@ -1,6 +1,6 @@
 import { decodeEventLog, Log } from 'viem';
-import { VincentNetworkContext } from '../../vincentNetworkContext';
-import { createVincentContracts } from './createVincentContracts';
+import { VincentNetworkContext } from '../../NetworkContextManager';
+import { createVincentContracts } from '../../ContractDataManager';
 
 export type DecodedLog = {
   eventName: string;

@@ -1,8 +1,8 @@
 import { z } from 'zod';
 import { logger } from '../../../../../../shared/logger';
-import { VincentNetworkContext } from '../../../vincentNetworkContext';
+import { VincentNetworkContext } from '../../../NetworkContextManager';
 import { callWithAdjustedOverrides } from '../../utils/callWithAdjustedOverrides';
-import { createVincentContracts } from '../../utils/createVincentContracts';
+import { createVincentContracts } from '../../../ContractDataManager';
 import { decodeVincentLogs } from '../../utils/decodeVincentLogs';
 
 const RemoveToolApprovalsRequest = z.object({

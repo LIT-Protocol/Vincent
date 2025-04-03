@@ -31,6 +31,16 @@
             "internalType": "string"
           },
           {
+            "name": "isDeleted",
+            "type": "bool",
+            "internalType": "bool"
+          },
+          {
+            "name": "deploymentStatus",
+            "type": "uint8",
+            "internalType": "enum VincentAppStorage.DeploymentStatus"
+          },
+          {
             "name": "manager",
             "type": "address",
             "internalType": "address"
@@ -85,6 +95,16 @@
             "name": "description",
             "type": "string",
             "internalType": "string"
+          },
+          {
+            "name": "isDeleted",
+            "type": "bool",
+            "internalType": "bool"
+          },
+          {
+            "name": "deploymentStatus",
+            "type": "uint8",
+            "internalType": "enum VincentAppStorage.DeploymentStatus"
           },
           {
             "name": "manager",
@@ -146,6 +166,16 @@
             "name": "description",
             "type": "string",
             "internalType": "string"
+          },
+          {
+            "name": "isDeleted",
+            "type": "bool",
+            "internalType": "bool"
+          },
+          {
+            "name": "deploymentStatus",
+            "type": "uint8",
+            "internalType": "enum VincentAppStorage.DeploymentStatus"
           },
           {
             "name": "manager",
@@ -263,6 +293,16 @@
                 "name": "description",
                 "type": "string",
                 "internalType": "string"
+              },
+              {
+                "name": "isDeleted",
+                "type": "bool",
+                "internalType": "bool"
+              },
+              {
+                "name": "deploymentStatus",
+                "type": "uint8",
+                "internalType": "enum VincentAppStorage.DeploymentStatus"
               },
               {
                 "name": "manager",
@@ -397,6 +437,17 @@
       }
     ],
     "stateMutability": "view"
+  },
+  {
+    "type": "error",
+    "name": "AppHasBeenDeleted",
+    "inputs": [
+      {
+        "name": "appId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
   },
   {
     "type": "error",

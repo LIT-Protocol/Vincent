@@ -1,7 +1,7 @@
 import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts';
 import { removeDelegatee } from './removeDelegatee';
 import { addDelegatee } from './addDelegatee';
-import { vincentNetworkContext } from '../../../vincentNetworkContext';
+import { vincentNetworkContext } from '../../../NetworkContextManager';
 import { getTestContext } from '../testContext';
 
 describe('removeDelegatee', () => {

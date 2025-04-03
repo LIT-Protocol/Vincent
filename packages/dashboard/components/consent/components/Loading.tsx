@@ -3,7 +3,7 @@ interface LoadingProps {
   error?: Error;
 }
 
-export default function Loading({ copy, error }: LoadingProps) {
+export default function Loading({ copy }: LoadingProps) {
   return (
     <div className="container">
       <div className="wrapper">

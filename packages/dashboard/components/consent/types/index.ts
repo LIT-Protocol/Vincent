@@ -15,6 +15,7 @@ export interface AppView {
   latestVersion: BigNumber | number;
   delegatees: string[] | any[];
   authorizedRedirectUris: string[];
+  deploymentStatus?: number; // 0: DEV, 1: TEST, 2: PROD
 }
 
 export interface VersionParameter {

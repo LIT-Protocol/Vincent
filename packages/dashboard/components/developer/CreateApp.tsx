@@ -27,26 +27,17 @@ import { VincentContracts } from '@/services';
 import { Network } from '@/services';
 import { ArrowLeft, Plus, Trash2 } from 'lucide-react';
 import { mapTypeToEnum } from '@/services/types';
-import { useRouter } from 'next/navigation';
 
 // Tool schema
 const toolSchema = z.object({
   toolIpfsCid: z.string().min(1, "Tool IPFS CID is required"),
   policies: z.array(z.object({
-    policyIpfsCid: z.string().min(1, "Policy IPFS CID is required"),
+    policyIpfsCid: z.string(),
     parameters: z.array(z.object({
-      name: z.string().min(1, "Parameter name is required"),
+      name: z.string(),
       type: z.string().default("string")
-    })).min(1, "At least one parameter is required")
-    .refine(parameters => {
-      const names = parameters.map(p => p.name);
-      return new Set(names).size === names.length;
-    }, { message: "Parameter names must be unique within a policy" })
-  })).min(1, "At least one policy is required")
-  .refine(policies => {
-    const cids = policies.map(p => p.policyIpfsCid);
-    return new Set(cids).size === cids.length;
-  }, { message: "Policy IPFS CIDs must be unique within a tool" })
+    }))
+  }))
 });
 
 const formSchema = z.object({
@@ -96,7 +87,6 @@ export default function CreateAppScreen({ onBack, onSuccess }: CreateAppScreenPr
   const [error, setError] = useState<string | null>(null);
   const { address } = useAccount();
   const chainId = useChainId();
-  const router = useRouter();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -104,20 +94,11 @@ export default function CreateAppScreen({ onBack, onSuccess }: CreateAppScreenPr
       appName: '',
       description: '',
       authorizedRedirectUris: [''],
+      deploymentStatus: 0, // DEV by default
       tools: [
         {
           toolIpfsCid: '',
-          policies: [
-            {
-              policyIpfsCid: '',
-              parameters: [
-                {
-                  name: '',
-                  type: 'string'
-                }
-              ]
-            }
-          ]
+          policies: []
         }
       ]
     },
@@ -139,7 +120,7 @@ export default function CreateAppScreen({ onBack, onSuccess }: CreateAppScreenPr
           ...updatedTools[toolIndex].policies,
           {
             policyIpfsCid: '',
-            parameters: [{ name: '', type: 'string' }]
+            parameters: []
           }
         ]
       };
@@ -212,6 +193,13 @@ export default function CreateAppScreen({ onBack, onSuccess }: CreateAppScreenPr
     name: 'tools'
   });
 
+  const addTool = () => {
+    appendTool({ 
+      toolIpfsCid: '',
+      policies: []
+    });
+  };
+
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     form.handleSubmit(onSubmit)(e);
@@ -256,16 +244,16 @@ export default function CreateAppScreen({ onBack, onSuccess }: CreateAppScreenPr
 
       const toolIpfsCids = values.tools.map(tool => tool.toolIpfsCid);
       const toolPolicies = values.tools.map(tool => 
-        tool.policies.map(policy => policy.policyIpfsCid)
+        (tool.policies || []).map(policy => policy.policyIpfsCid)
       );
       const toolPolicyParameterTypes = values.tools.map(tool => 
-        tool.policies.map(policy => 
-          policy.parameters.map(param => mapTypeToEnum(param.type))
+        (tool.policies || []).map(policy => 
+          (policy.parameters || []).map(param => mapTypeToEnum(param.type))
         )
       );
       const toolPolicyParameterNames = values.tools.map(tool => 
-        tool.policies.map(policy => 
-          policy.parameters.map(param => param.name)
+        (tool.policies || []).map(policy => 
+          (policy.parameters || []).map(param => param.name)
         )
       );
 
@@ -278,7 +266,8 @@ export default function CreateAppScreen({ onBack, onSuccess }: CreateAppScreenPr
         toolIpfsCids,
         toolPolicies,
         toolPolicyParameterTypes,
-        toolPolicyParameterNames
+        toolPolicyParameterNames,
+        values.deploymentStatus
       ).catch((err) => {
         // Handle user rejection specifically
         console.error('Transaction rejected:', err);
@@ -293,11 +282,22 @@ export default function CreateAppScreen({ onBack, onSuccess }: CreateAppScreenPr
       if (!receipt) return;
       
       console.log('receipt', receipt);
-      if (onSuccess) {
-        onSuccess();
-      } else {
-        router.push('/'); // Navigate to root path on success
-      }
+      
+      // Show success message
+      setError(null);
+      setIsSubmitting(false);
+      
+      // Force redirect with window.location after a short delay
+      setTimeout(() => {
+        if (onSuccess) {
+          onSuccess();
+        } else {
+          // Force a full page reload to the dashboard
+          window.location.href = '/';
+        }
+      }, 1000);
+      return; // Early return to prevent further processing
+
     } catch (err) {
       console.error('Error submitting form:', err);
       setError(err instanceof Error ? err.message : 'Failed to create app');
@@ -373,6 +373,29 @@ export default function CreateAppScreen({ onBack, onSuccess }: CreateAppScreenPr
 
                   <FormField
                     control={form.control}
+                    name="deploymentStatus"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-black">Deployment Status</FormLabel>
+                        <FormControl>
+                          <select 
+                            {...field} 
+                            className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm text-black ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            onChange={e => field.onChange(parseInt(e.target.value))}
+                            value={field.value}
+                          >
+                            <option value="0">DEV</option>
+                            <option value="1">TEST</option>
+                            <option value="2">PROD</option>
+                          </select>
+                        </FormControl>
+                        <FormMessage className="text-destructive" />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
                     name="authorizedRedirectUris"
                     render={({ field }) => (
                       <FormItem>
@@ -392,19 +415,21 @@ export default function CreateAppScreen({ onBack, onSuccess }: CreateAppScreenPr
                                     }}
                                     className="text-black flex-1"
                                   />
-                                  <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => {
-                                      const newValues = [...field.value];
-                                      newValues.splice(index, 1);
-                                      field.onChange(newValues);
-                                    }}
-                                    className="text-red-500 hover:text-red-700"
-                                  >
-                                    <Trash2 className="h-4 w-4" />
-                                  </Button>
+                                  {index > 0 && (
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => {
+                                        const newValues = [...field.value];
+                                        newValues.splice(index, 1);
+                                        field.onChange(newValues);
+                                      }}
+                                      className="text-red-500 hover:text-red-700"
+                                    >
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                  )}
                                 </div>
                                 {!uri && form.formState.errors.authorizedRedirectUris && (
                                   <span className="text-sm font-medium text-destructive">
@@ -442,10 +467,7 @@ export default function CreateAppScreen({ onBack, onSuccess }: CreateAppScreenPr
                         type="button"
                         variant="default"
                         size="sm"
-                        onClick={() => appendTool({ 
-                          toolIpfsCid: '',
-                          policies: [{ policyIpfsCid: '', parameters: [{ name: '', type: 'string' }] }]
-                        })}
+                        onClick={addTool}
                         className="text-black"
                       >
                         <Plus className="h-4 w-4 mr-2" /> Add Tool
@@ -520,17 +542,15 @@ export default function CreateAppScreen({ onBack, onSuccess }: CreateAppScreenPr
                                 <div key={`policy-${toolIndex}-${policyIndex}`} className="border p-3 rounded-md mb-4 space-y-3">
                                   <div className="flex justify-between items-center">
                                     <h6 className="font-medium text-black">Policy {policyIndex + 1}</h6>
-                                    {policyIndex > 0 && (
-                                      <Button
-                                        type="button"
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() => removePolicy(toolIndex, policyIndex)}
-                                        className="text-red-500 hover:text-red-700"
-                                      >
-                                        <Trash2 className="h-4 w-4" />
-                                      </Button>
-                                    )}
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => removePolicy(toolIndex, policyIndex)}
+                                      className="text-red-500 hover:text-red-700"
+                                    >
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
                                   </div>
                                   
                                   <FormField
@@ -611,17 +631,15 @@ export default function CreateAppScreen({ onBack, onSuccess }: CreateAppScreenPr
                                           )}
                                         />
                                         
-                                        {paramIndex > 0 && (
-                                          <Button
-                                            type="button"
-                                            variant="ghost"
-                                            size="sm"
-                                            onClick={() => removeParameter(toolIndex, policyIndex, paramIndex)}
-                                            className="text-red-500 hover:text-red-700"
-                                          >
-                                            <Trash2 className="h-4 w-4" />
-                                          </Button>
-                                        )}
+                                        <Button
+                                          type="button"
+                                          variant="ghost"
+                                          size="sm"
+                                          onClick={() => removeParameter(toolIndex, policyIndex, paramIndex)}
+                                          className="text-red-500 hover:text-red-700"
+                                        >
+                                          <Trash2 className="h-4 w-4" />
+                                        </Button>
                                       </div>
                                     ))}
                                   </div>

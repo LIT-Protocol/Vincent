@@ -7,7 +7,7 @@ import {
   PublicClient,
 } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
-import { VincentNetworkContext } from '../../vincentNetworkContext';
+import { VincentNetworkContext } from './NetworkContextManager';
 
 interface CreateVincentContractsOptions {
   publicClient?: PublicClient;
@@ -16,15 +16,12 @@ interface CreateVincentContractsOptions {
 
 export const createVincentContracts = (
   networkCtx: VincentNetworkContext,
-  opts?: CreateVincentContractsOptions
+  opts?: CreateVincentContractsOptions,
 ) => { // ts-expect-error TS7056
   const useDiamondAddress = opts?.useDiamondAddress ?? true;
 
   // 1. Fallback to env-based private key if user doesn't supply a wagmi walletClient
   const fallbackTransport = http(networkCtx.rpcUrl);
-  // const fallbackAccount = privateKeyToAccount(
-  //   networkCtx.privateKey as `0x${string}`
-  // );
 
   // 2. Decide which publicClient to use
   const publicClient =
@@ -35,21 +32,14 @@ export const createVincentContracts = (
     });
 
   // 3. Decide which walletClient to use
-  const walletClient =
-    networkCtx?.walletClient 
-    // ??
-    // createWalletClient({
-    //   chain: networkCtx.chainConfig.chain,
-    //   transport: fallbackTransport,
-    //   account: fallbackAccount,
-    // });
-
+  const walletClient = networkCtx?.walletClient;
+  
   // 4. Get the contract data
   const contractData = networkCtx.chainConfig.contractData;
 
   if (!contractData) {
     throw new Error(
-      `Contract data not found for network: ${networkCtx.network}`
+      `Contract data not found for network: ${networkCtx.network}`,
     );
   }
 

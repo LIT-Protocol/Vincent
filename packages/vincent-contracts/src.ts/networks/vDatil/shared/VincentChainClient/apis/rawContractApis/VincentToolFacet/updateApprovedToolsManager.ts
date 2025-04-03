@@ -1,9 +1,9 @@
 import { z } from 'zod';
 import { logger } from '../../../../../../shared/logger';
 import { toEthAddress } from '../../../../../../shared/utils/z-transformers';
-import { VincentNetworkContext } from '../../../vincentNetworkContext';
+import { VincentNetworkContext } from '../../../NetworkContextManager';
 import { callWithAdjustedOverrides } from '../../utils/callWithAdjustedOverrides';
-import { createVincentContracts } from '../../utils/createVincentContracts';
+import { createVincentContracts } from '../../../ContractDataManager';
 import { decodeVincentLogs } from '../../utils/decodeVincentLogs';
 
 const UpdateApprovedToolsManagerRequest = z.object({

@@ -7,5 +7,9 @@
     "skipLibCheck": true
   },
   "include": ["src.ts/**/*"],
-  "exclude": ["**/*.spec.ts", "**/*.test.ts"]
-} 
+  "exclude": [
+    "**/*.spec.ts",
+    "**/*.test.ts",
+    "src.ts/networks/vDatil/shared/VincentChainClient/apis/rawContractApis/testContext.ts"
+  ]
+}

@@ -1,8 +1,9 @@
 import { getTestContext } from '../testContext';
-import { permitAppVersion } from './permitAppVersion';
-import { setToolPolicyParameters } from './setToolPolicyParameters';
+import { createPolicyParameterValue } from '../VincentAppFacet/schemas/ParameterType';
 import { getAppVersion } from '../VincentAppViewFacet/getAppVersion';
 import { getAllToolsAndPoliciesForApp } from '../VincentUserViewFacet/getAllToolsAndPoliciesForApp';
+import { permitAppVersion } from './permitAppVersion';
+import { setToolPolicyParameters } from './setToolPolicyParameters';
 
 describe('setToolPolicyParameters', () => {
   let testContext: Awaited<ReturnType<typeof getTestContext>>;
@@ -38,7 +39,15 @@ describe('setToolPolicyParameters', () => {
     );
 
     // Set new policy parameters
-    const newParameterValues = [[[`new-value-${Date.now()}`]]];
+    const newParameterValues = [
+      [
+        [
+          createPolicyParameterValue('string', 'Hello World'),
+          createPolicyParameterValue('string[]', 'Hello,World'),
+          createPolicyParameterValue('bytes', '0x1234'),
+        ],
+      ],
+    ];
 
     const result = await setToolPolicyParameters(
       {
@@ -61,6 +70,8 @@ describe('setToolPolicyParameters', () => {
     expect(result).toHaveProperty('receipt');
     expect(result).toHaveProperty('decodedLogs');
 
+    console.log('APP ID:', result.decodedLogs[0].args.appId);
+
     // Verify the parameters were set by checking the event
     const parameterSetEvent = result.decodedLogs.find(
       (log) => log.eventName === 'ToolPolicyParameterSet',
@@ -81,7 +92,7 @@ describe('setToolPolicyParameters', () => {
     const toolsAndPolicies = await getAllToolsAndPoliciesForApp(
       {
         pkpTokenId: testContext.AGENT_PKP_TOKEN_IDS[0],
-        appId: testContext.registerAppRes.appId,
+        appId: result.decodedLogs[0].args.appId,
       },
       testContext.networkContext,
     );

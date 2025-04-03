@@ -1,5 +1,9 @@
 import { getTestContext } from '../testContext';
 import { getAppVersion } from '../VincentAppViewFacet/getAppVersion';
+import {
+  getAllPermittedAppIdsForPkp,
+  getPermittedAppVersionForPkp,
+} from '../VincentUserViewFacet';
 import { getAllRegisteredAgentPkps } from '../VincentUserViewFacet/getAllRegisteredAgentPkps';
 import { permitAppVersion } from './permitAppVersion';
 
@@ -83,6 +87,26 @@ describe('permitAppVersion', () => {
       expect(event.args.pkpTokenId).toBe(testContext.AGENT_PKP_TOKEN_IDS[0]);
       expect(event.args.appId).toBe(testContext.registerAppRes.appId);
       expect(event.args.appVersion).toBe(appVersionRes[1].version);
+
+      // Verify the permitted app version for the PKP
+      const permittedVersion = await getPermittedAppVersionForPkp(
+        {
+          pkpTokenId: event.args.pkpTokenId,
+          appId: event.args.appId,
+        },
+        testContext.networkContext,
+      );
+
+      console.log('Permitted app version:', permittedVersion);
+
+      const permittedAppIds = await getAllPermittedAppIdsForPkp(
+        {
+          pkpTokenId: event.args.pkpTokenId,
+        },
+        testContext.networkContext,
+      );
+
+      console.log('Permitted app IDs:', permittedAppIds);
     }
 
     // Verify the PKP is now registered for the user
@@ -94,7 +118,7 @@ describe('permitAppVersion', () => {
     // console.log('Registered PKPs after permitAppVersion:', registeredPkps);
     // expect(registeredPkps).toContain(testContext.AGENT_PKP_TOKEN_IDS[0]);
 
-    // // Verify the permitted app version for the PKP
+    // Verify the permitted app version for the PKP
     // const permittedVersion = await getPermittedAppVersionForPkp(
     //   {
     //     pkpTokenId: testContext.AGENT_PKP_TOKEN_IDS[0],

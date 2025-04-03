@@ -80,23 +80,6 @@ export default function VersionParametersForm({
                     console.log(`Found parameter by name AND type: "${paramName}" (type: ${paramType})`);
                   }
                   
-                  let defaultValue: any = '';
-                  
-                  // Set appropriate default empty values based on parameter type
-                  if (paramType === ParameterType.BOOL) {
-                    defaultValue = ''; // Use empty string as "not set" for booleans
-                  } else if (paramType === ParameterType.INT256 || paramType === ParameterType.UINT256) {
-                    defaultValue = '';  // Empty string for numbers
-                  } else if (paramType === ParameterType.ADDRESS) {
-                    defaultValue = '';  // Empty string for addresses
-                  } else if (paramType === ParameterType.BOOL_ARRAY) {
-                    defaultValue = '';  // Empty string for bool arrays
-                  } else if (paramType === ParameterType.INT256_ARRAY || paramType === ParameterType.UINT256_ARRAY) {
-                    defaultValue = '';  // Empty string for number arrays  
-                  } else if (paramType === ParameterType.STRING_ARRAY || paramType === ParameterType.ADDRESS_ARRAY) {
-                    defaultValue = '';  // Empty string for string/address arrays
-                  }
-                  
                   const processExistingValue = (existingValue: any, paramType: number) => {
                     // If no existing value, return appropriate default
                     if (existingValue === undefined || existingValue === null) {

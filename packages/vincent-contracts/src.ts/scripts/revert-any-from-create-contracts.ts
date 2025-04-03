@@ -2,7 +2,7 @@ import * as fs from "fs";
 
 // File path constants
 const TARGET_FILE = 
-  './packages/vincent-contracts/src.ts/networks/vDatil/shared/VincentChainClient/apis/utils/createVincentContracts.ts'
+  './packages/vincent-contracts/src.ts/networks/vDatil/shared/VincentChainClient/ContractDataManager.ts'
 
 
 // Main function to modify the file

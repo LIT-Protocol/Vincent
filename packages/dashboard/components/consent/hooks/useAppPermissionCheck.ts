@@ -30,6 +30,7 @@ interface AppPermissionState {
   isLoading: boolean;
   checkingPermissions: boolean;
   useCurrentVersionOnly?: boolean;
+  isAppDeleted: boolean;
 }
 
 /**
@@ -59,7 +60,8 @@ export const useAppPermissionCheck = ({
     showDisapproval: false,
     isLoading: true,
     checkingPermissions: true,
-    useCurrentVersionOnly: false
+    useCurrentVersionOnly: false,
+    isAppDeleted: false
   });
   
   // Ref to track if permission check has been done, track if we've previously seen a null appId
@@ -197,6 +199,18 @@ export const useAppPermissionCheck = ({
       const appRawInfo = await appViewRegistryContract.getAppById(Number(appId));
 
       updateState({ appInfo: appRawInfo });
+      
+      // Check if the app is deleted
+      if (appRawInfo.isDeleted) {
+        console.log('App is deleted. Preventing access.');
+        updateState({
+          isAppDeleted: true,
+          checkingPermissions: false,
+          isLoading: false
+        });
+        onStatusChange?.('This application has been deleted by its creator', 'error');
+        return;
+      }
 
       const isUriVerified = await verifyUri(appRawInfo);
       
