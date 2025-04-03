@@ -1,0 +1,130 @@
+import { VincentJWT } from '../types';
+import * as didJWT from 'did-jwt';
+import { isJWTExpired, processJWTSignature, splitJWT, validateJWTTime } from './utils';
+import * as secp256k1 from '@noble/secp256k1';
+import { ethers } from 'ethers';
+import { JWT_ERROR } from 'did-jwt';
+
+/**
+ * Verifies a JWT signature
+ *
+ * This function returns true only if:
+ * 1. The JWT signature is valid
+ * 2. The JWT is not expired
+ * 3. All time claims (nbf, iat) are valid
+ * 4. The JWT has an audience claim that includes the expected audience
+ *
+ * @param {string} jwt - The JWT string to verify
+ * @param expectedAudience - Domain that should be in the audience claim
+ * @returns VincentJWT The decoded VincentJWT object if it was verified successfully
+ * @example
+ * ```typescript
+ * if (verifyJWTSignature(jwt, 'myapp.com')) {
+ *   // JWT is valid and intended for myapp.com - process the request
+ * } else {
+ *   // JWT is invalid - reject the request
+ * }
+ * ```
+ */
+export function verifyJWT(jwt: string, expectedAudience: string): VincentJWT {
+  if (!expectedAudience) {
+    throw new Error(`You must provide an expectedAudience`);
+  }
+
+  const decoded = decodeJWT(jwt);
+
+  if (!decoded.payload.exp) {
+    throw new Error(`${JWT_ERROR.INVALID_JWT}: JWT does not contain an expiration claim (exp)`);
+  }
+
+  const isExpired = isJWTExpired(decoded);
+  if (isExpired) {
+    throw new Error(`${JWT_ERROR.INVALID_JWT}: JWT expired at ${decoded.payload.exp}`);
+  }
+
+  validateJWTTime(decoded.payload, Math.floor(Date.now() / 1000));
+
+  // Always validate audience - reject if no audience claim or expected audience isn't included
+  if (!decoded.payload.aud) {
+    throw new Error(`${JWT_ERROR.INVALID_JWT}: JWT does not contain an audience claim (aud)`);
+  }
+
+  const audiences = Array.isArray(decoded.payload.aud)
+    ? decoded.payload.aud
+    : [decoded.payload.aud];
+
+  if (!audiences.includes(expectedAudience)) {
+    throw new Error(
+      `${JWT_ERROR.INVALID_AUDIENCE}: Expected audience ${expectedAudience} not found in aud claim`
+    );
+  }
+
+  try {
+    const { signedData, signature } = splitJWT(jwt);
+
+    // Process signature from base64url to binary
+    const signatureBytes = processJWTSignature(signature);
+
+    // Extract r and s values from the signature
+    const r = signatureBytes.slice(0, 32);
+    const s = signatureBytes.slice(32, 64);
+
+    // Process public key
+    let publicKey = decoded.payload.pkpPublicKey;
+    if (publicKey.startsWith('0x')) {
+      publicKey = publicKey.substring(2);
+    }
+
+    const publicKeyBytes = Buffer.from(publicKey, 'hex');
+
+    // PKPEthersWallet.signMessage() adds Ethereum prefix, so we need to add it here too
+    const ethPrefixedMessage = '\x19Ethereum Signed Message:\n' + signedData.length + signedData;
+    const messageBuffer = Buffer.from(ethPrefixedMessage, 'utf8');
+
+    const messageHash = ethers.utils.keccak256(messageBuffer);
+    const messageHashBytes = Buffer.from(messageHash.substring(2), 'hex');
+
+    const signatureForSecp = new Uint8Array([...r, ...s]);
+
+    // Verify the signature against the public key
+    const isVerified = secp256k1.verify(signatureForSecp, messageHashBytes, publicKeyBytes);
+
+    if (!isVerified) {
+      throw new Error(`Signature verify() did not pass for ${signature}`);
+    }
+
+    return decoded;
+  } catch (error) {
+    throw new Error(
+      `${JWT_ERROR.INVALID_SIGNATURE}: Invalid signature: ${(error as Error).message}`
+    );
+  }
+}
+
+/**
+ * Decodes a JWT string into its payload
+ *
+ * This function uses the did-jwt library to decode a JWT string into its payload adding any extra Vincent fields
+ *
+ * @param {string} jwt - The JWT string to decode
+ * @returns The decoded Vincent JWT fields
+ */
+export function decodeJWT(jwt: string): VincentJWT {
+  const decoded = didJWT.decodeJWT(jwt);
+
+  // JWT only has the public key, compute and add the address
+  const pkpPublicKey = decoded.payload.pkpPublicKey;
+
+  if (!pkpPublicKey) {
+    throw new Error(`${JWT_ERROR.INVALID_JWT}: JWT does not contain a PKP public key`);
+  }
+
+  return {
+    ...decoded,
+    payload: {
+      ...decoded.payload,
+      pkpPublicKey,
+      pkpAddress: ethers.utils.computeAddress(pkpPublicKey),
+    },
+  };
+}
