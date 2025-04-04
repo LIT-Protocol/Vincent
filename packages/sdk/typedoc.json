@@ -6,6 +6,11 @@
   "out": "./docs",
   "skipErrorChecking": true,
   "plugin": ["typedoc-material-theme"],
+  "navigation": {
+    "includeCategories": true
+  },
+  "categorizeByGroup": false,
+  "categoryOrder": ["Vincent Tools", "Vincent Web App", "JWT"],
   "externalSymbolLinkMappings": {
     "@lit-protocol/types" : {
       "*": "https://v7-api-doc-lit-js-sdk.vercel.app/modules/types_src.html"
