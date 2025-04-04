@@ -9,8 +9,11 @@
   "navigation": {
     "includeCategories": true
   },
+  "defaultCategory": "Types",
   "categorizeByGroup": false,
-  "categoryOrder": ["Vincent Tools", "Vincent Web App", "JWT"],
+  "categoryOrder": ["Vincent SDK API", "Vincent Web App",  "Vincent Tools"],
+  "router": "category",
+  "visibilityFilters": { },
   "externalSymbolLinkMappings": {
     "@lit-protocol/types" : {
       "*": "https://v7-api-doc-lit-js-sdk.vercel.app/modules/types_src.html"

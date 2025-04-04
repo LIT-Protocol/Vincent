@@ -1,7 +1,10 @@
 import { ethers } from 'ethers';
 import { ExecuteJsResponse } from '@lit-protocol/types';
 
-/** @inline */
+/**
+ * @inline
+ * @hidden
+ * */
 export type VincentToolParams = Record<string, unknown>;
 
 /** @inline

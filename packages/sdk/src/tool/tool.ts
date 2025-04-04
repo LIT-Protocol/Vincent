@@ -80,7 +80,7 @@ const executeVincentTool = async <ToolParams extends VincentToolParams>({
  *
  * - `ethersSigner` is assumed to be an Ethers v5 signer
  *
- * @category Vincent Tools
+ * @category Vincent SDK API
  * */
 export const getVincentToolClient = (config: VincentToolClientConfig): VincentToolClient => {
   const { vincentToolCid, ethersSigner } = config;

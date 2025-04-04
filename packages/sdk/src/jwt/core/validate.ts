@@ -6,25 +6,18 @@ import { ethers } from 'ethers';
 import { JWT_ERROR } from 'did-jwt';
 
 /**
- * Verifies a JWT signature
+ * Decodes and verifies an {@link VincentJWT} token in string form
  *
- * This function returns true only if:
+ * This function returns the decoded {@link VincentJWT} object only if:
  * 1. The JWT signature is valid
  * 2. The JWT is not expired
  * 3. All time claims (nbf, iat) are valid
  * 4. The JWT has an audience claim that includes the expected audience
  *
  * @param {string} jwt - The JWT string to verify
- * @param expectedAudience - Domain that should be in the audience claim
- * @returns VincentJWT The decoded VincentJWT object if it was verified successfully
- * @example
- * ```typescript
- * if (verifyJWTSignature(jwt, 'myapp.com')) {
- *   // JWT is valid and intended for myapp.com - process the request
- * } else {
- *   // JWT is invalid - reject the request
- * }
- * ```
+ * @param {string} expectedAudience - String that should be in the audience claim(s)
+ *
+ * @returns {VincentJWT} The decoded VincentJWT object if it was verified successfully
  */
 export function verifyJWT(jwt: string, expectedAudience: string): VincentJWT {
   if (!expectedAudience) {
@@ -101,10 +94,7 @@ export function verifyJWT(jwt: string, expectedAudience: string): VincentJWT {
   }
 }
 
-/**
- * Decodes a JWT string into its payload
- *
- * This function uses the did-jwt library to decode a JWT string into its payload adding any extra Vincent fields
+/** This function uses the did-jwt library to decode a JWT string into its payload adding any extra Vincent fields
  *
  * @param {string} jwt - The JWT string to decode
  * @returns The decoded Vincent JWT fields
