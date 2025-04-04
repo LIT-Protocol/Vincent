@@ -38,7 +38,10 @@ export const getVincentWebAppClient = (
     isLogin: () => isLoginUri(window.location.href),
     decodeVincentLoginJWT: () => decodeVincentJWTFromUri(window.location.href),
     removeLoginJWTFromURI: () => {
-      const urlWithoutJWTSearchParam = removeSearchParam(window.location.href, JWT_URL_KEY);
+      const urlWithoutJWTSearchParam = removeSearchParam({
+        paramName: JWT_URL_KEY,
+        uri: window.location.href,
+      });
       window.history.replaceState({}, document.title, urlWithoutJWTSearchParam);
     },
   };

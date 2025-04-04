@@ -9,14 +9,14 @@ export const decodeVincentJWTFromUri = (uri: string) => {
     return null;
   }
 
-  return decodeJWT(jwt);
+  return { decodedJWT: decodeJWT(jwt), jwtStr: jwt };
 };
 
 export const isLoginUri = (uri: string) => {
   const url = new URL(uri);
   const loginJwt = url.searchParams.get(JWT_URL_KEY);
 
-  return !loginJwt;
+  return !!loginJwt;
 };
 
 export function composeConsentUrl(appId: string, redirectUri: string, consentPageUrl?: string) {
@@ -26,7 +26,13 @@ export function composeConsentUrl(appId: string, redirectUri: string, consentPag
   );
 }
 
-export const removeSearchParam = (paramName: string, uri: string): string => {
+export const removeSearchParam = ({
+  paramName,
+  uri,
+}: {
+  paramName: string;
+  uri: string;
+}): string => {
   const url = new URL(uri);
   url.searchParams.delete(paramName);
   // Update the browser's history without reloading the page
