@@ -25,3 +25,10 @@ export function composeConsentUrl(appId: string, redirectUri: string, consentPag
     consentPageUrl || PRODUCTION_VINCENT_DASHBOARD_URL
   );
 }
+
+export const removeSearchParam = (paramName: string, uri: string): string => {
+  const url = new URL(uri);
+  url.searchParams.delete(paramName);
+  // Update the browser's history without reloading the page
+  return url.toString();
+};

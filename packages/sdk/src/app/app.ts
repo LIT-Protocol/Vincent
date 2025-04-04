@@ -4,7 +4,8 @@ import {
   VincentWebAppClient,
 } from './types';
 import { uriHelpers } from './internal';
-import { composeConsentUrl } from './internal/uriHelpers';
+import { composeConsentUrl, removeSearchParam } from './internal/uriHelpers';
+import { JWT_URL_KEY } from './constants';
 
 const { isLoginUri, decodeVincentJWTFromUri } = uriHelpers;
 
@@ -36,5 +37,9 @@ export const getVincentWebAppClient = (
     },
     isLogin: () => isLoginUri(window.location.href),
     decodeVincentLoginJWT: () => decodeVincentJWTFromUri(window.location.href),
+    removeLoginJWTFromURI: () => {
+      const urlWithoutJWTSearchParam = removeSearchParam(window.location.href, JWT_URL_KEY);
+      window.history.replaceState({}, document.title, urlWithoutJWTSearchParam);
+    },
   };
 };

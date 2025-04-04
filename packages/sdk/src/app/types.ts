@@ -70,7 +70,7 @@ export interface VincentWebAppClient {
    * You can use this to detect if a user is loading your app as a result of approving permissions
    * on the Vincent consent page -- e.g. they just logged in
    *
-   * See: {@link VincentWeppAppClient.redirectToConsentPage} for example usage
+   * See: {@link VincentWebAppClient.redirectToConsentPage} for example usage
    *
    * @function
    * @inline
@@ -83,7 +83,7 @@ export interface VincentWebAppClient {
    *
    * The token is verified as part of this process; if the token is invalid or expired, this method will throw.
    *
-   * See: {@link VincentWeppAppClient.redirectToConsentPage} for example usage
+   * See: {@link VincentWebAppClient.redirectToConsentPage} for example usage
    *
    * @function
    * @inline
@@ -91,4 +91,31 @@ export interface VincentWebAppClient {
    * @throws {Error} If there was a JWT in the page URL, but it was invalid / could not be verified
    */
   decodeVincentLoginJWT: () => VincentJWT | null;
+
+  /**
+   * Removes the Vincent login JWT from the current window URI.
+   *
+   * This is useful for cleaning up the URL after decoding and storing the JWT,
+   * ensuring the redirect URL looks clean for the user and no sensitive information
+   * is exposed in the URI.
+   *
+   * @example
+   * ```typescript
+   * import { getVincentWebAppClient } from '@lit-protocol/vincent-sdk';
+   *
+   * const vincentAppClient = getVincentWebAppClient({ appId: MY_APP_ID });
+   *
+   * if (vincentAppClient.isLogin()) {
+   *   const jwt = vincentAppClient.decodeVincentLoginJWT();
+   *   // Store the JWT or use it for authentication
+   *
+   *   // Now we can remove the JWT from the URL searchParams
+   *   vincentAppClient.removeLoginJWTFromURI();
+   * }
+   * ```
+   *
+   * @function
+   * @inline
+   */
+  removeLoginJWTFromURI: () => void;
 }
