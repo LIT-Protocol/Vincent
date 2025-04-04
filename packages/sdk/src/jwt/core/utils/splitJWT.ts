@@ -1,4 +1,4 @@
-import { JWT_ERROR } from 'did-jwt/src/Errors';
+import { JWT_ERROR } from 'did-jwt';
 
 /** Splits a JWT into its signed data portion and signature
  * @ignore
