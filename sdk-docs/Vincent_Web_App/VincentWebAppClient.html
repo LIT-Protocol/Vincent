@@ -1,0 +1,209 @@
+<!DOCTYPE html><html class="default" lang="en" data-base="../"><head><meta charset="utf-8"/><meta http-equiv="x-ua-compatible" content="IE=edge"/><title>VincentWebAppClient | @lit-protocol/vincent-sdk</title><meta name="description" content="Documentation for @lit-protocol/vincent-sdk"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="../assets/style.css"/><link rel="stylesheet" href="../assets/highlight.css"/><script defer src="../assets/main.js"></script><script async src="../assets/icons.js" id="tsd-icons-script"></script><script async src="../assets/search.js" id="tsd-search-script"></script><script async src="../assets/navigation.js" id="tsd-nav-script"></script><style>
+@media (prefers-color-scheme: dark) {
+  :root {
+    --md-sys-color-primary: #f6be46;
+    --md-sys-color-on-primary: #412d00;
+    --md-sys-color-primary-container: #5d4200;
+    --md-sys-color-on-primary-container: #ffdea3;
+    --md-sys-color-secondary: #d9c4a0;
+    --md-sys-color-on-secondary: #3b2f15;
+    --md-sys-color-secondary-container: #53452a;
+    --md-sys-color-on-secondary-container: #f6e0bb;
+    --md-sys-color-tertiary: #b2cfa8;
+    --md-sys-color-on-tertiary: #1e361a;
+    --md-sys-color-tertiary-container: #344d2f;
+    --md-sys-color-on-tertiary-container: #cdebc2;
+    --md-sys-color-error: #ffb4ab;
+    --md-sys-color-on-error: #690005;
+    --md-sys-color-error-container: #93000a;
+    --md-sys-color-on-error-container: #ffb4ab;
+    --md-sys-color-background: #1e1b16;
+    --md-sys-color-on-background: #e9e1d9;
+    --md-sys-color-surface: #1e1b16;
+    --md-sys-color-on-surface: #e9e1d9;
+    --md-sys-color-surface-variant: #4e4639;
+    --md-sys-color-on-surface-variant: #d1c5b4;
+    --md-sys-color-outline: #9a8f80;
+    --md-sys-color-outline-variant: #4e4639;
+    --md-sys-color-shadow: #000000;
+    --md-sys-color-scrim: #000000;
+    --md-sys-color-inverse-surface: #e9e1d9;
+    --md-sys-color-inverse-on-surface: #34302a;
+    --md-sys-color-inverse-primary: #7a5900;
+    --md-sys-color-surface-dim: #16130e;
+    --md-sys-color-surface-bright: #3d3933;
+    --md-sys-color-surface-container-lowest: #110e09;
+    --md-sys-color-surface-container-low: #1e1b16;
+    --md-sys-color-surface-container: #221f1a;
+    --md-sys-color-surface-container-high: #2d2924;
+    --md-sys-color-surface-container-highest: #38342e
+  }
+}
+:root[data-theme="dark"] {
+  --md-sys-color-primary: #f6be46;
+  --md-sys-color-on-primary: #412d00;
+  --md-sys-color-primary-container: #5d4200;
+  --md-sys-color-on-primary-container: #ffdea3;
+  --md-sys-color-secondary: #d9c4a0;
+  --md-sys-color-on-secondary: #3b2f15;
+  --md-sys-color-secondary-container: #53452a;
+  --md-sys-color-on-secondary-container: #f6e0bb;
+  --md-sys-color-tertiary: #b2cfa8;
+  --md-sys-color-on-tertiary: #1e361a;
+  --md-sys-color-tertiary-container: #344d2f;
+  --md-sys-color-on-tertiary-container: #cdebc2;
+  --md-sys-color-error: #ffb4ab;
+  --md-sys-color-on-error: #690005;
+  --md-sys-color-error-container: #93000a;
+  --md-sys-color-on-error-container: #ffb4ab;
+  --md-sys-color-background: #1e1b16;
+  --md-sys-color-on-background: #e9e1d9;
+  --md-sys-color-surface: #1e1b16;
+  --md-sys-color-on-surface: #e9e1d9;
+  --md-sys-color-surface-variant: #4e4639;
+  --md-sys-color-on-surface-variant: #d1c5b4;
+  --md-sys-color-outline: #9a8f80;
+  --md-sys-color-outline-variant: #4e4639;
+  --md-sys-color-shadow: #000000;
+  --md-sys-color-scrim: #000000;
+  --md-sys-color-inverse-surface: #e9e1d9;
+  --md-sys-color-inverse-on-surface: #34302a;
+  --md-sys-color-inverse-primary: #7a5900;
+  --md-sys-color-surface-dim: #16130e;
+  --md-sys-color-surface-bright: #3d3933;
+  --md-sys-color-surface-container-lowest: #110e09;
+  --md-sys-color-surface-container-low: #1e1b16;
+  --md-sys-color-surface-container: #221f1a;
+  --md-sys-color-surface-container-high: #2d2924;
+  --md-sys-color-surface-container-highest: #38342e
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --md-sys-color-primary: #7a5900;
+    --md-sys-color-on-primary: #ffffff;
+    --md-sys-color-primary-container: #ffdea3;
+    --md-sys-color-on-primary-container: #261900;
+    --md-sys-color-secondary: #6c5c3f;
+    --md-sys-color-on-secondary: #ffffff;
+    --md-sys-color-secondary-container: #f6e0bb;
+    --md-sys-color-on-secondary-container: #251a04;
+    --md-sys-color-tertiary: #4b6545;
+    --md-sys-color-on-tertiary: #ffffff;
+    --md-sys-color-tertiary-container: #cdebc2;
+    --md-sys-color-on-tertiary-container: #092007;
+    --md-sys-color-error: #ba1a1a;
+    --md-sys-color-on-error: #ffffff;
+    --md-sys-color-error-container: #ffdad6;
+    --md-sys-color-on-error-container: #410002;
+    --md-sys-color-background: #fffbff;
+    --md-sys-color-on-background: #1e1b16;
+    --md-sys-color-surface: #fffbff;
+    --md-sys-color-on-surface: #1e1b16;
+    --md-sys-color-surface-variant: #ede1cf;
+    --md-sys-color-on-surface-variant: #4e4639;
+    --md-sys-color-outline: #7f7667;
+    --md-sys-color-outline-variant: #d1c5b4;
+    --md-sys-color-shadow: #000000;
+    --md-sys-color-scrim: #000000;
+    --md-sys-color-inverse-surface: #34302a;
+    --md-sys-color-inverse-on-surface: #f8efe7;
+    --md-sys-color-inverse-primary: #f6be46;
+    --md-sys-color-surface-dim: #e1d9d0;
+    --md-sys-color-surface-bright: #fff8f2;
+    --md-sys-color-surface-container-lowest: #ffffff;
+    --md-sys-color-surface-container-low: #fbf2e9;
+    --md-sys-color-surface-container: #f5ede4;
+    --md-sys-color-surface-container-high: #efe7de;
+    --md-sys-color-surface-container-highest: #e9e1d9
+  }
+}
+:root[data-theme="light"] {
+  --md-sys-color-primary: #7a5900;
+  --md-sys-color-on-primary: #ffffff;
+  --md-sys-color-primary-container: #ffdea3;
+  --md-sys-color-on-primary-container: #261900;
+  --md-sys-color-secondary: #6c5c3f;
+  --md-sys-color-on-secondary: #ffffff;
+  --md-sys-color-secondary-container: #f6e0bb;
+  --md-sys-color-on-secondary-container: #251a04;
+  --md-sys-color-tertiary: #4b6545;
+  --md-sys-color-on-tertiary: #ffffff;
+  --md-sys-color-tertiary-container: #cdebc2;
+  --md-sys-color-on-tertiary-container: #092007;
+  --md-sys-color-error: #ba1a1a;
+  --md-sys-color-on-error: #ffffff;
+  --md-sys-color-error-container: #ffdad6;
+  --md-sys-color-on-error-container: #410002;
+  --md-sys-color-background: #fffbff;
+  --md-sys-color-on-background: #1e1b16;
+  --md-sys-color-surface: #fffbff;
+  --md-sys-color-on-surface: #1e1b16;
+  --md-sys-color-surface-variant: #ede1cf;
+  --md-sys-color-on-surface-variant: #4e4639;
+  --md-sys-color-outline: #7f7667;
+  --md-sys-color-outline-variant: #d1c5b4;
+  --md-sys-color-shadow: #000000;
+  --md-sys-color-scrim: #000000;
+  --md-sys-color-inverse-surface: #34302a;
+  --md-sys-color-inverse-on-surface: #f8efe7;
+  --md-sys-color-inverse-primary: #f6be46;
+  --md-sys-color-surface-dim: #e1d9d0;
+  --md-sys-color-surface-bright: #fff8f2;
+  --md-sys-color-surface-container-lowest: #ffffff;
+  --md-sys-color-surface-container-low: #fbf2e9;
+  --md-sys-color-surface-container: #f5ede4;
+  --md-sys-color-surface-container-high: #efe7de;
+  --md-sys-color-surface-container-highest: #e9e1d9
+}
+</style><link rel="stylesheet" href="../assets/material-style.css"/></head><body><script>document.documentElement.dataset.theme = localStorage.getItem("tsd-theme") || "os";document.body.style.display="none";setTimeout(() => window.app?app.showPage():document.body.style.removeProperty("display"),500)</script><header class="tsd-page-toolbar"><div class="tsd-toolbar-contents container"><a href="../index.html" class="title">@lit-protocol/vincent-sdk</a><div id="tsd-toolbar-links"></div><button id="tsd-search-trigger" class="tsd-widget" aria-label="Search"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-search"></use></svg></button><dialog id="tsd-search" aria-label="Search"><input role="combobox" id="tsd-search-input" aria-controls="tsd-search-results" aria-autocomplete="list" aria-expanded="true" autocapitalize="off" autocomplete="off" placeholder="Search the docs" maxLength="100"/><ul role="listbox" id="tsd-search-results"></ul><div id="tsd-search-status" aria-live="polite" aria-atomic="true"><div>Preparing search index...</div></div></dialog><a href="#" class="tsd-widget menu" id="tsd-toolbar-menu-trigger" data-toggle="menu" aria-label="Menu"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-menu"></use></svg></a></div></header><div class="container container-main"><div class="col-content"><div class="tsd-page-title"><ul class="tsd-breadcrumb" aria-label="Breadcrumb"><li><a href="" aria-current="page">VincentWebAppClient</a></li></ul><h1>Interface VincentWebAppClient</h1></div><section class="tsd-panel tsd-comment"><div class="tsd-comment tsd-typography"><p>The Vincent Web Application Client is used in web apps to handle interactions with the Vincent app portal.</p>
+<ul>
+<li>Consent page redirection</li>
+<li>Authentication helpers that are browser specific</li>
+</ul>
+</div><div class="tsd-comment tsd-typography"></div></section><div class="tsd-signature"><span class="tsd-signature-keyword">interface</span> <span class="tsd-kind-interface">VincentWebAppClient</span> <span class="tsd-signature-symbol">{</span><br/>    <a class="tsd-kind-property" href="#decodevincentloginjwt">decodeVincentLoginJWT</a><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">()</span> <span class="tsd-signature-symbol">=&gt;</span> <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-type">null</span><br/>    <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">decodedJWT</span><span class="tsd-signature-symbol">:</span> <a href="../Types/VincentJWT.html" class="tsd-signature-type tsd-kind-interface">VincentJWT</a><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">jwtStr</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span> <span class="tsd-signature-symbol">}</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#islogin">isLogin</a><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">()</span> <span class="tsd-signature-symbol">=&gt;</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#redirecttoconsentpage">redirectToConsentPage</a><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">redirectConfig</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">redirectUri</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span> <span class="tsd-signature-symbol">}</span><span class="tsd-signature-symbol">)</span> <span class="tsd-signature-symbol">=&gt;</span> <span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#removeloginjwtfromuri">removeLoginJWTFromURI</a><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">()</span> <span class="tsd-signature-symbol">=&gt;</span> <span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">;</span><br/><span class="tsd-signature-symbol">}</span></div><aside class="tsd-sources"><ul><li>Defined in <a href="https://github.com/LIT-Protocol/Vincent/blob/0a316174e63d7d66ae7070907359f5c785f6e427/packages/sdk/src/app/types.ts#L31">packages/sdk/src/app/types.ts:31</a></li></ul></aside><section class="tsd-panel-group tsd-index-group"><section class="tsd-panel tsd-index-panel"><details class="tsd-index-content tsd-accordion" open><summary class="tsd-accordion-summary tsd-index-summary"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronSmall"></use></svg><h5 class="tsd-index-heading uppercase">Index</h5></summary><div class="tsd-accordion-details"><section class="tsd-index-section"><h3 class="tsd-index-heading">Properties</h3><div class="tsd-index-list"><a href="#decodevincentloginjwt" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>decode<wbr/>Vincent<wbr/>LoginJWT</span></a>
+<a href="#islogin" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>is<wbr/>Login</span></a>
+<a href="#redirecttoconsentpage" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>redirect<wbr/>To<wbr/>Consent<wbr/>Page</span></a>
+<a href="#removeloginjwtfromuri" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>remove<wbr/>LoginJWTFromURI</span></a>
+</div></section></div></details></section></section><details class="tsd-panel-group tsd-member-group tsd-accordion" open><summary class="tsd-accordion-summary" data-key="section-Properties"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg><h2>Properties</h2></summary><section><section class="tsd-panel tsd-member"><h3 class="tsd-anchor-link" id="decodevincentloginjwt"><code class="tsd-tag">Function</code><span>decode<wbr/>Vincent<wbr/>LoginJWT</span><a href="#decodevincentloginjwt" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3><div class="tsd-signature"><span class="tsd-kind-property">decodeVincentLoginJWT</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">()</span> <span class="tsd-signature-symbol">=&gt;</span> <span class="tsd-signature-type">null</span> <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">decodedJWT</span><span class="tsd-signature-symbol">:</span> <a href="../Types/VincentJWT.html" class="tsd-signature-type tsd-kind-interface">VincentJWT</a><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">jwtStr</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span> <span class="tsd-signature-symbol">}</span></div><div class="tsd-comment tsd-typography"><p>Extracts a decoded/parsed Vincent JWT (JSON Web Token) from the current window location</p>
+<p>The token is verified as part of this process; if the token is invalid or expired, this method will throw.</p>
+<p>See: <a href="#redirecttoconsentpage" class="tsd-kind-property">VincentWebAppClient.redirectToConsentPage</a> for example usage</p>
+</div><div class="tsd-type-declaration"><h4>Type declaration</h4><ul class="tsd-parameters"><li class="tsd-parameter-signature"><ul class="tsd-signatures"><li class="tsd-signature"><span class="tsd-signature-symbol">()</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">null</span> <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">decodedJWT</span><span class="tsd-signature-symbol">:</span> <a href="../Types/VincentJWT.html" class="tsd-signature-type tsd-kind-interface">VincentJWT</a><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">jwtStr</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span> <span class="tsd-signature-symbol">}</span></li><li class="tsd-description"><h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">null</span> <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">decodedJWT</span><span class="tsd-signature-symbol">:</span> <a href="../Types/VincentJWT.html" class="tsd-signature-type tsd-kind-interface">VincentJWT</a><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">jwtStr</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span> <span class="tsd-signature-symbol">}</span></h4><p><code>null</code> if no JWT is found, otherwise both the decoded jwt and the original JWT string is returned</p>
+<div class="tsd-comment tsd-typography"></div></li></ul></li></ul></div><div class="tsd-comment tsd-typography"><div class="tsd-tag-throws"><h4 class="tsd-anchor-link" id="throws">Throws<a href="#throws" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h4><p>If there was a JWT in the page URL, but it was invalid / could not be verified</p>
+</div></div><aside class="tsd-sources"><ul><li>Defined in <a href="https://github.com/LIT-Protocol/Vincent/blob/0a316174e63d7d66ae7070907359f5c785f6e427/packages/sdk/src/app/types.ts#L93">packages/sdk/src/app/types.ts:93</a></li></ul></aside></section><section class="tsd-panel tsd-member"><h3 class="tsd-anchor-link" id="islogin"><code class="tsd-tag">Function</code><span>is<wbr/>Login</span><a href="#islogin" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3><div class="tsd-signature"><span class="tsd-kind-property">isLogin</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">()</span> <span class="tsd-signature-symbol">=&gt;</span> <span class="tsd-signature-type">boolean</span></div><div class="tsd-comment tsd-typography"><p>Determines whether the current window location is a login URI associated with Vincent</p>
+<p>You can use this to detect if a user is loading your app as a result of approving permissions
+on the Vincent consent page -- e.g. they just logged in</p>
+<p>See: <a href="#redirecttoconsentpage" class="tsd-kind-property">VincentWebAppClient.redirectToConsentPage</a> for example usage</p>
+</div><div class="tsd-type-declaration"><h4>Type declaration</h4><ul class="tsd-parameters"><li class="tsd-parameter-signature"><ul class="tsd-signatures"><li class="tsd-signature"><span class="tsd-signature-symbol">()</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></li><li class="tsd-description"><h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4><p><code>true</code> if the current window URI is a login URI, otherwise <code>false</code>.</p>
+<div class="tsd-comment tsd-typography"></div></li></ul></li></ul></div><div class="tsd-comment tsd-typography"></div><aside class="tsd-sources"><ul><li>Defined in <a href="https://github.com/LIT-Protocol/Vincent/blob/0a316174e63d7d66ae7070907359f5c785f6e427/packages/sdk/src/app/types.ts#L79">packages/sdk/src/app/types.ts:79</a></li></ul></aside></section><section class="tsd-panel tsd-member"><h3 class="tsd-anchor-link" id="redirecttoconsentpage"><code class="tsd-tag">Function</code><span>redirect<wbr/>To<wbr/>Consent<wbr/>Page</span><a href="#redirecttoconsentpage" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3><div class="tsd-signature"><span class="tsd-kind-property">redirectToConsentPage</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">redirectConfig</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">redirectUri</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span> <span class="tsd-signature-symbol">}</span><span class="tsd-signature-symbol">)</span> <span class="tsd-signature-symbol">=&gt;</span> <span class="tsd-signature-type">void</span></div><div class="tsd-comment tsd-typography"><p>Redirects the user to the Vincent consent page.</p>
+<p>If the user approves your app permissions, they will be redirected back to the <code>redirectUri</code>.</p>
+<p>Use <a href="#islogin" class="tsd-kind-property">VincentWebAppClient.isLogin</a> to detect if a user has just opened your app via the consent page</p>
+<p>Use <a href="#decodevincentloginjwt" class="tsd-kind-property">VincentWebAppClient.decodeVincentLoginJWT</a> to decode and verify the <a href="../Types/VincentJWT.html" class="tsd-kind-interface">VincentJWT</a> from the page URI, and store it for later usage</p>
+<p>NOTE: You must register the <code>redirectUri</code> on your Vincent app for it to be considered a valid redirect target</p>
+</div><div class="tsd-comment tsd-typography"><div class="tsd-tag-example"><h4 class="tsd-anchor-link" id="example">Example<a href="#example" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h4><pre><code class="typescript"><span class="hl-1">  </span><span class="hl-2">import</span><span class="hl-1"> { </span><span class="hl-0">getVincentWebAppClient</span><span class="hl-1"> } </span><span class="hl-2">from</span><span class="hl-1"> </span><span class="hl-3">&#39;@lit-protocol/vincent-sdk&#39;</span><span class="hl-1">;</span><br/><br/><span class="hl-1">  </span><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-5">vincentAppClient</span><span class="hl-1"> = </span><span class="hl-6">getVincentWebAppClient</span><span class="hl-1">({ </span><span class="hl-0">appId:</span><span class="hl-1"> </span><span class="hl-5">MY_APP_ID</span><span class="hl-1"> });</span><br/><span class="hl-1">  </span><span class="hl-7">// ... In your app logic:</span><br/><span class="hl-1">  </span><span class="hl-2">if</span><span class="hl-1">(</span><span class="hl-0">vincentAppClient</span><span class="hl-1">.</span><span class="hl-6">isLogin</span><span class="hl-1">()) {</span><br/><span class="hl-1">    </span><span class="hl-7">// Handle app logic for the user has just logged in</span><br/><span class="hl-1">    </span><span class="hl-4">const</span><span class="hl-1"> { </span><span class="hl-5">decoded</span><span class="hl-1">, </span><span class="hl-5">jwt</span><span class="hl-1"> } = </span><span class="hl-0">vincentAppClient</span><span class="hl-1">.</span><span class="hl-6">decodeVincentLoginJWT</span><span class="hl-1">();</span><br/><span class="hl-1">    </span><span class="hl-7">// Store `jwt` for later usage; the user is now logged in.</span><br/><span class="hl-1">  } </span><span class="hl-2">else</span><span class="hl-1"> {</span><br/><span class="hl-1">    </span><span class="hl-7">// Handle app logic for the user is already logged in (check for stored &amp; unexpired JWT)</span><br/><span class="hl-1">    </span><span class="hl-7">// ...</span><br/><br/><span class="hl-1">    </span><span class="hl-7">// Handle app logic for the user is not yet logged in</span><br/><span class="hl-1">   </span><span class="hl-0">vincentAppClient</span><span class="hl-1">.</span><span class="hl-6">redirectToConsentPage</span><span class="hl-1">({ </span><span class="hl-0">redirectUri:</span><span class="hl-1"> </span><span class="hl-0">window</span><span class="hl-1">.</span><span class="hl-0">location</span><span class="hl-1">.</span><span class="hl-0">href</span><span class="hl-1"> });</span><br/><span class="hl-1">  }</span>
+</code><button type="button">Copy</button></pre>
+
+<p>See <a href="#redirecttoconsentpage" class="tsd-kind-type-literal">RedirectToVincentConsentPageParams</a></p>
+</div></div><aside class="tsd-sources"><ul><li>Defined in <a href="https://github.com/LIT-Protocol/Vincent/blob/0a316174e63d7d66ae7070907359f5c785f6e427/packages/sdk/src/app/types.ts#L65">packages/sdk/src/app/types.ts:65</a></li></ul></aside></section><section class="tsd-panel tsd-member"><h3 class="tsd-anchor-link" id="removeloginjwtfromuri"><code class="tsd-tag">Function</code><span>remove<wbr/>LoginJWTFromURI</span><a href="#removeloginjwtfromuri" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3><div class="tsd-signature"><span class="tsd-kind-property">removeLoginJWTFromURI</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">()</span> <span class="tsd-signature-symbol">=&gt;</span> <span class="tsd-signature-type">void</span></div><div class="tsd-comment tsd-typography"><p>Removes the Vincent login JWT from the current window URI.</p>
+<p>This is useful for cleaning up the URL after decoding and storing the JWT,
+ensuring the redirect URL looks clean for the user and no sensitive information
+is exposed in the URI.</p>
+</div><div class="tsd-comment tsd-typography"><div class="tsd-tag-example"><h4 class="tsd-anchor-link" id="example-1">Example<a href="#example-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h4><pre><code class="typescript"><span class="hl-2">import</span><span class="hl-1"> { </span><span class="hl-0">getVincentWebAppClient</span><span class="hl-1"> } </span><span class="hl-2">from</span><span class="hl-1"> </span><span class="hl-3">&#39;@lit-protocol/vincent-sdk&#39;</span><span class="hl-1">;</span><br/><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-5">vincentAppClient</span><span class="hl-1"> = </span><span class="hl-6">getVincentWebAppClient</span><span class="hl-1">({ </span><span class="hl-0">appId:</span><span class="hl-1"> </span><span class="hl-5">MY_APP_ID</span><span class="hl-1"> });</span><br/><br/><span class="hl-2">if</span><span class="hl-1"> (</span><span class="hl-0">vincentAppClient</span><span class="hl-1">.</span><span class="hl-6">isLogin</span><span class="hl-1">()) {</span><br/><span class="hl-1">  </span><span class="hl-4">const</span><span class="hl-1"> { </span><span class="hl-5">decodedJWT</span><span class="hl-1">, </span><span class="hl-5">jwtStr</span><span class="hl-1"> } = </span><span class="hl-0">vincentAppClient</span><span class="hl-1">.</span><span class="hl-6">decodeVincentLoginJWT</span><span class="hl-1">();</span><br/><span class="hl-1">  </span><span class="hl-7">// Store the JWT or use it for authentication</span><br/><br/><span class="hl-1">  </span><span class="hl-7">// Now we can remove the JWT from the URL searchParams</span><br/><span class="hl-1">  </span><span class="hl-0">vincentAppClient</span><span class="hl-1">.</span><span class="hl-6">removeLoginJWTFromURI</span><span class="hl-1">();</span><br/><span class="hl-1">}</span>
+</code><button type="button">Copy</button></pre>
+
+</div></div><aside class="tsd-sources"><ul><li>Defined in <a href="https://github.com/LIT-Protocol/Vincent/blob/0a316174e63d7d66ae7070907359f5c785f6e427/packages/sdk/src/app/types.ts#L120">packages/sdk/src/app/types.ts:120</a></li></ul></aside></section></section></details></div><div class="col-sidebar"><div class="page-menu"><div class="tsd-navigation settings"><details class="tsd-accordion"><summary class="tsd-accordion-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg><h3>Settings</h3></summary><div class="tsd-accordion-details"><div class="tsd-theme-toggle"><label class="settings-label" for="tsd-theme">Theme</label><select id="tsd-theme"><option value="os">OS</option><option value="light">Light</option><option value="dark">Dark</option></select></div></div></details></div><details open class="tsd-accordion tsd-page-navigation"><summary class="tsd-accordion-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg><h3>On This Page</h3></summary><div class="tsd-accordion-details"><details open class="tsd-accordion tsd-page-navigation-section"><summary class="tsd-accordion-summary" data-key="section-Properties"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>Properties</summary><div><a href="#decodevincentloginjwt"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>decode<wbr/>Vincent<wbr/>LoginJWT</span></a><a href="#islogin"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>is<wbr/>Login</span></a><a href="#redirecttoconsentpage"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>redirect<wbr/>To<wbr/>Consent<wbr/>Page</span></a><a href="#removeloginjwtfromuri"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>remove<wbr/>LoginJWTFromURI</span></a></div></details></div></details></div><div class="site-menu"><nav class="tsd-navigation"><a href="../modules.html">@lit-protocol/vincent-sdk</a><ul class="tsd-small-nested-navigation" id="tsd-nav-container"><li>Loading...</li></ul></nav></div></div></div><footer><p class="tsd-generator">Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p></footer><div class="overlay"></div><script>
+          try {
+            const generateLinkElement = document.querySelector(".tsd-generator a");
+            const link = document.createElement("a");
+            Object.assign(link, {
+              href: "https://github.com/dmnsgn/typedoc-material-theme",
+              target: "_blank",
+              rel: "noreferrer",
+              innerText: "typedoc-material-theme."
+            });
+            generateLinkElement.insertAdjacentElement("afterend", link);
+            generateLinkElement.insertAdjacentText("afterend", " with ");
+          } catch (error) {
+
+          }
+        </script></body></html>

@@ -3,7 +3,7 @@
   "entryPoints": [
     "./src/index.ts"
   ],
-  "out": "./docs",
+  "out": "../../sdk-docs",
   "skipErrorChecking": true,
   "plugin": ["typedoc-material-theme"],
   "navigation": {

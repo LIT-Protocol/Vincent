@@ -14,6 +14,7 @@
     "sdk"
   ],
   "dependencies": {
+    "@lit-protocol/auth-helpers": "^7.0.9",
     "@lit-protocol/constants": "^7.0.8",
     "@lit-protocol/lit-node-client": "^7.0.8",
     "@noble/secp256k1": "^2.2.3",
