@@ -16,6 +16,7 @@
   "keywords": [
     "library"
   ],
+  "packageManager": "pnpm@10.7.0",
   "scripts": {
     "build": "nx run-many --target=build --all",
     "test": "nx run-many --target=test --all",
@@ -45,7 +46,7 @@
     "@lit-protocol/misc": "^7.0.8",
     "@lit-protocol/pkp-ethers": "^7.0.8",
     "@lit-protocol/types": "^7.0.8",
-    "@lit-protocol/vincent-sdk": "0.1.1-1",
+    "@lit-protocol/vincent-sdk": "0.0.2",
     "@radix-ui/react-dialog": "^1.1.6",
     "@radix-ui/react-label": "^2.1.2",
     "@radix-ui/react-navigation-menu": "^1.2.5",

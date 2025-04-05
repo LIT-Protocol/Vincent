@@ -5,3 +5,5 @@ export type {
   VincentAppClientConfig,
   RedirectToVincentConsentPageParams,
 } from './app/types';
+
+export type { ExpressAuthHelpers } from './express-authentication-middleware/types';

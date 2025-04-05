@@ -102,53 +102,36 @@ Executes a Vincent Tool with the provided parameters.
 ### Usage
 
 ### Authentication
+A basic Express authentication middleware factory function is provided with the SDK.
+- Create an express middleware using `getAuthenticateUserExpressHandler()`
+- Once you have added the middleware to your route, use `authenticatedRequestHandler()` to provide
+  type-safe access to `req.user` in your downstream RequestHandler functions.
+- When defining your authenticated routes, use the `ExpressAuthHelpers` type to type your functions and function arguments.
+
 ```typescript
-import { NextFunction, Request, Response } from 'express';
+import { expressAuthHelpers } from '@lit-protocol/vincent-sdk';
+const { authenticatedRequestHandler, getAuthenticateUserExpressHandler } = expressAuthHelpers;
 
-import { jwt } from '@lit-protocol/vincent-sdk';
-
-const { verify } = jwt;
+import type { ExpressAuthHelpers } from '@lit-protocol/vincent-sdk';
 
 const { ALLOWED_AUDIENCE } = process.env;
 
-export const authenticateUser = async (req: Request, res: Response, next: NextFunction) => {
-  const authHeader = req.headers.authorization;
-  if (!authHeader) {
-    res.status(401).json({ error: 'No token provided' });
-    return;
-  }
 
-  const parts = authHeader.split(' ');
-  if (parts.length !== 2) {
-    res.status(401).json({ error: 'Token error' });
-    return;
-  }
+const authenticateUserMiddleware = getAuthenticateUserExpressHandler(ALLOWED_AUDIENCE);
 
-  const [scheme, jwtStr] = parts;
-  if (!/^Bearer$/i.test(scheme)) {
-    res.status(401).json({ error: 'Token malformatted' });
-    return;
-  }
 
-  try {
-    const decodedJWT = verify(jwtStr, ALLOWED_AUDIENCE);
-    if (!decodedJWT) {
-      res.status(401).json({ error: 'Invalid token' });
-      return;
-    }
+// Define an authenticated route handler
+const getUserProfile = async (req: ExpressAuthHelpers['AuthenticatedRequest'], res: Response) => {
+  // Access authenticated user information
+  const { pkpAddress } = req.user;
 
-    req.user = {
-      jwt: jwtStr,
-      pkp: {
-        address: decodedJWT.payload.pkpAddress,
-        publicKey: decodedJWT.payload.pkpPublicKey,
-      },
-    };
-    next();
-  } catch (e) {
-    res.status(401).json({ error: `Invalid token: ${(e as Error).message}` });
-  }
+  // Fetch and return user data
+  const userData = await userRepository.findByAddress(pkpAddress);
+  res.json(userData);
 };
+
+// Use in Express route with authentication
+app.get('/profile', authenticateUser, authenticatedRequestHandler(getUserProfile));
 ```
 
 ### Tool execution
