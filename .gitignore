@@ -54,6 +54,6 @@ packages/examples
 # Environment variables
 **/.env
 **/.env.*
+!**/.env.test.example
 !.env.example
-
 screenshots

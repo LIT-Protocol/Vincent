@@ -75,24 +75,24 @@ export async function estimateGasWithBuffer(
     // Add 20% buffer to the estimated gas
     const buffer = estimatedGas.div(5); // 20% = divide by 5
     const gasLimitWithBuffer = estimatedGas.add(buffer);
-    
+
     console.log(`Gas estimation for ${method}:`, {
       estimated: estimatedGas.toString(),
       withBuffer: gasLimitWithBuffer.toString()
     });
-    
+
     return gasLimitWithBuffer;
   } catch (error) {
     // Format and log a more detailed error message
     console.error(`Error estimating gas for ${method}:`, error);
-    
+
     // Extract detailed error information
     const errorObj = error as any;
     const errorMessage = errorObj.message || '';
     const errorCode = errorObj.code || '';
     const errorData = errorObj.data || '';
     const errorReason = errorObj.reason || '';
-    
+
     // Extract revert reason if available
     let revertReason = '';
     if (errorMessage && typeof errorMessage === 'string') {
@@ -103,7 +103,7 @@ export async function estimateGasWithBuffer(
         }
       }
     }
-    
+
     // Log all details for debugging
     console.error('Detailed error information:', {
       method,
@@ -114,18 +114,18 @@ export async function estimateGasWithBuffer(
       errorReason,
       revertReason
     });
-    
+
     // For gas estimation errors, it's usually better to fail the transaction
     // with a helpful message rather than using a default gas limit
-    if (errorMessage.includes('cannot estimate gas') || 
-        errorMessage.includes('execution reverted')) {
-      const detailedMessage = revertReason 
+    if (errorMessage.includes('cannot estimate gas') ||
+      errorMessage.includes('execution reverted')) {
+      const detailedMessage = revertReason
         ? `Cannot estimate gas for ${method}: ${revertReason}`
         : `Cannot estimate gas for ${method}: The transaction would fail. This might be due to invalid arguments, insufficient permissions, or contract restrictions.`;
-      
+
       throw new Error(detailedMessage);
     }
-    
+
     // If not a gas estimation error, return a default gas limit
     console.warn(`Using default gas limit for ${method} due to estimation failure`);
     const defaultGasLimit = ethers.BigNumber.from("3000000");

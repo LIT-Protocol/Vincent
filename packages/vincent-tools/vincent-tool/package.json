@@ -1,0 +1,24 @@
+{
+  "name": "@lit-protocol/vincent-tool",
+  "version": "0.1.0-0",
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@lit-protocol/constants": "7.0.6",
+    "tslib": "^2.3.0",
+    "zod": "^3.24.1"
+  },
+  "type": "commonjs",
+  "main": "./dist/index.js",
+  "typings": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "!**/*.tsbuildinfo"
+  ],
+  "nx": {
+    "sourceRoot": "packages/vincent-tool/src",
+    "projectType": "library",
+    "name": "vincent-tool"
+  }
+}
