@@ -37,7 +37,8 @@
   ],
   "scripts": {
     "test:contract-caller": "npx ts-node tools/scripts/vincent-contract-caller.ts",
-    "test:unit": "jest --testPathIgnorePatterns=test/e2e",
+    "test:unit": "jest test/unit",
+    "test:integration": "jest test/integration",
     "test:e2e:execute-tools": "jest test/e2e/tool.spec.ts --bail",
     "test:e2e:spending-limit-error": "jest test/e2e/spending-limit-error.spec.ts --bail"
   },
