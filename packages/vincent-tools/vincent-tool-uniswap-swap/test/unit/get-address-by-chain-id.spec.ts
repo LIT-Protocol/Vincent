@@ -1,4 +1,4 @@
-import { getAddressesByChainId } from '../src/lib/lit-actions/utils/get-addresses-by-chain-id';
+import { getAddressesByChainId } from '../../src/lib/lit-actions/utils/get-addresses-by-chain-id';
 
 describe('getAddressesByChainId', () => {
     it('should return correct addresses for Ethereum Mainnet (chain ID 1)', () => {

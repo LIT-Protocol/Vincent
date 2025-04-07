@@ -1,17 +1,17 @@
-import { encodeAbiParameters, formatEther, parseEventLogs } from "viem";
+import { parseEventLogs, encodeAbiParameters, formatEther } from 'viem';
 
-import { PARAMETER_TYPE, ERC20_APPROVAL_TOOL_IPFS_ID, SPENDING_LIMIT_POLICY_IPFS_ID, UNISWAP_SWAP_TOOL_IPFS_ID, TEST_CONFIG_PATH, BASE_PUBLIC_CLIENT, TEST_AGENT_WALLET_PKP_OWNER_PRIVATE_KEY, TEST_APP_MANAGER_VIEM_WALLET_CLIENT, VINCENT_ADDRESS, TEST_APP_DELEGATEE_ACCOUNT, DATIL_PUBLIC_CLIENT, TEST_APP_MANAGER_VIEM_ACCOUNT, APP_NAME, APP_DESCRIPTION, DEPLOYMENT_STATUS, AUTHORIZED_REDIRECT_URIS, DELEGATEES, TEST_AGENT_WALLET_PKP_OWNER_VIEM_WALLET_CLIENT, TEST_APP_DELEGATEE_PRIVATE_KEY, BASE_RPC_URL } from "./utils/test-variables";
-import { checkShouldMintAndFundPkp, executeTool, getTestConfig, permitAuthMethod, saveTestConfig, TestConfig } from "./utils";
+import { getTestConfig, saveTestConfig, TestConfig, executeTool, permitAuthMethod, checkShouldMintAndFundPkp } from "../utils";
+import { APP_DESCRIPTION, APP_NAME, AUTHORIZED_REDIRECT_URIS, BASE_PUBLIC_CLIENT, BASE_RPC_URL, DATIL_PUBLIC_CLIENT, DELEGATEES, ERC20_APPROVAL_TOOL_IPFS_ID, PARAMETER_TYPE, SPENDING_LIMIT_POLICY_IPFS_ID, TEST_AGENT_WALLET_PKP_OWNER_PRIVATE_KEY, TEST_AGENT_WALLET_PKP_OWNER_VIEM_WALLET_CLIENT, TEST_APP_DELEGATEE_ACCOUNT, TEST_APP_DELEGATEE_PRIVATE_KEY, TEST_APP_MANAGER_VIEM_ACCOUNT, TEST_APP_MANAGER_VIEM_WALLET_CLIENT, TEST_CONFIG_PATH, UNISWAP_SWAP_TOOL_IPFS_ID, VINCENT_ADDRESS } from '../utils/test-variables';
 
-import VincentAppFacetAbi from './utils/vincent-contract-abis/VincentAppFacet.abi.json';
-import VincentAppViewFacetAbi from './utils/vincent-contract-abis/VincentAppViewFacet.abi.json';
-import VincentUserFacetAbi from './utils/vincent-contract-abis/VincentUserFacet.abi.json';
-import VincentUserViewFacetAbi from './utils/vincent-contract-abis/VincentUserViewFacet.abi.json';
+import VincentAppFacetAbi from '../utils/vincent-contract-abis/VincentAppFacet.abi.json';
+import VincentAppViewFacetAbi from '../utils/vincent-contract-abis/VincentAppViewFacet.abi.json';
+import VincentUserFacetAbi from '../utils/vincent-contract-abis/VincentUserFacet.abi.json';
+import VincentUserViewFacetAbi from '../utils/vincent-contract-abis/VincentUserViewFacet.abi.json';
 
 // Extend Jest timeout to 2 minutes
 jest.setTimeout(120000);
 
-describe('Max Spending Limit Reached Error', () => {
+describe('Uniswap Swap Tool Tests', () => {
     const TOOL_IPFS_IDS = [ERC20_APPROVAL_TOOL_IPFS_ID, UNISWAP_SWAP_TOOL_IPFS_ID];
 
     const TOOL_POLICIES = [
@@ -33,7 +33,7 @@ describe('Max Spending Limit Reached Error', () => {
                 // Parameter values for SPENDING_LIMIT_POLICY_TOOL
                 encodeAbiParameters(
                     [{ type: 'uint256' }],
-                    [BigInt("100")] // maxDailySpendingLimitInUsdCents $1 USD (2 decimals)
+                    [BigInt("10000000000000")] // maxDailySpendingLimitInUsdCents $100,000 USD (8 decimals)
                 ),
             ]
         ]
@@ -65,7 +65,7 @@ describe('Max Spending Limit Reached Error', () => {
         } else {
             console.log(`ℹ️  Agent Wallet PKP has ${formatEther(agentWalletPkpBaseWethBalance)} Base WETH`)
         }
-    })
+    });
 
     it('should permit the ERC20 Approval Tool, Uniswap Swap Tool, and Spending Limit Policy for the Agent Wallet PKP', async () => {
         await permitAuthMethod(
@@ -269,7 +269,7 @@ describe('Max Spending Limit Reached Error', () => {
                         paramType: 2,
                         value: encodeAbiParameters(
                             [{ type: 'uint256' }],
-                            [BigInt("100")] // maxDailySpendingLimitInUsdCents $1 USD (2 decimals)
+                            [BigInt("10000000000000")] // maxDailySpendingLimitInUsdCents $100,000 USD (8 decimals)
                         ),
                     },
                 ],
@@ -327,7 +327,7 @@ describe('Max Spending Limit Reached Error', () => {
                 chainId: '8453',
                 tokenIn: '0x4200000000000000000000000000000000000006', // WETH
                 tokenOut: '0x4ed4E862860beD51a9570b96d89aF5E1B0Efefed', // DEGEN
-                amountIn: '1',
+                amountIn: '0.00001',
             },
             delegateePrivateKey: TEST_APP_DELEGATEE_PRIVATE_KEY as `0x${string}`,
             debug: true,
@@ -337,8 +337,12 @@ describe('Max Spending Limit Reached Error', () => {
 
         const parsedResponse = JSON.parse(uniswapSwapExecutionResult.response as string);
 
-        expect(parsedResponse.status).toBe("error");
-        expect(parsedResponse.error).toBeDefined();
-        expect(parsedResponse.error).toContain("Spent limit exceeded");
+        expect(parsedResponse.status).toBe("success");
+        expect(parsedResponse.swapTxHash).toMatch(/^0x[a-fA-F0-9]{64}$/);
+
+        const swapTxReceipt = await BASE_PUBLIC_CLIENT.waitForTransactionReceipt({
+            hash: parsedResponse.swapTxHash,
+        });
+        expect(swapTxReceipt.status).toBe('success');
     })
 });

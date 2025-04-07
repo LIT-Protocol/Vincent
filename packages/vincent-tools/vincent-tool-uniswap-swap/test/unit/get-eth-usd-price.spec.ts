@@ -1,4 +1,4 @@
-import { getEthUsdPrice } from '../src/lib/lit-actions/utils/get-eth-usd-price';
+import { getEthUsdPrice } from '../../src/lib/lit-actions/utils/get-eth-usd-price';
 
 // Mock Lit.Actions interface
 interface LitActions {

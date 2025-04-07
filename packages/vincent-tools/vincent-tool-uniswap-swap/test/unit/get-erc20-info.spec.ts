@@ -1,6 +1,6 @@
 import { ethers } from 'ethers';
 
-import { getErc20Info } from '../src/lib/lit-actions/utils/get-erc20-info';
+import { getErc20Info } from '../../src/lib/lit-actions/utils/get-erc20-info';
 
 describe('getErc20Info', () => {
     const BASE_RPC_URL = process.env.BASE_RPC_URL;
