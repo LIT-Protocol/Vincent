@@ -1,17 +1,17 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { AppView } from "@/services/types";
 import { Input } from "@/components/ui/input";
-import { getContract, estimateGasWithBuffer } from "@/services/contract/config";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Plus, Trash2, Info } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { VincentContracts } from "@/services";
 import { useErrorPopup } from "@/providers/error-popup";
 import { mapTypeToEnum } from "@/services/types";
 import { mapEnumToTypeName, ParameterType } from "@/services/types";
+import { createDatilChainManager } from '@lit-protocol/vincent-contracts';
+import { useWalletClient } from 'wagmi';
 
 interface PolicyParameter {
     name: string;
@@ -78,36 +78,59 @@ export default function ManageToolPoliciesScreen({
     const [statusMessage, setStatusMessage] = useState<{ message: string; type: 'info' | 'warning' | 'success' | 'error' } | null>(null);
     const { showError } = useErrorPopup();
     const [isFetching, setIsFetching] = useState(false);
+    const [shouldNavigateBack, setShouldNavigateBack] = useState(false);
+
+    const { data: walletClient } = useWalletClient();
+    
+    const chainManager = useMemo(() => {
+        if (!walletClient) return null;
+        
+        return createDatilChainManager({
+            account: walletClient,
+            network: 'datil',
+        });
+    }, [walletClient]);
+
+    const [isHydrated, setIsHydrated] = useState(false);
+    useEffect(() => {
+        setIsHydrated(true);
+    }, []);
 
     useEffect(() => {
-        if (dashboard?.appId && !isFetching) {
+        if (dashboard?.appId && !isFetching && chainManager && isHydrated) {
             fetchAppVersion();
         }
-    }, [dashboard?.appId]);
+    }, [dashboard?.appId, chainManager, isHydrated]);
+
+    useEffect(() => {
+        if (shouldNavigateBack) {
+            onBack();
+        }
+    }, [shouldNavigateBack, onBack]);
 
     const fetchAppVersion = async () => {
-        if (!dashboard?.appId) {
+        if (!dashboard?.appId || !chainManager) {
+            console.error("Chain manager not found");
+            setToolPolicies([createEmptyToolPolicy()]);
+            setIsLoading(false);
+            setIsFetching(false);
             return;
         }
+        
         setIsFetching(true);
 
         try {
-            const contracts = new VincentContracts('datil');
-            const appVersion = await contracts.getAppVersion(dashboard.appId, dashboard.currentVersion);
-            console.log("Fetched app version:", appVersion);
+            // Use the chainManager API with type assertion to avoid type errors
+            const appVersion = await chainManager.vincentApi.userDashboard.getAppVersion({
+                appId: BigInt(dashboard.appId),
+                version: BigInt(dashboard.currentVersion)
+            }) as any;
             
-            let toolsData = [];
+            console.log("Fetched app version using chainManager:", appVersion);
             
-            if (appVersion?.appVersion?.tools) {
-                toolsData = appVersion.appVersion.tools;
-            } else if (appVersion?.[1]?.[3]) {
-                toolsData = appVersion[1][3];
-            } else if (Array.isArray(appVersion) && appVersion.length >= 2 && appVersion[1] && Array.isArray(appVersion[1])) {
-                const appVersionArr = appVersion[1];
-                if (appVersionArr.length >= 4 && Array.isArray(appVersionArr[3])) {
-                    toolsData = appVersionArr[3];
-                }
-            }
+            // Define toolsData to avoid readonly array issues
+            const versionData = appVersion[1] as any;
+            let toolsData: any[] = Array.from(versionData.tools as any[]);
             
             const formattedTools = toolsData.map((tool: any) => {
                 let toolIpfsCid = "";
@@ -402,103 +425,119 @@ export default function ManageToolPoliciesScreen({
     };
 
     async function handleSaveToolPolicies() {
+        if (!chainManager) {
+            showError("Wallet connection required to publish a new version");
+            return;
+        }
+        
         setIsSubmitting(true);
         
         try {
-            const contract = await getContract('datil', 'App', true);
+            const validTools = toolPolicies.filter(tool => !!tool.toolIpfsCid);
             
-            const validToolPolicies = toolPolicies.filter(tool => !!tool.toolIpfsCid);
-            const toolIpfsCids = validToolPolicies.map(tool => tool.toolIpfsCid || "");
-            const toolPolicyPolicies = validToolPolicies.map(tool => 
-                tool.policies
+            // 1. Format the tools according to the contract expected format
+            const toolsFormatted = validTools.map(tool => {
+                // 2. Format the policies according to the contract expected format
+                const policies = tool.policies
                     .filter(policy => !!policy.policyIpfsCid)
-                    .map(policy => policy.policyIpfsCid)
-            ); 
-            const toolPolicyParameterNames = validToolPolicies.map(tool => 
-                tool.policies.map(policy => 
-                    policy.parameters
-                        .filter(param => !!param.name && param.name.trim() !== '')
-                        .map(param => param.name.trim())
-                )
-            );
-            const toolPolicyParameterTypes = validToolPolicies.map(tool => 
-                tool.policies.map(policy => 
-                    policy.parameters
-                        .filter(param => !!param.name && param.name.trim() !== '')
-                        .map(param => mapTypeToEnum(param.type || "string"))
-                )
-            );
+                    .map(policy => {
+                        // 3. Format the parameters according to the contract expected format
+                        const paramNames = policy.parameters
+                            .filter(param => !!param.name && param.name.trim() !== '')
+                            .map(param => param.name.trim());
+                            
+                        const paramTypes = policy.parameters
+                            .filter(param => !!param.name && param.name.trim() !== '')
+                            .map(param => mapTypeToEnum(param.type || "string"));
+                            
+                        return [
+                            policy.policyIpfsCid,
+                            paramNames,
+                            paramTypes
+                        ];
+                    });
+                
+                return [
+                    tool.toolIpfsCid,
+                    policies
+                ];
+            });
+            
+            // Validation
+            if (toolsFormatted.length === 0) {
+                showError("Please add at least one valid tool with an IPFS CID");
+                setIsSubmitting(false);
+                return;
+            }
+            
+            setStatusMessage({ message: "Sending transaction with chainManager...", type: "info" });
+            
+            // Extract the needed arrays from toolsFormatted with proper type casting for the chainManager API
+            const toolIpfsCids = toolsFormatted.map(tool => tool[0] as string);
+            const policyArray = toolsFormatted.map(tool => {
+                const policies = tool[1];
+                return Array.isArray(policies) ? policies.map(policy => policy[0] as string) : [];
+            });
+            const parameterNames = toolsFormatted.map(tool => {
+                const policies = tool[1];
+                return Array.isArray(policies) ? policies.map(policy => policy[1] as string[]) : [];
+            });
+            const parameterTypes = toolsFormatted.map(tool => {
+                const policies = tool[1];
+                return Array.isArray(policies) ? policies.map(policy => {
+                    const types = policy[2];
+                        return Array.isArray(types) ? types.map(type => {
+                            let typeName = mapEnumToTypeName(type as number).toUpperCase();
+                        
+                        // Fix array type format - convert "TYPE[]" to "TYPE_ARRAY"
+                        if (typeName.endsWith('[]')) {
+                            typeName = typeName.replace('[]', '_ARRAY');
+                        }
+                        
+                        // Use type assertion to match the expected string literals
+                        return typeName as "STRING" | "STRING_ARRAY" | "BOOL" | "BOOL_ARRAY" |
+                            "UINT256" | "UINT256_ARRAY" | "INT256" | "INT256_ARRAY" |
+                            "ADDRESS" | "ADDRESS_ARRAY" | "BYTES" | "BYTES_ARRAY";
+                    }) : [];
+                }) : [];
+            });
             
             try {
-                setStatusMessage({ message: "Preparing transaction...", type: "info" });
+                const result = await chainManager.vincentApi.appManagerDashboard.registerNextAppVersion({
+                    appId: BigInt(dashboard.appId),
+                    toolIpfsCids,
+                    toolPolicies: policyArray,
+                    toolPolicyParameterNames: parameterNames,
+                    toolPolicyParameterTypes: parameterTypes
+                });
                 
-                // Create the versionTools tuple argument as expected by the contract
-                const versionTools = {
-                    toolIpfsCids: toolIpfsCids,
-                    toolPolicies: toolPolicyPolicies,
-                    toolPolicyParameterNames: toolPolicyParameterNames,
-                    toolPolicyParameterTypes: toolPolicyParameterTypes
+                setStatusMessage({ message: "Waiting for confirmation...", type: "info" });
+                await result.receipt;
+                
+                setStatusMessage({ message: "New version published successfully!", type: "success" });
+                
+                // Separate the success UI from navigation to avoid hydration issues
+                const completeAfterDelay = () => {
+                    return new Promise(resolve => {
+                        setTimeout(() => {
+                            setStatusMessage(null);
+                            resolve(true);
+                        }, 2000);
+                    });
                 };
                 
-                // Use tuple parameters as expected by the contract
-                const args = [dashboard.appId, versionTools];
-                
-                try {
-                    setStatusMessage({ message: "Estimating gas...", type: "info" });
-                    const gasLimit = await estimateGasWithBuffer(
-                        contract,
-                        'registerNextAppVersion',
-                        args
-                    );
-                    
-                    setStatusMessage({ message: "Sending transaction...", type: "info" });
-                    const tx = await contract.registerNextAppVersion(
-                        ...args,
-                        {gasLimit}
-                    );
-                    
-                    console.log("Transaction sent:", tx.hash);
-                    
-                    setStatusMessage({ message: "Waiting for confirmation...", type: "info" });
-                    const receipt = await tx.wait();
-                    console.log("Transaction confirmed:", receipt);
-                    
-                    setStatusMessage({ message: "New version published successfully!", type: "success" });
-                    setTimeout(() => {
-                        setStatusMessage(null);
-                        onBack();
-                    }, 2000);
-                } catch (txError: any) {
-                    console.error("Transaction failed:", txError);
-                    setStatusMessage(null);
-                    
-                    if (txError.code === -32603 && txError.message?.includes("429")) {
-                        showError("Transaction failed due to RPC rate limiting. Please wait a moment and try again.");
-                    } else {
-                        let errorMsg = txError.message || "Unknown transaction error";
-                        if (errorMsg.includes("transaction failed")) {
-                            errorMsg = "Transaction failed. Please check your MetaMask and try again.";
-                        } else if (errorMsg.includes("Cannot estimate gas")) {
-                            const matches = errorMsg.match(/Cannot estimate gas for .+?: (.+)/);
-                            errorMsg = matches && matches[1] ? matches[1] : "Gas estimation failed. The transaction would likely fail.";
-                        }
-                        showError(`Transaction failed: ${errorMsg}`);
-                    }
-                }
+                completeAfterDelay().then(() => {
+                    // Handle navigation in a separate tick
+                    requestAnimationFrame(() => {
+                        setShouldNavigateBack(true);
+                    });
+                });
             } catch (error: any) {
-                console.error("Error saving tool policies:", error);
+                console.error("Transaction failed:", error);
                 setStatusMessage(null);
-                let errorMessage = "Failed to save tool policies: ";
                 
-                if (error.message) {
-                    errorMessage += error.message;
-                } else {
-                    errorMessage += "Unknown error";
-                }
-                
-                showError(errorMessage);
-            } finally {
-                setIsSubmitting(false);
+                let errorMsg = error.message || "Unknown transaction error";
+                showError(`Transaction failed: ${errorMsg}`);
             }
         } catch (error: any) {
             console.error("Error saving tool policies:", error);
@@ -512,6 +551,8 @@ export default function ManageToolPoliciesScreen({
             }
             
             showError(errorMessage);
+        } finally {
+            setIsSubmitting(false);
         }
     }
 
