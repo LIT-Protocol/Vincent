@@ -1,8 +1,15 @@
-import { getAddressesByChainId } from '../../src/lib/lit-actions/utils/get-addresses-by-chain-id';
+import { VincentToolError } from '@lit-protocol/vincent-tool';
+import { AddressesByChainIdResponse, getAddressesByChainId } from '../../src/lib/lit-actions/utils/get-addresses-by-chain-id';
 
 describe('getAddressesByChainId', () => {
     it('should return correct addresses for Ethereum Mainnet (chain ID 1)', () => {
-        const addresses = getAddressesByChainId('1');
+        const getAddressesByChainIdResponse = getAddressesByChainId('1');
+
+        if ('status' in getAddressesByChainIdResponse && getAddressesByChainIdResponse.status === 'error') {
+            throw new Error(`❌ ${JSON.stringify(getAddressesByChainIdResponse)}`);
+        }
+
+        const addresses = getAddressesByChainIdResponse as AddressesByChainIdResponse;
 
         expect(addresses.UNISWAP_V3_QUOTER).toBe('0x61fFE014bA17989E743c5F6cB21bF9697530B21e');
         expect(addresses.UNISWAP_V3_ROUTER).toBe('0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45');
@@ -12,7 +19,13 @@ describe('getAddressesByChainId', () => {
     });
 
     it('should return correct addresses for Base Mainnet (chain ID 8453)', () => {
-        const addresses = getAddressesByChainId('8453');
+        const getAddressesByChainIdResponse = getAddressesByChainId('8453');
+
+        if ('status' in getAddressesByChainIdResponse && getAddressesByChainIdResponse.status === 'error') {
+            throw new Error(`❌ ${JSON.stringify(getAddressesByChainIdResponse)}`);
+        }
+
+        const addresses = getAddressesByChainIdResponse as AddressesByChainIdResponse;
 
         expect(addresses.UNISWAP_V3_QUOTER).toBe('0x3d4e44Eb1374240CE5F1B871ab261CD16335B76a');
         expect(addresses.UNISWAP_V3_ROUTER).toBe('0x2626664c2603336E57B271c5C0b26F421741e481');
@@ -22,7 +35,13 @@ describe('getAddressesByChainId', () => {
     });
 
     it('should return correct addresses for Arbitrum (chain ID 42161)', () => {
-        const addresses = getAddressesByChainId('42161');
+        const getAddressesByChainIdResponse = getAddressesByChainId('42161');
+
+        if ('status' in getAddressesByChainIdResponse && getAddressesByChainIdResponse.status === 'error') {
+            throw new Error(`❌ ${JSON.stringify(getAddressesByChainIdResponse)}`);
+        }
+
+        const addresses = getAddressesByChainIdResponse as AddressesByChainIdResponse;
 
         expect(addresses.UNISWAP_V3_QUOTER).toBe('0x61fFE014bA17989E743c5F6cB21bF9697530B21e');
         expect(addresses.UNISWAP_V3_ROUTER).toBe('0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45');
@@ -32,7 +51,13 @@ describe('getAddressesByChainId', () => {
     });
 
     it('should return correct addresses for Yellowstone (chain ID 175188)', () => {
-        const addresses = getAddressesByChainId('175188');
+        const getAddressesByChainIdResponse = getAddressesByChainId('175188');
+
+        if ('status' in getAddressesByChainIdResponse && getAddressesByChainIdResponse.status === 'error') {
+            throw new Error(`❌ ${JSON.stringify(getAddressesByChainIdResponse)}`);
+        }
+
+        const addresses = getAddressesByChainIdResponse as AddressesByChainIdResponse;
 
         expect(addresses.UNISWAP_V3_QUOTER).toBeNull();
         expect(addresses.UNISWAP_V3_ROUTER).toBeNull();
@@ -42,6 +67,10 @@ describe('getAddressesByChainId', () => {
     });
 
     it('should throw an error for unsupported chain ID', () => {
-        expect(() => getAddressesByChainId('999')).toThrow('Unsupported chain ID: 999');
+        const getAddressesByChainIdResponse = getAddressesByChainId('999');
+
+        expect(getAddressesByChainIdResponse).toBeDefined();
+        expect((getAddressesByChainIdResponse as VincentToolError).status).toBe('error');
+        expect((getAddressesByChainIdResponse as VincentToolError).details[0]).toBe('Unsupported chain ID: 999');
     });
 });

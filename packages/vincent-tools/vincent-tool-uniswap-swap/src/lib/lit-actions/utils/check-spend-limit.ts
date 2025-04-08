@@ -3,6 +3,9 @@ import type { VincentToolError } from '@lit-protocol/vincent-tool';
 
 import { type AddressesByChainIdResponse, getAddressesByChainId } from '.';
 
+// TODO Instead of returning exceedLimit, we need to return the inverse: doesNotExceedLimit
+// checkLimit returns true if the amount is within the limit
+
 export const checkSpendLimit = async (
     yellowstoneProvider: ethers.providers.JsonRpcProvider,
     appId: string,

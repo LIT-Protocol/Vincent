@@ -11,8 +11,13 @@ describe('checkSpendLimit', () => {
         const spendingLimitDuration = ethers.BigNumber.from(86400);
         const pkpEthAddress = '0x7122eeed6472409d52eA93c16a25af28Ff69c3cE';
 
-        const spendLimit = await checkSpendLimit(yellowstoneProvider, appId, amountInUsd, maxSpendingLimitInUsdCents, spendingLimitDuration, pkpEthAddress);
-        expect(spendLimit).toBe(true);
+        const checkLimitResponse = await checkSpendLimit(yellowstoneProvider, appId, amountInUsd, maxSpendingLimitInUsdCents, spendingLimitDuration, pkpEthAddress);
+
+        if ('status' in checkLimitResponse && checkLimitResponse.status === 'error') {
+            throw new Error(`❌ ${JSON.stringify(checkLimitResponse)}`);
+        }
+
+        expect((checkLimitResponse as { exceedsLimit: boolean }).exceedsLimit).toBe(true);
     });
 
     it('should return false to show that the spend limit is exceeded', async () => {
@@ -23,7 +28,12 @@ describe('checkSpendLimit', () => {
         const spendingLimitDuration = ethers.BigNumber.from(86400);
         const pkpEthAddress = '0x7122eeed6472409d52eA93c16a25af28Ff69c3cE';
 
-        const spendLimit = await checkSpendLimit(yellowstoneProvider, appId, amountInUsd, maxSpendingLimitInUsdCents, spendingLimitDuration, pkpEthAddress);
-        expect(spendLimit).toBe(false);
+        const checkLimitResponse = await checkSpendLimit(yellowstoneProvider, appId, amountInUsd, maxSpendingLimitInUsdCents, spendingLimitDuration, pkpEthAddress);
+
+        if ('status' in checkLimitResponse && checkLimitResponse.status === 'error') {
+            throw new Error(`❌ ${JSON.stringify(checkLimitResponse)}`);
+        }
+
+        expect((checkLimitResponse as { exceedsLimit: boolean }).exceedsLimit).toBe(false);
     });
 });
