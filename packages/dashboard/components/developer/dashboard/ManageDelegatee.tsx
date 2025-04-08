@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Plus, Copy, Check } from "lucide-react";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { Wallet } from "ethers";
 import {
     Dialog,
@@ -13,9 +13,10 @@ import {
     DialogDescription,
 } from "@/components/ui/dialog";
 import { AppView } from "@/services/types";
-import { VincentContracts } from "@/services";
 import { Input } from "@/components/ui/input";
 import { useErrorPopup } from "@/providers/error-popup";
+import { createDatilChainManager } from '@lit-protocol/vincent-contracts';
+import { useWalletClient } from 'wagmi';
 
 interface DelegateeManagerProps {
     onBack: () => void;
@@ -62,6 +63,15 @@ export default function DelegateeManagerScreen({
     const [statusType, setStatusType] = useState<'info' | 'warning' | 'success' | 'error'>('info');
     
     const { showError } = useErrorPopup();
+    const { data: walletClient } = useWalletClient();
+    const chainManager = useMemo(() => {
+        if (!walletClient) return null;
+        
+        return createDatilChainManager({
+            account: walletClient,
+            network: 'datil',
+        });
+    }, [walletClient]);
     
     const showStatus = useCallback((message: string, type: 'info' | 'warning' | 'success' | 'error' = 'info') => {
         setStatusMessage(message);
@@ -100,10 +110,14 @@ export default function DelegateeManagerScreen({
     };
 
     async function handleConfirmSaved() {
+        if (!chainManager) {
+            showErrorWithStatus("Please connect your wallet first", "Wallet Not Connected");
+            return;
+        }
+        
         try {
             setIsSaving(true);
             showStatus("Adding new delegatee...", "info");
-            const contracts = new VincentContracts('datil');
             
             try {
                 if (delegatees.includes(newAddress)) {
@@ -113,11 +127,14 @@ export default function DelegateeManagerScreen({
                 }
                 
                 showStatus("Sending transaction...", "info");
-                const tx = await contracts.addDelegatee(dashboard.appId, newAddress);
+                const result = await chainManager.vincentApi.appManagerDashboard.addDelegatee({
+                    appId: BigInt(dashboard.appId),
+                    delegatee: newAddress
+                });
                 
                 showStatus("Waiting for confirmation...", "info");
-                const receipt = await tx.wait();
-                console.log("Transaction confirmed:", receipt);
+                await result.receipt;
+                console.log("Transaction confirmed");
                 
                 setDelegatees((prev) => [...prev, newAddress]);
                 setShowKeyDialog(false);
@@ -157,10 +174,14 @@ export default function DelegateeManagerScreen({
             return;
         }
 
+        if (!chainManager) {
+            showErrorWithStatus("Please connect your wallet first", "Wallet Not Connected");
+            return;
+        }
+
         try {
             setIsAdding(true);
             showStatus("Adding delegatee...", "info");
-            const contracts = new VincentContracts('datil');
             
             try {
                 if (delegatees.includes(manualAddress)) {
@@ -169,32 +190,18 @@ export default function DelegateeManagerScreen({
                     return;
                 }
                 
-                try {
-                    const appData = await contracts.getAppById(dashboard.appId);
-                    console.log("App data fetched:", appData);
-                    
-                    if (!appData || !appData.id) {
-                        showErrorWithStatus(`App ID ${dashboard.appId} not found or not accessible`, "App Not Found");
-                        setIsAdding(false);
-                        return;
-                    }
-                } catch (appError) {
-                    console.error("Error verifying app:", appError);
-                    showErrorWithStatus(`Could not verify app ID ${dashboard.appId}. Please check your connection and permissions.`, "Verification Error");
-                    setIsAdding(false);
-                    return;
-                }
-                
                 console.log("Adding delegatee to app ID:", dashboard.appId);
                 console.log("Delegatee address:", manualAddress);
                 
                 showStatus("Sending transaction...", "info");
-                const tx = await contracts.addDelegatee(dashboard.appId, manualAddress);
-                console.log("Transaction sent:", tx.hash);
+                const result = await chainManager.vincentApi.appManagerDashboard.addDelegatee({
+                    appId: BigInt(dashboard.appId),
+                    delegatee: manualAddress
+                });
                 
                 showStatus("Waiting for confirmation...", "info");
-                const receipt = await tx.wait();
-                console.log("Transaction confirmed:", receipt);
+                await result.receipt;
+                console.log("Transaction confirmed");
                 
                 setDelegatees((prev) => [...prev, manualAddress]);
                 setShowAddDialog(false);
@@ -234,13 +241,21 @@ export default function DelegateeManagerScreen({
             return;
         }
         
+        if (!chainManager) {
+            showErrorWithStatus("Please connect your wallet first", "Wallet Not Connected");
+            return;
+        }
+        
         try {
             showStatus("Removing delegatee...", "info");
-            const contracts = new VincentContracts('datil');
-            const tx = await contracts.removeDelegatee(dashboard.appId, delegateeAddress);
+            
+            const result = await chainManager.vincentApi.appManagerDashboard.removeDelegatee({
+                appId: BigInt(dashboard.appId),
+                delegatee: delegateeAddress
+            });
             
             showStatus("Waiting for confirmation...", "info");
-            await tx.wait();
+            await result.receipt;
             
             setDelegatees(current => current.filter(d => d !== delegateeAddress));
             showStatus("Delegatee removed successfully!", "success");
@@ -248,7 +263,7 @@ export default function DelegateeManagerScreen({
             setTimeout(() => clearStatus(), 2000);
         } catch (error: any) {
             console.error("Error removing delegatee:", error);
-            showErrorWithStatus(`Failed to remove delegatee: ${error.message || "Unknown error"}`, "Removal Error");
+            showErrorWithStatus(`Failed to remove delegatee: ${error.message || "Unknown error"}`, "Error");
         }
     }
 
