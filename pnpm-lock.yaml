@@ -47,6 +47,9 @@ importers:
       '@lit-protocol/types':
         specifier: ^7.0.8
         version: 7.0.9(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+      '@lit-protocol/vincent-contracts':
+        specifier: ^0.2.0
+        version: 0.2.0
       '@lit-protocol/vincent-sdk':
         specifier: 0.0.2
         version: 0.0.2(@walletconnect/modal@2.7.0(@types/react@19.1.0)(react@19.1.0))(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)
@@ -1538,6 +1541,9 @@ packages:
 
   '@lit-protocol/uint8arrays@7.0.9':
     resolution: {integrity: sha512-xSfThoFFeEoA0LjXwYISBarVDXQE8keWyiyIcfoYQ/WziOOhSA1W7WVjufagOSaXwTRyO0wb/arogDKL3za2EQ==}
+
+  '@lit-protocol/vincent-contracts@0.2.0':
+    resolution: {integrity: sha512-pNVtnLlUj1RSnAAoRqHSvKh2mTNAToEu4BZB9u+kes5tL4HyUsdJKXsS9YVgEcGRheF96yOT88loXL1I7XrTyA==}
 
   '@lit-protocol/vincent-sdk@0.0.2':
     resolution: {integrity: sha512-dmZ5i0/NaQ1rrqj0NaAY2fs7YOgO8eKe6IushVlvNwmzeDX7RzFbxN3JFTb3iQwq4Xq8UoMKrA2xlapER7HSOw==}
@@ -10246,6 +10252,8 @@ snapshots:
       - bufferutil
       - typescript
       - utf-8-validate
+
+  '@lit-protocol/vincent-contracts@0.2.0': {}
 
   '@lit-protocol/vincent-sdk@0.0.2(@walletconnect/modal@2.7.0(@types/react@19.1.0)(react@19.1.0))(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)':
     dependencies:
