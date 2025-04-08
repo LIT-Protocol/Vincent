@@ -1,6 +1,7 @@
 import { ethers } from 'ethers';
+import type { VincentToolPolicyResponse, VincentToolResponse } from '@lit-protocol/vincent-tool';
 
-import { getAddressesByChainId, signTx } from '.';
+import { type AddressesByChainIdResponse, getAddressesByChainId, signTx } from '.';
 
 const estimateGasForApproval = async (
     tokenInContract: ethers.Contract,
@@ -43,11 +44,17 @@ export const sendErc20ApprovalTx = async (
     tokenInDecimals: string,
     pkpEthAddress: string,
     pkpPubKey: string,
-) => {
+): Promise<VincentToolResponse | VincentToolPolicyResponse> => {
     const partialApprovalTxStringified = await Lit.Actions.runOnce(
         { waitForResponse: true, name: 'send approval tx gas estimation' },
         async () => {
-            const { UNISWAP_V3_ROUTER } = getAddressesByChainId(userChainId);
+            const addressByChainIdResponse = getAddressesByChainId(userChainId);
+
+            if ('status' in addressByChainIdResponse && addressByChainIdResponse.status === 'error') {
+                return addressByChainIdResponse;
+            }
+
+            const { UNISWAP_V3_ROUTER } = addressByChainIdResponse as AddressesByChainIdResponse;
 
             const tokenInContract = new ethers.Contract(
                 tokenInAddress,
@@ -112,5 +119,10 @@ export const sendErc20ApprovalTx = async (
 
     console.log(`Approval transaction hash: ${approvalTxHash}`);
 
-    return approvalTxHash;
+    return {
+        status: 'success',
+        details: [
+            approvalTxHash,
+        ]
+    };
 }

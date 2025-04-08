@@ -2,7 +2,7 @@
 import { ethers } from 'ethers';
 import { type Policy } from '@lit-protocol/vincent-tool';
 
-import { checkSpendLimit, getOnChainPolicyParams, getTokenAmountInUsd, sendSpendTx, validatePolicyIsPermitted } from './utils';
+import { getOnChainPolicyParams, getTokenAmountInUsd, sendSpendTx, validatePolicyIsPermitted } from './utils';
 
 declare global {
   // Required Inputs
@@ -28,50 +28,64 @@ declare global {
 }
 
 (async () => {
+  const policySuccessDetails = [];
+
   const yellowstoneProvider = new ethers.providers.JsonRpcProvider(
     await Lit.Actions.getRpcUrl({
       chain: 'yellowstone',
     })
   );
 
-  await validatePolicyIsPermitted(yellowstoneProvider, userPkpInfo.tokenId, parentToolIpfsCid);
+  const policyValidationResult = await validatePolicyIsPermitted(yellowstoneProvider, userPkpInfo.tokenId, parentToolIpfsCid);
+  if ('allow' in policyValidationResult && !policyValidationResult.allow) {
+    Lit.Actions.setResponse({
+      response: JSON.stringify(policyValidationResult),
+    });
+    return;
+  }
 
-  const {
-    maxDailySpendingLimitInUsdCents,
-  } = getOnChainPolicyParams(policy.parameters);
+  policySuccessDetails.push(...policyValidationResult.details);
 
-  console.log(`Retrieved maxDailySpendingLimitInUsdCents: ${maxDailySpendingLimitInUsdCents?.toString()}`);
+  const onChainPolicyParamsResult = getOnChainPolicyParams(policy.parameters);
+  if ('allow' in onChainPolicyParamsResult && !onChainPolicyParamsResult.allow) {
+    Lit.Actions.setResponse({
+      response: JSON.stringify(onChainPolicyParamsResult),
+    });
+    return;
+  }
 
-  const userRpcProvider = new ethers.providers.JsonRpcProvider(userRpcUrl);
-
-  const tokenAmountInUsd = await getTokenAmountInUsd(
-    userRpcProvider,
-    toolParams.chainId,
-    toolParams.amountIn,
-    toolParams.tokenIn,
-    toolParams.tokenInDecimals
-  )
+  const { maxDailySpendingLimitInUsdCents } = onChainPolicyParamsResult as { maxDailySpendingLimitInUsdCents?: ethers.BigNumber | undefined; };
 
   if (maxDailySpendingLimitInUsdCents) {
+    console.log(`Retrieved maxDailySpendingLimitInUsdCents: ${maxDailySpendingLimitInUsdCents.toString()}`);
+
+    const userRpcProvider = new ethers.providers.JsonRpcProvider(userRpcUrl);
+
+    const tokenAmountInUsdResponse = await getTokenAmountInUsd(
+      userRpcProvider,
+      toolParams.chainId,
+      toolParams.amountIn,
+      toolParams.tokenIn,
+      toolParams.tokenInDecimals
+    )
+
+    if ('status' in tokenAmountInUsdResponse && tokenAmountInUsdResponse.status === 'error') {
+      Lit.Actions.setResponse({
+        response: JSON.stringify(tokenAmountInUsdResponse),
+      });
+      return;
+    }
+
+    const { amountInUsd: tokenAmountInUsd } = tokenAmountInUsdResponse as { amountInUsd: ethers.BigNumber };
+
     // maxDailySpendingLimitInUsdCents has 2 decimal precision, but tokenAmountInUsd has 8,
     // so we multiply by 10^6 to match the precision
     const adjustedMaxDailySpendingLimit = maxDailySpendingLimitInUsdCents.mul(ethers.BigNumber.from(1_000_000));
     console.log(`Adjusted maxDailySpendingLimitInUsdCents to 8 decimal precision: ${adjustedMaxDailySpendingLimit.toString()}`);
 
-    const doesntExceedSpendLimit = await checkSpendLimit(
-      yellowstoneProvider,
-      vincentAppId,
-      tokenAmountInUsd,
-      adjustedMaxDailySpendingLimit,
-      ethers.BigNumber.from(86400), // number of seconds in a day
-      userPkpInfo.ethAddress
-    );
+    policySuccessDetails.push(`Spending ${tokenAmountInUsd.toString()} USD for App ID: ${vincentAppId} when the max daily spending limit is ${adjustedMaxDailySpendingLimit.toString()} USD`);
 
-    if (!doesntExceedSpendLimit) {
-      throw new Error(`Spent limit exceeded. Attempting to spend ${tokenAmountInUsd.toString()} USD for App ID: ${vincentAppId} when the max daily spending limit is ${adjustedMaxDailySpendingLimit.toString()} USD`);
-    }
-
-    const spendTxHash = await sendSpendTx(
+    const spendTxResponse = await sendSpendTx(
       yellowstoneProvider,
       vincentAppId,
       tokenAmountInUsd,
@@ -80,8 +94,43 @@ declare global {
       userPkpInfo.ethAddress,
       userPkpInfo.publicKey
     );
-    console.log(`Spend transaction hash: ${spendTxHash}`);
+
+    if ('allow' in spendTxResponse && !spendTxResponse.allow) {
+      console.log(`Spending limit exceeded. tokenAmountInUsd: ${tokenAmountInUsd.toString()} adjustedMaxDailySpendingLimit: ${adjustedMaxDailySpendingLimit.toString()}`);
+
+      Lit.Actions.setResponse({
+        response: JSON.stringify({
+          allow: false,
+          details: [
+            'Spending limit exceeded',
+            `Attempting to spend ${tokenAmountInUsd.toString()} USD for App ID: ${vincentAppId} when the max daily spending limit is ${adjustedMaxDailySpendingLimit.toString()} USD`
+          ]
+        }),
+      });
+      return;
+    }
+
+    if ('status' in spendTxResponse && spendTxResponse.status === 'error') {
+      Lit.Actions.setResponse({
+        response: JSON.stringify(spendTxResponse),
+      });
+      return;
+    }
+
+    console.log(`Spend transaction hash: ${spendTxResponse.details[0]}`);
+    policySuccessDetails.push(`Spend transaction hash: ${spendTxResponse.details[0]}`);
+  } else {
+    console.log(`No maxDailySpendingLimitInUsdCents set on-chain for App ID: ${vincentAppId} App Version: ${vincentAppVersion} Tool: ${parentToolIpfsCid} PKP token ID: ${userPkpInfo.tokenId} Delegatee: ${userPkpInfo.ethAddress}`);
+    policySuccessDetails.push(`No maxDailySpendingLimitInUsdCents set on-chain for App ID: ${vincentAppId} App Version: ${vincentAppVersion} Tool: ${parentToolIpfsCid} PKP token ID: ${userPkpInfo.tokenId} Delegatee: ${userPkpInfo.ethAddress}`);
   }
 
   console.log(`Policy ${policy.policyIpfsCid} executed successfully`);
+  policySuccessDetails.push(`Policy ${policy.policyIpfsCid} executed successfully`);
+
+  Lit.Actions.setResponse({
+    response: JSON.stringify({
+      allow: true,
+      details: policySuccessDetails,
+    }),
+  });
 })();

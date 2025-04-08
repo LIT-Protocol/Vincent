@@ -1,7 +1,7 @@
 import { parseEventLogs, encodeAbiParameters, formatEther } from 'viem';
 
 import { getTestConfig, saveTestConfig, TestConfig, executeTool, permitAuthMethod, checkShouldMintAndFundPkp } from "../utils";
-import { APP_DESCRIPTION, APP_NAME, AUTHORIZED_REDIRECT_URIS, BASE_PUBLIC_CLIENT, BASE_RPC_URL, DATIL_PUBLIC_CLIENT, DELEGATEES, ERC20_APPROVAL_TOOL_IPFS_ID, PARAMETER_TYPE, SPENDING_LIMIT_POLICY_IPFS_ID, TEST_AGENT_WALLET_PKP_OWNER_PRIVATE_KEY, TEST_AGENT_WALLET_PKP_OWNER_VIEM_WALLET_CLIENT, TEST_APP_DELEGATEE_ACCOUNT, TEST_APP_DELEGATEE_PRIVATE_KEY, TEST_APP_MANAGER_VIEM_ACCOUNT, TEST_APP_MANAGER_VIEM_WALLET_CLIENT, TEST_CONFIG_PATH, UNISWAP_SWAP_TOOL_IPFS_ID, VINCENT_ADDRESS } from '../utils/test-variables';
+import { APP_DESCRIPTION, APP_NAME, AUTHORIZED_REDIRECT_URIS, BASE_PUBLIC_CLIENT, BASE_RPC_URL, DATIL_PUBLIC_CLIENT, DELEGATEES, DEPLOYMENT_STATUS, ERC20_APPROVAL_TOOL_IPFS_ID, PARAMETER_TYPE, SPENDING_LIMIT_POLICY_IPFS_ID, TEST_AGENT_WALLET_PKP_OWNER_PRIVATE_KEY, TEST_AGENT_WALLET_PKP_OWNER_VIEM_WALLET_CLIENT, TEST_APP_DELEGATEE_ACCOUNT, TEST_APP_DELEGATEE_PRIVATE_KEY, TEST_APP_MANAGER_VIEM_ACCOUNT, TEST_APP_MANAGER_VIEM_WALLET_CLIENT, TEST_CONFIG_PATH, UNISWAP_SWAP_TOOL_IPFS_ID, VINCENT_ADDRESS } from '../utils/test-variables';
 
 import VincentAppFacetAbi from '../utils/vincent-contract-abis/VincentAppFacet.abi.json';
 import VincentAppViewFacetAbi from '../utils/vincent-contract-abis/VincentAppViewFacet.abi.json';
@@ -314,8 +314,11 @@ describe('Uniswap Swap Tool Tests', () => {
 
         const parsedResponse = JSON.parse(erc20ApprovalExecutionResult.response as string);
 
-        expect(parsedResponse.status).toBe("success");
-        expect(parsedResponse.approvalTxHash).toMatch(/^0x[a-fA-F0-9]{64}$/);
+        expect(parsedResponse.details).toBeDefined();
+        expect(Array.isArray(parsedResponse.details)).toBe(true);
+
+        expect(parsedResponse.details[0]).toMatch(/^0x[a-fA-F0-9]{64}$/);
+        expect(parsedResponse.details[1]).toMatch(/^0x[a-fA-F0-9]{40} approved 0\.00001 0x4200000000000000000000000000000000000006 for Uniswap V3 Router$/);
     })
 
     it('should execute the Uniswap Swap Tool with the Agent Wallet PKP', async () => {
@@ -338,10 +341,17 @@ describe('Uniswap Swap Tool Tests', () => {
         const parsedResponse = JSON.parse(uniswapSwapExecutionResult.response as string);
 
         expect(parsedResponse.status).toBe("success");
-        expect(parsedResponse.swapTxHash).toMatch(/^0x[a-fA-F0-9]{64}$/);
+
+        expect(parsedResponse.details).toBeDefined();
+        expect(Array.isArray(parsedResponse.details)).toBe(true);
+
+        const swapTxHash = parsedResponse.details[0];
+
+        expect(swapTxHash).toMatch(/^0x[a-fA-F0-9]{64}$/);
+        expect(parsedResponse.details[1]).toMatch(/^0x[a-fA-F0-9]{40} swapped 0\.00001 0x4200000000000000000000000000000000000006 for 0x[a-fA-F0-9]{40}$/);
 
         const swapTxReceipt = await BASE_PUBLIC_CLIENT.waitForTransactionReceipt({
-            hash: parsedResponse.swapTxHash,
+            hash: swapTxHash as `0x${string}`,
         });
         expect(swapTxReceipt.status).toBe('success');
     })

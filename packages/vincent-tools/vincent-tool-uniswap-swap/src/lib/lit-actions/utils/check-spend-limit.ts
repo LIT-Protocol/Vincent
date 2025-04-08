@@ -1,6 +1,7 @@
 import { ethers } from 'ethers';
+import type { VincentToolError } from '@lit-protocol/vincent-tool';
 
-import { getAddressesByChainId } from './get-addresses-by-chain-id';
+import { type AddressesByChainIdResponse, getAddressesByChainId } from '.';
 
 export const checkSpendLimit = async (
     yellowstoneProvider: ethers.providers.JsonRpcProvider,
@@ -9,8 +10,14 @@ export const checkSpendLimit = async (
     maxSpendingLimitInUsdCents: ethers.BigNumber,
     spendingLimitDuration: ethers.BigNumber,
     pkpEthAddress: string,
-) => {
-    const { SPENDING_LIMIT_ADDRESS } = getAddressesByChainId('175188'); // Yellowstone
+): Promise<{ exceedsLimit: boolean } | VincentToolError> => {
+    const addressByChainIdResponse = getAddressesByChainId('175188'); // Yellowstone
+
+    if ('status' in addressByChainIdResponse && addressByChainIdResponse.status === 'error') {
+        return addressByChainIdResponse;
+    }
+
+    const { SPENDING_LIMIT_ADDRESS } = addressByChainIdResponse as AddressesByChainIdResponse;
 
     const SPENDING_LIMIT_ABI = [
         `function checkLimit(address user, uint256 appId, uint256 amountToSpend, uint256 userMaxSpendLimit, uint256 duration) view returns (bool)`,
@@ -25,11 +32,13 @@ export const checkSpendLimit = async (
         yellowstoneProvider
     );
 
-    return spendingLimitContract.checkLimit(
-        pkpEthAddress,
-        appId,
-        amountInUsd,
-        maxSpendingLimitInUsdCents,
-        spendingLimitDuration
-    );
+    return {
+        exceedsLimit: await spendingLimitContract.checkLimit(
+            pkpEthAddress,
+            appId,
+            amountInUsd,
+            maxSpendingLimitInUsdCents,
+            spendingLimitDuration
+        )
+    };
 }

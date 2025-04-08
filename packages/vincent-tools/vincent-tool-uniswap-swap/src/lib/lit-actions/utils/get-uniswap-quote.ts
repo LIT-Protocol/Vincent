@@ -1,6 +1,13 @@
 import { ethers } from "ethers";
 
-import { getAddressesByChainId } from ".";
+import { type AddressesByChainIdResponse, getAddressesByChainId } from ".";
+import { type VincentToolError } from "@lit-protocol/vincent-tool";
+
+export interface UniswapQuoteResponse {
+    bestQuote: ethers.BigNumber;
+    bestFee: number;
+    amountOutMin: ethers.BigNumber;
+}
 
 export const getUniswapQuote = async (
     userRpcProvider: ethers.providers.JsonRpcProvider,
@@ -10,9 +17,15 @@ export const getUniswapQuote = async (
     amountIn: string,
     tokenInDecimals: string,
     tokenOutDecimals: string,
-) => {
+): Promise<UniswapQuoteResponse | VincentToolError> => {
     console.log('Starting Uniswap quote calculation...');
-    const { UNISWAP_V3_QUOTER } = getAddressesByChainId(userChainId);
+    const addressByChainIdResponse = getAddressesByChainId(userChainId);
+
+    if ('status' in addressByChainIdResponse && addressByChainIdResponse.status === 'error') {
+        return addressByChainIdResponse;
+    }
+
+    const { UNISWAP_V3_QUOTER } = addressByChainIdResponse as AddressesByChainIdResponse;
     console.log('Using Uniswap V3 Quoter address:', UNISWAP_V3_QUOTER);
 
     const uniswapV3QuoterInterface = new ethers.utils.Interface([
@@ -99,9 +112,12 @@ export const getUniswapQuote = async (
 
     if (!bestQuote || !bestFee) {
         console.error('Failed to get any valid quotes');
-        throw new Error(
-            'Failed to get quote from Uniswap V3. No valid pool found for this token pair or quote returned 0.'
-        );
+        return {
+            status: 'error',
+            details: [
+                'Failed to get quote from Uniswap V3. No valid pool found for this token pair or quote returned 0.'
+            ]
+        };
     }
 
     // Calculate minimum output with 0.5% slippage tolerance

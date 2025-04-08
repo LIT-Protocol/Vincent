@@ -1,4 +1,14 @@
-export const getAddressesByChainId = (chainId: string) => {
+import { VincentToolError } from "@lit-protocol/vincent-tool";
+
+export interface AddressesByChainIdResponse {
+    UNISWAP_V3_QUOTER: string | null;
+    UNISWAP_V3_ROUTER: string | null;
+    WETH_ADDRESS: string | null;
+    ETH_USD_CHAINLINK_FEED: string | null;
+    SPENDING_LIMIT_ADDRESS: string | null;
+}
+
+export const getAddressesByChainId = (chainId: string): AddressesByChainIdResponse | VincentToolError => {
     let UNISWAP_V3_QUOTER: string | null = null;
     let UNISWAP_V3_ROUTER: string | null = null;
     let WETH_ADDRESS: string | null = null;
@@ -29,7 +39,12 @@ export const getAddressesByChainId = (chainId: string) => {
             SPENDING_LIMIT_ADDRESS = '0x756fA449De893446B26e10C6C66E62ccabeE908C';
             break;
         default:
-            throw new Error(`Unsupported chain ID: ${chainId}`);
+            return {
+                status: 'error',
+                details: [
+                    `Unsupported chain ID: ${chainId}`
+                ]
+            };
     }
 
     return {

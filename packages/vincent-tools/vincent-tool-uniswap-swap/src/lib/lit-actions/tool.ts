@@ -55,7 +55,7 @@ declare global {
     const tokenInInfo = await getErc20Info(userRpcProvider, toolParams.tokenIn);
     const tokenOutInfo = await getErc20Info(userRpcProvider, toolParams.tokenOut);
 
-    const { status, error } = await validateUserToolPolicies(
+    const response = await validateUserToolPolicies(
       yellowstoneRpcProvider,
       toolParams.rpcUrl,
       delegateeAddress,
@@ -67,12 +67,17 @@ declare global {
         tokenOutDecimals: tokenOutInfo.decimals.toString(),
       }
     );
+    console.log(`validateUserToolPolicies response: ${JSON.stringify(response)}`);
 
-    if (status === 'error') {
-      throw new Error(error ?? 'Unknown error');
+    if (response.status === 'error') {
+      Lit.Actions.setResponse({
+        response: JSON.stringify(response),
+      });
+
+      return;
     }
 
-    const swapTxHash = await sendUniswapTx(
+    const swapTxResponse = await sendUniswapTx(
       userRpcProvider,
       toolParams.chainId,
       toolParams.tokenIn,
@@ -84,10 +89,19 @@ declare global {
       pkpInfo.publicKey,
     );
 
+    if ('status' in swapTxResponse && swapTxResponse.status === 'error') {
+      Lit.Actions.setResponse({
+        response: JSON.stringify(swapTxResponse),
+      });
+    }
+
     Lit.Actions.setResponse({
       response: JSON.stringify({
         status: 'success',
-        swapTxHash,
+        details: [
+          swapTxResponse.details[0],
+          `${pkpInfo.ethAddress} swapped ${toolParams.amountIn} ${toolParams.tokenIn} for ${toolParams.tokenOut}`,
+        ],
       }),
     });
   } catch (error: unknown) {
@@ -96,7 +110,7 @@ declare global {
     Lit.Actions.setResponse({
       response: JSON.stringify({
         status: 'error',
-        error: (error as Error).message || String(error)
+        details: [(error as Error).message || JSON.stringify(error)]
       }),
     });
   }

@@ -1,8 +1,8 @@
 /* eslint-disable */
-import { type PolicyParameter } from '@lit-protocol/vincent-tool';
+import type { VincentToolPolicyError, PolicyParameter } from '@lit-protocol/vincent-tool';
 import { ethers } from 'ethers';
 
-export const getOnChainPolicyParams = (parameters: PolicyParameter[]) => {
+export const getOnChainPolicyParams = (parameters: PolicyParameter[]): VincentToolPolicyError | { maxDailySpendingLimitInUsdCents?: ethers.BigNumber } => {
     let maxDailySpendingLimitInUsdCents: ethers.BigNumber | undefined;
 
     for (const parameter of parameters) {
@@ -12,7 +12,12 @@ export const getOnChainPolicyParams = (parameters: PolicyParameter[]) => {
                 if (parameter.paramType === 2) {
                     maxDailySpendingLimitInUsdCents = ethers.utils.defaultAbiCoder.decode(['uint256'], parameter.value)[0];
                 } else {
-                    throw new Error(`Unexpected parameter type for maxDailySpendingLimitInUsdCents: ${parameter.paramType}`);
+                    return {
+                        allow: false,
+                        details: [
+                            `Unexpected parameter type for maxDailySpendingLimitInUsdCents: ${parameter.paramType}`
+                        ]
+                    }
                 }
                 break;
         }

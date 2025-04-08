@@ -1,6 +1,7 @@
 import { ethers } from 'ethers';
+import { type VincentToolResponse } from '@lit-protocol/vincent-tool';
 
-import { getAddressesByChainId, getUniswapQuote, signTx } from '.';
+import { type AddressesByChainIdResponse, getAddressesByChainId, getUniswapQuote, signTx, type UniswapQuoteResponse } from '.';
 
 const estimateGasForSwap = async (
     uniswapV3RouterContract: ethers.Contract,
@@ -55,8 +56,14 @@ export const sendUniswapTx = async (
     tokenOutDecimals: string,
     pkpEthAddress: string,
     pkpPubKey: string,
-) => {
-    const { UNISWAP_V3_ROUTER } = getAddressesByChainId(userChainId);
+): Promise<VincentToolResponse> => {
+    const addressByChainIdResponse = getAddressesByChainId(userChainId);
+
+    if ('status' in addressByChainIdResponse && addressByChainIdResponse.status === 'error') {
+        return addressByChainIdResponse;
+    }
+
+    const { UNISWAP_V3_ROUTER } = addressByChainIdResponse as AddressesByChainIdResponse;
 
     console.log('Estimating gas for Swap transaction...');
     const partialSwapTxStringified = await Lit.Actions.runOnce(
@@ -72,7 +79,7 @@ export const sendUniswapTx = async (
             );
 
             console.log('Getting Uniswap quote for swap...');
-            const { bestFee, amountOutMin } = await getUniswapQuote(
+            const uniswapQuoteResponse = await getUniswapQuote(
                 userRpcProvider,
                 userChainId,
                 tokenInAddress,
@@ -81,6 +88,12 @@ export const sendUniswapTx = async (
                 tokenInDecimals,
                 tokenOutDecimals
             );
+
+            if ('status' in uniswapQuoteResponse && uniswapQuoteResponse.status === 'error') {
+                return uniswapQuoteResponse;
+            }
+
+            const { bestFee, amountOutMin } = uniswapQuoteResponse as UniswapQuoteResponse;
 
             const { estimatedGas, maxFeePerGas, maxPriorityFeePerGas } = await estimateGasForSwap(
                 uniswapV3RouterContract,
@@ -145,5 +158,10 @@ export const sendUniswapTx = async (
 
     console.log(`Swap transaction hash: ${swapTxHash}`);
 
-    return swapTxHash;
+    return {
+        status: 'success',
+        details: [
+            swapTxHash
+        ]
+    };
 }
