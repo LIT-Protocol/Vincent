@@ -30,7 +30,8 @@
     "make:contracts": "cd packages/vincent-contracts && make",
     "gen:contracts": "bun run make:contracts get-abis run-postbuild-scripts",
     "build:contracts": "nx build vincent-contracts",
-    "clean": "rimraf bun.lock node_modules"
+    "clean": "node tools/clean.js",
+    "deploy:tools": "npx nx deploy vincent-tool-uniswap-swap"
   },
   "dependencies": {
     "@hookform/resolvers": "^4.1.0",
@@ -86,6 +87,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@nx/eslint-plugin": "^20.7.1",
     "@nx/jest": "^20.5.0",
     "@nx/js": "20.4.6",
     "@nx/linter": "^19.8.4",
@@ -112,6 +114,7 @@
     "tailwindcss": "^3.4.1",
     "ts-jest": "^29.2.6",
     "tslib": "^2.3.0",
-    "typescript": "^5.8.2"
+    "typescript": "^5.8.2",
+    "typescript-eslint": "^8.29.0"
   }
 }
