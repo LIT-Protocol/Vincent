@@ -1,4 +1,3 @@
-/* eslint-disable */
 import { ethers } from 'ethers';
 import { type Policy } from '@lit-protocol/vincent-tool';
 
@@ -63,7 +62,6 @@ declare global {
 
     const tokenAmountInUsdResponse = await getTokenAmountInUsd(
       userRpcProvider,
-      toolParams.chainId,
       toolParams.amountIn,
       toolParams.tokenIn,
       toolParams.tokenInDecimals

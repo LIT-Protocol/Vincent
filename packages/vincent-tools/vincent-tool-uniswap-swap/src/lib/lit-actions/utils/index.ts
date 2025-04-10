@@ -1,4 +1,4 @@
-export * from './get-addresses-by-chain-id';
+export * from './address-constants';
 export * from './get-on-chain-policy-params';
 export * from './get-uniswap-quote';
 export * from './get-token-amount-in-usd';
@@ -10,3 +10,4 @@ export * from './send-uniswap-tx';
 export * from './send-erc20-approval';
 export * from './validate-policy-is-permitted';
 export * from './check-spend-limit';
+export * from './get-gas-params';

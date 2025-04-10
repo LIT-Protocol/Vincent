@@ -1,4 +1,3 @@
-/* eslint-disable */
 import type { VincentToolPolicyError, PolicyParameter } from '@lit-protocol/vincent-tool';
 import { ethers } from 'ethers';
 

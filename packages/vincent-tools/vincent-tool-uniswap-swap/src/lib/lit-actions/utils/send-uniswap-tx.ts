@@ -1,7 +1,7 @@
 import { ethers } from 'ethers';
 import { type VincentToolResponse } from '@lit-protocol/vincent-tool';
 
-import { type AddressesByChainIdResponse, getAddressesByChainId, getUniswapQuote, signTx, type UniswapQuoteResponse } from '.';
+import { BASE_MAINNET_UNISWAP_V3_ROUTER, getGasParams, getUniswapQuote, signTx, type UniswapQuoteResponse } from '.';
 
 const estimateGasForSwap = async (
     uniswapV3RouterContract: ethers.Contract,
@@ -12,37 +12,25 @@ const estimateGasForSwap = async (
     amountInSmallestUnit: ethers.BigNumber,
     amountOutMin: ethers.BigNumber
 ) => {
-    let estimatedGas = await uniswapV3RouterContract.estimateGas.exactInputSingle(
-        [
-            tokenInAddress,
-            tokenOutAddress,
-            uniswapV3PoolFee,
-            pkpEthAddress,
-            amountInSmallestUnit,
-            amountOutMin,
-            0
-        ],
-        { from: pkpEthAddress }
-    );
-
-    // Add 10% buffer to estimated gas
-    estimatedGas = estimatedGas.mul(110).div(100);
-
-    // Get current gas data
-    const [block, gasPrice] = await Promise.all([
+    const [block, feeData, estimatedGas] = await Promise.all([
         uniswapV3RouterContract.provider.getBlock('latest'),
-        uniswapV3RouterContract.provider.getGasPrice()
+        uniswapV3RouterContract.provider.getFeeData(),
+        uniswapV3RouterContract.estimateGas.exactInputSingle(
+            [
+                tokenInAddress,
+                tokenOutAddress,
+                uniswapV3PoolFee,
+                pkpEthAddress,
+                amountInSmallestUnit,
+                amountOutMin,
+                0
+            ],
+            { from: pkpEthAddress }
+        )
     ]);
 
-    // Use a more conservative max fee per gas calculation
-    const baseFeePerGas = block.baseFeePerGas || gasPrice;
-    const maxFeePerGas = baseFeePerGas.mul(150).div(100); // 1.5x base fee
-    const maxPriorityFeePerGas = gasPrice.div(10); // 0.1x gas price
-
     return {
-        estimatedGas,
-        maxFeePerGas,
-        maxPriorityFeePerGas,
+        ...await getGasParams(uniswapV3RouterContract.provider, block, feeData, estimatedGas),
     };
 }
 
@@ -57,14 +45,6 @@ export const sendUniswapTx = async (
     pkpEthAddress: string,
     pkpPubKey: string,
 ): Promise<VincentToolResponse> => {
-    const addressByChainIdResponse = getAddressesByChainId(userChainId);
-
-    if ('status' in addressByChainIdResponse && addressByChainIdResponse.status === 'error') {
-        return addressByChainIdResponse;
-    }
-
-    const { UNISWAP_V3_ROUTER } = addressByChainIdResponse as AddressesByChainIdResponse;
-
     console.log('Estimating gas for Swap transaction...');
     const partialSwapTxStringified = await Lit.Actions.runOnce(
         { waitForResponse: true, name: 'send swap tx gas estimation' },
@@ -73,7 +53,7 @@ export const sendUniswapTx = async (
             const amountInSmallestUnit = ethers.utils.parseUnits(amountIn, tokenInDecimals);
 
             const uniswapV3RouterContract = new ethers.Contract(
-                UNISWAP_V3_ROUTER!,
+                BASE_MAINNET_UNISWAP_V3_ROUTER,
                 ['function exactInputSingle((address,address,uint24,address,uint256,uint256,uint160)) external payable returns (uint256)'],
                 userRpcProvider
             );
@@ -81,7 +61,6 @@ export const sendUniswapTx = async (
             console.log('Getting Uniswap quote for swap...');
             const uniswapQuoteResponse = await getUniswapQuote(
                 userRpcProvider,
-                userChainId,
                 tokenInAddress,
                 tokenOutAddress,
                 amountIn,
@@ -133,7 +112,7 @@ export const sendUniswapTx = async (
 
     const partialSwapTxObject = JSON.parse(partialSwapTxStringified);
     const unsignedSwapTx = {
-        to: UNISWAP_V3_ROUTER!,
+        to: BASE_MAINNET_UNISWAP_V3_ROUTER,
         data: partialSwapTxObject.data,
         value: ethers.BigNumber.from(0),
         gasLimit: ethers.BigNumber.from(partialSwapTxObject.gasLimit),
@@ -151,17 +130,24 @@ export const sendUniswapTx = async (
     const swapTxHash = await Lit.Actions.runOnce(
         { waitForResponse: true, name: 'swapTxSender' },
         async () => {
-            const receipt = await userRpcProvider.sendTransaction(signedSwapTx);
-            return receipt.hash;
+            try {
+                const receipt = await userRpcProvider.sendTransaction(signedSwapTx);
+                return JSON.stringify({
+                    status: 'success',
+                    details: [
+                        receipt.hash,
+                    ]
+                });
+            } catch (error) {
+                return JSON.stringify({
+                    status: 'error',
+                    details: [
+                        (error as Error).message || JSON.stringify(error)
+                    ]
+                });
+            }
         }
     );
 
-    console.log(`Swap transaction hash: ${swapTxHash}`);
-
-    return {
-        status: 'success',
-        details: [
-            swapTxHash
-        ]
-    };
+    return JSON.parse(swapTxHash);
 }

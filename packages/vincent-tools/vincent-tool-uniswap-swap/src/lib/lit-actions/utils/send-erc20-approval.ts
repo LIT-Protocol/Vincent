@@ -1,38 +1,27 @@
 import { ethers } from 'ethers';
 import type { VincentToolPolicyResponse, VincentToolResponse } from '@lit-protocol/vincent-tool';
 
-import { type AddressesByChainIdResponse, getAddressesByChainId, signTx } from '.';
+import { BASE_MAINNET_UNISWAP_V3_ROUTER, getGasParams, signTx } from '.';
 
 const estimateGasForApproval = async (
     tokenInContract: ethers.Contract,
     uniswapV3RouterAddress: string,
     amountInSmallestUnit: ethers.BigNumber,
-    pkpEthAddress: string,
+    pkpEthAddress: string
 ) => {
-    let estimatedGas = await tokenInContract.estimateGas.approve(
-        uniswapV3RouterAddress,
-        amountInSmallestUnit,
-        { from: pkpEthAddress }
-    );
-
-    // Add 10% buffer to estimated gas
-    estimatedGas = estimatedGas.mul(110).div(100);
-
-    // Get current gas data
-    const [block, gasPrice] = await Promise.all([
+    // Get current gas data in parallel
+    const [block, feeData, estimatedGas] = await Promise.all([
         tokenInContract.provider.getBlock('latest'),
-        tokenInContract.provider.getGasPrice()
+        tokenInContract.provider.getFeeData(),
+        tokenInContract.estimateGas.approve(
+            uniswapV3RouterAddress,
+            amountInSmallestUnit,
+            { from: pkpEthAddress }
+        )
     ]);
 
-    // Use a more conservative max fee per gas calculation
-    const baseFeePerGas = block.baseFeePerGas || gasPrice;
-    const maxFeePerGas = baseFeePerGas.mul(150).div(100); // 1.5x base fee
-    const maxPriorityFeePerGas = gasPrice.div(10); // 0.1x gas price
-
     return {
-        estimatedGas,
-        maxFeePerGas,
-        maxPriorityFeePerGas,
+        ...await getGasParams(tokenInContract.provider, block, feeData, estimatedGas),
     };
 }
 
@@ -48,14 +37,6 @@ export const sendErc20ApprovalTx = async (
     const partialApprovalTxStringified = await Lit.Actions.runOnce(
         { waitForResponse: true, name: 'send approval tx gas estimation' },
         async () => {
-            const addressByChainIdResponse = getAddressesByChainId(userChainId);
-
-            if ('status' in addressByChainIdResponse && addressByChainIdResponse.status === 'error') {
-                return addressByChainIdResponse;
-            }
-
-            const { UNISWAP_V3_ROUTER } = addressByChainIdResponse as AddressesByChainIdResponse;
-
             const tokenInContract = new ethers.Contract(
                 tokenInAddress,
                 ['function approve(address,uint256) external returns (bool)'],
@@ -68,14 +49,14 @@ export const sendErc20ApprovalTx = async (
             console.log(`Estimating gas for approval transaction...`);
             const { estimatedGas, maxFeePerGas, maxPriorityFeePerGas } = await estimateGasForApproval(
                 tokenInContract,
-                UNISWAP_V3_ROUTER!,
+                BASE_MAINNET_UNISWAP_V3_ROUTER,
                 amountInSmallestUnit,
                 pkpEthAddress
             );
 
             console.log(`Encoding approval transaction data...`);
             const approvalTxData = tokenInContract.interface.encodeFunctionData('approve', [
-                UNISWAP_V3_ROUTER!,
+                BASE_MAINNET_UNISWAP_V3_ROUTER,
                 amountInSmallestUnit,
             ]);
 
@@ -112,17 +93,24 @@ export const sendErc20ApprovalTx = async (
     const approvalTxHash = await Lit.Actions.runOnce(
         { waitForResponse: true, name: 'approvalTxSender' },
         async () => {
-            const receipt = await userRpcProvider.sendTransaction(signedApprovalTx);
-            return receipt.hash;
+            try {
+                const receipt = await userRpcProvider.sendTransaction(signedApprovalTx);
+                return JSON.stringify({
+                    status: 'success',
+                    details: [
+                        receipt.hash
+                    ],
+                });
+            } catch (error) {
+                return JSON.stringify({
+                    status: 'error',
+                    details: [
+                        (error as Error).message || JSON.stringify(error)
+                    ]
+                });
+            }
         }
     );
 
-    console.log(`Approval transaction hash: ${approvalTxHash}`);
-
-    return {
-        status: 'success',
-        details: [
-            approvalTxHash,
-        ]
-    };
+    return JSON.parse(approvalTxHash);
 }

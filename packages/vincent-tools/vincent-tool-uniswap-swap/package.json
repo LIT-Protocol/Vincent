@@ -38,8 +38,8 @@
   "scripts": {
     "test:contract-caller": "npx ts-node tools/scripts/vincent-contract-caller.ts",
     "test": "jest --testPathIgnorePatterns=test/tool.spec.ts",
-    "test:execute-tools": "jest test/tool.spec.ts --bail",
-    "test:spending-limit-error": "jest test/spending-limit-error.spec.ts --bail"
+    "test:execute-tools": "jest test/tool.spec.ts --bail 1",
+    "test:spending-limit-error": "jest test/spending-limit-error.spec.ts --bail 1"
   },
   "nx": {
     "sourceRoot": "packages/vincent-tools/vincent-tool-uniswap-swap/src",

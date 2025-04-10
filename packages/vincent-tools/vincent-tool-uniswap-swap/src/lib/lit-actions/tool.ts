@@ -1,4 +1,3 @@
-/* eslint-disable */
 import { NETWORK_CONFIG, validateUserToolPolicies, getPkpInfo } from '@lit-protocol/vincent-tool';
 import { ethers } from 'ethers';
 
@@ -93,6 +92,7 @@ declare global {
       Lit.Actions.setResponse({
         response: JSON.stringify(swapTxResponse),
       });
+      return;
     }
 
     Lit.Actions.setResponse({
