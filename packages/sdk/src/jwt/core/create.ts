@@ -90,7 +90,7 @@ export function createPKPSigner(pkpWallet: PKPEthersWallet) {
  * ```
  */
 export async function createPKPSignedJWT(config: JWTConfig): Promise<string> {
-  const { pkpWallet, pkp, payload, expiresInMinutes, audience } = config;
+  const { app, pkpWallet, pkp, payload, expiresInMinutes, audience, authentication } = config;
   const signer = createPKPSigner(pkpWallet);
 
   // iat and exp are expressed in seconds https://datatracker.ietf.org/doc/html/rfc7519
@@ -103,7 +103,6 @@ export async function createPKPSignedJWT(config: JWTConfig): Promise<string> {
     iat: number;
     exp: number;
     iss: string;
-    pkpPublicKey: string;
     aud?: string | string[];
     [key: string]: unknown;
   } = {
@@ -112,7 +111,12 @@ export async function createPKPSignedJWT(config: JWTConfig): Promise<string> {
     iat,
     exp,
     iss: `did:ethr:${walletAddress}`,
-    pkpPublicKey: pkp.publicKey,
+    pkp,
+    app,
+    authentication: {
+      type: authentication.type,
+      ...(authentication.value ? { value: authentication.value } : {}),
+    },
   };
 
   const jwt = await didJWT.createJWT(

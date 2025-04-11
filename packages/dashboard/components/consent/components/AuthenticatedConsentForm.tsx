@@ -32,7 +32,7 @@ import {
 
 /**
  * AuthenticatedConsentForm is the main component for handling app permissions.
- * 
+ *
  * This component manages the entire flow for agent authorization:
  * 1. Checking if an app is already permitted
  * 2. Verifying redirect URIs for security
@@ -40,7 +40,7 @@ import {
  * 4. Managing version upgrades
  * 5. Providing UI for approval/disapproval actions
  * 6. JWT generation and redirection
- * 
+ *
  * The component uses several custom hooks to modularize functionality:
  * - useStatusMessage: For status messages and notifications
  * - useJwtRedirect: For JWT token generation and redirection
@@ -292,7 +292,8 @@ export default function AuthenticatedConsentForm({
             return { success: false };
           }
 
-          if (!agentPKP || !appId) {
+          const appVersion = permittedVersion || Number(appInfo.latestVersion);
+          if (!agentPKP || !appId || !appVersion) {
             console.error(
               'Missing required data for consent approval in handleFormSubmission'
             );
@@ -311,7 +312,7 @@ export default function AuthenticatedConsentForm({
           }
 
           showStatus('Generating authentication token...', 'info');
-          const jwt = await generateJWT(appInfo);
+          const jwt = await generateJWT(appId, appVersion, appInfo);
           updateState({ showSuccess: true });
 
           showStatus('Approval successful! Redirecting...', 'success');
@@ -342,7 +343,7 @@ export default function AuthenticatedConsentForm({
     } finally {
       setSubmitting(false);
     }
-  }, [approveConsent, updateParameters, generateJWT, redirectWithJWT, agentPKP, appId, appInfo, showErrorWithStatus, showStatus, updateState, useCurrentVersionOnly, parameters]);
+  }, [approveConsent, updateParameters, generateJWT, redirectWithJWT, agentPKP, appId, appInfo, showErrorWithStatus, showStatus, updateState, useCurrentVersionOnly, permittedVersion]);
 
   /**
    * Handles the disapproval action when the user denies permission to the app.

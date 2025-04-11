@@ -1,9 +1,9 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { IRelayPKP } from '@lit-protocol/types';
 import * as ethers from 'ethers';
-import { 
-  getAppViewRegistryContract, 
-  getUserViewRegistryContract 
+import {
+  getAppViewRegistryContract,
+  getUserViewRegistryContract
 } from '../utils/contracts';
 import { AppView } from '../types';
 
@@ -11,7 +11,7 @@ interface UseAppPermissionCheckProps {
   appId: string | null;
   agentPKP?: IRelayPKP;
   redirectUri: string | null;
-  generateJWT?: (appInfo: AppView) => Promise<string>;
+  generateJWT?: (appId: string, appVersion: number, appInfo: AppView) => Promise<string>;
   redirectWithJWT?: (jwt: string) => void;
   fetchExistingParameters?: () => Promise<void>;
   onStatusChange?: (message: string, type?: 'info' | 'warning' | 'success' | 'error') => void;
@@ -34,7 +34,7 @@ interface AppPermissionState {
 }
 
 /**
- * This hook manages the app permission checking process, determining whether a PKP 
+ * This hook manages the app permission checking process, determining whether a PKP
  * has permission to use an app, verifying redirect URIs, handling version upgrades,
  * and managing the various states throughout the permission flow.
  */
@@ -63,11 +63,11 @@ export const useAppPermissionCheck = ({
     useCurrentVersionOnly: false,
     isAppDeleted: false
   });
-  
+
   // Ref to track if permission check has been done, track if we've previously seen a null appId
   const permissionCheckedRef = useRef(false);
   const hadNullAppIdRef = useRef(appId === null);
-  
+
   /**
    * Updates specific fields in the permission state object while preserving other values.
    * This prevents unnecessary re-renders by only updating what has changed.
@@ -75,7 +75,7 @@ export const useAppPermissionCheck = ({
   const updateState = useCallback((updates: Partial<AppPermissionState>) => {
     setState(prev => ({ ...prev, ...updates }));
   }, []);
-  
+
   /**
    * Verifies if the redirect URI is authorized for this app.
    * Checks if the provided redirectUri matches any URI in the app's authorizedRedirectUris list.
@@ -84,19 +84,19 @@ export const useAppPermissionCheck = ({
     if (!redirectUri) {
       return false;
     }
-    
+
     try {
       const isAuthorized = appInfo?.authorizedRedirectUris?.some(uri => {
         return uri === redirectUri;
       }) || false;
-      
+
       return isAuthorized;
     } catch (e) {
       console.error('Error verifying redirect URI:', e);
       return false;
     }
   }, [redirectUri]);
-  
+
   /**
    * Handles the flow when a user chooses to continue with an existing permission.
    * Generates a JWT token and redirects the user to the appropriate URI.
@@ -107,32 +107,32 @@ export const useAppPermissionCheck = ({
       console.error('Missing JWT functions for continuing with existing permission');
       return;
     }
-    
-    const { appInfo } = state;
+
+    const { appInfo, permittedVersion } = state;
     // IF #2: Check if app info exists
-    if (!appInfo) {
-      console.error('Cannot continue with existing permission: Missing app info');
+    if (!appId || !appInfo || !permittedVersion) {
+      console.error('Cannot continue with existing permission: Missing app id, app info or permitted version');
       return;
     }
-    
+
     // IF #3: Check if redirect URI exists
     if (!redirectUri) {
       console.error('Cannot continue with existing permission: Missing redirect URI');
       return;
     }
-    
+
     // TRY-CATCH #1: Handle the JWT generation and redirect flow
     try {
       updateState({ showingAuthorizedMessage: true });
       onStatusChange?.('Continuing with existing permission...', 'info');
-      
+
       onStatusChange?.('Generating authentication token...', 'info');
-      const jwt = await generateJWT(appInfo);
-      
+      const jwt = await generateJWT(appId, permittedVersion, appInfo);
+
       setTimeout(() => {
         updateState({ showSuccess: true });
         onStatusChange?.('Permission verified! Redirecting...', 'success');
-        
+
         setTimeout(() => {
           redirectWithJWT(jwt);
         }, 1000);
@@ -142,8 +142,8 @@ export const useAppPermissionCheck = ({
       onStatusChange?.('An error occurred while processing your request. Please try again.', 'error');
       updateState({ showingAuthorizedMessage: false });
     }
-  }, [redirectUri, generateJWT, redirectWithJWT, onStatusChange, updateState, state.appInfo]);
-  
+  }, [appId, redirectUri, generateJWT, redirectWithJWT, onStatusChange, updateState, state]);
+
   /**
    * Handles the case when a user wants to upgrade to a newer version of the app.
    * Resets the version upgrade prompt and sets up state for the permission process.
@@ -166,7 +166,7 @@ export const useAppPermissionCheck = ({
       });
     }
   }, [updateState, fetchExistingParameters]);
-  
+
   /**
    * The main function that checks if a PKP has permission for an app.
    * This function:
@@ -211,9 +211,9 @@ export const useAppPermissionCheck = ({
         });
         return;
       }
-      
+
       updateState({ appInfo: appRawInfo });
-      
+
       // IF #4: Check if app is deleted
       if (appRawInfo.isDeleted) {
         console.log('App is deleted. Preventing access.');
@@ -227,7 +227,7 @@ export const useAppPermissionCheck = ({
       }
 
       const isUriVerified = await verifyUri(appRawInfo);
-      
+
       // IF #5: Check if redirect URI is trusted
       if (!isUriVerified) {
         updateState({
@@ -257,17 +257,17 @@ export const useAppPermissionCheck = ({
       // App is permitted and we have a redirect URI - check version
       let permittedVersionNum;
       let latestVersionNum;
-      
+
       // TRY-CATCH #2: For version checking
       try {
         const permittedAppVersion = await getUserViewRegistryContract().getPermittedAppVersionForPkp(
           agentPKP.tokenId,
           appIdNum
         );
-        
+
         permittedVersionNum = permittedAppVersion.toNumber();
         latestVersionNum = Number(appRawInfo.latestVersion);
-        
+
         updateState({ permittedVersion: permittedVersionNum });
       } catch (error) {
         onStatusChange?.('Error checking permitted version', 'error');
@@ -277,7 +277,7 @@ export const useAppPermissionCheck = ({
         });
         return;
       }
-      
+
       // IF #7: Check if version upgrade is needed
       if (permittedVersionNum < latestVersionNum) {
         updateState({
@@ -287,7 +287,7 @@ export const useAppPermissionCheck = ({
         });
         return;
       }
-      
+
       // IF #8: Check if we need to fetch existing parameters
       if (fetchExistingParameters) {
         // TRY-CATCH #3: For fetching existing parameters
@@ -299,7 +299,7 @@ export const useAppPermissionCheck = ({
           // Continue with the flow even if parameter fetching fails
         }
       }
-      
+
       // Proceed with modal display
       updateState({
         showUpdateModal: true,
@@ -310,7 +310,7 @@ export const useAppPermissionCheck = ({
       // Main error handler for the entire function
       console.error('Error in checkAppPermission:', error);
       onStatusChange?.('Error checking app permissions. Please make sure the app exists.', 'error');
-      updateState({ 
+      updateState({
         isLoading: false,
         checkingPermissions: false
       });
@@ -321,12 +321,10 @@ export const useAppPermissionCheck = ({
     redirectUri,
     verifyUri,
     updateState,
-    generateJWT,
-    redirectWithJWT,
     fetchExistingParameters,
     onStatusChange
   ]);
-  
+
   /**
    * Triggers the permission check when appId becomes available.
    * This is important because appId might be null on initial component mount,
@@ -339,7 +337,7 @@ export const useAppPermissionCheck = ({
       checkAppPermission();
     }
   }, [appId, checkAppPermission]);
-  
+
   /**
    * Resets UI flags when the update modal is displayed.
    * This ensures that success and authorization messages don't appear
@@ -354,11 +352,11 @@ export const useAppPermissionCheck = ({
       });
     }
   }, [state.showUpdateModal, updateState]);
-  
+
   return {
     ...state,
     continueWithExistingPermission,
     handleUpgrade,
     updateState
   };
-}; 
+};

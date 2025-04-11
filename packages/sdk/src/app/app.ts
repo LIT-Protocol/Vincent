@@ -31,8 +31,8 @@ export const getVincentWebAppClient = (
 
   return {
     redirectToConsentPage: (redirectConsentPageConfig: RedirectToVincentConsentPageParams) => {
-      const { redirectUri } = redirectConsentPageConfig;
-      redirectToConsentPage({ appId, redirectUri });
+      const { consentPageUrl, redirectUri } = redirectConsentPageConfig;
+      redirectToConsentPage({ appId, consentPageUrl, redirectUri });
     },
     isLogin: () => isLoginUri(window.location.href),
     decodeVincentLoginJWT: (expectedAudience: string) =>

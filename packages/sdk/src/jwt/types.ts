@@ -20,6 +20,14 @@ export interface JWTConfig {
   payload: Record<string, unknown>;
   expiresInMinutes: number;
   audience: string | string[];
+  app: {
+    id: string;
+    version: number;
+  };
+  authentication: {
+    type: string;
+    value?: string;
+  };
 }
 
 /**
@@ -27,12 +35,20 @@ export interface JWTConfig {
  *
  * @interface VincentJWTPayload
  * @extends {JWTPayload} Extends the JWTPayload type from `did-jwt` with Vincent-specific properties
- * @property {string} pkpPublicKey - The public key of the PKP associated with the JWT.
- * @property {string} pkpAddress - The public Ethereum address of the PKP.
+ * @property {string} app - The app associated with the JWT.
+ * @property {string} pkp - The PKP associated with the JWT.
+ * @property {string} authentication - The authentication method used to generate the JWT.
  */
 export interface VincentJWTPayload extends JWTPayload {
-  pkpPublicKey: string;
-  pkpAddress: string;
+  pkp: IRelayPKP;
+  app: {
+    id: string;
+    version: number;
+  };
+  authentication: {
+    type: string;
+    value?: string;
+  };
 }
 
 /**

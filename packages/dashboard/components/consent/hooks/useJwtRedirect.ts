@@ -4,6 +4,7 @@ import { jwt } from '@lit-protocol/vincent-sdk';
 import { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
 import { AppView } from '../types';
 import { litNodeClient } from '../utils/lit';
+import { useReadAuthInfo } from './useAuthInfo';
 
 const { create } = jwt;
 
@@ -24,13 +25,19 @@ export const useJwtRedirect = ({
   onStatusChange,
 }: UseJwtRedirectProps) => {
   const [isGenerating, setIsGenerating] = useState(false);
+  const authInfo = useReadAuthInfo();
 
   // Generate JWT for redirection
   const generateJWT = useCallback(
-    async (appInfo: AppView): Promise<string> => {
+    async (appId: string, appVersion: number, appInfo: AppView): Promise<string> => {
       if (!agentPKP || !redirectUri) {
         onStatusChange?.('Cannot generate JWT: missing agentPKP or redirectUri', 'error');
         throw new Error('Cannot generate JWT: missing agentPKP or redirectUri');
+      }
+
+      if (!authInfo) {
+        onStatusChange?.('Cannot generate JWT: missing authInfo', 'error');
+        throw new Error('Cannot generate JWT: missing authInfo');
       }
 
       if (!appInfo.authorizedRedirectUris.includes(redirectUri)) {
@@ -59,6 +66,14 @@ export const useJwtRedirect = ({
           payload: {},
           expiresInMinutes: parseInt(process.env.NEXT_PUBLIC_JWT_EXPIRATION_MINUTES!),
           audience: appInfo.authorizedRedirectUris,
+          app: {
+            id: appId,
+            version: appVersion,
+          },
+          authentication: {
+            type: authInfo.type,
+            value: authInfo.value,
+          },
         });
 
         onStatusChange?.('JWT created successfully!', 'success');
@@ -71,7 +86,7 @@ export const useJwtRedirect = ({
         setIsGenerating(false);
       }
     },
-    [agentPKP, redirectUri, sessionSigs, onStatusChange],
+    [agentPKP, authInfo, redirectUri, sessionSigs, onStatusChange],
   );
 
   const redirectWithJWT = useCallback(

@@ -1,9 +1,9 @@
-import { VincentJWT } from '../types';
-import * as didJWT from 'did-jwt';
-import { isJWTExpired, processJWTSignature, splitJWT, validateJWTTime } from './utils';
 import * as secp256k1 from '@noble/secp256k1';
-import { ethers } from 'ethers';
+import * as didJWT from 'did-jwt';
 import { JWT_ERROR } from 'did-jwt';
+import { ethers } from 'ethers';
+import { VincentJWT } from '../types';
+import { isJWTExpired, processJWTSignature, splitJWT, validateJWTTime } from './utils';
 
 /**
  * Decodes and verifies an {@link VincentJWT} token in string form
@@ -63,7 +63,7 @@ export function verifyJWT(jwt: string, expectedAudience: string): VincentJWT {
     const s = signatureBytes.slice(32, 64);
 
     // Process public key
-    let publicKey = decoded.payload.pkpPublicKey;
+    let publicKey = decoded.payload.pkp.publicKey;
     if (publicKey.startsWith('0x')) {
       publicKey = publicKey.substring(2);
     }
@@ -100,21 +100,5 @@ export function verifyJWT(jwt: string, expectedAudience: string): VincentJWT {
  * @returns The decoded Vincent JWT fields
  */
 export function decodeJWT(jwt: string): VincentJWT {
-  const decoded = didJWT.decodeJWT(jwt);
-
-  // JWT only has the public key, compute and add the address
-  const pkpPublicKey = decoded.payload.pkpPublicKey;
-
-  if (!pkpPublicKey) {
-    throw new Error(`${JWT_ERROR.INVALID_JWT}: JWT does not contain a PKP public key`);
-  }
-
-  return {
-    ...decoded,
-    payload: {
-      ...decoded.payload,
-      pkpPublicKey,
-      pkpAddress: ethers.utils.computeAddress(pkpPublicKey),
-    },
-  };
+  return didJWT.decodeJWT(jwt) as VincentJWT;
 }

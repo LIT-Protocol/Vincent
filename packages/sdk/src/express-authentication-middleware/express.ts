@@ -13,18 +13,25 @@ function assertAuthenticatedRequest(req: Request): asserts req is AuthenticatedR
 
   // Cast with a type assertion
   const user = req.user as Partial<{
+    app: unknown;
+    authentication: unknown;
     decodedJWT: unknown;
-    pkpAddress: unknown;
+    pkp: unknown;
     rawJWT: unknown;
   }>;
 
-  const { decodedJWT, pkpAddress, rawJWT } = user;
+  const { app, authentication, decodedJWT, pkp, rawJWT } = user;
+
+  function isDefinedObject(value: unknown): value is object {
+    return typeof value === 'object' && value !== null;
+  }
 
   if (
     typeof rawJWT !== 'string' ||
-    typeof pkpAddress !== 'string' ||
-    typeof decodedJWT !== 'object' ||
-    decodedJWT === null
+    !isDefinedObject(app) ||
+    !isDefinedObject(authentication) ||
+    !isDefinedObject(decodedJWT) ||
+    !isDefinedObject(pkp)
   ) {
     throw new Error('Request is not an AuthenticatedRequest: Invalid "user" properties');
   }
@@ -143,9 +150,11 @@ export const getAuthenticateUserExpressHandler =
       }
 
       (req as AuthenticatedRequest).user = {
+        app: decodedJWT.payload.app,
+        authentication: decodedJWT.payload.authentication,
         decodedJWT,
         rawJWT,
-        pkpAddress: decodedJWT.payload.pkpAddress,
+        pkp: decodedJWT.payload.pkp,
       };
 
       next();
