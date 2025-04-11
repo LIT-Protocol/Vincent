@@ -29,13 +29,15 @@ const VersionUpgradePrompt = ({
   const { isVersionEnabled } = useVersionEnabledCheck({
     versionNumber: permittedVersion
   });
+  
+  const { isVersionEnabled: isLatestVersionEnabled } = useVersionEnabledCheck({
+    versionNumber: Number(appInfo.latestVersion)
+  });
 
   return (
     <div className="consent-form-container">
       <h1>Version Upgrade Available</h1>
-      {isVersionEnabled === true && (
-        <StatusMessage message={statusMessage} type={statusType} />
-      )}
+      <StatusMessage message={statusMessage} type={statusType} />
 
       <div className="alert alert--warning" style={{ display: "block" }}>
         <p style={{ display: "block" }}>
@@ -54,6 +56,20 @@ const VersionUpgradePrompt = ({
           <p style={{ display: "block" }}>
             <strong>Warning:</strong> Version {permittedVersion} has been disabled by the app developer.
             To continue using the app, please update to the latest version.
+          </p>
+        </div>
+      )}
+      
+      {isLatestVersionEnabled === false && (
+        <div className="alert alert--warning" style={{
+          display: "block",
+          marginTop: "12px",
+          backgroundColor: "#FFFBE6",
+          color: "#806A00"
+        }}>
+          <p style={{ display: "block" }}>
+            <strong>Notice:</strong> The latest version of this application is currently disabled by the developer.
+            To continue using the app, please continue without changes or update your parameters for the current version.
           </p>
         </div>
       )}
@@ -78,12 +94,15 @@ const VersionUpgradePrompt = ({
           <button
             className="btn btn--primary"
             onClick={onUpgrade}
+            disabled={isLatestVersionEnabled === false}
+            title={isLatestVersionEnabled === false ? "Latest version is currently disabled" : "Update to the latest version"}
           >
             Update to Latest Version
           </button>
           <button
             className="btn btn--secondary"
             onClick={onUpdateParameters}
+            style={{ color: "#000000" }}
           >
             Update Parameters Only
           </button>

@@ -451,37 +451,6 @@ export default function AuthenticatedConsentForm({
     }
   }, [error, showErrorWithStatus]);
 
-  /**
-   * Automatically resolves loading state after a timeout period.
-   * This prevents the UI from getting stuck in a loading state if:
-   * 1. Network issues occur
-   * 2. Contract calls fail silently
-   * 3. Permission checking takes too long
-   */
-  useEffect(() => {
-    let timer: ReturnType<typeof setTimeout>;
-
-    if ((checkingPermissions || isLoading) && appInfo) {
-      timer = setTimeout(() => {
-        updateState({
-          checkingPermissions: false,
-          isLoading: false
-        });
-      }, 3000); // 3 seconds timeout with appInfo
-    } else if (checkingPermissions || isLoading) {
-      timer = setTimeout(() => {
-        updateState({
-          checkingPermissions: false,
-          isLoading: false
-        });
-      }, 8000);
-    }
-
-    return () => {
-      if (timer) clearTimeout(timer);
-    };
-  }, [checkingPermissions, isLoading, appInfo, updateState]);
-
   // ===== Render Logic =====
 
   // Show the parameter update modal - this should take precedence over all other views
