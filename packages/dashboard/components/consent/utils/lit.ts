@@ -40,7 +40,21 @@ export const litNodeClient: LitNodeClient = new LitNodeClient({
   debug: false,
 });
 
-litNodeClient.connect();
+// Only connect on the client side
+let litClientConnected = false;
+
+export const connectLitClient = async () => {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  if (!litClientConnected) {
+    await litNodeClient.connect();
+    litClientConnected = true;
+  }
+  console.log('litNodeClient', litNodeClient);
+  return litNodeClient;
+};
 
 const litRelay = new LitRelay({
   relayUrl: LitRelay.getRelayUrl(SELECTED_LIT_NETWORK),
@@ -224,7 +238,8 @@ export async function getSessionSigs({
   pkpPublicKey: string;
   authMethod: AuthMethod;
 }): Promise<SessionSigs> {
-  await litNodeClient.connect();
+  // Ensure the client is connected
+  await connectLitClient();
 
   const sessionSigs = await litNodeClient.getPkpSessionSigs({
     chain: 'ethereum',

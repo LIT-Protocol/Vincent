@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 import { IRelayPKP } from '@lit-protocol/types';
 import { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
 import { AppView, VersionInfo, VersionParameter } from '../types';
-import { litNodeClient } from '../utils/lit';
+import { connectLitClient, litNodeClient } from '../utils/lit';
 import {
   getUserViewRegistryContract,
   getUserRegistryContract,
@@ -85,6 +85,8 @@ export const useConsentApproval = ({
    */
   const initializeWallet = useCallback(async () => {
     onStatusChange?.('Initializing your PKP wallet...', 'info');
+
+    await connectLitClient();
 
     // Create and initialize the wallet
     const userPkpWallet = new PKPEthersWallet({
