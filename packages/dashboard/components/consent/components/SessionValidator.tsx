@@ -25,43 +25,71 @@ const CenteredContainer = ({ children }: { children: React.ReactNode }) => (
  * A streamlined SessionValidator component that validates session signatures on mount
  */
 const SessionValidator: React.FC = () => {
+  console.log('SessionValidator: Component rendering');
   const [showConsentForm, setShowConsentForm] = useState(false);
   const [showExistingAccount, setShowExistingAccount] = useState(false);
   const [sessionSigs, setSessionSigs] = useState<SessionSigs | null>(null);
   const authInfo = useReadAuthInfo();
   const [hasCheckedSession, setHasCheckedSession] = useState(false);
 
+  console.log('SessionValidator: Initial state', { 
+    showConsentForm, 
+    showExistingAccount, 
+    sessionSigs: sessionSigs ? 'SessionSigs exist' : null,
+    authInfo: authInfo ? 'AuthInfo exists' : null,
+    hasCheckedSession 
+  });
+
   // Validate session once we have auth info
   useEffect(() => {
+    console.log('SessionValidator: Auth effect triggered', { 
+      hasCheckedSession, 
+      authInfoExists: !!authInfo,
+      agentPKPExists: authInfo?.agentPKP ? true : false 
+    });
+    
     // Skip if we've already checked the session or don't have auth info
     if (hasCheckedSession || !authInfo || !authInfo.agentPKP) return;
 
     const validateSession = async () => {
+        console.log('SessionValidator: Beginning session validation');
         try {
           // Check if lit-wallet-sig exists in localStorage first
           const litWalletSig = localStorage.getItem('lit-wallet-sig');
+          console.log('SessionValidator: lit-wallet-sig from localStorage', { exists: !!litWalletSig });
+          
           if (!litWalletSig) {
             setHasCheckedSession(true);
+            console.log('SessionValidator: No lit-wallet-sig found, exiting validation');
             return; // Exit early if the key is missing
           }
 
           // Create lit resources for action execution and PKP signing
+          console.log('SessionValidator: Creating Lit resources');
           const litResources = [
             new LitActionResource('*'),
             new LitPKPResource('*'),
           ];
 
           // Generate session key
+          console.log('SessionValidator: Connecting Lit client');
           await connectLitClient();
+          console.log('SessionValidator: Getting session key');
           const sessionKey = await litNodeClient.getSessionKey();
+          console.log('SessionValidator: Session key obtained', { 
+            publicKey: sessionKey?.publicKey ? 'exists' : 'missing' 
+          });
 
           // Generate session capability object with wildcards
+          console.log('SessionValidator: Generating session capability object');
           const sessionCapabilityObject =
             await litNodeClient.generateSessionCapabilityObjectWithWildcards(
               litResources
             );
+          console.log('SessionValidator: Session capability object generated');
 
           // Get wallet signature
+          console.log('SessionValidator: Getting wallet signature');
           const walletSig = await litNodeClient.getWalletSig({
             chain: 'ethereum',
             expiration: new Date(Date.now() + 1000 * 60 * 60 * 24).toISOString(),
@@ -70,8 +98,12 @@ const SessionValidator: React.FC = () => {
             sessionCapabilityObject,
             nonce: Date.now().toString(),
           });
+          console.log('SessionValidator: Wallet signature result', { 
+            walletSigExists: !!walletSig 
+          });
 
           if (walletSig) {
+            console.log('SessionValidator: Getting session signatures');
             const attemptedSessionSigs = await litNodeClient.getSessionSigs({
               capabilityAuthSigs: [walletSig],
               resourceAbilityRequests: [
@@ -85,30 +117,42 @@ const SessionValidator: React.FC = () => {
                 },
               ],
               authNeededCallback: () => {
+                console.log('SessionValidator: Auth needed callback triggered');
                 return Promise.resolve(walletSig);
               },
+            });
+            console.log('SessionValidator: Session signatures obtained', { 
+              sessionSigsExist: !!attemptedSessionSigs 
             });
 
             // Store session sigs in state for later use
             setSessionSigs(attemptedSessionSigs);
+            console.log('SessionValidator: Session signatures stored in state');
 
             if(!attemptedSessionSigs) {
+              console.log('SessionValidator: No session signatures, exiting validation');
               setHasCheckedSession(true);
               return;
             }
 
+            console.log('SessionValidator: Validating session signatures');
             const validationResult = await validateSessionSigs(
               attemptedSessionSigs
             );
+            console.log('SessionValidator: Validation result', validationResult);
 
             // If validation is successful, show options (change from showing popup to showing existing account option)
             if (validationResult.isValid) {
+              console.log('SessionValidator: Session is valid, showing existing account option');
               setShowExistingAccount(true);
+            } else {
+              console.log('SessionValidator: Session is invalid');
             }
           }
         } catch (error) {
-        console.error('Error validating session:', error);
+        console.error('SessionValidator: Error validating session:', error);
       } finally {
+        console.log('SessionValidator: Validation complete, setting hasCheckedSession');
         setHasCheckedSession(true);
       }
     };
@@ -118,25 +162,36 @@ const SessionValidator: React.FC = () => {
 
   // Handle user's choice to use existing account
   const handleUseExistingAccount = async () => {
+    console.log('SessionValidator: handleUseExistingAccount called', { 
+      sessionSigsExist: !!sessionSigs,
+      agentPKPExists: authInfo?.agentPKP ? true : false 
+    });
+    
     if (sessionSigs && authInfo?.agentPKP) {
       // Instead of doing the JWT creation here, show the consent form
+      console.log('SessionValidator: Switching to consent form');
       setShowExistingAccount(false);
       setShowConsentForm(true);
     } else {
+      console.log('SessionValidator: Missing sessionSigs or agentPKP, can\'t proceed to consent form');
       setShowExistingAccount(false);
     }
   };
 
   // Handle user's choice to sign out
   const handleSignOut = async () => {
+    console.log('SessionValidator: handleSignOut called');
     cleanupSession();
+    console.log('SessionValidator: Session cleaned up');
     setShowExistingAccount(false);
     // Reload the page to show the regular authentication form
+    console.log('SessionValidator: Reloading page');
     window.location.reload();
   };
 
   // Function to render auth method information
   const renderAuthMethodInfo = () => {
+    console.log('SessionValidator: Rendering auth method info', { authInfoExists: !!authInfo });
     if (!authInfo) return null;
 
     let methodName = '';
@@ -164,6 +219,13 @@ const SessionValidator: React.FC = () => {
 
     // Get PKP Ethereum address for display
     const pkpEthAddress = authInfo.agentPKP?.ethAddress || 'Not available';
+    
+    console.log('SessionValidator: Auth method details', { 
+      methodName, 
+      methodDetails, 
+      authTime,
+      pkpEthAddress 
+    });
 
     return (
       <div className='auth-info'>
@@ -183,6 +245,15 @@ const SessionValidator: React.FC = () => {
     );
   };
 
+  console.log('SessionValidator: Render conditions', {
+    showConsentForm,
+    sessionSigsExist: !!sessionSigs,
+    authInfoExists: !!authInfo,
+    userPKPExists: authInfo?.userPKP ? true : false,
+    agentPKPExists: authInfo?.agentPKP ? true : false,
+    showExistingAccount
+  });
+
   // If showing consent form, render only that
   if (
     showConsentForm &&
@@ -190,6 +261,7 @@ const SessionValidator: React.FC = () => {
     authInfo?.agentPKP &&
     authInfo?.userPKP
   ) {
+    console.log('SessionValidator: Rendering consent form');
     return (
       <CenteredContainer>
         <div className="w-full max-w-[550px]">
@@ -206,6 +278,7 @@ const SessionValidator: React.FC = () => {
 
   // If showing existing account options, render them directly in a styled container
   if (showExistingAccount) {
+    console.log('SessionValidator: Rendering existing account options');
     return (
       <CenteredContainer>
         <div className="bg-white rounded-xl shadow-lg max-w-[550px] w-full mx-auto border border-gray-100 overflow-hidden">
@@ -259,6 +332,7 @@ const SessionValidator: React.FC = () => {
   }
 
   // If not showing consent form or existing account options, render nothing
+  console.log('SessionValidator: Rendering null, no UI conditions met');
   return null;
 };
 
