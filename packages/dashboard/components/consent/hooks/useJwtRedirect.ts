@@ -3,7 +3,7 @@ import { IRelayPKP, SessionSigs } from '@lit-protocol/types';
 import { jwt } from '@lit-protocol/vincent-sdk';
 import { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
 import { AppView } from '../types';
-import { litNodeClient } from '../utils/lit';
+import { litNodeClient, connectLitClient } from '../utils/lit';
 
 const { create } = jwt;
 
@@ -44,6 +44,8 @@ export const useJwtRedirect = ({
           'Initializing Agent EVM Wallet...',
           'info',
         );
+
+        await connectLitClient();
 
         const agentPkpWallet = new PKPEthersWallet({
           controllerSessionSigs: sessionSigs,

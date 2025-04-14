@@ -6,7 +6,11 @@ import { validateSessionSigs } from '@lit-protocol/misc';
 import { SessionSigs } from '@lit-protocol/types';
 import Image from 'next/image';
 
-import { cleanupSession, litNodeClient } from '../utils/lit';
+import {
+  cleanupSession,
+  connectLitClient,
+  litNodeClient,
+} from '../utils/lit';
 import AuthenticatedConsentForm from './AuthenticatedConsentForm';
 import { useReadAuthInfo } from '../hooks/useAuthInfo';
 
@@ -48,6 +52,7 @@ const SessionValidator: React.FC = () => {
           ];
 
           // Generate session key
+          await connectLitClient();
           const sessionKey = await litNodeClient.getSessionKey();
 
           // Generate session capability object with wildcards
@@ -67,7 +72,6 @@ const SessionValidator: React.FC = () => {
           });
 
           if (walletSig) {
-            await litNodeClient.connect();
             const attemptedSessionSigs = await litNodeClient.getSessionSigs({
               capabilityAuthSigs: [walletSig],
               resourceAbilityRequests: [
