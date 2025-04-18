@@ -17,6 +17,7 @@ import {
 import { mapEnumToTypeName } from '@/services/types';
 import { useErrorPopup } from '@/providers/error-popup';
 import { StatusMessage } from '@/utils/statusMessage';
+import { AppUrlGenerator } from '@/components/developer/dashboard/AppUrlGenerator';
 
 export default function AppDetailPage() {
   const params = useParams();
@@ -113,6 +114,9 @@ export default function AppDetailPage() {
           <h1 className="text-3xl font-bold text-black">{app.appName}</h1>
         </div>
         <div className="flex gap-2 items-center">
+          {app.authorizedRedirectUris && app.authorizedRedirectUris.length > 0 && (
+            <AppUrlGenerator app={app} />
+          )}
           <Button
             variant="default"
             onClick={() => router.push(`/appId/${app.appId}/delegatee`)}

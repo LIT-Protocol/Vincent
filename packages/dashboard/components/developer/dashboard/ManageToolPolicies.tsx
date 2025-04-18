@@ -519,20 +519,28 @@ export default function ManageToolPoliciesScreen({
                         <ArrowLeft className="h-4 w-4 mr-2" />
                         Back
                     </Button>
-                    <h1 className="text-3xl font-bold">Tool Policies</h1>
+                    <h1 className="text-3xl font-bold">Tools and Policies</h1>
                 </div>
-                <Button onClick={handleAddTool} className="text-black">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Tool Policy
-                </Button>
             </div>
 
             <Card>
                 <CardHeader>
-                    <CardTitle className="flex items-center">
-                        Tool Policies
-                        <Button variant="ghost" size="sm" className="ml-2 px-2 py-0" title="Define tools and their parameters. Each tool can have multiple policies with different parameters.">
-                            <Info className="h-4 w-4" />
+                    <CardTitle className="flex items-center justify-between">
+                        <div className="flex items-center">
+                            Tool and Policy Management
+                            <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                className="ml-2 px-2 py-0" 
+                                title="Define tools and their parameters. Each tool can have multiple policies with different parameters."
+                                onClick={() => window.open('https://docs.heyvincent.ai/Developers/Custom-Tools', '_blank')}
+                            >
+                                <Info className="h-4 w-4" />
+                            </Button>
+                        </div>
+                        <Button onClick={handleAddTool} size="sm" className="text-black">
+                            <Plus className="h-4 w-4 mr-2" />
+                            Add Tool
                         </Button>
                     </CardTitle>
                 </CardHeader>
