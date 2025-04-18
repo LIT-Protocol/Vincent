@@ -32,13 +32,12 @@ export const useConsentDisapproval = ({
         };
       } else {
         onStatusChange?.('No redirect URI available', 'error');
-        throw new Error('No redirect URI available for redirect');
+        return { success: false, message: 'No redirect URI available for redirect' };
       }
     } catch (err) {
-      console.error('Error disapproving consent:', err);
       const errorMessage = 'Failed to disapprove. Please try again.';
       onError?.(errorMessage, 'Disapproval Failed');
-      throw err;
+      return { success: false, message: errorMessage };
     }
   }, [redirectUri, redirectDelay, onStatusChange, onError]);
 

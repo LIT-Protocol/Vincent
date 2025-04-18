@@ -263,7 +263,7 @@ export const prepareVersionPermitData = (
   parameters: VersionParameter[]
 ) => {
   const toolIpfsCids: string[] = [];
-  const toolPolicies: string[][] = [];
+  const policyIpfsCids: string[][] = [];
   const toolPolicyParameterNames: string[][][] = [];
   const toolPolicyParameterTypes: number[][][] = [];
 
@@ -279,7 +279,7 @@ export const prepareVersionPermitData = (
           toolIpfsCids[toolIndex] = toolIpfsCid;
         }
 
-        toolPolicies[toolIndex] = [];
+        policyIpfsCids[toolIndex] = [];
         toolPolicyParameterNames[toolIndex] = [];
         toolPolicyParameterTypes[toolIndex] = [];
 
@@ -288,7 +288,7 @@ export const prepareVersionPermitData = (
           policies.forEach((policy, policyIndex) => {
             if (!policy) return;
 
-            toolPolicies[toolIndex][policyIndex] = policy.policyIpfsCid;
+            policyIpfsCids[toolIndex][policyIndex] = policy.policyIpfsCid;
             toolPolicyParameterNames[toolIndex][policyIndex] = [];
             toolPolicyParameterTypes[toolIndex][policyIndex] = [];
 
@@ -338,7 +338,7 @@ export const prepareVersionPermitData = (
 
   return {
     toolIpfsCids,
-    toolPolicies,
+    policyIpfsCids,
     toolPolicyParameterNames,
     toolPolicyParameterTypes
   };

@@ -1,30 +1,21 @@
 import React from 'react';
 import { AppView } from '../../types';
 import { useVersionEnabledCheck } from '../../hooks/useVersionEnabledCheck';
-import { IRelayPKP } from '@lit-protocol/types';
 
 interface VersionUpgradePromptProps {
   appInfo: AppView;
   permittedVersion: number;
-  agentPKP?: IRelayPKP;
   onUpgrade: () => void;
   onContinue: () => void;
   onUpdateParameters: () => void;
-  statusMessage?: string;
-  statusType?: 'info' | 'warning' | 'success' | 'error';
-  showStatusMessage?: boolean;
 }
 
 const VersionUpgradePrompt = ({
   appInfo,
   permittedVersion,
-  agentPKP,
   onUpgrade,
   onContinue,
   onUpdateParameters,
-  statusMessage: externalStatusMessage,
-  statusType: externalStatusType,
-  showStatusMessage = false
 }: VersionUpgradePromptProps) => {
   const { isVersionEnabled } = useVersionEnabledCheck({
     versionNumber: permittedVersion

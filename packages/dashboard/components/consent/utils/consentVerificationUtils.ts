@@ -1,4 +1,20 @@
 import { getUserViewRegistryContract } from './contracts';
+import bs58 from 'bs58';
+
+/**
+ * Converts a hex-encoded IPFS CID to base58 format
+ * @param hexCid Hex-encoded IPFS CID
+ * @returns Base58-encoded IPFS CID or the original string if conversion fails
+ */
+export const hexToBase58 = (hexCid: string): string => {
+  try {
+    const bytes = Buffer.from(hexCid.substring(2), 'hex');
+    return bs58.encode(bytes);
+  } catch (error) {
+    console.error('Error converting hex to base58:', error);
+    return hexCid;
+  }
+};
 
 /**
  * Checks if an app is already permitted for a PKP
@@ -78,4 +94,4 @@ export const verifyPermissionGrant = async (
     statusCallback?.('Could not verify permission grant', 'warning');
     return null;
   }
-}; 
+};
