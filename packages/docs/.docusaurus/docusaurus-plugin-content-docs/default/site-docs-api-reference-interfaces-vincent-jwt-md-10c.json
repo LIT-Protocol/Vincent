@@ -14,8 +14,8 @@
   "frontMatter": {},
   "sidebar": "tutorialSidebar",
   "previous": {
-    "title": "@lit-protocol/vincent-sdk",
-    "permalink": "/api/reference/"
+    "title": "Interface: VincentWebAppClient",
+    "permalink": "/api/reference/interfaces/VincentWebAppClient"
   },
   "next": {
     "title": "Interface: VincentJWTPayload",

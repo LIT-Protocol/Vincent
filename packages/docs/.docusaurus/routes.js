@@ -39,15 +39,15 @@ export default [
   },
   {
     path: '/',
-    component: ComponentCreator('/', 'a03'),
+    component: ComponentCreator('/', '9d0'),
     routes: [
       {
         path: '/',
-        component: ComponentCreator('/', '1b6'),
+        component: ComponentCreator('/', '46a'),
         routes: [
           {
             path: '/',
-            component: ComponentCreator('/', 'cd9'),
+            component: ComponentCreator('/', '87c'),
             routes: [
               {
                 path: '/api/',
@@ -57,9 +57,8 @@ export default [
               },
               {
                 path: '/api/reference/',
-                component: ComponentCreator('/api/reference/', 'dd0'),
-                exact: true,
-                sidebar: "tutorialSidebar"
+                component: ComponentCreator('/api/reference/', 'f25'),
+                exact: true
               },
               {
                 path: '/api/reference/@lit-protocol/namespaces/expressAuthHelpers/',
@@ -114,6 +113,11 @@ export default [
                 component: ComponentCreator('/api/reference/functions/getVincentWebAppClient', '6a9'),
                 exact: true,
                 sidebar: "tutorialSidebar"
+              },
+              {
+                path: '/api/reference/interfaces/ExpressAuthHelpers',
+                component: ComponentCreator('/api/reference/interfaces/ExpressAuthHelpers', 'e59'),
+                exact: true
               },
               {
                 path: '/api/reference/interfaces/VincentJWT',

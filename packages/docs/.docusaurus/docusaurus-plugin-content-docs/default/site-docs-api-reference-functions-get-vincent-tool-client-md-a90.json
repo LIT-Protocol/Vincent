@@ -14,8 +14,8 @@
   "frontMatter": {},
   "sidebar": "tutorialSidebar",
   "previous": {
-    "title": "Function: verify()",
-    "permalink": "/api/reference/@lit-protocol/namespaces/jwt/functions/verify"
+    "title": "Vincent SDK API Reference",
+    "permalink": "/api/"
   },
   "next": {
     "title": "Function: getVincentWebAppClient()",

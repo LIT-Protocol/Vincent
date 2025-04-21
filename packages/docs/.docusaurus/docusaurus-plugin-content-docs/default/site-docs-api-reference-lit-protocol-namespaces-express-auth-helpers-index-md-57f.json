@@ -14,8 +14,8 @@
   "frontMatter": {},
   "sidebar": "tutorialSidebar",
   "previous": {
-    "title": "Vincent SDK API Reference",
-    "permalink": "/api/"
+    "title": "Interface: VincentJWTPayload",
+    "permalink": "/api/reference/interfaces/VincentJWTPayload"
   },
   "next": {
     "title": "Function: authenticatedRequestHandler()",

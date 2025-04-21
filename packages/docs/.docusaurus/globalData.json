@@ -62,8 +62,11 @@
             },
             {
               "id": "api/reference/index",
-              "path": "/api/reference/",
-              "sidebar": "tutorialSidebar"
+              "path": "/api/reference/"
+            },
+            {
+              "id": "api/reference/interfaces/ExpressAuthHelpers",
+              "path": "/api/reference/interfaces/ExpressAuthHelpers"
             },
             {
               "id": "api/reference/interfaces/VincentJWT",

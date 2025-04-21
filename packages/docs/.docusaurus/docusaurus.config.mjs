@@ -35,20 +35,39 @@ export default {
           "position": 1,
           "fullNames": false
         },
-        "excludeExternals": true,
-        "excludePrivate": true,
-        "excludeProtected": true,
         "skipErrorChecking": true,
         "plugin": [
           "typedoc-plugin-markdown"
         ],
-        "hideBreadcrumbs": true,
-        "readme": "none",
+        "excludeNotDocumented": false,
+        "excludePrivate": true,
+        "excludeProtected": true,
+        "excludeExternals": false,
         "disableSources": true,
         "githubPages": false,
-        "excludeNotDocumented": true,
+        "logLevel": "Error",
+        "cleanOutputDir": true,
+        "hideBreadcrumbs": true,
+        "disableOutputCheck": true,
+        "treatWarningsAsErrors": false,
+        "kindSortOrder": [
+          "Function",
+          "Interface",
+          "Class",
+          "Enum",
+          "TypeAlias"
+        ],
+        "excludeGroups": true,
+        "excludeCategories": true,
         "categorizeByGroup": false,
-        "logLevel": "Error"
+        "categorizeByNamespace": false,
+        "categorizeFunctions": false,
+        "includeVersion": false,
+        "readme": "none",
+        "sort": [
+          "static-first",
+          "alphabetical"
+        ]
       }
     ]
   ],

@@ -18,7 +18,7 @@
     "permalink": "/api/reference/functions/getVincentToolClient"
   },
   "next": {
-    "title": "@lit-protocol/vincent-sdk",
-    "permalink": "/api/reference/"
+    "title": "Interface: VincentToolClient",
+    "permalink": "/api/reference/interfaces/VincentToolClient"
   }
 }

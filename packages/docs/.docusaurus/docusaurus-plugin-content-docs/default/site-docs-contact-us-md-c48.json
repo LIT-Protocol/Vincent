@@ -14,7 +14,7 @@
   "frontMatter": {},
   "sidebar": "tutorialSidebar",
   "previous": {
-    "title": "Interface: VincentWebAppClient",
-    "permalink": "/api/reference/interfaces/VincentWebAppClient"
+    "title": "Function: verify()",
+    "permalink": "/api/reference/@lit-protocol/namespaces/jwt/functions/verify"
   }
 }

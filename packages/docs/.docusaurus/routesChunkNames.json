@@ -42,24 +42,24 @@
       "plugin": "plugin---docusaurus-debugb-38-ad3"
     }
   },
-  "/-a03": {
+  "/-9d0": {
     "__comp": "__comp---theme-docs-root-5-e-9-0b6",
     "__context": {
       "plugin": "plugin---aba-d70"
     }
   },
-  "/-1b6": {
+  "/-46a": {
     "__comp": "__comp---theme-doc-version-roota-7-b-5de",
     "__props": "__props---22-d-307"
   },
-  "/-cd9": {
+  "/-87c": {
     "__comp": "__comp---theme-doc-roota-94-67a"
   },
   "/api/-1c0": {
     "__comp": "__comp---theme-doc-item-178-a40",
     "content": "content---api-5-e-8-619"
   },
-  "/api/reference/-dd0": {
+  "/api/reference/-f25": {
     "__comp": "__comp---theme-doc-item-178-a40",
     "content": "content---api-reference-683-ae1"
   },
@@ -98,6 +98,10 @@
   "/api/reference/functions/getVincentWebAppClient-6a9": {
     "__comp": "__comp---theme-doc-item-178-a40",
     "content": "content---api-reference-functions-get-vincent-web-app-clientfbd-74c"
+  },
+  "/api/reference/interfaces/ExpressAuthHelpers-e59": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---api-reference-interfaces-express-auth-helpersfc-7-d37"
   },
   "/api/reference/interfaces/VincentJWT-297": {
     "__comp": "__comp---theme-doc-item-178-a40",

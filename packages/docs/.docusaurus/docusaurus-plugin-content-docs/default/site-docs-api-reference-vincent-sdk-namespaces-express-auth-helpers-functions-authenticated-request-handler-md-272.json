@@ -1,0 +1,24 @@
+{
+  "id": "api/reference/Vincent-SDK/namespaces/expressAuthHelpers/functions/authenticatedRequestHandler",
+  "title": "Function: authenticatedRequestHandler()",
+  "description": "authenticatedRequestHandler(handler): (req, res, next) => void \\| Promise\\",
+  "source": "@site/docs/api/reference/Vincent-SDK/namespaces/expressAuthHelpers/functions/authenticatedRequestHandler.md",
+  "sourceDirName": "api/reference/Vincent-SDK/namespaces/expressAuthHelpers/functions",
+  "slug": "/api/reference/Vincent-SDK/namespaces/expressAuthHelpers/functions/authenticatedRequestHandler",
+  "permalink": "/api/reference/Vincent-SDK/namespaces/expressAuthHelpers/functions/authenticatedRequestHandler",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/LIT-Protocol/vincentDocs/docs/api/reference/Vincent-SDK/namespaces/expressAuthHelpers/functions/authenticatedRequestHandler.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "expressAuthHelpers",
+    "permalink": "/api/reference/Vincent-SDK/namespaces/expressAuthHelpers/"
+  },
+  "next": {
+    "title": "Function: getAuthenticateUserExpressHandler()",
+    "permalink": "/api/reference/Vincent-SDK/namespaces/expressAuthHelpers/functions/getAuthenticateUserExpressHandler"
+  }
+}

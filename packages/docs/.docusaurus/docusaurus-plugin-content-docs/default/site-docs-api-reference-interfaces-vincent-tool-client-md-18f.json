@@ -14,8 +14,8 @@
   "frontMatter": {},
   "sidebar": "tutorialSidebar",
   "previous": {
-    "title": "Interface: VincentJWTPayload",
-    "permalink": "/api/reference/interfaces/VincentJWTPayload"
+    "title": "Function: getVincentWebAppClient()",
+    "permalink": "/api/reference/functions/getVincentWebAppClient"
   },
   "next": {
     "title": "Interface: VincentWebAppClient",

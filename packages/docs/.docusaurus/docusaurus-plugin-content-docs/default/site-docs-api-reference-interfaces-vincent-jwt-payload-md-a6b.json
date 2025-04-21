@@ -18,7 +18,7 @@
     "permalink": "/api/reference/interfaces/VincentJWT"
   },
   "next": {
-    "title": "Interface: VincentToolClient",
-    "permalink": "/api/reference/interfaces/VincentToolClient"
+    "title": "expressAuthHelpers",
+    "permalink": "/api/reference/@lit-protocol/namespaces/expressAuthHelpers/"
   }
 }

@@ -5,7 +5,21 @@ sidebar_position: 1
 
 import TypeDocWrapper from '@site/src/components/TypeDocWrapper';
 
-# Vincent SDK API Reference
+# SDK API Reference
+
+Welcome to the Vincent SDK API reference documentation. This section provides detailed information about all available functions and interfaces.
+
+## Functions
+
+- [getVincentToolClient](reference/functions/getVincentToolClient.md) - Get a client for working with Vincent tools
+- [getVincentWebAppClient](reference/functions/getVincentWebAppClient.md) - Get a client for Vincent web applications
+
+## Interfaces
+
+- [VincentToolClient](reference/interfaces/VincentToolClient.md) - Client for interacting with Vincent tools
+- [VincentWebAppClient](reference/interfaces/VincentWebAppClient.md) - Client for Vincent web applications
+- [VincentJWT](reference/interfaces/VincentJWT.md) - Vincent JWT structure
+- [VincentJWTPayload](reference/interfaces/VincentJWTPayload.md) - Vincent JWT payload structure
 
 <TypeDocWrapper>
 
