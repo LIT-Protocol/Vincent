@@ -4,7 +4,7 @@
 
 Creates an Express middleware function to authenticate a user using a JWT token.
 
-This middleware word checks the `Authorization` header for a Bearer token, verifies the token, and checks its audience.
+This middleware checks the `Authorization` header for a Bearer token, verifies the token, and checks its audience.
 If the token is valid, it attaches the user information (decoded JWT, raw token, and PKP address) to the request object as `req.user`.
 If the token is missing or invalid, it returns a 401 Unauthorized response with an error message.
 
