@@ -1,0 +1,24 @@
+{
+  "id": "api/reference/@lit-protocol/namespaces/expressAuthHelpers/index",
+  "title": "expressAuthHelpers",
+  "description": "expressAuthHelpers are used to add a VincentJWT-specific authentication to your Express.js server routes",
+  "source": "@site/docs/api/reference/@lit-protocol/namespaces/expressAuthHelpers/index.md",
+  "sourceDirName": "api/reference/@lit-protocol/namespaces/expressAuthHelpers",
+  "slug": "/api/reference/@lit-protocol/namespaces/expressAuthHelpers/",
+  "permalink": "/api/reference/@lit-protocol/namespaces/expressAuthHelpers/",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/LIT-Protocol/vincentDocs/docs/api/reference/@lit-protocol/namespaces/expressAuthHelpers/index.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "Vincent SDK API Reference",
+    "permalink": "/api/"
+  },
+  "next": {
+    "title": "Function: authenticatedRequestHandler()",
+    "permalink": "/api/reference/@lit-protocol/namespaces/expressAuthHelpers/functions/authenticatedRequestHandler"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "id": "Contact-Us",
+  "title": "Contact Us",
+  "description": "If you have any issues with the Vincent SDK, general questions about Vincent, or specific feature requests, please post them on the official Vincent GitHub Repo.",
+  "source": "@site/docs/Contact-Us.md",
+  "sourceDirName": ".",
+  "slug": "/Contact-Us",
+  "permalink": "/Contact-Us",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/LIT-Protocol/vincentDocs/docs/Contact-Us.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "Interface: VincentWebAppClient",
+    "permalink": "/api/reference/interfaces/VincentWebAppClient"
+  }
+}

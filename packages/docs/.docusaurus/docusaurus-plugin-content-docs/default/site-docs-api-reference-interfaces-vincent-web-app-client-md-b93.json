@@ -1,0 +1,24 @@
+{
+  "id": "api/reference/interfaces/VincentWebAppClient",
+  "title": "Interface: VincentWebAppClient",
+  "description": "The Vincent Web Application Client is used in web apps to handle interactions with the Vincent app portal.",
+  "source": "@site/docs/api/reference/interfaces/VincentWebAppClient.md",
+  "sourceDirName": "api/reference/interfaces",
+  "slug": "/api/reference/interfaces/VincentWebAppClient",
+  "permalink": "/api/reference/interfaces/VincentWebAppClient",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/LIT-Protocol/vincentDocs/docs/api/reference/interfaces/VincentWebAppClient.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "Interface: VincentToolClient",
+    "permalink": "/api/reference/interfaces/VincentToolClient"
+  },
+  "next": {
+    "title": "Contact Us",
+    "permalink": "/Contact-Us"
+  }
+}

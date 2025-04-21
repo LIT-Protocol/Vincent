@@ -1,0 +1,128 @@
+{
+  "docusaurus-plugin-content-docs": {
+    "default": {
+      "path": "/",
+      "versions": [
+        {
+          "name": "current",
+          "label": "Next",
+          "isLast": true,
+          "path": "/",
+          "mainDocId": "Why-Vincent",
+          "docs": [
+            {
+              "id": "api/index",
+              "path": "/api/",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "api/reference/@lit-protocol/namespaces/expressAuthHelpers/functions/authenticatedRequestHandler",
+              "path": "/api/reference/@lit-protocol/namespaces/expressAuthHelpers/functions/authenticatedRequestHandler",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "api/reference/@lit-protocol/namespaces/expressAuthHelpers/functions/getAuthenticateUserExpressHandler",
+              "path": "/api/reference/@lit-protocol/namespaces/expressAuthHelpers/functions/getAuthenticateUserExpressHandler",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "api/reference/@lit-protocol/namespaces/expressAuthHelpers/index",
+              "path": "/api/reference/@lit-protocol/namespaces/expressAuthHelpers/",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "api/reference/@lit-protocol/namespaces/jwt/functions/decode",
+              "path": "/api/reference/@lit-protocol/namespaces/jwt/functions/decode",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "api/reference/@lit-protocol/namespaces/jwt/functions/isExpired",
+              "path": "/api/reference/@lit-protocol/namespaces/jwt/functions/isExpired",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "api/reference/@lit-protocol/namespaces/jwt/functions/verify",
+              "path": "/api/reference/@lit-protocol/namespaces/jwt/functions/verify",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "api/reference/@lit-protocol/namespaces/jwt/index",
+              "path": "/api/reference/@lit-protocol/namespaces/jwt/",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "api/reference/functions/getVincentToolClient",
+              "path": "/api/reference/functions/getVincentToolClient",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "api/reference/functions/getVincentWebAppClient",
+              "path": "/api/reference/functions/getVincentWebAppClient",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "api/reference/index",
+              "path": "/api/reference/",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "api/reference/interfaces/VincentJWT",
+              "path": "/api/reference/interfaces/VincentJWT",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "api/reference/interfaces/VincentJWTPayload",
+              "path": "/api/reference/interfaces/VincentJWTPayload",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "api/reference/interfaces/VincentToolClient",
+              "path": "/api/reference/interfaces/VincentToolClient",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "api/reference/interfaces/VincentWebAppClient",
+              "path": "/api/reference/interfaces/VincentWebAppClient",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "Contact-Us",
+              "path": "/Contact-Us",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "Developers/Custom-Tools",
+              "path": "/Developers/Custom-Tools",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "Developers/Quick-Start",
+              "path": "/Developers/Quick-Start",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "Users/Onboarding",
+              "path": "/Users/Onboarding",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "Why-Vincent",
+              "path": "/",
+              "sidebar": "tutorialSidebar"
+            }
+          ],
+          "draftIds": [],
+          "sidebars": {
+            "tutorialSidebar": {
+              "link": {
+                "path": "/",
+                "label": "Why-Vincent"
+              }
+            }
+          }
+        }
+      ],
+      "breadcrumbs": true
+    }
+  }
+}

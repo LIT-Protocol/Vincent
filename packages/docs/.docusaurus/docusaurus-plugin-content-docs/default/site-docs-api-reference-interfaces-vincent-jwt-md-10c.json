@@ -1,0 +1,24 @@
+{
+  "id": "api/reference/interfaces/VincentJWT",
+  "title": "Interface: VincentJWT",
+  "description": "Interface representing a decoded Vincent JWT",
+  "source": "@site/docs/api/reference/interfaces/VincentJWT.md",
+  "sourceDirName": "api/reference/interfaces",
+  "slug": "/api/reference/interfaces/VincentJWT",
+  "permalink": "/api/reference/interfaces/VincentJWT",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/LIT-Protocol/vincentDocs/docs/api/reference/interfaces/VincentJWT.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "@lit-protocol/vincent-sdk",
+    "permalink": "/api/reference/"
+  },
+  "next": {
+    "title": "Interface: VincentJWTPayload",
+    "permalink": "/api/reference/interfaces/VincentJWTPayload"
+  }
+}

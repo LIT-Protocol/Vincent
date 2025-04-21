@@ -1,0 +1,24 @@
+{
+  "id": "api/reference/index",
+  "title": "@lit-protocol/vincent-sdk",
+  "description": "Other",
+  "source": "@site/docs/api/reference/index.md",
+  "sourceDirName": "api/reference",
+  "slug": "/api/reference/",
+  "permalink": "/api/reference/",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/LIT-Protocol/vincentDocs/docs/api/reference/index.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "Function: getVincentWebAppClient()",
+    "permalink": "/api/reference/functions/getVincentWebAppClient"
+  },
+  "next": {
+    "title": "Interface: VincentJWT",
+    "permalink": "/api/reference/interfaces/VincentJWT"
+  }
+}

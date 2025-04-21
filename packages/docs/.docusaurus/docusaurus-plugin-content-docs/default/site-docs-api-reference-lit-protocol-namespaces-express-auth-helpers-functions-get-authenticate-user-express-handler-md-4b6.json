@@ -1,0 +1,24 @@
+{
+  "id": "api/reference/@lit-protocol/namespaces/expressAuthHelpers/functions/getAuthenticateUserExpressHandler",
+  "title": "Function: getAuthenticateUserExpressHandler()",
+  "description": "getAuthenticateUserExpressHandler(allowedAudience): (req, res, next) => Promise\\",
+  "source": "@site/docs/api/reference/@lit-protocol/namespaces/expressAuthHelpers/functions/getAuthenticateUserExpressHandler.md",
+  "sourceDirName": "api/reference/@lit-protocol/namespaces/expressAuthHelpers/functions",
+  "slug": "/api/reference/@lit-protocol/namespaces/expressAuthHelpers/functions/getAuthenticateUserExpressHandler",
+  "permalink": "/api/reference/@lit-protocol/namespaces/expressAuthHelpers/functions/getAuthenticateUserExpressHandler",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/LIT-Protocol/vincentDocs/docs/api/reference/@lit-protocol/namespaces/expressAuthHelpers/functions/getAuthenticateUserExpressHandler.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "Function: authenticatedRequestHandler()",
+    "permalink": "/api/reference/@lit-protocol/namespaces/expressAuthHelpers/functions/authenticatedRequestHandler"
+  },
+  "next": {
+    "title": "jwt",
+    "permalink": "/api/reference/@lit-protocol/namespaces/jwt/"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "id": "api/reference/@lit-protocol/namespaces/jwt/functions/decode",
+  "title": "Function: decode()",
+  "description": "decode(jwt): VincentJWT",
+  "source": "@site/docs/api/reference/@lit-protocol/namespaces/jwt/functions/decode.md",
+  "sourceDirName": "api/reference/@lit-protocol/namespaces/jwt/functions",
+  "slug": "/api/reference/@lit-protocol/namespaces/jwt/functions/decode",
+  "permalink": "/api/reference/@lit-protocol/namespaces/jwt/functions/decode",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/LIT-Protocol/vincentDocs/docs/api/reference/@lit-protocol/namespaces/jwt/functions/decode.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "jwt",
+    "permalink": "/api/reference/@lit-protocol/namespaces/jwt/"
+  },
+  "next": {
+    "title": "Function: isExpired()",
+    "permalink": "/api/reference/@lit-protocol/namespaces/jwt/functions/isExpired"
+  }
+}

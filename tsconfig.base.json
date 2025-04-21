@@ -16,6 +16,9 @@
     "skipLibCheck": true,
     "strict": true,
     "target": "es2022",
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "paths": {
+      "@lit-protocol/docs": ["packages/docs/src/index.ts"]
+    }
   }
 }

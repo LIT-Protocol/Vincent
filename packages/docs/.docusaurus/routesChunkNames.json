@@ -1,0 +1,138 @@
+{
+  "/__docusaurus/debug-5ff": {
+    "__comp": "__comp---theme-debug-config-23-a-2ff",
+    "__context": {
+      "plugin": "plugin---docusaurus-debugb-38-ad3"
+    }
+  },
+  "/__docusaurus/debug/config-5ba": {
+    "__comp": "__comp---theme-debug-config-23-a-2ff",
+    "__context": {
+      "plugin": "plugin---docusaurus-debugb-38-ad3"
+    }
+  },
+  "/__docusaurus/debug/content-a2b": {
+    "__comp": "__comp---theme-debug-contentba-8-ce7",
+    "__context": {
+      "plugin": "plugin---docusaurus-debugb-38-ad3"
+    },
+    "__props": "__props---docusaurus-debug-content-3-c-0-be2"
+  },
+  "/__docusaurus/debug/globalData-c3c": {
+    "__comp": "__comp---theme-debug-global-dataede-0fa",
+    "__context": {
+      "plugin": "plugin---docusaurus-debugb-38-ad3"
+    }
+  },
+  "/__docusaurus/debug/metadata-156": {
+    "__comp": "__comp---theme-debug-site-metadata-68-e-3d4",
+    "__context": {
+      "plugin": "plugin---docusaurus-debugb-38-ad3"
+    }
+  },
+  "/__docusaurus/debug/registry-88c": {
+    "__comp": "__comp---theme-debug-registry-679-501",
+    "__context": {
+      "plugin": "plugin---docusaurus-debugb-38-ad3"
+    }
+  },
+  "/__docusaurus/debug/routes-000": {
+    "__comp": "__comp---theme-debug-routes-946-699",
+    "__context": {
+      "plugin": "plugin---docusaurus-debugb-38-ad3"
+    }
+  },
+  "/-a03": {
+    "__comp": "__comp---theme-docs-root-5-e-9-0b6",
+    "__context": {
+      "plugin": "plugin---aba-d70"
+    }
+  },
+  "/-1b6": {
+    "__comp": "__comp---theme-doc-version-roota-7-b-5de",
+    "__props": "__props---22-d-307"
+  },
+  "/-cd9": {
+    "__comp": "__comp---theme-doc-roota-94-67a"
+  },
+  "/api/-1c0": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---api-5-e-8-619"
+  },
+  "/api/reference/-dd0": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---api-reference-683-ae1"
+  },
+  "/api/reference/@lit-protocol/namespaces/expressAuthHelpers/-fbc": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---api-reference-lit-protocol-namespaces-express-auth-helpers-57-f-c3b"
+  },
+  "/api/reference/@lit-protocol/namespaces/expressAuthHelpers/functions/authenticatedRequestHandler-c9a": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---api-reference-lit-protocol-namespaces-express-auth-helpers-functions-authenticated-request-handler-390-b84"
+  },
+  "/api/reference/@lit-protocol/namespaces/expressAuthHelpers/functions/getAuthenticateUserExpressHandler-395": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---api-reference-lit-protocol-namespaces-express-auth-helpers-functions-get-authenticate-user-express-handler-4-b-6-d34"
+  },
+  "/api/reference/@lit-protocol/namespaces/jwt/-4ec": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---api-reference-lit-protocol-namespaces-jwt-814-2cd"
+  },
+  "/api/reference/@lit-protocol/namespaces/jwt/functions/decode-189": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---api-reference-lit-protocol-namespaces-jwt-functions-decode-1-fe-02a"
+  },
+  "/api/reference/@lit-protocol/namespaces/jwt/functions/isExpired-1f5": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---api-reference-lit-protocol-namespaces-jwt-functions-is-expiredc-80-97b"
+  },
+  "/api/reference/@lit-protocol/namespaces/jwt/functions/verify-b03": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---api-reference-lit-protocol-namespaces-jwt-functions-verifydaf-fe4"
+  },
+  "/api/reference/functions/getVincentToolClient-927": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---api-reference-functions-get-vincent-tool-clienta-90-869"
+  },
+  "/api/reference/functions/getVincentWebAppClient-6a9": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---api-reference-functions-get-vincent-web-app-clientfbd-74c"
+  },
+  "/api/reference/interfaces/VincentJWT-297": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---api-reference-interfaces-vincent-jwt-10-c-c45"
+  },
+  "/api/reference/interfaces/VincentJWTPayload-b09": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---api-reference-interfaces-vincent-jwt-payloada-6-b-fc0"
+  },
+  "/api/reference/interfaces/VincentToolClient-785": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---api-reference-interfaces-vincent-tool-client-18-f-75c"
+  },
+  "/api/reference/interfaces/VincentWebAppClient-b3a": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---api-reference-interfaces-vincent-web-app-clientb-93-803"
+  },
+  "/Contact-Us-d05": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---contact-usc-48-3fa"
+  },
+  "/Developers/Custom-Tools-a12": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---developers-custom-toolse-3-d-b77"
+  },
+  "/Developers/Quick-Start-651": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---developers-quick-starta-6-e-856"
+  },
+  "/Users/Onboarding-855": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---users-onboarding-881-d11"
+  },
+  "/-b6b": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---cb-6-57e"
+  }
+}

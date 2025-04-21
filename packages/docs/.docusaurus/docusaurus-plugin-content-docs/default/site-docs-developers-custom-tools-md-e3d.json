@@ -1,0 +1,26 @@
+{
+  "id": "Developers/Custom-Tools",
+  "title": "Custom Tools",
+  "description": "Vincent allows you to create custom tools for AI agents to interact with your application. This guide will show you how to define, implement, and secure custom tools.",
+  "source": "@site/docs/Developers/Custom-Tools.md",
+  "sourceDirName": "Developers",
+  "slug": "/Developers/Custom-Tools",
+  "permalink": "/Developers/Custom-Tools",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/LIT-Protocol/vincentDocs/docs/Developers/Custom-Tools.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {
+    "title": "Custom Tools"
+  },
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "Quick Start Guide",
+    "permalink": "/Developers/Quick-Start"
+  },
+  "next": {
+    "title": "Getting Started with Vincent",
+    "permalink": "/Users/Onboarding"
+  }
+}

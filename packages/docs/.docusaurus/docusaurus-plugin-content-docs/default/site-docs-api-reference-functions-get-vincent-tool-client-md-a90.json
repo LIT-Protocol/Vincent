@@ -1,0 +1,24 @@
+{
+  "id": "api/reference/functions/getVincentToolClient",
+  "title": "Function: getVincentToolClient()",
+  "description": "getVincentToolClient(config): VincentToolClient",
+  "source": "@site/docs/api/reference/functions/getVincentToolClient.md",
+  "sourceDirName": "api/reference/functions",
+  "slug": "/api/reference/functions/getVincentToolClient",
+  "permalink": "/api/reference/functions/getVincentToolClient",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/LIT-Protocol/vincentDocs/docs/api/reference/functions/getVincentToolClient.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "Function: verify()",
+    "permalink": "/api/reference/@lit-protocol/namespaces/jwt/functions/verify"
+  },
+  "next": {
+    "title": "Function: getVincentWebAppClient()",
+    "permalink": "/api/reference/functions/getVincentWebAppClient"
+  }
+}

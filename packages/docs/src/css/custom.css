@@ -1,0 +1,66 @@
+/**
+ * Any CSS included here will be global. The classic template
+ * bundles Infima by default. Infima is a CSS framework designed to
+ * work well for content-centric websites.
+ */
+
+/* You can override the default Infima variables here. */
+:root {
+  --ifm-color-primary: #ff7a00; /* Lit Protocol orange */
+  --ifm-color-primary-dark: #e66f00;
+  --ifm-color-primary-darker: #d96800;
+  --ifm-color-primary-darkest: #b35500;
+  --ifm-color-primary-light: #ff8a1f;
+  --ifm-color-primary-lighter: #ff9a3c;
+  --ifm-color-primary-lightest: #ffae66;
+  --ifm-code-font-size: 95%;
+  --docusaurus-highlighted-code-line-bg: rgba(255, 122, 0, 0.1);
+  
+  /* Secondary colors for security feeling */
+  --lit-color-secondary: #3574f0; /* Strong blue for trust/security */
+  --lit-color-tertiary: #ffc107; /* Warm gold/amber for comfort */
+  --lit-color-quaternary: #00a3a3; /* Teal for stability */
+  --lit-color-secure: #2e5b2e; /* Deep green for security */
+}
+
+/* For readability concerns, you should choose a lighter palette in dark mode. */
+[data-theme='dark'] {
+  --ifm-color-primary: #ff8c2e; /* Brighter orange for dark mode */
+  --ifm-color-primary-dark: #ff7c11;
+  --ifm-color-primary-darker: #fa7200;
+  --ifm-color-primary-darkest: #cf5f00;
+  --ifm-color-primary-light: #ff9c4b;
+  --ifm-color-primary-lighter: #ffab68;
+  --ifm-color-primary-lightest: #ffc394;
+  --docusaurus-highlighted-code-line-bg: rgba(255, 140, 46, 0.3);
+  
+  /* Dark mode secondary colors */
+  --lit-color-secondary: #5a8ef6;
+  --lit-color-tertiary: #ffd54f;
+  --lit-color-quaternary: #1dbdbd;
+  --lit-color-secure: #3e793e;
+}
+
+/* Optional gradient for buttons or featured elements */
+.lit-fiery-gradient {
+  background: linear-gradient(90deg, #ff7a00, #ff5722);
+}
+
+/* Optional shadow for conveying security */
+.lit-secure-element {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-radius: 8px;
+}
+
+/* Style the API reference category to appear as a nested section */
+.api-reference-category {
+  font-size: 0.9em;
+}
+
+.api-reference-category > .menu__list-item-collapsible > .menu__link {
+  font-weight: normal;
+  padding-left: 1.5rem;
+  font-style: italic;
+  color: var(--ifm-menu-color);
+}

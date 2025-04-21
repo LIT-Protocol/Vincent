@@ -1,0 +1,69 @@
+.typeDocWrapper {
+  /* Custom styling for TypeDoc content */
+  padding: 16px 0;
+}
+
+/* Improved heading styles */
+.typeDocWrapper :global(.tsd-typography) h1,
+.typeDocWrapper :global(.tsd-typography) h2,
+.typeDocWrapper :global(.tsd-typography) h3,
+.typeDocWrapper :global(.tsd-typography) h4,
+.typeDocWrapper :global(.tsd-typography) h5,
+.typeDocWrapper :global(.tsd-typography) h6 {
+  margin-top: 1.5em;
+  margin-bottom: 1em;
+  font-weight: 600;
+}
+
+/* Panel styles */
+.typeDocWrapper :global(.tsd-panel) {
+  margin-bottom: 24px;
+  padding: 16px;
+  border-radius: 8px;
+  background-color: var(--ifm-background-surface-color);
+  box-shadow: var(--ifm-global-shadow-lw);
+}
+
+/* Source reference styles */
+.typeDocWrapper :global(.tsd-sources) {
+  font-size: 0.85em;
+  color: var(--ifm-color-gray-700);
+  margin-top: 16px;
+  padding-top: 8px;
+  border-top: 1px solid var(--ifm-color-gray-200);
+}
+
+/* Code styles */
+.typeDocWrapper :global(code) {
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.9em;
+  background-color: var(--ifm-code-background);
+  border-radius: var(--ifm-code-border-radius);
+  padding: 0.15rem 0.4rem;
+}
+
+/* Method signature styles */
+.typeDocWrapper :global(.tsd-signature) {
+  padding: 12px;
+  margin-bottom: 12px;
+  background-color: var(--ifm-pre-background);
+  border-radius: var(--ifm-code-border-radius);
+  font-family: var(--ifm-font-family-monospace);
+  overflow-x: auto;
+}
+
+/* Parameter table styles */
+.typeDocWrapper :global(table) {
+  display: table;
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+/* Dark mode adjustments */
+[data-theme='dark'] .typeDocWrapper :global(.tsd-panel) {
+  background-color: var(--ifm-background-surface-color);
+}
+
+[data-theme='dark'] .typeDocWrapper :global(.tsd-sources) {
+  border-top-color: var(--ifm-color-gray-800);
+} 

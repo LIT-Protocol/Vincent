@@ -1,0 +1,24 @@
+{
+  "id": "api/reference/functions/getVincentWebAppClient",
+  "title": "Function: getVincentWebAppClient()",
+  "description": "getVincentWebAppClient(appClientConfig): VincentWebAppClient",
+  "source": "@site/docs/api/reference/functions/getVincentWebAppClient.md",
+  "sourceDirName": "api/reference/functions",
+  "slug": "/api/reference/functions/getVincentWebAppClient",
+  "permalink": "/api/reference/functions/getVincentWebAppClient",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/LIT-Protocol/vincentDocs/docs/api/reference/functions/getVincentWebAppClient.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "Function: getVincentToolClient()",
+    "permalink": "/api/reference/functions/getVincentToolClient"
+  },
+  "next": {
+    "title": "@lit-protocol/vincent-sdk",
+    "permalink": "/api/reference/"
+  }
+}

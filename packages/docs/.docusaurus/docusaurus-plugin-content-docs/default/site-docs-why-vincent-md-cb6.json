@@ -1,0 +1,22 @@
+{
+  "id": "Why-Vincent",
+  "title": "Start Here",
+  "description": "Vincent is an open-source framework powered by Lit Protocol that empowers developers to create automated, user-controlled AI agents. With Vincent, you can build agents that automate the execution of operations across crypto networks, traditional finance (TradFi), and e-commerce platforms—all while ensuring users retain full control over their assets and data. Powered by Lit’s decentralized key management network and smart contracts, Vincent is your gateway to the future of the automated, User-Owned Web.",
+  "source": "@site/docs/Why-Vincent.md",
+  "sourceDirName": ".",
+  "slug": "/",
+  "permalink": "/",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/LIT-Protocol/vincentDocs/docs/Why-Vincent.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {
+    "slug": "/"
+  },
+  "sidebar": "tutorialSidebar",
+  "next": {
+    "title": "Quick Start Guide",
+    "permalink": "/Developers/Quick-Start"
+  }
+}

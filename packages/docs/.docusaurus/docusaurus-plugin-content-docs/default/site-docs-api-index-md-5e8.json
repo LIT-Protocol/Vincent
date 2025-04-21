@@ -1,0 +1,28 @@
+{
+  "id": "api/index",
+  "title": "Vincent SDK API Reference",
+  "description": "The Vincent SDK provides a comprehensive set of TypeScript APIs for integrating wallet delegation into your applications. The detailed API documentation is generated automatically from the source code using TypeDoc.",
+  "source": "@site/docs/api/index.md",
+  "sourceDirName": "api",
+  "slug": "/api/",
+  "permalink": "/api/",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/LIT-Protocol/vincentDocs/docs/api/index.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 1,
+  "frontMatter": {
+    "title": "Vincent SDK API Reference",
+    "sidebar_position": 1
+  },
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "Getting Started with Vincent",
+    "permalink": "/Users/Onboarding"
+  },
+  "next": {
+    "title": "expressAuthHelpers",
+    "permalink": "/api/reference/@lit-protocol/namespaces/expressAuthHelpers/"
+  }
+}

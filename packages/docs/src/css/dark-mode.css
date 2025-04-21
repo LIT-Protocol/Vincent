@@ -1,0 +1,70 @@
+/**
+ * Dark mode specific styles to improve visibility
+ */
+
+/* Fix for "So you want to build an agent?" section */
+[data-theme='dark'] .agentSection {
+  background-color: #2b2b2b !important; /* Darker background for dark mode */
+  color: #ffffff !important; /* Ensure text is visible in dark mode */
+}
+
+/* Ensure headings are visible in dark mode */
+[data-theme='dark'] .agentSection h2 {
+  color: var(--ifm-color-primary-lightest) !important;
+}
+
+/* Improve button contrast in dark mode */
+[data-theme='dark'] .agentSection .button {
+  background-color: var(--ifm-color-primary);
+  color: #ffffff;
+  border-color: var(--ifm-color-primary-darker);
+}
+
+/* Improve button hover state in dark mode */
+[data-theme='dark'] .agentSection .button:hover {
+  background-color: var(--ifm-color-primary-darker);
+  color: #ffffff;
+}
+
+/* Improve visibility of text in dark mode throughout the site */
+[data-theme='dark'] {
+  --ifm-font-color-base: #e3e3e3;
+  --ifm-navbar-background-color: #1a1a1a;
+  --ifm-background-color: #121212;
+  --ifm-footer-background-color: #1a1a1a;
+}
+
+/* Improve code block contrast in dark mode */
+[data-theme='dark'] pre {
+  background-color: #1a1a1a;
+}
+
+/* Ensure feature section text is visible in dark mode */
+[data-theme='dark'] .features h3 {
+  color: var(--ifm-color-primary-lightest);
+}
+
+[data-theme='dark'] .features p {
+  color: #e3e3e3;
+}
+
+/* Improve navbar item contrast in dark mode */
+[data-theme='dark'] .navbar__item {
+  color: #e3e3e3;
+}
+
+/* Improve sidebar item contrast in dark mode */
+[data-theme='dark'] .menu__link {
+  color: #e3e3e3;
+}
+
+/* Improve active sidebar item contrast in dark mode */
+[data-theme='dark'] .menu__link--active {
+  color: var(--ifm-color-primary-lightest);
+}
+
+/* Improve card contrast in dark mode */
+[data-theme='dark'] .card {
+  background-color: #2b2b2b;
+  border-color: #3a3a3a;
+} 

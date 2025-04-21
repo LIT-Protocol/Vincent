@@ -1,0 +1,26 @@
+{
+  "id": "Developers/Quick-Start",
+  "title": "Quick Start Guide",
+  "description": "This guide will help you get started with the Vincent SDK for both browser and Node.js environments.",
+  "source": "@site/docs/Developers/Quick-Start.md",
+  "sourceDirName": "Developers",
+  "slug": "/Developers/Quick-Start",
+  "permalink": "/Developers/Quick-Start",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/LIT-Protocol/vincentDocs/docs/Developers/Quick-Start.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {
+    "title": "Quick Start Guide"
+  },
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "Start Here",
+    "permalink": "/"
+  },
+  "next": {
+    "title": "Quick Start Guide",
+    "permalink": "/Developers/Quick-Start"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "id": "api/reference/interfaces/VincentToolClient",
+  "title": "Interface: VincentToolClient",
+  "description": "The Vincent Tool Client uses an ethers signer for your delegatee account to run Vincent Tools",
+  "source": "@site/docs/api/reference/interfaces/VincentToolClient.md",
+  "sourceDirName": "api/reference/interfaces",
+  "slug": "/api/reference/interfaces/VincentToolClient",
+  "permalink": "/api/reference/interfaces/VincentToolClient",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/LIT-Protocol/vincentDocs/docs/api/reference/interfaces/VincentToolClient.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "Interface: VincentJWTPayload",
+    "permalink": "/api/reference/interfaces/VincentJWTPayload"
+  },
+  "next": {
+    "title": "Interface: VincentWebAppClient",
+    "permalink": "/api/reference/interfaces/VincentWebAppClient"
+  }
+}

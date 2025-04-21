@@ -1,0 +1,26 @@
+{
+  "id": "Users/Onboarding",
+  "title": "Getting Started with Vincent",
+  "description": "Vincent allows you to securely delegate your wallet capabilities to AI agents. This guide will help you get started.",
+  "source": "@site/docs/Users/Onboarding.md",
+  "sourceDirName": "Users",
+  "slug": "/Users/Onboarding",
+  "permalink": "/Users/Onboarding",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/LIT-Protocol/vincentDocs/docs/Users/Onboarding.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {
+    "title": "Getting Started with Vincent"
+  },
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "Custom Tools",
+    "permalink": "/Developers/Custom-Tools"
+  },
+  "next": {
+    "title": "Getting Started with Vincent",
+    "permalink": "/Users/Onboarding"
+  }
+}
