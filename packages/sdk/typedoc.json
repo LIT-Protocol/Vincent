@@ -1,7 +1,15 @@
 {
   "$schema": "https://typedoc.org/schema.json",
+  "readme": "docs/Why-Vincent.md",
   "entryPoints": [
     "./src/index.ts"
+  ],
+  "projectDocuments": [
+    "docs/Why-Vincent.md",
+    "docs/Developers/Quick-Start.md",
+    "docs/Developers/Custom-Tools.md",
+    "docs/Users/Onboarding.md",
+    "docs/Contact-Us.md"
   ],
   "out": "./sdk-docs",
   "skipErrorChecking": true,
@@ -9,9 +17,9 @@
   "navigation": {
     "includeCategories": true
   },
-  "defaultCategory": "Types",
+  "defaultCategory": "API",
   "categorizeByGroup": false,
-  "categoryOrder": ["Vincent SDK API", "Vincent Web App",  "Vincent Tools"],
+  "categoryOrder": ["Intro", "Developers", "Users", "Contact", "Vincent SDK API", "Vincent Web App",  "Vincent Tools"],
   "router": "category",
   "visibilityFilters": { },
   "includeVersion": true,
