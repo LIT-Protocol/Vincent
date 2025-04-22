@@ -1,7 +1,7 @@
 {
   "id": "api/reference/interfaces/VincentJWT",
   "title": "VincentJWT",
-  "description": "Interface representing a decoded Vincent JWT",
+  "description": "Defined in61",
   "source": "@site/docs/api/reference/interfaces/VincentJWT.md",
   "sourceDirName": "api/reference/interfaces",
   "slug": "/api/reference/interfaces/VincentJWT",

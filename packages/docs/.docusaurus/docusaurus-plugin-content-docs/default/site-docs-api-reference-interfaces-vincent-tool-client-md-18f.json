@@ -1,7 +1,7 @@
 {
   "id": "api/reference/interfaces/VincentToolClient",
   "title": "VincentToolClient",
-  "description": "The Vincent Tool Client uses an ethers signer for your delegatee account to run Vincent Tools",
+  "description": "Defined in28",
   "source": "@site/docs/api/reference/interfaces/VincentToolClient.md",
   "sourceDirName": "api/reference/interfaces",
   "slug": "/api/reference/interfaces/VincentToolClient",

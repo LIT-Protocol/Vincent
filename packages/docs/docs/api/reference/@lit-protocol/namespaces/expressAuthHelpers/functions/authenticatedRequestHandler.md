@@ -1,5 +1,7 @@
 > **authenticatedRequestHandler**(`handler`): (`req`, `res`, `next`) => `void` \| `Promise`\<`void`\>
 
+Defined in: [packages/sdk/src/express-authentication-middleware/express.ts:62](https://github.com/LIT-Protocol/Vincent/blob/main/packages/sdk/src/express-authentication-middleware/express.ts#L62)
+
 Higher-order helper function to enforce authentication on a request handler and assert the type of `Request` that is
 passed into your authenticated Express routes.
 

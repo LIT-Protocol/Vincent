@@ -1,3 +1,5 @@
+Defined in: [packages/sdk/src/tool/types.ts:28](https://github.com/LIT-Protocol/Vincent/blob/main/packages/sdk/src/tool/types.ts#L28)
+
 The Vincent Tool Client uses an ethers signer for your delegatee account to run Vincent Tools
 on behalf of your app users.
 
@@ -10,6 +12,8 @@ private key to authenticate with the LIT network when executing the Vincent Tool
 ### execute()
 
 > **execute**: (`params`) => `Promise`\<`ExecuteJsResponse`\>
+
+Defined in: [packages/sdk/src/tool/types.ts:29](https://github.com/LIT-Protocol/Vincent/blob/main/packages/sdk/src/tool/types.ts#L29)
 
 #### Parameters
 

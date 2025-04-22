@@ -1,3 +1,5 @@
+Defined in: [packages/sdk/src/jwt/types.ts:42](https://github.com/LIT-Protocol/Vincent/blob/main/packages/sdk/src/jwt/types.ts#L42)
+
 Extended payload interface for Vincent-specific JWTs.
 
  VincentJWTPayload
@@ -16,6 +18,8 @@ Extended payload interface for Vincent-specific JWTs.
 
 > **app**: `object`
 
+Defined in: [packages/sdk/src/jwt/types.ts:44](https://github.com/LIT-Protocol/Vincent/blob/main/packages/sdk/src/jwt/types.ts#L44)
+
 The app associated with the JWT.
 
 #### id
@@ -32,6 +36,8 @@ The app associated with the JWT.
 
 > `optional` **aud**: `string` \| `string`[]
 
+Defined in: node\_modules/.pnpm/did-jwt@8.0.11/node\_modules/did-jwt/lib/JWT.d.ts:54
+
 #### Inherited from
 
 `JWTPayload.aud`
@@ -41,6 +47,8 @@ The app associated with the JWT.
 ### authentication
 
 > **authentication**: `object`
+
+Defined in: [packages/sdk/src/jwt/types.ts:48](https://github.com/LIT-Protocol/Vincent/blob/main/packages/sdk/src/jwt/types.ts#L48)
 
 The authentication method used to generate the JWT.
 
@@ -58,6 +66,8 @@ The authentication method used to generate the JWT.
 
 > `optional` **exp**: `number`
 
+Defined in: node\_modules/.pnpm/did-jwt@8.0.11/node\_modules/did-jwt/lib/JWT.d.ts:57
+
 #### Inherited from
 
 `JWTPayload.exp`
@@ -67,6 +77,8 @@ The authentication method used to generate the JWT.
 ### iat?
 
 > `optional` **iat**: `number`
+
+Defined in: node\_modules/.pnpm/did-jwt@8.0.11/node\_modules/did-jwt/lib/JWT.d.ts:55
 
 #### Inherited from
 
@@ -78,6 +90,8 @@ The authentication method used to generate the JWT.
 
 > `optional` **iss**: `string`
 
+Defined in: node\_modules/.pnpm/did-jwt@8.0.11/node\_modules/did-jwt/lib/JWT.d.ts:52
+
 #### Inherited from
 
 `JWTPayload.iss`
@@ -87,6 +101,8 @@ The authentication method used to generate the JWT.
 ### nbf?
 
 > `optional` **nbf**: `number`
+
+Defined in: node\_modules/.pnpm/did-jwt@8.0.11/node\_modules/did-jwt/lib/JWT.d.ts:56
 
 #### Inherited from
 
@@ -98,6 +114,8 @@ The authentication method used to generate the JWT.
 
 > **pkp**: `IRelayPKP`
 
+Defined in: [packages/sdk/src/jwt/types.ts:43](https://github.com/LIT-Protocol/Vincent/blob/main/packages/sdk/src/jwt/types.ts#L43)
+
 The PKP associated with the JWT.
 
 ***
@@ -105,6 +123,8 @@ The PKP associated with the JWT.
 ### rexp?
 
 > `optional` **rexp**: `number`
+
+Defined in: node\_modules/.pnpm/did-jwt@8.0.11/node\_modules/did-jwt/lib/JWT.d.ts:58
 
 #### Inherited from
 
@@ -115,6 +135,8 @@ The PKP associated with the JWT.
 ### sub?
 
 > `optional` **sub**: `string`
+
+Defined in: node\_modules/.pnpm/did-jwt@8.0.11/node\_modules/did-jwt/lib/JWT.d.ts:53
 
 #### Inherited from
 

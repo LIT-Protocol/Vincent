@@ -1,5 +1,7 @@
 > **getAuthenticateUserExpressHandler**(`allowedAudience`): (`req`, `res`, `next`) => `Promise`\<`void`\>
 
+Defined in: [packages/sdk/src/express-authentication-middleware/express.ts:114](https://github.com/LIT-Protocol/Vincent/blob/main/packages/sdk/src/express-authentication-middleware/express.ts#L114)
+
 Creates an Express middleware function to authenticate a user using a JWT token.
 
 This middleware checks the `Authorization` header for a Bearer token, verifies the token, and checks its audience.

@@ -1,3 +1,5 @@
+Defined in: [packages/sdk/src/jwt/types.ts:61](https://github.com/LIT-Protocol/Vincent/blob/main/packages/sdk/src/jwt/types.ts#L61)
+
 Interface representing a decoded Vincent JWT
 
  VincentJWT
@@ -12,6 +14,8 @@ Interface representing a decoded Vincent JWT
 
 > **data**: `string`
 
+Defined in: node\_modules/.pnpm/did-jwt@8.0.11/node\_modules/did-jwt/lib/JWT.d.ts:65
+
 #### Inherited from
 
 `JWTDecoded.data`
@@ -22,6 +26,8 @@ Interface representing a decoded Vincent JWT
 
 > **header**: `JWTHeader`
 
+Defined in: node\_modules/.pnpm/did-jwt@8.0.11/node\_modules/did-jwt/lib/JWT.d.ts:62
+
 #### Inherited from
 
 `JWTDecoded.header`
@@ -31,6 +37,8 @@ Interface representing a decoded Vincent JWT
 ### payload
 
 > **payload**: [`VincentJWTPayload`](VincentJWTPayload.md)
+
+Defined in: [packages/sdk/src/jwt/types.ts:62](https://github.com/LIT-Protocol/Vincent/blob/main/packages/sdk/src/jwt/types.ts#L62)
 
 The payload of the JWT
 
@@ -43,6 +51,8 @@ The payload of the JWT
 ### signature
 
 > **signature**: `string`
+
+Defined in: node\_modules/.pnpm/did-jwt@8.0.11/node\_modules/did-jwt/lib/JWT.d.ts:64
 
 #### Inherited from
 

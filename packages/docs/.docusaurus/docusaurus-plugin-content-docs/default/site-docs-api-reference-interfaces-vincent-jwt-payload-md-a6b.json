@@ -1,7 +1,7 @@
 {
   "id": "api/reference/interfaces/VincentJWTPayload",
   "title": "VincentJWTPayload",
-  "description": "Extended payload interface for Vincent-specific JWTs.",
+  "description": "Defined in42",
   "source": "@site/docs/api/reference/interfaces/VincentJWTPayload.md",
   "sourceDirName": "api/reference/interfaces",
   "slug": "/api/reference/interfaces/VincentJWTPayload",

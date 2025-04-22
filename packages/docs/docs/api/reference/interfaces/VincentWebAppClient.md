@@ -1,3 +1,5 @@
+Defined in: [packages/sdk/src/app/types.ts:31](https://github.com/LIT-Protocol/Vincent/blob/main/packages/sdk/src/app/types.ts#L31)
+
 The Vincent Web Application Client is used in web apps to handle interactions with the Vincent app portal.
 
 - Consent page redirection
@@ -8,6 +10,8 @@ The Vincent Web Application Client is used in web apps to handle interactions wi
 ### decodeVincentLoginJWT()
 
 > **decodeVincentLoginJWT**: (`expectedAudience`) => `null` \| \{ `decodedJWT`: [`VincentJWT`](VincentJWT.md); `jwtStr`: `string`; \}
+
+Defined in: [packages/sdk/src/app/types.ts:93](https://github.com/LIT-Protocol/Vincent/blob/main/packages/sdk/src/app/types.ts#L93)
 
 **`Function`**
 
@@ -41,6 +45,8 @@ If there was a JWT in the page URL, but it was invalid / could not be verified
 
 > **isLogin**: () => `boolean`
 
+Defined in: [packages/sdk/src/app/types.ts:78](https://github.com/LIT-Protocol/Vincent/blob/main/packages/sdk/src/app/types.ts#L78)
+
 **`Function`**
 
 Determines whether the current window location is a login URI associated with Vincent
@@ -61,6 +67,8 @@ See: [VincentWebAppClient.redirectToConsentPage](#redirecttoconsentpage) for exa
 ### redirectToConsentPage()
 
 > **redirectToConsentPage**: (`redirectConfig`) => `void`
+
+Defined in: [packages/sdk/src/app/types.ts:64](https://github.com/LIT-Protocol/Vincent/blob/main/packages/sdk/src/app/types.ts#L64)
 
 **`Function`**
 
@@ -111,6 +119,8 @@ NOTE: You must register the `redirectUri` on your Vincent app for it to be consi
 ### removeLoginJWTFromURI()
 
 > **removeLoginJWTFromURI**: () => `void`
+
+Defined in: [packages/sdk/src/app/types.ts:122](https://github.com/LIT-Protocol/Vincent/blob/main/packages/sdk/src/app/types.ts#L122)
 
 **`Function`**
 

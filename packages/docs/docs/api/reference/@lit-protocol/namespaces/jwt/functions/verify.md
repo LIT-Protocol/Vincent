@@ -1,5 +1,7 @@
 > **verify**(`jwt`, `expectedAudience`): [`VincentJWT`](../../../../interfaces/VincentJWT.md)
 
+Defined in: [packages/sdk/src/jwt/index.ts:48](https://github.com/LIT-Protocol/Vincent/blob/main/packages/sdk/src/jwt/index.ts#L48)
+
 ## Parameters
 
 ### jwt

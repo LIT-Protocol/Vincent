@@ -1,7 +1,7 @@
 {
   "id": "api/reference/interfaces/VincentWebAppClient",
   "title": "VincentWebAppClient",
-  "description": "The Vincent Web Application Client is used in web apps to handle interactions with the Vincent app portal.",
+  "description": "Defined in31",
   "source": "@site/docs/api/reference/interfaces/VincentWebAppClient.md",
   "sourceDirName": "api/reference/interfaces",
   "slug": "/api/reference/interfaces/VincentWebAppClient",
