@@ -13,7 +13,7 @@
   ],
   "out": "./sdk-docs",
   "skipErrorChecking": true,
-  "plugin": ["typedoc-github-theme"],
+  "plugin": ["typedoc-material-theme"],
   "navigation": {
     "includeCategories": true
   },
