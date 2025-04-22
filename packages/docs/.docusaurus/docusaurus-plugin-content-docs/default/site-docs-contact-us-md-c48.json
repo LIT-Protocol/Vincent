@@ -14,7 +14,7 @@
   "frontMatter": {},
   "sidebar": "tutorialSidebar",
   "previous": {
-    "title": "Function: verify()",
+    "title": "verify",
     "permalink": "/api/reference/@lit-protocol/namespaces/jwt/functions/verify"
   }
 }

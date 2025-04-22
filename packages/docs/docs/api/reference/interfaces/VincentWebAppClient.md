@@ -1,5 +1,3 @@
-# Interface: VincentWebAppClient
-
 The Vincent Web Application Client is used in web apps to handle interactions with the Vincent app portal.
 
 - Consent page redirection

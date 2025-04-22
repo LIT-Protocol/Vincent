@@ -1,5 +1,3 @@
-# Function: decode()
-
 > **decode**(`jwt`): [`VincentJWT`](../../../../interfaces/VincentJWT.md)
 
 Decodes a Vincent JWT in string form and returns an [VincentJWT](../../../../interfaces/VincentJWT.md) decoded object for your use

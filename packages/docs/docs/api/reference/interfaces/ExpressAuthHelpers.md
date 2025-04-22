@@ -1,5 +1,3 @@
-# Interface: ExpressAuthHelpers
-
 ## Properties
 
 ### AuthenticatedRequest

@@ -1,5 +1,3 @@
-# Function: verify()
-
 > **verify**(`jwt`, `expectedAudience`): [`VincentJWT`](../../../../interfaces/VincentJWT.md)
 
 ## Parameters

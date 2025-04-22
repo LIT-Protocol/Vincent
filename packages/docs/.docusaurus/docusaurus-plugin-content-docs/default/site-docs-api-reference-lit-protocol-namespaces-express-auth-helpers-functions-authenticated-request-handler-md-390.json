@@ -1,6 +1,6 @@
 {
   "id": "api/reference/@lit-protocol/namespaces/expressAuthHelpers/functions/authenticatedRequestHandler",
-  "title": "Function: authenticatedRequestHandler()",
+  "title": "authenticatedRequestHandler",
   "description": "authenticatedRequestHandler(handler): (req, res, next) => void \\| Promise\\",
   "source": "@site/docs/api/reference/@lit-protocol/namespaces/expressAuthHelpers/functions/authenticatedRequestHandler.md",
   "sourceDirName": "api/reference/@lit-protocol/namespaces/expressAuthHelpers/functions",
@@ -14,11 +14,11 @@
   "frontMatter": {},
   "sidebar": "tutorialSidebar",
   "previous": {
-    "title": "expressAuthHelpers",
+    "title": "index",
     "permalink": "/api/reference/@lit-protocol/namespaces/expressAuthHelpers/"
   },
   "next": {
-    "title": "Function: getAuthenticateUserExpressHandler()",
+    "title": "getAuthenticateUserExpressHandler",
     "permalink": "/api/reference/@lit-protocol/namespaces/expressAuthHelpers/functions/getAuthenticateUserExpressHandler"
   }
 }

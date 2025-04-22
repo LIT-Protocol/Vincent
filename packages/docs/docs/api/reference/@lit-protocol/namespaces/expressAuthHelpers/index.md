@@ -1,5 +1,3 @@
-# expressAuthHelpers
-
 expressAuthHelpers are used to add a VincentJWT-specific authentication to your Express.js server routes
 
 - Create an express middleware using [getAuthenticateUserExpressHandler](functions/getAuthenticateUserExpressHandler.md)

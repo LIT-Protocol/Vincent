@@ -1,0 +1,24 @@
+/**
+ * Styles to fix TypeDoc output
+ */
+
+/* Hide "Interface: " and "Function: " prefixes in headings */
+h1 > strong:first-child,
+h2 > strong:first-child,
+h3 > strong:first-child,
+h4 > strong:first-child,
+h5 > strong:first-child {
+  display: none;
+}
+
+/* Hide duplicate interface name after description */
+h1 + p + h2:has(code):where(:not(:has(*))) {
+  display: none;
+}
+
+/* Make inheritance links more visible */
+.tsd-hierarchy a {
+  color: var(--ifm-color-primary);
+  font-weight: bold;
+  text-decoration: underline;
+} 

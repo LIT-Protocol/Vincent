@@ -66,7 +66,7 @@ const sidebars: SidebarsConfig = {
         },
         {
           type: 'category',
-          label: '@lit-protocol',
+          label: 'For Developers',
           items: [
             {
               type: 'category',

@@ -1,5 +1,3 @@
-# Function: getVincentWebAppClient()
-
 > **getVincentWebAppClient**(`appClientConfig`): [`VincentWebAppClient`](../interfaces/VincentWebAppClient.md)
 
 Create a new [VincentWebAppClient](../interfaces/VincentWebAppClient.md) instance.

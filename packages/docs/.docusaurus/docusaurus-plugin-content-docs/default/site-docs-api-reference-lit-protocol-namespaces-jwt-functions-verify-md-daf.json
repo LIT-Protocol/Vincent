@@ -1,6 +1,6 @@
 {
   "id": "api/reference/@lit-protocol/namespaces/jwt/functions/verify",
-  "title": "Function: verify()",
+  "title": "verify",
   "description": "verify(jwt, expectedAudience): VincentJWT",
   "source": "@site/docs/api/reference/@lit-protocol/namespaces/jwt/functions/verify.md",
   "sourceDirName": "api/reference/@lit-protocol/namespaces/jwt/functions",
@@ -14,7 +14,7 @@
   "frontMatter": {},
   "sidebar": "tutorialSidebar",
   "previous": {
-    "title": "Function: isExpired()",
+    "title": "isExpired",
     "permalink": "/api/reference/@lit-protocol/namespaces/jwt/functions/isExpired"
   },
   "next": {

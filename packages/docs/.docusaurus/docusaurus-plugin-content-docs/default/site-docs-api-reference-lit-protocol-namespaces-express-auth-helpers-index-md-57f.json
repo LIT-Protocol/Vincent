@@ -1,6 +1,6 @@
 {
   "id": "api/reference/@lit-protocol/namespaces/expressAuthHelpers/index",
-  "title": "expressAuthHelpers",
+  "title": "index",
   "description": "expressAuthHelpers are used to add a VincentJWT-specific authentication to your Express.js server routes",
   "source": "@site/docs/api/reference/@lit-protocol/namespaces/expressAuthHelpers/index.md",
   "sourceDirName": "api/reference/@lit-protocol/namespaces/expressAuthHelpers",
@@ -14,11 +14,11 @@
   "frontMatter": {},
   "sidebar": "tutorialSidebar",
   "previous": {
-    "title": "Interface: VincentJWTPayload",
+    "title": "VincentJWTPayload",
     "permalink": "/api/reference/interfaces/VincentJWTPayload"
   },
   "next": {
-    "title": "Function: authenticatedRequestHandler()",
+    "title": "authenticatedRequestHandler",
     "permalink": "/api/reference/@lit-protocol/namespaces/expressAuthHelpers/functions/authenticatedRequestHandler"
   }
 }

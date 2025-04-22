@@ -1,5 +1,3 @@
-# Function: isExpired()
-
 > **isExpired**(`decodedJWT`): `boolean`
 
 When a JWT is expired, you need to use [VincentWebAppClient.redirectToConsentPage](../../../../interfaces/VincentWebAppClient.md#redirecttoconsentpage) to get a new JWT

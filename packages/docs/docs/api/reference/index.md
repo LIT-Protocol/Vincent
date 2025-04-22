@@ -1,5 +1,3 @@
-# @lit-protocol/vincent-sdk
-
 ## Other
 
 - [ExpressAuthHelpers](interfaces/ExpressAuthHelpers.md)
@@ -9,9 +7,9 @@
 ## Vincent SDK API
 
 - [expressAuthHelpers](@lit-protocol/namespaces/expressAuthHelpers/index.md)
+- [jwt](@lit-protocol/namespaces/jwt/index.md)
 - [getVincentToolClient](functions/getVincentToolClient.md)
 - [getVincentWebAppClient](functions/getVincentWebAppClient.md)
-- [jwt](@lit-protocol/namespaces/jwt/index.md)
 
 ## Vincent Tools
 

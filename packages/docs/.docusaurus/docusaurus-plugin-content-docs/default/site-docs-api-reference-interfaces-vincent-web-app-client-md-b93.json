@@ -1,6 +1,6 @@
 {
   "id": "api/reference/interfaces/VincentWebAppClient",
-  "title": "Interface: VincentWebAppClient",
+  "title": "VincentWebAppClient",
   "description": "The Vincent Web Application Client is used in web apps to handle interactions with the Vincent app portal.",
   "source": "@site/docs/api/reference/interfaces/VincentWebAppClient.md",
   "sourceDirName": "api/reference/interfaces",
@@ -14,11 +14,11 @@
   "frontMatter": {},
   "sidebar": "tutorialSidebar",
   "previous": {
-    "title": "Interface: VincentToolClient",
+    "title": "VincentToolClient",
     "permalink": "/api/reference/interfaces/VincentToolClient"
   },
   "next": {
-    "title": "Interface: VincentJWT",
+    "title": "VincentJWT",
     "permalink": "/api/reference/interfaces/VincentJWT"
   }
 }

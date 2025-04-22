@@ -1,6 +1,6 @@
 {
   "id": "api/reference/functions/getVincentWebAppClient",
-  "title": "Function: getVincentWebAppClient()",
+  "title": "getVincentWebAppClient",
   "description": "getVincentWebAppClient(appClientConfig): VincentWebAppClient",
   "source": "@site/docs/api/reference/functions/getVincentWebAppClient.md",
   "sourceDirName": "api/reference/functions",
@@ -14,11 +14,11 @@
   "frontMatter": {},
   "sidebar": "tutorialSidebar",
   "previous": {
-    "title": "Function: getVincentToolClient()",
+    "title": "getVincentToolClient",
     "permalink": "/api/reference/functions/getVincentToolClient"
   },
   "next": {
-    "title": "Interface: VincentToolClient",
+    "title": "VincentToolClient",
     "permalink": "/api/reference/interfaces/VincentToolClient"
   }
 }

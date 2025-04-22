@@ -22,7 +22,7 @@
     "permalink": "/Users/Onboarding"
   },
   "next": {
-    "title": "Function: getVincentToolClient()",
+    "title": "getVincentToolClient",
     "permalink": "/api/reference/functions/getVincentToolClient"
   }
 }

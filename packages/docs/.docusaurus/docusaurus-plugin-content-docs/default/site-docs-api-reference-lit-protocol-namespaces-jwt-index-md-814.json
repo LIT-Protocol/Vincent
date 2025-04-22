@@ -1,6 +1,6 @@
 {
   "id": "api/reference/@lit-protocol/namespaces/jwt/index",
-  "title": "jwt",
+  "title": "index",
   "description": "Helper methods for working with Vincent-issues JWTs.",
   "source": "@site/docs/api/reference/@lit-protocol/namespaces/jwt/index.md",
   "sourceDirName": "api/reference/@lit-protocol/namespaces/jwt",
@@ -14,11 +14,11 @@
   "frontMatter": {},
   "sidebar": "tutorialSidebar",
   "previous": {
-    "title": "Function: getAuthenticateUserExpressHandler()",
+    "title": "getAuthenticateUserExpressHandler",
     "permalink": "/api/reference/@lit-protocol/namespaces/expressAuthHelpers/functions/getAuthenticateUserExpressHandler"
   },
   "next": {
-    "title": "Function: decode()",
+    "title": "decode",
     "permalink": "/api/reference/@lit-protocol/namespaces/jwt/functions/decode"
   }
 }

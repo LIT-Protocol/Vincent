@@ -1,5 +1,3 @@
-# Function: authenticatedRequestHandler()
-
 > **authenticatedRequestHandler**(`handler`): (`req`, `res`, `next`) => `void` \| `Promise`\<`void`\>
 
 Higher-order helper function to enforce authentication on a request handler and assert the type of `Request` that is

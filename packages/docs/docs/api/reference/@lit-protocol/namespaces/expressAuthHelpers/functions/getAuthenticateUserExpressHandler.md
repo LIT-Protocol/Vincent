@@ -1,5 +1,3 @@
-# Function: getAuthenticateUserExpressHandler()
-
 > **getAuthenticateUserExpressHandler**(`allowedAudience`): (`req`, `res`, `next`) => `Promise`\<`void`\>
 
 Creates an Express middleware function to authenticate a user using a JWT token.

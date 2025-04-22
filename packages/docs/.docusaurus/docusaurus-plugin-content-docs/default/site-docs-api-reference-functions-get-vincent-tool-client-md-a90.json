@@ -1,6 +1,6 @@
 {
   "id": "api/reference/functions/getVincentToolClient",
-  "title": "Function: getVincentToolClient()",
+  "title": "getVincentToolClient",
   "description": "getVincentToolClient(config): VincentToolClient",
   "source": "@site/docs/api/reference/functions/getVincentToolClient.md",
   "sourceDirName": "api/reference/functions",
@@ -18,7 +18,7 @@
     "permalink": "/api/"
   },
   "next": {
-    "title": "Function: getVincentWebAppClient()",
+    "title": "getVincentWebAppClient",
     "permalink": "/api/reference/functions/getVincentWebAppClient"
   }
 }

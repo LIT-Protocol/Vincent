@@ -1,5 +1,3 @@
-# Function: getVincentToolClient()
-
 > **getVincentToolClient**(`config`): [`VincentToolClient`](../interfaces/VincentToolClient.md)
 
 Create a new [VincentToolClient](../interfaces/VincentToolClient.md) instance.

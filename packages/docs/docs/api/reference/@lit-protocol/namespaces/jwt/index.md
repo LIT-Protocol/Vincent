@@ -1,5 +1,3 @@
-# jwt
-
 Helper methods for working with Vincent-issues JWTs.
 
 ## Functions

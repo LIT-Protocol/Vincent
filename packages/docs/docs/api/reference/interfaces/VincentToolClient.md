@@ -1,5 +1,3 @@
-# Interface: VincentToolClient
-
 The Vincent Tool Client uses an ethers signer for your delegatee account to run Vincent Tools
 on behalf of your app users.
 
