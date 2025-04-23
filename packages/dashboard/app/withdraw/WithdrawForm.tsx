@@ -10,7 +10,8 @@ import {
   ChainSelector,
   TokenSelector,
   WithdrawPanel,
-  BalanceDisplay
+  BalanceDisplay,
+  WalletConnect
 } from '../../components/withdraw';
 import { handleSubmit } from './utils/handlers';
 import { ethers } from 'ethers';
@@ -129,6 +130,13 @@ export default function WithdrawForm({
           setIsCustomToken={setIsCustomToken}
           customTokenAddress={customTokenAddress}
           setCustomTokenAddress={setCustomTokenAddress}
+        />
+
+        <WalletConnect
+          sessionSigs={sessionSigs}
+          agentPKP={agentPKP!}
+          chainId={selectedChain}
+          onStatusChange={showStatus}
         />
 
         <WithdrawPanel
