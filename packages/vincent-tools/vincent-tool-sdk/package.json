@@ -1,6 +1,6 @@
 {
-  "name": "@lit-protocol/vincent-tool",
-  "version": "0.1.0-0",
+  "name": "@lit-protocol/vincent-tool-sdk",
+  "version": "0.0.1-0",
   "publishConfig": {
     "access": "public"
   },
@@ -17,8 +17,8 @@
     "!**/*.tsbuildinfo"
   ],
   "nx": {
-    "sourceRoot": "packages/vincent-tool/src",
+    "sourceRoot": "packages/vincent-tool-sdk/src",
     "projectType": "library",
-    "name": "vincent-tool"
+    "name": "vincent-tool-sdk"
   }
 }

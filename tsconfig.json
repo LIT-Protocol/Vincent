@@ -7,7 +7,7 @@
       "path": "./packages/vincent-tools/vincent-tool-uniswap-swap"
     },
     {
-      "path": "./packages/vincent-tools/vincent-tool"
+      "path": "./packages/vincent-tools/vincent-tool-sdk"
     }
   ]
 }
