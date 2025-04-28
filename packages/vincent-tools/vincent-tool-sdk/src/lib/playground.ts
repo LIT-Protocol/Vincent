@@ -146,7 +146,8 @@ const policy2 = validateVincentPolicyDef({
           details: [
             `Amount ${toolParams.maxAmount} is within limit ${userParams.limit}`,
           ],
-          result: { validatedAmount: toolParams.maxAmount },
+          result: { validatedAmount: 1983 },
+          // result: { beef: 'meow', quake: 1 },
         };
       } else {
         return {
@@ -309,12 +310,18 @@ const myTool = validateVincentToolDef({
     }
 
     if (policyResults.allowPolicyResults.policy2) {
-      // @ts-expect-error commitResult is intentionally not used elsewhere
       const commitResult =
         await policyResults.allowPolicyResults.policy2.commit({
           ...params,
           transactionId: 'orhfjkjsdfslkjhdf',
         });
+
+      if (commitResult.allow === true) {
+        const { transaction, timestamp } = commitResult.result;
+        console.log(`Transaction ${transaction} processed at ${timestamp}`);
+      } else {
+        console.log('failureReason', commitResult.result.failureReason);
+      }
     }
 
     if (policyResults.allowPolicyResults.policy3) {

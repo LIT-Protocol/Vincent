@@ -1,5 +1,12 @@
 import z from 'zod';
-import { PolicyResult } from '../types';
+import {
+  PolicyResult,
+  PolicyResultAllow,
+  PolicyResultAllowNoResult,
+  PolicyResultDeny,
+  PolicyResultDenyNoResult,
+  PolicyResultNoResult,
+} from '../types';
 
 export function validateVincentPolicyDef<
   ToolParamsSchema extends z.ZodType,
@@ -40,28 +47,24 @@ export function validateVincentPolicyDef<
       toolParams: z.infer<PolicyToolParams>;
       userParams: z.infer<UserParams>;
     }) => Promise<
-      PolicyResult<
-        PrecheckAllowResult extends z.ZodType
-          ? z.infer<PrecheckAllowResult>
-          : never,
-        PrecheckDenyResult extends z.ZodType
-          ? z.infer<PrecheckDenyResult>
-          : never
-      >
+      | (PrecheckAllowResult extends z.ZodType
+          ? PolicyResultAllow<z.infer<PrecheckAllowResult>>
+          : PolicyResultAllowNoResult)
+      | (PrecheckDenyResult extends z.ZodType
+          ? PolicyResultDeny<z.infer<PrecheckDenyResult>>
+          : PolicyResultDenyNoResult)
     >;
 
     commit?: CommitParams extends z.ZodType
       ? (
           args: z.infer<CommitParams>,
         ) => Promise<
-          PolicyResult<
-            CommitAllowResult extends z.ZodType
-              ? z.infer<CommitAllowResult>
-              : never,
-            CommitDenyResult extends z.ZodType
-              ? z.infer<CommitDenyResult>
-              : never
-          >
+          | (CommitAllowResult extends z.ZodType
+              ? PolicyResultAllow<z.infer<CommitAllowResult>>
+              : PolicyResultAllowNoResult)
+          | (CommitDenyResult extends z.ZodType
+              ? PolicyResultDeny<z.infer<CommitDenyResult>>
+              : PolicyResultDenyNoResult)
         >
       : never;
   };

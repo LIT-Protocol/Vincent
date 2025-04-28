@@ -7,22 +7,40 @@ interface PolicyResultBase {
   details?: string[];
 }
 
-export interface PolicyResultAllow<AllowResult = unknown>
-  extends PolicyResultBase {
-  allow: true;
-  result?: AllowResult;
-}
+export type PolicyResultAllow<AllowResult = never> = AllowResult extends never
+  ? Omit<PolicyResultBase, 'allow'> & { allow: true; result?: never }
+  : Omit<PolicyResultBase, 'allow'> & { allow: true; result: AllowResult };
 
-export interface PolicyResultDeny<DenyResult = unknown>
-  extends PolicyResultBase {
-  allow: false;
-  result?: DenyResult;
-  error?: string;
-}
+export type PolicyResultDeny<DenyResult = never> = DenyResult extends never
+  ? Omit<PolicyResultBase, 'allow'> & {
+      allow: false;
+      error?: string;
+      result?: never;
+    }
+  : Omit<PolicyResultBase, 'allow'> & {
+      allow: false;
+      result: DenyResult;
+      error?: string;
+    };
 
 export type PolicyResult<AllowResult = unknown, DenyResult = unknown> =
   | PolicyResultAllow<AllowResult>
   | PolicyResultDeny<DenyResult>;
+
+export interface PolicyResultAllowNoResult extends PolicyResultBase {
+  allow: true;
+  result?: never;
+}
+
+export interface PolicyResultDenyNoResult extends PolicyResultBase {
+  allow: false;
+  error?: string;
+  result?: never;
+}
+
+export type PolicyResultNoResult =
+  | PolicyResultAllowNoResult
+  | PolicyResultDenyNoResult;
 
 // PolicyDef interfaces are very verbose, but the verbosity is necessary to ensure proper typing for the policy definitions,
 // especially in the context of the VincentPolicyEvaluationResults dictionary, where every value has a different type.
@@ -51,96 +69,102 @@ export interface BasicPolicyDef<
 export interface PolicyWithPrecheck<
   ToolParams extends z.ZodType,
   UserParams extends z.ZodType,
-  PrecheckAllowResult extends z.ZodType,
-  PrecheckDenyResult extends z.ZodType,
-  EvalAllowResult extends z.ZodType | never = never,
-  EvalDenyResult extends z.ZodType | never = never,
+  PrecheckAllowResult extends z.ZodType | undefined = undefined,
+  PrecheckDenyResult extends z.ZodType | undefined = undefined,
+  EvalAllowResult extends z.ZodType | undefined = undefined,
+  EvalDenyResult extends z.ZodType | undefined = undefined,
 > extends BasicPolicyDef<
     ToolParams,
     UserParams,
     EvalAllowResult,
     EvalDenyResult
   > {
-  precheckAllowResultSchema: PrecheckAllowResult;
-  precheckDenyResultSchema: PrecheckDenyResult;
+  precheckAllowResultSchema?: PrecheckAllowResult;
+  precheckDenyResultSchema?: PrecheckDenyResult;
   precheck: (args: {
     toolParams: z.infer<ToolParams>;
     userParams: z.infer<UserParams>;
   }) => Promise<
-    PolicyResult<z.infer<PrecheckAllowResult>, z.infer<PrecheckDenyResult>>
+    | (PrecheckAllowResult extends z.ZodType
+        ? PolicyResultAllow<z.infer<PrecheckAllowResult>>
+        : PolicyResultAllowNoResult)
+    | (PrecheckDenyResult extends z.ZodType
+        ? PolicyResultDeny<z.infer<PrecheckDenyResult>>
+        : PolicyResultDenyNoResult)
   >;
 }
 
 export interface PolicyWithCommit<
   ToolParams extends z.ZodType,
   UserParams extends z.ZodType,
-  CommitParams extends z.ZodType,
-  CommitAllowResult extends z.ZodType | never = never,
-  CommitDenyResult extends z.ZodType | never = never,
-  EvalAllowResult extends z.ZodType | never = never,
-  EvalDenyResult extends z.ZodType | never = never,
+  CommitParams extends z.ZodType | undefined = undefined,
+  CommitAllowResult extends z.ZodType | undefined = undefined,
+  CommitDenyResult extends z.ZodType | undefined = undefined,
+  EvalAllowResult extends z.ZodType | undefined = undefined,
+  EvalDenyResult extends z.ZodType | undefined = undefined,
 > extends BasicPolicyDef<
     ToolParams,
     UserParams,
     EvalAllowResult,
     EvalDenyResult
   > {
-  commitParamsSchema: CommitParams;
-  commitAllowResultSchema?: CommitAllowResult extends never
-    ? never
-    : CommitAllowResult;
-  commitDenyResultSchema?: CommitDenyResult extends never
-    ? never
-    : CommitDenyResult;
+  commitParamsSchema: NonNullable<CommitParams>;
+  commitAllowResultSchema?: CommitAllowResult;
+  commitDenyResultSchema?: CommitDenyResult;
   commit: (
-    args: z.infer<CommitParams>,
+    args: CommitParams extends z.ZodType ? z.infer<CommitParams> : never,
   ) => Promise<
-    PolicyResult<
-      CommitAllowResult extends never ? never : z.infer<CommitAllowResult>,
-      CommitDenyResult extends never ? never : z.infer<CommitDenyResult>
-    >
+    | (CommitAllowResult extends z.ZodType
+        ? PolicyResultAllow<z.infer<CommitAllowResult>>
+        : PolicyResultAllowNoResult)
+    | (CommitDenyResult extends z.ZodType
+        ? PolicyResultDeny<z.infer<CommitDenyResult>>
+        : PolicyResultDenyNoResult)
   >;
 }
 
 export interface PolicyWithPrecheckAndCommit<
   ToolParams extends z.ZodType,
   UserParams extends z.ZodType,
-  PrecheckAllowResult extends z.ZodType,
-  PrecheckDenyResult extends z.ZodType,
-  CommitParams extends z.ZodType,
-  CommitAllowResult extends z.ZodType | never = never,
-  CommitDenyResult extends z.ZodType | never = never,
-  EvalAllowResult extends z.ZodType | never = never,
-  EvalDenyResult extends z.ZodType | never = never,
+  PrecheckAllowResult extends z.ZodType | undefined = undefined,
+  PrecheckDenyResult extends z.ZodType | undefined = undefined,
+  CommitParams extends z.ZodType | undefined = undefined,
+  CommitAllowResult extends z.ZodType | undefined = undefined,
+  CommitDenyResult extends z.ZodType | undefined = undefined,
+  EvalAllowResult extends z.ZodType | undefined = undefined,
+  EvalDenyResult extends z.ZodType | undefined = undefined,
 > extends BasicPolicyDef<
     ToolParams,
     UserParams,
     EvalAllowResult,
     EvalDenyResult
   > {
-  precheckAllowResultSchema: PrecheckAllowResult;
-  precheckDenyResultSchema: PrecheckDenyResult;
+  precheckAllowResultSchema?: PrecheckAllowResult;
+  precheckDenyResultSchema?: PrecheckDenyResult;
   precheck: (args: {
     toolParams: z.infer<ToolParams>;
     userParams: z.infer<UserParams>;
   }) => Promise<
-    PolicyResult<z.infer<PrecheckAllowResult>, z.infer<PrecheckDenyResult>>
+    | (PrecheckAllowResult extends z.ZodType
+        ? PolicyResultAllow<z.infer<PrecheckAllowResult>>
+        : PolicyResultAllowNoResult)
+    | (PrecheckDenyResult extends z.ZodType
+        ? PolicyResultDeny<z.infer<PrecheckDenyResult>>
+        : PolicyResultDenyNoResult)
   >;
 
-  commitParamsSchema: CommitParams;
-  commitAllowResultSchema?: CommitAllowResult extends never
-    ? never
-    : CommitAllowResult;
-  commitDenyResultSchema?: CommitDenyResult extends never
-    ? never
-    : CommitDenyResult;
+  commitParamsSchema: NonNullable<CommitParams>;
+  commitAllowResultSchema?: CommitAllowResult;
+  commitDenyResultSchema?: CommitDenyResult;
   commit: (
-    args: z.infer<CommitParams>,
+    args: CommitParams extends z.ZodType ? z.infer<CommitParams> : never,
   ) => Promise<
-    PolicyResult<
-      CommitAllowResult extends never ? never : z.infer<CommitAllowResult>,
-      CommitDenyResult extends never ? never : z.infer<CommitDenyResult>
-    >
+    | (CommitAllowResult extends z.ZodType
+        ? PolicyResultAllow<z.infer<CommitAllowResult>>
+        : PolicyResultAllowNoResult)
+    | (CommitDenyResult extends z.ZodType
+        ? PolicyResultDeny<z.infer<CommitDenyResult>>
+        : PolicyResultDenyNoResult)
   >;
 }
 
