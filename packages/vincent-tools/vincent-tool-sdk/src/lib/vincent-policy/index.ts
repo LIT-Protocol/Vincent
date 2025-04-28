@@ -5,7 +5,6 @@ import {
   PolicyResultAllowNoResult,
   PolicyResultDeny,
   PolicyResultDenyNoResult,
-  PolicyResultNoResult,
 } from '../types';
 
 export function validateVincentPolicyDef<
