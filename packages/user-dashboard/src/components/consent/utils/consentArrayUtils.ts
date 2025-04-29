@@ -1,9 +1,6 @@
 import { VersionParameter, VersionInfo } from '../types';
-import {
-  isEmptyParameterValue,
-  decodeParameterValue,
-} from './parameterDecoding';
-import { encodeParameterValue } from '../../../utils/parameterEncoding';
+import { isEmptyParameterValue, decodeParameterValue } from './parameterDecoding';
+import { encodeParameterValue } from './parameterEncoding';
 
 /**
  * Prepares parameter removal data for contract calls
@@ -168,10 +165,7 @@ export const prepareParameterUpdateData = (
                 // Only add parameters that have user-provided values and aren't empty
                 if (param && param.value !== undefined) {
                   // Check if parameter is empty using the shared utility
-                  const isEmpty = isEmptyParameterValue(
-                    param.value,
-                    param.type,
-                  );
+                  const isEmpty = isEmptyParameterValue(param.value, param.type);
 
                   // Skip if parameter is empty
                   if (isEmpty) return;
@@ -198,10 +192,7 @@ export const prepareParameterUpdateData = (
   const hasParametersToSet = toolIpfsCids.some((_toolCid, toolIndex) => {
     if (policyIpfsCids[toolIndex]) {
       return policyIpfsCids[toolIndex].some((_policyCid, policyIndex) => {
-        if (
-          policyParameterNames[toolIndex] &&
-          policyParameterNames[toolIndex][policyIndex]
-        ) {
+        if (policyParameterNames[toolIndex] && policyParameterNames[toolIndex][policyIndex]) {
           return policyParameterNames[toolIndex][policyIndex].length > 0;
         }
         return false;
@@ -232,10 +223,7 @@ export const identifyParametersToRemove = (
     try {
       // Make sure we have a decoded value for comparison
       if (typeof existingParam.value === 'string' && existingParam.type) {
-        existingParam.value = decodeParameterValue(
-          existingParam.value,
-          existingParam.type,
-        );
+        existingParam.value = decodeParameterValue(existingParam.value, existingParam.type);
       }
 
       // Match by name - the most direct approach
@@ -253,10 +241,7 @@ export const identifyParametersToRemove = (
         }
       }
     } catch (error) {
-      console.error(
-        `Error checking parameter ${existingParam.name} for removal:`,
-        error,
-      );
+      console.error(`Error checking parameter ${existingParam.name} for removal:`, error);
     }
   });
 
@@ -314,18 +299,14 @@ export const prepareVersionPermitData = (
                 // Ensure parameter name is never empty by using a default if it's empty
                 const paramName = name.trim() || `param_${paramIndex}`;
 
-                toolPolicyParameterNames[toolIndex][policyIndex][paramIndex] =
-                  paramName;
+                toolPolicyParameterNames[toolIndex][policyIndex][paramIndex] = paramName;
 
                 // Set the parameter type if available
                 if (paramTypes[paramIndex] !== undefined) {
                   toolPolicyParameterTypes[toolIndex][policyIndex][paramIndex] =
-                    typeof paramTypes[paramIndex] === 'number'
-                      ? paramTypes[paramIndex]
-                      : 0;
+                    typeof paramTypes[paramIndex] === 'number' ? paramTypes[paramIndex] : 0;
                 } else {
-                  toolPolicyParameterTypes[toolIndex][policyIndex][paramIndex] =
-                    0;
+                  toolPolicyParameterTypes[toolIndex][policyIndex][paramIndex] = 0;
                 }
               });
             }
@@ -342,9 +323,7 @@ export const prepareVersionPermitData = (
         toolPolicyParameterTypes[param.toolIndex] &&
         toolPolicyParameterTypes[param.toolIndex][param.policyIndex]
       ) {
-        toolPolicyParameterTypes[param.toolIndex][param.policyIndex][
-          param.paramIndex
-        ] = param.type;
+        toolPolicyParameterTypes[param.toolIndex][param.policyIndex][param.paramIndex] = param.type;
       }
     });
   }

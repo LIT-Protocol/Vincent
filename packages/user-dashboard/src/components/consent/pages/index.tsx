@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useEffect, useState, useCallback } from 'react';
 import { AUTH_METHOD_TYPE } from '@lit-protocol/constants';
@@ -14,7 +14,7 @@ import { useSetAuthInfo, useReadAuthInfo, useClearAuthInfo } from '../hooks/useA
 import SignUpView from '../views/SignUpView';
 import Loading from '../components/Loading';
 import { useErrorPopup } from '@/providers/ErrorPopup';
-import UserAppsView from '@/user/UserAppsView';
+import UserAppsView from '@/components/user/UserAppsView';
 
 export default function ConsentView() {
   // ------ STATE AND HOOKS ------
@@ -26,19 +26,19 @@ export default function ConsentView() {
   const [sessionSigs, setSessionSigs] = useState<SessionSigs>();
   const [agentPKP, setAgentPKP] = useState<IRelayPKP>();
   const [sessionError, setSessionError] = useState<Error>();
-  
+
   // State for loading messages
   const [loadingMessage, setLoadingMessage] = useState<string>('');
   const [isTransitioning, setIsTransitioning] = useState(false);
-  
+
   // ------ EXISTING SESSION HANDLING ------
-  
+
   // Check for existing auth info
-  const { 
-    authInfo, 
-    sessionSigs: validatedSessionSigs, 
+  const {
+    authInfo,
+    sessionSigs: validatedSessionSigs,
     isProcessing,
-    error: readError
+    error: readError,
   } = useReadAuthInfo();
 
   // Automatically use existing account instead of showing confirmation
@@ -49,12 +49,12 @@ export default function ConsentView() {
       setSessionSigs(validatedSessionSigs);
     }
   }, [validatedSessionSigs, isProcessing]);
-  
+
   // ------ NEW AUTHENTICATION FLOW ------
-  
+
   // Authentication state
   const [sessionLoading, setSessionLoading] = useState<boolean>(false);
-  
+
   // Authentication methods
   const {
     authMethod,
@@ -64,7 +64,7 @@ export default function ConsentView() {
     loading: authLoading,
     error: authError,
   } = useAuthenticate();
-  
+
   // Account handling
   const {
     fetchAccounts,
@@ -74,17 +74,17 @@ export default function ConsentView() {
     loading: accountsLoading,
     error: accountsError,
   } = useAccounts();
-  
+
   // Combine errors
   const error = authError || accountsError || sessionError || readError;
-  
+
   // Show errors in the popup when they occur
   useEffect(() => {
     if (error) {
       showError(error, 'Authentication Error');
     }
   }, [error, showError]);
-  
+
   // Register with WebAuthn
   async function handleRegisterWithWebAuthn() {
     const newPKP = await registerWebAuthn();
@@ -92,7 +92,7 @@ export default function ConsentView() {
       setuserPKP(newPKP);
     }
   }
-  
+
   // Generate session signatures on-demand
   const generateSessionSigs = useCallback(async () => {
     if (!authMethod || !userPKP) return;
@@ -103,7 +103,7 @@ export default function ConsentView() {
       // Generate session signatures for the user PKP
       const sigs = await getSessionSigs({
         pkpPublicKey: userPKP.publicKey,
-        authMethod
+        authMethod,
       });
       setSessionSigs(sigs);
 
@@ -120,8 +120,16 @@ export default function ConsentView() {
     } finally {
       setSessionLoading(false);
     }
-  }, [authMethod, userPKP, setSessionSigs, setAgentPKP, setSessionError, setSessionLoading, showError]);
-  
+  }, [
+    authMethod,
+    userPKP,
+    setSessionSigs,
+    setAgentPKP,
+    setSessionError,
+    setSessionLoading,
+    showError,
+  ]);
+
   // If user is authenticated, fetch accounts
   useEffect(() => {
     if (authMethod) {
@@ -142,9 +150,9 @@ export default function ConsentView() {
       generateSessionSigs();
     }
   }, [authMethod, userPKP, generateSessionSigs]);
-  
+
   // ------ LOADING STATES ------
-  
+
   // Update loading message based on current state with smooth transitions
   useEffect(() => {
     // Determine the appropriate message based on current loading state
@@ -158,26 +166,26 @@ export default function ConsentView() {
     } else if (isProcessing) {
       newMessage = 'Checking existing session...';
     }
-    
+
     // Only transition if the message is actually changing and not empty
     if (newMessage && newMessage !== loadingMessage) {
       // Start the transition
       setIsTransitioning(true);
-      
+
       // Wait briefly before changing the message
       const timeout = setTimeout(() => {
         setLoadingMessage(newMessage);
-        
+
         // After changing message, end the transition
         setTimeout(() => {
           setIsTransitioning(false);
         }, 150);
       }, 150);
-      
+
       return () => clearTimeout(timeout);
     }
   }, [authLoading, accountsLoading, sessionLoading, isProcessing, loadingMessage]);
-  
+
   // ------ CLEANUP ------
 
   const handleSignOut = async () => {
@@ -189,25 +197,20 @@ export default function ConsentView() {
   (ConsentView as any).handleSignOut = handleSignOut;
 
   // ------ RENDER CONTENT ------
-  
+
   const renderContent = () => {
     // Handle loading states first
     if (authLoading || accountsLoading || sessionLoading || isProcessing) {
-      return (
-        <Loading
-          copy={loadingMessage}
-          isTransitioning={isTransitioning}
-        />
-      );
+      return <Loading copy={loadingMessage} isTransitioning={isTransitioning} />;
     }
-    
+
     // If authenticated with session sigs (either from existing auth or new login)
     if (userPKP && sessionSigs) {
       // Save the PKP info in localStorage for SessionValidator to use
       try {
         updateAuthInfo({
           agentPKP,
-          userPKP
+          userPKP,
         });
       } catch (error) {
         console.error('Error saving PKP info to localStorage:', error);
@@ -221,17 +224,11 @@ export default function ConsentView() {
           />
         );
       }
-      
+
       // Show user apps view with PKP and session sigs
-      return (
-        <UserAppsView
-          userPKP={userPKP}
-          sessionSigs={sessionSigs}
-          agentPKP={agentPKP}
-        />
-      );
+      return <UserAppsView userPKP={userPKP} sessionSigs={sessionSigs} agentPKP={agentPKP} />;
     }
-    
+
     // If we have validated session sigs from an existing session
     if (validatedSessionSigs && authInfo?.userPKP) {
       // Show user apps view with existing session data
@@ -243,18 +240,20 @@ export default function ConsentView() {
         />
       );
     }
-    
+
     // If authenticated but no accounts found
     if (authMethod && accounts.length === 0) {
       return (
         <SignUpView
-          authMethodType={authMethod.authMethodType as typeof AUTH_METHOD_TYPE[keyof typeof AUTH_METHOD_TYPE]}
+          authMethodType={
+            authMethod.authMethodType as (typeof AUTH_METHOD_TYPE)[keyof typeof AUTH_METHOD_TYPE]
+          }
           handleRegisterWithWebAuthn={handleRegisterWithWebAuthn}
           authWithWebAuthn={authWithWebAuthn}
         />
       );
     }
-    
+
     // Initial authentication state - show login methods
     return (
       <LoginMethods
@@ -266,9 +265,5 @@ export default function ConsentView() {
     );
   };
 
-  return (
-    <div className="w-full">
-      {renderContent()}
-    </div>
-  );
+  return <div className="w-full">{renderContent()}</div>;
 }
