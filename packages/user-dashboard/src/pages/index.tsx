@@ -1,5 +1,5 @@
 import { Helmet } from 'react-helmet';
-import ConsentView from "@/components/consent/pages/index";
+import ConsentView from '@/components/consent/pages/index';
 import { wrap } from '@/utils/components';
 import { UserProviders } from '@/providers';
 import UserLayout from '@/components/layout/UserLayout';
@@ -16,11 +16,10 @@ export function Dashboard() {
   );
 }
 
-// Modify the wrap call to pass onSignOut to UserLayout
 const UserDashboardPage = () => {
   const handleSignOut = (ConsentView as any).handleSignOut;
   const WrappedDashboard = wrap(Dashboard, [...UserProviders]);
-  
+
   return (
     <UserLayout onSignOut={handleSignOut}>
       <WrappedDashboard />
