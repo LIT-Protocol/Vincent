@@ -1,18 +1,8 @@
-import { AppDetailsState } from '../types';
+import { AppDetailsState } from '@/pages/appId/types';
 import {
   getAppViewRegistryContract,
   getUserViewRegistryContract,
 } from '@/components/consent/utils/contracts';
-
-/**
- * Converts BigNumber objects to simple values
- */
-export const convertBigNumber = (value: any): any => {
-  if (typeof value === 'object' && value && value._isBigNumber) {
-    return value.toString();
-  }
-  return value;
-};
 
 /**
  * Fetches app details from the registry contract
@@ -21,13 +11,10 @@ export const fetchAppDetails = async (
   appId: string,
   agentPKPTokenId: string,
 ): Promise<AppDetailsState> => {
-  // Get app details from the registry contract
   const appViewContract = getAppViewRegistryContract();
 
-  // Get app details
   const appInfo = await appViewContract.getAppById(parseInt(appId));
 
-  // Get permitted version for this PKP
   const userViewContract = getUserViewRegistryContract();
   const permittedVersion = await userViewContract.getPermittedAppVersionForPkp(
     agentPKPTokenId,
@@ -37,21 +24,14 @@ export const fetchAppDetails = async (
   // Create app details object
   const appDetails: AppDetailsState = {
     id: appId,
-    name: convertBigNumber(appInfo.name) || 'Unnamed App',
-    description: convertBigNumber(appInfo.description) || '',
-    deploymentStatus:
-      typeof appInfo.deploymentStatus === 'object' && appInfo.deploymentStatus._isBigNumber
-        ? parseInt(appInfo.deploymentStatus.toString())
-        : appInfo.deploymentStatus,
+    name: appInfo.name,
+    description: appInfo.description,
+    deploymentStatus: appInfo.deploymentStatus,
     isDeleted: appInfo.isDeleted,
-    manager: convertBigNumber(appInfo.manager) || '',
-    latestVersion: convertBigNumber(appInfo.latestVersion) || 0,
-    permittedVersion: permittedVersion
-      ? typeof permittedVersion === 'object' && permittedVersion._isBigNumber
-        ? parseInt(permittedVersion.toString())
-        : permittedVersion
-      : null,
-    authorizedRedirectUris: appInfo.authorizedRedirectUris || [],
+    manager: appInfo.manager,
+    latestVersion: parseInt(appInfo.latestVersion.toString()),
+    permittedVersion: parseInt(permittedVersion.toString()),
+    authorizedRedirectUris: appInfo.authorizedRedirectUris,
   };
 
   return appDetails;

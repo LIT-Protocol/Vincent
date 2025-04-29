@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { AppDetailsState } from '../types';
-import { getDeploymentStatusName } from '../utils/appDetailsUtils';
+import { AppDetailsState } from '../../../pages/appId/types';
+import { getDeploymentStatusName } from '../../../pages/appId/utils/appDetailsUtils';
 
 interface AppInfoSectionProps {
   app: AppDetailsState;

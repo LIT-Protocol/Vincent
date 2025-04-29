@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowUpCircle } from 'lucide-react';
-import { AppDetailsState } from '../types';
+import { AppDetailsState } from '../../../pages/appId/types';
 
 interface VersionUpgradeSectionProps {
   app: AppDetailsState;

@@ -1,6 +1,6 @@
 import React from 'react';
 import { StatusMessage } from '@/components/layout/statusMessage';
-import { StatusType } from '../types';
+import { StatusType } from '../../../pages/appId/types';
 
 interface StatusHandlerProps {
   statusMessage: string;

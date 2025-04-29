@@ -13,12 +13,16 @@ import ConsentView from '@/components/consent/pages/index';
 import { StatusType, AppDetailsState } from '../types';
 import { fetchAppDetails, getVersionStatusText } from '../utils/appDetailsUtils';
 import { updateParametersForApp } from '../utils/parameterUtils';
-import { AppInfoSection } from '../components/AppInfoSection';
-import { VersionUpgradeSection } from '../components/VersionUpgradeSection';
-import { ParameterSettingsSection } from '../components/ParameterSettingsSection';
-import { AppHeader } from '../components/AppHeader';
-import { StatusHandler } from '../components/StatusHandler';
-import { ErrorState, AppNotFound, LoadingState } from '../components/ErrorState';
+import { AppInfoSection } from '../../../components/user/components/AppInfoSection';
+import { VersionUpgradeSection } from '../../../components/user/components/VersionUpgradeSection';
+import { ParameterSettingsSection } from '../../../components/user/components/ParameterSettingsSection';
+import { AppHeader } from '../../../components/user/components/AppHeader';
+import { StatusHandler } from '../../../components/user/components/StatusHandler';
+import {
+  ErrorState,
+  AppNotFound,
+  LoadingState,
+} from '../../../components/user/components/ErrorState';
 
 function AppDetailsPage() {
   const { appId } = useParams();
@@ -123,7 +127,7 @@ function AppDetailsPage() {
 
     try {
       // Use the shared upgrade utility
-      await upgradeAppToLatestVersion({
+      const result = await upgradeAppToLatestVersion({
         appId,
         agentPKP: authInfo.agentPKP,
         userPKP: authInfo.userPKP,
@@ -134,6 +138,13 @@ function AppDetailsPage() {
         onError: showErrorWithStatus,
       });
 
+      if (!result.success) {
+        throw new Error(result.message || 'Upgrade failed');
+      }
+
+      // Reset version fetched ref so parameters are reloaded
+      versionFetchedRef.current = false;
+
       // Update app state with new permitted version
       setApp((prev) => {
         if (!prev) return null;
@@ -143,19 +154,17 @@ function AppDetailsPage() {
         };
       });
 
-      // Refresh version info
-      versionFetchedRef.current = false;
+      showStatus('Successfully upgraded to latest version! Refreshing parameters...', 'success');
 
-      // Reset parameters and fetch new version info
+      // Reload version info and parameters for the new version
       try {
         await fetchVersionInfo(Number(app.latestVersion));
         await fetchExistingParameters();
-        showStatus('Successfully upgraded to latest version', 'success');
-      } catch (refreshError) {
-        console.error('Error refreshing version info after upgrade:', refreshError);
-        showErrorWithStatus(
-          'Upgrade successful, but failed to load latest parameters',
-          'Refresh Error',
+      } catch (error) {
+        console.error('Error refreshing parameters after upgrade:', error);
+        showStatus(
+          'Upgrade successful, but some parameters may not be visible until you refresh',
+          'warning',
         );
       }
     } catch (error) {
@@ -212,6 +221,60 @@ function AppDetailsPage() {
       return { success: false };
     }
 
+    // Improved parameter comparison that checks if any actual changes were made to existing parameters
+    let hasChanges = false;
+
+    // Check if any existing parameters have been modified
+    for (const existingParam of existingParameters) {
+      // Find the corresponding parameter in the current form
+      const formParam = parameters.find(
+        (p) =>
+          p.toolIndex === existingParam.toolIndex &&
+          p.policyIndex === existingParam.policyIndex &&
+          p.paramIndex === existingParam.paramIndex,
+      );
+
+      // If parameter exists in both existing and form, compare values
+      if (formParam) {
+        if (formParam.value !== existingParam.value) {
+          hasChanges = true;
+          break;
+        }
+      } else {
+        hasChanges = true;
+        break;
+      }
+    }
+
+    // If no changes to existing parameters, check for new non-empty parameters
+    if (!hasChanges) {
+      for (const formParam of parameters) {
+        // Check if this parameter is new (not in existing parameters)
+        const existingParam = existingParameters.find(
+          (ep) =>
+            ep.toolIndex === formParam.toolIndex &&
+            ep.policyIndex === formParam.policyIndex &&
+            ep.paramIndex === formParam.paramIndex,
+        );
+
+        // Only consider it a change if this is a new parameter with an actual value
+        if (
+          !existingParam &&
+          formParam.value !== undefined &&
+          formParam.value !== null &&
+          formParam.value !== ''
+        ) {
+          hasChanges = true;
+          break;
+        }
+      }
+    }
+
+    if (!hasChanges) {
+      showStatus('No changes detected. Parameters are already up to date.', 'success');
+      return { success: true, noChanges: true };
+    }
+
     setIsSaving(true);
 
     const result = await updateParametersForApp({
@@ -227,9 +290,11 @@ function AppDetailsPage() {
       onComplete: (success) => {
         setIsSaving(false);
         if (success) {
-          fetchExistingParameters().catch((e) => {
-            console.error('Error refreshing parameters after update:', e);
-          });
+          showStatus('Parameters saved successfully! Refreshing page...', 'success');
+          // Add delay before refreshing to show success message
+          setTimeout(() => {
+            navigate(0); // Refresh the page
+          }, 1500);
         }
       },
     });
