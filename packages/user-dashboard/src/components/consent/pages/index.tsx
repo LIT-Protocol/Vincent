@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { AUTH_METHOD_TYPE } from '@lit-protocol/constants';
 import { SessionSigs, IRelayPKP } from '@lit-protocol/types';
+import { useNavigate } from 'react-router-dom';
 
 import useAuthenticate from '../hooks/useAuthenticate';
 import useAccounts from '../hooks/useAccounts';
@@ -14,7 +15,6 @@ import { useSetAuthInfo, useReadAuthInfo, useClearAuthInfo } from '../hooks/useA
 import SignUpView from '../views/SignUpView';
 import Loading from '../components/Loading';
 import { useErrorPopup } from '@/providers/ErrorPopup';
-import UserAppsView from '@/components/user/UserAppsView';
 
 export default function ConsentView() {
   // ------ STATE AND HOOKS ------
@@ -30,6 +30,7 @@ export default function ConsentView() {
   // State for loading messages
   const [loadingMessage, setLoadingMessage] = useState<string>('');
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const navigate = useNavigate();
 
   // ------ EXISTING SESSION HANDLING ------
 
@@ -212,6 +213,9 @@ export default function ConsentView() {
           agentPKP,
           userPKP,
         });
+
+        navigate('/apps');
+        return;
       } catch (error) {
         console.error('Error saving PKP info to localStorage:', error);
         showError(error as Error, 'Authentication Error');
@@ -224,21 +228,13 @@ export default function ConsentView() {
           />
         );
       }
-
-      // Show user apps view with PKP and session sigs
-      return <UserAppsView userPKP={userPKP} sessionSigs={sessionSigs} agentPKP={agentPKP} />;
     }
 
     // If we have validated session sigs from an existing session
     if (validatedSessionSigs && authInfo?.userPKP) {
-      // Show user apps view with existing session data
-      return (
-        <UserAppsView
-          userPKP={authInfo.userPKP}
-          sessionSigs={validatedSessionSigs}
-          agentPKP={authInfo.agentPKP}
-        />
-      );
+      // Redirect to /apps page
+      navigate('/apps');
+      return;
     }
 
     // If authenticated but no accounts found

@@ -44,7 +44,7 @@ export const AppNotFound: React.FC<{ appId?: string; onBack: () => void }> = ({
 }) => (
   <div className="p-6">
     <Button onClick={onBack} variant="outline" className="mb-4">
-      <ArrowLeft className="mr-2 h-4 w-4" /> Back
+      <ArrowLeft className="mr-2 h-4 w-4" /> My Applications
     </Button>
     <Card>
       <CardHeader>

@@ -9,7 +9,7 @@ export function Dashboard() {
     <div className="w-full">
       <Helmet>
         <title>Vincent | User Dashboard</title>
-        <meta name="description" content="View and manage your Vincent applications" />
+        <meta name="description" content="Sign in to Vincent" />
       </Helmet>
       <ConsentView />
     </div>
@@ -17,11 +17,10 @@ export function Dashboard() {
 }
 
 const UserDashboardPage = () => {
-  const handleSignOut = (ConsentView as any).handleSignOut;
   const WrappedDashboard = wrap(Dashboard, [...UserProviders]);
 
   return (
-    <UserLayout onSignOut={handleSignOut}>
+    <UserLayout>
       <WrappedDashboard />
     </UserLayout>
   );

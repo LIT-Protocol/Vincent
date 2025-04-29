@@ -304,7 +304,7 @@ function AppDetailsPage() {
 
   // Handle back button
   const handleBack = () => {
-    navigate('/');
+    navigate('/apps');
   };
 
   // If auth failed, show a better UI

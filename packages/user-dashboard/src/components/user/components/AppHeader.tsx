@@ -13,7 +13,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ onBack }) => {
   return (
     <div className="mb-6 flex items-center justify-between">
       <Button onClick={onBack} variant="outline">
-        <ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard
+        <ArrowLeft className="mr-2 h-4 w-4" /> My Applications
       </Button>
     </div>
   );
