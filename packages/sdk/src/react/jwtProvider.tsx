@@ -76,7 +76,7 @@ export const JwtProvider: React.FC<JwtProviderProps> = ({
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [appJwtKey, storage]);
 
   const getJwtFromConsentPage = useCallback(
     (redirectUri: string) => {
@@ -139,7 +139,7 @@ export const JwtProvider: React.FC<JwtProviderProps> = ({
     } finally {
       setLoading(false);
     }
-  }, [logOut, vincentWebAppClient]);
+  }, [appJwtKey, logOut, storage, vincentWebAppClient]);
 
   const value = useMemo<JwtContextType>(
     () => ({
