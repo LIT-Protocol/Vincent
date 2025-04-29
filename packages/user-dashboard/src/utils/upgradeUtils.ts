@@ -128,8 +128,54 @@ export async function upgradeAppToLatestVersion(params: {
     // Fetch version details for the latest version
     const versionInfo = await appViewContract.getAppVersion(Number(appId), Number(latestVersion));
 
-    // Use existing parameters for the upgrade if available
-    const parameters = existingParameters;
+    // Filter existing parameters to only include ones that match parameters in the new version
+    const filteredParameters: VersionParameter[] = [];
+
+    if (existingParameters.length > 0) {
+      showStatus('Filtering parameters to match new version...', 'info');
+
+      // Build a map of parameter names to types from the new version
+      const newVersionParamMap = new Map<string, number>();
+
+      versionInfo.appVersion.tools.forEach((tool: any) => {
+        if (!tool || !tool.policies) return;
+
+        tool.policies.forEach((policy: any) => {
+          if (!policy || !policy.parameterNames || !policy.parameterTypes) return;
+
+          policy.parameterNames.forEach((name: string, paramIndex: number) => {
+            if (name && policy.parameterTypes[paramIndex] !== undefined) {
+              // Use name as key and type as value
+              newVersionParamMap.set(name, policy.parameterTypes[paramIndex]);
+            }
+          });
+        });
+      });
+
+      // Only keep parameters that exist in the new version with matching types
+      existingParameters.forEach((param) => {
+        if (newVersionParamMap.has(param.name)) {
+          const newType = newVersionParamMap.get(param.name);
+
+          // Only include parameters with matching types
+          if (newType === param.type) {
+            filteredParameters.push(param);
+            console.log(`Carrying over parameter: ${param.name} (type: ${param.type})`);
+          } else {
+            console.warn(
+              `Skipping parameter with type mismatch: ${param.name} (old type: ${param.type}, new type: ${newType})`,
+            );
+          }
+        } else {
+          console.log(`Skipping parameter not in new version: ${param.name}`);
+        }
+      });
+
+      showStatus(`Found ${filteredParameters.length} matching parameters to carry over`, 'info');
+    }
+
+    // Use filtered parameters for the upgrade
+    const parameters = filteredParameters;
 
     const { toolIpfsCids, policyIpfsCids, toolPolicyParameterNames } = prepareVersionPermitData(
       versionInfo,

@@ -1,5 +1,4 @@
 import * as ethers from 'ethers';
-
 import { ParameterType, PARAMETER_TYPE_NAMES } from '@/services/types/parameterTypes';
 
 /**
