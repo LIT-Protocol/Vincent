@@ -303,7 +303,7 @@ importers:
 
   packages/vincent-contracts: {}
 
-  packages/vincent-tools/vincent-tool:
+  packages/vincent-tools/vincent-tool-sdk:
     dependencies:
       '@lit-protocol/constants':
         specifier: 7.0.6
@@ -320,9 +320,9 @@ importers:
       '@lit-protocol/vincent-contracts':
         specifier: 0.1.1-4
         version: 0.1.1-4
-      '@lit-protocol/vincent-tool':
+      '@lit-protocol/vincent-tool-sdk':
         specifier: workspace:*
-        version: link:../vincent-tool
+        version: link:../vincent-tool-sdk
       ethers:
         specifier: ^5.7.2
         version: 5.7.2(bufferutil@4.0.9)(utf-8-validate@5.0.10)
@@ -3941,7 +3941,6 @@ packages:
 
   bun@1.2.9:
     resolution: {integrity: sha512-4l1MnbCk2aEDeyJPs8+St6XsVPwkQvq7XTHG501e7pdFOWvWCy9shfxsHtBwYzmT82gdvx9//AL4qStYfYMO4Q==}
-    cpu: [arm64, x64, aarch64]
     os: [darwin, linux, win32]
     hasBin: true
 
