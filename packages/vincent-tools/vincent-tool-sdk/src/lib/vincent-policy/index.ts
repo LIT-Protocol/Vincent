@@ -47,25 +47,25 @@ export function validateVincentPolicyDef<
       userParams: z.infer<UserParams>;
     }) => Promise<
       | (PrecheckAllowResult extends z.ZodType
-          ? PolicyResultAllow<z.infer<PrecheckAllowResult>>
-          : PolicyResultAllowNoResult)
+        ? PolicyResultAllow<z.infer<PrecheckAllowResult>>
+        : PolicyResultAllowNoResult)
       | (PrecheckDenyResult extends z.ZodType
-          ? PolicyResultDeny<z.infer<PrecheckDenyResult>>
-          : PolicyResultDenyNoResult)
+        ? PolicyResultDeny<z.infer<PrecheckDenyResult>>
+        : PolicyResultDenyNoResult)
     >;
 
     commit?: CommitParams extends z.ZodType
-      ? (
-          args: z.infer<CommitParams>,
-        ) => Promise<
-          | (CommitAllowResult extends z.ZodType
-              ? PolicyResultAllow<z.infer<CommitAllowResult>>
-              : PolicyResultAllowNoResult)
-          | (CommitDenyResult extends z.ZodType
-              ? PolicyResultDeny<z.infer<CommitDenyResult>>
-              : PolicyResultDenyNoResult)
-        >
-      : never;
+    ? (
+      args: z.infer<CommitParams>,
+    ) => Promise<
+      | (CommitAllowResult extends z.ZodType
+        ? PolicyResultAllow<z.infer<CommitAllowResult>>
+        : PolicyResultAllowNoResult)
+      | (CommitDenyResult extends z.ZodType
+        ? PolicyResultDeny<z.infer<CommitDenyResult>>
+        : PolicyResultDenyNoResult)
+    >
+    : never;
   };
   toolParameterMappings: Partial<{
     [K in keyof z.infer<ToolParamsSchema>]: keyof z.infer<PolicyToolParams>;
@@ -88,11 +88,13 @@ export function validateVincentPolicyDef<
 
   return result as {
     policyDef: typeof policyDef &
-      (CommitParams extends z.ZodType
-        ? {
-            commit: NonNullable<(typeof policyDef)['commit']>;
-          }
-        : {});
+    (CommitParams extends z.ZodType
+      ? {
+        commit: NonNullable<(typeof policyDef)['commit']>;
+      }
+      : {});
     toolParameterMappings: typeof config.toolParameterMappings;
   };
 }
+
+export { vincentPolicyHandler } from './handler';

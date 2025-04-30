@@ -6,7 +6,8 @@ import { decodePolicyParams, getUserToolPolicies } from "../lit-action-utils"
 
 declare const Lit: {
     Actions: {
-        getRpcUrl: (args: { chain: string }) => Promise<string>
+        getRpcUrl: (args: { chain: string }) => Promise<string>;
+        setResponse: (response: { response: string }) => void;
     }
 }
 declare const toolParams: z.infer<VincentPolicyDef['toolParamsSchema']>
@@ -29,8 +30,8 @@ export interface OnChainUserPolicyParams {
     policies: Policy[];
 }
 
-export const vincentPolicyHandler = ({ policyDef }: { policyDef: VincentPolicyDef }) => {
-    return async () => {
+export const vincentPolicyHandler = ({ policyDef }: { policyDef: VincentPolicyDef }): (() => Promise<void>) => {
+    return async (): Promise<void> => {
         try {
             const parsedToolParams = policyDef.toolParamsSchema.parse(toolParams);
 
@@ -48,12 +49,7 @@ export const vincentPolicyHandler = ({ policyDef }: { policyDef: VincentPolicyDe
             );
 
             if (!allOnChainUserPolicyParams.isPermitted) {
-                return {
-                    allow: false,
-                    result: {
-                        reason: `Delegatee: ${parsedToolParams.delegateeAddress} is not permitted to execute tool: ${parsedToolParams.toolIpfsCid} for App ID: ${allOnChainUserPolicyParams.appId.toString()} App Version: ${allOnChainUserPolicyParams.appVersion.toString()}`
-                    }
-                }
+                throw new Error(`Delegatee: ${parsedToolParams.delegateeAddress} is not permitted to execute tool: ${parsedToolParams.toolIpfsCid} for App ID: ${allOnChainUserPolicyParams.appId.toString()} App Version: ${allOnChainUserPolicyParams.appVersion.toString()}`);
             }
 
             const onChainPolicyParams = allOnChainUserPolicyParams.policies.find(
@@ -70,16 +66,20 @@ export const vincentPolicyHandler = ({ policyDef }: { policyDef: VincentPolicyDe
 
             const evaluateResult = await policyDef.evaluate({ toolParams: parsedToolParams, userParams });
 
-            return {
-                ...evaluateResult,
-                ipfsCid: policyDef.ipfsCid,
-            }
+            Lit.Actions.setResponse({
+                response: JSON.stringify({
+                    ...evaluateResult,
+                    ipfsCid: policyDef.ipfsCid,
+                })
+            });
         } catch (error) {
-            return {
-                allow: false,
-                ipfsCid: policyDef.ipfsCid,
-                error: error instanceof Error ? error.message : String(error),
-            };
+            Lit.Actions.setResponse({
+                response: JSON.stringify({
+                    allow: false,
+                    ipfsCid: policyDef.ipfsCid,
+                    error: error instanceof Error ? error.message : String(error),
+                })
+            });
         }
     }
 }
