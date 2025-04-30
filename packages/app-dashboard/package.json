@@ -31,6 +31,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.22.0",
+    "@near-wallet/feature-flags": "^0.1.0",
     "@types/node": "^20",
     "@types/react": "^19.0.10",
     "@types/react-dom": "^19.0.4",
