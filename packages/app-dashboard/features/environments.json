@@ -1,4 +1,5 @@
 {
-  "TESTNET": "testnet",
-  "MAINNET": "mainnet"
+  "DEV": "development",
+  "TEST": "testnet",
+  "PROD": "mainnet"
 }
