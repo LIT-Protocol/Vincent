@@ -12,15 +12,22 @@ import LoginMethods from '../components/LoginMethods';
 import { getAgentPKP } from '../utils/getAgentPKP';
 import { useSetAuthInfo, useReadAuthInfo, useClearAuthInfo } from '../hooks/useAuthInfo';
 
+import ExistingAccountView from '../views/ExistingAccountView';
+import AuthenticatedConsentForm from '../components/AuthenticatedConsentForm';
 import SignUpView from '../views/SignUpView';
 import Loading from '../components/Loading';
 import { useErrorPopup } from '@/providers/ErrorPopup';
 
-export default function ConsentView() {
+type ConsentViewProps = {
+  isUserDashboardFlow?: boolean;
+};
+
+export default function ConsentView({ isUserDashboardFlow = false }: ConsentViewProps) {
   // ------ STATE AND HOOKS ------
   const { showError } = useErrorPopup();
   const { updateAuthInfo } = useSetAuthInfo();
   const { clearAuthInfo } = useClearAuthInfo();
+  const navigate = useNavigate();
 
   // Shared state for session sigs and agent PKP
   const [sessionSigs, setSessionSigs] = useState<SessionSigs>();
@@ -30,7 +37,6 @@ export default function ConsentView() {
   // State for loading messages
   const [loadingMessage, setLoadingMessage] = useState<string>('');
   const [isTransitioning, setIsTransitioning] = useState(false);
-  const navigate = useNavigate();
 
   // ------ EXISTING SESSION HANDLING ------
 
@@ -42,14 +48,27 @@ export default function ConsentView() {
     error: readError,
   } = useReadAuthInfo();
 
-  // Automatically use existing account instead of showing confirmation
+  // State to show existing account option (used in non-user flow)
+  const [showExistingAccount, setShowExistingAccount] = useState(false);
+
+  // Check for existing auth info once the validation process is complete
   useEffect(() => {
     if (isProcessing) return;
     if (validatedSessionSigs) {
-      // Instead of showing confirmation, just set the session sigs directly
-      setSessionSigs(validatedSessionSigs);
+      if (isUserDashboardFlow) {
+        // In user flow, automatically use existing account
+        setSessionSigs(validatedSessionSigs);
+      } else {
+        // In consent flow, show option to use existing account
+        setShowExistingAccount(true);
+      }
     }
-  }, [validatedSessionSigs, isProcessing]);
+  }, [validatedSessionSigs, isProcessing, isUserDashboardFlow]);
+
+  // Handle using existing account (used in non-user flow)
+  const handleUseExistingAccount = () => {
+    setShowExistingAccount(false);
+  };
 
   // ------ NEW AUTHENTICATION FLOW ------
 
@@ -194,8 +213,23 @@ export default function ConsentView() {
     window.location.reload();
   };
 
-  // Expose the handleSignOut function through the component
-  (ConsentView as any).handleSignOut = handleSignOut;
+  // Expose the handleSignOut function for userFlow
+  if (isUserDashboardFlow) {
+    (ConsentView as any).handleSignOut = handleSignOut;
+  }
+
+  // Cleanup effect for consent flow
+  useEffect(() => {
+    // Only add the cleanup for the non-user flow
+    if (!isUserDashboardFlow) {
+      return () => {
+        // Cleanup web3 connection when component unmounts
+        if (sessionSigs) {
+          clearAuthInfo();
+        }
+      };
+    }
+  }, [clearAuthInfo, sessionSigs, isUserDashboardFlow]);
 
   // ------ RENDER CONTENT ------
 
@@ -205,7 +239,18 @@ export default function ConsentView() {
       return <Loading copy={loadingMessage} isTransitioning={isTransitioning} />;
     }
 
-    // If authenticated with session sigs (either from existing auth or new login)
+    // If we have existing auth info and we're not in user flow, show the option to use it
+    if (!isUserDashboardFlow && showExistingAccount) {
+      return (
+        <ExistingAccountView
+          authInfo={authInfo}
+          handleUseExistingAccount={handleUseExistingAccount}
+          handleSignOut={handleSignOut}
+        />
+      );
+    }
+
+    // If authenticated with a new PKP and session sigs
     if (userPKP && sessionSigs) {
       // Save the PKP info in localStorage for SessionValidator to use
       try {
@@ -214,8 +259,20 @@ export default function ConsentView() {
           userPKP,
         });
 
-        navigate('/user/apps');
-        return;
+        // User flow: navigate to apps page
+        if (isUserDashboardFlow) {
+          navigate('/user/apps');
+          return null;
+        }
+
+        // Consent flow: show the consent form
+        return (
+          <AuthenticatedConsentForm
+            userPKP={userPKP}
+            sessionSigs={sessionSigs}
+            agentPKP={agentPKP}
+          />
+        );
       } catch (error) {
         console.error('Error saving PKP info to localStorage:', error);
         showError(error as Error, 'Authentication Error');
@@ -230,11 +287,22 @@ export default function ConsentView() {
       }
     }
 
-    // If we have validated session sigs from an existing session
-    if (validatedSessionSigs && authInfo?.userPKP) {
+    // If we're not showing the existing account and have validated session sigs
+    if (!isUserDashboardFlow && !showExistingAccount && validatedSessionSigs && authInfo?.userPKP) {
+      return (
+        <AuthenticatedConsentForm
+          userPKP={authInfo.userPKP}
+          sessionSigs={validatedSessionSigs}
+          agentPKP={authInfo.agentPKP}
+        />
+      );
+    }
+
+    // If we have validated session sigs from an existing session in user flow
+    if (isUserDashboardFlow && validatedSessionSigs && authInfo?.userPKP) {
       // Redirect to /apps page
       navigate('/user/apps');
-      return;
+      return null;
     }
 
     // If authenticated but no accounts found

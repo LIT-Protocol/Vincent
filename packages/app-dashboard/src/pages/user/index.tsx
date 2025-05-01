@@ -1,5 +1,5 @@
 import { Helmet } from 'react-helmet';
-import ConsentView from '@/components/consent/pages/userIndex';
+import ConsentView from '@/components/consent/pages/consent';
 
 export default function UserDashboard() {
   return (
@@ -8,7 +8,7 @@ export default function UserDashboard() {
         <title>Vincent | User Dashboard</title>
         <meta name="description" content="Sign in to Vincent" />
       </Helmet>
-      <ConsentView />
+      <ConsentView isUserDashboardFlow={true} />
     </>
   );
 }
