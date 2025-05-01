@@ -2,78 +2,88 @@ import { Outlet, RouteObject } from 'react-router-dom';
 import AppLayout from './components/layout/AppLayout';
 import UserLayout from './components/layout/UserLayout';
 import { AppProviders, UserProviders } from './providers';
-import { wrap } from './utils/components';
 
-import Home from './pages/index';
-import Withdraw from './pages/withdraw';
-import CreateApp from './pages/create-app';
-import AppDetails from './pages/appId/[appId]/index';
-import AdvancedFunctions from './pages/appId/[appId]/advanced-functions';
-import Consent from './pages/appId/[appId]/consent';
-import Delegatee from './pages/appId/[appId]/delegatee';
-import ToolPolicies from './pages/appId/[appId]/tool-policies';
-import UserDashboard from './pages/user/index';
-import UserApps from './pages/user/apps';
-import UserAppDetails from './pages/user/appId/[appId]/index';
+import * as AppPages from './pages/app-dashboard';
+import * as UserPages from './pages/user-dashboard';
 
-const AppLayoutWithProviders = wrap(() => <Outlet />, [...AppProviders, AppLayout]);
-const UserLayoutWithProviders = wrap(() => <Outlet />, [...UserProviders, UserLayout]);
+const appRoutes = {
+  element: (
+    <>
+      {AppProviders.reduceRight(
+        (children, Provider) => (
+          <Provider>{children}</Provider>
+        ),
+        <AppLayout>
+          <Outlet />
+        </AppLayout>,
+      )}
+    </>
+  ),
+  children: [
+    {
+      path: '/',
+      element: <AppPages.Dashboard />,
+    },
+    {
+      path: '/create-app',
+      element: <AppPages.CreateApp />,
+    },
+    {
+      path: '/appId/:appId',
+      element: <AppPages.AppDetails />,
+    },
+    {
+      path: '/appId/:appId/advanced-functions',
+      element: <AppPages.AdvancedFunctions />,
+    },
+    {
+      path: '/appId/:appId/delegatee',
+      element: <AppPages.Delegatee />,
+    },
+    {
+      path: '/appId/:appId/tool-policies',
+      element: <AppPages.ToolPolicies />,
+    },
+  ],
+};
 
-const routes: RouteObject[] = [
-  {
-    element: <AppLayoutWithProviders />,
-    children: [
-      {
-        path: '/',
-        element: <Home />,
-      },
-      {
-        path: '/create-app',
-        element: <CreateApp />,
-      },
-      {
-        path: '/appId/:appId',
-        element: <AppDetails />,
-      },
-      {
-        path: '/appId/:appId/advanced-functions',
-        element: <AdvancedFunctions />,
-      },
-      {
-        path: '/appId/:appId/delegatee',
-        element: <Delegatee />,
-      },
-      {
-        path: '/appId/:appId/tool-policies',
-        element: <ToolPolicies />,
-      },
-    ],
-  },
-  {
-    element: <UserLayoutWithProviders />,
-    children: [
-      {
-        path: '/withdraw',
-        element: <Withdraw />,
-      },
-      {
-        path: '/appId/:appId/consent',
-        element: <Consent />,
-      },
-      {
-        path: '/user',
-        element: <UserDashboard />,
-      },
-      {
-        path: '/user/apps',
-        element: <UserApps />,
-      },
-      {
-        path: '/user/appId/:appId',
-        element: <UserAppDetails />,
-      },
-    ],
-  },
-];
+const userRoutes = {
+  element: (
+    <>
+      {UserProviders.reduceRight(
+        (children, Provider) => (
+          <Provider>{children}</Provider>
+        ),
+        <UserLayout>
+          <Outlet />
+        </UserLayout>,
+      )}
+    </>
+  ),
+  children: [
+    {
+      path: '/withdraw',
+      element: <UserPages.Withdraw />,
+    },
+    {
+      path: '/appId/:appId/consent',
+      element: <UserPages.Consent />,
+    },
+    {
+      path: '/user',
+      element: <UserPages.Dashboard />,
+    },
+    {
+      path: '/user/apps',
+      element: <UserPages.Apps />,
+    },
+    {
+      path: '/user/appId/:appId',
+      element: <UserPages.AppDetails />,
+    },
+  ],
+};
+
+const routes: RouteObject[] = [appRoutes, userRoutes];
 
 export default routes;
