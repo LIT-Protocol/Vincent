@@ -1,5 +1,4 @@
 {
-  "DEV": "development",
-  "TEST": "testnet",
-  "PROD": "mainnet"
+  "preview": "preview",
+  "production": "production"
 }
