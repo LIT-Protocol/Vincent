@@ -1,8 +1,7 @@
-import { z } from "zod";
+import { TypeOf, z } from "zod";
 import { ethers } from "ethers";
 
 import { VincentPolicyDef, VincentToolDef } from "../types";
-import { getPkpInfo, NETWORK_CONFIG } from "../lit-action-utils";
 
 declare const LitAuth: {
     authSigAddress: string;
@@ -16,35 +15,27 @@ declare const Lit: {
     }
 }
 
-declare const toolParams: Record<string, unknown>;
+declare const toolParams: z.infer<VincentToolDef<any, any>['toolParamsSchema']>;
+
+const LIT_DATIL_VINCENT_ADDRESS = '0x78Cd1d270Ff12BA55e98BDff1f3646426E25D932';
+const LIT_DATIL_PUBKEY_ROUTER_ADDRESS = '0xF182d6bEf16Ba77e69372dD096D8B70Bc3d5B475';
 
 export const vincentToolHandler = <
     ToolParams extends z.ZodType<any, any, any>,
-    Policies extends Record<string, { policyDef: VincentPolicyDef; toolParameterMappings: any }>,
->(toolDef: VincentToolDef<ToolParams, Policies>) => {
+    Policies extends Record<string, { policyDef: VincentPolicyDef; toolParameterMappings: Partial<{ [K in keyof TypeOf<ToolParams>]: string; }> }>,
+>({ toolDef }: { toolDef: VincentToolDef<ToolParams, Policies> }) => {
     return async () => {
         try {
-            console.log(`Using Lit Network: ${LIT_NETWORK}`);
-
-            const networkConfig = NETWORK_CONFIG[LIT_NETWORK as keyof typeof NETWORK_CONFIG];
-            console.log(
-                `Using Vincent Contract Address: ${networkConfig.vincentAddress}`
-            );
-            console.log(
-                `Using Pubkey Router Address: ${networkConfig.pubkeyRouterAddress}`
-            );
-
             const delegateeAddress = ethers.utils.getAddress(LitAuth.authSigAddress);
             const toolIpfsCid = LitAuth.actionIpfsIds[0];
-            console.log(`Tool: ${toolIpfsCid} being executed by delegatee: ${delegateeAddress}`);
+
+            const parsedToolParams = toolDef.toolParamsSchema.parse(toolParams);
 
             const yellowstoneRpcProvider = new ethers.providers.JsonRpcProvider(
                 await Lit.Actions.getRpcUrl({
                     chain: 'yellowstone',
                 })
             );
-
-            const parsedToolParams = toolDef.toolParamsSchema.parse(toolParams);
 
             const pkpInfo = await getPkpInfo(networkConfig.pubkeyRouterAddress, yellowstoneRpcProvider, parsedToolParams.pkpEthAddress);
             console.log(`Retrieved PKP info for PKP ETH Address: ${toolParams.pkpEthAddress}: ${JSON.stringify(pkpInfo)}`);

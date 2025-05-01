@@ -1,8 +1,9 @@
 import { z } from "zod";
 import { ethers } from "ethers";
 
-import type { Policy, VincentPolicyDef } from "./types";
+import type { EthersAbiDecodedValue, Policy, VincentPolicyDef } from "./types";
 import { abiDecodePolicyParameters } from "./abi-decode-policy-params";
+import { formatZodError } from "./format-zod-error";
 
 interface AllOnChainPolicyParams {
     isPermitted: boolean;
@@ -39,10 +40,10 @@ export const getOnChainPolicyParams = async (args: {
                 // All user Policy params can be optional, so if no parameters were set on-chain,
                 // we want to validate an empty object (i.e. no parameters) against the userParamsSchema
                 // to validate that there are no required Policy params
-                return args.policyUserParamsSchema.parse({});
+                return parseOnChainPolicyParams(args.policyUserParamsSchema.parse({}));
             } else {
                 const decodedPolicyParams = abiDecodePolicyParameters({ params: onChainPolicyParams.parameters });
-                return args.policyUserParamsSchema.parse(decodedPolicyParams);
+                return parseOnChainPolicyParams(args.policyUserParamsSchema.parse(decodedPolicyParams));
             }
         } else {
             if (!onChainPolicyParams) {
@@ -83,5 +84,14 @@ const _getAllOnChainPolicyParams = async (args: {
         );
     } catch (error) {
         throw new Error(`Error getting on-chain policy parameters from Vincent contract: ${args.vincentContractAddress} using App Delegatee: ${args.appDelegateeAddress} and Agent Wallet PKP Token ID: ${args.agentWalletPkpTokenId} and Vincent Tool: ${args.toolIpfsCid}: ${error instanceof Error ? error.message : String(error)}`);
+    }
+}
+
+const parseOnChainPolicyParams = (onChainPolicyParams: Record<string, EthersAbiDecodedValue>, policyUserParamsSchema?: z.infer<VincentPolicyDef['userParamsSchema']>) => {
+    try {
+        return policyUserParamsSchema.parse(onChainPolicyParams);
+    } catch (error) {
+        const errorMessage = error instanceof z.ZodError ? formatZodError(error) : error instanceof Error ? error.message : String(error);
+        throw new Error(`Error parsing on-chain policy parameters using Zod userParamsSchema (parseOnChainPolicyParams): ${errorMessage}`);
     }
 }

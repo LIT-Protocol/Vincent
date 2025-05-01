@@ -1,6 +1,6 @@
 import { ethers } from 'ethers';
 
-import type { PolicyParameter } from './types';
+import type { EthersAbiDecodedValue, PolicyParameter } from './types';
 
 const OnChainPolicyParamType = {
     INT256: 0,
@@ -16,16 +16,6 @@ const OnChainPolicyParamType = {
     BYTES: 10,
     BYTES_ARRAY: 11,
 } as const;
-
-type EthersAbiDecodedValue =
-    | ethers.BigNumber
-    | ethers.BigNumber[]
-    | boolean
-    | boolean[]
-    | string
-    | string[]
-    | Uint8Array
-    | Uint8Array[];
 
 export const abiDecodePolicyParameters = ({
     params,
