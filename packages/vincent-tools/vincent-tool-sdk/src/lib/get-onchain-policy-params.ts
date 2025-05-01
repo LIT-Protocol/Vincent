@@ -12,7 +12,15 @@ interface AllOnChainPolicyParams {
     policies: Policy[];
 }
 
-export const getOnChainPolicyParams = async (args: {
+export const getOnChainPolicyParams = async ({
+    yellowstoneRpcUrl,
+    vincentContractAddress,
+    appDelegateeAddress,
+    agentWalletPkpTokenId,
+    toolIpfsCid,
+    policyIpfsCid,
+    policyUserParamsSchema,
+}: {
     yellowstoneRpcUrl: string,
     vincentContractAddress: string,
     appDelegateeAddress: string,
@@ -22,34 +30,40 @@ export const getOnChainPolicyParams = async (args: {
     policyUserParamsSchema?: z.infer<VincentPolicyDef['userParamsSchema']>
 }): Promise<z.infer<VincentPolicyDef['userParamsSchema'] | undefined>> => {
     try {
-        const allOnChainPolicyParams = await _getAllOnChainPolicyParams(args);
+        const allOnChainPolicyParams = await _getAllOnChainPolicyParams({
+            yellowstoneRpcUrl,
+            vincentContractAddress,
+            appDelegateeAddress,
+            agentWalletPkpTokenId,
+            toolIpfsCid,
+        });
 
         // We exit early here because !allOnChainPolicyParams.isPermitted means appDelegateeAddress
         // is not permitted to execute toolIpfsCid for the Vincent App on behalf of the agentWalletPkpTokenId
         // and no further processing is needed
         if (!allOnChainPolicyParams.isPermitted) {
-            throw new Error(`App Delegatee: ${args.appDelegateeAddress} is not permitted to execute Vincent Tool: ${args.toolIpfsCid} for App ID: ${allOnChainPolicyParams.appId.toString()} App Version: ${allOnChainPolicyParams.appVersion.toString()} using Agent Wallet PKP Token ID: ${args.agentWalletPkpTokenId}`);
+            throw new Error(`App Delegatee: ${appDelegateeAddress} is not permitted to execute Vincent Tool: ${toolIpfsCid} for App ID: ${allOnChainPolicyParams.appId.toString()} App Version: ${allOnChainPolicyParams.appVersion.toString()} using Agent Wallet PKP Token ID: ${agentWalletPkpTokenId}`);
         }
 
         const onChainPolicyParams = allOnChainPolicyParams.policies.find(
-            (policy) => policy.policyIpfsCid === args.policyIpfsCid
+            (policy) => policy.policyIpfsCid === policyIpfsCid
         );
 
-        if (args.policyUserParamsSchema) {
+        if (policyUserParamsSchema) {
             if (!onChainPolicyParams) {
                 // All user Policy params can be optional, so if no parameters were set on-chain,
                 // we want to validate an empty object (i.e. no parameters) against the userParamsSchema
                 // to validate that there are no required Policy params
-                return parseOnChainPolicyParams(args.policyUserParamsSchema.parse({}));
+                return parseOnChainPolicyParams(policyUserParamsSchema.parse({}));
             } else {
                 const decodedPolicyParams = abiDecodePolicyParameters({ params: onChainPolicyParams.parameters });
-                return parseOnChainPolicyParams(args.policyUserParamsSchema.parse(decodedPolicyParams));
+                return parseOnChainPolicyParams(policyUserParamsSchema.parse(decodedPolicyParams));
             }
         } else {
             if (!onChainPolicyParams) {
                 return;
             } else {
-                throw new Error(`Agent Wallet PKP Token ID: ${args.agentWalletPkpTokenId} has registered on-chain Policy parameters for Vincent App: ${allOnChainPolicyParams.appId.toString()} App Version: ${allOnChainPolicyParams.appVersion.toString()} Vincent Policy: ${args.policyIpfsCid} Vincent Tool: ${args.toolIpfsCid} but no userParamsSchema was defined by the Policy`);
+                throw new Error(`Agent Wallet PKP Token ID: ${agentWalletPkpTokenId} has registered on-chain Policy parameters for Vincent App: ${allOnChainPolicyParams.appId.toString()} App Version: ${allOnChainPolicyParams.appVersion.toString()} Vincent Policy: ${policyIpfsCid} Vincent Tool: ${toolIpfsCid} but no userParamsSchema was defined by the Policy`);
             }
         }
     } catch (error) {
@@ -57,7 +71,13 @@ export const getOnChainPolicyParams = async (args: {
     }
 }
 
-const _getAllOnChainPolicyParams = async (args: {
+const _getAllOnChainPolicyParams = async ({
+    yellowstoneRpcUrl,
+    vincentContractAddress,
+    appDelegateeAddress,
+    agentWalletPkpTokenId,
+    toolIpfsCid,
+}: {
     yellowstoneRpcUrl: string,
     vincentContractAddress: string,
     appDelegateeAddress: string,
@@ -70,24 +90,24 @@ const _getAllOnChainPolicyParams = async (args: {
         ];
 
         const vincentContract = new ethers.Contract(
-            args.vincentContractAddress,
+            vincentContractAddress,
             VINCENT_CONTRACT_ABI,
             new ethers.providers.JsonRpcProvider(
-                args.yellowstoneRpcUrl
+                yellowstoneRpcUrl
             )
         );
 
         return vincentContract.validateToolExecutionAndGetPolicies(
-            args.appDelegateeAddress,
-            args.agentWalletPkpTokenId,
-            args.toolIpfsCid
+            appDelegateeAddress,
+            agentWalletPkpTokenId,
+            toolIpfsCid
         );
     } catch (error) {
-        throw new Error(`Error getting on-chain policy parameters from Vincent contract: ${args.vincentContractAddress} using App Delegatee: ${args.appDelegateeAddress} and Agent Wallet PKP Token ID: ${args.agentWalletPkpTokenId} and Vincent Tool: ${args.toolIpfsCid}: ${error instanceof Error ? error.message : String(error)}`);
+        throw new Error(`Error getting on-chain policy parameters from Vincent contract: ${vincentContractAddress} using App Delegatee: ${appDelegateeAddress} and Agent Wallet PKP Token ID: ${agentWalletPkpTokenId} and Vincent Tool: ${toolIpfsCid}: ${error instanceof Error ? error.message : String(error)}`);
     }
 }
 
-const parseOnChainPolicyParams = (onChainPolicyParams: Record<string, EthersAbiDecodedValue>, policyUserParamsSchema?: z.infer<VincentPolicyDef['userParamsSchema']>) => {
+const parseOnChainPolicyParams = ({ onChainPolicyParams, policyUserParamsSchema }: { onChainPolicyParams: Record<string, EthersAbiDecodedValue>, policyUserParamsSchema?: z.infer<VincentPolicyDef['userParamsSchema']> }) => {
     try {
         return policyUserParamsSchema.parse(onChainPolicyParams);
     } catch (error) {

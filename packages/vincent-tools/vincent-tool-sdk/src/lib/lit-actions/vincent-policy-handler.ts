@@ -21,7 +21,7 @@ const LIT_DATIL_VINCENT_ADDRESS = '0x78Cd1d270Ff12BA55e98BDff1f3646426E25D932';
 export const vincentPolicyHandler = ({ policyDef }: { policyDef: VincentPolicyDef }): (() => Promise<void>) => {
     return async (): Promise<void> => {
         try {
-            const parsedToolParams = parseToolParams(toolParams, policyDef.toolParamsSchema);
+            const parsedToolParams = parsePolicyToolParams({ toolParams, toolParamsSchema: policyDef.toolParamsSchema });
 
             const onChainPolicyParams = await getOnChainPolicyParams({
                 yellowstoneRpcUrl: await Lit.Actions.getRpcUrl({
@@ -55,11 +55,11 @@ export const vincentPolicyHandler = ({ policyDef }: { policyDef: VincentPolicyDe
     }
 }
 
-const parseToolParams = (toolParams: z.infer<VincentPolicyDef['toolParamsSchema']>, toolParamsSchema: z.ZodType<any, any, any>) => {
+const parsePolicyToolParams = ({ toolParams, toolParamsSchema }: { toolParams: z.infer<VincentPolicyDef['toolParamsSchema']>, toolParamsSchema: z.ZodType<any, any, any> }) => {
     try {
         return toolParamsSchema.parse(toolParams);
     } catch (error) {
         const errorMessage = error instanceof z.ZodError ? formatZodError(error) : error instanceof Error ? error.message : String(error);
-        throw new Error(`Error parsing toolParams using Zod toolParamsSchema (parseToolParams): ${errorMessage}`);
+        throw new Error(`Error parsing toolParams using Zod toolParamsSchema (parsePolicyToolParams): ${errorMessage}`);
     }
 }
