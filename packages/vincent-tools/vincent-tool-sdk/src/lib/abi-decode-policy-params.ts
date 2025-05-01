@@ -1,6 +1,6 @@
 import { ethers } from 'ethers';
 
-import type { EthersAbiDecodedValue, PolicyParameter } from './types';
+import type { EthersAbiDecodedValue, PolicyParameter } from './lit-actions/types';
 
 const OnChainPolicyParamType = {
     INT256: 0,

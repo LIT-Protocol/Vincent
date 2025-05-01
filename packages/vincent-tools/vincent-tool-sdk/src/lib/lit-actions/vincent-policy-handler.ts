@@ -3,7 +3,7 @@ import { ethers } from "ethers"
 
 import { VincentPolicyDef } from "../types"
 import { getOnChainPolicyParams } from "../get-onchain-policy-params"
-import { formatZodError } from "../format-zod-error"
+import { formatZodErrorString } from "../format-zod-error-string"
 
 declare const Lit: {
     Actions: {
@@ -13,6 +13,7 @@ declare const Lit: {
 }
 declare const LitAuth: {
     authSigAddress: string;
+    actionIpfsIds: string[];
 }
 declare const toolParams: z.infer<VincentPolicyDef['toolParamsSchema']>
 
@@ -20,6 +21,8 @@ const LIT_DATIL_VINCENT_ADDRESS = '0x78Cd1d270Ff12BA55e98BDff1f3646426E25D932';
 
 export const vincentPolicyHandler = ({ policyDef }: { policyDef: VincentPolicyDef }): (() => Promise<void>) => {
     return async (): Promise<void> => {
+        const policyIpfsCid = LitAuth.actionIpfsIds[0];
+
         try {
             const parsedToolParams = parsePolicyToolParams({ toolParams, toolParamsSchema: policyDef.toolParamsSchema });
 
@@ -31,7 +34,7 @@ export const vincentPolicyHandler = ({ policyDef }: { policyDef: VincentPolicyDe
                 appDelegateeAddress: ethers.utils.getAddress(LitAuth.authSigAddress),
                 agentWalletPkpTokenId: parsedToolParams.userPkpTokenId,
                 toolIpfsCid: parsedToolParams.toolIpfsCid,
-                policyIpfsCid: policyDef.ipfsCid,
+                policyIpfsCid,
                 policyUserParamsSchema: policyDef.userParamsSchema,
             });
 
@@ -40,14 +43,14 @@ export const vincentPolicyHandler = ({ policyDef }: { policyDef: VincentPolicyDe
             Lit.Actions.setResponse({
                 response: JSON.stringify({
                     ...evaluateResult,
-                    ipfsCid: policyDef.ipfsCid,
+                    ipfsCid: policyIpfsCid,
                 })
             });
         } catch (error) {
             Lit.Actions.setResponse({
                 response: JSON.stringify({
                     allow: false,
-                    ipfsCid: policyDef.ipfsCid,
+                    ipfsCid: policyIpfsCid,
                     error: error instanceof Error ? error.message : String(error),
                 })
             });
@@ -59,7 +62,7 @@ const parsePolicyToolParams = ({ toolParams, toolParamsSchema }: { toolParams: z
     try {
         return toolParamsSchema.parse(toolParams);
     } catch (error) {
-        const errorMessage = error instanceof z.ZodError ? formatZodError(error) : error instanceof Error ? error.message : String(error);
+        const errorMessage = error instanceof z.ZodError ? formatZodErrorString(error) : error instanceof Error ? error.message : String(error);
         throw new Error(`Error parsing toolParams using Zod toolParamsSchema (parsePolicyToolParams): ${errorMessage}`);
     }
 }

@@ -1,6 +1,5 @@
 // types.ts
 import { z } from 'zod';
-import { type ethers } from "ethers"
 
 interface PolicyResultBase {
   ipfsCid: string;
@@ -244,31 +243,3 @@ export interface VincentToolDef<
     policyEvaluationResults: VincentPolicyEvaluationResults<Policies>,
   ) => Promise<unknown>;
 }
-
-export interface PolicyParameter {
-  name: string;
-  paramType: number;
-  value: string;
-}
-
-export interface Policy {
-  policyIpfsCid: string;
-  parameters: PolicyParameter[];
-}
-
-export interface OnChainUserPolicyParams {
-  isPermitted: boolean;
-  appId: ethers.BigNumber;
-  appVersion: ethers.BigNumber;
-  policies: Policy[];
-}
-
-export type EthersAbiDecodedValue =
-  | ethers.BigNumber
-  | ethers.BigNumber[]
-  | boolean
-  | boolean[]
-  | string
-  | string[]
-  | Uint8Array
-  | Uint8Array[];
