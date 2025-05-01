@@ -12,6 +12,9 @@ import AdvancedFunctions from './pages/appId/[appId]/advanced-functions';
 import Consent from './pages/appId/[appId]/consent';
 import Delegatee from './pages/appId/[appId]/delegatee';
 import ToolPolicies from './pages/appId/[appId]/tool-policies';
+import UserDashboard from './pages/user/index';
+import UserApps from './pages/user/apps';
+import UserAppDetails from './pages/user/appId/[appId]/index';
 
 const AppLayoutWithProviders = wrap(() => <Outlet />, [...AppProviders, AppLayout]);
 const UserLayoutWithProviders = wrap(() => <Outlet />, [...UserProviders, UserLayout]);
@@ -56,6 +59,18 @@ const routes: RouteObject[] = [
       {
         path: '/appId/:appId/consent',
         element: <Consent />,
+      },
+      {
+        path: '/user',
+        element: <UserDashboard />,
+      },
+      {
+        path: '/user/apps',
+        element: <UserApps />,
+      },
+      {
+        path: '/user/appId/:appId',
+        element: <UserAppDetails />,
       },
     ],
   },
