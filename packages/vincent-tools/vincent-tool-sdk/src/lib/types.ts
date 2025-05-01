@@ -1,5 +1,6 @@
 // types.ts
 import { z } from 'zod';
+import { type ethers } from "ethers"
 
 interface PolicyResultBase {
   ipfsCid: string;
@@ -13,15 +14,15 @@ export type PolicyResultAllow<AllowResult = never> = AllowResult extends never
 
 export type PolicyResultDeny<DenyResult = never> = DenyResult extends never
   ? Omit<PolicyResultBase, 'allow'> & {
-      allow: false;
-      error?: string;
-      result?: never;
-    }
+    allow: false;
+    error?: string;
+    result?: never;
+  }
   : Omit<PolicyResultBase, 'allow'> & {
-      allow: false;
-      result: DenyResult;
-      error?: string;
-    };
+    allow: false;
+    result: DenyResult;
+    error?: string;
+  };
 
 export type PolicyResult<AllowResult = unknown, DenyResult = unknown> =
   | PolicyResultAllow<AllowResult>
@@ -74,11 +75,11 @@ export interface PolicyWithPrecheck<
   EvalAllowResult extends z.ZodType | undefined = undefined,
   EvalDenyResult extends z.ZodType | undefined = undefined,
 > extends BasicPolicyDef<
-    ToolParams,
-    UserParams,
-    EvalAllowResult,
-    EvalDenyResult
-  > {
+  ToolParams,
+  UserParams,
+  EvalAllowResult,
+  EvalDenyResult
+> {
   precheckAllowResultSchema?: PrecheckAllowResult;
   precheckDenyResultSchema?: PrecheckDenyResult;
   precheck: (args: {
@@ -86,11 +87,11 @@ export interface PolicyWithPrecheck<
     userParams: z.infer<UserParams>;
   }) => Promise<
     | (PrecheckAllowResult extends z.ZodType
-        ? PolicyResultAllow<z.infer<PrecheckAllowResult>>
-        : PolicyResultAllowNoResult)
+      ? PolicyResultAllow<z.infer<PrecheckAllowResult>>
+      : PolicyResultAllowNoResult)
     | (PrecheckDenyResult extends z.ZodType
-        ? PolicyResultDeny<z.infer<PrecheckDenyResult>>
-        : PolicyResultDenyNoResult)
+      ? PolicyResultDeny<z.infer<PrecheckDenyResult>>
+      : PolicyResultDenyNoResult)
   >;
 }
 
@@ -103,11 +104,11 @@ export interface PolicyWithCommit<
   EvalAllowResult extends z.ZodType | undefined = undefined,
   EvalDenyResult extends z.ZodType | undefined = undefined,
 > extends BasicPolicyDef<
-    ToolParams,
-    UserParams,
-    EvalAllowResult,
-    EvalDenyResult
-  > {
+  ToolParams,
+  UserParams,
+  EvalAllowResult,
+  EvalDenyResult
+> {
   commitParamsSchema: NonNullable<CommitParams>;
   commitAllowResultSchema?: CommitAllowResult;
   commitDenyResultSchema?: CommitDenyResult;
@@ -115,11 +116,11 @@ export interface PolicyWithCommit<
     args: CommitParams extends z.ZodType ? z.infer<CommitParams> : never,
   ) => Promise<
     | (CommitAllowResult extends z.ZodType
-        ? PolicyResultAllow<z.infer<CommitAllowResult>>
-        : PolicyResultAllowNoResult)
+      ? PolicyResultAllow<z.infer<CommitAllowResult>>
+      : PolicyResultAllowNoResult)
     | (CommitDenyResult extends z.ZodType
-        ? PolicyResultDeny<z.infer<CommitDenyResult>>
-        : PolicyResultDenyNoResult)
+      ? PolicyResultDeny<z.infer<CommitDenyResult>>
+      : PolicyResultDenyNoResult)
   >;
 }
 
@@ -134,11 +135,11 @@ export interface PolicyWithPrecheckAndCommit<
   EvalAllowResult extends z.ZodType | undefined = undefined,
   EvalDenyResult extends z.ZodType | undefined = undefined,
 > extends BasicPolicyDef<
-    ToolParams,
-    UserParams,
-    EvalAllowResult,
-    EvalDenyResult
-  > {
+  ToolParams,
+  UserParams,
+  EvalAllowResult,
+  EvalDenyResult
+> {
   precheckAllowResultSchema?: PrecheckAllowResult;
   precheckDenyResultSchema?: PrecheckDenyResult;
   precheck: (args: {
@@ -146,11 +147,11 @@ export interface PolicyWithPrecheckAndCommit<
     userParams: z.infer<UserParams>;
   }) => Promise<
     | (PrecheckAllowResult extends z.ZodType
-        ? PolicyResultAllow<z.infer<PrecheckAllowResult>>
-        : PolicyResultAllowNoResult)
+      ? PolicyResultAllow<z.infer<PrecheckAllowResult>>
+      : PolicyResultAllowNoResult)
     | (PrecheckDenyResult extends z.ZodType
-        ? PolicyResultDeny<z.infer<PrecheckDenyResult>>
-        : PolicyResultDenyNoResult)
+      ? PolicyResultDeny<z.infer<PrecheckDenyResult>>
+      : PolicyResultDenyNoResult)
   >;
 
   commitParamsSchema: NonNullable<CommitParams>;
@@ -160,11 +161,11 @@ export interface PolicyWithPrecheckAndCommit<
     args: CommitParams extends z.ZodType ? z.infer<CommitParams> : never,
   ) => Promise<
     | (CommitAllowResult extends z.ZodType
-        ? PolicyResultAllow<z.infer<CommitAllowResult>>
-        : PolicyResultAllowNoResult)
+      ? PolicyResultAllow<z.infer<CommitAllowResult>>
+      : PolicyResultAllowNoResult)
     | (CommitDenyResult extends z.ZodType
-        ? PolicyResultDeny<z.infer<CommitDenyResult>>
-        : PolicyResultDenyNoResult)
+      ? PolicyResultDeny<z.infer<CommitDenyResult>>
+      : PolicyResultDenyNoResult)
   >;
 }
 
@@ -179,8 +180,8 @@ export type VincentPolicyDef =
 // Helper type to determine if a policy has commit
 export type HasCommit<P> = P extends { commit: infer CommitFn }
   ? CommitFn extends Function
-    ? true
-    : false
+  ? true
+  : false
   : false;
 
 // Tool supported policy with proper typing
@@ -206,23 +207,23 @@ export type VincentPolicyEvaluationResults<
       result: PolicyResultAllow<any>;
     } & (HasCommit<Policies[PolicyKey]['policyDef']> extends true
       ? {
-          commit: Extract<
-            Policies[PolicyKey]['policyDef'],
-            { commit: Function }
-          >['commit'];
-        }
+        commit: Extract<
+          Policies[PolicyKey]['policyDef'],
+          { commit: Function }
+        >['commit'];
+      }
       : {});
   };
 } & (
-  | { allow: true; denyPolicyResult?: never }
-  | {
+    | { allow: true; denyPolicyResult?: never }
+    | {
       allow: false;
       denyPolicyResult: {
         result: PolicyResultDeny<any>;
         ipfsCid: keyof Policies;
       };
     }
-);
+  );
 
 // Tool definition
 export interface VincentToolDef<
@@ -242,4 +243,22 @@ export interface VincentToolDef<
     params: z.infer<ToolParamsSchema>,
     policyEvaluationResults: VincentPolicyEvaluationResults<Policies>,
   ) => Promise<unknown>;
+}
+
+export interface PolicyParameter {
+  name: string;
+  paramType: number;
+  value: string;
+}
+
+export interface Policy {
+  policyIpfsCid: string;
+  parameters: PolicyParameter[];
+}
+
+export interface OnChainUserPolicyParams {
+  isPermitted: boolean;
+  appId: ethers.BigNumber;
+  appVersion: ethers.BigNumber;
+  policies: Policy[];
 }

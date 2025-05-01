@@ -96,5 +96,3 @@ export function validateVincentPolicyDef<
     toolParameterMappings: typeof config.toolParameterMappings;
   };
 }
-
-export { vincentPolicyHandler } from './handler';
