@@ -24,8 +24,6 @@ export interface AppDetails {
   deploymentStatus: number;
   version: number;
   isDeleted: boolean;
-  latestVersion: number;
-  showUpgradePrompt?: boolean;
   showInfo?: boolean;
   infoMessage?: string;
 }

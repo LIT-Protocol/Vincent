@@ -20,17 +20,13 @@ export default function AppDetailsPage() {
         }}
       />
 
-      <div className="w-full flex justify-center">
-        <div className="w-[550px]">
-          {authInfo?.userPKP && sessionSigs && (
-            <UserAuthenticatedConsentForm
-              userPKP={authInfo.userPKP}
-              sessionSigs={sessionSigs}
-              agentPKP={authInfo.agentPKP}
-            />
-          )}
-        </div>
-      </div>
+      {authInfo?.userPKP && authInfo?.agentPKP && sessionSigs && (
+        <UserAuthenticatedConsentForm
+          userPKP={authInfo.userPKP}
+          sessionSigs={sessionSigs}
+          agentPKP={authInfo.agentPKP}
+        />
+      )}
     </>
   );
 }

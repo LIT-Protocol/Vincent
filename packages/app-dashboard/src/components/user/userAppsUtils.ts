@@ -43,21 +43,18 @@ export async function fetchUserApps({
   sessionSigs,
   agentPKP,
   showStatus,
-  showErrorWithStatus,
 }: {
   userPKP: IRelayPKP | null;
   sessionSigs: SessionSigs | null;
   agentPKP: IRelayPKP | null;
   showStatus: (message: string, type?: 'info' | 'warning' | 'success' | 'error') => void;
-  showErrorWithStatus: (errorMessage: string, title?: string, details?: string) => void;
 }): Promise<{
   apps: AppDetails[];
-  isError: boolean;
+  error?: string;
 }> {
   // Skip if missing dependencies
   if (!userPKP || !sessionSigs || !agentPKP) {
-    showErrorWithStatus('Missing required authentication. Please reconnect your wallet.', 'error');
-    return { apps: [], isError: true };
+    return { apps: [], error: 'Missing required authentication. Please reconnect your wallet.' };
   }
 
   try {
@@ -67,20 +64,15 @@ export async function fetchUserApps({
     const appIds = await userViewContract.getAllPermittedAppIdsForPkp(agentPKP.tokenId);
 
     if (!appIds || appIds.length === 0) {
-      showStatus("You haven't authorized any applications yet", 'info');
-      return { apps: [], isError: false };
+      showStatus("You haven't authorized any applications yet", 'warning');
+      return { apps: [] };
     }
 
     const appDetailsPromises = appIds.map(async (appId: BigNumber) => {
       try {
-        // Get app ID as a number for using in other API calls
         const appIdNumber = appId.toNumber();
 
-        // Get the app info using the app ID
         const appInfo = await appViewContract.getAppById(appIdNumber);
-        console.log('appInfo', appInfo);
-
-        // Get the permitted version for this PKP and app
         const permittedVersion = await userViewContract.getPermittedAppVersionForPkp(
           agentPKP.tokenId,
           appIdNumber,
@@ -88,7 +80,6 @@ export async function fetchUserApps({
         const currentVersion = parseInt(permittedVersion._hex, 16);
         const latestVersion = parseInt(appInfo.latestVersion._hex, 16);
 
-        // Get version data to check if versions are enabled
         const [, currentVersionData] = await appViewContract.getAppVersion(
           Number(appId),
           currentVersion,
@@ -101,9 +92,6 @@ export async function fetchUserApps({
         const isCurrentVersionEnabled = currentVersionData.enabled;
         const isLatestVersionEnabled = latestVersionData.enabled;
 
-        const showUpgradePrompt = currentVersion !== null && latestVersion > currentVersion;
-
-        // Generate version info
         const { showInfo, infoMessage } = generateVersionInfo(
           currentVersion,
           latestVersion,
@@ -111,7 +99,6 @@ export async function fetchUserApps({
           isLatestVersionEnabled,
         );
 
-        // Create AppDetails from app info
         return {
           id: appIdNumber.toString(),
           name: appInfo.name,
@@ -119,24 +106,19 @@ export async function fetchUserApps({
           deploymentStatus: appInfo.deploymentStatus,
           version: currentVersion,
           isDeleted: appInfo.isDeleted,
-          latestVersion,
-          showUpgradePrompt,
           showInfo,
           infoMessage,
         };
-      } catch (err) {
-        console.warn(`Error fetching details for app ${appId}:`, err);
+      } catch (error) {
+        return { apps: [], error: 'Error fetching application details' };
       }
     });
 
     const appDetails = await Promise.all(appDetailsPromises);
 
-    // Filter out any undefined or null values
     const filteredAppDetails = appDetails.filter((app) => app !== undefined && app !== null);
 
-    // Sort apps: active apps first (non-deleted), then by name
     const sortedApps = filteredAppDetails.sort((a, b) => {
-      // First sort by deleted status
       if (a.isDeleted !== b.isDeleted) {
         return a.isDeleted ? 1 : -1;
       }
@@ -144,14 +126,8 @@ export async function fetchUserApps({
       return a.name.localeCompare(b.name);
     });
 
-    return { apps: sortedApps, isError: false };
+    return { apps: sortedApps };
   } catch (error) {
-    console.error('Error fetching user apps:', error);
-    if (error instanceof Error) {
-      showErrorWithStatus(error.message, 'Application Error');
-    } else {
-      showErrorWithStatus('Failed to load applications', 'Application Error');
-    }
-    return { apps: [], isError: true };
+    return { apps: [], error: 'Error fetching user apps' };
   }
 }

@@ -54,11 +54,14 @@ export default function UserAppsView({ userPKP, sessionSigs, agentPKP }: UserApp
         sessionSigs,
         agentPKP,
         showStatus,
-        showErrorWithStatus,
       });
 
       if (isMounted) {
-        setApps(result.apps);
+        if (result.error) {
+          showError(result.error, 'Error', 'Error fetching user apps');
+        } else {
+          setApps(result.apps);
+        }
         setIsLoading(false);
       }
     }
