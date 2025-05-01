@@ -2,9 +2,15 @@ import { Helmet } from 'react-helmet';
 import { useReadAuthInfo } from '@/components/consent/hooks/useAuthInfo';
 import UserAuthenticatedConsentForm from '@/components/consent/components/UserAuthenticatedConsentForm';
 import UserHeader from '@/components/layout/UserHeader';
+import { useAuthGuard } from '@/components/user/AuthGuard';
 
 export default function AppDetailsPage() {
   const { authInfo, sessionSigs } = useReadAuthInfo();
+  const authGuardElement = useAuthGuard();
+
+  if (authGuardElement) {
+    return authGuardElement;
+  }
 
   return (
     <>
@@ -20,13 +26,11 @@ export default function AppDetailsPage() {
         }}
       />
 
-      {authInfo?.userPKP && authInfo?.agentPKP && sessionSigs && (
-        <UserAuthenticatedConsentForm
-          userPKP={authInfo.userPKP}
-          sessionSigs={sessionSigs}
-          agentPKP={authInfo.agentPKP}
-        />
-      )}
+      <UserAuthenticatedConsentForm
+        userPKP={authInfo!.userPKP!}
+        sessionSigs={sessionSigs!}
+        agentPKP={authInfo!.agentPKP!}
+      />
     </>
   );
 }
