@@ -90,9 +90,7 @@ export const JwtProvider: React.FC<JwtProviderProps> = ({
     try {
       setLoading(true);
 
-      const existingJwtStr = await storage.getItem(appJwtKey);
       const didJustLogin = vincentWebAppClient.isLogin();
-
       if (didJustLogin) {
         try {
           const jwtResult = vincentWebAppClient.decodeVincentLoginJWT(window.location.origin);
@@ -118,6 +116,7 @@ export const JwtProvider: React.FC<JwtProviderProps> = ({
         }
       }
 
+      const existingJwtStr = await storage.getItem(appJwtKey);
       if (existingJwtStr) {
         try {
           const decodedJWT = verify(existingJwtStr, window.location.origin);
