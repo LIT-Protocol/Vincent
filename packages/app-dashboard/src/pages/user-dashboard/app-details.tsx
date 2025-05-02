@@ -3,14 +3,11 @@ import { useReadAuthInfo } from '@/components/consent/hooks/useAuthInfo';
 import UserAuthenticatedConsentForm from '@/components/consent/components/UserAuthenticatedConsentForm';
 import UserHeader from '@/components/layout/UserHeader';
 import { useAuthGuard } from '@/components/user/AuthGuard';
+import Loading from '@/components/consent/components/Loading';
 
 export default function AppDetailsPage() {
   const { authInfo, sessionSigs } = useReadAuthInfo();
   const authGuardElement = useAuthGuard();
-
-  if (authGuardElement) {
-    return authGuardElement;
-  }
 
   return (
     <>
@@ -26,11 +23,15 @@ export default function AppDetailsPage() {
         }}
       />
 
-      <UserAuthenticatedConsentForm
-        userPKP={authInfo!.userPKP!}
-        sessionSigs={sessionSigs!}
-        agentPKP={authInfo!.agentPKP!}
-      />
+      {authGuardElement ? (
+        <Loading copy="Loading..." />
+      ) : (
+        <UserAuthenticatedConsentForm
+          userPKP={authInfo!.userPKP!}
+          sessionSigs={sessionSigs!}
+          agentPKP={authInfo!.agentPKP!}
+        />
+      )}
     </>
   );
 }

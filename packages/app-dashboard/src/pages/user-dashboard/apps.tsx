@@ -3,15 +3,11 @@ import UserAppsView from '@/components/user/UserAppsView';
 import { useReadAuthInfo } from '@/components/consent/hooks/useAuthInfo';
 import UserHeader from '@/components/layout/UserHeader';
 import { useAuthGuard } from '@/components/user/AuthGuard';
+import Loading from '@/components/consent/components/Loading';
 
 export default function AppsPage() {
   const { authInfo, sessionSigs } = useReadAuthInfo();
   const authGuardElement = useAuthGuard();
-
-  if (authGuardElement) {
-    return authGuardElement;
-  }
-
   return (
     <>
       <Helmet>
@@ -21,11 +17,15 @@ export default function AppsPage() {
 
       <UserHeader title="My Applications" />
 
-      <UserAppsView
-        userPKP={authInfo!.userPKP!}
-        sessionSigs={sessionSigs!}
-        agentPKP={authInfo!.agentPKP!}
-      />
+      {authGuardElement ? (
+        <Loading copy="Loading..." />
+      ) : (
+        <UserAppsView
+          userPKP={authInfo!.userPKP!}
+          sessionSigs={sessionSigs!}
+          agentPKP={authInfo!.agentPKP!}
+        />
+      )}
     </>
   );
 }

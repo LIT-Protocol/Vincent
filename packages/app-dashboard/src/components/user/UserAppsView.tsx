@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { UserAppsViewProps, AppDetails } from './types';
 import { AppCard } from './AppCard';
 import { fetchUserApps } from '@/components/user/userAppsUtils';
+import Loading from '../consent/components/Loading';
 
 export default function UserAppsView({ userPKP, sessionSigs, agentPKP }: UserAppsViewProps) {
   const [statusMessage, setStatusMessage] = useState<string>('');
@@ -78,14 +79,7 @@ export default function UserAppsView({ userPKP, sessionSigs, agentPKP }: UserApp
   };
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-[50vh]">
-        <div className="space-y-4 text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
-          <p className="text-sm text-gray-600">Loading your applications...</p>
-        </div>
-      </div>
-    );
+    return <Loading copy="Loading your applications..." />;
   }
 
   return (

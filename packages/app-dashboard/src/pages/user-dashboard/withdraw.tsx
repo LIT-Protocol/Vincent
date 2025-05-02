@@ -3,14 +3,11 @@ import WithdrawForm from '@/components/withdraw/WithdrawForm';
 import UserHeader from '@/components/layout/UserHeader';
 import useReadAuthInfo from '@/components/consent/hooks/useAuthInfo';
 import { useAuthGuard } from '@/components/user/AuthGuard';
+import Loading from '@/components/consent/components/Loading';
 
 export function Withdraw() {
   const { authInfo, sessionSigs } = useReadAuthInfo();
   const authGuardElement = useAuthGuard();
-
-  if (authGuardElement) {
-    return authGuardElement;
-  }
 
   return (
     <>
@@ -27,11 +24,15 @@ export function Withdraw() {
         }}
       />
 
-      <WithdrawForm
-        sessionSigs={sessionSigs!}
-        agentPKP={authInfo!.agentPKP!}
-        userPKP={authInfo!.userPKP!}
-      />
+      {authGuardElement ? (
+        <Loading copy="Loading..." />
+      ) : (
+        <WithdrawForm
+          sessionSigs={sessionSigs!}
+          agentPKP={authInfo!.agentPKP!}
+          userPKP={authInfo!.userPKP!}
+        />
+      )}
     </>
   );
 }

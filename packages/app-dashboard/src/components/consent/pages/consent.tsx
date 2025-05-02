@@ -262,7 +262,7 @@ export default function ConsentView({ isUserDashboardFlow = false }: ConsentView
         // User flow: navigate to apps page
         if (isUserDashboardFlow) {
           navigate('/user/apps');
-          return null;
+          return <></>;
         }
 
         // Consent flow: show the consent form

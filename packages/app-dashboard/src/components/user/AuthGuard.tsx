@@ -1,4 +1,4 @@
-import { Navigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useReadAuthInfo } from '@/components/consent/hooks/useAuthInfo';
 
 /**
@@ -7,19 +7,11 @@ import { useReadAuthInfo } from '@/components/consent/hooks/useAuthInfo';
  */
 export function useAuthGuard() {
   const { authInfo, sessionSigs, isProcessing } = useReadAuthInfo();
-
-  if (isProcessing) {
-    return (
-      <div className="flex items-center justify-center h-[50vh]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-      </div>
-    );
+  const navigate = useNavigate();
+  const userIsAuthed = authInfo?.userPKP && authInfo?.agentPKP && sessionSigs;
+  if (!isProcessing && !userIsAuthed) {
+    navigate(`/user`, { replace: true });
   }
 
-  if (!authInfo?.userPKP || !authInfo?.agentPKP || !sessionSigs) {
-    return <Navigate to="/user" replace />;
-  }
-
-  // Return null if authenticated, allowing the protected content to render
-  return null;
+  return isProcessing;
 }
