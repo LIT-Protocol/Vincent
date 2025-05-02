@@ -58,7 +58,7 @@ export const JwtProvider: React.FC<JwtProviderProps> = ({
   children,
   appId,
   storage = localStorage,
-  storageKeyBuilder = (appId) => `${appId}-jwt`,
+  storageKeyBuilder = (appId) => `vincent-${appId}-jwt`,
 }) => {
   const appJwtKey = storageKeyBuilder(appId);
   const vincentWebAppClient = useVincentWebAppClient(appId);
