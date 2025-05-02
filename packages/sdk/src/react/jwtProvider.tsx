@@ -92,25 +92,19 @@ export const JwtProvider: React.FC<JwtProviderProps> = ({
 
       const didJustLogin = vincentWebAppClient.isLogin();
       if (didJustLogin) {
-        try {
-          const jwtResult = vincentWebAppClient.decodeVincentLoginJWT(window.location.origin);
+        const jwtResult = vincentWebAppClient.decodeVincentLoginJWT(window.location.origin);
 
-          if (jwtResult) {
-            const { decodedJWT, jwtStr } = jwtResult;
+        if (jwtResult) {
+          const { decodedJWT, jwtStr } = jwtResult;
 
-            await storage.setItem(appJwtKey, jwtStr);
-            vincentWebAppClient.removeLoginJWTFromURI();
-            setAuthInfo({
-              jwt: jwtStr,
-              pkp: decodedJWT.payload.pkp,
-            });
-            return;
-          } else {
-            await logOut();
-            return;
-          }
-        } catch (e) {
-          console.error('Error decoding JWT:', e);
+          await storage.setItem(appJwtKey, jwtStr);
+          vincentWebAppClient.removeLoginJWTFromURI();
+          setAuthInfo({
+            jwt: jwtStr,
+            pkp: decodedJWT.payload.pkp,
+          });
+          return;
+        } else {
           await logOut();
           return;
         }
@@ -118,20 +112,16 @@ export const JwtProvider: React.FC<JwtProviderProps> = ({
 
       const existingJwtStr = await storage.getItem(appJwtKey);
       if (existingJwtStr) {
-        try {
-          const decodedJWT = verify(existingJwtStr, window.location.origin);
+        const decodedJWT = verify(existingJwtStr, window.location.origin);
 
-          setAuthInfo({
-            jwt: existingJwtStr,
-            pkp: decodedJWT.payload.pkp,
-          });
-        } catch (error: unknown) {
-          console.error(
-            `Error verifying existing JWT. Need to relogin: ${(error as Error).message}`
-          );
-          await logOut();
-        }
+        setAuthInfo({
+          jwt: existingJwtStr,
+          pkp: decodedJWT.payload.pkp,
+        });
       }
+    } catch (error) {
+      console.error(`Error logging in with JWT. Need to relogin: ${(error as Error).message}`);
+      await logOut();
     } finally {
       setLoading(false);
     }
@@ -149,19 +139,8 @@ export const JwtProvider: React.FC<JwtProviderProps> = ({
   );
 
   useEffect(() => {
-    async function init() {
-      try {
-        setLoading(true);
-        await logWithJwt();
-      } catch (error) {
-        console.error(`Error verifying existing JWT. Need to relogin: ${(error as Error).message}`);
-        await logOut();
-      } finally {
-        setLoading(false);
-      }
-    }
-    init();
-  }, [logWithJwt, logOut]);
+    logWithJwt();
+  }, [logWithJwt]);
 
   return <JwtContext.Provider value={value}>{children}</JwtContext.Provider>;
 };
