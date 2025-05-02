@@ -1,11 +1,12 @@
 import { Chain, http } from 'viem';
 import { createConfig } from 'wagmi';
 
-export const anvilFirstPrivateKey = '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80';
+export const anvilFirstPrivateKey =
+  '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80';
 
 export class Anvil {
   public static rpcUrls: string[] = ['http://127.0.0.1:8545'];
-  public static explorerUrl: string = 'http://127.0.0.1:8545';
+  public static explorerUrl = 'http://127.0.0.1:8545';
 
   /**
    * Returns the chain configuration for Anvil

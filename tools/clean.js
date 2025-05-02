@@ -5,7 +5,7 @@ function cleanWorkspace() {
 
   // Reset Nx cache
   try {
-    execSync('npx nx reset', { stdio: 'inherit' });
+    execSync('nx reset', { stdio: 'inherit' });
     console.log('✅ Reset Nx cache');
   } catch (error) {
     console.error('❌ Failed to reset Nx cache:', error.message);
