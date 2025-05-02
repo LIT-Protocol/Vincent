@@ -9,10 +9,16 @@ interface UserHeaderProps {
     label: string;
   };
   title?: string;
+  showButtons?: boolean;
   onSignOut?: () => void;
 }
 
-export default function UserHeader({ backButton, title, onSignOut }: UserHeaderProps) {
+export default function UserHeader({
+  backButton,
+  title,
+  showButtons = true,
+  onSignOut,
+}: UserHeaderProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const { clearAuthInfo } = useClearAuthInfo();
@@ -36,28 +42,30 @@ export default function UserHeader({ backButton, title, onSignOut }: UserHeaderP
           {title && <h1 className="text-2xl font-bold ml-4">{title}</h1>}
         </div>
 
-        <div className="flex items-center gap-3">
-          {backButton && (
-            <Button
-              variant="ghost"
-              onClick={() => navigate(backButton.to)}
-              className="flex items-center gap-2"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              {backButton.label}
-            </Button>
-          )}
+        {showButtons && (
+          <div className="flex items-center gap-3">
+            {backButton && (
+              <Button
+                variant="ghost"
+                onClick={() => navigate(backButton.to)}
+                className="flex items-center gap-2"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                {backButton.label}
+              </Button>
+            )}
 
-          {!isRootPath && (
-            <Button onClick={() => navigate('/user/withdraw')} variant="outline" size="sm">
-              <BanknoteArrowDown className="mr-2 h-4 w-4" /> Withdraw
-            </Button>
-          )}
+            {!isRootPath && (
+              <Button onClick={() => navigate('/user/withdraw')} variant="outline" size="sm">
+                <BanknoteArrowDown className="mr-2 h-4 w-4" /> Withdraw
+              </Button>
+            )}
 
-          <Button onClick={handleSignOut} variant="outline" size="sm">
-            <LogOut className="mr-2 h-4 w-4" /> Sign Out
-          </Button>
-        </div>
+            <Button onClick={handleSignOut} variant="outline" size="sm">
+              <LogOut className="mr-2 h-4 w-4" /> Sign Out
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -32,9 +32,9 @@ export default function ConsentView({ isUserDashboardFlow = false }: ConsentView
   const [agentPKP, setAgentPKP] = useState<IRelayPKP>();
   const [sessionError, setSessionError] = useState<Error>();
 
-  // State for loading messages
+  // Simplified loading state
   const [loadingMessage, setLoadingMessage] = useState<string>('');
-  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [isStableLoading, setIsStableLoading] = useState(false);
 
   // ------ EXISTING SESSION HANDLING ------
 
@@ -171,36 +171,30 @@ export default function ConsentView({ isUserDashboardFlow = false }: ConsentView
 
   // ------ LOADING STATES ------
 
-  // Update loading message based on current state with smooth transitions
   useEffect(() => {
-    // Determine the appropriate message based on current loading state
-    let newMessage = '';
+    const isLoading = authLoading || accountsLoading || sessionLoading || isProcessing;
+
+    let currentMessage = '';
     if (authLoading) {
-      newMessage = 'Authenticating your credentials...';
+      currentMessage = 'Authenticating your credentials...';
     } else if (accountsLoading) {
-      newMessage = 'Fetching your Agent Wallet...';
+      currentMessage = 'Fetching your Agent Wallet...';
     } else if (sessionLoading) {
-      newMessage = 'Securing your session...';
+      currentMessage = 'Securing your session...';
     } else if (isProcessing) {
-      newMessage = 'Checking existing session...';
+      currentMessage = 'Checking existing session...';
     }
 
-    // Only transition if the message is actually changing and not empty
-    if (newMessage && newMessage !== loadingMessage) {
-      // Start the transition
-      setIsTransitioning(true);
-
-      // Wait briefly before changing the message
-      const timeout = setTimeout(() => {
-        setLoadingMessage(newMessage);
-
-        // After changing message, end the transition
-        setTimeout(() => {
-          setIsTransitioning(false);
-        }, 150);
-      }, 150);
-
-      return () => clearTimeout(timeout);
+    if (isLoading) {
+      setIsStableLoading(true);
+      if (currentMessage && currentMessage !== loadingMessage) {
+        setLoadingMessage(currentMessage);
+      }
+    } else {
+      const timer = setTimeout(() => {
+        setIsStableLoading(false);
+      }, 200);
+      return () => clearTimeout(timer);
     }
   }, [authLoading, accountsLoading, sessionLoading, isProcessing, loadingMessage]);
 
@@ -227,9 +221,9 @@ export default function ConsentView({ isUserDashboardFlow = false }: ConsentView
   // ------ RENDER CONTENT ------
 
   const renderContent = () => {
-    // Handle loading states first
-    if (authLoading || accountsLoading || sessionLoading || isProcessing) {
-      return <Loading copy={loadingMessage} isTransitioning={isTransitioning} />;
+    // Use the stable loading state
+    if (isStableLoading) {
+      return <Loading copy={loadingMessage} />;
     }
 
     // If we have existing auth info and we're not in user flow, show the option to use it
@@ -322,5 +316,5 @@ export default function ConsentView({ isUserDashboardFlow = false }: ConsentView
     );
   };
 
-  return <div className="grow flex items-center justify-center">{renderContent()}</div>;
+  return <div className="grow flex flex-col">{renderContent()}</div>;
 }
