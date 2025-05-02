@@ -4,6 +4,7 @@ import VersionParametersForm from './authForm/VersionParametersForm';
 import { useErrorPopup } from '@/providers/ErrorPopup';
 import { Button } from '@/components/ui/button';
 import ProtectedByLit from '@/components/layout/ProtectedByLit';
+import ConnectWithVincent from '@/components/layout/ConnectWithVincent';
 
 import StatusMessage from './authForm/StatusMessage';
 import StatusAnimation from './authForm/StatusAnimation';
@@ -488,13 +489,7 @@ export default function AuthenticatedConsentForm({
   if (showUpdateModal && appInfo && permittedVersion !== null) {
     return (
       <div className="bg-white rounded-xl shadow-lg max-w-[550px] w-full mx-auto border border-gray-100 overflow-hidden">
-        {/* Header */}
-        <div className="px-6 py-4 border-b border-gray-100 flex items-center">
-          <div className="h-8 w-8 rounded-md flex items-center justify-center">
-            <img src="/logo.svg" alt="Vincent logo" width={20} height={20} />
-          </div>
-          <div className="ml-3 text-base font-medium text-gray-700">Connect with Vincent</div>
-        </div>
+        <ConnectWithVincent />
 
         {/* Content */}
         <div className="p-6">
@@ -518,13 +513,7 @@ export default function AuthenticatedConsentForm({
   if (isUriUntrusted) {
     return (
       <div className="bg-white rounded-xl shadow-lg max-w-[550px] w-full mx-auto border border-gray-100 overflow-hidden">
-        {/* Header */}
-        <div className="px-6 py-4 border-b border-gray-100 flex items-center">
-          <div className="h-8 w-8 rounded-md flex items-center justify-center">
-            <img src="/logo.svg" alt="Vincent logo" width={20} height={20} />
-          </div>
-          <div className="ml-3 text-base font-medium text-gray-700">Connect with Vincent</div>
-        </div>
+        <ConnectWithVincent />
 
         {/* Content */}
         <div className="p-6">
@@ -544,13 +533,7 @@ export default function AuthenticatedConsentForm({
   if (isAppDeleted) {
     return (
       <div className="bg-white rounded-xl shadow-lg max-w-[550px] w-full mx-auto border border-gray-100 overflow-hidden">
-        {/* Header */}
-        <div className="px-6 py-4 border-b border-gray-100 flex items-center">
-          <div className="h-8 w-8 rounded-md flex items-center justify-center">
-            <img src="/logo.svg" alt="Vincent logo" width={20} height={20} />
-          </div>
-          <div className="ml-3 text-base font-medium text-gray-700">Connect with Vincent</div>
-        </div>
+        <ConnectWithVincent />
 
         {/* Content */}
         <div className="p-6">
@@ -566,14 +549,7 @@ export default function AuthenticatedConsentForm({
   if (showVersionUpgradePrompt && appInfo && permittedVersion !== null) {
     return (
       <div className="bg-white rounded-xl shadow-lg max-w-[550px] w-full mx-auto border border-gray-100 overflow-hidden">
-        {/* Header */}
-        <div className="px-6 py-4 border-b border-gray-100 flex items-center">
-          <div className="h-8 w-8 rounded-md flex items-center justify-center">
-            <img src="/logo.svg" alt="Vincent logo" width={20} height={20} />
-          </div>
-          <div className="ml-3 text-base font-medium text-gray-700">Connect with Vincent</div>
-        </div>
-
+        <ConnectWithVincent />
         {/* Content */}
         <div className="p-6">
           <VersionUpgradePrompt
@@ -596,13 +572,7 @@ export default function AuthenticatedConsentForm({
   ) {
     return (
       <div className="bg-white rounded-xl shadow-lg max-w-[550px] w-full mx-auto border border-gray-100 overflow-hidden">
-        {/* Header */}
-        <div className="px-6 py-4 border-b border-gray-100 flex items-center">
-          <div className="h-8 w-8 rounded-md flex items-center justify-center">
-            <img src="/logo.svg" alt="Vincent logo" width={20} height={20} />
-          </div>
-          <div className="ml-3 text-base font-medium text-gray-700">Connect with Vincent</div>
-        </div>
+        <ConnectWithVincent />
 
         {/* Content */}
         <div className="p-6">
@@ -635,13 +605,7 @@ export default function AuthenticatedConsentForm({
     showErrorWithStatus('Missing appId parameter', 'Invalid Request');
     return (
       <div className="bg-white rounded-xl shadow-lg max-w-[550px] w-full mx-auto border border-gray-100 overflow-hidden">
-        {/* Header */}
-        <div className="px-6 py-4 border-b border-gray-100 flex items-center">
-          <div className="h-8 w-8 rounded-md flex items-center justify-center">
-            <img src="/logo.svg" alt="Vincent logo" width={20} height={20} />
-          </div>
-          <div className="ml-3 text-base font-medium text-gray-700">Connect with Vincent</div>
-        </div>
+        <ConnectWithVincent />
 
         {/* Content */}
         <div className="p-6">
@@ -656,13 +620,7 @@ export default function AuthenticatedConsentForm({
     // Use the error popup instead of inline display
     return (
       <div className="bg-white rounded-xl shadow-lg max-w-[550px] w-full mx-auto border border-gray-100 overflow-hidden">
-        {/* Header */}
-        <div className="px-6 py-4 border-b border-gray-100 flex items-center">
-          <div className="h-8 w-8 rounded-md flex items-center justify-center">
-            <img src="/logo.svg" alt="Vincent logo" width={20} height={20} />
-          </div>
-          <div className="ml-3 text-base font-medium text-gray-700">Connect with Vincent</div>
-        </div>
+        <ConnectWithVincent />
 
         {/* Content */}
         <div className="p-6">
@@ -678,13 +636,7 @@ export default function AuthenticatedConsentForm({
     // Use the error popup instead of inline display
     return (
       <div className="bg-white rounded-xl shadow-lg max-w-[550px] w-full mx-auto border border-gray-100 overflow-hidden">
-        {/* Header */}
-        <div className="px-6 py-4 border-b border-gray-100 flex items-center">
-          <div className="h-8 w-8 rounded-md flex items-center justify-center">
-            <img src="/logo.svg" alt="Vincent logo" width={20} height={20} />
-          </div>
-          <div className="ml-3 text-base font-medium text-gray-700">Connect with Vincent</div>
-        </div>
+        <ConnectWithVincent />
 
         {/* Content */}
         <div className="p-6">
@@ -700,13 +652,7 @@ export default function AuthenticatedConsentForm({
   if (versionInfo && isAppVersionDisabled && appInfo) {
     return (
       <div className="bg-white rounded-xl shadow-lg max-w-[550px] w-full mx-auto border border-gray-100 overflow-hidden">
-        {/* Header */}
-        <div className="px-6 py-4 border-b border-gray-100 flex items-center">
-          <div className="h-8 w-8 rounded-md flex items-center justify-center">
-            <img src="/logo.svg" alt="Vincent logo" width={20} height={20} />
-          </div>
-          <div className="ml-3 text-base font-medium text-gray-700">Connect with Vincent</div>
-        </div>
+        <ConnectWithVincent />
 
         {/* Content - Disabled App Notice */}
         <div className="p-6">
@@ -757,13 +703,7 @@ export default function AuthenticatedConsentForm({
 
   return (
     <div className="bg-white rounded-xl shadow-lg max-w-[550px] w-full mx-auto border border-gray-100 overflow-hidden">
-      {/* Header */}
-      <div className="px-6 py-4 border-b border-gray-100 flex items-center">
-        <div className="h-8 w-8 rounded-md flex items-center justify-center">
-          <img src="/logo.svg" alt="Vincent logo" width={20} height={20} />
-        </div>
-        <div className="ml-3 text-base font-medium text-gray-700">Connect with Vincent</div>
-      </div>
+      <ConnectWithVincent />
 
       {/* Content */}
       <div className="p-6">

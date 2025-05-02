@@ -5,6 +5,7 @@ import AuthMethods from './AuthMethods';
 import WalletMethods from './WalletMethods';
 import WebAuthn from './WebAuthn';
 import StytchOTP from './StytchOTP';
+import ConnectWithVincent from '@/components/layout/ConnectWithVincent';
 
 interface LoginProps {
   authWithEthWallet: (address: string) => Promise<void>;
@@ -25,12 +26,7 @@ export default function LoginMethods({
 
   return (
     <div className="bg-white rounded-xl shadow-lg max-w-[550px] w-full mx-auto border border-gray-100 overflow-hidden">
-      <div className="px-6 py-4 border-b border-gray-100 flex items-center">
-        <div className="h-8 w-8 rounded-md flex items-center justify-center">
-          <img src="/logo.svg" alt="Vincent logo" width={20} height={20} />
-        </div>
-        <div className="ml-3 text-base font-medium text-gray-700">Connect with Vincent</div>
-      </div>
+      <ConnectWithVincent />
 
       <div className="p-6">
         {view === 'default' && (

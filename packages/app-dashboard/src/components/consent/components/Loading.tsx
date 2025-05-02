@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import StatusMessage from './authForm/StatusMessage';
 import ProtectedByLit from '@/components/layout/ProtectedByLit';
+import ConnectWithVincent from '@/components/layout/ConnectWithVincent';
 
 interface LoadingProps {
   copy: string;
@@ -61,12 +62,7 @@ export default function Loading({
 
   return (
     <div className="bg-white rounded-xl shadow-lg max-w-[550px] w-full mx-auto border border-gray-100 overflow-hidden">
-      <div className="px-6 py-4 border-b border-gray-100 flex items-center">
-        <div className="h-8 w-8 rounded-md flex items-center justify-center">
-          <img src="/logo.svg" alt="Vincent logo" width={20} height={20} />
-        </div>
-        <div className="ml-3 text-base font-medium text-gray-700">Connect with Vincent</div>
-      </div>
+      <ConnectWithVincent />
 
       <div className="p-6">
         <div className="flex flex-col items-center justify-center py-8">

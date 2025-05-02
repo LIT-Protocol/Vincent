@@ -3,6 +3,7 @@ import { AUTH_METHOD_TYPE } from '@lit-protocol/constants';
 import Loading from '../components/Loading';
 import { Button } from '@/components/ui/button';
 import ProtectedByLit from '@/components/layout/ProtectedByLit';
+import ConnectWithVincent from '@/components/layout/ConnectWithVincent';
 
 interface SignUpViewProps {
   authMethodType: (typeof AUTH_METHOD_TYPE)[keyof typeof AUTH_METHOD_TYPE];
@@ -17,12 +18,7 @@ const SignUpView: FC<SignUpViewProps> = ({
 }) => {
   const renderWebAuthnView = () => (
     <div className="bg-white rounded-xl shadow-lg max-w-[550px] w-full mx-auto border border-gray-100 overflow-hidden">
-      <div className="px-6 py-4 border-b border-gray-100 flex items-center">
-        <div className="h-8 w-8 rounded-md flex items-center justify-center">
-          <img src="/logo.svg" alt="Vincent logo" width={20} height={20} />
-        </div>
-        <div className="ml-3 text-base font-medium text-gray-700">Connect with Vincent</div>
-      </div>
+      <ConnectWithVincent />
 
       <div className="p-6">
         <h1 className="text-xl font-semibold text-center mb-4">No Accounts Found</h1>
@@ -53,12 +49,7 @@ const SignUpView: FC<SignUpViewProps> = ({
 
   const renderWalletView = () => (
     <div className="bg-white rounded-xl shadow-lg max-w-[550px] w-full mx-auto border border-gray-100 overflow-hidden">
-      <div className="px-6 py-4 border-b border-gray-100 flex items-center">
-        <div className="h-8 w-8 rounded-md flex items-center justify-center">
-          <img src="/logo.svg" alt="Vincent logo" width={20} height={20} />
-        </div>
-        <div className="ml-3 text-base font-medium text-gray-700">Connect with Vincent</div>
-      </div>
+      <ConnectWithVincent />
 
       <div className="p-6">
         <h1 className="text-xl font-semibold text-center mb-4">No Accounts Found</h1>
@@ -79,12 +70,7 @@ const SignUpView: FC<SignUpViewProps> = ({
 
   const renderDefaultView = () => (
     <div className="bg-white rounded-xl shadow-lg max-w-[550px] w-full mx-auto border border-gray-100 overflow-hidden">
-      <div className="px-6 py-4 border-b border-gray-100 flex items-center">
-        <div className="h-8 w-8 rounded-md flex items-center justify-center">
-          <img src="/logo.svg" alt="Vincent logo" width={20} height={20} />
-        </div>
-        <div className="ml-3 text-base font-medium text-gray-700">Connect with Vincent</div>
-      </div>
+      <ConnectWithVincent />
 
       <div className="p-6">
         <h1 className="text-xl font-semibold text-center mb-4">

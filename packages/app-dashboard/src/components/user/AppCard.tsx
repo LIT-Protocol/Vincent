@@ -1,5 +1,10 @@
-import { AppCardProps } from './types';
 import { Info } from 'lucide-react';
+import { AppDetails } from '@/components/consent/types';
+
+export interface AppCardProps {
+  app: AppDetails;
+  onClick: (appId: string) => void;
+}
 
 export function AppCard({ app, onClick }: AppCardProps) {
   return (

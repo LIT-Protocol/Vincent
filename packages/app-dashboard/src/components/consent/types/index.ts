@@ -17,6 +17,17 @@ export interface AppView {
   deploymentStatus?: number; // 0: DEV, 1: TEST, 2: PROD
 }
 
+export interface AppDetails {
+  id: string;
+  name: string;
+  description?: string;
+  deploymentStatus: number;
+  version: number;
+  isDeleted: boolean;
+  showInfo?: boolean;
+  infoMessage?: string;
+}
+
 export interface VersionParameter {
   toolIndex: number;
   policyIndex: number;
@@ -46,7 +57,7 @@ export interface ToolWithPolicies {
  * Represents a BigNumber in hex format
  */
 interface BigNumberHex {
-  type: "BigNumber";
+  type: 'BigNumber';
   hex: string;
 }
 
@@ -89,16 +100,16 @@ export interface VersionInfo {
 export interface ContractVersionResult extends Array<any> {
   // Named properties for the top level array
   app: {
-    0: BigNumberHex;  // id
-    1: string;        // name
-    2: string;        // description
-    3: boolean;       // isDeleted
-    4: number;        // deploymentStatus
-    5: string;        // manager
-    6: BigNumberHex;  // latestVersion
-    7: any[];         // delegatees
-    8: string[];      // authorizedRedirectUris
-    
+    0: BigNumberHex; // id
+    1: string; // name
+    2: string; // description
+    3: boolean; // isDeleted
+    4: number; // deploymentStatus
+    5: string; // manager
+    6: BigNumberHex; // latestVersion
+    7: any[]; // delegatees
+    8: string[]; // authorizedRedirectUris
+
     // Named properties that match the positions
     id: BigNumberHex;
     name: string;
@@ -110,24 +121,24 @@ export interface ContractVersionResult extends Array<any> {
     delegatees: any[];
     authorizedRedirectUris: string[];
   };
-  
+
   appVersion: {
-    0: BigNumberHex;  // version
-    1: boolean;       // enabled
-    2: any[];         // delegatedAgentPkpTokenIds
+    0: BigNumberHex; // version
+    1: boolean; // enabled
+    2: any[]; // delegatedAgentPkpTokenIds
     3: Array<{
-      0: string;      // toolIpfsCid
+      0: string; // toolIpfsCid
       1: Array<{
-        0: string;    // policyIpfsCid
-        1: string[];  // parameterNames
-        2: number[];  // parameterTypes
-        
+        0: string; // policyIpfsCid
+        1: string[]; // parameterNames
+        2: number[]; // parameterTypes
+
         // Named properties that match the positions
         policyIpfsCid: string;
         parameterNames: string[];
         parameterTypes: number[];
       }>;
-      
+
       // Named properties that match the positions
       toolIpfsCid: string;
       policies: Array<{
@@ -136,7 +147,7 @@ export interface ContractVersionResult extends Array<any> {
         parameterTypes: number[];
       }>;
     }>;
-    
+
     // Named properties that match the positions
     version: BigNumberHex;
     enabled: boolean;
@@ -151,4 +162,3 @@ export interface ContractVersionResult extends Array<any> {
     }>;
   };
 }
-

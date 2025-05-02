@@ -1,5 +1,3 @@
-'use client';
-
 import { useEffect, useState, useCallback } from 'react';
 import { AUTH_METHOD_TYPE } from '@lit-protocol/constants';
 import { SessionSigs, IRelayPKP } from '@lit-protocol/types';
@@ -212,11 +210,6 @@ export default function ConsentView({ isUserDashboardFlow = false }: ConsentView
     await clearAuthInfo();
     window.location.reload();
   };
-
-  // Expose the handleSignOut function for userFlow
-  if (isUserDashboardFlow) {
-    (ConsentView as any).handleSignOut = handleSignOut;
-  }
 
   // Cleanup effect for consent flow
   useEffect(() => {

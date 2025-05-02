@@ -1,6 +1,6 @@
 import { IRelayPKP, SessionSigs } from '@lit-protocol/types';
 import { BigNumber } from 'ethers';
-import { AppDetails } from '@/components/user/types';
+import { AppDetails } from '../consent/types';
 import {
   getAppViewRegistryContract,
   getUserViewRegistryContract,
@@ -68,26 +68,25 @@ export async function fetchUserApps({
       return { apps: [] };
     }
 
-    const appDetailsPromises = appIds.map(async (appId: BigNumber) => {
-      try {
+    const appDetailsResults = await Promise.all(
+      appIds.map(async (appId: BigNumber) => {
         const appIdNumber = appId.toNumber();
 
-        const appInfo = await appViewContract.getAppById(appIdNumber);
-        const permittedVersion = await userViewContract.getPermittedAppVersionForPkp(
-          agentPKP.tokenId,
-          appIdNumber,
-        );
+        const [appInfo, permittedVersion] = await Promise.all([
+          appViewContract.getAppById(appIdNumber),
+          userViewContract.getPermittedAppVersionForPkp(agentPKP.tokenId, appIdNumber),
+        ]);
+
         const currentVersion = parseInt(permittedVersion._hex, 16);
         const latestVersion = parseInt(appInfo.latestVersion._hex, 16);
 
-        const [, currentVersionData] = await appViewContract.getAppVersion(
-          Number(appId),
-          currentVersion,
-        );
-        const [, latestVersionData] = await appViewContract.getAppVersion(
-          Number(appId),
-          latestVersion,
-        );
+        const versionResponses = await Promise.all([
+          appViewContract.getAppVersion(Number(appId), currentVersion),
+          appViewContract.getAppVersion(Number(appId), latestVersion),
+        ]);
+
+        const [, currentVersionData] = versionResponses[0];
+        const [, latestVersionData] = versionResponses[1];
 
         const isCurrentVersionEnabled = currentVersionData.enabled;
         const isLatestVersionEnabled = latestVersionData.enabled;
@@ -109,16 +108,10 @@ export async function fetchUserApps({
           showInfo,
           infoMessage,
         };
-      } catch (error) {
-        return { apps: [], error: 'Error fetching application details' };
-      }
-    });
+      }),
+    );
 
-    const appDetails = await Promise.all(appDetailsPromises);
-
-    const filteredAppDetails = appDetails.filter((app) => app !== undefined && app !== null);
-
-    const sortedApps = filteredAppDetails.sort((a, b) => {
+    const sortedApps = appDetailsResults.sort((a, b) => {
       if (a.isDeleted !== b.isDeleted) {
         return a.isDeleted ? 1 : -1;
       }
@@ -128,6 +121,10 @@ export async function fetchUserApps({
 
     return { apps: sortedApps };
   } catch (error) {
-    return { apps: [], error: 'Error fetching user apps' };
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    return {
+      apps: [],
+      error: `Error fetching user apps: ${errorMessage}`,
+    };
   }
 }

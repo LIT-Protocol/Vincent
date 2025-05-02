@@ -1,9 +1,16 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useErrorPopup } from '@/providers/ErrorPopup';
 import { useNavigate } from 'react-router-dom';
-import { UserAppsViewProps, AppDetails } from './types';
+import { AppDetails } from '@/components/consent/types';
 import { AppCard } from './AppCard';
+import { SessionSigs, IRelayPKP } from '@lit-protocol/types';
 import { fetchUserApps } from '@/components/user/userAppsUtils';
+
+export interface UserAppsViewProps {
+  userPKP: IRelayPKP;
+  sessionSigs: SessionSigs;
+  agentPKP?: IRelayPKP;
+}
 
 export default function UserAppsView({ userPKP, sessionSigs, agentPKP }: UserAppsViewProps) {
   const [statusMessage, setStatusMessage] = useState<string>('');
@@ -36,7 +43,7 @@ export default function UserAppsView({ userPKP, sessionSigs, agentPKP }: UserApp
     [showError, showStatus],
   );
 
-  // Load apps when component mounts or dependencies change
+  // Load apps when component mounts
   useEffect(() => {
     let isMounted = true;
 
@@ -58,7 +65,11 @@ export default function UserAppsView({ userPKP, sessionSigs, agentPKP }: UserApp
 
       if (isMounted) {
         if (result.error) {
-          showError(result.error, 'Error', 'Error fetching user apps');
+          showError(
+            result.error,
+            'Error',
+            'Please try again, or contact support if the problem persists.',
+          );
         } else {
           setApps(result.apps);
         }
@@ -71,7 +82,7 @@ export default function UserAppsView({ userPKP, sessionSigs, agentPKP }: UserApp
     return () => {
       isMounted = false;
     };
-  }, [userPKP, sessionSigs, agentPKP, showStatus, showErrorWithStatus]);
+  }, []);
 
   const handleCardClick = (appId: string) => {
     navigate(`/user/appId/${appId}`);
