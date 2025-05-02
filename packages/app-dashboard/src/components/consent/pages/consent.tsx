@@ -302,6 +302,7 @@ export default function ConsentView({ isUserDashboardFlow = false }: ConsentView
     if (isUserDashboardFlow && validatedSessionSigs && authInfo?.userPKP) {
       // Redirect to /apps page
       navigate('/user/apps');
+      return <></>;
     }
 
     // If authenticated but no accounts found
