@@ -255,7 +255,7 @@ export default function ConsentView({ isUserDashboardFlow = false }: ConsentView
         // User flow: navigate to apps page
         if (isUserDashboardFlow) {
           navigate('/user/apps');
-          return null;
+          return <></>;
         }
 
         // Consent flow: show the consent form
@@ -295,7 +295,7 @@ export default function ConsentView({ isUserDashboardFlow = false }: ConsentView
     if (isUserDashboardFlow && validatedSessionSigs && authInfo?.userPKP) {
       // Redirect to /apps page
       navigate('/user/apps');
-      return null;
+      return <></>;
     }
 
     // If authenticated but no accounts found

@@ -1,4 +1,4 @@
-import { ArrowLeft, LogOut } from 'lucide-react';
+import { ArrowLeft, BanknoteArrowDown, LogOut } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useClearAuthInfo } from '@/components/consent/hooks/useAuthInfo';
@@ -49,10 +49,14 @@ export default function UserHeader({ backButton, title, onSignOut }: UserHeaderP
           )}
 
           {!isRootPath && (
-            <Button onClick={handleSignOut} variant="outline" size="sm">
-              <LogOut className="mr-2 h-4 w-4" /> Sign Out
+            <Button onClick={() => navigate('/user/withdraw')} variant="outline" size="sm">
+              <BanknoteArrowDown className="mr-2 h-4 w-4" /> Withdraw
             </Button>
           )}
+
+          <Button onClick={handleSignOut} variant="outline" size="sm">
+            <LogOut className="mr-2 h-4 w-4" /> Sign Out
+          </Button>
         </div>
       </div>
     </div>
