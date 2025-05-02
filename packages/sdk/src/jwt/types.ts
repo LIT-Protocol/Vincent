@@ -2,6 +2,16 @@ import type { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
 import type { IRelayPKP } from '@lit-protocol/types';
 import type { JWTDecoded, JWTPayload } from 'did-jwt/lib/JWT';
 
+export interface AppInfo {
+  id: string;
+  version: number;
+}
+
+export interface AuthenticationInfo {
+  type: string;
+  value?: string;
+}
+
 /**
  * Configuration interface for creating a JWT (JSON Web Token) signed by a PKP wallet.
  * Vincent App developers will likely never need this function, as the provider of the JWT is the Vincent consent page frontend
@@ -20,14 +30,8 @@ export interface JWTConfig {
   payload: Record<string, unknown>;
   expiresInMinutes: number;
   audience: string | string[];
-  app: {
-    id: string;
-    version: number;
-  };
-  authentication: {
-    type: string;
-    value?: string;
-  };
+  app: AppInfo;
+  authentication: AuthenticationInfo;
 }
 
 /**
@@ -41,14 +45,8 @@ export interface JWTConfig {
  */
 export interface VincentJWTPayload extends JWTPayload {
   pkp: IRelayPKP;
-  app: {
-    id: string;
-    version: number;
-  };
-  authentication: {
-    type: string;
-    value?: string;
-  };
+  app: AppInfo;
+  authentication: AuthenticationInfo;
 }
 
 /**

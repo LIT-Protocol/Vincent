@@ -10,9 +10,12 @@ import React, {
 import { IRelayPKP } from '@lit-protocol/types';
 
 import { verify } from '../jwt';
+import type { AppInfo, AuthenticationInfo } from '../jwt/types';
 import { useVincentWebAppClient } from './useVincentWebAppClient';
 
 export interface AuthInfo {
+  app: AppInfo;
+  authentication: AuthenticationInfo;
   jwt: string;
   pkp: IRelayPKP;
 }
@@ -100,6 +103,8 @@ export const JwtProvider: React.FC<JwtProviderProps> = ({
           await storage.setItem(appJwtKey, jwtStr);
           vincentWebAppClient.removeLoginJWTFromURI();
           setAuthInfo({
+            app: decodedJWT.payload.app,
+            authentication: decodedJWT.payload.authentication,
             jwt: jwtStr,
             pkp: decodedJWT.payload.pkp,
           });
@@ -115,6 +120,8 @@ export const JwtProvider: React.FC<JwtProviderProps> = ({
         const decodedJWT = verify(existingJwtStr, window.location.origin);
 
         setAuthInfo({
+          app: decodedJWT.payload.app,
+          authentication: decodedJWT.payload.authentication,
           jwt: existingJwtStr,
           pkp: decodedJWT.payload.pkp,
         });
