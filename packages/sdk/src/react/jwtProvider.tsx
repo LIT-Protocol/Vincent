@@ -9,11 +9,8 @@ import React, {
 } from 'react';
 import { IRelayPKP } from '@lit-protocol/types';
 
-import { jwt } from '..';
-
+import { verify } from '../jwt';
 import { useVincentWebAppClient } from './useVincentWebAppClient';
-
-const { verify } = jwt;
 
 export interface AuthInfo {
   jwt: string;
