@@ -5,7 +5,7 @@ function initFeatureFlags({ flagState, currentEnvironment, environments }) {
 
   if (!Object.values(environments).includes(currentEnvironment)) {
     throw Error(`
-invalid environment "${currentEnvironment}", the LIT_ENV environment variable must be set to one of:
+invalid environment "${currentEnvironment}", the VITE_VINCENT_FEATURE_FLAGS_ENV environment variable must be set to one of:
 ${Object.values(environments).join(', ')}
         `);
   }

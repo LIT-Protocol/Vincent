@@ -41,7 +41,7 @@ import Environments from '../../features/environments.json';
 import Flags from '../../features/flags.json';
 
 // Determine the current environment from env variables
-const currentEnvironment = process.env.LIT_ENV || 'development';
+const currentEnvironment = process.env.VITE_VINCENT_FEATURE_FLAGS_ENV || 'PREVIEW';
 
 export const Features = initFeatureFlags({
     currentEnvironment,
