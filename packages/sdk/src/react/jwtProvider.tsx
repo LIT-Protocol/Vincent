@@ -89,50 +89,54 @@ export const JwtProvider: React.FC<JwtProviderProps> = ({
     [vincentWebAppClient]
   );
 
+  const getJwt = useCallback(async () => {
+    if (vincentWebAppClient.isLogin()) {
+      const jwtResult = vincentWebAppClient.decodeVincentLoginJWT(window.location.origin);
+
+      if (!jwtResult) {
+        return null;
+      }
+
+      const { decodedJWT, jwtStr } = jwtResult;
+      await storage.setItem(appJwtKey, jwtStr);
+      vincentWebAppClient.removeLoginJWTFromURI();
+
+      return { jwtStr, decodedJWT };
+    }
+
+    const existingJwtStr = await storage.getItem(appJwtKey);
+    if (!existingJwtStr) {
+      return null;
+    }
+
+    const decodedJWT = verify(existingJwtStr, window.location.origin);
+
+    return { jwtStr: existingJwtStr, decodedJWT };
+  }, [appJwtKey, storage, vincentWebAppClient]);
+
   const loginWithJwt = useCallback(async () => {
     try {
       setLoading(true);
 
-      const didJustLogin = vincentWebAppClient.isLogin();
-      if (didJustLogin) {
-        const jwtResult = vincentWebAppClient.decodeVincentLoginJWT(window.location.origin);
-
-        if (jwtResult) {
-          const { decodedJWT, jwtStr } = jwtResult;
-
-          await storage.setItem(appJwtKey, jwtStr);
-          vincentWebAppClient.removeLoginJWTFromURI();
-          setAuthInfo({
-            app: decodedJWT.payload.app,
-            authentication: decodedJWT.payload.authentication,
-            jwt: jwtStr,
-            pkp: decodedJWT.payload.pkp,
-          });
-          return;
-        } else {
-          await logOut();
-          return;
-        }
+      const jwtResult = await getJwt();
+      if (!jwtResult) {
+        throw new Error('Could not get JWT');
       }
 
-      const existingJwtStr = await storage.getItem(appJwtKey);
-      if (existingJwtStr) {
-        const decodedJWT = verify(existingJwtStr, window.location.origin);
-
-        setAuthInfo({
-          app: decodedJWT.payload.app,
-          authentication: decodedJWT.payload.authentication,
-          jwt: existingJwtStr,
-          pkp: decodedJWT.payload.pkp,
-        });
-      }
+      const { decodedJWT, jwtStr } = jwtResult;
+      setAuthInfo({
+        app: decodedJWT.payload.app,
+        authentication: decodedJWT.payload.authentication,
+        jwt: jwtStr,
+        pkp: decodedJWT.payload.pkp,
+      });
     } catch (error) {
       console.error(`Error logging in with JWT. Need to relogin: ${(error as Error).message}`);
       await logOut();
     } finally {
       setLoading(false);
     }
-  }, [appJwtKey, logOut, storage, vincentWebAppClient]);
+  }, [getJwt, logOut]);
 
   const value = useMemo<JwtContextType>(
     () => ({
