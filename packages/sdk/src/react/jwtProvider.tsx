@@ -24,7 +24,7 @@ interface JwtContextType {
   authInfo: AuthInfo | null;
   loading: boolean;
   getJwtFromConsentPage: (redirectUri: string) => void;
-  logWithJwt: (token: string | null) => void;
+  loginWithJwt: () => void;
   logOut: () => void;
 }
 
@@ -36,7 +36,7 @@ export const JwtContext = createContext<JwtContextType>({
   authInfo: null,
   loading: false,
   getJwtFromConsentPage: jwtContextNotInitialized,
-  logWithJwt: jwtContextNotInitialized,
+  loginWithJwt: jwtContextNotInitialized,
   logOut: jwtContextNotInitialized,
 });
 
@@ -89,7 +89,7 @@ export const JwtProvider: React.FC<JwtProviderProps> = ({
     [vincentWebAppClient]
   );
 
-  const logWithJwt = useCallback(async () => {
+  const loginWithJwt = useCallback(async () => {
     try {
       setLoading(true);
 
@@ -139,15 +139,15 @@ export const JwtProvider: React.FC<JwtProviderProps> = ({
       authInfo,
       getJwtFromConsentPage,
       loading,
-      logWithJwt,
+      loginWithJwt,
       logOut,
     }),
-    [authInfo, getJwtFromConsentPage, loading, logWithJwt, logOut]
+    [authInfo, getJwtFromConsentPage, loading, loginWithJwt, logOut]
   );
 
   useEffect(() => {
-    logWithJwt();
-  }, [logWithJwt]);
+    loginWithJwt();
+  }, [loginWithJwt]);
 
   return <JwtContext.Provider value={value}>{children}</JwtContext.Provider>;
 };
