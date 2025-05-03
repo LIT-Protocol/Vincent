@@ -1,0 +1,24 @@
+{
+  "name": "feature-flags",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/feature-flags/src",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npx rollup -c",
+        "cwd": "packages/feature-flags"
+      },
+      "outputs": ["{workspaceRoot}/packages/feature-flags/out"]
+    },
+    "edit-flags": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node packages/feature-flags/bin/flag-editor.js",
+        "cwd": "{workspaceRoot}"
+      }
+    }
+  },
+  "tags": []
+} 

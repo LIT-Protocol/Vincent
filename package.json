@@ -34,8 +34,8 @@
     "build:contracts": "nx build vincent-contracts",
     "clean": "node tools/clean.js",
     "deploy:tools": "npx nx deploy vincent-tool-uniswap-swap",
-    "prepare": "husky",
-    "feature-flags": "cd packages/app-dashboard && node ../../node_modules/.pnpm/@near-wallet+feature-flags@0.1.0/node_modules/@near-wallet/feature-flags/bin/flag-editor.js"
+    "feature-flags": "nx run feature-flags:edit-flags",
+    "prepare": "husky"
   },
   "dependencies": {
     "@hookform/resolvers": "^4.1.0",
