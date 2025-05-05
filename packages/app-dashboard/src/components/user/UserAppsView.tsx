@@ -95,10 +95,6 @@ export default function UserAppsView({ userPKP, sessionSigs, agentPKP }: UserApp
 
   return (
     <div className="w-full">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold">My Applications</h1>
-      </div>
-
       {statusMessage && (
         <div
           className={`p-4 mb-6 rounded-lg border ${
