@@ -1,15 +1,12 @@
-import { useEffect, useState } from "react";
-import { useAccount } from "wagmi";
+import { useEffect, useState } from 'react';
+import { useAccount } from 'wagmi';
 
-import DashboardScreen from "@/components/developer/Dashboard";
-import { formCompleteVincentAppForDev } from "@/services";
-import { AppView } from "@/services/types";
-import ConnectWalletScreen from "@/components/developer/ConnectWallet";
-import CreateAppScreen from "@/components/developer/CreateApp";
-import AppLayout from '@/components/layout/AppLayout';
+import DashboardScreen from '@/components/developer/Dashboard';
+import { formCompleteVincentAppForDev } from '@/services';
+import { AppView } from '@/services/types';
+import ConnectWalletScreen from '@/components/developer/ConnectWallet';
+import CreateAppScreen from '@/components/developer/CreateApp';
 import Loading from '@/components/layout/Loading';
-import { wrap } from '@/utils/components';
-import { AppProviders } from '@/providers';
 
 function AppHome() {
   const [hasApp, setHasApp] = useState<boolean>(false);
@@ -35,14 +32,16 @@ function AppHome() {
         }
       } catch (error) {
         // Check if this is the NoAppsFoundForManager error
-        if (error instanceof Error &&
-          (error.message.includes("NoAppsFoundForManager") ||
-            error.message.includes("call revert exception"))) {
+        if (
+          error instanceof Error &&
+          (error.message.includes('NoAppsFoundForManager') ||
+            error.message.includes('call revert exception'))
+        ) {
           setHasApp(false);
           setApp(null);
         } else {
           // Log other unexpected errors
-          console.error("Error fetching app:", error);
+          console.error('Error fetching app:', error);
           setHasApp(false);
           setApp(null);
         }
@@ -57,21 +56,14 @@ function AppHome() {
   }, [address, isConnected]);
 
   if (!isConnected) {
-    return (
-        <ConnectWalletScreen />
-    );
+    return <ConnectWalletScreen />;
   }
 
   if (isLoading) {
     return <Loading />;
   }
 
-  return hasApp ? (
-    <DashboardScreen vincentApp={app!} />
-  ) : (
-    <CreateAppScreen />
-  );
+  return hasApp ? <DashboardScreen vincentApp={app!} /> : <CreateAppScreen />;
 }
 
-const AppHomePage = wrap(AppHome, [...AppProviders, AppLayout]);
-export default AppHomePage;
+export default AppHome;

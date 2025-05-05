@@ -2,12 +2,9 @@ import { useCallback, useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import { formCompleteVincentAppForDev } from '@/services';
 import { useAccount } from 'wagmi';
-import AppLayout from '@/components/layout/AppLayout';
 import Loading from '@/components/layout/Loading';
 import { AppView } from '@/services/types';
 import ManageToolPoliciesScreen from '@/components/developer/dashboard/ManageToolPolicies';
-import { wrap } from '@/utils/components';
-import { AppProviders } from '@/providers';
 
 export function ToolPolicies() {
   const params = useParams();
@@ -26,7 +23,7 @@ export function ToolPolicies() {
 
       if (appData && appData.length > 0) {
         // Find the specific app by appId
-        const app = appData.find(app => app.appId && app.appId.toString() === appIdParam);
+        const app = appData.find((app) => app.appId && app.appId.toString() === appIdParam);
         if (app) {
           setDashboard(app);
         } else {
@@ -38,7 +35,7 @@ export function ToolPolicies() {
         navigate('/');
       }
     } catch (error) {
-      console.error("Error loading app data:", error);
+      console.error('Error loading app data:', error);
       navigate('/');
     } finally {
       setIsLoading(false);
@@ -61,13 +58,7 @@ export function ToolPolicies() {
     return <Loading />;
   }
 
-  return (
-    <ManageToolPoliciesScreen
-      onBack={handleBack}
-      dashboard={dashboard}
-    />
-  );
+  return <ManageToolPoliciesScreen onBack={handleBack} dashboard={dashboard} />;
 }
 
-const ToolPoliciesPage = wrap(ToolPolicies, [...AppProviders, AppLayout]);
-export default ToolPoliciesPage;
+export default ToolPolicies;

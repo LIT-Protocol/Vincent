@@ -8,16 +8,16 @@ import { registerWebAuthn, getSessionSigs } from '@/components/consent/utils/lit
 import LoginMethods from '@/components/consent/components/LoginMethods';
 import { getAgentPKP } from '@/components/consent/utils/getAgentPKP';
 import { useErrorPopup } from '@/providers/ErrorPopup';
-import { useSetAuthInfo, useReadAuthInfo, useClearAuthInfo } from '@/components/consent/hooks/useAuthInfo';
+import {
+  useSetAuthInfo,
+  useReadAuthInfo,
+  useClearAuthInfo,
+} from '@/components/consent/hooks/useAuthInfo';
 
 import Loading from '@/components/consent/components/Loading';
-import UserLayout from '@/components/layout/UserLayout';
 import WithdrawForm from '@/components/withdraw/WithdrawForm';
 import ExistingAccountView from '@/components/consent/views/ExistingAccountView';
 import SignUpView from '@/components/consent/views/SignUpView';
-import { wrap } from '@/utils/components';
-import { UserProviders } from '@/providers';
-
 export function Withdraw() {
   // ------ STATE AND HOOKS ------
   const { showError } = useErrorPopup();
@@ -39,7 +39,7 @@ export function Withdraw() {
     authInfo,
     sessionSigs: validatedSessionSigs,
     isProcessing,
-    error: readError
+    error: readError,
   } = useReadAuthInfo();
 
   // State to show existing account option
@@ -111,7 +111,7 @@ export function Withdraw() {
       // Generate session signatures for the user PKP
       const sigs = await getSessionSigs({
         pkpPublicKey: userPKP.publicKey,
-        authMethod
+        authMethod,
       });
       setSessionSigs(sigs);
 
@@ -128,7 +128,15 @@ export function Withdraw() {
     } finally {
       setSessionLoading(false);
     }
-  }, [authMethod, userPKP, setSessionSigs, setAgentPKP, setSessionError, setSessionLoading, showError]);
+  }, [
+    authMethod,
+    userPKP,
+    setSessionSigs,
+    setAgentPKP,
+    setSessionError,
+    setSessionLoading,
+    showError,
+  ]);
 
   // If user is authenticated, fetch accounts
   useEffect(() => {
@@ -169,14 +177,9 @@ export function Withdraw() {
 
     // Only transition if the message is actually changing and not empty
     if (newMessage && newMessage !== loadingMessage) {
-
       // Wait briefly before changing the message
       const timeout = setTimeout(() => {
         setLoadingMessage(newMessage);
-
-        // After changing message, end the transition
-        setTimeout(() => {
-        }, 150);
       }, 150);
 
       return () => clearTimeout(timeout);
@@ -204,11 +207,7 @@ export function Withdraw() {
   const renderContent = () => {
     // Handle loading states first
     if (authLoading || accountsLoading || sessionLoading || isProcessing) {
-      return (
-        <Loading
-          copy={loadingMessage}
-        />
-      );
+      return <Loading copy={loadingMessage} />;
     }
 
     // If we have existing auth info, show the option to use it
@@ -228,7 +227,7 @@ export function Withdraw() {
       try {
         updateAuthInfo({
           agentPKP,
-          userPKP
+          userPKP,
         });
       } catch (error) {
         console.error('Error saving PKP info to localStorage:', error);
@@ -246,11 +245,7 @@ export function Withdraw() {
       return (
         <div className="flex justify-center items-start w-full">
           <div className="w-[550px] position-relative mt-0">
-            <WithdrawForm
-              sessionSigs={sessionSigs}
-              agentPKP={agentPKP}
-              userPKP={userPKP}
-            />
+            <WithdrawForm sessionSigs={sessionSigs} agentPKP={agentPKP} userPKP={userPKP} />
           </div>
         </div>
       );
@@ -275,7 +270,9 @@ export function Withdraw() {
     if (authMethod && accounts.length === 0) {
       return (
         <SignUpView
-          authMethodType={authMethod.authMethodType as typeof AUTH_METHOD_TYPE[keyof typeof AUTH_METHOD_TYPE]}
+          authMethodType={
+            authMethod.authMethodType as (typeof AUTH_METHOD_TYPE)[keyof typeof AUTH_METHOD_TYPE]
+          }
           handleRegisterWithWebAuthn={handleRegisterWithWebAuthn}
           authWithWebAuthn={authWithWebAuthn}
         />
@@ -293,12 +290,7 @@ export function Withdraw() {
     );
   };
 
-  return (
-    <div className="grow flex items-center justify-center">
-      {renderContent()}
-    </div>
-  );
+  return <div className="grow flex items-center justify-center">{renderContent()}</div>;
 }
 
-const WithdrawPage = wrap(Withdraw, [...UserProviders, UserLayout]);
-export default WithdrawPage;
+export default Withdraw;

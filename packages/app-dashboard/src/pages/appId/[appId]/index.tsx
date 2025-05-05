@@ -5,19 +5,10 @@ import { useAccount } from 'wagmi';
 import { AppView } from '@/services/types';
 import { ArrowRight, Plus, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import AppLayout from '@/components/layout/AppLayout';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { mapEnumToTypeName } from '@/services/types';
 import { useErrorPopup } from '@/providers/ErrorPopup';
 import { StatusMessage } from '@/utils/statusMessage';
-import { wrap } from '@/utils/components';
-import { AppProviders } from '@/providers';
 import { AppUrlGenerator } from '@/components/developer/dashboard/AppUrlGenerator';
 
 export function AppDetail() {
@@ -28,19 +19,14 @@ export function AppDetail() {
   const [app, setApp] = useState<AppView | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [statusMessage, setStatusMessage] = useState<string>('');
-  const [statusType, setStatusType] = useState<
-    'info' | 'warning' | 'success' | 'error'
-  >('info');
+  const [statusType, setStatusType] = useState<'info' | 'warning' | 'success' | 'error'>('info');
 
   // Add the error popup hook
   const { showError } = useErrorPopup();
 
   // Helper function to set status messages
   const showStatus = useCallback(
-    (
-      message: string,
-      type: 'info' | 'warning' | 'success' | 'error' = 'info',
-    ) => {
+    (message: string, type: 'info' | 'warning' | 'success' | 'error' = 'info') => {
       setStatusMessage(message);
       setStatusType(type);
     },
@@ -67,9 +53,7 @@ export function AppDetail() {
 
       if (appData && appData.length > 0) {
         // Find the specific app by appId
-        const foundApp = appData.find(
-          (app) => app.appId && app.appId.toString() === appIdParam,
-        );
+        const foundApp = appData.find((app) => app.appId && app.appId.toString() === appIdParam);
         if (foundApp) {
           setApp(foundApp);
         } else {
@@ -114,9 +98,7 @@ export function AppDetail() {
 
   return (
     <div className="space-y-8">
-      {statusMessage && (
-        <StatusMessage message={statusMessage} type={statusType} />
-      )}
+      {statusMessage && <StatusMessage message={statusMessage} type={statusType} />}
 
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-4">
@@ -129,17 +111,11 @@ export function AppDetail() {
           {app.authorizedRedirectUris && app.authorizedRedirectUris.length > 0 && (
             <AppUrlGenerator app={app} />
           )}
-          <Button
-            variant="outline"
-            onClick={() => navigate(`/appId/${app.appId}/delegatee`)}
-          >
+          <Button variant="outline" onClick={() => navigate(`/appId/${app.appId}/delegatee`)}>
             <Plus className="h-4 w-4 mr-2 font-bold text-black" />
             Manage Delegatees
           </Button>
-          <Button
-            variant="outline"
-            onClick={() => navigate(`/appId/${app.appId}/tool-policies`)}
-          >
+          <Button variant="outline" onClick={() => navigate(`/appId/${app.appId}/tool-policies`)}>
             <Plus className="h-4 w-4 mr-2 font-bold text-black" />
             Manage Tool Policies
           </Button>
@@ -157,9 +133,7 @@ export function AppDetail() {
         <Card>
           <CardHeader>
             <CardTitle className="text-black">App Details</CardTitle>
-            <CardDescription className="text-black">
-              {app.description}
-            </CardDescription>
+            <CardDescription className="text-black">{app.description}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -167,8 +141,7 @@ export function AppDetail() {
                 <span className="font-medium">App ID:</span> {app.appId}
               </div>
               <div className="text-sm text-black">
-                <span className="font-medium">Management Wallet:</span>{' '}
-                {app.managementWallet}
+                <span className="font-medium">Management Wallet:</span> {app.managementWallet}
               </div>
             </div>
           </CardContent>
@@ -212,17 +185,12 @@ export function AppDetail() {
                               className={`mb-4 ${i === 0 ? 'bg-green-50 p-4 rounded-lg' : ''}`}
                             >
                               <div className="font-medium mb-2 text-black">
-                                Version: {version.toString()}{' '}
-                                {enabled ? '(Enabled)' : '(Disabled)'}
+                                Version: {version.toString()} {enabled ? '(Enabled)' : '(Disabled)'}
                                 {i === 0 && (
-                                  <span className="ml-2 text-xs text-green-600">
-                                    (Latest)
-                                  </span>
+                                  <span className="ml-2 text-xs text-green-600">(Latest)</span>
                                 )}
                               </div>
-                              <p className="text-sm italic text-gray-500">
-                                No tools configured
-                              </p>
+                              <p className="text-sm italic text-gray-500">No tools configured</p>
                             </div>
                           );
                         }
@@ -233,12 +201,9 @@ export function AppDetail() {
                             className={`mb-4 ${i === 0 ? 'bg-green-50 p-4 rounded-lg' : ''}`}
                           >
                             <div className="font-medium mb-2 text-black">
-                              Version: {version.toString()}{' '}
-                              {enabled ? '(Enabled)' : '(Disabled)'}
+                              Version: {version.toString()} {enabled ? '(Enabled)' : '(Disabled)'}
                               {i === 0 && (
-                                <span className="ml-2 text-xs text-green-600">
-                                  (Latest)
-                                </span>
+                                <span className="ml-2 text-xs text-green-600">(Latest)</span>
                               )}
                             </div>
 
@@ -248,72 +213,50 @@ export function AppDetail() {
                                   key={j}
                                   className="border-b border-gray-100 pb-2 mb-2 ml-4 text-black"
                                 >
-                                  <div className="font-medium mb-1">
-                                    Tool CID:
-                                  </div>
-                                  <div className="text-sm truncate">
-                                    {tool.toolIpfsCid}
-                                  </div>
+                                  <div className="font-medium mb-1">Tool CID:</div>
+                                  <div className="text-sm truncate">{tool.toolIpfsCid}</div>
 
                                   {tool.policies && tool.policies.length > 0 ? (
                                     <div className="mt-2">
-                                      <div className="font-medium mb-1">
-                                        Policies:
-                                      </div>
+                                      <div className="font-medium mb-1">Policies:</div>
                                       <div className="pl-2 text-sm">
-                                        {tool.policies.map(
-                                          (policy: any, k: number) => {
-                                            return (
-                                              <div key={k} className="mb-1">
-                                                <div className="text-xs">
-                                                  <span className="font-medium">
-                                                    Policy CID:
-                                                  </span>{' '}
-                                                  {policy.policyIpfsCid}
-                                                  <br />
-                                                  {policy.parameterTypes &&
-                                                  policy.parameterNames &&
-                                                  policy.parameterTypes.length >
-                                                    0 &&
-                                                  policy.parameterNames.length >
-                                                    0 ? (
-                                                    <div>
-                                                      <span className="font-medium">
-                                                        Parameters:
-                                                      </span>
-                                                      <ul className="ml-2 mt-1">
-                                                        {policy.parameterNames.map(
-                                                          (
-                                                            name: string,
-                                                            paramIndex: number,
-                                                          ) => (
-                                                            <li
-                                                              key={paramIndex}
-                                                            >
-                                                              {name}:{' '}
-                                                              {mapEnumToTypeName(
-                                                                Number(
-                                                                  policy
-                                                                    .parameterTypes[
-                                                                    paramIndex
-                                                                  ],
-                                                                ),
-                                                              )}
-                                                            </li>
-                                                          ),
-                                                        )}
-                                                      </ul>
-                                                    </div>
-                                                  ) : (
-                                                    <span className="text-xs italic">
-                                                      (No parameters)
-                                                    </span>
-                                                  )}
-                                                </div>
+                                        {tool.policies.map((policy: any, k: number) => {
+                                          return (
+                                            <div key={k} className="mb-1">
+                                              <div className="text-xs">
+                                                <span className="font-medium">Policy CID:</span>{' '}
+                                                {policy.policyIpfsCid}
+                                                <br />
+                                                {policy.parameterTypes &&
+                                                policy.parameterNames &&
+                                                policy.parameterTypes.length > 0 &&
+                                                policy.parameterNames.length > 0 ? (
+                                                  <div>
+                                                    <span className="font-medium">Parameters:</span>
+                                                    <ul className="ml-2 mt-1">
+                                                      {policy.parameterNames.map(
+                                                        (name: string, paramIndex: number) => (
+                                                          <li key={paramIndex}>
+                                                            {name}:{' '}
+                                                            {mapEnumToTypeName(
+                                                              Number(
+                                                                policy.parameterTypes[paramIndex],
+                                                              ),
+                                                            )}
+                                                          </li>
+                                                        ),
+                                                      )}
+                                                    </ul>
+                                                  </div>
+                                                ) : (
+                                                  <span className="text-xs italic">
+                                                    (No parameters)
+                                                  </span>
+                                                )}
                                               </div>
-                                            );
-                                          },
-                                        )}
+                                            </div>
+                                          );
+                                        })}
                                       </div>
                                     </div>
                                   ) : (
@@ -331,13 +274,9 @@ export function AppDetail() {
                       } catch (error) {
                         console.error(`Error rendering item ${i}:`, error);
                         return (
-                          <div
-                            key={i}
-                            className="mb-4 p-4 bg-red-50 rounded-lg"
-                          >
+                          <div key={i} className="mb-4 p-4 bg-red-50 rounded-lg">
                             <div className="text-red-800">
-                              Error rendering version:{' '}
-                              {(error as Error).message}
+                              Error rendering version: {(error as Error).message}
                             </div>
                             <pre className="text-xs overflow-auto mt-2">
                               {JSON.stringify(versionData, null, 2)}
@@ -362,21 +301,15 @@ export function AppDetail() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {!app.delegatees ||
-            !Array.isArray(app.delegatees) ||
-            app.delegatees.length === 0 ? (
+            {!app.delegatees || !Array.isArray(app.delegatees) || app.delegatees.length === 0 ? (
               <div className="text-center py-4">
-                <p className="text-sm text-black">
-                  Add delegatees to execute your application
-                </p>
+                <p className="text-sm text-black">Add delegatees to execute your application</p>
               </div>
             ) : (
               <div className="space-y-2">
                 {app.delegatees.map((delegatee, i) => (
                   <div key={i} className="text-sm text-black">
-                    <code className="bg-gray-50 px-1 py-0.5 rounded text-xs">
-                      {delegatee}
-                    </code>
+                    <code className="bg-gray-50 px-1 py-0.5 rounded text-xs">{delegatee}</code>
                   </div>
                 ))}
               </div>
@@ -388,5 +321,4 @@ export function AppDetail() {
   );
 }
 
-const AppDetailPage = wrap(AppDetail, [...AppProviders, AppLayout]);
-export default AppDetailPage;
+export default AppDetail;
