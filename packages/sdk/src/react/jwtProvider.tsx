@@ -13,6 +13,12 @@ import { verify } from '../jwt';
 import type { AppInfo, AuthenticationInfo } from '../jwt/types';
 import { useVincentWebAppClient } from './useVincentWebAppClient';
 
+/**
+ * Interface representing the authenticated user information.
+ *
+ * Contains details about the application, authentication method, JWT token,
+ * and the PKP (Programmable Key Pair) associated with the authenticated user.
+ */
 export interface AuthInfo {
   app: AppInfo;
   authentication: AuthenticationInfo;
@@ -40,10 +46,53 @@ export const JwtContext = createContext<JwtContextType>({
   logOut: jwtContextNotInitialized,
 });
 
+/**
+ * React hook to access the JWT authentication context.
+ *
+ * This hook provides access to authentication state and methods for managing JWT-based
+ * authentication in Vincent applications. It must be used within a component that is a
+ * descendant of JwtProvider.
+ *
+ * @example
+ * ```tsx
+ * import { useJwtContext } from '@lit-protocol/vincent-sdk';
+ *
+ * function AuthenticatedComponent() {
+ *   const { authInfo, loading, loginWithJwt, logOut } = useJwtContext();
+ *
+ *   if (loading) {
+ *     return <div>Loading authentication...</div>;
+ *   }
+ *
+ *   if (!authInfo) {
+ *     return (
+ *       <button onClick={loginWithJwt}>
+ *         Login
+ *       </button>
+ *     );
+ *   }
+ *
+ *   return (
+ *     <div>
+ *       <p>Logged in with PKP: {authInfo.pkp.ethAddress}</p>
+ *       <button onClick={logOut}>Logout</button>
+ *     </div>
+ *   );
+ * }
+ * ```
+ *
+ * @returns The JWT context containing authentication state and methods
+ */
 export function useJwtContext(): JwtContextType {
   return useContext(JwtContext);
 }
 
+/**
+ * Interface for storage providers that can be used with JwtProvider.
+ *
+ * This allows you to use custom storage solutions (like AsyncStorage in React Native)
+ * instead of the default localStorage.
+ */
 export interface AsyncStorage {
   getItem: (key: string) => Promise<string | null>;
   setItem: (key: string, value: string) => Promise<void>;
@@ -57,6 +106,61 @@ interface JwtProviderProps {
   storageKeyBuilder?: (appId: string) => string;
 }
 
+/**
+ * React component that provides JWT authentication capabilities for Vincent applications.
+ *
+ * The JwtProvider handles JWT token management, including
+ * - Retrieving and validating JWTs from the Vincent consent page
+ * - Storing and retrieving JWTs from persistent storage
+ * - Providing authentication state and methods to child components
+ * - Managing login/logout flows
+ *
+ * It uses the Context API to make authentication information and methods available
+ * throughout your application without prop drilling.
+ *
+ * @example
+ * ```tsx
+ * import { JwtProvider } from '@lit-protocol/vincent-sdk';
+ *
+ * function App() {
+ *   return (
+ *     <JwtProvider appId="your-vincent-app-id">
+ *       <YourApplication />
+ *     </JwtProvider>
+ *   );
+ * }
+ *
+ * // In a child component:
+ * function LoginButton() {
+ *   const { authInfo, loading, getJwtFromConsentPage, logOut } = useJwtContext();
+ *
+ *   if (loading) return <div>Loading...</div>;
+ *
+ *   if (authInfo) {
+ *     return (
+ *       <div>
+ *         <p>Logged in as: {authInfo.pkp.ethAddress}</p>
+ *         <button onClick={logOut}>Log out</button>
+ *       </div>
+ *     );
+ *   }
+ *
+ *   return (
+ *     <button
+ *       onClick={() => getJwtFromConsentPage(window.location.href)}
+ *     >
+ *       Login with Vincent
+ *     </button>
+ *   );
+ * }
+ * ```
+ *
+ * @param props - Props for the JwtProvider component
+ * @param props.children - Child components that will have access to the JWT context
+ * @param props.appId - Your Vincent App Id
+ * @param props.storage - Optional custom storage implementation (defaults to localStorage)
+ * @param props.storageKeyBuilder - Optional function to customize the storage key for JWT tokens
+ */
 export const JwtProvider: React.FC<JwtProviderProps> = ({
   children,
   appId,

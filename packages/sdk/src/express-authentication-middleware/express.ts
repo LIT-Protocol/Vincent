@@ -34,7 +34,7 @@ function assertAuthenticatedRequest(req: Request): asserts req is AuthenticatedR
  * If the `req.user` property isn't the correct shape, it sends a `401 Unauthorized` response to the client.
  *
  * NOTE: This does not verify signatures or any other content -- use `getAuthenticateUserExpressHandler` to create a
- * middleware that does those things and ensure that your routes use it.
+ * middleware that does those things and ensures that your routes use it.
  *
  * See [express.js documentation](https://expressjs.com/en/guide/writing-middleware.html) for details on writing your route handler
  * @example
@@ -72,7 +72,7 @@ export const authenticatedRequestHandler =
  * Creates an Express middleware function to authenticate a user using a JWT token.
  *
  * This middleware checks the `Authorization` header for a Bearer token, verifies the token, and checks its audience.
- * If the token is valid, it attaches the user information (decoded JWT, raw token, and PKP address) to the request object as `req.user`.
+ * If the token is valid, it attaches the user information (raw token and decoded JWT with PKP, app, and authentication info) to the request object as `req.user`.
  * If the token is missing or invalid, it returns a 401 Unauthorized response with an error message.
  *
  * NOTE: Wrap your route handler functions with `authenticatedRequestHandler()` to assert the type of `Request` and to
