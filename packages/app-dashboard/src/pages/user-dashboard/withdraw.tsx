@@ -3,7 +3,7 @@ import WithdrawForm from '@/components/withdraw/WithdrawForm';
 import UserHeader from '@/components/layout/UserHeader';
 import useReadAuthInfo from '@/components/consent/hooks/useAuthInfo';
 import { useAuthGuard } from '@/components/user/AuthGuard';
-import Loading from '@/components/consent/components/Loading';
+import StatusMessage from '@/components/consent/components/authForm/StatusMessage';
 
 export function Withdraw() {
   const { authInfo, sessionSigs } = useReadAuthInfo();
@@ -25,13 +25,15 @@ export function Withdraw() {
       />
 
       {authGuardElement ? (
-        <Loading copy="Loading..." />
-      ) : (
+        <StatusMessage message="Authenticating..." type="info" />
+      ) : sessionSigs && authInfo?.agentPKP && authInfo?.userPKP ? (
         <WithdrawForm
-          sessionSigs={sessionSigs!}
-          agentPKP={authInfo!.agentPKP!}
-          userPKP={authInfo!.userPKP!}
+          sessionSigs={sessionSigs}
+          agentPKP={authInfo.agentPKP}
+          userPKP={authInfo.userPKP}
         />
+      ) : (
+        <StatusMessage message="Authentication required" type="warning" />
       )}
     </>
   );

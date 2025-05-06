@@ -1,5 +1,7 @@
 import { Helmet } from 'react-helmet';
 import ConsentView from '@/components/consent/pages/consent';
+import ConnectWithVincent from '@/components/layout/ConnectWithVincent';
+import ProtectedByLit from '@/components/layout/ProtectedByLit';
 
 export function Consent() {
   return (
@@ -8,7 +10,13 @@ export function Consent() {
         <title>Vincent | App Consent</title>
         <meta name="description" content="Review and provide consent for an application" />
       </Helmet>
-      <ConsentView isUserDashboardFlow={false} />
+      <div className="bg-white rounded-xl shadow-lg max-w-[550px] w-full mx-auto border border-gray-100 overflow-hidden">
+        <ConnectWithVincent />
+        <div className="p-6">
+          <ConsentView isUserDashboardFlow={false} />
+        </div>
+        <ProtectedByLit />
+      </div>
     </>
   );
 }

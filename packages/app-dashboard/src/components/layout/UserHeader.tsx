@@ -10,32 +10,25 @@ interface UserHeaderProps {
   };
   title?: string;
   showButtons?: boolean;
-  onSignOut?: () => void;
 }
 
-export default function UserHeader({
-  backButton,
-  title,
-  showButtons = true,
-  onSignOut,
-}: UserHeaderProps) {
+export default function UserHeader({ backButton, title, showButtons = true }: UserHeaderProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const { clearAuthInfo } = useClearAuthInfo();
 
-  const handleDirectSignOut = async () => {
+  const handleSignOut = async () => {
     await clearAuthInfo();
     navigate('/user');
   };
 
-  const handleSignOut = onSignOut || handleDirectSignOut;
   const isRootPath = location.pathname === '/';
 
   return (
     <div className="border-b mb-6">
       <div className="flex justify-between items-center p-6">
         <div className="flex items-center gap-4">
-          <a href="/" className="flex items-center">
+          <a href="/user" className="flex items-center">
             <img src="/vincent-logo.png" alt="Vincent" width={150} height={40} />
           </a>
 

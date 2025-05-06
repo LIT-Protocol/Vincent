@@ -13,8 +13,8 @@ import { useSetAuthInfo, useReadAuthInfo, useClearAuthInfo } from '../hooks/useA
 import ExistingAccountView from '../views/ExistingAccountView';
 import AuthenticatedConsentForm from '../components/AuthenticatedConsentForm';
 import SignUpView from '../views/SignUpView';
-import Loading from '../components/Loading';
 import { useErrorPopup } from '@/providers/ErrorPopup';
+import StatusMessage from '../components/authForm/StatusMessage';
 
 type ConsentViewProps = {
   isUserDashboardFlow?: boolean;
@@ -223,7 +223,7 @@ export default function ConsentView({ isUserDashboardFlow = false }: ConsentView
   const renderContent = () => {
     // Use the stable loading state
     if (isStableLoading) {
-      return <Loading copy={loadingMessage} />;
+      return <StatusMessage message="Loading..." type="info" />;
     }
 
     // If we have existing auth info and we're not in user flow, show the option to use it

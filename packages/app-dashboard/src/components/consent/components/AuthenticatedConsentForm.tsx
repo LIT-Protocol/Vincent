@@ -4,7 +4,6 @@ import VersionParametersForm from './authForm/VersionParametersForm';
 import { useErrorPopup } from '@/providers/ErrorPopup';
 import { Button } from '@/components/ui/button';
 import ProtectedByLit from '@/components/layout/ProtectedByLit';
-import ConnectWithVincent from '@/components/layout/ConnectWithVincent';
 
 import StatusMessage from './authForm/StatusMessage';
 import StatusAnimation from './authForm/StatusAnimation';
@@ -14,7 +13,6 @@ import RedirectMessage from './authForm/RedirectMessage';
 import VersionUpgradePrompt from './authForm/VersionUpgradePrompt';
 import UntrustedUriError from './authForm/UntrustedUriError';
 import DeletedAppError from './DeletedAppError';
-import Loading from './Loading';
 import { useUrlAppId } from '../hooks/useUrlAppId';
 import { useUrlRedirectUri } from '../hooks/useUrlRedirectUri';
 import { useStatusMessage } from '../hooks/useStatusMessage';
@@ -123,6 +121,7 @@ export default function AuthenticatedConsentForm({
     appId,
     agentPKP,
     appInfo,
+    permittedVersion,
     onStatusChange: showStatus,
   });
 
@@ -161,6 +160,7 @@ export default function AuthenticatedConsentForm({
     agentPKP,
     userPKP,
     sessionSigs,
+    permittedVersion,
     onStatusChange: showStatus,
     onError: showErrorWithStatus,
   });
@@ -488,59 +488,36 @@ export default function AuthenticatedConsentForm({
   // Show the parameter update modal - this should take precedence over all other views
   if (showUpdateModal && appInfo && permittedVersion !== null) {
     return (
-      <div className="bg-white rounded-xl shadow-lg max-w-[550px] w-full mx-auto border border-gray-100 overflow-hidden">
-        <ConnectWithVincent />
-
-        {/* Content */}
-        <div className="p-6">
-          <StatusMessage message={statusMessage} type={statusType} />
-          <ParameterUpdateModal
-            isOpen={showUpdateModal && !isLoadingParameters}
-            onContinue={handleContinueWithExisting}
-            onUpdate={handleUpdateParameters}
-            appName={appInfo.name}
-            permittedVersion={permittedVersion}
-          />
-          {isLoadingParameters && (
-            <p className="text-center mt-4 text-gray-600">Loading your existing parameters...</p>
-          )}
-        </div>
-      </div>
+      <>
+        <StatusMessage message={statusMessage} type={statusType} />
+        <ParameterUpdateModal
+          isOpen={showUpdateModal && !isLoadingParameters}
+          onContinue={handleContinueWithExisting}
+          onUpdate={handleUpdateParameters}
+          appName={appInfo.name}
+          permittedVersion={permittedVersion}
+        />
+      </>
     );
   }
 
   // If URL is untrusted, show an error message
   if (isUriUntrusted) {
     return (
-      <div className="bg-white rounded-xl shadow-lg max-w-[550px] w-full mx-auto border border-gray-100 overflow-hidden">
-        <ConnectWithVincent />
-
-        {/* Content */}
-        <div className="p-6">
-          <StatusMessage message={statusMessage} type={statusType} />
-          <UntrustedUriError
-            redirectUri={redirectUri}
-            appInfo={appInfo}
-            statusMessage={statusMessage}
-            statusType={statusType}
-          />
-        </div>
-      </div>
+      <>
+        <StatusMessage message={statusMessage} type={statusType} />
+        <UntrustedUriError redirectUri={redirectUri} appInfo={appInfo} />
+      </>
     );
   }
 
   // If app is deleted, show an error message
   if (isAppDeleted) {
     return (
-      <div className="bg-white rounded-xl shadow-lg max-w-[550px] w-full mx-auto border border-gray-100 overflow-hidden">
-        <ConnectWithVincent />
-
-        {/* Content */}
-        <div className="p-6">
-          <StatusMessage message={statusMessage} type={statusType} />
-          <DeletedAppError statusMessage={statusMessage} statusType={statusType} />
-        </div>
-      </div>
+      <>
+        <StatusMessage message={statusMessage} type={statusType} />
+        <DeletedAppError />
+      </>
     );
   }
 
@@ -548,9 +525,8 @@ export default function AuthenticatedConsentForm({
   // If the app is already permitted, show a brief loading spinner or success animation
   if (showVersionUpgradePrompt && appInfo && permittedVersion !== null) {
     return (
-      <div className="bg-white rounded-xl shadow-lg max-w-[550px] w-full mx-auto border border-gray-100 overflow-hidden">
-        <ConnectWithVincent />
-        {/* Content */}
+      <>
+        <StatusMessage message={statusMessage} type={statusType} />
         <div className="p-6">
           <VersionUpgradePrompt
             appInfo={appInfo}
@@ -560,7 +536,7 @@ export default function AuthenticatedConsentForm({
             onUpdateParameters={handleUpdateParameters}
           />
         </div>
-      </div>
+      </>
     );
   }
 
@@ -571,32 +547,24 @@ export default function AuthenticatedConsentForm({
     (showingAuthorizedMessage && !showUpdateModal)
   ) {
     return (
-      <div className="bg-white rounded-xl shadow-lg max-w-[550px] w-full mx-auto border border-gray-100 overflow-hidden">
-        <ConnectWithVincent />
-
-        {/* Content */}
-        <div className="p-6">
-          <StatusMessage message={statusMessage} type={statusType} />
-          <RedirectMessage
-            showSuccess={showSuccess}
-            showDisapproval={showDisapproval}
-            statusMessage={statusMessage}
-            statusType={statusType}
-          />
-        </div>
-      </div>
+      <>
+        <StatusMessage message={statusMessage} type={statusType} />
+        <RedirectMessage
+          showSuccess={showSuccess}
+          showDisapproval={showDisapproval}
+          statusMessage={statusMessage}
+          statusType={statusType}
+        />
+      </>
     );
   }
 
   // Show loading indicator while checking permissions or loading app info
   if (checkingPermissions || isLoading) {
     return (
-      <Loading
-        copy={statusMessage || 'Loading app information...'}
-        type="info"
-        appName={appInfo?.name}
-        appDescription={appInfo?.description}
-      />
+      <>
+        <StatusMessage message={statusMessage} type={statusType} />
+      </>
     );
   }
 
@@ -604,55 +572,41 @@ export default function AuthenticatedConsentForm({
   if (!appId) {
     showErrorWithStatus('Missing appId parameter', 'Invalid Request');
     return (
-      <div className="bg-white rounded-xl shadow-lg max-w-[550px] w-full mx-auto border border-gray-100 overflow-hidden">
-        <ConnectWithVincent />
-
-        {/* Content */}
-        <div className="p-6">
-          <StatusMessage message="Missing app ID" type="error" />
-          <p className="text-center mt-3 text-gray-700">Invalid request. Missing app ID.</p>
-        </div>
-      </div>
+      <>
+        <StatusMessage message="Missing app ID" type="error" />
+      </>
     );
   }
 
   if (urlError) {
     // Use the error popup instead of inline display
     return (
-      <div className="bg-white rounded-xl shadow-lg max-w-[550px] w-full mx-auto border border-gray-100 overflow-hidden">
-        <ConnectWithVincent />
-
-        {/* Content */}
-        <div className="p-6">
-          <p className="text-center text-gray-700">
-            Invalid request. Please check your URL parameters.
-          </p>
-        </div>
-      </div>
+      <>
+        <StatusMessage message="Missing app ID" type="error" />
+        <p className="text-center text-gray-700">
+          Invalid request. Please check your URL parameters.
+        </p>
+      </>
     );
   }
 
   if (redirectError) {
     // Use the error popup instead of inline display
     return (
-      <div className="bg-white rounded-xl shadow-lg max-w-[550px] w-full mx-auto border border-gray-100 overflow-hidden">
-        <ConnectWithVincent />
-
-        {/* Content */}
-        <div className="p-6">
-          <p className="text-center text-gray-700">
-            Invalid redirect URI. Please check your URL parameters.
-          </p>
-        </div>
-      </div>
+      <>
+        <StatusMessage message="Invalid redirect URI" type="error" />
+        <p className="text-center text-gray-700">
+          Invalid redirect URI. Please check your URL parameters.
+        </p>
+      </>
     );
   }
 
   // If the app version is disabled, show a full-screen notice instead of the regular content
   if (versionInfo && isAppVersionDisabled && appInfo) {
     return (
-      <div className="bg-white rounded-xl shadow-lg max-w-[550px] w-full mx-auto border border-gray-100 overflow-hidden">
-        <ConnectWithVincent />
+      <>
+        <StatusMessage message={statusMessage} type={statusType} />
 
         {/* Content - Disabled App Notice */}
         <div className="p-6">
@@ -697,71 +651,66 @@ export default function AuthenticatedConsentForm({
         </div>
 
         <ProtectedByLit />
-      </div>
+      </>
     );
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-lg max-w-[550px] w-full mx-auto border border-gray-100 overflow-hidden">
-      <ConnectWithVincent />
+    <>
+      <StatusMessage message={statusMessage} type={statusType} />
+      {showSuccess && <StatusAnimation type="success" />}
+      {showDisapproval && <StatusAnimation type="disapproval" />}
 
-      {/* Content */}
-      <div className="p-6">
-        <StatusMessage message={statusMessage} type={statusType} />
-        {showSuccess && <StatusAnimation type="success" />}
-        {showDisapproval && <StatusAnimation type="disapproval" />}
+      {appInfo && (
+        <>
+          <div className="text-xl font-semibold text-center mb-2">
+            {appInfo.name} wants to use your Agent Wallet
+          </div>
 
-        {appInfo && (
-          <>
-            <div className="text-xl font-semibold text-center mb-2">
-              {appInfo.name} wants to use your Agent Wallet
+          {appInfo.description && (
+            <div className="text-center text-gray-600 text-sm mb-4">
+              {appInfo.description}
+              <br></br>
+              Version: {versionInfo
+                ? versionInfo.appVersion.version.toString()
+                : 'No version data'}{' '}
+              • App Mode:{' '}
+              {appInfo.deploymentStatus === 0
+                ? 'DEV'
+                : appInfo.deploymentStatus === 1
+                  ? 'TEST'
+                  : appInfo.deploymentStatus === 2
+                    ? 'PROD'
+                    : 'Unknown'}
             </div>
+          )}
 
-            {appInfo.description && (
-              <div className="text-center text-gray-600 text-sm mb-4">
-                {appInfo.description}
-                <br></br>
-                Version:{' '}
-                {versionInfo ? versionInfo.appVersion.version.toString() : 'No version data'} • App
-                Mode:{' '}
-                {appInfo.deploymentStatus === 0
-                  ? 'DEV'
-                  : appInfo.deploymentStatus === 1
-                    ? 'TEST'
-                    : appInfo.deploymentStatus === 2
-                      ? 'PROD'
-                      : 'Unknown'}
-              </div>
-            )}
-
-            {agentPKP && (
-              <div className="text-center text-gray-500 text-sm font-mono bg-gray-50 py-2 px-3 rounded-md mb-6 border border-gray-100">
-                EVM Address: {agentPKP.ethAddress}
-              </div>
-            )}
-
-            {versionInfo && (
-              <VersionParametersForm
-                versionInfo={versionInfo}
-                onChange={handleParametersChange}
-                existingParameters={existingParameters}
-                key={`params-form-${useCurrentVersionOnly ? `v${permittedVersion}` : 'latest'}`}
-              />
-            )}
-
-            <div className="text-xs text-gray-500 mb-6 bg-gray-50 p-3 rounded-lg">
-              You can change your parameters anytime by revisiting this page.
+          {agentPKP && (
+            <div className="text-center text-gray-500 text-sm font-mono bg-gray-50 py-2 px-3 rounded-md mb-6 border border-gray-100">
+              EVM Address: {agentPKP.ethAddress}
             </div>
+          )}
 
-            <ConsentActions
-              onApprove={handleApprove}
-              onDisapprove={handleDisapprove}
-              submitting={submitting}
+          {versionInfo && (
+            <VersionParametersForm
+              versionInfo={versionInfo}
+              onChange={handleParametersChange}
+              existingParameters={existingParameters}
+              key={`params-form-${useCurrentVersionOnly ? `v${permittedVersion}` : 'latest'}`}
             />
-          </>
-        )}
-      </div>
-      <ProtectedByLit />
-    </div>
+          )}
+
+          <div className="text-xs text-gray-500 mb-6 bg-gray-50 p-3 rounded-lg">
+            You can change your parameters anytime by revisiting this page.
+          </div>
+
+          <ConsentActions
+            onApprove={handleApprove}
+            onDisapprove={handleDisapprove}
+            submitting={submitting}
+          />
+        </>
+      )}
+    </>
   );
 }

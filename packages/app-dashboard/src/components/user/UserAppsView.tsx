@@ -5,12 +5,12 @@ import { AppDetails } from '@/components/consent/types';
 import { AppCard } from './AppCard';
 import { SessionSigs, IRelayPKP } from '@lit-protocol/types';
 import { fetchUserApps } from '@/components/user/userAppsUtils';
-import Loading from '../consent/components/Loading';
+import StatusMessage from '../consent/components/authForm/StatusMessage';
 
 export interface UserAppsViewProps {
   userPKP: IRelayPKP;
   sessionSigs: SessionSigs;
-  agentPKP?: IRelayPKP;
+  agentPKP: IRelayPKP;
 }
 
 export default function UserAppsView({ userPKP, sessionSigs, agentPKP }: UserAppsViewProps) {
@@ -90,7 +90,7 @@ export default function UserAppsView({ userPKP, sessionSigs, agentPKP }: UserApp
   };
 
   if (isLoading) {
-    return <Loading copy="Loading your applications..." />;
+    return <StatusMessage message="Loading your applications..." type="info" />;
   }
 
   return (

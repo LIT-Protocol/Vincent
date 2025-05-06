@@ -7,13 +7,14 @@ import { AppView } from '../types';
 interface UseAppPermissionCheckProps {
   appId: string | null;
   agentPKP?: IRelayPKP;
-  fetchExistingParameters?: () => Promise<void>;
+  redirectUri?: string | null;
   onStatusChange?: (message: string, type?: 'info' | 'warning' | 'success' | 'error') => void;
 }
 
 interface AppPermissionState {
   appInfo: AppView | null;
   isAppAlreadyPermitted: boolean;
+  isUriUntrusted: boolean;
   showVersionUpgradePrompt: boolean;
   showUpdateModal: boolean;
   permittedVersion: number | null;
@@ -24,6 +25,7 @@ interface AppPermissionState {
   checkingPermissions: boolean;
   useCurrentVersionOnly?: boolean;
   isAppDeleted: boolean;
+  isAppNotFound: boolean;
 }
 
 /**
@@ -34,13 +36,14 @@ interface AppPermissionState {
 export const useUserAppPermissionCheck = ({
   appId,
   agentPKP,
-  fetchExistingParameters,
+  redirectUri,
   onStatusChange,
 }: UseAppPermissionCheckProps) => {
   // State to track various permission-related flags
   const [state, setState] = useState<AppPermissionState>({
     appInfo: null,
     isAppAlreadyPermitted: false,
+    isUriUntrusted: false,
     showVersionUpgradePrompt: false,
     showUpdateModal: false,
     permittedVersion: null,
@@ -51,6 +54,7 @@ export const useUserAppPermissionCheck = ({
     checkingPermissions: true,
     useCurrentVersionOnly: false,
     isAppDeleted: false,
+    isAppNotFound: false,
   });
 
   // Ref to track if permission check has been done, track if we've previously seen a null appId
@@ -62,52 +66,66 @@ export const useUserAppPermissionCheck = ({
    * This prevents unnecessary re-renders by only updating what has changed.
    */
   const updateState = useCallback((updates: Partial<AppPermissionState>) => {
-    setState((prev) => ({ ...prev, ...updates }));
+    setState((prev) => {
+      const needsUpdate = Object.entries(updates).some(
+        ([key, value]) => prev[key as keyof AppPermissionState] !== value,
+      );
+
+      if (!needsUpdate) {
+        return prev;
+      }
+
+      return { ...prev, ...updates };
+    });
   }, []);
 
   /**
    * Handles the case when a user wants to upgrade to a newer version of the app.
    * Resets the version upgrade prompt and sets up state for the permission process.
-   * If fetchExistingParameters is provided, it will fetch existing parameters
-   * to preserve values when upgrading to a new version.
    */
   const handleUpgrade = useCallback(() => {
     updateState({
       showVersionUpgradePrompt: false,
       isAppAlreadyPermitted: false,
-      isLoading: true,
       checkingPermissions: false,
       useCurrentVersionOnly: false,
+      permittedVersion: null,
     });
 
-    setTimeout(async () => {
-      try {
-        if (fetchExistingParameters) {
-          await fetchExistingParameters();
-        }
-
-        updateState({
-          isLoading: false,
-          checkingPermissions: false,
-        });
-      } catch (error) {
-        console.error('Error fetching parameters for version upgrade:', error);
-        updateState({
-          isLoading: false,
-          checkingPermissions: false,
-        });
-      }
+    setTimeout(() => {
+      updateState({
+        isLoading: false,
+      });
     }, 100);
-  }, [updateState, fetchExistingParameters]);
+  }, [updateState]);
+
+  /**
+   * Verifies if the redirect URI is authorized for this app.
+   * Checks if the provided redirectUri matches any URI in the app's authorizedRedirectUris list.
+   * Only runs when redirectUri is provided.
+   */
+  const verifyUri = useCallback(
+    async (appInfo: AppView): Promise<boolean> => {
+      if (!redirectUri) {
+        return true;
+      }
+
+      try {
+        const isAuthorized =
+          appInfo?.authorizedRedirectUris?.some((uri) => {
+            return uri === redirectUri;
+          }) || false;
+
+        return isAuthorized;
+      } catch {
+        return false;
+      }
+    },
+    [redirectUri],
+  );
 
   /**
    * The main function that checks if a PKP has permission for an app.
-   * This function:
-   * 1. Fetches app information
-   * 2. Verifies the redirect URI is trusted
-   * 3. Checks if the app is already permitted
-   * 4. Handles version upgrades if needed
-   * 5. Sets the appropriate UI state based on the check results
    */
   const checkAppPermission = useCallback(async () => {
     // IF #1: Early return if missing required inputs
@@ -122,17 +140,18 @@ export const useUserAppPermissionCheck = ({
     }
 
     permissionCheckedRef.current = true;
-    onStatusChange?.('Checking app permissions...', 'info');
 
     // TRY-CATCH #1: Main try-catch for the entire permission check process
     try {
+      // Fetch all data in parallel where possible
       const userViewRegistryContract = getUserViewRegistryContract();
-      const permittedAppIds = await userViewRegistryContract.getAllPermittedAppIdsForPkp(
-        agentPKP.tokenId,
-      );
-
       const appViewRegistryContract = getAppViewRegistryContract();
-      const appRawInfo = await appViewRegistryContract.getAppById(Number(appId));
+
+      // Launch multiple contract calls in parallel for better performance
+      const [permittedAppIds, appRawInfo] = await Promise.all([
+        userViewRegistryContract.getAllPermittedAppIdsForPkp(agentPKP.tokenId),
+        appViewRegistryContract.getAppById(Number(appId)),
+      ]);
 
       // IF #3: Check if app exists
       if (!appRawInfo) {
@@ -140,22 +159,40 @@ export const useUserAppPermissionCheck = ({
         updateState({
           isLoading: false,
           checkingPermissions: false,
+          isAppNotFound: true,
         });
         return;
       }
 
-      updateState({ appInfo: appRawInfo });
+      // Collect all state updates in a single object
+      const stateUpdates: Partial<AppPermissionState> = {
+        appInfo: appRawInfo,
+        isLoading: false, // Set isLoading false only ONCE at the end
+        checkingPermissions: false,
+      };
 
       // IF #4: Check if app is deleted
       if (appRawInfo.isDeleted) {
         console.log('App is deleted. Preventing access.');
         updateState({
+          ...stateUpdates,
           isAppDeleted: true,
-          checkingPermissions: false,
-          isLoading: false,
         });
         onStatusChange?.('This application has been deleted by its creator', 'error');
         return;
+      }
+
+      // Check URI verification if redirectUri exists
+      if (redirectUri) {
+        const isUriVerified = await verifyUri(appRawInfo);
+
+        if (!isUriVerified) {
+          updateState({
+            ...stateUpdates,
+            isUriUntrusted: true,
+          });
+          return;
+        }
       }
 
       const appIdNum = Number(appId);
@@ -163,22 +200,15 @@ export const useUserAppPermissionCheck = ({
         (id: ethers.BigNumber) => id.toNumber() === appIdNum,
       );
 
-      updateState({ isAppAlreadyPermitted: isPermitted });
+      stateUpdates.isAppAlreadyPermitted = isPermitted;
 
-      // IF #6: Check if app is permitted and we have redirect URI
+      // IF #6: Check if app is not permitted
       if (!isPermitted) {
-        updateState({
-          isLoading: false,
-          checkingPermissions: false,
-        });
+        updateState(stateUpdates);
         return;
       }
 
-      // App is permitted and we have a redirect URI - check version
-      let permittedVersionNum;
-      let latestVersionNum;
-
-      // TRY-CATCH #2: For version checking
+      // App is permitted - check version
       try {
         const permittedAppVersion =
           await getUserViewRegistryContract().getPermittedAppVersionForPkp(
@@ -186,49 +216,29 @@ export const useUserAppPermissionCheck = ({
             appIdNum,
           );
 
-        permittedVersionNum = permittedAppVersion.toNumber();
-        latestVersionNum = Number(appRawInfo.latestVersion);
+        const permittedVersionNum = permittedAppVersion.toNumber();
+        const latestVersionNum = Number(appRawInfo.latestVersion);
 
-        updateState({ permittedVersion: permittedVersionNum });
+        stateUpdates.permittedVersion = permittedVersionNum;
+
+        // IF #7: Check if version upgrade is needed
+        if (permittedVersionNum < latestVersionNum) {
+          updateState({
+            ...stateUpdates,
+            showVersionUpgradePrompt: true,
+          });
+        } else {
+          // Proceed with modal display
+          updateState({
+            ...stateUpdates,
+            showUpdateModal: true,
+          });
+        }
       } catch (error: unknown) {
         console.error('Error checking permitted version:', error);
         onStatusChange?.('Error checking permitted version', 'error');
-        updateState({
-          checkingPermissions: false,
-          isLoading: false,
-        });
-        return;
+        updateState(stateUpdates);
       }
-
-      // IF #7: Check if version upgrade is needed
-      if (permittedVersionNum < latestVersionNum) {
-        updateState({
-          showVersionUpgradePrompt: true,
-          isLoading: false,
-          checkingPermissions: false,
-        });
-        return;
-      }
-
-      // IF #8: Check if we need to fetch existing parameters
-      if (fetchExistingParameters) {
-        // TRY-CATCH #3: For fetching existing parameters
-        try {
-          await fetchExistingParameters();
-        } catch (error: unknown) {
-          // Just log and continue - no need to throw or nest
-          console.error('Error fetching existing parameters:', error);
-          onStatusChange?.('Warning: Could not fetch existing parameters', 'warning');
-          // Continue with the flow even if parameter fetching fails
-        }
-      }
-
-      // Proceed with modal display
-      updateState({
-        showUpdateModal: true,
-        isLoading: false,
-        checkingPermissions: false,
-      });
     } catch (error) {
       // Main error handler for the entire function
       console.error('Error in checkAppPermission:', error);
@@ -236,9 +246,10 @@ export const useUserAppPermissionCheck = ({
       updateState({
         isLoading: false,
         checkingPermissions: false,
+        isAppNotFound: true,
       });
     }
-  }, [appId, agentPKP, updateState, fetchExistingParameters, onStatusChange]);
+  }, [appId, agentPKP, redirectUri, verifyUri, updateState, onStatusChange]);
 
   /**
    * Triggers the permission check when appId becomes available.
@@ -249,12 +260,13 @@ export const useUserAppPermissionCheck = ({
     // IF #1: Check if we have appId and should run permission check
     if (appId && (hadNullAppIdRef.current || !permissionCheckedRef.current)) {
       hadNullAppIdRef.current = false;
+      // Don't change isLoading here - let the checkAppPermission function handle it
       checkAppPermission();
     }
   }, [appId, checkAppPermission]);
 
   /**
-   * Resets UI flags when the update modal is displayed.
+   * Resets UI flags when the update modal is displayed without touching isLoading.
    * This ensures that success and authorization messages don't appear
    * simultaneously with the update modal.
    */
@@ -264,6 +276,7 @@ export const useUserAppPermissionCheck = ({
       updateState({
         showingAuthorizedMessage: false,
         showSuccess: false,
+        // Don't modify isLoading here to avoid toggle
       });
     }
   }, [state.showUpdateModal, updateState]);

@@ -1,9 +1,7 @@
 import { FC } from 'react';
 import { AUTH_METHOD_TYPE } from '@lit-protocol/constants';
-import Loading from '../components/Loading';
 import { Button } from '@/components/ui/button';
-import ProtectedByLit from '@/components/layout/ProtectedByLit';
-import ConnectWithVincent from '@/components/layout/ConnectWithVincent';
+import StatusMessage from '../components/authForm/StatusMessage';
 
 interface SignUpViewProps {
   authMethodType: (typeof AUTH_METHOD_TYPE)[keyof typeof AUTH_METHOD_TYPE];
@@ -17,61 +15,49 @@ const SignUpView: FC<SignUpViewProps> = ({
   authWithWebAuthn,
 }) => {
   const renderWebAuthnView = () => (
-    <div className="bg-white rounded-xl shadow-lg max-w-[550px] w-full mx-auto border border-gray-100 overflow-hidden">
-      <ConnectWithVincent />
-
-      <div className="p-6">
-        <h1 className="text-xl font-semibold text-center mb-4">No Accounts Found</h1>
-        <p className="text-sm text-gray-600 text-center mb-6">
-          You don&apos;t have any accounts associated with this WebAuthn credential.
-        </p>
-        <div className="flex flex-col space-y-3">
-          <Button
-            className="bg-black text-white rounded-lg py-3 font-medium text-sm hover:bg-gray-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            onClick={handleRegisterWithWebAuthn}
-          >
-            Create New Account
-          </Button>
-          <Button
-            className="bg-white text-gray-700 border border-gray-200 rounded-lg py-3 font-medium text-sm hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            onClick={authWithWebAuthn}
-          >
-            Try Sign In Again
-          </Button>
-        </div>
-      </div>
-
-      <ProtectedByLit />
-    </div>
-  );
-
-  const renderStytchView = () => <Loading copy={'Creating your account...'} />;
-
-  const renderWalletView = () => (
-    <div className="bg-white rounded-xl shadow-lg max-w-[550px] w-full mx-auto border border-gray-100 overflow-hidden">
-      <ConnectWithVincent />
-
-      <div className="p-6">
-        <h1 className="text-xl font-semibold text-center mb-4">No Accounts Found</h1>
-        <p className="text-sm text-gray-600 text-center mb-6">
-          No accounts were found for this wallet address.
-        </p>
+    <>
+      <h1 className="text-xl font-semibold text-center mb-4">No Accounts Found</h1>
+      <p className="text-sm text-gray-600 text-center mb-6">
+        You don&apos;t have any accounts associated with this WebAuthn credential.
+      </p>
+      <div className="flex flex-col space-y-3">
         <Button
-          className="bg-white text-gray-700 border border-gray-200 rounded-lg py-3 w-full font-medium text-sm hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          onClick={() => window.location.reload()}
+          className="bg-black text-white rounded-lg py-3 font-medium text-sm hover:bg-gray-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          onClick={handleRegisterWithWebAuthn}
         >
-          Try Again
+          Create New Account
+        </Button>
+        <Button
+          className="bg-white text-gray-700 border border-gray-200 rounded-lg py-3 font-medium text-sm hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          onClick={authWithWebAuthn}
+        >
+          Try Sign In Again
         </Button>
       </div>
+    </>
+  );
 
-      <ProtectedByLit />
-    </div>
+  const renderStytchView = () => (
+    <StatusMessage message={'Creating your account...'} type={'info'} />
+  );
+
+  const renderWalletView = () => (
+    <>
+      <h1 className="text-xl font-semibold text-center mb-4">No Accounts Found</h1>
+      <p className="text-sm text-gray-600 text-center mb-6">
+        No accounts were found for this wallet address.
+      </p>
+      <Button
+        className="bg-white text-gray-700 border border-gray-200 rounded-lg py-3 w-full font-medium text-sm hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        onClick={() => window.location.reload()}
+      >
+        Try Again
+      </Button>
+    </>
   );
 
   const renderDefaultView = () => (
-    <div className="bg-white rounded-xl shadow-lg max-w-[550px] w-full mx-auto border border-gray-100 overflow-hidden">
-      <ConnectWithVincent />
-
+    <>
       <div className="p-6">
         <h1 className="text-xl font-semibold text-center mb-4">
           Unsupported Authentication Method
@@ -86,9 +72,7 @@ const SignUpView: FC<SignUpViewProps> = ({
           Start Over
         </Button>
       </div>
-
-      <ProtectedByLit />
-    </div>
+    </>
   );
 
   switch (authMethodType) {

@@ -40,7 +40,7 @@ const VersionUpgradePrompt = ({
   const noticeText = getNoticeText();
 
   return (
-    <div className="mt-4">
+    <div className="mt-4 max-w-[500px]">
       <div className="mb-6">
         <div className="bg-gray-50 p-4 rounded-md border border-gray-100 mb-4">
           <div className="flex items-start">
@@ -53,16 +53,16 @@ const VersionUpgradePrompt = ({
                 />
               </svg>
             </div>
-            <div>
+            <div className="overflow-hidden">
               <h3 className="text-base font-medium text-gray-800 mb-2">
                 Version Upgrade Available
               </h3>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-gray-600 break-words">
                 You already have permission for version {permittedVersion} of {appInfo.name}, but
                 version {appInfo.latestVersion.toString()} is now available.
               </p>
 
-              {noticeText && <p className="text-sm text-blue-600 mt-2">{noticeText}</p>}
+              {noticeText && <p className="text-sm text-blue-600 mt-2 break-words">{noticeText}</p>}
             </div>
           </div>
         </div>

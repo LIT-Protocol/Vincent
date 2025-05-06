@@ -1,8 +1,6 @@
 import { FC } from 'react';
 import { IRelayPKP } from '@lit-protocol/types';
 import { Button } from '@/components/ui/button';
-import ProtectedByLit from '@/components/layout/ProtectedByLit';
-import ConnectWithVincent from '@/components/layout/ConnectWithVincent';
 
 interface AuthInfo {
   type: string;
@@ -74,36 +72,29 @@ const ExistingAccountView: FC<ExistingAccountViewProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-lg max-w-[550px] w-full mx-auto border border-gray-100 overflow-hidden">
-      <ConnectWithVincent />
+    <>
+      <h2 className="text-xl font-semibold text-center mb-4">Use Existing Account?</h2>
+      <p className="text-sm text-gray-600 text-center mb-6">
+        Would you like to use your existing authentication for this session?
+      </p>
 
-      {/* Content */}
-      <div className="p-6">
-        <h2 className="text-xl font-semibold text-center mb-4">Use Existing Account?</h2>
-        <p className="text-sm text-gray-600 text-center mb-6">
-          Would you like to use your existing authentication for this session?
-        </p>
+      {renderAuthMethodInfo()}
 
-        {renderAuthMethodInfo()}
-
-        <div className="flex flex-col space-y-3 mt-6">
-          <Button
-            onClick={handleUseExistingAccount}
-            className="bg-black text-white rounded-lg py-3 font-medium text-sm hover:bg-gray-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Yes, Use Existing Account
-          </Button>
-          <Button
-            onClick={handleSignOut}
-            className="bg-white text-gray-700 border border-gray-200 rounded-lg py-3 font-medium text-sm hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            No, Sign Out
-          </Button>
-        </div>
+      <div className="flex flex-col space-y-3 mt-6">
+        <Button
+          onClick={handleUseExistingAccount}
+          className="bg-black text-white rounded-lg py-3 font-medium text-sm hover:bg-gray-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Yes, Use Existing Account
+        </Button>
+        <Button
+          onClick={handleSignOut}
+          className="bg-white text-gray-700 border border-gray-200 rounded-lg py-3 font-medium text-sm hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          No, Sign Out
+        </Button>
       </div>
-
-      <ProtectedByLit />
-    </div>
+    </>
   );
 };
 

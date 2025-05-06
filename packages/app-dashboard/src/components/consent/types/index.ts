@@ -4,7 +4,7 @@ import { BigNumber } from 'ethers';
 export interface AuthenticatedConsentFormProps {
   userPKP: IRelayPKP;
   sessionSigs: SessionSigs;
-  agentPKP?: IRelayPKP;
+  agentPKP: IRelayPKP;
 }
 
 export interface AppView {
@@ -12,7 +12,7 @@ export interface AppView {
   description: string;
   manager: string;
   latestVersion: BigNumber | number;
-  delegatees: string[] | any[];
+  delegatees: string[];
   authorizedRedirectUris: string[];
   deploymentStatus?: number; // 0: DEV, 1: TEST, 2: PROD
 }
@@ -34,7 +34,7 @@ export interface VersionParameter {
   paramIndex: number;
   name: string;
   type: number;
-  value: any;
+  value: string | number | boolean | null;
 }
 
 export interface PolicyParameter {
@@ -75,13 +75,13 @@ export interface VersionInfo {
     deploymentStatus: number;
     manager: string;
     latestVersion: BigNumberHex;
-    delegatees: any[];
+    delegatees: unknown[];
     authorizedRedirectUris: string[];
   };
   appVersion: {
     version: BigNumberHex;
     enabled: boolean;
-    delegatedAgentPkpTokenIds: any[];
+    delegatedAgentPkpTokenIds: unknown[];
     tools: {
       toolIpfsCid: string;
       policies: {
@@ -97,7 +97,7 @@ export interface VersionInfo {
  * The data is structured as an array with two elements (app and appVersion data)
  * while also having named properties that reference those same elements.
  */
-export interface ContractVersionResult extends Array<any> {
+export interface ContractVersionResult extends Array<unknown> {
   // Named properties for the top level array
   app: {
     0: BigNumberHex; // id
@@ -107,7 +107,7 @@ export interface ContractVersionResult extends Array<any> {
     4: number; // deploymentStatus
     5: string; // manager
     6: BigNumberHex; // latestVersion
-    7: any[]; // delegatees
+    7: unknown[]; // delegatees
     8: string[]; // authorizedRedirectUris
 
     // Named properties that match the positions
@@ -118,14 +118,14 @@ export interface ContractVersionResult extends Array<any> {
     deploymentStatus: number;
     manager: string;
     latestVersion: BigNumberHex;
-    delegatees: any[];
+    delegatees: unknown[];
     authorizedRedirectUris: string[];
   };
 
   appVersion: {
     0: BigNumberHex; // version
     1: boolean; // enabled
-    2: any[]; // delegatedAgentPkpTokenIds
+    2: unknown[]; // delegatedAgentPkpTokenIds
     3: Array<{
       0: string; // toolIpfsCid
       1: Array<{
@@ -151,7 +151,7 @@ export interface ContractVersionResult extends Array<any> {
     // Named properties that match the positions
     version: BigNumberHex;
     enabled: boolean;
-    delegatedAgentPkpTokenIds: any[];
+    delegatedAgentPkpTokenIds: unknown[];
     tools: Array<{
       toolIpfsCid: string;
       policies: Array<{

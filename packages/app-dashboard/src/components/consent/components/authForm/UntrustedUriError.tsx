@@ -2,27 +2,17 @@ import { useNavigate } from 'react-router';
 
 import { Button } from '@/components/ui/button';
 import { AppView } from '../../types';
-import StatusMessage from './StatusMessage';
 
 interface UntrustedUriErrorProps {
   redirectUri: string | null;
   appInfo: AppView | null;
-  statusMessage: string;
-  statusType: 'info' | 'warning' | 'success' | 'error';
 }
 
-const UntrustedUriError = ({
-  redirectUri,
-  appInfo,
-  statusMessage,
-  statusType,
-}: UntrustedUriErrorProps) => {
+const UntrustedUriError = ({ redirectUri, appInfo }: UntrustedUriErrorProps) => {
   const navigate = useNavigate();
 
   return (
     <div className="p-6">
-      <StatusMessage message={statusMessage} type={statusType} />
-
       <div className="p-4 bg-red-50 border border-red-200 rounded-lg mb-4">
         <h2 className="text-lg font-semibold text-red-700 mb-2">Redirect URI Not Trusted</h2>
         <p className="text-sm text-red-600 mb-3">
@@ -52,7 +42,7 @@ const UntrustedUriError = ({
 
       <Button
         className="w-full bg-black text-white rounded-lg py-3 font-medium text-sm hover:bg-gray-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        onClick={() => navigate(-1)}
+        onClick={() => navigate('/user/apps')}
       >
         Go Back
       </Button>
