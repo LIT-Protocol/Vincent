@@ -3,44 +3,76 @@ import { RJSFSchema, UiSchema } from '@rjsf/utils';
 import JsonParameterInput from './JsonParameterInput';
 import { Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
+import { decode, encode } from 'cbor2';
 
 // Combined JSON schema for all parameters
 const jsonSchema: RJSFSchema = {
   type: 'object',
+  required: ['firstName', 'lastName'],
   properties: {
-    userInfo: {
+    firstName: {
       type: 'string',
-      title: 'User Information',
-      description: 'Enter user information',
+      title: 'First name',
+      default: 'Chuck',
     },
-    tokenAmount: {
+    lastName: {
+      type: 'string',
+      title: 'Last name',
+    },
+    age: {
       type: 'integer',
-      title: 'Token Amount',
-      minimum: 0,
+      title: 'Age',
     },
-    consent: {
-      type: 'boolean',
-      title: 'Terms Consent',
-      default: false,
+    bio: {
+      type: 'string',
+      title: 'Bio',
+    },
+    password: {
+      type: 'string',
+      title: 'Password',
+      minLength: 3,
+    },
+    telephone: {
+      type: 'string',
+      title: 'Telephone',
+      minLength: 10,
     },
   },
 };
 
 // Combined UI schema for all parameters
 const uiSchema: UiSchema = {
-  userInfo: {
-    'ui:widget': 'textarea',
-    'ui:placeholder': 'Enter your information',
-    'ui:help': 'Enter your user information',
+  firstName: {
+    'ui:autofocus': true,
+    'ui:emptyValue': '',
+    'ui:placeholder': 'ui:emptyValue causes this field to always be valid despite being required',
+    'ui:autocomplete': 'family-name',
+    'ui:enableMarkdownInDescription': true,
+    'ui:description':
+      'Make text **bold** or *italic*. Take a look at other options [here](https://markdown-to-jsx.quantizor.dev/).',
   },
-  tokenAmount: {
+  lastName: {
+    'ui:autocomplete': 'given-name',
+    'ui:enableMarkdownInDescription': true,
+    'ui:description':
+      'Make things **bold** or *italic*. Embed snippets of `code`. <small>And this is a small texts.</small> ',
+  },
+  age: {
     'ui:widget': 'updown',
-    'ui:placeholder': 'Enter token amount',
-    'ui:help': 'Specify the amount of tokens',
+    'ui:title': 'Age of person',
+    'ui:description': '(earth year)',
   },
-  consent: {
-    'ui:widget': 'checkbox',
-    'ui:help': 'Please agree to our terms and conditions',
+  bio: {
+    'ui:widget': 'textarea',
+  },
+  password: {
+    'ui:widget': 'password',
+    'ui:help': 'Hint: Make it strong!',
+  },
+  telephone: {
+    'ui:options': {
+      inputType: 'tel',
+    },
   },
 };
 
@@ -55,9 +87,35 @@ const triggerConfetti = () => {
 };
 
 export default function JsonSchemaFormDemo() {
-  const handleApprove = useCallback(() => {
+  const handleSubmit = useCallback((data: any) => {
     triggerConfetti();
+    const encoded = encode(data.formData);
+    console.log('Encoded data:', encoded);
+
+    // Convert binary data to base64 for storage using modern Web APIs
+    const base64Data = btoa(String.fromCharCode(...Array.from(encoded)));
+    localStorage.setItem('encoded', base64Data);
+
+    // Retrieve and decode
+    const storedBase64 = localStorage.getItem('encoded');
+    if (storedBase64) {
+      const binaryData = Uint8Array.from(atob(storedBase64), (c) => c.charCodeAt(0));
+      const decoded = decode(binaryData);
+      console.log('Decoded data:', decoded);
+    }
   }, []);
+
+  let asValues: Record<string, any> = {};
+  if (localStorage.getItem('encoded')) {
+    try {
+      const storedBase64 = localStorage.getItem('encoded')!;
+      const binaryData = Uint8Array.from(atob(storedBase64), (c) => c.charCodeAt(0));
+      asValues = decode(binaryData) as Record<string, any>;
+    } catch (error) {
+      console.error('Error decoding stored data:', error);
+      localStorage.removeItem('encoded'); // Clear invalid data
+    }
+  }
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
@@ -71,12 +129,11 @@ export default function JsonSchemaFormDemo() {
       <h1 className="text-2xl font-bold mb-6">JSON Schema Form Demo</h1>
 
       <div className="mb-8 p-4 bg-white rounded-lg shadow">
-        <h2 className="text-xl font-semibold mb-4">Form with JSON Schema</h2>
-
         <JsonParameterInput
           jsonSchema={jsonSchema}
           uiSchema={uiSchema}
-          handleSubmit={handleApprove}
+          handleSubmit={handleSubmit}
+          formData={asValues}
         />
       </div>
     </div>
