@@ -44,6 +44,10 @@ const appRoutes = {
       path: '/appId/:appId/tool-policies',
       element: <AppPages.ToolPolicies />,
     },
+    {
+      path: '/json-schema-demo',
+      element: <AppPages.JsonSchemaDemo />,
+    },
   ],
 };
 

@@ -1,0 +1,48 @@
+/* Basic container styles */
+.parameter-input-container {
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background-color: white;
+  margin-bottom: 0.75rem;
+  font-family: system-ui, sans-serif;
+}
+
+/* Body styles */
+.parameter-input-body {
+  padding: 1rem;
+}
+
+/* Base styling for RJSF forms within our components */
+.rjsf-parameter-field .form-group {
+  margin-bottom: 1rem;
+}
+
+.rjsf-parameter-field .control-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #4b5563;
+}
+
+.rjsf-parameter-field .form-control {
+  display: block;
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  background-color: white;
+  color: #111827;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.rjsf-parameter-field .form-control:focus {
+  border-color: #3b82f6;
+  outline: 0;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+}
+
+/* Style all form controls with a left border */
+.rjsf-parameter-field .form-control {
+  border-left: 3px solid #6366f1;
+} 
