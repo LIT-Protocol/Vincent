@@ -1,5 +1,4 @@
 import { useNavigate } from 'react-router';
-import { AppView } from '@/services/types';
 import { useEffect, useState, useCallback } from 'react';
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -7,9 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { StatusFilterDropdown, FilterOption } from '../ui/status-filter-dropdown';
 import { useErrorPopup } from '@/providers/ErrorPopup';
 import { StatusMessage } from '@/utils/statusMessage';
-
-// Deployment status names
-const deploymentStatusNames = ['DEV', 'TEST', 'PROD'];
+import { IAppDef } from '@/api/app/types';
 
 // Define filter options
 const statusFilterOptions: FilterOption[] = [
@@ -19,8 +16,8 @@ const statusFilterOptions: FilterOption[] = [
   { id: 'prod', label: 'PROD' },
 ];
 
-export default function DashboardScreen({ vincentApp }: { vincentApp: AppView[] }) {
-  const [dashboard, setDashboard] = useState<AppView[]>([]);
+export default function DashboardScreen({ vincentApp }: { vincentApp: IAppDef[] }) {
+  const [dashboard, setDashboard] = useState<IAppDef[]>([]);
   const [isRefetching, setIsRefetching] = useState(false);
   const [sortOption, setSortOption] = useState<string>('all');
   const [statusMessage, setStatusMessage] = useState<string>('');
@@ -72,9 +69,7 @@ export default function DashboardScreen({ vincentApp }: { vincentApp: AppView[] 
       return dashboard;
     }
 
-    // Sort based on deployment status (0: DEV, 1: TEST, 2: PROD)
-    const statusValue = sortOption === 'dev' ? 0 : sortOption === 'test' ? 1 : 2;
-    return dashboard.filter((app) => app.deploymentStatus === statusValue);
+    return dashboard.filter((app) => app.deploymentStatus === sortOption);
   }, [dashboard, sortOption]);
 
   if (!dashboard || isRefetching) {
@@ -136,13 +131,9 @@ export default function DashboardScreen({ vincentApp }: { vincentApp: AppView[] 
             >
               <CardHeader>
                 <CardTitle className="flex justify-between items-center text-black">
-                  <span>{app.appName}</span>
+                  <span>{app.name}</span>
                   <span className="text-xs px-2 py-1 rounded-full bg-gray-100">
-                    {app.deploymentStatus !== undefined &&
-                    app.deploymentStatus >= 0 &&
-                    app.deploymentStatus < deploymentStatusNames.length
-                      ? deploymentStatusNames[app.deploymentStatus]
-                      : 'DEV'}
+                    {app.deploymentStatus}
                   </span>
                 </CardTitle>
                 <CardDescription className="text-black">{app.description}</CardDescription>
@@ -154,13 +145,9 @@ export default function DashboardScreen({ vincentApp }: { vincentApp: AppView[] 
                   </div>
                   <div className="mb-2">
                     <span className="font-medium">Management Wallet:</span>{' '}
-                    {app.managementWallet
-                      ? `${app.managementWallet.substring(0, 8)}...${app.managementWallet.substring(app.managementWallet.length - 6)}`
+                    {app.managerAddress
+                      ? `${app.managerAddress.substring(0, 8)}...${app.managerAddress.substring(app.managerAddress.length - 6)}`
                       : 'N/A'}
-                  </div>
-                  <div>
-                    <span className="font-medium">Tool Policies:</span>{' '}
-                    {app.toolPolicies?.length || 0}
                   </div>
                 </div>
               </CardContent>
