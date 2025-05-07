@@ -2,12 +2,9 @@ import { useCallback, useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import { formCompleteVincentAppForDev } from '@/services';
 import { useAccount } from 'wagmi';
-import AppLayout from '@/components/layout/AppLayout';
 import Loading from '@/components/layout/Loading';
 import { AppView } from '@/services/types';
 import ManageAdvancedFunctionsScreen from '@/components/developer/dashboard/ManageAdvancedFunctions';
-import { wrap } from '@/utils/components';
-import { AppProviders } from '@/providers';
 
 export function AdvancedFunctions() {
   const params = useParams();
@@ -26,7 +23,7 @@ export function AdvancedFunctions() {
 
       if (appData && appData.length > 0) {
         // Find the specific app by appId
-        const app = appData.find(app => app.appId && app.appId.toString() === appIdParam);
+        const app = appData.find((app) => app.appId && app.appId.toString() === appIdParam);
         if (app) {
           setDashboard(app);
         } else {
@@ -38,7 +35,7 @@ export function AdvancedFunctions() {
         navigate('/');
       }
     } catch (error) {
-      console.error("Error loading app data:", error);
+      console.error('Error loading app data:', error);
       navigate('/');
     } finally {
       setIsLoading(false);
@@ -74,5 +71,4 @@ export function AdvancedFunctions() {
   );
 }
 
-const AdvancedFunctionsPage = wrap(AdvancedFunctions, [...AppProviders, AppLayout]);
-export default AdvancedFunctionsPage;
+export default AdvancedFunctions;

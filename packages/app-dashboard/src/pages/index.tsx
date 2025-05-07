@@ -3,6 +3,7 @@ import { useAccount } from 'wagmi';
 
 import DashboardScreen from '@/components/developer/Dashboard';
 import { VincentContracts } from '@/services/contract/contracts';
+import { AppView } from '@/services/types';
 import ConnectWalletScreen from '@/components/developer/ConnectWallet';
 import CreateAppScreen from '@/components/developer/CreateApp';
 import AppLayout from '@/components/layout/AppLayout';

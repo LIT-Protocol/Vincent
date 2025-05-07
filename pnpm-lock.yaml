@@ -29,6 +29,9 @@ importers:
       '@lit-protocol/contracts-sdk':
         specifier: ^7.0.6
         version: 7.1.1(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
+      '@lit-protocol/flags':
+        specifier: ^1.0.0
+        version: 1.0.0
       '@lit-protocol/lit-auth-client':
         specifier: ^7.0.6
         version: 7.1.1(@walletconnect/modal@2.7.0(@types/react@19.1.2)(react@19.1.0))(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
@@ -2018,6 +2021,11 @@ packages:
 
   '@lit-protocol/crypto@7.1.1':
     resolution: {integrity: sha512-Pvtc9pSgYBHcSVMqMf8STFm9yAsYlWNUeIywyblW8nWxBQam8Ommu6hZhP/IVN9jnTDT6p9Rwkao6Gth1mbwhg==}
+
+  '@lit-protocol/flags@1.0.0':
+    resolution: {integrity: sha512-Gk08aqEkd3EN5lP0NmeBuzYpQLggLgB5fw91GJjPm/FBxxwoweszuBtERKKKyfIZ27QTD+te+fI6YBuHK5QDBQ==}
+    engines: {node: ^20.11.1, pnpm: 10.7.0}
+    hasBin: true
 
   '@lit-protocol/lit-auth-client@7.1.1':
     resolution: {integrity: sha512-jIpRegxv/GdzHdu0wM91Pe4bTCtoJK8qV4sso9+BH2gj4rAMW3WrMEUULdEACM6ozQZ6C3oP38os2tkAnXABFQ==}
@@ -11903,6 +11911,8 @@ snapshots:
       - typescript
       - utf-8-validate
 
+  '@lit-protocol/flags@1.0.0': {}
+
   '@lit-protocol/lit-auth-client@7.1.1(@walletconnect/modal@2.7.0(@types/react@19.1.2)(react@19.1.0))(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)':
     dependencies:
       '@ethersproject/abi': 5.7.0
@@ -14499,10 +14509,10 @@ snapshots:
     dependencies:
       '@types/yargs-parser': 21.0.3
 
-  '@typescript-eslint/eslint-plugin@8.31.1(@typescript-eslint/parser@8.31.1(eslint@9.25.1(jiti@2.4.2))(typescript@5.7.3))(eslint@9.25.1(jiti@2.4.2))(typescript@5.7.3)':
+  '@typescript-eslint/eslint-plugin@8.31.1(@typescript-eslint/parser@8.31.1(eslint@9.25.1(jiti@2.4.2))(typescript@5.8.3))(eslint@9.25.1(jiti@2.4.2))(typescript@5.7.3)':
     dependencies:
       '@eslint-community/regexpp': 4.12.1
-      '@typescript-eslint/parser': 8.31.1(eslint@9.25.1(jiti@2.4.2))(typescript@5.7.3)
+      '@typescript-eslint/parser': 8.31.1(eslint@9.25.1(jiti@2.4.2))(typescript@5.8.3)
       '@typescript-eslint/scope-manager': 8.31.1
       '@typescript-eslint/type-utils': 8.31.1(eslint@9.25.1(jiti@2.4.2))(typescript@5.7.3)
       '@typescript-eslint/utils': 8.31.1(eslint@9.25.1(jiti@2.4.2))(typescript@5.7.3)
@@ -21179,7 +21189,7 @@ snapshots:
 
   typescript-eslint@8.31.1(eslint@9.25.1(jiti@2.4.2))(typescript@5.7.3):
     dependencies:
-      '@typescript-eslint/eslint-plugin': 8.31.1(@typescript-eslint/parser@8.31.1(eslint@9.25.1(jiti@2.4.2))(typescript@5.7.3))(eslint@9.25.1(jiti@2.4.2))(typescript@5.7.3)
+      '@typescript-eslint/eslint-plugin': 8.31.1(@typescript-eslint/parser@8.31.1(eslint@9.25.1(jiti@2.4.2))(typescript@5.8.3))(eslint@9.25.1(jiti@2.4.2))(typescript@5.7.3)
       '@typescript-eslint/parser': 8.31.1(eslint@9.25.1(jiti@2.4.2))(typescript@5.7.3)
       '@typescript-eslint/utils': 8.31.1(eslint@9.25.1(jiti@2.4.2))(typescript@5.7.3)
       eslint: 9.25.1(jiti@2.4.2)
