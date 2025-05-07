@@ -29,7 +29,7 @@ export interface AuthInfo {
 interface JwtContextType {
   authInfo: AuthInfo | null;
   loading: boolean;
-  getJwtFromConsentPage: (redirectUri: string) => void;
+  connect: (redirectUri: string) => void;
   loginWithJwt: () => void;
   logOut: () => void;
 }
@@ -41,7 +41,7 @@ function jwtContextNotInitialized() {
 export const JwtContext = createContext<JwtContextType>({
   authInfo: null,
   loading: false,
-  getJwtFromConsentPage: jwtContextNotInitialized,
+  connect: jwtContextNotInitialized,
   loginWithJwt: jwtContextNotInitialized,
   logOut: jwtContextNotInitialized,
 });
@@ -132,7 +132,7 @@ interface JwtProviderProps {
  *
  * // In a child component:
  * function LoginButton() {
- *   const { authInfo, loading, getJwtFromConsentPage, logOut } = useJwtContext();
+ *   const { authInfo, loading, connect, logOut } = useJwtContext();
  *
  *   if (loading) return <div>Loading...</div>;
  *
@@ -147,7 +147,7 @@ interface JwtProviderProps {
  *
  *   return (
  *     <button
- *       onClick={() => getJwtFromConsentPage(window.location.href)}
+ *       onClick={() => connect(window.location.href)}
  *     >
  *       Login with Vincent
  *     </button>
@@ -182,7 +182,7 @@ export const JwtProvider: React.FC<JwtProviderProps> = ({
     }
   }, [appJwtKey, storage]);
 
-  const getJwtFromConsentPage = useCallback(
+  const connect = useCallback(
     (redirectUri: string) => {
       // Redirect to Vincent Auth consent page with appId and version
       vincentWebAppClient.redirectToConsentPage({
@@ -245,12 +245,12 @@ export const JwtProvider: React.FC<JwtProviderProps> = ({
   const value = useMemo<JwtContextType>(
     () => ({
       authInfo,
-      getJwtFromConsentPage,
+      connect,
       loading,
       loginWithJwt,
       logOut,
     }),
-    [authInfo, getJwtFromConsentPage, loading, loginWithJwt, logOut]
+    [authInfo, connect, loading, loginWithJwt, logOut]
   );
 
   useEffect(() => {
