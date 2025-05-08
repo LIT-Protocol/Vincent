@@ -115,7 +115,10 @@ export default function UserAuthenticatedConsentForm({
     sessionSigs,
     permittedVersion,
     onStatusChange: showStatus,
-    onError: showErrorWithStatus,
+    onError: (error: unknown, title?: string, details?: string) => {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      showErrorWithStatus(errorMessage, title, details);
+    },
   });
 
   const { generateJWT, redirectWithJWT } = useJwtRedirect({

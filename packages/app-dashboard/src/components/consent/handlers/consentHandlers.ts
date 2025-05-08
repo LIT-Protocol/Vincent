@@ -3,6 +3,7 @@ import { AppView, ContractVersionResult, VersionParameter } from '../types';
 import { NavigateFunction } from 'react-router-dom';
 import { areParametersEqual } from '../utils/parameterComparison';
 import { IRelayPKP } from '@lit-protocol/types';
+import { StatusType } from '../hooks/useStatusMessage';
 
 interface AppContext {
   appInfo: AppView | null;
@@ -19,8 +20,8 @@ interface UserContext {
 
 interface UIContext {
   setSubmitting: (submitting: boolean) => void;
-  showStatus: (message: string, type?: string) => void;
-  showErrorWithStatus: (message: string, type?: string) => void;
+  showStatus: (message: string, type?: StatusType) => void;
+  showErrorWithStatus: (message: string, title?: string, details?: string) => void;
   updateState: (state: Partial<Record<string, unknown>>) => void;
 }
 
@@ -33,7 +34,7 @@ interface ParameterContext {
 interface ActionContext {
   updateParameters: () => Promise<Record<string, unknown>>;
   approveConsent: () => Promise<Record<string, unknown>>;
-  fetchVersionInfo: (version: number) => Promise<void>;
+  fetchVersionInfo: (version: number) => Promise<ContractVersionResult>;
   existingParameters?: VersionParameter[];
   parameters?: VersionParameter[];
 }
@@ -300,13 +301,13 @@ export const useConsentHandlers = ({
   existingParameters: VersionParameter[];
   parameters: VersionParameter[];
   setParameters: (parameters: VersionParameter[]) => void;
-  showStatus: (message: string, type?: string) => void;
-  showErrorWithStatus: (message: string, type?: string) => void;
+  showStatus: (message: string, type?: StatusType) => void;
+  showErrorWithStatus: (message: string, title?: string, details?: string) => void;
   updateState: (state: Partial<Record<string, unknown>>) => void;
   setSubmitting: (submitting: boolean) => void;
   updateParameters: () => Promise<Record<string, unknown>>;
   approveConsent: () => Promise<Record<string, unknown>>;
-  fetchVersionInfo: (version: number) => Promise<void>;
+  fetchVersionInfo: (version: number) => Promise<ContractVersionResult>;
   fetchExistingParameters: () => Promise<void>;
   redirectUri: string | null;
   generateJWT: (appId: string, appVersion: number, appInfo: AppView) => Promise<string | null>;
