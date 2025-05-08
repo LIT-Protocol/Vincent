@@ -30,36 +30,6 @@ library LibVincentAppFacet {
     event AppEnabled(uint256 indexed appId, uint256 indexed appVersion, bool indexed enabled);
 
     /**
-     * @notice Emitted when a new authorized redirect URI is added to an app
-     * @param appId ID of the app
-     * @param hashedRedirectUri The keccak256 hash of the redirect URI that was added.
-     *                          Original value can be retrieved using VincentAppViewFacet
-     */
-    event AuthorizedRedirectUriAdded(uint256 indexed appId, bytes32 indexed hashedRedirectUri);
-
-    /**
-     * @notice Emitted when an authorized redirect URI is removed from an app
-     * @param appId ID of the app
-     * @param hashedRedirectUri The keccak256 hash of the redirect URI that was removed.
-     *                          Original value can be retrieved using VincentAppViewFacet
-     */
-    event AuthorizedRedirectUriRemoved(uint256 indexed appId, bytes32 indexed hashedRedirectUri);
-
-    /**
-     * @notice Emitted when an app's name is updated
-     * @param appId ID of the app
-     * @param newName The new name of the app
-     */
-    event AppNameUpdated(uint256 indexed appId, string newName);
-
-    /**
-     * @notice Emitted when an app's description is updated
-     * @param appId ID of the app
-     * @param newDescription The new description of the app
-     */
-    event AppDescriptionUpdated(uint256 indexed appId, string newDescription);
-
-    /**
      * @notice Emitted when a new delegatee is added to an app
      * @param appId ID of the app
      * @param delegatee Address of the delegatee added to the app
@@ -78,13 +48,6 @@ library LibVincentAppFacet {
      * @param litActionIpfsCidHash The keccak256 hash of the lit action's IPFS CID that was registered
      */
     event NewLitActionRegistered(bytes32 indexed litActionIpfsCidHash);
-
-    /**
-     * @notice Emitted when an app's deployment status is updated
-     * @param appId ID of the app
-     * @param deploymentStatus New deployment status of the app
-     */
-    event AppDeploymentStatusUpdated(uint256 indexed appId, uint8 indexed deploymentStatus);
 
     /**
      * @notice Emitted when an app is deleted
@@ -121,45 +84,12 @@ library LibVincentAppFacet {
     error DelegateeNotRegisteredToApp(uint256 appId, address delegatee);
 
     /**
-     * @notice Error thrown when trying to remove a redirect URI not registered to the app
-     * @param appId ID of the app
-     * @param redirectUri The redirect URI that is not registered
-     */
-    error RedirectUriNotRegisteredToApp(uint256 appId, string redirectUri);
-
-    /**
-     * @notice Error thrown when no redirect URIs are provided during app registration
-     * @dev At least one redirect URI is required for app registration
-     */
-    error NoRedirectUrisProvided();
-
-    /**
-     * @notice Error thrown when trying to remove the last redirect URI of an app
-     * @param appId ID of the app
-     */
-    error CannotRemoveLastRedirectUri(uint256 appId);
-
-    /**
      * @notice Error thrown when trying to set app version enabled status to its current status
      * @param appId ID of the app
      * @param appVersion Version number of the app
      * @param enabled Current enabled status
      */
     error AppVersionAlreadyInRequestedState(uint256 appId, uint256 appVersion, bool enabled);
-
-    /**
-     * @notice Error thrown when trying to set app deployment status to its current status
-     * @param appId ID of the app
-     * @param deploymentStatus Current deployment status
-     */
-    error AppAlreadyInRequestedDeploymentStatus(uint256 appId, uint8 deploymentStatus);
-
-    /**
-     * @notice Error thrown when trying to add a redirect URI that already exists for the app
-     * @param appId ID of the app
-     * @param redirectUri The redirect URI that already exists
-     */
-    error RedirectUriAlreadyAuthorizedForApp(uint256 appId, string redirectUri);
 
     /**
      * @notice Error thrown when trying to use an empty policy IPFS CID
@@ -174,21 +104,6 @@ library LibVincentAppFacet {
      * @param toolIndex Index of the tool in the tools array
      */
     error EmptyToolIpfsCidNotAllowed(uint256 appId, uint256 toolIndex);
-
-    /**
-     * @notice Error thrown when app name is empty
-     */
-    error EmptyAppNameNotAllowed();
-
-    /**
-     * @notice Error thrown when app description is empty
-     */
-    error EmptyAppDescriptionNotAllowed();
-
-    /**
-     * @notice Error thrown when a redirect URI is empty
-     */
-    error EmptyRedirectUriNotAllowed();
 
     /**
      * @notice Error thrown when a delegatee address is the zero address

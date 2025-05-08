@@ -19,24 +19,6 @@ contract VincentAppFacet is VincentBase {
     using EnumerableSet for EnumerableSet.Bytes32Set;
 
     /**
-     * @title AppInfo
-     * @notice Structure containing basic information about an application
-     * @dev Used when registering a new application
-     * @param name The name of the application
-     * @param description A description of the application's purpose and functionality
-     * @param deploymentStatus The current deployment status (DEV, TEST, PROD)
-     * @param authorizedRedirectUris List of authorized redirect URIs for OAuth flows
-     * @param delegatees List of addresses authorized to act on behalf of the app
-     */
-    struct AppInfo {
-        string name;
-        string description;
-        VincentAppStorage.DeploymentStatus deploymentStatus;
-        string[] authorizedRedirectUris;
-        address[] delegatees;
-    }
-
-    /**
      * @title AppVersionTools
      * @notice Structure containing tools, policies, and parameters for an app version
      * @dev Used when registering a new app version
@@ -65,16 +47,16 @@ contract VincentAppFacet is VincentBase {
     /**
      * @notice Register a new application with initial version, tools, and policies
      * @dev This function combines app registration and first version registration in one call
-     * @param appInfo Basic information about the application
+     * @param delegatees List of addresses authorized to act on behalf of the app
      * @param versionTools Tools and policies for the app version
      * @return newAppId The ID of the newly registered app
      * @return newAppVersion The version number of the newly registered app version (always 1 for new apps)
      */
-    function registerApp(AppInfo calldata appInfo, AppVersionTools calldata versionTools)
+    function registerApp(address[] calldata delegatees, AppVersionTools calldata versionTools)
         external
         returns (uint256 newAppId, uint256 newAppVersion)
     {
-        newAppId = _registerApp(appInfo);
+        newAppId = _registerApp(delegatees);
         emit LibVincentAppFacet.NewAppRegistered(newAppId, msg.sender);
 
         newAppVersion = _registerNextAppVersion(newAppId, versionTools);
@@ -98,78 +80,6 @@ contract VincentAppFacet is VincentBase {
         newAppVersion = _registerNextAppVersion(appId, versionTools);
 
         emit LibVincentAppFacet.NewAppVersionRegistered(appId, newAppVersion, msg.sender);
-    }
-
-    /**
-     * @notice Update the deployment status of an application
-     * @dev Only the app manager can update the deployment status
-     * @param appId ID of the app
-     * @param deploymentStatus New deployment status for the app
-     */
-    function updateAppDeploymentStatus(uint256 appId, VincentAppStorage.DeploymentStatus deploymentStatus)
-        external
-        appNotDeleted(appId)
-        onlyAppManager(appId)
-        onlyRegisteredApp(appId)
-    {
-        VincentAppStorage.AppStorage storage as_ = VincentAppStorage.appStorage();
-        VincentAppStorage.App storage app = as_.appIdToApp[appId];
-
-        // Revert if trying to set the same status
-        if (app.deploymentStatus == deploymentStatus) {
-            revert LibVincentAppFacet.AppAlreadyInRequestedDeploymentStatus(appId, uint8(deploymentStatus));
-        }
-
-        app.deploymentStatus = deploymentStatus;
-        emit LibVincentAppFacet.AppDeploymentStatusUpdated(appId, uint8(deploymentStatus));
-    }
-
-    /**
-     * @notice Update the name of an application
-     * @dev Only the app manager can update the name
-     * @param appId ID of the app
-     * @param newName New name for the app
-     */
-    function updateAppName(uint256 appId, string calldata newName)
-        external
-        appNotDeleted(appId)
-        onlyAppManager(appId)
-        onlyRegisteredApp(appId)
-    {
-        // Validate new name is not empty
-        if (bytes(newName).length == 0) {
-            revert LibVincentAppFacet.EmptyAppNameNotAllowed();
-        }
-
-        VincentAppStorage.AppStorage storage as_ = VincentAppStorage.appStorage();
-        VincentAppStorage.App storage app = as_.appIdToApp[appId];
-
-        app.name = newName;
-        emit LibVincentAppFacet.AppNameUpdated(appId, newName);
-    }
-
-    /**
-     * @notice Update the description of an application
-     * @dev Only the app manager can update the description
-     * @param appId ID of the app
-     * @param newDescription New description for the app
-     */
-    function updateAppDescription(uint256 appId, string calldata newDescription)
-        external
-        appNotDeleted(appId)
-        onlyAppManager(appId)
-        onlyRegisteredApp(appId)
-    {
-        // Validate new description is not empty
-        if (bytes(newDescription).length == 0) {
-            revert LibVincentAppFacet.EmptyAppDescriptionNotAllowed();
-        }
-
-        VincentAppStorage.AppStorage storage as_ = VincentAppStorage.appStorage();
-        VincentAppStorage.App storage app = as_.appIdToApp[appId];
-
-        app.description = newDescription;
-        emit LibVincentAppFacet.AppDescriptionUpdated(appId, newDescription);
     }
 
     /**
@@ -198,56 +108,6 @@ contract VincentAppFacet is VincentBase {
 
         versionedApp.enabled = enabled;
         emit LibVincentAppFacet.AppEnabled(appId, appVersion, enabled);
-    }
-
-    /**
-     * @notice Add a new authorized redirect URI to an app
-     * @dev Only the app manager can add redirect URIs
-     * @param appId ID of the app
-     * @param redirectUri The redirect URI to add
-     */
-    function addAuthorizedRedirectUri(uint256 appId, string calldata redirectUri)
-        external
-        appNotDeleted(appId)
-        onlyAppManager(appId)
-        onlyRegisteredApp(appId)
-    {
-        // Check that the redirect URI is not empty
-        if (bytes(redirectUri).length == 0) {
-            revert LibVincentAppFacet.EmptyRedirectUriNotAllowed();
-        }
-
-        _addAuthorizedRedirectUri(VincentAppStorage.appStorage(), appId, redirectUri);
-    }
-
-    /**
-     * @notice Remove an authorized redirect URI from an app
-     * @dev Only the app manager can remove redirect URIs
-     * @param appId ID of the app
-     * @param redirectUri The redirect URI to remove
-     */
-    function removeAuthorizedRedirectUri(uint256 appId, string calldata redirectUri)
-        external
-        appNotDeleted(appId)
-        onlyAppManager(appId)
-        onlyRegisteredApp(appId)
-    {
-        VincentAppStorage.AppStorage storage as_ = VincentAppStorage.appStorage();
-
-        bytes32 hashedRedirectUri = keccak256(abi.encodePacked(redirectUri));
-
-        if (!as_.appIdToApp[appId].authorizedRedirectUris.contains(hashedRedirectUri)) {
-            revert LibVincentAppFacet.RedirectUriNotRegisteredToApp(appId, redirectUri);
-        }
-
-        // Check if this is the last redirect URI
-        if (as_.appIdToApp[appId].authorizedRedirectUris.length() == 1) {
-            revert LibVincentAppFacet.CannotRemoveLastRedirectUri(appId);
-        }
-
-        as_.appIdToApp[appId].authorizedRedirectUris.remove(hashedRedirectUri);
-
-        emit LibVincentAppFacet.AuthorizedRedirectUriRemoved(appId, hashedRedirectUri);
     }
 
     /**
@@ -328,25 +188,11 @@ contract VincentAppFacet is VincentBase {
 
     /**
      * @notice Internal function to register a new app
-     * @dev Sets up the basic app structure and associates redirect URIs and delegatees
-     * @param appInfo An AppInfo struct containing the app name, description, authorized redirect URIs, and delegatees
+     * @dev Sets up the basic app structure and associates delegatees
+     * @param delegatees List of addresses authorized to act on behalf of the app
      * @return newAppId The ID of the newly registered app
      */
-    function _registerApp(AppInfo calldata appInfo) internal returns (uint256 newAppId) {
-        // Validate app name and description are not empty
-        if (bytes(appInfo.name).length == 0) {
-            revert LibVincentAppFacet.EmptyAppNameNotAllowed();
-        }
-
-        if (bytes(appInfo.description).length == 0) {
-            revert LibVincentAppFacet.EmptyAppDescriptionNotAllowed();
-        }
-
-        // Require at least one authorized redirect URI
-        if (appInfo.authorizedRedirectUris.length == 0) {
-            revert LibVincentAppFacet.NoRedirectUrisProvided();
-        }
-
+    function _registerApp(address[] calldata delegatees) internal returns (uint256 newAppId) {
         VincentAppStorage.AppStorage storage as_ = VincentAppStorage.appStorage();
 
         newAppId = ++as_.appIdCounter;
@@ -357,33 +203,22 @@ contract VincentAppFacet is VincentBase {
         // Register the app
         VincentAppStorage.App storage app = as_.appIdToApp[newAppId];
         app.manager = msg.sender;
-        app.name = appInfo.name;
-        app.description = appInfo.description;
-        app.deploymentStatus = appInfo.deploymentStatus;
-
-        for (uint256 i = 0; i < appInfo.authorizedRedirectUris.length; i++) {
-            // Check that the redirect URI is not empty
-            if (bytes(appInfo.authorizedRedirectUris[i]).length == 0) {
-                revert LibVincentAppFacet.EmptyRedirectUriNotAllowed();
-            }
-            _addAuthorizedRedirectUri(as_, newAppId, appInfo.authorizedRedirectUris[i]);
-        }
 
         // Add the delegatees to the app
-        for (uint256 i = 0; i < appInfo.delegatees.length; i++) {
+        for (uint256 i = 0; i < delegatees.length; i++) {
             // Check that the delegatee is not the zero address
-            if (appInfo.delegatees[i] == address(0)) {
+            if (delegatees[i] == address(0)) {
                 revert LibVincentAppFacet.ZeroAddressDelegateeNotAllowed();
             }
 
-            uint256 existingAppId = as_.delegateeAddressToAppId[appInfo.delegatees[i]];
+            uint256 existingAppId = as_.delegateeAddressToAppId[delegatees[i]];
             if (existingAppId != 0) {
-                revert LibVincentAppFacet.DelegateeAlreadyRegisteredToApp(existingAppId, appInfo.delegatees[i]);
+                revert LibVincentAppFacet.DelegateeAlreadyRegisteredToApp(existingAppId, delegatees[i]);
             }
 
-            app.delegatees.add(appInfo.delegatees[i]);
+            app.delegatees.add(delegatees[i]);
 
-            as_.delegateeAddressToAppId[appInfo.delegatees[i]] = newAppId;
+            as_.delegateeAddressToAppId[delegatees[i]] = newAppId;
         }
     }
 
@@ -559,28 +394,5 @@ contract VincentAppFacet is VincentBase {
                 }
             }
         }
-    }
-
-    /**
-     * @notice Internal function to add an authorized redirect URI to an app
-     * @dev Registers the redirect URI and links it to the app
-     * @param appId ID of the app
-     * @param redirectUri The redirect URI to add
-     */
-    function _addAuthorizedRedirectUri(
-        VincentAppStorage.AppStorage storage appStorage,
-        uint256 appId,
-        string calldata redirectUri
-    ) internal {
-        bytes32 hashedRedirectUri = keccak256(abi.encodePacked(redirectUri));
-
-        // If the redirect URI was not added (already exists), revert
-        if (!appStorage.appIdToApp[appId].authorizedRedirectUris.add(hashedRedirectUri)) {
-            revert LibVincentAppFacet.RedirectUriAlreadyAuthorizedForApp(appId, redirectUri);
-        }
-
-        appStorage.authorizedRedirectUriHashToRedirectUri[hashedRedirectUri] = redirectUri;
-
-        emit LibVincentAppFacet.AuthorizedRedirectUriAdded(appId, hashedRedirectUri);
     }
 }

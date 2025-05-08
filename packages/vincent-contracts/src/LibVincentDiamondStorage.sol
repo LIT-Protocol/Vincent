@@ -30,12 +30,6 @@ library VincentAppStorage {
         BYTES_ARRAY
     }
 
-    enum DeploymentStatus {
-        DEV,
-        TEST,
-        PROD
-    }
-
     /**
      * @notice Policy data structure storing parameter names and types
      * @dev Renamed from PolicyStorage to Policy for clarity
@@ -65,12 +59,8 @@ library VincentAppStorage {
 
     struct App {
         EnumerableSet.AddressSet delegatees;
-        EnumerableSet.Bytes32Set authorizedRedirectUris;
         VersionedApp[] versionedApps;
         address manager;
-        string name;
-        string description;
-        DeploymentStatus deploymentStatus;
         bool isDeleted;
     }
 
@@ -78,7 +68,6 @@ library VincentAppStorage {
         mapping(uint256 => App) appIdToApp;
         mapping(address => EnumerableSet.UintSet) managerAddressToAppIds;
         mapping(address => uint256) delegateeAddressToAppId;
-        mapping(bytes32 => string) authorizedRedirectUriHashToRedirectUri;
         uint256 appIdCounter;
     }
 
@@ -96,14 +85,10 @@ library VincentLitActionStorage {
     bytes32 internal constant LITACTION_STORAGE_SLOT = keccak256("lit.vincent.litaction.storage");
 
     struct LitActionStorage {
-        // A list of approved/reviewed Lit Action IPFS CID Hashes
-        EnumerableSet.Bytes32Set approvedIpfsCidHashes;
         // Policy Parameter Name Hash => Policy Parameter Name
         mapping(bytes32 => string) policyParameterNameHashToName;
         // Lit Action IPFS CID Hash => IPFS CID
         mapping(bytes32 => string) ipfsCidHashToIpfsCid;
-        // Address of the manager who can add/remove Lit Actions from the approved list
-        address approvedLitActionsManager;
     }
 
     function litActionStorage() internal pure returns (LitActionStorage storage ls) {

@@ -25,12 +25,6 @@ contract VincentAppViewFacet is VincentBase {
     error DelegateeNotRegistered(address delegatee);
 
     /**
-     * @notice Thrown when trying to access a redirect URI that doesn't exist
-     * @param redirectUriHash The hash of the redirect URI that was not found
-     */
-    error RedirectUriNotFound(bytes32 redirectUriHash);
-
-    /**
      * @notice Thrown when trying to query by a zero address
      */
     error ZeroAddressNotAllowed();
@@ -40,12 +34,6 @@ contract VincentAppViewFacet is VincentBase {
      * @param manager The address of the manager with no apps
      */
     error NoAppsFoundForManager(address manager);
-
-    /**
-     * @notice Thrown when an app has no redirect URIs configured
-     * @param appId The ID of the app with no redirect URIs
-     */
-    error NoAuthorizedRedirectUrisFoundForApp(uint256 appId);
 
     // ==================================================================================
     // Data Structures
@@ -66,24 +54,17 @@ contract VincentAppViewFacet is VincentBase {
      * @notice Represents basic app information including metadata and relationships
      * @dev Used for returning app data in view functions
      * @param id Unique identifier for the app
-     * @param name Human-readable name of the app
-     * @param description Detailed description of the app
-     * @param deploymentStatus Deployment status of the app
+     * @param isDeleted Flag indicating if the app is deleted
      * @param manager Address of the account that manages this app
      * @param latestVersion The most recent version number of this app
      * @param delegatees Array of addresses that are delegated to act on behalf of this app
-     * @param authorizedRedirectUris Array of redirect URIs authorized for this app
      */
     struct App {
         uint256 id;
-        string name;
-        string description;
         bool isDeleted;
-        VincentAppStorage.DeploymentStatus deploymentStatus;
         address manager;
         uint256 latestVersion;
         address[] delegatees;
-        string[] authorizedRedirectUris;
     }
 
     /**
@@ -155,22 +136,11 @@ contract VincentAppViewFacet is VincentBase {
         VincentAppStorage.App storage storedApp = as_.appIdToApp[appId];
 
         app.id = appId;
-        app.name = storedApp.name;
-        app.description = storedApp.description;
         app.isDeleted = storedApp.isDeleted;
-        app.deploymentStatus = storedApp.deploymentStatus;
         app.manager = storedApp.manager;
         // App versions are 1-indexed, so the array length corresponds directly to the latest version number
         app.latestVersion = storedApp.versionedApps.length;
         app.delegatees = storedApp.delegatees.values();
-
-        // Convert authorized redirect URIs from bytes32 hashes to strings
-        uint256 redirectUriCount = storedApp.authorizedRedirectUris.length();
-        app.authorizedRedirectUris = new string[](redirectUriCount);
-        for (uint256 i = 0; i < redirectUriCount; i++) {
-            bytes32 redirectUriHash = storedApp.authorizedRedirectUris.at(i);
-            app.authorizedRedirectUris[i] = as_.authorizedRedirectUriHashToRedirectUri[redirectUriHash];
-        }
     }
 
     /**
@@ -342,60 +312,5 @@ contract VincentAppViewFacet is VincentBase {
 
         // Otherwise, get the app data
         app = getAppById(appId);
-    }
-
-    // ==================================================================================
-    // Domain and Redirect URI Functions
-    // ==================================================================================
-
-    /**
-     * @notice Retrieves a redirect URI from its hash
-     * @dev Converts a redirect URI hash back to its original string value
-     * @param redirectUriHash Hash of the redirect URI to look up
-     * @return redirectUri Original redirect URI string corresponding to the hash
-     */
-    function getAuthorizedRedirectUriByHash(bytes32 redirectUriHash)
-        external
-        view
-        returns (string memory redirectUri)
-    {
-        VincentAppStorage.AppStorage storage as_ = VincentAppStorage.appStorage();
-        redirectUri = as_.authorizedRedirectUriHashToRedirectUri[redirectUriHash];
-
-        // Check if the redirect URI exists
-        if (bytes(redirectUri).length == 0) {
-            revert RedirectUriNotFound(redirectUriHash);
-        }
-
-        return redirectUri;
-    }
-
-    /**
-     * @notice Retrieves authorized redirect URIs for a specific app
-     * @dev Looks up all redirect URI hashes for an app and converts them to string values
-     * @param appId ID of the app to query
-     * @return redirectUris Array of authorized redirect URI strings for the specified app
-     */
-    function getAuthorizedRedirectUrisByAppId(uint256 appId)
-        external
-        view
-        onlyRegisteredApp(appId)
-        returns (string[] memory redirectUris)
-    {
-        VincentAppStorage.AppStorage storage as_ = VincentAppStorage.appStorage();
-
-        // Get redirect URIs
-        uint256 redirectUriCount = as_.appIdToApp[appId].authorizedRedirectUris.length();
-
-        // Check if the app has no redirect URIs
-        if (redirectUriCount == 0) {
-            revert NoAuthorizedRedirectUrisFoundForApp(appId);
-        }
-
-        redirectUris = new string[](redirectUriCount);
-        for (uint256 i = 0; i < redirectUriCount; i++) {
-            redirectUris[i] =
-                as_.authorizedRedirectUriHashToRedirectUri[as_.appIdToApp[appId].authorizedRedirectUris.at(i)];
-        }
     }
 }
