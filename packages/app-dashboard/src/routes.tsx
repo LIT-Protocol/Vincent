@@ -31,6 +31,10 @@ const appRoutes = {
       element: <AppPages.AppDetails />,
     },
     {
+      path: '/appId/:appId/edit',
+      element: <AppPages.AppEdit />,
+    },
+    {
       path: '/appId/:appId/advanced-functions',
       element: <AppPages.AdvancedFunctions />,
     },

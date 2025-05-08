@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import { useAccount } from 'wagmi';
-import { ArrowRight, Plus, Settings } from 'lucide-react';
+import { ArrowRight, Plus, Settings, Edit } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useErrorPopup } from '@/providers/ErrorPopup';
@@ -102,6 +102,10 @@ export function AppDetail() {
           <h1 className="text-3xl font-bold text-black">{app.name}</h1>
         </div>
         <div className="flex gap-2 items-center">
+          <Button variant="outline" onClick={() => navigate(`/appId/${app.appId}/edit`)}>
+            <Edit className="h-4 w-4 mr-2 font-bold text-black" />
+            Edit App
+          </Button>
           {app.redirectUrls && app.redirectUrls.length > 0 && (
             <AppUrlGenerator appId={app.appId} redirectUrls={app.redirectUrls} />
           )}
