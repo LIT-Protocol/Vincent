@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/select';
 import { useErrorPopup } from '@/providers/ErrorPopup';
 import { StatusMessage } from '@/utils/statusMessage';
+import deleteApp from '@/api/app/delete';
 
 interface AdvancedFunctionsProps {
   onBack: () => void;
@@ -308,6 +309,9 @@ export default function ManageAdvancedFunctionsScreen({
 
       showStatus('Waiting for confirmation...', 'info');
       await tx.wait();
+
+      // Delete the app from the BE as well
+      await deleteApp(dashboard.appId);
 
       showStatus('App deleted successfully', 'success');
       setShowDeleteAppDialog(false);
