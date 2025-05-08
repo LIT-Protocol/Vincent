@@ -16,18 +16,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { AppView } from '@/services/types/appView';
 
 interface AppUrlGeneratorProps {
-  app: AppView;
+  appId: number;
+  redirectUrls: string[];
 }
 
-export function AppUrlGenerator({ app }: AppUrlGeneratorProps) {
+export function AppUrlGenerator({ appId, redirectUrls }: AppUrlGeneratorProps) {
   const [selectedRedirectUri, setSelectedRedirectUri] = useState<string>('');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  const consentUrl = `https://dashboard.heyvincent.ai/appId/${app.appId}/consent?redirectUri=${encodeURIComponent(selectedRedirectUri)}`;
+  const consentUrl = `https://dashboard.heyvincent.ai/appId/${appId}/consent?redirectUri=${encodeURIComponent(selectedRedirectUri)}`;
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(consentUrl);
@@ -61,8 +61,8 @@ export function AppUrlGenerator({ app }: AppUrlGeneratorProps) {
                   <SelectValue placeholder="Select a redirect URI" />
                 </SelectTrigger>
                 <SelectContent>
-                  {app.authorizedRedirectUris && app.authorizedRedirectUris.length > 0 ? (
-                    app.authorizedRedirectUris.map((uri, index) => (
+                  {redirectUrls && redirectUrls.length > 0 ? (
+                    redirectUrls.map((uri, index) => (
                       <SelectItem key={index} value={uri}>
                         {uri}
                       </SelectItem>
@@ -78,11 +78,8 @@ export function AppUrlGenerator({ app }: AppUrlGeneratorProps) {
           </div>
           {selectedRedirectUri && (
             <div className="flex justify-center mt-2">
-              <Button
-                variant="outline"
-                onClick={copyToClipboard}
-              >
-                {copied ? "URL Copied!" : "Copy Application URL"}
+              <Button variant="outline" onClick={copyToClipboard}>
+                {copied ? 'URL Copied!' : 'Copy Application URL'}
                 <Copy className="h-4 w-4 ml-2" />
               </Button>
             </div>

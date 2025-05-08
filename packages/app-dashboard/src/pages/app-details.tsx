@@ -1,22 +1,21 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router';
-import { formCompleteVincentAppForDev } from '@/services';
 import { useAccount } from 'wagmi';
-import { AppView } from '@/services/types';
 import { ArrowRight, Plus, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { mapEnumToTypeName } from '@/services/types';
 import { useErrorPopup } from '@/providers/ErrorPopup';
 import { StatusMessage } from '@/utils/statusMessage';
 import { AppUrlGenerator } from '@/components/developer/dashboard/AppUrlGenerator';
+import getApp from '@/api/app/get';
+import { IAppDef } from '@/api/app/types';
 
 export function AppDetail() {
   const params = useParams();
   const appIdParam = params.appId;
   const navigate = useNavigate();
-  const { address, isConnected } = useAccount();
-  const [app, setApp] = useState<AppView | null>(null);
+  const { isConnected } = useAccount();
+  const [app, setApp] = useState<IAppDef | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [statusMessage, setStatusMessage] = useState<string>('');
   const [statusType, setStatusType] = useState<'info' | 'warning' | 'success' | 'error'>('info');
@@ -45,23 +44,18 @@ export function AppDetail() {
   );
 
   const loadAppData = useCallback(async () => {
-    if (!address || !appIdParam) return;
+    if (!appIdParam) return;
 
     try {
       setIsLoading(true);
-      const appData = await formCompleteVincentAppForDev(address);
+      // Simply fetch the app using its ID
+      const appId = parseInt(appIdParam);
+      const appData = await getApp(appId);
 
-      if (appData && appData.length > 0) {
-        // Find the specific app by appId
-        const foundApp = appData.find((app) => app.appId && app.appId.toString() === appIdParam);
-        if (foundApp) {
-          setApp(foundApp);
-        } else {
-          // If app not found, navigate back to dashboard
-          navigate('/');
-        }
+      if (appData) {
+        setApp(appData);
       } else {
-        // If no apps found, navigate back to dashboard
+        // If app not found, navigate back to dashboard
         navigate('/');
       }
     } catch (error) {
@@ -71,7 +65,7 @@ export function AppDetail() {
     } finally {
       setIsLoading(false);
     }
-  }, [address, appIdParam, navigate, showErrorWithStatus]);
+  }, [appIdParam, navigate, showErrorWithStatus]);
 
   useEffect(() => {
     if (isConnected) {
@@ -105,11 +99,11 @@ export function AppDetail() {
           <Button variant="ghost" onClick={() => navigate('/')}>
             <ArrowRight className="h-4 w-4 rotate-180" />
           </Button>
-          <h1 className="text-3xl font-bold text-black">{app.appName}</h1>
+          <h1 className="text-3xl font-bold text-black">{app.name}</h1>
         </div>
         <div className="flex gap-2 items-center">
-          {app.authorizedRedirectUris && app.authorizedRedirectUris.length > 0 && (
-            <AppUrlGenerator app={app} />
+          {app.redirectUrls && app.redirectUrls.length > 0 && (
+            <AppUrlGenerator appId={app.appId} redirectUrls={app.redirectUrls} />
           )}
           <Button variant="outline" onClick={() => navigate(`/appId/${app.appId}/delegatee`)}>
             <Plus className="h-4 w-4 mr-2 font-bold text-black" />
@@ -141,7 +135,27 @@ export function AppDetail() {
                 <span className="font-medium">App ID:</span> {app.appId}
               </div>
               <div className="text-sm text-black">
-                <span className="font-medium">Management Wallet:</span> {app.managementWallet}
+                <span className="font-medium">Identity:</span> {app.identity}
+              </div>
+              <div className="text-sm text-black">
+                <span className="font-medium">Active Version:</span> {app.activeVersion}
+              </div>
+              <div className="text-sm text-black">
+                <span className="font-medium">Contact Email:</span> {app.contactEmail}
+              </div>
+              <div className="text-sm text-black">
+                <span className="font-medium">App User URL:</span> {app.appUserUrl}
+              </div>
+              <div className="text-sm text-black">
+                <span className="font-medium">Deployment Status:</span>{' '}
+                {app.deploymentStatus.toUpperCase()}
+              </div>
+              <div className="text-sm text-black">
+                <span className="font-medium">Management Wallet:</span> {app.managerAddress}
+              </div>
+              <div className="text-sm text-black">
+                <span className="font-medium">Last Updated:</span>{' '}
+                {app.lastUpdated.toLocaleString()}
               </div>
             </div>
           </CardContent>
@@ -149,173 +163,49 @@ export function AppDetail() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-black">Tool Policies</CardTitle>
+            <CardTitle className="text-black">Redirect URLs</CardTitle>
             <CardDescription className="text-black">
-              {app.toolPolicies.length === 0
-                ? 'No tool policies configured yet.'
-                : `${app.toolPolicies.length} app versions with tool policies`}
+              {app.redirectUrls.length === 0
+                ? 'No redirect URLs configured yet.'
+                : `${app.redirectUrls.length} authorized redirect URLs`}
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {app.toolPolicies.length === 0 ? (
+            {app.redirectUrls.length === 0 ? (
               <div className="text-center py-4">
-                <p className="text-sm text-black">No Tool Policies Yet</p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {(() => {
-                  return [...app.toolPolicies]
-                    .sort((a, b) => {
-                      // Handle the array-object hybrid format
-                      const versionA = a.version || (a[0] ? a[0] : 0);
-                      const versionB = b.version || (b[0] ? b[0] : 0);
-
-                      return Number(versionB) - Number(versionA);
-                    })
-                    .map((versionData, i) => {
-                      try {
-                        const version = versionData.version;
-                        const enabled = versionData.enabled;
-                        const tools = versionData.tools;
-
-                        if (!tools || tools.length === 0) {
-                          return (
-                            <div
-                              key={i}
-                              className={`mb-4 ${i === 0 ? 'bg-green-50 p-4 rounded-lg' : ''}`}
-                            >
-                              <div className="font-medium mb-2 text-black">
-                                Version: {version.toString()} {enabled ? '(Enabled)' : '(Disabled)'}
-                                {i === 0 && (
-                                  <span className="ml-2 text-xs text-green-600">(Latest)</span>
-                                )}
-                              </div>
-                              <p className="text-sm italic text-gray-500">No tools configured</p>
-                            </div>
-                          );
-                        }
-
-                        return (
-                          <div
-                            key={i}
-                            className={`mb-4 ${i === 0 ? 'bg-green-50 p-4 rounded-lg' : ''}`}
-                          >
-                            <div className="font-medium mb-2 text-black">
-                              Version: {version.toString()} {enabled ? '(Enabled)' : '(Disabled)'}
-                              {i === 0 && (
-                                <span className="ml-2 text-xs text-green-600">(Latest)</span>
-                              )}
-                            </div>
-
-                            {tools.map((tool: any, j: number) => {
-                              return (
-                                <div
-                                  key={j}
-                                  className="border-b border-gray-100 pb-2 mb-2 ml-4 text-black"
-                                >
-                                  <div className="font-medium mb-1">Tool CID:</div>
-                                  <div className="text-sm truncate">{tool.toolIpfsCid}</div>
-
-                                  {tool.policies && tool.policies.length > 0 ? (
-                                    <div className="mt-2">
-                                      <div className="font-medium mb-1">Policies:</div>
-                                      <div className="pl-2 text-sm">
-                                        {tool.policies.map((policy: any, k: number) => {
-                                          return (
-                                            <div key={k} className="mb-1">
-                                              <div className="text-xs">
-                                                <span className="font-medium">Policy CID:</span>{' '}
-                                                {policy.policyIpfsCid}
-                                                <br />
-                                                {policy.parameterTypes &&
-                                                policy.parameterNames &&
-                                                policy.parameterTypes.length > 0 &&
-                                                policy.parameterNames.length > 0 ? (
-                                                  <div>
-                                                    <span className="font-medium">Parameters:</span>
-                                                    <ul className="ml-2 mt-1">
-                                                      {policy.parameterNames.map(
-                                                        (name: string, paramIndex: number) => (
-                                                          <li key={paramIndex}>
-                                                            {name}:{' '}
-                                                            {mapEnumToTypeName(
-                                                              Number(
-                                                                policy.parameterTypes[paramIndex],
-                                                              ),
-                                                            )}
-                                                          </li>
-                                                        ),
-                                                      )}
-                                                    </ul>
-                                                  </div>
-                                                ) : (
-                                                  <span className="text-xs italic">
-                                                    (No parameters)
-                                                  </span>
-                                                )}
-                                              </div>
-                                            </div>
-                                          );
-                                        })}
-                                      </div>
-                                    </div>
-                                  ) : (
-                                    <div className="mt-2">
-                                      <div className="text-xs italic">
-                                        No policies defined for this tool
-                                      </div>
-                                    </div>
-                                  )}
-                                </div>
-                              );
-                            })}
-                          </div>
-                        );
-                      } catch (error) {
-                        console.error(`Error rendering item ${i}:`, error);
-                        return (
-                          <div key={i} className="mb-4 p-4 bg-red-50 rounded-lg">
-                            <div className="text-red-800">
-                              Error rendering version: {(error as Error).message}
-                            </div>
-                            <pre className="text-xs overflow-auto mt-2">
-                              {JSON.stringify(versionData, null, 2)}
-                            </pre>
-                          </div>
-                        );
-                      }
-                    });
-                })()}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-black">Delegatees</CardTitle>
-            <CardDescription className="text-black">
-              {app.delegatees.length === 0
-                ? 'No delegatees configured yet.'
-                : `${app.delegatees.length} delegatees configured`}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {!app.delegatees || !Array.isArray(app.delegatees) || app.delegatees.length === 0 ? (
-              <div className="text-center py-4">
-                <p className="text-sm text-black">Add delegatees to execute your application</p>
+                <p className="text-sm text-black">No Redirect URLs Yet</p>
               </div>
             ) : (
               <div className="space-y-2">
-                {app.delegatees.map((delegatee, i) => (
-                  <div key={i} className="text-sm text-black">
-                    <code className="bg-gray-50 px-1 py-0.5 rounded text-xs">{delegatee}</code>
+                {app.redirectUrls.map((url, index) => (
+                  <div
+                    key={index}
+                    className="text-sm text-black break-words p-2 bg-gray-50 rounded"
+                  >
+                    {url}
                   </div>
                 ))}
               </div>
             )}
           </CardContent>
         </Card>
+
+        {app.logo && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-black">App Logo</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex justify-center">
+                <img
+                  src={app.logo}
+                  alt={`${app.name} logo`}
+                  className="max-h-48 object-contain rounded"
+                />
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );
