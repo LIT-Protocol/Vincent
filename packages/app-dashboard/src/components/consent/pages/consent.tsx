@@ -252,7 +252,11 @@ export default function ConsentView({ isUserDashboardFlow = false }: ConsentView
           return <></>;
         }
 
-        // Consent flow: show the consent form
+        // Consent flow: show the consent form only if agentPKP is available
+        if (!agentPKP) {
+          return <StatusMessage message="Loading agent wallet..." type="info" />;
+        }
+
         return (
           <AuthenticatedConsentForm
             userPKP={userPKP}
@@ -276,6 +280,11 @@ export default function ConsentView({ isUserDashboardFlow = false }: ConsentView
 
     // If we're not showing the existing account and have validated session sigs
     if (!isUserDashboardFlow && !showExistingAccount && validatedSessionSigs && authInfo?.userPKP) {
+      // Only render if agentPKP is available
+      if (!authInfo.agentPKP) {
+        return <StatusMessage message="Loading agent wallet..." type="info" />;
+      }
+
       return (
         <AuthenticatedConsentForm
           userPKP={authInfo.userPKP}
