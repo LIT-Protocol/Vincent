@@ -111,7 +111,7 @@ contract VincentDiamond {
         LibDiamond.diamondCut(diamondCut, address(0), "");
 
         // Now add all other facets
-        IDiamondCut.FacetCut[] memory cuts = new IDiamondCut.FacetCut[](8);
+        IDiamondCut.FacetCut[] memory cuts = new IDiamondCut.FacetCut[](6);
 
         // Add DiamondLoupeFacet
         cuts[0] = IDiamondCut.FacetCut({
@@ -182,7 +182,7 @@ contract VincentDiamond {
     }
 
     function getVincentAppFacetSelectors() internal pure returns (bytes4[] memory) {
-        bytes4[] memory selectors = new bytes4[](11);
+        bytes4[] memory selectors = new bytes4[](6);
         selectors[0] = VincentAppFacet.registerApp.selector;
         selectors[1] = VincentAppFacet.registerNextAppVersion.selector;
         selectors[2] = VincentAppFacet.enableAppVersion.selector;
@@ -193,7 +193,7 @@ contract VincentDiamond {
     }
 
     function getVincentAppViewFacetSelectors() internal pure returns (bytes4[] memory) {
-        bytes4[] memory selectors = new bytes4[](7);
+        bytes4[] memory selectors = new bytes4[](5);
         selectors[0] = VincentAppViewFacet.getTotalAppCount.selector;
         selectors[1] = VincentAppViewFacet.getAppById.selector;
         selectors[2] = VincentAppViewFacet.getAppVersion.selector;

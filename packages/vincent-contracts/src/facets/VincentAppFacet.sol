@@ -319,7 +319,7 @@ contract VincentAppFacet is VincentBase {
 
             for (uint256 j = 0; j < policyCount; j++) {
                 string memory policyIpfsCid = versionTools.toolPolicies[i][j]; // Cache calldata value
-                bytes memory policyParameterMetadata = abi.encode(versionTools.toolPolicyParameterMetadata[i][j]); // Cache parameter metadata
+                bytes memory policyParameterMetadata = versionTools.toolPolicyParameterMetadata[i][j]; // Cache parameter metadata
 
                 bytes32 hashedToolPolicy = keccak256(abi.encodePacked(policyIpfsCid));
 
