@@ -97,13 +97,11 @@ contract VincentAppViewFacet is VincentBase {
      * @notice Represents policy information including parameters
      * @dev Used for returning policy data in view functions
      * @param policyIpfsCid IPFS CID pointing to the policy's Lit Action
-     * @param parameterNames Array of parameter names defined for this policy
-     * @param parameterTypes Array of parameter types defined for this policy
+     * @param parameterMetadata Parameter metadata defined for this policy
      */
     struct Policy {
         string policyIpfsCid;
-        string[] parameterNames;
-        VincentAppStorage.ParameterType[] parameterTypes;
+        bytes parameterMetadata;
     }
 
     // ==================================================================================
@@ -139,7 +137,7 @@ contract VincentAppViewFacet is VincentBase {
         app.isDeleted = storedApp.isDeleted;
         app.manager = storedApp.manager;
         // App versions are 1-indexed, so the array length corresponds directly to the latest version number
-        app.latestVersion = storedApp.versionedApps.length;
+        app.latestVersion = storedApp.appVersions.length;
         app.delegatees = storedApp.delegatees.values();
     }
 
@@ -165,8 +163,8 @@ contract VincentAppViewFacet is VincentBase {
         app = getAppById(appId);
 
         // Step 3: Retrieve the specific version data
-        VincentAppStorage.VersionedApp storage storedVersionedApp =
-            storedApp.versionedApps[getVersionedAppIndex(version)];
+        VincentAppStorage.AppVersion storage storedVersionedApp =
+            storedApp.appVersions[getAppVersionIndex(version)];
 
         // Step 4: Set basic version information
         appVersion.version = version;
@@ -208,29 +206,8 @@ contract VincentAppViewFacet is VincentBase {
                 // Step 10.2: Set the policy IPFS CID in the return structure
                 appVersion.tools[i].policies[j].policyIpfsCid = policyIpfsCid;
 
-                // Step 11: Get the policy data to access parameters
-                VincentAppStorage.Policy storage policy = toolPolicies.policyIpfsCidHashToPolicy[policyIpfsCidHash];
-
-                // Step 12: Get and process the policy parameter names and types
-                EnumerableSet.Bytes32Set storage policyParamNameHashes = policy.policyParameterNameHashes;
-                uint256 paramCount = policyParamNameHashes.length();
-
-                // Step 12.1: Initialize the parameter names and types arrays
-                appVersion.tools[i].policies[j].parameterNames = new string[](paramCount);
-                appVersion.tools[i].policies[j].parameterTypes = new VincentAppStorage.ParameterType[](paramCount);
-
-                // Step 12.2: Iterate through each parameter name
-                for (uint256 k = 0; k < paramCount; k++) {
-                    // Step 12.2.1: Get the parameter name hash
-                    bytes32 paramNameHash = policyParamNameHashes.at(k);
-
-                    // Step 12.2.2: Get and set the parameter name
-                    appVersion.tools[i].policies[j].parameterNames[k] = ls.policyParameterNameHashToName[paramNameHash];
-
-                    // Step 12.2.3: Get and set the parameter type
-                    appVersion.tools[i].policies[j].parameterTypes[k] =
-                        policy.policyParameterNameHashToType[paramNameHash];
-                }
+                // Step 11: Get the policy parameter metadata
+                appVersion.tools[i].policies[j].parameterMetadata = toolPolicies.policyIpfsCidHashToParameterMetadata[policyIpfsCidHash];
             }
         }
     }

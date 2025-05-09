@@ -24,14 +24,11 @@ contract VincentAppFacet is VincentBase {
      * @dev Used when registering a new app version
      * @param toolIpfsCids Array of IPFS CIDs pointing to tool metadata
      * @param toolPolicies 2D array of policy identifiers for each tool
-     * @param toolPolicyParameterNames 3D array of parameter names for each policy of each tool
-     * @param toolPolicyParameterTypes 3D array of parameter types for each policy of each tool
      */
     struct AppVersionTools {
         string[] toolIpfsCids;
         string[][] toolPolicies;
-        string[][][] toolPolicyParameterNames;
-        VincentAppStorage.ParameterType[][][] toolPolicyParameterTypes;
+        bytes[][] toolPolicyParameterMetadata;
     }
 
     /**
@@ -98,8 +95,8 @@ contract VincentAppFacet is VincentBase {
         VincentAppStorage.AppStorage storage as_ = VincentAppStorage.appStorage();
 
         // Cache the versioned app to avoid duplicate storage reads
-        VincentAppStorage.VersionedApp storage versionedApp =
-            as_.appIdToApp[appId].versionedApps[getVersionedAppIndex(appVersion)];
+        VincentAppStorage.AppVersion storage versionedApp =
+            as_.appIdToApp[appId].appVersions[getAppVersionIndex(appVersion)];
 
         // Revert if trying to set to the same status
         if (versionedApp.enabled == enabled) {
@@ -176,8 +173,8 @@ contract VincentAppFacet is VincentBase {
         VincentAppStorage.App storage app = as_.appIdToApp[appId];
 
         // Check that no app versions have delegated agent PKPs
-        for (uint256 i = 0; i < app.versionedApps.length; i++) {
-            if (app.versionedApps[i].delegatedAgentPkps.length() > 0) {
+        for (uint256 i = 0; i < app.appVersions.length; i++) {
+            if (app.appVersions[i].delegatedAgentPkps.length() > 0) {
                 revert LibVincentAppFacet.AppVersionHasDelegatedAgents(appId, i + 1);
             }
         }
@@ -245,15 +242,11 @@ contract VincentAppFacet is VincentBase {
 
         // Check array lengths at top level
         uint256 toolCount = versionTools.toolIpfsCids.length;
-        if (
-            toolCount != versionTools.toolPolicies.length || toolCount != versionTools.toolPolicyParameterNames.length
-                || toolCount != versionTools.toolPolicyParameterTypes.length
-        ) {
+        if (toolCount != versionTools.toolPolicies.length || toolCount != versionTools.toolPolicyParameterMetadata.length) {
             revert LibVincentAppFacet.ToolArrayDimensionMismatch(
                 toolCount,
                 versionTools.toolPolicies.length,
-                versionTools.toolPolicyParameterNames.length,
-                versionTools.toolPolicyParameterTypes.length
+                versionTools.toolPolicyParameterMetadata.length
             );
         }
 
@@ -268,48 +261,20 @@ contract VincentAppFacet is VincentBase {
 
             // Check nested array lengths
             uint256 policyCount = versionTools.toolPolicies[i].length;
-            if (
-                policyCount != versionTools.toolPolicyParameterNames[i].length
-                    || policyCount != versionTools.toolPolicyParameterTypes[i].length
-            ) {
+            if (policyCount != versionTools.toolPolicyParameterMetadata[i].length) {
                 revert LibVincentAppFacet.PolicyArrayLengthMismatch(
                     i,
                     policyCount,
-                    versionTools.toolPolicyParameterNames[i].length,
-                    versionTools.toolPolicyParameterTypes[i].length
+                    versionTools.toolPolicyParameterMetadata[i].length
                 );
             }
 
-            // Check parameter names and types match for each policy
             for (uint256 j = 0; j < policyCount; j++) {
-                if (
-                    versionTools.toolPolicyParameterNames[i][j].length
-                        != versionTools.toolPolicyParameterTypes[i][j].length
-                ) {
-                    revert LibVincentAppFacet.ParameterArrayLengthMismatch(
-                        i,
-                        j,
-                        versionTools.toolPolicyParameterNames[i][j].length,
-                        versionTools.toolPolicyParameterTypes[i][j].length
-                    );
-                }
-
                 string memory policyIpfsCid = versionTools.toolPolicies[i][j];
 
                 // Validate non-empty policy IPFS CID
                 if (bytes(policyIpfsCid).length == 0) {
                     revert LibVincentAppFacet.EmptyPolicyIpfsCidNotAllowed(appId, i);
-                }
-
-                // Check for empty parameter names
-                uint256 paramCount = versionTools.toolPolicyParameterNames[i][j].length;
-                for (uint256 k = 0; k < paramCount; k++) {
-                    string memory paramName = versionTools.toolPolicyParameterNames[i][j][k];
-
-                    // Check for empty parameter name
-                    if (bytes(paramName).length == 0) {
-                        revert LibVincentAppFacet.EmptyParameterNameNotAllowed(appId, i, j, k);
-                    }
                 }
             }
         }
@@ -320,10 +285,10 @@ contract VincentAppFacet is VincentBase {
         VincentLitActionStorage.LitActionStorage storage ls = VincentLitActionStorage.litActionStorage();
 
         // Step 5: Create a new app version.
-        app.versionedApps.push();
-        newAppVersion = app.versionedApps.length;
+        app.appVersions.push();
+        newAppVersion = app.appVersions.length;
 
-        VincentAppStorage.VersionedApp storage versionedApp = app.versionedApps[getVersionedAppIndex(newAppVersion)];
+        VincentAppStorage.AppVersion storage versionedApp = app.appVersions[getAppVersionIndex(newAppVersion)];
         versionedApp.enabled = true; // App versions are enabled by default
 
         // Store this once outside the loop instead of repeatedly accessing it
@@ -354,43 +319,19 @@ contract VincentAppFacet is VincentBase {
 
             for (uint256 j = 0; j < policyCount; j++) {
                 string memory policyIpfsCid = versionTools.toolPolicies[i][j]; // Cache calldata value
+                bytes memory policyParameterMetadata = abi.encode(versionTools.toolPolicyParameterMetadata[i][j]); // Cache parameter metadata
 
                 bytes32 hashedToolPolicy = keccak256(abi.encodePacked(policyIpfsCid));
 
                 // Step 7.1: Add the policy hash to the ToolPolicies
                 toolPoliciesStorage.policyIpfsCidHashes.add(hashedToolPolicy);
 
-                // Step 7.2: Store the policy IPFS CID globally if it's not already stored.
+                // Step 7.2: Store the policy parameter metadata
+                toolPoliciesStorage.policyIpfsCidHashToParameterMetadata[hashedToolPolicy] = policyParameterMetadata;
+
+                // Step 7.3: Store the policy IPFS CID globally if it's not already stored.
                 if (bytes(ls.ipfsCidHashToIpfsCid[hashedToolPolicy]).length == 0) {
                     ls.ipfsCidHashToIpfsCid[hashedToolPolicy] = policyIpfsCid;
-                }
-
-                // Create a new Policy storage structure for this policy in the current app version
-                VincentAppStorage.Policy storage policy =
-                    toolPoliciesStorage.policyIpfsCidHashToPolicy[hashedToolPolicy];
-
-                // Step 8: Get the Policy parameter name hashes for this policy
-                EnumerableSet.Bytes32Set storage policyParameterNameHashes = policy.policyParameterNameHashes;
-
-                // Step 9: Iterate through policy parameters.
-                uint256 paramCount = versionTools.toolPolicyParameterNames[i][j].length;
-
-                for (uint256 k = 0; k < paramCount; k++) {
-                    string memory paramName = versionTools.toolPolicyParameterNames[i][j][k]; // Cache calldata value
-
-                    bytes32 hashedPolicyParameterName = keccak256(abi.encodePacked(paramName));
-
-                    // Step 9.1: Register the policy parameter.
-                    policyParameterNameHashes.add(hashedPolicyParameterName);
-
-                    // Step 9.2: Store the parameter name if not already stored.
-                    if (bytes(ls.policyParameterNameHashToName[hashedPolicyParameterName]).length == 0) {
-                        ls.policyParameterNameHashToName[hashedPolicyParameterName] = paramName;
-                    }
-
-                    // Step 9.3: Store the parameter type
-                    VincentAppStorage.ParameterType paramType = versionTools.toolPolicyParameterTypes[i][j][k];
-                    policy.policyParameterNameHashToType[hashedPolicyParameterName] = paramType;
                 }
             }
         }

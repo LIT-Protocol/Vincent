@@ -124,45 +124,33 @@ library LibVincentAppFacet {
     error NoPoliciesProvidedForTool(uint256 appId, uint256 toolIndex);
 
     /**
-     * @notice Error thrown when a policy parameter name is empty
-     * @param appId ID of the app
-     * @param toolIndex Index of the tool in the tools array
-     * @param policyIndex Index of the policy in the policies array
-     * @param paramIndex Index of the parameter in the parameters array
-     */
-    error EmptyParameterNameNotAllowed(uint256 appId, uint256 toolIndex, uint256 policyIndex, uint256 paramIndex);
-
-    /**
      * @notice Error thrown when the top-level tool arrays have mismatched lengths
      * @param toolsLength Length of the tools array
      * @param policiesLength Length of the policies array
-     * @param paramNamesLength Length of the parameter names array
-     * @param paramTypesLength Length of the parameter types array
+     * @param paramMetadataLength Length of the parameter metadata array
      */
     error ToolArrayDimensionMismatch(
-        uint256 toolsLength, uint256 policiesLength, uint256 paramNamesLength, uint256 paramTypesLength
+        uint256 toolsLength, uint256 policiesLength, uint256 paramMetadataLength
     );
 
     /**
      * @notice Error thrown when policy-related arrays for a specific tool have mismatched lengths
      * @param toolIndex Index of the tool in the tools array
      * @param policiesLength Length of the policies array for this tool
-     * @param paramNamesLength Length of the parameter names array for this tool
-     * @param paramTypesLength Length of the parameter types array for this tool
+     * @param paramMetadataLength Length of the parameter metadata array for this tool
      */
     error PolicyArrayLengthMismatch(
-        uint256 toolIndex, uint256 policiesLength, uint256 paramNamesLength, uint256 paramTypesLength
+        uint256 toolIndex, uint256 policiesLength, uint256 paramMetadataLength
     );
 
     /**
      * @notice Error thrown when parameter arrays for a specific policy have mismatched lengths
      * @param toolIndex Index of the tool in the tools array
      * @param policyIndex Index of the policy in the policies array
-     * @param paramNamesLength Length of the parameter names array for this policy
-     * @param paramTypesLength Length of the parameter types array for this policy
+     * @param paramMetadataLength Length of the parameter metadata array for this policy
      */
     error ParameterArrayLengthMismatch(
-        uint256 toolIndex, uint256 policyIndex, uint256 paramNamesLength, uint256 paramTypesLength
+        uint256 toolIndex, uint256 policyIndex, uint256 paramMetadataLength
     );
 
     /**
