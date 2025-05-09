@@ -115,7 +115,6 @@ export default function UserAuthenticatedConsentForm({
     sessionSigs,
     permittedVersion,
     onStatusChange: showStatus,
-    onError: showErrorWithStatus,
   });
 
   const { generateJWT, redirectWithJWT } = useJwtRedirect({
