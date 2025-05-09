@@ -14,13 +14,14 @@ const STATUS_TYPES = {
 };
 
 const StatusMessage: React.FC<StatusMessageProps> = ({ message, type }) => {
-  if (!message) return null;
+  if (!message) return <></>;
 
   return (
     <div
       className={`flex items-center px-4 py-2.5 mb-4 rounded-lg text-sm leading-6 max-w-full min-h-[48px] opacity-100 transition-[background-color,color,border-color,opacity] duration-300 ease-in-out ${STATUS_TYPES[type]}`}
-      dangerouslySetInnerHTML={{ __html: message }}
-    />
+    >
+      {message}
+    </div>
   );
 };
 

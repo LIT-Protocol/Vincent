@@ -10,14 +10,14 @@ import {
   ChainSelector,
   TokenSelector,
   WithdrawPanel,
-  BalanceDisplay
+  BalanceDisplay,
 } from '.';
 import { handleSubmit } from '@/utils/handlers';
 import { ethers } from 'ethers';
 
 export interface WithdrawFormProps {
   sessionSigs: SessionSigs;
-  agentPKP?: IRelayPKP;
+  agentPKP: IRelayPKP;
   isSessionValidation?: boolean;
   userPKP?: IRelayPKP;
   shouldRefreshBalances?: boolean;
@@ -29,10 +29,7 @@ export interface TokenDetails {
   decimals: number;
 }
 
-export default function WithdrawForm({
-  sessionSigs,
-  agentPKP,
-}: WithdrawFormProps) {
+export default function WithdrawForm({ sessionSigs, agentPKP }: WithdrawFormProps) {
   const [loading, setLoading] = useState<boolean>(false);
   const [selectedChain, setSelectedChain] = useState<string>('ethereum');
   const [withdrawAmount, setWithdrawAmount] = useState<string>('');
@@ -93,11 +90,11 @@ export default function WithdrawForm({
       sessionSigs,
       selectedChain,
       setLoading,
-      showStatus
+      showStatus,
     );
 
     if (result.success) {
-        refreshBalance();
+      refreshBalance();
     }
   };
 
