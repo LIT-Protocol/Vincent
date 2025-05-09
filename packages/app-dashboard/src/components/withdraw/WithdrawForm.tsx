@@ -1,6 +1,7 @@
 import { useCallback, useState, useEffect } from 'react';
 import { SessionSigs, IRelayPKP } from '@lit-protocol/types';
 import { LIT_CHAINS } from '@lit-protocol/constants';
+import WalletConnectPage from './walletconnect';
 
 import {
   FormHeader,
@@ -44,6 +45,7 @@ export default function WithdrawForm({ sessionSigs, agentPKP }: WithdrawFormProp
     symbol: '',
     decimals: 18,
   });
+  const [showWalletConnect, setShowWalletConnect] = useState<boolean>(false);
 
   const showStatus = (message: string, type: StatusType = 'info') => {
     setStatusMessage(message);
@@ -100,44 +102,67 @@ export default function WithdrawForm({ sessionSigs, agentPKP }: WithdrawFormProp
 
   return (
     <div className="max-w-[550px] w-full mx-auto bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
-      <FormHeader />
-      <h3 className="text-lg font-medium text-black mb-4 mt-8 px-6">Account Fund Manager</h3>
+      {showWalletConnect ? (
+        <div className="p-6">
+          <button
+            className="mb-4 text-blue-500 hover:text-blue-700 flex items-center"
+            onClick={() => setShowWalletConnect(false)}
+          >
+            <span className="mr-1">←</span> Back to Withdraw
+          </button>
+          <WalletConnectPage />
+        </div>
+      ) : (
+        <>
+          <FormHeader />
+          <h3 className="text-lg font-medium text-black mb-4 mt-8 px-6">Account Fund Manager</h3>
 
-      <StatusMessage message={statusMessage} type={statusType} />
+          <StatusMessage message={statusMessage} type={statusType} />
 
-      <WalletInfo ethAddress={agentPKP?.ethAddress} />
+          <WalletInfo ethAddress={agentPKP?.ethAddress} />
 
-      <div className="p-6">
-        <ChainSelector
-          selectedChain={selectedChain}
-          ethAddress={agentPKP!.ethAddress}
-          onChange={setSelectedChain}
-        />
+          <div className="p-6">
+            <div className="mb-4">
+              <button
+                onClick={() => setShowWalletConnect(true)}
+                className="text-blue-500 hover:text-blue-700 underline"
+              >
+                Connect with WalletConnect
+              </button>
+            </div>
 
-        <BalanceDisplay
-          balance={nativeBalance}
-          token={nativeToken}
-          loading={loading}
-          refreshBalance={refreshBalance}
-        />
+            <ChainSelector
+              selectedChain={selectedChain}
+              ethAddress={agentPKP!.ethAddress}
+              onChange={setSelectedChain}
+            />
 
-        <TokenSelector
-          isCustomToken={isCustomToken}
-          setIsCustomToken={setIsCustomToken}
-          customTokenAddress={customTokenAddress}
-          setCustomTokenAddress={setCustomTokenAddress}
-        />
+            <BalanceDisplay
+              balance={nativeBalance}
+              token={nativeToken}
+              loading={loading}
+              refreshBalance={refreshBalance}
+            />
 
-        <WithdrawPanel
-          withdrawAddress={withdrawAddress}
-          setWithdrawAddress={setWithdrawAddress}
-          withdrawAmount={withdrawAmount}
-          setWithdrawAmount={setWithdrawAmount}
-          tokenSymbol={isCustomToken ? 'TOKEN' : nativeToken.symbol}
-          loading={loading}
-          onSubmit={onSubmit}
-        />
-      </div>
+            <TokenSelector
+              isCustomToken={isCustomToken}
+              setIsCustomToken={setIsCustomToken}
+              customTokenAddress={customTokenAddress}
+              setCustomTokenAddress={setCustomTokenAddress}
+            />
+
+            <WithdrawPanel
+              withdrawAddress={withdrawAddress}
+              setWithdrawAddress={setWithdrawAddress}
+              withdrawAmount={withdrawAmount}
+              setWithdrawAmount={setWithdrawAmount}
+              tokenSymbol={isCustomToken ? 'TOKEN' : nativeToken.symbol}
+              loading={loading}
+              onSubmit={onSubmit}
+            />
+          </div>
+        </>
+      )}
     </div>
   );
 }
