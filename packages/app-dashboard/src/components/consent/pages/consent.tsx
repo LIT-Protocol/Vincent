@@ -238,7 +238,7 @@ export default function ConsentView({ isUserDashboardFlow = false }: ConsentView
     }
 
     // If authenticated with a new PKP and session sigs
-    if (userPKP && sessionSigs) {
+    if (userPKP && agentPKP && sessionSigs) {
       // Save the PKP info in localStorage for SessionValidator to use
       try {
         updateAuthInfo({
@@ -275,7 +275,13 @@ export default function ConsentView({ isUserDashboardFlow = false }: ConsentView
     }
 
     // If we're not showing the existing account and have validated session sigs
-    if (!isUserDashboardFlow && !showExistingAccount && validatedSessionSigs && authInfo?.userPKP) {
+    if (
+      !isUserDashboardFlow &&
+      !showExistingAccount &&
+      validatedSessionSigs &&
+      authInfo?.userPKP &&
+      authInfo?.agentPKP
+    ) {
       return (
         <AuthenticatedConsentForm
           userPKP={authInfo.userPKP}
