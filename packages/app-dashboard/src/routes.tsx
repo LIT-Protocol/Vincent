@@ -43,8 +43,8 @@ const appRoutes = {
       element: <AppPages.Delegatee />,
     },
     {
-      path: '/appId/:appId/tool-policies',
-      element: <AppPages.ToolPolicies />,
+      path: '/appId/:appId/versions',
+      element: <AppPages.AppVersionsPage />,
     },
   ],
 };

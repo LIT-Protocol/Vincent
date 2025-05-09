@@ -12,3 +12,25 @@ export interface IAppDef {
   managerAddress: string; // wallet address allowed to manage on-chain data
   lastUpdated: Date; // Last time app definition was edited by its owner
 }
+
+export interface IAppVersionDef {
+  appId: number; // Numeric, sequentially assigned app ID this App Version is for
+  versionNumber: number; // Default to 1 since this is app creation
+  identity: string; // AppVersionDef|<appId>@<versionNumber>
+  enabled: boolean; // Default to true
+  changes: string; // Default to "Application Created at {Date.now()}"?
+  // NOTE: Intentionally not tracking Tools; reverse indexing for flexibility
+}
+
+export interface IAppToolDef {
+  appId: number; // Numeric, sequentially assigned app ID this Tool is for
+  appVersionNumber: number; // Default to 1 since this is app creation
+  toolPackageName: string; // NPM package name of the Tool
+  toolVersion: string; // NPM package explicit semver of the Tool
+  appVersionIdentity: string; // <appId>@<appVersionNumber>
+  toolIdentity: string; // <toolPackageName>@<toolVersion>
+  identity: string; // AppToolDef|<appIdentity>/<toolIdentity>
+
+  // Example app-specific extra metadata for this tool
+  hiddenSupportedPolicies: string[]; // Array of policies that the tool supports but the app author doesn't
+}

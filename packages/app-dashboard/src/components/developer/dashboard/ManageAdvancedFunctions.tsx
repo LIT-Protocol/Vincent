@@ -23,6 +23,7 @@ import {
 import { useErrorPopup } from '@/providers/ErrorPopup';
 import { StatusMessage } from '@/utils/statusMessage';
 import deleteApp from '@/api/app/delete';
+import disableVersion from '@/api/app/disableVersion';
 
 interface AdvancedFunctionsProps {
   onBack: () => void;
@@ -223,6 +224,11 @@ export default function ManageAdvancedFunctionsScreen({
 
       showStatus('Waiting for confirmation...', 'info');
       await tx.wait();
+
+      // If we're disabling a version, also call our API function
+      if (!willEnableVersion) {
+        await disableVersion(dashboard.appId, versionNumber);
+      }
 
       showStatus(
         `Version ${versionNumber} ${willEnableVersion ? 'enabled' : 'disabled'} successfully`,

@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import { useAccount } from 'wagmi';
-import { ArrowRight, Plus, Settings, Edit } from 'lucide-react';
+import { ArrowRight, Plus, Settings, Edit, History, CodeSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useErrorPopup } from '@/providers/ErrorPopup';
 import { StatusMessage } from '@/utils/statusMessage';
 import { AppUrlGenerator } from '@/components/developer/dashboard/AppUrlGenerator';
+import CreateVersion from '@/components/developer/dashboard/CreateVersion';
 import getApp from '@/api/app/get';
 import { IAppDef } from '@/api/app/types';
 
@@ -19,6 +20,7 @@ export function AppDetail() {
   const [isLoading, setIsLoading] = useState(true);
   const [statusMessage, setStatusMessage] = useState<string>('');
   const [statusType, setStatusType] = useState<'info' | 'warning' | 'success' | 'error'>('info');
+  const [showCreateVersion, setShowCreateVersion] = useState(false);
 
   // Add the error popup hook
   const { showError } = useErrorPopup();
@@ -106,16 +108,20 @@ export function AppDetail() {
             <Edit className="h-4 w-4 mr-2 font-bold text-black" />
             Edit App
           </Button>
+          <Button variant="outline" onClick={() => navigate(`/appId/${app.appId}/versions`)}>
+            <History className="h-4 w-4 mr-2 font-bold text-black" />
+            Version History
+          </Button>
+          <Button variant="outline" onClick={() => setShowCreateVersion(true)}>
+            <CodeSquare className="h-4 w-4 mr-2 font-bold text-black" />
+            Create Version
+          </Button>
           {app.redirectUrls && app.redirectUrls.length > 0 && (
             <AppUrlGenerator appId={app.appId} redirectUrls={app.redirectUrls} />
           )}
           <Button variant="outline" onClick={() => navigate(`/appId/${app.appId}/delegatee`)}>
             <Plus className="h-4 w-4 mr-2 font-bold text-black" />
             Manage Delegatees
-          </Button>
-          <Button variant="outline" onClick={() => navigate(`/appId/${app.appId}/tool-policies`)}>
-            <Plus className="h-4 w-4 mr-2 font-bold text-black" />
-            Manage Tool Policies
           </Button>
           <Button
             variant="outline"
@@ -211,6 +217,16 @@ export function AppDetail() {
           </Card>
         )}
       </div>
+
+      {/* Create Version Dialog */}
+      {app && (
+        <CreateVersion
+          appId={app.appId}
+          isOpen={showCreateVersion}
+          onClose={() => setShowCreateVersion(false)}
+          onSuccess={loadAppData}
+        />
+      )}
     </div>
   );
 }
