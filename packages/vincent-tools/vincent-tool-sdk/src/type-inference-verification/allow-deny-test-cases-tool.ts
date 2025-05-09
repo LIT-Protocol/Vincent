@@ -5,9 +5,10 @@
  * for tool definitions, focusing on success/failure responses.
  */
 import { z } from 'zod';
-import { createVincentTool } from '../lib/vincentTool';
-import { createVincentToolPolicy } from '../lib/vincentPolicy';
+import { createVincentTool } from '../lib/toolCore/vincentTool';
+import { createVincentToolPolicy } from '../lib/policyCore/vincentPolicy';
 
+/* eslint-disable @typescript-eslint/no-unused-vars */
 // Define a simple schema for our test cases
 const testSchema = z.object({
   action: z.string(),
@@ -214,8 +215,7 @@ export function testPolicyResultTypes() {
       // Should be able to check if policy evaluation allowed
       if (policiesContext.allow) {
         // Should be able to access the policy result with the correct type
-        const result =
-          policiesContext.allowedPolicies['@lit-protocol/test-policy@1.0.0'];
+        const result = policiesContext.allowedPolicies['@lit-protocol/test-policy@1.0.0'];
         if (result) {
           const { approved } = result.result;
           console.log(approved);
@@ -240,9 +240,7 @@ export function testPolicyResultTypes() {
   });
 }
 
-export function assertAllow<T extends { allow: true }>(
-  obj: T,
-): asserts obj is T {
+export function assertAllow<T extends { allow: true }>(obj: T): asserts obj is T {
   // This function just asserts that obj.allow is true
   // It doesn't actually need to do anything at runtime
   // TypeScript will use it for control flow analysis
@@ -265,8 +263,7 @@ export function testExecutePolicyResultTyping() {
       const allowIsAlwaysTrue: false = !policiesContext.allow;
 
       // Should have access to test policy result
-      const result =
-        policiesContext.allowedPolicies['@lit-protocol/test-policy@1.0.0'];
+      const result = policiesContext.allowedPolicies['@lit-protocol/test-policy@1.0.0'];
       if (result) {
         // Should be able to access properties of the result
         const { approved } = result.result;

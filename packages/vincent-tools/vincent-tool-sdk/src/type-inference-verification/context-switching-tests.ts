@@ -6,7 +6,7 @@
  * (precheck, evaluate, commit) which may have different schemas.
  */
 import { z } from 'zod';
-import { createVincentToolPolicy } from '../lib/vincentPolicy';
+import { createVincentToolPolicy } from '../lib/policyCore/vincentPolicy';
 
 // Base tool schema for all tests
 const baseToolSchema = z.object({
@@ -26,7 +26,7 @@ function testPrecheckEvaluateContextSwitching() {
   const evalAllowSchema = z.object({ finalStatus: z.string() });
   const evalDenySchema = z.object({ finalReason: z.string() });
 
-  const policy = createVincentToolPolicy({
+  return createVincentToolPolicy({
     toolParamsSchema: baseToolSchema,
     policyDef: {
       packageName: '@lit-protocol/test-policy@1.2.3',
@@ -75,8 +75,6 @@ function testPrecheckEvaluateContextSwitching() {
       action: 'actionType',
     },
   });
-
-  return policy;
 }
 
 /**
@@ -91,7 +89,7 @@ function testEvaluateCommitContextSwitching() {
   const commitAllowSchema = z.object({ transactionHash: z.string() });
   const commitDenySchema = z.object({ failureCode: z.number() });
 
-  const policy = createVincentToolPolicy({
+  return createVincentToolPolicy({
     toolParamsSchema: baseToolSchema,
     policyDef: {
       packageName: '@lit-protocol/test-policy@1.23.1',
@@ -145,8 +143,6 @@ function testEvaluateCommitContextSwitching() {
       action: 'actionType',
     },
   });
-
-  return policy;
 }
 
 /**
@@ -164,7 +160,7 @@ function testFullPolicyContextSwitching() {
   const commitAllowSchema = z.object({ completed: z.boolean() });
   const commitDenySchema = z.object({ aborted: z.boolean() });
 
-  const policy = createVincentToolPolicy({
+  return createVincentToolPolicy({
     toolParamsSchema: baseToolSchema,
     policyDef: {
       packageName: '@lit-protocol/testpolicyawesome@12.1.10',
@@ -261,8 +257,6 @@ function testFullPolicyContextSwitching() {
       amount: 'amount',
     },
   });
-
-  return policy;
 }
 
 // Export test functions

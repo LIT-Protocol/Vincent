@@ -6,10 +6,7 @@
  * arguments to verify TypeScript correctly enforces the type constraints.
  */
 import { z } from 'zod';
-import {
-  createVincentPolicy,
-  createVincentToolPolicy,
-} from '../lib/vincentPolicy';
+import { createVincentPolicy, createVincentToolPolicy } from '../lib/policyCore/vincentPolicy';
 
 // Base tool schema for all tests
 const baseToolSchema = z.object({
@@ -128,7 +125,7 @@ export function testAllowFunctionWithDifferentTypes() {
         toolParamsSchema: z.object({ actionType: z.string() }),
         // No schema defined
 
-        evaluate: async (params, { allow, deny, delegation }) => {
+        evaluate: async (params, { allow }) => {
           // Valid - no schema means no args
           allow();
 

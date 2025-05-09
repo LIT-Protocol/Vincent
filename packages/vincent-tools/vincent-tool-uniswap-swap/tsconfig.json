@@ -4,7 +4,7 @@
   "include": [],
   "references": [
     {
-      "path": "../vincent-tool"
+      "path": "../vincent-tool-sdk"
     },
     {
       "path": "./tsconfig.lib.json"

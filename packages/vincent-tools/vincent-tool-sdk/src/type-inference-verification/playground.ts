@@ -1,9 +1,6 @@
 import { z } from 'zod';
-import {
-  createVincentPolicy,
-  createVincentToolPolicy,
-} from '../lib/vincentPolicy';
-import { createVincentTool } from '../lib/vincentTool';
+import { createVincentPolicy, createVincentToolPolicy } from '../lib/policyCore/vincentPolicy';
+import { createVincentTool } from '../lib/toolCore/vincentTool';
 
 // Define your tool schema
 const myToolSchema = z.object({
@@ -11,6 +8,7 @@ const myToolSchema = z.object({
   target: z.string(),
   amount: z.number(),
 });
+/* eslint-disable @typescript-eslint/no-unused-vars */
 
 // Define policy schemas
 const policy1Schema = z.object({
@@ -269,11 +267,7 @@ export const myTool = createVincentTool({
 
   precheck: async (
     { toolParams },
-    {
-      fail,
-      policiesContext: { allow, allowedPolicies, deniedPolicy },
-      succeed,
-    },
+    { fail, policiesContext: { allow, allowedPolicies, deniedPolicy }, succeed },
   ) => {
     // Basic validation
     if (!toolParams.action || !toolParams.target) {
@@ -336,31 +330,22 @@ export const myTool = createVincentTool({
         const txHash = `0x${Math.random().toString(16).substring(2, 10)}`;
 
         // Use commit functions from policies if available
-        const extraRateLimitPolicyContext =
-          policiesContext.allowedPolicies['extra-rate-limit'];
+        const extraRateLimitPolicyContext = policiesContext.allowedPolicies['extra-rate-limit'];
         if (extraRateLimitPolicyContext) {
           const commitResult = await extraRateLimitPolicyContext.commit({
             confirmation: true,
           });
-
-          if (commitResult.allow) {
-          } else {
-            // If policy commit fails, we can still decide to continue or fail the tool execution
-          }
+          console.log(commitResult);
         }
 
-        const rateLimitPolicyContext =
-          policiesContext.allowedPolicies['rate-limit'];
+        const rateLimitPolicyContext = policiesContext.allowedPolicies['rate-limit'];
         if (rateLimitPolicyContext) {
           const commitResult = await rateLimitPolicyContext.commit({
             transactionId: txHash,
           });
-
-          if (commitResult.allow) {
-          }
+          console.log(commitResult);
         }
-        const toolSdkPolicyContext =
-          policiesContext.allowedPolicies['vincent-tool-sdk'];
+        const toolSdkPolicyContext = policiesContext.allowedPolicies['vincent-tool-sdk'];
         if (toolSdkPolicyContext) {
           const commitResult = await toolSdkPolicyContext.commit();
 
