@@ -111,6 +111,22 @@ contract VincentAppFacetTest is Test {
         assertEq(appVersion.tools[1].toolIpfsCid, TOOL_IPFS_CID_2);
         assertEq(appVersion.tools[1].policies.length, 0);
 
+        VincentAppViewFacet.AppWithVersions[] memory apps = vincentAppViewFacet.getAppsByManager(APP_MANAGER_ALICE);
+        assertEq(apps.length, 1);
+        assertEq(apps[0].app.id, newAppId);
+        assertFalse(apps[0].app.isDeleted);
+        assertEq(apps[0].app.manager, APP_MANAGER_ALICE);
+        assertEq(apps[0].app.latestVersion, newAppVersion);
+        assertEq(apps[0].versions.length, 1);
+        assertEq(apps[0].versions[0].version, newAppVersion);
+        assertTrue(apps[0].versions[0].enabled);
+        assertEq(apps[0].versions[0].tools.length, 2);
+        assertEq(apps[0].versions[0].tools[0].toolIpfsCid, TOOL_IPFS_CID_1);
+        assertEq(apps[0].versions[0].tools[0].policies.length, 1);
+        assertEq(apps[0].versions[0].tools[0].policies[0].policyIpfsCid, POLICY_IPFS_CID_1);
+        assertEq(apps[0].versions[0].tools[1].toolIpfsCid, TOOL_IPFS_CID_2);
+        assertEq(apps[0].versions[0].tools[1].policies.length, 0);
+
         /**
          * Now testing registering the next version of the app
          */
@@ -189,6 +205,55 @@ contract VincentAppFacetTest is Test {
         assertEq(appVersion.tools[2].policies[0].parameterMetadata, POLICY_PARAMETER_METADATA_1);
         assertEq(appVersion.tools[2].policies[1].parameterMetadata, POLICY_PARAMETER_METADATA_2);
         assertEq(appVersion.tools[2].policies[2].parameterMetadata, POLICY_PARAMETER_METADATA_3);
+
+        apps = vincentAppViewFacet.getAppsByManager(APP_MANAGER_ALICE);
+        assertEq(apps.length, 1);
+        assertEq(apps[0].app.id, newAppId);
+        assertFalse(apps[0].app.isDeleted);
+        assertEq(apps[0].app.manager, APP_MANAGER_ALICE);
+        assertEq(apps[0].app.latestVersion, newAppVersion);
+        assertEq(apps[0].app.delegatees.length, 1);
+        assertEq(apps[0].app.delegatees[0], APP_DELEGATEE_CHARLIE);
+
+        assertEq(apps[0].versions.length, 2);
+        assertEq(apps[0].versions[0].version, 1);
+        assertTrue(apps[0].versions[0].enabled);
+        assertEq(apps[0].versions[0].tools.length, 2);
+        assertEq(apps[0].versions[0].tools[0].toolIpfsCid, TOOL_IPFS_CID_1);
+        assertEq(apps[0].versions[0].tools[0].policies.length, 1);
+        assertEq(apps[0].versions[0].tools[0].policies[0].policyIpfsCid, POLICY_IPFS_CID_1);
+        assertEq(apps[0].versions[0].tools[0].policies[0].parameterMetadata, POLICY_PARAMETER_METADATA_1);
+
+        assertEq(apps[0].versions[0].tools[1].toolIpfsCid, TOOL_IPFS_CID_2);
+        assertEq(apps[0].versions[0].tools[1].policies.length, 0);
+
+        assertEq(apps[0].versions[1].version, newAppVersion);
+        assertTrue(apps[0].versions[1].enabled);
+        assertEq(apps[0].versions[1].tools.length, 3);
+        assertEq(apps[0].versions[1].tools[0].toolIpfsCid, TOOL_IPFS_CID_1);
+        assertEq(apps[0].versions[1].tools[0].policies.length, 1);
+        assertEq(apps[0].versions[1].tools[0].policies[0].policyIpfsCid, POLICY_IPFS_CID_1);
+        assertEq(apps[0].versions[1].tools[0].policies[0].parameterMetadata, POLICY_PARAMETER_METADATA_1);
+
+        assertEq(apps[0].versions[1].tools[1].toolIpfsCid, TOOL_IPFS_CID_2);
+        assertEq(apps[0].versions[1].tools[1].policies.length, 0);
+
+        assertEq(apps[0].versions[1].tools[2].toolIpfsCid, TOOL_IPFS_CID_3);
+        assertEq(apps[0].versions[1].tools[2].policies.length, 3);
+        assertEq(apps[0].versions[1].tools[2].policies[0].policyIpfsCid, POLICY_IPFS_CID_1);
+        assertEq(apps[0].versions[1].tools[2].policies[1].policyIpfsCid, POLICY_IPFS_CID_2);
+        assertEq(apps[0].versions[1].tools[2].policies[2].policyIpfsCid, POLICY_IPFS_CID_3);
+        assertEq(apps[0].versions[1].tools[2].policies[0].parameterMetadata, POLICY_PARAMETER_METADATA_1);
+        assertEq(apps[0].versions[1].tools[2].policies[1].parameterMetadata, POLICY_PARAMETER_METADATA_2);
+        assertEq(apps[0].versions[1].tools[2].policies[2].parameterMetadata, POLICY_PARAMETER_METADATA_3);
+
+        app = vincentAppViewFacet.getAppByDelegatee(APP_DELEGATEE_CHARLIE);
+        assertEq(app.id, newAppId);
+        assertFalse(app.isDeleted);
+        assertEq(app.manager, APP_MANAGER_ALICE);
+        assertEq(app.latestVersion, newAppVersion);
+        assertEq(app.delegatees.length, 1);
+        assertEq(app.delegatees[0], APP_DELEGATEE_CHARLIE);
     }
 
     function testEnableAppVersion() public {
@@ -597,8 +662,12 @@ contract VincentAppFacetTest is Test {
         versionTools.toolPolicyParameterMetadata[0][0] = POLICY_PARAMETER_METADATA_1;
 
         versionTools.toolPolicyParameterMetadata[1] = new bytes[](0);
+
+        assertEq(vincentAppViewFacet.getTotalAppCount(), 0);
         
         (newAppId, newAppVersion) = _registerApp(delegatees, versionTools);
+
+        assertEq(vincentAppViewFacet.getTotalAppCount(), 1);
 
         assertEq(newAppId, 1);
         assertEq(newAppVersion, 1);
