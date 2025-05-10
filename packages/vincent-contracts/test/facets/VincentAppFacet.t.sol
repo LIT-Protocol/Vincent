@@ -4,17 +4,17 @@ pragma solidity ^0.8.29;
 import "forge-std/Test.sol";
 import "forge-std/console.sol";
 
-import {DeployVincentDiamond} from "../../../script/DeployVincentDiamond.sol";
-import {MockPKPNftFacet} from "../../mocks/MockPKPNftFacet.sol";
+import {DeployVincentDiamond} from "../../script/DeployVincentDiamond.sol";
+import {MockPKPNftFacet} from "../mocks/MockPKPNftFacet.sol";
 
-import {VincentDiamond} from "../../../src/VincentDiamond.sol";
-import {VincentAppFacet} from "../../../src/facets/VincentAppFacet.sol";
-import {VincentAppViewFacet} from "../../../src/facets/VincentAppViewFacet.sol";
-import {VincentUserFacet} from "../../../src/facets/VincentUserFacet.sol";
-import {VincentUserViewFacet} from "../../../src/facets/VincentUserViewFacet.sol";
+import {VincentDiamond} from "../../src/VincentDiamond.sol";
+import {VincentAppFacet} from "../../src/facets/VincentAppFacet.sol";
+import {VincentAppViewFacet} from "../../src/facets/VincentAppViewFacet.sol";
+import {VincentUserFacet} from "../../src/facets/VincentUserFacet.sol";
+import {VincentUserViewFacet} from "../../src/facets/VincentUserViewFacet.sol";
 
-import {LibVincentAppFacet} from "../../../src/libs/LibVincentAppFacet.sol";
-import {VincentBase} from "../../../src/VincentBase.sol";
+import {LibVincentAppFacet} from "../../src/libs/LibVincentAppFacet.sol";
+import {VincentBase} from "../../src/VincentBase.sol";
 
 contract VincentAppFacetTest is Test {
     uint256 constant PKP_TOKEN_ID_1 = 1;
