@@ -41,9 +41,10 @@ contract VincentAppFacetTest is Test {
 
     address APP_DELEGATEE_CHARLIE = makeAddr("Charlie");
     address APP_DELEGATEE_DAVID = makeAddr("David");
+    address APP_DELEGATEE_EVE = makeAddr("Eve");
 
-    address APP_USER_EVE = makeAddr("Eve");
     address APP_USER_FRANK = makeAddr("Frank");
+    address APP_USER_GEORGE = makeAddr("George");
 
     VincentDiamond public vincentDiamond;
     VincentAppFacet public vincentAppFacet;
@@ -61,8 +62,8 @@ contract VincentAppFacetTest is Test {
         address diamondAddress = deployScript.deployToNetwork("test", address(mockPkpNft));
         vincentDiamond = VincentDiamond(payable(diamondAddress));
 
-        mockPkpNft.setOwner(PKP_TOKEN_ID_1, APP_USER_EVE);
-        mockPkpNft.setOwner(PKP_TOKEN_ID_2, APP_USER_FRANK);
+        mockPkpNft.setOwner(PKP_TOKEN_ID_1, APP_USER_FRANK);
+        mockPkpNft.setOwner(PKP_TOKEN_ID_2, APP_USER_GEORGE);
 
         vincentAppFacet = VincentAppFacet(diamondAddress);
         vincentAppViewFacet = VincentAppViewFacet(diamondAddress);
@@ -612,7 +613,7 @@ contract VincentAppFacetTest is Test {
         policyParameterValues[0][0] = POLICY_PARAMETER_VALUES_1;
         policyParameterValues[1] = new bytes[](0);
 
-        vm.startPrank(APP_USER_EVE);
+        vm.startPrank(APP_USER_FRANK);
         vincentUserFacet.permitAppVersion(
             PKP_TOKEN_ID_1,
             newAppId,
