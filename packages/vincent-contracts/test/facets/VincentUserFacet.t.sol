@@ -859,142 +859,310 @@ contract VincentUserFacetTest is Test {
         );
     }
 
-    function testSetToolPolicyParameters_InvalidInput() public {}
+    function testSetToolPolicyParameters_InvalidInput() public {
+        address[] memory delegatees = new address[](1);
+        delegatees[0] = APP_DELEGATEE_CHARLIE;
+        (uint256 newAppId, uint256 newAppVersion) = _registerBasicApp(delegatees);
 
-    // /**
-    //  * ######################### removeToolPolicyParameters ERROR CASES #########################
-    //  */
-    // function testRemoveToolPolicyParameters_AppHasBeenDeleted() public {
-    //     address[] memory delegatees = new address[](1);
-    //     delegatees[0] = APP_DELEGATEE_CHARLIE;
-    //     (uint256 newAppId, uint256 newAppVersion) = _registerBasicApp(delegatees);
+        // First permit the app version with valid parameters
+        vm.startPrank(APP_USER_FRANK);
+        vincentUserFacet.permitAppVersion(
+            PKP_TOKEN_ID_1,
+            newAppId,
+            newAppVersion,
+            toolIpfsCids,
+            policyIpfsCids,
+            policyParameterValues
+        );
 
-    //     string[] memory toolIpfsCids = new string[](2);
-    //     toolIpfsCids[0] = TOOL_IPFS_CID_1;
-    //     toolIpfsCids[1] = TOOL_IPFS_CID_2;
+        // Now try to set parameters with an empty tool IPFS CIDs array
+        string[] memory emptyToolIpfsCids = new string[](0);
 
-    //     string[][] memory policyIpfsCids = new string[][](2);
-    //     policyIpfsCids[0] = new string[](1);
-    //     policyIpfsCids[0][0] = POLICY_IPFS_CID_1;
-    //     policyIpfsCids[1] = new string[](0);
+        vm.expectRevert(abi.encodeWithSelector(LibVincentUserFacet.InvalidInput.selector));
+        vincentUserFacet.setToolPolicyParameters(
+            PKP_TOKEN_ID_1,
+            newAppId,
+            newAppVersion,
+            emptyToolIpfsCids,
+            policyIpfsCids,
+            policyParameterValues
+        );
+    }
 
-    //     bytes[][] memory policyParameterValues = new bytes[][](2);
-    //     policyParameterValues[0] = new bytes[](1);
-    //     policyParameterValues[0][0] = POLICY_PARAMETER_VALUES_1;
-    //     policyParameterValues[1] = new bytes[](0);
+    function testSetToolPolicyParameters_EmptyToolIpfsCid() public {
+        address[] memory delegatees = new address[](1);
+        delegatees[0] = APP_DELEGATEE_CHARLIE;
+        (uint256 newAppId, uint256 newAppVersion) = _registerBasicApp(delegatees);
 
-    //     vm.startPrank(APP_USER_FRANK);
-    //     vincentUserFacet.permitAppVersion(
-    //         PKP_TOKEN_ID_1,
-    //         newAppId,
-    //         newAppVersion,
-    //         toolIpfsCids,
-    //         policyIpfsCids,
-    //         policyParameterValues
-    //     );
-    //     vm.stopPrank();
+        // First permit the app version with valid parameters
+        vm.startPrank(APP_USER_FRANK);
+        vincentUserFacet.permitAppVersion(
+            PKP_TOKEN_ID_1,
+            newAppId,
+            newAppVersion,
+            toolIpfsCids,
+            policyIpfsCids,
+            policyParameterValues
+        );
 
-    //     vm.startPrank(APP_MANAGER_ALICE);
-    //     vincentAppFacet.deleteApp(newAppId);
-    //     vm.stopPrank();
+        // Create arrays with an empty tool IPFS CID
+        string[] memory _toolIpfsCids = new string[](2);
+        _toolIpfsCids[0] = ""; // Empty string for first tool
+        _toolIpfsCids[1] = TOOL_IPFS_CID_2;
 
-    //     vm.startPrank(APP_USER_FRANK);
-    //     vm.expectRevert(abi.encodeWithSelector(VincentBase.AppHasBeenDeleted.selector, newAppId));
-    //     vincentUserFacet.removeToolPolicyParameters(
-    //         newAppId,
-    //         PKP_TOKEN_ID_1,
-    //         newAppVersion,
-    //         toolIpfsCids,
-    //         policyIpfsCids
-    //     );
-    // }
+        vm.expectRevert(abi.encodeWithSelector(VincentUserViewFacet.EmptyToolIpfsCid.selector));
+        vincentUserFacet.setToolPolicyParameters(
+            PKP_TOKEN_ID_1,
+            newAppId,
+            newAppVersion,
+            _toolIpfsCids,
+            policyIpfsCids,
+            policyParameterValues
+        );
+    }
 
-    // function testRemoveToolPolicyParameters_NotPkpOwner() public {
-    //     address[] memory delegatees = new address[](1);
-    //     delegatees[0] = APP_DELEGATEE_CHARLIE;
-    //     (uint256 newAppId, uint256 newAppVersion) = _registerBasicApp(delegatees);
+    function testSetToolPolicyParameters_NotAllRegisteredToolsProvided() public {
+        address[] memory delegatees = new address[](1);
+        delegatees[0] = APP_DELEGATEE_CHARLIE;
+        (uint256 newAppId, uint256 newAppVersion) = _registerBasicApp(delegatees);
 
-    //     string[] memory toolIpfsCids = new string[](2);
-    //     toolIpfsCids[0] = TOOL_IPFS_CID_1;
-    //     toolIpfsCids[1] = TOOL_IPFS_CID_2;
+        // First permit the app version with valid parameters
+        vm.startPrank(APP_USER_FRANK);
+        vincentUserFacet.permitAppVersion(
+            PKP_TOKEN_ID_1,
+            newAppId,
+            newAppVersion,
+            toolIpfsCids,
+            policyIpfsCids,
+            policyParameterValues
+        );
 
-    //     string[][] memory policyIpfsCids = new string[][](2);
-    //     policyIpfsCids[0] = new string[](1);
-    //     policyIpfsCids[0][0] = POLICY_IPFS_CID_1;
-    //     policyIpfsCids[1] = new string[](0);
+        // Create arrays with only one tool instead of both registered tools
+        string[] memory _toolIpfsCids = new string[](1);
+        _toolIpfsCids[0] = TOOL_IPFS_CID_1; // Only providing first tool, missing TOOL_IPFS_CID_2
 
-    //     bytes[][] memory policyParameterValues = new bytes[][](2);
-    //     policyParameterValues[0] = new bytes[](1);
-    //     policyParameterValues[0][0] = POLICY_PARAMETER_VALUES_1;
-    //     policyParameterValues[1] = new bytes[](0);
+        string[][] memory _policyIpfsCids = new string[][](1);
+        _policyIpfsCids[0] = new string[](1);
+        _policyIpfsCids[0][0] = POLICY_IPFS_CID_1;
 
-    //     vm.startPrank(APP_USER_FRANK);
-    //     vincentUserFacet.permitAppVersion(
-    //         PKP_TOKEN_ID_1,
-    //         newAppId,
-    //         newAppVersion,
-    //         toolIpfsCids,
-    //         policyIpfsCids,
-    //         policyParameterValues
-    //     );
-    //     vm.stopPrank();
+        bytes[][] memory _policyParameterValues = new bytes[][](1);
+        _policyParameterValues[0] = new bytes[](1);
+        _policyParameterValues[0][0] = POLICY_PARAMETER_VALUES_1;
 
-    //     vm.startPrank(APP_DELEGATEE_CHARLIE);
-    //     vm.expectRevert(abi.encodeWithSelector(LibVincentUserFacet.NotPkpOwner.selector, PKP_TOKEN_ID_1, APP_DELEGATEE_CHARLIE));
-    //     vincentUserFacet.removeToolPolicyParameters(
-    //         newAppId,
-    //         PKP_TOKEN_ID_1,
-    //         newAppVersion,
-    //         toolIpfsCids,
-    //         policyIpfsCids
-    //     );
-    // }
+        vm.expectRevert(abi.encodeWithSelector(LibVincentUserFacet.NotAllRegisteredToolsProvided.selector, newAppId, newAppVersion));
+        vincentUserFacet.setToolPolicyParameters(
+            PKP_TOKEN_ID_1,
+            newAppId,
+            newAppVersion,
+            _toolIpfsCids,
+            _policyIpfsCids,
+            _policyParameterValues
+        );
+    }
 
-    // function testRemoveToolPolicyParameters_AppNotRegistered() public {
-    //     string[] memory toolIpfsCids = new string[](2);
-    //     toolIpfsCids[0] = TOOL_IPFS_CID_1;
-    //     toolIpfsCids[1] = TOOL_IPFS_CID_2;
+    function testSetToolPolicyParameters_ToolPolicyNotRegisteredForAppVersion() public {
+        address[] memory delegatees = new address[](1);
+        delegatees[0] = APP_DELEGATEE_CHARLIE;
+        (uint256 newAppId, uint256 newAppVersion) = _registerBasicApp(delegatees);
 
-    //     string[][] memory policyIpfsCids = new string[][](2);
-    //     policyIpfsCids[0] = new string[](1);
-    //     policyIpfsCids[0][0] = POLICY_IPFS_CID_1;
-    //     policyIpfsCids[1] = new string[](0);
+        // First permit the app version with valid parameters
+        vm.startPrank(APP_USER_FRANK);
+        vincentUserFacet.permitAppVersion(
+            PKP_TOKEN_ID_1,
+            newAppId,
+            newAppVersion,
+            toolIpfsCids,
+            policyIpfsCids,
+            policyParameterValues
+        );
 
-    //     vm.startPrank(APP_USER_FRANK);
-    //     vm.expectRevert(abi.encodeWithSelector(VincentBase.AppNotRegistered.selector, 1));
-    //     vincentUserFacet.removeToolPolicyParameters(
-    //         1,
-    //         PKP_TOKEN_ID_1,
-    //         1,
-    //         toolIpfsCids,
-    //         policyIpfsCids
-    //     );
-    // }
+        // Create arrays with an unregistered policy (POLICY_IPFS_CID_3)
+        string[][] memory _policyIpfsCids = new string[][](2);
+        _policyIpfsCids[0] = new string[](1);
+        _policyIpfsCids[0][0] = POLICY_IPFS_CID_3; // This policy is not registered for the tool
+        _policyIpfsCids[1] = new string[](0);
 
-    // function testRemoveToolPolicyParameters_AppVersionNotPermitted() public {
-    //     address[] memory delegatees = new address[](1);
-    //     delegatees[0] = APP_DELEGATEE_CHARLIE;
-    //     (uint256 newAppId, uint256 newAppVersion) = _registerBasicApp(delegatees);
+        bytes[][] memory _policyParameterValues = new bytes[][](2);
+        _policyParameterValues[0] = new bytes[](1);
+        _policyParameterValues[0][0] = POLICY_PARAMETER_VALUES_1;
+        _policyParameterValues[1] = new bytes[](0);
 
-    //     string[] memory toolIpfsCids = new string[](2);
-    //     toolIpfsCids[0] = TOOL_IPFS_CID_1;
-    //     toolIpfsCids[1] = TOOL_IPFS_CID_2;
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                LibVincentUserFacet.ToolPolicyNotRegisteredForAppVersion.selector,
+                newAppId,
+                newAppVersion,
+                TOOL_IPFS_CID_1,
+                POLICY_IPFS_CID_3
+            )
+        );
+        vincentUserFacet.setToolPolicyParameters(
+            PKP_TOKEN_ID_1,
+            newAppId,
+            newAppVersion,
+            toolIpfsCids,
+            _policyIpfsCids,
+            _policyParameterValues
+        );
+    }
 
-    //     string[][] memory policyIpfsCids = new string[][](2);
-    //     policyIpfsCids[0] = new string[](1);
-    //     policyIpfsCids[0][0] = POLICY_IPFS_CID_1;
-    //     policyIpfsCids[1] = new string[](0);
+    /**
+     * ######################### removeToolPolicyParameters ERROR CASES #########################
+     */
+    function testRemoveToolPolicyParameters_NotPkpOwner() public {
+        address[] memory delegatees = new address[](1);
+        delegatees[0] = APP_DELEGATEE_CHARLIE;
+        (uint256 newAppId, uint256 newAppVersion) = _registerBasicApp(delegatees);
 
-    //     vm.startPrank(APP_USER_FRANK);
-    //     vm.expectRevert(abi.encodeWithSelector(LibVincentUserFacet.AppVersionNotPermitted.selector, PKP_TOKEN_ID_1, newAppId, newAppVersion));
-    //     vincentUserFacet.removeToolPolicyParameters(
-    //         newAppId,
-    //         PKP_TOKEN_ID_1,
-    //         newAppVersion,
-    //         toolIpfsCids,
-    //         policyIpfsCids
-    //     );
-    // }
+        vm.startPrank(APP_USER_FRANK);
+        vincentUserFacet.permitAppVersion(
+            PKP_TOKEN_ID_1,
+            newAppId,
+            newAppVersion,
+            toolIpfsCids,
+            policyIpfsCids,
+            policyParameterValues
+        );
+        vm.stopPrank();
+
+        vm.startPrank(APP_DELEGATEE_CHARLIE);
+        vm.expectRevert(abi.encodeWithSelector(LibVincentUserFacet.NotPkpOwner.selector, PKP_TOKEN_ID_1, APP_DELEGATEE_CHARLIE));
+        vincentUserFacet.removeToolPolicyParameters(
+            newAppId,
+            PKP_TOKEN_ID_1,
+            newAppVersion,
+            toolIpfsCids,
+            policyIpfsCids
+        );
+    }
+
+    function testRemoveToolPolicyParameters_AppNotRegistered() public {
+        vm.startPrank(APP_USER_FRANK);
+        vm.expectRevert(abi.encodeWithSelector(VincentBase.AppNotRegistered.selector, 1));
+        vincentUserFacet.removeToolPolicyParameters(
+            1,
+            PKP_TOKEN_ID_1,
+            1,
+            toolIpfsCids,
+            policyIpfsCids
+        );
+    }
+
+    function testRemoveToolPolicyParameters_AppVersionNotRegistered() public {
+        address[] memory delegatees = new address[](1);
+        delegatees[0] = APP_DELEGATEE_CHARLIE;
+        (uint256 newAppId, uint256 newAppVersion) = _registerBasicApp(delegatees);
+
+        vm.startPrank(APP_USER_FRANK);
+        vm.expectRevert(abi.encodeWithSelector(VincentBase.AppVersionNotRegistered.selector, newAppId, newAppVersion + 1));
+        vincentUserFacet.removeToolPolicyParameters(
+            newAppId,
+            PKP_TOKEN_ID_1,
+            newAppVersion + 1, // Try to remove parameters for a version that hasn't been registered
+            toolIpfsCids,
+            policyIpfsCids
+        );
+    }
+
+    function testRemoveToolPolicyParameters_InvalidInput() public {
+        address[] memory delegatees = new address[](1);
+        delegatees[0] = APP_DELEGATEE_CHARLIE;
+        (uint256 newAppId, uint256 newAppVersion) = _registerBasicApp(delegatees);
+
+        // First permit the app version with valid parameters
+        vm.startPrank(APP_USER_FRANK);
+        vincentUserFacet.permitAppVersion(
+            PKP_TOKEN_ID_1,
+            newAppId,
+            newAppVersion,
+            toolIpfsCids,
+            policyIpfsCids,
+            policyParameterValues
+        );
+
+        // Now try to set parameters with an empty tool IPFS CIDs array
+        string[] memory emptyToolIpfsCids = new string[](0);
+
+        vm.expectRevert(abi.encodeWithSelector(LibVincentUserFacet.InvalidInput.selector));
+        vincentUserFacet.removeToolPolicyParameters(
+            PKP_TOKEN_ID_1,
+            newAppId,
+            newAppVersion,
+            emptyToolIpfsCids,
+            policyIpfsCids
+        );
+    }
+
+    function testRemoveToolPolicyParameters_EmptyToolIpfsCid() public {
+        address[] memory delegatees = new address[](1);
+        delegatees[0] = APP_DELEGATEE_CHARLIE;
+        (uint256 newAppId, uint256 newAppVersion) = _registerBasicApp(delegatees);
+
+        // First permit the app version with valid parameters
+        vm.startPrank(APP_USER_FRANK);
+        vincentUserFacet.permitAppVersion(
+            PKP_TOKEN_ID_1,
+            newAppId,
+            newAppVersion,
+            toolIpfsCids,
+            policyIpfsCids,
+            policyParameterValues
+        );
+
+        // Create arrays with an empty tool IPFS CID
+        string[] memory _toolIpfsCids = new string[](2);
+        _toolIpfsCids[0] = ""; // Empty string for first tool
+        _toolIpfsCids[1] = TOOL_IPFS_CID_2;
+
+        vm.expectRevert(abi.encodeWithSelector(VincentUserViewFacet.EmptyToolIpfsCid.selector));
+        vincentUserFacet.removeToolPolicyParameters(
+            PKP_TOKEN_ID_1,
+            newAppId,
+            newAppVersion,
+            _toolIpfsCids,
+            policyIpfsCids
+        );
+    }
+
+    function testRemoveToolPolicyParameters_ToolPolicyNotRegisteredForAppVersion() public {
+        address[] memory delegatees = new address[](1);
+        delegatees[0] = APP_DELEGATEE_CHARLIE;
+        (uint256 newAppId, uint256 newAppVersion) = _registerBasicApp(delegatees);
+
+        // First permit the app version with valid parameters
+        vm.startPrank(APP_USER_FRANK);
+        vincentUserFacet.permitAppVersion(
+            PKP_TOKEN_ID_1,
+            newAppId,
+            newAppVersion,
+            toolIpfsCids,
+            policyIpfsCids,
+            policyParameterValues
+        );
+
+        // Create arrays with an unregistered policy (POLICY_IPFS_CID_3)
+        string[][] memory _policyIpfsCids = new string[][](2);
+        _policyIpfsCids[0] = new string[](1);
+        _policyIpfsCids[0][0] = POLICY_IPFS_CID_3; // This policy is not registered for the tool
+        _policyIpfsCids[1] = new string[](0);
+
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                LibVincentUserFacet.ToolPolicyNotRegisteredForAppVersion.selector,
+                newAppId,
+                newAppVersion,
+                TOOL_IPFS_CID_1,
+                POLICY_IPFS_CID_3
+            )
+        );
+        vincentUserFacet.removeToolPolicyParameters(
+            newAppId,
+            PKP_TOKEN_ID_1,
+            newAppVersion,
+            toolIpfsCids,
+            _policyIpfsCids
+        );
+    }
 
     function _registerApp(
         address[] memory delegatees,
