@@ -239,6 +239,241 @@ contract VincentUserFacetTest is Test {
         assertEq(toolExecutionValidation.policies[0].policyParameterValues, POLICY_PARAMETER_VALUES_1);
     }
 
+    function testUnPermitAppVersion() public {
+        address[] memory delegatees = new address[](1);
+        delegatees[0] = APP_DELEGATEE_CHARLIE;
+        (uint256 newAppId_1, uint256 newAppVersion_1) = _registerBasicApp(delegatees);
+
+        delegatees[0] = APP_DELEGATEE_DAVID;
+        (uint256 newAppId_2, uint256 newAppVersion_2) = _registerBasicApp(delegatees);
+
+        string[] memory toolIpfsCids = new string[](2);
+        toolIpfsCids[0] = TOOL_IPFS_CID_1;
+        toolIpfsCids[1] = TOOL_IPFS_CID_2;
+
+        string[][] memory policyIpfsCids = new string[][](2);
+        policyIpfsCids[0] = new string[](1);
+        policyIpfsCids[0][0] = POLICY_IPFS_CID_1;
+        policyIpfsCids[1] = new string[](0);
+
+        bytes[][] memory policyParameterValues = new bytes[][](2);
+        policyParameterValues[0] = new bytes[](1);
+        policyParameterValues[0][0] = POLICY_PARAMETER_VALUES_1;
+        policyParameterValues[1] = new bytes[](0);
+
+        vm.startPrank(APP_USER_FRANK);
+        // Permit App 1 Version 1 for PKP 1 (Frank)
+        vincentUserFacet.permitAppVersion(
+            PKP_TOKEN_ID_1,
+            newAppId_1,
+            newAppVersion_1,
+            toolIpfsCids,
+            policyIpfsCids,
+            policyParameterValues
+        );
+
+        // Permit App 2 Version 1 for PKP 1 (Frank)
+        vincentUserFacet.permitAppVersion(
+            PKP_TOKEN_ID_1,
+            newAppId_2,
+            newAppVersion_2,
+            toolIpfsCids,
+            policyIpfsCids,
+            policyParameterValues
+        );
+        vm.stopPrank();
+
+        // Verify initial state
+        uint256[] memory permittedAppIds = vincentUserViewFacet.getAllPermittedAppIdsForPkp(PKP_TOKEN_ID_1);
+        assertEq(permittedAppIds.length, 2);
+        assertEq(permittedAppIds[0], newAppId_1);
+        assertEq(permittedAppIds[1], newAppId_2);
+
+        // Unpermit App 1 Version 1 for PKP 1 (Frank)
+        vm.startPrank(APP_USER_FRANK);
+        vincentUserFacet.unPermitAppVersion(PKP_TOKEN_ID_1, newAppId_1, newAppVersion_1);
+        vm.stopPrank();
+
+        // Verify App 1 is no longer permitted
+        uint256 permittedAppVersion = vincentUserViewFacet.getPermittedAppVersionForPkp(PKP_TOKEN_ID_1, newAppId_1);
+        assertEq(permittedAppVersion, 0);
+
+        // Verify App 2 is still permitted
+        permittedAppVersion = vincentUserViewFacet.getPermittedAppVersionForPkp(PKP_TOKEN_ID_1, newAppId_2);
+        assertEq(permittedAppVersion, newAppVersion_2);
+
+        // Verify permitted apps list is updated
+        permittedAppIds = vincentUserViewFacet.getAllPermittedAppIdsForPkp(PKP_TOKEN_ID_1);
+        assertEq(permittedAppIds.length, 1);
+        assertEq(permittedAppIds[0], newAppId_2);
+
+        // Verify tool execution validation for App 1 is no longer permitted
+        VincentUserViewFacet.ToolExecutionValidation memory toolExecutionValidation = vincentUserViewFacet.validateToolExecutionAndGetPolicies(
+            APP_DELEGATEE_CHARLIE,
+            PKP_TOKEN_ID_1,
+            TOOL_IPFS_CID_1
+        );
+        assertFalse(toolExecutionValidation.isPermitted);
+
+        // Verify tool execution validation for App 2 is still permitted
+        toolExecutionValidation = vincentUserViewFacet.validateToolExecutionAndGetPolicies(
+            APP_DELEGATEE_DAVID,
+            PKP_TOKEN_ID_1,
+            TOOL_IPFS_CID_1
+        );
+        assertTrue(toolExecutionValidation.isPermitted);
+        assertEq(toolExecutionValidation.appId, newAppId_2);
+        assertEq(toolExecutionValidation.appVersion, newAppVersion_2);
+    }
+
+    function testSetToolPolicyParameters() public {
+        address[] memory delegatees = new address[](1);
+        delegatees[0] = APP_DELEGATEE_CHARLIE;
+        (uint256 newAppId, uint256 newAppVersion) = _registerBasicApp(delegatees);
+
+        string[] memory toolIpfsCids = new string[](2);
+        toolIpfsCids[0] = TOOL_IPFS_CID_1;
+        toolIpfsCids[1] = TOOL_IPFS_CID_2;
+
+        string[][] memory policyIpfsCids = new string[][](2);
+        policyIpfsCids[0] = new string[](1);
+        policyIpfsCids[0][0] = POLICY_IPFS_CID_1;
+        policyIpfsCids[1] = new string[](0);
+
+        bytes[][] memory policyParameterValues = new bytes[][](2);
+        policyParameterValues[0] = new bytes[](1);
+        policyParameterValues[0][0] = POLICY_PARAMETER_VALUES_1;
+        policyParameterValues[1] = new bytes[](0);
+
+        // First permit the app version
+        vm.startPrank(APP_USER_FRANK);
+        vincentUserFacet.permitAppVersion(
+            PKP_TOKEN_ID_1,
+            newAppId,
+            newAppVersion,
+            toolIpfsCids,
+            policyIpfsCids,
+            policyParameterValues
+        );
+
+        // Verify initial policy parameters
+        VincentUserViewFacet.ToolWithPolicies[] memory toolsWithPolicies = vincentUserViewFacet.getAllToolsAndPoliciesForApp(
+            PKP_TOKEN_ID_1,
+            newAppId
+        );
+        assertEq(toolsWithPolicies.length, 2);
+        assertEq(toolsWithPolicies[0].policies.length, 1);
+        assertEq(toolsWithPolicies[0].policies[0].policyParameterValues, POLICY_PARAMETER_VALUES_1);
+        assertEq(toolsWithPolicies[1].policies.length, 0);
+
+        // Update policy parameters
+        bytes[][] memory newPolicyParameterValues = new bytes[][](2);
+        newPolicyParameterValues[0] = new bytes[](1);
+        newPolicyParameterValues[0][0] = POLICY_PARAMETER_VALUES_2; // Change to different value
+        newPolicyParameterValues[1] = new bytes[](0);
+
+        vincentUserFacet.setToolPolicyParameters(
+            PKP_TOKEN_ID_1,
+            newAppId,
+            newAppVersion,
+            toolIpfsCids,
+            policyIpfsCids,
+            newPolicyParameterValues
+        );
+        vm.stopPrank();
+
+        // Verify updated policy parameters
+        toolsWithPolicies = vincentUserViewFacet.getAllToolsAndPoliciesForApp(
+            PKP_TOKEN_ID_1,
+            newAppId
+        );
+        assertEq(toolsWithPolicies.length, 2);
+        assertEq(toolsWithPolicies[0].policies.length, 1);
+        assertEq(toolsWithPolicies[0].policies[0].policyParameterValues, POLICY_PARAMETER_VALUES_2);
+        assertEq(toolsWithPolicies[1].policies.length, 0);
+
+        // Verify tool execution validation returns updated parameters
+        VincentUserViewFacet.ToolExecutionValidation memory toolExecutionValidation = vincentUserViewFacet.validateToolExecutionAndGetPolicies(
+            APP_DELEGATEE_CHARLIE,
+            PKP_TOKEN_ID_1,
+            TOOL_IPFS_CID_1
+        );
+        assertTrue(toolExecutionValidation.isPermitted);
+        assertEq(toolExecutionValidation.policies.length, 1);
+        assertEq(toolExecutionValidation.policies[0].policyParameterValues, POLICY_PARAMETER_VALUES_2);
+    }
+
+    function testRemoveToolPolicyParameters() public {
+        address[] memory delegatees = new address[](1);
+        delegatees[0] = APP_DELEGATEE_CHARLIE;
+        (uint256 newAppId, uint256 newAppVersion) = _registerBasicApp(delegatees);
+
+        string[] memory toolIpfsCids = new string[](2);
+        toolIpfsCids[0] = TOOL_IPFS_CID_1;
+        toolIpfsCids[1] = TOOL_IPFS_CID_2;
+
+        string[][] memory policyIpfsCids = new string[][](2);
+        policyIpfsCids[0] = new string[](1);
+        policyIpfsCids[0][0] = POLICY_IPFS_CID_1;
+        policyIpfsCids[1] = new string[](0);
+
+        bytes[][] memory policyParameterValues = new bytes[][](2);
+        policyParameterValues[0] = new bytes[](1);
+        policyParameterValues[0][0] = POLICY_PARAMETER_VALUES_1;
+        policyParameterValues[1] = new bytes[](0);
+
+        // First permit the app version
+        vm.startPrank(APP_USER_FRANK);
+        vincentUserFacet.permitAppVersion(
+            PKP_TOKEN_ID_1,
+            newAppId,
+            newAppVersion,
+            toolIpfsCids,
+            policyIpfsCids,
+            policyParameterValues
+        );
+
+        // Verify initial policy parameters
+        VincentUserViewFacet.ToolWithPolicies[] memory toolsWithPolicies = vincentUserViewFacet.getAllToolsAndPoliciesForApp(
+            PKP_TOKEN_ID_1,
+            newAppId
+        );
+        assertEq(toolsWithPolicies.length, 2);
+        assertEq(toolsWithPolicies[0].policies.length, 1);
+        assertEq(toolsWithPolicies[0].policies[0].policyParameterValues, POLICY_PARAMETER_VALUES_1);
+        assertEq(toolsWithPolicies[1].policies.length, 0);
+
+        // Remove policy parameters
+        vincentUserFacet.removeToolPolicyParameters(
+            newAppId,
+            PKP_TOKEN_ID_1,
+            newAppVersion,
+            toolIpfsCids,
+            policyIpfsCids
+        );
+        vm.stopPrank();
+
+        // Verify policy parameters are removed
+        toolsWithPolicies = vincentUserViewFacet.getAllToolsAndPoliciesForApp(
+            PKP_TOKEN_ID_1,
+            newAppId
+        );
+        assertEq(toolsWithPolicies.length, 2);
+        assertEq(toolsWithPolicies[0].policies.length, 1);
+        assertEq(toolsWithPolicies[0].policies[0].policyParameterValues, bytes("")); // Empty bytes after removal
+        assertEq(toolsWithPolicies[1].policies.length, 0);
+
+        // Verify tool execution validation returns empty parameters
+        VincentUserViewFacet.ToolExecutionValidation memory toolExecutionValidation = vincentUserViewFacet.validateToolExecutionAndGetPolicies(
+            APP_DELEGATEE_CHARLIE,
+            PKP_TOKEN_ID_1,
+            TOOL_IPFS_CID_1
+        );
+        assertTrue(toolExecutionValidation.isPermitted);
+        assertEq(toolExecutionValidation.policies.length, 1);
+        assertEq(toolExecutionValidation.policies[0].policyParameterValues, bytes("")); // Empty bytes after removal
+    }
+
     function _registerApp(
         address[] memory delegatees,
         VincentAppFacet.AppVersionTools memory versionTools
