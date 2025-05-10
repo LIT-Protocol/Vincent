@@ -886,88 +886,69 @@ contract VincentUserFacetTest is Test {
         );
     }
 
-    // /**
-    //  * ######################### unPermitAppVersion ERROR CASES #########################
-    //  */
-    // function testUnPermitAppVersion_AppHasBeenDeleted() public {
-    //     address[] memory delegatees = new address[](1);
-    //     delegatees[0] = APP_DELEGATEE_CHARLIE;
-    //     (uint256 newAppId, uint256 newAppVersion) = _registerBasicApp(delegatees);
+    /**
+     * ######################### unPermitAppVersion ERROR CASES #########################
+     */
+    function testUnPermitAppVersion_NotPkpOwner() public {
+        address[] memory delegatees = new address[](1);
+        delegatees[0] = APP_DELEGATEE_CHARLIE;
+        (uint256 newAppId, uint256 newAppVersion) = _registerBasicApp(delegatees);
 
-    //     string[] memory toolIpfsCids = new string[](2);
-    //     toolIpfsCids[0] = TOOL_IPFS_CID_1;
-    //     toolIpfsCids[1] = TOOL_IPFS_CID_2;
+        string[] memory toolIpfsCids = new string[](2);
+        toolIpfsCids[0] = TOOL_IPFS_CID_1;
+        toolIpfsCids[1] = TOOL_IPFS_CID_2;
 
-    //     string[][] memory policyIpfsCids = new string[][](2);
-    //     policyIpfsCids[0] = new string[](1);
-    //     policyIpfsCids[0][0] = POLICY_IPFS_CID_1;
-    //     policyIpfsCids[1] = new string[](0);
+        string[][] memory policyIpfsCids = new string[][](2);
+        policyIpfsCids[0] = new string[](1);
+        policyIpfsCids[0][0] = POLICY_IPFS_CID_1;
+        policyIpfsCids[1] = new string[](0);
 
-    //     bytes[][] memory policyParameterValues = new bytes[][](2);
-    //     policyParameterValues[0] = new bytes[](1);
-    //     policyParameterValues[0][0] = POLICY_PARAMETER_VALUES_1;
-    //     policyParameterValues[1] = new bytes[](0);
+        bytes[][] memory policyParameterValues = new bytes[][](2);
+        policyParameterValues[0] = new bytes[](1);
+        policyParameterValues[0][0] = POLICY_PARAMETER_VALUES_1;
+        policyParameterValues[1] = new bytes[](0);
 
-    //     vm.startPrank(APP_USER_FRANK);
-    //     vincentUserFacet.permitAppVersion(
-    //         PKP_TOKEN_ID_1,
-    //         newAppId,
-    //         newAppVersion,
-    //         toolIpfsCids,
-    //         policyIpfsCids,
-    //         policyParameterValues
-    //     );
-    //     vm.stopPrank();
+        vm.startPrank(APP_USER_FRANK);
+        vincentUserFacet.permitAppVersion(
+            PKP_TOKEN_ID_1,
+            newAppId,
+            newAppVersion,
+            toolIpfsCids,
+            policyIpfsCids,
+            policyParameterValues
+        );
+        vm.stopPrank();
 
-    //     vm.startPrank(APP_MANAGER_ALICE);
-    //     vincentAppFacet.deleteApp(newAppId);
-    //     vm.stopPrank();
+        vm.startPrank(APP_DELEGATEE_CHARLIE);
+        vm.expectRevert(abi.encodeWithSelector(LibVincentUserFacet.NotPkpOwner.selector, PKP_TOKEN_ID_1, APP_DELEGATEE_CHARLIE));
+        vincentUserFacet.unPermitAppVersion(PKP_TOKEN_ID_1, newAppId, newAppVersion);
+    }
 
-    //     vm.startPrank(APP_USER_FRANK);
-    //     vm.expectRevert(abi.encodeWithSelector(VincentBase.AppHasBeenDeleted.selector, newAppId));
-    //     vincentUserFacet.unPermitAppVersion(PKP_TOKEN_ID_1, newAppId, newAppVersion);
-    // }
+    function testUnPermitAppVersion_AppNotRegistered() public {
+        vm.startPrank(APP_USER_FRANK);
+        vm.expectRevert(abi.encodeWithSelector(VincentBase.AppNotRegistered.selector, 1));
+        vincentUserFacet.unPermitAppVersion(PKP_TOKEN_ID_1, 1, 1);
+    }
 
-    // function testUnPermitAppVersion_NotPkpOwner() public {
-    //     address[] memory delegatees = new address[](1);
-    //     delegatees[0] = APP_DELEGATEE_CHARLIE;
-    //     (uint256 newAppId, uint256 newAppVersion) = _registerBasicApp(delegatees);
+    function testUnPermitAppVersion_AppVersionNotRegistered() public {
+        address[] memory delegatees = new address[](1);
+        delegatees[0] = APP_DELEGATEE_CHARLIE;
+        (uint256 newAppId, uint256 newAppVersion) = _registerBasicApp(delegatees);
 
-    //     string[] memory toolIpfsCids = new string[](2);
-    //     toolIpfsCids[0] = TOOL_IPFS_CID_1;
-    //     toolIpfsCids[1] = TOOL_IPFS_CID_2;
+        vm.startPrank(APP_USER_FRANK);
+        vm.expectRevert(abi.encodeWithSelector(VincentBase.AppVersionNotRegistered.selector, newAppId, newAppVersion + 1));
+        vincentUserFacet.unPermitAppVersion(PKP_TOKEN_ID_1, newAppId, newAppVersion + 1);
+    }
 
-    //     string[][] memory policyIpfsCids = new string[][](2);
-    //     policyIpfsCids[0] = new string[](1);
-    //     policyIpfsCids[0][0] = POLICY_IPFS_CID_1;
-    //     policyIpfsCids[1] = new string[](0);
+    function testUnPermitAppVersion_AppVersionNotPermitted() public {
+        address[] memory delegatees = new address[](1);
+        delegatees[0] = APP_DELEGATEE_CHARLIE;
+        (uint256 newAppId, uint256 newAppVersion) = _registerBasicApp(delegatees);
 
-    //     bytes[][] memory policyParameterValues = new bytes[][](2);
-    //     policyParameterValues[0] = new bytes[](1);
-    //     policyParameterValues[0][0] = POLICY_PARAMETER_VALUES_1;
-    //     policyParameterValues[1] = new bytes[](0);
-
-    //     vm.startPrank(APP_USER_FRANK);
-    //     vincentUserFacet.permitAppVersion(
-    //         PKP_TOKEN_ID_1,
-    //         newAppId,
-    //         newAppVersion,
-    //         toolIpfsCids,
-    //         policyIpfsCids,
-    //         policyParameterValues
-    //     );
-    //     vm.stopPrank();
-
-    //     vm.startPrank(APP_DELEGATEE_CHARLIE);
-    //     vm.expectRevert(abi.encodeWithSelector(LibVincentUserFacet.NotPkpOwner.selector, PKP_TOKEN_ID_1, APP_DELEGATEE_CHARLIE));
-    //     vincentUserFacet.unPermitAppVersion(PKP_TOKEN_ID_1, newAppId, newAppVersion);
-    // }
-
-    // function testUnPermitAppVersion_AppNotRegistered() public {
-    //     vm.startPrank(APP_USER_FRANK);
-    //     vm.expectRevert(abi.encodeWithSelector(VincentBase.AppNotRegistered.selector, 1));
-    //     vincentUserFacet.unPermitAppVersion(PKP_TOKEN_ID_1, 1, 1);
-    // }
+        vm.startPrank(APP_USER_FRANK);
+        vm.expectRevert(abi.encodeWithSelector(LibVincentUserFacet.AppVersionNotPermitted.selector, PKP_TOKEN_ID_1, newAppId, newAppVersion));
+        vincentUserFacet.unPermitAppVersion(PKP_TOKEN_ID_1, newAppId, newAppVersion);
+    }
 
     // function testUnPermitAppVersion_AppVersionNotPermitted() public {
     //     address[] memory delegatees = new address[](1);
