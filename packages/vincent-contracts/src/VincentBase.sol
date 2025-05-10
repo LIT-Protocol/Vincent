@@ -34,9 +34,8 @@ contract VincentBase {
         VincentAppStorage.AppStorage storage as_ = VincentAppStorage.appStorage();
         if (appId == 0 || appId > as_.appIdCounter) revert AppNotRegistered(appId);
 
-        // Also validate the app version exists
         VincentAppStorage.App storage app = as_.appIdToApp[appId];
-        if (appVersion == 0 || appVersion > app.versionedApps.length) {
+        if (appVersion == 0 || appVersion > app.appVersions.length) {
             revert AppVersionNotRegistered(appId, appVersion);
         }
         _;
@@ -56,7 +55,7 @@ contract VincentBase {
      * @param version The app version number (1-based)
      * @return index The corresponding array index (0-based)
      */
-    function getVersionedAppIndex(uint256 version) internal pure returns (uint256 index) {
+    function getAppVersionIndex(uint256 version) internal pure returns (uint256 index) {
         return version - 1;
     }
 }
