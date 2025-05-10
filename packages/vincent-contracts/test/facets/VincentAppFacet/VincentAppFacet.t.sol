@@ -71,6 +71,15 @@ contract VincentAppFacetTest is Test {
     }
 
     function testRegisterApp() public {
+        vm.expectEmit(true, true, true, true);
+        emit LibVincentAppFacet.NewAppRegistered(1, APP_MANAGER_ALICE);
+        vm.expectEmit(true, true, true, true);
+        emit LibVincentAppFacet.NewLitActionRegistered(keccak256(abi.encodePacked(TOOL_IPFS_CID_1)));
+        vm.expectEmit(true, true, true, true);
+        emit LibVincentAppFacet.NewLitActionRegistered(keccak256(abi.encodePacked(TOOL_IPFS_CID_2)));
+        vm.expectEmit(true, true, true, true);
+        emit LibVincentAppFacet.NewAppVersionRegistered(1, 1, APP_MANAGER_ALICE);
+        
         (uint256 newAppId, uint256 newAppVersion) = _registerBasicApp();
 
         VincentAppViewFacet.App memory app = vincentAppViewFacet.getAppById(newAppId);
@@ -186,6 +195,8 @@ contract VincentAppFacetTest is Test {
         (uint256 newAppId, uint256 newAppVersion) = _registerBasicApp();
 
         vm.startPrank(APP_MANAGER_ALICE);
+        vm.expectEmit(true, true, true, true);
+        emit LibVincentAppFacet.AppEnabled(newAppId, newAppVersion, false);
         vincentAppFacet.enableAppVersion(newAppId, newAppVersion, false);
         vm.stopPrank();
 
@@ -210,6 +221,8 @@ contract VincentAppFacetTest is Test {
         assertFalse(appVersion.enabled);
 
         vm.startPrank(APP_MANAGER_ALICE);
+        vm.expectEmit(true, true, true, true);
+        emit LibVincentAppFacet.AppEnabled(newAppId, newAppVersion, true);
         vincentAppFacet.enableAppVersion(newAppId, newAppVersion, true);
         vm.stopPrank();
 
@@ -237,6 +250,8 @@ contract VincentAppFacetTest is Test {
         (uint256 newAppId, uint256 newAppVersion) = _registerBasicApp();
 
         vm.startPrank(APP_MANAGER_ALICE);
+        vm.expectEmit(true, true, true, true);
+        emit LibVincentAppFacet.DelegateeAdded(newAppId, APP_DELEGATEE_DAVID);
         vincentAppFacet.addDelegatee(newAppId, APP_DELEGATEE_DAVID);
         vm.stopPrank();
 
@@ -263,6 +278,8 @@ contract VincentAppFacetTest is Test {
         assertTrue(appVersion.enabled);
 
         vm.startPrank(APP_MANAGER_ALICE);
+        vm.expectEmit(true, true, true, true);
+        emit LibVincentAppFacet.DelegateeRemoved(newAppId, APP_DELEGATEE_CHARLIE);
         vincentAppFacet.removeDelegatee(newAppId, APP_DELEGATEE_CHARLIE);
         vm.stopPrank();
         
@@ -290,6 +307,8 @@ contract VincentAppFacetTest is Test {
         (uint256 newAppId, uint256 newAppVersion) = _registerBasicApp();
 
         vm.startPrank(APP_MANAGER_ALICE);
+        vm.expectEmit(true, true, true, true);
+        emit LibVincentAppFacet.AppDeleted(newAppId);
         vincentAppFacet.deleteApp(newAppId);
         vm.stopPrank();
 
