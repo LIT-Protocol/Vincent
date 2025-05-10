@@ -13,6 +13,9 @@ import {VincentAppViewFacet} from "../../../src/facets/VincentAppViewFacet.sol";
 import {VincentUserFacet} from "../../../src/facets/VincentUserFacet.sol";
 import {VincentUserViewFacet} from "../../../src/facets/VincentUserViewFacet.sol";
 
+import {LibVincentAppFacet} from "../../../src/libs/LibVincentAppFacet.sol";
+import {VincentBase} from "../../../src/VincentBase.sol";
+
 contract VincentAppFacetTest is Test {
     uint256 constant PKP_TOKEN_ID_1 = 1;
     uint256 constant PKP_TOKEN_ID_2 = 2;
@@ -309,6 +312,236 @@ contract VincentAppFacetTest is Test {
         
         assertEq(appVersion.version, newAppVersion);
         assertTrue(appVersion.enabled);
+    }
+
+    /**
+     * ######################### registerNextAppVersion ERROR CASES #########################
+     */
+    function testRegisterNextAppVersion_AppHasBeenDeleted() public {
+        (uint256 newAppId,) = _registerBasicApp();
+
+        vm.startPrank(APP_MANAGER_ALICE);
+        vincentAppFacet.deleteApp(newAppId);
+        
+        vm.expectRevert(abi.encodeWithSelector(VincentBase.AppHasBeenDeleted.selector, newAppId));
+
+        VincentAppFacet.AppVersionTools memory versionTools_newAppVersion;
+        vincentAppFacet.registerNextAppVersion(newAppId, versionTools_newAppVersion);
+    }
+
+    function testRegisterNextAppVersion_NotAppManager() public {
+        (uint256 newAppId,) = _registerBasicApp();
+
+        vm.startPrank(APP_DELEGATEE_CHARLIE);
+        vm.expectRevert(abi.encodeWithSelector(LibVincentAppFacet.NotAppManager.selector, newAppId, APP_DELEGATEE_CHARLIE));
+
+        VincentAppFacet.AppVersionTools memory versionTools_newAppVersion;
+        vincentAppFacet.registerNextAppVersion(newAppId, versionTools_newAppVersion);
+    }
+
+    /**
+     * @dev This error case should revert with VincentBase.AppNotRegistered, but it doesn't
+     *      because we first check if msg.sender is the App Manager
+     *      and a non-existing App ID will address(0) for the App Manager.
+     */
+    function testRegisterNextAppVersion_AppNotRegistered() public {
+        vm.expectRevert(abi.encodeWithSelector(LibVincentAppFacet.NotAppManager.selector, 1, address(this)));
+
+        VincentAppFacet.AppVersionTools memory versionTools_newAppVersion;
+        vincentAppFacet.registerNextAppVersion(1, versionTools_newAppVersion);
+    }
+
+    /**
+     * ######################### enableAppVersion ERROR CASES #########################
+     */
+    function testEnableAppVersion_AppHasBeenDeleted() public {
+        (uint256 newAppId,) = _registerBasicApp();
+        
+        vm.startPrank(APP_MANAGER_ALICE);
+        vincentAppFacet.deleteApp(newAppId);
+        
+        vm.expectRevert(abi.encodeWithSelector(VincentBase.AppHasBeenDeleted.selector, newAppId));
+
+        vincentAppFacet.enableAppVersion(newAppId, newAppId, false);
+    }
+
+    function testEnableAppVersion_NotAppManager() public {
+        (uint256 newAppId,) = _registerBasicApp();
+
+        vm.startPrank(APP_DELEGATEE_CHARLIE);
+        vm.expectRevert(abi.encodeWithSelector(LibVincentAppFacet.NotAppManager.selector, newAppId, APP_DELEGATEE_CHARLIE));
+
+        vincentAppFacet.enableAppVersion(newAppId, newAppId, false);
+    }
+
+    /**
+     * @dev This error case should revert with VincentBase.AppNotRegistered, but it doesn't
+     *      because we first check if msg.sender is the App Manager
+     *      and a non-existing App ID will address(0) for the App Manager.
+     */
+    function testEnableAppVersion_AppNotRegistered() public {
+        vm.expectRevert(abi.encodeWithSelector(LibVincentAppFacet.NotAppManager.selector, 1, address(this)));
+        vincentAppFacet.enableAppVersion(1, 1, false);
+    }
+
+    function testEnableAppVersion_AppVersionAlreadyInRequestedState() public {
+        (uint256 newAppId,) = _registerBasicApp();
+
+        vm.startPrank(APP_MANAGER_ALICE);
+        vm.expectRevert(abi.encodeWithSelector(LibVincentAppFacet.AppVersionAlreadyInRequestedState.selector, newAppId, newAppId, true));
+
+        vincentAppFacet.enableAppVersion(newAppId, newAppId, true);
+    }
+
+    /**
+     * ######################### addDelegatee ERROR CASES #########################
+     */
+    function testAddDelegatee_AppHasBeenDeleted() public {
+        (uint256 newAppId,) = _registerBasicApp();
+        
+        vm.startPrank(APP_MANAGER_ALICE);
+        vincentAppFacet.deleteApp(newAppId);
+        
+        vm.expectRevert(abi.encodeWithSelector(VincentBase.AppHasBeenDeleted.selector, newAppId));
+        vincentAppFacet.addDelegatee(newAppId, APP_DELEGATEE_DAVID);
+    }
+
+    function testAddDelegatee_NotAppManager() public {
+        (uint256 newAppId,) = _registerBasicApp();
+
+        vm.startPrank(APP_DELEGATEE_CHARLIE);
+        vm.expectRevert(abi.encodeWithSelector(LibVincentAppFacet.NotAppManager.selector, newAppId, APP_DELEGATEE_CHARLIE));
+        vincentAppFacet.addDelegatee(newAppId, APP_DELEGATEE_DAVID);
+    }
+
+    /**
+     * @dev This error case should revert with VincentBase.AppNotRegistered, but it doesn't
+     *      because we first check if msg.sender is the App Manager
+     *      and a non-existing App ID will address(0) for the App Manager.
+     */
+    function testAddDelegatee_AppNotRegistered() public {
+        vm.expectRevert(abi.encodeWithSelector(LibVincentAppFacet.NotAppManager.selector, 1, address(this)));
+        vincentAppFacet.addDelegatee(1, APP_DELEGATEE_DAVID);
+    }
+
+    function testAddDelegatee_ZeroAddressDelegatee() public {
+        (uint256 newAppId,) = _registerBasicApp();
+
+        vm.startPrank(APP_MANAGER_ALICE);
+        vm.expectRevert(LibVincentAppFacet.ZeroAddressDelegateeNotAllowed.selector);
+        vincentAppFacet.addDelegatee(newAppId, address(0));
+    }
+
+    function testAddDelegatee_DelegateeAlreadyRegistered() public {
+        (uint256 newAppId,) = _registerBasicApp();
+
+        vm.startPrank(APP_MANAGER_ALICE);
+        vm.expectRevert(abi.encodeWithSelector(LibVincentAppFacet.DelegateeAlreadyRegisteredToApp.selector, newAppId, APP_DELEGATEE_CHARLIE));
+        vincentAppFacet.addDelegatee(newAppId, APP_DELEGATEE_CHARLIE);
+    }
+
+    /**
+     * ######################### removeDelegatee ERROR CASES #########################
+     */
+    function testRemoveDelegatee_AppHasBeenDeleted() public {
+        (uint256 newAppId,) = _registerBasicApp();
+        
+        vm.startPrank(APP_MANAGER_ALICE);
+        vincentAppFacet.deleteApp(newAppId);
+        
+        vm.expectRevert(abi.encodeWithSelector(VincentBase.AppHasBeenDeleted.selector, newAppId));
+        vincentAppFacet.removeDelegatee(newAppId, APP_DELEGATEE_CHARLIE);
+    }
+
+    function testRemoveDelegatee_NotAppManager() public {
+        (uint256 newAppId,) = _registerBasicApp();
+
+        vm.startPrank(APP_DELEGATEE_CHARLIE);
+        vm.expectRevert(abi.encodeWithSelector(LibVincentAppFacet.NotAppManager.selector, newAppId, APP_DELEGATEE_CHARLIE));
+        vincentAppFacet.removeDelegatee(newAppId, APP_DELEGATEE_CHARLIE);
+    }
+
+    /**
+     * @dev This error case should revert with VincentBase.AppNotRegistered, but it doesn't
+     *      because we first check if msg.sender is the App Manager
+     *      and a non-existing App ID will address(0) for the App Manager.
+     */
+    function testRemoveDelegatee_AppNotRegistered() public {
+        vm.expectRevert(abi.encodeWithSelector(LibVincentAppFacet.NotAppManager.selector, 1, address(this)));
+        vincentAppFacet.removeDelegatee(1, APP_DELEGATEE_CHARLIE);
+    }
+
+    function testRemoveDelegatee_DelegateeNotRegistered() public {
+        (uint256 newAppId,) = _registerBasicApp();
+
+        vm.startPrank(APP_MANAGER_ALICE);
+        vm.expectRevert(abi.encodeWithSelector(LibVincentAppFacet.DelegateeNotRegisteredToApp.selector, newAppId, APP_DELEGATEE_DAVID));
+        vincentAppFacet.removeDelegatee(newAppId, APP_DELEGATEE_DAVID);
+    }
+
+    /**
+     * ######################### deleteApp ERROR CASES #########################
+     */
+    function testDeleteApp_AppHasBeenDeleted() public {
+        (uint256 newAppId,) = _registerBasicApp();
+        
+        vm.startPrank(APP_MANAGER_ALICE);
+        vincentAppFacet.deleteApp(newAppId);
+        
+        vm.expectRevert(abi.encodeWithSelector(VincentBase.AppHasBeenDeleted.selector, newAppId));
+        vincentAppFacet.deleteApp(newAppId);
+    }
+
+    function testDeleteApp_NotAppManager() public {
+        (uint256 newAppId,) = _registerBasicApp();
+
+        vm.startPrank(APP_DELEGATEE_CHARLIE);
+        vm.expectRevert(abi.encodeWithSelector(LibVincentAppFacet.NotAppManager.selector, newAppId, APP_DELEGATEE_CHARLIE));
+        vincentAppFacet.deleteApp(newAppId);
+    }
+
+    /**
+     * @dev This error case should revert with VincentBase.AppNotRegistered, but it doesn't
+     *      because we first check if msg.sender is the App Manager
+     *      and a non-existing App ID will address(0) for the App Manager.
+     */
+    function testDeleteApp_AppNotRegistered() public {
+        vm.expectRevert(abi.encodeWithSelector(LibVincentAppFacet.NotAppManager.selector, 1, address(this)));
+        vincentAppFacet.deleteApp(1);
+    }
+
+    function testDeleteApp_AppVersionHasDelegatedAgents() public {
+        (uint256 newAppId, uint256 newAppVersion) = _registerBasicApp();
+
+        // Create arrays for all registered tools
+        string[] memory toolIpfsCids = new string[](2);
+        toolIpfsCids[0] = TOOL_IPFS_CID_1;
+        toolIpfsCids[1] = TOOL_IPFS_CID_2;
+
+        string[][] memory policyIpfsCids = new string[][](2);
+        policyIpfsCids[0] = new string[](1);
+        policyIpfsCids[0][0] = POLICY_IPFS_CID_1;
+        policyIpfsCids[1] = new string[](0);
+
+        bytes[][] memory policyParameterValues = new bytes[][](2);
+        policyParameterValues[0] = new bytes[](1);
+        policyParameterValues[0][0] = POLICY_PARAMETER_VALUES_1;
+        policyParameterValues[1] = new bytes[](0);
+
+        vm.startPrank(APP_USER_EVE);
+        vincentUserFacet.permitAppVersion(
+            PKP_TOKEN_ID_1,
+            newAppId,
+            newAppVersion,
+            toolIpfsCids,
+            policyIpfsCids,
+            policyParameterValues
+        );
+        vm.stopPrank();
+
+        vm.startPrank(APP_MANAGER_ALICE);
+        vm.expectRevert(abi.encodeWithSelector(LibVincentAppFacet.AppVersionHasDelegatedAgents.selector, newAppId, newAppVersion));
+        vincentAppFacet.deleteApp(newAppId);
     }
 
     function _registerApp(
