@@ -14,6 +14,7 @@ import {VincentUserFacet} from "../../src/facets/VincentUserFacet.sol";
 import {VincentUserViewFacet} from "../../src/facets/VincentUserViewFacet.sol";
 
 import {LibVincentAppFacet} from "../../src/libs/LibVincentAppFacet.sol";
+import {LibVincentUserFacet} from "../../src/libs/LibVincentUserFacet.sol";
 import {VincentBase} from "../../src/VincentBase.sol";
 
 contract VincentUserFacetTest is Test {
@@ -89,16 +90,28 @@ contract VincentUserFacetTest is Test {
         string[][] memory policyIpfsCids = new string[][](2);
         policyIpfsCids[0] = new string[](1);
         policyIpfsCids[0][0] = POLICY_IPFS_CID_1;
-
         policyIpfsCids[1] = new string[](0);
 
         bytes[][] memory policyParameterValues = new bytes[][](2);
         policyParameterValues[0] = new bytes[](1);
         policyParameterValues[0][0] = POLICY_PARAMETER_VALUES_1;
-
         policyParameterValues[1] = new bytes[](0);
 
         vm.startPrank(APP_USER_FRANK);
+        // Expect events for first permit
+        vm.expectEmit(true, true, true, true);
+        emit LibVincentUserFacet.NewUserAgentPkpRegistered(APP_USER_FRANK, PKP_TOKEN_ID_1);
+        vm.expectEmit(true, true, true, true);
+        emit LibVincentUserFacet.AppVersionPermitted(PKP_TOKEN_ID_1, newAppId_1, newAppVersion_1);
+        vm.expectEmit(true, true, true, true);
+        emit LibVincentUserFacet.ToolPolicyParametersSet(
+            PKP_TOKEN_ID_1,
+            newAppId_1,
+            newAppVersion_1,
+            keccak256(abi.encodePacked(TOOL_IPFS_CID_1)),
+            POLICY_PARAMETER_VALUES_1
+        );
+
         // Permit App 1 Version 1 for PKP 1 (Frank)
         vincentUserFacet.permitAppVersion(
             PKP_TOKEN_ID_1,
@@ -107,6 +120,18 @@ contract VincentUserFacetTest is Test {
             toolIpfsCids,
             policyIpfsCids,
             policyParameterValues
+        );
+
+        // Expect events for second permit
+        vm.expectEmit(true, true, true, true);
+        emit LibVincentUserFacet.AppVersionPermitted(PKP_TOKEN_ID_1, newAppId_2, newAppVersion_2);
+        vm.expectEmit(true, true, true, true);
+        emit LibVincentUserFacet.ToolPolicyParametersSet(
+            PKP_TOKEN_ID_1,
+            newAppId_2,
+            newAppVersion_2,
+            keccak256(abi.encodePacked(TOOL_IPFS_CID_1)),
+            POLICY_PARAMETER_VALUES_1
         );
 
         // Permit App 2 Version 1 for PKP 1 (Frank)
@@ -121,6 +146,20 @@ contract VincentUserFacetTest is Test {
         vm.stopPrank();
 
         vm.startPrank(APP_USER_GEORGE);
+        // Expect events for third permit
+        vm.expectEmit(true, true, true, true);
+        emit LibVincentUserFacet.NewUserAgentPkpRegistered(APP_USER_GEORGE, PKP_TOKEN_ID_2);
+        vm.expectEmit(true, true, true, true);
+        emit LibVincentUserFacet.AppVersionPermitted(PKP_TOKEN_ID_2, newAppId_3, newAppVersion_3);
+        vm.expectEmit(true, true, true, true);
+        emit LibVincentUserFacet.ToolPolicyParametersSet(
+            PKP_TOKEN_ID_2,
+            newAppId_3,
+            newAppVersion_3,
+            keccak256(abi.encodePacked(TOOL_IPFS_CID_1)),
+            POLICY_PARAMETER_VALUES_1
+        );
+
         // Permit App 3 Version 1 for PKP 2 (George)
         vincentUserFacet.permitAppVersion(
             PKP_TOKEN_ID_2,
@@ -262,6 +301,20 @@ contract VincentUserFacetTest is Test {
         policyParameterValues[1] = new bytes[](0);
 
         vm.startPrank(APP_USER_FRANK);
+        // Expect events for first permit
+        vm.expectEmit(true, true, true, true);
+        emit LibVincentUserFacet.NewUserAgentPkpRegistered(APP_USER_FRANK, PKP_TOKEN_ID_1);
+        vm.expectEmit(true, true, true, true);
+        emit LibVincentUserFacet.AppVersionPermitted(PKP_TOKEN_ID_1, newAppId_1, newAppVersion_1);
+        vm.expectEmit(true, true, true, true);
+        emit LibVincentUserFacet.ToolPolicyParametersSet(
+            PKP_TOKEN_ID_1,
+            newAppId_1,
+            newAppVersion_1,
+            keccak256(abi.encodePacked(TOOL_IPFS_CID_1)),
+            POLICY_PARAMETER_VALUES_1
+        );
+
         // Permit App 1 Version 1 for PKP 1 (Frank)
         vincentUserFacet.permitAppVersion(
             PKP_TOKEN_ID_1,
@@ -270,6 +323,18 @@ contract VincentUserFacetTest is Test {
             toolIpfsCids,
             policyIpfsCids,
             policyParameterValues
+        );
+
+        // Expect events for second permit
+        vm.expectEmit(true, true, true, true);
+        emit LibVincentUserFacet.AppVersionPermitted(PKP_TOKEN_ID_1, newAppId_2, newAppVersion_2);
+        vm.expectEmit(true, true, true, true);
+        emit LibVincentUserFacet.ToolPolicyParametersSet(
+            PKP_TOKEN_ID_1,
+            newAppId_2,
+            newAppVersion_2,
+            keccak256(abi.encodePacked(TOOL_IPFS_CID_1)),
+            POLICY_PARAMETER_VALUES_1
         );
 
         // Permit App 2 Version 1 for PKP 1 (Frank)
@@ -289,8 +354,12 @@ contract VincentUserFacetTest is Test {
         assertEq(permittedAppIds[0], newAppId_1);
         assertEq(permittedAppIds[1], newAppId_2);
 
-        // Unpermit App 1 Version 1 for PKP 1 (Frank)
+        // Expect event for unpermit
         vm.startPrank(APP_USER_FRANK);
+        vm.expectEmit(true, true, true, true);
+        emit LibVincentUserFacet.AppVersionUnPermitted(PKP_TOKEN_ID_1, newAppId_1, newAppVersion_1);
+
+        // Unpermit App 1 Version 1 for PKP 1 (Frank)
         vincentUserFacet.unPermitAppVersion(PKP_TOKEN_ID_1, newAppId_1, newAppVersion_1);
         vm.stopPrank();
 
@@ -347,6 +416,20 @@ contract VincentUserFacetTest is Test {
 
         // First permit the app version
         vm.startPrank(APP_USER_FRANK);
+        // Expect events for initial permit
+        vm.expectEmit(true, true, true, true);
+        emit LibVincentUserFacet.NewUserAgentPkpRegistered(APP_USER_FRANK, PKP_TOKEN_ID_1);
+        vm.expectEmit(true, true, true, true);
+        emit LibVincentUserFacet.AppVersionPermitted(PKP_TOKEN_ID_1, newAppId, newAppVersion);
+        vm.expectEmit(true, true, true, true);
+        emit LibVincentUserFacet.ToolPolicyParametersSet(
+            PKP_TOKEN_ID_1,
+            newAppId,
+            newAppVersion,
+            keccak256(abi.encodePacked(TOOL_IPFS_CID_1)),
+            POLICY_PARAMETER_VALUES_1
+        );
+
         vincentUserFacet.permitAppVersion(
             PKP_TOKEN_ID_1,
             newAppId,
@@ -371,6 +454,16 @@ contract VincentUserFacetTest is Test {
         newPolicyParameterValues[0] = new bytes[](1);
         newPolicyParameterValues[0][0] = POLICY_PARAMETER_VALUES_2; // Change to different value
         newPolicyParameterValues[1] = new bytes[](0);
+
+        // Expect event for setting new policy parameters
+        vm.expectEmit(true, true, true, true);
+        emit LibVincentUserFacet.ToolPolicyParametersSet(
+            PKP_TOKEN_ID_1,
+            newAppId,
+            newAppVersion,
+            keccak256(abi.encodePacked(TOOL_IPFS_CID_1)),
+            POLICY_PARAMETER_VALUES_2
+        );
 
         vincentUserFacet.setToolPolicyParameters(
             PKP_TOKEN_ID_1,
@@ -424,6 +517,20 @@ contract VincentUserFacetTest is Test {
 
         // First permit the app version
         vm.startPrank(APP_USER_FRANK);
+        // Expect events for initial permit
+        vm.expectEmit(true, true, true, true);
+        emit LibVincentUserFacet.NewUserAgentPkpRegistered(APP_USER_FRANK, PKP_TOKEN_ID_1);
+        vm.expectEmit(true, true, true, true);
+        emit LibVincentUserFacet.AppVersionPermitted(PKP_TOKEN_ID_1, newAppId, newAppVersion);
+        vm.expectEmit(true, true, true, true);
+        emit LibVincentUserFacet.ToolPolicyParametersSet(
+            PKP_TOKEN_ID_1,
+            newAppId,
+            newAppVersion,
+            keccak256(abi.encodePacked(TOOL_IPFS_CID_1)),
+            POLICY_PARAMETER_VALUES_1
+        );
+
         vincentUserFacet.permitAppVersion(
             PKP_TOKEN_ID_1,
             newAppId,
@@ -442,6 +549,15 @@ contract VincentUserFacetTest is Test {
         assertEq(toolsWithPolicies[0].policies.length, 1);
         assertEq(toolsWithPolicies[0].policies[0].policyParameterValues, POLICY_PARAMETER_VALUES_1);
         assertEq(toolsWithPolicies[1].policies.length, 0);
+
+        // Expect event for removing policy parameters
+        vm.expectEmit(true, true, true, true);
+        emit LibVincentUserFacet.ToolPolicyParametersRemoved(
+            PKP_TOKEN_ID_1,
+            newAppId,
+            newAppVersion,
+            keccak256(abi.encodePacked(TOOL_IPFS_CID_1))
+        );
 
         // Remove policy parameters
         vincentUserFacet.removeToolPolicyParameters(
