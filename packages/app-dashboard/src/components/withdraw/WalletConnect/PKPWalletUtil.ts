@@ -1,20 +1,12 @@
-import { walletkit } from '@/components/withdraw/WalletConnectUtil';
+import { walletkit } from './WalletConnectUtil';
 import { IRelayPKP, SessionSigs } from '@lit-protocol/types';
 import { ethers } from 'ethers';
 import { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
-import { LitNodeClient } from '@lit-protocol/lit-node-client';
-import { SELECTED_LIT_NETWORK } from '@/components/consent/utils/lit';
+import { litNodeClient } from '../../consent/utils/lit';
 import { LIT_CHAINS } from '@lit-protocol/constants';
-
-// Define Ethereum mainnet
-const ETHEREUM_MAINNET_CHAIN_ID = '1';
 
 // Store providers for different chains
 const chainProviders: Record<string, ethers.providers.JsonRpcProvider> = {};
-
-// Initialize LitNodeClient singleton
-let litNodeClient: LitNodeClient;
-let isLitNodeClientInitialized = false;
 
 /**
  * Get a provider for a specific chain ID
@@ -54,20 +46,6 @@ function getProviderForChain(chainId: string | number): ethers.providers.JsonRpc
   return provider;
 }
 
-/**
- * Initialize the LitNodeClient if not already initialized
- */
-async function initLitNodeClient() {
-  if (!isLitNodeClientInitialized) {
-    litNodeClient = new LitNodeClient({
-      litNetwork: SELECTED_LIT_NETWORK,
-    });
-    await litNodeClient.connect();
-    isLitNodeClientInitialized = true;
-  }
-  return litNodeClient;
-}
-
 // Store the PKP wallet instance
 let pkpWallet: PKPEthersWallet | null = null;
 
@@ -77,6 +55,7 @@ let walletConnectHandlersRegistered = false;
 /**
  * Notify connected sessions about account changes
  */
+
 async function notifySessionsOfAccount(address: string) {
   if (!walletkit) return;
 
@@ -87,12 +66,10 @@ async function notifySessionsOfAccount(address: string) {
       console.log('No active sessions to notify');
       return;
     }
+    const chainId = 'eip155:1';
 
     for (const session of sessions) {
       try {
-        // Use chainId from the connected chain
-        const chainId = `eip155:${ETHEREUM_MAINNET_CHAIN_ID}`;
-
         // Create accounts changed event
         const accountsChanged = {
           topic: session.topic,
@@ -117,58 +94,6 @@ async function notifySessionsOfAccount(address: string) {
 }
 
 /**
- * Create a PKPEthersWallet using the agent PKP and session signatures
- * @param agentPKP The agent's PKP to use for signing
- * @param sessionSigs Session signatures for authentication
- * @returns The created PKPEthersWallet instance
- */
-export async function createPKPWallet(
-  agentPKP: IRelayPKP,
-  sessionSigs: SessionSigs,
-): Promise<PKPEthersWallet> {
-  if (!agentPKP?.publicKey) {
-    throw new Error('PKP does not have a public key');
-  }
-
-  // Initialize LitNodeClient
-  const litClient = await initLitNodeClient();
-
-  // Create the PKP wallet
-  pkpWallet = new PKPEthersWallet({
-    pkpPubKey: agentPKP.publicKey,
-    litNodeClient: litClient,
-    controllerSessionSigs: sessionSigs,
-  });
-
-  // Initialize the wallet
-  await pkpWallet.init();
-
-  const address = await pkpWallet.getAddress();
-  console.log(`PKP wallet created successfully with address: ${address}`);
-
-  // Notify connected sessions about the wallet
-  await notifySessionsOfAccount(address);
-
-  return pkpWallet;
-}
-
-/**
- * Get the current PKP wallet instance or create a new one
- * @param agentPKP The agent's PKP
- * @param sessionSigs Session signatures
- * @returns The PKP wallet instance
- */
-export async function getPKPWallet(
-  agentPKP: IRelayPKP,
-  sessionSigs: SessionSigs,
-): Promise<PKPEthersWallet> {
-  if (!pkpWallet) {
-    return await createPKPWallet(agentPKP, sessionSigs);
-  }
-  return pkpWallet;
-}
-
-/**
  * Register a PKP wallet with WalletConnect to handle signing requests
  * @param agentPKP The agent's PKP to use for signing
  * @param sessionSigs Session signatures for authentication
@@ -176,20 +101,26 @@ export async function getPKPWallet(
  */
 export async function registerPKPWallet(
   agentPKP: IRelayPKP,
-  sessionSigs?: SessionSigs,
+  sessionSigs: SessionSigs,
 ): Promise<{ address: string; publicKey: string; chainId: string }> {
   if (!walletkit) {
     throw new Error('WalletConnect not initialized');
   }
 
-  if (!agentPKP?.ethAddress) {
+  if (!agentPKP.ethAddress) {
     throw new Error('PKP does not have an Ethereum address');
   }
 
   // If session signatures are provided, create an actual PKP wallet for signing
   if (sessionSigs) {
     try {
-      await getPKPWallet(agentPKP, sessionSigs);
+      pkpWallet = new PKPEthersWallet({
+        pkpPubKey: agentPKP.publicKey,
+        litNodeClient: litNodeClient,
+        controllerSessionSigs: sessionSigs,
+      });
+      await pkpWallet.init();
+      await notifySessionsOfAccount(agentPKP.ethAddress);
     } catch (error) {
       console.error('Failed to create PKP wallet:', error);
       throw new Error('Failed to create PKP wallet');
@@ -197,19 +128,10 @@ export async function registerPKPWallet(
   }
 
   const address = agentPKP.ethAddress;
-  console.log(`Registering PKP wallet with address: ${address}`);
 
-  // Only register event handlers once to prevent duplicates
   if (!walletConnectHandlersRegistered) {
-    console.log('Registering WalletConnect event handlers');
-
-    // Setup session request handler
     walletkit.on('session_request', async ({ id, topic, params }) => {
-      console.log('Received session request:', { id, topic, params });
-
-      // Validate session existence first before processing
       try {
-        // Check if the session exists and is valid
         const sessions = walletkit.getActiveSessions();
         if (!sessions || !sessions[topic]) {
           console.warn(
@@ -249,15 +171,13 @@ export async function registerPKPWallet(
           throw new Error('PKP wallet not initialized');
         }
 
+        console.log('Handling request:', { id, topic, params });
         switch (method) {
           case 'personal_sign': {
-            console.log(`Handling ${method} request:`, request);
-
             try {
               const message = request.params[0];
               const signature = await pkpWallet.signMessage(ethers.utils.arrayify(message));
               result = signature;
-              console.log('Message signed with PKP wallet:', signature);
             } catch (error) {
               console.error('Error signing with PKP wallet:', error);
               throw error;
@@ -266,31 +186,14 @@ export async function registerPKPWallet(
           }
 
           case 'eth_signTransaction': {
-            console.log('Handling eth_signTransaction request:', request);
             try {
-              // Get transaction params
               const txParams = request.params[0];
-
-              // Get provider for the specific chainId
               let provider: ethers.providers.JsonRpcProvider;
               if (txParams.chainId) {
-                console.log(`Transaction for chainId: ${txParams.chainId}`);
-
-                // Create a provider for this chain
                 provider = getProviderForChain(txParams.chainId);
-
-                // Use setRpc method to change the provider
-                if (pkpWallet) {
-                  const rpcUrl = provider.connection.url;
-                  await pkpWallet.setRpc(rpcUrl);
-                  console.log(`Set RPC URL for chain ID ${txParams.chainId}: ${rpcUrl}`);
-                }
-              } else {
-                // Default to Ethereum mainnet if no chainId specified
-                provider = getProviderForChain(1);
+                const rpcUrl = provider.connection.url;
+                await pkpWallet.setRpc(rpcUrl);
               }
-
-              // Sign transaction with PKP wallet
               const signedTx = await pkpWallet.signTransaction(txParams);
               result = signedTx;
               console.log('Transaction signed with PKP wallet:', signedTx);
@@ -302,11 +205,8 @@ export async function registerPKPWallet(
           }
 
           case 'eth_signTypedData_v4': {
-            console.log('Handling eth_signTypedData_v4 request:', request);
             try {
               const typedData = JSON.parse(request.params[1]);
-
-              // Extract domain, types, and message from the typed data
               const { domain, types, message } = typedData;
 
               // Make sure types doesn't include EIP712Domain
@@ -460,8 +360,6 @@ export async function registerPKPWallet(
 
         console.log(`Successfully responded to ${method} request`);
       } catch (error) {
-        console.error(`Error handling ${method} request:`, error);
-
         // Respond with error
         await walletkit.respondSessionRequest({
           topic,
@@ -493,7 +391,7 @@ export async function registerPKPWallet(
   const accountInfo = {
     address,
     publicKey: agentPKP.publicKey || '',
-    chainId: ETHEREUM_MAINNET_CHAIN_ID,
+    chainId: 'eip155:1',
   };
 
   console.log('PKP wallet event handlers registered with WalletConnect');
@@ -508,10 +406,7 @@ async function notifyTransactionComplete(txHash: string, topic: string, chainId:
   if (!walletkit) return;
 
   try {
-    // Format the chain ID with eip155 prefix if not already present
     const formattedChainId = chainId.includes(':') ? chainId : `eip155:${chainId}`;
-
-    // Create the event notification
     const transactionEvent = {
       topic: topic,
       event: {
@@ -521,7 +416,6 @@ async function notifyTransactionComplete(txHash: string, topic: string, chainId:
       chainId: formattedChainId,
     };
 
-    // Emit the event
     await walletkit.emitSessionEvent(transactionEvent);
     console.log('Emitted transactionComplete event to session', topic);
   } catch (error) {

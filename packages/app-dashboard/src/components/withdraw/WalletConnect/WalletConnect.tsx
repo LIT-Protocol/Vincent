@@ -1,13 +1,11 @@
-import QrReader from '@/components/withdraw/QrReader';
-import { walletkit, createWalletKit } from '@/components/withdraw/WalletConnectUtil';
-import { registerPKPWallet } from '@/components/withdraw/PKPWalletUtil';
+import { walletkit, createWalletKit } from './WalletConnectUtil';
+import { registerPKPWallet } from './PKPWalletUtil';
 import { Button } from '@/components/ui/button';
 import { Fragment, useEffect, useState } from 'react';
-import ModalStore from '@/components/withdraw/ModalStore';
+import ModalStore from './ModalStore';
 import { Input } from '@/components/ui/input';
 import { IRelayPKP, SessionSigs } from '@lit-protocol/types';
-import StatusMessage from '../consent/components/authForm/StatusMessage';
-import React from 'react';
+import StatusMessage from '../../consent/components/authForm/StatusMessage';
 
 // Define proper types to replace any
 type NamespaceRequirement = {
@@ -73,21 +71,16 @@ type DisconnectSessionParams = {
 
 export default function WalletConnectPage(params: {
   deepLink?: string;
-  agentPKP?: IRelayPKP;
-  sessionSigs?: SessionSigs;
+  agentPKP: IRelayPKP;
+  sessionSigs: SessionSigs;
 }) {
   const { deepLink, agentPKP, sessionSigs } = params;
   const [uri, setUri] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [isInitializing, setIsInitializing] = useState(false);
   const [walletRegistered, setWalletRegistered] = useState(false);
   const [pendingProposal, setPendingProposal] = useState<Proposal | null>(null);
   const [disconnecting, setDisconnecting] = useState<string | null>(null);
   const [processingProposal, setProcessingProposal] = useState(false);
   const [activeSessions, setActiveSessions] = useState<Session[]>([]);
-
-  // Create isRegistering ref at the top level of the component
-  const isRegistering = React.useRef(false);
 
   // Add a status state to replace all error/loading states
   const [status, setStatus] = useState<{
@@ -101,9 +94,8 @@ export default function WalletConnectPage(params: {
   // Initialize WalletConnect
   useEffect(() => {
     const initWalletConnect = async () => {
-      if (!walletkit && !isInitializing) {
+      if (!walletkit) {
         try {
-          setIsInitializing(true);
           setStatus({ message: 'Initializing WalletConnect...', type: 'info' });
 
           // Default to global region if none provided
@@ -118,14 +110,12 @@ export default function WalletConnectPage(params: {
             message: 'Failed to initialize WalletConnect. Please try refreshing the page.',
             type: 'error',
           });
-        } finally {
-          setIsInitializing(false);
         }
       }
     };
 
     initWalletConnect();
-  }, [isInitializing]);
+  }, []);
 
   // Register PKP wallet with WalletConnect
   useEffect(() => {
@@ -135,11 +125,10 @@ export default function WalletConnectPage(params: {
     // Use the ref defined at the top level
     const setupPKPWallet = async () => {
       // Skip if already registered or in the process of registering
-      if (!shouldRegister || isRegistering.current) return;
+      if (!shouldRegister) return;
 
       try {
         // Mark that we're starting registration
-        isRegistering.current = true;
         setStatus({ message: 'Registering PKP wallet...', type: 'info' });
 
         // Register the PKP wallet with session signatures if available
@@ -154,9 +143,6 @@ export default function WalletConnectPage(params: {
           message: `Failed to register PKP wallet: ${err instanceof Error ? err.message : 'Unknown error'}`,
           type: 'error',
         });
-      } finally {
-        // Reset the registering flag regardless of success/failure
-        isRegistering.current = false;
       }
     };
 
@@ -387,7 +373,6 @@ export default function WalletConnectPage(params: {
     }
 
     try {
-      setLoading(true);
       setStatus({ message: 'Attempting to connect...', type: 'info' });
 
       // Attempt to pair with the URI
@@ -404,7 +389,6 @@ export default function WalletConnectPage(params: {
       });
       ModalStore.close();
     } finally {
-      setLoading(false);
       setUri('');
     }
   }
@@ -503,8 +487,6 @@ export default function WalletConnectPage(params: {
         </div>
       ) : (
         <>
-          {!isInitializing && <QrReader onConnect={onConnect} />}
-
           {/* Unified status message */}
           {status.message && <StatusMessage message={status.message} type={status.type} />}
 
@@ -514,7 +496,7 @@ export default function WalletConnectPage(params: {
           </div>
 
           {/* Show pending proposal and approval/rejection buttons */}
-          {pendingProposal && !loading && (
+          {pendingProposal && !walletRegistered && (
             <div className="w-full mt-2 p-3 bg-yellow-50 border border-yellow-100 text-yellow-700 text-sm rounded mb-2">
               <p className="font-medium mb-2">Pending Connection Request:</p>
 
@@ -755,18 +737,16 @@ export default function WalletConnectPage(params: {
               onChange={(e) => setUri(e.target.value)}
               value={uri}
               data-testid="uri-input"
-              disabled={isInitializing || !walletkit}
+              disabled={!walletkit}
             />
             <Button
               size="sm"
               className="rounded-l-none"
-              disabled={
-                !uri || loading || isInitializing || !walletkit || (agentPKP && !walletRegistered)
-              }
+              disabled={!uri || !walletkit}
               onClick={() => onConnect(uri)}
               data-testid="uri-connect-button"
             >
-              {loading ? 'Connecting...' : 'Connect'}
+              {walletRegistered ? 'Connect' : 'Connecting...'}
             </Button>
           </div>
         </>
