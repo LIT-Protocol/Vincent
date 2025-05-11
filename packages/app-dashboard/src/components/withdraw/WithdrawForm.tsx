@@ -110,7 +110,7 @@ export default function WithdrawForm({ sessionSigs, agentPKP }: WithdrawFormProp
           >
             <span className="mr-1">←</span> Back to Withdraw
           </button>
-          <WalletConnectPage />
+          <WalletConnectPage agentPKP={agentPKP} sessionSigs={sessionSigs} />
         </div>
       ) : (
         <>
