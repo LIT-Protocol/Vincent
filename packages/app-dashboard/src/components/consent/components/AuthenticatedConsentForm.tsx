@@ -162,7 +162,6 @@ export default function AuthenticatedConsentForm({
     sessionSigs,
     permittedVersion,
     onStatusChange: showStatus,
-    onError: showErrorWithStatus,
   });
 
   // Add the consent disapproval hook
