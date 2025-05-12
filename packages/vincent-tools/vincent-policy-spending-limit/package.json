@@ -1,0 +1,89 @@
+{
+  "name": "@lit-protocol/vincent-policy-spending-limit",
+  "version": "0.1.0-0",
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@lit-protocol/vincent-tool-sdk": "workspace:*",
+    "ethers": "^5.7.2",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@dotenvx/dotenvx": "^1.39.0",
+    "@types/jest": "^29.5.14",
+    "esbuild": "^0.19.11",
+    "jest": "^29.7.0",
+    "jest-environment-node": "^29.7.0",
+    "jsonc-eslint-parser": "^2.4.0",
+    "node-fetch": "^2.7.0",
+    "ts-jest": "^29.2.6",
+    "ts-node": "^10.9.2"
+  },
+  "type": "commonjs",
+  "main": "./dist/src/index.js",
+  "module": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "files": [
+    "dist",
+    "!**/*.tsbuildinfo"
+  ],
+  "nx": {
+    "sourceRoot": "packages/vincent-tools/vincent-policy-spending-limit/src",
+    "projectType": "library",
+    "targets": {
+      "build": {
+        "executor": "@nx/js:tsc",
+        "outputs": [
+          "{options.outputPath}"
+        ],
+        "options": {
+          "outputPath": "packages/vincent-tools/vincent-policy-spending-limit/dist",
+          "main": "packages/vincent-tools/vincent-policy-spending-limit/src/index.ts",
+          "tsConfig": "packages/vincent-tools/vincent-policy-spending-limit/tsconfig.lib.json",
+          "assets": [
+            "packages/vincent-tools/vincent-policy-spending-limit/*.md"
+          ]
+        }
+      },
+      "build:action": {
+        "executor": "nx:run-commands",
+        "dependsOn": [
+          "build"
+        ],
+        "options": {
+          "commands": [
+            "node tools/scripts/build-lit-action.js"
+          ],
+          "cwd": "packages/vincent-tools/vincent-policy-spending-limit",
+          "parallel": false
+        },
+        "outputs": [
+          "{workspaceRoot}/packages/vincent-tools/vincent-policy-spending-limit/dist/deployed-lit-action.js"
+        ]
+      },
+      "deploy": {
+        "executor": "nx:run-commands",
+        "dependsOn": [
+          "build:action"
+        ],
+        "options": {
+          "commands": [
+            "node tools/scripts/deploy-lit-action.js"
+          ],
+          "cwd": "packages/vincent-tools/vincent-policy-spending-limit"
+        }
+      },
+      "publish": {
+        "executor": "@nx/js:npm-publish",
+        "dependsOn": [
+          "deploy"
+        ],
+        "options": {
+          "packageRoot": "dist"
+        }
+      }
+    },
+    "name": "vincent-policy-spending-limit"
+  }
+}

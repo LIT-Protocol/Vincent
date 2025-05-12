@@ -8,6 +8,9 @@
     },
     {
       "path": "./packages/vincent-tools/vincent-tool-sdk"
+    },
+    {
+      "path": "./packages/vincent-tools/vincent-policy-spending-limit"
     }
   ]
 }
