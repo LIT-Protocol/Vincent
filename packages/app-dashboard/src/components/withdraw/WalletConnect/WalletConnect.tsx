@@ -1,12 +1,12 @@
-import QrReader from '@/components/withdraw/QrReader';
-import { walletkit, createWalletKit } from '@/components/withdraw/WalletConnectUtil';
-import { registerPKPWallet } from '@/components/withdraw/PKPWalletUtil';
+import QrReader from '@/components/withdraw/WalletConnect/QrReader';
+import { walletkit, createWalletKit } from '@/components/withdraw/WalletConnect/WalletConnectUtil';
+import { registerPKPWallet } from '@/components/withdraw/WalletConnect/PKPWalletUtil';
 import { Button } from '@/components/ui/button';
 import { Fragment, useEffect, useState } from 'react';
-import ModalStore from '@/components/withdraw/ModalStore';
+import ModalStore from '@/components/withdraw/WalletConnect/ModalStore';
 import { Input } from '@/components/ui/input';
 import { IRelayPKP, SessionSigs } from '@lit-protocol/types';
-import StatusMessage from '../consent/components/authForm/StatusMessage';
+import StatusMessage from '../../consent/components/authForm/StatusMessage';
 import React from 'react';
 
 // Define proper types to replace any

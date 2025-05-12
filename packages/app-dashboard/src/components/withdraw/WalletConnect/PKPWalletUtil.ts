@@ -1,9 +1,8 @@
-import { walletkit } from '@/components/withdraw/WalletConnectUtil';
+import { walletkit } from '@/components/withdraw/WalletConnect/WalletConnectUtil';
 import { IRelayPKP, SessionSigs } from '@lit-protocol/types';
 import { ethers } from 'ethers';
 import { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
-import { LitNodeClient } from '@lit-protocol/lit-node-client';
-import { SELECTED_LIT_NETWORK } from '@/components/consent/utils/lit';
+import { litNodeClient } from '@/components/consent/utils/lit';
 import { LIT_CHAINS } from '@lit-protocol/constants';
 
 // Define Ethereum mainnet
@@ -11,10 +10,6 @@ const ETHEREUM_MAINNET_CHAIN_ID = '1';
 
 // Store providers for different chains
 const chainProviders: Record<string, ethers.providers.JsonRpcProvider> = {};
-
-// Initialize LitNodeClient singleton
-let litNodeClient: LitNodeClient;
-let isLitNodeClientInitialized = false;
 
 /**
  * Get a provider for a specific chain ID
@@ -52,20 +47,6 @@ function getProviderForChain(chainId: string | number): ethers.providers.JsonRpc
   chainProviders[chainIdKey] = provider;
 
   return provider;
-}
-
-/**
- * Initialize the LitNodeClient if not already initialized
- */
-async function initLitNodeClient() {
-  if (!isLitNodeClientInitialized) {
-    litNodeClient = new LitNodeClient({
-      litNetwork: SELECTED_LIT_NETWORK,
-    });
-    await litNodeClient.connect();
-    isLitNodeClientInitialized = true;
-  }
-  return litNodeClient;
 }
 
 // Store the PKP wallet instance
@@ -130,41 +111,17 @@ export async function createPKPWallet(
     throw new Error('PKP does not have a public key');
   }
 
-  // Initialize LitNodeClient
-  const litClient = await initLitNodeClient();
-
-  // Create the PKP wallet
   pkpWallet = new PKPEthersWallet({
     pkpPubKey: agentPKP.publicKey,
-    litNodeClient: litClient,
+    litNodeClient: litNodeClient,
     controllerSessionSigs: sessionSigs,
   });
 
-  // Initialize the wallet
   await pkpWallet.init();
 
   const address = await pkpWallet.getAddress();
-  console.log(`PKP wallet created successfully with address: ${address}`);
-
-  // Notify connected sessions about the wallet
   await notifySessionsOfAccount(address);
 
-  return pkpWallet;
-}
-
-/**
- * Get the current PKP wallet instance or create a new one
- * @param agentPKP The agent's PKP
- * @param sessionSigs Session signatures
- * @returns The PKP wallet instance
- */
-export async function getPKPWallet(
-  agentPKP: IRelayPKP,
-  sessionSigs: SessionSigs,
-): Promise<PKPEthersWallet> {
-  if (!pkpWallet) {
-    return await createPKPWallet(agentPKP, sessionSigs);
-  }
   return pkpWallet;
 }
 
@@ -189,7 +146,7 @@ export async function registerPKPWallet(
   // If session signatures are provided, create an actual PKP wallet for signing
   if (sessionSigs) {
     try {
-      await getPKPWallet(agentPKP, sessionSigs);
+      await createPKPWallet(agentPKP, sessionSigs);
     } catch (error) {
       console.error('Failed to create PKP wallet:', error);
       throw new Error('Failed to create PKP wallet');
@@ -336,58 +293,70 @@ export async function registerPKPWallet(
 
               // Get RPC URL from session's rpcMap if available
               let rpcUrl = '';
+
+              // Extract chainId from either txParams OR from the session request params
+              let chainId: number;
               if (txParams.chainId) {
                 // Convert chainId from hex to decimal if needed
                 const chainIdHex = txParams.chainId;
-                const chainId =
+                chainId =
                   typeof chainIdHex === 'string' && chainIdHex.startsWith('0x')
                     ? parseInt(chainIdHex, 16)
                     : Number(chainIdHex);
 
                 // Update the chainId in txParams to be a number
                 txParams.chainId = chainId;
+              } else if (params.chainId) {
+                // Extract chainId from the session request if not in txParams
+                console.log(
+                  `No chainId in transaction params, using session chainId: ${params.chainId}`,
+                );
+                const chainIdStr = params.chainId.split(':')[1]; // Extract number from "eip155:8453"
+                chainId = Number(chainIdStr);
 
-                console.log(`Transaction for chainId: ${chainId} (converted from ${chainIdHex})`);
-
-                // First check if we have an RPC URL in the session's rpcMap
-                try {
-                  // Get the active session for this topic
-                  const session = walletkit.getActiveSessions()[topic];
-                  if (session) {
-                    // Check for rpcMap in the namespaces
-                    const eip155Namespace = session.namespaces?.eip155;
-                    // Access optional properties safely through optional chaining
-                    const rpcMapEntry = (eip155Namespace as { rpcMap?: Record<string, string> })
-                      ?.rpcMap?.[chainId.toString()];
-                    if (rpcMapEntry) {
-                      rpcUrl = rpcMapEntry;
-                      console.log(
-                        `Using RPC URL from session rpcMap: ${rpcUrl} for chain ${chainId}`,
-                      );
-                    }
-                  }
-                } catch (rpcMapError) {
-                  console.error('Error getting RPC URL from session:', rpcMapError);
-                  // Continue with fallback methods
-                }
-
-                // If we couldn't get an RPC URL from the session, use our provider function
-                if (!rpcUrl) {
-                  // Create a provider for this chain
-                  provider = getProviderForChain(chainId);
-                  rpcUrl = provider.connection.url;
-                } else {
-                  // Create a provider with the RPC URL from the session
-                  provider = new ethers.providers.JsonRpcProvider(rpcUrl);
-                }
-
-                // Update the wallet's RPC URL
-                await pkpWallet.setRpc(rpcUrl);
-                console.log(`Set RPC URL for chain ID ${chainId}: ${rpcUrl}`);
+                // Set the chainId in txParams
+                txParams.chainId = chainId;
               } else {
-                // Default to Ethereum mainnet if no chainId specified
-                provider = getProviderForChain(1);
+                throw new Error('No chainId found in transaction or session request');
               }
+
+              console.log(`Transaction for chainId: ${chainId}`);
+
+              // First check if we have an RPC URL in the session's rpcMap
+              try {
+                // Get the active session for this topic
+                const session = walletkit.getActiveSessions()[topic];
+                if (session) {
+                  // Check for rpcMap in the namespaces
+                  const eip155Namespace = session.namespaces?.eip155;
+                  // Access optional properties safely through optional chaining
+                  const rpcMapEntry = (eip155Namespace as { rpcMap?: Record<string, string> })
+                    ?.rpcMap?.[chainId.toString()];
+                  if (rpcMapEntry) {
+                    rpcUrl = rpcMapEntry;
+                    console.log(
+                      `Using RPC URL from session rpcMap: ${rpcUrl} for chain ${chainId}`,
+                    );
+                  }
+                }
+              } catch (rpcMapError) {
+                console.error('Error getting RPC URL from session:', rpcMapError);
+                // Continue with fallback methods
+              }
+
+              // If we couldn't get an RPC URL from the session, use our provider function
+              if (!rpcUrl) {
+                // Create a provider for this chain
+                provider = getProviderForChain(chainId);
+                rpcUrl = provider.connection.url;
+              } else {
+                // Create a provider with the RPC URL from the session
+                provider = new ethers.providers.JsonRpcProvider(rpcUrl);
+              }
+
+              // Update the wallet's RPC URL
+              await pkpWallet.setRpc(rpcUrl);
+              console.log(`Set RPC URL for chain ID ${chainId}: ${rpcUrl}`);
 
               // Process gas parameters
               if (txParams.gas) {
@@ -408,11 +377,19 @@ export async function registerPKPWallet(
                 txParams.gasPrice = ethers.BigNumber.from(txParams.gasPrice);
               }
 
+              // Ensure the from address is set properly
+              if (!txParams.from) {
+                const walletAddress = await pkpWallet.getAddress();
+                txParams.from = walletAddress;
+                console.log(`Setting missing 'from' address to wallet address: ${walletAddress}`);
+              }
+
               // Ensure we have a gas limit if none was provided
               if (!txParams.gasLimit && !txParams.gas) {
                 try {
-                  // Estimate gas for the transaction
+                  // Add 'from' parameter to estimateGas call to avoid "from the zero address" errors
                   const gasEstimate = await provider.estimateGas({
+                    from: txParams.from,
                     to: txParams.to,
                     data: txParams.data,
                     value: txParams.value || '0x0',
@@ -434,9 +411,6 @@ export async function registerPKPWallet(
               const tx = await pkpWallet.sendTransaction(txParams);
               result = tx.hash;
               console.log('Transaction sent with PKP wallet:', tx.hash);
-
-              // Emit proper event to notify the client
-              await notifyTransactionComplete(tx.hash, topic, txParams.chainId.toString());
             } catch (error) {
               console.error('Error sending transaction with PKP wallet:', error);
               throw error;
@@ -499,32 +473,4 @@ export async function registerPKPWallet(
   console.log('PKP wallet event handlers registered with WalletConnect');
 
   return accountInfo;
-}
-
-/**
- * Notify the client that a transaction has completed
- */
-async function notifyTransactionComplete(txHash: string, topic: string, chainId: string) {
-  if (!walletkit) return;
-
-  try {
-    // Format the chain ID with eip155 prefix if not already present
-    const formattedChainId = chainId.includes(':') ? chainId : `eip155:${chainId}`;
-
-    // Create the event notification
-    const transactionEvent = {
-      topic: topic,
-      event: {
-        name: 'transactionComplete',
-        data: [txHash],
-      },
-      chainId: formattedChainId,
-    };
-
-    // Emit the event
-    await walletkit.emitSessionEvent(transactionEvent);
-    console.log('Emitted transactionComplete event to session', topic);
-  } catch (error) {
-    console.error('Failed to notify session of transaction completion:', error);
-  }
 }
