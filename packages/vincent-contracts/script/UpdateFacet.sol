@@ -160,7 +160,7 @@ contract UpdateFacet is Script {
                 isTargetFacet = isSameFacetType(facetAddress, registerUserSelector);
             } else if (compareStrings(facetName, "VincentUserViewFacet")) {
                 // Check for a common selector in VincentUserViewFacet - using a selector from the library
-                bytes4 getUserSelector = VincentUserViewFacet.getAllRegisteredAgentPkps.selector;
+                bytes4 getUserSelector = VincentUserViewFacet.getRegisteredPkpsForAddress.selector;
                 isTargetFacet = isSameFacetType(facetAddress, getUserSelector);
             }
 
@@ -246,12 +246,15 @@ contract UpdateFacet is Script {
 
     /// @dev Get VincentUserViewFacet selectors
     function getVincentUserViewFacetSelectors() internal pure returns (bytes4[] memory) {
-        bytes4[] memory selectors = new bytes4[](5);
-        selectors[0] = VincentUserViewFacet.getAllRegisteredAgentPkps.selector;
+        bytes4[] memory selectors = new bytes4[](8);
+        selectors[0] = VincentUserViewFacet.getRegisteredPkpsForAddress.selector;
         selectors[1] = VincentUserViewFacet.getPermittedAppVersionForPkp.selector;
-        selectors[2] = VincentUserViewFacet.getAllPermittedAppIdsForPkp.selector;
-        selectors[3] = VincentUserViewFacet.validateToolExecutionAndGetPolicies.selector;
-        selectors[4] = VincentUserViewFacet.getAllToolsAndPoliciesForApp.selector;
+        selectors[2] = VincentUserViewFacet.getPermittedAppsForPkp.selector;
+        selectors[3] = VincentUserViewFacet.getPermittedToolsAndPoliciesForApp.selector;
+        selectors[4] = VincentUserViewFacet.isDelegateePermittedToExecuteToolUsingPkp.selector;
+        selectors[5] = VincentUserViewFacet.getRegisteredPoliciesForTool.selector;
+        selectors[6] = VincentUserViewFacet.checkIsPermittedAndGetRegisteredPoliciesForTool.selector;
+        selectors[7] = VincentUserViewFacet.getToolPolicyParameterValuesForPkp.selector;
         return selectors;
     }
 
