@@ -175,7 +175,7 @@ contract VincentUserViewFacet is VincentBase {
             isDelegateePermittedToExecuteToolUsingPkp(delegatee, pkpTokenId, toolIpfsCid);
         return (
             delegateePermission,
-            getRegisteredPoliciesForTool(delegateePermission.appId, delegateePermission.appVersion, toolIpfsCid)
+            getRegisteredPoliciesForTool(delegateePermission.appId, pkpTokenId, toolIpfsCid)
         );
     }
 
