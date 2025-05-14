@@ -59,8 +59,8 @@ export const getTokenAmountInUsd = async ({
 }: {
   ethRpcUrl: string;
   tokenAddress: string;
-  tokenAmount: string;
   tokenDecimals: number;
+  tokenAmount: bigint;
 }): Promise<bigint> => {
   // Special case for WETH - no need to get a quote since it's already in ETH terms
   if (tokenAddress.toLowerCase() === ETH_MAINNET_WETH_ADDRESS.toLowerCase()) {

@@ -32,15 +32,15 @@ describe('getTokenAmountInUsd', () => {
   it('should calculate WBTC amount in USD using Uniswap', async () => {
     // Setup - using USDC as a real token
     const WBTC_ADDRESS = '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599';
-    const tokenAmount = '1'; // 1 WBTC
+    const tokenAmount = 1n; // 1 WBTC
     const tokenDecimals = 8; // WBTC has 8 decimals
 
     // Execute
     const result = await getTokenAmountInUsd({
       ethRpcUrl: ETH_RPC_URL,
       tokenAddress: WBTC_ADDRESS,
-      tokenAmount,
       tokenDecimals,
+      tokenAmount,
     });
 
     // Assert

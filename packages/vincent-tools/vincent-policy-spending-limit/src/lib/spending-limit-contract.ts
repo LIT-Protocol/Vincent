@@ -2,7 +2,7 @@ import { parseAbi, getContract } from 'viem';
 
 import { createChronicleYellowstoneViemClient } from './viem-chronicle-yellowstone-client';
 
-const SPENDING_LIMIT_CONTRACT_ABI = [
+export const SPENDING_LIMIT_CONTRACT_ABI = [
   'event Spent(address indexed spender, uint256 indexed appId, uint256 amount, uint256 timestamp)',
 
   'error EmptyAppIdsArray(address user)',
