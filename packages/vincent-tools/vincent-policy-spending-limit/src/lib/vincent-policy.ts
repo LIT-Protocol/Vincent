@@ -6,14 +6,16 @@ import { spendingLimitPolicyEval } from './vincent-policy-eval';
 import { spendingLimitPolicyCommit } from './vincent-policy-commit';
 
 export const spendingLimitPolicyToolParamsSchema = z.object({
+  appId: z.number(),
   pkpEthAddress: z.string(),
   rpcUrl: z.string(),
-  chainId: z.string(),
-  tokenInAddress: z.string(),
-  tokenOutAddress: z.string(),
-  tokenInAmount: z.string(),
-  tokenInDecimals: z.string(),
-  tokenOutDecimals: z.string(),
+  tokenAddress: z.string(),
+  tokenDecimals: z.number(),
+  buyAmount: z.number(),
+});
+
+export const spendingLimitPolicyUserParamsSchema = z.object({
+  maxDailySpendAmountUsd: z.string(),
 });
 
 export const spendingLimitPolicyEvalAllowResultSchema = z.object({
@@ -35,6 +37,9 @@ export const spendingLimitPolicyPrecheckAllowResultSchema = z.object({
 
 export const spendingLimitPolicyPrecheckDenyResultSchema = z.object({
   reason: z.literal('Attempted buy amount exceeds daily limit'),
+  attemptedBuyAmountUsd: z.string(),
+  currentDailySpendAmountUsd: z.string(),
+  maxDailySpendAmountUsd: z.string(),
 });
 
 export const spendingLimitPolicyCommitParamsSchema = z.object({
@@ -53,8 +58,9 @@ export const spendingLimitPolicyDef = createVincentPolicy({
   // TODO: Replace with actual CID
   ipfsCid: 'Qm-REPLACE-ME',
   packageName: '@lit-protocol/vincent-policy-spending-limit',
+
   toolParamsSchema: spendingLimitPolicyToolParamsSchema,
-  // userParamsSchema,
+  userParamsSchema: spendingLimitPolicyUserParamsSchema,
 
   evalAllowResultSchema: spendingLimitPolicyEvalAllowResultSchema,
   evalDenyResultSchema: spendingLimitPolicyEvalDenyResultSchema,

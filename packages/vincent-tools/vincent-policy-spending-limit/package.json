@@ -6,6 +6,10 @@
   },
   "dependencies": {
     "@lit-protocol/vincent-tool-sdk": "workspace:*",
+    "@uniswap/sdk-core": "^7.7.2",
+    "@uniswap/v3-core": "^1.0.1",
+    "@uniswap/v3-periphery": "^1.4.4",
+    "@uniswap/v3-sdk": "^3.25.2",
     "ethers": "^5.7.2",
     "viem": "^2.23.2",
     "zod": "^3.24.1"
@@ -29,6 +33,9 @@
     "dist",
     "!**/*.tsbuildinfo"
   ],
+  "scripts": {
+    "test": "jest"
+  },
   "nx": {
     "sourceRoot": "packages/vincent-tools/vincent-policy-spending-limit/src",
     "projectType": "library",
