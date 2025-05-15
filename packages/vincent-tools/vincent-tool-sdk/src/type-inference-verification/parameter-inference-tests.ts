@@ -5,7 +5,7 @@
  * on parameters passed to allow() and deny() methods.
  */
 import { z } from 'zod';
-import { createVincentToolPolicy } from '../lib/vincentPolicy';
+import { createVincentToolPolicy } from '../lib/policyCore/vincentPolicy';
 
 // Base tool schema for all tests
 const baseToolSchema = z.object({
@@ -18,7 +18,7 @@ const baseToolSchema = z.object({
  * Test 1: Basic schema validation for allow/deny
  */
 function testBasicSchemaValidation() {
-  const policy = createVincentToolPolicy({
+  return createVincentToolPolicy({
     toolParamsSchema: baseToolSchema,
     policyDef: {
       packageName: '@lit-protocol/test-policy@1.34.2',
@@ -48,15 +48,13 @@ function testBasicSchemaValidation() {
       action: 'actionType',
     },
   });
-
-  return policy;
 }
 
 /**
  * Test 2: No schema case validation
  */
 function testNoSchemaValidation() {
-  const policy = createVincentToolPolicy({
+  return createVincentToolPolicy({
     toolParamsSchema: baseToolSchema,
     policyDef: {
       packageName: '@lit-protocol/test-policy@1.34.2',
@@ -85,15 +83,13 @@ function testNoSchemaValidation() {
       action: 'actionType',
     },
   });
-
-  return policy;
 }
 
 /**
  * Test 3: String schema validation
  */
 function testStringSchemaValidation() {
-  const policy = createVincentToolPolicy({
+  return createVincentToolPolicy({
     toolParamsSchema: baseToolSchema,
     policyDef: {
       packageName: '@lit-protocol/test-policy@1.34.2',
@@ -122,15 +118,13 @@ function testStringSchemaValidation() {
       action: 'actionType',
     },
   });
-
-  return policy;
 }
 
 /**
  * Test 4: Deny parameter validation
  */
 function testDenyValidation() {
-  const policy = createVincentToolPolicy({
+  return createVincentToolPolicy({
     toolParamsSchema: baseToolSchema,
     policyDef: {
       packageName: '@lit-protocol/test-policy@1.34.2',
@@ -159,15 +153,13 @@ function testDenyValidation() {
       action: 'actionType',
     },
   });
-
-  return policy;
 }
 
 /**
  * Test 5: Different schemas for different contexts
  */
 function testContextSchemas() {
-  const policy = createVincentToolPolicy({
+  return createVincentToolPolicy({
     toolParamsSchema: baseToolSchema,
     policyDef: {
       packageName: '@lit-protocol/test-policy@1.34.2',
@@ -200,8 +192,6 @@ function testContextSchemas() {
       action: 'actionType',
     },
   });
-
-  return policy;
 }
 
 // Export test functions

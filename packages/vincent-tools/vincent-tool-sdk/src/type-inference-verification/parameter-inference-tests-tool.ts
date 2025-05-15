@@ -5,8 +5,8 @@
  * policy results, and context manipulation.
  */
 import { z } from 'zod';
-import { createVincentTool } from '../lib/vincentTool';
-import { createVincentToolPolicy } from '../lib/vincentPolicy';
+import { createVincentTool } from '../lib/toolCore/vincentTool';
+import { createVincentToolPolicy } from '../lib/policyCore/vincentPolicy';
 
 // Define a schema for our test cases
 const testSchema = z.object({
@@ -19,6 +19,7 @@ const testSchema = z.object({
     })
     .optional(),
 });
+/* eslint-disable @typescript-eslint/no-unused-vars */
 
 /**
  * Test Case 1: Basic parameter type inference
@@ -45,7 +46,9 @@ function testBasicParameterInference() {
     },
   });
 
-  const tool = createVincentTool({
+  return createVincentTool({
+    ipfsCid: 'theIpfsCid',
+    packageName: '@lit-protocol/tehTool@1.0.0',
     toolParamsSchema: testSchema,
     supportedPolicies: [testPolicy],
 
@@ -104,8 +107,6 @@ function testBasicParameterInference() {
       return succeed();
     },
   });
-
-  return tool;
 }
 
 /**
@@ -182,7 +183,9 @@ function testPolicyResultInference() {
     },
   });
 
-  const tool = createVincentTool({
+  return createVincentTool({
+    ipfsCid: 'cidIpfs',
+    packageName: '@lit-protocol/toolPlusPlus@1.0.0',
     toolParamsSchema: testSchema,
     supportedPolicies: [complexPolicy, commitPolicy],
 
@@ -190,13 +193,9 @@ function testPolicyResultInference() {
       // Testing allow/deny branch type inference
       if (policiesContext.allow) {
         // When allowed, policy results should be accessible
-        if (
-          policiesContext.allowedPolicies['@lit-protocol/complex-policy@1.0.0']
-        ) {
+        if (policiesContext.allowedPolicies['@lit-protocol/complex-policy@1.0.0']) {
           const { level, metadata, flags } =
-            policiesContext.allowedPolicies[
-              '@lit-protocol/complex-policy@1.0.0'
-            ].result;
+            policiesContext.allowedPolicies['@lit-protocol/complex-policy@1.0.0'].result;
 
           // Enum type should be correctly inferred
           switch (level) {
@@ -239,17 +238,13 @@ function testPolicyResultInference() {
 
     execute: async (params, { policiesContext, succeed }) => {
       // Testing commit function type inference
-      if (
-        policiesContext.allowedPolicies['@lit-protocol/commit-policy@1.0.0']
-      ) {
+      if (policiesContext.allowedPolicies['@lit-protocol/commit-policy@1.0.0']) {
         const { transactionId } =
-          policiesContext.allowedPolicies['@lit-protocol/commit-policy@1.0.0']
-            .result;
+          policiesContext.allowedPolicies['@lit-protocol/commit-policy@1.0.0'].result;
 
         // Commit function should be correctly typed
         const commitFn =
-          policiesContext.allowedPolicies['@lit-protocol/commit-policy@1.0.0']
-            ?.commit;
+          policiesContext.allowedPolicies['@lit-protocol/commit-policy@1.0.0']?.commit;
 
         // Valid commit parameters
         const commitResult = await commitFn({
@@ -287,8 +282,6 @@ function testPolicyResultInference() {
       return succeed();
     },
   });
-
-  return tool;
 }
 
 /**
@@ -329,7 +322,9 @@ function testComplexDestructuring() {
     }),
   });
 
-  const tool = createVincentTool({
+  return createVincentTool({
+    ipfsCid: 'whyowhy',
+    packageName: '@lit-protocol/toolPlus@1.0.0',
     toolParamsSchema: testSchema,
     supportedPolicies: [testPolicy],
     executeSuccessSchema: successSchema,
@@ -409,8 +404,6 @@ function testComplexDestructuring() {
       });
     },
   });
-
-  return tool;
 }
 
 /**
@@ -450,7 +443,9 @@ function testAdvancedParameterValidation() {
     },
   });
 
-  const tool = createVincentTool({
+  return createVincentTool({
+    ipfsCid: 'cidz',
+    packageName: '@lit-protocol/plusplustool@1.0.0',
     toolParamsSchema: advancedSchema,
     supportedPolicies: [testPolicy],
 
@@ -488,13 +483,14 @@ function testAdvancedParameterValidation() {
             toolParams.data.value.toUpperCase();
             break;
 
-          case 'boolean':
+          case 'boolean': {
             // Value should be a boolean when type is 'boolean'
             const isTrue = toolParams.data.value === true;
             console.log(isTrue);
             // @ts-expect-error - Not a string operation
             params.data.value.toUpperCase();
             break;
+          }
         }
       }
 
@@ -526,8 +522,6 @@ function testAdvancedParameterValidation() {
       return succeed();
     },
   });
-
-  return tool;
 }
 
 /**
@@ -556,6 +550,8 @@ function testMissingTypes() {
 
   // Case where success schema is defined but fail schema is not
   const toolWithOnlySuccessSchema = createVincentTool({
+    ipfsCid: 'extracidz',
+    packageName: '@lit-protocol/toolofglory@1.0.0',
     toolParamsSchema: testSchema,
     supportedPolicies: [testPolicy],
     executeSuccessSchema: successSchema,
@@ -584,6 +580,8 @@ function testMissingTypes() {
   });
 
   const toolWithOnlyFailSchema = createVincentTool({
+    ipfsCid: 'maxcids',
+    packageName: '@lit-protocol/lets-tool-this@1.0.0',
     toolParamsSchema: testSchema,
     supportedPolicies: [testPolicy],
     executeFailSchema: failSchema,

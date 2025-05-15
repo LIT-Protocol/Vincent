@@ -5,8 +5,8 @@
  * using a tool with two policies - one simple and one with commit functionality.
  */
 import { z } from 'zod';
-import { createVincentTool } from '../lib/vincentTool';
-import { createVincentToolPolicy } from '../lib/vincentPolicy';
+import { createVincentTool } from '../lib/toolCore/vincentTool';
+import { createVincentToolPolicy } from '../lib/policyCore/vincentPolicy';
 
 // Base tool schema
 const baseToolSchema = z.object({
@@ -14,6 +14,8 @@ const baseToolSchema = z.object({
   target: z.string(),
   amount: z.number(),
 });
+
+/* eslint-disable @typescript-eslint/no-unused-vars */
 
 /**
  * Simple test to verify inference of policy evaluation results
@@ -127,6 +129,8 @@ export function testPolicyEvaluationResults() {
 
   // Create tool with both policies
   return createVincentTool({
+    ipfsCid: 'theCid',
+    packageName: '@lit-protocol/mahTool@1.0.0',
     toolParamsSchema: baseToolSchema,
     supportedPolicies: [simplePolicy, commitPolicy],
 
@@ -162,12 +166,9 @@ export function testPolicyEvaluationResults() {
       try {
         // Verify type inference works correctly when results.allow is true
         // Access specific policy results - now TypeScript knows this is defined
-        if (
-          policiesContext.allowedPolicies['@lit-protocol/simple-policy@1.0.0']
-        ) {
+        if (policiesContext.allowedPolicies['@lit-protocol/simple-policy@1.0.0']) {
           const simpleResult =
-            policiesContext.allowedPolicies['@lit-protocol/simple-policy@1.0.0']
-              .result;
+            policiesContext.allowedPolicies['@lit-protocol/simple-policy@1.0.0'].result;
 
           // TypeScript should now correctly infer the result type
           const { approved, reason } = simpleResult;
@@ -176,12 +177,9 @@ export function testPolicyEvaluationResults() {
         }
 
         // Type inference should work for the commit policy result
-        if (
-          policiesContext.allowedPolicies['@lit-protocol/commit-policy@1.0.0']
-        ) {
+        if (policiesContext.allowedPolicies['@lit-protocol/commit-policy@1.0.0']) {
           const commitPolicyResult =
-            policiesContext.allowedPolicies['@lit-protocol/commit-policy@1.0.0']
-              .result;
+            policiesContext.allowedPolicies['@lit-protocol/commit-policy@1.0.0'].result;
 
           // No need for type guards anymore
           const { transactionId, status } = commitPolicyResult;
@@ -189,8 +187,7 @@ export function testPolicyEvaluationResults() {
 
           // The commit function should be available and properly typed
           const commitFn =
-            policiesContext.allowedPolicies['@lit-protocol/commit-policy@1.0.0']
-              .commit;
+            policiesContext.allowedPolicies['@lit-protocol/commit-policy@1.0.0'].commit;
 
           // Call commit with properly typed parameters
           const commitResult = await commitFn({
