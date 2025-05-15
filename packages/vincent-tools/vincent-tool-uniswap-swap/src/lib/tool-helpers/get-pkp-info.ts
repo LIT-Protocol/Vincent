@@ -29,6 +29,10 @@ export const getPkpInfo = async ({
     args: [pkpTokenId],
   });
 
+  console.log(
+    `Retrieved PKP info for PKP ETH Address: ${pkpEthAddress}: tokenId: ${pkpTokenId}, publicKey: ${publicKey} (getPkpInfo)`,
+  );
+
   return {
     tokenId: pkpTokenId,
     ethAddress: pkpEthAddress,

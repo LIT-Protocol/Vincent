@@ -22,7 +22,10 @@ declare const Lit: {
 const ETH_MAINNET_SWAP_ROUTER_CONTRACT_ADDRESS = '0xE592427A0AEce92De3Edee1F18E0157C05861564';
 
 export const sendUniswapTx = async ({
-  toolParams,
+  ethRpcUrl,
+  pkpEthAddress,
+  tokenInDecimals,
+  tokenInAmount,
   pkpPublicKey,
   uniswapSwapRoute,
   uniswapTokenIn,
@@ -31,7 +34,10 @@ export const sendUniswapTx = async ({
   slippageTolerance,
   swapDeadline,
 }: {
-  toolParams: z.infer<typeof UniswapSwapToolParamsSchema>;
+  ethRpcUrl: string;
+  pkpEthAddress: `0x${string}`;
+  tokenInDecimals: number;
+  tokenInAmount: bigint;
   pkpPublicKey: string;
   uniswapSwapRoute: Route<Token, Token>;
   uniswapTokenIn: Token;
@@ -40,8 +46,6 @@ export const sendUniswapTx = async ({
   slippageTolerance: Percent;
   swapDeadline: bigint;
 }): Promise<`0x${string}`> => {
-  const { ethRpcUrl, pkpEthAddress, tokenInDecimals, tokenInAmount } = toolParams;
-
   const client = createPublicClient({
     transport: http(ethRpcUrl),
   });
