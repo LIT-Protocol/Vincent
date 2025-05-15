@@ -50,7 +50,7 @@ export const UniswapSwapToolExecuteFailSchema = z.object({
 
 const SpendingLimitPolicy = createVincentToolPolicy({
   toolParamsSchema: UniswapSwapToolParamsSchema,
-  policyDef: SpendingLimitPolicyDef,
+  policyDef: SpendingLimitPolicyDef.__vincentPolicyDef,
   toolParameterMappings: {
     pkpEthAddress: 'pkpEthAddress',
     ethRpcUrl: 'ethRpcUrl',
