@@ -1,49 +1,48 @@
-import { PolicyContext } from '@lit-protocol/vincent-tool-sdk/src/lib/types';
+import { PolicyContext } from '@lit-protocol/vincent-tool-sdk';
 import { z } from 'zod';
 
 import {
-  spendingLimitPolicyToolParamsSchema,
-  spendingLimitPolicyUserParamsSchema,
-  spendingLimitPolicyEvalAllowResultSchema,
-  spendingLimitPolicyEvalDenyResultSchema,
+  SpendingLimitPolicyToolParamsSchema,
+  SpendingLimitPolicyUserParamsSchema,
+  SpendingLimitPolicyEvalAllowResultSchema,
+  SpendingLimitPolicyEvalDenyResultSchema,
 } from './vincent-policy';
 import { getSpendingLimitContractInstance } from './spending-limit-contract';
 import { getTokenAmountInUsd } from './policy-helpers/get-token-amount-in-usd';
 
-export const spendingLimitPolicyEval = async (
+export const SpendingLimitPolicyEval = async (
   {
     toolParams,
     userParams,
   }: {
-    toolParams: z.infer<typeof spendingLimitPolicyToolParamsSchema>;
-    userParams: z.infer<typeof spendingLimitPolicyUserParamsSchema>;
+    toolParams: z.infer<typeof SpendingLimitPolicyToolParamsSchema>;
+    userParams: z.infer<typeof SpendingLimitPolicyUserParamsSchema>;
   },
   context: PolicyContext<
-    typeof spendingLimitPolicyEvalAllowResultSchema,
-    typeof spendingLimitPolicyEvalDenyResultSchema
+    typeof SpendingLimitPolicyEvalAllowResultSchema,
+    typeof SpendingLimitPolicyEvalDenyResultSchema
   >,
 ) => {
-  const { pkpEthAddress, appId, buyAmount, ethRpcUrl, tokenAddress, tokenDecimals } =
-    spendingLimitPolicyToolParamsSchema.parse(toolParams);
-  const { maxDailySpendAmountUsd } = spendingLimitPolicyUserParamsSchema.parse(userParams);
-
-  const buyAmountInUsd = await getTokenAmountInUsd({
-    ethRpcUrl,
-    tokenAddress,
-    tokenDecimals,
-    tokenAmount: buyAmount,
-  });
-
-  // maxDailySpendingLimitInUsdCents has 2 decimal precision, but tokenAmountInUsd has 8,
-  // so we multiply by 10^6 to match the precision
-  const adjustedMaxDailySpendingLimit = maxDailySpendAmountUsd * 1_000_000n;
-  console.log(
-    `Adjusted maxDailySpendingLimitInUsdCents to 8 decimal precision: ${adjustedMaxDailySpendingLimit.toString()} (spendingLimitPolicyPrecheck)`,
-  );
-
-  const spendingLimitContract = getSpendingLimitContractInstance();
-
   try {
+    const { pkpEthAddress, appId, buyAmount, ethRpcUrl, tokenAddress, tokenDecimals } =
+      SpendingLimitPolicyToolParamsSchema.parse(toolParams);
+    const { maxDailySpendAmountUsd } = SpendingLimitPolicyUserParamsSchema.parse(userParams);
+
+    const buyAmountInUsd = await getTokenAmountInUsd({
+      ethRpcUrl,
+      tokenAddress,
+      tokenDecimals,
+      tokenAmount: buyAmount,
+    });
+
+    // maxDailySpendingLimitInUsdCents has 2 decimal precision, but tokenAmountInUsd has 8,
+    // so we multiply by 10^6 to match the precision
+    const adjustedMaxDailySpendingLimit = maxDailySpendAmountUsd * 1_000_000n;
+    console.log(
+      `Adjusted maxDailySpendingLimitInUsdCents to 8 decimal precision: ${adjustedMaxDailySpendingLimit.toString()} (spendingLimitPolicyPrecheck)`,
+    );
+
+    const spendingLimitContract = getSpendingLimitContractInstance();
     const buyAmountAllowed = await spendingLimitContract.read.checkLimit([
       pkpEthAddress,
       appId,
@@ -53,9 +52,16 @@ export const spendingLimitPolicyEval = async (
     ]);
     console.log(`Buy amount allowed: ${buyAmountAllowed} (spendingLimitPolicyPrecheck)`);
 
-    return context.allow({
-      allow: true,
-    });
+    return buyAmountAllowed
+      ? context.allow({
+          allow: true,
+          appId,
+          maxSpendingLimitInUsd: adjustedMaxDailySpendingLimit,
+        })
+      : context.deny({
+          allow: false,
+          reason: 'Attempted buy amount exceeds daily limit',
+        });
   } catch (error) {
     return context.deny({
       allow: false,

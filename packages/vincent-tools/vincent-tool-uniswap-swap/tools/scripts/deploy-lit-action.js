@@ -23,16 +23,13 @@ async function uploadToIPFS(filePath) {
       throw new Error('PINATA_JWT environment variable is not set');
     }
 
-    const response = await fetch(
-      'https://api.pinata.cloud/pinning/pinFileToIPFS',
-      {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${PINATA_JWT}`,
-        },
-        body: form,
-      }
-    );
+    const response = await fetch('https://api.pinata.cloud/pinning/pinFileToIPFS', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${PINATA_JWT}`,
+      },
+      body: form,
+    });
 
     if (!response.ok) {
       const text = await response.text();
@@ -59,7 +56,7 @@ async function main() {
             const actionPath = path.join(distDir, outputFile);
             if (!fs.existsSync(actionPath)) {
               throw new Error(
-                `Built action not found at ${actionPath}. Please run build:action first.`
+                `Built action not found at ${actionPath}. Please run build:action first.`,
               );
             }
 
@@ -67,14 +64,14 @@ async function main() {
             const ipfsCid = await uploadToIPFS(actionPath);
             console.log(`Deployed ${outputFile} to IPFS: ${ipfsCid}`);
             return { file: outputFile, ipfsCid };
-          })
+          }),
         );
 
         return {
           network,
           files: fileResults,
         };
-      })
+      }),
     );
 
     // Write deployment results to a JSON file
@@ -86,13 +83,13 @@ async function main() {
           defaultPolicy: files.find((f) => f.file.includes('policy'))?.ipfsCid,
         },
       }),
-      {}
+      {},
     );
 
     fs.writeFileSync(
       path.join(distDir, 'ipfs.json'),
       JSON.stringify(deployConfig, null, 2),
-      'utf8'
+      'utf8',
     );
 
     console.log('✅ Successfully deployed all Lit Actions');

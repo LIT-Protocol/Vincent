@@ -20,9 +20,7 @@ async function buildFile(entryPoint, outfile, network, config) {
       },
       target: ['es2020'],
     });
-    console.log(
-      `Successfully built ${path.basename(entryPoint)} for network: ${network}`,
-    );
+    console.log(`Successfully built ${path.basename(entryPoint)} for network: ${network}`);
   } catch (error) {
     console.error(`Error building ${path.basename(entryPoint)}:`, error);
     process.exit(1);
@@ -31,10 +29,7 @@ async function buildFile(entryPoint, outfile, network, config) {
 
 async function buildAction(network) {
   const config = networks[network];
-  const toolEntryPoint = path.resolve(
-    __dirname,
-    '../../src/lib/lit-actions/tool.ts',
-  );
+  const toolEntryPoint = path.resolve(__dirname, '../../src/lib/lit-actions/tool.ts');
   const spendingLimitPolicyEntryPoint = path.resolve(
     __dirname,
     '../../src/lib/lit-actions/spending-limit-policy.ts',
@@ -62,12 +57,7 @@ async function buildAction(network) {
 
   await Promise.all([
     buildFile(toolEntryPoint, toolOutfile, network, config),
-    buildFile(
-      spendingLimitPolicyEntryPoint,
-      spendingLimitPolicyOutfile,
-      network,
-      config,
-    ),
+    buildFile(spendingLimitPolicyEntryPoint, spendingLimitPolicyOutfile, network, config),
     buildFile(erc20ApprovalEntryPoint, erc20ApprovalOutfile, network, config),
   ]);
 }

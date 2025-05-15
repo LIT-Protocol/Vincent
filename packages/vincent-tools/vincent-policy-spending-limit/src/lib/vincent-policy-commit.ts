@@ -1,23 +1,23 @@
-import { PolicyContext } from '@lit-protocol/vincent-tool-sdk/src/lib/types';
+import { PolicyContext } from '@lit-protocol/vincent-tool-sdk';
 import { z } from 'zod';
 
 import {
-  spendingLimitPolicyCommitParamsSchema,
-  spendingLimitPolicyCommitAllowResultSchema,
-  spendingLimitPolicyCommitDenyResultSchema,
+  SpendingLimitPolicyCommitParamsSchema,
+  SpendingLimitPolicyCommitAllowResultSchema,
+  SpendingLimitPolicyCommitDenyResultSchema,
 } from './vincent-policy';
 import { sendSpendTx } from './policy-helpers/send-spend-tx';
 
-export const spendingLimitPolicyCommit = async (
-  params: z.infer<typeof spendingLimitPolicyCommitParamsSchema>,
+export const SpendingLimitPolicyCommit = async (
+  params: z.infer<typeof SpendingLimitPolicyCommitParamsSchema>,
   context: PolicyContext<
-    typeof spendingLimitPolicyCommitAllowResultSchema,
-    typeof spendingLimitPolicyCommitDenyResultSchema
+    typeof SpendingLimitPolicyCommitAllowResultSchema,
+    typeof SpendingLimitPolicyCommitDenyResultSchema
   >,
 ) => {
   try {
     const { appId, amountSpentUsd, maxSpendingLimitInUsd, pkpEthAddress, pkpPubKey } =
-      spendingLimitPolicyCommitParamsSchema.parse(params);
+      SpendingLimitPolicyCommitParamsSchema.parse(params);
 
     const spendTxHash = await sendSpendTx({
       appId,
@@ -29,7 +29,7 @@ export const spendingLimitPolicyCommit = async (
     });
 
     return context.allow({
-      transactionHash: spendTxHash,
+      spendTxHash,
     });
   } catch (error) {
     return context.deny({
