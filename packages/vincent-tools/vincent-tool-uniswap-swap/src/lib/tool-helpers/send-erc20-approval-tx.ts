@@ -16,7 +16,7 @@ declare const Lit: {
 
 const ETH_MAINNET_QUOTER_CONTRACT_ADDRESS = '0xb27308f9F90D607463bb33eA1BeBb41C27CE5AB6';
 
-export const sendErc20Approval = async ({
+export const sendErc20ApprovalTx = async ({
   ethRpcUrl,
   tokenInAmount,
   tokenInDecimals,

@@ -20,14 +20,15 @@ export const SPENDING_LIMIT_CONTRACT_ABI = [
   'function getTotalSpent(address user, uint256 duration) view returns (uint256)',
 
   'function spend(uint256 appId, uint256 amount, uint256 userMaxSpendLimit, uint256 duration)',
-];
+] as const;
+
 const SPENDING_LIMIT_CONTRACT_ADDRESS = '0x756fa449de893446b26e10c6c66e62ccabee908c';
 
 export const getSpendingLimitContractInstance = () => {
   const abi = parseAbi(SPENDING_LIMIT_CONTRACT_ABI);
   const chronicleYellowstoneProvider = createChronicleYellowstoneViemClient();
   const spendingLimitContract = getContract({
-    address: SPENDING_LIMIT_CONTRACT_ADDRESS,
+    address: SPENDING_LIMIT_CONTRACT_ADDRESS as `0x${string}`,
     abi,
     client: chronicleYellowstoneProvider,
   });
