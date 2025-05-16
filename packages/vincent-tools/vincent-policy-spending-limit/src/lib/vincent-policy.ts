@@ -8,6 +8,8 @@ export const SpendingLimitPolicyToolParamsSchema = z.object({
   appId: z.number(),
   pkpEthAddress: z.string(),
   ethRpcUrl: z.string(),
+  rpcUrlForUniswap: z.string(),
+  chainIdForUniswap: z.number(),
   tokenAddress: z.string(),
   tokenDecimals: z.number(),
   buyAmount: z.number(),
@@ -76,12 +78,23 @@ export const SpendingLimitPolicyDef = createVincentPolicy({
   commitDenyResultSchema: SpendingLimitPolicyCommitDenyResultSchema,
 
   precheck: async ({ toolParams, userParams }, { allow, deny }) => {
-    const { pkpEthAddress, appId, buyAmount, ethRpcUrl, tokenAddress, tokenDecimals } = toolParams;
+    const {
+      pkpEthAddress,
+      appId,
+      buyAmount,
+      ethRpcUrl,
+      rpcUrlForUniswap,
+      chainIdForUniswap,
+      tokenAddress,
+      tokenDecimals,
+    } = toolParams;
     const { maxDailySpendAmountUsd } = userParams;
 
     const { buyAmountAllowed, buyAmountInUsd, adjustedMaxDailySpendingLimit } =
       await checkIfBuyAmountAllowed({
         ethRpcUrl,
+        rpcUrlForUniswap,
+        chainIdForUniswap,
         tokenAddress: tokenAddress as `0x${string}`,
         tokenDecimals,
         buyAmount,
@@ -103,12 +116,23 @@ export const SpendingLimitPolicyDef = createVincentPolicy({
         });
   },
   evaluate: async ({ toolParams, userParams }, { allow, deny }) => {
-    const { pkpEthAddress, appId, buyAmount, ethRpcUrl, tokenAddress, tokenDecimals } = toolParams;
+    const {
+      pkpEthAddress,
+      appId,
+      buyAmount,
+      ethRpcUrl,
+      rpcUrlForUniswap,
+      chainIdForUniswap,
+      tokenAddress,
+      tokenDecimals,
+    } = toolParams;
     const { maxDailySpendAmountUsd } = userParams;
 
     const { buyAmountAllowed, buyAmountInUsd, adjustedMaxDailySpendingLimit } =
       await checkIfBuyAmountAllowed({
         ethRpcUrl,
+        rpcUrlForUniswap,
+        chainIdForUniswap,
         tokenAddress: tokenAddress as `0x${string}`,
         tokenDecimals,
         buyAmount,
@@ -129,7 +153,7 @@ export const SpendingLimitPolicyDef = createVincentPolicy({
           buyAmountInUsd: Number(buyAmountInUsd),
         });
   },
-  commit: async (params, context) => {
+  commit: async (params, { allow }) => {
     const { appId, amountSpentUsd, maxSpendingLimitInUsd, pkpEthAddress, pkpPubKey } = params;
 
     const spendTxHash = await sendSpendTx({
@@ -141,7 +165,7 @@ export const SpendingLimitPolicyDef = createVincentPolicy({
       pkpPubKey,
     });
 
-    return context.allow({
+    return allow({
       spendTxHash,
     });
   },

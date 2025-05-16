@@ -3,6 +3,8 @@ import { getSpendingLimitContractInstance } from './spending-limit-contract';
 
 export const checkIfBuyAmountAllowed = async ({
   ethRpcUrl,
+  rpcUrlForUniswap,
+  chainIdForUniswap,
   tokenAddress,
   tokenDecimals,
   buyAmount,
@@ -11,6 +13,8 @@ export const checkIfBuyAmountAllowed = async ({
   appId,
 }: {
   ethRpcUrl: string;
+  rpcUrlForUniswap: string;
+  chainIdForUniswap: number;
   tokenAddress: `0x${string}`;
   tokenDecimals: number;
   buyAmount: number;
@@ -24,6 +28,8 @@ export const checkIfBuyAmountAllowed = async ({
 }> => {
   const buyAmountInUsd = await getTokenAmountInUsd({
     ethRpcUrl,
+    rpcUrlForUniswap,
+    chainIdForUniswap,
     tokenAddress,
     tokenDecimals,
     tokenAmount: BigInt(buyAmount),

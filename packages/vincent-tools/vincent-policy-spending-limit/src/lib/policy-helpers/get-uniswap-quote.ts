@@ -1,12 +1,8 @@
 import { computePoolAddress, FeeAmount } from '@uniswap/v3-sdk';
-import { Token } from '@uniswap/sdk-core';
+import { Token, CHAIN_TO_ADDRESSES_MAP } from '@uniswap/sdk-core';
 import * as IUniswapV3PoolABI from '@uniswap/v3-core/artifacts/contracts/interfaces/IUniswapV3Pool.sol/IUniswapV3Pool.json';
 import * as IUniswapV3QuoterABI from '@uniswap/v3-periphery/artifacts/contracts/lens/Quoter.sol/Quoter.json';
-import { getContract, http, parseUnits } from 'viem';
-import { createPublicClient } from 'viem';
-
-const ETH_MAINNET_POOL_FACTORY_CONTRACT_ADDRESS = '0x1F98431c8aD98523631AE4a59f267346ea31F984';
-const ETH_MAINNET_QUOTER_CONTRACT_ADDRESS = '0xb27308f9F90D607463bb33eA1BeBb41C27CE5AB6';
+import { getContract, http, parseUnits, createPublicClient } from 'viem';
 
 export const getUniswapQuote = async ({
   tokenInAddress,
@@ -15,7 +11,8 @@ export const getUniswapQuote = async ({
   tokenOutAddress,
   tokenOutDecimals,
   poolFee,
-  ethRpcUrl,
+  rpcUrl,
+  chainId,
 }: {
   tokenInAddress: string;
   tokenInDecimals: number;
@@ -23,17 +20,28 @@ export const getUniswapQuote = async ({
   tokenOutAddress: string;
   tokenOutDecimals: number;
   poolFee?: number;
-  ethRpcUrl: string;
+  rpcUrl: string;
+  chainId: number;
 }): Promise<bigint> => {
+  if (CHAIN_TO_ADDRESSES_MAP[chainId as keyof typeof CHAIN_TO_ADDRESSES_MAP] === undefined) {
+    throw new Error(`Unsupported chainId: ${chainId} (getUniswapQuote)`);
+  }
+
+  const v3CoreFactoryAddress = CHAIN_TO_ADDRESSES_MAP[
+    chainId as keyof typeof CHAIN_TO_ADDRESSES_MAP
+  ].v3CoreFactoryAddress as `0x${string}`;
+  const quoterAddress = CHAIN_TO_ADDRESSES_MAP[chainId as keyof typeof CHAIN_TO_ADDRESSES_MAP]
+    .quoterAddress as `0x${string}`;
+
   const currentPoolAddress = computePoolAddress({
-    factoryAddress: ETH_MAINNET_POOL_FACTORY_CONTRACT_ADDRESS,
-    tokenA: new Token(1, tokenInAddress, tokenInDecimals),
-    tokenB: new Token(1, tokenOutAddress, tokenOutDecimals),
+    factoryAddress: v3CoreFactoryAddress,
+    tokenA: new Token(chainId, tokenInAddress, tokenInDecimals),
+    tokenB: new Token(chainId, tokenOutAddress, tokenOutDecimals),
     fee: poolFee ?? FeeAmount.MEDIUM,
   });
 
   const client = createPublicClient({
-    transport: http(ethRpcUrl),
+    transport: http(rpcUrl),
   });
   const poolContract = getContract({
     address: currentPoolAddress as `0x${string}`,
@@ -53,7 +61,7 @@ export const getUniswapQuote = async ({
   );
 
   const quoterContract = getContract({
-    address: ETH_MAINNET_QUOTER_CONTRACT_ADDRESS as `0x${string}`,
+    address: quoterAddress,
     abi: IUniswapV3QuoterABI.abi,
     client,
   });
