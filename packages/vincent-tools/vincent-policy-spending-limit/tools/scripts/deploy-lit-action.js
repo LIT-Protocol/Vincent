@@ -2,11 +2,41 @@ const fs = require('fs');
 const path = require('path');
 const fetch = require('node-fetch');
 const FormData = require('form-data');
-const networks = require('../config/networks');
 const dotenvx = require('@dotenvx/dotenvx');
 
 // Load environment variables
-dotenvx.config({ path: path.join(__dirname, '../../../../.env') });
+dotenvx.config({ path: path.join(__dirname, '../../../../../.env') });
+
+(async () => {
+  try {
+    const distDir = path.join(__dirname, '../../dist');
+    const outputFile = 'deployed-lit-action-vincent-policy.js';
+    const filePath = path.join(distDir, outputFile);
+
+    if (!fs.existsSync(filePath)) {
+      throw new Error(`Built action not found at ${filePath}. Please run build:action first.`);
+    }
+
+    console.log(`Deploying ${outputFile} to IPFS...`);
+    const ipfsCid = await uploadToIPFS(filePath);
+
+    // Write deployment results to a JSON file
+    const deployConfig = {
+      vincentPolicyIpfsCid: ipfsCid,
+    };
+
+    const ipfsOutputFileName = 'vincent-policy-ipfs.json';
+    const ipfsJsonPath = path.join(distDir, ipfsOutputFileName);
+    fs.writeFileSync(ipfsJsonPath, JSON.stringify(deployConfig, null, 2), 'utf8');
+
+    console.log('✅ Successfully deployed Lit Action');
+    console.log(`ℹ️  Deployed ${outputFile} to IPFS: ${ipfsCid}`);
+    console.log(`ℹ️  Saved ${ipfsOutputFileName} to: ${ipfsJsonPath}`);
+  } catch (error) {
+    console.error('❌ Error in deploy process:', error);
+    process.exit(1);
+  }
+})();
 
 async function uploadToIPFS(filePath) {
   try {
@@ -43,60 +73,3 @@ async function uploadToIPFS(filePath) {
     throw error;
   }
 }
-
-async function main() {
-  try {
-    const distDir = path.join(__dirname, '../../dist');
-
-    // Upload each built action to IPFS
-    const deployResults = await Promise.all(
-      Object.entries(networks).map(async ([network, config]) => {
-        const fileResults = await Promise.all(
-          config.outputFiles.map(async (outputFile) => {
-            const actionPath = path.join(distDir, outputFile);
-            if (!fs.existsSync(actionPath)) {
-              throw new Error(
-                `Built action not found at ${actionPath}. Please run build:action first.`,
-              );
-            }
-
-            console.log(`Deploying ${outputFile} to IPFS...`);
-            const ipfsCid = await uploadToIPFS(actionPath);
-            console.log(`Deployed ${outputFile} to IPFS: ${ipfsCid}`);
-            return { file: outputFile, ipfsCid };
-          }),
-        );
-
-        return {
-          network,
-          files: fileResults,
-        };
-      }),
-    );
-
-    // Write deployment results to a JSON file
-    const deployConfig = deployResults.reduce(
-      (acc, { network, files }) => ({
-        ...acc,
-        [network]: {
-          tool: files.find((f) => !f.file.includes('policy'))?.ipfsCid,
-          defaultPolicy: files.find((f) => f.file.includes('policy'))?.ipfsCid,
-        },
-      }),
-      {},
-    );
-
-    fs.writeFileSync(
-      path.join(distDir, 'ipfs.json'),
-      JSON.stringify(deployConfig, null, 2),
-      'utf8',
-    );
-
-    console.log('✅ Successfully deployed all Lit Actions');
-  } catch (error) {
-    console.error('❌ Error in deploy process:', error);
-    process.exit(1);
-  }
-}
-
-main();

@@ -84,7 +84,12 @@ export const sendSpendTx = async ({
       try {
         console.log(`Estimating gas for spending limit transaction...`);
         const estimatedGas = await spendingLimitContract.estimateGas.spend(
-          [appId, amountSpentUsd, maxSpendingLimitInUsd, spendingLimitDuration],
+          [
+            BigInt(appId),
+            BigInt(amountSpentUsd),
+            BigInt(maxSpendingLimitInUsd),
+            BigInt(spendingLimitDuration),
+          ],
           { account: pkpEthAddress as `0x${string}` },
         );
 
@@ -94,7 +99,12 @@ export const sendSpendTx = async ({
         const txData = encodeFunctionData({
           abi: spendingLimitContractAbi,
           functionName: 'spend',
-          args: [appId, amountSpentUsd, maxSpendingLimitInUsd, spendingLimitDuration],
+          args: [
+            BigInt(appId),
+            BigInt(amountSpentUsd),
+            BigInt(maxSpendingLimitInUsd),
+            BigInt(spendingLimitDuration),
+          ],
         });
 
         return JSON.stringify({
