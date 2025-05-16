@@ -1,8 +1,6 @@
 import { createPublicClient, http, getContract, parseAbi } from 'viem';
-import { Token } from '@uniswap/sdk-core';
+import { CHAIN_TO_ADDRESSES_MAP, Token } from '@uniswap/sdk-core';
 import { computePoolAddress, FeeAmount } from '@uniswap/v3-sdk';
-
-const ETH_MAINNET_POOL_FACTORY_CONTRACT_ADDRESS = '0x1F98431c8aD98523631AE4a59f267346ea31F984';
 
 const POOL_ABI = parseAbi([
   'function token0() view returns (address)',
@@ -13,34 +11,44 @@ const POOL_ABI = parseAbi([
 ]);
 
 export const getUniswapPoolMetadata = async ({
-  ethRpcUrl,
+  rpcUrl,
+  chainId,
   tokenInAddress,
   tokenInDecimals,
   tokenOutAddress,
   tokenOutDecimals,
   poolFee,
 }: {
-  ethRpcUrl: string;
+  rpcUrl: string;
+  chainId: number;
   tokenInAddress: string;
   tokenInDecimals: number;
   tokenOutAddress: string;
   tokenOutDecimals: number;
-  poolFee: FeeAmount;
+  poolFee?: FeeAmount;
 }): Promise<{
   fee: number;
   liquidity: bigint;
   sqrtPriceX96: bigint;
   tick: number;
 }> => {
+  if (CHAIN_TO_ADDRESSES_MAP[chainId as keyof typeof CHAIN_TO_ADDRESSES_MAP] === undefined) {
+    throw new Error(`Unsupported chainId: ${chainId} (getUniswapQuote)`);
+  }
+
+  const v3CoreFactoryAddress = CHAIN_TO_ADDRESSES_MAP[
+    chainId as keyof typeof CHAIN_TO_ADDRESSES_MAP
+  ].v3CoreFactoryAddress as `0x${string}`;
+
   const currentPoolAddress = computePoolAddress({
-    factoryAddress: ETH_MAINNET_POOL_FACTORY_CONTRACT_ADDRESS,
-    tokenA: new Token(1, tokenInAddress, tokenInDecimals),
-    tokenB: new Token(1, tokenOutAddress, tokenOutDecimals),
+    factoryAddress: v3CoreFactoryAddress,
+    tokenA: new Token(chainId, tokenInAddress, tokenInDecimals),
+    tokenB: new Token(chainId, tokenOutAddress, tokenOutDecimals),
     fee: poolFee ?? FeeAmount.MEDIUM,
   });
 
   const client = createPublicClient({
-    transport: http(ethRpcUrl),
+    transport: http(rpcUrl),
   });
   const poolContract = getContract({
     address: currentPoolAddress as `0x${string}`,

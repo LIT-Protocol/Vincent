@@ -1,6 +1,6 @@
 import { PublicClient } from 'viem';
 
-export const checkEthBalance = async ({
+export const checkNativeTokenBalance = async ({
   client,
   pkpEthAddress,
 }: {
@@ -13,7 +13,7 @@ export const checkEthBalance = async ({
 
   if (ethBalance === 0n) {
     throw new Error(
-      `pkpEthAddress (${pkpEthAddress}) has zero ETH balance (UniswapSwapToolPrecheck)`,
+      `pkpEthAddress (${pkpEthAddress}) has zero native token balance (UniswapSwapToolPrecheck)`,
     );
   }
 

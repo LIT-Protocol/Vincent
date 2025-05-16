@@ -1,6 +1,7 @@
 import { createPublicClient, encodeFunctionData, http, parseAbi, parseUnits } from 'viem';
+import { CHAIN_TO_ADDRESSES_MAP } from '@uniswap/sdk-core';
+
 import { signTx } from './sign-tx';
-import { createChronicleYellowstoneViemClient } from './viem-chronicle-yellowstone-client';
 
 declare const Lit: {
   Actions: {
@@ -14,36 +15,41 @@ declare const Lit: {
   };
 };
 
-const ETH_MAINNET_QUOTER_CONTRACT_ADDRESS = '0xb27308f9F90D607463bb33eA1BeBb41C27CE5AB6';
-
 export const sendErc20ApprovalTx = async ({
-  ethRpcUrl,
+  rpcUrl,
+  chainId,
   tokenInAmount,
   tokenInDecimals,
   tokenInAddress,
   pkpEthAddress,
   pkpPublicKey,
 }: {
-  ethRpcUrl: string;
+  rpcUrl: string;
+  chainId: number;
   tokenInAmount: bigint;
   tokenInDecimals: number;
   tokenInAddress: `0x${string}`;
   pkpEthAddress: `0x${string}`;
   pkpPublicKey: string;
 }) => {
+  if (CHAIN_TO_ADDRESSES_MAP[chainId as keyof typeof CHAIN_TO_ADDRESSES_MAP] === undefined) {
+    throw new Error(`Unsupported chainId: ${chainId} (sendErc20ApprovalTx)`);
+  }
+
   const erc20Abi = parseAbi(['function approve(address spender, uint256 amount) returns (bool)']);
 
   const approveTxData = encodeFunctionData({
     abi: erc20Abi,
     functionName: 'approve',
     args: [
-      ETH_MAINNET_QUOTER_CONTRACT_ADDRESS,
+      CHAIN_TO_ADDRESSES_MAP[chainId as keyof typeof CHAIN_TO_ADDRESSES_MAP]
+        .quoterAddress as `0x${string}`,
       parseUnits(tokenInAmount.toString(), tokenInDecimals),
     ],
   });
 
   const client = createPublicClient({
-    transport: http(ethRpcUrl),
+    transport: http(rpcUrl),
   });
 
   const { maxFeePerGas, maxPriorityFeePerGas } = await client.estimateFeesPerGas();
@@ -62,7 +68,7 @@ export const sendErc20ApprovalTx = async ({
     nonce: await client.getTransactionCount({
       address: pkpEthAddress as `0x${string}`,
     }),
-    chainId: 1,
+    chainId,
     type: 'eip1559' as const,
   };
 
@@ -76,8 +82,7 @@ export const sendErc20ApprovalTx = async ({
     { waitForResponse: true, name: 'spendTxSender' },
     async () => {
       try {
-        const chronicleYellowstoneProvider = createChronicleYellowstoneViemClient();
-        const txHash = await chronicleYellowstoneProvider.sendRawTransaction({
+        const txHash = await client.sendRawTransaction({
           serializedTransaction: signedApproveTx as `0x${string}`,
         });
         return JSON.stringify({

@@ -12,10 +12,16 @@ import {
   sendUniswapTx,
   getTokenAmountInUsd,
 } from './tool-helpers';
-import { checkEthBalance, checkUniswapPoolExists, checkTokenInBalance } from './tool-checks';
+import {
+  checkNativeTokenBalance,
+  checkUniswapPoolExists,
+  checkTokenInBalance,
+} from './tool-checks';
 
 export const UniswapSwapToolParamsSchema = z.object({
   ethRpcUrl: z.string(),
+  rpcUrlForUniswap: z.string(),
+  chainIdForUniswap: z.number(),
   pkpEthAddress: z.string(),
 
   tokenInAddress: z.string(),
@@ -78,19 +84,21 @@ export const UniswapSwapToolDef = createVincentTool({
   precheck: async ({ toolParams }, { policiesContext, fail, succeed }) => {
     const {
       pkpEthAddress,
-      ethRpcUrl,
+      rpcUrlForUniswap,
+      chainIdForUniswap,
       tokenInAddress,
       tokenInDecimals,
       tokenInAmount,
       tokenOutAddress,
       tokenOutDecimals,
-    } = UniswapSwapToolParamsSchema.parse(toolParams);
+      poolFee,
+    } = toolParams;
 
     const client = createPublicClient({
-      transport: http(ethRpcUrl),
+      transport: http(rpcUrlForUniswap),
     });
 
-    await checkEthBalance({
+    await checkNativeTokenBalance({
       client,
       pkpEthAddress: pkpEthAddress as `0x${string}`,
     });
@@ -103,12 +111,14 @@ export const UniswapSwapToolDef = createVincentTool({
     });
 
     await checkUniswapPoolExists({
-      ethRpcUrl,
+      rpcUrl: rpcUrlForUniswap,
+      chainId: chainIdForUniswap,
       tokenInAddress: tokenInAddress as `0x${string}`,
       tokenInDecimals,
       tokenInAmount: BigInt(tokenInAmount),
       tokenOutAddress: tokenOutAddress as `0x${string}`,
       tokenOutDecimals,
+      poolFee,
     });
 
     // TODO Check tokenInAddress ERC20 Allowance for Uniswap Router Contract
@@ -121,6 +131,8 @@ export const UniswapSwapToolDef = createVincentTool({
     const {
       pkpEthAddress,
       ethRpcUrl,
+      rpcUrlForUniswap,
+      chainIdForUniswap,
       tokenInAddress,
       tokenInDecimals,
       tokenInAmount,
@@ -136,17 +148,19 @@ export const UniswapSwapToolDef = createVincentTool({
     });
 
     const { swapQuote, uniswapSwapRoute, uniswapTokenIn, uniswapTokenOut } = await getUniswapQuote({
-      ethRpcUrl,
+      rpcUrl: rpcUrlForUniswap,
+      chainId: chainIdForUniswap,
       tokenInAddress,
       tokenInDecimals,
       tokenInAmount: BigInt(tokenInAmount),
       tokenOutAddress,
       tokenOutDecimals,
-      poolFee: poolFee ?? FeeAmount.MEDIUM,
+      poolFee,
     });
 
     const erc20ApprovalTxHash = await sendErc20ApprovalTx({
-      ethRpcUrl,
+      rpcUrl: rpcUrlForUniswap,
+      chainId: chainIdForUniswap,
       tokenInAmount: BigInt(tokenInAmount),
       tokenInDecimals,
       tokenInAddress: tokenInAddress as `0x${string}`,
@@ -155,7 +169,8 @@ export const UniswapSwapToolDef = createVincentTool({
     });
 
     const swapTxHash = await sendUniswapTx({
-      ethRpcUrl,
+      rpcUrl: rpcUrlForUniswap,
+      chainId: chainIdForUniswap,
       pkpEthAddress: pkpEthAddress as `0x${string}`,
       tokenInDecimals,
       tokenInAmount: BigInt(tokenInAmount),

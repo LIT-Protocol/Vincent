@@ -27,14 +27,9 @@ export const getUniswapQuote = async ({
     throw new Error(`Unsupported chainId: ${chainId} (getUniswapQuote)`);
   }
 
-  const v3CoreFactoryAddress = CHAIN_TO_ADDRESSES_MAP[
-    chainId as keyof typeof CHAIN_TO_ADDRESSES_MAP
-  ].v3CoreFactoryAddress as `0x${string}`;
-  const quoterAddress = CHAIN_TO_ADDRESSES_MAP[chainId as keyof typeof CHAIN_TO_ADDRESSES_MAP]
-    .quoterAddress as `0x${string}`;
-
   const currentPoolAddress = computePoolAddress({
-    factoryAddress: v3CoreFactoryAddress,
+    factoryAddress: CHAIN_TO_ADDRESSES_MAP[chainId as keyof typeof CHAIN_TO_ADDRESSES_MAP]
+      .v3CoreFactoryAddress as `0x${string}`,
     tokenA: new Token(chainId, tokenInAddress, tokenInDecimals),
     tokenB: new Token(chainId, tokenOutAddress, tokenOutDecimals),
     fee: poolFee ?? FeeAmount.MEDIUM,
@@ -61,7 +56,8 @@ export const getUniswapQuote = async ({
   );
 
   const quoterContract = getContract({
-    address: quoterAddress,
+    address: CHAIN_TO_ADDRESSES_MAP[chainId as keyof typeof CHAIN_TO_ADDRESSES_MAP]
+      .quoterAddress as `0x${string}`,
     abi: IUniswapV3QuoterABI.abi,
     client,
   });

@@ -1,28 +1,36 @@
+import { FeeAmount } from '@uniswap/v3-sdk';
+
 import { getUniswapQuote } from '../tool-helpers/get-uniswap-quote';
 
 export const checkUniswapPoolExists = async ({
-  ethRpcUrl,
+  rpcUrl,
+  chainId,
   tokenInAddress,
   tokenInDecimals,
   tokenInAmount,
   tokenOutAddress,
   tokenOutDecimals,
+  poolFee,
 }: {
-  ethRpcUrl: string;
+  rpcUrl: string;
+  chainId: number;
   tokenInAddress: `0x${string}`;
   tokenInDecimals: number;
   tokenInAmount: bigint;
   tokenOutAddress: `0x${string}`;
   tokenOutDecimals: number;
+  poolFee?: FeeAmount;
 }) => {
   try {
     await getUniswapQuote({
-      ethRpcUrl,
+      rpcUrl,
+      chainId,
       tokenInAddress,
       tokenInDecimals,
       tokenInAmount,
       tokenOutAddress,
       tokenOutDecimals,
+      poolFee,
     });
     return true;
   } catch (error) {

@@ -1,11 +1,14 @@
 import { createPublicClient, http, parseUnits } from 'viem';
-import { z } from 'zod';
 import { Route, SwapRouter, Trade } from '@uniswap/v3-sdk';
-import { CurrencyAmount, Percent, Token, TradeType } from '@uniswap/sdk-core';
+import {
+  CHAIN_TO_ADDRESSES_MAP,
+  CurrencyAmount,
+  Percent,
+  Token,
+  TradeType,
+} from '@uniswap/sdk-core';
 
-import { UniswapSwapToolParamsSchema } from '../vincent-tool';
 import { signTx } from './sign-tx';
-import { createChronicleYellowstoneViemClient } from './viem-chronicle-yellowstone-client';
 
 declare const Lit: {
   Actions: {
@@ -19,10 +22,9 @@ declare const Lit: {
   };
 };
 
-const ETH_MAINNET_SWAP_ROUTER_CONTRACT_ADDRESS = '0xE592427A0AEce92De3Edee1F18E0157C05861564';
-
 export const sendUniswapTx = async ({
-  ethRpcUrl,
+  rpcUrl,
+  chainId,
   pkpEthAddress,
   tokenInDecimals,
   tokenInAmount,
@@ -34,7 +36,8 @@ export const sendUniswapTx = async ({
   slippageTolerance,
   swapDeadline,
 }: {
-  ethRpcUrl: string;
+  rpcUrl: string;
+  chainId: number;
   pkpEthAddress: `0x${string}`;
   tokenInDecimals: number;
   tokenInAmount: bigint;
@@ -46,8 +49,12 @@ export const sendUniswapTx = async ({
   slippageTolerance: Percent;
   swapDeadline: bigint;
 }): Promise<`0x${string}`> => {
+  if (CHAIN_TO_ADDRESSES_MAP[chainId as keyof typeof CHAIN_TO_ADDRESSES_MAP] === undefined) {
+    throw new Error(`Unsupported chainId: ${chainId} (sendUniswapTx)`);
+  }
+
   const client = createPublicClient({
-    transport: http(ethRpcUrl),
+    transport: http(rpcUrl),
   });
 
   const uncheckedTrade = Trade.createUncheckedTrade({
@@ -66,22 +73,30 @@ export const sendUniswapTx = async ({
     recipient: pkpEthAddress as `0x${string}`,
   });
 
-  const { maxFeePerGas, maxPriorityFeePerGas } = await client.estimateFeesPerGas();
-  const unsignedSwapTx = {
-    to: ETH_MAINNET_SWAP_ROUTER_CONTRACT_ADDRESS as `0x${string}`,
-    data: methodParameters.calldata as `0x${string}`,
-    value: BigInt(methodParameters.value),
-    gas: await client.estimateGas({
+  const swapRouterAddress = CHAIN_TO_ADDRESSES_MAP[chainId as keyof typeof CHAIN_TO_ADDRESSES_MAP]
+    .swapRouter02Address as `0x${string}`;
+
+  const [gas, nonce, estimatedFeesPerGas] = await Promise.all([
+    client.estimateGas({
       account: pkpEthAddress as `0x${string}`,
-      to: ETH_MAINNET_SWAP_ROUTER_CONTRACT_ADDRESS,
+      to: swapRouterAddress,
       data: methodParameters.calldata as `0x${string}`,
     }),
-    maxFeePerGas,
-    maxPriorityFeePerGas,
-    nonce: await client.getTransactionCount({
+    client.getTransactionCount({
       address: pkpEthAddress as `0x${string}`,
     }),
-    chainId: 1,
+    client.estimateFeesPerGas(),
+  ]);
+
+  const unsignedSwapTx = {
+    to: swapRouterAddress,
+    data: methodParameters.calldata as `0x${string}`,
+    value: BigInt(methodParameters.value),
+    gas,
+    maxFeePerGas: estimatedFeesPerGas.maxFeePerGas,
+    maxPriorityFeePerGas: estimatedFeesPerGas.maxPriorityFeePerGas,
+    nonce,
+    chainId,
     type: 'eip1559' as const,
   };
 
@@ -92,11 +107,10 @@ export const sendUniswapTx = async ({
   });
 
   const swapTxResponse = await Lit.Actions.runOnce(
-    { waitForResponse: true, name: 'spendTxSender' },
+    { waitForResponse: true, name: 'uniswapSwapTxSender' },
     async () => {
       try {
-        const chronicleYellowstoneProvider = createChronicleYellowstoneViemClient();
-        const txHash = await chronicleYellowstoneProvider.sendRawTransaction({
+        const txHash = await client.sendRawTransaction({
           serializedTransaction: signedSwapTx as `0x${string}`,
         });
         return JSON.stringify({
