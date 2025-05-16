@@ -6,10 +6,7 @@
  * arguments to verify TypeScript correctly enforces the type constraints.
  */
 import { z } from 'zod';
-import {
-  createVincentPolicy,
-  createVincentToolPolicy,
-} from '../lib/vincentPolicy';
+import { createVincentPolicy, createVincentToolPolicy } from '../lib/policyCore/vincentPolicy';
 
 // Base tool schema for all tests
 const baseToolSchema = z.object({
@@ -26,8 +23,7 @@ export function testAllowFunctionWithDifferentTypes() {
 
   const test1 = createVincentToolPolicy({
     toolParamsSchema: baseToolSchema,
-    policyDef: {
-      ipfsCid: 'allowTest1',
+    vincentPolicy: createVincentPolicy({
       packageName: '@lit-protocol/test-policy-allow@1.0.0',
       toolParamsSchema: z.object({ actionType: z.string() }),
       evalAllowResultSchema: objSchema,
@@ -53,7 +49,7 @@ export function testAllowFunctionWithDifferentTypes() {
         // Valid - matches schema
         return allow({ id: 'test-id', success: true });
       },
-    },
+    }),
     toolParameterMappings: {
       action: 'actionType',
     },
@@ -62,8 +58,7 @@ export function testAllowFunctionWithDifferentTypes() {
   // Test with string schema
   const test2 = createVincentToolPolicy({
     toolParamsSchema: baseToolSchema,
-    policyDef: {
-      ipfsCid: 'allowTest2',
+    vincentPolicy: createVincentPolicy({
       packageName: '@lit-protocol/test-policy-allow-string@1.0.0',
       toolParamsSchema: z.object({ actionType: z.string() }),
       evalAllowResultSchema: z.string(),
@@ -81,7 +76,7 @@ export function testAllowFunctionWithDifferentTypes() {
         // Valid - matches string schema
         return allow('success');
       },
-    },
+    }),
     toolParameterMappings: {
       action: 'actionType',
     },
@@ -90,8 +85,7 @@ export function testAllowFunctionWithDifferentTypes() {
   // Test with number schema
   const test3 = createVincentToolPolicy({
     toolParamsSchema: baseToolSchema,
-    policyDef: {
-      ipfsCid: 'allowTest3',
+    vincentPolicy: createVincentPolicy({
       packageName: '@lit-protocol/test-policy-allow-number@1.0.0',
       toolParamsSchema: z.object({ actionType: z.string() }),
       evalAllowResultSchema: z.number(),
@@ -109,7 +103,7 @@ export function testAllowFunctionWithDifferentTypes() {
         // Valid - matches number schema
         return allow(123);
       },
-    },
+    }),
     toolParameterMappings: {
       action: 'actionType',
     },
@@ -122,13 +116,12 @@ export function testAllowFunctionWithDifferentTypes() {
     test3,
     test4: createVincentToolPolicy({
       toolParamsSchema: baseToolSchema,
-      policyDef: {
-        ipfsCid: 'allowTest4',
+      vincentPolicy: createVincentPolicy({
         packageName: '@lit-protocol/test-policy-no-schema@1.0.0',
         toolParamsSchema: z.object({ actionType: z.string() }),
         // No schema defined
 
-        evaluate: async (params, { allow, deny, delegation }) => {
+        evaluate: async (params, { allow }) => {
           // Valid - no schema means no args
           allow();
 
@@ -144,7 +137,7 @@ export function testAllowFunctionWithDifferentTypes() {
           // Valid case to return
           return allow();
         },
-      },
+      }),
       toolParameterMappings: {
         action: 'actionType',
       },
@@ -160,8 +153,7 @@ export function testDenyFunctionWithDifferentTypes() {
 
   const test1 = createVincentToolPolicy({
     toolParamsSchema: baseToolSchema,
-    policyDef: createVincentPolicy({
-      ipfsCid: 'denyTest1',
+    vincentPolicy: createVincentPolicy({
       packageName: '@lit-protocol/test-policy-deny@1.0.0',
       toolParamsSchema: z.object({ actionType: z.string() }),
       evalDenyResultSchema: objSchema,
@@ -199,8 +191,7 @@ export function testDenyFunctionWithDifferentTypes() {
   // Test with string schema
   const test2 = createVincentToolPolicy({
     toolParamsSchema: baseToolSchema,
-    policyDef: {
-      ipfsCid: 'denyTest2',
+    vincentPolicy: createVincentPolicy({
       packageName: '@lit-protocol/test-policy-deny-string@1.0.0',
       toolParamsSchema: z.object({ actionType: z.string() }),
       evalDenyResultSchema: z.string(),
@@ -219,7 +210,7 @@ export function testDenyFunctionWithDifferentTypes() {
         // Valid with a result and additional error
         return deny('Result string', 'Additional error context');
       },
-    },
+    }),
     toolParameterMappings: {
       action: 'actionType',
     },
@@ -228,8 +219,7 @@ export function testDenyFunctionWithDifferentTypes() {
   // Test with no schema
   const test3 = createVincentToolPolicy({
     toolParamsSchema: baseToolSchema,
-    policyDef: {
-      ipfsCid: 'denyTest3',
+    vincentPolicy: createVincentPolicy({
       packageName: '@lit-protocol/test-policy-deny-no-schema@1.0.0',
       toolParamsSchema: z.object({ actionType: z.string() }),
       // No schema defined
@@ -250,7 +240,7 @@ export function testDenyFunctionWithDifferentTypes() {
         // Valid case to return
         return deny('Access denied');
       },
-    },
+    }),
     toolParameterMappings: {
       action: 'actionType',
     },
@@ -265,8 +255,7 @@ export function testDenyFunctionWithDifferentTypes() {
 export function testCommitAllowDeny() {
   return createVincentToolPolicy({
     toolParamsSchema: baseToolSchema,
-    policyDef: {
-      ipfsCid: 'commitTest',
+    vincentPolicy: createVincentPolicy({
       packageName: '@lit-protocol/test-policy-commit@1.0.0',
       toolParamsSchema: z.object({ actionType: z.string() }),
 
@@ -304,7 +293,7 @@ export function testCommitAllowDeny() {
           return deny({ errorCode: 500 }, 'Invalid confirmation ID');
         }
       },
-    },
+    }),
     toolParameterMappings: {
       action: 'actionType',
     },

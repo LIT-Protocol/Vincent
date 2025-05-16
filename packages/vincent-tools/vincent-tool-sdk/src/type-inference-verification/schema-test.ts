@@ -6,8 +6,8 @@
  * schema configurations.
  */
 import { z } from 'zod';
-import { PolicyContext } from '../lib/types';
-import { createVincentToolPolicy } from '../lib/vincentPolicy';
+import { createVincentPolicy, createVincentToolPolicy } from '../lib/policyCore/vincentPolicy';
+import { PolicyContext } from '../lib/policyCore/policyContext/types';
 
 // Base tool schema for all tests
 const baseToolSchema = z.object({
@@ -25,19 +25,14 @@ const baseToolSchema = z.object({
 const objSchema = z.object({ id: z.string() });
 
 // Function signature to test types on a PolicyContext
-export function testContextSignature(
-  context: PolicyContext<typeof objSchema, undefined>,
-) {
-  // Should error - no args with schema
-  // @ts-expect-error
+export function testContextSignature(context: PolicyContext<typeof objSchema, undefined>) {
+  // @ts-expect-error Should error - no args with schema
   context.allow();
 
-  // Should error - wrong type
-  // @ts-expect-error
+  // @ts-expect-error Should error - wrong type
   context.allow('not an object');
 
-  // Should error - wrong shape
-  // @ts-expect-error
+  // @ts-expect-error Should error - wrong shape
   context.allow({ notId: 'wrong property' });
 
   // Valid - matches schema
@@ -47,8 +42,7 @@ export function testContextSignature(
 // Test in a real policy
 export const testRealPolicy = createVincentToolPolicy({
   toolParamsSchema: baseToolSchema,
-  policyDef: {
-    ipfsCid: 'test1',
+  vincentPolicy: createVincentPolicy({
     packageName: '@lit-protocol/schema-test-policy@1.0.0',
     toolParamsSchema: z.object({ actionType: z.string() }),
     evalAllowResultSchema: objSchema,
@@ -67,7 +61,7 @@ export const testRealPolicy = createVincentToolPolicy({
       // Valid case:
       return allow({ id: 'test-id' });
     },
-  },
+  }),
   toolParameterMappings: {
     action: 'actionType',
   },
@@ -81,17 +75,14 @@ export const testRealPolicy = createVincentToolPolicy({
  */
 export function testWithoutSchema() {
   // Function signature to test types on a PolicyContext
-  // @ts-expect-error
   function testContextSignature(context: PolicyContext<undefined, undefined>) {
     // Valid - no schema means no args
     context.allow();
 
-    // Should error - no schema means no args allowed
-    // @ts-expect-error
+    // @ts-expect-error Should error - no schema means no args allowed
     context.allow('no schema');
 
-    // Should error - no schema means no args allowed
-    // @ts-expect-error
+    // @ts-expect-error Should error - no schema means no args allowed
     context.allow({ no: 'schema' });
 
     // Valid - string error is allowed with no schema
@@ -100,12 +91,12 @@ export function testWithoutSchema() {
     // Valid - no args is allowed
     return context.deny();
   }
+  testContextSignature.touch = true; // Avoid 'function is never referenced ts error breaking our inference test
 
   // Test in a real policy
   return createVincentToolPolicy({
     toolParamsSchema: baseToolSchema,
-    policyDef: {
-      ipfsCid: 'test2',
+    vincentPolicy: createVincentPolicy({
       packageName: '@lit-protocol/schema-test-policy@1.0.0',
       toolParamsSchema: z.object({ actionType: z.string() }),
       // No schemas defined
@@ -131,7 +122,7 @@ export function testWithoutSchema() {
           return deny('Error message');
         }
       },
-    },
+    }),
     toolParameterMappings: {
       action: 'actionType',
     },
@@ -147,8 +138,7 @@ export function testStringSchema() {
   // Test in a real policy
   return createVincentToolPolicy({
     toolParamsSchema: baseToolSchema,
-    policyDef: {
-      ipfsCid: 'test3',
+    vincentPolicy: createVincentPolicy({
       packageName: '@lit-protocol/schema-test-policy@1.0.0',
       toolParamsSchema: z.object({ actionType: z.string() }),
       evalAllowResultSchema: z.string(),
@@ -178,7 +168,7 @@ export function testStringSchema() {
           return deny('Error message');
         }
       },
-    },
+    }),
     toolParameterMappings: {
       action: 'actionType',
     },
@@ -199,8 +189,7 @@ export function testDifferentContexts() {
 
   return createVincentToolPolicy({
     toolParamsSchema: baseToolSchema,
-    policyDef: {
-      ipfsCid: 'test4',
+    vincentPolicy: createVincentPolicy({
       packageName: '@lit-protocol/schema-test-policy@1.0.0',
       toolParamsSchema: z.object({ actionType: z.string() }),
 
@@ -249,7 +238,7 @@ export function testDifferentContexts() {
         // Valid for commit
         return allow({ txId: `tx-${confirmation}` });
       },
-    },
+    }),
     toolParameterMappings: {
       action: 'actionType',
     },
@@ -265,8 +254,7 @@ export function testPrimitiveSchemas() {
   // Test in a real policy
   return createVincentToolPolicy({
     toolParamsSchema: baseToolSchema,
-    policyDef: {
-      ipfsCid: 'test5',
+    vincentPolicy: createVincentPolicy({
       packageName: '@lit-protocol/schema-test-policy@1.0.0',
       toolParamsSchema: z.object({ actionType: z.string() }),
       evalAllowResultSchema: z.number(),
@@ -296,7 +284,7 @@ export function testPrimitiveSchemas() {
           return deny(false, 'Operation failed');
         }
       },
-    },
+    }),
     toolParameterMappings: {
       action: 'actionType',
     },

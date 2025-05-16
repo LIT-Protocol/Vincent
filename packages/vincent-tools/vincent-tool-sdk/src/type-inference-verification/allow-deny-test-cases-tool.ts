@@ -5,9 +5,10 @@
  * for tool definitions, focusing on success/failure responses.
  */
 import { z } from 'zod';
-import { createVincentTool } from '../lib/vincentTool';
-import { createVincentToolPolicy } from '../lib/vincentPolicy';
+import { createVincentTool } from '../lib/toolCore/vincentTool';
+import { createVincentPolicy, createVincentToolPolicy } from '../lib/policyCore/vincentPolicy';
 
+/* eslint-disable @typescript-eslint/no-unused-vars */
 // Define a simple schema for our test cases
 const testSchema = z.object({
   action: z.string(),
@@ -28,8 +29,7 @@ const failSchema = z.object({
 // Create a test policy
 const testPolicy = createVincentToolPolicy({
   toolParamsSchema: testSchema,
-  policyDef: {
-    ipfsCid: 'test-policy',
+  vincentPolicy: createVincentPolicy({
     packageName: '@lit-protocol/test-policy@1.0.0',
     toolParamsSchema: z.object({
       actionType: z.string(),
@@ -40,7 +40,7 @@ const testPolicy = createVincentToolPolicy({
     evaluate: async (params, { allow }) => {
       return allow({ approved: true });
     },
-  },
+  }),
   toolParameterMappings: {
     action: 'actionType',
   },
@@ -52,6 +52,7 @@ const testPolicy = createVincentToolPolicy({
  */
 export function testNoSchemas() {
   return createVincentTool({
+    packageName: '@lit-protocol/yestool@1.0.0',
     toolParamsSchema: testSchema,
     supportedPolicies: [testPolicy],
 
@@ -87,6 +88,7 @@ export function testNoSchemas() {
  */
 export function tesWithSchemas() {
   return createVincentTool({
+    packageName: '@lit-protocol/yestool2@1.0.0',
     toolParamsSchema: testSchema,
     supportedPolicies: [testPolicy],
     executeSuccessSchema: successSchema,
@@ -159,6 +161,7 @@ export function testDifferentSchemas() {
   });
 
   return createVincentTool({
+    packageName: '@lit-protocol/yestool3@1.0.0',
     toolParamsSchema: testSchema,
     supportedPolicies: [testPolicy],
     precheckSuccessSchema,
@@ -207,6 +210,7 @@ export function testDifferentSchemas() {
 export function testPolicyResultTypes() {
   // First test: Precheck with properly typed policiesContext
   return createVincentTool({
+    packageName: '@lit-protocol/yestool4@1.0.0',
     toolParamsSchema: testSchema,
     supportedPolicies: [testPolicy],
 
@@ -214,8 +218,7 @@ export function testPolicyResultTypes() {
       // Should be able to check if policy evaluation allowed
       if (policiesContext.allow) {
         // Should be able to access the policy result with the correct type
-        const result =
-          policiesContext.allowedPolicies['@lit-protocol/test-policy@1.0.0'];
+        const result = policiesContext.allowedPolicies['@lit-protocol/test-policy@1.0.0'];
         if (result) {
           const { approved } = result.result;
           console.log(approved);
@@ -240,9 +243,7 @@ export function testPolicyResultTypes() {
   });
 }
 
-export function assertAllow<T extends { allow: true }>(
-  obj: T,
-): asserts obj is T {
+export function assertAllow<T extends { allow: true }>(obj: T): asserts obj is T {
   // This function just asserts that obj.allow is true
   // It doesn't actually need to do anything at runtime
   // TypeScript will use it for control flow analysis
@@ -251,6 +252,7 @@ export function assertAllow<T extends { allow: true }>(
 // Separate test for execute-specific policy result typing
 export function testExecutePolicyResultTyping() {
   return createVincentTool({
+    packageName: '@lit-protocol/yestool5@1.0.0',
     toolParamsSchema: testSchema,
     supportedPolicies: [testPolicy],
 
@@ -265,8 +267,7 @@ export function testExecutePolicyResultTyping() {
       const allowIsAlwaysTrue: false = !policiesContext.allow;
 
       // Should have access to test policy result
-      const result =
-        policiesContext.allowedPolicies['@lit-protocol/test-policy@1.0.0'];
+      const result = policiesContext.allowedPolicies['@lit-protocol/test-policy@1.0.0'];
       if (result) {
         // Should be able to access properties of the result
         const { approved } = result.result;
@@ -311,6 +312,7 @@ export const missingSchema = createVincentTool({
 export const testReturnNoSchema = () => {
   // This is a good tool with proper returns
   return createVincentTool({
+    packageName: '@lit-protocol/yestool6@1.0.0',
     toolParamsSchema: testSchema,
     supportedPolicies: [testPolicy],
 
@@ -406,6 +408,7 @@ export const testExecuteWrongTypeReturn = () => {
   });
 
   return createVincentTool({
+    packageName: '@lit-protocol/yestool7@1.0.0',
     toolParamsSchema: testSchema,
     supportedPolicies: [testPolicy],
     executeSuccessSchema,
@@ -435,6 +438,7 @@ export const testPrecheckWrongSchema = () => {
   });
 
   return createVincentTool({
+    packageName: '@lit-protocol/yestool7@1.0.0',
     toolParamsSchema: testSchema,
     supportedPolicies: [testPolicy],
     precheckSuccessSchema,
@@ -465,6 +469,7 @@ export const testExecuteWrongSchema = () => {
   });
 
   return createVincentTool({
+    packageName: '@lit-protocol/yestool8@1.0.0',
     toolParamsSchema: testSchema,
     supportedPolicies: [testPolicy],
     precheckSuccessSchema,
@@ -496,6 +501,7 @@ export const testPrecheckSuccessWithFailSchema = () => {
   });
 
   return createVincentTool({
+    packageName: '@lit-protocol/yestool9@1.0.0',
     toolParamsSchema: testSchema,
     supportedPolicies: [testPolicy],
     precheckSuccessSchema,
@@ -531,6 +537,7 @@ export const testExecuteFailWithSuccessSchema = () => {
   });
 
   return createVincentTool({
+    packageName: '@lit-protocol/yestool10@1.0.0',
     toolParamsSchema: testSchema,
     supportedPolicies: [testPolicy],
     executeSuccessSchema,
@@ -557,6 +564,7 @@ export const testExecuteFailWithSuccessSchema = () => {
 // Test: Tool with void-returning functions inside
 export const testReturnWithInnerFunctions = () => {
   return createVincentTool({
+    packageName: '@lit-protocol/yestool11@1.0.0',
     toolParamsSchema: testSchema,
     supportedPolicies: [testPolicy],
 
@@ -680,6 +688,7 @@ export function testContextDestructuring() {
   });
 
   return createVincentTool({
+    packageName: '@lit-protocol/yestool12@1.0.0',
     toolParamsSchema: testSchema,
     supportedPolicies: [testPolicy],
     executeSuccessSchema,

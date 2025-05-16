@@ -5,8 +5,8 @@
  * using a tool with two policies - one simple and one with commit functionality.
  */
 import { z } from 'zod';
-import { createVincentTool } from '../lib/vincentTool';
-import { createVincentToolPolicy } from '../lib/vincentPolicy';
+import { createVincentTool } from '../lib/toolCore/vincentTool';
+import { createVincentPolicy, createVincentToolPolicy } from '../lib/policyCore/vincentPolicy';
 
 // Base tool schema
 const baseToolSchema = z.object({
@@ -14,6 +14,8 @@ const baseToolSchema = z.object({
   target: z.string(),
   amount: z.number(),
 });
+
+/* eslint-disable @typescript-eslint/no-unused-vars */
 
 /**
  * Simple test to verify inference of policy evaluation results
@@ -23,8 +25,7 @@ export function testPolicyEvaluationResults() {
   // Policy 1: Simple policy with object result schema
   const simplePolicy = createVincentToolPolicy({
     toolParamsSchema: baseToolSchema,
-    policyDef: {
-      ipfsCid: 'simple-policy',
+    vincentPolicy: createVincentPolicy({
       packageName: '@lit-protocol/simple-policy@1.0.0',
       toolParamsSchema: z.object({
         actionType: z.string(),
@@ -41,7 +42,7 @@ export function testPolicyEvaluationResults() {
           reason: `Action ${params.toolParams.actionType} approved`,
         });
       },
-    },
+    }),
     toolParameterMappings: {
       action: 'actionType',
       target: 'targetId',
@@ -51,8 +52,7 @@ export function testPolicyEvaluationResults() {
   // Policy 2: Policy with commit function
   const commitPolicy = createVincentToolPolicy({
     toolParamsSchema: baseToolSchema,
-    policyDef: {
-      ipfsCid: 'commit-policy',
+    vincentPolicy: createVincentPolicy({
       packageName: '@lit-protocol/commit-policy@1.0.0',
       toolParamsSchema: z.object({
         operation: z.string(),
@@ -94,7 +94,7 @@ export function testPolicyEvaluationResults() {
           timestamp: Date.now(),
         });
       },
-    },
+    }),
     toolParameterMappings: {
       action: 'operation',
       target: 'resource',
@@ -127,6 +127,7 @@ export function testPolicyEvaluationResults() {
 
   // Create tool with both policies
   return createVincentTool({
+    packageName: '@lit-protocol/mahTool@1.0.0',
     toolParamsSchema: baseToolSchema,
     supportedPolicies: [simplePolicy, commitPolicy],
 
@@ -162,12 +163,9 @@ export function testPolicyEvaluationResults() {
       try {
         // Verify type inference works correctly when results.allow is true
         // Access specific policy results - now TypeScript knows this is defined
-        if (
-          policiesContext.allowedPolicies['@lit-protocol/simple-policy@1.0.0']
-        ) {
+        if (policiesContext.allowedPolicies['@lit-protocol/simple-policy@1.0.0']) {
           const simpleResult =
-            policiesContext.allowedPolicies['@lit-protocol/simple-policy@1.0.0']
-              .result;
+            policiesContext.allowedPolicies['@lit-protocol/simple-policy@1.0.0'].result;
 
           // TypeScript should now correctly infer the result type
           const { approved, reason } = simpleResult;
@@ -176,12 +174,9 @@ export function testPolicyEvaluationResults() {
         }
 
         // Type inference should work for the commit policy result
-        if (
-          policiesContext.allowedPolicies['@lit-protocol/commit-policy@1.0.0']
-        ) {
+        if (policiesContext.allowedPolicies['@lit-protocol/commit-policy@1.0.0']) {
           const commitPolicyResult =
-            policiesContext.allowedPolicies['@lit-protocol/commit-policy@1.0.0']
-              .result;
+            policiesContext.allowedPolicies['@lit-protocol/commit-policy@1.0.0'].result;
 
           // No need for type guards anymore
           const { transactionId, status } = commitPolicyResult;
@@ -189,8 +184,7 @@ export function testPolicyEvaluationResults() {
 
           // The commit function should be available and properly typed
           const commitFn =
-            policiesContext.allowedPolicies['@lit-protocol/commit-policy@1.0.0']
-              .commit;
+            policiesContext.allowedPolicies['@lit-protocol/commit-policy@1.0.0'].commit;
 
           // Call commit with properly typed parameters
           const commitResult = await commitFn({

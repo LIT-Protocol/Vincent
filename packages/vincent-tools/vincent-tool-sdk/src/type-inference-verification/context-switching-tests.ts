@@ -6,7 +6,7 @@
  * (precheck, evaluate, commit) which may have different schemas.
  */
 import { z } from 'zod';
-import { createVincentToolPolicy } from '../lib/vincentPolicy';
+import { createVincentPolicy, createVincentToolPolicy } from '../lib/policyCore/vincentPolicy';
 
 // Base tool schema for all tests
 const baseToolSchema = z.object({
@@ -26,11 +26,10 @@ function testPrecheckEvaluateContextSwitching() {
   const evalAllowSchema = z.object({ finalStatus: z.string() });
   const evalDenySchema = z.object({ finalReason: z.string() });
 
-  const policy = createVincentToolPolicy({
+  return createVincentToolPolicy({
     toolParamsSchema: baseToolSchema,
-    policyDef: {
+    vincentPolicy: createVincentPolicy({
       packageName: '@lit-protocol/test-policy@1.2.3',
-      ipfsCid: 'contextSwitchTest1',
       toolParamsSchema: z.object({ actionType: z.string() }),
 
       // Different schemas for each context
@@ -70,13 +69,11 @@ function testPrecheckEvaluateContextSwitching() {
           return context.deny({ finalReason: 'denied-final' });
         }
       },
-    },
+    }),
     toolParameterMappings: {
       action: 'actionType',
     },
   });
-
-  return policy;
 }
 
 /**
@@ -91,11 +88,10 @@ function testEvaluateCommitContextSwitching() {
   const commitAllowSchema = z.object({ transactionHash: z.string() });
   const commitDenySchema = z.object({ failureCode: z.number() });
 
-  const policy = createVincentToolPolicy({
+  return createVincentToolPolicy({
     toolParamsSchema: baseToolSchema,
-    policyDef: {
+    vincentPolicy: createVincentPolicy({
       packageName: '@lit-protocol/test-policy@1.23.1',
-      ipfsCid: 'contextSwitchTest2',
       toolParamsSchema: z.object({ actionType: z.string() }),
 
       // Different schemas for each context
@@ -140,13 +136,11 @@ function testEvaluateCommitContextSwitching() {
           return context.deny({ failureCode: 500 }, 'Transaction failed');
         }
       },
-    },
+    }),
     toolParameterMappings: {
       action: 'actionType',
     },
   });
-
-  return policy;
 }
 
 /**
@@ -164,11 +158,10 @@ function testFullPolicyContextSwitching() {
   const commitAllowSchema = z.object({ completed: z.boolean() });
   const commitDenySchema = z.object({ aborted: z.boolean() });
 
-  const policy = createVincentToolPolicy({
+  return createVincentToolPolicy({
     toolParamsSchema: baseToolSchema,
-    policyDef: {
+    vincentPolicy: createVincentPolicy({
       packageName: '@lit-protocol/testpolicyawesome@12.1.10',
-      ipfsCid: 'fullContextSwitchTest',
       toolParamsSchema: z.object({
         actionType: z.string(),
         amount: z.number(),
@@ -255,14 +248,12 @@ function testFullPolicyContextSwitching() {
           return context.deny({ aborted: true });
         }
       },
-    },
+    }),
     toolParameterMappings: {
       action: 'actionType',
       amount: 'amount',
     },
   });
-
-  return policy;
 }
 
 // Export test functions
