@@ -34,7 +34,8 @@
     "build:contracts": "nx build vincent-contracts",
     "clean": "node tools/clean.js",
     "deploy:tools": "npx nx deploy vincent-tool-uniswap-swap",
-    "prepare": "husky"
+    "prepare": "husky",
+    "generate-api": "nx run vincent-rest-api:generate-api"
   },
   "dependencies": {
     "@hookform/resolvers": "^4.1.0",
