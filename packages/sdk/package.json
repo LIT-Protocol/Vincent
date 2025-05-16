@@ -24,6 +24,9 @@
     "ethers": "5.7.1",
     "tslib": "^2.8.1"
   },
+  "peerDependencies": {
+    "@modelcontextprotocol/sdk": "^1.11.2"
+  },
   "sideEffects": false,
   "files": [
     "dist"
