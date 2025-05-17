@@ -25,7 +25,7 @@ export const getTokenAmountInUsd = async ({
   chainIdForUniswap: number;
   tokenAddress: string;
   tokenDecimals: number;
-  tokenAmount: bigint;
+  tokenAmount: number;
 }): Promise<bigint> => {
   // Special case for WETH - no need to get a quote since it's already in ETH terms
   if (tokenAddress.toLowerCase() === ETH_MAINNET_WETH_ADDRESS.toLowerCase()) {

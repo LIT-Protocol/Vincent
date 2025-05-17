@@ -16,7 +16,7 @@ export const getUniswapQuote = async ({
 }: {
   tokenInAddress: string;
   tokenInDecimals: number;
-  tokenInAmount: bigint;
+  tokenInAmount: number;
   tokenOutAddress: string;
   tokenOutDecimals: number;
   poolFee?: number;

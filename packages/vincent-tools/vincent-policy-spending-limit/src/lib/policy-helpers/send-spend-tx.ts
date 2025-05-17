@@ -26,35 +26,6 @@ declare const Lit: {
 
 const CHRONICLE_YELLOWSTONE_SPENDING_LIMIT_ADDRESS = '0x756fA449De893446B26e10C6C66E62ccabeE908C';
 
-const attemptToDecodeSpendLimitExceededError = (error: unknown, spendingLimitContractAbi: Abi) => {
-  if (error instanceof ContractFunctionRevertedError && error.data) {
-    try {
-      const decoded = decodeErrorResult({
-        abi: spendingLimitContractAbi,
-        data: error.data as unknown as `0x${string}`,
-      });
-
-      if (decoded.errorName === 'SpendLimitExceeded' && decoded.args) {
-        const [user, appId, amount, limit] = decoded.args as [string, bigint, bigint, bigint];
-        return JSON.stringify({
-          status: 'error',
-          error: `Spending limit exceeded. User: ${user}, App ID: ${appId.toString()}, Attempted spend amount: ${amount.toString()}, Daily spend limit: ${limit.toString()}`,
-        });
-      }
-    } catch (decodingError: unknown) {
-      return JSON.stringify({
-        status: 'error',
-        error: `Failed to decode revert reason: ${decodingError}`,
-      });
-    }
-  }
-
-  return JSON.stringify({
-    status: 'error',
-    error,
-  });
-};
-
 export const sendSpendTx = async ({
   appId,
   amountSpentUsd,
@@ -110,12 +81,14 @@ export const sendSpendTx = async ({
         return JSON.stringify({
           status: 'success',
           data: txData,
-          gasLimit: estimatedGas,
-          maxFeePerGas,
-          maxPriorityFeePerGas,
-          nonce: await chronicleYellowstoneProvider.getTransactionCount({
-            address: pkpEthAddress as `0x${string}`,
-          }),
+          gasLimit: estimatedGas.toString(),
+          maxFeePerGas: maxFeePerGas.toString(),
+          maxPriorityFeePerGas: maxPriorityFeePerGas.toString(),
+          nonce: await chronicleYellowstoneProvider
+            .getTransactionCount({
+              address: pkpEthAddress as `0x${string}`,
+            })
+            .toString(),
         });
       } catch (error) {
         return attemptToDecodeSpendLimitExceededError(error, spendingLimitContractAbi);
@@ -137,15 +110,15 @@ export const sendSpendTx = async ({
     to: CHRONICLE_YELLOWSTONE_SPENDING_LIMIT_ADDRESS as `0x${string}`,
     data: data as `0x${string}`,
     value: 0n,
-    gas: gasLimit,
-    maxFeePerGas,
-    maxPriorityFeePerGas,
-    nonce,
+    gas: BigInt(gasLimit),
+    maxFeePerGas: BigInt(maxFeePerGas),
+    maxPriorityFeePerGas: BigInt(maxPriorityFeePerGas),
+    nonce: Number(nonce),
     chainId: 175188,
     type: 'eip1559',
   } as const;
 
-  console.log(`Signing spend transaction: ${JSON.stringify(unsignedSpendTx)} (sendSpendTx)`);
+  console.log(`Signing spend transaction: ${safeStringify(unsignedSpendTx)} (sendSpendTx)`);
   const signedSpendTx = await signTx({
     pkpPublicKey: pkpPubKey,
     tx: unsignedSpendTx,
@@ -177,4 +150,42 @@ export const sendSpendTx = async ({
   }
 
   return parsedSpendTxResponse.txHash;
+};
+
+const safeStringify = (obj: unknown): string => {
+  return JSON.stringify(obj, (_, value) => {
+    if (typeof value === 'bigint') {
+      return value.toString();
+    }
+    return value;
+  });
+};
+
+const attemptToDecodeSpendLimitExceededError = (error: unknown, spendingLimitContractAbi: Abi) => {
+  if (error instanceof ContractFunctionRevertedError && error.data) {
+    try {
+      const decoded = decodeErrorResult({
+        abi: spendingLimitContractAbi,
+        data: error.data as unknown as `0x${string}`,
+      });
+
+      if (decoded.errorName === 'SpendLimitExceeded' && decoded.args) {
+        const [user, appId, amount, limit] = decoded.args as [string, bigint, bigint, bigint];
+        return JSON.stringify({
+          status: 'error',
+          error: `Spending limit exceeded. User: ${user}, App ID: ${appId.toString()}, Attempted spend amount: ${amount.toString()}, Daily spend limit: ${limit.toString()}`,
+        });
+      }
+    } catch (decodingError: unknown) {
+      return JSON.stringify({
+        status: 'error',
+        error: `Failed to decode revert reason: ${decodingError}`,
+      });
+    }
+  }
+
+  return JSON.stringify({
+    status: 'error',
+    error,
+  });
 };

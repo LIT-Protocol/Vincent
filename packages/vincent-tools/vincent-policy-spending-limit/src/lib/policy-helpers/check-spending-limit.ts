@@ -32,7 +32,7 @@ export const checkIfBuyAmountAllowed = async ({
     chainIdForUniswap,
     tokenAddress,
     tokenDecimals,
-    tokenAmount: BigInt(buyAmount),
+    tokenAmount: buyAmount,
   });
 
   // maxDailySpendingLimitInUsdCents has 2 decimal precision, but tokenAmountInUsd has 8,
