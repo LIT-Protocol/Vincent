@@ -26,6 +26,7 @@ export const spendingLimitPolicyPrecheckAllowResultSchema = z.object({
 });
 
 export const spendingLimitPolicyPrecheckDenyResultSchema = z.object({
+  appId: z.number(),
   reason: z.literal('Attempted buy amount exceeds daily limit'),
   maxSpendingLimitInUsd: z.number(),
   buyAmountInUsd: z.number(),
@@ -110,6 +111,7 @@ export const SpendingLimitPolicyDef = createVincentPolicy({
           buyAmountInUsd: Number(buyAmountInUsd),
         })
       : deny({
+          appId,
           reason: 'Attempted buy amount exceeds daily limit',
           maxSpendingLimitInUsd: Number(adjustedMaxDailySpendingLimit),
           buyAmountInUsd: Number(buyAmountInUsd),

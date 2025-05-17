@@ -20,7 +20,7 @@ async function buildFile(entryPoint, outfile) {
 }
 
 async function buildAction() {
-  const policyEntryPoint = path.resolve(__dirname, '../../src/lib/vincent-policy.ts');
+  const policyEntryPoint = path.resolve(__dirname, '../../src/lib/vincent-policy-wrapped.ts');
 
   const policyOutfile = path.resolve(
     __dirname,
