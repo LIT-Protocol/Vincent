@@ -1,5 +1,4 @@
-import { http, createPublicClient } from 'viem';
-import type { Chain } from 'viem';
+import { http, createPublicClient, type Chain } from 'viem';
 
 export function createChronicleYellowstoneViemClient() {
   const yellowstoneChain: Chain = {

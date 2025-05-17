@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { createVincentPolicy } from '@lit-protocol/vincent-tool-sdk';
 
 import { sendSpendTx } from './policy-helpers/send-spend-tx';
-import { checkIfBuyAmountAllowed } from './check-spending-limit';
+import { checkIfBuyAmountAllowed } from './policy-helpers/check-spending-limit';
 
 export const SpendingLimitPolicyToolParamsSchema = z.object({
   appId: z.number(),

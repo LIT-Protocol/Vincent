@@ -1,4 +1,4 @@
-import { getTokenAmountInUsd } from './policy-helpers';
+import { getTokenAmountInUsd } from '.';
 import { getSpendingLimitContractInstance } from './spending-limit-contract';
 
 export const checkIfBuyAmountAllowed = async ({

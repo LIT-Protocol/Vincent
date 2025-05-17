@@ -8,8 +8,8 @@ import {
 import {
   getSpendingLimitContractInstance,
   SPENDING_LIMIT_CONTRACT_ABI,
-} from '../spending-limit-contract';
-import { createChronicleYellowstoneViemClient } from '../viem-chronicle-yellowstone-client';
+} from './spending-limit-contract';
+import { createChronicleYellowstoneViemClient } from './viem-chronicle-yellowstone-client';
 import { signTx } from './sign-tx';
 
 declare const Lit: {
