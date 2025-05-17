@@ -48,8 +48,8 @@ export const getTokenAmountInUsd = async ({
   });
 
   // Convert WETH amount to USD
-  console.log(`Amount in WETH: ${formatUnits(amountInWeth, 18)} (getTokenAmountInUsd)`);
-  return calculateUsdValue({ ethRpcUrl, amountInWeth });
+  console.log(`Amount in WETH: ${formatUnits(amountInWeth.swapQuote, 18)} (getTokenAmountInUsd)`);
+  return calculateUsdValue({ ethRpcUrl, amountInWeth: amountInWeth.swapQuote });
 };
 
 const calculateUsdValue = async ({

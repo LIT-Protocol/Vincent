@@ -4,6 +4,7 @@ import {
   CHAIN_TO_ADDRESSES_MAP,
   CurrencyAmount,
   Percent,
+  SWAP_ROUTER_02_ADDRESSES,
   Token,
   TradeType,
 } from '@uniswap/sdk-core';
@@ -40,7 +41,7 @@ export const sendUniswapTx = async ({
   chainId: number;
   pkpEthAddress: `0x${string}`;
   tokenInDecimals: number;
-  tokenInAmount: bigint;
+  tokenInAmount: number;
   pkpPublicKey: string;
   uniswapSwapRoute: Route<Token, Token>;
   uniswapTokenIn: Token;
@@ -73,8 +74,7 @@ export const sendUniswapTx = async ({
     recipient: pkpEthAddress as `0x${string}`,
   });
 
-  const swapRouterAddress = CHAIN_TO_ADDRESSES_MAP[chainId as keyof typeof CHAIN_TO_ADDRESSES_MAP]
-    .swapRouter02Address as `0x${string}`;
+  const swapRouterAddress = SWAP_ROUTER_02_ADDRESSES(chainId) as `0x${string}`;
 
   const [gas, nonce, estimatedFeesPerGas] = await Promise.all([
     client.estimateGas({

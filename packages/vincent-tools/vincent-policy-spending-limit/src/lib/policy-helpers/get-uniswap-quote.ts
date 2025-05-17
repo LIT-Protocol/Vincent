@@ -1,75 +1,98 @@
-import { computePoolAddress, FeeAmount } from '@uniswap/v3-sdk';
-import { Token, CHAIN_TO_ADDRESSES_MAP } from '@uniswap/sdk-core';
-import * as IUniswapV3PoolABI from '@uniswap/v3-core/artifacts/contracts/interfaces/IUniswapV3Pool.sol/IUniswapV3Pool.json';
-import * as IUniswapV3QuoterABI from '@uniswap/v3-periphery/artifacts/contracts/lens/Quoter.sol/Quoter.json';
-import { getContract, http, parseUnits, createPublicClient } from 'viem';
+import { TradeType, CurrencyAmount, Token, CHAIN_TO_ADDRESSES_MAP } from '@uniswap/sdk-core';
+import { FeeAmount, Pool, Route, SwapQuoter } from '@uniswap/v3-sdk';
+import { parseUnits, createPublicClient, decodeAbiParameters, http } from 'viem';
+
+import { getUniswapPoolMetadata } from './get-uniswap-pool-metadata';
 
 export const getUniswapQuote = async ({
+  rpcUrl,
+  chainId,
   tokenInAddress,
   tokenInDecimals,
   tokenInAmount,
   tokenOutAddress,
   tokenOutDecimals,
   poolFee,
-  rpcUrl,
-  chainId,
 }: {
+  rpcUrl: string;
+  chainId: number;
   tokenInAddress: string;
   tokenInDecimals: number;
   tokenInAmount: number;
   tokenOutAddress: string;
   tokenOutDecimals: number;
-  poolFee?: number;
-  rpcUrl: string;
-  chainId: number;
-}): Promise<bigint> => {
+  poolFee?: FeeAmount;
+}): Promise<{
+  swapQuote: bigint;
+  uniswapSwapRoute: Route<Token, Token>;
+  uniswapTokenIn: Token;
+  uniswapTokenOut: Token;
+}> => {
   if (CHAIN_TO_ADDRESSES_MAP[chainId as keyof typeof CHAIN_TO_ADDRESSES_MAP] === undefined) {
     throw new Error(`Unsupported chainId: ${chainId} (getUniswapQuote)`);
   }
 
-  const currentPoolAddress = computePoolAddress({
-    factoryAddress: CHAIN_TO_ADDRESSES_MAP[chainId as keyof typeof CHAIN_TO_ADDRESSES_MAP]
-      .v3CoreFactoryAddress as `0x${string}`,
-    tokenA: new Token(chainId, tokenInAddress, tokenInDecimals),
-    tokenB: new Token(chainId, tokenOutAddress, tokenOutDecimals),
-    fee: poolFee ?? FeeAmount.MEDIUM,
+  const { fee, liquidity, sqrtPriceX96, tick } = await getUniswapPoolMetadata({
+    rpcUrl,
+    chainId,
+    tokenInAddress,
+    tokenInDecimals,
+    tokenOutAddress,
+    tokenOutDecimals,
+    poolFee,
   });
+
+  const uniswapTokenIn = new Token(chainId, tokenInAddress, tokenInDecimals);
+  const uniswapTokenOut = new Token(chainId, tokenOutAddress, tokenOutDecimals);
+
+  const uniswapPool = new Pool(
+    uniswapTokenIn,
+    uniswapTokenOut,
+    fee,
+    sqrtPriceX96.toString(),
+    liquidity.toString(),
+    tick,
+  );
+
+  const uniswapSwapRoute = new Route([uniswapPool], uniswapTokenIn, uniswapTokenOut);
+
+  const { calldata } = SwapQuoter.quoteCallParameters(
+    uniswapSwapRoute,
+    CurrencyAmount.fromRawAmount(
+      uniswapTokenIn,
+      parseUnits(tokenInAmount.toString(), tokenInDecimals).toString(),
+    ),
+    TradeType.EXACT_INPUT,
+    // TODO Don't think this is needed, we should be using v3,
+    // but this was from the Uniswap docs
+    // https://docs.uniswap.org/sdk/v3/guides/swaps/quoting
+    // {
+    //   useQuoterV2: true,
+    // },
+  );
 
   const client = createPublicClient({
     transport: http(rpcUrl),
   });
-  const poolContract = getContract({
-    address: currentPoolAddress as `0x${string}`,
-    abi: IUniswapV3PoolABI.abi,
-    client,
-  });
 
-  const [token0, token1, fee, liquidity, slot0] = await Promise.all([
-    poolContract.read.token0(),
-    poolContract.read.token1(),
-    poolContract.read.fee(),
-    poolContract.read.liquidity(),
-    poolContract.read.slot0(),
-  ]);
-  console.log(
-    `Uniswap pool data Token0: ${token0}, Token1: ${token1}, Fee: ${fee}, Liquidity: ${liquidity}, Slot0: ${slot0} (getUniswapQuote)`,
-  );
-
-  const quoterContract = getContract({
-    address: CHAIN_TO_ADDRESSES_MAP[chainId as keyof typeof CHAIN_TO_ADDRESSES_MAP]
+  const quoteCallReturnData = await client.call({
+    to: CHAIN_TO_ADDRESSES_MAP[chainId as keyof typeof CHAIN_TO_ADDRESSES_MAP]
       .quoterAddress as `0x${string}`,
-    abi: IUniswapV3QuoterABI.abi,
-    client,
+    data: calldata as `0x${string}`,
   });
 
-  const quotedAmountOut = (await quoterContract.read.quoteExactInputSingle([
-    token0,
-    token1,
-    fee,
-    parseUnits(tokenInAmount.toString(), tokenInDecimals),
-    0n,
-  ])) as bigint;
+  if (!quoteCallReturnData.data) {
+    throw new Error('No data returned from uniswap quote call (getUniswapQuote)');
+  }
 
-  console.log(`Quoted amount out: ${quotedAmountOut} (getUniswapQuote)`);
-  return quotedAmountOut;
+  const [swapQuote] = decodeAbiParameters([{ type: 'uint256' }], quoteCallReturnData.data);
+
+  console.log(`Uniswap quote: ${swapQuote} (getUniswapQuote)`);
+
+  return {
+    swapQuote,
+    uniswapSwapRoute,
+    uniswapTokenIn,
+    uniswapTokenOut,
+  };
 };

@@ -16,7 +16,7 @@ export const checkUniswapPoolExists = async ({
   chainId: number;
   tokenInAddress: `0x${string}`;
   tokenInDecimals: number;
-  tokenInAmount: bigint;
+  tokenInAmount: number;
   tokenOutAddress: `0x${string}`;
   tokenOutDecimals: number;
   poolFee?: FeeAmount;
