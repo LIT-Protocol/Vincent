@@ -67,7 +67,6 @@
     "@simplewebauthn/browser": "^7.2.0",
     "@stytch/nextjs": "^21.4.1",
     "@tanstack/react-query": "^5.66.7",
-    "axios": "^1.7.9",
     "browserify-fs": "^1.0.0",
     "bs58": "^6.0.0",
     "buffer": "^6.0.3",
