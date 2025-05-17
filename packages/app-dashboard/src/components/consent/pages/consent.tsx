@@ -1,34 +1,40 @@
 import { useEffect, useState, useCallback } from 'react';
 import { AUTH_METHOD_TYPE } from '@lit-protocol/constants';
 import { SessionSigs, IRelayPKP } from '@lit-protocol/types';
+import { useNavigate } from 'react-router-dom';
 
 import useAuthenticate from '../hooks/useAuthenticate';
 import useAccounts from '../hooks/useAccounts';
 import { registerWebAuthn, getSessionSigs } from '../utils/lit';
 import LoginMethods from '../components/LoginMethods';
 import { getAgentPKP } from '../utils/getAgentPKP';
-import { useErrorPopup } from '@/providers/ErrorPopup';
 import { useSetAuthInfo, useReadAuthInfo, useClearAuthInfo } from '../hooks/useAuthInfo';
 
 import ExistingAccountView from '../views/ExistingAccountView';
 import AuthenticatedConsentForm from '../components/AuthenticatedConsentForm';
 import SignUpView from '../views/SignUpView';
-import Loading from '../components/Loading';
+import { useErrorPopup } from '@/providers/ErrorPopup';
+import StatusMessage from '../components/authForm/StatusMessage';
 
-export default function IndexView() {
+type ConsentViewProps = {
+  isUserDashboardFlow?: boolean;
+};
+
+export default function ConsentView({ isUserDashboardFlow = false }: ConsentViewProps) {
   // ------ STATE AND HOOKS ------
   const { showError } = useErrorPopup();
   const { updateAuthInfo } = useSetAuthInfo();
   const { clearAuthInfo } = useClearAuthInfo();
+  const navigate = useNavigate();
 
   // Shared state for session sigs and agent PKP
   const [sessionSigs, setSessionSigs] = useState<SessionSigs>();
   const [agentPKP, setAgentPKP] = useState<IRelayPKP>();
   const [sessionError, setSessionError] = useState<Error>();
 
-  // State for loading messages
+  // Simplified loading state
   const [loadingMessage, setLoadingMessage] = useState<string>('');
-  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [isStableLoading, setIsStableLoading] = useState(false);
 
   // ------ EXISTING SESSION HANDLING ------
 
@@ -40,18 +46,24 @@ export default function IndexView() {
     error: readError,
   } = useReadAuthInfo();
 
-  // State to show existing account option
+  // State to show existing account option (used in non-user flow)
   const [showExistingAccount, setShowExistingAccount] = useState(false);
 
   // Check for existing auth info once the validation process is complete
   useEffect(() => {
     if (isProcessing) return;
     if (validatedSessionSigs) {
-      setShowExistingAccount(true);
+      if (isUserDashboardFlow) {
+        // In user flow, automatically use existing account
+        setSessionSigs(validatedSessionSigs);
+      } else {
+        // In consent flow, show option to use existing account
+        setShowExistingAccount(true);
+      }
     }
-  }, [validatedSessionSigs, isProcessing]);
+  }, [validatedSessionSigs, isProcessing, isUserDashboardFlow]);
 
-  // Handle using existing account
+  // Handle using existing account (used in non-user flow)
   const handleUseExistingAccount = () => {
     setShowExistingAccount(false);
   };
@@ -159,36 +171,30 @@ export default function IndexView() {
 
   // ------ LOADING STATES ------
 
-  // Update loading message based on current state with smooth transitions
   useEffect(() => {
-    // Determine the appropriate message based on current loading state
-    let newMessage = '';
+    const isLoading = authLoading || accountsLoading || sessionLoading || isProcessing;
+
+    let currentMessage = '';
     if (authLoading) {
-      newMessage = 'Authenticating your credentials...';
+      currentMessage = 'Authenticating your credentials...';
     } else if (accountsLoading) {
-      newMessage = 'Fetching your Agent Wallet...';
+      currentMessage = 'Fetching your Agent Wallet...';
     } else if (sessionLoading) {
-      newMessage = 'Securing your session...';
+      currentMessage = 'Securing your session...';
     } else if (isProcessing) {
-      newMessage = 'Checking existing session...';
+      currentMessage = 'Checking existing session...';
     }
 
-    // Only transition if the message is actually changing and not empty
-    if (newMessage && newMessage !== loadingMessage) {
-      // Start the transition
-      setIsTransitioning(true);
-
-      // Wait briefly before changing the message
-      const timeout = setTimeout(() => {
-        setLoadingMessage(newMessage);
-
-        // After changing message, end the transition
-        setTimeout(() => {
-          setIsTransitioning(false);
-        }, 150);
-      }, 150);
-
-      return () => clearTimeout(timeout);
+    if (isLoading) {
+      setIsStableLoading(true);
+      if (currentMessage && currentMessage !== loadingMessage) {
+        setLoadingMessage(currentMessage);
+      }
+    } else {
+      const timer = setTimeout(() => {
+        setIsStableLoading(false);
+      }, 200);
+      return () => clearTimeout(timer);
     }
   }, [authLoading, accountsLoading, sessionLoading, isProcessing, loadingMessage]);
 
@@ -199,25 +205,29 @@ export default function IndexView() {
     window.location.reload();
   };
 
+  // Cleanup effect for consent flow
   useEffect(() => {
-    return () => {
-      // Cleanup web3 connection when component unmounts
-      if (sessionSigs) {
-        clearAuthInfo();
-      }
-    };
-  }, [clearAuthInfo, sessionSigs]);
+    // Only add the cleanup for the non-user flow
+    if (!isUserDashboardFlow) {
+      return () => {
+        // Cleanup web3 connection when component unmounts
+        if (sessionSigs) {
+          clearAuthInfo();
+        }
+      };
+    }
+  }, [clearAuthInfo, sessionSigs, isUserDashboardFlow]);
 
   // ------ RENDER CONTENT ------
 
   const renderContent = () => {
-    // Handle loading states first
-    if (authLoading || accountsLoading || sessionLoading || isProcessing) {
-      return <Loading copy={loadingMessage} isTransitioning={isTransitioning} />;
+    // Use the stable loading state
+    if (isStableLoading) {
+      return <StatusMessage message="Loading..." type="info" />;
     }
 
-    // If we have existing auth info, show the option to use it
-    if (showExistingAccount) {
+    // If we have existing auth info and we're not in user flow, show the option to use it
+    if (!isUserDashboardFlow && showExistingAccount) {
       return (
         <ExistingAccountView
           authInfo={authInfo}
@@ -235,6 +245,21 @@ export default function IndexView() {
           agentPKP,
           userPKP,
         });
+
+        // User flow: navigate to apps page
+        if (isUserDashboardFlow) {
+          navigate('/user/apps');
+          return <></>;
+        }
+
+        // Consent flow: show the consent form
+        return (
+          <AuthenticatedConsentForm
+            userPKP={userPKP}
+            sessionSigs={sessionSigs}
+            agentPKP={agentPKP}
+          />
+        );
       } catch (error) {
         console.error('Error saving PKP info to localStorage:', error);
         showError(error as Error, 'Authentication Error');
@@ -247,14 +272,10 @@ export default function IndexView() {
           />
         );
       }
-
-      return (
-        <AuthenticatedConsentForm userPKP={userPKP} sessionSigs={sessionSigs} agentPKP={agentPKP} />
-      );
     }
 
     // If we're not showing the existing account and have validated session sigs
-    if (!showExistingAccount && validatedSessionSigs && authInfo?.userPKP) {
+    if (!isUserDashboardFlow && !showExistingAccount && validatedSessionSigs && authInfo?.userPKP) {
       return (
         <AuthenticatedConsentForm
           userPKP={authInfo.userPKP}
@@ -262,6 +283,13 @@ export default function IndexView() {
           agentPKP={authInfo.agentPKP}
         />
       );
+    }
+
+    // If we have validated session sigs from an existing session in user flow
+    if (isUserDashboardFlow && validatedSessionSigs && authInfo?.userPKP) {
+      // Redirect to /apps page
+      navigate('/user/apps');
+      return <></>;
     }
 
     // If authenticated but no accounts found
@@ -288,5 +316,5 @@ export default function IndexView() {
     );
   };
 
-  return <div className="grow flex items-center justify-center">{renderContent()}</div>;
+  return <div className="grow flex flex-col">{renderContent()}</div>;
 }

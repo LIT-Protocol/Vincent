@@ -1,7 +1,6 @@
 import { FC } from 'react';
 import { IRelayPKP } from '@lit-protocol/types';
 import { Button } from '@/components/ui/button';
-import ProtectedByLit from '@/components/layout/ProtectedByLit';
 
 interface AuthInfo {
   type: string;
@@ -73,42 +72,29 @@ const ExistingAccountView: FC<ExistingAccountViewProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-lg max-w-[550px] w-full mx-auto border border-gray-100 overflow-hidden">
-      {/* Header */}
-      <div className="px-6 py-4 border-b border-gray-100 flex items-center">
-        <div className="h-8 w-8 rounded-md flex items-center justify-center">
-          <img src="/logo.svg" alt="Vincent logo" width={20} height={20} />
-        </div>
-        <div className="ml-3 text-base font-medium text-gray-700">Connect with Vincent</div>
+    <>
+      <h2 className="text-xl font-semibold text-center mb-4">Use Existing Account?</h2>
+      <p className="text-sm text-gray-600 text-center mb-6">
+        Would you like to use your existing authentication for this session?
+      </p>
+
+      {renderAuthMethodInfo()}
+
+      <div className="flex flex-col space-y-3 mt-6">
+        <Button
+          onClick={handleUseExistingAccount}
+          className="bg-black text-white rounded-lg py-3 font-medium text-sm hover:bg-gray-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Yes, Use Existing Account
+        </Button>
+        <Button
+          onClick={handleSignOut}
+          className="bg-white text-gray-700 border border-gray-200 rounded-lg py-3 font-medium text-sm hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          No, Sign Out
+        </Button>
       </div>
-
-      {/* Content */}
-      <div className="p-6">
-        <h2 className="text-xl font-semibold text-center mb-4">Use Existing Account?</h2>
-        <p className="text-sm text-gray-600 text-center mb-6">
-          Would you like to use your existing authentication for this session?
-        </p>
-
-        {renderAuthMethodInfo()}
-
-        <div className="flex flex-col space-y-3 mt-6">
-          <Button
-            onClick={handleUseExistingAccount}
-            className="bg-black text-white rounded-lg py-3 font-medium text-sm hover:bg-gray-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Yes, Use Existing Account
-          </Button>
-          <Button
-            onClick={handleSignOut}
-            className="bg-white text-gray-700 border border-gray-200 rounded-lg py-3 font-medium text-sm hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            No, Sign Out
-          </Button>
-        </div>
-      </div>
-
-      <ProtectedByLit />
-    </div>
+    </>
   );
 };
 

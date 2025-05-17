@@ -1,28 +1,19 @@
 import { useCallback } from 'react';
-import { IRelayPKP } from '@lit-protocol/types';
+import { IRelayPKP, SessionSigs } from '@lit-protocol/types';
 import { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
-import { AppView, VersionInfo, VersionParameter } from '../types';
+import { AppView, VersionInfo, VersionParameter, PolicyParameter } from '../types';
 import { litNodeClient } from '../utils/lit';
-import {
-  getUserViewRegistryContract,
-  getUserRegistryContract,
-} from '../utils/contracts';
+import { getUserViewRegistryContract, getUserRegistryContract } from '../utils/contracts';
 import { useParameterManagement } from './useParameterManagement';
 import { isEmptyParameterValue } from '../utils/parameterDecoding';
 import {
   prepareParameterRemovalData,
   prepareParameterUpdateData,
   identifyParametersToRemove,
-  prepareVersionPermitData
+  prepareVersionPermitData,
 } from '../utils/consentArrayUtils';
-import {
-  sendTransaction,
-  addPermittedActions,
-} from '../utils/consentTransactionUtils';
-import {
-  checkAppPermissionStatus,
-  verifyPermissionGrant
-} from '../utils/consentVerificationUtils';
+import { sendTransaction, addPermittedActions } from '../utils/consentTransactionUtils';
+import { checkAppPermissionStatus, verifyPermissionGrant } from '../utils/consentVerificationUtils';
 
 /**
  * Hook for managing application consent approval and parameter management in Lit Protocol
@@ -51,12 +42,20 @@ interface UseConsentApprovalProps {
   parameters: VersionParameter[];
   agentPKP?: IRelayPKP;
   userPKP: IRelayPKP;
-  sessionSigs: any;
-  onStatusChange?: (
-    message: string,
-    type: 'info' | 'warning' | 'success' | 'error',
-  ) => void;
-  onError?: (error: any, title?: string, details?: string) => void;
+  sessionSigs: SessionSigs;
+  permittedVersion: number | null;
+  onStatusChange?: (message: string, type: 'info' | 'warning' | 'success' | 'error') => void;
+  onError?: (error: Error | unknown, title?: string, details?: string) => void;
+}
+
+interface ToolWithPolicies {
+  toolIpfsCid: string;
+  policies: PolicyWithParameters[];
+}
+
+interface PolicyWithParameters {
+  policyIpfsCid: string;
+  parameters: PolicyParameter[];
 }
 
 export const useConsentApproval = ({
@@ -67,6 +66,7 @@ export const useConsentApproval = ({
   agentPKP,
   userPKP,
   sessionSigs,
+  permittedVersion,
   onStatusChange,
   onError,
 }: UseConsentApprovalProps) => {
@@ -74,9 +74,10 @@ export const useConsentApproval = ({
     appId,
     agentPKP,
     appInfo,
-    onStatusChange: onStatusChange ?
-      (message, type = 'info') => onStatusChange(message, type) :
-      undefined,
+    permittedVersion,
+    onStatusChange: onStatusChange
+      ? (message, type = 'info') => onStatusChange(message, type)
+      : undefined,
   });
 
   /**
@@ -121,7 +122,7 @@ export const useConsentApproval = ({
       const { permittedVersion } = await checkAppPermissionStatus(
         agentPKP.tokenId,
         appId,
-        onStatusChange
+        onStatusChange,
       );
 
       const existingParameters: VersionParameter[] = [];
@@ -131,12 +132,12 @@ export const useConsentApproval = ({
 
         const toolsAndPolicies = await userViewContract.getAllToolsAndPoliciesForApp(
           agentPKP.tokenId,
-          appIdNum
+          appIdNum,
         );
 
-        toolsAndPolicies.forEach((tool: any, toolIndex: number) => {
-          tool.policies.forEach((policy: any, policyIndex: number) => {
-            policy.parameters.forEach((param: any, paramIndex: number) => {
+        toolsAndPolicies.forEach((tool: ToolWithPolicies, toolIndex: number) => {
+          tool.policies.forEach((policy: PolicyWithParameters, policyIndex: number) => {
+            policy.parameters.forEach((param: PolicyParameter, paramIndex: number) => {
               existingParameters.push({
                 toolIndex,
                 policyIndex,
@@ -159,8 +160,10 @@ export const useConsentApproval = ({
       if (parametersToRemove.length > 0) {
         onStatusChange?.('Removing cleared parameters...', 'info');
 
-        const { filteredTools, filteredPolicies, filteredParams } =
-          prepareParameterRemovalData(parametersToRemove, versionInfo);
+        const { filteredTools, filteredPolicies, filteredParams } = prepareParameterRemovalData(
+          parametersToRemove,
+          versionInfo,
+        );
         try {
           const removeArgs = [
             appId,
@@ -177,13 +180,12 @@ export const useConsentApproval = ({
             removeArgs,
             'Sending transaction to remove cleared parameters...',
             onStatusChange,
-            onError
+            onError,
           );
 
           onStatusChange?.('Waiting for removal transaction to be confirmed...', 'info');
           await removeTxResponse.wait(1);
           onStatusChange?.('Parameter removal transaction confirmed!', 'success');
-
         } catch (error) {
           console.error('Parameter removal failed:', error);
           onStatusChange?.('Failed to remove cleared parameters', 'warning');
@@ -197,7 +199,7 @@ export const useConsentApproval = ({
         policyIpfsCids,
         policyParameterNames,
         policyParameterValues,
-        hasParametersToSet
+        hasParametersToSet,
       } = prepareParameterUpdateData(parameters, versionInfo);
 
       // Ensure the tools and policies are checked as soon as we have a readable format of them
@@ -206,12 +208,16 @@ export const useConsentApproval = ({
         agentPKP.tokenId,
         toolIpfsCids,
         policyIpfsCids.flat(),
-        onStatusChange
+        onStatusChange,
       );
 
       if (!approvalResult.success) {
         onStatusChange?.('Failed to add permitted actions', 'error');
-        return { success: false, message: 'Failed to add permitted actions. Please try again and contact support if the issue persists.' };
+        return {
+          success: false,
+          message:
+            'Failed to add permitted actions. Please try again and contact support if the issue persists.',
+        };
       }
 
       if (!hasParametersToSet) {
@@ -235,7 +241,7 @@ export const useConsentApproval = ({
         updateArgs,
         'Sending transaction to update parameters...',
         onStatusChange,
-        onError
+        onError,
       );
 
       onStatusChange?.('Waiting for update transaction to be confirmed...', 'info');
@@ -270,22 +276,16 @@ export const useConsentApproval = ({
         return { success: false, message: 'Missing required data for consent approval' };
       }
 
-      onStatusChange?.(
-        `Permitting version ${Number(appInfo.latestVersion)}...`,
-        'info',
-      );
+      onStatusChange?.(`Permitting version ${Number(appInfo.latestVersion)}...`, 'info');
 
       const { wallet, connectedContract } = await initializeWallet();
 
-      const {
-        toolIpfsCids,
-        policyIpfsCids,
-        toolPolicyParameterNames,
-      } = prepareVersionPermitData(versionInfo, parameters);
+      const { toolIpfsCids, policyIpfsCids, toolPolicyParameterNames } = prepareVersionPermitData(
+        versionInfo,
+        parameters,
+      );
 
-      const {
-        policyParameterValues,
-      } = prepareParameterUpdateData(parameters, versionInfo);
+      const { policyParameterValues } = prepareParameterUpdateData(parameters, versionInfo);
 
       const filteredToolPolicyParameterNames = toolPolicyParameterNames.map(
         (toolParams, toolIndex) =>
@@ -321,7 +321,7 @@ export const useConsentApproval = ({
         permitArgs,
         'Sending permission transaction...',
         onStatusChange,
-        onError
+        onError,
       );
 
       await txResponse.wait(1);
@@ -330,7 +330,7 @@ export const useConsentApproval = ({
         agentPKP.tokenId,
         appId,
         Number(appInfo.latestVersion),
-        onStatusChange
+        onStatusChange,
       );
 
       // Add permitted actions for the tools
@@ -339,12 +339,16 @@ export const useConsentApproval = ({
         agentPKP.tokenId,
         toolIpfsCids,
         policyIpfsCids.flat(),
-        onStatusChange
+        onStatusChange,
       );
 
       if (!approvalResult.success) {
         onStatusChange?.('Failed to add permitted actions', 'error');
-        return { success: false, message: 'Failed to add permitted actions. Please try again and contact suppport if the issue persists.' };
+        return {
+          success: false,
+          message:
+            'Failed to add permitted actions. Please try again and contact suppport if the issue persists.',
+        };
       }
 
       onStatusChange?.('Permission grant successful!', 'success');
@@ -355,7 +359,16 @@ export const useConsentApproval = ({
       onStatusChange?.('Consent approval process failed!', 'error');
       return { success: false, message: 'Consent approval process failed' };
     }
-  }, [agentPKP, appId, appInfo, parameters, versionInfo, initializeWallet, onStatusChange, onError]);
+  }, [
+    agentPKP,
+    appId,
+    appInfo,
+    parameters,
+    versionInfo,
+    initializeWallet,
+    onStatusChange,
+    onError,
+  ]);
 
   return {
     approveConsent,
