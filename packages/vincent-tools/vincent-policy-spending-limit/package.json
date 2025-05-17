@@ -48,10 +48,7 @@
           ],
           "cwd": "packages/vincent-tools/vincent-policy-spending-limit",
           "parallel": false
-        },
-        "outputs": [
-          "{workspaceRoot}/packages/vincent-tools/vincent-policy-spending-limit/dist/deployed-lit-action.js"
-        ]
+        }
       },
       "action:deploy": {
         "executor": "nx:run-commands",
@@ -85,6 +82,15 @@
               "output": "src/generated"
             }
           ]
+        }
+      },
+      "publish": {
+        "executor": "@nx/js:npm-publish",
+        "dependsOn": [
+          "deploy"
+        ],
+        "options": {
+          "packageRoot": "dist"
         }
       }
     },

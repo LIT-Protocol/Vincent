@@ -41,8 +41,33 @@
     "sourceRoot": "packages/vincent-tools/vincent-tool-uniswap-swap/src",
     "projectType": "library",
     "targets": {
+      "action:build": {
+        "executor": "nx:run-commands",
+        "options": {
+          "commands": [
+            "pnpm node ./esbuild.config.js"
+          ],
+          "cwd": "packages/vincent-tools/vincent-tool-uniswap-swap",
+          "parallel": false
+        }
+      },
+      "action:deploy": {
+        "executor": "nx:run-commands",
+        "dependsOn": [
+          "action:build"
+        ],
+        "options": {
+          "commands": [
+            "node tools/scripts/deploy-lit-action.js"
+          ],
+          "cwd": "packages/vincent-tools/vincent-tool-uniswap-swap"
+        }
+      },
       "build": {
         "executor": "@nx/js:tsc",
+        "dependsOn": [
+          "action:build"
+        ],
         "outputs": [
           "{options.outputPath}"
         ],
@@ -51,36 +76,13 @@
           "main": "packages/vincent-tools/vincent-tool-uniswap-swap/src/index.ts",
           "tsConfig": "packages/vincent-tools/vincent-tool-uniswap-swap/tsconfig.lib.json",
           "assets": [
-            "packages/vincent-tools/vincent-tool-uniswap-swap/*.md"
+            "packages/vincent-tools/vincent-tool-uniswap-swap/*.md",
+            {
+              "glob": "**/*",
+              "input": "packages/vincent-tools/vincent-tool-uniswap-swap/src/generated",
+              "output": "src/generated"
+            }
           ]
-        }
-      },
-      "build:action": {
-        "executor": "nx:run-commands",
-        "dependsOn": [
-          "build"
-        ],
-        "options": {
-          "commands": [
-            "node tools/scripts/build-lit-action.js"
-          ],
-          "cwd": "packages/vincent-tools/vincent-tool-uniswap-swap",
-          "parallel": false
-        },
-        "outputs": [
-          "{workspaceRoot}/packages/vincent-tools/vincent-tool-uniswap-swap/dist/deployed-lit-action.js"
-        ]
-      },
-      "deploy": {
-        "executor": "nx:run-commands",
-        "dependsOn": [
-          "build:action"
-        ],
-        "options": {
-          "commands": [
-            "node tools/scripts/deploy-lit-action.js"
-          ],
-          "cwd": "packages/vincent-tools/vincent-tool-uniswap-swap"
         }
       },
       "publish": {

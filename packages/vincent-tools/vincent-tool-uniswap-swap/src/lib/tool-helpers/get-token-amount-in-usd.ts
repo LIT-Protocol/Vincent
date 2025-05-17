@@ -42,7 +42,8 @@ export const getTokenAmountInUsd = async ({
     tokenInAmount: tokenAmount,
     tokenOutAddress: ETH_MAINNET_WETH_ADDRESS,
     tokenOutDecimals: 18,
-    ethRpcUrl,
+    rpcUrl: ethRpcUrl,
+    chainId: 1,
     poolFee,
   });
 

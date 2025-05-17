@@ -18,11 +18,11 @@ if (!PINATA_JWT) {
   try {
     const outputFile = 'vincent-policy-wrapped.js';
 
-    const distDir = path.join(__dirname, '../../dist');
-    const filePath = path.join(distDir, `src/generated/${outputFile}`);
+    const generatedDir = path.join(__dirname, '../../src/generated');
+    const filePath = path.join(generatedDir, outputFile);
     if (!fs.existsSync(filePath)) {
       throw new Error(
-        `Bundled Lit Action code string not found at ${filePath}. Please run pnpx nx run vincent-policy-spending-limit:build first.`,
+        `Bundled Lit Action code string not found at ${filePath}. Please run pnpx nx run vincent-policy-spending-limit:action:build first.`,
       );
     }
     const litActionCodeString = require(filePath);
@@ -30,7 +30,6 @@ if (!PINATA_JWT) {
     console.log(`Deploying ${outputFile} to IPFS...`);
     const ipfsCid = await uploadToIPFS(outputFile, litActionCodeString.code);
 
-    const generatedDir = path.join(__dirname, '../../src/generated');
     const cidJsPath = path.join(generatedDir, 'vincent-policy-ipfs-cid.js');
     const cidJsContent = `const vincentPolicyIpfsCid = '${ipfsCid}';\n\nmodule.exports = {\n  vincentPolicyIpfsCid,\n};\n`;
     fs.writeFileSync(cidJsPath, cidJsContent, 'utf8');
