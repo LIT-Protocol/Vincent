@@ -2,7 +2,7 @@ import { useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { useAccount } from 'wagmi';
 
-import CreateAppScreen from '@/components/developer/CreateApp';
+import CreateAppScreen from '@/components/app-dashboard/CreateApp';
 
 export function CreateApp() {
   const { isConnected } = useAccount();

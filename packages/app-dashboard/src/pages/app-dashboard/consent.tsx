@@ -1,7 +1,7 @@
 import { Helmet } from 'react-helmet';
-import ConsentView from '@/components/consent/pages/consent';
-import ConnectWithVincent from '@/components/layout/ConnectWithVincent';
-import ProtectedByLit from '@/components/layout/ProtectedByLit';
+import ConsentView from '@/components/user-dashboard/consent/Consent';
+import ConnectWithVincent from '@/layout/shared/ConnectWithVincent';
+import ProtectedByLit from '@/layout/shared/ProtectedByLit';
 
 export function Consent() {
   return (

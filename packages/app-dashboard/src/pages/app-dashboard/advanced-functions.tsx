@@ -2,9 +2,9 @@ import { useCallback, useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import { formCompleteVincentAppForDev } from '@/services';
 import { useAccount } from 'wagmi';
-import Loading from '@/components/layout/Loading';
+import Loading from '@/layout/app-dashboard/Loading';
 import { AppView } from '@/services/types';
-import ManageAdvancedFunctionsScreen from '@/components/developer/dashboard/ManageAdvancedFunctions';
+import ManageAdvancedFunctionsScreen from '@/components/app-dashboard/dashboard/ManageAdvancedFunctions';
 
 export function AdvancedFunctions() {
   const params = useParams();

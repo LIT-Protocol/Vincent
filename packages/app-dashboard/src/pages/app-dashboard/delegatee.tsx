@@ -2,9 +2,9 @@ import { useCallback, useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import { formCompleteVincentAppForDev } from '@/services';
 import { useAccount } from 'wagmi';
-import Loading from '@/components/layout/Loading';
+import Loading from '@/layout/app-dashboard/Loading';
 import { AppView } from '@/services/types';
-import DelegateeManagerScreen from '@/components/developer/dashboard/ManageDelegatee';
+import DelegateeManagerScreen from '@/components/app-dashboard/dashboard/ManageDelegatee';
 
 export function DelegateeManagement() {
   const params = useParams();

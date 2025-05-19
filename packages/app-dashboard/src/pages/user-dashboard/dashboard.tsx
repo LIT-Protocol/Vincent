@@ -1,8 +1,8 @@
 import { Helmet } from 'react-helmet';
-import ConsentView from '@/components/consent/pages/consent';
-import UserHeader from '@/components/layout/UserHeader';
-import ConnectWithVincent from '@/components/layout/ConnectWithVincent';
-import ProtectedByLit from '@/components/layout/ProtectedByLit';
+import ConsentView from '@/components/user-dashboard/consent/Consent';
+import UserHeader from '@/layout/user-dashboard/UserHeader';
+import ConnectWithVincent from '@/layout/shared/ConnectWithVincent';
+import ProtectedByLit from '@/layout/shared/ProtectedByLit';
 
 export default function UserDashboard() {
   return (

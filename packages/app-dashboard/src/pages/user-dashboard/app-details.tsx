@@ -1,12 +1,12 @@
 import { Helmet } from 'react-helmet';
-import { useReadAuthInfo } from '@/components/consent/hooks/useAuthInfo';
-import UserAuthenticatedConsentForm from '@/components/consent/components/UserAuthenticatedConsentForm';
-import UserHeader from '@/components/layout/UserHeader';
-import { useAuthGuard } from '@/components/user/AuthGuard';
-import { useUrlRedirectUri } from '@/components/consent/hooks/useUrlRedirectUri';
-import ConnectWithVincent from '@/components/layout/ConnectWithVincent';
-import ProtectedByLit from '@/components/layout/ProtectedByLit';
-import StatusMessage from '@/components/consent/components/authForm/StatusMessage';
+import { useReadAuthInfo } from '@/hooks/user-dashboard/useAuthInfo';
+import UserAuthenticatedConsentForm from '@/components/user-dashboard/consent/UserAuthenticatedConsentForm';
+import UserHeader from '@/layout/user-dashboard/UserHeader';
+import { useAuthGuard } from '@/components/user-dashboard/auth/AuthGuard';
+import { useUrlRedirectUri } from '@/hooks/user-dashboard/useUrlRedirectUri';
+import ConnectWithVincent from '@/layout/shared/ConnectWithVincent';
+import ProtectedByLit from '@/layout/shared/ProtectedByLit';
+import StatusMessage from '@/components/user-dashboard/consent/StatusMessage';
 
 export default function AppDetailsPage() {
   const { authInfo, sessionSigs } = useReadAuthInfo();

@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useAccount } from 'wagmi';
 
-import DashboardScreen from '@/components/developer/Dashboard';
+import DashboardScreen from '@/components/app-dashboard/Dashboard';
 import { formCompleteVincentAppForDev } from '@/services';
 import { AppView } from '@/services/types';
-import ConnectWalletScreen from '@/components/developer/ConnectWallet';
-import CreateAppScreen from '@/components/developer/CreateApp';
-import Loading from '@/components/layout/Loading';
+import ConnectWalletScreen from '@/components/app-dashboard/ConnectWallet';
+import CreateAppScreen from '@/components/app-dashboard/CreateApp';
+import Loading from '@/layout/app-dashboard/Loading';
 
 function AppHome() {
   const [hasApp, setHasApp] = useState<boolean>(false);

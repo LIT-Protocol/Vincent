@@ -1,9 +1,9 @@
 import { Helmet } from 'react-helmet';
-import WithdrawForm from '@/components/withdraw/WithdrawForm';
-import UserHeader from '@/components/layout/UserHeader';
-import useReadAuthInfo from '@/components/consent/hooks/useAuthInfo';
-import { useAuthGuard } from '@/components/user/AuthGuard';
-import StatusMessage from '@/components/consent/components/authForm/StatusMessage';
+import WithdrawForm from '@/components/user-dashboard/withdraw/WithdrawForm';
+import UserHeader from '@/layout/user-dashboard/UserHeader';
+import useReadAuthInfo from '@/hooks/user-dashboard/useAuthInfo';
+import { useAuthGuard } from '@/components/user-dashboard/auth/AuthGuard';
+import StatusMessage from '@/components/user-dashboard/consent/StatusMessage';
 
 export function Withdraw() {
   const { authInfo, sessionSigs } = useReadAuthInfo();

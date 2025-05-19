@@ -4,12 +4,18 @@ import { formCompleteVincentAppForDev } from '@/services';
 import { useAccount } from 'wagmi';
 import { AppView } from '@/services/types';
 import { ArrowRight, Plus, Settings } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/app-dashboard/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/app-dashboard/ui/card';
 import { mapEnumToTypeName } from '@/services/types';
 import { useErrorPopup } from '@/providers/ErrorPopup';
-import { StatusMessage } from '@/utils/statusMessage';
-import { AppUrlGenerator } from '@/components/developer/dashboard/AppUrlGenerator';
+import { StatusMessage } from '@/utils/shared/statusMessage';
+import { AppUrlGenerator } from '@/components/app-dashboard/dashboard/AppUrlGenerator';
 
 export function AppDetail() {
   const params = useParams();

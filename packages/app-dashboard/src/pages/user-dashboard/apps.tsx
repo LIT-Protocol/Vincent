@@ -1,9 +1,9 @@
 import { Helmet } from 'react-helmet';
-import UserAppsView from '@/components/user/UserAppsView';
-import { useReadAuthInfo } from '@/components/consent/hooks/useAuthInfo';
-import UserHeader from '@/components/layout/UserHeader';
-import { useAuthGuard } from '@/components/user/AuthGuard';
-import StatusMessage from '@/components/consent/components/authForm/StatusMessage';
+import UserAppsView from '@/components/user-dashboard/dashboard/UserAppsView';
+import { useReadAuthInfo } from '@/hooks/user-dashboard/useAuthInfo';
+import UserHeader from '@/layout/user-dashboard/UserHeader';
+import { useAuthGuard } from '@/components/user-dashboard/auth/AuthGuard';
+import StatusMessage from '@/components/user-dashboard/consent/StatusMessage';
 
 export default function AppsPage() {
   const { authInfo, sessionSigs } = useReadAuthInfo();
