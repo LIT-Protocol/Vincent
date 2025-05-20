@@ -41,36 +41,42 @@ export default function QrReader({ onConnect }: IProps) {
   }
 
   return (
-    <div className="container">
+    <div className="w-full flex flex-col items-center justify-center mb-6">
       {show ? (
         <Fragment>
           {loading && (
-            <div className="absolute">
+            <div className="absolute z-10">
               <Loading />
             </div>
           )}
-          <div className="qrVideoMask">
+          <div
+            className="w-full max-w-md relative overflow-hidden rounded-lg border border-gray-300"
+            style={{ height: '300px' }}
+          >
             <ReactQrReader
               onLoad={() => setLoading(false)}
               showViewFinder={false}
               onError={onError}
               onScan={onScan}
-              style={{ width: '100%' }}
+              style={{ width: '100%', height: '100%' }}
             />
           </div>
+          <Button variant="outline" className="mt-4" onClick={() => setShow(false)}>
+            Cancel Scan
+          </Button>
         </Fragment>
       ) : (
-        <div className="container qrPlaceholder">
+        <div className="w-full max-w-md flex flex-col items-center justify-center p-8 border border-gray-200 rounded-lg bg-gray-50">
           <Image
             src="/icons/qr-icon.svg"
             width={100}
             height={100}
             alt="qr code icon"
-            className="qrIcon"
+            className="mb-4"
           />
           <Button
             variant="default"
-            className="mt-10 w-full"
+            className="mt-4 w-full"
             onClick={onShowScanner}
             data-testid="qrcode-button"
           >

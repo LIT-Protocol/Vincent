@@ -1,63 +1,78 @@
-import { WalletKit, IWalletKit } from '@reown/walletkit';
+import { IWalletKit } from '@reown/walletkit';
+import { WalletKit } from '@reown/walletkit';
+import { getPKPWallet } from './PKPWalletUtil';
 import { Core } from '@walletconnect/core';
-export let walletkit: IWalletKit;
 
-// Add flag to track initialization
+// Track initialization status
 let isInitializing = false;
+let walletKitClient: IWalletKit | null = null;
 
-export async function createWalletKit() {
-  // If already initialized or currently initializing, return the existing instance
-  if (walletkit) {
-    console.log('WalletKit already initialized, reusing existing instance');
-    return walletkit;
+/**
+ * Initialize WalletKit directly without any React hooks
+ * @param setClient Optional callback to set the client in state
+ * @returns The initialized WalletKit client
+ */
+export async function createWalletConnectClient(
+  setClient?: (client: IWalletKit) => void,
+): Promise<IWalletKit> {
+  // If already initialized, return existing instance
+  if (walletKitClient) {
+    if (setClient) {
+      setClient(walletKitClient);
+    }
+    return walletKitClient;
   }
 
   // Prevent concurrent initialization
   if (isInitializing) {
     console.log('WalletKit initialization in progress, waiting...');
     // Wait for initialization to complete
-    await new Promise((resolve) => {
+    return new Promise<IWalletKit>((resolve) => {
       const checkInterval = setInterval(() => {
-        if (walletkit && !isInitializing) {
+        if (walletKitClient && !isInitializing) {
           clearInterval(checkInterval);
-          resolve(walletkit);
+          if (setClient) {
+            setClient(walletKitClient);
+          }
+          resolve(walletKitClient);
         }
       }, 100);
     });
-    return walletkit;
   }
 
   try {
     isInitializing = true;
     console.log('Initializing new WalletKit instance');
 
+    // Create a shared Core instance
     const core = new Core({
       projectId: '48dbb3e862642b9a8004ab871a2ac82d',
-      relayUrl: 'wss://relay.walletconnect.com',
     });
-    walletkit = await WalletKit.init({
-      core,
-      metadata: {
-        name: 'React Wallet Example',
-        description: 'React Wallet for WalletConnect',
-        url: 'https://intense-valid-hamster.ngrok-free.app/',
-        icons: ['https://avatars.githubusercontent.com/u/37784886'],
-      },
-      signConfig: {
-        disableRequestQueue: false,
-      },
-    });
-    console.log('walletkit', walletkit);
 
-    try {
-      const clientId = await walletkit.engine.signClient.core.crypto.getClientId();
-      console.log('WalletConnect ClientID: ', clientId);
-      localStorage.setItem('WALLETCONNECT_CLIENT_ID', clientId);
-    } catch (error) {
-      console.error('Failed to set WalletConnect clientId in localStorage: ', error);
+    // Initialize WalletKit with the required parameters - according to documentation
+    walletKitClient = await WalletKit.init({
+      core, // Pass the shared core instance
+      metadata: {
+        name: 'Vincent App',
+        description: 'Vincent App using PKP with WalletKit',
+        url: window.location.origin,
+        icons: ['https://lit.network/favicon.ico'],
+      },
+    });
+
+    // Add PKP wallet if available
+    const pkpWallet = getPKPWallet();
+    if (pkpWallet && walletKitClient) {
+      // Register the PKP wallet to receive signing requests
+      console.log('PKP wallet available for WalletKit');
     }
 
-    return walletkit;
+    // Store the client in the store if a setter was provided
+    if (setClient) {
+      setClient(walletKitClient);
+    }
+
+    return walletKitClient;
   } catch (error) {
     console.error('Error initializing WalletKit:', error);
     throw error;
@@ -67,23 +82,41 @@ export async function createWalletKit() {
 }
 
 /**
+ * Get the current WalletKit client instance without initialization
+ * @returns The current WalletKit client instance or null if not initialized
+ */
+export function getWalletConnectClient(): IWalletKit | null {
+  return walletKitClient;
+}
+
+/**
  * Disconnect a specific WalletConnect session by topic
  * @param topic The session topic to disconnect
+ * @param refreshSessions Optional callback to refresh sessions after disconnecting
  * @returns Promise that resolves when the session is disconnected
  */
-export async function disconnectSession(topic: string) {
+export async function disconnectSession(
+  topic: string,
+  refreshSessions?: () => void,
+): Promise<boolean> {
   try {
-    if (!walletkit) {
-      throw new Error('WalletKit is not initialized');
+    if (!walletKitClient) {
+      throw new Error('WalletKit client is not initialized');
     }
 
-    await walletkit.disconnectSession({
+    // Use the WalletKit disconnectSession method
+    await walletKitClient.disconnectSession({
       topic,
       reason: {
         code: 6000,
         message: 'User disconnected session',
       },
     });
+
+    // Refresh sessions after disconnecting
+    if (refreshSessions) {
+      refreshSessions();
+    }
 
     console.log(`Successfully disconnected session: ${topic}`);
     return true;
