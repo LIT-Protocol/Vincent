@@ -360,6 +360,8 @@ export const myTool = createVincentTool({
         if (toolSdkPolicyContext) {
           const commitResult = await toolSdkPolicyContext.commit();
 
+          const wat: boolean = commitResult.allow;
+          console.log(wat);
           if (commitResult.allow) {
             console.log(commitResult.result);
           }
@@ -420,7 +422,7 @@ export const gogoPolicy = async function () {
 
 export const gogo = async function () {
   const toolExecuteResult = await myTool.execute(
-    { action: 'wat', target: 'meow', amount: 23098123 },
+    { toolParams: { action: 'wat', target: 'meow', amount: 23098123 } },
     {
       delegation: { delegatee: 'meow', delegator: 'meowmeow' },
       policiesContext: {
@@ -446,7 +448,7 @@ export const gogo = async function () {
 
   if (myTool.precheck) {
     return myTool.precheck(
-      { action: 'wat', target: 'meow', amount: 23098123 },
+      { toolParams: { action: 'wat', target: 'meow', amount: 23098123 } },
       {
         delegation: { delegatee: 'meow', delegator: 'meowmeow' },
         policiesContext: {

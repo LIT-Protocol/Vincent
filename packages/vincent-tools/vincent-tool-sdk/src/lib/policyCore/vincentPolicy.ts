@@ -71,14 +71,6 @@ export function createVincentPolicy<
   const userParamsSchema = (policyDef.userParamsSchema ?? z.undefined()) as UserParams;
   const evalAllowSchema = (policyDef.evalAllowResultSchema ?? z.undefined()) as EvalAllowResult;
   const evalDenySchema = (policyDef.evalDenyResultSchema ?? z.undefined()) as EvalDenyResult;
-  const precheckAllowSchema = (policyDef.precheckAllowResultSchema ??
-    z.undefined()) as PrecheckAllowResult;
-  const precheckDenySchema = (policyDef.precheckDenyResultSchema ??
-    z.undefined()) as PrecheckDenyResult;
-  const commitAllowSchema = (policyDef.commitAllowResultSchema ??
-    z.undefined()) as CommitAllowResult;
-  const commitDenySchema = (policyDef.commitDenyResultSchema ?? z.undefined()) as CommitDenyResult;
-  const commitParamsSchema = (policyDef.commitParamsSchema ?? z.undefined()) as CommitParams;
 
   const evaluate: PolicyLifecycleFunction<
     PolicyToolParams,
@@ -137,6 +129,10 @@ export function createVincentPolicy<
     }
   };
 
+  const precheckAllowSchema = (policyDef.precheckAllowResultSchema ??
+    z.undefined()) as PrecheckAllowResult;
+  const precheckDenySchema = (policyDef.precheckDenyResultSchema ??
+    z.undefined()) as PrecheckDenyResult;
   const precheck = policyDef.precheck
     ? ((async (args, baseContext) => {
         try {
@@ -192,6 +188,10 @@ export function createVincentPolicy<
       >)
     : undefined;
 
+  const commitAllowSchema = (policyDef.commitAllowResultSchema ??
+    z.undefined()) as CommitAllowResult;
+  const commitDenySchema = (policyDef.commitDenyResultSchema ?? z.undefined()) as CommitDenyResult;
+  const commitParamsSchema = (policyDef.commitParamsSchema ?? z.undefined()) as CommitParams;
   const commit = policyDef.commit
     ? ((async (args, baseContext) => {
         try {

@@ -1,3 +1,5 @@
+// src/type-inference-verification/allow-deny-test-cases-tool.ts
+
 /**
  * Tool Definition Type Checking
  *

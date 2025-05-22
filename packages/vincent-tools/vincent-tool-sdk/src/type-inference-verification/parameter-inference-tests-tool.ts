@@ -1,3 +1,5 @@
+// src/type-inference-verification/parameter-inference-tests-tool.ts
+
 /**
  * Tool Parameter Type Inference Testing
  *

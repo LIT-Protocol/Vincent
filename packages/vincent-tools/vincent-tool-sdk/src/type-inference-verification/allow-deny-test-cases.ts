@@ -1,3 +1,5 @@
+// src/type-inference-verification/allow-deny-test-cases.ts
+
 /**
  * Allow/Deny Test Cases
  *

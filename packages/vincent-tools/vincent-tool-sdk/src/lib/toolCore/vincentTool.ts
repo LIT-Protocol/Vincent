@@ -9,11 +9,13 @@ import {
   ToolResponse,
   VincentToolPolicy,
 } from '../types';
-import { createExecutionToolContext, createPrecheckToolContext } from './toolContext/toolContext';
-import { BaseToolContext } from './toolDef/context/types';
-import { createToolFailureResult } from './helpers/resultCreators';
+import {
+  createExecutionToolContext,
+  createPrecheckToolContext,
+} from './toolDef/context/toolContext';
+import { wrapFailure, wrapNoResultFailure, wrapSuccess } from './helpers/resultCreators';
 import { getSchemaForToolResponseResult, validateOrFail } from './helpers/zod';
-import { isToolFailureResponse, isToolResponse } from './helpers/typeGuards';
+import { isToolFailureResponse } from './helpers/typeGuards';
 import { ToolPolicyMap } from './helpers';
 import { ToolDefLifecycleFunction, VincentToolDef } from './toolDef/types';
 
@@ -38,36 +40,10 @@ export function createVincentTool<
   const PkgNames extends string,
   const PolicyMap extends ToolPolicyMap<any, PkgNames>,
   PolicyMapByPackageName extends PolicyMap['policyByPackageName'],
-  PrecheckSuccessSchema extends z.ZodType | undefined = undefined,
-  PrecheckFailSchema extends z.ZodType | undefined = undefined,
-  ExecuteSuccessSchema extends z.ZodType | undefined = undefined,
-  ExecuteFailSchema extends z.ZodType | undefined = undefined,
-  PrecheckFn extends
-    | ToolLifecycleFunction<
-        ToolParamsSchema,
-        PolicyEvaluationResultContext<PolicyMapByPackageName>,
-        PrecheckSuccessSchema,
-        PrecheckFailSchema
-      >
-    | undefined =
-    | undefined
-    | ToolLifecycleFunction<
-        ToolParamsSchema,
-        PolicyEvaluationResultContext<PolicyMapByPackageName>,
-        PrecheckSuccessSchema,
-        PrecheckFailSchema
-      >,
-  ExecuteFn extends ToolLifecycleFunction<
-    ToolParamsSchema,
-    ToolExecutionPolicyContext<PolicyMapByPackageName>,
-    ExecuteSuccessSchema,
-    ExecuteFailSchema
-  > = ToolLifecycleFunction<
-    ToolParamsSchema,
-    ToolExecutionPolicyContext<PolicyMapByPackageName>,
-    ExecuteSuccessSchema,
-    ExecuteFailSchema
-  >,
+  PrecheckSuccessSchema extends z.ZodType = z.ZodUndefined,
+  PrecheckFailSchema extends z.ZodType = z.ZodUndefined,
+  ExecuteSuccessSchema extends z.ZodType = z.ZodUndefined,
+  ExecuteFailSchema extends z.ZodType = z.ZodUndefined,
 >(
   toolDef: VincentToolDef<
     ToolParamsSchema,
@@ -92,164 +68,133 @@ export function createVincentTool<
     >
   >,
 ) {
-  const { policyByPackageName: policyMap } = toolDef.policyMap;
+  const { policyByPackageName } = toolDef.policyMap;
 
-  const originalToolDef = {
-    ...toolDef,
-  };
+  const executeSuccessSchema = (toolDef.executeSuccessSchema ??
+    z.undefined()) as ExecuteSuccessSchema;
+  const executeFailSchema = (toolDef.executeFailSchema ?? z.undefined()) as ExecuteFailSchema;
+  const execute: ToolLifecycleFunction<
+    ToolParamsSchema,
+    ToolExecutionPolicyEvaluationResult<PolicyMapByPackageName>,
+    ExecuteSuccessSchema,
+    ExecuteFailSchema
+  > = async (params, baseToolContext) => {
+    try {
+      const context = createExecutionToolContext({
+        baseContext: baseToolContext,
+        successSchema: executeSuccessSchema,
+        failSchema: executeFailSchema,
+        supportedPolicies: policyByPackageName as PolicyMapByPackageName,
+      });
 
-  const wrappedToolDef = {
-    ...originalToolDef,
+      const parsedToolParams = validateOrFail(
+        params.toolParams,
+        toolDef.toolParamsSchema,
+        'execute',
+        'input',
+      );
 
-    ...(originalToolDef.precheck !== undefined
-      ? {
-          precheck: async (
-            params: z.infer<ToolParamsSchema>,
-            baseToolContext: BaseToolContext<PolicyEvaluationResultContext<PolicyMapByPackageName>>,
-          ) => {
-            try {
-              const { toolParamsSchema, precheckSuccessSchema, precheckFailSchema } = toolDef;
-
-              const context = createPrecheckToolContext<
-                PrecheckSuccessSchema,
-                PrecheckFailSchema,
-                PolicyMapByPackageName
-              >({
-                baseContext: baseToolContext,
-                successSchema: originalToolDef.precheckSuccessSchema,
-                failSchema: originalToolDef.precheckFailSchema,
-              });
-
-              const parsedToolParams = validateOrFail(
-                params.toolParams,
-                toolParamsSchema,
-                'precheck',
-                'input',
-              );
-
-              if (isToolFailureResponse(parsedToolParams)) {
-                return parsedToolParams;
-              }
-
-              const { precheck: precheckFn } = originalToolDef;
-
-              if (!precheckFn) {
-                throw new Error('precheck function unexpectedly missing');
-              }
-
-              const result = await precheckFn(params, context);
-
-              const { schemaToUse } = getSchemaForToolResponseResult({
-                value: result,
-                successResultSchema: precheckSuccessSchema,
-                failureResultSchema: precheckFailSchema,
-              });
-
-              const parsed = validateOrFail(
-                result as ToolResponse<PrecheckSuccessSchema, PrecheckFailSchema>,
-                schemaToUse,
-                'precheck',
-                'output',
-              );
-
-              if (isToolResponse(parsed)) {
-                return parsed;
-              }
-
-              return createToolFailureResult({
-                message: 'Tool returned invalid result shape from precheck()',
-              });
-            } catch (err) {
-              return createToolFailureResult({
-                message: err instanceof Error ? err.message : 'Unknown error',
-              });
-            }
-          },
-        }
-      : { precheck: undefined }),
-
-    execute: async (
-      params: z.infer<ToolParamsSchema>,
-      baseToolContext: BaseToolContext<ToolExecutionPolicyEvaluationResult<PolicyMapByPackageName>>,
-    ) => {
-      try {
-        const context = createExecutionToolContext<
-          ExecuteSuccessSchema,
-          ExecuteFailSchema,
-          PolicyMapByPackageName
-        >({
-          baseContext: baseToolContext,
-          successSchema: originalToolDef.executeSuccessSchema,
-          failSchema: originalToolDef.executeFailSchema,
-          supportedPolicies: policyMap as PolicyMapByPackageName,
-        });
-
-        const { toolParamsSchema, executeSuccessSchema, executeFailSchema } = toolDef;
-
-        const parsedToolParams = validateOrFail(
-          params.toolParams,
-          toolParamsSchema,
-          'execute',
-          'input',
-        );
-
-        if (isToolFailureResponse(parsedToolParams)) {
-          return parsedToolParams;
-        }
-
-        const result = await originalToolDef.execute(params, context);
-
-        const { schemaToUse } = getSchemaForToolResponseResult({
-          value: result,
-          successResultSchema: executeSuccessSchema,
-          failureResultSchema: executeFailSchema,
-        });
-
-        const parsed = validateOrFail(
-          result as ToolResponse<ExecuteSuccessSchema, ExecuteFailSchema>,
-          schemaToUse,
-          'execute',
-          'output',
-        );
-
-        if (isToolResponse(parsed)) {
-          return parsed;
-        }
-
-        return createToolFailureResult({
-          message: 'Tool returned invalid result shape from execute()',
-        });
-      } catch (err) {
-        return createToolFailureResult({
-          message: err instanceof Error ? err.message : 'Unknown error',
-        });
+      if (isToolFailureResponse(parsedToolParams)) {
+        return wrapFailure(parsedToolParams);
       }
-    },
+
+      const result = await toolDef.execute(parsedToolParams, {
+        ...context,
+        policiesContext: { ...context.policiesContext, allow: true },
+      });
+
+      const { schemaToUse } = getSchemaForToolResponseResult({
+        value: result,
+        successResultSchema: executeSuccessSchema,
+        failureResultSchema: executeFailSchema,
+      });
+
+      const resultOrFailure = validateOrFail(result, schemaToUse, 'execute', 'output');
+
+      if (isToolFailureResponse(resultOrFailure)) {
+        return wrapFailure(resultOrFailure);
+      }
+
+      return wrapSuccess(resultOrFailure);
+    } catch (err) {
+      return wrapNoResultFailure(err instanceof Error ? err.message : 'Unknown error');
+    }
   };
+
+  const precheckSuccessSchema = (toolDef.precheckSuccessSchema ??
+    z.undefined()) as PrecheckSuccessSchema;
+  const precheckFailSchema = (toolDef.precheckFailSchema ?? z.undefined()) as PrecheckFailSchema;
+  const precheck = toolDef.precheck
+    ? ((async (params, baseToolContext) => {
+        try {
+          const context = createPrecheckToolContext({
+            baseContext: baseToolContext,
+            successSchema: precheckSuccessSchema,
+            failSchema: precheckFailSchema,
+          });
+
+          const parsedToolParams = validateOrFail(
+            params.toolParams,
+            toolDef.toolParamsSchema,
+            'precheck',
+            'input',
+          );
+
+          if (isToolFailureResponse(parsedToolParams)) {
+            return wrapFailure(parsedToolParams);
+          }
+
+          const { precheck: precheckFn } = toolDef;
+
+          if (!precheckFn) {
+            throw new Error('precheck function unexpectedly missing');
+          }
+
+          const result = await precheckFn(parsedToolParams, context);
+
+          const { schemaToUse } = getSchemaForToolResponseResult({
+            value: result,
+            successResultSchema: precheckSuccessSchema,
+            failureResultSchema: precheckFailSchema,
+          });
+
+          const resultOrFailure = validateOrFail(
+            result as ToolResponse<PrecheckSuccessSchema, PrecheckFailSchema>,
+            schemaToUse,
+            'precheck',
+            'output',
+          );
+
+          if (isToolFailureResponse(resultOrFailure)) {
+            return wrapFailure(resultOrFailure);
+          }
+
+          return wrapSuccess(resultOrFailure);
+        } catch (err) {
+          return wrapNoResultFailure(err instanceof Error ? err.message : 'Unknown error');
+        }
+      }) as ToolLifecycleFunction<
+        ToolParamsSchema,
+        PolicyEvaluationResultContext<PolicyMapByPackageName>,
+        PrecheckSuccessSchema,
+        PrecheckFailSchema
+      >)
+    : undefined;
 
   return {
-    ...wrappedToolDef,
+    execute,
+    precheck,
+    policyByPackageName,
     __schemaTypes: {
       precheckSuccessSchema: toolDef.precheckSuccessSchema,
       precheckFailSchema: toolDef.precheckFailSchema,
       executeSuccessSchema: toolDef.executeSuccessSchema,
       executeFailSchema: toolDef.executeFailSchema,
     },
-  } as VincentToolDef<
-    ToolParamsSchema,
-    PkgNames,
-    PolicyMap,
-    PolicyMapByPackageName,
-    PrecheckSuccessSchema,
-    PrecheckFailSchema,
-    ExecuteSuccessSchema,
-    ExecuteFailSchema,
-    PrecheckFn,
-    ExecuteFn
-  > & {
-    supportedPolicies: PolicyMapByPackageName;
-    precheck: (typeof wrappedToolDef)['precheck'];
-    execute: (typeof wrappedToolDef)['execute'];
+  } as {
+    policyByPackageName: typeof policyByPackageName;
+    precheck: typeof precheck;
+    execute: typeof execute;
     __schemaTypes: {
       precheckSuccessSchema: PrecheckSuccessSchema;
       precheckFailSchema: PrecheckFailSchema;

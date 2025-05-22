@@ -9,7 +9,7 @@ import {
   ContextDenyResponse,
   ContextDenyResponseNoResult,
 } from './policyCore/policyDef/context/types';
-import { ToolContext } from './toolCore/toolDef/context/types';
+import { BaseToolContext } from './toolCore/toolDef/context/types';
 import { ToolPolicyMap } from './toolCore/helpers';
 
 export interface PolicyResponseAllow<AllowResult> {
@@ -352,9 +352,8 @@ export type ToolLifecycleFunction<
 > = (
   params: {
     toolParams: z.infer<ToolParamsSchema>;
-    policiesContext: Policies;
   },
-  context: ToolContext<SuccessSchema, FailSchema, Policies>,
+  context: BaseToolContext<Policies>,
 ) => Promise<ToolResponse<SuccessSchema, FailSchema>>;
 
 export type VincentTool<

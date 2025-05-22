@@ -48,15 +48,15 @@ export type ContextResult<SuccessResult, FailResult> =
   | ContextFailure<FailResult>;
 
 export interface ToolContext<
-  SuccessSchema extends z.ZodType | undefined = undefined,
-  FailSchema extends z.ZodType | undefined = undefined,
+  SuccessSchema extends z.ZodType = z.ZodUndefined,
+  FailSchema extends z.ZodType = z.ZodUndefined,
   Policies = any,
 > extends BaseToolContext<Policies> {
-  succeed: SuccessSchema extends z.ZodType
-    ? (result: z.infer<SuccessSchema>) => ContextSuccess<z.infer<SuccessSchema>>
-    : () => ContextSuccess;
+  succeed: SuccessSchema extends z.ZodUndefined
+    ? () => ContextSuccess
+    : (result: z.infer<SuccessSchema>) => ContextSuccess<z.infer<SuccessSchema>>;
 
-  fail: FailSchema extends z.ZodType
-    ? (result: z.infer<FailSchema>, error?: string) => ContextFailure<z.infer<FailSchema>>
-    : (error?: string) => ContextFailure;
+  fail: FailSchema extends z.ZodUndefined
+    ? (error?: string) => ContextFailure
+    : (result: z.infer<FailSchema>, error?: string) => ContextFailure<z.infer<FailSchema>>;
 }

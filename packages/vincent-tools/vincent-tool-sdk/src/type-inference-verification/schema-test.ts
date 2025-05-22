@@ -1,3 +1,5 @@
+// src/type-inference-verification/schema-test.ts
+
 /**
  * Schema Test File
  *

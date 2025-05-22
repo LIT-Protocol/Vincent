@@ -16,19 +16,17 @@ export type ToolPolicyMap<T extends readonly any[], PkgNames extends string> = {
  * Enforces literal string `packageName` keys and exposes reverse lookup maps.
  */
 export function createPolicyMapFromToolPolicies<
-  const T extends readonly {
+  const Policies extends readonly {
     vincentPolicy: { packageName: string };
     ipfsCid: string;
   }[],
-  PkgNames extends
-    T[number]['vincentPolicy']['packageName'] = T[number]['vincentPolicy']['packageName'],
->(policies: T): ToolPolicyMap<T, PkgNames> {
-  type PolicyMap = {
-    [K in PkgNames]: Extract<T[number], { vincentPolicy: { packageName: K } }>;
+  const PkgNames extends
+    Policies[number]['vincentPolicy']['packageName'] = Policies[number]['vincentPolicy']['packageName'],
+>(policies: Policies): ToolPolicyMap<Policies, PkgNames> {
+  const policyByPackageName = {} as {
+    [K in PkgNames]: Extract<Policies[number], { vincentPolicy: { packageName: K } }>;
   };
-
-  const policyByPackageName = {} as Partial<PolicyMap>;
-  const policyByIpfsCid: Record<string, T[number]> = {};
+  const policyByIpfsCid: Record<string, Policies[number]> = {};
   const cidToPackageName = new Map<string, PkgNames>();
   const packageNameToCid = new Map<PkgNames, string>();
 
@@ -37,12 +35,12 @@ export function createPolicyMapFromToolPolicies<
     const cid = policy.ipfsCid;
 
     if (!pkg) throw new Error('Missing policy packageName');
-    if ((policyByPackageName as Record<string, unknown>)[pkg]) {
+    if (pkg in policyByPackageName) {
       throw new Error(`Duplicate policy packageName: ${pkg}`);
     }
 
     policyByPackageName[pkg] = policy as Extract<
-      T[number],
+      Policies[number],
       { vincentPolicy: { packageName: typeof pkg } }
     >;
     policyByIpfsCid[cid] = policy;
@@ -51,9 +49,9 @@ export function createPolicyMapFromToolPolicies<
   }
 
   return {
-    policyByPackageName: policyByPackageName as PolicyMap,
+    policyByPackageName,
     policyByIpfsCid,
     cidToPackageName,
     packageNameToCid,
-  } as ToolPolicyMap<T, PkgNames>;
+  };
 }

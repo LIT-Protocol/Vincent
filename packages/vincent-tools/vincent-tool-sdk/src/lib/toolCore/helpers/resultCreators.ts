@@ -60,7 +60,14 @@ export function createToolFailureNoResult(message: string): ToolResponseFailureN
   return createToolFailureResult({ message });
 }
 
-export function returnNoResultFailure<T extends ZodType<any, any, any> | undefined>(
+export function wrapFailure<T extends z.ZodType<any, any, any>>(
+  value: z.infer<T>,
+  message?: string,
+): ToolResponseFailure<z.infer<T>> {
+  return createToolFailureResult({ result: value, message });
+}
+
+export function wrapNoResultFailure<T extends ZodType<any, any, any> | undefined>(
   message: string,
 ): T extends ZodType<any, any, any>
   ? ToolResponseFailure<z.infer<T>>
@@ -72,4 +79,8 @@ export function wrapSuccess<T extends z.ZodType<any, any, any>>(
   value: z.infer<T>,
 ): ToolResponseSuccess<z.infer<T>> {
   return createToolSuccessResult({ result: value });
+}
+
+export function wrapNoResultSuccess(): ToolResponseSuccessNoResult {
+  return createToolSuccessResult();
 }
