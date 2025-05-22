@@ -7,7 +7,7 @@ import { defineConfig } from 'vite';
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
-    allowedHosts: ['intense-valid-hamster.ngrok-free.app'],
+    allowedHosts: ['kairosv1.ngrok.dev'],
   },
   define: {
     global: 'globalThis',

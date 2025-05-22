@@ -3,7 +3,7 @@ import Loading from '@/components/layout/Loading';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import { Fragment, useState } from 'react';
-import StatusMessage from '../../withdraw/StatusMessage';
+import StatusMessage from '../StatusMessage';
 
 /**
  * You can use normal import if you are not within next / ssr environment
