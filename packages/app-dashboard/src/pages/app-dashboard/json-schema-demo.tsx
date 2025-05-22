@@ -1,4 +1,4 @@
-import JsonSchemaFormDemo from '../../components/consent/components/authForm/JsonSchemaFormDemo';
+import JsonSchemaFormDemo from '../../components/consent/components/authForm/playground-testing/JsonSchemaFormDemo';
 
 export default function JsonSchemaDemo() {
   return (

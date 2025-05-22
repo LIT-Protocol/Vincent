@@ -1,5 +1,5 @@
 import Form from '@rjsf/shadcn';
-import { RJSFSchema, UiSchema } from '@rjsf/utils';
+import { RJSFSchema, UiSchema, FieldProps } from '@rjsf/utils';
 import validator from '@rjsf/validator-ajv8';
 
 interface JsonParameterInputProps {
@@ -8,6 +8,7 @@ interface JsonParameterInputProps {
   uiSchema: UiSchema;
   handleSubmit: (data: any) => void;
   onChange?: (data: any) => void;
+  fields?: Record<string, React.ComponentType<FieldProps>>;
 }
 
 export default function JsonParameterInput({
@@ -16,6 +17,7 @@ export default function JsonParameterInput({
   uiSchema,
   handleSubmit,
   onChange,
+  fields,
 }: JsonParameterInputProps) {
   const enhancedUiSchema = { ...uiSchema };
 
@@ -41,6 +43,7 @@ export default function JsonParameterInput({
           liveValidate={false}
           onSubmit={handleSubmit}
           onChange={onChange}
+          fields={fields}
         />
       </div>
     </div>
