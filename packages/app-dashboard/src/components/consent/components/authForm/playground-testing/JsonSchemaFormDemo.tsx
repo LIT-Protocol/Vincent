@@ -175,24 +175,6 @@ try {
   validationError = true;
 }
 
-try {
-  exampleSchemas.push({
-    policy: PolicyDefinition.parse({
-      jsonSchema: {
-        type: 'object',
-        properties: {},
-      },
-      uiSchema: {},
-    }),
-    id: 'QmEmpty123456789123456789123456789123456789ABCDE',
-    title: 'Empty Policy',
-    formData: {},
-  });
-} catch (error) {
-  console.error('Error parsing empty schema:', error);
-  validationError = true;
-}
-
 if (validationError) {
   exampleSchemas.length = 0;
 }
