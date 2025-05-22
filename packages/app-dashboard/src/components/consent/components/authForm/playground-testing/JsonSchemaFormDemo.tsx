@@ -10,8 +10,17 @@ import addFormats from 'ajv-formats';
 import validator from '@rjsf/validator-ajv8';
 import { z } from 'zod';
 import { ExpandableCard } from './ExpandableCard';
-import * as simpleSchema from './simple';
-import * as nestedSchema from './nested';
+// Import directly from files to avoid bundling issues
+import {
+  jsonSchema as simpleJsonSchema,
+  uiSchema as simpleUiSchema,
+  formData as simpleFormData,
+} from './simple';
+import {
+  jsonSchema as nestedJsonSchema,
+  uiSchema as nestedUiSchema,
+  formData as nestedFormData,
+} from './nested';
 import { PolicyDefinition } from './zod-validation';
 
 type Schema = {
@@ -139,12 +148,12 @@ let validationError = false;
 try {
   exampleSchemas.push({
     policy: PolicyDefinition.parse({
-      jsonSchema: simpleSchema.jsonSchema,
-      uiSchema: simpleSchema.uiSchema || {},
+      jsonSchema: simpleJsonSchema,
+      uiSchema: simpleUiSchema || {},
     }),
     id: 'QmR76vUGsEcPJNDraqEg3KhfZTibou6wMJW8LHZHMU5TFz',
     title: 'Personal Information Bot Policies',
-    formData: simpleSchema.formData,
+    formData: simpleFormData,
   });
 } catch (error) {
   console.error('Error parsing simple schema:', error);
@@ -154,12 +163,12 @@ try {
 try {
   exampleSchemas.push({
     policy: PolicyDefinition.parse({
-      jsonSchema: nestedSchema.jsonSchema,
-      uiSchema: nestedSchema.uiSchema || {},
+      jsonSchema: nestedJsonSchema,
+      uiSchema: nestedUiSchema || {},
     }),
     id: 'QmdoY1VUxVvxShBQK5B6PP2jZFVw7PMTJ3qy2aiCARjMqo',
     title: 'Task Manager Bot Policies',
-    formData: nestedSchema.formData,
+    formData: nestedFormData,
   });
 } catch (error) {
   console.error('Error parsing nested schema:', error);
