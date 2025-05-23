@@ -29,12 +29,18 @@ export function setupRequestHandlers(client: IWalletKit): void {
   client.on('session_request', (event: any) => {
     console.log('Received session request:', event);
 
-    pendingSessionRequests.push(event);
+    // Check if request already exists to prevent duplicates
+    const existingRequest = pendingSessionRequests.find((req) => req.id === event.id);
+    if (!existingRequest) {
+      pendingSessionRequests.push(event);
 
-    const customEvent = new CustomEvent('walletconnect:session_request', {
-      detail: event,
-    });
-    window.dispatchEvent(customEvent);
+      const customEvent = new CustomEvent('walletconnect:session_request', {
+        detail: event,
+      });
+      window.dispatchEvent(customEvent);
+    } else {
+      console.log('Request already exists, skipping duplicate:', event.id);
+    }
   });
 
   client.on('session_proposal', (event: any) => {

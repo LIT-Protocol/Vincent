@@ -1,14 +1,6 @@
 import { Button } from '@/components/shared/ui/button';
-import Loading from '@/layout/app-dashboard/Loading';
-import dynamic from 'next/dynamic';
-import Image from 'next/image';
 import { Fragment, useState } from 'react';
-
-/**
- * You can use normal import if you are not within next / ssr environment
- * @info https://nextjs.org/docs/advanced-features/dynamic-import
- */
-const ReactQrReader = dynamic(() => import('react-qr-reader-es6'), { ssr: false });
+import ReactQrReader from 'react-qr-reader-es6';
 
 /**
  * Types
@@ -46,7 +38,9 @@ export default function QrReader({ onConnect }: IProps) {
         <Fragment>
           {loading && (
             <div className="absolute z-10">
-              <Loading />
+              <div className="flex items-center justify-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              </div>
             </div>
           )}
           <div
@@ -67,7 +61,7 @@ export default function QrReader({ onConnect }: IProps) {
         </Fragment>
       ) : (
         <div className="w-full max-w-md flex flex-col items-center justify-center p-8 border border-gray-200 rounded-lg bg-gray-50">
-          <Image
+          <img
             src="/icons/qr-icon.svg"
             width={100}
             height={100}
