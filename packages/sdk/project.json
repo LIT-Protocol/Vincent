@@ -22,7 +22,7 @@
     "typedoc": {
       "executor": "nx:run-commands",
       "options": {
-        "commands": ["pnpm typedoc --watch", "node ./scripts/typedocServer.mjs"],
+        "commands": ["pnpm typedoc --skipErrorChecking", "node ./scripts/typedocServer.mjs"],
         "cwd": "{projectRoot}",
         "tty": true
       }
