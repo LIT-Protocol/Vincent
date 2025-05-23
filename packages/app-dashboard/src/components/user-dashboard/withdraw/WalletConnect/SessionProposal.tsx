@@ -1,4 +1,3 @@
-import React from 'react';
 import { Button } from '@/components/shared/ui/button';
 import { DAppIcon, DAppIconFallback } from './DAppIcon';
 import { WalletConnectCard } from './WalletConnectCard';
