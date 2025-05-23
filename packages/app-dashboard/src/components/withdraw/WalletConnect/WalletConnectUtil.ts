@@ -10,11 +10,19 @@ let walletKitClient: IWalletKit | null = null;
 /**
  * Initialize WalletKit directly without any React hooks
  * @param setClient Optional callback to set the client in state
+ * @param forceReset Whether to force a reset of the client
  * @returns The initialized WalletKit client
  */
 export async function createWalletConnectClient(
   setClient?: (client: IWalletKit) => void,
+  forceReset = false,
 ): Promise<IWalletKit> {
+  // If we're forcing a reset, clean up the existing client
+  if (forceReset && walletKitClient) {
+    console.log('Force resetting WalletKit client');
+    await resetWalletConnectClient();
+  }
+
   // If already initialized, return existing instance
   if (walletKitClient) {
     if (setClient) {
@@ -77,6 +85,66 @@ export async function createWalletConnectClient(
     console.error('Error initializing WalletKit:', error);
     throw error;
   } finally {
+    isInitializing = false;
+  }
+}
+
+/**
+ * Reset the WalletKit client by disconnecting all sessions and clearing the instance
+ * @returns Promise that resolves when reset is complete
+ */
+export async function resetWalletConnectClient(): Promise<void> {
+  try {
+    if (walletKitClient) {
+      console.log('Resetting WalletKit client');
+
+      try {
+        // Get all active sessions
+        const activeSessions = walletKitClient.getActiveSessions() || {};
+
+        if (Object.keys(activeSessions).length > 0) {
+          console.log(`Disconnecting ${Object.keys(activeSessions).length} active sessions`);
+
+          // Disconnect all active sessions
+          const disconnectPromises = Object.keys(activeSessions).map(async (topic) => {
+            try {
+              await walletKitClient!.disconnectSession({
+                topic,
+                reason: {
+                  code: 6000,
+                  message: 'Wallet reset',
+                },
+              });
+              console.log(`Disconnected session: ${topic}`);
+            } catch (error) {
+              console.error(`Failed to disconnect session ${topic}:`, error);
+              // Continue with reset even if individual disconnect fails
+            }
+          });
+
+          // Wait for all disconnect operations to complete with a timeout
+          await Promise.race([
+            Promise.all(disconnectPromises),
+            new Promise((resolve) => setTimeout(resolve, 1000)), // 1 second timeout
+          ]);
+        } else {
+          console.log('No active sessions to disconnect');
+        }
+      } catch (sessionError) {
+        console.error('Error during session disconnect:', sessionError);
+        // Continue with reset even if session handling fails
+      }
+
+      // Reset the client reference - still do this even if there were errors above
+      walletKitClient = null;
+      console.log('WalletKit client has been reset');
+    }
+  } catch (error) {
+    console.error('Error resetting WalletKit client:', error);
+    // Still set client to null even if there's an error
+    walletKitClient = null;
+  } finally {
+    // Ensure initialization flag is reset
     isInitializing = false;
   }
 }

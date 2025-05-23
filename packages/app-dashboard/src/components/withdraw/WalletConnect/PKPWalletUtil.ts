@@ -1,17 +1,10 @@
 import { IRelayPKP, SessionSigs } from '@lit-protocol/types';
 import { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
 import { litNodeClient } from '@/components/consent/utils/lit';
-
-// Define Ethereum mainnet
-const ETHEREUM_MAINNET_CHAIN_ID = '1';
-
-/**
- * Get a provider for a specific chain ID
- * @param chainId The chain ID to get a provider for (decimal or hex format)
- */
-
 // Store the PKP wallet instance
 let pkpWallet: PKPEthersWallet | null = null;
+// Store the current PKP address to detect wallet changes
+let currentPKPAddress: string | null = null;
 
 /**
  * Create a PKPEthersWallet using the agent PKP and session signatures
@@ -48,20 +41,67 @@ export async function registerPKPWallet(
   sessionSigs?: SessionSigs,
 ): Promise<{ address: string; publicKey: string; chainId: string }> {
   // Import and use the non-hook function to get the client
-  const { getWalletConnectClient } = await import('./WalletConnectStore');
-  const client = getWalletConnectClient();
-
-  if (!client) {
-    throw new Error('WalletKit client not initialized');
-  }
+  const { createWalletConnectClient, resetWalletConnectClient } = await import(
+    './WalletConnectUtil'
+  );
+  const { getWalletConnectActions, getCurrentWalletAddress } = await import('./WalletConnectStore');
 
   if (!agentPKP?.ethAddress) {
     throw new Error('PKP does not have an Ethereum address');
   }
 
+  // Check if the wallet address has changed
+  const newAddress = agentPKP.ethAddress;
+  const storedWalletAddress = getCurrentWalletAddress();
+  const walletHasChanged = storedWalletAddress !== null && storedWalletAddress !== newAddress;
+
+  // Get the actions from the store
+  const actions = getWalletConnectActions();
+
+  // If the wallet has changed, we need to disconnect sessions from the old wallet
+  if (walletHasChanged) {
+    console.log(`Wallet has changed from ${storedWalletAddress} to ${newAddress}`);
+
+    // First disconnect any sessions associated with the previous wallet to ensure
+    // dApps know that wallet has been disconnected
+    if (storedWalletAddress) {
+      console.log(`Disconnecting all sessions for previous wallet: ${storedWalletAddress}`);
+      try {
+        await actions.clearSessionsForAddress(storedWalletAddress);
+      } catch (error) {
+        console.error('Error disconnecting sessions for previous wallet:', error);
+      }
+    }
+
+    // Reset client to ensure clean state
+    await resetWalletConnectClient();
+
+    // Update the current wallet address in the store
+    actions.setCurrentWalletAddress(newAddress);
+  } else if (newAddress && storedWalletAddress !== newAddress) {
+    // First time setting this wallet or wallet address isn't tracked yet
+    console.log(`Setting current wallet address to ${newAddress}`);
+    actions.setCurrentWalletAddress(newAddress);
+  }
+
+  // Store the new address
+  currentPKPAddress = newAddress;
+
+  // Get or create the client
+  const client = await createWalletConnectClient();
+
+  if (!client) {
+    throw new Error('WalletKit client not initialized');
+  }
+
   // If session signatures are provided, create an actual PKP wallet for signing
   if (sessionSigs) {
     try {
+      // Clear existing wallet if we're creating a new one
+      if (pkpWallet) {
+        pkpWallet = null;
+      }
+
       pkpWallet = await createPKPWallet(agentPKP, sessionSigs);
 
       // Register the PKP wallet with the WalletKit client
@@ -86,7 +126,7 @@ export async function registerPKPWallet(
   return {
     address,
     publicKey: agentPKP.publicKey || '',
-    chainId: ETHEREUM_MAINNET_CHAIN_ID,
+    chainId: '1',
   };
 }
 
@@ -96,4 +136,12 @@ export async function registerPKPWallet(
  */
 export function getPKPWallet(): PKPEthersWallet | null {
   return pkpWallet;
+}
+
+/**
+ * Get the current PKP address
+ * @returns The current PKP address or null if not set
+ */
+export function getCurrentPKPAddress(): string | null {
+  return currentPKPAddress;
 }

@@ -1,8 +1,9 @@
-import { ArrowLeft, BanknoteArrowDown, LogOut, Menu } from 'lucide-react';
+import { BanknoteArrowDown, LogOut, Menu } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useClearAuthInfo } from '@/components/consent/hooks/useAuthInfo';
 import { useState } from 'react';
+import BackButton from '@/components/ui/BackButton';
 
 interface UserHeaderProps {
   backButton?: {
@@ -42,14 +43,9 @@ export default function UserHeader({ backButton, title, showButtons = true }: Us
             {/* Desktop buttons */}
             <div className="hidden md:flex items-center gap-3">
               {backButton && (
-                <Button
-                  variant="ghost"
-                  onClick={() => navigate(backButton.to)}
-                  className="flex items-center gap-2"
-                >
-                  <ArrowLeft className="h-4 w-4" />
-                  {backButton.label}
-                </Button>
+                <div className="mr-2">
+                  <BackButton label={backButton.label} onClick={() => navigate(backButton.to)} />
+                </div>
               )}
 
               {!isRootPath && (
@@ -82,18 +78,15 @@ export default function UserHeader({ backButton, title, showButtons = true }: Us
       {showButtons && menuOpen && (
         <div className="md:hidden p-3 pb-4 flex flex-col gap-2 border-t border-gray-100">
           {backButton && (
-            <Button
-              variant="ghost"
-              onClick={() => {
-                navigate(backButton.to);
-                setMenuOpen(false);
-              }}
-              className="w-full justify-start"
-              size="sm"
-            >
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              {backButton.label}
-            </Button>
+            <div className="mb-2">
+              <BackButton
+                label={backButton.label}
+                onClick={() => {
+                  navigate(backButton.to);
+                  setMenuOpen(false);
+                }}
+              />
+            </div>
           )}
 
           {!isRootPath && (

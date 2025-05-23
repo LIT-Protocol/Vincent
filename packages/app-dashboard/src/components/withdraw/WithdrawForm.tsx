@@ -15,6 +15,7 @@ import {
 } from '.';
 import { handleSubmit } from '@/utils/handlers';
 import { ethers } from 'ethers';
+import BackButton from '@/components/ui/BackButton';
 
 export interface WithdrawFormProps {
   sessionSigs: SessionSigs;
@@ -104,12 +105,9 @@ export default function WithdrawForm({ sessionSigs, agentPKP }: WithdrawFormProp
     <div className="max-w-[550px] w-full mx-auto bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
       {showWalletConnect ? (
         <div className="p-6">
-          <button
-            className="mb-4 text-blue-500 hover:text-blue-700 flex items-center"
-            onClick={() => setShowWalletConnect(false)}
-          >
-            <span className="mr-1">←</span> Back to Withdraw
-          </button>
+          <div className="mb-4">
+            <BackButton label="Back to withdraw" onClick={() => setShowWalletConnect(false)} />
+          </div>
           <WalletConnectPage agentPKP={agentPKP} sessionSigs={sessionSigs} />
         </div>
       ) : (

@@ -10,12 +10,14 @@ import {
 import {
   setupRequestHandlers,
   getPendingSessionRequests,
+  //getPendingSessionRequestsForWallet,
   clearSessionRequest,
 } from '@/components/withdraw/WalletConnect/RequestHandler';
 import {
   useWalletConnectClient,
   useWalletConnectSessions,
   useWalletConnectStoreActions,
+  useCurrentWalletAddress,
 } from './WalletConnectStore';
 import useWalletConnectStore from './WalletConnectStore';
 import { Fragment, useEffect, useState, useCallback } from 'react';
@@ -76,6 +78,7 @@ export default function WalletConnectPage(params: {
   const client = useWalletConnectClient();
   const sessions = useWalletConnectSessions();
   const { refreshSessions } = useWalletConnectStoreActions();
+  const currentWalletAddress = useCurrentWalletAddress();
 
   // Create isRegistering ref at the top level of the component
   const isRegistering = React.useRef(false);
@@ -98,8 +101,9 @@ export default function WalletConnectPage(params: {
   // Listen for session requests
   useEffect(() => {
     const updatePendingRequests = () => {
-      const requests = getPendingSessionRequests();
-      setPendingSessionRequests(requests);
+      // Use the wallet-specific function to get requests
+      const walletSpecificRequests = getPendingSessionRequests();
+      setPendingSessionRequests(walletSpecificRequests);
     };
 
     // Add event listener for custom session request events
@@ -120,7 +124,7 @@ export default function WalletConnectPage(params: {
         handleSessionRequest as EventListener,
       );
     };
-  }, []);
+  }, [client, currentWalletAddress]);
 
   // Handle session request approval
   const handleApproveRequest = useCallback(
@@ -160,6 +164,28 @@ export default function WalletConnectPage(params: {
           chainId: params.chainId,
           requestOrigin: params.request?.origin || 'unknown',
         });
+
+        // Check if the session topic exists before proceeding
+        try {
+          // Validate that this session topic is known to the client
+          const activeSessions = client.getActiveSessions() || {};
+          if (!activeSessions[topic]) {
+            console.warn(
+              `Session topic ${topic} is not active or recognized. This may be a stale request.`,
+            );
+            // Clean up any stale requests
+            clearSessionRequest(id);
+            setPendingSessionRequests(getPendingSessionRequests());
+            setStatus({
+              message: 'Cannot process request: session is no longer active',
+              type: 'error',
+            });
+            return;
+          }
+        } catch (sessionCheckError) {
+          console.error('Error validating session topic:', sessionCheckError);
+          // Continue anyway since we might be able to recover
+        }
 
         let result;
         // Handle different method types
@@ -724,18 +750,29 @@ export default function WalletConnectPage(params: {
         setStatus({ message: 'Registering PKP wallet...', type: 'info' });
 
         // Import functions to avoid hook usage inside this async function
-        const { registerPKPWallet } = await import('./PKPWalletUtil');
-        const { getWalletConnectClient } = await import('./WalletConnectStore');
+        const { registerPKPWallet, getCurrentPKPAddress } = await import('./PKPWalletUtil');
 
-        // Get client directly from store state
-        const clientInstance = getWalletConnectClient();
+        // Check if we're using a different wallet than before
+        const currentAddress = getCurrentPKPAddress();
+        const newAddress = agentPKP.ethAddress;
 
-        if (!clientInstance) {
-          throw new Error('WalletKit client not initialized');
+        // If the address has changed, explicitly update the UI to indicate wallet change
+        if (currentAddress && currentAddress !== newAddress) {
+          console.log(`Wallet change detected from ${currentAddress} to ${newAddress}`);
+          setStatus({
+            message: `Switching wallet from ${currentAddress.slice(0, 6)}...${currentAddress.slice(-4)} to ${newAddress.slice(0, 6)}...${newAddress.slice(-4)}`,
+            type: 'info',
+          });
+
+          // Clear any pending session requests from the previous wallet
+          setPendingSessionRequests([]);
         }
 
         // Register the PKP wallet with session signatures if available
         const accountInfo = await registerPKPWallet(agentPKP, sessionSigs);
+
+        // Refresh sessions to ensure UI is updated after wallet change
+        refreshSessions();
 
         console.log('PKP wallet registered successfully', accountInfo);
         setWalletRegistered(true);
@@ -754,7 +791,7 @@ export default function WalletConnectPage(params: {
 
     // Execute the registration function
     setupPKPWallet();
-  }, [client, agentPKP, sessionSigs, walletRegistered]);
+  }, [client, agentPKP, sessionSigs, walletRegistered, refreshSessions]);
 
   // Listen for session proposals
   useEffect(() => {
@@ -881,19 +918,56 @@ export default function WalletConnectPage(params: {
         }),
       };
 
-      // Approve the session proposal with properly formatted namespaces and properties
-      await client.approveSession({
-        id,
-        namespaces: approvedNamespaces,
-        sessionProperties,
-      });
+      try {
+        // Approve the session proposal with properly formatted namespaces and properties
+        await client.approveSession({
+          id,
+          namespaces: approvedNamespaces,
+          sessionProperties,
+        });
 
-      console.log('Session proposal approved successfully');
-      setStatus({ message: 'Session approved successfully', type: 'success' });
-      setPendingProposal(null);
+        console.log('Session proposal approved successfully');
+        setStatus({ message: 'Session approved successfully', type: 'success' });
+        setPendingProposal(null);
 
-      // Update sessions in the store
-      refreshSessions();
+        // Update sessions in the store
+        refreshSessions();
+      } catch (approvalError) {
+        console.error('Error during session approval:', approvalError);
+
+        // Handle the "No matching key" error specifically
+        const errorMessage =
+          approvalError instanceof Error ? approvalError.message : String(approvalError);
+
+        if (errorMessage.includes('No matching key')) {
+          console.log('Detected "No matching key" error, trying to reset the client');
+          const { resetWalletConnectClient, createWalletConnectClient } = await import(
+            './WalletConnectUtil'
+          );
+
+          // Reset the WalletKit client
+          await resetWalletConnectClient();
+
+          // Re-initialize with the store callback
+          await createWalletConnectClient((clientInstance) => {
+            useWalletConnectStore.getState().actions.setClient(clientInstance);
+            refreshSessions();
+          });
+
+          // Wait a moment for client to initialize
+          await new Promise((resolve) => setTimeout(resolve, 500));
+
+          setStatus({
+            message: 'Session error occurred. Please try connecting again.',
+            type: 'warning',
+          });
+
+          // Clear the proposal so user can try again
+          setPendingProposal(null);
+        } else {
+          throw approvalError; // Re-throw for the outer catch to handle
+        }
+      }
     } catch (error) {
       console.error('Failed to approve session:', error);
       setStatus({
@@ -1027,13 +1101,6 @@ export default function WalletConnectPage(params: {
     }
   }, [deepLink, client, onConnect]);
 
-  // Add a status for the PKP wallet
-  const pkpStatus = agentPKP
-    ? walletRegistered
-      ? `Ready with PKP address: ${agentPKP.ethAddress.slice(0, 6)}...${agentPKP.ethAddress.slice(-4)}`
-      : 'PKP wallet setup in progress...'
-    : 'No PKP wallet provided';
-
   // Determine if we need to wait for wallet initialization
   const shouldWaitForWallet = !!agentPKP; // Only wait for wallet if there's a PKP
 
@@ -1081,15 +1148,15 @@ export default function WalletConnectPage(params: {
             {/* Unified status message */}
             {status.message && <StatusMessage message={status.message} type={status.type} />}
 
-            {/* Show PKP status */}
-            <div className="w-full mt-2 p-2 bg-blue-50 border border-blue-100 text-blue-600 text-sm rounded mb-2">
-              <p>PKP Status: {pkpStatus}</p>
-            </div>
-
             {/* Show pending proposal and approval/rejection buttons */}
             {pendingProposal && !loading && (
-              <div className="w-full mt-2 p-3 bg-yellow-50 border border-yellow-100 text-yellow-700 text-sm rounded mb-2">
-                <p className="font-medium mb-2">Pending Connection Request:</p>
+              <div className="w-full mt-3 p-3 bg-gradient-to-r from-yellow-50 to-amber-50 border border-yellow-100 text-yellow-800 text-sm rounded-md mb-3 shadow-sm">
+                <div className="flex items-center mb-2 border-b border-yellow-100 pb-2">
+                  <span className="text-lg mr-2" role="img" aria-label="Connection request icon">
+                    🔌
+                  </span>
+                  <p className="font-semibold text-yellow-900">New Connection Request</p>
+                </div>
 
                 {/* Extract and show dapp info */}
                 {(() => {
@@ -1110,23 +1177,32 @@ export default function WalletConnectPage(params: {
                   }
 
                   return (
-                    <div className="flex items-start mb-2">
-                      {dappIcon && (
-                        <div className="mr-2 flex-shrink-0">
+                    <div className="flex items-start mb-3 p-2 bg-white rounded-md border border-yellow-100">
+                      {dappIcon ? (
+                        <div className="mr-3 flex-shrink-0">
                           <img
                             src={dappIcon}
                             alt={`${dappName} icon`}
-                            className="w-8 h-8 rounded-full border border-gray-200"
+                            className="w-10 h-10 rounded-md border border-yellow-100"
                             onError={(e) => {
-                              (e.target as HTMLImageElement).style.display = 'none';
+                              const target = e.target as HTMLImageElement;
+                              target.onerror = null;
+                              target.src =
+                                'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23F59E0B"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>';
                             }}
                           />
                         </div>
+                      ) : (
+                        <div className="mr-3 flex-shrink-0 w-10 h-10 rounded-md bg-yellow-100 flex items-center justify-center text-yellow-700 font-bold">
+                          {dappName.charAt(0).toUpperCase()}
+                        </div>
                       )}
                       <div>
-                        <p className="font-semibold">{dappName}</p>
-                        {dappUrl && <p className="text-xs text-gray-500">{dappUrl}</p>}
-                        {dappDescription && <p className="text-xs mt-1">{dappDescription}</p>}
+                        <p className="font-semibold text-yellow-900">{dappName}</p>
+                        {dappUrl && <p className="text-xs text-yellow-600">{dappUrl}</p>}
+                        {dappDescription && (
+                          <p className="text-xs mt-1 text-yellow-700">{dappDescription}</p>
+                        )}
                       </div>
                     </div>
                   );
@@ -1211,9 +1287,9 @@ export default function WalletConnectPage(params: {
                   }
 
                   return permissions.length > 0 ? (
-                    <div className="mb-3">
-                      <p className="font-medium mb-1">Requesting permission to:</p>
-                      <ul className="list-disc ml-5 text-xs space-y-1">
+                    <div className="mb-3 p-2 bg-white rounded-md border border-yellow-100">
+                      <p className="font-medium mb-2 text-yellow-900">Requesting permission to:</p>
+                      <ul className="list-disc ml-5 text-xs space-y-1 text-yellow-800">
                         {permissions.map((permission, i) => (
                           <li key={i}>{permission}</li>
                         ))}
@@ -1227,7 +1303,7 @@ export default function WalletConnectPage(params: {
                   <Button
                     size="sm"
                     variant="default"
-                    className="bg-green-600 hover:bg-green-700"
+                    className="bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 border-0"
                     onClick={handleApproveSession}
                     disabled={processingProposal || !walletRegistered}
                     data-testid="approve-session-button"
@@ -1236,10 +1312,11 @@ export default function WalletConnectPage(params: {
                   </Button>
                   <Button
                     size="sm"
-                    variant="destructive"
+                    variant="outline"
                     onClick={handleRejectSession}
                     disabled={processingProposal}
                     data-testid="reject-session-button"
+                    className="border-yellow-200 text-yellow-700 hover:bg-yellow-50 hover:text-yellow-800"
                   >
                     Reject
                   </Button>
@@ -1249,9 +1326,20 @@ export default function WalletConnectPage(params: {
 
             {/* Show active sessions */}
             {sessions.length > 0 && (
-              <div className="w-full mt-2 p-2 bg-gray-50 border border-gray-100 text-gray-600 text-sm rounded mb-2">
-                <p className="font-medium">Active Sessions:</p>
-                <ul className="mt-1">
+              <div className="w-full mt-4 p-3 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 text-blue-700 text-sm rounded mb-3 shadow-sm">
+                <p className="font-semibold mb-3 text-blue-900 border-b border-blue-100 pb-2 flex items-center">
+                  <span className="text-lg mr-2" role="img" aria-label="Connection icon">
+                    🔗
+                  </span>
+                  Active Connections{' '}
+                  {currentWalletAddress && (
+                    <span className="text-xs ml-2 font-normal text-blue-600">
+                      • {currentWalletAddress.slice(0, 6)}...{currentWalletAddress.slice(-4)}
+                    </span>
+                  )}
+                </p>
+
+                <div className="space-y-2">
                   {sessions.map((session: Session, index) => {
                     const dappName = session.peer?.metadata?.name || 'Unknown';
                     const dappUrl = session.peer?.metadata?.url || null;
@@ -1259,21 +1347,28 @@ export default function WalletConnectPage(params: {
                     const sessionTopic = session.topic || '';
 
                     return (
-                      <li
+                      <div
                         key={index}
-                        className="flex items-center justify-between gap-2 py-2 border-b border-gray-100 last:border-0"
+                        className="flex items-center justify-between gap-2 py-2 px-3 bg-white rounded-md border border-blue-100 shadow-sm transition-all hover:shadow-md"
                       >
                         <div className="flex items-center gap-2">
-                          {dappIcon && (
+                          {dappIcon ? (
                             <img
                               src={dappIcon}
                               alt={`${dappName} logo`}
-                              className="w-6 h-6 rounded-full"
+                              className="w-8 h-8 rounded-full border border-blue-100"
                               onError={(e) => {
-                                // Hide broken images
-                                (e.target as HTMLImageElement).style.display = 'none';
+                                // Use a fallback icon if image fails to load
+                                const target = e.target as HTMLImageElement;
+                                target.onerror = null;
+                                target.src =
+                                  'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%234285F4"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>';
                               }}
                             />
+                          ) : (
+                            <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-500 font-bold">
+                              {dappName.charAt(0).toUpperCase()}
+                            </div>
                           )}
                           <div>
                             {dappUrl ? (
@@ -1281,119 +1376,147 @@ export default function WalletConnectPage(params: {
                                 href={dappUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="font-medium text-blue-600 hover:text-blue-800 hover:underline"
+                                className="font-medium text-blue-700 hover:text-blue-800 hover:underline"
                               >
                                 {dappName}
                               </a>
                             ) : (
-                              <span className="font-medium">{dappName}</span>
+                              <span className="font-medium text-blue-700">{dappName}</span>
                             )}
-                            <span className="text-xs text-gray-400 ml-1">
-                              ({sessionTopic.slice(0, 8)}...)
+                            <span className="text-xs text-blue-400 ml-1 block">
+                              Session: {sessionTopic.slice(0, 8)}...
                             </span>
                           </div>
                         </div>
                         <Button
                           size="sm"
-                          variant="destructive"
+                          variant="outline"
                           onClick={() => handleDisconnect(sessionTopic)}
                           disabled={disconnecting === sessionTopic}
-                          className="h-7 px-2 text-xs"
+                          className="h-8 px-3 text-xs border-blue-200 text-blue-700 hover:bg-blue-50 hover:text-blue-800"
                         >
                           {disconnecting === sessionTopic ? 'Disconnecting...' : 'Disconnect'}
                         </Button>
-                      </li>
+                      </div>
                     );
                   })}
-                </ul>
+                </div>
               </div>
             )}
 
             {/* Show pending requests */}
             {pendingSessionRequests.length > 0 && (
-              <div className="w-full mt-2 p-3 bg-orange-50 border border-orange-100 text-orange-700 text-sm rounded mb-2">
-                <p className="font-medium mb-2">Pending Session Requests:</p>
+              <div className="w-full mt-4 p-3 bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-100 text-orange-800 text-sm rounded mb-2 shadow-sm">
+                <p className="font-semibold mb-3 text-orange-900 border-b border-orange-100 pb-2">
+                  Pending Requests ({pendingSessionRequests.length})
+                </p>
 
-                {pendingSessionRequests.map((request, _) => {
-                  const { id, params } = request;
-                  const { request: req } = params;
-                  const { method, params: methodParams } = req;
+                <div className="space-y-3">
+                  {pendingSessionRequests.map((request, index) => {
+                    const { id, params } = request;
+                    const { request: req } = params;
+                    const { method, params: methodParams } = req;
 
-                  // Determine request type and format display
-                  let requestDescription = '';
-                  let requestDetails = null;
+                    // Determine request type and format display
+                    let requestDescription = '';
+                    let requestIcon = '';
+                    let requestDetails = null;
 
-                  if (method === 'personal_sign' || method === 'eth_sign') {
-                    // For message signing
-                    const message = methodParams[0];
-                    const displayMsg =
-                      typeof message === 'string' && message.startsWith('0x')
-                        ? Buffer.from(message.slice(2), 'hex').toString('utf8')
-                        : message;
-                    requestDescription = 'Sign Message';
-                    requestDetails = (
-                      <div className="mt-1 p-2 bg-gray-50 rounded text-gray-800 text-xs font-mono whitespace-pre-wrap">
-                        {displayMsg}
+                    if (method === 'personal_sign' || method === 'eth_sign') {
+                      requestIcon = '✍️';
+                      requestDescription = 'Sign Message';
+                      const message = methodParams[0];
+                      const displayMsg =
+                        typeof message === 'string' && message.startsWith('0x')
+                          ? Buffer.from(message.slice(2), 'hex').toString('utf8')
+                          : message;
+                      requestDetails = (
+                        <div className="mt-2 p-2 bg-white rounded-md text-gray-800 text-xs font-mono whitespace-pre-wrap border border-orange-100 max-h-24 overflow-auto">
+                          {displayMsg}
+                        </div>
+                      );
+                    } else if (method === 'eth_sendTransaction') {
+                      requestIcon = '💸';
+                      requestDescription = 'Send Transaction';
+                      const tx = methodParams[0];
+                      requestDetails = (
+                        <div className="mt-2 p-2 bg-white rounded-md text-gray-800 text-xs font-mono overflow-auto border border-orange-100">
+                          <p className="mb-1">
+                            <span className="text-gray-500">To:</span> {tx.to}
+                          </p>
+                          {tx.value && (
+                            <p className="mb-1">
+                              <span className="text-gray-500">Value:</span> {tx.value.toString()}{' '}
+                              wei
+                            </p>
+                          )}
+                          {tx.data && tx.data !== '0x' && (
+                            <p>
+                              <span className="text-gray-500">Data:</span> {tx.data.slice(0, 20)}...
+                            </p>
+                          )}
+                        </div>
+                      );
+                    } else if (
+                      method === 'eth_signTypedData' ||
+                      method === 'eth_signTypedData_v4'
+                    ) {
+                      requestIcon = '📝';
+                      requestDescription = 'Sign Typed Data';
+                      requestDetails = (
+                        <div className="mt-2 p-2 bg-white rounded-md text-gray-800 text-xs font-mono overflow-auto border border-orange-100">
+                          <p>Structured data signature request</p>
+                        </div>
+                      );
+                    } else if (method === 'wallet_getCapabilities') {
+                      requestIcon = '🔍';
+                      requestDescription = 'Get Wallet Capabilities';
+                      requestDetails = (
+                        <div className="mt-2 p-2 bg-white rounded-md text-gray-800 text-xs font-mono overflow-auto border border-orange-100">
+                          <p>Request for wallet capabilities</p>
+                        </div>
+                      );
+                    } else {
+                      requestIcon = '🔄';
+                      requestDescription = `Request: ${method}`;
+                    }
+
+                    return (
+                      <div
+                        key={`request-${id}-${index}`}
+                        className="bg-white rounded-md p-3 border border-orange-100 shadow-sm transition-all hover:shadow-md"
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="text-lg" role="img" aria-label="Request icon">
+                            {requestIcon}
+                          </span>
+                          <p className="font-medium text-orange-900">{requestDescription}</p>
+                        </div>
+                        {requestDetails}
+                        <div className="flex gap-2 mt-3">
+                          <Button
+                            size="sm"
+                            variant="default"
+                            className="bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 border-0 text-xs"
+                            onClick={() => handleApproveRequest(request)}
+                            disabled={processingRequest}
+                          >
+                            {processingRequest ? 'Processing...' : 'Approve'}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="text-xs border-orange-200 text-orange-700 hover:bg-orange-50 hover:text-orange-800"
+                            onClick={() => handleRejectRequest(request)}
+                            disabled={processingRequest}
+                          >
+                            Reject
+                          </Button>
+                        </div>
                       </div>
                     );
-                  } else if (method === 'eth_sendTransaction') {
-                    // For transaction sending
-                    const tx = methodParams[0];
-                    requestDescription = 'Send Transaction';
-                    requestDetails = (
-                      <div className="mt-1 p-2 bg-gray-50 rounded text-gray-800 text-xs font-mono overflow-auto">
-                        <p>To: {tx.to}</p>
-                        {tx.value && <p>Value: {tx.value.toString()} wei</p>}
-                        {tx.data && tx.data !== '0x' && <p>Data: {tx.data.slice(0, 20)}...</p>}
-                      </div>
-                    );
-                  } else if (method === 'eth_signTypedData' || method === 'eth_signTypedData_v4') {
-                    // For typed data signing
-                    requestDescription = 'Sign Typed Data';
-                    requestDetails = (
-                      <div className="mt-1 p-2 bg-gray-50 rounded text-gray-800 text-xs font-mono overflow-auto">
-                        <p>Structured data signature request</p>
-                      </div>
-                    );
-                  } else if (method === 'wallet_getCapabilities') {
-                    requestDescription = 'Get Wallet Capabilities';
-                    requestDetails = (
-                      <div className="mt-1 p-2 bg-gray-50 rounded text-gray-800 text-xs font-mono overflow-auto">
-                        <p>Request for wallet capabilities</p>
-                      </div>
-                    );
-                  } else {
-                    // For other methods
-                    requestDescription = `Request: ${method}`;
-                  }
-
-                  return (
-                    <div key={id} className="mb-4 p-3 bg-white border border-orange-200 rounded">
-                      <p className="font-semibold">{requestDescription}</p>
-                      {requestDetails}
-                      <div className="flex gap-2 mt-3">
-                        <Button
-                          size="sm"
-                          variant="default"
-                          className="bg-green-600 hover:bg-green-700 text-xs"
-                          onClick={() => handleApproveRequest(request)}
-                          disabled={processingRequest}
-                        >
-                          {processingRequest ? 'Processing...' : 'Approve'}
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          className="text-xs"
-                          onClick={() => handleRejectRequest(request)}
-                          disabled={processingRequest}
-                        >
-                          Reject
-                        </Button>
-                      </div>
-                    </div>
-                  );
-                })}
+                  })}
+                </div>
               </div>
             )}
           </>
