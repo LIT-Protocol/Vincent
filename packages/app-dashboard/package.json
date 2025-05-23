@@ -52,18 +52,22 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.22.0",
+    "@reown/walletkit": "^1.2.4",
     "@types/node": "^20",
     "@types/react": "^19.0.10",
     "@types/react-dom": "^19.0.4",
     "@vitejs/plugin-react": "^4.3.4",
+    "@walletconnect/core": "^2.20.3",
     "autoprefixer": "^10.4.21",
     "eslint": "^9.22.0",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.19",
     "globals": "^16.0.0",
     "postcss": "^8.5.3",
+    "react-qr-reader-es6": "2.2.1-2",
     "typescript": "~5.7.2",
     "typescript-eslint": "^8.26.1",
-    "vite": "^6.3.0"
+    "vite": "^6.3.0",
+    "zustand": "^5.0.5"
   }
 }
