@@ -1,6 +1,7 @@
 import { Button } from '@/components/shared/ui/button';
 import { DAppIcon, DAppIconFallback } from './DAppIcon';
 import { WalletConnectCard } from './WalletConnectCard';
+import { useEffect } from 'react';
 
 type Session = {
   topic: string;
@@ -28,24 +29,64 @@ interface ActiveSessionsProps {
   disconnecting: string | null;
 }
 
+// Helper function to extract wallet address from session namespaces
+function getSessionWalletAddress(session: Session): string | null {
+  try {
+    const eip155Namespace = session.namespaces?.eip155 as any;
+    if (eip155Namespace?.accounts?.[0]) {
+      // Format is "eip155:chainId:address"
+      const parts = eip155Namespace.accounts[0].split(':');
+      return parts[2] || null;
+    }
+  } catch (error) {
+    console.error('Failed to extract wallet address from session:', error);
+  }
+  return null;
+}
+
 export function ActiveSessions({
   sessions,
   currentWalletAddress,
   onDisconnect,
   disconnecting,
 }: ActiveSessionsProps) {
+  // Disconnect sessions that don't match current wallet (side effect in useEffect)
+  useEffect(() => {
+    if (!currentWalletAddress) return;
+
+    sessions.forEach((session) => {
+      const sessionWalletAddress = getSessionWalletAddress(session);
+
+      if (
+        sessionWalletAddress &&
+        sessionWalletAddress.toLowerCase() !== currentWalletAddress.toLowerCase()
+      ) {
+        console.log(
+          `Auto-disconnecting session from different wallet: ${sessionWalletAddress} (current: ${currentWalletAddress})`,
+        );
+        onDisconnect(session.topic);
+      }
+    });
+  }, [sessions, currentWalletAddress, onDisconnect]);
+
   if (sessions.length === 0) {
     return null;
   }
 
-  const subtitle = currentWalletAddress
-    ? `• ${currentWalletAddress.slice(0, 6)}...${currentWalletAddress.slice(-4)}`
-    : undefined;
+  // Filter sessions to only show those that match the current wallet (pure filtering, no side effects)
+  const relevantSessions = sessions.filter((session) => {
+    const sessionWalletAddress = getSessionWalletAddress(session);
+    return sessionWalletAddress?.toLowerCase() === currentWalletAddress?.toLowerCase();
+  });
+
+  if (relevantSessions.length === 0) {
+    return null;
+  }
 
   return (
-    <WalletConnectCard variant="sessions" title="Active Connections" icon="🔗" subtitle={subtitle}>
+    <WalletConnectCard variant="sessions" title="Active Connections" icon="🔗">
       <div className="space-y-2">
-        {sessions.map((session: Session, index) => (
+        {relevantSessions.map((session: Session, index) => (
           <SessionItem
             key={index}
             session={session}
@@ -71,6 +112,11 @@ function SessionItem({
   const dappUrl = session.peer?.metadata?.url || null;
   const dappIcon = session.peer?.metadata?.icons?.[0] || null;
   const sessionTopic = session.topic || '';
+  const sessionWalletAddress = getSessionWalletAddress(session);
+
+  const walletAddressDisplay = sessionWalletAddress
+    ? `• ${sessionWalletAddress.slice(0, 6)}...${sessionWalletAddress.slice(-4)}`
+    : '';
 
   return (
     <div className="flex items-center justify-between gap-2 py-2 px-3 bg-white rounded-md border border-blue-100 shadow-sm transition-all hover:shadow-md">
@@ -93,9 +139,10 @@ function SessionItem({
           ) : (
             <span className="font-medium text-blue-700">{dappName}</span>
           )}
-          <span className="text-xs text-blue-400 ml-1 block">
-            Session: {sessionTopic.slice(0, 8)}...
-          </span>
+          <div className="text-xs text-blue-400">
+            <span>Session: {sessionTopic.slice(0, 8)}...</span>
+            {walletAddressDisplay && <span className="ml-2">{walletAddressDisplay}</span>}
+          </div>
         </div>
       </div>
       <Button

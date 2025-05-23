@@ -51,6 +51,7 @@ export function useWalletConnectSession(agentPKP?: IRelayPKP, sessionSigs?: Sess
 
   const isRegistering = useRef(false);
   const requestHandlersSetup = useRef(false);
+  const previousWalletAddress = useRef<string | null>(null);
 
   // Initialize WalletConnect
   useEffect(() => {
@@ -267,6 +268,49 @@ export function useWalletConnectSession(agentPKP?: IRelayPKP, sessionSigs?: Sess
       client.off('session_delete', handleSessionDelete);
     };
   }, [client, refreshSessions]);
+
+  // Disconnect all sessions when wallet address changes to a different address
+  useEffect(() => {
+    if (!client || !currentWalletAddress) return;
+
+    // Only disconnect if the wallet address actually changed to a different address
+    if (previousWalletAddress.current && previousWalletAddress.current !== currentWalletAddress) {
+      const disconnectAllSessions = async () => {
+        try {
+          const activeSessions = client.getActiveSessions() || {};
+          const sessionTopics = Object.keys(activeSessions);
+
+          if (sessionTopics.length > 0) {
+            console.log(
+              `Wallet changed from ${previousWalletAddress.current} to ${currentWalletAddress}, disconnecting ${sessionTopics.length} active sessions`,
+            );
+
+            for (const topic of sessionTopics) {
+              try {
+                await disconnectSession(topic);
+                console.log(`Disconnected session: ${topic.slice(0, 8)}...`);
+              } catch (error) {
+                console.error(`Failed to disconnect session ${topic}:`, error);
+              }
+            }
+
+            refreshSessions();
+            setStatus({
+              message: 'Previous sessions cleared for new wallet',
+              type: 'info',
+            });
+          }
+        } catch (error) {
+          console.error('Failed to disconnect sessions on wallet change:', error);
+        }
+      };
+
+      disconnectAllSessions();
+    }
+
+    // Update the previous wallet address
+    previousWalletAddress.current = currentWalletAddress;
+  }, [currentWalletAddress, client, refreshSessions]);
 
   return {
     client,
