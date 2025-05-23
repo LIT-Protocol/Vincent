@@ -29,10 +29,8 @@ export function setupRequestHandlers(client: IWalletKit): void {
   client.on('session_request', (event: any) => {
     console.log('Received session request:', event);
 
-    // Add this request to our pending requests
     pendingSessionRequests.push(event);
 
-    // Emit a custom event so components can react to it
     const customEvent = new CustomEvent('walletconnect:session_request', {
       detail: event,
     });
@@ -41,19 +39,16 @@ export function setupRequestHandlers(client: IWalletKit): void {
 
   client.on('session_proposal', (event: any) => {
     console.log('Received session proposal:', event);
-    // This will be handled by the UI
   });
 
   client.on('session_delete', (event: any) => {
     console.log('Session deleted:', event);
   });
 
-  // Set up listeners for transaction events
   window.addEventListener('walletconnect:transaction_complete', (event: Event) => {
     const customEvent = event as CustomEvent;
     console.log('Transaction complete event received:', customEvent.detail);
 
-    // Notify the dapp that the transaction is complete
     notifyTransactionComplete(client, customEvent.detail);
   });
 
@@ -61,7 +56,6 @@ export function setupRequestHandlers(client: IWalletKit): void {
     const customEvent = event as CustomEvent;
     console.log('Transaction error event received:', customEvent.detail);
 
-    // Notify the dapp that the transaction failed
     notifyTransactionError(client, customEvent.detail);
   });
 

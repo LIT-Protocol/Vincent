@@ -1,11 +1,120 @@
 import { IWalletKit } from '@reown/walletkit';
 import { WalletKit } from '@reown/walletkit';
-import { getPKPWallet } from './PKPWalletUtil';
 import { Core } from '@walletconnect/core';
+import { IRelayPKP, SessionSigs } from '@lit-protocol/types';
+import { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
+import { litNodeClient } from '@/utils/user-dashboard/lit';
+import { getWalletConnectActions, getCurrentWalletAddress } from './WalletConnectStore';
 
-// Track initialization status
-let isInitializing = false;
+import { env } from '@/config/env';
+
+const { VITE_WALLETCONNECT_PROJECT_ID } = env;
+
+let pkpWallet: PKPEthersWallet | null = null;
 let walletKitClient: IWalletKit | null = null;
+let isInitializing = false;
+
+/**
+ * Create a PKPEthersWallet using the agent PKP and session signatures
+ * @param agentPKP The agent's PKP to use for signing
+ * @param sessionSigs Session signatures for authentication
+ * @returns The created PKPEthersWallet instance
+ */
+export async function createPKPWallet(
+  agentPKP: IRelayPKP,
+  sessionSigs: SessionSigs,
+): Promise<PKPEthersWallet> {
+  if (!agentPKP?.publicKey) {
+    throw new Error('PKP does not have a public key');
+  }
+
+  pkpWallet = new PKPEthersWallet({
+    pkpPubKey: agentPKP.publicKey,
+    litNodeClient: litNodeClient,
+    controllerSessionSigs: sessionSigs,
+  });
+
+  await pkpWallet.init();
+  return pkpWallet;
+}
+
+/**
+ * Register a PKP wallet with WalletKit to handle signing requests
+ * @param agentPKP The agent's PKP to use for signing
+ * @param sessionSigs Session signatures for authentication
+ * @returns Information about the registered account
+ */
+export async function registerPKPWallet(
+  agentPKP: IRelayPKP,
+  sessionSigs?: SessionSigs,
+): Promise<{ address: string; publicKey: string }> {
+  if (!agentPKP?.ethAddress) {
+    throw new Error('PKP does not have an Ethereum address');
+  }
+
+  const newAddress = agentPKP.ethAddress;
+  const storedWalletAddress = getCurrentWalletAddress();
+  const walletHasChanged = storedWalletAddress !== null && storedWalletAddress !== newAddress;
+
+  const actions = getWalletConnectActions();
+
+  if (walletHasChanged) {
+    console.log(`Wallet has changed from ${storedWalletAddress} to ${newAddress}`);
+
+    // First disconnect any sessions associated with the previous wallet to ensure
+    // dApps know that wallet has been disconnected
+    if (storedWalletAddress) {
+      console.log(`Disconnecting all sessions for previous wallet: ${storedWalletAddress}`);
+      try {
+        await actions.clearSessionsForAddress(storedWalletAddress);
+      } catch (error) {
+        console.error('Error disconnecting sessions for previous wallet:', error);
+      }
+    }
+
+    await resetWalletConnectClient();
+
+    // Update the current wallet address in the store
+    actions.setCurrentWalletAddress(newAddress);
+  } else if (newAddress && storedWalletAddress !== newAddress) {
+    // First time setting this wallet or wallet address isn't tracked yet
+    console.log(`Setting current wallet address to ${newAddress}`);
+    actions.setCurrentWalletAddress(newAddress);
+  }
+
+  // Get or create the client
+  const client = await createWalletConnectClient();
+
+  if (!client) {
+    throw new Error('WalletKit client not initialized');
+  }
+
+  if (sessionSigs) {
+    try {
+      if (pkpWallet) {
+        pkpWallet = null;
+      }
+
+      pkpWallet = await createPKPWallet(agentPKP, sessionSigs);
+    } catch (error) {
+      console.error('Failed to create PKP wallet:', error);
+      throw new Error('Failed to create PKP wallet');
+    }
+  }
+
+  return {
+    address: agentPKP.ethAddress,
+    publicKey: agentPKP.publicKey,
+  };
+}
+
+/**
+ * Get the initialized PKP wallet instance
+ * @returns The PKP wallet instance or null if not initialized
+ */
+export function getPKPWallet(): PKPEthersWallet | null {
+  return pkpWallet;
+}
 
 /**
  * Initialize WalletKit directly without any React hooks
@@ -54,7 +163,7 @@ export async function createWalletConnectClient(
 
     // Create a shared Core instance
     const core = new Core({
-      projectId: '48dbb3e862642b9a8004ab871a2ac82d',
+      projectId: VITE_WALLETCONNECT_PROJECT_ID,
     });
 
     // Initialize WalletKit with the required parameters - according to documentation
@@ -64,16 +173,9 @@ export async function createWalletConnectClient(
         name: 'Vincent App',
         description: 'Vincent App using PKP with WalletKit',
         url: window.location.origin,
-        icons: ['https://lit.network/favicon.ico'],
+        icons: ['https://lit.network/favicon.ico'], // TODO: Add a logo
       },
     });
-
-    // Add PKP wallet if available
-    const pkpWallet = getPKPWallet();
-    if (pkpWallet && walletKitClient) {
-      // Register the PKP wallet to receive signing requests
-      console.log('PKP wallet available for WalletKit');
-    }
 
     // Store the client in the store if a setter was provided
     if (setClient) {
@@ -108,14 +210,16 @@ export async function resetWalletConnectClient(): Promise<void> {
           // Disconnect all active sessions
           const disconnectPromises = Object.keys(activeSessions).map(async (topic) => {
             try {
-              await walletKitClient!.disconnectSession({
-                topic,
-                reason: {
-                  code: 6000,
-                  message: 'Wallet reset',
-                },
-              });
-              console.log(`Disconnected session: ${topic}`);
+              if (walletKitClient) {
+                await walletKitClient.disconnectSession({
+                  topic,
+                  reason: {
+                    code: 6000,
+                    message: 'Wallet reset',
+                  },
+                });
+                console.log(`Disconnected session: ${topic}`);
+              }
             } catch (error) {
               console.error(`Failed to disconnect session ${topic}:`, error);
               // Continue with reset even if individual disconnect fails
@@ -147,14 +251,6 @@ export async function resetWalletConnectClient(): Promise<void> {
     // Ensure initialization flag is reset
     isInitializing = false;
   }
-}
-
-/**
- * Get the current WalletKit client instance without initialization
- * @returns The current WalletKit client instance or null if not initialized
- */
-export function getWalletConnectClient(): IWalletKit | null {
-  return walletKitClient;
 }
 
 /**
