@@ -1,4 +1,4 @@
-import { Button } from '@/components/app-dashboard/ui/button';
+import { Button } from '@/components/shared/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/app-dashboard/ui/card';
 import { ArrowLeft, Plus, Copy, Check } from 'lucide-react';
 import { useState, useEffect, useCallback } from 'react';
@@ -12,7 +12,7 @@ import {
 } from '@/components/app-dashboard/ui/dialog';
 import { AppView } from '@/services/types';
 import { VincentContracts } from '@/services';
-import { Input } from '@/components/app-dashboard/ui/input';
+import { Input } from '@/components/shared/ui/input';
 import { useErrorPopup } from '@/providers/ErrorPopup';
 import { StatusMessage } from '@/utils/shared/statusMessage';
 

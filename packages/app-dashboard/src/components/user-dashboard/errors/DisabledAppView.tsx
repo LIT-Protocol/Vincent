@@ -1,7 +1,7 @@
 import React from 'react';
 import { AppView, ContractVersionResult } from '@/types';
 import { NavigateFunction } from 'react-router-dom';
-import { Button } from '@/components/app-dashboard/ui/button';
+import { Button } from '@/components/shared/ui/button';
 
 interface DisabledAppViewProps {
   appInfo: AppView;

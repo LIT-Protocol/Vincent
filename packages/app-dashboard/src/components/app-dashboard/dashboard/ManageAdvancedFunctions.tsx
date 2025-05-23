@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router';
 import { AppView } from '@/services/types';
 import { useState, useEffect, useCallback } from 'react';
-import { Button } from '@/components/app-dashboard/ui/button';
+import { Button } from '@/components/shared/ui/button';
 import {
   Card,
   CardContent,
@@ -10,7 +10,7 @@ import {
   CardDescription,
 } from '@/components/app-dashboard/ui/card';
 import { ArrowLeft, Plus, Settings, ExternalLink, Trash2 } from 'lucide-react';
-import { Input } from '@/components/app-dashboard/ui/input';
+import { Input } from '@/components/shared/ui/input';
 import {
   Dialog,
   DialogContent,

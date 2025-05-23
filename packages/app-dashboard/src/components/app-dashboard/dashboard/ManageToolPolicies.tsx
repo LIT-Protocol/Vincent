@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { getContract, estimateGasWithBuffer } from '@/services/contract/config';
-import { Button } from '@/components/app-dashboard/ui/button';
+import { Button } from '@/components/shared/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/app-dashboard/ui/card';
 import { ArrowLeft, Plus, Trash2, Info } from 'lucide-react';
 import { VincentContracts } from '@/services';

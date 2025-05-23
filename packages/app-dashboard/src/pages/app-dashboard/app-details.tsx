@@ -4,7 +4,7 @@ import { formCompleteVincentAppForDev } from '@/services';
 import { useAccount } from 'wagmi';
 import { AppView } from '@/services/types';
 import { ArrowRight, Plus, Settings } from 'lucide-react';
-import { Button } from '@/components/app-dashboard/ui/button';
+import { Button } from '@/components/shared/ui/button';
 import {
   Card,
   CardContent,

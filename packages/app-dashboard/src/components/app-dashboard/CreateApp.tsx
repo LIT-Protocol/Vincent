@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router';
-import { Button } from '@/components/app-dashboard/ui/button';
+import { Button } from '@/components/shared/ui/button';
 import {
   Card,
   CardContent,
@@ -15,7 +15,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/app-dashboard/ui/form';
-import { Input } from '@/components/app-dashboard/ui/input';
+import { Input } from '@/components/shared/ui/input';
 import { Textarea } from '@/components/app-dashboard/ui/textarea';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm, useFieldArray, useWatch } from 'react-hook-form';

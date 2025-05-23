@@ -1,7 +1,7 @@
 import { useClearAuthInfo } from '@/hooks/user-dashboard/useAuthInfo';
 import { LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { Button } from '../../components/app-dashboard/ui/button';
+import { Button } from '../../components/shared/ui/button';
 
 export default function ConnectWithVincent({ signout = false }: { signout?: boolean }) {
   const { clearAuthInfo } = useClearAuthInfo();

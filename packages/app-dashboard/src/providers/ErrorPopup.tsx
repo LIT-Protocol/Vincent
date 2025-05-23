@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useState, ReactNode 
 import { createPortal } from 'react-dom';
 import { XCircle } from 'lucide-react';
 
-import { Button } from '@/components/app-dashboard/ui/button';
+import { Button } from '@/components/shared/ui/button';
 
 interface ErrorPopupProps {
   isOpen: boolean;

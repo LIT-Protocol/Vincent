@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { ParameterType, mapEnumToTypeName } from '../../../services/types/parameterTypes';
 import { z } from 'zod';
-import { Button } from '@/components/app-dashboard/ui/button';
+import { Button } from '@/components/shared/ui/button';
 
 // Define Zod schemas for different parameter types
 const zodSchemas: Record<number, z.ZodTypeAny> = {

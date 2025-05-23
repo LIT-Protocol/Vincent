@@ -4,7 +4,7 @@ import { useSetAuthInfo } from '../../../hooks/user-dashboard/useAuthInfo';
 import { z } from 'zod';
 import PhoneInput from 'react-phone-number-input';
 import 'react-phone-number-input/style.css';
-import { Button } from '@/components/app-dashboard/ui/button';
+import { Button } from '@/components/shared/ui/button';
 
 interface StytchOTPProps {
   method: OtpMethod;

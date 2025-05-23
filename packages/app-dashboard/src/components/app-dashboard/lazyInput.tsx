@@ -1,4 +1,4 @@
-import { Input } from '@/components/app-dashboard/ui/input';
+import { Input } from '@/components/shared/ui/input';
 import { useRef } from 'react';
 
 export const LazyInput = ({

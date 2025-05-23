@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Button } from '@/components/app-dashboard/ui/button';
+import { Button } from '@/components/shared/ui/button';
 
 interface WithdrawPanelProps {
   withdrawAddress: string;

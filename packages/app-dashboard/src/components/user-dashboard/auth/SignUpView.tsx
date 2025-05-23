@@ -1,6 +1,6 @@
 import { FC } from 'react';
 import { AUTH_METHOD_TYPE } from '@lit-protocol/constants';
-import { Button } from '@/components/app-dashboard/ui/button';
+import { Button } from '@/components/shared/ui/button';
 import StatusMessage from '../consent/StatusMessage';
 
 interface SignUpViewProps {

@@ -6,7 +6,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/app-dashboard/ui/card';
-import { Button } from '@/components/app-dashboard/ui/button';
+import { Button } from '@/components/shared/ui/button';
 import { ExternalLink } from 'lucide-react';
 
 export default function ConnectWalletScreen() {

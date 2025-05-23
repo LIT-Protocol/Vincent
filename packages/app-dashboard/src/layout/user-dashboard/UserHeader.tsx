@@ -1,6 +1,6 @@
 import { ArrowLeft, BanknoteArrowDown, LogOut } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Button } from '@/components/app-dashboard/ui/button';
+import { Button } from '@/components/shared/ui/button';
 import { useClearAuthInfo } from '@/hooks/user-dashboard/useAuthInfo';
 
 interface UserHeaderProps {

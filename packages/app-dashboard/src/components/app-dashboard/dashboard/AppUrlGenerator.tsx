@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Copy, Link } from 'lucide-react';
-import { Button } from '@/components/app-dashboard/ui/button';
+import { Button } from '@/components/shared/ui/button';
 import {
   Dialog,
   DialogContent,

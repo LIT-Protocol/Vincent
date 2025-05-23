@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router';
 import { AppView } from '@/services/types';
 import { useEffect, useState, useCallback } from 'react';
 import { Plus } from 'lucide-react';
-import { Button } from '@/components/app-dashboard/ui/button';
+import { Button } from '@/components/shared/ui/button';
 import {
   Card,
   CardContent,
