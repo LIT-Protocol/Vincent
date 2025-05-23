@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from 'react';
-import { ethers } from 'ethers';
 import { LIT_CHAINS } from '@lit-protocol/constants';
 import {
   setupRequestHandlers,
@@ -224,17 +223,8 @@ async function handleSendTransaction(pkpWallet: any, methodParams: any[], params
   }
 
   console.log(`Setting up provider for chain ${chainId} with RPC URL: ${rpcUrl}`);
-
-  // Set up provider
-  if (typeof pkpWallet.setRpc === 'function') {
-    console.log(`Calling pkpWallet.setRpc with: ${rpcUrl}`);
-    await pkpWallet.setRpc(rpcUrl);
-    console.log(`Successfully set RPC URL using setRpc`);
-  } else {
-    console.log(`setRpc not available, setting provider directly`);
-    const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
-    pkpWallet.provider = provider;
-  }
+  await pkpWallet.setRpc(rpcUrl);
+  console.log(`Successfully set RPC URL using setRpc`);
 
   tx.chainId = chainId;
   console.log(`Set transaction chainId to: ${chainId}`);
