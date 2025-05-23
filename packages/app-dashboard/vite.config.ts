@@ -6,9 +6,6 @@ import { defineConfig } from 'vite';
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss()],
-  server: {
-    allowedHosts: ['kairosv1.ngrok.dev'],
-  },
   define: {
     global: 'globalThis',
     'process.env': process.env,

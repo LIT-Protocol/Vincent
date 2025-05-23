@@ -2,17 +2,17 @@ import { IRelayPKP, SessionSigs } from '@lit-protocol/types';
 import { Button } from '@/components/shared/ui/button';
 import { Input } from '@/components/shared/ui/input';
 import StatusMessage from '@/components/user-dashboard/consent/StatusMessage';
-import QrReader from '@/components/withdraw/WalletConnect/QrReader';
+import QrReader from '@/components/user-dashboard/withdraw/WalletConnect/QrReader';
 import {
   createWalletConnectClient,
   disconnectSession,
-} from '@/components/withdraw/WalletConnect/WalletConnectUtil';
+} from '@/components/user-dashboard/withdraw/WalletConnect/WalletConnectUtil';
 import {
   setupRequestHandlers,
   getPendingSessionRequests,
   //getPendingSessionRequestsForWallet,
   clearSessionRequest,
-} from '@/components/withdraw/WalletConnect/RequestHandler';
+} from '@/components/user-dashboard/withdraw/WalletConnect/RequestHandler';
 import {
   useWalletConnectClient,
   useWalletConnectSessions,

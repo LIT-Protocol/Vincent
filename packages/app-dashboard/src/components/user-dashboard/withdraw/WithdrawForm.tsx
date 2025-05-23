@@ -1,7 +1,7 @@
 import { useCallback, useState, useEffect } from 'react';
 import { SessionSigs, IRelayPKP } from '@lit-protocol/types';
 import { LIT_CHAINS } from '@lit-protocol/constants';
-import WalletConnectPage from '@/components/withdraw/WalletConnect/WalletConnect';
+import WalletConnectPage from '@/components/user-dashboard/withdraw/WalletConnect/WalletConnect';
 
 import {
   FormHeader,
