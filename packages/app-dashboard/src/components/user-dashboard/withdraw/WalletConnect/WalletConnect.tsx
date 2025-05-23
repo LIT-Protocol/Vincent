@@ -41,8 +41,21 @@ export default function WalletConnectPage(params: {
     handleDisconnect,
   } = useWalletConnectSession(agentPKP, sessionSigs);
 
-  const { pendingSessionRequests, processingRequest, handleApproveRequest, handleRejectRequest } =
-    useWalletConnectRequests(client, currentWalletAddress);
+  const {
+    pendingSessionRequests,
+    processingRequest,
+    handleApproveRequest,
+    handleRejectRequest,
+    clearPendingRequests,
+  } = useWalletConnectRequests(client, currentWalletAddress);
+
+  // Clear pending requests when wallet changes
+  useEffect(() => {
+    if (currentWalletAddress) {
+      console.log('Wallet changed, clearing pending requests');
+      clearPendingRequests();
+    }
+  }, [currentWalletAddress, clearPendingRequests]);
 
   // Handle connect with URI
   const onConnect = useCallback(
