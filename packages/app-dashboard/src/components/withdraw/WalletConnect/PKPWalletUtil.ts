@@ -1,6 +1,6 @@
 import { IRelayPKP, SessionSigs } from '@lit-protocol/types';
 import { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
-import { litNodeClient } from '@/components/consent/utils/lit';
+import { litNodeClient } from '@/utils/user-dashboard/lit';
 // Store the PKP wallet instance
 let pkpWallet: PKPEthersWallet | null = null;
 // Store the current PKP address to detect wallet changes

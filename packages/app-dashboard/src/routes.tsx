@@ -1,6 +1,6 @@
 import { Outlet, RouteObject } from 'react-router-dom';
-import AppLayout from './components/layout/AppLayout';
-import UserLayout from './components/layout/UserLayout';
+import AppLayout from './layout/app-dashboard/AppLayout';
+import UserLayout from './layout/user-dashboard/UserLayout';
 import { AppProviders, UserProviders } from './providers';
 
 import * as AppPages from './pages/app-dashboard';

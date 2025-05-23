@@ -1,5 +1,5 @@
-import { Button } from '@/components/ui/button';
-import Loading from '@/components/layout/Loading';
+import { Button } from '@/components/shared/ui/button';
+import Loading from '@/layout/app-dashboard/Loading';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import { Fragment, useState } from 'react';

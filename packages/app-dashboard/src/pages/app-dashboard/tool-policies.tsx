@@ -2,9 +2,9 @@ import { useCallback, useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import { formCompleteVincentAppForDev } from '@/services';
 import { useAccount } from 'wagmi';
-import Loading from '@/components/layout/Loading';
+import Loading from '@/layout/app-dashboard/Loading';
 import { AppView } from '@/services/types';
-import ManageToolPoliciesScreen from '@/components/developer/dashboard/ManageToolPolicies';
+import ManageToolPoliciesScreen from '@/components/app-dashboard/dashboard/ManageToolPolicies';
 
 export function ToolPolicies() {
   const params = useParams();

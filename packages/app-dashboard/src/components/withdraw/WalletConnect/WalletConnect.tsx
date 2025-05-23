@@ -1,7 +1,7 @@
 import { IRelayPKP, SessionSigs } from '@lit-protocol/types';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import StatusMessage from '../../consent/components/authForm/StatusMessage';
+import { Button } from '@/components/shared/ui/button';
+import { Input } from '@/components/shared/ui/input';
+import StatusMessage from '@/components/user-dashboard/consent/StatusMessage';
 import QrReader from '@/components/withdraw/WalletConnect/QrReader';
 import {
   createWalletConnectClient,
@@ -1127,7 +1127,7 @@ export default function WalletConnectPage(params: {
               <Input
                 className="w-full rounded-r-none"
                 placeholder="e.g. wc:a281567bb3e4..."
-                onChange={(e) => setUri(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setUri(e.target.value)}
                 value={uri}
                 data-testid="uri-input"
                 disabled={isInitializing || !client}
