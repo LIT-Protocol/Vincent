@@ -84,7 +84,7 @@ The `userParamsSchema` property is a Zod schema that defines the configuration p
 import { createVincentPolicy } from '@lit-protocol/vincent-tool-sdk';
 import { z } from 'zod';
 
-const SpendingLimitPolicyToolParamsSchema = z.object({ /** ... */ });
+export const SpendingLimitPolicyToolParamsSchema z.object({ /** ... */ });
 
 const SpendingLimitPolicyUserParamsSchema = z.object({
   maxDailySpendAmountUsd: z.number(),
@@ -109,31 +109,31 @@ To reiterate, the `SpendingLimitPolicyUserParamsSchema` shown above is a referen
 
 The `precheck` function is a crucial optimization that helps Vincent App Delegatees avoid wasting resources on operations that would ultimately fail due to policy restrictions. For example, if a Spending Limit policy has already reached its daily maximum, there's no point in attempting the transaction.
 
-Key characteristics of the precheck function:
+Key characteristics of the `precheck` function:
 
-- It must be **non-mutative** - it should only read and validate, never modify state as there's no guarantee the your policy will be executed after the precheck function is called
+- It must be **non-mutative** - it should only read and validate, never modify state as there's no guarantee the your policy will be executed after the `precheck` function is called
 - It should perform the same validation checks that your policy will perform during execution
 - It provides a "best effort" prediction of whether the operation will succeed
 - It helps delegatees make informed decisions before committing resources to the operation
 
-The precheck function acts as an early warning system, allowing delegatees to quickly determine if an operation is likely to succeed before investing time and computational resources in the full execution.
+The `precheck` function acts as an early warning system, allowing delegatees to quickly determine if an operation is likely to succeed before investing time and computational resources in the full execution.
 
-Defining a precheck method is **optional**, but highly recommended. If you choose to define one, your policies' `VincentPolicyDef` will need to define a Zod schema for `precheckAllowResultSchema` which describes a successful precheck result, and `precheckDenyResultSchema` which describes a failed precheck result.
+Defining a `precheck` method is **optional**, but highly recommended. If you choose to define one, your policies' `VincentPolicyDef` will need to define a Zod schema for `precheckAllowResultSchema` which describes a successful precheck result, and `precheckDenyResultSchema` which describes a failed precheck result.
 
 #### `precheckAllowResultSchema`
 
-The `precheckAllowResultSchema` is a Zod schema that describes the object that will be returned by the precheck function if it's validation checks pass, and the policy is expected to permit the Vincent Tool to execute.
+The `precheckAllowResultSchema` is a Zod schema that describes the object that will be returned by the `precheck` function if it's validation checks pass, and the policy is expected to permit the Vincent Tool to execute.
 
-What's returned by the precheck function for the allow case is up to you as the Vincent Policy developer, but it should contain information that will be useful to the Vincent App Delegatee to determine whether the Vincent Tool should be executed.
+What's returned by the `precheck` function for the allow case is up to you as the Vincent Policy developer, but it should contain information that will be useful to the Vincent App Delegatee to determine whether the Vincent Tool should be executed.
 
 ```typescript
 import { createVincentPolicy } from '@lit-protocol/vincent-tool-sdk';
 import { z } from 'zod';
 
-const SpendingLimitPolicyToolParamsSchema = z.object({ /** ... */ });
+export const SpendingLimitPolicyToolParamsSchema z.object({ /** ... */ });
 const SpendingLimitPolicyUserParamsSchema = z.object({ /** ... */ });
 
-const spendingLimitPolicyPrecheckAllowResultSchema = z.object({
+const SpendingLimitPolicyPrecheckAllowResultSchema = z.object({
   appId: z.number(),
   maxSpendingLimitInUsd: z.number(),
   buyAmountInUsd: z.number(),
@@ -146,26 +146,26 @@ export const SpendingLimitPolicyDef = createVincentPolicy({
   toolParamsSchema: SpendingLimitPolicyToolParamsSchema,
   userParamsSchema: SpendingLimitPolicyUserParamsSchema,
 
-  precheckAllowResultSchema: spendingLimitPolicyPrecheckAllowResultSchema,
+  precheckAllowResultSchema: SpendingLimitPolicyPrecheckAllowResultSchema,
 });
 ```
 
-For the Spending Limit Policy, `spendingLimitPolicyPrecheckAllowResultSchema` is returning the `appId` as confirmation what the precheck function used to source on-chain policy parameters, the current `maxSpendingLimitInUsd` that was retrieved from the on-chain Vincent registry smart contract, and the `buyAmountInUsd` that was calculated for the `buyAmount` that was provided as input via the `toolParamsSchema`.
+For the Spending Limit Policy, `SpendingLimitPolicyPrecheckAllowResultSchema` is returning the `appId` as confirmation what the `precheck` function used to source on-chain policy parameters, the current `maxSpendingLimitInUsd` that was retrieved from the on-chain Vincent registry smart contract, and the `buyAmountInUsd` that was calculated for the `buyAmount` that was provided as input via the `toolParamsSchema`.
 
 #### `precheckDenyResultSchema`
 
-The `precheckDenyResultSchema` is a Zod schema that describes the object that will be returned by the precheck function if it's validation checks fail, and the policy is expected to deny the Vincent Tool from executing.
+The `precheckDenyResultSchema` is a Zod schema that describes the object that will be returned by the `precheck` function if it's validation checks fail, and the policy is expected to deny the Vincent Tool from executing.
 
-What's returned by the precheck function for the deny case is up to you as the Vincent Policy developer, but it should contain information that will be useful to the Vincent App Delegatee to determine why the Vincent Tool will be denied from executing.
+What's returned by the `precheck` function for the deny case is up to you as the Vincent Policy developer, but it should contain information that will be useful to the Vincent App Delegatee to determine why the Vincent Tool will be denied from executing.
 
 ```typescript
 import { createVincentPolicy } from '@lit-protocol/vincent-tool-sdk';
 import { z } from 'zod';
 
-const SpendingLimitPolicyToolParamsSchema = z.object({ /** ... */ });
+export const SpendingLimitPolicyToolParamsSchema z.object({ /** ... */ });
 const SpendingLimitPolicyUserParamsSchema = z.object({ /** ... */ });
 
-const spendingLimitPolicyPrecheckAllowResultSchema = z.object({ /** ... */ });
+const SpendingLimitPolicyPrecheckAllowResultSchema = z.object({ /** ... */ });
 const SpendingLimitPolicyEvalDenyResultSchema = z.object({
   reason: z.literal('Attempted buy amount exceeds daily limit'),
   maxSpendingLimitInUsd: z.number(),
@@ -179,7 +179,7 @@ export const SpendingLimitPolicyDef = createVincentPolicy({
   toolParamsSchema: SpendingLimitPolicyToolParamsSchema,
   userParamsSchema: SpendingLimitPolicyUserParamsSchema,
 
-  precheckAllowResultSchema: spendingLimitPolicyPrecheckAllowResultSchema,
+  precheckAllowResultSchema: SpendingLimitPolicyPrecheckAllowResultSchema,
   precheckDenyResultSchema: SpendingLimitPolicyEvalDenyResultSchema,
 });
 ```
@@ -200,10 +200,10 @@ import { z } from 'zod';
 // but this is a helper function that checks if the buy amount is allowed based on the spending limit policy
 import { checkIfBuyAmountAllowed } from './policy-helpers/check-spending-limit';
 
-const SpendingLimitPolicyToolParamsSchema = z.object({ /** ... */ });
+export const SpendingLimitPolicyToolParamsSchema z.object({ /** ... */ });
 const SpendingLimitPolicyUserParamsSchema = z.object({ /** ... */ });
 
-const spendingLimitPolicyPrecheckAllowResultSchema = z.object({ /** ... */ });
+const SpendingLimitPolicyPrecheckAllowResultSchema = z.object({ /** ... */ });
 const SpendingLimitPolicyEvalDenyResultSchema = z.object({ /** ... */ });
 
 export const SpendingLimitPolicyDef = createVincentPolicy({
@@ -213,7 +213,7 @@ export const SpendingLimitPolicyDef = createVincentPolicy({
   toolParamsSchema: SpendingLimitPolicyToolParamsSchema,
   userParamsSchema: SpendingLimitPolicyUserParamsSchema,
 
-  precheckAllowResultSchema: spendingLimitPolicyPrecheckAllowResultSchema,
+  precheckAllowResultSchema: SpendingLimitPolicyPrecheckAllowResultSchema,
   precheckDenyResultSchema: SpendingLimitPolicyEvalDenyResultSchema,
 
   precheck: async ({ toolParams, userParams }, { allow, deny }) => {
@@ -260,4 +260,464 @@ export const SpendingLimitPolicyDef = createVincentPolicy({
 
 The input parameters to the `precheck` function are magic values that are provided by the `createVincentPolicy` wrapper function. `toolParams` will have the properties defined by `toolParamsSchema` and `userParams` will have the properties defined by `userParamsSchema`.
 
-The `allow` and `deny` parameters are functions that your precheck function will call depending on whether the precheck function's validation checks pass or fail. As shown in the reference implementation, the `allow` function will be called if `buyAmountAllowed` is `true`, and the `deny` function will be called if it's `false`. The structure of the objects passed to `allow` and `deny` are defined by the `precheckAllowResultSchema` and `precheckDenyResultSchema` respectively.
+The `allow` and `deny` parameters are functions that your `precheck` function will call depending on whether the `precheck` function's validation checks pass or fail. As shown in the reference implementation, the `allow` function will be called if `buyAmountAllowed` is `true`, and the `deny` function will be called if it's `false`. The structure of the objects passed to `allow` and `deny` are defined by the `precheckAllowResultSchema` and `precheckDenyResultSchema` respectively.
+
+### Required Property: Policy `evaluate` Function
+
+The `evaluate` function is the core function that defines the logic for your policy to determine whether the Vincent Tool should be permitted to execute. This function is called during the actual execution of the Vincent Tool, before any of the Tool's logic is executed.
+
+Unlike the `precheck` function, the `evaluate` function is allowed to mutate state, but keep in mind there's no guarantee the Vincent Tool will be executed as Vincent Policies executed after your policy can deny the Tool's execution
+
+Covered in the next section, a `commit` function is available to allow you to define logic that will be executed after all policies permit the Tool's execution, and the Tool was successfully executed.
+
+Defining an `evaluate` function is **required**, and the `evalAllowResultSchema` and `evalDenyResultSchema` are required to be defined in your `VincentPolicyDef` object.
+
+#### `evalAllowResultSchema`
+
+The `evalAllowResultSchema` is a Zod schema that describes the object that will be returned by the `evaluate` function if it's validation checks pass, and the policy permits the Vincent Tool to execute.
+
+What's returned by the `evaluate` function for the allow case is up to you as the Vincent Policy developer, but it should contain information that will be useful to the Vincent App Delegatee or information that a Vincent App may want to display to the Vincent App User.
+
+```typescript
+import { createVincentPolicy } from '@lit-protocol/vincent-tool-sdk';
+import { z } from 'zod';
+
+// Not included in the reference implementation,
+// but this is a helper function that checks if the buy amount is allowed based on the spending limit policy
+import { checkIfBuyAmountAllowed } from './policy-helpers/check-spending-limit';
+
+export const SpendingLimitPolicyToolParamsSchema z.object({ /** ... */ });
+const SpendingLimitPolicyUserParamsSchema = z.object({ /** ... */ });
+
+const SpendingLimitPolicyPrecheckAllowResultSchema = z.object({ /** ... */ });
+const SpendingLimitPolicyEvalDenyResultSchema = z.object({ /** ... */ });
+
+const SpendingLimitPolicyEvalAllowResultSchema = z.object({
+  appId: z.number(),
+  maxSpendingLimitInUsd: z.number(),
+  buyAmountInUsd: z.number(),
+});
+
+export const SpendingLimitPolicyDef = createVincentPolicy({
+  ipfsCid: 'Qm-REPLACE-ME',
+  packageName: '@lit-protocol/vincent-policy-spending-limit',
+
+  toolParamsSchema: SpendingLimitPolicyToolParamsSchema,
+  userParamsSchema: SpendingLimitPolicyUserParamsSchema,
+
+  precheckAllowResultSchema: SpendingLimitPolicyPrecheckAllowResultSchema,
+  precheckDenyResultSchema: SpendingLimitPolicyEvalDenyResultSchema,
+
+  evalAllowResultSchema: SpendingLimitPolicyEvalAllowResultSchema,
+
+  precheck: async ({ toolParams, userParams }, { allow, deny }) => { /** ... */ },
+});
+```
+
+For the Spending Limit Policy, `SpendingLimitPolicyEvalAllowResultSchema` is returning the same properties as the `SpendingLimitPolicyPrecheckAllowResultSchema`. This is fine if it's also the case for your policy, but there's no requirement that your `precheck` and `evaluate` functions return the same properties for the `allow` case.
+
+#### `evalDenyResultSchema`
+
+The `evalDenyResultSchema` is a Zod schema that describes the object that will be returned by the `evaluate` function if it's validation checks fail, and the policy denies the Vincent Tool from executing.
+
+What's returned by the `evaluate` function for the deny case is up to you as the Vincent Policy developer, but it should contain information that will be useful to the Vincent App Delegatee or information that a Vincent App may want to display to the Vincent App User to explain why the Vincent Tool was denied from executing.
+
+```typescript
+import { createVincentPolicy } from '@lit-protocol/vincent-tool-sdk';
+import { z } from 'zod';
+
+// Not included in the reference implementation,
+// but this is a helper function that checks if the buy amount is allowed based on the spending limit policy
+import { checkIfBuyAmountAllowed } from './policy-helpers/check-spending-limit';
+
+export const SpendingLimitPolicyToolParamsSchema z.object({ /** ... */ });
+const SpendingLimitPolicyUserParamsSchema = z.object({ /** ... */ });
+
+const SpendingLimitPolicyPrecheckAllowResultSchema = z.object({ /** ... */ });
+const SpendingLimitPolicyEvalDenyResultSchema = z.object({ /** ... */ });
+
+const SpendingLimitPolicyEvalAllowResultSchema = z.object({ /** ... */ });
+const SpendingLimitPolicyEvalDenyResultSchema = z.object({
+  reason: z.literal('Attempted buy amount exceeds daily limit'),
+  maxSpendingLimitInUsd: z.number(),
+  buyAmountInUsd: z.number(),
+});
+
+export const SpendingLimitPolicyDef = createVincentPolicy({
+  ipfsCid: 'Qm-REPLACE-ME',
+  packageName: '@lit-protocol/vincent-policy-spending-limit',
+
+  toolParamsSchema: SpendingLimitPolicyToolParamsSchema,
+  userParamsSchema: SpendingLimitPolicyUserParamsSchema,
+
+  precheckAllowResultSchema: SpendingLimitPolicyPrecheckAllowResultSchema,
+  precheckDenyResultSchema: SpendingLimitPolicyEvalDenyResultSchema,
+
+  evalAllowResultSchema: SpendingLimitPolicyEvalAllowResultSchema,
+  evalDenyResultSchema: SpendingLimitPolicyEvalDenyResultSchema,
+
+  precheck: async ({ toolParams, userParams }, { allow, deny }) => { /** ... */ },
+});
+```
+
+For the Spending Limit Policy, `SpendingLimitPolicyEvalDenyResultSchema` is returning the same properties as the `SpendingLimitPolicyEvalDenyResultSchema`. This is fine if it's also the case for your policy, but there's no requirement that your `precheck` and `evaluate` functions return the same properties for the `deny` case.
+
+#### The `evaluate` Function
+
+This function **must** be defined inline in the `VincentPolicyDef` object in order for the type inference that `createVincentPolicy` provides to work.
+
+The following is a reference implementation of the `evaluate` function for the Spending Limit Policy:
+
+```typescript
+import { createVincentPolicy } from '@lit-protocol/vincent-tool-sdk';
+import { z } from 'zod';
+
+// Not included in the reference implementation,
+// but this is a helper function that checks if the buy amount is allowed based on the spending limit policy
+import { checkIfBuyAmountAllowed } from './policy-helpers/check-spending-limit';
+
+export const SpendingLimitPolicyToolParamsSchema z.object({ /** ... */ });
+const SpendingLimitPolicyUserParamsSchema = z.object({ /** ... */ });
+
+const SpendingLimitPolicyPrecheckAllowResultSchema = z.object({ /** ... */ });
+const SpendingLimitPolicyEvalDenyResultSchema = z.object({ /** ... */ });
+
+const SpendingLimitPolicyEvalAllowResultSchema = z.object({ /** ... */ });
+const SpendingLimitPolicyEvalDenyResultSchema = z.object({ /** ... */ });
+
+export const SpendingLimitPolicyDef = createVincentPolicy({
+  ipfsCid: 'Qm-REPLACE-ME',
+  packageName: '@lit-protocol/vincent-policy-spending-limit',
+
+  toolParamsSchema: SpendingLimitPolicyToolParamsSchema,
+  userParamsSchema: SpendingLimitPolicyUserParamsSchema,
+
+  precheckAllowResultSchema: SpendingLimitPolicyPrecheckAllowResultSchema,
+  precheckDenyResultSchema: SpendingLimitPolicyEvalDenyResultSchema,
+
+  evalAllowResultSchema: SpendingLimitPolicyEvalAllowResultSchema,
+  evalDenyResultSchema: SpendingLimitPolicyEvalDenyResultSchema,
+
+  precheck: async ({ toolParams, userParams }, { allow, deny }) => { /** ... */ },
+  
+  evaluate: async ({ toolParams, userParams }, { allow, deny }) => {
+    const {
+      pkpEthAddress,
+      appId,
+      buyAmount,
+      ethRpcUrl,
+      rpcUrlForUniswap,
+      chainIdForUniswap,
+      tokenAddress,
+      tokenDecimals,
+    } = toolParams;
+    const { maxDailySpendAmountUsd } = userParams;
+
+    const { buyAmountAllowed, buyAmountInUsd, adjustedMaxDailySpendingLimit } =
+      await checkIfBuyAmountAllowed({
+        ethRpcUrl,
+        rpcUrlForUniswap,
+        chainIdForUniswap,
+        tokenAddress: tokenAddress as `0x${string}`,
+        tokenDecimals,
+        buyAmount,
+        maxDailySpendAmountUsd,
+        pkpEthAddress: pkpEthAddress as `0x${string}`,
+        appId,
+      });
+
+    return buyAmountAllowed
+      ? allow({
+          appId,
+          maxSpendingLimitInUsd: Number(adjustedMaxDailySpendingLimit),
+          buyAmountInUsd: Number(buyAmountInUsd),
+        })
+      : deny({
+          reason: 'Attempted buy amount exceeds daily limit',
+          maxSpendingLimitInUsd: Number(adjustedMaxDailySpendingLimit),
+          buyAmountInUsd: Number(buyAmountInUsd),
+        });
+  }
+});
+```
+
+Just like the `precheck` function, the input parameters to the `evaluate` function are magic values that are provided by the `createVincentPolicy` wrapper function.
+
+In this reference implementation, the `evaluate` function is the same as the `precheck` function, this is fine if it's also the case for your policy, but there's no requirement that your `precheck` and `evaluate` functions to have the same logic.
+
+### Optional Property: Policy `commit` Function
+
+The `commit` function is an optional function that is called after all policies permit the Tool's execution, and the Tool was successfully executed. This function is designed to give you the opportunity to write any data relevant for your policy do anything else you need to do after the Tool was successfully executed.
+
+The `commit` function is expected to mutate state, but it's not required to do so if your policy doesn't need to. `commit` functions are expected to be executed after a Vincent Tool was successfully executed, but there's no guarantee as other policies' `commit` functions could throw errors that would cause the Tool execution to halt.
+
+Defining a `commit` function is **optional**, and is based on whether your policy needs to do anything after the Vincent Tool was successfully executed. If you choose to define a `commit` function, you are required to define `commitParamsSchema`, `commitAllowResultSchema`, and `commitDenyResultSchema` in your `VincentPolicyDef` object.
+
+#### `commitParamsSchema`
+
+The `commitParamsSchema` property is a Zod schema that describes the properties your policies' `commit` function accepts as input parameters from the executing Vincent Tool.
+
+The parameters that should be provided to your `commit` function are up to you as the Vincent Policy developer, but it should be data the Vincent Tool developer will have access to, and should just be parameters that are required to execute your `commit` function.
+
+```typescript
+import { createVincentPolicy } from '@lit-protocol/vincent-tool-sdk';
+import { z } from 'zod';
+
+// Not included in the reference implementation,
+// but this is a helper function that checks if the buy amount is allowed based on the spending limit policy
+import { checkIfBuyAmountAllowed } from './policy-helpers/check-spending-limit';
+
+export const SpendingLimitPolicyToolParamsSchema z.object({ /** ... */ });
+const SpendingLimitPolicyUserParamsSchema = z.object({ /** ... */ });
+
+const SpendingLimitPolicyPrecheckAllowResultSchema = z.object({ /** ... */ });
+const SpendingLimitPolicyEvalDenyResultSchema = z.object({ /** ... */ });
+
+const SpendingLimitPolicyEvalAllowResultSchema = z.object({ /** ... */ });
+const SpendingLimitPolicyEvalDenyResultSchema = z.object({ /** ... */ });
+
+const SpendingLimitPolicyCommitParamsSchema = z.object({
+  appId: z.number(),
+  amountSpentUsd: z.number(),
+  maxSpendingLimitInUsd: z.number(),
+  pkpEthAddress: z.string(),
+  pkpPubKey: z.string(),
+});
+
+export const SpendingLimitPolicyDef = createVincentPolicy({
+  ipfsCid: 'Qm-REPLACE-ME',
+  packageName: '@lit-protocol/vincent-policy-spending-limit',
+
+  toolParamsSchema: SpendingLimitPolicyToolParamsSchema,
+  userParamsSchema: SpendingLimitPolicyUserParamsSchema,
+
+  precheckAllowResultSchema: SpendingLimitPolicyPrecheckAllowResultSchema,
+  precheckDenyResultSchema: SpendingLimitPolicyEvalDenyResultSchema,
+
+  evalAllowResultSchema: SpendingLimitPolicyEvalAllowResultSchema,
+  evalDenyResultSchema: SpendingLimitPolicyEvalDenyResultSchema,
+
+  commitParamsSchema: SpendingLimitPolicyCommitParamsSchema,
+
+  precheck: async ({ toolParams, userParams }, { allow, deny }) => { /** ... */ },
+  
+  evaluate: async ({ toolParams, userParams }, { allow, deny }) => { /** ... */ },
+});
+```
+
+For the Spending Limit Policy, `SpendingLimitPolicyCommitParamsSchema` is requiring the properties it needs in order to make a transaction to it's bespoke smart contract to update the amount of USD spent on behalf of the Vincent App User by the App Delegatees in the past day.
+
+#### `commitAllowResultSchema`
+
+The `commitAllowResultSchema` is a Zod schema that describes the object that will be returned by the `commit` function if it executes successfully.
+
+What's returned by the `commit` function for the allow case is up to you as the Vincent Policy developer, but it should contain information that will be useful to the Vincent App Delegatee or information that a Vincent App may want to display to the Vincent App User.
+
+```typescript
+import { createVincentPolicy } from '@lit-protocol/vincent-tool-sdk';
+import { z } from 'zod';
+
+// Not included in the reference implementation,
+// but this is a helper function that checks if the buy amount is allowed based on the spending limit policy
+import { checkIfBuyAmountAllowed } from './policy-helpers/check-spending-limit';
+
+export const SpendingLimitPolicyToolParamsSchema z.object({ /** ... */ });
+const SpendingLimitPolicyUserParamsSchema = z.object({ /** ... */ });
+
+const SpendingLimitPolicyPrecheckAllowResultSchema = z.object({ /** ... */ });
+const SpendingLimitPolicyEvalDenyResultSchema = z.object({ /** ... */ });
+
+const SpendingLimitPolicyEvalAllowResultSchema = z.object({ /** ... */ });
+const SpendingLimitPolicyEvalDenyResultSchema = z.object({ /** ... */ });
+
+const SpendingLimitPolicyCommitParamsSchema = z.object({ /** ... */ });
+const SpendingLimitPolicyCommitAllowResultSchema = z.object({
+  spendTxHash: z.string(),
+});
+
+export const SpendingLimitPolicyDef = createVincentPolicy({
+  ipfsCid: 'Qm-REPLACE-ME',
+  packageName: '@lit-protocol/vincent-policy-spending-limit',
+
+  toolParamsSchema: SpendingLimitPolicyToolParamsSchema,
+  userParamsSchema: SpendingLimitPolicyUserParamsSchema,
+
+  precheckAllowResultSchema: SpendingLimitPolicyPrecheckAllowResultSchema,
+  precheckDenyResultSchema: SpendingLimitPolicyEvalDenyResultSchema,
+
+  evalAllowResultSchema: SpendingLimitPolicyEvalAllowResultSchema,
+  evalDenyResultSchema: SpendingLimitPolicyEvalDenyResultSchema,
+
+  commitParamsSchema: SpendingLimitPolicyCommitParamsSchema,
+  commitAllowResultSchema: SpendingLimitPolicyCommitAllowResultSchema,
+
+  precheck: async ({ toolParams, userParams }, { allow, deny }) => { /** ... */ },
+  
+  evaluate: async ({ toolParams, userParams }, { allow, deny }) => { /** ... */ },
+});
+```
+
+For the Spending Limit Policy, `SpendingLimitPolicyCommitAllowResultSchema` is returning the hash of the transaction that updates the amount of USD spent on behalf of the Vincent App User by the App Delegatees in the past day in it's own bespoke smart contract.
+
+#### `commitDenyResultSchema`
+
+The `commitDenyResultSchema` is a Zod schema that describes the object that will be returned by the `commit` function if it throws an error, or needs sends a "deny" signal to the Tool.
+
+What's returned by the `commit` function for the deny case is up to you as the Vincent Policy developer, but it should contain information that will be useful to the Vincent App Delegatee or information that a Vincent App may want to display to the Vincent App User to explain the error that occurred during the policies' `commit` execution.
+
+```typescript
+import { createVincentPolicy } from '@lit-protocol/vincent-tool-sdk';
+import { z } from 'zod';
+
+// Not included in the reference implementation,
+// but this is a helper function that checks if the buy amount is allowed based on the spending limit policy
+import { checkIfBuyAmountAllowed } from './policy-helpers/check-spending-limit';
+
+export const SpendingLimitPolicyToolParamsSchema z.object({ /** ... */ });
+const SpendingLimitPolicyUserParamsSchema = z.object({ /** ... */ });
+
+const SpendingLimitPolicyPrecheckAllowResultSchema = z.object({ /** ... */ });
+const SpendingLimitPolicyEvalDenyResultSchema = z.object({ /** ... */ });
+
+const SpendingLimitPolicyEvalAllowResultSchema = z.object({ /** ... */ });
+const SpendingLimitPolicyEvalDenyResultSchema = z.object({ /** ... */ });
+
+const SpendingLimitPolicyCommitParamsSchema = z.object({ /** ... */ });
+const SpendingLimitPolicyCommitAllowResultSchema = z.object({ /** ... */ });
+const SpendingLimitPolicyCommitDenyResultSchema = z.object({
+  error: z.string(),
+});
+
+export const SpendingLimitPolicyDef = createVincentPolicy({
+  ipfsCid: 'Qm-REPLACE-ME',
+  packageName: '@lit-protocol/vincent-policy-spending-limit',
+
+  toolParamsSchema: SpendingLimitPolicyToolParamsSchema,
+  userParamsSchema: SpendingLimitPolicyUserParamsSchema,
+
+  precheckAllowResultSchema: SpendingLimitPolicyPrecheckAllowResultSchema,
+  precheckDenyResultSchema: SpendingLimitPolicyEvalDenyResultSchema,
+
+  evalAllowResultSchema: SpendingLimitPolicyEvalAllowResultSchema,
+  evalDenyResultSchema: SpendingLimitPolicyEvalDenyResultSchema,
+
+  commitParamsSchema: SpendingLimitPolicyCommitParamsSchema,
+  commitAllowResultSchema: SpendingLimitPolicyCommitAllowResultSchema,
+  commitDenyResultSchema: SpendingLimitPolicyCommitDenyResultSchema,
+
+  precheck: async ({ toolParams, userParams }, { allow, deny }) => { /** ... */ },
+  
+  evaluate: async ({ toolParams, userParams }, { allow, deny }) => { /** ... */ },
+});
+```
+
+For the Spending Limit Policy, `SpendingLimitPolicyCommitDenyResultSchema` is returning a `string` that describes the error that occurred during the policies' `commit` execution.
+
+#### The `commit` Function
+
+This function **must** be defined inline in the `VincentPolicyDef` object in order for the type inference that `createVincentPolicy` provides to work.
+
+The following is a reference implementation of the `commit` function for the Spending Limit Policy:
+
+```typescript
+import { createVincentPolicy } from '@lit-protocol/vincent-tool-sdk';
+import { z } from 'zod';
+
+// Not included in the reference implementation,
+// but this is a helper function that checks if the buy amount is allowed based on the spending limit policy
+import { checkIfBuyAmountAllowed } from './policy-helpers/check-spending-limit';
+
+// Not included in the reference implementation,
+// but this is a helper function that sends a transaction to the spending limit policy's bespoke smart contract
+// to update the amount of USD spent on behalf of the Vincent App User by the App Delegatees in the past day
+import { sendSpendTx } from './policy-helpers/send-spend-tx';
+
+export const SpendingLimitPolicyToolParamsSchema z.object({ /** ... */ });
+const SpendingLimitPolicyUserParamsSchema = z.object({ /** ... */ });
+
+const SpendingLimitPolicyPrecheckAllowResultSchema = z.object({ /** ... */ });
+const SpendingLimitPolicyEvalDenyResultSchema = z.object({ /** ... */ });
+
+const SpendingLimitPolicyEvalAllowResultSchema = z.object({ /** ... */ });
+const SpendingLimitPolicyEvalDenyResultSchema = z.object({ /** ... */ });
+
+const SpendingLimitPolicyCommitParamsSchema = z.object({ /** ... */ });
+const SpendingLimitPolicyCommitAllowResultSchema = z.object({ /** ... */ });
+const SpendingLimitPolicyCommitDenyResultSchema = z.object({
+  error: z.string(),
+});
+
+export const SpendingLimitPolicyDef = createVincentPolicy({
+  ipfsCid: 'Qm-REPLACE-ME',
+  packageName: '@lit-protocol/vincent-policy-spending-limit',
+
+  toolParamsSchema: SpendingLimitPolicyToolParamsSchema,
+  userParamsSchema: SpendingLimitPolicyUserParamsSchema,
+
+  precheckAllowResultSchema: SpendingLimitPolicyPrecheckAllowResultSchema,
+  precheckDenyResultSchema: SpendingLimitPolicyEvalDenyResultSchema,
+
+  evalAllowResultSchema: SpendingLimitPolicyEvalAllowResultSchema,
+  evalDenyResultSchema: SpendingLimitPolicyEvalDenyResultSchema,
+
+  commitParamsSchema: SpendingLimitPolicyCommitParamsSchema,
+  commitAllowResultSchema: SpendingLimitPolicyCommitAllowResultSchema,
+  commitDenyResultSchema: SpendingLimitPolicyCommitDenyResultSchema,
+
+  precheck: async ({ toolParams, userParams }, { allow, deny }) => { /** ... */ },
+  
+  evaluate: async ({ toolParams, userParams }, { allow, deny }) => { /** ... */ },
+
+  commit: async (params, { allow }) => {
+    const { appId, amountSpentUsd, maxSpendingLimitInUsd, pkpEthAddress, pkpPubKey } = params;
+
+    const spendTxHash = await sendSpendTx({
+      appId,
+      amountSpentUsd,
+      maxSpendingLimitInUsd,
+      spendingLimitDuration: 86400, // number of seconds in a day
+      pkpEthAddress,
+      pkpPubKey,
+    });
+
+    return allow({
+      spendTxHash,
+    });
+  }
+});
+```
+
+The input parameters to the `commit` function are magic values that are provided by the `createVincentPolicy` wrapper function. `params` is an object that contains the properties defined in the `commitParamsSchema` property of the `VincentPolicyDef` object.
+
+`allow` and `deny` are functions that are provided by the `createVincentPolicy` wrapper function. `allow` is a function that is called if the `commit` function executes successfully, and `deny` is a function that is called if the `commit` function throws an error, or needs sends a "deny" signal to the Tool.
+
+In the case of the Spending Limit Policy, the `commit` functions doesn't actually make use of the `deny` function as `sendSpendTx` will throw an error if anything fails, and this error will be caught the the `createVincentPolicy` wrapper function and formatted automatically.
+
+You would still call the `deny` function if you wanted to add additional context to an error message, or if you needed to send a "deny" signal to the Tool because something is wrong that didn't cause an error to be thrown (e.g. some application state isn't what it should be).
+
+The Spending Limit Policy's `commit` function is using the `sendSpendTx` helper function to send a transaction to the spending limit policy's bespoke smart contract to update the amount of USD spent on behalf of the Vincent App User by the App Delegatees in the past day.
+
+## Wrapping Up Your Custom Policy
+
+Now that you have your `VincentPolicyDef` object, the next step is to wrap the object using the `vincentPolicyHandler` function. This helper function wraps your `VincentPolicyDef` object in a function that can be used to execute the policy, providing it the magic values, and handling the formatting of any thrown errors.
+
+Because Vincent Policies are executed as Lit Protocol [Lit Actions](https://developer.litprotocol.com/sdk/serverless-signing/overview), you'll need to define your wrapped `VincentPolicyDef` in a separate file that will be bundled and compiled into a _Immediately Invoked Function Expression (IIFE)_, so that it can be uploaded to IPFS and used by the Lit Protocol network as a Lit Action.
+
+For the Spending Limit Policy, a new file called `vincent-policy-wrapped.ts` is created:
+
+```typescript
+import { vincentPolicyHandler } from '@lit-protocol/vincent-tool-sdk';
+
+// This is the VincentPolicyDef and the toolParamsSchema we've been defining above
+import { SpendingLimitPolicyDef, SpendingLimitPolicyToolParamsSchema } from './vincent-policy';
+
+declare const userPkpTokenId: string;
+declare const toolParams: typeof SpendingLimitPolicyToolParamsSchema;
+
+(async () =>
+  vincentPolicyHandler({
+    vincentPolicyDef: SpendingLimitPolicyDef,
+    context: { userPkpTokenId },
+    toolParams,
+  }))();
+```
