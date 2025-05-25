@@ -1,6 +1,6 @@
 # Developing a Custom Policy
 
-The `createVincentPolicy` function is a helper function that takes several required parameters to produce a strongly typed Policy object that describes properties of the policy such as input parameters and return values. It can be imported from the library like so:
+The `createVincentPolicy` function is a helper function that takes several required parameters to produce a strongly typed Policy object that describes properties of the policy such as input parameters and return values. It can be imported from the Vincent Tool and Policy SDK like so:
 
 ```typescript
 import { createVincentPolicy } from '@lit-protocol/vincent-tool-sdk';
@@ -105,7 +105,7 @@ Because this Spending Limit Policy is restricting the amount of USD that can be 
 
 To reiterate, the `SpendingLimitPolicyUserParamsSchema` shown above is a reference implementation for `userParamsSchema` and none of these properties are required for your custom Vincent Policy. The `userParamsSchema` you define is completely custom and used to provide your policy with the information it needs to determine whether the Vincent Tool should be permitted to execute.
 
-### Optional Property: Policy Precheck Function
+### Optional Property: Policy `precheck` Function
 
 The `precheck` function is a crucial optimization that helps Vincent App Delegatees avoid wasting resources on operations that would ultimately fail due to policy restrictions. For example, if a Spending Limit policy has already reached its daily maximum, there's no point in attempting the transaction.
 
@@ -114,11 +114,9 @@ Key characteristics of the `precheck` function:
 - It must be **non-mutative** - it should only read and validate, never modify state as there's no guarantee the your policy will be executed after the `precheck` function is called
 - It should perform the same validation checks that your policy will perform during execution
 - It provides a "best effort" prediction of whether the operation will succeed
-- It helps delegatees make informed decisions before committing resources to the operation
+- It helps Vincent App Delegatees make informed decisions before committing resources to the operation
 
-The `precheck` function acts as an early warning system, allowing delegatees to quickly determine if an operation is likely to succeed before investing time and computational resources in the full execution.
-
-Defining a `precheck` method is **optional**, but highly recommended. If you choose to define one, your policies' `VincentPolicyDef` will need to define a Zod schema for `precheckAllowResultSchema` which describes a successful precheck result, and `precheckDenyResultSchema` which describes a failed precheck result.
+Defining a `precheck` method is **optional**, but highly recommended. If you choose to define one, your policy's `VincentPolicyDef` will need to define a Zod schema for `precheckAllowResultSchema` which describes a successful precheck result, and `precheckDenyResultSchema` which describes a failed precheck result.
 
 #### `precheckAllowResultSchema`
 
@@ -449,13 +447,13 @@ In this reference implementation, the `evaluate` function is the same as the `pr
 
 The `commit` function is an optional function that is called after all policies permit the Tool's execution, and the Tool was successfully executed. This function is designed to give you the opportunity to write any data relevant for your policy do anything else you need to do after the Tool was successfully executed.
 
-The `commit` function is expected to mutate state, but it's not required to do so if your policy doesn't need to. `commit` functions are expected to be executed after a Vincent Tool was successfully executed, but there's no guarantee as other policies' `commit` functions could throw errors that would cause the Tool execution to halt.
+The `commit` function is expected to mutate state, but it's not required to do so if your policy doesn't need to. `commit` functions are expected to be executed after a Vincent Tool was successfully executed, but there's no guarantee as other policy's `commit` functions could throw errors that would cause the Tool execution to halt.
 
 Defining a `commit` function is **optional**, and is based on whether your policy needs to do anything after the Vincent Tool was successfully executed. If you choose to define a `commit` function, you are required to define `commitParamsSchema`, `commitAllowResultSchema`, and `commitDenyResultSchema` in your `VincentPolicyDef` object.
 
 #### `commitParamsSchema`
 
-The `commitParamsSchema` property is a Zod schema that describes the properties your policies' `commit` function accepts as input parameters from the executing Vincent Tool.
+The `commitParamsSchema` property is a Zod schema that describes the properties your policy's `commit` function accepts as input parameters from the executing Vincent Tool.
 
 The parameters that should be provided to your `commit` function are up to you as the Vincent Policy developer, but it should be data the Vincent Tool developer will have access to, and should just be parameters that are required to execute your `commit` function.
 
@@ -563,7 +561,7 @@ For the Spending Limit Policy, `SpendingLimitPolicyCommitAllowResultSchema` is r
 
 The `commitDenyResultSchema` is a Zod schema that describes the object that will be returned by the `commit` function if it throws an error, or needs sends a "deny" signal to the Tool.
 
-What's returned by the `commit` function for the deny case is up to you as the Vincent Policy developer, but it should contain information that will be useful to the Vincent App Delegatee or information that a Vincent App may want to display to the Vincent App User to explain the error that occurred during the policies' `commit` execution.
+What's returned by the `commit` function for the deny case is up to you as the Vincent Policy developer, but it should contain information that will be useful to the Vincent App Delegatee or information that a Vincent App may want to display to the Vincent App User to explain the error that occurred during the policy's `commit` execution.
 
 ```typescript
 import { createVincentPolicy } from '@lit-protocol/vincent-tool-sdk';
@@ -611,7 +609,7 @@ export const SpendingLimitPolicyDef = createVincentPolicy({
 });
 ```
 
-For the Spending Limit Policy, `SpendingLimitPolicyCommitDenyResultSchema` is returning a `string` that describes the error that occurred during the policies' `commit` execution.
+For the Spending Limit Policy, `SpendingLimitPolicyCommitDenyResultSchema` is returning a `string` that describes the error that occurred during the policy's `commit` execution.
 
 #### The `commit` Function
 
