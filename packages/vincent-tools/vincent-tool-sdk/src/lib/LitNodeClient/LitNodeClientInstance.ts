@@ -1,3 +1,5 @@
+// src/lib/LitNodeClient/LitNodeClientInstance.ts
+
 import { LitNodeClient } from '@lit-protocol/lit-node-client';
 import { LIT_NETWORKS_KEYS } from '@lit-protocol/types';
 

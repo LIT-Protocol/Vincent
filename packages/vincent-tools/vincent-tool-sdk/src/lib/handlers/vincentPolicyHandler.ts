@@ -2,12 +2,12 @@
 
 import { ethers } from 'ethers';
 
-import { InferOrUndefined, VincentPolicyDef } from '../types';
+import { BaseContext, InferOrUndefined, VincentPolicy } from '../types';
 import { getOnePolicysOnChainParams } from '../policyCore/policyParameters/getOnchainPolicyParams';
-import { LIT_DATIL_VINCENT_ADDRESS } from './constants';
+import { LIT_DATIL_PUBKEY_ROUTER_ADDRESS, LIT_DATIL_VINCENT_ADDRESS } from './constants';
 import { createDenyResult } from '../policyCore/helpers';
-import { createVincentPolicy } from '../policyCore';
 import { z } from 'zod';
+import { getPkpInfo } from '../toolCore/helpers';
 
 declare const Lit: {
   Actions: {
@@ -29,11 +29,11 @@ export async function vincentPolicyHandler<
   EvalAllowResult extends z.ZodType | undefined = undefined,
   EvalDenyResult extends z.ZodType | undefined = undefined,
 >({
-  vincentPolicyDef,
+  vincentPolicy,
   context,
   toolParams,
 }: {
-  vincentPolicyDef: VincentPolicyDef<
+  vincentPolicy: VincentPolicy<
     PackageName,
     PolicyToolParams,
     UserParams,
@@ -43,36 +43,37 @@ export async function vincentPolicyHandler<
     EvalDenyResult,
     any, // CommitParams
     any, // CommitAllowResult
-    any, // CommitDenyResult
-    any, // evaluate
-    any, // precheck
-    any // commit
+    any // CommitDenyResult
   >;
-  toolParams: PolicyToolParams;
-  context: {
-    userPkpTokenId: string;
-    toolIpfsCid: string;
-    rpcUrl: string;
-  };
+  toolParams: unknown;
+  context: BaseContext;
 }) {
-  const { userPkpTokenId, toolIpfsCid } = context;
+  const {
+    delegation: { delegator },
+  } = context;
   const policyIpfsCid = LitAuth.actionIpfsIds[0];
+  const toolIpfsCid = LitAuth.actionIpfsIds[1];
 
   try {
     const delegationRpcUrl = await Lit.Actions.getRpcUrl({
       chain: 'yellowstone',
     });
 
+    const { tokenId } = await getPkpInfo({
+      litPubkeyRouterAddress: LIT_DATIL_PUBKEY_ROUTER_ADDRESS,
+      yellowstoneRpcUrl: 'https://yellowstone-rpc.litprotocol.com/',
+      pkpEthAddress: delegator,
+    });
+
     const onChainPolicyParams = await getOnePolicysOnChainParams({
       delegationRpcUrl,
       vincentContractAddress: LIT_DATIL_VINCENT_ADDRESS,
       appDelegateeAddress: ethers.utils.getAddress(LitAuth.authSigAddress),
-      agentWalletPkpTokenId: userPkpTokenId,
-      toolIpfsCid: toolIpfsCid,
+      agentWalletPkpTokenId: tokenId,
+      toolIpfsCid,
       policyIpfsCid,
     });
 
-    const vincentPolicy = createVincentPolicy(vincentPolicyDef);
     const evaluateResult = await vincentPolicy.evaluate(
       {
         toolParams,
@@ -81,7 +82,7 @@ export async function vincentPolicyHandler<
       {
         delegation: {
           delegatee: ethers.utils.getAddress(LitAuth.authSigAddress),
-          delegator: userPkpTokenId,
+          delegator,
         },
       },
     );
@@ -89,14 +90,12 @@ export async function vincentPolicyHandler<
     Lit.Actions.setResponse({
       response: JSON.stringify({
         ...evaluateResult,
-        ipfsCid: policyIpfsCid,
       }),
     });
   } catch (error) {
     Lit.Actions.setResponse({
       response: JSON.stringify(
         createDenyResult({
-          ipfsCid: policyIpfsCid,
           message: error instanceof Error ? error.message : String(error),
         }),
       ),

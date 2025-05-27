@@ -9,6 +9,10 @@
     "tslib": "^2.3.0",
     "zod": "^3.24.1"
   },
+  "scripts": {
+    "watch:type-tests": "chokidar 'src/**/*' --initial --await-write-finish --delay 100 --silent -c './scripts/run-typecheck.sh'",
+    "typecheck": "./scripts/precommit-check.sh"
+  },
   "type": "commonjs",
   "main": "./dist/index.js",
   "typings": "./dist/index.d.ts",

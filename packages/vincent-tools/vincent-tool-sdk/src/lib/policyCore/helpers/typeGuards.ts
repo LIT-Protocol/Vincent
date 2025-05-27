@@ -7,6 +7,7 @@ import {
   PolicyResponseDeny,
   ZodValidationDenyResult,
 } from '../../types';
+import { z } from 'zod';
 
 export function isZodValidationDenyResult(result: unknown): result is ZodValidationDenyResult {
   return typeof result === 'object' && result !== null && 'zodError' in result;
@@ -30,7 +31,7 @@ export function isPolicyAllowResponse<T>(val: unknown): val is PolicyResponseAll
   );
 }
 
-export function isPolicyResponse<AllowResult, DenyResult>(
+export function isPolicyResponse<AllowResult extends z.ZodType, DenyResult extends z.ZodType>(
   value: unknown,
 ): value is PolicyResponse<AllowResult, DenyResult> {
   return (

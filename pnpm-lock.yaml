@@ -52,7 +52,7 @@ importers:
         version: 7.1.1(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       '@lit-protocol/vincent-sdk':
         specifier: 0.0.6
-        version: link:packages/sdk
+        version: 0.0.6(@walletconnect/modal@2.7.0(@types/react@19.1.2)(react@19.1.0))(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
       '@radix-ui/react-dialog':
         specifier: ^1.1.6
         version: 1.1.11(@types/react-dom@19.1.2(@types/react@19.1.2))(@types/react@19.1.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -449,7 +449,7 @@ importers:
         version: 1.4.4
       '@uniswap/v3-sdk':
         specifier: ^3.25.2
-        version: 3.25.2(hardhat@2.24.0(bufferutil@4.0.9)(ts-node@10.9.2(@swc/core@1.5.29(@swc/helpers@0.5.17))(@types/node@20.17.32)(typescript@5.8.3))(typescript@5.8.3)(utf-8-validate@5.0.10))
+        version: 3.25.2(hardhat@2.24.1(bufferutil@4.0.9)(ts-node@10.9.2(@swc/core@1.5.29(@swc/helpers@0.5.17))(@types/node@20.17.32)(typescript@5.8.3))(typescript@5.8.3)(utf-8-validate@5.0.10))
       ethers:
         specifier: ^5.7.2
         version: 5.7.2(bufferutil@4.0.9)(utf-8-validate@5.0.10)
@@ -523,7 +523,7 @@ importers:
         version: 1.4.4
       '@uniswap/v3-sdk':
         specifier: ^3.25.2
-        version: 3.25.2(hardhat@2.24.0(bufferutil@4.0.9)(ts-node@10.9.2(@swc/core@1.5.29(@swc/helpers@0.5.17))(@types/node@20.17.32)(typescript@5.8.3))(typescript@5.8.3)(utf-8-validate@5.0.10))
+        version: 3.25.2(hardhat@2.24.1(bufferutil@4.0.9)(ts-node@10.9.2(@swc/core@1.5.29(@swc/helpers@0.5.17))(@types/node@20.17.32)(typescript@5.8.3))(typescript@5.8.3)(utf-8-validate@5.0.10))
       ethers:
         specifier: ^5.7.2
         version: 5.7.2(bufferutil@4.0.9)(utf-8-validate@5.0.10)
@@ -1249,8 +1249,8 @@ packages:
   '@emotion/hash@0.9.2':
     resolution: {integrity: sha512-MyqliTZGuOm3+5ZRSaaBGP3USLw6+EGykkwZns2EPC5g8jJ4z9OrdZY9apkl3+UP9+sdz76YYkwCKP5gh8iY3g==}
 
-  '@ensofinance/sdk@1.0.18':
-    resolution: {integrity: sha512-oC2bJuluj5a1Jct7Un5XtxH/+0vZ5zETg4LtfhzBQ2uh7cljQr/ANQK5mYjj8FFE+D7pJns384PHy13/CgkCEg==}
+  '@ensofinance/sdk@1.1.1':
+    resolution: {integrity: sha512-7H2lQG72J6L/WYZTdzvDpaORABTz3yTs8yiEMoUGVbmEaQ7RjrH1zn4iKR5HnCaSCwhabTbm8vtA/lWYFm13SA==}
 
   '@esbuild/aix-ppc64@0.19.12':
     resolution: {integrity: sha512-bmoCYyWdEL3wDQIVbcyzRyeKLgk2WtWLTWz1ZIAZF/EGbNOwSA6ew3PftJ1PqMiOOGu0OyFMzG53L0zqIpPeNA==}
@@ -2158,6 +2158,10 @@ packages:
 
   '@lit-protocol/uint8arrays@7.1.1':
     resolution: {integrity: sha512-9EycDdx3WQSH97DwIXUVhJXblVR1iJZCSa7watNzt+j2Au7CikO/DiBpIHfBe7ULVLkCI7li5hAnVB9vDfDEtQ==}
+
+  '@lit-protocol/vincent-sdk@0.0.6':
+    resolution: {integrity: sha512-oLZEE3REcRuS0N1SO3WTUR9Lstpku0eKuNZ693YaJuRAlu2sMTeodHFUr68D9hPpdhn5G7LCtRkXlbGu4EFpAA==}
+    engines: {node: 20.11.1}
 
   '@lit-protocol/wasm@7.1.1':
     resolution: {integrity: sha512-B7qojNwmftZ+kOUgivm73pBL96LxDZKMn9XSmfOQ0HoirUbO0oLTIMV1UEbtU5Fkr4N+v+zKKcv+XJ7O1ZUCRw==}
@@ -3394,24 +3398,24 @@ packages:
     resolution: {integrity: sha512-E1ImOIAD1tBZFRdjeM4/pzTiTApC0AOBGwyAMS4fwIodCWArzJ3DWdoh8cKxeFM2fElkxBh2Aqts1BPC373rHA==}
     engines: {node: '>=5.10'}
 
-  '@solana/codecs-core@2.1.0':
-    resolution: {integrity: sha512-SR7pKtmJBg2mhmkel2NeHA1pz06QeQXdMv8WJoIR9m8F/hw80K/612uaYbwTt2nkK0jg/Qn/rNSd7EcJ4SBGjw==}
+  '@solana/codecs-core@2.1.1':
+    resolution: {integrity: sha512-iPQW3UZ2Vi7QFBo2r9tw0NubtH8EdrhhmZulx6lC8V5a+qjaxovtM/q/UW2BTNpqqHLfO0tIcLyBLrNH4HTWPg==}
     engines: {node: '>=20.18.0'}
     peerDependencies:
-      typescript: '>=5'
+      typescript: '>=5.3.3'
 
-  '@solana/codecs-numbers@2.1.0':
-    resolution: {integrity: sha512-XMu4yw5iCgQnMKsxSWPPOrGgtaohmupN3eyAtYv3K3C/MJEc5V90h74k5B1GUCiHvcrdUDO9RclNjD9lgbjFag==}
+  '@solana/codecs-numbers@2.1.1':
+    resolution: {integrity: sha512-m20IUPJhPUmPkHSlZ2iMAjJ7PaYUvlMtFhCQYzm9BEBSI6OCvXTG3GAPpAnSGRBfg5y+QNqqmKn4QHU3B6zzCQ==}
     engines: {node: '>=20.18.0'}
     peerDependencies:
-      typescript: '>=5'
+      typescript: '>=5.3.3'
 
-  '@solana/errors@2.1.0':
-    resolution: {integrity: sha512-l+GxAv0Ar4d3c3PlZdA9G++wFYZREEbbRyAFP8+n8HSg0vudCuzogh/13io6hYuUhG/9Ve8ARZNamhV7UScKNw==}
+  '@solana/errors@2.1.1':
+    resolution: {integrity: sha512-sj6DaWNbSJFvLzT8UZoabMefQUfSW/8tXK7NTiagsDmh+Q87eyQDDC9L3z+mNmx9b6dEf6z660MOIplDD2nfEw==}
     engines: {node: '>=20.18.0'}
     hasBin: true
     peerDependencies:
-      typescript: '>=5'
+      typescript: '>=5.3.3'
 
   '@solana/web3.js@1.98.2':
     resolution: {integrity: sha512-BqVwEG+TaG2yCkBMbD3C4hdpustR4FpuUFRPUmqRZYYlPI9Hg4XMWxHWOWRzHE9Lkc9NDjzXFX7lDXSgzC7R1A==}
@@ -6485,8 +6489,8 @@ packages:
     peerDependencies:
       hardhat: ^2.0.0
 
-  hardhat@2.24.0:
-    resolution: {integrity: sha512-wDkD5GPmttYv21MR7tGDkyQ22tO2V86OEV8pA7NcXWYUpibe8XZ2EanXCeRHO61vwEx0f7/M+NqrhJwasaNMJg==}
+  hardhat@2.24.1:
+    resolution: {integrity: sha512-3iwrO2liEGCw1rz/l/mlB1rSNexCc4CFcMj0DlvjXGChzmD3sGUgLwWDOZPf+ya8MEm5ZhO1oprRVmb/wVi0YA==}
     hasBin: true
     peerDependencies:
       ts-node: '*'
@@ -10470,7 +10474,7 @@ snapshots:
       '@babel/traverse': 7.27.0
       '@babel/types': 7.27.0
       convert-source-map: 2.0.0
-      debug: 4.4.0
+      debug: 4.4.0(supports-color@8.1.1)
       gensync: 1.0.0-beta.2
       json5: 2.2.3
       semver: 6.3.1
@@ -10522,7 +10526,7 @@ snapshots:
       '@babel/core': 7.26.10
       '@babel/helper-compilation-targets': 7.27.0
       '@babel/helper-plugin-utils': 7.26.5
-      debug: 4.4.0
+      debug: 4.4.0(supports-color@8.1.1)
       lodash.debounce: 4.0.8
       resolve: 1.22.10
     transitivePeerDependencies:
@@ -11216,7 +11220,7 @@ snapshots:
       '@babel/parser': 7.27.0
       '@babel/template': 7.27.0
       '@babel/types': 7.27.0
-      debug: 4.4.0
+      debug: 4.4.0(supports-color@8.1.1)
       globals: 11.12.0
     transitivePeerDependencies:
       - supports-color
@@ -11317,10 +11321,9 @@ snapshots:
 
   '@emotion/hash@0.9.2': {}
 
-  '@ensofinance/sdk@1.0.18':
+  '@ensofinance/sdk@1.1.1':
     dependencies:
       axios: 1.9.0
-      prettier: 3.5.3
     transitivePeerDependencies:
       - debug
 
@@ -11478,7 +11481,7 @@ snapshots:
   '@eslint/config-array@0.20.0':
     dependencies:
       '@eslint/object-schema': 2.1.6
-      debug: 4.4.0
+      debug: 4.4.0(supports-color@8.1.1)
       minimatch: 3.1.2
     transitivePeerDependencies:
       - supports-color
@@ -11492,7 +11495,7 @@ snapshots:
   '@eslint/eslintrc@3.3.1':
     dependencies:
       ajv: 6.12.6
-      debug: 4.4.0
+      debug: 4.4.0(supports-color@8.1.1)
       espree: 10.3.0
       globals: 14.0.0
       ignore: 5.3.2
@@ -11804,11 +11807,11 @@ snapshots:
     dependencies:
       '@ethersproject/abstract-provider': 5.7.0
       '@ethersproject/abstract-signer': 5.7.0
-      '@ethersproject/address': 5.8.0
+      '@ethersproject/address': 5.7.0
       '@ethersproject/base64': 5.7.0
       '@ethersproject/basex': 5.7.0
       '@ethersproject/bignumber': 5.7.0
-      '@ethersproject/bytes': 5.8.0
+      '@ethersproject/bytes': 5.7.0
       '@ethersproject/constants': 5.7.0
       '@ethersproject/hash': 5.7.0
       '@ethersproject/logger': 5.7.0
@@ -11817,7 +11820,7 @@ snapshots:
       '@ethersproject/random': 5.7.0
       '@ethersproject/rlp': 5.7.0
       '@ethersproject/sha2': 5.7.0
-      '@ethersproject/strings': 5.8.0
+      '@ethersproject/strings': 5.7.0
       '@ethersproject/transactions': 5.7.0
       '@ethersproject/web': 5.7.1
       bech32: 1.1.4
@@ -12550,7 +12553,7 @@ snapshots:
 
   '@lit-protocol/aw-tool-enso@0.1.0-23(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)':
     dependencies:
-      '@ensofinance/sdk': 1.0.18
+      '@ensofinance/sdk': 1.1.1
       '@lit-protocol/aw-tool': 0.1.0-23(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
       ethers: 5.7.2(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       tslib: 2.8.1
@@ -13654,6 +13657,41 @@ snapshots:
       - typescript
       - utf-8-validate
 
+  '@lit-protocol/vincent-sdk@0.0.6(@walletconnect/modal@2.7.0(@types/react@19.1.2)(react@19.1.0))(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)':
+    dependencies:
+      '@lit-protocol/auth-helpers': 7.1.1(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
+      '@lit-protocol/constants': 7.1.1(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
+      '@lit-protocol/lit-node-client': 7.1.1(@walletconnect/modal@2.7.0(@types/react@19.1.2)(react@19.1.0))(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
+      '@noble/secp256k1': 2.2.3
+      did-jwt: 8.0.14
+      ethers: 5.7.1(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+      tslib: 2.8.1
+    transitivePeerDependencies:
+      - '@azure/app-configuration'
+      - '@azure/cosmos'
+      - '@azure/data-tables'
+      - '@azure/identity'
+      - '@azure/keyvault-secrets'
+      - '@azure/storage-blob'
+      - '@capacitor/preferences'
+      - '@deno/kv'
+      - '@netlify/blobs'
+      - '@planetscale/database'
+      - '@react-native-async-storage/async-storage'
+      - '@upstash/redis'
+      - '@vercel/blob'
+      - '@vercel/kv'
+      - '@walletconnect/modal'
+      - aws4fetch
+      - bufferutil
+      - db0
+      - encoding
+      - ioredis
+      - supports-color
+      - typescript
+      - uploadthing
+      - utf-8-validate
+
   '@lit-protocol/wasm@7.1.1(bufferutil@4.0.9)(utf-8-validate@5.0.10)':
     dependencies:
       ethers: 5.7.2(bufferutil@4.0.9)(utf-8-validate@5.0.10)
@@ -13766,7 +13804,7 @@ snapshots:
       bufferutil: 4.0.9
       cross-fetch: 4.1.0
       date-fns: 2.30.0
-      debug: 4.4.0
+      debug: 4.4.0(supports-color@8.1.1)
       eciesjs: 0.4.14
       eventemitter2: 6.4.9
       readable-stream: 3.6.2
@@ -13790,7 +13828,7 @@ snapshots:
       '@paulmillr/qr': 0.2.1
       bowser: 2.11.0
       cross-fetch: 4.1.0
-      debug: 4.4.0
+      debug: 4.4.0(supports-color@8.1.1)
       eciesjs: 0.4.14
       eth-rpc-errors: 4.0.3
       eventemitter2: 6.4.9
@@ -13813,7 +13851,7 @@ snapshots:
     dependencies:
       '@ethereumjs/tx': 4.2.0
       '@types/debug': 4.1.12
-      debug: 4.4.0
+      debug: 4.4.0(supports-color@8.1.1)
       semver: 7.7.1
       superstruct: 1.0.4
     transitivePeerDependencies:
@@ -13826,7 +13864,7 @@ snapshots:
       '@noble/hashes': 1.8.0
       '@scure/base': 1.2.5
       '@types/debug': 4.1.12
-      debug: 4.4.0
+      debug: 4.4.0(supports-color@8.1.1)
       pony-cause: 2.1.11
       semver: 7.7.1
       uuid: 9.0.1
@@ -13840,7 +13878,7 @@ snapshots:
       '@noble/hashes': 1.8.0
       '@scure/base': 1.2.5
       '@types/debug': 4.1.12
-      debug: 4.4.0
+      debug: 4.4.0(supports-color@8.1.1)
       pony-cause: 2.1.11
       semver: 7.7.1
       uuid: 9.0.1
@@ -15135,18 +15173,18 @@ snapshots:
     dependencies:
       buffer: 6.0.3
 
-  '@solana/codecs-core@2.1.0(typescript@5.8.3)':
+  '@solana/codecs-core@2.1.1(typescript@5.8.3)':
     dependencies:
-      '@solana/errors': 2.1.0(typescript@5.8.3)
+      '@solana/errors': 2.1.1(typescript@5.8.3)
       typescript: 5.8.3
 
-  '@solana/codecs-numbers@2.1.0(typescript@5.8.3)':
+  '@solana/codecs-numbers@2.1.1(typescript@5.8.3)':
     dependencies:
-      '@solana/codecs-core': 2.1.0(typescript@5.8.3)
-      '@solana/errors': 2.1.0(typescript@5.8.3)
+      '@solana/codecs-core': 2.1.1(typescript@5.8.3)
+      '@solana/errors': 2.1.1(typescript@5.8.3)
       typescript: 5.8.3
 
-  '@solana/errors@2.1.0(typescript@5.8.3)':
+  '@solana/errors@2.1.1(typescript@5.8.3)':
     dependencies:
       chalk: 5.4.1
       commander: 13.1.0
@@ -15158,7 +15196,7 @@ snapshots:
       '@noble/curves': 1.9.0
       '@noble/hashes': 1.8.0
       '@solana/buffer-layout': 4.0.1
-      '@solana/codecs-numbers': 2.1.0(typescript@5.8.3)
+      '@solana/codecs-numbers': 2.1.1(typescript@5.8.3)
       agentkeepalive: 4.6.0
       bn.js: 5.2.2
       borsh: 0.7.0
@@ -15290,7 +15328,7 @@ snapshots:
       '@swc-node/sourcemap-support': 0.5.1
       '@swc/core': 1.5.29(@swc/helpers@0.5.17)
       colorette: 2.0.20
-      debug: 4.4.0
+      debug: 4.4.0(supports-color@8.1.1)
       pirates: 4.0.7
       tslib: 2.8.1
       typescript: 5.8.3
@@ -15632,10 +15670,10 @@ snapshots:
     dependencies:
       '@types/yargs-parser': 21.0.3
 
-  '@typescript-eslint/eslint-plugin@8.31.1(@typescript-eslint/parser@8.31.1(eslint@9.25.1(jiti@2.4.2))(typescript@5.8.3))(eslint@9.25.1(jiti@2.4.2))(typescript@5.7.3)':
+  '@typescript-eslint/eslint-plugin@8.31.1(@typescript-eslint/parser@8.31.1(eslint@9.25.1(jiti@2.4.2))(typescript@5.7.3))(eslint@9.25.1(jiti@2.4.2))(typescript@5.7.3)':
     dependencies:
       '@eslint-community/regexpp': 4.12.1
-      '@typescript-eslint/parser': 8.31.1(eslint@9.25.1(jiti@2.4.2))(typescript@5.8.3)
+      '@typescript-eslint/parser': 8.31.1(eslint@9.25.1(jiti@2.4.2))(typescript@5.7.3)
       '@typescript-eslint/scope-manager': 8.31.1
       '@typescript-eslint/type-utils': 8.31.1(eslint@9.25.1(jiti@2.4.2))(typescript@5.7.3)
       '@typescript-eslint/utils': 8.31.1(eslint@9.25.1(jiti@2.4.2))(typescript@5.7.3)
@@ -15684,7 +15722,7 @@ snapshots:
       '@typescript-eslint/types': 8.31.1
       '@typescript-eslint/typescript-estree': 8.31.1(typescript@5.8.3)
       '@typescript-eslint/visitor-keys': 8.31.1
-      debug: 4.4.0
+      debug: 4.4.0(supports-color@8.1.1)
       eslint: 9.25.1(jiti@2.4.2)
       typescript: 5.8.3
     transitivePeerDependencies:
@@ -15710,7 +15748,7 @@ snapshots:
     dependencies:
       '@typescript-eslint/typescript-estree': 8.31.1(typescript@5.8.3)
       '@typescript-eslint/utils': 8.31.1(eslint@9.25.1(jiti@2.4.2))(typescript@5.8.3)
-      debug: 4.4.0
+      debug: 4.4.0(supports-color@8.1.1)
       eslint: 9.25.1(jiti@2.4.2)
       ts-api-utils: 2.1.0(typescript@5.8.3)
       typescript: 5.8.3
@@ -15737,7 +15775,7 @@ snapshots:
     dependencies:
       '@typescript-eslint/types': 8.31.1
       '@typescript-eslint/visitor-keys': 8.31.1
-      debug: 4.4.0
+      debug: 4.4.0(supports-color@8.1.1)
       fast-glob: 3.3.3
       is-glob: 4.0.3
       minimatch: 9.0.5
@@ -15788,14 +15826,14 @@ snapshots:
       tiny-invariant: 1.3.3
       toformat: 2.0.0
 
-  '@uniswap/swap-router-contracts@1.3.1(hardhat@2.24.0(bufferutil@4.0.9)(ts-node@10.9.2(@swc/core@1.5.29(@swc/helpers@0.5.17))(@types/node@20.17.32)(typescript@5.8.3))(typescript@5.8.3)(utf-8-validate@5.0.10))':
+  '@uniswap/swap-router-contracts@1.3.1(hardhat@2.24.1(bufferutil@4.0.9)(ts-node@10.9.2(@swc/core@1.5.29(@swc/helpers@0.5.17))(@types/node@20.17.32)(typescript@5.8.3))(typescript@5.8.3)(utf-8-validate@5.0.10))':
     dependencies:
       '@openzeppelin/contracts': 3.4.2-solc-0.7
       '@uniswap/v2-core': 1.0.1
       '@uniswap/v3-core': 1.0.1
       '@uniswap/v3-periphery': 1.4.4
       dotenv: 14.3.2
-      hardhat-watcher: 2.5.0(hardhat@2.24.0(bufferutil@4.0.9)(ts-node@10.9.2(@swc/core@1.5.29(@swc/helpers@0.5.17))(@types/node@20.17.32)(typescript@5.8.3))(typescript@5.8.3)(utf-8-validate@5.0.10))
+      hardhat-watcher: 2.5.0(hardhat@2.24.1(bufferutil@4.0.9)(ts-node@10.9.2(@swc/core@1.5.29(@swc/helpers@0.5.17))(@types/node@20.17.32)(typescript@5.8.3))(typescript@5.8.3)(utf-8-validate@5.0.10))
     transitivePeerDependencies:
       - hardhat
 
@@ -15813,12 +15851,12 @@ snapshots:
       '@uniswap/v3-core': 1.0.1
       base64-sol: 1.0.1
 
-  '@uniswap/v3-sdk@3.25.2(hardhat@2.24.0(bufferutil@4.0.9)(ts-node@10.9.2(@swc/core@1.5.29(@swc/helpers@0.5.17))(@types/node@20.17.32)(typescript@5.8.3))(typescript@5.8.3)(utf-8-validate@5.0.10))':
+  '@uniswap/v3-sdk@3.25.2(hardhat@2.24.1(bufferutil@4.0.9)(ts-node@10.9.2(@swc/core@1.5.29(@swc/helpers@0.5.17))(@types/node@20.17.32)(typescript@5.8.3))(typescript@5.8.3)(utf-8-validate@5.0.10))':
     dependencies:
       '@ethersproject/abi': 5.8.0
       '@ethersproject/solidity': 5.7.0
       '@uniswap/sdk-core': 7.7.2
-      '@uniswap/swap-router-contracts': 1.3.1(hardhat@2.24.0(bufferutil@4.0.9)(ts-node@10.9.2(@swc/core@1.5.29(@swc/helpers@0.5.17))(@types/node@20.17.32)(typescript@5.8.3))(typescript@5.8.3)(utf-8-validate@5.0.10))
+      '@uniswap/swap-router-contracts': 1.3.1(hardhat@2.24.1(bufferutil@4.0.9)(ts-node@10.9.2(@swc/core@1.5.29(@swc/helpers@0.5.17))(@types/node@20.17.32)(typescript@5.8.3))(typescript@5.8.3)(utf-8-validate@5.0.10))
       '@uniswap/v3-periphery': 1.4.4
       '@uniswap/v3-staker': 1.0.0
       tiny-invariant: 1.3.3
@@ -16065,7 +16103,7 @@ snapshots:
       '@verdaccio/loaders': 8.0.0-next-8.6
       '@verdaccio/signature': 8.0.0-next-8.7
       '@verdaccio/utils': 8.1.0-next-8.15
-      debug: 4.4.0
+      debug: 4.4.0(supports-color@8.1.1)
       lodash: 4.17.21
       verdaccio-htpasswd: 13.0.0-next-8.15
     transitivePeerDependencies:
@@ -16080,7 +16118,7 @@ snapshots:
     dependencies:
       '@verdaccio/core': 8.0.0-next-8.15
       '@verdaccio/utils': 8.1.0-next-8.15
-      debug: 4.4.0
+      debug: 4.4.0(supports-color@8.1.1)
       js-yaml: 4.1.0
       lodash: 4.17.21
       minimatch: 7.4.6
@@ -16106,7 +16144,7 @@ snapshots:
 
   '@verdaccio/loaders@8.0.0-next-8.6':
     dependencies:
-      debug: 4.4.0
+      debug: 4.4.0(supports-color@8.1.1)
       lodash: 4.17.21
     transitivePeerDependencies:
       - supports-color
@@ -16129,7 +16167,7 @@ snapshots:
       '@verdaccio/core': 8.0.0-next-8.15
       '@verdaccio/logger-prettify': 8.0.0-next-8.2
       colorette: 2.0.20
-      debug: 4.4.0
+      debug: 4.4.0(supports-color@8.1.1)
     transitivePeerDependencies:
       - supports-color
 
@@ -16154,7 +16192,7 @@ snapshots:
       '@verdaccio/core': 8.0.0-next-8.15
       '@verdaccio/url': 13.0.0-next-8.15
       '@verdaccio/utils': 8.1.0-next-8.15
-      debug: 4.4.0
+      debug: 4.4.0(supports-color@8.1.1)
       express: 4.21.2
       express-rate-limit: 5.5.1
       lodash: 4.17.21
@@ -16168,7 +16206,7 @@ snapshots:
   '@verdaccio/signature@8.0.0-next-8.7':
     dependencies:
       '@verdaccio/config': 8.0.0-next-8.15
-      debug: 4.4.0
+      debug: 4.4.0(supports-color@8.1.1)
       jsonwebtoken: 9.0.2
     transitivePeerDependencies:
       - supports-color
@@ -16180,7 +16218,7 @@ snapshots:
       '@verdaccio/core': 8.0.0-next-8.15
       '@verdaccio/url': 13.0.0-next-8.15
       '@verdaccio/utils': 8.1.0-next-8.15
-      debug: 4.4.0
+      debug: 4.4.0(supports-color@8.1.1)
       gunzip-maybe: 1.4.2
       lodash: 4.17.21
       tar-stream: 3.1.7
@@ -16192,7 +16230,7 @@ snapshots:
   '@verdaccio/url@13.0.0-next-8.15':
     dependencies:
       '@verdaccio/core': 8.0.0-next-8.15
-      debug: 4.4.0
+      debug: 4.4.0(supports-color@8.1.1)
       lodash: 4.17.21
       validator: 13.12.0
     transitivePeerDependencies:
@@ -16925,7 +16963,7 @@ snapshots:
 
   agent-base@6.0.2:
     dependencies:
-      debug: 4.4.0
+      debug: 4.4.0(supports-color@8.1.1)
     transitivePeerDependencies:
       - supports-color
 
@@ -17164,7 +17202,7 @@ snapshots:
 
   axios@1.9.0:
     dependencies:
-      follow-redirects: 1.15.9
+      follow-redirects: 1.15.9(debug@4.4.0)
       form-data: 4.0.2
       proxy-from-env: 1.1.0
     transitivePeerDependencies:
@@ -17984,10 +18022,6 @@ snapshots:
     dependencies:
       ms: 2.1.3
 
-  debug@4.4.0:
-    dependencies:
-      ms: 2.1.3
-
   debug@4.4.0(supports-color@8.1.1):
     dependencies:
       ms: 2.1.3
@@ -18079,7 +18113,7 @@ snapshots:
   detect-port@1.6.1:
     dependencies:
       address: 1.2.2
-      debug: 4.4.0
+      debug: 4.4.0(supports-color@8.1.1)
     transitivePeerDependencies:
       - supports-color
 
@@ -18556,7 +18590,7 @@ snapshots:
   eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.31.0)(eslint@9.25.1(jiti@2.4.2)):
     dependencies:
       '@nolyfill/is-core-module': 1.0.39
-      debug: 4.4.0
+      debug: 4.4.0(supports-color@8.1.1)
       eslint: 9.25.1(jiti@2.4.2)
       get-tsconfig: 4.10.0
       is-bun-module: 2.0.0
@@ -18693,7 +18727,7 @@ snapshots:
       ajv: 6.12.6
       chalk: 4.1.2
       cross-spawn: 7.0.6
-      debug: 4.4.0
+      debug: 4.4.0(supports-color@8.1.1)
       escape-string-regexp: 4.0.0
       eslint-scope: 8.3.0
       eslint-visitor-keys: 4.2.0
@@ -19028,7 +19062,7 @@ snapshots:
 
   extension-port-stream@3.0.0:
     dependencies:
-      readable-stream: 4.7.0
+      readable-stream: 3.6.2
       webextension-polyfill: 0.10.0
 
   extglob@2.0.4:
@@ -19178,8 +19212,6 @@ snapshots:
   flat@5.0.2: {}
 
   flatted@3.3.3: {}
-
-  follow-redirects@1.15.9: {}
 
   follow-redirects@1.15.9(debug@4.4.0):
     optionalDependencies:
@@ -19427,12 +19459,12 @@ snapshots:
 
   hard-rejection@2.1.0: {}
 
-  hardhat-watcher@2.5.0(hardhat@2.24.0(bufferutil@4.0.9)(ts-node@10.9.2(@swc/core@1.5.29(@swc/helpers@0.5.17))(@types/node@20.17.32)(typescript@5.8.3))(typescript@5.8.3)(utf-8-validate@5.0.10)):
+  hardhat-watcher@2.5.0(hardhat@2.24.1(bufferutil@4.0.9)(ts-node@10.9.2(@swc/core@1.5.29(@swc/helpers@0.5.17))(@types/node@20.17.32)(typescript@5.8.3))(typescript@5.8.3)(utf-8-validate@5.0.10)):
     dependencies:
       chokidar: 3.6.0
-      hardhat: 2.24.0(bufferutil@4.0.9)(ts-node@10.9.2(@swc/core@1.5.29(@swc/helpers@0.5.17))(@types/node@20.17.32)(typescript@5.8.3))(typescript@5.8.3)(utf-8-validate@5.0.10)
+      hardhat: 2.24.1(bufferutil@4.0.9)(ts-node@10.9.2(@swc/core@1.5.29(@swc/helpers@0.5.17))(@types/node@20.17.32)(typescript@5.8.3))(typescript@5.8.3)(utf-8-validate@5.0.10)
 
-  hardhat@2.24.0(bufferutil@4.0.9)(ts-node@10.9.2(@swc/core@1.5.29(@swc/helpers@0.5.17))(@types/node@20.17.32)(typescript@5.8.3))(typescript@5.8.3)(utf-8-validate@5.0.10):
+  hardhat@2.24.1(bufferutil@4.0.9)(ts-node@10.9.2(@swc/core@1.5.29(@swc/helpers@0.5.17))(@types/node@20.17.32)(typescript@5.8.3))(typescript@5.8.3)(utf-8-validate@5.0.10):
     dependencies:
       '@ethereumjs/util': 9.1.0
       '@ethersproject/abi': 5.8.0
@@ -19464,7 +19496,7 @@ snapshots:
       mocha: 10.8.2
       p-map: 4.0.0
       picocolors: 1.1.1
-      raw-body: 2.5.2
+      raw-body: 2.4.1
       resolve: 1.17.0
       semver: 6.3.1
       solc: 0.8.26(debug@4.4.0)
@@ -19611,7 +19643,7 @@ snapshots:
   https-proxy-agent@5.0.1:
     dependencies:
       agent-base: 6.0.2
-      debug: 4.4.0
+      debug: 4.4.0(supports-color@8.1.1)
     transitivePeerDependencies:
       - supports-color
 
@@ -20020,7 +20052,7 @@ snapshots:
 
   istanbul-lib-source-maps@4.0.1:
     dependencies:
-      debug: 4.4.0
+      debug: 4.4.0(supports-color@8.1.1)
       istanbul-lib-coverage: 3.2.2
       source-map: 0.6.1
     transitivePeerDependencies:
@@ -20736,7 +20768,7 @@ snapshots:
     dependencies:
       chalk: 5.4.1
       commander: 13.1.0
-      debug: 4.4.0
+      debug: 4.4.0(supports-color@8.1.1)
       execa: 8.0.1
       lilconfig: 3.1.3
       listr2: 8.3.2
@@ -21981,7 +22013,7 @@ snapshots:
     dependencies:
       '@assemblyscript/loader': 0.9.4
       bl: 5.1.0
-      debug: 4.4.0
+      debug: 4.4.0(supports-color@8.1.1)
       minimist: 1.2.8
       node-fetch: 2.7.0
       readable-stream: 3.6.2
@@ -23381,7 +23413,7 @@ snapshots:
 
   typescript-eslint@8.31.1(eslint@9.25.1(jiti@2.4.2))(typescript@5.7.3):
     dependencies:
-      '@typescript-eslint/eslint-plugin': 8.31.1(@typescript-eslint/parser@8.31.1(eslint@9.25.1(jiti@2.4.2))(typescript@5.8.3))(eslint@9.25.1(jiti@2.4.2))(typescript@5.7.3)
+      '@typescript-eslint/eslint-plugin': 8.31.1(@typescript-eslint/parser@8.31.1(eslint@9.25.1(jiti@2.4.2))(typescript@5.7.3))(eslint@9.25.1(jiti@2.4.2))(typescript@5.7.3)
       '@typescript-eslint/parser': 8.31.1(eslint@9.25.1(jiti@2.4.2))(typescript@5.7.3)
       '@typescript-eslint/utils': 8.31.1(eslint@9.25.1(jiti@2.4.2))(typescript@5.7.3)
       eslint: 9.25.1(jiti@2.4.2)
@@ -23654,7 +23686,7 @@ snapshots:
       apache-md5: 1.1.8
       bcryptjs: 2.4.3
       core-js: 3.40.0
-      debug: 4.4.0
+      debug: 4.4.0(supports-color@8.1.1)
       http-errors: 2.0.0
       unix-crypt-td-js: 1.1.4
     transitivePeerDependencies:
@@ -23682,7 +23714,7 @@ snapshots:
       clipanion: 4.0.0-rc.4(typanion@3.14.0)
       compression: 1.8.0
       cors: 2.8.5
-      debug: 4.4.0
+      debug: 4.4.0(supports-color@8.1.1)
       envinfo: 7.14.0
       express: 4.21.2
       handlebars: 4.7.8

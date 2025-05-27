@@ -1,18 +1,17 @@
-// src/lib/toolCore/helpers/evaluatePolicies.ts
+// src/lib/handlers/evaluatePolicies.ts
 
 import { z } from 'zod';
 import { ValidatedPolicyMap } from '../toolCore/helpers/validatePolicies';
-import { getPkpInfo } from '../toolCore/helpers/getPkpInfo';
-import { LIT_DATIL_PUBKEY_ROUTER_ADDRESS } from './constants';
 import {
+  BaseContext,
   PolicyEvaluationResultContext,
   PolicyResponse,
   PolicyResponseDeny,
-  VincentPolicyDef,
-  VincentToolDef,
-  VincentToolPolicy,
+  PolicyResponseDenyNoResult,
+  VincentPolicy,
+  VincentTool,
+  ZodValidationDenyResult,
 } from '../types';
-import { createVincentTool, EnrichedVincentToolPolicy } from '../toolCore/vincentTool';
 import {
   createDenyResult,
   getSchemaForPolicyResponseResult,
@@ -22,7 +21,9 @@ import {
 import {
   createAllowEvaluationResult,
   createDenyEvaluationResult,
+  returnNoResultDeny,
 } from '../policyCore/helpers/resultCreators';
+import { ToolPolicyMap } from '../toolCore/helpers';
 
 declare const Lit: {
   Actions: {
@@ -35,75 +36,57 @@ declare const Lit: {
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export async function evaluatePolicies<
   ToolParamsSchema extends z.ZodType,
-  PolicyArray extends readonly VincentToolPolicy<
-    ToolParamsSchema,
-    VincentPolicyDef<any, any, any, any, any, any, any, any, any, any, any, any, any>
-  >[],
-  PolicyMapType extends Record<string, EnrichedVincentToolPolicy> = {
-    [K in PolicyArray[number]['policyDef']['packageName']]: Extract<
-      PolicyArray[number],
-      { policyDef: { packageName: K } }
-    >;
-  },
+  PolicyMap extends ToolPolicyMap<any, any>,
+  PoliciesByPackageName extends PolicyMap['policyByPackageName'],
 >({
-  vincentToolDef,
-  parsedToolParams,
+  vincentTool,
+  context,
   validatedPolicies,
 }: {
-  vincentToolDef: VincentToolDef<
+  vincentTool: VincentTool<
     ToolParamsSchema,
-    PolicyArray,
-    PolicyArray[number]['policyDef']['packageName'],
-    PolicyMapType,
-    any,
-    any,
+    keyof PoliciesByPackageName & string,
+    PolicyMap,
+    PoliciesByPackageName,
     any,
     any,
     any,
     any
   >;
-  parsedToolParams: z.infer<ToolParamsSchema>;
-  validatedPolicies: ValidatedPolicyMap<z.infer<ToolParamsSchema>, PolicyMapType>;
-}): Promise<PolicyEvaluationResultContext<PolicyMapType>> {
-  const vincentTool = createVincentTool(vincentToolDef);
-
-  const userPkpInfo = await getPkpInfo({
-    litPubkeyRouterAddress: LIT_DATIL_PUBKEY_ROUTER_ADDRESS,
-    yellowstoneRpcUrl: 'https://yellowstone-rpc.litprotocol.com/',
-    pkpEthAddress: parsedToolParams.pkpEthAddress,
-  });
-
-  const evaluatedPolicies: PolicyEvaluationResultContext<PolicyMapType>['evaluatedPolicies'] = [];
-  const policyEvaluationResults: PolicyEvaluationResultContext<PolicyMapType>['allowedPolicies'] =
+  context: BaseContext;
+  validatedPolicies: ValidatedPolicyMap<z.infer<ToolParamsSchema>, PoliciesByPackageName>;
+}): Promise<PolicyEvaluationResultContext<PoliciesByPackageName>> {
+  const evaluatedPolicies: PolicyEvaluationResultContext<PoliciesByPackageName>['evaluatedPolicies'] =
+    [];
+  const policyEvaluationResults: PolicyEvaluationResultContext<PoliciesByPackageName>['allowedPolicies'] =
     {};
-  let policyDeniedResult: PolicyEvaluationResultContext<PolicyMapType>['deniedPolicy'] = undefined;
+  let policyDeniedResult: PolicyEvaluationResultContext<PoliciesByPackageName>['deniedPolicy'] =
+    undefined;
   const rawAllowedPolicies: Partial<{
-    [K in keyof PolicyMapType]: { result: unknown };
+    [K in keyof PoliciesByPackageName]: { result: unknown };
   }> = {};
 
   for (const { policyPackageName, toolPolicyParams } of validatedPolicies) {
     evaluatedPolicies.push(policyPackageName);
 
-    const policy = vincentTool.supportedPolicies[policyPackageName];
+    const policy = vincentTool.policyMap.policyByPackageName[policyPackageName];
     try {
       const litActionResponse = await Lit.Actions.call({
-        ipfsId: policy.policyDef.ipfsCid,
+        ipfsId: policy.vincentPolicy.ipfsCid,
         params: {
           toolParams: toolPolicyParams,
-          context: {
-            userPkpTokenId: userPkpInfo.tokenId,
-          },
+          context,
         },
       });
 
       const result = parseAndValidateEvaluateResult({
         litActionResponse,
-        policyDef: policy.policyDef,
+        vincentPolicy: policy.vincentPolicy,
       });
 
       if (isPolicyDenyResponse(result)) {
         policyDeniedResult = {
-          ...(result as PolicyResponseDeny<typeof policy.policyDef.evalDenyResultSchema>),
+          ...(result as PolicyResponseDeny<typeof policy.vincentPolicy.evalDenyResultSchema>),
           packageName: policyPackageName,
         };
       } else {
@@ -113,7 +96,6 @@ export async function evaluatePolicies<
       }
     } catch (err) {
       const denyResult = createDenyResult({
-        ipfsCid: policy.policyDef.ipfsCid,
         message: err instanceof Error ? err.message : 'Unknown error',
       });
       policyDeniedResult = { ...denyResult, packageName: policyPackageName };
@@ -131,7 +113,7 @@ export async function evaluatePolicies<
   return createAllowEvaluationResult({
     evaluatedPolicies,
     allowedPolicies:
-      rawAllowedPolicies as PolicyEvaluationResultContext<PolicyMapType>['allowedPolicies'],
+      rawAllowedPolicies as PolicyEvaluationResultContext<PoliciesByPackageName>['allowedPolicies'],
   });
 }
 
@@ -140,10 +122,10 @@ function parseAndValidateEvaluateResult<
   EvalDenyResult extends z.ZodType | undefined = undefined,
 >({
   litActionResponse,
-  policyDef,
+  vincentPolicy,
 }: {
   litActionResponse: string;
-  policyDef: VincentPolicyDef<
+  vincentPolicy: VincentPolicy<
     string,
     z.ZodType,
     any,
@@ -151,9 +133,6 @@ function parseAndValidateEvaluateResult<
     any,
     EvalAllowResult,
     EvalDenyResult,
-    any,
-    any,
-    any,
     any,
     any,
     any
@@ -172,21 +151,21 @@ function parseAndValidateEvaluateResult<
   try {
     const { schemaToUse } = getSchemaForPolicyResponseResult({
       value: parsedLitActionResponse,
-      denyResultSchema: policyDef.evalDenyResultSchema,
-      allowResultSchema: policyDef.evalAllowResultSchema,
+      denyResultSchema: vincentPolicy.evalDenyResultSchema || z.undefined(),
+      allowResultSchema: vincentPolicy.evalAllowResultSchema || z.undefined(),
     });
 
     return validateOrDeny(
       parsedLitActionResponse,
       schemaToUse,
-      policyDef.ipfsCid,
       'evaluate',
       'output',
     ) as PolicyResponse<EvalAllowResult, EvalDenyResult>;
   } catch (err) {
-    return createDenyResult({
-      ipfsCid: policyDef.ipfsCid,
-      message: err instanceof Error ? err.message : 'Unknown error',
-    });
+    return returnNoResultDeny<EvalDenyResult>(
+      err instanceof Error ? err.message : 'Unknown error',
+    ) as unknown as EvalDenyResult extends z.ZodType
+      ? PolicyResponseDeny<z.infer<EvalDenyResult> | ZodValidationDenyResult>
+      : PolicyResponseDenyNoResult;
   }
 }

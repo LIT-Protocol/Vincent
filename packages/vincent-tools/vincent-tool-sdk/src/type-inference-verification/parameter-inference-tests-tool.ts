@@ -1,3 +1,5 @@
+// src/type-inference-verification/parameter-inference-tests-tool.ts
+
 /**
  * Tool Parameter Type Inference Testing
  *
@@ -6,7 +8,9 @@
  */
 import { z } from 'zod';
 import { createVincentTool } from '../lib/toolCore/vincentTool';
-import { createVincentToolPolicy } from '../lib/policyCore/vincentPolicy';
+import { createVincentPolicy, createVincentToolPolicy } from '../lib/policyCore/vincentPolicy';
+import { asBundledVincentPolicy } from '../lib/policyCore/bundledPolicy/bundledPolicy';
+import { createPolicyMapFromToolPolicies } from '../lib/toolCore/helpers';
 
 // Define a schema for our test cases
 const testSchema = z.object({
@@ -26,31 +30,29 @@ const testSchema = z.object({
  */
 function testBasicParameterInference() {
   // Create a simple policy for testing
+  const basicParamInferPolicy = createVincentPolicy({
+    packageName: '@lit-protocol/test-policy@1.0.0',
+    toolParamsSchema: z.object({
+      operation: z.string(),
+    }),
+    evalAllowResultSchema: z.object({
+      allowed: z.boolean(),
+    }),
+    evaluate: async (_, { allow }) => {
+      return allow({ allowed: true });
+    },
+  });
   const testPolicy = createVincentToolPolicy({
     toolParamsSchema: testSchema,
-    policyDef: {
-      ipfsCid: 'test-policy',
-      packageName: '@lit-protocol/test-policy@1.0.0',
-      toolParamsSchema: z.object({
-        operation: z.string(),
-      }),
-      evalAllowResultSchema: z.object({
-        allowed: z.boolean(),
-      }),
-      evaluate: async (_, { allow }) => {
-        return allow({ allowed: true });
-      },
-    },
+    bundledVincentPolicy: asBundledVincentPolicy(basicParamInferPolicy, '209oifusfdj' as const),
     toolParameterMappings: {
       action: 'operation',
     },
   });
 
   return createVincentTool({
-    ipfsCid: 'theIpfsCid',
-    packageName: '@lit-protocol/tehTool@1.0.0',
     toolParamsSchema: testSchema,
-    supportedPolicies: [testPolicy],
+    policyMap: createPolicyMapFromToolPolicies([testPolicy]),
 
     precheck: async ({ toolParams }, { succeed }) => {
       // Params should have the correct types
@@ -114,80 +116,79 @@ function testBasicParameterInference() {
  */
 function testPolicyResultInference() {
   // Create a policy with complex result type
+  const resultInferPolicy = createVincentPolicy({
+    packageName: '@lit-protocol/complex-policy@1.0.0',
+    toolParamsSchema: z.object({
+      command: z.string(),
+    }),
+    evalAllowResultSchema: z.object({
+      level: z.enum(['low', 'medium', 'high']),
+      metadata: z.object({
+        timestamp: z.number(),
+        signature: z.string(),
+      }),
+      flags: z.array(z.string()),
+    }),
+    evaluate: async (params, { allow }) => {
+      return allow({
+        level: 'medium',
+        metadata: {
+          timestamp: Date.now(),
+          signature: 'sig123',
+        },
+        flags: ['verbose', 'secure'],
+      });
+    },
+  });
   const complexPolicy = createVincentToolPolicy({
     toolParamsSchema: testSchema,
-    policyDef: {
-      ipfsCid: 'complex-policy',
-      packageName: '@lit-protocol/complex-policy@1.0.0',
-      toolParamsSchema: z.object({
-        command: z.string(),
-      }),
-      evalAllowResultSchema: z.object({
-        level: z.enum(['low', 'medium', 'high']),
-        metadata: z.object({
-          timestamp: z.number(),
-          signature: z.string(),
-        }),
-        flags: z.array(z.string()),
-      }),
-      evaluate: async (params, { allow }) => {
-        return allow({
-          level: 'medium',
-          metadata: {
-            timestamp: Date.now(),
-            signature: 'sig123',
-          },
-          flags: ['verbose', 'secure'],
-        });
-      },
-    },
+    bundledVincentPolicy: asBundledVincentPolicy(resultInferPolicy, '-0932i0fjs0jfd' as const),
     toolParameterMappings: {
       action: 'command',
     },
   });
 
   // Create policy with commit function
+  const commitResultPolicy = createVincentPolicy({
+    packageName: '@lit-protocol/commit-policy@1.0.0',
+    toolParamsSchema: z.object({
+      resource: z.string(),
+    }),
+    evalAllowResultSchema: z.object({
+      transactionId: z.string(),
+    }),
+    commitParamsSchema: z.object({
+      transactionId: z.string(),
+      status: z.enum(['complete', 'abort']),
+    }),
+    commitAllowResultSchema: z.object({
+      success: z.boolean(),
+      timestamp: z.number(),
+    }),
+    evaluate: async (params, { allow }) => {
+      return allow({
+        transactionId: 'tx123',
+      });
+    },
+    commit: async (params, { allow }) => {
+      return allow({
+        success: params.status === 'complete',
+        timestamp: Date.now(),
+      });
+    },
+  });
   const commitPolicy = createVincentToolPolicy({
     toolParamsSchema: testSchema,
-    policyDef: {
-      ipfsCid: 'commit-policy',
-      packageName: '@lit-protocol/commit-policy@1.0.0',
-      toolParamsSchema: z.object({
-        resource: z.string(),
-      }),
-      evalAllowResultSchema: z.object({
-        transactionId: z.string(),
-      }),
-      commitParamsSchema: z.object({
-        transactionId: z.string(),
-        status: z.enum(['complete', 'abort']),
-      }),
-      commitAllowResultSchema: z.object({
-        success: z.boolean(),
-        timestamp: z.number(),
-      }),
-      evaluate: async (params, { allow }) => {
-        return allow({
-          transactionId: 'tx123',
-        });
-      },
-      commit: async (params, { allow }) => {
-        return allow({
-          success: params.status === 'complete',
-          timestamp: Date.now(),
-        });
-      },
-    },
+    bundledVincentPolicy: asBundledVincentPolicy(commitResultPolicy, '1098u2098qjfn' as const),
     toolParameterMappings: {
       target: 'resource',
     },
   });
 
   return createVincentTool({
-    ipfsCid: 'cidIpfs',
-    packageName: '@lit-protocol/toolPlusPlus@1.0.0',
+    // packageName: '@lit-protocol/toolPlusPlus@1.0.0',
     toolParamsSchema: testSchema,
-    supportedPolicies: [complexPolicy, commitPolicy],
+    policyMap: createPolicyMapFromToolPolicies([complexPolicy, commitPolicy]),
 
     precheck: async (params, { policiesContext, succeed }) => {
       // Testing allow/deny branch type inference
@@ -289,21 +290,24 @@ function testPolicyResultInference() {
  */
 function testComplexDestructuring() {
   // Create a simple policy
+  const complexDestructurePolicy = createVincentPolicy({
+    packageName: '@lit-protocol/test-policy@1.0.0',
+    toolParamsSchema: z.object({
+      action: z.string(),
+    }),
+    evalAllowResultSchema: z.object({
+      data: z.any(),
+    }),
+    evaluate: async (params, { allow }) => {
+      return allow({ data: {} });
+    },
+  });
   const testPolicy = createVincentToolPolicy({
     toolParamsSchema: testSchema,
-    policyDef: {
-      ipfsCid: 'test-policy',
-      packageName: '@lit-protocol/test-policy@1.0.0',
-      toolParamsSchema: z.object({
-        action: z.string(),
-      }),
-      evalAllowResultSchema: z.object({
-        data: z.any(),
-      }),
-      evaluate: async (params, { allow }) => {
-        return allow({ data: {} });
-      },
-    },
+    bundledVincentPolicy: asBundledVincentPolicy(
+      complexDestructurePolicy,
+      '1-093iofijn209j' as const,
+    ),
     toolParameterMappings: {
       action: 'action',
     },
@@ -323,10 +327,9 @@ function testComplexDestructuring() {
   });
 
   return createVincentTool({
-    ipfsCid: 'whyowhy',
-    packageName: '@lit-protocol/toolPlus@1.0.0',
+    // packageName: '@lit-protocol/toolPlus@1.0.0',
     toolParamsSchema: testSchema,
-    supportedPolicies: [testPolicy],
+    policyMap: createPolicyMapFromToolPolicies([testPolicy]),
     executeSuccessSchema: successSchema,
     executeFailSchema: failSchema,
 
@@ -425,29 +428,28 @@ function testAdvancedParameterValidation() {
   });
 
   // Create a policy
+  const advancedParamPolicy = createVincentPolicy({
+    packageName: '@lit-protocol/test-policy@1.0.0',
+    toolParamsSchema: z.object({
+      op: z.string(),
+    }),
+    evalAllowResultSchema: z.boolean(),
+    evaluate: async (params, { allow }) => {
+      return allow(true);
+    },
+  });
   const testPolicy = createVincentToolPolicy({
     toolParamsSchema: advancedSchema,
-    policyDef: {
-      ipfsCid: 'test-policy',
-      packageName: '@lit-protocol/test-policy@1.0.0',
-      toolParamsSchema: z.object({
-        op: z.string(),
-      }),
-      evalAllowResultSchema: z.boolean(),
-      evaluate: async (params, { allow }) => {
-        return allow(true);
-      },
-    },
+    bundledVincentPolicy: asBundledVincentPolicy(advancedParamPolicy, '1-093iofijn209j' as const),
     toolParameterMappings: {
       action: 'op',
     },
   });
 
   return createVincentTool({
-    ipfsCid: 'cidz',
-    packageName: '@lit-protocol/plusplustool@1.0.0',
+    // packageName: '@lit-protocol/plusplustool@1.0.0',
     toolParamsSchema: advancedSchema,
-    supportedPolicies: [testPolicy],
+    policyMap: createPolicyMapFromToolPolicies([testPolicy]),
 
     precheck: async ({ toolParams }, { succeed }) => {
       // Test enum type inference
@@ -529,17 +531,17 @@ function testAdvancedParameterValidation() {
  */
 function testMissingTypes() {
   // Create a policy
+  const missingTypesPolicy = createVincentPolicy({
+    packageName: '@lit-protocol/test-policy@1.0.0',
+    toolParamsSchema: z.object({ op: z.string() }),
+    evalAllowResultSchema: z.object({ data: z.string() }),
+    evaluate: async (_, { allow }) => {
+      return allow({ data: 'test' });
+    },
+  });
   const testPolicy = createVincentToolPolicy({
     toolParamsSchema: testSchema,
-    policyDef: {
-      ipfsCid: 'test',
-      packageName: '@lit-protocol/test-policy@1.0.0',
-      toolParamsSchema: z.object({ op: z.string() }),
-      evalAllowResultSchema: z.object({ data: z.string() }),
-      evaluate: async (_, { allow }) => {
-        return allow({ data: 'test' });
-      },
-    },
+    bundledVincentPolicy: asBundledVincentPolicy(missingTypesPolicy, '20198jfgnfj' as const),
     toolParameterMappings: { action: 'op' },
   });
 
@@ -550,10 +552,9 @@ function testMissingTypes() {
 
   // Case where success schema is defined but fail schema is not
   const toolWithOnlySuccessSchema = createVincentTool({
-    ipfsCid: 'extracidz',
-    packageName: '@lit-protocol/toolofglory@1.0.0',
+    // packageName: '@lit-protocol/toolofglory@1.0.0',
     toolParamsSchema: testSchema,
-    supportedPolicies: [testPolicy],
+    policyMap: createPolicyMapFromToolPolicies([testPolicy]),
     executeSuccessSchema: successSchema,
 
     precheck: async (_, { succeed }) => {
@@ -580,10 +581,9 @@ function testMissingTypes() {
   });
 
   const toolWithOnlyFailSchema = createVincentTool({
-    ipfsCid: 'maxcids',
-    packageName: '@lit-protocol/lets-tool-this@1.0.0',
+    // packageName: '@lit-protocol/lets-tool-this@1.0.0',
     toolParamsSchema: testSchema,
-    supportedPolicies: [testPolicy],
+    policyMap: createPolicyMapFromToolPolicies([testPolicy]),
     executeFailSchema: failSchema,
 
     precheck: async (params, { succeed }) => {

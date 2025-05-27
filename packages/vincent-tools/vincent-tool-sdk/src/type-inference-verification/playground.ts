@@ -1,6 +1,10 @@
 import { z } from 'zod';
 import { createVincentPolicy, createVincentToolPolicy } from '../lib/policyCore/vincentPolicy';
 import { createVincentTool } from '../lib/toolCore/vincentTool';
+import { asBundledVincentPolicy } from '../lib/policyCore/bundledPolicy/bundledPolicy';
+import { createPolicyMapFromToolPolicies } from '../lib/toolCore/helpers';
+import { createAllowResult } from '../lib/policyCore/helpers/resultCreators';
+import { createDenyResult } from '../lib/policyCore/helpers';
 
 // Define your tool schema
 const myToolSchema = z.object({
@@ -29,7 +33,6 @@ const policy1CommitDenyResult = z.object({ errorCode: z.number() });
 
 // Create policies with full type inference
 const policyDef1 = createVincentPolicy({
-  ipfsCid: 'policy1',
   packageName: 'extra-rate-limit' as const,
   toolParamsSchema: policy1Schema,
   userParamsSchema: userParams1Schema,
@@ -42,6 +45,8 @@ const policyDef1 = createVincentPolicy({
   commitDenyResultSchema: policy1CommitDenyResult,
 
   precheck: async ({ toolParams, userParams }, context) => {
+    const wat = userParams.allowedTargets;
+    console.log(wat);
     if (toolParams.targetAllowed) {
       return context.allow();
     } else {
@@ -73,7 +78,10 @@ const policyDef1 = createVincentPolicy({
 
 const policy1 = createVincentToolPolicy({
   toolParamsSchema: myToolSchema,
-  policyDef: policyDef1.__vincentPolicyDef,
+  bundledVincentPolicy: asBundledVincentPolicy(
+    policyDef1,
+    'QmX7Dqn4zYhJVvXYwKr8cFX5Xp7gVpqK5r8QHwvF8zYjXa' as const,
+  ),
   toolParameterMappings: {
     target: 'targetAllowed',
     action: 'actionType',
@@ -103,7 +111,6 @@ const policy2CommitAllowResult = z.object({
 const policy2CommitDenyResult = z.object({ failureReason: z.string() });
 
 const policyDef2 = createVincentPolicy({
-  ipfsCid: 'policy2',
   packageName: 'rate-limit' as const,
   toolParamsSchema: policy2Schema,
   userParamsSchema: userParams2Schema,
@@ -162,7 +169,10 @@ const policyDef2 = createVincentPolicy({
 
 const policy2 = createVincentToolPolicy({
   toolParamsSchema: myToolSchema,
-  policyDef: policyDef2.__vincentPolicyDef,
+  bundledVincentPolicy: asBundledVincentPolicy(
+    policyDef2,
+    'QmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdG' as const,
+  ),
   toolParameterMappings: {
     amount: 'maxAmount',
     action: 'currency',
@@ -193,7 +203,6 @@ const policy3EvalDenyResult = z.object({
 
 // Create policy3 without a commit function
 const policyDef3 = createVincentPolicy({
-  ipfsCid: 'policy3ipfscid123',
   packageName: 'vincent-tool-sdk' as const,
   toolParamsSchema: policy3ToolParams,
   userParamsSchema: policy3UserParams,
@@ -224,7 +233,10 @@ const policyDef3 = createVincentPolicy({
 
 const policy3 = createVincentToolPolicy({
   toolParamsSchema: myToolSchema,
-  policyDef: policyDef3.__vincentPolicyDef,
+  bundledVincentPolicy: asBundledVincentPolicy(
+    policyDef3,
+    'QmYwAasdPJzv5CZA625s3Xf2nemtYgPpHdWEz79ojWnPbdG' as const,
+  ),
   toolParameterMappings: {
     amount: 'toolName',
   },
@@ -256,10 +268,9 @@ const toolPrecheckFailSchema = z.object({
 
 // Create your tool with fully typed policies
 export const myTool = createVincentTool({
-  ipfsCid: 'boogabooga',
-  packageName: '@lit-protocol/awesome-tool@1.0.2',
+  // packageName: '@lit-protocol/awesome-tool@1.0.2',
   toolParamsSchema: myToolSchema,
-  supportedPolicies: [policy1, policy2, policy3] as const,
+  policyMap: createPolicyMapFromToolPolicies([policy1, policy2, policy3]),
 
   // Add schemas for tool results
   executeSuccessSchema: toolExecuteSuccessSchema,
@@ -351,6 +362,8 @@ export const myTool = createVincentTool({
         if (toolSdkPolicyContext) {
           const commitResult = await toolSdkPolicyContext.commit();
 
+          const wat: boolean = commitResult.allow;
+          console.log(wat);
           if (commitResult.allow) {
             console.log(commitResult.result);
           }
@@ -383,7 +396,7 @@ export const myTool = createVincentTool({
 });
 
 export const gogoPolicy = async function () {
-  await policy3.policyDef.evaluate(
+  await policy3.vincentPolicy.evaluate(
     {
       toolParams: {
         toolName: 'wat',
@@ -396,8 +409,8 @@ export const gogoPolicy = async function () {
     },
   );
 
-  if (policy2.policyDef.commit) {
-    return policy2.policyDef.commit(
+  if (policy2.vincentPolicy.commit) {
+    return policy2.vincentPolicy.commit(
       {
         transactionId: '10981328981279487',
       },
@@ -411,10 +424,11 @@ export const gogoPolicy = async function () {
 
 export const gogo = async function () {
   const toolExecuteResult = await myTool.execute(
-    { action: 'wat', target: 'meow', amount: 23098123 },
+    { toolParams: { action: 'wat', target: 'meow', amount: 23098123 } },
     {
       delegation: { delegatee: 'meow', delegator: 'meowmeow' },
       policiesContext: {
+        allow: true,
         evaluatedPolicies: [
           // 'extra-rate-limit',
           'rate-limit',
@@ -427,6 +441,22 @@ export const gogo = async function () {
             result: {
               approvedCurrency: 'USD',
             },
+            commit: async (params) => {
+              if (!params.transactionId.includes('fail')) {
+                return createAllowResult({
+                  result: {
+                    transaction: `completed-${params.transactionId}`,
+                    timestamp: 1700000000000,
+                  },
+                });
+              } else {
+                return createDenyResult({
+                  result: {
+                    failureReason: 'Invalid transaction ID format',
+                  },
+                });
+              }
+            },
           },
         },
       },
@@ -437,7 +467,7 @@ export const gogo = async function () {
 
   if (myTool.precheck) {
     return myTool.precheck(
-      { action: 'wat', target: 'meow', amount: 23098123 },
+      { toolParams: { action: 'wat', target: 'meow', amount: 23098123 } },
       {
         delegation: { delegatee: 'meow', delegator: 'meowmeow' },
         policiesContext: {

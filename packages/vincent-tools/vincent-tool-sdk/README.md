@@ -155,7 +155,7 @@ export const myTokenSwapTool = createVincentTool({
   supportedPolicies: [
     createVincentToolPolicy({
       toolParamsSchema,
-      policyDef: dailySpendPolicy.__vincentPolicyDef,
+      policyDef: dailySpendPolicy,
       toolParameterMappings: { buy: 'buyAmount' },
     }),
   ],

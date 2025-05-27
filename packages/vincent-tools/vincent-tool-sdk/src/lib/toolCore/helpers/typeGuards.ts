@@ -1,15 +1,15 @@
 // src/lib/toolCore/helpers/typeGuards.ts
 
 import {
-  ToolResponseFailure,
-  ToolResponseFailureNoResult,
-  ToolResponseSuccess,
-  ToolResponseSuccessNoResult,
+  ToolResultFailure,
+  ToolResultFailureNoResult,
+  ToolResultSuccess,
+  ToolResultSuccessNoResult,
 } from '../../types';
 
-export function isToolSuccessResponse(
+export function isToolSuccessResult(
   value: unknown,
-): value is ToolResponseSuccess<unknown> | ToolResponseSuccessNoResult {
+): value is ToolResultSuccess<unknown> | ToolResultSuccessNoResult {
   return (
     typeof value === 'object' &&
     value !== null &&
@@ -19,9 +19,9 @@ export function isToolSuccessResponse(
   );
 }
 
-export function isToolFailureResponse(
+export function isToolFailureResult(
   value: unknown,
-): value is ToolResponseFailure<unknown> | ToolResponseFailureNoResult {
+): value is ToolResultFailure<unknown> | ToolResultFailureNoResult {
   return (
     typeof value === 'object' &&
     value !== null &&
@@ -32,11 +32,11 @@ export function isToolFailureResponse(
 }
 
 /**
- * Runtime type guard to check whether a value matches the ToolResponse structure.
+ * Runtime type guard to check whether a value matches the ToolResult structure.
  */
-export function isToolResponse(
+export function isToolResult(
   value: unknown,
-): value is ToolResponseFailure<unknown> | ToolResponseFailureNoResult {
+): value is ToolResultFailure<unknown> | ToolResultFailureNoResult {
   return (
     typeof value === 'object' &&
     value !== null &&

@@ -2,15 +2,15 @@
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { z, ZodType } from 'zod';
-import { ToolResponseFailure, ToolResponseFailureNoResult } from '../../types';
+import { ToolResultFailure, ToolResultFailureNoResult } from '../../types';
 import { createToolFailureResult } from './resultCreators';
-import { isToolResponse } from './typeGuards';
+import { isToolResult } from './typeGuards';
 
 /**
- * Matches the minimum structure of a ToolResponse.
+ * Matches the minimum structure of a ToolResult.
  * This is useful when validating that a response shape is at least plausible.
  */
-export const ToolResponseShape = z.object({
+export const ToolResultShape = z.object({
   success: z.boolean(),
   result: z.unknown(),
 });
@@ -34,7 +34,7 @@ export function validateOrFail<T extends ZodType<any, any, any>>(
   schema: T,
   phase: 'precheck' | 'execute',
   stage: 'input' | 'output',
-): z.infer<T> | ToolResponseFailure | ToolResponseFailureNoResult {
+): z.infer<T> | ToolResultFailure | ToolResultFailureNoResult {
   const effectiveSchema = schema ?? mustBeUndefinedSchema;
   const parsed = effectiveSchema.safeParse(value);
 
@@ -54,10 +54,10 @@ export function validateOrFail<T extends ZodType<any, any, any>>(
  * Given an unknown tool response result and the known success/failure schemas,
  * this function returns the appropriate Zod schema to use when validating `.result`.
  *
- * - If the response shape is invalid, returns a Zod schema matching the ToolResponse structure.
+ * - If the response shape is invalid, returns a Zod schema matching the ToolResult structure.
  * - If the shape is valid, returns either the success or failure result schema.
  */
-export function getSchemaForToolResponseResult({
+export function getSchemaForToolResult({
   value,
   successResultSchema,
   failureResultSchema,
@@ -69,9 +69,9 @@ export function getSchemaForToolResponseResult({
   schemaToUse: ZodType;
   parsedType: 'success' | 'failure' | 'unknown';
 } {
-  if (!isToolResponse(value)) {
+  if (!isToolResult(value)) {
     return {
-      schemaToUse: ToolResponseShape,
+      schemaToUse: ToolResultShape,
       parsedType: 'unknown',
     };
   }
