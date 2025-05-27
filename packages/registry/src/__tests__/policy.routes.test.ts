@@ -63,6 +63,18 @@ describe('Policy Routes', () => {
         version: {
           version: '1.0.0',
           changes: 'Initial version',
+          repository: 'https://github.com/test/repo',
+          description: 'Test policy version',
+          author: {
+            name: 'Test Author',
+            email: 'test@example.com',
+            url: 'https://example.com',
+          },
+          ipfsCid: 'QmTest123',
+          parameters: {
+            uiSchema: '{}',
+            jsonSchema: '{}',
+          },
         },
       };
 
@@ -142,7 +154,18 @@ describe('Policy Routes', () => {
 
       const versionData = {
         changes: 'New version changes',
-        metadata: { key: 'value' },
+        repository: 'https://github.com/test/repo',
+        description: 'Test policy version',
+        author: {
+          name: 'Test Author',
+          email: 'test@example.com',
+          url: 'https://example.com',
+        },
+        ipfsCid: 'QmTest123',
+        parameters: {
+          uiSchema: '{}',
+          jsonSchema: '{}',
+        },
       };
 
       const response = await request(app)
