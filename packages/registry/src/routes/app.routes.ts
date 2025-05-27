@@ -68,6 +68,7 @@ router.post('/', async (req, res) => {
       identity: `AppVersionDef|${appId}@${initialVersion}`,
       changes: 'Initial version',
       enabled: true,
+      id: appId * 1000 + initialVersion,
     });
 
     await appVersion.save();
@@ -177,6 +178,7 @@ router.post('/:identity/version/:version', async (req, res) => {
       identity: `AppVersionDef|${app.appId}@${versionNumber}`,
       changes: req.body.changes,
       enabled: true,
+      id: app.appId * 1000 + versionNumber,
     });
 
     const savedVersion = await appVersion.save();
@@ -194,7 +196,7 @@ router.get('/:identity/versions', async (req, res) => {
       return res.status(404).json({ message: 'App not found' });
     }
 
-    const versions = await AppVersion.find({ appId: app.appId }).sort({ versionNumber: -1 });
+    const versions = await AppVersion.find({ appId: app.appId }).sort({ versionNumber: 1 });
     res.json(versions);
   } catch (error) {
     res.status(500).json({ message: 'Error fetching app versions', error });
