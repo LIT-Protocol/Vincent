@@ -114,7 +114,7 @@ export default function WalletConnectPage(params: {
     async (request: any) => {
       try {
         await handleRejectRequest(request);
-        setStatus({ message: 'Request rejected', type: 'info' });
+        setStatus({ message: 'Request rejected', type: 'warning' });
       } catch (error) {
         setStatus({
           message: error instanceof Error ? error.message : 'Failed to reject request',
