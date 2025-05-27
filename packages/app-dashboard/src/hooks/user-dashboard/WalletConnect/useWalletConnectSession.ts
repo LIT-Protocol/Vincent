@@ -255,7 +255,7 @@ export function useWalletConnectSession(agentPKP?: IRelayPKP, sessionSigs?: Sess
       if (event.topic) {
         setStatus({
           message: `Session disconnected: ${event.topic.slice(0, 8)}...`,
-          type: 'info',
+          type: 'success',
         });
       }
     };

@@ -1,5 +1,4 @@
-import { IWalletKit } from '@reown/walletkit';
-import { WalletKit } from '@reown/walletkit';
+import { IWalletKit, WalletKit } from '@reown/walletkit';
 import { Core } from '@walletconnect/core';
 import { IRelayPKP, SessionSigs } from '@lit-protocol/types';
 import { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
@@ -77,17 +76,11 @@ export async function registerPKPWallet(
     // Update the current wallet address in the store
     actions.setCurrentWalletAddress(newAddress);
   } else if (newAddress && storedWalletAddress !== newAddress) {
-    // First time setting this wallet or wallet address isn't tracked yet
-    console.log(`Setting current wallet address to ${newAddress}`);
     actions.setCurrentWalletAddress(newAddress);
   }
 
   // Get or create the client
-  const client = await createWalletConnectClient();
-
-  if (!client) {
-    throw new Error('WalletKit client not initialized');
-  }
+  await createWalletConnectClient();
 
   if (sessionSigs) {
     try {
@@ -128,7 +121,6 @@ export async function createWalletConnectClient(
 ): Promise<IWalletKit> {
   // If we're forcing a reset, clean up the existing client
   if (forceReset && walletKitClient) {
-    console.log('Force resetting WalletKit client');
     await resetWalletConnectClient();
   }
 
@@ -142,7 +134,6 @@ export async function createWalletConnectClient(
 
   // Prevent concurrent initialization
   if (isInitializing) {
-    console.log('WalletKit initialization in progress, waiting...');
     // Wait for initialization to complete
     return new Promise<IWalletKit>((resolve) => {
       const checkInterval = setInterval(() => {
@@ -159,7 +150,6 @@ export async function createWalletConnectClient(
 
   try {
     isInitializing = true;
-    console.log('Initializing new WalletKit instance');
 
     // Create a shared Core instance
     const core = new Core({
@@ -173,7 +163,7 @@ export async function createWalletConnectClient(
         name: 'Vincent App',
         description: 'Vincent App using PKP with WalletKit',
         url: window.location.origin,
-        icons: ['https://lit.network/favicon.ico'], // TODO: Add a logo
+        icons: [`${window.location.origin}/logo.svg`], // This should work when deployed, but it doesn't really matter
       },
     });
 
@@ -183,9 +173,6 @@ export async function createWalletConnectClient(
     }
 
     return walletKitClient;
-  } catch (error) {
-    console.error('Error initializing WalletKit:', error);
-    throw error;
   } finally {
     isInitializing = false;
   }
@@ -198,15 +185,11 @@ export async function createWalletConnectClient(
 export async function resetWalletConnectClient(): Promise<void> {
   try {
     if (walletKitClient) {
-      console.log('Resetting WalletKit client');
-
       try {
         // Get all active sessions
         const activeSessions = walletKitClient.getActiveSessions() || {};
 
         if (Object.keys(activeSessions).length > 0) {
-          console.log(`Disconnecting ${Object.keys(activeSessions).length} active sessions`);
-
           // Disconnect all active sessions
           const disconnectPromises = Object.keys(activeSessions).map(async (topic) => {
             try {

@@ -9,6 +9,30 @@ interface WalletConnectCardProps {
   className?: string;
 }
 
+const variantStyles = {
+  sessions: {
+    gradient: 'bg-gradient-to-r from-blue-50 to-indigo-50',
+    border: 'border-blue-100',
+    text: 'text-blue-700',
+    titleText: 'text-blue-900',
+    titleBorder: 'border-blue-100',
+  },
+  requests: {
+    gradient: 'bg-gradient-to-r from-orange-50 to-amber-50',
+    border: 'border-orange-100',
+    text: 'text-orange-800',
+    titleText: 'text-orange-900',
+    titleBorder: 'border-orange-100',
+  },
+  proposal: {
+    gradient: 'bg-gradient-to-r from-yellow-50 to-amber-50',
+    border: 'border-yellow-100',
+    text: 'text-yellow-800',
+    titleText: 'text-yellow-900',
+    titleBorder: 'border-yellow-100',
+  },
+};
+
 export function WalletConnectCard({
   children,
   variant,
@@ -17,30 +41,6 @@ export function WalletConnectCard({
   subtitle,
   className = '',
 }: WalletConnectCardProps) {
-  const variantStyles = {
-    sessions: {
-      gradient: 'bg-gradient-to-r from-blue-50 to-indigo-50',
-      border: 'border-blue-100',
-      text: 'text-blue-700',
-      titleText: 'text-blue-900',
-      titleBorder: 'border-blue-100',
-    },
-    requests: {
-      gradient: 'bg-gradient-to-r from-orange-50 to-amber-50',
-      border: 'border-orange-100',
-      text: 'text-orange-800',
-      titleText: 'text-orange-900',
-      titleBorder: 'border-orange-100',
-    },
-    proposal: {
-      gradient: 'bg-gradient-to-r from-yellow-50 to-amber-50',
-      border: 'border-yellow-100',
-      text: 'text-yellow-800',
-      titleText: 'text-yellow-900',
-      titleBorder: 'border-yellow-100',
-    },
-  };
-
   const styles = variantStyles[variant];
 
   return (

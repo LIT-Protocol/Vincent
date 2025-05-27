@@ -3,7 +3,7 @@ import { Button } from '@/components/shared/ui/button';
 import { Input } from '@/components/shared/ui/input';
 import StatusMessage from '@/components/user-dashboard/consent/StatusMessage';
 import QrReader from '@/components/user-dashboard/withdraw/WalletConnect/QrReader';
-import { Fragment, useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import React from 'react';
 
 // Custom hooks
@@ -129,78 +129,76 @@ export default function WalletConnectPage(params: {
   const shouldWaitForWallet = !!agentPKP;
 
   return (
-    <Fragment>
-      <div className="w-full max-w-lg mx-auto p-4 bg-white rounded-lg shadow-sm">
-        {/* Show loading state while PKP wallet is initializing */}
-        {shouldWaitForWallet && !walletRegistered ? (
-          <div className="w-full flex justify-center items-center py-8">
-            <div className="flex flex-col items-center space-y-4">
-              <StatusMessage
-                message={status.message || 'Initializing PKP Wallet...'}
-                type={status.type || 'info'}
-              />
-            </div>
+    <>
+      {/* Show loading state while PKP wallet is initializing */}
+      {shouldWaitForWallet && !walletRegistered ? (
+        <div className="w-full flex justify-center items-center py-8">
+          <div className="flex flex-col items-center space-y-4">
+            <StatusMessage
+              message={status.message || 'Initializing PKP Wallet...'}
+              type={status.type || 'info'}
+            />
           </div>
-        ) : (
-          <>
-            {/* QR reader should be visible once we're initialized */}
-            {client && !isInitializing && <QrReader onConnect={onConnect} />}
+        </div>
+      ) : (
+        <>
+          {/* Unified status message */}
+          {status.message && <StatusMessage message={status.message} type={status.type} />}
 
-            {/* Manual URI input */}
-            <div className="flex w-full mt-4 mb-4">
-              <Input
-                className="w-full rounded-r-none"
-                placeholder="e.g. wc:a281567bb3e4..."
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setUri(e.target.value)}
-                value={uri}
-                data-testid="uri-input"
-                disabled={isInitializing || !client}
-              />
-              <Button
-                size="sm"
-                className="rounded-l-none"
-                disabled={
-                  !uri || loading || isInitializing || !client || (agentPKP && !walletRegistered)
-                }
-                onClick={() => onConnect(uri)}
-                data-testid="uri-connect-button"
-              >
-                {loading ? 'Connecting...' : 'Connect'}
-              </Button>
-            </div>
+          {/* QR reader should be visible once we're initialized */}
+          {client && !isInitializing && <QrReader onConnect={onConnect} />}
 
-            {/* Unified status message */}
-            {status.message && <StatusMessage message={status.message} type={status.type} />}
-
-            {/* Session Proposal */}
-            {pendingProposal && !loading && (
-              <SessionProposal
-                proposal={pendingProposal}
-                onApprove={handleApproveSession}
-                onReject={handleRejectSession}
-                processing={processingProposal}
-                walletRegistered={walletRegistered}
-              />
-            )}
-
-            {/* Active Sessions */}
-            <ActiveSessions
-              sessions={sessions}
-              currentWalletAddress={currentWalletAddress}
-              onDisconnect={handleDisconnect}
-              disconnecting={disconnecting}
+          {/* Manual URI input */}
+          <div className="flex w-full mt-4 mb-4">
+            <Input
+              className="w-full rounded-r-none"
+              placeholder="e.g. wc:a281567bb3e4..."
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setUri(e.target.value)}
+              value={uri}
+              data-testid="uri-input"
+              disabled={isInitializing || !client}
             />
+            <Button
+              size="sm"
+              className="rounded-l-none"
+              disabled={
+                !uri || loading || isInitializing || !client || (agentPKP && !walletRegistered)
+              }
+              onClick={() => onConnect(uri)}
+              data-testid="uri-connect-button"
+            >
+              {loading ? 'Connecting...' : 'Connect'}
+            </Button>
+          </div>
 
-            {/* Pending Requests */}
-            <PendingRequests
-              requests={pendingSessionRequests}
-              onApprove={handleApproveWithStatus}
-              onReject={handleRejectWithStatus}
-              processing={processingRequest}
+          {/* Session Proposal */}
+          {pendingProposal && !loading && (
+            <SessionProposal
+              proposal={pendingProposal}
+              onApprove={handleApproveSession}
+              onReject={handleRejectSession}
+              processing={processingProposal}
+              walletRegistered={walletRegistered}
             />
-          </>
-        )}
-      </div>
-    </Fragment>
+          )}
+
+          {/* Active Sessions */}
+          <ActiveSessions
+            sessions={sessions}
+            currentWalletAddress={currentWalletAddress}
+            onDisconnect={handleDisconnect}
+            disconnecting={disconnecting}
+          />
+
+          {/* Pending Requests */}
+          <PendingRequests
+            requests={pendingSessionRequests}
+            onApprove={handleApproveWithStatus}
+            onReject={handleRejectWithStatus}
+            processing={processingRequest}
+          />
+        </>
+      )}
+    </>
   );
 }

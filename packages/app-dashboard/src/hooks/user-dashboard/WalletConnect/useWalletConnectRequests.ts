@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { LIT_CHAINS } from '@lit-protocol/constants';
+import { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
 import {
   setupRequestHandlers,
   getPendingSessionRequests,
@@ -10,12 +11,6 @@ import { getPKPWallet } from '@/components/user-dashboard/withdraw/WalletConnect
 export function useWalletConnectRequests(client: any, currentWalletAddress: string | null) {
   const [pendingSessionRequests, setPendingSessionRequests] = useState<any[]>([]);
   const [processingRequest, setProcessingRequest] = useState(false);
-
-  // Function to clear pending requests (for wallet changes)
-  const clearPendingRequests = useCallback(() => {
-    console.log('Clearing pending session requests due to wallet change');
-    setPendingSessionRequests([]);
-  }, []);
 
   // Listen for session requests
   useEffect(() => {
@@ -107,7 +102,6 @@ export function useWalletConnectRequests(client: any, currentWalletAddress: stri
         }
 
         await client.respondSessionRequest({ topic, response });
-        console.log('Successfully sent response');
 
         clearSessionRequest(id);
         setPendingSessionRequests(getPendingSessionRequests());
@@ -181,12 +175,11 @@ export function useWalletConnectRequests(client: any, currentWalletAddress: stri
     processingRequest,
     handleApproveRequest,
     handleRejectRequest,
-    clearPendingRequests,
   };
 }
 
 // Helper functions
-async function handleSignMessage(pkpWallet: any, methodParams: any[]) {
+async function handleSignMessage(pkpWallet: PKPEthersWallet, methodParams: any[]) {
   const message = methodParams[0];
   return await pkpWallet.signMessage(
     typeof message === 'string' && message.startsWith('0x')
@@ -195,18 +188,15 @@ async function handleSignMessage(pkpWallet: any, methodParams: any[]) {
   );
 }
 
-async function handleSendTransaction(pkpWallet: any, methodParams: any[], params: any) {
+async function handleSendTransaction(pkpWallet: PKPEthersWallet, methodParams: any[], params: any) {
   const tx = { ...methodParams[0] };
 
   // Convert chainId from hex to number if needed
   if (tx.chainId && typeof tx.chainId === 'string' && tx.chainId.startsWith('0x')) {
-    console.log(`Converting chainId from hex ${tx.chainId} to number`);
     tx.chainId = parseInt(tx.chainId, 16);
-    console.log(`Converted chainId: ${tx.chainId}`);
   }
 
   const chainId = tx.chainId || parseInt(params.chainId.split(':')[1], 10);
-  console.log(`Using chainId: ${chainId}`);
 
   // Find RPC URL for chain
   let rpcUrl = '';
@@ -221,45 +211,27 @@ async function handleSendTransaction(pkpWallet: any, methodParams: any[], params
   if (!rpcUrl) {
     throw new Error(`Chain with ID ${chainId} is not supported in LIT_CHAINS`);
   }
-
-  console.log(`Setting up provider for chain ${chainId} with RPC URL: ${rpcUrl}`);
   await pkpWallet.setRpc(rpcUrl);
-  console.log(`Successfully set RPC URL using setRpc`);
-
   tx.chainId = chainId;
-  console.log(`Set transaction chainId to: ${chainId}`);
-
   // Handle gas estimation
   if (!tx.gas && !tx.gasLimit) {
     console.log('No gas limit specified, estimating gas...');
-    try {
-      const estimateGasTx = { ...tx };
-      delete estimateGasTx.chainId;
-      const gasEstimate = await pkpWallet.estimateGas(estimateGasTx);
-      const gasWithBuffer = gasEstimate.mul(120).div(100);
-      console.log(
-        `Estimated gas: ${gasEstimate.toString()}, with buffer: ${gasWithBuffer.toString()}`,
-      );
-      tx.gas = gasWithBuffer;
-      tx.gasLimit = gasWithBuffer;
-    } catch {
-      const defaultGas = tx.data?.startsWith('0x095ea7b3') ? 150000 : 100000;
-      console.log(`Using default gas limit of ${defaultGas}`);
-      tx.gas = defaultGas;
-      tx.gasLimit = defaultGas;
-    }
+    const estimateGasTx = { ...tx };
+    delete estimateGasTx.chainId;
+    const gasEstimate = await pkpWallet.estimateGas(estimateGasTx);
+    const gasWithBuffer = gasEstimate.mul(120).div(100);
+    tx.gas = gasWithBuffer;
+    tx.gasLimit = gasWithBuffer;
   } else if (tx.gasLimit && !tx.gas) {
     tx.gas = tx.gasLimit;
   } else if (tx.gas && !tx.gasLimit) {
     tx.gasLimit = tx.gas;
   }
 
-  console.log('Full transaction:', tx);
-
   return await pkpWallet.sendTransaction(tx);
 }
 
-async function handleSignTypedData(pkpWallet: any, methodParams: any[]) {
+async function handleSignTypedData(pkpWallet: PKPEthersWallet, methodParams: any[]) {
   const [, data] = methodParams;
   const parsedData = typeof data === 'string' ? JSON.parse(data) : data;
 

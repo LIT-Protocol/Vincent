@@ -26,7 +26,7 @@ export function PendingRequests({
   processing,
 }: PendingRequestsProps) {
   if (requests.length === 0) {
-    return null;
+    return <></>;
   }
 
   return (
@@ -151,9 +151,23 @@ function getRequestInfo(method: string, methodParams: any[]) {
     case 'eth_signTypedData_v4': {
       icon = '📝';
       description = 'Sign Typed Data';
+
+      // Extract the typed data from methodParams[1]
+      let typedDataDisplay = 'Structured data signature request';
+      try {
+        if (methodParams[1]) {
+          const typedData =
+            typeof methodParams[1] === 'string' ? JSON.parse(methodParams[1]) : methodParams[1];
+          typedDataDisplay = JSON.stringify(typedData, null, 2);
+        }
+      } catch (error) {
+        console.error('Error parsing typed data:', error);
+        typedDataDisplay = 'Error parsing typed data';
+      }
+
       details = (
-        <div className="mt-2 p-2 bg-white rounded-md text-gray-800 text-xs font-mono overflow-auto border border-orange-100">
-          <p>Structured data signature request</p>
+        <div className="mt-2 p-3 bg-white rounded-md text-gray-800 text-xs font-mono overflow-auto border border-orange-100 max-h-48">
+          <div className="whitespace-pre-wrap break-words">{typedDataDisplay}</div>
         </div>
       );
       break;

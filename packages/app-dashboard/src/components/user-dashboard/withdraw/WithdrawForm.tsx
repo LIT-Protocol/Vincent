@@ -2,21 +2,11 @@ import { useCallback, useState, useEffect } from 'react';
 import { SessionSigs, IRelayPKP } from '@lit-protocol/types';
 import { LIT_CHAINS } from '@lit-protocol/constants';
 import WalletConnectPage from '@/components/user-dashboard/withdraw/WalletConnect/WalletConnect';
+import StatusMessage from '@/components/user-dashboard/consent/StatusMessage';
 
-import {
-  FormHeader,
-  StatusMessage,
-  WalletInfo,
-  StatusType,
-  ChainSelector,
-  TokenSelector,
-  WithdrawPanel,
-  BalanceDisplay,
-} from '.';
+import { StatusType, ChainSelector, TokenSelector, WithdrawPanel, BalanceDisplay } from '.';
 import { handleSubmit } from '@/utils/user-dashboard/withdrawHandler';
 import { ethers } from 'ethers';
-import BackButton from '@/components/user-dashboard/dashboard/BackButton';
-import { Button } from '@/components/shared/ui/button';
 
 export interface WithdrawFormProps {
   sessionSigs: SessionSigs;
@@ -47,7 +37,7 @@ export default function WithdrawForm({ sessionSigs, agentPKP }: WithdrawFormProp
     symbol: '',
     decimals: 18,
   });
-  const [showWalletConnect, setShowWalletConnect] = useState<boolean>(false);
+  const [activeTab, setActiveTab] = useState<'walletconnect' | 'withdraw'>('walletconnect');
 
   const showStatus = (message: string, type: StatusType = 'info') => {
     setStatusMessage(message);
@@ -104,65 +94,87 @@ export default function WithdrawForm({ sessionSigs, agentPKP }: WithdrawFormProp
 
   return (
     <div className="max-w-[550px] w-full mx-auto bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
-      {showWalletConnect ? (
-        <div className="p-6">
-          <div className="mb-4">
-            <BackButton label="Back to withdraw" onClick={() => setShowWalletConnect(false)} />
+      <div className="px-6 pt-8 pb-6 border-b border-gray-100">
+        <h3 className="text-xl font-semibold text-gray-900 mb-6">Wallet</h3>
+
+        <div className="mb-4">
+          <div className="text-sm font-medium text-gray-700 mb-2">Wallet Information</div>
+          <div className="text-sm text-gray-600 font-mono bg-gray-50 px-3 py-2 rounded-md border">
+            <span className="text-gray-500">EVM Address:</span>{' '}
+            {agentPKP?.ethAddress || 'Not available'}
           </div>
+        </div>
+      </div>
+
+      <div className="px-6 pb-6">
+        <div className="flex items-center justify-center mb-8 mt-6 px-8">
+          <div
+            onClick={() => setActiveTab('walletconnect')}
+            className={`pb-2 text-lg font-medium transition-colors cursor-pointer select-none ${
+              activeTab === 'walletconnect'
+                ? 'text-gray-900 border-b-2 border-gray-900'
+                : 'text-gray-600 hover:text-gray-800'
+            }`}
+          >
+            <div className="flex items-center gap-2 px-3">
+              WalletConnect
+              <img src="/walletconnect.svg" alt="WalletConnect" width={30} height={40} />
+            </div>
+          </div>
+
+          <span className="mx-8 text-gray-300 pointer-events-none text-lg">|</span>
+
+          <div
+            onClick={() => setActiveTab('withdraw')}
+            className={`px-4 pb-2 text-lg font-medium transition-colors cursor-pointer select-none flex items-center gap-2 ${
+              activeTab === 'withdraw'
+                ? 'text-gray-900 border-b-2 border-gray-900'
+                : 'text-gray-600 hover:text-gray-800'
+            }`}
+          >
+            Withdraw
+            <img src="/logo.svg" alt="Vincent logo" width={20} height={20} />
+          </div>
+        </div>
+
+        <div className={`mt-0 ${activeTab === 'walletconnect' ? 'block' : 'hidden'}`}>
           <WalletConnectPage agentPKP={agentPKP} sessionSigs={sessionSigs} />
         </div>
-      ) : (
-        <>
-          <FormHeader />
-          <h3 className="text-lg font-medium text-black mb-4 mt-8 px-6">Account Fund Manager</h3>
 
-          <StatusMessage message={statusMessage} type={statusType} />
+        <div className={`space-y-6 mt-0 ${activeTab === 'withdraw' ? 'block' : 'hidden'}`}>
+          {statusMessage && <StatusMessage message={statusMessage} type={statusType} />}
 
-          <WalletInfo ethAddress={agentPKP?.ethAddress} />
+          <ChainSelector
+            selectedChain={selectedChain}
+            ethAddress={agentPKP.ethAddress}
+            onChange={setSelectedChain}
+          />
 
-          <div className="p-6">
-            <ChainSelector
-              selectedChain={selectedChain}
-              ethAddress={agentPKP!.ethAddress}
-              onChange={setSelectedChain}
-            />
+          <BalanceDisplay
+            balance={nativeBalance}
+            token={nativeToken}
+            loading={loading}
+            refreshBalance={refreshBalance}
+          />
 
-            <BalanceDisplay
-              balance={nativeBalance}
-              token={nativeToken}
-              loading={loading}
-              refreshBalance={refreshBalance}
-            />
+          <TokenSelector
+            isCustomToken={isCustomToken}
+            setIsCustomToken={setIsCustomToken}
+            customTokenAddress={customTokenAddress}
+            setCustomTokenAddress={setCustomTokenAddress}
+          />
 
-            <TokenSelector
-              isCustomToken={isCustomToken}
-              setIsCustomToken={setIsCustomToken}
-              customTokenAddress={customTokenAddress}
-              setCustomTokenAddress={setCustomTokenAddress}
-            />
-
-            <div className="mb-4">
-              <Button
-                variant="outline"
-                onClick={() => setShowWalletConnect(true)}
-                className="h-8 px-3 text-xs border-blue-200 text-blue-700 hover:bg-blue-50 hover:text-blue-800"
-              >
-                Connect with WalletConnect
-              </Button>
-            </div>
-
-            <WithdrawPanel
-              withdrawAddress={withdrawAddress}
-              setWithdrawAddress={setWithdrawAddress}
-              withdrawAmount={withdrawAmount}
-              setWithdrawAmount={setWithdrawAmount}
-              tokenSymbol={isCustomToken ? 'TOKEN' : nativeToken.symbol}
-              loading={loading}
-              onSubmit={onSubmit}
-            />
-          </div>
-        </>
-      )}
+          <WithdrawPanel
+            withdrawAddress={withdrawAddress}
+            setWithdrawAddress={setWithdrawAddress}
+            withdrawAmount={withdrawAmount}
+            setWithdrawAmount={setWithdrawAmount}
+            tokenSymbol={isCustomToken ? 'TOKEN' : nativeToken.symbol}
+            loading={loading}
+            onSubmit={onSubmit}
+          />
+        </div>
+      </div>
     </div>
   );
 }

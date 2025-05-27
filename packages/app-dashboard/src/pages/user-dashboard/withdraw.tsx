@@ -17,7 +17,7 @@ export function Withdraw() {
       </Helmet>
 
       <UserHeader
-        title="Withdraw"
+        title=""
         backButton={{
           to: '/user/apps',
           label: 'Back to Apps',

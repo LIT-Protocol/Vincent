@@ -27,8 +27,6 @@ export function clearSessionRequest(id: number): void {
 export function setupRequestHandlers(client: IWalletKit): void {
   // Log session events for debugging
   client.on('session_request', (event: any) => {
-    console.log('Received session request:', event);
-
     // Check if request already exists to prevent duplicates
     const existingRequest = pendingSessionRequests.find((req) => req.id === event.id);
     if (!existingRequest) {
