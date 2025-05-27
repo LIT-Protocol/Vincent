@@ -14,7 +14,24 @@ router.get('/', async (_req, res) => {
   }
 });
 
-// Get a single tool
+// Get Tool by identity
+router.get('/identity/:identity', async (req, res) => {
+  try {
+    const tool = await Tool.findOne({ identity: req.params.identity });
+    if (!tool) {
+      return res.status(404).json({ message: 'Tool not found' });
+    }
+    return res.json(tool);
+  } catch (error) {
+    console.error('Error fetching tool:', error);
+    return res.status(500).json({
+      message: 'Error fetching tool',
+      error: error instanceof Error ? error.message : 'Unknown error',
+    });
+  }
+});
+
+// Get a single tool by ID
 router.get('/:id', async (req, res) => {
   try {
     const tool = await Tool.findById(req.params.id);
@@ -70,19 +87,6 @@ router.post('/', async (req, res) => {
     res.status(201).json(savedTool);
   } catch (error) {
     res.status(400).json({ message: 'Error creating tool', error });
-  }
-});
-
-// Get Tool
-router.get('/:identity', async (req, res) => {
-  try {
-    const tool = await Tool.findOne({ identity: req.params.identity });
-    if (!tool) {
-      return res.status(404).json({ message: 'Tool not found' });
-    }
-    res.json(tool);
-  } catch (error) {
-    res.status(500).json({ message: 'Error fetching tool', error });
   }
 });
 
@@ -177,7 +181,11 @@ router.get('/:identity/versions', async (req, res) => {
     const versions = await ToolVersion.find({ packageName: tool.packageName });
     res.json(versions);
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching tool versions', error });
+    console.error('Error fetching tool versions:', error);
+    res.status(500).json({
+      message: 'Error fetching tool versions',
+      error: error instanceof Error ? error.message : 'Unknown error',
+    });
   }
 });
 
@@ -200,7 +208,11 @@ router.get('/:identity/version/:version', async (req, res) => {
 
     res.json(version);
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching tool version', error });
+    console.error('Error fetching tool version:', error);
+    res.status(500).json({
+      message: 'Error fetching tool version',
+      error: error instanceof Error ? error.message : 'Unknown error',
+    });
   }
 });
 
@@ -227,7 +239,11 @@ router.put('/:identity/version/:version', async (req, res) => {
 
     res.json(version);
   } catch (error) {
-    res.status(400).json({ message: 'Error updating tool version', error });
+    console.error('Error updating tool version:', error);
+    res.status(400).json({
+      message: 'Error updating tool version',
+      error: error instanceof Error ? error.message : 'Unknown error',
+    });
   }
 });
 
