@@ -3,7 +3,7 @@ import { createConfig } from 'wagmi';
 
 export class ChrnoicleYellowstone {
   public static rpcUrls: string[] = ['https://yellowstone-rpc.litprotocol.com/'];
-  public static explorerUrl: string = 'https://yellowstone-explorer.litprotocol.com/';
+  public static explorerUrl = 'https://yellowstone-explorer.litprotocol.com/';
 
   /**
    * You'll likely need to cast this to Viem's Chain type for type safety.

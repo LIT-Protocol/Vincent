@@ -13,13 +13,13 @@
     "moduleResolution": "node",
     "module": "commonjs",
     "paths": {
-      "@lit-protocol/vincent-tool": ["../vincent-tool/src"]
+      "@lit-protocol/vincent-tool-sdk": ["../vincent-tool-sdk/src"]
     }
   },
   "include": ["src/**/*.ts"],
   "references": [
     {
-      "path": "../vincent-tool/tsconfig.lib.json"
+      "path": "../vincent-tool-sdk/tsconfig.lib.json"
     }
   ],
   "exclude": ["jest.config.ts", "src/**/*.spec.ts", "src/**/*.test.ts"]
