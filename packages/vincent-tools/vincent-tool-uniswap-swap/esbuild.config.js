@@ -59,7 +59,7 @@ module.exports = {
         inject: ['./buffer.shim.js'],
         external: ['ethers'],
         plugins: [wrapIIFEInStringPlugin],
-        platform: 'browser',
+        platform: 'node',
       })
       .then((result) => {
         result.outputFiles.forEach((file) => {

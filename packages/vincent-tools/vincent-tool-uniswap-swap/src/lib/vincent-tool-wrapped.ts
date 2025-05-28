@@ -5,15 +5,17 @@ import { UniswapSwapToolDef, UniswapSwapToolParamsSchema } from './vincent-tool'
 
 declare const userPkpTokenId: string;
 declare const toolParams: z.infer<typeof UniswapSwapToolParamsSchema>;
+declare const LitAuth: {
+  authSigAddress: string;
+};
 
 (async () =>
   vincentToolHandler({
-    vincentToolDef: UniswapSwapToolDef,
-    context: {
-      pkpTokenId: userPkpTokenId,
+    vincentTool: UniswapSwapToolDef,
+    baseContext: {
       delegation: {
-        delegatee: userPkpTokenId,
         delegator: userPkpTokenId,
+        delegatee: LitAuth.authSigAddress,
       },
     },
     toolParams,

@@ -1,7 +1,10 @@
 import { z } from 'zod';
-import { createVincentTool, createVincentToolPolicy } from '@lit-protocol/vincent-tool-sdk';
+import {
+  asBundledVincentPolicy,
+  createVincentTool,
+  createVincentToolPolicy,
+} from '@lit-protocol/vincent-tool-sdk';
 import { SpendingLimitPolicyDef } from '@lit-protocol/vincent-policy-spending-limit';
-import { FeeAmount } from '@uniswap/v3-sdk';
 import { Percent } from '@uniswap/sdk-core';
 import { createPublicClient, http } from 'viem';
 
@@ -17,6 +20,7 @@ import {
   checkUniswapPoolExists,
   checkTokenInBalance,
 } from './tool-checks';
+import { createPolicyMapFromToolPolicies } from '@lit-protocol/vincent-tool-sdk/src/lib/toolCore/helpers';
 
 export const UniswapSwapToolParamsSchema = z.object({
   ethRpcUrl: z.string(),
@@ -59,7 +63,10 @@ export const UniswapSwapToolExecuteFailSchema = z.object({
 
 const SpendingLimitPolicy = createVincentToolPolicy({
   toolParamsSchema: UniswapSwapToolParamsSchema,
-  policyDef: SpendingLimitPolicyDef.__vincentPolicyDef,
+  bundledVincentPolicy: asBundledVincentPolicy(
+    SpendingLimitPolicyDef,
+    'QmPNsnUb1qWwnbeeo7ZyKe2ZxRstCyCqSRxxVHqoNhpbaM' as const,
+  ),
   toolParameterMappings: {
     pkpEthAddress: 'pkpEthAddress',
     ethRpcUrl: 'ethRpcUrl',
@@ -70,18 +77,20 @@ const SpendingLimitPolicy = createVincentToolPolicy({
 });
 
 export const UniswapSwapToolDef = createVincentTool({
-  // TODO: Replace with actual CID
-  ipfsCid: 'Qm-REPLACE-ME',
-  packageName: '@lit-protocol/vincent-tool-uniswap-swap',
+  // packageName: '@lit-protocol/vincent-tool-uniswap-swap' as const,
+
   toolParamsSchema: UniswapSwapToolParamsSchema,
-  supportedPolicies: [SpendingLimitPolicy] as const,
+  policyMap: createPolicyMapFromToolPolicies([SpendingLimitPolicy] as const),
 
   precheckSuccessSchema: UniswapSwapToolPrecheckSuccessSchema,
   precheckFailSchema: UniswapSwapToolPrecheckFailSchema,
+
   executeSuccessSchema: UniswapSwapToolExecuteSuccessSchema,
   executeFailSchema: UniswapSwapToolExecuteFailSchema,
 
   precheck: async ({ toolParams }, { policiesContext, fail, succeed }) => {
+    if (!policiesContext.allow) return fail({ allow: false, error: 'Policy check failed' });
+
     const {
       pkpEthAddress,
       rpcUrlForUniswap,
@@ -115,7 +124,7 @@ export const UniswapSwapToolDef = createVincentTool({
       chainId: chainIdForUniswap,
       tokenInAddress: tokenInAddress as `0x${string}`,
       tokenInDecimals,
-      tokenInAmount: BigInt(tokenInAmount),
+      tokenInAmount,
       tokenOutAddress: tokenOutAddress as `0x${string}`,
       tokenOutDecimals,
       poolFee,
@@ -128,6 +137,8 @@ export const UniswapSwapToolDef = createVincentTool({
     });
   },
   execute: async ({ toolParams }, { succeed, fail, policiesContext }) => {
+    if (!policiesContext.allow) return fail({ error: 'Policy check failed' });
+
     const {
       pkpEthAddress,
       ethRpcUrl,
@@ -152,7 +163,7 @@ export const UniswapSwapToolDef = createVincentTool({
       chainId: chainIdForUniswap,
       tokenInAddress,
       tokenInDecimals,
-      tokenInAmount: BigInt(tokenInAmount),
+      tokenInAmount,
       tokenOutAddress,
       tokenOutDecimals,
       poolFee,
@@ -173,7 +184,7 @@ export const UniswapSwapToolDef = createVincentTool({
       chainId: chainIdForUniswap,
       pkpEthAddress: pkpEthAddress as `0x${string}`,
       tokenInDecimals,
-      tokenInAmount: BigInt(tokenInAmount),
+      tokenInAmount,
       pkpPublicKey: pkpInfo.publicKey,
       uniswapSwapRoute,
       uniswapTokenIn,
@@ -187,10 +198,11 @@ export const UniswapSwapToolDef = createVincentTool({
     if (policiesContext.allowedPolicies['@lit-protocol/vincent-policy-spending-limit']) {
       const tokenInAmountInUsd = await getTokenAmountInUsd({
         ethRpcUrl,
+        rpcUrlForUniswap,
+        chainIdForUniswap,
         tokenAddress: tokenInAddress,
-        tokenAmount: BigInt(tokenInAmount),
+        tokenAmount: tokenInAmount,
         tokenDecimals: tokenInDecimals,
-        poolFee: poolFee ?? FeeAmount.MEDIUM,
       });
 
       const spendingLimitPolicyContext =

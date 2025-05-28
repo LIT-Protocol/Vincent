@@ -1,4 +1,4 @@
-const vincentPolicyIpfsCid = 'QmUeop9ShFq5ur3HMp8e5mMs5ZVafcTSMCzrGhkiSagFBL';
+const vincentPolicyIpfsCid = 'QmPNsnUb1qWwnbeeo7ZyKe2ZxRstCyCqSRxxVHqoNhpbaM';
 
 module.exports = {
   vincentPolicyIpfsCid,

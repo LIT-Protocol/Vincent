@@ -4,11 +4,13 @@ import { SpendingLimitPolicyDef, SpendingLimitPolicyToolParamsSchema } from './v
 
 declare const userPkpTokenId: string;
 declare const toolParams: typeof SpendingLimitPolicyToolParamsSchema;
+declare const LitAuth: {
+  authSigAddress: string;
+};
 
 (async () =>
   vincentPolicyHandler({
-    vincentPolicyDef: SpendingLimitPolicyDef,
-    // @ts-expect-error - TODO: fix this
-    context: { userPkpTokenId },
+    vincentPolicy: SpendingLimitPolicyDef,
+    context: { delegation: { delegator: userPkpTokenId, delegatee: LitAuth.authSigAddress } },
     toolParams,
   }))();

@@ -61,12 +61,11 @@ export const SpendingLimitPolicyCommitDenyResultSchema = z.object({
 });
 
 export const SpendingLimitPolicyDef = createVincentPolicy({
-  // TODO: Replace with actual CID
-  ipfsCid: 'Qm-REPLACE-ME',
-  packageName: '@lit-protocol/vincent-policy-spending-limit',
+  packageName: '@lit-protocol/vincent-policy-spending-limit' as const,
 
   toolParamsSchema: SpendingLimitPolicyToolParamsSchema,
   userParamsSchema: SpendingLimitPolicyUserParamsSchema,
+  commitParamsSchema: SpendingLimitPolicyCommitParamsSchema,
 
   precheckAllowResultSchema: spendingLimitPolicyPrecheckAllowResultSchema,
   precheckDenyResultSchema: spendingLimitPolicyPrecheckDenyResultSchema,
@@ -74,7 +73,6 @@ export const SpendingLimitPolicyDef = createVincentPolicy({
   evalAllowResultSchema: SpendingLimitPolicyEvalAllowResultSchema,
   evalDenyResultSchema: SpendingLimitPolicyEvalDenyResultSchema,
 
-  commitParamsSchema: SpendingLimitPolicyCommitParamsSchema,
   commitAllowResultSchema: SpendingLimitPolicyCommitAllowResultSchema,
   commitDenyResultSchema: SpendingLimitPolicyCommitDenyResultSchema,
 
