@@ -324,8 +324,8 @@ contract VincentUserFacet is VincentBase {
                 versionedApp.toolIpfsCidHashToToolPolicies[hashedToolIpfsCid];
 
             // Step 3.3: Access the tool policy storage for the PKP owner.
-            VincentUserStorage.ToolPolicyStorage storage toolStorage =
-                us_.agentPkpTokenIdToAgentStorage[pkpTokenId].toolPolicyStorage[appId][appVersion][hashedToolIpfsCid];
+            mapping(bytes32 => bytes) storage toolPolicyParameterValues =
+                us_.agentPkpTokenIdToAgentStorage[pkpTokenId].toolPolicyParameterValues[appId][appVersion][hashedToolIpfsCid];
 
             // Step 4: Iterate through each policy associated with the tool.
             uint256 policyCount = policyIpfsCids[i].length;
@@ -347,8 +347,7 @@ contract VincentUserFacet is VincentBase {
                 }
 
                 // Step 5: Remove the policy parameter metadata
-                delete toolStorage.policyIpfsCidHashToParameterValues[hashedPolicyId];
-                toolStorage.policyIpfsCidHashesWithParameters.remove(hashedPolicyId);
+                delete toolPolicyParameterValues[hashedPolicyId];
 
                 // Step 5.1: Emit an event to record the removal of the policy parameter
                 emit LibVincentUserFacet.ToolPolicyParametersRemoved(
@@ -421,8 +420,8 @@ contract VincentUserFacet is VincentBase {
             VincentAppStorage.ToolPolicies storage toolPolicies =
                 versionedApp.toolIpfsCidHashToToolPolicies[hashedToolIpfsCid];
 
-            VincentUserStorage.ToolPolicyStorage storage userToolPolicyStorage =
-                us_.agentPkpTokenIdToAgentStorage[pkpTokenId].toolPolicyStorage[appId][appVersion][hashedToolIpfsCid];
+            mapping(bytes32 => bytes) storage toolPolicyParameterValues =
+                us_.agentPkpTokenIdToAgentStorage[pkpTokenId].toolPolicyParameterValues[appId][appVersion][hashedToolIpfsCid];
 
             // Step 4: Iterate through each policy associated with the tool.
             for (uint256 j = 0; j < policyCount; j++) {
@@ -443,8 +442,7 @@ contract VincentUserFacet is VincentBase {
                 }
 
                 // Step 5: Store the policy parameter metadata
-                userToolPolicyStorage.policyIpfsCidHashToParameterValues[hashedToolPolicy] = policyParameterValues[i][j];
-                userToolPolicyStorage.policyIpfsCidHashesWithParameters.add(hashedToolPolicy);
+                toolPolicyParameterValues[hashedToolPolicy] = policyParameterValues[i][j];
 
                 // Step 5.1: Emit an event for tracking
                 emit LibVincentUserFacet.ToolPolicyParametersSet(

@@ -72,20 +72,13 @@ library VincentUserStorage {
 
     bytes32 internal constant USER_STORAGE_SLOT = keccak256("lit.vincent.user.storage");
 
-    struct ToolPolicyStorage {
-        // Tool Policy IPFS CID hash -> User's CBOR2 encoded Policy parameter values
-        mapping(bytes32 => bytes) policyIpfsCidHashToParameterValues;
-        // Set of Policy IPFS CID hashes that have User parameters set
-        EnumerableSet.Bytes32Set policyIpfsCidHashesWithParameters;
-    }
-
     struct AgentStorage {
         // Set of App IDs that have a permitted version
         EnumerableSet.UintSet permittedApps;
         // App ID -> Permitted App version
         mapping(uint256 => uint256) permittedAppVersion;
-        // App ID -> App version -> Tool IPFS CID hash -> Tool Policy storage
-        mapping(uint256 => mapping(uint256 => mapping(bytes32 => ToolPolicyStorage))) toolPolicyStorage;
+        // App ID -> App version -> Tool IPFS CID hash -> Tool Policy storage -> Tool Policy IPFS CID hash -> User's CBOR2 encoded Policy parameter values
+        mapping(uint256 => mapping(uint256 => mapping(bytes32 => mapping(bytes32 => bytes)))) toolPolicyParameterValues;
     }
 
     struct UserStorage {

@@ -308,8 +308,8 @@ contract VincentUserViewFacet is VincentBase {
         validation.policies = new PolicyWithParameters[](policyCount);
 
         // Get the tool policy storage for this PKP, app, app version, and tool
-        VincentUserStorage.ToolPolicyStorage storage toolPolicyStorage =
-            us_.agentPkpTokenIdToAgentStorage[pkpTokenId].toolPolicyStorage[appId][appVersion][hashedToolIpfsCid];
+        mapping(bytes32 => bytes) storage toolPolicyParameterValues =
+            us_.agentPkpTokenIdToAgentStorage[pkpTokenId].toolPolicyParameterValues[appId][appVersion][hashedToolIpfsCid];
 
         // For each policy, get all its parameters
         for (uint256 i = 0; i < policyCount; i++) {
@@ -317,7 +317,7 @@ contract VincentUserViewFacet is VincentBase {
 
             // Get the policy IPFS CID
             validation.policies[i].policyIpfsCid = ls_.ipfsCidHashToIpfsCid[policyHash];
-            validation.policies[i].policyParameterValues = toolPolicyStorage.policyIpfsCidHashToParameterValues[policyHash];
+            validation.policies[i].policyParameterValues = toolPolicyParameterValues[policyHash];
         }
 
         return validation;
@@ -357,14 +357,14 @@ contract VincentUserViewFacet is VincentBase {
         toolWithPolicies.policies = new PolicyWithParameters[](policyCount);
 
         // Get the tool policy storage for this PKP, app, and tool
-        VincentUserStorage.ToolPolicyStorage storage toolPolicyStorage =
-            us_.agentPkpTokenIdToAgentStorage[pkpTokenId].toolPolicyStorage[appId][appVersion][toolHash];
+        mapping(bytes32 => bytes) storage toolPolicyParameterValues =
+            us_.agentPkpTokenIdToAgentStorage[pkpTokenId].toolPolicyParameterValues[appId][appVersion][toolHash];
 
         // For each policy, get all its parameters
         for (uint256 i = 0; i < policyCount; i++) {
             bytes32 policyHash = allPolicyHashes[i];
             toolWithPolicies.policies[i].policyIpfsCid = ls_.ipfsCidHashToIpfsCid[policyHash];
-            toolWithPolicies.policies[i].policyParameterValues = toolPolicyStorage.policyIpfsCidHashToParameterValues[policyHash];
+            toolWithPolicies.policies[i].policyParameterValues = toolPolicyParameterValues[policyHash];
         }
     }
 }
