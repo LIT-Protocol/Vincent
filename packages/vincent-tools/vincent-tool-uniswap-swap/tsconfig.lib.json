@@ -19,6 +19,9 @@
   "include": ["src/**/*.ts"],
   "references": [
     {
+      "path": "../vincent-policy-spending-limit/tsconfig.lib.json"
+    },
+    {
       "path": "../vincent-tool-sdk/tsconfig.lib.json"
     }
   ],
