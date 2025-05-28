@@ -57,7 +57,7 @@ module.exports = {
         treeShaking: true,
         outdir: './src/generated/',
         inject: ['./buffer.shim.js'],
-        external: ['ethers'],
+        // external: ['crypto'],
         plugins: [wrapIIFEInStringPlugin],
         platform: 'node',
       })

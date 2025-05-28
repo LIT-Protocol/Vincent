@@ -75,6 +75,11 @@ export const TEST_AGENT_WALLET_PKP_OWNER_PRIVATE_KEY = getEnv(
 export const TEST_AGENT_WALLET_PKP_OWNER_VIEM_ACCOUNT = privateKeyToAccount(
   TEST_AGENT_WALLET_PKP_OWNER_PRIVATE_KEY as `0x${string}`,
 );
+export const TEST_AGENT_WALLET_PKP_OWNER_VIEM_WALLET_CLIENT = createWalletClient({
+  account: TEST_AGENT_WALLET_PKP_OWNER_VIEM_ACCOUNT,
+  chain: DATIL_CHAIN,
+  transport: http(YELLOWSTONE_RPC_URL),
+});
 
 export const TEST_APP_MANAGER_PRIVATE_KEY = getEnv('TEST_APP_MANAGER_PRIVATE_KEY');
 export const TEST_APP_MANAGER_VIEM_ACCOUNT = privateKeyToAccount(
@@ -95,3 +100,25 @@ export const APP_NAME = 'Vincent Test App';
 export const APP_DESCRIPTION = 'A test app for the Vincent protocol';
 export const AUTHORIZED_REDIRECT_URIS = ['https://testing.vincent.com'];
 export const DELEGATEES = [TEST_APP_DELEGATEE_ACCOUNT.address];
+
+// Enums matching the contract definitions
+export enum PARAMETER_TYPE {
+  INT256 = 0,
+  INT256_ARRAY = 1,
+  UINT256 = 2,
+  UINT256_ARRAY = 3,
+  BOOL = 4,
+  BOOL_ARRAY = 5,
+  ADDRESS = 6,
+  ADDRESS_ARRAY = 7,
+  STRING = 8,
+  STRING_ARRAY = 9,
+  BYTES = 10,
+  BYTES_ARRAY = 11,
+}
+
+export enum DEPLOYMENT_STATUS {
+  DEV = 0,
+  TEST = 1,
+  PROD = 2,
+}

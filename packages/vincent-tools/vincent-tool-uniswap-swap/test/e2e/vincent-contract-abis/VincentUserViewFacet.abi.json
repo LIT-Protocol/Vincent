@@ -74,9 +74,26 @@
                 "internalType": "string"
               },
               {
-                "name": "policyParameterValues",
-                "type": "bytes",
-                "internalType": "bytes"
+                "name": "parameters",
+                "type": "tuple[]",
+                "internalType": "struct VincentUserViewFacet.PolicyParameter[]",
+                "components": [
+                  {
+                    "name": "name",
+                    "type": "string",
+                    "internalType": "string"
+                  },
+                  {
+                    "name": "paramType",
+                    "type": "uint8",
+                    "internalType": "enum VincentAppStorage.ParameterType"
+                  },
+                  {
+                    "name": "value",
+                    "type": "bytes",
+                    "internalType": "bytes"
+                  }
+                ]
               }
             ]
           }
@@ -161,9 +178,26 @@
                 "internalType": "string"
               },
               {
-                "name": "policyParameterValues",
-                "type": "bytes",
-                "internalType": "bytes"
+                "name": "parameters",
+                "type": "tuple[]",
+                "internalType": "struct VincentUserViewFacet.PolicyParameter[]",
+                "components": [
+                  {
+                    "name": "name",
+                    "type": "string",
+                    "internalType": "string"
+                  },
+                  {
+                    "name": "paramType",
+                    "type": "uint8",
+                    "internalType": "enum VincentAppStorage.ParameterType"
+                  },
+                  {
+                    "name": "value",
+                    "type": "bytes",
+                    "internalType": "bytes"
+                  }
+                ]
               }
             ]
           }

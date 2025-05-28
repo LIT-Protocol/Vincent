@@ -65,7 +65,7 @@ const SpendingLimitPolicy = createVincentToolPolicy({
   toolParamsSchema: UniswapSwapToolParamsSchema,
   bundledVincentPolicy: asBundledVincentPolicy(
     SpendingLimitPolicyDef,
-    'QmPNsnUb1qWwnbeeo7ZyKe2ZxRstCyCqSRxxVHqoNhpbaM' as const,
+    'Qmaet4CJAfcn5Adr94Xkq3HbG4H9xQa3VZa1ccEZcP1bzr' as const,
   ),
   toolParameterMappings: {
     pkpEthAddress: 'pkpEthAddress',
