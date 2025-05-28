@@ -1,4 +1,4 @@
-const vincentToolIpfsCid = 'QmYCzEKchQuf7pFSYeTYujjW575YP6oGvRbQUDreT8UxYf';
+const vincentToolIpfsCid = 'QmNSEuxnFM4bPMe19jTWHQ9nyPvoBEipaCogtz3GujhCSQ';
 
 module.exports = {
   vincentToolIpfsCid,
