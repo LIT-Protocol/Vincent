@@ -297,11 +297,11 @@ contract VincentUserViewFacet is VincentBase {
         validation.isPermitted = true;
 
         // Get all policies registered for this tool in the app version
-        VincentAppStorage.ToolPolicies storage appToolPolicies =
-            versionedApp.toolIpfsCidHashToToolPolicies[hashedToolIpfsCid];
+        EnumerableSet.Bytes32Set storage toolPolicyIpfsCidHashes =
+            versionedApp.toolIpfsCidHashToToolPolicyIpfsCidHashes[hashedToolIpfsCid];
 
         // Get all policy hashes for this tool from the app version
-        bytes32[] memory allPolicyHashes = appToolPolicies.policyIpfsCidHashes.values();
+        bytes32[] memory allPolicyHashes = toolPolicyIpfsCidHashes.values();
         uint256 policyCount = allPolicyHashes.length;
 
         // Create the policies array
@@ -347,10 +347,11 @@ contract VincentUserViewFacet is VincentBase {
         toolWithPolicies.toolIpfsCid = ls_.ipfsCidHashToIpfsCid[toolHash];
 
         // Get all policies registered for this tool in the app version
-        VincentAppStorage.ToolPolicies storage appToolPolicies = versionedApp.toolIpfsCidHashToToolPolicies[toolHash];
+        EnumerableSet.Bytes32Set storage toolPolicyIpfsCidHashes =
+            versionedApp.toolIpfsCidHashToToolPolicyIpfsCidHashes[toolHash];
 
         // Get all policy hashes for this tool from the app version
-        bytes32[] memory allPolicyHashes = appToolPolicies.policyIpfsCidHashes.values();
+        bytes32[] memory allPolicyHashes = toolPolicyIpfsCidHashes.values();
         uint256 policyCount = allPolicyHashes.length;
 
         // Create the policies array for this tool

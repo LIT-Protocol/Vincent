@@ -90,18 +90,7 @@ contract VincentAppViewFacet is VincentBase {
      */
     struct Tool {
         string toolIpfsCid;
-        Policy[] policies;
-    }
-
-    /**
-     * @notice Represents policy information including parameters
-     * @dev Used for returning policy data in view functions
-     * @param policyIpfsCid IPFS CID pointing to the policy's Lit Action
-     * @param parameterMetadata Parameter metadata defined for this policy
-     */
-    struct Policy {
-        string policyIpfsCid;
-        bytes parameterMetadata;
+        string[] policyIpfsCids;
     }
 
     // ==================================================================================
@@ -190,24 +179,21 @@ contract VincentAppViewFacet is VincentBase {
             appVersion.tools[i].toolIpfsCid = toolIpfsCid;
 
             // Step 9: Get the policies for this specific tool
-            VincentAppStorage.ToolPolicies storage toolPolicies =
-                storedVersionedApp.toolIpfsCidHashToToolPolicies[toolIpfsCidHash];
-            uint256 policyCount = toolPolicies.policyIpfsCidHashes.length();
+            EnumerableSet.Bytes32Set storage toolPolicyIpfsCidHashes =
+                storedVersionedApp.toolIpfsCidHashToToolPolicyIpfsCidHashes[toolIpfsCidHash];
+            uint256 policyCount = toolPolicyIpfsCidHashes.length();
 
             // Step 9.1: Initialize the policies array for this tool
-            appVersion.tools[i].policies = new Policy[](policyCount);
+            appVersion.tools[i].policyIpfsCids = new string[](policyCount);
 
             // Step 10: Iterate through each policy for this tool
             for (uint256 j = 0; j < policyCount; j++) {
                 // Step 10.1: Get the policy hash and resolve to the actual IPFS CID
-                bytes32 policyIpfsCidHash = toolPolicies.policyIpfsCidHashes.at(j);
+                bytes32 policyIpfsCidHash = toolPolicyIpfsCidHashes.at(j);
                 string memory policyIpfsCid = ls.ipfsCidHashToIpfsCid[policyIpfsCidHash];
 
                 // Step 10.2: Set the policy IPFS CID in the return structure
-                appVersion.tools[i].policies[j].policyIpfsCid = policyIpfsCid;
-
-                // Step 11: Get the policy parameter metadata
-                appVersion.tools[i].policies[j].parameterMetadata = toolPolicies.policyIpfsCidHashToParameterMetadata[policyIpfsCidHash];
+                appVersion.tools[i].policyIpfsCids[j] = policyIpfsCid;
             }
         }
     }

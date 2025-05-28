@@ -1188,13 +1188,6 @@ contract VincentUserFacetTest is Test {
         versionTools.toolPolicies[0][0] = POLICY_IPFS_CID_1;
 
         versionTools.toolPolicies[1] = new string[](0);
-
-        versionTools.toolPolicyParameterMetadata = new bytes[][](2);
-
-        versionTools.toolPolicyParameterMetadata[0] = new bytes[](1);
-        versionTools.toolPolicyParameterMetadata[0][0] = POLICY_PARAMETER_METADATA_1;
-
-        versionTools.toolPolicyParameterMetadata[1] = new bytes[](0);
         
         (newAppId, newAppVersion) = _registerApp(delegatees, versionTools);
     }

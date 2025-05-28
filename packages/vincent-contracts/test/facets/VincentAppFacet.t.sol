@@ -28,10 +28,6 @@ contract VincentAppFacetTest is Test {
     string constant POLICY_IPFS_CID_2 = "QmPolicy2";
     string constant POLICY_IPFS_CID_3 = "QmPolicy3";
 
-    bytes constant POLICY_PARAMETER_METADATA_1 = abi.encode(1);
-    bytes constant POLICY_PARAMETER_METADATA_2 = abi.encode(2);
-    bytes constant POLICY_PARAMETER_METADATA_3 = abi.encode(3);
-
     bytes constant POLICY_PARAMETER_VALUES_1 = abi.encode(1);
     bytes constant POLICY_PARAMETER_VALUES_2 = abi.encode(2);
     bytes constant POLICY_PARAMETER_VALUES_3 = abi.encode(3);
@@ -106,11 +102,11 @@ contract VincentAppFacetTest is Test {
         assertEq(appVersion.tools.length, 2);
 
         assertEq(appVersion.tools[0].toolIpfsCid, TOOL_IPFS_CID_1);
-        assertEq(appVersion.tools[0].policies.length, 1);
-        assertEq(appVersion.tools[0].policies[0].policyIpfsCid, POLICY_IPFS_CID_1);
+        assertEq(appVersion.tools[0].policyIpfsCids.length, 1);
+        assertEq(appVersion.tools[0].policyIpfsCids[0], POLICY_IPFS_CID_1);
 
         assertEq(appVersion.tools[1].toolIpfsCid, TOOL_IPFS_CID_2);
-        assertEq(appVersion.tools[1].policies.length, 0);
+        assertEq(appVersion.tools[1].policyIpfsCids.length, 0);
 
         VincentAppViewFacet.AppWithVersions[] memory apps = vincentAppViewFacet.getAppsByManager(APP_MANAGER_ALICE);
         assertEq(apps.length, 1);
@@ -123,10 +119,10 @@ contract VincentAppFacetTest is Test {
         assertTrue(apps[0].versions[0].enabled);
         assertEq(apps[0].versions[0].tools.length, 2);
         assertEq(apps[0].versions[0].tools[0].toolIpfsCid, TOOL_IPFS_CID_1);
-        assertEq(apps[0].versions[0].tools[0].policies.length, 1);
-        assertEq(apps[0].versions[0].tools[0].policies[0].policyIpfsCid, POLICY_IPFS_CID_1);
+        assertEq(apps[0].versions[0].tools[0].policyIpfsCids.length, 1);
+        assertEq(apps[0].versions[0].tools[0].policyIpfsCids[0], POLICY_IPFS_CID_1);
         assertEq(apps[0].versions[0].tools[1].toolIpfsCid, TOOL_IPFS_CID_2);
-        assertEq(apps[0].versions[0].tools[1].policies.length, 0);
+        assertEq(apps[0].versions[0].tools[1].policyIpfsCids.length, 0);
 
         /**
          * Now testing registering the next version of the app
@@ -150,18 +146,6 @@ contract VincentAppFacetTest is Test {
         versionTools_newAppVersion.toolPolicies[2][0] = POLICY_IPFS_CID_1;
         versionTools_newAppVersion.toolPolicies[2][1] = POLICY_IPFS_CID_2;
         versionTools_newAppVersion.toolPolicies[2][2] = POLICY_IPFS_CID_3;
-
-        versionTools_newAppVersion.toolPolicyParameterMetadata = new bytes[][](3);
-
-        versionTools_newAppVersion.toolPolicyParameterMetadata[0] = new bytes[](1);
-        versionTools_newAppVersion.toolPolicyParameterMetadata[0][0] = POLICY_PARAMETER_METADATA_1;
-
-        versionTools_newAppVersion.toolPolicyParameterMetadata[1] = new bytes[](0);
-
-        versionTools_newAppVersion.toolPolicyParameterMetadata[2] = new bytes[](3);
-        versionTools_newAppVersion.toolPolicyParameterMetadata[2][0] = POLICY_PARAMETER_METADATA_1;
-        versionTools_newAppVersion.toolPolicyParameterMetadata[2][1] = POLICY_PARAMETER_METADATA_2;
-        versionTools_newAppVersion.toolPolicyParameterMetadata[2][2] = POLICY_PARAMETER_METADATA_3;
 
         vm.startPrank(APP_MANAGER_ALICE);
         (newAppVersion) = vincentAppFacet.registerNextAppVersion(newAppId, versionTools_newAppVersion);
@@ -191,21 +175,17 @@ contract VincentAppFacetTest is Test {
         assertEq(appVersion.tools.length, 3);
 
         assertEq(appVersion.tools[0].toolIpfsCid, TOOL_IPFS_CID_1);
-        assertEq(appVersion.tools[0].policies.length, 1);
-        assertEq(appVersion.tools[0].policies[0].policyIpfsCid, POLICY_IPFS_CID_1);
+        assertEq(appVersion.tools[0].policyIpfsCids.length, 1);
+        assertEq(appVersion.tools[0].policyIpfsCids[0], POLICY_IPFS_CID_1);
 
         assertEq(appVersion.tools[1].toolIpfsCid, TOOL_IPFS_CID_2);
-        assertEq(appVersion.tools[1].policies.length, 0);
+        assertEq(appVersion.tools[1].policyIpfsCids.length, 0);
 
         assertEq(appVersion.tools[2].toolIpfsCid, TOOL_IPFS_CID_3);
-        assertEq(appVersion.tools[2].policies.length, 3);
-        assertEq(appVersion.tools[2].policies[0].policyIpfsCid, POLICY_IPFS_CID_1);
-        assertEq(appVersion.tools[2].policies[1].policyIpfsCid, POLICY_IPFS_CID_2);
-        assertEq(appVersion.tools[2].policies[2].policyIpfsCid, POLICY_IPFS_CID_3);
-
-        assertEq(appVersion.tools[2].policies[0].parameterMetadata, POLICY_PARAMETER_METADATA_1);
-        assertEq(appVersion.tools[2].policies[1].parameterMetadata, POLICY_PARAMETER_METADATA_2);
-        assertEq(appVersion.tools[2].policies[2].parameterMetadata, POLICY_PARAMETER_METADATA_3);
+        assertEq(appVersion.tools[2].policyIpfsCids.length, 3);
+        assertEq(appVersion.tools[2].policyIpfsCids[0], POLICY_IPFS_CID_1);
+        assertEq(appVersion.tools[2].policyIpfsCids[1], POLICY_IPFS_CID_2);
+        assertEq(appVersion.tools[2].policyIpfsCids[2], POLICY_IPFS_CID_3);
 
         apps = vincentAppViewFacet.getAppsByManager(APP_MANAGER_ALICE);
         assertEq(apps.length, 1);
@@ -221,32 +201,27 @@ contract VincentAppFacetTest is Test {
         assertTrue(apps[0].versions[0].enabled);
         assertEq(apps[0].versions[0].tools.length, 2);
         assertEq(apps[0].versions[0].tools[0].toolIpfsCid, TOOL_IPFS_CID_1);
-        assertEq(apps[0].versions[0].tools[0].policies.length, 1);
-        assertEq(apps[0].versions[0].tools[0].policies[0].policyIpfsCid, POLICY_IPFS_CID_1);
-        assertEq(apps[0].versions[0].tools[0].policies[0].parameterMetadata, POLICY_PARAMETER_METADATA_1);
+        assertEq(apps[0].versions[0].tools[0].policyIpfsCids.length, 1);
+        assertEq(apps[0].versions[0].tools[0].policyIpfsCids[0], POLICY_IPFS_CID_1);
 
         assertEq(apps[0].versions[0].tools[1].toolIpfsCid, TOOL_IPFS_CID_2);
-        assertEq(apps[0].versions[0].tools[1].policies.length, 0);
+        assertEq(apps[0].versions[0].tools[1].policyIpfsCids.length, 0);
 
         assertEq(apps[0].versions[1].version, newAppVersion);
         assertTrue(apps[0].versions[1].enabled);
         assertEq(apps[0].versions[1].tools.length, 3);
         assertEq(apps[0].versions[1].tools[0].toolIpfsCid, TOOL_IPFS_CID_1);
-        assertEq(apps[0].versions[1].tools[0].policies.length, 1);
-        assertEq(apps[0].versions[1].tools[0].policies[0].policyIpfsCid, POLICY_IPFS_CID_1);
-        assertEq(apps[0].versions[1].tools[0].policies[0].parameterMetadata, POLICY_PARAMETER_METADATA_1);
+        assertEq(apps[0].versions[1].tools[0].policyIpfsCids.length, 1);
+        assertEq(apps[0].versions[1].tools[0].policyIpfsCids[0], POLICY_IPFS_CID_1);
 
         assertEq(apps[0].versions[1].tools[1].toolIpfsCid, TOOL_IPFS_CID_2);
-        assertEq(apps[0].versions[1].tools[1].policies.length, 0);
+        assertEq(apps[0].versions[1].tools[1].policyIpfsCids.length, 0);
 
         assertEq(apps[0].versions[1].tools[2].toolIpfsCid, TOOL_IPFS_CID_3);
-        assertEq(apps[0].versions[1].tools[2].policies.length, 3);
-        assertEq(apps[0].versions[1].tools[2].policies[0].policyIpfsCid, POLICY_IPFS_CID_1);
-        assertEq(apps[0].versions[1].tools[2].policies[1].policyIpfsCid, POLICY_IPFS_CID_2);
-        assertEq(apps[0].versions[1].tools[2].policies[2].policyIpfsCid, POLICY_IPFS_CID_3);
-        assertEq(apps[0].versions[1].tools[2].policies[0].parameterMetadata, POLICY_PARAMETER_METADATA_1);
-        assertEq(apps[0].versions[1].tools[2].policies[1].parameterMetadata, POLICY_PARAMETER_METADATA_2);
-        assertEq(apps[0].versions[1].tools[2].policies[2].parameterMetadata, POLICY_PARAMETER_METADATA_3);
+        assertEq(apps[0].versions[1].tools[2].policyIpfsCids.length, 3);
+        assertEq(apps[0].versions[1].tools[2].policyIpfsCids[0], POLICY_IPFS_CID_1);
+        assertEq(apps[0].versions[1].tools[2].policyIpfsCids[1], POLICY_IPFS_CID_2);
+        assertEq(apps[0].versions[1].tools[2].policyIpfsCids[2], POLICY_IPFS_CID_3);
 
         app = vincentAppViewFacet.getAppByDelegatee(APP_DELEGATEE_CHARLIE);
         assertEq(app.id, newAppId);
@@ -656,13 +631,6 @@ contract VincentAppFacetTest is Test {
         versionTools.toolPolicies[0][0] = POLICY_IPFS_CID_1;
 
         versionTools.toolPolicies[1] = new string[](0);
-
-        versionTools.toolPolicyParameterMetadata = new bytes[][](2);
-
-        versionTools.toolPolicyParameterMetadata[0] = new bytes[](1);
-        versionTools.toolPolicyParameterMetadata[0][0] = POLICY_PARAMETER_METADATA_1;
-
-        versionTools.toolPolicyParameterMetadata[1] = new bytes[](0);
 
         assertEq(vincentAppViewFacet.getTotalAppCount(), 0);
         

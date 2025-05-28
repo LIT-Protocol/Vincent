@@ -320,8 +320,8 @@ contract VincentUserFacet is VincentBase {
             }
 
             // Step 3.2: Fetch the tool policies to check if policies exist.
-            VincentAppStorage.ToolPolicies storage toolPolicies =
-                versionedApp.toolIpfsCidHashToToolPolicies[hashedToolIpfsCid];
+            EnumerableSet.Bytes32Set storage toolPolicyIpfsCidHashes =
+                versionedApp.toolIpfsCidHashToToolPolicyIpfsCidHashes[hashedToolIpfsCid];
 
             // Step 3.3: Access the tool policy storage for the PKP owner.
             mapping(bytes32 => bytes) storage toolPolicyParameterValues =
@@ -340,7 +340,7 @@ contract VincentUserFacet is VincentBase {
                 bytes32 hashedPolicyId = keccak256(abi.encodePacked(policyIpfsCid));
 
                 // Step 4.1: Verify that the policy exists before attempting removal.
-                if (!toolPolicies.policyIpfsCidHashes.contains(hashedPolicyId)) {
+                if (!toolPolicyIpfsCidHashes.contains(hashedPolicyId)) {
                     revert LibVincentUserFacet.ToolPolicyNotRegisteredForAppVersion(
                         appId, appVersion, toolIpfsCid, policyIpfsCid
                     );
@@ -417,8 +417,8 @@ contract VincentUserFacet is VincentBase {
             }
 
             // Step 3.2: Access storage locations for tool policies.
-            VincentAppStorage.ToolPolicies storage toolPolicies =
-                versionedApp.toolIpfsCidHashToToolPolicies[hashedToolIpfsCid];
+            EnumerableSet.Bytes32Set storage toolPolicyIpfsCidHashes =
+                versionedApp.toolIpfsCidHashToToolPolicyIpfsCidHashes[hashedToolIpfsCid];
 
             mapping(bytes32 => bytes) storage toolPolicyParameterValues =
                 us_.agentPkpTokenIdToAgentStorage[pkpTokenId].toolPolicyParameterValues[appId][appVersion][hashedToolIpfsCid];
@@ -435,7 +435,7 @@ contract VincentUserFacet is VincentBase {
                 bytes32 hashedToolPolicy = keccak256(abi.encodePacked(policyIpfsCid));
 
                 // Step 4.1: Validate that the policy is registered for the tool.
-                if (!toolPolicies.policyIpfsCidHashes.contains(hashedToolPolicy)) {
+                if (!toolPolicyIpfsCidHashes.contains(hashedToolPolicy)) {
                     revert LibVincentUserFacet.ToolPolicyNotRegisteredForAppVersion(
                         appId, appVersion, toolIpfsCid, policyIpfsCid
                     );

@@ -12,17 +12,11 @@ library VincentAppStorage {
 
     bytes32 internal constant APP_STORAGE_SLOT = keccak256("lit.vincent.app.storage");
 
-    struct ToolPolicies {
-        EnumerableSet.Bytes32Set policyIpfsCidHashes;
-        // Policy IPFS CID hash => CBOR2 encoded Policy parameter metadata
-        mapping(bytes32 => bytes) policyIpfsCidHashToParameterMetadata;
-    }
-
     struct AppVersion {
         EnumerableSet.Bytes32Set toolIpfsCidHashes;
         EnumerableSet.UintSet delegatedAgentPkps;
-        // Tool IPFS CID hash => Tool Policies
-        mapping(bytes32 => ToolPolicies) toolIpfsCidHashToToolPolicies;
+        // Tool IPFS CID hash => Tool Policy IPFS CID hashes
+        mapping(bytes32 => EnumerableSet.Bytes32Set) toolIpfsCidHashToToolPolicyIpfsCidHashes;
         bool enabled;
     }
 

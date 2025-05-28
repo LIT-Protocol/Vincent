@@ -127,10 +127,9 @@ library LibVincentAppFacet {
      * @notice Error thrown when the top-level tool arrays have mismatched lengths
      * @param toolsLength Length of the tools array
      * @param policiesLength Length of the policies array
-     * @param paramMetadataLength Length of the parameter metadata array
      */
     error ToolArrayDimensionMismatch(
-        uint256 toolsLength, uint256 policiesLength, uint256 paramMetadataLength
+        uint256 toolsLength, uint256 policiesLength
     );
 
     /**

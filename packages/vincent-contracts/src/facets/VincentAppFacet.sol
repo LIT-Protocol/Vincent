@@ -20,7 +20,7 @@ contract VincentAppFacet is VincentBase {
 
     /**
      * @title AppVersionTools
-     * @notice Structure containing tools, policies, and parameters for an app version
+     * @notice Structure containing tools and policies for an app version
      * @dev Used when registering a new app version
      * @param toolIpfsCids Array of IPFS CIDs pointing to tool metadata
      * @param toolPolicies 2D array of policy identifiers for each tool
@@ -28,7 +28,6 @@ contract VincentAppFacet is VincentBase {
     struct AppVersionTools {
         string[] toolIpfsCids;
         string[][] toolPolicies;
-        bytes[][] toolPolicyParameterMetadata;
     }
 
     /**
@@ -242,11 +241,10 @@ contract VincentAppFacet is VincentBase {
 
         // Check array lengths at top level
         uint256 toolCount = versionTools.toolIpfsCids.length;
-        if (toolCount != versionTools.toolPolicies.length || toolCount != versionTools.toolPolicyParameterMetadata.length) {
+        if (toolCount != versionTools.toolPolicies.length) {
             revert LibVincentAppFacet.ToolArrayDimensionMismatch(
                 toolCount,
-                versionTools.toolPolicies.length,
-                versionTools.toolPolicyParameterMetadata.length
+                versionTools.toolPolicies.length
             );
         }
 
@@ -261,13 +259,6 @@ contract VincentAppFacet is VincentBase {
 
             // Check nested array lengths
             uint256 policyCount = versionTools.toolPolicies[i].length;
-            if (policyCount != versionTools.toolPolicyParameterMetadata[i].length) {
-                revert LibVincentAppFacet.PolicyArrayLengthMismatch(
-                    i,
-                    policyCount,
-                    versionTools.toolPolicyParameterMetadata[i].length
-                );
-            }
 
             for (uint256 j = 0; j < policyCount; j++) {
                 string memory policyIpfsCid = versionTools.toolPolicies[i][j];
@@ -310,24 +301,16 @@ contract VincentAppFacet is VincentBase {
                 emit LibVincentAppFacet.NewLitActionRegistered(hashedToolCid);
             }
 
-            // Step 6.2: Fetch the tool policies storage for this tool.
-            VincentAppStorage.ToolPolicies storage toolPoliciesStorage =
-                versionedApp.toolIpfsCidHashToToolPolicies[hashedToolCid];
-
             // Step 7: Iterate through policies linked to this tool.
             uint256 policyCount = versionTools.toolPolicies[i].length;
 
             for (uint256 j = 0; j < policyCount; j++) {
                 string memory policyIpfsCid = versionTools.toolPolicies[i][j]; // Cache calldata value
-                bytes memory policyParameterMetadata = versionTools.toolPolicyParameterMetadata[i][j]; // Cache parameter metadata
 
                 bytes32 hashedToolPolicy = keccak256(abi.encodePacked(policyIpfsCid));
 
                 // Step 7.1: Add the policy hash to the ToolPolicies
-                toolPoliciesStorage.policyIpfsCidHashes.add(hashedToolPolicy);
-
-                // Step 7.2: Store the policy parameter metadata
-                toolPoliciesStorage.policyIpfsCidHashToParameterMetadata[hashedToolPolicy] = policyParameterMetadata;
+                versionedApp.toolIpfsCidHashToToolPolicyIpfsCidHashes[hashedToolCid].add(hashedToolPolicy);
 
                 // Step 7.3: Store the policy IPFS CID globally if it's not already stored.
                 if (bytes(ls.ipfsCidHashToIpfsCid[hashedToolPolicy]).length == 0) {
