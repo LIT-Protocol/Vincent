@@ -1,5 +1,6 @@
 import { Button } from '@/components/shared/ui/button';
 import { WalletConnectCard } from './WalletConnectCard';
+import { ethers } from 'ethers';
 
 interface PendingRequest {
   id: string;
@@ -127,6 +128,21 @@ function getRequestInfo(method: string, methodParams: any[]) {
       icon = '💸';
       description = 'Send Transaction';
       const tx = methodParams[0];
+
+      let valueDisplay = '';
+      if (tx.value) {
+        try {
+          const weiValue = tx.value.toString();
+          const ethValue = ethers.utils.formatEther(weiValue);
+          const ethFormatted = parseFloat(ethValue)
+            .toFixed(6)
+            .replace(/\.?0+$/, '');
+          valueDisplay = `${ethFormatted} ETH (${weiValue} wei)`;
+        } catch (error) {
+          valueDisplay = `${tx.value.toString()} wei`;
+        }
+      }
+
       details = (
         <div className="mt-2 p-2 bg-white rounded-md text-gray-800 text-xs font-mono overflow-auto border border-orange-100">
           <p className="mb-1">
@@ -134,7 +150,7 @@ function getRequestInfo(method: string, methodParams: any[]) {
           </p>
           {tx.value && (
             <p className="mb-1">
-              <span className="text-gray-500">Value:</span> {tx.value.toString()} wei
+              <span className="text-gray-500">Value:</span> {valueDisplay}
             </p>
           )}
           {tx.data && tx.data !== '0x' && (
