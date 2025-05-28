@@ -80,7 +80,7 @@ export default function WithdrawForm({ sessionSigs, agentPKP }: WithdrawFormProp
       customTokenAddress,
       withdrawAmount,
       withdrawAddress,
-      agentPKP!,
+      agentPKP,
       sessionSigs,
       selectedChain,
       setLoading,
@@ -99,9 +99,8 @@ export default function WithdrawForm({ sessionSigs, agentPKP }: WithdrawFormProp
 
         <div className="mb-4">
           <div className="text-sm font-medium text-gray-700 mb-2">Wallet Information</div>
-          <div className="text-sm text-gray-600 font-mono bg-gray-50 px-3 py-2 rounded-md border">
-            <span className="text-gray-500">EVM Address:</span>{' '}
-            {agentPKP?.ethAddress || 'Not available'}
+          <div className="text-sm font-medium text-gray-700">
+            EVM Address: {agentPKP.ethAddress}
           </div>
         </div>
       </div>

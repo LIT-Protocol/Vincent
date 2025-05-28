@@ -69,8 +69,8 @@ export default function QrReader({ onConnect }: IProps) {
             className="mb-4"
           />
           <Button
-            variant="default"
-            className="mt-4 w-full"
+            variant="outline"
+            className="mt-4 w-full font-normal"
             onClick={onShowScanner}
             data-testid="qrcode-button"
           >
