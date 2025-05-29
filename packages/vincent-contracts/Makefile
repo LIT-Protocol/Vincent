@@ -34,14 +34,9 @@ deploy-vincent: ## Deploy the Vincent Diamond contract to all Datil networks
 		echo "Error: DATIL_PKP_NFT_CONTRACT_ADDRESS is not set in .env"; \
 		exit 1; \
 	fi
-	@if [ -z "$(APPROVED_LIT_ACTIONS_MANAGER_ADDRESS)" ]; then \
-		echo "Error: APPROVED_LIT_ACTIONS_MANAGER_ADDRESS is not set in .env"; \
-		exit 1; \
-	fi
 	@echo "Deploying Vincent Diamond to $(VINCENT_DEPLOYMENT_RPC_URL)..."
 	@echo "Using PKP NFT contracts:"
 	@echo "  Datil:      $(DATIL_PKP_NFT_CONTRACT_ADDRESS)"
-	@echo "Using approved lit actions manager: $(APPROVED_LIT_ACTIONS_MANAGER_ADDRESS)"
 	@forge script script/DeployVincentDiamond.sol:DeployVincentDiamond -vvv \
 		--broadcast \
 		--private-key $(VINCENT_DEPLOYER_PRIVATE_KEY) \
@@ -60,13 +55,8 @@ deploy-vincent-datil: ## Deploy the Vincent Diamond contract to Datil network on
 		echo "Error: DATIL_PKP_NFT_CONTRACT_ADDRESS is not set in .env"; \
 		exit 1; \
 	fi
-	@if [ -z "$(APPROVED_LIT_ACTIONS_MANAGER_ADDRESS)" ]; then \
-		echo "Error: APPROVED_LIT_ACTIONS_MANAGER_ADDRESS is not set in .env"; \
-		exit 1; \
-	fi
 	@echo "Deploying Vincent Diamond to Datil network ($(VINCENT_DEPLOYMENT_RPC_URL))..."
 	@echo "Using PKP NFT contract: $(DATIL_PKP_NFT_CONTRACT_ADDRESS)"
-	@echo "Using approved lit actions manager: $(APPROVED_LIT_ACTIONS_MANAGER_ADDRESS)"
 	@forge script script/DeployVincentDiamond.sol:DeployVincentDiamond --sig "deployToDatil()" -vvv \
 		--broadcast \
 		--private-key $(VINCENT_DEPLOYER_PRIVATE_KEY) \
@@ -88,7 +78,7 @@ update-facet: ## Update a specific facet in the Vincent Diamond contract. Usage:
 	fi
 	@if [ -z "$(FACET_NAME)" ]; then \
 		echo "Error: FACET_NAME parameter is required. Usage: make update-facet NETWORK=datil FACET_NAME=VincentAppViewFacet"; \
-		echo "Available facets: VincentAppFacet, VincentAppViewFacet, VincentLitActionFacet, VincentLitActionViewFacet, VincentUserFacet, VincentUserViewFacet"; \
+		echo "Available facets: VincentAppFacet, VincentAppViewFacet, VincentUserFacet, VincentUserViewFacet"; \
 		exit 1; \
 	fi
 	@if [ "$(NETWORK)" = "datil" ]; then \
@@ -116,10 +106,6 @@ get-abis: ## Get human-readable ABIs for all facets
 	# @forge inspect DiamondLoupeFacet abi > abis/DiamondLoupeFacet.abi.json
 	# @echo "Getting ABI for OwnershipFacet..."
 	# @forge inspect OwnershipFacet abi > abis/OwnershipFacet.abi.json
-	@echo "Getting ABI for VincentLitActionFacet..."
-	@forge inspect VincentLitActionFacet abi --json > abis/VincentLitActionFacet.abi.json
-	@echo "Getting ABI for VincentLitActionViewFacet..."
-	@forge inspect VincentLitActionViewFacet abi --json > abis/VincentLitActionViewFacet.abi.json
 	@echo "Getting ABI for VincentAppFacet..."
 	@forge inspect VincentAppFacet abi --json > abis/VincentAppFacet.abi.json
 	@echo "Getting ABI for VincentAppViewFacet..."
