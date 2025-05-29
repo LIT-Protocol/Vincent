@@ -76,11 +76,6 @@
             "name": "toolPolicies",
             "type": "string[][]",
             "internalType": "string[][]"
-          },
-          {
-            "name": "toolPolicyParameterMetadata",
-            "type": "bytes[][]",
-            "internalType": "bytes[][]"
           }
         ]
       }
@@ -122,11 +117,6 @@
             "name": "toolPolicies",
             "type": "string[][]",
             "internalType": "string[][]"
-          },
-          {
-            "name": "toolPolicyParameterMetadata",
-            "type": "bytes[][]",
-            "internalType": "bytes[][]"
           }
         ]
       }
@@ -459,27 +449,6 @@
   },
   {
     "type": "error",
-    "name": "PolicyArrayLengthMismatch",
-    "inputs": [
-      {
-        "name": "toolIndex",
-        "type": "uint256",
-        "internalType": "uint256"
-      },
-      {
-        "name": "policiesLength",
-        "type": "uint256",
-        "internalType": "uint256"
-      },
-      {
-        "name": "paramMetadataLength",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ]
-  },
-  {
-    "type": "error",
     "name": "ToolArrayDimensionMismatch",
     "inputs": [
       {
@@ -489,11 +458,6 @@
       },
       {
         "name": "policiesLength",
-        "type": "uint256",
-        "internalType": "uint256"
-      },
-      {
-        "name": "paramMetadataLength",
         "type": "uint256",
         "internalType": "uint256"
       }

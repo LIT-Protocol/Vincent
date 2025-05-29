@@ -3,1728 +3,1668 @@
  * This file is auto-generated. DO NOT EDIT UNLESS YOU KNOW WHAT YOU'RE DOING.
  */
 
-export const vincentDiamondAddress = '0x2b1738312CBa1F8960758ca86acebE62E4C30397';
+export const vincentDiamondAddress = '0x53D7181a204868b4A43e74aa4e84569279b23cbe';
 
 export const vincentSignatures = {
-  "VincentAppViewFacet": {
-    "address": "0x5b936ceb6af02cfe3cdd9dc65f268938bf9fb6a9",
-    "methods": {
-      "getAppByDelegatee": {
-        "type": "function",
-        "name": "getAppByDelegatee",
-        "inputs": [
+  VincentAppViewFacet: {
+    address: '0x81f26a7c961454cf519c0313f95ce6773094d485',
+    methods: {
+      getAppByDelegatee: {
+        type: 'function',
+        name: 'getAppByDelegatee',
+        inputs: [
           {
-            "name": "delegatee",
-            "type": "address",
-            "internalType": "address"
-          }
+            name: 'delegatee',
+            type: 'address',
+            internalType: 'address',
+          },
         ],
-        "outputs": [
+        outputs: [
           {
-            "name": "app",
-            "type": "tuple",
-            "internalType": "struct VincentAppViewFacet.App",
-            "components": [
+            name: 'app',
+            type: 'tuple',
+            internalType: 'struct VincentAppViewFacet.App',
+            components: [
               {
-                "name": "id",
-                "type": "uint256",
-                "internalType": "uint256"
+                name: 'id',
+                type: 'uint256',
+                internalType: 'uint256',
               },
               {
-                "name": "isDeleted",
-                "type": "bool",
-                "internalType": "bool"
+                name: 'isDeleted',
+                type: 'bool',
+                internalType: 'bool',
               },
               {
-                "name": "manager",
-                "type": "address",
-                "internalType": "address"
+                name: 'manager',
+                type: 'address',
+                internalType: 'address',
               },
               {
-                "name": "latestVersion",
-                "type": "uint256",
-                "internalType": "uint256"
+                name: 'latestVersion',
+                type: 'uint256',
+                internalType: 'uint256',
               },
               {
-                "name": "delegatees",
-                "type": "address[]",
-                "internalType": "address[]"
-              }
-            ]
-          }
+                name: 'delegatees',
+                type: 'address[]',
+                internalType: 'address[]',
+              },
+            ],
+          },
         ],
-        "stateMutability": "view"
+        stateMutability: 'view',
       },
-      "getAppById": {
-        "type": "function",
-        "name": "getAppById",
-        "inputs": [
+      getAppById: {
+        type: 'function',
+        name: 'getAppById',
+        inputs: [
           {
-            "name": "appId",
-            "type": "uint256",
-            "internalType": "uint256"
-          }
+            name: 'appId',
+            type: 'uint256',
+            internalType: 'uint256',
+          },
         ],
-        "outputs": [
+        outputs: [
           {
-            "name": "app",
-            "type": "tuple",
-            "internalType": "struct VincentAppViewFacet.App",
-            "components": [
+            name: 'app',
+            type: 'tuple',
+            internalType: 'struct VincentAppViewFacet.App',
+            components: [
               {
-                "name": "id",
-                "type": "uint256",
-                "internalType": "uint256"
+                name: 'id',
+                type: 'uint256',
+                internalType: 'uint256',
               },
               {
-                "name": "isDeleted",
-                "type": "bool",
-                "internalType": "bool"
+                name: 'isDeleted',
+                type: 'bool',
+                internalType: 'bool',
               },
               {
-                "name": "manager",
-                "type": "address",
-                "internalType": "address"
+                name: 'manager',
+                type: 'address',
+                internalType: 'address',
               },
               {
-                "name": "latestVersion",
-                "type": "uint256",
-                "internalType": "uint256"
+                name: 'latestVersion',
+                type: 'uint256',
+                internalType: 'uint256',
               },
               {
-                "name": "delegatees",
-                "type": "address[]",
-                "internalType": "address[]"
-              }
-            ]
-          }
+                name: 'delegatees',
+                type: 'address[]',
+                internalType: 'address[]',
+              },
+            ],
+          },
         ],
-        "stateMutability": "view"
+        stateMutability: 'view',
       },
-      "getAppVersion": {
-        "type": "function",
-        "name": "getAppVersion",
-        "inputs": [
+      getAppVersion: {
+        type: 'function',
+        name: 'getAppVersion',
+        inputs: [
           {
-            "name": "appId",
-            "type": "uint256",
-            "internalType": "uint256"
+            name: 'appId',
+            type: 'uint256',
+            internalType: 'uint256',
           },
           {
-            "name": "version",
-            "type": "uint256",
-            "internalType": "uint256"
-          }
+            name: 'version',
+            type: 'uint256',
+            internalType: 'uint256',
+          },
         ],
-        "outputs": [
+        outputs: [
           {
-            "name": "app",
-            "type": "tuple",
-            "internalType": "struct VincentAppViewFacet.App",
-            "components": [
+            name: 'app',
+            type: 'tuple',
+            internalType: 'struct VincentAppViewFacet.App',
+            components: [
               {
-                "name": "id",
-                "type": "uint256",
-                "internalType": "uint256"
+                name: 'id',
+                type: 'uint256',
+                internalType: 'uint256',
               },
               {
-                "name": "isDeleted",
-                "type": "bool",
-                "internalType": "bool"
+                name: 'isDeleted',
+                type: 'bool',
+                internalType: 'bool',
               },
               {
-                "name": "manager",
-                "type": "address",
-                "internalType": "address"
+                name: 'manager',
+                type: 'address',
+                internalType: 'address',
               },
               {
-                "name": "latestVersion",
-                "type": "uint256",
-                "internalType": "uint256"
+                name: 'latestVersion',
+                type: 'uint256',
+                internalType: 'uint256',
               },
               {
-                "name": "delegatees",
-                "type": "address[]",
-                "internalType": "address[]"
-              }
-            ]
+                name: 'delegatees',
+                type: 'address[]',
+                internalType: 'address[]',
+              },
+            ],
           },
           {
-            "name": "appVersion",
-            "type": "tuple",
-            "internalType": "struct VincentAppViewFacet.AppVersion",
-            "components": [
+            name: 'appVersion',
+            type: 'tuple',
+            internalType: 'struct VincentAppViewFacet.AppVersion',
+            components: [
               {
-                "name": "version",
-                "type": "uint256",
-                "internalType": "uint256"
+                name: 'version',
+                type: 'uint256',
+                internalType: 'uint256',
               },
               {
-                "name": "enabled",
-                "type": "bool",
-                "internalType": "bool"
+                name: 'enabled',
+                type: 'bool',
+                internalType: 'bool',
               },
               {
-                "name": "delegatedAgentPkpTokenIds",
-                "type": "uint256[]",
-                "internalType": "uint256[]"
+                name: 'delegatedAgentPkpTokenIds',
+                type: 'uint256[]',
+                internalType: 'uint256[]',
               },
               {
-                "name": "tools",
-                "type": "tuple[]",
-                "internalType": "struct VincentAppViewFacet.Tool[]",
-                "components": [
+                name: 'tools',
+                type: 'tuple[]',
+                internalType: 'struct VincentAppViewFacet.Tool[]',
+                components: [
                   {
-                    "name": "toolIpfsCid",
-                    "type": "string",
-                    "internalType": "string"
+                    name: 'toolIpfsCid',
+                    type: 'string',
+                    internalType: 'string',
                   },
                   {
-                    "name": "policies",
-                    "type": "tuple[]",
-                    "internalType": "struct VincentAppViewFacet.Policy[]",
-                    "components": [
+                    name: 'policyIpfsCids',
+                    type: 'string[]',
+                    internalType: 'string[]',
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+        stateMutability: 'view',
+      },
+      getAppsByManager: {
+        type: 'function',
+        name: 'getAppsByManager',
+        inputs: [
+          {
+            name: 'manager',
+            type: 'address',
+            internalType: 'address',
+          },
+        ],
+        outputs: [
+          {
+            name: 'appsWithVersions',
+            type: 'tuple[]',
+            internalType: 'struct VincentAppViewFacet.AppWithVersions[]',
+            components: [
+              {
+                name: 'app',
+                type: 'tuple',
+                internalType: 'struct VincentAppViewFacet.App',
+                components: [
+                  {
+                    name: 'id',
+                    type: 'uint256',
+                    internalType: 'uint256',
+                  },
+                  {
+                    name: 'isDeleted',
+                    type: 'bool',
+                    internalType: 'bool',
+                  },
+                  {
+                    name: 'manager',
+                    type: 'address',
+                    internalType: 'address',
+                  },
+                  {
+                    name: 'latestVersion',
+                    type: 'uint256',
+                    internalType: 'uint256',
+                  },
+                  {
+                    name: 'delegatees',
+                    type: 'address[]',
+                    internalType: 'address[]',
+                  },
+                ],
+              },
+              {
+                name: 'versions',
+                type: 'tuple[]',
+                internalType: 'struct VincentAppViewFacet.AppVersion[]',
+                components: [
+                  {
+                    name: 'version',
+                    type: 'uint256',
+                    internalType: 'uint256',
+                  },
+                  {
+                    name: 'enabled',
+                    type: 'bool',
+                    internalType: 'bool',
+                  },
+                  {
+                    name: 'delegatedAgentPkpTokenIds',
+                    type: 'uint256[]',
+                    internalType: 'uint256[]',
+                  },
+                  {
+                    name: 'tools',
+                    type: 'tuple[]',
+                    internalType: 'struct VincentAppViewFacet.Tool[]',
+                    components: [
                       {
-                        "name": "policyIpfsCid",
-                        "type": "string",
-                        "internalType": "string"
+                        name: 'toolIpfsCid',
+                        type: 'string',
+                        internalType: 'string',
                       },
                       {
-                        "name": "parameterMetadata",
-                        "type": "bytes",
-                        "internalType": "bytes"
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          }
-        ],
-        "stateMutability": "view"
-      },
-      "getAppsByManager": {
-        "type": "function",
-        "name": "getAppsByManager",
-        "inputs": [
-          {
-            "name": "manager",
-            "type": "address",
-            "internalType": "address"
-          }
-        ],
-        "outputs": [
-          {
-            "name": "appsWithVersions",
-            "type": "tuple[]",
-            "internalType": "struct VincentAppViewFacet.AppWithVersions[]",
-            "components": [
-              {
-                "name": "app",
-                "type": "tuple",
-                "internalType": "struct VincentAppViewFacet.App",
-                "components": [
-                  {
-                    "name": "id",
-                    "type": "uint256",
-                    "internalType": "uint256"
-                  },
-                  {
-                    "name": "isDeleted",
-                    "type": "bool",
-                    "internalType": "bool"
-                  },
-                  {
-                    "name": "manager",
-                    "type": "address",
-                    "internalType": "address"
-                  },
-                  {
-                    "name": "latestVersion",
-                    "type": "uint256",
-                    "internalType": "uint256"
-                  },
-                  {
-                    "name": "delegatees",
-                    "type": "address[]",
-                    "internalType": "address[]"
-                  }
-                ]
-              },
-              {
-                "name": "versions",
-                "type": "tuple[]",
-                "internalType": "struct VincentAppViewFacet.AppVersion[]",
-                "components": [
-                  {
-                    "name": "version",
-                    "type": "uint256",
-                    "internalType": "uint256"
-                  },
-                  {
-                    "name": "enabled",
-                    "type": "bool",
-                    "internalType": "bool"
-                  },
-                  {
-                    "name": "delegatedAgentPkpTokenIds",
-                    "type": "uint256[]",
-                    "internalType": "uint256[]"
-                  },
-                  {
-                    "name": "tools",
-                    "type": "tuple[]",
-                    "internalType": "struct VincentAppViewFacet.Tool[]",
-                    "components": [
-                      {
-                        "name": "toolIpfsCid",
-                        "type": "string",
-                        "internalType": "string"
+                        name: 'policyIpfsCids',
+                        type: 'string[]',
+                        internalType: 'string[]',
                       },
-                      {
-                        "name": "policies",
-                        "type": "tuple[]",
-                        "internalType": "struct VincentAppViewFacet.Policy[]",
-                        "components": [
-                          {
-                            "name": "policyIpfsCid",
-                            "type": "string",
-                            "internalType": "string"
-                          },
-                          {
-                            "name": "parameterMetadata",
-                            "type": "bytes",
-                            "internalType": "bytes"
-                          }
-                        ]
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          }
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
         ],
-        "stateMutability": "view"
+        stateMutability: 'view',
       },
-      "getTotalAppCount": {
-        "type": "function",
-        "name": "getTotalAppCount",
-        "inputs": [],
-        "outputs": [
+      getTotalAppCount: {
+        type: 'function',
+        name: 'getTotalAppCount',
+        inputs: [],
+        outputs: [
           {
-            "name": "",
-            "type": "uint256",
-            "internalType": "uint256"
-          }
+            name: '',
+            type: 'uint256',
+            internalType: 'uint256',
+          },
         ],
-        "stateMutability": "view"
-      }
+        stateMutability: 'view',
+      },
     },
-    "events": [],
-    "errors": [
+    events: [],
+    errors: [
       {
-        "type": "error",
-        "name": "AppHasBeenDeleted",
-        "inputs": [
+        type: 'error',
+        name: 'AppHasBeenDeleted',
+        inputs: [
           {
-            "name": "appId",
-            "type": "uint256",
-            "internalType": "uint256"
-          }
-        ]
+            name: 'appId',
+            type: 'uint256',
+            internalType: 'uint256',
+          },
+        ],
       },
       {
-        "type": "error",
-        "name": "AppNotRegistered",
-        "inputs": [
+        type: 'error',
+        name: 'AppNotRegistered',
+        inputs: [
           {
-            "name": "appId",
-            "type": "uint256",
-            "internalType": "uint256"
-          }
-        ]
+            name: 'appId',
+            type: 'uint256',
+            internalType: 'uint256',
+          },
+        ],
       },
       {
-        "type": "error",
-        "name": "AppVersionNotRegistered",
-        "inputs": [
+        type: 'error',
+        name: 'AppVersionNotRegistered',
+        inputs: [
           {
-            "name": "appId",
-            "type": "uint256",
-            "internalType": "uint256"
+            name: 'appId',
+            type: 'uint256',
+            internalType: 'uint256',
           },
           {
-            "name": "appVersion",
-            "type": "uint256",
-            "internalType": "uint256"
-          }
-        ]
+            name: 'appVersion',
+            type: 'uint256',
+            internalType: 'uint256',
+          },
+        ],
       },
       {
-        "type": "error",
-        "name": "DelegateeNotRegistered",
-        "inputs": [
+        type: 'error',
+        name: 'DelegateeNotRegistered',
+        inputs: [
           {
-            "name": "delegatee",
-            "type": "address",
-            "internalType": "address"
-          }
-        ]
+            name: 'delegatee',
+            type: 'address',
+            internalType: 'address',
+          },
+        ],
       },
       {
-        "type": "error",
-        "name": "NoAppsFoundForManager",
-        "inputs": [
+        type: 'error',
+        name: 'NoAppsFoundForManager',
+        inputs: [
           {
-            "name": "manager",
-            "type": "address",
-            "internalType": "address"
-          }
-        ]
+            name: 'manager',
+            type: 'address',
+            internalType: 'address',
+          },
+        ],
       },
       {
-        "type": "error",
-        "name": "ZeroAddressNotAllowed",
-        "inputs": []
-      }
-    ]
+        type: 'error',
+        name: 'ZeroAddressNotAllowed',
+        inputs: [],
+      },
+    ],
   },
-  "VincentUserViewFacet": {
-    "address": "0x01dfbcb2cece683b6524d0525344ea5b4c69208d",
-    "methods": {
-      "getAllPermittedAppIdsForPkp": {
-        "type": "function",
-        "name": "getAllPermittedAppIdsForPkp",
-        "inputs": [
+  VincentUserViewFacet: {
+    address: '0x00702b8a3d8bf268f3ad37d0be419dfd77437104',
+    methods: {
+      getAllPermittedAppIdsForPkp: {
+        type: 'function',
+        name: 'getAllPermittedAppIdsForPkp',
+        inputs: [
           {
-            "name": "pkpTokenId",
-            "type": "uint256",
-            "internalType": "uint256"
-          }
+            name: 'pkpTokenId',
+            type: 'uint256',
+            internalType: 'uint256',
+          },
         ],
-        "outputs": [
+        outputs: [
           {
-            "name": "",
-            "type": "uint256[]",
-            "internalType": "uint256[]"
-          }
+            name: '',
+            type: 'uint256[]',
+            internalType: 'uint256[]',
+          },
         ],
-        "stateMutability": "view"
+        stateMutability: 'view',
       },
-      "getAllRegisteredAgentPkps": {
-        "type": "function",
-        "name": "getAllRegisteredAgentPkps",
-        "inputs": [
+      getAllRegisteredAgentPkps: {
+        type: 'function',
+        name: 'getAllRegisteredAgentPkps',
+        inputs: [
           {
-            "name": "userAddress",
-            "type": "address",
-            "internalType": "address"
-          }
+            name: 'userAddress',
+            type: 'address',
+            internalType: 'address',
+          },
         ],
-        "outputs": [
+        outputs: [
           {
-            "name": "",
-            "type": "uint256[]",
-            "internalType": "uint256[]"
-          }
+            name: '',
+            type: 'uint256[]',
+            internalType: 'uint256[]',
+          },
         ],
-        "stateMutability": "view"
+        stateMutability: 'view',
       },
-      "getAllToolsAndPoliciesForApp": {
-        "type": "function",
-        "name": "getAllToolsAndPoliciesForApp",
-        "inputs": [
+      getAllToolsAndPoliciesForApp: {
+        type: 'function',
+        name: 'getAllToolsAndPoliciesForApp',
+        inputs: [
           {
-            "name": "pkpTokenId",
-            "type": "uint256",
-            "internalType": "uint256"
+            name: 'pkpTokenId',
+            type: 'uint256',
+            internalType: 'uint256',
           },
           {
-            "name": "appId",
-            "type": "uint256",
-            "internalType": "uint256"
-          }
+            name: 'appId',
+            type: 'uint256',
+            internalType: 'uint256',
+          },
         ],
-        "outputs": [
+        outputs: [
           {
-            "name": "tools",
-            "type": "tuple[]",
-            "internalType": "struct VincentUserViewFacet.ToolWithPolicies[]",
-            "components": [
+            name: 'tools',
+            type: 'tuple[]',
+            internalType: 'struct VincentUserViewFacet.ToolWithPolicies[]',
+            components: [
               {
-                "name": "toolIpfsCid",
-                "type": "string",
-                "internalType": "string"
+                name: 'toolIpfsCid',
+                type: 'string',
+                internalType: 'string',
               },
               {
-                "name": "policies",
-                "type": "tuple[]",
-                "internalType": "struct VincentUserViewFacet.PolicyWithParameters[]",
-                "components": [
+                name: 'policies',
+                type: 'tuple[]',
+                internalType: 'struct VincentUserViewFacet.PolicyWithParameters[]',
+                components: [
                   {
-                    "name": "policyIpfsCid",
-                    "type": "string",
-                    "internalType": "string"
+                    name: 'policyIpfsCid',
+                    type: 'string',
+                    internalType: 'string',
                   },
                   {
-                    "name": "policyParameterValues",
-                    "type": "bytes",
-                    "internalType": "bytes"
-                  }
-                ]
-              }
-            ]
-          }
+                    name: 'policyParameterValues',
+                    type: 'bytes',
+                    internalType: 'bytes',
+                  },
+                ],
+              },
+            ],
+          },
         ],
-        "stateMutability": "view"
+        stateMutability: 'view',
       },
-      "getPermittedAppVersionForPkp": {
-        "type": "function",
-        "name": "getPermittedAppVersionForPkp",
-        "inputs": [
+      getPermittedAppVersionForPkp: {
+        type: 'function',
+        name: 'getPermittedAppVersionForPkp',
+        inputs: [
           {
-            "name": "pkpTokenId",
-            "type": "uint256",
-            "internalType": "uint256"
+            name: 'pkpTokenId',
+            type: 'uint256',
+            internalType: 'uint256',
           },
           {
-            "name": "appId",
-            "type": "uint256",
-            "internalType": "uint256"
-          }
+            name: 'appId',
+            type: 'uint256',
+            internalType: 'uint256',
+          },
         ],
-        "outputs": [
+        outputs: [
           {
-            "name": "",
-            "type": "uint256",
-            "internalType": "uint256"
-          }
+            name: '',
+            type: 'uint256',
+            internalType: 'uint256',
+          },
         ],
-        "stateMutability": "view"
+        stateMutability: 'view',
       },
-      "validateToolExecutionAndGetPolicies": {
-        "type": "function",
-        "name": "validateToolExecutionAndGetPolicies",
-        "inputs": [
+      validateToolExecutionAndGetPolicies: {
+        type: 'function',
+        name: 'validateToolExecutionAndGetPolicies',
+        inputs: [
           {
-            "name": "delegatee",
-            "type": "address",
-            "internalType": "address"
+            name: 'delegatee',
+            type: 'address',
+            internalType: 'address',
           },
           {
-            "name": "pkpTokenId",
-            "type": "uint256",
-            "internalType": "uint256"
+            name: 'pkpTokenId',
+            type: 'uint256',
+            internalType: 'uint256',
           },
           {
-            "name": "toolIpfsCid",
-            "type": "string",
-            "internalType": "string"
-          }
+            name: 'toolIpfsCid',
+            type: 'string',
+            internalType: 'string',
+          },
         ],
-        "outputs": [
+        outputs: [
           {
-            "name": "validation",
-            "type": "tuple",
-            "internalType": "struct VincentUserViewFacet.ToolExecutionValidation",
-            "components": [
+            name: 'validation',
+            type: 'tuple',
+            internalType: 'struct VincentUserViewFacet.ToolExecutionValidation',
+            components: [
               {
-                "name": "isPermitted",
-                "type": "bool",
-                "internalType": "bool"
+                name: 'isPermitted',
+                type: 'bool',
+                internalType: 'bool',
               },
               {
-                "name": "appId",
-                "type": "uint256",
-                "internalType": "uint256"
+                name: 'appId',
+                type: 'uint256',
+                internalType: 'uint256',
               },
               {
-                "name": "appVersion",
-                "type": "uint256",
-                "internalType": "uint256"
+                name: 'appVersion',
+                type: 'uint256',
+                internalType: 'uint256',
               },
               {
-                "name": "policies",
-                "type": "tuple[]",
-                "internalType": "struct VincentUserViewFacet.PolicyWithParameters[]",
-                "components": [
+                name: 'policies',
+                type: 'tuple[]',
+                internalType: 'struct VincentUserViewFacet.PolicyWithParameters[]',
+                components: [
                   {
-                    "name": "policyIpfsCid",
-                    "type": "string",
-                    "internalType": "string"
+                    name: 'policyIpfsCid',
+                    type: 'string',
+                    internalType: 'string',
                   },
                   {
-                    "name": "policyParameterValues",
-                    "type": "bytes",
-                    "internalType": "bytes"
-                  }
-                ]
-              }
-            ]
-          }
+                    name: 'policyParameterValues',
+                    type: 'bytes',
+                    internalType: 'bytes',
+                  },
+                ],
+              },
+            ],
+          },
         ],
-        "stateMutability": "view"
-      }
+        stateMutability: 'view',
+      },
     },
-    "events": [],
-    "errors": [
+    events: [],
+    errors: [
       {
-        "type": "error",
-        "name": "AppHasBeenDeleted",
-        "inputs": [
+        type: 'error',
+        name: 'AppHasBeenDeleted',
+        inputs: [
           {
-            "name": "appId",
-            "type": "uint256",
-            "internalType": "uint256"
-          }
-        ]
-      },
-      {
-        "type": "error",
-        "name": "AppNotRegistered",
-        "inputs": [
-          {
-            "name": "appId",
-            "type": "uint256",
-            "internalType": "uint256"
-          }
-        ]
-      },
-      {
-        "type": "error",
-        "name": "AppVersionNotRegistered",
-        "inputs": [
-          {
-            "name": "appId",
-            "type": "uint256",
-            "internalType": "uint256"
+            name: 'appId',
+            type: 'uint256',
+            internalType: 'uint256',
           },
-          {
-            "name": "appVersion",
-            "type": "uint256",
-            "internalType": "uint256"
-          }
-        ]
-      },
-      {
-        "type": "error",
-        "name": "DelegateeNotAssociatedWithApp",
-        "inputs": [
-          {
-            "name": "delegatee",
-            "type": "address",
-            "internalType": "address"
-          }
-        ]
-      },
-      {
-        "type": "error",
-        "name": "EmptyToolIpfsCid",
-        "inputs": []
-      },
-      {
-        "type": "error",
-        "name": "InvalidAppId",
-        "inputs": []
-      },
-      {
-        "type": "error",
-        "name": "InvalidPkpTokenId",
-        "inputs": []
-      },
-      {
-        "type": "error",
-        "name": "NoRegisteredPkpsFound",
-        "inputs": [
-          {
-            "name": "userAddress",
-            "type": "address",
-            "internalType": "address"
-          }
-        ]
-      },
-      {
-        "type": "error",
-        "name": "PkpNotPermittedForAppVersion",
-        "inputs": [
-          {
-            "name": "pkpTokenId",
-            "type": "uint256",
-            "internalType": "uint256"
-          },
-          {
-            "name": "appId",
-            "type": "uint256",
-            "internalType": "uint256"
-          },
-          {
-            "name": "appVersion",
-            "type": "uint256",
-            "internalType": "uint256"
-          }
-        ]
-      },
-      {
-        "type": "error",
-        "name": "PolicyParameterNotSetForPkp",
-        "inputs": [
-          {
-            "name": "pkpTokenId",
-            "type": "uint256",
-            "internalType": "uint256"
-          },
-          {
-            "name": "appId",
-            "type": "uint256",
-            "internalType": "uint256"
-          },
-          {
-            "name": "appVersion",
-            "type": "uint256",
-            "internalType": "uint256"
-          },
-          {
-            "name": "policyIpfsCid",
-            "type": "string",
-            "internalType": "string"
-          },
-          {
-            "name": "parameterName",
-            "type": "string",
-            "internalType": "string"
-          }
-        ]
-      },
-      {
-        "type": "error",
-        "name": "ZeroAddressNotAllowed",
-        "inputs": []
-      }
-    ]
-  },
-  "VincentAppFacet": {
-    "address": "0x362606245166b14422e876f8c62609155d391448",
-    "methods": {
-      "addDelegatee": {
-        "type": "function",
-        "name": "addDelegatee",
-        "inputs": [
-          {
-            "name": "appId",
-            "type": "uint256",
-            "internalType": "uint256"
-          },
-          {
-            "name": "delegatee",
-            "type": "address",
-            "internalType": "address"
-          }
         ],
-        "outputs": [],
-        "stateMutability": "nonpayable"
-      },
-      "deleteApp": {
-        "type": "function",
-        "name": "deleteApp",
-        "inputs": [
-          {
-            "name": "appId",
-            "type": "uint256",
-            "internalType": "uint256"
-          }
-        ],
-        "outputs": [],
-        "stateMutability": "nonpayable"
-      },
-      "enableAppVersion": {
-        "type": "function",
-        "name": "enableAppVersion",
-        "inputs": [
-          {
-            "name": "appId",
-            "type": "uint256",
-            "internalType": "uint256"
-          },
-          {
-            "name": "appVersion",
-            "type": "uint256",
-            "internalType": "uint256"
-          },
-          {
-            "name": "enabled",
-            "type": "bool",
-            "internalType": "bool"
-          }
-        ],
-        "outputs": [],
-        "stateMutability": "nonpayable"
-      },
-      "registerApp": {
-        "type": "function",
-        "name": "registerApp",
-        "inputs": [
-          {
-            "name": "delegatees",
-            "type": "address[]",
-            "internalType": "address[]"
-          },
-          {
-            "name": "versionTools",
-            "type": "tuple",
-            "internalType": "struct VincentAppFacet.AppVersionTools",
-            "components": [
-              {
-                "name": "toolIpfsCids",
-                "type": "string[]",
-                "internalType": "string[]"
-              },
-              {
-                "name": "toolPolicies",
-                "type": "string[][]",
-                "internalType": "string[][]"
-              },
-              {
-                "name": "toolPolicyParameterMetadata",
-                "type": "bytes[][]",
-                "internalType": "bytes[][]"
-              }
-            ]
-          }
-        ],
-        "outputs": [
-          {
-            "name": "newAppId",
-            "type": "uint256",
-            "internalType": "uint256"
-          },
-          {
-            "name": "newAppVersion",
-            "type": "uint256",
-            "internalType": "uint256"
-          }
-        ],
-        "stateMutability": "nonpayable"
-      },
-      "registerNextAppVersion": {
-        "type": "function",
-        "name": "registerNextAppVersion",
-        "inputs": [
-          {
-            "name": "appId",
-            "type": "uint256",
-            "internalType": "uint256"
-          },
-          {
-            "name": "versionTools",
-            "type": "tuple",
-            "internalType": "struct VincentAppFacet.AppVersionTools",
-            "components": [
-              {
-                "name": "toolIpfsCids",
-                "type": "string[]",
-                "internalType": "string[]"
-              },
-              {
-                "name": "toolPolicies",
-                "type": "string[][]",
-                "internalType": "string[][]"
-              },
-              {
-                "name": "toolPolicyParameterMetadata",
-                "type": "bytes[][]",
-                "internalType": "bytes[][]"
-              }
-            ]
-          }
-        ],
-        "outputs": [
-          {
-            "name": "newAppVersion",
-            "type": "uint256",
-            "internalType": "uint256"
-          }
-        ],
-        "stateMutability": "nonpayable"
-      },
-      "removeDelegatee": {
-        "type": "function",
-        "name": "removeDelegatee",
-        "inputs": [
-          {
-            "name": "appId",
-            "type": "uint256",
-            "internalType": "uint256"
-          },
-          {
-            "name": "delegatee",
-            "type": "address",
-            "internalType": "address"
-          }
-        ],
-        "outputs": [],
-        "stateMutability": "nonpayable"
-      }
-    },
-    "events": [
-      {
-        "type": "event",
-        "name": "AppDeleted",
-        "inputs": [
-          {
-            "name": "appId",
-            "type": "uint256",
-            "indexed": true,
-            "internalType": "uint256"
-          }
-        ],
-        "anonymous": false
       },
       {
-        "type": "event",
-        "name": "AppEnabled",
-        "inputs": [
+        type: 'error',
+        name: 'AppNotRegistered',
+        inputs: [
           {
-            "name": "appId",
-            "type": "uint256",
-            "indexed": true,
-            "internalType": "uint256"
+            name: 'appId',
+            type: 'uint256',
+            internalType: 'uint256',
           },
-          {
-            "name": "appVersion",
-            "type": "uint256",
-            "indexed": true,
-            "internalType": "uint256"
-          },
-          {
-            "name": "enabled",
-            "type": "bool",
-            "indexed": true,
-            "internalType": "bool"
-          }
         ],
-        "anonymous": false
       },
       {
-        "type": "event",
-        "name": "DelegateeAdded",
-        "inputs": [
+        type: 'error',
+        name: 'AppVersionNotRegistered',
+        inputs: [
           {
-            "name": "appId",
-            "type": "uint256",
-            "indexed": true,
-            "internalType": "uint256"
+            name: 'appId',
+            type: 'uint256',
+            internalType: 'uint256',
           },
           {
-            "name": "delegatee",
-            "type": "address",
-            "indexed": true,
-            "internalType": "address"
-          }
+            name: 'appVersion',
+            type: 'uint256',
+            internalType: 'uint256',
+          },
         ],
-        "anonymous": false
       },
       {
-        "type": "event",
-        "name": "DelegateeRemoved",
-        "inputs": [
+        type: 'error',
+        name: 'DelegateeNotAssociatedWithApp',
+        inputs: [
           {
-            "name": "appId",
-            "type": "uint256",
-            "indexed": true,
-            "internalType": "uint256"
+            name: 'delegatee',
+            type: 'address',
+            internalType: 'address',
           },
-          {
-            "name": "delegatee",
-            "type": "address",
-            "indexed": true,
-            "internalType": "address"
-          }
         ],
-        "anonymous": false
       },
       {
-        "type": "event",
-        "name": "NewAppRegistered",
-        "inputs": [
-          {
-            "name": "appId",
-            "type": "uint256",
-            "indexed": true,
-            "internalType": "uint256"
-          },
-          {
-            "name": "manager",
-            "type": "address",
-            "indexed": true,
-            "internalType": "address"
-          }
-        ],
-        "anonymous": false
+        type: 'error',
+        name: 'EmptyToolIpfsCid',
+        inputs: [],
       },
       {
-        "type": "event",
-        "name": "NewAppVersionRegistered",
-        "inputs": [
-          {
-            "name": "appId",
-            "type": "uint256",
-            "indexed": true,
-            "internalType": "uint256"
-          },
-          {
-            "name": "appVersion",
-            "type": "uint256",
-            "indexed": true,
-            "internalType": "uint256"
-          },
-          {
-            "name": "manager",
-            "type": "address",
-            "indexed": true,
-            "internalType": "address"
-          }
-        ],
-        "anonymous": false
+        type: 'error',
+        name: 'InvalidAppId',
+        inputs: [],
       },
       {
-        "type": "event",
-        "name": "NewLitActionRegistered",
-        "inputs": [
+        type: 'error',
+        name: 'InvalidPkpTokenId',
+        inputs: [],
+      },
+      {
+        type: 'error',
+        name: 'NoRegisteredPkpsFound',
+        inputs: [
           {
-            "name": "litActionIpfsCidHash",
-            "type": "bytes32",
-            "indexed": true,
-            "internalType": "bytes32"
-          }
+            name: 'userAddress',
+            type: 'address',
+            internalType: 'address',
+          },
         ],
-        "anonymous": false
-      }
+      },
+      {
+        type: 'error',
+        name: 'PkpNotPermittedForAppVersion',
+        inputs: [
+          {
+            name: 'pkpTokenId',
+            type: 'uint256',
+            internalType: 'uint256',
+          },
+          {
+            name: 'appId',
+            type: 'uint256',
+            internalType: 'uint256',
+          },
+          {
+            name: 'appVersion',
+            type: 'uint256',
+            internalType: 'uint256',
+          },
+        ],
+      },
+      {
+        type: 'error',
+        name: 'PolicyParameterNotSetForPkp',
+        inputs: [
+          {
+            name: 'pkpTokenId',
+            type: 'uint256',
+            internalType: 'uint256',
+          },
+          {
+            name: 'appId',
+            type: 'uint256',
+            internalType: 'uint256',
+          },
+          {
+            name: 'appVersion',
+            type: 'uint256',
+            internalType: 'uint256',
+          },
+          {
+            name: 'policyIpfsCid',
+            type: 'string',
+            internalType: 'string',
+          },
+          {
+            name: 'parameterName',
+            type: 'string',
+            internalType: 'string',
+          },
+        ],
+      },
+      {
+        type: 'error',
+        name: 'ZeroAddressNotAllowed',
+        inputs: [],
+      },
     ],
-    "errors": [
-      {
-        "type": "error",
-        "name": "AppHasBeenDeleted",
-        "inputs": [
-          {
-            "name": "appId",
-            "type": "uint256",
-            "internalType": "uint256"
-          }
-        ]
-      },
-      {
-        "type": "error",
-        "name": "AppNotRegistered",
-        "inputs": [
-          {
-            "name": "appId",
-            "type": "uint256",
-            "internalType": "uint256"
-          }
-        ]
-      },
-      {
-        "type": "error",
-        "name": "AppVersionAlreadyInRequestedState",
-        "inputs": [
-          {
-            "name": "appId",
-            "type": "uint256",
-            "internalType": "uint256"
-          },
-          {
-            "name": "appVersion",
-            "type": "uint256",
-            "internalType": "uint256"
-          },
-          {
-            "name": "enabled",
-            "type": "bool",
-            "internalType": "bool"
-          }
-        ]
-      },
-      {
-        "type": "error",
-        "name": "AppVersionHasDelegatedAgents",
-        "inputs": [
-          {
-            "name": "appId",
-            "type": "uint256",
-            "internalType": "uint256"
-          },
-          {
-            "name": "appVersion",
-            "type": "uint256",
-            "internalType": "uint256"
-          }
-        ]
-      },
-      {
-        "type": "error",
-        "name": "AppVersionNotRegistered",
-        "inputs": [
-          {
-            "name": "appId",
-            "type": "uint256",
-            "internalType": "uint256"
-          },
-          {
-            "name": "appVersion",
-            "type": "uint256",
-            "internalType": "uint256"
-          }
-        ]
-      },
-      {
-        "type": "error",
-        "name": "DelegateeAlreadyRegisteredToApp",
-        "inputs": [
-          {
-            "name": "appId",
-            "type": "uint256",
-            "internalType": "uint256"
-          },
-          {
-            "name": "delegatee",
-            "type": "address",
-            "internalType": "address"
-          }
-        ]
-      },
-      {
-        "type": "error",
-        "name": "DelegateeNotRegisteredToApp",
-        "inputs": [
-          {
-            "name": "appId",
-            "type": "uint256",
-            "internalType": "uint256"
-          },
-          {
-            "name": "delegatee",
-            "type": "address",
-            "internalType": "address"
-          }
-        ]
-      },
-      {
-        "type": "error",
-        "name": "EmptyPolicyIpfsCidNotAllowed",
-        "inputs": [
-          {
-            "name": "appId",
-            "type": "uint256",
-            "internalType": "uint256"
-          },
-          {
-            "name": "toolIndex",
-            "type": "uint256",
-            "internalType": "uint256"
-          }
-        ]
-      },
-      {
-        "type": "error",
-        "name": "EmptyToolIpfsCidNotAllowed",
-        "inputs": [
-          {
-            "name": "appId",
-            "type": "uint256",
-            "internalType": "uint256"
-          },
-          {
-            "name": "toolIndex",
-            "type": "uint256",
-            "internalType": "uint256"
-          }
-        ]
-      },
-      {
-        "type": "error",
-        "name": "NoToolsProvided",
-        "inputs": [
-          {
-            "name": "appId",
-            "type": "uint256",
-            "internalType": "uint256"
-          }
-        ]
-      },
-      {
-        "type": "error",
-        "name": "NotAppManager",
-        "inputs": [
-          {
-            "name": "appId",
-            "type": "uint256",
-            "internalType": "uint256"
-          },
-          {
-            "name": "msgSender",
-            "type": "address",
-            "internalType": "address"
-          }
-        ]
-      },
-      {
-        "type": "error",
-        "name": "PolicyArrayLengthMismatch",
-        "inputs": [
-          {
-            "name": "toolIndex",
-            "type": "uint256",
-            "internalType": "uint256"
-          },
-          {
-            "name": "policiesLength",
-            "type": "uint256",
-            "internalType": "uint256"
-          },
-          {
-            "name": "paramMetadataLength",
-            "type": "uint256",
-            "internalType": "uint256"
-          }
-        ]
-      },
-      {
-        "type": "error",
-        "name": "ToolArrayDimensionMismatch",
-        "inputs": [
-          {
-            "name": "toolsLength",
-            "type": "uint256",
-            "internalType": "uint256"
-          },
-          {
-            "name": "policiesLength",
-            "type": "uint256",
-            "internalType": "uint256"
-          },
-          {
-            "name": "paramMetadataLength",
-            "type": "uint256",
-            "internalType": "uint256"
-          }
-        ]
-      },
-      {
-        "type": "error",
-        "name": "ZeroAddressDelegateeNotAllowed",
-        "inputs": []
-      }
-    ]
   },
-  "VincentUserFacet": {
-    "address": "0x60c20f3370c216faccd834e5c8f5ca1fc91bd94b",
-    "methods": {
-      "permitAppVersion": {
-        "type": "function",
-        "name": "permitAppVersion",
-        "inputs": [
+  VincentAppFacet: {
+    address: '0x3a03376f83d0b0cdbd706abc2ebd40dbc6ecbeb1',
+    methods: {
+      addDelegatee: {
+        type: 'function',
+        name: 'addDelegatee',
+        inputs: [
           {
-            "name": "pkpTokenId",
-            "type": "uint256",
-            "internalType": "uint256"
+            name: 'appId',
+            type: 'uint256',
+            internalType: 'uint256',
           },
           {
-            "name": "appId",
-            "type": "uint256",
-            "internalType": "uint256"
+            name: 'delegatee',
+            type: 'address',
+            internalType: 'address',
           },
-          {
-            "name": "appVersion",
-            "type": "uint256",
-            "internalType": "uint256"
-          },
-          {
-            "name": "toolIpfsCids",
-            "type": "string[]",
-            "internalType": "string[]"
-          },
-          {
-            "name": "policyIpfsCids",
-            "type": "string[][]",
-            "internalType": "string[][]"
-          },
-          {
-            "name": "policyParameterValues",
-            "type": "bytes[][]",
-            "internalType": "bytes[][]"
-          }
         ],
-        "outputs": [],
-        "stateMutability": "nonpayable"
+        outputs: [],
+        stateMutability: 'nonpayable',
       },
-      "removeToolPolicyParameters": {
-        "type": "function",
-        "name": "removeToolPolicyParameters",
-        "inputs": [
+      deleteApp: {
+        type: 'function',
+        name: 'deleteApp',
+        inputs: [
           {
-            "name": "appId",
-            "type": "uint256",
-            "internalType": "uint256"
+            name: 'appId',
+            type: 'uint256',
+            internalType: 'uint256',
           },
-          {
-            "name": "pkpTokenId",
-            "type": "uint256",
-            "internalType": "uint256"
-          },
-          {
-            "name": "appVersion",
-            "type": "uint256",
-            "internalType": "uint256"
-          },
-          {
-            "name": "toolIpfsCids",
-            "type": "string[]",
-            "internalType": "string[]"
-          },
-          {
-            "name": "policyIpfsCids",
-            "type": "string[][]",
-            "internalType": "string[][]"
-          }
         ],
-        "outputs": [],
-        "stateMutability": "nonpayable"
+        outputs: [],
+        stateMutability: 'nonpayable',
       },
-      "setToolPolicyParameters": {
-        "type": "function",
-        "name": "setToolPolicyParameters",
-        "inputs": [
+      enableAppVersion: {
+        type: 'function',
+        name: 'enableAppVersion',
+        inputs: [
           {
-            "name": "pkpTokenId",
-            "type": "uint256",
-            "internalType": "uint256"
+            name: 'appId',
+            type: 'uint256',
+            internalType: 'uint256',
           },
           {
-            "name": "appId",
-            "type": "uint256",
-            "internalType": "uint256"
+            name: 'appVersion',
+            type: 'uint256',
+            internalType: 'uint256',
           },
           {
-            "name": "appVersion",
-            "type": "uint256",
-            "internalType": "uint256"
+            name: 'enabled',
+            type: 'bool',
+            internalType: 'bool',
           },
-          {
-            "name": "toolIpfsCids",
-            "type": "string[]",
-            "internalType": "string[]"
-          },
-          {
-            "name": "policyIpfsCids",
-            "type": "string[][]",
-            "internalType": "string[][]"
-          },
-          {
-            "name": "policyParameterValues",
-            "type": "bytes[][]",
-            "internalType": "bytes[][]"
-          }
         ],
-        "outputs": [],
-        "stateMutability": "nonpayable"
+        outputs: [],
+        stateMutability: 'nonpayable',
       },
-      "unPermitAppVersion": {
-        "type": "function",
-        "name": "unPermitAppVersion",
-        "inputs": [
+      registerApp: {
+        type: 'function',
+        name: 'registerApp',
+        inputs: [
           {
-            "name": "pkpTokenId",
-            "type": "uint256",
-            "internalType": "uint256"
+            name: 'delegatees',
+            type: 'address[]',
+            internalType: 'address[]',
           },
           {
-            "name": "appId",
-            "type": "uint256",
-            "internalType": "uint256"
+            name: 'versionTools',
+            type: 'tuple',
+            internalType: 'struct VincentAppFacet.AppVersionTools',
+            components: [
+              {
+                name: 'toolIpfsCids',
+                type: 'string[]',
+                internalType: 'string[]',
+              },
+              {
+                name: 'toolPolicies',
+                type: 'string[][]',
+                internalType: 'string[][]',
+              },
+            ],
           },
-          {
-            "name": "appVersion",
-            "type": "uint256",
-            "internalType": "uint256"
-          }
         ],
-        "outputs": [],
-        "stateMutability": "nonpayable"
-      }
+        outputs: [
+          {
+            name: 'newAppId',
+            type: 'uint256',
+            internalType: 'uint256',
+          },
+          {
+            name: 'newAppVersion',
+            type: 'uint256',
+            internalType: 'uint256',
+          },
+        ],
+        stateMutability: 'nonpayable',
+      },
+      registerNextAppVersion: {
+        type: 'function',
+        name: 'registerNextAppVersion',
+        inputs: [
+          {
+            name: 'appId',
+            type: 'uint256',
+            internalType: 'uint256',
+          },
+          {
+            name: 'versionTools',
+            type: 'tuple',
+            internalType: 'struct VincentAppFacet.AppVersionTools',
+            components: [
+              {
+                name: 'toolIpfsCids',
+                type: 'string[]',
+                internalType: 'string[]',
+              },
+              {
+                name: 'toolPolicies',
+                type: 'string[][]',
+                internalType: 'string[][]',
+              },
+            ],
+          },
+        ],
+        outputs: [
+          {
+            name: 'newAppVersion',
+            type: 'uint256',
+            internalType: 'uint256',
+          },
+        ],
+        stateMutability: 'nonpayable',
+      },
+      removeDelegatee: {
+        type: 'function',
+        name: 'removeDelegatee',
+        inputs: [
+          {
+            name: 'appId',
+            type: 'uint256',
+            internalType: 'uint256',
+          },
+          {
+            name: 'delegatee',
+            type: 'address',
+            internalType: 'address',
+          },
+        ],
+        outputs: [],
+        stateMutability: 'nonpayable',
+      },
     },
-    "events": [
+    events: [
       {
-        "type": "event",
-        "name": "AppVersionPermitted",
-        "inputs": [
+        type: 'event',
+        name: 'AppDeleted',
+        inputs: [
           {
-            "name": "pkpTokenId",
-            "type": "uint256",
-            "indexed": true,
-            "internalType": "uint256"
+            name: 'appId',
+            type: 'uint256',
+            indexed: true,
+            internalType: 'uint256',
           },
-          {
-            "name": "appId",
-            "type": "uint256",
-            "indexed": true,
-            "internalType": "uint256"
-          },
-          {
-            "name": "appVersion",
-            "type": "uint256",
-            "indexed": true,
-            "internalType": "uint256"
-          }
         ],
-        "anonymous": false
+        anonymous: false,
       },
       {
-        "type": "event",
-        "name": "AppVersionUnPermitted",
-        "inputs": [
+        type: 'event',
+        name: 'AppEnabled',
+        inputs: [
           {
-            "name": "pkpTokenId",
-            "type": "uint256",
-            "indexed": true,
-            "internalType": "uint256"
+            name: 'appId',
+            type: 'uint256',
+            indexed: true,
+            internalType: 'uint256',
           },
           {
-            "name": "appId",
-            "type": "uint256",
-            "indexed": true,
-            "internalType": "uint256"
+            name: 'appVersion',
+            type: 'uint256',
+            indexed: true,
+            internalType: 'uint256',
           },
           {
-            "name": "appVersion",
-            "type": "uint256",
-            "indexed": true,
-            "internalType": "uint256"
-          }
+            name: 'enabled',
+            type: 'bool',
+            indexed: true,
+            internalType: 'bool',
+          },
         ],
-        "anonymous": false
+        anonymous: false,
       },
       {
-        "type": "event",
-        "name": "NewUserAgentPkpRegistered",
-        "inputs": [
+        type: 'event',
+        name: 'DelegateeAdded',
+        inputs: [
           {
-            "name": "userAddress",
-            "type": "address",
-            "indexed": true,
-            "internalType": "address"
+            name: 'appId',
+            type: 'uint256',
+            indexed: true,
+            internalType: 'uint256',
           },
           {
-            "name": "pkpTokenId",
-            "type": "uint256",
-            "indexed": true,
-            "internalType": "uint256"
-          }
+            name: 'delegatee',
+            type: 'address',
+            indexed: true,
+            internalType: 'address',
+          },
         ],
-        "anonymous": false
+        anonymous: false,
       },
       {
-        "type": "event",
-        "name": "ToolPolicyParametersRemoved",
-        "inputs": [
+        type: 'event',
+        name: 'DelegateeRemoved',
+        inputs: [
           {
-            "name": "pkpTokenId",
-            "type": "uint256",
-            "indexed": true,
-            "internalType": "uint256"
+            name: 'appId',
+            type: 'uint256',
+            indexed: true,
+            internalType: 'uint256',
           },
           {
-            "name": "appId",
-            "type": "uint256",
-            "indexed": true,
-            "internalType": "uint256"
+            name: 'delegatee',
+            type: 'address',
+            indexed: true,
+            internalType: 'address',
           },
-          {
-            "name": "appVersion",
-            "type": "uint256",
-            "indexed": true,
-            "internalType": "uint256"
-          },
-          {
-            "name": "hashedToolIpfsCid",
-            "type": "bytes32",
-            "indexed": false,
-            "internalType": "bytes32"
-          }
         ],
-        "anonymous": false
+        anonymous: false,
       },
       {
-        "type": "event",
-        "name": "ToolPolicyParametersSet",
-        "inputs": [
+        type: 'event',
+        name: 'NewAppRegistered',
+        inputs: [
           {
-            "name": "pkpTokenId",
-            "type": "uint256",
-            "indexed": true,
-            "internalType": "uint256"
+            name: 'appId',
+            type: 'uint256',
+            indexed: true,
+            internalType: 'uint256',
           },
           {
-            "name": "appId",
-            "type": "uint256",
-            "indexed": true,
-            "internalType": "uint256"
+            name: 'manager',
+            type: 'address',
+            indexed: true,
+            internalType: 'address',
           },
-          {
-            "name": "appVersion",
-            "type": "uint256",
-            "indexed": true,
-            "internalType": "uint256"
-          },
-          {
-            "name": "hashedToolIpfsCid",
-            "type": "bytes32",
-            "indexed": false,
-            "internalType": "bytes32"
-          },
-          {
-            "name": "policyParameterValues",
-            "type": "bytes",
-            "indexed": false,
-            "internalType": "bytes"
-          }
         ],
-        "anonymous": false
-      }
+        anonymous: false,
+      },
+      {
+        type: 'event',
+        name: 'NewAppVersionRegistered',
+        inputs: [
+          {
+            name: 'appId',
+            type: 'uint256',
+            indexed: true,
+            internalType: 'uint256',
+          },
+          {
+            name: 'appVersion',
+            type: 'uint256',
+            indexed: true,
+            internalType: 'uint256',
+          },
+          {
+            name: 'manager',
+            type: 'address',
+            indexed: true,
+            internalType: 'address',
+          },
+        ],
+        anonymous: false,
+      },
+      {
+        type: 'event',
+        name: 'NewLitActionRegistered',
+        inputs: [
+          {
+            name: 'litActionIpfsCidHash',
+            type: 'bytes32',
+            indexed: true,
+            internalType: 'bytes32',
+          },
+        ],
+        anonymous: false,
+      },
     ],
-    "errors": [
+    errors: [
       {
-        "type": "error",
-        "name": "AppHasBeenDeleted",
-        "inputs": [
+        type: 'error',
+        name: 'AppHasBeenDeleted',
+        inputs: [
           {
-            "name": "appId",
-            "type": "uint256",
-            "internalType": "uint256"
-          }
-        ]
+            name: 'appId',
+            type: 'uint256',
+            internalType: 'uint256',
+          },
+        ],
       },
       {
-        "type": "error",
-        "name": "AppNotRegistered",
-        "inputs": [
+        type: 'error',
+        name: 'AppNotRegistered',
+        inputs: [
           {
-            "name": "appId",
-            "type": "uint256",
-            "internalType": "uint256"
-          }
-        ]
+            name: 'appId',
+            type: 'uint256',
+            internalType: 'uint256',
+          },
+        ],
       },
       {
-        "type": "error",
-        "name": "AppVersionAlreadyPermitted",
-        "inputs": [
+        type: 'error',
+        name: 'AppVersionAlreadyInRequestedState',
+        inputs: [
           {
-            "name": "pkpTokenId",
-            "type": "uint256",
-            "internalType": "uint256"
+            name: 'appId',
+            type: 'uint256',
+            internalType: 'uint256',
           },
           {
-            "name": "appId",
-            "type": "uint256",
-            "internalType": "uint256"
+            name: 'appVersion',
+            type: 'uint256',
+            internalType: 'uint256',
           },
           {
-            "name": "appVersion",
-            "type": "uint256",
-            "internalType": "uint256"
-          }
-        ]
+            name: 'enabled',
+            type: 'bool',
+            internalType: 'bool',
+          },
+        ],
       },
       {
-        "type": "error",
-        "name": "AppVersionNotEnabled",
-        "inputs": [
+        type: 'error',
+        name: 'AppVersionHasDelegatedAgents',
+        inputs: [
           {
-            "name": "appId",
-            "type": "uint256",
-            "internalType": "uint256"
+            name: 'appId',
+            type: 'uint256',
+            internalType: 'uint256',
           },
           {
-            "name": "appVersion",
-            "type": "uint256",
-            "internalType": "uint256"
-          }
-        ]
+            name: 'appVersion',
+            type: 'uint256',
+            internalType: 'uint256',
+          },
+        ],
       },
       {
-        "type": "error",
-        "name": "AppVersionNotPermitted",
-        "inputs": [
+        type: 'error',
+        name: 'AppVersionNotRegistered',
+        inputs: [
           {
-            "name": "pkpTokenId",
-            "type": "uint256",
-            "internalType": "uint256"
+            name: 'appId',
+            type: 'uint256',
+            internalType: 'uint256',
           },
           {
-            "name": "appId",
-            "type": "uint256",
-            "internalType": "uint256"
+            name: 'appVersion',
+            type: 'uint256',
+            internalType: 'uint256',
+          },
+        ],
+      },
+      {
+        type: 'error',
+        name: 'DelegateeAlreadyRegisteredToApp',
+        inputs: [
+          {
+            name: 'appId',
+            type: 'uint256',
+            internalType: 'uint256',
           },
           {
-            "name": "appVersion",
-            "type": "uint256",
-            "internalType": "uint256"
-          }
-        ]
+            name: 'delegatee',
+            type: 'address',
+            internalType: 'address',
+          },
+        ],
       },
       {
-        "type": "error",
-        "name": "AppVersionNotRegistered",
-        "inputs": [
+        type: 'error',
+        name: 'DelegateeNotRegisteredToApp',
+        inputs: [
           {
-            "name": "appId",
-            "type": "uint256",
-            "internalType": "uint256"
+            name: 'appId',
+            type: 'uint256',
+            internalType: 'uint256',
           },
           {
-            "name": "appVersion",
-            "type": "uint256",
-            "internalType": "uint256"
-          }
-        ]
+            name: 'delegatee',
+            type: 'address',
+            internalType: 'address',
+          },
+        ],
       },
       {
-        "type": "error",
-        "name": "EmptyPolicyIpfsCid",
-        "inputs": []
-      },
-      {
-        "type": "error",
-        "name": "EmptyToolIpfsCid",
-        "inputs": []
-      },
-      {
-        "type": "error",
-        "name": "InvalidInput",
-        "inputs": []
-      },
-      {
-        "type": "error",
-        "name": "NotAllRegisteredToolsProvided",
-        "inputs": [
+        type: 'error',
+        name: 'EmptyPolicyIpfsCidNotAllowed',
+        inputs: [
           {
-            "name": "appId",
-            "type": "uint256",
-            "internalType": "uint256"
+            name: 'appId',
+            type: 'uint256',
+            internalType: 'uint256',
           },
           {
-            "name": "appVersion",
-            "type": "uint256",
-            "internalType": "uint256"
-          }
-        ]
+            name: 'toolIndex',
+            type: 'uint256',
+            internalType: 'uint256',
+          },
+        ],
       },
       {
-        "type": "error",
-        "name": "NotPkpOwner",
-        "inputs": [
+        type: 'error',
+        name: 'EmptyToolIpfsCidNotAllowed',
+        inputs: [
           {
-            "name": "pkpTokenId",
-            "type": "uint256",
-            "internalType": "uint256"
+            name: 'appId',
+            type: 'uint256',
+            internalType: 'uint256',
           },
           {
-            "name": "msgSender",
-            "type": "address",
-            "internalType": "address"
-          }
-        ]
+            name: 'toolIndex',
+            type: 'uint256',
+            internalType: 'uint256',
+          },
+        ],
       },
       {
-        "type": "error",
-        "name": "PkpTokenDoesNotExist",
-        "inputs": [
+        type: 'error',
+        name: 'NoToolsProvided',
+        inputs: [
           {
-            "name": "pkpTokenId",
-            "type": "uint256",
-            "internalType": "uint256"
-          }
-        ]
+            name: 'appId',
+            type: 'uint256',
+            internalType: 'uint256',
+          },
+        ],
       },
       {
-        "type": "error",
-        "name": "PolicyArrayLengthMismatch",
-        "inputs": [
+        type: 'error',
+        name: 'NotAppManager',
+        inputs: [
           {
-            "name": "toolIndex",
-            "type": "uint256",
-            "internalType": "uint256"
+            name: 'appId',
+            type: 'uint256',
+            internalType: 'uint256',
           },
           {
-            "name": "policiesLength",
-            "type": "uint256",
-            "internalType": "uint256"
+            name: 'msgSender',
+            type: 'address',
+            internalType: 'address',
           },
-          {
-            "name": "paramValuesLength",
-            "type": "uint256",
-            "internalType": "uint256"
-          }
-        ]
+        ],
       },
       {
-        "type": "error",
-        "name": "ToolNotRegisteredForAppVersion",
-        "inputs": [
+        type: 'error',
+        name: 'ToolArrayDimensionMismatch',
+        inputs: [
           {
-            "name": "appId",
-            "type": "uint256",
-            "internalType": "uint256"
+            name: 'toolsLength',
+            type: 'uint256',
+            internalType: 'uint256',
           },
           {
-            "name": "appVersion",
-            "type": "uint256",
-            "internalType": "uint256"
+            name: 'policiesLength',
+            type: 'uint256',
+            internalType: 'uint256',
           },
-          {
-            "name": "toolIpfsCid",
-            "type": "string",
-            "internalType": "string"
-          }
-        ]
+        ],
       },
       {
-        "type": "error",
-        "name": "ToolPolicyNotRegisteredForAppVersion",
-        "inputs": [
+        type: 'error',
+        name: 'ZeroAddressDelegateeNotAllowed',
+        inputs: [],
+      },
+    ],
+  },
+  VincentUserFacet: {
+    address: '0xb060766ba6cfda4ae07d3e07c6380b479541c252',
+    methods: {
+      permitAppVersion: {
+        type: 'function',
+        name: 'permitAppVersion',
+        inputs: [
           {
-            "name": "appId",
-            "type": "uint256",
-            "internalType": "uint256"
+            name: 'pkpTokenId',
+            type: 'uint256',
+            internalType: 'uint256',
           },
           {
-            "name": "appVersion",
-            "type": "uint256",
-            "internalType": "uint256"
+            name: 'appId',
+            type: 'uint256',
+            internalType: 'uint256',
           },
           {
-            "name": "toolIpfsCid",
-            "type": "string",
-            "internalType": "string"
+            name: 'appVersion',
+            type: 'uint256',
+            internalType: 'uint256',
           },
           {
-            "name": "toolPolicyIpfsCid",
-            "type": "string",
-            "internalType": "string"
-          }
-        ]
+            name: 'toolIpfsCids',
+            type: 'string[]',
+            internalType: 'string[]',
+          },
+          {
+            name: 'policyIpfsCids',
+            type: 'string[][]',
+            internalType: 'string[][]',
+          },
+          {
+            name: 'policyParameterValues',
+            type: 'bytes[][]',
+            internalType: 'bytes[][]',
+          },
+        ],
+        outputs: [],
+        stateMutability: 'nonpayable',
+      },
+      removeToolPolicyParameters: {
+        type: 'function',
+        name: 'removeToolPolicyParameters',
+        inputs: [
+          {
+            name: 'appId',
+            type: 'uint256',
+            internalType: 'uint256',
+          },
+          {
+            name: 'pkpTokenId',
+            type: 'uint256',
+            internalType: 'uint256',
+          },
+          {
+            name: 'appVersion',
+            type: 'uint256',
+            internalType: 'uint256',
+          },
+          {
+            name: 'toolIpfsCids',
+            type: 'string[]',
+            internalType: 'string[]',
+          },
+          {
+            name: 'policyIpfsCids',
+            type: 'string[][]',
+            internalType: 'string[][]',
+          },
+        ],
+        outputs: [],
+        stateMutability: 'nonpayable',
+      },
+      setToolPolicyParameters: {
+        type: 'function',
+        name: 'setToolPolicyParameters',
+        inputs: [
+          {
+            name: 'pkpTokenId',
+            type: 'uint256',
+            internalType: 'uint256',
+          },
+          {
+            name: 'appId',
+            type: 'uint256',
+            internalType: 'uint256',
+          },
+          {
+            name: 'appVersion',
+            type: 'uint256',
+            internalType: 'uint256',
+          },
+          {
+            name: 'toolIpfsCids',
+            type: 'string[]',
+            internalType: 'string[]',
+          },
+          {
+            name: 'policyIpfsCids',
+            type: 'string[][]',
+            internalType: 'string[][]',
+          },
+          {
+            name: 'policyParameterValues',
+            type: 'bytes[][]',
+            internalType: 'bytes[][]',
+          },
+        ],
+        outputs: [],
+        stateMutability: 'nonpayable',
+      },
+      unPermitAppVersion: {
+        type: 'function',
+        name: 'unPermitAppVersion',
+        inputs: [
+          {
+            name: 'pkpTokenId',
+            type: 'uint256',
+            internalType: 'uint256',
+          },
+          {
+            name: 'appId',
+            type: 'uint256',
+            internalType: 'uint256',
+          },
+          {
+            name: 'appVersion',
+            type: 'uint256',
+            internalType: 'uint256',
+          },
+        ],
+        outputs: [],
+        stateMutability: 'nonpayable',
+      },
+    },
+    events: [
+      {
+        type: 'event',
+        name: 'AppVersionPermitted',
+        inputs: [
+          {
+            name: 'pkpTokenId',
+            type: 'uint256',
+            indexed: true,
+            internalType: 'uint256',
+          },
+          {
+            name: 'appId',
+            type: 'uint256',
+            indexed: true,
+            internalType: 'uint256',
+          },
+          {
+            name: 'appVersion',
+            type: 'uint256',
+            indexed: true,
+            internalType: 'uint256',
+          },
+        ],
+        anonymous: false,
       },
       {
-        "type": "error",
-        "name": "ToolsAndPoliciesLengthMismatch",
-        "inputs": []
+        type: 'event',
+        name: 'AppVersionUnPermitted',
+        inputs: [
+          {
+            name: 'pkpTokenId',
+            type: 'uint256',
+            indexed: true,
+            internalType: 'uint256',
+          },
+          {
+            name: 'appId',
+            type: 'uint256',
+            indexed: true,
+            internalType: 'uint256',
+          },
+          {
+            name: 'appVersion',
+            type: 'uint256',
+            indexed: true,
+            internalType: 'uint256',
+          },
+        ],
+        anonymous: false,
       },
       {
-        "type": "error",
-        "name": "ZeroPkpTokenId",
-        "inputs": []
-      }
-    ]
-  }
+        type: 'event',
+        name: 'NewUserAgentPkpRegistered',
+        inputs: [
+          {
+            name: 'userAddress',
+            type: 'address',
+            indexed: true,
+            internalType: 'address',
+          },
+          {
+            name: 'pkpTokenId',
+            type: 'uint256',
+            indexed: true,
+            internalType: 'uint256',
+          },
+        ],
+        anonymous: false,
+      },
+      {
+        type: 'event',
+        name: 'ToolPolicyParametersRemoved',
+        inputs: [
+          {
+            name: 'pkpTokenId',
+            type: 'uint256',
+            indexed: true,
+            internalType: 'uint256',
+          },
+          {
+            name: 'appId',
+            type: 'uint256',
+            indexed: true,
+            internalType: 'uint256',
+          },
+          {
+            name: 'appVersion',
+            type: 'uint256',
+            indexed: true,
+            internalType: 'uint256',
+          },
+          {
+            name: 'hashedToolIpfsCid',
+            type: 'bytes32',
+            indexed: false,
+            internalType: 'bytes32',
+          },
+        ],
+        anonymous: false,
+      },
+      {
+        type: 'event',
+        name: 'ToolPolicyParametersSet',
+        inputs: [
+          {
+            name: 'pkpTokenId',
+            type: 'uint256',
+            indexed: true,
+            internalType: 'uint256',
+          },
+          {
+            name: 'appId',
+            type: 'uint256',
+            indexed: true,
+            internalType: 'uint256',
+          },
+          {
+            name: 'appVersion',
+            type: 'uint256',
+            indexed: true,
+            internalType: 'uint256',
+          },
+          {
+            name: 'hashedToolIpfsCid',
+            type: 'bytes32',
+            indexed: false,
+            internalType: 'bytes32',
+          },
+          {
+            name: 'policyParameterValues',
+            type: 'bytes',
+            indexed: false,
+            internalType: 'bytes',
+          },
+        ],
+        anonymous: false,
+      },
+    ],
+    errors: [
+      {
+        type: 'error',
+        name: 'AppHasBeenDeleted',
+        inputs: [
+          {
+            name: 'appId',
+            type: 'uint256',
+            internalType: 'uint256',
+          },
+        ],
+      },
+      {
+        type: 'error',
+        name: 'AppNotRegistered',
+        inputs: [
+          {
+            name: 'appId',
+            type: 'uint256',
+            internalType: 'uint256',
+          },
+        ],
+      },
+      {
+        type: 'error',
+        name: 'AppVersionAlreadyPermitted',
+        inputs: [
+          {
+            name: 'pkpTokenId',
+            type: 'uint256',
+            internalType: 'uint256',
+          },
+          {
+            name: 'appId',
+            type: 'uint256',
+            internalType: 'uint256',
+          },
+          {
+            name: 'appVersion',
+            type: 'uint256',
+            internalType: 'uint256',
+          },
+        ],
+      },
+      {
+        type: 'error',
+        name: 'AppVersionNotEnabled',
+        inputs: [
+          {
+            name: 'appId',
+            type: 'uint256',
+            internalType: 'uint256',
+          },
+          {
+            name: 'appVersion',
+            type: 'uint256',
+            internalType: 'uint256',
+          },
+        ],
+      },
+      {
+        type: 'error',
+        name: 'AppVersionNotPermitted',
+        inputs: [
+          {
+            name: 'pkpTokenId',
+            type: 'uint256',
+            internalType: 'uint256',
+          },
+          {
+            name: 'appId',
+            type: 'uint256',
+            internalType: 'uint256',
+          },
+          {
+            name: 'appVersion',
+            type: 'uint256',
+            internalType: 'uint256',
+          },
+        ],
+      },
+      {
+        type: 'error',
+        name: 'AppVersionNotRegistered',
+        inputs: [
+          {
+            name: 'appId',
+            type: 'uint256',
+            internalType: 'uint256',
+          },
+          {
+            name: 'appVersion',
+            type: 'uint256',
+            internalType: 'uint256',
+          },
+        ],
+      },
+      {
+        type: 'error',
+        name: 'EmptyPolicyIpfsCid',
+        inputs: [],
+      },
+      {
+        type: 'error',
+        name: 'EmptyToolIpfsCid',
+        inputs: [],
+      },
+      {
+        type: 'error',
+        name: 'InvalidInput',
+        inputs: [],
+      },
+      {
+        type: 'error',
+        name: 'NotAllRegisteredToolsProvided',
+        inputs: [
+          {
+            name: 'appId',
+            type: 'uint256',
+            internalType: 'uint256',
+          },
+          {
+            name: 'appVersion',
+            type: 'uint256',
+            internalType: 'uint256',
+          },
+        ],
+      },
+      {
+        type: 'error',
+        name: 'NotPkpOwner',
+        inputs: [
+          {
+            name: 'pkpTokenId',
+            type: 'uint256',
+            internalType: 'uint256',
+          },
+          {
+            name: 'msgSender',
+            type: 'address',
+            internalType: 'address',
+          },
+        ],
+      },
+      {
+        type: 'error',
+        name: 'PkpTokenDoesNotExist',
+        inputs: [
+          {
+            name: 'pkpTokenId',
+            type: 'uint256',
+            internalType: 'uint256',
+          },
+        ],
+      },
+      {
+        type: 'error',
+        name: 'PolicyArrayLengthMismatch',
+        inputs: [
+          {
+            name: 'toolIndex',
+            type: 'uint256',
+            internalType: 'uint256',
+          },
+          {
+            name: 'policiesLength',
+            type: 'uint256',
+            internalType: 'uint256',
+          },
+          {
+            name: 'paramValuesLength',
+            type: 'uint256',
+            internalType: 'uint256',
+          },
+        ],
+      },
+      {
+        type: 'error',
+        name: 'ToolNotRegisteredForAppVersion',
+        inputs: [
+          {
+            name: 'appId',
+            type: 'uint256',
+            internalType: 'uint256',
+          },
+          {
+            name: 'appVersion',
+            type: 'uint256',
+            internalType: 'uint256',
+          },
+          {
+            name: 'toolIpfsCid',
+            type: 'string',
+            internalType: 'string',
+          },
+        ],
+      },
+      {
+        type: 'error',
+        name: 'ToolPolicyNotRegisteredForAppVersion',
+        inputs: [
+          {
+            name: 'appId',
+            type: 'uint256',
+            internalType: 'uint256',
+          },
+          {
+            name: 'appVersion',
+            type: 'uint256',
+            internalType: 'uint256',
+          },
+          {
+            name: 'toolIpfsCid',
+            type: 'string',
+            internalType: 'string',
+          },
+          {
+            name: 'toolPolicyIpfsCid',
+            type: 'string',
+            internalType: 'string',
+          },
+        ],
+      },
+      {
+        type: 'error',
+        name: 'ToolsAndPoliciesLengthMismatch',
+        inputs: [],
+      },
+      {
+        type: 'error',
+        name: 'ZeroPkpTokenId',
+        inputs: [],
+      },
+    ],
+  },
 } as const;

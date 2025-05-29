@@ -170,21 +170,9 @@
                 "internalType": "string"
               },
               {
-                "name": "policies",
-                "type": "tuple[]",
-                "internalType": "struct VincentAppViewFacet.Policy[]",
-                "components": [
-                  {
-                    "name": "policyIpfsCid",
-                    "type": "string",
-                    "internalType": "string"
-                  },
-                  {
-                    "name": "parameterMetadata",
-                    "type": "bytes",
-                    "internalType": "bytes"
-                  }
-                ]
+                "name": "policyIpfsCids",
+                "type": "string[]",
+                "internalType": "string[]"
               }
             ]
           }
@@ -272,21 +260,9 @@
                     "internalType": "string"
                   },
                   {
-                    "name": "policies",
-                    "type": "tuple[]",
-                    "internalType": "struct VincentAppViewFacet.Policy[]",
-                    "components": [
-                      {
-                        "name": "policyIpfsCid",
-                        "type": "string",
-                        "internalType": "string"
-                      },
-                      {
-                        "name": "parameterMetadata",
-                        "type": "bytes",
-                        "internalType": "bytes"
-                      }
-                    ]
+                    "name": "policyIpfsCids",
+                    "type": "string[]",
+                    "internalType": "string[]"
                   }
                 ]
               }
