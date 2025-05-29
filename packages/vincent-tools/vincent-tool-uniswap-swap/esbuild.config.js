@@ -2,6 +2,22 @@ const fs = require('fs');
 const path = require('path');
 
 const esbuild = require('esbuild');
+const { polyfillNode } = require('esbuild-plugin-polyfill-node');
+
+function aliasFetch() {
+  const shim = path.resolve(__dirname, 'deno-fetch-shim.js');
+
+  return {
+    name: 'alias-fetch',
+    setup(build) {
+      // node-fetch root
+      build.onResolve({ filter: /^node-fetch$/ }, () => ({ path: shim }));
+
+      // any cross-fetch entry: "cross-fetch", "cross-fetch/…"
+      build.onResolve({ filter: /^cross-fetch(\/.*)?$/ }, () => ({ path: shim }));
+    },
+  };
+}
 
 const ensureDirectoryExistence = (filePath) => {
   const dirname = path.dirname(filePath);
@@ -48,32 +64,52 @@ module.exports = {
 
 (async () => {
   try {
-    await esbuild
-      .build({
-        entryPoints: ['./src/lib/vincent-tool-wrapped.ts'],
-        bundle: true,
-        minify: true,
-        sourcemap: false,
-        treeShaking: true,
-        outdir: './src/generated/',
-        inject: ['./buffer.shim.js'],
-        external: ['ethers'],
-        plugins: [wrapIIFEInStringPlugin],
-        platform: 'browser',
-      })
-      .then((result) => {
-        result.outputFiles.forEach((file) => {
-          const bytes = file.text.length;
-          const mbInBinary = (bytes / (1024 * 1024)).toFixed(4);
-          const mbInDecimal = (bytes / 1_000_000).toFixed(4);
-
-          console.log(
-            `✅ ${file.path
-              .split('/')
-              .pop()}\n- ${mbInDecimal} MB (in decimal)\n- ${mbInBinary} MB (in binary)`,
-          );
-        });
-      });
+    const result = await esbuild.build({
+      tsconfig: './tsconfig.lib.json',
+      entryPoints: ['./src/lib/vincent-tool-wrapped.ts'],
+      bundle: true,
+      minify: false,
+      sourcemap: false,
+      treeShaking: true,
+      metafile: true,
+      outdir: './src/generated/',
+      inject: ['./buffer.shim.js'],
+      // external: ['ethers'],
+      plugins: [
+        aliasFetch(),
+        polyfillNode({
+          globals: {
+            Buffer: true,
+            process: true,
+          },
+          modules: {
+            crypto: true,
+            http: true,
+            https: true,
+            stream: true,
+            zlib: true,
+            url: true,
+            util: true,
+          },
+        }),
+        wrapIIFEInStringPlugin,
+      ],
+      platform: 'browser',
+    });
+    // .then((result) => {
+    //   result.outputFiles.forEach((file) => {
+    //     const bytes = file.text.length;
+    //     const mbInBinary = (bytes / (1024 * 1024)).toFixed(4);
+    //     const mbInDecimal = (bytes / 1_000_000).toFixed(4);
+    //
+    //     console.log(
+    //       `✅ ${file.path
+    //         .split('/')
+    //         .pop()}\n- ${mbInDecimal} MB (in decimal)\n- ${mbInBinary} MB (in binary)`,
+    //     );
+    //   });
+    // });
+    fs.writeFileSync('meta.json', JSON.stringify(result.metafile));
     console.log('✅ Lit actions built successfully');
   } catch (e) {
     console.error('❌ Error building lit actions: ', e);

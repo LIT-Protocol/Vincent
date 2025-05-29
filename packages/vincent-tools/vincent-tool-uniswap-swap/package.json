@@ -42,8 +42,12 @@
     "sourceRoot": "packages/vincent-tools/vincent-tool-uniswap-swap/src",
     "projectType": "library",
     "targets": {
-      "action:build": {
+      "build": {
         "executor": "nx:run-commands",
+        "dependsOn": [
+          "vincent-tool-sdk:build",
+          "vincent-policy-spending-limit:build"
+        ],
         "options": {
           "commands": [
             "pnpm node ./esbuild.config.js"
@@ -52,38 +56,16 @@
           "parallel": false
         }
       },
-      "action:deploy": {
+      "deploy": {
         "executor": "nx:run-commands",
         "dependsOn": [
-          "action:build"
+          "build"
         ],
         "options": {
           "commands": [
             "node tools/scripts/deploy-lit-action.js"
           ],
           "cwd": "packages/vincent-tools/vincent-tool-uniswap-swap"
-        }
-      },
-      "build": {
-        "executor": "@nx/js:tsc",
-        "dependsOn": [
-          "action:build"
-        ],
-        "outputs": [
-          "{options.outputPath}"
-        ],
-        "options": {
-          "outputPath": "packages/vincent-tools/vincent-tool-uniswap-swap/dist",
-          "main": "packages/vincent-tools/vincent-tool-uniswap-swap/src/index.ts",
-          "tsConfig": "packages/vincent-tools/vincent-tool-uniswap-swap/tsconfig.lib.json",
-          "assets": [
-            "packages/vincent-tools/vincent-tool-uniswap-swap/*.md",
-            {
-              "glob": "**/*",
-              "input": "packages/vincent-tools/vincent-tool-uniswap-swap/src/generated",
-              "output": "src/generated"
-            }
-          ]
         }
       },
       "publish": {
