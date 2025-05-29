@@ -33,6 +33,7 @@
     "build:watch": "tsc --watch",
     "dev:stdio": "tsx src/stdio.ts",
     "dev:http": "tsx watch --env-file=.env src/http.ts",
+    "dev:centralized": "tsx watch --env-file=.env src/centralized.ts",
     "inspector": "npx @modelcontextprotocol/inspector",
     "test": "echo \"Error: no test specified\" && exit 1",
     "mintRlI": "tsx --env-file=.env ./src/bin/mintRLINft.ts"
