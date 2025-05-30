@@ -17,9 +17,9 @@ router.get('/', async (_req, res) => {
 });
 
 // Get Policy by identity
-router.get('/:identity', async (req, res) => {
+router.get('/:packageName', async (req, res) => {
   try {
-    const policy = await Policy.findOne({ identity: req.params.identity });
+    const policy = await Policy.findOne({ packageName: req.params.packageName });
     if (!policy) {
       res.status(404).json({ message: 'Policy not found' });
       return;
@@ -37,26 +37,9 @@ router.post('/', async (req, res) => {
   try {
     const { packageName, authorWalletAddress, description, activeVersion, version } = req.body;
 
-    if (
-      !version ||
-      !version.changes ||
-      !version.repository ||
-      !version.description ||
-      !version.author ||
-      !version.ipfsCid ||
-      !version.parameters
-    ) {
-      res.status(400).json({ message: 'Missing required version fields' });
-      return;
-    }
-
-    // Create the policy identity
-    const identity = `PolicyDef|${packageName}`;
-
     // Create the policy
     const policy = new Policy({
       packageName,
-      identity,
       authorWalletAddress,
       description,
       activeVersion,
@@ -67,7 +50,6 @@ router.post('/', async (req, res) => {
       ...version,
       packageName,
       version: activeVersion,
-      identity: `PolicyVersionDef|${packageName}@${activeVersion}`,
       status: 'ready',
       keywords: version.keywords || [],
       dependencies: version.dependencies || [],
@@ -75,6 +57,7 @@ router.post('/', async (req, res) => {
     });
 
     // Save both in a transaction
+    // FIXME: This should be a real transaction
     const [savedPolicy, savedVersion] = await Promise.all([policy.save(), policyVersion.save()]);
 
     res.status(201).json({
@@ -89,11 +72,11 @@ router.post('/', async (req, res) => {
 });
 
 // Edit Policy
-router.put('/:identity', async (req, res) => {
+router.put('/:packageName', async (req, res) => {
   try {
     const { description, activeVersion } = req.body;
     const policy = await Policy.findOneAndUpdate(
-      { identity: req.params.identity },
+      { packageName: req.params.packageName },
       { description, activeVersion },
       { new: true },
     );
@@ -111,11 +94,11 @@ router.put('/:identity', async (req, res) => {
 });
 
 // Change Policy Owner
-router.post('/:identity/owner', async (req, res) => {
+router.post('/:packageName/owner', async (req, res) => {
   try {
     const { authorWalletAddress } = req.body;
     const policy = await Policy.findOneAndUpdate(
-      { identity: req.params.identity },
+      { packageName: req.params.packageName },
       { authorWalletAddress },
       { new: true },
     );
@@ -133,32 +116,18 @@ router.post('/:identity/owner', async (req, res) => {
 });
 
 // Create new Policy Version
-router.post('/:identity/version/:version', async (req, res) => {
+router.post('/:packageName/version/:version', async (req, res) => {
   try {
-    const policy = await Policy.findOne({ identity: req.params.identity });
+    const policy = await Policy.findOne({ packageName: req.params.packageName });
     if (!policy) {
       res.status(404).json({ message: 'Policy not found' });
       return;
     }
 
-    if (
-      !req.body.changes ||
-      !req.body.repository ||
-      !req.body.description ||
-      !req.body.author ||
-      !req.body.ipfsCid ||
-      !req.body.parameters
-    ) {
-      res.status(400).json({ message: 'Missing required version fields' });
-      return;
-    }
-
-    const versionIdentity = `PolicyVersionDef|${policy.packageName}@${req.params.version}`;
     const policyVersion = new PolicyVersion({
       ...req.body,
       packageName: policy.packageName,
       version: req.params.version,
-      identity: versionIdentity,
       status: 'ready',
       keywords: req.body.keywords || [],
       dependencies: req.body.dependencies || [],
@@ -175,9 +144,9 @@ router.post('/:identity/version/:version', async (req, res) => {
 });
 
 // List Policy Versions
-router.get('/:identity/versions', async (req, res) => {
+router.get('/:packageName/versions', async (req, res) => {
   try {
-    const policy = await Policy.findOne({ identity: req.params.identity });
+    const policy = await Policy.findOne({ packageName: req.params.packageName });
     if (!policy) {
       res.status(404).json({ message: 'Policy not found' });
       return;
@@ -194,9 +163,12 @@ router.get('/:identity/versions', async (req, res) => {
 });
 
 // Get Policy Version
-router.get('/:identity/version/:version', async (req, res) => {
+router.get('/:packageName/version/:version', async (req, res) => {
   try {
-    const policy = await Policy.findOne({ identity: req.params.identity });
+    const policy = await Policy.findOne({
+      packageName: req.params.packageName,
+      version: req.params.version,
+    });
     if (!policy) {
       res.status(404).json({ message: 'Policy not found' });
       return;
@@ -219,9 +191,9 @@ router.get('/:identity/version/:version', async (req, res) => {
 });
 
 // Edit Policy Version
-router.put('/:identity/version/:version', async (req, res) => {
+router.put('/:packageName/version/:version', async (req, res) => {
   try {
-    const policy = await Policy.findOne({ identity: req.params.identity });
+    const policy = await Policy.findOne({ packageName: req.params.packageName });
     if (!policy) {
       res.status(404).json({ message: 'Policy not found' });
       return;
@@ -249,14 +221,15 @@ router.put('/:identity/version/:version', async (req, res) => {
 });
 
 // Delete a policy
-router.delete('/:identity', async (req, res) => {
+router.delete('/:packageName', async (req, res) => {
   try {
-    const policy = await Policy.findOneAndDelete({ identity: req.params.identity });
+    const policy = await Policy.findOneAndDelete({ packageName: req.params.packageName });
     if (!policy) {
       res.status(404).json({ message: 'Policy not found' });
       return;
     }
 
+    // FIXME: All policy versions would also need to be deleted
     res.json({ message: 'Policy deleted successfully' });
     return;
   } catch (error) {

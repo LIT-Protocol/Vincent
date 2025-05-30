@@ -15,9 +15,9 @@ router.get('/', async (_req, res) => {
 });
 
 // Get Tool by identity
-router.get('/identity/:identity', async (req, res) => {
+router.get('/packageName/:packageName', async (req, res) => {
   try {
-    const tool = await Tool.findOne({ identity: req.params.identity });
+    const tool = await Tool.findOne({ packageName: req.params.packageName });
     if (!tool) {
       res.status(404).json({ message: 'Tool not found' });
       return;
@@ -38,6 +38,7 @@ router.get('/identity/:identity', async (req, res) => {
 // Get a single tool by ID
 router.get('/:id', async (req, res) => {
   try {
+    // FIXME: This should use packageName
     const tool = await Tool.findById(req.params.id);
     if (!tool) {
       res.status(404).json({ message: 'Tool not found' });
@@ -57,15 +58,12 @@ router.post('/', async (req, res) => {
   try {
     const { packageName, authorWalletAddress, description } = req.body;
 
-    // Create identity
-    const identity = `ToolDef|${packageName}`;
-
     // Create initial tool version
+    // FIXME: This must be a real package version that we've verified
     const initialVersion = '0.1.0';
     const toolVersion = new ToolVersion({
       packageName,
       version: initialVersion,
-      identity: `ToolVersionDef|${packageName}@${initialVersion}`,
       changes: 'Initial version',
       repository: req.body.repository,
       description,
@@ -85,7 +83,6 @@ router.post('/', async (req, res) => {
     // Create tool
     const tool = new Tool({
       packageName,
-      identity,
       authorWalletAddress,
       description,
       activeVersion: initialVersion,
@@ -101,17 +98,9 @@ router.post('/', async (req, res) => {
 });
 
 // Edit Tool
-router.put('/:identity', async (req, res) => {
+router.put('/:packageName', async (req, res) => {
   try {
-    const allowedUpdates = ['description', 'activeVersion'];
-    const updates = Object.keys(req.body)
-      .filter((key) => allowedUpdates.includes(key))
-      .reduce<Record<string, string>>((obj, key) => {
-        obj[key] = req.body[key];
-        return obj;
-      }, {});
-
-    const tool = await Tool.findOneAndUpdate({ identity: req.params.identity }, updates, {
+    const tool = await Tool.findOneAndUpdate({ packageName: req.params.packageName }, req.body, {
       new: true,
     });
 
@@ -129,7 +118,7 @@ router.put('/:identity', async (req, res) => {
 });
 
 // Change Tool Owner
-router.post('/:identity/owner', async (req, res) => {
+router.post('/:packageName/owner', async (req, res) => {
   try {
     const { authorWalletAddress } = req.body;
     if (!authorWalletAddress) {
@@ -138,7 +127,7 @@ router.post('/:identity/owner', async (req, res) => {
     }
 
     const tool = await Tool.findOneAndUpdate(
-      { identity: req.params.identity },
+      { packageName: req.params.packageName },
       { authorWalletAddress },
       { new: true },
     );
@@ -156,18 +145,18 @@ router.post('/:identity/owner', async (req, res) => {
 });
 
 // Create new Tool Version
-router.post('/:identity/version/:version', async (req, res) => {
+router.post('/:packageName/version/:version', async (req, res) => {
   try {
-    const tool = await Tool.findOne({ identity: req.params.identity });
+    const tool = await Tool.findOne({ packageName: req.params.packageName });
     if (!tool) {
       res.status(404).json({ message: 'Tool not found' });
       return;
     }
 
+    // FIXME: Check the package version.
     const toolVersion = new ToolVersion({
       packageName: tool.packageName,
       version: req.params.version,
-      identity: `ToolVersionDef|${tool.packageName}@${req.params.version}`,
       changes: req.body.changes,
       repository: req.body.repository,
       description: req.body.description,
@@ -192,9 +181,9 @@ router.post('/:identity/version/:version', async (req, res) => {
 });
 
 // List Tool Versions
-router.get('/:identity/versions', async (req, res) => {
+router.get('/:packageName/versions', async (req, res) => {
   try {
-    const tool = await Tool.findOne({ identity: req.params.identity });
+    const tool = await Tool.findOne({ packageName: req.params.packageName });
     if (!tool) {
       res.status(404).json({ message: 'Tool not found' });
       return;
@@ -216,9 +205,9 @@ router.get('/:identity/versions', async (req, res) => {
 });
 
 // Get Tool Version
-router.get('/:identity/version/:version', async (req, res) => {
+router.get('/:packageName/version/:version', async (req, res) => {
   try {
-    const tool = await Tool.findOne({ identity: req.params.identity });
+    const tool = await Tool.findOne({ packageName: req.params.packageName });
     if (!tool) {
       res.status(404).json({ message: 'Tool not found' });
       return;
@@ -247,9 +236,9 @@ router.get('/:identity/version/:version', async (req, res) => {
 });
 
 // Edit Tool Version
-router.put('/:identity/version/:version', async (req, res) => {
+router.put('/:packageName/version/:version', async (req, res) => {
   try {
-    const tool = await Tool.findOne({ identity: req.params.identity });
+    const tool = await Tool.findOne({ packageName: req.params.packageName });
     if (!tool) {
       res.status(404).json({ message: 'Tool not found' });
       return;
@@ -284,6 +273,8 @@ router.put('/:identity/version/:version', async (req, res) => {
 // Delete a tool
 router.delete('/:id', async (req, res) => {
   try {
+    // FIXME: Must delete all tool versions also
+    // FIXME: Use packageName instead of id
     const tool = await Tool.findByIdAndDelete(req.params.id);
     if (!tool) {
       res.status(404).json({ message: 'Tool not found' });
