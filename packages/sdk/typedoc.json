@@ -1,12 +1,11 @@
 {
   "$schema": "https://typedoc.org/schema.json",
   "readme": "docs/Why-Vincent.md",
-  "entryPoints": [
-    "./src/index.ts"
-  ],
+  "entryPoints": ["./src/index.ts"],
   "name": "Vincent Docs",
   "projectDocuments": [
     "docs/Why-Vincent.md",
+    "docs/Concepts.md",
     "docs/Developers/Quick-Start.md",
     "docs/Developers/Custom-Tools.md",
     "docs/Developers/AI-Integration.md",
@@ -23,22 +22,30 @@
   },
   "defaultCategory": "API",
   "categorizeByGroup": false,
-  "categoryOrder": ["Intro", "Developers", "Users", "Contact", "Vincent SDK API", "Vincent Web App",  "Vincent Tools"],
-  "visibilityFilters": { },
+  "categoryOrder": [
+    "Intro",
+    "Developers",
+    "Users",
+    "Contact",
+    "Vincent SDK API",
+    "Vincent Web App",
+    "Vincent Tools"
+  ],
+  "visibilityFilters": {},
   "externalSymbolLinkMappings": {
-    "@lit-protocol/types" : {
+    "@lit-protocol/types": {
       "*": "https://v7-api-doc-lit-js-sdk.vercel.app/modules/types_src.html"
     },
-    "@lit-protocol/pkp-ethers" : {
+    "@lit-protocol/pkp-ethers": {
       "*": "https://v7-api-doc-lit-js-sdk.vercel.app/modules/pkp_ethers_src.html"
     },
-    "did-jwt" : {
+    "did-jwt": {
       "*": "https://www.jsdocs.io/package/did-jwt"
     },
-    "ethers" : {
+    "ethers": {
       "*": "https://docs.ethers.org/v5/api/"
     },
-    "@ethersproject/abstract-signer" : {
+    "@ethersproject/abstract-signer": {
       "*": "https://docs.ethers.org/v5/api/"
     }
   },
