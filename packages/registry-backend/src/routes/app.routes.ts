@@ -30,9 +30,10 @@ router.get('/', async (req, res) => {
 });
 
 // Get a single app
-router.get('/:identity', async (req, res) => {
+router.get('/:appId', async (req, res) => {
   try {
-    const app = await App.findOne({ identity: req.params.identity });
+    const { appId } = req.params;
+    const app = await App.findOne({ appId });
     if (!app) {
       res.status(404).json({ message: 'App not found' });
       return;
@@ -60,18 +61,12 @@ router.post('/', async (req, res) => {
       managerAddress,
     } = req.body;
 
-    // Create identity
-    const identity = `AppDef|${appId}`;
-
     // Create initial app version
-    const initialVersion = 1;
     const appVersion = new AppVersion({
       appId,
-      versionNumber: initialVersion,
-      identity: `AppVersionDef|${appId}@${initialVersion}`,
+      versionNumber: 1,
       changes: 'Initial version',
       enabled: true,
-      id: appId * 1000 + initialVersion,
     });
 
     await appVersion.save();
@@ -79,9 +74,6 @@ router.post('/', async (req, res) => {
     // Create app
     const app = new App({
       appId,
-      identity,
-      id: appId, // Using appId as the record ID
-      activeVersion: initialVersion,
       name,
       description,
       contactEmail,
@@ -90,7 +82,6 @@ router.post('/', async (req, res) => {
       redirectUrls,
       deploymentStatus,
       managerAddress,
-      lastUpdated: new Date(),
     });
 
     const savedApp = await app.save();
@@ -101,29 +92,9 @@ router.post('/', async (req, res) => {
 });
 
 // Edit App
-router.put('/:identity', async (req, res) => {
+router.put('/:appId', async (req, res) => {
   try {
-    const allowedUpdates = [
-      'name',
-      'description',
-      'contactEmail',
-      'appUserUrl',
-      'logo',
-      'redirectUrls',
-      'deploymentStatus',
-      'activeVersion',
-    ];
-
-    const updates = Object.keys(req.body)
-      .filter((key) => allowedUpdates.includes(key))
-      .reduce<Record<string, unknown>>((obj, key) => {
-        obj[key] = req.body[key];
-        return obj;
-      }, {});
-
-    updates.lastUpdated = new Date();
-
-    const app = await App.findOneAndUpdate({ identity: req.params.identity }, updates, {
+    const app = await App.findOneAndUpdate({ appId: req.params.appId }, req.body, {
       new: true,
     });
 
@@ -140,7 +111,7 @@ router.put('/:identity', async (req, res) => {
 });
 
 // Change App Owner
-router.post('/:identity/owner', async (req, res) => {
+router.post('/:appId/owner', async (req, res) => {
   try {
     const { managerAddress } = req.body;
     if (!managerAddress) {
@@ -149,7 +120,7 @@ router.post('/:identity/owner', async (req, res) => {
     }
 
     const app = await App.findOneAndUpdate(
-      { identity: req.params.identity },
+      { appId: req.params.appId },
       {
         managerAddress,
         lastUpdated: new Date(),
@@ -170,27 +141,21 @@ router.post('/:identity/owner', async (req, res) => {
 });
 
 // Create new App Version
-router.post('/:identity/version/:version', async (req, res) => {
+router.post('/:appId/version/:version', async (req, res) => {
   try {
-    const app = await App.findOne({ identity: req.params.identity });
+    const { version, appId } = req.params;
+
+    const app = await App.findOne({ appId });
     if (!app) {
       res.status(404).json({ message: 'App not found' });
       return;
     }
 
-    const versionNumber = parseInt(req.params.version);
-    if (isNaN(versionNumber)) {
-      res.status(400).json({ message: 'Invalid version number' });
-      return;
-    }
-
     const appVersion = new AppVersion({
-      appId: app.appId,
-      versionNumber,
-      identity: `AppVersionDef|${app.appId}@${versionNumber}`,
+      appId,
+      version,
       changes: req.body.changes,
       enabled: true,
-      id: app.appId * 1000 + versionNumber,
     });
 
     const savedVersion = await appVersion.save();
@@ -203,9 +168,9 @@ router.post('/:identity/version/:version', async (req, res) => {
 });
 
 // List App Versions
-router.get('/:identity/versions', async (req, res) => {
+router.get('/:appId/versions', async (req, res) => {
   try {
-    const app = await App.findOne({ identity: req.params.identity });
+    const app = await App.findOne({ appId: req.params.appId });
     if (!app) {
       res.status(404).json({ message: 'App not found' });
       return;
@@ -221,9 +186,9 @@ router.get('/:identity/versions', async (req, res) => {
 });
 
 // Get App Version
-router.get('/:identity/version/:version', async (req, res) => {
+router.get('/:appId/version/:version', async (req, res) => {
   try {
-    const app = await App.findOne({ identity: req.params.identity });
+    const app = await App.findOne({ appId: req.params.appId });
     if (!app) {
       res.status(404).json({ message: 'App not found' });
       return;
@@ -257,9 +222,9 @@ router.get('/:identity/version/:version', async (req, res) => {
 });
 
 // Edit App Version
-router.put('/:identity/version/:version', async (req, res) => {
+router.put('/:appId/version/:version', async (req, res) => {
   try {
-    const app = await App.findOne({ identity: req.params.identity });
+    const app = await App.findOne({ appId: req.params.appId });
     if (!app) {
       res.status(404).json({ message: 'App not found' });
       return;
@@ -287,9 +252,9 @@ router.put('/:identity/version/:version', async (req, res) => {
 });
 
 // Disable app version
-router.post('/:identity/version/:version/disable', async (req, res) => {
+router.post('/:appId/version/:version/disable', async (req, res) => {
   try {
-    const app = await App.findOne({ identity: req.params.identity });
+    const app = await App.findOne({ appId: req.params.appId });
     if (!app) {
       res.status(404).json({ message: 'App not found' });
       return;
@@ -318,9 +283,9 @@ router.post('/:identity/version/:version/disable', async (req, res) => {
 });
 
 // Enable app version
-router.post('/:identity/version/:version/enable', async (req, res) => {
+router.post('/:appId/version/:version/enable', async (req, res) => {
   try {
-    const app = await App.findOne({ identity: req.params.identity });
+    const app = await App.findOne({ appId: req.params.appId });
     if (!app) {
       res.status(404).json({ message: 'App not found' });
       return;
@@ -349,9 +314,9 @@ router.post('/:identity/version/:version/enable', async (req, res) => {
 });
 
 // Delete an app
-router.delete('/:identity', async (req, res) => {
+router.delete('/:appId', async (req, res) => {
   try {
-    const app = await App.findOneAndDelete({ identity: req.params.identity });
+    const app = await App.findOneAndDelete({ appId: req.params.appId });
     if (!app) {
       res.status(404).json({ message: 'App not found' });
       return;
