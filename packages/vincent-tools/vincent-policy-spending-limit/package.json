@@ -40,7 +40,7 @@
     "sourceRoot": "packages/vincent-tools/vincent-policy-spending-limit/src",
     "projectType": "library",
     "targets": {
-      "build": {
+      "action:build": {
         "executor": "nx:run-commands",
         "dependsOn": [
           "vincent-tool-sdk:build"
@@ -53,16 +53,38 @@
           "parallel": false
         }
       },
-      "deploy": {
+      "action:deploy": {
         "executor": "nx:run-commands",
         "dependsOn": [
-          "build"
+          "action:build"
         ],
         "options": {
           "commands": [
             "node tools/scripts/deploy-lit-action.js"
           ],
           "cwd": "packages/vincent-tools/vincent-policy-spending-limit"
+        }
+      },
+      "build": {
+        "executor": "@nx/js:tsc",
+        "dependsOn": [
+          "action:build"
+        ],
+        "outputs": [
+          "{options.outputPath}"
+        ],
+        "options": {
+          "outputPath": "packages/vincent-tools/vincent-policy-spending-limit/dist",
+          "main": "packages/vincent-tools/vincent-policy-spending-limit/src/index.ts",
+          "tsConfig": "packages/vincent-tools/vincent-policy-spending-limit/tsconfig.lib.json",
+          "assets": [
+            "packages/vincent-tools/vincent-policy-spending-limit/*.md",
+            {
+              "glob": "**/*",
+              "input": "packages/vincent-tools/vincent-policy-spending-limit/src/generated",
+              "output": "src/generated"
+            }
+          ]
         }
       },
       "publish": {
