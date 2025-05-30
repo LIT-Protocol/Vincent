@@ -3,6 +3,10 @@ import * as OpenApiValidator from 'express-openapi-validator';
 import * as path from 'node:path';
 import cors from 'cors';
 import helmet from 'helmet';
+import { toolRouter } from './routes/tool.routes';
+import { policyRouter } from './routes/policy.routes';
+import { appRouter } from './routes/app.routes';
+import mongoose from 'mongoose';
 
 const host = process.env.HOST ?? 'localhost';
 const port = process.env.PORT ? Number(process.env.PORT) : 3000;
@@ -20,13 +24,25 @@ app.use(
     validateResponses: true, // false by default
   }),
 );
+app.use('/api/v1/tool', toolRouter);
+app.use('/api/v1/policy', policyRouter);
+app.use('/api/v1/app', appRouter);
 
-app.get('/api/v1/app/:appId/version/:version', (req, res) => {
-  const { appId, version } = req.params;
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/registry';
 
-  console.log(`[ request ] GET /app/${appId}/version/${version}`);
-  res.send({ message: `Hello ${appId} ${version}` });
-});
+// Connect to MongoDB and start server
+mongoose
+  .connect(MONGODB_URI)
+  .then(() => {
+    console.log('Connected to MongoDB');
+    app.listen(port, host, () => {
+      console.log(`[ ready ] http://${host}:${port}`);
+    });
+  })
+  .catch((error) => {
+    console.error('MongoDB connection error:', error);
+    process.exit(1);
+  });
 
 app.get('/', (req, res) => {
   res.send({ message: 'Hello API' });
@@ -39,8 +55,4 @@ app.use((err, req, res, next) => {
     message: err.message,
     errors: err.errors,
   });
-});
-
-app.listen(port, host, () => {
-  console.log(`[ ready ] http://${host}:${port}`);
 });
