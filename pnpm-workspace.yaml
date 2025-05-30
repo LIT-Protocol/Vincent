@@ -1,3 +1,15 @@
 packages:
   - packages/*
   - packages/vincent-tools/*
+onlyBuiltDependencies:
+  - '@swc/core'
+  - '@tailwindcss/oxide'
+  - bufferutil
+  - bun
+  - esbuild
+  - fsevents
+  - keccak
+  - nx
+  - protobufjs
+  - unrs-resolver
+  - utf-8-validate

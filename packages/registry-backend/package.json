@@ -1,0 +1,26 @@
+{
+  "name": "@lit-protocol/registry-backend",
+  "version": "0.0.1",
+  "private": false,
+  "main": "./dist/src/main.js",
+  "types": "./dist/src/main.d.ts",
+  "scripts": {
+    "build": "cd ../../ && pnpm nx build registry-backend"
+  },
+  "dependencies": {
+    "@lit-protocol/vincent-rest-api": "^1.0.0",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "helmet": "^7.1.0",
+    "mongoose": "^8.15.1"
+  },
+  "devDependencies": {
+    "@dotenvx/dotenvx": "^1.44.1",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.11.0",
+    "@types/supertest": "^6.0.2",
+    "supertest": "^6.3.4"
+  }
+}
