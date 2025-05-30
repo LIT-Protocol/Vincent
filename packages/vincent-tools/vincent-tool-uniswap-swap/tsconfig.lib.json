@@ -13,6 +13,7 @@
     "moduleResolution": "node",
     "module": "commonjs",
     "paths": {
+      "@lit-protocol/vincent-policy-spending-limit": ["../vincent-policy-spending-limit/src"],
       "@lit-protocol/vincent-tool-sdk": ["../vincent-tool-sdk/src"]
     }
   },

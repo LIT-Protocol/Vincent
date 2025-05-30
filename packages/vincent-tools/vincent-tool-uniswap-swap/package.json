@@ -44,6 +44,10 @@
     "targets": {
       "action:build": {
         "executor": "nx:run-commands",
+        "dependsOn": [
+          "vincent-tool-sdk:build",
+          "vincent-policy-spending-limit:build"
+        ],
         "options": {
           "commands": [
             "pnpm node ./esbuild.config.js"
