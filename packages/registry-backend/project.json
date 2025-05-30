@@ -20,7 +20,11 @@
         "main": "packages/registry-backend/src/main.ts",
         "tsConfig": "packages/registry-backend/tsconfig.app.json",
         "assets": [
-          "packages/registry-backend/src/assets"
+          {
+            "input": "packages/registry-backend/src/assets/*",
+            "glob": "**/!(*.ts)",
+            "output": "./"
+          }
         ],
         "esbuildOptions": {
           "sourcemap": true,
