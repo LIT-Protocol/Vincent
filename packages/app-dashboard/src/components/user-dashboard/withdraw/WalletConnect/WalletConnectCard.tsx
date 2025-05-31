@@ -4,32 +4,32 @@ interface WalletConnectCardProps {
   children: ReactNode;
   variant: 'sessions' | 'requests' | 'proposal';
   title: string;
-  icon?: string;
+  icon?: ReactNode;
   subtitle?: string;
   className?: string;
 }
 
 const variantStyles = {
   sessions: {
-    gradient: 'bg-gradient-to-r from-blue-50 to-indigo-50',
-    border: 'border-blue-100',
-    text: 'text-blue-700',
-    titleText: 'text-blue-900',
-    titleBorder: 'border-blue-100',
+    gradient: 'bg-white',
+    border: 'border-gray-200',
+    text: 'text-gray-800',
+    titleText: 'text-gray-900',
+    titleBorder: 'border-gray-200',
   },
   requests: {
-    gradient: 'bg-gradient-to-r from-orange-50 to-amber-50',
-    border: 'border-orange-100',
-    text: 'text-orange-800',
-    titleText: 'text-orange-900',
-    titleBorder: 'border-orange-100',
+    gradient: 'bg-white',
+    border: 'border-gray-200',
+    text: 'text-gray-800',
+    titleText: 'text-gray-900',
+    titleBorder: 'border-gray-200',
   },
   proposal: {
-    gradient: 'bg-gradient-to-r from-yellow-50 to-amber-50',
-    border: 'border-yellow-100',
-    text: 'text-yellow-800',
-    titleText: 'text-yellow-900',
-    titleBorder: 'border-yellow-100',
+    gradient: 'bg-gradient-to-r from-purple-50 to-indigo-50',
+    border: 'border-purple-100',
+    text: 'text-purple-800',
+    titleText: 'text-purple-900',
+    titleBorder: 'border-purple-100',
   },
 };
 
@@ -50,11 +50,7 @@ export function WalletConnectCard({
       <div
         className={`font-semibold mb-3 ${styles.titleText} border-b ${styles.titleBorder} pb-2 flex items-center`}
       >
-        {icon && (
-          <span className="text-lg mr-2" role="img" aria-label={`${variant} icon`}>
-            {icon}
-          </span>
-        )}
+        {icon && <span className="mr-2 flex items-center">{icon}</span>}
         {title}
         {subtitle && <span className="text-xs ml-2 font-normal">{subtitle}</span>}
       </div>

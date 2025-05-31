@@ -66,7 +66,7 @@ const userRoutes = {
   ),
   children: [
     {
-      path: '/user/withdraw',
+      path: '/user/wallet',
       element: <UserPages.Withdraw />,
     },
     {

@@ -1,6 +1,7 @@
 import { Button } from '@/components/shared/ui/button';
 import { DAppIcon, DAppIconFallback } from './DAppIcon';
 import { WalletConnectCard } from './WalletConnectCard';
+import { UserPlus } from 'lucide-react';
 
 type SessionMetadata = {
   name: string;
@@ -44,9 +45,14 @@ export function SessionProposal({
   const permissions = extractPermissions(proposal);
 
   return (
-    <WalletConnectCard variant="proposal" title="New Connection Request" icon="🔌" className="mt-3">
+    <WalletConnectCard
+      variant="proposal"
+      title="New Connection Request"
+      icon={<UserPlus className="w-5 h-5" />}
+      className="mt-3"
+    >
       {/* DApp Info */}
-      <div className="flex items-start mb-3 p-2 bg-white rounded-md border border-yellow-100">
+      <div className="flex items-start mb-3 p-2 bg-white rounded-md border border-purple-100">
         {dappIcon ? (
           <DAppIcon
             src={dappIcon}
@@ -58,17 +64,17 @@ export function SessionProposal({
           <DAppIconFallback name={dappName} size="md" className="mr-3 flex-shrink-0" />
         )}
         <div>
-          <p className="font-semibold text-yellow-900">{dappName}</p>
-          {dappUrl && <p className="text-xs text-yellow-600">{dappUrl}</p>}
-          {dappDescription && <p className="text-xs mt-1 text-yellow-700">{dappDescription}</p>}
+          <p className="font-semibold text-purple-900">{dappName}</p>
+          {dappUrl && <p className="text-xs text-purple-600">{dappUrl}</p>}
+          {dappDescription && <p className="text-xs mt-1 text-purple-700">{dappDescription}</p>}
         </div>
       </div>
 
       {/* Permissions */}
       {permissions.length > 0 && (
-        <div className="mb-3 p-2 bg-white rounded-md border border-yellow-100">
-          <p className="font-medium mb-2 text-yellow-900">Requesting permission to:</p>
-          <ul className="list-disc ml-5 text-xs space-y-1 text-yellow-800">
+        <div className="mb-3 p-2 bg-white rounded-md border border-purple-100">
+          <p className="font-medium mb-2 text-purple-900">Requesting permission to:</p>
+          <ul className="list-disc ml-5 text-xs space-y-1 text-purple-800">
             {permissions.map((permission, i) => (
               <li key={i}>{permission}</li>
             ))}
@@ -80,11 +86,11 @@ export function SessionProposal({
       <div className="flex gap-2 mt-4">
         <Button
           size="sm"
-          variant="default"
-          className="bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 border-0"
+          variant="outline"
           onClick={onApprove}
           disabled={processing || !walletRegistered}
           data-testid="approve-session-button"
+          className="border-purple-200 text-purple-700 hover:bg-purple-50 hover:text-purple-800"
         >
           {processing ? 'Processing...' : 'Approve Connection'}
         </Button>
@@ -94,7 +100,7 @@ export function SessionProposal({
           onClick={onReject}
           disabled={processing}
           data-testid="reject-session-button"
-          className="border-yellow-200 text-yellow-700 hover:bg-yellow-50 hover:text-yellow-800"
+          className="border-purple-200 text-purple-700 hover:bg-purple-50 hover:text-purple-800"
         >
           Reject
         </Button>
