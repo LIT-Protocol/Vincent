@@ -182,10 +182,19 @@ export const vincentToolHandler = <
         baseContext,
       });
 
-      const toolExecutionResult = await vincentTool.execute(parsedOrFail, {
-        ...baseContext,
-        policiesContext: executeContext,
-      });
+      console.log('parsedOrFail', parsedOrFail);
+
+      const toolExecutionResult = await vincentTool.execute(
+        {
+          toolParams: parsedOrFail,
+        },
+        {
+          ...baseContext,
+          policiesContext: executeContext,
+        },
+      );
+
+      console.log('toolExecutionResult', toolExecutionResult);
 
       Lit.Actions.setResponse({
         response: JSON.stringify({

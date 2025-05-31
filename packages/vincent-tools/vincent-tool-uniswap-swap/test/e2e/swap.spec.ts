@@ -26,6 +26,7 @@ import {
   PARAMETER_TYPE,
   TEST_APP_DELEGATEE_PRIVATE_KEY,
   BASE_RPC_URL,
+  ETH_RPC_URL,
   executeTool,
 } from './helpers';
 import {
@@ -358,7 +359,7 @@ describe('Uniswap Swap Tool E2E Tests', () => {
         rpcUrl: BASE_RPC_URL,
         chainId: '8453',
         tokenIn: '0x4200000000000000000000000000000000000006', // WETH
-        amountIn: '0.00001',
+        amountIn: '0.0005',
       },
       delegateePrivateKey: TEST_APP_DELEGATEE_PRIVATE_KEY as `0x${string}`,
       debug: true,
@@ -373,7 +374,7 @@ describe('Uniswap Swap Tool E2E Tests', () => {
 
     expect(parsedResponse.details[0]).toMatch(/^0x[a-fA-F0-9]{64}$/);
     expect(parsedResponse.details[1]).toMatch(
-      /^0x[a-fA-F0-9]{40} approved 0\.00001 0x4200000000000000000000000000000000000006 for Uniswap V3 Router$/,
+      /^0x[a-fA-F0-9]{40} approved 0\.0005 0x4200000000000000000000000000000000000006 for Uniswap V3 Router$/,
     );
   });
 
@@ -382,11 +383,14 @@ describe('Uniswap Swap Tool E2E Tests', () => {
       toolIpfsCid: UNISWAP_SWAP_TOOL_IPFS_ID,
       toolParameters: {
         pkpEthAddress: TEST_CONFIG.userPkp!.ethAddress!,
-        rpcUrl: BASE_RPC_URL,
-        chainId: '8453',
-        tokenIn: '0x4200000000000000000000000000000000000006', // WETH
-        tokenOut: '0x4ed4E862860beD51a9570b96d89aF5E1B0Efefed', // DEGEN
-        amountIn: '0.00001',
+        ethRpcUrl: ETH_RPC_URL,
+        rpcUrlForUniswap: BASE_RPC_URL,
+        chainIdForUniswap: 8453,
+        tokenInAddress: '0x4200000000000000000000000000000000000006', // WETH
+        tokenInDecimals: 18,
+        tokenInAmount: 0.0005,
+        tokenOutAddress: '0x4ed4E862860beD51a9570b96d89aF5E1B0Efefed', // DEGEN
+        tokenOutDecimals: 18,
       },
       delegateePrivateKey: TEST_APP_DELEGATEE_PRIVATE_KEY as `0x${string}`,
       debug: true,
@@ -405,7 +409,7 @@ describe('Uniswap Swap Tool E2E Tests', () => {
 
     expect(swapTxHash).toMatch(/^0x[a-fA-F0-9]{64}$/);
     expect(parsedResponse.details[1]).toMatch(
-      /^0x[a-fA-F0-9]{40} swapped 0\.00001 0x4200000000000000000000000000000000000006 for 0x[a-fA-F0-9]{40}$/,
+      /^0x[a-fA-F0-9]{40} swapped 0\.0005 0x4200000000000000000000000000000000000006 for 0x[a-fA-F0-9]{40}$/,
     );
 
     const swapTxReceipt = await BASE_PUBLIC_CLIENT.waitForTransactionReceipt({

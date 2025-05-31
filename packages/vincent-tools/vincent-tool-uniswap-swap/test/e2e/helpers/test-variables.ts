@@ -6,6 +6,7 @@ import { getEnv } from './test-config';
 
 export const YELLOWSTONE_RPC_URL = getEnv('YELLOWSTONE_RPC_URL');
 export const BASE_RPC_URL = getEnv('BASE_RPC_URL');
+export const ETH_RPC_URL = getEnv('ETH_RPC_URL');
 export const TEST_CONFIG_PATH = path.join(__dirname, '../test-config.json');
 export const VINCENT_ADDRESS = getEnv('VINCENT_ADDRESS');
 

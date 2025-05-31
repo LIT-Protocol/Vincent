@@ -33,7 +33,7 @@ export const getUniswapPoolMetadata = async ({
   tick: number;
 }> => {
   if (CHAIN_TO_ADDRESSES_MAP[chainId as keyof typeof CHAIN_TO_ADDRESSES_MAP] === undefined) {
-    throw new Error(`Unsupported chainId: ${chainId} (getUniswapQuote)`);
+    throw new Error(`Unsupported chainId: ${chainId} (getUniswapPoolMetadata)`);
   }
 
   const v3CoreFactoryAddress = CHAIN_TO_ADDRESSES_MAP[
@@ -62,7 +62,7 @@ export const getUniswapPoolMetadata = async ({
     poolContract.read.slot0(),
   ]);
   console.log(
-    `Uniswap pool data tokenInAddress: ${tokenInAddress}, tokenOutAddress: ${tokenOutAddress}, Fee: ${fee}, Liquidity: ${liquidity}, Slot0: ${slot0} (getUniswapQuote)`,
+    `Uniswap pool data tokenInAddress: ${tokenInAddress}, tokenOutAddress: ${tokenOutAddress}, Fee: ${fee}, Liquidity: ${liquidity}, Slot0: ${slot0} (getUniswapPoolMetadata)`,
   );
 
   return {

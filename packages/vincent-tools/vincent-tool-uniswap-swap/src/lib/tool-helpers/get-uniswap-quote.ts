@@ -28,6 +28,17 @@ export const getUniswapQuote = async ({
   uniswapTokenIn: Token;
   uniswapTokenOut: Token;
 }> => {
+  console.log('Getting Uniswap Quote', {
+    rpcUrl,
+    chainId,
+    tokenInAddress,
+    tokenInDecimals,
+    tokenInAmount,
+    tokenOutAddress,
+    tokenOutDecimals,
+    poolFee,
+  });
+
   if (CHAIN_TO_ADDRESSES_MAP[chainId as keyof typeof CHAIN_TO_ADDRESSES_MAP] === undefined) {
     throw new Error(`Unsupported chainId: ${chainId} (getUniswapQuote)`);
   }
@@ -54,7 +65,15 @@ export const getUniswapQuote = async ({
     tick,
   );
 
+  console.log('Uniswap Pool', {
+    uniswapPool,
+  });
+
   const uniswapSwapRoute = new Route([uniswapPool], uniswapTokenIn, uniswapTokenOut);
+
+  console.log('Uniswap Swap Route', {
+    uniswapSwapRoute,
+  });
 
   const { calldata } = SwapQuoter.quoteCallParameters(
     uniswapSwapRoute,
@@ -71,6 +90,10 @@ export const getUniswapQuote = async ({
     // },
   );
 
+  console.log('Uniswap Quote Call Parameters', {
+    calldata,
+  });
+
   const client = createPublicClient({
     transport: http(rpcUrl),
   });
@@ -79,6 +102,10 @@ export const getUniswapQuote = async ({
     to: CHAIN_TO_ADDRESSES_MAP[chainId as keyof typeof CHAIN_TO_ADDRESSES_MAP]
       .quoterAddress as `0x${string}`,
     data: calldata as `0x${string}`,
+  });
+
+  console.log('Uniswap Quote Call Return Data', {
+    quoteCallReturnData,
   });
 
   if (!quoteCallReturnData.data) {

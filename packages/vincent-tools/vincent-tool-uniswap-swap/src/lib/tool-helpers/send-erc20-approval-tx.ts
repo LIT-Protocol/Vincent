@@ -32,6 +32,16 @@ export const sendErc20ApprovalTx = async ({
   pkpEthAddress: `0x${string}`;
   pkpPublicKey: string;
 }) => {
+  console.log('sendErc20ApprovalTx', {
+    rpcUrl,
+    chainId,
+    tokenInAmount: tokenInAmount.toString(),
+    tokenInDecimals,
+    tokenInAddress,
+    pkpEthAddress,
+    pkpPublicKey,
+  });
+
   if (CHAIN_TO_ADDRESSES_MAP[chainId as keyof typeof CHAIN_TO_ADDRESSES_MAP] === undefined) {
     throw new Error(`Unsupported chainId: ${chainId} (sendErc20ApprovalTx)`);
   }

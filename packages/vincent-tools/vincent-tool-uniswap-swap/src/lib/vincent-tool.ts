@@ -65,7 +65,7 @@ const SpendingLimitPolicy = createVincentToolPolicy({
   toolParamsSchema: UniswapSwapToolParamsSchema,
   bundledVincentPolicy: asBundledVincentPolicy(
     SpendingLimitPolicyDef,
-    'QmQCjBCemMAzVPZGAokwwxfT2cfa3jMYhX1YXkVYc1yed9' as const,
+    'QmbuFfLGm3GkPWcGdNvQZ7os5wAddaQDkjcAkh1VcEb9Ch' as const,
   ),
   toolParameterMappings: {
     pkpEthAddress: 'pkpEthAddress',
@@ -80,7 +80,7 @@ export const UniswapSwapToolDef = createVincentTool({
   // packageName: '@lit-protocol/vincent-tool-uniswap-swap' as const,
 
   toolParamsSchema: UniswapSwapToolParamsSchema,
-  policyMap: createPolicyMapFromToolPolicies([SpendingLimitPolicy] as const),
+  policyMap: createPolicyMapFromToolPolicies([SpendingLimitPolicy]),
 
   precheckSuccessSchema: UniswapSwapToolPrecheckSuccessSchema,
   precheckFailSchema: UniswapSwapToolPrecheckFailSchema,
@@ -136,8 +136,11 @@ export const UniswapSwapToolDef = createVincentTool({
       allow: true,
     });
   },
-  execute: async ({ toolParams }, { succeed, fail, policiesContext }) => {
+  execute: async (toolParams, { succeed, fail, policiesContext }) => {
     if (!policiesContext.allow) return fail({ error: 'Policy check failed' });
+
+    console.log('Executing UniswapSwapTool');
+    console.log('toolParams', toolParams);
 
     const {
       pkpEthAddress,
@@ -169,71 +172,71 @@ export const UniswapSwapToolDef = createVincentTool({
       poolFee,
     });
 
-    const erc20ApprovalTxHash = await sendErc20ApprovalTx({
-      rpcUrl: rpcUrlForUniswap,
-      chainId: chainIdForUniswap,
-      tokenInAmount: BigInt(tokenInAmount),
-      tokenInDecimals,
-      tokenInAddress: tokenInAddress as `0x${string}`,
-      pkpEthAddress: pkpEthAddress as `0x${string}`,
-      pkpPublicKey: pkpInfo.publicKey,
-    });
+    // const erc20ApprovalTxHash = await sendErc20ApprovalTx({
+    //   rpcUrl: rpcUrlForUniswap,
+    //   chainId: chainIdForUniswap,
+    //   tokenInAmount: BigInt(tokenInAmount),
+    //   tokenInDecimals,
+    //   tokenInAddress: tokenInAddress as `0x${string}`,
+    //   pkpEthAddress: pkpEthAddress as `0x${string}`,
+    //   pkpPublicKey: pkpInfo.publicKey,
+    // });
 
-    const swapTxHash = await sendUniswapTx({
-      rpcUrl: rpcUrlForUniswap,
-      chainId: chainIdForUniswap,
-      pkpEthAddress: pkpEthAddress as `0x${string}`,
-      tokenInDecimals,
-      tokenInAmount,
-      pkpPublicKey: pkpInfo.publicKey,
-      uniswapSwapRoute,
-      uniswapTokenIn,
-      uniswapTokenOut,
-      swapQuote,
-      slippageTolerance: new Percent(slippageTolerance ?? 50, 10_000),
-      swapDeadline: BigInt(swapDeadline ?? Math.floor(Date.now() / 1000) + 60 * 20),
-    });
+    // const swapTxHash = await sendUniswapTx({
+    //   rpcUrl: rpcUrlForUniswap,
+    //   chainId: chainIdForUniswap,
+    //   pkpEthAddress: pkpEthAddress as `0x${string}`,
+    //   tokenInDecimals,
+    //   tokenInAmount,
+    //   pkpPublicKey: pkpInfo.publicKey,
+    //   uniswapSwapRoute,
+    //   uniswapTokenIn,
+    //   uniswapTokenOut,
+    //   swapQuote,
+    //   slippageTolerance: new Percent(slippageTolerance ?? 50, 10_000),
+    //   swapDeadline: BigInt(swapDeadline ?? Math.floor(Date.now() / 1000) + 60 * 20),
+    // });
 
-    let spendTxHash: string | undefined;
-    if (policiesContext.allowedPolicies['@lit-protocol/vincent-policy-spending-limit']) {
-      const tokenInAmountInUsd = await getTokenAmountInUsd({
-        ethRpcUrl,
-        rpcUrlForUniswap,
-        chainIdForUniswap,
-        tokenAddress: tokenInAddress,
-        tokenAmount: tokenInAmount,
-        tokenDecimals: tokenInDecimals,
-      });
+    // let spendTxHash: string | undefined;
+    // if (policiesContext.allowedPolicies['@lit-protocol/vincent-policy-spending-limit']) {
+    //   const tokenInAmountInUsd = await getTokenAmountInUsd({
+    //     ethRpcUrl,
+    //     rpcUrlForUniswap,
+    //     chainIdForUniswap,
+    //     tokenAddress: tokenInAddress,
+    //     tokenAmount: tokenInAmount,
+    //     tokenDecimals: tokenInDecimals,
+    //   });
 
-      const spendingLimitPolicyContext =
-        policiesContext.allowedPolicies['@lit-protocol/vincent-policy-spending-limit'];
-      const { appId, maxSpendingLimitInUsd } = spendingLimitPolicyContext.result;
+    //   const spendingLimitPolicyContext =
+    //     policiesContext.allowedPolicies['@lit-protocol/vincent-policy-spending-limit'];
+    //   const { appId, maxSpendingLimitInUsd } = spendingLimitPolicyContext.result;
 
-      const commitResult = await spendingLimitPolicyContext.commit({
-        appId,
-        amountSpentUsd: Number(tokenInAmountInUsd),
-        maxSpendingLimitInUsd: Number(maxSpendingLimitInUsd),
-        pkpEthAddress,
-        pkpPubKey: pkpInfo.publicKey,
-      });
+    //   const commitResult = await spendingLimitPolicyContext.commit({
+    //     appId,
+    //     amountSpentUsd: Number(tokenInAmountInUsd),
+    //     maxSpendingLimitInUsd: Number(maxSpendingLimitInUsd),
+    //     pkpEthAddress,
+    //     pkpPubKey: pkpInfo.publicKey,
+    //   });
 
-      if (commitResult.allow) {
-        spendTxHash = commitResult.result.spendTxHash;
-      } else {
-        return fail({
-          error:
-            commitResult.error ?? 'Unknown error occurred while committing spending limit policy',
-        });
-      }
-      console.log(
-        `Committed spending limit policy for transaction: ${spendTxHash} (UniswapSwapToolExecute)`,
-      );
-    }
+    //   if (commitResult.allow) {
+    //     spendTxHash = commitResult.result.spendTxHash;
+    //   } else {
+    //     return fail({
+    //       error:
+    //         commitResult.error ?? 'Unknown error occurred while committing spending limit policy',
+    //     });
+    //   }
+    //   console.log(
+    //     `Committed spending limit policy for transaction: ${spendTxHash} (UniswapSwapToolExecute)`,
+    //   );
+    // }
 
     return succeed({
-      erc20ApprovalTxHash,
-      swapTxHash,
-      spendTxHash,
+      // erc20ApprovalTxHash,
+      // swapTxHash,
+      // spendTxHash,
     });
   },
 });

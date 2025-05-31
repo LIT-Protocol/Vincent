@@ -72,7 +72,7 @@ export async function evaluatePolicies<
     const policy = vincentTool.policyMap.policyByPackageName[policyPackageName];
     try {
       const litActionResponse = await Lit.Actions.call({
-        ipfsId: policy.vincentPolicy.ipfsCid,
+        ipfsId: policy.ipfsCid,
         params: {
           toolParams: toolPolicyParams,
           context,
