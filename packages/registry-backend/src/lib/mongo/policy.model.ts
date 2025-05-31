@@ -1,19 +1,8 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import { Schema, model } from 'mongoose';
 
-export interface IPolicy extends Document {
-  packageName: string;
-  identity: string;
-  authorWalletAddress: string;
-  description: string;
-  activeVersion: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-const policySchema = new Schema<IPolicy>(
+const policySchema = new Schema(
   {
     packageName: { type: String, required: true, unique: true },
-    identity: { type: String, required: true, unique: true },
     authorWalletAddress: { type: String, required: true },
     description: { type: String, required: true },
     activeVersion: { type: String, required: true },
@@ -21,4 +10,4 @@ const policySchema = new Schema<IPolicy>(
   { timestamps: true },
 );
 
-export const Policy = mongoose.model<IPolicy>('Policy', policySchema);
+export const Policy = model('Policy', policySchema);

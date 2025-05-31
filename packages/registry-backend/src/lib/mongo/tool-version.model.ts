@@ -1,34 +1,6 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import { Schema, model } from 'mongoose';
 
-export interface IToolVersion extends Document {
-  packageName: string;
-  version: string;
-  identity: string;
-  changes: string;
-  repository: string;
-  description: string;
-  keywords: string[];
-  dependencies: string[];
-  author: {
-    name: string;
-    email: string;
-    url: string;
-  };
-  contributors: Array<{
-    name: string;
-    email: string;
-    url: string;
-  }>;
-  homepage?: string;
-  status: 'validating' | 'invalid' | 'error' | 'ready';
-  supportedPolicies: string[];
-  policiesNotInRegistry: string[];
-  ipfsCid: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-const toolVersionSchema = new Schema<IToolVersion>(
+const toolVersionSchema = new Schema(
   {
     packageName: { type: String, required: true },
     version: { type: String, required: true },
@@ -67,4 +39,4 @@ const toolVersionSchema = new Schema<IToolVersion>(
 // Compound index to ensure unique package name + version combinations
 toolVersionSchema.index({ packageName: 1, version: 1 }, { unique: true });
 
-export const ToolVersion = mongoose.model<IToolVersion>('ToolVersion', toolVersionSchema);
+export const ToolVersion = model('ToolVersion', toolVersionSchema);

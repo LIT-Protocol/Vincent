@@ -1,19 +1,8 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import { Schema, model } from 'mongoose';
 
-export interface ITool extends Document {
-  packageName: string;
-  identity: string;
-  authorWalletAddress: string;
-  description: string;
-  activeVersion: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-const toolSchema = new Schema<ITool>(
+const toolSchema = new Schema(
   {
     packageName: { type: String, required: true, unique: true },
-    identity: { type: String, required: true, unique: true },
     authorWalletAddress: { type: String, required: true },
     description: { type: String, required: true },
     activeVersion: { type: String, required: true },
@@ -21,4 +10,4 @@ const toolSchema = new Schema<ITool>(
   { timestamps: true },
 );
 
-export const Tool = mongoose.model<ITool>('Tool', toolSchema);
+export const Tool = model('Tool', toolSchema);
