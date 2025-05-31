@@ -1,7 +1,7 @@
 import cors from 'cors';
 import express, { type Express } from 'express';
 import * as OpenApiValidator from 'express-openapi-validator';
-import helmet from 'helmet';
+// import helmet from 'helmet';
 
 import { openApiJson } from '@lit-protocol/vincent-rest-api';
 
@@ -9,6 +9,7 @@ import { env } from '../../env';
 import { registerRoutes as registerToolRoutes } from './tool/routes';
 import { registerRoutes as registerPolicyRoutes } from './policy/routes';
 import { registerRoutes as registerAppRoutes } from './app/routes';
+import path from 'node:path';
 
 const { IS_DEVELOPMENT, CORS_ALLOWED_DOMAIN } = env;
 
@@ -19,8 +20,14 @@ const corsConfig = {
 
 export function registerRoutes(app: Express) {
   app.use(cors(corsConfig));
-  app.use(helmet());
+  // app.use(helmet());
   app.use(express.json());
+
+  app.get('/openApiJson', (req, res) => {
+    res.json(openApiJson);
+  });
+
+  app.use(express.static(path.join(__dirname, './static')));
 
   app.use(
     OpenApiValidator.middleware({
