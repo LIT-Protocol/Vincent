@@ -1,15 +1,6 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import { Schema, model } from 'mongoose';
 
-export interface IAppVersion extends Document {
-  appId: number;
-  versionNumber: number;
-  id: number;
-  identity: string;
-  enabled: boolean;
-  changes: string;
-}
-
-const AppVersionSchema: Schema = new Schema({
+const AppVersionSchema = new Schema({
   appId: { type: Number, required: true },
   versionNumber: { type: Number, required: true },
   id: { type: Number, required: true, unique: true },
@@ -21,4 +12,4 @@ const AppVersionSchema: Schema = new Schema({
 // Compound index to ensure unique version numbers per app
 AppVersionSchema.index({ appId: 1, versionNumber: 1 }, { unique: true });
 
-export const AppVersion = mongoose.model<IAppVersion>('AppVersion', AppVersionSchema);
+export const AppVersion = model('AppVersion', AppVersionSchema);

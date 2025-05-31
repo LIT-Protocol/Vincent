@@ -15,7 +15,7 @@ router.get('/', async (_req, res) => {
 });
 
 // Get Tool by identity
-router.get('/packageName/:packageName', async (req, res) => {
+router.get('/:packageName', async (req, res) => {
   try {
     const tool = await Tool.findOne({ packageName: req.params.packageName });
     if (!tool) {

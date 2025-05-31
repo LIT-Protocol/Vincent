@@ -28,7 +28,8 @@ export function registerRoutes(app: Express) {
 
   app.use(
     OpenApiValidator.middleware({
-      apiSpec: openApiJson as never,
+      // @ts-expect-error JSON 'generic' doesn't match the `DocumentV3` type - it's not exported from `express-openapi-validator`
+      apiSpec: openApiJson,
       validateRequests: true, // (default)
       validateResponses: true, // false by default
     }),
@@ -43,7 +44,7 @@ export function registerRoutes(app: Express) {
     });
   });
 
-  app.use('/api/v1/tool', toolRouter);
-  app.use('/api/v1/policy', policyRouter);
-  app.use('/api/v1/app', appRouter);
+  app.use('/tool', toolRouter);
+  app.use('/policy', policyRouter);
+  app.use('/app', appRouter);
 }
