@@ -15,9 +15,7 @@ export const requirePolicy = (paramName = 'packageName') => {
       const policy = await Policy.findOne({ packageName });
 
       if (!policy) {
-        res.status(404).json({
-          error: `Policy ${packageName} not found`,
-        });
+        res.status(404).end();
         return;
       }
 

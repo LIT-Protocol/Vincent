@@ -29,9 +29,7 @@ export const requireAppVersion = (versionParam = 'versionNumber') => {
       });
 
       if (!appVersion) {
-        res.status(404).json({
-          error: `Version ${versionNumber} not found for app ${reqWithApp.vincentApp.appId}`,
-        });
+        res.status(404).end();
         return;
       }
 

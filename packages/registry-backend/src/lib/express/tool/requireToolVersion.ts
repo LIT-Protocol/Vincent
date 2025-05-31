@@ -29,9 +29,7 @@ export const requireToolVersion = (versionParam = 'version') => {
       });
 
       if (!toolVersion) {
-        res.status(404).json({
-          error: `Version ${version} not found for tool ${reqWithTool.vincentTool.packageName}`,
-        });
+        res.status(404).end();
         return;
       }
 
