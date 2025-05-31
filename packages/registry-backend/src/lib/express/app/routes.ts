@@ -39,7 +39,7 @@ export function registerRoutes(app: Express) {
         contactEmail,
         appUserUrl,
         logo,
-        redirectUrls,
+        redirectUris,
         deploymentStatus,
         managerAddress,
       } = req.body;
@@ -47,7 +47,7 @@ export function registerRoutes(app: Express) {
       // Create initial app version
       const appVersion = new AppVersion({
         appId,
-        versionNumber: 1,
+        version: 1,
         changes: 'Initial version',
         enabled: true,
       });
@@ -56,21 +56,24 @@ export function registerRoutes(app: Express) {
 
       // Create app
       const app = new App({
+        activeVersion: 1,
         appId,
         name,
         description,
         contactEmail,
         appUserUrl,
         logo,
-        redirectUrls,
+        redirectUris,
         deploymentStatus,
         managerAddress,
       });
 
       const appDef = await app.save();
       res.status(201).json(appDef);
+      return;
     } catch (error) {
       res.status(500).json({ message: 'Error creating app', error });
+      return;
     }
   });
 
@@ -146,7 +149,7 @@ export function registerRoutes(app: Express) {
       const { appId } = req.params;
 
       try {
-        const versions = await AppVersion.find({ appId: appId }).sort({ versionNumber: 1 }).lean();
+        const versions = await AppVersion.find({ appId: appId }).sort({ version: 1 }).lean();
         res.json(versions);
         return;
       } catch (error) {

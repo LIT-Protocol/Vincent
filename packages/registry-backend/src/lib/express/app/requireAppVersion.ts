@@ -8,7 +8,7 @@ interface RequestWithAppAndVersion extends RequestWithApp {
 }
 
 // Type guard function that expects vincentApp to already exist
-export const requireAppVersion = (versionParam = 'versionNumber') => {
+export const requireAppVersion = (versionParam = 'version') => {
   return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const reqWithApp = req as RequestWithApp;
 
@@ -20,12 +20,12 @@ export const requireAppVersion = (versionParam = 'versionNumber') => {
       return;
     }
 
-    const versionNumber = req.params[versionParam];
+    const version = req.params[versionParam];
 
     try {
       const appVersion = await AppVersion.findOne({
         appId: reqWithApp.vincentApp.appId,
-        versionNumber: parseInt(versionNumber),
+        version: parseInt(version),
       });
 
       if (!appVersion) {
@@ -37,7 +37,7 @@ export const requireAppVersion = (versionParam = 'versionNumber') => {
       next();
     } catch (error) {
       res.status(500).json({
-        message: `Error fetching version ${versionNumber} for app ${reqWithApp.vincentApp.appId}`,
+        message: `Error fetching version ${version} for app ${reqWithApp.vincentApp.appId}`,
         error,
       });
       return;
