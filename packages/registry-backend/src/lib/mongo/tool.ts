@@ -1,5 +1,5 @@
 import { model, Schema } from 'mongoose';
-import { uniquePackageName, uniquePackageVersion } from './indexes';
+import { uniquePackageVersion } from './indexes';
 
 const toolSchema = new Schema(
   {
@@ -9,7 +9,8 @@ const toolSchema = new Schema(
     activeVersion: { type: String, required: true },
   } as const,
   { timestamps: true },
-).index(...uniquePackageName);
+);
+
 export const Tool = model('Tool', toolSchema);
 
 export const toolVersionSchema = new Schema(
@@ -45,6 +46,8 @@ export const toolVersionSchema = new Schema(
     ipfsCid: { type: String, required: true },
   } as const,
   { timestamps: true },
-).index(...uniquePackageVersion); // Compound index to ensure unique package name + version combinations
+);
+
+toolVersionSchema.index(...uniquePackageVersion); // Compound index to ensure unique package name + version combinations
 
 export const ToolVersion = model('ToolVersion', toolVersionSchema);

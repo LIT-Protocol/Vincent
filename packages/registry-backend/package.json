@@ -19,7 +19,7 @@
     "pnpm": "10.7.0"
   },
   "dependencies": {
-    "@lit-protocol/vincent-rest-api": "^1.0.0",
+    "@lit-protocol/vincent-rest-api": "^1.0.1",
     "@t3-oss/env-core": "^0.13.6",
     "cors": "^2.8.5",
     "express": "^5.1.0",

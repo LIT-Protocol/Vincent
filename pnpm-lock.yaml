@@ -378,8 +378,8 @@ importers:
   packages/registry-backend:
     dependencies:
       '@lit-protocol/vincent-rest-api':
-        specifier: ^1.0.0
-        version: 1.0.0(react-redux@9.2.0(@types/react@19.1.6)(react@19.1.0)(redux@5.0.1))(react@19.1.0)(zod@3.25.42)
+        specifier: ^1.0.1
+        version: 1.0.1(react-redux@9.2.0(@types/react@19.1.6)(react@19.1.0)(redux@5.0.1))(react@19.1.0)(zod@3.25.42)
       '@t3-oss/env-core':
         specifier: ^0.13.6
         version: 0.13.6(typescript@5.8.3)(zod@3.25.42)
@@ -2105,8 +2105,8 @@ packages:
   '@lit-protocol/vincent-contracts@0.1.1-4':
     resolution: {integrity: sha512-rAEH26hbDfAKOOkZ9qP1gFtJKIiIznE+oc5ivbh1CS41qzCdF2aA+qJx9CaEUF3LfKJRikBfH+vryx9PRo9D0g==}
 
-  '@lit-protocol/vincent-rest-api@1.0.0':
-    resolution: {integrity: sha512-nKgYzr9H855abL4P/WImybGbaoHDxI/EGuiyvhCCDM9Loneqb7DphPNIbe5AuejZOrnQDGoNKIcPyYiMzwgx2A==}
+  '@lit-protocol/vincent-rest-api@1.0.1':
+    resolution: {integrity: sha512-EPS7cttcpYqaX+iBi+TWNoBkjnEKi4riVIQRPp4UYQ6AF5/Tb6C2S9wMS54dftnaM6TiEfzVDRNc+xCb7j+6Pw==}
 
   '@lit-protocol/vincent-sdk@0.0.7':
     resolution: {integrity: sha512-u7B7GX/Aiu1umLW+L96RBGX7T3IQylgHaLiozY6ruUFSh1A2mtQsrV2Fds+3DsaQokBcbUrIN4c9hwbnxVIOdA==}
@@ -4571,6 +4571,7 @@ packages:
 
   bun@1.2.15:
     resolution: {integrity: sha512-9Nryct8QYQRE/W3/FjW2i4eLdVKme7JPY8R9DNLSGjKdSX8uMgZ2mogs+H5d88Ng0bYeSLpUkBhRelbNi8MwYA==}
+    cpu: [arm64, x64, aarch64]
     os: [darwin, linux, win32]
     hasBin: true
 
@@ -13064,7 +13065,7 @@ snapshots:
 
   '@lit-protocol/vincent-contracts@0.1.1-4': {}
 
-  '@lit-protocol/vincent-rest-api@1.0.0(react-redux@9.2.0(@types/react@19.1.6)(react@19.1.0)(redux@5.0.1))(react@19.1.0)(zod@3.25.42)':
+  '@lit-protocol/vincent-rest-api@1.0.1(react-redux@9.2.0(@types/react@19.1.6)(react@19.1.0)(redux@5.0.1))(react@19.1.0)(zod@3.25.42)':
     dependencies:
       '@asteasolutions/zod-to-openapi': 7.3.2(zod@3.25.42)
       '@reduxjs/toolkit': 2.8.2(react-redux@9.2.0(@types/react@19.1.6)(react@19.1.0)(redux@5.0.1))(react@19.1.0)

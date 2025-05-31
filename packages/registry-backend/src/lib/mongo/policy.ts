@@ -1,5 +1,5 @@
 import { model, Schema } from 'mongoose';
-import { uniquePackageName, uniquePackageVersion } from './indexes';
+import { uniquePackageVersion } from './indexes';
 
 const policySchema = new Schema(
   {
@@ -9,7 +9,7 @@ const policySchema = new Schema(
     activeVersion: { type: String, required: true },
   } as const,
   { timestamps: true },
-).index(...uniquePackageName);
+);
 
 export const Policy = model('Policy', policySchema);
 
@@ -48,6 +48,8 @@ export const policyVersionSchema = new Schema(
     },
   } as const,
   { timestamps: true },
-).index(...uniquePackageVersion);
+);
+
+policyVersionSchema.index(...uniquePackageVersion);
 
 export const PolicyVersion = model('PolicyVersion', policyVersionSchema);
