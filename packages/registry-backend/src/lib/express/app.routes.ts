@@ -1,7 +1,5 @@
 import express, { Router } from 'express';
-import { App } from '../mongo/app.model';
-import { AppVersion } from '../mongo/app-version.model';
-import { AppTool } from '../mongo/app-tool.model';
+import { App, AppTool, AppVersion } from '../mongo/app';
 
 const router: Router = express.Router();
 

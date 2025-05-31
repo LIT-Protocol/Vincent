@@ -1,10 +1,22 @@
-import { Schema, model } from 'mongoose';
+import { model, Schema } from 'mongoose';
+import { uniquePackageName, uniquePackageVersion } from './indexes';
 
-const policyVersionSchema = new Schema(
+const policySchema = new Schema(
+  {
+    packageName: { type: String, required: true, unique: true },
+    authorWalletAddress: { type: String, required: true },
+    description: { type: String, required: true },
+    activeVersion: { type: String, required: true },
+  } as const,
+  { timestamps: true },
+).index(...uniquePackageName);
+
+export const Policy = model('Policy', policySchema);
+
+export const policyVersionSchema = new Schema(
   {
     packageName: { type: String, required: true },
     version: { type: String, required: true },
-    identity: { type: String, required: true, unique: true },
     changes: { type: String, required: true },
     repository: { type: String, required: true },
     description: { type: String, required: true },
@@ -34,11 +46,8 @@ const policyVersionSchema = new Schema(
       uiSchema: { type: String, required: true },
       jsonSchema: { type: String, required: true },
     },
-  },
+  } as const,
   { timestamps: true },
-);
-
-// Compound index to ensure unique package name + version combinations
-policyVersionSchema.index({ packageName: 1, version: 1 }, { unique: true });
+).index(...uniquePackageVersion);
 
 export const PolicyVersion = model('PolicyVersion', policyVersionSchema);

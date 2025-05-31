@@ -1,10 +1,21 @@
-import { Schema, model } from 'mongoose';
+import { model, Schema } from 'mongoose';
+import { uniquePackageName, uniquePackageVersion } from './indexes';
 
-const toolVersionSchema = new Schema(
+const toolSchema = new Schema(
+  {
+    packageName: { type: String, required: true, unique: true },
+    authorWalletAddress: { type: String, required: true },
+    description: { type: String, required: true },
+    activeVersion: { type: String, required: true },
+  } as const,
+  { timestamps: true },
+).index(...uniquePackageName);
+export const Tool = model('Tool', toolSchema);
+
+export const toolVersionSchema = new Schema(
   {
     packageName: { type: String, required: true },
     version: { type: String, required: true },
-    identity: { type: String, required: true, unique: true },
     changes: { type: String, required: true },
     repository: { type: String, required: true },
     description: { type: String, required: true },
@@ -32,11 +43,8 @@ const toolVersionSchema = new Schema(
     supportedPolicies: [{ type: String }],
     policiesNotInRegistry: [{ type: String }],
     ipfsCid: { type: String, required: true },
-  },
+  } as const,
   { timestamps: true },
-);
-
-// Compound index to ensure unique package name + version combinations
-toolVersionSchema.index({ packageName: 1, version: 1 }, { unique: true });
+).index(...uniquePackageVersion); // Compound index to ensure unique package name + version combinations
 
 export const ToolVersion = model('ToolVersion', toolVersionSchema);
