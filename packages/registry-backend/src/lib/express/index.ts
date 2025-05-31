@@ -1,3 +1,5 @@
+import path from 'node:path';
+
 import cors from 'cors';
 import express, { type Express } from 'express';
 import * as OpenApiValidator from 'express-openapi-validator';
@@ -9,7 +11,6 @@ import { env } from '../../env';
 import { registerRoutes as registerToolRoutes } from './tool/routes';
 import { registerRoutes as registerPolicyRoutes } from './policy/routes';
 import { registerRoutes as registerAppRoutes } from './app/routes';
-import path from 'node:path';
 
 const { IS_DEVELOPMENT, CORS_ALLOWED_DOMAIN } = env;
 

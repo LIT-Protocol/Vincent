@@ -9,7 +9,7 @@ const AppSchema = new Schema(
     contactEmail: { type: String, required: true },
     appUserUrl: { type: String, required: true },
     logo: { type: String },
-    redirectUrls: [{ type: String }],
+    redirectUris: [{ type: String }],
     deploymentStatus: {
       type: String,
       required: true,
@@ -31,13 +31,16 @@ export const AppVersionSchema = new Schema({
 
 export const AppVersion = model('AppVersion', AppVersionSchema);
 
-export const AppToolSchema = new Schema({
-  appId: { type: Number, required: true },
-  appVersion: { type: Number, required: true },
-  toolPackageName: { type: String, required: true },
-  toolVersion: { type: Number, required: true },
-  hiddenSupportedPolicies: [{ type: String }],
-} as const);
+export const AppToolSchema = new Schema(
+  {
+    appId: { type: Number, required: true },
+    appVersion: { type: Number, required: true },
+    toolPackageName: { type: String, required: true },
+    toolVersion: { type: Number, required: true },
+    hiddenSupportedPolicies: [{ type: String }],
+  } as const,
+  { timestamps: true },
+);
 
 AppToolSchema.index(
   // Only 1 doc per app version + tool combination
