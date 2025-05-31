@@ -11,6 +11,9 @@
     },
     {
       "path": "./packages/vincent-tools/vincent-policy-spending-limit"
+    },
+    {
+      "path": "./packages/vincent-tools/vincent-tool-erc20-approval"
     }
   ]
 }
