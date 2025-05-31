@@ -6,9 +6,9 @@ import helmet from 'helmet';
 import { openApiJson } from '@lit-protocol/vincent-rest-api';
 
 import { env } from '../../env';
-import { toolRouter } from './tool.routes';
-import { policyRouter } from './policy.routes';
-import { appRouter } from './app.routes';
+import { registerRoutes as registerToolRoutes } from './tool/routes';
+import { registerRoutes as registerPolicyRoutes } from './policy/routes';
+import { registerRoutes as registerAppRoutes } from './app/routes';
 
 const { IS_DEVELOPMENT, CORS_ALLOWED_DOMAIN } = env;
 
@@ -19,10 +19,6 @@ const corsConfig = {
 
 export function registerRoutes(app: Express) {
   app.use(cors(corsConfig));
-  app.use(helmet());
-  app.use(express.json());
-
-  app.use(cors());
   app.use(helmet());
   app.use(express.json());
 
@@ -44,7 +40,9 @@ export function registerRoutes(app: Express) {
     });
   });
 
-  app.use('/tool', toolRouter);
-  app.use('/policy', policyRouter);
-  app.use('/app', appRouter);
+  registerAppRoutes(app);
+  registerToolRoutes(app);
+  registerPolicyRoutes(app);
+
+  return app;
 }

@@ -1,0 +1,216 @@
+import { Policy, PolicyVersion } from '../../mongo/policy';
+import { requirePolicy, withPolicy } from './requirePolicy';
+import { requirePolicyVersion, withPolicyVersion } from './requirePolicyVersion';
+
+import type { Express } from 'express';
+
+export function registerRoutes(app: Express) {
+  // List all policies
+  app.get('/policies', async (_req, res) => {
+    try {
+      const policies = await Policy.find().lean();
+      res.json(policies);
+    } catch (error) {
+      res.status(500).json({ message: 'Error fetching policies', error });
+    }
+  });
+
+  // Get Policy by its package name
+  app.get(
+    '/policy/:packageName',
+    requirePolicy(),
+    withPolicy(async (req, res) => {
+      const { vincentPolicy } = req;
+      res.json(vincentPolicy);
+      return;
+    }),
+  );
+
+  // Create new Policy
+  app.post('/policy', async (req, res) => {
+    try {
+      const { packageName, authorWalletAddress, description, activeVersion, version } = req.body;
+
+      // Create the policy
+      const policy = new Policy({
+        packageName,
+        authorWalletAddress,
+        description,
+        activeVersion,
+      });
+
+      // Create initial policy version
+      const policyVersion = new PolicyVersion({
+        ...version,
+        packageName,
+        version: activeVersion,
+        status: 'ready',
+        keywords: version.keywords || [],
+        dependencies: version.dependencies || [],
+        contributors: version.contributors || [],
+      });
+
+      // Save both in a transaction
+      // FIXME: This should be an actual atomic transaction
+      const [savedPolicy, savedVersion] = await Promise.all([policy.save(), policyVersion.save()]);
+
+      res.status(201).json({
+        policy: savedPolicy,
+        version: savedVersion,
+      });
+      return;
+    } catch (error) {
+      res.status(400).json({ message: 'Error creating policy', error });
+      return;
+    }
+  });
+
+  // Edit Policy
+  app.put(
+    '/policy/:packageName',
+    requirePolicy(),
+    withPolicy(async (req, res) => {
+      const { packageName } = req.params;
+
+      try {
+        const updatedPolicy = await req.vincentPolicy.updateOne(req.body, { new: true }).lean();
+
+        res.json(updatedPolicy);
+        return;
+      } catch (error) {
+        res.status(400).json({ message: `Error updating policy ${packageName}`, error });
+        return;
+      }
+    }),
+  );
+
+  // Change Policy Owner
+  app.post(
+    '/policy/:packageName/owner',
+    requirePolicy(),
+    withPolicy(async (req, res) => {
+      const { packageName } = req.params;
+      const { authorWalletAddress } = req.body;
+
+      if (!authorWalletAddress) {
+        res.status(400).json({ message: 'authorWalletAddress is required' });
+        return;
+      }
+
+      try {
+        const updatedPolicy = await req.vincentPolicy
+          .updateOne({ authorWalletAddress }, { new: true })
+          .lean();
+
+        res.json(updatedPolicy);
+        return;
+      } catch (error) {
+        res.status(400).json({ message: `Error updating policy owner for ${packageName}`, error });
+        return;
+      }
+    }),
+  );
+
+  // Create new Policy Version
+  app.post(
+    '/policy/:packageName/version/:version',
+    requirePolicy(),
+    withPolicy(async (req, res) => {
+      const { version } = req.params;
+
+      try {
+        const policyVersion = new PolicyVersion({
+          ...req.body,
+          packageName: req.vincentPolicy.packageName,
+          version: version,
+          status: 'ready',
+          keywords: req.body.keywords || [],
+          dependencies: req.body.dependencies || [],
+          contributors: req.body.contributors || [],
+        });
+
+        const savedVersion = await policyVersion.save();
+        res.status(201).json(savedVersion);
+        return;
+      } catch (error) {
+        res.status(400).json({ message: 'Error creating policy version', error });
+        return;
+      }
+    }),
+  );
+
+  // List Policy Versions
+  app.get(
+    '/policy/:packageName/versions',
+    requirePolicy(),
+    withPolicy(async (req, res) => {
+      try {
+        const versions = await PolicyVersion.find({ packageName: req.vincentPolicy.packageName })
+          .sort({ version: 1 })
+          .lean();
+
+        res.json(versions);
+        return;
+      } catch (error) {
+        res.status(500).json({ message: 'Error fetching policy versions', error });
+        return;
+      }
+    }),
+  );
+
+  // Get Policy Version
+  app.get(
+    '/policy/:packageName/version/:version',
+    requirePolicy(),
+    requirePolicyVersion(),
+    withPolicyVersion(async (req, res) => {
+      const { vincentPolicyVersion } = req;
+      res.json(vincentPolicyVersion);
+      return;
+    }),
+  );
+
+  // Edit Policy Version
+  app.put(
+    '/policy/:packageName/version/:version',
+    requirePolicy(),
+    requirePolicyVersion(),
+    withPolicyVersion(async (req, res) => {
+      const { vincentPolicy, vincentPolicyVersion } = req;
+
+      try {
+        const updatedVersion = await vincentPolicyVersion
+          .updateOne({ changes: req.body.changes }, { new: true })
+          .lean();
+
+        res.json(updatedVersion);
+        return;
+      } catch (error) {
+        res.status(400).json({
+          message: `Error updating policy version ${vincentPolicyVersion.version} for policy ${vincentPolicy.packageName}`,
+          error,
+        });
+        return;
+      }
+    }),
+  );
+
+  // Delete a policy, along with all of its policy versions
+  app.delete('/policy/:packageName', async (req, res) => {
+    try {
+      const { packageName } = req.params;
+
+      // FIXME: Would be nice if this was an atomic transaction
+      await Promise.all([
+        Policy.findOneAndDelete({ packageName }),
+        PolicyVersion.deleteMany({ packageName }),
+      ]);
+
+      res.json({ message: 'Policy and associated versions deleted successfully' });
+      return;
+    } catch (error) {
+      res.status(500).json({ message: 'Error deleting policy', error });
+      return;
+    }
+  });
+}
