@@ -1,6 +1,6 @@
 import express, { Router } from 'express';
-import { Policy } from '../models/policy.model';
-import { PolicyVersion } from '../models/policy-version.model';
+import { Policy } from '../mongo/policy.model';
+import { PolicyVersion } from '../mongo/policy-version.model';
 
 const router: Router = express.Router();
 

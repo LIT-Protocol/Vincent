@@ -1,13 +1,14 @@
 {
-  "extends": "../../tsconfig.base.json",
-  "files": [],
-  "include": [],
-  "references": [
-    {
-      "path": "./tsconfig.app.json"
-    },
-    {
-      "path": "./tsconfig.spec.json"
-    }
-  ]
+  "extends": ["@tsconfig/node20/tsconfig.json"],
+  "include": ["src/**/*.ts", "src/*.ts"],
+  "strictNullChecks": true,
+  "allowJs": true,
+  "types": ["jest", "node"],
+  "compilerOptions": {
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "outDir": "./dist"
+  }
 }
