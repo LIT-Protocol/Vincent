@@ -15,9 +15,7 @@ export const requireApp = (paramName = 'appId') => {
       const app = await App.findOne({ appId: parseInt(appId) });
 
       if (!app) {
-        res.status(404).json({
-          error: `App ${appId} not found`,
-        });
+        res.status(404).end();
         return;
       }
 

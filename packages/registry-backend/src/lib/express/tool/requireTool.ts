@@ -15,16 +15,16 @@ export const requireTool = (paramName = 'packageName') => {
       const tool = await Tool.findOne({ packageName });
 
       if (!tool) {
-        res.status(404).json({
-          error: `Tool ${packageName} not found`,
-        });
+        res.status(404).end();
         return;
       }
 
       (req as RequestWithTool).vincentTool = tool;
       next();
     } catch (error) {
-      res.status(500).json({ message: `Error fetching tool ${packageName}`, error });
+      res
+        .status(500)
+        .json({ message: `Error fetching tool ${packageName}`, error: (error as Error).message });
       return;
     }
   };

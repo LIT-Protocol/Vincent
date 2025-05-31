@@ -29,9 +29,7 @@ export const requirePolicyVersion = (versionParam = 'version') => {
       });
 
       if (!policyVersion) {
-        res.status(404).json({
-          error: `Version ${version} not found for policy ${reqWithPolicy.vincentPolicy.packageName}`,
-        });
+        res.status(404).end();
         return;
       }
 

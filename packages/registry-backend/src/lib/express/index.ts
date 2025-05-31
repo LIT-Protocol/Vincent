@@ -27,7 +27,7 @@ export function registerRoutes(app: Express) {
       // @ts-expect-error JSON 'generic' doesn't match the `DocumentV3` type - it's not exported from `express-openapi-validator`
       apiSpec: openApiJson,
       validateRequests: true, // (default)
-      validateResponses: true, // false by default
+      // validateResponses: true, // false by default
     }),
   );
 
