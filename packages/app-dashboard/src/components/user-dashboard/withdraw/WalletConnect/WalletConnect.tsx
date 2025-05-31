@@ -159,7 +159,7 @@ export default function WalletConnectPage(params: {
               disabled={isInitializing || !client}
             />
             <Button
-              size="sm"
+              variant="outline"
               className="rounded-l-none"
               disabled={
                 !uri || loading || isInitializing || !client || (agentPKP && !walletRegistered)
@@ -196,6 +196,7 @@ export default function WalletConnectPage(params: {
             onApprove={handleApproveWithStatus}
             onReject={handleRejectWithStatus}
             processing={processingRequest}
+            client={client}
           />
         </>
       )}

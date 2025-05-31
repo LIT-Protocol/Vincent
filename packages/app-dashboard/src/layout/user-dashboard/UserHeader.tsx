@@ -49,7 +49,7 @@ export default function UserHeader({ backButton, title, showButtons = true }: Us
             )}
 
             {!isRootPath && (
-              <Button onClick={() => navigate('/user/withdraw')} variant="outline" size="sm">
+              <Button onClick={() => navigate('/user/wallet')} variant="outline" size="sm">
                 <BanknoteArrowDown className="mr-2 h-4 w-4" /> Wallet
               </Button>
             )}
