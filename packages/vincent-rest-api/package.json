@@ -8,7 +8,8 @@
     "generate-openapi": "pnpx ts-node src/utils/generate-openapi.ts",
     "generate-rtk-client": "pnpx @rtk-query/codegen-openapi rtk-client-config.js",
     "generate-api": "run-s generate-openapi generate-rtk-client",
-    "prepublishOnly": "cd ../../ && nx build vincent-rest-api"
+    "prepublishOnly": "cd ../../ && nx build vincent-rest-api",
+    "watch": "pnpm chokidar 'src/lib/**/*' --initial --await-write-finish --delay 1000 --silent -c 'pnpm generate-api'"
   },
   "devDependencies": {
     "@rtk-query/codegen-openapi": "^1.2.0",
@@ -16,6 +17,7 @@
     "@types/jest": "^29.5.0",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^20.10.5",
+    "chokidar-cli": "^3.0.0",
     "jest": "^29.5.0",
     "npm-run-all": "^4.1.5",
     "ts-jest": "^29.1.0",

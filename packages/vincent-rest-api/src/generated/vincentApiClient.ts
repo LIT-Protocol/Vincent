@@ -1,6 +1,9 @@
 import { baseVincentRtkApi as api } from '../lib/baseVincentRtkApi';
 const injectedRtkApi = api.injectEndpoints({
   endpoints: (build) => ({
+    listApps: build.query<ListAppsApiResponse, ListAppsApiArg>({
+      query: () => ({ url: `/apps` }),
+    }),
     createApp: build.mutation<CreateAppApiResponse, CreateAppApiArg>({
       query: (queryArg) => ({ url: `/app`, method: 'POST', body: queryArg.createApp }),
     }),
@@ -37,9 +40,15 @@ const injectedRtkApi = api.injectEndpoints({
         body: queryArg.versionChanges,
       }),
     }),
-    toggleAppVersion: build.mutation<ToggleAppVersionApiResponse, ToggleAppVersionApiArg>({
+    enableAppVersion: build.mutation<EnableAppVersionApiResponse, EnableAppVersionApiArg>({
       query: (queryArg) => ({
-        url: `/app/${queryArg.appId}/version/${queryArg.version}/toggle`,
+        url: `/app/${queryArg.appId}/version/${queryArg.version}/enable`,
+        method: 'POST',
+      }),
+    }),
+    disableAppVersion: build.mutation<DisableAppVersionApiResponse, DisableAppVersionApiArg>({
+      query: (queryArg) => ({
+        url: `/app/${queryArg.appId}/version/${queryArg.version}/disable`,
         method: 'POST',
       }),
     }),
@@ -133,6 +142,8 @@ const injectedRtkApi = api.injectEndpoints({
   overrideExisting: false,
 });
 export { injectedRtkApi as vincentApiClient };
+export type ListAppsApiResponse = /** status 200 Successful operation */ AppDefRead[];
+export type ListAppsApiArg = void;
 export type CreateAppApiResponse = /** status 200 Successful operation */ AppDefRead;
 export type CreateAppApiArg = {
   /** Developer-defined application information */
@@ -185,11 +196,18 @@ export type EditAppVersionApiArg = {
   /** Update version changes field */
   versionChanges: VersionChanges;
 };
-export type ToggleAppVersionApiResponse = /** status 200 Successful operation */ AppVersionDefRead;
-export type ToggleAppVersionApiArg = {
-  /** ID of the application to toggle a version for */
+export type EnableAppVersionApiResponse = /** status 200 Successful operation */ AppVersionDefRead;
+export type EnableAppVersionApiArg = {
+  /** ID of the application to enable a version for */
   appId: number;
-  /** Version number to toggle */
+  /** Version number to enable */
+  version: number;
+};
+export type DisableAppVersionApiResponse = /** status 200 Successful operation */ AppVersionDefRead;
+export type DisableAppVersionApiArg = {
+  /** ID of the application to disable a version for */
+  appId: number;
+  /** Version number to disable */
   version: number;
 };
 export type ListAllToolsApiResponse = /** status 200 Successful operation */ ToolDefRead[];
@@ -364,9 +382,11 @@ export type AppDefRead = {
 };
 export type Error = {
   /** Error code */
-  code: string;
+  code?: string;
   /** Error message */
   message: string;
+  /** Error details */
+  error?: string;
 };
 export type CreateApp = {
   /** The name of the application */
@@ -736,6 +756,7 @@ export type PolicyVersionDefRead = {
 export type PolicyVersionsArray = PolicyVersionDef[];
 export type PolicyVersionsArrayRead = PolicyVersionDefRead[];
 export const {
+  useListAppsQuery,
   useCreateAppMutation,
   useGetAppQuery,
   useEditAppMutation,
@@ -744,7 +765,8 @@ export const {
   useCreateAppVersionMutation,
   useGetAppVersionQuery,
   useEditAppVersionMutation,
-  useToggleAppVersionMutation,
+  useEnableAppVersionMutation,
+  useDisableAppVersionMutation,
   useListAllToolsQuery,
   useCreateToolMutation,
   useGetToolQuery,
