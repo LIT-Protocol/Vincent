@@ -24,7 +24,7 @@ export const App = model('App', AppSchema);
 
 export const AppVersionSchema = new Schema({
   appId: { type: Number, required: true },
-  versionNumber: { type: Number, required: true },
+  version: { type: Number, required: true },
   id: { type: Number, required: true, unique: true },
   enabled: { type: Boolean, default: true },
   changes: { type: String, required: true },
@@ -34,13 +34,13 @@ export const AppVersion = model('AppVersion', AppVersionSchema);
 
 export const AppToolSchema = new Schema({
   appId: { type: Number, required: true },
-  appVersionNumber: { type: Number, required: true },
+  appVersion: { type: Number, required: true },
   toolPackageName: { type: String, required: true },
   toolVersion: { type: String, required: true },
   hiddenSupportedPolicies: [{ type: String }],
 } as const).index(
   // Only 1 doc per app version + tool combination
-  { appId: 1, appVersionNumber: 1, toolPackageName: 1, toolVersion: 1 },
+  { appId: 1, appVersion: 1, toolPackageName: 1, toolVersion: 1 },
   { unique: true },
 );
 
