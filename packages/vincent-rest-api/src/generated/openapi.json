@@ -19,11 +19,6 @@
             "type": "string",
             "description": "Error message",
             "example": "Invalid input provided"
-          },
-          "error": {
-            "type": "string",
-            "description": "Error details",
-            "example": "Invalid input provided"
           }
         },
         "required": [

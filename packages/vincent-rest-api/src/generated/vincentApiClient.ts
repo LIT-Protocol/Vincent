@@ -385,8 +385,6 @@ export type Error = {
   code?: string;
   /** Error message */
   message: string;
-  /** Error details */
-  error?: string;
 };
 export type CreateApp = {
   /** The name of the application */
