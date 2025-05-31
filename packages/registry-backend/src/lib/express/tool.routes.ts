@@ -1,6 +1,5 @@
 import express, { Router } from 'express';
-import { Tool } from '../mongo/tool.model';
-import { ToolVersion } from '../mongo/tool-version.model';
+import { Tool, ToolVersion } from '../mongo/tool';
 
 const router: Router = express.Router();
 
