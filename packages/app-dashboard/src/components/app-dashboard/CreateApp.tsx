@@ -17,9 +17,7 @@ import {
 } from '@/components/app-dashboard/ui/form';
 import { Input } from '@/components/shared/ui/input';
 import { Textarea } from '@/components/app-dashboard/ui/textarea';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm, useFieldArray, useWatch } from 'react-hook-form';
-import * as z from 'zod';
 import { useState, FormEvent } from 'react';
 import { useAccount, useChainId } from 'wagmi';
 import { VincentContracts } from '@/services';
@@ -27,86 +25,23 @@ import { Network } from '@/services';
 import { ArrowLeft, Plus, Trash2 } from 'lucide-react';
 import { mapTypeToEnum } from '@/services/types';
 
-// Tool schema
-const toolSchema = z.object({
-  toolIpfsCid: z.string().min(1, 'Tool IPFS CID is required'),
-  policies: z.array(
-    z.object({
-      policyIpfsCid: z.string(),
-      parameters: z.array(
-        z.object({
-          name: z.string(),
-          type: z.string().default('string'),
-        }),
-      ),
-    }),
-  ),
-});
-
-const formSchema = z.object({
-  appName: z
-    .string()
-    .min(2, 'App name must be at least 2 characters')
-    .max(50, 'App name cannot exceed 50 characters'),
-
-  description: z
-    .string()
-    .min(10, 'Description must be at least 10 characters')
-    .max(500, 'Description cannot exceed 500 characters'),
-
-  authorizedRedirectUris: z
-    .array(z.string().min(1, 'Redirect URI cannot be empty'))
-    .min(1, 'At least one redirect URI is required'),
-
-  tools: z
-    .array(toolSchema)
-    .min(1, 'At least one tool is required')
-    .refine(
-      (tools) => {
-        const cids = tools.map((t) => t.toolIpfsCid);
-        return new Set(cids).size === cids.length;
-      },
-      { message: 'Tool IPFS CIDs must be unique' },
-    )
-    .refine(
-      (tools) => {
-        // Check that policy CIDs are unique across all tools
-        const allPolicyCids: string[] = [];
-
-        for (const tool of tools) {
-          for (const policy of tool.policies) {
-            if (policy.policyIpfsCid && policy.policyIpfsCid.trim() !== '') {
-              allPolicyCids.push(policy.policyIpfsCid);
-            }
-          }
-        }
-
-        return new Set(allPolicyCids).size === allPolicyCids.length;
-      },
-      { message: 'Policy IPFS CIDs must be unique across all tools' },
-    )
-    .refine(
-      (tools) => {
-        // Check that parameter names are unique across all policies
-        const allParamNames: string[] = [];
-
-        for (const tool of tools) {
-          for (const policy of tool.policies) {
-            for (const param of policy.parameters) {
-              allParamNames.push(param.name);
-            }
-          }
-        }
-
-        return new Set(allParamNames).size === allParamNames.length;
-      },
-      { message: 'Parameter names must be unique across all policies' },
-    ),
-
-  deploymentStatus: z.number().default(0),
-});
-
-type FormValues = z.infer<typeof formSchema>;
+// Simplified interface instead of inferred Zod type
+interface FormValues {
+  appName: string;
+  description: string;
+  authorizedRedirectUris: string[];
+  tools: {
+    toolIpfsCid: string;
+    policies: {
+      policyIpfsCid: string;
+      parameters: {
+        name: string;
+        type: string;
+      }[];
+    }[];
+  }[];
+  deploymentStatus: number;
+}
 
 interface CreateAppScreenProps {
   onBack?: () => void;
@@ -121,12 +56,11 @@ export default function CreateAppScreen({ onBack, onSuccess }: CreateAppScreenPr
   const navigate = useNavigate();
 
   const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
     defaultValues: {
       appName: '',
       description: '',
       authorizedRedirectUris: [''],
-      deploymentStatus: 0, // DEV by default
+      deploymentStatus: 0,
       tools: [
         {
           toolIpfsCid: '',
@@ -257,38 +191,6 @@ export default function CreateAppScreen({ onBack, onSuccess }: CreateAppScreenPr
     try {
       setIsSubmitting(true);
       setError(null);
-
-      // Check for duplicate tool CIDs
-      const toolCids = values.tools.map((tool) => tool.toolIpfsCid);
-      if (new Set(toolCids).size !== toolCids.length) {
-        setError('Duplicate Tool IPFS CIDs found. Each tool must have a unique CID.');
-        setIsSubmitting(false);
-        return;
-      }
-
-      // Check for duplicate policy CIDs within each tool
-      for (let i = 0; i < values.tools.length; i++) {
-        const policyCids = values.tools[i].policies.map((policy) => policy.policyIpfsCid);
-        if (new Set(policyCids).size !== policyCids.length) {
-          setError(
-            `Duplicate Policy IPFS CIDs found in Tool ${i + 1}. Each policy within a tool must have a unique CID.`,
-          );
-          setIsSubmitting(false);
-          return;
-        }
-
-        // Check for duplicate parameter names within each policy
-        for (let j = 0; j < values.tools[i].policies.length; j++) {
-          const paramNames = values.tools[i].policies[j].parameters.map((param) => param.name);
-          if (new Set(paramNames).size !== paramNames.length) {
-            setError(
-              `Duplicate parameter names found in Tool ${i + 1}, Policy ${j + 1}. Each parameter must have a unique name.`,
-            );
-            setIsSubmitting(false);
-            return;
-          }
-        }
-      }
 
       const toolIpfsCids = values.tools.map((tool) => tool.toolIpfsCid);
       const toolPolicies = values.tools.map((tool) =>
