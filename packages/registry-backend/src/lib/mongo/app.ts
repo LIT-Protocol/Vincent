@@ -18,7 +18,7 @@ const AppSchema = new Schema(
     managerAddress: { type: String, required: true },
   } as const,
   { timestamps: true },
-).index({ appId: 1 }, { unique: true }); // Only 1 doc per appId!
+);
 
 export const App = model('App', AppSchema);
 
@@ -38,7 +38,9 @@ export const AppToolSchema = new Schema({
   toolPackageName: { type: String, required: true },
   toolVersion: { type: String, required: true },
   hiddenSupportedPolicies: [{ type: String }],
-} as const).index(
+} as const);
+
+AppToolSchema.index(
   // Only 1 doc per app version + tool combination
   { appId: 1, appVersion: 1, toolPackageName: 1, toolVersion: 1 },
   { unique: true },

@@ -18,12 +18,7 @@
         "outputPath": "packages/vincent-rest-api/dist",
         "main": "packages/vincent-rest-api/src/index.ts",
         "tsConfig": "packages/vincent-rest-api/tsconfig.lib.json",
-        "assets": ["packages/vincent-rest-api/*.md",
-          {
-          "input": "packages/vincent-rest-api/src/generated/",
-          "glob": "**/!(*.ts)",
-          "output": "./"
-        }],
+        "assets": ["packages/vincent-rest-api/*.md"],
         "formats": ["cjs"]
       }
     },
