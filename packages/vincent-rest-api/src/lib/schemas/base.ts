@@ -10,7 +10,7 @@ export const BaseDocAttributes = z.object({
 
 // Error response
 export const Error = z.object({
-  code: z.string().openapi({
+  code: z.string().optional().openapi({
     description: 'Error code',
     example: 'VALIDATION_ERROR',
   }),

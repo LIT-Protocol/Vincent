@@ -1,15 +1,10 @@
 {
   "openapi": "3.0.0",
   "info": {
-    "title": "Vincent API",
+    "title": "Vincent Registry API",
     "version": "1.0.0",
-    "description": "API for Vincent SDK"
+    "description": "API for Vincent App, Tool, and Policy Registry"
   },
-  "servers": [
-    {
-      "url": "/api/v1"
-    }
-  ],
   "components": {
     "schemas": {
       "Error": {
@@ -24,10 +19,14 @@
             "type": "string",
             "description": "Error message",
             "example": "Invalid input provided"
+          },
+          "error": {
+            "type": "string",
+            "description": "Error details",
+            "example": "Invalid input provided"
           }
         },
         "required": [
-          "code",
           "message"
         ]
       },
@@ -1026,6 +1025,40 @@
     "parameters": {}
   },
   "paths": {
+    "/apps": {
+      "get": {
+        "tags": [
+          "app"
+        ],
+        "summary": "Lists all applications",
+        "operationId": "listApps",
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AppDef"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/app": {
       "post": {
         "tags": [
@@ -1455,18 +1488,18 @@
         }
       }
     },
-    "/app/{appId}/version/{version}/toggle": {
+    "/app/{appId}/version/{version}/enable": {
       "post": {
         "tags": [
           "app/version"
         ],
-        "summary": "Toggles enabled/disabled for an application version",
-        "operationId": "toggleAppVersion",
+        "summary": "Enables an application version",
+        "operationId": "enableAppVersion",
         "parameters": [
           {
             "name": "appId",
             "in": "path",
-            "description": "ID of the application to toggle a version for",
+            "description": "ID of the application to enable a version for",
             "required": true,
             "schema": {
               "type": "number",
@@ -1476,7 +1509,66 @@
           {
             "name": "version",
             "in": "path",
-            "description": "Version number to toggle",
+            "description": "Version number to enable",
+            "required": true,
+            "schema": {
+              "type": "number",
+              "example": 2
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AppVersionDef"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "422": {
+            "description": "Validation exception"
+          },
+          "default": {
+            "description": "Unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/app/{appId}/version/{version}/disable": {
+      "post": {
+        "tags": [
+          "app/version"
+        ],
+        "summary": "Disables an application version",
+        "operationId": "disableAppVersion",
+        "parameters": [
+          {
+            "name": "appId",
+            "in": "path",
+            "description": "ID of the application to disable a version for",
+            "required": true,
+            "schema": {
+              "type": "number",
+              "example": 5
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "description": "Version number to disable",
             "required": true,
             "schema": {
               "type": "number",
