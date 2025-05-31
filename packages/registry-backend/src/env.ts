@@ -24,11 +24,7 @@ export const env = createEnv({
     CORS_ALLOWED_DOMAIN: z.string(),
     IS_DEVELOPMENT: BooleanOrBooleanStringSchema,
     MONGODB_URI: z.string().url(),
-    PORT: z.coerce.number(),
+    MONGO_DB_NAME: z.string().optional(),
+    PORT: z.coerce.number().default(3000),
   },
 });
-
-console.log(env.CORS_ALLOWED_DOMAIN);
-console.log(env.IS_DEVELOPMENT);
-console.log(env.MONGODB_URI);
-console.log(env.PORT);
