@@ -22,8 +22,7 @@
     "pnpm": "10.7.0"
   },
   "scripts": {
-    "build": "nx run-many --target=build --all",
-    "test": "nx run-many --target=test --all",
+    "build": "nx run registry-backend:build",
     "lint": "nx run-many --target=lint --all",
     "format": "nx format:write",
     "release": "nx release",
