@@ -17,6 +17,10 @@ export const CreateTool = z.object({
     description: 'Tool description',
     example: 'When we foo, our complex tool will also bar.',
   }),
+  version: z.string().openapi({
+    description: 'An initial version of the tool; must be an exact semver',
+    example: '1.0.0',
+  }),
 });
 
 // Request body for editing a tool

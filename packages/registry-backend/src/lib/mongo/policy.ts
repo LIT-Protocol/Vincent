@@ -6,7 +6,7 @@ const policySchema = new Schema(
     packageName: { type: String, required: true, unique: true },
     authorWalletAddress: { type: String, required: true },
     description: { type: String, required: true },
-    activeVersion: { type: Number, required: true },
+    activeVersion: { type: String, required: true },
   } as const,
   { timestamps: true },
 );
@@ -16,7 +16,7 @@ export const Policy = model('Policy', policySchema);
 export const policyVersionSchema = new Schema(
   {
     packageName: { type: String, required: true },
-    version: { type: Number, required: true, index: true },
+    version: { type: String, required: true, index: true },
     changes: { type: String, required: true },
     repository: { type: String, required: true },
     description: { type: String, required: true },

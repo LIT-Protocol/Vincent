@@ -21,11 +21,14 @@
   "dependencies": {
     "@lit-protocol/vincent-rest-api": "^1.0.1",
     "@t3-oss/env-core": "^0.13.6",
+    "bs58": "^6.0.0",
     "cors": "^2.8.5",
     "express": "^5.1.0",
     "express-openapi-validator": "^5.5.3",
     "helmet": "^7.1.0",
     "mongoose": "^8.15.1",
+    "normalize-package-data": "^7.0.0",
+    "query-registry": "^4.0.1",
     "react-redux": "^9.2.0",
     "zod": "^3.25.42"
   },
