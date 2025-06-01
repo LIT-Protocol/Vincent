@@ -78,8 +78,6 @@ export function registerRoutes(app: Express) {
     '/app/:appId',
     requireApp(),
     withApp(async (req, res) => {
-      const { appId } = req.params;
-
       const updatedApp = await req.vincentApp.updateOne(req.body, { new: true }).lean();
 
       res.json(updatedApp);
@@ -92,7 +90,6 @@ export function registerRoutes(app: Express) {
     '/app/:appId/owner',
     requireApp(),
     withApp(async (req, res) => {
-      const { appId } = req.params;
       const updatedApp = await req.vincentApp
         .updateOne({ managerAddress: req.body.managerAddress }, { new: true })
         .lean();
