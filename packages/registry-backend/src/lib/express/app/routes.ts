@@ -3,6 +3,10 @@ import { App, AppTool, AppVersion } from '../../mongo/app';
 import type { Express } from 'express';
 import { requireApp, withApp } from './requireApp';
 import { requireAppVersion, withAppVersion } from './requireAppVersion';
+import mongoose from 'mongoose';
+import { withSession } from '../../mongo/withSession';
+
+const NEW_APP_APPVERSION = 1;
 
 export function registerRoutes(app: Express) {
   // List all apps
@@ -31,50 +35,54 @@ export function registerRoutes(app: Express) {
 
   // Create new App
   app.post('/app', async (req, res) => {
-    try {
-      const {
-        appId,
-        name,
-        description,
-        contactEmail,
-        appUserUrl,
-        logo,
-        redirectUris,
-        deploymentStatus,
-        managerAddress,
-      } = req.body;
+    await withSession(async (mongoSession) => {
+      try {
+        const {
+          appId,
+          name,
+          description,
+          contactEmail,
+          appUserUrl,
+          logo,
+          redirectUris,
+          deploymentStatus,
+          managerAddress,
+        } = req.body;
 
-      // Create initial app version
-      const appVersion = new AppVersion({
-        appId,
-        version: 1,
-        changes: 'Initial version',
-        enabled: true,
-      });
+        const appVersion = new AppVersion({
+          appId,
+          version: NEW_APP_APPVERSION,
+          changes: 'Initial version',
+          enabled: true,
+        });
 
-      await appVersion.save();
+        const app = new App({
+          activeVersion: NEW_APP_APPVERSION,
+          appId,
+          name,
+          description,
+          contactEmail,
+          appUserUrl,
+          logo,
+          redirectUris,
+          deploymentStatus,
+          managerAddress,
+        });
 
-      // Create app
-      const app = new App({
-        activeVersion: 1,
-        appId,
-        name,
-        description,
-        contactEmail,
-        appUserUrl,
-        logo,
-        redirectUris,
-        deploymentStatus,
-        managerAddress,
-      });
+        let appDef;
 
-      const appDef = await app.save();
-      res.status(201).json(appDef);
-      return;
-    } catch (error) {
-      res.status(500).json({ message: 'Error creating app', error });
-      return;
-    }
+        await mongoSession.withTransaction(async (session) => {
+          await appVersion.save({ session });
+          appDef = await app.save({ session });
+        });
+
+        res.status(201).json(appDef);
+        return;
+      } catch (error) {
+        res.status(500).json({ message: 'Error creating app', error: (error as Error).message });
+        return;
+      }
+    });
   });
 
   // Edit App
@@ -118,26 +126,42 @@ export function registerRoutes(app: Express) {
 
   // Create new App Version
   app.post(
-    '/app/:appId/version/:version',
+    '/app/:appId/version',
     requireApp(),
     withApp(async (req, res) => {
-      const { version, appId } = req.params;
+      const { appId } = req.params;
+      await withSession(async (mongoSession) => {
+        try {
+          let savedAppVersion;
 
-      try {
-        const appVersion = new AppVersion({
-          appId,
-          version,
-          changes: req.body.changes,
-          enabled: true,
-        });
+          await mongoSession.withTransaction(async (session) => {
+            const highest = await AppVersion.find({ appId })
+              .session(session)
+              .sort({ version: -1 })
+              .limit(1)
+              .lean();
 
-        const savedVersion = await appVersion.save();
-        res.status(201).json(savedVersion);
-        return;
-      } catch (error) {
-        res.status(500).json({ message: 'Error creating app version', error });
-        return;
-      }
+            console.log('highest', highest);
+
+            const appVersion = new AppVersion({
+              appId,
+              version: highest.length ? highest[0].version + 1 : 1,
+              changes: req.body.changes,
+              enabled: true,
+            });
+
+            savedAppVersion = await appVersion.save({ session });
+          });
+
+          res.status(201).json(savedAppVersion);
+          return;
+        } catch (error) {
+          res
+            .status(500)
+            .json({ message: 'Error creating app version', error: (error as Error).message });
+          return;
+        }
+      });
     }),
   );
 
