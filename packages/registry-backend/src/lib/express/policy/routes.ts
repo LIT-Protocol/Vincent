@@ -8,12 +8,8 @@ import { withSession } from '../../mongo/withSession';
 export function registerRoutes(app: Express) {
   // List all policies
   app.get('/policies', async (_req, res) => {
-    try {
-      const policies = await Policy.find().lean();
-      res.json(policies);
-    } catch (error) {
-      res.status(500).json({ message: (error as Error).message });
-    }
+    const policies = await Policy.find().lean();
+    res.json(policies);
   });
 
   // Get Policy by its package name
@@ -30,46 +26,41 @@ export function registerRoutes(app: Express) {
   // Create new Policy
   app.post('/policy', async (req, res) => {
     await withSession(async (mongoSession) => {
-      try {
-        const { packageName, authorWalletAddress, description, activeVersion, version } = req.body;
+      const { packageName, authorWalletAddress, description, activeVersion, version } = req.body;
 
-        // Create the policy
-        const policy = new Policy({
-          packageName,
-          authorWalletAddress,
-          description,
-          activeVersion, // FIXME: Should this be an entire PolicyVersion? Otherwise it must be optional.
-        });
+      // Create the policy
+      const policy = new Policy({
+        packageName,
+        authorWalletAddress,
+        description,
+        activeVersion, // FIXME: Should this be an entire PolicyVersion? Otherwise it must be optional.
+      });
 
-        // Create initial policy version
-        const policyVersion = new PolicyVersion({
-          ...version,
-          packageName,
-          version: activeVersion,
-          status: 'ready',
-          keywords: version.keywords || [],
-          dependencies: version.dependencies || [],
-          contributors: version.contributors || [],
-        });
+      // Create initial policy version
+      const policyVersion = new PolicyVersion({
+        ...version,
+        packageName,
+        version: activeVersion,
+        status: 'ready',
+        keywords: version.keywords || [],
+        dependencies: version.dependencies || [],
+        contributors: version.contributors || [],
+      });
 
-        // Save both in a transaction
-        let savedPolicy, savedVersion;
+      // Save both in a transaction
+      let savedPolicy, savedVersion;
 
-        await mongoSession.withTransaction(async (session) => {
-          savedPolicy = await policy.save({ session });
-          savedVersion = await policyVersion.save({ session });
-        });
+      await mongoSession.withTransaction(async (session) => {
+        savedPolicy = await policy.save({ session });
+        savedVersion = await policyVersion.save({ session });
+      });
 
-        // FIXME: This doesn't actually match our OpenAPI spec - which should we change? Should we allow a Policy before there is a PolicyVersion?
-        res.status(201).json({
-          policy: savedPolicy,
-          version: savedVersion,
-        });
-        return;
-      } catch (error) {
-        res.status(500).json({ message: (error as Error).message });
-        return;
-      }
+      // FIXME: This doesn't actually match our OpenAPI spec - which should we change? Should we allow a Policy before there is a PolicyVersion?
+      res.status(201).json({
+        policy: savedPolicy,
+        version: savedVersion,
+      });
+      return;
     });
   });
 
@@ -78,15 +69,10 @@ export function registerRoutes(app: Express) {
     '/policy/:packageName',
     requirePolicy(),
     withPolicy(async (req, res) => {
-      try {
-        const updatedPolicy = await req.vincentPolicy.updateOne(req.body, { new: true }).lean();
+      const updatedPolicy = await req.vincentPolicy.updateOne(req.body, { new: true }).lean();
 
-        res.json(updatedPolicy);
-        return;
-      } catch (error) {
-        res.status(500).json({ message: (error as Error).message });
-        return;
-      }
+      res.json(updatedPolicy);
+      return;
     }),
   );
 
@@ -97,17 +83,12 @@ export function registerRoutes(app: Express) {
     withPolicy(async (req, res) => {
       const { authorWalletAddress } = req.body;
 
-      try {
-        const updatedPolicy = await req.vincentPolicy
-          .updateOne({ authorWalletAddress }, { new: true })
-          .lean();
+      const updatedPolicy = await req.vincentPolicy
+        .updateOne({ authorWalletAddress }, { new: true })
+        .lean();
 
-        res.json(updatedPolicy);
-        return;
-      } catch (error) {
-        res.status(500).json({ message: (error as Error).message });
-        return;
-      }
+      res.json(updatedPolicy);
+      return;
     }),
   );
 
@@ -118,24 +99,19 @@ export function registerRoutes(app: Express) {
     withPolicy(async (req, res) => {
       const { version } = req.params;
 
-      try {
-        const policyVersion = new PolicyVersion({
-          ...req.body,
-          packageName: req.vincentPolicy.packageName,
-          version: version,
-          status: 'ready',
-          keywords: req.body.keywords || [],
-          dependencies: req.body.dependencies || [],
-          contributors: req.body.contributors || [],
-        });
+      const policyVersion = new PolicyVersion({
+        ...req.body,
+        packageName: req.vincentPolicy.packageName,
+        version: version,
+        status: 'ready',
+        keywords: req.body.keywords || [],
+        dependencies: req.body.dependencies || [],
+        contributors: req.body.contributors || [],
+      });
 
-        const savedVersion = await policyVersion.save();
-        res.status(201).json(savedVersion);
-        return;
-      } catch (error) {
-        res.status(400).json({ message: 'Error creating policy version', error });
-        return;
-      }
+      const savedVersion = await policyVersion.save();
+      res.status(201).json(savedVersion);
+      return;
     }),
   );
 
@@ -144,17 +120,12 @@ export function registerRoutes(app: Express) {
     '/policy/:packageName/versions',
     requirePolicy(),
     withPolicy(async (req, res) => {
-      try {
-        const versions = await PolicyVersion.find({ packageName: req.vincentPolicy.packageName })
-          .sort({ version: 1 })
-          .lean();
+      const versions = await PolicyVersion.find({ packageName: req.vincentPolicy.packageName })
+        .sort({ version: 1 })
+        .lean();
 
-        res.json(versions);
-        return;
-      } catch (error) {
-        res.status(500).json({ message: 'Error fetching policy versions', error });
-        return;
-      }
+      res.json(versions);
+      return;
     }),
   );
 
@@ -176,42 +147,29 @@ export function registerRoutes(app: Express) {
     requirePolicy(),
     requirePolicyVersion(),
     withPolicyVersion(async (req, res) => {
-      const { vincentPolicy, vincentPolicyVersion } = req;
+      const { vincentPolicyVersion } = req;
 
-      try {
-        const updatedVersion = await vincentPolicyVersion
-          .updateOne({ changes: req.body.changes }, { new: true })
-          .lean();
+      const updatedVersion = await vincentPolicyVersion
+        .updateOne({ changes: req.body.changes }, { new: true })
+        .lean();
 
-        res.json(updatedVersion);
-        return;
-      } catch (error) {
-        res.status(400).json({
-          message: `Error updating policy version ${vincentPolicyVersion.version} for policy ${vincentPolicy.packageName}`,
-          error,
-        });
-        return;
-      }
+      res.json(updatedVersion);
+      return;
     }),
   );
 
   // Delete a policy, along with all of its policy versions
   app.delete('/policy/:packageName', async (req, res) => {
     await withSession(async (mongoSession) => {
-      try {
-        const { packageName } = req.params;
+      const { packageName } = req.params;
 
-        // FIXME: Would be nice if this was an atomic transaction
-        await mongoSession.withTransaction(async (session) => {
-          await Policy.findOneAndDelete({ packageName }).session(session);
-          await PolicyVersion.deleteMany({ packageName }).session(session);
-        });
-        res.json({ message: 'Policy and associated versions deleted successfully' });
-        return;
-      } catch (error) {
-        res.status(500).json({ message: 'Error deleting policy', error });
-        return;
-      }
+      // FIXME: Would be nice if this was an atomic transaction
+      await mongoSession.withTransaction(async (session) => {
+        await Policy.findOneAndDelete({ packageName }).session(session);
+        await PolicyVersion.deleteMany({ packageName }).session(session);
+      });
+      res.json({ message: 'Policy and associated versions deleted successfully' });
+      return;
     });
   });
 }
