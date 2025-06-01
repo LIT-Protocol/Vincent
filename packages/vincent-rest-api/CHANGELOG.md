@@ -1,3 +1,13 @@
+## 1.0.2 (2025-06-01)
+
+### 🩹 Fixes
+
+- - Add `version` property to create new tool endpoint ([5266cd2](https://github.com/LIT-Protocol/Vincent/commit/5266cd2))
+
+### ❤️ Thank You
+
+- Daryl Collins
+
 ## 1.0.1 (2025-05-31)
 
 ### 🩹 Fixes
