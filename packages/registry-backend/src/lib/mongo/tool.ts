@@ -41,9 +41,10 @@ export const toolVersionSchema = new Schema(
       enum: ['validating', 'invalid', 'error', 'ready'],
       default: 'validating',
     },
+    ipfsCid: { type: String, required: true },
+    // FIXME: Should these last 2 be [{ packageName, version}]?
     supportedPolicies: [{ type: String }],
     policiesNotInRegistry: [{ type: String }],
-    ipfsCid: { type: String, required: true },
   } as const,
   { timestamps: true },
 );

@@ -6,7 +6,7 @@ const policySchema = new Schema(
     packageName: { type: String, required: true, unique: true },
     authorWalletAddress: { type: String, required: true },
     description: { type: String, required: true },
-    activeVersion: { type: String, required: true },
+    activeVersion: { type: Number, required: true },
   } as const,
   { timestamps: true },
 );
