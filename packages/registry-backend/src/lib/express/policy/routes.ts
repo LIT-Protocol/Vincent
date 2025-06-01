@@ -12,7 +12,7 @@ export function registerRoutes(app: Express) {
       const policies = await Policy.find().lean();
       res.json(policies);
     } catch (error) {
-      res.status(500).json({ message: 'Error fetching policies', error });
+      res.status(500).json({ message: (error as Error).message });
     }
   });
 
@@ -67,7 +67,7 @@ export function registerRoutes(app: Express) {
         });
         return;
       } catch (error) {
-        res.status(400).json({ message: 'Error creating policy', error });
+        res.status(500).json({ message: (error as Error).message });
         return;
       }
     });
@@ -78,15 +78,13 @@ export function registerRoutes(app: Express) {
     '/policy/:packageName',
     requirePolicy(),
     withPolicy(async (req, res) => {
-      const { packageName } = req.params;
-
       try {
         const updatedPolicy = await req.vincentPolicy.updateOne(req.body, { new: true }).lean();
 
         res.json(updatedPolicy);
         return;
       } catch (error) {
-        res.status(400).json({ message: `Error updating policy ${packageName}`, error });
+        res.status(500).json({ message: (error as Error).message });
         return;
       }
     }),
@@ -97,13 +95,7 @@ export function registerRoutes(app: Express) {
     '/policy/:packageName/owner',
     requirePolicy(),
     withPolicy(async (req, res) => {
-      const { packageName } = req.params;
       const { authorWalletAddress } = req.body;
-
-      if (!authorWalletAddress) {
-        res.status(400).json({ message: 'authorWalletAddress is required' });
-        return;
-      }
 
       try {
         const updatedPolicy = await req.vincentPolicy
@@ -113,7 +105,7 @@ export function registerRoutes(app: Express) {
         res.json(updatedPolicy);
         return;
       } catch (error) {
-        res.status(400).json({ message: `Error updating policy owner for ${packageName}`, error });
+        res.status(500).json({ message: (error as Error).message });
         return;
       }
     }),

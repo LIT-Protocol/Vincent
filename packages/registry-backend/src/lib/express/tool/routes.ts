@@ -3,6 +3,7 @@ import { requireTool, withTool } from './requireTool';
 import { requireToolVersion, withToolVersion } from './requireToolVersion';
 
 import type { Express } from 'express';
+import { withSession } from '../../mongo/withSession';
 
 export function registerRoutes(app: Express) {
   // Get all tools
@@ -28,46 +29,51 @@ export function registerRoutes(app: Express) {
 
   // Create new Tool
   app.post('/tool', async (req, res) => {
-    try {
-      const { packageName, authorWalletAddress, description } = req.body;
+    await withSession(async (mongoSession) => {
+      try {
+        const { packageName, authorWalletAddress, description } = req.body;
 
-      // Create initial tool version
-      // FIXME: This must be a real package version that we've verified
-      const initialVersion = '0.1.0';
-      const toolVersion = new ToolVersion({
-        packageName,
-        version: initialVersion,
-        changes: 'Initial version',
-        repository: req.body.repository,
-        description,
-        keywords: req.body.keywords || [],
-        dependencies: req.body.dependencies || [],
-        author: req.body.author,
-        contributors: req.body.contributors || [],
-        homepage: req.body.homepage,
-        status: 'validating',
-        supportedPolicies: [],
-        policiesNotInRegistry: [],
-        ipfsCid: req.body.ipfsCid,
-      });
+        // FIXME: This must be a real package version that we've verified
+        const initialVersion = '0.1.0';
+        const toolVersion = new ToolVersion({
+          packageName,
+          version: initialVersion,
+          changes: 'Initial version',
+          repository: req.body.repository,
+          description,
+          keywords: req.body.keywords || [],
+          dependencies: req.body.dependencies || [],
+          author: req.body.author,
+          contributors: req.body.contributors || [],
+          homepage: req.body.homepage,
+          status: 'validating',
+          supportedPolicies: [],
+          policiesNotInRegistry: [],
+          ipfsCid: req.body.ipfsCid,
+        });
 
-      await toolVersion.save();
+        const tool = new Tool({
+          packageName,
+          authorWalletAddress,
+          description,
+          activeVersion: initialVersion,
+        });
 
-      // Create tool
-      const tool = new Tool({
-        packageName,
-        authorWalletAddress,
-        description,
-        activeVersion: initialVersion,
-      });
+        let /*savedToolVersion,*/ savedTool;
 
-      const savedTool = await tool.save();
-      res.status(201).json(savedTool);
-      return;
-    } catch (error) {
-      res.status(400).json({ message: 'Error creating tool', error });
-      return;
-    }
+        await mongoSession.withTransaction(async (session) => {
+          await toolVersion.save({ session });
+          savedTool = await tool.save({ session });
+        });
+
+        // FIXME: If we take a toolVersion as an input, should we return both docs in the response?
+        res.status(201).json(savedTool);
+        return;
+      } catch (error) {
+        res.status(400).json({ message: 'Error creating tool', error });
+        return;
+      }
+    });
   });
 
   // Edit Tool
@@ -97,11 +103,6 @@ export function registerRoutes(app: Express) {
       const { packageName } = req.params;
       const { authorWalletAddress } = req.body;
 
-      if (!authorWalletAddress) {
-        res.status(400).json({ message: 'authorWalletAddress is required' });
-        return;
-      }
-
       try {
         const updatedTool = await req.vincentTool
           .updateOne({ authorWalletAddress }, { new: true })
@@ -121,7 +122,7 @@ export function registerRoutes(app: Express) {
     '/tool/:packageName/version/:version',
     requireTool(),
     withTool(async (req, res) => {
-      const { version, packageName } = req.params;
+      const { version } = req.params;
 
       try {
         // FIXME: Check the package version.
@@ -157,8 +158,6 @@ export function registerRoutes(app: Express) {
     '/tool/:packageName/versions',
     requireTool(),
     withTool(async (req, res) => {
-      const { packageName } = req.params;
-
       try {
         const versions = await ToolVersion.find({ packageName: req.vincentTool.packageName })
           .sort({ version: 1 })
@@ -211,20 +210,21 @@ export function registerRoutes(app: Express) {
 
   // Delete a tool, along with all of its tool versions
   app.delete('/tool/:packageName', async (req, res) => {
-    try {
-      const { packageName } = req.params;
+    await withSession(async (mongoSession) => {
+      try {
+        const { packageName } = req.params;
 
-      // FIXME: Would be nice if this was an atomic transaction
-      await Promise.all([
-        Tool.findOneAndDelete({ packageName }),
-        ToolVersion.deleteMany({ packageName }),
-      ]);
+        await mongoSession.withTransaction(async (session) => {
+          await Tool.findOneAndDelete({ packageName }).session(session);
+          await ToolVersion.deleteMany({ packageName }).session(session);
+        });
 
-      res.json({ message: 'Tool and associated versions deleted successfully' });
-      return;
-    } catch (error) {
-      res.status(500).json({ message: 'Error deleting tool', error });
-      return;
-    }
+        res.json({ message: 'Tool and associated versions deleted successfully' });
+        return;
+      } catch (error) {
+        res.status(500).json({ message: 'Error deleting tool', error });
+        return;
+      }
+    });
   });
 }
