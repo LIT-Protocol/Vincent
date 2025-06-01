@@ -3,6 +3,7 @@ import { requirePolicy, withPolicy } from './requirePolicy';
 import { requirePolicyVersion, withPolicyVersion } from './requirePolicyVersion';
 
 import type { Express } from 'express';
+import { withSession } from '../../mongo/withSession';
 
 export function registerRoutes(app: Express) {
   // List all policies
@@ -28,41 +29,48 @@ export function registerRoutes(app: Express) {
 
   // Create new Policy
   app.post('/policy', async (req, res) => {
-    try {
-      const { packageName, authorWalletAddress, description, activeVersion, version } = req.body;
+    await withSession(async (mongoSession) => {
+      try {
+        const { packageName, authorWalletAddress, description, activeVersion, version } = req.body;
 
-      // Create the policy
-      const policy = new Policy({
-        packageName,
-        authorWalletAddress,
-        description,
-        activeVersion,
-      });
+        // Create the policy
+        const policy = new Policy({
+          packageName,
+          authorWalletAddress,
+          description,
+          activeVersion, // FIXME: Should this be an entire PolicyVersion? Otherwise it must be optional.
+        });
 
-      // Create initial policy version
-      const policyVersion = new PolicyVersion({
-        ...version,
-        packageName,
-        version: activeVersion,
-        status: 'ready',
-        keywords: version.keywords || [],
-        dependencies: version.dependencies || [],
-        contributors: version.contributors || [],
-      });
+        // Create initial policy version
+        const policyVersion = new PolicyVersion({
+          ...version,
+          packageName,
+          version: activeVersion,
+          status: 'ready',
+          keywords: version.keywords || [],
+          dependencies: version.dependencies || [],
+          contributors: version.contributors || [],
+        });
 
-      // Save both in a transaction
-      // FIXME: This should be an actual atomic transaction
-      const [savedPolicy, savedVersion] = await Promise.all([policy.save(), policyVersion.save()]);
+        // Save both in a transaction
+        let savedPolicy, savedVersion;
 
-      res.status(201).json({
-        policy: savedPolicy,
-        version: savedVersion,
-      });
-      return;
-    } catch (error) {
-      res.status(400).json({ message: 'Error creating policy', error });
-      return;
-    }
+        await mongoSession.withTransaction(async (session) => {
+          savedPolicy = await policy.save({ session });
+          savedVersion = await policyVersion.save({ session });
+        });
+
+        // FIXME: This doesn't actually match our OpenAPI spec - which should we change? Should we allow a Policy before there is a PolicyVersion?
+        res.status(201).json({
+          policy: savedPolicy,
+          version: savedVersion,
+        });
+        return;
+      } catch (error) {
+        res.status(400).json({ message: 'Error creating policy', error });
+        return;
+      }
+    });
   });
 
   // Edit Policy
@@ -197,20 +205,21 @@ export function registerRoutes(app: Express) {
 
   // Delete a policy, along with all of its policy versions
   app.delete('/policy/:packageName', async (req, res) => {
-    try {
-      const { packageName } = req.params;
+    await withSession(async (mongoSession) => {
+      try {
+        const { packageName } = req.params;
 
-      // FIXME: Would be nice if this was an atomic transaction
-      await Promise.all([
-        Policy.findOneAndDelete({ packageName }),
-        PolicyVersion.deleteMany({ packageName }),
-      ]);
-
-      res.json({ message: 'Policy and associated versions deleted successfully' });
-      return;
-    } catch (error) {
-      res.status(500).json({ message: 'Error deleting policy', error });
-      return;
-    }
+        // FIXME: Would be nice if this was an atomic transaction
+        await mongoSession.withTransaction(async (session) => {
+          await Policy.findOneAndDelete({ packageName }).session(session);
+          await PolicyVersion.deleteMany({ packageName }).session(session);
+        });
+        res.json({ message: 'Policy and associated versions deleted successfully' });
+        return;
+      } catch (error) {
+        res.status(500).json({ message: 'Error deleting policy', error });
+        return;
+      }
+    });
   });
 }
