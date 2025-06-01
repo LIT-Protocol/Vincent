@@ -5,7 +5,8 @@
   "type:": "module",
   "scripts": {
     "build": "pnpm unbuild",
-    "dev": "pnpm dotenvx run -- pnpm bun --watch src/bin/apiServer.ts"
+    "dev": "pnpm dotenvx run -- pnpm bun --watch src/bin/apiServer.ts",
+    "start": "node ./dist/bin/apiServer.mjs"
   },
   "files": [
     "dist"

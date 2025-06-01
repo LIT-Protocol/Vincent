@@ -8,6 +8,19 @@
       "options": {
         "passWithNoTests": true
       }
+    },
+    "deploy": {
+      "executor": "@getlarge/nx-heroku:deploy",
+      "options": {
+        "org": "lit-protocol",
+        "appNamePrefix": "vincent",
+        "procfile": "web: pnpm start",
+        "buildPacks": [
+          "heroku/nodejs",
+          "heroku-community/multi-procfile"
+        ],
+        "debug": true
+      }
     }
   }
 }
