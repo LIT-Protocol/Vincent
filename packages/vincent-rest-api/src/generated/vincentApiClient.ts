@@ -552,6 +552,8 @@ export type CreateTool = {
   title: string;
   /** Tool description */
   description: string;
+  /** An initial version of the tool; must be an exact semver */
+  version: string;
 };
 export type EditTool = {
   /** Tool title */

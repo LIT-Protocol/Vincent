@@ -436,12 +436,18 @@
             "type": "string",
             "description": "Tool description",
             "example": "When we foo, our complex tool will also bar."
+          },
+          "version": {
+            "type": "string",
+            "description": "An initial version of the tool; must be an exact semver",
+            "example": "1.0.0"
           }
         },
         "required": [
           "packageName",
           "title",
-          "description"
+          "description",
+          "version"
         ]
       },
       "EditTool": {
