@@ -28,7 +28,7 @@ export function registerRoutes(app: Express) {
     res.json(openApiJson);
   });
 
-  app.use(express.static(path.join(__dirname, './static')));
+  app.use(express.static(path.join(import.meta.dirname, './static')));
 
   app.use(
     OpenApiValidator.middleware({
