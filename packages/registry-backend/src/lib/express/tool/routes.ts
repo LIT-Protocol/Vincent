@@ -1,9 +1,11 @@
 import { Tool, ToolVersion } from '../../mongo/tool';
 import { requireTool, withTool } from './requireTool';
 import { requireToolVersion, withToolVersion } from './requireToolVersion';
+import { getPackageInfo } from '../../npm';
 
 import type { Express } from 'express';
 import { withSession } from '../../mongo/withSession';
+import { generateRandomCid } from '../../util';
 
 export function registerRoutes(app: Express) {
   // Get all tools
@@ -26,32 +28,32 @@ export function registerRoutes(app: Express) {
   // Create new Tool
   app.post('/tool', async (req, res) => {
     await withSession(async (mongoSession) => {
-      const { packageName, authorWalletAddress, description } = req.body;
+      const { packageName, authorWalletAddress, description, version } = req.body;
 
-      // FIXME: This must be a real package version that we've verified
-      const initialVersion = '0.1.0';
+      const packageInfo = await getPackageInfo({ packageName, version });
+
       const toolVersion = new ToolVersion({
         packageName,
-        version: initialVersion,
+        version: version,
         changes: 'Initial version',
-        repository: req.body.repository,
+        repository: packageInfo.repository,
         description,
-        keywords: req.body.keywords || [],
-        dependencies: req.body.dependencies || [],
-        author: req.body.author,
-        contributors: req.body.contributors || [],
-        homepage: req.body.homepage,
+        keywords: packageInfo.keywords || [],
+        dependencies: packageInfo.dependencies || [],
+        author: packageInfo.author,
+        contributors: packageInfo.contributors || [],
+        homepage: packageInfo.homepage,
         status: 'validating',
-        supportedPolicies: [],
+        supportedPolicies: [], // FIXME: Identify supportedPolicies from the package.json dependencies
         policiesNotInRegistry: [],
-        ipfsCid: req.body.ipfsCid,
+        ipfsCid: generateRandomCid(), // FIXME: Load this from a JSON file in the package distribution
       });
 
       const tool = new Tool({
         packageName,
         authorWalletAddress,
         description,
-        activeVersion: initialVersion,
+        activeVersion: version,
       });
 
       let /*savedToolVersion,*/ savedTool;
@@ -102,22 +104,26 @@ export function registerRoutes(app: Express) {
     withTool(async (req, res) => {
       const { version } = req.params;
 
-      // FIXME: Check the package version.
-      const toolVersion = new ToolVersion({
+      const packageInfo = await getPackageInfo({
         packageName: req.vincentTool.packageName,
         version,
+      });
+
+      const toolVersion = new ToolVersion({
+        packageName: req.vincentTool.packageName,
+        version: version,
         changes: req.body.changes,
-        repository: req.body.repository,
+        repository: packageInfo.repository,
         description: req.body.description,
-        keywords: req.body.keywords || [],
-        dependencies: req.body.dependencies || [],
-        author: req.body.author,
-        contributors: req.body.contributors || [],
-        homepage: req.body.homepage,
+        keywords: packageInfo.keywords || [],
+        dependencies: packageInfo.dependencies || [],
+        author: packageInfo.author,
+        contributors: packageInfo.contributors || [],
+        homepage: packageInfo.homepage,
         status: 'validating',
-        supportedPolicies: [],
+        supportedPolicies: [], // FIXME: Identify supportedPolicies from the package.json dependencies
         policiesNotInRegistry: [],
-        ipfsCid: req.body.ipfsCid,
+        ipfsCid: generateRandomCid(), // FIXME: Load this from a JSON file in the package distribution
       });
 
       const savedVersion = await toolVersion.save();

@@ -6,7 +6,7 @@ const toolSchema = new Schema(
     packageName: { type: String, required: true, unique: true },
     authorWalletAddress: { type: String, required: true },
     description: { type: String, required: true },
-    activeVersion: { type: Number, required: true },
+    activeVersion: { type: String, required: true },
   } as const,
   { timestamps: true },
 );
@@ -16,16 +16,19 @@ export const Tool = model('Tool', toolSchema);
 export const toolVersionSchema = new Schema(
   {
     packageName: { type: String, required: true },
-    version: { type: Number, required: true },
+    version: { type: String, required: true },
     changes: { type: String, required: true },
-    repository: { type: String, required: true },
+    repository: {
+      type: { type: String },
+      url: { type: String },
+    },
     description: { type: String, required: true },
     keywords: [{ type: String }],
-    dependencies: [{ type: String }],
+    dependencies: [{ type: Object }],
     author: {
       name: { type: String, required: true },
       email: { type: String, required: true },
-      url: { type: String, required: true },
+      url: { type: String },
     },
     contributors: [
       {
