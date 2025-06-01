@@ -28,7 +28,24 @@ export function registerRoutes(app: Express) {
     res.json(openApiJson);
   });
 
-  app.use(express.static(path.join(import.meta.dirname, './static')));
+  console.log('Serving from', path.join(import.meta.dirname, './static'));
+  app.get('/openapi', (req, res) => {
+    res.send(`<!doctype html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <script type="module" src="https://unpkg.com/rapidoc/dist/rapidoc-min.js"></script>
+</head>
+
+<body>
+<rapi-doc spec-url="/openApiJson" theme="light"> </rapi-doc>
+</body>
+
+</html>
+`);
+    return;
+  });
 
   app.use(
     OpenApiValidator.middleware({

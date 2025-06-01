@@ -9,7 +9,8 @@
     "start": "pnpm build && node ./dist/bin/apiServer.mjs"
   },
   "files": [
-    "dist"
+    "dist",
+    "src/lib/express/static/openapi.html"
   ],
   "bin": {
     "apiServer": "./dist/bin/apiServer.mjs"
