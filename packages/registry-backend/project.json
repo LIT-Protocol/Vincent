@@ -14,7 +14,7 @@
       "options": {
         "org": "lit-protocol",
         "appNamePrefix": "vincent",
-        "procfile": "web: pnpm start",
+        "procfile": "web: cd packages/registry-backend && pnpm start",
         "buildPacks": [
           "heroku/nodejs",
           "heroku-community/multi-procfile"
