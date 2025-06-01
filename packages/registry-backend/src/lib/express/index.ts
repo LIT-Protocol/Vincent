@@ -39,6 +39,10 @@ export function registerRoutes(app: Express) {
     }),
   );
 
+  registerAppRoutes(app);
+  registerToolRoutes(app);
+  registerPolicyRoutes(app);
+
   // @ts-expect-error Error handler is abstract/generic
   app.use((err, req, res, next) => {
     // format error
@@ -47,10 +51,6 @@ export function registerRoutes(app: Express) {
       errors: err.errors,
     });
   });
-
-  registerAppRoutes(app);
-  registerToolRoutes(app);
-  registerPolicyRoutes(app);
 
   return app;
 }

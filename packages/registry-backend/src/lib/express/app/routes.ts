@@ -10,15 +10,9 @@ const NEW_APP_APPVERSION = 1;
 export function registerRoutes(app: Express) {
   // List all apps
   app.get('/apps', async (req, res) => {
-    try {
-      const apps = await App.find().lean();
+    const apps = await App.find().lean();
 
-      res.json(apps);
-      return;
-    } catch (error) {
-      res.status(500).json({ message: (error as Error).message });
-      return;
-    }
+    res.json(apps);
   });
 
   // Get a single app by its app ID
@@ -35,52 +29,47 @@ export function registerRoutes(app: Express) {
   // Create new App
   app.post('/app', async (req, res) => {
     await withSession(async (mongoSession) => {
-      try {
-        const {
-          appId,
-          name,
-          description,
-          contactEmail,
-          appUserUrl,
-          logo,
-          redirectUris,
-          deploymentStatus,
-          managerAddress,
-        } = req.body;
+      const {
+        appId,
+        name,
+        description,
+        contactEmail,
+        appUserUrl,
+        logo,
+        redirectUris,
+        deploymentStatus,
+        managerAddress,
+      } = req.body;
 
-        const appVersion = new AppVersion({
-          appId,
-          version: NEW_APP_APPVERSION,
-          changes: 'Initial version',
-          enabled: true,
-        });
+      const appVersion = new AppVersion({
+        appId,
+        version: NEW_APP_APPVERSION,
+        changes: 'Initial version',
+        enabled: true,
+      });
 
-        const app = new App({
-          activeVersion: NEW_APP_APPVERSION,
-          appId,
-          name,
-          description,
-          contactEmail,
-          appUserUrl,
-          logo,
-          redirectUris,
-          deploymentStatus,
-          managerAddress,
-        });
+      const app = new App({
+        activeVersion: NEW_APP_APPVERSION,
+        appId,
+        name,
+        description,
+        contactEmail,
+        appUserUrl,
+        logo,
+        redirectUris,
+        deploymentStatus,
+        managerAddress,
+      });
 
-        let appDef;
+      let appDef;
 
-        await mongoSession.withTransaction(async (session) => {
-          await appVersion.save({ session });
-          appDef = await app.save({ session });
-        });
+      await mongoSession.withTransaction(async (session) => {
+        await appVersion.save({ session });
+        appDef = await app.save({ session });
+      });
 
-        res.status(201).json(appDef);
-        return;
-      } catch (error) {
-        res.status(500).json({ message: (error as Error).message });
-        return;
-      }
+      res.status(201).json(appDef);
+      return;
     });
   });
 
@@ -91,15 +80,10 @@ export function registerRoutes(app: Express) {
     withApp(async (req, res) => {
       const { appId } = req.params;
 
-      try {
-        const updatedApp = await req.vincentApp.updateOne(req.body, { new: true }).lean();
+      const updatedApp = await req.vincentApp.updateOne(req.body, { new: true }).lean();
 
-        res.json(updatedApp);
-        return;
-      } catch (error) {
-        res.status(500).json({ message: (error as Error).message });
-        return;
-      }
+      res.json(updatedApp);
+      return;
     }),
   );
 
@@ -109,17 +93,12 @@ export function registerRoutes(app: Express) {
     requireApp(),
     withApp(async (req, res) => {
       const { appId } = req.params;
-      try {
-        const updatedApp = await req.vincentApp
-          .updateOne({ managerAddress: req.body.managerAddress }, { new: true })
-          .lean();
+      const updatedApp = await req.vincentApp
+        .updateOne({ managerAddress: req.body.managerAddress }, { new: true })
+        .lean();
 
-        res.json(updatedApp);
-        return;
-      } catch (error) {
-        res.status(500).json({ message: (error as Error).message });
-        return;
-      }
+      res.json(updatedApp);
+      return;
     }),
   );
 
@@ -130,36 +109,29 @@ export function registerRoutes(app: Express) {
     withApp(async (req, res) => {
       const { appId } = req.params;
       await withSession(async (mongoSession) => {
-        try {
-          let savedAppVersion;
+        let savedAppVersion;
 
-          await mongoSession.withTransaction(async (session) => {
-            const highest = await AppVersion.find({ appId })
-              .session(session)
-              .sort({ version: -1 })
-              .limit(1)
-              .lean();
+        await mongoSession.withTransaction(async (session) => {
+          const highest = await AppVersion.find({ appId })
+            .session(session)
+            .sort({ version: -1 })
+            .limit(1)
+            .lean();
 
-            console.log('highest', highest);
+          console.log('highest', highest);
 
-            const appVersion = new AppVersion({
-              appId,
-              version: highest.length ? highest[0].version + 1 : 1,
-              changes: req.body.changes,
-              enabled: true,
-            });
-
-            savedAppVersion = await appVersion.save({ session });
+          const appVersion = new AppVersion({
+            appId,
+            version: highest.length ? highest[0].version + 1 : 1,
+            changes: req.body.changes,
+            enabled: true,
           });
 
-          res.status(201).json(savedAppVersion);
-          return;
-        } catch (error) {
-          res
-            .status(500)
-            .json({ message: 'Error creating app version', error: (error as Error).message });
-          return;
-        }
+          savedAppVersion = await appVersion.save({ session });
+        });
+
+        res.status(201).json(savedAppVersion);
+        return;
       });
     }),
   );
@@ -171,14 +143,9 @@ export function registerRoutes(app: Express) {
     withApp(async (req, res) => {
       const { appId } = req.params;
 
-      try {
-        const versions = await AppVersion.find({ appId: appId }).sort({ version: 1 }).lean();
-        res.json(versions);
-        return;
-      } catch (error) {
-        res.status(500).json({ message: (error as Error).message });
-        return;
-      }
+      const versions = await AppVersion.find({ appId: appId }).sort({ version: 1 }).lean();
+      res.json(versions);
+      return;
     }),
   );
 
@@ -189,25 +156,17 @@ export function registerRoutes(app: Express) {
     requireAppVersion(),
     withAppVersion(async (req, res) => {
       const { vincentApp, vincentAppVersion } = req;
-      try {
-        // Get associated app tools
-        const appTools = await AppTool.find({
-          appId: vincentApp.appId,
-          appVersion: vincentAppVersion.version,
-        }).lean();
 
-        res.json({
-          version: vincentAppVersion.version,
-          tools: appTools,
-        });
-        return;
-      } catch (error) {
-        res.status(500).json({
-          message: `Error fetching app version ${vincentAppVersion.version} for app ${vincentApp.appId}`,
-          error: (error as Error).message,
-        });
-        return;
-      }
+      const appTools = await AppTool.find({
+        appId: vincentApp.appId,
+        appVersion: vincentAppVersion.version,
+      }).lean();
+
+      res.json({
+        version: vincentAppVersion.version,
+        tools: appTools,
+      });
+      return;
     }),
   );
 
@@ -217,22 +176,14 @@ export function registerRoutes(app: Express) {
     requireApp(),
     requireAppVersion(),
     withAppVersion(async (req, res) => {
-      const { vincentApp, vincentAppVersion } = req;
+      const { vincentAppVersion } = req;
 
-      try {
-        const version = await vincentAppVersion
-          .updateOne({ changes: req.body.changes }, { new: true })
-          .lean();
+      const version = await vincentAppVersion
+        .updateOne({ changes: req.body.changes }, { new: true })
+        .lean();
 
-        res.json(version);
-        return;
-      } catch (error) {
-        res.status(500).json({
-          message: `Error updating app version ${vincentAppVersion.version} for app ${vincentApp.appId}`,
-          error: (error as Error).message,
-        });
-        return;
-      }
+      res.json(version);
+      return;
     }),
   );
 
@@ -242,24 +193,14 @@ export function registerRoutes(app: Express) {
     requireApp(),
     requireAppVersion(),
     withAppVersion(async (req, res) => {
-      const { vincentApp, vincentAppVersion } = req;
+      const { vincentAppVersion } = req;
 
-      try {
-        const { vincentAppVersion } = req;
+      const updatedAppVersion = await vincentAppVersion
+        .updateOne({ enabled: false }, { new: true })
+        .lean();
 
-        const updatedAppVersion = await vincentAppVersion
-          .updateOne({ enabled: false }, { new: true })
-          .lean();
-
-        res.json(updatedAppVersion);
-        return;
-      } catch (error) {
-        res.status(500).json({
-          message: `Error disabling app version ${vincentAppVersion.version} for app ${vincentApp.appId}`,
-          error: (error as Error).message,
-        });
-        return;
-      }
+      res.json(updatedAppVersion);
+      return;
     }),
   );
 
@@ -269,45 +210,30 @@ export function registerRoutes(app: Express) {
     requireApp(),
     requireAppVersion(),
     withAppVersion(async (req, res) => {
-      const { vincentApp, vincentAppVersion } = req;
+      const { vincentAppVersion } = req;
 
-      try {
-        const { vincentAppVersion } = req;
+      const updatedAppVersion = await vincentAppVersion
+        .updateOne({ enabled: true }, { new: true })
+        .lean();
 
-        const updatedAppVersion = await vincentAppVersion
-          .updateOne({ enabled: true }, { new: true })
-          .lean();
-
-        res.json(updatedAppVersion);
-        return;
-      } catch (error) {
-        res.status(500).json({
-          message: `Error enabling app version ${vincentAppVersion.version} for app ${vincentApp.appId}`,
-          error: (error as Error).message,
-        });
-        return;
-      }
+      res.json(updatedAppVersion);
+      return;
     }),
   );
 
   // Delete an app, along with all of its appVersions and their tools.
   app.delete('/app/:appId', async (req, res) => {
     await withSession(async (mongoSession) => {
-      try {
-        const { appId } = req.params;
+      const { appId } = req.params;
 
-        await mongoSession.withTransaction(async (session) => {
-          await App.findOneAndDelete({ appId }).session(session);
-          await AppVersion.deleteMany({ appId }).session(session);
-          await AppTool.deleteMany({ appId }).session(session);
-        });
+      await mongoSession.withTransaction(async (session) => {
+        await App.findOneAndDelete({ appId }).session(session);
+        await AppVersion.deleteMany({ appId }).session(session);
+        await AppTool.deleteMany({ appId }).session(session);
+      });
 
-        res.json({ message: 'App and associated data deleted successfully' });
-        return;
-      } catch (error) {
-        res.status(500).json({ message: (error as Error).message });
-        return;
-      }
+      res.json({ message: 'App and associated data deleted successfully' });
+      return;
     });
   });
 }
