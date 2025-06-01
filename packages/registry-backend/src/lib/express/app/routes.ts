@@ -3,7 +3,6 @@ import { App, AppTool, AppVersion } from '../../mongo/app';
 import type { Express } from 'express';
 import { requireApp, withApp } from './requireApp';
 import { requireAppVersion, withAppVersion } from './requireAppVersion';
-import mongoose from 'mongoose';
 import { withSession } from '../../mongo/withSession';
 
 const NEW_APP_APPVERSION = 1;
@@ -17,7 +16,7 @@ export function registerRoutes(app: Express) {
       res.json(apps);
       return;
     } catch (error) {
-      res.status(500).json({ message: 'Error fetching apps', error });
+      res.status(500).json({ message: (error as Error).message });
       return;
     }
   });
@@ -79,7 +78,7 @@ export function registerRoutes(app: Express) {
         res.status(201).json(appDef);
         return;
       } catch (error) {
-        res.status(500).json({ message: 'Error creating app', error: (error as Error).message });
+        res.status(500).json({ message: (error as Error).message });
         return;
       }
     });
@@ -98,7 +97,7 @@ export function registerRoutes(app: Express) {
         res.json(updatedApp);
         return;
       } catch (error) {
-        res.status(500).json({ message: `Error updating app ${appId}`, error });
+        res.status(500).json({ message: (error as Error).message });
         return;
       }
     }),
@@ -118,7 +117,7 @@ export function registerRoutes(app: Express) {
         res.json(updatedApp);
         return;
       } catch (error) {
-        res.status(500).json({ message: `Error updating app owner for ${appId}`, error });
+        res.status(500).json({ message: (error as Error).message });
         return;
       }
     }),
@@ -177,7 +176,7 @@ export function registerRoutes(app: Express) {
         res.json(versions);
         return;
       } catch (error) {
-        res.status(500).json({ message: 'Error fetching app versions', error });
+        res.status(500).json({ message: (error as Error).message });
         return;
       }
     }),
@@ -205,7 +204,7 @@ export function registerRoutes(app: Express) {
       } catch (error) {
         res.status(500).json({
           message: `Error fetching app version ${vincentAppVersion.version} for app ${vincentApp.appId}`,
-          error,
+          error: (error as Error).message,
         });
         return;
       }
@@ -230,7 +229,7 @@ export function registerRoutes(app: Express) {
       } catch (error) {
         res.status(500).json({
           message: `Error updating app version ${vincentAppVersion.version} for app ${vincentApp.appId}`,
-          error,
+          error: (error as Error).message,
         });
         return;
       }
@@ -257,7 +256,7 @@ export function registerRoutes(app: Express) {
       } catch (error) {
         res.status(500).json({
           message: `Error disabling app version ${vincentAppVersion.version} for app ${vincentApp.appId}`,
-          error,
+          error: (error as Error).message,
         });
         return;
       }
@@ -284,7 +283,7 @@ export function registerRoutes(app: Express) {
       } catch (error) {
         res.status(500).json({
           message: `Error enabling app version ${vincentAppVersion.version} for app ${vincentApp.appId}`,
-          error,
+          error: (error as Error).message,
         });
         return;
       }
@@ -293,21 +292,22 @@ export function registerRoutes(app: Express) {
 
   // Delete an app, along with all of its appVersions and their tools.
   app.delete('/app/:appId', async (req, res) => {
-    try {
-      const { appId } = req.params;
+    await withSession(async (mongoSession) => {
+      try {
+        const { appId } = req.params;
 
-      // FIXME: Would be nice if this was an atomic transaction
-      await Promise.all([
-        App.findOneAndDelete({ appId }),
-        AppVersion.deleteMany({ appId }),
-        AppTool.deleteMany({ appId }),
-      ]);
+        await mongoSession.withTransaction(async (session) => {
+          await App.findOneAndDelete({ appId }).session(session);
+          await AppVersion.deleteMany({ appId }).session(session);
+          await AppTool.deleteMany({ appId }).session(session);
+        });
 
-      res.json({ message: 'App and associated data deleted successfully' });
-      return;
-    } catch (error) {
-      res.status(500).json({ message: 'Error deleting app', error });
-      return;
-    }
+        res.json({ message: 'App and associated data deleted successfully' });
+        return;
+      } catch (error) {
+        res.status(500).json({ message: (error as Error).message });
+        return;
+      }
+    });
   });
 }
