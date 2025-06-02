@@ -90,3 +90,8 @@ This configuration launches the Vincent MCP server in STDIO mode using the `tsx`
 - Run `pnpm dev:http` to start the server in HTTP mode.
 - The server will be available at `http://localhost:3000/mcp` (or the port you specified in the `.env` file)
 - Connect your LLM client to `http://localhost:3000/mcp` to connect to the server.
+
+# Integrations
+
+Check our [Vincent Docs page](https://docs.heyvincent.ai/) to see how to integrate this MCP server with other services such as OpenAI or Anthropic responses APIs or multiple AgentKits
+

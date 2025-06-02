@@ -1,9 +1,9 @@
 ---
 category: Developers
-title: AI Integration
+title: MCP - Model Context Protocol
 ---
 
-# AI Integration
+# MCP - Model Context Protocol
 
 Any Vincent App can be converted into a Model Protocol Server (MCP) that can be consumed by any Large Language Model (LLM) that supports the MCP standard.
 
@@ -106,6 +106,14 @@ You can also check the [Vincent MCP package README](https://github.com/LIT-Proto
 
 When the LLM or Agent decides to execute a tool, it will send a request to the MCP server with the tool name and parameters. The MCP server will then execute the tool using the delegatee signer and return the result to the LLM.
 
-## Integrating into OpenAI AgentKit
+# Integration with messaging APIs
+
+To integrate with either [OpenAI API](https://platform.openai.com/docs/guides/tools-remote-mcp) or [Anthropic API](https://docs.anthropic.com/en/docs/agents-and-tools/mcp-connector) you'll have to make your MCP server publicly accessible.
+
+Note: You can expose the HTTP transport with your server in a temporary public API with [ngrok](https://ngrok.com/).
+
+Then follow our [OpenAI](https://github.com/LIT-Protocol/Vincent/tree/main/packages/mcp/integrations/openAI.ts) or [Anthropic](https://github.com/LIT-Protocol/Vincent/tree/main/packages/mcp/integrations/anthropic.ts) examples for guidelines on how to use their messaging APIs with access to your MCP Server.
+
+# Integrating into OpenAI AgentKit
 
 Check the [OpenAI AgentKit demo](https://github.com/LIT-Protocol/Vincent-MCP-OpenAI-AgentKit) for a guide on how to integrate your Vincent App with the OpenAI AgentKit.
