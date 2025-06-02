@@ -355,11 +355,13 @@ describe('Uniswap Swap Tool E2E Tests', () => {
     const erc20ApprovalExecutionResult = await executeTool({
       toolIpfsCid: ERC20_APPROVAL_TOOL_IPFS_ID,
       toolParameters: {
-        pkpEthAddress: TEST_CONFIG.userPkp!.ethAddress!,
         rpcUrl: BASE_RPC_URL,
-        chainId: '8453',
-        tokenIn: '0x4200000000000000000000000000000000000006', // WETH
-        amountIn: '0.0005',
+        chainId: 8453,
+        pkpEthAddress: TEST_CONFIG.userPkp!.ethAddress!,
+        spenderAddress: '0x6ff5693b99212da76ad316178a184ab56d299b43', // Uniswap Universal Router on Base
+        tokenAddress: '0x4200000000000000000000000000000000000006', // WETH
+        tokenDecimals: 18,
+        tokenAmount: 0.0005,
       },
       delegateePrivateKey: TEST_APP_DELEGATEE_PRIVATE_KEY as `0x${string}`,
       debug: true,
@@ -369,12 +371,22 @@ describe('Uniswap Swap Tool E2E Tests', () => {
 
     const parsedResponse = JSON.parse(erc20ApprovalExecutionResult.response as string);
 
-    expect(parsedResponse.details).toBeDefined();
-    expect(Array.isArray(parsedResponse.details)).toBe(true);
+    expect(parsedResponse.policyEvaluationResults).toBeDefined();
+    expect(parsedResponse.policyEvaluationResults.allow).toBe(true);
+    expect(parsedResponse.policyEvaluationResults.evaluatedPolicies.length).toBe(0);
+    expect(parsedResponse.policyEvaluationResults.allowedPolicies).toEqual({});
 
-    expect(parsedResponse.details[0]).toMatch(/^0x[a-fA-F0-9]{64}$/);
-    expect(parsedResponse.details[1]).toMatch(
-      /^0x[a-fA-F0-9]{40} approved 0\.0005 0x4200000000000000000000000000000000000006 for Uniswap V3 Router$/,
+    expect(parsedResponse.toolExecutionResult).toBeDefined();
+    expect(parsedResponse.toolExecutionResult.success).toBe(true);
+    expect(parsedResponse.toolExecutionResult.result).toBeDefined();
+    expect(parsedResponse.toolExecutionResult.result.existingApprovalSufficient).toBe(true);
+    expect(parsedResponse.toolExecutionResult.result.approvedAmount).toBe('500000000000000');
+    expect(parsedResponse.toolExecutionResult.result.tokenAddress).toBe(
+      '0x4200000000000000000000000000000000000006',
+    );
+    expect(parsedResponse.toolExecutionResult.result.tokenDecimals).toBe(18);
+    expect(parsedResponse.toolExecutionResult.result.spenderAddress).toBe(
+      '0x6ff5693b99212da76ad316178a184ab56d299b43',
     );
   });
 

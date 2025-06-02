@@ -36,6 +36,10 @@ export const Erc20ApprovalToolExecuteSuccessSchema = z.object({
   approvalTxHash: z.string().optional(),
   // The approved amount that is now active (either from existing or new approval)
   approvedAmount: z.string(),
+  // The token address that was approved
+  tokenAddress: z.string(),
+  // The token decimals that was approved
+  tokenDecimals: z.number(),
   // The spender address that was approved
   spenderAddress: z.string(),
 });
@@ -123,9 +127,23 @@ export const Erc20ApprovalToolDef = createVincentTool({
     const requiredAmount = parseUnits(tokenAmount.toString(), tokenDecimals);
 
     if (currentAllowance >= requiredAmount) {
+      console.log(
+        `currentAllowance: ${currentAllowance} >= requiredAmount: ${requiredAmount} (execute)`,
+      );
+
+      console.log('Tool execution successful', {
+        existingApprovalSufficient: true,
+        approvedAmount: currentAllowance.toString(),
+        spenderAddress,
+        tokenAddress,
+        tokenDecimals: parseInt(tokenDecimals.toString()),
+      });
+
       return succeed({
         existingApprovalSufficient: true,
         approvedAmount: currentAllowance.toString(),
+        tokenAddress,
+        tokenDecimals: parseInt(tokenDecimals.toString()),
         spenderAddress,
       });
     }
@@ -136,15 +154,26 @@ export const Erc20ApprovalToolDef = createVincentTool({
       pkpEthAddress: pkpEthAddress as `0x${string}`,
       pkpPublicKey: pkpInfo.publicKey,
       spenderAddress: spenderAddress as `0x${string}`,
-      tokenAmount: BigInt(tokenAmount),
+      tokenAmount: parseUnits(tokenAmount.toString(), tokenDecimals),
       tokenDecimals,
       tokenAddress: tokenAddress as `0x${string}`,
+    });
+
+    console.log('Tool execution successful', {
+      existingApprovalSufficient: false,
+      approvalTxHash,
+      approvedAmount: requiredAmount.toString(),
+      spenderAddress,
+      tokenAddress,
+      tokenDecimals: parseInt(tokenDecimals.toString()),
     });
 
     return succeed({
       existingApprovalSufficient: false,
       approvalTxHash,
       approvedAmount: requiredAmount.toString(),
+      tokenAddress,
+      tokenDecimals: parseInt(tokenDecimals.toString()),
       spenderAddress,
     });
   },

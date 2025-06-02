@@ -1,5 +1,6 @@
 import {
   keccak256,
+  recoverTransactionAddress,
   serializeTransaction,
   Signature,
   toBytes,
@@ -30,8 +31,11 @@ export const signTx = async ({
   const publicKeyForLit = pkpPublicKey.replace(/^0x/, '');
   console.log(`Signing using PKP Public Key: ${publicKeyForLit} (signTx)`);
 
-  const serializedTx = serializeTransaction(tx);
-  const txHash = keccak256(toBytes(serializedTx));
+  const unsignedSerializedTx = serializeTransaction(tx);
+  const txHash = keccak256(toBytes(unsignedSerializedTx));
+
+  console.log('unsignedSerializedTx (signTx)', unsignedSerializedTx);
+  console.log('txHash (signTx)', txHash);
 
   const sigJson = await Lit.Actions.signAndCombineEcdsa({
     toSign: toBytes(txHash),
@@ -39,16 +43,23 @@ export const signTx = async ({
     sigName,
   });
 
+  console.log(`Signature: ${sigJson} (signTx)`);
+
   const parsed = JSON.parse(sigJson);
   const { r, s, v } = parsed;
-
-  const yParity = Number(v) % 2; // Convert ECDSA `v` to yParity (0 or 1)
+  console.log('Parsed signature (signTx)', { r, s, v });
 
   const signature: Signature = {
-    r: r as `0x${string}`,
-    s: s as `0x${string}`,
-    yParity,
+    r: ('0x' + r.substring(2)) as `0x${string}`,
+    s: ('0x' + s) as `0x${string}`,
+    v,
   };
+
+  const recoveredAddress = await recoverTransactionAddress({
+    serializedTransaction: unsignedSerializedTx,
+    signature,
+  });
+  console.log('Recovered address (signTx)', recoveredAddress);
 
   return serializeTransaction(tx, signature);
 };

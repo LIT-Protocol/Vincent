@@ -89,10 +89,16 @@ export function createVincentTool<
         return wrapFailure(parsedToolParams);
       }
 
-      const result = await toolDef.execute(parsedToolParams, {
-        ...context,
-        policiesContext: { ...context.policiesContext, allow: true },
-      });
+      const result = await toolDef.execute(
+        // @ts-expect-error - TODO: fix this
+        { toolParams: parsedToolParams },
+        {
+          ...context,
+          policiesContext: { ...context.policiesContext, allow: true },
+        },
+      );
+
+      console.log('toolDef execute result', result);
 
       const { schemaToUse } = getSchemaForToolResult({
         value: result,
@@ -100,7 +106,15 @@ export function createVincentTool<
         failureResultSchema: executeFailSchema,
       });
 
-      const resultOrFailure = validateOrFail(result, schemaToUse, 'execute', 'output');
+      const resultOrFailure = validateOrFail(
+        // @ts-expect-error - TODO: fix this
+        result.result,
+        schemaToUse,
+        'execute',
+        'output',
+      );
+
+      console.log('resultOrFailure', resultOrFailure);
 
       if (isToolFailureResult(resultOrFailure)) {
         return wrapFailure(resultOrFailure);

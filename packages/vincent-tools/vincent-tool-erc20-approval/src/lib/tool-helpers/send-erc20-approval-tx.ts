@@ -9,8 +9,8 @@ declare const Lit: {
         waitForResponse: boolean;
         name: string;
       },
-      callback: () => Promise<string>,
-    ) => Promise<string>;
+      callback: () => Promise<unknown>,
+    ) => Promise<unknown>;
   };
 };
 
@@ -56,31 +56,63 @@ export const sendErc20ApprovalTx = async ({
     transport: http(rpcUrl),
   });
 
-  const { maxFeePerGas, maxPriorityFeePerGas } = await client.estimateFeesPerGas();
+  const txMetadataResponse = await Lit.Actions.runOnce(
+    { waitForResponse: true, name: 'estimateGas' },
+    async () => {
+      try {
+        const { maxFeePerGas, maxPriorityFeePerGas } = await client.estimateFeesPerGas();
+        const gas = await client.estimateGas({
+          account: pkpEthAddress as `0x${string}`,
+          to: tokenAddress as `0x${string}`,
+          data: approveTxData,
+        });
+        const nonce = await client.getTransactionCount({
+          address: pkpEthAddress as `0x${string}`,
+        });
+
+        return JSON.stringify({
+          status: 'success',
+          maxFeePerGas: maxFeePerGas.toString(),
+          maxPriorityFeePerGas: maxPriorityFeePerGas.toString(),
+          gas: gas.toString(),
+          nonce,
+        });
+      } catch (error) {
+        return JSON.stringify({
+          status: 'error',
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
+    },
+  );
+
+  const parsedTxMetadataResponse = JSON.parse(txMetadataResponse as string);
+  if (parsedTxMetadataResponse.status === 'error') {
+    throw new Error(`Error estimating gas: ${parsedTxMetadataResponse.error}`);
+  }
+  const { maxFeePerGas, maxPriorityFeePerGas, gas, nonce } = parsedTxMetadataResponse;
 
   const unsignedApproveTx = {
     to: tokenAddress as `0x${string}`,
     data: approveTxData,
     value: 0n,
-    gas: await client.estimateGas({
-      account: pkpEthAddress as `0x${string}`,
-      to: tokenAddress as `0x${string}`,
-      data: approveTxData,
-    }),
-    maxFeePerGas,
-    maxPriorityFeePerGas,
-    nonce: await client.getTransactionCount({
-      address: pkpEthAddress as `0x${string}`,
-    }),
+    gas: BigInt(gas),
+    maxFeePerGas: BigInt(maxFeePerGas),
+    maxPriorityFeePerGas: BigInt(maxPriorityFeePerGas),
+    nonce,
     chainId,
     type: 'eip1559' as const,
   };
+
+  console.log('unsignedApproveTx (sendErc20ApprovalTx)', unsignedApproveTx);
 
   const signedApproveTx = await signTx({
     pkpPublicKey,
     tx: unsignedApproveTx,
     sigName: 'approveErc20Sig',
   });
+
+  console.log('signedApproveTx (sendErc20ApprovalTx)', signedApproveTx);
 
   const erc20ApproveTxResponse = await Lit.Actions.runOnce(
     { waitForResponse: true, name: 'spendTxSender' },
@@ -101,6 +133,8 @@ export const sendErc20ApprovalTx = async ({
       }
     },
   );
+
+  console.log('erc20ApproveTxResponse (sendErc20ApprovalTx)', erc20ApproveTxResponse);
 
   const parsedErc20ApproveTxResponse = JSON.parse(erc20ApproveTxResponse as string);
   if (parsedErc20ApproveTxResponse.status === 'error') {
