@@ -4,6 +4,18 @@ import { parseUnits, createPublicClient, decodeAbiParameters, http } from 'viem'
 
 import { getUniswapPoolMetadata } from './get-uniswap-pool-metadata';
 
+declare const Lit: {
+  Actions: {
+    runOnce: (
+      params: {
+        waitForResponse: boolean;
+        name: string;
+      },
+      callback: () => Promise<unknown>,
+    ) => Promise<unknown>;
+  };
+};
+
 export const getUniswapQuote = async ({
   rpcUrl,
   chainId,
@@ -64,13 +76,11 @@ export const getUniswapQuote = async ({
     liquidity.toString(),
     tick,
   );
-
   console.log('Uniswap Pool', {
     uniswapPool,
   });
 
   const uniswapSwapRoute = new Route([uniswapPool], uniswapTokenIn, uniswapTokenOut);
-
   console.log('Uniswap Swap Route', {
     uniswapSwapRoute,
   });
@@ -82,33 +92,56 @@ export const getUniswapQuote = async ({
       parseUnits(tokenInAmount.toString(), tokenInDecimals).toString(),
     ),
     TradeType.EXACT_INPUT,
-    // TODO Don't think this is needed, we should be using v3,
-    // but this was from the Uniswap docs
-    // https://docs.uniswap.org/sdk/v3/guides/swaps/quoting
-    // {
-    //   useQuoterV2: true,
-    // },
+    {
+      useQuoterV2: true,
+    },
   );
-
   console.log('Uniswap Quote Call Parameters', {
     calldata,
   });
 
-  const client = createPublicClient({
-    transport: http(rpcUrl),
-  });
+  const quoteCallReturnDataResponse = await Lit.Actions.runOnce(
+    { waitForResponse: true, name: 'getUniswapQuote' },
+    async () => {
+      try {
+        const client = createPublicClient({
+          transport: http(rpcUrl),
+        });
 
-  const quoteCallReturnData = await client.call({
-    to: CHAIN_TO_ADDRESSES_MAP[chainId as keyof typeof CHAIN_TO_ADDRESSES_MAP]
-      .quoterAddress as `0x${string}`,
-    data: calldata as `0x${string}`,
-  });
+        const quoterAddress = CHAIN_TO_ADDRESSES_MAP[chainId as keyof typeof CHAIN_TO_ADDRESSES_MAP]
+          .quoterAddress as `0x${string}`;
+        console.log(`Using Quoter Address: ${quoterAddress} (getUniswapQuote)`);
 
+        const quoteCallReturnData = await client.call({
+          to: quoterAddress,
+          data: calldata as `0x${string}`,
+        });
+
+        return JSON.stringify({
+          status: 'success',
+          quoteCallReturnData,
+        });
+      } catch (error) {
+        return JSON.stringify({
+          status: 'error',
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
+    },
+  );
+
+  const parsedQuoteCallReturnData = JSON.parse(quoteCallReturnDataResponse as string);
+  if (parsedQuoteCallReturnData.status === 'error') {
+    throw new Error(
+      `Error getting Uniswap quote: ${parsedQuoteCallReturnData.error} (getUniswapQuote)`,
+    );
+  }
   console.log('Uniswap Quote Call Return Data', {
-    quoteCallReturnData,
+    parsedQuoteCallReturnData,
   });
+  const { quoteCallReturnData } = parsedQuoteCallReturnData;
 
-  if (!quoteCallReturnData.data) {
+  if (!quoteCallReturnData) {
     throw new Error('No data returned from uniswap quote call (getUniswapQuote)');
   }
 

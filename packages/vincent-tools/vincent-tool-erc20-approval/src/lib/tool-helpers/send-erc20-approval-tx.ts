@@ -60,15 +60,17 @@ export const sendErc20ApprovalTx = async ({
     { waitForResponse: true, name: 'estimateGas' },
     async () => {
       try {
-        const { maxFeePerGas, maxPriorityFeePerGas } = await client.estimateFeesPerGas();
-        const gas = await client.estimateGas({
-          account: pkpEthAddress as `0x${string}`,
-          to: tokenAddress as `0x${string}`,
-          data: approveTxData,
-        });
-        const nonce = await client.getTransactionCount({
-          address: pkpEthAddress as `0x${string}`,
-        });
+        const [{ maxFeePerGas, maxPriorityFeePerGas }, gas, nonce] = await Promise.all([
+          client.estimateFeesPerGas(),
+          client.estimateGas({
+            account: pkpEthAddress as `0x${string}`,
+            to: tokenAddress as `0x${string}`,
+            data: approveTxData,
+          }),
+          client.getTransactionCount({
+            address: pkpEthAddress as `0x${string}`,
+          }),
+        ]);
 
         return JSON.stringify({
           status: 'success',
@@ -103,8 +105,6 @@ export const sendErc20ApprovalTx = async ({
     chainId,
     type: 'eip1559' as const,
   };
-
-  console.log('unsignedApproveTx (sendErc20ApprovalTx)', unsignedApproveTx);
 
   const signedApproveTx = await signTx({
     pkpPublicKey,

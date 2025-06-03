@@ -9,7 +9,7 @@ import { CHAIN_TO_ADDRESSES_MAP, Percent } from '@uniswap/sdk-core';
 import { createPublicClient, http } from 'viem';
 import { createPolicyMapFromToolPolicies } from '@lit-protocol/vincent-tool-sdk/src/lib/toolCore/helpers';
 
-import { getPkpInfo, getUniswapQuote, sendUniswapTx, getTokenAmountInUsd } from './tool-helpers';
+import { getPkpInfo, getUniswapQuote, sendUniswapTx } from './tool-helpers';
 import {
   checkNativeTokenBalance,
   checkUniswapPoolExists,
@@ -59,7 +59,7 @@ const SpendingLimitPolicy = createVincentToolPolicy({
   toolParamsSchema: UniswapSwapToolParamsSchema,
   bundledVincentPolicy: asBundledVincentPolicy(
     SpendingLimitPolicyDef,
-    'QmYhk5cTA8W8K4X8LKPqjC3rg2dVpAH5d9kd5TNdqVBEtk' as const,
+    'QmbAQb3a7h8tLHiAgbfHRVcC8TYMQ29dFB3YF84evRtXRQ' as const,
   ),
   toolParameterMappings: {
     pkpEthAddress: 'pkpEthAddress',
@@ -150,7 +150,6 @@ export const UniswapSwapToolDef = createVincentTool({
     if (!policiesContext.allow) return fail({ error: 'Policy check failed' });
 
     console.log('Executing UniswapSwapTool');
-    console.log('toolParams', toolParams);
 
     const {
       pkpEthAddress,
@@ -193,49 +192,51 @@ export const UniswapSwapToolDef = createVincentTool({
       uniswapTokenIn,
       uniswapTokenOut,
       swapQuote,
-      slippageTolerance: new Percent(slippageTolerance ?? 50, 10_000),
-      swapDeadline: BigInt(swapDeadline ?? Math.floor(Date.now() / 1000) + 60 * 20),
+      slippageTolerance: new Percent(slippageTolerance ?? 1000, 10_000), // 1000 basis points (10%)
+      swapDeadline: BigInt(
+        swapDeadline ?? Math.floor(Date.now() / 1000) + 60 * 20, // 20 minutes from the current Unix time
+      ),
     });
 
-    let spendTxHash: string | undefined;
-    if (policiesContext.allowedPolicies['@lit-protocol/vincent-policy-spending-limit']) {
-      const tokenInAmountInUsd = await getTokenAmountInUsd({
-        ethRpcUrl,
-        rpcUrlForUniswap,
-        chainIdForUniswap,
-        tokenAddress: tokenInAddress,
-        tokenAmount: tokenInAmount,
-        tokenDecimals: tokenInDecimals,
-      });
+    // let spendTxHash: string | undefined;
+    // if (policiesContext.allowedPolicies['@lit-protocol/vincent-policy-spending-limit']) {
+    //   const tokenInAmountInUsd = await getTokenAmountInUsd({
+    //     ethRpcUrl,
+    //     rpcUrlForUniswap,
+    //     chainIdForUniswap,
+    //     tokenAddress: tokenInAddress,
+    //     tokenAmount: tokenInAmount,
+    //     tokenDecimals: tokenInDecimals,
+    //   });
 
-      const spendingLimitPolicyContext =
-        policiesContext.allowedPolicies['@lit-protocol/vincent-policy-spending-limit'];
-      const { appId, maxSpendingLimitInUsd } = spendingLimitPolicyContext.result;
+    //   const spendingLimitPolicyContext =
+    //     policiesContext.allowedPolicies['@lit-protocol/vincent-policy-spending-limit'];
+    //   const { appId, maxSpendingLimitInUsd } = spendingLimitPolicyContext.result;
 
-      const commitResult = await spendingLimitPolicyContext.commit({
-        appId,
-        amountSpentUsd: Number(tokenInAmountInUsd),
-        maxSpendingLimitInUsd: Number(maxSpendingLimitInUsd),
-        pkpEthAddress,
-        pkpPubKey: pkpInfo.publicKey,
-      });
+    //   const commitResult = await spendingLimitPolicyContext.commit({
+    //     appId,
+    //     amountSpentUsd: Number(tokenInAmountInUsd),
+    //     maxSpendingLimitInUsd: Number(maxSpendingLimitInUsd),
+    //     pkpEthAddress,
+    //     pkpPubKey: pkpInfo.publicKey,
+    //   });
 
-      if (commitResult.allow) {
-        spendTxHash = commitResult.result.spendTxHash;
-      } else {
-        return fail({
-          error:
-            commitResult.error ?? 'Unknown error occurred while committing spending limit policy',
-        });
-      }
-      console.log(
-        `Committed spending limit policy for transaction: ${spendTxHash} (UniswapSwapToolExecute)`,
-      );
-    }
+    //   if (commitResult.allow) {
+    //     spendTxHash = commitResult.result.spendTxHash;
+    //   } else {
+    //     return fail({
+    //       error:
+    //         commitResult.error ?? 'Unknown error occurred while committing spending limit policy',
+    //     });
+    //   }
+    //   console.log(
+    //     `Committed spending limit policy for transaction: ${spendTxHash} (UniswapSwapToolExecute)`,
+    //   );
+    // }
 
     return succeed({
       swapTxHash,
-      spendTxHash,
+      // spendTxHash,
     });
   },
 });

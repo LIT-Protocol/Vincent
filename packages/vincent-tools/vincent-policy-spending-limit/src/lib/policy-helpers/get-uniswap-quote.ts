@@ -63,12 +63,9 @@ export const getUniswapQuote = async ({
       parseUnits(tokenInAmount.toString(), tokenInDecimals).toString(),
     ),
     TradeType.EXACT_INPUT,
-    // TODO Don't think this is needed, we should be using v3,
-    // but this was from the Uniswap docs
-    // https://docs.uniswap.org/sdk/v3/guides/swaps/quoting
-    // {
-    //   useQuoterV2: true,
-    // },
+    {
+      useQuoterV2: true,
+    },
   );
 
   const client = createPublicClient({

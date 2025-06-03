@@ -26,7 +26,15 @@ export const signTx = async ({
   tx: TransactionSerializableEIP1559;
   sigName: string;
 }): Promise<`0x${string}`> => {
-  console.log(`Signing tx: ${sigName} (signTx)`);
+  console.log(`Signing tx: ${sigName} (signTx)`, {
+    tx: {
+      ...tx,
+      value: tx.value?.toString(),
+      gas: tx.gas?.toString(),
+      maxFeePerGas: tx.maxFeePerGas?.toString(),
+      maxPriorityFeePerGas: tx.maxPriorityFeePerGas?.toString(),
+    },
+  });
 
   const publicKeyForLit = pkpPublicKey.replace(/^0x/, '');
   console.log(`Signing using PKP Public Key: ${publicKeyForLit} (signTx)`);
@@ -54,12 +62,13 @@ export const signTx = async ({
     s: ('0x' + s) as `0x${string}`,
     v,
   };
+  console.log('Viem formatted signature (signTx)', signature);
 
-  const recoveredAddress = await recoverTransactionAddress({
+  const recoveredAddressFromTx = await recoverTransactionAddress({
     serializedTransaction: unsignedSerializedTx,
     signature,
   });
-  console.log('Recovered address (signTx)', recoveredAddress);
+  console.log('Recovered address from transaction (signTx)', recoveredAddressFromTx);
 
   return serializeTransaction(tx, signature);
 };

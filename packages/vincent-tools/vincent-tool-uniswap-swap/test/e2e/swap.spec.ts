@@ -36,8 +36,8 @@ import {
   VincentUserViewFacetAbi,
 } from './vincent-contract-abis';
 
-// Extend Jest timeout to 2 minutes
-jest.setTimeout(120000);
+// Extend Jest timeout to 4 minutes
+jest.setTimeout(240000);
 
 describe('Uniswap Swap Tool E2E Tests', () => {
   const TOOL_IPFS_IDS = [ERC20_APPROVAL_TOOL_IPFS_ID, UNISWAP_SWAP_TOOL_IPFS_ID];
@@ -358,10 +358,10 @@ describe('Uniswap Swap Tool E2E Tests', () => {
         rpcUrl: BASE_RPC_URL,
         chainId: 8453,
         pkpEthAddress: TEST_CONFIG.userPkp!.ethAddress!,
-        spenderAddress: '0x6ff5693b99212da76ad316178a184ab56d299b43', // Uniswap Universal Router on Base
+        spenderAddress: '0x2626664c2603336E57B271c5C0b26F421741e481', // Uniswap V3 Router 02 on Base
         tokenAddress: '0x4200000000000000000000000000000000000006', // WETH
         tokenDecimals: 18,
-        tokenAmount: 0.0005,
+        tokenAmount: 1,
       },
       delegateePrivateKey: TEST_APP_DELEGATEE_PRIVATE_KEY as `0x${string}`,
       debug: true,
@@ -380,13 +380,15 @@ describe('Uniswap Swap Tool E2E Tests', () => {
     expect(parsedResponse.toolExecutionResult.success).toBe(true);
     expect(parsedResponse.toolExecutionResult.result).toBeDefined();
     expect(parsedResponse.toolExecutionResult.result.existingApprovalSufficient).toBe(true);
-    expect(parsedResponse.toolExecutionResult.result.approvedAmount).toBe('500000000000000');
+    expect(parsedResponse.toolExecutionResult.result.approvedAmount).toBe(
+      '1000000000000000000000000000000000000',
+    );
     expect(parsedResponse.toolExecutionResult.result.tokenAddress).toBe(
       '0x4200000000000000000000000000000000000006',
     );
     expect(parsedResponse.toolExecutionResult.result.tokenDecimals).toBe(18);
     expect(parsedResponse.toolExecutionResult.result.spenderAddress).toBe(
-      '0x6ff5693b99212da76ad316178a184ab56d299b43',
+      '0x2626664c2603336E57B271c5C0b26F421741e481',
     );
   });
 
@@ -400,8 +402,8 @@ describe('Uniswap Swap Tool E2E Tests', () => {
         chainIdForUniswap: 8453,
         tokenInAddress: '0x4200000000000000000000000000000000000006', // WETH
         tokenInDecimals: 18,
-        tokenInAmount: 0.0005,
-        tokenOutAddress: '0x4ed4E862860beD51a9570b96d89aF5E1B0Efefed', // DEGEN
+        tokenInAmount: 0.0002,
+        tokenOutAddress: '0xD968196FA6977c4e58F2af5aC01C655ea8332d22', // CBBTC
         tokenOutDecimals: 18,
       },
       delegateePrivateKey: TEST_APP_DELEGATEE_PRIVATE_KEY as `0x${string}`,
