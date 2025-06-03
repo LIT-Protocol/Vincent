@@ -34,6 +34,10 @@ export const CreatePolicy = z.object({
     description: 'Policy description',
     example: 'This policy is a foo bar policy',
   }),
+  version: z.string().openapi({
+    description: 'An initial version of the policy; must be an exact semver',
+    example: '1.0.0',
+  }),
 });
 
 export const PolicyVersionDef = BaseDocAttributes.extend({
