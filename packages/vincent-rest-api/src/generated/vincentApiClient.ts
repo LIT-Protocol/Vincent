@@ -14,7 +14,7 @@ const injectedRtkApi = api.injectEndpoints({
       query: (queryArg) => ({
         url: `/app/${queryArg.appId}`,
         method: 'PUT',
-        body: queryArg.createApp,
+        body: queryArg.editApp,
       }),
     }),
     deleteApp: build.mutation<DeleteAppApiResponse, DeleteAppApiArg>({
@@ -75,7 +75,7 @@ const injectedRtkApi = api.injectEndpoints({
       query: (queryArg) => ({
         url: `/tool/${queryArg.packageName}/owner`,
         method: 'PUT',
-        body: queryArg.body,
+        body: queryArg.changeOwner,
       }),
     }),
     createToolVersion: build.mutation<CreateToolVersionApiResponse, CreateToolVersionApiArg>({
@@ -135,7 +135,7 @@ const injectedRtkApi = api.injectEndpoints({
       query: (queryArg) => ({
         url: `/policy/${queryArg.packageName}/owner`,
         method: 'PUT',
-        body: queryArg.body,
+        body: queryArg.changeOwner,
       }),
     }),
   }),
@@ -159,7 +159,7 @@ export type EditAppApiArg = {
   /** ID of the application to edit */
   appId: number;
   /** Developer-defined updated application details */
-  createApp: CreateApp;
+  editApp: EditApp;
 };
 export type DeleteAppApiResponse =
   /** status 200 OK - Resource successfully deleted */ DeleteResponse;
@@ -239,10 +239,7 @@ export type ChangeToolOwnerApiArg = {
   /** Package name of the tool to change the owner of */
   packageName: string;
   /** Developer-defined updated tool details */
-  body: {
-    /** New author wallet address */
-    authorWalletAddress: string;
-  };
+  changeOwner: ChangeOwner;
 };
 export type CreateToolVersionApiResponse = /** status 200 Successful operation */ ToolVersionDef;
 export type CreateToolVersionApiArg = {
@@ -323,10 +320,7 @@ export type ChangePolicyOwnerApiArg = {
   /** Package name of the policy to change the owner of */
   packageName: string;
   /** Developer-defined updated policy details */
-  body: {
-    /** New author wallet address */
-    authorWalletAddress: string;
-  };
+  changeOwner: ChangeOwner;
 };
 export type AppDef = {
   /** Timestamp when this was last modified */
@@ -345,6 +339,8 @@ export type AppDef = {
   logo: string;
   /** Redirect URIs users can be sent to after signing up for your application (with their JWT token) */
   redirectUris: string[];
+  /** List of tool identities to include in the initial version */
+  tools: string[];
   /** Deployment status of the application; dev, test, or prod */
   deploymentStatus: 'dev' | 'test' | 'prod';
   /** Manager wallet address */
@@ -359,6 +355,8 @@ export type AppDefRead = {
   updatedAt: string;
   /** Timestamp when this was created */
   createdAt: string;
+  /** Application ID */
+  appId: number;
   /** The name of the application */
   name: string;
   /** Description of the application */
@@ -371,12 +369,12 @@ export type AppDefRead = {
   logo: string;
   /** Redirect URIs users can be sent to after signing up for your application (with their JWT token) */
   redirectUris: string[];
+  /** List of tool identities to include in the initial version */
+  tools: string[];
   /** Deployment status of the application; dev, test, or prod */
   deploymentStatus: 'dev' | 'test' | 'prod';
   /** Manager wallet address */
   managerAddress: string;
-  /** Application ID */
-  appId: number;
   /** Active version of the application */
   activeVersion: number;
 };
@@ -387,6 +385,28 @@ export type Error = {
   message: string;
 };
 export type CreateApp = {
+  /** Application ID (optional - will be generated if not provided) */
+  appId: number;
+  /** The name of the application */
+  name: string;
+  /** Description of the application */
+  description: string;
+  /** Contact email for the application manager */
+  contactEmail: string;
+  /** URL of the application for users */
+  appUserUrl: string;
+  /** Base64 encoded logo image */
+  logo: string;
+  /** Redirect URIs users can be sent to after signing up for your application (with their JWT token) */
+  redirectUris: string[];
+  /** List of tool identities to include in the initial version */
+  tools: string[];
+  /** Deployment status of the application; dev, test, or prod */
+  deploymentStatus: 'dev' | 'test' | 'prod';
+  /** Manager wallet address */
+  managerAddress: string;
+};
+export type EditApp = {
   /** The name of the application */
   name: string;
   /** Description of the application */
@@ -401,8 +421,6 @@ export type CreateApp = {
   redirectUris: string[];
   /** Deployment status of the application; dev, test, or prod */
   deploymentStatus: 'dev' | 'test' | 'prod';
-  /** Manager wallet address */
-  managerAddress: string;
 };
 export type DeleteResponse = {
   /** Success message */
@@ -602,6 +620,10 @@ export type ToolVersionDef = {
   supportedPolicies: string[];
   /** IPFS CID */
   ipfsCid: string;
+};
+export type ChangeOwner = {
+  /** New owner address */
+  authorWalletAddress: string;
 };
 export type PolicyDef = {
   /** Timestamp when this was last modified */

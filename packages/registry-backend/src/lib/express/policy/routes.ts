@@ -55,11 +55,8 @@ export function registerRoutes(app: Express) {
         savedVersion = await policyVersion.save({ session });
       });
 
-      // FIXME: This doesn't actually match our OpenAPI spec - which should we change? Should we allow a Policy before there is a PolicyVersion?
-      res.status(201).json({
-        policy: savedPolicy,
-        version: savedVersion,
-      });
+      // Return only the policy to match OpenAPI spec
+      res.status(201).json(savedPolicy);
       return;
     });
   });
