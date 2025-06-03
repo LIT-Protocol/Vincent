@@ -1,6 +1,6 @@
-import { z } from 'zod';
 import { Author, Contributor } from './packages';
 import { BaseDocAttributes } from './base';
+import { z } from './openApiZod';
 
 export const PolicyDef = BaseDocAttributes.extend({
   packageName: z.string().openapi({

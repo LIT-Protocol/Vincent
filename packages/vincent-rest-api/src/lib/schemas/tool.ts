@@ -1,6 +1,6 @@
 import { BaseDocAttributes } from './base';
 import { EXAMPLE_WALLET_ADDRESS } from '../openApi/constants';
-import { z } from 'zod';
+import { z } from './openApiZod';
 import { Author, Contributor } from './packages';
 
 // Request body for creating a new tool
