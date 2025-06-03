@@ -34,14 +34,6 @@ export const CreateApp = z.object({
       'Redirect URIs users can be sent to after signing up for your application (with their JWT token)',
     example: ['https://google.com', 'https://litprotocol.com'],
   }),
-  tools: z.array(z.string()).openapi({
-    description: 'List of tool identities to include in the initial version',
-    example: ['@vincent/foo-bar@1.0.0'],
-  }),
-  policies: z.array(z.string()).openapi({
-    description: 'List of policy identities to include in the initial version',
-    example: ['@vincent/foo-bar-policy@1.0.0'],
-  }),
   deploymentStatus: z.enum(['dev', 'test', 'prod']).openapi({
     description: 'Deployment status of the application; dev, test, or prod',
     example: 'dev',
@@ -67,10 +59,23 @@ export const AppDef = BaseDocAttributes.merge(CreateApp).extend({
 
 // Request body for creating a new application version
 export const CreateAppVersion = z.object({
-  tools: z.array(z.string()).openapi({
-    description: 'List of tool identities to include in this version',
-    example: ['@vincent/foo-bar@1.0.0'],
-  }),
+  tools: z
+    .array(
+      z.object({
+        packageName: z.string().openapi({
+          description: 'Tool package name',
+          example: '@vincent/foo-bar',
+        }),
+        version: z.string().openapi({
+          description: 'Tool version',
+          example: '1.0.0',
+        }),
+      }),
+    )
+    .openapi({
+      description: 'List of tools to include in this version',
+      example: [{ packageName: '@vincent/foo-bar', version: '1.0.0' }],
+    }),
   changes: z.string().openapi({
     description: 'Changelog information for this version',
     example: 'I am a changelog trapped in a computer!',
