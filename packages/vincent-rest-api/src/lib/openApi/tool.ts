@@ -1,5 +1,5 @@
 import { CreateTool, EditTool, ToolDef, ToolVersionDef } from '../schemas/tool';
-import { ErrorSchema, VersionChangesSchema } from './baseRegistry';
+import { ErrorSchema, VersionChangesSchema, ChangeOwnerSchema } from './baseRegistry';
 import { z } from '../schemas/openApiZod';
 import { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
 
@@ -243,12 +243,7 @@ export function addToRegistry(registry: OpenAPIRegistry) {
       body: {
         content: {
           'application/json': {
-            schema: z.object({
-              authorWalletAddress: z.string().openapi({
-                description: 'New author wallet address',
-                example: '0x1234567890123456789012345678901234567890',
-              }),
-            }),
+            schema: ChangeOwnerSchema,
           },
         },
         description: 'Developer-defined updated tool details',
