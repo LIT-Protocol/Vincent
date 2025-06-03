@@ -1,6 +1,8 @@
 import {
   keccak256,
+  recoverAddress,
   recoverTransactionAddress,
+  serializeSignature,
   serializeTransaction,
   Signature,
   toBytes,
@@ -47,6 +49,7 @@ export const signTx = async ({
 
   const sigJson = await Lit.Actions.signAndCombineEcdsa({
     toSign: toBytes(txHash),
+    // toSign: toBytes(keccak256(toBytes('foo'))),
     publicKey: publicKeyForLit,
     sigName,
   });
@@ -70,5 +73,40 @@ export const signTx = async ({
   });
   console.log('Recovered address from transaction (signTx)', recoveredAddressFromTx);
 
-  return serializeTransaction(tx, signature);
+  const viemSerializedTx = serializeTransaction(tx, signature);
+  console.log('Viem serialized tx (signTx)', viemSerializedTx);
+
+  // @ts-expect-error Debug
+  const ethersSerializedTx = ethers.utils.serializeTransaction(
+    {
+      to: tx.to,
+      data: tx.data,
+      // @ts-expect-error Debug
+      value: ethers.BigNumber.from(0),
+      // @ts-expect-error Debug
+      gasLimit: ethers.BigNumber.from(tx.gas?.toString()),
+      // @ts-expect-error Debug
+      maxFeePerGas: ethers.BigNumber.from(tx.maxFeePerGas?.toString()),
+      // @ts-expect-error Debug
+      maxPriorityFeePerGas: ethers.BigNumber.from(tx.maxPriorityFeePerGas?.toString()),
+      nonce: tx.nonce,
+      // @ts-expect-error Debug
+      chainId: ethers.BigNumber.from(tx.chainId?.toString()).toNumber(),
+      type: 2,
+    },
+    // @ts-expect-error Debug
+    ethers.utils.joinSignature(signature),
+  );
+  console.log('Ethers serialized tx (signTx)', ethersSerializedTx);
+
+  // @ts-expect-error Debug
+  const ethersRecoveredAddress = ethers.utils.recoverAddress(
+    txHash,
+    // @ts-expect-error Debug
+    ethers.utils.joinSignature(signature),
+  );
+  console.log('Ethers recovered address (signTx)', ethersRecoveredAddress);
+
+  // return ethersSerializedTx;
+  return viemSerializedTx;
 };
