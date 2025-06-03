@@ -20,11 +20,6 @@
     "dist",
     "!**/*.tsbuildinfo"
   ],
-  "nx": {
-    "sourceRoot": "packages/vincent-tool-sdk/src",
-    "projectType": "library",
-    "name": "vincent-tool-sdk"
-  },
   "devDependencies": {
     "jsonc-eslint-parser": "^2.4.0"
   }

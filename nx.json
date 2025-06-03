@@ -44,7 +44,7 @@
     }
   ],
   "release": {
-    "projects": ["vincent-sdk", "@lit-protocol/vincent-policy-spending-limit"],
+    "projects": ["vincent-tool-sdk", "vincent-sdk"],
     "projectsRelationship": "independent",
     "releaseTagPattern": "vincent/{projectName}/{version}",
     "changelog": {
@@ -52,7 +52,14 @@
       "projectChangelogs": true
     },
     "version": {
-      "preVersionCommand": "pnpm dlx nx build vincent-sdk"
+      "preVersionCommand": "pnpm dlx nx run-many --target=build --projects=vincent-tool-sdk,vincent-sdk --parallel=false",
+      "generatorOptions": {
+        "preserveLocalDependencyProtocols": true
+      }
+    },
+    "git": {
+      "tagArgs": "-f",
+      "pushArgs": "--force-with-lease"
     }
   },
   "targetDefaults": {
