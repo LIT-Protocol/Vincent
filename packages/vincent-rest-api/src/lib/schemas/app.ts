@@ -38,6 +38,10 @@ export const CreateApp = z.object({
     description: 'List of tool identities to include in the initial version',
     example: ['@vincent/foo-bar@1.0.0'],
   }),
+  policies: z.array(z.string()).openapi({
+    description: 'List of policy identities to include in the initial version',
+    example: ['@vincent/foo-bar-policy@1.0.0'],
+  }),
   deploymentStatus: z.enum(['dev', 'test', 'prod']).openapi({
     description: 'Deployment status of the application; dev, test, or prod',
     example: 'dev',
