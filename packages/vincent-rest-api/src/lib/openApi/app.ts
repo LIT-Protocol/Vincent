@@ -6,12 +6,14 @@ import {
   AppVersionWithTools,
   CreateApp,
   CreateAppVersion,
+  EditApp,
 } from '../schemas/app';
 import { DeleteResponseSchema, ErrorSchema, VersionChangesSchema } from './baseRegistry';
 import { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
 
 export function addToRegistry(registry: OpenAPIRegistry) {
   const CreateAppSchema = registry.register('CreateApp', CreateApp);
+  const EditAppSchema = registry.register('EditApp', EditApp);
   const AppDefSchema = registry.register('AppDef', AppDef);
   const CreateAppVersionSchema = registry.register('CreateAppVersion', CreateAppVersion);
   const AppVersionDefSchema = registry.register('AppVersionDef', AppVersionDef);
@@ -153,7 +155,7 @@ export function addToRegistry(registry: OpenAPIRegistry) {
       body: {
         content: {
           'application/json': {
-            schema: CreateAppSchema,
+            schema: EditAppSchema,
           },
         },
         description: 'Developer-defined updated application details',
