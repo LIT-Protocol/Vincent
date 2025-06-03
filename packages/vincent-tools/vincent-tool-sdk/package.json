@@ -14,10 +14,10 @@
     "typecheck": "./scripts/precommit-check.sh"
   },
   "type": "commonjs",
-  "main": "./dist/index.js",
-  "typings": "./dist/index.d.ts",
+  "main": "./src/index.js",
+  "typings": "./src/index.d.ts",
   "files": [
-    "dist",
+    "src",
     "!**/*.tsbuildinfo"
   ],
   "devDependencies": {
