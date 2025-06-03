@@ -111,26 +111,6 @@
               "https://litprotocol.com"
             ]
           },
-          "tools": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "description": "List of tool identities to include in the initial version",
-            "example": [
-              "@vincent/foo-bar@1.0.0"
-            ]
-          },
-          "policies": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "description": "List of policy identities to include in the initial version",
-            "example": [
-              "@vincent/foo-bar-policy@1.0.0"
-            ]
-          },
           "deploymentStatus": {
             "type": "string",
             "enum": [
@@ -155,8 +135,6 @@
           "appUserUrl",
           "logo",
           "redirectUris",
-          "tools",
-          "policies",
           "deploymentStatus",
           "managerAddress"
         ]
@@ -287,26 +265,6 @@
               "https://litprotocol.com"
             ]
           },
-          "tools": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "description": "List of tool identities to include in the initial version",
-            "example": [
-              "@vincent/foo-bar@1.0.0"
-            ]
-          },
-          "policies": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "description": "List of policy identities to include in the initial version",
-            "example": [
-              "@vincent/foo-bar-policy@1.0.0"
-            ]
-          },
           "deploymentStatus": {
             "type": "string",
             "enum": [
@@ -339,8 +297,6 @@
           "appUserUrl",
           "logo",
           "redirectUris",
-          "tools",
-          "policies",
           "deploymentStatus",
           "managerAddress",
           "activeVersion"
@@ -352,11 +308,30 @@
           "tools": {
             "type": "array",
             "items": {
-              "type": "string"
+              "type": "object",
+              "properties": {
+                "packageName": {
+                  "type": "string",
+                  "description": "Tool package name",
+                  "example": "@vincent/foo-bar"
+                },
+                "version": {
+                  "type": "string",
+                  "description": "Tool version",
+                  "example": "1.0.0"
+                }
+              },
+              "required": [
+                "packageName",
+                "version"
+              ]
             },
-            "description": "List of tool identities to include in this version",
+            "description": "List of tools to include in this version",
             "example": [
-              "@vincent/foo-bar@1.0.0"
+              {
+                "packageName": "@vincent/foo-bar",
+                "version": "1.0.0"
+              }
             ]
           },
           "changes": {

@@ -339,10 +339,6 @@ export type AppDef = {
   logo: string;
   /** Redirect URIs users can be sent to after signing up for your application (with their JWT token) */
   redirectUris: string[];
-  /** List of tool identities to include in the initial version */
-  tools: string[];
-  /** List of policy identities to include in the initial version */
-  policies: string[];
   /** Deployment status of the application; dev, test, or prod */
   deploymentStatus: 'dev' | 'test' | 'prod';
   /** Manager wallet address */
@@ -371,10 +367,6 @@ export type AppDefRead = {
   logo: string;
   /** Redirect URIs users can be sent to after signing up for your application (with their JWT token) */
   redirectUris: string[];
-  /** List of tool identities to include in the initial version */
-  tools: string[];
-  /** List of policy identities to include in the initial version */
-  policies: string[];
   /** Deployment status of the application; dev, test, or prod */
   deploymentStatus: 'dev' | 'test' | 'prod';
   /** Manager wallet address */
@@ -403,10 +395,6 @@ export type CreateApp = {
   logo: string;
   /** Redirect URIs users can be sent to after signing up for your application (with their JWT token) */
   redirectUris: string[];
-  /** List of tool identities to include in the initial version */
-  tools: string[];
-  /** List of policy identities to include in the initial version */
-  policies: string[];
   /** Deployment status of the application; dev, test, or prod */
   deploymentStatus: 'dev' | 'test' | 'prod';
   /** Manager wallet address */
@@ -489,8 +477,13 @@ export type AppVersionDefRead = {
   changes: string;
 };
 export type CreateAppVersion = {
-  /** List of tool identities to include in this version */
-  tools: string[];
+  /** List of tools to include in this version */
+  tools: {
+    /** Tool package name */
+    packageName: string;
+    /** Tool version */
+    version: string;
+  }[];
   /** Changelog information for this version */
   changes: string;
 };
