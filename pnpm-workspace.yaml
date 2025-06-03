@@ -3,6 +3,7 @@ packages:
   - packages/mcp
   - packages/sdk
   - packages/vincent-rest-api
+  - packages/app-dashboard
 onlyBuiltDependencies:
   - '@swc/core'
   - '@tailwindcss/oxide'
