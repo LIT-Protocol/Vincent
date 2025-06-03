@@ -8,9 +8,6 @@ import {
 } from '@/components/app-dashboard/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/app-dashboard/ui/tabs';
 
-// Import unique blockchain app forms
-import { CreateAppForm, DeleteAppForm, CreateAppVersionForm } from './unique';
-
 // Import generic app forms and all resource-based forms
 import {
   GetAppForm,
@@ -18,6 +15,7 @@ import {
   GetAppVersionsForm,
   GetAppVersionForm,
   EditAppVersionForm,
+  CreateAppVersionForm,
   CreatePolicyForm,
   GetPolicyForm,
   EditPolicyForm,
@@ -36,6 +34,8 @@ import {
   EditToolVersionForm,
   GetAllToolsForm,
   GetAllPoliciesForm,
+  CreateAppForm,
+  DeleteAppForm,
 } from './generic';
 
 function InnerTabbedContainer({

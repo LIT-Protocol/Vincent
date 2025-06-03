@@ -29,7 +29,7 @@ const appRoutes = {
       element: <AppPages.CreateApp />,
     },
     {
-      path: '/mock-api-forms',
+      path: '/mock-api-forms/appId/:appId',
       element: <AppPages.MockApiForms />,
     },
     {
