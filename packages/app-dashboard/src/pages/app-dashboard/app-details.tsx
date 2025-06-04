@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router';
 import { useAccount } from 'wagmi';
-import { ArrowLeft, Settings, FileText, ChevronDown, ChevronRight, GitBranch } from 'lucide-react';
+import { Settings, FileText, ChevronDown, ChevronRight, GitBranch } from 'lucide-react';
 
 import {
   Card,

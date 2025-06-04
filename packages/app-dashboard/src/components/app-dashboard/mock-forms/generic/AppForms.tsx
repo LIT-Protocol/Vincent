@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { useUrlAppId } from '@/hooks/user-dashboard/useUrlAppId';
 import { useAccount } from 'wagmi';
 import { VersionChanges } from '../schemas/base';
-import { useLocation, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 
 export function CreateAppForm() {
   const [createApp, { isLoading }] = vincentApiClient.useCreateAppMutation();

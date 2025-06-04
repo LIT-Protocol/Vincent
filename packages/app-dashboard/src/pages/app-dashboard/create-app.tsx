@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useAccount } from 'wagmi';
 import { Helmet } from 'react-helmet';
-import { ArrowLeft, Plus, Wrench, Shield } from 'lucide-react';
+import { Plus, Wrench, Shield } from 'lucide-react';
 
 import { CreateAppForm } from '@/components/app-dashboard/mock-forms/generic/AppForms';
 import { CreateToolForm } from '@/components/app-dashboard/mock-forms/generic/ToolForms';
