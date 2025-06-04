@@ -1,7 +1,6 @@
 import { z } from '../schemas/openApiZod';
 
 import {
-  AppDef,
   AppVersionDef,
   AppVersionWithTools,
   CreateApp,
@@ -14,7 +13,6 @@ import { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
 export function addToRegistry(registry: OpenAPIRegistry) {
   const CreateAppSchema = registry.register('CreateApp', CreateApp);
   const EditAppSchema = registry.register('EditApp', EditApp);
-  const AppDefSchema = registry.register('AppDef', AppDef);
   const CreateAppVersionSchema = registry.register('CreateAppVersion', CreateAppVersion);
   const AppVersionDefSchema = registry.register('AppVersionDef', AppVersionDef);
   const AppVersionWithToolsSchema = registry.register('AppVersionWithTools', AppVersionWithTools);
@@ -31,7 +29,7 @@ export function addToRegistry(registry: OpenAPIRegistry) {
         description: 'Successful operation',
         content: {
           'application/json': {
-            schema: z.array(AppDefSchema),
+            schema: z.array(CreateApp),
           },
         },
       },
@@ -69,7 +67,7 @@ export function addToRegistry(registry: OpenAPIRegistry) {
         description: 'Successful operation',
         content: {
           'application/json': {
-            schema: AppDefSchema,
+            schema: CreateApp,
           },
         },
       },
@@ -114,7 +112,7 @@ export function addToRegistry(registry: OpenAPIRegistry) {
         description: 'Successful operation',
         content: {
           'application/json': {
-            schema: AppDefSchema,
+            schema: CreateApp,
           },
         },
       },
@@ -167,7 +165,7 @@ export function addToRegistry(registry: OpenAPIRegistry) {
         description: 'Successful operation',
         content: {
           'application/json': {
-            schema: AppDefSchema,
+            schema: CreateApp,
           },
         },
       },
