@@ -42,7 +42,7 @@
     }
   ],
   "release": {
-    "projects": ["vincent-sdk", "vincent-mcp", "vincent-rest-api"],
+    "projects": ["vincent-tool-sdk", "vincent-sdk", "vincent-mcp", "vincent-rest-api"],
     "projectsRelationship": "independent",
     "releaseTagPattern": "vincent/{projectName}/{version}",
     "versionPlans": true,
@@ -51,7 +51,10 @@
       "projectChangelogs": true
     },
     "version": {
-      "preVersionCommand": "pnpm dlx nx run-many --target=build --projects=vincent-sdk,vincent-mcp,vincent-rest-api --parallel=false"
+      "preVersionCommand": "pnpm dlx nx run-many --target=build --projects=vincent-tool-sdk,vincent-sdk,vincent-mcp,vincent-rest-api --parallel=false",
+      "generatorOptions": {
+        "preserveLocalDependencyProtocols": true
+      }
     },
     "git": {
       "tagArgs": "-f",
