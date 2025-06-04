@@ -29,11 +29,35 @@ const appRoutes = {
       element: <AppPages.CreateApp />,
     },
     {
+      path: '/create-policy',
+      element: <AppPages.CreatePolicy />,
+    },
+    {
+      path: '/create-tool',
+      element: <AppPages.CreateTool />,
+    },
+    {
       path: '/mock-api-forms/appId/:appId',
       element: <AppPages.MockApiForms />,
     },
     {
       path: '/appId/:appId',
+      element: <AppPages.AppDetails />,
+    },
+    {
+      path: '/appId/:appId/edit',
+      element: <AppPages.AppDetails />,
+    },
+    {
+      path: '/appId/:appId/delete',
+      element: <AppPages.AppDetails />,
+    },
+    {
+      path: '/appId/:appId/create-version',
+      element: <AppPages.AppDetails />,
+    },
+    {
+      path: '/appId/:appId/edit-version',
       element: <AppPages.AppDetails />,
     },
     {

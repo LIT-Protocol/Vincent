@@ -5,10 +5,9 @@ import {
   CreatePolicyVersion,
   GetPolicy,
   GetPolicyVersions,
-  ChangePolicyOwner,
-  EditPolicyVersion,
   GetPolicyVersion,
 } from '../schemas/policy';
+import { VersionChanges, ChangeOwner } from '../schemas/base';
 import { vincentApiClient } from '../vincentApiClient';
 import { z } from 'zod';
 
@@ -176,7 +175,7 @@ export function ChangePolicyOwnerForm() {
 
   return (
     <FormRenderer
-      schema={ChangePolicyOwner}
+      schema={ChangeOwner}
       onSubmit={handleSubmit}
       title="Change Policy Owner"
       description="Change the owner of a policy"
@@ -230,7 +229,7 @@ export function EditPolicyVersionForm() {
 
   return (
     <FormRenderer
-      schema={EditPolicyVersion}
+      schema={VersionChanges}
       onSubmit={handleSubmit}
       title="Edit Policy Version"
       description="Update a specific version of a policy"

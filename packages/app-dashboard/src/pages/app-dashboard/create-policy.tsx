@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router';
 import { useAccount } from 'wagmi';
 import { Helmet } from 'react-helmet';
 
-import { CreateAppForm } from '@/components/app-dashboard/mock-forms/generic';
+import { CreatePolicyForm } from '@/components/app-dashboard/mock-forms/generic';
 import {
   Card,
   CardContent,
@@ -12,7 +12,7 @@ import {
   CardTitle,
 } from '@/components/app-dashboard/ui/card';
 
-export function CreateApp() {
+export function CreatePolicy() {
   const { isConnected } = useAccount();
   const navigate = useNavigate();
 
@@ -29,8 +29,8 @@ export function CreateApp() {
   return (
     <>
       <Helmet>
-        <title>Vincent | Create App</title>
-        <meta name="description" content="Create a new application for Vincent" />
+        <title>Vincent | Create Policy</title>
+        <meta name="description" content="Create a new policy for Vincent" />
       </Helmet>
 
       <div className="flex h-screen">
@@ -46,7 +46,7 @@ export function CreateApp() {
             <h2 className="text-xl font-bold text-gray-900 mb-6">Vincent</h2>
             <nav className="space-y-2">
               <div className="w-full flex items-center px-4 py-2 text-left rounded-lg border border-gray-300 text-gray-900">
-                Create App
+                Create Policy
               </div>
             </nav>
           </div>
@@ -55,7 +55,7 @@ export function CreateApp() {
         {/* Main Content */}
         <div className="flex-1 overflow-auto">
           <div className="p-6">
-            <CreateAppForm />
+            <CreatePolicyForm />
           </div>
         </div>
       </div>
@@ -63,4 +63,4 @@ export function CreateApp() {
   );
 }
 
-export default CreateApp;
+export default CreatePolicy;

@@ -1,5 +1,5 @@
 import { BaseDocAttributes } from './base';
-import { EXAMPLE_WALLET_ADDRESS } from './app';
+import { EXAMPLE_WALLET_ADDRESS } from './constants';
 import { z } from './openApiZod';
 import { Author, Contributor } from './packages';
 

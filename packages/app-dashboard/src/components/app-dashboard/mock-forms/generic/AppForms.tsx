@@ -1,16 +1,10 @@
 import { FormRenderer } from './FormRenderer';
-import {
-  CreateApp,
-  CreateAppVersion,
-  GetAppVersion,
-  EditApp,
-  DeleteApp,
-  EditAppVersion,
-} from '../schemas/app';
+import { CreateApp, CreateAppVersion, EditApp, DeleteApp } from '../schemas/app';
 import { vincentApiClient } from '../vincentApiClient';
 import { z } from 'zod';
 import { useUrlAppId } from '@/hooks/user-dashboard/useUrlAppId';
 import { useAccount } from 'wagmi';
+import { VersionChanges } from '../schemas/base';
 
 export function CreateAppForm() {
   const [createApp, { isLoading }] = vincentApiClient.useCreateAppMutation();
@@ -43,11 +37,6 @@ export function CreateAppForm() {
 
   return (
     <div>
-      {isConnected && address && (
-        <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
-          <p className="text-blue-800">Connected Address: {address}</p>
-        </div>
-      )}
       <FormRenderer
         schema={CreateApp}
         onSubmit={handleSubmit}
@@ -65,7 +54,7 @@ export function CreateAppForm() {
   );
 }
 
-export function EditAppForm() {
+export function EditAppForm({ appData }: { appData?: any }) {
   const [editApp, { isLoading }] = vincentApiClient.useEditAppMutation();
   const { address, isConnected } = useAccount();
   const { appId } = useUrlAppId();
@@ -95,11 +84,6 @@ export function EditAppForm() {
 
   return (
     <div>
-      {isConnected && address && (
-        <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
-          <p className="text-blue-800">Connected Address: {address}</p>
-        </div>
-      )}
       <FormRenderer
         schema={EditApp}
         onSubmit={handleSubmit}
@@ -108,6 +92,7 @@ export function EditAppForm() {
         defaultValues={{
           redirectUris: [''],
         }}
+        appData={appData}
         isLoading={isLoading}
       />
     </div>
@@ -151,7 +136,7 @@ export function GetAppForm() {
   );
 }
 
-export function DeleteAppForm() {
+export function DeleteAppForm({ appData }: { appData?: any }) {
   const [deleteApp, { isLoading }] = vincentApiClient.useDeleteAppMutation();
   const { appId } = useUrlAppId();
 
@@ -175,12 +160,13 @@ export function DeleteAppForm() {
       onSubmit={handleSubmit}
       title="Delete App"
       description="Delete an application"
+      appData={appData}
       isLoading={isLoading}
     />
   );
 }
 
-export function CreateAppVersionForm() {
+export function CreateAppVersionForm({ appData }: { appData?: any }) {
   const [createAppVersion, { isLoading }] = vincentApiClient.useCreateAppVersionMutation();
   const { appId } = useUrlAppId();
 
@@ -210,6 +196,7 @@ export function CreateAppVersionForm() {
       defaultValues={{
         tools: [''],
       }}
+      appData={appData}
       isLoading={isLoading}
     />
   );
@@ -251,9 +238,22 @@ export function GetAppVersionsForm() {
   );
 }
 
+/*
+// Commenting this out becuase we'll never actually have a form to get a specific version of an app
+// The actual implementation will get ALL versions, render them as a list, and have users click to
+// directly hit the API to get a specific version.
+
 export function GetAppVersionForm() {
   const [getAppVersion, { isLoading }] = vincentApiClient.useLazyGetAppVersionQuery();
   const { appId } = useUrlAppId();
+
+  const GetAppVersion = z.object({
+  version: z.number().openapi({
+    description: 'Application version number',
+    example: 1,
+  }),
+});
+
 
   const handleSubmit = async (data: any) => {
     if (!appId) {
@@ -287,8 +287,9 @@ export function GetAppVersionForm() {
     </div>
   );
 }
+*/
 
-export function EditAppVersionForm() {
+export function EditAppVersionForm({ appData }: { appData?: any }) {
   const [editAppVersion, { isLoading }] = vincentApiClient.useEditAppVersionMutation();
   const { appId } = useUrlAppId();
 
@@ -313,10 +314,36 @@ export function EditAppVersionForm() {
 
   return (
     <FormRenderer
-      schema={EditAppVersion}
+      schema={VersionChanges}
       onSubmit={handleSubmit}
       title="Edit App Version"
       description="Update changes for a specific app version"
+      isLoading={isLoading}
+    />
+  );
+}
+
+export function GetAllAppsForm() {
+  const [listApps, { isLoading }] = vincentApiClient.useLazyListAppsQuery();
+
+  const handleSubmit = async () => {
+    try {
+      const result = await listApps().unwrap();
+      alert(`Success! Retrieved ${result.length} apps: ${JSON.stringify(result, null, 2)}`);
+    } catch (error: any) {
+      alert(`Error: ${error?.data?.message || error?.message || 'Unknown error'}`);
+    }
+  };
+
+  // Create a minimal schema for the form (no fields needed)
+  const EmptySchema = z.object({});
+
+  return (
+    <FormRenderer
+      schema={EmptySchema}
+      onSubmit={handleSubmit}
+      title="Get All Apps"
+      description="Fetch all applications from the system"
       isLoading={isLoading}
     />
   );

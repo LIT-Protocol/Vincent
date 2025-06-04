@@ -1,9 +1,17 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router';
-import { formCompleteVincentAppForDev } from '@/services';
+import { useParams, useNavigate, useLocation } from 'react-router';
 import { useAccount } from 'wagmi';
-import { AppView } from '@/services/types';
-import { ArrowRight, Plus, Settings } from 'lucide-react';
+import {
+  ArrowLeft,
+  Settings,
+  Plus,
+  Trash2,
+  Edit,
+  FileText,
+  ChevronDown,
+  ChevronRight,
+} from 'lucide-react';
+
 import { Button } from '@/components/shared/ui/button';
 import {
   Card,
@@ -12,22 +20,91 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/app-dashboard/ui/card';
-import { mapEnumToTypeName } from '@/services/types';
 import { useErrorPopup } from '@/providers/ErrorPopup';
 import { StatusMessage } from '@/utils/shared/statusMessage';
-import { AppUrlGenerator } from '@/components/app-dashboard/dashboard/AppUrlGenerator';
+import { vincentApiClient } from '@/components/app-dashboard/mock-forms/vincentApiClient';
+
+// Import app management forms
+import {
+  EditAppForm,
+  DeleteAppForm,
+  CreateAppVersionForm,
+  EditAppVersionForm,
+} from '@/components/app-dashboard/mock-forms/generic/AppForms';
+
+// Form components mapping
+const formComponents: {
+  [key: string]: {
+    component: React.ComponentType<{ appData?: any }>;
+    title: string;
+    description: string;
+  };
+} = {
+  edit: {
+    component: EditAppForm,
+    title: 'Edit App',
+    description: 'Update app details and configuration',
+  },
+  delete: {
+    component: DeleteAppForm,
+    title: 'Delete App',
+    description: 'Permanently delete this application',
+  },
+  'create-version': {
+    component: CreateAppVersionForm,
+    title: 'Create App Version',
+    description: 'Create a new version of this app',
+  },
+  'edit-version': {
+    component: EditAppVersionForm,
+    title: 'Edit App Version',
+    description: 'Update an existing app version',
+  },
+};
+
+// Menu items for app management
+const appMenuItems = [
+  { id: 'app-details', label: 'App Details', icon: FileText },
+  {
+    id: 'app-management',
+    label: 'App Management',
+    icon: Settings,
+    submenu: [
+      { id: 'edit', label: 'Edit App' },
+      { id: 'delete', label: 'Delete App' },
+      { id: 'create-version', label: 'Create App Version' },
+      { id: 'edit-version', label: 'Edit App Version' },
+    ],
+  },
+];
 
 export function AppDetail() {
   const params = useParams();
-  const appIdParam = params.appId;
   const navigate = useNavigate();
+  const location = useLocation();
   const { address, isConnected } = useAccount();
-  const [app, setApp] = useState<AppView | null>(null);
+
+  const [app, setApp] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [statusMessage, setStatusMessage] = useState<string>('');
   const [statusType, setStatusType] = useState<'info' | 'warning' | 'success' | 'error'>('info');
+  const [expandedMenus, setExpandedMenus] = useState<Set<string>>(new Set(['app-management']));
 
-  // Add the error popup hook
+  // Get current action from URL path
+  const getActionFromPath = () => {
+    const path = location.pathname;
+    const appIdPattern = `/appId/${params.appId}`;
+
+    if (path === appIdPattern) {
+      return null; // Default app details view
+    }
+
+    const actionPart = path.replace(`${appIdPattern}/`, '');
+    return actionPart;
+  };
+
+  const currentAction = getActionFromPath();
+  const appIdParam = params.appId;
   const { showError } = useErrorPopup();
 
   // Helper function to set status messages
@@ -39,55 +116,105 @@ export function AppDetail() {
     [],
   );
 
-  // Create enhanced error function that shows both popup and status error
+  // Create enhanced error function
   const showErrorWithStatus = useCallback(
     (errorMessage: string, title?: string, details?: string) => {
-      // Show error in popup
       showError(errorMessage, title || 'Error', details);
-      // Also show in status message
       showStatus(errorMessage, 'error');
     },
     [showError, showStatus],
   );
 
+  // Use the proper GET endpoint for a single app
+  const {
+    data: apiApp,
+    error: apiError,
+    isLoading: isApiLoading,
+  } = vincentApiClient.useGetAppQuery(
+    { appId: parseInt(appIdParam || '0') },
+    { skip: !appIdParam },
+  );
+
+  // Handle menu expansion (but prevent closing app-management)
+  const toggleMenu = (menuId: string) => {
+    if (menuId === 'app-management') return; // Prevent toggling app-management
+
+    setExpandedMenus((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(menuId)) {
+        newSet.delete(menuId);
+      } else {
+        newSet.add(menuId);
+      }
+      return newSet;
+    });
+  };
+
+  // Handle navigation and form selection
+  const handleMenuSelection = (id: string) => {
+    if (id === 'app-details') {
+      navigate(`/appId/${appIdParam}`);
+    } else if (formComponents[id]) {
+      navigate(`/appId/${appIdParam}/${id}`);
+    }
+  };
+
   const loadAppData = useCallback(async () => {
-    if (!address || !appIdParam) return;
+    if (!address || !appIdParam) {
+      return;
+    }
 
     try {
       setIsLoading(true);
-      const appData = await formCompleteVincentAppForDev(address);
 
-      if (appData && appData.length > 0) {
-        // Find the specific app by appId
-        const foundApp = appData.find((app) => app.appId && app.appId.toString() === appIdParam);
-        if (foundApp) {
-          setApp(foundApp);
+      if (isApiLoading) {
+        return;
+      }
+
+      if (apiError) {
+        console.error('Error fetching app from API:', apiError);
+        showErrorWithStatus('Failed to load app data from API', 'Error');
+        return;
+      }
+
+      if (apiApp) {
+        // Check if the current user is the manager of this app
+        if (
+          apiApp.managerAddress &&
+          apiApp.managerAddress.toLowerCase() === address.toLowerCase()
+        ) {
+          setApp(apiApp);
         } else {
-          // If app not found, navigate back to dashboard
-          navigate('/');
+          // User is not authorized to view this app
+          showErrorWithStatus('You are not authorized to view this app', 'Access Denied');
+          setApp(null);
         }
       } else {
-        // If no apps found, navigate back to dashboard
-        navigate('/');
+        setApp(null);
       }
     } catch (error) {
-      console.error('Error loading app data:', error);
+      console.error('Error processing app data:', error);
       showErrorWithStatus('Failed to load app data', 'Error');
-      navigate('/');
+      setApp(null);
     } finally {
       setIsLoading(false);
     }
-  }, [address, appIdParam, navigate, showErrorWithStatus]);
+  }, [address, appIdParam, showErrorWithStatus, apiApp, apiError, isApiLoading]);
 
   useEffect(() => {
-    if (isConnected) {
+    if (isConnected && !isApiLoading) {
       loadAppData();
-    } else {
+    } else if (!isConnected) {
       navigate('/');
     }
-  }, [isConnected, loadAppData, navigate]);
+  }, [isConnected, loadAppData, navigate, isApiLoading]);
 
-  if (isLoading) {
+  if (!isConnected) {
+    navigate('/');
+    return null;
+  }
+
+  if (isLoading || isApiLoading) {
     return (
       <div className="flex items-center justify-center h-[50vh]">
         <div className="space-y-4 text-center">
@@ -99,229 +226,227 @@ export function AppDetail() {
   }
 
   if (!app) {
+    navigate('/');
     return null;
   }
 
-  return (
-    <div className="space-y-8">
-      {statusMessage && <StatusMessage message={statusMessage} type={statusType} />}
+  // App details view component
+  const renderAppDetails = () => {
+    // Filter out unnecessary fields and format dates
+    const filteredApp: [string, any][] = Object.entries(app)
+      .filter(
+        ([key]) => !['_id', '__v', 'logo', 'managerAddress', 'name', 'description'].includes(key),
+      )
+      .map((entry: [string, any]) => {
+        const [key, value] = entry;
+        if (key === 'createdAt' || key === 'updatedAt') {
+          return [key, new Date(value as string).toLocaleString()];
+        }
+        return [key, value];
+      });
 
-      <div className="flex justify-between items-center">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" onClick={() => navigate('/')}>
-            <ArrowRight className="h-4 w-4 rotate-180" />
-          </Button>
-          <h1 className="text-3xl font-bold text-black">{app.appName}</h1>
-        </div>
-        <div className="flex gap-2 items-center">
-          {app.authorizedRedirectUris && app.authorizedRedirectUris.length > 0 && (
-            <AppUrlGenerator app={app} />
+    return (
+      <div className="space-y-6">
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            <h1 className="text-3xl font-bold text-gray-900">{app.name}</h1>
+            <p className="text-gray-600 mt-2">{app.description}</p>
+          </div>
+          {app.logo && (
+            <div className="ml-6 flex-shrink-0">
+              <img
+                src={app.logo.startsWith('data:') ? app.logo : `data:image/png;base64,${app.logo}`}
+                alt="App logo"
+                className="w-16 h-16 rounded-lg border shadow-sm object-cover"
+                onError={(e) => {
+                  const target = e.currentTarget;
+                  target.style.display = 'none';
+                  const errorDiv = document.createElement('div');
+                  errorDiv.className =
+                    'w-16 h-16 bg-gray-100 rounded-lg border flex items-center justify-center text-xs text-gray-500';
+                  errorDiv.textContent = 'No Logo';
+                  target.parentNode?.appendChild(errorDiv);
+                }}
+              />
+            </div>
           )}
-          <Button variant="outline" onClick={() => navigate(`/appId/${app.appId}/delegatee`)}>
-            <Plus className="h-4 w-4 mr-2 font-bold text-black" />
-            Manage Delegatees
-          </Button>
-          <Button variant="outline" onClick={() => navigate(`/appId/${app.appId}/tool-policies`)}>
-            <Plus className="h-4 w-4 mr-2 font-bold text-black" />
-            Manage Tool Policies
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => navigate(`/appId/${app.appId}/advanced-functions`)}
+        </div>
+
+        <div className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-gray-900">App Information</CardTitle>
+              <CardDescription className="text-gray-700">Application details</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 gap-4">
+                {filteredApp.map((entry: [string, any]) => {
+                  const [key, value] = entry;
+                  return (
+                    <div key={key} className="border-b border-gray-100 pb-3 last:border-b-0">
+                      <div className="flex flex-col sm:flex-row sm:justify-between">
+                        <span className="font-medium text-gray-600 text-sm uppercase tracking-wide">
+                          {key.replace(/([A-Z])/g, ' $1').trim()}
+                        </span>
+                        <div className="mt-1 sm:mt-0 sm:text-right">
+                          {Array.isArray(value) ? (
+                            <div className="space-y-1">
+                              {value.map((item, index) => (
+                                <div key={index}>
+                                  <span className="inline-block bg-blue-50 text-blue-700 px-2 py-1 rounded text-sm">
+                                    {item}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          ) : key === 'appUserUrl' ? (
+                            <a
+                              href={String(value)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-600 hover:underline text-sm"
+                            >
+                              {String(value)}
+                            </a>
+                          ) : key === 'deploymentStatus' ? (
+                            <span
+                              className={`inline-block px-2 py-1 rounded text-sm font-medium ${
+                                value === 'prod'
+                                  ? 'bg-green-100 text-green-800'
+                                  : value === 'test'
+                                    ? 'bg-yellow-100 text-yellow-800'
+                                    : 'bg-gray-100 text-gray-800'
+                              }`}
+                            >
+                              {String(value).toUpperCase()}
+                            </span>
+                          ) : (
+                            <span className="text-gray-900 text-sm">{String(value)}</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div className="flex h-screen">
+      {/* Left Sidebar */}
+      <div className="w-80 bg-white border-r border-gray-200">
+        <div className="p-6">
+          <button
+            onClick={() => navigate('/')}
+            className="flex items-center text-xl font-bold text-gray-900 mb-6 hover:text-blue-600 transition-colors cursor-pointer"
+            style={{ border: 'none', outline: 'none', boxShadow: 'none', background: 'none' }}
           >
-            <Settings className="h-4 w-4 mr-2 font-bold text-black" />
-            Advanced Functions
-          </Button>
+            <ArrowLeft className="h-5 w-5 mr-2" />
+            Back to Dashboard
+          </button>
+          <nav className="space-y-2">
+            {appMenuItems.map((item) => {
+              const Icon = item.icon;
+
+              // Handle items with submenus
+              if (item.submenu) {
+                const isExpanded = expandedMenus.has(item.id);
+                const isAppManagement = item.id === 'app-management';
+
+                return (
+                  <div key={item.id}>
+                    <div
+                      className="w-full flex items-center justify-between px-4 py-2 rounded-lg transition-colors text-gray-700"
+                      style={{ border: 'none', outline: 'none', boxShadow: 'none' }}
+                    >
+                      <div className="flex items-center">
+                        <Icon className="h-5 w-5 mr-3" />
+                        {item.label}
+                      </div>
+                      {!isAppManagement && (
+                        <button
+                          onClick={() => toggleMenu(item.id)}
+                          style={{ border: 'none', outline: 'none', boxShadow: 'none' }}
+                        >
+                          {isExpanded ? (
+                            <ChevronDown className="h-4 w-4" />
+                          ) : (
+                            <ChevronRight className="h-4 w-4" />
+                          )}
+                        </button>
+                      )}
+                    </div>
+                    {isExpanded && (
+                      <div className="ml-8 mt-1 space-y-1">
+                        {item.submenu.map((subItem) => (
+                          <button
+                            key={subItem.id}
+                            onClick={() => handleMenuSelection(subItem.id)}
+                            className={`w-full text-left px-4 py-2 text-sm rounded-lg transition-colors ${
+                              currentAction === subItem.id
+                                ? 'bg-blue-50 text-blue-700 font-medium'
+                                : 'text-gray-600 hover:bg-gray-50'
+                            }`}
+                            style={{ border: 'none', outline: 'none', boxShadow: 'none' }}
+                          >
+                            {subItem.label}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              }
+
+              // Handle regular items
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => handleMenuSelection(item.id)}
+                  className={`w-full flex items-center px-4 py-2 text-left rounded-lg transition-colors ${
+                    item.id === 'app-details' && !currentAction
+                      ? 'bg-gray-100 text-gray-900'
+                      : 'text-gray-700 hover:bg-gray-50'
+                  }`}
+                  style={{ border: 'none', outline: 'none', boxShadow: 'none' }}
+                >
+                  <Icon className="h-5 w-5 mr-3" />
+                  {item.label}
+                </button>
+              );
+            })}
+          </nav>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-black">App Details</CardTitle>
-            <CardDescription className="text-black">{app.description}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="text-sm text-black">
-                <span className="font-medium">App ID:</span> {app.appId}
-              </div>
-              <div className="text-sm text-black">
-                <span className="font-medium">Management Wallet:</span> {app.managementWallet}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      {/* Main Content */}
+      <div className="flex-1 overflow-auto">
+        <div className="p-6">
+          {statusMessage && <StatusMessage message={statusMessage} type={statusType} />}
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-black">Tool Policies</CardTitle>
-            <CardDescription className="text-black">
-              {app.toolPolicies.length === 0
-                ? 'No tool policies configured yet.'
-                : `${app.toolPolicies.length} app versions with tool policies`}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {app.toolPolicies.length === 0 ? (
-              <div className="text-center py-4">
-                <p className="text-sm text-black">No Tool Policies Yet</p>
-              </div>
+          {currentAction && formComponents[currentAction] ? (
+            // Render selected form
+            app ? (
+              (() => {
+                const FormComponent = formComponents[currentAction].component;
+                return <FormComponent appData={app} />;
+              })()
             ) : (
-              <div className="space-y-4">
-                {(() => {
-                  return [...app.toolPolicies]
-                    .sort((a, b) => {
-                      // Handle the array-object hybrid format
-                      const versionA = a.version || (a[0] ? a[0] : 0);
-                      const versionB = b.version || (b[0] ? b[0] : 0);
-
-                      return Number(versionB) - Number(versionA);
-                    })
-                    .map((versionData, i) => {
-                      try {
-                        const version = versionData.version;
-                        const enabled = versionData.enabled;
-                        const tools = versionData.tools;
-
-                        if (!tools || tools.length === 0) {
-                          return (
-                            <div
-                              key={i}
-                              className={`mb-4 ${i === 0 ? 'bg-green-50 p-4 rounded-lg' : ''}`}
-                            >
-                              <div className="font-medium mb-2 text-black">
-                                Version: {version.toString()} {enabled ? '(Enabled)' : '(Disabled)'}
-                                {i === 0 && (
-                                  <span className="ml-2 text-xs text-green-600">(Latest)</span>
-                                )}
-                              </div>
-                              <p className="text-sm italic text-gray-500">No tools configured</p>
-                            </div>
-                          );
-                        }
-
-                        return (
-                          <div
-                            key={i}
-                            className={`mb-4 ${i === 0 ? 'bg-green-50 p-4 rounded-lg' : ''}`}
-                          >
-                            <div className="font-medium mb-2 text-black">
-                              Version: {version.toString()} {enabled ? '(Enabled)' : '(Disabled)'}
-                              {i === 0 && (
-                                <span className="ml-2 text-xs text-green-600">(Latest)</span>
-                              )}
-                            </div>
-
-                            {tools.map((tool: any, j: number) => {
-                              return (
-                                <div
-                                  key={j}
-                                  className="border-b border-gray-100 pb-2 mb-2 ml-4 text-black"
-                                >
-                                  <div className="font-medium mb-1">Tool CID:</div>
-                                  <div className="text-sm truncate">{tool.toolIpfsCid}</div>
-
-                                  {tool.policies && tool.policies.length > 0 ? (
-                                    <div className="mt-2">
-                                      <div className="font-medium mb-1">Policies:</div>
-                                      <div className="pl-2 text-sm">
-                                        {tool.policies.map((policy: any, k: number) => {
-                                          return (
-                                            <div key={k} className="mb-1">
-                                              <div className="text-xs">
-                                                <span className="font-medium">Policy CID:</span>{' '}
-                                                {policy.policyIpfsCid}
-                                                <br />
-                                                {policy.parameterTypes &&
-                                                policy.parameterNames &&
-                                                policy.parameterTypes.length > 0 &&
-                                                policy.parameterNames.length > 0 ? (
-                                                  <div>
-                                                    <span className="font-medium">Parameters:</span>
-                                                    <ul className="ml-2 mt-1">
-                                                      {policy.parameterNames.map(
-                                                        (name: string, paramIndex: number) => (
-                                                          <li key={paramIndex}>
-                                                            {name}:{' '}
-                                                            {mapEnumToTypeName(
-                                                              Number(
-                                                                policy.parameterTypes[paramIndex],
-                                                              ),
-                                                            )}
-                                                          </li>
-                                                        ),
-                                                      )}
-                                                    </ul>
-                                                  </div>
-                                                ) : (
-                                                  <span className="text-xs italic">
-                                                    (No parameters)
-                                                  </span>
-                                                )}
-                                              </div>
-                                            </div>
-                                          );
-                                        })}
-                                      </div>
-                                    </div>
-                                  ) : (
-                                    <div className="mt-2">
-                                      <div className="text-xs italic">
-                                        No policies defined for this tool
-                                      </div>
-                                    </div>
-                                  )}
-                                </div>
-                              );
-                            })}
-                          </div>
-                        );
-                      } catch (error) {
-                        console.error(`Error rendering item ${i}:`, error);
-                        return (
-                          <div key={i} className="mb-4 p-4 bg-red-50 rounded-lg">
-                            <div className="text-red-800">
-                              Error rendering version: {(error as Error).message}
-                            </div>
-                            <pre className="text-xs overflow-auto mt-2">
-                              {JSON.stringify(versionData, null, 2)}
-                            </pre>
-                          </div>
-                        );
-                      }
-                    });
-                })()}
+              <div className="flex items-center justify-center py-8">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900"></div>
+                <span className="ml-2 text-gray-600">Loading app data...</span>
               </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-black">Delegatees</CardTitle>
-            <CardDescription className="text-black">
-              {app.delegatees.length === 0
-                ? 'No delegatees configured yet.'
-                : `${app.delegatees.length} delegatees configured`}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {!app.delegatees || !Array.isArray(app.delegatees) || app.delegatees.length === 0 ? (
-              <div className="text-center py-4">
-                <p className="text-sm text-black">Add delegatees to execute your application</p>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {app.delegatees.map((delegatee, i) => (
-                  <div key={i} className="text-sm text-black">
-                    <code className="bg-gray-50 px-1 py-0.5 rounded text-xs">{delegatee}</code>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+            )
+          ) : (
+            // Render app details
+            renderAppDetails()
+          )}
+        </div>
       </div>
     </div>
   );

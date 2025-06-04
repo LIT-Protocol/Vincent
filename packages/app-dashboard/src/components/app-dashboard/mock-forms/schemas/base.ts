@@ -1,4 +1,5 @@
 import { z } from './openApiZod';
+import { EXAMPLE_WALLET_ADDRESS } from './constants';
 
 export const BaseDocAttributes = z.object({
   _id: z.string().openapi({ description: 'Document ID', readOnly: true }),
@@ -25,6 +26,14 @@ export const VersionChanges = z.object({
   changes: z.string().openapi({
     description: 'Updated changelog information',
     example: 'Updated changelog information',
+  }),
+});
+
+// Request body for changing a tool/policy owner
+export const ChangeOwner = z.object({
+  owner: z.string().openapi({
+    description: 'New owner address',
+    example: EXAMPLE_WALLET_ADDRESS,
   }),
 });
 

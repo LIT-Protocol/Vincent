@@ -1,8 +1,6 @@
 import { z } from './openApiZod';
 import { BaseDocAttributes } from './base';
-
-export const EXAMPLE_WALLET_ADDRESS = '0x123456789012345678901234567890123456abcd';
-export const EXAMPLE_EMAIL_ADDRESS = 'contact@example.com';
+import { EXAMPLE_WALLET_ADDRESS, EXAMPLE_EMAIL_ADDRESS } from './constants';
 
 // Request body for creating a new application
 export const CreateApp = z.object({
@@ -129,26 +127,6 @@ export const AppVersionWithTools = z
   .openapi({
     description: 'Application version with its tools',
   });
-
-// NEW SCHEMAS
-
-export const GetAppVersion = z.object({
-  version: z.number().openapi({
-    description: 'Application version number',
-    example: 1,
-  }),
-});
-
-export const EditAppVersion = z.object({
-  version: z.number().openapi({
-    description: 'Application version number to edit',
-    example: 1,
-  }),
-  changes: z.string().openapi({
-    description: 'Changelog information for this version',
-    example: 'I am a changelog trapped in a computer!',
-  }),
-});
 
 export const EditApp = z.object({
   name: z.string().openapi({

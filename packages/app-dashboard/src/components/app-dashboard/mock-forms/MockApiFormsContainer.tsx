@@ -13,7 +13,7 @@ import {
   GetAppForm,
   EditAppForm,
   GetAppVersionsForm,
-  GetAppVersionForm,
+  //GetAppVersionForm,
   EditAppVersionForm,
   CreateAppVersionForm,
   CreatePolicyForm,
@@ -36,6 +36,7 @@ import {
   GetAllPoliciesForm,
   CreateAppForm,
   DeleteAppForm,
+  GetAllAppsForm,
 } from './generic';
 
 function InnerTabbedContainer({
@@ -70,11 +71,12 @@ export function MockApiFormsContainer() {
   const appForms = [
     { key: 'create-app', label: 'Create App', component: <CreateAppForm /> },
     { key: 'get-app', label: 'Get App', component: <GetAppForm /> },
+    { key: 'get-all-apps', label: 'Get All Apps', component: <GetAllAppsForm /> },
     { key: 'edit-app', label: 'Edit App', component: <EditAppForm /> },
     { key: 'delete-app', label: 'Delete App', component: <DeleteAppForm /> },
     { key: 'get-app-versions', label: 'Get App Versions', component: <GetAppVersionsForm /> },
     { key: 'create-app-version', label: 'Create App Version', component: <CreateAppVersionForm /> },
-    { key: 'get-app-version', label: 'Get App Version', component: <GetAppVersionForm /> },
+    //{ key: 'get-app-version', label: 'Get App Version', component: <GetAppVersionForm /> },
     { key: 'edit-app-version', label: 'Edit App Version', component: <EditAppVersionForm /> },
   ];
 

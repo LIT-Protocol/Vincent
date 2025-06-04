@@ -1,5 +1,5 @@
 import { z } from './openApiZod';
-import { EXAMPLE_EMAIL_ADDRESS } from './app';
+import { EXAMPLE_EMAIL_ADDRESS } from './constants';
 
 // Contributors on NPM package
 export const Contributor = z.object({

@@ -10,8 +10,48 @@ interface FormRendererProps {
   title: string;
   description?: string;
   defaultValues?: any;
+  initialData?: any;
+  appData?: any;
   isLoading?: boolean;
   hiddenFields?: string[];
+}
+
+// Generic function to map appData to schema fields
+function mapAppDataToSchema(appData: any, schema: any): any {
+  if (!appData || !schema?.shape) return {};
+
+  const mapped: any = {};
+  const schemaKeys = Object.keys(schema.shape);
+
+  // Define field mappings for raw API data (AppDefRead format)
+  const fieldMappings: { [key: string]: string } = {
+    name: 'name',
+    description: 'description',
+    redirectUris: 'redirectUris',
+    contactEmail: 'contactEmail',
+    appUserUrl: 'appUserUrl',
+    logo: 'logo',
+    deploymentStatus: 'deploymentStatus',
+    managerAddress: 'managerAddress',
+    appId: 'appId',
+  };
+
+  // Map each schema field
+  schemaKeys.forEach((schemaKey) => {
+    const appDataKey = fieldMappings[schemaKey] || schemaKey;
+    const value = appData[appDataKey];
+
+    if (value !== undefined) {
+      // Special handling for arrays that might be empty
+      if (schemaKey === 'redirectUris' && Array.isArray(value)) {
+        mapped[schemaKey] = value.length > 0 ? value : [''];
+      } else {
+        mapped[schemaKey] = value;
+      }
+    }
+  });
+
+  return mapped;
 }
 
 export function FormRenderer({
@@ -20,9 +60,15 @@ export function FormRenderer({
   title,
   description,
   defaultValues = {},
+  initialData = {},
+  appData,
   isLoading = false,
   hiddenFields = [],
 }: FormRendererProps) {
+  // Auto-map appData to schema if provided
+  const autoMappedData = appData ? mapAppDataToSchema(appData, schema) : {};
+  const finalValues = { ...defaultValues, ...initialData, ...autoMappedData };
+
   const {
     register,
     handleSubmit,
@@ -31,7 +77,7 @@ export function FormRenderer({
     watch,
   } = useForm({
     resolver: zodResolver(schema) as any,
-    defaultValues: defaultValues as any,
+    defaultValues: finalValues as any,
     mode: 'onChange',
   });
 

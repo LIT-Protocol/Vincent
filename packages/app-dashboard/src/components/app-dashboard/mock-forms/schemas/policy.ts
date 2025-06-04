@@ -1,7 +1,6 @@
 import { z } from './openApiZod';
 import { Author, Contributor } from './packages';
 import { BaseDocAttributes } from './base';
-import { EXAMPLE_WALLET_ADDRESS } from './app';
 
 export const PolicyDef = BaseDocAttributes.extend({
   packageName: z.string().openapi({
@@ -149,17 +148,6 @@ export const GetPolicyVersions = z.object({
   }),
 });
 
-export const ChangePolicyOwner = z.object({
-  packageName: z.string().openapi({
-    description: 'Policy package name',
-    example: '@vincent/foo-bar-policy',
-  }),
-  authorWalletAddress: z.string().openapi({
-    description: 'New owner address',
-    example: EXAMPLE_WALLET_ADDRESS,
-  }),
-});
-
 export const GetPolicyVersion = z.object({
   packageName: z.string().openapi({
     description: 'Policy package name',
@@ -168,20 +156,5 @@ export const GetPolicyVersion = z.object({
   version: z.string().openapi({
     description: 'Policy version',
     example: '1.0.0',
-  }),
-});
-
-export const EditPolicyVersion = z.object({
-  packageName: z.string().openapi({
-    description: 'Policy package name',
-    example: '@vincent/foo-bar-policy',
-  }),
-  version: z.string().openapi({
-    description: 'Policy version',
-    example: '1.0.0',
-  }),
-  changes: z.string().openapi({
-    description: 'Changes description',
-    example: 'Initial release',
   }),
 });
