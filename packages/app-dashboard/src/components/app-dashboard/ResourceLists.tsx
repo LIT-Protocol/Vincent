@@ -1,0 +1,303 @@
+import { useNavigate } from 'react-router';
+import { Plus } from 'lucide-react';
+import { Button } from '@/components/shared/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/app-dashboard/ui/card';
+import { StatusFilterDropdown, FilterOption } from './ui/status-filter-dropdown';
+
+// Define filter options
+const statusFilterOptions: FilterOption[] = [
+  { id: 'all', label: 'All Applications' },
+  { id: 'dev', label: 'DEV' },
+  { id: 'test', label: 'TEST' },
+  { id: 'prod', label: 'PROD' },
+];
+
+interface AppsListProps {
+  apps: any[];
+  isLoading: boolean;
+  error: any;
+  sortOption: string;
+  onSortChange: (option: string) => void;
+  onCreateClick: () => void;
+}
+
+interface ToolsListProps {
+  tools: any[];
+  isLoading: boolean;
+  error: any;
+  onCreateClick: () => void;
+}
+
+interface PoliciesListProps {
+  policies: any[];
+  isLoading: boolean;
+  error: any;
+  onCreateClick: () => void;
+}
+
+// Helper function to truncate address
+const truncateAddress = (address: string) => {
+  if (!address) return 'N/A';
+  return `${address.substring(0, 8)}...${address.substring(address.length - 6)}`;
+};
+
+// Helper function to format date
+const formatDate = (dateString: string) => {
+  return new Date(dateString).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+};
+
+// Helper function to generate proper logo URL
+const getLogoUrl = (logo: string | undefined) => {
+  if (!logo) return null;
+
+  // If logo is just "image:1" or similar invalid values, return null
+  if (logo === 'image:1' || logo.length < 10) return null;
+
+  // If logo already starts with data:image, use it as-is
+  if (logo.startsWith('data:image/')) {
+    return logo;
+  }
+
+  // Otherwise, assume it's a base64 string and prefix it
+  return `data:image/png;base64,${logo}`;
+};
+
+export function AppsList({
+  apps,
+  isLoading,
+  error,
+  sortOption,
+  onSortChange,
+  onCreateClick,
+}: AppsListProps) {
+  const navigate = useNavigate();
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-32">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+        <p className="ml-4">Loading apps...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-red-600 mb-4">Error loading apps: {JSON.stringify(error)}</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold text-gray-900">Your Apps</h1>
+        <div className="flex gap-3">
+          <StatusFilterDropdown
+            options={statusFilterOptions}
+            selectedOptionId={sortOption}
+            onChange={onSortChange}
+          />
+        </div>
+      </div>
+
+      {apps.length === 0 ? (
+        <div className="border rounded-lg p-8 text-center">
+          <h2 className="text-xl font-semibold mb-4 text-gray-900">No Apps Yet</h2>
+          <p className="text-gray-600 mb-6">
+            Create your first app to get started with Lit Protocol.
+          </p>
+          <Button variant="outline" className="text-gray-700" onClick={onCreateClick}>
+            <Plus className="h-4 w-4 mr-2 font-bold text-gray-700" />
+            Create App
+          </Button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-6">
+          {apps.map((app, index) => (
+            <Card
+              key={index}
+              className="cursor-pointer hover:shadow-md transition-shadow"
+              onClick={() => navigate(`/appId/${app.appId}`)}
+            >
+              <CardHeader>
+                <CardTitle className="flex justify-between items-center text-gray-900">
+                  <div className="flex items-center gap-3">
+                    {(() => {
+                      const logoUrl = getLogoUrl(app.logo);
+                      return logoUrl ? (
+                        <img
+                          src={logoUrl}
+                          alt={`${app.name} logo`}
+                          className="w-8 h-8 rounded-md object-cover flex-shrink-0"
+                          onError={(e) => {
+                            // Show fallback logo.svg if logo fails to load
+                            e.currentTarget.src = '/logo.svg';
+                          }}
+                        />
+                      ) : (
+                        <img
+                          src="/logo.svg"
+                          alt="Vincent logo"
+                          className="w-8 h-8 rounded-md object-cover flex-shrink-0"
+                        />
+                      );
+                    })()}
+                    <span>{app.name}</span>
+                  </div>
+                  <div className="flex gap-2">
+                    <span className="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-800">
+                      v{app.activeVersion}
+                    </span>
+                    <span className="text-xs px-2 py-1 rounded-full bg-gray-100 uppercase">
+                      {app.deploymentStatus}
+                    </span>
+                  </div>
+                </CardTitle>
+                <CardDescription className="text-gray-700">{app.description}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-sm text-gray-700">
+                  <div>
+                    <span className="font-medium">App ID:</span> {app.appId}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export function ToolsList({ tools, isLoading, error, onCreateClick }: ToolsListProps) {
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-32">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+        <p className="ml-4">Loading tools...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    console.error('🔧 Tools API Error:', error);
+    return (
+      <div className="text-center py-8">
+        <p className="text-red-600 mb-4">Error loading tools: {JSON.stringify(error)}</p>
+        <p className="text-gray-600 mb-4">You can still create tools using the forms below.</p>
+        <Button onClick={onCreateClick}>
+          <Plus className="h-4 w-4 mr-2" />
+          Create Tool
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <h2 className="text-2xl font-bold text-gray-900">Your Tools</h2>
+      {tools.length === 0 ? (
+        <div className="text-center py-8">
+          <p className="text-gray-600 mb-4">No tools found for your wallet address.</p>
+          <Button onClick={onCreateClick}>
+            <Plus className="h-4 w-4 mr-2" />
+            Create Your First Tool
+          </Button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-4">
+          {tools.map((tool: any, index: number) => (
+            <Card key={index}>
+              <CardHeader>
+                <CardTitle className="text-gray-900">{tool.packageName}</CardTitle>
+                <CardDescription>{tool.description || 'No description available'}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-sm text-gray-600">
+                  <p>Version: {tool.currentVersion || 'N/A'}</p>
+                  <p>Owner: {truncateAddress(tool.authorWalletAddress)}</p>
+                  <p>Created: {tool.createdAt ? formatDate(tool.createdAt) : 'N/A'}</p>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export function PoliciesList({ policies, isLoading, error, onCreateClick }: PoliciesListProps) {
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-32">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+        <p className="ml-4">Loading policies...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    console.error('🛡️ Policies API Error:', error);
+    return (
+      <div className="text-center py-8">
+        <p className="text-red-600 mb-4">Error loading policies: {JSON.stringify(error)}</p>
+        <p className="text-gray-600 mb-4">You can still create policies using the forms below.</p>
+        <Button onClick={onCreateClick}>
+          <Plus className="h-4 w-4 mr-2" />
+          Create Policy
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <h2 className="text-2xl font-bold text-gray-900">Your Policies</h2>
+      {policies.length === 0 ? (
+        <div className="text-center py-8">
+          <p className="text-gray-600 mb-4">No policies found for your wallet address.</p>
+          <Button onClick={onCreateClick}>
+            <Plus className="h-4 w-4 mr-2" />
+            Create Your First Policy
+          </Button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-4">
+          {policies.map((policy: any, index: number) => (
+            <Card key={index}>
+              <CardHeader>
+                <CardTitle className="text-gray-900">{policy.packageName}</CardTitle>
+                <CardDescription>
+                  {policy.description || 'No description available'}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-sm text-gray-600">
+                  <p>Version: {policy.currentVersion || 'N/A'}</p>
+                  <p>Owner: {truncateAddress(policy.authorWalletAddress)}</p>
+                  <p>Created: {policy.createdAt ? formatDate(policy.createdAt) : 'N/A'}</p>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}

@@ -3,15 +3,13 @@ import { useAccount } from 'wagmi';
 
 import DashboardScreen from '@/components/app-dashboard/Dashboard';
 import ConnectWalletScreen from '@/components/app-dashboard/ConnectWallet';
-import CreateAppScreen from '@/components/app-dashboard/CreateApp';
 import Loading from '@/layout/app-dashboard/Loading';
 import { vincentApiClient } from '@/components/app-dashboard/mock-forms/vincentApiClient';
 
 function AppHome() {
-  const [hasApp, setHasApp] = useState<boolean>(false);
-  const [app, setApp] = useState<any[] | null>(null); // Use any[] instead of AppView[] for API data
+  const [app, setApp] = useState<any[] | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [hasCheckedForApps, setHasCheckedForApps] = useState(false); // Track if we've checked for apps
+  const [hasCheckedForApps, setHasCheckedForApps] = useState(false);
 
   const { address, isConnected } = useAccount();
 
@@ -57,8 +55,7 @@ function AppHome() {
 
         if (apiError) {
           console.error('❌ Dashboard: Error fetching apps from API:', apiError);
-          setHasApp(false);
-          setApp(null);
+          setApp([]);
           setHasCheckedForApps(true);
           return;
         }
@@ -81,24 +78,15 @@ function AppHome() {
           console.log('✅ Dashboard: Filtered user apps (raw API format):', userApps);
           console.log('📊 Dashboard: User apps count:', userApps.length);
 
-          if (userApps.length > 0) {
-            setApp(userApps);
-            setHasApp(true);
-            console.log('🎉 Dashboard: User has apps, showing dashboard');
-          } else {
-            setHasApp(false);
-            setApp(null);
-            console.log('📭 Dashboard: No apps found for user');
-          }
+          setApp(userApps);
+          console.log('🎉 Dashboard: Apps processed, showing dashboard');
         } else {
-          setHasApp(false);
-          setApp(null);
+          setApp([]);
           console.log('📭 Dashboard: No apps returned from API (apiApps is null/undefined/empty)');
         }
       } catch (error) {
         console.error('💥 Dashboard: Error processing app data:', error);
-        setHasApp(false);
-        setApp(null);
+        setApp([]);
       } finally {
         setIsLoading(false);
         setHasCheckedForApps(true);
@@ -117,7 +105,7 @@ function AppHome() {
     return <Loading />;
   }
 
-  return hasApp ? <DashboardScreen vincentApp={app!} /> : <CreateAppScreen />;
+  return <DashboardScreen vincentApp={app || []} />;
 }
 
 export default AppHome;

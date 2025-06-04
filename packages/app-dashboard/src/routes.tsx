@@ -60,18 +60,6 @@ const appRoutes = {
       path: '/appId/:appId/edit-version',
       element: <AppPages.AppDetails />,
     },
-    {
-      path: '/appId/:appId/advanced-functions',
-      element: <AppPages.AdvancedFunctions />,
-    },
-    {
-      path: '/appId/:appId/delegatee',
-      element: <AppPages.Delegatee />,
-    },
-    {
-      path: '/appId/:appId/tool-policies',
-      element: <AppPages.ToolPolicies />,
-    },
   ],
 };
 
@@ -92,10 +80,6 @@ const userRoutes = {
     {
       path: '/user/wallet',
       element: <UserPages.Withdraw />,
-    },
-    {
-      path: '/appId/:appId/consent',
-      element: <UserPages.Consent />,
     },
     {
       path: '/user',
