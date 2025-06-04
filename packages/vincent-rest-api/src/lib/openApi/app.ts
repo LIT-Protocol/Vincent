@@ -1,18 +1,11 @@
 import { z } from '../schemas/openApiZod';
 
-import {
-  AppVersionDef,
-  AppVersionWithTools,
-  CreateApp,
-  CreateAppVersion,
-  EditApp,
-} from '../schemas/app';
+import { AppVersionDef, AppVersionWithTools, AppDef, CreateAppVersion } from '../schemas/app';
 import { DeleteResponseSchema, ErrorSchema, VersionChangesSchema } from './baseRegistry';
 import { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
 
 export function addToRegistry(registry: OpenAPIRegistry) {
-  const CreateAppSchema = registry.register('CreateApp', CreateApp);
-  const EditAppSchema = registry.register('EditApp', EditApp);
+  const CreateAppSchema = registry.register('CreateApp', AppDef);
   const CreateAppVersionSchema = registry.register('CreateAppVersion', CreateAppVersion);
   const AppVersionDefSchema = registry.register('AppVersionDef', AppVersionDef);
   const AppVersionWithToolsSchema = registry.register('AppVersionWithTools', AppVersionWithTools);
@@ -29,7 +22,7 @@ export function addToRegistry(registry: OpenAPIRegistry) {
         description: 'Successful operation',
         content: {
           'application/json': {
-            schema: z.array(CreateApp),
+            schema: z.array(AppDef),
           },
         },
       },
@@ -67,7 +60,7 @@ export function addToRegistry(registry: OpenAPIRegistry) {
         description: 'Successful operation',
         content: {
           'application/json': {
-            schema: CreateApp,
+            schema: AppDef,
           },
         },
       },
@@ -112,7 +105,7 @@ export function addToRegistry(registry: OpenAPIRegistry) {
         description: 'Successful operation',
         content: {
           'application/json': {
-            schema: CreateApp,
+            schema: AppDef,
           },
         },
       },
@@ -153,7 +146,7 @@ export function addToRegistry(registry: OpenAPIRegistry) {
       body: {
         content: {
           'application/json': {
-            schema: EditAppSchema,
+            schema: AppDef,
           },
         },
         description: 'Developer-defined updated application details',
@@ -165,7 +158,7 @@ export function addToRegistry(registry: OpenAPIRegistry) {
         description: 'Successful operation',
         content: {
           'application/json': {
-            schema: CreateApp,
+            schema: AppDef,
           },
         },
       },
