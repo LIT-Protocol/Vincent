@@ -1,9 +1,6 @@
 packages:
-  - packages/registry-backend
-  - packages/mcp
-  - packages/sdk
-  - packages/vincent-rest-api
-  - packages/app-dashboard
+  - packages/*
+  - packages/vincent-tools/*
 onlyBuiltDependencies:
   - '@swc/core'
   - '@tailwindcss/oxide'

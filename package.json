@@ -22,7 +22,8 @@
     "pnpm": "10.7.0"
   },
   "scripts": {
-    "build": "nx run registry-backend:build",
+    "build": "nx run-many --target=build --all",
+    "test": "nx run-many --target=test --all",
     "lint": "nx run-many --target=lint --all",
     "format": "nx format:write",
     "release": "nx release",
@@ -61,7 +62,6 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.25.1",
-    "@getlarge/nx-heroku": "^0.4.3",
     "@nx/esbuild": "21.1.2",
     "@nx/eslint": "21.1.2",
     "@nx/eslint-plugin": "21.1.2",
