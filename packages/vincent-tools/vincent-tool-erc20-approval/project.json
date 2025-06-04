@@ -1,0 +1,66 @@
+{
+  "name": "vincent-tool-erc20-approval",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/vincent-tools/vincent-tool-erc20-approval/src",
+  "projectType": "library",
+  "targets": {
+    "action:build": {
+      "executor": "nx:run-commands",
+      "dependsOn": [
+        "vincent-tool-sdk:build"
+      ],
+      "options": {
+        "commands": [
+          "pnpm node ./esbuild.config.js"
+        ],
+        "cwd": "packages/vincent-tools/vincent-tool-erc20-approval",
+        "parallel": false
+      }
+    },
+    "action:deploy": {
+      "executor": "nx:run-commands",
+      "dependsOn": [
+        "action:build"
+      ],
+      "options": {
+        "commands": [
+          "node tools/scripts/deploy-lit-action.js"
+        ],
+        "cwd": "packages/vincent-tools/vincent-tool-erc20-approval"
+      }
+    },
+    "build": {
+      "executor": "@nx/js:tsc",
+      "dependsOn": [
+        "action:build"
+      ],
+      "outputs": [
+        "{options.outputPath}"
+      ],
+      "options": {
+        "outputPath": "packages/vincent-tools/vincent-tool-erc20-approval/dist",
+        "main": "packages/vincent-tools/vincent-tool-erc20-approval/src/index.ts",
+        "tsConfig": "packages/vincent-tools/vincent-tool-erc20-approval/tsconfig.lib.json",
+        "assets": [
+          "packages/vincent-tools/vincent-tool-erc20-approval/*.md",
+          {
+            "glob": "**/*",
+            "input": "packages/vincent-tools/vincent-tool-erc20-approval/src/generated",
+            "output": "src/generated"
+          }
+        ]
+      }
+    },
+    "lint": {},
+    "publish": {
+      "executor": "@nx/js:npm-publish",
+      "dependsOn": [
+        "deploy"
+      ],
+      "options": {
+        "packageRoot": "dist"
+      }
+    }
+  },
+  "tags": []
+}

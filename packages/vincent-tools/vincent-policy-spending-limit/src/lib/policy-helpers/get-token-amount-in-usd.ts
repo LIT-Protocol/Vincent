@@ -82,7 +82,7 @@ const getEthUsdPriceFromChainlink = async ({
     transport: http(ethRpcUrl),
   });
 
-  const [_, answer] = await client.readContract({
+  const [, answer] = await client.readContract({
     address: ETH_MAINNET_ETH_USD_CHAINLINK_FEED,
     abi: CHAINLINK_AGGREGATOR_ABI,
     functionName: 'latestRoundData',

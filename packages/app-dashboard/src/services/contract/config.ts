@@ -1,5 +1,5 @@
 import { ethers } from 'ethers';
-import { LIT_NETWORK, LIT_RPC } from "@lit-protocol/constants";
+import { LIT_NETWORK, LIT_RPC } from '@lit-protocol/constants';
 
 import { env } from '@/config/env';
 
@@ -12,7 +12,9 @@ export const VINCENT_DIAMOND_ADDRESS: Record<Network, string> = {
 };
 
 if (!VINCENT_DIAMOND_ADDRESS.datil) {
-  throw new Error('Vincent Diamond contract address for datil network is undefined. Check your environment variables.');
+  throw new Error(
+    'Vincent Diamond contract address for datil network is undefined. Check your environment variables.',
+  );
 }
 
 import APP_VIEW_FACET_ABI from './abis/VincentAppViewFacet.abi.json';
@@ -46,8 +48,8 @@ export const rpc = LIT_RPC.CHRONICLE_YELLOWSTONE;
 export async function getContract(
   network: Network,
   facet: ContractFacet,
-  isSigner: boolean = false,
-  customSigner?: ethers.Signer
+  isSigner = false,
+  customSigner?: ethers.Signer,
 ) {
   const abi = FACET_ABIS[facet];
 
@@ -75,7 +77,7 @@ export async function getContract(
 export async function estimateGasWithBuffer(
   contract: ethers.Contract,
   method: string,
-  args: unknown[]
+  args: unknown[],
 ): Promise<ethers.BigNumber> {
   try {
     // Estimate the gas required for the transaction

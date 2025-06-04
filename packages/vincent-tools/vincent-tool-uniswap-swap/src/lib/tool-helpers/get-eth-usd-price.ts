@@ -22,7 +22,7 @@ export const getEthUsdPriceFromChainlink = async ({
     CHAINLINK_AGGREGATOR_ABI,
     provider,
   );
-  const [_, answer] = await contract.latestRoundData();
+  const [, answer] = await contract.latestRoundData();
   console.log(`Got ETH price in USD (getEthUsdPriceFromChainlink)`, {
     ethPriceInUsd: ethers.utils.formatUnits(answer, 8),
   });
