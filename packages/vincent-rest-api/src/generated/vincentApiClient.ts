@@ -139,6 +139,12 @@ const injectedRtkApi = api.injectEndpoints({
 });
 export { injectedRtkApi as vincentApiClient };
 export type ListAppsApiResponse = /** status 200 Successful operation */ {
+  /** Document ID */
+  _id: string;
+  /** Timestamp when this was last modified */
+  updatedAt: string;
+  /** Timestamp when this was created */
+  createdAt: string;
   /** Application ID (randomly generated) */
   appId: number;
   /** The name of the application */
@@ -162,6 +168,12 @@ export type ListAppsApiResponse = /** status 200 Successful operation */ {
 }[];
 export type ListAppsApiArg = void;
 export type CreateAppApiResponse = /** status 200 Successful operation */ {
+  /** Document ID */
+  _id: string;
+  /** Timestamp when this was last modified */
+  updatedAt: string;
+  /** Timestamp when this was created */
+  createdAt: string;
   /** Application ID (randomly generated) */
   appId: number;
   /** The name of the application */
@@ -188,6 +200,12 @@ export type CreateAppApiArg = {
   createApp: CreateApp;
 };
 export type GetAppApiResponse = /** status 200 Successful operation */ {
+  /** Document ID */
+  _id: string;
+  /** Timestamp when this was last modified */
+  updatedAt: string;
+  /** Timestamp when this was created */
+  createdAt: string;
   /** Application ID (randomly generated) */
   appId: number;
   /** The name of the application */
@@ -214,6 +232,12 @@ export type GetAppApiArg = {
   appId: number;
 };
 export type EditAppApiResponse = /** status 200 Successful operation */ {
+  /** Document ID */
+  _id: string;
+  /** Timestamp when this was last modified */
+  updatedAt: string;
+  /** Timestamp when this was created */
+  createdAt: string;
   /** Application ID (randomly generated) */
   appId: number;
   /** The name of the application */
@@ -430,8 +454,6 @@ export type Error = {
   message: string;
 };
 export type CreateApp = {
-  /** Application ID (randomly generated) */
-  appId: number;
   /** The name of the application */
   name: string;
   /** Description of the application */
@@ -448,8 +470,6 @@ export type CreateApp = {
   deploymentStatus: 'dev' | 'test' | 'prod';
   /** Manager wallet address */
   managerAddress: string;
-  /** Active version of the application */
-  activeVersion: number;
 };
 export type DeleteResponse = {
   /** Success message */

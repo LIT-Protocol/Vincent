@@ -67,11 +67,6 @@
       "CreateApp": {
         "type": "object",
         "properties": {
-          "appId": {
-            "type": "number",
-            "description": "Application ID (randomly generated)",
-            "example": 12345
-          },
           "name": {
             "type": "string",
             "description": "The name of the application",
@@ -125,15 +120,9 @@
             "type": "string",
             "description": "Manager wallet address",
             "example": "0x123456789012345678901234567890123456abcd"
-          },
-          "activeVersion": {
-            "type": "number",
-            "description": "Active version of the application",
-            "example": 1
           }
         },
         "required": [
-          "appId",
           "name",
           "description",
           "contactEmail",
@@ -141,8 +130,7 @@
           "logo",
           "redirectUris",
           "deploymentStatus",
-          "managerAddress",
-          "activeVersion"
+          "managerAddress"
         ]
       },
       "CreateAppVersion": {
@@ -993,6 +981,21 @@
                   "items": {
                     "type": "object",
                     "properties": {
+                      "_id": {
+                        "type": "string",
+                        "description": "Document ID",
+                        "readOnly": true
+                      },
+                      "updatedAt": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "Timestamp when this was last modified"
+                      },
+                      "createdAt": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "Timestamp when this was created"
+                      },
                       "appId": {
                         "type": "number",
                         "description": "Application ID (randomly generated)",
@@ -1059,6 +1062,9 @@
                       }
                     },
                     "required": [
+                      "_id",
+                      "updatedAt",
+                      "createdAt",
                       "appId",
                       "name",
                       "description",
@@ -1114,6 +1120,21 @@
                 "schema": {
                   "type": "object",
                   "properties": {
+                    "_id": {
+                      "type": "string",
+                      "description": "Document ID",
+                      "readOnly": true
+                    },
+                    "updatedAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "description": "Timestamp when this was last modified"
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "description": "Timestamp when this was created"
+                    },
                     "appId": {
                       "type": "number",
                       "description": "Application ID (randomly generated)",
@@ -1180,6 +1201,9 @@
                     }
                   },
                   "required": [
+                    "_id",
+                    "updatedAt",
+                    "createdAt",
                     "appId",
                     "name",
                     "description",
@@ -1241,6 +1265,21 @@
                 "schema": {
                   "type": "object",
                   "properties": {
+                    "_id": {
+                      "type": "string",
+                      "description": "Document ID",
+                      "readOnly": true
+                    },
+                    "updatedAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "description": "Timestamp when this was last modified"
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "description": "Timestamp when this was created"
+                    },
                     "appId": {
                       "type": "number",
                       "description": "Application ID (randomly generated)",
@@ -1307,6 +1346,9 @@
                     }
                   },
                   "required": [
+                    "_id",
+                    "updatedAt",
+                    "createdAt",
                     "appId",
                     "name",
                     "description",
@@ -1452,6 +1494,21 @@
                 "schema": {
                   "type": "object",
                   "properties": {
+                    "_id": {
+                      "type": "string",
+                      "description": "Document ID",
+                      "readOnly": true
+                    },
+                    "updatedAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "description": "Timestamp when this was last modified"
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "description": "Timestamp when this was created"
+                    },
                     "appId": {
                       "type": "number",
                       "description": "Application ID (randomly generated)",
@@ -1518,6 +1575,9 @@
                     }
                   },
                   "required": [
+                    "_id",
+                    "updatedAt",
+                    "createdAt",
                     "appId",
                     "name",
                     "description",

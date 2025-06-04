@@ -1,11 +1,18 @@
 import { z } from '../schemas/openApiZod';
 
-import { AppVersionDef, AppVersionWithTools, AppDef, CreateAppVersion } from '../schemas/app';
+import {
+  AppVersionDef,
+  AppVersionWithTools,
+  AppDef,
+  CreateAppVersion,
+  CreateApp,
+  AppClient,
+} from '../schemas/app';
 import { DeleteResponseSchema, ErrorSchema, VersionChangesSchema } from './baseRegistry';
 import { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
 
 export function addToRegistry(registry: OpenAPIRegistry) {
-  const CreateAppSchema = registry.register('CreateApp', AppDef);
+  const CreateAppSchema = registry.register('CreateApp', CreateApp);
   const CreateAppVersionSchema = registry.register('CreateAppVersion', CreateAppVersion);
   const AppVersionDefSchema = registry.register('AppVersionDef', AppVersionDef);
   const AppVersionWithToolsSchema = registry.register('AppVersionWithTools', AppVersionWithTools);
@@ -146,7 +153,7 @@ export function addToRegistry(registry: OpenAPIRegistry) {
       body: {
         content: {
           'application/json': {
-            schema: AppDef,
+            schema: AppClient,
           },
         },
         description: 'Developer-defined updated application details',

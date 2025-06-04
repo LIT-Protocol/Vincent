@@ -2,8 +2,7 @@ import { BaseDocAttributes } from './base';
 import { z } from './openApiZod';
 import { EXAMPLE_EMAIL_ADDRESS, EXAMPLE_WALLET_ADDRESS } from '../openApi/constants';
 
-// Request body for creating a new application
-export const AppDef = z.object({
+export const AppClient = z.object({
   appId: z.number().openapi({
     description: 'Application ID (randomly generated)',
     example: 12345,
@@ -46,6 +45,15 @@ export const AppDef = z.object({
     description: 'Active version of the application',
     example: 1,
   }),
+});
+
+// Response body for getting an application
+export const AppDef = BaseDocAttributes.merge(AppClient);
+
+// Request body for creating a new application
+export const CreateApp = AppClient.omit({
+  appId: true,
+  activeVersion: true,
 });
 
 // Request body for creating a new application version
