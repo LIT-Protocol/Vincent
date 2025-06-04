@@ -3,7 +3,7 @@ import { z } from './openApiZod';
 import { EXAMPLE_EMAIL_ADDRESS, EXAMPLE_WALLET_ADDRESS } from '../openApi/constants';
 
 // Request body for creating a new application
-export const CreateApp = z.object({
+export const AppDef = z.object({
   appId: z.number().openapi({
     description: 'Application ID (randomly generated)',
     example: 12345,
@@ -127,37 +127,3 @@ export const AppVersionWithTools = z
   .openapi({
     description: 'Application version with its tools',
   });
-
-// Since the CreateApp needs tools and EditApp doesn't, we need to define a separate schema for EditApp
-export const EditApp = z.object({
-  name: z.string().openapi({
-    description: 'The name of the application',
-    example: 'Memecoin DCA App',
-  }),
-  description: z.string().openapi({
-    description: 'Description of the application',
-    example: 'This is a memecoin DCA App',
-  }),
-  contactEmail: z.string().email().openapi({
-    description: 'Contact email for the application manager',
-    example: EXAMPLE_EMAIL_ADDRESS,
-  }),
-  appUserUrl: z.string().url().openapi({
-    description: 'URL of the application for users',
-    example: 'https://myapplication.example.com/',
-  }),
-  logo: z.string().openapi({
-    description: 'Base64 encoded logo image',
-    example:
-      'iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAIAAAACDbGyAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAOvwAADr8BOAVTJAAAAA5JREFUGFdj/M+ACAAAAAD//wE7AnsAAAAAAElFTkSuQmCC',
-  }),
-  redirectUris: z.array(z.string().url()).openapi({
-    description:
-      'Redirect URIs users can be sent to after signing up for your application (with their JWT token)',
-    example: ['https://google.com', 'https://litprotocol.com'],
-  }),
-  deploymentStatus: z.enum(['dev', 'test', 'prod']).openapi({
-    description: 'Deployment status of the application; dev, test, or prod',
-    example: 'dev',
-  }),
-});

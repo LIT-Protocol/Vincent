@@ -145,69 +145,6 @@
           "activeVersion"
         ]
       },
-      "EditApp": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "description": "The name of the application",
-            "example": "Memecoin DCA App"
-          },
-          "description": {
-            "type": "string",
-            "description": "Description of the application",
-            "example": "This is a memecoin DCA App"
-          },
-          "contactEmail": {
-            "type": "string",
-            "format": "email",
-            "description": "Contact email for the application manager",
-            "example": "contact@example.com"
-          },
-          "appUserUrl": {
-            "type": "string",
-            "format": "uri",
-            "description": "URL of the application for users",
-            "example": "https://myapplication.example.com/"
-          },
-          "logo": {
-            "type": "string",
-            "description": "Base64 encoded logo image",
-            "example": "iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAIAAAACDbGyAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAOvwAADr8BOAVTJAAAAA5JREFUGFdj/M+ACAAAAAD//wE7AnsAAAAAAElFTkSuQmCC"
-          },
-          "redirectUris": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "format": "uri"
-            },
-            "description": "Redirect URIs users can be sent to after signing up for your application (with their JWT token)",
-            "example": [
-              "https://google.com",
-              "https://litprotocol.com"
-            ]
-          },
-          "deploymentStatus": {
-            "type": "string",
-            "enum": [
-              "dev",
-              "test",
-              "prod"
-            ],
-            "description": "Deployment status of the application; dev, test, or prod",
-            "example": "dev"
-          }
-        },
-        "required": [
-          "name",
-          "description",
-          "contactEmail",
-          "appUserUrl",
-          "logo",
-          "redirectUris",
-          "deploymentStatus"
-        ]
-      },
       "CreateAppVersion": {
         "type": "object",
         "properties": {
@@ -1424,7 +1361,85 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/EditApp"
+                "type": "object",
+                "properties": {
+                  "appId": {
+                    "type": "number",
+                    "description": "Application ID (randomly generated)",
+                    "example": 12345
+                  },
+                  "name": {
+                    "type": "string",
+                    "description": "The name of the application",
+                    "example": "Memecoin DCA App"
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "Description of the application",
+                    "example": "This is a memecoin DCA App"
+                  },
+                  "contactEmail": {
+                    "type": "string",
+                    "format": "email",
+                    "description": "Contact email for the application manager",
+                    "example": "contact@example.com"
+                  },
+                  "appUserUrl": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "URL of the application for users",
+                    "example": "https://myapplication.example.com/"
+                  },
+                  "logo": {
+                    "type": "string",
+                    "description": "Base64 encoded logo image",
+                    "example": "iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAIAAAACDbGyAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAOvwAADr8BOAVTJAAAAA5JREFUGFdj/M+ACAAAAAD//wE7AnsAAAAAAElFTkSuQmCC"
+                  },
+                  "redirectUris": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "uri"
+                    },
+                    "description": "Redirect URIs users can be sent to after signing up for your application (with their JWT token)",
+                    "example": [
+                      "https://google.com",
+                      "https://litprotocol.com"
+                    ]
+                  },
+                  "deploymentStatus": {
+                    "type": "string",
+                    "enum": [
+                      "dev",
+                      "test",
+                      "prod"
+                    ],
+                    "description": "Deployment status of the application; dev, test, or prod",
+                    "example": "dev"
+                  },
+                  "managerAddress": {
+                    "type": "string",
+                    "description": "Manager wallet address",
+                    "example": "0x123456789012345678901234567890123456abcd"
+                  },
+                  "activeVersion": {
+                    "type": "number",
+                    "description": "Active version of the application",
+                    "example": 1
+                  }
+                },
+                "required": [
+                  "appId",
+                  "name",
+                  "description",
+                  "contactEmail",
+                  "appUserUrl",
+                  "logo",
+                  "redirectUris",
+                  "deploymentStatus",
+                  "managerAddress",
+                  "activeVersion"
+                ]
               }
             }
           }
