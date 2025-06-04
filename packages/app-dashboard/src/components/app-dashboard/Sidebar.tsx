@@ -83,7 +83,7 @@ export function Sidebar({
                     >
                       <ChevronDown
                         className={`h-4 w-4 transition-transform duration-300 ease-in-out ${
-                          isExpanded ? 'rotate-0' : 'rotate-90'
+                          isExpanded ? 'rotate-0' : '-rotate-90'
                         }`}
                       />
                     </button>

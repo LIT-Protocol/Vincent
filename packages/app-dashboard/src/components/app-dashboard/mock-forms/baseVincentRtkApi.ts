@@ -3,6 +3,6 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 export const baseVincentRtkApi = createApi({
   reducerPath: 'vincentApi',
-  baseQuery: fetchBaseQuery({ baseUrl: 'http://staging.registry.heyvincent.ai/' }),
+  baseQuery: fetchBaseQuery({ baseUrl: 'https://staging.registry.heyvincent.ai/' }),
   endpoints: () => ({}),
 });

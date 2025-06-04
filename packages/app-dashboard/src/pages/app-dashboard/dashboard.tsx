@@ -18,14 +18,7 @@ function AppHome() {
     data: apiApps,
     error: apiError,
     isLoading: apiIsLoading,
-    isFetching,
   } = vincentApiClient.useListAppsQuery();
-
-  console.log('🚀 Dashboard: API Hook Status:');
-  console.log('  - isLoading:', apiIsLoading);
-  console.log('  - isFetching:', isFetching);
-  console.log('  - error:', apiError);
-  console.log('  - data:', apiApps);
 
   useEffect(() => {
     async function processApiData() {
@@ -45,14 +38,6 @@ function AppHome() {
       setIsLoading(true);
 
       try {
-        console.log('🔍 Dashboard: Processing API data...');
-        console.log('📱 Dashboard: Connected address:', address);
-        console.log('📊 Dashboard: Raw API apps data (type):', typeof apiApps);
-        console.log('📊 Dashboard: Raw API apps data (Array.isArray):', Array.isArray(apiApps));
-        console.log('📊 Dashboard: Raw API apps data (length):', apiApps?.length);
-        console.log('📊 Dashboard: Raw API apps data (full):', JSON.stringify(apiApps, null, 2));
-        console.log('❌ Dashboard: API error:', apiError);
-
         if (apiError) {
           console.error('❌ Dashboard: Error fetching apps from API:', apiError);
           setApp([]);
