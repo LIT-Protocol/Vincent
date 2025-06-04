@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { useUrlAppId } from '@/hooks/user-dashboard/useUrlAppId';
 import { useAccount } from 'wagmi';
 import { VersionChanges } from '../schemas/base';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 
 export function CreateAppForm() {
   const [createApp, { isLoading }] = vincentApiClient.useCreateAppMutation();
@@ -299,12 +299,10 @@ export function GetAppVersionForm() {
 export function EditAppVersionForm() {
   const [editAppVersion, { isLoading }] = vincentApiClient.useEditAppVersionMutation();
   const { appId } = useUrlAppId();
-  const location = useLocation();
+  const params = useParams();
 
-  // Get version from URL query parameter
-  const urlParams = new URLSearchParams(location.search);
-  const versionFromUrl = urlParams.get('version');
-  const preSelectedVersion = versionFromUrl ? parseInt(versionFromUrl) : null;
+  // Get version from URL path parameter instead of query parameter
+  const versionIdParam = params.versionId ? parseInt(params.versionId) : null;
 
   const handleSubmit = async (data: any) => {
     if (!appId) {
@@ -313,8 +311,8 @@ export function EditAppVersionForm() {
     }
 
     try {
-      // Use pre-selected version if available, otherwise get from form data
-      const version = preSelectedVersion || data.version;
+      // Use version from URL path if available, otherwise get from form data
+      const version = versionIdParam || data.version;
       const { changes } = data;
 
       if (!version) {
@@ -333,8 +331,8 @@ export function EditAppVersionForm() {
     }
   };
 
-  // If we have a pre-selected version, only show the changes field
-  if (preSelectedVersion) {
+  // If we have a version from URL path, only show the changes field
+  if (versionIdParam) {
     const ChangesOnlySchema = z.object({
       changes: z.string().min(1, 'Changes description is required').openapi({
         description: 'Updated changelog information',
@@ -347,7 +345,7 @@ export function EditAppVersionForm() {
         <FormRenderer
           schema={ChangesOnlySchema}
           onSubmit={handleSubmit}
-          title={`Edit App Version ${preSelectedVersion}`}
+          title={`Edit App Version ${versionIdParam}`}
           description="Update the changelog for this specific app version"
           isLoading={isLoading}
         />

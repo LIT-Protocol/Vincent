@@ -388,6 +388,9 @@ importers:
       globals:
         specifier: ^16.0.0
         version: 16.0.0
+      markdown-to-jsx:
+        specifier: ^7.7.6
+        version: 7.7.6(react@19.1.0)
       postcss:
         specifier: ^8.5.3
         version: 8.5.3

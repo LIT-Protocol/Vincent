@@ -74,14 +74,6 @@ export function CreateApp() {
         {/* Left Sidebar */}
         <div className="w-80 bg-white border-r border-gray-200">
           <div className="p-6">
-            <button
-              onClick={() => navigate('/')}
-              className="flex items-center text-xl font-bold text-gray-900 mb-6 hover:text-blue-600 transition-colors cursor-pointer"
-              style={{ border: 'none', outline: 'none', boxShadow: 'none', background: 'none' }}
-            >
-              <ArrowLeft className="h-5 w-5 mr-2" />
-              Back to Dashboard
-            </button>
             <nav className="space-y-2">
               {createMenuItems.map((item) => {
                 const Icon = item.icon;

@@ -396,22 +396,53 @@ export function AppDetail() {
       {/* Left Sidebar */}
       <div className="w-80 bg-white border-r border-gray-200">
         <div className="p-6">
-          <button
-            onClick={() => {
-              if (versionIdParam) {
-                // When viewing a version, go back to the app details
-                navigate(`/appId/${appIdParam}`);
-              } else {
-                // When viewing app details, go back to dashboard
-                navigate('/');
-              }
-            }}
-            className="flex items-center text-xl font-bold text-gray-900 mb-6 hover:text-blue-600 transition-colors cursor-pointer"
-            style={{ border: 'none', outline: 'none', boxShadow: 'none', background: 'none' }}
-          >
-            <ArrowLeft className="h-5 w-5 mr-2" />
-            {versionIdParam ? 'Back to App' : 'Back to Dashboard'}
-          </button>
+          {/* Breadcrumbs */}
+          <div className="mb-6 text-sm text-gray-600">
+            <div className="flex flex-col space-y-1">
+              <button
+                onClick={() => navigate('/')}
+                className="text-left hover:text-blue-600 transition-colors"
+                style={{ border: 'none', outline: 'none', boxShadow: 'none', background: 'none' }}
+              >
+                Dashboard
+              </button>
+
+              <button
+                onClick={() => navigate(`/appId/${appIdParam}`)}
+                className="text-left hover:text-blue-600 transition-colors ml-2"
+                style={{ border: 'none', outline: 'none', boxShadow: 'none', background: 'none' }}
+              >
+                › {app?.name || 'App'}
+              </button>
+
+              {currentAction === 'versions' && (
+                <span className="text-gray-900 font-medium ml-4">› Versions</span>
+              )}
+
+              {versionIdParam && (
+                <button
+                  onClick={() => navigate(`/appId/${appIdParam}/version/${versionIdParam}`)}
+                  className="text-left hover:text-blue-600 transition-colors ml-4"
+                  style={{ border: 'none', outline: 'none', boxShadow: 'none', background: 'none' }}
+                >
+                  › Version {versionIdParam}
+                </button>
+              )}
+
+              {currentAction === 'edit-version' && versionIdParam && (
+                <span className="text-gray-900 font-medium ml-6">› Edit</span>
+              )}
+
+              {currentAction && ['edit', 'delete', 'create-version'].includes(currentAction) && (
+                <span className="text-gray-900 font-medium ml-4">
+                  › {currentAction === 'edit' && 'Edit App'}
+                  {currentAction === 'delete' && 'Delete App'}
+                  {currentAction === 'create-version' && 'Create Version'}
+                </span>
+              )}
+            </div>
+          </div>
+
           <nav className="space-y-2">
             {buildMenuItems().map((item) => {
               const Icon = item.icon;
