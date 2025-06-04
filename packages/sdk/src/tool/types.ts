@@ -1,5 +1,5 @@
 import { ethers } from 'ethers';
-import { ExecuteJsResponse } from '@lit-protocol/types';
+import type { ExecuteJsResponse } from '@lit-protocol/types';
 
 /**
  * @inline

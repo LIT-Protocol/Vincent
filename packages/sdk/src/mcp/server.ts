@@ -34,7 +34,7 @@ function buildToolCallback(
 ) {
   return async (
     args: ZodRawShape,
-    _extra: RequestHandlerExtra<ServerRequest, ServerNotification>
+    _extra: RequestHandlerExtra<ServerRequest, ServerNotification> // eslint-disable-line @typescript-eslint/no-unused-vars
   ): Promise<CallToolResult> => {
     const vincentToolClient = getVincentToolClient({
       ethersSigner: delegateeSigner,

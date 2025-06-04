@@ -34,6 +34,7 @@ module.exports = [
           ignoredFiles: [
             '{projectRoot}/eslint.config.{js,cjs,mjs}',
             '{projectRoot}/jest.config.{js,cjs,mjs,ts}',
+            '{projectRoot}/scripts/*.{js,cjs,mjs,ts}',
           ],
         },
       ],

@@ -20,9 +20,13 @@
     "@lit-protocol/auth-helpers": "^7.0.9",
     "@lit-protocol/constants": "^7.0.8",
     "@lit-protocol/lit-node-client": "^7.0.8",
+    "@lit-protocol/pkp-ethers": "^7.0.8",
+    "@lit-protocol/types": "^7.0.8",
     "@noble/secp256k1": "^2.2.3",
     "did-jwt": "^8.0.8",
-    "ethers": "5.7.1"
+    "ethers": "5.7.1",
+    "express": "^5.1.0",
+    "zod": "^3.24.1"
   },
   "peerDependencies": {
     "@modelcontextprotocol/sdk": "^1.11.2",
