@@ -1,4 +1,4 @@
-import { Plus, LayoutDashboard, Wrench, Shield, ChevronDown, ChevronRight } from 'lucide-react';
+import { Plus, LayoutDashboard, Wrench, Shield, ChevronDown } from 'lucide-react';
 
 // Menu items with hierarchical structure
 const menuItems = [

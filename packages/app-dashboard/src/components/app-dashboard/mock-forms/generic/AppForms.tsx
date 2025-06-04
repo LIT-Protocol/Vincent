@@ -296,7 +296,7 @@ export function GetAppVersionForm() {
 }
 */
 
-export function EditAppVersionForm({ appData }: { appData?: any }) {
+export function EditAppVersionForm() {
   const [editAppVersion, { isLoading }] = vincentApiClient.useEditAppVersionMutation();
   const { appId } = useUrlAppId();
   const location = useLocation();

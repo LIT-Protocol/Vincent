@@ -4,13 +4,6 @@ import { useAccount } from 'wagmi';
 import { Helmet } from 'react-helmet';
 
 import { CreatePolicyForm } from '@/components/app-dashboard/mock-forms/generic';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/app-dashboard/ui/card';
 
 export function CreatePolicy() {
   const { isConnected } = useAccount();

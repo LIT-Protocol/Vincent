@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/app-dashboard/ui/card';
 import { vincentApiClient } from '@/components/app-dashboard/mock-forms/vincentApiClient';
-import { ArrowLeft } from 'lucide-react';
 
 // Type definition for a single app version (from API client)
 interface AppVersion {
@@ -22,21 +21,6 @@ interface AppVersionsListProps {
   error?: any;
   onVersionSelect?: (appId: number, version: number) => void;
 }
-
-// Helper function to safely format dates
-const formatDate = (dateString: string): string => {
-  if (!dateString) return 'Not available';
-
-  try {
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) {
-      return 'Not available';
-    }
-    return date.toLocaleString();
-  } catch (error) {
-    return 'Not available';
-  }
-};
 
 export function AppVersionsList({
   versions,
@@ -75,13 +59,6 @@ export function AppVersionsList({
     setSelectedAppId(version.appId);
     // Notify parent component about the selected version
     onVersionSelect?.(version.appId, version.version);
-  };
-
-  const handleBackToList = () => {
-    setSelectedVersion(null);
-    setSelectedAppId(null);
-    // Clear selection in parent
-    onVersionSelect?.(0, 0);
   };
 
   if (isLoading) {

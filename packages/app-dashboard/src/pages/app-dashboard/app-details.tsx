@@ -1,19 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router';
 import { useAccount } from 'wagmi';
-import {
-  ArrowLeft,
-  Settings,
-  Plus,
-  Trash2,
-  Edit,
-  FileText,
-  ChevronDown,
-  ChevronRight,
-  GitBranch,
-} from 'lucide-react';
+import { ArrowLeft, Settings, FileText, ChevronDown, ChevronRight, GitBranch } from 'lucide-react';
 
-import { Button } from '@/components/shared/ui/button';
 import {
   Card,
   CardContent,
@@ -24,7 +13,6 @@ import {
 import { useErrorPopup } from '@/providers/ErrorPopup';
 import { StatusMessage } from '@/utils/shared/statusMessage';
 import { vincentApiClient } from '@/components/app-dashboard/mock-forms/vincentApiClient';
-import { AppVersionsList } from '@/components/app-dashboard/AppVersionsList';
 import { AppVersionsListView } from '@/components/app-dashboard/AppVersionsListView';
 import { VersionDetails } from '@/components/app-dashboard/VersionDetails';
 
@@ -66,26 +54,6 @@ const formComponents: {
   },
 };
 
-// Menu items for app management
-const appMenuItems = [
-  { id: 'app-details', label: 'App Details', icon: FileText },
-  {
-    id: 'app-versions',
-    label: 'App Versions',
-    icon: GitBranch,
-  },
-  {
-    id: 'app-management',
-    label: 'App Management',
-    icon: Settings,
-    submenu: [
-      { id: 'edit', label: 'Edit App' },
-      { id: 'delete', label: 'Delete App' },
-      { id: 'create-version', label: 'Create App Version' },
-    ],
-  },
-];
-
 // Define types for menu items
 interface MenuSubItem {
   id: string;
@@ -113,10 +81,6 @@ export function AppDetail() {
   const [expandedMenus, setExpandedMenus] = useState<Set<string>>(
     new Set(['app-management', 'version-management']),
   );
-  const [selectedVersionForEdit, setSelectedVersionForEdit] = useState<{
-    appId: number;
-    version: number;
-  } | null>(null);
 
   // Get current action from URL path
   const getActionFromPath = () => {
