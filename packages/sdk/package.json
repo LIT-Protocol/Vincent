@@ -22,11 +22,11 @@
     "@lit-protocol/lit-node-client": "^7.0.8",
     "@noble/secp256k1": "^2.2.3",
     "did-jwt": "^8.0.8",
-    "ethers": "5.7.1",
-    "tslib": "^2.8.1"
+    "ethers": "5.7.1"
   },
   "peerDependencies": {
-    "@modelcontextprotocol/sdk": "^1.11.2"
+    "@modelcontextprotocol/sdk": "^1.11.2",
+    "tslib": "^2.8.1"
   },
   "sideEffects": false,
   "files": [

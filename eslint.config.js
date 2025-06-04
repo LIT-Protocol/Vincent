@@ -26,6 +26,23 @@ module.exports = [
     },
   },
   {
+    files: ['**/*.json'],
+    rules: {
+      '@nx/dependency-checks': [
+        'error',
+        {
+          ignoredFiles: [
+            '{projectRoot}/eslint.config.{js,cjs,mjs}',
+            '{projectRoot}/jest.config.{js,cjs,mjs,ts}',
+          ],
+        },
+      ],
+    },
+    languageOptions: {
+      parser: require('jsonc-eslint-parser'),
+    },
+  },
+  {
     files: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx'],
     // Override or add rules here
     rules: {},
