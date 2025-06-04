@@ -1,5 +1,6 @@
 import { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
-import { ChangeOwner, DeleteResponse, Error, VersionChanges } from '../schemas/base';
+import { DeleteResponse, Error, VersionChanges } from '../schemas/base';
+import { ChangeOwner } from '../schemas/packages';
 
 const registry = new OpenAPIRegistry();
 
@@ -7,6 +8,8 @@ const registry = new OpenAPIRegistry();
 export const ErrorSchema = registry.register('Error', Error);
 export const DeleteResponseSchema = registry.register('DeleteResponse', DeleteResponse);
 export const VersionChangesSchema = registry.register('VersionChanges', VersionChanges);
+
+// Extra schema from packages.ts
 export const ChangeOwnerSchema = registry.register('ChangeOwner', ChangeOwner);
 
 // Export the registry
