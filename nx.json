@@ -58,9 +58,6 @@
       "pushArgs": "--force-with-lease"
     }
   },
-  "workspaceLayout": {
-    "appsDir": "packages"
-  },
   "targetDefaults": {
     "nx-release-publish": {
       "dependsOn": [
