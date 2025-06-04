@@ -11,11 +11,7 @@ const injectedRtkApi = api.injectEndpoints({
       query: (queryArg) => ({ url: `/app/${queryArg.appId}` }),
     }),
     editApp: build.mutation<EditAppApiResponse, EditAppApiArg>({
-      query: (queryArg) => ({
-        url: `/app/${queryArg.appId}`,
-        method: 'PUT',
-        body: queryArg.editApp,
-      }),
+      query: (queryArg) => ({ url: `/app/${queryArg.appId}`, method: 'PUT', body: queryArg.body }),
     }),
     deleteApp: build.mutation<DeleteAppApiResponse, DeleteAppApiArg>({
       query: (queryArg) => ({ url: `/app/${queryArg.appId}`, method: 'DELETE' }),
@@ -142,24 +138,153 @@ const injectedRtkApi = api.injectEndpoints({
   overrideExisting: false,
 });
 export { injectedRtkApi as vincentApiClient };
-export type ListAppsApiResponse = /** status 200 Successful operation */ AppDefRead[];
+export type ListAppsApiResponse = /** status 200 Successful operation */ {
+  /** Document ID */
+  _id: string;
+  /** Timestamp when this was last modified */
+  updatedAt: string;
+  /** Timestamp when this was created */
+  createdAt: string;
+  /** Application ID (randomly generated) */
+  appId: number;
+  /** The name of the application */
+  name: string;
+  /** Description of the application */
+  description: string;
+  /** Contact email for the application manager */
+  contactEmail: string;
+  /** URL of the application for users */
+  appUserUrl: string;
+  /** Base64 encoded logo image */
+  logo: string;
+  /** Redirect URIs users can be sent to after signing up for your application (with their JWT token) */
+  redirectUris: string[];
+  /** Deployment status of the application; dev, test, or prod */
+  deploymentStatus: 'dev' | 'test' | 'prod';
+  /** Manager wallet address */
+  managerAddress: string;
+  /** Active version of the application */
+  activeVersion: number;
+}[];
 export type ListAppsApiArg = void;
-export type CreateAppApiResponse = /** status 200 Successful operation */ AppDefRead;
+export type CreateAppApiResponse = /** status 200 Successful operation */ {
+  /** Document ID */
+  _id: string;
+  /** Timestamp when this was last modified */
+  updatedAt: string;
+  /** Timestamp when this was created */
+  createdAt: string;
+  /** Application ID (randomly generated) */
+  appId: number;
+  /** The name of the application */
+  name: string;
+  /** Description of the application */
+  description: string;
+  /** Contact email for the application manager */
+  contactEmail: string;
+  /** URL of the application for users */
+  appUserUrl: string;
+  /** Base64 encoded logo image */
+  logo: string;
+  /** Redirect URIs users can be sent to after signing up for your application (with their JWT token) */
+  redirectUris: string[];
+  /** Deployment status of the application; dev, test, or prod */
+  deploymentStatus: 'dev' | 'test' | 'prod';
+  /** Manager wallet address */
+  managerAddress: string;
+  /** Active version of the application */
+  activeVersion: number;
+};
 export type CreateAppApiArg = {
   /** Developer-defined application information */
   createApp: CreateApp;
 };
-export type GetAppApiResponse = /** status 200 Successful operation */ AppDefRead;
+export type GetAppApiResponse = /** status 200 Successful operation */ {
+  /** Document ID */
+  _id: string;
+  /** Timestamp when this was last modified */
+  updatedAt: string;
+  /** Timestamp when this was created */
+  createdAt: string;
+  /** Application ID (randomly generated) */
+  appId: number;
+  /** The name of the application */
+  name: string;
+  /** Description of the application */
+  description: string;
+  /** Contact email for the application manager */
+  contactEmail: string;
+  /** URL of the application for users */
+  appUserUrl: string;
+  /** Base64 encoded logo image */
+  logo: string;
+  /** Redirect URIs users can be sent to after signing up for your application (with their JWT token) */
+  redirectUris: string[];
+  /** Deployment status of the application; dev, test, or prod */
+  deploymentStatus: 'dev' | 'test' | 'prod';
+  /** Manager wallet address */
+  managerAddress: string;
+  /** Active version of the application */
+  activeVersion: number;
+};
 export type GetAppApiArg = {
   /** ID of the application to retrieve */
   appId: number;
 };
-export type EditAppApiResponse = /** status 200 Successful operation */ AppDefRead;
+export type EditAppApiResponse = /** status 200 Successful operation */ {
+  /** Document ID */
+  _id: string;
+  /** Timestamp when this was last modified */
+  updatedAt: string;
+  /** Timestamp when this was created */
+  createdAt: string;
+  /** Application ID (randomly generated) */
+  appId: number;
+  /** The name of the application */
+  name: string;
+  /** Description of the application */
+  description: string;
+  /** Contact email for the application manager */
+  contactEmail: string;
+  /** URL of the application for users */
+  appUserUrl: string;
+  /** Base64 encoded logo image */
+  logo: string;
+  /** Redirect URIs users can be sent to after signing up for your application (with their JWT token) */
+  redirectUris: string[];
+  /** Deployment status of the application; dev, test, or prod */
+  deploymentStatus: 'dev' | 'test' | 'prod';
+  /** Manager wallet address */
+  managerAddress: string;
+  /** Active version of the application */
+  activeVersion: number;
+};
 export type EditAppApiArg = {
   /** ID of the application to edit */
   appId: number;
   /** Developer-defined updated application details */
-  editApp: EditApp;
+  body: {
+    /** Application ID (randomly generated) */
+    appId: number;
+    /** The name of the application */
+    name: string;
+    /** Description of the application */
+    description: string;
+    /** Contact email for the application manager */
+    contactEmail: string;
+    /** URL of the application for users */
+    appUserUrl: string;
+    /** Base64 encoded logo image */
+    logo: string;
+    /** Redirect URIs users can be sent to after signing up for your application (with their JWT token) */
+    redirectUris: string[];
+    /** Deployment status of the application; dev, test, or prod */
+    deploymentStatus: 'dev' | 'test' | 'prod';
+    /** Manager wallet address */
+    managerAddress: string;
+    /** Active version of the application */
+    activeVersion: number;
+  };
 };
 export type DeleteAppApiResponse =
   /** status 200 OK - Resource successfully deleted */ DeleteResponse;
@@ -322,58 +447,6 @@ export type ChangePolicyOwnerApiArg = {
   /** Developer-defined updated policy details */
   changeOwner: ChangeOwner;
 };
-export type AppDef = {
-  /** Timestamp when this was last modified */
-  updatedAt: string;
-  /** Timestamp when this was created */
-  createdAt: string;
-  /** The name of the application */
-  name: string;
-  /** Description of the application */
-  description: string;
-  /** Contact email for the application manager */
-  contactEmail: string;
-  /** URL of the application for users */
-  appUserUrl: string;
-  /** Base64 encoded logo image */
-  logo: string;
-  /** Redirect URIs users can be sent to after signing up for your application (with their JWT token) */
-  redirectUris: string[];
-  /** Deployment status of the application; dev, test, or prod */
-  deploymentStatus: 'dev' | 'test' | 'prod';
-  /** Manager wallet address */
-  managerAddress: string;
-  /** Active version of the application */
-  activeVersion: number;
-};
-export type AppDefRead = {
-  /** Document ID */
-  _id: string;
-  /** Timestamp when this was last modified */
-  updatedAt: string;
-  /** Timestamp when this was created */
-  createdAt: string;
-  /** Application ID */
-  appId: number;
-  /** The name of the application */
-  name: string;
-  /** Description of the application */
-  description: string;
-  /** Contact email for the application manager */
-  contactEmail: string;
-  /** URL of the application for users */
-  appUserUrl: string;
-  /** Base64 encoded logo image */
-  logo: string;
-  /** Redirect URIs users can be sent to after signing up for your application (with their JWT token) */
-  redirectUris: string[];
-  /** Deployment status of the application; dev, test, or prod */
-  deploymentStatus: 'dev' | 'test' | 'prod';
-  /** Manager wallet address */
-  managerAddress: string;
-  /** Active version of the application */
-  activeVersion: number;
-};
 export type Error = {
   /** Error code */
   code?: string;
@@ -381,8 +454,6 @@ export type Error = {
   message: string;
 };
 export type CreateApp = {
-  /** Application ID (generated by the contract) */
-  appId: number;
   /** The name of the application */
   name: string;
   /** Description of the application */
@@ -399,22 +470,6 @@ export type CreateApp = {
   deploymentStatus: 'dev' | 'test' | 'prod';
   /** Manager wallet address */
   managerAddress: string;
-};
-export type EditApp = {
-  /** The name of the application */
-  name: string;
-  /** Description of the application */
-  description: string;
-  /** Contact email for the application manager */
-  contactEmail: string;
-  /** URL of the application for users */
-  appUserUrl: string;
-  /** Base64 encoded logo image */
-  logo: string;
-  /** Redirect URIs users can be sent to after signing up for your application (with their JWT token) */
-  redirectUris: string[];
-  /** Deployment status of the application; dev, test, or prod */
-  deploymentStatus: 'dev' | 'test' | 'prod';
 };
 export type DeleteResponse = {
   /** Success message */
@@ -661,6 +716,8 @@ export type CreatePolicyDef = {
   policyTitle: string;
   /** Policy description */
   description: string;
+  /** An initial version of the policy; must be an exact semver */
+  version: string;
 };
 export type EditPolicyDef = {
   /** Policy title */
