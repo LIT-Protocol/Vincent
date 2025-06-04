@@ -75,7 +75,7 @@ export function DashboardContent({
             </div>
             <CardTitle className="text-xl font-bold text-gray-900">Policies</CardTitle>
             <CardDescription className="text-gray-600">
-              Define and manage access policies
+              Create and manage your policies
             </CardDescription>
           </CardHeader>
           <CardContent className="text-center">

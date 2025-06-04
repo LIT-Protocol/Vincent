@@ -69,8 +69,22 @@ export default function DashboardScreen({ vincentApp }: { vincentApp: any[] }) {
     setExpandedMenus((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(menuId)) {
+        // If closing the menu, also clear any selected views related to that menu
         newSet.delete(menuId);
+        if (selectedListView === menuId) {
+          setSelectedListView(null);
+        }
+        if (
+          selectedForm &&
+          ((menuId === 'app' && selectedForm === 'create-app') ||
+            (menuId === 'tool' && selectedForm === 'create-tool') ||
+            (menuId === 'policy' && selectedForm === 'create-policy'))
+        ) {
+          setSelectedForm(null);
+        }
       } else {
+        // Opening a menu - close others and open this one
+        newSet.clear();
         newSet.add(menuId);
       }
       return newSet;
@@ -80,9 +94,11 @@ export default function DashboardScreen({ vincentApp }: { vincentApp: any[] }) {
   // Handle category clicks (show list view and ensure menu stays open)
   const handleCategoryClick = (categoryId: string) => {
     console.log('🎯 Category click:', categoryId);
-    // Ensure the menu is expanded
-    setExpandedMenus((prev) => new Set([...prev, categoryId]));
-    // Show the list view
+
+    // Close other expanded menus and open the clicked one
+    setExpandedMenus(new Set([categoryId]));
+
+    // Automatically select the "My [Category]" view and highlight the corresponding submenu item
     setSelectedForm(null);
     setSelectedListView(categoryId);
   };
@@ -93,12 +109,38 @@ export default function DashboardScreen({ vincentApp }: { vincentApp: any[] }) {
     if (id === 'dashboard') {
       setSelectedForm(null);
       setSelectedListView(null);
+      setExpandedMenus(new Set()); // Close all dropdowns when going to dashboard
     } else if (id === 'app' || id === 'tool' || id === 'policy') {
       // Use the dedicated category click handler
       handleCategoryClick(id);
+    } else if (id === 'my-apps') {
+      // Show apps list view and keep app menu expanded
+      setSelectedForm(null);
+      setSelectedListView('app');
+      setExpandedMenus(new Set(['app']));
+    } else if (id === 'my-tools') {
+      // Show tools list view and keep tool menu expanded
+      setSelectedForm(null);
+      setSelectedListView('tool');
+      setExpandedMenus(new Set(['tool']));
+    } else if (id === 'my-policies') {
+      // Show policies list view and keep policy menu expanded
+      setSelectedForm(null);
+      setSelectedListView('policy');
+      setExpandedMenus(new Set(['policy']));
     } else if (formComponents[id]) {
+      // Handle form selection - keep the appropriate menu expanded
       setSelectedForm(id);
       setSelectedListView(null);
+
+      // Keep the parent menu expanded based on the form type
+      if (id === 'create-app') {
+        setExpandedMenus(new Set(['app']));
+      } else if (id === 'create-tool') {
+        setExpandedMenus(new Set(['tool']));
+      } else if (id === 'create-policy') {
+        setExpandedMenus(new Set(['policy']));
+      }
     }
   };
 
@@ -200,51 +242,61 @@ export default function DashboardScreen({ vincentApp }: { vincentApp: any[] }) {
       {/* Main Content */}
       <div className="flex-1 overflow-auto">
         <div className="p-6">
-          {selectedForm && formComponents[selectedForm] ? (
-            // Render selected form
-            (() => {
-              const FormComponent = formComponents[selectedForm].component;
-              return <FormComponent />;
-            })()
-          ) : selectedListView ? (
-            // Render list views using the new components
-            <div>
-              {selectedListView === 'app' && (
-                <AppsList
-                  apps={filteredAppsForDashboard}
-                  isLoading={isApiLoading}
-                  error={apiError}
-                  sortOption={sortOption}
-                  onSortChange={setSortOption}
-                  onCreateClick={() => handleMenuSelection('create-app')}
-                />
-              )}
-              {selectedListView === 'tool' && (
-                <ToolsList
-                  tools={filteredTools}
-                  isLoading={toolsLoading}
-                  error={toolsError}
-                  onCreateClick={() => handleMenuSelection('create-tool')}
-                />
-              )}
-              {selectedListView === 'policy' && (
-                <PoliciesList
-                  policies={filteredPolicies}
-                  isLoading={policiesLoading}
-                  error={policiesError}
-                  onCreateClick={() => handleMenuSelection('create-policy')}
-                />
-              )}
-            </div>
-          ) : (
-            // Render dashboard using the new component
-            <DashboardContent
-              filteredAppsCount={filteredApps.length}
-              filteredToolsCount={filteredTools.length}
-              filteredPoliciesCount={filteredPolicies.length}
-              onMenuSelection={handleMenuSelection}
-            />
-          )}
+          <div
+            className="transition-all duration-300 ease-in-out opacity-0 animate-pulse"
+            style={{
+              opacity: 1,
+              transform: 'translateY(0)',
+              animation: 'none',
+            }}
+            key={selectedForm || selectedListView || 'dashboard'}
+          >
+            {selectedForm && formComponents[selectedForm] ? (
+              // Render selected form
+              (() => {
+                const FormComponent = formComponents[selectedForm].component;
+                return <FormComponent />;
+              })()
+            ) : selectedListView ? (
+              // Render list views using the new components
+              <div>
+                {selectedListView === 'app' && (
+                  <AppsList
+                    apps={filteredAppsForDashboard}
+                    isLoading={isApiLoading}
+                    error={apiError}
+                    sortOption={sortOption}
+                    onSortChange={setSortOption}
+                    onCreateClick={() => handleMenuSelection('create-app')}
+                  />
+                )}
+                {selectedListView === 'tool' && (
+                  <ToolsList
+                    tools={filteredTools}
+                    isLoading={toolsLoading}
+                    error={toolsError}
+                    onCreateClick={() => handleMenuSelection('create-tool')}
+                  />
+                )}
+                {selectedListView === 'policy' && (
+                  <PoliciesList
+                    policies={filteredPolicies}
+                    isLoading={policiesLoading}
+                    error={policiesError}
+                    onCreateClick={() => handleMenuSelection('create-policy')}
+                  />
+                )}
+              </div>
+            ) : (
+              // Render dashboard using the new component
+              <DashboardContent
+                filteredAppsCount={filteredApps.length}
+                filteredToolsCount={filteredTools.length}
+                filteredPoliciesCount={filteredPolicies.length}
+                onMenuSelection={handleMenuSelection}
+              />
+            )}
+          </div>
         </div>
       </div>
     </div>

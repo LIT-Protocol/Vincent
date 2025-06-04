@@ -60,6 +60,18 @@ const appRoutes = {
       path: '/appId/:appId/edit-version',
       element: <AppPages.AppDetails />,
     },
+    {
+      path: '/appId/:appId/versions',
+      element: <AppPages.AppDetails />,
+    },
+    {
+      path: '/appId/:appId/version/:versionId',
+      element: <AppPages.AppDetails />,
+    },
+    {
+      path: '/appId/:appId/version/:versionId/edit',
+      element: <AppPages.AppDetails />,
+    },
   ],
 };
 

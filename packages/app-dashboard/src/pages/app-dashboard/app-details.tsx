@@ -10,6 +10,7 @@ import {
   FileText,
   ChevronDown,
   ChevronRight,
+  GitBranch,
 } from 'lucide-react';
 
 import { Button } from '@/components/shared/ui/button';
@@ -23,6 +24,9 @@ import {
 import { useErrorPopup } from '@/providers/ErrorPopup';
 import { StatusMessage } from '@/utils/shared/statusMessage';
 import { vincentApiClient } from '@/components/app-dashboard/mock-forms/vincentApiClient';
+import { AppVersionsList } from '@/components/app-dashboard/AppVersionsList';
+import { AppVersionsListView } from '@/components/app-dashboard/AppVersionsListView';
+import { VersionDetails } from '@/components/app-dashboard/VersionDetails';
 
 // Import app management forms
 import {
@@ -66,6 +70,11 @@ const formComponents: {
 const appMenuItems = [
   { id: 'app-details', label: 'App Details', icon: FileText },
   {
+    id: 'app-versions',
+    label: 'App Versions',
+    icon: GitBranch,
+  },
+  {
     id: 'app-management',
     label: 'App Management',
     icon: Settings,
@@ -73,10 +82,23 @@ const appMenuItems = [
       { id: 'edit', label: 'Edit App' },
       { id: 'delete', label: 'Delete App' },
       { id: 'create-version', label: 'Create App Version' },
-      { id: 'edit-version', label: 'Edit App Version' },
     ],
   },
 ];
+
+// Define types for menu items
+interface MenuSubItem {
+  id: string;
+  label: string;
+  submenu?: MenuSubItem[];
+}
+
+interface MenuItem {
+  id: string;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+  submenu?: MenuSubItem[];
+}
 
 export function AppDetail() {
   const params = useParams();
@@ -88,7 +110,13 @@ export function AppDetail() {
   const [isLoading, setIsLoading] = useState(true);
   const [statusMessage, setStatusMessage] = useState<string>('');
   const [statusType, setStatusType] = useState<'info' | 'warning' | 'success' | 'error'>('info');
-  const [expandedMenus, setExpandedMenus] = useState<Set<string>>(new Set(['app-management']));
+  const [expandedMenus, setExpandedMenus] = useState<Set<string>>(
+    new Set(['app-management', 'version-management']),
+  );
+  const [selectedVersionForEdit, setSelectedVersionForEdit] = useState<{
+    appId: number;
+    version: number;
+  } | null>(null);
 
   // Get current action from URL path
   const getActionFromPath = () => {
@@ -100,12 +128,26 @@ export function AppDetail() {
     }
 
     const actionPart = path.replace(`${appIdPattern}/`, '');
+
+    // Check if we're editing a version (version/:versionId/edit)
+    if (actionPart.includes('/edit') && params.versionId) {
+      return 'edit-version';
+    }
+
     return actionPart;
   };
 
   const currentAction = getActionFromPath();
+  const versionIdParam = params.versionId ? parseInt(params.versionId) : null;
   const appIdParam = params.appId;
   const { showError } = useErrorPopup();
+
+  // Auto-expand version management when viewing a version
+  useEffect(() => {
+    if (versionIdParam) {
+      setExpandedMenus((prev) => new Set([...prev, 'version-management']));
+    }
+  }, [versionIdParam]);
 
   // Helper function to set status messages
   const showStatus = useCallback(
@@ -135,10 +177,18 @@ export function AppDetail() {
     { skip: !appIdParam },
   );
 
-  // Handle menu expansion (but prevent closing app-management)
-  const toggleMenu = (menuId: string) => {
-    if (menuId === 'app-management') return; // Prevent toggling app-management
+  // Get app versions
+  const {
+    data: appVersions,
+    error: versionsError,
+    isLoading: isVersionsLoading,
+  } = vincentApiClient.useGetAppVersionsQuery(
+    { appId: parseInt(appIdParam || '0') },
+    { skip: !appIdParam },
+  );
 
+  // Handle menu expansion
+  const toggleMenu = (menuId: string) => {
     setExpandedMenus((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(menuId)) {
@@ -154,6 +204,15 @@ export function AppDetail() {
   const handleMenuSelection = (id: string) => {
     if (id === 'app-details') {
       navigate(`/appId/${appIdParam}`);
+    } else if (id === 'app-versions') {
+      navigate(`/appId/${appIdParam}/versions`);
+    } else if (id === 'version-details') {
+      // Navigate to version details if we have a version ID
+      if (versionIdParam) {
+        navigate(`/appId/${appIdParam}/version/${versionIdParam}`);
+      }
+    } else if (id === 'edit-version' && versionIdParam) {
+      navigate(`/appId/${appIdParam}/version/${versionIdParam}/edit`);
     } else if (formComponents[id]) {
       navigate(`/appId/${appIdParam}/${id}`);
     }
@@ -336,67 +395,162 @@ export function AppDetail() {
     );
   };
 
+  // Build dynamic menu structure
+  const buildMenuItems = (): MenuItem[] => {
+    // If we're viewing a specific version, show version-specific menu
+    if (versionIdParam) {
+      return [
+        { id: 'version-details', label: `Version ${versionIdParam}`, icon: GitBranch },
+        {
+          id: 'version-management',
+          label: 'Version Management',
+          icon: Settings,
+          submenu: [{ id: 'edit-version', label: 'Edit Version' }],
+        },
+      ];
+    }
+
+    // Default app menu
+    return [
+      { id: 'app-details', label: 'App Details', icon: FileText },
+      { id: 'app-versions', label: 'App Versions', icon: GitBranch },
+      {
+        id: 'app-management',
+        label: 'App Management',
+        icon: Settings,
+        submenu: [
+          { id: 'edit', label: 'Edit App' },
+          { id: 'delete', label: 'Delete App' },
+          { id: 'create-version', label: 'Create App Version' },
+        ],
+      },
+    ];
+  };
+
   return (
     <div className="flex h-screen">
       {/* Left Sidebar */}
       <div className="w-80 bg-white border-r border-gray-200">
         <div className="p-6">
           <button
-            onClick={() => navigate('/')}
+            onClick={() => {
+              if (versionIdParam) {
+                // When viewing a version, go back to the app details
+                navigate(`/appId/${appIdParam}`);
+              } else {
+                // When viewing app details, go back to dashboard
+                navigate('/');
+              }
+            }}
             className="flex items-center text-xl font-bold text-gray-900 mb-6 hover:text-blue-600 transition-colors cursor-pointer"
             style={{ border: 'none', outline: 'none', boxShadow: 'none', background: 'none' }}
           >
             <ArrowLeft className="h-5 w-5 mr-2" />
-            Back to Dashboard
+            {versionIdParam ? 'Back to App' : 'Back to Dashboard'}
           </button>
           <nav className="space-y-2">
-            {appMenuItems.map((item) => {
+            {buildMenuItems().map((item) => {
               const Icon = item.icon;
 
               // Handle items with submenus
               if (item.submenu) {
                 const isExpanded = expandedMenus.has(item.id);
-                const isAppManagement = item.id === 'app-management';
 
                 return (
                   <div key={item.id}>
-                    <div
-                      className="w-full flex items-center justify-between px-4 py-2 rounded-lg transition-colors text-gray-700"
-                      style={{ border: 'none', outline: 'none', boxShadow: 'none' }}
-                    >
+                    <div className="w-full flex items-center justify-between px-4 py-2 rounded-lg transition-colors text-gray-700">
                       <div className="flex items-center">
                         <Icon className="h-5 w-5 mr-3" />
                         {item.label}
                       </div>
-                      {!isAppManagement && (
-                        <button
-                          onClick={() => toggleMenu(item.id)}
-                          style={{ border: 'none', outline: 'none', boxShadow: 'none' }}
-                        >
-                          {isExpanded ? (
-                            <ChevronDown className="h-4 w-4" />
-                          ) : (
-                            <ChevronRight className="h-4 w-4" />
-                          )}
-                        </button>
-                      )}
+                      <button
+                        onClick={() => toggleMenu(item.id)}
+                        style={{ border: 'none', outline: 'none', boxShadow: 'none' }}
+                      >
+                        {isExpanded ? (
+                          <ChevronDown className="h-4 w-4" />
+                        ) : (
+                          <ChevronRight className="h-4 w-4" />
+                        )}
+                      </button>
                     </div>
                     {isExpanded && (
                       <div className="ml-8 mt-1 space-y-1">
-                        {item.submenu.map((subItem) => (
-                          <button
-                            key={subItem.id}
-                            onClick={() => handleMenuSelection(subItem.id)}
-                            className={`w-full text-left px-4 py-2 text-sm rounded-lg transition-colors ${
-                              currentAction === subItem.id
-                                ? 'bg-blue-50 text-blue-700 font-medium'
-                                : 'text-gray-600 hover:bg-gray-50'
-                            }`}
-                            style={{ border: 'none', outline: 'none', boxShadow: 'none' }}
-                          >
-                            {subItem.label}
-                          </button>
-                        ))}
+                        {item.submenu.map((subItem) => {
+                          // Handle version items with their own submenus
+                          if (subItem.submenu) {
+                            const versionNumber = parseInt(subItem.id.replace('version-', ''));
+                            const isVersionExpanded = expandedMenus.has(subItem.id);
+                            const isVersionSelected = versionIdParam === versionNumber;
+
+                            return (
+                              <div key={subItem.id}>
+                                <div className="flex items-center justify-between">
+                                  <button
+                                    onClick={() => handleMenuSelection(subItem.id)}
+                                    className={`flex-1 text-left px-4 py-2 text-sm rounded-lg transition-colors ${
+                                      isVersionSelected
+                                        ? 'bg-blue-50 text-blue-700 font-medium'
+                                        : 'text-gray-600 hover:bg-gray-50'
+                                    }`}
+                                    style={{ border: 'none', outline: 'none', boxShadow: 'none' }}
+                                  >
+                                    {subItem.label}
+                                  </button>
+                                  <button
+                                    onClick={() => toggleMenu(subItem.id)}
+                                    className="p-1 hover:bg-gray-100 rounded"
+                                    style={{ border: 'none', outline: 'none', boxShadow: 'none' }}
+                                  >
+                                    {isVersionExpanded ? (
+                                      <ChevronDown className="h-3 w-3" />
+                                    ) : (
+                                      <ChevronRight className="h-3 w-3" />
+                                    )}
+                                  </button>
+                                </div>
+                                {isVersionExpanded && (
+                                  <div className="ml-6 mt-1 space-y-1">
+                                    {subItem.submenu.map((versionSubItem) => (
+                                      <button
+                                        key={versionSubItem.id}
+                                        onClick={() => handleMenuSelection(versionSubItem.id)}
+                                        className={`w-full text-left px-4 py-2 text-sm rounded-lg transition-colors ${
+                                          currentAction === 'edit-version'
+                                            ? 'bg-blue-50 text-blue-700 font-medium'
+                                            : 'text-gray-600 hover:bg-gray-50'
+                                        }`}
+                                        style={{
+                                          border: 'none',
+                                          outline: 'none',
+                                          boxShadow: 'none',
+                                        }}
+                                      >
+                                        {versionSubItem.label}
+                                      </button>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          }
+
+                          // Regular submenu items
+                          return (
+                            <button
+                              key={subItem.id}
+                              onClick={() => handleMenuSelection(subItem.id)}
+                              className={`w-full text-left px-4 py-2 text-sm rounded-lg transition-colors ${
+                                currentAction === subItem.id
+                                  ? 'bg-blue-50 text-blue-700 font-medium'
+                                  : 'text-gray-600 hover:bg-gray-50'
+                              }`}
+                              style={{ border: 'none', outline: 'none', boxShadow: 'none' }}
+                            >
+                              {subItem.label}
+                            </button>
+                          );
+                        })}
                       </div>
                     )}
                   </div>
@@ -409,8 +563,12 @@ export function AppDetail() {
                   key={item.id}
                   onClick={() => handleMenuSelection(item.id)}
                   className={`w-full flex items-center px-4 py-2 text-left rounded-lg transition-colors ${
-                    item.id === 'app-details' && !currentAction
-                      ? 'bg-gray-100 text-gray-900'
+                    (item.id === 'app-details' && !currentAction) ||
+                    (item.id === 'app-versions' && currentAction === 'versions') ||
+                    (item.id === 'version-details' &&
+                      versionIdParam &&
+                      currentAction !== 'edit-version')
+                      ? 'bg-blue-50 text-blue-700 font-medium'
                       : 'text-gray-700 hover:bg-gray-50'
                   }`}
                   style={{ border: 'none', outline: 'none', boxShadow: 'none' }}
@@ -429,7 +587,37 @@ export function AppDetail() {
         <div className="p-6">
           {statusMessage && <StatusMessage message={statusMessage} type={statusType} />}
 
-          {currentAction && formComponents[currentAction] ? (
+          {currentAction === 'edit-version' && versionIdParam ? (
+            // Render edit version form when we're at /appId/:appId/version/:versionId/edit
+            app ? (
+              (() => {
+                const FormComponent = formComponents[currentAction].component;
+                return <FormComponent appData={app} />;
+              })()
+            ) : (
+              <div className="flex items-center justify-center py-8">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900"></div>
+                <span className="ml-2 text-gray-600">Loading app data...</span>
+              </div>
+            )
+          ) : versionIdParam ? (
+            // Render version details for the selected version
+            <VersionDetails
+              appId={parseInt(appIdParam || '0')}
+              version={versionIdParam}
+              appName={app?.name}
+            />
+          ) : currentAction === 'versions' ? (
+            // Render versions list view
+            <AppVersionsListView
+              versions={appVersions || []}
+              appName={app?.name}
+              appId={parseInt(appIdParam || '0')}
+              latestVersion={app?.latestVersion}
+              isLoading={isVersionsLoading}
+              error={versionsError}
+            />
+          ) : currentAction && formComponents[currentAction] ? (
             // Render selected form
             app ? (
               (() => {

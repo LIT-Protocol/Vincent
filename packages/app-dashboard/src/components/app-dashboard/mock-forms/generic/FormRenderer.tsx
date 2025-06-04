@@ -272,7 +272,10 @@ export function FormRenderer({
             size="sm"
             onClick={() => (setValue as any)(key, [...currentValues, ''])}
           >
-            Add {singularLabel.toLowerCase()}
+            Add{' '}
+            {singularLabel.toLowerCase() === 'redirect uri'
+              ? 'redirect URI'
+              : singularLabel.toLowerCase()}
           </Button>
           {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
         </div>

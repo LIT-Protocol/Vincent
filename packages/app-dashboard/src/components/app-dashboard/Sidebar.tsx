@@ -7,19 +7,28 @@ const menuItems = [
     id: 'app',
     label: 'App',
     icon: Plus,
-    submenu: [{ id: 'create-app', label: 'Create App' }],
+    submenu: [
+      { id: 'my-apps', label: 'My Apps' },
+      { id: 'create-app', label: 'Create App' },
+    ],
   },
   {
     id: 'tool',
     label: 'Tool',
     icon: Wrench,
-    submenu: [{ id: 'create-tool', label: 'Create Tool' }],
+    submenu: [
+      { id: 'my-tools', label: 'My Tools' },
+      { id: 'create-tool', label: 'Create Tool' },
+    ],
   },
   {
     id: 'policy',
     label: 'Policy',
     icon: Shield,
-    submenu: [{ id: 'create-policy', label: 'Create Policy' }],
+    submenu: [
+      { id: 'my-policies', label: 'My Policies' },
+      { id: 'create-policy', label: 'Create Policy' },
+    ],
   },
 ];
 
@@ -54,32 +63,36 @@ export function Sidebar({
               return (
                 <div key={item.id}>
                   <div
-                    className={`w-full flex items-center justify-between px-4 py-2 rounded-lg transition-colors ${
+                    className={`w-full flex items-center justify-between px-4 py-2 rounded-lg transition-all duration-200 ease-in-out ${
                       selectedListView === item.id
                         ? 'bg-blue-50 text-blue-700'
                         : 'text-gray-700 hover:bg-gray-50'
                     }`}
                   >
                     <button
-                      className="flex items-center flex-1 text-left focus:outline-none"
+                      className="flex items-center flex-1 text-left focus:outline-none transition-all duration-200"
                       onClick={() => onCategoryClick(item.id)}
                       style={{ border: 'none', outline: 'none', boxShadow: 'none' }}
                     >
-                      <Icon className="h-5 w-5 mr-3" />
+                      <Icon className="h-5 w-5 mr-3 transition-transform duration-200" />
                       {item.label}
                     </button>
                     <button
                       onClick={() => onToggleMenu(item.id)}
-                      className="p-1 hover:bg-gray-100 rounded focus:outline-none"
+                      className="p-1 hover:bg-gray-100 rounded focus:outline-none transition-colors duration-200"
                     >
-                      {isExpanded ? (
-                        <ChevronDown className="h-4 w-4" />
-                      ) : (
-                        <ChevronRight className="h-4 w-4" />
-                      )}
+                      <ChevronDown
+                        className={`h-4 w-4 transition-transform duration-300 ease-in-out ${
+                          isExpanded ? 'rotate-0' : 'rotate-90'
+                        }`}
+                      />
                     </button>
                   </div>
-                  {isExpanded && (
+                  <div
+                    className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                      isExpanded ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0'
+                    }`}
+                  >
                     <div
                       className="ml-8 mt-1 space-y-1 focus:outline-none"
                       style={{ border: 'none', outline: 'none', boxShadow: 'none' }}
@@ -88,8 +101,11 @@ export function Sidebar({
                         <button
                           key={subItem.id}
                           onClick={() => onMenuSelection(subItem.id)}
-                          className={`w-full text-left px-4 py-2 text-sm rounded-lg transition-colors focus:outline-none ${
-                            selectedForm === subItem.id
+                          className={`w-full text-left px-4 py-2 text-sm rounded-lg transition-all duration-200 ease-in-out focus:outline-none ${
+                            selectedForm === subItem.id ||
+                            (subItem.id === 'my-apps' && selectedListView === 'app') ||
+                            (subItem.id === 'my-tools' && selectedListView === 'tool') ||
+                            (subItem.id === 'my-policies' && selectedListView === 'policy')
                               ? 'bg-blue-50 text-blue-700 font-medium'
                               : 'text-gray-600 hover:bg-gray-50'
                           }`}
@@ -99,7 +115,7 @@ export function Sidebar({
                         </button>
                       ))}
                     </div>
-                  )}
+                  </div>
                 </div>
               );
             }
@@ -109,13 +125,13 @@ export function Sidebar({
               <button
                 key={item.id}
                 onClick={() => onMenuSelection(item.id)}
-                className={`w-full flex items-center px-4 py-2 text-left rounded-lg transition-colors ${
+                className={`w-full flex items-center px-4 py-2 text-left rounded-lg transition-all duration-200 ease-in-out ${
                   item.id === 'dashboard' && !selectedForm && !selectedListView
                     ? 'bg-gray-100 text-gray-900'
                     : 'text-gray-700 hover:bg-gray-50'
                 }`}
               >
-                <Icon className="h-5 w-5 mr-3" />
+                <Icon className="h-5 w-5 mr-3 transition-transform duration-200" />
                 {item.label}
               </button>
             );

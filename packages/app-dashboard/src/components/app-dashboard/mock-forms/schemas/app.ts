@@ -159,6 +159,10 @@ export const EditApp = z.object({
     description: 'Deployment status of the application; dev, test, or prod',
     example: 'dev',
   }),
+  activeVersion: z.number().openapi({
+    description: 'Active version of the application',
+    example: 1,
+  }),
 });
 
 export const DeleteApp = (appId: string) =>

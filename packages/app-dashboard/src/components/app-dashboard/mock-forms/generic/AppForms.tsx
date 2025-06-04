@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { useUrlAppId } from '@/hooks/user-dashboard/useUrlAppId';
 import { useAccount } from 'wagmi';
 import { VersionChanges } from '../schemas/base';
+import { useLocation } from 'react-router-dom';
 
 export function CreateAppForm() {
   const [createApp, { isLoading }] = vincentApiClient.useCreateAppMutation();
@@ -30,6 +31,9 @@ export function CreateAppForm() {
       }).unwrap();
 
       alert(`Success! App created: ${JSON.stringify(result, null, 2)}`);
+
+      // Refresh the page after successful submission
+      window.location.reload();
     } catch (error: any) {
       alert(`Error: ${error?.data?.message || error?.message || 'Unknown error'}`);
     }
@@ -77,6 +81,9 @@ export function EditAppForm({ appData }: { appData?: any }) {
         createApp: { ...editAppData, managerAddress: address },
       }).unwrap();
       alert(`Success! App updated: ${JSON.stringify(result, null, 2)}`);
+
+      // Refresh the page after successful submission
+      window.location.reload();
     } catch (error: any) {
       alert(`Error: ${error?.data?.message || error?.message || 'Unknown error'}`);
     }
@@ -292,6 +299,12 @@ export function GetAppVersionForm() {
 export function EditAppVersionForm({ appData }: { appData?: any }) {
   const [editAppVersion, { isLoading }] = vincentApiClient.useEditAppVersionMutation();
   const { appId } = useUrlAppId();
+  const location = useLocation();
+
+  // Get version from URL query parameter
+  const urlParams = new URLSearchParams(location.search);
+  const versionFromUrl = urlParams.get('version');
+  const preSelectedVersion = versionFromUrl ? parseInt(versionFromUrl) : null;
 
   const handleSubmit = async (data: any) => {
     if (!appId) {
@@ -300,18 +313,49 @@ export function EditAppVersionForm({ appData }: { appData?: any }) {
     }
 
     try {
-      const { version, changes } = data;
+      // Use pre-selected version if available, otherwise get from form data
+      const version = preSelectedVersion || data.version;
+      const { changes } = data;
+
+      if (!version) {
+        alert('Error: No version specified');
+        return;
+      }
+
       const result = await editAppVersion({
         appId: parseInt(appId),
         version,
         versionChanges: { changes },
       }).unwrap();
-      alert(`Success! Version updated: ${JSON.stringify(result, null, 2)}`);
+      alert(`Success! Version ${version} updated: ${JSON.stringify(result, null, 2)}`);
     } catch (error: any) {
       alert(`Error: ${error?.data?.message || error?.message || 'Unknown error'}`);
     }
   };
 
+  // If we have a pre-selected version, only show the changes field
+  if (preSelectedVersion) {
+    const ChangesOnlySchema = z.object({
+      changes: z.string().min(1, 'Changes description is required').openapi({
+        description: 'Updated changelog information',
+        example: 'Fixed bugs and improved performance',
+      }),
+    });
+
+    return (
+      <div>
+        <FormRenderer
+          schema={ChangesOnlySchema}
+          onSubmit={handleSubmit}
+          title={`Edit App Version ${preSelectedVersion}`}
+          description="Update the changelog for this specific app version"
+          isLoading={isLoading}
+        />
+      </div>
+    );
+  }
+
+  // Original form with version selector for backward compatibility
   return (
     <FormRenderer
       schema={VersionChanges}
