@@ -65,6 +65,7 @@
         ]
       },
       "CreateApp": {
+      "CreateApp": {
         "type": "object",
         "properties": {
           "name": {

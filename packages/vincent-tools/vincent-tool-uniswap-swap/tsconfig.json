@@ -7,6 +7,9 @@
       "path": "../vincent-tool-sdk"
     },
     {
+      "path": "../vincent-policy-spending-limit"
+    },
+    {
       "path": "./tsconfig.lib.json"
     }
   ]

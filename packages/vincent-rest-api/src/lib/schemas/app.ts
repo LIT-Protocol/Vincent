@@ -75,6 +75,23 @@ export const CreateAppVersion = z.object({
       description: 'List of tools to include in this version',
       example: [{ packageName: '@vincent/foo-bar', version: '1.0.0' }],
     }),
+  tools: z
+    .array(
+      z.object({
+        packageName: z.string().openapi({
+          description: 'Tool package name',
+          example: '@vincent/foo-bar',
+        }),
+        version: z.string().openapi({
+          description: 'Tool version',
+          example: '1.0.0',
+        }),
+      }),
+    )
+    .openapi({
+      description: 'List of tools to include in this version',
+      example: [{ packageName: '@vincent/foo-bar', version: '1.0.0' }],
+    }),
   changes: z.string().openapi({
     description: 'Changelog information for this version',
     example: 'I am a changelog trapped in a computer!',
