@@ -9,7 +9,7 @@
   "files": [],
   "references": [
     {
-      "path": "../sdk"
+      "path": "../sdk/tsconfig.lib.json"
     },
     {
       "path": "./tsconfig.app.json"

@@ -1,5 +1,5 @@
 {
-  "name": "vincent-sdk",
+  "name": "@lit-protocol/vincent-sdk",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "packages/sdk/src",
   "projectType": "library",
