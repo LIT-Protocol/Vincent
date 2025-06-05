@@ -16,17 +16,6 @@
         "watch": true
       }
     },
-    "build": {
-      "executor": "@nx/js:tsc",
-      "outputs": ["{options.outputPath}"],
-      "options": {
-        "outputPath": "packages/vincent-tools/vincent-tool-sdk/dist",
-        "main": "packages/vincent-tools/vincent-tool-sdk/src/index.ts",
-        "tsConfig": "packages/vincent-tools/vincent-tool-sdk/tsconfig.lib.json",
-        "assets": ["packages/vincent-tools/vincent-tool-sdk/*.md"],
-        "formats": ["cjs"]
-      }
-    },
     "lint": {},
     "test": {
       "executor": "@nx/jest:jest",
