@@ -197,11 +197,11 @@ export function Sidebar({
                   {!isCollapsed && (
                     <div
                       className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                        isExpanded ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+                        isExpanded ? 'max-h-[calc(100vh-200px)] opacity-100' : 'max-h-0 opacity-0'
                       }`}
                     >
                       <div
-                        className="ml-8 mt-1 space-y-1 focus:outline-none"
+                        className="ml-8 mt-1 space-y-1 focus:outline-none overflow-y-auto max-h-[calc(100vh-250px)]"
                         style={{ border: 'none', outline: 'none', boxShadow: 'none' }}
                       >
                         {item.submenu.map((subItem) => (
