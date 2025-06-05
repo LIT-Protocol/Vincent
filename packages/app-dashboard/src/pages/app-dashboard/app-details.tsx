@@ -1,8 +1,18 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router';
 import { useAccount } from 'wagmi';
-import { Settings, FileText, ChevronDown, ChevronRight, GitBranch } from 'lucide-react';
+import {
+  Settings,
+  FileText,
+  ChevronDown,
+  ChevronRight,
+  GitBranch,
+  Edit,
+  Plus,
+  Trash2,
+} from 'lucide-react';
 
+import { Button } from '@/components/shared/ui/button';
 import {
   Card,
   CardContent,
@@ -27,7 +37,7 @@ import {
 // Form components mapping
 const formComponents: {
   [key: string]: {
-    component: React.ComponentType<{ appData?: any }>;
+    component: React.ComponentType<{ appData?: any; hideHeader?: boolean }>;
     title: string;
     description: string;
   };
@@ -295,6 +305,44 @@ export function AppDetail() {
           )}
         </div>
 
+        {/* App Management Actions */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-gray-900">App Management</CardTitle>
+            <CardDescription className="text-gray-700">
+              Manage your application settings and versions
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-3">
+              <Button
+                onClick={() => handleMenuSelection('edit')}
+                variant="outline"
+                className="flex items-center gap-2"
+              >
+                <Edit className="h-4 w-4" />
+                Edit App
+              </Button>
+              <Button
+                onClick={() => handleMenuSelection('create-version')}
+                variant="outline"
+                className="flex items-center gap-2"
+              >
+                <Plus className="h-4 w-4" />
+                Create App Version
+              </Button>
+              <Button
+                onClick={() => handleMenuSelection('delete')}
+                variant="outline"
+                className="flex items-center gap-2 text-red-600 border-red-200 hover:bg-red-50"
+              >
+                <Trash2 className="h-4 w-4" />
+                Delete App
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
         <div className="space-y-6">
           <Card>
             <CardHeader>
@@ -374,20 +422,10 @@ export function AppDetail() {
       ];
     }
 
-    // Default app menu
+    // Default app menu (removed App Management section)
     return [
       { id: 'app-details', label: 'App Details', icon: FileText },
       { id: 'app-versions', label: 'App Versions', icon: GitBranch },
-      {
-        id: 'app-management',
-        label: 'App Management',
-        icon: Settings,
-        submenu: [
-          { id: 'edit', label: 'Edit App' },
-          { id: 'delete', label: 'Delete App' },
-          { id: 'create-version', label: 'Create App Version' },
-        ],
-      },
     ];
   };
 
@@ -587,7 +625,7 @@ export function AppDetail() {
             app ? (
               (() => {
                 const FormComponent = formComponents[currentAction].component;
-                return <FormComponent appData={app} />;
+                return <FormComponent appData={app} hideHeader={false} />;
               })()
             ) : (
               <div className="flex items-center justify-center py-8">
@@ -617,7 +655,7 @@ export function AppDetail() {
             app ? (
               (() => {
                 const FormComponent = formComponents[currentAction].component;
-                return <FormComponent appData={app} />;
+                return <FormComponent appData={app} hideHeader={false} />;
               })()
             ) : (
               <div className="flex items-center justify-center py-8">

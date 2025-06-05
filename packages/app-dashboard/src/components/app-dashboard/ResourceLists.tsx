@@ -25,6 +25,7 @@ interface AppsListProps {
   sortOption: string;
   onSortChange: (option: string) => void;
   onCreateClick: () => void;
+  onAppClick?: (app: any) => void;
 }
 
 interface ToolsListProps {
@@ -81,6 +82,7 @@ export function AppsList({
   sortOption,
   onSortChange,
   onCreateClick,
+  onAppClick,
 }: AppsListProps) {
   const navigate = useNavigate();
 
@@ -117,9 +119,7 @@ export function AppsList({
       {apps.length === 0 ? (
         <div className="border rounded-lg p-8 text-center">
           <h2 className="text-xl font-semibold mb-4 text-gray-900">No Apps Yet</h2>
-          <p className="text-gray-600 mb-6">
-            Create your first app to get started with Lit Protocol.
-          </p>
+          <p className="text-gray-600 mb-6">Create your first app to get started with Vincent.</p>
           <Button variant="outline" className="text-gray-700" onClick={onCreateClick}>
             <Plus className="h-4 w-4 mr-2 font-bold text-gray-700" />
             Create App
@@ -131,7 +131,7 @@ export function AppsList({
             <Card
               key={index}
               className="cursor-pointer hover:shadow-md transition-shadow"
-              onClick={() => navigate(`/appId/${app.appId}`)}
+              onClick={() => (onAppClick ? onAppClick(app) : navigate(`/appId/${app.appId}`))}
             >
               <CardHeader>
                 <CardTitle className="flex justify-between items-center text-gray-900">
@@ -209,29 +209,45 @@ export function ToolsList({ tools, isLoading, error, onCreateClick }: ToolsListP
   }
 
   return (
-    <div className="space-y-4">
-      <h2 className="text-2xl font-bold text-gray-900">Your Tools</h2>
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold text-gray-900">Your Tools</h1>
+      </div>
+
       {tools.length === 0 ? (
-        <div className="text-center py-8">
-          <p className="text-gray-600 mb-4">No tools found for your wallet address.</p>
-          <Button onClick={onCreateClick}>
-            <Plus className="h-4 w-4 mr-2" />
-            Create Your First Tool
+        <div className="border rounded-lg p-8 text-center">
+          <h2 className="text-xl font-semibold mb-4 text-gray-900">No Tools Yet</h2>
+          <p className="text-gray-600 mb-6">Create your first tool to get started with Vincent.</p>
+          <Button variant="outline" className="text-gray-700" onClick={onCreateClick}>
+            <Plus className="h-4 w-4 mr-2 font-bold text-gray-700" />
+            Create Tool
           </Button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-4">
+        <div className="grid grid-cols-1 gap-6">
           {tools.map((tool: any, index: number) => (
-            <Card key={index}>
+            <Card key={index} className="hover:shadow-md transition-shadow">
               <CardHeader>
                 <CardTitle className="text-gray-900">{tool.packageName}</CardTitle>
-                <CardDescription>{tool.description || 'No description available'}</CardDescription>
+                <CardDescription className="text-gray-700">
+                  {tool.description || 'No description available'}
+                </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="text-sm text-gray-600">
-                  <p>Version: {tool.currentVersion || 'N/A'}</p>
-                  <p>Owner: {truncateAddress(tool.authorWalletAddress)}</p>
-                  <p>Created: {tool.createdAt ? formatDate(tool.createdAt) : 'N/A'}</p>
+                <div className="text-sm text-gray-700">
+                  <div className="space-y-1">
+                    <div>
+                      <span className="font-medium">Version:</span> {tool.currentVersion || 'N/A'}
+                    </div>
+                    <div>
+                      <span className="font-medium">Owner:</span>{' '}
+                      {truncateAddress(tool.authorWalletAddress)}
+                    </div>
+                    <div>
+                      <span className="font-medium">Created:</span>{' '}
+                      {tool.createdAt ? formatDate(tool.createdAt) : 'N/A'}
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -267,31 +283,47 @@ export function PoliciesList({ policies, isLoading, error, onCreateClick }: Poli
   }
 
   return (
-    <div className="space-y-4">
-      <h2 className="text-2xl font-bold text-gray-900">Your Policies</h2>
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold text-gray-900">Your Policies</h1>
+      </div>
+
       {policies.length === 0 ? (
-        <div className="text-center py-8">
-          <p className="text-gray-600 mb-4">No policies found for your wallet address.</p>
-          <Button onClick={onCreateClick}>
-            <Plus className="h-4 w-4 mr-2" />
-            Create Your First Policy
+        <div className="border rounded-lg p-8 text-center">
+          <h2 className="text-xl font-semibold mb-4 text-gray-900">No Policies Yet</h2>
+          <p className="text-gray-600 mb-6">
+            Create your first policy to get started with Vincent.
+          </p>
+          <Button variant="outline" className="text-gray-700" onClick={onCreateClick}>
+            <Plus className="h-4 w-4 mr-2 font-bold text-gray-700" />
+            Create Policy
           </Button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-4">
+        <div className="grid grid-cols-1 gap-6">
           {policies.map((policy: any, index: number) => (
-            <Card key={index}>
+            <Card key={index} className="hover:shadow-md transition-shadow">
               <CardHeader>
                 <CardTitle className="text-gray-900">{policy.packageName}</CardTitle>
-                <CardDescription>
+                <CardDescription className="text-gray-700">
                   {policy.description || 'No description available'}
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="text-sm text-gray-600">
-                  <p>Version: {policy.currentVersion || 'N/A'}</p>
-                  <p>Owner: {truncateAddress(policy.authorWalletAddress)}</p>
-                  <p>Created: {policy.createdAt ? formatDate(policy.createdAt) : 'N/A'}</p>
+                <div className="text-sm text-gray-700">
+                  <div className="space-y-1">
+                    <div>
+                      <span className="font-medium">Version:</span> {policy.currentVersion || 'N/A'}
+                    </div>
+                    <div>
+                      <span className="font-medium">Owner:</span>{' '}
+                      {truncateAddress(policy.authorWalletAddress)}
+                    </div>
+                    <div>
+                      <span className="font-medium">Created:</span>{' '}
+                      {policy.createdAt ? formatDate(policy.createdAt) : 'N/A'}
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>

@@ -1,6 +1,3 @@
 export { default as Dashboard } from './dashboard';
-export { default as CreateApp } from './create-app';
-export { default as CreatePolicy } from './create-policy';
-export { default as CreateTool } from './create-tool';
 export { default as AppDetails } from './app-details';
 export { default as MockApiForms } from './MockApiForms';

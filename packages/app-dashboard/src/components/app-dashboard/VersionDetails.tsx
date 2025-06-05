@@ -13,7 +13,7 @@ interface VersionDetailsProps {
   appName?: string;
 }
 
-export function VersionDetails({ appId, version, appName }: VersionDetailsProps) {
+export function VersionDetails({ appId, version }: VersionDetailsProps) {
   const {
     data: versionData,
     error,
@@ -63,15 +63,6 @@ export function VersionDetails({ appId, version, appName }: VersionDetailsProps)
 
   return (
     <div className="space-y-6">
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <h1 className="text-3xl font-bold text-gray-900">
-            {appName} - Version {version}
-          </h1>
-          <p className="text-gray-600 mt-2">Version details and associated tools</p>
-        </div>
-      </div>
-
       {(versionData as any).changes && (
         <Card>
           <CardHeader>

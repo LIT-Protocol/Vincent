@@ -6,17 +6,18 @@ import { useUrlAppId } from '@/hooks/user-dashboard/useUrlAppId';
 import { useAccount } from 'wagmi';
 import { VersionChanges } from '../schemas/base';
 import { useParams } from 'react-router-dom';
+import Loading from '@/layout/app-dashboard/Loading';
 
 export function CreateAppForm() {
   const [createApp, { isLoading }] = vincentApiClient.useCreateAppMutation();
   const { address, isConnected } = useAccount();
 
-  const handleSubmit = async (data: any) => {
-    if (!isConnected || !address) {
-      alert('Error: Wallet not connected');
-      return;
-    }
+  // Show loading if wallet is not connected yet (required for creating apps)
+  if (!isConnected || !address) {
+    return <Loading />;
+  }
 
+  const handleSubmit = async (data: any) => {
     try {
       // Generate appId and prepare app data
       const appId = Math.floor(Math.random() * 10000);
@@ -58,10 +59,21 @@ export function CreateAppForm() {
   );
 }
 
-export function EditAppForm({ appData }: { appData?: any }) {
+export function EditAppForm({
+  appData,
+  hideHeader = false,
+}: {
+  appData?: any;
+  hideHeader?: boolean;
+}) {
   const [editApp, { isLoading }] = vincentApiClient.useEditAppMutation();
   const { address, isConnected } = useAccount();
   const { appId } = useUrlAppId();
+
+  // Show loading if we don't have appData yet (required for editing)
+  if (!appData) {
+    return <Loading />;
+  }
 
   const handleSubmit = async (data: any) => {
     if (!isConnected || !address) {
@@ -90,19 +102,18 @@ export function EditAppForm({ appData }: { appData?: any }) {
   };
 
   return (
-    <div>
-      <FormRenderer
-        schema={EditApp}
-        onSubmit={handleSubmit}
-        title="Edit App"
-        description="Update an existing application"
-        defaultValues={{
-          redirectUris: [''],
-        }}
-        appData={appData}
-        isLoading={isLoading}
-      />
-    </div>
+    <FormRenderer
+      schema={EditApp}
+      onSubmit={handleSubmit}
+      title="Edit App"
+      description="Update an existing application"
+      defaultValues={{
+        redirectUris: [''],
+      }}
+      appData={appData}
+      isLoading={isLoading}
+      hideHeader={hideHeader}
+    />
   );
 }
 
@@ -110,12 +121,12 @@ export function GetAppForm() {
   const [getApp, { isLoading }] = vincentApiClient.useLazyGetAppQuery();
   const { appId } = useUrlAppId();
 
-  const handleSubmit = async () => {
-    if (!appId) {
-      alert('Error: No app ID found in URL');
-      return;
-    }
+  // Show loading if we don't have appId yet (required for the API call)
+  if (!appId) {
+    return <Loading />;
+  }
 
+  const handleSubmit = async () => {
     try {
       const result = await getApp({ appId: parseInt(appId) }).unwrap();
       alert(`Success! Retrieved app: ${JSON.stringify(result, null, 2)}`);
@@ -143,9 +154,20 @@ export function GetAppForm() {
   );
 }
 
-export function DeleteAppForm({ appData }: { appData?: any }) {
+export function DeleteAppForm({
+  appData,
+  hideHeader = false,
+}: {
+  appData?: any;
+  hideHeader?: boolean;
+}) {
   const [deleteApp, { isLoading }] = vincentApiClient.useDeleteAppMutation();
   const { appId } = useUrlAppId();
+
+  // Show loading if we don't have appData yet (required for deletion context)
+  if (!appData) {
+    return <Loading />;
+  }
 
   const handleSubmit = async () => {
     if (!appId) {
@@ -153,9 +175,22 @@ export function DeleteAppForm({ appData }: { appData?: any }) {
       return;
     }
 
+    // Confirmation dialog
+    const confirmDelete = window.confirm(
+      `Are you sure you want to delete app ID ${appId}? This action cannot be undone.`,
+    );
+    if (!confirmDelete) {
+      return;
+    }
+
     try {
-      const result = await deleteApp({ appId: parseInt(appId) }).unwrap();
+      const result = await deleteApp({
+        appId: parseInt(appId),
+      }).unwrap();
       alert(`Success! App deleted: ${JSON.stringify(result, null, 2)}`);
+
+      // Navigate back to dashboard after successful deletion
+      window.location.href = '/';
     } catch (error: any) {
       alert(`Error: ${error?.data?.message || error?.message || 'Unknown error'}`);
     }
@@ -163,19 +198,34 @@ export function DeleteAppForm({ appData }: { appData?: any }) {
 
   return (
     <FormRenderer
-      schema={DeleteApp(appId || '')}
+      schema={DeleteApp}
       onSubmit={handleSubmit}
       title="Delete App"
-      description="Delete an application"
-      appData={appData}
+      description="Delete an application permanently"
+      defaultValues={{
+        appId: appData?.appId || 0,
+      }}
+      hiddenFields={['appId']}
       isLoading={isLoading}
+      hideHeader={hideHeader}
     />
   );
 }
 
-export function CreateAppVersionForm({ appData }: { appData?: any }) {
+export function CreateAppVersionForm({
+  appData,
+  hideHeader = false,
+}: {
+  appData?: any;
+  hideHeader?: boolean;
+}) {
   const [createAppVersion, { isLoading }] = vincentApiClient.useCreateAppVersionMutation();
   const { appId } = useUrlAppId();
+
+  // Show loading if we don't have appData yet (required for context)
+  if (!appData) {
+    return <Loading />;
+  }
 
   const handleSubmit = async (data: any) => {
     if (!appId) {
@@ -205,6 +255,7 @@ export function CreateAppVersionForm({ appData }: { appData?: any }) {
       }}
       appData={appData}
       isLoading={isLoading}
+      hideHeader={hideHeader}
     />
   );
 }
@@ -213,12 +264,12 @@ export function GetAppVersionsForm() {
   const [getAppVersions, { isLoading }] = vincentApiClient.useLazyGetAppVersionsQuery();
   const { appId } = useUrlAppId();
 
-  const handleSubmit = async () => {
-    if (!appId) {
-      alert('Error: No app ID found in URL');
-      return;
-    }
+  // Show loading if we don't have appId yet (required for the API call)
+  if (!appId) {
+    return <Loading />;
+  }
 
+  const handleSubmit = async () => {
     try {
       const result = await getAppVersions({ appId: parseInt(appId) }).unwrap();
       alert(`Success! Retrieved versions: ${JSON.stringify(result, null, 2)}`);
@@ -296,7 +347,7 @@ export function GetAppVersionForm() {
 }
 */
 
-export function EditAppVersionForm() {
+export function EditAppVersionForm({ hideHeader = false }: { hideHeader?: boolean }) {
   const [editAppVersion, { isLoading }] = vincentApiClient.useEditAppVersionMutation();
   const { appId } = useUrlAppId();
   const params = useParams();
@@ -304,12 +355,12 @@ export function EditAppVersionForm() {
   // Get version from URL path parameter instead of query parameter
   const versionIdParam = params.versionId ? parseInt(params.versionId) : null;
 
-  const handleSubmit = async (data: any) => {
-    if (!appId) {
-      alert('Error: No app ID found in URL');
-      return;
-    }
+  // Show loading if we don't have required data yet
+  if (!appId) {
+    return <Loading />;
+  }
 
+  const handleSubmit = async (data: any) => {
     try {
       // Use version from URL path if available, otherwise get from form data
       const version = versionIdParam || data.version;
@@ -348,6 +399,7 @@ export function EditAppVersionForm() {
           title={`Edit App Version ${versionIdParam}`}
           description="Update the changelog for this specific app version"
           isLoading={isLoading}
+          hideHeader={hideHeader}
         />
       </div>
     );
@@ -361,6 +413,7 @@ export function EditAppVersionForm() {
       title="Edit App Version"
       description="Update changes for a specific app version"
       isLoading={isLoading}
+      hideHeader={hideHeader}
     />
   );
 }

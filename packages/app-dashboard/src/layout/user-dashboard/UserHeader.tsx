@@ -29,7 +29,7 @@ export default function UserHeader({ backButton, title, showButtons = true }: Us
       <div className="flex justify-between items-center p-6">
         <div className="flex items-center gap-4">
           <a href="/user" className="flex items-center">
-            <img src="/vincent-logo.png" alt="Vincent" width={150} height={40} />
+            <img src="/vincent-by-litlogo.png" alt="Vincent" width={150} height={40} />
           </a>
 
           {title && <h1 className="text-2xl font-bold ml-4">{title}</h1>}

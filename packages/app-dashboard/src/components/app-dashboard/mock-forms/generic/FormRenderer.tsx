@@ -13,6 +13,7 @@ interface FormRendererProps {
   appData?: any;
   isLoading?: boolean;
   hiddenFields?: string[];
+  hideHeader?: boolean;
 }
 
 // Generic function to map appData to schema fields
@@ -63,6 +64,7 @@ export function FormRenderer({
   appData,
   isLoading = false,
   hiddenFields = [],
+  hideHeader = false,
 }: FormRendererProps) {
   // Auto-map appData to schema if provided
   const autoMappedData = appData ? mapAppDataToSchema(appData, schema) : {};
@@ -94,7 +96,7 @@ export function FormRenderer({
     if (key === 'tools' && fieldSchema._def.typeName === 'ZodArray') {
       const currentValues = (watchedValues as any)[key] || [];
       return (
-        <div key={key} className="mb-4">
+        <div key={key} className="mb-3">
           <EntitySelector
             entityType="tool"
             selectedEntities={currentValues}
@@ -108,18 +110,18 @@ export function FormRenderer({
     // Handle different zod types
     if (fieldSchema._def.typeName === 'ZodNumber') {
       return (
-        <div key={key} className="mb-4">
-          <label htmlFor={key} className="block text-sm font-medium text-gray-700 mb-1">
+        <div key={key} className="mb-3">
+          <label htmlFor={key} className="block text-xs font-medium text-gray-700 mb-1">
             {label}
           </label>
           <input
             {...register(key as any, { valueAsNumber: true })}
             type="number"
             id={key}
-            className={`w-full px-3 py-2 border rounded-md ${error ? 'border-red-500' : 'border-gray-300'}`}
+            className={`w-full px-2 py-1.5 text-sm border rounded-md ${error ? 'border-red-500' : 'border-gray-300'}`}
             placeholder={placeholder}
           />
-          {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
+          {error && <p className="text-red-500 text-xs mt-0.5">{error}</p>}
         </div>
       );
     }
@@ -128,36 +130,36 @@ export function FormRenderer({
       // Check for specific validations
       if (fieldSchema._def.checks?.some((check: any) => check.kind === 'email')) {
         return (
-          <div key={key} className="mb-4">
-            <label htmlFor={key} className="block text-sm font-medium text-gray-700 mb-1">
+          <div key={key} className="mb-3">
+            <label htmlFor={key} className="block text-xs font-medium text-gray-700 mb-1">
               {label}
             </label>
             <input
               {...register(key as any)}
               type="email"
               id={key}
-              className={`w-full px-3 py-2 border rounded-md ${error ? 'border-red-500' : 'border-gray-300'}`}
+              className={`w-full px-2 py-1.5 text-sm border rounded-md ${error ? 'border-red-500' : 'border-gray-300'}`}
               placeholder={placeholder}
             />
-            {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
+            {error && <p className="text-red-500 text-xs mt-0.5">{error}</p>}
           </div>
         );
       }
 
       if (fieldSchema._def.checks?.some((check: any) => check.kind === 'url')) {
         return (
-          <div key={key} className="mb-4">
-            <label htmlFor={key} className="block text-sm font-medium text-gray-700 mb-1">
+          <div key={key} className="mb-3">
+            <label htmlFor={key} className="block text-xs font-medium text-gray-700 mb-1">
               {label}
             </label>
             <input
               {...register(key as any)}
               type="url"
               id={key}
-              className={`w-full px-3 py-2 border rounded-md ${error ? 'border-red-500' : 'border-gray-300'}`}
+              className={`w-full px-2 py-1.5 text-sm border rounded-md ${error ? 'border-red-500' : 'border-gray-300'}`}
               placeholder={placeholder}
             />
-            {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
+            {error && <p className="text-red-500 text-xs mt-0.5">{error}</p>}
           </div>
         );
       }
@@ -168,35 +170,35 @@ export function FormRenderer({
 
       if (isLongText) {
         return (
-          <div key={key} className="mb-4">
-            <label htmlFor={key} className="block text-sm font-medium text-gray-700 mb-1">
+          <div key={key} className="mb-3">
+            <label htmlFor={key} className="block text-xs font-medium text-gray-700 mb-1">
               {label}
             </label>
             <textarea
               {...register(key as any)}
               id={key}
-              rows={3}
-              className={`w-full px-3 py-2 border rounded-md ${error ? 'border-red-500' : 'border-gray-300'}`}
+              rows={2}
+              className={`w-full px-2 py-1.5 text-sm border rounded-md ${error ? 'border-red-500' : 'border-gray-300'}`}
               placeholder={placeholder}
             />
-            {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
+            {error && <p className="text-red-500 text-xs mt-0.5">{error}</p>}
           </div>
         );
       }
 
       return (
-        <div key={key} className="mb-4">
-          <label htmlFor={key} className="block text-sm font-medium text-gray-700 mb-1">
+        <div key={key} className="mb-3">
+          <label htmlFor={key} className="block text-xs font-medium text-gray-700 mb-1">
             {label}
           </label>
           <input
             {...register(key as any)}
             type="text"
             id={key}
-            className={`w-full px-3 py-2 border rounded-md ${error ? 'border-red-500' : 'border-gray-300'}`}
+            className={`w-full px-2 py-1.5 text-sm border rounded-md ${error ? 'border-red-500' : 'border-gray-300'}`}
             placeholder={placeholder}
           />
-          {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
+          {error && <p className="text-red-500 text-xs mt-0.5">{error}</p>}
         </div>
       );
     }
@@ -204,14 +206,14 @@ export function FormRenderer({
     if (fieldSchema._def.typeName === 'ZodEnum') {
       const options = fieldSchema._def.values;
       return (
-        <div key={key} className="mb-4">
-          <label htmlFor={key} className="block text-sm font-medium text-gray-700 mb-1">
+        <div key={key} className="mb-3">
+          <label htmlFor={key} className="block text-xs font-medium text-gray-700 mb-1">
             {label}
           </label>
           <select
             {...register(key as any)}
             id={key}
-            className={`w-full px-3 py-2 border rounded-md ${error ? 'border-red-500' : 'border-gray-300'}`}
+            className={`w-full px-2 py-1.5 text-sm border rounded-md ${error ? 'border-red-500' : 'border-gray-300'}`}
           >
             <option value="">Select {label.toLowerCase()}</option>
             {options.map((option: string) => (
@@ -220,7 +222,7 @@ export function FormRenderer({
               </option>
             ))}
           </select>
-          {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
+          {error && <p className="text-red-500 text-xs mt-0.5">{error}</p>}
         </div>
       );
     }
@@ -235,10 +237,10 @@ export function FormRenderer({
       const inputType = isUrlArray ? 'url' : 'text';
 
       return (
-        <div key={key} className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+        <div key={key} className="mb-3">
+          <label className="block text-xs font-medium text-gray-700 mb-1">{label}</label>
           {currentValues.map((value: string, index: number) => (
-            <div key={index} className="flex gap-2 mb-2">
+            <div key={index} className="flex gap-2 mb-1">
               <input
                 type={inputType}
                 value={value}
@@ -247,7 +249,7 @@ export function FormRenderer({
                   newValues[index] = e.target.value;
                   (setValue as any)(key, newValues);
                 }}
-                className={`flex-1 px-3 py-2 border rounded-md ${error ? 'border-red-500' : 'border-gray-300'}`}
+                className={`flex-1 px-2 py-1.5 text-sm border rounded-md ${error ? 'border-red-500' : 'border-gray-300'}`}
                 placeholder={placeholder || `Enter ${singularLabel.toLowerCase()}`}
               />
               {currentValues.length > 1 && (
@@ -255,6 +257,7 @@ export function FormRenderer({
                   type="button"
                   variant="destructive"
                   size="sm"
+                  className="h-8 px-2 text-xs"
                   onClick={() => {
                     const newValues = currentValues.filter((_: any, i: number) => i !== index);
                     (setValue as any)(key, newValues);
@@ -269,6 +272,7 @@ export function FormRenderer({
             type="button"
             variant="outline"
             size="sm"
+            className="h-7 px-2 text-xs mt-1"
             onClick={() => (setValue as any)(key, [...currentValues, ''])}
           >
             Add{' '}
@@ -276,25 +280,25 @@ export function FormRenderer({
               ? 'redirect URI'
               : singularLabel.toLowerCase()}
           </Button>
-          {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
+          {error && <p className="text-red-500 text-xs mt-0.5">{error}</p>}
         </div>
       );
     }
 
     // Fallback to text input
     return (
-      <div key={key} className="mb-4">
-        <label htmlFor={key} className="block text-sm font-medium text-gray-700 mb-1">
+      <div key={key} className="mb-3">
+        <label htmlFor={key} className="block text-xs font-medium text-gray-700 mb-1">
           {label}
         </label>
         <input
           {...register(key as any)}
           type="text"
           id={key}
-          className={`w-full px-3 py-2 border rounded-md ${error ? 'border-red-500' : 'border-gray-300'}`}
+          className={`w-full px-2 py-1.5 text-sm border rounded-md ${error ? 'border-red-500' : 'border-gray-300'}`}
           placeholder={placeholder}
         />
-        {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
+        {error && <p className="text-red-500 text-xs mt-0.5">{error}</p>}
       </div>
     );
   };
@@ -306,16 +310,20 @@ export function FormRenderer({
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold text-gray-900 mb-2">{title}</h2>
-      {description && <p className="text-gray-600 mb-6">{description}</p>}
+    <div className="max-w-4xl mx-auto p-4 bg-white rounded-lg shadow-md">
+      {!hideHeader && (
+        <>
+          <h2 className="text-xl font-bold text-gray-900 mb-1">{title}</h2>
+          {description && <p className="text-gray-600 text-sm mb-4">{description}</p>}
+        </>
+      )}
 
-      <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
+      <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-3">
         {Object.entries(schemaShape)
           .filter(([key]) => !hiddenFields.includes(key))
           .map(([key, fieldSchema]) => renderField(key, fieldSchema))}
 
-        <Button type="submit" disabled={!isValid || isLoading} className="w-full">
+        <Button type="submit" disabled={!isValid || isLoading} className="w-full h-9 text-sm">
           {isLoading ? 'Loading...' : 'Submit'}
         </Button>
       </form>

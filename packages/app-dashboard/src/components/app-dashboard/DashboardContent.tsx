@@ -1,11 +1,6 @@
-import { Plus, Wrench, Shield } from 'lucide-react';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/app-dashboard/ui/card';
+import { SquareStack, Wrench, Shield, BookOpen, MessageCircle } from 'lucide-react';
+import { Button } from '@/components/shared/ui/button';
+import { Card, CardContent } from '@/components/app-dashboard/ui/card';
 
 interface DashboardContentProps {
   filteredAppsCount: number;
@@ -20,68 +15,154 @@ export function DashboardContent({
   filteredPoliciesCount,
   onMenuSelection,
 }: DashboardContentProps) {
+  const currentTime = new Date().getHours();
+  const greeting =
+    currentTime < 12 ? 'Good morning' : currentTime < 17 ? 'Good afternoon' : 'Good evening';
+
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+    <div className="max-w-4xl mx-auto">
+      {/* Greeting */}
+      <h1 className="text-4xl font-medium text-gray-900 text-center mb-12">
+        {greeting}, Developer
+      </h1>
+
+      {/* Action Buttons */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12">
+        <Button
+          variant="outline"
+          className="h-16 flex items-center justify-center gap-3 text-base font-medium"
+          onClick={() => onMenuSelection('create-app')}
+        >
+          <SquareStack className="h-5 w-5" />
+          Create an app
+        </Button>
+        <Button
+          variant="outline"
+          className="h-16 flex items-center justify-center gap-3 text-base font-medium"
+          onClick={() => onMenuSelection('create-tool')}
+        >
+          <Wrench className="h-5 w-5" />
+          Create a tool
+        </Button>
+        <Button
+          variant="outline"
+          className="h-16 flex items-center justify-center gap-3 text-base font-medium"
+          onClick={() => onMenuSelection('create-policy')}
+        >
+          <Shield className="h-5 w-5" />
+          Create a policy
+        </Button>
       </div>
 
-      {/* Navigation Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Apps Card */}
-        <Card
-          className="cursor-pointer hover:shadow-lg transition-all duration-200 hover:border-blue-200"
-          onClick={() => onMenuSelection('app')}
-        >
-          <CardHeader className="text-center">
-            <div className="mx-auto w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
-              <Plus className="h-8 w-8 text-blue-600" />
+      {/* Announcement Card */}
+      <Card className="mb-12 border border-blue-200 bg-blue-50/50">
+        <CardContent className="p-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                <BookOpen className="h-4 w-4 text-blue-600" />
+              </div>
+              <div>
+                <p className="font-medium text-gray-900">New to Vincent?</p>
+                <p className="text-sm text-gray-600">Get started with our quick start guide</p>
+              </div>
             </div>
-            <CardTitle className="text-xl font-bold text-gray-900">Apps</CardTitle>
-            <CardDescription className="text-gray-600">Manage your applications</CardDescription>
-          </CardHeader>
-          <CardContent className="text-center">
-            <div className="text-2xl font-bold text-blue-600 mb-2">{filteredAppsCount}</div>
-          </CardContent>
-        </Card>
+            <Button
+              size="sm"
+              className="bg-blue-600 hover:bg-blue-700"
+              onClick={() =>
+                window.open('https://docs.heyvincent.ai/documents/Quick_Start.html', '_blank')
+              }
+            >
+              View Docs
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
-        {/* Tools Card */}
-        <Card
-          className="cursor-pointer hover:shadow-lg transition-all duration-200 hover:border-green-200"
-          onClick={() => onMenuSelection('tool')}
-        >
-          <CardHeader className="text-center">
-            <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
-              <Wrench className="h-8 w-8 text-green-600" />
-            </div>
-            <CardTitle className="text-xl font-bold text-gray-900">Tools</CardTitle>
-            <CardDescription className="text-gray-600">
-              Create and manage your tools
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="text-center">
-            <div className="text-2xl font-bold text-green-600 mb-2">{filteredToolsCount}</div>
-          </CardContent>
-        </Card>
+      {/* Project Stats */}
+      <div className="space-y-4 mb-20">
+        <h2 className="text-lg font-medium text-gray-900">Your Projects</h2>
 
-        {/* Policies Card */}
-        <Card
-          className="cursor-pointer hover:shadow-lg transition-all duration-200 hover:border-purple-200"
-          onClick={() => onMenuSelection('policy')}
+        <div className="space-y-3">
+          <Card
+            className="cursor-pointer hover:bg-gray-50 transition-colors"
+            onClick={() => onMenuSelection('app')}
+          >
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-blue-100 rounded flex items-center justify-center">
+                    <SquareStack className="h-4 w-4 text-blue-600" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-900">Apps</p>
+                    <p className="text-sm text-gray-600">Create and manage your applications</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-2xl font-semibold text-gray-900">{filteredAppsCount}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card
+            className="cursor-pointer hover:bg-gray-50 transition-colors"
+            onClick={() => onMenuSelection('tool')}
+          >
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-green-100 rounded flex items-center justify-center">
+                    <Wrench className="h-4 w-4 text-green-600" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-900">Tools</p>
+                    <p className="text-sm text-gray-600">Create and manage your tools</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-2xl font-semibold text-gray-900">{filteredToolsCount}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card
+            className="cursor-pointer hover:bg-gray-50 transition-colors"
+            onClick={() => onMenuSelection('policy')}
+          >
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-purple-100 rounded flex items-center justify-center">
+                    <Shield className="h-4 w-4 text-purple-600" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-900">Policies</p>
+                    <p className="text-sm text-gray-600">Create and manage your policies</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-2xl font-semibold text-gray-900">{filteredPoliciesCount}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      {/* Footer Button */}
+      <div className="flex justify-center pb-8">
+        <Button
+          variant="ghost"
+          className="text-gray-600 hover:text-gray-800"
+          onClick={() => window.open('https://t.me/+vZWoA5k8jGoxZGEx', '_blank')}
         >
-          <CardHeader className="text-center">
-            <div className="mx-auto w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mb-4">
-              <Shield className="h-8 w-8 text-purple-600" />
-            </div>
-            <CardTitle className="text-xl font-bold text-gray-900">Policies</CardTitle>
-            <CardDescription className="text-gray-600">
-              Create and manage your policies
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="text-center">
-            <div className="text-2xl font-bold text-purple-600 mb-2">{filteredPoliciesCount}</div>
-          </CardContent>
-        </Card>
+          <MessageCircle className="h-4 w-4 mr-2" />
+          Help & Feedback
+        </Button>
       </div>
     </div>
   );

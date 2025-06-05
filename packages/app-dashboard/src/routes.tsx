@@ -25,52 +25,52 @@ const appRoutes = {
       element: <AppPages.Dashboard />,
     },
     {
-      path: '/create-app',
-      element: <AppPages.CreateApp />,
+      path: '/apps',
+      element: <AppPages.Dashboard />,
     },
     {
-      path: '/create-policy',
-      element: <AppPages.CreatePolicy />,
+      path: '/tools',
+      element: <AppPages.Dashboard />,
+    },
+    {
+      path: '/policies',
+      element: <AppPages.Dashboard />,
+    },
+    {
+      path: '/create-app',
+      element: <AppPages.Dashboard />,
     },
     {
       path: '/create-tool',
-      element: <AppPages.CreateTool />,
+      element: <AppPages.Dashboard />,
+    },
+    {
+      path: '/create-policy',
+      element: <AppPages.Dashboard />,
     },
     {
       path: '/mock-api-forms/appId/:appId',
       element: <AppPages.MockApiForms />,
     },
     {
-      path: '/appId/:appId',
-      element: <AppPages.AppDetails />,
+      path: '/appId/:appId/*',
+      element: <AppPages.Dashboard />,
     },
     {
       path: '/appId/:appId/edit',
-      element: <AppPages.AppDetails />,
-    },
-    {
-      path: '/appId/:appId/delete',
-      element: <AppPages.AppDetails />,
+      element: <AppPages.Dashboard />,
     },
     {
       path: '/appId/:appId/create-version',
-      element: <AppPages.AppDetails />,
+      element: <AppPages.Dashboard />,
     },
     {
-      path: '/appId/:appId/edit-version',
-      element: <AppPages.AppDetails />,
-    },
-    {
-      path: '/appId/:appId/versions',
-      element: <AppPages.AppDetails />,
-    },
-    {
-      path: '/appId/:appId/version/:versionId',
-      element: <AppPages.AppDetails />,
+      path: '/appId/:appId/delete',
+      element: <AppPages.Dashboard />,
     },
     {
       path: '/appId/:appId/version/:versionId/edit',
-      element: <AppPages.AppDetails />,
+      element: <AppPages.Dashboard />,
     },
   ],
 };
