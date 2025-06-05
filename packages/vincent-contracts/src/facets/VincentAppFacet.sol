@@ -248,28 +248,6 @@ contract VincentAppFacet is VincentBase {
             );
         }
 
-        // Then check nested arrays for each tool
-        for (uint256 i = 0; i < toolCount; i++) {
-            string memory toolIpfsCid = versionTools.toolIpfsCids[i];
-
-            // Validate tool IPFS CID is not empty
-            if (bytes(toolIpfsCid).length == 0) {
-                revert LibVincentAppFacet.EmptyToolIpfsCidNotAllowed(appId, i);
-            }
-
-            // Check nested array lengths
-            uint256 policyCount = versionTools.toolPolicies[i].length;
-
-            for (uint256 j = 0; j < policyCount; j++) {
-                string memory policyIpfsCid = versionTools.toolPolicies[i][j];
-
-                // Validate non-empty policy IPFS CID
-                if (bytes(policyIpfsCid).length == 0) {
-                    revert LibVincentAppFacet.EmptyPolicyIpfsCidNotAllowed(appId, i);
-                }
-            }
-        }
-
         // Step 4: Fetch necessary storage references.
         VincentAppStorage.AppStorage storage as_ = VincentAppStorage.appStorage();
         VincentAppStorage.App storage app = as_.appIdToApp[appId];
@@ -289,6 +267,11 @@ contract VincentAppFacet is VincentBase {
         for (uint256 i = 0; i < toolCount; i++) {
             string memory toolIpfsCid = versionTools.toolIpfsCids[i]; // Cache calldata value
 
+            // Validate tool IPFS CID is not empty
+            if (bytes(toolIpfsCid).length == 0) {
+                revert LibVincentAppFacet.EmptyToolIpfsCidNotAllowed(appId, i);
+            }
+
             bytes32 hashedToolCid = keccak256(abi.encodePacked(toolIpfsCid));
 
             // Step 6.1: Register the tool IPFS CID globally if it hasn't been added already.
@@ -307,6 +290,11 @@ contract VincentAppFacet is VincentBase {
             for (uint256 j = 0; j < policyCount; j++) {
                 string memory policyIpfsCid = versionTools.toolPolicies[i][j]; // Cache calldata value
 
+                // Validate non-empty policy IPFS CID
+                if (bytes(policyIpfsCid).length == 0) {
+                    revert LibVincentAppFacet.EmptyPolicyIpfsCidNotAllowed(appId, j);
+                }
+
                 bytes32 hashedToolPolicy = keccak256(abi.encodePacked(policyIpfsCid));
 
                 // Step 7.1: Add the policy hash to the ToolPolicies
@@ -315,6 +303,7 @@ contract VincentAppFacet is VincentBase {
                 // Step 7.3: Store the policy IPFS CID globally if it's not already stored.
                 if (bytes(ls.ipfsCidHashToIpfsCid[hashedToolPolicy]).length == 0) {
                     ls.ipfsCidHashToIpfsCid[hashedToolPolicy] = policyIpfsCid;
+                    emit LibVincentAppFacet.NewLitActionRegistered(hashedToolPolicy);
                 }
             }
         }
