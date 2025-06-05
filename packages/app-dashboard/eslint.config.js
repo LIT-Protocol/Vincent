@@ -23,7 +23,6 @@ export default [
     },
   },
   {
-    files: ['*.json'],
     rules: {
       '@nx/dependency-checks': [
         'error',

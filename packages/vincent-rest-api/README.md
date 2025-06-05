@@ -42,5 +42,4 @@ vincent-rest-api/
 - [Zod](https://github.com/colinhacks/zod) - Schema validation
 - [@asteasolutions/zod-to-openapi](https://github.com/asteasolutions/zod-to-openapi) - Convert Zod schemas to OpenAPI
 - [RTK Query](https://redux-toolkit.js.org/rtk-query/overview) - API client generation
-- [Express](https://expressjs.com/) - API server for testing
 - [Jest](https://jestjs.io/) - Testing framework 
