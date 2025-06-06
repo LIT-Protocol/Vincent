@@ -124,8 +124,8 @@ export function getVincentAppServer(
     `get-${_vincentAppDefinition.name}-${_vincentAppDefinition.version}-delegators-info`,
     `Tool to get the delegators info for the ${_vincentAppDefinition.name} Vincent App. Info includes the PKP token ID, ETH address, and public key for each delegator.`,
     async () => {
-      const appId = parseInt(_vincentAppDefinition.id);
-      const appVersion = parseInt(_vincentAppDefinition.version);
+      const appId = parseInt(_vincentAppDefinition.id, 10);
+      const appVersion = parseInt(_vincentAppDefinition.version, 10);
 
       const delegatorsPkpInfo = await getDelegatorsAgentPkpInfo(appId, appVersion);
 
