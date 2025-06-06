@@ -14,17 +14,12 @@
     "typecheck": "./scripts/precommit-check.sh"
   },
   "type": "commonjs",
-  "main": "./dist/index.js",
-  "typings": "./dist/index.d.ts",
+  "main": "./src/index.js",
+  "typings": "./src/index.d.ts",
   "files": [
-    "dist",
+    "src",
     "!**/*.tsbuildinfo"
   ],
-  "nx": {
-    "sourceRoot": "packages/vincent-tool-sdk/src",
-    "projectType": "library",
-    "name": "vincent-tool-sdk"
-  },
   "devDependencies": {
     "jsonc-eslint-parser": "^2.4.0"
   }

@@ -27,6 +27,14 @@
         "tty": true
       }
     },
+    "nx-release-publish": {
+      "dependsOn": ["build"],
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npm publish",
+        "cwd": "packages/sdk/dist"
+      }
+    },
     "dev": {
       "executor": "@nx/js:tsc",
       "outputs": ["{options.outputPath}"],

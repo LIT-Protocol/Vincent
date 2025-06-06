@@ -1,0 +1,56 @@
+{
+  "name": "vincent-tool-sdk",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/vincent-tools/vincent-tool-sdk/src",
+  "projectType": "library",
+  "targets": {
+    "dev": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "packages/vincent-tools/vincent-tool-sdk/dist",
+        "main": "packages/vincent-tools/vincent-tool-sdk/src/index.ts",
+        "tsConfig": "packages/vincent-tools/vincent-tool-sdk/tsconfig.lib.json",
+        "assets": ["packages/vincent-tools/vincent-tool-sdk/*.md"],
+        "formats": ["cjs"],
+        "updateBuildableProjectDepsInPackageJson": true,
+        "watch": true
+      }
+    },
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "packages/vincent-tools/vincent-tool-sdk/dist",
+        "main": "packages/vincent-tools/vincent-tool-sdk/src/index.ts",
+        "tsConfig": "packages/vincent-tools/vincent-tool-sdk/tsconfig.lib.json",
+        "assets": ["packages/vincent-tools/vincent-tool-sdk/*.md"],
+        "formats": ["cjs"],
+        "updateBuildableProjectDepsInPackageJson": true
+      }
+    },
+    "nx-release-publish": {
+      "dependsOn": ["build"],
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npm publish",
+        "cwd": "packages/vincent-tools/vincent-tool-sdk/dist"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["packages/vincent-tools/vincent-tool-sdk/**/*.ts"]
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "packages/vincent-tools/vincent-tool-sdk/jest.config.js"
+      }
+    }
+  },
+  "tags": []
+}

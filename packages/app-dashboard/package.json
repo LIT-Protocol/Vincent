@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^4.1.0",
+    "@lit-protocol/vincent-sdk": "workspace:*",
     "@radix-ui/react-checkbox": "^1.2.3",
     "@radix-ui/react-dialog": "^1.1.6",
     "@radix-ui/react-dropdown-menu": "^2.1.12",

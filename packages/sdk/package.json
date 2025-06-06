@@ -9,8 +9,8 @@
     "node": "^20.11.1",
     "pnpm": "10.7.0"
   },
-  "main": "./dist/src/index.js",
-  "types": "./dist/src/index.d.ts",
+  "main": "./src/index.js",
+  "types": "./src/index.d.ts",
   "keywords": [
     "jwt",
     "authentication",
@@ -30,7 +30,7 @@
   },
   "sideEffects": false,
   "files": [
-    "dist"
+    "src"
   ],
   "devDependencies": {
     "@dotenvx/dotenvx": "^1.39.1",

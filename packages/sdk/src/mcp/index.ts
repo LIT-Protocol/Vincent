@@ -7,18 +7,9 @@
  * @category Vincent SDK API
  */
 
-import {
-  VincentAppDef,
-  VincentAppDefSchema,
-  VincentToolDef,
-  VincentToolDefSchema,
-} from './definitions';
+import { VincentAppDefSchema, VincentToolDefSchema } from './definitions';
+import type { VincentAppDef, VincentToolDef } from './definitions';
 import { getVincentAppServer } from './server';
 
-export {
-  VincentAppDef,
-  VincentAppDefSchema,
-  VincentToolDef,
-  VincentToolDefSchema,
-  getVincentAppServer,
-};
+export type { VincentAppDef, VincentToolDef };
+export { VincentAppDefSchema, VincentToolDefSchema, getVincentAppServer };
