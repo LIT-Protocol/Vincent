@@ -17,8 +17,14 @@ import {
 import { ethers } from 'ethers';
 import { ZodRawShape } from 'zod';
 
-import { VincentAppDef, VincentToolDefWithIPFS, buildParamDefinitions } from './definitions';
-import { getVincentToolClient } from '../tool/tool';
+import {
+  buildParamDefinitions,
+  buildVincentActionCallback,
+  VincentAppDef,
+  VincentAppDefSchema,
+  VincentToolDefWithIPFS,
+} from './definitions';
+import { getDelegatorsAgentPkpInfo } from '../utils/delegation';
 
 /**
  * Creates a callback function for handling tool execution requests
@@ -32,22 +38,13 @@ function buildToolCallback(
   delegateeSigner: ethers.Signer,
   vincentToolDefWithIPFS: VincentToolDefWithIPFS
 ) {
+  const vincentToolCallback = buildVincentActionCallback(vincentToolDefWithIPFS);
+
   return async (
     args: ZodRawShape,
     _extra: RequestHandlerExtra<ServerRequest, ServerNotification>
   ): Promise<CallToolResult> => {
-    const vincentToolClient = getVincentToolClient({
-      ethersSigner: delegateeSigner,
-      vincentToolCid: vincentToolDefWithIPFS.ipfsCid,
-    });
-
-    const vincentToolExecutionResult = await vincentToolClient.execute(args);
-
-    const response = JSON.parse(vincentToolExecutionResult.response as string);
-    if (response.status !== 'success') {
-      console.error(response);
-      throw new Error(JSON.stringify(response, null, 2));
-    }
+    const response = await vincentToolCallback(delegateeSigner, args);
 
     return {
       content: [
@@ -115,12 +112,35 @@ export function getVincentAppServer(
   delegateeSigner: ethers.Signer,
   vincentAppDefinition: VincentAppDef
 ): McpServer {
+  const _vincentAppDefinition = VincentAppDefSchema.parse(vincentAppDefinition);
+
   const server = new McpServer({
-    name: vincentAppDefinition.name,
-    version: vincentAppDefinition.version,
+    name: _vincentAppDefinition.name,
+    version: _vincentAppDefinition.version,
   });
 
-  Object.entries(vincentAppDefinition.tools).forEach(([toolIpfsCid, tool]) => {
+  // Tool to get this app delegators
+  server.tool(
+    `get-${_vincentAppDefinition.name}-${_vincentAppDefinition.version}-delegators-info`,
+    `Tool to get the delegators info for the ${_vincentAppDefinition.name} Vincent App. Info includes the PKP token ID, ETH address, and public key for each delegator.`,
+    async () => {
+      const appId = parseInt(_vincentAppDefinition.id);
+      const appVersion = parseInt(_vincentAppDefinition.version);
+
+      const delegatorsPkpInfo = await getDelegatorsAgentPkpInfo(appId, appVersion);
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(delegatorsPkpInfo),
+          },
+        ],
+      };
+    }
+  );
+
+  Object.entries(_vincentAppDefinition.tools).forEach(([toolIpfsCid, tool]) => {
     server.tool(
       tool.name,
       tool.description,

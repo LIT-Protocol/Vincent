@@ -19,11 +19,6 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { ethers } from 'ethers';
 import { z } from 'zod';
 
-import { fetchDelegatedAgentPKPTokenIds } from './contracts';
-import { env } from './env';
-
-const { PUBKEY_ROUTER_DATIL_CONTRACT, VINCENT_DATIL_CONTRACT } = env;
-
 const ERC20_ABI = [
   'function balanceOf(address owner) external view returns (uint256)',
   'function approve(address spender, uint256 amount) external returns (bool)',
@@ -35,18 +30,6 @@ const ERC20_ABI = [
   'function name() external view returns (string)',
   'function symbol() external view returns (string)',
 ] as const;
-
-const PUBKEY_ROUTER_ABI = [
-  'function getEthAddress(uint256 tokenId) public view returns (address)',
-  'function getPubkey(uint256 tokenId) public view returns (bytes memory)',
-] as const;
-
-const NETWORK_CONFIG = {
-  datil: {
-    pubkeyRouterAddress: PUBKEY_ROUTER_DATIL_CONTRACT,
-    vincentAddress: VINCENT_DATIL_CONTRACT,
-  },
-} as const;
 
 /**
  * Gets information about a Lit-supported blockchain by its chain ID
@@ -70,44 +53,6 @@ function getLitSupportedChainData(chainId: string) {
 
   return litSupportedChain;
 }
-
-/**
- * Retrieves information about a PKP token
- *
- * This function queries the PKP Router contract to get the Ethereum address
- * and public key associated with a PKP token ID.
- *
- * @param pkpTokenId - The PKP token ID as an ethers.BigNumber
- * @returns An object containing the token ID (as a hex string), Ethereum address, and public key
- * @internal
- */
-const getPkpInfo = async (
-  pkpTokenId: ethers.BigNumber,
-): Promise<{
-  tokenId: string;
-  ethAddress: string;
-  publicKey: string;
-}> => {
-  const yellowstoneChain = LIT_EVM_CHAINS.yellowstone;
-  const provider = new ethers.providers.JsonRpcProvider(yellowstoneChain.rpcUrls[0]);
-
-  const pubkeyRouter = new ethers.Contract(
-    NETWORK_CONFIG.datil.pubkeyRouterAddress,
-    PUBKEY_ROUTER_ABI,
-    provider,
-  );
-
-  const [ethAddress, publicKey] = await Promise.all([
-    pubkeyRouter.getEthAddress(pkpTokenId),
-    pubkeyRouter.getPubkey(pkpTokenId),
-  ]);
-
-  return {
-    tokenId: pkpTokenId.toHexString(),
-    ethAddress,
-    publicKey,
-  };
-};
 
 /**
  * Extends an MCP server with additional tools for Vincent applications
@@ -164,27 +109,6 @@ export function extendVincentServer(
   delegateeSigner: ethers.Signer,
 ) {
   // Add more resources, tools, and prompts as needed
-  server.tool(
-    'get-delegators-info',
-    `Tool to get the delegators info for the ${vincentAppDefinition.name} Vincent App. Info includes the PKP token ID, ETH address, and public key for each delegator.`,
-    async () => {
-      const appId = parseInt(vincentAppDefinition.id);
-      const appVersion = parseInt(vincentAppDefinition.version);
-
-      const delegators = await fetchDelegatedAgentPKPTokenIds(appId, appVersion);
-      const delegatorsPkpInfo = await Promise.all(delegators.map(getPkpInfo));
-
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(delegatorsPkpInfo),
-          },
-        ],
-      };
-    },
-  );
-
   server.tool(
     'native-balance',
     'Resource to get the native balance for a given PKP ETH address on a given chain.',

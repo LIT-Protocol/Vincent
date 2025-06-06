@@ -8,7 +8,11 @@
  * @category Vincent SDK API
  */
 
+import { Signer } from 'ethers';
 import { z, ZodRawShape } from 'zod';
+
+import { getVincentToolClient } from '../tool';
+import { VincentToolParams } from '../types';
 
 /**
  * Supported parameter types for Vincent tool parameters
@@ -122,12 +126,58 @@ const ZodSchemaMap: Record<ParameterType, z.ZodTypeAny> = {
  * const validationSchema = z.object(paramSchema);
  * ```
  */
-export function buildParamDefinitions(params: VincentParameter[]) {
+export function buildParamDefinitions(params: VincentParameter[]): ZodRawShape {
   return params.reduce((acc, param) => {
     const zodSchema = ZodSchemaMap[param.type] || z.string();
     acc[param.name] = zodSchema.describe(param.description);
     return acc;
   }, {} as ZodRawShape);
+}
+
+/**
+ * Creates a callback function for executing Vincent actions
+ *
+ * This function takes a Vincent tool definition with IPFS CID and returns a callback
+ * function that can be used to execute the tool. The callback handles the connection
+ * to the Vincent tool client, execution of the tool with provided arguments, and
+ * processing of the response.
+ *
+ * @param vincentToolDefWithIPFS - The Vincent tool definition with its IPFS CID
+ * @returns An async function that takes a wallet signer and tool parameters, and returns the execution result
+ *
+ * @example
+ * ```typescript
+ * const toolDef: VincentToolDefWithIPFS = {
+ *   name: 'myTool',
+ *   description: 'A sample tool',
+ *   parameters: [{ name: 'param1', type: 'string', description: 'the param description' }],
+ *   ipfsCid: 'Qm...'
+ * };
+ *
+ * const actionCallback = buildVincentActionCallback(toolDef);
+ * const result = await actionCallback(wallet, { param1: 'value1' });
+ * ```
+ */
+export function buildVincentActionCallback(vincentToolDefWithIPFS: VincentToolDefWithIPFS) {
+  return async (wallet: Signer, args: VincentToolParams): Promise<string> => {
+    try {
+      const vincentToolClient = getVincentToolClient({
+        ethersSigner: wallet,
+        vincentToolCid: vincentToolDefWithIPFS.ipfsCid,
+      });
+
+      const vincentToolExecutionResult = await vincentToolClient.execute(args);
+
+      const response = JSON.parse(vincentToolExecutionResult.response as string);
+      if (response.status !== 'success') {
+        throw new Error(JSON.stringify(response, null, 2));
+      }
+
+      return response;
+    } catch (error) {
+      return `Error performing vincent_action: Error: ${error}`;
+    }
+  };
 }
 
 /**
@@ -154,7 +204,6 @@ export type VincentParameter = z.infer<typeof VincentParameterSchema>;
  * Zod schema for validating Vincent tool definitions
  *
  * This schema defines the structure of a tool in a Vincent application.
- * @hidden
  */
 export const VincentToolDefSchema = z.object({
   name: z.string(),
@@ -184,11 +233,11 @@ export type VincentToolDefWithIPFS = VincentToolDef & { ipfsCid: string };
  * Zod schema for validating Vincent application definitions
  *
  * This schema defines the structure of a Vincent application.
- * @hidden
  */
 export const VincentAppDefSchema = z.object({
   id: z.string(),
   name: z.string(),
+  description: z.string().optional(),
   version: z.string(),
   tools: z.record(VincentToolDefSchema),
 });
