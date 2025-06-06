@@ -1,0 +1,26 @@
+{
+  "name": "registry-backend",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/registry-backend/src",
+  "projectType": "application",
+  "targets": {
+    "test": {
+      "options": {
+        "passWithNoTests": true
+      }
+    },
+    "deploy": {
+      "executor": "@getlarge/nx-heroku:deploy",
+      "options": {
+        "org": "lit-protocol",
+        "appNamePrefix": "vincent",
+        "procfile": "web: cd packages/registry-backend && pnpm start",
+        "buildPacks": [
+          "heroku/nodejs",
+          "heroku-community/multi-procfile"
+        ],
+        "debug": true
+      }
+    }
+  }
+}

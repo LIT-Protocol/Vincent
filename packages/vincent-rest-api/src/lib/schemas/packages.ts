@@ -1,5 +1,5 @@
 import { z } from './openApiZod';
-import { EXAMPLE_EMAIL_ADDRESS } from '../openApi/constants';
+import { EXAMPLE_EMAIL_ADDRESS, EXAMPLE_WALLET_ADDRESS } from '../openApi/constants';
 
 // Contributors on NPM package
 export const Contributor = z.object({
@@ -30,5 +30,24 @@ export const Author = z.object({
   url: z.string().url().optional().openapi({
     description: "URL of the author's website",
     example: 'https://example.com',
+  }),
+});
+
+// Request body for changing a tool/policy owner
+export const ChangeOwner = z.object({
+  authorWalletAddress: z.string().openapi({
+    description: 'New owner address',
+    example: EXAMPLE_WALLET_ADDRESS,
+  }),
+});
+
+// Generic schema to represent fetching a tool/policy version(s)
+// Not actually used in the API since the packageName is not used in the request body
+// but it's useful for the OpenAPI spec
+
+export const GetToolPolicy = z.object({
+  packageName: z.string().openapi({
+    description: 'Policy package name',
+    example: '@vincent/foo-bar-policy',
   }),
 });

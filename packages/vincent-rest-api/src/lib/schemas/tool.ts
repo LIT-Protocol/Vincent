@@ -1,6 +1,6 @@
 import { BaseDocAttributes } from './base';
 import { EXAMPLE_WALLET_ADDRESS } from '../openApi/constants';
-import { z } from 'zod';
+import { z } from './openApiZod';
 import { Author, Contributor } from './packages';
 
 // Request body for creating a new tool
@@ -16,6 +16,10 @@ export const CreateTool = z.object({
   description: z.string().openapi({
     description: 'Tool description',
     example: 'When we foo, our complex tool will also bar.',
+  }),
+  version: z.string().openapi({
+    description: 'An initial version of the tool; must be an exact semver',
+    example: '1.0.0',
   }),
 });
 

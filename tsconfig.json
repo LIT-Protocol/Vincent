@@ -14,6 +14,9 @@
     },
     {
       "path": "./packages/vincent-tools/vincent-tool-erc20-approval"
+    },
+    {
+      "path": "./packages/registry-backend"
     }
   ]
 }

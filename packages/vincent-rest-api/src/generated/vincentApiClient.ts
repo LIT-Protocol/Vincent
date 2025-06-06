@@ -1,6 +1,9 @@
 import { baseVincentRtkApi as api } from '../lib/baseVincentRtkApi';
 const injectedRtkApi = api.injectEndpoints({
   endpoints: (build) => ({
+    listApps: build.query<ListAppsApiResponse, ListAppsApiArg>({
+      query: () => ({ url: `/apps` }),
+    }),
     createApp: build.mutation<CreateAppApiResponse, CreateAppApiArg>({
       query: (queryArg) => ({ url: `/app`, method: 'POST', body: queryArg.createApp }),
     }),
@@ -11,7 +14,7 @@ const injectedRtkApi = api.injectEndpoints({
       query: (queryArg) => ({
         url: `/app/${queryArg.appId}`,
         method: 'PUT',
-        body: queryArg.createApp,
+        body: queryArg.editApp,
       }),
     }),
     deleteApp: build.mutation<DeleteAppApiResponse, DeleteAppApiArg>({
@@ -37,9 +40,15 @@ const injectedRtkApi = api.injectEndpoints({
         body: queryArg.versionChanges,
       }),
     }),
-    toggleAppVersion: build.mutation<ToggleAppVersionApiResponse, ToggleAppVersionApiArg>({
+    enableAppVersion: build.mutation<EnableAppVersionApiResponse, EnableAppVersionApiArg>({
       query: (queryArg) => ({
-        url: `/app/${queryArg.appId}/version/${queryArg.version}/toggle`,
+        url: `/app/${queryArg.appId}/version/${queryArg.version}/enable`,
+        method: 'POST',
+      }),
+    }),
+    disableAppVersion: build.mutation<DisableAppVersionApiResponse, DisableAppVersionApiArg>({
+      query: (queryArg) => ({
+        url: `/app/${queryArg.appId}/version/${queryArg.version}/disable`,
         method: 'POST',
       }),
     }),
@@ -66,7 +75,7 @@ const injectedRtkApi = api.injectEndpoints({
       query: (queryArg) => ({
         url: `/tool/${queryArg.packageName}/owner`,
         method: 'PUT',
-        body: queryArg.body,
+        body: queryArg.changeOwner,
       }),
     }),
     createToolVersion: build.mutation<CreateToolVersionApiResponse, CreateToolVersionApiArg>({
@@ -126,13 +135,15 @@ const injectedRtkApi = api.injectEndpoints({
       query: (queryArg) => ({
         url: `/policy/${queryArg.packageName}/owner`,
         method: 'PUT',
-        body: queryArg.body,
+        body: queryArg.changeOwner,
       }),
     }),
   }),
   overrideExisting: false,
 });
 export { injectedRtkApi as vincentApiClient };
+export type ListAppsApiResponse = /** status 200 Successful operation */ AppDefRead[];
+export type ListAppsApiArg = void;
 export type CreateAppApiResponse = /** status 200 Successful operation */ AppDefRead;
 export type CreateAppApiArg = {
   /** Developer-defined application information */
@@ -148,7 +159,7 @@ export type EditAppApiArg = {
   /** ID of the application to edit */
   appId: number;
   /** Developer-defined updated application details */
-  createApp: CreateApp;
+  editApp: EditApp;
 };
 export type DeleteAppApiResponse =
   /** status 200 OK - Resource successfully deleted */ DeleteResponse;
@@ -185,11 +196,18 @@ export type EditAppVersionApiArg = {
   /** Update version changes field */
   versionChanges: VersionChanges;
 };
-export type ToggleAppVersionApiResponse = /** status 200 Successful operation */ AppVersionDefRead;
-export type ToggleAppVersionApiArg = {
-  /** ID of the application to toggle a version for */
+export type EnableAppVersionApiResponse = /** status 200 Successful operation */ AppVersionDefRead;
+export type EnableAppVersionApiArg = {
+  /** ID of the application to enable a version for */
   appId: number;
-  /** Version number to toggle */
+  /** Version number to enable */
+  version: number;
+};
+export type DisableAppVersionApiResponse = /** status 200 Successful operation */ AppVersionDefRead;
+export type DisableAppVersionApiArg = {
+  /** ID of the application to disable a version for */
+  appId: number;
+  /** Version number to disable */
   version: number;
 };
 export type ListAllToolsApiResponse = /** status 200 Successful operation */ ToolDefRead[];
@@ -221,10 +239,7 @@ export type ChangeToolOwnerApiArg = {
   /** Package name of the tool to change the owner of */
   packageName: string;
   /** Developer-defined updated tool details */
-  body: {
-    /** New author wallet address */
-    authorWalletAddress: string;
-  };
+  changeOwner: ChangeOwner;
 };
 export type CreateToolVersionApiResponse = /** status 200 Successful operation */ ToolVersionDef;
 export type CreateToolVersionApiArg = {
@@ -305,10 +320,7 @@ export type ChangePolicyOwnerApiArg = {
   /** Package name of the policy to change the owner of */
   packageName: string;
   /** Developer-defined updated policy details */
-  body: {
-    /** New author wallet address */
-    authorWalletAddress: string;
-  };
+  changeOwner: ChangeOwner;
 };
 export type AppDef = {
   /** Timestamp when this was last modified */
@@ -341,6 +353,8 @@ export type AppDefRead = {
   updatedAt: string;
   /** Timestamp when this was created */
   createdAt: string;
+  /** Application ID */
+  appId: number;
   /** The name of the application */
   name: string;
   /** Description of the application */
@@ -357,18 +371,18 @@ export type AppDefRead = {
   deploymentStatus: 'dev' | 'test' | 'prod';
   /** Manager wallet address */
   managerAddress: string;
-  /** Application ID */
-  appId: number;
   /** Active version of the application */
   activeVersion: number;
 };
 export type Error = {
   /** Error code */
-  code: string;
+  code?: string;
   /** Error message */
   message: string;
 };
 export type CreateApp = {
+  /** Application ID (generated by the contract) */
+  appId: number;
   /** The name of the application */
   name: string;
   /** Description of the application */
@@ -385,6 +399,22 @@ export type CreateApp = {
   deploymentStatus: 'dev' | 'test' | 'prod';
   /** Manager wallet address */
   managerAddress: string;
+};
+export type EditApp = {
+  /** The name of the application */
+  name: string;
+  /** Description of the application */
+  description: string;
+  /** Contact email for the application manager */
+  contactEmail: string;
+  /** URL of the application for users */
+  appUserUrl: string;
+  /** Base64 encoded logo image */
+  logo: string;
+  /** Redirect URIs users can be sent to after signing up for your application (with their JWT token) */
+  redirectUris: string[];
+  /** Deployment status of the application; dev, test, or prod */
+  deploymentStatus: 'dev' | 'test' | 'prod';
 };
 export type DeleteResponse = {
   /** Success message */
@@ -447,8 +477,13 @@ export type AppVersionDefRead = {
   changes: string;
 };
 export type CreateAppVersion = {
-  /** List of tool identities to include in this version */
-  tools: string[];
+  /** List of tools to include in this version */
+  tools: {
+    /** Tool package name */
+    packageName: string;
+    /** Tool version */
+    version: string;
+  }[];
   /** Changelog information for this version */
   changes: string;
 };
@@ -534,6 +569,8 @@ export type CreateTool = {
   title: string;
   /** Tool description */
   description: string;
+  /** An initial version of the tool; must be an exact semver */
+  version: string;
 };
 export type EditTool = {
   /** Tool title */
@@ -582,6 +619,10 @@ export type ToolVersionDef = {
   supportedPolicies: string[];
   /** IPFS CID */
   ipfsCid: string;
+};
+export type ChangeOwner = {
+  /** New owner address */
+  authorWalletAddress: string;
 };
 export type PolicyDef = {
   /** Timestamp when this was last modified */
@@ -736,6 +777,7 @@ export type PolicyVersionDefRead = {
 export type PolicyVersionsArray = PolicyVersionDef[];
 export type PolicyVersionsArrayRead = PolicyVersionDefRead[];
 export const {
+  useListAppsQuery,
   useCreateAppMutation,
   useGetAppQuery,
   useEditAppMutation,
@@ -744,7 +786,8 @@ export const {
   useCreateAppVersionMutation,
   useGetAppVersionQuery,
   useEditAppVersionMutation,
-  useToggleAppVersionMutation,
+  useEnableAppVersionMutation,
+  useDisableAppVersionMutation,
   useListAllToolsQuery,
   useCreateToolMutation,
   useGetToolQuery,

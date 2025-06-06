@@ -6,16 +6,45 @@ import {
   AppVersionWithTools,
   CreateApp,
   CreateAppVersion,
+  EditApp,
 } from '../schemas/app';
 import { DeleteResponseSchema, ErrorSchema, VersionChangesSchema } from './baseRegistry';
 import { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
 
 export function addToRegistry(registry: OpenAPIRegistry) {
   const CreateAppSchema = registry.register('CreateApp', CreateApp);
+  const EditAppSchema = registry.register('EditApp', EditApp);
   const AppDefSchema = registry.register('AppDef', AppDef);
   const CreateAppVersionSchema = registry.register('CreateAppVersion', CreateAppVersion);
   const AppVersionDefSchema = registry.register('AppVersionDef', AppVersionDef);
   const AppVersionWithToolsSchema = registry.register('AppVersionWithTools', AppVersionWithTools);
+
+  // GET /apps - List all applications
+  registry.registerPath({
+    method: 'get',
+    path: '/apps',
+    tags: ['app'],
+    summary: 'Lists all applications',
+    operationId: 'listApps',
+    responses: {
+      200: {
+        description: 'Successful operation',
+        content: {
+          'application/json': {
+            schema: z.array(AppDefSchema),
+          },
+        },
+      },
+      default: {
+        description: 'Unexpected error',
+        content: {
+          'application/json': {
+            schema: ErrorSchema,
+          },
+        },
+      },
+    },
+  });
 
   // POST /app - Create a new application
   registry.registerPath({
@@ -126,7 +155,7 @@ export function addToRegistry(registry: OpenAPIRegistry) {
       body: {
         content: {
           'application/json': {
-            schema: CreateAppSchema,
+            schema: EditAppSchema,
           },
         },
         description: 'Developer-defined updated application details',
@@ -419,19 +448,18 @@ export function addToRegistry(registry: OpenAPIRegistry) {
       },
     },
   });
-
-  // POST /app/{appId}/version/{version}/toggle - Toggle enabled/disabled for an application version
+  // POST /app/{appId}/version/{version}/enable - Enable an application version
   registry.registerPath({
     method: 'post',
-    path: '/app/{appId}/version/{version}/toggle',
+    path: '/app/{appId}/version/{version}/enable',
     tags: ['app/version'],
-    summary: 'Toggles enabled/disabled for an application version',
-    operationId: 'toggleAppVersion',
+    summary: 'Enables an application version',
+    operationId: 'enableAppVersion',
     parameters: [
       {
         name: 'appId',
         in: 'path',
-        description: 'ID of the application to toggle a version for',
+        description: 'ID of the application to enable a version for',
         required: true,
         schema: {
           type: 'number',
@@ -441,7 +469,62 @@ export function addToRegistry(registry: OpenAPIRegistry) {
       {
         name: 'version',
         in: 'path',
-        description: 'Version number to toggle',
+        description: 'Version number to enable',
+        required: true,
+        schema: {
+          type: 'number',
+          example: 2,
+        },
+      },
+    ],
+    responses: {
+      200: {
+        description: 'Successful operation',
+        content: {
+          'application/json': {
+            schema: AppVersionDefSchema,
+          },
+        },
+      },
+      400: {
+        description: 'Invalid input',
+      },
+      422: {
+        description: 'Validation exception',
+      },
+      default: {
+        description: 'Unexpected error',
+        content: {
+          'application/json': {
+            schema: ErrorSchema,
+          },
+        },
+      },
+    },
+  });
+
+  // POST /app/{appId}/version/{version}/disable - Disable an application version
+  registry.registerPath({
+    method: 'post',
+    path: '/app/{appId}/version/{version}/disable',
+    tags: ['app/version'],
+    summary: 'Disables an application version',
+    operationId: 'disableAppVersion',
+    parameters: [
+      {
+        name: 'appId',
+        in: 'path',
+        description: 'ID of the application to disable a version for',
+        required: true,
+        schema: {
+          type: 'number',
+          example: 5,
+        },
+      },
+      {
+        name: 'version',
+        in: 'path',
+        description: 'Version number to disable',
         required: true,
         schema: {
           type: 'number',

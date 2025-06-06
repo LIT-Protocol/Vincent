@@ -37,15 +37,6 @@
           }
         ]
       }
-    },
-    "build": {
-      "executor": "nx:run-commands",
-      "options": {
-        "commands": [
-          "nx run vincent-contracts:build:tsc",
-          "nx run vincent-contracts:post-build"
-        ]
-      }
     }
   },
   "tags": []

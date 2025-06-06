@@ -1,6 +1,6 @@
-import { z } from 'zod';
 import { Author, Contributor } from './packages';
 import { BaseDocAttributes } from './base';
+import { z } from './openApiZod';
 
 export const PolicyDef = BaseDocAttributes.extend({
   packageName: z.string().openapi({
@@ -33,6 +33,10 @@ export const CreatePolicy = z.object({
   description: z.string().openapi({
     description: 'Policy description',
     example: 'This policy is a foo bar policy',
+  }),
+  version: z.string().openapi({
+    description: 'An initial version of the policy; must be an exact semver',
+    example: '1.0.0',
   }),
 });
 

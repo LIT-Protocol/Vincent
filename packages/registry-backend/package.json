@@ -1,0 +1,49 @@
+{
+  "name": "@lit-protocol/registry-backend",
+  "version": "0.0.1",
+  "private": false,
+  "type:": "module",
+  "scripts": {
+    "build": "pnpm unbuild",
+    "dev": "pnpm dotenvx run -- pnpm bun --watch src/bin/apiServer.ts",
+    "start": "pnpm build && node ./dist/bin/apiServer.mjs"
+  },
+  "files": [
+    "dist",
+    "src/lib/express/static/openapi.html"
+  ],
+  "bin": {
+    "apiServer": "./dist/bin/apiServer.mjs"
+  },
+  "packageManager": "pnpm@10.7.0",
+  "engines": {
+    "node": "^20.11.1",
+    "pnpm": "10.7.0"
+  },
+  "dependencies": {
+    "@lit-protocol/vincent-rest-api": "^1.0.2",
+    "@t3-oss/env-core": "^0.13.6",
+    "bs58": "^6.0.0",
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "express-openapi-validator": "^5.5.3",
+    "helmet": "^7.1.0",
+    "mongoose": "^8.15.1",
+    "normalize-package-data": "^7.0.0",
+    "query-registry": "^4.0.1",
+    "react-redux": "^9.2.0",
+    "zod": "^3.25.42"
+  },
+  "devDependencies": {
+    "@dotenvx/dotenvx": "^1.44.1",
+    "@tsconfig/node20": "^20.1.5",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.2",
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.11.0",
+    "@types/supertest": "^6.0.2",
+    "bun": "^1.2.5",
+    "supertest": "^6.3.4",
+    "unbuild": "^3.5.0"
+  }
+}
