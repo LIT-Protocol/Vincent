@@ -1,96 +1,109 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAccount } from 'wagmi';
 
 import DashboardScreen from '@/components/app-dashboard/Dashboard';
 import ConnectWalletScreen from '@/components/app-dashboard/ConnectWallet';
 import Loading from '@/layout/app-dashboard/Loading';
 import { vincentApiClient } from '@/components/app-dashboard/mock-forms/vincentApiClient';
+import { StatusMessage } from '@/utils/shared/statusMessage';
+import type { AppDefRead } from '@/components/app-dashboard/mock-forms/vincentApiClient';
 
-function AppHome() {
-  const [app, setApp] = useState<any[] | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+interface UseUserAppsReturn {
+  userApps: AppDefRead[];
+  isLoading: boolean;
+  errorMessage: string;
+}
+
+function useUserApps(): UseUserAppsReturn {
+  const [userApps, setUserApps] = useState<AppDefRead[]>([]);
   const [hasCheckedForApps, setHasCheckedForApps] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string>('');
 
   const { address, isConnected } = useAccount();
 
-  // Use the API endpoint instead of on-chain
   const {
     data: apiApps,
     error: apiError,
     isLoading: apiIsLoading,
   } = vincentApiClient.useListAppsQuery();
 
-  useEffect(() => {
-    async function processApiData() {
-      if (!isConnected || !address) {
-        console.log('⚠️ Dashboard: Not connected or no address');
-        setIsLoading(false);
-        setHasCheckedForApps(true);
-        return;
-      }
-
-      // Don't process data while API is still loading
-      if (apiIsLoading) {
-        console.log('⏳ Dashboard: API still loading, waiting...');
-        return;
-      }
-
-      setIsLoading(true);
-
-      try {
-        if (apiError) {
-          console.error('❌ Dashboard: Error fetching apps from API:', apiError);
-          setApp([]);
-          setHasCheckedForApps(true);
-          return;
-        }
-
-        if (apiApps && apiApps.length > 0) {
-          console.log('📋 Dashboard: Total apps from API:', apiApps.length);
-          console.log('🔍 Dashboard: First app structure:', JSON.stringify(apiApps[0], null, 2));
-
-          // Filter apps by manager address but keep the original API format
-          const userApps = apiApps.filter((apiApp: any) => {
-            const isUserApp =
-              apiApp.managerAddress &&
-              apiApp.managerAddress.toLowerCase() === address.toLowerCase();
-            console.log(
-              `🔎 Dashboard: App ${apiApp.appId} (${apiApp.name}) - Manager: ${apiApp.managerAddress}, Is User App: ${isUserApp}`,
-            );
-            return isUserApp;
-          });
-
-          console.log('✅ Dashboard: Filtered user apps (raw API format):', userApps);
-          console.log('📊 Dashboard: User apps count:', userApps.length);
-
-          setApp(userApps);
-          console.log('🎉 Dashboard: Apps processed, showing dashboard');
-        } else {
-          setApp([]);
-          console.log('📭 Dashboard: No apps returned from API (apiApps is null/undefined/empty)');
-        }
-      } catch (error) {
-        console.error('💥 Dashboard: Error processing app data:', error);
-        setApp([]);
-      } finally {
-        setIsLoading(false);
-        setHasCheckedForApps(true);
-        console.log('✅ Dashboard: Loading complete');
-      }
+  const processApiData = useCallback(async () => {
+    if (!isConnected || !address) {
+      setUserApps([]);
+      setHasCheckedForApps(false);
+      setErrorMessage('');
+      return;
     }
 
-    processApiData();
+    if (apiIsLoading) {
+      return;
+    }
+
+    try {
+      if (apiError) {
+        setErrorMessage('Failed to load your apps. Please try refreshing the page.');
+        setHasCheckedForApps(true);
+        return;
+      }
+
+      if (!apiApps) {
+        setUserApps([]);
+        setHasCheckedForApps(true);
+        return;
+      }
+
+      // Filter apps by manager address
+      const filteredApps = apiApps.filter((apiApp: AppDefRead) => {
+        return apiApp.managerAddress?.toLowerCase() === address.toLowerCase();
+      });
+
+      setUserApps(filteredApps);
+    } catch (error) {
+      setUserApps([]);
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : 'An unexpected error occurred while loading your apps.',
+      );
+    } finally {
+      setHasCheckedForApps(true);
+    }
   }, [apiApps, apiError, address, isConnected, apiIsLoading]);
+
+  useEffect(() => {
+    processApiData();
+  }, [processApiData]);
+
+  const isLoading = useMemo(() => {
+    if (!isConnected) return false;
+    return apiIsLoading || !hasCheckedForApps;
+  }, [isConnected, apiIsLoading, hasCheckedForApps]);
+
+  return {
+    userApps,
+    isLoading,
+    errorMessage,
+  };
+}
+
+function AppHome() {
+  const { isConnected } = useAccount();
+  const { userApps, isLoading, errorMessage } = useUserApps();
 
   if (!isConnected) {
     return <ConnectWalletScreen />;
   }
 
-  if (isLoading || !hasCheckedForApps || apiIsLoading) {
+  if (isLoading) {
     return <Loading />;
   }
 
-  return <DashboardScreen vincentApp={app || []} />;
+  return (
+    <>
+      {errorMessage && <StatusMessage message={errorMessage} type="error" />}
+      <DashboardScreen vincentApp={userApps} />
+    </>
+  );
 }
 
 export default AppHome;

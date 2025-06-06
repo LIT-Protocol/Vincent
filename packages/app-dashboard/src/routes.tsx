@@ -5,6 +5,7 @@ import { AppProviders, UserProviders } from './providers';
 
 import * as AppPages from './pages/app-dashboard';
 import * as UserPages from './pages/user-dashboard';
+import { AppDetail } from './pages/app-dashboard/app-details';
 
 const appRoutes = {
   element: (
@@ -52,25 +53,34 @@ const appRoutes = {
       path: '/mock-api-forms/appId/:appId',
       element: <AppPages.MockApiForms />,
     },
+    // App-specific routes - use proper nested routes
     {
-      path: '/appId/:appId/*',
-      element: <AppPages.Dashboard />,
+      path: '/appId/:appId',
+      element: <AppDetail />,
     },
     {
-      path: '/appId/:appId/edit',
-      element: <AppPages.Dashboard />,
+      path: '/appId/:appId/versions',
+      element: <AppDetail />,
     },
     {
-      path: '/appId/:appId/create-version',
-      element: <AppPages.Dashboard />,
-    },
-    {
-      path: '/appId/:appId/delete',
-      element: <AppPages.Dashboard />,
+      path: '/appId/:appId/version/:versionId',
+      element: <AppDetail />,
     },
     {
       path: '/appId/:appId/version/:versionId/edit',
-      element: <AppPages.Dashboard />,
+      element: <AppDetail />,
+    },
+    {
+      path: '/appId/:appId/edit-app',
+      element: <AppDetail />,
+    },
+    {
+      path: '/appId/:appId/delete-app',
+      element: <AppDetail />,
+    },
+    {
+      path: '/appId/:appId/create-app-version',
+      element: <AppDetail />,
     },
   ],
 };

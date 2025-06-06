@@ -169,9 +169,16 @@ export function DeleteAppForm({
     return <Loading />;
   }
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (data: any) => {
     if (!appId) {
       alert('Error: No app ID found in URL');
+      return;
+    }
+
+    // Additional validation - check if the confirmation matches
+    const expectedConfirmation = `I want to delete app ${appId}`;
+    if (data.confirmation !== expectedConfirmation) {
+      alert(`Error: Please type exactly: "${expectedConfirmation}"`);
       return;
     }
 
@@ -198,14 +205,11 @@ export function DeleteAppForm({
 
   return (
     <FormRenderer
-      schema={DeleteApp}
+      schema={DeleteApp(appId || '0')}
       onSubmit={handleSubmit}
       title="Delete App"
       description="Delete an application permanently"
-      defaultValues={{
-        appId: appData?.appId || 0,
-      }}
-      hiddenFields={['appId']}
+      hiddenFields={[]}
       isLoading={isLoading}
       hideHeader={hideHeader}
     />

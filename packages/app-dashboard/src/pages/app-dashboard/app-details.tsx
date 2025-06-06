@@ -1,674 +1,120 @@
-import { useCallback, useEffect, useState } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router';
+import { useParams, useNavigate } from 'react-router';
 import { useAccount } from 'wagmi';
-import {
-  Settings,
-  FileText,
-  ChevronDown,
-  ChevronRight,
-  GitBranch,
-  Edit,
-  Plus,
-  Trash2,
-} from 'lucide-react';
-
-import { Button } from '@/components/shared/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/app-dashboard/ui/card';
-import { useErrorPopup } from '@/providers/ErrorPopup';
-import { StatusMessage } from '@/utils/shared/statusMessage';
-import { vincentApiClient } from '@/components/app-dashboard/mock-forms/vincentApiClient';
+import { Edit } from 'lucide-react';
 import { AppVersionsListView } from '@/components/app-dashboard/AppVersionsListView';
 import { VersionDetails } from '@/components/app-dashboard/VersionDetails';
-
-// Import app management forms
-import {
-  EditAppForm,
-  DeleteAppForm,
-  CreateAppVersionForm,
-  EditAppVersionForm,
-} from '@/components/app-dashboard/mock-forms/generic/AppForms';
-
-// Form components mapping
-const formComponents: {
-  [key: string]: {
-    component: React.ComponentType<{ appData?: any; hideHeader?: boolean }>;
-    title: string;
-    description: string;
-  };
-} = {
-  edit: {
-    component: EditAppForm,
-    title: 'Edit App',
-    description: 'Update app details and configuration',
-  },
-  delete: {
-    component: DeleteAppForm,
-    title: 'Delete App',
-    description: 'Permanently delete this application',
-  },
-  'create-version': {
-    component: CreateAppVersionForm,
-    title: 'Create App Version',
-    description: 'Create a new version of this app',
-  },
-  'edit-version': {
-    component: EditAppVersionForm,
-    title: 'Edit App Version',
-    description: 'Update an existing app version',
-  },
-};
-
-// Define types for menu items
-interface MenuSubItem {
-  id: string;
-  label: string;
-  submenu?: MenuSubItem[];
-}
-
-interface MenuItem {
-  id: string;
-  label: string;
-  icon: React.ComponentType<{ className?: string }>;
-  submenu?: MenuSubItem[];
-}
+import { AppDetailsView } from '@/components/app-dashboard/AppDetailsView';
+import { StatusMessage } from '@/utils/shared/statusMessage';
+import Loading from '@/layout/app-dashboard/Loading';
+import { AppModal } from '@/components/app-dashboard/AppModal';
+import { useViewType, useAppData } from '@/hooks/app-dashboard';
+import { AppViewType } from '@/types/app-dashboard/viewTypes';
 
 export function AppDetail() {
   const params = useParams();
   const navigate = useNavigate();
-  const location = useLocation();
   const { address, isConnected } = useAccount();
 
-  const [app, setApp] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [statusMessage, setStatusMessage] = useState<string>('');
-  const [statusType, setStatusType] = useState<'info' | 'warning' | 'success' | 'error'>('info');
-  const [expandedMenus, setExpandedMenus] = useState<Set<string>>(
-    new Set(['app-management', 'version-management']),
-  );
+  if (!params.appId || isNaN(parseInt(params.appId))) {
+    return <StatusMessage message="App not found" type="error" />;
+  }
 
-  // Get current action from URL path
-  const getActionFromPath = () => {
-    const path = location.pathname;
-    const appIdPattern = `/appId/${params.appId}`;
+  const appId = parseInt(params.appId);
+  const { viewType, versionId } = useViewType();
 
-    if (path === appIdPattern) {
-      return null; // Default app details view
-    }
-
-    const actionPart = path.replace(`${appIdPattern}/`, '');
-
-    // Check if we're editing a version (version/:versionId/edit)
-    if (actionPart.includes('/edit') && params.versionId) {
-      return 'edit-version';
-    }
-
-    return actionPart;
-  };
-
-  const currentAction = getActionFromPath();
-  const versionIdParam = params.versionId ? parseInt(params.versionId) : null;
-  const appIdParam = params.appId;
-  const { showError } = useErrorPopup();
-
-  // Auto-expand version management when viewing a version
-  useEffect(() => {
-    if (versionIdParam) {
-      setExpandedMenus((prev) => new Set([...prev, 'version-management']));
-    }
-  }, [versionIdParam]);
-
-  // Helper function to set status messages
-  const showStatus = useCallback(
-    (message: string, type: 'info' | 'warning' | 'success' | 'error' = 'info') => {
-      setStatusMessage(message);
-      setStatusType(type);
-    },
-    [],
-  );
-
-  // Create enhanced error function
-  const showErrorWithStatus = useCallback(
-    (errorMessage: string, title?: string, details?: string) => {
-      showError(errorMessage, title || 'Error', details);
-      showStatus(errorMessage, 'error');
-    },
-    [showError, showStatus],
-  );
-
-  // Use the proper GET endpoint for a single app
   const {
-    data: apiApp,
-    error: apiError,
-    isLoading: isApiLoading,
-  } = vincentApiClient.useGetAppQuery(
-    { appId: parseInt(appIdParam || '0') },
-    { skip: !appIdParam },
-  );
+    app,
+    appError,
+    appLoading,
+    versions,
+    versionsError,
+    versionsLoading,
+    versionData,
+    versionError,
+    versionLoading,
+  } = useAppData({ appId, viewType, versionId });
 
-  // Get app versions
-  const {
-    data: appVersions,
-    error: versionsError,
-    isLoading: isVersionsLoading,
-  } = vincentApiClient.useGetAppVersionsQuery(
-    { appId: parseInt(appIdParam || '0') },
-    { skip: !appIdParam },
-  );
-
-  // Handle menu expansion
-  const toggleMenu = (menuId: string) => {
-    setExpandedMenus((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(menuId)) {
-        newSet.delete(menuId);
-      } else {
-        newSet.add(menuId);
-      }
-      return newSet;
-    });
-  };
-
-  // Handle navigation and form selection
-  const handleMenuSelection = (id: string) => {
-    if (id === 'app-details') {
-      navigate(`/appId/${appIdParam}`);
-    } else if (id === 'app-versions') {
-      navigate(`/appId/${appIdParam}/versions`);
-    } else if (id === 'version-details') {
-      // Navigate to version details if we have a version ID
-      if (versionIdParam) {
-        navigate(`/appId/${appIdParam}/version/${versionIdParam}`);
-      }
-    } else if (id === 'edit-version' && versionIdParam) {
-      navigate(`/appId/${appIdParam}/version/${versionIdParam}/edit`);
-    } else if (formComponents[id]) {
-      navigate(`/appId/${appIdParam}/${id}`);
-    }
-  };
-
-  const loadAppData = useCallback(async () => {
-    if (!address || !appIdParam) {
-      return;
-    }
-
-    try {
-      setIsLoading(true);
-
-      if (isApiLoading) {
-        return;
-      }
-
-      if (apiError) {
-        console.error('Error fetching app from API:', apiError);
-        showErrorWithStatus('Failed to load app data from API', 'Error');
-        return;
-      }
-
-      if (apiApp) {
-        // Check if the current user is the manager of this app
-        if (
-          apiApp.managerAddress &&
-          apiApp.managerAddress.toLowerCase() === address.toLowerCase()
-        ) {
-          setApp(apiApp);
-        } else {
-          // User is not authorized to view this app
-          showErrorWithStatus('You are not authorized to view this app', 'Access Denied');
-          setApp(null);
-        }
-      } else {
-        setApp(null);
-      }
-    } catch (error) {
-      console.error('Error processing app data:', error);
-      showErrorWithStatus('Failed to load app data', 'Error');
-      setApp(null);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [address, appIdParam, showErrorWithStatus, apiApp, apiError, isApiLoading]);
-
-  useEffect(() => {
-    if (isConnected && !isApiLoading) {
-      loadAppData();
-    } else if (!isConnected) {
-      navigate('/');
-    }
-  }, [isConnected, loadAppData, navigate, isApiLoading]);
-
+  // Auth and loading checks
   if (!isConnected) {
-    navigate('/');
-    return null;
+    navigate('/'); // Redirect to home if not connected, they need to connect.
+    return;
+  }
+  if (appLoading) return <Loading />;
+
+  // Error handling
+  if (appError || !app) {
+    return <StatusMessage message="App not found" type="error" />;
   }
 
-  if (isLoading || isApiLoading) {
-    return (
-      <div className="flex items-center justify-center h-[50vh]">
-        <div className="space-y-4 text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
-          <p className="text-sm text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
+  if (app.managerAddress.toLowerCase() !== address?.toLowerCase()) {
+    return <StatusMessage message="Access denied" type="error" />;
   }
 
-  if (!app) {
-    navigate('/');
-    return null;
+  if (viewType === AppViewType.APP_VERSIONS && versionsError) {
+    return <StatusMessage message="Error loading app versions" type="error" />;
   }
 
-  // App details view component
-  const renderAppDetails = () => {
-    // Filter out unnecessary fields and format dates
-    const filteredApp: [string, any][] = Object.entries(app)
-      .filter(
-        ([key]) => !['_id', '__v', 'logo', 'managerAddress', 'name', 'description'].includes(key),
-      )
-      .map((entry: [string, any]) => {
-        const [key, value] = entry;
-        if (key === 'createdAt' || key === 'updatedAt') {
-          return [key, new Date(value as string).toLocaleString()];
-        }
-        return [key, value];
-      });
-
-    return (
-      <div className="space-y-6">
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <h1 className="text-3xl font-bold text-gray-900">{app.name}</h1>
-            <p className="text-gray-600 mt-2">{app.description}</p>
-          </div>
-          {app.logo && (
-            <div className="ml-6 flex-shrink-0">
-              <img
-                src={app.logo.startsWith('data:') ? app.logo : `data:image/png;base64,${app.logo}`}
-                alt="App logo"
-                className="w-16 h-16 rounded-lg border shadow-sm object-cover"
-                onError={(e) => {
-                  const target = e.currentTarget;
-                  target.style.display = 'none';
-                  const errorDiv = document.createElement('div');
-                  errorDiv.className =
-                    'w-16 h-16 bg-gray-100 rounded-lg border flex items-center justify-center text-xs text-gray-500';
-                  errorDiv.textContent = 'No Logo';
-                  target.parentNode?.appendChild(errorDiv);
-                }}
-              />
-            </div>
-          )}
-        </div>
-
-        {/* App Management Actions */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-gray-900">App Management</CardTitle>
-            <CardDescription className="text-gray-700">
-              Manage your application settings and versions
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-3">
-              <Button
-                onClick={() => handleMenuSelection('edit')}
-                variant="outline"
-                className="flex items-center gap-2"
-              >
-                <Edit className="h-4 w-4" />
-                Edit App
-              </Button>
-              <Button
-                onClick={() => handleMenuSelection('create-version')}
-                variant="outline"
-                className="flex items-center gap-2"
-              >
-                <Plus className="h-4 w-4" />
-                Create App Version
-              </Button>
-              <Button
-                onClick={() => handleMenuSelection('delete')}
-                variant="outline"
-                className="flex items-center gap-2 text-red-600 border-red-200 hover:bg-red-50"
-              >
-                <Trash2 className="h-4 w-4" />
-                Delete App
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-gray-900">App Information</CardTitle>
-              <CardDescription className="text-gray-700">Application details</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 gap-4">
-                {filteredApp.map((entry: [string, any]) => {
-                  const [key, value] = entry;
-                  return (
-                    <div key={key} className="border-b border-gray-100 pb-3 last:border-b-0">
-                      <div className="flex flex-col sm:flex-row sm:justify-between">
-                        <span className="font-medium text-gray-600 text-sm uppercase tracking-wide">
-                          {key.replace(/([A-Z])/g, ' $1').trim()}
-                        </span>
-                        <div className="mt-1 sm:mt-0 sm:text-right">
-                          {Array.isArray(value) ? (
-                            <div className="space-y-1">
-                              {value.map((item, index) => (
-                                <div key={index}>
-                                  <span className="inline-block bg-blue-50 text-blue-700 px-2 py-1 rounded text-sm">
-                                    {item}
-                                  </span>
-                                </div>
-                              ))}
-                            </div>
-                          ) : key === 'appUserUrl' ? (
-                            <a
-                              href={String(value)}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-blue-600 hover:underline text-sm"
-                            >
-                              {String(value)}
-                            </a>
-                          ) : key === 'deploymentStatus' ? (
-                            <span
-                              className={`inline-block px-2 py-1 rounded text-sm font-medium ${
-                                value === 'prod'
-                                  ? 'bg-green-100 text-green-800'
-                                  : value === 'test'
-                                    ? 'bg-yellow-100 text-yellow-800'
-                                    : 'bg-gray-100 text-gray-800'
-                              }`}
-                            >
-                              {String(value).toUpperCase()}
-                            </span>
-                          ) : (
-                            <span className="text-gray-900 text-sm">{String(value)}</span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
-  };
-
-  // Build dynamic menu structure
-  const buildMenuItems = (): MenuItem[] => {
-    // If we're viewing a specific version, show version-specific menu
-    if (versionIdParam) {
-      return [
-        { id: 'version-details', label: `Version ${versionIdParam}`, icon: GitBranch },
-        {
-          id: 'version-management',
-          label: 'Version Management',
-          icon: Settings,
-          submenu: [{ id: 'edit-version', label: 'Edit Version' }],
-        },
-      ];
-    }
-
-    // Default app menu (removed App Management section)
-    return [
-      { id: 'app-details', label: 'App Details', icon: FileText },
-      { id: 'app-versions', label: 'App Versions', icon: GitBranch },
-    ];
-  };
+  if (viewType === AppViewType.APP_VERSION && versionError) {
+    return <StatusMessage message="Error loading version data" type="error" />;
+  }
 
   return (
-    <div className="flex h-screen">
-      {/* Left Sidebar */}
-      <div className="w-80 bg-white border-r border-gray-200">
-        <div className="p-6">
-          {/* Breadcrumbs */}
-          <div className="mb-6 text-sm text-gray-600">
-            <div className="flex flex-col space-y-1">
+    <div className="p-6">
+      {/* Main Content */}
+      {viewType === AppViewType.APP_DETAILS && (
+        <AppDetailsView
+          selectedApp={app}
+          onOpenModal={(modalType: string) => navigate(`/appId/${appId}/${modalType}`)}
+        />
+      )}
+
+      {viewType === AppViewType.APP_VERSIONS && (
+        <AppVersionsListView
+          versions={versions || []}
+          appName={app.name}
+          appId={appId}
+          latestVersion={app.activeVersion}
+          isLoading={versionsLoading}
+          error={versionsError}
+        />
+      )}
+
+      {viewType === AppViewType.APP_VERSION && versionId && (
+        <div className="space-y-6">
+          {/* Version Management Card */}
+          <div className="bg-white border rounded-lg">
+            <div className="p-6 border-b border-gray-100">
+              <h3 className="text-lg font-medium text-gray-900">Version Management</h3>
+              <p className="text-gray-600 text-sm mt-1">Manage this specific version</p>
+            </div>
+            <div className="p-6">
               <button
-                onClick={() => navigate('/')}
-                className="text-left hover:text-blue-600 transition-colors"
-                style={{ border: 'none', outline: 'none', boxShadow: 'none', background: 'none' }}
+                onClick={() => navigate(`/appId/${appId}/version/${versionId}/edit`)}
+                className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
               >
-                Dashboard
+                <Edit className="h-4 w-4" />
+                Edit Version
               </button>
-
-              <button
-                onClick={() => navigate(`/appId/${appIdParam}`)}
-                className="text-left hover:text-blue-600 transition-colors ml-2"
-                style={{ border: 'none', outline: 'none', boxShadow: 'none', background: 'none' }}
-              >
-                › {app?.name || 'App'}
-              </button>
-
-              {currentAction === 'versions' && (
-                <span className="text-gray-900 font-medium ml-4">› Versions</span>
-              )}
-
-              {versionIdParam && (
-                <button
-                  onClick={() => navigate(`/appId/${appIdParam}/version/${versionIdParam}`)}
-                  className="text-left hover:text-blue-600 transition-colors ml-4"
-                  style={{ border: 'none', outline: 'none', boxShadow: 'none', background: 'none' }}
-                >
-                  › Version {versionIdParam}
-                </button>
-              )}
-
-              {currentAction === 'edit-version' && versionIdParam && (
-                <span className="text-gray-900 font-medium ml-6">› Edit</span>
-              )}
-
-              {currentAction && ['edit', 'delete', 'create-version'].includes(currentAction) && (
-                <span className="text-gray-900 font-medium ml-4">
-                  › {currentAction === 'edit' && 'Edit App'}
-                  {currentAction === 'delete' && 'Delete App'}
-                  {currentAction === 'create-version' && 'Create Version'}
-                </span>
-              )}
             </div>
           </div>
 
-          <nav className="space-y-2">
-            {buildMenuItems().map((item) => {
-              const Icon = item.icon;
-
-              // Handle items with submenus
-              if (item.submenu) {
-                const isExpanded = expandedMenus.has(item.id);
-
-                return (
-                  <div key={item.id}>
-                    <div className="w-full flex items-center justify-between px-4 py-2 rounded-lg transition-colors text-gray-700">
-                      <div className="flex items-center">
-                        <Icon className="h-5 w-5 mr-3" />
-                        {item.label}
-                      </div>
-                      <button
-                        onClick={() => toggleMenu(item.id)}
-                        style={{ border: 'none', outline: 'none', boxShadow: 'none' }}
-                      >
-                        {isExpanded ? (
-                          <ChevronDown className="h-4 w-4" />
-                        ) : (
-                          <ChevronRight className="h-4 w-4" />
-                        )}
-                      </button>
-                    </div>
-                    {isExpanded && (
-                      <div className="ml-8 mt-1 space-y-1">
-                        {item.submenu.map((subItem) => {
-                          // Handle version items with their own submenus
-                          if (subItem.submenu) {
-                            const versionNumber = parseInt(subItem.id.replace('version-', ''));
-                            const isVersionExpanded = expandedMenus.has(subItem.id);
-                            const isVersionSelected = versionIdParam === versionNumber;
-
-                            return (
-                              <div key={subItem.id}>
-                                <div className="flex items-center justify-between">
-                                  <button
-                                    onClick={() => handleMenuSelection(subItem.id)}
-                                    className={`flex-1 text-left px-4 py-2 text-sm rounded-lg transition-colors ${
-                                      isVersionSelected
-                                        ? 'bg-blue-50 text-blue-700 font-medium'
-                                        : 'text-gray-600 hover:bg-gray-50'
-                                    }`}
-                                    style={{ border: 'none', outline: 'none', boxShadow: 'none' }}
-                                  >
-                                    {subItem.label}
-                                  </button>
-                                  <button
-                                    onClick={() => toggleMenu(subItem.id)}
-                                    className="p-1 hover:bg-gray-100 rounded"
-                                    style={{ border: 'none', outline: 'none', boxShadow: 'none' }}
-                                  >
-                                    {isVersionExpanded ? (
-                                      <ChevronDown className="h-3 w-3" />
-                                    ) : (
-                                      <ChevronRight className="h-3 w-3" />
-                                    )}
-                                  </button>
-                                </div>
-                                {isVersionExpanded && (
-                                  <div className="ml-6 mt-1 space-y-1">
-                                    {subItem.submenu.map((versionSubItem) => (
-                                      <button
-                                        key={versionSubItem.id}
-                                        onClick={() => handleMenuSelection(versionSubItem.id)}
-                                        className={`w-full text-left px-4 py-2 text-sm rounded-lg transition-colors ${
-                                          currentAction === 'edit-version'
-                                            ? 'bg-blue-50 text-blue-700 font-medium'
-                                            : 'text-gray-600 hover:bg-gray-50'
-                                        }`}
-                                        style={{
-                                          border: 'none',
-                                          outline: 'none',
-                                          boxShadow: 'none',
-                                        }}
-                                      >
-                                        {versionSubItem.label}
-                                      </button>
-                                    ))}
-                                  </div>
-                                )}
-                              </div>
-                            );
-                          }
-
-                          // Regular submenu items
-                          return (
-                            <button
-                              key={subItem.id}
-                              onClick={() => handleMenuSelection(subItem.id)}
-                              className={`w-full text-left px-4 py-2 text-sm rounded-lg transition-colors ${
-                                currentAction === subItem.id
-                                  ? 'bg-blue-50 text-blue-700 font-medium'
-                                  : 'text-gray-600 hover:bg-gray-50'
-                              }`}
-                              style={{ border: 'none', outline: 'none', boxShadow: 'none' }}
-                            >
-                              {subItem.label}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                );
-              }
-
-              // Handle regular items
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => handleMenuSelection(item.id)}
-                  className={`w-full flex items-center px-4 py-2 text-left rounded-lg transition-colors ${
-                    (item.id === 'app-details' && !currentAction) ||
-                    (item.id === 'app-versions' && currentAction === 'versions') ||
-                    (item.id === 'version-details' &&
-                      versionIdParam &&
-                      currentAction !== 'edit-version')
-                      ? 'bg-blue-50 text-blue-700 font-medium'
-                      : 'text-gray-700 hover:bg-gray-50'
-                  }`}
-                  style={{ border: 'none', outline: 'none', boxShadow: 'none' }}
-                >
-                  <Icon className="h-5 w-5 mr-3" />
-                  {item.label}
-                </button>
-              );
-            })}
-          </nav>
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="flex-1 overflow-auto">
-        <div className="p-6">
-          {statusMessage && <StatusMessage message={statusMessage} type={statusType} />}
-
-          {currentAction === 'edit-version' && versionIdParam ? (
-            // Render edit version form when we're at /appId/:appId/version/:versionId/edit
-            app ? (
-              (() => {
-                const FormComponent = formComponents[currentAction].component;
-                return <FormComponent appData={app} hideHeader={false} />;
-              })()
-            ) : (
-              <div className="flex items-center justify-center py-8">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900"></div>
-                <span className="ml-2 text-gray-600">Loading app data...</span>
-              </div>
-            )
-          ) : versionIdParam ? (
-            // Render version details for the selected version
-            <VersionDetails
-              appId={parseInt(appIdParam || '0')}
-              version={versionIdParam}
-              appName={app?.name}
-            />
-          ) : currentAction === 'versions' ? (
-            // Render versions list view
-            <AppVersionsListView
-              versions={appVersions || []}
-              appName={app?.name}
-              appId={parseInt(appIdParam || '0')}
-              latestVersion={app?.latestVersion}
-              isLoading={isVersionsLoading}
-              error={versionsError}
-            />
-          ) : currentAction && formComponents[currentAction] ? (
-            // Render selected form
-            app ? (
-              (() => {
-                const FormComponent = formComponents[currentAction].component;
-                return <FormComponent appData={app} hideHeader={false} />;
-              })()
-            ) : (
-              <div className="flex items-center justify-center py-8">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900"></div>
-                <span className="ml-2 text-gray-600">Loading app data...</span>
-              </div>
-            )
+          {/* Version Details */}
+          {versionLoading ? (
+            <Loading />
           ) : (
-            // Render app details
-            renderAppDetails()
+            <VersionDetails version={versionId} appName={app.name} versionData={versionData} />
           )}
         </div>
-      </div>
+      )}
+
+      {/* Modal */}
+      <AppModal
+        viewType={viewType}
+        versionId={versionId}
+        appId={appId}
+        app={app}
+        onClose={() => navigate(`/appId/${appId}`)}
+      />
     </div>
   );
 }

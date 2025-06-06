@@ -163,37 +163,33 @@ export function Sidebar({
               const isExpanded = expandedMenus.has(item.id);
               return (
                 <div key={item.id}>
-                  <div
+                  <button
                     className={`w-full flex items-center ${
                       isCollapsed ? 'justify-center' : 'justify-between'
                     } px-3 py-2 rounded-lg transition-all duration-200 ease-in-out ${
                       selectedListView === item.id
                         ? 'bg-blue-50 text-blue-700'
                         : 'text-gray-700 hover:bg-gray-50'
-                    }`}
+                    } focus:outline-none`}
+                    onClick={() => {
+                      onCategoryClick(item.id);
+                      onToggleMenu(item.id);
+                    }}
+                    style={{ border: 'none', outline: 'none', boxShadow: 'none' }}
+                    title={isCollapsed ? item.label : undefined}
                   >
-                    <button
-                      className="flex items-center flex-1 text-left focus:outline-none transition-all duration-200"
-                      onClick={() => onCategoryClick(item.id)}
-                      style={{ border: 'none', outline: 'none', boxShadow: 'none' }}
-                      title={isCollapsed ? item.label : undefined}
-                    >
+                    <div className="flex items-center flex-1">
                       <Icon className="h-5 w-5 flex-shrink-0 transition-transform duration-200" />
                       {!isCollapsed && <span className="ml-3">{item.label}</span>}
-                    </button>
+                    </div>
                     {!isCollapsed && (
-                      <button
-                        onClick={() => onToggleMenu(item.id)}
-                        className="p-1 hover:bg-gray-100 rounded focus:outline-none transition-colors duration-200"
-                      >
-                        <ChevronDown
-                          className={`h-4 w-4 transition-transform duration-300 ease-in-out ${
-                            isExpanded ? 'rotate-0' : '-rotate-90'
-                          }`}
-                        />
-                      </button>
+                      <ChevronDown
+                        className={`h-4 w-4 transition-transform duration-300 ease-in-out ${
+                          isExpanded ? 'rotate-0' : '-rotate-90'
+                        }`}
+                      />
                     )}
-                  </div>
+                  </button>
                   {!isCollapsed && (
                     <div
                       className={`overflow-hidden transition-all duration-300 ease-in-out ${

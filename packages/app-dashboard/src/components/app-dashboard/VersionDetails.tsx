@@ -5,47 +5,14 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/app-dashboard/ui/card';
-import { vincentApiClient } from '@/components/app-dashboard/mock-forms/vincentApiClient';
 
 interface VersionDetailsProps {
-  appId: number;
   version: number;
   appName?: string;
+  versionData: any; // The fetched version data
 }
 
-export function VersionDetails({ appId, version }: VersionDetailsProps) {
-  const {
-    data: versionData,
-    error,
-    isLoading,
-  } = vincentApiClient.useGetAppVersionQuery({ appId, version }, { skip: !appId || !version });
-
-  console.log('VersionDetails - API response:', versionData);
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-8">
-        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900"></div>
-        <span className="ml-2 text-gray-600">Loading version details...</span>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="p-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-red-600">Error Loading Version</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-red-600">Failed to load version {version} details.</p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
+export function VersionDetails({ version, versionData }: VersionDetailsProps) {
   if (!versionData) {
     return (
       <div className="p-6">
