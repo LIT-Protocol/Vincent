@@ -175,7 +175,7 @@ export function buildVincentActionCallback(vincentToolDefWithIPFS: VincentToolDe
 
       return response;
     } catch (error) {
-      return `Error performing vincent_action: Error: ${error}`;
+      return `Error performing vincent_action: Error: ${JSON.stringify(error, null, 2)}`;
     }
   };
 }
