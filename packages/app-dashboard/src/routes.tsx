@@ -5,6 +5,7 @@ import { AppProviders, UserProviders } from './providers';
 
 import * as AppPages from './pages/app-dashboard';
 import * as UserPages from './pages/user-dashboard';
+import { AppDetail } from './pages/app-dashboard/app-details';
 
 const appRoutes = {
   element: (
@@ -25,24 +26,61 @@ const appRoutes = {
       element: <AppPages.Dashboard />,
     },
     {
-      path: '/create-app',
-      element: <AppPages.CreateApp />,
+      path: '/apps',
+      element: <AppPages.Dashboard />,
     },
+    {
+      path: '/tools',
+      element: <AppPages.Dashboard />,
+    },
+    {
+      path: '/policies',
+      element: <AppPages.Dashboard />,
+    },
+    {
+      path: '/create-app',
+      element: <AppPages.Dashboard />,
+    },
+    {
+      path: '/create-tool',
+      element: <AppPages.Dashboard />,
+    },
+    {
+      path: '/create-policy',
+      element: <AppPages.Dashboard />,
+    },
+    {
+      path: '/mock-api-forms/appId/:appId',
+      element: <AppPages.MockApiForms />,
+    },
+    // App-specific routes - use proper nested routes
     {
       path: '/appId/:appId',
-      element: <AppPages.AppDetails />,
+      element: <AppDetail />,
     },
     {
-      path: '/appId/:appId/advanced-functions',
-      element: <AppPages.AdvancedFunctions />,
+      path: '/appId/:appId/versions',
+      element: <AppDetail />,
     },
     {
-      path: '/appId/:appId/delegatee',
-      element: <AppPages.Delegatee />,
+      path: '/appId/:appId/version/:versionId',
+      element: <AppDetail />,
     },
     {
-      path: '/appId/:appId/tool-policies',
-      element: <AppPages.ToolPolicies />,
+      path: '/appId/:appId/version/:versionId/edit',
+      element: <AppDetail />,
+    },
+    {
+      path: '/appId/:appId/edit-app',
+      element: <AppDetail />,
+    },
+    {
+      path: '/appId/:appId/delete-app',
+      element: <AppDetail />,
+    },
+    {
+      path: '/appId/:appId/create-app-version',
+      element: <AppDetail />,
     },
   ],
 };
@@ -64,10 +102,6 @@ const userRoutes = {
     {
       path: '/user/wallet',
       element: <UserPages.Withdraw />,
-    },
-    {
-      path: '/appId/:appId/consent',
-      element: <UserPages.Consent />,
     },
     {
       path: '/user',

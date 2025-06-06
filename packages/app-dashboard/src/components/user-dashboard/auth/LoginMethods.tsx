@@ -25,7 +25,7 @@ export default function LoginMethods({
         <>
           <div className="flex flex-col items-center mb-6">
             <img
-              src="/vincent-logo.png"
+              src="/vincent-by-lit-logo.png"
               alt="Vincent Logo"
               width={120}
               height={36}

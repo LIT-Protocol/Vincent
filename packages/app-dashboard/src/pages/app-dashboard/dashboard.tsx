@@ -1,59 +1,94 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAccount } from 'wagmi';
 
 import DashboardScreen from '@/components/app-dashboard/Dashboard';
-import { formCompleteVincentAppForDev } from '@/services';
-import { AppView } from '@/services/types';
 import ConnectWalletScreen from '@/components/app-dashboard/ConnectWallet';
-import CreateAppScreen from '@/components/app-dashboard/CreateApp';
 import Loading from '@/layout/app-dashboard/Loading';
+import { vincentApiClient } from '@/components/app-dashboard/mock-forms/vincentApiClient';
+import { StatusMessage } from '@/utils/shared/statusMessage';
+import type { AppDefRead } from '@/components/app-dashboard/mock-forms/vincentApiClient';
 
-function AppHome() {
-  const [hasApp, setHasApp] = useState<boolean>(false);
-  const [app, setApp] = useState<AppView[] | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+interface UseUserAppsReturn {
+  userApps: AppDefRead[];
+  isLoading: boolean;
+  errorMessage: string;
+}
+
+function useUserApps(): UseUserAppsReturn {
+  const [userApps, setUserApps] = useState<AppDefRead[]>([]);
+  const [hasCheckedForApps, setHasCheckedForApps] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string>('');
 
   const { address, isConnected } = useAccount();
 
-  useEffect(() => {
-    async function checkAndFetchApp() {
-      if (!address) return;
-      setIsLoading(true);
-      try {
-        const appData = await formCompleteVincentAppForDev(address);
-        const exists = appData && appData.length > 0;
+  const {
+    data: apiApps,
+    error: apiError,
+    isLoading: apiIsLoading,
+  } = vincentApiClient.useListAppsQuery();
 
-        if (exists) {
-          setApp(appData);
-          setHasApp(true);
-        } else {
-          setHasApp(false);
-          setApp(null);
-        }
-      } catch (error) {
-        // Check if this is the NoAppsFoundForManager error
-        if (
-          error instanceof Error &&
-          (error.message.includes('NoAppsFoundForManager') ||
-            error.message.includes('call revert exception'))
-        ) {
-          setHasApp(false);
-          setApp(null);
-        } else {
-          // Log other unexpected errors
-          console.error('Error fetching app:', error);
-          setHasApp(false);
-          setApp(null);
-        }
-      } finally {
-        setIsLoading(false);
+  const processApiData = useCallback(async () => {
+    if (!isConnected || !address) {
+      setUserApps([]);
+      setHasCheckedForApps(false);
+      setErrorMessage('');
+      return;
+    }
+
+    if (apiIsLoading) {
+      return;
+    }
+
+    try {
+      if (apiError) {
+        setErrorMessage('Failed to load your apps. Please try refreshing the page.');
+        setHasCheckedForApps(true);
+        return;
       }
-    }
 
-    if (isConnected) {
-      checkAndFetchApp();
+      if (!apiApps) {
+        setUserApps([]);
+        setHasCheckedForApps(true);
+        return;
+      }
+
+      // Filter apps by manager address
+      const filteredApps = apiApps.filter((apiApp: AppDefRead) => {
+        return apiApp.managerAddress?.toLowerCase() === address.toLowerCase();
+      });
+
+      setUserApps(filteredApps);
+    } catch (error) {
+      setUserApps([]);
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : 'An unexpected error occurred while loading your apps.',
+      );
+    } finally {
+      setHasCheckedForApps(true);
     }
-  }, [address, isConnected]);
+  }, [apiApps, apiError, address, isConnected, apiIsLoading]);
+
+  useEffect(() => {
+    processApiData();
+  }, [processApiData]);
+
+  const isLoading = useMemo(() => {
+    if (!isConnected) return false;
+    return apiIsLoading || !hasCheckedForApps;
+  }, [isConnected, apiIsLoading, hasCheckedForApps]);
+
+  return {
+    userApps,
+    isLoading,
+    errorMessage,
+  };
+}
+
+function AppHome() {
+  const { isConnected } = useAccount();
+  const { userApps, isLoading, errorMessage } = useUserApps();
 
   if (!isConnected) {
     return <ConnectWalletScreen />;
@@ -63,7 +98,12 @@ function AppHome() {
     return <Loading />;
   }
 
-  return hasApp ? <DashboardScreen vincentApp={app!} /> : <CreateAppScreen />;
+  return (
+    <>
+      {errorMessage && <StatusMessage message={errorMessage} type="error" />}
+      <DashboardScreen vincentApp={userApps} />
+    </>
+  );
 }
 
 export default AppHome;
