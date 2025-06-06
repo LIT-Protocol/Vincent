@@ -1,4 +1,5 @@
 import * as jwt from './jwt';
+
 export { jwt };
 export type { JWTConfig, VincentJWT, VincentJWTPayload } from './jwt/types';
 
@@ -13,8 +14,20 @@ export type {
 } from './types';
 
 import * as expressAuthHelpers from './express-authentication-middleware';
+
 export { expressAuthHelpers };
 export type { ExpressAuthHelpers } from './express-authentication-middleware/types';
 
 import * as mcp from './mcp';
+
 export { mcp };
+export type {
+  ParameterType,
+  VincentAppDef,
+  VincentParameter,
+  VincentToolDef,
+  VincentToolDefWithIPFS,
+} from './mcp/definitions';
+
+import * as utils from './utils';
+export { utils };
