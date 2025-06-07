@@ -59,22 +59,6 @@ const formatDate = (dateString: string) => {
   });
 };
 
-// Helper function to generate proper logo URL
-const getLogoUrl = (logo: string | undefined) => {
-  if (!logo) return null;
-
-  // If logo is just "image:1" or similar invalid values, return null
-  if (logo === 'image:1' || logo.length < 10) return null;
-
-  // If logo already starts with data:image, use it as-is
-  if (logo.startsWith('data:image/')) {
-    return logo;
-  }
-
-  // Otherwise, assume it's a base64 string and prefix it
-  return `data:image/png;base64,${logo}`;
-};
-
 export function AppsList({
   apps,
   isLoading,
@@ -137,7 +121,7 @@ export function AppsList({
                 <CardTitle className="flex justify-between items-center text-gray-900">
                   <div className="flex items-center gap-3">
                     {(() => {
-                      const logoUrl = getLogoUrl(app.logo);
+                      const logoUrl = app.logo && app.logo.length >= 10 ? app.logo : null;
                       return logoUrl ? (
                         <img
                           src={logoUrl}

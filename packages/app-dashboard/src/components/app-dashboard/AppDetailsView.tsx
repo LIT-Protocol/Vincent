@@ -17,6 +17,8 @@ export function AppDetailsView({ selectedApp, onOpenModal }: AppDetailsViewProps
       return [key, value];
     });
 
+  const logoUrl = selectedApp.logo && selectedApp.logo.length >= 10 ? selectedApp.logo : null;
+
   return (
     <div className="space-y-6">
       <div className="flex items-start justify-between">
@@ -24,28 +26,22 @@ export function AppDetailsView({ selectedApp, onOpenModal }: AppDetailsViewProps
           <h1 className="text-3xl font-bold text-gray-900">{selectedApp.name}</h1>
           <p className="text-gray-600 mt-2">{selectedApp.description}</p>
         </div>
-        {selectedApp.logo && (
-          <div className="ml-6 flex-shrink-0">
+        <div className="ml-6 flex-shrink-0">
+          {logoUrl ? (
             <img
-              src={
-                selectedApp.logo.startsWith('data:')
-                  ? selectedApp.logo
-                  : `data:image/png;base64,${selectedApp.logo}`
-              }
+              src={logoUrl}
               alt="App logo"
-              className="w-16 h-16 rounded-lg border shadow-sm object-cover"
+              className="max-w-24 max-h-24 object-contain rounded-lg border shadow-sm bg-gray-50"
               onError={(e) => {
-                const target = e.currentTarget;
-                target.style.display = 'none';
-                const errorDiv = document.createElement('div');
-                errorDiv.className =
-                  'w-16 h-16 bg-gray-100 rounded-lg border flex items-center justify-center text-xs text-gray-500';
-                errorDiv.textContent = 'No Logo';
-                target.parentNode?.appendChild(errorDiv);
+                e.currentTarget.src = '/logo.svg';
               }}
             />
-          </div>
-        )}
+          ) : (
+            <div className="w-16 h-16 bg-gray-100 rounded-lg border flex items-center justify-center">
+              <img src="/logo.svg" alt="Vincent logo" className="w-8 h-8 opacity-50" />
+            </div>
+          )}
+        </div>
       </div>
 
       {/* App Management Actions */}
