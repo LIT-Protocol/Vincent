@@ -14,6 +14,7 @@ library VincentAppStorage {
 
     struct AppVersion {
         EnumerableSet.Bytes32Set toolIpfsCidHashes;
+        // EnumerableSet instead of an array since the App needs to know all the delegated Agents
         EnumerableSet.UintSet delegatedAgentPkps;
         // Tool IPFS CID hash => Tool Policy IPFS CID hashes
         mapping(bytes32 => EnumerableSet.Bytes32Set) toolIpfsCidHashToToolPolicyIpfsCidHashes;
@@ -76,6 +77,7 @@ library VincentUserStorage {
     }
 
     struct UserStorage {
+        // EnumerableSet instead of an array because we register the Agent PKP during the first App registration so we need to check for duplicates.
         // User PKP ETH address => Registered Agent PKP token IDs
         mapping(address => EnumerableSet.UintSet) userAddressToRegisteredAgentPkps;
         // PKP Token ID -> Agent storage

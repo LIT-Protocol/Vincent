@@ -221,7 +221,7 @@ contract VincentAppFacet is VincentBase {
     /**
      * @dev Registers a new version of an app, associating tools and policies with it.
      * This function ensures that all provided tools, policies, and parameters are correctly stored
-     * and linked to the new app version.
+     * and linked to the new app version. Also ensures that no duplicate tool or policy IPFS CIDs are added.
      *
      * @notice This function is used internally to register a new app version and its associated tools and policies.
      * @notice App versions are enabled by default when registered.
@@ -275,7 +275,9 @@ contract VincentAppFacet is VincentBase {
             bytes32 hashedToolCid = keccak256(abi.encodePacked(toolIpfsCid));
 
             // Step 6.1: Register the tool IPFS CID globally if it hasn't been added already.
-            toolIpfsCidHashes.add(hashedToolCid);
+            if (!toolIpfsCidHashes.add(hashedToolCid)) {
+                revert LibVincentAppFacet.DuplicateToolIpfsCidNotAllowed(appId, i);
+            }
 
             // First check if the tool is already registered in global storage
             // before trying to register it again
@@ -296,9 +298,12 @@ contract VincentAppFacet is VincentBase {
                 }
 
                 bytes32 hashedToolPolicy = keccak256(abi.encodePacked(policyIpfsCid));
+                EnumerableSet.Bytes32Set storage toolPolicyIpfsCidHashes = versionedApp.toolIpfsCidHashToToolPolicyIpfsCidHashes[hashedToolCid];
 
                 // Step 7.1: Add the policy hash to the ToolPolicies
-                versionedApp.toolIpfsCidHashToToolPolicyIpfsCidHashes[hashedToolCid].add(hashedToolPolicy);
+                if (!toolPolicyIpfsCidHashes.add(hashedToolPolicy)) {
+                    revert LibVincentAppFacet.DuplicateToolPolicyIpfsCidNotAllowed(appId, i, j);
+                }
 
                 // Step 7.3: Store the policy IPFS CID globally if it's not already stored.
                 if (bytes(ls.ipfsCidHashToIpfsCid[hashedToolPolicy]).length == 0) {

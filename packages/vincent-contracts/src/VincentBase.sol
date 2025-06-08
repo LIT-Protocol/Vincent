@@ -12,6 +12,7 @@ contract VincentBase {
     error AppNotRegistered(uint256 appId);
     error AppVersionNotRegistered(uint256 appId, uint256 appVersion);
     error AppHasBeenDeleted(uint256 appId);
+    error AppVersionNotEnabled(uint256 appId, uint256 appVersion);
 
     /**
      * @notice Validates that an app exists
@@ -45,6 +46,14 @@ contract VincentBase {
         VincentAppStorage.AppStorage storage as_ = VincentAppStorage.appStorage();
         if (as_.appIdToApp[appId].isDeleted) {
             revert AppHasBeenDeleted(appId);
+        }
+        _;
+    }
+
+    modifier appEnabled(uint256 appId, uint256 appVersion) {
+        VincentAppStorage.AppStorage storage as_ = VincentAppStorage.appStorage();
+        if (!as_.appIdToApp[appId].appVersions[getAppVersionIndex(appVersion)].enabled) {
+            revert AppVersionNotEnabled(appId, appVersion);
         }
         _;
     }

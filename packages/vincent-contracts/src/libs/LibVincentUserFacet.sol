@@ -134,6 +134,23 @@ library LibVincentUserFacet {
     );
 
     /**
+     * @notice Error thrown when a duplicate tool IPFS CID is provided
+     * @param appId The ID of the app
+     * @param appVersion The version of the app
+     * @param toolIpfsCid The IPFS CID of the tool
+     */
+    error DuplicateToolIpfsCid(uint256 appId, uint256 appVersion, string toolIpfsCid);
+    
+    /**
+     * @notice Error thrown when a duplicate tool policy IPFS CID is provided
+     * @param appId The ID of the app
+     * @param appVersion The version of the app
+     * @param toolIpfsCid The IPFS CID of the tool
+     * @param toolPolicyIpfsCid The IPFS CID of the tool policy
+     */
+    error DuplicateToolPolicyIpfsCid(uint256 appId, uint256 appVersion, string toolIpfsCid, string toolPolicyIpfsCid);
+
+    /**
      * @notice Error thrown when invalid input is provided
      */
     error InvalidInput();

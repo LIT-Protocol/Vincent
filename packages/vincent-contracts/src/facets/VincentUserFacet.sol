@@ -60,7 +60,11 @@ contract VincentUserFacet is VincentBase {
         string[] calldata toolIpfsCids,
         string[][] calldata policyIpfsCids,
         bytes[][] calldata policyParameterValues
-    ) external appNotDeleted(appId) onlyPkpOwner(pkpTokenId) onlyRegisteredAppVersion(appId, appVersion) {
+    ) external appNotDeleted(appId) onlyRegisteredAppVersion(appId, appVersion) appEnabled(appId, appVersion) onlyPkpOwner(pkpTokenId) {
+        if (toolIpfsCids.length == 0 || policyIpfsCids.length == 0 || policyParameterValues.length == 0) {
+            revert LibVincentUserFacet.InvalidInput();
+        }
+
         if (
             toolIpfsCids.length != policyIpfsCids.length || toolIpfsCids.length != policyParameterValues.length
         ) {
@@ -82,44 +86,6 @@ contract VincentUserFacet is VincentBase {
         VincentAppStorage.AppVersion storage newAppVersion =
             as_.appIdToApp[appId].appVersions[getAppVersionIndex(appVersion)];
 
-        // Check if the App Manager has disabled the App
-        if (!newAppVersion.enabled) revert LibVincentUserFacet.AppVersionNotEnabled(appId, appVersion);
-
-        // Check if all registered tools for this app version are provided
-        if (
-            newAppVersion.toolIpfsCidHashes.length() > 0
-                && toolIpfsCids.length != newAppVersion.toolIpfsCidHashes.length()
-        ) {
-            revert LibVincentUserFacet.NotAllRegisteredToolsProvided(appId, appVersion);
-        }
-
-        // Verify that every tool provided is registered and every registered tool is provided
-        if (toolIpfsCids.length > 0) {
-            bytes32[] memory providedToolHashes = new bytes32[](toolIpfsCids.length);
-            for (uint256 i = 0; i < toolIpfsCids.length; i++) {
-                providedToolHashes[i] = keccak256(abi.encodePacked(toolIpfsCids[i]));
-                if (!newAppVersion.toolIpfsCidHashes.contains(providedToolHashes[i])) {
-                    revert LibVincentUserFacet.ToolNotRegisteredForAppVersion(appId, appVersion, toolIpfsCids[i]);
-                }
-            }
-
-            // Ensure all registered tools are in the provided tools array
-            uint256 registeredToolCount = newAppVersion.toolIpfsCidHashes.length();
-            for (uint256 i = 0; i < registeredToolCount; i++) {
-                bytes32 registeredToolHash = newAppVersion.toolIpfsCidHashes.at(i);
-                bool found = false;
-                for (uint256 j = 0; j < providedToolHashes.length; j++) {
-                    if (registeredToolHash == providedToolHashes[j]) {
-                        found = true;
-                        break;
-                    }
-                }
-                if (!found) {
-                    revert LibVincentUserFacet.NotAllRegisteredToolsProvided(appId, appVersion);
-                }
-            }
-        }
-
         // Check if User has permitted a previous app version,
         // if so, remove the PKP Token ID from the previous AppVersion's delegated agent PKPs
         // before continuing with permitting the new app version
@@ -137,12 +103,12 @@ contract VincentUserFacet is VincentBase {
         // Add the PKP Token ID to the app version's delegated agent PKPs
         newAppVersion.delegatedAgentPkps.add(pkpTokenId);
 
-        // Set the new permitted app version
-        agentStorage.permittedAppVersion[appId] = appVersion;
-
         // Add the app ID to the User's permitted apps set
         // .add will not add the app ID again if it is already registered
         agentStorage.permittedApps.add(appId);
+
+        // Set the new permitted app version
+        agentStorage.permittedAppVersion[appId] = appVersion;
 
         // Add pkpTokenId to the User's registered agent PKPs
         // .add will not add the PKP Token ID again if it is already registered
@@ -152,12 +118,9 @@ contract VincentUserFacet is VincentBase {
 
         emit LibVincentUserFacet.AppVersionPermitted(pkpTokenId, appId, appVersion);
 
-        // Save some gas by not calling the setToolPolicyParameters function if there are no tool policy parameters to set
-        if (toolIpfsCids.length > 0) {
-            _setToolPolicyParameters(
-                appId, pkpTokenId, appVersion, toolIpfsCids, policyIpfsCids, policyParameterValues
-            );
-        }
+        _setToolPolicyParameters(
+            appId, pkpTokenId, appVersion, toolIpfsCids, policyIpfsCids, policyParameterValues
+        );
     }
 
     /**
@@ -217,50 +180,25 @@ contract VincentUserFacet is VincentBase {
         string[] calldata toolIpfsCids,
         string[][] calldata policyIpfsCids,
         bytes[][] calldata policyParameterValues
-    ) public onlyPkpOwner(pkpTokenId) onlyRegisteredAppVersion(appId, appVersion) {
-        if (toolIpfsCids.length == 0) {
+    ) external appNotDeleted(appId) onlyRegisteredAppVersion(appId, appVersion) appEnabled(appId, appVersion) onlyPkpOwner(pkpTokenId) {
+        if (toolIpfsCids.length == 0 || policyIpfsCids.length == 0 || policyParameterValues.length == 0) {
             revert LibVincentUserFacet.InvalidInput();
         }
 
-        // Check for empty tool IPFS CIDs first
-        for (uint256 i = 0; i < toolIpfsCids.length; i++) {
-            if (bytes(toolIpfsCids[i]).length == 0) {
-                revert LibVincentUserFacet.EmptyToolIpfsCid();
-            }
+        if (
+            toolIpfsCids.length != policyIpfsCids.length || toolIpfsCids.length != policyParameterValues.length
+        ) {
+            revert LibVincentUserFacet.ToolsAndPoliciesLengthMismatch();
         }
 
-        // Get the app version to check registered tools
-        VincentAppStorage.AppVersion storage versionedApp =
-            VincentAppStorage.appStorage().appIdToApp[appId].appVersions[getAppVersionIndex(appVersion)];
+        // Check if the User has permitted the current app version
+        VincentUserStorage.UserStorage storage us_ = VincentUserStorage.userStorage();
 
-        // Check if all registered tools for this app version are provided
-        if (versionedApp.toolIpfsCidHashes.length() != toolIpfsCids.length) {
-            revert LibVincentUserFacet.NotAllRegisteredToolsProvided(appId, appVersion);
-        }
+        VincentUserStorage.AgentStorage storage agentStorage = us_.agentPkpTokenIdToAgentStorage[pkpTokenId];
+        uint256 currentPermittedAppVersion = agentStorage.permittedAppVersion[appId];
 
-        // Verify that every tool provided is registered and every registered tool is provided
-        bytes32[] memory providedToolHashes = new bytes32[](toolIpfsCids.length);
-        for (uint256 i = 0; i < toolIpfsCids.length; i++) {
-            providedToolHashes[i] = keccak256(abi.encodePacked(toolIpfsCids[i]));
-            if (!versionedApp.toolIpfsCidHashes.contains(providedToolHashes[i])) {
-                revert LibVincentUserFacet.ToolNotRegisteredForAppVersion(appId, appVersion, toolIpfsCids[i]);
-            }
-        }
-
-        // Ensure all registered tools are in the provided tools array
-        uint256 registeredToolCount = versionedApp.toolIpfsCidHashes.length();
-        for (uint256 i = 0; i < registeredToolCount; i++) {
-            bytes32 registeredToolHash = versionedApp.toolIpfsCidHashes.at(i);
-            bool found = false;
-            for (uint256 j = 0; j < providedToolHashes.length; j++) {
-                if (registeredToolHash == providedToolHashes[j]) {
-                    found = true;
-                    break;
-                }
-            }
-            if (!found) {
-                revert LibVincentUserFacet.NotAllRegisteredToolsProvided(appId, appVersion);
-            }
+        if (currentPermittedAppVersion != appVersion) {
+            revert LibVincentUserFacet.AppVersionNotPermitted(pkpTokenId, appId, appVersion);
         }
 
         _setToolPolicyParameters(
@@ -380,15 +318,17 @@ contract VincentUserFacet is VincentBase {
     ) internal {
         // Step 1: Validate input array lengths to prevent mismatches.
         uint256 toolCount = toolIpfsCids.length;
-        if (
-            toolCount != policyIpfsCids.length || toolCount != policyParameterValues.length
-        ) {
-            revert LibVincentUserFacet.ToolsAndPoliciesLengthMismatch();
-        }
 
         // Step 2: Fetch necessary storage references.
         VincentAppStorage.AppStorage storage as_ = VincentAppStorage.appStorage();
         VincentUserStorage.UserStorage storage us_ = VincentUserStorage.userStorage();
+
+        VincentAppStorage.AppVersion storage versionedApp =
+            as_.appIdToApp[appId].appVersions[getAppVersionIndex(appVersion)];
+
+        if (versionedApp.toolIpfsCidHashes.length() != toolCount) {
+            revert LibVincentUserFacet.NotAllRegisteredToolsProvided(appId, appVersion);
+        }
 
         // Step 3: Loop over each tool to process its associated policies and parameters.
         for (uint256 i = 0; i < toolCount; i++) {
@@ -409,11 +349,16 @@ contract VincentUserFacet is VincentBase {
 
             bytes32 hashedToolIpfsCid = keccak256(abi.encodePacked(toolIpfsCid));
 
-            // Step 3.1: Validate that the tool exists in the specified app version.
-            VincentAppStorage.AppVersion storage versionedApp =
-                as_.appIdToApp[appId].appVersions[getAppVersionIndex(appVersion)];
+            // Step 3.1: Validate that the tool exists in the specified app version. This works since we ensured that all the Tools were unique during registration via EnumebrableSet.
             if (!versionedApp.toolIpfsCidHashes.contains(hashedToolIpfsCid)) {
                 revert LibVincentUserFacet.ToolNotRegisteredForAppVersion(appId, appVersion, toolIpfsCid);
+            }
+
+            // Check for duplicate tool IPFS CIDs
+            for (uint256 k = i + 1; k < toolCount; k++) {
+                if (keccak256(abi.encodePacked(toolIpfsCids[k])) == hashedToolIpfsCid) {
+                    revert LibVincentUserFacet.DuplicateToolIpfsCid(appId, appVersion, toolIpfsCids[k]);
+                }
             }
 
             // Step 3.2: Access storage locations for tool policies.
@@ -434,11 +379,18 @@ contract VincentUserFacet is VincentBase {
 
                 bytes32 hashedToolPolicy = keccak256(abi.encodePacked(policyIpfsCid));
 
-                // Step 4.1: Validate that the policy is registered for the tool.
+                // Step 4.1: Validate that the policy is registered for the tool. This works since we ensured that all the Policies were unique during registration via EnumebrableSet.
                 if (!toolPolicyIpfsCidHashes.contains(hashedToolPolicy)) {
                     revert LibVincentUserFacet.ToolPolicyNotRegisteredForAppVersion(
                         appId, appVersion, toolIpfsCid, policyIpfsCid
                     );
+                }
+
+                // Check for duplicate tool policy IPFS CIDs
+                for (uint256 k = j + 1; k < policyCount; k++) {
+                    if (keccak256(abi.encodePacked(policyIpfsCids[i][k])) == hashedToolPolicy) {
+                        revert LibVincentUserFacet.DuplicateToolPolicyIpfsCid(appId, appVersion, toolIpfsCid, policyIpfsCids[i][k]);
+                    }
                 }
 
                 // Step 5: Store the policy parameter metadata
