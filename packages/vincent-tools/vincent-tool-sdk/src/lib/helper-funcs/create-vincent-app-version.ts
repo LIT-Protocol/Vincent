@@ -3,55 +3,20 @@ import { ethers } from 'ethers';
 
 import { getEnv } from './get-env';
 import { checkNativeTokenBalance } from './check-native-balance';
-
-const TEST_VINCENT_APP_NAME = 'Vincent Test App';
-const TEST_VINCENT_APP_DESCRIPTION = 'A test app for the Vincent protocol';
-const TEST_VINCENT_APP_AUTHORIZED_REDIRECT_URIS = ['https://testing.vincent.com'];
+import { VincentToolMetadata, VincentAppInfo } from './create-vincent-app';
 
 const VINCENT_CONTRACT_ABI = [
-  'function registerApp((string name, string description, uint8 deploymentStatus, string[] authorizedRedirectUris, address[] delegatees) appInfo, (string[] toolIpfsCids, string[][] toolPolicies, string[][][] toolPolicyParameterNames, uint8[][][] toolPolicyParameterTypes) versionTools) returns (uint256 newAppId, uint256 newAppVersion)',
-  'event NewAppRegistered(uint256 indexed appId, address indexed manager)',
+  'function registerNextAppVersion(uint256 appId, (string[] toolIpfsCids, string[][] toolPolicies, string[][][] toolPolicyParameterNames, uint8[][][] toolPolicyParameterTypes) versionTools) returns (uint256 newAppVersion)',
+  'event NewAppVersionRegistered(uint256 indexed appId, uint256 indexed appVersion, address indexed manager)',
 ];
 
-// Enums matching the contract definitions
-export enum VINCENT_APP_PARAMETER_TYPE {
-  INT256 = 0,
-  INT256_ARRAY = 1,
-  UINT256 = 2,
-  UINT256_ARRAY = 3,
-  BOOL = 4,
-  BOOL_ARRAY = 5,
-  ADDRESS = 6,
-  ADDRESS_ARRAY = 7,
-  STRING = 8,
-  STRING_ARRAY = 9,
-  BYTES = 10,
-  BYTES_ARRAY = 11,
-}
-
-export interface VincentAppInfo {
-  appId: number;
-  appVersion: number;
-}
-
-export interface VincentPolicyMetadata {
-  ipfsCid: string;
-  parameterNames: string[];
-  parameterTypes: number[];
-}
-
-export interface VincentToolMetadata {
-  ipfsCid: string;
-  policies: VincentPolicyMetadata[];
-}
-
-export const createVincentApp = async ({
+export const createVincentAppVersion = async ({
+  appId,
   vincentTools,
-  vincentAppDelegatees,
 }: {
+  appId: number;
   vincentTools: VincentToolMetadata[];
-  vincentAppDelegatees: string[];
-}) => {
+}): Promise<VincentAppInfo> => {
   const VINCENT_ADDRESS = getEnv('VINCENT_ADDRESS');
   if (VINCENT_ADDRESS === undefined) {
     throw new Error(
@@ -62,7 +27,7 @@ export const createVincentApp = async ({
   const TEST_VINCENT_APP_MANAGER_PRIVATE_KEY = getEnv('TEST_VINCENT_APP_MANAGER_PRIVATE_KEY');
   if (TEST_VINCENT_APP_MANAGER_PRIVATE_KEY === undefined) {
     throw new Error(
-      `TEST_VINCENT_APP_MANAGER_PRIVATE_KEY environment variable is not set. Please set it to the private key that will be used to create the test Vincent App.`,
+      `TEST_VINCENT_APP_MANAGER_PRIVATE_KEY environment variable is not set. Please set it to the private key that will be used to create the test Vincent App version.`,
     );
   }
   const appManagerEthersWallet = new ethers.Wallet(TEST_VINCENT_APP_MANAGER_PRIVATE_KEY);
@@ -99,27 +64,15 @@ export const createVincentApp = async ({
     tool.policies.map((policy) => policy.parameterTypes),
   );
 
-  const tx = await vincentContract.registerApp(
-    // AppInfo struct
-    {
-      name: TEST_VINCENT_APP_NAME,
-      description: TEST_VINCENT_APP_DESCRIPTION,
-      deploymentStatus: 0, // DEV
-      authorizedRedirectUris: TEST_VINCENT_APP_AUTHORIZED_REDIRECT_URIS,
-      delegatees: vincentAppDelegatees,
-    },
-    // VersionTools struct
-    {
-      toolIpfsCids: TOOL_IPFS_IDS,
-      toolPolicies: TOOL_POLICIES,
-      toolPolicyParameterNames: TOOL_POLICY_PARAMETER_NAMES,
-      toolPolicyParameterTypes: TOOL_POLICY_PARAMETER_TYPES,
-    },
-  );
+  const tx = await vincentContract.registerNextAppVersion(appId, {
+    toolIpfsCids: TOOL_IPFS_IDS,
+    toolPolicies: TOOL_POLICIES,
+    toolPolicyParameterNames: TOOL_POLICY_PARAMETER_NAMES,
+    toolPolicyParameterTypes: TOOL_POLICY_PARAMETER_TYPES,
+  });
 
   const txReceipt = await tx.wait();
 
-  // Parse the NewAppRegistered event to get the app ID
   const vincentInterface = new ethers.utils.Interface(VINCENT_CONTRACT_ABI);
   const parsedLogs = txReceipt.logs
     .map((log: any) => {
@@ -131,16 +84,17 @@ export const createVincentApp = async ({
     })
     .filter((log: any) => log !== null);
 
-  const newAppRegisteredLog = parsedLogs.find((log: any) => log?.name === 'NewAppRegistered');
-  if (!newAppRegisteredLog) {
-    throw new Error('NewAppRegistered event not found in transaction logs');
+  const newAppVersionRegisteredLog = parsedLogs.find(
+    (log: any) => log?.name === 'NewAppVersionRegistered',
+  );
+  if (!newAppVersionRegisteredLog) {
+    throw new Error('NewAppVersionRegistered event not found in transaction logs');
   }
 
-  const newAppId = newAppRegisteredLog.args.appId as ethers.BigNumber;
-  const newAppVersion = 1; // First version is always 1
+  const newAppVersion = newAppVersionRegisteredLog.args.appVersion as ethers.BigNumber;
 
   return {
-    appId: newAppId.toNumber(),
-    appVersion: newAppVersion,
+    appId: appId,
+    appVersion: newAppVersion.toNumber(),
   };
 };

@@ -5,3 +5,6 @@ export * from './check-native-balance';
 export * from './check-erc20-balance';
 export * from './check-pkp-has-auth-methods';
 export * from './create-vincent-app';
+export * from './check-vincent-app';
+export * from './create-vincent-app-version';
+export * from './add-vincent-app-delegatee';
