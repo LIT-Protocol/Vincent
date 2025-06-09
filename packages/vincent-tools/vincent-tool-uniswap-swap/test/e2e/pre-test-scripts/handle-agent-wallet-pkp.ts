@@ -3,6 +3,7 @@ import {
   checkNativeTokenBalance,
   getEnv,
   handleAgentWalletPkp,
+  VINCENT_APP_PARAMETER_TYPE,
 } from '@lit-protocol/vincent-tool-sdk';
 import { VincentPolicySpendingLimitMetadata } from '@lit-protocol/vincent-policy-spending-limit';
 import { VincentToolErc20ApprovalMetadata } from '@lit-protocol/vincent-tool-erc20-approval';
@@ -27,12 +28,40 @@ import { VincentToolUniswapSwapMetadata } from '../../../src';
     process.exit(1);
   }
 
+  const TEST_VINCENT_APP_DELEGATEE_PRIVATE_KEY = getEnv('TEST_VINCENT_APP_DELEGATEE_PRIVATE_KEY');
+  if (TEST_VINCENT_APP_DELEGATEE_PRIVATE_KEY === undefined) {
+    console.error('TEST_VINCENT_APP_DELEGATEE_PRIVATE_KEY environment variable is not set');
+    process.exit(1);
+  }
+  const testVincentAppDelegateeWallet = new ethers.Wallet(TEST_VINCENT_APP_DELEGATEE_PRIVATE_KEY);
+
   const { pkpInfo } = await handleAgentWalletPkp({
-    vincentToolAndPolicyIpfsCids: [
-      VincentToolErc20ApprovalMetadata.ipfsCid,
-      VincentToolUniswapSwapMetadata.ipfsCid,
-      VincentPolicySpendingLimitMetadata.ipfsCid,
+    vincentToolsWithValues: [
+      {
+        ipfsCid: VincentToolErc20ApprovalMetadata.ipfsCid,
+        policies: [], // No policies for ERC20 Approval Tool
+      },
+      {
+        ipfsCid: VincentToolUniswapSwapMetadata.ipfsCid,
+        policies: [
+          {
+            ipfsCid: VincentPolicySpendingLimitMetadata.ipfsCid,
+            parameterNames: ['maxDailySpendingLimitInUsdCents'],
+            parameterTypes: [VINCENT_APP_PARAMETER_TYPE.UINT256],
+            parameterValues: [
+              {
+                name: 'maxDailySpendingLimitInUsdCents',
+                value: ethers.utils.defaultAbiCoder.encode(
+                  ['uint256'],
+                  [ethers.BigNumber.from('1000000000')], // maxDailySpendingLimitInUsdCents $10 USD (8 decimals)
+                ),
+              },
+            ],
+          },
+        ],
+      },
     ],
+    vincentAppDelegateeAddresses: [testVincentAppDelegateeWallet.address],
   });
 
   const MIN_ETH_BALANCE = ethers.utils.parseUnits('1', 'wei');

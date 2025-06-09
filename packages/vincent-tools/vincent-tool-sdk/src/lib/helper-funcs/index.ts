@@ -8,3 +8,7 @@ export * from './create-vincent-app';
 export * from './check-vincent-app';
 export * from './create-vincent-app-version';
 export * from './add-vincent-app-delegatee';
+export * from './permit-vincent-app-version';
+export * from './unpermit-vincent-app-version';
+export * from './check-app-version-permitted';
+export * from './check-delegatee-execute-tool';
