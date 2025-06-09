@@ -45,7 +45,14 @@
         "packageRoot": "dist"
       }
     },
-    "pre-test:pkp": {
+    "pre-test:vincent-app": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": ["pnpx ts-node test/e2e/pre-test-scripts/handle-vincent-app.ts"],
+        "cwd": "packages/vincent-tools/vincent-tool-uniswap-swap"
+      }
+    },
+    "pre-test:agent-wallet": {
       "executor": "nx:run-commands",
       "options": {
         "commands": ["pnpx ts-node test/e2e/pre-test-scripts/handle-agent-wallet-pkp.ts"],

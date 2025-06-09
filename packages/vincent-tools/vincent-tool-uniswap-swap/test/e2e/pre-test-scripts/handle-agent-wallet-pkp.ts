@@ -11,7 +11,7 @@ import { ethers } from 'ethers';
 import { VincentToolUniswapSwapMetadata } from '../../../src';
 
 (async () => {
-  const UNISWAP_RPC_URL = getEnv('UNISWAP_RPC_URL');
+  const UNISWAP_RPC_URL = getEnv('TEST_UNISWAP_RPC_URL');
   if (UNISWAP_RPC_URL === undefined) {
     console.error(
       `UNISWAP_RPC_URL environment variable is not set. Please set it to the RPC URL to be used to perform the Uniswap Swap.`,
@@ -19,7 +19,7 @@ import { VincentToolUniswapSwapMetadata } from '../../../src';
     process.exit(1);
   }
 
-  const WETH_ADDRESS = getEnv('WETH_ADDRESS');
+  const WETH_ADDRESS = getEnv('TEST_WETH_ADDRESS');
   if (WETH_ADDRESS === undefined) {
     console.error(
       `WETH_ADDRESS environment variable is not set. Please set it to the WETH address to be used to perform the Uniswap Swap.`,

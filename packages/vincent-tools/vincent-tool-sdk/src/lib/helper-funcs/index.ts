@@ -4,3 +4,4 @@ export * from './mint-pkp';
 export * from './check-native-balance';
 export * from './check-erc20-balance';
 export * from './check-pkp-has-auth-methods';
+export * from './create-vincent-app';

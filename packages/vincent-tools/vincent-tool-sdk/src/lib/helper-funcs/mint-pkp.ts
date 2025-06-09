@@ -1,6 +1,7 @@
 import { type BigNumberish, type BytesLike, ethers } from 'ethers';
 import { LIT_NETWORK, RPC_URL_BY_NETWORK } from '@lit-protocol/constants';
 import { LitContracts } from '@lit-protocol/contracts-sdk';
+import { checkNativeTokenBalance } from './check-native-balance';
 
 export interface MintPkpParams {
   pkpOwnerPrivateKey: string;
@@ -28,10 +29,15 @@ export const mintPkp = async ({
   );
   const pkpOwnerWallet = new ethers.Wallet(pkpOwnerPrivateKey as string, provider);
 
-  const nativeTokenBalance = await provider.getBalance(pkpOwnerWallet.address);
-  if (nativeTokenBalance.isZero()) {
+  const MIN_ETH_BALANCE = ethers.utils.parseEther('0.01');
+  const { balance, hasMinBalance } = await checkNativeTokenBalance({
+    ethAddress: pkpOwnerWallet.address,
+    rpcUrl: RPC_URL_BY_NETWORK[LIT_NETWORK.Datil],
+    minBalance: MIN_ETH_BALANCE,
+  });
+  if (!hasMinBalance) {
     throw new Error(
-      `Address ${pkpOwnerWallet.address} has no Lit test token balance on Chronicle Yellowstone to mint an Agent Wallet PKP. Please fund it with Lit test tokens using the faucet: https://chronicle-yellowstone-faucet.getlit.dev/`,
+      `PKP Owner (${pkpOwnerWallet.address}) doesn't have the minimum required balance of ${ethers.utils.formatEther(MIN_ETH_BALANCE)} ETH on the Lit Datil network. Current balance is ${ethers.utils.formatEther(balance)} ETH. Please fund the PKP Owner before continuing using the Lit test token faucet: https://chronicle-yellowstone-faucet.getlit.dev/.`,
     );
   }
 

@@ -19,14 +19,11 @@ export const handleAgentWalletPkp = async ({
 
     const pkpInfoString = [
       mintedNewPkp
-        ? [
-            `Minted new Agent Wallet PKP.`,
-            'Set the following environment variables to use this Agent Wallet PKP:',
-          ]
-        : `Using existing Agent Wallet PKP.`,
-      `AGENT_WALLET_PKP_ETH_ADDRESS=${pkpInfo.ethAddress}`,
-      `AGENT_WALLET_PKP_TOKEN_ID=${pkpInfo.tokenId}`,
-      `AGENT_WALLET_PKP_PUBLIC_KEY=${pkpInfo.publicKey}`,
+        ? 'Minted new Agent Wallet PKP. Set the following environment variables to use this Agent Wallet PKP:'
+        : `Using existing Agent Wallet PKP:`,
+      `TEST_VINCENT_AGENT_WALLET_PKP_ETH_ADDRESS=${pkpInfo.ethAddress}`,
+      `TEST_VINCENT_AGENT_WALLET_PKP_TOKEN_ID=${pkpInfo.tokenId}`,
+      `TEST_VINCENT_AGENT_WALLET_PKP_PUBLIC_KEY=${pkpInfo.publicKey}`,
     ]
       .filter(Boolean)
       .join('\n');
@@ -83,15 +80,15 @@ const getPkpFromEnv = async (): Promise<PkpInfo> => {
     getInfo: (identifier: string) => Promise<PkpInfo>;
   }> = [
     {
-      envVar: 'AGENT_WALLET_PKP_ETH_ADDRESS',
+      envVar: 'TEST_VINCENT_AGENT_WALLET_PKP_ETH_ADDRESS',
       getInfo: (identifier) => getPkpInfo({ pkpEthAddress: identifier }),
     },
     {
-      envVar: 'AGENT_WALLET_PKP_TOKEN_ID',
+      envVar: 'TEST_VINCENT_AGENT_WALLET_PKP_TOKEN_ID',
       getInfo: (identifier) => getPkpInfo({ pkpTokenId: identifier }),
     },
     {
-      envVar: 'AGENT_WALLET_PKP_PUBLIC_KEY',
+      envVar: 'TEST_VINCENT_AGENT_WALLET_PKP_PUBLIC_KEY',
       getInfo: (identifier) => getPkpInfo({ pkpPublicKey: identifier }),
     },
   ];
@@ -106,15 +103,15 @@ const getPkpFromEnv = async (): Promise<PkpInfo> => {
   }
 
   throw new Error(
-    'No Agent Wallet PKP identifier found in environment variables. Please set one of the following: AGENT_WALLET_PKP_ETH_ADDRESS, AGENT_WALLET_PKP_TOKEN_ID, AGENT_WALLET_PKP_PUBLIC_KEY',
+    'No Agent Wallet PKP identifier found in environment variables. Please set one of the following: TEST_VINCENT_AGENT_WALLET_PKP_ETH_ADDRESS, TEST_VINCENT_AGENT_WALLET_PKP_TOKEN_ID, TEST_VINCENT_AGENT_WALLET_PKP_PUBLIC_KEY',
   );
 };
 
 const _mintPkp = async (vincentToolAndPolicyIpfsCids?: string[]) => {
-  const pkpOwnerPrivateKey = getEnv('AGENT_WALLET_PKP_OWNER_PRIVATE_KEY');
+  const pkpOwnerPrivateKey = getEnv('TEST_VINCENT_AGENT_WALLET_PKP_OWNER_PRIVATE_KEY');
   if (pkpOwnerPrivateKey === undefined) {
     console.error(
-      'AGENT_WALLET_PKP_OWNER_PRIVATE_KEY environment variable is not set. Please set it to the private key that should own the Agent Wallet PKP.',
+      'TEST_VINCENT_AGENT_WALLET_PKP_OWNER_PRIVATE_KEY environment variable is not set. Please set it to the private key that should own the Agent Wallet PKP.',
     );
     process.exit(1);
   }
