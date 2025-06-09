@@ -1,3 +1,6 @@
 export * from './get-env';
 export * from './get-pkp-info';
 export * from './mint-pkp';
+export * from './check-native-balance';
+export * from './check-erc20-balance';
+export * from './check-pkp-has-auth-methods';

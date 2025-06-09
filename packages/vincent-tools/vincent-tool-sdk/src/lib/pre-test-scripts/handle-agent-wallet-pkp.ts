@@ -1,9 +1,14 @@
 import { AUTH_METHOD_SCOPE, AUTH_METHOD_TYPE } from '@lit-protocol/constants';
-import { type BigNumber, type BigNumberish, ethers } from 'ethers';
+import { type BigNumberish, ethers } from 'ethers';
 
-import { getEnv, getPkpInfo, mintPkp, type PkpInfo } from '../helper-funcs';
+import {
+  checkPkpHasPermittedIpfsCids,
+  getEnv,
+  getPkpInfo,
+  mintPkp,
+  type PkpInfo,
+} from '../helper-funcs';
 
-// TODO If not minting PKP, check for IPFS CIDs as Auth Methods
 export const handleAgentWalletPkp = async ({
   vincentToolAndPolicyIpfsCids,
 }: {
@@ -44,10 +49,20 @@ const getPkpInfoOrMint = async (vincentToolAndPolicyIpfsCids?: string[]) => {
 
   try {
     pkpInfo = await getPkpFromEnv();
+
+    if (vincentToolAndPolicyIpfsCids !== undefined) {
+      await checkPkpHasPermittedIpfsCids({
+        pkpTokenId: pkpInfo.tokenId,
+        vincentToolAndPolicyIpfsCids,
+      });
+    }
   } catch (error) {
     if (
       !(error instanceof Error) ||
-      !error.message.includes('No Agent Wallet PKP identifier found in environment variables')
+      !error.message.includes('No Agent Wallet PKP identifier found in environment variables') ||
+      !error.message.includes(
+        'does not have the required Vincent Tools and Policies as permitted Auth Methods',
+      )
     ) {
       throw error;
     }
@@ -82,15 +97,12 @@ const getPkpFromEnv = async (): Promise<PkpInfo> => {
   ];
 
   for (const { envVar, getInfo } of candidates) {
-    try {
-      const identifier = getEnv(envVar);
-      return await getInfo(identifier);
-    } catch (error) {
-      if (error instanceof Error && error.message.includes('is not set')) {
-        continue;
-      }
-      throw error;
+    const identifier = getEnv(envVar);
+    if (identifier === undefined) {
+      continue;
     }
+
+    return await getInfo(identifier);
   }
 
   throw new Error(
@@ -100,6 +112,13 @@ const getPkpFromEnv = async (): Promise<PkpInfo> => {
 
 const _mintPkp = async (vincentToolAndPolicyIpfsCids?: string[]) => {
   const pkpOwnerPrivateKey = getEnv('AGENT_WALLET_PKP_OWNER_PRIVATE_KEY');
+  if (pkpOwnerPrivateKey === undefined) {
+    console.error(
+      'AGENT_WALLET_PKP_OWNER_PRIVATE_KEY environment variable is not set. Please set it to the private key that should own the Agent Wallet PKP.',
+    );
+    process.exit(1);
+  }
+
   const pkpOwnerWallet = new ethers.Wallet(pkpOwnerPrivateKey);
 
   const permittedAuthMethodTypes: BigNumberish[] = [AUTH_METHOD_TYPE.EthWallet];
