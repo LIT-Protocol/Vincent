@@ -159,7 +159,7 @@ export function buildParamDefinitions(params: VincentParameter[]): ZodRawShape {
  * ```
  */
 export function buildVincentActionCallback(vincentToolDefWithIPFS: VincentToolDefWithIPFS) {
-  return async (wallet: Signer, args: VincentToolParams): Promise<string> => {
+  return async (wallet: Signer, args: VincentToolParams): Promise<any> => {
     try {
       const vincentToolClient = getVincentToolClient({
         ethersSigner: wallet,
