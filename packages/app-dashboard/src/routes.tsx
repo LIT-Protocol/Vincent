@@ -104,12 +104,20 @@ const userRoutes = {
       element: <UserPages.Withdraw />,
     },
     {
-      path: '/user',
+      path: '/user/dashboard',
       element: <UserPages.Dashboard />,
+    },
+    {
+      path: '/user',
+      element: <UserPages.Home />,
     },
     {
       path: '/user/apps',
       element: <UserPages.Apps />,
+    },
+    {
+      path: '/user/explorer',
+      element: <UserPages.Explorer />,
     },
     {
       path: '/user/appId/:appId',

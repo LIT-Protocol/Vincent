@@ -23,19 +23,6 @@ export default function LoginMethods({
     <>
       {view === 'default' && (
         <>
-          <div className="flex flex-col items-center mb-6">
-            <img
-              src="/vincent-by-lit-logo.png"
-              alt="Vincent Logo"
-              width={120}
-              height={36}
-              className="mb-3"
-            />
-            <h1 className="text-xl font-semibold text-center text-gray-800">
-              Agent Wallet Authentication
-            </h1>
-            <p className="text-sm text-gray-600 mt-2">Access or create your Vincent Agent Wallet</p>
-          </div>
           <AuthMethods setView={setView as Dispatch<SetStateAction<string>>} />
         </>
       )}

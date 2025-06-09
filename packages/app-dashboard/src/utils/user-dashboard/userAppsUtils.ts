@@ -1,50 +1,20 @@
 import { IRelayPKP, SessionSigs } from '@lit-protocol/types';
 import { BigNumber } from 'ethers';
 import { AppDetails } from '@/types';
-import { getAppViewRegistryContract, getUserViewRegistryContract } from './contracts';
+import { getUserViewRegistryContract } from './contracts';
+import type { AppDefRead } from '@/components/app-dashboard/mock-forms/vincentApiClient';
 
 /**
- * Generate a status message for version enabled/disabled states
+ * Fetches apps using API data but filtered by on-chain authorized app IDs
  */
-function generateVersionInfo(
-  currentVersion: number,
-  latestVersion: number,
-  isCurrentVersionEnabled: boolean,
-  isLatestVersionEnabled: boolean,
-): { showInfo: boolean; infoMessage?: string } {
-  let showInfo = false;
-  let infoMessage: string | undefined = undefined;
-
-  if (isCurrentVersionEnabled === false && isLatestVersionEnabled === false) {
-    showInfo = true;
-    infoMessage = `Both your current version (${currentVersion}) and the latest version have been disabled by the app developer.`;
-  } else if (isLatestVersionEnabled === false) {
-    showInfo = true;
-    infoMessage = `The latest version of this application is currently disabled by the developer.`;
-  } else if (isCurrentVersionEnabled === false) {
-    showInfo = true;
-    infoMessage = `Version ${currentVersion} has been disabled by the app developer. To continue using the app, please update to the latest version.`;
-  } else if (latestVersion > currentVersion) {
-    showInfo = true;
-    infoMessage = `Version ${latestVersion} is available (you're using v${currentVersion}).`;
-  }
-
-  return { showInfo, infoMessage };
-}
-
-/**
- * Fetches all permitted applications for a user's PKP
- */
-export async function fetchUserApps({
+export async function fetchUserAppsWithApiCrossReference({
   userPKP,
   sessionSigs,
   agentPKP,
-  showStatus,
 }: {
   userPKP: IRelayPKP | null;
   sessionSigs: SessionSigs | null;
   agentPKP: IRelayPKP | null;
-  showStatus: (message: string, type?: 'info' | 'warning' | 'success' | 'error') => void;
 }): Promise<{
   apps: AppDetails[];
   error?: string;
@@ -55,64 +25,76 @@ export async function fetchUserApps({
   }
 
   try {
-    const userViewContract = getUserViewRegistryContract();
-    const appViewContract = getAppViewRegistryContract();
+    // Fetch from both sources concurrently
+    const [authorizedAppIds, apiApps] = await Promise.all([
+      // Get authorized app IDs from on-chain registry
+      (async () => {
+        const userViewContract = getUserViewRegistryContract();
+        const appIds = await userViewContract.getAllPermittedAppIdsForPkp(agentPKP.tokenId);
+        const appIdNumbers = appIds.map((id: BigNumber) => id.toNumber());
+        return appIdNumbers;
+      })(),
 
-    const appIds = await userViewContract.getAllPermittedAppIdsForPkp(agentPKP.tokenId);
+      // Fetch API apps
+      (async () => {
+        try {
+          const apiUrl = 'https://staging.registry.heyvincent.ai/apps';
+          const response = await fetch(apiUrl);
 
-    if (!appIds || appIds.length === 0) {
-      showStatus("You haven't authorized any applications yet", 'warning');
+          if (!response.ok) {
+            throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+          }
+
+          const responseText = await response.text();
+
+          let apiApps: AppDefRead[];
+          try {
+            apiApps = JSON.parse(responseText);
+          } catch (parseError) {
+            return [];
+          }
+
+          return apiApps;
+        } catch (error) {
+          return [];
+        }
+      })(),
+    ]);
+
+    if (authorizedAppIds.length === 0) {
       return { apps: [] };
     }
 
-    const appDetailsResults = await Promise.all(
-      appIds.map(async (appId: BigNumber) => {
-        const appIdNumber = appId.toNumber();
+    // Filter API apps to only show those the user is authorized for
+    const authorizedApiApps = apiApps.filter((apiApp: AppDefRead) => {
+      return authorizedAppIds.includes(apiApp.appId);
+    });
 
-        const [appInfo, permittedVersion] = await Promise.all([
-          appViewContract.getAppById(appIdNumber),
-          userViewContract.getPermittedAppVersionForPkp(agentPKP.tokenId, appIdNumber),
-        ]);
+    // Convert API apps to AppDetails format
+    const appDetails: AppDetails[] = authorizedApiApps.map((apiApp: AppDefRead) => {
+      return {
+        id: apiApp.appId.toString(),
+        name: apiApp.name,
+        description: apiApp.description,
+        deploymentStatus:
+          apiApp.deploymentStatus === 'dev' ? 0 : apiApp.deploymentStatus === 'test' ? 1 : 2,
+        version: apiApp.activeVersion,
+        isDeleted: false,
+        // API-specific fields
+        logo: apiApp.logo,
+        appUserUrl: apiApp.appUserUrl,
+        contactEmail: apiApp.contactEmail,
+        redirectUris: apiApp.redirectUris,
+        managerAddress: apiApp.managerAddress,
+        createdAt: apiApp.createdAt,
+        updatedAt: apiApp.updatedAt,
+      };
+    });
 
-        const currentVersion = parseInt(permittedVersion._hex, 16);
-        const latestVersion = parseInt(appInfo.latestVersion._hex, 16);
-
-        const versionResponses = await Promise.all([
-          appViewContract.getAppVersion(Number(appId), currentVersion),
-          appViewContract.getAppVersion(Number(appId), latestVersion),
-        ]);
-
-        const [, currentVersionData] = versionResponses[0];
-        const [, latestVersionData] = versionResponses[1];
-
-        const isCurrentVersionEnabled = currentVersionData.enabled;
-        const isLatestVersionEnabled = latestVersionData.enabled;
-
-        const { showInfo, infoMessage } = generateVersionInfo(
-          currentVersion,
-          latestVersion,
-          isCurrentVersionEnabled,
-          isLatestVersionEnabled,
-        );
-
-        return {
-          id: appIdNumber.toString(),
-          name: appInfo.name,
-          description: appInfo.description,
-          deploymentStatus: appInfo.deploymentStatus,
-          version: currentVersion,
-          isDeleted: appInfo.isDeleted,
-          showInfo,
-          infoMessage,
-        };
-      }),
-    );
-
-    const sortedApps = appDetailsResults.sort((a, b) => {
+    const sortedApps = appDetails.sort((a, b) => {
       if (a.isDeleted !== b.isDeleted) {
         return a.isDeleted ? 1 : -1;
       }
-
       return a.name.localeCompare(b.name);
     });
 
@@ -122,6 +104,87 @@ export async function fetchUserApps({
     return {
       apps: [],
       error: `Error fetching user apps: ${errorMessage}`,
+    };
+  }
+}
+
+/**
+ * Fetches all permitted applications for a user's PKP (original function, kept for backward compatibility)
+ */
+export async function fetchUserApps({
+  userPKP,
+  sessionSigs,
+  agentPKP,
+}: {
+  userPKP: IRelayPKP | null;
+  sessionSigs: SessionSigs | null;
+  agentPKP: IRelayPKP | null;
+}): Promise<{
+  apps: AppDetails[];
+  error?: string;
+}> {
+  // Use the new API-focused function by default
+  return fetchUserAppsWithApiCrossReference({ userPKP, sessionSigs, agentPKP });
+}
+
+/**
+ * Fetches all apps from Vincent API for Explorer page
+ */
+export async function fetchAllApps(): Promise<{
+  apps: AppDetails[];
+  error?: string;
+}> {
+  try {
+    const apiUrl = 'https://staging.registry.heyvincent.ai/apps';
+    const response = await fetch(apiUrl);
+
+    if (!response.ok) {
+      throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+    }
+
+    const responseText = await response.text();
+
+    let apiApps: AppDefRead[];
+    try {
+      apiApps = JSON.parse(responseText);
+    } catch (parseError) {
+      return { apps: [], error: 'Failed to parse API response' };
+    }
+
+    // Convert API apps to AppDetails format
+    const appDetails: AppDetails[] = apiApps.map((apiApp: AppDefRead) => {
+      return {
+        id: apiApp.appId.toString(),
+        name: apiApp.name,
+        description: apiApp.description,
+        deploymentStatus:
+          apiApp.deploymentStatus === 'dev' ? 0 : apiApp.deploymentStatus === 'test' ? 1 : 2,
+        version: apiApp.activeVersion,
+        isDeleted: false,
+        // API-specific fields
+        logo: apiApp.logo,
+        appUserUrl: apiApp.appUserUrl,
+        contactEmail: apiApp.contactEmail,
+        redirectUris: apiApp.redirectUris,
+        managerAddress: apiApp.managerAddress,
+        createdAt: apiApp.createdAt,
+        updatedAt: apiApp.updatedAt,
+      };
+    });
+
+    const sortedApps = appDetails.sort((a, b) => {
+      if (a.isDeleted !== b.isDeleted) {
+        return a.isDeleted ? 1 : -1;
+      }
+      return a.name.localeCompare(b.name);
+    });
+
+    return { apps: sortedApps };
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    return {
+      apps: [],
+      error: `Error fetching all apps: ${errorMessage}`,
     };
   }
 }

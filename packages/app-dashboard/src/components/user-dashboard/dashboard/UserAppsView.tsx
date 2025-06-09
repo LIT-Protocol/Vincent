@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useErrorPopup } from '@/providers/ErrorPopup';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { AppDetails } from '@/types';
 import { AppCard } from '../../app-dashboard/ui/AppCard';
 import { SessionSigs, IRelayPKP } from '@lit-protocol/types';
@@ -61,7 +61,6 @@ export default function UserAppsView({ userPKP, sessionSigs, agentPKP }: UserApp
         userPKP,
         sessionSigs,
         agentPKP,
-        showStatus,
       });
 
       if (isMounted) {
@@ -109,11 +108,35 @@ export default function UserAppsView({ userPKP, sessionSigs, agentPKP }: UserApp
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {apps.map((app) => (
-          <AppCard key={app.id} app={app} onClick={handleCardClick} />
-        ))}
-      </div>
+      {apps.length === 0 ? (
+        <div className="border border-gray-200 rounded-lg p-12 text-center bg-gray-50">
+          <h2 className="text-2xl font-semibold mb-4 text-gray-900">No Connected Apps</h2>
+          <p className="text-gray-600 text-lg mb-6">
+            You haven't connected any applications yet. When you authorize apps to access your
+            Vincent identity, they'll appear here.
+          </p>
+          <p className="text-gray-500">
+            Check out the <Link to="/user/explorer">Explorer</Link> to find apps that support
+            Vincent authentication.
+          </p>
+        </div>
+      ) : (
+        <>
+          <div className="mb-6">
+            <h2 className="text-2xl font-semibold text-gray-900 mb-2">Your Connected Apps</h2>
+            <p className="text-gray-600">
+              {apps.length} {apps.length === 1 ? 'application' : 'applications'} connected to your
+              Vincent identity
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            {apps.map((app) => (
+              <AppCard key={app.id} app={app} onClick={handleCardClick} />
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 }
