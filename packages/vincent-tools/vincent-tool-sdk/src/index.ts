@@ -17,3 +17,6 @@ export type {
 
 export type { BundledVincentPolicy } from './lib/policyCore/bundledPolicy/types';
 export type { VincentToolPolicy, BaseContext, PolicyEvaluationResultContext } from './lib/types';
+
+export * from './lib/helper-funcs';
+export * from './lib/pre-test-scripts';

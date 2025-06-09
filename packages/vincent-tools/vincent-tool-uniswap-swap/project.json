@@ -44,6 +44,13 @@
       "options": {
         "packageRoot": "dist"
       }
+    },
+    "pre-test:pkp": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": ["pnpx ts-node test/e2e/pre-test-scripts/handle-agent-wallet-pkp.ts"],
+        "cwd": "packages/vincent-tools/vincent-tool-uniswap-swap"
+      }
     }
   }
 }
