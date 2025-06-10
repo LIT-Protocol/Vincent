@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { createPublicClient, getContract, http, PublicClient } from 'viem';
 import { VincentNetworkContext } from './NetworkContextManager';
 
@@ -10,7 +9,8 @@ interface CreateVincentContractsOptions {
 export const createVincentContracts = (
   networkCtx: VincentNetworkContext,
   opts?: CreateVincentContractsOptions,
-) => { // ts-expect-error TS7056
+): any => {
+  // ts-expect-error TS7056 (post-build hacky fix)
   const useDiamondAddress = opts?.useDiamondAddress ?? true;
 
   // 1. Fallback to env-based private key if user doesn't supply a wagmi walletClient
@@ -30,9 +30,7 @@ export const createVincentContracts = (
   const contractData = networkCtx.chainConfig.contractData;
 
   if (!contractData) {
-    throw new Error(
-      `Contract data not found for network: ${networkCtx.network}`,
-    );
+    throw new Error(`Contract data not found for network: ${networkCtx.network}`);
   }
 
   // ---------- All your contracts ----------
@@ -81,8 +79,7 @@ export const createVincentContracts = (
     abi: [
       contractData.VincentLitActionFacet.methods.approveLitActions,
       contractData.VincentLitActionFacet.methods.removeLitActionApprovals,
-      contractData.VincentLitActionFacet.methods
-        .updateApprovedLitActionsManager,
+      contractData.VincentLitActionFacet.methods.updateApprovedLitActionsManager,
       ...contractData.VincentLitActionFacet.events,
       ...contractData.VincentLitActionFacet.errors,
     ],
@@ -95,8 +92,7 @@ export const createVincentContracts = (
       : contractData.VincentLitActionViewFacet.address,
     abi: [
       contractData.VincentLitActionViewFacet.methods.getAllApprovedLitActions,
-      contractData.VincentLitActionViewFacet.methods
-        .getApprovedLitActionsManager,
+      contractData.VincentLitActionViewFacet.methods.getApprovedLitActionsManager,
       contractData.VincentLitActionViewFacet.methods.getLitActionIpfsCidByHash,
       contractData.VincentLitActionViewFacet.methods.isLitActionApproved,
       ...contractData.VincentLitActionViewFacet.events,
@@ -129,8 +125,7 @@ export const createVincentContracts = (
       contractData.VincentUserViewFacet.methods.getAllRegisteredAgentPkps,
       contractData.VincentUserViewFacet.methods.getAllToolsAndPoliciesForApp,
       contractData.VincentUserViewFacet.methods.getPermittedAppVersionForPkp,
-      contractData.VincentUserViewFacet.methods
-        .validateToolExecutionAndGetPolicies,
+      contractData.VincentUserViewFacet.methods.validateToolExecutionAndGetPolicies,
       ...contractData.VincentUserViewFacet.events,
       ...contractData.VincentUserViewFacet.errors,
     ],

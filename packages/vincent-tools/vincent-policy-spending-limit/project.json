@@ -1,0 +1,49 @@
+{
+  "name": "@lit-protocol/vincent-policy-spending-limit",
+  "sourceRoot": "src",
+  "projectType": "library",
+  "targets": {
+    "action:build": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["vincent-tool-sdk:build"],
+      "options": {
+        "commands": ["pnpm node ./esbuild.config.js"],
+        "cwd": "packages/vincent-tools/vincent-policy-spending-limit",
+        "parallel": false
+      }
+    },
+    "action:deploy": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["action:build"],
+      "options": {
+        "commands": ["node tools/deploy-lit-action.js"],
+        "cwd": "packages/vincent-tools/vincent-policy-spending-limit"
+      }
+    },
+    "build": {
+      "executor": "@nx/js:tsc",
+      "dependsOn": ["action:build"],
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "packages/vincent-tools/vincent-policy-spending-limit/dist",
+        "main": "packages/vincent-tools/vincent-policy-spending-limit/src/index.ts",
+        "tsConfig": "packages/vincent-tools/vincent-policy-spending-limit/tsconfig.lib.json",
+        "assets": [
+          "packages/vincent-tools/vincent-policy-spending-limit/*.md",
+          {
+            "glob": "**/*",
+            "input": "packages/vincent-tools/vincent-policy-spending-limit/src/generated",
+            "output": "src/generated"
+          }
+        ]
+      }
+    },
+    "publish": {
+      "executor": "@nx/js:npm-publish",
+      "dependsOn": ["deploy"],
+      "options": {
+        "packageRoot": "dist"
+      }
+    }
+  }
+}

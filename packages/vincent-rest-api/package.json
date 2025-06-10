@@ -1,0 +1,36 @@
+{
+  "name": "@lit-protocol/vincent-rest-api",
+  "version": "1.0.0",
+  "description": "Vincent Registry REST API OpenAPI definition and related generated code",
+  "packageManager": "pnpm@10.7.0",
+  "private": false,
+  "scripts": {
+    "generate-openapi": "pnpx ts-node src/utils/generate-openapi.ts",
+    "generate-rtk-client": "pnpx @rtk-query/codegen-openapi rtk-client-config.js",
+    "generate-api": "run-s generate-openapi generate-rtk-client",
+    "prepublishOnly": "cd ../../ && nx build vincent-rest-api"
+  },
+  "devDependencies": {
+    "@rtk-query/codegen-openapi": "^1.2.0",
+    "@types/express": "^4.17.21",
+    "@types/jest": "^29.5.0",
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^20.10.5",
+    "jest": "^29.5.0",
+    "npm-run-all": "^4.1.5",
+    "ts-jest": "^29.1.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.0.0",
+    "zod": "^3.25.36"
+  },
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "files": [
+    "dist",
+    "openapi.json"
+  ],
+  "dependencies": {
+    "@asteasolutions/zod-to-openapi": "^7.3.2",
+    "@reduxjs/toolkit": "^2.8.2"
+  }
+}

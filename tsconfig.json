@@ -7,7 +7,13 @@
       "path": "./packages/vincent-tools/vincent-tool-uniswap-swap"
     },
     {
-      "path": "./packages/vincent-tools/vincent-tool"
+      "path": "./packages/vincent-tools/vincent-tool-sdk"
+    },
+    {
+      "path": "./packages/vincent-tools/vincent-policy-spending-limit"
+    },
+    {
+      "path": "./packages/vincent-tools/vincent-tool-erc20-approval"
     }
   ]
 }

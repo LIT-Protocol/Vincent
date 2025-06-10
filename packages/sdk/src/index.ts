@@ -18,3 +18,6 @@ export type { ExpressAuthHelpers } from './express-authentication-middleware/typ
 
 import * as reactHelpers from './react';
 export { reactHelpers };
+
+import * as mcp from './mcp';
+export { mcp };

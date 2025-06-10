@@ -1,1 +1,2 @@
 sdk-docs/**/* linguist-generated=true
+packages/vincent-rest-api/src/generated/**/* linguist-generated=true

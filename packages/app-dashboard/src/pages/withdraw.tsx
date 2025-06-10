@@ -242,27 +242,17 @@ export function Withdraw() {
         );
       }
 
-      return (
-        <div className="flex justify-center items-start w-full">
-          <div className="w-[550px] position-relative mt-0">
-            <WithdrawForm sessionSigs={sessionSigs} agentPKP={agentPKP} userPKP={userPKP} />
-          </div>
-        </div>
-      );
+      return <WithdrawForm sessionSigs={sessionSigs} agentPKP={agentPKP} userPKP={userPKP} />;
     }
 
     // If we're not showing the existing account and have validated session sigs
     if (!showExistingAccount && validatedSessionSigs && authInfo?.userPKP) {
       return (
-        <div className="flex justify-center items-start w-full">
-          <div className="w-[550px] position-relative mt-0">
-            <WithdrawForm
-              sessionSigs={validatedSessionSigs}
-              agentPKP={authInfo.agentPKP}
-              userPKP={authInfo.userPKP}
-            />
-          </div>
-        </div>
+        <WithdrawForm
+          sessionSigs={validatedSessionSigs}
+          agentPKP={authInfo.agentPKP}
+          userPKP={authInfo.userPKP}
+        />
       );
     }
 
@@ -290,7 +280,7 @@ export function Withdraw() {
     );
   };
 
-  return <div className="grow flex items-center justify-center">{renderContent()}</div>;
+  return <>{renderContent()}</>;
 }
 
 export default Withdraw;

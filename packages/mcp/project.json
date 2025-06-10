@@ -1,0 +1,36 @@
+{
+  "name": "vincent-mcp",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/mcp/src",
+  "projectType": "application",
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "packages/mcp/build",
+        "main": "packages/mcp/src/index.ts",
+        "tsConfig": "packages/mcp/tsconfig.json",
+        "assets": ["packages/mcp/*.md"],
+        "formats": ["cjs"],
+        "updateBuildableProjectDepsInPackageJson": true
+      }
+    },
+    "nx-release-publish": {
+      "dependsOn": ["build"],
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npm publish",
+        "cwd": "packages/mcp/build"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["packages/mcp/**/*.ts"]
+      }
+    }
+  },
+  "tags": []
+}

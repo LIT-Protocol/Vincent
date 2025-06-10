@@ -1,6 +1,7 @@
 import { useCallback, useState, useEffect } from 'react';
 import { SessionSigs, IRelayPKP } from '@lit-protocol/types';
 import { LIT_CHAINS } from '@lit-protocol/constants';
+import WalletConnectPage from '@/components/withdraw/WalletConnect/WalletConnect';
 
 import {
   FormHeader,
@@ -10,10 +11,12 @@ import {
   ChainSelector,
   TokenSelector,
   WithdrawPanel,
-  BalanceDisplay
+  BalanceDisplay,
 } from '.';
-import { handleSubmit } from '@/utils/handlers';
+import { handleSubmit } from './WalletConnect/withdrawHandler';
 import { ethers } from 'ethers';
+import BackButton from './WalletConnect/BackButton';
+import { Button } from '@/components/ui/button';
 
 export interface WithdrawFormProps {
   sessionSigs: SessionSigs;
@@ -29,10 +32,7 @@ export interface TokenDetails {
   decimals: number;
 }
 
-export default function WithdrawForm({
-  sessionSigs,
-  agentPKP,
-}: WithdrawFormProps) {
+export default function WithdrawForm({ sessionSigs, agentPKP }: WithdrawFormProps) {
   const [loading, setLoading] = useState<boolean>(false);
   const [selectedChain, setSelectedChain] = useState<string>('ethereum');
   const [withdrawAmount, setWithdrawAmount] = useState<string>('');
@@ -47,6 +47,7 @@ export default function WithdrawForm({
     symbol: '',
     decimals: 18,
   });
+  const [showWalletConnect, setShowWalletConnect] = useState<boolean>(false);
 
   const showStatus = (message: string, type: StatusType = 'info') => {
     setStatusMessage(message);
@@ -93,54 +94,75 @@ export default function WithdrawForm({
       sessionSigs,
       selectedChain,
       setLoading,
-      showStatus
+      showStatus,
     );
 
     if (result.success) {
-        refreshBalance();
+      refreshBalance();
     }
   };
 
   return (
-    <div className="max-w-[550px] w-full mx-auto bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
-      <FormHeader />
-      <h3 className="text-lg font-medium text-black mb-4 mt-8 px-6">Account Fund Manager</h3>
+    <div className="max-w-2xl w-full mx-auto bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+      {showWalletConnect ? (
+        <>
+          <div className="p-6 border-b border-gray-100">
+            <BackButton label="Back to withdraw" onClick={() => setShowWalletConnect(false)} />
+          </div>
+          <WalletConnectPage agentPKP={agentPKP} sessionSigs={sessionSigs} />
+        </>
+      ) : (
+        <>
+          <FormHeader />
+          <h3 className="text-lg font-medium text-black mb-4 mt-8 px-6">Account Fund Manager</h3>
 
-      <StatusMessage message={statusMessage} type={statusType} />
+          <StatusMessage message={statusMessage} type={statusType} />
 
-      <WalletInfo ethAddress={agentPKP?.ethAddress} />
+          <WalletInfo ethAddress={agentPKP?.ethAddress} />
 
-      <div className="p-6">
-        <ChainSelector
-          selectedChain={selectedChain}
-          ethAddress={agentPKP!.ethAddress}
-          onChange={setSelectedChain}
-        />
+          <div className="p-6">
+            <ChainSelector
+              selectedChain={selectedChain}
+              ethAddress={agentPKP!.ethAddress}
+              onChange={setSelectedChain}
+            />
 
-        <BalanceDisplay
-          balance={nativeBalance}
-          token={nativeToken}
-          loading={loading}
-          refreshBalance={refreshBalance}
-        />
+            <BalanceDisplay
+              balance={nativeBalance}
+              token={nativeToken}
+              loading={loading}
+              refreshBalance={refreshBalance}
+            />
 
-        <TokenSelector
-          isCustomToken={isCustomToken}
-          setIsCustomToken={setIsCustomToken}
-          customTokenAddress={customTokenAddress}
-          setCustomTokenAddress={setCustomTokenAddress}
-        />
+            <TokenSelector
+              isCustomToken={isCustomToken}
+              setIsCustomToken={setIsCustomToken}
+              customTokenAddress={customTokenAddress}
+              setCustomTokenAddress={setCustomTokenAddress}
+            />
 
-        <WithdrawPanel
-          withdrawAddress={withdrawAddress}
-          setWithdrawAddress={setWithdrawAddress}
-          withdrawAmount={withdrawAmount}
-          setWithdrawAmount={setWithdrawAmount}
-          tokenSymbol={isCustomToken ? 'TOKEN' : nativeToken.symbol}
-          loading={loading}
-          onSubmit={onSubmit}
-        />
-      </div>
+            <div className="mb-4">
+              <Button
+                variant="outline"
+                onClick={() => setShowWalletConnect(true)}
+                className="h-8 px-3 text-xs border-blue-200 text-blue-700 hover:bg-blue-50 hover:text-blue-800"
+              >
+                Connect with WalletConnect
+              </Button>
+            </div>
+
+            <WithdrawPanel
+              withdrawAddress={withdrawAddress}
+              setWithdrawAddress={setWithdrawAddress}
+              withdrawAmount={withdrawAmount}
+              setWithdrawAmount={setWithdrawAmount}
+              tokenSymbol={isCustomToken ? 'TOKEN' : nativeToken.symbol}
+              loading={loading}
+              onSubmit={onSubmit}
+            />
+          </div>
+        </>
+      )}
     </div>
   );
 }

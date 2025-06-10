@@ -4,12 +4,15 @@
     "default": ["{projectRoot}/**/*", "sharedGlobals"],
     "production": [
       "default",
-      "!{projectRoot}/.eslintrc.json",
-      "!{projectRoot}/eslint.config.js"
+      "!{projectRoot}/eslint.config.js",
+      "!{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)",
+      "!{projectRoot}/tsconfig.spec.json",
+      "!{projectRoot}/jest.config.[jt]s",
+      "!{projectRoot}/src/test-setup.[jt]s",
+      "!{projectRoot}/test-setup.[jt]s"
     ],
     "sharedGlobals": ["{workspaceRoot}/.github/workflows/ci.yml"]
   },
-  "nxCloudId": "67c2315752e26209c26ce414",
   "plugins": [
     {
       "plugin": "@nx/js/typescript",
@@ -30,18 +33,29 @@
       "options": {
         "targetName": "eslint:lint"
       }
+    },
+    {
+      "plugin": "@nx/jest/plugin",
+      "options": {
+        "targetName": "jest:test"
+      }
     }
   ],
   "release": {
-    "projects": ["vincent-sdk"],
+    "projects": ["vincent-sdk", "vincent-mcp", "vincent-rest-api"],
     "projectsRelationship": "independent",
     "releaseTagPattern": "vincent/{projectName}/{version}",
+    "versionPlans": true,
     "changelog": {
       "automaticFromRef": true,
       "projectChangelogs": true
     },
     "version": {
-      "preVersionCommand": "pnpm dlx nx build vincent-sdk"
+      "preVersionCommand": "pnpm dlx nx run-many --target=build --projects=vincent-sdk,vincent-mcp,vincent-rest-api --parallel=false"
+    },
+    "git": {
+      "tagArgs": "-f",
+      "pushArgs": "--force-with-lease"
     }
   },
   "targetDefaults": {
@@ -49,9 +63,21 @@
       "dependsOn": [
         {
           "projects": "self",
+          "target": "build"
+        },
+        {
+          "projects": "self",
           "target": "publish-typedoc"
         }
       ]
+    },
+    "@nx/esbuild:esbuild": {
+      "cache": true,
+      "dependsOn": ["^build"],
+      "inputs": ["production", "^production"]
+    },
+    "test": {
+      "dependsOn": ["^build"]
     }
   }
 }

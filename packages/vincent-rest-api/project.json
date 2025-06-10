@@ -1,0 +1,46 @@
+{
+  "name": "vincent-rest-api",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/vincent-rest-api/src",
+  "projectType": "library",
+  "targets": {
+    "generate-api": {
+      "executor": "nx:run-script",
+      "options": {
+        "script": "generate-api"
+      }
+    },
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "dependsOn": ["generate-api"],
+      "options": {
+        "outputPath": "packages/vincent-rest-api/dist",
+        "main": "packages/vincent-rest-api/src/index.ts",
+        "tsConfig": "packages/vincent-rest-api/tsconfig.lib.json",
+        "assets": ["packages/vincent-rest-api/*.md",
+          {
+          "input": "packages/vincent-rest-api/src/generated/",
+          "glob": "**/!(*.ts)",
+          "output": "./"
+        }],
+        "formats": ["cjs"]
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["{projectRoot}/src"]
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "{projectRoot}/jest.config.ts"
+      }
+    }
+  },
+  "tags": []
+}

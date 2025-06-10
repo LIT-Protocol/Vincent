@@ -1,0 +1,2 @@
+export const EXAMPLE_WALLET_ADDRESS = '0x123456789012345678901234567890123456abcd';
+export const EXAMPLE_EMAIL_ADDRESS = 'contact@example.com';

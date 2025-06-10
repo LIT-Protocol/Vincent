@@ -1,0 +1,55 @@
+{
+  "name": "@lit-protocol/vincent-mcp",
+  "version": "0.0.3",
+  "description": "Vincent App MCP Transformer",
+  "author": "Lit Protocol",
+  "license": "ISC",
+  "publishConfig": {
+    "access": "public"
+  },
+  "packageManager": "pnpm@10.7.0",
+  "engines": {
+    "node": "^20.11.1",
+    "pnpm": "10.7.0"
+  },
+  "keywords": [
+    "mcp",
+    "vincent",
+    "AI",
+    "web3",
+    "agents"
+  ],
+  "files": [
+    "src/**"
+  ],
+  "bin": {
+    "vincent-mcp": "src/cli.js",
+    "http": "src/http.js",
+    "stdio": "src/stdio.js"
+  },
+  "main": "./src/stdio.js",
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "dev:stdio": "tsx src/stdio.ts",
+    "dev:http": "tsx watch --env-file=.env src/http.ts",
+    "inspector": "npx @modelcontextprotocol/inspector",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "mintRlI": "tsx --env-file=.env ./src/bin/mintRLINft.ts"
+  },
+  "dependencies": {
+    "@lit-protocol/constants": "^7.1.1",
+    "@lit-protocol/contracts-sdk": "^7.1.1",
+    "@lit-protocol/vincent-sdk": "0.0.7",
+    "@modelcontextprotocol/sdk": "^1.11.2",
+    "@t3-oss/env-core": "^0.13.4",
+    "ethers": "^5.8.0",
+    "express": "^5.1.0",
+    "zod": "^3.24.3"
+  },
+  "devDependencies": {
+    "@tsconfig/node20": "^20.1.5",
+    "@types/express": "^5.0.1",
+    "tsx": "^4.19.4"
+  }
+}
