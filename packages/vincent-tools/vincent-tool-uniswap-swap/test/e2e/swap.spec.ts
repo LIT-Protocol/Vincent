@@ -1,17 +1,25 @@
 import { ethers } from 'ethers';
 import { VincentToolErc20ApprovalMetadata } from '@lit-protocol/vincent-tool-erc20-approval';
-// import { VincentPolicySpendingLimitMetadata } from '@lit-protocol/vincent-policy-spending-limit';
 import { executeVincentTool, getEnv } from '@lit-protocol/vincent-tool-sdk';
+
+import { VincentToolUniswapSwapMetadata } from '../../src';
 
 // Extend Jest timeout to 4 minutes
 jest.setTimeout(240000);
 
 describe('Vincent Tool Uniswap Swap E2E Tests', () => {
+  let TEST_ETH_MAINNET_RPC_URL: string | undefined;
   let TEST_UNISWAP_RPC_URL: string | undefined;
   let TEST_VINCENT_APP_DELEGATEE_PRIVATE_KEY: string | undefined;
   let TEST_VINCENT_AGENT_WALLET_PKP_ETH_ADDRESS: string | undefined;
 
   beforeAll(async () => {
+    TEST_ETH_MAINNET_RPC_URL = getEnv('TEST_ETH_MAINNET_RPC_URL');
+    if (TEST_ETH_MAINNET_RPC_URL === undefined) {
+      console.error('❌ TEST_ETH_MAINNET_RPC_URL environment variable is not set');
+      process.exit(1);
+    }
+
     TEST_UNISWAP_RPC_URL = getEnv('TEST_UNISWAP_RPC_URL');
     if (TEST_UNISWAP_RPC_URL === undefined) {
       console.error('❌ TEST_UNISWAP_RPC_URL environment variable is not set');
@@ -82,53 +90,47 @@ describe('Vincent Tool Uniswap Swap E2E Tests', () => {
     expect(result.spenderAddress).toBe('0x2626664c2603336E57B271c5C0b26F421741e481');
   });
 
-  // xit('should execute the Uniswap Swap Tool with the Agent Wallet PKP', async () => {
-  //   const BASE_RPC_URL = getEnv('TEST_BASE_RPC_URL')!;
-  //   const ETH_RPC_URL = getEnv('TEST_ETH_RPC_URL')!;
-  //   const TEST_VINCENT_APP_DELEGATEE_PRIVATE_KEY = getEnv('TEST_VINCENT_APP_DELEGATEE_PRIVATE_KEY')!;
+  it('should execute the Uniswap Swap Tool with the Agent Wallet PKP', async () => {
+    const uniswapSwapExecutionResult = await executeVincentTool({
+      vincentToolIpfsCid: VincentToolUniswapSwapMetadata.ipfsCid,
+      vincentToolParameters: {
+        pkpEthAddress: TEST_VINCENT_AGENT_WALLET_PKP_ETH_ADDRESS,
+        ethRpcUrl: TEST_ETH_MAINNET_RPC_URL,
+        rpcUrlForUniswap: TEST_UNISWAP_RPC_URL,
+        chainIdForUniswap: 8453,
+        tokenInAddress: '0x4200000000000000000000000000000000000006', // WETH
+        tokenInDecimals: 18,
+        tokenInAmount: 0.0000077,
+        tokenOutAddress: '0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf', // CBBTC
+        tokenOutDecimals: 8,
+      },
+      vincentAppDelegateePrivateKey: TEST_VINCENT_APP_DELEGATEE_PRIVATE_KEY!,
+      litSdkDebug: true,
+    });
 
-  //   const uniswapSwapExecutionResult = await executeTool({
-  //     toolIpfsCid: VincentToolUniswapSwapMetadata.ipfsCid,
-  //     toolParameters: {
-  //       pkpEthAddress: TEST_CONFIG.userPkp!.ethAddress!,
-  //       ethRpcUrl: ETH_RPC_URL,
-  //       rpcUrlForUniswap: BASE_RPC_URL,
-  //       chainIdForUniswap: 8453,
-  //       tokenInAddress: '0x4200000000000000000000000000000000000006', // WETH
-  //       tokenInDecimals: 18,
-  //       tokenInAmount: 0.0000077,
-  //       tokenOutAddress: '0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf', // CBBTC
-  //       tokenOutDecimals: 8,
-  //     },
-  //     delegateePrivateKey: TEST_VINCENT_APP_DELEGATEE_PRIVATE_KEY,
-  //     debug: true,
-  //     capacityCreditTokenId: TEST_CONFIG.capacityCreditInfo!.capacityTokenId!,
-  //   });
+    expect(uniswapSwapExecutionResult).toBeDefined();
 
-  //   expect(uniswapSwapExecutionResult).toBeDefined();
+    const parsedResponse = JSON.parse(uniswapSwapExecutionResult.response as string);
 
-  //   const parsedResponse = JSON.parse(uniswapSwapExecutionResult.response as string);
+    expect(parsedResponse.success).toBeTruthy();
 
-  //   expect(parsedResponse.success).toBeTruthy();
+    expect(parsedResponse.result).toBeDefined();
+    expect(parsedResponse.result.swapTxHash).toBeDefined();
+    expect(parsedResponse.result.spendTxHash).toBeDefined();
 
-  //   expect(parsedResponse.result).toBeDefined();
-  //   expect(parsedResponse.result.swapTxHash).toBeDefined();
-  //   expect(parsedResponse.result.spendTxHash).toBeDefined();
+    const swapTxHash = parsedResponse.result.swapTxHash;
+    expect(swapTxHash).toMatch(/^0x[a-fA-F0-9]{64}$/);
 
-  //   const swapTxHash = parsedResponse.result.swapTxHash;
-  //   expect(swapTxHash).toMatch(/^0x[a-fA-F0-9]{64}$/);
+    const spendTxHash = parsedResponse.result.spendTxHash;
+    expect(spendTxHash).toMatch(/^0x[a-fA-F0-9]{64}$/);
 
-  //   const spendTxHash = parsedResponse.result.spendTxHash;
-  //   expect(spendTxHash).toMatch(/^0x[a-fA-F0-9]{64}$/);
+    // Verify transactions succeeded
+    const uniswapProvider = new ethers.providers.JsonRpcProvider(TEST_UNISWAP_RPC_URL);
 
-  //   // Verify transactions succeeded
-  // const BASE_RPC_URL_FOR_VERIFICATION = getEnv('TEST_BASE_RPC_URL')!;
-  // const baseProvider = new ethers.providers.JsonRpcProvider(BASE_RPC_URL_FOR_VERIFICATION);
+    const swapTxReceipt = await uniswapProvider.waitForTransaction(swapTxHash);
+    expect(swapTxReceipt.status).toBe(1);
 
-  //   const swapTxReceipt = await baseProvider.waitForTransaction(swapTxHash);
-  //   expect(swapTxReceipt.status).toBe(1);
-
-  //   const spendTxReceipt = await baseProvider.waitForTransaction(spendTxHash);
-  //   expect(spendTxReceipt.status).toBe(1);
-  // });
+    const spendTxReceipt = await uniswapProvider.waitForTransaction(spendTxHash);
+    expect(spendTxReceipt.status).toBe(1);
+  });
 });
