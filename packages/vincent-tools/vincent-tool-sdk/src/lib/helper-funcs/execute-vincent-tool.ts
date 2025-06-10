@@ -1,37 +1,27 @@
-import { ethers } from 'ethers';
-import { LitNodeClient } from '@lit-protocol/lit-node-client';
-import { LIT_NETWORK, LIT_ABILITY } from '@lit-protocol/constants';
 import {
   createSiweMessageWithRecaps,
   generateAuthSig,
   LitActionResource,
 } from '@lit-protocol/auth-helpers';
+import { LIT_ABILITY, LIT_NETWORK, RPC_URL_BY_NETWORK } from '@lit-protocol/constants';
 import { LitContracts } from '@lit-protocol/contracts-sdk';
+import { LitNodeClient } from '@lit-protocol/lit-node-client';
+import { ethers } from 'ethers';
 
-const YELLOWSTONE_RPC_URL = 'https://yellowstone-rpc.litprotocol.com/';
-
-export interface ExecuteToolOptions {
-  toolIpfsCid: string;
-  toolParameters: any;
-  delegateePrivateKey: string;
-  litNetwork?: string;
-  sessionDurationMinutes?: number;
-  debug?: boolean;
-  capacityCreditTokenId: string;
-}
-
-export const executeTool = async (options: ExecuteToolOptions) => {
-  const {
-    toolIpfsCid,
-    toolParameters,
-    delegateePrivateKey,
-    sessionDurationMinutes = 10,
-    debug = false,
-  } = options;
-
+export const executeVincentTool = async ({
+  vincentToolIpfsCid,
+  vincentToolParameters,
+  vincentAppDelegateePrivateKey,
+  litSdkDebug = false,
+}: {
+  vincentToolIpfsCid: string;
+  vincentToolParameters: Record<string, unknown>;
+  vincentAppDelegateePrivateKey: string;
+  litSdkDebug?: boolean;
+}) => {
   const delegateeWallet = new ethers.Wallet(
-    delegateePrivateKey,
-    new ethers.providers.JsonRpcProvider(YELLOWSTONE_RPC_URL),
+    vincentAppDelegateePrivateKey,
+    new ethers.providers.JsonRpcProvider(RPC_URL_BY_NETWORK[LIT_NETWORK.Datil]),
   );
 
   let litNodeClient: LitNodeClient;
@@ -39,7 +29,7 @@ export const executeTool = async (options: ExecuteToolOptions) => {
   try {
     litNodeClient = new LitNodeClient({
       litNetwork: LIT_NETWORK.Datil,
-      debug,
+      debug: litSdkDebug,
     });
     await litNodeClient.connect();
 
@@ -49,17 +39,9 @@ export const executeTool = async (options: ExecuteToolOptions) => {
     });
     await litContractClient.connect();
 
-    const { capacityDelegationAuthSig } = await litNodeClient.createCapacityDelegationAuthSig({
-      dAppOwnerWallet: delegateeWallet,
-      capacityTokenId: options.capacityCreditTokenId,
-      uses: '1',
-      expiration: new Date(Date.now() + 1000 * 60 * sessionDurationMinutes).toISOString(),
-    });
-
     const sessionSigs = await litNodeClient.getSessionSigs({
       chain: 'ethereum',
-      expiration: new Date(Date.now() + 1000 * 60 * 60 * 24).toISOString(), // 24 hours
-      capabilityAuthSigs: [capacityDelegationAuthSig],
+      expiration: new Date(Date.now() + 1000 * 60 * 15).toISOString(), // 15 minutes
       resourceAbilityRequests: [
         {
           resource: new LitActionResource('*'),
@@ -85,10 +67,10 @@ export const executeTool = async (options: ExecuteToolOptions) => {
 
     const litActionResponse = await litNodeClient.executeJs({
       sessionSigs,
-      ipfsId: toolIpfsCid,
+      ipfsId: vincentToolIpfsCid,
       jsParams: {
         toolParams: {
-          ...toolParameters,
+          ...vincentToolParameters,
         },
       },
     });

@@ -4,7 +4,6 @@ import { type BigNumberish, ethers } from 'ethers';
 import {
   checkPkpHasPermittedIpfsCids,
   checkVincentAppVersionPermitted,
-  checkVincentDelegateeCanExecuteTool,
   getEnv,
   getPkpInfo,
   mintPkp,
@@ -16,48 +15,29 @@ import {
 
 export const handleAgentWalletPkp = async ({
   vincentToolsWithValues,
-  vincentAppDelegateeAddresses,
 }: {
-  vincentToolsWithValues?: VincentToolWithValues[];
-  vincentAppDelegateeAddresses?: string[];
+  vincentToolsWithValues: VincentToolWithValues[];
 }) => {
-  try {
-    const { pkpInfo, mintedNewPkp } = await getPkpInfoOrMint(vincentToolsWithValues);
+  const { pkpInfo, mintedNewPkp } = await getPkpInfoOrMint(vincentToolsWithValues);
 
-    const pkpInfoString = [
-      mintedNewPkp
-        ? 'Minted new Agent Wallet PKP. Set the following environment variables to use this Agent Wallet PKP:'
-        : `Using existing Agent Wallet PKP:`,
-      `TEST_VINCENT_AGENT_WALLET_PKP_ETH_ADDRESS=${pkpInfo.ethAddress}`,
-      `TEST_VINCENT_AGENT_WALLET_PKP_TOKEN_ID=${pkpInfo.tokenId}`,
-      `TEST_VINCENT_AGENT_WALLET_PKP_PUBLIC_KEY=${pkpInfo.publicKey}`,
-    ]
-      .filter(Boolean)
-      .join('\n');
+  const pkpInfoString = [
+    mintedNewPkp
+      ? 'ℹ️  Minted new Agent Wallet PKP. Set the following environment variables to use this Agent Wallet PKP:'
+      : `ℹ️  Using existing Agent Wallet PKP:`,
+    `TEST_VINCENT_AGENT_WALLET_PKP_ETH_ADDRESS=${pkpInfo.ethAddress}`,
+    `TEST_VINCENT_AGENT_WALLET_PKP_TOKEN_ID=${pkpInfo.tokenId}`,
+    `TEST_VINCENT_AGENT_WALLET_PKP_PUBLIC_KEY=${pkpInfo.publicKey}`,
+  ]
+    .filter(Boolean)
+    .join('\n');
+  console.log(pkpInfoString);
 
-    console.log(pkpInfoString);
+  await _permitVincentAppVersion({
+    pkpTokenId: pkpInfo.tokenId,
+    vincentToolsWithValues,
+  });
 
-    await _permitVincentAppVersion({
-      pkpTokenId: pkpInfo.tokenId,
-      vincentToolsWithValues: vincentToolsWithValues || [],
-    });
-
-    // if (vincentAppDelegateeAddresses !== undefined) {
-    //     await _checkVincentDelegateeCanExecuteTool({
-    //         pkpTokenId: ethers.BigNumber.from(pkpInfo.tokenId),
-    //         vincentToolIpfsCids: extractIpfsCidsFromToolsWithValues(vincentToolsWithValues || []),
-    //         vincentAppDelegateeAddresses,
-    //     });
-    // }
-
-    return { pkpInfo, mintedNewPkp };
-  } catch (error) {
-    console.error(
-      `There was an error when processing the Agent Wallet PKP:`,
-      error instanceof Error ? error.message : 'Unknown error',
-    );
-    process.exit(1);
-  }
+  return { pkpInfo, mintedNewPkp };
 };
 
 const extractIpfsCidsFromToolsWithValues = (
@@ -78,13 +58,14 @@ const extractIpfsCidsFromToolsWithValues = (
   return ipfsCids;
 };
 
-const getPkpInfoOrMint = async (vincentToolsWithValues?: VincentToolWithValues[]) => {
-  let pkpInfo: PkpInfo;
+const getPkpInfoOrMint = async (vincentToolsWithValues: VincentToolWithValues[]) => {
   let mintedNewPkp = false;
+  let pkpInfo = await getPkpInfoFromEnv();
 
-  try {
-    pkpInfo = await getPkpFromEnv();
-
+  if (pkpInfo === null) {
+    pkpInfo = await _mintPkp(vincentToolsWithValues);
+    mintedNewPkp = true;
+  } else {
     if (vincentToolsWithValues !== undefined) {
       // Extract all IPFS CIDs from tools and policies
       const vincentToolAndPolicyIpfsCids =
@@ -94,19 +75,6 @@ const getPkpInfoOrMint = async (vincentToolsWithValues?: VincentToolWithValues[]
         vincentToolAndPolicyIpfsCids,
       });
     }
-  } catch (error) {
-    if (
-      !(error instanceof Error) ||
-      !error.message.includes('No Agent Wallet PKP identifier found in environment variables') ||
-      !error.message.includes(
-        'does not have the required Vincent Tools and Policies as permitted Auth Methods',
-      )
-    ) {
-      throw error;
-    }
-
-    pkpInfo = await _mintPkp(vincentToolsWithValues);
-    mintedNewPkp = true;
   }
 
   return {
@@ -115,7 +83,7 @@ const getPkpInfoOrMint = async (vincentToolsWithValues?: VincentToolWithValues[]
   };
 };
 
-const getPkpFromEnv = async (): Promise<PkpInfo> => {
+export const getPkpInfoFromEnv = async (): Promise<PkpInfo | null> => {
   const candidates: Array<{
     envVar: string;
     getInfo: (identifier: string) => Promise<PkpInfo>;
@@ -143,18 +111,16 @@ const getPkpFromEnv = async (): Promise<PkpInfo> => {
     return await getInfo(identifier);
   }
 
-  throw new Error(
-    'No Agent Wallet PKP identifier found in environment variables. Please set one of the following: TEST_VINCENT_AGENT_WALLET_PKP_ETH_ADDRESS, TEST_VINCENT_AGENT_WALLET_PKP_TOKEN_ID, TEST_VINCENT_AGENT_WALLET_PKP_PUBLIC_KEY',
-  );
+  return null;
 };
 
-const _mintPkp = async (vincentToolsWithValues?: VincentToolWithValues[]) => {
+const _mintPkp = async (vincentToolsWithValues: VincentToolWithValues[]) => {
   const TEST_VINCENT_AGENT_WALLET_PKP_OWNER_PRIVATE_KEY = getEnv(
     'TEST_VINCENT_AGENT_WALLET_PKP_OWNER_PRIVATE_KEY',
   );
   if (TEST_VINCENT_AGENT_WALLET_PKP_OWNER_PRIVATE_KEY === undefined) {
     console.error(
-      'TEST_VINCENT_AGENT_WALLET_PKP_OWNER_PRIVATE_KEY environment variable is not set. Please set it to the private key that should own the Agent Wallet PKP.',
+      '❌ TEST_VINCENT_AGENT_WALLET_PKP_OWNER_PRIVATE_KEY environment variable is not set. Please set it to the private key that should own the Agent Wallet PKP.',
     );
     process.exit(1);
   }
@@ -167,9 +133,7 @@ const _mintPkp = async (vincentToolsWithValues?: VincentToolWithValues[]) => {
   const permittedAuthMethodScopes: BigNumberish[][] = [[AUTH_METHOD_SCOPE.SignAnything]];
 
   // Extract IPFS CIDs and add them as permitted auth methods
-  const vincentToolAndPolicyIpfsCids = extractIpfsCidsFromToolsWithValues(
-    vincentToolsWithValues || [],
-  );
+  const vincentToolAndPolicyIpfsCids = extractIpfsCidsFromToolsWithValues(vincentToolsWithValues);
   for (const ipfsCid of vincentToolAndPolicyIpfsCids) {
     permittedAuthMethodTypes.push(AUTH_METHOD_TYPE.LitAction);
     permittedAuthMethodIds.push(
@@ -205,7 +169,7 @@ const _permitVincentAppVersion = async ({
   );
   if (TEST_VINCENT_AGENT_WALLET_PKP_OWNER_PRIVATE_KEY === undefined) {
     console.error(
-      'TEST_VINCENT_AGENT_WALLET_PKP_OWNER_PRIVATE_KEY environment variable is not set. Please set it to the private key that should own the Agent Wallet PKP.',
+      '❌ TEST_VINCENT_AGENT_WALLET_PKP_OWNER_PRIVATE_KEY environment variable is not set. Please set it to the private key that should own the Agent Wallet PKP.',
     );
     process.exit(1);
   }
@@ -213,7 +177,7 @@ const _permitVincentAppVersion = async ({
   const TEST_VINCENT_APP_ID = getEnv('TEST_VINCENT_APP_ID');
   if (TEST_VINCENT_APP_ID === undefined) {
     console.error(
-      'TEST_VINCENT_APP_ID environment variable is not set. Please set it to the ID of the Vincent App to permit.',
+      '❌ TEST_VINCENT_APP_ID environment variable is not set. Please set it to the ID of the Vincent App to permit.',
     );
     process.exit(1);
   }
@@ -221,7 +185,7 @@ const _permitVincentAppVersion = async ({
   const TEST_VINCENT_APP_VERSION = getEnv('TEST_VINCENT_APP_VERSION');
   if (TEST_VINCENT_APP_VERSION === undefined) {
     console.error(
-      'TEST_VINCENT_APP_VERSION environment variable is not set. Please set it to the version of the Vincent App to permit.',
+      '❌ TEST_VINCENT_APP_VERSION environment variable is not set. Please set it to the version of the Vincent App to permit.',
     );
     process.exit(1);
   }
@@ -235,13 +199,13 @@ const _permitVincentAppVersion = async ({
   if (isPermitted) {
     if (permittedAppVersion === Number(TEST_VINCENT_APP_VERSION)) {
       console.log(
-        `Agent Wallet PKP with token id ${pkpTokenId} has already permitted Vincent App ID ${TEST_VINCENT_APP_ID} Version ${permittedAppVersion}`,
+        `ℹ️  Agent Wallet PKP with token id ${pkpTokenId} has already permitted Vincent App ID ${TEST_VINCENT_APP_ID} Version ${permittedAppVersion}`,
       );
       return;
     }
 
     console.error(
-      `Agent Wallet PKP with token id ${pkpTokenId} has already permitted Vincent App ID ${TEST_VINCENT_APP_ID} Version ${permittedAppVersion} but the current version is ${TEST_VINCENT_APP_VERSION}. Unpermitting the current version and permitting the new version...`,
+      `⚠️  Agent Wallet PKP with token id ${pkpTokenId} has already permitted Vincent App ID ${TEST_VINCENT_APP_ID} Version ${permittedAppVersion} but the current version is ${TEST_VINCENT_APP_VERSION}. Unpermitting the current version and permitting the new version...`,
     );
     const { txHash: unpermitTxHash } = await unpermitVincentAppVersion({
       pkpTokenId,
@@ -250,7 +214,7 @@ const _permitVincentAppVersion = async ({
       pkpOwnerPrivateKey: TEST_VINCENT_AGENT_WALLET_PKP_OWNER_PRIVATE_KEY,
     });
     console.log(
-      `Unpermitted Vincent App ID ${TEST_VINCENT_APP_ID} Version ${permittedAppVersion} for Agent Wallet PKP with token id ${pkpTokenId} with tx hash ${unpermitTxHash}`,
+      `ℹ️  Unpermitted Vincent App ID ${TEST_VINCENT_APP_ID} Version ${permittedAppVersion} for Agent Wallet PKP with token id ${pkpTokenId} with tx hash ${unpermitTxHash}`,
     );
   }
 
@@ -263,50 +227,6 @@ const _permitVincentAppVersion = async ({
   });
 
   console.log(
-    `Permitted Vincent App ID ${TEST_VINCENT_APP_ID} Version ${TEST_VINCENT_APP_VERSION} for Agent Wallet PKP with token id ${pkpTokenId} with tx hash ${txHash}`,
-  );
-};
-
-// @ts-expect-error TODO Fix call revert error
-const _checkVincentDelegateeCanExecuteTool = async ({
-  pkpTokenId,
-  vincentToolIpfsCids,
-  vincentAppDelegateeAddresses,
-}: {
-  pkpTokenId: ethers.BigNumber;
-  vincentToolIpfsCids: string[];
-  vincentAppDelegateeAddresses: string[];
-}) => {
-  const unpermittedCombinations: { delegatee: string; tool: string }[] = [];
-
-  for (const toolIpfsCid of vincentToolIpfsCids) {
-    for (const vincentAppDelegateeAddress of vincentAppDelegateeAddresses) {
-      const { isPermitted } = await checkVincentDelegateeCanExecuteTool({
-        delegateeAddress: vincentAppDelegateeAddress,
-        pkpTokenId,
-        toolIpfsCid,
-      });
-
-      if (!isPermitted) {
-        unpermittedCombinations.push({
-          delegatee: vincentAppDelegateeAddress,
-          tool: toolIpfsCid,
-        });
-      }
-    }
-  }
-
-  if (unpermittedCombinations.length > 0) {
-    console.error(
-      `PKP token id ${pkpTokenId} has the following unpermitted delegatee/tool combinations:`,
-    );
-    unpermittedCombinations.forEach(({ delegatee, tool }) => {
-      console.error(`  - Delegatee ${delegatee} cannot execute tool ${tool}`);
-    });
-    process.exit(1);
-  }
-
-  console.log(
-    `All delegatees have permission to execute all tools with PKP token id ${pkpTokenId}`,
+    `ℹ️  Permitted Vincent App ID ${TEST_VINCENT_APP_ID} Version ${TEST_VINCENT_APP_VERSION} for Agent Wallet PKP with token id ${pkpTokenId} with tx hash ${txHash}`,
   );
 };

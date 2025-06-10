@@ -1,9 +1,6 @@
 import { LIT_NETWORK, RPC_URL_BY_NETWORK } from '@lit-protocol/constants';
 import { ethers } from 'ethers';
 
-import { getEnv } from './get-env';
-import { checkNativeTokenBalance } from './check-native-balance';
-
 const TEST_VINCENT_APP_NAME = 'Vincent Test App';
 const TEST_VINCENT_APP_DESCRIPTION = 'A test app for the Vincent protocol';
 const TEST_VINCENT_APP_AUTHORIZED_REDIRECT_URIS = ['https://testing.vincent.com'];
@@ -46,45 +43,22 @@ export interface VincentToolMetadata {
 }
 
 export const createVincentApp = async ({
+  vincentAddress,
+  vincentAppManagerEthersWallet,
   vincentTools,
   vincentAppDelegatees,
 }: {
+  vincentAddress: string;
+  vincentAppManagerEthersWallet: ethers.Wallet;
   vincentTools: VincentToolMetadata[];
   vincentAppDelegatees: string[];
 }) => {
-  const VINCENT_ADDRESS = getEnv('VINCENT_ADDRESS');
-  if (VINCENT_ADDRESS === undefined) {
-    throw new Error(
-      `VINCENT_ADDRESS environment variable is not set. Please set it to the address of the Vincent contract.`,
-    );
-  }
-
-  const TEST_VINCENT_APP_MANAGER_PRIVATE_KEY = getEnv('TEST_VINCENT_APP_MANAGER_PRIVATE_KEY');
-  if (TEST_VINCENT_APP_MANAGER_PRIVATE_KEY === undefined) {
-    throw new Error(
-      `TEST_VINCENT_APP_MANAGER_PRIVATE_KEY environment variable is not set. Please set it to the private key that will be used to create the test Vincent App.`,
-    );
-  }
-  const appManagerEthersWallet = new ethers.Wallet(TEST_VINCENT_APP_MANAGER_PRIVATE_KEY);
-
-  const MIN_ETH_BALANCE = ethers.utils.parseEther('0.01');
-  const { balance, hasMinBalance } = await checkNativeTokenBalance({
-    ethAddress: appManagerEthersWallet.address,
-    rpcUrl: RPC_URL_BY_NETWORK[LIT_NETWORK.Datil],
-    minBalance: MIN_ETH_BALANCE,
-  });
-  if (!hasMinBalance) {
-    throw new Error(
-      `App Manager (${appManagerEthersWallet.address}) doesn't have the minimum required balance of ${ethers.utils.formatEther(MIN_ETH_BALANCE)} ETH on the Lit Datil network. Current balance is ${ethers.utils.formatEther(balance)} ETH. Please fund the App Manager before continuing using the Lit test token faucet: https://chronicle-yellowstone-faucet.getlit.dev/.`,
-    );
-  }
-
   const provider = new ethers.providers.StaticJsonRpcProvider(
     RPC_URL_BY_NETWORK[LIT_NETWORK.Datil],
   );
-  const connectedWallet = appManagerEthersWallet.connect(provider);
+  const connectedWallet = vincentAppManagerEthersWallet.connect(provider);
   const vincentContract = new ethers.Contract(
-    VINCENT_ADDRESS,
+    vincentAddress,
     VINCENT_CONTRACT_ABI,
     connectedWallet,
   );

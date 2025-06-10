@@ -1,13 +1,5 @@
-import { LIT_NETWORK, RPC_URL_BY_NETWORK } from '@lit-protocol/constants';
-import { ethers } from 'ethers';
-
-import { getEnv } from './get-env';
 import { VincentToolMetadata } from './create-vincent-app';
-
-const VINCENT_APP_VIEW_CONTRACT_ABI = [
-  'function getAppById(uint256 appId) view returns ((uint256 id, string name, string description, bool isDeleted, uint8 deploymentStatus, address manager, uint256 latestVersion, address[] delegatees, string[] authorizedRedirectUris) app)',
-  'function getAppVersion(uint256 appId, uint256 version) view returns ((uint256 id, string name, string description, bool isDeleted, uint8 deploymentStatus, address manager, uint256 latestVersion, address[] delegatees, string[] authorizedRedirectUris) app, (uint256 version, bool enabled, uint256[] delegatedAgentPkpTokenIds, (string toolIpfsCid, (string policyIpfsCid, string[] parameterNames, uint8[] parameterTypes)[] policies)[] tools) appVersion)',
-];
+import { getVincentApp } from './get-vincent-app';
 
 // TODO Should this handle when the App Version has more tools and policies than what's provided in vincentTools?
 export const checkVincentApp = async ({
@@ -22,84 +14,95 @@ export const checkVincentApp = async ({
   vincentAppDelegatees: string[];
 }) => {
   const appData = await getVincentApp({ appId, appVersion });
-  const appVersionTools = appData.appVersion.tools;
 
-  const missingTools: string[] = [];
-  const missingPolicies: { toolIpfsCid: string; policyIpfsCid: string }[] = [];
-  const missingDelegatees: string[] = [];
+  const { missingTools, missingPolicies } = await checkForMissingToolsAndPolicies({
+    expectedToolsAndPolicies: vincentTools,
+    receivedToolsAndPolicies: appData.appVersion.tools,
+  });
 
-  // Check tools and policies
-  for (const providedTool of vincentTools) {
-    // Find the corresponding tool in the app version
-    const appTool = appVersionTools.find((tool: any) => tool.toolIpfsCid === providedTool.ipfsCid);
-
-    if (!appTool) {
-      missingTools.push(providedTool.ipfsCid);
-      continue;
-    }
-
-    // Check if all policies for this tool are available
-    for (const providedPolicy of providedTool.policies) {
-      const appPolicy = appTool.policies.find(
-        (policy: any) => policy.policyIpfsCid === providedPolicy.ipfsCid,
-      );
-
-      if (!appPolicy) {
-        missingPolicies.push({
-          toolIpfsCid: providedTool.ipfsCid,
-          policyIpfsCid: providedPolicy.ipfsCid,
-        });
-      }
-    }
-  }
-
-  // Check delegatees
-  for (const providedDelegatee of vincentAppDelegatees) {
-    const appDelegatee = appData.app.delegatees.find(
-      (delegatee: string) => delegatee.toLowerCase() === providedDelegatee.toLowerCase(),
-    );
-
-    if (!appDelegatee) {
-      missingDelegatees.push(providedDelegatee);
-    }
-  }
+  const { missingDelegatees } = await checkForMissingDelegatees({
+    expectedDelegatees: vincentAppDelegatees,
+    receivedDelegatees: appData.app.delegatees,
+  });
 
   const allToolsAndPoliciesAvailable = missingTools.length === 0 && missingPolicies.length === 0;
   const allDelegateesAvailable = missingDelegatees.length === 0;
   const allRequirementsAvailable = allToolsAndPoliciesAvailable && allDelegateesAvailable;
 
   return {
+    allRequirementsAvailable,
     allToolsAndPoliciesAvailable,
     allDelegateesAvailable,
-    allRequirementsAvailable,
     missingTools,
     missingPolicies,
     missingDelegatees,
-    appVersionTools,
+    appVersionTools: appData.appVersion.tools,
     appDelegatees: appData.app.delegatees,
   };
 };
 
-const getVincentApp = async ({ appId, appVersion }: { appId: number; appVersion: number }) => {
-  const VINCENT_ADDRESS = getEnv('VINCENT_ADDRESS');
-  if (VINCENT_ADDRESS === undefined) {
-    throw new Error(
-      `VINCENT_ADDRESS environment variable is not set. Please set it to the address of the Vincent contract.`,
+const checkForMissingToolsAndPolicies = async ({
+  expectedToolsAndPolicies,
+  receivedToolsAndPolicies,
+}: {
+  expectedToolsAndPolicies: VincentToolMetadata[];
+  receivedToolsAndPolicies: any;
+}) => {
+  const missingTools: string[] = [];
+  const missingPolicies: { toolIpfsCid: string; policyIpfsCid: string }[] = [];
+
+  for (const expected of expectedToolsAndPolicies) {
+    // Find the corresponding tool in the app version
+    const appTool = receivedToolsAndPolicies.find(
+      (tool: any) => tool.toolIpfsCid === expected.ipfsCid,
     );
+
+    if (!appTool) {
+      missingTools.push(expected.ipfsCid);
+      continue;
+    }
+
+    // Check if all policies for this tool are available
+    for (const expectedPolicy of expected.policies) {
+      const appPolicy = appTool.policies.find(
+        (policy: any) => policy.policyIpfsCid === expectedPolicy.ipfsCid,
+      );
+
+      if (!appPolicy) {
+        missingPolicies.push({
+          toolIpfsCid: expected.ipfsCid,
+          policyIpfsCid: expectedPolicy.ipfsCid,
+        });
+      }
+    }
   }
 
-  const provider = new ethers.providers.StaticJsonRpcProvider(
-    RPC_URL_BY_NETWORK[LIT_NETWORK.Datil],
-  );
-  const vincentContract = new ethers.Contract(
-    VINCENT_ADDRESS,
-    VINCENT_APP_VIEW_CONTRACT_ABI,
-    provider,
-  );
-
-  const result = await vincentContract.getAppVersion(appId, appVersion);
   return {
-    app: result.app,
-    appVersion: result.appVersion,
+    missingTools,
+    missingPolicies,
+  };
+};
+
+const checkForMissingDelegatees = async ({
+  expectedDelegatees,
+  receivedDelegatees,
+}: {
+  expectedDelegatees: string[];
+  receivedDelegatees: string[];
+}) => {
+  const missingDelegatees: string[] = [];
+
+  for (const expectedDelegatee of expectedDelegatees) {
+    const appDelegatee = receivedDelegatees.find(
+      (delegatee: string) => delegatee.toLowerCase() === expectedDelegatee.toLowerCase(),
+    );
+
+    if (!appDelegatee) {
+      missingDelegatees.push(expectedDelegatee);
+    }
+  }
+
+  return {
+    missingDelegatees,
   };
 };
