@@ -1,12 +1,41 @@
+import { VincentPolicySpendingLimitMetadata } from '@lit-protocol/vincent-policy-spending-limit';
+import { VincentToolErc20ApprovalMetadata } from '@lit-protocol/vincent-tool-erc20-approval';
 import {
   checkErc20Balance,
   checkNativeTokenBalance,
   getEnv,
   handleAgentWalletPkp,
+  VINCENT_APP_PARAMETER_TYPE,
 } from '@lit-protocol/vincent-tool-sdk';
 import { ethers } from 'ethers';
 
-import { vincentToolsWithValuesForAgentWalletPkp } from './vincent-tool-and-policies';
+import { VincentToolUniswapSwapMetadata } from '../../../src';
+
+export const vincentToolsWithValuesForAgentWalletPkp = [
+  {
+    ipfsCid: VincentToolErc20ApprovalMetadata.ipfsCid,
+    policies: [], // No policies for ERC20 Approval Tool
+  },
+  {
+    ipfsCid: VincentToolUniswapSwapMetadata.ipfsCid,
+    policies: [
+      {
+        ipfsCid: VincentPolicySpendingLimitMetadata.ipfsCid,
+        parameterNames: ['maxDailySpendingLimitInUsdCents'],
+        parameterTypes: [VINCENT_APP_PARAMETER_TYPE.UINT256],
+        parameterValues: [
+          {
+            name: 'maxDailySpendingLimitInUsdCents',
+            value: ethers.utils.defaultAbiCoder.encode(
+              ['uint256'],
+              [ethers.BigNumber.from('1000000000')], // maxDailySpendingLimitInUsdCents $10 USD (8 decimals)
+            ),
+          },
+        ],
+      },
+    ],
+  },
+];
 
 (async () => {
   const { pkpInfo } = await handleAgentWalletPkp({

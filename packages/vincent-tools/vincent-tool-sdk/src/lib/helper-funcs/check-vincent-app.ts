@@ -1,7 +1,6 @@
 import { VincentToolMetadata } from './create-vincent-app';
 import { getVincentApp } from './get-vincent-app';
 
-// TODO Should this handle when the App Version has more tools and policies than what's provided in vincentTools?
 export const checkVincentApp = async ({
   appId,
   appVersion,

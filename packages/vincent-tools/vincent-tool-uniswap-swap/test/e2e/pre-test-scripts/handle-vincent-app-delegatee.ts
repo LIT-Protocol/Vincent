@@ -1,7 +1,7 @@
 import { getEnv, handleVincentAppDelegatees } from '@lit-protocol/vincent-tool-sdk';
 import { ethers } from 'ethers';
 
-import { vincentToolsForVincentApp } from './vincent-tool-and-policies';
+import { vincentToolsForVincentApp } from './handle-vincent-app';
 
 (async () => {
   const TEST_VINCENT_APP_DELEGATEE_PRIVATE_KEY = getEnv('TEST_VINCENT_APP_DELEGATEE_PRIVATE_KEY');
