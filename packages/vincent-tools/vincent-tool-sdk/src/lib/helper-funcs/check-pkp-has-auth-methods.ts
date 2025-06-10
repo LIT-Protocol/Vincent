@@ -23,12 +23,10 @@ export const checkPkpHasPermittedIpfsCids = async ({
   const missingIpfsCids = vincentToolAndPolicyIpfsCidsFormatted.filter(
     (ipfsCid) => !permittedLitActions.includes(ipfsCid),
   );
-  const missingIpfsCidsFormatted = missingIpfsCids.map((ipfsCid) =>
-    ethers.utils.base58.encode(Buffer.from(ipfsCid.slice(2), 'hex')),
-  );
-  if (missingIpfsCids.length > 0) {
-    throw new Error(
-      `Agent Wallet PKP with token ID: ${pkpTokenId} does not have the required Vincent Tools and Policies as permitted Auth Methods: ${missingIpfsCidsFormatted.join(', ')}. Please add these IPFS CIDs to the Agent Wallet PKP using the Lit SDK: https://developer.litprotocol.com/user-wallets/pkps/advanced-topics/auth-methods/add-remove-auth-methods#add-an-auth-method`,
-    );
-  }
+
+  return {
+    missingIpfsCids: missingIpfsCids.map((ipfsCid) =>
+      ethers.utils.base58.encode(Buffer.from(ipfsCid.slice(2), 'hex')),
+    ),
+  };
 };

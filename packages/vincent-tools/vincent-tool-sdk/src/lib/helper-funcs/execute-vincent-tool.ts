@@ -8,6 +8,8 @@ import { LitContracts } from '@lit-protocol/contracts-sdk';
 import { LitNodeClient } from '@lit-protocol/lit-node-client';
 import { ethers } from 'ethers';
 
+import { checkMintLitCapacityCredit } from './check-mint-lit-capacity-credit';
+
 export const executeVincentTool = async ({
   vincentToolIpfsCid,
   vincentToolParameters,
@@ -38,6 +40,10 @@ export const executeVincentTool = async ({
       network: LIT_NETWORK.Datil,
     });
     await litContractClient.connect();
+
+    await checkMintLitCapacityCredit({
+      creditOwnerEthersWallet: delegateeWallet,
+    });
 
     const sessionSigs = await litNodeClient.getSessionSigs({
       chain: 'ethereum',

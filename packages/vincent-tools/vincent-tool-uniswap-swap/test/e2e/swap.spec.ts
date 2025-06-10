@@ -1,28 +1,40 @@
 import { ethers } from 'ethers';
 import { VincentToolErc20ApprovalMetadata } from '@lit-protocol/vincent-tool-erc20-approval';
 // import { VincentPolicySpendingLimitMetadata } from '@lit-protocol/vincent-policy-spending-limit';
-import { getEnv } from '@lit-protocol/vincent-tool-sdk';
-
-import { executeTool } from './helpers';
+import { executeVincentTool, getEnv } from '@lit-protocol/vincent-tool-sdk';
 
 // Extend Jest timeout to 4 minutes
 jest.setTimeout(240000);
 
 describe('Vincent Tool Uniswap Swap E2E Tests', () => {
-  // beforeAll(async () => { });
+  let TEST_UNISWAP_RPC_URL: string | undefined;
+  let TEST_VINCENT_APP_DELEGATEE_PRIVATE_KEY: string | undefined;
+  let TEST_VINCENT_AGENT_WALLET_PKP_ETH_ADDRESS: string | undefined;
+
+  beforeAll(async () => {
+    TEST_UNISWAP_RPC_URL = getEnv('TEST_UNISWAP_RPC_URL');
+    if (TEST_UNISWAP_RPC_URL === undefined) {
+      console.error('❌ TEST_UNISWAP_RPC_URL environment variable is not set');
+      process.exit(1);
+    }
+
+    TEST_VINCENT_APP_DELEGATEE_PRIVATE_KEY = getEnv('TEST_VINCENT_APP_DELEGATEE_PRIVATE_KEY');
+    if (TEST_VINCENT_APP_DELEGATEE_PRIVATE_KEY === undefined) {
+      console.error('❌ TEST_VINCENT_APP_DELEGATEE_PRIVATE_KEY environment variable is not set');
+      process.exit(1);
+    }
+
+    TEST_VINCENT_AGENT_WALLET_PKP_ETH_ADDRESS = getEnv('TEST_VINCENT_AGENT_WALLET_PKP_ETH_ADDRESS');
+    if (TEST_VINCENT_AGENT_WALLET_PKP_ETH_ADDRESS === undefined) {
+      console.error('❌ TEST_VINCENT_AGENT_WALLET_PKP_ETH_ADDRESS environment variable is not set');
+      process.exit(1);
+    }
+  });
 
   it('should execute the ERC20 Approval Tool with the Agent Wallet PKP', async () => {
-    const TEST_UNISWAP_RPC_URL = getEnv('TEST_UNISWAP_RPC_URL')!;
-    const TEST_VINCENT_APP_DELEGATEE_PRIVATE_KEY = getEnv(
-      'TEST_VINCENT_APP_DELEGATEE_PRIVATE_KEY',
-    )!;
-    const TEST_VINCENT_AGENT_WALLET_PKP_ETH_ADDRESS = getEnv(
-      'TEST_VINCENT_AGENT_WALLET_PKP_ETH_ADDRESS',
-    )!;
-
-    const erc20ApprovalExecutionResult = await executeTool({
-      toolIpfsCid: VincentToolErc20ApprovalMetadata.ipfsCid,
-      toolParameters: {
+    const erc20ApprovalExecutionResult = await executeVincentTool({
+      vincentToolIpfsCid: VincentToolErc20ApprovalMetadata.ipfsCid,
+      vincentToolParameters: {
         rpcUrl: TEST_UNISWAP_RPC_URL,
         chainId: 8453, // TODO Replace hardcoded chain id
         pkpEthAddress: TEST_VINCENT_AGENT_WALLET_PKP_ETH_ADDRESS,
@@ -31,9 +43,8 @@ describe('Vincent Tool Uniswap Swap E2E Tests', () => {
         tokenDecimals: 18,
         tokenAmount: 1,
       },
-      delegateePrivateKey: TEST_VINCENT_APP_DELEGATEE_PRIVATE_KEY,
-      debug: true,
-      capacityCreditTokenId: TEST_CONFIG.capacityCreditInfo!.capacityTokenId!,
+      vincentAppDelegateePrivateKey: TEST_VINCENT_APP_DELEGATEE_PRIVATE_KEY!,
+      litSdkDebug: true,
     });
 
     expect(erc20ApprovalExecutionResult).toBeDefined();
@@ -48,19 +59,27 @@ describe('Vincent Tool Uniswap Swap E2E Tests', () => {
     expect(parsedResponse.toolExecutionResult).toBeDefined();
     expect(parsedResponse.toolExecutionResult.success).toBe(true);
     expect(parsedResponse.toolExecutionResult.result).toBeDefined();
-    expect(parsedResponse.toolExecutionResult.result.existingApprovalSufficient).toBe(true);
 
-    // Allowance will decrease after swap
-    expect(
-      ethers.BigNumber.from(parsedResponse.toolExecutionResult.result.approvedAmount).gt(0),
-    ).toBe(true);
-    expect(parsedResponse.toolExecutionResult.result.tokenAddress).toBe(
-      '0x4200000000000000000000000000000000000006',
-    );
-    expect(parsedResponse.toolExecutionResult.result.tokenDecimals).toBe(18);
-    expect(parsedResponse.toolExecutionResult.result.spenderAddress).toBe(
-      '0x2626664c2603336E57B271c5C0b26F421741e481',
-    );
+    // Handle both cases: existing approval or new approval needed
+    const result = parsedResponse.toolExecutionResult.result;
+    expect(typeof result.existingApprovalSufficient).toBe('boolean');
+
+    if (result.existingApprovalSufficient) {
+      expect(result.approvalTxHash).toBeUndefined();
+    } else {
+      expect(result.approvalTxHash).toBeDefined();
+      expect(result.approvalTxHash).toMatch(/^0x[a-fA-F0-9]{64}$/);
+
+      const uniswapProvider = new ethers.providers.JsonRpcProvider(TEST_UNISWAP_RPC_URL);
+      const approvalTxReceipt = await uniswapProvider.waitForTransaction(result.approvalTxHash);
+      expect(approvalTxReceipt.status).toBe(1);
+    }
+
+    // Common validations for both cases
+    expect(ethers.BigNumber.from(result.approvedAmount).gt(0)).toBe(true);
+    expect(result.tokenAddress).toBe('0x4200000000000000000000000000000000000006');
+    expect(result.tokenDecimals).toBe(18);
+    expect(result.spenderAddress).toBe('0x2626664c2603336E57B271c5C0b26F421741e481');
   });
 
   // xit('should execute the Uniswap Swap Tool with the Agent Wallet PKP', async () => {
@@ -103,8 +122,8 @@ describe('Vincent Tool Uniswap Swap E2E Tests', () => {
   //   expect(spendTxHash).toMatch(/^0x[a-fA-F0-9]{64}$/);
 
   //   // Verify transactions succeeded
-  //   const BASE_RPC_URL_FOR_VERIFICATION = getEnv('TEST_BASE_RPC_URL')!;
-  //   const baseProvider = new ethers.providers.JsonRpcProvider(BASE_RPC_URL_FOR_VERIFICATION);
+  // const BASE_RPC_URL_FOR_VERIFICATION = getEnv('TEST_BASE_RPC_URL')!;
+  // const baseProvider = new ethers.providers.JsonRpcProvider(BASE_RPC_URL_FOR_VERIFICATION);
 
   //   const swapTxReceipt = await baseProvider.waitForTransaction(swapTxHash);
   //   expect(swapTxReceipt.status).toBe(1);

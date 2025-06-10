@@ -13,3 +13,4 @@ export * from './unpermit-vincent-app-version';
 export * from './check-app-version-permitted';
 export * from './check-tool-execution';
 export * from './execute-vincent-tool';
+export * from './check-mint-lit-capacity-credit';

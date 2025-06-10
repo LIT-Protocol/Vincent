@@ -1,4 +1,9 @@
-import { AUTH_METHOD_SCOPE, AUTH_METHOD_TYPE } from '@lit-protocol/constants';
+import {
+  AUTH_METHOD_SCOPE,
+  AUTH_METHOD_TYPE,
+  LIT_NETWORK,
+  RPC_URL_BY_NETWORK,
+} from '@lit-protocol/constants';
 import { type BigNumberish, ethers } from 'ethers';
 
 import {
@@ -12,6 +17,7 @@ import {
   type PkpInfo,
   type VincentToolWithValues,
 } from '../helper-funcs';
+import { LitContracts } from '@lit-protocol/contracts-sdk';
 
 export const handleAgentWalletPkp = async ({
   vincentToolsWithValues,
@@ -67,13 +73,44 @@ const getPkpInfoOrMint = async (vincentToolsWithValues: VincentToolWithValues[])
     mintedNewPkp = true;
   } else {
     if (vincentToolsWithValues !== undefined) {
-      // Extract all IPFS CIDs from tools and policies
       const vincentToolAndPolicyIpfsCids =
         extractIpfsCidsFromToolsWithValues(vincentToolsWithValues);
-      await checkPkpHasPermittedIpfsCids({
+      const { missingIpfsCids } = await checkPkpHasPermittedIpfsCids({
         pkpTokenId: pkpInfo.tokenId,
         vincentToolAndPolicyIpfsCids,
       });
+
+      if (missingIpfsCids.length > 0) {
+        console.error(
+          `⚠️  Agent Wallet PKP with token id ${pkpInfo.tokenId} does not have permitted IPFS CIDs: ${missingIpfsCids.join(', ')}. Adding them...`,
+        );
+
+        const TEST_VINCENT_AGENT_WALLET_PKP_OWNER_PRIVATE_KEY = getEnv(
+          'TEST_VINCENT_AGENT_WALLET_PKP_OWNER_PRIVATE_KEY',
+        );
+        if (TEST_VINCENT_AGENT_WALLET_PKP_OWNER_PRIVATE_KEY === undefined) {
+          console.error(
+            '❌ TEST_VINCENT_AGENT_WALLET_PKP_OWNER_PRIVATE_KEY environment variable is not set. Please set it to the private key that should own the Agent Wallet PKP.',
+          );
+          process.exit(1);
+        }
+
+        const litContractClient = new LitContracts({
+          signer: new ethers.Wallet(
+            TEST_VINCENT_AGENT_WALLET_PKP_OWNER_PRIVATE_KEY,
+            new ethers.providers.StaticJsonRpcProvider(RPC_URL_BY_NETWORK[LIT_NETWORK.Datil]),
+          ),
+          network: LIT_NETWORK.Datil,
+        });
+        await litContractClient.connect();
+        for (const ipfsCid of missingIpfsCids) {
+          await litContractClient.pkpPermissionsContract.write.addPermittedAction(
+            pkpInfo.tokenId,
+            `0x${Buffer.from(ethers.utils.base58.decode(ipfsCid)).toString('hex')}`,
+            [AUTH_METHOD_SCOPE.SignAnything],
+          );
+        }
+      }
     }
   }
 

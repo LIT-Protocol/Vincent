@@ -54,7 +54,6 @@
     },
     "pre-test:agent-wallet": {
       "executor": "nx:run-commands",
-      "dependsOn": ["pre-test:vincent-app"],
       "options": {
         "commands": ["pnpx ts-node test/e2e/pre-test-scripts/handle-agent-wallet-pkp.ts"],
         "cwd": "packages/vincent-tools/vincent-tool-uniswap-swap"
@@ -62,7 +61,6 @@
     },
     "pre-test:vincent-app-delegatees": {
       "executor": "nx:run-commands",
-      "dependsOn": ["pre-test:agent-wallet"],
       "options": {
         "commands": ["pnpx ts-node test/e2e/pre-test-scripts/handle-vincent-app-delegatee.ts"],
         "cwd": "packages/vincent-tools/vincent-tool-uniswap-swap"
