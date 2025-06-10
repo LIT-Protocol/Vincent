@@ -120,6 +120,10 @@ const userRoutes = {
       element: <UserPages.Explorer />,
     },
     {
+      path: '/user/explorer/appId/:appId',
+      element: <UserPages.Explorer />,
+    },
+    {
       path: '/user/appId/:appId',
       element: <UserPages.AppDetails />,
     },
