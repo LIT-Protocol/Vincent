@@ -12,7 +12,7 @@ import {
   CheckCircle,
 } from 'lucide-react';
 import { Button } from '@/components/shared/ui/button';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useClearAuthInfo, useReadAuthInfo } from '@/hooks/user-dashboard/useAuthInfo';
 import { AppDetails } from '@/types';
 
@@ -45,6 +45,14 @@ export function UserSidebar({
 
   const { clearAuthInfo } = useClearAuthInfo();
   const { authInfo } = useReadAuthInfo();
+
+  // Update main content margin when sidebar width changes
+  useEffect(() => {
+    const mainContent = document.querySelector('.main-content-area') as HTMLElement;
+    if (mainContent) {
+      mainContent.style.marginLeft = isCollapsed ? '64px' : '320px';
+    }
+  }, [isCollapsed]);
 
   const toggleSidebar = () => {
     setIsCollapsed(!isCollapsed);
@@ -132,7 +140,7 @@ export function UserSidebar({
         </button>
       </div>
 
-      <div className="flex-1 p-4 overflow-y-auto">
+      <div className="flex-1 p-4 overflow-y-auto pb-48">
         <nav className="space-y-2">
           {menuItems.map((item) => {
             const Icon = item.icon;
@@ -317,31 +325,37 @@ export function UserSidebar({
         </div>
       )}
 
-      {/* Bottom action buttons */}
-      <div className="p-4 border-t border-gray-200 space-y-2">
+      {/* Bottom action buttons - Fixed positioning */}
+      <div
+        className={`absolute bottom-0 left-0 ${isCollapsed ? 'w-16' : 'w-80'} p-4 border-t border-gray-200 bg-white space-y-2 transition-all duration-300`}
+      >
         {/* My Wallet Button */}
         <Button
-          variant="outline"
-          className={`w-full justify-start ${!authInfo?.userPKP?.ethAddress ? 'opacity-60' : ''}`}
+          variant="ghost"
+          className={`w-full ${isCollapsed ? 'justify-center' : 'justify-start'} ${!authInfo?.userPKP?.ethAddress ? 'opacity-60' : ''}`}
           onClick={handleMyWalletClick}
         >
-          <User className="h-4 w-4 mr-2" />
+          <User className={`h-4 w-4 ${!isCollapsed ? 'mr-2' : ''}`} />
           {!isCollapsed && 'My Account'}
         </Button>
 
         {/* Wallet Button */}
-        <Button variant="outline" className="w-full justify-start" onClick={handleWalletClick}>
-          <Wallet className="h-4 w-4 mr-2" />
+        <Button
+          variant="ghost"
+          className={`w-full ${isCollapsed ? 'justify-center' : 'justify-start'}`}
+          onClick={handleWalletClick}
+        >
+          <Wallet className={`h-4 w-4 ${!isCollapsed ? 'mr-2' : ''}`} />
           {!isCollapsed && 'Wallet'}
         </Button>
 
         {/* Sign Out Button */}
         <Button
-          variant="outline"
-          className="w-full justify-start text-red-600 border-red-200 hover:bg-red-50"
+          variant="ghost"
+          className={`w-full ${isCollapsed ? 'justify-center' : 'justify-start'} text-red-600 hover:bg-red-50`}
           onClick={handleSignOut}
         >
-          <LogOut className="h-4 w-4 mr-2" />
+          <LogOut className={`h-4 w-4 ${!isCollapsed ? 'mr-2' : ''}`} />
           {!isCollapsed && 'Sign Out'}
         </Button>
       </div>

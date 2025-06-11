@@ -379,7 +379,8 @@ export const AppDetailsModal = ({
                         <span className="text-gray-500">Support Email:</span>
                         <a
                           href={`mailto:${appMetadata.contactEmail}`}
-                          className="ml-2 text-blue-600 hover:text-blue-800"
+                          className="ml-2 text-blue-600 hover:text-blue-800 truncate block"
+                          title={appMetadata.contactEmail}
                         >
                           {appMetadata.contactEmail}
                         </a>
@@ -392,7 +393,8 @@ export const AppDetailsModal = ({
                           href={appMetadata.appUserUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="ml-2 text-blue-600 hover:text-blue-800"
+                          className="ml-2 text-blue-600 hover:text-blue-800 truncate block"
+                          title={appMetadata.appUserUrl}
                         >
                           {appMetadata.appUserUrl}
                         </a>

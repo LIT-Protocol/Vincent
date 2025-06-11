@@ -25,11 +25,15 @@ function UserLayout({ children, className }: ComponentProps<'div'>) {
     <div className={cn('min-h-screen bg-gray-50', className)}>
       {shouldShowSidebar ? (
         <div className="flex min-h-screen">
-          {/* Sidebar */}
-          <UserSidebar {...sidebarProps} />
+          {/* Fixed Sidebar */}
+          <div className="fixed left-0 top-0 h-screen z-40">
+            <UserSidebar {...sidebarProps} />
+          </div>
 
-          {/* Main Content */}
-          <div className="flex-1">{children}</div>
+          {/* Main Content with margin to account for fixed sidebar */}
+          <div className="main-content-area flex-1 min-h-screen ml-80 transition-all duration-300">
+            {children}
+          </div>
         </div>
       ) : (
         children

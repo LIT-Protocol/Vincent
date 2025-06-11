@@ -68,7 +68,7 @@ export default function ExplorerPage() {
 
   const handleConnectApp = (e: React.MouseEvent, appId: string) => {
     e.stopPropagation();
-    navigate(`/user/explorer/appId/${appId}`);
+    navigate(`/user/appId/${appId}`);
   };
 
   const handleCloseModal = () => {
