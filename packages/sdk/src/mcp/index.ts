@@ -8,17 +8,31 @@
  */
 
 import {
-  VincentAppDef,
+  buildParamDefinitions,
+  buildVincentActionCallback,
   VincentAppDefSchema,
-  VincentToolDef,
   VincentToolDefSchema,
+} from './definitions';
+import type {
+  ParameterType,
+  VincentAppDef,
+  VincentParameter,
+  VincentToolDef,
+  VincentToolDefWithIPFS,
 } from './definitions';
 import { getVincentAppServer } from './server';
 
-export {
+export type {
+  ParameterType,
   VincentAppDef,
-  VincentAppDefSchema,
+  VincentParameter,
   VincentToolDef,
-  VincentToolDefSchema,
+  VincentToolDefWithIPFS,
+};
+export {
+  buildParamDefinitions,
+  buildVincentActionCallback,
   getVincentAppServer,
+  VincentAppDefSchema,
+  VincentToolDefSchema,
 };

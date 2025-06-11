@@ -35,9 +35,7 @@ In HTTP mode, the environment variables are configured on the server itself, not
 
 These commands require the following environment variables to be set:
 - `VINCENT_APP_JSON_DEFINITION`: Path to your Vincent App definition JSON file
-- `PUBKEY_ROUTER_DATIL_CONTRACT`: The public key router Datil contract address
 - `VINCENT_DELEGATEE_PRIVATE_KEY`: The private key of the delegatee. This is the one you added in the Vincent App Dashboard as [an authorized signer for your app](https://docs.heyvincent.ai/documents/Quick_Start.html#:~:text=New%20App%22%20button.-,Delegatees,-%3A%20Delegatees%20are).
-- `VINCENT_DATIL_CONTRACT`: The Vincent Datil contract address
 - `HTTP_PORT` (for HTTP mode only): The port to run the HTTP server on (defaults to 3000)
 
 You can set these environment variables in your shell before running the commands, or use a tool like `dotenv-cli`:
