@@ -44,7 +44,7 @@ contract VincentUserFacet is VincentBase {
      * @notice Permits an app version for a PKP token and optionally sets tool policy parameters
      * @dev This function allows a PKP owner to authorize a specific app version to use their PKP.
      *      If the PKP was previously authorized for a different version of the same app, that
-     *      permission is revoked and replaced with the new version.
+     *      permission is revoked and replaced with the new version. It ensures that all the registered Tools are provided but Policies can be optional.
      *
      * @param pkpTokenId The token ID of the PKP to permit the app version for
      * @param appId The ID of the app to permit
@@ -61,12 +61,14 @@ contract VincentUserFacet is VincentBase {
         string[][] calldata policyIpfsCids,
         bytes[][] calldata policyParameterValues
     ) external appNotDeleted(appId) onlyRegisteredAppVersion(appId, appVersion) appEnabled(appId, appVersion) onlyPkpOwner(pkpTokenId) {
-        if (toolIpfsCids.length == 0 || policyIpfsCids.length == 0 || policyParameterValues.length == 0) {
+        uint256 toolCount = toolIpfsCids.length;
+
+        if (toolCount == 0 || policyIpfsCids.length == 0 || policyParameterValues.length == 0) {
             revert LibVincentUserFacet.InvalidInput();
         }
 
         if (
-            toolIpfsCids.length != policyIpfsCids.length || toolIpfsCids.length != policyParameterValues.length
+            toolCount != policyIpfsCids.length || toolCount != policyParameterValues.length
         ) {
             revert LibVincentUserFacet.ToolsAndPoliciesLengthMismatch();
         }
@@ -85,6 +87,10 @@ contract VincentUserFacet is VincentBase {
         // App versions start at 1, but the appVersions array is 0-indexed
         VincentAppStorage.AppVersion storage newAppVersion =
             as_.appIdToApp[appId].appVersions[getAppVersionIndex(appVersion)];
+
+        if (newAppVersion.toolIpfsCidHashes.length() != toolCount) {
+            revert LibVincentUserFacet.NotAllRegisteredToolsProvided(appId, appVersion);
+        }
 
         // Check if User has permitted a previous app version,
         // if so, remove the PKP Token ID from the previous AppVersion's delegated agent PKPs
@@ -164,7 +170,7 @@ contract VincentUserFacet is VincentBase {
      * @dev This function allows configuring policy parameters for tools associated with an app.
      *      It validates that the tools, policies, and parameters exist in the app version before
      *      storing parameter values. This is the public entry point for setting parameters without
-     *      changing app version permissions.
+     *      changing app version permissions. Even a single Tool Policy can be updated.
      *
      * @param pkpTokenId The token ID of the PKP to set parameters for
      * @param appId The ID of the app
@@ -180,7 +186,8 @@ contract VincentUserFacet is VincentBase {
         string[] calldata toolIpfsCids,
         string[][] calldata policyIpfsCids,
         bytes[][] calldata policyParameterValues
-    ) external appNotDeleted(appId) onlyRegisteredAppVersion(appId, appVersion) appEnabled(appId, appVersion) onlyPkpOwner(pkpTokenId) {
+    ) external onlyRegisteredAppVersion(appId, appVersion) onlyPkpOwner(pkpTokenId) {
+        // Allowing the User to update the Policies for Apps even if they're deleted or disabled since these flags can be toggled anytime by the App Manager so we don't want to block the User from updating the Policies.
         if (toolIpfsCids.length == 0 || policyIpfsCids.length == 0 || policyParameterValues.length == 0) {
             revert LibVincentUserFacet.InvalidInput();
         }
@@ -325,10 +332,6 @@ contract VincentUserFacet is VincentBase {
 
         VincentAppStorage.AppVersion storage versionedApp =
             as_.appIdToApp[appId].appVersions[getAppVersionIndex(appVersion)];
-
-        if (versionedApp.toolIpfsCidHashes.length() != toolCount) {
-            revert LibVincentUserFacet.NotAllRegisteredToolsProvided(appId, appVersion);
-        }
 
         // Step 3: Loop over each tool to process its associated policies and parameters.
         for (uint256 i = 0; i < toolCount; i++) {

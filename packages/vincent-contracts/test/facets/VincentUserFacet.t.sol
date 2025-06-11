@@ -937,27 +937,55 @@ contract VincentUserFacetTest is Test {
             policyParameterValues
         );
 
+        // Validate the original tool policies and parameters
+        VincentUserViewFacet.ToolWithPolicies[] memory originalToolsWithPolicies = vincentUserViewFacet.getAllToolsAndPoliciesForApp(
+            PKP_TOKEN_ID_1,
+            newAppId
+        );
+        assertEq(originalToolsWithPolicies.length, 2); // Still has both tools
+        assertEq(originalToolsWithPolicies[0].policies.length, 1);
+        assertEq(originalToolsWithPolicies[0].policies[0].policyParameterValues, POLICY_PARAMETER_VALUES_1);
+        assertEq(originalToolsWithPolicies[1].policies.length, 0); // Second tool unchanged
+
         // Create arrays with only one tool instead of both registered tools
-        string[] memory _toolIpfsCids = new string[](1);
-        _toolIpfsCids[0] = TOOL_IPFS_CID_1; // Only providing first tool, missing TOOL_IPFS_CID_2
+        string[] memory subsetToolIpfsCids = new string[](1);
+        subsetToolIpfsCids[0] = TOOL_IPFS_CID_1; // Only providing first tool, missing TOOL_IPFS_CID_2
 
-        string[][] memory _policyIpfsCids = new string[][](1);
-        _policyIpfsCids[0] = new string[](1);
-        _policyIpfsCids[0][0] = POLICY_IPFS_CID_1;
+        string[][] memory subsetPolicyIpfsCids = new string[][](1);
+        subsetPolicyIpfsCids[0] = new string[](1);
+        subsetPolicyIpfsCids[0][0] = POLICY_IPFS_CID_1;
 
-        bytes[][] memory _policyParameterValues = new bytes[][](1);
-        _policyParameterValues[0] = new bytes[](1);
-        _policyParameterValues[0][0] = POLICY_PARAMETER_VALUES_1;
+        bytes[][] memory subsetPolicyParameterValues = new bytes[][](1);
+        subsetPolicyParameterValues[0] = new bytes[](1);
+        subsetPolicyParameterValues[0][0] = POLICY_PARAMETER_VALUES_2;
 
-        vm.expectRevert(abi.encodeWithSelector(LibVincentUserFacet.NotAllRegisteredToolsProvided.selector, newAppId, newAppVersion));
+         vm.expectEmit(true, true, true, true);
+        emit LibVincentUserFacet.ToolPolicyParametersSet(
+            PKP_TOKEN_ID_1,
+            newAppId,
+            newAppVersion,
+            keccak256(abi.encodePacked(TOOL_IPFS_CID_1)),
+            POLICY_PARAMETER_VALUES_2
+        );
+
         vincentUserFacet.setToolPolicyParameters(
             PKP_TOKEN_ID_1,
             newAppId,
             newAppVersion,
-            _toolIpfsCids,
-            _policyIpfsCids,
-            _policyParameterValues
+            subsetToolIpfsCids,
+            subsetPolicyIpfsCids,
+            subsetPolicyParameterValues
         );
+
+        // Verify the parameters were updated for the first tool only
+        VincentUserViewFacet.ToolWithPolicies[] memory updatedToolsWithPolicies = vincentUserViewFacet.getAllToolsAndPoliciesForApp(
+            PKP_TOKEN_ID_1,
+            newAppId
+        );
+        assertEq(updatedToolsWithPolicies.length, 2); // Still has both tools
+        assertEq(updatedToolsWithPolicies[0].policies.length, 1);
+        assertEq(updatedToolsWithPolicies[0].policies[0].policyParameterValues, POLICY_PARAMETER_VALUES_2);
+        assertEq(updatedToolsWithPolicies[1].policies.length, 0); // Second tool unchanged
     }
 
     function testSetToolPolicyParameters_ToolPolicyNotRegisteredForAppVersion() public {
