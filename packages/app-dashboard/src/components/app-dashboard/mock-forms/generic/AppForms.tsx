@@ -254,7 +254,7 @@ export function DeleteAppForm({
 
       setResult(response);
       // Navigate back to dashboard after successful deletion
-      setTimeout(() => (window.location.href = '/'), 2000);
+      setTimeout(() => (window.location.href = '/developer'), 2000);
     } catch (error: any) {
       setError(error?.data?.message || error?.message || 'Failed to delete app');
     }

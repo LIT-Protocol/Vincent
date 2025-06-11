@@ -2,18 +2,10 @@ import { useNavigate } from 'react-router';
 import { DashboardContent } from '@/components/app-dashboard/DashboardContent';
 import { useDashboard } from '../../components/app-dashboard/DashboardContext';
 import { PageLoader } from '../../components/app-dashboard/PageLoader';
-import ConnectWalletScreen from './home';
-import { useWalletProtection } from '@/hooks/app-dashboard/useWalletProtection';
 
-export default function DashboardHome() {
+export default function DashboardPage() {
   const navigate = useNavigate();
   const { apps, tools, policies, loading, errors } = useDashboard();
-  const { isConnected } = useWalletProtection();
-
-  // If not connected, show the connect wallet screen
-  if (!isConnected) {
-    return <ConnectWalletScreen />;
-  }
 
   const hasError = Object.values(errors).some((error) => error !== null);
   const isLoading = Object.values(loading).some((loading) => loading);

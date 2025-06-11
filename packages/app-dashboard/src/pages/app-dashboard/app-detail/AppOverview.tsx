@@ -7,14 +7,8 @@ import { useAppDetail } from '@/components/app-dashboard/AppDetailContext';
 
 export default function AppOverview() {
   const navigate = useNavigate();
-  const { address, isConnected } = useAccount();
+  const { address } = useAccount();
   const { appId, app, appError, appLoading } = useAppDetail();
-
-  // Auth check
-  if (!isConnected) {
-    navigate('/');
-    return null;
-  }
 
   // Loading state
   if (appLoading) return <Loading />;
@@ -26,7 +20,7 @@ export default function AppOverview() {
 
   // Authorization check
   if (app.managerAddress.toLowerCase() !== address?.toLowerCase()) {
-    return <StatusMessage message="Access denied" type="error" />;
+    navigate('/developer');
   }
 
   return (

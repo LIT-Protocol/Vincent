@@ -8,15 +8,9 @@ import { useAppDetail } from '@/components/app-dashboard/AppDetailContext';
 
 export default function AppVersionDetail() {
   const navigate = useNavigate();
-  const { address, isConnected } = useAccount();
+  const { address } = useAccount();
   const { appId, app, appError, appLoading, versionData, versionError, versionLoading, versionId } =
     useAppDetail();
-
-  // Auth check
-  if (!isConnected) {
-    navigate('/');
-    return null;
-  }
 
   // Loading state
   if (appLoading) return <Loading />;
@@ -28,7 +22,7 @@ export default function AppVersionDetail() {
 
   // Authorization check
   if (app.managerAddress.toLowerCase() !== address?.toLowerCase()) {
-    return <StatusMessage message="Access denied" type="error" />;
+    navigate('/developer');
   }
 
   // Version specific error handling

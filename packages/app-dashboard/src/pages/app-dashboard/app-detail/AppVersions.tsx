@@ -1,21 +1,15 @@
-import { useNavigate } from 'react-router';
 import { useAccount } from 'wagmi';
 import { AppVersionsListView } from '@/components/app-dashboard/AppVersionsListView';
 import { StatusMessage } from '@/utils/shared/statusMessage';
 import Loading from '@/layout/app-dashboard/Loading';
 import { useAppDetail } from '@/components/app-dashboard/AppDetailContext';
+import { useNavigate } from 'react-router';
 
 export default function AppVersions() {
   const navigate = useNavigate();
-  const { address, isConnected } = useAccount();
+  const { address } = useAccount();
   const { appId, app, appError, appLoading, versions, versionsError, versionsLoading } =
     useAppDetail();
-
-  // Auth check
-  if (!isConnected) {
-    navigate('/');
-    return null;
-  }
 
   // Loading state
   if (appLoading) return <Loading />;
@@ -27,7 +21,7 @@ export default function AppVersions() {
 
   // Authorization check
   if (app.managerAddress.toLowerCase() !== address?.toLowerCase()) {
-    return <StatusMessage message="Access denied" type="error" />;
+    navigate('/developer');
   }
 
   // Versions error handling

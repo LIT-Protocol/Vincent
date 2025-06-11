@@ -21,7 +21,7 @@ function AppLayout({ children, className }: ComponentProps<'div'>) {
   } = useAppSidebar();
 
   return (
-    <div className={cn('min-h-screen min-w-screen bg-gray-50 flex', className)}>
+    <div className={cn('min-h-screen min-w-screen bg-gray flex', className)}>
       {shouldShowSidebar && (
         <Sidebar
           expandedMenus={expandedMenus}

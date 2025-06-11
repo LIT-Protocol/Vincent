@@ -8,6 +8,13 @@ import { AppDetail } from './pages/app-dashboard/app-detail';
 import { AppDetailLayout } from './layout/app-dashboard/AppDetailLayout';
 import { AppDashboard } from './pages/app-dashboard';
 import { DashboardLayout } from './layout/app-dashboard/DashboardLayout';
+import SharedHome from './pages/shared/home';
+
+// Root route for shared home page
+const rootRoute = {
+  path: '/',
+  element: <SharedHome />,
+};
 
 const appRoutes = {
   element: (
@@ -23,9 +30,14 @@ const appRoutes = {
     </>
   ),
   children: [
+    // Connect wallet page at /developer
+    {
+      path: '/developer',
+      element: <AppDashboard.ConnectWallet />,
+    },
     // Main dashboard routes with shared layout
     {
-      path: '/*',
+      path: '/developer/*',
       element: (
         <DashboardLayout>
           <Outlet />
@@ -33,8 +45,8 @@ const appRoutes = {
       ),
       children: [
         {
-          index: true,
-          element: <AppDashboard.Home />,
+          path: 'dashboard',
+          element: <AppDashboard.Dashboard />,
         },
         {
           path: 'apps',
@@ -148,6 +160,6 @@ const userRoutes = {
   ],
 };
 
-const routes: RouteObject[] = [appRoutes, userRoutes];
+const routes: RouteObject[] = [rootRoute, appRoutes, userRoutes];
 
 export default routes;

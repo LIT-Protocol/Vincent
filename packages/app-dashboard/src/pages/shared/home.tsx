@@ -1,29 +1,58 @@
 import { Helmet } from 'react-helmet';
-import ConsentView from '@/components/user-dashboard/consent/Consent';
+import { useNavigate } from 'react-router-dom';
 
-export default function UserHome() {
+export default function SharedHome() {
+  const navigate = useNavigate();
+
   return (
     <>
       <Helmet>
-        <title>Vincent | User Dashboard</title>
-        <meta name="description" content="Sign in to Vincent" />
+        <title>Vincent | AI Assistant Platform</title>
+        <meta
+          name="description"
+          content="Vincent - AI Assistant for user owned automation powered by Lit Protocol"
+        />
       </Helmet>
       <div className="flex flex-col items-center justify-center min-h-screen bg-white text-center p-5 font-sans relative pb-16">
         <main className="flex flex-col items-center flex-1 justify-center">
+          <h1 className="text-5xl font-medium text-gray-900 mb-4">Welcome to</h1>
           <img
             src="/vincent-main-logo.png"
             alt="Vincent by Lit Protocol - Assistant for user owned automation"
             className="max-w-[400px] mb-5"
           />
-          <h1 className="text-4xl font-medium text-gray-900 mb-4 mt-0">User Dashboard</h1>
+          <p className="text-gray-600 mb-8 max-w-md">
+            AI Assistant for user owned automation. Choose your path to get started.
+          </p>
 
-          <div className="bg-white rounded-xl shadow-lg max-w-[550px] w-full mx-auto border border-gray-100 overflow-hidden">
-            <div className="p-6">
-              <ConsentView isUserDashboardFlow={true} />
-            </div>
+          <div className="flex flex-col sm:flex-row gap-4 mb-8">
+            <button
+              onClick={() => navigate('/developer')}
+              className="bg-gray-900 text-white px-6 py-3 rounded-[20px] font-medium hover:bg-gray-800 transition-colors min-w-[160px]"
+            >
+              Developer Dashboard
+            </button>
+            <button
+              onClick={() => navigate('/user')}
+              className="bg-transparent text-gray-900 px-6 py-3 rounded-[20px] font-medium border border-gray-900 hover:bg-gray-100 transition-colors min-w-[160px]"
+            >
+              User Dashboard
+            </button>
           </div>
 
-          {/* Protected by Lit - Right beneath ConsentView */}
+          <div className="text-gray-600 text-sm mb-8">
+            <a
+              target="_blank"
+              href="https://docs.heyvincent.ai/"
+              className="text-gray-600 no-underline hover:text-gray-800 transition-colors"
+              rel="noopener noreferrer"
+              style={{ color: '#666', textDecoration: 'none' }}
+            >
+              Documentation
+            </a>
+          </div>
+
+          {/* Protected by Lit */}
           <div className="mt-6 flex flex-col items-center mb-8">
             <div className="text-gray-400 text-xs uppercase tracking-wide mb-2">Protected by</div>
             <a

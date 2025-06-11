@@ -34,38 +34,38 @@ export function useAppSidebar() {
   useEffect(() => {
     const pathname = location.pathname;
 
-    if (pathname === '/') {
+    if (pathname === '/developer') {
       setSelectedForm(null);
       setSelectedListView(null);
       setSelectedApp(null);
       setSelectedAppView(null);
-    } else if (pathname === '/apps') {
+    } else if (pathname === '/developer/apps') {
       setSelectedForm(null);
       setSelectedListView('app');
       setSelectedApp(null);
       setSelectedAppView(null);
       setExpandedMenus(new Set(['app', 'my-apps']));
-    } else if (pathname === '/tools') {
+    } else if (pathname === '/developer/tools') {
       setSelectedForm(null);
       setSelectedListView('tool');
       setSelectedApp(null);
       setSelectedAppView(null);
-    } else if (pathname === '/policies') {
+    } else if (pathname === '/developer/policies') {
       setSelectedForm(null);
       setSelectedListView('policy');
       setSelectedApp(null);
       setSelectedAppView(null);
-    } else if (pathname === '/create-app') {
+    } else if (pathname === '/developer/create-app') {
       setSelectedForm('create-app');
       setSelectedListView(null);
       setSelectedApp(null);
       setSelectedAppView(null);
-    } else if (pathname === '/create-tool') {
+    } else if (pathname === '/developer/create-tool') {
       setSelectedForm('create-tool');
       setSelectedListView(null);
       setSelectedApp(null);
       setSelectedAppView(null);
-    } else if (pathname === '/create-policy') {
+    } else if (pathname === '/developer/create-policy') {
       setSelectedForm('create-policy');
       setSelectedListView(null);
       setSelectedApp(null);
@@ -113,11 +113,11 @@ export function useAppSidebar() {
   const handleCategoryClick = useCallback(
     (categoryId: string) => {
       if (categoryId === 'app') {
-        navigate('/apps');
+        navigate('/developer/apps');
       } else if (categoryId === 'tool') {
-        navigate('/tools');
+        navigate('/developer/tools');
       } else if (categoryId === 'policy') {
-        navigate('/policies');
+        navigate('/developer/policies');
       }
     },
     [navigate],
@@ -126,19 +126,19 @@ export function useAppSidebar() {
   const handleMenuSelection = useCallback(
     (id: string) => {
       if (id === 'dashboard') {
-        navigate('/');
+        navigate('/developer');
       } else if (id === 'my-apps') {
-        navigate('/apps');
+        navigate('/developer/apps');
       } else if (id === 'my-tools') {
-        navigate('/tools');
+        navigate('/developer/tools');
       } else if (id === 'my-policies') {
-        navigate('/policies');
+        navigate('/developer/policies');
       } else if (id === 'create-app') {
-        navigate('/create-app');
+        navigate('/developer/create-app');
       } else if (id === 'create-tool') {
-        navigate('/create-tool');
+        navigate('/developer/create-tool');
       } else if (id === 'create-policy') {
-        navigate('/create-policy');
+        navigate('/developer/create-policy');
       }
     },
     [navigate],
@@ -149,7 +149,7 @@ export function useAppSidebar() {
       if (app) {
         navigate(`/appId/${app.appId}`);
       } else {
-        navigate('/apps');
+        navigate('/developer/apps');
       }
     },
     [navigate],
