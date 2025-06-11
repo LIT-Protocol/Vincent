@@ -5,7 +5,7 @@ import { fetchUserApps } from '@/utils/user-dashboard/userAppsUtils';
 import { AppDetails } from '@/types';
 
 export function useUserSidebar() {
-  const { authInfo, sessionSigs } = useReadAuthInfo();
+  const { authInfo, sessionSigs, isProcessing } = useReadAuthInfo();
   const location = useLocation();
   const navigate = useNavigate();
   const params = useParams();
@@ -15,17 +15,31 @@ export function useUserSidebar() {
   const [selectedApp, setSelectedApp] = useState<AppDetails | null>(null);
   const [apps, setApps] = useState<AppDetails[]>([]);
   const [isLoadingApps, setIsLoadingApps] = useState<boolean>(true);
+  const [appsError, setAppsError] = useState<string | null>(null);
+
+  // Unified loading state that combines auth processing and apps loading
+  const isLoading = isProcessing || isLoadingApps;
 
   useEffect(() => {
     let isMounted = true;
 
     async function loadApps() {
-      if (!authInfo?.userPKP || !sessionSigs || !authInfo?.agentPKP) {
-        setIsLoadingApps(false);
+      // If still processing auth, keep loading true
+      if (isProcessing) {
         return;
       }
 
+      // If no auth info, set loading to false
+      if (!authInfo?.userPKP || !sessionSigs || !authInfo?.agentPKP) {
+        if (isMounted) {
+          setIsLoadingApps(false);
+        }
+        return;
+      }
+
+      // Auth is ready, start loading apps
       setIsLoadingApps(true);
+      setAppsError(null); // Clear any previous errors
 
       const result = await fetchUserApps({
         userPKP: authInfo.userPKP,
@@ -34,8 +48,11 @@ export function useUserSidebar() {
       });
 
       if (isMounted) {
-        if (!result.error) {
+        if (result.error) {
+          setAppsError(result.error);
+        } else {
           setApps(result.apps);
+          setAppsError(null);
         }
         setIsLoadingApps(false);
       }
@@ -46,7 +63,7 @@ export function useUserSidebar() {
     return () => {
       isMounted = false;
     };
-  }, [authInfo?.userPKP, sessionSigs, authInfo?.agentPKP]);
+  }, [authInfo?.userPKP, sessionSigs, authInfo?.agentPKP, isProcessing]);
 
   // Sync sidebar state with URL
   useEffect(() => {
@@ -117,7 +134,11 @@ export function useUserSidebar() {
     selectedView,
     selectedApp,
     apps,
-    isLoadingApps,
+    isLoading,
+    appsError,
+    // Auth info (so other components don't need separate useReadAuthInfo calls)
+    authInfo,
+    sessionSigs,
     // Handlers
     onToggleMenu: handleToggleMenu,
     onMenuSelection: handleMenuSelection,

@@ -8,6 +8,13 @@ export default function useAuthenticate() {
   const [error, setError] = useState<Error>();
 
   /**
+   * Clear error state
+   */
+  const clearError = useCallback(() => {
+    setError(undefined);
+  }, []);
+
+  /**
    * Authenticate with WebAuthn credential
    */
   const authWithWebAuthn = useCallback(async (): Promise<void> => {
@@ -19,7 +26,22 @@ export default function useAuthenticate() {
       const result: AuthMethod = await authenticateWithWebAuthn();
       setAuthMethod(result);
     } catch (err) {
-      setError(err as Error);
+      // Check if this is a user cancellation - if so, don't treat it as an error
+      if (err instanceof Error) {
+        const errorText = err.message;
+        if (
+          errorText.includes('timed out') ||
+          errorText.includes('not allowed') ||
+          errorText.includes('cancelled') ||
+          errorText.includes('privacy-considerations-client')
+        ) {
+          // User cancelled - silently ignore, don't set error state
+        } else {
+          setError(err as Error);
+        }
+      } else {
+        setError(err as Error);
+      }
     } finally {
       setLoading(false);
     }
@@ -56,5 +78,6 @@ export default function useAuthenticate() {
     authMethod,
     loading,
     error,
+    clearError,
   };
 }

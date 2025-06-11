@@ -7,7 +7,6 @@ import { useUrlRedirectUri } from '@/hooks/user-dashboard/useUrlRedirectUri';
 import ConnectWithVincent from '@/layout/shared/ConnectWithVincent';
 import ProtectedByLit from '@/layout/shared/ProtectedByLit';
 import StatusMessage from '@/components/user-dashboard/consent/StatusMessage';
-import Loading from '@/layout/app-dashboard/Loading';
 import { Card, CardContent } from '@/components/app-dashboard/ui/card';
 import { ExternalLink } from 'lucide-react';
 import { vincentApiClient } from '@/components/app-dashboard/mock-forms/vincentApiClient';
@@ -16,48 +15,46 @@ export default function AppDetailsPage() {
   const { authInfo, sessionSigs } = useReadAuthInfo();
   const authGuardElement = useAuthGuard();
   const { redirectUri } = useUrlRedirectUri();
-  const { appId } = useParams();
+  const { appId } = useParams<{ appId: string }>();
 
-  // Convert appId to number for the API call
-  const appIdNumber = appId ? parseInt(appId, 10) : 0;
-
-  // Use Vincent API client to fetch app data
+  // Get app metadata using RTK Query
   const {
     data: appMetadata,
     error: appError,
     isLoading: isLoadingApp,
   } = vincentApiClient.useGetAppQuery(
-    { appId: appIdNumber },
-    { skip: !appId || isNaN(appIdNumber) },
+    { appId: parseInt(appId || '0') },
+    { skip: !appId || isNaN(parseInt(appId || '0')) },
   );
 
   // Helper function to render app logo
   const renderLogo = () => {
-    if (appMetadata?.logo) {
-      const logoSrc = appMetadata.logo.startsWith('data:')
-        ? appMetadata.logo
-        : `data:image/png;base64,${appMetadata.logo}`;
-
-      return (
-        <img
-          src={logoSrc}
-          alt={`${appMetadata.name} logo`}
-          className="w-20 h-20 rounded-xl object-cover flex-shrink-0"
-          onError={(e) => {
-            e.currentTarget.src = '/logo.svg';
-          }}
-        />
-      );
-    }
-
-    return (
+    const logoUrl = appMetadata?.logo && appMetadata.logo.length >= 10 ? appMetadata.logo : null;
+    return logoUrl ? (
       <img
-        src="/logo.svg"
-        alt="Vincent logo"
-        className="w-20 h-20 rounded-xl object-cover flex-shrink-0"
+        src={logoUrl}
+        alt={`${appMetadata?.name} logo`}
+        className="w-16 h-16 rounded-xl object-cover"
+        onError={(e) => {
+          e.currentTarget.src = '/logo.svg';
+        }}
       />
+    ) : (
+      <img src="/logo.svg" alt="Vincent logo" className="w-16 h-16 rounded-xl object-cover" />
     );
   };
+
+  if (!appId || isNaN(parseInt(appId))) {
+    return (
+      <>
+        <Helmet>
+          <title>Vincent | Invalid App</title>
+          <meta name="description" content="Invalid app ID" />
+        </Helmet>
+        <StatusMessage message="Invalid app ID provided" type="error" />
+      </>
+    );
+  }
 
   return (
     <>
@@ -67,9 +64,7 @@ export default function AppDetailsPage() {
       </Helmet>
 
       {authGuardElement ? (
-        <div className="flex min-h-screen items-center justify-center">
-          <Loading />
-        </div>
+        <StatusMessage message="Authenticating..." type="info" />
       ) : authInfo?.userPKP && authInfo?.agentPKP && sessionSigs ? (
         <div className="flex items-center justify-center p-8 min-h-screen">
           <div className="bg-white rounded-xl shadow-lg max-w-[600px] w-full border border-gray-100 overflow-hidden">
@@ -78,7 +73,7 @@ export default function AppDetailsPage() {
             {/* Enhanced App Information Card */}
             {isLoadingApp ? (
               <div className="p-6 flex items-center justify-center">
-                <Loading />
+                <StatusMessage message="Loading app details..." type="info" />
               </div>
             ) : appError ? (
               <div className="p-6">

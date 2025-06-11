@@ -64,11 +64,42 @@ const StytchOTP = ({ method, authWithStytch, setView }: StytchOTPProps) => {
 
       let errorMessage = 'Failed to send verification code. Please try again.';
 
-      if (err.message?.includes('invalid_phone_number')) {
-        errorMessage =
-          'Please enter a valid phone number in international format (e.g. +12025551234)';
-      } else if (typeof err.message === 'string') {
-        errorMessage = err.message;
+      if (err.error_type || err.message) {
+        const errorType = err.error_type || '';
+        const errorMessage_raw = err.message || '';
+
+        if (
+          errorType === 'user_lock_limit_reached' ||
+          errorMessage_raw.includes('user_lock_limit_reached')
+        ) {
+          errorMessage = 'Too many failed attempts. Please wait a few minutes before trying again.';
+        } else if (errorType === 'rate_limit_exceeded' || errorMessage_raw.includes('rate_limit')) {
+          errorMessage = 'Too many requests. Please wait a moment and try again.';
+        } else if (errorMessage_raw.includes('invalid_phone_number')) {
+          errorMessage =
+            'Please enter a valid phone number in international format (e.g. +12025551234)';
+        } else if (errorMessage_raw.includes('invalid_email')) {
+          errorMessage = 'Please enter a valid email address.';
+        } else if (typeof errorMessage_raw === 'string' && errorMessage_raw.length > 0) {
+          // Clean up other API errors
+          if (
+            errorMessage_raw.includes('[429]') ||
+            errorMessage_raw.includes('[4') ||
+            errorMessage_raw.includes('request-id')
+          ) {
+            // Extract meaningful part before technical details
+            if (errorMessage_raw.includes('too many')) {
+              errorMessage = 'Too many attempts. Please wait a few minutes before trying again.';
+            } else if (errorMessage_raw.includes('locked')) {
+              errorMessage =
+                'Account temporarily locked. Please wait a few minutes before trying again.';
+            } else {
+              errorMessage = 'Unable to send verification code. Please try again later.';
+            }
+          } else {
+            errorMessage = errorMessage_raw;
+          }
+        }
       }
 
       setError(errorMessage);
@@ -107,10 +138,25 @@ const StytchOTP = ({ method, authWithStytch, setView }: StytchOTPProps) => {
 
       if (err instanceof z.ZodError && err.errors.length > 0) {
         errorMessage = err.errors[0].message;
-      } else if (err.message?.includes('invalid_code')) {
-        errorMessage = 'Invalid verification code. Please check and try again.';
-      } else if (typeof err.message === 'string') {
-        errorMessage = err.message;
+      } else if (err.error_type || err.message) {
+        const errorType = err.error_type || '';
+        const errorMessage_raw = err.message || '';
+
+        if (errorType === 'otp_code_not_found' || errorMessage_raw.includes('otp_code_not_found')) {
+          errorMessage = 'Incorrect verification code. Please check and try again.';
+        } else if (errorType === 'otp_code_expired' || errorMessage_raw.includes('expired')) {
+          errorMessage = 'Verification code has expired. Please request a new one.';
+        } else if (errorType === 'too_many_attempts' || errorMessage_raw.includes('too_many')) {
+          errorMessage = 'Too many incorrect attempts. Please request a new code.';
+        } else if (errorMessage_raw.includes('invalid_code')) {
+          errorMessage = 'Invalid verification code. Please check and try again.';
+        } else if (typeof errorMessage_raw === 'string' && errorMessage_raw.length > 0) {
+          if (errorMessage_raw.includes('[404]') || errorMessage_raw.includes('request-id')) {
+            errorMessage = 'Incorrect verification code. Please check and try again.';
+          } else {
+            errorMessage = errorMessage_raw;
+          }
+        }
       }
 
       setError(errorMessage);

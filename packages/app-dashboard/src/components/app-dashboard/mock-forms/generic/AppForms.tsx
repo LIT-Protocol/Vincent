@@ -7,10 +7,14 @@ import { useAccount } from 'wagmi';
 import { VersionChanges } from '../schemas/base';
 import { useParams } from 'react-router-dom';
 import Loading from '@/layout/app-dashboard/Loading';
+import { StatusMessage } from '@/utils/shared/statusMessage';
+import { useState } from 'react';
 
 export function CreateAppForm() {
   const [createApp, { isLoading }] = vincentApiClient.useCreateAppMutation();
   const { address, isConnected } = useAccount();
+  const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<any>(null);
 
   // Show loading if wallet is not connected yet (required for creating apps)
   if (!isConnected || !address) {
@@ -18,6 +22,14 @@ export function CreateAppForm() {
   }
 
   const handleSubmit = async (data: any) => {
+    if (!isConnected || !address) {
+      setError('Wallet not connected');
+      return;
+    }
+
+    setError(null);
+    setResult(null);
+
     try {
       // Generate appId and prepare app data
       const appId = Math.floor(Math.random() * 10000);
@@ -27,18 +39,25 @@ export function CreateAppForm() {
         managerAddress: address,
       };
 
-      const result = await createApp({
+      const response = await createApp({
         createApp: appDataForApi,
       }).unwrap();
 
-      alert(`Success! App created: ${JSON.stringify(result, null, 2)}`);
-
+      setResult(response);
       // Refresh the page after successful submission
-      window.location.reload();
+      setTimeout(() => window.location.reload(), 1500);
     } catch (error: any) {
-      alert(`Error: ${error?.data?.message || error?.message || 'Unknown error'}`);
+      setError(error?.data?.message || error?.message || 'Failed to create app');
     }
   };
+
+  if (error) {
+    return <StatusMessage message={error} type="error" />;
+  }
+
+  if (result) {
+    return <StatusMessage message="App created successfully! Refreshing page..." type="success" />;
+  }
 
   return (
     <div>
@@ -69,6 +88,8 @@ export function EditAppForm({
   const [editApp, { isLoading }] = vincentApiClient.useEditAppMutation();
   const { address, isConnected } = useAccount();
   const { appId } = useUrlAppId();
+  const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<any>(null);
 
   // Show loading if we don't have appData yet (required for editing)
   if (!appData) {
@@ -77,29 +98,40 @@ export function EditAppForm({
 
   const handleSubmit = async (data: any) => {
     if (!isConnected || !address) {
-      alert('Error: Wallet not connected');
+      setError('Wallet not connected');
       return;
     }
 
     if (!appId) {
-      alert('Error: No app ID found in URL');
+      setError('No app ID found in URL');
       return;
     }
 
+    setError(null);
+    setResult(null);
+
     try {
       const { ...editAppData } = data;
-      const result = await editApp({
+      const response = await editApp({
         appId: parseInt(appId),
         createApp: { ...editAppData, managerAddress: address },
       }).unwrap();
-      alert(`Success! App updated: ${JSON.stringify(result, null, 2)}`);
 
+      setResult(response);
       // Refresh the page after successful submission
-      window.location.reload();
+      setTimeout(() => window.location.reload(), 1500);
     } catch (error: any) {
-      alert(`Error: ${error?.data?.message || error?.message || 'Unknown error'}`);
+      setError(error?.data?.message || error?.message || 'Failed to update app');
     }
   };
+
+  if (error) {
+    return <StatusMessage message={error} type="error" />;
+  }
+
+  if (result) {
+    return <StatusMessage message="App updated successfully! Refreshing page..." type="success" />;
+  }
 
   return (
     <FormRenderer
@@ -120,6 +152,8 @@ export function EditAppForm({
 export function GetAppForm() {
   const [getApp, { isLoading }] = vincentApiClient.useLazyGetAppQuery();
   const { appId } = useUrlAppId();
+  const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<any>(null);
 
   // Show loading if we don't have appId yet (required for the API call)
   if (!appId) {
@@ -127,13 +161,31 @@ export function GetAppForm() {
   }
 
   const handleSubmit = async () => {
+    setError(null);
+    setResult(null);
+
     try {
-      const result = await getApp({ appId: parseInt(appId) }).unwrap();
-      alert(`Success! Retrieved app: ${JSON.stringify(result, null, 2)}`);
+      const data = await getApp({ appId: parseInt(appId) }).unwrap();
+      setResult(data);
     } catch (error: any) {
-      alert(`Error: ${error?.data?.message || error?.message || 'Unknown error'}`);
+      setError(error?.data?.message || error?.message || 'Failed to get app');
     }
   };
+
+  if (error) {
+    return <StatusMessage message={error} type="error" />;
+  }
+
+  if (result) {
+    return (
+      <div>
+        <StatusMessage message="App retrieved successfully!" type="success" />
+        <pre className="mt-4 p-4 bg-gray-100 rounded overflow-auto">
+          {JSON.stringify(result, null, 2)}
+        </pre>
+      </div>
+    );
+  }
 
   // Create a minimal schema for the form (no fields needed since appId comes from URL)
   const EmptySchema = z.object({});
@@ -163,6 +215,8 @@ export function DeleteAppForm({
 }) {
   const [deleteApp, { isLoading }] = vincentApiClient.useDeleteAppMutation();
   const { appId } = useUrlAppId();
+  const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<any>(null);
 
   // Show loading if we don't have appData yet (required for deletion context)
   if (!appData) {
@@ -171,14 +225,14 @@ export function DeleteAppForm({
 
   const handleSubmit = async (data: any) => {
     if (!appId) {
-      alert('Error: No app ID found in URL');
+      setError('No app ID found in URL');
       return;
     }
 
     // Additional validation - check if the confirmation matches
     const expectedConfirmation = `I want to delete app ${appId}`;
     if (data.confirmation !== expectedConfirmation) {
-      alert(`Error: Please type exactly: "${expectedConfirmation}"`);
+      setError(`Please type exactly: "${expectedConfirmation}"`);
       return;
     }
 
@@ -190,18 +244,34 @@ export function DeleteAppForm({
       return;
     }
 
+    setError(null);
+    setResult(null);
+
     try {
-      const result = await deleteApp({
+      const response = await deleteApp({
         appId: parseInt(appId),
       }).unwrap();
-      alert(`Success! App deleted: ${JSON.stringify(result, null, 2)}`);
 
+      setResult(response);
       // Navigate back to dashboard after successful deletion
-      window.location.href = '/';
+      setTimeout(() => (window.location.href = '/'), 2000);
     } catch (error: any) {
-      alert(`Error: ${error?.data?.message || error?.message || 'Unknown error'}`);
+      setError(error?.data?.message || error?.message || 'Failed to delete app');
     }
   };
+
+  if (error) {
+    return <StatusMessage message={error} type="error" />;
+  }
+
+  if (result) {
+    return (
+      <StatusMessage
+        message="App deleted successfully! Redirecting to dashboard..."
+        type="success"
+      />
+    );
+  }
 
   return (
     <FormRenderer
@@ -225,6 +295,8 @@ export function CreateAppVersionForm({
 }) {
   const [createAppVersion, { isLoading }] = vincentApiClient.useCreateAppVersionMutation();
   const { appId } = useUrlAppId();
+  const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<any>(null);
 
   // Show loading if we don't have appData yet (required for context)
   if (!appData) {
@@ -233,20 +305,40 @@ export function CreateAppVersionForm({
 
   const handleSubmit = async (data: any) => {
     if (!appId) {
-      alert('Error: No app ID found in URL');
+      setError('No app ID found in URL');
       return;
     }
 
+    setError(null);
+    setResult(null);
+
     try {
-      const result = await createAppVersion({
+      const { ...versionDataForApi } = data;
+      const response = await createAppVersion({
         appId: parseInt(appId),
-        createAppVersion: data,
+        createAppVersion: versionDataForApi,
       }).unwrap();
-      alert(`Success! App version created: ${JSON.stringify(result, null, 2)}`);
+
+      setResult(response);
+      // Refresh the page after successful submission
+      setTimeout(() => window.location.reload(), 1500);
     } catch (error: any) {
-      alert(`Error: ${error?.data?.message || error?.message || 'Unknown error'}`);
+      setError(error?.data?.message || error?.message || 'Failed to create app version');
     }
   };
+
+  if (error) {
+    return <StatusMessage message={error} type="error" />;
+  }
+
+  if (result) {
+    return (
+      <StatusMessage
+        message="App version created successfully! Refreshing page..."
+        type="success"
+      />
+    );
+  }
 
   return (
     <FormRenderer

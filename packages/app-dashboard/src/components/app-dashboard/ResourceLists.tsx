@@ -9,6 +9,7 @@ import {
   CardTitle,
 } from '@/components/app-dashboard/ui/card';
 import { StatusFilterDropdown, FilterOption } from './ui/status-filter-dropdown';
+import { StatusMessage } from '@/utils/shared/statusMessage';
 
 // Define filter options
 const statusFilterOptions: FilterOption[] = [
@@ -80,11 +81,7 @@ export function AppsList({
   }
 
   if (error) {
-    return (
-      <div className="text-center py-8">
-        <p className="text-red-600 mb-4">Error loading apps: {JSON.stringify(error)}</p>
-      </div>
-    );
+    return <StatusMessage message={`Failed to load your apps: ${error}`} type="error" />;
   }
 
   return (
@@ -179,17 +176,7 @@ export function ToolsList({ tools, isLoading, error, onCreateClick }: ToolsListP
   }
 
   if (error) {
-    console.error('🔧 Tools API Error:', error);
-    return (
-      <div className="text-center py-8">
-        <p className="text-red-600 mb-4">Error loading tools: {JSON.stringify(error)}</p>
-        <p className="text-gray-600 mb-4">You can still create tools using the forms below.</p>
-        <Button onClick={onCreateClick}>
-          <Plus className="h-4 w-4 mr-2" />
-          Create Tool
-        </Button>
-      </div>
-    );
+    return <StatusMessage message={`Failed to load your tools: ${error}`} type="error" />;
   }
 
   return (
@@ -253,17 +240,7 @@ export function PoliciesList({ policies, isLoading, error, onCreateClick }: Poli
   }
 
   if (error) {
-    console.error('🛡️ Policies API Error:', error);
-    return (
-      <div className="text-center py-8">
-        <p className="text-red-600 mb-4">Error loading policies: {JSON.stringify(error)}</p>
-        <p className="text-gray-600 mb-4">You can still create policies using the forms below.</p>
-        <Button onClick={onCreateClick}>
-          <Plus className="h-4 w-4 mr-2" />
-          Create Policy
-        </Button>
-      </div>
-    );
+    return <StatusMessage message={`Failed to load your policies: ${error}`} type="error" />;
   }
 
   return (

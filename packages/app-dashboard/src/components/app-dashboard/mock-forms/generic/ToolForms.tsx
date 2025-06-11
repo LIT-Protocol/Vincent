@@ -11,25 +11,45 @@ import {
 } from '../schemas/tool';
 import { vincentApiClient } from '../vincentApiClient';
 import { z } from 'zod';
+import { StatusMessage } from '@/utils/shared/statusMessage';
+import { useState } from 'react';
 
 export function CreateToolForm() {
   const [createTool, { isLoading }] = vincentApiClient.useCreateToolMutation();
+  const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<any>(null);
 
   const handleSubmit = async (data: any) => {
+    setError(null);
+    setResult(null);
+
     try {
-      const result = await createTool({ createTool: data }).unwrap();
-      alert(`Success! Tool created: ${JSON.stringify(result, null, 2)}`);
+      const response = await createTool({
+        createTool: data,
+      }).unwrap();
+
+      setResult(response);
+      // Refresh the page after successful submission
+      setTimeout(() => window.location.reload(), 1500);
     } catch (error: any) {
-      alert(`Error: ${error?.data?.message || error?.message || 'Unknown error'}`);
+      setError(error?.data?.message || error?.message || 'Failed to create tool');
     }
   };
+
+  if (error) {
+    return <StatusMessage message={error} type="error" />;
+  }
+
+  if (result) {
+    return <StatusMessage message="Tool created successfully! Refreshing page..." type="success" />;
+  }
 
   return (
     <FormRenderer
       schema={CreateTool}
       onSubmit={handleSubmit}
       title="Create Tool"
-      description="Create a new tool"
+      description="Create a new tool for blockchain applications"
       isLoading={isLoading}
     />
   );

@@ -4,7 +4,8 @@ import { LIT_CHAINS } from '@lit-protocol/constants';
 import WalletConnectPage from '@/components/user-dashboard/withdraw/WalletConnect/WalletConnect';
 import StatusMessage from '@/components/user-dashboard/consent/StatusMessage';
 
-import { StatusType, ChainSelector, TokenSelector, WithdrawPanel, BalanceDisplay } from '.';
+import { ChainSelector, TokenSelector, WithdrawPanel, BalanceDisplay } from '.';
+import { StatusType } from '@/types/shared/StatusType';
 import { handleSubmit } from '@/utils/user-dashboard/withdrawHandler';
 import { ethers } from 'ethers';
 

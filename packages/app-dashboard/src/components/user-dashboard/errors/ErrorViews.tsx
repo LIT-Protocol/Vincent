@@ -39,11 +39,9 @@ export const AppDeletedView: React.FC<ErrorViewProps> = ({ statusMessage, status
  */
 export const LoadingView: React.FC<ErrorViewProps> = ({ statusMessage, statusType }) => {
   return (
-    <>
-      <StatusMessage
-        message={statusMessage || 'Loading application details...'}
-        type={statusType}
-      />
-    </>
+    <StatusMessage
+      message={statusMessage || 'Loading application details...'}
+      type={statusType || 'info'}
+    />
   );
 };

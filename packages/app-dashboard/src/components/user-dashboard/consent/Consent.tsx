@@ -16,7 +16,6 @@ import {
 
 import UserAuthenticatedConsentForm from './UserAuthenticatedConsentForm';
 import SignUpView from '../auth/SignUpView';
-import { useErrorPopup } from '@/providers/ErrorPopup';
 import StatusMessage from './StatusMessage';
 
 type ConsentViewProps = {
@@ -25,7 +24,6 @@ type ConsentViewProps = {
 
 export default function ConsentView({ isUserDashboardFlow = false }: ConsentViewProps) {
   // ------ STATE AND HOOKS ------
-  const { showError } = useErrorPopup();
   const { updateAuthInfo } = useSetAuthInfo();
   const { clearAuthInfo } = useClearAuthInfo();
   const navigate = useNavigate();
@@ -34,6 +32,10 @@ export default function ConsentView({ isUserDashboardFlow = false }: ConsentView
   const [sessionSigs, setSessionSigs] = useState<SessionSigs>();
   const [agentPKP, setAgentPKP] = useState<IRelayPKP>();
   const [sessionError, setSessionError] = useState<Error>();
+
+  // Status message state
+  const [statusMessage, setStatusMessage] = useState<string>('');
+  const [statusType, setStatusType] = useState<'info' | 'warning' | 'success' | 'error'>('info');
 
   // Simplified loading state
   const [loadingMessage, setLoadingMessage] = useState<string>('');
@@ -78,6 +80,7 @@ export default function ConsentView({ isUserDashboardFlow = false }: ConsentView
     authWithStytch,
     loading: authLoading,
     error: authError,
+    clearError,
   } = useAuthenticate();
 
   // Account handling
@@ -93,12 +96,16 @@ export default function ConsentView({ isUserDashboardFlow = false }: ConsentView
   // Combine errors
   const error = authError || accountsError || sessionError || readError;
 
-  // Show errors in the popup when they occur
+  // Show errors inline when they occur
   useEffect(() => {
     if (error) {
-      showError(error, 'Authentication Error');
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      setStatusMessage(`Authentication Error: ${errorMessage}`);
+      setStatusType('error');
+    } else {
+      setStatusMessage('');
     }
-  }, [error, showError]);
+  }, [error]);
 
   // Register with WebAuthn
   async function handleRegisterWithWebAuthn() {
@@ -128,22 +135,15 @@ export default function ConsentView({ isUserDashboardFlow = false }: ConsentView
         setAgentPKP(agentPkpInfo);
       } catch (agentError) {
         console.error('Error handling Agent PKP:', agentError);
-        showError(agentError as Error, 'Agent PKP Error');
+        setStatusMessage(`Agent PKP Error: ${agentError}`);
+        setStatusType('error');
       }
     } catch (err) {
       setSessionError(err as Error);
     } finally {
       setSessionLoading(false);
     }
-  }, [
-    authMethod,
-    userPKP,
-    setSessionSigs,
-    setAgentPKP,
-    setSessionError,
-    setSessionLoading,
-    showError,
-  ]);
+  }, [authMethod, userPKP, setSessionSigs, setAgentPKP, setSessionError, setSessionLoading]);
 
   // If user is authenticated, fetch accounts
   useEffect(() => {
@@ -215,7 +215,12 @@ export default function ConsentView({ isUserDashboardFlow = false }: ConsentView
   const renderContent = () => {
     // Use the stable loading state
     if (isStableLoading) {
-      return <StatusMessage message="Loading..." type="info" />;
+      return (
+        <div className="flex flex-col items-center justify-center py-8 space-y-4">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+          <p className="text-sm text-gray-600">Loading...</p>
+        </div>
+      );
     }
 
     // If authenticated with a new PKP and session sigs
@@ -243,12 +248,15 @@ export default function ConsentView({ isUserDashboardFlow = false }: ConsentView
         );
       } catch (error) {
         console.error('Error saving PKP info to localStorage:', error);
-        showError(error as Error, 'Authentication Error');
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        setStatusMessage(`Authentication Error: ${errorMessage}`);
+        setStatusType('error');
         return (
           <LoginMethods
             authWithWebAuthn={authWithWebAuthn}
             authWithStytch={authWithStytch}
             registerWithWebAuthn={handleRegisterWithWebAuthn}
+            clearError={clearError}
           />
         );
       }
@@ -297,9 +305,19 @@ export default function ConsentView({ isUserDashboardFlow = false }: ConsentView
         authWithWebAuthn={authWithWebAuthn}
         authWithStytch={authWithStytch}
         registerWithWebAuthn={handleRegisterWithWebAuthn}
+        clearError={clearError}
       />
     );
   };
 
-  return <div className="grow flex flex-col">{renderContent()}</div>;
+  return (
+    <div className="grow flex flex-col">
+      {statusMessage && (
+        <div className="mb-4">
+          <StatusMessage message={statusMessage} type={statusType} />
+        </div>
+      )}
+      {renderContent()}
+    </div>
+  );
 }

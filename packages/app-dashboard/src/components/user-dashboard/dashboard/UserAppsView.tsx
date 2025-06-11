@@ -1,114 +1,36 @@
-import { useState, useCallback, useEffect } from 'react';
-import { useErrorPopup } from '@/providers/ErrorPopup';
 import { useNavigate, Link } from 'react-router-dom';
 import { AppDetails } from '@/types';
 import { AppCard } from '../../app-dashboard/ui/AppCard';
-import { SessionSigs, IRelayPKP } from '@lit-protocol/types';
-import { fetchUserApps } from '@/utils/user-dashboard/userAppsUtils';
-import StatusMessage from '../consent/StatusMessage';
 
 export interface UserAppsViewProps {
-  userPKP: IRelayPKP;
-  sessionSigs: SessionSigs;
-  agentPKP: IRelayPKP;
+  apps: AppDetails[];
+  isLoading: boolean;
+  error?: string;
 }
 
-export default function UserAppsView({ userPKP, sessionSigs, agentPKP }: UserAppsViewProps) {
-  const [statusMessage, setStatusMessage] = useState<string>('');
-  const [statusType, setStatusType] = useState<'info' | 'warning' | 'success' | 'error'>('info');
-  const [apps, setApps] = useState<AppDetails[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-
+export default function UserAppsView({ apps, isLoading, error }: UserAppsViewProps) {
   const navigate = useNavigate();
-  const { showError } = useErrorPopup();
-
-  const showStatus = useCallback(
-    (message: string, type: 'info' | 'warning' | 'success' | 'error' = 'info') => {
-      setStatusMessage(message);
-      setStatusType(type);
-
-      if (type === 'success' || type === 'info') {
-        setTimeout(() => {
-          setStatusMessage('');
-        }, 5000);
-      }
-    },
-    [],
-  );
-
-  const showErrorWithStatus = useCallback(
-    (errorMessage: string, title?: string, details?: string) => {
-      showError(errorMessage, title || 'Error', details);
-      showStatus(errorMessage, 'error');
-    },
-    [showError, showStatus],
-  );
-
-  // Load apps when component mounts
-  useEffect(() => {
-    let isMounted = true;
-
-    async function loadApps() {
-      setIsLoading(true);
-
-      if (!userPKP || !sessionSigs || !agentPKP) {
-        showErrorWithStatus('Missing required authentication. Please reconnect your wallet.');
-        setIsLoading(false);
-        return;
-      }
-
-      const result = await fetchUserApps({
-        userPKP,
-        sessionSigs,
-        agentPKP,
-      });
-
-      if (isMounted) {
-        if (result.error) {
-          showError(
-            result.error,
-            'Error',
-            'Please try again, or contact support if the problem persists.',
-          );
-        } else {
-          setApps(result.apps);
-        }
-        setIsLoading(false);
-      }
-    }
-
-    loadApps();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
 
   const handleCardClick = (appId: string) => {
     navigate(`/user/appId/${appId}`);
   };
 
   if (isLoading) {
-    return <StatusMessage message="Loading your applications..." type="info" />;
+    return (
+      <div className="flex items-center justify-center h-32">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+        <p className="ml-4">Loading your apps...</p>
+      </div>
+    );
   }
 
   return (
     <div className="w-full">
-      {statusMessage && (
-        <div
-          className={`p-4 mb-6 rounded-lg border ${
-            statusType === 'error'
-              ? 'bg-red-50 border-red-200 text-red-800'
-              : statusType === 'success'
-                ? 'bg-green-50 border-green-200 text-green-800'
-                : 'bg-blue-50 border-blue-200 text-blue-800'
-          }`}
-        >
-          {statusMessage}
+      {error ? (
+        <div className="text-center py-8">
+          <p className="text-red-600">{error}</p>
         </div>
-      )}
-
-      {apps.length === 0 ? (
+      ) : apps.length === 0 ? (
         <div className="border border-gray-200 rounded-lg p-12 text-center bg-gray-50">
           <h2 className="text-2xl font-semibold mb-4 text-gray-900">No Connected Apps</h2>
           <p className="text-gray-600 text-lg mb-6">

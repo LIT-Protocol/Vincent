@@ -1,6 +1,6 @@
 import { ethers } from 'ethers';
 import { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
-import { StatusType } from '@/components/user-dashboard/withdraw/types';
+import { StatusType } from '@/types/shared/StatusType';
 import { sendTokenTransaction, sendNativeTransaction } from './transactionService';
 import { LitNodeClient } from '@lit-protocol/lit-node-client';
 import { SessionSigs, IRelayPKP } from '@lit-protocol/types';

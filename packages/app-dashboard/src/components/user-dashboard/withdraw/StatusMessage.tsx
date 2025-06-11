@@ -1,5 +1,5 @@
 import React from 'react';
-import { StatusType } from './types';
+import { StatusType } from '@/types/shared/StatusType';
 
 interface StatusMessageProps {
   message: string | null;

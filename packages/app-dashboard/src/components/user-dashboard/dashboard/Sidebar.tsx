@@ -21,7 +21,8 @@ interface UserSidebarProps {
   selectedView: string | null;
   selectedApp: AppDetails | null;
   apps: AppDetails[];
-  isLoadingApps: boolean;
+  isLoading: boolean;
+  appsError: string | null;
   onToggleMenu: (menuId: string) => void;
   onMenuSelection: (id: string) => void;
   onAppSelection: (app: AppDetails) => void;
@@ -32,7 +33,8 @@ export function UserSidebar({
   selectedView,
   selectedApp,
   apps,
-  isLoadingApps,
+  isLoading,
+  appsError,
   onToggleMenu,
   onMenuSelection,
   onAppSelection,
@@ -175,8 +177,10 @@ export function UserSidebar({
                       }`}
                     >
                       <div className="ml-8 mt-1 space-y-1">
-                        {isLoadingApps ? (
+                        {isLoading ? (
                           <div className="px-4 py-2 text-xs text-gray-500">Loading apps...</div>
+                        ) : appsError ? (
+                          <div className="px-4 py-2 text-xs text-red-600">{appsError}</div>
                         ) : apps.length === 0 ? (
                           <div className="px-4 py-2 text-xs text-gray-500">No connected apps</div>
                         ) : (

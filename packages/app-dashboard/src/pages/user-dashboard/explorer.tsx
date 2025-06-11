@@ -1,11 +1,11 @@
 import { Helmet } from 'react-helmet';
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { fetchAllApps } from '@/utils/user-dashboard/userAppsUtils';
 import { AppDetails } from '@/types';
-import Loading from '@/layout/app-dashboard/Loading';
-import { AppCard } from '@/components/app-dashboard/explorer/AppCard';
-import { AppDetailsModal } from '@/components/app-dashboard/explorer/AppDetailsModal';
+import { StatusMessage } from '@/utils/shared/statusMessage';
+import { AppCard } from '@/components/user-dashboard/explorer/AppCard';
+import { AppDetailsModal } from '@/components/user-dashboard/explorer/AppDetailsModal';
 
 export default function ExplorerPage() {
   const navigate = useNavigate();
@@ -14,8 +14,7 @@ export default function ExplorerPage() {
   // Apps state
   const [apps, setApps] = useState<AppDetails[]>([]);
   const [isLoadingApps, setIsLoadingApps] = useState<boolean>(true);
-  const [statusMessage, setStatusMessage] = useState<string>('');
-  const [statusType, setStatusType] = useState<'info' | 'warning' | 'success' | 'error'>('info');
+  const [appsError, setAppsError] = useState<string | null>(null);
 
   // Modal state
   const [selectedAppId, setSelectedAppId] = useState<string | null>(null);
@@ -35,34 +34,22 @@ export default function ExplorerPage() {
     }
   }, [appIdFromUrl]);
 
-  const showStatus = useCallback(
-    (message: string, type: 'info' | 'warning' | 'success' | 'error' = 'info') => {
-      setStatusMessage(message);
-      setStatusType(type);
-
-      if (type === 'success' || type === 'info') {
-        setTimeout(() => {
-          setStatusMessage('');
-        }, 5000);
-      }
-    },
-    [],
-  );
-
   // Load all apps
   useEffect(() => {
     let isMounted = true;
 
     async function loadApps() {
       setIsLoadingApps(true);
+      setAppsError(null); // Clear any previous errors
 
       const result = await fetchAllApps();
 
       if (isMounted) {
         if (result.error) {
-          showStatus(result.error, 'error');
+          setAppsError(result.error);
         } else {
           setApps(result.apps);
+          setAppsError(null);
         }
         setIsLoadingApps(false);
       }
@@ -73,7 +60,7 @@ export default function ExplorerPage() {
     return () => {
       isMounted = false;
     };
-  }, [showStatus]);
+  }, []);
 
   const handleAppClick = (appId: string) => {
     navigate(`/user/explorer/appId/${appId}`);
@@ -103,16 +90,16 @@ export default function ExplorerPage() {
       .slice(0, 3);
   }, [apps]);
 
-  // Show loading while fetching apps
+  // Show loading state
   if (isLoadingApps) {
     return (
       <>
         <Helmet>
-          <title>Vincent | Explorer</title>
-          <meta name="description" content="Explore all Vincent applications" />
+          <title>Vincent | App Explorer</title>
+          <meta name="description" content="Explore Vincent applications" />
         </Helmet>
-        <main className="p-8 flex items-center justify-center min-h-screen">
-          <Loading />
+        <main className="p-8">
+          <StatusMessage message="Loading applications..." type="info" />
         </main>
       </>
     );
@@ -133,22 +120,12 @@ export default function ExplorerPage() {
             <p className="text-gray-600">Discover and connect to Vincent applications</p>
           </div>
 
-          {/* Status Message */}
-          {statusMessage && (
-            <div
-              className={`p-4 mb-6 rounded-lg border ${
-                statusType === 'error'
-                  ? 'bg-red-50 border-red-200 text-red-800'
-                  : statusType === 'success'
-                    ? 'bg-green-50 border-green-200 text-green-800'
-                    : 'bg-blue-50 border-blue-200 text-blue-800'
-              }`}
-            >
-              {statusMessage}
+          {/* Error Message */}
+          {appsError ? (
+            <div className="text-center py-8">
+              <p className="text-red-600">{appsError}</p>
             </div>
-          )}
-
-          {apps.length === 0 ? (
+          ) : apps.length === 0 ? (
             <div className="border border-gray-200 rounded-lg p-12 text-center bg-gray-50">
               <h2 className="text-2xl font-semibold mb-4 text-gray-900">No Applications Found</h2>
               <p className="text-gray-600 text-lg mb-6">
