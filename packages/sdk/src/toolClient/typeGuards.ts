@@ -1,6 +1,6 @@
 // src/lib/toolClient/typeGuards.ts
 
-import {
+import type {
   ToolResponse,
   ToolResponseFailure,
   ToolResponseFailureNoResult,
@@ -20,8 +20,7 @@ export function isToolResponseSuccess(
     typeof value === 'object' &&
     value !== null &&
     'success' in value &&
-    (value as any).success === true &&
-    'result' in value
+    (value as any).success === true
   );
 }
 
@@ -37,8 +36,7 @@ export function isToolResponseFailure(
     typeof value === 'object' &&
     value !== null &&
     'success' in value &&
-    (value as any).success === false &&
-    'result' in value
+    (value as any).success === false
   );
 }
 
@@ -52,7 +50,6 @@ export function isToolResponse(
     typeof value === 'object' &&
     value !== null &&
     'success' in value &&
-    typeof (value as any).success === 'boolean' &&
-    'result' in value
+    typeof (value as any).success === 'boolean'
   );
 }

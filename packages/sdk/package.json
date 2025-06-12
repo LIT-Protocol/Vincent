@@ -17,10 +17,6 @@
     "authentication",
     "sdk"
   ],
-  "scripts": {
-    "watch:type-tests": "chokidar 'src/**/*' --initial --await-write-finish --delay 100 --silent -c './scripts/run-typecheck.sh'",
-    "typecheck": "./scripts/precommit-check.sh"
-  },
   "dependencies": {
     "@lit-protocol/auth-helpers": "^7.0.9",
     "@lit-protocol/constants": "^7.0.8",

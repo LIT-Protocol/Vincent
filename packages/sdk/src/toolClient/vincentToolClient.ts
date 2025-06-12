@@ -1,40 +1,65 @@
 // src/lib/toolClient/vincentToolClient.ts
 
-import { PolicyEvaluationResultContext, VincentTool, BaseContext } from '../types';
 import { z } from 'zod';
-import {
-  validateOrDeny,
-  getSchemaForPolicyResponseResult,
-  isPolicyDenyResponse,
-  createDenyResult,
-  isPolicyAllowResponse,
-} from '../policyCore/helpers';
-import { ToolPolicyMap } from '../toolCore/helpers';
-import { getSchemaForToolResult, validateOrFail } from '../toolCore/helpers/zod';
-import { createToolSuccessResult } from '../toolCore/helpers/resultCreators';
+
 import { ethers } from 'ethers';
-import { decodePolicyParams } from '../policyCore/policyParameters/decodePolicyParams';
-import type { DecodedValues } from '../policyCore/policyParameters/types';
-import { YELLOWSTONE_PUBLIC_RPC } from '../constants';
-import { getLitNodeClientInstance } from '../LitNodeClient/getLitNodeClient';
-import type { LitNodeClient } from '@lit-protocol/lit-node-client';
+
 import {
   createSiweMessageWithRecaps,
   generateAuthSig,
   LitActionResource,
   LitPKPResource,
 } from '@lit-protocol/auth-helpers';
+
 import { LIT_ABILITY, LIT_NETWORK } from '@lit-protocol/constants';
-import { validatePolicies } from '../toolCore/helpers/validatePolicies';
+
+import type { LitNodeClient } from '@lit-protocol/lit-node-client';
+
+import {
+  getPkpInfo,
+  type ToolPolicyMap,
+} from '@lit-protocol/vincent-tool-sdk/src/lib/toolCore/helpers';
+import type {
+  VincentTool,
+  PolicyEvaluationResultContext,
+  ToolConsumerContext,
+} from '@lit-protocol/vincent-tool-sdk';
+
+import { getPoliciesAndAppVersion } from '@lit-protocol/vincent-tool-sdk/src/lib/policyCore/policyParameters/getOnchainPolicyParams';
+import { validatePolicies } from '@lit-protocol/vincent-tool-sdk/src/lib/toolCore/helpers/validatePolicies';
+import type { DecodedValues } from '@lit-protocol/vincent-tool-sdk/src/lib/policyCore/policyParameters/types';
+import { decodePolicyParams } from '@lit-protocol/vincent-tool-sdk/src/lib/policyCore/policyParameters/decodePolicyParams';
+import { YELLOWSTONE_PUBLIC_RPC } from '@lit-protocol/vincent-tool-sdk/src/lib/constants';
+import {
+  LIT_DATIL_PUBKEY_ROUTER_ADDRESS,
+  LIT_DATIL_VINCENT_ADDRESS,
+} from '@lit-protocol/vincent-tool-sdk/src/lib/handlers/constants';
+
+import {
+  createDenyResult,
+  getSchemaForPolicyResponseResult,
+  isPolicyAllowResponse,
+  isPolicyDenyResponse,
+  validateOrDeny,
+} from '@lit-protocol/vincent-tool-sdk/src/lib/policyCore/helpers';
+
+import { createToolSuccessResult } from '@lit-protocol/vincent-tool-sdk/src/lib/toolCore/helpers/resultCreators';
+
+import {
+  getSchemaForToolResult,
+  validateOrFail,
+} from '@lit-protocol/vincent-tool-sdk/src/lib/toolCore/helpers/zod';
+
+import { getLitNodeClientInstance } from '../internal/LitNodeClient/getLitNodeClient';
+
 import {
   createAllowEvaluationResult,
   createDenyEvaluationResult,
   createToolResponseFailureNoResult,
 } from './resultCreators';
-import { ToolResponse } from './types';
+import { type RemoteVincentToolExecutionResult, ToolResponse } from './types';
 import { isToolResponseFailure } from './typeGuards';
-import { getPoliciesAndAppVersion } from '../policyCore/policyParameters/getOnchainPolicyParams';
-import { LIT_DATIL_VINCENT_ADDRESS } from '../handlers/constants';
+import type { BaseToolContext } from '@lit-protocol/vincent-tool-sdk/dist/lib/toolCore/toolDef/context/types';
 
 const generateSessionSigs = async ({
   litNodeClient,
@@ -86,26 +111,50 @@ async function runToolPolicyPrechecks<
     any
   >;
   toolParams: unknown;
-  context: BaseContext & { rpcUrl?: string };
-}): Promise<PolicyEvaluationResultContext<PoliciesByPackageName>> {
+  context: ToolConsumerContext & { delegateePkpEthAddress: string; rpcUrl?: string };
+}): Promise<BaseToolContext<PolicyEvaluationResultContext<PoliciesByPackageName>>> {
   type Key = PkgNames & keyof PoliciesByPackageName;
 
-  const { vincentTool, toolParams, context } = args;
+  const {
+    vincentTool,
+    toolParams,
+    context: { delegateePkpEthAddress, delegatorPkpEthAddress, rpcUrl, toolIpfsCid },
+  } = args;
 
   const parsedToolParams = vincentTool.toolParamsSchema.parse(toolParams);
 
-  const { policies, appId, appVersion } = await getPoliciesAndAppVersion({
-    delegationRpcUrl: context.rpcUrl ?? YELLOWSTONE_PUBLIC_RPC,
-    vincentContractAddress: LIT_DATIL_VINCENT_ADDRESS,
-    appDelegateeAddress: context.delegation.delegateeAddress,
-    agentWalletPkpTokenId: context.delegation.delegatorPkpInfo.tokenId,
-    toolIpfsCid: context.toolIpfsCid,
+  const userPkpInfo = await getPkpInfo({
+    litPubkeyRouterAddress: LIT_DATIL_PUBKEY_ROUTER_ADDRESS,
+    yellowstoneRpcUrl: 'https://yellowstone-rpc.litprotocol.com/',
+    pkpEthAddress: delegatorPkpEthAddress,
   });
+
+  const { policies, appId, appVersion } = await getPoliciesAndAppVersion({
+    delegationRpcUrl: rpcUrl ?? YELLOWSTONE_PUBLIC_RPC,
+    vincentContractAddress: LIT_DATIL_VINCENT_ADDRESS,
+    appDelegateeAddress: delegateePkpEthAddress,
+    agentWalletPkpTokenId: userPkpInfo.tokenId,
+    toolIpfsCid,
+  });
+
+  const baseContext = {
+    toolIpfsCid,
+    appId: appId.toNumber(),
+    appVersion: appVersion.toNumber(),
+    delegation: {
+      delegateeAddress: delegateePkpEthAddress,
+      delegatorPkpInfo: {
+        ethAddress: delegatorPkpEthAddress,
+        tokenId: userPkpInfo.tokenId,
+        publicKey: userPkpInfo.publicKey,
+      },
+    },
+  };
 
   const validatedPolicies = await validatePolicies({
     policies,
     vincentTool,
-    toolIpfsCid: context.toolIpfsCid,
+    toolIpfsCid,
     parsedToolParams,
   });
 
@@ -165,14 +214,7 @@ async function runToolPolicyPrechecks<
           toolParams: toolPolicyParams,
           userParams: decodedPoliciesByPackageName[key as string] as unknown,
         },
-        {
-          appId: appId.toNumber(),
-          appVersion: appVersion.toNumber(),
-          delegation: {
-            delegatee: context.delegation.delegateeAddress,
-            delegator: context.delegation.delegatorAddress,
-          },
-        }
+        baseContext
       );
 
       const { schemaToUse } = getSchemaForPolicyResponseResult({
@@ -209,36 +251,48 @@ async function runToolPolicyPrechecks<
     }
   }
 
-  return deniedPolicy
-    ? createDenyEvaluationResult(
-        evaluatedPolicies,
-        allowedPolicies as {
-          [K in keyof PoliciesByPackageName]?: {
-            result: PoliciesByPackageName[K]['__schemaTypes'] extends {
-              evalAllowResultSchema: infer Schema;
-            }
-              ? Schema extends z.ZodType
-                ? z.infer<Schema>
-                : never
-              : never;
-          };
-        },
-        deniedPolicy
-      )
-    : createAllowEvaluationResult(
-        evaluatedPolicies,
-        allowedPolicies as {
-          [K in keyof PoliciesByPackageName]?: {
-            result: PoliciesByPackageName[K]['__schemaTypes'] extends {
-              evalAllowResultSchema: infer Schema;
-            }
-              ? Schema extends z.ZodType
-                ? z.infer<Schema>
-                : never
-              : never;
-          };
+  if (deniedPolicy) {
+    const policiesContext = createDenyEvaluationResult(
+      evaluatedPolicies,
+      allowedPolicies as {
+        [K in keyof PoliciesByPackageName]?: {
+          result: PoliciesByPackageName[K]['__schemaTypes'] extends {
+            evalAllowResultSchema: infer Schema;
+          }
+            ? Schema extends z.ZodType
+              ? z.infer<Schema>
+              : never
+            : never;
+        };
+      },
+      deniedPolicy
+    );
+
+    return {
+      ...baseContext,
+      policiesContext,
+    };
+  }
+
+  const policiesContext = createAllowEvaluationResult(
+    evaluatedPolicies,
+    allowedPolicies as {
+      [K in keyof PoliciesByPackageName]?: {
+        result: PoliciesByPackageName[K]['__schemaTypes'] extends {
+          evalAllowResultSchema: infer Schema;
         }
-      );
+          ? Schema extends z.ZodType
+            ? z.infer<Schema>
+            : never
+          : never;
+      };
+    }
+  );
+
+  return {
+    ...baseContext,
+    policiesContext,
+  };
 }
 
 export function createVincentToolClient<
@@ -273,63 +327,48 @@ export function createVincentToolClient<
 
   return {
     async precheck(
-      rawToolParams: unknown,
+      toolParams: z.infer<ToolParamsSchema>,
       {
         rpcUrl,
-        delegator,
+        delegatorPkpEthAddress,
         toolIpfsCid,
-        appId,
-        appVersion,
       }: {
         rpcUrl?: string;
-        delegator: string;
+        delegatorPkpEthAddress: string;
         toolIpfsCid: string;
-        appId: number;
-        appVersion: number;
       }
     ): Promise<ToolResponse<PrecheckSuccessSchema, PrecheckFailSchema, PoliciesByPackageName>> {
-      const delegatee = ethers.utils.getAddress(await ethersSigner.getAddress());
+      const delegateePkpEthAddress = ethers.utils.getAddress(await ethersSigner.getAddress());
 
-      const policiesContext: PolicyEvaluationResultContext<PoliciesByPackageName> =
-        await runToolPolicyPrechecks({
-          vincentTool,
-          toolParams: rawToolParams,
-          context: {
-            appId,
-            appVersion,
-            rpcUrl,
-            toolIpfsCid,
-            delegation: { delegatorAddress: delegator, delegateeAddress: delegatee },
-          },
-        });
+      const baseToolContext = await runToolPolicyPrechecks({
+        vincentTool,
+        toolParams,
+        context: {
+          toolIpfsCid,
+          delegateePkpEthAddress,
+          delegatorPkpEthAddress: delegatorPkpEthAddress,
+          rpcUrl,
+        },
+      });
 
       if (!vincentTool.precheck) {
         return {
           ...createToolSuccessResult(),
-          policiesContext,
+          context: baseToolContext,
         } as ToolResponse<PrecheckSuccessSchema, PrecheckFailSchema, PoliciesByPackageName>;
       }
 
-      const precheckResult = await vincentTool.precheck(
-        { toolParams: rawToolParams },
-        {
-          policiesContext,
-          delegation: { delegatorAddress: delegator, delegateeAddress: delegatee },
-          toolIpfsCid,
-          appId,
-          appVersion,
-        }
-      );
+      const precheckResult = await vincentTool.precheck({ toolParams }, baseToolContext);
 
       return {
         ...precheckResult,
-        policiesContext,
+        context: baseToolContext,
       } as ToolResponse<PrecheckSuccessSchema, PrecheckFailSchema, PoliciesByPackageName>;
     },
 
     async execute(
       rawToolParams: unknown,
-      context: BaseContext
+      context: ToolConsumerContext
     ): Promise<ToolResponse<ExecuteSuccessSchema, ExecuteFailSchema, PoliciesByPackageName>> {
       const parsedParams = validateOrFail(
         rawToolParams,
@@ -341,7 +380,7 @@ export function createVincentToolClient<
       if (isToolResponseFailure(parsedParams)) {
         return {
           ...parsedParams,
-          policiesContext: undefined,
+          context,
         } as ToolResponse<ExecuteSuccessSchema, ExecuteFailSchema, PoliciesByPackageName>;
       }
 
@@ -349,15 +388,11 @@ export function createVincentToolClient<
       const sessionSigs = await generateSessionSigs({ ethersSigner, litNodeClient });
 
       const result = await litNodeClient.executeJs({
-        ipfsId: '09180ijflkshdjf',
-        // ipfsId: context.toolIpfsCid,
+        ipfsId: context.toolIpfsCid, // FIXME: The toolIpfsCid should be on the bundledVincentTool
         sessionSigs,
         jsParams: {
-          toolParams: { ...parsedParams },
-          context: {
-            ...context,
-            delegatee: await ethersSigner.getAddress(),
-          },
+          toolParams: parsedParams,
+          context,
         },
       });
 
@@ -375,30 +410,44 @@ export function createVincentToolClient<
         }) as ToolResponse<ExecuteSuccessSchema, ExecuteFailSchema, PoliciesByPackageName>;
       }
 
-      const resp = response as ToolResponse<
+      const resp = response as RemoteVincentToolExecutionResult<
         ExecuteSuccessSchema,
         ExecuteFailSchema,
         PoliciesByPackageName
       >;
 
-      if (resp.result) {
+      const executionResult = resp.toolExecutionResult;
+      if (executionResult.result) {
         const { schemaToUse } = getSchemaForToolResult({
-          value: resp.result,
+          value: executionResult,
           successResultSchema: executeSuccessSchema,
           failureResultSchema: executeFailSchema,
         });
 
-        const executeResult = validateOrFail(response, schemaToUse, 'execute', 'output');
+        const executeResult = validateOrFail(
+          executionResult.result,
+          schemaToUse,
+          'execute',
+          'output'
+        );
+
+        if (isToolResponseFailure(executeResult)) {
+          return { ...executeResult, context: resp.toolContext } as ToolResponse<
+            ExecuteSuccessSchema,
+            ExecuteFailSchema,
+            PoliciesByPackageName
+          >;
+        }
 
         return {
           ...executeResult,
-          policiesContext: resp.policiesContext,
-        } as ToolResponse<ExecuteSuccessSchema, ExecuteFailSchema, PoliciesByPackageName>;
+          context: resp.toolContext,
+        };
       }
 
       return {
-        ...resp,
-        policiesContext: resp.policiesContext,
+        ...executionResult,
+        context: resp.toolContext,
       };
     },
   };

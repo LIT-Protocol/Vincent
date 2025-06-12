@@ -387,6 +387,7 @@ export type VincentTool<
 };
 
 export interface ToolConsumerContext {
+  toolIpfsCid: string; // FIXME: This will be removed when we have shipped lit action ipfs cids stack
   delegatorPkpEthAddress: string;
 }
 

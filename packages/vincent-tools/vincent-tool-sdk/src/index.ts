@@ -8,4 +8,13 @@ export { asBundledVincentPolicy } from './lib/policyCore/bundledPolicy/bundledPo
 export { supportedPoliciesForTool } from './lib/toolCore/helpers/supportedPoliciesForTool';
 
 export type { BundledVincentPolicy } from './lib/policyCore/bundledPolicy/types';
-export type { VincentToolPolicy, BaseContext, PolicyEvaluationResultContext } from './lib/types';
+export type {
+  VincentToolPolicy,
+  BaseContext,
+  PolicyEvaluationResultContext,
+  VincentTool,
+  ToolConsumerContext,
+  PolicyConsumerContext,
+} from './lib/types';
+
+export type { BaseToolContext } from './lib/toolCore/toolDef/context/types';

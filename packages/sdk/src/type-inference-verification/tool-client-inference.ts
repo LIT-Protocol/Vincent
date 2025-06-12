@@ -14,6 +14,7 @@ const currencyPolicy = createVincentPolicy({
   toolParamsSchema: z.object({ currency: z.string() }),
   evaluate: async ({ toolParams }, ctx) => ctx.allow({ approvedCurrency: toolParams.currency }),
   evalAllowResultSchema: z.object({ approvedCurrency: z.string() }),
+  evalDenyResultSchema: z.object({ borked: z.string() }),
 });
 
 const currencyToolPolicy = createVincentToolPolicy({
@@ -69,9 +70,7 @@ export async function run() {
   } as const;
 
   const precheckResult = await client.precheck(toolParams, {
-    appId: 123123,
-    appVersion: 123,
-    delegator: '0xabc',
+    delegatorPkpEthAddress: '0xabc',
     toolIpfsCid: 'QmFakeTool123',
   });
 
@@ -85,9 +84,9 @@ export async function run() {
       console.log(successResult.foo);
     }
 
-    const policiesContext = precheckResult.policiesContext;
+    const policiesContext = precheckResult?.context?.policiesContext;
 
-    if (policiesContext && policiesContext.allow) {
+    if (precheckResult && policiesContext && policiesContext.allow) {
       const p = policiesContext.allowedPolicies;
 
       // ✅ Should infer currency-policy result shape
@@ -117,8 +116,15 @@ export async function run() {
     precheckResult.error?.toUpperCase();
 
     // Should still be optional policiesContext
-    const deniedPolicy = precheckResult.policiesContext?.deniedPolicy;
+    const deniedPolicy = precheckResult.context?.policiesContext?.deniedPolicy;
     if (deniedPolicy) {
+      if (
+        deniedPolicy.packageName === 'currency-policy' &&
+        deniedPolicy.result &&
+        deniedPolicy.result.borked
+      ) {
+        console.log(deniedPolicy.result.borked);
+      }
       console.log(deniedPolicy.result);
     }
   }
@@ -126,17 +132,7 @@ export async function run() {
   // 🧪 Now check execute inference
   const executeResult = await client.execute(toolParams, {
     toolIpfsCid: 'oijskljfdj',
-    appId: 123123,
-    appVersion: 123,
-    delegation: {
-      delegateeAddress: '0xabc',
-      delegatorPkpInfo: {
-        tokenId: '90128301832',
-        ethAddress: '0x102398103981032',
-        publicKey: '0398103810938ef987ef978fe987ef',
-      },
-    },
-    // toolIpfsCid: 'QmFakeTool123',
+    delegatorPkpEthAddress: '0x09182301238',
   });
 
   if (executeResult.success === true) {
@@ -146,7 +142,7 @@ export async function run() {
       // @ts-expect-error - invalid field on success result
       console.log(val.failureReason);
 
-      const result = executeResult.policiesContext?.allowedPolicies;
+      const result = executeResult.context?.policiesContext?.allowedPolicies;
       if (result) {
         const currencyPolicyResult = result['currency-policy'];
         if (currencyPolicyResult) {
@@ -155,7 +151,7 @@ export async function run() {
       }
     }
   } else {
-    console.log(executeResult.policiesContext?.deniedPolicy?.result);
+    console.log(executeResult.context?.policiesContext?.deniedPolicy?.result);
   }
 }
 
@@ -213,10 +209,8 @@ const fullParams = { count: 5 };
 
 export async function gogo() {
   const precheck = await fullClient.precheck(fullParams, {
-    appId: 123123,
-    appVersion: 123,
-    delegator: '0xabc',
     toolIpfsCid: 'QmFullSchema123',
+    delegatorPkpEthAddress: '0x1sfskjdfhf',
   });
 
   if (precheck.success === true) {
@@ -234,16 +228,7 @@ export async function gogo() {
 
   const execute = await fullClient.execute(fullParams, {
     toolIpfsCid: 'oijskljfdj',
-    appId: 123123,
-    appVersion: 123,
-    delegation: {
-      delegateeAddress: '0xabc',
-      delegatorPkpInfo: {
-        tokenId: '90128301832',
-        ethAddress: '0x102398103981032',
-        publicKey: '0398103810938ef987ef978fe987ef',
-      },
-    },
+    delegatorPkpEthAddress: '0x098479847928734',
   });
 
   if (execute.success === true) {
