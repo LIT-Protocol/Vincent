@@ -22,7 +22,7 @@ export default function SharedHome() {
             className="max-w-[400px] mb-5"
           />
           <p className="text-gray-600 mb-8 max-w-md">
-            AI Assistant for user owned automation. Choose your path to get started.
+            Automated, user-controlled AI agents. Choose your path to get started.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 mb-8">
