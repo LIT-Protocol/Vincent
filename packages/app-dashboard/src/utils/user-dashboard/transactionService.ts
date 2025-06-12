@@ -1,5 +1,6 @@
 import { ethers } from 'ethers';
 import { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
+import { fixFeeData } from './fixGasFee';
 
 interface TokenDetails {
   address: string;
@@ -88,9 +89,15 @@ export async function sendNativeTransaction({
       };
     }
 
-    const txOptions = {
+    const rawFeeData = await provider.getFeeData();
+    const feeData = fixFeeData(rawFeeData, 'bigNumber');
+
+    const txOptions: any = {
       to: recipientAddress,
       value: amount,
+      type: 2,
+      maxFeePerGas: feeData.maxFeePerGas,
+      maxPriorityFeePerGas: feeData.maxPriorityFeePerGas,
     };
 
     return await sendTransaction({
@@ -118,7 +125,8 @@ export async function sendTokenTransaction({
   provider,
 }: SendTokenTransactionParams): Promise<TransactionResult> {
   try {
-    const gasPrice = await provider.getGasPrice();
+    const rawFeeData = await provider.getFeeData();
+    const feeData = fixFeeData(rawFeeData, 'bigNumber');
 
     const tokenContract = new ethers.Contract(
       tokenDetails.address,
@@ -145,16 +153,19 @@ export async function sendTokenTransaction({
 
     const data = tokenContract.interface.encodeFunctionData('transfer', [recipientAddress, amount]);
 
-    const txOptions = {
+    // Prepare transaction options for EIP-1559
+    const txOptions: any = {
       to: tokenDetails.address,
       value: 0,
       data: data,
       gasLimit: gasLimit,
-      gasPrice: gasPrice,
+      type: 2,
+      maxFeePerGas: feeData.maxFeePerGas,
+      maxPriorityFeePerGas: feeData.maxPriorityFeePerGas,
     };
 
     const nativeBalance = await pkpWallet.getBalance();
-    const gasCost = gasLimit.mul(gasPrice);
+    const gasCost = gasLimit.mul(feeData.maxFeePerGas!);
 
     if (nativeBalance.lt(gasCost)) {
       return {
