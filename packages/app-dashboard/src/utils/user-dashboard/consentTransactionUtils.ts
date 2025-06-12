@@ -5,6 +5,7 @@ import { AUTH_METHOD_SCOPE } from '@lit-protocol/constants';
 import { SELECTED_LIT_NETWORK } from './lit';
 import { IPFS_POLICIES_THAT_NEED_SIGNING } from '@/config/policyConstants';
 import { hexToBase58 } from './consentVerificationUtils';
+import { fixFeeData } from './fixGasFee';
 
 /**
  * Handles sending a transaction with proper error handling
@@ -22,91 +23,42 @@ export const sendTransaction = async (
   args: any[],
   statusMessage: string,
   statusCallback?: (message: string, type: 'info' | 'warning' | 'success' | 'error') => void,
-  errorCallback?: (error: any, title?: string, details?: string) => void,
 ) => {
   try {
     statusCallback?.('Estimating transaction gas fees...', 'info');
     const gasLimit = await estimateGasWithBuffer(contract, methodName, args);
 
-    statusCallback?.(statusMessage, 'info');
-    const txResponse = await contract[methodName](...args, {
+    const provider = contract.provider;
+    const feeData = await provider.getFeeData();
+
+    const txOptions: any = {
       gasLimit,
-    });
+    };
+
+    if (feeData.maxFeePerGas && feeData.maxPriorityFeePerGas) {
+      txOptions.type = 2;
+      const fixedFeeData = fixFeeData(feeData);
+      txOptions.maxFeePerGas = fixedFeeData.maxFeePerGas;
+      txOptions.maxPriorityFeePerGas = fixedFeeData.maxPriorityFeePerGas;
+    } else if (feeData.gasPrice) {
+      txOptions.gasPrice = feeData.gasPrice;
+    } else {
+      const gasPrice = await provider.getGasPrice();
+      txOptions.gasPrice = gasPrice;
+    }
+
+    statusCallback?.(statusMessage, 'info');
+    console.log('txOptions', txOptions);
+    const txResponse = await contract[methodName](...args, txOptions);
+    console.log('txResponse', txResponse);
 
     statusCallback?.(`Transaction submitted! Hash: ${txResponse.hash.substring(0, 10)}...`, 'info');
 
     return txResponse;
   } catch (error) {
     console.error(`TRANSACTION FAILED (${methodName}):`, error);
-
-    // Try to extract more specific error information
-    const errorObj = error as any;
-    const errorMessage = errorObj.message || '';
-    const errorData = errorObj.data || '';
-    const errorReason = errorObj.reason || '';
-
-    console.error('Error details:', {
-      message: errorMessage,
-      data: errorData,
-      reason: errorReason,
-    });
-
-    // Get the raw error message for display in details
-    let rawErrorDetails = '';
-    if (typeof errorMessage === 'string') {
-      rawErrorDetails = errorMessage.substring(0, 500); // Get first 500 chars
-    }
-
-    // Format the raw error details for better readability
-    if (rawErrorDetails.includes('execution reverted')) {
-      const parts = rawErrorDetails.split('execution reverted');
-      if (parts.length > 1) {
-        rawErrorDetails = 'Execution reverted: ' + parts[1].trim();
-      }
-    }
-
-    // Check for common contract errors
-    let userFriendlyError: string;
-
-    if (errorMessage.includes('AppNotRegistered')) {
-      userFriendlyError = `App ID is not registered in the contract`;
-    } else if (
-      errorMessage.includes('AppVersionNotRegistered') ||
-      errorMessage.includes('AppVersionNotEnabled')
-    ) {
-      userFriendlyError = `App version is not registered or not enabled`;
-    } else if (
-      errorMessage.includes('EmptyToolIpfsCid') ||
-      errorMessage.includes('EmptyPolicyIpfsCid')
-    ) {
-      userFriendlyError = 'One of the tool or policy IPFS CIDs is empty';
-    } else if (
-      errorMessage.includes('EmptyParameterName') ||
-      errorMessage.includes('EmptyParameterValue')
-    ) {
-      userFriendlyError = 'Parameter name or value cannot be empty';
-    } else if (
-      errorMessage.includes('PolicyParameterNameNotRegistered') ||
-      errorMessage.includes('ToolNotRegistered') ||
-      errorMessage.includes('ToolPolicyNotRegistered')
-    ) {
-      userFriendlyError =
-        'Tool, policy, or parameter is not properly registered for this app version';
-    } else if (errorMessage.includes('NotPkpOwner')) {
-      userFriendlyError = 'You are not the owner of this PKP';
-    } else if (errorMessage.includes('cannot estimate gas')) {
-      userFriendlyError = 'Transaction cannot be completed - the contract rejected it';
-    } else {
-      // Default error message
-      userFriendlyError = `Transaction failed`;
-    }
-
-    // Show the error in the popup with detailed information
-    errorCallback?.(userFriendlyError, 'Contract Error', rawErrorDetails);
     statusCallback?.('Transaction failed', 'error');
-
-    // Rethrow the error with the user-friendly message
-    throw new Error(userFriendlyError);
+    throw error;
   }
 };
 
@@ -132,6 +84,28 @@ export const addPermittedActions = async (
   statusCallback?.(`Adding permissions for ${toolIpfsCids.length} action(s)...`, 'info');
 
   try {
+    // Get provider and prepare gas options
+    const provider = wallet.provider;
+    if (!provider) {
+      throw new Error('Wallet provider not available');
+    }
+
+    const feeData = await provider.getFeeData();
+    const fixedFeeData = fixFeeData(feeData);
+
+    // Prepare gas options for the SDK
+    const gasOptions: any = {};
+    if (feeData.maxFeePerGas && feeData.maxPriorityFeePerGas) {
+      gasOptions.maxFeePerGas = fixedFeeData.maxFeePerGas;
+      gasOptions.maxPriorityFeePerGas = fixedFeeData.maxPriorityFeePerGas;
+      gasOptions.type = 2;
+    } else if (feeData.gasPrice) {
+      gasOptions.gasPrice = feeData.gasPrice;
+    } else {
+      const gasPrice = await provider.getGasPrice();
+      gasOptions.gasPrice = gasPrice;
+    }
+
     // Initialize Lit Contracts
     const litContracts = new LitContracts({
       network: SELECTED_LIT_NETWORK,
@@ -159,6 +133,7 @@ export const addPermittedActions = async (
             ipfsId: ipfsCid,
             pkpTokenId: agentPKPTokenId,
             authMethodScopes: [AUTH_METHOD_SCOPE.SignAnything],
+            ...gasOptions, // Provide the corrected gas options
           });
         }
       }
@@ -171,6 +146,7 @@ export const addPermittedActions = async (
           ipfsId: ipfsCid,
           pkpTokenId: agentPKPTokenId,
           authMethodScopes: [AUTH_METHOD_SCOPE.SignAnything],
+          ...gasOptions, // Provide the corrected gas options
         });
       }
     }
@@ -178,6 +154,7 @@ export const addPermittedActions = async (
     statusCallback?.('Permission grants successful!', 'success');
     return { success: true };
   } catch (error) {
+    console.error('addPermittedActions error:', error);
     statusCallback?.(`Failed to add permitted actions`, 'error');
     return { success: false, error: error };
   }
