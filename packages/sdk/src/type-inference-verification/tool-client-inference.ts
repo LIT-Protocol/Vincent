@@ -1,9 +1,13 @@
 import { z } from 'zod';
-import { createVincentTool } from '../lib/toolCore/vincentTool';
-import { createVincentPolicy, createVincentToolPolicy } from '../lib/policyCore/vincentPolicy';
-import { createVincentToolClient } from '../lib/toolClient/vincentToolClient';
-import { supportedPoliciesForTool } from '../lib/toolCore/helpers/supportedPoliciesForTool';
-import { asBundledVincentPolicy } from '../lib/policyCore/bundledPolicy/bundledPolicy';
+import {
+  createVincentTool,
+  createVincentPolicy,
+  createVincentToolPolicy,
+  supportedPoliciesForTool,
+  asBundledVincentPolicy,
+} from '@lit-protocol/vincent-tool-sdk';
+
+import { createVincentToolClient } from '../toolClient/vincentToolClient';
 
 const currencyPolicy = createVincentPolicy({
   packageName: 'currency-policy',
