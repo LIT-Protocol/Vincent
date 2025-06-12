@@ -240,7 +240,6 @@ contract UpdateFacet is Script {
         selectors[0] = VincentUserFacet.permitAppVersion.selector;
         selectors[1] = VincentUserFacet.unPermitAppVersion.selector;
         selectors[2] = VincentUserFacet.setToolPolicyParameters.selector;
-        selectors[3] = VincentUserFacet.removeToolPolicyParameters.selector;
         return selectors;
     }
 

@@ -106,6 +106,21 @@ library LibVincentAppFacet {
     error EmptyToolIpfsCidNotAllowed(uint256 appId, uint256 toolIndex);
 
     /**
+     * @notice Error thrown when a tool IPFS CID is present more than once
+     * @param appId ID of the app
+     * @param toolIndex Index of the tool in the tools array
+     */
+    error DuplicateToolIpfsCidNotAllowed(uint256 appId, uint256 toolIndex);
+
+    /**
+     * @notice Error thrown when a policy IPFS CID is present more than once
+     * @param appId ID of the app
+     * @param toolIndex Index of the tool in the tools array
+     * @param policyIndex Index of the policy in the policies array
+     */
+    error DuplicateToolPolicyIpfsCidNotAllowed(uint256 appId, uint256 toolIndex, uint256 policyIndex);
+
+    /**
      * @notice Error thrown when a delegatee address is the zero address
      */
     error ZeroAddressDelegateeNotAllowed();
