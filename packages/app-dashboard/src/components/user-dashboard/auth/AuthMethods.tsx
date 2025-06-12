@@ -65,6 +65,33 @@ const AuthMethods = ({ setView }: AuthMethodsProps) => {
 
       <div
         className="w-full py-3 px-4 flex items-center justify-between bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
+        onClick={() => setView('wallet')}
+      >
+        <div className="flex items-center">
+          <div className="w-5 h-5 text-gray-500 mr-3 flex items-center justify-center">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-4 h-4">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
+              />
+            </svg>
+          </div>
+          <span className="text-gray-700 text-sm font-medium">Continue with wallet</span>
+        </div>
+        <svg
+          className="w-4 h-4 text-gray-400"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+        </svg>
+      </div>
+
+      <div
+        className="w-full py-3 px-4 flex items-center justify-between bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
         onClick={() => setView('webauthn')}
       >
         <div className="flex items-center">

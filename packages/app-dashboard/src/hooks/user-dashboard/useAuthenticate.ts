@@ -1,6 +1,10 @@
 import { useCallback, useState } from 'react';
 import { AuthMethod } from '@lit-protocol/types';
-import { authenticateWithWebAuthn, authenticateWithStytch } from '../../utils/user-dashboard/lit';
+import {
+  authenticateWithWebAuthn,
+  authenticateWithStytch,
+  authenticateWithEthWallet,
+} from '@/utils/user-dashboard/lit';
 
 export default function useAuthenticate() {
   const [authMethod, setAuthMethod] = useState<AuthMethod>();
@@ -72,9 +76,31 @@ export default function useAuthenticate() {
     [],
   );
 
+  /**
+   * Authenticate with Ethereum wallet
+   */
+  const authWithEthWallet = useCallback(
+    async (address: string, signMessage: (message: string) => Promise<string>): Promise<void> => {
+      setLoading(true);
+      setError(undefined);
+      setAuthMethod(undefined);
+
+      try {
+        const result: AuthMethod = await authenticateWithEthWallet(address, signMessage);
+        setAuthMethod(result);
+      } catch (err) {
+        setError(err as Error);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [],
+  );
+
   return {
     authWithWebAuthn,
     authWithStytch,
+    authWithEthWallet,
     authMethod,
     loading,
     error,

@@ -173,7 +173,7 @@ const StytchOTP = ({ method, authWithStytch, setView }: StytchOTPProps) => {
             Enter your {method}
           </h1>
           <p className="text-sm text-gray-600 text-center mb-6">
-            A verification code will be sent to your {method}.
+            A verification code will be sent to your {method}
           </p>
 
           <div className="w-full">

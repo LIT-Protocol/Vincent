@@ -78,6 +78,7 @@ export default function ConsentView({ isUserDashboardFlow = false }: ConsentView
     authMethod,
     authWithWebAuthn,
     authWithStytch,
+    authWithEthWallet,
     loading: authLoading,
     error: authError,
     clearError,
@@ -255,6 +256,7 @@ export default function ConsentView({ isUserDashboardFlow = false }: ConsentView
           <LoginMethods
             authWithWebAuthn={authWithWebAuthn}
             authWithStytch={authWithStytch}
+            authWithEthWallet={authWithEthWallet}
             registerWithWebAuthn={handleRegisterWithWebAuthn}
             clearError={clearError}
           />
@@ -304,6 +306,7 @@ export default function ConsentView({ isUserDashboardFlow = false }: ConsentView
       <LoginMethods
         authWithWebAuthn={authWithWebAuthn}
         authWithStytch={authWithStytch}
+        authWithEthWallet={authWithEthWallet}
         registerWithWebAuthn={handleRegisterWithWebAuthn}
         clearError={clearError}
       />

@@ -5,4 +5,9 @@ import ReduxProvider from '@/providers/ReduxProvider';
 
 export const AppProviders = [ReduxProvider, WagmiProviderWrapper, RainbowKitProviderWrapper];
 
-export const UserProviders = [ReduxProvider, StytchProviderWrapper];
+export const UserProviders = [
+  ReduxProvider,
+  StytchProviderWrapper,
+  WagmiProviderWrapper,
+  RainbowKitProviderWrapper,
+];
