@@ -76,7 +76,7 @@ export function UserSidebar({
   };
 
   const handleCopyAddress = async () => {
-    const address = authInfo?.userPKP?.ethAddress;
+    const address = authInfo?.agentPKP?.ethAddress;
     if (address) {
       try {
         await navigator.clipboard.writeText(address);
@@ -290,11 +290,11 @@ export function UserSidebar({
               ×
             </button>
           </div>
-          {authInfo?.userPKP?.ethAddress ? (
+          {authInfo?.agentPKP?.ethAddress ? (
             <>
               <div className="bg-gray-50 rounded p-2 mb-2">
                 <code className="text-xs font-mono text-gray-800 break-all">
-                  {authInfo.userPKP.ethAddress}
+                  {authInfo.agentPKP.ethAddress}
                 </code>
               </div>
               <button
@@ -332,7 +332,7 @@ export function UserSidebar({
         {/* My Wallet Button */}
         <Button
           variant="ghost"
-          className={`w-full ${isCollapsed ? 'justify-center' : 'justify-start'} ${!authInfo?.userPKP?.ethAddress ? 'opacity-60' : ''}`}
+          className={`w-full ${isCollapsed ? 'justify-center' : 'justify-start'} ${!authInfo?.agentPKP?.ethAddress ? 'opacity-60' : ''}`}
           onClick={handleMyWalletClick}
         >
           <User className={`h-4 w-4 ${!isCollapsed ? 'mr-2' : ''}`} />

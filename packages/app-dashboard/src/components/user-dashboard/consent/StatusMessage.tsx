@@ -3,8 +3,21 @@ interface StatusMessageProps {
   type?: 'info' | 'warning' | 'success' | 'error';
 }
 
+// Function to check if message is a trusted withdrawal message that can contain HTML
+const isTrustedWithdrawalMessage = (message: string): boolean => {
+  // Only allow HTML for specific withdrawal confirmation messages
+  const trustedPatterns = [
+    /^.+ withdrawal confirmed!&nbsp;&nbsp;<a href="https:\/\/[^"]+\/tx\/0x[a-fA-F0-9]{64}" target="_blank" rel="noopener noreferrer" class="text-black underline">View transaction<\/a>$/,
+    /^Transaction may have failed\.&nbsp;&nbsp;<a href="https:\/\/[^"]+\/tx\/0x[a-fA-F0-9]{64}" target="_blank" rel="noopener noreferrer" class="text-black underline">Check on explorer<\/a>$/,
+  ];
+
+  return trustedPatterns.some((pattern) => pattern.test(message));
+};
+
 const StatusMessage = ({ message, type = 'info' }: StatusMessageProps) => {
   if (!message) return <></>;
+
+  const shouldRenderAsHTML = isTrustedWithdrawalMessage(message);
 
   // Dictionary of Tailwind classes for different status types
   const statusClasses = {
@@ -87,7 +100,14 @@ const StatusMessage = ({ message, type = 'info' }: StatusMessageProps) => {
       className={`flex items-start p-3 mb-4 rounded-lg text-sm leading-normal transition-all min-h-[48px] opacity-100 ${classes.container}`}
     >
       <div className="flex-shrink-0">{getIcon()}</div>
-      <span className="ml-3 transition-opacity flex-1 break-words">{message}</span>
+      {shouldRenderAsHTML ? (
+        <span
+          className="ml-3 transition-opacity flex-1 break-words"
+          dangerouslySetInnerHTML={{ __html: message }}
+        />
+      ) : (
+        <span className="ml-3 transition-opacity flex-1 break-words">{message}</span>
+      )}
     </div>
   );
 };
