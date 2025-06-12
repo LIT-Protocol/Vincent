@@ -90,7 +90,7 @@ export async function sendNativeTransaction({
     }
 
     const rawFeeData = await provider.getFeeData();
-    const feeData = fixFeeData(rawFeeData, 'bigNumber');
+    const feeData = fixFeeData(rawFeeData);
 
     const txOptions: any = {
       to: recipientAddress,
@@ -126,7 +126,7 @@ export async function sendTokenTransaction({
 }: SendTokenTransactionParams): Promise<TransactionResult> {
   try {
     const rawFeeData = await provider.getFeeData();
-    const feeData = fixFeeData(rawFeeData, 'bigNumber');
+    const feeData = fixFeeData(rawFeeData);
 
     const tokenContract = new ethers.Contract(
       tokenDetails.address,
