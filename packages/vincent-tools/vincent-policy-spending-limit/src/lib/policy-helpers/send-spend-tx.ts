@@ -73,8 +73,12 @@ export const sendSpendTx = async ({
           status: 'success',
           data: txData,
           gasLimit: estimatedGas.toString(),
-          maxFeePerGas: feeData.maxFeePerGas?.toString() || '0',
-          maxPriorityFeePerGas: feeData.maxPriorityFeePerGas?.toString() || '0',
+          maxFeePerGas:
+            feeData.lastBaseFeePerGas
+              ?.mul(2)
+              .add(ethers.utils.parseUnits('0.001', 'gwei'))
+              .toString() || '0',
+          maxPriorityFeePerGas: ethers.utils.parseUnits('0.001', 'gwei').toString() || '0',
           nonce: nonce.toString(),
         });
       } catch (error) {
