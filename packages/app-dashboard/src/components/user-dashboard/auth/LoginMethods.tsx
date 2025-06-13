@@ -3,11 +3,17 @@ import { useState, Dispatch, SetStateAction } from 'react';
 import AuthMethods from './AuthMethods';
 import WebAuthn from './WebAuthn';
 import StytchOTP from './StytchOTP';
+import EthWalletAuth from './EthWalletAuth';
 
 interface LoginProps {
   authWithWebAuthn: (credentialId: string, userId: string) => Promise<void>;
   authWithStytch: (sessionJwt: string, userId: string, method: 'email' | 'phone') => Promise<void>;
+  authWithEthWallet: (
+    address: string,
+    signMessage: (message: string) => Promise<string>,
+  ) => Promise<void>;
   registerWithWebAuthn?: (credentialId: string) => Promise<void>;
+  clearError?: () => void;
 }
 
 type AuthView = 'default' | 'email' | 'phone' | 'wallet' | 'webauthn';
@@ -15,7 +21,9 @@ type AuthView = 'default' | 'email' | 'phone' | 'wallet' | 'webauthn';
 export default function LoginMethods({
   authWithWebAuthn,
   authWithStytch,
+  authWithEthWallet,
   registerWithWebAuthn,
+  clearError,
 }: LoginProps) {
   const [view, setView] = useState<AuthView>('default');
 
@@ -23,19 +31,6 @@ export default function LoginMethods({
     <>
       {view === 'default' && (
         <>
-          <div className="flex flex-col items-center mb-6">
-            <img
-              src="/vincent-logo.png"
-              alt="Vincent Logo"
-              width={120}
-              height={36}
-              className="mb-3"
-            />
-            <h1 className="text-xl font-semibold text-center text-gray-800">
-              Agent Wallet Authentication
-            </h1>
-            <p className="text-sm text-gray-600 mt-2">Access or create your Vincent Agent Wallet</p>
-          </div>
           <AuthMethods setView={setView as Dispatch<SetStateAction<string>>} />
         </>
       )}
@@ -53,11 +48,18 @@ export default function LoginMethods({
           setView={setView as Dispatch<SetStateAction<string>>}
         />
       )}
+      {view === 'wallet' && (
+        <EthWalletAuth
+          authWithEthWallet={authWithEthWallet}
+          setView={setView as Dispatch<SetStateAction<string>>}
+        />
+      )}
       {view === 'webauthn' && (
         <WebAuthn
           authWithWebAuthn={authWithWebAuthn}
           registerWithWebAuthn={registerWithWebAuthn}
           setView={setView as Dispatch<SetStateAction<string>>}
+          clearError={clearError}
         />
       )}
     </>

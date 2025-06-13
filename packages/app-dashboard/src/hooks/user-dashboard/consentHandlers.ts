@@ -3,7 +3,7 @@ import { AppView, ContractVersionResult, VersionParameter } from '@/types';
 import { NavigateFunction } from 'react-router-dom';
 import { areParametersEqual } from '@/utils/user-dashboard/parameterComparison';
 import { IRelayPKP } from '@lit-protocol/types';
-import { StatusType } from '@/hooks/user-dashboard/useStatusMessage';
+import { StatusType } from '@/types/shared/StatusType';
 
 interface AppContext {
   appInfo: AppView | null;

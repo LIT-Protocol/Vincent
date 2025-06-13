@@ -264,9 +264,7 @@ export default function UserAuthenticatedConsentForm({
 
   return (
     <MainConsentFormView
-      appInfo={appInfo as AppView}
       versionInfo={versionInfo}
-      agentPKP={agentPKP}
       permittedVersion={permittedVersion}
       existingParameters={existingParameters}
       statusMessage={statusMessage}

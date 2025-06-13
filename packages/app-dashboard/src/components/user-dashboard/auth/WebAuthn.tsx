@@ -6,31 +6,64 @@ interface WebAuthnProps {
   authWithWebAuthn: any;
   setView: React.Dispatch<React.SetStateAction<string>>;
   registerWithWebAuthn?: any;
+  clearError?: () => void;
 }
 
 export default function WebAuthn({
   authWithWebAuthn,
   setView,
   registerWithWebAuthn,
+  clearError,
 }: WebAuthnProps) {
   const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string>('');
   const { setAuthInfo } = useSetAuthInfo();
+
+  const handleBackClick = () => {
+    // Clear the error from the parent component when going back
+    if (clearError) {
+      clearError();
+    }
+    setView('default');
+  };
 
   async function handleRegister() {
     if (!registerWithWebAuthn) {
       return;
     }
     setLoading(true);
+    setError('');
     try {
       await registerWithWebAuthn();
     } catch (err) {
       console.error(err);
+      let errorMessage = '';
+
+      if (err instanceof Error) {
+        const errorText = err.message;
+        // Don't show errors for user cancellation - it's not really an error
+        if (
+          errorText.includes('timed out') ||
+          errorText.includes('not allowed') ||
+          errorText.includes('cancelled') ||
+          errorText.includes('privacy-considerations-client')
+        ) {
+          // User cancelled - silently ignore
+        } else {
+          errorMessage = 'Failed to create passkey. Please try again.';
+        }
+      } else {
+        errorMessage = 'Failed to create passkey. Please try again.';
+      }
+
+      setError(errorMessage);
     }
     setLoading(false);
   }
 
   async function handleAuthenticate() {
     setLoading(true);
+    setError('');
     try {
       await authWithWebAuthn();
 
@@ -46,6 +79,26 @@ export default function WebAuthn({
       }
     } catch (err) {
       console.error(err);
+      let errorMessage = '';
+
+      if (err instanceof Error) {
+        const errorText = err.message;
+        // Don't show errors for user cancellation - it's not really an error
+        if (
+          errorText.includes('timed out') ||
+          errorText.includes('not allowed') ||
+          errorText.includes('cancelled') ||
+          errorText.includes('privacy-considerations-client')
+        ) {
+          // User cancelled - silently ignore
+        } else {
+          errorMessage = 'Failed to authenticate with passkey. Please try again.';
+        }
+      } else {
+        errorMessage = 'Failed to authenticate with passkey. Please try again.';
+      }
+
+      setError(errorMessage);
     }
     setLoading(false);
   }
@@ -67,6 +120,12 @@ export default function WebAuthn({
       <p className="text-sm text-gray-600 text-center mb-6">
         Use passkeys for secure, passwordless login
       </p>
+
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm mb-6">
+          {error}
+        </div>
+      )}
 
       <div className="space-y-6">
         {registerWithWebAuthn && (
@@ -100,7 +159,7 @@ export default function WebAuthn({
 
       <div className="mt-6">
         <Button
-          onClick={() => setView('default')}
+          onClick={handleBackClick}
           className="bg-white text-gray-700 border border-gray-200 rounded-lg py-3 px-4 w-full font-medium text-sm hover:bg-gray-50 transition-colors"
         >
           Back

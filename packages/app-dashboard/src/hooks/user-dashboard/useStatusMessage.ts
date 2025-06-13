@@ -1,25 +1,27 @@
 import { useState, useCallback } from 'react';
-import { useErrorPopup } from '@/providers/ErrorPopup';
-
-export type StatusType = 'info' | 'warning' | 'success' | 'error';
 
 export const useStatusMessage = () => {
   const [statusMessage, setStatusMessage] = useState<string>('');
-  const [statusType, setStatusType] = useState<StatusType>('info');
-  const { showError } = useErrorPopup();
+  const [statusType, setStatusType] = useState<'info' | 'warning' | 'success' | 'error'>('info');
 
-  const showStatus = useCallback((message: string, type: StatusType = 'info') => {
-    setStatusMessage(message);
-    setStatusType(type);
-  }, []);
+  const showStatus = useCallback(
+    (message: string, type: 'info' | 'warning' | 'success' | 'error' = 'info') => {
+      setStatusMessage(message);
+      setStatusType(type);
 
-  const showErrorWithStatus = useCallback(
-    (errorMessage: string, title?: string, details?: string) => {
-      showError(errorMessage, title || 'Error', details);
-      showStatus(errorMessage, 'error');
+      if (type === 'success' || type === 'info') {
+        setTimeout(() => {
+          setStatusMessage('');
+        }, 5000);
+      }
     },
-    [showError, showStatus],
+    [],
   );
+
+  const showErrorWithStatus = useCallback((errorMessage: string) => {
+    setStatusMessage(errorMessage);
+    setStatusType('error');
+  }, []);
 
   return {
     statusMessage,

@@ -9,5 +9,3 @@ export interface TokenBalance {
   decimals: number;
   logoUrl?: string;
 }
-
-export type StatusType = 'info' | 'warning' | 'success' | 'error';

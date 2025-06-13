@@ -16,6 +16,14 @@ interface AppDetails {
   isDeleted: boolean;
   showInfo?: boolean;
   infoMessage?: string;
+  // API-specific fields
+  logo?: string;
+  appUserUrl?: string;
+  contactEmail?: string;
+  redirectUris?: string[];
+  managerAddress?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 interface VersionParameter {

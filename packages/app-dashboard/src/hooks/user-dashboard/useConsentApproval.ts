@@ -189,7 +189,6 @@ export const useConsentApproval = ({
             removeArgs,
             'Sending transaction to remove cleared parameters...',
             onStatusChange,
-            onError,
           );
 
           onStatusChange?.('Waiting for removal transaction to be confirmed...', 'info');
@@ -250,7 +249,6 @@ export const useConsentApproval = ({
         updateArgs,
         'Sending transaction to update parameters...',
         onStatusChange,
-        onError,
       );
 
       onStatusChange?.('Waiting for update transaction to be confirmed...', 'info');
@@ -330,7 +328,6 @@ export const useConsentApproval = ({
         permitArgs,
         'Sending permission transaction...',
         onStatusChange,
-        onError,
       );
 
       await txResponse.wait(1);
