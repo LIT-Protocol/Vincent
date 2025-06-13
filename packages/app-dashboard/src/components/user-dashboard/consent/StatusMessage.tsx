@@ -9,6 +9,7 @@ const isTrustedWithdrawalMessage = (message: string): boolean => {
   const trustedPatterns = [
     /^.+ withdrawal confirmed!&nbsp;&nbsp;<a href="https:\/\/[^"]+\/tx\/0x[a-fA-F0-9]{64}" target="_blank" rel="noopener noreferrer" class="text-black underline">View transaction<\/a>$/,
     /^Transaction may have failed\.&nbsp;&nbsp;<a href="https:\/\/[^"]+\/tx\/0x[a-fA-F0-9]{64}" target="_blank" rel="noopener noreferrer" class="text-black underline">Check on explorer<\/a>$/,
+    /^Ready to send .+ to 0x[a-fA-F0-9]{4}\.\.\.[a-fA-F0-9]{4}\.<br\/>Estimated gas cost: .+$/,
   ];
 
   return trustedPatterns.some((pattern) => pattern.test(message));

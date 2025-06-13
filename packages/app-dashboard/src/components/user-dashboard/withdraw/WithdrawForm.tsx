@@ -39,6 +39,7 @@ export default function WithdrawForm({ sessionSigs, agentPKP }: WithdrawFormProp
     decimals: 18,
   });
   const [activeTab, setActiveTab] = useState<'walletconnect' | 'withdraw'>('walletconnect');
+  const [isConfirmationMode, setIsConfirmationMode] = useState<boolean>(false);
 
   const showStatus = (message: string, type: StatusType = 'info') => {
     setStatusMessage(message);
@@ -47,8 +48,8 @@ export default function WithdrawForm({ sessionSigs, agentPKP }: WithdrawFormProp
 
   const refreshBalance = useCallback(async () => {
     setLoading(true);
-    const chain = LIT_CHAINS[selectedChain]; // Chains are only from the dropdown
-    const rpcUrl = chain.rpcUrls[0]; // rpcUrl is a require prop for chains
+    const chain = LIT_CHAINS[selectedChain];
+    const rpcUrl = chain.rpcUrls[0];
     const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
 
     try {
@@ -72,7 +73,6 @@ export default function WithdrawForm({ sessionSigs, agentPKP }: WithdrawFormProp
     refreshBalance();
   }, [refreshBalance]);
 
-  // Handle submission
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -86,11 +86,22 @@ export default function WithdrawForm({ sessionSigs, agentPKP }: WithdrawFormProp
       selectedChain,
       setLoading,
       showStatus,
+      isConfirmationMode,
     );
 
-    if (result.success) {
-      refreshBalance();
+    if (result.success && result.needsConfirmation) {
+      setIsConfirmationMode(true);
+    } else if (result.success) {
+      setIsConfirmationMode(false);
+      setTimeout(() => {
+        refreshBalance();
+      }, 5000);
     }
+  };
+
+  const onCancel = () => {
+    setIsConfirmationMode(false);
+    showStatus('Transaction cancelled', 'success');
   };
 
   return (
@@ -172,6 +183,8 @@ export default function WithdrawForm({ sessionSigs, agentPKP }: WithdrawFormProp
             tokenSymbol={isCustomToken ? 'TOKEN' : nativeToken.symbol}
             loading={loading}
             onSubmit={onSubmit}
+            confirmationMode={isConfirmationMode}
+            onCancel={onCancel}
           />
         </div>
       </div>
