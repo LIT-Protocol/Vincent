@@ -1,11 +1,11 @@
 import { ethers } from 'ethers';
+import { JsonRpcProvider as V6JsonRpcProvider } from 'ethers-v6';
 import { estimateGasWithBuffer } from '@/services/contract/config';
 import { LitContracts } from '@lit-protocol/contracts-sdk';
-import { AUTH_METHOD_SCOPE } from '@lit-protocol/constants';
+import { AUTH_METHOD_SCOPE, LIT_RPC } from '@lit-protocol/constants';
 import { SELECTED_LIT_NETWORK } from './lit';
 import { IPFS_POLICIES_THAT_NEED_SIGNING } from '@/config/policyConstants';
 import { hexToBase58 } from './consentVerificationUtils';
-import { fixFeeData } from './fixGasFee';
 
 /**
  * Handles sending a transaction with proper error handling
@@ -29,7 +29,8 @@ export const sendTransaction = async (
     const gasLimit = await estimateGasWithBuffer(contract, methodName, args);
 
     const provider = contract.provider;
-    const feeData = await provider.getFeeData();
+    const gasEstimationProvider = new V6JsonRpcProvider(LIT_RPC.CHRONICLE_YELLOWSTONE);
+    const feeData = await gasEstimationProvider.getFeeData();
 
     const txOptions: any = {
       gasLimit,
@@ -37,9 +38,8 @@ export const sendTransaction = async (
 
     if (feeData.maxFeePerGas && feeData.maxPriorityFeePerGas) {
       txOptions.type = 2;
-      const fixedFeeData = fixFeeData(feeData);
-      txOptions.maxFeePerGas = fixedFeeData.maxFeePerGas;
-      txOptions.maxPriorityFeePerGas = fixedFeeData.maxPriorityFeePerGas;
+      txOptions.maxFeePerGas = feeData.maxFeePerGas;
+      txOptions.maxPriorityFeePerGas = feeData.maxPriorityFeePerGas;
     } else if (feeData.gasPrice) {
       txOptions.gasPrice = feeData.gasPrice;
     } else {
@@ -48,9 +48,7 @@ export const sendTransaction = async (
     }
 
     statusCallback?.(statusMessage, 'info');
-    console.log('txOptions', txOptions);
     const txResponse = await contract[methodName](...args, txOptions);
-    console.log('txResponse', txResponse);
 
     statusCallback?.(`Transaction submitted! Hash: ${txResponse.hash.substring(0, 10)}...`, 'info');
 
@@ -90,14 +88,14 @@ export const addPermittedActions = async (
       throw new Error('Wallet provider not available');
     }
 
-    const feeData = await provider.getFeeData();
-    const fixedFeeData = fixFeeData(feeData);
+    const gasEstimationProvider = new V6JsonRpcProvider(LIT_RPC.CHRONICLE_YELLOWSTONE);
+    const feeData = await gasEstimationProvider.getFeeData();
 
     // Prepare gas options for the SDK
     const gasOptions: any = {};
     if (feeData.maxFeePerGas && feeData.maxPriorityFeePerGas) {
-      gasOptions.maxFeePerGas = fixedFeeData.maxFeePerGas;
-      gasOptions.maxPriorityFeePerGas = fixedFeeData.maxPriorityFeePerGas;
+      gasOptions.maxFeePerGas = feeData.maxFeePerGas;
+      gasOptions.maxPriorityFeePerGas = feeData.maxPriorityFeePerGas;
       gasOptions.type = 2;
     } else if (feeData.gasPrice) {
       gasOptions.gasPrice = feeData.gasPrice;

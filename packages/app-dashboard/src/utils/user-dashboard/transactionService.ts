@@ -1,6 +1,11 @@
 import { ethers } from 'ethers';
+import {
+  JsonRpcProvider as V6JsonRpcProvider,
+  Contract as V6Contract,
+  TransactionReceipt,
+  TransactionRequest,
+} from 'ethers-v6';
 import { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
-import { fixFeeData } from './fixGasFee';
 
 interface TokenDetails {
   address: string;
@@ -12,20 +17,20 @@ interface TransactionResult {
   success: boolean;
   hash: string;
   error?: string;
-  receipt?: ethers.providers.TransactionReceipt;
+  receipt?: TransactionReceipt;
 }
 
-interface SendTransactionWithRetryParams {
+interface SendTransactionParams {
   pkpWallet: PKPEthersWallet;
-  txOptions: ethers.providers.TransactionRequest;
-  provider: ethers.providers.JsonRpcProvider;
+  txOptions: TransactionRequest;
+  provider: V6JsonRpcProvider;
 }
 
 interface SendNativeTransactionParams {
   pkpWallet: PKPEthersWallet;
   amount: ethers.BigNumber;
   recipientAddress: string;
-  provider: ethers.providers.JsonRpcProvider;
+  provider: V6JsonRpcProvider;
 }
 
 interface SendTokenTransactionParams {
@@ -33,7 +38,7 @@ interface SendTokenTransactionParams {
   tokenDetails: TokenDetails;
   amount: ethers.BigNumber;
   recipientAddress: string;
-  provider: ethers.providers.JsonRpcProvider;
+  provider: V6JsonRpcProvider;
 }
 
 /**
@@ -43,15 +48,15 @@ async function sendTransaction({
   pkpWallet,
   txOptions,
   provider,
-}: SendTransactionWithRetryParams): Promise<TransactionResult> {
+}: SendTransactionParams): Promise<TransactionResult> {
   try {
     const tx = await pkpWallet.sendTransaction(txOptions);
     const receipt = await provider.waitForTransaction(tx.hash, 1);
 
     return {
-      success: receipt.status === 1,
+      success: receipt ? receipt.status === 1 : false,
       hash: tx.hash,
-      receipt,
+      receipt: receipt || undefined,
     };
   } catch (error: unknown) {
     if ((error as Error).message.includes('insufficient funds for intrinsic transaction cost')) {
@@ -89,8 +94,7 @@ export async function sendNativeTransaction({
       };
     }
 
-    const rawFeeData = await provider.getFeeData();
-    const feeData = fixFeeData(rawFeeData);
+    const feeData = await provider.getFeeData();
 
     const txOptions: any = {
       to: recipientAddress,
@@ -125,10 +129,8 @@ export async function sendTokenTransaction({
   provider,
 }: SendTokenTransactionParams): Promise<TransactionResult> {
   try {
-    const rawFeeData = await provider.getFeeData();
-    const feeData = fixFeeData(rawFeeData);
-
-    const tokenContract = new ethers.Contract(
+    const feeData = await provider.getFeeData();
+    const tokenContract = new V6Contract(
       tokenDetails.address,
       ['function transfer(address to, uint256 amount) returns (bool)'],
       provider,
@@ -136,12 +138,18 @@ export async function sendTokenTransaction({
 
     let gasLimit;
     try {
-      const tokenWithSigner = tokenContract.connect(pkpWallet as unknown as ethers.Signer);
-
-      const estimatedGas = await tokenWithSigner.estimateGas.transfer(recipientAddress, amount);
+      // For V6, we need to estimate gas differently
+      const estimatedGas = await provider.estimateGas({
+        to: tokenDetails.address,
+        data: tokenContract.interface.encodeFunctionData('transfer', [
+          recipientAddress,
+          BigInt(amount.toString()),
+        ]),
+        from: await pkpWallet.getAddress(),
+      });
 
       // Add 10% buffer to estimated gas for token transfers
-      gasLimit = estimatedGas.mul(110).div(100);
+      gasLimit = ethers.BigNumber.from(estimatedGas.toString()).mul(110).div(100);
       console.log('Estimated gas for token transfer:', gasLimit.toString());
     } catch (err: unknown) {
       return {
@@ -151,7 +159,10 @@ export async function sendTokenTransaction({
       };
     }
 
-    const data = tokenContract.interface.encodeFunctionData('transfer', [recipientAddress, amount]);
+    const data = tokenContract.interface.encodeFunctionData('transfer', [
+      recipientAddress,
+      BigInt(amount.toString()),
+    ]);
 
     // Prepare transaction options for EIP-1559
     const txOptions: any = {
@@ -171,7 +182,7 @@ export async function sendTokenTransaction({
       return {
         success: false,
         hash: '',
-        error: `Insufficient native balance for gas fees. Need ${ethers.utils.formatUnits(gasCost, tokenDetails.decimals)} ${tokenDetails.symbol} for gas.`,
+        error: `Insufficient native balance for gas fees. Need ${ethers.utils.formatUnits(gasCost, 'ether')} ETH for gas.`,
       };
     }
 

@@ -1,4 +1,5 @@
 import { ethers } from 'ethers';
+import { JsonRpcProvider as V6JsonRpcProvider, Contract as V6Contract } from 'ethers-v6';
 import { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
 import { StatusType } from '@/types/shared/StatusType';
 import { sendTokenTransaction, sendNativeTransaction } from './transactionService';
@@ -73,7 +74,7 @@ export const handleSubmit = async (
 
     await pkpWallet.init();
 
-    const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
+    const provider = new V6JsonRpcProvider(rpcUrl);
 
     // Default token setup
     let token = {
@@ -87,7 +88,7 @@ export const handleSubmit = async (
       showStatus('Fetching token details...', 'info');
 
       try {
-        const tokenContract = new ethers.Contract(tokenAddress, ERC20_ABI, provider);
+        const tokenContract = new V6Contract(tokenAddress, ERC20_ABI, provider);
         const [symbol, decimals] = await Promise.all([
           tokenContract.symbol(),
           tokenContract.decimals(),
