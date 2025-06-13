@@ -9,6 +9,7 @@
     "@lit-protocol/vincent-tool-sdk": "workspace:*",
     "@uniswap/sdk-core": "^7.7.2",
     "ethers": "^5.7.2",
+    "ethers-v6": "npm:ethers@^6.13.4",
     "zod": "^3.24.1"
   },
   "devDependencies": {

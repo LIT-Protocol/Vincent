@@ -11,9 +11,7 @@ export const estimateGasForSwap = async (
   amountInSmallestUnit: ethers.BigNumber,
   amountOutMin: ethers.BigNumber,
 ) => {
-  const [block, feeData, estimatedGas] = await Promise.all([
-    uniswapV3RouterContract.provider.getBlock('latest'),
-    uniswapV3RouterContract.provider.getFeeData(),
+  const [estimatedGas] = await Promise.all([
     uniswapV3RouterContract.estimateGas.exactInputSingle(
       [
         tokenInAddress,
@@ -29,6 +27,6 @@ export const estimateGasForSwap = async (
   ]);
 
   return {
-    ...(await getGasParams(uniswapV3RouterContract.provider, block, feeData, estimatedGas)),
+    ...(await getGasParams(uniswapV3RouterContract.provider, estimatedGas)),
   };
 };

@@ -1,6 +1,7 @@
 import { ethers } from 'ethers';
 import { getErc20Contract } from './getErc20Contract';
 import { signTx } from './sign-tx';
+import { getGasParams } from './get-gas-params';
 
 declare const Lit: {
   Actions: {
@@ -44,10 +45,8 @@ export const sendErc20ApprovalTx = async ({
   const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
   const contract = getErc20Contract(tokenAddress, provider);
 
-  // Convert bigint to ethers.BigNumber for proper encoding
   const tokenAmountBN = ethers.BigNumber.from(tokenAmount.toString());
 
-  // Encode the approve function call
   const approveTxData = contract.interface.encodeFunctionData('approve', [
     spenderAddress,
     tokenAmountBN,
@@ -57,25 +56,20 @@ export const sendErc20ApprovalTx = async ({
     { waitForResponse: true, name: 'estimateGas' },
     async () => {
       try {
-        const [feeData, gasLimit, nonce] = await Promise.all([
-          provider.getFeeData(),
-          provider.estimateGas({
-            from: pkpEthAddress,
-            to: tokenAddress,
-            data: approveTxData,
-          }),
-          provider.getTransactionCount(pkpEthAddress),
-        ]);
+        const gasLimit = await provider.estimateGas({
+          from: pkpEthAddress,
+          to: tokenAddress,
+          data: approveTxData,
+        });
+
+        const gasParams = await getGasParams(provider, gasLimit);
+        const nonce = await provider.getTransactionCount(pkpEthAddress);
 
         return JSON.stringify({
           status: 'success',
-          maxFeePerGas:
-            feeData.lastBaseFeePerGas
-              ?.mul(2)
-              .add(ethers.utils.parseUnits('0.001', 'gwei'))
-              .toString() || '0',
-          maxPriorityFeePerGas: ethers.utils.parseUnits('0.001', 'gwei').toString() || '0',
-          gas: gasLimit.toString(),
+          maxFeePerGas: gasParams.maxFeePerGas.toString(),
+          maxPriorityFeePerGas: gasParams.maxPriorityFeePerGas.toString(),
+          gas: gasParams.estimatedGas.toString(), // Already includes 20% buffer
           nonce,
         });
       } catch (error) {
