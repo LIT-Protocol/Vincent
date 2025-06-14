@@ -1,7 +1,7 @@
 module.exports = {
-  preset: '../../../jest.preset.js',
+  preset: '../../jest.preset.js',
   testEnvironment: 'node',
-  testMatch: ['**/tests/**/*.test.ts'],
+  passWithNoTests: true,
   collectCoverage: true,
   coverageDirectory: 'coverage',
   collectCoverageFrom: ['src/**/*.ts'],

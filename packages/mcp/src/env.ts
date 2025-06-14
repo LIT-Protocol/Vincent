@@ -3,6 +3,9 @@ import { z } from 'zod';
 
 // Ref: https://github.com/t3-oss/t3-env/pull/145
 const booleanStrings = ['true', 'false', true, false, '1', '0', 'yes', 'no', 'y', 'n', 'on', 'off'];
+
+// @ts-expect-error Just happen to not have any boolean env vars right now, but want to keep this in case we do
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const BooleanOrBooleanStringSchema = z
   .any()
   .refine((val) => booleanStrings.includes(val), { message: 'must be boolean' })

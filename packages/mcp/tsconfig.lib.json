@@ -1,0 +1,26 @@
+{
+  "extends": ["./tsconfig.json", "@tsconfig/node20/tsconfig.json"],
+  "include": ["src/**/*", "src/**/*.json"],
+  "exclude": ["node_modules"],
+  "strictNullChecks": true,
+  "allowJs": true,
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "resolveJsonModule": true,
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "baseUrl": "./",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "lib": ["ES2022", "dom"]
+  },
+  "references": [
+    {
+      "path": "../sdk/tsconfig.lib.json"
+    }
+  ]
+}

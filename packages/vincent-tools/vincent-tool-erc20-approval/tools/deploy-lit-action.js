@@ -1,7 +1,5 @@
 const fs = require('fs');
 const path = require('path');
-const fetch = require('node-fetch');
-const FormData = require('form-data');
 
 // Get Pinata JWT from environment variable
 const PINATA_JWT = process.env.PINATA_JWT;
@@ -52,10 +50,7 @@ if (!PINATA_JWT) {
 async function uploadToIPFS(filename, fileContent) {
   try {
     const form = new FormData();
-    form.append('file', fileContent, {
-      filename,
-      contentType: 'application/javascript',
-    });
+    form.append('file', new Blob([fileContent], { type: 'application/javascript' }), filename);
 
     const response = await fetch('https://api.pinata.cloud/pinning/pinFileToIPFS', {
       method: 'POST',

@@ -3,6 +3,13 @@ import { LIT_NETWORK, LIT_RPC } from '@lit-protocol/constants';
 
 import { env } from '@/config/env';
 
+import APP_VIEW_FACET_ABI from './abis/VincentAppViewFacet.abi.json';
+import APP_FACET_ABI from './abis/VincentAppFacet.abi.json';
+import TOOL_FACET_ABI from './abis/VincentToolFacet.abi.json';
+import TOOL_VIEW_FACET_ABI from './abis/VincentToolViewFacet.abi.json';
+import USER_FACET_ABI from './abis/VincentUserFacet.abi.json';
+import USER_VIEW_FACET_ABI from './abis/VincentUserViewFacet.abi.json';
+
 const { VITE_VINCENT_DATIL_CONTRACT, VITE_GAS_BUFFER_DIVISOR } = env;
 
 export type Network = typeof LIT_NETWORK.Datil;
@@ -16,13 +23,6 @@ if (!VINCENT_DIAMOND_ADDRESS.datil) {
     'Vincent Diamond contract address for datil network is undefined. Check your environment variables.',
   );
 }
-
-import APP_VIEW_FACET_ABI from './abis/VincentAppViewFacet.abi.json';
-import APP_FACET_ABI from './abis/VincentAppFacet.abi.json';
-import TOOL_FACET_ABI from './abis/VincentToolFacet.abi.json';
-import TOOL_VIEW_FACET_ABI from './abis/VincentToolViewFacet.abi.json';
-import USER_FACET_ABI from './abis/VincentUserFacet.abi.json';
-import USER_VIEW_FACET_ABI from './abis/VincentUserViewFacet.abi.json';
 
 export type ContractFacet = 'AppView' | 'App' | 'ToolView' | 'Tool' | 'UserView' | 'User';
 

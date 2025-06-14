@@ -10,7 +10,7 @@
       "options": {
         "outputPath": "packages/mcp/dist",
         "main": "packages/mcp/src/index.ts",
-        "tsConfig": "packages/mcp/tsconfig.json",
+        "tsConfig": "packages/mcp/tsconfig.lib.json",
         "assets": ["packages/mcp/*.md"],
         "formats": ["cjs"]
       }

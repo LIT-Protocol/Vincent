@@ -14,6 +14,18 @@
     },
     {
       "path": "./packages/vincent-tools/vincent-tool-erc20-approval"
+    },
+    {
+      "path": "./packages/app-dashboard"
+    },
+    {
+      "path": "./packages/sdk"
+    },
+    {
+      "path": "./packages/vincent-rest-api"
+    },
+    {
+      "path": "./packages/mcp"
     }
   ]
 }

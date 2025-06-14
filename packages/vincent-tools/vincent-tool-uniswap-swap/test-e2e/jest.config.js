@@ -5,4 +5,5 @@ module.exports = {
   testMatch: ['<rootDir>/**/*.spec.ts'],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
   setupFilesAfterEnv: ['./jest.setup.js'],
+  tsconfig: '../tsconfig.spec.json',
 };

@@ -34,7 +34,7 @@
     {
       "plugin": "@nx/eslint/plugin",
       "options": {
-        "targetName": "eslint:lint"
+        "targetName": "lint"
       }
     },
     {
@@ -69,6 +69,13 @@
     }
   },
   "targetDefaults": {
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["{projectRoot}/**/*.{ts,tsx,js,jsx}"]
+      }
+    },
     "nx-release-publish": {
       "dependsOn": [
         {
@@ -87,6 +94,10 @@
       "inputs": ["production", "^production"]
     },
     "test": {
+      "dependsOn": ["^build"]
+    },
+    "build": {
+      "inputs": ["{projectRoot}/src/**/*"],
       "dependsOn": ["^build"]
     }
   }

@@ -37,23 +37,8 @@
     "prepare": "husky"
   },
   "dependencies": {
-    "@lit-protocol/auth-browser": "^7.0.8",
-    "@lit-protocol/auth-helpers": "^7.0.8",
-    "@lit-protocol/constants": "^7.0.8",
-    "@lit-protocol/contracts": "^0.0.90",
-    "@lit-protocol/contracts-sdk": "^7.0.6",
     "@lit-protocol/flags": "^1.0.0",
-    "@lit-protocol/lit-auth-client": "^7.0.6",
-    "@lit-protocol/lit-node-client": "^7.0.8",
-    "@lit-protocol/logger": "custom-logger",
-    "@lit-protocol/misc": "^7.0.8",
-    "@lit-protocol/pkp-ethers": "^7.0.8",
-    "@lit-protocol/types": "^7.0.8",
-    "bs58": "^6.0.0",
-    "ethers": "5.7.2",
-    "viem": "^2.28.0",
-    "wagmi": "^2.14.11",
-    "zod": "^3.24.2"
+    "tslib": "2.8.1"
   },
   "devDependencies": {
     "@dotenvx/dotenvx": "^1.44.2",
@@ -80,21 +65,19 @@
     "eslint-plugin-prettier": "^5.2.3",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.19",
-    "form-data": "^4.0.3",
     "globals": "^16.0.0",
     "husky": "^9.1.7",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
     "jest-environment-node": "^29.7.0",
-    "jsonc-eslint-parser": "^2.1.0",
+    "jsonc-eslint-parser": "^2.4.0",
     "lint-staged": "^15.5.1",
     "nx": "20.8.0",
     "prettier": "^3.5.3",
     "rimraf": "^6.0.1",
     "ts-jest": "^29.2.6",
     "ts-node": "10.9.1",
-    "tslib": "^2.3.0",
-    "typescript": "^5.8.2",
+    "typescript": "^5.8.3",
     "typescript-eslint": "^8.29.0"
   },
   "overrides": {

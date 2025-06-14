@@ -21,13 +21,8 @@ interface DelegateeManagerProps {
   dashboard: AppView;
 }
 
-export default function DelegateeManagerScreen({
-  onBack,
-  dashboard,
-}: DelegateeManagerProps) {
-  const [delegatees, setDelegatees] = useState<string[]>(
-    dashboard.delegatees || [],
-  );
+export default function DelegateeManagerScreen({ onBack, dashboard }: DelegateeManagerProps) {
+  const [delegatees, setDelegatees] = useState<string[]>(dashboard.delegatees || []);
   const [showKeyDialog, setShowKeyDialog] = useState(false);
   const [newPrivateKey, setNewPrivateKey] = useState('');
   const [newAddress, setNewAddress] = useState('');
@@ -38,17 +33,12 @@ export default function DelegateeManagerScreen({
   const [isSaving, setIsSaving] = useState(false);
 
   const [statusMessage, setStatusMessage] = useState<string>('');
-  const [statusType, setStatusType] = useState<
-    'info' | 'warning' | 'success' | 'error'
-  >('info');
+  const [statusType, setStatusType] = useState<'info' | 'warning' | 'success' | 'error'>('info');
 
   const { showError } = useErrorPopup();
 
   const showStatus = useCallback(
-    (
-      message: string,
-      type: 'info' | 'warning' | 'success' | 'error' = 'info',
-    ) => {
+    (message: string, type: 'info' | 'warning' | 'success' | 'error' = 'info') => {
       setStatusMessage(message);
       setStatusType(type);
     },
@@ -136,15 +126,8 @@ export default function DelegateeManagerScreen({
   }
 
   async function handleAddDelegatee() {
-    if (
-      !manualAddress ||
-      !manualAddress.startsWith('0x') ||
-      manualAddress.length !== 42
-    ) {
-      showErrorWithStatus(
-        'Please enter a valid Ethereum address',
-        'Invalid Address',
-      );
+    if (!manualAddress || !manualAddress.startsWith('0x') || manualAddress.length !== 42) {
+      showErrorWithStatus('Please enter a valid Ethereum address', 'Invalid Address');
       return;
     }
 
@@ -230,21 +213,14 @@ export default function DelegateeManagerScreen({
   }
 
   async function handleRemoveDelegatee(delegateeAddress: string) {
-    if (
-      !confirm(
-        `Are you sure you want to remove ${delegateeAddress} from delegatees?`,
-      )
-    ) {
+    if (!window.confirm(`Are you sure you want to remove ${delegateeAddress} from delegatees?`)) {
       return;
     }
 
     try {
       showStatus('Removing delegatee...', 'info');
       const contracts = new VincentContracts('datil');
-      const tx = await contracts.removeDelegatee(
-        dashboard.appId,
-        delegateeAddress,
-      );
+      const tx = await contracts.removeDelegatee(dashboard.appId, delegateeAddress);
 
       showStatus('Waiting for confirmation...', 'info');
       await tx.wait();
@@ -264,9 +240,7 @@ export default function DelegateeManagerScreen({
 
   return (
     <div className="space-y-8">
-      {statusMessage && (
-        <StatusMessage message={statusMessage} type={statusType} />
-      )}
+      {statusMessage && <StatusMessage message={statusMessage} type={statusType} />}
 
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-4">
@@ -351,11 +325,7 @@ export default function DelegateeManagerScreen({
               >
                 Cancel
               </Button>
-              <Button
-                variant="outline"
-                onClick={handleAddDelegatee}
-                disabled={isAdding}
-              >
+              <Button variant="outline" onClick={handleAddDelegatee} disabled={isAdding}>
                 {isAdding ? 'Adding...' : 'Add Delegatee'}
               </Button>
             </div>
@@ -368,8 +338,7 @@ export default function DelegateeManagerScreen({
           <DialogHeader>
             <DialogTitle>Save Private Key</DialogTitle>
             <DialogDescription>
-              WARNING: Save this private key securely. It will never be shown
-              again!
+              WARNING: Save this private key securely. It will never be shown again!
             </DialogDescription>
           </DialogHeader>
 
@@ -411,9 +380,7 @@ export default function DelegateeManagerScreen({
                 onClick={handleConfirmSaved}
                 disabled={isSaving}
               >
-                {isSaving
-                  ? 'Adding Delegatee...'
-                  : 'I have saved the private key'}
+                {isSaving ? 'Adding Delegatee...' : 'I have saved the private key'}
               </Button>
             </div>
           </div>
