@@ -19,11 +19,13 @@ The Vincent REST API is an offchain service that increases the available informa
 ### Generating API Client
 
 Generate the OpenAPI specification and TypeScript client:
+
 ```bash
 pnpm generate-api
 ```
 
 This command:
+
 1. Converts Zod schemas to an OpenAPI specification using `@asteasolutions/zod-to-openapi`
 2. Generates the OpenAPI JSON file in `src/generated/openapi.json`
 3. Creates a TypeScript client with RTK Query in the `src/generated/api` directory
@@ -54,6 +56,7 @@ This command:
 ## Testing
 
 Run tests:
+
 ```bash
 pnpm test
 ```
@@ -102,6 +105,7 @@ When working with AI-powered editors like Cursor, GitHub Copilot, or other AI as
 ### Related Projects
 
 The REST API is used by:
+
 - `app-dashboard`: For frontend integration with the API
 - Vincent apps: For retrieving additional information about Vincent apps
 

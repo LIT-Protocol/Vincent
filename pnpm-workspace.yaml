@@ -14,3 +14,5 @@ onlyBuiltDependencies:
   - protobufjs
   - unrs-resolver
   - utf-8-validate
+overrides:
+   "typescript": "5.8.3"

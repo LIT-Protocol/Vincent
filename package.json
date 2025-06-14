@@ -96,5 +96,8 @@
     "tslib": "^2.3.0",
     "typescript": "^5.8.2",
     "typescript-eslint": "^8.29.0"
+  },
+  "overrides": {
+    "typescript": "5.8.3"
   }
 }

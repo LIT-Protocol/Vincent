@@ -37,6 +37,8 @@ export default function Loading({
 
       return () => clearTimeout(timer);
     }
+
+    return undefined;
   }, [copy, displayMessage, error, type]);
 
   // Handle error transitions

@@ -27,14 +27,6 @@
         "tty": true
       }
     },
-    "nx-release-publish": {
-      "dependsOn": ["build"],
-      "executor": "nx:run-commands",
-      "options": {
-        "command": "npm publish",
-        "cwd": "packages/sdk/dist"
-      }
-    },
     "dev": {
       "executor": "@nx/js:tsc",
       "outputs": ["{options.outputPath}"],
@@ -44,7 +36,6 @@
         "tsConfig": "packages/sdk/tsconfig.lib.json",
         "assets": ["packages/sdk/*.md"],
         "formats": ["cjs"],
-        "updateBuildableProjectDepsInPackageJson": true,
         "watch": true
       }
     },
@@ -56,8 +47,7 @@
         "main": "packages/sdk/src/index.ts",
         "tsConfig": "packages/sdk/tsconfig.lib.json",
         "assets": ["packages/sdk/*.md"],
-        "formats": ["cjs"],
-        "updateBuildableProjectDepsInPackageJson": true
+        "formats": ["cjs"]
       }
     },
     "lint": {

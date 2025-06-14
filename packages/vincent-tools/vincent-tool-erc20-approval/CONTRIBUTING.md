@@ -19,6 +19,7 @@ The Vincent Tool ERC20 Approval is a tool to send ERC20 approve/allowance transa
 ### Testing
 
 Run tests:
+
 ```bash
 nx test vincent-tool-erc20-approval
 ```
@@ -26,6 +27,7 @@ nx test vincent-tool-erc20-approval
 ### Building the Lit Action
 
 Build the policy:
+
 ```bash
 nx action:build vincent-tool-erc20-approval
 ```
@@ -33,6 +35,7 @@ nx action:build vincent-tool-erc20-approval
 ### Deploying the Lit Action to IPFS
 
 Building will be done automatically. Deploy the policy:
+
 ```bash
 nx action:deploy vincent-tool-erc20-approval
 ```
@@ -60,6 +63,7 @@ This tool can be integrated with various Vincent Policies to enforce constraints
 ## Testing
 
 Write unit tests for all functionality:
+
 ```bash
 pnpm test
 ```

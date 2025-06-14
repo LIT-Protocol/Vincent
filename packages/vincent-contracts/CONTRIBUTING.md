@@ -19,6 +19,7 @@ The Vincent Contracts project contains the Solidity smart contracts that create 
 ### Building
 
 Build the contracts:
+
 ```bash
 pnpm build:contracts
 ```
@@ -26,6 +27,7 @@ pnpm build:contracts
 ### Generate ABIs and TypeScript Bindings
 
 Generate ABIs and TypeScript bindings:
+
 ```bash
 pnpm gen:contracts
 ```
@@ -52,6 +54,7 @@ pnpm gen:contracts
 ## Testing
 
 Run tests using Foundry:
+
 ```bash
 cd packages/vincent-contracts
 forge test
@@ -103,6 +106,7 @@ When working with AI-powered editors like Cursor, GitHub Copilot, or other AI as
 ### Related Projects
 
 The contracts are a core component that is used by:
+
 - `vincent-sdk`: For interacting with the contracts
 - `app-dashboard`: For frontend integration with the contracts
 

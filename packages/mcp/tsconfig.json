@@ -9,7 +9,7 @@
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "resolveJsonModule": true,
-    "outDir": "./build",
+    "outDir": "./dist",
     "rootDir": "./src",
     "baseUrl": "./",
     "strict": true,

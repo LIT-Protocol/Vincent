@@ -17,11 +17,13 @@ The Vincent MCP project provide servers that can be used to serve Vincent Apps o
 ### Local Development
 
 1. Build the package:
+
    ```bash
    pnpm build
    ```
 
 2. For development with hot reloading:
+
    ```bash
    # For STDIO mode
    pnpm dev:stdio
@@ -33,6 +35,7 @@ The Vincent MCP project provide servers that can be used to serve Vincent Apps o
 ### Testing
 
 Run the MCP inspector to test your MCP server:
+
 ```bash
 pnpm inspector
 ```
@@ -99,6 +102,7 @@ When working with AI-powered editors like Cursor, GitHub Copilot, or other AI as
 ### Related Projects
 
 The MCP project depends on:
+
 - `@lit-protocol/vincent-sdk`: For MCP utilities and Vincent integration
 - `@modelcontextprotocol/sdk`: For MCP protocol implementation
 

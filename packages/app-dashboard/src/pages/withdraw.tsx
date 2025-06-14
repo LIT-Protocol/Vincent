@@ -184,6 +184,8 @@ export function Withdraw() {
 
       return () => clearTimeout(timeout);
     }
+
+    return undefined;
   }, [authLoading, accountsLoading, sessionLoading, isProcessing, loadingMessage]);
 
   // ------ CLEANUP ------

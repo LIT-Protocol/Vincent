@@ -13,6 +13,9 @@
     ],
     "sharedGlobals": ["{workspaceRoot}/.github/workflows/ci.yml"]
   },
+  "cli": {
+    "packageManager": "pnpm"
+  },
   "plugins": [
     {
       "plugin": "@nx/js/typescript",
@@ -42,16 +45,20 @@
     }
   ],
   "release": {
-    "projects": ["vincent-tool-sdk", "vincent-sdk", "vincent-mcp", "vincent-rest-api"],
+    "projects": [
+      "vincent-tool-sdk",
+      "vincent-sdk",
+      "vincent-mcp",
+      "vincent-rest-api",
+      "vincent-policy-spending-limit",
+      "vincent-tool-erc20-approval",
+      "vincent-tool-uniswap-swap"
+    ],
     "projectsRelationship": "independent",
     "releaseTagPattern": "vincent/{projectName}/{version}",
     "versionPlans": true,
-    "changelog": {
-      "automaticFromRef": true,
-      "projectChangelogs": true
-    },
     "version": {
-      "preVersionCommand": "pnpm dlx nx run-many --target=build --projects=vincent-tool-sdk,vincent-sdk,vincent-mcp,vincent-rest-api --parallel=false",
+      "preVersionCommand": "pnpm dlx nx run-many --target=build --all",
       "generatorOptions": {
         "preserveLocalDependencyProtocols": true
       }

@@ -1,11 +1,11 @@
 {
-  "name": "@lit-protocol/vincent-tool-uniswap-swap",
+  "name": "vincent-tool-uniswap-swap",
   "sourceRoot": "src",
   "projectType": "library",
   "targets": {
     "action:build": {
       "executor": "nx:run-commands",
-      "dependsOn": ["vincent-tool-sdk:build", "@lit-protocol/vincent-policy-spending-limit:build"],
+      "dependsOn": ["vincent-tool-sdk:build", "vincent-policy-spending-limit:build"],
       "options": {
         "commands": ["pnpm node ./esbuild.config.js"],
         "cwd": "packages/vincent-tools/vincent-tool-uniswap-swap",
@@ -36,20 +36,6 @@
             "output": "src/generated"
           }
         ]
-      }
-    },
-    "test": {
-      "executor": "@nx/jest:jest",
-      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
-      "options": {
-        "jestConfig": "packages/vincent-tools/vincent-tool-uniswap-swap/jest.config.js"
-      }
-    },
-    "publish": {
-      "executor": "@nx/js:npm-publish",
-      "dependsOn": ["deploy"],
-      "options": {
-        "packageRoot": "dist"
       }
     },
     "test": {

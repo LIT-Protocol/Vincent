@@ -21,12 +21,11 @@
     "ts-jest": "^29.2.6",
     "ts-node": "^10.9.2"
   },
-  "type": "commonjs",
   "main": "./dist/src/index.js",
   "module": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
   "files": [
-    "dist",
-    "!**/*.tsbuildinfo"
+    "dist/**",
+    "*.md"
   ]
 }

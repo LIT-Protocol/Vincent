@@ -13,7 +13,6 @@
         "tsConfig": "packages/vincent-tools/vincent-tool-sdk/tsconfig.lib.json",
         "assets": ["packages/vincent-tools/vincent-tool-sdk/*.md"],
         "formats": ["cjs"],
-        "updateBuildableProjectDepsInPackageJson": true,
         "watch": true
       }
     },
@@ -25,16 +24,7 @@
         "main": "packages/vincent-tools/vincent-tool-sdk/src/index.ts",
         "tsConfig": "packages/vincent-tools/vincent-tool-sdk/tsconfig.lib.json",
         "assets": ["packages/vincent-tools/vincent-tool-sdk/*.md"],
-        "formats": ["cjs"],
-        "updateBuildableProjectDepsInPackageJson": true
-      }
-    },
-    "nx-release-publish": {
-      "dependsOn": ["build"],
-      "executor": "nx:run-commands",
-      "options": {
-        "command": "npm publish",
-        "cwd": "packages/vincent-tools/vincent-tool-sdk/dist"
+        "formats": ["cjs"]
       }
     },
     "lint": {

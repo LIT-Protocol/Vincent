@@ -19,6 +19,7 @@ The Vincent Tool SDK is an SDK exposing utilities to develop Vincent tools and p
 ### Building
 
 Build the SDK:
+
 ```bash
 nx build vincent-tool-sdk
 ```
@@ -26,6 +27,7 @@ nx build vincent-tool-sdk
 ### Type Checking
 
 Run type checking:
+
 ```bash
 pnpm typecheck
 ```
@@ -33,6 +35,7 @@ pnpm typecheck
 ### Watch Mode for Type Checking
 
 Run type checking in watch mode:
+
 ```bash
 pnpm watch:type-tests
 ```
@@ -62,6 +65,7 @@ The SDK is built around these core concepts:
 ## Testing
 
 Write unit tests for all functionality:
+
 ```bash
 pnpm test
 ```
@@ -99,6 +103,7 @@ When working with AI-powered editors like Cursor, GitHub Copilot, or other AI as
 ### Related Projects
 
 The Tool SDK is a core component that is used by:
+
 - `vincent-policy-spending-limit`: For implementing spending limit policies
 - `vincent-tool-erc20-approval`: For implementing ERC20 approval tools
 - `vincent-tool-uniswap-swap`: For implementing Uniswap swap tools

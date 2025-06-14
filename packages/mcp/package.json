@@ -20,14 +20,15 @@
     "agents"
   ],
   "files": [
-    "src/**"
+    "dist/**",
+    "*.md"
   ],
   "bin": {
-    "vincent-mcp": "src/cli.js",
-    "http": "src/http.js",
-    "stdio": "src/stdio.js"
+    "vincent-mcp": "./dist/src/cli.js",
+    "http": "./dist/http.js",
+    "stdio": "./dist/stdio.js"
   },
-  "main": "./src/stdio.js",
+  "main": "./dist/stdio.js",
   "scripts": {
     "build": "tsc",
     "build:watch": "tsc --watch",

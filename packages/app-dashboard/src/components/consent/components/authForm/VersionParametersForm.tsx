@@ -24,7 +24,7 @@ interface PolicyData {
 export default function VersionParametersForm({
   versionInfo,
   onChange,
-  existingParameters = []
+  existingParameters = [],
 }: VersionParametersFormProps) {
   const [parameters, setParameters] = useState<VersionParameter[]>([]);
   const initializedRef = useRef(false);
@@ -35,17 +35,17 @@ export default function VersionParametersForm({
 
   // Toggle tool expand/collapse
   const toggleTool = (toolId: string) => {
-    setExpandedTools(prev => ({
+    setExpandedTools((prev) => ({
       ...prev,
-      [toolId]: !prev[toolId]
+      [toolId]: !prev[toolId],
     }));
   };
 
   // Toggle policy expand/collapse
   const togglePolicy = (policyId: string) => {
-    setExpandedPolicies(prev => ({
+    setExpandedPolicies((prev) => ({
       ...prev,
-      [policyId]: !prev[policyId]
+      [policyId]: !prev[policyId],
     }));
   };
 
@@ -53,9 +53,10 @@ export default function VersionParametersForm({
     // Generate a version key for tracking changes
     const versionKey = `${versionInfo.app.id.hex}:${versionInfo.appVersion.version.hex}`;
 
-    const shouldInitialize = !initializedRef.current ||
-                             existingParameters.length > 0 ||
-                             versionKey !== processedVersionRef.current;
+    const shouldInitialize =
+      !initializedRef.current ||
+      existingParameters.length > 0 ||
+      versionKey !== processedVersionRef.current;
 
     if (!shouldInitialize && parameters.length > 0) return;
 
@@ -88,7 +89,7 @@ export default function VersionParametersForm({
         const toolData: ToolData = {
           toolIndex,
           toolIpfsCid: tool.toolIpfsCid,
-          policies: []
+          policies: [],
         };
 
         const policies = tool.policies;
@@ -109,7 +110,7 @@ export default function VersionParametersForm({
           const policyData: PolicyData = {
             policyIndex,
             policyIpfsCid: policy.policyIpfsCid,
-            parameters: []
+            parameters: [],
           };
 
           const parameterNames = policy.parameterNames;
@@ -122,14 +123,16 @@ export default function VersionParametersForm({
           parameterNames.forEach((name, paramIndex) => {
             if (paramIndex < parameterTypes.length) {
               const paramType = parameterTypes[paramIndex];
-              const paramName = typeof name === 'string' && name.trim() !== ''
-                ? name.trim()
-                : `param_${paramIndex}`;
+              const paramName =
+                typeof name === 'string' && name.trim() !== ''
+                  ? name.trim()
+                  : `param_${paramIndex}`;
 
-              const existingParam = existingParameters.find(p =>
-                typeof p.name === 'string' &&
-                p.name.toLowerCase() === paramName.toLowerCase() &&
-                p.type === paramType
+              const existingParam = existingParameters.find(
+                (p) =>
+                  typeof p.name === 'string' &&
+                  p.name.toLowerCase() === paramName.toLowerCase() &&
+                  p.type === paramType,
               );
 
               const parameter = {
@@ -138,7 +141,7 @@ export default function VersionParametersForm({
                 paramIndex,
                 name: paramName,
                 type: paramType,
-                value: existingParam ? existingParam.value : ''
+                value: existingParam ? existingParam.value : '',
               };
 
               extractedParams.push(parameter);
@@ -161,7 +164,6 @@ export default function VersionParametersForm({
       setExpandedTools(toolExpansions);
       setExpandedPolicies(policyExpansions);
       initializedRef.current = true;
-
     } catch (error) {
       console.error('Error parsing version data:', error);
       setParameters([]);
@@ -179,16 +181,20 @@ export default function VersionParametersForm({
 
       return () => clearTimeout(timeoutId);
     }
+
+    return undefined;
   }, [parameters, onChange]);
 
   // Add debugging to track parameter changes
   const handleParameterChange = (updatedParam: VersionParameter) => {
     // Update the parameters state by replacing the matching parameter
-    setParameters(prevParams => {
-      const updatedParams = prevParams.map(param => {
-        if (param.toolIndex === updatedParam.toolIndex &&
-            param.policyIndex === updatedParam.policyIndex &&
-            param.paramIndex === updatedParam.paramIndex) {
+    setParameters((prevParams) => {
+      const updatedParams = prevParams.map((param) => {
+        if (
+          param.toolIndex === updatedParam.toolIndex &&
+          param.policyIndex === updatedParam.policyIndex &&
+          param.paramIndex === updatedParam.paramIndex
+        ) {
           return updatedParam;
         }
         return param;
@@ -203,8 +209,8 @@ export default function VersionParametersForm({
     // Only apply if we have both existing parameters and the form is already initialized
     if (existingParameters.length > 0 && initializedRef.current && parameters.length > 0) {
       // Use a ref to prevent multiple updates for the same set of parameters
-      const existingParamsKey = existingParameters.map(p => `${p.name}:${p.value}`).join('|');
-      const currentParamsKey = parameters.map(p => `${p.name}:${p.value}`).join('|');
+      const existingParamsKey = existingParameters.map((p) => `${p.name}:${p.value}`).join('|');
+      const currentParamsKey = parameters.map((p) => `${p.name}:${p.value}`).join('|');
 
       // Skip if the parameters haven't actually changed (prevents loops)
       if (existingParamsKey === currentParamsKey) {
@@ -215,16 +221,17 @@ export default function VersionParametersForm({
       let hasChanges = false;
 
       // Apply each existing parameter value to the matching form field
-      existingParameters.forEach(existingParam => {
+      existingParameters.forEach((existingParam) => {
         // Find the matching parameter in our form
-        const formParamIndex = updatedParams.findIndex(p =>
-          // Match by name AND type to avoid type mismatches
-          (p.name === existingParam.name && p.type === existingParam.type) ||
-          // Match by position AND type
-          (p.toolIndex === existingParam.toolIndex &&
-           p.policyIndex === existingParam.policyIndex &&
-           p.paramIndex === existingParam.paramIndex &&
-           p.type === existingParam.type) // Ensure type matches
+        const formParamIndex = updatedParams.findIndex(
+          (p) =>
+            // Match by name AND type to avoid type mismatches
+            (p.name === existingParam.name && p.type === existingParam.type) ||
+            // Match by position AND type
+            (p.toolIndex === existingParam.toolIndex &&
+              p.policyIndex === existingParam.policyIndex &&
+              p.paramIndex === existingParam.paramIndex &&
+              p.type === existingParam.type), // Ensure type matches
         );
 
         if (formParamIndex !== -1) {
@@ -233,7 +240,7 @@ export default function VersionParametersForm({
             // Update the form parameter with the existing value
             updatedParams[formParamIndex] = {
               ...updatedParams[formParamIndex],
-              value: existingParam.value
+              value: existingParam.value,
             };
             hasChanges = true;
           }
@@ -245,7 +252,7 @@ export default function VersionParametersForm({
         setParameters(updatedParams);
       }
     }
-  // Remove parameters from dependency array to break the loop
+    // Remove parameters from dependency array to break the loop
   }, [existingParameters]);
 
   // Helper functions to abbreviate long strings
@@ -269,9 +276,7 @@ export default function VersionParametersForm({
   if (parameters.length === 0) {
     return (
       <div className="mb-6">
-        <div className="text-sm font-medium text-gray-700 mb-3">
-          Parameters
-        </div>
+        <div className="text-sm font-medium text-gray-700 mb-3">Parameters</div>
         <div className="bg-gray-50 p-3 rounded-lg text-sm text-gray-500">
           No parameter inputs found for this application version.
         </div>
@@ -281,9 +286,7 @@ export default function VersionParametersForm({
 
   return (
     <div className="mb-6">
-      <div className="text-sm font-medium text-gray-700 mb-3">
-        Application Parameters
-      </div>
+      <div className="text-sm font-medium text-gray-700 mb-3">Application Parameters</div>
       <div className="space-y-3">
         {toolsData.map((tool) => {
           const toolId = `tool-${tool.toolIndex}`;
@@ -292,16 +295,17 @@ export default function VersionParametersForm({
           const toolName = getToolFriendlyName(tool.toolIpfsCid, tool.toolIndex);
 
           return (
-            <div key={toolId} className="border border-gray-200 rounded-lg overflow-hidden bg-white">
+            <div
+              key={toolId}
+              className="border border-gray-200 rounded-lg overflow-hidden bg-white"
+            >
               {/* Tool Header */}
               <div
                 className="flex items-center justify-between p-3 cursor-pointer hover:bg-gray-50"
                 onClick={() => toggleTool(toolId)}
               >
                 <div className="flex items-center">
-                  <div className="font-medium text-sm">
-                    {toolName}
-                  </div>
+                  <div className="font-medium text-sm">{toolName}</div>
                   {/*
                   <div className="ml-2 px-2 py-0.5 text-xs bg-green-100 text-green-800 rounded-full flex items-center">
                     <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -330,7 +334,13 @@ export default function VersionParametersForm({
                     xmlns="http://www.w3.org/2000/svg"
                     className={`transform transition-transform duration-300 ease-in-out ${isToolExpanded ? 'rotate-180' : ''}`}
                   >
-                    <path d="M6 9L12 15L18 9" stroke="#6B7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path
+                      d="M6 9L12 15L18 9"
+                      stroke="#6B7280"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
                   </svg>
                 </div>
               </div>
@@ -348,7 +358,10 @@ export default function VersionParametersForm({
                     const policyId = `tool-${tool.toolIndex}-policy-${policy.policyIndex}`;
                     const isPolicyExpanded = expandedPolicies[policyId] === true;
 
-                    const policyName = getPolicyFriendlyName(policy.policyIpfsCid, policy.policyIndex);
+                    const policyName = getPolicyFriendlyName(
+                      policy.policyIpfsCid,
+                      policy.policyIndex,
+                    );
 
                     return (
                       <div key={policyId} className="border-b border-gray-100 last:border-b-0">
@@ -358,9 +371,7 @@ export default function VersionParametersForm({
                           onClick={() => togglePolicy(policyId)}
                         >
                           <div className="flex items-center">
-                            <div className="font-medium text-sm">
-                              {policyName}
-                            </div>
+                            <div className="font-medium text-sm">{policyName}</div>
                             {/*
                             <div className="ml-2 px-2 py-0.5 text-xs bg-green-100 text-green-800 rounded-full flex items-center">
                               <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -389,7 +400,13 @@ export default function VersionParametersForm({
                               xmlns="http://www.w3.org/2000/svg"
                               className={`transform transition-transform duration-300 ease-in-out ${isPolicyExpanded ? 'rotate-180' : ''}`}
                             >
-                              <path d="M6 9L12 15L18 9" stroke="#6B7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                              <path
+                                d="M6 9L12 15L18 9"
+                                stroke="#6B7280"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
                             </svg>
                           </div>
                         </div>
@@ -400,18 +417,24 @@ export default function VersionParametersForm({
                         >
                           <div className="p-3 pt-2 pl-8 pr-4">
                             {policy.parameters.length === 0 ? (
-                              <div className="text-sm text-gray-500 italic">No parameters for this policy</div>
+                              <div className="text-sm text-gray-500 italic">
+                                No parameters for this policy
+                              </div>
                             ) : (
                               policy.parameters.map((param) => (
-                                <div key={`${param.toolIndex}-${param.policyIndex}-${param.paramIndex}`}>
+                                <div
+                                  key={`${param.toolIndex}-${param.policyIndex}-${param.paramIndex}`}
+                                >
                                   <ParameterInput
                                     name={param.name}
                                     type={param.type}
                                     value={param.value}
-                                    onChange={(value) => handleParameterChange({
-                                      ...param,
-                                      value
-                                    })}
+                                    onChange={(value) =>
+                                      handleParameterChange({
+                                        ...param,
+                                        value,
+                                      })
+                                    }
                                   />
                                 </div>
                               ))

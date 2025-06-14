@@ -190,6 +190,8 @@ export default function IndexView() {
 
       return () => clearTimeout(timeout);
     }
+
+    return undefined;
   }, [authLoading, accountsLoading, sessionLoading, isProcessing, loadingMessage]);
 
   // ------ CLEANUP ------

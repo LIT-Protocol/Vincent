@@ -34,17 +34,20 @@ The Vincent system consists of several key components:
 ### Installation
 
 1. Clone the repository:
+
    ```bash
    git clone https://github.com/LIT-Protocol/Vincent.git
    cd Vincent
    ```
 
 2. Ensure pnpm is available:
+
    ```bash
    corepack enable
    ```
 
 3. Install dependencies:
+
    ```bash
    pnpm install
    ```
@@ -150,6 +153,7 @@ Follow the [Conventional Commits](https://www.conventionalcommits.org/) specific
 ```
 
 Types include:
+
 - `feat`: A new feature
 - `fix`: A bug fix
 - `docs`: Documentation changes
@@ -183,6 +187,7 @@ This repository is structured as a monorepo with multiple projects, each with it
 ### Context Loading Strategy
 
 AI editors should:
+
 1. First load the project-specific documentation when working in a project directory
 2. Supplement with root documentation for overall context
 3. Consider relationships between projects as described in the root documentation

@@ -19,6 +19,7 @@ The Vincent Policy Spending Limit is a policy that can be attached to tools to a
 ### Testing
 
 Run tests:
+
 ```bash
 nx test vincent-policy-spending-limit
 ```
@@ -26,6 +27,7 @@ nx test vincent-policy-spending-limit
 ### Building the Lit Action
 
 Build the policy:
+
 ```bash
 nx action:build vincent-policy-spending-limit
 ```
@@ -33,6 +35,7 @@ nx action:build vincent-policy-spending-limit
 ### Deploying the Lit Action to IPFS
 
 Building will be done automatically. Deploy the policy:
+
 ```bash
 nx action:deploy vincent-policy-spending-limit
 ```
@@ -61,6 +64,7 @@ This policy can be integrated with various Vincent Tools to enforce spending lim
 ## Testing
 
 Write unit tests for all functionality:
+
 ```bash
 pnpm test
 ```

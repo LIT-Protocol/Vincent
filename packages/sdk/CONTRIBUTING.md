@@ -19,6 +19,7 @@ The Vincent SDK is a TypeScript SDK that exposes useful tools to interact with V
 ### Building
 
 Build the SDK:
+
 ```bash
 pnpm build
 ```
@@ -26,6 +27,7 @@ pnpm build
 ### Documentation
 
 Generate TypeDoc documentation:
+
 ```bash
 pnpm typedoc
 ```
@@ -73,6 +75,7 @@ This SDK provides tools to transform your Vincent application into an MCP server
 ## Testing
 
 Write unit tests for new functionality:
+
 ```bash
 pnpm test
 ```
@@ -111,6 +114,7 @@ When working with AI-powered editors like Cursor, GitHub Copilot, or other AI as
 ### Related Projects
 
 The SDK is a core component that is used by:
+
 - `vincent-mcp`: For MCP server implementation
 - `vincent-tools`: For tool and policy implementation
 - `app-dashboard`: For frontend integration

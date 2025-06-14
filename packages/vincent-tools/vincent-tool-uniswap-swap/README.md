@@ -31,7 +31,7 @@ import { UNISWAP_SWAP_TOOL_IPFS_ID } from '@lit-protocol/vincent-tool-uniswap-sw
 // Initialize the Vincent Tool Client with your delegatee signer
 const toolClient = getVincentToolClient({
   ethersSigner: delegateeSigner,
-  vincentToolCid: UNISWAP_SWAP_TOOL_IPFS_ID
+  vincentToolCid: UNISWAP_SWAP_TOOL_IPFS_ID,
 });
 
 // Execute the Uniswap Swap Tool
@@ -50,7 +50,11 @@ const response = await toolClient.execute({
 This tool is integrated with the Vincent Policy Spending Limit to enforce spending constraints:
 
 ```typescript
-import { createVincentToolPolicy, createVincentTool, createPolicyMapFromToolPolicies } from '@lit-protocol/vincent-tool-sdk';
+import {
+  createVincentToolPolicy,
+  createVincentTool,
+  createPolicyMapFromToolPolicies,
+} from '@lit-protocol/vincent-tool-sdk';
 import { bundledVincentPolicy } from '@lit-protocol/vincent-policy-spending-limit';
 import { toolParamsSchema } from '@lit-protocol/vincent-tool-uniswap-swap';
 
