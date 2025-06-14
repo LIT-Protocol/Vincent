@@ -19,6 +19,16 @@
     "dist/**",
     "*.md"
   ],
+  "exports": {
+    ".": {
+      "require": "./dist/src/index.js",
+      "import": "./dist/src/index.js"
+    },
+    "./internal": {
+      "require": "./dist/src/internal.js",
+      "import": "./dist/src/internal.js"
+    }
+  },
   "devDependencies": {
     "chokidar-cli": "^3.0.0",
     "jsonc-eslint-parser": "^2.4.0"

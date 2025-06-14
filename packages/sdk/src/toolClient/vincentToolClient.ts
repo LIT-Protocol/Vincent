@@ -1,4 +1,4 @@
-// src/lib/toolClient/vincentToolClient.ts
+// src/toolClient/vincentToolClient.ts
 
 import { z } from 'zod';
 
@@ -15,40 +15,32 @@ import { LIT_ABILITY, LIT_NETWORK } from '@lit-protocol/constants';
 
 import type { LitNodeClient } from '@lit-protocol/lit-node-client';
 
-import {
-  getPkpInfo,
-  type ToolPolicyMap,
-} from '@lit-protocol/vincent-tool-sdk/src/lib/toolCore/helpers';
 import type {
   VincentTool,
   PolicyEvaluationResultContext,
   ToolConsumerContext,
+  BaseToolContext,
 } from '@lit-protocol/vincent-tool-sdk';
 
-import { getPoliciesAndAppVersion } from '@lit-protocol/vincent-tool-sdk/src/lib/policyCore/policyParameters/getOnchainPolicyParams';
-import { validatePolicies } from '@lit-protocol/vincent-tool-sdk/src/lib/toolCore/helpers/validatePolicies';
-import type { DecodedValues } from '@lit-protocol/vincent-tool-sdk/src/lib/policyCore/policyParameters/types';
-import { decodePolicyParams } from '@lit-protocol/vincent-tool-sdk/src/lib/policyCore/policyParameters/decodePolicyParams';
-import { YELLOWSTONE_PUBLIC_RPC } from '@lit-protocol/vincent-tool-sdk/src/lib/constants';
-import {
-  LIT_DATIL_PUBKEY_ROUTER_ADDRESS,
-  LIT_DATIL_VINCENT_ADDRESS,
-} from '@lit-protocol/vincent-tool-sdk/src/lib/handlers/constants';
+import type { DecodedValues, ToolPolicyMap } from '@lit-protocol/vincent-tool-sdk/internal';
 
 import {
+  getPkpInfo,
+  getPoliciesAndAppVersion,
+  validatePolicies,
+  decodePolicyParams,
+  YELLOWSTONE_PUBLIC_RPC,
+  LIT_DATIL_PUBKEY_ROUTER_ADDRESS,
+  LIT_DATIL_VINCENT_ADDRESS,
   createDenyResult,
   getSchemaForPolicyResponseResult,
   isPolicyAllowResponse,
   isPolicyDenyResponse,
   validateOrDeny,
-} from '@lit-protocol/vincent-tool-sdk/src/lib/policyCore/helpers';
-
-import { createToolSuccessResult } from '@lit-protocol/vincent-tool-sdk/src/lib/toolCore/helpers/resultCreators';
-
-import {
+  createToolSuccessResult,
   getSchemaForToolResult,
   validateOrFail,
-} from '@lit-protocol/vincent-tool-sdk/src/lib/toolCore/helpers/zod';
+} from '@lit-protocol/vincent-tool-sdk/internal';
 
 import { getLitNodeClientInstance } from '../internal/LitNodeClient/getLitNodeClient';
 
@@ -57,9 +49,10 @@ import {
   createDenyEvaluationResult,
   createToolResponseFailureNoResult,
 } from './resultCreators';
+
 import { type RemoteVincentToolExecutionResult, ToolResponse } from './types';
+
 import { isToolResponseFailure } from './typeGuards';
-import type { BaseToolContext } from '@lit-protocol/vincent-tool-sdk/dist/lib/toolCore/toolDef/context/types';
 
 const generateSessionSigs = async ({
   litNodeClient,

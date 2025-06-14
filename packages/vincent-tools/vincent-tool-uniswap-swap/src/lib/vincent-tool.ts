@@ -1,8 +1,11 @@
-import { createVincentTool, createVincentToolPolicy } from '@lit-protocol/vincent-tool-sdk';
+import {
+  createVincentTool,
+  createVincentToolPolicy,
+  supportedPoliciesForTool,
+} from '@lit-protocol/vincent-tool-sdk';
 import { bundledVincentPolicy } from '@lit-protocol/vincent-policy-spending-limit';
 
 import { CHAIN_TO_ADDRESSES_MAP } from '@uniswap/sdk-core';
-import { supportedPoliciesForTool } from '@lit-protocol/vincent-tool-sdk';
 
 import { getTokenAmountInUsd, sendUniswapTx } from './tool-helpers';
 import {

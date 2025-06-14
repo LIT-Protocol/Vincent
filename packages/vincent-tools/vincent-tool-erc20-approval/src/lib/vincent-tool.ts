@@ -1,5 +1,4 @@
-import { createVincentTool } from '@lit-protocol/vincent-tool-sdk';
-import { supportedPoliciesForTool } from '@lit-protocol/vincent-tool-sdk/src/lib/toolCore/helpers';
+import { createVincentTool, supportedPoliciesForTool } from '@lit-protocol/vincent-tool-sdk';
 import { ethers } from 'ethers';
 
 import { getCurrentAllowance, sendErc20ApprovalTx } from './tool-helpers';
