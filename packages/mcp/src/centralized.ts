@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 /**
- * HTTP server implementation for Vincent MCP
+ * Bundled HTTP server implementation for Vincent MCP
  *
  * This module provides an HTTP server implementation for the Model Context Protocol (MCP)
  * using Express. It creates a streamable HTTP server that can handle MCP requests
  * and maintain session state across multiple requests.
  *
- * The server loads a Vincent application definition from a JSON file and creates
+ * The server loads a Vincent application definition from a JSON file on demand and creates
  * an MCP server with extended capabilities for that application. It then exposes
  * the server via HTTP endpoints that follow the MCP protocol.
  *
@@ -14,23 +14,20 @@
  * @category Vincent MCP
  */
 
-import fs from 'node:fs';
 import { randomUUID } from 'node:crypto';
 
-import { mcp } from '@lit-protocol/vincent-sdk';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { isInitializeRequest } from '@modelcontextprotocol/sdk/types.js';
 import express, { Request, Response } from 'express';
 
 import { getVincentDelegateeSigner } from './delegatees';
 import { env } from './env';
+import { getVincentAppDef } from './registry';
 import { getServer } from './server';
 
-const { HTTP_PORT, VINCENT_APP_JSON_DEFINITION, VINCENT_DELEGATEE_PRIVATE_KEY } = env;
-const { VincentAppDefSchema } = mcp;
+const MCP_URL = '/:appId/:appVersion/mcp';
 
-const vincentAppJson = fs.readFileSync(VINCENT_APP_JSON_DEFINITION, { encoding: 'utf8' });
-const vincentAppDef = VincentAppDefSchema.parse(JSON.parse(vincentAppJson));
+const { HTTP_PORT } = env;
 
 const app = express();
 app.use(express.json());
@@ -38,7 +35,7 @@ app.use(express.json());
 // In-memory store for transports
 const transports: { [sessionId: string]: StreamableHTTPServerTransport } = {};
 
-app.post('/mcp', async (req: Request, res: Response) => {
+app.post(MCP_URL, async (req: Request, res: Response) => {
   try {
     const sessionId = req.headers['mcp-session-id'] as string | undefined;
     let transport: StreamableHTTPServerTransport;
@@ -62,8 +59,21 @@ app.post('/mcp', async (req: Request, res: Response) => {
         }
       };
 
-      // In local HTTP configuration, the signer is defined with VINCENT_DELEGATEE_PRIVATE_KEY env variable
-      const delegateeSigner = getVincentDelegateeSigner(VINCENT_DELEGATEE_PRIVATE_KEY);
+      const authorization = (req.headers['authorization'] as string) || '';
+      const [, delegateePrivateKey] = authorization.split(' ');
+      if (!delegateePrivateKey) {
+        throw new Error('No delegatee private key provided');
+      }
+
+      const { appId, appVersion } = req.params;
+      const delegateeSigner = getVincentDelegateeSigner(delegateePrivateKey);
+      const vincentAppDef = await getVincentAppDef(appId, appVersion);
+      if (!delegateeSigner) {
+        throw new Error(
+          `No delegatee signer found for app ${appId}. App must be registered with a delegatee private key before it can be used.`,
+        );
+      }
+
       const server = getServer(vincentAppDef, delegateeSigner);
       await server.connect(transport);
     } else {
@@ -117,9 +127,9 @@ const handleSessionRequest = async (req: express.Request, res: express.Response)
   await transport.handleRequest(req, res);
 };
 
-app.get('/mcp', handleSessionRequest);
-app.delete('/mcp', handleSessionRequest);
+app.get(MCP_URL, handleSessionRequest);
+app.delete(MCP_URL, handleSessionRequest);
 
 app.listen(HTTP_PORT, () => {
-  console.log(`MCP Stateless Streamable HTTP Server listening on port ${HTTP_PORT}`);
+  console.log(`Centralized Vincent MCP Server listening on port ${HTTP_PORT}`);
 });
