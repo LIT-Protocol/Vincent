@@ -9,9 +9,9 @@ There are different types of developers in the Vincent ecosystem depending on wh
 
 ## App & Agent Developers
 
-You’re an App/Agent Developer if you're building an app or autonomous agent that uses Vincent Tools & Policies to perform actions on behalf of Vincent Users.
+You’re an App & Agent Developer if you're building an app or autonomous agent that uses Vincent Tools & Policies to perform actions on behalf of Vincent Users.
 
-[Get started with App/Agent Development](./App-Agent-Developers/Getting-Started.md) and learn how to:
+[Get started with App & Agent Development](./App-Agent-Developers/Getting-Started.md) and learn how to:
 
 - Create and configure a Vincent App
 - Install and use the Vincent Tool Client SDK to execute Vincent Tools governed by user-defined Vincent Policies<!-- TODO Link to SDK -->
