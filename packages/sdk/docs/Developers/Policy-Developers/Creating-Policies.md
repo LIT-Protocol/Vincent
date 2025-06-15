@@ -3,39 +3,6 @@ category: Developers
 title: Creating Vincent Policies
 ---
 
-# What is a Vincent Policy?
-
-<!-- TODO Link to Vincent Tool definition when it's available -->
-A Vincent Policy is a function built using [Lit Actions](https://developer.litprotocol.com/sdk/serverless-signing/overview) and is a programmable guardrail for Vincent Tool executions. These policies have user-configurable parameters and determine whether a Vincent App can execute specific Vincent Tools on behalf of a Vincent App User, ensuring that autonomous agents and Vincent Apps operate strictly within user-defined boundaries.
-
-## Key Capabilities of Vincent Policies
-
-- **Flexible Data Access:** Read and write both on and off-chain data to any blockchain network or HTTP-accessible API or database
-- **Stateful Policy Management:** Persist data across executions to track cumulative metrics and implement sophisticated rules like spending limits, rate limiting, and usage quotas
-- **Cryptographic Capabilities:** Utilize Lit Protocol's [Encryption and Access Control ](https://developer.litprotocol.com/sdk/access-control/intro) features for computing over private data within Lit's secure [Trusted Execution Environment (TEE)](https://en.wikipedia.org/wiki/Trusted_execution_environment)
-- **Type-Safe Development:** Strongly-typed Zod schemas ensure parameter validation and clear interfaces between Vincent Tools and Policies, and both utilize packages installed from NPM to extend functionality
-
-### Real-World Policy Examples
-
-**Financial Controls**
-- **Daily Spending Limits**: Track cumulative spending by storing transaction amounts on or off-chain and deny Vincent Tool execution when limits are exceeded
-- **Multi-Signature Requirements**: Require additional approvals for high-value transactions by integrating with on or off-chain approval systems
-- **Token Allowlists**: Restrict transactions to specific token types or verified contract addresses
-
-**Access Management**
-- **Membership Gates**: Verify ownership of on-chain assets (like NFTs), or off-chain data (like Discord roles) before allowing access to premium features
-- **Time-Based Restrictions**: Only allow Vincent Tool execution during specific hours, days, or based on cooldown periods
-
-**Usage Limits**
-- **Rate Limiting**: Track API usage frequency and implement cooldown periods between executions
-- **Compliance Monitoring**: Enforce regulatory requirements by checking transaction amounts against legal limits
-- **Geographic Restrictions**: Use IP geolocation APIs to restrict access based on user location
-
-**Risk Management**
-- **Transaction Pattern Analysis**: Monitor spending patterns and flag suspicious activity that deviates from normal behavior
-- **Circuit Breakers**: Automatically disable tools when unusual activity is detected or system-wide limits are reached
-- **Emergency Stops**: Implement admin-controlled emergency stops that can pause policy-governed operations
-
 # How a Vincent Policy Works
 
 A Vincent Policy consists of three main lifecycle methods executed in the following order:
@@ -62,16 +29,16 @@ export const vincentPolicy = createVincentPolicy({
 
   precheckAllowResultSchema,
   precheckDenyResultSchema,
-  precheck: async ({ toolParams, userParams }, policyContext) => { },
+  precheck: async ({ toolParams, userParams }, policyContext) => {},
 
   evalAllowResultSchema,
   evalDenyResultSchema,
-  evaluate: async ({ toolParams, userParams }, policyContext) => { },
+  evaluate: async ({ toolParams, userParams }, policyContext) => {},
 
   commitParamsSchema,
   commitAllowResultSchema,
   commitDenyResultSchema,
-  commit: async (params, policyContext) => {  },
+  commit: async (params, policyContext) => {},
 });
 ```
 
@@ -111,6 +78,7 @@ interface PolicyContext {
 ```
 
 Where:
+
 - `toolIpfsCid`: The IPFS CID of the Vincent Tool that is being executed
 - `appId`: The ID of the Vincent App the Vincent Tool is being executed for
 - `appVersion`: The version of the Vincent App the Vincent Tool is being executed for
@@ -140,8 +108,8 @@ const vincentPolicy = createVincentPolicy({
   // ... other policy definitions
 
   toolParamsSchema: z.object({
-      tokenAddress: z.string(),
-      amount: z.number(),
+    tokenAddress: z.string(),
+    amount: z.number(),
   }),
 });
 ```
@@ -162,8 +130,8 @@ const vincentPolicy = createVincentPolicy({
   // ... other policy definitions
 
   userParamsSchema: z.object({
-      dailySpendingLimit: z.number(),
-      allowedTokens: z.array(z.string()).optional(),
+    dailySpendingLimit: z.number(),
+    allowedTokens: z.array(z.string()).optional(),
   }),
 });
 ```
@@ -192,11 +160,15 @@ const vincentPolicy = createVincentPolicy({
     const { dailySpendingLimit, allowedTokens } = userParams;
 
     const isTokenAllowed = allowedTokens.includes(tokenAddress);
-    const { isSpendingLimitExceeded, currentDailySpending } = await checkSpendingLimit(tokenAddress, amount, dailySpendingLimit);
+    const { isSpendingLimitExceeded, currentDailySpending } = await checkSpendingLimit(
+      tokenAddress,
+      amount,
+      dailySpendingLimit
+    );
 
     if (!isTokenAllowed) {
       return policyContext.deny({
-        reason: "Token not allowed",
+        reason: 'Token not allowed',
         maxDailySpendingLimit: dailySpendingLimit,
         currentDailySpending,
         allowedTokens: allowedTokens,
@@ -205,7 +177,7 @@ const vincentPolicy = createVincentPolicy({
 
     if (isSpendingLimitExceeded) {
       return policyContext.deny({
-        reason: "Spending limit exceeded",
+        reason: 'Spending limit exceeded',
         maxDailySpendingLimit: dailySpendingLimit,
         currentDailySpending,
         allowedTokens: allowedTokens,
@@ -294,11 +266,15 @@ const vincentPolicy = createVincentPolicy({
     const { dailySpendingLimit, allowedTokens } = userParams;
 
     const isTokenAllowed = allowedTokens.includes(tokenAddress);
-    const { isSpendingLimitExceeded, currentDailySpending } = await checkSpendingLimit(tokenAddress, amount, dailySpendingLimit);
+    const { isSpendingLimitExceeded, currentDailySpending } = await checkSpendingLimit(
+      tokenAddress,
+      amount,
+      dailySpendingLimit
+    );
 
     if (!isTokenAllowed) {
       return policyContext.deny({
-        reason: "Token not allowed",
+        reason: 'Token not allowed',
         maxDailySpendingLimit: dailySpendingLimit,
         currentDailySpending,
         allowedTokens: allowedTokens,
@@ -307,7 +283,7 @@ const vincentPolicy = createVincentPolicy({
 
     if (isSpendingLimitExceeded) {
       return policyContext.deny({
-        reason: "Spending limit exceeded",
+        reason: 'Spending limit exceeded',
         maxDailySpendingLimit: dailySpendingLimit,
         currentDailySpending,
         allowedTokens: allowedTokens,
@@ -389,27 +365,27 @@ const vincentPolicy = createVincentPolicy({
     const { spentAmount, tokenAddress } = params;
 
     try {
-        const { updatedDailySpending, remainingDailyLimit } = await updateSpentAmount({
-            vincentAppId: policyContext.appId,
-            spenderAddress: policyContext.delegation.delegatorPkpInfo.ethAddress,
-            spentAmount,
-            spentTokenAddress: tokenAddress,
-        });
+      const { updatedDailySpending, remainingDailyLimit } = await updateSpentAmount({
+        vincentAppId: policyContext.appId,
+        spenderAddress: policyContext.delegation.delegatorPkpInfo.ethAddress,
+        spentAmount,
+        spentTokenAddress: tokenAddress,
+      });
 
-        return policyContext.allow({
-            vincentAppId: policyContext.appId,
-            spenderAddress: policyContext.delegation.delegatorPkpInfo.ethAddress,
-            updatedDailySpending,
-            remainingDailyLimit,
-        });
+      return policyContext.allow({
+        vincentAppId: policyContext.appId,
+        spenderAddress: policyContext.delegation.delegatorPkpInfo.ethAddress,
+        updatedDailySpending,
+        remainingDailyLimit,
+      });
     } catch (error) {
-        return policyContext.deny({
-            reason: "Failed to update spending limit",
-            vincentAppId: policyContext.appId,
-            spenderAddress: policyContext.delegation.delegatorPkpInfo.ethAddress,
-            spentAmount,
-            spentTokenAddress: tokenAddress,
-        });
+      return policyContext.deny({
+        reason: 'Failed to update spending limit',
+        vincentAppId: policyContext.appId,
+        spenderAddress: policyContext.delegation.delegatorPkpInfo.ethAddress,
+        spentAmount,
+        spentTokenAddress: tokenAddress,
+      });
     }
   },
 });
@@ -504,12 +480,12 @@ const vincentPolicy = createVincentPolicy({
   packageName: '@my-npm-org/vincent-policy-my-name' as const,
 
   toolParamsSchema: z.object({
-      tokenAddress: z.string(),
-      amount: z.number(),
+    tokenAddress: z.string(),
+    amount: z.number(),
   }),
   userParamsSchema: z.object({
-      dailySpendingLimit: z.number(),
-      allowedTokens: z.array(z.string()).optional(),
+    dailySpendingLimit: z.number(),
+    allowedTokens: z.array(z.string()).optional(),
   }),
 
   precheckAllowResultSchema: z.object({
@@ -528,11 +504,15 @@ const vincentPolicy = createVincentPolicy({
     const { dailySpendingLimit, allowedTokens } = userParams;
 
     const isTokenAllowed = allowedTokens.includes(tokenAddress);
-    const { isSpendingLimitExceeded, currentDailySpending } = await checkSpendingLimit(tokenAddress, amount, dailySpendingLimit);
+    const { isSpendingLimitExceeded, currentDailySpending } = await checkSpendingLimit(
+      tokenAddress,
+      amount,
+      dailySpendingLimit
+    );
 
     if (!isTokenAllowed) {
       return policyContext.deny({
-        reason: "Token not allowed",
+        reason: 'Token not allowed',
         maxDailySpendingLimit: dailySpendingLimit,
         currentDailySpending,
         allowedTokens: allowedTokens,
@@ -541,7 +521,7 @@ const vincentPolicy = createVincentPolicy({
 
     if (isSpendingLimitExceeded) {
       return policyContext.deny({
-        reason: "Spending limit exceeded",
+        reason: 'Spending limit exceeded',
         maxDailySpendingLimit: dailySpendingLimit,
         currentDailySpending,
         allowedTokens: allowedTokens,
@@ -571,11 +551,15 @@ const vincentPolicy = createVincentPolicy({
     const { dailySpendingLimit, allowedTokens } = userParams;
 
     const isTokenAllowed = allowedTokens.includes(tokenAddress);
-    const { isSpendingLimitExceeded, currentDailySpending } = await checkSpendingLimit(tokenAddress, amount, dailySpendingLimit);
+    const { isSpendingLimitExceeded, currentDailySpending } = await checkSpendingLimit(
+      tokenAddress,
+      amount,
+      dailySpendingLimit
+    );
 
     if (!isTokenAllowed) {
       return policyContext.deny({
-        reason: "Token not allowed",
+        reason: 'Token not allowed',
         maxDailySpendingLimit: dailySpendingLimit,
         currentDailySpending,
         allowedTokens: allowedTokens,
@@ -584,7 +568,7 @@ const vincentPolicy = createVincentPolicy({
 
     if (isSpendingLimitExceeded) {
       return policyContext.deny({
-        reason: "Spending limit exceeded",
+        reason: 'Spending limit exceeded',
         maxDailySpendingLimit: dailySpendingLimit,
         currentDailySpending,
         allowedTokens: allowedTokens,
@@ -617,25 +601,25 @@ const vincentPolicy = createVincentPolicy({
     const { spentAmount, tokenAddress } = params;
 
     try {
-        const { updatedDailySpending, remainingDailyLimit } = await updateSpentAmount({
-            vincentAppId: policyContext.appId,
-            spenderAddress: policyContext.delegation.delegatorPkpInfo.ethAddress,
-            spentAmount,
-            spentTokenAddress: tokenAddress,
-        });
+      const { updatedDailySpending, remainingDailyLimit } = await updateSpentAmount({
+        vincentAppId: policyContext.appId,
+        spenderAddress: policyContext.delegation.delegatorPkpInfo.ethAddress,
+        spentAmount,
+        spentTokenAddress: tokenAddress,
+      });
 
-        return policyContext.allow({
-            updatedDailySpending,
-            remainingDailyLimit,
-        });
+      return policyContext.allow({
+        updatedDailySpending,
+        remainingDailyLimit,
+      });
     } catch (error) {
-        return policyContext.deny({
-            reason: "Failed to update spending limit",
-            vincentAppId: policyContext.appId,
-            spenderAddress: policyContext.delegation.delegatorPkpInfo.ethAddress,
-            spentAmount,
-            spentTokenAddress: tokenAddress,
-        });
+      return policyContext.deny({
+        reason: 'Failed to update spending limit',
+        vincentAppId: policyContext.appId,
+        spenderAddress: policyContext.delegation.delegatorPkpInfo.ethAddress,
+        spentAmount,
+        spentTokenAddress: tokenAddress,
+      });
     }
   },
 });
