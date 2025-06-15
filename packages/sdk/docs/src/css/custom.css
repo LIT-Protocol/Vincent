@@ -8,6 +8,22 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
+/* Dark theme overrides */
+[data-theme='dark'] .info-box {
+  background-color: #1a2b3c;
+  border-left: 8px solid #4a9eff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* OS theme overrides */
+@media (prefers-color-scheme: dark) {
+  .info-box {
+    background-color: #1a2b3c;
+    border-left: 8px solid #4a9eff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+}
+
 /* Info box title */
 .info-box-title {
   color: #2980b9;
@@ -17,6 +33,18 @@
   margin-bottom: 8px;
   display: flex;
   align-items: center;
+}
+
+/* Dark theme title override */
+[data-theme='dark'] .info-box-title {
+  color: #4a9eff;
+}
+
+/* OS theme title overrides */
+@media (prefers-color-scheme: dark) {
+  .info-box-title {
+    color: #4a9eff;
+  }
 }
 
 /* Info icon - using inline SVG data URI */
