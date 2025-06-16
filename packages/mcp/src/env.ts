@@ -27,7 +27,7 @@ export const env = createEnv({
     HTTP_PORT: z.coerce.number().default(3000),
     PUBKEY_ROUTER_DATIL_CONTRACT: z.string(),
     VINCENT_APP_JSON_DEFINITION: z.string(),
-    VINCENT_DELEGATEE_PRIVATE_KEY: z.string(),
     VINCENT_DATIL_CONTRACT: z.string(),
+    VINCENT_DELEGATEE_PRIVATE_KEY: z.string(),
   },
 });

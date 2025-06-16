@@ -1,0 +1,75 @@
+{
+  "id": "196",
+  "version": "1",
+  "name": "Uniswap Swap",
+  "description": "This app offers tools to approve ERC20 token allowances and perform swaps on uniswap",
+  "tools": {
+    "QmPZ46EiurxMb7DmE9McFyzHfg2B6ZGEERui2tnNNX7cky": {
+      "name": "erc20-approval",
+      "description": "Allow an ERC20 token spending, up to a limit, to the Uniswap v3 Router contract. This is necessary to make trades on Uniswap.",
+      "parameters": [
+        {
+          "name": "chainId",
+          "type": "string",
+          "description": "The chain ID to execute the transaction on. For example: 8453 for Base."
+        },
+        {
+          "name": "tokenIn",
+          "type": "string",
+          "description": "ERC20 Token address to approve. For example 0x4200000000000000000000000000000000000006 for WETH on Base."
+        },
+        {
+          "name": "amountIn",
+          "type": "string",
+          "description": "Amount of tokenIn to approve. For example 0.00001 for 0.00001 WETH."
+        },
+        {
+          "name": "pkpEthAddress",
+          "type": "string",
+          "description": "The delegator's PKP address that will execute the swap. For example 0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045."
+        },
+        {
+          "name": "rpcUrl",
+          "type": "string",
+          "description": "The RPC URL to use for the transaction"
+        }
+      ]
+    },
+    "QmZbh52JYnutuFURnpwfywfiiHuFoJpqFyFzNiMtbiDNkK": {
+      "name": "uniswap-swap",
+      "description": "Executes a swap in Uniswap selling an specific amount of the input token to get another token. The necessary allowance for the input token must be approved for the Uniswap v3 Router contract.",
+      "parameters": [
+        {
+          "name": "chainId",
+          "type": "string",
+          "description": "The chain ID to execute the transaction on. For example: 8453 for Base."
+        },
+        {
+          "name": "tokenIn",
+          "type": "string",
+          "description": "ERC20 Token address to sell. For example 0x4200000000000000000000000000000000000006 for WETH on Base."
+        },
+        {
+          "name": "amountIn",
+          "type": "string",
+          "description": "Amount of tokenIn to sell. For example 0.00001 for 0.00001 WETH."
+        },
+        {
+          "name": "tokenOut",
+          "type": "string",
+          "description": "ERC20 Token address to buy. For example 0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C for SPX600 on Base."
+        },
+        {
+          "name": "pkpEthAddress",
+          "type": "string",
+          "description": "The delegator's PKP address that will execute the swap. For example 0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045."
+        },
+        {
+          "name": "rpcUrl",
+          "type": "string",
+          "description": "The RPC URL to use for the transaction"
+        }
+      ]
+    }
+  }
+}
