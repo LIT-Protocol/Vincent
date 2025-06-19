@@ -100,6 +100,7 @@ const StytchOTP = ({ method, authWithStytch, setView }: StytchOTPProps) => {
         });
       } catch (storageError) {
         setError('Authentication succeeded but failed to save auth info');
+        setLoading(false);
         return;
       }
     } catch (err: any) {

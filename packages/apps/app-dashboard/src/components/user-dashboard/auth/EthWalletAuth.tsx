@@ -45,6 +45,7 @@ export default function EthWalletAuth({ authWithEthWallet, setView }: WalletAuth
         });
       } catch (storageError) {
         setError('Authentication succeeded but failed to save session data. Please try again.');
+        setLoading(false);
         return;
       }
       
@@ -67,6 +68,48 @@ export default function EthWalletAuth({ authWithEthWallet, setView }: WalletAuth
       setLoading(false);
     }
   };
+
+  const renderConnectButton = () => (
+    <div className="flex justify-center">
+      <ConnectButton.Custom>
+        {({ account, chain, openConnectModal, mounted }) => {
+          const ready = mounted;
+          const connected = ready && account && chain;
+
+          return (
+            <div
+              {...(!ready && {
+                'aria-hidden': true,
+                style: {
+                  opacity: 0,
+                  pointerEvents: 'none',
+                  userSelect: 'none',
+                },
+              })}
+              className="w-full"
+            >
+              {!connected && (
+                <Button onClick={openConnectModal} className="w-full">
+                  Connect Wallet
+                </Button>
+              )}
+            </div>
+          );
+        }}
+      </ConnectButton.Custom>
+    </div>
+  );
+
+  const renderAuthenticateUI = () => (
+    <div className="space-y-2">
+      <Button onClick={authenticate} className="w-full">
+        Sign In with Wallet
+      </Button>
+      <Button onClick={() => disconnect()} variant="outline" className="w-full">
+        Disconnect
+      </Button>
+    </div>
+  );
 
   if (loading) {
     return (
@@ -103,52 +146,7 @@ export default function EthWalletAuth({ authWithEthWallet, setView }: WalletAuth
 
       <div className="w-full">
         <div className="space-y-4">
-          {!isWalletReady ? (
-            <div className="flex justify-center">
-              <ConnectButton.Custom>
-                {({ account, chain, openConnectModal, mounted }) => {
-                  const ready = mounted;
-                  const connected = ready && account && chain;
-
-                  return (
-                    <div
-                      {...(!ready && {
-                        'aria-hidden': true,
-                        style: {
-                          opacity: 0,
-                          pointerEvents: 'none',
-                          userSelect: 'none',
-                        },
-                      })}
-                      className="w-full"
-                    >
-                      {!connected && (
-                        <Button onClick={openConnectModal} className="w-full">
-                          Connect Wallet
-                        </Button>
-                      )}
-                    </div>
-                  );
-                }}
-              </ConnectButton.Custom>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              <Button onClick={authenticate} disabled={loading} className="w-full">
-                {loading ? (
-                  <div className="flex items-center justify-center">
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                    Authenticating...
-                  </div>
-                ) : (
-                  'Sign In with Wallet'
-                )}
-              </Button>
-              <Button onClick={() => disconnect()} variant="outline" className="w-full">
-                Disconnect
-              </Button>
-            </div>
-          )}
+          {!isWalletReady ? renderConnectButton() : renderAuthenticateUI()}
 
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded text-sm">
