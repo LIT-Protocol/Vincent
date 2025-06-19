@@ -36,6 +36,7 @@ export default function EthWalletAuth({ authWithEthWallet, setView }: WalletAuth
         return await signMessageAsync({ message });
       };
 
+      await authWithEthWallet(address, signMessage);
       try {
         setAuthInfo({
           type: 'Ethereum Wallet',
@@ -43,12 +44,25 @@ export default function EthWalletAuth({ authWithEthWallet, setView }: WalletAuth
           authenticatedAt: new Date().toISOString(),
         });
       } catch (storageError) {
-        console.error('Error storing wallet auth info in localStorage:', storageError);
+        setError('Authentication succeeded but failed to save session data. Please try again.');
+        return;
+      }
+      
+    } catch (err: any) {
+      console.error('Error authenticating with wallet:', err);
+      let errorMessage = 'Failed to authenticate with wallet. Please try again.';
+
+      if (err.message) {
+        if (err.message.includes('User rejected') || err.message.includes('denied') || err.message.includes('rejected')) {
+          errorMessage = 'Signature was cancelled. Please try again.';
+        } else if (err.message.includes('network')) {
+          errorMessage = 'Network error. Please check your connection and try again.';
+        } else {
+          errorMessage = err.message;
+        }
       }
 
-      await authWithEthWallet(address, signMessage);
-    } catch (err: any) {
-      setError(err.message);
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
