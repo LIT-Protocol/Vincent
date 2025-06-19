@@ -8,11 +8,8 @@
     "access": "public"
   },
   "scripts": {
-    "generate-openapi": "pnpx ts-node src/utils/generate-openapi.ts",
-    "generate-rtk-client": "pnpx @rtk-query/codegen-openapi rtk-client-config.js",
-    "generate-api": "run-s generate-openapi generate-rtk-client",
-    "prepublishOnly": "cd ../../../ && nx build registry-sdk",
-    "watch": "pnpm chokidar 'src/lib/**/*' --initial --await-write-finish --delay 1000 --silent -c 'pnpm generate-api'"
+    "prepublishOnly": "nx build",
+    "watch": "pnpm chokidar 'src/lib/**/*' --initial --await-write-finish --delay 1000 --silent -c 'pnpm nx run generate-all'"
   },
   "devDependencies": {
     "@rtk-query/codegen-openapi": "^1.2.0",
@@ -21,7 +18,6 @@
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^20.10.5",
     "chokidar-cli": "^3.0.0",
-    "npm-run-all": "^4.1.5",
     "ts-node": "^10.9.2"
   },
   "main": "./dist/src/index.js",

@@ -1,4 +1,4 @@
-import { baseVincentRtkApi as api } from '../lib/baseVincentRtkApi';
+import { baseVincentRtkApiReact as api } from '../lib/baseVincentRtkApiReact';
 const injectedRtkApi = api.injectEndpoints({
   endpoints: (build) => ({
     listApps: build.query<ListAppsApiResponse, ListAppsApiArg>({
@@ -141,7 +141,7 @@ const injectedRtkApi = api.injectEndpoints({
   }),
   overrideExisting: false,
 });
-export { injectedRtkApi as vincentApiClient };
+export { injectedRtkApi as vincentApiClientReact };
 export type ListAppsApiResponse = /** status 200 Successful operation */ AppDefRead[];
 export type ListAppsApiArg = void;
 export type CreateAppApiResponse = /** status 200 Successful operation */ AppDefRead;

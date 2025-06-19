@@ -1,26 +1,46 @@
 {
   "name": "registry-sdk",
   "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "root": "packages/libs/registry-sdk",
   "sourceRoot": "packages/libs/registry-sdk/src",
   "projectType": "library",
   "tags": [],
   "targets": {
     "clean": {},
-    "generate-api": {
-      "executor": "nx:run-script",
+    "generate-openapi": {
+      "executor": "nx:run-commands",
       "options": {
-        "script": "generate-api"
+        "command": "pnpm bun ./src/utils/generate-openapi.ts",
+        "cwd": "{projectRoot}"
+      }
+    },
+    "generate-rtk-clients": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["generate-openapi"],
+      "options": {
+        "commands": [
+          "pnpx @rtk-query/codegen-openapi rtk-client-config-react.cjs",
+          "pnpx @rtk-query/codegen-openapi rtk-client-config-node.cjs"
+        ],
+        "cwd": "{projectRoot}",
+        "parallel": true
+      }
+    },
+    "generate-all": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["generate-rtk-clients"],
+      "options": {
+        "commands": ["echo 'API generation completed successfully'"]
       }
     },
     "build": {
       "executor": "@nx/js:tsc",
       "outputs": ["{options.outputPath}"],
-      "dependsOn": ["generate-api"],
+      "dependsOn": ["generate-all"],
       "options": {
         "outputPath": "packages/libs/registry-sdk/dist",
         "main": "packages/libs/registry-sdk/src/index.ts",
         "tsConfig": "packages/libs/registry-sdk/tsconfig.lib.json",
-        "assets": ["packages/libs/registry-sdk/*.md"],
         "formats": ["cjs"]
       }
     }
