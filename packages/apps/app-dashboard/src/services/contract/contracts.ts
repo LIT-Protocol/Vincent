@@ -28,7 +28,7 @@ export class VincentContracts {
     toolPolicies: string[][],
     toolPolicyParameterTypes: number[][][],
     toolPolicyParameterNames: string[][][],
-    deploymentStatus = 0, // DEV=0, TEST=1, PROD=2
+    deploymentStatus: number = 0 // DEV=0, TEST=1, PROD=2
   ) {
     const contract = await getContract(this.network, 'App', true, this.signer);
 
@@ -38,22 +38,29 @@ export class VincentContracts {
       description: appDescription,
       deploymentStatus: deploymentStatus,
       authorizedRedirectUris: authorizedRedirectUris,
-      delegatees: delegatees,
+      delegatees: delegatees
     };
 
     const versionTools = {
       toolIpfsCids: toolIpfsCids,
       toolPolicies: toolPolicies,
       toolPolicyParameterNames: toolPolicyParameterNames,
-      toolPolicyParameterTypes: toolPolicyParameterTypes,
+      toolPolicyParameterTypes: toolPolicyParameterTypes
     };
 
     // Use tuple parameters as expected by the contract
     const args = [appInfo, versionTools];
 
-    const gasLimit = await estimateGasWithBuffer(contract, 'registerApp', args);
+    const gasLimit = await estimateGasWithBuffer(
+      contract,
+      'registerApp',
+      args
+    );
 
-    const tx = await contract.registerApp(...args, { gasLimit });
+    const tx = await contract.registerApp(
+      ...args,
+      {gasLimit}
+    );
 
     await tx.wait();
     return tx;
@@ -78,7 +85,7 @@ export class VincentContracts {
     toolIpfsCids: string[],
     toolPolicies: string[][],
     toolPolicyParameterTypes: number[][][],
-    toolPolicyParameterNames: string[][][],
+    toolPolicyParameterNames: string[][][]
   ) {
     const contract = await getContract(this.network, 'App', true, this.signer);
 
@@ -87,15 +94,22 @@ export class VincentContracts {
       toolIpfsCids: toolIpfsCids,
       toolPolicies: toolPolicies,
       toolPolicyParameterNames: toolPolicyParameterNames,
-      toolPolicyParameterTypes: toolPolicyParameterTypes,
+      toolPolicyParameterTypes: toolPolicyParameterTypes
     };
 
     // Use tuple parameters as expected by the contract
     const args = [appId, versionTools];
 
-    const gasLimit = await estimateGasWithBuffer(contract, 'registerNextAppVersion', args);
+    const gasLimit = await estimateGasWithBuffer(
+      contract,
+      'registerNextAppVersion',
+      args
+    );
 
-    const tx = await contract.registerNextAppVersion(...args, { gasLimit });
+    const tx = await contract.registerNextAppVersion(
+      ...args,
+      {gasLimit}
+    );
 
     await tx.wait();
     return tx;
@@ -132,9 +146,16 @@ export class VincentContracts {
 
     const args = [appId, deploymentStatus];
 
-    const gasLimit = await estimateGasWithBuffer(contract, 'updateAppDeploymentStatus', args);
+    const gasLimit = await estimateGasWithBuffer(
+      contract,
+      'updateAppDeploymentStatus',
+      args
+    );
 
-    const tx = await contract.updateAppDeploymentStatus(...args, { gasLimit });
+    const tx = await contract.updateAppDeploymentStatus(
+      ...args,
+      {gasLimit}
+    );
 
     await tx.wait();
     return tx;
@@ -146,9 +167,16 @@ export class VincentContracts {
 
     const args = [appId];
 
-    const gasLimit = await estimateGasWithBuffer(contract, 'deleteApp', args);
+    const gasLimit = await estimateGasWithBuffer(
+      contract,
+      'deleteApp',
+      args
+    );
 
-    const tx = await contract.deleteApp(...args, { gasLimit });
+    const tx = await contract.deleteApp(
+      ...args,
+      {gasLimit}
+    );
 
     await tx.wait();
     return tx;

@@ -10,10 +10,18 @@ const demoAppInfo = {
 
 const queryClient = new QueryClient();
 
-export default function RainbowKitProviderWrapper({ children }: { children: ReactNode }) {
+export default function RainbowKitProviderWrapper({
+  children,
+}: {
+  children: ReactNode;
+}) {
   return (
     <QueryClientProvider client={queryClient}>
-      <RainbowKitProvider theme={darkTheme()} initialChain={yellowstone} appInfo={demoAppInfo}>
+      <RainbowKitProvider
+        theme={darkTheme()}
+        initialChain={yellowstone}
+        appInfo={demoAppInfo}
+      >
         {children}
       </RainbowKitProvider>
     </QueryClientProvider>
