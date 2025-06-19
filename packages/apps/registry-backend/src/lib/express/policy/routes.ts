@@ -1,11 +1,11 @@
 import { Policy, PolicyVersion } from '../../mongo/policy';
 import { requirePolicy, withPolicy } from './requirePolicy';
 import { requirePolicyVersion, withPolicyVersion } from './requirePolicyVersion';
+import { requirePackage, withValidPackage } from '../package/requirePackage';
 
 import type { Express } from 'express';
 import { withSession } from '../../mongo/withSession';
 import { Features } from '../../../features';
-import { getPackageInfo } from '../../npm';
 
 export function registerRoutes(app: Express) {
   // List all policies
@@ -26,48 +26,50 @@ export function registerRoutes(app: Express) {
   );
 
   // Create new Policy
-  app.post('/policy', async (req, res) => {
-    const { packageName, authorWalletAddress, description, activeVersion, version } = req.body;
+  app.post(
+    '/policy',
+    requirePackage('packageName', 'activeVersion'),
+    withValidPackage(async (req, res) => {
+      const { packageName, authorWalletAddress, description, activeVersion, version } = req.body;
+      const packageInfo = req.vincentPackage;
 
-    // getPackageInfo validates packageName and version
-    const packageInfo = await getPackageInfo({ packageName, version: activeVersion });
+      await withSession(async (mongoSession) => {
+        // Create the policy
+        const policy = new Policy({
+          packageName,
+          authorWalletAddress,
+          description,
+          activeVersion, // FIXME: Should this be an entire PolicyVersion? Otherwise it must be optional.
+        });
 
-    await withSession(async (mongoSession) => {
-      // Create the policy
-      const policy = new Policy({
-        packageName,
-        authorWalletAddress,
-        description,
-        activeVersion, // FIXME: Should this be an entire PolicyVersion? Otherwise it must be optional.
+        // Create initial policy version
+        const policyVersion = new PolicyVersion({
+          ...version,
+          packageName,
+          version: activeVersion,
+          status: 'ready',
+          repository: packageInfo.repository,
+          keywords: packageInfo.keywords || [],
+          dependencies: packageInfo.dependencies || [],
+          author: packageInfo.author,
+          contributors: packageInfo.contributors || [],
+          homepage: packageInfo.homepage,
+        });
+
+        // Save both in a transaction
+        let savedPolicy;
+
+        await mongoSession.withTransaction(async (session) => {
+          savedPolicy = await policy.save({ session });
+          await policyVersion.save({ session });
+        });
+
+        // Return only the policy to match OpenAPI spec
+        res.status(201).json(savedPolicy);
+        return;
       });
-
-      // Create initial policy version
-      const policyVersion = new PolicyVersion({
-        ...version,
-        packageName,
-        version: activeVersion,
-        status: 'ready',
-        repository: packageInfo.repository,
-        keywords: packageInfo.keywords || [],
-        dependencies: packageInfo.dependencies || [],
-        author: packageInfo.author,
-        contributors: packageInfo.contributors || [],
-        homepage: packageInfo.homepage,
-      });
-
-      // Save both in a transaction
-      let savedPolicy;
-
-      await mongoSession.withTransaction(async (session) => {
-        savedPolicy = await policy.save({ session });
-        await policyVersion.save({ session });
-      });
-
-      // Return only the policy to match OpenAPI spec
-      res.status(201).json(savedPolicy);
-      return;
-    });
-  });
+    }),
+  );
 
   // Edit Policy
   app.put(
@@ -101,29 +103,27 @@ export function registerRoutes(app: Express) {
   app.post(
     '/policy/:packageName/version/:version',
     requirePolicy(),
-    withPolicy(async (req, res) => {
-      const { version } = req.params;
+    requirePackage(),
+    withPolicy(
+      withValidPackage(async (req, res) => {
+        const { version } = req.params;
+        const packageInfo = req.vincentPackage;
 
-      // getPackageInfo validates packageName and version
-      const packageInfo = await getPackageInfo({
-        packageName: req.vincentPolicy.packageName,
-        version,
-      });
+        const policyVersion = new PolicyVersion({
+          ...req.body,
+          packageName: req.vincentPolicy.packageName,
+          version: version,
+          status: 'ready',
+          keywords: packageInfo.keywords || [],
+          dependencies: packageInfo.dependencies || [],
+          contributors: packageInfo.contributors || [],
+        });
 
-      const policyVersion = new PolicyVersion({
-        ...req.body,
-        packageName: req.vincentPolicy.packageName,
-        version: version,
-        status: 'ready',
-        keywords: packageInfo.keywords || [],
-        dependencies: packageInfo.dependencies || [],
-        contributors: packageInfo.contributors || [],
-      });
-
-      const savedVersion = await policyVersion.save();
-      res.status(201).json(savedVersion);
-      return;
-    }),
+        const savedVersion = await policyVersion.save();
+        res.status(201).json(savedVersion);
+        return;
+      }),
+    ),
   );
 
   // List Policy Versions
