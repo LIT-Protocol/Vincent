@@ -21,6 +21,8 @@ The Vincent system consists of several key components:
 - **tool-erc20-approval**: A tool to send ERC20 approve/allowance transactions from a Vincent app on behalf of the delegator.
 - **tool-sdk**: An SDK exposing utilities to develop Vincent tools and policies.
 - **tool-uniswap-swap**: A tool to trigger swaps on Uniswap from a Vincent app on behalf of the delegator.
+- **mcp-sdk**: A Model Context Protocol Wrapper that converts any Vincent app into an MCP server that can be connected to any LLM client to provide it with Vincent tools.
+- **mcp**: An MCP runner
 
 ## Getting Started
 

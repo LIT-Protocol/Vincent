@@ -1,0 +1,60 @@
+{
+  "name": "@lit-protocol/vincent-mcp",
+  "version": "0.0.3",
+  "description": "Vincent MCP Server",
+  "author": "Lit Protocol",
+  "license": "ISC",
+  "publishConfig": {
+    "access": "public"
+  },
+  "packageManager": "pnpm@10.7.0",
+  "engines": {
+    "node": "^20.11.1",
+    "pnpm": "10.7.0"
+  },
+  "keywords": [
+    "mcp",
+    "vincent",
+    "AI",
+    "web3",
+    "agents"
+  ],
+  "files": [
+    "dist/**",
+    "*.md"
+  ],
+  "bin": {
+    "vincent-mcp": "./dist/src/cli.js",
+    "http": "./dist/http.js",
+    "stdio": "./dist/stdio.js"
+  },
+  "main": "./dist/stdio.js",
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "dev:stdio": "tsx src/stdio.ts",
+    "dev:http": "tsx watch --env-file=.env src/http.ts",
+    "inspector": "npx @modelcontextprotocol/inspector",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "mintRlI": "tsx --env-file=.env ./src/bin/mintRLINft.ts",
+    "integration:openAI": "tsx --env-file=.env ./integrations/openAI.ts",
+    "integration:anthropic": "tsx --env-file=.env ./integrations/anthropic.ts"
+  },
+  "dependencies": {
+    "@lit-protocol/constants": "^7.1.1",
+    "@lit-protocol/contracts-sdk": "^7.1.1",
+    "@lit-protocol/vincent-app-sdk": "workspace:*",
+    "@lit-protocol/vincent-mcp-sdk": "workspace:*",
+    "@modelcontextprotocol/sdk": "^1.12.1",
+    "@t3-oss/env-core": "^0.13.4",
+    "ethers": "^5.8.0",
+    "express": "^5.1.0",
+    "zod": "^3.25.64"
+  },
+  "devDependencies": {
+    "@anthropic-ai/sdk": "^0.52.0",
+    "@types/express": "^5.0.1",
+    "openai": "^5.0.1",
+    "tsx": "^4.19.4"
+  }
+}

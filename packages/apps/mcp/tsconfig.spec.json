@@ -1,0 +1,28 @@
+{
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "./out-tsc/jest",
+    "baseUrl": ".",
+    "emitDeclarationOnly": false,
+    "composite": true,
+    "declaration": true,
+    "declarationMap": true,
+    "moduleResolution": "nodenext",
+    "module": "nodenext",
+    "esModuleInterop": true,
+    "types": ["jest", "node"]
+  },
+  "include": [
+    "jest.config.ts",
+    "src/**/*.test.ts",
+    "src/**/*.spec.ts",
+    "src/**/*.d.ts",
+    "test-e2e/**/*.ts",
+    "test-e2e/**/*.d.ts"
+  ],
+  "references": [
+    {
+      "path": "./tsconfig.app.json"
+    }
+  ]
+}

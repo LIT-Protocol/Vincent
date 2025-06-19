@@ -1,0 +1,108 @@
+{
+  "id": "485",
+  "version": "2",
+  "name": "Uniswap Swap",
+  "description": "This app offers tools to approve ERC20 token allowances and perform swaps on uniswap",
+  "tools": {
+    "QmQtRByug18aRyceD21RnFu6QZeDhzmzoYC8zjj6x8ketw": {
+      "name": "erc20-approval",
+      "description": "Allow an ERC20 token spending, up to a limit, to the Uniswap v3 Router contract. This is necessary to make trades on Uniswap.",
+      "parameters": [
+        {
+          "name": "chainId",
+          "type": "number",
+          "description": "The chain ID to execute the transaction on. For example: 8453 for Base."
+        },
+        {
+          "name": "rpcUrl",
+          "type": "string",
+          "description": "The RPC URL to use for the transaction"
+        },
+        {
+          "name": "spenderAddress",
+          "type": "string",
+          "description": "The spender address to approve. For example 0x2626664c2603336E57B271c5C0b26F421741e481 for the Uniswap v3 Swap Router contract on Base."
+        },
+        {
+          "name": "tokenAddress",
+          "type": "string",
+          "description": "ERC20 Token address to approve. For example 0x4200000000000000000000000000000000000006 for WETH on Base."
+        },
+        {
+          "name": "tokenAmount",
+          "type": "number",
+          "description": "Amount of tokenIn to approve. For example 0.00001 for 0.00001 WETH."
+        },
+        {
+          "name": "tokenDecimals",
+          "type": "number",
+          "description": "ERC20 Token to approve decimals. For example 18 for WETH on Base."
+        }
+      ]
+    },
+    "Qmaj8RSBA8orrjD8fnRyXf8YXFyYUonhdgK72HP85FQFsX": {
+      "name": "uniswap-swap",
+      "description": "Executes a swap in Uniswap selling an specific amount of the input token to get another token. The necessary allowance for the input token must be approved for the Uniswap v3 Router contract.",
+      "parameters": [
+        {
+          "name": "chainIdForUniswap",
+          "type": "number",
+          "description": "The chain ID to execute the transaction on. For example: 8453 for Base."
+        },
+        {
+          "name": "rpcUrlForUniswap",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "ethRpcUrl",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "tokenInAddress",
+          "type": "string",
+          "description": "ERC20 Token address to sell. For example 0x4200000000000000000000000000000000000006 for WETH on Base."
+        },
+        {
+          "name": "tokenInDecimals",
+          "type": "number",
+          "description": "ERC20 Token to sell decimals. For example 18 for WETH on Base."
+        },
+        {
+          "name": "tokenInAmount",
+          "type": "number",
+          "description": "Amount of token to sell. For example 0.00001 for 0.00001 WETH. Must be greater than 0."
+        },
+        {
+          "name": "tokenOutAddress",
+          "type": "string",
+          "description": "ERC20 Token address to buy. For example 0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C for SPX600 on Base."
+        },
+        {
+          "name": "tokenOutDecimals",
+          "type": "number",
+          "description": "ERC20 Token to buy decimals. For example 18 for WETH on Base."
+        },
+        {
+          "name": "poolFee",
+          "type": "number",
+          "description": "",
+          "optional": true
+        },
+        {
+          "name": "slippageTolerance",
+          "type": "number",
+          "description": "",
+          "optional": true
+        },
+        {
+          "name": "swapDeadline",
+          "type": "number",
+          "description": "",
+          "optional": true
+        }
+      ]
+    }
+  }
+}

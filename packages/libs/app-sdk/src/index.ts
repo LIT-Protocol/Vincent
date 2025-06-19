@@ -18,3 +18,6 @@ export type {
 import * as expressAuthHelpers from './express-authentication-middleware';
 export { expressAuthHelpers };
 export type { ExpressAuthHelpers } from './express-authentication-middleware/types';
+
+import * as utils from './utils';
+export { utils };

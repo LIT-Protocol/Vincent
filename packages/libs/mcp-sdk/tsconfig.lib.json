@@ -1,0 +1,29 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "target": "es2018",
+    "module": "nodenext",
+    "lib": ["dom", "esnext"],
+    "importHelpers": true,
+    "declaration": true,
+    "sourceMap": true,
+    "rootDir": "src",
+    "outDir": "dist",
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "noImplicitThis": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "composite": true
+  },
+  "include": ["src"],
+  "exclude": ["node_modules", "dist", "tests", "**/*.spec.ts", "**/*.test.ts", "toolClient"],
+  "references": [
+    {
+      "path": "../tool-sdk/tsconfig.lib.json"
+    }
+  ]
+}

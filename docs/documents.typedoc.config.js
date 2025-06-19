@@ -17,6 +17,7 @@ module.exports = {
     'src/Developers/App-Agent-Developers/Upgrading-Apps.md',
     'src/Developers/App-Agent-Developers/Auth-Users.md',
     'src/Developers/App-Agent-Developers/Executing-Tools.md',
+    'src/Developers/App-Agent-Developers/MCP.md',
     'src/Developers/Tool-Developers/Creating-Tools.md',
     'src/Developers/Policy-Developers/Creating-Policies.md',
     'src/Users/Onboarding.md',
