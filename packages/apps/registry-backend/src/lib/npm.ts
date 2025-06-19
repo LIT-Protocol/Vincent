@@ -2,8 +2,38 @@ import * as queryRegistry from 'query-registry';
 
 // @ts-expect-error No types for this pkg
 import normalizePackage from 'normalize-package-data';
+// @ts-expect-error no types for this pkg
+import validatePackageName from 'validate-npm-package-name';
+import semver from 'semver';
 
 const { getPackument } = queryRegistry;
+
+/**
+ * Validates an NPM package name
+ * @param packageName The package name to validate
+ * @throws Error if the package name is invalid
+ */
+export function validateNpmPackageName(packageName: string): void {
+  const result = validatePackageName(packageName);
+  if (!result.validForNewPackages) {
+    const errors = result.errors || [];
+    const warnings = result.warnings || [];
+    const messages = [...errors, ...warnings];
+    throw new Error(`Invalid NPM package name: ${packageName}. ${messages.join(', ')}`);
+  }
+}
+
+/**
+ * Validates a semantic version string
+ * @param version The version string to validate
+ * @throws Error if the version is not a valid semver
+ */
+export function validateSemver(version: string): void {
+  if (!semver.valid(version)) {
+    throw new Error(`Invalid semantic version: ${version}. Must be a valid semver (e.g., 1.0.0).`);
+  }
+}
+
 export async function getPackageInfo({
   packageName,
   version,
@@ -11,6 +41,10 @@ export async function getPackageInfo({
   packageName: string;
   version: string;
 }) {
+  // Validate inputs before making the request
+  validateNpmPackageName(packageName);
+  validateSemver(version);
+
   try {
     const packument = await getPackument(packageName);
 

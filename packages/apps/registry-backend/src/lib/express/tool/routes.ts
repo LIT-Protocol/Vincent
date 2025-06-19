@@ -28,11 +28,12 @@ export function registerRoutes(app: Express) {
 
   // Create new Tool
   app.post('/tool', async (req, res) => {
+    const { packageName, authorWalletAddress, description, version } = req.body;
+
+    // getPackageInfo now validates packageName and version
+    const packageInfo = await getPackageInfo({ packageName, version });
+
     await withSession(async (mongoSession) => {
-      const { packageName, authorWalletAddress, description, version } = req.body;
-
-      const packageInfo = await getPackageInfo({ packageName, version });
-
       const toolVersion = new ToolVersion({
         packageName,
         version: version,
@@ -105,6 +106,7 @@ export function registerRoutes(app: Express) {
     withTool(async (req, res) => {
       const { version } = req.params;
 
+      // getPackageInfo now validates packageName and version
       const packageInfo = await getPackageInfo({
         packageName: req.vincentTool.packageName,
         version,
@@ -114,8 +116,8 @@ export function registerRoutes(app: Express) {
         packageName: req.vincentTool.packageName,
         version: version,
         changes: req.body.changes,
-        repository: packageInfo.repository,
         description: req.body.description,
+        repository: packageInfo.repository,
         keywords: packageInfo.keywords || [],
         dependencies: packageInfo.dependencies || [],
         author: packageInfo.author,

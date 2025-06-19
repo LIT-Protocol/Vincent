@@ -5,6 +5,7 @@ import { requirePolicyVersion, withPolicyVersion } from './requirePolicyVersion'
 import type { Express } from 'express';
 import { withSession } from '../../mongo/withSession';
 import { Features } from '../../../features';
+import { getPackageInfo } from '../../npm';
 
 export function registerRoutes(app: Express) {
   // List all policies
@@ -26,9 +27,12 @@ export function registerRoutes(app: Express) {
 
   // Create new Policy
   app.post('/policy', async (req, res) => {
-    await withSession(async (mongoSession) => {
-      const { packageName, authorWalletAddress, description, activeVersion, version } = req.body;
+    const { packageName, authorWalletAddress, description, activeVersion, version } = req.body;
 
+    // getPackageInfo validates packageName and version
+    const packageInfo = await getPackageInfo({ packageName, version: activeVersion });
+
+    await withSession(async (mongoSession) => {
       // Create the policy
       const policy = new Policy({
         packageName,
@@ -43,9 +47,12 @@ export function registerRoutes(app: Express) {
         packageName,
         version: activeVersion,
         status: 'ready',
-        keywords: version.keywords || [],
-        dependencies: version.dependencies || [],
-        contributors: version.contributors || [],
+        repository: packageInfo.repository,
+        keywords: packageInfo.keywords || [],
+        dependencies: packageInfo.dependencies || [],
+        author: packageInfo.author,
+        contributors: packageInfo.contributors || [],
+        homepage: packageInfo.homepage,
       });
 
       // Save both in a transaction
@@ -97,14 +104,20 @@ export function registerRoutes(app: Express) {
     withPolicy(async (req, res) => {
       const { version } = req.params;
 
+      // getPackageInfo validates packageName and version
+      const packageInfo = await getPackageInfo({
+        packageName: req.vincentPolicy.packageName,
+        version,
+      });
+
       const policyVersion = new PolicyVersion({
         ...req.body,
         packageName: req.vincentPolicy.packageName,
         version: version,
         status: 'ready',
-        keywords: req.body.keywords || [],
-        dependencies: req.body.dependencies || [],
-        contributors: req.body.contributors || [],
+        keywords: packageInfo.keywords || [],
+        dependencies: packageInfo.dependencies || [],
+        contributors: packageInfo.contributors || [],
       });
 
       const savedVersion = await policyVersion.save();

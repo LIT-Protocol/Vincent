@@ -6,7 +6,9 @@
   "scripts": {
     "build": "pnpm unbuild",
     "dev": "pnpm dotenvx run -- pnpm bun --watch src/bin/apiServer.ts",
-    "start": "pnpm build && node ./dist/bin/apiServer.mjs"
+    "start": "pnpm build && node ./dist/bin/apiServer.mjs",
+    "test": "jest",
+    "test:integration": "jest src/tests/integration/index.spec.ts"
   },
   "files": [
     "dist",
@@ -31,6 +33,8 @@
     "mongoose": "^8.15.1",
     "normalize-package-data": "^7.0.0",
     "query-registry": "^4.0.1",
+    "semver": "^7.7.2",
+    "validate-npm-package-name": "^6.0.1",
     "zod": "^3.25.42"
   },
   "devDependencies": {
@@ -39,7 +43,12 @@
     "@types/express": "^5.0.2",
     "@types/jest": "^29.5.12",
     "@types/node": "^20.11.0",
+    "@types/semver": "^7.7.0",
     "bun": "^1.2.5",
+    "jest": "^29.5.0",
+    "jest-process-manager": "^0.2.9",
+    "supertest": "^6.3.4",
+    "ts-jest": "^29.1.0",
     "unbuild": "^3.5.0"
   }
 }
