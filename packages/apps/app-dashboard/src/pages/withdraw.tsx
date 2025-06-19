@@ -5,7 +5,7 @@ import { SessionSigs, IRelayPKP } from '@lit-protocol/types';
 import useAuthenticate from '@/components/consent/hooks/useAuthenticate';
 import useAccounts from '@/components/consent/hooks/useAccounts';
 import { registerWebAuthn, getSessionSigs } from '@/components/consent/utils/lit';
-import LoginMethods from '@/components/consent/components/LoginMethods';
+import LoginMethods from '@/components/user-dashboard/auth/LoginMethods';
 import { getAgentPKP } from '@/components/consent/utils/getAgentPKP';
 import { useErrorPopup } from '@/providers/ErrorPopup';
 import {

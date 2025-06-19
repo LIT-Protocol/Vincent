@@ -5,4 +5,4 @@ import WagmiProviderWrapper from '@/providers/WagmiProviderWrapper';
 
 export const AppProviders = [WagmiProviderWrapper, RainbowKitProviderWrapper, ErrorPopupProvider];
 
-export const UserProviders = [StytchProviderWrapper, ErrorPopupProvider];
+export const UserProviders = [StytchProviderWrapper, ErrorPopupProvider, WagmiProviderWrapper, RainbowKitProviderWrapper];
