@@ -15,6 +15,7 @@
     "@lit-protocol/constants": "^7.2.0",
     "@lit-protocol/contracts": "^0.0.90",
     "@lit-protocol/contracts-sdk": "^7.2.0",
+    "@lit-protocol/flags": "^2.0.0",
     "@lit-protocol/lit-auth-client": "^7.2.0",
     "@lit-protocol/lit-node-client": "^7.2.0",
     "@lit-protocol/misc": "^7.2.0",
