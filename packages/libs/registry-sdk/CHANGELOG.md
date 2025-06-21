@@ -1,3 +1,13 @@
+## 1.0.4 (2025-06-20)
+
+### 🩹 Fixes
+
+- Add lazy hook generation to the `rtk-client-config`, export lazy hooks within the `vincentApiClient` ([d99721a0](https://github.com/LIT-Protocol/Vincent/commit/d99721a0))
+
+### ❤️ Thank You
+
+- Andrew Wisniewski
+
 ## 1.0.3 (2025-06-19)
 
 ### 🩹 Fixes
