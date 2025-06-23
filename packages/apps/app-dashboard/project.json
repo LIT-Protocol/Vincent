@@ -5,6 +5,7 @@
   "projectType": "application",
   "tags": [],
   "targets": {
-    "clean": {}
+    "clean": {},
+    "flag": {}
   }
 }
