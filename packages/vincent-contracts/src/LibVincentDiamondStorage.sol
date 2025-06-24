@@ -29,6 +29,7 @@ library VincentAppStorage {
     }
 
     struct AppStorage {
+        // TODO!: App id could be uint32
         mapping(uint256 => App) appIdToApp;
         mapping(address => EnumerableSet.UintSet) managerAddressToAppIds;
         mapping(address => uint256) delegateeAddressToAppId;
@@ -71,6 +72,7 @@ library VincentUserStorage {
         // Set of App IDs that have a permitted version
         EnumerableSet.UintSet permittedApps;
         // App ID -> Permitted App version
+        // TODO!: App version could be uint32
         mapping(uint256 => uint256) permittedAppVersion;
         // App ID -> App version -> Tool IPFS CID hash -> Tool Policy storage -> Tool Policy IPFS CID hash -> User's CBOR2 encoded Policy parameter values
         mapping(uint256 => mapping(uint256 => mapping(bytes32 => mapping(bytes32 => bytes)))) toolPolicyParameterValues;

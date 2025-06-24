@@ -600,8 +600,11 @@ contract VincentAppFacetTest is Test {
         vm.stopPrank();
 
         vm.startPrank(APP_MANAGER_ALICE);
-        vm.expectRevert(abi.encodeWithSelector(LibVincentAppFacet.AppVersionHasDelegatedAgents.selector, newAppId, newAppVersion));
+        vm.expectEmit(true, true, true, true);
+        emit LibVincentAppFacet.AppDeleted(newAppId);
         vincentAppFacet.deleteApp(newAppId);
+
+        assertEq(vincentAppViewFacet.getAppById(newAppId).isDeleted, true);
     }
 
     function _registerApp(

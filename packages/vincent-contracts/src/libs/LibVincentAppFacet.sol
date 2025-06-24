@@ -56,6 +56,12 @@ library LibVincentAppFacet {
     event AppDeleted(uint256 indexed appId);
 
     /**
+     * @notice Emitted when an app is undeleted
+     * @param appId ID of the undeleted app
+     */
+    event AppUndeleted(uint256 indexed appId);
+
+    /**
      * @notice Error thrown when a non-manager attempts to modify an app
      * @param appId ID of the app being modified
      * @param msgSender Address that attempted the unauthorized modification

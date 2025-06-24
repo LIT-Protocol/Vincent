@@ -171,15 +171,21 @@ contract VincentAppFacet is VincentBase {
         VincentAppStorage.AppStorage storage as_ = VincentAppStorage.appStorage();
         VincentAppStorage.App storage app = as_.appIdToApp[appId];
 
-        // Check that no app versions have delegated agent PKPs
-        for (uint256 i = 0; i < app.appVersions.length; i++) {
-            if (app.appVersions[i].delegatedAgentPkps.length() > 0) {
-                revert LibVincentAppFacet.AppVersionHasDelegatedAgents(appId, i + 1);
-            }
-        }
-
         app.isDeleted = true;
         emit LibVincentAppFacet.AppDeleted(appId);
+    }
+
+    /**
+     * @notice Undeletes an app by setting its isDeleted flag to false
+     * @dev Only the app manager can undelete an app
+     * @param appId ID of the app to undelete
+     */
+    function undeleteApp(uint256 appId) external onlyAppManager(appId) onlyRegisteredApp(appId) {
+        VincentAppStorage.AppStorage storage as_ = VincentAppStorage.appStorage();
+        VincentAppStorage.App storage app = as_.appIdToApp[appId];
+
+        app.isDeleted = false;
+        emit LibVincentAppFacet.AppUndeleted(appId);
     }
 
     /**
@@ -191,6 +197,7 @@ contract VincentAppFacet is VincentBase {
     function _registerApp(address[] calldata delegatees) internal returns (uint256 newAppId) {
         VincentAppStorage.AppStorage storage as_ = VincentAppStorage.appStorage();
 
+        // TODO!: Will be passed from the Registry
         newAppId = ++as_.appIdCounter;
 
         // Add the app to the manager's list of apps
@@ -255,6 +262,7 @@ contract VincentAppFacet is VincentBase {
 
         // Step 5: Create a new app version.
         app.appVersions.push();
+        // TODO!: Will be passed from the Registry
         newAppVersion = app.appVersions.length;
 
         VincentAppStorage.AppVersion storage versionedApp = app.appVersions[getAppVersionIndex(newAppVersion)];
