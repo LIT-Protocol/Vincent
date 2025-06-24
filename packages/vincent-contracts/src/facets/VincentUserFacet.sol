@@ -161,7 +161,6 @@ contract VincentUserFacet is VincentBase {
         // Remove the app from the User's permitted apps set
         us_.agentPkpTokenIdToAgentStorage[pkpTokenId].permittedApps.remove(appId);
 
-        // Emit the AppVersionUnPermitted event
         emit LibVincentUserFacet.AppVersionUnPermitted(pkpTokenId, appId, appVersion);
     }
 
@@ -310,10 +309,8 @@ contract VincentUserFacet is VincentBase {
                 // Step 5: Store the policy parameter metadata
                 toolPolicyParameterValues[hashedToolPolicy] = policyParameterValues[i][j];
 
-                // Step 5.1: Emit an event for tracking
-                // TODO!: Add Policy IpfsCid to the event
                 emit LibVincentUserFacet.ToolPolicyParametersSet(
-                    pkpTokenId, appId, appVersion, hashedToolIpfsCid, policyParameterValues[i][j]
+                    pkpTokenId, appId, appVersion, hashedToolIpfsCid, hashedToolPolicy, policyParameterValues[i][j]
                 );
             }
         }

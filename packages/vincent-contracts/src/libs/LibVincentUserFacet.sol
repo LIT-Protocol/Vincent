@@ -35,6 +35,7 @@ library LibVincentUserFacet {
      * @param appId The ID of the app
      * @param appVersion The version of the app
      * @param hashedToolIpfsCid The keccak256 hash of the tool's IPFS CID
+     * @param hashedToolPolicyIpfsCid The keccak256 hash of the tool policy's IPFS CID
      * @param policyParameterValues The CBOR2 encoded policy parameter values
      */
     event ToolPolicyParametersSet(
@@ -42,6 +43,7 @@ library LibVincentUserFacet {
         uint256 indexed appId,
         uint256 indexed appVersion,
         bytes32 hashedToolIpfsCid,
+        bytes32 hashedToolPolicyIpfsCid,
         bytes policyParameterValues
     );
 

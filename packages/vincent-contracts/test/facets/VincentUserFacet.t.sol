@@ -110,6 +110,7 @@ contract VincentUserFacetTest is Test {
             newAppId_1,
             newAppVersion_1,
             keccak256(abi.encodePacked(TOOL_IPFS_CID_1)),
+            keccak256(abi.encodePacked(POLICY_IPFS_CID_1)),
             POLICY_PARAMETER_VALUES_1
         );
 
@@ -132,6 +133,7 @@ contract VincentUserFacetTest is Test {
             newAppId_2,
             newAppVersion_2,
             keccak256(abi.encodePacked(TOOL_IPFS_CID_1)),
+            keccak256(abi.encodePacked(POLICY_IPFS_CID_1)),
             POLICY_PARAMETER_VALUES_1
         );
 
@@ -158,6 +160,7 @@ contract VincentUserFacetTest is Test {
             newAppId_3,
             newAppVersion_3,
             keccak256(abi.encodePacked(TOOL_IPFS_CID_1)),
+            keccak256(abi.encodePacked(POLICY_IPFS_CID_1)),
             POLICY_PARAMETER_VALUES_1
         );
 
@@ -299,6 +302,7 @@ contract VincentUserFacetTest is Test {
             newAppId_1,
             newAppVersion_1,
             keccak256(abi.encodePacked(TOOL_IPFS_CID_1)),
+            keccak256(abi.encodePacked(POLICY_IPFS_CID_1)),
             POLICY_PARAMETER_VALUES_1
         );
 
@@ -321,6 +325,7 @@ contract VincentUserFacetTest is Test {
             newAppId_2,
             newAppVersion_2,
             keccak256(abi.encodePacked(TOOL_IPFS_CID_1)),
+            keccak256(abi.encodePacked(POLICY_IPFS_CID_1)),
             POLICY_PARAMETER_VALUES_1
         );
 
@@ -446,6 +451,7 @@ contract VincentUserFacetTest is Test {
             newAppId,
             newAppVersion,
             keccak256(abi.encodePacked(TOOL_IPFS_CID_1)),
+            keccak256(abi.encodePacked(POLICY_IPFS_CID_1)),
             POLICY_PARAMETER_VALUES_1
         );
 
@@ -487,6 +493,7 @@ contract VincentUserFacetTest is Test {
             newAppId,
             newAppVersion,
             keccak256(abi.encodePacked(TOOL_IPFS_CID_1)),
+            keccak256(abi.encodePacked(POLICY_IPFS_CID_1)),
             bytes("")
         );
 
@@ -938,6 +945,7 @@ contract VincentUserFacetTest is Test {
             newAppId,
             newAppVersion,
             keccak256(abi.encodePacked(TOOL_IPFS_CID_1)),
+            keccak256(abi.encodePacked(POLICY_IPFS_CID_1)),
             POLICY_PARAMETER_VALUES_2
         );
 
