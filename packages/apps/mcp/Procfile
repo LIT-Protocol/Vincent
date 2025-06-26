@@ -1,1 +1,1 @@
-web: node dist/src/http.js
+web: node dist/src/bin/http.js
