@@ -36,8 +36,8 @@
   },
   "dependencies": {
     "@lit-protocol/constants": "^7.1.1",
-    "@lit-protocol/vincent-app-sdk": "workspace:*",
-    "@lit-protocol/vincent-mcp-sdk": "workspace:*",
+    "@lit-protocol/vincent-app-sdk": "1.0.1-mcp2",
+    "@lit-protocol/vincent-mcp-sdk": "1.0.0-mcp3",
     "@modelcontextprotocol/sdk": "^1.12.1",
     "@t3-oss/env-core": "^0.13.4",
     "cors": "^2.8.5",
