@@ -1,13 +1,23 @@
 {
-  "extends": ["../../../tsconfig.base.json"],
+  "compilerOptions": {
+    "composite": true,
+    "declarationMap": true,
+    "declaration": true,
+    "importHelpers": true,
+    "isolatedModules": true,
+    "lib": ["es2022"],
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "noEmitOnError": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "target": "es2022",
+    "resolveJsonModule": true
+  },
   "files": [],
-  "include": [],
-  "references": [
-    {
-      "path": "../../libs/app-sdk"
-    },
-    {
-      "path": "../../libs/tool-sdk"
-    }
-  ]
+  "include": []
 }
