@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "composite": true,
+    "outDir": "./dist",
     "declarationMap": true,
     "declaration": true,
     "importHelpers": true,
@@ -18,6 +19,15 @@
     "target": "es2022",
     "resolveJsonModule": true
   },
-  "files": [],
-  "include": []
+  "include": ["src/**/*.ts"],
+  "exclude": [
+    "out-tsc",
+    "dist",
+    "jest.config.ts",
+    "src/**/*.spec.ts",
+    "src/**/*.test.ts",
+    "eslint.config.js",
+    "eslint.config.cjs",
+    "eslint.config.mjs"
+  ]
 }
