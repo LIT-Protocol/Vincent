@@ -52,11 +52,13 @@
     "projects": [
       "tool-sdk",
       "app-sdk",
+      "mcp-sdk",
       "registry-sdk",
       "registry-backend",
       "policy-spending-limit",
       "tool-erc20-approval",
-      "tool-uniswap-swap"
+      "tool-uniswap-swap",
+      "mcp-server"
     ],
     "projectsRelationship": "independent",
     "releaseTagPattern": "vincent/{projectName}/{version}",

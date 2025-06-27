@@ -10,7 +10,7 @@ import { disconnectLitNodeClientInstance } from './internal/LitNodeClient/getLit
 const disconnectVincentToolClients = disconnectLitNodeClientInstance;
 export { disconnectVincentToolClients };
 
-export { getVincentToolClient } from './toolClient';
+export { generateVincentToolSessionSigs, getVincentToolClient } from './toolClient';
 export type {
   VincentToolClient,
   ToolClientContext,
@@ -33,3 +33,6 @@ export type { BaseToolContext } from './toolClient';
 import * as expressAuthHelpers from './express-authentication-middleware';
 export { expressAuthHelpers };
 export type { ExpressAuthHelpers } from './express-authentication-middleware/types';
+
+import * as utils from './utils';
+export { utils };

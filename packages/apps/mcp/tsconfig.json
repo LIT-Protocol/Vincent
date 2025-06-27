@@ -1,0 +1,13 @@
+{
+  "extends": ["../../../tsconfig.base.json"],
+  "files": [],
+  "include": [],
+  "references": [
+    {
+      "path": "../../libs/app-sdk"
+    },
+    {
+      "path": "../../libs/tool-sdk"
+    }
+  ]
+}

@@ -241,3 +241,4 @@ Here’s a quick recap of what you covered:
 
 - If your App requires the ability to perform an action not offered by existing Vincent Tools, checkout how to get started with [Creating a Vincent Tool](../Tool-Developers/Getting-Started.md) to learn how to perform any on or off-chain action your Vincent App needs.
 - If the existing Vincent Policies don't meet your App's needs, checkout how to get started with [Creating a Vincent Policy](../Policy-Developers/Getting-Started.md) to learn how to create your own Vincent Policies to govern the execution of Vincent Tools.
+- To expose your Vincent App to AI Agents in an MCP Server, check out our [Model Context Protocol Server](./MCP.md) guide.

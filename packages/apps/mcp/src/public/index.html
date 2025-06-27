@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#111827">
+  <title>Vincent MCP</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-gray-900 text-white font-sans">
+<div class="container">
+  <header class="main-header">
+    <h1 class="text-4xl md:text-5xl font-bold">Vincent Model Context Protocol Server</h1>
+    <p class="text-lg md:text-xl text-gray-400 mt-2">Your gateway to decentralized, user-controlled AI agents.</p>
+    <div class="header-links">
+      <a href="https://www.heyvincent.ai/" target="_blank" rel="noopener noreferrer">Home</a>
+      <span>&ndash;</span>
+      <a href="https://docs.heyvincent.ai/" target="_blank" rel="noopener noreferrer">Docs</a>
+      <span>&ndash;</span>
+      <a href="https://github.com/LIT-Protocol/Vincent" target="_blank" rel="noopener noreferrer">Github</a>
+    </div>
+  </header>
+
+  <main class="content-grid">
+    <div id="app-definition" class="card">
+      <div class="card-content">
+        <div class="app-header">
+          <div class="app-title-row">
+            <h2 id="app-name" class="card-title">Loading app definition...</h2>
+            <span id="app-version" class="app-version"></span>
+          </div>
+          <p id="app-description" class="card-text"></p>
+          <div class="button-container">
+            <button id="approve-button" class="action-button">
+              <span>Approve Vincent App</span>
+            </button>
+            <button id="connect-button" class="action-button" disabled>
+              <span>Connect Vincent MCP</span>
+            </button>
+          </div>
+          <div id="pkp-address-container" class="pkp-address-container" style="display: none;">
+            <span class="pkp-address-label">Your PKP Address</span>
+            <code id="pkp-address" class="pkp-address"></code>
+          </div>
+        </div>
+        <div id="tools-container" class="tools-container"></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- MCP Connection Modal -->
+  <div id="mcp-modal" class="modal" tabindex="-1" role="dialog" aria-labelledby="modal-title" aria-hidden="true">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modal-title" class="modal-title">Connect to <span id="modal-app-name">Vincent App</span></h3>
+        <button type="button" class="modal-close" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="connection-instructions">
+          <p>Connect this app to any LLM client that supports the Model Context Protocol (MCP).</p>
+          <p>Copy and paste the connection URL below into your client's connection settings:</p>
+        </div>
+        <div class="connection-link-container">
+          <input type="text"
+                 id="mcp-connection-link"
+                 class="connection-link"
+                 readonly
+                 aria-label="MCP Connection URL"
+                 onclick="this.select()">
+          <button id="copy-link-btn" class="copy-button" aria-label="Copy to clipboard">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+            <span>Copy</span>
+          </button>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="action-button close-modal">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="main-footer">
+    <p>
+      <a href="https://docs.heyvincent.ai/" target="_blank" rel="noopener noreferrer">Vincent</a>
+      by <a href="https://developer.litprotocol.com/" target="_blank" rel="noopener noreferrer">Lit Protocol</a>.
+    </p>
+  </footer>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

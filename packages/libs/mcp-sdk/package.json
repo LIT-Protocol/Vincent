@@ -1,0 +1,39 @@
+{
+  "name": "@lit-protocol/vincent-mcp-sdk",
+  "version": "0.0.1",
+  "description": "Vincent Model Context Protocol SDK",
+  "author": "Lit Protocol",
+  "license": "ISC",
+  "access": "public",
+  "packageManager": "pnpm@10.7.0",
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": "^20.11.1",
+    "pnpm": "10.7.0"
+  },
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "keywords": [
+    "mcp",
+    "AI",
+    "agents",
+    "sdk"
+  ],
+  "dependencies": {
+    "@lit-protocol/constants": "^7.2.0",
+    "@lit-protocol/lit-node-client": "^7.2.0",
+    "@lit-protocol/types": "7.2.0",
+    "@lit-protocol/vincent-app-sdk": "workspace:*",
+    "@modelcontextprotocol/sdk": "^1.12.1",
+    "ethers": "5.8.0",
+    "tslib": "^2.8.1",
+    "zod": "3.25.64"
+  },
+  "sideEffects": false,
+  "files": [
+    "dist/**/*",
+    "*.md"
+  ]
+}

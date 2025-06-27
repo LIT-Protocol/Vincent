@@ -1,4 +1,4 @@
-export { getVincentToolClient } from './vincentToolClient';
+export { generateVincentToolSessionSigs, getVincentToolClient } from './vincentToolClient';
 export {
   type VincentToolClient,
   type ToolClientContext,

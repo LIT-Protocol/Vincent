@@ -67,7 +67,7 @@ import {
 import { isRemoteVincentToolExecutionResult, isToolResponseFailure } from './typeGuards';
 import * as util from 'node:util';
 
-const generateSessionSigs = async ({
+export const generateVincentToolSessionSigs = async ({
   litNodeClient,
   ethersSigner,
 }: {
@@ -470,7 +470,7 @@ export function getVincentToolClient<
       }
 
       const litNodeClient = await getLitNodeClientInstance({ network });
-      const sessionSigs = await generateSessionSigs({ ethersSigner, litNodeClient });
+      const sessionSigs = await generateVincentToolSessionSigs({ ethersSigner, litNodeClient });
 
       const result = await litNodeClient.executeJs({
         ipfsId: ipfsCid,
