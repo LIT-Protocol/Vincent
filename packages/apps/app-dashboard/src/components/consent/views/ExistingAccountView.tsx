@@ -62,7 +62,7 @@ const ExistingAccountView: FC<ExistingAccountViewProps> = ({
         <p className="text-sm text-gray-500 mt-2">Authenticated at: {authTime}</p>
         <div className="mt-3 pt-3 border-t border-gray-200">
           <p>
-            <strong>EVM Address:</strong>
+            <strong>Agent Wallet EVM Address:</strong>
           </p>
           <p className="text-xs font-mono bg-gray-100 p-2 rounded mt-1 overflow-hidden text-ellipsis">
             {pkpEthAddress}

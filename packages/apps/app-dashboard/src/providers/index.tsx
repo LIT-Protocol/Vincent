@@ -11,4 +11,4 @@ export const AppProviders = [
   ErrorPopupProvider,
 ];
 
-export const UserProviders = [StytchProviderWrapper, ErrorPopupProvider];
+export const UserProviders = [StytchProviderWrapper, ErrorPopupProvider, WagmiProviderWrapper, RainbowKitProviderWrapper];

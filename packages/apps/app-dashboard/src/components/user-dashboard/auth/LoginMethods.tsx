@@ -2,12 +2,12 @@ import { useState, Dispatch, SetStateAction } from 'react';
 
 import ProtectedByLit from '@/components/layout/ProtectedByLit';
 import AuthMethods from './AuthMethods';
-import WalletMethods from './WalletMethods';
-import WebAuthn from './WebAuthn';
-import StytchOTP from './StytchOTP';
+import WebAuthn from '@/components/consent/components/WebAuthn';
+import StytchOTP from '@/components/consent/components/StytchOTP';
+import EthWalletAuth from '@/components/user-dashboard/auth/EthWalletAuth';
 
 interface LoginProps {
-  authWithEthWallet: (address: string) => Promise<void>;
+  authWithEthWallet: (address: string, signMessage: (message: string) => Promise<string>) => Promise<void>;
   authWithWebAuthn: (credentialId: string, userId: string) => Promise<void>;
   authWithStytch: (sessionJwt: string, userId: string, method: 'email' | 'phone') => Promise<void>;
   registerWithWebAuthn?: (credentialId: string) => Promise<void>;
@@ -67,12 +67,12 @@ export default function LoginMethods({
             setView={setView as Dispatch<SetStateAction<string>>}
           />
         )}
-        {view === 'wallet' && (
-          <WalletMethods
-            authWithEthWallet={authWithEthWallet}
-            setView={setView as Dispatch<SetStateAction<string>>}
-          />
-        )}
+      {view === 'wallet' && (
+        <EthWalletAuth
+          authWithEthWallet={authWithEthWallet}
+          setView={setView as Dispatch<SetStateAction<string>>}
+        />
+      )}
         {view === 'webauthn' && (
           <WebAuthn
             authWithWebAuthn={authWithWebAuthn}
