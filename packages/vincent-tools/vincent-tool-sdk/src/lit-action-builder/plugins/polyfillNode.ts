@@ -1,0 +1,67 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-nocheck
+import { polyfillNode } from 'esbuild-plugin-polyfill-node';
+
+export const basePluginConfig = {
+  globals: {
+    buffer: true,
+    process: false,
+    __filename: false,
+    __dirname: false,
+    global: false,
+  },
+  polyfills: {
+    crypto: true,
+    buffer: true,
+    _stream_duplex: false,
+    _stream_passthrough: false,
+    _stream_readable: false,
+    _stream_transform: false,
+    _stream_writable: false,
+    assert: false,
+    'assert/strict': false,
+    async_hooks: false,
+    child_process: false,
+    cluster: false,
+    console: false,
+    constants: false,
+    dgram: false,
+    diagnostics_channel: false,
+    dns: false,
+    domain: false,
+    events: false,
+    fs: false,
+    'fs/promises': false,
+    http: false,
+    http2: false,
+    https: false,
+    module: false,
+    net: false,
+    os: false,
+    path: false,
+    perf_hooks: false,
+    process: false,
+    punycode: false,
+    querystring: false,
+    readline: false,
+    repl: false,
+    stream: false,
+    string_decoder: false,
+    sys: false,
+    timers: false,
+    'timers/promises': false,
+    tls: false,
+    tty: false,
+    url: false,
+    util: false,
+    v8: false,
+    vm: false,
+    wasi: false,
+    worker_threads: false,
+    zlib: false,
+  },
+};
+
+export function getPolyfillNodePlugin(overrides = {}) {
+  return polyfillNode({ ...basePluginConfig, ...overrides });
+}
