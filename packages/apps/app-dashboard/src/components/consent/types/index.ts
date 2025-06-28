@@ -28,8 +28,8 @@ export interface VersionParameter {
 
 export interface PolicyParameter {
   name: string;
-  paramType: number;
-  value: string;
+  type: string | number;
+  value?: string;
 }
 
 export interface PolicyWithParameters {

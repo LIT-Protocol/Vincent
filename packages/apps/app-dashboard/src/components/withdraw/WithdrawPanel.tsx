@@ -10,6 +10,8 @@ interface WithdrawPanelProps {
   tokenSymbol: string;
   loading: boolean;
   onSubmit: (e: React.FormEvent) => void;
+  confirmationMode?: boolean;
+  onCancel?: () => void;
 }
 
 export const WithdrawPanel: React.FC<WithdrawPanelProps> = ({
@@ -20,6 +22,8 @@ export const WithdrawPanel: React.FC<WithdrawPanelProps> = ({
   tokenSymbol,
   loading,
   onSubmit,
+  confirmationMode = false,
+  onCancel,
 }) => {
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -64,16 +68,32 @@ export const WithdrawPanel: React.FC<WithdrawPanelProps> = ({
             </span>
           </div>
         </div>
-        <Button
-          variant="default"
-          type="submit"
-          disabled={
-            loading || !withdrawAddress || !withdrawAmount || parseFloat(withdrawAmount) <= 0
-          }
-          className="w-full disabled:bg-gray-300 disabled:cursor-not-allowed"
-        >
-          {loading ? 'Processing...' : 'Withdraw'}
-        </Button>
+        {confirmationMode ? (
+          <div className="flex gap-2">
+            <Button type="submit" disabled={loading} className="flex-1">
+              {loading ? 'Processing...' : 'Confirm'}
+            </Button>
+            <Button
+              type="button"
+              onClick={onCancel}
+              disabled={loading}
+              variant="outline"
+              className="flex-1"
+            >
+              Cancel
+            </Button>
+          </div>
+        ) : (
+          <Button
+            type="submit"
+            disabled={
+              loading || !withdrawAddress || !withdrawAmount || parseFloat(withdrawAmount) <= 0
+            }
+            className="w-full disabled:bg-gray-300 disabled:cursor-not-allowed"
+          >
+            {loading ? 'Processing...' : 'Withdraw'}
+          </Button>
+        )}
       </form>
     </div>
   );

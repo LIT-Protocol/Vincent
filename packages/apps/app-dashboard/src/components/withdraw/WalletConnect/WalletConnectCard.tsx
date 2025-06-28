@@ -18,18 +18,18 @@ const variantStyles = {
     titleBorder: 'border-blue-100',
   },
   requests: {
-    gradient: 'bg-gradient-to-r from-orange-50 to-amber-50',
-    border: 'border-orange-100',
-    text: 'text-orange-800',
-    titleText: 'text-orange-900',
-    titleBorder: 'border-orange-100',
+    gradient: 'bg-gradient-to-r from-gray-50 to-gray-50',
+    border: 'border-gray-100',
+    text: 'text-gray-800',
+    titleText: 'text-gray-900',
+    titleBorder: 'border-gray-100',
   },
   proposal: {
-    gradient: 'bg-gradient-to-r from-yellow-50 to-amber-50',
-    border: 'border-yellow-100',
-    text: 'text-yellow-800',
-    titleText: 'text-yellow-900',
-    titleBorder: 'border-yellow-100',
+    gradient: 'bg-gradient-to-r from-gray-50 to-gray-50',
+    border: 'border-gray-100',
+    text: 'text-gray-800',
+    titleText: 'text-gray-900',
+    titleBorder: 'border-gray-100',
   },
 };
 

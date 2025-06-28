@@ -244,7 +244,7 @@ export function Withdraw() {
         );
       }
 
-      return <WithdrawForm sessionSigs={sessionSigs} agentPKP={agentPKP} userPKP={userPKP} />;
+      return <WithdrawForm sessionSigs={sessionSigs} agentPKP={agentPKP!} userPKP={userPKP} />;
     }
 
     // If we're not showing the existing account and have validated session sigs
@@ -252,7 +252,7 @@ export function Withdraw() {
       return (
         <WithdrawForm
           sessionSigs={validatedSessionSigs}
-          agentPKP={authInfo.agentPKP}
+          agentPKP={authInfo.agentPKP!}
           userPKP={authInfo.userPKP}
         />
       );

@@ -44,7 +44,7 @@ export default function QrReader({ onConnect }: IProps) {
             </div>
           )}
           <div
-            className="w-full max-w-md relative overflow-hidden rounded-lg border border-gray-300"
+            className="w-full relative overflow-hidden rounded-lg border border-gray-300"
             style={{ height: '300px' }}
           >
             <ReactQrReader
@@ -60,7 +60,7 @@ export default function QrReader({ onConnect }: IProps) {
           </Button>
         </Fragment>
       ) : (
-        <div className="w-full max-w-md flex flex-col items-center justify-center p-8 border border-gray-200 rounded-lg bg-gray-50">
+        <div className="w-full flex flex-col items-center justify-center p-8 border border-gray-200 rounded-lg bg-gray-50">
           <img
             src="/icons/qr-icon.svg"
             width={100}
@@ -69,8 +69,8 @@ export default function QrReader({ onConnect }: IProps) {
             className="mb-4"
           />
           <Button
-            variant="default"
-            className="mt-4 w-full"
+            variant="outline"
+            className="mt-4 w-full font-normal"
             onClick={onShowScanner}
             data-testid="qrcode-button"
           >
