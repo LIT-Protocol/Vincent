@@ -3,10 +3,21 @@ import AppLayout from './components/layout/AppLayout';
 import UserLayout from './components/layout/UserLayout';
 import { AppProviders, UserProviders } from './providers';
 import { wrap } from './utils/components';
+import {
+  AppEdit,
+  AppOverview,
+  AppDelete,
+  CreateAppPage,
+  AppVersions,
+  AppVersionDetail,
+  AppVersionTools,
+  AppCreateVersion,
+  AppEditVersion,
+  AppsPage,
+} from './pages/developer-dashboard/app';
 
 import Home from './pages/index';
 import Withdraw from './pages/withdraw';
-import CreateApp from './pages/create-app';
 import AppDetails from './pages/appId/[appId]/index';
 import AdvancedFunctions from './pages/appId/[appId]/advanced-functions';
 import Consent from './pages/appId/[appId]/consent';
@@ -37,11 +48,47 @@ const routes: RouteObject[] = [
             path: 'dashboard',
             element: <AppDashboard.Dashboard />,
           },
+          {
+            path: 'apps',
+            element: <AppsPage />,
+          },
+          {
+            path: 'create-app/*',
+            element: <CreateAppPage />,
+          },
+          {
+            path: 'appId/:appId',
+            element: <AppOverview />,
+          },
+          {
+            path: 'appId/:appId/edit-app',
+            element: <AppEdit />,
+          },
+          {
+            path: 'appId/:appId/delete-app',
+            element: <AppDelete />,
+          },
+          {
+            path: 'appId/:appId/versions',
+            element: <AppVersions />,
+          },
+          {
+            path: 'appId/:appId/create-app-version',
+            element: <AppCreateVersion />,
+          },
+          {
+            path: 'appId/:appId/version/:versionId',
+            element: <AppVersionDetail />,
+          },
+          {
+            path: 'appId/:appId/version/:versionId/edit',
+            element: <AppEditVersion />,
+          },
+          {
+            path: 'appId/:appId/version/:versionId/tools',
+            element: <AppVersionTools />,
+          },
         ],
-      },
-      {
-        path: '/create-app',
-        element: <CreateApp />,
       },
       {
         path: '/appId/:appId',

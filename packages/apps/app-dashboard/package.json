@@ -46,6 +46,8 @@
     "@tailwindcss/vite": "^4.1.4",
     "@tanstack/react-query": "^5.66.7",
     "@walletconnect/core": "^2.21.3",
+    "ag-grid-community": "^33.3.2",
+    "ag-grid-react": "^33.3.2",
     "bs58": "^6.0.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

@@ -83,11 +83,12 @@ export function ToolList({
         <div key={tool.packageName}>
           <button
             onClick={() => onToolSelection(tool)}
-            className={`w-full text-left px-3 py-2 text-xs rounded-lg transition-all duration-200 ease-in-out ${
+            className={`w-full text-left px-3 py-2 text-xs rounded-lg transition-all duration-200 ease-in-out focus:outline-none ${
               selectedTool?.packageName === tool.packageName
                 ? 'bg-blue-50 text-blue-700 font-medium'
                 : 'text-gray-500 hover:bg-gray-50'
             }`}
+            style={{ border: 'none', outline: 'none', boxShadow: 'none' }}
             aria-label={`Select tool ${tool.toolTitle}`}
             aria-pressed={selectedTool?.packageName === tool.packageName}
           >
@@ -114,13 +115,14 @@ export function ToolList({
                       <button
                         onClick={() => handleToolViewNavigation(toolItem.id)}
                         disabled={hasVersionsError}
-                        className={`w-full flex items-center px-3 py-2 text-sm rounded-lg transition-colors ${
+                        className={`w-full flex items-center px-3 py-2 text-sm rounded-lg transition-colors focus:outline-none ${
                           hasVersionsError
                             ? 'text-gray-400 cursor-not-allowed'
                             : selectedToolView === toolItem.id
                               ? 'bg-blue-50 text-blue-700 font-medium'
                               : 'text-gray-700 hover:bg-gray-50'
                         }`}
+                        style={{ border: 'none', outline: 'none', boxShadow: 'none' }}
                         aria-label={toolItem.label}
                         aria-expanded={isToolSubmenuExpanded}
                         aria-controls={`submenu-${toolItem.id}`}
@@ -161,13 +163,14 @@ export function ToolList({
                                 key={subMenuItem.id}
                                 onClick={() => handleToolSubmenuNavigation(subMenuItem.id)}
                                 disabled={subMenuItem.disabled}
-                                className={`w-full text-left px-4 py-2 text-xs rounded-lg transition-all duration-200 ease-in-out ${
+                                className={`w-full text-left px-4 py-2 text-xs rounded-lg transition-all duration-200 ease-in-out focus:outline-none ${
                                   subMenuItem.disabled
                                     ? 'text-gray-400 cursor-not-allowed'
                                     : selectedToolView === subMenuItem.id
                                       ? 'bg-blue-50 text-blue-700 font-medium'
                                       : 'text-gray-600 hover:bg-gray-50'
                                 }`}
+                                style={{ border: 'none', outline: 'none', boxShadow: 'none' }}
                                 aria-label={subMenuItem.label}
                                 aria-pressed={
                                   !subMenuItem.disabled && selectedToolView === subMenuItem.id
@@ -187,11 +190,12 @@ export function ToolList({
                   <button
                     key={toolItem.id}
                     onClick={() => handleToolViewNavigation(toolItem.id)}
-                    className={`w-full flex items-center px-3 py-2 text-left rounded-lg transition-all duration-200 ease-in-out text-sm ${
+                    className={`w-full flex items-center px-3 py-2 text-left rounded-lg transition-all duration-200 ease-in-out text-sm focus:outline-none ${
                       selectedToolView === toolItem.id
                         ? 'bg-blue-50 text-blue-700 font-medium'
                         : 'text-gray-600 hover:bg-gray-50'
                     }`}
+                    style={{ border: 'none', outline: 'none', boxShadow: 'none' }}
                     aria-label={toolItem.label}
                     aria-pressed={selectedToolView === toolItem.id}
                   >

@@ -1,6 +1,5 @@
 import ConnectWallet from './ConnectWalletPage';
-import Dashboard from './DashboardPage';
-
+import Dashboard from './DashboardRoute';
 export const AppDashboard = {
   ConnectWallet,
   Dashboard,

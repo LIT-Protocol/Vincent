@@ -83,11 +83,12 @@ export function PolicyList({
         <div key={policy.packageName}>
           <button
             onClick={() => onPolicySelection(policy)}
-            className={`w-full text-left px-3 py-2 text-xs rounded-lg transition-all duration-200 ease-in-out ${
+            className={`w-full text-left px-3 py-2 text-xs rounded-lg transition-all duration-200 ease-in-out focus:outline-none ${
               selectedPolicy?.packageName === policy.packageName
                 ? 'bg-blue-50 text-blue-700 font-medium'
                 : 'text-gray-500 hover:bg-gray-50'
             }`}
+            style={{ border: 'none', outline: 'none', boxShadow: 'none' }}
             aria-label={`Select policy ${policy.policyTitle}`}
             aria-pressed={selectedPolicy?.packageName === policy.packageName}
           >
@@ -114,13 +115,14 @@ export function PolicyList({
                       <button
                         onClick={() => handlePolicyViewNavigation(policyItem.id)}
                         disabled={hasVersionsError}
-                        className={`w-full flex items-center px-3 py-2 text-sm rounded-lg transition-colors ${
+                        className={`w-full flex items-center px-3 py-2 text-sm rounded-lg transition-colors focus:outline-none ${
                           hasVersionsError
                             ? 'text-gray-400 cursor-not-allowed'
                             : selectedPolicyView === policyItem.id
                               ? 'bg-blue-50 text-blue-700 font-medium'
                               : 'text-gray-700 hover:bg-gray-50'
                         }`}
+                        style={{ border: 'none', outline: 'none', boxShadow: 'none' }}
                         aria-label={policyItem.label}
                         aria-expanded={isPolicySubmenuExpanded}
                         aria-controls={`submenu-${policyItem.id}`}
@@ -161,13 +163,14 @@ export function PolicyList({
                                 key={subMenuItem.id}
                                 onClick={() => handlePolicySubmenuNavigation(subMenuItem.id)}
                                 disabled={subMenuItem.disabled}
-                                className={`w-full text-left px-4 py-2 text-xs rounded-lg transition-all duration-200 ease-in-out ${
+                                className={`w-full text-left px-4 py-2 text-xs rounded-lg transition-all duration-200 ease-in-out focus:outline-none ${
                                   subMenuItem.disabled
                                     ? 'text-gray-400 cursor-not-allowed'
                                     : selectedPolicyView === subMenuItem.id
                                       ? 'bg-blue-50 text-blue-700 font-medium'
                                       : 'text-gray-600 hover:bg-gray-50'
                                 }`}
+                                style={{ border: 'none', outline: 'none', boxShadow: 'none' }}
                                 aria-label={subMenuItem.label}
                                 aria-pressed={
                                   !subMenuItem.disabled && selectedPolicyView === subMenuItem.id
@@ -187,11 +190,12 @@ export function PolicyList({
                   <button
                     key={policyItem.id}
                     onClick={() => handlePolicyViewNavigation(policyItem.id)}
-                    className={`w-full flex items-center px-3 py-2 text-left rounded-lg transition-all duration-200 ease-in-out text-sm ${
+                    className={`w-full flex items-center px-3 py-2 text-left rounded-lg transition-all duration-200 ease-in-out text-sm focus:outline-none ${
                       selectedPolicyView === policyItem.id
                         ? 'bg-blue-50 text-blue-700 font-medium'
                         : 'text-gray-600 hover:bg-gray-50'
                     }`}
+                    style={{ border: 'none', outline: 'none', boxShadow: 'none' }}
                     aria-label={policyItem.label}
                     aria-pressed={selectedPolicyView === policyItem.id}
                   >
