@@ -30,7 +30,6 @@ function testPrecheckEvaluateContextSwitching() {
   const evalDenySchema = z.object({ finalReason: z.string() });
 
   const precheckEvalContextSwitchPolicy = createVincentPolicy({
-    packageName: '@lit-protocol/test-policy@1.2.3',
     toolParamsSchema: z.object({ actionType: z.string() }),
 
     // Different schemas for each context
@@ -73,10 +72,10 @@ function testPrecheckEvaluateContextSwitching() {
   });
   return createVincentToolPolicy({
     toolParamsSchema: baseToolSchema,
-    bundledVincentPolicy: asBundledVincentPolicy(
-      precheckEvalContextSwitchPolicy,
-      '02u3kjwdsnfs2890hf' as const,
-    ),
+    bundledVincentPolicy: asBundledVincentPolicy(precheckEvalContextSwitchPolicy, {
+      ipfsCid: '02u3kjwdsnfs2890hf' as const,
+      packageName: '@lit-protocol/test-policy@1.2.3' as const,
+    }),
     toolParameterMappings: {
       action: 'actionType',
     },
@@ -96,7 +95,6 @@ function testEvaluateCommitContextSwitching() {
   const commitDenySchema = z.object({ failureCode: z.number() });
 
   const evalCommitContextSwitchPolicy = createVincentPolicy({
-    packageName: '@lit-protocol/test-policy@1.23.1',
     toolParamsSchema: z.object({ actionType: z.string() }),
 
     // Different schemas for each context
@@ -144,10 +142,10 @@ function testEvaluateCommitContextSwitching() {
   });
   return createVincentToolPolicy({
     toolParamsSchema: baseToolSchema,
-    bundledVincentPolicy: asBundledVincentPolicy(
-      evalCommitContextSwitchPolicy,
-      '048oifjnwfoij3208h' as const,
-    ),
+    bundledVincentPolicy: asBundledVincentPolicy(evalCommitContextSwitchPolicy, {
+      ipfsCid: '048oifjnwfoij3208h' as const,
+      packageName: '@lit-protocol/test-policy@1.23.1' as const,
+    }),
     toolParameterMappings: {
       action: 'actionType',
     },
@@ -170,7 +168,6 @@ function testFullPolicyContextSwitching() {
   const commitDenySchema = z.object({ aborted: z.boolean() });
 
   const fullPolicyContext = createVincentPolicy({
-    packageName: '@lit-protocol/testpolicyawesome@12.1.10',
     toolParamsSchema: z.object({
       actionType: z.string(),
       amount: z.number(),
@@ -260,10 +257,10 @@ function testFullPolicyContextSwitching() {
   });
   return createVincentToolPolicy({
     toolParamsSchema: baseToolSchema,
-    bundledVincentPolicy: asBundledVincentPolicy(
-      fullPolicyContext,
-      '908joiun2f928q1hjbfn' as const,
-    ),
+    bundledVincentPolicy: asBundledVincentPolicy(fullPolicyContext, {
+      ipfsCid: '908joiun2f928q1hjbfn' as const,
+      packageName: '@lit-protocol/testpolicyawesome@12.1.10' as const,
+    }),
     toolParameterMappings: {
       action: 'actionType',
       amount: 'amount',

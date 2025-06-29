@@ -28,7 +28,6 @@ const baseToolSchema = z.object({
 export function testPolicyEvaluationResults() {
   // Policy 1: Simple policy with object result schema
   const evalResultsPolicy = createVincentPolicy({
-    packageName: '@lit-protocol/simple-policy@1.0.0',
     toolParamsSchema: z.object({
       actionType: z.string(),
       targetId: z.string(),
@@ -47,7 +46,10 @@ export function testPolicyEvaluationResults() {
   });
   const simplePolicy = createVincentToolPolicy({
     toolParamsSchema: baseToolSchema,
-    bundledVincentPolicy: asBundledVincentPolicy(evalResultsPolicy, '109i0ifj' as const),
+    bundledVincentPolicy: asBundledVincentPolicy(evalResultsPolicy, {
+      ipfsCid: '109i0ifj' as const,
+      packageName: '@lit-protocol/simple-policy@1.0.0' as const,
+    }),
     toolParameterMappings: {
       action: 'actionType',
       target: 'targetId',
@@ -56,7 +58,6 @@ export function testPolicyEvaluationResults() {
 
   // Policy 2: Policy with commit function
   const commitResultsPolicy = createVincentPolicy({
-    packageName: '@lit-protocol/commit-policy@1.0.0',
     toolParamsSchema: z.object({
       operation: z.string(),
       resource: z.string(),
@@ -100,7 +101,10 @@ export function testPolicyEvaluationResults() {
   });
   const commitPolicy = createVincentToolPolicy({
     toolParamsSchema: baseToolSchema,
-    bundledVincentPolicy: asBundledVincentPolicy(commitResultsPolicy, 'ajialkjads' as const),
+    bundledVincentPolicy: asBundledVincentPolicy(commitResultsPolicy, {
+      ipfsCid: 'ajialkjads' as const,
+      packageName: '@lit-protocol/commit-policy@1.0.0' as const,
+    }),
     toolParameterMappings: {
       action: 'operation',
       target: 'resource',

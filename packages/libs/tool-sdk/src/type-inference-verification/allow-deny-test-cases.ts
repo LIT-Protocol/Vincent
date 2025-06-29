@@ -25,7 +25,6 @@ export function testAllowFunctionWithDifferentTypes() {
   const objSchema = z.object({ id: z.string(), success: z.boolean() });
 
   const allowFuncDiffTypesPolicy = createVincentPolicy({
-    packageName: '@lit-protocol/test-policy-allow@1.0.0',
     toolParamsSchema: z.object({ actionType: z.string() }),
     evalAllowResultSchema: objSchema,
 
@@ -53,10 +52,10 @@ export function testAllowFunctionWithDifferentTypes() {
   });
   const test1 = createVincentToolPolicy({
     toolParamsSchema: baseToolSchema,
-    bundledVincentPolicy: asBundledVincentPolicy(
-      allowFuncDiffTypesPolicy,
-      '19ofnsfoj908r21on' as const,
-    ),
+    bundledVincentPolicy: asBundledVincentPolicy(allowFuncDiffTypesPolicy, {
+      ipfsCid: '19ofnsfoj908r21on' as const,
+      packageName: '@lit-protocol/test-policy-allow@1.0.0' as const,
+    }),
     toolParameterMappings: {
       action: 'actionType',
     },
@@ -64,7 +63,6 @@ export function testAllowFunctionWithDifferentTypes() {
 
   // Test with string schema
   const allowFuncDiffTypesStringPolicy = createVincentPolicy({
-    packageName: '@lit-protocol/test-policy-allow-string@1.0.0',
     toolParamsSchema: z.object({ actionType: z.string() }),
     evalAllowResultSchema: z.string(),
 
@@ -84,10 +82,10 @@ export function testAllowFunctionWithDifferentTypes() {
   });
   const test2 = createVincentToolPolicy({
     toolParamsSchema: baseToolSchema,
-    bundledVincentPolicy: asBundledVincentPolicy(
-      allowFuncDiffTypesStringPolicy,
-      'asdjlkajsda' as const,
-    ),
+    bundledVincentPolicy: asBundledVincentPolicy(allowFuncDiffTypesStringPolicy, {
+      ipfsCid: 'asdjlkajsda' as const,
+      packageName: '@lit-protocol/test-policy-allow-string@1.0.0' as const,
+    }),
     toolParameterMappings: {
       action: 'actionType',
     },
@@ -95,7 +93,6 @@ export function testAllowFunctionWithDifferentTypes() {
 
   // Test with number schema
   const allowFuncNumberTypes = createVincentPolicy({
-    packageName: '@lit-protocol/test-policy-allow-number@1.0.0',
     toolParamsSchema: z.object({ actionType: z.string() }),
     evalAllowResultSchema: z.number(),
 
@@ -115,10 +112,10 @@ export function testAllowFunctionWithDifferentTypes() {
   });
   const test3 = createVincentToolPolicy({
     toolParamsSchema: baseToolSchema,
-    bundledVincentPolicy: asBundledVincentPolicy(
-      allowFuncNumberTypes,
-      '0398109sfawrt2-itxzdkvj3810938123' as const,
-    ),
+    bundledVincentPolicy: asBundledVincentPolicy(allowFuncNumberTypes, {
+      ipfsCid: '0398109sfawrt2-itxzdkvj3810938123' as const,
+      packageName: '@lit-protocol/test-policy-allow-number@1.0.0' as const,
+    }),
     toolParameterMappings: {
       action: 'actionType',
     },
@@ -126,7 +123,6 @@ export function testAllowFunctionWithDifferentTypes() {
 
   // Test with no schema
   const allowFuncNoSchema = createVincentPolicy({
-    packageName: '@lit-protocol/test-policy-no-schema@1.0.0',
     toolParamsSchema: z.object({ actionType: z.string() }),
     // No schema defined
 
@@ -154,10 +150,10 @@ export function testAllowFunctionWithDifferentTypes() {
     test3,
     test4: createVincentToolPolicy({
       toolParamsSchema: baseToolSchema,
-      bundledVincentPolicy: asBundledVincentPolicy(
-        allowFuncNoSchema,
-        '094821ksjf8u2nuif908j2' as const,
-      ),
+      bundledVincentPolicy: asBundledVincentPolicy(allowFuncNoSchema, {
+        ipfsCid: '094821ksjf8u2nuif908j2' as const,
+        packageName: '@lit-protocol/test-policy-no-schema@1.0.0' as const,
+      }),
       toolParameterMappings: {
         action: 'actionType',
       },
@@ -172,7 +168,6 @@ export function testDenyFunctionWithDifferentTypes() {
   const objSchema = z.object({ code: z.number(), message: z.string() });
 
   const denyFuncDifferentTypes = createVincentPolicy({
-    packageName: '@lit-protocol/test-policy-deny@1.0.0',
     toolParamsSchema: z.object({ actionType: z.string() }),
     evalDenyResultSchema: objSchema,
 
@@ -203,10 +198,10 @@ export function testDenyFunctionWithDifferentTypes() {
   });
   const test1 = createVincentToolPolicy({
     toolParamsSchema: baseToolSchema,
-    bundledVincentPolicy: asBundledVincentPolicy(
-      denyFuncDifferentTypes,
-      '01943fnjksf9843nr' as const,
-    ),
+    bundledVincentPolicy: asBundledVincentPolicy(denyFuncDifferentTypes, {
+      ipfsCid: '01943fnjksf9843nr' as const,
+      packageName: '@lit-protocol/test-policy-deny@1.0.0' as const,
+    }),
     toolParameterMappings: {
       action: 'actionType',
     },
@@ -214,7 +209,6 @@ export function testDenyFunctionWithDifferentTypes() {
 
   // Test with string schema
   const denyFuncDifferentTypesString = createVincentPolicy({
-    packageName: '@lit-protocol/test-policy-deny-string@1.0.0',
     toolParamsSchema: z.object({ actionType: z.string() }),
     evalDenyResultSchema: z.string(),
 
@@ -235,10 +229,10 @@ export function testDenyFunctionWithDifferentTypes() {
   });
   const test2 = createVincentToolPolicy({
     toolParamsSchema: baseToolSchema,
-    bundledVincentPolicy: asBundledVincentPolicy(
-      denyFuncDifferentTypesString,
-      'asdkfjofs2' as const,
-    ),
+    bundledVincentPolicy: asBundledVincentPolicy(denyFuncDifferentTypesString, {
+      ipfsCid: 'asdkfjofs2' as const,
+      packageName: '@lit-protocol/test-policy-deny-string@1.0.0' as const,
+    }),
     toolParameterMappings: {
       action: 'actionType',
     },
@@ -246,7 +240,6 @@ export function testDenyFunctionWithDifferentTypes() {
 
   // Test with no schema
   const denyFuncDifferentTypesNoSchema = createVincentPolicy({
-    packageName: '@lit-protocol/test-policy-deny-no-schema@1.0.0',
     toolParamsSchema: z.object({ actionType: z.string() }),
     // No schema defined
 
@@ -269,10 +262,10 @@ export function testDenyFunctionWithDifferentTypes() {
   });
   const test3 = createVincentToolPolicy({
     toolParamsSchema: baseToolSchema,
-    bundledVincentPolicy: asBundledVincentPolicy(
-      denyFuncDifferentTypesNoSchema,
-      'oi2jsldkfjsdfijsdflkj' as const,
-    ),
+    bundledVincentPolicy: asBundledVincentPolicy(denyFuncDifferentTypesNoSchema, {
+      ipfsCid: 'oi2jsldkfjsdfijsdflkj' as const,
+      packageName: '@lit-protocol/test-policy-deny-no-schema@1.0.0' as const,
+    }),
     toolParameterMappings: {
       action: 'actionType',
     },
@@ -286,7 +279,6 @@ export function testDenyFunctionWithDifferentTypes() {
  */
 export function testCommitAllowDeny() {
   const testCommitAllowDenyPolicy = createVincentPolicy({
-    packageName: '@lit-protocol/test-policy-commit@1.0.0',
     toolParamsSchema: z.object({ actionType: z.string() }),
 
     // Commit requires a params schema
@@ -326,10 +318,10 @@ export function testCommitAllowDeny() {
   });
   return createVincentToolPolicy({
     toolParamsSchema: baseToolSchema,
-    bundledVincentPolicy: asBundledVincentPolicy(
-      testCommitAllowDenyPolicy,
-      'owijfiuhwf98234j' as const,
-    ),
+    bundledVincentPolicy: asBundledVincentPolicy(testCommitAllowDenyPolicy, {
+      ipfsCid: 'owijfiuhwf98234j' as const,
+      packageName: '@lit-protocol/test-policy-commit@1.0.0' as const,
+    }),
     toolParameterMappings: {
       action: 'actionType',
     },

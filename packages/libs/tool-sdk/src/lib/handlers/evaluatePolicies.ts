@@ -132,7 +132,6 @@ function parseAndValidateEvaluateResult<
 }: {
   litActionResponse: string;
   vincentPolicy: VincentPolicy<
-    string,
     z.ZodType,
     any,
     any,

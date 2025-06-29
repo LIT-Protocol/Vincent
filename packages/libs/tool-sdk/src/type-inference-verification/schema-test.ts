@@ -44,7 +44,6 @@ export function testContextSignature(context: PolicyContext<typeof objSchema, Zo
 
 // Test in a real policy
 const realPolicy = createVincentPolicy({
-  packageName: '@lit-protocol/schema-test-policy@1.0.0',
   toolParamsSchema: z.object({ actionType: z.string() }),
   evalAllowResultSchema: objSchema,
 
@@ -65,7 +64,10 @@ const realPolicy = createVincentPolicy({
 });
 export const testRealPolicy = createVincentToolPolicy({
   toolParamsSchema: baseToolSchema,
-  bundledVincentPolicy: asBundledVincentPolicy(realPolicy, '1091jkfn2039j802jf' as const),
+  bundledVincentPolicy: asBundledVincentPolicy(realPolicy, {
+    ipfsCid: '1091jkfn2039j802jf' as const,
+    packageName: '@lit-protocol/schema-test-policy@1.0.0' as const,
+  }),
   toolParameterMappings: {
     action: 'actionType',
   },
@@ -99,7 +101,6 @@ export function testWithoutSchema() {
 
   // Test in a real policy
   const thePolicy = createVincentPolicy({
-    packageName: '@lit-protocol/schema-test-policy@1.0.0',
     toolParamsSchema: z.object({ actionType: z.string() }),
 
     // No schemas defined
@@ -128,7 +129,10 @@ export function testWithoutSchema() {
   });
   return createVincentToolPolicy({
     toolParamsSchema: baseToolSchema,
-    bundledVincentPolicy: asBundledVincentPolicy(thePolicy, '1091jkfn2039j802jf' as const),
+    bundledVincentPolicy: asBundledVincentPolicy(thePolicy, {
+      ipfsCid: '1091jkfn2039j802jf' as const,
+      packageName: '@lit-protocol/schema-test-policy@1.0.0' as const,
+    }),
     toolParameterMappings: {
       action: 'actionType',
     },
@@ -143,7 +147,6 @@ export function testWithoutSchema() {
 export function testStringSchema() {
   // Test in a real policy
   const stringSchemaPolicy = createVincentPolicy({
-    packageName: '@lit-protocol/schema-test-policy@1.0.0',
     toolParamsSchema: z.object({ actionType: z.string() }),
     evalAllowResultSchema: z.string(),
     evalDenyResultSchema: z.string(),
@@ -175,7 +178,10 @@ export function testStringSchema() {
   });
   return createVincentToolPolicy({
     toolParamsSchema: baseToolSchema,
-    bundledVincentPolicy: asBundledVincentPolicy(stringSchemaPolicy, '1091jkfn2039j802jf' as const),
+    bundledVincentPolicy: asBundledVincentPolicy(stringSchemaPolicy, {
+      ipfsCid: '1091jkfn2039j802jf' as const,
+      packageName: '@lit-protocol/schema-test-policy@1.0.0' as const,
+    }),
     toolParameterMappings: {
       action: 'actionType',
     },
@@ -195,7 +201,6 @@ export function testDifferentContexts() {
   const commitSchema = z.object({ txId: z.string() });
 
   const differentContextsPolicy = createVincentPolicy({
-    packageName: '@lit-protocol/schema-test-policy@1.0.0',
     toolParamsSchema: z.object({ actionType: z.string() }),
 
     // Define different schemas for different contexts
@@ -247,10 +252,10 @@ export function testDifferentContexts() {
 
   return createVincentToolPolicy({
     toolParamsSchema: baseToolSchema,
-    bundledVincentPolicy: asBundledVincentPolicy(
-      differentContextsPolicy,
-      '1091jkfn2039j802jf' as const,
-    ),
+    bundledVincentPolicy: asBundledVincentPolicy(differentContextsPolicy, {
+      ipfsCid: '1091jkfn2039j802jf' as const,
+      packageName: '@lit-protocol/schema-test-policy@1.0.0' as const,
+    }),
     toolParameterMappings: {
       action: 'actionType',
     },
@@ -265,7 +270,6 @@ export function testDifferentContexts() {
 export function testPrimitiveSchemas() {
   // Test in a real policy
   const primitivePolicy = createVincentPolicy({
-    packageName: '@lit-protocol/schema-test-policy@1.0.0',
     toolParamsSchema: z.object({ actionType: z.string() }),
     evalAllowResultSchema: z.number(),
     evalDenyResultSchema: z.boolean(),
@@ -297,7 +301,10 @@ export function testPrimitiveSchemas() {
   });
   return createVincentToolPolicy({
     toolParamsSchema: baseToolSchema,
-    bundledVincentPolicy: asBundledVincentPolicy(primitivePolicy, '1091jkfn2039j802jf' as const),
+    bundledVincentPolicy: asBundledVincentPolicy(primitivePolicy, {
+      ipfsCid: '1091jkfn2039j802jf' as const,
+      packageName: '@lit-protocol/schema-test-policy@1.0.0' as const,
+    }),
     toolParameterMappings: {
       action: 'actionType',
     },

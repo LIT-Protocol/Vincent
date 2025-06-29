@@ -33,7 +33,6 @@ const policy1CommitDenyResult = z.object({ errorCode: z.number() });
 
 // Create policies with full type inference
 const PolicyConfig1 = createVincentPolicy({
-  packageName: 'extra-rate-limit' as const,
   toolParamsSchema: policy1Schema,
   userParamsSchema: userParams1Schema,
   commitParamsSchema: commitParams1Schema,
@@ -78,10 +77,10 @@ const PolicyConfig1 = createVincentPolicy({
 
 const policy1 = createVincentToolPolicy({
   toolParamsSchema: myToolSchema,
-  bundledVincentPolicy: asBundledVincentPolicy(
-    PolicyConfig1,
-    'QmX7Dqn4zYhJVvXYwKr8cFX5Xp7gVpqK5r8QHwvF8zYjXa' as const,
-  ),
+  bundledVincentPolicy: asBundledVincentPolicy(PolicyConfig1, {
+    ipfsCid: 'QmX7Dqn4zYhJVvXYwKr8cFX5Xp7gVpqK5r8QHwvF8zYjXa' as const,
+    packageName: 'extra-rate-limit' as const,
+  }),
   toolParameterMappings: {
     target: 'targetAllowed',
     action: 'actionType',
@@ -111,7 +110,6 @@ const policy2CommitAllowResult = z.object({
 const policy2CommitDenyResult = z.object({ failureReason: z.string() });
 
 const PolicyConfig2 = createVincentPolicy({
-  packageName: 'rate-limit' as const,
   toolParamsSchema: policy2Schema,
   userParamsSchema: userParams2Schema,
   commitParamsSchema: commitParams2Schema,
@@ -169,10 +167,10 @@ const PolicyConfig2 = createVincentPolicy({
 
 const policy2 = createVincentToolPolicy({
   toolParamsSchema: myToolSchema,
-  bundledVincentPolicy: asBundledVincentPolicy(
-    PolicyConfig2,
-    'QmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdG' as const,
-  ),
+  bundledVincentPolicy: asBundledVincentPolicy(PolicyConfig2, {
+    ipfsCid: 'QmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdG' as const,
+    packageName: 'rate-limit' as const,
+  }),
   toolParameterMappings: {
     amount: 'maxAmount',
     action: 'currency',
@@ -203,7 +201,6 @@ const policy3EvalDenyResult = z.object({
 
 // Create policy3 without a commit function
 const PolicyConfig3 = createVincentPolicy({
-  packageName: 'vincent-tool-sdk' as const,
   toolParamsSchema: policy3ToolParams,
   userParamsSchema: policy3UserParams,
   evalAllowResultSchema: policy3EvalAllowResult,
@@ -233,10 +230,10 @@ const PolicyConfig3 = createVincentPolicy({
 
 const policy3 = createVincentToolPolicy({
   toolParamsSchema: myToolSchema,
-  bundledVincentPolicy: asBundledVincentPolicy(
-    PolicyConfig3,
-    'QmYwAasdPJzv5CZA625s3Xf2nemtYgPpHdWEz79ojWnPbdG' as const,
-  ),
+  bundledVincentPolicy: asBundledVincentPolicy(PolicyConfig3, {
+    ipfsCid: 'QmYwAasdPJzv5CZA625s3Xf2nemtYgPpHdWEz79ojWnPbdG' as const,
+    packageName: 'vincent-tool-sdk' as const,
+  }),
   toolParameterMappings: {
     amount: 'toolName',
   },

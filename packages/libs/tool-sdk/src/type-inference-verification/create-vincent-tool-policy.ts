@@ -17,7 +17,6 @@ const evalAllow = z.object({ allowed: z.boolean() });
 const evalDeny = z.object({ reason: z.string() });
 
 const PolicyConfig = createVincentPolicy({
-  packageName: 'my-policy' as const,
   toolParamsSchema: policyParamsSchema,
   evalAllowResultSchema: evalAllow,
   evalDenyResultSchema: evalDeny,
@@ -26,7 +25,10 @@ const PolicyConfig = createVincentPolicy({
   },
 });
 
-const bundled = asBundledVincentPolicy(PolicyConfig, 'QmCID12345' as const);
+const bundled = asBundledVincentPolicy(PolicyConfig, {
+  ipfsCid: 'QmCID12345' as const,
+  packageName: 'my-policy' as const,
+});
 
 const toolPolicy = createVincentToolPolicy({
   toolParamsSchema,
@@ -40,8 +42,8 @@ type Expect<T extends true> = T;
 
 // ✅ Should pass only if ipfsCid is a literal string
 type CidIsLiteral = Expect<
-  (typeof toolPolicy)['ipfsCid'] extends string
-    ? string extends (typeof toolPolicy)['ipfsCid']
+  (typeof toolPolicy)['metadata']['ipfsCid'] extends string
+    ? string extends (typeof toolPolicy)['metadata']['ipfsCid']
       ? false // 🔴 widened
       : true // ✅ literal
     : false

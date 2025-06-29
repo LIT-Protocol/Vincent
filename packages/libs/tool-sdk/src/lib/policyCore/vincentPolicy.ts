@@ -44,7 +44,6 @@ import { BundledVincentPolicy } from './bundledPolicy/types';
  * @category API Methods
  */
 export function createVincentPolicy<
-  PackageName extends string,
   PolicyToolParams extends z.ZodType,
   UserParams extends z.ZodType = z.ZodUndefined,
   PrecheckAllowResult extends z.ZodType = z.ZodUndefined,
@@ -56,7 +55,6 @@ export function createVincentPolicy<
   CommitDenyResult extends z.ZodType = z.ZodUndefined,
 >(
   PolicyConfig: VincentPolicyConfig<
-    PackageName,
     PolicyToolParams,
     UserParams,
     PrecheckAllowResult,
@@ -283,7 +281,6 @@ export function createVincentPolicy<
     : undefined;
 
   const vincentPolicy: VincentPolicy<
-    PackageName,
     PolicyToolParams,
     UserParams,
     PrecheckAllowResult,
@@ -365,7 +362,6 @@ export function createVincentToolPolicy<
   toolParamsSchema: ToolParamsSchema;
   bundledVincentPolicy: BundledVincentPolicy<
     VincentPolicy<
-      PackageName,
       PolicyToolParams,
       UserParams,
       PrecheckAllowResult,
@@ -384,19 +380,22 @@ export function createVincentToolPolicy<
       >,
       CommitLifecycleFunction<CommitParams, CommitAllowResult, CommitDenyResult>
     >,
-    IpfsCid
+    { ipfsCid: IpfsCid; packageName: PackageName }
   >;
   toolParameterMappings: Partial<{
     [K in keyof z.infer<ToolParamsSchema>]: keyof z.infer<PolicyToolParams>;
   }>;
 }) {
   const {
-    bundledVincentPolicy: { vincentPolicy, ipfsCid },
+    bundledVincentPolicy: {
+      vincentPolicy,
+      metadata: { ipfsCid, packageName },
+    },
   } = config;
 
   const result = {
     vincentPolicy: vincentPolicy,
-    ipfsCid,
+    metadata: { ipfsCid, packageName },
     toolParameterMappings: config.toolParameterMappings,
     // Explicitly include schema types in the returned object for type inference
     /** @hidden */
@@ -418,7 +417,7 @@ export function createVincentToolPolicy<
   // Use the same type assertion -- but include __schemaTypes to fix generic inference issues
   return result as {
     vincentPolicy: typeof vincentPolicy;
-    ipfsCid: typeof ipfsCid;
+    metadata: { ipfsCid: IpfsCid; packageName: PackageName };
     toolParameterMappings: typeof config.toolParameterMappings;
     /** @hidden */
     __schemaTypes: {

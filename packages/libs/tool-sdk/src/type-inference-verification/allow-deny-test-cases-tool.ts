@@ -32,7 +32,6 @@ const failSchema = z.object({
 
 // Create a test policy
 const baseTestPolicy = createVincentPolicy({
-  packageName: '@lit-protocol/test-policy@1.0.0',
   toolParamsSchema: z.object({
     actionType: z.string(),
   }),
@@ -45,7 +44,10 @@ const baseTestPolicy = createVincentPolicy({
 });
 const testPolicy = createVincentToolPolicy({
   toolParamsSchema: testSchema,
-  bundledVincentPolicy: asBundledVincentPolicy(baseTestPolicy, 'j298jhodf9024j4jfg' as const),
+  bundledVincentPolicy: asBundledVincentPolicy(baseTestPolicy, {
+    ipfsCid: 'j298jhodf9024j4jfg' as const,
+    packageName: '@lit-protocol/test-policy@1.0.0' as const,
+  }),
   toolParameterMappings: {
     action: 'actionType',
   },
