@@ -9,7 +9,7 @@ import {
   appVersionToolEdit,
   appVersionToolDoc,
 } from '../schemas/appVersion';
-import { DeleteResponse, ErrorResponse } from './baseRegistry';
+import { DeleteResponse, ErrorResponse, siweAuth } from './baseRegistry';
 import { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
 
 const appIdParam = z
@@ -41,7 +41,7 @@ export function addToRegistry(registry: OpenAPIRegistry) {
   registry.registerPath({
     method: 'get',
     path: '/apps',
-    tags: ['app'],
+    tags: ['App'],
     summary: 'Lists all applications',
     operationId: 'listApps',
     responses: {
@@ -68,9 +68,10 @@ export function addToRegistry(registry: OpenAPIRegistry) {
   registry.registerPath({
     method: 'post',
     path: '/app',
-    tags: ['app'],
+    tags: ['App', 'AppVersion'],
     summary: 'Creates a new application',
     operationId: 'createApp',
+    security: [{ [siweAuth.name]: [] }],
     request: {
       body: {
         content: {
@@ -112,7 +113,7 @@ export function addToRegistry(registry: OpenAPIRegistry) {
   registry.registerPath({
     method: 'get',
     path: '/app/{appId}',
-    tags: ['app'],
+    tags: ['App'],
     summary: 'Fetches an application',
     operationId: 'getApp',
     request: {
@@ -145,9 +146,10 @@ export function addToRegistry(registry: OpenAPIRegistry) {
   registry.registerPath({
     method: 'put',
     path: '/app/{appId}',
-    tags: ['app'],
+    tags: ['App'],
     summary: 'Edits an application',
     operationId: 'editApp',
+    security: [{ [siweAuth.name]: [] }],
     request: {
       params: z.object({
         appId: appIdParam,
@@ -192,9 +194,10 @@ export function addToRegistry(registry: OpenAPIRegistry) {
   registry.registerPath({
     method: 'delete',
     path: '/app/{appId}',
-    tags: ['app'],
+    tags: ['App', 'AppVersion', 'AppVersionTool'],
     summary: 'Deletes an application',
     operationId: 'deleteApp',
+    security: [{ [siweAuth.name]: [] }],
     request: {
       params: z.object({
         appId: appIdParam,
@@ -226,11 +229,50 @@ export function addToRegistry(registry: OpenAPIRegistry) {
     },
   });
 
+  // POST /app/{appId}/undelete - Undelete an application
+  registry.registerPath({
+    method: 'post',
+    path: '/app/{appId}/undelete',
+    tags: ['App', 'AppVersion', 'AppVersionTool'],
+    summary: 'Undeletes an application',
+    operationId: 'undeleteApp',
+    security: [{ [siweAuth.name]: [] }],
+    request: {
+      params: z.object({
+        appId: appIdParam,
+      }),
+    },
+    responses: {
+      200: {
+        description: 'OK - Resource successfully undeleted',
+        content: {
+          'application/json': {
+            schema: DeleteResponse,
+          },
+        },
+      },
+      400: {
+        description: 'Invalid input',
+      },
+      422: {
+        description: 'Validation exception',
+      },
+      default: {
+        description: 'Unexpected error',
+        content: {
+          'application/json': {
+            schema: ErrorResponse,
+          },
+        },
+      },
+    },
+  });
+
   // GET /app/{appId}/versions - Fetch all versions of an application
   registry.registerPath({
     method: 'get',
     path: '/app/{appId}/versions',
-    tags: ['app'],
+    tags: ['AppVersion'],
     summary: 'Fetches all versions of an application',
     operationId: 'getAppVersions',
     request: {
@@ -265,9 +307,10 @@ export function addToRegistry(registry: OpenAPIRegistry) {
   registry.registerPath({
     method: 'post',
     path: '/app/{appId}/version',
-    tags: ['app/version'],
+    tags: ['AppVersion'],
     summary: 'Creates an application version',
     operationId: 'createAppVersion',
+    security: [{ [siweAuth.name]: [] }],
     request: {
       params: z.object({
         appId: appIdParam,
@@ -312,7 +355,7 @@ export function addToRegistry(registry: OpenAPIRegistry) {
   registry.registerPath({
     method: 'get',
     path: '/app/{appId}/version/{version}',
-    tags: ['app/version'],
+    tags: ['AppVersion'],
     summary: 'Fetches an application version',
     operationId: 'getAppVersion',
     request: {
@@ -348,9 +391,10 @@ export function addToRegistry(registry: OpenAPIRegistry) {
   registry.registerPath({
     method: 'put',
     path: '/app/{appId}/version/{version}',
-    tags: ['app/version'],
+    tags: ['AppVersion'],
     summary: 'Edits an application version',
     operationId: 'editAppVersion',
+    security: [{ [siweAuth.name]: [] }],
     request: {
       params: z.object({
         appId: appIdParam,
@@ -396,9 +440,10 @@ export function addToRegistry(registry: OpenAPIRegistry) {
   registry.registerPath({
     method: 'post',
     path: '/app/{appId}/version/{version}/enable',
-    tags: ['app/version'],
+    tags: ['AppVersion'],
     summary: 'Enables an application version',
     operationId: 'enableAppVersion',
+    security: [{ [siweAuth.name]: [] }],
     request: {
       params: z.object({
         appId: appIdParam,
@@ -435,9 +480,10 @@ export function addToRegistry(registry: OpenAPIRegistry) {
   registry.registerPath({
     method: 'post',
     path: '/app/{appId}/version/{version}/disable',
-    tags: ['app/version'],
+    tags: ['AppVersion'],
     summary: 'Disables an application version',
     operationId: 'disableAppVersion',
+    security: [{ [siweAuth.name]: [] }],
     request: {
       params: z.object({
         appId: appIdParam,
@@ -474,7 +520,7 @@ export function addToRegistry(registry: OpenAPIRegistry) {
   registry.registerPath({
     method: 'get',
     path: '/app/{appId}/version/{version}/tools',
-    tags: ['app/version/tool'],
+    tags: ['AppVersionTool'],
     summary: 'Lists all tools for an application version',
     operationId: 'listAppVersionTools',
     request: {
@@ -510,9 +556,10 @@ export function addToRegistry(registry: OpenAPIRegistry) {
   registry.registerPath({
     method: 'post',
     path: '/app/{appId}/version/{appVersion}/tool/{toolPackageName}',
-    tags: ['app/version/tool'],
+    tags: ['AppVersionTool'],
     summary: 'Creates a tool for an application version',
     operationId: 'createAppVersionTool',
+    security: [{ [siweAuth.name]: [] }],
     request: {
       params: z.object({
         appId: appIdParam,
@@ -559,9 +606,10 @@ export function addToRegistry(registry: OpenAPIRegistry) {
   registry.registerPath({
     method: 'put',
     path: '/app/{appId}/version/{appVersion}/tool/{toolPackageName}',
-    tags: ['app/version/tool'],
+    tags: ['AppVersionTool'],
     summary: 'Edits a tool for an application version',
     operationId: 'editAppVersionTool',
+    security: [{ [siweAuth.name]: [] }],
     request: {
       params: z.object({
         appId: appIdParam,
@@ -584,6 +632,180 @@ export function addToRegistry(registry: OpenAPIRegistry) {
         content: {
           'application/json': {
             schema: AppVersionToolRead,
+          },
+        },
+      },
+      400: {
+        description: 'Invalid input',
+      },
+      404: {
+        description: 'Application, version, or tool not found',
+      },
+      422: {
+        description: 'Validation exception',
+      },
+      default: {
+        description: 'Unexpected error',
+        content: {
+          'application/json': {
+            schema: ErrorResponse,
+          },
+        },
+      },
+    },
+  });
+
+  // DELETE /app/{appId}/version/{version} - Delete an application version and its AppVersionTools
+  registry.registerPath({
+    method: 'delete',
+    path: '/app/{appId}/version/{version}',
+    tags: ['AppVersion'],
+    summary: 'Deletes an application version',
+    operationId: 'deleteAppVersion',
+    security: [{ [siweAuth.name]: [] }],
+    request: {
+      params: z.object({
+        appId: appIdParam,
+        version: appVersionParam,
+      }),
+    },
+    responses: {
+      200: {
+        description: 'OK - Resource successfully deleted',
+        content: {
+          'application/json': {
+            schema: DeleteResponse,
+          },
+        },
+      },
+      400: {
+        description: 'Invalid input',
+      },
+      404: {
+        description: 'Application or version not found',
+      },
+      422: {
+        description: 'Validation exception',
+      },
+      default: {
+        description: 'Unexpected error',
+        content: {
+          'application/json': {
+            schema: ErrorResponse,
+          },
+        },
+      },
+    },
+  });
+
+  // POST /app/{appId}/version/{version}/undelete - Undelete an application version and its AppVersionTools
+  registry.registerPath({
+    method: 'post',
+    path: '/app/{appId}/version/{version}/undelete',
+    tags: ['AppVersion'],
+    summary: 'Undeletes an application version',
+    operationId: 'undeleteAppVersion',
+    security: [{ [siweAuth.name]: [] }],
+    request: {
+      params: z.object({
+        appId: appIdParam,
+        version: appVersionParam,
+      }),
+    },
+    responses: {
+      200: {
+        description: 'OK - Resource successfully undeleted',
+        content: {
+          'application/json': {
+            schema: DeleteResponse,
+          },
+        },
+      },
+      400: {
+        description: 'Invalid input',
+      },
+      404: {
+        description: 'Application or version not found',
+      },
+      422: {
+        description: 'Validation exception',
+      },
+      default: {
+        description: 'Unexpected error',
+        content: {
+          'application/json': {
+            schema: ErrorResponse,
+          },
+        },
+      },
+    },
+  });
+
+  // DELETE /app/{appId}/version/{appVersion}/tool/{toolPackageName} - Delete a tool for an application version
+  registry.registerPath({
+    method: 'delete',
+    path: '/app/{appId}/version/{appVersion}/tool/{toolPackageName}',
+    tags: ['AppVersionTool'],
+    summary: 'Deletes a tool for an application version',
+    operationId: 'deleteAppVersionTool',
+    security: [{ [siweAuth.name]: [] }],
+    request: {
+      params: z.object({
+        appId: appIdParam,
+        appVersion: appVersionParam,
+        toolPackageName: packageNameParam,
+      }),
+    },
+    responses: {
+      200: {
+        description: 'OK - Resource successfully deleted',
+        content: {
+          'application/json': {
+            schema: DeleteResponse,
+          },
+        },
+      },
+      400: {
+        description: 'Invalid input',
+      },
+      404: {
+        description: 'Application, version, or tool not found',
+      },
+      422: {
+        description: 'Validation exception',
+      },
+      default: {
+        description: 'Unexpected error',
+        content: {
+          'application/json': {
+            schema: ErrorResponse,
+          },
+        },
+      },
+    },
+  });
+
+  // POST /app/{appId}/version/{appVersion}/tool/{toolPackageName}/undelete - Undelete a tool for an application version
+  registry.registerPath({
+    method: 'post',
+    path: '/app/{appId}/version/{appVersion}/tool/{toolPackageName}/undelete',
+    tags: ['AppVersionTool'],
+    summary: 'Undeletes a tool for an application version',
+    operationId: 'undeleteAppVersionTool',
+    security: [{ [siweAuth.name]: [] }],
+    request: {
+      params: z.object({
+        appId: appIdParam,
+        appVersion: appVersionParam,
+        toolPackageName: packageNameParam,
+      }),
+    },
+    responses: {
+      200: {
+        description: 'OK - Resource successfully undeleted',
+        content: {
+          'application/json': {
+            schema: DeleteResponse,
           },
         },
       },

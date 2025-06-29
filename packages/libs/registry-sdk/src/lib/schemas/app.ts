@@ -72,23 +72,15 @@ const app = z
     managerAddress: z.string().openapi({
       description: `App manager's wallet address. Derived from the authorization signature provided by the creator.`,
       example: EXAMPLE_WALLET_ADDRESS,
-      // readOnly: true, // FIXME: Add this when we've implemented authentication
+      readOnly: true,
     }),
   })
   .strict();
 
 // Avoiding using z.omit() or z.pick() due to excessive TS type inference costs
 function buildCreateAppSchema() {
-  const {
-    name,
-    deploymentStatus,
-    description,
-    contactEmail,
-    appUserUrl,
-    logo,
-    redirectUris,
-    managerAddress,
-  } = app.shape;
+  const { name, deploymentStatus, description, contactEmail, appUserUrl, logo, redirectUris } =
+    app.shape;
 
   return z
     .object({
@@ -100,7 +92,6 @@ function buildCreateAppSchema() {
           appUserUrl,
           logo,
           redirectUris,
-          managerAddress, // FIXME: Remove when we have authentication implemented
         })
         .partial()
         .strict().shape,
@@ -113,7 +104,6 @@ function buildCreateAppSchema() {
 
 /**
  * New apps must have a name and description; everything else can be defined later
- * - managerAddress is derived from the authorization signature provided by the creator
  */
 export const appCreate = buildCreateAppSchema();
 

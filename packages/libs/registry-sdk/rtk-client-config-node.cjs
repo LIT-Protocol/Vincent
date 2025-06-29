@@ -8,6 +8,7 @@ const config = {
   outputFile: './src/generated/vincentApiClientNode.ts',
   exportName: 'vincentApiClientNode',
   encodePathParams: true,
+  tag: true,
 };
 
 module.exports = config;

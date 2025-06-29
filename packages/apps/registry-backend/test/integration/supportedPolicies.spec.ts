@@ -1,11 +1,13 @@
 import { api, store } from './setup';
 import { expectAssertArray, expectAssertObject } from '../assertions';
-import { logIfVerbose } from '../log';
+import { createTestDebugger } from '../debug';
 
-const VERBOSE_LOGGING = true;
+// Create a debug instance for this file
+const debug = createTestDebugger('supportedPolicies');
 
+// For backwards compatibility
 const verboseLog = (value: any) => {
-  logIfVerbose(value, VERBOSE_LOGGING);
+  debug(value);
 };
 
 describe('Supported Policies Integration Tests', () => {
@@ -22,7 +24,6 @@ describe('Supported Policies Integration Tests', () => {
     title: 'Spending Limit Policy',
     description: 'A policy that enforces spending limits',
     activeVersion: '1.0.0',
-    authorWalletAddress: '0x1234567890abcdef1234567890abcdef12345678',
   };
 
   // Test data for creating a tool
@@ -30,7 +31,6 @@ describe('Supported Policies Integration Tests', () => {
     title: 'Uniswap Swap Tool',
     description: 'A tool for swapping tokens on Uniswap',
     activeVersion: '1.0.0',
-    authorWalletAddress: '0x1234567890abcdef1234567890abcdef12345678',
   };
 
   // Test data for creating a tool version
@@ -124,7 +124,6 @@ describe('Supported Policies Integration Tests', () => {
       // Verify supportedPolicies contains the policy
       expect(toolVersionData).toHaveProperty('supportedPolicies');
       expect(toolVersionData.supportedPolicies).toHaveProperty(policyPackageName);
-      // @ts-expect-error It's a test.
       expect(toolVersionData.supportedPolicies[policyPackageName]).toBe('1.0.0');
 
       // Verify policiesNotInRegistry is empty
@@ -211,7 +210,6 @@ describe('Supported Policies Integration Tests', () => {
       // Verify supportedPolicies contains the policy
       expect(toolVersionResultData).toHaveProperty('supportedPolicies');
       expect(toolVersionResultData.supportedPolicies).toHaveProperty(policyPackageName);
-      // @ts-expect-error It's a test.
       expect(toolVersionResultData.supportedPolicies[policyPackageName]).toBe('1.0.1');
 
       // Verify policiesNotInRegistry is empty

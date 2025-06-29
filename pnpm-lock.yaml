@@ -419,6 +419,9 @@ importers:
       cors:
         specifier: ^2.8.5
         version: 2.8.5
+      debug:
+        specifier: ^4.4.1
+        version: 4.4.1
       express:
         specifier: ^5.1.0
         version: 5.1.0
@@ -440,6 +443,9 @@ importers:
       semver:
         specifier: ^7.7.2
         version: 7.7.2
+      siwe:
+        specifier: ^3.0.0
+        version: 3.0.0(ethers@5.8.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))
       tar:
         specifier: ^7.4.3
         version: 7.4.3
@@ -459,6 +465,9 @@ importers:
       '@types/cors':
         specifier: ^2.8.17
         version: 2.8.19
+      '@types/debug':
+        specifier: ^4.1.12
+        version: 4.1.12
       '@types/express':
         specifier: ^5.0.2
         version: 5.0.3
@@ -477,12 +486,15 @@ importers:
       bun:
         specifier: ^1.2.5
         version: 1.2.16
+      ethers:
+        specifier: 5.8.0
+        version: 5.8.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       jest:
         specifier: ^29.5.0
         version: 29.7.0(@types/node@20.19.1)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.5.29(@swc/helpers@0.5.17))(@types/node@20.19.1)(typescript@5.8.3))
       jest-process-manager:
         specifier: ^0.2.9
-        version: 0.2.9
+        version: 0.2.9(debug@4.4.1)
       mongodb-memory-server:
         specifier: ^10.1.4
         version: 10.1.4
@@ -4730,6 +4742,7 @@ packages:
 
   bun@1.2.16:
     resolution: {integrity: sha512-sjZH6rr1P6yu44+XPA8r+ZojwmK9Kbz9lO6KAA/4HRIupdpC31k7b93crLBm19wEYmd6f2+3+57/7tbOcmHbGg==}
+    cpu: [arm64, x64, aarch64]
     os: [darwin, linux, win32]
     hasBin: true
 
@@ -11599,7 +11612,7 @@ snapshots:
   '@ethersproject/abstract-provider@5.7.0':
     dependencies:
       '@ethersproject/bignumber': 5.8.0
-      '@ethersproject/bytes': 5.7.0
+      '@ethersproject/bytes': 5.8.0
       '@ethersproject/logger': 5.8.0
       '@ethersproject/networks': 5.8.0
       '@ethersproject/properties': 5.8.0
@@ -11618,11 +11631,11 @@ snapshots:
 
   '@ethersproject/abstract-signer@5.7.0':
     dependencies:
-      '@ethersproject/abstract-provider': 5.7.0
+      '@ethersproject/abstract-provider': 5.8.0
       '@ethersproject/bignumber': 5.8.0
-      '@ethersproject/bytes': 5.7.0
-      '@ethersproject/logger': 5.7.0
-      '@ethersproject/properties': 5.7.0
+      '@ethersproject/bytes': 5.8.0
+      '@ethersproject/logger': 5.8.0
+      '@ethersproject/properties': 5.8.0
 
   '@ethersproject/abstract-signer@5.8.0':
     dependencies:
@@ -11635,9 +11648,9 @@ snapshots:
   '@ethersproject/address@5.7.0':
     dependencies:
       '@ethersproject/bignumber': 5.8.0
-      '@ethersproject/bytes': 5.7.0
-      '@ethersproject/keccak256': 5.7.0
-      '@ethersproject/logger': 5.7.0
+      '@ethersproject/bytes': 5.8.0
+      '@ethersproject/keccak256': 5.8.0
+      '@ethersproject/logger': 5.8.0
       '@ethersproject/rlp': 5.8.0
 
   '@ethersproject/address@5.8.0':
@@ -11678,11 +11691,11 @@ snapshots:
   '@ethersproject/contracts@5.7.0':
     dependencies:
       '@ethersproject/abi': 5.8.0
-      '@ethersproject/abstract-provider': 5.7.0
+      '@ethersproject/abstract-provider': 5.8.0
       '@ethersproject/abstract-signer': 5.8.0
       '@ethersproject/address': 5.8.0
       '@ethersproject/bignumber': 5.8.0
-      '@ethersproject/bytes': 5.7.0
+      '@ethersproject/bytes': 5.8.0
       '@ethersproject/constants': 5.8.0
       '@ethersproject/logger': 5.8.0
       '@ethersproject/properties': 5.8.0
@@ -11703,15 +11716,15 @@ snapshots:
 
   '@ethersproject/hash@5.7.0':
     dependencies:
-      '@ethersproject/abstract-signer': 5.7.0
-      '@ethersproject/address': 5.7.0
+      '@ethersproject/abstract-signer': 5.8.0
+      '@ethersproject/address': 5.8.0
       '@ethersproject/base64': 5.8.0
       '@ethersproject/bignumber': 5.8.0
-      '@ethersproject/bytes': 5.7.0
-      '@ethersproject/keccak256': 5.7.0
-      '@ethersproject/logger': 5.7.0
-      '@ethersproject/properties': 5.7.0
-      '@ethersproject/strings': 5.7.0
+      '@ethersproject/bytes': 5.8.0
+      '@ethersproject/keccak256': 5.8.0
+      '@ethersproject/logger': 5.8.0
+      '@ethersproject/properties': 5.8.0
+      '@ethersproject/strings': 5.8.0
 
   '@ethersproject/hash@5.8.0':
     dependencies:
@@ -11727,18 +11740,18 @@ snapshots:
 
   '@ethersproject/hdnode@5.7.0':
     dependencies:
-      '@ethersproject/abstract-signer': 5.7.0
+      '@ethersproject/abstract-signer': 5.8.0
       '@ethersproject/basex': 5.8.0
       '@ethersproject/bignumber': 5.8.0
-      '@ethersproject/bytes': 5.7.0
-      '@ethersproject/logger': 5.7.0
+      '@ethersproject/bytes': 5.8.0
+      '@ethersproject/logger': 5.8.0
       '@ethersproject/pbkdf2': 5.8.0
-      '@ethersproject/properties': 5.7.0
+      '@ethersproject/properties': 5.8.0
       '@ethersproject/sha2': 5.8.0
       '@ethersproject/signing-key': 5.8.0
-      '@ethersproject/strings': 5.7.0
-      '@ethersproject/transactions': 5.7.0
-      '@ethersproject/wordlists': 5.7.0
+      '@ethersproject/strings': 5.8.0
+      '@ethersproject/transactions': 5.8.0
+      '@ethersproject/wordlists': 5.8.0
 
   '@ethersproject/hdnode@5.8.0':
     dependencies:
@@ -11757,17 +11770,17 @@ snapshots:
 
   '@ethersproject/json-wallets@5.7.0':
     dependencies:
-      '@ethersproject/abstract-signer': 5.7.0
-      '@ethersproject/address': 5.7.0
-      '@ethersproject/bytes': 5.7.0
-      '@ethersproject/hdnode': 5.7.0
-      '@ethersproject/keccak256': 5.7.0
-      '@ethersproject/logger': 5.7.0
+      '@ethersproject/abstract-signer': 5.8.0
+      '@ethersproject/address': 5.8.0
+      '@ethersproject/bytes': 5.8.0
+      '@ethersproject/hdnode': 5.8.0
+      '@ethersproject/keccak256': 5.8.0
+      '@ethersproject/logger': 5.8.0
       '@ethersproject/pbkdf2': 5.8.0
-      '@ethersproject/properties': 5.7.0
-      '@ethersproject/random': 5.7.0
-      '@ethersproject/strings': 5.7.0
-      '@ethersproject/transactions': 5.7.0
+      '@ethersproject/properties': 5.8.0
+      '@ethersproject/random': 5.8.0
+      '@ethersproject/strings': 5.8.0
+      '@ethersproject/transactions': 5.8.0
       aes-js: 3.0.0
       scrypt-js: 3.0.1
 
@@ -11789,7 +11802,7 @@ snapshots:
 
   '@ethersproject/keccak256@5.7.0':
     dependencies:
-      '@ethersproject/bytes': 5.7.0
+      '@ethersproject/bytes': 5.8.0
       js-sha3: 0.8.0
 
   '@ethersproject/keccak256@5.8.0':
@@ -11812,7 +11825,7 @@ snapshots:
 
   '@ethersproject/properties@5.7.0':
     dependencies:
-      '@ethersproject/logger': 5.7.0
+      '@ethersproject/logger': 5.8.0
 
   '@ethersproject/properties@5.8.0':
     dependencies:
@@ -11820,13 +11833,13 @@ snapshots:
 
   '@ethersproject/providers@5.7.2(bufferutil@4.0.9)(utf-8-validate@5.0.10)':
     dependencies:
-      '@ethersproject/abstract-provider': 5.7.0
+      '@ethersproject/abstract-provider': 5.8.0
       '@ethersproject/abstract-signer': 5.8.0
       '@ethersproject/address': 5.8.0
       '@ethersproject/base64': 5.8.0
       '@ethersproject/basex': 5.8.0
       '@ethersproject/bignumber': 5.8.0
-      '@ethersproject/bytes': 5.7.0
+      '@ethersproject/bytes': 5.8.0
       '@ethersproject/constants': 5.8.0
       '@ethersproject/hash': 5.8.0
       '@ethersproject/logger': 5.8.0
@@ -11835,7 +11848,7 @@ snapshots:
       '@ethersproject/random': 5.8.0
       '@ethersproject/rlp': 5.8.0
       '@ethersproject/sha2': 5.8.0
-      '@ethersproject/strings': 5.7.0
+      '@ethersproject/strings': 5.8.0
       '@ethersproject/transactions': 5.8.0
       '@ethersproject/web': 5.8.0
       bech32: 1.1.4
@@ -11872,8 +11885,8 @@ snapshots:
 
   '@ethersproject/random@5.7.0':
     dependencies:
-      '@ethersproject/bytes': 5.7.0
-      '@ethersproject/logger': 5.7.0
+      '@ethersproject/bytes': 5.8.0
+      '@ethersproject/logger': 5.8.0
 
   '@ethersproject/random@5.8.0':
     dependencies:
@@ -11911,7 +11924,7 @@ snapshots:
 
   '@ethersproject/strings@5.7.0':
     dependencies:
-      '@ethersproject/bytes': 5.7.0
+      '@ethersproject/bytes': 5.8.0
       '@ethersproject/constants': 5.8.0
       '@ethersproject/logger': 5.8.0
 
@@ -11925,7 +11938,7 @@ snapshots:
     dependencies:
       '@ethersproject/address': 5.8.0
       '@ethersproject/bignumber': 5.8.0
-      '@ethersproject/bytes': 5.7.0
+      '@ethersproject/bytes': 5.8.0
       '@ethersproject/constants': 5.8.0
       '@ethersproject/keccak256': 5.8.0
       '@ethersproject/logger': 5.8.0
@@ -11953,11 +11966,11 @@ snapshots:
 
   '@ethersproject/wallet@5.7.0':
     dependencies:
-      '@ethersproject/abstract-provider': 5.7.0
+      '@ethersproject/abstract-provider': 5.8.0
       '@ethersproject/abstract-signer': 5.8.0
       '@ethersproject/address': 5.8.0
       '@ethersproject/bignumber': 5.8.0
-      '@ethersproject/bytes': 5.7.0
+      '@ethersproject/bytes': 5.8.0
       '@ethersproject/hash': 5.8.0
       '@ethersproject/hdnode': 5.8.0
       '@ethersproject/json-wallets': 5.8.0
@@ -11997,11 +12010,11 @@ snapshots:
 
   '@ethersproject/wordlists@5.7.0':
     dependencies:
-      '@ethersproject/bytes': 5.7.0
-      '@ethersproject/hash': 5.7.0
-      '@ethersproject/logger': 5.7.0
-      '@ethersproject/properties': 5.7.0
-      '@ethersproject/strings': 5.7.0
+      '@ethersproject/bytes': 5.8.0
+      '@ethersproject/hash': 5.8.0
+      '@ethersproject/logger': 5.8.0
+      '@ethersproject/properties': 5.8.0
+      '@ethersproject/strings': 5.8.0
 
   '@ethersproject/wordlists@5.8.0':
     dependencies:
@@ -16503,7 +16516,7 @@ snapshots:
 
   axe-core@4.10.3: {}
 
-  axios@0.21.4:
+  axios@0.21.4(debug@4.4.1):
     dependencies:
       follow-redirects: 1.15.9(debug@4.4.1)
     transitivePeerDependencies:
@@ -19532,7 +19545,7 @@ snapshots:
     optionalDependencies:
       jest-resolve: 29.7.0
 
-  jest-process-manager@0.2.9:
+  jest-process-manager@0.2.9(debug@4.4.1):
     dependencies:
       '@types/wait-on': 5.3.4
       chalk: 4.1.2
@@ -19543,7 +19556,7 @@ snapshots:
       signal-exit: 3.0.7
       spawnd: 4.4.0
       tree-kill: 1.2.2
-      wait-on: 5.3.0
+      wait-on: 5.3.0(debug@4.4.1)
     transitivePeerDependencies:
       - debug
       - supports-color
@@ -23122,9 +23135,9 @@ snapshots:
       - utf-8-validate
       - zod
 
-  wait-on@5.3.0:
+  wait-on@5.3.0(debug@4.4.1):
     dependencies:
-      axios: 0.21.4
+      axios: 0.21.4(debug@4.4.1)
       joi: 17.13.3
       lodash: 4.17.21
       minimist: 1.2.8

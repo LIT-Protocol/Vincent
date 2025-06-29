@@ -19,6 +19,11 @@ const openApiDocument = generator.generateDocument({
     version: '1.0.3',
     description: 'API for Vincent App, Tool, and Policy Registry',
   },
+  servers: [
+    { url: 'https://staging.registry.heyvincent.ai' },
+    { url: 'https://registry.heyvincent.ai' },
+    { url: 'http://localhost:3000/' },
+  ],
 });
 
 const outputDir = path.resolve(__dirname, '../generated');

@@ -2,12 +2,12 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "./out-tsc/jest",
-    "types": ["jest", "node"],
-    "esModuleInterop": true
+    "types": ["jest", "node"]
   },
   "include": [
     "test/**/*.ts",
-    "src/**/*.ts",
+    "**/packageImporter.ts",
+    "debug.ts",
     "src/**/*.test.ts",
     "src/**/*.spec.ts",
     "src/**/*.d.ts",

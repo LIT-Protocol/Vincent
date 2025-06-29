@@ -12,6 +12,11 @@ const policySchema = new Schema(
     authorWalletAddress: { type: String, required: true },
     description: { type: String, required: true },
     activeVersion: { type: String, required: true },
+    deploymentStatus: {
+      type: String,
+      enum: ['dev', 'test', 'prod'],
+      default: 'dev',
+    },
     isDeleted: { type: Boolean, default: false, index: true },
   } as const,
   { timestamps: true },

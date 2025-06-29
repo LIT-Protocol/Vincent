@@ -3,9 +3,310 @@
   <head>
     <meta charset="utf-8" />
     <script type="module" src="https://unpkg.com/rapidoc/dist/rapidoc-min.js"></script>
+    <script type="text/javascript" src="https://unpkg.com/ethers@5.8.0/dist/ethers.umd.js">
+    </script>
+    <style>
+      .metamask-button {
+        background-color: #f6851b;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 4px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        font-weight: bold;
+      }
+      .metamask-button img {
+        margin-right: 8px;
+        height: 20px;
+      }
+      .metamask-container {
+        padding: 16px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        margin-bottom: 16px;
+      }
+      .metamask-status {
+        margin-top: 8px;
+        font-size: 14px;
+      }
+      .connected {
+        color: green;
+      }
+      .error {
+        color: red;
+      }
+    </style>
   </head>
 
   <body>
-  <rapi-doc spec-url="../src/generated/openapi.json" theme="light"> </rapi-doc>
+    <rapi-doc 
+      spec-url="../src/generated/openapi.json" 
+      theme="light"
+      render-style="read"
+      show-header="false"
+      allow-authentication="true"
+      allow-server-selection="true"
+    >
+      <div slot="auth" class="metamask-container">
+        <h3>SIWE Authentication with Metamask</h3>
+        <div>
+          <button id="connectMetamask" class="metamask-button">
+            <img src="https://images.ctfassets.net/clixtyxoaeas/4rnpEzy1ATWRKVBOLxZ1Fm/a74dc1eed36d23d7ea6030383a4d5163/MetaMask-icon-fox.svg" alt="Metamask logo" />
+            Connect with Metamask
+          </button>
+          <div id="metamaskStatus" class="metamask-status"></div>
+        </div>
+        <div id="authDetails" style="margin-top: 16px; display: none;">
+          <p>Connected Address: <span id="connectedAddress"></span></p>
+          <div style="margin-bottom: 16px;">
+            <label for="domainInput" style="display: block; margin-bottom: 8px; font-weight: bold;">Domain:</label>
+            <input 
+              id="domainInput" 
+              type="text" 
+              placeholder="Enter domain (e.g., app.example.com)" 
+              style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;"
+            >
+            <small style="display: block; margin-top: 4px; color: #666;">Domain used in the SIWE message. Defaults to current host if empty.</small>
+          </div>
+          <button id="generateSiwe" class="metamask-button" style="background-color: #0366d6;">
+            Generate SIWE Authentication
+          </button>
+          <div id="siweStatus" class="metamask-status"></div>
+        </div>
+      </div>
+
+      <script>
+        // Implementation of SIWE functionality
+        // Generate a secure random nonce
+        function generateNonce() {
+          const array = new Uint8Array(16);
+          window.crypto.getRandomValues(array);
+          return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
+        }
+
+        // Simple SiweMessage class implementation
+        class SiweMessage {
+          constructor(params) {
+            this.domain = params.domain;
+            this.address = params.address;
+            this.statement = params.statement;
+            this.uri = params.uri;
+            this.version = params.version;
+            this.chainId = params.chainId;
+            this.nonce = params.nonce;
+            this.issuedAt = params.issuedAt;
+            this.expirationTime = params.expirationTime;
+            this.notBefore = params.notBefore;
+            this.requestId = params.requestId;
+            this.resources = params.resources;
+          }
+
+          prepareMessage() {
+            const header = `${this.domain} wants you to sign in with your Ethereum account:`;
+            const uriField = `URI: ${this.uri}`;
+            // Format the address using ethers.utils.getAddress to ensure proper checksum format (EIP-55)
+            const formattedAddress = window.ethers.utils.getAddress(this.address);
+            let prefix = [header, formattedAddress].join('\n');
+            const versionField = `Version: ${this.version}`;
+            const chainField = `Chain ID: ${this.chainId || '1'}`;
+            const nonceField = `Nonce: ${this.nonce}`;
+
+            const suffixArray = [uriField, versionField, chainField, nonceField];
+
+            if (this.issuedAt) {
+              suffixArray.push(`Issued At: ${this.issuedAt}`);
+            }
+
+            if (this.expirationTime) {
+              suffixArray.push(`Expiration Time: ${this.expirationTime}`);
+            }
+
+            if (this.notBefore) {
+              suffixArray.push(`Not Before: ${this.notBefore}`);
+            }
+
+            if (this.requestId) {
+              suffixArray.push(`Request ID: ${this.requestId}`);
+            }
+
+            if (this.resources) {
+              suffixArray.push(
+                [`Resources:`, ...this.resources.map(x => `- ${x}`)].join('\n')
+              );
+            }
+
+            const suffix = suffixArray.join('\n');
+            prefix = [prefix, this.statement].join('\n\n');
+            if (this.statement !== undefined) {
+              prefix += '\n';
+            }
+            return [prefix, suffix].join('\n');
+          }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+          const connectBtn = document.getElementById('connectMetamask');
+          const statusEl = document.getElementById('metamaskStatus');
+          const authDetailsEl = document.getElementById('authDetails');
+          const addressEl = document.getElementById('connectedAddress');
+          const generateSiweBtn = document.getElementById('generateSiwe');
+          const siweStatusEl = document.getElementById('siweStatus');
+          const domainInput = document.getElementById('domainInput');
+          const rapidoc = document.querySelector('rapi-doc');
+
+          let currentAccount = null;
+
+          // Function to update domain input from server URL
+          function updateDomainFromServer(serverUrl) {
+            try {
+              domainInput.value = serverUrl;
+            } catch (error) {
+              console.error('Error parsing server URL:', error);
+            }
+          }
+
+          // Initialize domain input with current server URL
+          if (rapidoc.serverUrl) {
+            updateDomainFromServer(rapidoc.serverUrl);
+          }
+
+          // Listen for server selection changes
+          rapidoc.addEventListener('api-server-change', function(e) {
+            console.log('EVENT api-server-change', e);
+            if (e.detail && e.detail.selectedServer && e.detail.selectedServer.url) {
+              updateDomainFromServer(e.detail.selectedServer.url);
+            }
+          });
+
+          // Check if Metamask is installed
+          if (typeof window.ethereum === 'undefined') {
+            statusEl.textContent = 'Metamask not detected. Please install Metamask extension.';
+            statusEl.classList.add('error');
+            connectBtn.disabled = true;
+            return;
+          }
+
+          // Connect to Metamask
+          connectBtn.addEventListener('click', async function() {
+            try {
+              statusEl.textContent = 'Connecting to Metamask...';
+
+              // Request account access
+              const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+              currentAccount = accounts[0];
+
+              // Update UI
+              statusEl.textContent = 'Connected to Metamask';
+              statusEl.classList.add('connected');
+              addressEl.textContent = currentAccount;
+
+              // Only set domain input if it's empty
+              if (!domainInput.value) {
+                domainInput.value = window.location.host;
+              }
+
+              // Show auth details
+              authDetailsEl.style.display = 'block';
+
+              // Listen for account changes
+              window.ethereum.on('accountsChanged', function (accounts) {
+                if (accounts.length === 0) {
+                  // User disconnected
+                  currentAccount = null;
+                  statusEl.textContent = 'Disconnected from Metamask';
+                  statusEl.classList.remove('connected');
+                  authDetailsEl.style.display = 'none';
+                } else {
+                  // Account changed
+                  currentAccount = accounts[0];
+                  addressEl.textContent = currentAccount;
+                  statusEl.textContent = 'Connected to Metamask';
+                  statusEl.classList.add('connected');
+                }
+              });
+
+            } catch (error) {
+              console.error(error);
+              statusEl.textContent = 'Error connecting to Metamask: ' + error.message;
+              statusEl.classList.add('error');
+            }
+          });
+
+          // Generate SIWE message and signature
+          generateSiweBtn.addEventListener('click', async function() {
+            if (!currentAccount) {
+              siweStatusEl.textContent = 'Please connect to Metamask first';
+              siweStatusEl.classList.add('error');
+              return;
+            }
+
+            try {
+              siweStatusEl.textContent = 'Generating SIWE message...';
+
+              // Create a SIWE message using the SiweMessage class
+              // Get domain from input field or use current host as fallback
+              const domainInput = document.getElementById('domainInput');
+              const domain = new URL(domainInput.value.trim()).hostname || window.location.host;
+              const statement = 'Sign in with Ethereum to authenticate with Vincent Registry API';
+
+              // Generate a secure nonce
+              const nonce = generateNonce();
+
+              // Create a SiweMessage object
+              const siweMessage = new SiweMessage({
+                domain,
+                address: currentAccount,
+                statement,
+                uri: domainInput.value.trim() || window.location.host,
+                version: '1',
+                chainId: 1,
+                nonce,
+                issuedAt: new Date().toISOString()
+              });
+
+              console.log({
+                domain,
+                address: currentAccount,
+                statement,
+                uri: domainInput.value.trim() || window.location.host,
+                version: '1',
+                chainId: 1,
+                nonce,
+                issuedAt: new Date().toISOString()
+              });
+
+              // Prepare the message for signing
+              const message = siweMessage.prepareMessage();
+
+              // Request signature from user
+              siweStatusEl.textContent = 'Please sign the message in Metamask...';
+              const signature = await window.ethereum.request({
+                method: 'personal_sign',
+                params: [message, currentAccount]
+              });
+
+              // Format the Authorization header value - Base64 encode the payload
+              const payload = JSON.stringify({message, signature});
+              const base64Payload = btoa(payload);
+              const authHeader = `SIWE ${base64Payload}`;
+
+              // Set the API key in RapiDoc
+              const rapidoc = document.querySelector('rapi-doc');
+              rapidoc.setApiKey('siweAuth', authHeader);
+
+              siweStatusEl.textContent = 'SIWE authentication generated and applied!';
+              siweStatusEl.classList.add('connected');
+
+            } catch (error) {
+              console.error(error);
+              siweStatusEl.textContent = 'Error generating SIWE: ' + error.message;
+              siweStatusEl.classList.add('error');
+            }
+          });
+        });
+      </script>
+    </rapi-doc>
   </body>
 </html>

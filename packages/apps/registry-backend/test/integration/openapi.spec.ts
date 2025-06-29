@@ -20,7 +20,7 @@ describe('OpenAPI Integration Tests', () => {
 
       expect(response.status).toBe(200);
       expect(text).toContain('<!doctype html>');
-      expect(text).toContain('<rapi-doc spec-url="/openApiJson"');
+      expect(text).toContain('<rapi-doc');
     });
   });
 });

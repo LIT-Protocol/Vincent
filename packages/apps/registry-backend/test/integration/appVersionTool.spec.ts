@@ -1,11 +1,13 @@
 import { api, store } from './setup';
 import { expectAssertArray, expectAssertObject } from '../assertions';
-import { logIfVerbose } from '../log';
+import { createTestDebugger } from '../debug';
 
-const VERBOSE_LOGGING = true;
+// Create a debug instance for this file
+const debug = createTestDebugger('appVersionTool');
 
+// For backwards compatibility
 const verboseLog = (value: any) => {
-  logIfVerbose(value, VERBOSE_LOGGING);
+  debug(value);
 };
 
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
@@ -18,10 +20,6 @@ describe('AppVersionTool API Integration Tests', () => {
   let testAppId: number | undefined;
   let testToolPackageName1: string;
   let testToolPackageName2: string;
-  // @ts-expect-error It's a test
-  let testToolVersion1: string;
-  // @ts-expect-error It's a test
-  let testToolVersion2: string;
   const firstAppVersion = 1; // Initial app version
   let secondAppVersion: number;
 
@@ -34,7 +32,6 @@ describe('AppVersionTool API Integration Tests', () => {
     logo: 'https://example.com/logo.png',
     redirectUris: ['https://example.com/callback'],
     deploymentStatus: 'dev' as const,
-    managerAddress: '0x1234567890abcdef1234567890abcdef12345678',
   };
 
   // Test data for creating tools
@@ -42,14 +39,12 @@ describe('AppVersionTool API Integration Tests', () => {
     title: 'Test Tool 1',
     description: 'Test tool 1 for AppVersionTool integration tests',
     activeVersion: '1.0.0',
-    authorWalletAddress: '0x1093891467868461234876123873',
   };
 
   const toolData2 = {
     title: 'Test Tool 2',
     description: 'Test tool 2 for AppVersionTool integration tests',
     activeVersion: '1.0.0',
-    authorWalletAddress: '0x1093891467868461234876123873',
   };
 
   // Test data for creating app versions
@@ -71,7 +66,6 @@ describe('AppVersionTool API Integration Tests', () => {
     it('should create the first tool', async () => {
       // Generate a unique package name for testing
       testToolPackageName1 = `@lit-protocol/vincent-tool-erc20-approval`;
-      testToolVersion1 = toolData1.activeVersion;
 
       const result = await store.dispatch(
         api.endpoints.createTool.initiate({
@@ -95,7 +89,6 @@ describe('AppVersionTool API Integration Tests', () => {
     it('should create the second tool', async () => {
       // Generate a unique package name for testing
       testToolPackageName2 = `@lit-protocol/vincent-tool-uniswap-swap`;
-      testToolVersion2 = toolData2.activeVersion;
 
       const result = await store.dispatch(
         api.endpoints.createTool.initiate({
@@ -384,6 +377,53 @@ describe('AppVersionTool API Integration Tests', () => {
           hiddenSupportedPolicies: updatedPolicies,
         });
       }
+    });
+  });
+
+  describe('DELETE /app/:appId/version/:version/tool/:toolPackageName', () => {
+    it('should delete an app version tool', async () => {
+      // Delete the second tool from the second app version
+      const result = await store.dispatch(
+        api.endpoints.deleteAppVersionTool.initiate({
+          appId: testAppId!,
+          appVersion: secondAppVersion,
+          toolPackageName: testToolPackageName2,
+        }),
+      );
+
+      verboseLog(result);
+      expect(result).not.toHaveProperty('error');
+
+      const { data } = result;
+      expectAssertObject(data);
+
+      // Verify the message in the response
+      expect(data).toHaveProperty('message');
+      expect(data.message).toContain('deleted successfully');
+
+      // Reset the API cache
+      store.dispatch(api.util.resetApiState());
+
+      // Verify the tool is deleted by checking the list of tools
+      const getToolsResult = await store.dispatch(
+        api.endpoints.listAppVersionTools.initiate({
+          appId: testAppId!,
+          version: secondAppVersion,
+        }),
+      );
+
+      expect(getToolsResult).not.toHaveProperty('error');
+      const { data: toolsData } = getToolsResult;
+      expectAssertArray(toolsData);
+
+      // Should now only have one tool for the second app version
+      expect(toolsData).toHaveLength(1);
+
+      // And it should be the first tool, not the deleted second tool
+      // @ts-expect-error It's a test
+      expect(toolsData[0].toolPackageName).toBe(testToolPackageName1);
+      // @ts-expect-error It's a test
+      expect(toolsData[0].toolPackageName).not.toBe(testToolPackageName2);
     });
   });
 

@@ -18,7 +18,7 @@ const policy = z
       description:
         'Author wallet address. Derived from the authorization signature provided by the creator.',
       example: EXAMPLE_WALLET_ADDRESS,
-      // readOnly: true, // FIXME: Enable this when we ship SIWE authentication
+      readOnly: true,
     }),
     description: z.string().openapi({
       description: 'Policy description - displayed to users in the dashboard/Vincent Explorer UI',
@@ -32,12 +32,16 @@ const policy = z
       description: 'Policy title for displaying to users in the dashboard/Vincent Explorer UI',
       example: 'Vincent Spending Limit Policy',
     }),
+    deploymentStatus: z.enum(['dev', 'test', 'prod']).optional().openapi({
+      description: 'Identifies if a policy is in development, test, or production.',
+      example: 'dev',
+    }),
   })
   .strict();
 
 // Avoiding using z.omit() or z.pick() due to excessive TS type inference costs
 function buildCreatePolicySchema() {
-  const { activeVersion, title, description, authorWalletAddress } = policy.shape;
+  const { activeVersion, title, description, deploymentStatus } = policy.shape;
 
   return z
     .object({
@@ -45,7 +49,13 @@ function buildCreatePolicySchema() {
       activeVersion,
       title,
       description,
-      authorWalletAddress, // FIXME: Remove this when we ship SIWE authentication
+      // Optional
+      ...z
+        .object({
+          deploymentStatus: deploymentStatus.default('dev'),
+        })
+        .partial()
+        .strict().shape,
     })
     .strict();
 }
@@ -54,12 +64,12 @@ export const policyCreate = buildCreatePolicySchema();
 
 // Avoiding using z.omit() or z.pick() due to excessive TS type inference costs
 function buildEditPolicySchema() {
-  const { activeVersion, title, description } = policy.shape;
+  const { activeVersion, title, description, deploymentStatus } = policy.shape;
 
   return z
     .object({
       // Optional
-      ...z.object({ activeVersion, title, description }).partial().strict().shape,
+      ...z.object({ activeVersion, title, description, deploymentStatus }).partial().strict().shape,
     })
     .strict();
 }

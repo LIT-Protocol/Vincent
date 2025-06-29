@@ -9,7 +9,7 @@ import {
   policyVersionEdit,
   policyVersionDoc,
 } from '../schemas/policy';
-import { ErrorResponse, ChangeOwner, DeleteResponse } from './baseRegistry';
+import { ErrorResponse, ChangeOwner, DeleteResponse, siweAuth } from './baseRegistry';
 
 const packageNameParam = z
   .string()
@@ -31,7 +31,7 @@ export function addToRegistry(registry: OpenAPIRegistry) {
   registry.registerPath({
     method: 'get',
     path: '/policies',
-    tags: ['policy'],
+    tags: ['Policy'],
     summary: 'Lists all policies',
     operationId: 'listAllPolicies',
     responses: {
@@ -58,9 +58,10 @@ export function addToRegistry(registry: OpenAPIRegistry) {
   registry.registerPath({
     method: 'post',
     path: '/policy/{packageName}',
-    tags: ['policy'],
+    tags: ['Policy', 'PolicyVersion'],
     summary: 'Creates a new policy',
     operationId: 'createPolicy',
+    security: [{ [siweAuth.name]: [] }],
     request: {
       params: z.object({ packageName: packageNameParam }),
       body: {
@@ -103,7 +104,7 @@ export function addToRegistry(registry: OpenAPIRegistry) {
   registry.registerPath({
     method: 'get',
     path: '/policy/{packageName}',
-    tags: ['policy'],
+    tags: ['Policy'],
     summary: 'Fetches a policy',
     operationId: 'getPolicy',
     request: {
@@ -136,9 +137,10 @@ export function addToRegistry(registry: OpenAPIRegistry) {
   registry.registerPath({
     method: 'put',
     path: '/policy/{packageName}',
-    tags: ['policy'],
+    tags: ['Policy'],
     summary: 'Edits a policy',
     operationId: 'editPolicy',
+    security: [{ [siweAuth.name]: [] }],
     request: {
       params: z.object({ packageName: packageNameParam }),
       body: {
@@ -181,9 +183,10 @@ export function addToRegistry(registry: OpenAPIRegistry) {
   registry.registerPath({
     method: 'post',
     path: '/policy/{packageName}/version/{version}',
-    tags: ['policy/version'],
+    tags: ['PolicyVersion'],
     summary: 'Creates a new policy version',
     operationId: 'createPolicyVersion',
+    security: [{ [siweAuth.name]: [] }],
     request: {
       params: z.object({ packageName: packageNameParam, version: policyVersionParam }),
       body: {
@@ -226,7 +229,7 @@ export function addToRegistry(registry: OpenAPIRegistry) {
   registry.registerPath({
     method: 'get',
     path: '/policy/{packageName}/version/{version}',
-    tags: ['policy/version'],
+    tags: ['PolicyVersion'],
     summary: 'Fetches a policy version',
     operationId: 'getPolicyVersion',
     request: {
@@ -259,7 +262,7 @@ export function addToRegistry(registry: OpenAPIRegistry) {
   registry.registerPath({
     method: 'get',
     path: '/policy/{packageName}/versions',
-    tags: ['policy'],
+    tags: ['PolicyVersion'],
     summary: 'Fetches all versions of a policy',
     operationId: 'getPolicyVersions',
     request: {
@@ -292,9 +295,10 @@ export function addToRegistry(registry: OpenAPIRegistry) {
   registry.registerPath({
     method: 'put',
     path: '/policy/{packageName}/owner',
-    tags: ['policy'],
+    tags: ['Policy'],
     summary: "Changes a policy's owner",
     operationId: 'changePolicyOwner',
+    security: [{ [siweAuth.name]: [] }],
     request: {
       params: z.object({ packageName: packageNameParam }),
       body: {
@@ -337,9 +341,10 @@ export function addToRegistry(registry: OpenAPIRegistry) {
   registry.registerPath({
     method: 'put',
     path: '/policy/{packageName}/version/{version}',
-    tags: ['policy/version'],
+    tags: ['PolicyVersion'],
     summary: 'Edits a policy version',
     operationId: 'editPolicyVersion',
+    security: [{ [siweAuth.name]: [] }],
     request: {
       params: z.object({ packageName: packageNameParam, version: policyVersionParam }),
       body: {
@@ -382,9 +387,10 @@ export function addToRegistry(registry: OpenAPIRegistry) {
   registry.registerPath({
     method: 'delete',
     path: '/policy/{packageName}',
-    tags: ['policy'],
+    tags: ['Policy', 'PolicyVersion'],
     summary: 'Deletes a policy and all its versions',
     operationId: 'deletePolicy',
+    security: [{ [siweAuth.name]: [] }],
     request: {
       params: z.object({ packageName: packageNameParam }),
     },
@@ -399,6 +405,126 @@ export function addToRegistry(registry: OpenAPIRegistry) {
       },
       404: {
         description: 'Policy not found',
+      },
+      default: {
+        description: 'Unexpected error',
+        content: {
+          'application/json': {
+            schema: ErrorResponse,
+          },
+        },
+      },
+    },
+  });
+
+  // POST /policy/{packageName}/undelete - Undelete a policy and all its versions
+  registry.registerPath({
+    method: 'post',
+    path: '/policy/{packageName}/undelete',
+    tags: ['Policy', 'PolicyVersion'],
+    summary: 'Undeletes a policy and all its versions',
+    operationId: 'undeletePolicy',
+    security: [{ [siweAuth.name]: [] }],
+    request: {
+      params: z.object({ packageName: packageNameParam }),
+    },
+    responses: {
+      200: {
+        description: 'Successful operation',
+        content: {
+          'application/json': {
+            schema: DeleteResponse,
+          },
+        },
+      },
+      404: {
+        description: 'Policy not found',
+      },
+      default: {
+        description: 'Unexpected error',
+        content: {
+          'application/json': {
+            schema: ErrorResponse,
+          },
+        },
+      },
+    },
+  });
+
+  // DELETE /policy/{packageName}/version/{version} - Delete a policy version
+  registry.registerPath({
+    method: 'delete',
+    path: '/policy/{packageName}/version/{version}',
+    tags: ['PolicyVersion'],
+    summary: 'Deletes a policy version',
+    operationId: 'deletePolicyVersion',
+    security: [{ [siweAuth.name]: [] }],
+    request: {
+      params: z.object({
+        packageName: packageNameParam,
+        version: policyVersionParam,
+      }),
+    },
+    responses: {
+      200: {
+        description: 'OK - Resource successfully deleted',
+        content: {
+          'application/json': {
+            schema: DeleteResponse,
+          },
+        },
+      },
+      400: {
+        description: 'Invalid input',
+      },
+      404: {
+        description: 'Policy or version not found',
+      },
+      422: {
+        description: 'Validation exception',
+      },
+      default: {
+        description: 'Unexpected error',
+        content: {
+          'application/json': {
+            schema: ErrorResponse,
+          },
+        },
+      },
+    },
+  });
+
+  // POST /policy/{packageName}/version/{version}/undelete - Undelete a policy version
+  registry.registerPath({
+    method: 'post',
+    path: '/policy/{packageName}/version/{version}/undelete',
+    tags: ['PolicyVersion'],
+    summary: 'Undeletes a policy version',
+    operationId: 'undeletePolicyVersion',
+    security: [{ [siweAuth.name]: [] }],
+    request: {
+      params: z.object({
+        packageName: packageNameParam,
+        version: policyVersionParam,
+      }),
+    },
+    responses: {
+      200: {
+        description: 'OK - Resource successfully undeleted',
+        content: {
+          'application/json': {
+            schema: DeleteResponse,
+          },
+        },
+      },
+      400: {
+        description: 'Invalid input',
+      },
+      404: {
+        description: 'Policy or version not found',
+      },
+      422: {
+        description: 'Validation exception',
       },
       default: {
         description: 'Unexpected error',

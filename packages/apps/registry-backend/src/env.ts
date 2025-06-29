@@ -26,5 +26,6 @@ export const env = createEnv({
     MONGODB_URI: z.string().url(),
     MONGO_DB_NAME: z.string().optional(),
     PORT: z.coerce.number().default(3000),
+    EXPECTED_AUDIENCE: z.string(),
   },
 });

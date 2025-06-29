@@ -13,6 +13,7 @@ const config = {
     mutations: true,
   },
   encodePathParams: true,
+  tag: true,
 };
 
 module.exports = config;

@@ -1,11 +1,13 @@
 import { api, store } from './setup';
-import { expectAssertArray, expectAssertObject } from '../assertions';
-import { logIfVerbose } from '../log';
+import { expectAssertArray, expectAssertObject, hasError } from '../assertions';
+import { createTestDebugger } from '../debug';
 
-const VERBOSE_LOGGING = true;
+// Create a debug instance for this file
+const debug = createTestDebugger('policy');
 
+// For backwards compatibility
 const verboseLog = (value: any) => {
-  logIfVerbose(value, VERBOSE_LOGGING);
+  debug(value);
 };
 
 describe('Policy API Integration Tests', () => {
@@ -24,7 +26,6 @@ describe('Policy API Integration Tests', () => {
     title: 'Test Policy',
     description: 'Test policy for integration tests',
     activeVersion: '1.0.0',
-    authorWalletAddress: '0x1234567890abcdef1234567890abcdef12345678',
   };
 
   // Test data for creating a policy version
@@ -72,7 +73,6 @@ describe('Policy API Integration Tests', () => {
         title: policyData.title,
         description: policyData.description,
         activeVersion: policyData.activeVersion,
-        authorWalletAddress: policyData.authorWalletAddress,
       });
     });
   });
@@ -105,8 +105,8 @@ describe('Policy API Integration Tests', () => {
 
       expect(result).toHaveProperty('error');
 
-      expect(result.isError).toBe(true);
-      if (result.isError) {
+      expect(hasError(result)).toBe(true);
+      if (hasError(result)) {
         const { error } = result;
         expectAssertObject(error);
         // @ts-expect-error it's a test
@@ -119,6 +119,7 @@ describe('Policy API Integration Tests', () => {
     it('should update a policy', async () => {
       const updateData = {
         description: 'Updated test policy description!',
+        deploymentStatus: 'test' as const,
       };
 
       const result = await store.dispatch(
@@ -143,6 +144,7 @@ describe('Policy API Integration Tests', () => {
       expectAssertObject(data);
 
       expect(data).toHaveProperty('description', updateData.description);
+      expect(data).toHaveProperty('deploymentStatus', updateData.deploymentStatus);
     });
   });
 
@@ -224,8 +226,8 @@ describe('Policy API Integration Tests', () => {
       verboseLog(result);
       expect(result).toHaveProperty('error');
 
-      expect(result.isError).toBe(true);
-      if (result.isError) {
+      expect(hasError(result)).toBe(true);
+      if (hasError(result)) {
         const { error } = result;
         expectAssertObject(error);
         // @ts-expect-error it's a test
@@ -278,16 +280,14 @@ describe('Policy API Integration Tests', () => {
     });
   });
 
-  describe('PUT /policy/{packageName}/owner', () => {
-    it('should change a policy owner', async () => {
-      const newOwnerAddress = '0x9876543210abcdef9876543210abcdef98765432';
+  describe('DELETE /policy/{packageName}/version/{version}', () => {
+    it('should delete a policy version', async () => {
+      const versionToDelete = '1.0.1';
 
       const result = await store.dispatch(
-        api.endpoints.changePolicyOwner.initiate({
+        api.endpoints.deletePolicyVersion.initiate({
           packageName: testPackageName,
-          changeOwner: {
-            authorWalletAddress: newOwnerAddress,
-          },
+          version: versionToDelete,
         }),
       );
 
@@ -297,20 +297,31 @@ describe('Policy API Integration Tests', () => {
       const { data } = result;
       expectAssertObject(data);
 
-      // Reset the API cache so we can verify the change
+      // Verify the message in the response
+      expect(data).toHaveProperty('message');
+      expect(data.message).toContain('deleted successfully');
+
+      // Reset the API cache
       store.dispatch(api.util.resetApiState());
 
+      // Verify the version is deleted by checking for a 404
       const getResult = await store.dispatch(
-        api.endpoints.getPolicy.initiate({ packageName: testPackageName }),
+        api.endpoints.getPolicyVersion.initiate({
+          packageName: testPackageName,
+          version: versionToDelete,
+        }),
       );
 
       verboseLog(getResult);
-      expect(getResult).not.toHaveProperty('error');
+      expect(getResult).toHaveProperty('error');
+      expect(hasError(getResult)).toBe(true);
 
-      const { data: updatedData } = getResult;
-      expectAssertObject(updatedData);
-
-      expect(updatedData).toHaveProperty('authorWalletAddress', newOwnerAddress);
+      if (hasError(getResult)) {
+        const { error } = getResult;
+        expectAssertObject(error);
+        // @ts-expect-error it's a test
+        expect(error.status).toBe(404);
+      }
     });
   });
 
@@ -341,9 +352,9 @@ describe('Policy API Integration Tests', () => {
 
       verboseLog(getResult);
       expect(getResult).toHaveProperty('error');
-      expect(getResult.isError).toBe(true);
+      expect(hasError(getResult)).toBe(true);
 
-      if (getResult.isError) {
+      if (hasError(getResult)) {
         const { error } = getResult;
         expectAssertObject(error);
         // @ts-expect-error it's a test

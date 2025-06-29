@@ -1,11 +1,13 @@
 import { api, store } from './setup';
-import { expectAssertArray, expectAssertObject } from '../assertions';
-import { logIfVerbose } from '../log';
+import { expectAssertArray, expectAssertObject, hasError } from '../assertions';
+import { createTestDebugger } from '../debug';
 
-const VERBOSE_LOGGING = true;
+// Create a debug instance for this file
+const debug = createTestDebugger('app');
 
+// For backwards compatibility
 const verboseLog = (value: any) => {
-  logIfVerbose(value, VERBOSE_LOGGING);
+  debug(value);
 };
 
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
@@ -25,7 +27,6 @@ describe('App API Integration Tests', () => {
     logo: 'https://example.com/logo.png',
     redirectUris: ['https://example.com/callback'],
     // deploymentStatus: 'dev' as const,
-    managerAddress: '0x1234567890abcdef1234567890abcdef12345678',
   };
 
   describe('GET /apps', () => {
@@ -78,8 +79,8 @@ describe('App API Integration Tests', () => {
 
       expect(result).toHaveProperty('error');
 
-      expect(result.isError).toBe(true);
-      if (result.isError) {
+      expect(hasError(result)).toBe(true);
+      if (hasError(result)) {
         const { error } = result;
         expectAssertObject(error);
         // @ts-expect-error it's a test
@@ -191,8 +192,8 @@ describe('App API Integration Tests', () => {
       verboseLog(result);
       expect(result).toHaveProperty('error');
 
-      expect(result.isError).toBe(true);
-      if (result.isError) {
+      expect(hasError(result)).toBe(true);
+      if (hasError(result)) {
         const { error } = result;
         expectAssertObject(error);
         // @ts-expect-error it's a test
@@ -319,6 +320,67 @@ describe('App API Integration Tests', () => {
     });
   });
 
+  describe('DELETE /app/:appId/version/:version', () => {
+    it('should delete an app version and its tools', async () => {
+      // Create a new version to delete
+      const versionData = {
+        changes: 'Version to be deleted',
+      };
+
+      const createResult = await store.dispatch(
+        api.endpoints.createAppVersion.initiate({
+          appId: testAppId!,
+          appVersionCreate: versionData,
+        }),
+      );
+
+      verboseLog(createResult);
+      expect(createResult).not.toHaveProperty('error');
+
+      const { data } = createResult;
+      expectAssertObject(data);
+      const versionToDelete = createResult.data.version;
+
+      // Delete the version
+      {
+        const result = await store.dispatch(
+          api.endpoints.deleteAppVersion.initiate({
+            appId: testAppId!,
+            version: versionToDelete,
+          }),
+        );
+        verboseLog(result);
+        expect(result).not.toHaveProperty('error');
+
+        const { data } = result;
+        expectAssertObject(data);
+
+        expect(data).toHaveProperty('message');
+        expect(data.message).toContain('deleted successfully');
+      }
+
+      store.dispatch(api.util.resetApiState());
+
+      {
+        // Verify the deletion
+        const getResult = await store.dispatch(
+          api.endpoints.getAppVersion.initiate({
+            appId: testAppId!,
+            version: versionToDelete,
+          }),
+        );
+
+        expect(hasError(getResult)).toBe(true);
+        if (hasError(getResult)) {
+          const { error } = getResult;
+          expectAssertObject(error);
+          // @ts-expect-error it's a test
+          expect(error.status).toBe(404);
+        }
+      }
+    });
+  });
+
   describe('DELETE /app/:appId', () => {
     it('should delete an app and its versions', async () => {
       {
@@ -343,8 +405,8 @@ describe('App API Integration Tests', () => {
           api.endpoints.getApp.initiate({ appId: testAppId! }),
         );
 
-        expect(getResult.isError).toBe(true);
-        if (getResult.isError) {
+        expect(hasError(getResult)).toBe(true);
+        if (hasError(getResult)) {
           const { error } = getResult;
           expectAssertObject(error);
           // @ts-expect-error it's a test

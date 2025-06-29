@@ -22,7 +22,7 @@ const tool = z
       description:
         'Author wallet address. Derived from the authorization signature provided by the creator.',
       example: EXAMPLE_WALLET_ADDRESS,
-      // readOnly: true, // FIXME: Enable this when we ship SIWE authentication
+      readOnly: true,
     }),
     description: z.string().openapi({
       description: 'Tool description - displayed to users in the dashboard/Vincent Explorer UI',
@@ -33,12 +33,16 @@ const tool = z
       description: 'Active version of the tool',
       example: '1.0.0',
     }),
+    deploymentStatus: z.enum(['dev', 'test', 'prod']).optional().openapi({
+      description: 'Identifies if a tool is in development, test, or production.',
+      example: 'dev',
+    }),
   })
   .strict();
 
 // Avoiding using z.omit() or z.pick() due to excessive TS type inference costs
 function buildCreateToolSchema() {
-  const { activeVersion, title, description, authorWalletAddress } = tool.shape;
+  const { activeVersion, title, description, deploymentStatus } = tool.shape;
 
   return z
     .object({
@@ -46,7 +50,13 @@ function buildCreateToolSchema() {
       activeVersion,
       title,
       description,
-      authorWalletAddress, // FIXME: Remove this when we have SIWE authentication live
+      // Optional
+      ...z
+        .object({
+          deploymentStatus: deploymentStatus.default('dev'),
+        })
+        .partial()
+        .strict().shape,
     })
     .strict();
 }
@@ -55,12 +65,12 @@ export const toolCreate = buildCreateToolSchema();
 
 // Avoiding using z.omit() or z.pick() due to excessive TS type inference costs
 function buildEditToolSchema() {
-  const { activeVersion, title, description } = tool.shape;
+  const { activeVersion, title, description, deploymentStatus } = tool.shape;
 
   return z
     .object({
       // Optional
-      ...z.object({ activeVersion, title, description }).partial().strict().shape,
+      ...z.object({ activeVersion, title, description, deploymentStatus }).partial().strict().shape,
     })
     .strict();
 }

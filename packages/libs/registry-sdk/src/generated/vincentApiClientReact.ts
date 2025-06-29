@@ -1,201 +1,347 @@
 import { baseVincentRtkApiReact as api } from '../lib/internal/baseVincentRtkApiReact';
-const injectedRtkApi = api.injectEndpoints({
-  endpoints: (build) => ({
-    listApps: build.query<ListAppsApiResponse, ListAppsApiArg>({
-      query: () => ({ url: `/apps` }),
-    }),
-    createApp: build.mutation<CreateAppApiResponse, CreateAppApiArg>({
-      query: (queryArg) => ({ url: `/app`, method: 'POST', body: queryArg.appCreate }),
-    }),
-    getApp: build.query<GetAppApiResponse, GetAppApiArg>({
-      query: (queryArg) => ({ url: `/app/${encodeURIComponent(String(queryArg.appId))}` }),
-    }),
-    editApp: build.mutation<EditAppApiResponse, EditAppApiArg>({
-      query: (queryArg) => ({
-        url: `/app/${encodeURIComponent(String(queryArg.appId))}`,
-        method: 'PUT',
-        body: queryArg.appEdit,
+export const addTagTypes = [
+  'App',
+  'AppVersion',
+  'AppVersionTool',
+  'Tool',
+  'ToolVersion',
+  'Policy',
+  'PolicyVersion',
+] as const;
+const injectedRtkApi = api
+  .enhanceEndpoints({
+    addTagTypes,
+  })
+  .injectEndpoints({
+    endpoints: (build) => ({
+      listApps: build.query<ListAppsApiResponse, ListAppsApiArg>({
+        query: () => ({ url: `/apps` }),
+        providesTags: ['App'],
+      }),
+      createApp: build.mutation<CreateAppApiResponse, CreateAppApiArg>({
+        query: (queryArg) => ({ url: `/app`, method: 'POST', body: queryArg.appCreate }),
+        invalidatesTags: ['App', 'AppVersion'],
+      }),
+      getApp: build.query<GetAppApiResponse, GetAppApiArg>({
+        query: (queryArg) => ({ url: `/app/${encodeURIComponent(String(queryArg.appId))}` }),
+        providesTags: ['App'],
+      }),
+      editApp: build.mutation<EditAppApiResponse, EditAppApiArg>({
+        query: (queryArg) => ({
+          url: `/app/${encodeURIComponent(String(queryArg.appId))}`,
+          method: 'PUT',
+          body: queryArg.appEdit,
+        }),
+        invalidatesTags: ['App'],
+      }),
+      deleteApp: build.mutation<DeleteAppApiResponse, DeleteAppApiArg>({
+        query: (queryArg) => ({
+          url: `/app/${encodeURIComponent(String(queryArg.appId))}`,
+          method: 'DELETE',
+        }),
+        invalidatesTags: ['App', 'AppVersion', 'AppVersionTool'],
+      }),
+      undeleteApp: build.mutation<UndeleteAppApiResponse, UndeleteAppApiArg>({
+        query: (queryArg) => ({
+          url: `/app/${encodeURIComponent(String(queryArg.appId))}/undelete`,
+          method: 'POST',
+        }),
+        invalidatesTags: ['App', 'AppVersion', 'AppVersionTool'],
+      }),
+      getAppVersions: build.query<GetAppVersionsApiResponse, GetAppVersionsApiArg>({
+        query: (queryArg) => ({
+          url: `/app/${encodeURIComponent(String(queryArg.appId))}/versions`,
+        }),
+        providesTags: ['AppVersion'],
+      }),
+      createAppVersion: build.mutation<CreateAppVersionApiResponse, CreateAppVersionApiArg>({
+        query: (queryArg) => ({
+          url: `/app/${encodeURIComponent(String(queryArg.appId))}/version`,
+          method: 'POST',
+          body: queryArg.appVersionCreate,
+        }),
+        invalidatesTags: ['AppVersion'],
+      }),
+      getAppVersion: build.query<GetAppVersionApiResponse, GetAppVersionApiArg>({
+        query: (queryArg) => ({
+          url: `/app/${encodeURIComponent(String(queryArg.appId))}/version/${encodeURIComponent(String(queryArg.version))}`,
+        }),
+        providesTags: ['AppVersion'],
+      }),
+      editAppVersion: build.mutation<EditAppVersionApiResponse, EditAppVersionApiArg>({
+        query: (queryArg) => ({
+          url: `/app/${encodeURIComponent(String(queryArg.appId))}/version/${encodeURIComponent(String(queryArg.version))}`,
+          method: 'PUT',
+          body: queryArg.appVersionEdit,
+        }),
+        invalidatesTags: ['AppVersion'],
+      }),
+      deleteAppVersion: build.mutation<DeleteAppVersionApiResponse, DeleteAppVersionApiArg>({
+        query: (queryArg) => ({
+          url: `/app/${encodeURIComponent(String(queryArg.appId))}/version/${encodeURIComponent(String(queryArg.version))}`,
+          method: 'DELETE',
+        }),
+        invalidatesTags: ['AppVersion'],
+      }),
+      enableAppVersion: build.mutation<EnableAppVersionApiResponse, EnableAppVersionApiArg>({
+        query: (queryArg) => ({
+          url: `/app/${encodeURIComponent(String(queryArg.appId))}/version/${encodeURIComponent(String(queryArg.version))}/enable`,
+          method: 'POST',
+        }),
+        invalidatesTags: ['AppVersion'],
+      }),
+      disableAppVersion: build.mutation<DisableAppVersionApiResponse, DisableAppVersionApiArg>({
+        query: (queryArg) => ({
+          url: `/app/${encodeURIComponent(String(queryArg.appId))}/version/${encodeURIComponent(String(queryArg.version))}/disable`,
+          method: 'POST',
+        }),
+        invalidatesTags: ['AppVersion'],
+      }),
+      listAppVersionTools: build.query<ListAppVersionToolsApiResponse, ListAppVersionToolsApiArg>({
+        query: (queryArg) => ({
+          url: `/app/${encodeURIComponent(String(queryArg.appId))}/version/${encodeURIComponent(String(queryArg.version))}/tools`,
+        }),
+        providesTags: ['AppVersionTool'],
+      }),
+      createAppVersionTool: build.mutation<
+        CreateAppVersionToolApiResponse,
+        CreateAppVersionToolApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/app/${encodeURIComponent(String(queryArg.appId))}/version/${encodeURIComponent(String(queryArg.appVersion))}/tool/${encodeURIComponent(String(queryArg.toolPackageName))}`,
+          method: 'POST',
+          body: queryArg.appVersionToolCreate,
+        }),
+        invalidatesTags: ['AppVersionTool'],
+      }),
+      editAppVersionTool: build.mutation<EditAppVersionToolApiResponse, EditAppVersionToolApiArg>({
+        query: (queryArg) => ({
+          url: `/app/${encodeURIComponent(String(queryArg.appId))}/version/${encodeURIComponent(String(queryArg.appVersion))}/tool/${encodeURIComponent(String(queryArg.toolPackageName))}`,
+          method: 'PUT',
+          body: queryArg.appVersionToolEdit,
+        }),
+        invalidatesTags: ['AppVersionTool'],
+      }),
+      deleteAppVersionTool: build.mutation<
+        DeleteAppVersionToolApiResponse,
+        DeleteAppVersionToolApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/app/${encodeURIComponent(String(queryArg.appId))}/version/${encodeURIComponent(String(queryArg.appVersion))}/tool/${encodeURIComponent(String(queryArg.toolPackageName))}`,
+          method: 'DELETE',
+        }),
+        invalidatesTags: ['AppVersionTool'],
+      }),
+      undeleteAppVersion: build.mutation<UndeleteAppVersionApiResponse, UndeleteAppVersionApiArg>({
+        query: (queryArg) => ({
+          url: `/app/${encodeURIComponent(String(queryArg.appId))}/version/${encodeURIComponent(String(queryArg.version))}/undelete`,
+          method: 'POST',
+        }),
+        invalidatesTags: ['AppVersion'],
+      }),
+      undeleteAppVersionTool: build.mutation<
+        UndeleteAppVersionToolApiResponse,
+        UndeleteAppVersionToolApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/app/${encodeURIComponent(String(queryArg.appId))}/version/${encodeURIComponent(String(queryArg.appVersion))}/tool/${encodeURIComponent(String(queryArg.toolPackageName))}/undelete`,
+          method: 'POST',
+        }),
+        invalidatesTags: ['AppVersionTool'],
+      }),
+      listAllTools: build.query<ListAllToolsApiResponse, ListAllToolsApiArg>({
+        query: () => ({ url: `/tools` }),
+        providesTags: ['Tool'],
+      }),
+      createTool: build.mutation<CreateToolApiResponse, CreateToolApiArg>({
+        query: (queryArg) => ({
+          url: `/tool/${encodeURIComponent(String(queryArg.packageName))}`,
+          method: 'POST',
+          body: queryArg.toolCreate,
+        }),
+        invalidatesTags: ['Tool', 'ToolVersion'],
+      }),
+      getTool: build.query<GetToolApiResponse, GetToolApiArg>({
+        query: (queryArg) => ({ url: `/tool/${encodeURIComponent(String(queryArg.packageName))}` }),
+        providesTags: ['Tool'],
+      }),
+      editTool: build.mutation<EditToolApiResponse, EditToolApiArg>({
+        query: (queryArg) => ({
+          url: `/tool/${encodeURIComponent(String(queryArg.packageName))}`,
+          method: 'PUT',
+          body: queryArg.toolEdit,
+        }),
+        invalidatesTags: ['Tool'],
+      }),
+      deleteTool: build.mutation<DeleteToolApiResponse, DeleteToolApiArg>({
+        query: (queryArg) => ({
+          url: `/tool/${encodeURIComponent(String(queryArg.packageName))}`,
+          method: 'DELETE',
+        }),
+        invalidatesTags: ['Tool', 'ToolVersion'],
+      }),
+      getToolVersions: build.query<GetToolVersionsApiResponse, GetToolVersionsApiArg>({
+        query: (queryArg) => ({
+          url: `/tool/${encodeURIComponent(String(queryArg.packageName))}/versions`,
+        }),
+        providesTags: ['ToolVersion'],
+      }),
+      changeToolOwner: build.mutation<ChangeToolOwnerApiResponse, ChangeToolOwnerApiArg>({
+        query: (queryArg) => ({
+          url: `/tool/${encodeURIComponent(String(queryArg.packageName))}/owner`,
+          method: 'PUT',
+          body: queryArg.changeOwner,
+        }),
+        invalidatesTags: ['Tool'],
+      }),
+      createToolVersion: build.mutation<CreateToolVersionApiResponse, CreateToolVersionApiArg>({
+        query: (queryArg) => ({
+          url: `/tool/${encodeURIComponent(String(queryArg.packageName))}/version/${encodeURIComponent(String(queryArg.version))}`,
+          method: 'POST',
+          body: queryArg.toolVersionCreate,
+        }),
+        invalidatesTags: ['ToolVersion'],
+      }),
+      getToolVersion: build.query<GetToolVersionApiResponse, GetToolVersionApiArg>({
+        query: (queryArg) => ({
+          url: `/tool/${encodeURIComponent(String(queryArg.packageName))}/version/${encodeURIComponent(String(queryArg.version))}`,
+        }),
+        providesTags: ['ToolVersion'],
+      }),
+      editToolVersion: build.mutation<EditToolVersionApiResponse, EditToolVersionApiArg>({
+        query: (queryArg) => ({
+          url: `/tool/${encodeURIComponent(String(queryArg.packageName))}/version/${encodeURIComponent(String(queryArg.version))}`,
+          method: 'PUT',
+          body: queryArg.toolVersionEdit,
+        }),
+        invalidatesTags: ['ToolVersion'],
+      }),
+      deleteToolVersion: build.mutation<DeleteToolVersionApiResponse, DeleteToolVersionApiArg>({
+        query: (queryArg) => ({
+          url: `/tool/${encodeURIComponent(String(queryArg.packageName))}/version/${encodeURIComponent(String(queryArg.version))}`,
+          method: 'DELETE',
+        }),
+        invalidatesTags: ['ToolVersion'],
+      }),
+      undeleteTool: build.mutation<UndeleteToolApiResponse, UndeleteToolApiArg>({
+        query: (queryArg) => ({
+          url: `/tool/${encodeURIComponent(String(queryArg.packageName))}/undelete`,
+          method: 'POST',
+        }),
+        invalidatesTags: ['Tool', 'ToolVersion'],
+      }),
+      undeleteToolVersion: build.mutation<
+        UndeleteToolVersionApiResponse,
+        UndeleteToolVersionApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/tool/${encodeURIComponent(String(queryArg.packageName))}/version/${encodeURIComponent(String(queryArg.version))}/undelete`,
+          method: 'POST',
+        }),
+        invalidatesTags: ['ToolVersion'],
+      }),
+      listAllPolicies: build.query<ListAllPoliciesApiResponse, ListAllPoliciesApiArg>({
+        query: () => ({ url: `/policies` }),
+        providesTags: ['Policy'],
+      }),
+      createPolicy: build.mutation<CreatePolicyApiResponse, CreatePolicyApiArg>({
+        query: (queryArg) => ({
+          url: `/policy/${encodeURIComponent(String(queryArg.packageName))}`,
+          method: 'POST',
+          body: queryArg.policyCreate,
+        }),
+        invalidatesTags: ['Policy', 'PolicyVersion'],
+      }),
+      getPolicy: build.query<GetPolicyApiResponse, GetPolicyApiArg>({
+        query: (queryArg) => ({
+          url: `/policy/${encodeURIComponent(String(queryArg.packageName))}`,
+        }),
+        providesTags: ['Policy'],
+      }),
+      editPolicy: build.mutation<EditPolicyApiResponse, EditPolicyApiArg>({
+        query: (queryArg) => ({
+          url: `/policy/${encodeURIComponent(String(queryArg.packageName))}`,
+          method: 'PUT',
+          body: queryArg.policyEdit,
+        }),
+        invalidatesTags: ['Policy'],
+      }),
+      deletePolicy: build.mutation<DeletePolicyApiResponse, DeletePolicyApiArg>({
+        query: (queryArg) => ({
+          url: `/policy/${encodeURIComponent(String(queryArg.packageName))}`,
+          method: 'DELETE',
+        }),
+        invalidatesTags: ['Policy', 'PolicyVersion'],
+      }),
+      createPolicyVersion: build.mutation<
+        CreatePolicyVersionApiResponse,
+        CreatePolicyVersionApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/policy/${encodeURIComponent(String(queryArg.packageName))}/version/${encodeURIComponent(String(queryArg.version))}`,
+          method: 'POST',
+          body: queryArg.policyVersionCreate,
+        }),
+        invalidatesTags: ['PolicyVersion'],
+      }),
+      getPolicyVersion: build.query<GetPolicyVersionApiResponse, GetPolicyVersionApiArg>({
+        query: (queryArg) => ({
+          url: `/policy/${encodeURIComponent(String(queryArg.packageName))}/version/${encodeURIComponent(String(queryArg.version))}`,
+        }),
+        providesTags: ['PolicyVersion'],
+      }),
+      editPolicyVersion: build.mutation<EditPolicyVersionApiResponse, EditPolicyVersionApiArg>({
+        query: (queryArg) => ({
+          url: `/policy/${encodeURIComponent(String(queryArg.packageName))}/version/${encodeURIComponent(String(queryArg.version))}`,
+          method: 'PUT',
+          body: queryArg.policyVersionEdit,
+        }),
+        invalidatesTags: ['PolicyVersion'],
+      }),
+      deletePolicyVersion: build.mutation<
+        DeletePolicyVersionApiResponse,
+        DeletePolicyVersionApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/policy/${encodeURIComponent(String(queryArg.packageName))}/version/${encodeURIComponent(String(queryArg.version))}`,
+          method: 'DELETE',
+        }),
+        invalidatesTags: ['PolicyVersion'],
+      }),
+      getPolicyVersions: build.query<GetPolicyVersionsApiResponse, GetPolicyVersionsApiArg>({
+        query: (queryArg) => ({
+          url: `/policy/${encodeURIComponent(String(queryArg.packageName))}/versions`,
+        }),
+        providesTags: ['PolicyVersion'],
+      }),
+      changePolicyOwner: build.mutation<ChangePolicyOwnerApiResponse, ChangePolicyOwnerApiArg>({
+        query: (queryArg) => ({
+          url: `/policy/${encodeURIComponent(String(queryArg.packageName))}/owner`,
+          method: 'PUT',
+          body: queryArg.changeOwner,
+        }),
+        invalidatesTags: ['Policy'],
+      }),
+      undeletePolicy: build.mutation<UndeletePolicyApiResponse, UndeletePolicyApiArg>({
+        query: (queryArg) => ({
+          url: `/policy/${encodeURIComponent(String(queryArg.packageName))}/undelete`,
+          method: 'POST',
+        }),
+        invalidatesTags: ['Policy', 'PolicyVersion'],
+      }),
+      undeletePolicyVersion: build.mutation<
+        UndeletePolicyVersionApiResponse,
+        UndeletePolicyVersionApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/policy/${encodeURIComponent(String(queryArg.packageName))}/version/${encodeURIComponent(String(queryArg.version))}/undelete`,
+          method: 'POST',
+        }),
+        invalidatesTags: ['PolicyVersion'],
       }),
     }),
-    deleteApp: build.mutation<DeleteAppApiResponse, DeleteAppApiArg>({
-      query: (queryArg) => ({
-        url: `/app/${encodeURIComponent(String(queryArg.appId))}`,
-        method: 'DELETE',
-      }),
-    }),
-    getAppVersions: build.query<GetAppVersionsApiResponse, GetAppVersionsApiArg>({
-      query: (queryArg) => ({ url: `/app/${encodeURIComponent(String(queryArg.appId))}/versions` }),
-    }),
-    createAppVersion: build.mutation<CreateAppVersionApiResponse, CreateAppVersionApiArg>({
-      query: (queryArg) => ({
-        url: `/app/${encodeURIComponent(String(queryArg.appId))}/version`,
-        method: 'POST',
-        body: queryArg.appVersionCreate,
-      }),
-    }),
-    getAppVersion: build.query<GetAppVersionApiResponse, GetAppVersionApiArg>({
-      query: (queryArg) => ({
-        url: `/app/${encodeURIComponent(String(queryArg.appId))}/version/${encodeURIComponent(String(queryArg.version))}`,
-      }),
-    }),
-    editAppVersion: build.mutation<EditAppVersionApiResponse, EditAppVersionApiArg>({
-      query: (queryArg) => ({
-        url: `/app/${encodeURIComponent(String(queryArg.appId))}/version/${encodeURIComponent(String(queryArg.version))}`,
-        method: 'PUT',
-        body: queryArg.appVersionEdit,
-      }),
-    }),
-    enableAppVersion: build.mutation<EnableAppVersionApiResponse, EnableAppVersionApiArg>({
-      query: (queryArg) => ({
-        url: `/app/${encodeURIComponent(String(queryArg.appId))}/version/${encodeURIComponent(String(queryArg.version))}/enable`,
-        method: 'POST',
-      }),
-    }),
-    disableAppVersion: build.mutation<DisableAppVersionApiResponse, DisableAppVersionApiArg>({
-      query: (queryArg) => ({
-        url: `/app/${encodeURIComponent(String(queryArg.appId))}/version/${encodeURIComponent(String(queryArg.version))}/disable`,
-        method: 'POST',
-      }),
-    }),
-    listAppVersionTools: build.query<ListAppVersionToolsApiResponse, ListAppVersionToolsApiArg>({
-      query: (queryArg) => ({
-        url: `/app/${encodeURIComponent(String(queryArg.appId))}/version/${encodeURIComponent(String(queryArg.version))}/tools`,
-      }),
-    }),
-    createAppVersionTool: build.mutation<
-      CreateAppVersionToolApiResponse,
-      CreateAppVersionToolApiArg
-    >({
-      query: (queryArg) => ({
-        url: `/app/${encodeURIComponent(String(queryArg.appId))}/version/${encodeURIComponent(String(queryArg.appVersion))}/tool/${encodeURIComponent(String(queryArg.toolPackageName))}`,
-        method: 'POST',
-        body: queryArg.appVersionToolCreate,
-      }),
-    }),
-    editAppVersionTool: build.mutation<EditAppVersionToolApiResponse, EditAppVersionToolApiArg>({
-      query: (queryArg) => ({
-        url: `/app/${encodeURIComponent(String(queryArg.appId))}/version/${encodeURIComponent(String(queryArg.appVersion))}/tool/${encodeURIComponent(String(queryArg.toolPackageName))}`,
-        method: 'PUT',
-        body: queryArg.appVersionToolEdit,
-      }),
-    }),
-    listAllTools: build.query<ListAllToolsApiResponse, ListAllToolsApiArg>({
-      query: () => ({ url: `/tools` }),
-    }),
-    createTool: build.mutation<CreateToolApiResponse, CreateToolApiArg>({
-      query: (queryArg) => ({
-        url: `/tool/${encodeURIComponent(String(queryArg.packageName))}`,
-        method: 'POST',
-        body: queryArg.toolCreate,
-      }),
-    }),
-    getTool: build.query<GetToolApiResponse, GetToolApiArg>({
-      query: (queryArg) => ({ url: `/tool/${encodeURIComponent(String(queryArg.packageName))}` }),
-    }),
-    editTool: build.mutation<EditToolApiResponse, EditToolApiArg>({
-      query: (queryArg) => ({
-        url: `/tool/${encodeURIComponent(String(queryArg.packageName))}`,
-        method: 'PUT',
-        body: queryArg.toolEdit,
-      }),
-    }),
-    deleteTool: build.mutation<DeleteToolApiResponse, DeleteToolApiArg>({
-      query: (queryArg) => ({
-        url: `/tool/${encodeURIComponent(String(queryArg.packageName))}`,
-        method: 'DELETE',
-      }),
-    }),
-    getToolVersions: build.query<GetToolVersionsApiResponse, GetToolVersionsApiArg>({
-      query: (queryArg) => ({
-        url: `/tool/${encodeURIComponent(String(queryArg.packageName))}/versions`,
-      }),
-    }),
-    changeToolOwner: build.mutation<ChangeToolOwnerApiResponse, ChangeToolOwnerApiArg>({
-      query: (queryArg) => ({
-        url: `/tool/${encodeURIComponent(String(queryArg.packageName))}/owner`,
-        method: 'PUT',
-        body: queryArg.changeOwner,
-      }),
-    }),
-    createToolVersion: build.mutation<CreateToolVersionApiResponse, CreateToolVersionApiArg>({
-      query: (queryArg) => ({
-        url: `/tool/${encodeURIComponent(String(queryArg.packageName))}/version/${encodeURIComponent(String(queryArg.version))}`,
-        method: 'POST',
-        body: queryArg.toolVersionCreate,
-      }),
-    }),
-    getToolVersion: build.query<GetToolVersionApiResponse, GetToolVersionApiArg>({
-      query: (queryArg) => ({
-        url: `/tool/${encodeURIComponent(String(queryArg.packageName))}/version/${encodeURIComponent(String(queryArg.version))}`,
-      }),
-    }),
-    editToolVersion: build.mutation<EditToolVersionApiResponse, EditToolVersionApiArg>({
-      query: (queryArg) => ({
-        url: `/tool/${encodeURIComponent(String(queryArg.packageName))}/version/${encodeURIComponent(String(queryArg.version))}`,
-        method: 'PUT',
-        body: queryArg.toolVersionEdit,
-      }),
-    }),
-    listAllPolicies: build.query<ListAllPoliciesApiResponse, ListAllPoliciesApiArg>({
-      query: () => ({ url: `/policies` }),
-    }),
-    createPolicy: build.mutation<CreatePolicyApiResponse, CreatePolicyApiArg>({
-      query: (queryArg) => ({
-        url: `/policy/${encodeURIComponent(String(queryArg.packageName))}`,
-        method: 'POST',
-        body: queryArg.policyCreate,
-      }),
-    }),
-    getPolicy: build.query<GetPolicyApiResponse, GetPolicyApiArg>({
-      query: (queryArg) => ({ url: `/policy/${encodeURIComponent(String(queryArg.packageName))}` }),
-    }),
-    editPolicy: build.mutation<EditPolicyApiResponse, EditPolicyApiArg>({
-      query: (queryArg) => ({
-        url: `/policy/${encodeURIComponent(String(queryArg.packageName))}`,
-        method: 'PUT',
-        body: queryArg.policyEdit,
-      }),
-    }),
-    deletePolicy: build.mutation<DeletePolicyApiResponse, DeletePolicyApiArg>({
-      query: (queryArg) => ({
-        url: `/policy/${encodeURIComponent(String(queryArg.packageName))}`,
-        method: 'DELETE',
-      }),
-    }),
-    createPolicyVersion: build.mutation<CreatePolicyVersionApiResponse, CreatePolicyVersionApiArg>({
-      query: (queryArg) => ({
-        url: `/policy/${encodeURIComponent(String(queryArg.packageName))}/version/${encodeURIComponent(String(queryArg.version))}`,
-        method: 'POST',
-        body: queryArg.policyVersionCreate,
-      }),
-    }),
-    getPolicyVersion: build.query<GetPolicyVersionApiResponse, GetPolicyVersionApiArg>({
-      query: (queryArg) => ({
-        url: `/policy/${encodeURIComponent(String(queryArg.packageName))}/version/${encodeURIComponent(String(queryArg.version))}`,
-      }),
-    }),
-    editPolicyVersion: build.mutation<EditPolicyVersionApiResponse, EditPolicyVersionApiArg>({
-      query: (queryArg) => ({
-        url: `/policy/${encodeURIComponent(String(queryArg.packageName))}/version/${encodeURIComponent(String(queryArg.version))}`,
-        method: 'PUT',
-        body: queryArg.policyVersionEdit,
-      }),
-    }),
-    getPolicyVersions: build.query<GetPolicyVersionsApiResponse, GetPolicyVersionsApiArg>({
-      query: (queryArg) => ({
-        url: `/policy/${encodeURIComponent(String(queryArg.packageName))}/versions`,
-      }),
-    }),
-    changePolicyOwner: build.mutation<ChangePolicyOwnerApiResponse, ChangePolicyOwnerApiArg>({
-      query: (queryArg) => ({
-        url: `/policy/${encodeURIComponent(String(queryArg.packageName))}/owner`,
-        method: 'PUT',
-        body: queryArg.changeOwner,
-      }),
-    }),
-  }),
-  overrideExisting: false,
-});
+    overrideExisting: false,
+  });
 export { injectedRtkApi as vincentApiClientReact };
 export type ListAppsApiResponse = /** status 200 Successful operation */ AppListRead;
 export type ListAppsApiArg = void;
@@ -219,6 +365,12 @@ export type EditAppApiArg = {
 export type DeleteAppApiResponse =
   /** status 200 OK - Resource successfully deleted */ DeleteResponse;
 export type DeleteAppApiArg = {
+  /** ID of the target application */
+  appId: number;
+};
+export type UndeleteAppApiResponse =
+  /** status 200 OK - Resource successfully undeleted */ DeleteResponse;
+export type UndeleteAppApiArg = {
   /** ID of the target application */
   appId: number;
 };
@@ -249,6 +401,14 @@ export type EditAppVersionApiArg = {
   version: number;
   /** Update version changes field */
   appVersionEdit: AppVersionEdit;
+};
+export type DeleteAppVersionApiResponse =
+  /** status 200 OK - Resource successfully deleted */ DeleteResponse;
+export type DeleteAppVersionApiArg = {
+  /** ID of the target application */
+  appId: number;
+  /** Version # of the target application version */
+  version: number;
 };
 export type EnableAppVersionApiResponse = /** status 200 Successful operation */ AppVersionRead;
 export type EnableAppVersionApiArg = {
@@ -295,6 +455,34 @@ export type EditAppVersionToolApiArg = {
   toolPackageName: string;
   /** Updated tool configuration for the application version */
   appVersionToolEdit: AppVersionToolEdit;
+};
+export type DeleteAppVersionToolApiResponse =
+  /** status 200 OK - Resource successfully deleted */ DeleteResponse;
+export type DeleteAppVersionToolApiArg = {
+  /** ID of the target application */
+  appId: number;
+  /** Version # of the target application version */
+  appVersion: number;
+  /** The NPM package name */
+  toolPackageName: string;
+};
+export type UndeleteAppVersionApiResponse =
+  /** status 200 OK - Resource successfully undeleted */ DeleteResponse;
+export type UndeleteAppVersionApiArg = {
+  /** ID of the target application */
+  appId: number;
+  /** Version # of the target application version */
+  version: number;
+};
+export type UndeleteAppVersionToolApiResponse =
+  /** status 200 OK - Resource successfully undeleted */ DeleteResponse;
+export type UndeleteAppVersionToolApiArg = {
+  /** ID of the target application */
+  appId: number;
+  /** Version # of the target application version */
+  appVersion: number;
+  /** The NPM package name */
+  toolPackageName: string;
 };
 export type ListAllToolsApiResponse = /** status 200 Successful operation */ ToolListRead;
 export type ListAllToolsApiArg = void;
@@ -359,6 +547,27 @@ export type EditToolVersionApiArg = {
   /** Update version changes field */
   toolVersionEdit: ToolVersionEdit;
 };
+export type DeleteToolVersionApiResponse =
+  /** status 200 OK - Resource successfully deleted */ DeleteResponse;
+export type DeleteToolVersionApiArg = {
+  /** The NPM package name */
+  packageName: string;
+  /** NPM semver of the target tool version */
+  version: string;
+};
+export type UndeleteToolApiResponse = /** status 200 Successful operation */ DeleteResponse;
+export type UndeleteToolApiArg = {
+  /** The NPM package name */
+  packageName: string;
+};
+export type UndeleteToolVersionApiResponse =
+  /** status 200 OK - Resource successfully undeleted */ DeleteResponse;
+export type UndeleteToolVersionApiArg = {
+  /** The NPM package name */
+  packageName: string;
+  /** NPM semver of the target tool version */
+  version: string;
+};
 export type ListAllPoliciesApiResponse = /** status 200 Successful operation */ PolicyListRead;
 export type ListAllPoliciesApiArg = void;
 export type CreatePolicyApiResponse = /** status 200 Successful operation */ PolicyRead;
@@ -411,6 +620,14 @@ export type EditPolicyVersionApiArg = {
   /** Update version changes field */
   policyVersionEdit: PolicyVersionEdit;
 };
+export type DeletePolicyVersionApiResponse =
+  /** status 200 OK - Resource successfully deleted */ DeleteResponse;
+export type DeletePolicyVersionApiArg = {
+  /** The NPM package name */
+  packageName: string;
+  /** NPM semver of the target policy version */
+  version: string;
+};
 export type GetPolicyVersionsApiResponse =
   /** status 200 Successful operation */ PolicyVersionListRead;
 export type GetPolicyVersionsApiArg = {
@@ -423,6 +640,19 @@ export type ChangePolicyOwnerApiArg = {
   packageName: string;
   /** Developer-defined updated policy details */
   changeOwner: ChangeOwner;
+};
+export type UndeletePolicyApiResponse = /** status 200 Successful operation */ DeleteResponse;
+export type UndeletePolicyApiArg = {
+  /** The NPM package name */
+  packageName: string;
+};
+export type UndeletePolicyVersionApiResponse =
+  /** status 200 OK - Resource successfully undeleted */ DeleteResponse;
+export type UndeletePolicyVersionApiArg = {
+  /** The NPM package name */
+  packageName: string;
+  /** NPM semver of the target policy version */
+  version: string;
 };
 export type App = {
   /** Timestamp when this was last modified */
@@ -445,8 +675,6 @@ export type App = {
   redirectUris?: string[];
   /** Identifies if an application is in development, test, or production. */
   deploymentStatus?: 'dev' | 'test' | 'prod';
-  /** App manager's wallet address. Derived from the authorization signature provided by the creator. */
-  managerAddress: string;
 };
 export type AppRead = {
   /** Document ID */
@@ -495,8 +723,6 @@ export type AppCreate = {
   logo?: string;
   /** Redirect URIs users can be sent to after signing up for your application (with their JWT token). */
   redirectUris?: string[];
-  /** App manager's wallet address. Derived from the authorization signature provided by the creator. */
-  managerAddress?: string;
   /** The name of the application */
   name: string;
   /** Description of the application */
@@ -611,12 +837,12 @@ export type Tool = {
   packageName: string;
   /** Tool title - displayed to users in the dashboard/Vincent Explorer UI */
   title?: string;
-  /** Author wallet address. Derived from the authorization signature provided by the creator. */
-  authorWalletAddress: string;
   /** Tool description - displayed to users in the dashboard/Vincent Explorer UI */
   description: string;
   /** Active version of the tool */
   activeVersion: string;
+  /** Identifies if a tool is in development, test, or production. */
+  deploymentStatus?: 'dev' | 'test' | 'prod';
 };
 export type ToolRead = {
   /** Document ID */
@@ -635,6 +861,8 @@ export type ToolRead = {
   description: string;
   /** Active version of the tool */
   activeVersion: string;
+  /** Identifies if a tool is in development, test, or production. */
+  deploymentStatus?: 'dev' | 'test' | 'prod';
 };
 export type ToolList = Tool[];
 export type ToolListRead = ToolRead[];
@@ -645,8 +873,8 @@ export type ToolCreate = {
   title?: string;
   /** Tool description - displayed to users in the dashboard/Vincent Explorer UI */
   description: string;
-  /** Author wallet address. Derived from the authorization signature provided by the creator. */
-  authorWalletAddress: string;
+  /** Identifies if a tool is in development, test, or production. */
+  deploymentStatus?: 'dev' | 'test' | 'prod';
 };
 export type ToolEdit = {
   /** Active version of the tool */
@@ -655,6 +883,8 @@ export type ToolEdit = {
   title?: string;
   /** Tool description - displayed to users in the dashboard/Vincent Explorer UI */
   description?: string;
+  /** Identifies if a tool is in development, test, or production. */
+  deploymentStatus?: 'dev' | 'test' | 'prod';
 };
 export type ToolVersion = {
   /** Timestamp when this was last modified */
@@ -767,14 +997,14 @@ export type Policy = {
   createdAt: string;
   /** Policy NPM package name */
   packageName: string;
-  /** Author wallet address. Derived from the authorization signature provided by the creator. */
-  authorWalletAddress: string;
   /** Policy description - displayed to users in the dashboard/Vincent Explorer UI */
   description: string;
   /** Active version of the policy; must be an exact semver */
   activeVersion: string;
   /** Policy title for displaying to users in the dashboard/Vincent Explorer UI */
   title: string;
+  /** Identifies if a policy is in development, test, or production. */
+  deploymentStatus?: 'dev' | 'test' | 'prod';
 };
 export type PolicyRead = {
   /** Document ID */
@@ -793,6 +1023,8 @@ export type PolicyRead = {
   activeVersion: string;
   /** Policy title for displaying to users in the dashboard/Vincent Explorer UI */
   title: string;
+  /** Identifies if a policy is in development, test, or production. */
+  deploymentStatus?: 'dev' | 'test' | 'prod';
 };
 export type PolicyList = Policy[];
 export type PolicyListRead = PolicyRead[];
@@ -803,8 +1035,8 @@ export type PolicyCreate = {
   title: string;
   /** Policy description - displayed to users in the dashboard/Vincent Explorer UI */
   description: string;
-  /** Author wallet address. Derived from the authorization signature provided by the creator. */
-  authorWalletAddress: string;
+  /** Identifies if a policy is in development, test, or production. */
+  deploymentStatus?: 'dev' | 'test' | 'prod';
 };
 export type PolicyEdit = {
   /** Active version of the policy; must be an exact semver */
@@ -813,6 +1045,8 @@ export type PolicyEdit = {
   title?: string;
   /** Policy description - displayed to users in the dashboard/Vincent Explorer UI */
   description?: string;
+  /** Identifies if a policy is in development, test, or production. */
+  deploymentStatus?: 'dev' | 'test' | 'prod';
 };
 export type PolicyVersion = {
   /** Timestamp when this was last modified */
@@ -923,18 +1157,23 @@ export const {
   useLazyGetAppQuery,
   useEditAppMutation,
   useDeleteAppMutation,
+  useUndeleteAppMutation,
   useGetAppVersionsQuery,
   useLazyGetAppVersionsQuery,
   useCreateAppVersionMutation,
   useGetAppVersionQuery,
   useLazyGetAppVersionQuery,
   useEditAppVersionMutation,
+  useDeleteAppVersionMutation,
   useEnableAppVersionMutation,
   useDisableAppVersionMutation,
   useListAppVersionToolsQuery,
   useLazyListAppVersionToolsQuery,
   useCreateAppVersionToolMutation,
   useEditAppVersionToolMutation,
+  useDeleteAppVersionToolMutation,
+  useUndeleteAppVersionMutation,
+  useUndeleteAppVersionToolMutation,
   useListAllToolsQuery,
   useLazyListAllToolsQuery,
   useCreateToolMutation,
@@ -949,6 +1188,9 @@ export const {
   useGetToolVersionQuery,
   useLazyGetToolVersionQuery,
   useEditToolVersionMutation,
+  useDeleteToolVersionMutation,
+  useUndeleteToolMutation,
+  useUndeleteToolVersionMutation,
   useListAllPoliciesQuery,
   useLazyListAllPoliciesQuery,
   useCreatePolicyMutation,
@@ -960,7 +1202,10 @@ export const {
   useGetPolicyVersionQuery,
   useLazyGetPolicyVersionQuery,
   useEditPolicyVersionMutation,
+  useDeletePolicyVersionMutation,
   useGetPolicyVersionsQuery,
   useLazyGetPolicyVersionsQuery,
   useChangePolicyOwnerMutation,
+  useUndeletePolicyMutation,
+  useUndeletePolicyVersionMutation,
 } = injectedRtkApi;

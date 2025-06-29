@@ -5,6 +5,7 @@ import express, { type Express } from 'express';
 import * as OpenApiValidator from 'express-openapi-validator';
 
 import { openApiJson } from '@lit-protocol/vincent-registry-sdk';
+import { html } from '../../assets/apiHtml.json';
 
 import { env } from '../../env';
 import { registerRoutes as registerToolRoutes } from './tool/routes';
@@ -28,21 +29,7 @@ export function registerRoutes(app: Express) {
 
   console.log('Serving from', path.join(import.meta.dirname, './static'));
   app.get('/openapi', (req, res) => {
-    res.send(`<!doctype html>
-<html>
-
-<head>
-  <meta charset="utf-8">
-  <script type="module" src="https://unpkg.com/rapidoc/dist/rapidoc-min.js"></script>
-</head>
-
-<body>
-<rapi-doc spec-url="/openApiJson" theme="light"> </rapi-doc>
-</body>
-
-</html>
-`);
-    return;
+    res.send(html);
   });
 
   app.use(
