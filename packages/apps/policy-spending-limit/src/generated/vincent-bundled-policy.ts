@@ -10,4 +10,4 @@ if(!metadata.ipfsCid) {
   throw new Error('ipfsCid is not defined in metadata JSON file');
 }
 
-export const bundledVincentPolicy = asBundledVincentPolicy(vincentPolicy, metadata.ipfsCid);
+export const bundledVincentPolicy = asBundledVincentPolicy(vincentPolicy, { ipfsCid: metadata.ipfsCid, packageName: "@lit-protocol/vincent-policy-spending-limit" as const });

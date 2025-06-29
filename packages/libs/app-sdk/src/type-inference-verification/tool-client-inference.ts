@@ -11,7 +11,6 @@ import {
 import { getVincentToolClient } from '../toolClient/vincentToolClient';
 
 const currencyPolicy = createVincentPolicy({
-  packageName: 'currency-policy',
   toolParamsSchema: z.object({ currency: z.string() }),
   evaluate: async ({ toolParams }, ctx) => ctx.allow({ approvedCurrency: toolParams.currency }),
   evalAllowResultSchema: z.object({ approvedCurrency: z.string() }),
@@ -22,14 +21,17 @@ const currencyToolPolicy = createVincentToolPolicy({
   toolParamsSchema: z.object({
     currency: z.string(),
   }),
-  bundledVincentPolicy: asBundledVincentPolicy(currencyPolicy, 'QmCurrency123' as const),
+
+  bundledVincentPolicy: asBundledVincentPolicy(currencyPolicy, {
+    ipfsCid: 'QmCurrency123' as const,
+    packageName: 'currency-policy',
+  }),
   toolParameterMappings: {
     currency: 'currency',
   },
 });
 
 const rateLimitPolicy = createVincentPolicy({
-  packageName: 'rate-limit',
   toolParamsSchema: z.object({ userId: z.string() }),
   evaluate: async (_, ctx) => ctx.allow({ allowed: true }),
   evalAllowResultSchema: z.object({ allowed: z.literal(true) }),
@@ -41,7 +43,10 @@ const rateLimitToolPolicy = createVincentToolPolicy({
   toolParamsSchema: z.object({
     userId: z.string(),
   }),
-  bundledVincentPolicy: asBundledVincentPolicy(rateLimitPolicy, 'QmRateLimit123' as const),
+  bundledVincentPolicy: asBundledVincentPolicy(rateLimitPolicy, {
+    ipfsCid: 'QmRateLimit123' as const,
+    packageName: 'rate-limit',
+  }),
   toolParameterMappings: {
     userId: 'userId',
   },
@@ -156,7 +161,6 @@ export async function run() {
 }
 
 const fullSchemaPolicy = createVincentPolicy({
-  packageName: 'full-policy',
   toolParamsSchema: z.object({ count: z.number() }),
   evaluate: async ({ toolParams }, ctx) => {
     if (toolParams.count > 0) {
@@ -171,7 +175,10 @@ const fullSchemaPolicy = createVincentPolicy({
 
 const fullSchemaToolPolicy = createVincentToolPolicy({
   toolParamsSchema: z.object({ count: z.number() }),
-  bundledVincentPolicy: asBundledVincentPolicy(fullSchemaPolicy, 'QmFullSchema123' as const),
+  bundledVincentPolicy: asBundledVincentPolicy(fullSchemaPolicy, {
+    ipfsCid: 'QmFullSchema123' as const,
+    packageName: 'full-policy',
+  }),
   toolParameterMappings: {
     count: 'count',
   },
