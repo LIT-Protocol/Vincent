@@ -32,6 +32,9 @@
     },
     {
       "path": "./packages/apps/registry-backend"
+    },
+    {
+      "path": "./packages/libs/lit-action-bundler-rollup"
     }
   ]
 }
