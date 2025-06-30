@@ -1,0 +1,37 @@
+{
+  "name": "@lit-protocol/lit-action-bundler-rollup",
+  "version": "0.0.1",
+  "publishConfig": {
+    "access": "public"
+  },
+  "type": "module",
+  "main": "./dist/index.cjs.js",
+  "module": "./dist/index.esm.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.esm.js",
+      "default": "./dist/index.cjs.js",
+      "require": "./dist/index.cjs.js"
+    }
+  },
+  "files": [
+    "dist",
+    "!**/*.tsbuildinfo"
+  ],
+  "devDependencies": {
+    "eslint-import-resolver-next": "^0.6.0",
+    "eslint-import-resolver-typescript": "^4.4.4",
+    "eslint-plugin-import-x": "^4.16.1",
+    "eslint-plugin-perfectionist": "^4.15.0"
+  },
+  "dependencies": {
+    "@rollup/plugin-alias": "^5.1.1",
+    "@rollup/plugin-inject": "^5.0.5",
+    "@rollup/plugin-typescript": "^12.1.4",
+    "ipfs-only-hash": "^4.0.0",
+    "rollup": "^4.44.1"
+  }
+}

@@ -9,6 +9,9 @@
   "files": [],
   "references": [
     {
+      "path": "../../libs/registry-sdk"
+    },
+    {
       "path": "../../libs/app-sdk"
     },
     {

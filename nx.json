@@ -64,7 +64,8 @@
       "registry-backend",
       "policy-spending-limit",
       "tool-erc20-approval",
-      "tool-uniswap-swap"
+      "tool-uniswap-swap",
+      "lit-action-bundler-rollup"
     ],
     "projectsRelationship": "independent",
     "releaseTagPattern": "vincent/{projectName}/{version}",

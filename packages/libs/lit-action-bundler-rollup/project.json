@@ -1,0 +1,8 @@
+{
+  "name": "lit-action-bundler-rollup",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "// targets": "to see all targets run: nx show project @lit-protocol/lit-action-bundler-rollup --web",
+  "targets": {
+    "clean": {}
+  }
+}
