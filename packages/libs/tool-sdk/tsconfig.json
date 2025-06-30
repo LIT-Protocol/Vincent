@@ -4,6 +4,9 @@
   "include": [],
   "references": [
     {
+      "path": "../lit-action-bundler-rollup"
+    },
+    {
       "path": "./tsconfig.lib.json"
     }
   ]

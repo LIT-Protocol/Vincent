@@ -18,17 +18,6 @@
         "watch": true
       }
     },
-    "build": {
-      "executor": "@nx/js:tsc",
-      "outputs": ["{options.outputPath}"],
-      "options": {
-        "outputPath": "packages/libs/tool-sdk/dist",
-        "main": "packages/libs/tool-sdk/src/index.ts",
-        "tsConfig": "packages/libs/tool-sdk/tsconfig.lib.json",
-        "assets": ["packages/libs/tool-sdk/*.md"],
-        "formats": ["cjs"]
-      }
-    },
     "typedoc:build": {
       "executor": "nx:run-commands",
       "options": {

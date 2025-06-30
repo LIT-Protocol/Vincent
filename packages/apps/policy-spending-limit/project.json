@@ -9,7 +9,7 @@
       "executor": "nx:run-commands",
       "dependsOn": ["tool-sdk:build"],
       "options": {
-        "commands": ["pnpm node ./esbuild.config.js"],
+        "commands": ["pnpm node ./esbuild.config.mjs"],
         "cwd": "packages/apps/policy-spending-limit",
         "parallel": false
       }

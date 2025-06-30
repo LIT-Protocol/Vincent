@@ -6,6 +6,7 @@ module.exports = withNx(
     compiler: 'swc',
     format: ['esm', 'cjs'],
     main: './src/index.ts',
+    additionalEntryPoints: ['./src/internal.ts'],
     outputPath: './dist',
     tsConfig: resolve('./tsconfig.lib.json'),
   },

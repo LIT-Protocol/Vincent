@@ -9,11 +9,19 @@
     "declaration": true,
     "declarationMap": true,
     "types": ["node"],
-    "moduleResolution": "nodenext",
-    "module": "nodenext",
-    "esModuleInterop": true
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "esModuleInterop": true,
+    "resolveJsonModule": true
   },
-  "include": ["src/**/*.ts", "src/generated/vincent-policy-metadata.json"],
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.json",
+    "*.json",
+    "**/*/vincent-policy-metadata.json",
+    "./vincent-policy-metadata.json",
+    "src/generated/vincent-policy-metadata.json"
+  ],
   "references": [
     {
       "path": "../../libs/tool-sdk/tsconfig.lib.json"

@@ -26,3 +26,8 @@ export type {
 } from './lib/types';
 
 export type { BaseToolContext } from './lib/toolCore/toolConfig/context/types';
+
+export { getPolicyRollupConfig } from './bundler/getPolicyRollupConfig';
+export { getToolRollupConfig } from './bundler/getToolRollupConfig';
+
+export type { VincentBundlerConfig } from './bundler/types';

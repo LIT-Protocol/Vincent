@@ -7,12 +7,16 @@ import fs from 'fs';
 import ipfsOnlyHash from 'ipfs-only-hash';
 import path from 'path';
 
+import type { LitBundleContext } from './createLitBundleContext';
+
 import { getCompiledHandlerCode } from './utils';
 
 export function emitMetadataFile({
+  ctx,
   outputDir,
   sourceFileName,
 }: {
+  ctx: LitBundleContext;
   outputDir: string;
   sourceFileName: string;
 }): Plugin {
@@ -20,7 +24,11 @@ export function emitMetadataFile({
     async generateBundle(_, bundle) {
       this.info({ message: 'Emitting JSON metadata file...' });
 
-      const { chunk, fileName } = getCompiledHandlerCode(this, bundle);
+      const { chunk, fileName } = getCompiledHandlerCode({
+        bundle: bundle,
+        ctx,
+        pluginContext: this,
+      });
 
       this.info({ message: 'Computing IPFS CID for LA handler code', meta: { fileName } });
 
