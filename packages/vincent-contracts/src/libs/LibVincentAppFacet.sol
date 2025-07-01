@@ -185,4 +185,15 @@ library LibVincentAppFacet {
      * @param appVersion Version number of the app
      */
     error AppVersionHasDelegatedAgents(uint256 appId, uint256 appVersion);
+
+    /**
+     * @notice Error thrown when the app ID is zero
+     */
+    error ZeroAppIdNotAllowed();
+
+    /**
+     * @notice Error thrown when the app is already registered
+     * @param appId ID of the app
+     */
+    error AppAlreadyRegistered(uint256 appId);
 }

@@ -99,28 +99,13 @@ contract VincentAppViewFacet is VincentBase {
     }
 
     // ==================================================================================
-    // App Registry and Enumeration Functions
-    // ==================================================================================
-
-    /**
-     * @notice Returns the total count of registered apps
-     * @dev Returns the current app ID counter value, which represents the total number of apps that have been registered
-     * @return The total number of apps registered in the system
-     */
-    // TODO!: Will be removed since the Registry generates the app IDs
-    function getTotalAppCount() external view returns (uint256) {
-        VincentAppStorage.AppStorage storage as_ = VincentAppStorage.appStorage();
-        return as_.appIdCounter;
-    }
-
-    // ==================================================================================
     // App Data Retrieval Functions
     // ==================================================================================
 
     /**
      * @notice Retrieves detailed information about an app
      * @dev Fetches app data from storage and formats it into the App struct
-     * @dev This function will revert if the app is deleted or isn't registered
+     * @dev This function will revert if the app isn't registered
      * @param appId ID of the app to retrieve
      * @return app Detailed view of the app containing its metadata and relationships
      */

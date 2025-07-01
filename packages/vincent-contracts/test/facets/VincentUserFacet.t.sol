@@ -89,14 +89,18 @@ contract VincentUserFacetTest is Test {
 
     function testPermitAppVersion() public {
         address[] memory delegatees = new address[](1);
+
         delegatees[0] = APP_DELEGATEE_CHARLIE;
-        (uint256 newAppId_1, uint256 newAppVersion_1) = _registerBasicApp(delegatees);
+        uint256 newAppId_1 = 1;
+        uint256 newAppVersion_1 = _registerBasicApp(newAppId_1, delegatees);
 
         delegatees[0] = APP_DELEGATEE_DAVID;
-        (uint256 newAppId_2, uint256 newAppVersion_2) = _registerBasicApp(delegatees);
+        uint256 newAppId_2 = 2;
+        uint256 newAppVersion_2 = _registerBasicApp(newAppId_2, delegatees);
 
         delegatees[0] = APP_DELEGATEE_EVE;
-        (uint256 newAppId_3, uint256 newAppVersion_3) = _registerBasicApp(delegatees);
+        uint256 newAppId_3 = 3;
+        uint256 newAppVersion_3 = _registerBasicApp(newAppId_3, delegatees);
 
         vm.startPrank(APP_USER_FRANK);
         // Expect events for first permit
@@ -285,10 +289,12 @@ contract VincentUserFacetTest is Test {
     function testUnPermitAppVersion() public {
         address[] memory delegatees = new address[](1);
         delegatees[0] = APP_DELEGATEE_CHARLIE;
-        (uint256 newAppId_1, uint256 newAppVersion_1) = _registerBasicApp(delegatees);
+        uint256 newAppId_1 = 1;
+        uint256 newAppVersion_1 = _registerBasicApp(newAppId_1, delegatees);
 
         delegatees[0] = APP_DELEGATEE_DAVID;
-        (uint256 newAppId_2, uint256 newAppVersion_2) = _registerBasicApp(delegatees);
+        uint256 newAppId_2 = 2;
+        uint256 newAppVersion_2 = _registerBasicApp(newAppId_2, delegatees);
 
         vm.startPrank(APP_USER_FRANK);
         // Expect events for first permit
@@ -390,7 +396,8 @@ contract VincentUserFacetTest is Test {
     function testSetToolPolicyParameters_ToolPolicyNotRegisteredForAppVersion() public {
         address[] memory delegatees = new address[](1);
         delegatees[0] = APP_DELEGATEE_CHARLIE;
-        (uint256 newAppId, uint256 newAppVersion) = _registerBasicApp(delegatees);
+        uint256 newAppId = 1;
+        uint256 newAppVersion = _registerBasicApp(newAppId, delegatees);
 
         // First permit the app version with valid parameters
         vm.startPrank(APP_USER_FRANK);
@@ -436,7 +443,8 @@ contract VincentUserFacetTest is Test {
     function testRemoveToolPolicyParameters() public {
         address[] memory delegatees = new address[](1);
         delegatees[0] = APP_DELEGATEE_CHARLIE;
-        (uint256 newAppId, uint256 newAppVersion) = _registerBasicApp(delegatees);
+        uint256 newAppId = 1;
+        uint256 newAppVersion = _registerBasicApp(newAppId, delegatees);
 
         // First permit the app version
         vm.startPrank(APP_USER_FRANK);
@@ -535,7 +543,8 @@ contract VincentUserFacetTest is Test {
     function testPermitAppVersion_AppHasBeenDeleted() public {
         address[] memory delegatees = new address[](1);
         delegatees[0] = APP_DELEGATEE_CHARLIE;
-        (uint256 newAppId, uint256 newAppVersion) = _registerBasicApp(delegatees);
+        uint256 newAppId = 1;
+        uint256 newAppVersion = _registerBasicApp(newAppId, delegatees);
 
         vm.startPrank(APP_MANAGER_ALICE);
         vincentAppFacet.deleteApp(newAppId);
@@ -556,7 +565,8 @@ contract VincentUserFacetTest is Test {
     function testPermitAppVersion_NotPkpOwner() public {
         address[] memory delegatees = new address[](1);
         delegatees[0] = APP_DELEGATEE_CHARLIE;
-        (uint256 newAppId, uint256 newAppVersion) = _registerBasicApp(delegatees);
+        uint256 newAppId = 1;
+        uint256 newAppVersion = _registerBasicApp(newAppId, delegatees);
 
         vm.startPrank(APP_USER_GEORGE);
         vm.expectRevert(abi.encodeWithSelector(LibVincentUserFacet.NotPkpOwner.selector, PKP_TOKEN_ID_1, APP_USER_GEORGE));
@@ -586,7 +596,8 @@ contract VincentUserFacetTest is Test {
     function testPermitAppVersion_AppVersionNotRegistered() public {
         address[] memory delegatees = new address[](1);
         delegatees[0] = APP_DELEGATEE_CHARLIE;
-        (uint256 newAppId, uint256 newAppVersion) = _registerBasicApp(delegatees);
+        uint256 newAppId = 1;
+        uint256 newAppVersion = _registerBasicApp(newAppId, delegatees);
 
         vm.startPrank(APP_USER_FRANK);
         vm.expectRevert(abi.encodeWithSelector(VincentBase.AppVersionNotRegistered.selector, newAppId, newAppVersion + 1));
@@ -603,7 +614,8 @@ contract VincentUserFacetTest is Test {
     function testPermitAppVersion_ToolsAndPoliciesLengthMismatch() public {
         address[] memory delegatees = new address[](1);
         delegatees[0] = APP_DELEGATEE_CHARLIE;
-        (uint256 newAppId, uint256 newAppVersion) = _registerBasicApp(delegatees);
+        uint256 newAppId = 1;
+        uint256 newAppVersion = _registerBasicApp(newAppId, delegatees);
 
         // Create arrays with mismatched length
 
@@ -631,7 +643,8 @@ contract VincentUserFacetTest is Test {
     function testPermitAppVersion_AppVersionAlreadyPermitted() public {
         address[] memory delegatees = new address[](1);
         delegatees[0] = APP_DELEGATEE_CHARLIE;
-        (uint256 newAppId, uint256 newAppVersion) = _registerBasicApp(delegatees);
+        uint256 newAppId = 1;
+        uint256 newAppVersion = _registerBasicApp(newAppId, delegatees);
 
         // First permit the app version
         vm.startPrank(APP_USER_FRANK);
@@ -659,7 +672,8 @@ contract VincentUserFacetTest is Test {
     function testPermitAppVersion_AppVersionNotEnabled() public {
         address[] memory delegatees = new address[](1);
         delegatees[0] = APP_DELEGATEE_CHARLIE;
-        (uint256 newAppId, uint256 newAppVersion) = _registerBasicApp(delegatees);
+        uint256 newAppId = 1;
+        uint256 newAppVersion = _registerBasicApp(newAppId, delegatees);
 
         vm.startPrank(APP_MANAGER_ALICE);
         vincentAppFacet.enableAppVersion(newAppId, newAppVersion, false);
@@ -680,7 +694,8 @@ contract VincentUserFacetTest is Test {
     function testPermitAppVersion_NotAllRegisteredToolsProvided() public {
         address[] memory delegatees = new address[](1);
         delegatees[0] = APP_DELEGATEE_CHARLIE;
-        (uint256 newAppId, uint256 newAppVersion) = _registerBasicApp(delegatees);
+        uint256 newAppId = 1;
+        uint256 newAppVersion = _registerBasicApp(newAppId, delegatees);
 
         // Create arrays with only one tool instead of both registered tools
         string[] memory _toolIpfsCids = new string[](1);
@@ -709,7 +724,8 @@ contract VincentUserFacetTest is Test {
     function testPermitAppVersion_ToolNotRegisteredForAppVersion() public {
         address[] memory delegatees = new address[](1);
         delegatees[0] = APP_DELEGATEE_CHARLIE;
-        (uint256 newAppId, uint256 newAppVersion) = _registerBasicApp(delegatees);
+        uint256 newAppId = 1;
+        uint256 newAppVersion = _registerBasicApp(newAppId, delegatees);
 
         // Create arrays with an unregistered tool (TOOL_IPFS_CID_3)
         string[] memory _toolIpfsCids = new string[](2);
@@ -734,7 +750,8 @@ contract VincentUserFacetTest is Test {
     function testUnPermitAppVersion_NotPkpOwner() public {
         address[] memory delegatees = new address[](1);
         delegatees[0] = APP_DELEGATEE_CHARLIE;
-        (uint256 newAppId, uint256 newAppVersion) = _registerBasicApp(delegatees);
+        uint256 newAppId = 1;
+        uint256 newAppVersion = _registerBasicApp(newAppId, delegatees);
 
         vm.startPrank(APP_USER_FRANK);
         vincentUserFacet.permitAppVersion(
@@ -761,7 +778,8 @@ contract VincentUserFacetTest is Test {
     function testUnPermitAppVersion_AppVersionNotRegistered() public {
         address[] memory delegatees = new address[](1);
         delegatees[0] = APP_DELEGATEE_CHARLIE;
-        (uint256 newAppId, uint256 newAppVersion) = _registerBasicApp(delegatees);
+        uint256 newAppId = 1;
+        uint256 newAppVersion = _registerBasicApp(newAppId, delegatees);
 
         vm.startPrank(APP_USER_FRANK);
         vm.expectRevert(abi.encodeWithSelector(VincentBase.AppVersionNotRegistered.selector, newAppId, newAppVersion + 1));
@@ -771,7 +789,8 @@ contract VincentUserFacetTest is Test {
     function testUnPermitAppVersion_AppVersionNotPermitted() public {
         address[] memory delegatees = new address[](1);
         delegatees[0] = APP_DELEGATEE_CHARLIE;
-        (uint256 newAppId, uint256 newAppVersion) = _registerBasicApp(delegatees);
+        uint256 newAppId = 1;
+        uint256 newAppVersion = _registerBasicApp(newAppId, delegatees);
 
         vm.startPrank(APP_USER_FRANK);
         vm.expectRevert(abi.encodeWithSelector(LibVincentUserFacet.AppVersionNotPermitted.selector, PKP_TOKEN_ID_1, newAppId, newAppVersion));
@@ -784,7 +803,8 @@ contract VincentUserFacetTest is Test {
     function testSetToolPolicyParameters_NotPkpOwner() public {
         address[] memory delegatees = new address[](1);
         delegatees[0] = APP_DELEGATEE_CHARLIE;
-        (uint256 newAppId, uint256 newAppVersion) = _registerBasicApp(delegatees);
+        uint256 newAppId = 1;
+        uint256 newAppVersion = _registerBasicApp(newAppId, delegatees);
 
         vm.startPrank(APP_USER_FRANK);
         vincentUserFacet.permitAppVersion(
@@ -825,7 +845,8 @@ contract VincentUserFacetTest is Test {
     function testSetToolPolicyParameters_AppVersionNotRegistered() public {
         address[] memory delegatees = new address[](1);
         delegatees[0] = APP_DELEGATEE_CHARLIE;
-        (uint256 newAppId, uint256 newAppVersion) = _registerBasicApp(delegatees);
+        uint256 newAppId = 1;
+        uint256 newAppVersion = _registerBasicApp(newAppId, delegatees);
 
         vm.startPrank(APP_USER_FRANK);
         vm.expectRevert(abi.encodeWithSelector(VincentBase.AppVersionNotRegistered.selector, newAppId, newAppVersion + 1));
@@ -842,7 +863,8 @@ contract VincentUserFacetTest is Test {
     function testSetToolPolicyParameters_InvalidInput() public {
         address[] memory delegatees = new address[](1);
         delegatees[0] = APP_DELEGATEE_CHARLIE;
-        (uint256 newAppId, uint256 newAppVersion) = _registerBasicApp(delegatees);
+        uint256 newAppId = 1;
+        uint256 newAppVersion = _registerBasicApp(newAppId, delegatees);
 
         // First permit the app version with valid parameters
         vm.startPrank(APP_USER_FRANK);
@@ -872,7 +894,8 @@ contract VincentUserFacetTest is Test {
     function testSetToolPolicyParameters_EmptyToolIpfsCid() public {
         address[] memory delegatees = new address[](1);
         delegatees[0] = APP_DELEGATEE_CHARLIE;
-        (uint256 newAppId, uint256 newAppVersion) = _registerBasicApp(delegatees);
+        uint256 newAppId = 1;
+        uint256 newAppVersion = _registerBasicApp(newAppId, delegatees);
 
         // First permit the app version with valid parameters
         vm.startPrank(APP_USER_FRANK);
@@ -904,7 +927,8 @@ contract VincentUserFacetTest is Test {
     function testSetToolPolicyParameters_NotAllRegisteredToolsProvided() public {
         address[] memory delegatees = new address[](1);
         delegatees[0] = APP_DELEGATEE_CHARLIE;
-        (uint256 newAppId, uint256 newAppVersion) = _registerBasicApp(delegatees);
+        uint256 newAppId = 1;
+        uint256 newAppVersion = _registerBasicApp(newAppId, delegatees);
 
         // First permit the app version with valid parameters
         vm.startPrank(APP_USER_FRANK);
@@ -970,17 +994,18 @@ contract VincentUserFacetTest is Test {
     }
 
     function _registerApp(
+        uint256 appId,
         address[] memory delegatees,
         VincentAppFacet.AppVersionTools memory versionTools
-    ) private returns (uint256, uint256) {
+    ) private returns (uint256) {
         vm.startPrank(APP_MANAGER_ALICE);
-        (uint256 newAppId, uint256 newAppVersion) = vincentAppFacet.registerApp(delegatees, versionTools);
+        uint256 newAppVersion = vincentAppFacet.registerApp(appId, delegatees, versionTools);
         vm.stopPrank();
 
-        return (newAppId, newAppVersion);
+        return newAppVersion;
     }
 
-    function _registerBasicApp(address[] memory delegatees) private returns (uint256 newAppId, uint256 newAppVersion) {
+    function _registerBasicApp(uint256 appId, address[] memory delegatees) private returns (uint256 newAppVersion) {
         VincentAppFacet.AppVersionTools memory versionTools;
         versionTools.toolIpfsCids = new string[](2);
 
@@ -994,6 +1019,6 @@ contract VincentUserFacetTest is Test {
 
         versionTools.toolPolicies[1] = new string[](0);
         
-        (newAppId, newAppVersion) = _registerApp(delegatees, versionTools);
+        return _registerApp(appId, delegatees, versionTools);
     }
 }
