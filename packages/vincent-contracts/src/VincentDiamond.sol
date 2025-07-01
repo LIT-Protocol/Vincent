@@ -193,12 +193,13 @@ contract VincentDiamond {
     }
 
     function getVincentAppViewFacetSelectors() internal pure returns (bytes4[] memory) {
-        bytes4[] memory selectors = new bytes4[](5);
+        bytes4[] memory selectors = new bytes4[](6);
         selectors[0] = VincentAppViewFacet.getTotalAppCount.selector;
         selectors[1] = VincentAppViewFacet.getAppById.selector;
         selectors[2] = VincentAppViewFacet.getAppVersion.selector;
         selectors[3] = VincentAppViewFacet.getAppsByManager.selector;
         selectors[4] = VincentAppViewFacet.getAppByDelegatee.selector;
+        selectors[5] = VincentAppViewFacet.getDelegatedAgentPkpTokenIds.selector;
         return selectors;
     }
 

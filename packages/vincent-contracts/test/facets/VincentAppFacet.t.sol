@@ -607,6 +607,49 @@ contract VincentAppFacetTest is Test {
         assertEq(vincentAppViewFacet.getAppById(newAppId).isDeleted, true);
     }
 
+    function test_fetchDelegatedAgentPkpTokenIds() public {
+        (uint256 newAppId, uint256 newAppVersion) = _registerBasicApp();
+
+        // Create arrays for all registered tools
+        string[] memory toolIpfsCids = new string[](2);
+        toolIpfsCids[0] = TOOL_IPFS_CID_1;
+        toolIpfsCids[1] = TOOL_IPFS_CID_2;
+
+        string[][] memory policyIpfsCids = new string[][](2);
+        policyIpfsCids[0] = new string[](1);
+        policyIpfsCids[0][0] = POLICY_IPFS_CID_1;
+        policyIpfsCids[1] = new string[](0);
+
+        bytes[][] memory policyParameterValues = new bytes[][](2);
+        policyParameterValues[0] = new bytes[](1);
+        policyParameterValues[0][0] = POLICY_PARAMETER_VALUES_1;
+        policyParameterValues[1] = new bytes[](0);
+
+        vm.startPrank(APP_USER_FRANK);
+        vincentUserFacet.permitAppVersion(
+            PKP_TOKEN_ID_1,
+            newAppId,
+            newAppVersion,
+            toolIpfsCids,
+            policyIpfsCids,
+            policyParameterValues
+        );
+        vm.stopPrank();
+
+        uint256[] memory delegatedAgentPkpTokenIds = vincentAppViewFacet.getDelegatedAgentPkpTokenIds(newAppId, newAppVersion, 0, 1);
+        assertEq(delegatedAgentPkpTokenIds.length, 1);
+        assertEq(delegatedAgentPkpTokenIds[0], PKP_TOKEN_ID_1);
+
+        vm.expectRevert(abi.encodeWithSelector(VincentAppViewFacet.InvalidOffsetOrLimit.selector));
+        vincentAppViewFacet.getDelegatedAgentPkpTokenIds(newAppId, newAppVersion, 1, 1);
+
+        vm.expectRevert(abi.encodeWithSelector(VincentAppViewFacet.InvalidOffsetOrLimit.selector));
+        vincentAppViewFacet.getDelegatedAgentPkpTokenIds(newAppId, newAppVersion, 0, 2);
+
+        vm.expectRevert(abi.encodeWithSelector(VincentAppViewFacet.InvalidOffsetOrLimit.selector));
+        vincentAppViewFacet.getDelegatedAgentPkpTokenIds(newAppId, newAppVersion, 1, 0);
+    }
+
     function _registerApp(
         address[] memory delegatees,
         VincentAppFacet.AppVersionTools memory versionTools

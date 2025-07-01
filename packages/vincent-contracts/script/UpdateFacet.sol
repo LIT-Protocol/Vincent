@@ -231,6 +231,7 @@ contract UpdateFacet is Script {
         selectors[2] = VincentAppViewFacet.getAppVersion.selector;
         selectors[3] = VincentAppViewFacet.getAppsByManager.selector;
         selectors[4] = VincentAppViewFacet.getAppByDelegatee.selector;
+        selectors[5] = VincentAppViewFacet.getDelegatedAgentPkpTokenIds.selector;
         return selectors;
     }
 

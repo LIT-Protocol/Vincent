@@ -35,6 +35,11 @@ contract VincentAppViewFacet is VincentBase {
      */
     error NoAppsFoundForManager(address manager);
 
+    /**
+     * @notice Thrown when the offset and limit are invalid
+     */
+    error InvalidOffsetOrLimit();
+
     // ==================================================================================
     // Data Structures
     // ==================================================================================
@@ -102,6 +107,7 @@ contract VincentAppViewFacet is VincentBase {
      * @dev Returns the current app ID counter value, which represents the total number of apps that have been registered
      * @return The total number of apps registered in the system
      */
+    // TODO!: Will be removed since the Registry generates the app IDs
     function getTotalAppCount() external view returns (uint256) {
         VincentAppStorage.AppStorage storage as_ = VincentAppStorage.appStorage();
         return as_.appIdCounter;
@@ -128,6 +134,28 @@ contract VincentAppViewFacet is VincentBase {
         // App versions are 1-indexed, so the array length corresponds directly to the latest version number
         app.latestVersion = storedApp.appVersions.length;
         app.delegatees = storedApp.delegatees.values();
+    }
+
+    /**
+     * @notice Retrieves the delegatedAgentPkpTokenIds with an offset and limit
+     * @param appId ID of the app to retrieve
+     * @param version Version number of the app to retrieve (1-indexed)
+     * @param offset The offset of the first token ID to retrieve
+     * @param limit The maximum number of token IDs to retrieve
+     * @return delegatedAgentPkpTokenIds Array of delegated agent PKP token IDs
+     */
+    function getDelegatedAgentPkpTokenIds(uint256 appId, uint256 version, uint256 offset, uint256 limit) external view onlyRegisteredAppVersion(appId, version) returns (uint256[] memory delegatedAgentPkpTokenIds) {
+        VincentAppStorage.AppVersion storage versionedApp =
+            VincentAppStorage.appStorage().appIdToApp[appId].appVersions[getAppVersionIndex(version)];
+
+        if (limit == 0 || offset + limit > versionedApp.delegatedAgentPkps.length()) {
+            revert InvalidOffsetOrLimit();
+        }
+
+        delegatedAgentPkpTokenIds = new uint256[](limit);
+        for (uint256 i = 0; i < limit; i++) {
+            delegatedAgentPkpTokenIds[i] = versionedApp.delegatedAgentPkps.at(offset + i);
+        }
     }
 
     /**

@@ -33,6 +33,7 @@ library VincentAppStorage {
         mapping(uint256 => App) appIdToApp;
         mapping(address => EnumerableSet.UintSet) managerAddressToAppIds;
         mapping(address => uint256) delegateeAddressToAppId;
+        // TODO!: Will be removed since the Registry generates the app IDs
         uint256 appIdCounter;
     }
 
