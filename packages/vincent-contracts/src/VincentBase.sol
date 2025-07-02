@@ -21,7 +21,7 @@ contract VincentBase {
      */
     modifier onlyRegisteredApp(uint256 appId) {
         VincentAppStorage.AppStorage storage as_ = VincentAppStorage.appStorage();
-        if (appId == 0 || appId > as_.appIdCounter) revert AppNotRegistered(appId);
+        if (appId == 0 || as_.appIdToApp[appId].manager == address(0)) revert AppNotRegistered(appId);
         _;
     }
 
@@ -33,7 +33,7 @@ contract VincentBase {
      */
     modifier onlyRegisteredAppVersion(uint256 appId, uint256 appVersion) {
         VincentAppStorage.AppStorage storage as_ = VincentAppStorage.appStorage();
-        if (appId == 0 || appId > as_.appIdCounter) revert AppNotRegistered(appId);
+        if (appId == 0 || as_.appIdToApp[appId].manager == address(0)) revert AppNotRegistered(appId);
 
         VincentAppStorage.App storage app = as_.appIdToApp[appId];
         if (appVersion == 0 || appVersion > app.appVersions.length) {

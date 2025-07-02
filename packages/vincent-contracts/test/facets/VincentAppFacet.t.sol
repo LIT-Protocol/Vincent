@@ -77,7 +77,8 @@ contract VincentAppFacetTest is Test {
         vm.expectEmit(true, true, true, true);
         emit LibVincentAppFacet.NewAppVersionRegistered(1, 1, APP_MANAGER_ALICE);
         
-        (uint256 newAppId, uint256 newAppVersion) = _registerBasicApp();
+        uint256 newAppId = 1;
+        uint256 newAppVersion = _registerBasicApp(newAppId);
 
         VincentAppViewFacet.App memory app = vincentAppViewFacet.getAppById(newAppId);
         assertEq(app.id, newAppId);
@@ -233,7 +234,8 @@ contract VincentAppFacetTest is Test {
     }
 
     function testEnableAppVersion() public {
-        (uint256 newAppId, uint256 newAppVersion) = _registerBasicApp();
+        uint256 newAppId = 1;
+        uint256 newAppVersion = _registerBasicApp(newAppId);
 
         vm.startPrank(APP_MANAGER_ALICE);
         vm.expectEmit(true, true, true, true);
@@ -288,7 +290,8 @@ contract VincentAppFacetTest is Test {
     }
 
     function testAddAndRemoveDelegatee() public {
-        (uint256 newAppId, uint256 newAppVersion) = _registerBasicApp();
+        uint256 newAppId = 1;
+        uint256 newAppVersion = _registerBasicApp(newAppId);
 
         vm.startPrank(APP_MANAGER_ALICE);
         vm.expectEmit(true, true, true, true);
@@ -345,7 +348,8 @@ contract VincentAppFacetTest is Test {
     }
 
     function testDeleteApp() public {
-        (uint256 newAppId, uint256 newAppVersion) = _registerBasicApp();
+        uint256 newAppId = 1;
+        uint256 newAppVersion = _registerBasicApp(newAppId);
 
         vm.startPrank(APP_MANAGER_ALICE);
         vm.expectEmit(true, true, true, true);
@@ -378,7 +382,8 @@ contract VincentAppFacetTest is Test {
      * ######################### registerNextAppVersion ERROR CASES #########################
      */
     function testRegisterNextAppVersion_AppHasBeenDeleted() public {
-        (uint256 newAppId,) = _registerBasicApp();
+        uint256 newAppId = 1;
+        _registerBasicApp(newAppId);
 
         vm.startPrank(APP_MANAGER_ALICE);
         vincentAppFacet.deleteApp(newAppId);
@@ -390,7 +395,8 @@ contract VincentAppFacetTest is Test {
     }
 
     function testRegisterNextAppVersion_NotAppManager() public {
-        (uint256 newAppId,) = _registerBasicApp();
+        uint256 newAppId = 1;
+        _registerBasicApp(newAppId);
 
         vm.startPrank(APP_DELEGATEE_CHARLIE);
         vm.expectRevert(abi.encodeWithSelector(LibVincentAppFacet.NotAppManager.selector, newAppId, APP_DELEGATEE_CHARLIE));
@@ -415,7 +421,8 @@ contract VincentAppFacetTest is Test {
      * ######################### enableAppVersion ERROR CASES #########################
      */
     function testEnableAppVersion_AppHasBeenDeleted() public {
-        (uint256 newAppId,) = _registerBasicApp();
+        uint256 newAppId = 1;
+        _registerBasicApp(newAppId);
         
         vm.startPrank(APP_MANAGER_ALICE);
         vincentAppFacet.deleteApp(newAppId);
@@ -426,7 +433,8 @@ contract VincentAppFacetTest is Test {
     }
 
     function testEnableAppVersion_NotAppManager() public {
-        (uint256 newAppId,) = _registerBasicApp();
+        uint256 newAppId = 1;
+        _registerBasicApp(newAppId);
 
         vm.startPrank(APP_DELEGATEE_CHARLIE);
         vm.expectRevert(abi.encodeWithSelector(LibVincentAppFacet.NotAppManager.selector, newAppId, APP_DELEGATEE_CHARLIE));
@@ -445,7 +453,8 @@ contract VincentAppFacetTest is Test {
     }
 
     function testEnableAppVersion_AppVersionAlreadyInRequestedState() public {
-        (uint256 newAppId,) = _registerBasicApp();
+        uint256 newAppId = 1;
+        _registerBasicApp(newAppId);
 
         vm.startPrank(APP_MANAGER_ALICE);
         vm.expectRevert(abi.encodeWithSelector(LibVincentAppFacet.AppVersionAlreadyInRequestedState.selector, newAppId, newAppId, true));
@@ -457,7 +466,8 @@ contract VincentAppFacetTest is Test {
      * ######################### addDelegatee ERROR CASES #########################
      */
     function testAddDelegatee_AppHasBeenDeleted() public {
-        (uint256 newAppId,) = _registerBasicApp();
+        uint256 newAppId = 1;
+        _registerBasicApp(newAppId);
         
         vm.startPrank(APP_MANAGER_ALICE);
         vincentAppFacet.deleteApp(newAppId);
@@ -467,7 +477,8 @@ contract VincentAppFacetTest is Test {
     }
 
     function testAddDelegatee_NotAppManager() public {
-        (uint256 newAppId,) = _registerBasicApp();
+        uint256 newAppId = 1;
+        _registerBasicApp(newAppId);
 
         vm.startPrank(APP_DELEGATEE_CHARLIE);
         vm.expectRevert(abi.encodeWithSelector(LibVincentAppFacet.NotAppManager.selector, newAppId, APP_DELEGATEE_CHARLIE));
@@ -485,7 +496,8 @@ contract VincentAppFacetTest is Test {
     }
 
     function testAddDelegatee_ZeroAddressDelegatee() public {
-        (uint256 newAppId,) = _registerBasicApp();
+        uint256 newAppId = 1;
+        _registerBasicApp(newAppId);
 
         vm.startPrank(APP_MANAGER_ALICE);
         vm.expectRevert(LibVincentAppFacet.ZeroAddressDelegateeNotAllowed.selector);
@@ -493,7 +505,8 @@ contract VincentAppFacetTest is Test {
     }
 
     function testAddDelegatee_DelegateeAlreadyRegistered() public {
-        (uint256 newAppId,) = _registerBasicApp();
+        uint256 newAppId = 1;
+        _registerBasicApp(newAppId);
 
         vm.startPrank(APP_MANAGER_ALICE);
         vm.expectRevert(abi.encodeWithSelector(LibVincentAppFacet.DelegateeAlreadyRegisteredToApp.selector, newAppId, APP_DELEGATEE_CHARLIE));
@@ -504,7 +517,8 @@ contract VincentAppFacetTest is Test {
      * ######################### removeDelegatee ERROR CASES #########################
      */
     function testRemoveDelegatee_AppHasBeenDeleted() public {
-        (uint256 newAppId,) = _registerBasicApp();
+        uint256 newAppId = 1;
+        _registerBasicApp(newAppId);
         
         vm.startPrank(APP_MANAGER_ALICE);
         vincentAppFacet.deleteApp(newAppId);
@@ -514,7 +528,8 @@ contract VincentAppFacetTest is Test {
     }
 
     function testRemoveDelegatee_NotAppManager() public {
-        (uint256 newAppId,) = _registerBasicApp();
+        uint256 newAppId = 1;
+        _registerBasicApp(newAppId);
 
         vm.startPrank(APP_DELEGATEE_CHARLIE);
         vm.expectRevert(abi.encodeWithSelector(LibVincentAppFacet.NotAppManager.selector, newAppId, APP_DELEGATEE_CHARLIE));
@@ -532,7 +547,8 @@ contract VincentAppFacetTest is Test {
     }
 
     function testRemoveDelegatee_DelegateeNotRegistered() public {
-        (uint256 newAppId,) = _registerBasicApp();
+        uint256 newAppId = 1;
+        _registerBasicApp(newAppId);
 
         vm.startPrank(APP_MANAGER_ALICE);
         vm.expectRevert(abi.encodeWithSelector(LibVincentAppFacet.DelegateeNotRegisteredToApp.selector, newAppId, APP_DELEGATEE_DAVID));
@@ -543,7 +559,8 @@ contract VincentAppFacetTest is Test {
      * ######################### deleteApp ERROR CASES #########################
      */
     function testDeleteApp_AppHasBeenDeleted() public {
-        (uint256 newAppId,) = _registerBasicApp();
+        uint256 newAppId = 1;
+        _registerBasicApp(newAppId);
         
         vm.startPrank(APP_MANAGER_ALICE);
         vincentAppFacet.deleteApp(newAppId);
@@ -553,7 +570,8 @@ contract VincentAppFacetTest is Test {
     }
 
     function testDeleteApp_NotAppManager() public {
-        (uint256 newAppId,) = _registerBasicApp();
+        uint256 newAppId = 1;
+        _registerBasicApp(newAppId);
 
         vm.startPrank(APP_DELEGATEE_CHARLIE);
         vm.expectRevert(abi.encodeWithSelector(LibVincentAppFacet.NotAppManager.selector, newAppId, APP_DELEGATEE_CHARLIE));
@@ -571,7 +589,8 @@ contract VincentAppFacetTest is Test {
     }
 
     function testDeleteApp_AppVersionHasDelegatedAgents() public {
-        (uint256 newAppId, uint256 newAppVersion) = _registerBasicApp();
+        uint256 newAppId = 1;
+        uint256 newAppVersion = _registerBasicApp(newAppId);
 
         // Create arrays for all registered tools
         string[] memory toolIpfsCids = new string[](2);
@@ -600,22 +619,70 @@ contract VincentAppFacetTest is Test {
         vm.stopPrank();
 
         vm.startPrank(APP_MANAGER_ALICE);
-        vm.expectRevert(abi.encodeWithSelector(LibVincentAppFacet.AppVersionHasDelegatedAgents.selector, newAppId, newAppVersion));
+        vm.expectEmit(true, true, true, true);
+        emit LibVincentAppFacet.AppDeleted(newAppId);
         vincentAppFacet.deleteApp(newAppId);
+
+        assertEq(vincentAppViewFacet.getAppById(newAppId).isDeleted, true);
+    }
+
+    function test_fetchDelegatedAgentPkpTokenIds() public {
+        uint256 newAppId = 1;
+        uint256 newAppVersion = _registerBasicApp(newAppId);
+
+        // Create arrays for all registered tools
+        string[] memory toolIpfsCids = new string[](2);
+        toolIpfsCids[0] = TOOL_IPFS_CID_1;
+        toolIpfsCids[1] = TOOL_IPFS_CID_2;
+
+        string[][] memory policyIpfsCids = new string[][](2);
+        policyIpfsCids[0] = new string[](1);
+        policyIpfsCids[0][0] = POLICY_IPFS_CID_1;
+        policyIpfsCids[1] = new string[](0);
+
+        bytes[][] memory policyParameterValues = new bytes[][](2);
+        policyParameterValues[0] = new bytes[](1);
+        policyParameterValues[0][0] = POLICY_PARAMETER_VALUES_1;
+        policyParameterValues[1] = new bytes[](0);
+
+        vm.startPrank(APP_USER_FRANK);
+        vincentUserFacet.permitAppVersion(
+            PKP_TOKEN_ID_1,
+            newAppId,
+            newAppVersion,
+            toolIpfsCids,
+            policyIpfsCids,
+            policyParameterValues
+        );
+        vm.stopPrank();
+
+        uint256[] memory delegatedAgentPkpTokenIds = vincentAppViewFacet.getDelegatedAgentPkpTokenIds(newAppId, newAppVersion, 0, 1);
+        assertEq(delegatedAgentPkpTokenIds.length, 1);
+        assertEq(delegatedAgentPkpTokenIds[0], PKP_TOKEN_ID_1);
+
+        vm.expectRevert(abi.encodeWithSelector(VincentAppViewFacet.InvalidOffsetOrLimit.selector));
+        vincentAppViewFacet.getDelegatedAgentPkpTokenIds(newAppId, newAppVersion, 1, 1);
+
+        vm.expectRevert(abi.encodeWithSelector(VincentAppViewFacet.InvalidOffsetOrLimit.selector));
+        vincentAppViewFacet.getDelegatedAgentPkpTokenIds(newAppId, newAppVersion, 0, 2);
+
+        vm.expectRevert(abi.encodeWithSelector(VincentAppViewFacet.InvalidOffsetOrLimit.selector));
+        vincentAppViewFacet.getDelegatedAgentPkpTokenIds(newAppId, newAppVersion, 1, 0);
     }
 
     function _registerApp(
+        uint256 appId,
         address[] memory delegatees,
         VincentAppFacet.AppVersionTools memory versionTools
-    ) private returns (uint256, uint256) {
+    ) private returns (uint256) {
         vm.startPrank(APP_MANAGER_ALICE);
-        (uint256 newAppId, uint256 newAppVersion) = vincentAppFacet.registerApp(delegatees, versionTools);
+        uint256 newAppVersion = vincentAppFacet.registerApp(appId, delegatees, versionTools);
         vm.stopPrank();
 
-        return (newAppId, newAppVersion);
+        return newAppVersion;
     }
 
-    function _registerBasicApp() private returns (uint256 newAppId, uint256 newAppVersion) {
+    function _registerBasicApp(uint256 appId) private returns (uint256 newAppVersion) {
         address[] memory delegatees = new address[](1);
         delegatees[0] = APP_DELEGATEE_CHARLIE;
 
@@ -632,13 +699,8 @@ contract VincentAppFacetTest is Test {
 
         versionTools.toolPolicies[1] = new string[](0);
 
-        assertEq(vincentAppViewFacet.getTotalAppCount(), 0);
-        
-        (newAppId, newAppVersion) = _registerApp(delegatees, versionTools);
+        newAppVersion = _registerApp(appId, delegatees, versionTools);
 
-        assertEq(vincentAppViewFacet.getTotalAppCount(), 1);
-
-        assertEq(newAppId, 1);
         assertEq(newAppVersion, 1);
     }
 }

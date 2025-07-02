@@ -43,20 +43,22 @@ contract VincentAppFacet is VincentBase {
     /**
      * @notice Register a new application with initial version, tools, and policies
      * @dev This function combines app registration and first version registration in one call
+     * @param appId The ID of the app to register
      * @param delegatees List of addresses authorized to act on behalf of the app
      * @param versionTools Tools and policies for the app version
-     * @return newAppId The ID of the newly registered app
-     * @return newAppVersion The version number of the newly registered app version (always 1 for new apps)
      */
-    function registerApp(address[] calldata delegatees, AppVersionTools calldata versionTools)
-        external
-        returns (uint256 newAppId, uint256 newAppVersion)
+    function registerApp(uint256 appId, address[] calldata delegatees, AppVersionTools calldata versionTools)
+        external returns (uint256 newAppVersion)
     {
-        newAppId = _registerApp(delegatees);
-        emit LibVincentAppFacet.NewAppRegistered(newAppId, msg.sender);
+        if (appId == 0) {
+            revert LibVincentAppFacet.ZeroAppIdNotAllowed();
+        }
 
-        newAppVersion = _registerNextAppVersion(newAppId, versionTools);
-        emit LibVincentAppFacet.NewAppVersionRegistered(newAppId, newAppVersion, msg.sender);
+        _registerApp(appId, delegatees);
+        emit LibVincentAppFacet.NewAppRegistered(appId, msg.sender);
+
+        newAppVersion = _registerNextAppVersion(appId, versionTools);
+        emit LibVincentAppFacet.NewAppVersionRegistered(appId, newAppVersion, msg.sender);
     }
 
     /**
@@ -171,11 +173,9 @@ contract VincentAppFacet is VincentBase {
         VincentAppStorage.AppStorage storage as_ = VincentAppStorage.appStorage();
         VincentAppStorage.App storage app = as_.appIdToApp[appId];
 
-        // Check that no app versions have delegated agent PKPs
-        for (uint256 i = 0; i < app.appVersions.length; i++) {
-            if (app.appVersions[i].delegatedAgentPkps.length() > 0) {
-                revert LibVincentAppFacet.AppVersionHasDelegatedAgents(appId, i + 1);
-            }
+        // Check if the app is already undeleted
+        if (app.isDeleted) {
+            revert LibVincentAppFacet.AppAlreadyDeleted(appId);
         }
 
         app.isDeleted = true;
@@ -183,21 +183,40 @@ contract VincentAppFacet is VincentBase {
     }
 
     /**
+     * @notice Undeletes an app by setting its isDeleted flag to false
+     * @dev Only the app manager can undelete an app
+     * @param appId ID of the app to undelete
+     */
+    function undeleteApp(uint256 appId) external onlyAppManager(appId) onlyRegisteredApp(appId) {
+        VincentAppStorage.AppStorage storage as_ = VincentAppStorage.appStorage();
+        VincentAppStorage.App storage app = as_.appIdToApp[appId];
+
+        if (!app.isDeleted) {
+            revert LibVincentAppFacet.AppAlreadyUndeleted(appId);
+        }
+
+        app.isDeleted = false;
+        emit LibVincentAppFacet.AppUndeleted(appId);
+    }
+
+    /**
      * @notice Internal function to register a new app
      * @dev Sets up the basic app structure and associates delegatees
+     * @param appId The ID of the app to register
      * @param delegatees List of addresses authorized to act on behalf of the app
-     * @return newAppId The ID of the newly registered app
      */
-    function _registerApp(address[] calldata delegatees) internal returns (uint256 newAppId) {
+    function _registerApp(uint256 appId, address[] calldata delegatees) internal {
         VincentAppStorage.AppStorage storage as_ = VincentAppStorage.appStorage();
 
-        newAppId = ++as_.appIdCounter;
+        if (as_.appIdToApp[appId].manager != address(0)) {
+            revert LibVincentAppFacet.AppAlreadyRegistered(appId);
+        }
 
         // Add the app to the manager's list of apps
-        as_.managerAddressToAppIds[msg.sender].add(newAppId);
+        as_.managerAddressToAppIds[msg.sender].add(appId);
 
         // Register the app
-        VincentAppStorage.App storage app = as_.appIdToApp[newAppId];
+        VincentAppStorage.App storage app = as_.appIdToApp[appId];
         app.manager = msg.sender;
 
         // Add the delegatees to the app
@@ -214,7 +233,7 @@ contract VincentAppFacet is VincentBase {
 
             app.delegatees.add(delegatees[i]);
 
-            as_.delegateeAddressToAppId[delegatees[i]] = newAppId;
+            as_.delegateeAddressToAppId[delegatees[i]] = appId;
         }
     }
 
@@ -248,12 +267,12 @@ contract VincentAppFacet is VincentBase {
             );
         }
 
-        // Step 4: Fetch necessary storage references.
+        // Step 2: Fetch necessary storage references.
         VincentAppStorage.AppStorage storage as_ = VincentAppStorage.appStorage();
         VincentAppStorage.App storage app = as_.appIdToApp[appId];
         VincentLitActionStorage.LitActionStorage storage ls = VincentLitActionStorage.litActionStorage();
 
-        // Step 5: Create a new app version.
+        // Step 3: Create a new app version.
         app.appVersions.push();
         newAppVersion = app.appVersions.length;
 

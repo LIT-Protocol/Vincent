@@ -56,6 +56,12 @@ library LibVincentAppFacet {
     event AppDeleted(uint256 indexed appId);
 
     /**
+     * @notice Emitted when an app is undeleted
+     * @param appId ID of the undeleted app
+     */
+    event AppUndeleted(uint256 indexed appId);
+
+    /**
      * @notice Error thrown when a non-manager attempts to modify an app
      * @param appId ID of the app being modified
      * @param msgSender Address that attempted the unauthorized modification
@@ -174,9 +180,26 @@ library LibVincentAppFacet {
     error AppAlreadyDeleted(uint256 appId);
 
     /**
+     * @notice Error thrown when the app is already undeleted
+     * @param appId ID of the undeleted app
+     */
+    error AppAlreadyUndeleted(uint256 appId);
+
+    /**
      * @notice Error thrown when the app version has delegated agents
      * @param appId ID of the app
      * @param appVersion Version number of the app
      */
     error AppVersionHasDelegatedAgents(uint256 appId, uint256 appVersion);
+
+    /**
+     * @notice Error thrown when the app ID is zero
+     */
+    error ZeroAppIdNotAllowed();
+
+    /**
+     * @notice Error thrown when the app is already registered
+     * @param appId ID of the app
+     */
+    error AppAlreadyRegistered(uint256 appId);
 }
