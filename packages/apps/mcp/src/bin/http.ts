@@ -14,18 +14,17 @@
  * @category Vincent MCP
  */
 
-import fs from 'node:fs';
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
 
 import { LIT_EVM_CHAINS } from '@lit-protocol/constants';
-import { VincentAppDefSchema } from '@lit-protocol/vincent-mcp-sdk';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { isInitializeRequest } from '@modelcontextprotocol/sdk/types.js';
 import cors from 'cors';
 import { ethers } from 'ethers';
 import express, { Request, Response } from 'express';
 
+import { getVincentAppDef } from '../appDefBuilder';
 import {
   authenticateWithSiwe,
   getSiweMessageToAuthenticate,
@@ -35,12 +34,9 @@ import { env } from '../env';
 import { getServer } from '../server';
 import { transportManager } from '../transportManager';
 
-const { PORT, VINCENT_APP_JSON_DEFINITION, VINCENT_DELEGATEE_PRIVATE_KEY } = env;
+const { PORT, VINCENT_DELEGATEE_PRIVATE_KEY } = env;
 
 const YELLOWSTONE = LIT_EVM_CHAINS.yellowstone;
-
-const vincentAppJson = fs.readFileSync(VINCENT_APP_JSON_DEFINITION, { encoding: 'utf8' });
-const vincentAppDef = VincentAppDefSchema.parse(JSON.parse(vincentAppJson));
 
 const delegateeSigner = new ethers.Wallet(
   VINCENT_DELEGATEE_PRIVATE_KEY,
@@ -117,8 +113,9 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../public', 'index.html'));
 });
 
-app.get('/appDef', (req, res) => {
-  res.sendFile(VINCENT_APP_JSON_DEFINITION);
+app.get('/appDef', async (req, res) => {
+  const appDef = await getVincentAppDef();
+  res.status(200).json(appDef);
 });
 
 app.get('/siwe', async (req: Request, res: Response) => {
@@ -196,6 +193,8 @@ app.post('/mcp', async (req: Request, res: Response) => {
         );
       }
 
+      const appDef = await getVincentAppDef();
+
       // Only one authentication. Good. Authenticate the user now
       let authenticatedAddress;
       try {
@@ -204,7 +203,7 @@ app.post('/mcp', async (req: Request, res: Response) => {
           ? // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             await authenticateWithSiwe(message!, signature!)
           : // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            authenticateWithJwt(jwt!, vincentAppDef.id, vincentAppDef.version);
+            authenticateWithJwt(jwt!, appDef.id, appDef.version);
       } catch (e) {
         console.error(`Client authentication failed: ${(e as Error).message}`);
         return returnWithError(
@@ -219,7 +218,7 @@ app.post('/mcp', async (req: Request, res: Response) => {
         const delegatorPkpEthAddress =
           authenticatedAddress !== delegateeSigner.address ? authenticatedAddress : undefined;
 
-        const server = await getServer(vincentAppDef, {
+        const server = await getServer(appDef, {
           delegateeSigner,
           delegatorPkpEthAddress,
         });

@@ -18,16 +18,14 @@
 import '../bootstrap'; // Bootstrap console.log to a log file
 import { ethers } from 'ethers';
 
-import fs from 'node:fs';
-
 import { LIT_EVM_CHAINS } from '@lit-protocol/constants';
-import { VincentAppDefSchema } from '@lit-protocol/vincent-mcp-sdk';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 
+import { getVincentAppDef } from '../appDefBuilder';
 import { env } from '../env';
 import { getServer } from '../server';
 
-const { VINCENT_APP_JSON_DEFINITION, VINCENT_DELEGATEE_PRIVATE_KEY } = env;
+const { VINCENT_DELEGATEE_PRIVATE_KEY } = env;
 
 const delegateeSigner = new ethers.Wallet(
   VINCENT_DELEGATEE_PRIVATE_KEY,
@@ -48,8 +46,7 @@ const delegateeSigner = new ethers.Wallet(
  */
 async function main() {
   const stdioTransport = new StdioServerTransport();
-  const vincentAppJson = fs.readFileSync(VINCENT_APP_JSON_DEFINITION, { encoding: 'utf8' });
-  const vincentAppDef = VincentAppDefSchema.parse(JSON.parse(vincentAppJson));
+  const vincentAppDef = await getVincentAppDef();
 
   const server = await getServer(vincentAppDef, {
     delegateeSigner,

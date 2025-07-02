@@ -4,7 +4,8 @@
   "name": "Uniswap Swap",
   "description": "This app offers tools to approve ERC20 token allowances and perform swaps on uniswap",
   "tools": {
-    "QmWHK5KsJitDwW1zHRoiJQdQECASzSjjphp4Rg8YqB6BsX": {
+    "@lit-protocol/vincent-tool-erc20-approval": {
+      "version": "1.0.1",
       "name": "erc20-approval",
       "description": "Allow an ERC20 token spending, up to a limit, to the Uniswap v3 Router contract. This is necessary to make trades on Uniswap.",
       "parameters": [
@@ -40,51 +41,10 @@
         }
       ]
     },
-    "QmSJWXQsmbp1Bbe7QKYugnJadnvGZJa1uf5y3gLvy6ZftU": {
+    "@lit-protocol/vincent-tool-uniswap-swap": {
+      "version": "1.0.1",
       "name": "uniswap-swap",
-      "description": "Executes a swap in Uniswap selling an specific amount of the input token to get another token. The necessary allowance for the input token must be approved for the Uniswap v3 Router contract.",
-      "parameters": [
-        {
-          "name": "chainIdForUniswap",
-          "type": "number",
-          "description": "The chain ID to execute the transaction on. For example: 8453 for Base."
-        },
-        {
-          "name": "rpcUrlForUniswap",
-          "type": "string",
-          "description": "An RPC endpoint for any chain that is supported by the @uniswap/sdk-core package. Must work for the chain specified in chainIdForUniswap"
-        },
-        {
-          "name": "ethRpcUrl",
-          "type": "string",
-          "description": "An Ethereum Mainnet RPC Endpoint. This is used to check USD <> ETH prices via Chainlink."
-        },
-        {
-          "name": "tokenInAddress",
-          "type": "string",
-          "description": "ERC20 Token address to sell. For example 0x4200000000000000000000000000000000000006 for WETH on Base."
-        },
-        {
-          "name": "tokenInDecimals",
-          "type": "number",
-          "description": "ERC20 Token to sell decimals. For example 18 for WETH on Base."
-        },
-        {
-          "name": "tokenInAmount",
-          "type": "number",
-          "description": "Amount of token to sell. For example 0.00001 for 0.00001 WETH. Must be greater than 0."
-        },
-        {
-          "name": "tokenOutAddress",
-          "type": "string",
-          "description": "ERC20 Token address to buy. For example 0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C for SPX600 on Base."
-        },
-        {
-          "name": "tokenOutDecimals",
-          "type": "number",
-          "description": "ERC20 Token to buy decimals. For example 18 for WETH on Base."
-        }
-      ]
+      "description": "Executes a swap in Uniswap selling an specific amount of the input token to get another token. The necessary allowance for the input token must be approved for the Uniswap v3 Router contract."
     }
   }
 }
