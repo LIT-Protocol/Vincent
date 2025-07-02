@@ -275,7 +275,7 @@ export type VincentParameter = z.infer<typeof VincentParameterSchema>;
 export const VincentToolDefSchema = z.object({
   name: z.string(),
   description: z.string(),
-  parameters: z.array(VincentParameterSchema),
+  parameters: z.array(VincentParameterSchema).optional(),
 });
 
 /**
@@ -286,6 +286,22 @@ export const VincentToolDefSchema = z.object({
  * @property parameters - An array of parameter definitions for the tool
  */
 export type VincentToolDef = z.infer<typeof VincentToolDefSchema>;
+
+/**
+ * Zod schema for validating Vincent tool definitions published in an NPM package
+ *
+ * This schema defines the structure of a tool in a NPM package.
+ */
+export const VincentToolNpmSchema = VincentToolDefSchema.extend({
+  version: z.string(),
+});
+
+/**
+ * Type representing a tool in a NPM package
+ *
+ * @property version - The version of the tool
+ */
+export type VincentToolNpm = z.infer<typeof VincentToolNpmSchema>;
 
 /**
  * Type representing a tool in a Vincent application with its IPFS CID
@@ -306,7 +322,7 @@ export const VincentAppDefSchema = z.object({
   name: z.string(),
   description: z.string().optional(),
   version: z.string(),
-  tools: z.record(VincentToolDefSchema),
+  tools: z.record(VincentToolNpmSchema),
 });
 
 /**

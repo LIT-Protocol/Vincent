@@ -4,7 +4,6 @@
   "sourceRoot": "packages/libs/app-sdk/src",
   "projectType": "library",
   "tags": [],
-  "publishable": false,
   "targets": {
     "clean": {},
     "dev": {

@@ -6,24 +6,32 @@
  * @module mcp/server
  * @category Vincent MCP SDK
  */
+import { exec } from 'node:child_process';
 
 import { LIT_NETWORK } from '@lit-protocol/constants';
 import { LitNodeClient } from '@lit-protocol/lit-node-client';
 import type { LitNodeClientConfig } from '@lit-protocol/types';
-import { utils } from '@lit-protocol/vincent-app-sdk';
+import { getVincentToolClient, utils } from '@lit-protocol/vincent-app-sdk';
 import type { Implementation } from '@modelcontextprotocol/sdk/types.js';
 import type { ServerOptions } from '@modelcontextprotocol/sdk/server/index.js';
+import { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js';
 import type { Transport } from '@modelcontextprotocol/sdk/shared/transport.js';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import {
+  CallToolResult,
+  ServerRequest,
+  ServerNotification,
+} from '@modelcontextprotocol/sdk/types.js';
 import { Signer } from 'ethers';
+import { type ZodRawShape } from 'zod';
 
 import {
   buildMcpToolName,
-  buildMcpParamDefinitions,
-  buildMcpToolCallback,
+  // buildMcpParamDefinitions,
+  // buildMcpToolCallback,
   VincentAppDef,
   VincentAppDefSchema,
-  VincentToolDefWithIPFS,
+  // VincentToolDefWithIPFS,
 } from './definitions';
 
 const { getDelegatorsAgentPkpAddresses } = utils;
@@ -61,19 +69,19 @@ export class VincentMcpServer extends McpServer {
     await this.litNodeClient.disconnect();
   }
 
-  vincentTool(
-    name: string,
-    toolData: VincentToolDefWithIPFS,
-    delegateeSigner: Signer,
-    delegatorPkpEthAddress?: string
-  ) {
-    this.tool(
-      name,
-      toolData.description,
-      buildMcpParamDefinitions(toolData.parameters, !delegatorPkpEthAddress),
-      buildMcpToolCallback(this.litNodeClient, delegateeSigner, delegatorPkpEthAddress, toolData)
-    );
-  }
+  // vincentTool(
+  //   name: string,
+  //   toolData: VincentToolDefWithIPFS,
+  //   delegateeSigner: Signer,
+  //   delegatorPkpEthAddress?: string
+  // ) {
+  //   this.tool(
+  //     name,
+  //     toolData.description,
+  //     buildMcpParamDefinitions(toolData.parameters, !delegatorPkpEthAddress),
+  //     buildMcpToolCallback(this.litNodeClient, delegateeSigner, delegatorPkpEthAddress, toolData)
+  //   );
+  // }
 }
 
 /**
@@ -131,7 +139,7 @@ export async function getVincentAppServer(
   vincentAppDefinition: VincentAppDef,
   config: DelegationMcpServerConfig
 ): Promise<McpServer> {
-  const { delegatorPkpEthAddress } = config;
+  const { delegateeSigner, delegatorPkpEthAddress } = config;
   const _vincentAppDefinition = VincentAppDefSchema.parse(vincentAppDefinition);
 
   const server = new VincentMcpServer({
@@ -199,14 +207,80 @@ export async function getVincentAppServer(
     }
   );
 
-  Object.entries(_vincentAppDefinition.tools).forEach(([toolIpfsCid, tool]) => {
-    server.vincentTool(
-      buildMcpToolName(_vincentAppDefinition, tool.name),
-      { ipfsCid: toolIpfsCid, ...tool },
-      config.delegateeSigner,
-      config.delegatorPkpEthAddress
+  // Fetch and install tool packages
+  await new Promise<void>((resolve, reject) => {
+    const toolPackages = Object.entries(_vincentAppDefinition.tools).map(
+      ([toolNpmName, pkgInfo]) => {
+        return `${toolNpmName}@${pkgInfo.version}`;
+      }
+    );
+    console.log(`Installing tool packages ${toolPackages.join(', ')}...`);
+    exec(
+      `pnpm i ${toolPackages.join(' ')} --save-exact --no-lockfile --ignore-scripts`,
+      (error, stdout, stderr) => {
+        if (error) {
+          console.error(error);
+          reject(error);
+          return;
+        }
+        // stderr has the debugger logs so it seems to fail when executing with the debugger
+        // if (stderr) {
+        //   console.error(stderr);
+        //   reject(stderr);
+        //   return;
+        // }
+
+        console.log(`Successfully installed ${toolPackages.join(', ')}`);
+        resolve();
+      }
     );
   });
+  // Load the tool packages
+  for await (const toolPackage of Object.keys(_vincentAppDefinition.tools)) {
+    console.log(`Loading tool package ${toolPackage}...`);
+    const tool = require(toolPackage); // This works
+    // const tool = await import(toolPackage); // This doesn't work
+    console.log(`Successfully loaded tool package ${toolPackage}`);
+    console.log(tool);
+
+    const bundledVincentTool = tool.bundledVincentTool;
+    const { vincentTool } = bundledVincentTool;
+
+    const toolClient = getVincentToolClient({
+      ethersSigner: delegateeSigner,
+      bundledVincentTool: bundledVincentTool,
+    });
+
+    server.tool(
+      buildMcpToolName(_vincentAppDefinition, vincentTool.packageName),
+      // tool.description,
+      vincentTool.toolParamsSchema.shape,
+      async (
+        args: ZodRawShape,
+        extra: RequestHandlerExtra<ServerRequest, ServerNotification>
+      ): Promise<CallToolResult> => {
+        const precheckResult = await toolClient.precheck(args, {
+          delegatorPkpEthAddress: delegatorPkpEthAddress!,
+        });
+        if (!precheckResult.success) {
+          throw new Error(JSON.stringify(precheckResult.result, null, 2));
+        }
+
+        const executeResult = await toolClient.execute(args, {
+          delegatorPkpEthAddress: delegatorPkpEthAddress!,
+        });
+
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(executeResult),
+            },
+          ],
+        };
+      }
+    );
+  }
 
   return server;
 }

@@ -14,6 +14,7 @@ import {
   buildVincentToolCallback,
   VincentAppDefSchema,
   VincentToolDefSchema,
+  VincentToolNpmSchema,
 } from './definitions';
 import type {
   ParameterType,
@@ -21,6 +22,7 @@ import type {
   VincentParameter,
   VincentToolDef,
   VincentToolDefWithIPFS,
+  VincentToolNpm,
 } from './definitions';
 import { getVincentAppServer } from './server';
 
@@ -30,6 +32,7 @@ export type {
   VincentParameter,
   VincentToolDef,
   VincentToolDefWithIPFS,
+  VincentToolNpm,
 };
 export {
   buildMcpToolName,
@@ -39,4 +42,5 @@ export {
   getVincentAppServer,
   VincentAppDefSchema,
   VincentToolDefSchema,
+  VincentToolNpmSchema,
 };
