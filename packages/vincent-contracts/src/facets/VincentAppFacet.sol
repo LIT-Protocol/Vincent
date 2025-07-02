@@ -173,6 +173,11 @@ contract VincentAppFacet is VincentBase {
         VincentAppStorage.AppStorage storage as_ = VincentAppStorage.appStorage();
         VincentAppStorage.App storage app = as_.appIdToApp[appId];
 
+        // Check if the app is already undeleted
+        if (app.isDeleted) {
+            revert LibVincentAppFacet.AppAlreadyDeleted(appId);
+        }
+
         app.isDeleted = true;
         emit LibVincentAppFacet.AppDeleted(appId);
     }
@@ -185,6 +190,10 @@ contract VincentAppFacet is VincentBase {
     function undeleteApp(uint256 appId) external onlyAppManager(appId) onlyRegisteredApp(appId) {
         VincentAppStorage.AppStorage storage as_ = VincentAppStorage.appStorage();
         VincentAppStorage.App storage app = as_.appIdToApp[appId];
+
+        if (!app.isDeleted) {
+            revert LibVincentAppFacet.AppAlreadyUndeleted(appId);
+        }
 
         app.isDeleted = false;
         emit LibVincentAppFacet.AppUndeleted(appId);

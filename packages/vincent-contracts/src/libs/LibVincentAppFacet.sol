@@ -180,6 +180,12 @@ library LibVincentAppFacet {
     error AppAlreadyDeleted(uint256 appId);
 
     /**
+     * @notice Error thrown when the app is already undeleted
+     * @param appId ID of the undeleted app
+     */
+    error AppAlreadyUndeleted(uint256 appId);
+
+    /**
      * @notice Error thrown when the app version has delegated agents
      * @param appId ID of the app
      * @param appVersion Version number of the app
