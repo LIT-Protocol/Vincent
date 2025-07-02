@@ -2,6 +2,16 @@ import type { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
 import type { IRelayPKP } from '@lit-protocol/types';
 import type { JWTHeader, JWTPayload } from 'did-jwt';
 
+export interface AppInfo {
+  id: string;
+  version: number;
+}
+
+export interface AuthenticationInfo {
+  type: string;
+  value?: string;
+}
+
 // Copied interface from did-jwt that is not exposed publicly
 interface JWTDecoded {
   header: JWTHeader;
@@ -28,14 +38,8 @@ export interface JWTConfig {
   payload: Record<string, unknown>;
   expiresInMinutes: number;
   audience: string | string[];
-  app: {
-    id: string;
-    version: number;
-  };
-  authentication: {
-    type: string;
-    value?: string;
-  };
+  app: AppInfo;
+  authentication: AuthenticationInfo;
 }
 
 /**
@@ -51,14 +55,8 @@ export interface JWTConfig {
  */
 export interface VincentJWTPayload extends JWTPayload {
   pkp: IRelayPKP;
-  app: {
-    id: string;
-    version: number;
-  };
-  authentication: {
-    type: string;
-    value?: string;
-  };
+  app: AppInfo;
+  authentication: AuthenticationInfo;
 }
 
 /**
