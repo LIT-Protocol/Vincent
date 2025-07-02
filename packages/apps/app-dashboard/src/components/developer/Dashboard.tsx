@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { StatusFilterDropdown, FilterOption } from '../ui/status-filter-dropdown';
 import { useErrorPopup } from '@/providers/ErrorPopup';
 import { StatusMessage } from '@/utils/statusMessage';
+import Loading from '@/components/layout/Loading';
 
 // Deployment status names
 const deploymentStatusNames = ['DEV', 'TEST', 'PROD'];
@@ -21,7 +22,6 @@ const statusFilterOptions: FilterOption[] = [
 
 export default function DashboardScreen({ vincentApp }: { vincentApp: AppView[] }) {
   const [dashboard, setDashboard] = useState<AppView[]>([]);
-  const [isRefetching, setIsRefetching] = useState(false);
   const [sortOption, setSortOption] = useState<string>('all');
   const [statusMessage, setStatusMessage] = useState<string>('');
   const [statusType, setStatusType] = useState<'info' | 'warning' | 'success' | 'error'>('info');
@@ -60,8 +60,6 @@ export default function DashboardScreen({ vincentApp }: { vincentApp: AppView[] 
           error instanceof Error ? error.message : 'Error loading dashboard',
           'Dashboard Error',
         );
-      } finally {
-        setIsRefetching(false);
       }
     }
   }, [vincentApp, showErrorWithStatus]);
@@ -77,12 +75,12 @@ export default function DashboardScreen({ vincentApp }: { vincentApp: AppView[] 
     return dashboard.filter((app) => app.deploymentStatus === statusValue);
   }, [dashboard, sortOption]);
 
-  if (!dashboard || isRefetching) {
+  if (!dashboard) {
     return (
       <div className="flex items-center justify-center h-[50vh]">
         <div className="space-y-4 text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
-          <p className="text-sm text-gray-600">{isRefetching ? 'Refreshing...' : 'Loading...'}</p>
+          <Loading />
         </div>
       </div>
     );

@@ -11,10 +11,10 @@ import {
 } from 'lucide-react';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { Button } from '@/components/ui/button';
-import { useState, useMemo } from 'react';
-import { AppList } from './sidebar/AppList';
-import { ToolList } from './sidebar/ToolList';
-import { PolicyList } from './sidebar/PolicyList';
+import { useState, useMemo, useEffect } from 'react';
+import { AppList } from './AppList';
+import { ToolList } from './ToolList';
+import { PolicyList } from './PolicyList';
 
 interface SidebarProps {
   expandedMenus: Set<string>;
@@ -73,6 +73,14 @@ export function Sidebar({
     setIsCollapsed(!isCollapsed);
   };
 
+  // Update main content margin when sidebar width changes
+  useEffect(() => {
+    const mainContent = document.querySelector('.main-content-area') as HTMLElement;
+    if (mainContent) {
+      mainContent.style.marginLeft = isCollapsed ? '64px' : '320px';
+    }
+  }, [isCollapsed]);
+
   // Memoize menu items to prevent unnecessary re-renders
   const menuItems = useMemo(
     () => [
@@ -119,7 +127,7 @@ export function Sidebar({
 
   return (
     <div
-      className={`${isCollapsed ? 'w-16' : 'w-80'} bg-white border-r border-gray-200 h-screen flex flex-col transition-all duration-300`}
+      className={`${isCollapsed ? 'w-16' : 'w-80'} bg-white border-r border-gray-200 h-screen flex flex-col transition-all duration-300 fixed top-0 left-0 z-40`}
     >
       {/* Header with toggle button */}
       <div className="flex items-center justify-between p-4 border-b border-gray-100">
@@ -261,7 +269,7 @@ export function Sidebar({
                 onClick={() => onMenuSelection(item.id)}
                 className={`w-full flex items-center ${
                   isCollapsed ? 'justify-center' : ''
-                } px-3 py-2 text-left rounded-lg transition-all duration-200 ease-in-out ${
+                } px-3 py-2 text-left rounded-lg transition-all duration-200 ease-in-out focus:outline-none ${
                   item.id === 'dashboard' &&
                   !selectedForm &&
                   !selectedListView &&
@@ -271,6 +279,7 @@ export function Sidebar({
                     ? 'bg-blue-50 text-blue-700 font-medium'
                     : 'text-gray-700 hover:bg-gray-50'
                 }`}
+                style={{ border: 'none', outline: 'none', boxShadow: 'none' }}
                 title={isCollapsed ? item.label : undefined}
               >
                 <Icon className="h-5 w-5 flex-shrink-0 transition-transform duration-200" />
@@ -286,7 +295,7 @@ export function Sidebar({
         <button
           className={`w-full flex items-center ${
             isCollapsed ? 'justify-center' : ''
-          } px-3 py-2 text-left text-gray-600 hover:text-gray-800 transition-colors rounded-lg`}
+          } px-3 py-2 text-left text-gray-600 hover:text-gray-800 transition-colors rounded-lg focus:outline-none`}
           onClick={() =>
             window.open('https://docs.heyvincent.ai/documents/Getting_Started.html', '_blank')
           }

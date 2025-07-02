@@ -1,13 +1,14 @@
 import { FileText, GitBranch } from 'lucide-react';
 import { useMemo } from 'react';
 import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
+import { Policy, PolicyVersion } from '@/types/developer-dashboard/appTypes';
 
 interface PolicyListProps {
-  policies: any[]; // FIXME: When we export the types for the policies, we can use them here
-  selectedPolicy: any | null;
+  policies: Policy[];
+  selectedPolicy: Policy | null;
   selectedPolicyView: string | null;
   expandedMenus: Set<string>;
-  onPolicySelection: (policy: any) => void;
+  onPolicySelection: (policy: Policy) => void;
   onPolicyViewSelection: (viewId: string) => void;
   onToggleMenu: (menuId: string) => void;
 }
@@ -25,14 +26,15 @@ export function PolicyList({
     data: policyVersions,
     isLoading: versionsLoading,
     error: versionsError,
-  } = vincentApiClient.useGetPolicyVersionsQuery(
-    { packageName: selectedPolicy?.packageName },
-    { skip: !selectedPolicy?.packageName || typeof selectedPolicy.packageName !== 'string' },
-  );
+  } = vincentApiClient.useGetPolicyVersionsQuery({
+    packageName: selectedPolicy?.packageName || '',
+  });
 
   const sortedVersions = useMemo(() => {
     if (!policyVersions || policyVersions.length === 0) return [];
-    return [...policyVersions].sort((a: any, b: any) =>
+    // Filter out deleted versions from sidebar dropdown
+    const activeVersions = policyVersions.filter((version: PolicyVersion) => !version.isDeleted);
+    return [...activeVersions].sort((a: PolicyVersion, b: PolicyVersion) =>
       b.version.localeCompare(a.version, undefined, { numeric: true }),
     );
   }, [policyVersions]);
@@ -48,7 +50,7 @@ export function PolicyList({
         icon: GitBranch,
         submenu:
           sortedVersions.length > 0
-            ? sortedVersions.map((version: any) => ({
+            ? sortedVersions.map((version: PolicyVersion) => ({
                 id: `version-${version.version}`,
                 label: `Version ${version.version}${version.version === selectedPolicy.activeVersion ? ' (Active)' : ''}`,
               }))
@@ -79,20 +81,21 @@ export function PolicyList({
 
   return (
     <div className="ml-4 mt-1 space-y-1">
-      {policies.map((policy: any) => (
+      {policies.map((policy: Policy) => (
         <div key={policy.packageName}>
           <button
             onClick={() => onPolicySelection(policy)}
-            className={`w-full text-left px-3 py-2 text-xs rounded-lg transition-all duration-200 ease-in-out ${
+            className={`w-full text-left px-3 py-2 text-xs rounded-lg transition-all duration-200 ease-in-out focus:outline-none ${
               selectedPolicy?.packageName === policy.packageName
                 ? 'bg-blue-50 text-blue-700 font-medium'
                 : 'text-gray-500 hover:bg-gray-50'
             }`}
-            aria-label={`Select policy ${policy.policyTitle}`}
+            style={{ border: 'none', outline: 'none', boxShadow: 'none' }}
+            aria-label={`Select policy ${policy.title}`}
             aria-pressed={selectedPolicy?.packageName === policy.packageName}
           >
             <div className="truncate">
-              <div className="font-medium">{policy.policyTitle}</div>
+              <div className="font-medium">{policy.title}</div>
               <div className="text-xs opacity-75">{policy.packageName}</div>
             </div>
           </button>
@@ -114,13 +117,14 @@ export function PolicyList({
                       <button
                         onClick={() => handlePolicyViewNavigation(policyItem.id)}
                         disabled={hasVersionsError}
-                        className={`w-full flex items-center px-3 py-2 text-sm rounded-lg transition-colors ${
+                        className={`w-full flex items-center px-3 py-2 text-sm rounded-lg transition-colors focus:outline-none ${
                           hasVersionsError
                             ? 'text-gray-400 cursor-not-allowed'
                             : selectedPolicyView === policyItem.id
                               ? 'bg-blue-50 text-blue-700 font-medium'
                               : 'text-gray-700 hover:bg-gray-50'
                         }`}
+                        style={{ border: 'none', outline: 'none', boxShadow: 'none' }}
                         aria-label={policyItem.label}
                         aria-expanded={isPolicySubmenuExpanded}
                         aria-controls={`submenu-${policyItem.id}`}
@@ -161,13 +165,14 @@ export function PolicyList({
                                 key={subMenuItem.id}
                                 onClick={() => handlePolicySubmenuNavigation(subMenuItem.id)}
                                 disabled={subMenuItem.disabled}
-                                className={`w-full text-left px-4 py-2 text-xs rounded-lg transition-all duration-200 ease-in-out ${
+                                className={`w-full text-left px-4 py-2 text-xs rounded-lg transition-all duration-200 ease-in-out focus:outline-none ${
                                   subMenuItem.disabled
                                     ? 'text-gray-400 cursor-not-allowed'
                                     : selectedPolicyView === subMenuItem.id
                                       ? 'bg-blue-50 text-blue-700 font-medium'
                                       : 'text-gray-600 hover:bg-gray-50'
                                 }`}
+                                style={{ border: 'none', outline: 'none', boxShadow: 'none' }}
                                 aria-label={subMenuItem.label}
                                 aria-pressed={
                                   !subMenuItem.disabled && selectedPolicyView === subMenuItem.id
@@ -187,11 +192,12 @@ export function PolicyList({
                   <button
                     key={policyItem.id}
                     onClick={() => handlePolicyViewNavigation(policyItem.id)}
-                    className={`w-full flex items-center px-3 py-2 text-left rounded-lg transition-all duration-200 ease-in-out text-sm ${
+                    className={`w-full flex items-center px-3 py-2 text-left rounded-lg transition-all duration-200 ease-in-out text-sm focus:outline-none ${
                       selectedPolicyView === policyItem.id
                         ? 'bg-blue-50 text-blue-700 font-medium'
                         : 'text-gray-600 hover:bg-gray-50'
                     }`}
+                    style={{ border: 'none', outline: 'none', boxShadow: 'none' }}
                     aria-label={policyItem.label}
                     aria-pressed={selectedPolicyView === policyItem.id}
                   >

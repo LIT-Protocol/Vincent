@@ -1,26 +1,10 @@
-import { useMemo, useEffect, useCallback, useReducer } from 'react';
+import { useEffect, useCallback, useReducer } from 'react';
 import { useAccount } from 'wagmi';
 import { useLocation, useNavigate, useParams } from 'react-router';
-import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
-
-// Type definitions
-interface App {
-  appId: number;
-  managerAddress: string;
-  [key: string]: any;
-}
-
-interface Tool {
-  packageName: string;
-  authorWalletAddress: string;
-  [key: string]: any;
-}
-
-interface Policy {
-  packageName: string;
-  authorWalletAddress: string;
-  [key: string]: any;
-}
+import { useUserApps } from '@/hooks/developer-dashboard/app/useUserApps';
+import { useUserTools } from '@/hooks/developer-dashboard/tool/useUserTools';
+import { useUserPolicies } from '@/hooks/developer-dashboard/policy/useUserPolicies';
+import { App, Tool, Policy } from '@/types/developer-dashboard/appTypes';
 
 interface SidebarState {
   expandedMenus: Set<string>;
@@ -76,7 +60,17 @@ function sidebarReducer(state: SidebarState, action: SidebarAction): SidebarStat
         expandedMenus: action.payload.expandedMenus,
       };
 
-    case 'SET_FORM':
+    case 'SET_FORM': {
+      // Determine which parent menu should be expanded based on form type
+      const expandedMenus = new Set<string>();
+      if (action.payload === 'create-app') {
+        expandedMenus.add('app');
+      } else if (action.payload === 'create-tool') {
+        expandedMenus.add('tool');
+      } else if (action.payload === 'create-policy') {
+        expandedMenus.add('policy');
+      }
+
       return {
         ...state,
         selectedForm: action.payload,
@@ -87,7 +81,9 @@ function sidebarReducer(state: SidebarState, action: SidebarAction): SidebarStat
         selectedToolView: null,
         selectedPolicy: null,
         selectedPolicyView: null,
+        expandedMenus,
       };
+    }
 
     case 'SET_APP_STATE':
       return {
@@ -132,7 +128,7 @@ function sidebarReducer(state: SidebarState, action: SidebarAction): SidebarStat
 }
 
 export function useAppSidebar() {
-  const { address, isConnected } = useAccount();
+  const { isConnected } = useAccount();
   const location = useLocation();
   const navigate = useNavigate();
   const params = useParams();
@@ -141,50 +137,17 @@ export function useAppSidebar() {
 
   const [state, dispatch] = useReducer(sidebarReducer, initialState);
 
+  // Use filtered hooks instead of unified data context
+  const { data: filteredApps, isLoading: appsLoading, isError: appsError } = useUserApps();
+  const { data: filteredTools, isLoading: toolsLoading, isError: toolsError } = useUserTools();
   const {
-    data: apiApps,
-    error: appsError,
-    isLoading: appsLoading,
-  } = vincentApiClient.useListAppsQuery(undefined, {
-    skip: !shouldShowSidebar,
-  });
-
-  const {
-    data: allTools,
-    error: toolsError,
-    isLoading: toolsLoading,
-  } = vincentApiClient.useListAllToolsQuery(undefined, {
-    skip: !shouldShowSidebar,
-  });
-
-  const {
-    data: allPolicies,
-    error: policiesError,
+    data: filteredPolicies,
     isLoading: policiesLoading,
-  } = vincentApiClient.useListAllPoliciesQuery(undefined, {
-    skip: !shouldShowSidebar,
-  });
+    isError: policiesError,
+  } = useUserPolicies();
 
-  const filteredApps = useMemo(() => {
-    if (!address || !apiApps || apiApps.length === 0) return [];
-    return apiApps.filter(
-      (apiApp: App) => apiApp.managerAddress.toLowerCase() === address.toLowerCase(),
-    );
-  }, [apiApps, address]);
-
-  const filteredTools = useMemo(() => {
-    if (!address || !allTools || allTools.length === 0) return [];
-    return allTools.filter(
-      (tool: Tool) => tool.authorWalletAddress.toLowerCase() === address.toLowerCase(),
-    );
-  }, [allTools, address]);
-
-  const filteredPolicies = useMemo(() => {
-    if (!address || !allPolicies || allPolicies.length === 0) return [];
-    return allPolicies.filter(
-      (policy: Policy) => policy.authorWalletAddress.toLowerCase() === address.toLowerCase(),
-    );
-  }, [allPolicies, address]);
+  const isLoading = appsLoading || toolsLoading || policiesLoading;
+  const hasErrors = appsError || toolsError || policiesError;
 
   const findAppById = useCallback(
     (appId: number): App | null => {
@@ -211,7 +174,7 @@ export function useAppSidebar() {
   );
 
   useEffect(() => {
-    if (!shouldShowSidebar || appsLoading || toolsLoading || policiesLoading) {
+    if (!shouldShowSidebar || isLoading) {
       return;
     }
 
@@ -298,7 +261,7 @@ export function useAppSidebar() {
             expandedMenus: menusToExpand,
           },
         });
-      } else if (pathname.startsWith('/developer/toolId/') || params.packageName) {
+      } else if (pathname.startsWith('/developer/toolId/')) {
         // Handle tool-specific routes using params OR pathname parsing
         let packageName: string;
 
@@ -349,24 +312,24 @@ export function useAppSidebar() {
             expandedMenus: menusToExpand,
           },
         });
-      } else if (pathname.startsWith('/developer/policyId/') || params.policyId) {
+      } else if (pathname.startsWith('/developer/policyId/')) {
         // Handle policy-specific routes using params OR pathname parsing
         let packageName: string;
 
-        if (params.policyId) {
+        if (params.packageName) {
           try {
-            packageName = decodeURIComponent(params.policyId);
+            packageName = decodeURIComponent(params.packageName);
           } catch (error) {
-            console.error(`Invalid policyId parameter: ${params.policyId}`, error);
+            console.error(`Invalid packageName parameter: ${params.packageName}`, error);
             return;
           }
         } else {
           // Extract packageName from pathname: /developer/policyId/package-name
-          const parts = pathname.split('/'); // ['', 'developer', 'policyId', 'package-name']
+          const parts = pathname.split('/'); // ['', 'developer', 'policyId', 'package-name'] TEMP: This is a hack to get the package name from the pathname
           try {
             packageName = decodeURIComponent(parts[3]);
           } catch (error) {
-            console.error(`Invalid policyId in pathname: ${pathname}`, error);
+            console.error(`Invalid packageName in pathname: ${pathname}`, error);
             return;
           }
         }
@@ -410,17 +373,8 @@ export function useAppSidebar() {
     params.versionId,
     params.packageName,
     params.version,
-    params.policyId,
-    filteredApps,
-    filteredTools,
-    filteredPolicies,
     shouldShowSidebar,
-    appsLoading,
-    toolsLoading,
-    policiesLoading,
-    findAppById,
-    findToolByPackageName,
-    findPolicyByPackageName,
+    isLoading,
   ]);
 
   // Handle menu toggle
@@ -570,12 +524,14 @@ export function useAppSidebar() {
     selectedToolView: state.selectedToolView,
     selectedPolicy: state.selectedPolicy,
     selectedPolicyView: state.selectedPolicyView,
+
+    // Data from filtered hooks
     apps: filteredApps,
     tools: filteredTools,
     policies: filteredPolicies,
-    // Loading and error states
-    isLoading: appsLoading || toolsLoading || policiesLoading,
-    hasErrors: !!(appsError || toolsError || policiesError),
+    isLoading,
+    hasErrors,
+
     // Handlers
     onToggleMenu: handleToggleMenu,
     onCategoryClick: handleCategoryClick,
