@@ -8,14 +8,8 @@
  */
 import { exec } from 'node:child_process';
 
-import { LIT_NETWORK } from '@lit-protocol/constants';
-import { LitNodeClient } from '@lit-protocol/lit-node-client';
-import type { LitNodeClientConfig } from '@lit-protocol/types';
 import { getVincentToolClient, utils } from '@lit-protocol/vincent-app-sdk';
-import type { Implementation } from '@modelcontextprotocol/sdk/types.js';
-import type { ServerOptions } from '@modelcontextprotocol/sdk/server/index.js';
 import { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js';
-import type { Transport } from '@modelcontextprotocol/sdk/shared/transport.js';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import {
   CallToolResult,
@@ -27,11 +21,9 @@ import { type ZodRawShape } from 'zod';
 
 import {
   buildMcpToolName,
-  // buildMcpParamDefinitions,
-  // buildMcpToolCallback,
   VincentAppDef,
   VincentAppDefSchema,
-  // VincentToolDefWithIPFS,
+  VincentAppTools,
 } from './definitions';
 
 const { getDelegatorsAgentPkpAddresses } = utils;
@@ -41,47 +33,96 @@ export interface DelegationMcpServerConfig {
   delegatorPkpEthAddress: string | undefined;
 }
 
-export interface LitServerOptions extends ServerOptions {
-  litNodeClientOptions: LitNodeClientConfig;
+async function installToolPackages(tools: VincentAppTools) {
+  return await new Promise<void>((resolve, reject) => {
+    const toolPackages = Object.entries(tools).map(([toolNpmName, pkgInfo]) => {
+      return `${toolNpmName}@${pkgInfo.version}`;
+    });
+    console.log(`Installing tool packages ${toolPackages.join(', ')}...`);
+    // TODO use npm but check compatibility
+    exec(
+      `pnpm i ${toolPackages.join(' ')} --save-exact --no-lockfile --ignore-scripts`,
+      (error, stdout, stderr) => {
+        if (error) {
+          console.error(error);
+          reject(error);
+          return;
+        }
+        // stderr has the debugger logs so it seems to fail when executing with the debugger
+        // if (stderr) {
+        //   console.error(stderr);
+        //   reject(stderr);
+        //   return;
+        // }
+
+        console.log(`Successfully installed ${toolPackages.join(', ')}`);
+        resolve();
+      }
+    );
+  });
 }
 
-export class VincentMcpServer extends McpServer {
-  litNodeClient: LitNodeClient;
+async function registerVincentTools(
+  vincentAppDef: VincentAppDef,
+  server: McpServer,
+  config: DelegationMcpServerConfig
+) {
+  const { delegateeSigner, delegatorPkpEthAddress } = config;
 
-  constructor(serverInfo: Implementation, options?: LitServerOptions) {
-    super(serverInfo, options);
+  for await (const [toolPackage, toolData] of Object.entries(vincentAppDef.tools)) {
+    console.log(`Loading tool package ${toolPackage}...`);
+    const tool = require(toolPackage); // This works
+    // const tool = await import(toolPackage); // TODO This doesn't work
+    console.log(`Successfully loaded tool package ${toolPackage}`);
 
-    const litNodeClientOptions = options?.litNodeClientOptions || {};
-    this.litNodeClient = new LitNodeClient({
-      debug: true,
-      litNetwork: LIT_NETWORK.Datil,
-      ...litNodeClientOptions,
+    const bundledVincentTool = tool.bundledVincentTool;
+    const { vincentTool } = bundledVincentTool;
+    const {
+      toolParamsSchema: { shape: paramsSchema },
+    } = vincentTool;
+
+    const toolClient = getVincentToolClient({
+      ethersSigner: delegateeSigner,
+      bundledVincentTool: bundledVincentTool,
     });
+
+    // Add available descriptions to each param
+    toolData.parameters?.forEach((param) => {
+      if (param.description) {
+        paramsSchema[param.name] = paramsSchema[param.name].describe(param.description);
+      }
+    });
+
+    server.tool(
+      buildMcpToolName(vincentAppDef, toolData.name || toolPackage),
+      toolData.description || '',
+      paramsSchema,
+      async (
+        args: ZodRawShape,
+        extra: RequestHandlerExtra<ServerRequest, ServerNotification>
+      ): Promise<CallToolResult> => {
+        const precheckResult = await toolClient.precheck(args, {
+          delegatorPkpEthAddress: delegatorPkpEthAddress!,
+        });
+        if (!precheckResult.success) {
+          throw new Error(JSON.stringify(precheckResult.result, null, 2));
+        }
+
+        const executeResult = await toolClient.execute(args, {
+          delegatorPkpEthAddress: delegatorPkpEthAddress!,
+        });
+
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(executeResult),
+            },
+          ],
+        };
+      }
+    );
   }
-
-  override async connect(transport: Transport): Promise<void> {
-    await super.connect(transport);
-
-    await this.litNodeClient.connect();
-  }
-
-  override async close(): Promise<void> {
-    await this.litNodeClient.disconnect();
-  }
-
-  // vincentTool(
-  //   name: string,
-  //   toolData: VincentToolDefWithIPFS,
-  //   delegateeSigner: Signer,
-  //   delegatorPkpEthAddress?: string
-  // ) {
-  //   this.tool(
-  //     name,
-  //     toolData.description,
-  //     buildMcpParamDefinitions(toolData.parameters, !delegatorPkpEthAddress),
-  //     buildMcpToolCallback(this.litNodeClient, delegateeSigner, delegatorPkpEthAddress, toolData)
-  //   );
-  // }
 }
 
 /**
@@ -139,18 +180,18 @@ export async function getVincentAppServer(
   vincentAppDefinition: VincentAppDef,
   config: DelegationMcpServerConfig
 ): Promise<McpServer> {
-  const { delegateeSigner, delegatorPkpEthAddress } = config;
-  const _vincentAppDefinition = VincentAppDefSchema.parse(vincentAppDefinition);
+  const { delegatorPkpEthAddress } = config;
+  const vincentAppDef = VincentAppDefSchema.parse(vincentAppDefinition);
 
-  const server = new VincentMcpServer({
-    name: _vincentAppDefinition.name,
-    version: _vincentAppDefinition.version,
+  const server = new McpServer({
+    name: vincentAppDef.name,
+    version: vincentAppDef.version,
   });
 
   if (delegatorPkpEthAddress) {
     server.tool(
-      buildMcpToolName(_vincentAppDefinition, 'get-current-agent-pkp-address'),
-      `Tool to get your agent pkp eth address in use for the ${_vincentAppDefinition.name} Vincent App MCP.`,
+      buildMcpToolName(vincentAppDef, 'get-current-agent-pkp-address'),
+      `Tool to get your agent pkp eth address in use for the ${vincentAppDef.name} Vincent App MCP.`,
       async () => {
         return {
           content: [
@@ -165,11 +206,11 @@ export async function getVincentAppServer(
   } else {
     // In delegatee mode (no delegator), user has to be able to fetch its delegators and select which one to operate on behalf of
     server.tool(
-      buildMcpToolName(_vincentAppDefinition, 'get-delegators-eth-addresses'),
-      `Tool to get the delegators pkp Eth addresses for the ${_vincentAppDefinition.name} Vincent App.`,
+      buildMcpToolName(vincentAppDef, 'get-delegators-eth-addresses'),
+      `Tool to get the delegators pkp Eth addresses for the ${vincentAppDef.name} Vincent App.`,
       async () => {
-        const appId = parseInt(_vincentAppDefinition.id, 10);
-        const appVersion = parseInt(_vincentAppDefinition.version, 10);
+        const appId = parseInt(vincentAppDef.id, 10);
+        const appVersion = parseInt(vincentAppDef.version, 10);
 
         const delegatorsPkpEthAddresses = await getDelegatorsAgentPkpAddresses(appId, appVersion);
 
@@ -186,14 +227,14 @@ export async function getVincentAppServer(
   }
 
   server.tool(
-    buildMcpToolName(_vincentAppDefinition, 'get-current-vincent-app-info'),
-    `Tool to get the ${_vincentAppDefinition.name} Vincent App info.`,
+    buildMcpToolName(vincentAppDef, 'get-current-vincent-app-info'),
+    `Tool to get the ${vincentAppDef.name} Vincent App info.`,
     async () => {
       const appInfo = {
-        id: _vincentAppDefinition.id,
-        name: _vincentAppDefinition.name,
-        version: _vincentAppDefinition.version,
-        description: _vincentAppDefinition.description,
+        id: vincentAppDef.id,
+        name: vincentAppDef.name,
+        version: vincentAppDef.version,
+        description: vincentAppDef.description,
       };
 
       return {
@@ -207,80 +248,9 @@ export async function getVincentAppServer(
     }
   );
 
-  // Fetch and install tool packages
-  await new Promise<void>((resolve, reject) => {
-    const toolPackages = Object.entries(_vincentAppDefinition.tools).map(
-      ([toolNpmName, pkgInfo]) => {
-        return `${toolNpmName}@${pkgInfo.version}`;
-      }
-    );
-    console.log(`Installing tool packages ${toolPackages.join(', ')}...`);
-    exec(
-      `pnpm i ${toolPackages.join(' ')} --save-exact --no-lockfile --ignore-scripts`,
-      (error, stdout, stderr) => {
-        if (error) {
-          console.error(error);
-          reject(error);
-          return;
-        }
-        // stderr has the debugger logs so it seems to fail when executing with the debugger
-        // if (stderr) {
-        //   console.error(stderr);
-        //   reject(stderr);
-        //   return;
-        // }
-
-        console.log(`Successfully installed ${toolPackages.join(', ')}`);
-        resolve();
-      }
-    );
-  });
-  // Load the tool packages
-  for await (const toolPackage of Object.keys(_vincentAppDefinition.tools)) {
-    console.log(`Loading tool package ${toolPackage}...`);
-    const tool = require(toolPackage); // This works
-    // const tool = await import(toolPackage); // This doesn't work
-    console.log(`Successfully loaded tool package ${toolPackage}`);
-    console.log(tool);
-
-    const bundledVincentTool = tool.bundledVincentTool;
-    const { vincentTool } = bundledVincentTool;
-
-    const toolClient = getVincentToolClient({
-      ethersSigner: delegateeSigner,
-      bundledVincentTool: bundledVincentTool,
-    });
-
-    server.tool(
-      buildMcpToolName(_vincentAppDefinition, vincentTool.packageName),
-      // tool.description,
-      vincentTool.toolParamsSchema.shape,
-      async (
-        args: ZodRawShape,
-        extra: RequestHandlerExtra<ServerRequest, ServerNotification>
-      ): Promise<CallToolResult> => {
-        const precheckResult = await toolClient.precheck(args, {
-          delegatorPkpEthAddress: delegatorPkpEthAddress!,
-        });
-        if (!precheckResult.success) {
-          throw new Error(JSON.stringify(precheckResult.result, null, 2));
-        }
-
-        const executeResult = await toolClient.execute(args, {
-          delegatorPkpEthAddress: delegatorPkpEthAddress!,
-        });
-
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(executeResult),
-            },
-          ],
-        };
-      }
-    );
-  }
+  // Fetch and install tool packages, then load them as Vincent MCP Tools
+  await installToolPackages(vincentAppDef.tools);
+  await registerVincentTools(vincentAppDef, server, config);
 
   return server;
 }

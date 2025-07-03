@@ -19,6 +19,7 @@ import '../bootstrap'; // Bootstrap console.log to a log file
 import { ethers } from 'ethers';
 
 import { LIT_EVM_CHAINS } from '@lit-protocol/constants';
+import { disconnectVincentToolClients } from '@lit-protocol/vincent-app-sdk';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 
 import { getVincentAppDef } from '../appDefBuilder';
@@ -45,18 +46,28 @@ const delegateeSigner = new ethers.Wallet(
  * @internal
  */
 async function main() {
-  const stdioTransport = new StdioServerTransport();
   const vincentAppDef = await getVincentAppDef();
 
   const server = await getServer(vincentAppDef, {
     delegateeSigner,
     delegatorPkpEthAddress: undefined, // STDIO is ALWAYS running in a local environment
   });
-  await server.connect(stdioTransport);
-  console.error('Vincent MCP Server running in stdio mode'); // console.log is used for messaging the parent process
+  await server.connect(new StdioServerTransport());
+  console.error('Vincent MCP Server running in STDIO mode'); // console.log is used for messaging the parent process
+
+  function gracefulShutdown() {
+    console.error('🔌 Disconnecting from Lit Network...');
+
+    disconnectVincentToolClients();
+
+    console.error('🛑 Vincent MCP Server has been closed.');
+    process.exit(0);
+  }
+  process.on('SIGINT', gracefulShutdown);
+  process.on('SIGTERM', gracefulShutdown);
 }
 
 main().catch((error) => {
-  console.error('Fatal error in main():', error);
+  console.error('Fatal error starting MCP server in STDIO mode:', error);
   process.exit(1);
 });

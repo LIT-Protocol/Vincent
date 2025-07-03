@@ -29,6 +29,7 @@
   "main": "./dist/src/bin/cli.js",
   "scripts": {
     "dev:http": "tsx watch --tsconfig ./tsconfig.app.json --env-file=.env src/bin/http.ts",
+    "dev:stdio": "tsx watch --tsconfig ./tsconfig.app.json --env-file=.env src/bin/stdio.ts",
     "inspector": "npx @modelcontextprotocol/inspector",
     "integration:openAI": "tsx --env-file=.env ./integrations/openAI.ts",
     "integration:anthropic": "tsx --env-file=.env ./integrations/anthropic.ts"

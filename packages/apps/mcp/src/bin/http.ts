@@ -18,6 +18,8 @@ import path from 'node:path';
 import { randomUUID } from 'node:crypto';
 
 import { LIT_EVM_CHAINS } from '@lit-protocol/constants';
+import { disconnectVincentToolClients } from '@lit-protocol/vincent-app-sdk';
+import { VincentAppDef } from '@lit-protocol/vincent-mcp-sdk';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { isInitializeRequest } from '@modelcontextprotocol/sdk/types.js';
 import cors from 'cors';
@@ -37,6 +39,7 @@ import { transportManager } from '../transportManager';
 const { PORT, VINCENT_DELEGATEE_PRIVATE_KEY } = env;
 
 const YELLOWSTONE = LIT_EVM_CHAINS.yellowstone;
+let appDef: VincentAppDef | undefined;
 
 const delegateeSigner = new ethers.Wallet(
   VINCENT_DELEGATEE_PRIVATE_KEY,
@@ -135,6 +138,14 @@ app.get('/siwe', async (req: Request, res: Response) => {
 
 app.post('/mcp', async (req: Request, res: Response) => {
   try {
+    if (!appDef) {
+      return returnWithError(
+        res,
+        500,
+        'Vincent App Definition has not been loaded. Restart server',
+      );
+    }
+
     const sessionId = req.headers['mcp-session-id'] as string | undefined;
     let transport: StreamableHTTPServerTransport;
 
@@ -192,8 +203,6 @@ app.post('/mcp', async (req: Request, res: Response) => {
           'Authentication failed. Could not find JWT nor SIWE values. Choose one',
         );
       }
-
-      const appDef = await getVincentAppDef();
 
       // Only one authentication. Good. Authenticate the user now
       let authenticatedAddress;
@@ -270,6 +279,27 @@ app.delete('/mcp', async (req: Request, res: Response) => {
   return returnWithError(res, 405, 'Method not allowed');
 });
 
-app.listen(PORT, () => {
-  console.log(`MCP Stateless Streamable HTTP Server listening on port ${PORT}`);
+async function startServer() {
+  appDef = await getVincentAppDef();
+
+  const server = app.listen(PORT, () => {
+    console.log(`Vincent MCP Server listening on port ${PORT}`);
+  });
+
+  function gracefulShutdown() {
+    console.log('🔌 Disconnecting from Lit Network...');
+
+    disconnectVincentToolClients();
+
+    server.close(() => {
+      console.log('🛑 Vincent MCP Server has been closed.');
+      process.exit(0);
+    });
+  }
+  process.on('SIGINT', gracefulShutdown);
+  process.on('SIGTERM', gracefulShutdown);
+}
+startServer().catch((error) => {
+  console.error('Fatal error starting Vincent MCP server in HTTP mode:', error);
+  process.exit(1);
 });
