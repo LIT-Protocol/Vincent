@@ -5,11 +5,11 @@ import { VincentPolicy } from '../../types';
 
 /** @hidden */
 export function asBundledVincentPolicy<
-  const VP extends VincentPolicy<any, any, any, any, any, any, any, any, any, any, any, any, any>,
-  const IpfsCid extends string,
->(vincentPolicy: VP, ipfsCid: IpfsCid): BundledVincentPolicy<VP, IpfsCid> {
+  const VP extends VincentPolicy<any, any, any, any, any, any, any, any, any, any, any, any>,
+  Metadata extends { readonly packageName: string; readonly ipfsCid: string },
+>(vincentPolicy: VP, metadata: Metadata): BundledVincentPolicy<VP, Metadata> {
   return {
-    ipfsCid,
+    metadata,
     vincentPolicy,
     [__bundledPolicyBrand]: 'BundledVincentPolicy',
   };

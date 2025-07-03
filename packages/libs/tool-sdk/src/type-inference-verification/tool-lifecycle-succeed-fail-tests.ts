@@ -10,12 +10,14 @@ const dummyPolicy = createVincentToolPolicy({
   toolParamsSchema: toolParams,
   bundledVincentPolicy: asBundledVincentPolicy(
     createVincentPolicy({
-      packageName: 'test' as const,
       toolParamsSchema: z.object({ foo: z.string() }),
       evalAllowResultSchema: z.string(),
       evaluate: async (_, ctx) => ctx.allow('ok'),
     }),
-    'cid-test' as const,
+    {
+      ipfsCid: 'cid-test' as const,
+      packageName: 'test' as const,
+    },
   ),
   toolParameterMappings: { x: 'foo' },
 });

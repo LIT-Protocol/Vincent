@@ -27,8 +27,6 @@ declare const Lit: {
 };
 
 export const vincentPolicy = createVincentPolicy({
-  packageName: '@lit-protocol/vincent-policy-spending-limit' as const,
-
   toolParamsSchema,
   userParamsSchema,
   commitParamsSchema,

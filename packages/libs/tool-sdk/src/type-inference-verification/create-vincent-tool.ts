@@ -21,7 +21,6 @@ const policyEvalAllow = z.object({ ok: z.boolean() });
 const policyEvalDeny = z.object({ reason: z.string() });
 
 const PolicyConfig = createVincentPolicy({
-  packageName: 'limit-check' as const,
   toolParamsSchema: policySchema,
   evalAllowResultSchema: policyEvalAllow,
   evalDenyResultSchema: policyEvalDeny,
@@ -32,7 +31,10 @@ const PolicyConfig = createVincentPolicy({
   },
 });
 
-const bundled = asBundledVincentPolicy(PolicyConfig, 'QmCID123' as const);
+const bundled = asBundledVincentPolicy(PolicyConfig, {
+  ipfsCid: 'QmCID123' as const,
+  packageName: 'limit-check' as const,
+});
 
 const policy = createVincentToolPolicy({
   toolParamsSchema: toolParams,
