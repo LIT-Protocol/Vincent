@@ -67,6 +67,7 @@ import {
 import { isRemoteVincentToolExecutionResult, isToolResponseFailure } from './typeGuards';
 import * as util from 'node:util';
 
+/** @hidden */
 export const generateVincentToolSessionSigs = async ({
   litNodeClient,
   ethersSigner,

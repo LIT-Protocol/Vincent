@@ -102,7 +102,7 @@ function parseSiweHeader(header: string | undefined | null): ParsedSiweHeader | 
   return { b64message, signature };
 }
 
-function returnWithError(res: Response, httpStatus: number, message: string): void {
+function sendJsonRPCErrorResponse(res: Response, httpStatus: number, message: string): void {
   res.status(httpStatus).json({
     jsonrpc: '2.0',
     error: {
@@ -142,10 +142,17 @@ app.post('/mcp', async (req: Request, res: Response) => {
     let transport: StreamableHTTPServerTransport;
 
     // Get the corresponding transport (from sessionId or create a new one if asked)
-    if (sessionId && transportManager.getTransport(sessionId)) {
+    if (sessionId) {
       // Reuse existing transport
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      transport = transportManager.getTransport(sessionId)!;
+      const existingTransport = transportManager.getTransport(sessionId);
+      if (!existingTransport) {
+        return sendJsonRPCErrorResponse(
+          res,
+          400,
+          'Bad Request: No valid session ID provided. Transport not found.',
+        );
+      }
+      transport = existingTransport;
     } else if (!sessionId && isInitializeRequest(req.body)) {
       // New initialization request
       transport = new StreamableHTTPServerTransport({
@@ -183,13 +190,13 @@ app.post('/mcp', async (req: Request, res: Response) => {
 
       // Using both or none are incorrect
       if (usingSiwe && usingJwt) {
-        return returnWithError(
+        return sendJsonRPCErrorResponse(
           res,
           401,
           'Authentication failed. Found both JWT and SIWE values. Choose one',
         );
       } else if (!usingSiwe && !usingJwt) {
-        return returnWithError(
+        return sendJsonRPCErrorResponse(
           res,
           401,
           'Authentication failed. Could not find JWT nor SIWE values. Choose one',
@@ -207,7 +214,7 @@ app.post('/mcp', async (req: Request, res: Response) => {
             authenticateWithJwt(jwt!, vincentAppDef.id, vincentAppDef.version);
       } catch (e) {
         console.error(`Client authentication failed: ${(e as Error).message}`);
-        return returnWithError(
+        return sendJsonRPCErrorResponse(
           res,
           401,
           `Authentication failed. Check passed ${usingSiwe ? 'SIWE message and signature' : 'jwt'}`,
@@ -226,28 +233,27 @@ app.post('/mcp', async (req: Request, res: Response) => {
         await server.connect(transport);
       } catch (e) {
         console.error(`Client authentication failed: ${(e as Error).message}`);
-        return returnWithError(res, 500, 'Could not generate MCP Server');
+        return sendJsonRPCErrorResponse(res, 500, 'Could not generate MCP Server');
       }
     } else {
       // Invalid request
-      return returnWithError(res, 400, 'Bad Request: No valid session ID provided');
+      return sendJsonRPCErrorResponse(res, 400, 'Bad Request: No valid session ID provided');
     }
 
     // Handle the request
     await transport.handleRequest(req, res, req.body);
   } catch (error) {
     console.error('Error handling MCP request:', error);
-    return returnWithError(res, 500, 'Internal Server Error');
+    return sendJsonRPCErrorResponse(res, 500, 'Internal Server Error');
   }
 });
 
 /**
- * Handles GET and DELETE requests for MCP sessions
+ * Handles GET requests for MCP sessions
  *
  * This function processes requests that require an existing session,
- * such as GET requests for streaming responses or DELETE requests to
- * terminate a session. It validates the session ID and delegates the
- * request handling to the appropriate transport.
+ * such as GET requests for streaming responses. It validates the session
+ * ID and delegates the request handling to the appropriate transport.
  *
  * @param req - The Express request object
  * @param res - The Express response object
@@ -255,12 +261,19 @@ app.post('/mcp', async (req: Request, res: Response) => {
  */
 const handleSessionRequest = async (req: express.Request, res: express.Response) => {
   const sessionId = req.headers['mcp-session-id'] as string | undefined;
-  if (!sessionId || !transportManager.getTransport(sessionId)) {
-    return returnWithError(res, 400, 'Invalid or missing session ID');
+  if (!sessionId) {
+    return sendJsonRPCErrorResponse(res, 400, 'Invalid or missing session ID');
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const transport = transportManager.getTransport(sessionId)!;
+  const transport = transportManager.getTransport(sessionId);
+  if (!transport) {
+    return sendJsonRPCErrorResponse(
+      res,
+      400,
+      'Bad Request: No valid session ID provided. Transport not found.',
+    );
+  }
+
   await transport.handleRequest(req, res);
 };
 app.get('/mcp', handleSessionRequest);
@@ -268,7 +281,7 @@ app.get('/mcp', handleSessionRequest);
 // Clients are not allowed to delete their transport/session. Some never destroy it (Anthropic) and some try to use it after calling DELETE (OpenAI)
 // We take their ownership in transportManager
 app.delete('/mcp', async (req: Request, res: Response) => {
-  return returnWithError(res, 405, 'Method not allowed');
+  return sendJsonRPCErrorResponse(res, 405, 'Method not allowed');
 });
 
 app.listen(PORT, () => {

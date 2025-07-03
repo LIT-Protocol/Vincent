@@ -29,9 +29,7 @@
   "main": "./dist/src/bin/cli.js",
   "scripts": {
     "dev:http": "tsx watch --tsconfig ./tsconfig.app.json --env-file=.env src/bin/http.ts",
-    "inspector": "npx @modelcontextprotocol/inspector",
-    "integration:openAI": "tsx --env-file=.env ./integrations/openAI.ts",
-    "integration:anthropic": "tsx --env-file=.env ./integrations/anthropic.ts"
+    "inspector": "npx @modelcontextprotocol/inspector"
   },
   "dependencies": {
     "@lit-protocol/constants": "^7.1.1",
@@ -47,10 +45,8 @@
     "zod": "^3.25.64"
   },
   "devDependencies": {
-    "@anthropic-ai/sdk": "^0.52.0",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.1",
-    "openai": "^5.0.1",
     "tsx": "^4.19.4"
   }
 }
