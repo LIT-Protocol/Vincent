@@ -4,6 +4,9 @@ import UserLayout from './components/layout/UserLayout';
 import { AppProviders, UserProviders } from './providers';
 import { wrap } from './utils/components';
 
+import { ExplorerHomeWrapper } from './components/explorer/wrappers/HomeWrapper';
+import { AppInfoWrapper } from './components/explorer/wrappers/AppInfoWrapper';
+
 import Home from './pages/index';
 import Withdraw from './pages/withdraw';
 import CreateApp from './pages/create-app';
@@ -23,6 +26,14 @@ const routes: RouteObject[] = [
       {
         path: '/',
         element: <Home />,
+      },
+      {
+        path: '/explorer',
+        element: <ExplorerHomeWrapper />,
+      },
+      {
+        path: '/explorer/appId/:appId',
+        element: <AppInfoWrapper />,
       },
       {
         path: '/create-app',
