@@ -89,6 +89,8 @@ const StytchOTP = ({ method, authWithStytch, setView }: StytchOTPProps) => {
         session_duration_minutes: 60,
       });
 
+      await authWithStytch(response.session_jwt, response.user_id, method);
+
       try {
         setAuthInfo({
           type: method,
@@ -97,10 +99,10 @@ const StytchOTP = ({ method, authWithStytch, setView }: StytchOTPProps) => {
           authenticatedAt: new Date().toISOString(),
         });
       } catch (storageError) {
-        console.error('Error storing auth info in localStorage:', storageError);
+        setError('Authentication succeeded but failed to save auth info');
+        setLoading(false);
+        return;
       }
-
-      await authWithStytch(response.session_jwt, response.user_id, method);
     } catch (err: any) {
       console.error(`Error authenticating with ${method} OTP:`, err);
       let errorMessage = 'Failed to verify code. Please try again.';
