@@ -14,8 +14,6 @@ import {OwnershipFacet} from "../contracts/diamond-base/facets/OwnershipFacet.so
 // Vincent-specific facets - these are the only ones that can be updated through this script
 import {VincentAppFacet} from "../contracts/facets/VincentAppFacet.sol";
 import {VincentAppViewFacet} from "../contracts/facets/VincentAppViewFacet.sol";
-import {VincentLitActionFacet} from "../contracts/facets/VincentLitActionFacet.sol";
-import {VincentLitActionViewFacet} from "../contracts/facets/VincentLitActionViewFacet.sol";
 import {VincentUserFacet} from "../contracts/facets/VincentUserFacet.sol";
 import {VincentUserViewFacet} from "../contracts/facets/VincentUserViewFacet.sol";
 
@@ -119,10 +117,6 @@ contract UpdateFacet is Script {
             return address(new VincentAppFacet());
         } else if (compareStrings(facetName, "VincentAppViewFacet")) {
             return address(new VincentAppViewFacet());
-        } else if (compareStrings(facetName, "VincentLitActionFacet")) {
-            return address(new VincentLitActionFacet());
-        } else if (compareStrings(facetName, "VincentLitActionViewFacet")) {
-            return address(new VincentLitActionViewFacet());
         } else if (compareStrings(facetName, "VincentUserFacet")) {
             return address(new VincentUserFacet());
         } else if (compareStrings(facetName, "VincentUserViewFacet")) {
@@ -160,14 +154,6 @@ contract UpdateFacet is Script {
                 // Check for a common selector in VincentAppViewFacet - using a selector from the library
                 bytes4 getAppSelector = VincentAppViewFacet.getAppById.selector;
                 isTargetFacet = isSameFacetType(facetAddress, getAppSelector);
-            } else if (compareStrings(facetName, "VincentLitActionFacet")) {
-                // Check for a common selector in VincentLitActionFacet - using a selector from the library
-                bytes4 approveLitActionsSelector = VincentLitActionFacet.approveLitActions.selector;
-                isTargetFacet = isSameFacetType(facetAddress, approveLitActionsSelector);
-            } else if (compareStrings(facetName, "VincentLitActionViewFacet")) {
-                // Check for a common selector in VincentLitActionViewFacet - using a selector from the library
-                bytes4 getLitActionSelector = VincentLitActionViewFacet.getLitActionIpfsCidByHash.selector;
-                isTargetFacet = isSameFacetType(facetAddress, getLitActionSelector);
             } else if (compareStrings(facetName, "VincentUserFacet")) {
                 // Check for a common selector in VincentUserFacet - using a selector from the library
                 bytes4 registerUserSelector = VincentUserFacet.permitAppVersion.selector;
@@ -214,10 +200,6 @@ contract UpdateFacet is Script {
             return getVincentAppFacetSelectors();
         } else if (compareStrings(facetName, "VincentAppViewFacet")) {
             return getVincentAppViewFacetSelectors();
-        } else if (compareStrings(facetName, "VincentLitActionFacet")) {
-            return getVincentLitActionFacetSelectors();
-        } else if (compareStrings(facetName, "VincentLitActionViewFacet")) {
-            return getVincentLitActionViewFacetSelectors();
         } else if (compareStrings(facetName, "VincentUserFacet")) {
             return getVincentUserFacetSelectors();
         } else if (compareStrings(facetName, "VincentUserViewFacet")) {
@@ -231,60 +213,34 @@ contract UpdateFacet is Script {
 
     /// @dev Get VincentAppFacet selectors
     function getVincentAppFacetSelectors() internal pure returns (bytes4[] memory) {
-        bytes4[] memory selectors = new bytes4[](11);
+        bytes4[] memory selectors = new bytes4[](7);
         selectors[0] = VincentAppFacet.registerApp.selector;
         selectors[1] = VincentAppFacet.registerNextAppVersion.selector;
         selectors[2] = VincentAppFacet.enableAppVersion.selector;
-        selectors[3] = VincentAppFacet.addAuthorizedRedirectUri.selector;
-        selectors[4] = VincentAppFacet.removeAuthorizedRedirectUri.selector;
-        selectors[5] = VincentAppFacet.addDelegatee.selector;
-        selectors[6] = VincentAppFacet.removeDelegatee.selector;
-        selectors[7] = VincentAppFacet.updateAppName.selector;
-        selectors[8] = VincentAppFacet.updateAppDescription.selector;
-        selectors[9] = VincentAppFacet.updateAppDeploymentStatus.selector;
-        selectors[10] = VincentAppFacet.deleteApp.selector;
+        selectors[3] = VincentAppFacet.addDelegatee.selector;
+        selectors[4] = VincentAppFacet.removeDelegatee.selector;
+        selectors[5] = VincentAppFacet.deleteApp.selector;
+        selectors[6] = VincentAppFacet.undeleteApp.selector;
         return selectors;
     }
 
     /// @dev Get VincentAppViewFacet selectors
     function getVincentAppViewFacetSelectors() internal pure returns (bytes4[] memory) {
-        bytes4[] memory selectors = new bytes4[](7);
-        selectors[0] = VincentAppViewFacet.getTotalAppCount.selector;
-        selectors[1] = VincentAppViewFacet.getAppById.selector;
-        selectors[2] = VincentAppViewFacet.getAppVersion.selector;
-        selectors[3] = VincentAppViewFacet.getAppsByManager.selector;
-        selectors[4] = VincentAppViewFacet.getAppByDelegatee.selector;
-        selectors[5] = VincentAppViewFacet.getAuthorizedRedirectUriByHash.selector;
-        selectors[6] = VincentAppViewFacet.getAuthorizedRedirectUrisByAppId.selector;
-        return selectors;
-    }
-
-    /// @dev Get VincentLitActionFacet selectors
-    function getVincentLitActionFacetSelectors() internal pure returns (bytes4[] memory) {
-        bytes4[] memory selectors = new bytes4[](3);
-        selectors[0] = VincentLitActionFacet.approveLitActions.selector;
-        selectors[1] = VincentLitActionFacet.removeLitActionApprovals.selector;
-        selectors[2] = VincentLitActionFacet.updateApprovedLitActionsManager.selector;
-        return selectors;
-    }
-
-    /// @dev Get VincentLitActionViewFacet selectors
-    function getVincentLitActionViewFacetSelectors() internal pure returns (bytes4[] memory) {
-        bytes4[] memory selectors = new bytes4[](4);
-        selectors[0] = VincentLitActionViewFacet.getLitActionIpfsCidByHash.selector;
-        selectors[1] = VincentLitActionViewFacet.getAllApprovedLitActions.selector;
-        selectors[2] = VincentLitActionViewFacet.isLitActionApproved.selector;
-        selectors[3] = VincentLitActionViewFacet.getApprovedLitActionsManager.selector;
+        bytes4[] memory selectors = new bytes4[](5);
+        selectors[0] = VincentAppViewFacet.getAppById.selector;
+        selectors[1] = VincentAppViewFacet.getAppVersion.selector;
+        selectors[2] = VincentAppViewFacet.getAppsByManager.selector;
+        selectors[3] = VincentAppViewFacet.getAppByDelegatee.selector;
+        selectors[4] = VincentAppViewFacet.getDelegatedAgentPkpTokenIds.selector;
         return selectors;
     }
 
     /// @dev Get VincentUserFacet selectors
     function getVincentUserFacetSelectors() internal pure returns (bytes4[] memory) {
-        bytes4[] memory selectors = new bytes4[](4);
+        bytes4[] memory selectors = new bytes4[](3);
         selectors[0] = VincentUserFacet.permitAppVersion.selector;
         selectors[1] = VincentUserFacet.unPermitAppVersion.selector;
         selectors[2] = VincentUserFacet.setToolPolicyParameters.selector;
-        selectors[3] = VincentUserFacet.removeToolPolicyParameters.selector;
         return selectors;
     }
 
@@ -307,7 +263,6 @@ contract UpdateFacet is Script {
     function isValidFacetName(string memory facetName) internal pure returns (bool) {
         // Only allow Vincent-specific facets
         return compareStrings(facetName, "VincentAppFacet") || compareStrings(facetName, "VincentAppViewFacet")
-            || compareStrings(facetName, "VincentLitActionFacet") || compareStrings(facetName, "VincentLitActionViewFacet")
             || compareStrings(facetName, "VincentUserFacet") || compareStrings(facetName, "VincentUserViewFacet");
     }
 

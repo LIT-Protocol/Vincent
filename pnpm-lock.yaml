@@ -749,6 +749,10 @@ importers:
       pino-pretty:
         specifier: ^13.0.0
         version: 13.0.0
+    devDependencies:
+      '@openzeppelin/contracts':
+        specifier: 5.3.0
+        version: 5.3.0
 
   packages/libs/mcp-sdk:
     dependencies:
@@ -2671,6 +2675,9 @@ packages:
 
   '@openagenda/verror@3.1.4':
     resolution: {integrity: sha512-+V7QuD6v5sMWez7cu+5DXoXMim+iQssOcspoNgbWDW8sEyC54Mdo5VuIkcIjqhPmQYOzBWo5qlbzNGEpD6PzMA==}
+
+  '@openzeppelin/contracts@5.3.0':
+    resolution: {integrity: sha512-zj/KGoW7zxWUE8qOI++rUM18v+VeLTTzKs/DJFkSzHpQFPD/jKKF0TrMxBfGLl3kpdELCNccvB3zmofSzm4nlA==}
 
   '@oven/bun-darwin-aarch64@1.2.16':
     resolution: {integrity: sha512-NLVU9YDORq/3WuJOE5TQv5of3R99n56gYZPfdqP4U0/5nllbC8yzRxA2BWwAS2RxxD0Y3bxqEVUsIGiTNN2jxg==}
@@ -4879,7 +4886,6 @@ packages:
 
   bun@1.2.16:
     resolution: {integrity: sha512-sjZH6rr1P6yu44+XPA8r+ZojwmK9Kbz9lO6KAA/4HRIupdpC31k7b93crLBm19wEYmd6f2+3+57/7tbOcmHbGg==}
-    cpu: [arm64, x64, aarch64]
     os: [darwin, linux, win32]
     hasBin: true
 
@@ -14365,6 +14371,8 @@ snapshots:
       depd: 2.0.0
       inherits: 2.0.4
       sprintf-js: 1.1.3
+
+  '@openzeppelin/contracts@5.3.0': {}
 
   '@oven/bun-darwin-aarch64@1.2.16':
     optional: true

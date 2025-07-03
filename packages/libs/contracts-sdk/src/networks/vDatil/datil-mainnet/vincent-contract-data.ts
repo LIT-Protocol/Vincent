@@ -3,186 +3,9 @@
  * This file is auto-generated. DO NOT EDIT UNLESS YOU KNOW WHAT YOU'RE DOING.
  */
 
-export const vincentDiamondAddress = '0x78Cd1d270Ff12BA55e98BDff1f3646426E25D932';
+export const vincentDiamondAddress = '0xa1979393bbe7D59dfFBEB38fE5eCf9BDdFE6f4aD';
 
 export const vincentContractData = [
-  {
-    VincentLitActionFacet: [
-      {
-        type: 'function',
-        name: 'approveLitActions',
-        inputs: [
-          {
-            name: 'litActionIpfsCids',
-            type: 'string[]',
-            internalType: 'string[]',
-          },
-        ],
-        outputs: [],
-        stateMutability: 'nonpayable',
-      },
-      {
-        type: 'function',
-        name: 'removeLitActionApprovals',
-        inputs: [
-          {
-            name: 'litActionIpfsCids',
-            type: 'string[]',
-            internalType: 'string[]',
-          },
-        ],
-        outputs: [],
-        stateMutability: 'nonpayable',
-      },
-      {
-        type: 'function',
-        name: 'updateApprovedLitActionsManager',
-        inputs: [
-          {
-            name: 'newManager',
-            type: 'address',
-            internalType: 'address',
-          },
-        ],
-        outputs: [],
-        stateMutability: 'nonpayable',
-      },
-      {
-        type: 'event',
-        name: 'ApprovedLitActionsManagerUpdated',
-        inputs: [
-          {
-            name: 'previousManager',
-            type: 'address',
-            indexed: true,
-            internalType: 'address',
-          },
-          {
-            name: 'newManager',
-            type: 'address',
-            indexed: true,
-            internalType: 'address',
-          },
-        ],
-        anonymous: false,
-      },
-      {
-        type: 'event',
-        name: 'LitActionApprovalRemoved',
-        inputs: [
-          {
-            name: 'litActionIpfsCidHash',
-            type: 'bytes32',
-            indexed: true,
-            internalType: 'bytes32',
-          },
-        ],
-        anonymous: false,
-      },
-      {
-        type: 'event',
-        name: 'LitActionApproved',
-        inputs: [
-          {
-            name: 'litActionIpfsCidHash',
-            type: 'bytes32',
-            indexed: true,
-            internalType: 'bytes32',
-          },
-        ],
-        anonymous: false,
-      },
-      {
-        type: 'event',
-        name: 'NewLitActionRegistered',
-        inputs: [
-          {
-            name: 'litActionIpfsCidHash',
-            type: 'bytes32',
-            indexed: true,
-            internalType: 'bytes32',
-          },
-        ],
-        anonymous: false,
-      },
-      {
-        type: 'error',
-        name: 'EmptyLitActionIpfsCid',
-        inputs: [],
-      },
-      {
-        type: 'error',
-        name: 'EmptyLitActionIpfsCidsArray',
-        inputs: [],
-      },
-      {
-        type: 'error',
-        name: 'InvalidApprovedLitActionsManager',
-        inputs: [
-          {
-            name: 'manager',
-            type: 'address',
-            internalType: 'address',
-          },
-        ],
-      },
-      {
-        type: 'error',
-        name: 'LitActionAlreadyApproved',
-        inputs: [
-          {
-            name: 'litActionIpfsCidHash',
-            type: 'bytes32',
-            internalType: 'bytes32',
-          },
-        ],
-      },
-      {
-        type: 'error',
-        name: 'LitActionAlreadyRegistered',
-        inputs: [
-          {
-            name: 'litActionIpfsCidHash',
-            type: 'bytes32',
-            internalType: 'bytes32',
-          },
-        ],
-      },
-      {
-        type: 'error',
-        name: 'LitActionNotApproved',
-        inputs: [
-          {
-            name: 'litActionIpfsCidHash',
-            type: 'bytes32',
-            internalType: 'bytes32',
-          },
-        ],
-      },
-      {
-        type: 'error',
-        name: 'LitActionNotRegistered',
-        inputs: [
-          {
-            name: 'litActionIpfsCidHash',
-            type: 'bytes32',
-            internalType: 'bytes32',
-          },
-        ],
-      },
-      {
-        type: 'error',
-        name: 'NotApprovedLitActionsManager',
-        inputs: [
-          {
-            name: 'caller',
-            type: 'address',
-            internalType: 'address',
-          },
-        ],
-      },
-    ],
-  },
   {
     VincentAppViewFacet: [
       {
@@ -207,24 +30,9 @@ export const vincentContractData = [
                 internalType: 'uint256',
               },
               {
-                name: 'name',
-                type: 'string',
-                internalType: 'string',
-              },
-              {
-                name: 'description',
-                type: 'string',
-                internalType: 'string',
-              },
-              {
                 name: 'isDeleted',
                 type: 'bool',
                 internalType: 'bool',
-              },
-              {
-                name: 'deploymentStatus',
-                type: 'uint8',
-                internalType: 'enum VincentAppStorage.DeploymentStatus',
               },
               {
                 name: 'manager',
@@ -240,11 +48,6 @@ export const vincentContractData = [
                 name: 'delegatees',
                 type: 'address[]',
                 internalType: 'address[]',
-              },
-              {
-                name: 'authorizedRedirectUris',
-                type: 'string[]',
-                internalType: 'string[]',
               },
             ],
           },
@@ -273,24 +76,9 @@ export const vincentContractData = [
                 internalType: 'uint256',
               },
               {
-                name: 'name',
-                type: 'string',
-                internalType: 'string',
-              },
-              {
-                name: 'description',
-                type: 'string',
-                internalType: 'string',
-              },
-              {
                 name: 'isDeleted',
                 type: 'bool',
                 internalType: 'bool',
-              },
-              {
-                name: 'deploymentStatus',
-                type: 'uint8',
-                internalType: 'enum VincentAppStorage.DeploymentStatus',
               },
               {
                 name: 'manager',
@@ -306,11 +94,6 @@ export const vincentContractData = [
                 name: 'delegatees',
                 type: 'address[]',
                 internalType: 'address[]',
-              },
-              {
-                name: 'authorizedRedirectUris',
-                type: 'string[]',
-                internalType: 'string[]',
               },
             ],
           },
@@ -344,24 +127,9 @@ export const vincentContractData = [
                 internalType: 'uint256',
               },
               {
-                name: 'name',
-                type: 'string',
-                internalType: 'string',
-              },
-              {
-                name: 'description',
-                type: 'string',
-                internalType: 'string',
-              },
-              {
                 name: 'isDeleted',
                 type: 'bool',
                 internalType: 'bool',
-              },
-              {
-                name: 'deploymentStatus',
-                type: 'uint8',
-                internalType: 'enum VincentAppStorage.DeploymentStatus',
               },
               {
                 name: 'manager',
@@ -377,11 +145,6 @@ export const vincentContractData = [
                 name: 'delegatees',
                 type: 'address[]',
                 internalType: 'address[]',
-              },
-              {
-                name: 'authorizedRedirectUris',
-                type: 'string[]',
-                internalType: 'string[]',
               },
             ],
           },
@@ -416,26 +179,9 @@ export const vincentContractData = [
                     internalType: 'string',
                   },
                   {
-                    name: 'policies',
-                    type: 'tuple[]',
-                    internalType: 'struct VincentAppViewFacet.Policy[]',
-                    components: [
-                      {
-                        name: 'policyIpfsCid',
-                        type: 'string',
-                        internalType: 'string',
-                      },
-                      {
-                        name: 'parameterNames',
-                        type: 'string[]',
-                        internalType: 'string[]',
-                      },
-                      {
-                        name: 'parameterTypes',
-                        type: 'uint8[]',
-                        internalType: 'enum VincentAppStorage.ParameterType[]',
-                      },
-                    ],
+                    name: 'policyIpfsCids',
+                    type: 'string[]',
+                    internalType: 'string[]',
                   },
                 ],
               },
@@ -471,24 +217,9 @@ export const vincentContractData = [
                     internalType: 'uint256',
                   },
                   {
-                    name: 'name',
-                    type: 'string',
-                    internalType: 'string',
-                  },
-                  {
-                    name: 'description',
-                    type: 'string',
-                    internalType: 'string',
-                  },
-                  {
                     name: 'isDeleted',
                     type: 'bool',
                     internalType: 'bool',
-                  },
-                  {
-                    name: 'deploymentStatus',
-                    type: 'uint8',
-                    internalType: 'enum VincentAppStorage.DeploymentStatus',
                   },
                   {
                     name: 'manager',
@@ -504,11 +235,6 @@ export const vincentContractData = [
                     name: 'delegatees',
                     type: 'address[]',
                     internalType: 'address[]',
-                  },
-                  {
-                    name: 'authorizedRedirectUris',
-                    type: 'string[]',
-                    internalType: 'string[]',
                   },
                 ],
               },
@@ -543,26 +269,9 @@ export const vincentContractData = [
                         internalType: 'string',
                       },
                       {
-                        name: 'policies',
-                        type: 'tuple[]',
-                        internalType: 'struct VincentAppViewFacet.Policy[]',
-                        components: [
-                          {
-                            name: 'policyIpfsCid',
-                            type: 'string',
-                            internalType: 'string',
-                          },
-                          {
-                            name: 'parameterNames',
-                            type: 'string[]',
-                            internalType: 'string[]',
-                          },
-                          {
-                            name: 'parameterTypes',
-                            type: 'uint8[]',
-                            internalType: 'enum VincentAppStorage.ParameterType[]',
-                          },
-                        ],
+                        name: 'policyIpfsCids',
+                        type: 'string[]',
+                        internalType: 'string[]',
                       },
                     ],
                   },
@@ -575,51 +284,34 @@ export const vincentContractData = [
       },
       {
         type: 'function',
-        name: 'getAuthorizedRedirectUriByHash',
-        inputs: [
-          {
-            name: 'redirectUriHash',
-            type: 'bytes32',
-            internalType: 'bytes32',
-          },
-        ],
-        outputs: [
-          {
-            name: 'redirectUri',
-            type: 'string',
-            internalType: 'string',
-          },
-        ],
-        stateMutability: 'view',
-      },
-      {
-        type: 'function',
-        name: 'getAuthorizedRedirectUrisByAppId',
+        name: 'getDelegatedAgentPkpTokenIds',
         inputs: [
           {
             name: 'appId',
             type: 'uint256',
             internalType: 'uint256',
           },
-        ],
-        outputs: [
           {
-            name: 'redirectUris',
-            type: 'string[]',
-            internalType: 'string[]',
-          },
-        ],
-        stateMutability: 'view',
-      },
-      {
-        type: 'function',
-        name: 'getTotalAppCount',
-        inputs: [],
-        outputs: [
-          {
-            name: '',
+            name: 'version',
             type: 'uint256',
             internalType: 'uint256',
+          },
+          {
+            name: 'offset',
+            type: 'uint256',
+            internalType: 'uint256',
+          },
+          {
+            name: 'limit',
+            type: 'uint256',
+            internalType: 'uint256',
+          },
+        ],
+        outputs: [
+          {
+            name: 'delegatedAgentPkpTokenIds',
+            type: 'uint256[]',
+            internalType: 'uint256[]',
           },
         ],
         stateMutability: 'view',
@@ -641,6 +333,22 @@ export const vincentContractData = [
         inputs: [
           {
             name: 'appId',
+            type: 'uint256',
+            internalType: 'uint256',
+          },
+        ],
+      },
+      {
+        type: 'error',
+        name: 'AppVersionNotEnabled',
+        inputs: [
+          {
+            name: 'appId',
+            type: 'uint256',
+            internalType: 'uint256',
+          },
+          {
+            name: 'appVersion',
             type: 'uint256',
             internalType: 'uint256',
           },
@@ -675,34 +383,17 @@ export const vincentContractData = [
       },
       {
         type: 'error',
+        name: 'InvalidOffsetOrLimit',
+        inputs: [],
+      },
+      {
+        type: 'error',
         name: 'NoAppsFoundForManager',
         inputs: [
           {
             name: 'manager',
             type: 'address',
             internalType: 'address',
-          },
-        ],
-      },
-      {
-        type: 'error',
-        name: 'NoAuthorizedRedirectUrisFoundForApp',
-        inputs: [
-          {
-            name: 'appId',
-            type: 'uint256',
-            internalType: 'uint256',
-          },
-        ],
-      },
-      {
-        type: 'error',
-        name: 'RedirectUriNotFound',
-        inputs: [
-          {
-            name: 'redirectUriHash',
-            type: 'bytes32',
-            internalType: 'bytes32',
           },
         ],
       },
@@ -790,26 +481,9 @@ export const vincentContractData = [
                     internalType: 'string',
                   },
                   {
-                    name: 'parameters',
-                    type: 'tuple[]',
-                    internalType: 'struct VincentUserViewFacet.PolicyParameter[]',
-                    components: [
-                      {
-                        name: 'name',
-                        type: 'string',
-                        internalType: 'string',
-                      },
-                      {
-                        name: 'paramType',
-                        type: 'uint8',
-                        internalType: 'enum VincentAppStorage.ParameterType',
-                      },
-                      {
-                        name: 'value',
-                        type: 'bytes',
-                        internalType: 'bytes',
-                      },
-                    ],
+                    name: 'policyParameterValues',
+                    type: 'bytes',
+                    internalType: 'bytes',
                   },
                 ],
               },
@@ -894,26 +568,9 @@ export const vincentContractData = [
                     internalType: 'string',
                   },
                   {
-                    name: 'parameters',
-                    type: 'tuple[]',
-                    internalType: 'struct VincentUserViewFacet.PolicyParameter[]',
-                    components: [
-                      {
-                        name: 'name',
-                        type: 'string',
-                        internalType: 'string',
-                      },
-                      {
-                        name: 'paramType',
-                        type: 'uint8',
-                        internalType: 'enum VincentAppStorage.ParameterType',
-                      },
-                      {
-                        name: 'value',
-                        type: 'bytes',
-                        internalType: 'bytes',
-                      },
-                    ],
+                    name: 'policyParameterValues',
+                    type: 'bytes',
+                    internalType: 'bytes',
                   },
                 ],
               },
@@ -939,6 +596,22 @@ export const vincentContractData = [
         inputs: [
           {
             name: 'appId',
+            type: 'uint256',
+            internalType: 'uint256',
+          },
+        ],
+      },
+      {
+        type: 'error',
+        name: 'AppVersionNotEnabled',
+        inputs: [
+          {
+            name: 'appId',
+            type: 'uint256',
+            internalType: 'uint256',
+          },
+          {
+            name: 'appVersion',
             type: 'uint256',
             internalType: 'uint256',
           },
@@ -1057,119 +730,7 @@ export const vincentContractData = [
     ],
   },
   {
-    VincentLitActionViewFacet: [
-      {
-        type: 'function',
-        name: 'getAllApprovedLitActions',
-        inputs: [],
-        outputs: [
-          {
-            name: 'litActionIpfsCids',
-            type: 'string[]',
-            internalType: 'string[]',
-          },
-        ],
-        stateMutability: 'view',
-      },
-      {
-        type: 'function',
-        name: 'getApprovedLitActionsManager',
-        inputs: [],
-        outputs: [
-          {
-            name: 'manager',
-            type: 'address',
-            internalType: 'address',
-          },
-        ],
-        stateMutability: 'view',
-      },
-      {
-        type: 'function',
-        name: 'getLitActionIpfsCidByHash',
-        inputs: [
-          {
-            name: 'litActionIpfsCidHash',
-            type: 'bytes32',
-            internalType: 'bytes32',
-          },
-        ],
-        outputs: [
-          {
-            name: '',
-            type: 'string',
-            internalType: 'string',
-          },
-        ],
-        stateMutability: 'view',
-      },
-      {
-        type: 'function',
-        name: 'isLitActionApproved',
-        inputs: [
-          {
-            name: 'litActionIpfsCid',
-            type: 'string',
-            internalType: 'string',
-          },
-        ],
-        outputs: [
-          {
-            name: 'isApproved',
-            type: 'bool',
-            internalType: 'bool',
-          },
-        ],
-        stateMutability: 'view',
-      },
-      {
-        type: 'error',
-        name: 'EmptyLitActionIpfsCid',
-        inputs: [],
-      },
-      {
-        type: 'error',
-        name: 'LitActionHashNotFound',
-        inputs: [
-          {
-            name: 'litActionIpfsCidHash',
-            type: 'bytes32',
-            internalType: 'bytes32',
-          },
-        ],
-      },
-      {
-        type: 'error',
-        name: 'NoLitActionsApproved',
-        inputs: [],
-      },
-      {
-        type: 'error',
-        name: 'NoLitActionsRegistered',
-        inputs: [],
-      },
-    ],
-  },
-  {
     VincentAppFacet: [
-      {
-        type: 'function',
-        name: 'addAuthorizedRedirectUri',
-        inputs: [
-          {
-            name: 'appId',
-            type: 'uint256',
-            internalType: 'uint256',
-          },
-          {
-            name: 'redirectUri',
-            type: 'string',
-            internalType: 'string',
-          },
-        ],
-        outputs: [],
-        stateMutability: 'nonpayable',
-      },
       {
         type: 'function',
         name: 'addDelegatee',
@@ -1229,36 +790,14 @@ export const vincentContractData = [
         name: 'registerApp',
         inputs: [
           {
-            name: 'appInfo',
-            type: 'tuple',
-            internalType: 'struct VincentAppFacet.AppInfo',
-            components: [
-              {
-                name: 'name',
-                type: 'string',
-                internalType: 'string',
-              },
-              {
-                name: 'description',
-                type: 'string',
-                internalType: 'string',
-              },
-              {
-                name: 'deploymentStatus',
-                type: 'uint8',
-                internalType: 'enum VincentAppStorage.DeploymentStatus',
-              },
-              {
-                name: 'authorizedRedirectUris',
-                type: 'string[]',
-                internalType: 'string[]',
-              },
-              {
-                name: 'delegatees',
-                type: 'address[]',
-                internalType: 'address[]',
-              },
-            ],
+            name: 'appId',
+            type: 'uint256',
+            internalType: 'uint256',
+          },
+          {
+            name: 'delegatees',
+            type: 'address[]',
+            internalType: 'address[]',
           },
           {
             name: 'versionTools',
@@ -1275,25 +814,10 @@ export const vincentContractData = [
                 type: 'string[][]',
                 internalType: 'string[][]',
               },
-              {
-                name: 'toolPolicyParameterNames',
-                type: 'string[][][]',
-                internalType: 'string[][][]',
-              },
-              {
-                name: 'toolPolicyParameterTypes',
-                type: 'uint8[][][]',
-                internalType: 'enum VincentAppStorage.ParameterType[][][]',
-              },
             ],
           },
         ],
         outputs: [
-          {
-            name: 'newAppId',
-            type: 'uint256',
-            internalType: 'uint256',
-          },
           {
             name: 'newAppVersion',
             type: 'uint256',
@@ -1326,16 +850,6 @@ export const vincentContractData = [
                 type: 'string[][]',
                 internalType: 'string[][]',
               },
-              {
-                name: 'toolPolicyParameterNames',
-                type: 'string[][][]',
-                internalType: 'string[][][]',
-              },
-              {
-                name: 'toolPolicyParameterTypes',
-                type: 'uint8[][][]',
-                internalType: 'enum VincentAppStorage.ParameterType[][][]',
-              },
             ],
           },
         ],
@@ -1346,24 +860,6 @@ export const vincentContractData = [
             internalType: 'uint256',
           },
         ],
-        stateMutability: 'nonpayable',
-      },
-      {
-        type: 'function',
-        name: 'removeAuthorizedRedirectUri',
-        inputs: [
-          {
-            name: 'appId',
-            type: 'uint256',
-            internalType: 'uint256',
-          },
-          {
-            name: 'redirectUri',
-            type: 'string',
-            internalType: 'string',
-          },
-        ],
-        outputs: [],
         stateMutability: 'nonpayable',
       },
       {
@@ -1386,53 +882,12 @@ export const vincentContractData = [
       },
       {
         type: 'function',
-        name: 'updateAppDeploymentStatus',
+        name: 'undeleteApp',
         inputs: [
           {
             name: 'appId',
             type: 'uint256',
             internalType: 'uint256',
-          },
-          {
-            name: 'deploymentStatus',
-            type: 'uint8',
-            internalType: 'enum VincentAppStorage.DeploymentStatus',
-          },
-        ],
-        outputs: [],
-        stateMutability: 'nonpayable',
-      },
-      {
-        type: 'function',
-        name: 'updateAppDescription',
-        inputs: [
-          {
-            name: 'appId',
-            type: 'uint256',
-            internalType: 'uint256',
-          },
-          {
-            name: 'newDescription',
-            type: 'string',
-            internalType: 'string',
-          },
-        ],
-        outputs: [],
-        stateMutability: 'nonpayable',
-      },
-      {
-        type: 'function',
-        name: 'updateAppName',
-        inputs: [
-          {
-            name: 'appId',
-            type: 'uint256',
-            internalType: 'uint256',
-          },
-          {
-            name: 'newName',
-            type: 'string',
-            internalType: 'string',
           },
         ],
         outputs: [],
@@ -1447,44 +902,6 @@ export const vincentContractData = [
             type: 'uint256',
             indexed: true,
             internalType: 'uint256',
-          },
-        ],
-        anonymous: false,
-      },
-      {
-        type: 'event',
-        name: 'AppDeploymentStatusUpdated',
-        inputs: [
-          {
-            name: 'appId',
-            type: 'uint256',
-            indexed: true,
-            internalType: 'uint256',
-          },
-          {
-            name: 'deploymentStatus',
-            type: 'uint8',
-            indexed: true,
-            internalType: 'uint8',
-          },
-        ],
-        anonymous: false,
-      },
-      {
-        type: 'event',
-        name: 'AppDescriptionUpdated',
-        inputs: [
-          {
-            name: 'appId',
-            type: 'uint256',
-            indexed: true,
-            internalType: 'uint256',
-          },
-          {
-            name: 'newDescription',
-            type: 'string',
-            indexed: false,
-            internalType: 'string',
           },
         ],
         anonymous: false,
@@ -1516,57 +933,13 @@ export const vincentContractData = [
       },
       {
         type: 'event',
-        name: 'AppNameUpdated',
+        name: 'AppUndeleted',
         inputs: [
           {
             name: 'appId',
             type: 'uint256',
             indexed: true,
             internalType: 'uint256',
-          },
-          {
-            name: 'newName',
-            type: 'string',
-            indexed: false,
-            internalType: 'string',
-          },
-        ],
-        anonymous: false,
-      },
-      {
-        type: 'event',
-        name: 'AuthorizedRedirectUriAdded',
-        inputs: [
-          {
-            name: 'appId',
-            type: 'uint256',
-            indexed: true,
-            internalType: 'uint256',
-          },
-          {
-            name: 'hashedRedirectUri',
-            type: 'bytes32',
-            indexed: true,
-            internalType: 'bytes32',
-          },
-        ],
-        anonymous: false,
-      },
-      {
-        type: 'event',
-        name: 'AuthorizedRedirectUriRemoved',
-        inputs: [
-          {
-            name: 'appId',
-            type: 'uint256',
-            indexed: true,
-            internalType: 'uint256',
-          },
-          {
-            name: 'hashedRedirectUri',
-            type: 'bytes32',
-            indexed: true,
-            internalType: 'bytes32',
           },
         ],
         anonymous: false,
@@ -1668,17 +1041,34 @@ export const vincentContractData = [
       },
       {
         type: 'error',
-        name: 'AppAlreadyInRequestedDeploymentStatus',
+        name: 'AppAlreadyDeleted',
         inputs: [
           {
             name: 'appId',
             type: 'uint256',
             internalType: 'uint256',
           },
+        ],
+      },
+      {
+        type: 'error',
+        name: 'AppAlreadyRegistered',
+        inputs: [
           {
-            name: 'deploymentStatus',
-            type: 'uint8',
-            internalType: 'uint8',
+            name: 'appId',
+            type: 'uint256',
+            internalType: 'uint256',
+          },
+        ],
+      },
+      {
+        type: 'error',
+        name: 'AppAlreadyUndeleted',
+        inputs: [
+          {
+            name: 'appId',
+            type: 'uint256',
+            internalType: 'uint256',
           },
         ],
       },
@@ -1727,7 +1117,7 @@ export const vincentContractData = [
       },
       {
         type: 'error',
-        name: 'AppVersionHasDelegatedAgents',
+        name: 'AppVersionNotEnabled',
         inputs: [
           {
             name: 'appId',
@@ -1752,17 +1142,6 @@ export const vincentContractData = [
           },
           {
             name: 'appVersion',
-            type: 'uint256',
-            internalType: 'uint256',
-          },
-        ],
-      },
-      {
-        type: 'error',
-        name: 'CannotRemoveLastRedirectUri',
-        inputs: [
-          {
-            name: 'appId',
             type: 'uint256',
             internalType: 'uint256',
           },
@@ -1802,17 +1181,23 @@ export const vincentContractData = [
       },
       {
         type: 'error',
-        name: 'EmptyAppDescriptionNotAllowed',
-        inputs: [],
+        name: 'DuplicateToolIpfsCidNotAllowed',
+        inputs: [
+          {
+            name: 'appId',
+            type: 'uint256',
+            internalType: 'uint256',
+          },
+          {
+            name: 'toolIndex',
+            type: 'uint256',
+            internalType: 'uint256',
+          },
+        ],
       },
       {
         type: 'error',
-        name: 'EmptyAppNameNotAllowed',
-        inputs: [],
-      },
-      {
-        type: 'error',
-        name: 'EmptyParameterNameNotAllowed',
+        name: 'DuplicateToolPolicyIpfsCidNotAllowed',
         inputs: [
           {
             name: 'appId',
@@ -1826,11 +1211,6 @@ export const vincentContractData = [
           },
           {
             name: 'policyIndex',
-            type: 'uint256',
-            internalType: 'uint256',
-          },
-          {
-            name: 'paramIndex',
             type: 'uint256',
             internalType: 'uint256',
           },
@@ -1854,11 +1234,6 @@ export const vincentContractData = [
       },
       {
         type: 'error',
-        name: 'EmptyRedirectUriNotAllowed',
-        inputs: [],
-      },
-      {
-        type: 'error',
         name: 'EmptyToolIpfsCidNotAllowed',
         inputs: [
           {
@@ -1872,11 +1247,6 @@ export const vincentContractData = [
             internalType: 'uint256',
           },
         ],
-      },
-      {
-        type: 'error',
-        name: 'NoRedirectUrisProvided',
-        inputs: [],
       },
       {
         type: 'error',
@@ -1907,90 +1277,6 @@ export const vincentContractData = [
       },
       {
         type: 'error',
-        name: 'ParameterArrayLengthMismatch',
-        inputs: [
-          {
-            name: 'toolIndex',
-            type: 'uint256',
-            internalType: 'uint256',
-          },
-          {
-            name: 'policyIndex',
-            type: 'uint256',
-            internalType: 'uint256',
-          },
-          {
-            name: 'paramNamesLength',
-            type: 'uint256',
-            internalType: 'uint256',
-          },
-          {
-            name: 'paramTypesLength',
-            type: 'uint256',
-            internalType: 'uint256',
-          },
-        ],
-      },
-      {
-        type: 'error',
-        name: 'PolicyArrayLengthMismatch',
-        inputs: [
-          {
-            name: 'toolIndex',
-            type: 'uint256',
-            internalType: 'uint256',
-          },
-          {
-            name: 'policiesLength',
-            type: 'uint256',
-            internalType: 'uint256',
-          },
-          {
-            name: 'paramNamesLength',
-            type: 'uint256',
-            internalType: 'uint256',
-          },
-          {
-            name: 'paramTypesLength',
-            type: 'uint256',
-            internalType: 'uint256',
-          },
-        ],
-      },
-      {
-        type: 'error',
-        name: 'RedirectUriAlreadyAuthorizedForApp',
-        inputs: [
-          {
-            name: 'appId',
-            type: 'uint256',
-            internalType: 'uint256',
-          },
-          {
-            name: 'redirectUri',
-            type: 'string',
-            internalType: 'string',
-          },
-        ],
-      },
-      {
-        type: 'error',
-        name: 'RedirectUriNotRegisteredToApp',
-        inputs: [
-          {
-            name: 'appId',
-            type: 'uint256',
-            internalType: 'uint256',
-          },
-          {
-            name: 'redirectUri',
-            type: 'string',
-            internalType: 'string',
-          },
-        ],
-      },
-      {
-        type: 'error',
         name: 'ToolArrayDimensionMismatch',
         inputs: [
           {
@@ -2003,21 +1289,16 @@ export const vincentContractData = [
             type: 'uint256',
             internalType: 'uint256',
           },
-          {
-            name: 'paramNamesLength',
-            type: 'uint256',
-            internalType: 'uint256',
-          },
-          {
-            name: 'paramTypesLength',
-            type: 'uint256',
-            internalType: 'uint256',
-          },
         ],
       },
       {
         type: 'error',
         name: 'ZeroAddressDelegateeNotAllowed',
+        inputs: [],
+      },
+      {
+        type: 'error',
+        name: 'ZeroAppIdNotAllowed',
         inputs: [],
       },
     ],
@@ -2054,52 +1335,9 @@ export const vincentContractData = [
             internalType: 'string[][]',
           },
           {
-            name: 'policyParameterNames',
-            type: 'string[][][]',
-            internalType: 'string[][][]',
-          },
-          {
             name: 'policyParameterValues',
-            type: 'bytes[][][]',
-            internalType: 'bytes[][][]',
-          },
-        ],
-        outputs: [],
-        stateMutability: 'nonpayable',
-      },
-      {
-        type: 'function',
-        name: 'removeToolPolicyParameters',
-        inputs: [
-          {
-            name: 'appId',
-            type: 'uint256',
-            internalType: 'uint256',
-          },
-          {
-            name: 'pkpTokenId',
-            type: 'uint256',
-            internalType: 'uint256',
-          },
-          {
-            name: 'appVersion',
-            type: 'uint256',
-            internalType: 'uint256',
-          },
-          {
-            name: 'toolIpfsCids',
-            type: 'string[]',
-            internalType: 'string[]',
-          },
-          {
-            name: 'policyIpfsCids',
-            type: 'string[][]',
-            internalType: 'string[][]',
-          },
-          {
-            name: 'policyParameterNames',
-            type: 'string[][][]',
-            internalType: 'string[][][]',
+            type: 'bytes[][]',
+            internalType: 'bytes[][]',
           },
         ],
         outputs: [],
@@ -2135,14 +1373,9 @@ export const vincentContractData = [
             internalType: 'string[][]',
           },
           {
-            name: 'policyParameterNames',
-            type: 'string[][][]',
-            internalType: 'string[][][]',
-          },
-          {
             name: 'policyParameterValues',
-            type: 'bytes[][][]',
-            internalType: 'bytes[][][]',
+            type: 'bytes[][]',
+            internalType: 'bytes[][]',
           },
         ],
         outputs: [],
@@ -2242,7 +1475,7 @@ export const vincentContractData = [
       },
       {
         type: 'event',
-        name: 'ToolPolicyParameterRemoved',
+        name: 'ToolPolicyParametersSet',
         inputs: [
           {
             name: 'pkpTokenId',
@@ -2269,47 +1502,16 @@ export const vincentContractData = [
             internalType: 'bytes32',
           },
           {
-            name: 'hashedPolicyParameterName',
-            type: 'bytes32',
-            indexed: false,
-            internalType: 'bytes32',
-          },
-        ],
-        anonymous: false,
-      },
-      {
-        type: 'event',
-        name: 'ToolPolicyParameterSet',
-        inputs: [
-          {
-            name: 'pkpTokenId',
-            type: 'uint256',
-            indexed: true,
-            internalType: 'uint256',
-          },
-          {
-            name: 'appId',
-            type: 'uint256',
-            indexed: true,
-            internalType: 'uint256',
-          },
-          {
-            name: 'appVersion',
-            type: 'uint256',
-            indexed: true,
-            internalType: 'uint256',
-          },
-          {
-            name: 'hashedToolIpfsCid',
+            name: 'hashedToolPolicyIpfsCid',
             type: 'bytes32',
             indexed: false,
             internalType: 'bytes32',
           },
           {
-            name: 'hashedPolicyParameterName',
-            type: 'bytes32',
+            name: 'policyParameterValues',
+            type: 'bytes',
             indexed: false,
-            internalType: 'bytes32',
+            internalType: 'bytes',
           },
         ],
         anonymous: false,
@@ -2412,15 +1614,46 @@ export const vincentContractData = [
       },
       {
         type: 'error',
-        name: 'EmptyParameterName',
-        inputs: [],
+        name: 'DuplicateToolIpfsCid',
+        inputs: [
+          {
+            name: 'appId',
+            type: 'uint256',
+            internalType: 'uint256',
+          },
+          {
+            name: 'appVersion',
+            type: 'uint256',
+            internalType: 'uint256',
+          },
+          {
+            name: 'toolIpfsCid',
+            type: 'string',
+            internalType: 'string',
+          },
+        ],
       },
       {
         type: 'error',
-        name: 'EmptyParameterValue',
+        name: 'DuplicateToolPolicyIpfsCid',
         inputs: [
           {
-            name: 'parameterName',
+            name: 'appId',
+            type: 'uint256',
+            internalType: 'uint256',
+          },
+          {
+            name: 'appVersion',
+            type: 'uint256',
+            internalType: 'uint256',
+          },
+          {
+            name: 'toolIpfsCid',
+            type: 'string',
+            internalType: 'string',
+          },
+          {
+            name: 'toolPolicyIpfsCid',
             type: 'string',
             internalType: 'string',
           },
@@ -2475,32 +1708,6 @@ export const vincentContractData = [
       },
       {
         type: 'error',
-        name: 'ParameterArrayLengthMismatch',
-        inputs: [
-          {
-            name: 'toolIndex',
-            type: 'uint256',
-            internalType: 'uint256',
-          },
-          {
-            name: 'policyIndex',
-            type: 'uint256',
-            internalType: 'uint256',
-          },
-          {
-            name: 'paramNamesLength',
-            type: 'uint256',
-            internalType: 'uint256',
-          },
-          {
-            name: 'paramValuesLength',
-            type: 'uint256',
-            internalType: 'uint256',
-          },
-        ],
-      },
-      {
-        type: 'error',
         name: 'PkpTokenDoesNotExist',
         inputs: [
           {
@@ -2525,45 +1732,9 @@ export const vincentContractData = [
             internalType: 'uint256',
           },
           {
-            name: 'paramNamesLength',
-            type: 'uint256',
-            internalType: 'uint256',
-          },
-          {
             name: 'paramValuesLength',
             type: 'uint256',
             internalType: 'uint256',
-          },
-        ],
-      },
-      {
-        type: 'error',
-        name: 'PolicyParameterNameNotRegisteredForAppVersion',
-        inputs: [
-          {
-            name: 'appId',
-            type: 'uint256',
-            internalType: 'uint256',
-          },
-          {
-            name: 'appVersion',
-            type: 'uint256',
-            internalType: 'uint256',
-          },
-          {
-            name: 'toolIpfsCid',
-            type: 'string',
-            internalType: 'string',
-          },
-          {
-            name: 'toolPolicyIpfsCid',
-            type: 'string',
-            internalType: 'string',
-          },
-          {
-            name: 'policyParameterName',
-            type: 'string',
-            internalType: 'string',
           },
         ],
       },

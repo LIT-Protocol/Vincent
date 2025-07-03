@@ -15,6 +15,9 @@
   "publishConfig": {
     "access": "public"
   },
+  "devDependencies": {
+    "@openzeppelin/contracts": "5.3.0"
+  },
   "dependencies": {
     "@lit-protocol/logger": "custom-logger",
     "pino-pretty": "^13.0.0"

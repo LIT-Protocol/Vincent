@@ -14,8 +14,6 @@ import "./diamond-base/interfaces/IERC165.sol";
 import "./diamond-base/interfaces/IERC173.sol";
 import "./facets/VincentAppFacet.sol";
 import "./facets/VincentAppViewFacet.sol";
-import "./facets/VincentLitActionFacet.sol";
-import "./facets/VincentLitActionViewFacet.sol";
 import "./facets/VincentUserFacet.sol";
 import "./facets/VincentUserViewFacet.sol";
 
@@ -37,11 +35,6 @@ contract VincentDiamond {
     error InvalidFacetAddress();
 
     /**
-     * @notice Thrown when an invalid (zero address) approved litActions manager is provided
-     */
-    error InvalidApprovedLitActionsManagerAddress();
-
-    /**
      * @notice Thrown when ETH is sent directly to the contract without a function call
      */
     error DirectETHTransfersNotAllowed();
@@ -59,10 +52,6 @@ contract VincentDiamond {
         address vincentAppFacet;
         // The facet implementing app viewing functions
         address vincentAppViewFacet;
-        // The facet implementing lit action registration and management functions
-        address vincentLitActionFacet;
-        // The facet implementing lit action viewing functions
-        address vincentLitActionViewFacet;
         // The facet implementing user management functions
         address vincentUserFacet;
         // The facet implementing user data viewing functions
@@ -76,25 +65,21 @@ contract VincentDiamond {
      * @param _diamondCutFacet Address of the facet implementing diamond cut functionality
      * @param _facets Struct containing addresses of all other facets
      * @param _pkpNFTContract Address of the PKP NFT contract used for sourcing PKP ownership
-     * @param _approvedLitActionsManager Address authorized to manage list of approved litActions
      */
     constructor(
         address _contractOwner,
         address _diamondCutFacet,
         FacetAddresses memory _facets,
-        address _pkpNFTContract,
-        address _approvedLitActionsManager
+        address _pkpNFTContract
     ) payable {
         // Validate inputs
         if (_pkpNFTContract == address(0)) revert InvalidPKPNFTContract();
         if (_diamondCutFacet == address(0)) revert InvalidFacetAddress();
-        if (_approvedLitActionsManager == address(0)) revert InvalidApprovedLitActionsManagerAddress();
 
         // Validate all facet addresses
         if (
             _facets.diamondLoupeFacet == address(0) || _facets.ownershipFacet == address(0)
                 || _facets.vincentAppFacet == address(0) || _facets.vincentAppViewFacet == address(0)
-                || _facets.vincentLitActionFacet == address(0) || _facets.vincentLitActionViewFacet == address(0)
                 || _facets.vincentUserFacet == address(0) || _facets.vincentUserViewFacet == address(0)
         ) {
             revert InvalidFacetAddress();
@@ -102,10 +87,6 @@ contract VincentDiamond {
 
         // Set the contract owner
         LibDiamond.setContractOwner(_contractOwner);
-
-        // Initialize the approvedLitActionsManager
-        VincentLitActionStorage.LitActionStorage storage ls = VincentLitActionStorage.litActionStorage();
-        ls.approvedLitActionsManager = _approvedLitActionsManager;
 
         // Initialize Vincent storage with PKP NFT contract (inlined)
         VincentUserStorage.UserStorage storage us = VincentUserStorage.userStorage();
@@ -130,7 +111,7 @@ contract VincentDiamond {
         LibDiamond.diamondCut(diamondCut, address(0), "");
 
         // Now add all other facets
-        IDiamondCut.FacetCut[] memory cuts = new IDiamondCut.FacetCut[](8);
+        IDiamondCut.FacetCut[] memory cuts = new IDiamondCut.FacetCut[](6);
 
         // Add DiamondLoupeFacet
         cuts[0] = IDiamondCut.FacetCut({
@@ -160,29 +141,15 @@ contract VincentDiamond {
             functionSelectors: getVincentAppViewFacetSelectors()
         });
 
-        // Add VincentLitActionFacet
-        cuts[4] = IDiamondCut.FacetCut({
-            facetAddress: _facets.vincentLitActionFacet,
-            action: IDiamondCut.FacetCutAction.Add,
-            functionSelectors: getVincentLitActionFacetSelectors()
-        });
-
-        // Add VincentLitActionViewFacet
-        cuts[5] = IDiamondCut.FacetCut({
-            facetAddress: _facets.vincentLitActionViewFacet,
-            action: IDiamondCut.FacetCutAction.Add,
-            functionSelectors: getVincentLitActionViewFacetSelectors()
-        });
-
         // Add VincentUserFacet
-        cuts[6] = IDiamondCut.FacetCut({
+        cuts[4] = IDiamondCut.FacetCut({
             facetAddress: _facets.vincentUserFacet,
             action: IDiamondCut.FacetCutAction.Add,
             functionSelectors: getVincentUserFacetSelectors()
         });
 
         // Add VincentUserViewFacet
-        cuts[7] = IDiamondCut.FacetCut({
+        cuts[5] = IDiamondCut.FacetCut({
             facetAddress: _facets.vincentUserViewFacet,
             action: IDiamondCut.FacetCutAction.Add,
             functionSelectors: getVincentUserViewFacetSelectors()
@@ -215,56 +182,32 @@ contract VincentDiamond {
     }
 
     function getVincentAppFacetSelectors() internal pure returns (bytes4[] memory) {
-        bytes4[] memory selectors = new bytes4[](11);
+        bytes4[] memory selectors = new bytes4[](7);
         selectors[0] = VincentAppFacet.registerApp.selector;
         selectors[1] = VincentAppFacet.registerNextAppVersion.selector;
         selectors[2] = VincentAppFacet.enableAppVersion.selector;
-        selectors[3] = VincentAppFacet.addAuthorizedRedirectUri.selector;
-        selectors[4] = VincentAppFacet.removeAuthorizedRedirectUri.selector;
-        selectors[5] = VincentAppFacet.addDelegatee.selector;
-        selectors[6] = VincentAppFacet.removeDelegatee.selector;
-        selectors[7] = VincentAppFacet.updateAppName.selector;
-        selectors[8] = VincentAppFacet.updateAppDescription.selector;
-        selectors[9] = VincentAppFacet.updateAppDeploymentStatus.selector;
-        selectors[10] = VincentAppFacet.deleteApp.selector;
+        selectors[3] = VincentAppFacet.addDelegatee.selector;
+        selectors[4] = VincentAppFacet.removeDelegatee.selector;
+        selectors[5] = VincentAppFacet.deleteApp.selector;
+        selectors[6] = VincentAppFacet.undeleteApp.selector;
         return selectors;
     }
 
     function getVincentAppViewFacetSelectors() internal pure returns (bytes4[] memory) {
-        bytes4[] memory selectors = new bytes4[](7);
-        selectors[0] = VincentAppViewFacet.getTotalAppCount.selector;
-        selectors[1] = VincentAppViewFacet.getAppById.selector;
-        selectors[2] = VincentAppViewFacet.getAppVersion.selector;
-        selectors[3] = VincentAppViewFacet.getAppsByManager.selector;
-        selectors[4] = VincentAppViewFacet.getAppByDelegatee.selector;
-        selectors[5] = VincentAppViewFacet.getAuthorizedRedirectUriByHash.selector;
-        selectors[6] = VincentAppViewFacet.getAuthorizedRedirectUrisByAppId.selector;
-        return selectors;
-    }
-
-    function getVincentLitActionFacetSelectors() internal pure returns (bytes4[] memory) {
-        bytes4[] memory selectors = new bytes4[](3);
-        selectors[0] = VincentLitActionFacet.approveLitActions.selector;
-        selectors[1] = VincentLitActionFacet.removeLitActionApprovals.selector;
-        selectors[2] = VincentLitActionFacet.updateApprovedLitActionsManager.selector;
-        return selectors;
-    }
-
-    function getVincentLitActionViewFacetSelectors() internal pure returns (bytes4[] memory) {
-        bytes4[] memory selectors = new bytes4[](4);
-        selectors[0] = VincentLitActionViewFacet.getLitActionIpfsCidByHash.selector;
-        selectors[1] = VincentLitActionViewFacet.getAllApprovedLitActions.selector;
-        selectors[2] = VincentLitActionViewFacet.isLitActionApproved.selector;
-        selectors[3] = VincentLitActionViewFacet.getApprovedLitActionsManager.selector;
+        bytes4[] memory selectors = new bytes4[](5);
+        selectors[0] = VincentAppViewFacet.getAppById.selector;
+        selectors[1] = VincentAppViewFacet.getAppVersion.selector;
+        selectors[2] = VincentAppViewFacet.getAppsByManager.selector;
+        selectors[3] = VincentAppViewFacet.getAppByDelegatee.selector;
+        selectors[4] = VincentAppViewFacet.getDelegatedAgentPkpTokenIds.selector;
         return selectors;
     }
 
     function getVincentUserFacetSelectors() internal pure returns (bytes4[] memory) {
-        bytes4[] memory selectors = new bytes4[](4);
+        bytes4[] memory selectors = new bytes4[](3);
         selectors[0] = VincentUserFacet.permitAppVersion.selector;
         selectors[1] = VincentUserFacet.unPermitAppVersion.selector;
         selectors[2] = VincentUserFacet.setToolPolicyParameters.selector;
-        selectors[3] = VincentUserFacet.removeToolPolicyParameters.selector;
         return selectors;
     }
 

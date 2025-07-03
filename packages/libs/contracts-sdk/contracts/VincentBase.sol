@@ -12,6 +12,7 @@ contract VincentBase {
     error AppNotRegistered(uint256 appId);
     error AppVersionNotRegistered(uint256 appId, uint256 appVersion);
     error AppHasBeenDeleted(uint256 appId);
+    error AppVersionNotEnabled(uint256 appId, uint256 appVersion);
 
     /**
      * @notice Validates that an app exists
@@ -20,7 +21,7 @@ contract VincentBase {
      */
     modifier onlyRegisteredApp(uint256 appId) {
         VincentAppStorage.AppStorage storage as_ = VincentAppStorage.appStorage();
-        if (appId == 0 || appId > as_.appIdCounter) revert AppNotRegistered(appId);
+        if (appId == 0 || as_.appIdToApp[appId].manager == address(0)) revert AppNotRegistered(appId);
         _;
     }
 
@@ -32,12 +33,19 @@ contract VincentBase {
      */
     modifier onlyRegisteredAppVersion(uint256 appId, uint256 appVersion) {
         VincentAppStorage.AppStorage storage as_ = VincentAppStorage.appStorage();
-        if (appId == 0 || appId > as_.appIdCounter) revert AppNotRegistered(appId);
+        if (appId == 0 || as_.appIdToApp[appId].manager == address(0)) revert AppNotRegistered(appId);
 
-        // Also validate the app version exists
         VincentAppStorage.App storage app = as_.appIdToApp[appId];
-        if (appVersion == 0 || appVersion > app.versionedApps.length) {
+        if (appVersion == 0 || appVersion > app.appVersions.length) {
             revert AppVersionNotRegistered(appId, appVersion);
+        }
+        _;
+    }
+
+    modifier appEnabled(uint256 appId, uint256 appVersion) {
+        VincentAppStorage.AppStorage storage as_ = VincentAppStorage.appStorage();
+        if (!as_.appIdToApp[appId].appVersions[getAppVersionIndex(appVersion)].enabled) {
+            revert AppVersionNotEnabled(appId, appVersion);
         }
         _;
     }
@@ -56,7 +64,7 @@ contract VincentBase {
      * @param version The app version number (1-based)
      * @return index The corresponding array index (0-based)
      */
-    function getVersionedAppIndex(uint256 version) internal pure returns (uint256 index) {
+    function getAppVersionIndex(uint256 version) internal pure returns (uint256 index) {
         return version - 1;
     }
 }

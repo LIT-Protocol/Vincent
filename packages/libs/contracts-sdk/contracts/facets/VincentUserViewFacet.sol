@@ -84,14 +84,7 @@ contract VincentUserViewFacet is VincentBase {
     // Struct to represent a policy with its parameters
     struct PolicyWithParameters {
         string policyIpfsCid;
-        PolicyParameter[] parameters;
-    }
-
-    // Struct to hold a parameter name, type, and value
-    struct PolicyParameter {
-        string name;
-        VincentAppStorage.ParameterType paramType;
-        bytes value;
+        bytes policyParameterValues;
     }
 
     /**
@@ -215,8 +208,8 @@ contract VincentUserViewFacet is VincentBase {
         }
 
         // Get the app version
-        VincentAppStorage.VersionedApp storage versionedApp =
-            as_.appIdToApp[appId].versionedApps[getVersionedAppIndex(appVersion)];
+        VincentAppStorage.AppVersion storage versionedApp =
+            as_.appIdToApp[appId].appVersions[getAppVersionIndex(appVersion)];
 
         // Get all tool hashes for this app version
         bytes32[] memory toolHashes = versionedApp.toolIpfsCidHashes.values();
@@ -293,8 +286,8 @@ contract VincentUserViewFacet is VincentBase {
         validation.appVersion = appVersion;
 
         // Check if the app version is enabled and the tool is registered for this app version
-        VincentAppStorage.VersionedApp storage versionedApp =
-            as_.appIdToApp[appId].versionedApps[getVersionedAppIndex(appVersion)];
+        VincentAppStorage.AppVersion storage versionedApp =
+            as_.appIdToApp[appId].appVersions[getAppVersionIndex(appVersion)];
 
         if (!versionedApp.enabled || !versionedApp.toolIpfsCidHashes.contains(hashedToolIpfsCid)) {
             return validation;
@@ -304,19 +297,19 @@ contract VincentUserViewFacet is VincentBase {
         validation.isPermitted = true;
 
         // Get all policies registered for this tool in the app version
-        VincentAppStorage.ToolPolicies storage appToolPolicies =
-            versionedApp.toolIpfsCidHashToToolPolicies[hashedToolIpfsCid];
+        EnumerableSet.Bytes32Set storage toolPolicyIpfsCidHashes =
+            versionedApp.toolIpfsCidHashToToolPolicyIpfsCidHashes[hashedToolIpfsCid];
 
         // Get all policy hashes for this tool from the app version
-        bytes32[] memory allPolicyHashes = appToolPolicies.policyIpfsCidHashes.values();
+        bytes32[] memory allPolicyHashes = toolPolicyIpfsCidHashes.values();
         uint256 policyCount = allPolicyHashes.length;
 
         // Create the policies array
         validation.policies = new PolicyWithParameters[](policyCount);
 
         // Get the tool policy storage for this PKP, app, app version, and tool
-        VincentUserStorage.ToolPolicyStorage storage toolPolicyStorage =
-            us_.agentPkpTokenIdToAgentStorage[pkpTokenId].toolPolicyStorage[appId][appVersion][hashedToolIpfsCid];
+        mapping(bytes32 => bytes) storage toolPolicyParameterValues =
+            us_.agentPkpTokenIdToAgentStorage[pkpTokenId].toolPolicyParameterValues[appId][appVersion][hashedToolIpfsCid];
 
         // For each policy, get all its parameters
         for (uint256 i = 0; i < policyCount; i++) {
@@ -324,38 +317,7 @@ contract VincentUserViewFacet is VincentBase {
 
             // Get the policy IPFS CID
             validation.policies[i].policyIpfsCid = ls_.ipfsCidHashToIpfsCid[policyHash];
-
-            // Check if this policy has parameters set
-            if (toolPolicyStorage.policyIpfsCidHashesWithParameters.contains(policyHash)) {
-                // Get the policy parameters storage
-                VincentUserStorage.PolicyParametersStorage storage policyParametersStorage =
-                    toolPolicyStorage.policyIpfsCidHashToPolicyParametersStorage[policyHash];
-
-                // Get parameter names hashes
-                bytes32[] memory paramNameHashes = policyParametersStorage.policyParameterNameHashes.values();
-                uint256 paramCount = paramNameHashes.length;
-
-                // Create the parameters array for this policy
-                validation.policies[i].parameters = new PolicyParameter[](paramCount);
-
-                // For each parameter, get its name, type, and value
-                for (uint256 j = 0; j < paramCount; j++) {
-                    bytes32 paramHash = paramNameHashes[j];
-
-                    // Get the policy data to access parameter type
-                    VincentAppStorage.Policy storage policy = versionedApp.toolIpfsCidHashToToolPolicies[hashedToolIpfsCid]
-                        .policyIpfsCidHashToPolicy[policyHash];
-
-                    // Get parameter name, type, and value
-                    validation.policies[i].parameters[j].name = ls_.policyParameterNameHashToName[paramHash];
-                    validation.policies[i].parameters[j].paramType = policy.policyParameterNameHashToType[paramHash];
-                    validation.policies[i].parameters[j].value =
-                        policyParametersStorage.policyParameterNameHashToValue[paramHash];
-                }
-            } else {
-                // Policy has no parameters, initialize an empty array
-                validation.policies[i].parameters = new PolicyParameter[](0);
-            }
+            validation.policies[i].policyParameterValues = toolPolicyParameterValues[policyHash];
         }
 
         return validation;
@@ -377,7 +339,7 @@ contract VincentUserViewFacet is VincentBase {
         uint256 pkpTokenId,
         uint256 appId,
         uint256 appVersion,
-        VincentAppStorage.VersionedApp storage versionedApp,
+        VincentAppStorage.AppVersion storage versionedApp,
         VincentUserStorage.UserStorage storage us_,
         VincentLitActionStorage.LitActionStorage storage ls_
     ) internal view returns (ToolWithPolicies memory toolWithPolicies) {
@@ -385,75 +347,25 @@ contract VincentUserViewFacet is VincentBase {
         toolWithPolicies.toolIpfsCid = ls_.ipfsCidHashToIpfsCid[toolHash];
 
         // Get all policies registered for this tool in the app version
-        VincentAppStorage.ToolPolicies storage appToolPolicies = versionedApp.toolIpfsCidHashToToolPolicies[toolHash];
+        EnumerableSet.Bytes32Set storage toolPolicyIpfsCidHashes =
+            versionedApp.toolIpfsCidHashToToolPolicyIpfsCidHashes[toolHash];
 
         // Get all policy hashes for this tool from the app version
-        bytes32[] memory allPolicyHashes = appToolPolicies.policyIpfsCidHashes.values();
+        bytes32[] memory allPolicyHashes = toolPolicyIpfsCidHashes.values();
         uint256 policyCount = allPolicyHashes.length;
 
         // Create the policies array for this tool
         toolWithPolicies.policies = new PolicyWithParameters[](policyCount);
 
         // Get the tool policy storage for this PKP, app, and tool
-        VincentUserStorage.ToolPolicyStorage storage toolPolicyStorage =
-            us_.agentPkpTokenIdToAgentStorage[pkpTokenId].toolPolicyStorage[appId][appVersion][toolHash];
+        mapping(bytes32 => bytes) storage toolPolicyParameterValues =
+            us_.agentPkpTokenIdToAgentStorage[pkpTokenId].toolPolicyParameterValues[appId][appVersion][toolHash];
 
         // For each policy, get all its parameters
         for (uint256 i = 0; i < policyCount; i++) {
             bytes32 policyHash = allPolicyHashes[i];
-            toolWithPolicies.policies[i] =
-                _getPolicyWithParameters(policyHash, toolHash, toolPolicyStorage, versionedApp, ls_);
-        }
-    }
-
-    /**
-     * @dev Internal function to get a policy with its parameters
-     * @param policyHash The hash of the policy IPFS CID
-     * @param toolHash The hash of the tool IPFS CID
-     * @param toolPolicyStorage The tool policy storage
-     * @param versionedApp The versioned app storage
-     * @param ls_ The lit action storage
-     * @return policyWithParameters The policy with its parameters
-     */
-    function _getPolicyWithParameters(
-        bytes32 policyHash,
-        bytes32 toolHash,
-        VincentUserStorage.ToolPolicyStorage storage toolPolicyStorage,
-        VincentAppStorage.VersionedApp storage versionedApp,
-        VincentLitActionStorage.LitActionStorage storage ls_
-    ) internal view returns (PolicyWithParameters memory policyWithParameters) {
-        // Get the policy IPFS CID
-        policyWithParameters.policyIpfsCid = ls_.ipfsCidHashToIpfsCid[policyHash];
-
-        // Check if this policy has parameters set
-        if (toolPolicyStorage.policyIpfsCidHashesWithParameters.contains(policyHash)) {
-            // Get the policy parameters storage
-            VincentUserStorage.PolicyParametersStorage storage policyParametersStorage =
-                toolPolicyStorage.policyIpfsCidHashToPolicyParametersStorage[policyHash];
-
-            // Get parameter names hashes
-            bytes32[] memory paramNameHashes = policyParametersStorage.policyParameterNameHashes.values();
-            uint256 paramCount = paramNameHashes.length;
-
-            // Create the parameters array for this policy
-            policyWithParameters.parameters = new PolicyParameter[](paramCount);
-
-            // Get the policy data to access parameter type
-            VincentAppStorage.Policy storage policy =
-                versionedApp.toolIpfsCidHashToToolPolicies[toolHash].policyIpfsCidHashToPolicy[policyHash];
-
-            // For each parameter, get its name, type, and value
-            for (uint256 i = 0; i < paramCount; i++) {
-                bytes32 paramHash = paramNameHashes[i];
-                policyWithParameters.parameters[i] = PolicyParameter({
-                    name: ls_.policyParameterNameHashToName[paramHash],
-                    paramType: policy.policyParameterNameHashToType[paramHash],
-                    value: policyParametersStorage.policyParameterNameHashToValue[paramHash]
-                });
-            }
-        } else {
-            // Policy has no parameters, initialize an empty array
-            policyWithParameters.parameters = new PolicyParameter[](0);
+            toolWithPolicies.policies[i].policyIpfsCid = ls_.ipfsCidHashToIpfsCid[policyHash];
+            toolWithPolicies.policies[i].policyParameterValues = toolPolicyParameterValues[policyHash];
         }
     }
 }
