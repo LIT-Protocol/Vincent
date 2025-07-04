@@ -9,36 +9,23 @@ import { z } from 'zod';
 import { env } from './env';
 
 const { VINCENT_APP_ID, VINCENT_APP_JSON_DEFINITION, VINCENT_REGISTRY_URL } = env;
-
 interface RegistryApp {
-  _id: string;
   appId: number;
   activeVersion: number;
   name: string;
   description: string;
-  contactEmail: string;
-  appUserUrl: string;
-  logo: string;
   redirectUris: string[];
-  deploymentStatus: string;
+  deploymentStatus: 'dev' | 'test' | 'prod';
   managerAddress: string;
   isDeleted: boolean;
-  createdAt: string;
-  updatedAt: string;
-  __v: number;
 }
 
 interface RegistryAppVersionTool {
-  _id: string;
   appId: number;
   appVersion: number;
   toolPackageName: string;
   toolVersion: string;
-  hiddenSupportedPolicies: string[];
   isDeleted: boolean;
-  createdAt: string;
-  updatedAt: string;
-  __v: number;
 }
 
 const JsonVincentAppToolsSchema = z.record(VincentToolNpmSchema.omit({ version: true }));
@@ -77,6 +64,15 @@ async function getAppDataFromRegistry(appId: string): Promise<VincentAppDef> {
     );
   }
   const registryData = (await registryAppResponse.json()) as RegistryApp;
+  if (registryData.isDeleted) {
+    throw new Error(`Vincent App ${appId} has been deleted from the registry`);
+  }
+  if (registryData.deploymentStatus !== 'prod') {
+    console.warn(
+      `Warning: Vincent App ${appId} is deployed as ${registryData.deploymentStatus}. Consider migrating to a production deployment.`,
+    );
+  }
+
   const appVersion = registryData.activeVersion.toString();
 
   const registryToolsResponse = await fetch(
@@ -96,6 +92,11 @@ async function getAppDataFromRegistry(appId: string): Promise<VincentAppDef> {
 
   const toolsObject: VincentAppTools = {};
   registryTools.forEach((rt) => {
+    if (rt.isDeleted) {
+      throw new Error(
+        `Vincent App Version Tool ${rt.toolPackageName}@${rt.toolVersion} has been deleted from the registry`,
+      );
+    }
     toolsObject[rt.toolPackageName] = {
       version: rt.toolVersion,
     };
