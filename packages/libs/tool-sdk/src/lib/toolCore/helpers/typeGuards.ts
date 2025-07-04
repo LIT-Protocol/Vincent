@@ -14,8 +14,7 @@ export function isToolSuccessResult(
     typeof value === 'object' &&
     value !== null &&
     'success' in value &&
-    (value as any).success === true &&
-    'result' in value
+    (value as any).success === true
   );
 }
 
@@ -26,8 +25,7 @@ export function isToolFailureResult(
     typeof value === 'object' &&
     value !== null &&
     'success' in value &&
-    (value as any).success === false &&
-    'result' in value
+    (value as any).success === false
   );
 }
 
@@ -41,7 +39,6 @@ export function isToolResult(
     typeof value === 'object' &&
     value !== null &&
     'success' in value &&
-    typeof (value as any).success === 'boolean' &&
-    'result' in value
+    typeof (value as any).success === 'boolean'
   );
 }

@@ -18,7 +18,7 @@ import {
   checkShouldMintAndFundPkp,
   BASE_PUBLIC_CLIENT,
   TEST_AGENT_WALLET_PKP_OWNER_PRIVATE_KEY,
-  permitAuthMethod,
+  permitAuthMethods,
   TEST_APP_MANAGER_VIEM_WALLET_CLIENT,
   DATIL_PUBLIC_CLIENT,
   VINCENT_ADDRESS,
@@ -242,12 +242,10 @@ describe('Uniswap Swap Tool E2E Tests', () => {
   });
 
   it('should permit the ERC20 Approval Tool, Uniswap Swap Tool, and Spending Limit Policy for the Agent Wallet PKP', async () => {
-    await permitAuthMethod(
+    await permitAuthMethods(
       TEST_AGENT_WALLET_PKP_OWNER_PRIVATE_KEY as `0x${string}`,
       TEST_CONFIG.userPkp!.tokenId!,
-      erc20BundledTool.ipfsCid,
-      uniswapBundledTool.ipfsCid,
-      spendingLimitPolicyMetadata.ipfsCid,
+      [erc20BundledTool.ipfsCid, uniswapBundledTool.ipfsCid, spendingLimitPolicyMetadata.ipfsCid],
     );
   });
 

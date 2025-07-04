@@ -58,7 +58,8 @@
       "policy-spending-limit",
       "tool-erc20-approval",
       "tool-uniswap-swap",
-      "mcp-server"
+      "mcp-server",
+      "toolpolicies-e2e"
     ],
     "projectsRelationship": "independent",
     "releaseTagPattern": "vincent/{projectName}/{version}",

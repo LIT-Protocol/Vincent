@@ -434,6 +434,9 @@ importers:
 
   packages/apps/policy-spending-limit:
     dependencies:
+      '@lit-protocol/vincent-app-sdk':
+        specifier: workspace:^
+        version: link:../../libs/app-sdk
       '@lit-protocol/vincent-tool-sdk':
         specifier: workspace:*
         version: link:../../libs/tool-sdk
@@ -562,6 +565,9 @@ importers:
 
   packages/apps/tool-erc20-approval:
     dependencies:
+      '@lit-protocol/vincent-app-sdk':
+        specifier: workspace:^
+        version: link:../../libs/app-sdk
       '@lit-protocol/vincent-tool-sdk':
         specifier: workspace:*
         version: link:../../libs/tool-sdk
@@ -587,6 +593,9 @@ importers:
 
   packages/apps/tool-uniswap-swap:
     dependencies:
+      '@lit-protocol/vincent-app-sdk':
+        specifier: workspace:^
+        version: link:../../libs/app-sdk
       '@lit-protocol/vincent-policy-spending-limit':
         specifier: workspace:*
         version: link:../policy-spending-limit
@@ -651,9 +660,18 @@ importers:
       '@lit-protocol/vincent-tool-uniswap-swap':
         specifier: workspace:*
         version: link:../tool-uniswap-swap
+      esbuild:
+        specifier: ^0.25.5
+        version: 0.25.5
+      esbuild-plugin-polyfill-node:
+        specifier: ^0.3.0
+        version: 0.3.0(esbuild@0.25.5)
       ethers:
         specifier: 5.8.0
         version: 5.8.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+      ipfs-only-hash:
+        specifier: ^4.0.0
+        version: 4.0.0
       tslib:
         specifier: 2.8.1
         version: 2.8.1
@@ -4879,7 +4897,6 @@ packages:
 
   bun@1.2.16:
     resolution: {integrity: sha512-sjZH6rr1P6yu44+XPA8r+ZojwmK9Kbz9lO6KAA/4HRIupdpC31k7b93crLBm19wEYmd6f2+3+57/7tbOcmHbGg==}
-    cpu: [arm64, x64, aarch64]
     os: [darwin, linux, win32]
     hasBin: true
 
@@ -18463,6 +18480,12 @@ snapshots:
     dependencies:
       '@jspm/core': 2.1.0
       esbuild: 0.19.12
+      import-meta-resolve: 3.1.1
+
+  esbuild-plugin-polyfill-node@0.3.0(esbuild@0.25.5):
+    dependencies:
+      '@jspm/core': 2.1.0
+      esbuild: 0.25.5
       import-meta-resolve: 3.1.1
 
   esbuild-sunos-64@0.14.47:

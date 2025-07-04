@@ -1,5 +1,5 @@
 {
-  "name": "mcp",
+  "name": "mcp-server",
   "$schema": "../../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "packages/apps/mcp/src",
   "projectType": "application",

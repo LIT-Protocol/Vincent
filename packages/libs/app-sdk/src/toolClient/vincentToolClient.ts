@@ -67,6 +67,7 @@ import {
 import { isRemoteVincentToolExecutionResult, isToolResponseFailure } from './typeGuards';
 import * as util from 'node:util';
 
+/** @hidden */
 export const generateVincentToolSessionSigs = async ({
   litNodeClient,
   ethersSigner,
@@ -431,6 +432,11 @@ export function getVincentToolClient<
           delegatorPkpEthAddress,
           rpcUrl,
         });
+        if (!baseToolContext.policiesContext.allow) {
+          return createToolResponseFailureNoResult({
+            context: baseToolContext,
+          }) as ToolResponse<PrecheckSuccessSchema, PrecheckFailSchema, PoliciesByPackageName>;
+        }
 
         return createToolResponseSuccessNoResult({
           context: baseToolContext,
@@ -482,9 +488,12 @@ export function getVincentToolClient<
       });
 
       const { success, response } = result;
+      console.log('executeResult - raw result from `litNodeClient.executeJs()', {
+        response,
+        success,
+      });
 
       if (success !== true) {
-        console.log('executeResult 1', { response, success });
         return createToolResponseFailureNoResult({
           message: `Remote tool failed with unknown error: ${JSON.stringify(response)}`,
         }) as ToolResponse<ExecuteSuccessSchema, ExecuteFailSchema, PoliciesByPackageName>;
@@ -494,8 +503,6 @@ export function getVincentToolClient<
 
       if (typeof response === 'string') {
         // lit-node-client returns a string if no signed data, even if the result could be JSON.parse'd :(
-        console.log('executeResult 2', { response, success });
-
         try {
           parsedResult = JSON.parse(response);
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -507,7 +514,10 @@ export function getVincentToolClient<
       }
 
       if (!isRemoteVincentToolExecutionResult(parsedResult)) {
-        console.log('executeResult3', { parsedResult, success });
+        console.log(
+          'Result from `executeJs` was valid JSON, but not a vincentToolExecutionResult',
+          { parsedResult, success }
+        );
 
         return createToolResponseFailureNoResult({
           message: `Remote tool failed with unknown error: ${JSON.stringify(parsedResult)}`,
@@ -520,12 +530,17 @@ export function getVincentToolClient<
         PoliciesByPackageName
       > = parsedResult;
 
+      console.log('Parsed executeJs vincentToolExecutionResult:', { parsedResult });
       const executionResult = resp.toolExecutionResult;
-      const { schemaToUse } = getSchemaForToolResult({
+      const resultSchemaDetails = getSchemaForToolResult({
         value: executionResult,
         successResultSchema: executeSuccessSchema,
         failureResultSchema: executeFailSchema,
       });
+
+      const { schemaToUse, parsedType } = resultSchemaDetails;
+
+      console.log(`Parsing tool result using the ${parsedType} Zod schema`);
 
       // Parse returned result using appropriate execute zod schema
       const executeResult = validateOrFail(
@@ -535,10 +550,24 @@ export function getVincentToolClient<
         'output'
       );
 
+      console.log('Zod parse result:', executeResult);
+
       if (isToolResponseFailure(executeResult)) {
+        // Parsing the result threw a zodError
+        return executeResult as ToolResponse<
+          ExecuteSuccessSchema,
+          ExecuteFailSchema,
+          PoliciesByPackageName
+        >;
+      }
+
+      console.log('Raw toolExecutionResult was:', executionResult);
+
+      // We parsed the result -- it may be a success or a failure; return appropriately.
+      if (isToolResponseFailure(executionResult)) {
         return createToolResponseFailure({
-          result: executeResult.result,
-          ...executeResult,
+          ...(executionResult.error ? { message: executionResult.error } : {}),
+          result: executeResult,
           context: resp.toolContext,
         }) as ToolResponse<ExecuteSuccessSchema, ExecuteFailSchema, PoliciesByPackageName>;
       }
