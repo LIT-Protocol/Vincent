@@ -1,10 +1,13 @@
 import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
 import { StatusMessage } from '@/components/shared/ui/statusMessage';
 import Loading from '@/components/layout/Loading';
-import { ExplorerHomeView } from '../views/HomeView';
+import { AppExploreView } from '../views/AppExploreView';
+import { App } from '@/types/developer-dashboard/appTypes';
 
-export const ExplorerHomeWrapper = () => {
+export const AppExploreWrapper = () => {
   const { data: apps, isLoading, isError } = vincentApiClient.useListAppsQuery();
+
+  const activeApps = apps?.filter((app: App) => app.deploymentStatus !== 'dev') || [];
 
   // Loading states
   if (isLoading) return <Loading />;
@@ -13,5 +16,5 @@ export const ExplorerHomeWrapper = () => {
   if (isError) return <StatusMessage message="Failed to load apps" type="error" />;
   if (!apps) return <StatusMessage message={`Apps not found`} type="error" />;
 
-  return <ExplorerHomeView apps={apps} />;
+  return <AppExploreView apps={activeApps} />;
 };

@@ -12,3 +12,5 @@ export const AppProviders = [
 ];
 
 export const UserProviders = [StytchProviderWrapper, ErrorPopupProvider];
+
+export const ExplorerProviders = [ReduxProvider];

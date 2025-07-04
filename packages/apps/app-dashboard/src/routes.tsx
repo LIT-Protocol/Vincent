@@ -1,10 +1,11 @@
 import { Outlet, RouteObject } from 'react-router';
 import AppLayout from './components/layout/AppLayout';
 import UserLayout from './components/layout/UserLayout';
-import { AppProviders, UserProviders } from './providers';
+import ExplorerLayout from './components/layout/ExplorerLayout';
+import { AppProviders, UserProviders, ExplorerProviders } from './providers';
 import { wrap } from './utils/components';
 
-import { ExplorerHomeWrapper } from './components/explorer/wrappers/HomeWrapper';
+import { AppExploreWrapper } from './components/explorer/wrappers/AppExploreWrapper';
 import { AppInfoWrapper } from './components/explorer/wrappers/AppInfoWrapper';
 
 import Home from './pages/index';
@@ -18,6 +19,7 @@ import ToolPolicies from './pages/appId/[appId]/tool-policies';
 
 const AppLayoutWithProviders = wrap(() => <Outlet />, [...AppProviders, AppLayout]);
 const UserLayoutWithProviders = wrap(() => <Outlet />, [...UserProviders, UserLayout]);
+const ExplorerLayoutWithProviders = wrap(() => <Outlet />, [...ExplorerProviders, ExplorerLayout]);
 
 const routes: RouteObject[] = [
   {
@@ -26,14 +28,6 @@ const routes: RouteObject[] = [
       {
         path: '/',
         element: <Home />,
-      },
-      {
-        path: '/explorer',
-        element: <ExplorerHomeWrapper />,
-      },
-      {
-        path: '/explorer/appId/:appId',
-        element: <AppInfoWrapper />,
       },
       {
         path: '/create-app',
@@ -67,6 +61,19 @@ const routes: RouteObject[] = [
       {
         path: '/appId/:appId/consent',
         element: <Consent />,
+      },
+    ],
+  },
+  {
+    element: <ExplorerLayoutWithProviders />,
+    children: [
+      {
+        path: '/explorer/apps',
+        element: <AppExploreWrapper />,
+      },
+      {
+        path: '/explorer/appId/:appId',
+        element: <AppInfoWrapper />,
       },
     ],
   },
