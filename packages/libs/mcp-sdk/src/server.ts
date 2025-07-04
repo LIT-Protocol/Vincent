@@ -91,8 +91,7 @@ async function registerVincentTools(
 
   for await (const [toolPackage, toolData] of Object.entries(vincentAppDef.tools)) {
     console.log(`Loading tool package ${toolPackage}...`);
-    const tool = require(toolPackage); // This works
-    // const tool = await import(toolPackage); // TODO This doesn't work
+    const tool = require(toolPackage); // import cannot find the pkgs just installed as they were not there when the process started
     console.log(`Successfully loaded tool package ${toolPackage}`);
 
     const bundledVincentTool = tool.bundledVincentTool;
