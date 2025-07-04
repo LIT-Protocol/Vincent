@@ -123,6 +123,7 @@ export default function AuthenticatedConsentForm({
     agentPKP,
     appInfo,
     onStatusChange: showStatus,
+    permittedVersion,
   });
 
   // Set the fetchExistingParameters ref after it's created
@@ -160,8 +161,9 @@ export default function AuthenticatedConsentForm({
     agentPKP,
     userPKP,
     sessionSigs,
+    permittedVersion,
     onStatusChange: showStatus,
-    onError: showErrorWithStatus,
+    onError: (error: unknown) => showErrorWithStatus(error as string),
   });
 
   // Add the consent disapproval hook

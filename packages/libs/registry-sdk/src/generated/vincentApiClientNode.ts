@@ -664,7 +664,7 @@ export type App = {
   /** The name of the application */
   name: string;
   /** Description of the application */
-  description?: string;
+  description: string;
   /** Contact email for the application manager */
   contactEmail?: string;
   /** This should be a landing page for the app. */
@@ -675,6 +675,8 @@ export type App = {
   redirectUris?: string[];
   /** Identifies if an application is in development, test, or production. */
   deploymentStatus?: 'dev' | 'test' | 'prod';
+  /** Whether or not this App is deleted */
+  isDeleted?: boolean;
 };
 export type AppRead = {
   /** Document ID */
@@ -690,7 +692,7 @@ export type AppRead = {
   /** The name of the application */
   name: string;
   /** Description of the application */
-  description?: string;
+  description: string;
   /** Contact email for the application manager */
   contactEmail?: string;
   /** This should be a landing page for the app. */
@@ -703,6 +705,8 @@ export type AppRead = {
   deploymentStatus?: 'dev' | 'test' | 'prod';
   /** App manager's wallet address. Derived from the authorization signature provided by the creator. */
   managerAddress: string;
+  /** Whether or not this App is deleted */
+  isDeleted?: boolean;
 };
 export type AppList = App[];
 export type AppListRead = AppRead[];
@@ -726,7 +730,7 @@ export type AppCreate = {
   /** The name of the application */
   name: string;
   /** Description of the application */
-  description?: string;
+  description: string;
 };
 export type AppEdit = {
   /** The name of the application */
@@ -759,6 +763,8 @@ export type AppVersion = {
   enabled: boolean;
   /** Describes what changed between this version and the previous version. */
   changes?: string;
+  /** Whether or not this AppVersion is deleted */
+  isDeleted?: boolean;
 };
 export type AppVersionRead = {
   /** Document ID */
@@ -775,6 +781,8 @@ export type AppVersionRead = {
   enabled: boolean;
   /** Describes what changed between this version and the previous version. */
   changes?: string;
+  /** Whether or not this AppVersion is deleted */
+  isDeleted?: boolean;
 };
 export type AppVersionList = AppVersion[];
 export type AppVersionListRead = AppVersionRead[];
@@ -797,6 +805,8 @@ export type AppVersionTool = {
   toolVersion: string;
   /** Policies that are supported by this tool, but are hidden from users of this app specifically */
   hiddenSupportedPolicies?: string[];
+  /** Whether or not this AppVersionTool is deleted */
+  isDeleted?: boolean;
 };
 export type AppVersionToolRead = {
   /** Document ID */
@@ -815,6 +825,8 @@ export type AppVersionToolRead = {
   toolVersion: string;
   /** Policies that are supported by this tool, but are hidden from users of this app specifically */
   hiddenSupportedPolicies?: string[];
+  /** Whether or not this AppVersionTool is deleted */
+  isDeleted?: boolean;
 };
 export type AppVersionToolList = AppVersionTool[];
 export type AppVersionToolListRead = AppVersionToolRead[];
@@ -836,13 +848,15 @@ export type Tool = {
   /** Tool NPM package name */
   packageName: string;
   /** Tool title - displayed to users in the dashboard/Vincent Explorer UI */
-  title?: string;
+  title: string;
   /** Tool description - displayed to users in the dashboard/Vincent Explorer UI */
   description: string;
   /** Active version of the tool */
   activeVersion: string;
   /** Identifies if a tool is in development, test, or production. */
   deploymentStatus?: 'dev' | 'test' | 'prod';
+  /** Whether or not this Tool is deleted */
+  isDeleted?: boolean;
 };
 export type ToolRead = {
   /** Document ID */
@@ -854,7 +868,7 @@ export type ToolRead = {
   /** Tool NPM package name */
   packageName: string;
   /** Tool title - displayed to users in the dashboard/Vincent Explorer UI */
-  title?: string;
+  title: string;
   /** Author wallet address. Derived from the authorization signature provided by the creator. */
   authorWalletAddress: string;
   /** Tool description - displayed to users in the dashboard/Vincent Explorer UI */
@@ -863,6 +877,8 @@ export type ToolRead = {
   activeVersion: string;
   /** Identifies if a tool is in development, test, or production. */
   deploymentStatus?: 'dev' | 'test' | 'prod';
+  /** Whether or not this Tool is deleted */
+  isDeleted?: boolean;
 };
 export type ToolList = Tool[];
 export type ToolListRead = ToolRead[];
@@ -870,7 +886,7 @@ export type ToolCreate = {
   /** Active version of the tool */
   activeVersion: string;
   /** Tool title - displayed to users in the dashboard/Vincent Explorer UI */
-  title?: string;
+  title: string;
   /** Tool description - displayed to users in the dashboard/Vincent Explorer UI */
   description: string;
   /** Identifies if a tool is in development, test, or production. */
@@ -925,6 +941,8 @@ export type ToolVersion = {
   }[];
   /** Policy homepage */
   homepage?: string;
+  /** Whether or not this ToolVersion is deleted */
+  isDeleted?: boolean;
 };
 export type ToolVersionRead = {
   /** Document ID */
@@ -975,6 +993,8 @@ export type ToolVersionRead = {
   ipfsCid: string;
   /** Policy versions that are not in the registry but are supported by this tool */
   policiesNotInRegistry: string[];
+  /** Whether or not this ToolVersion is deleted */
+  isDeleted?: boolean;
 };
 export type ToolVersionList = ToolVersion[];
 export type ToolVersionListRead = ToolVersionRead[];
@@ -1005,6 +1025,8 @@ export type Policy = {
   title: string;
   /** Identifies if a policy is in development, test, or production. */
   deploymentStatus?: 'dev' | 'test' | 'prod';
+  /** Whether or not this Policy is deleted */
+  isDeleted?: boolean;
 };
 export type PolicyRead = {
   /** Document ID */
@@ -1025,6 +1047,8 @@ export type PolicyRead = {
   title: string;
   /** Identifies if a policy is in development, test, or production. */
   deploymentStatus?: 'dev' | 'test' | 'prod';
+  /** Whether or not this Policy is deleted */
+  isDeleted?: boolean;
 };
 export type PolicyList = Policy[];
 export type PolicyListRead = PolicyRead[];
@@ -1087,6 +1111,8 @@ export type PolicyVersion = {
   }[];
   /** Policy homepage */
   homepage?: string;
+  /** Whether or not this PolicyVersion is deleted */
+  isDeleted?: boolean;
 };
 export type PolicyVersionRead = {
   /** Document ID */
@@ -1138,6 +1164,8 @@ export type PolicyVersionRead = {
     /** JSON Schema for parameter validation */
     jsonSchema: string;
   };
+  /** Whether or not this PolicyVersion is deleted */
+  isDeleted?: boolean;
 };
 export type PolicyVersionCreate = {
   /** Changelog information for this version */

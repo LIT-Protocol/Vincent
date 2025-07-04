@@ -1,7 +1,13 @@
 import { useCallback } from 'react';
-import { IRelayPKP } from '@lit-protocol/types';
+import { IRelayPKP, SessionSigs } from '@lit-protocol/types';
 import { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
-import { AppView, VersionInfo, VersionParameter } from '../types';
+import {
+  AppView,
+  VersionInfo,
+  VersionParameter,
+  PolicyParameter,
+  PolicyWithParameters,
+} from '../types';
 import { litNodeClient } from '../utils/lit';
 import { getUserViewRegistryContract, getUserRegistryContract } from '../utils/contracts';
 import { useParameterManagement } from './useParameterManagement';
@@ -42,9 +48,15 @@ interface UseConsentApprovalProps {
   parameters: VersionParameter[];
   agentPKP?: IRelayPKP;
   userPKP: IRelayPKP;
-  sessionSigs: any;
+  sessionSigs: SessionSigs;
+  permittedVersion: number | null;
   onStatusChange?: (message: string, type: 'info' | 'warning' | 'success' | 'error') => void;
-  onError?: (error: any, title?: string, details?: string) => void;
+  onError?: (error: Error | unknown, title?: string, details?: string) => void;
+}
+
+interface ToolWithPolicies {
+  toolIpfsCid: string;
+  policies: PolicyWithParameters[];
 }
 
 export const useConsentApproval = ({
@@ -55,6 +67,7 @@ export const useConsentApproval = ({
   agentPKP,
   userPKP,
   sessionSigs,
+  permittedVersion,
   onStatusChange,
   onError,
 }: UseConsentApprovalProps) => {
@@ -62,6 +75,7 @@ export const useConsentApproval = ({
     appId,
     agentPKP,
     appInfo,
+    permittedVersion,
     onStatusChange: onStatusChange
       ? (message, type = 'info') => onStatusChange(message, type)
       : undefined,
@@ -122,16 +136,16 @@ export const useConsentApproval = ({
           appIdNum,
         );
 
-        toolsAndPolicies.forEach((tool: any, toolIndex: number) => {
-          tool.policies.forEach((policy: any, policyIndex: number) => {
-            policy.parameters.forEach((param: any, paramIndex: number) => {
+        toolsAndPolicies.forEach((tool: ToolWithPolicies, toolIndex: number) => {
+          tool.policies.forEach((policy: PolicyWithParameters, policyIndex: number) => {
+            policy.parameters.forEach((param: PolicyParameter, paramIndex: number) => {
               existingParameters.push({
                 toolIndex,
                 policyIndex,
                 paramIndex,
                 name: param.name,
-                type: param.paramType,
-                value: param.value,
+                type: Number(param.type),
+                value: param.value!,
               });
             });
           });
@@ -167,7 +181,6 @@ export const useConsentApproval = ({
             removeArgs,
             'Sending transaction to remove cleared parameters...',
             onStatusChange,
-            onError,
           );
 
           onStatusChange?.('Waiting for removal transaction to be confirmed...', 'info');
@@ -228,7 +241,6 @@ export const useConsentApproval = ({
         updateArgs,
         'Sending transaction to update parameters...',
         onStatusChange,
-        onError,
       );
 
       onStatusChange?.('Waiting for update transaction to be confirmed...', 'info');
@@ -308,7 +320,6 @@ export const useConsentApproval = ({
         permitArgs,
         'Sending permission transaction...',
         onStatusChange,
-        onError,
       );
 
       await txResponse.wait(1);

@@ -14,7 +14,7 @@ const tool = z
       description: 'Tool NPM package name',
       example: '@lit-protocol/vincent-erc20-approval-tool',
     }),
-    title: z.string().optional().openapi({
+    title: z.string().trim().min(2).openapi({
       description: 'Tool title - displayed to users in the dashboard/Vincent Explorer UI',
       example: 'ERC20 Approval Tool',
     }),
@@ -24,7 +24,7 @@ const tool = z
       example: EXAMPLE_WALLET_ADDRESS,
       readOnly: true,
     }),
-    description: z.string().openapi({
+    description: z.string().trim().min(10).openapi({
       description: 'Tool description - displayed to users in the dashboard/Vincent Explorer UI',
       example:
         'A tool that manages ERC20 approvals for PKPs. Facilitates vincent-uniswap-swap-tool usage.',
@@ -36,6 +36,10 @@ const tool = z
     deploymentStatus: z.enum(['dev', 'test', 'prod']).optional().openapi({
       description: 'Identifies if a tool is in development, test, or production.',
       example: 'dev',
+    }),
+    isDeleted: z.boolean().optional().openapi({
+      description: 'Whether or not this Tool is deleted',
+      example: false,
     }),
   })
   .strict();
@@ -93,7 +97,7 @@ const toolVersion = z
       description: 'Tool version - must be an exact semver.',
       example: '1.0.0',
     }),
-    changes: z.string().openapi({
+    changes: z.string().trim().min(10).openapi({
       description: 'Changelog information for this version',
       example: 'Ensure commit() is run on spending policy limit for users who have it enabled.',
     }),
@@ -118,6 +122,10 @@ const toolVersion = z
       description: 'Policy versions that are not in the registry but are supported by this tool',
       example: ['@lit-protocol/vincent-spending-limit-policy@1.0.1'],
       readOnly: true,
+    }),
+    isDeleted: z.boolean().optional().openapi({
+      description: 'Whether or not this ToolVersion is deleted',
+      example: false,
     }),
   })
   .strict();

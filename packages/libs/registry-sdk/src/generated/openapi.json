@@ -108,6 +108,7 @@
               "format": "uri"
             },
             "description": "Redirect URIs users can be sent to after signing up for your application (with their JWT token).",
+            "uniqueItems": true,
             "example": [
               "https://myapp.example.com",
               "https://myapp.example.com/subpage"
@@ -115,17 +116,20 @@
           },
           "name": {
             "type": "string",
+            "minLength": 2,
             "description": "The name of the application",
             "example": "Memecoin DCA App"
           },
           "description": {
             "type": "string",
+            "minLength": 10,
             "description": "Description of the application",
             "example": "This is a memecoin DCA App."
           }
         },
         "required": [
-          "name"
+          "name",
+          "description"
         ],
         "additionalProperties": false
       },
@@ -134,11 +138,13 @@
         "properties": {
           "name": {
             "type": "string",
+            "minLength": 2,
             "description": "The name of the application",
             "example": "Memecoin DCA App"
           },
           "description": {
             "type": "string",
+            "minLength": 10,
             "description": "Description of the application",
             "example": "This is a memecoin DCA App."
           },
@@ -166,6 +172,7 @@
               "format": "uri"
             },
             "description": "Redirect URIs users can be sent to after signing up for your application (with their JWT token).",
+            "uniqueItems": true,
             "example": [
               "https://myapp.example.com",
               "https://myapp.example.com/subpage"
@@ -220,11 +227,13 @@
           },
           "name": {
             "type": "string",
+            "minLength": 2,
             "description": "The name of the application",
             "example": "Memecoin DCA App"
           },
           "description": {
             "type": "string",
+            "minLength": 10,
             "description": "Description of the application",
             "example": "This is a memecoin DCA App."
           },
@@ -252,6 +261,7 @@
               "format": "uri"
             },
             "description": "Redirect URIs users can be sent to after signing up for your application (with their JWT token).",
+            "uniqueItems": true,
             "example": [
               "https://myapp.example.com",
               "https://myapp.example.com/subpage"
@@ -272,6 +282,11 @@
             "description": "App manager's wallet address. Derived from the authorization signature provided by the creator.",
             "example": "0x123456789012345678901234567890123456abcd",
             "readOnly": true
+          },
+          "isDeleted": {
+            "type": "boolean",
+            "description": "Whether or not this App is deleted",
+            "example": false
           }
         },
         "required": [
@@ -280,6 +295,7 @@
           "createdAt",
           "appId",
           "name",
+          "description",
           "managerAddress"
         ],
         "additionalProperties": false
@@ -345,6 +361,11 @@
             "type": "string",
             "description": "Describes what changed between this version and the previous version.",
             "example": "I am a changelog trapped in a computer!"
+          },
+          "isDeleted": {
+            "type": "boolean",
+            "description": "Whether or not this AppVersion is deleted",
+            "example": false
           }
         },
         "required": [
@@ -449,6 +470,11 @@
               "@vincent/foo-bar-policy-1",
               "@vincent/foo-bar-policy-2"
             ]
+          },
+          "isDeleted": {
+            "type": "boolean",
+            "description": "Whether or not this AppVersionTool is deleted",
+            "example": false
           }
         },
         "required": [
@@ -472,11 +498,13 @@
           },
           "title": {
             "type": "string",
+            "minLength": 2,
             "description": "Tool title - displayed to users in the dashboard/Vincent Explorer UI",
             "example": "ERC20 Approval Tool"
           },
           "description": {
             "type": "string",
+            "minLength": 10,
             "description": "Tool description - displayed to users in the dashboard/Vincent Explorer UI",
             "example": "A tool that manages ERC20 approvals for PKPs. Facilitates vincent-uniswap-swap-tool usage."
           },
@@ -494,6 +522,7 @@
         },
         "required": [
           "activeVersion",
+          "title",
           "description"
         ],
         "additionalProperties": false
@@ -508,11 +537,13 @@
           },
           "title": {
             "type": "string",
+            "minLength": 2,
             "description": "Tool title - displayed to users in the dashboard/Vincent Explorer UI",
             "example": "ERC20 Approval Tool"
           },
           "description": {
             "type": "string",
+            "minLength": 10,
             "description": "Tool description - displayed to users in the dashboard/Vincent Explorer UI",
             "example": "A tool that manages ERC20 approvals for PKPs. Facilitates vincent-uniswap-swap-tool usage."
           },
@@ -554,6 +585,7 @@
           },
           "title": {
             "type": "string",
+            "minLength": 2,
             "description": "Tool title - displayed to users in the dashboard/Vincent Explorer UI",
             "example": "ERC20 Approval Tool"
           },
@@ -565,6 +597,7 @@
           },
           "description": {
             "type": "string",
+            "minLength": 10,
             "description": "Tool description - displayed to users in the dashboard/Vincent Explorer UI",
             "example": "A tool that manages ERC20 approvals for PKPs. Facilitates vincent-uniswap-swap-tool usage."
           },
@@ -582,6 +615,11 @@
             ],
             "description": "Identifies if a tool is in development, test, or production.",
             "example": "dev"
+          },
+          "isDeleted": {
+            "type": "boolean",
+            "description": "Whether or not this Tool is deleted",
+            "example": false
           }
         },
         "required": [
@@ -589,6 +627,7 @@
           "updatedAt",
           "createdAt",
           "packageName",
+          "title",
           "authorWalletAddress",
           "description",
           "activeVersion"
@@ -600,6 +639,7 @@
         "properties": {
           "changes": {
             "type": "string",
+            "minLength": 10,
             "description": "Changelog information for this version",
             "example": "Ensure commit() is run on spending policy limit for users who have it enabled."
           }
@@ -614,6 +654,7 @@
         "properties": {
           "changes": {
             "type": "string",
+            "minLength": 10,
             "description": "Changelog information for this version",
             "example": "Ensure commit() is run on spending policy limit for users who have it enabled."
           }
@@ -653,6 +694,7 @@
           },
           "changes": {
             "type": "string",
+            "minLength": 10,
             "description": "Changelog information for this version",
             "example": "Ensure commit() is run on spending policy limit for users who have it enabled."
           },
@@ -777,6 +819,11 @@
               "@lit-protocol/vincent-spending-limit-policy@1.0.1"
             ],
             "readOnly": true
+          },
+          "isDeleted": {
+            "type": "boolean",
+            "description": "Whether or not this ToolVersion is deleted",
+            "example": false
           }
         },
         "required": [
@@ -808,11 +855,13 @@
           },
           "title": {
             "type": "string",
+            "minLength": 2,
             "description": "Policy title for displaying to users in the dashboard/Vincent Explorer UI",
             "example": "Vincent Spending Limit Policy"
           },
           "description": {
             "type": "string",
+            "minLength": 10,
             "description": "Policy description - displayed to users in the dashboard/Vincent Explorer UI",
             "example": "This policy is a foo bar policy"
           },
@@ -845,11 +894,13 @@
           },
           "title": {
             "type": "string",
+            "minLength": 2,
             "description": "Policy title for displaying to users in the dashboard/Vincent Explorer UI",
             "example": "Vincent Spending Limit Policy"
           },
           "description": {
             "type": "string",
+            "minLength": 10,
             "description": "Policy description - displayed to users in the dashboard/Vincent Explorer UI",
             "example": "This policy is a foo bar policy"
           },
@@ -897,6 +948,7 @@
           },
           "description": {
             "type": "string",
+            "minLength": 10,
             "description": "Policy description - displayed to users in the dashboard/Vincent Explorer UI",
             "example": "This policy is a foo bar policy"
           },
@@ -907,6 +959,7 @@
           },
           "title": {
             "type": "string",
+            "minLength": 2,
             "description": "Policy title for displaying to users in the dashboard/Vincent Explorer UI",
             "example": "Vincent Spending Limit Policy"
           },
@@ -919,6 +972,11 @@
             ],
             "description": "Identifies if a policy is in development, test, or production.",
             "example": "dev"
+          },
+          "isDeleted": {
+            "type": "boolean",
+            "description": "Whether or not this Policy is deleted",
+            "example": false
           }
         },
         "required": [
@@ -1113,6 +1171,11 @@
             ],
             "description": "Schema parameters",
             "readOnly": true
+          },
+          "isDeleted": {
+            "type": "boolean",
+            "description": "Whether or not this PolicyVersion is deleted",
+            "example": false
           }
         },
         "required": [

@@ -1,4 +1,4 @@
-import { useCallback, useState, useRef } from 'react';
+import { useCallback, useState, useRef, useEffect } from 'react';
 import { IRelayPKP } from '@lit-protocol/types';
 
 import { getAppViewRegistryContract, getUserViewRegistryContract } from '../utils/contracts';
@@ -17,26 +17,71 @@ interface UseParameterManagementProps {
   agentPKP?: IRelayPKP;
   appInfo: AppView | null;
   onStatusChange?: (message: string, type?: 'info' | 'warning' | 'success' | 'error') => void;
+  updateState?: (state: any) => void;
+  permittedVersion: number | null;
+  useCurrentVersionOnly?: boolean;
+  checkingPermissions?: boolean;
+  stabilityDelayMs?: number;
 }
 
 /**
- * This hook manages the parameters for an app version.
- * It handles loading, decoding, and updating parameters, as well as fetching version information.
- * Parameters are used to customize how an app interacts with tools and policies.
+ * Hook to manage parameter fetching, updating, and version information
+ * This hook centralizes all parameter and version related operations
  */
 export const useParameterManagement = ({
   appId,
   agentPKP,
   appInfo,
   onStatusChange,
+  updateState,
+  permittedVersion,
+  useCurrentVersionOnly,
+  checkingPermissions = false,
+  stabilityDelayMs = 100,
 }: UseParameterManagementProps) => {
   const [parameters, setParameters] = useState<VersionParameter[]>([]);
   const [existingParameters, setExistingParameters] = useState<VersionParameter[]>([]);
   const [isLoadingParameters, setIsLoadingParameters] = useState<boolean>(false);
   const [versionInfo, setVersionInfo] = useState<ContractVersionResult | null>(null);
+  const [stableReady, setStableReady] = useState(false);
 
-  // Ref to track if we've already fetched parameters
-  const parametersFetchedRef = useRef(false);
+  // Refs to track state for version and parameter fetching
+  const fetchExistingParametersRef = useRef<(() => Promise<void>) | null>(null);
+  const parametersFetchedRef = useRef<boolean>(false);
+
+  /**
+   * Fetches version information for the specified app.
+   * This provides details about the latest version of the app, including
+   * tools, policies, and parameters that can be configured.
+   * @param versionNumber Optional specific version to fetch. If not provided, uses the latest version.
+   * @throws Error if appId or appInfo is missing, or if the contract call fails
+   */
+  const fetchVersionInfo = useCallback(
+    async (versionNumber?: number): Promise<ContractVersionResult> => {
+      if (!appId || !appInfo) {
+        throw new Error('Missing appId or appInfo in fetchVersionInfo');
+      }
+
+      try {
+        const versionToFetch =
+          versionNumber !== undefined ? versionNumber : Number(appInfo.latestVersion);
+        onStatusChange?.(`Loading app version information for v${versionToFetch}...`, 'info');
+        const contract = getAppViewRegistryContract();
+        const versionData = await contract.getAppVersion(Number(appId), versionToFetch);
+
+        setVersionInfo(versionData);
+        onStatusChange?.('', 'info');
+        return versionData;
+      } catch (err) {
+        console.error('Error fetching version info:', err);
+        onStatusChange?.('Failed to load app information', 'error');
+        throw new Error(
+          `Failed to fetch version info: ${err instanceof Error ? err.message : String(err)}`,
+        );
+      }
+    },
+    [appId, appInfo, onStatusChange],
+  );
 
   /**
    * Fetches existing parameters for the app from the smart contract.
@@ -80,14 +125,14 @@ export const useParameterManagement = ({
           // Process each parameter in the policy
           policy.parameters.forEach((param: PolicyParameter, paramIndex: number) => {
             // Use the shared utility to decode the parameter value
-            const decodedValue = decodeParameterValue(param.value, param.paramType);
+            const decodedValue = decodeParameterValue(param.value!, Number(param.type));
 
             existingParams.push({
               toolIndex,
               policyIndex,
               paramIndex,
               name: param.name,
-              type: param.paramType,
+              type: Number(param.type),
               value: decodedValue,
             });
           });
@@ -95,43 +140,104 @@ export const useParameterManagement = ({
       });
 
       setExistingParameters(existingParams);
-      onStatusChange?.('Successfully loaded your existing parameters', 'success');
-
-      // Also try to fetch version info to match parameter names if not already loaded
-      /*
-      if (!versionInfo && appInfo) {
-        try {
-          const contract = getAppViewRegistryContract();
-          const versionData = await contract.getAppVersion(Number(appId), Number(appInfo.latestVersion));
-          setVersionInfo(versionData);
-        } catch (err) {
-          console.error('Error fetching version info for parameter matching:', err);
-          throw new Error(`Failed to fetch version info for parameter matching: ${err instanceof Error ? err.message : String(err)}`);
-        }
-      }*/
-
-      onStatusChange?.('Successfully loaded your existing parameters', 'success');
+      onStatusChange?.('', 'info'); // Clear the loading message on success
     } catch (error) {
       console.error('Error fetching existing parameters:', error);
       onStatusChange?.('Failed to load your existing parameters', 'error');
+      parametersFetchedRef.current = false; // Reset on error to allow retry
       throw new Error(
         `Failed to fetch existing parameters: ${error instanceof Error ? error.message : String(error)}`,
       );
     } finally {
       setIsLoadingParameters(false);
     }
+  }, [appId, agentPKP, existingParameters.length, isLoadingParameters, onStatusChange]);
+
+  useEffect(() => {
+    const currentlyReady =
+      !checkingPermissions &&
+      !isLoadingParameters &&
+      (versionInfo !== null || useCurrentVersionOnly);
+
+    if (currentlyReady) {
+      const timer = setTimeout(() => {
+        setStableReady(true);
+      }, stabilityDelayMs);
+      return () => clearTimeout(timer);
+    } else {
+      setStableReady(false);
+      return;
+    }
   }, [
+    checkingPermissions,
+    isLoadingParameters,
+    versionInfo,
+    useCurrentVersionOnly,
+    stabilityDelayMs,
+  ]);
+
+  useEffect(() => {
+    fetchExistingParametersRef.current = fetchExistingParameters;
+  }, [fetchExistingParameters]);
+
+  useEffect(() => {
+    if (permittedVersion !== null && appId && appInfo && !versionInfo && !useCurrentVersionOnly) {
+      if (updateState) {
+        updateState({ isLoading: true });
+      }
+
+      fetchVersionInfo(permittedVersion)
+        .then(() => {
+          if (updateState) {
+            updateState({ isLoading: false });
+          }
+
+          if (existingParameters.length === 0 && !isLoadingParameters) {
+            fetchExistingParameters();
+          }
+        })
+        .catch((error) => {
+          console.error(`Error fetching version ${permittedVersion} data:`, error);
+          if (updateState) {
+            updateState({ isLoading: false });
+          }
+          onStatusChange?.('Failed to load version data', 'error');
+        });
+    }
+  }, [
+    permittedVersion,
+    appId,
+    appInfo,
+    versionInfo,
+    fetchVersionInfo,
+    fetchExistingParameters,
+    existingParameters.length,
+    isLoadingParameters,
+    updateState,
+    onStatusChange,
+    useCurrentVersionOnly,
+  ]);
+
+  useEffect(() => {
+    if (
+      useCurrentVersionOnly &&
+      existingParameters.length === 0 &&
+      !isLoadingParameters &&
+      appId &&
+      agentPKP
+    ) {
+      fetchExistingParameters();
+    }
+  }, [
+    useCurrentVersionOnly,
+    existingParameters.length,
+    isLoadingParameters,
     appId,
     agentPKP,
-    versionInfo,
-    appInfo,
-    isLoadingParameters,
-    existingParameters,
-    onStatusChange,
+    fetchExistingParameters,
   ]);
 
   /**
-   * Handles changes to the parameters in the form.
    * Updates the parameters state when user modifies values in the UI.
    */
   const handleParametersChange = useCallback(
@@ -147,40 +253,6 @@ export const useParameterManagement = ({
     [parameters],
   );
 
-  /**
-   * Fetches version information for the specified app.
-   * This provides details about the latest version of the app, including
-   * tools, policies, and parameters that can be configured.
-   * @param versionNumber Optional specific version to fetch. If not provided, uses the latest version.
-   * @throws Error if appId or appInfo is missing, or if the contract call fails
-   */
-  const fetchVersionInfo = useCallback(
-    async (versionNumber?: number): Promise<ContractVersionResult> => {
-      if (!appId || !appInfo) {
-        throw new Error('Missing appId or appInfo in fetchVersionInfo');
-      }
-
-      try {
-        const versionToFetch =
-          versionNumber !== undefined ? versionNumber : Number(appInfo.latestVersion);
-        onStatusChange?.(`Loading app version information for v${versionToFetch}...`, 'info');
-        const contract = getAppViewRegistryContract();
-        const versionData = await contract.getAppVersion(Number(appId), versionToFetch);
-
-        setVersionInfo(versionData);
-        onStatusChange?.('', 'info');
-        return versionData;
-      } catch (err) {
-        console.error('Error fetching version info:', err);
-        onStatusChange?.('Failed to load app information', 'error');
-        throw new Error(
-          `Failed to fetch version info: ${err instanceof Error ? err.message : String(err)}`,
-        );
-      }
-    },
-    [appId, appInfo, onStatusChange],
-  );
-
   return {
     parameters,
     setParameters,
@@ -188,8 +260,9 @@ export const useParameterManagement = ({
     isLoadingParameters,
     versionInfo,
     fetchVersionInfo,
-    decodeParameterValue,
     fetchExistingParameters,
     handleParametersChange,
+    fetchExistingParametersRef: fetchExistingParametersRef.current,
+    stableReady,
   };
 };

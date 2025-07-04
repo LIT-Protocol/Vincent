@@ -2,13 +2,13 @@ import { IRelayPKP, SessionSigs } from '@lit-protocol/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import StatusMessage from '@/components/consent/components/authForm/StatusMessage';
-import QrReader from './QrReader';
+import QrReader from '@/components/withdraw/WalletConnect/QrReader';
 import { useState, useCallback, useEffect } from 'react';
 import React from 'react';
 
 // Custom hooks
-import { useWalletConnectSession } from './useWalletConnectSession';
-import { useWalletConnectRequests } from './useWalletConnectRequests';
+import { useWalletConnectSession } from '@/components/withdraw/WalletConnect/useWalletConnectSession';
+import { useWalletConnectRequests } from '@/components/withdraw/WalletConnect/useWalletConnectRequests';
 
 // UI Components
 import { SessionProposal } from './SessionProposal';
@@ -114,7 +114,7 @@ export default function WalletConnectPage(params: {
     async (request: any) => {
       try {
         await handleRejectRequest(request);
-        setStatus({ message: 'Request rejected', type: 'info' });
+        setStatus({ message: 'Request rejected', type: 'success' });
       } catch (error) {
         setStatus({
           message: error instanceof Error ? error.message : 'Failed to reject request',
@@ -129,7 +129,7 @@ export default function WalletConnectPage(params: {
   const shouldWaitForWallet = !!agentPKP;
 
   return (
-    <div className="w-full max-w-lg mx-auto p-4 bg-white rounded-lg shadow-sm">
+    <>
       {/* Show loading state while PKP wallet is initializing */}
       {shouldWaitForWallet && !walletRegistered ? (
         <div className="w-full flex justify-center items-center py-8">
@@ -142,6 +142,9 @@ export default function WalletConnectPage(params: {
         </div>
       ) : (
         <>
+          {/* Unified status message */}
+          {status.message && <StatusMessage message={status.message} type={status.type} />}
+
           {/* QR reader should be visible once we're initialized */}
           {client && !isInitializing && <QrReader onConnect={onConnect} />}
 
@@ -156,7 +159,7 @@ export default function WalletConnectPage(params: {
               disabled={isInitializing || !client}
             />
             <Button
-              size="sm"
+              variant="outline"
               className="rounded-l-none"
               disabled={
                 !uri || loading || isInitializing || !client || (agentPKP && !walletRegistered)
@@ -167,9 +170,6 @@ export default function WalletConnectPage(params: {
               {loading ? 'Connecting...' : 'Connect'}
             </Button>
           </div>
-
-          {/* Unified status message */}
-          {status.message && <StatusMessage message={status.message} type={status.type} />}
 
           {/* Session Proposal */}
           {pendingProposal && !loading && (
@@ -196,9 +196,10 @@ export default function WalletConnectPage(params: {
             onApprove={handleApproveWithStatus}
             onReject={handleRejectWithStatus}
             processing={processingRequest}
+            client={client}
           />
         </>
       )}
-    </div>
+    </>
   );
 }

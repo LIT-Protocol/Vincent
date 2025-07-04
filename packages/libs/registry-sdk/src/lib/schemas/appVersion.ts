@@ -23,6 +23,10 @@ const appVersion = z
       description: 'Describes what changed between this version and the previous version.',
       example: 'I am a changelog trapped in a computer!',
     }),
+    isDeleted: z.boolean().optional().openapi({
+      description: 'Whether or not this AppVersion is deleted',
+      example: false,
+    }),
   })
   .strict();
 
@@ -83,6 +87,10 @@ const appVersionTool = z
           'Policies that are supported by this tool, but are hidden from users of this app specifically',
         example: ['@vincent/foo-bar-policy-1', '@vincent/foo-bar-policy-2'],
       }),
+    isDeleted: z.boolean().optional().openapi({
+      description: 'Whether or not this AppVersionTool is deleted',
+      example: false,
+    }),
   })
   .strict();
 

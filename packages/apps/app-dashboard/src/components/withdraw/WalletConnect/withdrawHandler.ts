@@ -1,4 +1,5 @@
 import { ethers } from 'ethers';
+import { JsonRpcProvider as V6JsonRpcProvider, Contract as V6Contract } from 'ethers-v6';
 import { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
 import { StatusType } from '@/components/withdraw/types';
 import { sendTokenTransaction, sendNativeTransaction } from '@/utils/transactionService';
@@ -39,6 +40,7 @@ export const handleSubmit = async (
   chainId: string,
   setLoading: (loading: boolean) => void,
   showStatus: ShowStatusFn,
+  isConfirming = false,
 ) => {
   if (!withdrawAmount || !withdrawAddress) {
     showStatus('Please fill all fields', 'warning');
@@ -73,7 +75,7 @@ export const handleSubmit = async (
 
     await pkpWallet.init();
 
-    const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
+    const provider = new V6JsonRpcProvider(rpcUrl);
 
     // Default token setup
     let token = {
@@ -82,12 +84,13 @@ export const handleSubmit = async (
       decimals: chain.decimals,
     };
 
-    let transactionResult;
+    let amount: ethers.BigNumber;
+
     if (isCustomToken && ethers.utils.isAddress(tokenAddress)) {
       showStatus('Fetching token details...', 'info');
 
       try {
-        const tokenContract = new ethers.Contract(tokenAddress, ERC20_ABI, provider);
+        const tokenContract = new V6Contract(tokenAddress, ERC20_ABI, provider);
         const [symbol, decimals] = await Promise.all([
           tokenContract.symbol(),
           tokenContract.decimals(),
@@ -99,15 +102,7 @@ export const handleSubmit = async (
           decimals,
         };
 
-        const amount = ethers.utils.parseUnits(withdrawAmount, token.decimals);
-
-        transactionResult = await sendTokenTransaction({
-          pkpWallet,
-          tokenDetails: token,
-          amount,
-          recipientAddress: withdrawAddress,
-          provider,
-        });
+        amount = ethers.utils.parseUnits(withdrawAmount, token.decimals);
         showStatus(`Detected token: ${symbol}`, 'info');
       } catch (error: unknown) {
         console.error('Error fetching token details:', error);
@@ -115,9 +110,124 @@ export const handleSubmit = async (
         return { success: false };
       }
     } else {
+      amount = ethers.utils.parseUnits(withdrawAmount, token.decimals);
+    }
+
+    if (!isConfirming) {
+      showStatus('Estimating gas costs...', 'info');
+
+      let gasEstimate;
+
+      if (isCustomToken) {
+        // Simulate token transfer
+        const tokenContract = new V6Contract(
+          tokenAddress,
+          ['function transfer(address to, uint256 amount) returns (bool)'],
+          provider,
+        );
+
+        const data = tokenContract.interface.encodeFunctionData('transfer', [
+          withdrawAddress,
+          BigInt(amount.toString()),
+        ]);
+
+        gasEstimate = await provider.estimateGas({
+          to: tokenAddress,
+          data: data,
+          from: await pkpWallet.getAddress(),
+          value: 0,
+        });
+      } else {
+        // Simulate native transfer
+        gasEstimate = await provider.estimateGas({
+          to: withdrawAddress,
+          value: BigInt(amount.toString()),
+          from: await pkpWallet.getAddress(),
+        });
+      }
+
+      const feeData = await provider.getFeeData();
+
+      // Require gas price data - no fallbacks
+      if (!feeData.gasPrice) {
+        showStatus('Failed to fetch gas price data', 'error');
+        return { success: false };
+      }
+
+      let gasPrice: ethers.BigNumber;
+      if (feeData.maxPriorityFeePerGas) {
+        gasPrice = ethers.BigNumber.from(feeData.gasPrice.toString()).add(
+          ethers.BigNumber.from(feeData.maxPriorityFeePerGas.toString()),
+        );
+      } else {
+        gasPrice = ethers.BigNumber.from(feeData.gasPrice.toString());
+      }
+
+      const gasCost = ethers.BigNumber.from(gasEstimate.toString()).mul(gasPrice);
+      const gasCostEth = ethers.utils.formatEther(gasCost);
+
+      // Try to get USD price
+      let costDisplay = `${gasCostEth} ${chain.symbol}`;
+
+      // Map chain symbols to CoinGecko IDs
+      const symbolToCoinGeckoId: { [key: string]: string } = {
+        ETH: 'ethereum',
+        MATIC: 'matic-network',
+        BNB: 'binancecoin',
+        AVAX: 'avalanche-2',
+        FTM: 'fantom',
+        xDai: 'xdai',
+        ONE: 'harmony',
+        CRO: 'crypto-com-chain',
+        CELO: 'celo',
+        XDC: 'xdce-crowd-sale',
+        EVMOS: 'evmos',
+        DEV: 'moonbeam',
+        AETH: 'ethereum',
+      };
+
+      const coinId = symbolToCoinGeckoId[chain.symbol];
+      if (coinId) {
+        try {
+          const response = await fetch(
+            `https://api.coingecko.com/api/v3/simple/price?ids=${coinId}&vs_currencies=usd`,
+          );
+          if (response.ok) {
+            const data = await response.json();
+            const tokenPrice = data[coinId]?.usd;
+            if (tokenPrice) {
+              const gasCostUsd = (parseFloat(gasCostEth) * tokenPrice).toFixed(4);
+              costDisplay = `${gasCostEth} ${chain.symbol} (~$${gasCostUsd})`;
+            }
+          }
+        } catch (e) {
+          // If USD price fetch fails, just use native token display
+        }
+      }
+
+      showStatus(
+        `Ready to send ${withdrawAmount} ${token.symbol} to ${withdrawAddress.slice(0, 6)}...${withdrawAddress.slice(-4)}.<br/>Estimated gas cost: ${costDisplay}`,
+        'info',
+      );
+
+      return { success: true, needsConfirmation: true };
+    }
+
+    showStatus('Sending transaction...', 'info');
+
+    let transactionResult;
+    if (isCustomToken) {
+      transactionResult = await sendTokenTransaction({
+        pkpWallet,
+        tokenDetails: token,
+        amount,
+        recipientAddress: withdrawAddress,
+        provider,
+      });
+    } else {
       transactionResult = await sendNativeTransaction({
         pkpWallet,
-        amount: ethers.utils.parseUnits(withdrawAmount, token.decimals),
+        amount,
         recipientAddress: withdrawAddress,
         provider,
       });

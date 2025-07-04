@@ -5,8 +5,8 @@ import {
   setupRequestHandlers,
   getPendingSessionRequests,
   clearSessionRequest,
-} from './RequestHandler';
-import { getPKPWallet } from './WalletConnectUtil';
+} from '@/components/withdraw/WalletConnect/RequestHandler';
+import { getPKPWallet } from '@/components/withdraw/WalletConnect/WalletConnectUtil';
 
 export function useWalletConnectRequests(client: any, currentWalletAddress: string | null) {
   const [pendingSessionRequests, setPendingSessionRequests] = useState<any[]>([]);
@@ -213,11 +213,31 @@ async function handleSendTransaction(pkpWallet: PKPEthersWallet, methodParams: a
   }
   await pkpWallet.setRpc(rpcUrl);
   tx.chainId = chainId;
-  // Handle gas estimation
+
+  const isEIP1559 = tx.maxFeePerGas !== undefined || tx.maxPriorityFeePerGas !== undefined;
+
+  const convertHexToNumber = (value: any) => {
+    return typeof value === 'string' && value.startsWith('0x') ? parseInt(value, 16) : value;
+  };
+
+  if (isEIP1559) {
+    tx.type = 2;
+    tx.maxFeePerGas = convertHexToNumber(tx.maxFeePerGas);
+    tx.maxPriorityFeePerGas = convertHexToNumber(tx.maxPriorityFeePerGas);
+    delete tx.gasPrice;
+  }
+
   if (!tx.gas && !tx.gasLimit) {
     console.log('No gas limit specified, estimating gas...');
     const estimateGasTx = { ...tx };
+
     delete estimateGasTx.chainId;
+    if (isEIP1559) {
+      delete estimateGasTx.type;
+      delete estimateGasTx.maxFeePerGas;
+      delete estimateGasTx.maxPriorityFeePerGas;
+    }
+
     const gasEstimate = await pkpWallet.estimateGas(estimateGasTx);
     const gasWithBuffer = gasEstimate.mul(120).div(100);
     tx.gas = gasWithBuffer;
@@ -228,6 +248,10 @@ async function handleSendTransaction(pkpWallet: PKPEthersWallet, methodParams: a
     tx.gasLimit = tx.gas;
   }
 
+  tx.gasLimit = convertHexToNumber(tx.gasLimit);
+  tx.gas = convertHexToNumber(tx.gas);
+
+  console.log('Final transaction object:', tx);
   return await pkpWallet.sendTransaction(tx);
 }
 
