@@ -9,34 +9,28 @@
 
 import {
   buildMcpToolName,
-  buildMcpParamDefinitions,
-  buildMcpToolCallback,
-  buildVincentToolCallback,
   VincentAppDefSchema,
+  VincentAppToolsSchema,
+  VincentParameterSchema,
   VincentToolDefSchema,
+  VincentToolNpmSchema,
 } from './definitions';
 import type {
-  ParameterType,
   VincentAppDef,
+  VincentAppTools,
   VincentParameter,
   VincentToolDef,
-  VincentToolDefWithIPFS,
+  VincentToolNpm,
 } from './definitions';
 import { getVincentAppServer } from './server';
 
-export type {
-  ParameterType,
-  VincentAppDef,
-  VincentParameter,
-  VincentToolDef,
-  VincentToolDefWithIPFS,
-};
+export type { VincentAppDef, VincentAppTools, VincentParameter, VincentToolDef, VincentToolNpm };
 export {
   buildMcpToolName,
-  buildMcpParamDefinitions,
-  buildMcpToolCallback,
-  buildVincentToolCallback,
   getVincentAppServer,
   VincentAppDefSchema,
+  VincentAppToolsSchema,
+  VincentParameterSchema,
   VincentToolDefSchema,
+  VincentToolNpmSchema,
 };

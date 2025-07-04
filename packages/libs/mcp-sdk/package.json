@@ -22,9 +22,6 @@
     "sdk"
   ],
   "dependencies": {
-    "@lit-protocol/constants": "^7.2.0",
-    "@lit-protocol/lit-node-client": "^7.2.0",
-    "@lit-protocol/types": "7.2.0",
     "@lit-protocol/vincent-app-sdk": "workspace:*",
     "@modelcontextprotocol/sdk": "^1.12.1",
     "ethers": "5.8.0",
