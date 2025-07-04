@@ -37,7 +37,7 @@ async function registerVincentTools(
     // Imports the tool pkg and gets its exported data, most notable the bundled code and their params schema.
     const tool = require(toolPackage); // import cannot find the pkgs just installed as they were not there when the process started
 
-    const { bundledVincentTool } = tool.bundledVincentTool;
+    const bundledVincentTool = tool.bundledVincentTool;
     const { vincentTool } = bundledVincentTool;
     const { toolParamsSchema } = vincentTool;
 
