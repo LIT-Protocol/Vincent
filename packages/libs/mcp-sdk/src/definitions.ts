@@ -10,9 +10,18 @@
 
 import { z } from 'zod';
 
+/**
+ * Builds a unique tool name for use in the MCP.
+ *
+ * The name is composed of the tool name, the Vincent application name, and the
+ * application version. The total length is capped at 64 characters to ensure
+ * compatibility with various systems. Invalid characters are replaced with hyphens.
+ *
+ * @param vincentAppDef - The Vincent application definition.
+ * @param toolName - The name of the tool.
+ * @returns A unique, sanitized tool name.
+ */
 export function buildMcpToolName(vincentAppDef: VincentAppDef, toolName: string) {
-  // Name is composed of the Vincent App name, the app version, and the tool name.
-  // We also cap total length at 64 characters to avoid compatibility issues
   return `${toolName}/${vincentAppDef.name}/${vincentAppDef.version}`
     .replace(/[^a-zA-Z0-9@&/_.-]/g, '-')
     .substring(0, 64);
@@ -73,8 +82,20 @@ export const VincentToolNpmSchema = VincentToolDefSchema.extend({
  */
 export type VincentToolNpm = z.infer<typeof VincentToolNpmSchema>;
 
+/**
+ * Zod schema for validating a collection of Vincent application tools.
+ *
+ * This schema defines the structure for a record of tools, where each key
+ * is a tool identifier and the value is a valid VincentToolNpm object.
+ */
 export const VincentAppToolsSchema = z.record(VincentToolNpmSchema);
 
+/**
+ * Type representing a collection of tools in a Vincent application.
+ *
+ * This is a record where keys are tool npm package names and
+ * values are `VincentToolNpm` objects.
+ */
 export type VincentAppTools = z.infer<typeof VincentAppToolsSchema>;
 
 /**
@@ -96,6 +117,6 @@ export const VincentAppDefSchema = z.object({
  * @property id - The unique identifier of the application
  * @property name - The name of the application
  * @property version - The version of the application
- * @property tools - A record of tools in the application, where the key is the IPFS CID of the tool
+ * @property tools - A record of tools in the application, where the key is the tool's npm package name
  */
 export type VincentAppDef = z.infer<typeof VincentAppDefSchema>;

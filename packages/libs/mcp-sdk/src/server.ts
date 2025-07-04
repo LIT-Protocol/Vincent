@@ -21,11 +21,30 @@ import { buildMcpToolName, VincentAppDef, VincentAppDefSchema } from './definiti
 
 const { getDelegatorsAgentPkpAddresses } = utils;
 
+/**
+ * Configuration for a Vincent MCP server regarding its delegation mode.
+ *
+ * @property {Signer} delegateeSigner - The signer for the delegatee, used to execute tools.
+ * @property {string | undefined} delegatorPkpEthAddress - The PKP Ethereum address of the delegator. If undefined, the server operates in delegatee-only mode.
+ */
 export interface DelegationMcpServerConfig {
   delegateeSigner: Signer;
   delegatorPkpEthAddress: string | undefined;
 }
 
+/**
+ * Registers Vincent tools with an MCP server.
+ *
+ * This function iterates through the tools defined in the Vincent application definition,
+ * dynamically imports each tool's package, and registers it with the provided MCP server.
+ * It configures each tool to be executed with the delegatee's signer and handles parameter descriptions.
+ *
+ * @param {VincentAppDef} vincentAppDef - The Vincent application definition containing the tools to register.
+ * @param {McpServer} server - The MCP server instance to register the tools with.
+ * @param {DelegationMcpServerConfig} config - The server configuration, including the delegatee signer.
+ * @private
+ * @hidden
+ */
 async function registerVincentTools(
   vincentAppDef: VincentAppDef,
   server: McpServer,
@@ -90,12 +109,15 @@ async function registerVincentTools(
 /**
  * Creates an MCP server for a Vincent application
  *
- * This function configures an MCP server with the tools defined in the Vincent application definition.
- * Each tool is registered with the server and configured to use the provided delegatee signer for execution.
+ * This function configures an MCP server based on the Vincent application definition provided.
+ * Each Vincent tool is registered with the server and configured to use the provided delegatee signer for execution.
+ * Extra tools to get delegator and app info are added.
+ *
+ * Tool packages MUST be installed before calling this function as it will try to import them on demand.
  *
  * Check (MCP Typescript SDK docs)[https://github.com/modelcontextprotocol/typescript-sdk] for more details on MCP server definition.
  *
- * @param vincentAppDefinition - The Vincent application definition containing the tools to register
+ * @param {VincentAppDef} vincentAppDefinition - The Vincent application definition containing the tools to register
  * @param {DelegationMcpServerConfig} config - The server configuration
  * @returns A configured MCP server instance
  *
@@ -116,13 +138,12 @@ async function registerVincentTools(
  *   name: 'My Vincent App',
  *   description: 'A Vincent application that executes tools for its delegators',
  *   tools: {
- *     'QmIpfsCid1': {
+ *     '@organization/some_tool': {
  *       name: 'myTool',
  *       description: 'A tool that does something',
  *       parameters: [
  *         {
  *           name: 'param1',
- *           type: 'string',
  *           description: 'A parameter that is used in the tool to do something'
  *         }
  *       ]

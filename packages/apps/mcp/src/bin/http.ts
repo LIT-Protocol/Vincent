@@ -258,7 +258,7 @@ app.post('/mcp', async (req: Request, res: Response) => {
  *
  * @param req - The Express request object
  * @param res - The Express response object
- * @internal
+ * @hidden
  */
 const handleSessionRequest = async (req: express.Request, res: express.Response) => {
   const sessionId = req.headers['mcp-session-id'] as string | undefined;

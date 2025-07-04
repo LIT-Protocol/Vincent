@@ -19,20 +19,18 @@ To define the Vincent App that will be transformed into an MCP Server, a JSON de
   "version": "1", // The version of the Vincent App
   "name": "My Vincent App", // Name of the Vincent App. Can be overriden, doesn't have to be the same as in the registry.
   "description": "A Vincent application that executes tools for its delegators", // Description of the Vincent App. Can be overriden, doesn't have to be the same as in the registry.
+  // Adding a tools object will override what is already present in the registry. Without this field, all tools from the registry will be exposed.
   "tools": {
-    // Any tool that you want to expose to the LLM has to be included using its IPFS CID as key in this object. If a tool is not included, it is not exposed as an MCP Server tool.
-    "QmIpfsCid1": {
-      "name": "myTool", // Name of the tool. Can be overriden, doesn't have to be the same as in the registry.
-      "description": "A tool that does something", // Description of the tool. Can be overriden, doesn't have to be the same as in the registry.
-      // All parameters of the tool have to be added under this array or the LLM won't be able to see them or provide values for it
+    // Any tool that you want to expose to the LLM has to be included using its NPM package name as key in this object. If a tool is not included, it is not exposed as an MCP Server tool.
+    "vincent-tool-npm-pkg-name": {
+      "name": "myTool", // Name of the tool. Defaults to npm pkg name.
+      "description": "A tool that does something", // Description of the tool.
       "parameters": [
         {
-          "name": "param1", // Name of the param. Cannot be overriden.
-          "type": "string", // Type of the param. Must be the type the tool expects.
-          "description": "A parameter that is used in the tool to do something" // Description of the param. Can be overriden.
+          "name": "param1", // Name of the param. Used to identify and apply the rest of properties.
+          "description": "A parameter that is used in the tool to do something" // Description of the param.
         }
-        // ...rest of params you want to expose.
-        // Any optional param that is not included here will be exposed by the tool.
+        // ...rest of params you want to override.
       ]
     }
   }

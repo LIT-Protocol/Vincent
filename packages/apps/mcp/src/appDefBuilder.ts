@@ -12,6 +12,10 @@ import { env } from './env';
 
 const { VINCENT_APP_ID, VINCENT_APP_JSON_DEFINITION, VINCENT_REGISTRY_URL } = env;
 
+/**
+ * The structure of an application retrieved from the Vincent Registry.
+ * @hidden
+ */
 interface RegistryApp {
   appId: number;
   activeVersion: number;
@@ -23,6 +27,10 @@ interface RegistryApp {
   isDeleted: boolean;
 }
 
+/**
+ * A tool associated with a specific version of an application in the Vincent Registry.
+ * @hidden
+ */
 interface RegistryAppVersionTool {
   appId: number;
   appVersion: number;
@@ -31,13 +39,37 @@ interface RegistryAppVersionTool {
   isDeleted: boolean;
 }
 
+/**
+ * Zod schema for Vincent application tools defined in a JSON file.
+ * This schema omits the `version` field, as it's expected to come from the registry.
+ * @hidden
+ */
 const JsonVincentAppToolsSchema = z.record(VincentToolNpmSchema.omit({ version: true }));
+
+/**
+ * Zod schema for a Vincent application definition provided in a JSON file.
+ * This schema allows for partial definitions, which will be merged with data from the registry.
+ * @hidden
+ */
 const JsonVincentAppSchema = VincentAppDefSchema.extend({
   tools: JsonVincentAppToolsSchema,
 }).partial();
 
+/**
+ * Type representing a collection of Vincent application tools defined in a JSON file.
+ * @hidden
+ */
 type JsonVincentAppTools = z.infer<typeof JsonVincentAppToolsSchema>;
 
+/**
+ * Installs the NPM packages for the given Vincent tools.
+ *
+ * It uses `pnpm` if available, otherwise falls back to `npm`.
+ *
+ * @param {VincentAppTools} tools - A map of tool package names to their definitions.
+ * @returns {Promise<void>} A promise that resolves when all packages are installed.
+ * @hidden
+ */
 async function installToolPackages(tools: VincentAppTools) {
   return await new Promise<void>((resolve, reject) => {
     const packagesToInstall = Object.entries(tools).map(([toolNpmName, pkgInfo]) => {
@@ -71,6 +103,16 @@ async function installToolPackages(tools: VincentAppTools) {
   });
 }
 
+/**
+ * Loads the installed tool packages and enriches the tool definitions with details from the packages.
+ *
+ * This function dynamically requires each tool package to access its bundled information,
+ * such as parameter schemas, and updates the tool definitions accordingly.
+ *
+ * @param {VincentAppTools} tools - The initial tool definitions, typically from the registry.
+ * @returns {Promise<VincentAppTools>} A promise that resolves with the enriched tool definitions.
+ * @hidden
+ */
 async function registerVincentTools(tools: VincentAppTools): Promise<VincentAppTools> {
   const toolsObject: VincentAppTools = {};
   for (const [toolPackage, toolData] of Object.entries(tools)) {
@@ -105,6 +147,16 @@ async function registerVincentTools(tools: VincentAppTools): Promise<VincentAppT
   return toolsObject;
 }
 
+/**
+ * Fetches the application definition from the Vincent Registry.
+ *
+ * This includes the app's metadata and the list of associated tools for the active version.
+ * It authenticates with the registry using a temporary SIWE message.
+ *
+ * @param {string} appId - The ID of the Vincent application.
+ * @returns {Promise<VincentAppDef>} A promise that resolves with the application definition from the registry.
+ * @hidden
+ */
 async function getAppDataFromRegistry(appId: string): Promise<VincentAppDef> {
   const delegateeSigner = Wallet.createRandom();
   const address = await delegateeSigner.getAddress();
@@ -184,6 +236,16 @@ async function getAppDataFromRegistry(appId: string): Promise<VincentAppDef> {
   };
 }
 
+/**
+ * Merges tool definitions from a JSON file with those from the registry.
+ *
+ * Properties in the JSON file will override the corresponding properties from the registry.
+ *
+ * @param {JsonVincentAppTools | undefined} jsonTools - The tool definitions from the JSON file.
+ * @param {VincentAppTools} registryTools - The tool definitions from the registry.
+ * @returns {VincentAppTools} The merged tool definitions.
+ * @hidden
+ */
 function mergeToolData(
   jsonTools: JsonVincentAppTools | undefined,
   registryTools: VincentAppTools,
@@ -198,6 +260,16 @@ function mergeToolData(
   return mergedTools;
 }
 
+/**
+ * Constructs the complete Vincent application definition.
+ *
+ * This function orchestrates the process of fetching the base application definition from the
+ * Vincent Registry and merging it with any local overrides provided in a JSON file
+ * (specified by `VINCENT_APP_JSON_DEFINITION`). It also handles the installation of
+ * required tool packages. The final app definition is validated against the schema.
+ *
+ * @returns {Promise<VincentAppDef>} A promise that resolves with the final, validated Vincent application definition.
+ */
 export async function getVincentAppDef(): Promise<VincentAppDef> {
   // Load data from the App definition JSON
   const appJson = VINCENT_APP_JSON_DEFINITION

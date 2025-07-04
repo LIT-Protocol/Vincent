@@ -43,7 +43,7 @@ const delegateeSigner = new ethers.Wallet(
  * 4. Connects the server to the stdio transport
  * 5. Logs a message to stderr indicating the server is running
  *
- * @internal
+ * @hidden
  */
 async function main() {
   const vincentAppDef = await getVincentAppDef();

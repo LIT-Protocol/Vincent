@@ -35,7 +35,7 @@ const vincentApp: VincentAppDef = {
   name: 'My Vincent App',
   version: '1',
   tools: {
-    'ipfs-cid-of-tool-1': {
+    '@organization/first-tool-npm-pkg-name': {
       name: 'sendMessage',
       description: 'Send a message to a user',
       parameters: [
@@ -51,7 +51,7 @@ const vincentApp: VincentAppDef = {
         },
       ],
     },
-    'ipfs-cid-of-tool-2': {
+    '@organization/second-tool-npm-pkg-name': {
       name: 'checkBalance',
       description: 'Check the balance of an account',
       parameters: [
