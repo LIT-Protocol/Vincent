@@ -40,7 +40,6 @@
     "@lit-protocol/vincent-mcp-sdk": "workspace:*",
     "@modelcontextprotocol/sdk": "^1.12.1",
     "@t3-oss/env-core": "^0.13.4",
-    "@types/which": "^3.0.4",
     "cors": "^2.8.5",
     "ethers": "^5.8.0",
     "express": "^5.1.0",
@@ -53,6 +52,7 @@
     "@anthropic-ai/sdk": "^0.52.0",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.1",
+    "@types/which": "^3.0.4",
     "openai": "^5.0.1",
     "tsx": "^4.19.4"
   }
