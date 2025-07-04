@@ -717,7 +717,7 @@ importers:
         version: 1.2.16
       jest:
         specifier: ^29.5.0
-        version: 29.7.0(@types/node@20.19.1)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.5.29(@swc/helpers@0.5.17))(@types/node@20.19.1)(typescript@5.8.3))
+        version: 29.7.0(@types/node@20.19.1)(babel-plugin-macros@3.1.0)(ts-node@10.9.1(@swc/core@1.5.29(@swc/helpers@0.5.17))(@types/node@20.19.1)(typescript@5.8.3))
       jest-process-manager:
         specifier: ^0.2.9
         version: 0.2.9(debug@4.4.1)
