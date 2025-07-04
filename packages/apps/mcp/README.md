@@ -6,12 +6,14 @@ It leverages the `@lit-protocol/vincent-mcp-sdk` to build a server from a Vincen
 
 ## Setup
 
-- Copy `vincent-app.example.json` to `vincent-app.json` or any other name you want and configure your Vincent App definition in it.
-- Copy `.env.example` to `.env` and fill in the values. Use absolute paths for the `VINCENT_APP_JSON_DEFINITION` value.
+- Optional: Copy `vincent-app.example.json` to `vincent-app.json` or any other name you want and configure your Vincent App definition overrides in it. If no overrides are needed, then this file can be omitted.
+- Optional: Copy `.env.example` to `.env` and fill in the values. Use absolute paths for the `VINCENT_APP_JSON_DEFINITION` value. You can also pass them via CLI arguments when calling the script.
 
-# Writing App definition JSON file
+# Writing App definition overrides in the JSON file
 
-To define the Vincent App that will be transformed into an MCP Server, a JSON definition of it must be provided.
+Name and descriptions provided by developers in the registry might not be very descriptive to LLMs or you may want to modify them.
+
+In order to override any of those values, create a `.json` file with the following structure:
 
 ```json
 {
@@ -32,21 +34,17 @@ To define the Vincent App that will be transformed into an MCP Server, a JSON de
         }
         // ...rest of params you want to override.
       ]
-    }
+    },
+    "vincent-tool-without-overrides": {} // Empty objects mean that the tool is exposed but with default values.
   }
 }
 ```
 
+When the `tools` property is omitted, all tools from the registry will be exposed. So when overriding at least one tool, you need to specify all others that you want to still expose as MCP tools, even with empty values.
+
 For any value that can be overriden, consider that those are the hints the LLM uses to know how to use the tool. Therefore, those are good places to provide any information you want the LLM to know about the tool such as units, formats, examples or pre-conditions to check.
 
-If you are the owner of the app, most of the data can be obtained from the Vincent App page in the Vincent dashboard.
-
-If you are not the owner of the app, the tool fields and its included tools IPFS CIDs are shown in the consent screen.
-
-The IPFS CID can also be obtained from the bundled tool code published in npm. For example [vincent-tool-metadata.json](../tool-erc20-approval/src/generated/vincent-tool-metadata.json) for our ERC20 approval tool.
-To get the tool params from source code, you can check the tool schemas such as [schemas.ts](../tool-erc20-approval/src/lib/schemas.ts) for our ERC20 approval tool.
-
-Any tool created using our [Tools and Policies SDK](https://www.npmjs.com/package/@lit-protocol/vincent-tool-sdk) will provide those files.
+Tools included in definition MUST be published in NPM and imported using their package names. Also they must be part of the Vincent App and already registered. Any tool that is not part of that specific app will fail its invocation.
 
 # Running
 
@@ -64,10 +62,13 @@ You can run the Vincent MCP server directly using npx without downloading the re
 npx @lit-protocol/vincent-mcp-server stdio
 ```
 
-When setting this in the LLM client, pass it the necessary environment variables from your client. These env variables include:
+When setting this in the LLM client, pass it the necessary environment variables from your LLM client. These env variables include:
 
-- `VINCENT_APP_JSON_DEFINITION`: Path to your Vincent App definition JSON file
-- `VINCENT_DELEGATEE_PRIVATE_KEY`: The private key of the delegatee. This is the one you added in the Vincent App Dashboard as [an authorized signer for your app](https://docs.heyvincent.ai/documents/Quick_Start.html#:~:text=New%20App%22%20button.-,Delegatees,-%3A%20Delegatees%20are). This private key MUST be an allowed delegatee of the Vincent App defined in the JSON.
+- `VINCENT_DELEGATEE_PRIVATE_KEY`: The private key of the delegatee. This is the one you added in the Vincent App Dashboard as [an authorized signer for your app](https://docs.heyvincent.ai/documents/Quick_Start.html#:~:text=New%20App%22%20button.-,Delegatees,-%3A%20Delegatees%20are). This private key MUST be an allowed delegatee of the Vincent App.
+- (Optional) `VINCENT_APP_ID`: The Vincent App Id you want to run as an MCP Server
+- (Optional) `VINCENT_APP_JSON_DEFINITION`: Path to your Vincent App overrides JSON file
+
+Either in `VINCENT_APP_ID` or in the `VINCENT_APP_JSON_DEFINITION` file, the App Id MUST be specified. So one of those values is required.
 
 ### HTTP mode
 
@@ -77,28 +78,29 @@ npx @lit-protocol/vincent-mcp-server http
 
 In HTTP mode, the environment variables are configured on the server itself, not the client running it.
 
-These commands require the following environment variables to be set:
+To configure runtime environment in this mode, set the following environment variables:
 
+- `VINCENT_DELEGATEE_PRIVATE_KEY`: The private key of the delegatee. This is the one you added in the Vincent App Dashboard as [an authorized signer for your app](https://docs.heyvincent.ai/documents/Quick_Start.html#:~:text=New%20App%22%20button.-,Delegatees,-%3A%20Delegatees%20are). This private key MUST be an allowed delegatee of the Vincent App.
+- (Optional) `VINCENT_APP_ID`: The Vincent App Id you want to run as an MCP Server
+- (Optional) `VINCENT_APP_JSON_DEFINITION`: Path to your Vincent App overrides JSON file
 - `EXPECTED_AUDIENCE`: The audience that you expect JWTs to have. Vincent populates this with the redirect URLs. Likely you want this server to be one of those URLs.
-- `VINCENT_APP_JSON_DEFINITION`: Path to your Vincent App definition JSON file
-- `VINCENT_DELEGATEE_PRIVATE_KEY`: The private key of the delegatee. This is the one you added in the Vincent App Dashboard as [an authorized signer for your app](https://docs.heyvincent.ai/documents/Quick_Start.html#:~:text=New%20App%22%20button.-,Delegatees,-%3A%20Delegatees%20are).
-- `VINCENT_MCP_BASE_URL`: This MCP server URL
-- `PORT` (for HTTP mode only): The port to run the HTTP server on (defaults to 3000)
+- `VINCENT_MCP_BASE_URL`: This MCP server URL. Used to generate SIWE messages and verify signatures
+- `VINCENT_REGISTRY_URL`: This Vincent Registry server URL. Will be queried to get the Vincent App and its tools info
+- (Optional) `PORT`: The port to run the HTTP server on (defaults to 3000)
+- (Optional) `HTTP_TRANSPORT_CLEAN_INTERVAL`: Defines the interval (milliseconds) that the server will use to clean unused transports. Defaults to 1 hour
+- (Optional) `HTTP_TRANSPORT_TTL`: Defines the time (milliseconds) that a transport will still be considered in use after the last time it was actually used. Defaults to 1 hour
+- (Optional) `SIWE_EXPIRATION_TIME`: Duration of the generated SIWE message to sign. Defaults to 1 hour
+- (Optional) `SIWE_NONCE_CLEAN_INTERVAL`: Defines the interval (milliseconds) that the server will use to clean unused transports. Defaults to 1 hour
+- (Optional) `SIWE_NONCE_TTL`: Defines the time (milliseconds) that a SIWE nonce will still be considered valid after it was created. Defaults to 5 minutes
 
-Other optional environment variables include:
-
-- `HTTP_TRANSPORT_CLEAN_INTERVAL`: Defines the interval (milliseconds) that the server will use to clean unused transports. Defaults to 1 hour
-- `HTTP_TRANSPORT_TTL`: Defines the time (milliseconds) that a transport will still be considered in use after the last time it was actually used. Defaults to 1 hour
-- `SIWE_EXPIRATION_TIME`: Duration of the generated SIWE message to sign. Defaults to 1 hour
-- `SIWE_NONCE_CLEAN_INTERVAL`: Defines the interval (milliseconds) that the server will use to clean unused transports. Defaults to 1 hour
-- `SIWE_NONCE_TTL`: Defines the time (milliseconds) that a SIWE nonce will still be considered valid after it was created. Defaults to 5 minutes
+Either in `VINCENT_APP_ID` or in the `VINCENT_APP_JSON_DEFINITION` file, the App Id MUST be specified. So one of those values is required.
 
 Consider that a SIWE message must have a valid nonce, so it will become invalid after reaching the expiration time or the nonce has been discarded.
 
 You can set these environment variables in your shell before running the commands, or use a tool like `dotenvx`:
 
 ```bash
-dotenvx run -f /path/to/.env -- npx @lit-protocol/vincent-mcp-server http
+dotenvx run -f /path/to/.env -- npx -y @lit-protocol/vincent-mcp-server http
 ```
 
 For an .env file example check [./.env.example](./.env.example)

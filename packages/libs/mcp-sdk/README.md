@@ -36,6 +36,7 @@ const vincentApp: VincentAppDef = {
   version: '1',
   tools: {
     '@organization/first-tool-npm-pkg-name': {
+      version: '0.1.0',
       name: 'sendMessage',
       description: 'Send a message to a user',
       parameters: [
@@ -52,6 +53,7 @@ const vincentApp: VincentAppDef = {
       ],
     },
     '@organization/second-tool-npm-pkg-name': {
+      version: '0.1.0',
       name: 'checkBalance',
       description: 'Check the balance of an account',
       parameters: [
@@ -78,11 +80,13 @@ await mcpServer.connect(stdioTransport);
 
 1. **Define Your Vincent Application**: Create a Vincent application definition with the tools you want to expose to LLMs.
 
-2. **Create an MCP Server**: Use `getVincentAppServer()` to transform your Vincent application into an MCP server.
+2. **Install Tool packages from NPM**: Install tool packages from NPM using the package names and versions specified in your Vincent application definition.
 
-3. **Connect to a Transport**: Connect your MCP server to a transport mechanism (stdio, HTTP, etc.) to allow LLMs to communicate with it.
+3. **Create an MCP Server**: Use `getVincentAppServer()` to transform your Vincent application into an MCP server.
 
-4. **LLM Interaction**: LLMs can now discover and use your Vincent tools through the MCP interface, executing them on behalf of authenticated users.
+4. **Connect to a Transport**: Connect your MCP server to a transport mechanism (stdio, HTTP, etc.) to allow LLMs to communicate with it.
+
+5. **LLM Interaction**: LLMs can now discover and use your Vincent tools through the MCP interface, executing them on behalf of authenticated users.
 
 ### Benefits
 
