@@ -17,6 +17,7 @@ import {
   ServerNotification,
 } from '@modelcontextprotocol/sdk/types.js';
 import { Signer } from 'ethers';
+import which from 'which';
 import { type ZodRawShape } from 'zod';
 
 import {
@@ -28,6 +29,10 @@ import {
 
 const { getDelegatorsAgentPkpAddresses } = utils;
 
+// Keeps track of packages ("<name>@<version>") installed during this process so we don’t
+// reinstall them when `installToolPackages` is called again.
+const installedToolCache = new Set<string>();
+
 export interface DelegationMcpServerConfig {
   delegateeSigner: Signer;
   delegatorPkpEthAddress: string | undefined;
@@ -35,30 +40,45 @@ export interface DelegationMcpServerConfig {
 
 async function installToolPackages(tools: VincentAppTools) {
   return await new Promise<void>((resolve, reject) => {
-    const toolPackages = Object.entries(tools).map(([toolNpmName, pkgInfo]) => {
+    const allPackages = Object.entries(tools).map(([toolNpmName, pkgInfo]) => {
       return `${toolNpmName}@${pkgInfo.version}`;
     });
-    console.log(`Installing tool packages ${toolPackages.join(', ')}...`);
-    // TODO use npm but check compatibility
-    exec(
-      `pnpm i ${toolPackages.join(' ')} --save-exact --no-lockfile --ignore-scripts`,
-      (error, stdout, stderr) => {
-        if (error) {
-          console.error(error);
-          reject(error);
-          return;
-        }
-        // stderr has the debugger logs so it seems to fail when executing with the debugger
-        // if (stderr) {
-        //   console.error(stderr);
-        //   reject(stderr);
-        //   return;
-        // }
 
-        console.log(`Successfully installed ${toolPackages.join(', ')}`);
-        resolve();
+    // Install only what hasn’t been installed during this runtime
+    const packagesToInstall = allPackages.filter((p) => !installedToolCache.has(p));
+
+    if (packagesToInstall.length === 0) {
+      console.log('All tool packages already installed, skipping install.');
+      return resolve();
+    }
+
+    console.log(`Installing tool packages ${packagesToInstall.join(', ')}...`);
+    // When running in the Vincent repo ecosystem, pnpm must be used to avoid conflicts with nx and pnpm configurations
+    // On `npx` commands, pnpm might not even be available. We fall back to having `npm` in the running machine (having `npx` implies that)
+    const mgr = which.sync('pnpm', { nothrow: true }) ? 'pnpm' : 'npm';
+    const command =
+      mgr === 'npm'
+        ? `npm i ${packagesToInstall.join(' ')} --no-save --production --ignore-scripts`
+        : `pnpm i ${packagesToInstall.join(' ')} --save-exact --no-lockfile --ignore-scripts`;
+    exec(command, (error, stdout, stderr) => {
+      if (error) {
+        console.error(error);
+        reject(error);
+        return;
       }
-    );
+      // stderr has the debugger logs so it seems to fail when executing with the debugger
+      // if (stderr) {
+      //   console.error(stderr);
+      //   reject(stderr);
+      //   return;
+      // }
+
+      // Update cache with newly installed packages
+      packagesToInstall.forEach((p) => installedToolCache.add(p));
+
+      console.log(`Successfully installed ${packagesToInstall.join(', ')}`);
+      resolve();
+    });
   });
 }
 

@@ -26,11 +26,15 @@
     "@modelcontextprotocol/sdk": "^1.12.1",
     "ethers": "5.8.0",
     "tslib": "^2.8.1",
+    "which": "^5.0.0",
     "zod": "3.25.64"
   },
   "sideEffects": false,
   "files": [
     "dist/**/*",
     "*.md"
-  ]
+  ],
+  "devDependencies": {
+    "@types/which": "^3.0.4"
+  }
 }
