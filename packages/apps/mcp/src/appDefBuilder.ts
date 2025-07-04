@@ -1,14 +1,17 @@
+import { exec } from 'node:child_process';
 import fs from 'node:fs';
 
 import { VincentAppDefSchema, VincentToolNpmSchema } from '@lit-protocol/vincent-mcp-sdk';
 import type { VincentAppDef, VincentAppTools } from '@lit-protocol/vincent-mcp-sdk';
 import { Wallet } from 'ethers';
 import { generateNonce, SiweMessage } from 'siwe';
-import { z } from 'zod';
+import which from 'which';
+import { z, type ZodAny, ZodObject } from 'zod';
 
 import { env } from './env';
 
 const { VINCENT_APP_ID, VINCENT_APP_JSON_DEFINITION, VINCENT_REGISTRY_URL } = env;
+
 interface RegistryApp {
   appId: number;
   activeVersion: number;
@@ -34,6 +37,73 @@ const JsonVincentAppSchema = VincentAppDefSchema.extend({
 }).partial();
 
 type JsonVincentAppTools = z.infer<typeof JsonVincentAppToolsSchema>;
+
+async function installToolPackages(tools: VincentAppTools) {
+  return await new Promise<void>((resolve, reject) => {
+    const packagesToInstall = Object.entries(tools).map(([toolNpmName, pkgInfo]) => {
+      return `${toolNpmName}@${pkgInfo.version}`;
+    });
+
+    console.log(`Installing tool packages ${packagesToInstall.join(', ')}...`);
+    // When running in the Vincent repo ecosystem, pnpm must be used to avoid conflicts with nx and pnpm configurations
+    // On `npx` commands, pnpm might not even be available. We fall back to having `npm` in the running machine (having `npx` implies that)
+    const mgr = which.sync('pnpm', { nothrow: true }) ? 'pnpm' : 'npm';
+    const command =
+      mgr === 'npm'
+        ? `npm i ${packagesToInstall.join(' ')} --no-save --production --ignore-scripts`
+        : `pnpm i ${packagesToInstall.join(' ')} --save-exact --no-lockfile --ignore-scripts`;
+    exec(command, (error, stdout, stderr) => {
+      if (error) {
+        console.error(error);
+        reject(error);
+        return;
+      }
+      // stderr has the debugger logs so it seems to fail when executing with the debugger
+      // if (stderr) {
+      //   console.error(stderr);
+      //   reject(stderr);
+      //   return;
+      // }
+
+      console.log(`Successfully installed ${packagesToInstall.join(', ')}`);
+      resolve();
+    });
+  });
+}
+
+async function registerVincentTools(tools: VincentAppTools): Promise<VincentAppTools> {
+  const toolsObject: VincentAppTools = {};
+  for (const [toolPackage, toolData] of Object.entries(tools)) {
+    console.log(`Loading tool package ${toolPackage}...`);
+    const tool = require(toolPackage); // import cannot find the pkgs just installed as they were not there when the process started
+    console.log(`Successfully loaded tool package ${toolPackage}`);
+
+    const bundledVincentTool = tool.bundledVincentTool;
+    const { vincentTool } = bundledVincentTool;
+    const { toolParamsSchema } = vincentTool;
+    const paramsSchema = toolParamsSchema.shape as ZodObject<any>;
+
+    const parameters = Object.entries(paramsSchema).map(([key, value]) => {
+      const parameterSchema = value as ZodAny;
+      const parameter = {
+        name: key,
+        ...(parameterSchema.description ? { description: parameterSchema.description } : {}),
+      };
+
+      return parameter;
+    });
+
+    // Add name, description
+    toolsObject[toolPackage] = {
+      name: toolPackage,
+      // description: 'TODO',
+      parameters,
+      ...toolData,
+    };
+  }
+
+  return toolsObject;
+}
 
 async function getAppDataFromRegistry(appId: string): Promise<VincentAppDef> {
   const delegateeSigner = Wallet.createRandom();
@@ -90,7 +160,7 @@ async function getAppDataFromRegistry(appId: string): Promise<VincentAppDef> {
     );
   }
 
-  const toolsObject: VincentAppTools = {};
+  let toolsObject: VincentAppTools = {};
   registryTools.forEach((rt) => {
     if (rt.isDeleted) {
       throw new Error(
@@ -101,6 +171,9 @@ async function getAppDataFromRegistry(appId: string): Promise<VincentAppDef> {
       version: rt.toolVersion,
     };
   });
+
+  await installToolPackages(toolsObject);
+  toolsObject = await registerVincentTools(toolsObject);
 
   return {
     id: appId,

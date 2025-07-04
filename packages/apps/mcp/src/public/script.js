@@ -361,24 +361,36 @@ function displayAppDefinition(appDef) {
   const toolsContainer = document.getElementById('tools-container');
   toolsContainer.innerHTML = '';
 
-  Object.values(tools).forEach((tool) => {
-    const toolElement = createToolElement(tool);
+  Object.entries(tools).forEach(([toolKey, tool]) => {
+    const toolElement = createToolElement(toolKey, tool);
     toolsContainer.appendChild(toolElement);
   });
 }
 
 /**
  * Creates a DOM element for a tool
+ * @param {string} toolKey - The key of the tool
  * @param {Object} tool - The tool object
  * @returns {HTMLElement} The created tool element
  */
-function createToolElement(tool) {
+function createToolElement(toolKey, tool) {
   const toolElement = document.createElement('div');
   toolElement.className = 'tool-card';
 
+  const toolName = tool.name || toolKey;
+  const toolVersionSpan = tool.version
+    ? `<span class="tool-version">v${escapeHtml(String(tool.version))}</span>`
+    : '';
+  const toolDescriptionP = tool.description
+    ? `<p class="tool-description">${escapeHtml(tool.description)}</p>`
+    : '';
+
   toolElement.innerHTML = `
-    <h3 class="tool-name">${escapeHtml(tool.name)}</h3>
-    <p class="tool-description">${escapeHtml(tool.description)}</p>
+    <div class="tool-title-row">
+      <h3 class="tool-name">${escapeHtml(toolName)}</h3>
+      ${toolVersionSpan}
+    </div>
+    ${toolDescriptionP}
   `;
 
   if (tool.parameters && tool.parameters.length > 0) {
@@ -395,17 +407,16 @@ function createToolElement(tool) {
 
       const nameElement = document.createElement('div');
       nameElement.className = 'parameter-name';
-      nameElement.innerHTML = `
-        ${escapeHtml(param.name)}
-        <span class="parameter-type">${escapeHtml(param.type)}</span>
-      `;
-
-      const descElement = document.createElement('div');
-      descElement.className = 'parameter-description';
-      descElement.textContent = param.description || 'No description provided.';
-
+      nameElement.textContent = escapeHtml(param.name);
       paramElement.appendChild(nameElement);
-      paramElement.appendChild(descElement);
+
+      if (param.description) {
+        const descriptionElement = document.createElement('p');
+        descriptionElement.className = 'parameter-description';
+        descriptionElement.textContent = escapeHtml(param.description);
+        paramElement.appendChild(descriptionElement);
+      }
+
       parametersList.appendChild(paramElement);
     });
 

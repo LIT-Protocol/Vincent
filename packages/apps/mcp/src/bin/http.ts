@@ -28,9 +28,9 @@ import express, { Request, Response } from 'express';
 
 import { getVincentAppDef } from '../appDefBuilder';
 import {
+  authenticateWithJwt,
   authenticateWithSiwe,
   getSiweMessageToAuthenticate,
-  authenticateWithJwt,
 } from '../authentication';
 import { env } from '../env';
 import { getServer } from '../server';
@@ -117,7 +117,6 @@ app.get('/', (req, res) => {
 });
 
 app.get('/appDef', async (req, res) => {
-  const appDef = await getVincentAppDef();
   res.status(200).json(appDef);
 });
 

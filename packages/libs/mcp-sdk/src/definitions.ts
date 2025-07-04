@@ -25,7 +25,7 @@ export function buildMcpToolName(vincentAppDef: VincentAppDef, toolName: string)
  */
 export const VincentParameterSchema = z.object({
   name: z.string(),
-  description: z.string(),
+  description: z.string().optional(),
 });
 
 /**
