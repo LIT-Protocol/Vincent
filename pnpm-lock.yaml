@@ -749,15 +749,6 @@ importers:
 
   packages/libs/mcp-sdk:
     dependencies:
-      '@lit-protocol/constants':
-        specifier: ^7.2.0
-        version: 7.2.0(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
-      '@lit-protocol/lit-node-client':
-        specifier: ^7.2.0
-        version: 7.2.0(@walletconnect/modal@2.7.0)(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
-      '@lit-protocol/types':
-        specifier: 7.2.0
-        version: 7.2.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       '@lit-protocol/vincent-app-sdk':
         specifier: workspace:*
         version: link:../app-sdk
