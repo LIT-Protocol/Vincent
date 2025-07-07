@@ -58,7 +58,7 @@ async function registerVincentTools(
 
     const bundledVincentTool = tool.bundledVincentTool;
     const { vincentTool } = bundledVincentTool;
-    const { toolParamsSchema } = vincentTool;
+    const { packageName, toolDescription, toolParamsSchema } = vincentTool;
 
     const toolClient = getVincentToolClient({
       ethersSigner: delegateeSigner,
@@ -75,8 +75,8 @@ async function registerVincentTools(
     });
 
     server.tool(
-      buildMcpToolName(vincentAppDef, toolData.name || toolPackage),
-      toolData.description || '',
+      buildMcpToolName(vincentAppDef, toolData.name || packageName),
+      toolData.description || toolDescription || '',
       toolParamsSchema.shape,
       async (
         args: ZodRawShape,

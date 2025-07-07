@@ -121,7 +121,7 @@ async function registerVincentTools(tools: VincentAppTools): Promise<VincentAppT
     console.log(`Successfully loaded tool package ${toolPackage}`);
 
     const bundledVincentTool = tool.bundledVincentTool;
-    const { vincentTool } = bundledVincentTool;
+    const { toolDescription, vincentTool } = bundledVincentTool;
     const { toolParamsSchema } = vincentTool;
     const paramsSchema = toolParamsSchema.shape as ZodObject<any>;
 
@@ -138,7 +138,7 @@ async function registerVincentTools(tools: VincentAppTools): Promise<VincentAppT
     // Add name, description
     toolsObject[toolPackage] = {
       name: toolPackage,
-      // description: 'TODO',
+      description: toolDescription,
       parameters,
       ...toolData,
     };
