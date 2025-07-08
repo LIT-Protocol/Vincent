@@ -17,8 +17,6 @@ interface UseParameterManagementProps {
   agentPKP?: IRelayPKP;
   appInfo: AppView | null;
   onStatusChange?: (message: string, type?: 'info' | 'warning' | 'success' | 'error') => void;
-  updateState?: (state: any) => void;
-  permittedVersion: number | null;
   useCurrentVersionOnly?: boolean;
   checkingPermissions?: boolean;
   stabilityDelayMs?: number;
@@ -33,8 +31,6 @@ export const useParameterManagement = ({
   agentPKP,
   appInfo,
   onStatusChange,
-  updateState,
-  permittedVersion,
   useCurrentVersionOnly,
   checkingPermissions = false,
   stabilityDelayMs = 100,
@@ -80,7 +76,7 @@ export const useParameterManagement = ({
         );
       }
     },
-    [appId, appInfo, onStatusChange],
+    [appId, appInfo, onStatusChange, setVersionInfo],
   );
 
   /**

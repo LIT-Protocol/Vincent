@@ -123,10 +123,10 @@ export default function AuthenticatedConsentForm({
     agentPKP,
     appInfo,
     onStatusChange: showStatus,
-    permittedVersion,
   });
 
-  // Set the fetchExistingParameters ref after it's created
+  // Set the fetchExistingParameters ref after it's created. There is a circular dep between the
+  // useAppPermissionCheck hook and the useParameterManagement hook
   useEffect(() => {
     if (fetchExistingParameters && fetchExistingParametersRef.current !== fetchExistingParameters) {
       fetchExistingParametersRef.current = fetchExistingParameters;
@@ -161,7 +161,6 @@ export default function AuthenticatedConsentForm({
     agentPKP,
     userPKP,
     sessionSigs,
-    permittedVersion,
     onStatusChange: showStatus,
     onError: (error: unknown) => showErrorWithStatus(error as string),
   });
@@ -314,8 +313,7 @@ export default function AuthenticatedConsentForm({
     setSubmitting(true);
     showStatus('Processing approval...', 'info');
     try {
-      const appVersion = permittedVersion || Number(appInfo.latestVersion);
-      if (!agentPKP || !appId || !appVersion) {
+      if (!agentPKP || !appId || !versionInfo) {
         const errorMessage = 'Missing required data. Please try again.';
         setError(errorMessage);
         showErrorWithStatus(errorMessage, 'Missing Data');
@@ -331,6 +329,7 @@ export default function AuthenticatedConsentForm({
       }
 
       showStatus('Generating authentication token...', 'info');
+      const appVersion = Number(versionInfo.appVersion.version);
       const jwt = await generateJWT(appId, appVersion, appInfo);
       updateState({ showSuccess: true });
 
@@ -352,7 +351,6 @@ export default function AuthenticatedConsentForm({
     appInfo,
     showStatus,
     showErrorWithStatus,
-    permittedVersion,
     agentPKP,
     appId,
     useCurrentVersionOnly,
@@ -361,6 +359,7 @@ export default function AuthenticatedConsentForm({
     generateJWT,
     updateState,
     redirectWithJWT,
+    versionInfo,
   ]);
 
   /**

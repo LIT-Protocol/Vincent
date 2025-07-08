@@ -49,7 +49,6 @@ interface UseConsentApprovalProps {
   agentPKP?: IRelayPKP;
   userPKP: IRelayPKP;
   sessionSigs: SessionSigs;
-  permittedVersion: number | null;
   onStatusChange?: (message: string, type: 'info' | 'warning' | 'success' | 'error') => void;
   onError?: (error: Error | unknown, title?: string, details?: string) => void;
 }
@@ -67,7 +66,6 @@ export const useConsentApproval = ({
   agentPKP,
   userPKP,
   sessionSigs,
-  permittedVersion,
   onStatusChange,
   onError,
 }: UseConsentApprovalProps) => {
@@ -75,7 +73,6 @@ export const useConsentApproval = ({
     appId,
     agentPKP,
     appInfo,
-    permittedVersion,
     onStatusChange: onStatusChange
       ? (message, type = 'info') => onStatusChange(message, type)
       : undefined,
