@@ -181,44 +181,6 @@ export const useParameterManagement = ({
   }, [fetchExistingParameters]);
 
   useEffect(() => {
-    if (permittedVersion !== null && appId && appInfo && !versionInfo && !useCurrentVersionOnly) {
-      if (updateState) {
-        updateState({ isLoading: true });
-      }
-
-      fetchVersionInfo(permittedVersion)
-        .then(() => {
-          if (updateState) {
-            updateState({ isLoading: false });
-          }
-
-          if (existingParameters.length === 0 && !isLoadingParameters) {
-            fetchExistingParameters();
-          }
-        })
-        .catch((error) => {
-          console.error(`Error fetching version ${permittedVersion} data:`, error);
-          if (updateState) {
-            updateState({ isLoading: false });
-          }
-          onStatusChange?.('Failed to load version data', 'error');
-        });
-    }
-  }, [
-    permittedVersion,
-    appId,
-    appInfo,
-    versionInfo,
-    fetchVersionInfo,
-    fetchExistingParameters,
-    existingParameters.length,
-    isLoadingParameters,
-    updateState,
-    onStatusChange,
-    useCurrentVersionOnly,
-  ]);
-
-  useEffect(() => {
     if (
       useCurrentVersionOnly &&
       existingParameters.length === 0 &&
