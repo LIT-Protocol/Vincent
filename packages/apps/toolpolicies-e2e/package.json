@@ -1,7 +1,7 @@
 {
   "name": "@lit-protocol/toolpolicies-e2e",
   "private": true,
-  "version": "0.0.1",
+  "version": "0.1.1",
   "dependencies": {
     "@lit-protocol/vincent-app-sdk": "workspace:*",
     "@lit-protocol/vincent-policy-spending-limit": "workspace:*",

@@ -29,12 +29,6 @@ import precheckDenyWithSchemaMetadata from '../src/generated/policies/deny/withS
 import precheckDenyNoSchemaErrorResultMetadata from '../src/generated/policies/deny/noSchema/precheckDenyNoSchemaErrorResult/vincent-policy-metadata.json';
 import precheckDenyNoSchemaNoResultMetadata from '../src/generated/policies/deny/noSchema/precheckDenyNoSchemaNoResult/vincent-policy-metadata.json';
 
-// Commit policy metadata
-import commitDenyThrowErrorMetadata from '../src/generated/policies/deny/noSchema/commitDenyThrowError/vincent-policy-metadata.json';
-import commitDenyWithSchemaMetadata from '../src/generated/policies/deny/withSchema/commitDenyWithSchema/vincent-policy-metadata.json';
-import commitDenyNoSchemaErrorResultMetadata from '../src/generated/policies/deny/noSchema/commitDenyNoSchemaErrorResult/vincent-policy-metadata.json';
-import commitDenyNoSchemaNoResultMetadata from '../src/generated/policies/deny/noSchema/commitDenyNoSchemaNoResult/vincent-policy-metadata.json';
-
 import {
   TestConfig,
   getTestConfig,
@@ -167,12 +161,6 @@ describe('VincentToolClient policy failure tests', () => {
     [precheckDenyWithSchemaMetadata.ipfsCid],
     [precheckDenyNoSchemaErrorResultMetadata.ipfsCid],
     [precheckDenyNoSchemaNoResultMetadata.ipfsCid],
-
-    // Commit policy failure tools
-    [commitDenyThrowErrorMetadata.ipfsCid],
-    [commitDenyWithSchemaMetadata.ipfsCid],
-    [commitDenyNoSchemaErrorResultMetadata.ipfsCid],
-    [commitDenyNoSchemaNoResultMetadata.ipfsCid],
   ];
 
   // Define parameter names for each policy
@@ -184,12 +172,6 @@ describe('VincentToolClient policy failure tests', () => {
     [['y']],
 
     // Precheck policy failure tools
-    [['y']],
-    [['y']],
-    [['y']],
-    [['y']],
-
-    // Commit policy failure tools
     [['y']],
     [['y']],
     [['y']],
@@ -209,12 +191,6 @@ describe('VincentToolClient policy failure tests', () => {
     [[PARAMETER_TYPE.STRING]],
     [[PARAMETER_TYPE.STRING]],
     [[PARAMETER_TYPE.STRING]],
-
-    // Commit policy failure tools
-    [[PARAMETER_TYPE.STRING]],
-    [[PARAMETER_TYPE.STRING]],
-    [[PARAMETER_TYPE.STRING]],
-    [[PARAMETER_TYPE.STRING]],
   ];
 
   // Define parameter values for each policy
@@ -226,12 +202,6 @@ describe('VincentToolClient policy failure tests', () => {
     [[encodeAbiParameters([{ type: 'string' }], ['test-value'])]],
 
     // Precheck policy failure tools
-    [[encodeAbiParameters([{ type: 'string' }], ['test-value'])]],
-    [[encodeAbiParameters([{ type: 'string' }], ['test-value'])]],
-    [[encodeAbiParameters([{ type: 'string' }], ['test-value'])]],
-    [[encodeAbiParameters([{ type: 'string' }], ['test-value'])]],
-
-    // Commit policy failure tools
     [[encodeAbiParameters([{ type: 'string' }], ['test-value'])]],
     [[encodeAbiParameters([{ type: 'string' }], ['test-value'])]],
     [[encodeAbiParameters([{ type: 'string' }], ['test-value'])]],

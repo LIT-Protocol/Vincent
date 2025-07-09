@@ -14,6 +14,13 @@
         "parallel": false
       }
     },
+    "action:only:deploy": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": ["node tools/deploy-lit-action.js"],
+        "cwd": "{projectRoot}"
+      }
+    },
     "action:deploy": {
       "executor": "nx:run-commands",
       "dependsOn": ["action:build"],

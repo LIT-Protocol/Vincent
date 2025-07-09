@@ -1,3 +1,24 @@
+## 1.0.2 (2025-07-08)
+
+### 🩹 Fixes
+
+- #### VincentToolClient Precheck fixes ([8da32df2](https://github.com/LIT-Protocol/Vincent/commit/8da32df2))
+
+  - Fix a case where deny results from `precheck()` were not correctly bubbled to the caller
+  - Fixed incorrect return type shape - `error` is a sibling of `result` in the policiesContext- Ensured `error` is bubbled up to the caller when provided
+
+- - VincentToolClient - Expose correct policiesContext type when calling `precheck()` ([812d4fe9](https://github.com/LIT-Protocol/Vincent/commit/812d4fe9))
+- - `VincentToolClient` - Fixed case where a tool without its own `precheck()` function would return `success` result even if a policy returned an `deny` result from its `precheck()` ([71380b89](https://github.com/LIT-Protocol/Vincent/commit/71380b89))
+- - `VincentToolClient` - Fixed case where a fail response did not return the `error` or `result` response to the caller correctly ([30e32f1e](https://github.com/LIT-Protocol/Vincent/commit/30e32f1e))
+
+### 🧱 Updated Dependencies
+
+- Updated tool-sdk to 1.0.2
+
+### ❤️ Thank You
+
+- Daryl Collins
+
 ## 0.0.7 (2025-05-26)
 
 ### 🚀 Features
