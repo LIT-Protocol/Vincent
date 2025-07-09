@@ -308,8 +308,8 @@ async function startServer() {
       process.exit(0);
     });
   }
-  process.on('SIGINT', gracefulShutdown);
-  process.on('SIGTERM', gracefulShutdown);
+  process.once('SIGINT', gracefulShutdown);
+  process.once('SIGTERM', gracefulShutdown);
 }
 startServer().catch((error) => {
   console.error('Fatal error starting Vincent MCP server in HTTP mode:', error);

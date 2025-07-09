@@ -63,8 +63,8 @@ async function main() {
     console.error('🛑 Vincent MCP Server has been closed.');
     process.exit(0);
   }
-  process.on('SIGINT', gracefulShutdown);
-  process.on('SIGTERM', gracefulShutdown);
+  process.once('SIGINT', gracefulShutdown);
+  process.once('SIGTERM', gracefulShutdown);
 }
 
 main().catch((error) => {
