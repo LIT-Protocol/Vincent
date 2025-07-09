@@ -33,7 +33,6 @@ export function buildMcpToolName(vincentAppDef: VincentAppDef, toolName: string)
  * This schema defines the structure of a parameter in a Vincent tool.
  */
 export const VincentParameterSchema = z.object({
-  name: z.string(),
   description: z.string().optional(),
 });
 
@@ -54,7 +53,7 @@ export type VincentParameter = z.infer<typeof VincentParameterSchema>;
 export const VincentToolDefSchema = z.object({
   name: z.string().optional(),
   description: z.string().optional(),
-  parameters: z.array(VincentParameterSchema).optional(),
+  parameters: z.record(VincentParameterSchema).optional(),
 });
 
 /**

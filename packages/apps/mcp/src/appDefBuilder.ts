@@ -2,11 +2,15 @@ import { exec } from 'node:child_process';
 import fs from 'node:fs';
 
 import { VincentAppDefSchema, VincentToolNpmSchema } from '@lit-protocol/vincent-mcp-sdk';
-import type { VincentAppDef, VincentAppTools } from '@lit-protocol/vincent-mcp-sdk';
+import type {
+  VincentAppDef,
+  VincentAppTools,
+  VincentParameter,
+} from '@lit-protocol/vincent-mcp-sdk';
 import { Wallet } from 'ethers';
 import { generateNonce, SiweMessage } from 'siwe';
 import which from 'which';
-import { z, type ZodAny, ZodObject } from 'zod';
+import { z, ZodObject } from 'zod';
 
 import { env } from './env';
 
@@ -125,14 +129,11 @@ async function registerVincentTools(tools: VincentAppTools): Promise<VincentAppT
     const { toolParamsSchema } = vincentTool;
     const paramsSchema = toolParamsSchema.shape as ZodObject<any>;
 
-    const parameters = Object.entries(paramsSchema).map(([key, value]) => {
-      const parameterSchema = value as ZodAny;
-      const parameter = {
-        name: key,
-        ...(parameterSchema.description ? { description: parameterSchema.description } : {}),
+    const parameters = {} as Record<string, VincentParameter>;
+    Object.entries(paramsSchema).forEach(([key, value]) => {
+      parameters[key] = {
+        ...(value.description ? { description: value.description } : {}),
       };
-
-      return parameter;
     });
 
     // Add name, description

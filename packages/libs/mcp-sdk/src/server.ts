@@ -66,11 +66,9 @@ async function registerVincentTools(
     });
 
     // Add available descriptions to each param
-    toolData.parameters?.forEach((param) => {
+    Object.entries(toolData.parameters || {}).forEach(([key, param]) => {
       if (param.description) {
-        toolParamsSchema.shape[param.name] = toolParamsSchema.shape[param.name].describe(
-          param.description
-        );
+        toolParamsSchema.shape[key] = toolParamsSchema.shape[key].describe(param.description);
       }
     });
 
