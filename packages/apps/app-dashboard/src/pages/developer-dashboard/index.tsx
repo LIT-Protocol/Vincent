@@ -1,7 +1,2 @@
-import ConnectWallet from './ConnectWalletPage';
-import Dashboard from './DashboardPage';
-
-export const AppDashboard = {
-  ConnectWallet,
-  Dashboard,
-};
+export { default as ConnectWallet } from './ConnectWalletPage';
+export { default as Dashboard } from './DashboardRoute';

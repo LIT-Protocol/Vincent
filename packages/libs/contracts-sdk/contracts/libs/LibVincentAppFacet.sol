@@ -30,36 +30,6 @@ library LibVincentAppFacet {
     event AppEnabled(uint256 indexed appId, uint256 indexed appVersion, bool indexed enabled);
 
     /**
-     * @notice Emitted when a new authorized redirect URI is added to an app
-     * @param appId ID of the app
-     * @param hashedRedirectUri The keccak256 hash of the redirect URI that was added.
-     *                          Original value can be retrieved using VincentAppViewFacet
-     */
-    event AuthorizedRedirectUriAdded(uint256 indexed appId, bytes32 indexed hashedRedirectUri);
-
-    /**
-     * @notice Emitted when an authorized redirect URI is removed from an app
-     * @param appId ID of the app
-     * @param hashedRedirectUri The keccak256 hash of the redirect URI that was removed.
-     *                          Original value can be retrieved using VincentAppViewFacet
-     */
-    event AuthorizedRedirectUriRemoved(uint256 indexed appId, bytes32 indexed hashedRedirectUri);
-
-    /**
-     * @notice Emitted when an app's name is updated
-     * @param appId ID of the app
-     * @param newName The new name of the app
-     */
-    event AppNameUpdated(uint256 indexed appId, string newName);
-
-    /**
-     * @notice Emitted when an app's description is updated
-     * @param appId ID of the app
-     * @param newDescription The new description of the app
-     */
-    event AppDescriptionUpdated(uint256 indexed appId, string newDescription);
-
-    /**
      * @notice Emitted when a new delegatee is added to an app
      * @param appId ID of the app
      * @param delegatee Address of the delegatee added to the app
@@ -80,17 +50,16 @@ library LibVincentAppFacet {
     event NewLitActionRegistered(bytes32 indexed litActionIpfsCidHash);
 
     /**
-     * @notice Emitted when an app's deployment status is updated
-     * @param appId ID of the app
-     * @param deploymentStatus New deployment status of the app
-     */
-    event AppDeploymentStatusUpdated(uint256 indexed appId, uint8 indexed deploymentStatus);
-
-    /**
      * @notice Emitted when an app is deleted
      * @param appId ID of the deleted app
      */
     event AppDeleted(uint256 indexed appId);
+
+    /**
+     * @notice Emitted when an app is undeleted
+     * @param appId ID of the undeleted app
+     */
+    event AppUndeleted(uint256 indexed appId);
 
     /**
      * @notice Error thrown when a non-manager attempts to modify an app
@@ -121,45 +90,12 @@ library LibVincentAppFacet {
     error DelegateeNotRegisteredToApp(uint256 appId, address delegatee);
 
     /**
-     * @notice Error thrown when trying to remove a redirect URI not registered to the app
-     * @param appId ID of the app
-     * @param redirectUri The redirect URI that is not registered
-     */
-    error RedirectUriNotRegisteredToApp(uint256 appId, string redirectUri);
-
-    /**
-     * @notice Error thrown when no redirect URIs are provided during app registration
-     * @dev At least one redirect URI is required for app registration
-     */
-    error NoRedirectUrisProvided();
-
-    /**
-     * @notice Error thrown when trying to remove the last redirect URI of an app
-     * @param appId ID of the app
-     */
-    error CannotRemoveLastRedirectUri(uint256 appId);
-
-    /**
      * @notice Error thrown when trying to set app version enabled status to its current status
      * @param appId ID of the app
      * @param appVersion Version number of the app
      * @param enabled Current enabled status
      */
     error AppVersionAlreadyInRequestedState(uint256 appId, uint256 appVersion, bool enabled);
-
-    /**
-     * @notice Error thrown when trying to set app deployment status to its current status
-     * @param appId ID of the app
-     * @param deploymentStatus Current deployment status
-     */
-    error AppAlreadyInRequestedDeploymentStatus(uint256 appId, uint8 deploymentStatus);
-
-    /**
-     * @notice Error thrown when trying to add a redirect URI that already exists for the app
-     * @param appId ID of the app
-     * @param redirectUri The redirect URI that already exists
-     */
-    error RedirectUriAlreadyAuthorizedForApp(uint256 appId, string redirectUri);
 
     /**
      * @notice Error thrown when trying to use an empty policy IPFS CID
@@ -176,19 +112,19 @@ library LibVincentAppFacet {
     error EmptyToolIpfsCidNotAllowed(uint256 appId, uint256 toolIndex);
 
     /**
-     * @notice Error thrown when app name is empty
+     * @notice Error thrown when a tool IPFS CID is present more than once
+     * @param appId ID of the app
+     * @param toolIndex Index of the tool in the tools array
      */
-    error EmptyAppNameNotAllowed();
+    error DuplicateToolIpfsCidNotAllowed(uint256 appId, uint256 toolIndex);
 
     /**
-     * @notice Error thrown when app description is empty
+     * @notice Error thrown when a policy IPFS CID is present more than once
+     * @param appId ID of the app
+     * @param toolIndex Index of the tool in the tools array
+     * @param policyIndex Index of the policy in the policies array
      */
-    error EmptyAppDescriptionNotAllowed();
-
-    /**
-     * @notice Error thrown when a redirect URI is empty
-     */
-    error EmptyRedirectUriNotAllowed();
+    error DuplicateToolPolicyIpfsCidNotAllowed(uint256 appId, uint256 toolIndex, uint256 policyIndex);
 
     /**
      * @notice Error thrown when a delegatee address is the zero address
@@ -209,45 +145,32 @@ library LibVincentAppFacet {
     error NoPoliciesProvidedForTool(uint256 appId, uint256 toolIndex);
 
     /**
-     * @notice Error thrown when a policy parameter name is empty
-     * @param appId ID of the app
-     * @param toolIndex Index of the tool in the tools array
-     * @param policyIndex Index of the policy in the policies array
-     * @param paramIndex Index of the parameter in the parameters array
-     */
-    error EmptyParameterNameNotAllowed(uint256 appId, uint256 toolIndex, uint256 policyIndex, uint256 paramIndex);
-
-    /**
      * @notice Error thrown when the top-level tool arrays have mismatched lengths
      * @param toolsLength Length of the tools array
      * @param policiesLength Length of the policies array
-     * @param paramNamesLength Length of the parameter names array
-     * @param paramTypesLength Length of the parameter types array
      */
     error ToolArrayDimensionMismatch(
-        uint256 toolsLength, uint256 policiesLength, uint256 paramNamesLength, uint256 paramTypesLength
+        uint256 toolsLength, uint256 policiesLength
     );
 
     /**
      * @notice Error thrown when policy-related arrays for a specific tool have mismatched lengths
      * @param toolIndex Index of the tool in the tools array
      * @param policiesLength Length of the policies array for this tool
-     * @param paramNamesLength Length of the parameter names array for this tool
-     * @param paramTypesLength Length of the parameter types array for this tool
+     * @param paramMetadataLength Length of the parameter metadata array for this tool
      */
     error PolicyArrayLengthMismatch(
-        uint256 toolIndex, uint256 policiesLength, uint256 paramNamesLength, uint256 paramTypesLength
+        uint256 toolIndex, uint256 policiesLength, uint256 paramMetadataLength
     );
 
     /**
      * @notice Error thrown when parameter arrays for a specific policy have mismatched lengths
      * @param toolIndex Index of the tool in the tools array
      * @param policyIndex Index of the policy in the policies array
-     * @param paramNamesLength Length of the parameter names array for this policy
-     * @param paramTypesLength Length of the parameter types array for this policy
+     * @param paramMetadataLength Length of the parameter metadata array for this policy
      */
     error ParameterArrayLengthMismatch(
-        uint256 toolIndex, uint256 policyIndex, uint256 paramNamesLength, uint256 paramTypesLength
+        uint256 toolIndex, uint256 policyIndex, uint256 paramMetadataLength
     );
 
     /**
@@ -257,9 +180,26 @@ library LibVincentAppFacet {
     error AppAlreadyDeleted(uint256 appId);
 
     /**
+     * @notice Error thrown when the app is already undeleted
+     * @param appId ID of the undeleted app
+     */
+    error AppAlreadyUndeleted(uint256 appId);
+
+    /**
      * @notice Error thrown when the app version has delegated agents
      * @param appId ID of the app
      * @param appVersion Version number of the app
      */
     error AppVersionHasDelegatedAgents(uint256 appId, uint256 appVersion);
+
+    /**
+     * @notice Error thrown when the app ID is zero
+     */
+    error ZeroAppIdNotAllowed();
+
+    /**
+     * @notice Error thrown when the app is already registered
+     * @param appId ID of the app
+     */
+    error AppAlreadyRegistered(uint256 appId);
 }

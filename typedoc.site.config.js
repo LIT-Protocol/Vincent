@@ -23,6 +23,7 @@ module.exports = {
     'docs/src/Developers/App-Agent-Developers/Executing-Tools.md',
     'docs/src/Developers/App-Agent-Developers/MCP.md',
     'docs/src/Developers/Tool-Developers/Creating-Tools.md',
+    'docs/src/Developers/Tool-Developers/AI-Tool-Development.md',
     'docs/src/Developers/Policy-Developers/Creating-Policies.md',
     'docs/src/Users/Onboarding.md',
     'docs/src/Contact-Us.md',

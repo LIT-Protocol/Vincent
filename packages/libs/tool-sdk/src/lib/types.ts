@@ -85,6 +85,8 @@ export type VincentToolPolicy<
   }>;
   /** @hidden */
   __schemaTypes: {
+    policyToolParamsSchema: VP['toolParamsSchema'];
+    userParamsSchema?: VP['userParamsSchema'];
     evalAllowResultSchema?: VP['evalAllowResultSchema'];
     evalDenyResultSchema?: VP['evalDenyResultSchema'];
     precheckAllowResultSchema?: VP['precheckAllowResultSchema'];
@@ -197,16 +199,15 @@ export type PolicyEvaluationResultContext<
   | {
       allow: false;
       deniedPolicy: {
+        error?: string;
         packageName: keyof Policies;
-        result: {
-          error?: string;
-        } & (Policies[Extract<keyof Policies, string>]['__schemaTypes'] extends {
+        result: Policies[Extract<keyof Policies, string>]['__schemaTypes'] extends {
           evalDenyResultSchema: infer Schema;
         }
           ? Schema extends z.ZodType
             ? z.infer<Schema>
             : undefined
-          : undefined);
+          : undefined;
       };
       allowedPolicies?: {
         [PolicyKey in keyof Policies]?: {

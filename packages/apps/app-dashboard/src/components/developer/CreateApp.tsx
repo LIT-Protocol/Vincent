@@ -50,7 +50,10 @@ const formSchema = z.object({
 
   authorizedRedirectUris: z
     .array(z.string().min(1, 'Redirect URI cannot be empty'))
-    .min(1, 'At least one redirect URI is required'),
+    .min(1, 'At least one redirect URI is required')
+    .refine((uris) => new Set(uris).size === uris.length, {
+      message: 'Redirect URIs must be unique',
+    }),
 
   tools: z
     .array(toolSchema)

@@ -14,11 +14,16 @@ export { generateVincentToolSessionSigs, getVincentToolClient } from './toolClie
 export type {
   VincentToolClient,
   ToolClientContext,
-  ToolResponse,
-  ToolResponseFailure,
-  ToolResponseFailureNoResult,
-  ToolResponseSuccess,
-  ToolResponseSuccessNoResult,
+  ToolExecuteResponse,
+  ToolExecuteResponseFailure,
+  ToolExecuteResponseFailureNoResult,
+  ToolExecuteResponseSuccess,
+  ToolExecuteResponseSuccessNoResult,
+  ToolPrecheckResponse,
+  ToolPrecheckResponseFailure,
+  ToolPrecheckResponseFailureNoResult,
+  ToolPrecheckResponseSuccess,
+  ToolPrecheckResponseSuccessNoResult,
 } from './toolClient';
 
 export { getVincentWebAppClient } from './app';

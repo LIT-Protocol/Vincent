@@ -1,5 +1,5 @@
 {
-  "name": "@lit-protocol/toolpolicies-e2e",
+  "name": "toolpolicies-e2e",
   "$schema": "../../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "packages/apps/toolpolicies-e2e/src",
   "projectType": "application",
@@ -19,6 +19,22 @@
       "outputs": ["{workspaceRoot}/test-output/jest/{projectRoot}"],
       "options": {
         "jestConfig": "{projectRoot}/jest.config.js"
+      }
+    },
+    "action:build": {
+      "dependsOn": ["tool-sdk:build"],
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": ["node scripts/buildAllActions.js"],
+        "cwd": "packages/apps/toolpolicies-e2e"
+      }
+    },
+    "action:deploy": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["action:build"],
+      "options": {
+        "commands": ["node scripts/deployAllActions.js"],
+        "cwd": "packages/apps/toolpolicies-e2e"
       }
     }
   }

@@ -1,13 +1,14 @@
 import { FileText, GitBranch } from 'lucide-react';
 import { useMemo } from 'react';
 import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
+import { Tool, ToolVersion } from '@/types/developer-dashboard/appTypes';
 
 interface ToolListProps {
-  tools: any[]; // FIXME: When we export the types for the tools, we can use them here
-  selectedTool: any | null;
+  tools: Tool[];
+  selectedTool: Tool | null;
   selectedToolView: string | null;
   expandedMenus: Set<string>;
-  onToolSelection: (tool: any) => void;
+  onToolSelection: (tool: Tool) => void;
   onToolViewSelection: (viewId: string) => void;
   onToggleMenu: (menuId: string) => void;
 }
@@ -26,13 +27,15 @@ export function ToolList({
     isLoading: versionsLoading,
     error: versionsError,
   } = vincentApiClient.useGetToolVersionsQuery(
-    { packageName: selectedTool?.packageName },
-    { skip: !selectedTool?.packageName || typeof selectedTool.packageName !== 'string' },
-  );
+    { packageName: selectedTool?.packageName || '' },
+    { skip: !selectedTool?.packageName },
+  ); // FIXME: Sidebar-related patch, we don't want to fetch versions if no tool is selected
 
   const sortedVersions = useMemo(() => {
     if (!toolVersions || toolVersions.length === 0) return [];
-    return [...toolVersions].sort((a: any, b: any) =>
+    // Filter out deleted versions from sidebar dropdown
+    const activeVersions = toolVersions.filter((version: ToolVersion) => !version.isDeleted);
+    return [...activeVersions].sort((a: ToolVersion, b: ToolVersion) =>
       b.version.localeCompare(a.version, undefined, { numeric: true }),
     );
   }, [toolVersions]);
@@ -48,7 +51,7 @@ export function ToolList({
         icon: GitBranch,
         submenu:
           sortedVersions.length > 0
-            ? sortedVersions.map((version: any) => ({
+            ? sortedVersions.map((version: ToolVersion) => ({
                 id: `version-${version.version}`,
                 label: `Version ${version.version}${version.version === selectedTool.activeVersion ? ' (Active)' : ''}`,
               }))
@@ -79,20 +82,21 @@ export function ToolList({
 
   return (
     <div className="ml-4 mt-1 space-y-1">
-      {tools.map((tool: any) => (
+      {tools.map((tool: Tool) => (
         <div key={tool.packageName}>
           <button
             onClick={() => onToolSelection(tool)}
-            className={`w-full text-left px-3 py-2 text-xs rounded-lg transition-all duration-200 ease-in-out ${
+            className={`w-full text-left px-3 py-2 text-xs rounded-lg transition-all duration-200 ease-in-out focus:outline-none ${
               selectedTool?.packageName === tool.packageName
                 ? 'bg-blue-50 text-blue-700 font-medium'
                 : 'text-gray-500 hover:bg-gray-50'
             }`}
-            aria-label={`Select tool ${tool.toolTitle}`}
+            style={{ border: 'none', outline: 'none', boxShadow: 'none' }}
+            aria-label={`Select tool ${tool.title}`}
             aria-pressed={selectedTool?.packageName === tool.packageName}
           >
             <div className="truncate">
-              <div className="font-medium">{tool.toolTitle}</div>
+              <div className="font-medium">{tool.title}</div>
               <div className="text-xs opacity-75">{tool.packageName}</div>
             </div>
           </button>
@@ -114,13 +118,14 @@ export function ToolList({
                       <button
                         onClick={() => handleToolViewNavigation(toolItem.id)}
                         disabled={hasVersionsError}
-                        className={`w-full flex items-center px-3 py-2 text-sm rounded-lg transition-colors ${
+                        className={`w-full flex items-center px-3 py-2 text-sm rounded-lg transition-colors focus:outline-none ${
                           hasVersionsError
                             ? 'text-gray-400 cursor-not-allowed'
                             : selectedToolView === toolItem.id
                               ? 'bg-blue-50 text-blue-700 font-medium'
                               : 'text-gray-700 hover:bg-gray-50'
                         }`}
+                        style={{ border: 'none', outline: 'none', boxShadow: 'none' }}
                         aria-label={toolItem.label}
                         aria-expanded={isToolSubmenuExpanded}
                         aria-controls={`submenu-${toolItem.id}`}
@@ -161,13 +166,14 @@ export function ToolList({
                                 key={subMenuItem.id}
                                 onClick={() => handleToolSubmenuNavigation(subMenuItem.id)}
                                 disabled={subMenuItem.disabled}
-                                className={`w-full text-left px-4 py-2 text-xs rounded-lg transition-all duration-200 ease-in-out ${
+                                className={`w-full text-left px-4 py-2 text-xs rounded-lg transition-all duration-200 ease-in-out focus:outline-none ${
                                   subMenuItem.disabled
                                     ? 'text-gray-400 cursor-not-allowed'
                                     : selectedToolView === subMenuItem.id
                                       ? 'bg-blue-50 text-blue-700 font-medium'
                                       : 'text-gray-600 hover:bg-gray-50'
                                 }`}
+                                style={{ border: 'none', outline: 'none', boxShadow: 'none' }}
                                 aria-label={subMenuItem.label}
                                 aria-pressed={
                                   !subMenuItem.disabled && selectedToolView === subMenuItem.id
@@ -187,11 +193,12 @@ export function ToolList({
                   <button
                     key={toolItem.id}
                     onClick={() => handleToolViewNavigation(toolItem.id)}
-                    className={`w-full flex items-center px-3 py-2 text-left rounded-lg transition-all duration-200 ease-in-out text-sm ${
+                    className={`w-full flex items-center px-3 py-2 text-left rounded-lg transition-all duration-200 ease-in-out text-sm focus:outline-none ${
                       selectedToolView === toolItem.id
                         ? 'bg-blue-50 text-blue-700 font-medium'
                         : 'text-gray-600 hover:bg-gray-50'
                     }`}
+                    style={{ border: 'none', outline: 'none', boxShadow: 'none' }}
                     aria-label={toolItem.label}
                     aria-pressed={selectedToolView === toolItem.id}
                   >

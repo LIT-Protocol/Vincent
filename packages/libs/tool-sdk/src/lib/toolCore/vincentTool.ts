@@ -114,8 +114,8 @@ export function createVincentTool<
     try {
       const context = createExecutionToolContext({
         baseContext: baseToolContext,
-        successSchema: executeSuccessSchema,
-        failSchema: executeFailSchema,
+        successSchema: ToolConfig.executeSuccessSchema,
+        failSchema: ToolConfig.executeFailSchema,
         policiesByPackageName: policyByPackageName as PolicyMapByPackageName,
       });
 
@@ -127,7 +127,7 @@ export function createVincentTool<
       );
 
       if (isToolFailureResult(parsedToolParams)) {
-        return wrapFailure(parsedToolParams);
+        return parsedToolParams;
       }
 
       const result = await ToolConfig.execute(
@@ -149,7 +149,12 @@ export function createVincentTool<
       const resultOrFailure = validateOrFail(result.result, schemaToUse, 'execute', 'output');
 
       if (isToolFailureResult(resultOrFailure)) {
-        return wrapFailure(resultOrFailure);
+        return resultOrFailure;
+      }
+
+      // We parsed the result -- it may be a success or a failure; return appropriately.
+      if (isToolFailureResult(result)) {
+        return wrapFailure(resultOrFailure, result.error);
       }
 
       return wrapSuccess(resultOrFailure);
@@ -168,8 +173,8 @@ export function createVincentTool<
         try {
           const context = createPrecheckToolContext({
             baseContext: baseToolContext,
-            successSchema: precheckSuccessSchema,
-            failSchema: precheckFailSchema,
+            successSchema: ToolConfig.precheckSuccessSchema,
+            failSchema: ToolConfig.precheckFailSchema,
           });
 
           const parsedToolParams = validateOrFail(
@@ -180,7 +185,7 @@ export function createVincentTool<
           );
 
           if (isToolFailureResult(parsedToolParams)) {
-            return wrapFailure(parsedToolParams);
+            return parsedToolParams;
           }
 
           const result = await precheckFn({ toolParams }, context);
@@ -195,7 +200,12 @@ export function createVincentTool<
           const resultOrFailure = validateOrFail(result.result, schemaToUse, 'precheck', 'output');
 
           if (isToolFailureResult(resultOrFailure)) {
-            return wrapFailure(resultOrFailure);
+            return resultOrFailure;
+          }
+
+          // We parsed the result successfully -- it may be a success or a failure, return appropriately
+          if (isToolFailureResult(result)) {
+            return wrapFailure(resultOrFailure, result.error);
           }
 
           return wrapSuccess(resultOrFailure);

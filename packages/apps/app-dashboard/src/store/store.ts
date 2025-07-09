@@ -1,11 +1,50 @@
 import { configureStore } from '@reduxjs/toolkit';
 import { fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { reactClient } from '@lit-protocol/vincent-registry-sdk';
+import { getCurrentSIWEToken } from '@/hooks/developer-dashboard/useVincentApiWithSIWE';
 
 const { vincentApiClientReact, setBaseQueryFn }: any = reactClient;
 
-// Configure the base query function
-setBaseQueryFn(fetchBaseQuery({ baseUrl: `https://staging.registry.heyvincent.ai` }));
+// Create a wrapper function that adds SIWE authentication headers to mutation requests
+const createWithSiweAuth = (baseQuery: any) => {
+  return async (args: any, api: any, extraOptions: any) => {
+    // Check if this is a mutation request (has a method other than GET or undefined)
+    const isMutation =
+      args && typeof args === 'object' && 'method' in args && args.method && args.method !== 'GET';
+
+    // If it's a mutation, add the SIWE authentication header
+    if (isMutation) {
+      const siweToken = await getCurrentSIWEToken();
+
+      if (!siweToken) {
+        // No valid token, don't make the request
+        return {
+          error: {
+            status: 401,
+            data: { message: 'Authentication required. Please sign in with your wallet.' },
+          },
+        };
+      }
+
+      // Add the authorization header to the request
+      args = {
+        ...args,
+        headers: {
+          ...args.headers,
+          authorization: `SIWE ${siweToken}`,
+        },
+      };
+    }
+
+    // Pass the request to the original fetchBaseQuery function
+    return baseQuery(args, api, extraOptions);
+  };
+};
+
+// Configure the base query function with SIWE authentication
+setBaseQueryFn(
+  createWithSiweAuth(fetchBaseQuery({ baseUrl: `https://staging.registry.heyvincent.ai` })),
+);
 
 export const store = configureStore({
   reducer: {

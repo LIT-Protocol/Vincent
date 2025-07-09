@@ -22,7 +22,7 @@ import { getPkpEthAddress } from './pkp';
  * console.log(`App has ${tokenIds.length} delegated agent PKPs`);
  * ```
  */
-export async function fetchDelegatedAgentPKPTokenIds(appId: number, version: number) {
+async function fetchDelegatedAgentPKPTokenIds(appId: number, version: number) {
   try {
     const contract = getContract(LIT_NETWORK.Datil, 'AppView');
     const appView = await contract.getAppVersion(appId, version);

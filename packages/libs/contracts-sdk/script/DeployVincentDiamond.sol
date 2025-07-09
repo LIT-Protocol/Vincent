@@ -6,8 +6,6 @@ import "../contracts/VincentDiamond.sol";
 import "../contracts/diamond-base/facets/DiamondCutFacet.sol";
 import "../contracts/diamond-base/facets/DiamondLoupeFacet.sol";
 import "../contracts/diamond-base/facets/OwnershipFacet.sol";
-import "../contracts/facets/VincentLitActionFacet.sol";
-import "../contracts/facets/VincentLitActionViewFacet.sol";
 import "../contracts/facets/VincentAppFacet.sol";
 import "../contracts/facets/VincentAppViewFacet.sol";
 import "../contracts/facets/VincentUserFacet.sol";
@@ -18,18 +16,22 @@ import "../contracts/diamond-base/interfaces/IDiamondLoupe.sol";
 import "../contracts/diamond-base/interfaces/IERC165.sol";
 import "../contracts/diamond-base/interfaces/IERC173.sol";
 
-/// @title Vincent Diamond Deployment Script
-/// @notice Foundry script for deploying the Vincent Diamond to multiple networks
-/// @dev Uses environment variables for private key and PKP NFT contract addresses
-/// @custom:env VINCENT_DEPLOYER_PRIVATE_KEY - Private key of the deployer
-/// @custom:env DATIL_PKP_NFT_CONTRACT_ADDRESS - PKP NFT contract address on Datil
+/**
+ * @title Vincent Diamond Deployment Script
+ * @notice Foundry script for deploying the Vincent Diamond to multiple networks
+ * @dev Uses environment variables for private key and PKP NFT contract addresses
+ * @custom:env VINCENT_DEPLOYER_PRIVATE_KEY - Private key of the deployer
+ * @custom:env DATIL_PKP_NFT_CONTRACT_ADDRESS - PKP NFT contract address on Datil
+ */
 contract DeployVincentDiamond is Script {
-    /// @notice Error thrown when required environment variables are missing
+    /** @notice Error thrown when required environment variables are missing */
     error MissingEnvironmentVariable(string name);
 
-    /// @notice Deploy facets for the diamond
-    /// @return facets Array of deployed facet addresses
-    /// @return diamondCutFacetAddress Address of the DiamondCutFacet
+    /**
+     * @notice Deploy facets for the diamond
+     * @return facets Array of deployed facet addresses
+     * @return diamondCutFacetAddress Address of the DiamondCutFacet
+     */
     function deployFacets()
         internal
         returns (VincentDiamond.FacetAddresses memory facets, address diamondCutFacetAddress)
@@ -38,8 +40,6 @@ contract DeployVincentDiamond is Script {
         DiamondCutFacet diamondCutFacet = new DiamondCutFacet();
         DiamondLoupeFacet diamondLoupeFacet = new DiamondLoupeFacet();
         OwnershipFacet ownershipFacet = new OwnershipFacet();
-        VincentLitActionFacet litActionFacet = new VincentLitActionFacet();
-        VincentLitActionViewFacet litActionViewFacet = new VincentLitActionViewFacet();
         VincentAppFacet appFacet = new VincentAppFacet();
         VincentAppViewFacet appViewFacet = new VincentAppViewFacet();
         VincentUserFacet userFacet = new VincentUserFacet();
@@ -51,8 +51,6 @@ contract DeployVincentDiamond is Script {
             ownershipFacet: address(ownershipFacet),
             vincentAppFacet: address(appFacet),
             vincentAppViewFacet: address(appViewFacet),
-            vincentLitActionFacet: address(litActionFacet),
-            vincentLitActionViewFacet: address(litActionViewFacet),
             vincentUserFacet: address(userFacet),
             vincentUserViewFacet: address(userViewFacet)
         });
@@ -62,36 +60,35 @@ contract DeployVincentDiamond is Script {
         return (facets, diamondCutFacetAddress);
     }
 
-    /// @notice Log deployment details
-    /// @param network Network name
-    /// @param diamond Diamond contract address
-    /// @param pkpNFTAddress PKP NFT contract address
-    /// @param approvedLitActionsManager Approved lit actions manager address
-    /// @param facets Struct containing deployed facet addresses
+    /**
+     * @notice Log deployment details
+     * @param network Network name
+     * @param diamond Diamond contract address
+     * @param pkpNFTAddress PKP NFT contract address
+     * @param facets Struct containing deployed facet addresses
+     */
     function logDeployment(
         string memory network,
         address diamond,
         address pkpNFTAddress,
-        address approvedLitActionsManager,
         VincentDiamond.FacetAddresses memory facets
-    ) internal view {
+    ) internal pure {
         console.log("Vincent Diamond deployed for", network, "to:", address(diamond));
         console.log("Using PKP NFT contract:", pkpNFTAddress);
-        console.log("Approved Lit Actions Manager:", approvedLitActionsManager);
         console.log("DiamondLoupeFacet:", facets.diamondLoupeFacet);
         console.log("OwnershipFacet:", facets.ownershipFacet);
         console.log("VincentAppFacet:", facets.vincentAppFacet);
         console.log("VincentAppViewFacet:", facets.vincentAppViewFacet);
-        console.log("VincentLitActionFacet:", facets.vincentLitActionFacet);
-        console.log("VincentLitActionViewFacet:", facets.vincentLitActionViewFacet);
         console.log("VincentUserFacet:", facets.vincentUserFacet);
         console.log("VincentUserViewFacet:", facets.vincentUserViewFacet);
     }
 
-    /// @notice Deploy to a specific network
-    /// @param network Network name for logging
-    /// @param pkpNFTAddress PKP NFT contract address
-    /// @return address The address of the deployed registry
+    /**
+     * @notice Deploy to a specific network
+     * @param network Network name for logging
+     * @param pkpNFTAddress PKP NFT contract address
+     * @return address The address of the deployed registry
+     */
     function deployToNetwork(string memory network, address pkpNFTAddress) public returns (address) {
         // Validate PKP NFT address
         if (pkpNFTAddress == address(0)) {
@@ -107,19 +104,6 @@ contract DeployVincentDiamond is Script {
         // Get the deployer address
         address deployerAddress = vm.addr(deployerPrivateKey);
 
-        // Get approved lit actions manager address - this is required
-        address approvedLitActionsManager;
-        try vm.envAddress("APPROVED_LIT_ACTIONS_MANAGER_ADDRESS") returns (address managedAddress) {
-            if (managedAddress != address(0)) {
-                approvedLitActionsManager = managedAddress;
-                console.log("Using approved lit actions manager:", approvedLitActionsManager);
-            } else {
-                revert MissingEnvironmentVariable("APPROVED_LIT_ACTIONS_MANAGER_ADDRESS (zero address provided)");
-            }
-        } catch {
-            revert MissingEnvironmentVariable("APPROVED_LIT_ACTIONS_MANAGER_ADDRESS");
-        }
-
         // Start broadcasting transactions
         vm.startBroadcast(deployerPrivateKey);
 
@@ -131,26 +115,25 @@ contract DeployVincentDiamond is Script {
             deployerAddress, // contract owner
             diamondCutFacetAddress, // diamond cut facet
             facets, // all other facets
-            pkpNFTAddress, // PKP NFT contract address - set immutably
-            approvedLitActionsManager // approved lit actions manager
+            pkpNFTAddress // PKP NFT contract address - set immutably
         );
 
         // Stop broadcasting transactions
         vm.stopBroadcast();
 
         // Log deployment details
-        logDeployment(network, address(diamond), pkpNFTAddress, approvedLitActionsManager, facets);
+        logDeployment(network, address(diamond), pkpNFTAddress, facets);
 
         return address(diamond);
     }
 
-    /// @notice Deploy to Datil network
+    /** @notice Deploy to Datil network */
     function deployToDatil() public returns (address) {
         address pkpNFTAddress = vm.envAddress("DATIL_PKP_NFT_CONTRACT_ADDRESS");
         return deployToNetwork("Datil", pkpNFTAddress);
     }
 
-    /// @notice Main deployment function
+    /** @notice Main deployment function */
     function run() public {
         // Deploy to all networks
         deployToDatil();

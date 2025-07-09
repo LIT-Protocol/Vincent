@@ -92,13 +92,16 @@ export async function run() {
 
       // ✅ Should infer currency-policy result shape
       if (p['currency-policy']) {
+        // @ts-expect-error There is no precheck result schema; result must be undefined
         p['currency-policy'].result.approvedCurrency.toUpperCase();
+
         // @ts-expect-error - no commit on currency-policy
         p['currency-policy'].commit();
       }
 
       // ✅ Should infer rate-limit result shape and commit
       if (p['rate-limit']) {
+        // @ts-expect-error There is no precheck result schema; result must be undefined
         const val: true = p['rate-limit'].result.allowed;
         console.log(val);
       }
@@ -122,8 +125,10 @@ export async function run() {
       if (
         deniedPolicy.packageName === 'currency-policy' &&
         deniedPolicy.result &&
+        // @ts-expect-error There's no precheck deny schema!
         deniedPolicy.result.borked
       ) {
+        // @ts-expect-error There's no precheck deny schema!
         console.log(deniedPolicy.result.borked);
       }
       console.log(deniedPolicy.result);

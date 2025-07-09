@@ -9,7 +9,7 @@ export { validatePolicies } from './lib/toolCore/helpers/validatePolicies';
 export { createToolSuccessResult } from './lib/toolCore/helpers/resultCreators';
 export { getSchemaForToolResult, validateOrFail } from './lib/toolCore/helpers/zod';
 export { isToolFailureResult } from './lib/toolCore/helpers/typeGuards';
-export type { ToolResultFailure } from './lib/types';
+export type { ToolResultFailure, VincentPolicy } from './lib/types';
 
 // Policy Core - Parameter Loading + Decoding
 export { getPoliciesAndAppVersion } from './lib/policyCore/policyParameters/getOnchainPolicyParams';

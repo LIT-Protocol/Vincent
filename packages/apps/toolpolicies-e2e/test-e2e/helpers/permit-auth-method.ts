@@ -4,12 +4,10 @@ import { LitContracts } from '@lit-protocol/contracts-sdk';
 
 const YELLOWSTONE_RPC_URL = 'https://yellowstone-rpc.litprotocol.com/';
 
-export const permitAuthMethod = async (
+export const permitAuthMethods = async (
   pkpOwnerPrivateKey: string,
   pkpTokenId: string,
-  vincentErc20ApprovalToolIpfsCid: string,
-  vincentUniswapSwapToolIpfsCid: string,
-  vincentUniswapSwapPolicyIpfsCid: string,
+  toolIpfsCids: string[],
   litNetwork = 'datil',
 ) => {
   const provider = new ethers.providers.JsonRpcProvider(YELLOWSTONE_RPC_URL);
@@ -21,24 +19,12 @@ export const permitAuthMethod = async (
   });
   await litContractClient.connect();
 
-  console.log(`Adding permitted auth method for tool: ${vincentErc20ApprovalToolIpfsCid}`);
-  await litContractClient.addPermittedAction({
-    pkpTokenId,
-    ipfsId: vincentErc20ApprovalToolIpfsCid,
-    authMethodScopes: [AUTH_METHOD_SCOPE.SignAnything],
-  });
-
-  console.log(`Adding permitted auth method for tool: ${vincentUniswapSwapToolIpfsCid}`);
-  await litContractClient.addPermittedAction({
-    pkpTokenId,
-    ipfsId: vincentUniswapSwapToolIpfsCid,
-    authMethodScopes: [AUTH_METHOD_SCOPE.SignAnything],
-  });
-
-  console.log(`Adding permitted auth method for policy: ${vincentUniswapSwapPolicyIpfsCid}`);
-  await litContractClient.addPermittedAction({
-    pkpTokenId,
-    ipfsId: vincentUniswapSwapPolicyIpfsCid,
-    authMethodScopes: [AUTH_METHOD_SCOPE.SignAnything],
-  });
+  for (const ipfsCid of toolIpfsCids) {
+    console.log(`Adding permitted auth method for tool: ${ipfsCid}`);
+    await litContractClient.addPermittedAction({
+      pkpTokenId,
+      ipfsId: ipfsCid,
+      authMethodScopes: [AUTH_METHOD_SCOPE.SignAnything],
+    });
+  }
 };

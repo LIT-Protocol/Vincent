@@ -1,16 +1,16 @@
 import { useNavigate } from 'react-router';
 import { DashboardContent } from '@/components/developer-dashboard/DashboardContent';
-import { useDashboardData } from '@/hooks/developer-dashboard/useDashboardData';
-import Loading from '@/components/layout/Loading';
 import { MenuId } from '@/types/developer-dashboard/menuId';
+import { App, Policy, Tool } from '@/types/developer-dashboard/appTypes';
 
-export default function DashboardPage() {
+interface DashboardPageProps {
+  apps: App[];
+  tools: Tool[];
+  policies: Policy[];
+}
+
+export default function DashboardPage({ apps, tools, policies }: DashboardPageProps) {
   const navigate = useNavigate();
-  const { apps, tools, policies, loading, errors } = useDashboardData();
-
-  const hasError = Object.values(errors).some((error) => error !== null);
-
-  const isLoading = loading.apps || loading.tools || loading.policies;
 
   const handleMenuSelection = (id: MenuId) => {
     const routes: Record<MenuId, string> = {
@@ -31,16 +31,11 @@ export default function DashboardPage() {
     }
   };
 
-  if (isLoading) {
-    return <Loading />;
-  }
-
   return (
     <DashboardContent
       filteredAppsCount={apps.length}
       filteredToolsCount={tools.length}
       filteredPoliciesCount={policies.length}
-      error={hasError ? 'Some data failed to load' : null}
       onMenuSelection={handleMenuSelection}
     />
   );

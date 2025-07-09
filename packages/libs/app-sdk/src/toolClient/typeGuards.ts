@@ -2,12 +2,12 @@
 
 import type {
   RemoteVincentToolExecutionResult,
-  ToolResponse,
-  ToolResponseFailure,
-  ToolResponseFailureNoResult,
-  ToolResponseSuccess,
-  ToolResponseSuccessNoResult,
-} from './types';
+  ToolExecuteResponse,
+  ToolExecuteResponseFailure,
+  ToolExecuteResponseFailureNoResult,
+  ToolExecuteResponseSuccess,
+  ToolExecuteResponseSuccessNoResult,
+} from './execute/types';
 
 /**
  * Runtime type guard for ToolResponse success result.
@@ -15,8 +15,8 @@ import type {
 export function isToolResponseSuccess(
   value: unknown
 ): value is
-  | ToolResponseSuccess<any, Record<string, any>>
-  | ToolResponseSuccessNoResult<Record<string, any>> {
+  | ToolExecuteResponseSuccess<any, Record<string, any>>
+  | ToolExecuteResponseSuccessNoResult<Record<string, any>> {
   return (
     typeof value === 'object' &&
     value !== null &&
@@ -31,8 +31,8 @@ export function isToolResponseSuccess(
 export function isToolResponseFailure(
   value: unknown
 ): value is
-  | ToolResponseFailure<any, Record<string, any>>
-  | ToolResponseFailureNoResult<Record<string, any>> {
+  | ToolExecuteResponseFailure<any, Record<string, any>>
+  | ToolExecuteResponseFailureNoResult<Record<string, any>> {
   return (
     typeof value === 'object' &&
     value !== null &&
@@ -46,7 +46,7 @@ export function isToolResponseFailure(
  */
 export function isToolResponse(
   value: unknown
-): value is ToolResponse<any, any, Record<string, any>> {
+): value is ToolExecuteResponse<any, any, Record<string, any>> {
   return (
     typeof value === 'object' &&
     value !== null &&

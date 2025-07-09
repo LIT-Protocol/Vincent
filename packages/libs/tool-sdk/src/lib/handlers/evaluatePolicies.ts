@@ -168,7 +168,7 @@ function parseAndValidateEvaluateResult<
       allowResultSchema: vincentPolicy.evalAllowResultSchema || z.undefined(),
     });
 
-    console.log('schemaToUse', parsedType);
+    console.log('parsedType', parsedType);
     return validateOrDeny(
       (parsedLitActionResponse as PolicyResponse<any, any>).result,
       schemaToUse,

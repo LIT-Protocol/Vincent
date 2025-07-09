@@ -1,4 +1,4 @@
-import { SquareStack, Wrench, Shield, BookOpen, MessageCircle, AlertCircle } from 'lucide-react';
+import { SquareStack, Wrench, Shield, BookOpen, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { MenuId } from '@/types/developer-dashboard/menuId';
@@ -7,7 +7,6 @@ interface DashboardContentProps {
   filteredAppsCount: number;
   filteredToolsCount: number;
   filteredPoliciesCount: number;
-  error?: string | null;
   onMenuSelection: (id: MenuId) => void;
 }
 
@@ -15,7 +14,6 @@ export function DashboardContent({
   filteredAppsCount,
   filteredToolsCount,
   filteredPoliciesCount,
-  error,
   onMenuSelection,
 }: DashboardContentProps) {
   const currentTime = new Date().getHours();
@@ -28,21 +26,6 @@ export function DashboardContent({
       <h1 className="text-4xl font-medium text-gray-900 text-center mb-12">
         {greeting}, Developer
       </h1>
-
-      {/* Error Display */}
-      {error && (
-        <Card className="mb-6 border border-red-200 bg-red-50/50">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0" />
-              <div>
-                <p className="font-medium text-red-800">Error</p>
-                <p className="text-sm text-red-700">{error}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
       {/* Action Buttons */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12">

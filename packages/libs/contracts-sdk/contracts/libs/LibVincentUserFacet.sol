@@ -30,35 +30,35 @@ library LibVincentUserFacet {
     event AppVersionUnPermitted(uint256 indexed pkpTokenId, uint256 indexed appId, uint256 indexed appVersion);
 
     /**
-     * @notice Emitted when a tool policy parameter is set
+     * @notice Emitted when a tool policy parameters are set
      * @param pkpTokenId The token ID of the PKP
      * @param appId The ID of the app
      * @param appVersion The version of the app
      * @param hashedToolIpfsCid The keccak256 hash of the tool's IPFS CID
-     * @param hashedPolicyParameterName The keccak256 hash of the policy parameter name
+     * @param hashedToolPolicyIpfsCid The keccak256 hash of the tool policy's IPFS CID
+     * @param policyParameterValues The CBOR2 encoded policy parameter values
      */
-    event ToolPolicyParameterSet(
+    event ToolPolicyParametersSet(
         uint256 indexed pkpTokenId,
         uint256 indexed appId,
         uint256 indexed appVersion,
         bytes32 hashedToolIpfsCid,
-        bytes32 hashedPolicyParameterName
+        bytes32 hashedToolPolicyIpfsCid,
+        bytes policyParameterValues
     );
 
     /**
-     * @notice Emitted when a tool policy parameter is removed
+     * @notice Emitted when a tool policy parameters are removed
      * @param pkpTokenId The token ID of the PKP
      * @param appId The ID of the app
      * @param appVersion The version of the app
      * @param hashedToolIpfsCid The keccak256 hash of the tool's IPFS CID
-     * @param hashedPolicyParameterName The keccak256 hash of the policy parameter name being removed
      */
-    event ToolPolicyParameterRemoved(
+    event ToolPolicyParametersRemoved(
         uint256 indexed pkpTokenId,
         uint256 indexed appId,
         uint256 indexed appVersion,
-        bytes32 hashedToolIpfsCid,
-        bytes32 hashedPolicyParameterName
+        bytes32 hashedToolIpfsCid
     );
 
     /**
@@ -100,22 +100,20 @@ library LibVincentUserFacet {
      * @notice Error thrown when policy-related arrays for a specific tool have mismatched lengths
      * @param toolIndex Index of the tool in the tools array
      * @param policiesLength Length of the policies array for this tool
-     * @param paramNamesLength Length of the parameter names array for this tool
      * @param paramValuesLength Length of the parameter values array for this tool
      */
     error PolicyArrayLengthMismatch(
-        uint256 toolIndex, uint256 policiesLength, uint256 paramNamesLength, uint256 paramValuesLength
+        uint256 toolIndex, uint256 policiesLength, uint256 paramValuesLength
     );
 
     /**
      * @notice Error thrown when parameter arrays for a specific policy have mismatched lengths
      * @param toolIndex Index of the tool in the tools array
      * @param policyIndex Index of the policy in the policies array
-     * @param paramNamesLength Length of the parameter names array for this policy
      * @param paramValuesLength Length of the parameter values array for this policy
      */
     error ParameterArrayLengthMismatch(
-        uint256 toolIndex, uint256 policyIndex, uint256 paramNamesLength, uint256 paramValuesLength
+        uint256 toolIndex, uint256 policyIndex, uint256 paramValuesLength
     );
 
     /**
@@ -138,27 +136,26 @@ library LibVincentUserFacet {
     );
 
     /**
-     * @notice Error thrown when a policy parameter name is not registered for an app version
+     * @notice Error thrown when a duplicate tool IPFS CID is provided
+     * @param appId The ID of the app
+     * @param appVersion The version of the app
+     * @param toolIpfsCid The IPFS CID of the tool
+     */
+    error DuplicateToolIpfsCid(uint256 appId, uint256 appVersion, string toolIpfsCid);
+    
+    /**
+     * @notice Error thrown when a duplicate tool policy IPFS CID is provided
      * @param appId The ID of the app
      * @param appVersion The version of the app
      * @param toolIpfsCid The IPFS CID of the tool
      * @param toolPolicyIpfsCid The IPFS CID of the tool policy
-     * @param policyParameterName The name of the policy parameter
      */
-    error PolicyParameterNameNotRegisteredForAppVersion(
-        uint256 appId, uint256 appVersion, string toolIpfsCid, string toolPolicyIpfsCid, string policyParameterName
-    );
+    error DuplicateToolPolicyIpfsCid(uint256 appId, uint256 appVersion, string toolIpfsCid, string toolPolicyIpfsCid);
 
     /**
      * @notice Error thrown when invalid input is provided
      */
     error InvalidInput();
-
-    /**
-     * @notice Error thrown when a policy parameter value is empty
-     * @param parameterName The name of the parameter with an empty value
-     */
-    error EmptyParameterValue(string parameterName);
 
     /**
      * @notice Error thrown when a zero PKP token ID is provided
@@ -180,11 +177,6 @@ library LibVincentUserFacet {
      * @notice Error thrown when an empty policy IPFS CID is provided
      */
     error EmptyPolicyIpfsCid();
-
-    /**
-     * @notice Error thrown when an empty parameter name is provided
-     */
-    error EmptyParameterName();
 
     /**
      * @notice Error thrown when not all registered tools for an app version are provided

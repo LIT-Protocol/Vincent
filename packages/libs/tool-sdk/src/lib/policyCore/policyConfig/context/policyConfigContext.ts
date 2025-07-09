@@ -10,15 +10,6 @@ import {
   PolicyContext,
 } from './types';
 
-interface CreatePolicyContextParams<
-  AllowSchema extends z.ZodType = z.ZodUndefined,
-  DenySchema extends z.ZodType = z.ZodUndefined,
-> {
-  allowSchema: AllowSchema;
-  denySchema: DenySchema;
-  baseContext: BaseContext;
-}
-
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
 /**
@@ -34,7 +25,11 @@ export function createPolicyContext<
   baseContext,
   allowSchema,
   denySchema,
-}: CreatePolicyContextParams<AllowSchema, DenySchema>): PolicyContext<AllowSchema, DenySchema> {
+}: {
+  allowSchema?: AllowSchema;
+  denySchema?: DenySchema;
+  baseContext: BaseContext;
+}): PolicyContext<AllowSchema, DenySchema> {
   function allowWithSchema<T>(result: T): ContextAllowResponse<T> {
     return {
       allow: true,

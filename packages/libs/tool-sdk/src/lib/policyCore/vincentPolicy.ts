@@ -93,8 +93,8 @@ export function createVincentPolicy<
     try {
       const context = createPolicyContext({
         baseContext,
-        allowSchema: evalAllowSchema,
-        denySchema: evalDenySchema,
+        allowSchema: PolicyConfig.evalAllowResultSchema,
+        denySchema: PolicyConfig.evalDenyResultSchema,
       });
 
       const paramsOrDeny = getValidatedParamsOrDeny({
@@ -115,12 +115,6 @@ export function createVincentPolicy<
 
       const result = await PolicyConfig.evaluate({ toolParams, userParams }, context);
 
-      if (isPolicyDenyResponse(result)) {
-        return result as unknown as EvalDenyResult extends z.ZodType
-          ? PolicyResponseDeny<z.infer<EvalDenyResult> | ZodValidationDenyResult>
-          : PolicyResponseDenyNoResult;
-      }
-
       const { schemaToUse } = getSchemaForPolicyResponseResult({
         value: result,
         allowResultSchema: evalAllowSchema,
@@ -136,6 +130,16 @@ export function createVincentPolicy<
 
       if (isPolicyDenyResponse(resultOrDeny)) {
         return resultOrDeny as EvalDenyResult extends z.ZodType
+          ? PolicyResponseDeny<z.infer<EvalDenyResult> | ZodValidationDenyResult>
+          : PolicyResponseDenyNoResult;
+      }
+
+      // We parsed the result -- it may be a success or a failure; return appropriately.
+      if (isPolicyDenyResponse(result)) {
+        return createDenyResult({
+          message: result.error,
+          result: resultOrDeny,
+        }) as EvalDenyResult extends z.ZodType
           ? PolicyResponseDeny<z.infer<EvalDenyResult> | ZodValidationDenyResult>
           : PolicyResponseDenyNoResult;
       }
@@ -161,8 +165,8 @@ export function createVincentPolicy<
         try {
           const context = createPolicyContext({
             baseContext,
-            allowSchema: precheckAllowSchema,
-            denySchema: precheckDenySchema,
+            allowSchema: PolicyConfig.precheckAllowResultSchema,
+            denySchema: PolicyConfig.precheckDenyResultSchema,
           });
 
           const { precheck: precheckFn } = PolicyConfig;
@@ -185,12 +189,6 @@ export function createVincentPolicy<
 
           const result = await precheckFn(args, context);
 
-          if (isPolicyDenyResponse(result)) {
-            return result as unknown as PrecheckDenyResult extends z.ZodType
-              ? PolicyResponseDeny<z.infer<PrecheckDenyResult> | ZodValidationDenyResult>
-              : PolicyResponseDenyNoResult;
-          }
-
           const { schemaToUse } = getSchemaForPolicyResponseResult({
             value: result,
             allowResultSchema: precheckAllowSchema,
@@ -206,6 +204,14 @@ export function createVincentPolicy<
 
           if (isPolicyDenyResponse(resultOrDeny)) {
             return resultOrDeny;
+          }
+
+          // We parsed the result -- it may be a success or a failure; return appropriately.
+          if (isPolicyDenyResponse(result)) {
+            return createDenyResult({
+              message: result.error,
+              result: resultOrDeny,
+            });
           }
 
           return createAllowResult({ result: resultOrDeny });
@@ -232,8 +238,8 @@ export function createVincentPolicy<
         try {
           const context = createPolicyContext({
             baseContext,
-            denySchema: commitDenySchema,
-            allowSchema: commitAllowSchema,
+            denySchema: PolicyConfig.commitDenyResultSchema,
+            allowSchema: PolicyConfig.commitAllowResultSchema,
           });
 
           const { commit: commitFn } = PolicyConfig;
@@ -250,12 +256,6 @@ export function createVincentPolicy<
 
           const result = await commitFn(args, context);
 
-          if (isPolicyDenyResponse(result)) {
-            return result as unknown as CommitDenyResult extends z.ZodType
-              ? PolicyResponseDeny<z.infer<CommitDenyResult> | ZodValidationDenyResult>
-              : PolicyResponseDenyNoResult;
-          }
-
           const { schemaToUse } = getSchemaForPolicyResponseResult({
             value: result,
             allowResultSchema: commitAllowSchema,
@@ -271,6 +271,14 @@ export function createVincentPolicy<
 
           if (isPolicyDenyResponse(resultOrDeny)) {
             return resultOrDeny;
+          }
+
+          // We parsed the result -- it may be a success or a failure; return appropriately.
+          if (isPolicyDenyResponse(result)) {
+            return createDenyResult({
+              message: result.error,
+              result: resultOrDeny,
+            });
           }
 
           return createAllowResult({ result: resultOrDeny });
@@ -401,6 +409,8 @@ export function createVincentToolPolicy<
     // Explicitly include schema types in the returned object for type inference
     /** @hidden */
     __schemaTypes: {
+      policyToolParamsSchema: vincentPolicy.toolParamsSchema,
+      userParamsSchema: vincentPolicy.userParamsSchema,
       evalAllowResultSchema: vincentPolicy.evalAllowResultSchema,
       evalDenyResultSchema: vincentPolicy.evalDenyResultSchema,
       commitParamsSchema: vincentPolicy.commitParamsSchema,
@@ -422,6 +432,8 @@ export function createVincentToolPolicy<
     toolParameterMappings: typeof config.toolParameterMappings;
     /** @hidden */
     __schemaTypes: {
+      policyToolParamsSchema: PolicyToolParams;
+      userParamsSchema: UserParams;
       evalAllowResultSchema: EvalAllowResult;
       evalDenyResultSchema: EvalDenyResult;
       precheckAllowResultSchema: PrecheckAllowResult;
