@@ -113,6 +113,20 @@ export function AppDetailsView({ selectedApp, onOpenMutation }: AppDetailsViewPr
                 </AppDetail>
               )}
 
+              {selectedApp.delegateeAddresses && selectedApp.delegateeAddresses.length > 0 && (
+                <AppDetail label="Delegatee Addresses">
+                  <div className="space-y-1">
+                    {selectedApp.delegateeAddresses.map((address) => (
+                      <div key={address}>
+                        <span className="inline-block bg-blue-50 text-blue-700 px-2 py-1 rounded text-sm">
+                          {address}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </AppDetail>
+              )}
+
               {selectedApp.deploymentStatus && (
                 <AppDetail label="Deployment Status">
                   <span
