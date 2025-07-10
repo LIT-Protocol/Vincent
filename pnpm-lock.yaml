@@ -403,6 +403,9 @@ importers:
       '@lit-protocol/vincent-mcp-sdk':
         specifier: workspace:*
         version: link:../../libs/mcp-sdk
+      '@lit-protocol/vincent-tool-sdk':
+        specifier: workspace:*
+        version: link:../../libs/tool-sdk
       '@modelcontextprotocol/sdk':
         specifier: ^1.12.1
         version: 1.13.0
@@ -431,9 +434,6 @@ importers:
         specifier: ^3.25.64
         version: 3.25.64
     devDependencies:
-      '@lit-protocol/vincent-tool-sdk':
-        specifier: workspace:*
-        version: link:../../libs/tool-sdk
       '@types/cors':
         specifier: ^2.8.19
         version: 2.8.19

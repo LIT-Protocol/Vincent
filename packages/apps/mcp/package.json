@@ -36,6 +36,7 @@
     "@lit-protocol/constants": "^7.1.1",
     "@lit-protocol/vincent-app-sdk": "workspace:*",
     "@lit-protocol/vincent-mcp-sdk": "workspace:*",
+    "@lit-protocol/vincent-tool-sdk": "workspace:*",
     "@modelcontextprotocol/sdk": "^1.12.1",
     "@t3-oss/env-core": "^0.13.4",
     "cors": "^2.8.5",
@@ -47,7 +48,6 @@
     "zod": "^3.25.64"
   },
   "devDependencies": {
-    "@lit-protocol/vincent-tool-sdk": "workspace:*",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.1",
     "tsx": "^4.19.4"
