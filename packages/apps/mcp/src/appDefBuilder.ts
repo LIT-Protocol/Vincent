@@ -7,41 +7,15 @@ import type {
   VincentParameter,
 } from '@lit-protocol/vincent-mcp-sdk';
 import type { BundledVincentTool, VincentTool } from '@lit-protocol/vincent-tool-sdk';
-import { Wallet } from 'ethers';
+import { nodeClient } from '@lit-protocol/vincent-registry-sdk';
 import { npxImport } from 'npx-import';
-import { generateNonce, SiweMessage } from 'siwe';
 import { z, ZodObject } from 'zod';
 
 import { env } from './env';
+import { store as registryStore } from './registry';
 
-const { VINCENT_APP_ID, VINCENT_APP_JSON_DEFINITION, VINCENT_REGISTRY_URL } = env;
-
-/**
- * The structure of an application retrieved from the Vincent Registry.
- * @hidden
- */
-interface RegistryApp {
-  appId: number;
-  activeVersion: number;
-  name: string;
-  description: string;
-  redirectUris: string[];
-  deploymentStatus: 'dev' | 'test' | 'prod';
-  managerAddress: string;
-  isDeleted: boolean;
-}
-
-/**
- * A tool associated with a specific version of an application in the Vincent Registry.
- * @hidden
- */
-interface RegistryAppVersionTool {
-  appId: number;
-  appVersion: number;
-  toolPackageName: string;
-  toolVersion: string;
-  isDeleted: boolean;
-}
+const { VINCENT_APP_ID, VINCENT_APP_JSON_DEFINITION, VINCENT_APP_VERSION } = env;
+const { vincentApiClientNode } = nodeClient;
 
 /**
  * Zod schema for Vincent application tools defined in a JSON file.
@@ -123,66 +97,50 @@ async function registerVincentTools(tools: VincentAppTools): Promise<VincentAppT
  * It authenticates with the registry using a temporary SIWE message.
  *
  * @param {string} appId - The ID of the Vincent application.
+ * @param {string} appVersion - The version of the Vincent application.
  * @returns {Promise<VincentAppDef>} A promise that resolves with the application definition from the registry.
  * @hidden
  */
-async function getAppDataFromRegistry(appId: string): Promise<VincentAppDef> {
-  const delegateeSigner = Wallet.createRandom();
-  const address = await delegateeSigner.getAddress();
-
-  const siweMessage = new SiweMessage({
-    address,
-    chainId: 1,
-    domain: VINCENT_REGISTRY_URL,
-    issuedAt: new Date().toISOString(),
-    nonce: generateNonce(),
-    statement: 'Sign in with Ethereum to authenticate with Vincent Registry API',
-    uri: VINCENT_REGISTRY_URL,
-    version: '1',
-  });
-  const message = siweMessage.prepareMessage();
-  const signature = await delegateeSigner.signMessage(message);
-  const authorization = `SIWE ${Buffer.from(JSON.stringify({ message, signature })).toString('base64')}`;
-
-  const registryAppResponse = await fetch(`${VINCENT_REGISTRY_URL}/app/${appId}`, {
-    headers: {
-      Authorization: authorization,
-    },
-  });
-  if (!registryAppResponse.ok) {
-    throw new Error(
-      `Failed to retrieve app data for ${appId}. Request status code: ${registryAppResponse.status}, error: ${await registryAppResponse.text()}, `,
-    );
+async function getAppDataFromRegistry(
+  appId: string,
+  appVersion: string | undefined,
+): Promise<VincentAppDef> {
+  const registryAppQuery = await registryStore.dispatch(
+    vincentApiClientNode.endpoints.getApp.initiate({ appId: Number(appId) }),
+  );
+  const registryApp = registryAppQuery.data;
+  if (!registryApp) {
+    throw new Error(`Failed to retrieve registry app data for Vincent App ${appId}.`);
   }
-  const registryData = (await registryAppResponse.json()) as RegistryApp;
-  if (registryData.isDeleted) {
+  if (registryApp.isDeleted) {
     throw new Error(`Vincent App ${appId} has been deleted from the registry`);
   }
-  if (registryData.deploymentStatus !== 'prod') {
+  if (registryApp.deploymentStatus !== 'prod') {
     console.warn(
-      `Warning: Vincent App ${appId} is deployed as ${registryData.deploymentStatus}. Consider migrating to a production deployment.`,
+      `Warning: Vincent App ${appId} is deployed as ${registryApp.deploymentStatus}. Consider migrating to a production deployment.`,
     );
   }
 
-  const appVersion = registryData.activeVersion.toString();
-
-  const registryToolsResponse = await fetch(
-    `${VINCENT_REGISTRY_URL}/app/${appId}/version/${appVersion}/tools`,
-    {
-      headers: {
-        Authorization: authorization,
-      },
-    },
-  );
-  const registryTools = (await registryToolsResponse.json()) as RegistryAppVersionTool[];
-  if (!registryToolsResponse.ok) {
+  const vincentAppVersion = Number(appVersion) || registryApp.activeVersion;
+  if (!vincentAppVersion) {
     throw new Error(
-      `Failed to retrieve tools for ${appId}. Request status code: ${registryToolsResponse.status}, error: ${await registryToolsResponse.text()}`,
+      `Failed to define Vincent App version for ${appId}. Either specify a version in the app definition file, set the VINCENT_APP_VERSION environment variable or ensure the registry has an active version.`,
     );
+  }
+
+  const registryToolsQuery = await registryStore.dispatch(
+    vincentApiClientNode.endpoints.listAppVersionTools.initiate({
+      appId: Number(appId),
+      version: vincentAppVersion,
+    }),
+  );
+  const registryToolsData = registryToolsQuery.data;
+  if (!registryToolsData) {
+    throw new Error(`Failed to retrieve tools for Vincent App ${appId}.`);
   }
 
   let toolsObject: VincentAppTools = {};
-  registryTools.forEach((rt) => {
+  registryToolsData.forEach((rt) => {
     if (rt.isDeleted) {
       throw new Error(
         `Vincent App Version Tool ${rt.toolPackageName}@${rt.toolVersion} has been deleted from the registry`,
@@ -197,9 +155,9 @@ async function getAppDataFromRegistry(appId: string): Promise<VincentAppDef> {
 
   return {
     id: appId,
-    version: appVersion,
-    name: registryData.name,
-    description: registryData?.description,
+    version: vincentAppVersion.toString(),
+    name: registryApp.name,
+    description: registryApp?.description,
     tools: toolsObject,
   };
 }
@@ -255,9 +213,15 @@ export async function getVincentAppDef(): Promise<VincentAppDef> {
       `The Vincent App Id specified in the environment variable VINCENT_APP_ID (${VINCENT_APP_ID}) does not match the Id in ${VINCENT_APP_JSON_DEFINITION} (${jsonData.id}). Using the Id from the file...`,
     );
   }
+  if (jsonData.id && VINCENT_APP_VERSION && jsonData.version !== VINCENT_APP_VERSION) {
+    console.warn(
+      `The Vincent App version specified in the environment variable VINCENT_APP_VERSION (${VINCENT_APP_VERSION}) does not match the version in ${VINCENT_APP_JSON_DEFINITION} (${jsonData.version}). Using the version from the file...`,
+    );
+  }
 
   const vincentAppId = jsonData.id ?? (VINCENT_APP_ID as string);
-  const registryData = await getAppDataFromRegistry(vincentAppId);
+  const vincentAppVersion = jsonData.version ?? VINCENT_APP_VERSION;
+  const registryData = await getAppDataFromRegistry(vincentAppId, vincentAppVersion);
 
   const vincentAppDef = VincentAppDefSchema.parse({
     id: vincentAppId,

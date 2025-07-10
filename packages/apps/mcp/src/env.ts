@@ -36,6 +36,7 @@ export const env = createEnv({
     SIWE_NONCE_CLEAN_INTERVAL: z.coerce.number().default(ONE_HOUR),
     SIWE_NONCE_TTL: z.coerce.number().default(FIVE_MIN),
     VINCENT_APP_ID: z.string().optional(),
+    VINCENT_APP_VERSION: z.string().optional(),
     VINCENT_APP_JSON_DEFINITION: z.string().optional(),
     VINCENT_DELEGATEE_PRIVATE_KEY: z.string(),
     VINCENT_MCP_BASE_URL: z.string().optional(),
