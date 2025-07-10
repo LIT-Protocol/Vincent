@@ -32,6 +32,7 @@ const SpendingLimitPolicy = createVincentToolPolicy({
 
 export const vincentTool = createVincentTool({
   packageName: '@lit-protocol/vincent-tool-uniswap-swap' as const,
+  toolDescription: 'Performs a swap between two ERC20 tokens using Uniswap' as const,
 
   toolParamsSchema,
   supportedPolicies: supportedPoliciesForTool([SpendingLimitPolicy]),

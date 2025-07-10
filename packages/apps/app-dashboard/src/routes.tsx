@@ -55,6 +55,7 @@ import AdvancedFunctions from './pages/appId/[appId]/advanced-functions';
 import Consent from './pages/appId/[appId]/consent';
 import Delegatee from './pages/appId/[appId]/delegatee';
 import ToolPolicies from './pages/appId/[appId]/tool-policies';
+import CreateApp from './pages/create-app';
 
 const AppLayoutWithProviders = wrap(() => <Outlet />, [...AppProviders, AppLayout]);
 const UserLayoutWithProviders = wrap(() => <Outlet />, [...UserProviders, UserLayout]);
@@ -66,6 +67,10 @@ const routes: RouteObject[] = [
       {
         path: '/',
         element: <Home />,
+      },
+      {
+        path: '/create-app',
+        element: <CreateApp />,
       },
       {
         path: '/developer',

@@ -39,6 +39,8 @@
     "@rainbow-me/rainbowkit": "^2.2.3",
     "@reduxjs/toolkit": "^2.8.2",
     "@reown/walletkit": "1.2.6",
+    "@sentry/react": "^9.36.0",
+    "@sentry/vite-plugin": "^3.5.0",
     "@simplewebauthn/browser": "^13.1.0",
     "@stytch/react": "^19.4.4",
     "@stytch/vanilla-js": "^5.22.6",

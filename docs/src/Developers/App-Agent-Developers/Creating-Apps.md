@@ -5,14 +5,6 @@ title: Creating Vincent Apps
 
 # How a Vincent App Works
 
-<div class="box warning-box">
-  <p class="box-title warning-box-title">
-    <span class="box-icon warning-icon">Warning</span> Vincent is in Alpha
-  </p>
-  <p>The Vincent App Registry is under active development and is subject to change.</p>
-  <p>Vincent Apps and their registered delegations created during the Alpha phase <strong>will not persist</strong> after the App Registry is finalized.</p>
-</div>
-
 <div class="box info-box">
   <p class="box-title info-box-title">
     <span class="box-icon info-icon">Info</span> Note
