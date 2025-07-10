@@ -6,6 +6,7 @@ import { StatusMessage } from '@/components/shared/ui/statusMessage';
 import { useAddressCheck } from '@/hooks/developer-dashboard/app/useAddressCheck';
 import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
 import Loading from '@/components/layout/Loading';
+import { PublishAppVersionWrapper } from './PublishAppVersionWrapper';
 
 export function AppVersionDetailWrapper() {
   const { appId, versionId } = useParams<{ appId: string; versionId: string }>();
@@ -192,6 +193,7 @@ export function AppVersionDetailWrapper() {
               <Trash2 className="h-4 w-4" />
               Delete Version
             </button>
+            <PublishAppVersionWrapper />
           </div>
         </div>
       </div>

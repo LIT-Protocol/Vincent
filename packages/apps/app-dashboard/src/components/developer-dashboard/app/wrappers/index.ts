@@ -14,6 +14,7 @@ import { UndeleteAppVersionButton } from './ui/UndeleteAppVersionButton';
 import { DeleteAppVersionToolButton } from './ui/DeleteAppToolVersionButton';
 import { UndeleteAppVersionToolButton } from './ui/UndeleteAppVersionToolButton';
 import { AppsWrapper } from './AppsWrapper';
+import { PublishAppVersionButton } from './ui/PublishAppVersionButton';
 
 export {
   AppOverviewWrapper,
@@ -32,4 +33,5 @@ export {
   UndeleteAppVersionButton,
   UndeleteAppVersionToolButton,
   AppsWrapper,
+  PublishAppVersionButton,
 };
