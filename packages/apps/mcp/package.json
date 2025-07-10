@@ -41,15 +41,15 @@
     "cors": "^2.8.5",
     "ethers": "^5.8.0",
     "express": "^5.1.0",
+    "npx-import": "^1.1.4",
     "siwe": "^3.0.0",
     "tslib": "^2.8.1",
-    "which": "^5.0.0",
     "zod": "^3.25.64"
   },
   "devDependencies": {
+    "@lit-protocol/vincent-tool-sdk": "workspace:*",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.1",
-    "@types/which": "^3.0.4",
     "tsx": "^4.19.4"
   }
 }

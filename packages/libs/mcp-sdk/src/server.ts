@@ -15,6 +15,7 @@ import {
   ServerNotification,
 } from '@modelcontextprotocol/sdk/types.js';
 import { Signer } from 'ethers';
+import { npxImport } from 'npx-import';
 import { type ZodRawShape } from 'zod';
 
 import { buildMcpToolName, VincentAppDef, VincentAppDefSchema } from './definitions';
@@ -50,11 +51,17 @@ async function registerVincentTools(
   server: McpServer,
   config: DelegationMcpServerConfig
 ) {
+  const packagesToInstall = Object.entries(vincentAppDef.tools).map(([toolNpmName, pkgInfo]) => {
+    return `${toolNpmName}@${pkgInfo.version}`;
+  });
+  const toolsPkgs = (await npxImport(packagesToInstall)) as any[];
+
   const { delegateeSigner, delegatorPkpEthAddress } = config;
 
   for (const [toolPackage, toolData] of Object.entries(vincentAppDef.tools)) {
-    // Imports the tool pkg and gets its exported data, most notable the bundled code and their params schema.
-    const tool = require(toolPackage); // import cannot find the pkgs just installed as they were not there when the process started
+    const tool = toolsPkgs.find(
+      (tool) => toolPackage === tool.bundledVincentTool.vincentTool.packageName
+    );
 
     const bundledVincentTool = tool.bundledVincentTool;
     const { vincentTool } = bundledVincentTool;
