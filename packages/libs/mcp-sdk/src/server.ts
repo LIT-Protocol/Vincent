@@ -81,8 +81,18 @@ async function registerVincentTools(
         const precheckResult = await toolClient.precheck(args, {
           delegatorPkpEthAddress: delegatorPkpEthAddress!,
         });
-        if (!precheckResult.success) {
-          throw new Error(JSON.stringify(precheckResult.result, null, 2));
+        if ('error' in precheckResult || !precheckResult.success) {
+          throw new Error(
+            JSON.stringify(
+              {
+                success: precheckResult.success,
+                error: precheckResult.error,
+                result: precheckResult.result,
+              },
+              null,
+              2
+            )
+          );
         }
 
         const executeResult = await toolClient.execute(args, {
