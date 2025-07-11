@@ -40,7 +40,7 @@ const ERC20_ABI = [
  * @param chainId - The chain ID as a string
  * @returns The chain configuration data
  * @throws Error if Lit does not support the chain
- * @internal
+ * @hidden
  */
 function getLitSupportedChainData(chainId: number) {
   const litSupportedChain = Object.values(LIT_EVM_CHAINS).find(

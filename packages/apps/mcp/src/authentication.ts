@@ -56,15 +56,16 @@ export async function authenticateWithSiwe(
   signature: string,
 ): Promise<string> {
   const siweMsg = new SiweMessage(messageToSign);
-  const verification = await siweMsg.verify({ signature });
+  const verification = await siweMsg.verify({ domain: VINCENT_MCP_BASE_URL, signature });
 
-  const { address, domain, nonce, uri } = verification.data;
+  const { address, expirationTime, issuedAt, nonce, uri } = verification.data;
 
   if (
     !verification.success ||
+    !issuedAt ||
+    !expirationTime ||
     !nonceManager.consumeNonce(address, nonce) ||
-    // @ts-expect-error Env var is defined or this module would have thrown
-    domain !== new URL(VINCENT_MCP_BASE_URL).host || // Env var is defined or this module would have thrown
+    new Date(issuedAt).getTime() + SIWE_EXPIRATION_TIME >= new Date(expirationTime).getTime() ||
     uri !== EXPECTED_AUDIENCE
   ) {
     throw new Error('SIWE message verification failed');
