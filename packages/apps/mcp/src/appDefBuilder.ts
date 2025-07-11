@@ -142,6 +142,20 @@ async function getAppDataFromRegistry(
     );
   }
 
+  const vincentAppVersionQuery = await registryStore.dispatch(
+    vincentApiClientNode.endpoints.getAppVersion.initiate({
+      appId: Number(appId),
+      version: vincentAppVersion,
+    }),
+  );
+  const vincentAppVersionData = vincentAppVersionQuery.data;
+  if (!vincentAppVersionData) {
+    throw new Error(`Failed to retrieve Vincent App version data for Vincent App ${appId}.`);
+  }
+  if (!vincentAppVersionData.enabled) {
+    throw new Error(`Vincent App Version ${vincentAppVersion} is not enabled in the registry.`);
+  }
+
   const registryToolsQuery = await registryStore.dispatch(
     vincentApiClientNode.endpoints.listAppVersionTools.initiate({
       appId: Number(appId),
