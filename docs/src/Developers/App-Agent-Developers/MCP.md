@@ -20,6 +20,7 @@ The first step is to convert your Vincent App into an MCP server. This is done b
 ```typescript
 import { ethers } from 'ethers';
 import { getVincentAppServer, VincentAppDef } from '@lit-protocol/vincent-mcp-sdk';
+import { bundledVincentTool } from '@organization/npm-published-vincent-too';
 
 // Create a signer using your Vincent App delegatee private key
 const provider = new ethers.providers.JsonRpcProvider(
@@ -36,17 +37,15 @@ const appDef: VincentAppDef = {
   tools: {
     '@organization/npm-published-vincent-tool': {
       version: '1.0.0',
+      bundledVincentTool: bundledVincentTool,
       name: 'myTool',
       description: 'A tool that does something',
-      parameters: [
-        {
-          name: 'param1',
-          type: 'string',
+      parameters: {
+        param1: {
           description: 'A parameter that is used in the tool to do something',
-          optional: true,
         },
         // Add more parameters here
-      ],
+      },
     },
     // Add the other tools in your Vincent App here
   },
@@ -61,9 +60,9 @@ const server = await getVincentAppServer(wallet, appDef);
 At this moment you can add more tools, resources or prompts to the server.
 
 ```typescript
-server.tool(...);
-server.resource(...);
-server.prompt(...);
+server.tool(/*...*/);
+server.resource(/*...*/);
+server.prompt(/*...*/);
 ```
 
 These tools, resources and prompts will be exposed in the server along with the ones from the Vincent App definition. Consider adding any other tools that you want to be executed by the LLM and that are not Vincent Tools. For example, you could add tools to query balance or fetch useful data from external sources.
@@ -123,6 +122,8 @@ For an already working MCP Server that simply wraps your Vincent App you can che
 
 This MCP Server includes:
 
+- Running as `npx` commands directly from NPM
+- Automatic tool installation using `npx-import`. No local installation needed
 - HTTP and STDIO transports
 - `.env` file support for environment definition
 - App definition overriding with a custom JSON file to refine descriptions and filter tools to be exposed to LLMs

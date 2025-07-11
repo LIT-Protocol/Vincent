@@ -69,7 +69,7 @@ async function buildRegistryVincentTools(
   const packagesToInstall = Object.entries(tools).map(([toolNpmName, pkgInfo]) => {
     return `${toolNpmName}@${pkgInfo.version}`;
   });
-  const toolsPkgs = await npxImport<ToolPackage[]>(packagesToInstall); // TODO: add a type for the exposed object, in tools-sdk
+  const toolsPkgs = await npxImport<ToolPackage[]>(packagesToInstall);
 
   const toolsObject: VincentAppTools = {};
   for (const [toolPackage, toolData] of Object.entries(tools)) {

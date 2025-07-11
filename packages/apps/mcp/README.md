@@ -9,7 +9,7 @@ It leverages the `@lit-protocol/vincent-mcp-sdk` to build a server from a Vincen
 - Optional: Copy `vincent-app.example.json` to `vincent-app.json` or any other name you want and configure your Vincent App definition overrides in it. If no overrides are needed, then this file can be omitted.
 - Optional: Copy `.env.example` to `.env` and fill in the values. Use absolute paths for the `VINCENT_APP_JSON_DEFINITION` value. You can also pass them via CLI arguments when calling the script.
 
-# Writing App definition overrides in the JSON file
+# Writing App definition overrides in a JSON file
 
 Name and descriptions provided by developers in the registry might not be very descriptive to LLMs or you may want to modify them.
 
@@ -27,24 +27,24 @@ In order to override any of those values, create a `.json` file with the followi
     "vincent-tool-npm-pkg-name": {
       "name": "myTool", // Name of the tool. Defaults to npm pkg name.
       "description": "A tool that does something", // Description of the tool.
-      "parameters": [
-        {
-          "name": "param1", // Name of the param. Used to identify and apply the rest of properties.
+      "parameters": {
+        // Keys are the names of each param. Used to identify and apply the rest of properties.
+        "param1": {
           "description": "A parameter that is used in the tool to do something" // Description of the param.
         }
         // ...rest of params you want to override.
-      ]
+      }
     },
     "vincent-tool-without-overrides": {} // Empty objects mean that the tool is exposed but with default values.
   }
 }
 ```
 
-When the `tools` property is omitted, all tools from the registry will be exposed. So when overriding at least one tool, you need to specify all others that you want to still expose as MCP tools, even with empty values.
+When the `tools` property is omitted, all tools from the registry will be exposed. When overriding at least one tool, you need to specify all others that you want to still expose as MCP tools, even with empty values inside.
 
 For any value that can be overriden, consider that those are the hints the LLM uses to know how to use the tool. Therefore, those are good places to provide any information you want the LLM to know about the tool such as units, formats, examples or pre-conditions to check.
 
-Tools included in definition MUST be published in NPM and imported using their package names. Also they must be part of the Vincent App and already registered. Any tool that is not part of that specific app will fail its invocation.
+Tools included in definition MUST be published in NPM and imported using their package names. Also, they must be part of the Vincent App and recorded in the Vincent Registry. Any tool that is not part of that specific app will fail its invocation.
 
 # Running
 
@@ -66,9 +66,10 @@ When setting this in the LLM client, pass it the necessary environment variables
 
 - `VINCENT_DELEGATEE_PRIVATE_KEY`: The private key of the delegatee. This is the one you added in the Vincent App Dashboard as [an authorized signer for your app](https://docs.heyvincent.ai/documents/Quick_Start.html#:~:text=New%20App%22%20button.-,Delegatees,-%3A%20Delegatees%20are). This private key MUST be an allowed delegatee of the Vincent App.
 - (Optional) `VINCENT_APP_ID`: The Vincent App Id you want to run as an MCP Server
+- (Optional) `VINCENT_APP_VERSION`: The Vincent App Version you want to run as an MCP Server
 - (Optional) `VINCENT_APP_JSON_DEFINITION`: Path to your Vincent App overrides JSON file
 
-Either in `VINCENT_APP_ID` or in the `VINCENT_APP_JSON_DEFINITION` file, the App Id MUST be specified. So one of those values is required.
+Note: The environment MUST include the Vincent App Id, either via the `VINCENT_APP_ID` env variable or in the App definition JSON file. The version is completely optional as it will default to the latest version specified in the registry.
 
 ### HTTP mode
 
@@ -82,6 +83,7 @@ To configure runtime environment in this mode, set the following environment var
 
 - `VINCENT_DELEGATEE_PRIVATE_KEY`: The private key of the delegatee. This is the one you added in the Vincent App Dashboard as [an authorized signer for your app](https://docs.heyvincent.ai/documents/Quick_Start.html#:~:text=New%20App%22%20button.-,Delegatees,-%3A%20Delegatees%20are). This private key MUST be an allowed delegatee of the Vincent App.
 - (Optional) `VINCENT_APP_ID`: The Vincent App Id you want to run as an MCP Server
+- (Optional) `VINCENT_APP_VERSION`: The Vincent App Version you want to run as an MCP Server
 - (Optional) `VINCENT_APP_JSON_DEFINITION`: Path to your Vincent App overrides JSON file
 - `EXPECTED_AUDIENCE`: The audience that you expect JWTs to have. Vincent populates this with the redirect URLs. Likely you want this server to be one of those URLs.
 - `VINCENT_MCP_BASE_URL`: This MCP server URL. Used to generate SIWE messages and verify signatures
@@ -93,7 +95,7 @@ To configure runtime environment in this mode, set the following environment var
 - (Optional) `SIWE_NONCE_CLEAN_INTERVAL`: Defines the interval (milliseconds) that the server will use to clean unused transports. Defaults to 1 hour
 - (Optional) `SIWE_NONCE_TTL`: Defines the time (milliseconds) that a SIWE nonce will still be considered valid after it was created. Defaults to 5 minutes
 
-Either in `VINCENT_APP_ID` or in the `VINCENT_APP_JSON_DEFINITION` file, the App Id MUST be specified. So one of those values is required.
+Note: The environment MUST include the Vincent App Id, either via the `VINCENT_APP_ID` env variable or in the App definition JSON file. The version is completely optional as it will default to the latest version specified in the registry.
 
 Consider that a SIWE message must have a valid nonce, so it will become invalid after reaching the expiration time or the nonce has been discarded.
 
