@@ -64,16 +64,17 @@ async function registerVincentTools(
     });
 
     // Add available descriptions to each param
+    const toolParamsSchemaShape = { ...toolParamsSchema.shape };
     Object.entries(vincentAppToolDef.parameters || {}).forEach(([key, param]) => {
       if (param.description) {
-        toolParamsSchema.shape[key] = toolParamsSchema.shape[key].describe(param.description);
+        toolParamsSchemaShape[key] = toolParamsSchemaShape[key].describe(param.description);
       }
     });
 
     server.tool(
       buildMcpToolName(vincentAppDef, vincentAppToolDef.name || packageName),
       vincentAppToolDef.description || toolDescription || '', // First versions on the tool SDK did not have a description
-      toolParamsSchema.shape,
+      toolParamsSchemaShape,
       async (
         args: ZodRawShape,
         extra: RequestHandlerExtra<ServerRequest, ServerNotification>
