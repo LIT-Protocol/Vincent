@@ -156,13 +156,14 @@ async function getAppDataFromRegistry(
   const toolVersionsObject: VersionedVincentAppTools = {};
   registryToolsData.forEach((rt) => {
     if (rt.isDeleted) {
-      throw new Error(
-        `Vincent App Version Tool ${rt.toolPackageName}@${rt.toolVersion} has been deleted from the registry`,
+      console.warn(
+        `Vincent App Version Tool ${rt.toolPackageName}@${rt.toolVersion} has been deleted from the registry. Will not be included in the app definition.`,
       );
+    } else {
+      toolVersionsObject[rt.toolPackageName] = {
+        version: rt.toolVersion,
+      };
     }
-    toolVersionsObject[rt.toolPackageName] = {
-      version: rt.toolVersion,
-    };
   });
 
   const fullToolsObject = await buildRegistryVincentTools(toolVersionsObject);
