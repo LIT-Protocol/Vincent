@@ -61,7 +61,7 @@ async function main() {
     disconnectVincentToolClients();
 
     console.error('🛑 Vincent MCP Server has been closed.');
-    process.exit(0);
+    process.exitCode = 0;
   }
   process.once('SIGINT', gracefulShutdown);
   process.once('SIGTERM', gracefulShutdown);

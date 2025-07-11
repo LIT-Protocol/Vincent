@@ -305,7 +305,7 @@ async function startServer() {
 
     server.close(() => {
       console.log('🛑 Vincent MCP Server has been closed.');
-      process.exit(0);
+      process.exitCode = 0;
     });
   }
   process.once('SIGINT', gracefulShutdown);
