@@ -15,7 +15,6 @@ import {
   ServerNotification,
 } from '@modelcontextprotocol/sdk/types.js';
 import { Signer } from 'ethers';
-import { npxImport } from 'npx-import';
 import { type ZodRawShape } from 'zod';
 
 import { buildMcpToolName, VincentAppDef, VincentAppDefSchema } from './definitions';
@@ -51,21 +50,13 @@ async function registerVincentTools(
   server: McpServer,
   config: DelegationMcpServerConfig
 ) {
-  const packagesToInstall = Object.entries(vincentAppDef.tools).map(([toolNpmName, pkgInfo]) => {
-    return `${toolNpmName}@${pkgInfo.version}`;
-  });
-  const toolsPkgs = (await npxImport(packagesToInstall)) as any[];
-
   const { delegateeSigner, delegatorPkpEthAddress } = config;
 
-  for (const [toolPackage, toolData] of Object.entries(vincentAppDef.tools)) {
-    const tool = toolsPkgs.find(
-      (tool) => toolPackage === tool.bundledVincentTool.vincentTool.packageName
-    );
-
-    const bundledVincentTool = tool.bundledVincentTool;
-    const { vincentTool } = bundledVincentTool;
-    const { packageName, toolDescription, toolParamsSchema } = vincentTool;
+  for (const vincentAppToolDef of Object.values(vincentAppDef.tools)) {
+    const bundledVincentTool = vincentAppToolDef.bundledVincentTool;
+    const {
+      vincentTool: { packageName, toolDescription, toolParamsSchema },
+    } = bundledVincentTool;
 
     const toolClient = getVincentToolClient({
       ethersSigner: delegateeSigner,
@@ -73,15 +64,15 @@ async function registerVincentTools(
     });
 
     // Add available descriptions to each param
-    Object.entries(toolData.parameters || {}).forEach(([key, param]) => {
+    Object.entries(vincentAppToolDef.parameters || {}).forEach(([key, param]) => {
       if (param.description) {
         toolParamsSchema.shape[key] = toolParamsSchema.shape[key].describe(param.description);
       }
     });
 
     server.tool(
-      buildMcpToolName(vincentAppDef, toolData.name || packageName),
-      toolData.description || toolDescription || '',
+      buildMcpToolName(vincentAppDef, vincentAppToolDef.name || packageName),
+      vincentAppToolDef.description || toolDescription || '', // First versions on the tool SDK did not have a description
       toolParamsSchema.shape,
       async (
         args: ZodRawShape,

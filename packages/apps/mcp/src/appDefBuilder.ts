@@ -1,12 +1,12 @@
 import fs from 'node:fs';
 
-import { VincentAppDefSchema, VincentToolNpmSchema } from '@lit-protocol/vincent-mcp-sdk';
+import { VincentAppDefSchema, VincentToolDefSchema } from '@lit-protocol/vincent-mcp-sdk';
 import type {
+  BundledVincentTool,
   VincentAppDef,
   VincentAppTools,
   VincentParameter,
 } from '@lit-protocol/vincent-mcp-sdk';
-import type { BundledVincentTool, VincentTool } from '@lit-protocol/vincent-tool-sdk';
 import { nodeClient } from '@lit-protocol/vincent-registry-sdk';
 import { npxImport } from 'npx-import';
 import { z, ZodObject } from 'zod';
@@ -19,10 +19,10 @@ const { vincentApiClientNode } = nodeClient;
 
 /**
  * Zod schema for Vincent application tools defined in a JSON file.
- * This schema omits the `version` field, as it's expected to come from the registry.
+ * This schema omits the `version` and bundled action fields, as it's expected to come from the registry or loaded at runtime.
  * @hidden
  */
-const JsonVincentAppToolsSchema = z.record(VincentToolNpmSchema.omit({ version: true }));
+const JsonVincentAppToolsSchema = z.record(VincentToolDefSchema);
 
 /**
  * Zod schema for a Vincent application definition provided in a JSON file.
@@ -39,9 +39,20 @@ const JsonVincentAppSchema = VincentAppDefSchema.extend({
  */
 type JsonVincentAppTools = z.infer<typeof JsonVincentAppToolsSchema>;
 
+/**
+ * Type representing a Vincent Tool NPM package.
+ * @hidden
+ */
 type ToolPackage = {
-  bundledVincentTool: BundledVincentTool<VincentTool<any, any, any, any>>;
+  bundledVincentTool: BundledVincentTool;
 };
+
+/**
+ * Type representing a collection of Vincent application tools defined in the registry.
+ * @hidden
+ */
+type VersionedVincentAppTools = Record<string, { version: string }>;
+
 /**
  * Loads the installed tool packages and enriches the tool definitions with details from the packages.
  *
@@ -52,7 +63,9 @@ type ToolPackage = {
  * @returns {Promise<VincentAppTools>} A promise that resolves with the enriched tool definitions.
  * @hidden
  */
-async function registerVincentTools(tools: VincentAppTools): Promise<VincentAppTools> {
+async function buildRegistryVincentTools(
+  tools: VersionedVincentAppTools,
+): Promise<VincentAppTools> {
   const packagesToInstall = Object.entries(tools).map(([toolNpmName, pkgInfo]) => {
     return `${toolNpmName}@${pkgInfo.version}`;
   });
@@ -67,7 +80,8 @@ async function registerVincentTools(tools: VincentAppTools): Promise<VincentAppT
       throw new Error(`Tried to import tool ${toolPackage} but could not find it`);
     }
 
-    const { vincentTool } = tool.bundledVincentTool;
+    const { bundledVincentTool } = tool;
+    const { vincentTool } = bundledVincentTool;
     const { toolDescription, toolParamsSchema } = vincentTool;
     const paramsSchema = toolParamsSchema.shape as ZodObject<any>;
 
@@ -78,12 +92,13 @@ async function registerVincentTools(tools: VincentAppTools): Promise<VincentAppT
       };
     });
 
-    // Add name, description
+    // Add all tool fields to the object
     toolsObject[toolPackage] = {
-      name: toolPackage,
+      bundledVincentTool,
       description: toolDescription,
+      name: toolPackage,
       parameters,
-      ...toolData,
+      version: toolData.version,
     };
   }
 
@@ -139,26 +154,26 @@ async function getAppDataFromRegistry(
     throw new Error(`Failed to retrieve tools for Vincent App ${appId}.`);
   }
 
-  let toolsObject: VincentAppTools = {};
+  const toolVersionsObject: VersionedVincentAppTools = {};
   registryToolsData.forEach((rt) => {
     if (rt.isDeleted) {
       throw new Error(
         `Vincent App Version Tool ${rt.toolPackageName}@${rt.toolVersion} has been deleted from the registry`,
       );
     }
-    toolsObject[rt.toolPackageName] = {
+    toolVersionsObject[rt.toolPackageName] = {
       version: rt.toolVersion,
     };
   });
 
-  toolsObject = await registerVincentTools(toolsObject);
+  const fullToolsObject = await buildRegistryVincentTools(toolVersionsObject);
 
   return {
     id: appId,
     version: vincentAppVersion.toString(),
     name: registryApp.name,
     description: registryApp?.description,
-    tools: toolsObject,
+    tools: fullToolsObject,
   };
 }
 

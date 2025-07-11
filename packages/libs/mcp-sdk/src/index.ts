@@ -16,6 +16,7 @@ import {
   VincentToolNpmSchema,
 } from './definitions';
 import type {
+  BundledVincentTool,
   VincentAppDef,
   VincentAppTools,
   VincentParameter,
@@ -24,7 +25,14 @@ import type {
 } from './definitions';
 import { getVincentAppServer } from './server';
 
-export type { VincentAppDef, VincentAppTools, VincentParameter, VincentToolDef, VincentToolNpm };
+export type {
+  BundledVincentTool,
+  VincentAppDef,
+  VincentAppTools,
+  VincentParameter,
+  VincentToolDef,
+  VincentToolNpm,
+};
 export {
   buildMcpToolName,
   getVincentAppServer,

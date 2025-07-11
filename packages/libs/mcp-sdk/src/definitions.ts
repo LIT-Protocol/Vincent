@@ -8,6 +8,10 @@
  * @category Vincent MCP SDK
  */
 
+import type {
+  BundledVincentTool as _BundledVincentTool,
+  VincentTool,
+} from '@lit-protocol/vincent-tool-sdk';
 import { z } from 'zod';
 
 /**
@@ -66,12 +70,36 @@ export const VincentToolDefSchema = z.object({
 export type VincentToolDef = z.infer<typeof VincentToolDefSchema>;
 
 /**
+ * Type representing a bundled Vincent tool. This is a tool pkg that has been
+ * published to NPM. Check @lit-protocol/vincent-tool-sdk for more details
+ *
+ * @hidden
+ */
+export type BundledVincentTool = _BundledVincentTool<
+  VincentTool<any, any, any, any, z.ZodTypeAny, z.ZodTypeAny, z.ZodTypeAny, z.ZodTypeAny, any, any>
+>;
+
+/**
+ * Zod schema for validating a bundled Vincent tool.
+ *
+ * This schema defines the structure we need of a bundled Vincent tool.
+ *
+ * @hidden
+ */
+const BundledVincentToolSchema = z.custom<BundledVincentTool>(
+  (v): v is BundledVincentTool =>
+    typeof v === 'object' && v !== null && 'vincentTool' in v && typeof v.vincentTool === 'object',
+  { message: 'Invalid BundledVincentTool, cannot create Vincent MCP Tool from it' }
+);
+
+/**
  * Zod schema for validating Vincent tool definitions published in an NPM package
  *
  * This schema defines the structure of a tool in a NPM package.
  */
 export const VincentToolNpmSchema = VincentToolDefSchema.extend({
   version: z.string(),
+  bundledVincentTool: BundledVincentToolSchema,
 });
 
 /**
@@ -105,7 +133,7 @@ export type VincentAppTools = z.infer<typeof VincentAppToolsSchema>;
 export const VincentAppDefSchema = z.object({
   id: z.string(),
   name: z.string(),
-  description: z.string().optional(),
+  description: z.string(),
   version: z.string(),
   tools: VincentAppToolsSchema,
 });
