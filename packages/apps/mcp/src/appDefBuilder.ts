@@ -209,6 +209,10 @@ function mergeToolData(
 
   const mergedTools: VincentAppTools = {};
   Object.entries(jsonTools).forEach(([toolKey, toolValue]) => {
+    if (!registryTools[toolKey]) {
+      throw new Error(`Tool ${toolKey} from app def file not found in registry`);
+    }
+
     mergedTools[toolKey] = Object.assign({}, registryTools[toolKey], toolValue);
   });
 
