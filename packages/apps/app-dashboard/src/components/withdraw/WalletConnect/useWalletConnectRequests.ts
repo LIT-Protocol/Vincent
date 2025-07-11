@@ -214,6 +214,29 @@ async function handleSendTransaction(pkpWallet: PKPEthersWallet, methodParams: a
   await pkpWallet.setRpc(rpcUrl);
   tx.chainId = chainId;
 
+  // Check if this should be an EIP-1559 transaction and pre-populate fee fields
+  // This prevents PKPEthersWallet from creating BigNumber objects internally
+  if (!tx.gasPrice && !tx.maxFeePerGas && !tx.maxPriorityFeePerGas) {
+    try {
+      const provider = pkpWallet.provider;
+      const feeData = await provider.getFeeData();
+
+      if (feeData.maxFeePerGas && feeData.maxPriorityFeePerGas) {
+        // Convert BigNumber fee data to numbers to prevent serialization issues
+        tx.maxFeePerGas = parseInt(feeData.maxFeePerGas.toString());
+        tx.maxPriorityFeePerGas = parseInt(feeData.maxPriorityFeePerGas.toString());
+        tx.type = 2;
+      } else {
+        // Fallback to legacy gasPrice
+        if (feeData.gasPrice) {
+          tx.gasPrice = parseInt(feeData.gasPrice.toString());
+        }
+      }
+    } catch (feeError) {
+      throw new Error('Failed to fetch fee data');
+    }
+  }
+
   const isEIP1559 = tx.maxFeePerGas !== undefined || tx.maxPriorityFeePerGas !== undefined;
 
   const convertHexToNumber = (value: any) => {
