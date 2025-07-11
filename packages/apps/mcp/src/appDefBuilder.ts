@@ -54,9 +54,9 @@ type ToolPackage = {
 type VersionedVincentAppTools = Record<string, { version: string }>;
 
 /**
- * Loads the installed tool packages and enriches the tool definitions with details from the packages.
+ * Builds Tools definitions based on registry data making registry data self-sufficient for app definition
  *
- * This function dynamically requires each tool package to access its bundled information,
+ * This function dynamically imports each tool package to access its bundled information,
  * such as parameter schemas, and updates the tool definitions accordingly.
  *
  * @param {VincentAppTools} tools - The initial tool definitions, typically from the registry.
@@ -109,7 +109,6 @@ async function buildRegistryVincentTools(
  * Fetches the application definition from the Vincent Registry.
  *
  * This includes the app's metadata and the list of associated tools for the active version.
- * It authenticates with the registry using a temporary SIWE message.
  *
  * @param {string} appId - The ID of the Vincent application.
  * @param {string} appVersion - The version of the Vincent application.
