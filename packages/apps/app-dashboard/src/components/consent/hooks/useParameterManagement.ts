@@ -17,8 +17,6 @@ interface UseParameterManagementProps {
   agentPKP?: IRelayPKP;
   appInfo: AppView | null;
   onStatusChange?: (message: string, type?: 'info' | 'warning' | 'success' | 'error') => void;
-  updateState?: (state: any) => void;
-  permittedVersion: number | null;
   useCurrentVersionOnly?: boolean;
   checkingPermissions?: boolean;
   stabilityDelayMs?: number;
@@ -33,8 +31,6 @@ export const useParameterManagement = ({
   agentPKP,
   appInfo,
   onStatusChange,
-  updateState,
-  permittedVersion,
   useCurrentVersionOnly,
   checkingPermissions = false,
   stabilityDelayMs = 100,
@@ -80,7 +76,7 @@ export const useParameterManagement = ({
         );
       }
     },
-    [appId, appInfo, onStatusChange],
+    [appId, appInfo, onStatusChange, setVersionInfo],
   );
 
   /**
@@ -179,44 +175,6 @@ export const useParameterManagement = ({
   useEffect(() => {
     fetchExistingParametersRef.current = fetchExistingParameters;
   }, [fetchExistingParameters]);
-
-  useEffect(() => {
-    if (permittedVersion !== null && appId && appInfo && !versionInfo && !useCurrentVersionOnly) {
-      if (updateState) {
-        updateState({ isLoading: true });
-      }
-
-      fetchVersionInfo(permittedVersion)
-        .then(() => {
-          if (updateState) {
-            updateState({ isLoading: false });
-          }
-
-          if (existingParameters.length === 0 && !isLoadingParameters) {
-            fetchExistingParameters();
-          }
-        })
-        .catch((error) => {
-          console.error(`Error fetching version ${permittedVersion} data:`, error);
-          if (updateState) {
-            updateState({ isLoading: false });
-          }
-          onStatusChange?.('Failed to load version data', 'error');
-        });
-    }
-  }, [
-    permittedVersion,
-    appId,
-    appInfo,
-    versionInfo,
-    fetchVersionInfo,
-    fetchExistingParameters,
-    existingParameters.length,
-    isLoadingParameters,
-    updateState,
-    onStatusChange,
-    useCurrentVersionOnly,
-  ]);
 
   useEffect(() => {
     if (
