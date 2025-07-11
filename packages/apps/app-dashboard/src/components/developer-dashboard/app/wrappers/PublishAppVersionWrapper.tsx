@@ -11,7 +11,7 @@ import {
 } from '@lit-protocol/vincent-contracts-sdk';
 import { ethers } from 'ethers';
 import { PublishAppVersionButton } from './ui/PublishAppVersionButton';
-import LoadingSkeleton from '@/components/layout/LoadingSkeleton';
+import MutationButtonStates, { SkeletonButton } from '@/components/layout/MutationButtonStates';
 
 export function PublishAppVersionWrapper({ isAppRegistered }: { isAppRegistered: boolean }) {
   const { appId, versionId } = useParams<{ appId: string; versionId: string }>();
@@ -158,7 +158,7 @@ export function PublishAppVersionWrapper({ isAppRegistered }: { isAppRegistered:
     toolVersionsLoading ||
     policiesLoading
   ) {
-    return <LoadingSkeleton type="button" />;
+    return <SkeletonButton />;
   }
 
   // Error states
@@ -280,13 +280,16 @@ export function PublishAppVersionWrapper({ isAppRegistered }: { isAppRegistered:
 
   return (
     <div>
-      {publishResult?.success ? (
-        <LoadingSkeleton type="success" successMessage={publishResult.message || 'Success'} />
-      ) : publishResult && !publishResult.success ? (
-        <LoadingSkeleton type="error" errorMessage={publishResult.message || 'Failed to publish'} />
-      ) : (
-        <PublishAppVersionButton onSubmit={publishAppVersion} />
+      {publishResult && publishResult.success && (
+        <MutationButtonStates type="success" successMessage={publishResult.message || 'Success'} />
       )}
+      {publishResult && !publishResult.success && (
+        <MutationButtonStates
+          type="error"
+          errorMessage={publishResult.message || 'Failed to publish'}
+        />
+      )}
+      {!publishResult && <PublishAppVersionButton onSubmit={publishAppVersion} />}
     </div>
   );
 }

@@ -10,12 +10,14 @@ interface AppDetailsViewProps {
   selectedApp: App;
   onOpenMutation: (mutationType: string) => void;
   blockchainAppData: ContractApp | null;
+  refetchBlockchainData: () => void;
 }
 
 export function AppDetailsView({
   selectedApp,
   onOpenMutation,
   blockchainAppData,
+  refetchBlockchainData,
 }: AppDetailsViewProps) {
   const isPublished = blockchainAppData !== null;
 
@@ -43,7 +45,10 @@ export function AppDetailsView({
 
       {/* Publish Status Messages */}
       {isPublished && (
-        <StatusMessage message="This app is already published on the blockchain" type="info" />
+        <StatusMessage
+          message="This app is already registered in the on-chain Vincent Registry"
+          type="info"
+        />
       )}
 
       {/* App Management Actions */}
@@ -58,6 +63,7 @@ export function AppDetailsView({
               appId={selectedApp.appId}
               onOpenMutation={onOpenMutation}
               blockchainAppData={blockchainAppData}
+              refetchBlockchainData={refetchBlockchainData}
             />
           ) : (
             <AppUnpublishedButtons onOpenMutation={onOpenMutation} />

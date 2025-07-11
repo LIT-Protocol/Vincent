@@ -2,18 +2,20 @@ import { useEffect, useState } from 'react';
 import { Power, PowerOff } from 'lucide-react';
 import { ethers } from 'ethers';
 import { AppVersion, enableAppVersion } from '@lit-protocol/vincent-contracts-sdk';
-import LoadingSkeleton from '@/components/layout/LoadingSkeleton';
+import MutationButtonStates, { SkeletonButton } from '@/components/layout/MutationButtonStates';
 
 interface AppVersionPublishedButtonsProps {
   appId: number;
   versionId: number;
   appVersionData: AppVersion;
+  refetchBlockchainAppVersionData: () => void;
 }
 
 export function AppVersionPublishedButtons({
   appId,
   versionId,
   appVersionData,
+  refetchBlockchainAppVersionData,
 }: AppVersionPublishedButtonsProps) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -40,13 +42,17 @@ export function AppVersionPublishedButtons({
 
       setSuccess('App version toggled successfully!');
 
-      // TODO: Find a better way to do this. Our registry queries get automatic cache invalidation, so they don't need to worry about
-      // notifying the data layer with a callback or anything, but we need to since the contracts don't have caching and **need** to be the latest data.
+      // Refetch on-chain data after showing success message
       setTimeout(() => {
-        window.location.reload();
+        refetchBlockchainAppVersionData();
       }, 3000);
     } catch (error: any) {
-      setError(error.message || 'Failed to toggle app version. Please try again.');
+      // Handle user rejection gracefully
+      if (error?.message?.includes('user rejected')) {
+        setError('Transaction rejected.');
+      } else {
+        setError(error.message || 'Failed to toggle app version. Please try again.');
+      }
     } finally {
       setIsProcessing(false);
     }
@@ -62,14 +68,16 @@ export function AppVersionPublishedButtons({
   }, [error]);
 
   if (error) {
-    return <LoadingSkeleton type="error" errorMessage={error || 'Failed to toggle app version'} />;
+    return (
+      <MutationButtonStates type="error" errorMessage={error || 'Failed to toggle app version'} />
+    );
   }
 
   if (success) {
     return (
-      <LoadingSkeleton
+      <MutationButtonStates
         type="success"
-        successMessage={success || 'App version toggled successfully!'}
+        successMessage={success || 'Version updated successfully!'}
       />
     );
   }
@@ -85,7 +93,7 @@ export function AppVersionPublishedButtons({
         }`}
       >
         {isProcessing ? (
-          <LoadingSkeleton type="button" />
+          <SkeletonButton />
         ) : appVersionData.enabled ? (
           <>
             <PowerOff className="h-4 w-4" />

@@ -4,29 +4,27 @@ import { StatusMessage } from '@/components/shared/ui/statusMessage';
 import { AppVersionPublishedButtons } from '../wrappers/ui/AppVersionPublishedButtons';
 import { AppVersionUnpublishedButtons } from '../wrappers/ui/AppVersionUnpublishedButtons';
 import { App, AppVersion, AppVersionTool } from '@/types/developer-dashboard/appTypes';
-import {
-  AppVersion as ContractAppVersion,
-  App as ContractApp,
-} from '@lit-protocol/vincent-contracts-sdk';
+import { AppVersion as ContractAppVersion } from '@lit-protocol/vincent-contracts-sdk';
 
 interface AppVersionDetailViewProps {
   app: App;
   versionData: AppVersion;
   versionTools: AppVersionTool[];
-  blockchainApp: ContractApp | null;
   blockchainAppVersion: ContractAppVersion | null;
+  refetchBlockchainAppVersionData: () => void;
+  isAppRegistered: boolean;
 }
 
 export function AppVersionDetailView({
   app,
   versionData,
   versionTools,
-  blockchainApp,
   blockchainAppVersion,
+  refetchBlockchainAppVersionData,
+  isAppRegistered,
 }: AppVersionDetailViewProps) {
   const isPublished = !!blockchainAppVersion;
   const isVersionEnabled = versionData?.enabled ?? false;
-  const isAppRegistered = blockchainApp !== null;
 
   return (
     <div className="space-y-6">
@@ -39,7 +37,10 @@ export function AppVersionDetailView({
 
       {/* Publish Status Message */}
       {isPublished && (
-        <StatusMessage message="This version is already published on the blockchain" type="info" />
+        <StatusMessage
+          message="This app version is already registered in the on-chain Vincent Registry"
+          type="info"
+        />
       )}
 
       {/* Version Management Card */}
@@ -72,6 +73,7 @@ export function AppVersionDetailView({
               appId={versionData.appId}
               versionId={versionData.version}
               appVersionData={blockchainAppVersion}
+              refetchBlockchainAppVersionData={refetchBlockchainAppVersionData}
             />
           ) : (
             <AppVersionUnpublishedButtons
