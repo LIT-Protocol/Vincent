@@ -795,9 +795,6 @@ importers:
       '@lit-protocol/vincent-app-sdk':
         specifier: workspace:*
         version: link:../app-sdk
-      '@lit-protocol/vincent-tool-sdk':
-        specifier: workspace:*
-        version: link:../tool-sdk
       '@modelcontextprotocol/sdk':
         specifier: ^1.12.1
         version: 1.13.0
@@ -810,6 +807,10 @@ importers:
       zod:
         specifier: 3.25.64
         version: 3.25.64
+    devDependencies:
+      '@lit-protocol/vincent-tool-sdk':
+        specifier: workspace:*
+        version: link:../tool-sdk
 
   packages/libs/registry-sdk:
     dependencies:
