@@ -199,8 +199,8 @@ importers:
         specifier: 0.1.1-6
         version: 0.1.1-6(@walletconnect/modal@2.7.0(@types/react@19.1.8)(react@19.1.0))(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
       '@lit-protocol/vincent-registry-sdk':
-        specifier: ^3.3.2
-        version: 3.3.2(react-redux@9.2.0(@types/react@19.1.8)(react@19.1.0)(redux@5.0.1))(react@19.1.0)
+        specifier: workspace:*
+        version: link:../../libs/registry-sdk
       '@radix-ui/react-checkbox':
         specifier: ^1.2.3
         version: 1.3.2(@types/react-dom@19.1.6(@types/react@19.1.8))(@types/react@19.1.8)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -2390,9 +2390,6 @@ packages:
 
   '@lit-protocol/vincent-contracts-sdk@0.1.1-6':
     resolution: {integrity: sha512-nNq6pzbzT46ekFfqH4YrtoqBKHG8hK7pXST7/mVTglwWgdWw3R+Yt48h1JPHqNJOmk6oPBMJ+q/mhLEZdPRrUw==}
-
-  '@lit-protocol/vincent-registry-sdk@3.3.2':
-    resolution: {integrity: sha512-58KaseVNW/+NpDPFR6TwxaB1cZyP/EHuGxF3gxnoWoyZo24ZNU1rV02vwpOkVWvNw1Vnc0gFX+k7i08nyEuVJg==}
 
   '@lit-protocol/vincent-tool-sdk@1.0.1':
     resolution: {integrity: sha512-wSGlLCFnL/uTqWnK3N4pQvOhPniKTG1Te3UAs+lOj+hjiiFfDQ7WPpTMqEZ7koMz8Xviq4bZTCeMOPdX5exFvA==}
@@ -13825,16 +13822,6 @@ snapshots:
       - typescript
       - uploadthing
       - utf-8-validate
-
-  '@lit-protocol/vincent-registry-sdk@3.3.2(react-redux@9.2.0(@types/react@19.1.8)(react@19.1.0)(redux@5.0.1))(react@19.1.0)':
-    dependencies:
-      '@asteasolutions/zod-to-openapi': 7.3.4(zod@3.25.64)
-      '@reduxjs/toolkit': 2.8.2(react-redux@9.2.0(@types/react@19.1.8)(react@19.1.0)(redux@5.0.1))(react@19.1.0)
-      tslib: 2.8.1
-      zod: 3.25.64
-    transitivePeerDependencies:
-      - react
-      - react-redux
 
   '@lit-protocol/vincent-tool-sdk@1.0.1(bufferutil@4.0.9)(utf-8-validate@5.0.10)':
     dependencies:

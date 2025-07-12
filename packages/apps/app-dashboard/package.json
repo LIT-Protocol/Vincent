@@ -23,7 +23,7 @@
     "@lit-protocol/types": "^7.0.8",
     "@lit-protocol/vincent-app-sdk": "1.0.1",
     "@lit-protocol/vincent-contracts-sdk": "0.1.1-6",
-    "@lit-protocol/vincent-registry-sdk": "^3.3.2",
+    "@lit-protocol/vincent-registry-sdk": "workspace:*",
     "@radix-ui/react-checkbox": "^1.2.3",
     "@radix-ui/react-dialog": "^1.1.6",
     "@radix-ui/react-dropdown-menu": "^2.1.12",
