@@ -2298,6 +2298,9 @@ packages:
   '@lit-protocol/access-control-conditions@7.2.0':
     resolution: {integrity: sha512-pET0l1lmpg1lgvRHZAiOhVk1qci4yvsArK/OMemsqkm1GC6b47Pqn9HkKMi7Hm8OiDhLrva635hQy7Hz5KZqag==}
 
+  '@lit-protocol/accs-schemas@0.0.24':
+    resolution: {integrity: sha512-sjUfMAc8kj/Tj/GAFnlrbvs9PzoSK5wR3L1hK4kFI6lifq31LsDGqNLWmIEDXRubE/YusK5QaY30h+WPgk8RFQ==}
+
   '@lit-protocol/accs-schemas@0.0.26':
     resolution: {integrity: sha512-njLWohavO/xuqIlH3K6+kbAuF1bNLbKVATX7laD084/BiH84O4Ws+JtAp8qbEyY9OJNXrB7OJl5vMnuwgc2vdA==}
 
@@ -2315,6 +2318,9 @@ packages:
 
   '@lit-protocol/auth-helpers@7.2.0':
     resolution: {integrity: sha512-mG3/cZ6cvNhWiPOXxwX1Wr7x8UOUmH/xWU4O07EDJapdr1MhMrzUm/UzPVVTjwD/BlD9R5X7A4sMulzVglRAiw==}
+
+  '@lit-protocol/constants@7.0.16-custom-logger':
+    resolution: {integrity: sha512-T6zcXR7HTkGFzGmk2f4WTCio7+XaBed74f3Agdy6ZsIPlYdxvnyUJFaVvaT3M2tr6a2EqOO49IPhNOY5FC0ArQ==}
 
   '@lit-protocol/constants@7.1.3-eip1559':
     resolution: {integrity: sha512-Z5wjzxJ2w16SWtkfwaSCx7xkS1ugETtjJtqHYhDh04LAaaQirzc7EEzN/qxXmSwm2M9zvUa09u2LjuOI2Rn71A==}
@@ -2370,6 +2376,9 @@ packages:
   '@lit-protocol/lit-node-client@7.2.0':
     resolution: {integrity: sha512-o8c1bamNHK5T3SMj1imW3Wgu781/VXvE3b2d+h5WfDqLnr1JNPTmeasEEnWNcHs2hXAIpCbEAtEQ174y1DYr1g==}
 
+  '@lit-protocol/logger@7.0.16-custom-logger':
+    resolution: {integrity: sha512-2YrpkMJkGZs+xGmqTc88xnO8dWGSCoKlYYH7eBXWGUFR7UVNYvLg3K3E06uF+Nl4Vh9W9bpLMCAshdbYjBE9JA==}
+
   '@lit-protocol/logger@7.1.3-eip1559':
     resolution: {integrity: sha512-WDItdqY07tP89lQ3ekd/jy+sEvMtW5neeW14zKn32c9cUSWYuKTLwLKVpvPl5MAmxgv8vIX+dTuyzJShOqfZ4g==}
 
@@ -2405,6 +2414,9 @@ packages:
 
   '@lit-protocol/pkp-ethers@7.2.0':
     resolution: {integrity: sha512-3n8jEILyXqSzZqEbSUaV5siNzFFAxvtywraIGvR8c/FRhRBKFSuYMCVlx1/4Sc59GcLLIPZ5PXlUK5aZDj5s5Q==}
+
+  '@lit-protocol/types@7.0.16-custom-logger':
+    resolution: {integrity: sha512-EXbjaf0sJEVP63hGm3nXrJddUPvt4l6yGp+YPN7qYSpcUWCDFkSFZh+/KwEztZP5JUsMNC5+yIWEH6aNiZwHhg==}
 
   '@lit-protocol/types@7.1.3-eip1559':
     resolution: {integrity: sha512-BckE1SBDUFjiYMz5GSYpnDRIJ5UWaQDTh5TkOQR77JOnYhNMjQX9OhDMTYepF9l1O0RdyiDV6kQOKrNqPdp/qw==}
@@ -12822,6 +12834,10 @@ snapshots:
       - typescript
       - utf-8-validate
 
+  '@lit-protocol/accs-schemas@0.0.24':
+    dependencies:
+      ajv: 8.17.1
+
   '@lit-protocol/accs-schemas@0.0.26':
     dependencies:
       ajv: 8.17.1
@@ -12931,6 +12947,22 @@ snapshots:
       siwe-recap: 0.0.2-alpha.0(ethers@5.8.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))
       tslib: 1.14.1
       util: 0.12.5
+    transitivePeerDependencies:
+      - bufferutil
+      - typescript
+      - utf-8-validate
+
+  '@lit-protocol/constants@7.0.16-custom-logger(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)':
+    dependencies:
+      '@ethersproject/abstract-provider': 5.8.0
+      '@lit-protocol/accs-schemas': 0.0.24
+      '@lit-protocol/contracts': 0.0.74(typescript@5.8.3)
+      '@lit-protocol/types': 7.0.16-custom-logger(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+      '@openagenda/verror': 3.1.4
+      depd: 2.0.0
+      ethers: 5.8.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+      siwe: 2.3.2(ethers@5.8.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))
+      tslib: 1.14.1
     transitivePeerDependencies:
       - bufferutil
       - typescript
@@ -13474,6 +13506,23 @@ snapshots:
       - uploadthing
       - utf-8-validate
 
+  '@lit-protocol/logger@7.0.16-custom-logger(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)':
+    dependencies:
+      '@ethersproject/abstract-provider': 5.8.0
+      '@lit-protocol/accs-schemas': 0.0.24
+      '@lit-protocol/constants': 7.0.16-custom-logger(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
+      '@lit-protocol/contracts': 0.0.74(typescript@5.8.3)
+      '@lit-protocol/types': 7.0.16-custom-logger(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+      '@openagenda/verror': 3.1.4
+      depd: 2.0.0
+      ethers: 5.8.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+      siwe: 2.3.2(ethers@5.8.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))
+      tslib: 1.14.1
+    transitivePeerDependencies:
+      - bufferutil
+      - typescript
+      - utf-8-validate
+
   '@lit-protocol/logger@7.1.3-eip1559(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)':
     dependencies:
       '@ethersproject/abstract-provider': 5.7.0
@@ -13916,6 +13965,18 @@ snapshots:
       - supports-color
       - typescript
       - uploadthing
+      - utf-8-validate
+
+  '@lit-protocol/types@7.0.16-custom-logger(bufferutil@4.0.9)(utf-8-validate@5.0.10)':
+    dependencies:
+      '@ethersproject/abstract-provider': 5.8.0
+      '@lit-protocol/accs-schemas': 0.0.24
+      depd: 2.0.0
+      ethers: 5.8.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+      siwe: 2.3.2(ethers@5.8.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))
+      tslib: 1.14.1
+    transitivePeerDependencies:
+      - bufferutil
       - utf-8-validate
 
   '@lit-protocol/types@7.1.3-eip1559(bufferutil@4.0.9)(utf-8-validate@5.0.10)':
