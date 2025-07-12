@@ -23,6 +23,10 @@ export function AppDetailsView({
   const isPublished = blockchainAppData !== null;
   const isDeleted = blockchainAppData?.isDeleted;
 
+  const delegateeAddresses = isPublished
+    ? blockchainAppData.delegatees
+    : selectedApp.delegateeAddresses;
+
   return (
     <div className="space-y-6">
       <div className="flex items-start justify-between">
@@ -127,10 +131,10 @@ export function AppDetailsView({
                 </AppDetail>
               )}
 
-              {selectedApp.delegateeAddresses && selectedApp.delegateeAddresses.length > 0 && (
+              {delegateeAddresses && delegateeAddresses.length > 0 && (
                 <AppDetail label="Delegatee Addresses">
                   <div className="space-y-1">
-                    {selectedApp.delegateeAddresses.map((address) => (
+                    {delegateeAddresses.map((address) => (
                       <div key={address}>
                         <span className="inline-block bg-blue-50 text-blue-700 px-2 py-1 rounded text-sm">
                           {address}
