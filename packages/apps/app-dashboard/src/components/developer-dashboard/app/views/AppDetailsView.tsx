@@ -48,7 +48,7 @@ export function AppDetailsView({
       {/* Publish Status Messages */}
       {isPublished && (
         <StatusMessage
-          message="This app is already registered in the on-chain Vincent Registry."
+          message="This app is registered in the on-chain Vincent Registry."
           type="info"
         />
       )}
