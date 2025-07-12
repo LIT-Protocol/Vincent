@@ -16,7 +16,7 @@ import { UndeleteAppVersionToolButton } from './ui/UndeleteAppVersionToolButton'
 import { AppsWrapper } from './AppsWrapper';
 import { PublishAppVersionButton } from './ui/PublishAppVersionButton';
 import { EditPublishedAppWrapper } from './EditPublishedAppWrapper';
-//import { ManageDelegateesWrapper } from './ManageDelegateesWrapper';
+import { ManageDelegateesWrapper } from './ManageDelegateesWrapper';
 
 export {
   AppOverviewWrapper,
@@ -37,5 +37,5 @@ export {
   AppsWrapper,
   PublishAppVersionButton,
   EditPublishedAppWrapper,
-  //ManageDelegateesWrapper,
+  ManageDelegateesWrapper,
 };

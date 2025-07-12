@@ -19,7 +19,7 @@ import {
   DeleteAppWrapper,
   CreateAppWrapper,
   DeleteAppVersionWrapper,
-  //ManageDelegateesWrapper,
+  ManageDelegateesWrapper,
 } from './components/developer-dashboard/app/wrappers';
 
 import {
@@ -101,12 +101,10 @@ const routes: RouteObject[] = [
             path: 'appId/:appId/edit-app',
             element: <EditAppWrapper />,
           },
-          /*
           {
             path: 'appId/:appId/manage-delegatees',
             element: <ManageDelegateesWrapper />,
           },
-          */
           {
             path: 'appId/:appId/delete-app',
             element: <DeleteAppWrapper />,
