@@ -4,17 +4,12 @@
     "outDir": "./dist",
     "declaration": true,
     "types": [],
-    "skipLibCheck": true,
-    "resolveJsonModule": true,
-    "esModuleInterop": true,
-    "composite": true
+    "skipLibCheck": true
   },
-  "include": ["src/**/*", "abis/**/*"],
-  "exclude": ["**/*.spec.ts", "**/*.test.ts"],
-  "files": [
-    "abis/VincentAppFacet.abi.json",
-    "abis/VincentAppViewFacet.abi.json",
-    "abis/VincentUserFacet.abi.json",
-    "abis/VincentUserViewFacet.abi.json"
+  "include": ["src/**/*"],
+  "exclude": [
+    "**/*.spec.ts",
+    "**/*.test.ts",
+    "src/networks/vDatil/shared/VincentChainClient/apis/rawContractApis/testContext.ts"
   ]
 }

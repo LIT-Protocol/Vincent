@@ -27,7 +27,6 @@ import { ToolConfigLifecycleFunction, VincentToolConfig } from './toolConfig/typ
  *```typescript
  * const exampleSimpleTool = createVincentTool({
  *     packageName: '@lit-protocol/yestool@1.0.0',
- *     toolDescription: 'Yes Tool description',
  *     toolParamsSchema: testSchema,
  *     supportedPolicies: supportedPoliciesForTool([testPolicy]),
  *
@@ -223,7 +222,6 @@ export function createVincentTool<
 
   return {
     packageName: ToolConfig.packageName,
-    toolDescription: ToolConfig.toolDescription,
     execute,
     precheck,
     supportedPolicies: ToolConfig.supportedPolicies,

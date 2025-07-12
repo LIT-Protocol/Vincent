@@ -44,8 +44,6 @@ export type VincentToolConfig<
   >,
 > = {
   packageName: string;
-  toolDescription: string;
-
   toolParamsSchema: ToolParamsSchema;
   supportedPolicies: PolicyMap;
 

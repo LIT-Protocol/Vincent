@@ -19,7 +19,7 @@ export function AppPublishedDeletedButtons({
   const [success, setSuccess] = useState<string | null>(null);
 
   const handleToggleUndeleteApp = async () => {
-    setError(null); // Clear any previous errors
+    setError(null); // Clear any previous errors!
     setIsProcessing(true);
 
     try {

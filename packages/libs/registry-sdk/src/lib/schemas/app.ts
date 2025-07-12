@@ -69,21 +69,6 @@ const app = z
         example: ['https://myapp.example.com', 'https://myapp.example.com/subpage'],
       })
       .optional(),
-    delegateeAddresses: z
-      .array(z.string().regex(/^0x[a-fA-F0-9]{40}$/))
-      .refine((addresses) => new Set(addresses).size === addresses.length, {
-        message: 'Delegatee addresses must be unique',
-      })
-      .openapi({
-        uniqueItems: true,
-        description:
-          "Addresses responsible for executing the app's operations on behalf of Vincent App Users",
-        example: [
-          '0x123456789012345678901234567890123456abcd',
-          '0x1234567890123456789012345678901234561234',
-        ],
-      })
-      .optional(),
     deploymentStatus: z.enum(['dev', 'test', 'prod']).optional().openapi({
       description: 'Identifies if an application is in development, test, or production.',
       example: 'dev',
@@ -102,16 +87,8 @@ const app = z
 
 // Avoiding using z.omit() or z.pick() due to excessive TS type inference costs
 function buildCreateAppSchema() {
-  const {
-    name,
-    deploymentStatus,
-    description,
-    contactEmail,
-    appUserUrl,
-    logo,
-    redirectUris,
-    delegateeAddresses,
-  } = app.shape;
+  const { name, deploymentStatus, description, contactEmail, appUserUrl, logo, redirectUris } =
+    app.shape;
 
   return z
     .object({
@@ -123,7 +100,6 @@ function buildCreateAppSchema() {
           appUserUrl,
           logo,
           redirectUris,
-          delegateeAddresses,
         })
         .partial()
         .strict().shape,
@@ -145,7 +121,6 @@ function buildEditAppSchema() {
     contactEmail,
     activeVersion,
     redirectUris,
-    delegateeAddresses,
     name,
     description,
     deploymentStatus,
@@ -164,7 +139,6 @@ function buildEditAppSchema() {
           appUserUrl,
           logo,
           redirectUris,
-          delegateeAddresses,
           deploymentStatus,
           activeVersion,
         })

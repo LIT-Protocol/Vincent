@@ -147,9 +147,6 @@ const toolParamsSchema = z.object({
 });
 
 export const myTokenSwapTool = createVincentTool({
-  packageName: 'tokenswaptool',
-  toolDescription: 'Token Swap Tool',
-
   toolParamsSchema,
 
   supportedPolicies: [
