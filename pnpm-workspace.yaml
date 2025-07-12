@@ -2,6 +2,7 @@ packages:
   - packages/libs/*
   - packages/apps/*
 onlyBuiltDependencies:
+  - '@sentry/cli'
   - '@swc/core'
   - '@tailwindcss/oxide'
   - bufferutil

@@ -15,6 +15,7 @@ const AppSchema = new Schema(
       required: true,
       enum: ['dev', 'prod', 'test'],
     },
+    delegateeAddresses: [{ type: String }],
     managerAddress: { type: String, required: true },
     isDeleted: { type: Boolean, default: false, index: true },
   } as const,

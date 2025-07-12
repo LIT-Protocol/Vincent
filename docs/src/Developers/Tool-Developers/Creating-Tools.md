@@ -26,6 +26,9 @@ The following is the basic structure of a Vincent Tool definition:
 
 ```typescript
 export const vincentTool = createVincentTool({
+  packageName: 'tool-pkg-name',
+  toolDescription: 'What this tool does',
+
   toolParamsSchema,
 
   supportedPolicies: supportedPoliciesForTool([]),
