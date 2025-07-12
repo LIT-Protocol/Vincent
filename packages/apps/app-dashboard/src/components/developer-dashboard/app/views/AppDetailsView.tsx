@@ -1,14 +1,32 @@
 import { App } from '@/types/developer-dashboard/appTypes';
+import { App as ContractApp } from '@lit-protocol/vincent-contracts-sdk';
 import { AppDetail } from '@/components/developer-dashboard/ui/AppDetail';
 import { Logo } from '@/components/shared/ui/Logo';
-import { Edit, Plus, Trash2 } from 'lucide-react';
+import { StatusMessage } from '@/components/shared/ui/statusMessage';
+import { AppPublishedButtons } from '../wrappers/ui/AppPublishedButtons';
+import { AppUnpublishedButtons } from '../wrappers/ui/AppUnpublishedButtons';
+import { AppPublishedDeletedButtons } from '../wrappers/ui/AppPublishedDeletedButtons';
 
 interface AppDetailsViewProps {
   selectedApp: App;
   onOpenMutation: (mutationType: string) => void;
+  blockchainAppData: ContractApp | null;
+  refetchBlockchainData: () => void;
 }
 
-export function AppDetailsView({ selectedApp, onOpenMutation }: AppDetailsViewProps) {
+export function AppDetailsView({
+  selectedApp,
+  onOpenMutation,
+  blockchainAppData,
+  refetchBlockchainData,
+}: AppDetailsViewProps) {
+  const isPublished = blockchainAppData !== null;
+  const isDeleted = blockchainAppData?.isDeleted;
+
+  const delegateeAddresses = isPublished
+    ? blockchainAppData.delegatees
+    : selectedApp.delegateeAddresses;
+
   return (
     <div className="space-y-6">
       <div className="flex items-start justify-between">
@@ -31,6 +49,14 @@ export function AppDetailsView({ selectedApp, onOpenMutation }: AppDetailsViewPr
         </div>
       </div>
 
+      {/* Publish Status Messages */}
+      {isPublished && (
+        <StatusMessage
+          message="This app is registered in the on-chain Vincent Registry."
+          type="info"
+        />
+      )}
+
       {/* App Management Actions */}
       <div className="bg-white border rounded-lg">
         <div className="p-6 border-b border-gray-100">
@@ -38,29 +64,21 @@ export function AppDetailsView({ selectedApp, onOpenMutation }: AppDetailsViewPr
           <p className="text-gray-600 text-sm mt-1">Manage your application settings</p>
         </div>
         <div className="p-6">
-          <div className="flex flex-wrap gap-3">
-            <button
-              onClick={() => onOpenMutation('edit-app')}
-              className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
-            >
-              <Edit className="h-4 w-4" />
-              Edit App
-            </button>
-            <button
-              onClick={() => onOpenMutation('create-app-version')}
-              className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
-            >
-              <Plus className="h-4 w-4" />
-              Create App Version
-            </button>
-            <button
-              onClick={() => onOpenMutation('delete-app')}
-              className="inline-flex items-center gap-2 px-4 py-2 border border-red-200 rounded-lg text-sm font-medium text-red-600 bg-white hover:bg-red-50 transition-colors"
-            >
-              <Trash2 className="h-4 w-4" />
-              Delete App
-            </button>
-          </div>
+          {isPublished && !isDeleted ? (
+            <AppPublishedButtons
+              appId={selectedApp.appId}
+              onOpenMutation={onOpenMutation}
+              refetchBlockchainData={refetchBlockchainData}
+            />
+          ) : isPublished && isDeleted ? (
+            <AppPublishedDeletedButtons
+              appId={selectedApp.appId}
+              onOpenMutation={onOpenMutation}
+              refetchBlockchainData={refetchBlockchainData}
+            />
+          ) : (
+            <AppUnpublishedButtons onOpenMutation={onOpenMutation} />
+          )}
         </div>
       </div>
 
@@ -106,6 +124,20 @@ export function AppDetailsView({ selectedApp, onOpenMutation }: AppDetailsViewPr
                       <div key={uri}>
                         <span className="inline-block bg-blue-50 text-blue-700 px-2 py-1 rounded text-sm">
                           {uri}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </AppDetail>
+              )}
+
+              {delegateeAddresses && delegateeAddresses.length > 0 && (
+                <AppDetail label="Delegatee Addresses">
+                  <div className="space-y-1">
+                    {delegateeAddresses.map((address) => (
+                      <div key={address}>
+                        <span className="inline-block bg-blue-50 text-blue-700 px-2 py-1 rounded text-sm">
+                          {address}
                         </span>
                       </div>
                     ))}

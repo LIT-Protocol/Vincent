@@ -4,33 +4,70 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Form } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  TextField,
+  LongTextField,
+  ArrayField,
+  NumberSelectField,
+  ImageUploadField,
+} from '../../form-fields';
 import { docSchemas } from '@lit-protocol/vincent-registry-sdk';
-import { TextField, LongTextField, ArrayField, ImageUploadField } from '../../form-fields';
+import { App, AppVersion } from '@/types/developer-dashboard/appTypes';
 import { DeploymentStatusSelectField } from '../../form-fields/array/DeploymentStatusSelectField';
 
 const { appDoc } = docSchemas;
 
-const { name, description, contactEmail, appUserUrl, logo, redirectUris, deploymentStatus, delegateeAddresses } =
-  appDoc.shape;
+const {
+  name,
+  description,
+  contactEmail,
+  appUserUrl,
+  logo,
+  redirectUris,
+  deploymentStatus,
+  activeVersion,
+} = appDoc.shape;
 
-export const CreateAppSchema = z
-  .object({ name, description, contactEmail, appUserUrl, logo, redirectUris, deploymentStatus, delegateeAddresses })
+export const EditPublishedAppSchema = z
+  .object({
+    name,
+    description,
+    contactEmail,
+    appUserUrl,
+    logo,
+    redirectUris,
+    deploymentStatus,
+    activeVersion,
+  })
+  .required()
   .strict();
 
-export type CreateAppFormData = z.infer<typeof CreateAppSchema>;
+export type EditPublishedAppFormData = z.infer<typeof EditPublishedAppSchema>;
 
-interface CreateAppFormProps {
-  onSubmit: (data: CreateAppFormData) => Promise<void>;
+interface EditPublishedAppFormProps {
+  appData: App;
+  appVersions: AppVersion[];
+  onSubmit: (data: EditPublishedAppFormData) => Promise<void>;
   isSubmitting?: boolean;
 }
 
-export function CreateAppForm({ onSubmit, isSubmitting = false }: CreateAppFormProps) {
-  const form = useForm<CreateAppFormData>({
-    resolver: zodResolver(CreateAppSchema),
+export function EditPublishedAppForm({
+  appData,
+  appVersions,
+  onSubmit,
+  isSubmitting = false,
+}: EditPublishedAppFormProps) {
+  const form = useForm<EditPublishedAppFormData>({
+    resolver: zodResolver(EditPublishedAppSchema),
     defaultValues: {
-      redirectUris: [''],
-      delegateeAddresses: [''],
-      deploymentStatus: 'dev',
+      name: appData.name,
+      description: appData.description,
+      contactEmail: appData.contactEmail,
+      appUserUrl: appData.appUserUrl,
+      logo: appData.logo,
+      redirectUris: appData.redirectUris,
+      deploymentStatus: appData.deploymentStatus,
+      activeVersion: appData.activeVersion,
     },
   });
 
@@ -45,11 +82,17 @@ export function CreateAppForm({ onSubmit, isSubmitting = false }: CreateAppFormP
     formState: { errors },
   } = form;
 
+  // Create version options from appVersions, showing enabled/disabled status for all versions
+  const versionOptions = appVersions.map((version) => ({
+    value: version.version,
+    label: `Version ${version.version} (${version.enabled ? 'Enabled' : 'Disabled'})`,
+  }));
+
   return (
-    <Card className="w-full max-w-4xl mx-auto">
+    <Card className="w-full max-w-2xl mx-auto">
       <CardHeader>
-        <CardTitle>Create New App</CardTitle>
-        <CardDescription>Create a new Vincent application and select initial tools</CardDescription>
+        <CardTitle>Edit App</CardTitle>
+        <CardDescription>Update an existing application</CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -60,7 +103,6 @@ export function CreateAppForm({ onSubmit, isSubmitting = false }: CreateAppFormP
               error={errors.name?.message}
               label="App Name"
               placeholder="Enter app name"
-              required
             />
 
             <TextField
@@ -69,7 +111,6 @@ export function CreateAppForm({ onSubmit, isSubmitting = false }: CreateAppFormP
               error={errors.contactEmail?.message}
               label="Contact Email"
               placeholder="contact@example.com"
-              required
             />
 
             <LongTextField
@@ -79,7 +120,6 @@ export function CreateAppForm({ onSubmit, isSubmitting = false }: CreateAppFormP
               label="Description"
               placeholder="Describe your application"
               rows={4}
-              required
             />
 
             <TextField
@@ -88,7 +128,6 @@ export function CreateAppForm({ onSubmit, isSubmitting = false }: CreateAppFormP
               error={errors.appUserUrl?.message}
               label="App User URL"
               placeholder="https://yourapp.com"
-              required
             />
 
             <ImageUploadField
@@ -109,18 +148,6 @@ export function CreateAppForm({ onSubmit, isSubmitting = false }: CreateAppFormP
               control={control}
               label="Redirect URIs"
               placeholder="https://yourapp.com/callback"
-              required
-            />
-
-            <ArrayField
-              name="delegateeAddresses"
-              register={register}
-              error={errors.delegateeAddresses?.message}
-              errors={errors}
-              control={control}
-              label="Delegatee Addresses"
-              placeholder="0x1234567890123456789012345678901234567890"
-              required
             />
 
             <DeploymentStatusSelectField
@@ -128,8 +155,17 @@ export function CreateAppForm({ onSubmit, isSubmitting = false }: CreateAppFormP
               control={control}
             />
 
+            <NumberSelectField
+              name="activeVersion"
+              error={errors.activeVersion?.message}
+              control={control}
+              label="Active Version"
+              options={versionOptions}
+              required
+            />
+
             <Button type="submit" className="w-full" disabled={isSubmitting}>
-              {isSubmitting ? 'Creating App...' : 'Create App'}
+              Update App
             </Button>
           </form>
         </Form>

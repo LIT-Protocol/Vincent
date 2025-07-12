@@ -26,6 +26,7 @@ const {
   redirectUris,
   deploymentStatus,
   activeVersion,
+  delegateeAddresses,
 } = appDoc.shape;
 
 export const EditAppSchema = z
@@ -38,6 +39,7 @@ export const EditAppSchema = z
     redirectUris,
     deploymentStatus,
     activeVersion,
+    delegateeAddresses,
   })
   .required()
   .strict();
@@ -68,6 +70,7 @@ export function EditAppForm({
       redirectUris: appData.redirectUris,
       deploymentStatus: appData.deploymentStatus,
       activeVersion: appData.activeVersion,
+      delegateeAddresses: appData.delegateeAddresses,
     },
   });
 
@@ -148,6 +151,17 @@ export function EditAppForm({
               control={control}
               label="Redirect URIs"
               placeholder="https://yourapp.com/callback"
+            />
+
+            <ArrayField
+              name="delegateeAddresses"
+              register={register}
+              error={errors.delegateeAddresses?.message}
+              errors={errors}
+              control={control}
+              label="Delegatee Addresses"
+              placeholder="0x1234567890123456789012345678901234567890"
+              required
             />
 
             <DeploymentStatusSelectField

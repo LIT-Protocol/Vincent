@@ -33,11 +33,6 @@ export const StatusMessage = ({
     <div
       className={`flex items-center p-3 mb-4 rounded-lg text-sm leading-normal w-full transition-all min-h-[48px] opacity-100 ${classes.container}`}
     >
-      {type === 'info' && (
-        <div className="flex justify-center items-center w-5 h-5 flex-shrink-0">
-          <div className="w-[18px] h-[18px] border-2 border-blue-700 rounded-full border-t-transparent animate-spin"></div>
-        </div>
-      )}
       <span className="ml-3 transition-opacity">{message}</span>
     </div>
   );
