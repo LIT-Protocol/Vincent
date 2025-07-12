@@ -45,6 +45,7 @@ const policyB = createVincentToolPolicy({
 
 const tool = createVincentTool({
   packageName: '@lit-protocol/yestool3@1.0.0',
+  toolDescription: 'Yes Tool',
   toolParamsSchema,
   supportedPolicies: supportedPoliciesForTool([policyA, policyB] as const),
   execute: async ({ toolParams }, { policiesContext, succeed, fail }) => {

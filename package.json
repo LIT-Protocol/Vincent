@@ -18,6 +18,7 @@
   ],
   "packageManager": "pnpm@10.7.0",
   "scripts": {
+    "heroku-postbuild": "echo 'Skipping full repo build during Heroku deployment. Make sure your Procfile runs any necessary build commands.'",
     "build": "nx run-many --target=build --all",
     "test": "nx run-many --target=test --all",
     "lint": "nx run-many --target=lint --all",

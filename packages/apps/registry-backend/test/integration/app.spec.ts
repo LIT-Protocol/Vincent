@@ -26,6 +26,10 @@ describe('App API Integration Tests', () => {
     appUserUrl: 'https://example.com/app',
     logo: 'https://example.com/logo.png',
     redirectUris: ['https://example.com/callback'],
+    delegateeAddresses: [
+      '0x1234567890123456789012345678901234567890',
+      '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd',
+    ],
     // deploymentStatus: 'dev' as const,
   };
 
@@ -115,6 +119,38 @@ describe('App API Integration Tests', () => {
       expectAssertObject(data);
 
       expect(data).toHaveProperty('description', updateData.description);
+    });
+
+    it('should update delegateeAddresses', async () => {
+      const newDelegateeAddresses = [
+        '0x0000000000000000000000000000000000000001',
+        '0x0000000000000000000000000000000000000002',
+      ];
+      const updateData = {
+        delegateeAddresses: newDelegateeAddresses,
+      };
+
+      const result = await store.dispatch(
+        api.endpoints.editApp.initiate({
+          appId: testAppId!,
+          appEdit: updateData,
+        }),
+      );
+      verboseLog(result);
+      expect(result).not.toHaveProperty('error');
+
+      // Reset the API cache so we can verify the change
+      store.dispatch(api.util.resetApiState());
+
+      const getResult = await store.dispatch(api.endpoints.getApp.initiate({ appId: testAppId! }));
+
+      verboseLog(getResult);
+
+      const { data } = getResult;
+      expectAssertObject(data);
+
+      expect(data).toHaveProperty('delegateeAddresses');
+      expect(data.delegateeAddresses).toEqual(newDelegateeAddresses);
     });
   });
 

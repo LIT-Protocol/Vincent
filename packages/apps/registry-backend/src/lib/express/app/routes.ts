@@ -12,8 +12,9 @@ import { Features } from '../../../features';
 const NEW_APP_APPVERSION = 1;
 const MAX_APPID_RETRY_ATTEMPTS = 20;
 
+// App IDs are randomly selected indexes between 1000 and 10 billion to avoid huge bigNum-sized strings for appId
 function generateRandomAppId(): number {
-  return Math.floor(Math.random() * (100_000_000 - 1000)) + 1000;
+  return Math.floor(Math.random() * (10_000_000_000 - 1000)) + 1000;
 }
 
 export function registerRoutes(app: Express) {
@@ -49,6 +50,7 @@ export function registerRoutes(app: Express) {
           appUserUrl,
           logo,
           redirectUris,
+          delegateeAddresses,
         } = req.body;
 
         const triedAppIds = new Set<number>();
@@ -84,6 +86,7 @@ export function registerRoutes(app: Express) {
             logo,
             redirectUris,
             deploymentStatus,
+            delegateeAddresses,
             managerAddress: req.vincentUser.address,
           });
 

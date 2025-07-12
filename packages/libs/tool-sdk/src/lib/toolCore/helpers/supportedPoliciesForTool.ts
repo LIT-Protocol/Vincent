@@ -36,6 +36,7 @@ export type ToolPolicyMap<T extends readonly any[], PkgNames extends string> = {
  *
  * export const vincentTool = createVincentTool({
  *   packageName: '@lit-protocol/vincent-tool-uniswap-swap' as const,
+ *   description: 'Uniswap Swap Tool',
  *
  *   toolParamsSchema,
  *   supportedPolicies: supportedPoliciesForTool([SpendingLimitPolicy]),

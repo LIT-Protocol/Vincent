@@ -673,6 +673,8 @@ export type App = {
   logo?: string;
   /** Redirect URIs users can be sent to after signing up for your application (with their JWT token). */
   redirectUris?: string[];
+  /** Addresses responsible for executing the app's operations on behalf of Vincent App Users */
+  delegateeAddresses?: string[];
   /** Identifies if an application is in development, test, or production. */
   deploymentStatus?: 'dev' | 'test' | 'prod';
   /** Whether or not this App is deleted */
@@ -701,6 +703,8 @@ export type AppRead = {
   logo?: string;
   /** Redirect URIs users can be sent to after signing up for your application (with their JWT token). */
   redirectUris?: string[];
+  /** Addresses responsible for executing the app's operations on behalf of Vincent App Users */
+  delegateeAddresses?: string[];
   /** Identifies if an application is in development, test, or production. */
   deploymentStatus?: 'dev' | 'test' | 'prod';
   /** App manager's wallet address. Derived from the authorization signature provided by the creator. */
@@ -727,6 +731,8 @@ export type AppCreate = {
   logo?: string;
   /** Redirect URIs users can be sent to after signing up for your application (with their JWT token). */
   redirectUris?: string[];
+  /** Addresses responsible for executing the app's operations on behalf of Vincent App Users */
+  delegateeAddresses?: string[];
   /** The name of the application */
   name: string;
   /** Description of the application */
@@ -745,6 +751,8 @@ export type AppEdit = {
   logo?: string;
   /** Redirect URIs users can be sent to after signing up for your application (with their JWT token). */
   redirectUris?: string[];
+  /** Addresses responsible for executing the app's operations on behalf of Vincent App Users */
+  delegateeAddresses?: string[];
   /** Identifies if an application is in development, test, or production. */
   deploymentStatus?: 'dev' | 'test' | 'prod';
   /** Active version of the application */

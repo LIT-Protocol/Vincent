@@ -1,3 +1,15 @@
+## 3.3.2 (2025-07-09)
+
+### 🚀 Features
+
+- #### Add delegateeAddresses to Apps in the Registry ([1424ec10](https://github.com/LIT-Protocol/Vincent/commit/1424ec10))
+
+  - Added arrays of delegateeAddresses to the app doc, as well as its creation and editing.
+
+### ❤️ Thank You
+
+- Andrew Wisniewski
+
 ## 3.3.1 (2025-07-01)
 
 ### 🩹 Fixes

@@ -1,4 +1,0 @@
-- [x] permitAppVersion
-- [x] removeToolPolicyParameters
-- [x] setToolPolicyParameters
-- [x] unPermitAppVersion

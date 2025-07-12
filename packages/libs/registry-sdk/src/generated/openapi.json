@@ -114,6 +114,19 @@
               "https://myapp.example.com/subpage"
             ]
           },
+          "delegateeAddresses": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^0x[a-fA-F0-9]{40}$"
+            },
+            "description": "Addresses responsible for executing the app's operations on behalf of Vincent App Users",
+            "uniqueItems": true,
+            "example": [
+              "0x123456789012345678901234567890123456abcd",
+              "0x1234567890123456789012345678901234561234"
+            ]
+          },
           "name": {
             "type": "string",
             "minLength": 2,
@@ -176,6 +189,19 @@
             "example": [
               "https://myapp.example.com",
               "https://myapp.example.com/subpage"
+            ]
+          },
+          "delegateeAddresses": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^0x[a-fA-F0-9]{40}$"
+            },
+            "description": "Addresses responsible for executing the app's operations on behalf of Vincent App Users",
+            "uniqueItems": true,
+            "example": [
+              "0x123456789012345678901234567890123456abcd",
+              "0x1234567890123456789012345678901234561234"
             ]
           },
           "deploymentStatus": {
@@ -265,6 +291,19 @@
             "example": [
               "https://myapp.example.com",
               "https://myapp.example.com/subpage"
+            ]
+          },
+          "delegateeAddresses": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^0x[a-fA-F0-9]{40}$"
+            },
+            "description": "Addresses responsible for executing the app's operations on behalf of Vincent App Users",
+            "uniqueItems": true,
+            "example": [
+              "0x123456789012345678901234567890123456abcd",
+              "0x1234567890123456789012345678901234561234"
             ]
           },
           "deploymentStatus": {

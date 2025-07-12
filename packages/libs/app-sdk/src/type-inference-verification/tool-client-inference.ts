@@ -54,6 +54,7 @@ const toolParamsSchema = z.object({
 
 const tool = createVincentTool({
   packageName: '@lit-protocol/yestool3@1.0.0',
+  toolDescription: 'Yes Tool',
   toolParamsSchema,
   supportedPolicies: supportedPoliciesForTool([currencyToolPolicy, rateLimitToolPolicy]),
   execute: async ({ toolParams }, ctx) => ctx.succeed({ ok: true }),
@@ -184,6 +185,7 @@ const fullSchemaToolPolicy = createVincentToolPolicy({
 
 const fullTool = createVincentTool({
   packageName: '@lit-protocol/yestool3@1.0.0',
+  toolDescription: 'Yes Tool',
   toolParamsSchema: z.object({ count: z.number() }),
   supportedPolicies: supportedPoliciesForTool([fullSchemaToolPolicy]),
   precheck: async ({ toolParams }, ctx) => {

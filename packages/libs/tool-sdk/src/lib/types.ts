@@ -398,6 +398,7 @@ export type VincentTool<
       >,
 > = {
   packageName: string;
+  toolDescription: string;
   precheck?: PrecheckFn;
   execute: ExecuteFn;
   toolParamsSchema: ToolParamsSchema;

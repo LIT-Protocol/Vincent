@@ -269,6 +269,7 @@ const toolPrecheckFailSchema = z.object({
 // Create your tool with fully typed policies
 export const myTool = createVincentTool({
   packageName: '@lit-protocol/awesome-tool@1.0.2',
+  toolDescription: 'Awesome Tool',
   toolParamsSchema: myToolSchema,
   supportedPolicies: supportedPoliciesForTool([policy1, policy2, policy3]),
 

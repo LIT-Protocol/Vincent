@@ -4,14 +4,6 @@ title: Why Vincent?
 
 # Start Here
 
-<div class="box warning-box">
-  <p class="box-title warning-box-title">
-    <span class="box-icon warning-icon">Warning</span> Vincent is in Alpha
-  </p>
-  <p>The Vincent App Registry is under active development and is subject to change.</p>
-  <p>Vincent Apps and their registered delegations created during the Alpha phase <strong>will not persist</strong> after the App Registry is finalized.</p>
-</div>
-
 Vincent is an open-source framework powered by [Lit Protocol](https://litprotocol.com/) that empowers developers to create automated, user-controlled AI agents. With Vincent, you can build agents that automate the execution of operations across crypto networks, traditional finance (TradFi), and e-commerce platforms—all while ensuring users retain full control over their assets and data. Powered by Lit’s decentralized [key management network](https://developer.litprotocol.com/resources/how-it-works) and smart contracts, Vincent is your gateway to the future of the automated, User-Owned Web.
 
 [Demo](https://demo.heyvincent.ai/) |

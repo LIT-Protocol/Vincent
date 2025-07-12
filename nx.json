@@ -54,6 +54,7 @@
       "app-sdk",
       "mcp-sdk",
       "registry-sdk",
+      "contracts-sdk",
       "registry-backend",
       "policy-spending-limit",
       "tool-erc20-approval",

@@ -25,6 +25,7 @@ const F = z.object({ err: z.string() });
 
 export const tool_s_p = createVincentTool({
   packageName: '@lit-protocol/yestool3@1.0.0',
+  toolDescription: 'Yes Tool',
   toolParamsSchema: toolParams,
   supportedPolicies: supportedPoliciesForTool([dummyPolicy]),
   executeSuccessSchema: S,
@@ -51,6 +52,7 @@ export const tool_s_p = createVincentTool({
 
 export const tool_s_none = createVincentTool({
   packageName: '@lit-protocol/yestool3@1.0.0',
+  toolDescription: 'Yes Tool',
   toolParamsSchema: toolParams,
   supportedPolicies: supportedPoliciesForTool([dummyPolicy]),
   executeSuccessSchema: S,
@@ -76,6 +78,7 @@ export const tool_s_none = createVincentTool({
 
 export const tool_f_pf = createVincentTool({
   packageName: '@lit-protocol/yestool3@1.0.0',
+  toolDescription: 'Yes Tool',
   toolParamsSchema: toolParams,
   supportedPolicies: supportedPoliciesForTool([dummyPolicy]),
   executeFailSchema: F,
@@ -100,6 +103,7 @@ export const tool_f_pf = createVincentTool({
 
 export const tool_f_p = createVincentTool({
   packageName: '@lit-protocol/yestool3@1.0.0',
+  toolDescription: 'Yes Tool',
   toolParamsSchema: toolParams,
   supportedPolicies: supportedPoliciesForTool([dummyPolicy]),
   executeFailSchema: F,
@@ -125,6 +129,7 @@ export const tool_f_p = createVincentTool({
 
 export const tool_f_none = createVincentTool({
   packageName: '@lit-protocol/yestool3@1.0.0',
+  toolDescription: 'Yes Tool',
   toolParamsSchema: toolParams,
   supportedPolicies: supportedPoliciesForTool([dummyPolicy]),
   executeFailSchema: F,
@@ -149,6 +154,7 @@ export const tool_f_none = createVincentTool({
 
 export const tool_none_pf = createVincentTool({
   packageName: '@lit-protocol/yestool3@1.0.0',
+  toolDescription: 'Yes Tool',
   toolParamsSchema: toolParams,
   supportedPolicies: supportedPoliciesForTool([dummyPolicy]),
   precheckFailSchema: F,
@@ -173,6 +179,7 @@ export const tool_none_pf = createVincentTool({
 
 export const tool_none_p = createVincentTool({
   packageName: '@lit-protocol/yestool3@1.0.0',
+  toolDescription: 'Yes Tool',
   toolParamsSchema: toolParams,
   supportedPolicies: supportedPoliciesForTool([dummyPolicy]),
   precheckSuccessSchema: S,
