@@ -27,7 +27,7 @@ export function AppPublishedDeletedButtons({
       await provider.send('eth_requestAccounts', []);
       const signer = provider.getSigner();
 
-      // Undelete the app using contract call
+      // Undelete the app using contract call!
       await undeleteApp({
         signer: signer,
         args: {
