@@ -42,6 +42,7 @@ export function AppVersionDetailWrapper() {
     blockchainAppVersion,
     blockchainAppVersionError,
     blockchainAppVersionLoading,
+    blockchainAppData,
     isAppRegistered,
     refetch: refetchBlockchainAppVersionData,
   } = useBlockchainAppVersionData(appId, versionId);
@@ -76,6 +77,7 @@ export function AppVersionDetailWrapper() {
       versionData={versionData}
       versionTools={versionTools || []}
       blockchainAppVersion={blockchainAppVersion}
+      blockchainAppData={blockchainAppData}
       refetchBlockchainAppVersionData={refetchBlockchainAppVersionData}
       isAppRegistered={isAppRegistered}
     />

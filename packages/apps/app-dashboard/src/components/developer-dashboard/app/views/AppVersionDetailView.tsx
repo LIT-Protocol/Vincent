@@ -4,13 +4,17 @@ import { StatusMessage } from '@/components/shared/ui/statusMessage';
 import { AppVersionPublishedButtons } from '../wrappers/ui/AppVersionPublishedButtons';
 import { AppVersionUnpublishedButtons } from '../wrappers/ui/AppVersionUnpublishedButtons';
 import { App, AppVersion, AppVersionTool } from '@/types/developer-dashboard/appTypes';
-import { AppVersion as ContractAppVersion } from '@lit-protocol/vincent-contracts-sdk';
+import {
+  App as ContractApp,
+  AppVersion as ContractAppVersion,
+} from '@lit-protocol/vincent-contracts-sdk';
 
 interface AppVersionDetailViewProps {
   app: App;
   versionData: AppVersion;
   versionTools: AppVersionTool[];
   blockchainAppVersion: ContractAppVersion | null;
+  blockchainAppData: ContractApp | null;
   refetchBlockchainAppVersionData: () => void;
   isAppRegistered: boolean;
 }
@@ -20,10 +24,12 @@ export function AppVersionDetailView({
   versionData,
   versionTools,
   blockchainAppVersion,
+  blockchainAppData,
   refetchBlockchainAppVersionData,
   isAppRegistered,
 }: AppVersionDetailViewProps) {
-  const isPublished = !!blockchainAppVersion;
+  const isPublished = blockchainAppVersion !== null;
+  const isAppDeleted = blockchainAppData?.isDeleted;
   const isVersionEnabled = versionData?.enabled ?? false;
 
   return (
@@ -38,7 +44,7 @@ export function AppVersionDetailView({
       {/* Publish Status Message */}
       {isPublished && (
         <StatusMessage
-          message="This app version is already registered in the on-chain Vincent Registry"
+          message="This app version is already registered in the on-chain Vincent Registry."
           type="info"
         />
       )}
@@ -68,12 +74,17 @@ export function AppVersionDetailView({
           </div>
         </div>
         <div className="p-6 space-y-3">
-          {isPublished ? (
+          {isPublished && !isAppDeleted ? (
             <AppVersionPublishedButtons
               appId={versionData.appId}
               versionId={versionData.version}
               appVersionData={blockchainAppVersion}
               refetchBlockchainAppVersionData={refetchBlockchainAppVersionData}
+            />
+          ) : isPublished && isAppDeleted ? (
+            <StatusMessage
+              message="This app is deleted in the on-chain Vincent Registry. Please undelete the app to enable version modification."
+              type="info"
             />
           ) : (
             <AppVersionUnpublishedButtons

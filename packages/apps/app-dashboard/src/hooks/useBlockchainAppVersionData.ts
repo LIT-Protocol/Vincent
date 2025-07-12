@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { getAppVersion, getAppById, AppVersion } from '@lit-protocol/vincent-contracts-sdk';
+import { getAppVersion, getAppById, AppVersion, App } from '@lit-protocol/vincent-contracts-sdk';
 import { readOnlySigner } from '@/utils/developer-dashboard/readOnlySigner';
 
 export function useBlockchainAppVersionData(
@@ -9,6 +9,7 @@ export function useBlockchainAppVersionData(
   const [blockchainAppVersion, setBlockchainAppVersion] = useState<AppVersion | null>(null);
   const [blockchainAppVersionError, setBlockchainAppVersionError] = useState<string | null>(null);
   const [blockchainAppVersionLoading, setBlockchainAppVersionLoading] = useState(true);
+  const [blockchainAppData, setBlockchainAppData] = useState<App | null>(null);
   const [isAppRegistered, setIsAppRegistered] = useState(false);
 
   const fetchBlockchainAppVersionData = useCallback(async () => {
@@ -44,6 +45,7 @@ export function useBlockchainAppVersionData(
         },
       });
       setBlockchainAppVersion(appVersionResult.appVersion);
+      setBlockchainAppData(appVersionResult.app);
       setBlockchainAppVersionError(null);
     } catch (error: any) {
       if (
@@ -51,10 +53,12 @@ export function useBlockchainAppVersionData(
         error?.message?.includes('AppNotRegistered')
       ) {
         setBlockchainAppVersion(null);
+        setBlockchainAppData(null);
         setBlockchainAppVersionError(null);
       } else {
         setBlockchainAppVersionError('Failed to fetch app version data');
         setBlockchainAppVersion(null);
+        setBlockchainAppData(null);
       }
     } finally {
       setBlockchainAppVersionLoading(false);
@@ -64,6 +68,7 @@ export function useBlockchainAppVersionData(
   useEffect(() => {
     if (!appId || !versionId) {
       setBlockchainAppVersion(null);
+      setBlockchainAppData(null);
       setBlockchainAppVersionError(null);
       setBlockchainAppVersionLoading(false);
       setIsAppRegistered(false);
@@ -81,6 +86,7 @@ export function useBlockchainAppVersionData(
     blockchainAppVersion,
     blockchainAppVersionError,
     blockchainAppVersionLoading,
+    blockchainAppData,
     isAppRegistered,
     refetch,
   };

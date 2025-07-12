@@ -1,20 +1,18 @@
 import { useState, useEffect } from 'react';
-import { Plus, Users, Trash2, RotateCcw, Edit } from 'lucide-react';
+import { Plus, Users, Trash2, Edit } from 'lucide-react';
 import { ethers } from 'ethers';
-import { App, deleteApp, undeleteApp } from '@lit-protocol/vincent-contracts-sdk';
+import { deleteApp } from '@lit-protocol/vincent-contracts-sdk';
 import MutationButtonStates, { SkeletonButton } from '@/components/layout/MutationButtonStates';
 
 interface AppPublishedButtonsProps {
   appId: number;
   onOpenMutation: (mutationType: string) => void;
-  blockchainAppData: App;
   refetchBlockchainData: () => void;
 }
 
 export function AppPublishedButtons({
   appId,
   onOpenMutation,
-  blockchainAppData,
   refetchBlockchainData,
 }: AppPublishedButtonsProps) {
   const [isProcessing, setIsProcessing] = useState(false);
@@ -22,7 +20,6 @@ export function AppPublishedButtons({
   const [success, setSuccess] = useState<string | null>(null);
 
   const handleToggleDeleteApp = async () => {
-    const isDeleted = blockchainAppData.isDeleted;
     setError(null); // Clear any previous errors
     setIsProcessing(true);
 
@@ -31,25 +28,15 @@ export function AppPublishedButtons({
       await provider.send('eth_requestAccounts', []);
       const signer = provider.getSigner();
 
-      if (isDeleted) {
-        // Undelete the app using contract call
-        await undeleteApp({
-          signer: signer,
-          args: {
-            appId: appId.toString(),
-          },
-        });
-      } else {
-        // Delete the app using contract call
-        await deleteApp({
-          signer: signer,
-          args: {
-            appId: appId.toString(),
-          },
-        });
-      }
+      // Delete the app using contract call
+      await deleteApp({
+        signer: signer,
+        args: {
+          appId: appId.toString(),
+        },
+      });
 
-      setSuccess(isDeleted ? 'App undeleted successfully!' : 'App deleted successfully!');
+      setSuccess('App deleted successfully!');
 
       // Refetch on-chain data after showing success message
       setTimeout(() => {
@@ -60,7 +47,7 @@ export function AppPublishedButtons({
       if (error?.message?.includes('user rejected')) {
         setError('Transaction rejected.');
       } else {
-        setError(error.message || 'Failed to delete/undelete app. Please try again.');
+        setError(error.message || 'Failed to delete app. Please try again.');
       }
     } finally {
       setIsProcessing(false);
@@ -77,9 +64,7 @@ export function AppPublishedButtons({
   }, [error]);
 
   if (error) {
-    return (
-      <MutationButtonStates type="error" errorMessage={error || 'Failed to delete/undelete app'} />
-    );
+    return <MutationButtonStates type="error" errorMessage={error || 'Failed to delete app'} />;
   }
 
   if (success) {
@@ -90,8 +75,6 @@ export function AppPublishedButtons({
       />
     );
   }
-
-  const isDeleted = blockchainAppData.isDeleted;
 
   return (
     <div className="flex flex-wrap gap-3">
@@ -119,19 +102,10 @@ export function AppPublishedButtons({
       <button
         onClick={handleToggleDeleteApp}
         disabled={isProcessing}
-        className={`inline-flex items-center gap-2 px-4 py-2 border rounded-lg text-sm font-medium bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
-          isDeleted
-            ? 'border-green-200 text-green-600 hover:bg-green-50'
-            : 'border-red-200 text-red-600 hover:bg-red-50'
-        }`}
+        className={`inline-flex items-center gap-2 px-4 py-2 border rounded-lg text-sm font-medium bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${'border-red-200 text-red-600 hover:bg-red-50'}`}
       >
         {isProcessing ? (
           <SkeletonButton />
-        ) : isDeleted ? (
-          <>
-            <RotateCcw className="h-4 w-4" />
-            Undelete App
-          </>
         ) : (
           <>
             <Trash2 className="h-4 w-4" />

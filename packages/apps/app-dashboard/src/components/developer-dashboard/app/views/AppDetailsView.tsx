@@ -5,6 +5,7 @@ import { Logo } from '@/components/shared/ui/Logo';
 import { StatusMessage } from '@/components/shared/ui/statusMessage';
 import { AppPublishedButtons } from '../wrappers/ui/AppPublishedButtons';
 import { AppUnpublishedButtons } from '../wrappers/ui/AppUnpublishedButtons';
+import { AppPublishedDeletedButtons } from '../wrappers/ui/AppPublishedDeletedButtons';
 
 interface AppDetailsViewProps {
   selectedApp: App;
@@ -20,6 +21,7 @@ export function AppDetailsView({
   refetchBlockchainData,
 }: AppDetailsViewProps) {
   const isPublished = blockchainAppData !== null;
+  const isDeleted = blockchainAppData?.isDeleted;
 
   return (
     <div className="space-y-6">
@@ -46,7 +48,7 @@ export function AppDetailsView({
       {/* Publish Status Messages */}
       {isPublished && (
         <StatusMessage
-          message="This app is already registered in the on-chain Vincent Registry"
+          message="This app is already registered in the on-chain Vincent Registry."
           type="info"
         />
       )}
@@ -58,11 +60,16 @@ export function AppDetailsView({
           <p className="text-gray-600 text-sm mt-1">Manage your application settings</p>
         </div>
         <div className="p-6">
-          {isPublished ? (
+          {isPublished && !isDeleted ? (
             <AppPublishedButtons
               appId={selectedApp.appId}
               onOpenMutation={onOpenMutation}
-              blockchainAppData={blockchainAppData}
+              refetchBlockchainData={refetchBlockchainData}
+            />
+          ) : isPublished && isDeleted ? (
+            <AppPublishedDeletedButtons
+              appId={selectedApp.appId}
+              onOpenMutation={onOpenMutation}
               refetchBlockchainData={refetchBlockchainData}
             />
           ) : (

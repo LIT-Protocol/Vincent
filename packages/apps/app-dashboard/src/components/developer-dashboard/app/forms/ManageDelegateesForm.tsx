@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form } from '@/components/ui/form';
 import { StatusMessage } from '@/components/shared/ui/statusMessage';
-import { Plus, Trash2, ArrowLeft } from 'lucide-react';
+import { Plus, Trash2 } from 'lucide-react';
 import { TextField } from '../../form-fields';
 import {
   addDelegatee,
@@ -36,7 +36,6 @@ export function ManageDelegateesForm({
   refetchBlockchainData,
 }: ManageDelegateesFormProps) {
   const { appId } = useParams<{ appId: string }>();
-  const navigate = useNavigate();
   const [error, setError] = useState<string>('');
   const [removingDelegatee, setRemovingDelegatee] = useState<string | null>(null);
 
@@ -166,9 +165,6 @@ export function ManageDelegateesForm({
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
-        <Button variant="ghost" onClick={() => navigate(`/appId/${appId}`)}>
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
         <div>
           <h1 className="text-2xl font-bold">Manage Delegatees</h1>
           <p className="text-gray-600">Add or remove delegatees for your application</p>
