@@ -23,7 +23,7 @@ import { disconnectVincentToolClients } from '@lit-protocol/vincent-app-sdk';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 
 import { getVincentAppDef } from '../appDefBuilder';
-import { env } from '../env';
+import { env } from '../env/base';
 import { getServer } from '../server';
 
 const { VINCENT_DELEGATEE_PRIVATE_KEY } = env;

@@ -1,6 +1,6 @@
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 
-import { env } from './env';
+import { env } from './env/http';
 
 const { HTTP_TRANSPORT_TTL, HTTP_TRANSPORT_CLEAN_INTERVAL } = env;
 

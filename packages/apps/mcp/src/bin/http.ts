@@ -32,7 +32,7 @@ import {
   authenticateWithSiwe,
   getSiweMessageToAuthenticate,
 } from '../authentication';
-import { env } from '../env';
+import { env } from '../env/http';
 import { getServer } from '../server';
 import { transportManager } from '../transportManager';
 

@@ -1,6 +1,6 @@
 import { generateNonce } from 'siwe';
 
-import { env } from './env';
+import { env } from './env/http';
 
 const { SIWE_NONCE_CLEAN_INTERVAL, SIWE_NONCE_TTL } = env;
 

@@ -11,7 +11,7 @@ import { nodeClient } from '@lit-protocol/vincent-registry-sdk';
 import { npxImport } from 'npx-import';
 import { z, ZodObject } from 'zod';
 
-import { env } from './env';
+import { env } from './env/base';
 import { store as registryStore } from './registry';
 
 const { VINCENT_APP_ID, VINCENT_APP_JSON_DEFINITION, VINCENT_APP_VERSION } = env;

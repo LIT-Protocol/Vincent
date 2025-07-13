@@ -2,7 +2,7 @@ import { nodeClient } from '@lit-protocol/vincent-registry-sdk';
 import { configureStore } from '@reduxjs/toolkit';
 import { fetchBaseQuery } from '@reduxjs/toolkit/query';
 
-import { env } from './env';
+import { env } from './env/base';
 
 const { VINCENT_REGISTRY_URL } = env;
 const { vincentApiClientNode, setBaseQueryFn } = nodeClient;
