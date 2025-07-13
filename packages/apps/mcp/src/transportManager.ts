@@ -1,46 +1,57 @@
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
+import NodeCache from 'node-cache';
 
 import { env } from './env/http';
 
 const { HTTP_TRANSPORT_TTL, HTTP_TRANSPORT_CLEAN_INTERVAL } = env;
 
 class TransportManager {
-  private readonly transports: {
-    [sessionId: string]: {
-      ttl: number;
-      transport: StreamableHTTPServerTransport;
-    };
-  } = {};
+  private readonly transportCache: NodeCache;
 
   constructor() {
-    setInterval(() => {
-      const now = Date.now();
-      for (const [sessionId, { transport, ttl }] of Object.entries(this.transports)) {
-        if (now > ttl) {
-          transport.close().then(() => this.deleteTransport(sessionId));
+    this.transportCache = new NodeCache({
+      checkperiod: HTTP_TRANSPORT_CLEAN_INTERVAL / 1000,
+      deleteOnExpire: true,
+      stdTTL: HTTP_TRANSPORT_TTL / 1000,
+      useClones: false, // Store transport by reference
+    });
+
+    // Set up cleanup handler when items expire
+    this.transportCache.on(
+      'expired',
+      async (key: string, transport: StreamableHTTPServerTransport) => {
+        try {
+          await transport.close();
+        } catch (error) {
+          console.error(`Error closing transport for session ${key}:`, error);
         }
-      }
-    }, HTTP_TRANSPORT_CLEAN_INTERVAL);
+      },
+    );
   }
 
   addTransport(sessionId: string, transport: StreamableHTTPServerTransport) {
-    this.transports[sessionId] = { ttl: Date.now() + HTTP_TRANSPORT_TTL, transport };
+    this.transportCache.set(sessionId, transport);
   }
 
-  getTransport(sessionId: string) {
-    const transportWithTtl = this.transports[sessionId];
-    if (!transportWithTtl) {
-      return;
+  getTransport(sessionId: string): StreamableHTTPServerTransport | undefined {
+    const transport = this.transportCache.get<StreamableHTTPServerTransport>(sessionId);
+    if (transport) {
+      // Reset TTL on access
+      this.transportCache.ttl(sessionId);
     }
-
-    const { transport } = transportWithTtl;
-    this.transports[sessionId].ttl = Date.now() + HTTP_TRANSPORT_TTL;
-
     return transport;
   }
 
-  deleteTransport(sessionId: string) {
-    delete this.transports[sessionId];
+  async deleteTransport(sessionId: string): Promise<boolean> {
+    const transport = this.transportCache.get<StreamableHTTPServerTransport>(sessionId);
+    if (transport) {
+      try {
+        await transport.close();
+      } catch (error) {
+        console.error(`Error closing transport for session ${sessionId}:`, error);
+      }
+    }
+    return this.transportCache.del(sessionId) > 0;
   }
 }
 

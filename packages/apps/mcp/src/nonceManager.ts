@@ -1,3 +1,4 @@
+import NodeCache from 'node-cache';
 import { generateNonce } from 'siwe';
 
 import { env } from './env/http';
@@ -5,50 +6,46 @@ import { env } from './env/http';
 const { SIWE_NONCE_CLEAN_INTERVAL, SIWE_NONCE_TTL } = env;
 
 class NonceManager {
-  private readonly nonces: {
-    [address: string]: {
-      ttl: number;
-      nonce: string;
-    }[];
-  } = {};
+  private readonly nonceCache: NodeCache;
 
   constructor() {
-    setInterval(() => {
-      const now = Date.now();
-      for (const [address, nonces] of Object.entries(this.nonces)) {
-        this.nonces[address] = nonces.filter((n) => n.ttl > now);
-      }
-    }, SIWE_NONCE_CLEAN_INTERVAL);
+    this.nonceCache = new NodeCache({
+      checkperiod: SIWE_NONCE_CLEAN_INTERVAL / 1000,
+      deleteOnExpire: true,
+      stdTTL: SIWE_NONCE_TTL / 1000,
+      useClones: false, // Set useClones to false to store arrays by reference
+    });
+  }
+
+  private getNoncesForAddress(address: string): string[] {
+    return this.nonceCache.get<string[]>(address) || [];
+  }
+
+  private setNoncesForAddress(address: string, nonces: string[]): void {
+    this.nonceCache.set(address, nonces, SIWE_NONCE_TTL / 1000);
   }
 
   getNonce(address: string): string {
     const nonce = generateNonce();
+    const nonces = this.getNoncesForAddress(address);
 
-    if (!this.nonces[address]) {
-      this.nonces[address] = [];
-    }
-
-    this.nonces[address].push({
-      ttl: Date.now() + SIWE_NONCE_TTL,
-      nonce,
-    });
+    nonces.push(nonce);
+    this.setNoncesForAddress(address, nonces);
 
     return nonce;
   }
 
   consumeNonce(address: string, nonce: string): boolean {
-    const addressNonces = this.nonces[address] || [];
+    const nonces = this.getNoncesForAddress(address);
+    const nonceIndex = nonces.indexOf(nonce);
 
-    const now = Date.now();
-    const consumedNonce = addressNonces.find((n) => n.nonce === nonce && n.ttl > now);
+    if (nonceIndex !== -1) {
+      // Nonce found and valid (since it's in the cache, it hasn't expired)
+      // We don't remove it to handle repeated requests from clients
+      return true;
+    }
 
-    // Consumed nonce should be removed. But some clients are doing several repeated requests with it. TTL will handle it
-    // if (consumedNonce) {
-    //   // Remove consumed nonce
-    //   this.nonces[address] = addressNonces.filter((n) => n.nonce !== nonce);
-    // }
-
-    return !!consumedNonce;
+    return false;
   }
 }
 
