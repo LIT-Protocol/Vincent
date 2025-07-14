@@ -8,6 +8,7 @@
     "@lit-protocol/vincent-policy-spending-limit": "workspace:*",
     "@lit-protocol/vincent-tool-sdk": "workspace:*",
     "@uniswap/sdk-core": "^7.7.2",
+    "@uniswap/v3-sdk": "^3.25.2",
     "ethers": "^5.8.0",
     "tslib": "2.8.1",
     "zod": "^3.25.64"

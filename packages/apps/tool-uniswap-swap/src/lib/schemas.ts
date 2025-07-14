@@ -40,6 +40,19 @@ export const toolParamsSchema = z.object({
   tokenOutDecimals: z
     .number()
     .describe('ERC20 Token to buy decimals. For example 18 for WETH on Base.'),
+
+  // Optional multihop path
+  path: z
+    .array(
+      z.object({
+        tokenAddress: z.string().describe('Intermediate token address'),
+        fee: z.number().describe('Pool fee tier (e.g., 3000 for 0.3%, 500 for 0.05%)'),
+      }),
+    )
+    .optional()
+    .describe(
+      'Optional multihop path for complex swaps. If provided, the swap will route through these intermediate tokens. Leave empty for direct single-hop swaps.',
+    ),
 });
 
 export const executeSuccessSchema = z.object({

@@ -7,11 +7,12 @@ import { bundledVincentPolicy } from '@lit-protocol/vincent-policy-spending-limi
 
 import { CHAIN_TO_ADDRESSES_MAP } from '@uniswap/sdk-core';
 
-import { getTokenAmountInUsd, sendUniswapTx } from './tool-helpers';
+import { getTokenAmountInUsd, sendUniswapTx, sendUniswapMultihopTx } from './tool-helpers';
 import {
   checkNativeTokenBalance,
   checkTokenInBalance,
   checkUniswapPoolExists,
+  checkUniswapMultihopPoolsExist,
 } from './tool-checks';
 import { executeSuccessSchema, toolParamsSchema } from './schemas';
 import { ethers } from 'ethers';
@@ -32,7 +33,8 @@ const SpendingLimitPolicy = createVincentToolPolicy({
 
 export const vincentTool = createVincentTool({
   packageName: '@lit-protocol/vincent-tool-uniswap-swap' as const,
-  toolDescription: 'Performs a swap between two ERC20 tokens using Uniswap' as const,
+  toolDescription:
+    'Performs a swap between two ERC20 tokens using Uniswap with support for single-hop and multihop routing' as const,
 
   toolParamsSchema,
   supportedPolicies: supportedPoliciesForTool([SpendingLimitPolicy]),
@@ -49,6 +51,7 @@ export const vincentTool = createVincentTool({
       tokenInAmount,
       tokenOutAddress,
       tokenOutDecimals,
+      path,
     } = toolParams;
 
     console.log('Prechecking UniswapSwapTool', toolParams);
@@ -89,15 +92,29 @@ export const vincentTool = createVincentTool({
       tokenInAmount: requiredAmount,
     });
 
-    await checkUniswapPoolExists({
-      rpcUrl: rpcUrlForUniswap,
-      chainId: chainIdForUniswap,
-      tokenInAddress: tokenInAddress as `0x${string}`,
-      tokenInDecimals,
-      tokenInAmount,
-      tokenOutAddress: tokenOutAddress as `0x${string}`,
-      tokenOutDecimals,
-    });
+    // Check pool existence - use multihop check if path is provided
+    if (path && path.length > 0) {
+      await checkUniswapMultihopPoolsExist({
+        rpcUrl: rpcUrlForUniswap,
+        chainId: chainIdForUniswap,
+        tokenInAddress: tokenInAddress as `0x${string}`,
+        tokenInDecimals,
+        tokenInAmount,
+        tokenOutAddress: tokenOutAddress as `0x${string}`,
+        tokenOutDecimals,
+        path,
+      });
+    } else {
+      await checkUniswapPoolExists({
+        rpcUrl: rpcUrlForUniswap,
+        chainId: chainIdForUniswap,
+        tokenInAddress: tokenInAddress as `0x${string}`,
+        tokenInDecimals,
+        tokenInAmount,
+        tokenOutAddress: tokenOutAddress as `0x${string}`,
+        tokenOutDecimals,
+      });
+    }
 
     return succeed();
   },
@@ -117,22 +134,38 @@ export const vincentTool = createVincentTool({
       tokenInAmount,
       tokenOutAddress,
       tokenOutDecimals,
+      path,
     } = toolParams;
 
     const spendingLimitPolicyContext =
       policiesContext.allowedPolicies['@lit-protocol/vincent-policy-spending-limit'];
 
-    const swapTxHash = await sendUniswapTx({
-      rpcUrl: rpcUrlForUniswap,
-      chainId: chainIdForUniswap,
-      pkpEthAddress: delegatorPkpAddress as `0x${string}`,
-      pkpPublicKey: delegatorPublicKey,
-      tokenInAddress: tokenInAddress as `0x${string}`,
-      tokenOutAddress: tokenOutAddress as `0x${string}`,
-      tokenInDecimals,
-      tokenOutDecimals,
-      tokenInAmount,
-    });
+    // Use multihop if path is provided, otherwise use single-hop
+    const swapTxHash =
+      path && path.length > 0
+        ? await sendUniswapMultihopTx({
+            rpcUrl: rpcUrlForUniswap,
+            chainId: chainIdForUniswap,
+            pkpEthAddress: delegatorPkpAddress as `0x${string}`,
+            pkpPublicKey: delegatorPublicKey,
+            tokenInAddress: tokenInAddress as `0x${string}`,
+            tokenOutAddress: tokenOutAddress as `0x${string}`,
+            tokenInDecimals,
+            tokenOutDecimals,
+            tokenInAmount,
+            path,
+          })
+        : await sendUniswapTx({
+            rpcUrl: rpcUrlForUniswap,
+            chainId: chainIdForUniswap,
+            pkpEthAddress: delegatorPkpAddress as `0x${string}`,
+            pkpPublicKey: delegatorPublicKey,
+            tokenInAddress: tokenInAddress as `0x${string}`,
+            tokenOutAddress: tokenOutAddress as `0x${string}`,
+            tokenInDecimals,
+            tokenOutDecimals,
+            tokenInAmount,
+          });
 
     let spendTxHash: string | undefined;
 
