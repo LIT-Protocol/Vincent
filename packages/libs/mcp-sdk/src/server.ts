@@ -71,10 +71,12 @@ async function registerVincentTools(
       }
     });
 
-    server.tool(
+    server.registerTool(
       buildMcpToolName(vincentAppDef, vincentAppToolDef.name || packageName),
-      vincentAppToolDef.description || toolDescription || '', // First versions on the tool SDK did not have a description
-      toolParamsSchemaShape,
+      {
+        description: vincentAppToolDef.description || toolDescription || '', // First versions on the tool SDK did not have a description
+        inputSchema: toolParamsSchemaShape,
+      },
       async (
         args: ZodRawShape,
         extra: RequestHandlerExtra<ServerRequest, ServerNotification>
@@ -179,25 +181,43 @@ export async function getVincentAppServer(
   });
 
   if (delegatorPkpEthAddress) {
-    server.tool(
-      buildMcpToolName(vincentAppDef, 'get-current-agent-pkp-address'),
-      `Tool to get your agent pkp eth address in use for the ${vincentAppDef.name} Vincent App MCP.`,
-      async () => {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: delegatorPkpEthAddress,
-            },
-          ],
-        };
-      }
+    // Add as resource and tool to maximize compatibility (some LLM clients may not support resources)
+    server.registerResource(
+      buildMcpToolName(vincentAppDef, 'current-agent-eth-address'),
+      'agent://current/eth-address',
+      {
+        description: `Resource to get current agent eth address in use for Vincent App ${vincentAppDef.id}/${vincentAppDef.version}.`,
+      },
+      async (uri: URL) => ({
+        contents: [
+          {
+            uri: uri.href,
+            text: delegatorPkpEthAddress,
+          },
+        ],
+      })
+    );
+    server.registerTool(
+      buildMcpToolName(vincentAppDef, 'get-current-agent-eth-address'),
+      {
+        description: `Tool to get current agent eth address in use for Vincent App ${vincentAppDef.id}/${vincentAppDef.version}.`,
+      },
+      async () => ({
+        content: [
+          {
+            type: 'text',
+            text: delegatorPkpEthAddress,
+          },
+        ],
+      })
     );
   } else {
     // In delegatee mode (no delegator), user has to be able to fetch its delegators and select which one to operate on behalf of
-    server.tool(
+    server.registerTool(
       buildMcpToolName(vincentAppDef, 'get-delegators-eth-addresses'),
-      `Tool to get the delegators pkp Eth addresses for the ${vincentAppDef.name} Vincent App.`,
+      {
+        description: `Tool to get the delegators pkp Eth addresses for the ${vincentAppDef.name} Vincent App.`,
+      },
       async () => {
         const appId = parseInt(vincentAppDef.id, 10);
         const appVersion = parseInt(vincentAppDef.version, 10);
@@ -216,26 +236,41 @@ export async function getVincentAppServer(
     );
   }
 
-  server.tool(
+  const appInfo = {
+    id: vincentAppDef.id,
+    name: vincentAppDef.name,
+    version: vincentAppDef.version,
+    description: vincentAppDef.description,
+  };
+  // Add as resource and tool to maximize compatibility (some LLM clients may not support resources)
+  server.registerResource(
+    buildMcpToolName(vincentAppDef, 'current-vincent-app-info'),
+    `app://${vincentAppDef.id}/${vincentAppDef.version}/info`,
+    {
+      description: `Resource to get the Vincent App ${vincentAppDef.id}/${vincentAppDef.version} info.`,
+    },
+    async (uri: URL) => ({
+      contents: [
+        {
+          uri: uri.href,
+          text: JSON.stringify(appInfo),
+        },
+      ],
+    })
+  );
+  server.registerTool(
     buildMcpToolName(vincentAppDef, 'get-current-vincent-app-info'),
-    `Tool to get the ${vincentAppDef.name} Vincent App info.`,
-    async () => {
-      const appInfo = {
-        id: vincentAppDef.id,
-        name: vincentAppDef.name,
-        version: vincentAppDef.version,
-        description: vincentAppDef.description,
-      };
-
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(appInfo),
-          },
-        ],
-      };
-    }
+    {
+      description: `Tool to get the Vincent App ${vincentAppDef.id}/${vincentAppDef.version} info.`,
+    },
+    async () => ({
+      content: [
+        {
+          type: 'text',
+          text: JSON.stringify(appInfo),
+        },
+      ],
+    })
   );
 
   // Fetch and install tool packages, then load them as Vincent MCP Tools

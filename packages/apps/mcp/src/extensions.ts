@@ -108,18 +108,23 @@ export function extendVincentServer(
   delegateeSigner: ethers.Signer,
 ) {
   // Add more resources, tools, and prompts as needed
-  server.tool(
+  server.registerTool(
     buildMcpToolName(vincentAppDefinition, 'native-balance'),
-    'Resource to get the native balance for a given PKP ETH address on a given chain.',
     {
-      chainId: z.coerce
-        .number()
-        .describe('The chain ID to execute the query the balance on. For example: 8453 for Base.'),
-      pkpEthAddress: z
-        .string()
-        .describe(
-          'The PKP address to query the balance for. For example 0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045.',
-        ),
+      description:
+        'Resource to get the native balance for a given PKP ETH address on a given chain.',
+      inputSchema: {
+        chainId: z.coerce
+          .number()
+          .describe(
+            'The chain ID to execute the query the balance on. For example: 8453 for Base.',
+          ),
+        pkpEthAddress: z
+          .string()
+          .describe(
+            'The PKP address to query the balance for. For example 0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045.',
+          ),
+      },
     },
     async ({ chainId, pkpEthAddress }) => {
       const chain = getLitSupportedChainData(chainId);
@@ -137,23 +142,28 @@ export function extendVincentServer(
     },
   );
 
-  server.tool(
+  server.registerTool(
     buildMcpToolName(vincentAppDefinition, 'erc20-balance'),
-    'Resource to get the ERC20 balance for a given PKP ETH address on a given chain.',
     {
-      chainId: z.coerce
-        .number()
-        .describe('The chain ID to execute the query the balance on. For example: 8453 for Base.'),
-      pkpEthAddress: z
-        .string()
-        .describe(
-          "The delegator's PKP address. For example 0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045.",
-        ),
-      tokenAddress: z
-        .string()
-        .describe(
-          'The ERC20 token address to query the balance for. For example 0x4200000000000000000000000000000000000006 for WETH on Base.',
-        ),
+      description:
+        'Resource to get the ERC20 balance for a given PKP ETH address on a given chain.',
+      inputSchema: {
+        chainId: z.coerce
+          .number()
+          .describe(
+            'The chain ID to execute the query the balance on. For example: 8453 for Base.',
+          ),
+        pkpEthAddress: z
+          .string()
+          .describe(
+            "The delegator's PKP address. For example 0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045.",
+          ),
+        tokenAddress: z
+          .string()
+          .describe(
+            'The ERC20 token address to query the balance for. For example 0x4200000000000000000000000000000000000006 for WETH on Base.',
+          ),
+      },
     },
     async ({ chainId, pkpEthAddress, tokenAddress }) => {
       const chain = getLitSupportedChainData(chainId);
@@ -175,30 +185,33 @@ export function extendVincentServer(
     },
   );
 
-  server.tool(
+  server.registerTool(
     buildMcpToolName(vincentAppDefinition, 'erc20-allowance'),
-    'Resource to get the ERC20 allowance for a given PKP ETH address on a given chain.',
     {
-      chainId: z.coerce
-        .number()
-        .describe(
-          'The chain ID to execute the query the allowance on. For example: 8453 for Base.',
-        ),
-      pkpEthAddress: z
-        .string()
-        .describe(
-          "The delegator's PKP address. For example 0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045.",
-        ),
-      tokenAddress: z
-        .string()
-        .describe(
-          'The ERC20 token address to query the allowance for. For example 0x4200000000000000000000000000000000000006 for WETH on Base.',
-        ),
-      spenderAddress: z
-        .string()
-        .describe(
-          'The spender address to query the allowance for. For example 0x4ed4E862860beD51a9570b96d89aF5E1B0Efefed for Uniswap V3 Router on Base.',
-        ),
+      description:
+        'Resource to get the ERC20 allowance for a given PKP ETH address on a given chain.',
+      inputSchema: {
+        chainId: z.coerce
+          .number()
+          .describe(
+            'The chain ID to execute the query the allowance on. For example: 8453 for Base.',
+          ),
+        pkpEthAddress: z
+          .string()
+          .describe(
+            "The delegator's PKP address. For example 0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045.",
+          ),
+        tokenAddress: z
+          .string()
+          .describe(
+            'The ERC20 token address to query the allowance for. For example 0x4200000000000000000000000000000000000006 for WETH on Base.',
+          ),
+        spenderAddress: z
+          .string()
+          .describe(
+            'The spender address to query the allowance for. For example 0x4ed4E862860beD51a9570b96d89aF5E1B0Efefed for Uniswap V3 Router on Base.',
+          ),
+      },
     },
     async ({ chainId, pkpEthAddress, spenderAddress, tokenAddress }) => {
       const chain = getLitSupportedChainData(chainId);

@@ -60,9 +60,9 @@ const server = await getVincentAppServer(wallet, appDef);
 At this moment you can add more tools, resources or prompts to the server.
 
 ```typescript
-server.tool(/*...*/);
-server.resource(/*...*/);
-server.prompt(/*...*/);
+server.registerTool(/*...*/);
+server.registerResource(/*...*/);
+server.registerPrompt(/*...*/);
 ```
 
 These tools, resources and prompts will be exposed in the server along with the ones from the Vincent App definition. Consider adding any other tools that you want to be executed by the LLM and that are not Vincent Tools. For example, you could add tools to query balance or fetch useful data from external sources.
