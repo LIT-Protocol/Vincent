@@ -29,6 +29,10 @@ class TransportManager {
     );
   }
 
+  closeTransportManager() {
+    this.transportCache.close();
+  }
+
   addTransport(sessionId: string, transport: StreamableHTTPServerTransport) {
     this.transportCache.set(sessionId, transport);
   }

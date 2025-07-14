@@ -17,6 +17,10 @@ class NonceManager {
     });
   }
 
+  closeNonceManager() {
+    this.nonceCache.flushAll();
+  }
+
   private getNoncesForAddress(address: string): string[] {
     return this.nonceCache.get<string[]>(address) || [];
   }

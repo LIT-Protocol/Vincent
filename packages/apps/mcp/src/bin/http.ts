@@ -33,6 +33,7 @@ import {
   getSiweMessageToAuthenticate,
 } from '../authentication';
 import { env } from '../env/http';
+import { nonceManager } from '../nonceManager';
 import { getServer } from '../server';
 import { transportManager } from '../transportManager';
 
@@ -302,6 +303,8 @@ async function startServer() {
     console.log('🔌 Disconnecting from Lit Network...');
 
     disconnectVincentToolClients();
+    nonceManager.closeNonceManager();
+    transportManager.closeTransportManager();
 
     server.close(() => {
       console.log('🛑 Vincent MCP Server has been closed.');
