@@ -21,7 +21,9 @@ export async function getAllRegisteredAgentPkps({
   const contract = createContract(signer);
 
   try {
-    const pkps = await contract.getAllRegisteredAgentPkps(args.userAddress);
+    const offset = utils.parseUnits(args.offset, 0);
+    const limit = utils.parseUnits(args.limit, 0);
+    const pkps = await contract.getAllRegisteredAgentPkps(args.userAddress, offset, limit);
 
     return pkps.map((pkp: any) => pkp.toString());
   } catch (error: unknown) {
@@ -78,8 +80,10 @@ export async function getAllPermittedAppIdsForPkp({
 
   try {
     const pkpTokenId = utils.parseUnits(args.pkpTokenId, 0);
+    const offset = utils.parseUnits(args.offset, 0);
+    const limit = utils.parseUnits(args.limit, 0);
 
-    const appIds = await contract.getAllPermittedAppIdsForPkp(pkpTokenId);
+    const appIds = await contract.getAllPermittedAppIdsForPkp(pkpTokenId, offset, limit);
 
     return appIds.map((appId: any) => appId.toString());
   } catch (error: unknown) {

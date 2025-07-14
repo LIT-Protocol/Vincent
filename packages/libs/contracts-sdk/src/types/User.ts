@@ -56,6 +56,8 @@ export interface SetToolPolicyParametersOptions {
 
 export interface GetAllRegisteredAgentPkpsParams {
   userAddress: string;
+  offset: string;
+  limit: string;
 }
 
 export interface GetAllRegisteredAgentPkpsOptions {
@@ -75,6 +77,8 @@ export interface GetPermittedAppVersionForPkpOptions {
 
 export interface GetAllPermittedAppIdsForPkpParams {
   pkpTokenId: string;
+  offset: string;
+  limit: string;
 }
 
 export interface GetAllPermittedAppIdsForPkpOptions {

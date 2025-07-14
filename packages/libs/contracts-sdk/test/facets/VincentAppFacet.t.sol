@@ -109,7 +109,7 @@ contract VincentAppFacetTest is Test {
         assertEq(appVersion.tools[1].toolIpfsCid, TOOL_IPFS_CID_2);
         assertEq(appVersion.tools[1].policyIpfsCids.length, 0);
 
-        VincentAppViewFacet.AppWithVersions[] memory apps = vincentAppViewFacet.getAppsByManager(APP_MANAGER_ALICE);
+        VincentAppViewFacet.AppWithVersions[] memory apps = vincentAppViewFacet.getAppsByManager(APP_MANAGER_ALICE, 0, 10); // Just setting the limit more than the number of Apps
         assertEq(apps.length, 1);
         assertEq(apps[0].app.id, newAppId);
         assertFalse(apps[0].app.isDeleted);
@@ -188,7 +188,7 @@ contract VincentAppFacetTest is Test {
         assertEq(appVersion.tools[2].policyIpfsCids[1], POLICY_IPFS_CID_2);
         assertEq(appVersion.tools[2].policyIpfsCids[2], POLICY_IPFS_CID_3);
 
-        apps = vincentAppViewFacet.getAppsByManager(APP_MANAGER_ALICE);
+        apps = vincentAppViewFacet.getAppsByManager(APP_MANAGER_ALICE, 0, 10); // Just setting the limit more than the number of Apps
         assertEq(apps.length, 1);
         assertEq(apps[0].app.id, newAppId);
         assertFalse(apps[0].app.isDeleted);
@@ -660,13 +660,10 @@ contract VincentAppFacetTest is Test {
         assertEq(delegatedAgentPkpTokenIds.length, 1);
         assertEq(delegatedAgentPkpTokenIds[0], PKP_TOKEN_ID_1);
 
-        vm.expectRevert(abi.encodeWithSelector(VincentAppViewFacet.InvalidOffsetOrLimit.selector));
+        vm.expectRevert(abi.encodeWithSelector(VincentBase.InvalidOffset.selector, 1, 1));
         vincentAppViewFacet.getDelegatedAgentPkpTokenIds(newAppId, newAppVersion, 1, 1);
 
-        vm.expectRevert(abi.encodeWithSelector(VincentAppViewFacet.InvalidOffsetOrLimit.selector));
-        vincentAppViewFacet.getDelegatedAgentPkpTokenIds(newAppId, newAppVersion, 0, 2);
-
-        vm.expectRevert(abi.encodeWithSelector(VincentAppViewFacet.InvalidOffsetOrLimit.selector));
+        vm.expectRevert(abi.encodeWithSelector(VincentBase.InvalidOffset.selector, 1, 1));
         vincentAppViewFacet.getDelegatedAgentPkpTokenIds(newAppId, newAppVersion, 1, 0);
     }
 

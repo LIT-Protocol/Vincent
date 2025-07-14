@@ -89,7 +89,7 @@ export async function getAppVersion({
 /**
  * Get all apps managed by a specific address with all their versions
  * @param signer - The ethers signer to use for the transaction. Could be a standard Ethers Signer or a PKPEthersWallet
- * @param args - Object containing manager address
+ * @param args - Object containing manager address, offset, and limit
  * @returns Array of apps with all their versions managed by the specified address
  */
 export async function getAppsByManager({
@@ -99,7 +99,10 @@ export async function getAppsByManager({
   const contract = createContract(signer);
 
   try {
-    const appsWithVersions = await contract.getAppsByManager(args.manager);
+    const offset = utils.parseUnits(args.offset, 0);
+    const limit = utils.parseUnits(args.limit, 0);
+
+    const appsWithVersions = await contract.getAppsByManager(args.manager, offset, limit);
 
     return appsWithVersions.map((appWithVersions: any) => ({
       app: {
