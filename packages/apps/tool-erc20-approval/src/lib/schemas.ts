@@ -25,6 +25,19 @@ export const toolParamsSchema = z.object({
     .number()
     .gte(0, 'tokenAmount cannot be a negative number')
     .describe('Amount of tokenIn to approve. For example 0.00001 for 0.00001 WETH.'),
+  alchemyGasSponsor: z
+    .boolean()
+    .optional()
+    .default(false)
+    .describe('Whether to use Alchemy gas sponsorship for the transaction.'),
+  alchemyGasSponsorApiKey: z
+    .string()
+    .optional()
+    .describe('The API key for Alchemy gas sponsorship.'),
+  alchemyGasSponsorPolicyId: z
+    .string()
+    .optional()
+    .describe('The policy ID for Alchemy gas sponsorship.'),
 });
 
 export const precheckSuccessSchema = z.object({

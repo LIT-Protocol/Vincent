@@ -56,8 +56,17 @@ export const vincentTool = createVincentTool({
     console.log('Executing ERC20 Approval Tool');
 
     const { ethAddress, publicKey } = delegatorPkpInfo;
-    const { rpcUrl, chainId, spenderAddress, tokenAddress, tokenDecimals, tokenAmount } =
-      toolParams;
+    const {
+      rpcUrl,
+      chainId,
+      spenderAddress,
+      tokenAddress,
+      tokenDecimals,
+      tokenAmount,
+      alchemyGasSponsor,
+      alchemyGasSponsorApiKey,
+      alchemyGasSponsorPolicyId,
+    } = toolParams;
 
     const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
 
@@ -104,6 +113,9 @@ export const vincentTool = createVincentTool({
       spenderAddress,
       tokenAmount: requiredAmount,
       tokenAddress,
+      alchemyGasSponsor,
+      alchemyGasSponsorApiKey,
+      alchemyGasSponsorPolicyId,
     });
 
     console.log('Tool execution successful', {
