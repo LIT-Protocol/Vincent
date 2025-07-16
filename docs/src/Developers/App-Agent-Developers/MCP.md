@@ -7,9 +7,9 @@ title: MCP - Model Context Protocol
 
 Any Vincent App can be converted into a Model Protocol Server (MCP) that can be consumed by any Large Language Model (LLM) with support for the MCP standard.
 
-We provide an [implementation of an MCP Server](https://github.com/LIT-Protocol/Vincent/tree/main/packages/apps/mcp), connectable through STDIO and HTTP transports. You can use it (forking or [using `npx`](https://www.npmjs.com/package/@lit-protocol/vincent-mcp-server)) with your keys and Vincent Apps or you can customize the whole process to make your own Vincent MCP Server.
+We provide an [implementation of an MCP Server](https://github.com/LIT-Protocol/Vincent/tree/main/packages/apps/mcp), connectable through STDIO and HTTP transports. You can use it (forking or [using `npx`](https://www.npmjs.com/package/@lit-protocol/vincent-mcp-server)) with your keys and Vincent Apps or you can customize the whole process to make your own Vincent MCP Server based on our [MCP SDK](https://github.com/LIT-Protocol/Vincent/blob/main/packages/libs/mcp-sdk/README.md).
 
-By following this process, your Vincent App tools will be exposed to LLMs as a set of MCP tools. The MCP server can also be extended with custom tools and prompts to suit your specific needs.
+By following this process, your Vincent App tools will be exposed to LLMs as a set of MCP tools. The MCP server can also be extended with custom tools and prompts to suit your specific needs or provide extra capabilities around the Vincent Tool ecosystem.
 
 And if you're building an AI application, check out our [OpenAI AgentKit demo](https://github.com/LIT-Protocol/Vincent-MCP-OpenAI-AgentKit) for a guide on how to integrate your Vincent App with the OpenAI AgentKit.
 
@@ -20,6 +20,7 @@ The first step is to convert your Vincent App into an MCP server. This is done b
 ```typescript
 import { ethers } from 'ethers';
 import { getVincentAppServer, VincentAppDef } from '@lit-protocol/vincent-mcp-sdk';
+import { bundledVincentTool } from '@organization/npm-published-vincent-too';
 
 // Create a signer using your Vincent App delegatee private key
 const provider = new ethers.providers.JsonRpcProvider(
@@ -34,18 +35,17 @@ const appDef: VincentAppDef = {
   name: 'My Vincent App',
   description: 'A Vincent application that executes tools for its delegators',
   tools: {
-    QmIpfsCid1: {
+    '@organization/npm-published-vincent-tool': {
+      version: '1.0.0',
+      bundledVincentTool: bundledVincentTool,
       name: 'myTool',
       description: 'A tool that does something',
-      parameters: [
-        {
-          name: 'param1',
-          type: 'string',
+      parameters: {
+        param1: {
           description: 'A parameter that is used in the tool to do something',
-          optional: true,
         },
         // Add more parameters here
-      ],
+      },
     },
     // Add the other tools in your Vincent App here
   },
@@ -55,19 +55,17 @@ const appDef: VincentAppDef = {
 const server = await getVincentAppServer(wallet, appDef);
 ```
 
-You can check the [Uniswap Swap example app json](https://github.com/LIT-Protocol/Vincent/blob/main/packages/apps/mcp/vincent-app.example.json) for a complete Vincent App definition.
-
 ## Extending the MCP Server
 
 At this moment you can add more tools, resources or prompts to the server.
 
 ```typescript
-server.tool(...);
-server.resource(...);
-server.prompt(...);
+server.registerTool(/*...*/);
+server.registerResource(/*...*/);
+server.registerPrompt(/*...*/);
 ```
 
-These tools, resources and prompts will be exposed in the server along with the ones from the Vincent App definition. Consider adding any other tools that you want to be executed by the LLM and that are not Vincent Tools such as tools to query balance or fetch useful data from external sources.
+These tools, resources and prompts will be exposed in the server along with the ones from the Vincent App definition. Consider adding any other tools that you want to be executed by the LLM and that are not Vincent Tools. For example, you could add tools to query balance or fetch useful data from external sources.
 
 ## Picking a Transport
 
@@ -124,9 +122,11 @@ For an already working MCP Server that simply wraps your Vincent App you can che
 
 This MCP Server includes:
 
+- Running as `npx` commands directly from NPM
+- Automatic tool installation using `npx-import`. No local installation needed
 - HTTP and STDIO transports
 - `.env` file support for environment definition
-- App definition with a custom JSON file to define which tools and params are exposed to LLMs
+- App definition overriding with a custom JSON file to refine descriptions and filter tools to be exposed to LLMs
 - Support for delegatee and delegators in HTTP transport
   - Delegators MUST authenticate with SIWE OR their Vincent JWT
   - Delegatees MUST identify with SIWE
@@ -162,7 +162,7 @@ Before deploying, you'll need to create the following two files in the root of y
     CMD ["npx", "@lit-protocol/vincent-mcp-server", "http"]
     ```
 
-2.  Create the Vincent App JSON definition file. Fill it with the data of your Vincent: ID, version, name, description and tools data. Check the [Uniswap Swap example app json](https://github.com/LIT-Protocol/Vincent/blob/main/packages/apps/mcp/vincent-app.example.json) for a complete Vincent App definition.
+2.  Create the Vincent App JSON definition override file. Fill it with the data of your Vincent App you want to override: ID, version, name, description and tools data. Check the [Uniswap Swap example app json](https://github.com/LIT-Protocol/Vincent/blob/main/packages/apps/mcp/vincent-app.example.json) for a complete Vincent App override file.
 
 3.  Add both files to git. Commit and push them to your repository to use as source for Heroku or Render.
 

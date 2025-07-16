@@ -18,16 +18,15 @@
 import '../bootstrap'; // Bootstrap console.log to a log file
 import { ethers } from 'ethers';
 
-import fs from 'node:fs';
-
 import { LIT_EVM_CHAINS } from '@lit-protocol/constants';
-import { VincentAppDefSchema } from '@lit-protocol/vincent-mcp-sdk';
+import { disconnectVincentToolClients } from '@lit-protocol/vincent-app-sdk';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 
-import { env } from '../env';
+import { getVincentAppDef } from '../appDefBuilder';
+import { env } from '../env/base';
 import { getServer } from '../server';
 
-const { VINCENT_APP_JSON_DEFINITION, VINCENT_DELEGATEE_PRIVATE_KEY } = env;
+const { VINCENT_DELEGATEE_PRIVATE_KEY } = env;
 
 const delegateeSigner = new ethers.Wallet(
   VINCENT_DELEGATEE_PRIVATE_KEY,
@@ -44,22 +43,31 @@ const delegateeSigner = new ethers.Wallet(
  * 4. Connects the server to the stdio transport
  * 5. Logs a message to stderr indicating the server is running
  *
- * @internal
+ * @hidden
  */
 async function main() {
-  const stdioTransport = new StdioServerTransport();
-  const vincentAppJson = fs.readFileSync(VINCENT_APP_JSON_DEFINITION, { encoding: 'utf8' });
-  const vincentAppDef = VincentAppDefSchema.parse(JSON.parse(vincentAppJson));
+  const vincentAppDef = await getVincentAppDef();
 
   const server = await getServer(vincentAppDef, {
     delegateeSigner,
     delegatorPkpEthAddress: undefined, // STDIO is ALWAYS running in a local environment
   });
-  await server.connect(stdioTransport);
-  console.error('Vincent MCP Server running in stdio mode'); // console.log is used for messaging the parent process
+  await server.connect(new StdioServerTransport());
+  console.error('Vincent MCP Server running in STDIO mode'); // console.log is used for messaging the parent process
+
+  function gracefulShutdown() {
+    console.error('🔌 Disconnecting from Lit Network...');
+
+    disconnectVincentToolClients();
+
+    console.error('🛑 Vincent MCP Server has been closed.');
+    process.exitCode = 0;
+  }
+  process.once('SIGINT', gracefulShutdown);
+  process.once('SIGTERM', gracefulShutdown);
 }
 
 main().catch((error) => {
-  console.error('Fatal error in main():', error);
+  console.error('Fatal error starting MCP server in STDIO mode:', error);
   process.exit(1);
 });

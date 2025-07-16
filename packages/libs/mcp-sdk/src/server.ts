@@ -6,72 +6,111 @@
  * @module mcp/server
  * @category Vincent MCP SDK
  */
-
-import { LIT_NETWORK } from '@lit-protocol/constants';
-import { LitNodeClient } from '@lit-protocol/lit-node-client';
-import type { LitNodeClientConfig } from '@lit-protocol/types';
-import { utils } from '@lit-protocol/vincent-app-sdk';
-import type { Implementation } from '@modelcontextprotocol/sdk/types.js';
-import type { ServerOptions } from '@modelcontextprotocol/sdk/server/index.js';
-import type { Transport } from '@modelcontextprotocol/sdk/shared/transport.js';
+import { getVincentToolClient, utils } from '@lit-protocol/vincent-app-sdk';
+import { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { Signer } from 'ethers';
-
 import {
-  buildMcpToolName,
-  buildMcpParamDefinitions,
-  buildMcpToolCallback,
-  VincentAppDef,
-  VincentAppDefSchema,
-  VincentToolDefWithIPFS,
-} from './definitions';
+  CallToolResult,
+  ServerRequest,
+  ServerNotification,
+} from '@modelcontextprotocol/sdk/types.js';
+import { Signer } from 'ethers';
+import { type ZodRawShape } from 'zod';
+
+import { buildMcpToolName, VincentAppDef, VincentAppDefSchema } from './definitions';
 
 const { getDelegatorsAgentPkpAddresses } = utils;
 
+/**
+ * Configuration for a Vincent MCP server regarding its delegation mode.
+ *
+ * @property {Signer} delegateeSigner - The signer for the delegatee, used to execute tools.
+ * @property {string | undefined} delegatorPkpEthAddress - The PKP Ethereum address of the delegator. If undefined, the server operates in delegatee-only mode.
+ */
 export interface DelegationMcpServerConfig {
   delegateeSigner: Signer;
   delegatorPkpEthAddress: string | undefined;
 }
 
-export interface LitServerOptions extends ServerOptions {
-  litNodeClientOptions: LitNodeClientConfig;
-}
+/**
+ * Registers Vincent tools with an MCP server.
+ *
+ * This function iterates through the tools defined in the Vincent application definition,
+ * dynamically imports each tool's package, and registers it with the provided MCP server.
+ * It configures each tool to be executed with the delegatee's signer and handles parameter descriptions.
+ *
+ * @param {VincentAppDef} vincentAppDef - The Vincent application definition containing the tools to register.
+ * @param {McpServer} server - The MCP server instance to register the tools with.
+ * @param {DelegationMcpServerConfig} config - The server configuration, including the delegatee signer.
+ * @private
+ * @hidden
+ */
+async function registerVincentTools(
+  vincentAppDef: VincentAppDef,
+  server: McpServer,
+  config: DelegationMcpServerConfig
+) {
+  const { delegateeSigner, delegatorPkpEthAddress } = config;
 
-export class VincentMcpServer extends McpServer {
-  litNodeClient: LitNodeClient;
+  for (const vincentAppToolDef of Object.values(vincentAppDef.tools)) {
+    const bundledVincentTool = vincentAppToolDef.bundledVincentTool;
+    const {
+      vincentTool: { packageName, toolDescription, toolParamsSchema },
+    } = bundledVincentTool;
 
-  constructor(serverInfo: Implementation, options?: LitServerOptions) {
-    super(serverInfo, options);
-
-    const litNodeClientOptions = options?.litNodeClientOptions || {};
-    this.litNodeClient = new LitNodeClient({
-      debug: true,
-      litNetwork: LIT_NETWORK.Datil,
-      ...litNodeClientOptions,
+    const toolClient = getVincentToolClient({
+      ethersSigner: delegateeSigner,
+      bundledVincentTool: bundledVincentTool,
     });
-  }
 
-  override async connect(transport: Transport): Promise<void> {
-    await super.connect(transport);
+    // Add available descriptions to each param
+    const toolParamsSchemaShape = { ...toolParamsSchema.shape };
+    Object.entries(vincentAppToolDef.parameters || {}).forEach(([key, param]) => {
+      if (param.description) {
+        toolParamsSchemaShape[key] = toolParamsSchemaShape[key].describe(param.description);
+      }
+    });
 
-    await this.litNodeClient.connect();
-  }
+    server.registerTool(
+      buildMcpToolName(vincentAppDef, vincentAppToolDef.name || packageName),
+      {
+        description: vincentAppToolDef.description || toolDescription || '', // First versions on the tool SDK did not have a description
+        inputSchema: toolParamsSchemaShape,
+      },
+      async (
+        args: ZodRawShape,
+        extra: RequestHandlerExtra<ServerRequest, ServerNotification>
+      ): Promise<CallToolResult> => {
+        const precheckResult = await toolClient.precheck(args, {
+          delegatorPkpEthAddress: delegatorPkpEthAddress!,
+        });
+        if ('error' in precheckResult || !precheckResult.success) {
+          throw new Error(
+            JSON.stringify(
+              {
+                success: precheckResult.success,
+                error: precheckResult.error,
+                result: precheckResult.result,
+              },
+              null,
+              2
+            )
+          );
+        }
 
-  override async close(): Promise<void> {
-    await this.litNodeClient.disconnect();
-  }
+        const executeResult = await toolClient.execute(args, {
+          delegatorPkpEthAddress: delegatorPkpEthAddress!,
+        });
 
-  vincentTool(
-    name: string,
-    toolData: VincentToolDefWithIPFS,
-    delegateeSigner: Signer,
-    delegatorPkpEthAddress?: string
-  ) {
-    this.tool(
-      name,
-      toolData.description,
-      buildMcpParamDefinitions(toolData.parameters, !delegatorPkpEthAddress),
-      buildMcpToolCallback(this.litNodeClient, delegateeSigner, delegatorPkpEthAddress, toolData)
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(executeResult),
+            },
+          ],
+        };
+      }
     );
   }
 }
@@ -79,12 +118,15 @@ export class VincentMcpServer extends McpServer {
 /**
  * Creates an MCP server for a Vincent application
  *
- * This function configures an MCP server with the tools defined in the Vincent application definition.
- * Each tool is registered with the server and configured to use the provided delegatee signer for execution.
+ * This function configures an MCP server based on the Vincent application definition provided.
+ * Each Vincent tool is registered with the server and configured to use the provided delegatee signer for execution.
+ * Extra tools to get delegator and app info are added.
+ *
+ * Tool packages MUST be installed before calling this function as it will try to import them on demand.
  *
  * Check (MCP Typescript SDK docs)[https://github.com/modelcontextprotocol/typescript-sdk] for more details on MCP server definition.
  *
- * @param vincentAppDefinition - The Vincent application definition containing the tools to register
+ * @param {VincentAppDef} vincentAppDefinition - The Vincent application definition containing the tools to register
  * @param {DelegationMcpServerConfig} config - The server configuration
  * @returns A configured MCP server instance
  *
@@ -105,13 +147,12 @@ export class VincentMcpServer extends McpServer {
  *   name: 'My Vincent App',
  *   description: 'A Vincent application that executes tools for its delegators',
  *   tools: {
- *     'QmIpfsCid1': {
+ *     '@organization/some_tool': {
  *       name: 'myTool',
  *       description: 'A tool that does something',
  *       parameters: [
  *         {
  *           name: 'param1',
- *           type: 'string',
  *           description: 'A parameter that is used in the tool to do something'
  *         }
  *       ]
@@ -132,36 +173,54 @@ export async function getVincentAppServer(
   config: DelegationMcpServerConfig
 ): Promise<McpServer> {
   const { delegatorPkpEthAddress } = config;
-  const _vincentAppDefinition = VincentAppDefSchema.parse(vincentAppDefinition);
+  const vincentAppDef = VincentAppDefSchema.parse(vincentAppDefinition);
 
-  const server = new VincentMcpServer({
-    name: _vincentAppDefinition.name,
-    version: _vincentAppDefinition.version,
+  const server = new McpServer({
+    name: vincentAppDef.name,
+    version: vincentAppDef.version,
   });
 
   if (delegatorPkpEthAddress) {
-    server.tool(
-      buildMcpToolName(_vincentAppDefinition, 'get-current-agent-pkp-address'),
-      `Tool to get your agent pkp eth address in use for the ${_vincentAppDefinition.name} Vincent App MCP.`,
-      async () => {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: delegatorPkpEthAddress,
-            },
-          ],
-        };
-      }
+    // Add as resource and tool to maximize compatibility (some LLM clients may not support resources)
+    server.registerResource(
+      buildMcpToolName(vincentAppDef, 'current-agent-eth-address'),
+      'agent://current/eth-address',
+      {
+        description: `Resource to get current agent eth address in use for Vincent App ${vincentAppDef.id}/${vincentAppDef.version}.`,
+      },
+      async (uri: URL) => ({
+        contents: [
+          {
+            uri: uri.href,
+            text: delegatorPkpEthAddress,
+          },
+        ],
+      })
+    );
+    server.registerTool(
+      buildMcpToolName(vincentAppDef, 'get-current-agent-eth-address'),
+      {
+        description: `Tool to get current agent eth address in use for Vincent App ${vincentAppDef.id}/${vincentAppDef.version}.`,
+      },
+      async () => ({
+        content: [
+          {
+            type: 'text',
+            text: delegatorPkpEthAddress,
+          },
+        ],
+      })
     );
   } else {
     // In delegatee mode (no delegator), user has to be able to fetch its delegators and select which one to operate on behalf of
-    server.tool(
-      buildMcpToolName(_vincentAppDefinition, 'get-delegators-eth-addresses'),
-      `Tool to get the delegators pkp Eth addresses for the ${_vincentAppDefinition.name} Vincent App.`,
+    server.registerTool(
+      buildMcpToolName(vincentAppDef, 'get-delegators-eth-addresses'),
+      {
+        description: `Tool to get the delegators pkp Eth addresses for the ${vincentAppDef.name} Vincent App.`,
+      },
       async () => {
-        const appId = parseInt(_vincentAppDefinition.id, 10);
-        const appVersion = parseInt(_vincentAppDefinition.version, 10);
+        const appId = parseInt(vincentAppDef.id, 10);
+        const appVersion = parseInt(vincentAppDef.version, 10);
 
         const delegatorsPkpEthAddresses = await getDelegatorsAgentPkpAddresses(appId, appVersion);
 
@@ -177,36 +236,45 @@ export async function getVincentAppServer(
     );
   }
 
-  server.tool(
-    buildMcpToolName(_vincentAppDefinition, 'get-current-vincent-app-info'),
-    `Tool to get the ${_vincentAppDefinition.name} Vincent App info.`,
-    async () => {
-      const appInfo = {
-        id: _vincentAppDefinition.id,
-        name: _vincentAppDefinition.name,
-        version: _vincentAppDefinition.version,
-        description: _vincentAppDefinition.description,
-      };
-
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(appInfo),
-          },
-        ],
-      };
-    }
+  const appInfo = {
+    id: vincentAppDef.id,
+    name: vincentAppDef.name,
+    version: vincentAppDef.version,
+    description: vincentAppDef.description,
+  };
+  // Add as resource and tool to maximize compatibility (some LLM clients may not support resources)
+  server.registerResource(
+    buildMcpToolName(vincentAppDef, 'current-vincent-app-info'),
+    `app://${vincentAppDef.id}/${vincentAppDef.version}/info`,
+    {
+      description: `Resource to get the Vincent App ${vincentAppDef.id}/${vincentAppDef.version} info.`,
+    },
+    async (uri: URL) => ({
+      contents: [
+        {
+          uri: uri.href,
+          text: JSON.stringify(appInfo),
+        },
+      ],
+    })
+  );
+  server.registerTool(
+    buildMcpToolName(vincentAppDef, 'get-current-vincent-app-info'),
+    {
+      description: `Tool to get the Vincent App ${vincentAppDef.id}/${vincentAppDef.version} info.`,
+    },
+    async () => ({
+      content: [
+        {
+          type: 'text',
+          text: JSON.stringify(appInfo),
+        },
+      ],
+    })
   );
 
-  Object.entries(_vincentAppDefinition.tools).forEach(([toolIpfsCid, tool]) => {
-    server.vincentTool(
-      buildMcpToolName(_vincentAppDefinition, tool.name),
-      { ipfsCid: toolIpfsCid, ...tool },
-      config.delegateeSigner,
-      config.delegatorPkpEthAddress
-    );
-  });
+  // Fetch and install tool packages, then load them as Vincent MCP Tools
+  await registerVincentTools(vincentAppDef, server, config);
 
   return server;
 }

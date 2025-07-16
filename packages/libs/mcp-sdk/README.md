@@ -21,6 +21,8 @@ The SDK provides tools to transform your Vincent application into an MCP server,
 ```typescript
 import { ethers } from 'ethers';
 import { getVincentAppServer, VincentAppDef } from '@lit-protocol/vincent-mcp-sdk';
+import { bundledVincentTool as firstBundledVincentTool } from '@organization/first-tool-npm-pkg-name';
+import { bundledVincentTool as secondBundledVincentTool } from '@organization/second-tool-npm-pkg-name';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 
 // Create a signer for your delegatee account
@@ -35,32 +37,30 @@ const vincentApp: VincentAppDef = {
   name: 'My Vincent App',
   version: '1',
   tools: {
-    'ipfs-cid-of-tool-1': {
+    '@organization/first-tool-npm-pkg-name': {
+      version: '0.1.0',
+      bundledVincentTool: firstBundledVincentTool,
       name: 'sendMessage',
       description: 'Send a message to a user',
-      parameters: [
-        {
-          name: 'recipient',
-          type: 'address',
+      parameters: {
+        recipient: {
           description: 'Ethereum address of the recipient',
         },
-        {
-          name: 'message',
-          type: 'string',
+        message: {
           description: 'Message content to send',
         },
-      ],
+      },
     },
-    'ipfs-cid-of-tool-2': {
+    '@organization/second-tool-npm-pkg-name': {
+      version: '0.1.0',
+      bundledVincentTool: secondBundledVincentTool,
       name: 'checkBalance',
       description: 'Check the balance of an account',
-      parameters: [
-        {
-          name: 'address',
-          type: 'address',
+      parameters: {
+        address: {
           description: 'Ethereum address to check',
         },
-      ],
+      },
     },
   },
 };
@@ -76,13 +76,15 @@ await mcpServer.connect(stdioTransport);
 
 ### How It Works
 
-1. **Define Your Vincent Application**: Create a Vincent application definition with the tools you want to expose to LLMs.
+1. **Install Tool packages from NPM**: Install tool packages from NPM using the package names and versions specified in your Vincent application definition.
 
-2. **Create an MCP Server**: Use `getVincentAppServer()` to transform your Vincent application into an MCP server.
+2. **Define Your Vincent Application**: Create a Vincent application definition with the tools you want to expose to LLMs.
 
-3. **Connect to a Transport**: Connect your MCP server to a transport mechanism (stdio, HTTP, etc.) to allow LLMs to communicate with it.
+3. **Create an MCP Server**: Use `getVincentAppServer()` to transform your Vincent application definition into an MCP server.
 
-4. **LLM Interaction**: LLMs can now discover and use your Vincent tools through the MCP interface, executing them on behalf of authenticated users.
+4. **Connect to a Transport**: Connect your MCP server to a transport mechanism (stdio, HTTP, etc.) to allow LLMs to communicate with it.
+
+5. **LLM Interaction**: LLMs can now discover and use your Vincent tools through the MCP interface, executing them on behalf of authenticated users.
 
 ### Benefits
 

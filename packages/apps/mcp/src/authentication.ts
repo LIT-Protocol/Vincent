@@ -4,18 +4,12 @@ import { SiweMessage } from 'siwe';
 
 import { nonceManager } from './nonceManager';
 
-import { env } from './env';
+import { env } from './env/http';
 
 const { EXPECTED_AUDIENCE, SIWE_EXPIRATION_TIME, VINCENT_MCP_BASE_URL } = env;
 const { verify } = jwt;
 
 const YELLOWSTONE = LIT_EVM_CHAINS.yellowstone;
-
-if (!EXPECTED_AUDIENCE || !VINCENT_MCP_BASE_URL) {
-  throw new Error(
-    '"EXPECTED_AUDIENCE" or "VINCENT_MCP_BASE_URL" environment variable missing. They are required for proper authentication',
-  );
-}
 
 /**
  * Generates a SIWE (Sign-In with Ethereum) message for authentication.
@@ -56,15 +50,16 @@ export async function authenticateWithSiwe(
   signature: string,
 ): Promise<string> {
   const siweMsg = new SiweMessage(messageToSign);
-  const verification = await siweMsg.verify({ signature });
+  const verification = await siweMsg.verify({ domain: VINCENT_MCP_BASE_URL, signature });
 
-  const { address, domain, nonce, uri } = verification.data;
+  const { address, expirationTime, issuedAt, nonce, uri } = verification.data;
 
   if (
     !verification.success ||
+    !issuedAt ||
+    !expirationTime ||
     !nonceManager.consumeNonce(address, nonce) ||
-    // @ts-expect-error Env var is defined or this module would have thrown
-    domain !== new URL(VINCENT_MCP_BASE_URL).host || // Env var is defined or this module would have thrown
+    new Date(issuedAt).getTime() + SIWE_EXPIRATION_TIME >= new Date(expirationTime).getTime() ||
     uri !== EXPECTED_AUDIENCE
   ) {
     throw new Error('SIWE message verification failed');
@@ -84,7 +79,6 @@ export async function authenticateWithSiwe(
  * @throws {Error} If the JWT is invalid or doesn't match the expected app ID/version
  */
 export function authenticateWithJwt(jwt: string, appId: string, appVersion: string): string {
-  // @ts-expect-error Env var is defined or this module would have thrown
   const decodedJwt = verify(jwt, EXPECTED_AUDIENCE);
   const { id, version } = decodedJwt.payload.app;
   if (id !== appId || version !== parseInt(appVersion)) {
