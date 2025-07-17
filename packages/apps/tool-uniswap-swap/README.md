@@ -11,6 +11,7 @@ The Vincent Tool Uniswap Swap is part of the Vincent Tools ecosystem and is buil
 - Execute token swaps on Uniswap V3
 - Support for exact input and exact output swaps
 - Support for multiple token pairs
+- Support for multi-hop swaps (routing through multiple pools for better rates)
 - Integration with spending limit policies for enhanced security
 - Support for multiple chains and Uniswap deployments
 
