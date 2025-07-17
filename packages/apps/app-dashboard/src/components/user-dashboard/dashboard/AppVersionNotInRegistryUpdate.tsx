@@ -14,8 +14,8 @@ type AppVersionNotInRegistryUpdateProps = {
   readAuthInfo: UseReadAuthInfo;
 };
 
-export function AppVersionNotInRegistryUpdate({ appData }: AppVersionNotInRegistryUpdateProps) {
-  const { isDark } = useTheme();
+export function AppNotInRegistryConsent({ appData, readAuthInfo }: AppNotInRegistryConsentProps) {
+  const { isDark, toggleTheme } = useTheme();
   const themeStyles = theme(isDark);
   const navigate = useNavigate();
 

@@ -1,5 +1,4 @@
 import { useState, useCallback, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { permitApp } from '@lit-protocol/vincent-contracts-sdk';
 import { ConsentInfoMap } from '@/hooks/user-dashboard/consent/useConsentInfo';
 import { useConsentFormData } from '@/hooks/user-dashboard/consent/useConsentFormData';
@@ -25,7 +24,6 @@ interface ConsentPageProps {
 
 export function ConsentPage({ consentInfoMap, readAuthInfo }: ConsentPageProps) {
   const { isDark, toggleTheme } = useTheme();
-  const navigate = useNavigate();
   const [localError, setLocalError] = useState<string | null>(null);
   const [isConsentProcessing, setIsConsentProcessing] = useState(false);
   const formRefs = useRef<Record<string, PolicyFormRef>>({});
