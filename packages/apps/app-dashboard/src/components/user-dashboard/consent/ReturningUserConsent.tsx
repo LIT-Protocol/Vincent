@@ -9,7 +9,7 @@ import { ActionCard } from './ui/ActionCard';
 import { useNavigate } from 'react-router-dom';
 import { UseReadAuthInfo } from '@/hooks/user-dashboard/useAuthInfo';
 import { App } from '@/types/developer-dashboard/appTypes';
-import { useSystemTheme } from '@/hooks/user-dashboard/consent/useSystemTheme';
+import { useTheme } from '@/providers/ThemeProvider';
 
 type ReturningUserConsentProps = {
   appData: App;
@@ -22,13 +22,13 @@ export function ReturningUserConsent({
   version,
   readAuthInfo,
 }: ReturningUserConsentProps) {
-  const { isDark, toggleTheme } = useSystemTheme();
+  const { isDark, toggleTheme } = useTheme();
   const themeStyles = theme(isDark);
   const navigate = useNavigate();
   const { generateJWT, isLoading, loadingStatus, error } = useJwtRedirect({ readAuthInfo });
 
   const handleEditParameters = () => {
-    navigate('/user/apps');
+    navigate(`/user/appId/${appData.appId}`);
   };
 
   const handleContinue = async () => {

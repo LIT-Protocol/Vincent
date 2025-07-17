@@ -2,10 +2,10 @@ import Skeleton, { SkeletonTheme } from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 import { Card, CardContent } from '@/components/shared/ui/card';
 import { theme } from './ui/theme';
-import { useSystemTheme } from '@/hooks/user-dashboard/consent/useSystemTheme';
+import { useTheme } from '@/providers/ThemeProvider';
 
 export function ConsentPageSkeleton() {
-  const { isDark } = useSystemTheme();
+  const { isDark } = useTheme();
   const themeStyles = theme(isDark);
 
   return (

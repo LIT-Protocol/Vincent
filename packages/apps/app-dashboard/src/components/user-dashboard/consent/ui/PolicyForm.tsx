@@ -70,6 +70,10 @@ export const PolicyForm = forwardRef<PolicyFormRef, PolicyFormProps>(
       <div className="mt-4 p-4 bg-opacity-50 rounded-lg border border-opacity-20">
         <style>
           {`
+            .policy-form-${policy.ipfsCid} * {
+              color: ${isDark ? 'rgb(255 255 255 / 0.8)' : 'rgb(17 24 39)'} !important;
+            }
+            
             .policy-form-${policy.ipfsCid} label {
               color: ${isDark ? 'rgb(255 255 255 / 0.9)' : 'rgb(17 24 39)'};
               font-weight: 500;

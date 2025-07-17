@@ -5,10 +5,10 @@ import { InfoBanner } from './ui/InfoBanner';
 import { Button } from '@/components/shared/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
 import ConsentView from './Consent';
-import { useSystemTheme } from '@/hooks/user-dashboard/consent/useSystemTheme';
+import { useTheme } from '@/providers/ThemeProvider';
 
 export function AuthenticationErrorScreen() {
-  const { isDark, toggleTheme } = useSystemTheme();
+  const { isDark, toggleTheme } = useTheme();
   const themeStyles = theme(isDark);
 
   return (

@@ -5,14 +5,14 @@ import { InfoBanner } from './ui/InfoBanner';
 import { ActionCard } from './ui/ActionCard';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/shared/ui/button';
-import { useSystemTheme } from '@/hooks/user-dashboard/consent/useSystemTheme';
+import { useTheme } from '@/providers/ThemeProvider';
 
 type GeneralErrorScreenProps = {
   errorDetails: string;
 };
 
 export function GeneralErrorScreen({ errorDetails }: GeneralErrorScreenProps) {
-  const { isDark, toggleTheme } = useSystemTheme();
+  const { isDark, toggleTheme } = useTheme();
   const themeStyles = theme(isDark);
   const navigate = useNavigate();
 

@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef } from 'react';
-import { permitApp, getAllToolsAndPoliciesForApp } from '@lit-protocol/vincent-contracts-sdk';
+import { permitApp } from '@lit-protocol/vincent-contracts-sdk';
 import { ConsentInfoMap } from '@/hooks/user-dashboard/consent/useConsentInfo';
 import { useConsentFormData } from '@/hooks/user-dashboard/consent/useConsentFormData';
 import { ConsentPageHeader } from './ui/ConsentPageHeader';
@@ -15,7 +15,7 @@ import { StatusCard } from './ui/StatusCard';
 import { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
 import { litNodeClient } from '@/utils/user-dashboard/lit';
 import { useJwtRedirect } from '@/hooks/user-dashboard/consent/useJwtRedirect';
-import { useSystemTheme } from '@/hooks/user-dashboard/consent/useSystemTheme';
+import { useTheme } from '@/providers/ThemeProvider';
 
 interface ConsentPageProps {
   consentInfoMap: ConsentInfoMap;
@@ -23,7 +23,7 @@ interface ConsentPageProps {
 }
 
 export function ConsentPage({ consentInfoMap, readAuthInfo }: ConsentPageProps) {
-  const { isDark, toggleTheme } = useSystemTheme();
+  const { isDark, toggleTheme } = useTheme();
   const [localError, setLocalError] = useState<string | null>(null);
   const formRefs = useRef<Record<string, PolicyFormRef>>({});
 
@@ -61,22 +61,22 @@ export function ConsentPage({ consentInfoMap, readAuthInfo }: ConsentPageProps) 
 
       console.log('formData', formData);
 
-      const agentPkpWallet = new PKPEthersWallet({
+      const userPkpWallet = new PKPEthersWallet({
         controllerSessionSigs: readAuthInfo.sessionSigs,
         pkpPubKey: readAuthInfo.authInfo.userPKP.publicKey,
         litNodeClient: litNodeClient,
       });
-      await agentPkpWallet.init();
+      await userPkpWallet.init();
 
       await addPermittedActions({
-        wallet: agentPkpWallet,
+        wallet: userPkpWallet,
         agentPKPTokenId: readAuthInfo.authInfo.userPKP.tokenId,
         toolIpfsCids: Object.keys(formData),
       });
 
       try {
-        const permitAppResponse = await permitApp({
-          signer: agentPkpWallet,
+        await permitApp({
+          signer: userPkpWallet,
           args: {
             pkpTokenId: readAuthInfo.authInfo.agentPKP!.tokenId,
             appId: consentInfoMap.app.appId.toString(),
@@ -84,18 +84,6 @@ export function ConsentPage({ consentInfoMap, readAuthInfo }: ConsentPageProps) 
             permissionData: formData,
           },
         });
-
-        console.log('permitAppResponse', permitAppResponse);
-
-        const allToolsAndPoliciesForApp = await getAllToolsAndPoliciesForApp({
-          signer: agentPkpWallet,
-          args: {
-            pkpTokenId: readAuthInfo.authInfo.agentPKP!.tokenId,
-            appId: consentInfoMap.app.appId.toString(),
-          },
-        });
-
-        console.log('allToolsAndPoliciesForApp', allToolsAndPoliciesForApp);
       } catch (error) {
         setLocalError(error instanceof Error ? error.message : 'Failed to permit app');
         return;

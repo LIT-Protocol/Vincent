@@ -1,10 +1,10 @@
 import { Helmet } from 'react-helmet-async';
 import ConsentView from '@/components/user-dashboard/consent/Consent';
-import { useSystemTheme } from '@/hooks/user-dashboard/consent/useSystemTheme';
+import { useTheme } from '@/providers/ThemeProvider';
 import { theme } from '@/components/user-dashboard/consent/ui/theme';
 
 export default function UserHome() {
-  const { isDark } = useSystemTheme();
+  const { isDark } = useTheme();
   const themeStyles = theme(isDark);
 
   return (

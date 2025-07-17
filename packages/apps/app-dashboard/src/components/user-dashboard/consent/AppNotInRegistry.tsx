@@ -8,7 +8,7 @@ import { ActionCard } from './ui/ActionCard';
 import { useNavigate } from 'react-router-dom';
 import { UseReadAuthInfo } from '@/hooks/user-dashboard/useAuthInfo';
 import { App } from '@/types/developer-dashboard/appTypes';
-import { useSystemTheme } from '@/hooks/user-dashboard/consent/useSystemTheme';
+import { useTheme } from '@/providers/ThemeProvider';
 
 type AppNotInRegistryConsentProps = {
   appData: App;
@@ -16,7 +16,7 @@ type AppNotInRegistryConsentProps = {
 };
 
 export function AppNotInRegistryConsent({ appData, readAuthInfo }: AppNotInRegistryConsentProps) {
-  const { isDark, toggleTheme } = useSystemTheme();
+  const { isDark, toggleTheme } = useTheme();
   const themeStyles = theme(isDark);
   const navigate = useNavigate();
 
