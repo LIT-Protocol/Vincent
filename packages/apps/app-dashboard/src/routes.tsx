@@ -52,7 +52,7 @@ import {
 } from './components/developer-dashboard/policy/wrappers';
 
 import { Home, Wallet, Apps, UserDashboard } from './pages/user-dashboard';
-import { UserAppManagementWrapper } from './components/user-dashboard/dashboard/UserAppManagementWrapper';
+import { UserPermissionWrapper } from './components/user-dashboard/dashboard/UserPermissionWrapper';
 import { ConsentPageWrapper } from './components/user-dashboard/consent/ConsentPageWraper';
 
 const AppLayoutWithProviders = wrap(() => <Outlet />, [...AppProviders, AppLayout]);
@@ -251,7 +251,7 @@ const routes: RouteObject[] = [
           },
           {
             path: 'appId/:appId',
-            element: <UserAppManagementWrapper />,
+            element: <UserPermissionWrapper />,
           },
           {
             path: 'apps',

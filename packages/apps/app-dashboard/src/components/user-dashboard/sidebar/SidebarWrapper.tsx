@@ -3,7 +3,7 @@ import { AppSidebar } from '../dashboard/AppSidebar';
 import { SidebarSkeleton } from './SidebarSkeleton';
 import { StatusMessage } from '@/components/shared/ui/statusMessage';
 import useReadAuthInfo from '@/hooks/user-dashboard/useAuthInfo';
-import { useUserAppManagementMiddleware } from '@/hooks/user-dashboard/dashboard/useUserAppManagementMiddleware';
+import { useUserPermissionsMiddleware } from '@/hooks/user-dashboard/dashboard/useUserPermissionsMiddleware';
 import { useMemo } from 'react';
 
 export function SidebarWrapper() {
@@ -13,8 +13,8 @@ export function SidebarWrapper() {
   const {
     permittedApps,
     isLoading: permissionsLoading,
-    error: UserAppManagementsError,
-  } = useUserAppManagementMiddleware({
+    error: UserPermissionsError,
+  } = useUserPermissionsMiddleware({
     pkpTokenId: authInfo?.agentPKP?.tokenId || '',
   });
 
@@ -50,10 +50,10 @@ export function SidebarWrapper() {
     );
   }
 
-  if (appsError || UserAppManagementsError)
+  if (appsError || UserPermissionsError)
     return (
       <StatusMessage
-        message={`Failed to load available apps, ${appsError || UserAppManagementsError}`}
+        message={`Failed to load available apps, ${appsError || UserPermissionsError}`}
         type="error"
       />
     );
