@@ -2322,6 +2322,9 @@ packages:
   '@lit-protocol/access-control-conditions@7.2.0':
     resolution: {integrity: sha512-pET0l1lmpg1lgvRHZAiOhVk1qci4yvsArK/OMemsqkm1GC6b47Pqn9HkKMi7Hm8OiDhLrva635hQy7Hz5KZqag==}
 
+  '@lit-protocol/accs-schemas@0.0.22':
+    resolution: {integrity: sha512-c3LPDE8g8COt8FdXx+Nfv4CvEvP+QcHh94HZcukcttjZyu6jjICecq/XMXWVUSMGhAVWRMH8tBbjpHzElB45QQ==}
+
   '@lit-protocol/accs-schemas@0.0.28':
     resolution: {integrity: sha512-SkayRWUz7MvibjKO/MN8xuhEziyWPlKYZ5wrPdC9gDqvgiJR1BM95tY89jv/ypVDA+u5B3DhtXXYMpIQCSHUOg==}
 
@@ -2331,8 +2334,41 @@ packages:
   '@lit-protocol/auth-helpers@7.2.0':
     resolution: {integrity: sha512-mG3/cZ6cvNhWiPOXxwX1Wr7x8UOUmH/xWU4O07EDJapdr1MhMrzUm/UzPVVTjwD/BlD9R5X7A4sMulzVglRAiw==}
 
+  '@lit-protocol/aw-contracts-sdk@0.1.0-23':
+    resolution: {integrity: sha512-q+IiXsKoCAflFbXVUXFhxUR7NhDZ2jdIpf9FUZDDTMTqZIo60zmPNRtXLYgxjjs5yM8PQ95Qc9ssGQ3fe9KcKA==}
+
+  '@lit-protocol/aw-tool-enso@0.1.0-23':
+    resolution: {integrity: sha512-d4So9hBc9WxFHJLn2DuTYU/DwzUn16kjsI4kjtVNRrwUkqtMz66PQwf/Q3JHWSnTqU1hPni6y76M8aANUbixUg==}
+
+  '@lit-protocol/aw-tool-erc20-transfer@0.1.0-23':
+    resolution: {integrity: sha512-N8TQnWqcz44BKIKANMSdVJnrau1zdzrTSRrJFL0oQGEcYfIgLVdo4iPd4Aaz80o4qHAg3t3K79y21mWm6Cyhsw==}
+
+  '@lit-protocol/aw-tool-jupiter-swap@0.1.0-23':
+    resolution: {integrity: sha512-1Ht4RsWG02uzikckz/0qE+REwWR/m1aFbbkigaKYJPkr7F08MPJOjVmwlmGxgMXJscvrvdfdJqyyvWaLDUHvwQ==}
+
+  '@lit-protocol/aw-tool-registry@0.1.0-23':
+    resolution: {integrity: sha512-D1iLZfbPzkQVvEjUrWvfnnZpI32V/RkAjFg7E7lI7etB2vh4bwJHq3hc9sIG6LJBswaBdY8kKN+1RI7yiRFIfw==}
+
+  '@lit-protocol/aw-tool-sign-ecdsa@0.1.0-23':
+    resolution: {integrity: sha512-JWocja77tuCIlmxQunSD+ftBoyO3Fb0igiuz+q9Uje16QRc4ETBPe2l16HVhp5bBDpEGQrXxV8VURfi+zobdrQ==}
+
+  '@lit-protocol/aw-tool-sign-eddsa@0.1.0-23':
+    resolution: {integrity: sha512-1TcJs5M2xLbh0kLZYbSk7l5SJPAdh6fiPUdLt5Bd2iZvYZrC7PCixb+T2MvXxXvL7DPstlmUdPhSBzleLQRCHw==}
+
+  '@lit-protocol/aw-tool-uniswap-swap@0.1.0-23':
+    resolution: {integrity: sha512-uyqOs+7SV8JDaR8s+Xj6MD6+veFFW9Hi3Ei3NrxioeasSvIKXZYkto+dYauQeMVGeZvI0+ndbpZhxtd19uaDeQ==}
+
+  '@lit-protocol/aw-tool@0.1.0-23':
+    resolution: {integrity: sha512-1comgyTqhYt4irT4+sJJoMSBUvJovw8MYhIzU/H2plHI5OYpWj3M4jZd5xjDiPgv7uc4RpPbEFxYRv4Kth953g==}
+
+  '@lit-protocol/constants@7.0.6':
+    resolution: {integrity: sha512-ZU0V3Ixw/xzHtPnRCK6lf8PdU9P6PyfhQQ8AEeQ7Eygh5dOBA0IFC7hArTa/If/+BssWPdsj5vwIdwKOgIbTMQ==}
+
   '@lit-protocol/constants@7.2.0':
     resolution: {integrity: sha512-oY/+pxWP5t/9ItE13wyM+79G2ORxpsIsCuke+k3vVuGLaApyYVQQBKc/qS2RWXLalQuCG/835T1KBUbf7ghISw==}
+
+  '@lit-protocol/contracts-sdk@7.0.6':
+    resolution: {integrity: sha512-U87r7JcZFj4i0VhHnVysLrqpWJUEpE7PzqVOLjI6QrqLUGlSAxxDeKL5FHcrK/ZTf7h33pVGQ/DydwIXJPZHeA==}
 
   '@lit-protocol/contracts-sdk@7.2.0':
     resolution: {integrity: sha512-2O0KCT/13JeI+WSbPAQTMoQmbfFbH//gi7VaBTpol8V2ZxnAIh24+KA5uHrvNVtipIWVr8YfxAT9ja0B+2oafQ==}
@@ -2367,11 +2403,17 @@ packages:
   '@lit-protocol/lit-node-client@7.2.0':
     resolution: {integrity: sha512-o8c1bamNHK5T3SMj1imW3Wgu781/VXvE3b2d+h5WfDqLnr1JNPTmeasEEnWNcHs2hXAIpCbEAtEQ174y1DYr1g==}
 
+  '@lit-protocol/logger@7.0.6':
+    resolution: {integrity: sha512-dj8FAjpB+o46IIFHxH7++wUhUjzlXAJ2GXltj9RWcoAag6sPZftiLnDxZyU2RzqWLI1K2gtYuYn7aAOO94sgXA==}
+
   '@lit-protocol/logger@7.2.0':
     resolution: {integrity: sha512-5Ao1UwBYUvbkhJlIbtCIYlvZ0c2CmnXRa2Xb742jioiVd93suYxl6WE0pKHTcoZW14vhG4bWjGzO/UvsOjrOHA==}
 
   '@lit-protocol/misc-browser@7.2.0':
     resolution: {integrity: sha512-HdE35c5cetrI4jMW6DWUbPEbfqV4DuNgBbN4IfUMP+HLBQXdzvKUHGSxispvXWljQFjqQeRcCXJxsdUwtR6Fuw==}
+
+  '@lit-protocol/misc@7.0.6':
+    resolution: {integrity: sha512-wJJHS3XJZXCofBxtRiMOdSfcE55eZxoqyVbiE57qKlMoVWLBQdv4LUExaWdrmVZBPKLdShFfBCtz0sAMagrOyg==}
 
   '@lit-protocol/misc@7.2.0':
     resolution: {integrity: sha512-AsPC0LzUlyjTBECFude3dafcRPO71JPy4VfzhF6wsgppiRqVcJQfBMrqVtIxUiq8pkbuVFYljNMnPIEfKuUJBQ==}
@@ -2384,6 +2426,9 @@ packages:
 
   '@lit-protocol/pkp-ethers@7.2.0':
     resolution: {integrity: sha512-3n8jEILyXqSzZqEbSUaV5siNzFFAxvtywraIGvR8c/FRhRBKFSuYMCVlx1/4Sc59GcLLIPZ5PXlUK5aZDj5s5Q==}
+
+  '@lit-protocol/types@7.0.6':
+    resolution: {integrity: sha512-PT0m2hQuPhaXoDURsJkeUF8Nq8s4JGeamGmxLMLSLCoctXrFWBiCjw5GDOYLoFe3cEHPQSj19rm9mzyjxkqQ8g==}
 
   '@lit-protocol/types@7.2.0':
     resolution: {integrity: sha512-OScABdsFUnVwMUzkGM7YEaZNAd/3lVKcjwuAiYSLlT0czFsbFJl0Q7UVzB9QQyawgeezKQrkIfV+/XlqBra7jw==}
@@ -13071,6 +13116,10 @@ snapshots:
       - typescript
       - utf-8-validate
 
+  '@lit-protocol/accs-schemas@0.0.22':
+    dependencies:
+      ajv: 8.17.1
+
   '@lit-protocol/accs-schemas@0.0.28':
     dependencies:
       ajv: 8.17.1
@@ -13128,6 +13177,135 @@ snapshots:
       - typescript
       - utf-8-validate
 
+  '@lit-protocol/aw-contracts-sdk@0.1.0-23(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)':
+    dependencies:
+      '@lit-protocol/aw-tool': 0.1.0-23(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
+      '@lit-protocol/aw-tool-registry': 0.1.0-23(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
+      '@lit-protocol/constants': 7.0.6(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
+      '@lit-protocol/contracts-sdk': 7.0.6(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
+      bs58: 6.0.0
+      ethers: 5.8.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+    transitivePeerDependencies:
+      - bufferutil
+      - debug
+      - encoding
+      - typescript
+      - utf-8-validate
+
+  '@lit-protocol/aw-tool-enso@0.1.0-23(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)':
+    dependencies:
+      '@ensofinance/sdk': 1.1.6
+      '@lit-protocol/aw-tool': 0.1.0-23(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
+      ethers: 5.8.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+      tslib: 2.8.1
+      zod: 3.25.64
+    transitivePeerDependencies:
+      - bufferutil
+      - debug
+      - typescript
+      - utf-8-validate
+
+  '@lit-protocol/aw-tool-erc20-transfer@0.1.0-23(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)':
+    dependencies:
+      '@lit-protocol/aw-tool': 0.1.0-23(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
+      ethers: 5.8.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+      tslib: 2.8.1
+      zod: 3.25.64
+    transitivePeerDependencies:
+      - bufferutil
+      - typescript
+      - utf-8-validate
+
+  '@lit-protocol/aw-tool-jupiter-swap@0.1.0-23(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)':
+    dependencies:
+      '@lit-protocol/aw-tool': 0.1.0-23(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
+      '@solana/web3.js': 1.98.2(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
+      ethers: 5.8.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+      tslib: 2.8.1
+      zod: 3.25.64
+    transitivePeerDependencies:
+      - bufferutil
+      - encoding
+      - typescript
+      - utf-8-validate
+
+  '@lit-protocol/aw-tool-registry@0.1.0-23(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)':
+    dependencies:
+      '@lit-protocol/aw-tool': 0.1.0-23(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
+      '@lit-protocol/aw-tool-enso': 0.1.0-23(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
+      '@lit-protocol/aw-tool-erc20-transfer': 0.1.0-23(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
+      '@lit-protocol/aw-tool-jupiter-swap': 0.1.0-23(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
+      '@lit-protocol/aw-tool-sign-ecdsa': 0.1.0-23(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
+      '@lit-protocol/aw-tool-sign-eddsa': 0.1.0-23(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
+      '@lit-protocol/aw-tool-uniswap-swap': 0.1.0-23(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
+      ethers: 5.7.2(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+      tslib: 2.8.1
+    transitivePeerDependencies:
+      - bufferutil
+      - debug
+      - encoding
+      - typescript
+      - utf-8-validate
+
+  '@lit-protocol/aw-tool-sign-ecdsa@0.1.0-23(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)':
+    dependencies:
+      '@lit-protocol/aw-tool': 0.1.0-23(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
+      ethers: 5.8.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+      tslib: 2.8.1
+      zod: 3.25.64
+    transitivePeerDependencies:
+      - bufferutil
+      - typescript
+      - utf-8-validate
+
+  '@lit-protocol/aw-tool-sign-eddsa@0.1.0-23(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)':
+    dependencies:
+      '@lit-protocol/aw-tool': 0.1.0-23(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
+      ethers: 5.8.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+      tslib: 2.8.1
+      zod: 3.25.64
+    transitivePeerDependencies:
+      - bufferutil
+      - typescript
+      - utf-8-validate
+
+  '@lit-protocol/aw-tool-uniswap-swap@0.1.0-23(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)':
+    dependencies:
+      '@lit-protocol/aw-tool': 0.1.0-23(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
+      ethers: 5.8.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+      tslib: 2.8.1
+      zod: 3.25.64
+    transitivePeerDependencies:
+      - bufferutil
+      - typescript
+      - utf-8-validate
+
+  '@lit-protocol/aw-tool@0.1.0-23(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)':
+    dependencies:
+      '@lit-protocol/constants': 7.0.6(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
+      tslib: 2.8.1
+      zod: 3.25.64
+    transitivePeerDependencies:
+      - bufferutil
+      - typescript
+      - utf-8-validate
+
+  '@lit-protocol/constants@7.0.6(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)':
+    dependencies:
+      '@ethersproject/abstract-provider': 5.7.0
+      '@lit-protocol/accs-schemas': 0.0.22
+      '@lit-protocol/contracts': 0.0.74(typescript@5.8.3)
+      '@lit-protocol/types': 7.0.6(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+      '@openagenda/verror': 3.1.4
+      depd: 2.0.0
+      ethers: 5.8.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+      siwe: 2.3.2(ethers@5.8.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))
+      tslib: 1.14.1
+    transitivePeerDependencies:
+      - bufferutil
+      - typescript
+      - utf-8-validate
+
   '@lit-protocol/constants@7.2.0(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)':
     dependencies:
       '@ethersproject/abstract-provider': 5.7.0
@@ -13139,6 +13317,33 @@ snapshots:
       ethers: 5.8.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       siwe: 2.3.2(ethers@5.8.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))
       tslib: 1.14.1
+    transitivePeerDependencies:
+      - bufferutil
+      - typescript
+      - utf-8-validate
+
+  '@lit-protocol/contracts-sdk@7.0.6(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)':
+    dependencies:
+      '@ethersproject/abi': 5.7.0
+      '@ethersproject/abstract-provider': 5.7.0
+      '@ethersproject/contracts': 5.7.0
+      '@ethersproject/providers': 5.7.2(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+      '@lit-protocol/accs-schemas': 0.0.22
+      '@lit-protocol/constants': 7.0.6(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
+      '@lit-protocol/contracts': 0.0.74(typescript@5.8.3)
+      '@lit-protocol/logger': 7.0.6(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
+      '@lit-protocol/misc': 7.0.6(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
+      '@lit-protocol/types': 7.0.6(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+      '@openagenda/verror': 3.1.4
+      ajv: 8.17.1
+      bech32: 2.0.0
+      depd: 2.0.0
+      ethers: 5.8.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+      jose: 4.15.9
+      process: 0.11.10
+      siwe: 2.3.2(ethers@5.8.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))
+      tslib: 1.14.1
+      util: 0.12.5
     transitivePeerDependencies:
       - bufferutil
       - typescript
@@ -13440,6 +13645,23 @@ snapshots:
       - uploadthing
       - utf-8-validate
 
+  '@lit-protocol/logger@7.0.6(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)':
+    dependencies:
+      '@ethersproject/abstract-provider': 5.7.0
+      '@lit-protocol/accs-schemas': 0.0.22
+      '@lit-protocol/constants': 7.0.6(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
+      '@lit-protocol/contracts': 0.0.74(typescript@5.8.3)
+      '@lit-protocol/types': 7.0.6(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+      '@openagenda/verror': 3.1.4
+      depd: 2.0.0
+      ethers: 5.8.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+      siwe: 2.3.2(ethers@5.8.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))
+      tslib: 1.14.1
+    transitivePeerDependencies:
+      - bufferutil
+      - typescript
+      - utf-8-validate
+
   '@lit-protocol/logger@7.2.0(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)':
     dependencies:
       '@ethersproject/abstract-provider': 5.7.0
@@ -13470,6 +13692,29 @@ snapshots:
       ethers: 5.8.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       siwe: 2.3.2(ethers@5.8.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))
       tslib: 1.14.1
+    transitivePeerDependencies:
+      - bufferutil
+      - typescript
+      - utf-8-validate
+
+  '@lit-protocol/misc@7.0.6(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)':
+    dependencies:
+      '@ethersproject/abstract-provider': 5.7.0
+      '@ethersproject/contracts': 5.7.0
+      '@ethersproject/providers': 5.7.2(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+      '@lit-protocol/accs-schemas': 0.0.22
+      '@lit-protocol/constants': 7.0.6(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
+      '@lit-protocol/contracts': 0.0.74(typescript@5.8.3)
+      '@lit-protocol/logger': 7.0.6(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
+      '@lit-protocol/types': 7.0.6(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+      '@openagenda/verror': 3.1.4
+      ajv: 8.17.1
+      bech32: 2.0.0
+      depd: 2.0.0
+      ethers: 5.8.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+      siwe: 2.3.2(ethers@5.8.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))
+      tslib: 1.14.1
+      util: 0.12.5
     transitivePeerDependencies:
       - bufferutil
       - typescript
@@ -13660,6 +13905,18 @@ snapshots:
       - supports-color
       - typescript
       - uploadthing
+      - utf-8-validate
+
+  '@lit-protocol/types@7.0.6(bufferutil@4.0.9)(utf-8-validate@5.0.10)':
+    dependencies:
+      '@ethersproject/abstract-provider': 5.7.0
+      '@lit-protocol/accs-schemas': 0.0.22
+      depd: 2.0.0
+      ethers: 5.8.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+      siwe: 2.3.2(ethers@5.8.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))
+      tslib: 1.14.1
+    transitivePeerDependencies:
+      - bufferutil
       - utf-8-validate
 
   '@lit-protocol/types@7.2.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)':
