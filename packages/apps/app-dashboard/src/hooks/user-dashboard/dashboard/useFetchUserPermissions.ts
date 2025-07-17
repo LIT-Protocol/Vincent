@@ -60,7 +60,7 @@ export const useFetchUserPermissions = ({
     };
 
     checkPermitted();
-  }, [pkpTokenId, appId]);
+  }, [pkpTokenId]);
 
   return state;
 };

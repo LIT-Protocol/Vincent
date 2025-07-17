@@ -11,27 +11,23 @@ import { PolicyFormRef } from '../consent/ui/PolicyForm';
 import { UseReadAuthInfo } from '@/hooks/user-dashboard/useAuthInfo';
 import { useAddPermittedActions } from '@/hooks/user-dashboard/consent/useAddPermittedActions';
 import { ConsentAppHeader } from '../consent/ui/ConsentAppHeader';
-import { PermittedAppInfo } from './ui/PermittedAppInfo';
+import { AppsInfo } from '../consent/ui/AppInfo';
 import { UserPermissionButtons } from './ui/UserPermissionButtons';
 import { StatusCard } from '../consent/ui/StatusCard';
 import { useTheme } from '@/providers/ThemeProvider';
 import { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
 import { litNodeClient } from '@/utils/user-dashboard/lit';
-import { PageHeader } from './ui/PageHeader';
-import { useNavigate } from 'react-router-dom';
 
 interface AppPermissionPageProps {
   consentInfoMap: ConsentInfoMap;
   readAuthInfo: UseReadAuthInfo;
   existingData: PermissionData;
-  permittedAppVersions: Record<string, string>;
 }
 
 export function AppPermissionPage({
   consentInfoMap,
   readAuthInfo,
   existingData,
-  permittedAppVersions,
 }: AppPermissionPageProps) {
   const [localError, setLocalError] = useState<string | null>(null);
   const [localStatus, setLocalStatus] = useState<string | null>(null);
@@ -39,7 +35,6 @@ export function AppPermissionPage({
   const formRefs = useRef<Record<string, PolicyFormRef>>({});
   const { isDark } = useTheme();
   const themeStyles = theme(isDark);
-  const navigate = useNavigate();
 
   const { formData, handleFormChange } = useFormatUserPermissions(consentInfoMap, existingData);
 
@@ -49,10 +44,6 @@ export function AppPermissionPage({
     loadingStatus: actionsLoadingStatus,
     error: actionsError,
   } = useAddPermittedActions();
-
-  // Get the permitted version for this app
-  const appIdString = consentInfoMap.app.appId.toString();
-  const permittedVersion = permittedAppVersions[appIdString];
 
   const handleSubmit = useCallback(async () => {
     // Clear any previous local errors and success
@@ -94,7 +85,7 @@ export function AppPermissionPage({
           args: {
             pkpTokenId: readAuthInfo.authInfo.agentPKP!.tokenId,
             appId: consentInfoMap.app.appId.toString(),
-            appVersion: permittedVersion.toString(),
+            appVersion: consentInfoMap.app.activeVersion!.toString(),
             policyParams: formData,
           },
         });
@@ -113,53 +104,36 @@ export function AppPermissionPage({
     } else {
       setLocalStatus(null);
     }
-  }, [formData, readAuthInfo, addPermittedActions, consentInfoMap.app, permittedVersion]);
+  }, [formData, readAuthInfo, addPermittedActions, consentInfoMap.app]);
 
   const handleUnpermit = useCallback(async () => {
-    // Clear any previous local errors and success
-    setLocalError(null);
-    setLocalSuccess(null);
-
     if (!readAuthInfo.authInfo?.userPKP || !readAuthInfo.sessionSigs) {
       setLocalError('Missing authentication information. Please try refreshing the page.');
       setLocalStatus(null);
       return;
     }
 
-    try {
-      const agentPkpWallet = new PKPEthersWallet({
-        controllerSessionSigs: readAuthInfo.sessionSigs,
-        pkpPubKey: readAuthInfo.authInfo.userPKP.publicKey,
-        litNodeClient: litNodeClient,
-      });
-      await agentPkpWallet.init();
+    const agentPkpWallet = new PKPEthersWallet({
+      controllerSessionSigs: readAuthInfo.sessionSigs,
+      pkpPubKey: readAuthInfo.authInfo.userPKP.publicKey,
+      litNodeClient: litNodeClient,
+    });
+    await agentPkpWallet.init();
 
-      setLocalStatus('Unpermitting app...');
+    setLocalStatus('Unpermitting app...');
+    await unPermitApp({
+      signer: agentPkpWallet,
+      args: {
+        pkpTokenId: readAuthInfo.authInfo.agentPKP!.tokenId,
+        appId: consentInfoMap.app.appId.toString(),
+        appVersion: consentInfoMap.app.activeVersion!.toString(),
+      },
+    });
 
-      await unPermitApp({
-        signer: agentPkpWallet,
-        args: {
-          pkpTokenId: readAuthInfo.authInfo.agentPKP!.tokenId,
-          appId: consentInfoMap.app.appId.toString(),
-          appVersion: permittedVersion.toString(), // FIXME: Why is a version needed here?
-        },
-      });
+    setLocalStatus(null);
+  }, [readAuthInfo]);
 
-      setLocalStatus(null);
-      // Show success state for 3 seconds, then navigate to apps page
-      setLocalSuccess('App unpermitted successfully!');
-      setTimeout(() => {
-        setLocalSuccess(null);
-        // Force the refresh for the sidebar to update
-        window.location.href = `/user/apps`;
-      }, 3000);
-    } catch (error) {
-      setLocalError(error instanceof Error ? error.message : 'Failed to unpermit app');
-      setLocalStatus(null);
-    }
-  }, [readAuthInfo, consentInfoMap.app, permittedVersion, navigate]);
-
-  const registerFormRef = useCallback((policyIpfsCid: string, ref: PolicyFormRef) => {    
+  const registerFormRef = useCallback((policyIpfsCid: string, ref: PolicyFormRef) => {
     formRefs.current[policyIpfsCid] = ref;
   }, []);
 
@@ -173,31 +147,18 @@ export function AppPermissionPage({
       <div
         className={`max-w-6xl mx-auto ${themeStyles.mainCard} border ${themeStyles.mainCardBorder} rounded-2xl shadow-2xl overflow-hidden`}
       >
-        {/* Page Header */}
-        <PageHeader
-          icon={
-            <svg className="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-            </svg>
-          }
-          title="Manage App Permissions"
-          description="Review and modify your permissions for this app"
-          theme={themeStyles}
-        />
-
         <div className="px-6 py-8 space-y-6">
           {/* App Header */}
           <ConsentAppHeader app={consentInfoMap.app} theme={themeStyles} />
 
           {/* Apps and Versions */}
-          <PermittedAppInfo
+          <AppsInfo
             consentInfoMap={consentInfoMap}
             theme={themeStyles}
             isDark={isDark}
             formData={formData}
             onFormChange={handleFormChange}
             onRegisterFormRef={registerFormRef}
-            permittedVersion={permittedVersion}
           />
 
           {/* Status Card */}
