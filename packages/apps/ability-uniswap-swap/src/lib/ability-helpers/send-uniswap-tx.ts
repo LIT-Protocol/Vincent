@@ -1,7 +1,6 @@
-import { CHAIN_TO_ADDRESSES_MAP } from '@uniswap/sdk-core';
 import { ethers } from 'ethers';
 
-import { estimateGasForSwap, getUniswapQuote, signTx } from '.';
+import { getUniswapQuote, signTx } from '.';
 
 declare const Lit: {
   Actions: {
@@ -38,32 +37,12 @@ export const sendUniswapTx = async ({
 }): Promise<`0x${string}`> => {
   console.log('Estimating gas for Swap transaction (sendUniswapTx)');
 
-  if (CHAIN_TO_ADDRESSES_MAP[chainId as keyof typeof CHAIN_TO_ADDRESSES_MAP] === undefined) {
-    throw new Error(`Unsupported chainId: ${chainId} (sendUniswapTx)`);
-  }
-
-  const uniswapRouterAddress = CHAIN_TO_ADDRESSES_MAP[
-    chainId as keyof typeof CHAIN_TO_ADDRESSES_MAP
-  ].swapRouter02Address as `0x{string}`;
   const uniswapRpcProvider = new ethers.providers.StaticJsonRpcProvider(rpcUrl);
 
   const partialSwapTxResponse = await Lit.Actions.runOnce(
     { waitForResponse: true, name: 'Uniswap swap tx gas estimation' },
     async () => {
       try {
-        const formattedTokenInAmount = ethers.utils.parseUnits(
-          tokenInAmount.toString(),
-          tokenInDecimals,
-        );
-
-        const uniswapV3RouterContract = new ethers.Contract(
-          uniswapRouterAddress,
-          [
-            'function exactInputSingle((address,address,uint24,address,uint256,uint256,uint160)) external payable returns (uint256)',
-          ],
-          uniswapRpcProvider,
-        );
-
         console.log('Getting Uniswap quote for swap (sendUniswapTx)');
         const uniswapQuoteResponse = await getUniswapQuote({
           rpcUrl,
@@ -75,48 +54,36 @@ export const sendUniswapTx = async ({
           tokenOutDecimals,
         });
 
-        const { bestFee, amountOutMin } = uniswapQuoteResponse;
-        const { estimatedGas, maxFeePerGas, maxPriorityFeePerGas } = await estimateGasForSwap(
-          uniswapV3RouterContract,
-          tokenInAddress,
-          tokenOutAddress,
-          bestFee,
-          pkpEthAddress,
-          formattedTokenInAmount,
-          amountOutMin,
-        );
+        const { route } = uniswapQuoteResponse;
 
-        console.log('Encoding swap transaction data (sendUniswapTx)', {
-          tokenInAddress,
-          tokenOutAddress,
-          bestFee,
-          pkpEthAddress,
-          formattedTokenInAmount,
-          amountOutMin,
-          sqrtPriceLimitX96: 0,
+        if (!route || !route.methodParameters) {
+          throw new Error('Failed to get valid route from Uniswap');
+        }
+
+        // Get gas estimates
+        const gasPrice = await uniswapRpcProvider.getGasPrice();
+        const maxPriorityFeePerGas = gasPrice.div(10); // 10% of gas price
+        const maxFeePerGas = gasPrice.mul(2); // 2x gas price for safety
+
+        // Use the gas estimate from the route
+        const estimatedGas = route.estimatedGasUsed.add(route.estimatedGasUsed.div(10)); // Add 10% buffer
+
+        console.log('Swap transaction details (sendUniswapTx)', {
+          to: route.methodParameters.to,
+          calldata: route.methodParameters.calldata,
+          value: route.methodParameters.value,
+          estimatedGas: estimatedGas.toString(),
         });
-        const swapTxData = uniswapV3RouterContract.interface.encodeFunctionData(
-          'exactInputSingle',
-          [
-            [
-              tokenInAddress,
-              tokenOutAddress,
-              bestFee,
-              pkpEthAddress,
-              formattedTokenInAmount,
-              amountOutMin,
-              0,
-            ],
-          ],
-        );
 
         return JSON.stringify({
           status: 'success',
           partialSwapTx: {
-            data: swapTxData,
-            gasLimit: estimatedGas,
-            maxFeePerGas: maxFeePerGas,
-            maxPriorityFeePerGas: maxPriorityFeePerGas,
+            to: route.methodParameters.to,
+            data: route.methodParameters.calldata,
+            value: route.methodParameters.value,
+            gasLimit: estimatedGas.toString(),
+            maxFeePerGas: maxFeePerGas.toString(),
+            maxPriorityFeePerGas: maxPriorityFeePerGas.toString(),
             nonce: await uniswapRpcProvider.getTransactionCount(pkpEthAddress),
           },
         });
@@ -138,9 +105,9 @@ export const sendUniswapTx = async ({
   const { partialSwapTx } = parsedPartialSwapTxResponse;
 
   const unsignedSwapTx = {
-    to: uniswapRouterAddress,
+    to: partialSwapTx.to,
     data: partialSwapTx.data,
-    value: ethers.BigNumber.from(0),
+    value: ethers.BigNumber.from(partialSwapTx.value || 0),
     gasLimit: ethers.BigNumber.from(partialSwapTx.gasLimit),
     maxFeePerGas: ethers.BigNumber.from(partialSwapTx.maxFeePerGas),
     maxPriorityFeePerGas: ethers.BigNumber.from(partialSwapTx.maxPriorityFeePerGas),

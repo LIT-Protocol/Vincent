@@ -1,4 +1,3 @@
-// @ts-expect-error No types for this pkg
 import normalizePackage from 'normalize-package-data';
 import * as queryRegistry from 'query-registry';
 import { valid, clean } from 'semver';

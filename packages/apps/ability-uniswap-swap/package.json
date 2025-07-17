@@ -8,6 +8,8 @@
     "@lit-protocol/vincent-policy-spending-limit": "workspace:*",
     "@lit-protocol/vincent-ability-sdk": "workspace:*",
     "@uniswap/sdk-core": "^7.7.2",
+    "@uniswap/smart-order-router": "^4.22.9",
+    "@uniswap/v3-sdk": "^3.25.2",
     "ethers": "^5.8.0",
     "tslib": "2.8.1",
     "zod": "^3.25.64"
