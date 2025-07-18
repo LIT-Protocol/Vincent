@@ -51,10 +51,12 @@ import {
   DeletePolicyVersionWrapper,
 } from './components/developer-dashboard/policy/wrappers';
 
-import { Home, Wallet } from './pages/user-dashboard';
+import { Wallet } from './pages/user-dashboard';
 import { UserPermissionWrapper } from './components/user-dashboard/dashboard/UserPermissionWrapper';
 import { ConsentPageWrapper } from './components/user-dashboard/consent/ConsentPageWraper';
 import { PermittedAppsWrapper } from './components/user-dashboard/dashboard/PermittedAppsWrapper';
+import { UpdateVersionPageWrapper } from './components/user-dashboard/dashboard/UpdateVersionPageWrapper';
+import { HomeWrapper } from './components/user-dashboard/dashboard/HomeWrapper';
 
 const AppLayoutWithProviders = wrap(() => <Outlet />, [...AppProviders, AppLayout]);
 const UserDashboardLayoutWithProviders = wrap(
@@ -235,7 +237,11 @@ const routes: RouteObject[] = [
     children: [
       {
         path: '/user',
-        element: <Home />,
+        element: <HomeWrapper />,
+      },
+      {
+        path: '/user/consent/appId/:appId',
+        element: <ConsentPageWrapper />,
       },
     ],
   },
@@ -251,16 +257,16 @@ const routes: RouteObject[] = [
             element: <UserPermissionWrapper />,
           },
           {
+            path: 'appId/:appId/update-version',
+            element: <UpdateVersionPageWrapper />,
+          },
+          {
             path: 'apps',
             element: <PermittedAppsWrapper />,
           },
           {
             path: 'wallet',
             element: <Wallet />,
-          },
-          {
-            path: 'consent/appId/:appId',
-            element: <ConsentPageWrapper />,
           },
         ],
       },
