@@ -11,7 +11,7 @@ import { PolicyFormRef } from '../consent/ui/PolicyForm';
 import { UseReadAuthInfo } from '@/hooks/user-dashboard/useAuthInfo';
 import { useAddPermittedActions } from '@/hooks/user-dashboard/consent/useAddPermittedActions';
 import { ConsentAppHeader } from '../consent/ui/ConsentAppHeader';
-import { AppsInfo } from '../consent/ui/AppInfo';
+import { PermittedAppInfo } from './ui/PermittedAppInfo';
 import { UserPermissionButtons } from './ui/UserPermissionButtons';
 import { StatusCard } from '../consent/ui/StatusCard';
 import { useTheme } from '@/providers/ThemeProvider';
@@ -22,12 +22,14 @@ interface AppPermissionPageProps {
   consentInfoMap: ConsentInfoMap;
   readAuthInfo: UseReadAuthInfo;
   existingData: PermissionData;
+  permittedAppVersions: Record<string, string>;
 }
 
 export function AppPermissionPage({
   consentInfoMap,
   readAuthInfo,
   existingData,
+  permittedAppVersions,
 }: AppPermissionPageProps) {
   const [localError, setLocalError] = useState<string | null>(null);
   const [localStatus, setLocalStatus] = useState<string | null>(null);
@@ -44,6 +46,10 @@ export function AppPermissionPage({
     loadingStatus: actionsLoadingStatus,
     error: actionsError,
   } = useAddPermittedActions();
+
+  // Get the permitted version for this app
+  const appIdString = consentInfoMap.app.appId.toString();
+  const permittedVersion = permittedAppVersions[appIdString];
 
   const handleSubmit = useCallback(async () => {
     // Clear any previous local errors and success
@@ -85,7 +91,7 @@ export function AppPermissionPage({
           args: {
             pkpTokenId: readAuthInfo.authInfo.agentPKP!.tokenId,
             appId: consentInfoMap.app.appId.toString(),
-            appVersion: consentInfoMap.app.activeVersion!.toString(),
+            appVersion: permittedVersion.toString(),
             policyParams: formData,
           },
         });
@@ -104,7 +110,7 @@ export function AppPermissionPage({
     } else {
       setLocalStatus(null);
     }
-  }, [formData, readAuthInfo, addPermittedActions, consentInfoMap.app]);
+  }, [formData, readAuthInfo, addPermittedActions, consentInfoMap.app, permittedVersion]);
 
   const handleUnpermit = useCallback(async () => {
     if (!readAuthInfo.authInfo?.userPKP || !readAuthInfo.sessionSigs) {
@@ -121,17 +127,18 @@ export function AppPermissionPage({
     await agentPkpWallet.init();
 
     setLocalStatus('Unpermitting app...');
+
     await unPermitApp({
       signer: agentPkpWallet,
       args: {
         pkpTokenId: readAuthInfo.authInfo.agentPKP!.tokenId,
         appId: consentInfoMap.app.appId.toString(),
-        appVersion: consentInfoMap.app.activeVersion!.toString(),
+        appVersion: permittedVersion.toString(), // FIXME: Why is a version needed here?
       },
     });
 
     setLocalStatus(null);
-  }, [readAuthInfo]);
+  }, [readAuthInfo, consentInfoMap.app, permittedVersion]);
 
   const registerFormRef = useCallback((policyIpfsCid: string, ref: PolicyFormRef) => {
     formRefs.current[policyIpfsCid] = ref;
@@ -152,13 +159,14 @@ export function AppPermissionPage({
           <ConsentAppHeader app={consentInfoMap.app} theme={themeStyles} />
 
           {/* Apps and Versions */}
-          <AppsInfo
+          <PermittedAppInfo
             consentInfoMap={consentInfoMap}
             theme={themeStyles}
             isDark={isDark}
             formData={formData}
             onFormChange={handleFormChange}
             onRegisterFormRef={registerFormRef}
+            permittedVersion={permittedVersion}
           />
 
           {/* Status Card */}

@@ -6,6 +6,7 @@ import { useConsentInfo } from '@/hooks/user-dashboard/consent/useConsentInfo';
 import useReadAuthInfo from '@/hooks/user-dashboard/useAuthInfo';
 import { AppPermissionPage } from './UserPermissionPage';
 import { useFetchUserPermissions } from '@/hooks/user-dashboard/dashboard/useFetchUserPermissions';
+import { useUserPermissionsMiddleware } from '@/hooks/user-dashboard/dashboard/useUserPermissionsMiddleware';
 
 export function UserPermissionWrapper() {
   const { appId } = useParams();
@@ -20,6 +21,15 @@ export function UserPermissionWrapper() {
     pkpTokenId: authInfo?.agentPKP?.tokenId || '',
   });
 
+  // Get permitted app versions for this user
+  const {
+    permittedAppVersions,
+    isLoading: permissionsLoading,
+    error: permissionsError,
+  } = useUserPermissionsMiddleware({
+    pkpTokenId: authInfo?.agentPKP?.tokenId || '',
+  });
+
   if (isProcessing) {
     return <ConsentPageSkeleton />;
   }
@@ -29,13 +39,13 @@ export function UserPermissionWrapper() {
     return <AuthenticationErrorScreen />;
   }
 
-  if (isLoading || isExistingDataLoading) {
+  if (isLoading || isExistingDataLoading || permissionsLoading) {
     return <ConsentPageSkeleton />;
   }
 
-  if (isError || error || isExistingDataError) {
+  if (isError || error || isExistingDataError || (permissionsError && permissionsError !== 'Missing pkpTokenId')) {
     const errorMessage =
-      errors.length > 0 ? errors.join(', ') : (error ?? 'An unknown error occurred');
+      errors.length > 0 ? errors.join(', ') : (error ?? permissionsError ?? 'An unknown error occurred');
     return <GeneralErrorScreen errorDetails={errorMessage} />;
   }
 
@@ -44,6 +54,7 @@ export function UserPermissionWrapper() {
       consentInfoMap={data}
       readAuthInfo={{ authInfo, sessionSigs, isProcessing, error }}
       existingData={existingData}
+      permittedAppVersions={permittedAppVersions || {}}
     />
   );
 }
