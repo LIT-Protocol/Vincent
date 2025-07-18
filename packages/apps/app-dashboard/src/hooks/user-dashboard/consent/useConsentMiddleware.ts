@@ -54,37 +54,22 @@ export const useConsentMiddleware = ({
       try {
         // Check if the app's active version is published in the registry (if we have app data)
         if (appData?.activeVersion) {
-          try {
-            await getAppVersion({
-              signer: readOnlySigner,
-              args: { appId: appId.toString(), version: appData.activeVersion.toString() },
+          const appVersionResult = await getAppVersion({
+            signer: readOnlySigner,
+            args: { appId: appId.toString(), version: appData.activeVersion.toString() },
+          });
+
+          // If getAppVersion returns null, it means the app version is not registered
+          if (appVersionResult === null) {
+            setState({
+              isPermitted: null,
+              appExists: true,
+              activeVersionExists: false,
+              userPermittedVersion: null,
+              isLoading: false,
+              error: null,
             });
-          } catch (versionError: any) {
-            if (versionError?.message?.includes('AppNotRegistered')) {
-              // App not published - set appExists to false
-              setState({
-                isPermitted: null,
-                appExists: false,
-                activeVersionExists: false,
-                userPermittedVersion: null,
-                isLoading: false,
-                error: null,
-              });
-              return;
-            } else if (versionError?.message?.includes('AppVersionNotRegistered')) {
-              // App exists but active version not published - return early
-              setState({
-                isPermitted: null,
-                appExists: true,
-                activeVersionExists: false,
-                userPermittedVersion: null,
-                isLoading: false,
-                error: null,
-              });
-              return;
-            }
-            // Other version-related error, re-throw
-            throw versionError;
+            return;
           }
         }
 
