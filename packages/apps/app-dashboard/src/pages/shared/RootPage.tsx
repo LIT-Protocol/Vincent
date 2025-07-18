@@ -7,10 +7,10 @@ export default function RootPage() {
   return (
     <>
       <Helmet>
-        <title>Vincent | AI Assistant Platform</title>
+        <title>Vincent | Delegation Platform</title>
         <meta
           name="description"
-          content="Vincent - AI Assistant for user owned automation powered by Lit Protocol"
+          content="Vincent - Delegation Platform for user owned automation powered by Lit Protocol"
         />
       </Helmet>
       <div className="flex flex-col items-center justify-center min-h-screen bg-white text-center p-5 font-sans relative pb-16">
@@ -18,7 +18,7 @@ export default function RootPage() {
           <h1 className="text-5xl font-medium text-gray-900 mb-4">Welcome to</h1>
           <img
             src="/vincent-main-logo.png"
-            alt="Vincent by Lit Protocol - Assistant for user owned automation"
+            alt="Vincent by Lit Protocol - Delegation Platform for user owned automation"
             className="max-w-[400px] mb-5"
           />
           <p className="text-gray-600 mb-8 max-w-md">
