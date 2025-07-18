@@ -15,6 +15,7 @@ import { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
 import { litNodeClient } from '@/utils/user-dashboard/lit';
 import { useTheme } from '@/providers/ThemeProvider';
 import { PageHeader } from './ui/PageHeader';
+import { useNavigate } from 'react-router-dom';
 
 interface UpdateVersionPageProps {
   consentInfoMap: ConsentInfoMap;
@@ -27,6 +28,7 @@ export function UpdateVersionPage({ consentInfoMap, readAuthInfo }: UpdateVersio
   const [localStatus, setLocalStatus] = useState<string | null>(null);
   const [localSuccess, setLocalSuccess] = useState<string | null>(null);
   const formRefs = useRef<Record<string, PolicyFormRef>>({});
+  const navigate = useNavigate();
 
   const { formData, handleFormChange } = useConsentFormData(consentInfoMap);
 
@@ -104,8 +106,8 @@ export function UpdateVersionPage({ consentInfoMap, readAuthInfo }: UpdateVersio
   }, [formData, readAuthInfo, addPermittedActions, consentInfoMap.app]);
 
   const handleDecline = useCallback(() => {
-    console.log('Declined');
-  }, []);
+    navigate(`/user/appId/${consentInfoMap.app.appId}`);
+  }, [consentInfoMap.app.appId, navigate]);
 
   const registerFormRef = useCallback((policyIpfsCid: string, ref: PolicyFormRef) => {
     formRefs.current[policyIpfsCid] = ref;

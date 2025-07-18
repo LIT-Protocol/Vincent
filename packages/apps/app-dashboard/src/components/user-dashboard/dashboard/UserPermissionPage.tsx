@@ -18,6 +18,7 @@ import { useTheme } from '@/providers/ThemeProvider';
 import { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
 import { litNodeClient } from '@/utils/user-dashboard/lit';
 import { PageHeader } from './ui/PageHeader';
+import { useNavigate } from 'react-router-dom';
 
 interface AppPermissionPageProps {
   consentInfoMap: ConsentInfoMap;
@@ -38,6 +39,7 @@ export function AppPermissionPage({
   const formRefs = useRef<Record<string, PolicyFormRef>>({});
   const { isDark } = useTheme();
   const themeStyles = theme(isDark);
+  const navigate = useNavigate();
 
   const { formData, handleFormChange } = useFormatUserPermissions(consentInfoMap, existingData);
 
@@ -114,34 +116,50 @@ export function AppPermissionPage({
   }, [formData, readAuthInfo, addPermittedActions, consentInfoMap.app, permittedVersion]);
 
   const handleUnpermit = useCallback(async () => {
+    // Clear any previous local errors and success
+    setLocalError(null);
+    setLocalSuccess(null);
+
     if (!readAuthInfo.authInfo?.userPKP || !readAuthInfo.sessionSigs) {
       setLocalError('Missing authentication information. Please try refreshing the page.');
       setLocalStatus(null);
       return;
     }
 
-    const agentPkpWallet = new PKPEthersWallet({
-      controllerSessionSigs: readAuthInfo.sessionSigs,
-      pkpPubKey: readAuthInfo.authInfo.userPKP.publicKey,
-      litNodeClient: litNodeClient,
-    });
-    await agentPkpWallet.init();
+    try {
+      const agentPkpWallet = new PKPEthersWallet({
+        controllerSessionSigs: readAuthInfo.sessionSigs,
+        pkpPubKey: readAuthInfo.authInfo.userPKP.publicKey,
+        litNodeClient: litNodeClient,
+      });
+      await agentPkpWallet.init();
 
-    setLocalStatus('Unpermitting app...');
+      setLocalStatus('Unpermitting app...');
 
-    await unPermitApp({
-      signer: agentPkpWallet,
-      args: {
-        pkpTokenId: readAuthInfo.authInfo.agentPKP!.tokenId,
-        appId: consentInfoMap.app.appId.toString(),
-        appVersion: permittedVersion.toString(), // FIXME: Why is a version needed here?
-      },
-    });
+      await unPermitApp({
+        signer: agentPkpWallet,
+        args: {
+          pkpTokenId: readAuthInfo.authInfo.agentPKP!.tokenId,
+          appId: consentInfoMap.app.appId.toString(),
+          appVersion: permittedVersion.toString(), // FIXME: Why is a version needed here?
+        },
+      });
 
-    setLocalStatus(null);
-  }, [readAuthInfo, consentInfoMap.app, permittedVersion]);
+      setLocalStatus(null);
+      // Show success state for 3 seconds, then navigate to apps page
+      setLocalSuccess('App unpermitted successfully!');
+      setTimeout(() => {
+        setLocalSuccess(null);
+        // Force the refresh for the sidebar to update
+        window.location.href = `/user/apps`;
+      }, 3000);
+    } catch (error) {
+      setLocalError(error instanceof Error ? error.message : 'Failed to unpermit app');
+      setLocalStatus(null);
+    }
+  }, [readAuthInfo, consentInfoMap.app, permittedVersion, navigate]);
 
-  const registerFormRef = useCallback((policyIpfsCid: string, ref: PolicyFormRef) => {
+  const registerFormRef = useCallback((policyIpfsCid: string, ref: PolicyFormRef) => {    
     formRefs.current[policyIpfsCid] = ref;
   }, []);
 
