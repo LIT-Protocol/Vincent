@@ -4,7 +4,7 @@ import { useTheme } from '@/providers/ThemeProvider';
 import { theme } from '../consent/ui/theme';
 import { Card, CardContent } from '@/components/shared/ui/card';
 import { Logo } from '@/components/shared/ui/Logo';
-import { ExternalLink } from 'lucide-react';
+import { ExternalLink, Package } from 'lucide-react';
 
 type PermittedAppsPageProps = {
     apps: App[];
@@ -21,8 +21,18 @@ export function PermittedAppsPage({ apps }: PermittedAppsPageProps) {
 
   if (apps.length === 0) {
     return (
-      <div className={`text-center py-12 ${themeStyles.textMuted}`}>
-        <p>No permitted apps found</p>
+      <div className="flex items-center justify-center min-h-[400px] w-full">
+        <div className="text-center max-w-md mx-auto px-6">
+          <div className={`inline-flex items-center justify-center w-16 h-16 rounded-full ${themeStyles.itemBg} ${themeStyles.cardBorder} border mb-6`}>
+            <Package className={`w-8 h-8 ${themeStyles.textMuted}`} />
+          </div>
+          <h3 className={`text-xl font-semibold mb-2 ${themeStyles.text}`}>
+            No applications found
+          </h3>
+          <p className={`text-sm ${themeStyles.textMuted} leading-relaxed`}>
+            You haven't granted permissions to any applications yet. Once you authorize apps, they'll appear here.
+          </p>
+        </div>
       </div>
     );
   }
