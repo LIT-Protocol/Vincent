@@ -1,6 +1,7 @@
-import { Moon, Sun, LogOut, User, Copy } from 'lucide-react';
+import { Moon, Sun, LogOut, User, Copy, Home } from 'lucide-react';
 import { Button } from '@/components/shared/ui/button';
 import { AuthInfo, useClearAuthInfo } from '@/hooks/user-dashboard/useAuthInfo';
+import { useNavigate } from 'react-router-dom';
 import { ThemeType } from './theme';
 
 interface ConsentPageHeaderProps {
@@ -17,10 +18,15 @@ export function ConsentPageHeader({
   authInfo,
 }: ConsentPageHeaderProps) {
   const { clearAuthInfo } = useClearAuthInfo();
+  const navigate = useNavigate();
 
   const handleSignOut = async () => {
     await clearAuthInfo();
     window.location.reload();
+  };
+
+  const handleDashboardClick = () => {
+    navigate('/user/apps');
   };
 
   const handleCopyEthAddress = async () => {
@@ -48,6 +54,15 @@ export function ConsentPageHeader({
           />
         </div>
         <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleDashboardClick}
+            className={`${theme.text} hover:bg-white/10`}
+          >
+            <Home className="w-4 h-4 mr-2" />
+            Dashboard
+          </Button>
           <div className="relative group">
             <Button variant="ghost" size="sm" className={`${theme.text} hover:bg-white/10`}>
               <User className="w-4 h-4" />
