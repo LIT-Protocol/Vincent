@@ -6,7 +6,7 @@ export default function Header() {
   return (
     <div className="flex justify-between items-center p-6 border-b">
       <a href="/" className="flex items-center">
-        <img src="/vincent-logo.png" alt="Vincent" width={150} height={40} />
+        <img src="/vincent-by-lit-logo.png" alt="Vincent" width={150} height={40} />
       </a>
       <ConnectButton.Custom>
         {({ account, chain, openAccountModal, openConnectModal, mounted }) => {
