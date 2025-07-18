@@ -20,19 +20,23 @@ export function UserPermissionWrapper() {
     pkpTokenId: authInfo?.agentPKP?.tokenId || '',
   });
 
+  if (isProcessing) {
+    return <ConsentPageSkeleton />;
+  }
+
   const isUserAuthed = authInfo?.userPKP && authInfo?.agentPKP && sessionSigs;
   if (!isProcessing && !isUserAuthed) {
     return <AuthenticationErrorScreen />;
+  }
+
+  if (isLoading || isExistingDataLoading) {
+    return <ConsentPageSkeleton />;
   }
 
   if (isError || error || isExistingDataError) {
     const errorMessage =
       errors.length > 0 ? errors.join(', ') : (error ?? 'An unknown error occurred');
     return <GeneralErrorScreen errorDetails={errorMessage} />;
-  }
-
-  if (isLoading || isProcessing || isExistingDataLoading) {
-    return <ConsentPageSkeleton />;
   }
 
   return (
