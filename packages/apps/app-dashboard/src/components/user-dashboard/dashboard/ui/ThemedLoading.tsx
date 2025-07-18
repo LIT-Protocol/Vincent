@@ -6,7 +6,7 @@ export function ThemedLoading() {
   const themeStyles = theme(isDark);
 
   return (
-    <div className={`min-h-screen min-w-screen flex items-center justify-center ${themeStyles.bg}`}>
+    <div className={`fixed inset-0 flex items-center justify-center z-50 ${themeStyles.bg}`}>
       <div className="text-center">
         <div className="mb-4">
           <img
