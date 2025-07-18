@@ -17,6 +17,7 @@ import { StatusCard } from '../consent/ui/StatusCard';
 import { useTheme } from '@/providers/ThemeProvider';
 import { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
 import { litNodeClient } from '@/utils/user-dashboard/lit';
+import { PageHeader } from './ui/PageHeader';
 
 interface AppPermissionPageProps {
   consentInfoMap: ConsentInfoMap;
@@ -154,6 +155,18 @@ export function AppPermissionPage({
       <div
         className={`max-w-6xl mx-auto ${themeStyles.mainCard} border ${themeStyles.mainCardBorder} rounded-2xl shadow-2xl overflow-hidden`}
       >
+        {/* Page Header */}
+        <PageHeader
+          icon={
+            <svg className="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            </svg>
+          }
+          title="Manage App Permissions"
+          description="Review and modify your permissions for this app"
+          theme={themeStyles}
+        />
+
         <div className="px-6 py-8 space-y-6">
           {/* App Header */}
           <ConsentAppHeader app={consentInfoMap.app} theme={themeStyles} />
