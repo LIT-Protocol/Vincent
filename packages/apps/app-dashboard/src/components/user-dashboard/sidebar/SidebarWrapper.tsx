@@ -3,6 +3,7 @@ import { SidebarSkeleton } from './SidebarSkeleton';
 import { StatusMessage } from '@/components/shared/ui/statusMessage';
 import useReadAuthInfo from '@/hooks/user-dashboard/useAuthInfo';
 import { useSidebarData } from '@/hooks/user-dashboard/sidebar/useSidebarData';
+import { SidebarError } from './SidebarError';
 
 export function SidebarWrapper() {
   const { authInfo, isProcessing, error } = useReadAuthInfo();
@@ -27,15 +28,10 @@ export function SidebarWrapper() {
   return <SidebarWithData pkpTokenId={pkpTokenId} />;
 }
 
-
 function SidebarWithData({ pkpTokenId }: { pkpTokenId: string }) {
-  const {
-    apps,
-    permittedAppVersions,
-    appVersionsMap,
-    isLoading,
-    error,
-  } = useSidebarData({ pkpTokenId });
+  const { apps, permittedAppVersions, appVersionsMap, isLoading, error } = useSidebarData({
+    pkpTokenId,
+  });
 
   // Show skeleton while data is loading
   if (isLoading) {
@@ -44,20 +40,15 @@ function SidebarWithData({ pkpTokenId }: { pkpTokenId: string }) {
 
   // Handle errors
   if (error) {
-    return (
-      <StatusMessage
-        message={`Failed to load sidebar data: ${error}`}
-        type="error"
-      />
-    );
+    return <SidebarError error={error || 'An error has occurred'} />;
   }
 
   return (
-    <AppSidebar 
-      apps={apps} 
-      permittedAppVersions={permittedAppVersions} 
+    <AppSidebar
+      apps={apps}
+      permittedAppVersions={permittedAppVersions}
       appVersionsMap={appVersionsMap}
-      isLoadingApps={isLoading} 
+      isLoadingApps={isLoading}
     />
   );
 }
