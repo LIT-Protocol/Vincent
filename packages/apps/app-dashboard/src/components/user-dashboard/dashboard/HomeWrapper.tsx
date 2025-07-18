@@ -2,7 +2,7 @@ import { useReadAuthInfo } from "@/hooks/user-dashboard/useAuthInfo";
 import { AuthenticationErrorScreen } from "../consent/AuthenticationErrorScreen";
 import { ThemedLoading } from "./ui/ThemedLoading";
 import { Navigate } from "react-router-dom";
-import SharedHome from "@/pages/shared/home";
+import SharedHome from "@/pages/shared/RootPage";
 
 export function HomeWrapper() {
     const { authInfo, sessionSigs, isProcessing, error } = useReadAuthInfo();
@@ -24,6 +24,6 @@ export function HomeWrapper() {
         return <Navigate to="/user/apps" replace />;
     }
     
-    // If not authenticated, show the SharedHome component
+    // If not authenticated, show the SharedHome component (this won't actually be shown, since when not authenticated we should the AuthenticationErrorScreen)
     return <SharedHome />;
 }
