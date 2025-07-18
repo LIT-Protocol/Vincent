@@ -146,7 +146,7 @@ export function ToolSelectorModal({
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent
-        className="w-[85vw] max-w-6xl h-[70vh] flex flex-col !max-w-none"
+        className="w-[85vw] max-w-6xl h-[70vh] flex flex-col !max-w-none bg-white"
         style={{ width: '85vw', maxWidth: '72rem' }}
       >
         <DialogHeader className="flex-shrink-0">
@@ -160,7 +160,7 @@ export function ToolSelectorModal({
         </DialogHeader>
 
         <div className="flex-1 min-h-0">
-          <div className="ag-theme-alpine h-full w-full">
+          <div className="ag-theme-alpine h-full w-full bg-white">
             <AgGridReact
               rowData={filteredTools}
               columnDefs={TOOL_GRID_COLUMNS}
