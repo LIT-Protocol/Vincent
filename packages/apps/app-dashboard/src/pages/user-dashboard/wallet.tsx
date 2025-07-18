@@ -1,10 +1,14 @@
 import { Helmet } from 'react-helmet-async';
 import WithdrawForm from '@/components/user-dashboard/withdraw/WithdrawForm';
+import { WithdrawFormSkeleton } from '@/components/user-dashboard/withdraw/WithdrawFormSkeleton';
 import useReadAuthInfo from '@/hooks/user-dashboard/useAuthInfo';
 import { useAuthGuard } from '@/hooks/user-dashboard/consent/useAuthGuard';
-import Loading from '@/components/shared/ui/Loading';
+import { useTheme } from '@/providers/ThemeProvider';
+import { theme } from '@/components/user-dashboard/consent/ui/theme';
 
 export function Wallet() {
+  const { isDark } = useTheme();
+  const themeStyles = theme(isDark);
   const { authInfo, sessionSigs } = useReadAuthInfo();
   const authGuardElement = useAuthGuard();
 
@@ -13,22 +17,28 @@ export function Wallet() {
       <>
         <Helmet>
           <title>Vincent | Wallet</title>
-          <meta name="description" content="Your Vincent wallet dashboard" />
+          <meta name="description" content="Vincent Wallet Dashboard" />
         </Helmet>
-        <Loading />
+        <div className={`w-full h-full flex items-center justify-center ${themeStyles.bg}`}>
+          <WithdrawFormSkeleton />
+        </div>
       </>
     );
   }
 
   return (
     <>
-      <main className="p-8">
+      <Helmet>
+        <title>Vincent | Wallet</title>
+        <meta name="description" content="Your Vincent wallet dashboard" />
+      </Helmet>
+      <div className={`w-full h-full flex items-center justify-center ${themeStyles.bg}`}>
         <WithdrawForm
           sessionSigs={sessionSigs}
           agentPKP={authInfo.agentPKP}
           userPKP={authInfo.userPKP}
         />
-      </main>
+      </div>
     </>
   );
 }
