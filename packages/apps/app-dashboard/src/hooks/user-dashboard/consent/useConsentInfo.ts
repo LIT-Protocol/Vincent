@@ -41,7 +41,6 @@ export const useConsentInfo = (appId: string): ConsentInfoState => {
     data: appVersions,
     isFetching: appVersionsLoading,
     isError: appVersionsError,
-    error: appVersionsErrorDetails,
   } = vincentApiClient.useGetAppVersionsQuery({ appId: Number(appId) });
 
   // Use lazy queries with their built-in states
@@ -67,6 +66,9 @@ export const useConsentInfo = (appId: string): ConsentInfoState => {
   // Fetch all data when appVersions changes
   useEffect(() => {
     if (!app || !appVersions || appVersions.length === 0) {
+      // Mark data fetching as complete even if app/versions don't exist
+      // This prevents infinite loading when app doesn't exist
+      setIsDataFetchingComplete(true);
       return;
     }
 
@@ -262,8 +264,14 @@ export const useConsentInfo = (appId: string): ConsentInfoState => {
       toolVersionsError ||
       policiesError ||
       toolsInfoError ||
-      policiesInfoError,
-    errors: appVersionsError ? [`Failed to fetch app versions: ${appVersionsErrorDetails}`] : [],
+      policiesInfoError ||
+      (!appLoading && !app && isDataFetchingComplete),
+    errors:
+      !appLoading && !app && isDataFetchingComplete
+        ? ['App not found']
+        : appVersionsError
+          ? [`Failed to fetch app versions`]
+          : [],
     data: consentInfoMap,
   };
 };
