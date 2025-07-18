@@ -6,6 +6,7 @@ import { AppProviders, UserProviders } from './providers';
 import { wrap } from '@/utils/shared/components';
 
 import { ConnectWallet, Dashboard } from './pages/developer-dashboard';
+import RootPage from './pages/RootPage';
 
 import {
   AppsWrapper,
@@ -70,12 +71,12 @@ const UserLayoutWithSidebarAndProviders = wrap(
 
 const routes: RouteObject[] = [
   {
+    path: '/',
+    element: <RootPage />,
+  },
+  {
     element: <AppLayoutWithProviders />,
     children: [
-      {
-        path: '/',
-        element: <Dashboard />,
-      },
       {
         path: '/developer',
         element: <ConnectWallet />,

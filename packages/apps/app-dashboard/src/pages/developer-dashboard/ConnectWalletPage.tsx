@@ -12,7 +12,7 @@ export default function ConnectWalletScreen() {
 
   useEffect(() => {
     if (isConnected) {
-      navigate('/');
+      navigate('/developer/dashboard');
     }
   }, [isConnected, navigate]);
 
