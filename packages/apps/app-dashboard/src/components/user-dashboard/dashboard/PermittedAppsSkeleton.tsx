@@ -10,22 +10,15 @@ export function PermittedAppsSkeleton() {
   const skeletonCards = Array.from({ length: 6 }, (_, i) => i);
 
   return (
-    <div className="w-full flex justify-start pl-6">
-      <div className="w-full" style={{ 
-        display: 'grid', 
-        gridTemplateColumns: 'repeat(3, 1fr)', 
-        columnGap: '1.5rem',
-        rowGap: '1.5rem',
-        alignItems: 'start'
-      }}>
+    <div className="w-full flex justify-start -ml-8">
+      <div className="grid grid-cols-3 gap-4 items-start w-full">
         {skeletonCards.map((index) => (
           <Card
             key={index}
-            className={`py-0 gap-0 backdrop-blur-xl ${themeStyles.cardBg} border ${themeStyles.cardBorder}`}
-            style={{ height: 'fit-content' }}
+            className={`backdrop-blur-xl ${themeStyles.cardBg} border ${themeStyles.cardBorder} h-fit`}
           >
-            <CardContent className="p-3">
-              <div className="flex flex-col gap-2">
+            <CardContent className="p-4">
+              <div className="flex flex-col gap-3">
                 {/* Logo and Title Row */}
                 <div className="flex items-center gap-3">
                   <div className="flex-shrink-0">
@@ -45,8 +38,8 @@ export function PermittedAppsSkeleton() {
                 
                 {/* App ID and Version */}
                 <div className="flex items-center justify-between">
-                  <div className={`h-3 w-16 rounded ${themeStyles.itemBg} animate-pulse`}></div>
-                  <div className={`h-5 w-8 rounded ${themeStyles.itemBg} animate-pulse`}></div>
+                  <div className={`h-3 rounded ${themeStyles.itemBg} animate-pulse w-20`}></div>
+                  <div className={`h-5 rounded ${themeStyles.itemBg} animate-pulse w-8`}></div>
                 </div>
               </div>
             </CardContent>

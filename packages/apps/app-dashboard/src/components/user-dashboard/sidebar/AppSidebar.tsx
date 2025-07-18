@@ -1,6 +1,6 @@
 import React from 'react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
-import { Package, Wallet, Loader2, Sun, Moon, LogOut, TriangleAlert } from 'lucide-react';
+import { Smartphone, Wallet, Loader2, Sun, Moon, LogOut, TriangleAlert } from 'lucide-react';
 import { useTheme } from '@/providers/ThemeProvider';
 import { theme } from '../consent/ui/theme';
 import { App } from '@/types/developer-dashboard/appTypes';
@@ -42,7 +42,7 @@ const getMainMenuItems = (apps: App[], isLoadingApps: boolean, permittedAppVersi
   {
     id: 'apps',
     label: 'Apps',
-    icon: <Package className="h-4 w-4" />,
+    icon: <Smartphone className="h-4 w-4" />,
     route: '/user/apps',
     type: 'section',
     children: isLoadingApps
@@ -59,8 +59,8 @@ const getMainMenuItems = (apps: App[], isLoadingApps: boolean, permittedAppVersi
         ? [
             {
               id: 'no-apps',
-              label: 'No Apps',
-              icon: <Package className="h-4 w-4 opacity-50" />,
+              label: 'No Apps Found',
+              icon: <Smartphone className="h-4 w-4 opacity-50" />,
               route: '#',
               type: 'link',
             },

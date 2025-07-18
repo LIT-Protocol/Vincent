@@ -1,5 +1,5 @@
 import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
-import { AppSidebar } from '../dashboard/AppSidebar';
+import { AppSidebar } from './AppSidebar';
 import { SidebarSkeleton } from './SidebarSkeleton';
 import { StatusMessage } from '@/components/shared/ui/statusMessage';
 import useReadAuthInfo from '@/hooks/user-dashboard/useAuthInfo';
