@@ -28,54 +28,61 @@ export function PermittedAppsPage({ apps }: PermittedAppsPageProps) {
   }
 
   return (
-    <div className="w-full flex justify-start -ml-8">
-      <div className="grid grid-cols-3 gap-4 items-start w-full">
+    <div className="w-full flex justify-start pl-6">
+      <div className="w-full" style={{ 
+        display: 'grid', 
+        gridTemplateColumns: 'repeat(3, 1fr)', 
+        columnGap: '1.5rem',
+        rowGap: '1.5rem',
+        alignItems: 'start'
+      }}>
         {apps.map((app) => (
           <Card
             key={app.appId}
-            className={`backdrop-blur-xl ${themeStyles.cardBg} border ${themeStyles.cardBorder} ${themeStyles.cardHoverBorder} cursor-pointer transition-all duration-200 hover:shadow-lg h-fit`}
+            className={`py-0 gap-0 backdrop-blur-xl ${themeStyles.cardBg} border ${themeStyles.cardBorder} ${themeStyles.cardHoverBorder} cursor-pointer transition-all duration-200 hover:shadow-lg`}
             onClick={() => handleAppClick(app.appId.toString())}
+            style={{ height: 'fit-content' }}
           >
-            <CardContent className="p-4">
-              <div className="flex flex-col gap-3">
-                {/* Logo and Title Row */}
-                <div className="flex items-center gap-3">
-                  <div className="flex-shrink-0">
-                    <Logo
-                      logo={app.logo}
-                      alt={`${app.name} logo`}
-                      className="w-10 h-10 rounded-lg object-cover"
-                    />
+              <CardContent className="p-3">
+                <div className="flex flex-col gap-2">
+                  {/* Logo and Title Row */}
+                  <div className="flex items-center gap-3">
+                    <div className="flex-shrink-0">
+                      <Logo
+                        logo={app.logo}
+                        alt={`${app.name} logo`}
+                        className="w-10 h-10 rounded-lg object-cover"
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className={`font-semibold ${themeStyles.text} truncate`}>
+                        {app.name}
+                      </h3>
+                    </div>
+                    <ExternalLink className={`w-4 h-4 ${themeStyles.textSubtle} flex-shrink-0`} />
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className={`font-semibold ${themeStyles.text} truncate`}>
-                      {app.name}
-                    </h3>
-                  </div>
-                  <ExternalLink className={`w-4 h-4 ${themeStyles.textSubtle} flex-shrink-0`} />
-                </div>
-                
-                {/* Description */}
-                {app.description && (
-                  <p className={`text-sm ${themeStyles.textMuted} line-clamp-2`}>
-                    {app.description}
-                  </p>
-                )}
-                
-                {/* App ID and Version */}
-                <div className="flex items-center justify-between">
-                  <span className={`text-xs ${themeStyles.textSubtle}`}>
-                    App ID: {app.appId}
-                  </span>
-                  {app.activeVersion && (
-                    <span className={`px-2 py-1 rounded text-xs ${themeStyles.itemBg} ${themeStyles.textMuted}`}>
-                      v{app.activeVersion}
-                    </span>
+                  
+                  {/* Description */}
+                  {app.description && (
+                    <p className={`text-sm ${themeStyles.textMuted} line-clamp-2`}>
+                      {app.description}
+                    </p>
                   )}
+                  
+                  {/* App ID and Version */}
+                  <div className="flex items-center justify-between">
+                    <span className={`text-xs ${themeStyles.textSubtle}`}>
+                      App ID: {app.appId}
+                    </span>
+                    {app.activeVersion && (
+                      <span className={`px-2 py-1 rounded text-xs ${themeStyles.itemBg} ${themeStyles.textMuted}`}>
+                        v{app.activeVersion}
+                      </span>
+                    )}
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
         ))}
       </div>
     </div>
