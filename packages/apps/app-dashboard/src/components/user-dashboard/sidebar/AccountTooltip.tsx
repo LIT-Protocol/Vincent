@@ -40,21 +40,21 @@ export function AccountTooltip() {
       {authInfo && (
         <TooltipContent
           side="top"
-          className={`${isDark ? 'bg-black border-gray-700' : 'bg-white border-gray-200'} ${themeStyles.text} max-w-xs`}
+          className={`${isDark ? 'bg-black border-gray-700' : 'bg-white border-gray-200'} ${themeStyles.text} max-w-sm`}
         >
           <div className="whitespace-pre-line text-xs">
             <div className="mb-2">{formatAuthInfo()}</div>
             {authInfo.agentPKP?.ethAddress && (
               <div className="flex items-center gap-2 pt-2 border-t border-gray-600">
-                <div>
+                <div className="flex-1 min-w-0">
                   <div className={themeStyles.textMuted}>Agent PKP:</div>
-                  <div className={`font-mono text-xs ${themeStyles.text}`}>
+                  <div className={`font-mono text-xs ${themeStyles.text} truncate`}>
                     {authInfo.agentPKP.ethAddress}
                   </div>
                 </div>
                 <button
                   onClick={handleCopyEthAddress}
-                  className={`p-1 ${themeStyles.itemHoverBg} rounded transition-colors`}
+                  className={`p-1 ${themeStyles.itemHoverBg} rounded transition-colors flex-shrink-0`}
                 >
                   <Copy className="w-3 h-3" />
                 </button>
