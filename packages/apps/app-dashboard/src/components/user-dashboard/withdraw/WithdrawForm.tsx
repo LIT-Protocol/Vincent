@@ -3,6 +3,8 @@ import { SessionSigs, IRelayPKP } from '@lit-protocol/types';
 import { LIT_CHAINS } from '@lit-protocol/constants';
 import WalletConnectPage from '@/components/user-dashboard/withdraw/WalletConnect/WalletConnect';
 import StatusMessage from '@/components/user-dashboard/consent/StatusMessage';
+import { useTheme } from '@/providers/ThemeProvider';
+import { theme } from '@/components/user-dashboard/consent/ui/theme';
 
 import { ChainSelector, TokenSelector, WithdrawPanel, BalanceDisplay } from '.';
 import { StatusType } from '@/types/shared/StatusType';
@@ -24,6 +26,8 @@ export interface TokenDetails {
 }
 
 export default function WithdrawForm({ sessionSigs, agentPKP }: WithdrawFormProps) {
+  const { isDark } = useTheme();
+  const themeStyles = theme(isDark);
   const [loading, setLoading] = useState<boolean>(false);
   const [selectedChain, setSelectedChain] = useState<string>('ethereum');
   const [withdrawAmount, setWithdrawAmount] = useState<string>('');
@@ -105,13 +109,13 @@ export default function WithdrawForm({ sessionSigs, agentPKP }: WithdrawFormProp
   };
 
   return (
-    <div className="max-w-[550px] w-full mx-auto bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
-      <div className="px-6 pt-8 pb-6 border-b border-gray-100">
-        <h3 className="text-xl font-semibold text-gray-900 mb-6">Wallet</h3>
+    <div className={`max-w-[550px] w-full mx-auto ${themeStyles.cardBg} rounded-xl shadow-lg border ${themeStyles.cardBorder} overflow-hidden`}>
+      <div className={`px-6 pt-8 pb-6 border-b ${themeStyles.cardBorder}`}>
+        <h3 className={`text-xl font-semibold ${themeStyles.text} mb-6`}>Wallet</h3>
 
         <div className="mb-4">
-          <div className="text-sm font-medium text-gray-700 mb-2">Wallet Information</div>
-          <div className="text-sm font-medium text-gray-700">
+          <div className={`text-sm font-medium ${themeStyles.text} mb-2`}>Wallet Information</div>
+          <div className={`text-sm font-medium ${themeStyles.text}`}>
             EVM Address: {agentPKP.ethAddress}
           </div>
         </div>
@@ -123,8 +127,8 @@ export default function WithdrawForm({ sessionSigs, agentPKP }: WithdrawFormProp
             onClick={() => setActiveTab('walletconnect')}
             className={`pb-2 text-lg font-medium transition-colors cursor-pointer select-none ${
               activeTab === 'walletconnect'
-                ? 'text-gray-900 border-b-2 border-gray-900'
-                : 'text-gray-600 hover:text-gray-800'
+                ? `${themeStyles.text} border-b-2 border-orange-500`
+                : `${themeStyles.textMuted} hover:${themeStyles.text}`
             }`}
           >
             <div className="flex items-center gap-2 px-3">
@@ -133,14 +137,14 @@ export default function WithdrawForm({ sessionSigs, agentPKP }: WithdrawFormProp
             </div>
           </div>
 
-          <span className="mx-8 text-gray-300 pointer-events-none text-lg">|</span>
+          <span className={`mx-8 ${themeStyles.textMuted} pointer-events-none text-lg`}>|</span>
 
           <div
             onClick={() => setActiveTab('withdraw')}
             className={`px-4 pb-2 text-lg font-medium transition-colors cursor-pointer select-none flex items-center gap-2 ${
               activeTab === 'withdraw'
-                ? 'text-gray-900 border-b-2 border-gray-900'
-                : 'text-gray-600 hover:text-gray-800'
+                ? `${themeStyles.text} border-b-2 border-orange-500`
+                : `${themeStyles.textMuted} hover:${themeStyles.text}`
             }`}
           >
             Withdraw
