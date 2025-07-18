@@ -3,16 +3,16 @@ import { PermittedAppsPage } from './PermittedAppsPage';
 import { useUserPermissionsMiddleware } from '@/hooks/user-dashboard/dashboard/useUserPermissionsMiddleware';
 import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
 import { PermittedAppsSkeleton } from './PermittedAppsSkeleton';
-import { StatusMessage } from '@/components/shared/ui/statusMessage';
 import { useReadAuthInfo } from '@/hooks/user-dashboard/useAuthInfo';
 import { AuthenticationErrorScreen } from '../consent/AuthenticationErrorScreen';
+import { GeneralErrorScreen } from '@/components/user-dashboard/consent/GeneralErrorScreen';
 
 export function PermittedAppsWrapper() {
   const { authInfo, sessionSigs, isProcessing, error } = useReadAuthInfo();
 
   const pkpTokenId = authInfo?.agentPKP?.tokenId || '';
 
- // Fetch apps from on-chain
+  // Fetch apps from on-chain
   const {
     permittedApps,
     isLoading: permissionsLoading,
@@ -64,10 +64,7 @@ export function PermittedAppsWrapper() {
   // Handle errors
   if (appsError || UserPermissionsError) {
     return (
-      <StatusMessage
-        message={`Failed to load available apps, ${appsError || UserPermissionsError}`}
-        type="error"
-      />
+      <GeneralErrorScreen errorDetails={appsError || UserPermissionsError || 'An error occurred'} />
     );
   }
 
