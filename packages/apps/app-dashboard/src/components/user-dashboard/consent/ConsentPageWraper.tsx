@@ -7,7 +7,6 @@ import { useConsentInfo } from '@/hooks/user-dashboard/consent/useConsentInfo';
 import { useConsentMiddleware } from '@/hooks/user-dashboard/consent/useConsentMiddleware';
 import useReadAuthInfo from '@/hooks/user-dashboard/useAuthInfo';
 import { ReturningUserConsent } from './ReturningUserConsent';
-import { AppNotInRegistryConsent } from './AppNotInRegistry';
 import { AppVersionNotInRegistryConsent } from './AppVersionNotInRegistry';
 
 export function ConsentPageWrapper() {
@@ -52,15 +51,6 @@ export function ConsentPageWrapper() {
 
   if (!data || !authInfo || !sessionSigs) {
     return <ConsentPageSkeleton />;
-  }
-
-  if (appExists === false) {
-    return (
-      <AppNotInRegistryConsent
-        appData={data.app}
-        readAuthInfo={{ authInfo, sessionSigs, isProcessing, error }}
-      />
-    );
   }
 
   if (appExists === true && activeVersionExists === false) {

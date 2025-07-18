@@ -25,6 +25,7 @@ interface ConsentPageProps {
 export function ConsentPage({ consentInfoMap, readAuthInfo }: ConsentPageProps) {
   const { isDark, toggleTheme } = useTheme();
   const [localError, setLocalError] = useState<string | null>(null);
+  const [isConsentProcessing, setIsConsentProcessing] = useState(false);
   const formRefs = useRef<Record<string, PolicyFormRef>>({});
 
   const { formData, handleFormChange } = useConsentFormData(consentInfoMap);
@@ -47,6 +48,7 @@ export function ConsentPage({ consentInfoMap, readAuthInfo }: ConsentPageProps) 
   const handleSubmit = useCallback(async () => {
     // Clear any previous local errors
     setLocalError(null);
+    setIsConsentProcessing(true);
 
     // Check if all forms are valid using RJSF's built-in validateForm method
     const allValid = Object.values(formRefs.current).every((formRef) => {
@@ -56,6 +58,7 @@ export function ConsentPage({ consentInfoMap, readAuthInfo }: ConsentPageProps) 
     if (allValid) {
       if (!readAuthInfo.authInfo?.userPKP || !readAuthInfo.sessionSigs) {
         setLocalError('Missing authentication information. Please try refreshing the page.');
+        setIsConsentProcessing(false);
         return;
       }
 
@@ -86,10 +89,12 @@ export function ConsentPage({ consentInfoMap, readAuthInfo }: ConsentPageProps) 
         });
       } catch (error) {
         setLocalError(error instanceof Error ? error.message : 'Failed to permit app');
+        setIsConsentProcessing(false);
         return;
       }
       await generateJWT(consentInfoMap.app, consentInfoMap.app.activeVersion!); // ! since this will be valid. Only optional in the schema doc for init creation.
     }
+    setIsConsentProcessing(false);
   }, [formData, readAuthInfo, addPermittedActions]);
 
   const handleDecline = useCallback(() => {
@@ -100,8 +105,8 @@ export function ConsentPage({ consentInfoMap, readAuthInfo }: ConsentPageProps) 
     formRefs.current[policyIpfsCid] = ref;
   }, []);
 
-  const isLoading = isJwtLoading || isActionsLoading;
-  const loadingStatus = jwtLoadingStatus || actionsLoadingStatus;
+  const isLoading = isJwtLoading || isActionsLoading || isConsentProcessing;
+  const loadingStatus = jwtLoadingStatus || actionsLoadingStatus || (isConsentProcessing ? 'Processing consent...' : null);
   const error = jwtError || actionsError;
 
   return (
