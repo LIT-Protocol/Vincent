@@ -1,67 +1,63 @@
-import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
 import { AppSidebar } from './AppSidebar';
 import { SidebarSkeleton } from './SidebarSkeleton';
 import { StatusMessage } from '@/components/shared/ui/statusMessage';
 import useReadAuthInfo from '@/hooks/user-dashboard/useAuthInfo';
-import { useUserPermissionsMiddleware } from '@/hooks/user-dashboard/dashboard/useUserPermissionsMiddleware';
-import { useMemo } from 'react';
+import { useSidebarData } from '@/hooks/user-dashboard/sidebar/useSidebarData';
 
 export function SidebarWrapper() {
   const { authInfo, isProcessing, error } = useReadAuthInfo();
+  const pkpTokenId = authInfo?.agentPKP?.tokenId || '';
 
-  // Fetch apps from on-chain
-  const {
-    permittedApps,
-    isLoading: permissionsLoading,
-    error: UserPermissionsError,
-  } = useUserPermissionsMiddleware({
-    pkpTokenId: authInfo?.agentPKP?.tokenId || '',
-  });
-
-  // Fetch all apps from the API
-  const {
-    data: allApps,
-    isLoading: appsLoading,
-    error: appsError,
-  } = vincentApiClient.useListAppsQuery();
-
-  // Filter apps based on permitted app IDs
-  const filteredApps = useMemo(() => {
-    if (!allApps || !permittedApps.length) return [];
-
-    return allApps.filter((app) => permittedApps.includes(app.appId.toString()));
-  }, [allApps, permittedApps]);
+  // Early return if required params are missing
+  if (!pkpTokenId && !isProcessing) {
+    return <SidebarSkeleton />;
+  }
 
   // Show skeleton while auth is processing
   if (isProcessing) {
     return <SidebarSkeleton />;
   }
 
-  // Handle auth errors early
-  if (error) return <StatusMessage message="Authentication failed" type="error" />;
-
-  // Handle missing auth or PKP token
-  if (!authInfo?.agentPKP?.tokenId) {
-    return (
-      <StatusMessage
-        message="No PKP token found. Please authenticate with a valid PKP."
-        type="error"
-      />
-    );
+  // Handle auth errors
+  if (error) {
+    return <StatusMessage message="Authentication failed" type="error" />;
   }
 
-  if (appsError || UserPermissionsError)
-    return (
-      <StatusMessage
-        message={`Failed to load available apps, ${appsError || UserPermissionsError}`}
-        type="error"
-      />
-    );
+  // Now we have stable pkpTokenId, so we can call the consolidated hook
+  return <SidebarWithData pkpTokenId={pkpTokenId} />;
+}
 
-  // Show skeleton while data is being fetched
-  if (permissionsLoading || appsLoading) {
+
+function SidebarWithData({ pkpTokenId }: { pkpTokenId: string }) {
+  const {
+    apps,
+    permittedAppVersions,
+    appVersionsMap,
+    isLoading,
+    error,
+  } = useSidebarData({ pkpTokenId });
+
+  // Show skeleton while data is loading
+  if (isLoading) {
     return <SidebarSkeleton />;
   }
 
-  return <AppSidebar apps={filteredApps} isLoadingApps={permissionsLoading || appsLoading} />;
+  // Handle errors
+  if (error) {
+    return (
+      <StatusMessage
+        message={`Failed to load sidebar data: ${error}`}
+        type="error"
+      />
+    );
+  }
+
+  return (
+    <AppSidebar 
+      apps={apps} 
+      permittedAppVersions={permittedAppVersions} 
+      appVersionsMap={appVersionsMap}
+      isLoadingApps={isLoading} 
+    />
+  );
 }
