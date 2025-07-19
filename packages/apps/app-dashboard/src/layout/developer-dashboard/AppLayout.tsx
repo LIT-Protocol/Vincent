@@ -1,4 +1,4 @@
-import { ComponentProps } from 'react';
+import { ComponentProps, useEffect } from 'react';
 import { useLocation } from 'react-router';
 import { cn } from '@/lib/utils';
 import { DeveloperSidebarWrapper } from '@/components/developer-dashboard/sidebar/DeveloperSidebarWrapper';
@@ -10,6 +10,7 @@ import { useTheme } from '@/providers/ThemeProvider';
 import { useAppAddressCheck } from '@/hooks/developer-dashboard/app/useAppAddressCheck';
 import { useToolAddressCheck } from '@/hooks/developer-dashboard/tool/useToolAddressCheck';
 import { usePolicyAddressCheck } from '@/hooks/developer-dashboard/policy/usePolicyAddressCheck';
+import { getCurrentSIWEToken } from '@/hooks/developer-dashboard/useVincentApiWithSIWE';
 import Loading from '@/components/shared/ui/Loading';
 import useReadAuthInfo from '@/hooks/user-dashboard/useAuthInfo';
 
@@ -20,6 +21,13 @@ function AppLayout({ children, className }: ComponentProps<'div'>) {
   // FIRST: Check basic authentication
   const { authInfo, sessionSigs, isProcessing: authLoading } = useReadAuthInfo();
   const isAuthenticated = authInfo?.agentPKP && sessionSigs;
+
+  // Generate SIWE token when authenticated (for store mutations)
+  useEffect(() => {
+    if (isAuthenticated && authInfo && sessionSigs) {
+      getCurrentSIWEToken(authInfo, sessionSigs).catch(console.error);
+    }
+  }, [isAuthenticated, authInfo, sessionSigs]);
 
   // Always call address check hooks (React hooks rule)
   const appAddressCheck = useAppAddressCheck();
