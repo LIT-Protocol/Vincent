@@ -4,7 +4,6 @@ import {
   DeletePolicyVersionForm,
   DeletePolicyVersionFormData,
 } from '../forms/DeletePolicyVersionForm';
-import { useAddressCheck } from '@/hooks/developer-dashboard/tool/useAddressCheck';
 import { StatusMessage } from '@/components/shared/ui/statusMessage';
 import { getErrorMessage } from '@/utils/developer-dashboard/app-forms';
 import Loading from '@/components/shared/ui/Loading';
@@ -50,8 +49,6 @@ export function DeletePolicyVersionWrapper() {
       navigate(`/developer/policyId/${encodeURIComponent(packageName!)}/versions`); // Navigate immediately, no delay needed
     }
   }, [isSuccess, data, navigate]);
-
-  useAddressCheck(policy || null);
 
   // Loading states
   if (policyLoading || versionLoading) return <Loading />;

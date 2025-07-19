@@ -1,6 +1,5 @@
 import { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useAddressCheck } from '@/hooks/developer-dashboard/tool/useAddressCheck';
 import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
 import { StatusMessage } from '@/components/shared/ui/statusMessage';
 import {
@@ -45,8 +44,6 @@ export function EditPolicyVersionWrapper() {
       );
     }
   }, [isSuccess, data, navigate, policy, versionData]);
-
-  useAddressCheck(policy || null);
 
   // Loading states
   if (policyLoading || versionLoading) return <Loading />;

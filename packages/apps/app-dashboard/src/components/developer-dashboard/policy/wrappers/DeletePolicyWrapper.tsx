@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { DeletePolicyForm } from '../forms/DeletePolicyForm';
-import { useAddressCheck } from '@/hooks/developer-dashboard/tool/useAddressCheck';
 import { StatusMessage } from '@/components/shared/ui/statusMessage';
 import { getErrorMessage } from '@/utils/developer-dashboard/app-forms';
 import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
@@ -30,8 +29,6 @@ export function DeletePolicyWrapper() {
       navigate('/developer/policies'); // Navigate immediately, no delay needed
     }
   }, [isSuccess, data, navigate]);
-
-  useAddressCheck(policy || null);
 
   // Loading states
   if (policyLoading) return <Loading />;
