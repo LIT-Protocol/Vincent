@@ -27,13 +27,13 @@ export default function RootPage() {
 
           <div className="flex flex-col sm:flex-row gap-4 mb-8">
             <button
-              onClick={() => navigate('/developer')}
+              onClick={() => navigate('/developer/dashboard')}
               className="bg-gray-900 text-white px-6 py-3 rounded-[20px] font-medium hover:bg-gray-800 transition-colors min-w-[160px]"
             >
               Developer Dashboard
             </button>
             <button
-              onClick={() => navigate('/user')}
+              onClick={() => navigate('/user/apps')}
               className="bg-transparent text-gray-900 px-6 py-3 rounded-[20px] font-medium border border-gray-900 hover:bg-gray-100 transition-colors min-w-[160px]"
             >
               User Dashboard
@@ -42,7 +42,8 @@ export default function RootPage() {
 
           <div className="text-center space-y-4">
             <p className="text-gray-500 text-sm">
-              <strong>Developer Dashboard:</strong> Build and manage applications with delegated permissions
+              <strong>Developer Dashboard:</strong> Build and manage applications with delegated
+              permissions
             </p>
             <p className="text-gray-500 text-sm">
               <strong>User Dashboard:</strong> Control and delegate permissions to your applications
@@ -87,4 +88,4 @@ export default function RootPage() {
       </div>
     </>
   );
-} 
+}
