@@ -66,9 +66,7 @@ export const useConsentInfo = (appId: string): ConsentInfoState => {
   // Fetch all data when appVersions changes
   useEffect(() => {
     if (!app || !appVersions || appVersions.length === 0) {
-      // Mark data fetching as complete even if app/versions don't exist
-      // This prevents infinite loading when app doesn't exist
-      setIsDataFetchingComplete(true);
+      // Keep loading until we have data
       return;
     }
 
