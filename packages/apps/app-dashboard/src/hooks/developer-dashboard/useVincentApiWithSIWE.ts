@@ -1,5 +1,7 @@
 import { SiweMessage, generateNonce } from 'siwe';
-import { getAddress } from 'ethers/lib/utils';
+import { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
+import { litNodeClient } from '@/utils/user-dashboard/lit';
+import useReadAuthInfo from '@/hooks/user-dashboard/useAuthInfo';
 
 interface StoredSIWE {
   message: string;
@@ -22,20 +24,17 @@ function isValidStoredSIWE(data: any): data is StoredSIWE {
 }
 
 /**
- * Get current SIWE token for request headers - returns null if invalid
+ * Get current SIWE token for request headers using PKP wallet - returns null if invalid
  */
-export const getCurrentSIWEToken = async (): Promise<string | null> => {
-  // Get current wallet address first
-  if (!window.ethereum) return null;
-
-  let address: string;
-  try {
-    const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-    if (!accounts?.length) return null;
-    address = getAddress(accounts[0]);
-  } catch {
+export const getCurrentSIWEToken = async (
+  authInfo: any,
+  sessionSigs: any,
+): Promise<string | null> => {
+  if (!authInfo?.agentPKP?.ethAddress || !authInfo?.agentPKP || !sessionSigs) {
     return null;
   }
+
+  const address = authInfo.agentPKP.ethAddress;
 
   // Check if stored token is still valid
   const stored = localStorage.getItem(SIWE_STORAGE_KEY);
@@ -45,7 +44,7 @@ export const getCurrentSIWEToken = async (): Promise<string | null> => {
       if (!isValidStoredSIWE(data)) {
         localStorage.removeItem(SIWE_STORAGE_KEY);
       } else {
-        // Check if stored address matches current wallet address
+        // Check if stored address matches current PKP address
         if (data.address !== address) {
           localStorage.removeItem(SIWE_STORAGE_KEY);
         } else {
@@ -67,6 +66,14 @@ export const getCurrentSIWEToken = async (): Promise<string | null> => {
   }
 
   try {
+    // Create PKP wallet for signing
+    const pkpWallet = new PKPEthersWallet({
+      controllerSessionSigs: sessionSigs,
+      pkpPubKey: authInfo.agentPKP.publicKey,
+      litNodeClient: litNodeClient,
+    });
+    await pkpWallet.init();
+
     const siweMessage = new SiweMessage({
       domain: 'staging.registry.heyvincent.ai',
       address: address,
@@ -80,15 +87,59 @@ export const getCurrentSIWEToken = async (): Promise<string | null> => {
     });
 
     const message = siweMessage.prepareMessage();
-    const signature = await window.ethereum.request({
-      method: 'personal_sign',
-      params: [message, address],
-    });
+    const signature = await pkpWallet.signMessage(message);
 
     const storedData: StoredSIWE = { message, signature, address };
     localStorage.setItem(SIWE_STORAGE_KEY, JSON.stringify(storedData));
     return btoa(JSON.stringify({ message, signature }));
-  } catch {
+  } catch (error) {
+    console.error('Error creating SIWE token with PKP:', error);
     return null;
   }
+};
+
+/**
+ * Store-compatible version that checks for existing valid SIWE token
+ */
+export const getCurrentSIWETokenForStore = async (): Promise<string | null> => {
+  const stored = localStorage.getItem(SIWE_STORAGE_KEY);
+  if (!stored) return null;
+
+  try {
+    const data = JSON.parse(stored);
+    if (!isValidStoredSIWE(data)) {
+      localStorage.removeItem(SIWE_STORAGE_KEY);
+      return null;
+    }
+
+    // Verify the stored token is still valid
+    const result = await new SiweMessage(data.message).verify({
+      signature: data.signature,
+      domain: 'staging.registry.heyvincent.ai',
+      time: new Date().toISOString(),
+    });
+
+    if (result.success) {
+      return btoa(JSON.stringify({ message: data.message, signature: data.signature }));
+    } else {
+      localStorage.removeItem(SIWE_STORAGE_KEY);
+      return null;
+    }
+  } catch {
+    localStorage.removeItem(SIWE_STORAGE_KEY);
+    return null;
+  }
+};
+
+/**
+ * Hook to get current SIWE token for authenticated requests
+ */
+export const useVincentApiWithPKP = () => {
+  const { authInfo, sessionSigs } = useReadAuthInfo();
+
+  const getSIWEToken = async (): Promise<string | null> => {
+    return getCurrentSIWEToken(authInfo, sessionSigs);
+  };
+
+  return { getSIWEToken };
 };
