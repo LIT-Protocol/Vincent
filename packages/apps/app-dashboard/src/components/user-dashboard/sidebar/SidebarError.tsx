@@ -31,9 +31,6 @@ export function SidebarError({ error }: SidebarErrorProps) {
   const { clearAuthInfo } = useClearAuthInfo();
 
   const isActiveRoute = (route: string) => {
-    if (route === '/user') {
-      return location.pathname === '/user';
-    }
     return location.pathname.startsWith(route);
   };
 

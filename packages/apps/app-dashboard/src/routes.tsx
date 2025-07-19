@@ -5,7 +5,7 @@ import UserLayoutWithSidebar from '@/layout/user-dashboard/UserLayoutWithSidebar
 import { AppProviders, UserProviders } from './providers';
 import { wrap } from '@/utils/shared/components';
 
-import { ConnectWallet, Dashboard } from './pages/developer-dashboard';
+import { Dashboard } from './pages/developer-dashboard';
 import RootPage from './pages/shared/RootPage';
 
 import {
@@ -57,7 +57,6 @@ import { UserPermissionWrapper } from './components/user-dashboard/dashboard/Use
 import { ConsentPageWrapper } from './components/user-dashboard/consent/ConsentPageWraper';
 import { PermittedAppsWrapper } from './components/user-dashboard/dashboard/PermittedAppsWrapper';
 import { UpdateVersionPageWrapper } from './components/user-dashboard/dashboard/UpdateVersionPageWrapper';
-import { HomeWrapper } from './components/user-dashboard/dashboard/HomeWrapper';
 
 const AppLayoutWithProviders = wrap(() => <Outlet />, [...AppProviders, AppLayout]);
 const UserDashboardLayoutWithProviders = wrap(
@@ -77,10 +76,6 @@ const routes: RouteObject[] = [
   {
     element: <AppLayoutWithProviders />,
     children: [
-      {
-        path: '/developer',
-        element: <ConnectWallet />,
-      },
       {
         path: '/developer/*',
         element: <Outlet />,
@@ -236,10 +231,6 @@ const routes: RouteObject[] = [
   {
     element: <UserDashboardLayoutWithProviders />,
     children: [
-      {
-        path: '/user',
-        element: <HomeWrapper />,
-      },
       {
         path: '/user/consent/appId/:appId',
         element: <ConsentPageWrapper />,
