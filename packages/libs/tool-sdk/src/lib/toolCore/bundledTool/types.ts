@@ -5,22 +5,25 @@ import type { VincentTool } from '../../types';
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 /**
- * A VincentTool bundled with an IPFS CID and uniquely branded.
- * This ensures only correctly constructed objects are assignable.
+ * A VincentTool bundled with metadata and uniquely branded.
+ * This ensures only correctly constructed objects are assignable
+ * and that literal types for metadata are preserved through inference.
  *
  *
  * @typeParam VT - The Vincent Tool that was bundled for usage
- * @typeParam IpfsCid - The IPFS CID that the bundled tool was published to
+ * @typeParam Metadata - The metadata object containing ipfsCid and packageName
  *
  * @category Interfaces
  */
 export type BundledVincentTool<
   VT extends VincentTool<any, any, any, any, any, any, any, any, any, any>,
-  IpfsCid extends string = string,
+  Metadata extends {
+    readonly ipfsCid: string;
+    readonly packageName: string;
+  },
   VincentToolApiVersion extends string = string,
 > = {
-  /* @type string */
-  readonly ipfsCid: IpfsCid;
+  readonly metadata: Metadata;
   readonly vincentTool: VT;
   /** @hidden */
   readonly vincentToolApiVersion: VincentToolApiVersion;

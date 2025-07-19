@@ -46,8 +46,15 @@ import { asBundledVincentTool } from '@lit-protocol/vincent-tool-sdk';
 import { vincentTool } from '${vincentToolPath}';
 import metadata from './vincent-tool-metadata.json';
 
+if(!metadata.ipfsCid) {
+  throw new Error('ipfsCid is not defined in metadata JSON file');
+}
 
-export const bundledVincentTool = asBundledVincentTool(vincentTool, metadata.ipfsCid);
+if(!metadata.packageName) {
+  throw new Error('packageName is not defined in metadata JSON file');
+}
+
+export const bundledVincentTool = asBundledVincentTool(vincentTool, metadata.ipfsCid, metadata.packageName);
 `;
 }
 
@@ -70,7 +77,14 @@ if(!metadata.ipfsCid) {
   throw new Error('ipfsCid is not defined in metadata JSON file');
 }
 
-export const bundledVincentPolicy = asBundledVincentPolicy(vincentPolicy, metadata.ipfsCid);
+if(!metadata.packageName) {
+  throw new Error('packageName is not defined in metadata JSON file');
+}
+
+export const bundledVincentPolicy = asBundledVincentPolicy(vincentPolicy, { 
+  ipfsCid: metadata.ipfsCid, 
+  packageName: metadata.packageName 
+});
 `;
 }
 
@@ -98,11 +112,13 @@ module.exports = {
  * Creates the metadata JSON file
  * @param {object} params - Parameters
  * @param {string} params.ipfsCid - The IPFS CID
+ * @param {string} params.packageName - The package name
  * @returns {string} The metadata JSON
  */
-function metadataJsonFile({ ipfsCid }) {
+function metadataJsonFile({ ipfsCid, packageName = 'test-package' }) {
   return `{
-  "ipfsCid": "${ipfsCid}"
+  "ipfsCid": "${ipfsCid}",
+  "packageName": "${packageName}"
 }
 `;
 }
@@ -155,7 +171,9 @@ function createBundledFile(sourceDir, type) {
         // Write metadata JSON
         // Use the directory of the generated output file
         const metadataPath = path.join(outputPath, `vincent-${type}-metadata.json`);
-        const metadataContent = metadataJsonFile({ ipfsCid });
+        // Extract package name from the output path
+        const packageName = `test-${type}-${path.basename(outputPath)}`;
+        const metadataContent = metadataJsonFile({ ipfsCid, packageName });
         ensureDirectoryExistence(metadataPath);
         fs.writeFileSync(metadataPath, metadataContent);
       });

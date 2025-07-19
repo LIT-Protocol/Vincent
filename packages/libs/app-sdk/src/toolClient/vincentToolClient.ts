@@ -55,7 +55,7 @@ const YELLOWSTONE_RPC_URL = 'https://yellowstone-rpc.litprotocol.com/';
  * @category API Methods
  * */
 export function getVincentToolClient<
-  const IpfsCid extends string,
+  const Metadata extends { readonly ipfsCid: string; readonly packageName: string },
   ToolParamsSchema extends z.ZodType,
   PkgNames extends string,
   PolicyMap extends ToolPolicyMap<any, PkgNames>,
@@ -78,7 +78,7 @@ export function getVincentToolClient<
       any,
       any
     >,
-    IpfsCid
+    Metadata
   >;
   ethersSigner: ethers.Signer;
 }): VincentToolClient<
@@ -90,7 +90,11 @@ export function getVincentToolClient<
   PrecheckFailSchema
 > {
   const { bundledVincentTool, ethersSigner } = params;
-  const { ipfsCid, vincentTool, vincentToolApiVersion } = bundledVincentTool;
+  const {
+    metadata: { ipfsCid },
+    vincentTool,
+    vincentToolApiVersion,
+  } = bundledVincentTool;
 
   assertSupportedToolVersion(vincentToolApiVersion);
 

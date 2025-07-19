@@ -5,21 +5,24 @@ import type { VincentPolicy } from '../../types';
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 /**
- * A VincentPolicy bundled with an IPFS CID
- * This ensures only correctly constructed objects are assignable.
+ * A VincentPolicy bundled with metadata and uniquely branded.
+ * This ensures only correctly constructed objects are assignable
+ * and that literal types for metadata are preserved through inference.
  *
  * @typeParam VP - The Vincent Policy that was bundled for usage
- * @typeParam IpfsCid - The IPFS CID that the bundled tool was published to
+ * @typeParam Metadata - The metadata object containing ipfsCid and packageName
  *
  * @category Interfaces
  */
 export type BundledVincentPolicy<
-  VP extends VincentPolicy<any, any, any, any, any, any, any, any, any, any, any, any, any>,
-  IpfsCid extends string = string,
+  VP extends VincentPolicy<any, any, any, any, any, any, any, any, any, any, any, any>,
+  Metadata extends {
+    readonly ipfsCid: string;
+    readonly packageName: string;
+  },
   VincentToolApiVersion extends string = string,
 > = {
-  /* @type string */
-  readonly ipfsCid: IpfsCid;
+  readonly metadata: Metadata;
   readonly vincentPolicy: VP;
   /** @hidden */
   readonly vincentToolApiVersion: VincentToolApiVersion;

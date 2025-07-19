@@ -8,7 +8,6 @@ import { createVincentPolicy, createVincentToolPolicy } from '../lib/policyCore/
 import { supportedPoliciesForTool } from '../lib/toolCore/helpers';
 
 const PolicyConfig1 = createVincentPolicy({
-  packageName: 'example-policy-1',
   toolParamsSchema: z.object({ x: z.string() }),
   evalAllowResultSchema: z.object({ pass: z.boolean() }),
   evalDenyResultSchema: z.object({ error: z.string() }),
@@ -18,7 +17,6 @@ const PolicyConfig1 = createVincentPolicy({
 });
 
 const PolicyConfig2 = createVincentPolicy({
-  packageName: 'example-policy-2',
   toolParamsSchema: z.object({ y: z.number() }),
   evalAllowResultSchema: z.object({ pass: z.literal(true) }),
   evalDenyResultSchema: z.object({ code: z.number() }),
@@ -27,8 +25,14 @@ const PolicyConfig2 = createVincentPolicy({
   },
 });
 
-const bundled1 = asBundledVincentPolicy(PolicyConfig1, 'QmCID1' as const);
-const bundled2 = asBundledVincentPolicy(PolicyConfig2, 'QmCID2' as const);
+const bundled1 = asBundledVincentPolicy(PolicyConfig1, {
+  ipfsCid: 'QmCID1' as const,
+  packageName: 'example-policy-1' as const,
+});
+const bundled2 = asBundledVincentPolicy(PolicyConfig2, {
+  ipfsCid: 'QmCID2' as const,
+  packageName: 'example-policy-2' as const,
+});
 
 const policy1 = createVincentToolPolicy({
   toolParamsSchema: z.object({ x: z.string() }),

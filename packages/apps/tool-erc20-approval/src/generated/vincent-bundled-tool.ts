@@ -10,4 +10,8 @@ if(!metadata.ipfsCid) {
   throw new Error('ipfsCid is not defined in metadata JSON file');
 }
 
-export const bundledVincentTool = asBundledVincentTool(vincentTool, metadata.ipfsCid);
+if(!metadata.packageName) {
+  throw new Error('packageName is not defined in metadata JSON file');
+}
+
+export const bundledVincentTool = asBundledVincentTool(vincentTool, metadata.ipfsCid, metadata.packageName);

@@ -23,7 +23,6 @@ const baseToolSchema = z.object({
  */
 function testBasicSchemaValidation() {
   const basicSchemaPolicyValid = createVincentPolicy({
-    packageName: '@lit-protocol/test-policy@1.34.2',
     toolParamsSchema: z.object({ actionType: z.string() }),
 
     // Define schemas
@@ -47,7 +46,10 @@ function testBasicSchemaValidation() {
   });
   const basicSchemaPolicy = createVincentToolPolicy({
     toolParamsSchema: baseToolSchema,
-    bundledVincentPolicy: asBundledVincentPolicy(basicSchemaPolicyValid, 'oi3wjfn9048w2j' as const),
+    bundledVincentPolicy: asBundledVincentPolicy(basicSchemaPolicyValid, {
+      ipfsCid: 'oi3wjfn9048w2j' as const,
+      packageName: '@lit-protocol/test-policy@1.34.2' as const,
+    }),
     toolParameterMappings: {
       action: 'actionType',
     },
@@ -60,7 +62,6 @@ function testBasicSchemaValidation() {
  */
 function testNoSchemaValidation() {
   const noSchemaPolicy = createVincentPolicy({
-    packageName: '@lit-protocol/test-policy@1.34.2',
     toolParamsSchema: z.object({ actionType: z.string() }),
 
     // No schemas defined
@@ -83,7 +84,10 @@ function testNoSchemaValidation() {
   });
   return createVincentToolPolicy({
     toolParamsSchema: baseToolSchema,
-    bundledVincentPolicy: asBundledVincentPolicy(noSchemaPolicy, '1098jwsdoifosdji' as const),
+    bundledVincentPolicy: asBundledVincentPolicy(noSchemaPolicy, {
+      ipfsCid: '1098jwsdoifosdji' as const,
+      packageName: '@lit-protocol/test-policy@1.34.2' as const,
+    }),
     toolParameterMappings: {
       action: 'actionType',
     },
@@ -95,7 +99,6 @@ function testNoSchemaValidation() {
  */
 function testStringSchemaValidation() {
   const stringSchemaPolicy = createVincentPolicy({
-    packageName: '@lit-protocol/test-policy@1.34.2',
     toolParamsSchema: z.object({ actionType: z.string() }),
 
     // String schema
@@ -118,7 +121,10 @@ function testStringSchemaValidation() {
   });
   return createVincentToolPolicy({
     toolParamsSchema: baseToolSchema,
-    bundledVincentPolicy: asBundledVincentPolicy(stringSchemaPolicy, '082u0fij0w9jf0sjdf' as const),
+    bundledVincentPolicy: asBundledVincentPolicy(stringSchemaPolicy, {
+      ipfsCid: '082u0fij0w9jf0sjdf' as const,
+      packageName: '@lit-protocol/test-policy@1.34.2' as const,
+    }),
     toolParameterMappings: {
       action: 'actionType',
     },
@@ -130,7 +136,6 @@ function testStringSchemaValidation() {
  */
 function testDenyValidation() {
   const denyValidationPolicy = createVincentPolicy({
-    packageName: '@lit-protocol/test-policy@1.34.2',
     toolParamsSchema: z.object({ actionType: z.string() }),
 
     // Define deny schema
@@ -153,10 +158,10 @@ function testDenyValidation() {
   });
   return createVincentToolPolicy({
     toolParamsSchema: baseToolSchema,
-    bundledVincentPolicy: asBundledVincentPolicy(
-      denyValidationPolicy,
-      '198hf0298w3hfo9idfjh' as const,
-    ),
+    bundledVincentPolicy: asBundledVincentPolicy(denyValidationPolicy, {
+      ipfsCid: '198hf0298w3hfo9idfjh' as const,
+      packageName: '@lit-protocol/test-policy@1.34.2' as const,
+    }),
     toolParameterMappings: {
       action: 'actionType',
     },
@@ -168,7 +173,6 @@ function testDenyValidation() {
  */
 function testContextSchemas() {
   const contextSchemasPolicy = createVincentPolicy({
-    packageName: '@lit-protocol/test-policy@1.34.2',
     toolParamsSchema: z.object({ actionType: z.string() }),
 
     // Different schemas for precheck and evaluate
@@ -195,10 +199,10 @@ function testContextSchemas() {
   });
   return createVincentToolPolicy({
     toolParamsSchema: baseToolSchema,
-    bundledVincentPolicy: asBundledVincentPolicy(
-      contextSchemasPolicy,
-      'swmfd08238rhjdskjfn' as const,
-    ),
+    bundledVincentPolicy: asBundledVincentPolicy(contextSchemasPolicy, {
+      ipfsCid: 'swmfd08238rhjdskjfn' as const,
+      packageName: '@lit-protocol/test-policy@1.34.2' as const,
+    }),
     toolParameterMappings: {
       action: 'actionType',
     },

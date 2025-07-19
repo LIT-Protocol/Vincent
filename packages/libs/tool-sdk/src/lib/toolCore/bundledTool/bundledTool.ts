@@ -9,11 +9,19 @@ import { VINCENT_TOOL_API_VERSION } from '../../constants';
 export function asBundledVincentTool<
   const VT extends VincentTool<any, any, any, any, any, any, any, any, any, any>,
   const IpfsCid extends string,
->(vincentTool: VT, ipfsCid: IpfsCid): BundledVincentTool<VT, IpfsCid> {
+  const PackageName extends string,
+>(
+  vincentTool: VT,
+  ipfsCid: IpfsCid,
+  packageName: PackageName,
+): BundledVincentTool<VT, { ipfsCid: IpfsCid; packageName: PackageName }> {
   const bundledTool = {
-    ipfsCid,
+    metadata: {
+      ipfsCid,
+      packageName,
+    },
     vincentTool,
-  } as BundledVincentTool<VT, IpfsCid>;
+  } as BundledVincentTool<VT, { ipfsCid: IpfsCid; packageName: PackageName }>;
 
   // Add non-enumerable 'magic' property
   Object.defineProperty(bundledTool, 'vincentToolApiVersion', {
@@ -23,5 +31,9 @@ export function asBundledVincentTool<
     configurable: false,
   });
 
-  return bundledTool as BundledVincentTool<VT, IpfsCid, typeof VINCENT_TOOL_API_VERSION>;
+  return bundledTool as BundledVincentTool<
+    VT,
+    { ipfsCid: IpfsCid; packageName: PackageName },
+    typeof VINCENT_TOOL_API_VERSION
+  >;
 }

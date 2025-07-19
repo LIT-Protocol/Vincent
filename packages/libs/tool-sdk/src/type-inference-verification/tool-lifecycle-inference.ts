@@ -14,7 +14,6 @@ const toolParamsSchema = z.object({
 });
 
 const aVincentPolicy = createVincentPolicy({
-  packageName: 'a' as const,
   toolParamsSchema: z.object({ foo: z.string() }),
   evalAllowResultSchema: z.object({ approved: z.boolean() }),
   commit: async (_, ctx) => ctx.allow(),
@@ -23,14 +22,16 @@ const aVincentPolicy = createVincentPolicy({
 
 const policyA = createVincentToolPolicy({
   toolParamsSchema,
-  bundledVincentPolicy: asBundledVincentPolicy(aVincentPolicy, 'cid-a' as const),
+  bundledVincentPolicy: asBundledVincentPolicy(aVincentPolicy, {
+    ipfsCid: 'cid-a' as const,
+    packageName: 'a' as const,
+  }),
   toolParameterMappings: {
     flag: 'foo',
   },
 });
 
 const bVincentPolicy = createVincentPolicy({
-  packageName: 'b' as const,
   toolParamsSchema: z.object({ bar: z.number() }),
   evalAllowResultSchema: z.string(),
   evaluate: async (_, ctx) => ctx.allow('hello'),
@@ -38,14 +39,16 @@ const bVincentPolicy = createVincentPolicy({
 
 const policyB = createVincentToolPolicy({
   toolParamsSchema,
-  bundledVincentPolicy: asBundledVincentPolicy(bVincentPolicy, 'cid-b' as const),
+  bundledVincentPolicy: asBundledVincentPolicy(bVincentPolicy, {
+    ipfsCid: 'cid-b' as const,
+    packageName: 'b' as const,
+  }),
   toolParameterMappings: {
     value: 'bar',
   },
 });
 
 const tool = createVincentTool({
-  packageName: '@lit-protocol/yestool3@1.0.0',
   toolDescription: 'Yes Tool',
   toolParamsSchema,
   supportedPolicies: supportedPoliciesForTool([policyA, policyB] as const),

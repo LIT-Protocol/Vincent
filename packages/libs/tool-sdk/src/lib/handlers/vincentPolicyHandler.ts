@@ -33,7 +33,6 @@ declare const vincentToolApiVersion: string;
 
 /** @hidden */
 export async function vincentPolicyHandler<
-  PackageName extends string,
   PolicyToolParams extends z.ZodType,
   UserParams extends z.ZodType | undefined = undefined,
   EvalAllowResult extends z.ZodType | undefined = undefined,
@@ -44,7 +43,6 @@ export async function vincentPolicyHandler<
   toolParams,
 }: {
   vincentPolicy: VincentPolicy<
-    PackageName,
     PolicyToolParams,
     UserParams,
     any, // PrecheckAllowResult

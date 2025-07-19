@@ -33,7 +33,6 @@ const failSchema = z.object({
 
 // Create a test policy
 const baseTestPolicy = createVincentPolicy({
-  packageName: '@lit-protocol/test-policy@1.0.0',
   toolParamsSchema: z.object({
     actionType: z.string(),
   }),
@@ -46,7 +45,10 @@ const baseTestPolicy = createVincentPolicy({
 });
 const testPolicy = createVincentToolPolicy({
   toolParamsSchema: testSchema,
-  bundledVincentPolicy: asBundledVincentPolicy(baseTestPolicy, 'j298jhodf9024j4jfg' as const),
+  bundledVincentPolicy: asBundledVincentPolicy(baseTestPolicy, {
+    ipfsCid: 'j298jhodf9024j4jfg' as const,
+    packageName: '@lit-protocol/test-policy@1.0.0' as const,
+  }),
   toolParameterMappings: {
     action: 'actionType',
   },
@@ -58,7 +60,6 @@ const testPolicy = createVincentToolPolicy({
  */
 export function testNoSchemas() {
   return createVincentTool({
-    packageName: '@lit-protocol/yestool@1.0.0',
     toolDescription: 'Yes Tool',
     toolParamsSchema: testSchema,
     supportedPolicies: supportedPoliciesForTool([testPolicy]),
@@ -95,7 +96,6 @@ export function testNoSchemas() {
  */
 export function tesWithSchemas() {
   return createVincentTool({
-    packageName: '@lit-protocol/yestool2@1.0.0',
     toolDescription: 'Yes Tool',
     toolParamsSchema: testSchema,
     supportedPolicies: supportedPoliciesForTool([testPolicy]),
@@ -169,7 +169,6 @@ export function testDifferentSchemas() {
   });
 
   return createVincentTool({
-    packageName: '@lit-protocol/yestool3@1.0.0',
     toolDescription: 'Yes Tool',
     toolParamsSchema: testSchema,
     supportedPolicies: supportedPoliciesForTool([testPolicy]),
@@ -219,7 +218,6 @@ export function testDifferentSchemas() {
 export function testPolicyResultTypes() {
   // First test: Precheck with properly typed policiesContext
   return createVincentTool({
-    packageName: '@lit-protocol/yestool4@1.0.0',
     toolDescription: 'Yes Tool',
     toolParamsSchema: testSchema,
     supportedPolicies: supportedPoliciesForTool([testPolicy]),
@@ -262,7 +260,6 @@ export function assertAllow<T extends { allow: true }>(obj: T): asserts obj is T
 // Separate test for execute-specific policy result typing
 export function testExecutePolicyResultTyping() {
   return createVincentTool({
-    packageName: '@lit-protocol/yestool5@1.0.0',
     toolDescription: 'Yes Tool',
     toolParamsSchema: testSchema,
     supportedPolicies: supportedPoliciesForTool([testPolicy]),
@@ -323,7 +320,6 @@ export const missingSchema = createVincentTool({
 export const testReturnNoSchema = () => {
   // This is a good tool with proper returns
   return createVincentTool({
-    packageName: '@lit-protocol/yestool6@1.0.0',
     toolDescription: 'Yes Tool',
     toolParamsSchema: testSchema,
     supportedPolicies: supportedPoliciesForTool([testPolicy]),
@@ -420,7 +416,6 @@ export const testExecuteWrongTypeReturn = () => {
   });
 
   return createVincentTool({
-    packageName: '@lit-protocol/yestool7@1.0.0',
     toolDescription: 'Yes Tool',
     toolParamsSchema: testSchema,
     supportedPolicies: supportedPoliciesForTool([testPolicy]),
@@ -451,7 +446,6 @@ export const testPrecheckWrongSchema = () => {
   });
 
   return createVincentTool({
-    packageName: '@lit-protocol/yestool7@1.0.0',
     toolDescription: 'Yes Tool',
     toolParamsSchema: testSchema,
     supportedPolicies: supportedPoliciesForTool([testPolicy]),
@@ -483,7 +477,6 @@ export const testExecuteWrongSchema = () => {
   });
 
   return createVincentTool({
-    packageName: '@lit-protocol/yestool8@1.0.0',
     toolDescription: 'Yes Tool',
     toolParamsSchema: testSchema,
     supportedPolicies: supportedPoliciesForTool([testPolicy]),
@@ -516,7 +509,6 @@ export const testPrecheckSuccessWithFailSchema = () => {
   });
 
   return createVincentTool({
-    packageName: '@lit-protocol/yestool9@1.0.0',
     toolDescription: 'Yes Tool',
     toolParamsSchema: testSchema,
     supportedPolicies: supportedPoliciesForTool([testPolicy]),
@@ -553,7 +545,6 @@ export const testExecuteFailWithSuccessSchema = () => {
   });
 
   return createVincentTool({
-    packageName: '@lit-protocol/yestool10@1.0.0',
     toolDescription: 'Yes Tool',
     toolParamsSchema: testSchema,
     supportedPolicies: supportedPoliciesForTool([testPolicy]),
@@ -581,7 +572,6 @@ export const testExecuteFailWithSuccessSchema = () => {
 // Test: Tool with void-returning functions inside
 export const testReturnWithInnerFunctions = () => {
   return createVincentTool({
-    packageName: '@lit-protocol/yestool11@1.0.0',
     toolDescription: 'Yes Tool',
     toolParamsSchema: testSchema,
     supportedPolicies: supportedPoliciesForTool([testPolicy]),
@@ -706,7 +696,6 @@ export function testContextDestructuring() {
   });
 
   return createVincentTool({
-    packageName: '@lit-protocol/yestool12@1.0.0',
     toolDescription: 'Yes Tool',
     toolParamsSchema: testSchema,
     supportedPolicies: supportedPoliciesForTool([testPolicy]),

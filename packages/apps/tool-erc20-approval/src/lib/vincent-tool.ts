@@ -12,7 +12,6 @@ import {
 } from './schemas';
 
 export const vincentTool = createVincentTool({
-  packageName: '@lit-protocol/vincent-tool-erc20-approval' as const,
   toolDescription: 'Allow, up to a limit, of an ERC20 token spending to another address.' as const,
   toolParamsSchema,
   supportedPolicies: supportedPoliciesForTool([]),

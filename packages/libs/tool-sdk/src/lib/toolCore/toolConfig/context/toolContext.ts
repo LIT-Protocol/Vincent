@@ -81,7 +81,7 @@ export function createPrecheckToolContext<
         evalAllowResultSchema?: z.ZodType;
         evalDenyResultSchema?: z.ZodType;
       };
-      vincentPolicy: VincentPolicy<any, any, any, any, any, any, any, any, any, any, any, any, any>;
+      vincentPolicy: VincentPolicy<any, any, any, any, any, any, any, any, any, any, any, any>;
     }
   >,
   SuccessSchema extends z.ZodType = z.ZodUndefined,

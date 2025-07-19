@@ -7,13 +7,13 @@ import { VINCENT_TOOL_API_VERSION } from '../../constants';
 
 /** @hidden */
 export function asBundledVincentPolicy<
-  const VP extends VincentPolicy<any, any, any, any, any, any, any, any, any, any, any, any, any>,
-  const IpfsCid extends string,
->(vincentPolicy: VP, ipfsCid: IpfsCid): BundledVincentPolicy<VP, IpfsCid> {
+  const VP extends VincentPolicy<any, any, any, any, any, any, any, any, any, any, any, any>,
+  Metadata extends { readonly packageName: string; readonly ipfsCid: string },
+>(vincentPolicy: VP, metadata: Metadata): BundledVincentPolicy<VP, Metadata> {
   const bundledPolicy = {
-    ipfsCid,
+    metadata,
     vincentPolicy,
-  } as BundledVincentPolicy<VP, IpfsCid>;
+  } as BundledVincentPolicy<VP, Metadata>;
 
   // Add non-enumerable 'magic' property
   Object.defineProperty(bundledPolicy, 'vincentToolApiVersion', {
@@ -23,5 +23,5 @@ export function asBundledVincentPolicy<
     configurable: false,
   });
 
-  return bundledPolicy as BundledVincentPolicy<VP, IpfsCid, typeof VINCENT_TOOL_API_VERSION>;
+  return bundledPolicy as BundledVincentPolicy<VP, Metadata, typeof VINCENT_TOOL_API_VERSION>;
 }

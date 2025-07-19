@@ -8,10 +8,7 @@ import { assertSupportedToolVersion } from '../../assertSupportedToolVersion';
 
 export type ToolPolicyMap<T extends readonly any[], PkgNames extends string> = {
   policyByPackageName: {
-    [K in PkgNames]: Extract<
-      T[number],
-      { vincentToolApiVersion: string; vincentPolicy: { packageName: K } }
-    >;
+    [K in PkgNames]: Extract<T[number], { metadata: { packageName: K } }>;
   };
   policyByIpfsCid: Record<string, T[number]>;
   cidToPackageName: Map<string, PkgNames>;
@@ -55,20 +52,31 @@ export type ToolPolicyMap<T extends readonly any[], PkgNames extends string> = {
  */
 export function supportedPoliciesForTool<
   const Policies extends readonly {
-    vincentPolicy: VincentPolicy<any, any, any, any, any, any, any, any, any, any, any, any, any>;
-    ipfsCid: IpfsCid;
-    vincentToolApiVersion: VincentToolApiVersion;
+    readonly vincentPolicy: VincentPolicy<
+      any,
+      any,
+      any,
+      any,
+      any,
+      any,
+      any,
+      any,
+      any,
+      any,
+      any,
+      any
+    >;
+    readonly metadata: {
+      readonly ipfsCid: string;
+      readonly packageName: string;
+    };
+    readonly vincentToolApiVersion: string;
   }[],
-  const IpfsCid extends string = string,
-  const VincentToolApiVersion extends string = string,
   const PkgNames extends
-    Policies[number]['vincentPolicy']['packageName'] = Policies[number]['vincentPolicy']['packageName'],
+    Policies[number]['metadata']['packageName'] = Policies[number]['metadata']['packageName'],
 >(policies: Policies): ToolPolicyMap<Policies, PkgNames> {
   const policyByPackageName = {} as {
-    [K in PkgNames]: Extract<
-      Policies[number],
-      { vincentToolApiVersion: string; vincentPolicy: { packageName: K } }
-    >;
+    [K in PkgNames]: Extract<Policies[number], { metadata: { packageName: K } }>;
   };
   const policyByIpfsCid: Record<string, Policies[number]> = {};
   const cidToPackageName = new Map<string, PkgNames>();
@@ -78,8 +86,8 @@ export function supportedPoliciesForTool<
     const { vincentToolApiVersion } = policy;
     assertSupportedToolVersion(vincentToolApiVersion);
 
-    const pkg = policy.vincentPolicy.packageName as PkgNames;
-    const cid = policy.ipfsCid;
+    const pkg = policy.metadata.packageName as PkgNames;
+    const cid = policy.metadata.ipfsCid;
 
     if (!pkg) throw new Error('Missing policy packageName');
     if (pkg in policyByPackageName) {
@@ -88,7 +96,7 @@ export function supportedPoliciesForTool<
 
     policyByPackageName[pkg] = policy as Extract<
       Policies[number],
-      { vincentToolApiVersion: string; vincentPolicy: { packageName: typeof pkg } }
+      { metadata: { packageName: typeof pkg } }
     >;
     policyByIpfsCid[cid] = policy;
     cidToPackageName.set(cid, pkg);

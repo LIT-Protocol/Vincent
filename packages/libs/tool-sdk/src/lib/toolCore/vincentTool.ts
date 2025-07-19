@@ -233,7 +233,6 @@ export function createVincentTool<
     : undefined;
 
   return {
-    packageName: ToolConfig.packageName,
     vincentToolApiVersion: VINCENT_TOOL_API_VERSION,
     toolDescription: ToolConfig.toolDescription,
     execute,

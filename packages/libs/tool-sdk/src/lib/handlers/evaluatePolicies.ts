@@ -74,7 +74,7 @@ export async function evaluatePolicies<
     const policy = vincentTool.supportedPolicies.policyByPackageName[policyPackageName];
     try {
       const litActionResponse = await Lit.Actions.call({
-        ipfsId: policy.ipfsCid,
+        ipfsId: policy.metadata.ipfsCid,
         params: {
           toolParams: toolPolicyParams,
           context: {
@@ -137,7 +137,6 @@ function parseAndValidateEvaluateResult<
 }: {
   litActionResponse: string;
   vincentPolicy: VincentPolicy<
-    string,
     z.ZodType,
     any,
     any,

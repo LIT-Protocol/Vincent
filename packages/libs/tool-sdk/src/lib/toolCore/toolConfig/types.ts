@@ -49,7 +49,6 @@ export type VincentToolConfig<
     ExecuteFailSchema
   >,
 > = {
-  packageName: string;
   toolDescription: string;
 
   toolParamsSchema: ToolParamsSchema;

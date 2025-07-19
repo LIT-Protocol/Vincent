@@ -75,15 +75,18 @@ export type InferOrUndefined<T> = T extends z.ZodType ? z.infer<T> : undefined;
 /** @hidden */
 export type VincentToolPolicy<
   ToolParamsSchema extends z.ZodType,
-  VP extends VincentPolicy<any, any, any, any, any, any, any, any, any, any, any, any, any>,
+  VP extends VincentPolicy<any, any, any, any, any, any, any, any, any, any, any, any>,
   VincentToolApiVersion extends string = string,
   PackageName extends string = string,
   IpfsCid extends string = string,
 > = {
-  ipfsCid: IpfsCid;
+  metadata: {
+    ipfsCid: IpfsCid;
+    packageName: PackageName;
+  };
   /** @hidden */
   vincentToolApiVersion: VincentToolApiVersion;
-  vincentPolicy: VP & { packageName: PackageName };
+  vincentPolicy: VP;
   toolParameterMappings: Partial<{
     [K in keyof z.infer<ToolParamsSchema>]: keyof z.infer<VP['toolParamsSchema']>;
   }>;
@@ -122,7 +125,6 @@ export type CommitLifecycleFunction<
 
 /** @inline */
 export type VincentPolicy<
-  PackageName extends string,
   PolicyToolParams extends z.ZodType,
   UserParams extends z.ZodType | undefined = undefined,
   PrecheckAllowResult extends z.ZodType | undefined = undefined,
@@ -148,7 +150,6 @@ export type VincentPolicy<
       >,
   CommitFn = undefined | CommitLifecycleFunction<CommitParams, CommitAllowResult, CommitDenyResult>,
 > = {
-  packageName: PackageName;
   toolParamsSchema: PolicyToolParams;
   userParamsSchema?: UserParams;
   precheckAllowResultSchema?: PrecheckAllowResult;
@@ -401,7 +402,6 @@ export type VincentTool<
         PrecheckFailSchema
       >,
 > = {
-  packageName: string;
   toolDescription: string;
   precheck?: PrecheckFn;
   execute: ExecuteFn;

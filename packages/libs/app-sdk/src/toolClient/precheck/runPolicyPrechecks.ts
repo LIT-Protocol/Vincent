@@ -27,7 +27,7 @@ import type { PolicyPrecheckResultContext } from './types';
 import { createAllowPrecheckResult, createDenyPrecheckResult } from './resultCreators';
 
 export async function runToolPolicyPrechecks<
-  const IpfsCid extends string,
+  const Metadata extends { readonly ipfsCid: string; readonly packageName: string },
   ToolParamsSchema extends z.ZodType,
   PkgNames extends string,
   PolicyMap extends ToolPolicyMap<any, PkgNames>,
@@ -50,7 +50,7 @@ export async function runToolPolicyPrechecks<
       any,
       any
     >,
-    IpfsCid
+    Metadata
   >;
   toolParams: z.infer<ToolParamsSchema>;
   context: BaseContext & { rpcUrl?: string };
@@ -59,7 +59,10 @@ export async function runToolPolicyPrechecks<
   type Key = PkgNames & keyof PoliciesByPackageName;
 
   const {
-    bundledVincentTool: { vincentTool, ipfsCid },
+    bundledVincentTool: {
+      vincentTool,
+      metadata: { ipfsCid },
+    },
     toolParams,
     context,
     decodedPolicies,

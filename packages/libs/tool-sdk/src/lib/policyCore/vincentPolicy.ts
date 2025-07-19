@@ -34,7 +34,6 @@ import { createPolicyContext } from './policyConfig/context/policyConfigContext'
  * The `createVincentPolicy()` method is used to define a policy's lifecycle methods and ensure that arguments provided to the tool's
  * lifecycle methods, as well as their return values, are validated and fully type-safe by defining ZOD schemas for them.
  *
- * @typeParam PackageName {@removeTypeParameterCompletely}
  * @typeParam PolicyToolParams {@removeTypeParameterCompletely}
  * @typeParam UserParams {@removeTypeParameterCompletely}
  * @typeParam PrecheckAllowResult {@removeTypeParameterCompletely}
@@ -47,7 +46,6 @@ import { createPolicyContext } from './policyConfig/context/policyConfigContext'
  * @category API Methods
  */
 export function createVincentPolicy<
-  PackageName extends string,
   PolicyToolParams extends z.ZodType,
   UserParams extends z.ZodType = z.ZodUndefined,
   PrecheckAllowResult extends z.ZodType = z.ZodUndefined,
@@ -59,7 +57,6 @@ export function createVincentPolicy<
   CommitDenyResult extends z.ZodType = z.ZodUndefined,
 >(
   PolicyConfig: VincentPolicyConfig<
-    PackageName,
     PolicyToolParams,
     UserParams,
     PrecheckAllowResult,
@@ -294,7 +291,6 @@ export function createVincentPolicy<
     : undefined;
 
   const vincentPolicy: VincentPolicy<
-    PackageName,
     PolicyToolParams,
     UserParams,
     PrecheckAllowResult,
@@ -377,7 +373,6 @@ export function createVincentToolPolicy<
   toolParamsSchema: ToolParamsSchema;
   bundledVincentPolicy: BundledVincentPolicy<
     VincentPolicy<
-      PackageName,
       PolicyToolParams,
       UserParams,
       PrecheckAllowResult,
@@ -396,7 +391,7 @@ export function createVincentToolPolicy<
       >,
       CommitLifecycleFunction<CommitParams, CommitAllowResult, CommitDenyResult>
     >,
-    IpfsCid,
+    { ipfsCid: IpfsCid; packageName: PackageName },
     VincentToolApiVersion
   >;
   toolParameterMappings: Partial<{
@@ -404,14 +399,18 @@ export function createVincentToolPolicy<
   }>;
 }) {
   const {
-    bundledVincentPolicy: { vincentPolicy, ipfsCid, vincentToolApiVersion },
+    bundledVincentPolicy: {
+      vincentPolicy,
+      metadata: { ipfsCid, packageName },
+      vincentToolApiVersion,
+    },
   } = config;
 
   assertSupportedToolVersion(vincentToolApiVersion);
 
   const result = {
     vincentPolicy: vincentPolicy,
-    ipfsCid,
+    metadata: { ipfsCid, packageName },
     vincentToolApiVersion,
     toolParameterMappings: config.toolParameterMappings,
     // Explicitly include schema types in the returned object for type inference
@@ -436,7 +435,7 @@ export function createVincentToolPolicy<
   // Use the same type assertion -- but include __schemaTypes to fix generic inference issues
   return result as {
     vincentPolicy: typeof vincentPolicy;
-    ipfsCid: typeof ipfsCid;
+    metadata: { ipfsCid: IpfsCid; packageName: PackageName };
     toolParameterMappings: typeof config.toolParameterMappings;
     /** @hidden */
     vincentToolApiVersion: typeof vincentToolApiVersion;

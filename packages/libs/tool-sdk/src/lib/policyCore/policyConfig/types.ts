@@ -60,7 +60,6 @@ export type PolicyConfigCommitFunction<
 >;
 
 /**
- * @typeParam PackageName {@removeTypeParameterCompletely}
  * @typeParam PolicyToolParams {@removeTypeParameterCompletely}
  * @typeParam UserParams {@removeTypeParameterCompletely}
  * @typeParam PrecheckAllowResult {@removeTypeParameterCompletely}
@@ -73,7 +72,6 @@ export type PolicyConfigCommitFunction<
  * @typeParam CommitDenyResult {@removeTypeParameterCompletely}
  */
 export type VincentPolicyConfig<
-  PackageName extends string,
   PolicyToolParams extends z.ZodType,
   UserParams extends z.ZodType = z.ZodUndefined,
   PrecheckAllowResult extends z.ZodType = z.ZodUndefined,
@@ -101,7 +99,6 @@ export type VincentPolicyConfig<
     | undefined
     | PolicyConfigCommitFunction<CommitParams, CommitAllowResult, CommitDenyResult>,
 > = {
-  packageName: PackageName;
   toolParamsSchema: PolicyToolParams;
   userParamsSchema?: UserParams;
   evalAllowResultSchema?: EvalAllowResult;

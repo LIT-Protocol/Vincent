@@ -37,7 +37,11 @@ if(!metadata.ipfsCid) {
   throw new Error('ipfsCid is not defined in metadata JSON file');
 }
 
-export const bundledVincentTool = asBundledVincentTool(vincentTool, metadata.ipfsCid);
+if(!metadata.packageName) {
+  throw new Error('packageName is not defined in metadata JSON file');
+}
+
+export const bundledVincentTool = asBundledVincentTool(vincentTool, metadata.ipfsCid, metadata.packageName);
 `;
 }
 
@@ -55,8 +59,13 @@ module.exports = {
 }
 
 function metadataJsonFile({ ipfsCid }) {
+  // Get package name from package.json
+  const packageJson = require('./package.json');
+  const packageName = packageJson.name;
+
   return `{
-  "ipfsCid": "${ipfsCid}"
+  "ipfsCid": "${ipfsCid}",
+  "packageName": "${packageName}"
 }
 `;
 }
