@@ -1,6 +1,5 @@
 import { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useAddressCheck } from '@/hooks/developer-dashboard/tool/useAddressCheck';
 import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
 import { StatusMessage } from '@/components/shared/ui/statusMessage';
 import { EditToolVersionForm, type EditToolVersionFormData } from '../forms/EditToolVersionForm';
@@ -42,8 +41,6 @@ export function EditToolVersionWrapper() {
       );
     }
   }, [isSuccess, data, navigate, tool, versionData]);
-
-  useAddressCheck(tool || null);
 
   // Loading states
   if (toolLoading || versionLoading) return <Loading />;

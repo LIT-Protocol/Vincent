@@ -2,7 +2,6 @@ import { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { DeleteToolForm } from '../forms/DeleteToolForm';
 import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
-import { useAddressCheck } from '@/hooks/developer-dashboard/tool/useAddressCheck';
 import { StatusMessage } from '@/components/shared/ui/statusMessage';
 import { getErrorMessage } from '@/utils/developer-dashboard/app-forms';
 import Loading from '@/components/shared/ui/Loading';
@@ -30,8 +29,6 @@ export function DeleteToolWrapper() {
       navigate('/developer/tools'); // Navigate immediately, no delay needed
     }
   }, [isSuccess, data, navigate]);
-
-  useAddressCheck(tool || null);
 
   // Loading states
   if (toolLoading) return <Loading />;
