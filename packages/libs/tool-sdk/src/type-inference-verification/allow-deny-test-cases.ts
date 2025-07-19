@@ -8,8 +8,9 @@
  * arguments to verify TypeScript correctly enforces the type constraints.
  */
 import { z } from 'zod';
-import { createVincentPolicy, createVincentToolPolicy } from '../lib/policyCore/vincentPolicy';
+
 import { asBundledVincentPolicy } from '../lib/policyCore/bundledPolicy/bundledPolicy';
+import { createVincentPolicy, createVincentToolPolicy } from '../lib/policyCore/vincentPolicy';
 
 // Base tool schema for all tests
 const baseToolSchema = z.object({

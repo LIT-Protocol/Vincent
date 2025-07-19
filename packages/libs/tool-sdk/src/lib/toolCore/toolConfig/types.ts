@@ -1,9 +1,15 @@
 // src/lib/toolCore/toolConfig/types.ts
 
-import { z } from 'zod';
-import { ContextFailure, ContextSuccess, EnforceToolResult, ToolContext } from './context/types';
-import { PolicyEvaluationResultContext, ToolExecutionPolicyContext } from '../../types';
-import { ToolPolicyMap } from '../helpers';
+import type { z } from 'zod';
+
+import type { PolicyEvaluationResultContext, ToolExecutionPolicyContext } from '../../types';
+import type { ToolPolicyMap } from '../helpers';
+import type {
+  ContextFailure,
+  ContextSuccess,
+  EnforceToolResult,
+  ToolContext,
+} from './context/types';
 
 export type ToolConfigLifecycleFunction<
   ToolParams extends z.ZodType,

@@ -7,8 +7,8 @@
  */
 
 import { createPKPSignedJWT } from './core/create';
-import { decodeJWT, verifyJWT } from './core/validate';
 import { isJWTExpired } from './core/utils';
+import { decodeJWT, verifyJWT } from './core/validate';
 
 /** @function
  * @hidden

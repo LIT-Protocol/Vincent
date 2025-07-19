@@ -1,10 +1,11 @@
-import {
+import type {
   RedirectToVincentConsentPageParams,
   VincentAppClientConfig,
   VincentWebAppClient,
 } from './types';
-import { uriHelpers } from './internal';
+
 import { JWT_URL_KEY } from './constants';
+import { uriHelpers } from './internal';
 
 const { isLoginUri, composeConsentUrl, removeSearchParam, decodeVincentJWTFromUri } = uriHelpers;
 

@@ -1,13 +1,13 @@
 // src/lib/toolCore/helpers/resultCreators.ts
 
-import {
+import type { z, ZodType } from 'zod';
+
+import type {
   ToolResultFailure,
   ToolResultFailureNoResult,
   ToolResultSuccess,
   ToolResultSuccessNoResult,
 } from '../../types';
-
-import { z, ZodType } from 'zod';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 

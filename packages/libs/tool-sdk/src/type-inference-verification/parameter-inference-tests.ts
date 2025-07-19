@@ -7,8 +7,9 @@
  * on parameters passed to allow() and deny() methods.
  */
 import { z } from 'zod';
-import { createVincentPolicy, createVincentToolPolicy } from '../lib/policyCore/vincentPolicy';
+
 import { asBundledVincentPolicy } from '../lib/policyCore/bundledPolicy/bundledPolicy';
+import { createVincentPolicy, createVincentToolPolicy } from '../lib/policyCore/vincentPolicy';
 
 // Base tool schema for all tests
 const baseToolSchema = z.object({

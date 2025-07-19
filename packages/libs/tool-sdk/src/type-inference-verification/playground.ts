@@ -1,10 +1,11 @@
 import { z } from 'zod';
-import { createVincentPolicy, createVincentToolPolicy } from '../lib/policyCore/vincentPolicy';
-import { createVincentTool } from '../lib/toolCore/vincentTool';
+
 import { asBundledVincentPolicy } from '../lib/policyCore/bundledPolicy/bundledPolicy';
-import { supportedPoliciesForTool } from '../lib/toolCore/helpers';
-import { createAllowResult } from '../lib/policyCore/helpers/resultCreators';
 import { createDenyResult } from '../lib/policyCore/helpers';
+import { createAllowResult } from '../lib/policyCore/helpers/resultCreators';
+import { createVincentPolicy, createVincentToolPolicy } from '../lib/policyCore/vincentPolicy';
+import { supportedPoliciesForTool } from '../lib/toolCore/helpers';
+import { createVincentTool } from '../lib/toolCore/vincentTool';
 
 // Define your tool schema
 const myToolSchema = z.object({
@@ -495,7 +496,7 @@ export const gogo = async function () {
   console.log(toolExecuteResult);
 
   if (myTool.precheck) {
-    myTool.precheck(
+    await myTool.precheck(
       { toolParams: { action: 'wat', target: 'meow', amount: 23098123 } },
       {
         toolIpfsCid: 'oijskljfdj',

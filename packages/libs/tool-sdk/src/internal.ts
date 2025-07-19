@@ -11,6 +11,8 @@ export { getSchemaForToolResult, validateOrFail } from './lib/toolCore/helpers/z
 export { isToolFailureResult } from './lib/toolCore/helpers/typeGuards';
 export type { ToolResultFailure, VincentPolicy } from './lib/types';
 
+export { assertSupportedToolVersion } from './lib/assertSupportedToolVersion';
+
 // Policy Core - Parameter Loading + Decoding
 export { getPoliciesAndAppVersion } from './lib/policyCore/policyParameters/getOnchainPolicyParams';
 

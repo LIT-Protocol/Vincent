@@ -2,7 +2,7 @@ import { vincentToolHandler } from '@lit-protocol/vincent-tool-sdk';
 import { z } from 'zod';
 
 import { vincentTool } from './vincent-tool';
-import { toolParams as toolParamsSchema } from '../../../../schemas';
+import { toolParams as toolParamsSchema } from '../../../schemas';
 
 declare const toolParams: z.infer<typeof toolParamsSchema>;
 declare const context: {

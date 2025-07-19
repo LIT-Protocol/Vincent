@@ -2,10 +2,9 @@
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { z } from 'zod';
-import { createVincentPolicy } from '../lib/policyCore/vincentPolicy';
-import { asBundledVincentPolicy } from '../lib/policyCore/bundledPolicy/bundledPolicy';
-import { createVincentToolPolicy } from '../lib/policyCore/vincentPolicy';
 
+import { asBundledVincentPolicy } from '../lib/policyCore/bundledPolicy/bundledPolicy';
+import { createVincentPolicy, createVincentToolPolicy } from '../lib/policyCore/vincentPolicy';
 import { supportedPoliciesForTool } from '../lib/toolCore/helpers';
 
 const PolicyConfig1 = createVincentPolicy({

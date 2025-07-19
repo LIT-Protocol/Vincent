@@ -260,15 +260,15 @@ describe('Uniswap Swap Tool E2E Tests', () => {
         new ethers.providers.JsonRpcProvider(YELLOWSTONE_RPC_URL),
       ),
       args: {
-        delegatee: TEST_APP_DELEGATEE_ACCOUNT.address,
-        pkpTokenId: TEST_CONFIG.userPkp!.tokenId!,
+        delegateeAddress: TEST_APP_DELEGATEE_ACCOUNT.address,
+        pkpEthAddress: TEST_CONFIG.userPkp!.ethAddress!,
         toolIpfsCid: TOOL_IPFS_IDS[0],
       },
     });
 
     expect(validationResult).toBeDefined();
     expect(validationResult.isPermitted).toBe(true);
-    expect(validationResult.appId).toBe(TEST_CONFIG.appId!.toString());
+    expect(validationResult.appId).toBe(TEST_CONFIG.appId!);
     expect(validationResult.appVersion).toBe(TEST_CONFIG.appVersion!);
     expect(Object.keys(validationResult.decodedPolicies)).toHaveLength(0);
   });
@@ -280,15 +280,15 @@ describe('Uniswap Swap Tool E2E Tests', () => {
         new ethers.providers.JsonRpcProvider(YELLOWSTONE_RPC_URL),
       ),
       args: {
-        delegatee: TEST_APP_DELEGATEE_ACCOUNT.address,
-        pkpTokenId: TEST_CONFIG.userPkp!.tokenId!,
+        delegateeAddress: TEST_APP_DELEGATEE_ACCOUNT.address,
+        pkpEthAddress: TEST_CONFIG.userPkp!.ethAddress!,
         toolIpfsCid: TOOL_IPFS_IDS[1],
       },
     });
 
     expect(validationResult).toBeDefined();
     expect(validationResult.isPermitted).toBe(true);
-    expect(validationResult.appId).toBe(TEST_CONFIG.appId!.toString());
+    expect(validationResult.appId).toBe(TEST_CONFIG.appId!);
     expect(validationResult.appVersion).toBe(TEST_CONFIG.appVersion!);
 
     // Check that we have the spending limit policy

@@ -1,8 +1,12 @@
 // src/lib/toolCore/helpers/zod.ts
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { z, ZodType } from 'zod';
-import { ToolResultFailure, ToolResultFailureNoResult } from '../../types';
+import type { ZodType } from 'zod';
+
+import { z } from 'zod';
+
+import type { ToolResultFailure, ToolResultFailureNoResult } from '../../types';
+
 import { createToolFailureResult } from './resultCreators';
 import { isToolResult } from './typeGuards';
 

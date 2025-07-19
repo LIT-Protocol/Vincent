@@ -1,7 +1,8 @@
 // src/lib/toolCore/toolConfig/context/types.ts
 
-import { z } from 'zod';
-import {
+import type { z } from 'zod';
+
+import type {
   BaseContext,
   ToolResultFailure,
   ToolResultFailureNoResult,

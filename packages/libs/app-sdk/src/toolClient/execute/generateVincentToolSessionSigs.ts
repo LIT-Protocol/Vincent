@@ -1,7 +1,9 @@
 // src/toolClient/execute/generateVincentToolSessionSigs.ts
 
+import type { ethers } from 'ethers';
+
 import type { LitNodeClient } from '@lit-protocol/lit-node-client';
-import { ethers } from 'ethers';
+
 import {
   createSiweMessageWithRecaps,
   generateAuthSig,

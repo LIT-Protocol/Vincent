@@ -1,12 +1,17 @@
 // src/lib/toolCore/helpers/supportedPoliciesForTool.ts
 
-import { VincentPolicy } from '../../types';
+import type { VincentPolicy } from '../../types';
+
+import { assertSupportedToolVersion } from '../../assertSupportedToolVersion';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 export type ToolPolicyMap<T extends readonly any[], PkgNames extends string> = {
   policyByPackageName: {
-    [K in PkgNames]: Extract<T[number], { vincentPolicy: { packageName: K } }>;
+    [K in PkgNames]: Extract<
+      T[number],
+      { vincentToolApiVersion: string; vincentPolicy: { packageName: K } }
+    >;
   };
   policyByIpfsCid: Record<string, T[number]>;
   cidToPackageName: Map<string, PkgNames>;
@@ -52,19 +57,27 @@ export function supportedPoliciesForTool<
   const Policies extends readonly {
     vincentPolicy: VincentPolicy<any, any, any, any, any, any, any, any, any, any, any, any, any>;
     ipfsCid: IpfsCid;
+    vincentToolApiVersion: VincentToolApiVersion;
   }[],
   const IpfsCid extends string = string,
+  const VincentToolApiVersion extends string = string,
   const PkgNames extends
     Policies[number]['vincentPolicy']['packageName'] = Policies[number]['vincentPolicy']['packageName'],
 >(policies: Policies): ToolPolicyMap<Policies, PkgNames> {
   const policyByPackageName = {} as {
-    [K in PkgNames]: Extract<Policies[number], { vincentPolicy: { packageName: K } }>;
+    [K in PkgNames]: Extract<
+      Policies[number],
+      { vincentToolApiVersion: string; vincentPolicy: { packageName: K } }
+    >;
   };
   const policyByIpfsCid: Record<string, Policies[number]> = {};
   const cidToPackageName = new Map<string, PkgNames>();
   const packageNameToCid = new Map<PkgNames, string>();
 
   for (const policy of policies) {
+    const { vincentToolApiVersion } = policy;
+    assertSupportedToolVersion(vincentToolApiVersion);
+
     const pkg = policy.vincentPolicy.packageName as PkgNames;
     const cid = policy.ipfsCid;
 
@@ -75,7 +88,7 @@ export function supportedPoliciesForTool<
 
     policyByPackageName[pkg] = policy as Extract<
       Policies[number],
-      { vincentPolicy: { packageName: typeof pkg } }
+      { vincentToolApiVersion: string; vincentPolicy: { packageName: typeof pkg } }
     >;
     policyByIpfsCid[cid] = policy;
     cidToPackageName.set(cid, pkg);

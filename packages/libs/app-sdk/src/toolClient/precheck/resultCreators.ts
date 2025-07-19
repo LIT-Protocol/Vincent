@@ -3,6 +3,7 @@
 import type { z } from 'zod';
 
 import type { BaseToolContext } from '@lit-protocol/vincent-tool-sdk';
+
 import type {
   ToolPrecheckResponseFailure,
   ToolPrecheckResponseFailureNoResult,

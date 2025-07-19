@@ -119,20 +119,10 @@ export const vincentTool = createVincentTool({
       tokenOutDecimals,
     } = toolParams;
 
+    // Commit spending limit before we submit the TX. We'd rather the tx fail and we count the spend erroneously
+    // than to have the commit fail but the tx succeed, and we erroneously don't track the spend!
     const spendingLimitPolicyContext =
       policiesContext.allowedPolicies['@lit-protocol/vincent-policy-spending-limit'];
-
-    const swapTxHash = await sendUniswapTx({
-      rpcUrl: rpcUrlForUniswap,
-      chainId: chainIdForUniswap,
-      pkpEthAddress: delegatorPkpAddress as `0x${string}`,
-      pkpPublicKey: delegatorPublicKey,
-      tokenInAddress: tokenInAddress as `0x${string}`,
-      tokenOutAddress: tokenOutAddress as `0x${string}`,
-      tokenInDecimals,
-      tokenOutDecimals,
-      tokenInAmount,
-    });
 
     let spendTxHash: string | undefined;
 
@@ -164,6 +154,18 @@ export const vincentTool = createVincentTool({
         `Committed spending limit policy for transaction: ${spendTxHash} (UniswapSwapToolExecute)`,
       );
     }
+
+    const swapTxHash = await sendUniswapTx({
+      rpcUrl: rpcUrlForUniswap,
+      chainId: chainIdForUniswap,
+      pkpEthAddress: delegatorPkpAddress as `0x${string}`,
+      pkpPublicKey: delegatorPublicKey,
+      tokenInAddress: tokenInAddress as `0x${string}`,
+      tokenOutAddress: tokenOutAddress as `0x${string}`,
+      tokenInDecimals,
+      tokenOutDecimals,
+      tokenInAmount,
+    });
 
     return succeed({
       swapTxHash,

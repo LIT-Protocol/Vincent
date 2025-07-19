@@ -7,10 +7,11 @@
  * for tool definitions, focusing on success/failure responses.
  */
 import { z } from 'zod';
-import { createVincentTool } from '../lib/toolCore/vincentTool';
-import { createVincentPolicy, createVincentToolPolicy } from '../lib/policyCore/vincentPolicy';
+
 import { asBundledVincentPolicy } from '../lib/policyCore/bundledPolicy/bundledPolicy';
+import { createVincentPolicy, createVincentToolPolicy } from '../lib/policyCore/vincentPolicy';
 import { supportedPoliciesForTool } from '../lib/toolCore/helpers';
+import { createVincentTool } from '../lib/toolCore/vincentTool';
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 // Define a simple schema for our test cases
@@ -658,7 +659,7 @@ export const testPrecheckAsyncWithoutAwait = () => {
     // @ts-expect-error - Missing return from async function that calls other async functions
     precheck: async (params, { succeed }) => {
       // Call async function without await or using its result
-      fetchData();
+      await fetchData();
 
       async function fetchData() {
         return succeed();

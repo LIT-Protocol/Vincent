@@ -10,7 +10,7 @@
       "dependsOn": ["tool-sdk:build", "policy-spending-limit:build"],
       "options": {
         "commands": ["pnpm node ./esbuild.config.js"],
-        "cwd": "packages/apps/tool-uniswap-swap",
+        "cwd": "{projectRoot}",
         "parallel": false
       }
     },
@@ -19,7 +19,7 @@
       "dependsOn": ["action:build"],
       "options": {
         "commands": ["node tools/deploy-lit-action.js"],
-        "cwd": "packages/apps/tool-uniswap-swap"
+        "cwd": "{projectRoot}"
       }
     },
     "action:only:deploy": {

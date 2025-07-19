@@ -1,6 +1,7 @@
+import type { JWTHeader, JWTPayload } from 'did-jwt';
+
 import type { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
 import type { IRelayPKP } from '@lit-protocol/types';
-import type { JWTHeader, JWTPayload } from 'did-jwt';
 
 // Copied interface from did-jwt that is not exposed publicly
 interface JWTDecoded {

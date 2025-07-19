@@ -1,28 +1,30 @@
 // src/lib/toolClient/precheck/runPolicyPrechecks.ts
 
-import { z } from 'zod';
 import util from 'node:util';
-import { createAllowPrecheckResult, createDenyPrecheckResult } from './resultCreators';
-import {
-  createDenyResult,
-  getSchemaForPolicyResponseResult,
-  isPolicyAllowResponse,
-  isPolicyDenyResponse,
-  ToolPolicyMap,
-  validateOrDeny,
-  validatePolicies,
-} from '@lit-protocol/vincent-tool-sdk/internal';
+
+import { z } from 'zod';
 
 import type { ToolPolicyParameterData } from '@lit-protocol/vincent-contracts-sdk';
-
-import {
+import type {
   BaseContext,
   BaseToolContext,
   BundledVincentTool,
   VincentTool,
 } from '@lit-protocol/vincent-tool-sdk';
+import type { ToolPolicyMap } from '@lit-protocol/vincent-tool-sdk/internal';
+
+import {
+  createDenyResult,
+  getSchemaForPolicyResponseResult,
+  isPolicyAllowResponse,
+  isPolicyDenyResponse,
+  validateOrDeny,
+  validatePolicies,
+} from '@lit-protocol/vincent-tool-sdk/internal';
 
 import type { PolicyPrecheckResultContext } from './types';
+
+import { createAllowPrecheckResult, createDenyPrecheckResult } from './resultCreators';
 
 export async function runToolPolicyPrechecks<
   const IpfsCid extends string,

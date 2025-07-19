@@ -1,10 +1,9 @@
-import * as queryRegistry from 'query-registry';
-
 // @ts-expect-error No types for this pkg
 import normalizePackage from 'normalize-package-data';
+import * as queryRegistry from 'query-registry';
+import { valid, clean } from 'semver';
 // @ts-expect-error no types for this pkg
 import validatePackageName from 'validate-npm-package-name';
-import semver from 'semver';
 
 const { getPackument } = queryRegistry;
 
@@ -30,13 +29,13 @@ export function validateNpmPackageName(packageName: string): void {
  */
 export function validateSemver(version: string): void {
   // Check if it's a valid semver
-  if (!semver.valid(version)) {
+  if (!valid(version)) {
     throw new Error(`Invalid semantic version: ${version}. Must be a valid semver (e.g., 1.0.0).`);
   }
 
   // Check for range modifiers by comparing the cleaned version with the original
   // If they're different, it means the original had range modifiers
-  if (version !== semver.clean(version)) {
+  if (version !== clean(version)) {
     throw new Error(
       `Invalid semantic version: ${version}. Version must be explicit and Invalid semantic version (^, ~, >, <, etc.).`,
     );

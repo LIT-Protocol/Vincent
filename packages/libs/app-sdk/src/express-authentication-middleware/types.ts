@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { NextFunction, Request, RequestHandler, Response } from 'express';
+import type { NextFunction, Request, RequestHandler, Response } from 'express';
 
-import { VincentJWT } from '../jwt/types';
+import type { VincentJWT } from '../jwt/types';
 
 /** Extract the parameters type from the original RequestHandler */
 type ExtractRequestHandlerParams<T> =

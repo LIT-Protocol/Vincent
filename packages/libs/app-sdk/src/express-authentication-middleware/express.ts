@@ -1,9 +1,9 @@
 import type { NextFunction, Request, Response } from 'express';
 
+import type { AuthenticatedRequest, AuthenticatedRequestHandler } from './types';
+
 import { jwt } from '..';
 import { isDefinedObject } from '../jwt/core/utils';
-
-import { AuthenticatedRequest, AuthenticatedRequestHandler } from './types';
 
 const { verify } = jwt;
 

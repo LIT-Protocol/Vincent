@@ -1,14 +1,14 @@
 // src/lib/toolCore/toolConfig/context/toolContext.ts
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { z } from 'zod';
+import type { z } from 'zod';
+
 import type {
   PolicyEvaluationResultContext,
   ToolExecutionPolicyContext,
   ToolExecutionPolicyEvaluationResult,
   VincentPolicy,
 } from '../../../types';
-
 import type { BaseToolContext, ToolContext } from './types';
 
 import {

@@ -2,15 +2,12 @@ import { formatEther } from 'viem';
 
 import {
   DATIL_PUBLIC_CLIENT,
-  ERC20_APPROVAL_TOOL_IPFS_ID,
   mintNewPkp,
   saveTestConfig,
-  SPENDING_LIMIT_POLICY_IPFS_ID,
   TEST_AGENT_WALLET_PKP_OWNER_PRIVATE_KEY,
   TEST_CONFIG_PATH,
   TEST_FUNDER_VIEM_WALLET_CLIENT,
   TestConfig,
-  UNISWAP_SWAP_TOOL_IPFS_ID,
 } from '.';
 import { privateKeyToAccount } from 'viem/accounts';
 
@@ -41,12 +38,7 @@ export const checkShouldMintAndFundPkp = async (testConfig: TestConfig) => {
     }
 
     // Mint the Agent Wallet PKP
-    const pkpInfo = await mintNewPkp(
-      TEST_AGENT_WALLET_PKP_OWNER_PRIVATE_KEY as `0x${string}`,
-      ERC20_APPROVAL_TOOL_IPFS_ID,
-      UNISWAP_SWAP_TOOL_IPFS_ID,
-      SPENDING_LIMIT_POLICY_IPFS_ID,
-    );
+    const pkpInfo = await mintNewPkp(TEST_AGENT_WALLET_PKP_OWNER_PRIVATE_KEY as `0x${string}`);
 
     console.log(`ℹ️  Minted PKP with token id: ${pkpInfo.tokenId}`);
     console.log(`ℹ️  Minted PKP with address: ${pkpInfo.ethAddress}`);

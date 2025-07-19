@@ -1,5 +1,5 @@
-import { JWT_URL_KEY, PRODUCTION_VINCENT_DASHBOARD_URL } from '../constants';
 import { verifyJWT } from '../../jwt/core/validate';
+import { JWT_URL_KEY, PRODUCTION_VINCENT_DASHBOARD_URL } from '../constants';
 
 export const decodeVincentJWTFromUri = (uri: string, expectedAudience: string) => {
   const url = new URL(uri);

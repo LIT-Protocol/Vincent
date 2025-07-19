@@ -1,7 +1,6 @@
 // This file ensures that the tests run in the correct order
 // First, we test the OpenAPI endpoints to ensure the API spec is available
 import './openapi.spec';
-
 // Then we test the core entity endpoints, in sequence since they all have mutations that could break eachother
 import './tool.spec';
 import './policy.spec';

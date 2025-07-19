@@ -1,8 +1,9 @@
-import { Request, Response, NextFunction } from 'express';
-import { ToolVersion } from '../../mongo/tool';
-import { createDebugger } from '../../../../debug';
+import type { Request, Response, NextFunction } from 'express';
 
-import { RequestWithTool } from './requireTool';
+import type { RequestWithTool } from './requireTool';
+
+import { createDebugger } from '../../../../debug';
+import { ToolVersion } from '../../mongo/tool';
 
 // Create a debug instance for this middleware
 const debug = createDebugger('requireToolVersion');

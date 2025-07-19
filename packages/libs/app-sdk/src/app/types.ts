@@ -1,4 +1,4 @@
-import { VincentJWT } from '../jwt/types';
+import type { VincentJWT } from '../jwt/types';
 
 /**
  * @category Interfaces

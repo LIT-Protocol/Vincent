@@ -1,7 +1,7 @@
-const baseConfig = require('../../../eslint.config');
+const strictConfig = require('../../../eslint.config.strict.js');
 
 module.exports = [
-  ...baseConfig,
+  ...strictConfig,
   {
     files: ['package.json'],
     rules: {

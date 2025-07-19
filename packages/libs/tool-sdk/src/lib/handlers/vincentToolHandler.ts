@@ -1,22 +1,26 @@
+import type { z } from 'zod';
+
 import { ethers } from 'ethers';
 
-import type { BaseContext } from '../types';
-import {
+import type { ToolPolicyMap } from '../toolCore/helpers';
+import type { BaseToolContext } from '../toolCore/toolConfig/context/types';
+import type {
+  BaseContext,
   PolicyEvaluationResultContext,
   ToolConsumerContext,
   ToolExecutionPolicyContext,
   VincentTool,
 } from '../types';
-import { getPkpInfo, ToolPolicyMap } from '../toolCore/helpers';
-import { evaluatePolicies } from './evaluatePolicies';
-import { validateOrFail } from '../toolCore/helpers/zod';
-import { isToolFailureResult } from '../toolCore/helpers/typeGuards';
-import { LIT_DATIL_PUBKEY_ROUTER_ADDRESS } from './constants';
-import { validatePolicies } from '../toolCore/helpers/validatePolicies';
-import { z } from 'zod';
+
+import { assertSupportedToolVersion } from '../assertSupportedToolVersion';
 import { getPoliciesAndAppVersion } from '../policyCore/policyParameters/getOnchainPolicyParams';
-import type { BaseToolContext } from '../toolCore/toolConfig/context/types';
+import { getPkpInfo } from '../toolCore/helpers';
+import { isToolFailureResult } from '../toolCore/helpers/typeGuards';
+import { validatePolicies } from '../toolCore/helpers/validatePolicies';
+import { validateOrFail } from '../toolCore/helpers/zod';
 import { bigintReplacer } from '../utils';
+import { LIT_DATIL_PUBKEY_ROUTER_ADDRESS } from './constants';
+import { evaluatePolicies } from './evaluatePolicies';
 
 declare const LitAuth: {
   authSigAddress: string;
@@ -30,6 +34,8 @@ declare const Lit: {
     getRpcUrl: (args: { chain: string }) => Promise<string>;
   };
 };
+
+declare const vincentToolApiVersion: string;
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export function createToolExecutionContext<
@@ -126,6 +132,8 @@ export const vincentToolHandler = <
   toolParams: Record<string, unknown>;
 }) => {
   return async () => {
+    assertSupportedToolVersion(vincentToolApiVersion);
+
     let policyEvalResults: PolicyEvaluationResultContext<PoliciesByPackageName> | undefined =
       undefined;
     const toolIpfsCid = LitAuth.actionIpfsIds[0];
@@ -191,6 +199,7 @@ export const vincentToolHandler = <
         validatedPolicies,
         vincentTool,
         context: baseContext,
+        vincentToolApiVersion,
       });
 
       console.log(

@@ -1,13 +1,14 @@
 // src/lib/policyCore/helpers/typeGuards.ts
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import {
+import type { z } from 'zod';
+
+import type {
   PolicyResponse,
   PolicyResponseAllow,
   PolicyResponseDeny,
   ZodValidationDenyResult,
 } from '../../types';
-import { z } from 'zod';
 
 export function isZodValidationDenyResult(result: unknown): result is ZodValidationDenyResult {
   return typeof result === 'object' && result !== null && 'zodError' in result;

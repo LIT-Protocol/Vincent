@@ -1,4 +1,4 @@
-import { type Signer } from 'ethers';
+import type { Signer } from 'ethers';
 
 import { getDelegatedPkpEthAddresses } from '@lit-protocol/vincent-contracts-sdk';
 

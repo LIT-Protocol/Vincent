@@ -1,6 +1,5 @@
-import { z } from './openApiZod';
-
 import { baseDocAttributes } from './base';
+import { z } from './openApiZod';
 
 const appVersion = z
   .object({

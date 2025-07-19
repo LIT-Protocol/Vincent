@@ -7,10 +7,11 @@
  * policy results, and context manipulation.
  */
 import { z } from 'zod';
-import { createVincentTool } from '../lib/toolCore/vincentTool';
-import { createVincentPolicy, createVincentToolPolicy } from '../lib/policyCore/vincentPolicy';
+
 import { asBundledVincentPolicy } from '../lib/policyCore/bundledPolicy/bundledPolicy';
+import { createVincentPolicy, createVincentToolPolicy } from '../lib/policyCore/vincentPolicy';
 import { supportedPoliciesForTool } from '../lib/toolCore/helpers';
+import { createVincentTool } from '../lib/toolCore/vincentTool';
 
 // Define a schema for our test cases
 const testSchema = z.object({

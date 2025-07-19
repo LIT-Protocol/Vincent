@@ -1,12 +1,13 @@
 // src/lib/toolCore/toolConfig/context/resultCreators.ts
 
-import {
+import type {
   ContextSuccess,
   ContextSuccessNoResult,
   ContextFailure,
   ContextFailureNoResult,
-  YouMustCallContextSucceedOrFail,
 } from './types';
+
+import { YouMustCallContextSucceedOrFail } from './types';
 
 /**
  * Wraps a success result with payload

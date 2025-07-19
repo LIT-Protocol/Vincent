@@ -1,6 +1,7 @@
-import { Request, Response, NextFunction } from 'express';
-import { getPackageInfo } from '../../npm';
+import type { Request, Response, NextFunction } from 'express';
+
 import { createDebugger } from '../../../../debug';
+import { getPackageInfo } from '../../npm';
 
 // Create a debug instance for this middleware
 const debug = createDebugger('requirePackage');

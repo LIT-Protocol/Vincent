@@ -1,6 +1,8 @@
-import { Request, Response, NextFunction } from 'express';
-import { RequestWithApp } from './requireApp';
-import { RequestWithVincentUser } from '../requireVincentAuth';
+import type { Request, Response, NextFunction } from 'express';
+
+import type { RequestWithVincentUser } from '../requireVincentAuth';
+import type { RequestWithApp } from './requireApp';
+
 import { createDebugger } from '../../../../debug';
 
 // Combined interface for requests with both app and vincent user

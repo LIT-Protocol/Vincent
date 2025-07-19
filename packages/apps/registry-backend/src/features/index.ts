@@ -1,7 +1,8 @@
 import { getFeatureFlags } from '@lit-protocol/flags';
 
-import Flags from './featureState.json';
 import type { Features } from './features';
+
+import Flags from './featureState.json';
 
 const envVarName = 'LIT_FEATURE_ENV';
 

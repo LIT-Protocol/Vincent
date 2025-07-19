@@ -1,23 +1,27 @@
 // src/lib/toolCore/vincentTool.ts
 
 import { z } from 'zod';
-import {
+
+import type {
   PolicyEvaluationResultContext,
   ToolExecutionPolicyContext,
   ToolExecutionPolicyEvaluationResult,
   ToolLifecycleFunction,
   VincentTool,
 } from '../types';
+import type { ToolPolicyMap } from './helpers';
+import type { ToolConfigLifecycleFunction, VincentToolConfig } from './toolConfig/types';
+
+import { assertSupportedToolVersion } from '../assertSupportedToolVersion';
+import { VINCENT_TOOL_API_VERSION } from '../constants';
+import { bigintReplacer } from '../utils';
+import { wrapFailure, wrapNoResultFailure, wrapSuccess } from './helpers/resultCreators';
+import { isToolFailureResult } from './helpers/typeGuards';
+import { getSchemaForToolResult, validateOrFail } from './helpers/zod';
 import {
   createExecutionToolContext,
   createPrecheckToolContext,
 } from './toolConfig/context/toolContext';
-import { wrapFailure, wrapNoResultFailure, wrapSuccess } from './helpers/resultCreators';
-import { getSchemaForToolResult, validateOrFail } from './helpers/zod';
-import { isToolFailureResult } from './helpers/typeGuards';
-import { ToolPolicyMap } from './helpers';
-import { ToolConfigLifecycleFunction, VincentToolConfig } from './toolConfig/types';
-import { bigintReplacer } from '../utils';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -102,7 +106,13 @@ export function createVincentTool<
     >
   >,
 ) {
-  const { policyByPackageName } = ToolConfig.supportedPolicies;
+  const { policyByPackageName, policyByIpfsCid } = ToolConfig.supportedPolicies;
+
+  for (const policyId in policyByIpfsCid) {
+    const policy = policyByIpfsCid[policyId];
+    const { vincentToolApiVersion } = policy;
+    assertSupportedToolVersion(vincentToolApiVersion);
+  }
 
   const executeSuccessSchema = (ToolConfig.executeSuccessSchema ??
     z.undefined()) as ExecuteSuccessSchema;
@@ -224,6 +234,7 @@ export function createVincentTool<
 
   return {
     packageName: ToolConfig.packageName,
+    vincentToolApiVersion: VINCENT_TOOL_API_VERSION,
     toolDescription: ToolConfig.toolDescription,
     execute,
     precheck,

@@ -8,8 +8,11 @@
  * @category Vincent MCP
  */
 
-import { LIT_NETWORK, LIT_RPC } from '@lit-protocol/constants';
 import { ethers } from 'ethers';
+
+import type { LIT_NETWORK } from '@lit-protocol/constants';
+
+import { LIT_RPC } from '@lit-protocol/constants';
 
 /**
  * RPC endpoint for interacting with the Lit Network Contracts in Yellowstone

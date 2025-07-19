@@ -1,11 +1,14 @@
 // src/lib/policyCore/policyParameters/getOnchainPolicyParams.ts
 
 import { ethers } from 'ethers';
-import {
-  validateToolExecutionAndGetPolicies,
-  type ToolPolicyParameterData,
-  type ValidateToolExecutionAndGetPoliciesResult,
+
+import type {
+  ToolPolicyParameterData,
+  ValidateToolExecutionAndGetPoliciesResult,
 } from '@lit-protocol/vincent-contracts-sdk';
+
+import { validateToolExecutionAndGetPolicies } from '@lit-protocol/vincent-contracts-sdk';
+
 import { bigintReplacer } from '../../utils';
 
 export const getDecodedPolicyParams = async ({

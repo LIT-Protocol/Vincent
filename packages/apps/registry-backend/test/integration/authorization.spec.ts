@@ -1,11 +1,19 @@
-import { api, store, withSiweAuth, defaultWallet, generateRandomEthAddresses } from './setup';
-import { expectAssertObject, hasError } from '../assertions';
-import { createTestDebugger } from '../debug';
-import { nodeClient } from '@lit-protocol/vincent-registry-sdk';
 import { fetchBaseQuery } from '@reduxjs/toolkit/query';
 import { Wallet } from 'ethers';
-import { createWithSiweAuth } from './setup';
+
 import { registerApp } from '@lit-protocol/vincent-contracts-sdk';
+import { nodeClient } from '@lit-protocol/vincent-registry-sdk';
+
+import { expectAssertObject, hasError } from '../assertions';
+import { createTestDebugger } from '../debug';
+import {
+  api,
+  store,
+  withSiweAuth,
+  defaultWallet,
+  generateRandomEthAddresses,
+  createWithSiweAuth,
+} from './setup';
 
 // Create a debug instance for this file
 const debug = createTestDebugger('authorization');

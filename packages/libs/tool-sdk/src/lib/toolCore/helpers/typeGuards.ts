@@ -1,6 +1,6 @@
 // src/lib/toolCore/helpers/typeGuards.ts
 
-import {
+import type {
   ToolResultFailure,
   ToolResultFailureNoResult,
   ToolResultSuccess,

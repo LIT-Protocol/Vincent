@@ -2,8 +2,8 @@
 
 import type { z } from 'zod';
 
-import type { VincentPolicy } from '@lit-protocol/vincent-tool-sdk/internal';
 import type { BaseToolContext } from '@lit-protocol/vincent-tool-sdk';
+import type { VincentPolicy } from '@lit-protocol/vincent-tool-sdk/internal';
 
 /* eslint-disable @typescript-eslint/no-unsafe-function-type */
 

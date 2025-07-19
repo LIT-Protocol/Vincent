@@ -1,4 +1,7 @@
-import { createApi, type BaseQueryFn } from '@reduxjs/toolkit/query';
+import type { BaseQueryFn } from '@reduxjs/toolkit/query';
+
+import { createApi } from '@reduxjs/toolkit/query';
+
 import { tagTypes } from './tags';
 
 let baseQueryFn: BaseQueryFn = () => {

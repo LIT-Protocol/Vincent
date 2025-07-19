@@ -1,8 +1,9 @@
-import { Request, Response, NextFunction } from 'express';
-import { AppVersion } from '../../mongo/app';
-import { createDebugger } from '../../../../debug';
+import type { Request, Response, NextFunction } from 'express';
 
-import { RequestWithApp } from './requireApp';
+import type { RequestWithApp } from './requireApp';
+
+import { createDebugger } from '../../../../debug';
+import { AppVersion } from '../../mongo/app';
 
 export interface RequestWithAppAndVersion extends RequestWithApp {
   vincentAppVersion: InstanceType<typeof AppVersion>;

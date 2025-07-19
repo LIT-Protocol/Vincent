@@ -2,9 +2,10 @@
 
 /* eslint-disable @typescript-eslint/no-unsafe-function-type */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { z, type ZodError } from 'zod';
-import { BaseToolContext } from './toolCore/toolConfig/context/types';
-import { ToolPolicyMap } from './toolCore/helpers';
+import type { z, ZodError } from 'zod';
+
+import type { ToolPolicyMap } from './toolCore/helpers';
+import type { BaseToolContext } from './toolCore/toolConfig/context/types';
 
 export interface PolicyResponseAllow<AllowResult> {
   allow: true;
@@ -75,10 +76,13 @@ export type InferOrUndefined<T> = T extends z.ZodType ? z.infer<T> : undefined;
 export type VincentToolPolicy<
   ToolParamsSchema extends z.ZodType,
   VP extends VincentPolicy<any, any, any, any, any, any, any, any, any, any, any, any, any>,
+  VincentToolApiVersion extends string = string,
   PackageName extends string = string,
   IpfsCid extends string = string,
 > = {
   ipfsCid: IpfsCid;
+  /** @hidden */
+  vincentToolApiVersion: VincentToolApiVersion;
   vincentPolicy: VP & { packageName: PackageName };
   toolParameterMappings: Partial<{
     [K in keyof z.infer<ToolParamsSchema>]: keyof z.infer<VP['toolParamsSchema']>;

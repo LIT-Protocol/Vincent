@@ -1,5 +1,6 @@
+import type { LIT_NETWORKS_KEYS } from '@lit-protocol/types';
+
 import { LitNodeClient } from '@lit-protocol/lit-node-client';
-import { LIT_NETWORKS_KEYS } from '@lit-protocol/types';
 
 export class LitNodeClientInstance {
   private readonly litNodeClientInstance: LitNodeClient;

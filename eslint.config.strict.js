@@ -48,7 +48,7 @@ module.exports = [
       'import-x/no-duplicates': ['error'],
       'import-x/no-extraneous-dependencies': ['off'], // NX provides already
       'import-x/no-relative-packages': ['error'],
-      'import-x/no-unresolved': ['error'],
+      'import-x/no-unresolved': ['off'], // Fails to resolve `workspace:*` only in GH actions :(
       'import-x/prefer-default-export': ['off'],
       'no-await-in-loop': 'off',
       'no-param-reassign': 'error',

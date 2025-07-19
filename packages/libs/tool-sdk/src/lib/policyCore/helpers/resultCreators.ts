@@ -1,7 +1,8 @@
 // src/lib/policyCore/helpers/resultCreators.ts
 
-import { z, ZodType } from 'zod';
-import {
+import type { z, ZodType } from 'zod';
+
+import type {
   PolicyResponseAllow,
   PolicyResponseAllowNoResult,
   PolicyResponseDeny,

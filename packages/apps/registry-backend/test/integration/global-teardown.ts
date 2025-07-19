@@ -1,4 +1,5 @@
 import { teardown as teardownDevServer } from 'jest-process-manager';
+
 import { stopMongoMemoryServer } from './mongodb-memory-server';
 
 module.exports = async function globalTeardown() {

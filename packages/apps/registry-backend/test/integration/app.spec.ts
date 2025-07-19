@@ -1,7 +1,8 @@
-import { api, store, defaultWallet, generateRandomEthAddresses } from './setup';
+import { registerApp } from '@lit-protocol/vincent-contracts-sdk';
+
 import { expectAssertArray, expectAssertObject, hasError } from '../assertions';
 import { createTestDebugger } from '../debug';
-import { registerApp } from '@lit-protocol/vincent-contracts-sdk';
+import { api, store, defaultWallet, generateRandomEthAddresses } from './setup';
 
 // Create a debug instance for this file
 const debug = createTestDebugger('app');

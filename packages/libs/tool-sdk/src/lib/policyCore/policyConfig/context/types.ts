@@ -1,6 +1,7 @@
 // src/lib/policyConfig/context/types.ts
 
-import { z } from 'zod';
+import type { z } from 'zod';
+
 import type {
   PolicyResponseAllow,
   PolicyResponseAllowNoResult,

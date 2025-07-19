@@ -1,8 +1,10 @@
 // src/lib/handlers/evaluatePolicies.ts
 
 import { z } from 'zod';
-import { ValidatedPolicyMap } from '../toolCore/helpers/validatePolicies';
-import {
+
+import type { ToolPolicyMap } from '../toolCore/helpers';
+import type { ValidatedPolicyMap } from '../toolCore/helpers/validatePolicies';
+import type {
   BaseContext,
   PolicyEvaluationResultContext,
   PolicyResponse,
@@ -12,6 +14,7 @@ import {
   VincentTool,
   ZodValidationDenyResult,
 } from '../types';
+
 import {
   createDenyResult,
   getSchemaForPolicyResponseResult,
@@ -23,7 +26,6 @@ import {
   createDenyEvaluationResult,
   returnNoResultDeny,
 } from '../policyCore/helpers/resultCreators';
-import { ToolPolicyMap } from '../toolCore/helpers';
 
 declare const Lit: {
   Actions: {
@@ -42,6 +44,7 @@ export async function evaluatePolicies<
   vincentTool,
   context,
   validatedPolicies,
+  vincentToolApiVersion,
 }: {
   vincentTool: VincentTool<
     ToolParamsSchema,
@@ -55,6 +58,7 @@ export async function evaluatePolicies<
   >;
   context: BaseContext;
   validatedPolicies: ValidatedPolicyMap<z.infer<ToolParamsSchema>, PoliciesByPackageName>;
+  vincentToolApiVersion: string;
 }): Promise<PolicyEvaluationResultContext<PoliciesByPackageName>> {
   const evaluatedPolicies: PolicyEvaluationResultContext<PoliciesByPackageName>['evaluatedPolicies'] =
     [];
@@ -77,6 +81,7 @@ export async function evaluatePolicies<
             toolIpfsCid: context.toolIpfsCid,
             delegatorPkpEthAddress: context.delegation.delegatorPkpInfo.ethAddress,
           },
+          vincentToolApiVersion,
         },
       });
 

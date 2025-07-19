@@ -2,7 +2,10 @@ import * as secp256k1 from '@noble/secp256k1';
 import * as didJWT from 'did-jwt';
 import { JWT_ERROR } from 'did-jwt';
 import { ethers } from 'ethers';
-import { VincentJWT } from '../types';
+import { arrayify, toUtf8Bytes } from 'ethers/lib/utils';
+
+import type { VincentJWT } from '../types';
+
 import {
   isDefinedObject,
   isJWTExpired,
@@ -67,20 +70,12 @@ export function verifyJWT(jwt: string, expectedAudience: string): VincentJWT {
     const r = signatureBytes.slice(0, 32);
     const s = signatureBytes.slice(32, 64);
 
-    // Process public key
-    let publicKey = pkp.publicKey;
-    if (publicKey.startsWith('0x')) {
-      publicKey = publicKey.substring(2);
-    }
-
-    const publicKeyBytes = Buffer.from(publicKey, 'hex');
+    const publicKeyBytes = arrayify(pkp.publicKey);
 
     // PKPEthersWallet.signMessage() adds Ethereum prefix, so we need to add it here too
     const ethPrefixedMessage = '\x19Ethereum Signed Message:\n' + signedData.length + signedData;
-    const messageBuffer = Buffer.from(ethPrefixedMessage, 'utf8');
-
-    const messageHash = ethers.utils.keccak256(messageBuffer);
-    const messageHashBytes = Buffer.from(messageHash.substring(2), 'hex');
+    const messageHash = ethers.utils.keccak256(toUtf8Bytes(ethPrefixedMessage));
+    const messageHashBytes = arrayify(messageHash);
 
     const signatureForSecp = new Uint8Array([...r, ...s]);
 

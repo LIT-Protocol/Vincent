@@ -1,5 +1,5 @@
-import { baseDocAttributes } from './base';
 import { EXAMPLE_WALLET_ADDRESS } from '../constants';
+import { baseDocAttributes } from './base';
 import { z } from './openApiZod';
 import { fromPackageJson } from './packages';
 

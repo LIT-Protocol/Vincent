@@ -1,7 +1,9 @@
-import { Request, Response, NextFunction } from 'express';
-import { Policy } from '../../mongo/policy';
-import { RequestWithVincentUser } from '../requireVincentAuth';
+import type { Request, Response, NextFunction } from 'express';
+
+import type { RequestWithVincentUser } from '../requireVincentAuth';
+
 import { createDebugger } from '../../../../debug';
+import { Policy } from '../../mongo/policy';
 
 // Create a debug instance for this middleware
 const debug = createDebugger('requirePolicy');

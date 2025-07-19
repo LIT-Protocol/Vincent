@@ -1,17 +1,20 @@
 // src/lib/handlers/vincentPolicyHandler.ts
 
+import type { z } from 'zod';
+
 import { ethers } from 'ethers';
 
-import { InferOrUndefined, PolicyConsumerContext, VincentPolicy } from '../types';
+import type { InferOrUndefined, PolicyConsumerContext, VincentPolicy } from '../types';
+
+import { assertSupportedToolVersion } from '../assertSupportedToolVersion';
+import { createDenyResult } from '../policyCore/helpers';
 import {
   getDecodedPolicyParams,
   getPoliciesAndAppVersion,
 } from '../policyCore/policyParameters/getOnchainPolicyParams';
-import { LIT_DATIL_PUBKEY_ROUTER_ADDRESS } from './constants';
-import { createDenyResult } from '../policyCore/helpers';
-import { z } from 'zod';
 import { getPkpInfo } from '../toolCore/helpers';
 import { bigintReplacer } from '../utils';
+import { LIT_DATIL_PUBKEY_ROUTER_ADDRESS } from './constants';
 
 declare const Lit: {
   Actions: {
@@ -25,6 +28,8 @@ declare const LitAuth: {
 };
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
+
+declare const vincentToolApiVersion: string;
 
 /** @hidden */
 export async function vincentPolicyHandler<
@@ -53,6 +58,8 @@ export async function vincentPolicyHandler<
   toolParams: unknown;
   context: PolicyConsumerContext;
 }) {
+  assertSupportedToolVersion(vincentToolApiVersion);
+
   const { delegatorPkpEthAddress, toolIpfsCid } = context; // FIXME: Set from ipfsCidsStack when it's shipped
 
   console.log('actionIpfsIds:', LitAuth.actionIpfsIds.join(','));

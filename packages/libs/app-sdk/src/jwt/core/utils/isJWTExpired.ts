@@ -1,4 +1,4 @@
-import { VincentJWT } from '../../types';
+import type { VincentJWT } from '../../types';
 
 /** Checks if a JWT is expired based on its 'exp' claim
  *

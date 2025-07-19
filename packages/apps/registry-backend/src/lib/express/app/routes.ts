@@ -1,17 +1,18 @@
-import { App, AppTool, AppVersion } from '../../mongo/app';
-
 import type { Express } from 'express';
-import { requireApp, withApp } from './requireApp';
-import { requireAppVersion, withAppVersion } from './requireAppVersion';
-import { requireAppTool, withAppTool } from './requireAppTool';
-import { requireUserManagesApp } from './requireUserManagesApp';
-import { requireVincentAuth, withVincentAuth } from '../requireVincentAuth';
-import { withSession } from '../../mongo/withSession';
-import { Features } from '../../../features';
-import { requireAppVersionNotOnChain } from './requireAppVersionNotOnChain';
-import { requireAppOnChain, withAppOnChain } from './requireAppOnChain';
-import { ethersSigner } from '../../ethersSigner';
+
 import { getAppById, getAppVersion } from '@lit-protocol/vincent-contracts-sdk';
+
+import { Features } from '../../../features';
+import { ethersSigner } from '../../ethersSigner';
+import { App, AppTool, AppVersion } from '../../mongo/app';
+import { withSession } from '../../mongo/withSession';
+import { requireVincentAuth, withVincentAuth } from '../requireVincentAuth';
+import { requireApp, withApp } from './requireApp';
+import { requireAppOnChain, withAppOnChain } from './requireAppOnChain';
+import { requireAppTool, withAppTool } from './requireAppTool';
+import { requireAppVersion, withAppVersion } from './requireAppVersion';
+import { requireAppVersionNotOnChain } from './requireAppVersionNotOnChain';
+import { requireUserManagesApp } from './requireUserManagesApp';
 
 const NEW_APP_APPVERSION = 1;
 const MAX_APPID_RETRY_ATTEMPTS = 20;
@@ -96,7 +97,7 @@ export function registerRoutes(app: Express) {
           // First, check if the appId exists in chain state; someone may have registered it off-registry
           const appOnChain = await getAppById({
             signer: ethersSigner,
-            args: { appId: appId.toString() },
+            args: { appId },
           });
 
           if (appOnChain) {
@@ -583,8 +584,8 @@ export function registerRoutes(app: Express) {
         const appVersionOnChain = await getAppVersion({
           signer: ethersSigner,
           args: {
-            appId: vincentApp.appId.toString(),
-            version: vincentAppVersion.version.toString(),
+            appId: vincentApp.appId,
+            version: vincentAppVersion.version,
           },
         });
 

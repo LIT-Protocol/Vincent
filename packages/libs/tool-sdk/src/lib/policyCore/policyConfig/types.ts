@@ -1,5 +1,6 @@
-import { z } from 'zod';
-import {
+import type { z } from 'zod';
+
+import type {
   ContextAllowResponse,
   ContextAllowResponseNoResult,
   ContextDenyResponse,

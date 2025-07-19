@@ -1,11 +1,15 @@
 // src/lib/policyCore/helpers/zod.ts
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { z, ZodType } from 'zod';
-import { PolicyResponseDeny, ZodValidationDenyResult } from '../../types';
+import type { ZodType } from 'zod';
+
+import { z } from 'zod';
+
+import type { PolicyResponseDeny, ZodValidationDenyResult } from '../../types';
+
+import { bigintReplacer } from '../../utils';
 import { createDenyResult } from './resultCreators';
 import { isPolicyDenyResponse, isPolicyResponse } from './typeGuards';
-import { bigintReplacer } from '../../utils';
 
 /**
  * Matches the minimum structure of a PolicyResponse.

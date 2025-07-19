@@ -1,11 +1,13 @@
 // src/lib/toolCore/helpers/validatePolicies.ts
 
-import { z } from 'zod';
+import type { z } from 'zod';
 
-import { VincentTool, VincentToolPolicy } from '../../types';
+import type { ToolPolicyParameterData } from '@lit-protocol/vincent-contracts-sdk';
+
+import type { VincentTool, VincentToolPolicy } from '../../types';
+import type { ToolPolicyMap } from './supportedPoliciesForTool';
+
 import { getMappedToolPolicyParams } from './getMappedToolPolicyParams';
-import { ToolPolicyParameterData } from '@lit-protocol/vincent-contracts-sdk';
-import { ToolPolicyMap } from './supportedPoliciesForTool';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 

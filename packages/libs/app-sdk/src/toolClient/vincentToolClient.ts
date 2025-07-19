@@ -1,41 +1,38 @@
 // src/toolClient/vincentToolClient.ts
 
+import { ethers } from 'ethers';
 import { z } from 'zod';
 
-import { ethers } from 'ethers';
+import type { BundledVincentTool, VincentTool } from '@lit-protocol/vincent-tool-sdk';
+import type { ToolPolicyMap } from '@lit-protocol/vincent-tool-sdk/internal';
 
 import { LIT_NETWORK } from '@lit-protocol/constants';
-
-import type { BundledVincentTool, VincentTool } from '@lit-protocol/vincent-tool-sdk';
-
 import {
+  assertSupportedToolVersion,
   getPkpInfo,
   getPoliciesAndAppVersion,
   getSchemaForToolResult,
   LIT_DATIL_PUBKEY_ROUTER_ADDRESS,
-  type ToolPolicyMap,
   validateOrFail,
 } from '@lit-protocol/vincent-tool-sdk/internal';
 
-import { getLitNodeClientInstance } from '../internal/LitNodeClient/getLitNodeClient';
+import type { RemoteVincentToolExecutionResult, ToolExecuteResponse } from './execute/types';
+import type { ToolPrecheckResponse } from './precheck/types';
+import type { ToolClientContext, VincentToolClient } from './types';
 
+import { getLitNodeClientInstance } from '../internal/LitNodeClient/getLitNodeClient';
+import { generateVincentToolSessionSigs } from './execute/generateVincentToolSessionSigs';
 import {
   createToolExecuteResponseFailure,
   createToolExecuteResponseFailureNoResult,
   createToolExecuteResponseSuccess,
 } from './execute/resultCreators';
-
-import { type ToolClientContext, type VincentToolClient } from './types';
-
-import { isRemoteVincentToolExecutionResult, isToolResponseFailure } from './typeGuards';
-import { generateVincentToolSessionSigs } from './execute/generateVincentToolSessionSigs';
-import { runToolPolicyPrechecks } from './precheck/runPolicyPrechecks';
-import type { RemoteVincentToolExecutionResult, ToolExecuteResponse } from './execute/types';
-import type { ToolPrecheckResponse } from './precheck/types';
 import {
   createToolPrecheckResponseFailureNoResult,
   createToolPrecheckResponseSuccessNoResult,
 } from './precheck/resultCreators';
+import { runToolPolicyPrechecks } from './precheck/runPolicyPrechecks';
+import { isRemoteVincentToolExecutionResult, isToolResponseFailure } from './typeGuards';
 
 const YELLOWSTONE_RPC_URL = 'https://yellowstone-rpc.litprotocol.com/';
 
@@ -93,7 +90,9 @@ export function getVincentToolClient<
   PrecheckFailSchema
 > {
   const { bundledVincentTool, ethersSigner } = params;
-  const { ipfsCid, vincentTool } = bundledVincentTool;
+  const { ipfsCid, vincentTool, vincentToolApiVersion } = bundledVincentTool;
+
+  assertSupportedToolVersion(vincentToolApiVersion);
 
   const network = LIT_NETWORK.Datil;
 
@@ -244,6 +243,7 @@ export function getVincentToolClient<
         jsParams: {
           toolParams: parsedParams,
           context,
+          vincentToolApiVersion,
         },
       });
 

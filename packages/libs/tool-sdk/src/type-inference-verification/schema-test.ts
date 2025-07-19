@@ -7,10 +7,14 @@
  * is working correctly for the allow() and deny() methods with various
  * schema configurations.
  */
-import { z, ZodUndefined } from 'zod';
-import { createVincentPolicy, createVincentToolPolicy } from '../lib/policyCore/vincentPolicy';
+import type { ZodUndefined } from 'zod';
+
+import { z } from 'zod';
+
+import type { PolicyContext } from '../lib/policyCore/policyConfig/context/types';
+
 import { asBundledVincentPolicy } from '../lib/policyCore/bundledPolicy/bundledPolicy';
-import { PolicyContext } from '../lib/policyCore/policyConfig/context/types';
+import { createVincentPolicy, createVincentToolPolicy } from '../lib/policyCore/vincentPolicy';
 
 // Base tool schema for all tests
 const baseToolSchema = z.object({

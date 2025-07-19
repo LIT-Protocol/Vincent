@@ -1,6 +1,6 @@
-import { api, store } from './setup';
 import { expectAssertArray, expectAssertObject } from '../assertions';
 import { createTestDebugger } from '../debug';
+import { api, store } from './setup';
 
 // Create a debug instance for this file
 const debug = createTestDebugger('supportedPolicies');

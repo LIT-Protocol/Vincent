@@ -1,8 +1,9 @@
 // src/lib/policyConfig/context/policyConfigContext.ts
 
-import { z } from 'zod';
-import { BaseContext } from '../../../types';
-import {
+import type { z } from 'zod';
+
+import type { BaseContext } from '../../../types';
+import type {
   ContextAllowResponse,
   ContextAllowResponseNoResult,
   ContextDenyResponse,
