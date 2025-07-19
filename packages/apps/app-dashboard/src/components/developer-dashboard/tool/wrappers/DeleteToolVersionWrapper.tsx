@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { DeleteToolVersionForm, DeleteToolVersionFormData } from '../forms/DeleteToolVersionForm';
-import { useAddressCheck } from '@/hooks/developer-dashboard/tool/useAddressCheck';
 import { StatusMessage } from '@/components/shared/ui/statusMessage';
 import { getErrorMessage } from '@/utils/developer-dashboard/app-forms';
 import Loading from '@/components/shared/ui/Loading';
@@ -47,8 +46,6 @@ export function DeleteToolVersionWrapper() {
       navigate(`/developer/toolId/${encodeURIComponent(packageName!)}/versions`); // Navigate immediately, no delay needed
     }
   }, [isSuccess, data, navigate]);
-
-  useAddressCheck(tool || null);
 
   // Loading states
   if (toolLoading || versionLoading) return <Loading />;

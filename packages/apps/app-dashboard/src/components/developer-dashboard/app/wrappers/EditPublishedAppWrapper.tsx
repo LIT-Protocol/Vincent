@@ -5,7 +5,6 @@ import { StatusMessage } from '@/components/shared/ui/statusMessage';
 import { EditPublishedAppForm, type EditPublishedAppFormData } from '../forms/EditPublishedAppForm';
 import { getErrorMessage, navigateWithDelay } from '@/utils/developer-dashboard/app-forms';
 import Loading from '@/components/shared/ui/Loading';
-import { useAddressCheck } from '@/hooks/developer-dashboard/app/useAddressCheck';
 
 export function EditPublishedAppWrapper() {
   const { appId } = useParams<{ appId: string }>();
@@ -36,8 +35,6 @@ export function EditPublishedAppWrapper() {
       navigateWithDelay(navigate, `/developer/appId/${app.appId}`);
     }
   }, [isSuccess, data, app]);
-
-  useAddressCheck(app || null);
 
   // Loading states
   if (appLoading || versionsLoading) return <Loading />;

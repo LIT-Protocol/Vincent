@@ -1,6 +1,5 @@
 import { useParams } from 'react-router-dom';
 import { StatusMessage } from '@/components/shared/ui/statusMessage';
-import { useAddressCheck } from '@/hooks/developer-dashboard/app/useAddressCheck';
 import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
 import Loading from '@/components/shared/ui/Loading';
 import { AppVersionDetailView } from '@/components/developer-dashboard/app/views/AppVersionDetailView';
@@ -48,8 +47,6 @@ export function AppVersionDetailWrapper() {
     blockchainAppVersionLoading,
     refetch: refetchBlockchainAppVersionData,
   } = useBlockchainAppVersionData(appId, versionId);
-
-  useAddressCheck(app || null);
 
   // Loading states first
   if (

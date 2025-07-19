@@ -1,7 +1,6 @@
 import { useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { ToolVersionsListView } from '../views/ToolVersionsListView';
-import { useAddressCheck } from '@/hooks/developer-dashboard/tool/useAddressCheck';
 import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
 import Loading from '@/components/shared/ui/Loading';
 import { StatusMessage } from '@/components/shared/ui/statusMessage';
@@ -35,8 +34,6 @@ export function ToolVersionsWrapper() {
 
   // Navigation
   const navigate = useNavigate();
-
-  useAddressCheck(tool || null);
 
   // Loading states first
   if (toolLoading || versionsLoading) return <Loading />;

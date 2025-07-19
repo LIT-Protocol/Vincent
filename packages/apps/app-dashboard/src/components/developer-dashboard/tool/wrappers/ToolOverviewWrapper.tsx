@@ -3,7 +3,6 @@ import ToolDetailsView from '../views/ToolDetailsView';
 import Loading from '@/components/shared/ui/Loading';
 import { StatusMessage } from '@/components/shared/ui/statusMessage';
 import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
-import { useAddressCheck } from '@/hooks/developer-dashboard/tool/useAddressCheck';
 
 export function ToolOverviewWrapper() {
   const { packageName } = useParams<{ packageName: string }>();
@@ -30,10 +29,10 @@ export function ToolOverviewWrapper() {
   // Navigation
   const navigate = useNavigate();
 
-  useAddressCheck(tool || null);
-
-  // Loading
+  // Show loading while data is loading
   if (toolLoading || activeToolVersionLoading) return <Loading />;
+
+  // Handle errors
   if (toolError || activeToolVersionError)
     return <StatusMessage message="Failed to load tool" type="error" />;
   if (!tool) return <StatusMessage message={`Tool ${packageName} not found`} type="error" />;
