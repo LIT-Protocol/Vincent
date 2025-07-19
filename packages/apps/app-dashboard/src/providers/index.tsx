@@ -7,6 +7,7 @@ import ThemeProvider from '@/providers/ThemeProvider';
 export const AppProviders = [
   ThemeProvider,
   ReduxProvider,
+  StytchProviderWrapper,
   WagmiProviderWrapper,
   RainbowKitProviderWrapper,
 ];
