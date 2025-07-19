@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { DeleteAppForm } from '../forms/DeleteAppForm';
-import { useAddressCheck } from '@/hooks/developer-dashboard/app/useAddressCheck';
 import { StatusMessage } from '@/components/shared/ui/statusMessage';
 import { getErrorMessage } from '@/utils/developer-dashboard/app-forms';
 import Loading from '@/components/shared/ui/Loading';
@@ -30,8 +29,6 @@ export function DeleteAppWrapper() {
       navigate('/developer/apps'); // Navigate immediately, no delay needed
     }
   }, [isSuccess, data, navigate]);
-
-  useAddressCheck(app || null);
 
   // Loading states
   if (appLoading) return <Loading />;

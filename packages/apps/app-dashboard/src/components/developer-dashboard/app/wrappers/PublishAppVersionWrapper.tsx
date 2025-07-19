@@ -1,6 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
-import { useAddressCheck } from '@/hooks/developer-dashboard/app/useAddressCheck';
 import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
 import { ToolVersion, PolicyVersion } from '@/types/developer-dashboard/appTypes';
 import { StatusMessage } from '@/components/shared/ui/statusMessage';
@@ -136,8 +135,6 @@ export function PublishAppVersionWrapper({ isAppPublished }: { isAppPublished: b
       toolPolicies, // Array of policy arrays, one per tool (same length as toolIpfsCids)
     };
   }, [toolVersionsData, policyVersionsData]);
-
-  useAddressCheck(app || null);
 
   // Clear error message after 3 seconds
   useEffect(() => {

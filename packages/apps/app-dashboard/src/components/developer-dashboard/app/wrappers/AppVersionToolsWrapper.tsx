@@ -1,6 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
-import { useAddressCheck } from '@/hooks/developer-dashboard/app/useAddressCheck';
 import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
 import { AppVersionTool, Tool } from '@/types/developer-dashboard/appTypes';
 import { ManageAppVersionTools } from '../views/ManageAppVersionTools';
@@ -63,8 +62,6 @@ export function AppVersionToolsWrapper() {
 
     return () => clearTimeout(timer);
   }, [isSuccess, data]);
-
-  useAddressCheck(app || null);
 
   // Loading states
   if (appLoading || versionLoading || versionToolsLoading || toolsLoading) return <Loading />;
