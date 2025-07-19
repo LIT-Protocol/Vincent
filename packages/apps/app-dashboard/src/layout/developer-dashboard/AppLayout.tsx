@@ -2,56 +2,63 @@ import { ComponentProps } from 'react';
 import { useLocation } from 'react-router';
 import { cn } from '@/lib/utils';
 import { DeveloperSidebarWrapper } from '@/components/developer-dashboard/sidebar/DeveloperSidebarWrapper';
-import useReadAuthInfo from '@/hooks/user-dashboard/useAuthInfo';
 import { AuthenticationErrorScreen } from '@/components/user-dashboard/consent/AuthenticationErrorScreen';
-import { ThemedLoading } from '@/components/user-dashboard/dashboard/ui/ThemedLoading';
+import { GeneralErrorScreen } from '@/components/user-dashboard/consent/GeneralErrorScreen';
 import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/shared/ui/sidebar';
 import { Separator } from '@/components/shared/ui/separator';
 import { useTheme } from '@/providers/ThemeProvider';
-import Header from '../../components/developer-dashboard/ui/Header';
+import { useAppAddressCheck } from '@/hooks/developer-dashboard/app/useAppAddressCheck';
+import { useToolAddressCheck } from '@/hooks/developer-dashboard/tool/useToolAddressCheck';
+import { usePolicyAddressCheck } from '@/hooks/developer-dashboard/policy/usePolicyAddressCheck';
+import Loading from '@/components/shared/ui/Loading';
+import useReadAuthInfo from '@/hooks/user-dashboard/useAuthInfo';
 
 function AppLayout({ children, className }: ComponentProps<'div'>) {
   const location = useLocation();
   const { isDark } = useTheme();
-  const { authInfo, sessionSigs, isProcessing } = useReadAuthInfo();
 
-  // Check if user is authenticated with PKP
-  const isUserAuthed = authInfo?.userPKP && authInfo?.agentPKP && sessionSigs;
+  // FIRST: Check basic authentication
+  const { authInfo, sessionSigs, isProcessing: authLoading } = useReadAuthInfo();
+  const isAuthenticated = authInfo?.agentPKP && sessionSigs;
 
-  const isDeveloperRoute = location.pathname.includes('developer');
+  // Always call address check hooks (React hooks rule)
+  const appAddressCheck = useAppAddressCheck();
+  const toolAddressCheck = useToolAddressCheck();
+  const policyAddressCheck = usePolicyAddressCheck();
 
-  // Show loading spinner while processing authentication
-  if (isProcessing) {
-    return <ThemedLoading />;
+  // Check if we're on any developer route
+  const isDeveloperRoute = location.pathname.startsWith('/developer');
+
+  // Determine which specific authorization check is needed based on route
+  const needsAppAuthorization = location.pathname.includes('/developer/appId/');
+  const needsToolAuthorization = location.pathname.includes('/developer/toolId/');
+  const needsPolicyAuthorization = location.pathname.includes('/developer/policyId/');
+
+  // Select the appropriate authorization result based on the current route
+  let isResourceAuthorized: boolean | null = true;
+  let isResourceChecking = false;
+
+  if (needsAppAuthorization) {
+    isResourceAuthorized = appAddressCheck.isAuthorized;
+    isResourceChecking = appAddressCheck.isChecking;
+  } else if (needsToolAuthorization) {
+    isResourceAuthorized = toolAddressCheck.isAuthorized;
+    isResourceChecking = toolAddressCheck.isChecking;
+  } else if (needsPolicyAuthorization) {
+    isResourceAuthorized = policyAddressCheck.isAuthorized;
+    isResourceChecking = policyAddressCheck.isChecking;
   }
 
-  // Show authentication error for developer routes that need auth (not the connect wallet page)
-  if (isDeveloperRoute && !isUserAuthed) {
-    return <AuthenticationErrorScreen />;
-  }
+  // Get resource type for error message
+  const getResourceType = () => {
+    if (needsAppAuthorization) return 'app';
+    if (needsToolAuthorization) return 'tool';
+    if (needsPolicyAuthorization) return 'policy';
+    return 'resource';
+  };
 
-  if (!isDeveloperRoute) {
-    return (
-      <div className={cn('min-h-screen min-w-screen flex flex-col align-center', className)}>
-        <Header />
-        <main className="min-h-screen mx-auto flex flex-col align-center max-w-screen-xl xl:w-screen p-8">
-          {children}
-        </main>
-      </div>
-    );
-  }
-
-  // For non-authenticated developer routes (connect wallet page), show simple layout
-  if (!isUserAuthed) {
-    return (
-      <div className={cn('min-h-screen min-w-screen flex flex-col align-center', className)}>
-        <main className="flex-1 p-8">{children}</main>
-      </div>
-    );
-  }
-
-  // Render sidebar-based layout for authenticated developer routes
-  return (
+  // Common layout wrapper function
+  const layoutWrapper = (content: React.ReactNode) => (
     <div className={cn('min-h-screen min-w-screen bg-gray flex', className)}>
       <SidebarProvider style={{ '--sidebar-width': '20rem' } as React.CSSProperties}>
         <DeveloperSidebarWrapper />
@@ -66,13 +73,43 @@ function AppLayout({ children, className }: ComponentProps<'div'>) {
           </header>
           <main className="flex-1 p-8 flex justify-center items-start">
             <div className="w-full">
-              <div className="max-w-6xl mx-auto">{children}</div>
+              <div className="max-w-6xl mx-auto">{content}</div>
             </div>
           </main>
         </SidebarInset>
       </SidebarProvider>
     </div>
   );
+
+  // Early returns for error and loading states
+  if (isDeveloperRoute && !authLoading && !isAuthenticated) {
+    return <AuthenticationErrorScreen />;
+  }
+
+  if (isDeveloperRoute && authLoading) {
+    return layoutWrapper(<Loading />);
+  }
+
+  if (
+    (needsAppAuthorization || needsToolAuthorization || needsPolicyAuthorization) &&
+    isResourceChecking
+  ) {
+    return layoutWrapper(<Loading />);
+  }
+
+  if (
+    (needsAppAuthorization || needsToolAuthorization || needsPolicyAuthorization) &&
+    isResourceAuthorized === false
+  ) {
+    return layoutWrapper(
+      <GeneralErrorScreen
+        errorDetails={`You don't have permission to access this ${getResourceType()}. Only the ${getResourceType()} owner can access this page.`}
+      />,
+    );
+  }
+
+  // Single main return statement for normal flow
+  return layoutWrapper(children);
 }
 
 export default AppLayout;
