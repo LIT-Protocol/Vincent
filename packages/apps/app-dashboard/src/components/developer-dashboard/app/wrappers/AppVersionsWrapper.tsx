@@ -1,7 +1,6 @@
 import { useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { AppVersionsListView } from '../views/AppVersionsListView';
-import { useAddressCheck } from '@/hooks/developer-dashboard/app/useAddressCheck';
 import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
 import Loading from '@/components/shared/ui/Loading';
 import { StatusMessage } from '@/components/shared/ui/statusMessage';
@@ -32,8 +31,6 @@ export function AppVersionsWrapper() {
     const deletedVersions = versions.filter((version: AppVersion) => version.isDeleted);
     return { activeVersions, deletedVersions };
   }, [versions]);
-
-  useAddressCheck(app || null);
 
   // Loading states first
   if (appLoading || versionsLoading) return <Loading />;

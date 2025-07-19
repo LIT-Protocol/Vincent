@@ -1,6 +1,5 @@
 import { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useAddressCheck } from '@/hooks/developer-dashboard/app/useAddressCheck';
 import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
 import { StatusMessage } from '@/components/shared/ui/statusMessage';
 import { CreateAppVersionForm, type CreateAppVersionFormData } from '../forms/CreateAppVersionForm';
@@ -33,8 +32,6 @@ export function CreateAppVersionWrapper() {
       navigateWithDelay(navigate, `/developer/appId/${app.appId}/version/${data.version}/tools`);
     }
   }, [isSuccess, data, navigate, app]);
-
-  useAddressCheck(app || null);
 
   // Loading states
   if (appLoading || versionsLoading) return <Loading />;
