@@ -17,8 +17,8 @@ export function UserPermissionWrapper() {
     isLoading: isExistingDataLoading,
     error: isExistingDataError,
   } = useFetchUserPermissions({
-    appId: appId || '',
-    pkpTokenId: authInfo?.agentPKP?.tokenId || '',
+    appId: Number(appId),
+    pkpEthAddress: authInfo?.agentPKP?.ethAddress || '',
   });
 
   // Get permitted app versions for this user
@@ -27,7 +27,7 @@ export function UserPermissionWrapper() {
     isLoading: permissionsLoading,
     error: permissionsError,
   } = useUserPermissionsMiddleware({
-    pkpTokenId: authInfo?.agentPKP?.tokenId || '',
+    pkpEthAddress: authInfo?.agentPKP?.ethAddress || '',
   });
 
   if (isProcessing) {
@@ -43,9 +43,16 @@ export function UserPermissionWrapper() {
     return <ConsentPageSkeleton />;
   }
 
-  if (isError || error || isExistingDataError || (permissionsError && permissionsError !== 'Missing pkpTokenId')) {
+  if (
+    isError ||
+    error ||
+    isExistingDataError ||
+    (permissionsError && permissionsError !== 'Missing pkpTokenId')
+  ) {
     const errorMessage =
-      errors.length > 0 ? errors.join(', ') : (error ?? permissionsError ?? 'An unknown error occurred');
+      errors.length > 0
+        ? errors.join(', ')
+        : (error ?? permissionsError ?? 'An unknown error occurred');
     return <GeneralErrorScreen errorDetails={errorMessage} />;
   }
 

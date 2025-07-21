@@ -24,7 +24,7 @@ export function AppDetailsView({
   const isAppDeletedRegistry = selectedApp.isDeleted;
 
   const delegateeAddresses = isPublished
-    ? blockchainAppData.delegatees
+    ? blockchainAppData.delegateeAddresses
     : selectedApp.delegateeAddresses;
 
   return (

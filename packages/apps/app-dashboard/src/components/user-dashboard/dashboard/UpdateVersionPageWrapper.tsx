@@ -19,8 +19,8 @@ export function UpdateVersionPageWrapper() {
     isLoading: isPermittedLoading,
     error: isPermittedError,
   } = useConsentMiddleware({
-    appId: appId || '',
-    pkpTokenId: authInfo?.agentPKP?.tokenId || '',
+    appId: Number(appId),
+    pkpEthAddress: authInfo?.agentPKP?.ethAddress || '',
     appData: data?.app,
   });
 

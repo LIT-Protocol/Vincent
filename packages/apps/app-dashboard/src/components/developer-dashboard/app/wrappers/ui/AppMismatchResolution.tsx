@@ -43,14 +43,14 @@ export function AppMismatchResolution({
         await deleteApp({
           signer: signer,
           args: {
-            appId: appId.toString(),
+            appId: Number(appId),
           },
         });
       } else {
         await undeleteApp({
           signer: signer,
           args: {
-            appId: appId.toString(),
+            appId: Number(appId),
           },
         });
       }

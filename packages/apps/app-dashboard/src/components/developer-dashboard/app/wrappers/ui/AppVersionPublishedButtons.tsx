@@ -68,8 +68,8 @@ export function AppVersionPublishedButtons({
       await enableAppVersionOnChain({
         signer: signer,
         args: {
-          appId: appId.toString(),
-          appVersion: versionId.toString(),
+          appId: Number(appId),
+          appVersion: Number(versionId),
           enabled: targetState,
         },
       });

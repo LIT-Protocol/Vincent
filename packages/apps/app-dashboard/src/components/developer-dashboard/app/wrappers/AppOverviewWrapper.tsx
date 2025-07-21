@@ -20,7 +20,7 @@ export function AppOverviewWrapper() {
     blockchainAppError,
     blockchainAppLoading,
     refetch: refetchBlockchainData,
-  } = useBlockchainAppData(appId);
+  } = useBlockchainAppData(Number(appId));
 
   // Navigation
   const navigate = useNavigate();

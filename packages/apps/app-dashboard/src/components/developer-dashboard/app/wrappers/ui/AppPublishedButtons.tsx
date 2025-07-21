@@ -63,14 +63,14 @@ export function AppPublishedButtons({
         await deleteApp({
           signer: signer,
           args: {
-            appId: appData.appId.toString(),
+            appId: Number(appData.appId),
           },
         });
       } else {
         await undeleteApp({
           signer: signer,
           args: {
-            appId: appData.appId.toString(),
+            appId: appData.appId,
           },
         });
       }

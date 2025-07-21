@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { getAppById, App } from '@lit-protocol/vincent-contracts-sdk';
 import { readOnlySigner } from '@/utils/developer-dashboard/readOnlySigner';
 
-export function useBlockchainAppData(appId: string | undefined) {
+export function useBlockchainAppData(appId: number | undefined) {
   const [blockchainAppData, setBlockchainAppData] = useState<App | null>(null);
   const [blockchainAppError, setBlockchainAppError] = useState<string | null>(null);
   const [blockchainAppLoading, setBlockchainAppLoading] = useState(true);
@@ -20,7 +20,7 @@ export function useBlockchainAppData(appId: string | undefined) {
     try {
       const appResult = await getAppById({
         signer: readOnlySigner,
-        args: { appId: appId.toString() },
+        args: { appId },
       });
 
       if (appResult === null) {
