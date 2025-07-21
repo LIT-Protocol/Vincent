@@ -37,8 +37,9 @@ export function AppVersionDetailWrapper() {
     version: Number(versionId),
   });
 
-  const { blockchainAppData, blockchainAppError, blockchainAppLoading } =
-    useBlockchainAppData(appId);
+  const { blockchainAppData, blockchainAppError, blockchainAppLoading } = useBlockchainAppData(
+    Number(appId),
+  );
 
   // Fetch blockchain app and version data
   const {
@@ -46,7 +47,7 @@ export function AppVersionDetailWrapper() {
     blockchainAppVersionError,
     blockchainAppVersionLoading,
     refetch: refetchBlockchainAppVersionData,
-  } = useBlockchainAppVersionData(appId, versionId);
+  } = useBlockchainAppVersionData(Number(appId), Number(versionId));
 
   // Loading states first
   if (

@@ -6,7 +6,7 @@ import { StatusMessage } from '@/components/shared/ui/statusMessage';
 import {
   registerNextVersion,
   registerApp,
-  getAppByDelegatee,
+  getAppByDelegateeAddress,
 } from '@lit-protocol/vincent-contracts-sdk';
 import { ethers } from 'ethers';
 import { PublishAppVersionButton } from './ui/PublishAppVersionButton';
@@ -213,15 +213,15 @@ export function PublishAppVersionWrapper({ isAppPublished }: { isAppPublished: b
 
       for (const delegatee of delegatees) {
         try {
-          const existingApp = await getAppByDelegatee({
+          const existingApp = await getAppByDelegateeAddress({
             signer: signer,
-            args: { delegatee: delegatee },
+            args: { delegateeAddress: delegatee },
           });
 
-          if (existingApp.id !== appId) {
+          if (existingApp?.id !== Number(appId)) {
             setPublishResult({
               success: false,
-              message: `Delegatee ${delegatee} is already registered to app ${existingApp.id}`,
+              message: `Delegatee ${delegatee} is already registered to app ${existingApp?.id}`,
             });
             return;
           }
@@ -238,8 +238,8 @@ export function PublishAppVersionWrapper({ isAppPublished }: { isAppPublished: b
         await registerApp({
           signer: signer,
           args: {
-            appId: appId.toString(),
-            delegatees: delegatees,
+            appId: Number(appId),
+            delegateeAddresses: delegatees,
             versionTools: {
               toolIpfsCids: toolIpfsCids,
               toolPolicies: toolPolicies,
@@ -251,7 +251,7 @@ export function PublishAppVersionWrapper({ isAppPublished }: { isAppPublished: b
         await registerNextVersion({
           signer: signer,
           args: {
-            appId: appId.toString(),
+            appId: Number(appId),
             versionTools: {
               toolIpfsCids: toolIpfsCids,
               toolPolicies: toolPolicies,

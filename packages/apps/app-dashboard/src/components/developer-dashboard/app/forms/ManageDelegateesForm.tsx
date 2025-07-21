@@ -82,8 +82,8 @@ export function ManageDelegateesForm({
       await addDelegatee({
         signer: signer,
         args: {
-          appId: appId,
-          delegatee: data.address,
+          appId: Number(appId),
+          delegateeAddress: data.address,
         },
       });
 
@@ -114,8 +114,8 @@ export function ManageDelegateesForm({
       await removeDelegatee({
         signer: signer,
         args: {
-          appId: appId,
-          delegatee: addressToRemove,
+          appId: Number(appId),
+          delegateeAddress: addressToRemove,
         },
       });
 

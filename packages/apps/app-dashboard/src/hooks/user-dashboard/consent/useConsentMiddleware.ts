@@ -8,8 +8,8 @@ import { useEffect, useState } from 'react';
 import { App } from '@/types/developer-dashboard/appTypes';
 
 export type UseConsentMiddlewareProps = {
-  appId: string;
-  pkpTokenId: string;
+  appId: number;
+  pkpEthAddress: string;
   appData: App;
 };
 
@@ -24,7 +24,7 @@ export type UseConsentMiddlewareReturn = {
 
 export const useConsentMiddleware = ({
   appId,
-  pkpTokenId,
+  pkpEthAddress,
   appData,
 }: UseConsentMiddlewareProps): UseConsentMiddlewareReturn => {
   const [state, setState] = useState<UseConsentMiddlewareReturn>({
@@ -38,14 +38,14 @@ export const useConsentMiddleware = ({
 
   useEffect(() => {
     // Early return if params are missing
-    if (!appId || !pkpTokenId) {
+    if (!appId || !pkpEthAddress) {
       setState({
         isPermitted: null,
         appExists: null,
         activeVersionExists: null,
         userPermittedVersion: null,
         isLoading: false,
-        error: 'Missing appId or pkpTokenId',
+        error: 'Missing appId or pkpEthAddress',
       });
       return;
     }
@@ -56,7 +56,7 @@ export const useConsentMiddleware = ({
         if (appData?.activeVersion) {
           const appVersionResult = await getAppVersion({
             signer: readOnlySigner,
-            args: { appId: appId.toString(), version: appData.activeVersion.toString() },
+            args: { appId, version: appData.activeVersion },
           });
 
           // If getAppVersion returns null, it means the app version is not registered
@@ -75,13 +75,13 @@ export const useConsentMiddleware = ({
 
         const userApps = await getAllPermittedAppIdsForPkp({
           signer: readOnlySigner,
-          args: { pkpTokenId },
+          args: { pkpEthAddress },
         });
 
         if (userApps.includes(appId)) {
           const version = await getPermittedAppVersionForPkp({
             signer: readOnlySigner,
-            args: { pkpTokenId, appId },
+            args: { pkpEthAddress, appId },
           });
 
           setState({
@@ -115,7 +115,7 @@ export const useConsentMiddleware = ({
     };
 
     checkPermitted();
-  }, [appId, pkpTokenId, appData]);
+  }, [appId, pkpEthAddress, appData]);
 
   return state;
 };

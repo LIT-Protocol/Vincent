@@ -83,9 +83,9 @@ export function ConsentPage({ consentInfoMap, readAuthInfo }: ConsentPageProps) 
         await permitApp({
           signer: userPkpWallet,
           args: {
-            pkpTokenId: readAuthInfo.authInfo.agentPKP!.tokenId,
-            appId: consentInfoMap.app.appId.toString(),
-            appVersion: consentInfoMap.app.activeVersion!.toString(),
+            pkpEthAddress: readAuthInfo.authInfo.agentPKP!.ethAddress,
+            appId: Number(consentInfoMap.app.appId),
+            appVersion: Number(consentInfoMap.app.activeVersion),
             permissionData: formData,
           },
         });
@@ -108,7 +108,10 @@ export function ConsentPage({ consentInfoMap, readAuthInfo }: ConsentPageProps) 
   }, []);
 
   const isLoading = isJwtLoading || isActionsLoading || isConsentProcessing;
-  const loadingStatus = jwtLoadingStatus || actionsLoadingStatus || (isConsentProcessing ? 'Processing consent...' : null);
+  const loadingStatus =
+    jwtLoadingStatus ||
+    actionsLoadingStatus ||
+    (isConsentProcessing ? 'Processing consent...' : null);
   const error = jwtError || actionsError;
 
   return (
