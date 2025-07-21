@@ -1,7 +1,6 @@
 import { SiweMessage, generateNonce } from 'siwe';
 import { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
 import { litNodeClient } from '@/utils/user-dashboard/lit';
-import useReadAuthInfo from '@/hooks/user-dashboard/useAuthInfo';
 
 interface StoredSIWE {
   message: string;
@@ -129,17 +128,4 @@ export const getCurrentSIWETokenForStore = async (): Promise<string | null> => {
     localStorage.removeItem(SIWE_STORAGE_KEY);
     return null;
   }
-};
-
-/**
- * Hook to get current SIWE token for authenticated requests
- */
-export const useVincentApiWithPKP = () => {
-  const { authInfo, sessionSigs } = useReadAuthInfo();
-
-  const getSIWEToken = async (): Promise<string | null> => {
-    return getCurrentSIWEToken(authInfo, sessionSigs);
-  };
-
-  return { getSIWEToken };
 };
