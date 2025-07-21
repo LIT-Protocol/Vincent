@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { Power, PowerOff } from 'lucide-react';
-import { ethers } from 'ethers';
 import { AppVersion } from '@/types/developer-dashboard/appTypes';
 import {
   AppVersion as ContractAppVersion,
@@ -9,6 +8,8 @@ import {
 import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
 import MutationButtonStates, { SkeletonButton } from '@/components/shared/ui/MutationButtonStates';
 import { AppVersionMismatchResolution } from './AppVersionMismatchResolution';
+import { initPkpSigner } from '@/utils/developer-dashboard/initPkpSigner';
+import useReadAuthInfo from '@/hooks/user-dashboard/useAuthInfo';
 
 interface AppVersionPublishedButtonsProps {
   appId: number;
@@ -28,6 +29,7 @@ export function AppVersionPublishedButtons({
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const { authInfo, sessionSigs } = useReadAuthInfo();
 
   // Mutations for enable/disable
   const [enableAppVersion, { isLoading: isEnabling, error: enableAppVersionError }] =
@@ -61,12 +63,10 @@ export function AppVersionPublishedButtons({
       }
 
       // Step 2: Update on-chain
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
-      await provider.send('eth_requestAccounts', []);
-      const signer = provider.getSigner();
+      const pkpSigner = await initPkpSigner({ authInfo, sessionSigs });
 
       await enableAppVersionOnChain({
-        signer: signer,
+        signer: pkpSigner,
         args: {
           appId: Number(appId),
           appVersion: Number(versionId),

@@ -18,6 +18,8 @@ import { Plus, Trash2 } from 'lucide-react';
 import { TextField } from '../../form-fields';
 import { addDelegatee, removeDelegatee } from '@lit-protocol/vincent-contracts-sdk';
 import { SkeletonButton } from '@/components/shared/ui/MutationButtonStates';
+import { initPkpSigner } from '@/utils/developer-dashboard/initPkpSigner';
+import useReadAuthInfo from '@/hooks/user-dashboard/useAuthInfo';
 
 const AddDelegateeSchema = z.object({
   address: z.string().refine((val) => ethers.utils.isAddress(val), {
@@ -37,6 +39,7 @@ export function ManageDelegateesForm({
   refetchBlockchainData,
 }: ManageDelegateesFormProps) {
   const { appId } = useParams<{ appId: string }>();
+  const { authInfo, sessionSigs } = useReadAuthInfo();
   const [error, setError] = useState<string>('');
   const [removingDelegatee, setRemovingDelegatee] = useState<string | null>(null);
 
@@ -75,12 +78,10 @@ export function ManageDelegateesForm({
 
     // Now add the delegatee
     try {
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
-      await provider.send('eth_requestAccounts', []);
-      const signer = provider.getSigner();
+      const pkpSigner = await initPkpSigner({ authInfo, sessionSigs });
 
       await addDelegatee({
-        signer: signer,
+        signer: pkpSigner,
         args: {
           appId: Number(appId),
           delegateeAddress: data.address,
@@ -107,12 +108,10 @@ export function ManageDelegateesForm({
     setRemovingDelegatee(addressToRemove);
 
     try {
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
-      await provider.send('eth_requestAccounts', []);
-      const signer = provider.getSigner();
+      const pkpSigner = await initPkpSigner({ authInfo, sessionSigs });
 
       await removeDelegatee({
-        signer: signer,
+        signer: pkpSigner,
         args: {
           appId: Number(appId),
           delegateeAddress: addressToRemove,

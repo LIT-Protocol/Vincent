@@ -8,12 +8,14 @@ import {
   registerApp,
   getAppByDelegateeAddress,
 } from '@lit-protocol/vincent-contracts-sdk';
-import { ethers } from 'ethers';
 import { PublishAppVersionButton } from './ui/PublishAppVersionButton';
 import MutationButtonStates, { SkeletonButton } from '@/components/shared/ui/MutationButtonStates';
+import { initPkpSigner } from '@/utils/developer-dashboard/initPkpSigner';
+import useReadAuthInfo from '@/hooks/user-dashboard/useAuthInfo';
 
 export function PublishAppVersionWrapper({ isAppPublished }: { isAppPublished: boolean }) {
   const { appId, versionId } = useParams<{ appId: string; versionId: string }>();
+  const { authInfo, sessionSigs } = useReadAuthInfo();
 
   // Fetching
   const {
@@ -207,18 +209,16 @@ export function PublishAppVersionWrapper({ isAppPublished }: { isAppPublished: b
         return;
       }
 
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
-      await provider.send('eth_requestAccounts', []);
-      const signer = provider.getSigner();
+      const pkpSigner = await initPkpSigner({ authInfo, sessionSigs });
 
       for (const delegatee of delegatees) {
         try {
           const existingApp = await getAppByDelegateeAddress({
-            signer: signer,
+            signer: pkpSigner,
             args: { delegateeAddress: delegatee },
           });
 
-          if (existingApp?.id !== Number(appId)) {
+          if (existingApp && existingApp?.id !== Number(appId)) {
             setPublishResult({
               success: false,
               message: `Delegatee ${delegatee} is already registered to app ${existingApp?.id}`,
@@ -236,7 +236,7 @@ export function PublishAppVersionWrapper({ isAppPublished }: { isAppPublished: b
       if (!isAppPublished) {
         // App not registered - use registerApp (first-time registration)
         await registerApp({
-          signer: signer,
+          signer: pkpSigner,
           args: {
             appId: Number(appId),
             delegateeAddresses: delegatees,
@@ -249,7 +249,7 @@ export function PublishAppVersionWrapper({ isAppPublished }: { isAppPublished: b
       } else {
         // App is registered - use registerNextVersion
         await registerNextVersion({
-          signer: signer,
+          signer: pkpSigner,
           args: {
             appId: Number(appId),
             versionTools: {

@@ -53,7 +53,6 @@ export function ResourceNotOwnedError({ resourceType, errorDetails }: ResourceNo
                   <h3 className="text-sm font-medium text-gray-900 mb-2">Possible reasons:</h3>
                   <ul className="text-sm text-gray-600 space-y-1">
                     <li>• The {resourceType} belongs to another user</li>
-                    <li>• The {resourceType} has been deleted or transferred</li>
                     <li>• The {resourceType} ID may be incorrect</li>
                   </ul>
                 </div>
