@@ -15,3 +15,6 @@ docs/
 
 # Ignore run build JSON files
 /broadcast/**/run-*.json
+
+# We don't commit HTML typedoc output; just json
+docs/html/**/*

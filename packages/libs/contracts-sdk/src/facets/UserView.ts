@@ -21,15 +21,19 @@ import {
 
 /**
  * Get all PKP tokens that are registered as agents for a specific user address
- * @param signer - The ethers signer to use for the transaction. Could be a standard Ethers Signer or a PKPEthersWallet
- * @param args - Object containing userAddress
+ * @param params
+ * @param params.signer - The ethers signer to use for the transaction. Could be a standard Ethers Signer or a PKPEthersWallet
+ * @param params.args - Object containing userAddress
  *
  * @returns Array of PKP eth addresses that are registered as agents for the user. Empty array if none found.
  */
-export async function getAllRegisteredAgentPkpEthAddresses({
-  signer,
-  args: { userPkpAddress },
-}: GetAllRegisteredAgentPkpsOptions): Promise<string[]> {
+export async function getAllRegisteredAgentPkpEthAddresses(
+  params: GetAllRegisteredAgentPkpsOptions,
+): Promise<string[]> {
+  const {
+    signer,
+    args: { userPkpAddress },
+  } = params;
   const contract = createContract(signer);
 
   try {
@@ -54,14 +58,18 @@ export async function getAllRegisteredAgentPkpEthAddresses({
 
 /**
  * Get the permitted app version for a specific PKP token and app
- * @param signer - The ethers signer to use for the transaction. Could be a standard Ethers Signer or a PKPEthersWallet
- * @param args - Object containing pkpEthAddress and appId
+ * @param params
+ * @param params.signer - The ethers signer to use for the transaction. Could be a standard Ethers Signer or a PKPEthersWallet
+ * @param params.args - Object containing pkpEthAddress and appId
  * @returns The permitted app version for the PKP token and app
  */
-export async function getPermittedAppVersionForPkp({
-  signer,
-  args: { pkpEthAddress, appId },
-}: GetPermittedAppVersionForPkpOptions): Promise<number | null> {
+export async function getPermittedAppVersionForPkp(
+  params: GetPermittedAppVersionForPkpOptions,
+): Promise<number | null> {
+  const {
+    signer,
+    args: { pkpEthAddress, appId },
+  } = params;
   const contract = createContract(signer);
 
   try {
@@ -80,14 +88,18 @@ export async function getPermittedAppVersionForPkp({
 
 /**
  * Get all app IDs that have permissions for a specific PKP token, excluding deleted apps
- * @param signer - The ethers signer to use for the transaction. Could be a standard Ethers Signer or a PKPEthersWallet
- * @param args - Object containing pkpEthAddress
+ * @param params
+ * @param params.signer - The ethers signer to use for the transaction. Could be a standard Ethers Signer or a PKPEthersWallet
+ * @param params.args - Object containing pkpEthAddress
  * @returns Array of app IDs that have permissions for the PKP token and haven't been deleted
  */
-export async function getAllPermittedAppIdsForPkp({
-  signer,
-  args: { pkpEthAddress },
-}: GetAllPermittedAppIdsForPkpOptions): Promise<number[]> {
+export async function getAllPermittedAppIdsForPkp(
+  params: GetAllPermittedAppIdsForPkpOptions,
+): Promise<number[]> {
+  const {
+    signer,
+    args: { pkpEthAddress },
+  } = params;
   const contract = createContract(signer);
 
   try {
@@ -104,14 +116,18 @@ export async function getAllPermittedAppIdsForPkp({
 
 /**
  * Get all permitted tools, policies, and policy parameters for a specific app and PKP in a nested object structure
- * @param signer - The ethers signer to use for the transaction. Could be a standard Ethers Signer or a PKPEthersWallet
- * @param args - Object containing pkpEthAddress and appId
+ * @param params
+ * @param params.signer - The ethers signer to use for the transaction. Could be a standard Ethers Signer or a PKPEthersWallet
+ * @param params.args - Object containing pkpEthAddress and appId
  * @returns Nested object structure where keys are tool IPFS CIDs and values are objects with policy IPFS CIDs as keys
  */
-export async function getAllToolsAndPoliciesForApp({
-  signer,
-  args: { pkpEthAddress, appId },
-}: GetAllToolsAndPoliciesForAppOptions): Promise<PermissionData> {
+export async function getAllToolsAndPoliciesForApp(
+  params: GetAllToolsAndPoliciesForAppOptions,
+): Promise<PermissionData> {
+  const {
+    signer,
+    args: { pkpEthAddress, appId },
+  } = params;
   const contract = createContract(signer);
 
   try {
@@ -131,14 +147,19 @@ export async function getAllToolsAndPoliciesForApp({
 
 /**
  * Validates tool execution and gets policies for a specific tool
- * @param signer - The ethers signer to use for the transaction. Could be a standard Ethers Signer or a PKPEthersWallet
- * @param args - Object containing delegateeAddress, pkpEthAddress, and toolIpfsCid
+ * @param params
+ * @param params.signer - The ethers signer to use for the transaction. Could be a standard Ethers Signer or a PKPEthersWallet
+ * @param params.args - Object containing delegateeAddress, pkpEthAddress, and toolIpfsCid
  * @returns Object containing validation result with isPermitted, appId, appVersion, and policies
  */
-export async function validateToolExecutionAndGetPolicies({
-  signer,
-  args: { delegateeAddress, pkpEthAddress, toolIpfsCid },
-}: ValidateToolExecutionAndGetPoliciesOptions): Promise<ValidateToolExecutionAndGetPoliciesResult> {
+export async function validateToolExecutionAndGetPolicies(
+  params: ValidateToolExecutionAndGetPoliciesOptions,
+): Promise<ValidateToolExecutionAndGetPoliciesResult> {
+  const {
+    signer,
+    args: { delegateeAddress, pkpEthAddress, toolIpfsCid },
+  } = params;
+
   const contract = createContract(signer);
 
   try {

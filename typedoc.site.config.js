@@ -30,7 +30,11 @@ module.exports = {
   ],
   categoryOrder: ['Developers', 'Users', 'Contact', 'Packages'],
   entryPointStrategy: 'merge',
-  entryPoints: ['./packages/libs/app-sdk/docs/json', './packages/libs/tool-sdk/docs/json'],
+  entryPoints: [
+    './packages/libs/app-sdk/docs/json',
+    './packages/libs/tool-sdk/docs/json',
+    './packages/libs/contracts-sdk/docs/json',
+  ],
   name: 'Vincent Docs',
   out: './docs/dist/site',
   includeVersion: false,

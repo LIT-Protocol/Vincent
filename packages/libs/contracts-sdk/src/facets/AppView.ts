@@ -18,14 +18,17 @@ import { getPkpEthAddress } from '../utils/pkpInfo';
 
 /**
  * Get detailed information about an app by its ID
- * @param signer - The ethers signer to use for the transaction. Could be a standard Ethers Signer or a PKPEthersWallet
- * @param args - Object containing appId
+ * @param params
+ * @param params.signer - The ethers signer to use for the transaction. Could be a standard Ethers Signer or a PKPEthersWallet
+ * @param params.args - Object containing appId
  * @returns Detailed view of the app containing its metadata and relationships, or null if the app is not registered
+
  */
-export async function getAppById({
-  signer,
-  args: { appId },
-}: GetAppByIdOptions): Promise<App | null> {
+export async function getAppById(params: GetAppByIdOptions): Promise<App | null> {
+  const {
+    args: { appId },
+    signer,
+  } = params;
   const contract = createContract(signer);
 
   try {
@@ -52,14 +55,19 @@ export async function getAppById({
 
 /**
  * Get detailed information about a specific version of an app
- * @param signer - The ethers signer to use for the transaction. Could be a standard Ethers Signer or a PKPEthersWallet
- * @param args - Object containing appId and version
+ * @param params
+ * @param params.signer - The ethers signer to use for the transaction. Could be a standard Ethers Signer or a PKPEthersWallet
+ * @param params.args - Object containing appId and version
  * @returns Object containing basic app information and version-specific information including tools and policies, or null if the app version is not registered
+
  */
-export async function getAppVersion({
-  signer,
-  args: { appId, version },
-}: GetAppVersionOptions): Promise<{ appVersion: AppVersion } | null> {
+export async function getAppVersion(
+  params: GetAppVersionOptions,
+): Promise<{ appVersion: AppVersion } | null> {
+  const {
+    args: { appId, version },
+    signer,
+  } = params;
   const contract = createContract(signer);
 
   try {
@@ -85,14 +93,19 @@ export async function getAppVersion({
 
 /**
  * Get all apps managed by a specific address with all their versions
- * @param signer - The ethers signer to use for the transaction. Could be a standard Ethers Signer or a PKPEthersWallet
- * @param args - Object containing manager address
+ * @param params
+ * @param params.signer - The ethers signer to use for the transaction. Could be a standard Ethers Signer or a PKPEthersWallet
+ * @param params.args - Object containing manager address
  * @returns Array of apps with all their versions managed by the specified address
+
  */
-export async function getAppsByManagerAddress({
-  signer,
-  args: { managerAddress },
-}: GetAppsByManagerOptions): Promise<AppWithVersions[]> {
+export async function getAppsByManagerAddress(
+  params: GetAppsByManagerOptions,
+): Promise<AppWithVersions[]> {
+  const {
+    args: { managerAddress },
+    signer,
+  } = params;
   const contract = createContract(signer);
 
   try {
@@ -129,14 +142,19 @@ export async function getAppsByManagerAddress({
 
 /**
  * Get the app associated with a delegatee address
- * @param signer - The ethers signer to use for the transaction. Could be a standard Ethers Signer or a PKPEthersWallet
- * @param args - Object containing delegatee address
+ * @param params
+ * @param params.signer - The ethers signer to use for the transaction. Could be a standard Ethers Signer or a PKPEthersWallet
+ * @param params.args - Object containing delegatee address
  * @returns Detailed view of the app the delegatee is associated with
+
  */
-export async function getAppByDelegateeAddress({
-  signer,
-  args: { delegateeAddress },
-}: GetAppByDelegateeOptions): Promise<App | null> {
+export async function getAppByDelegateeAddress(
+  params: GetAppByDelegateeOptions,
+): Promise<App | null> {
+  const {
+    args: { delegateeAddress },
+    signer,
+  } = params;
   const contract = createContract(signer);
 
   try {
@@ -163,18 +181,25 @@ export async function getAppByDelegateeAddress({
 
 /**
  * Get delegated agent PKP token IDs for a specific app version with pagination
- * Returns the first 500 PKP eth addresses.
- * Provide `pageOpts.offset` to fetch more than the initial 500
- * Provide `pageOpts.limit` to fetch more or less than 500-at-a-time
+ * Returns the first 100 PKP eth addresses.
  *
- * @param signer - The ethers signer to use for the transaction. Could be a standard Ethers Signer or a PKPEthersWallet
- * @param args - Object containing appId, version, and pageOpts for offset and an optional limit
+ * Provide `pageOpts.offset` to fetch more than the initial 100
+ *
+ * Provide `pageOpts.limit` to fetch more or less than 100-at-a-time
+ *
+ * @param params
+ * @param params.signer - The ethers signer to use for the transaction. Could be a standard Ethers Signer or a PKPEthersWallet
+ * @param params.args - Object containing appId, version, and pageOpts for offset and an optional limit
  * @returns Array of delegated agent PKP token IDs
+
  */
-export async function getDelegatedPkpEthAddresses({
-  signer,
-  args: { appId, version, pageOpts },
-}: GetDelegatedPkpEthAddressesOptions): Promise<string[]> {
+export async function getDelegatedPkpEthAddresses(
+  params: GetDelegatedPkpEthAddressesOptions,
+): Promise<string[]> {
+  const {
+    args: { appId, pageOpts, version },
+    signer,
+  } = params;
   const contract = createContract(signer);
 
   try {
