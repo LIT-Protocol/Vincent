@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Plus, Users, Trash2, Edit, RotateCcw } from 'lucide-react';
-import { ethers } from 'ethers';
 import { deleteApp, undeleteApp } from '@lit-protocol/vincent-contracts-sdk';
 import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
 import { App } from '@/types/developer-dashboard/appTypes';
 import { App as ContractApp } from '@lit-protocol/vincent-contracts-sdk';
 import MutationButtonStates, { SkeletonButton } from '@/components/shared/ui/MutationButtonStates';
 import { AppMismatchResolution } from './AppMismatchResolution';
+import { initPkpSigner } from '@/utils/developer-dashboard/initPkpSigner';
+import useReadAuthInfo from '@/hooks/user-dashboard/useAuthInfo';
 
 interface AppPublishedButtonsProps {
   appData: App;
@@ -24,6 +25,7 @@ export function AppPublishedButtons({
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const { authInfo, sessionSigs } = useReadAuthInfo();
 
   // Registry mutations
   const [deleteAppInRegistry, { isLoading: isDeletingInRegistry, error: deleteAppError }] =
@@ -55,20 +57,18 @@ export function AppPublishedButtons({
       }
 
       // Step 2: Update on-chain
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
-      await provider.send('eth_requestAccounts', []);
-      const signer = provider.getSigner();
+      const pkpSigner = await initPkpSigner({ authInfo, sessionSigs });
 
       if (targetDeleted) {
         await deleteApp({
-          signer: signer,
+          signer: pkpSigner,
           args: {
             appId: Number(appData.appId),
           },
         });
       } else {
         await undeleteApp({
-          signer: signer,
+          signer: pkpSigner,
           args: {
             appId: appData.appId,
           },
