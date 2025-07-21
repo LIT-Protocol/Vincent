@@ -43,11 +43,13 @@ export function SidebarError({ error }: SidebarErrorProps) {
     <Sidebar variant="sidebar" collapsible="offcanvas" className="border-r-0">
       <SidebarHeader className="border-b border-sidebar-border h-16">
         <div className="flex items-center px-6 py-4 h-full">
-          <img
-            src={isDark ? '/vincent-by-lit-white-logo.png' : '/vincent-by-lit-logo.png'}
-            alt="Vincent by Lit Protocol"
-            className="h-8 object-contain"
-          />
+          <Link to="/" className="flex items-center">
+            <img
+              src={isDark ? '/vincent-by-lit-white-logo.png' : '/vincent-by-lit-logo.png'}
+              alt="Vincent by Lit Protocol"
+              className="h-8 object-contain cursor-pointer hover:opacity-80 transition-opacity"
+            />
+          </Link>
         </div>
       </SidebarHeader>
 

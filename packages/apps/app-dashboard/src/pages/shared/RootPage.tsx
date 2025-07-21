@@ -42,8 +42,8 @@ export default function RootPage() {
 
           <div className="text-center space-y-4">
             <p className="text-gray-500 text-sm">
-              <strong>Developer Dashboard:</strong> Build and manage applications with delegated
-              permissions
+              <strong>Developer Dashboard:</strong> Build and manage applications, tools, and
+              policies with delegated permissions
             </p>
             <p className="text-gray-500 text-sm">
               <strong>User Dashboard:</strong> Control and delegate permissions to your applications

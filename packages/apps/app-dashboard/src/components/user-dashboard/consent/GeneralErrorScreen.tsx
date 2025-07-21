@@ -3,7 +3,7 @@ import { AlertTriangle, ArrowLeft, RefreshCw, Sun, Moon } from 'lucide-react';
 import { theme } from './ui/theme';
 import { InfoBanner } from './ui/InfoBanner';
 import { ActionCard } from './ui/ActionCard';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/shared/ui/button';
 import { useTheme } from '@/providers/ThemeProvider';
 
@@ -35,11 +35,13 @@ export function GeneralErrorScreen({ errorDetails }: GeneralErrorScreenProps) {
         <div className={`px-6 py-4 border-b ${themeStyles.cardBorder}`}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <img
-                src={isDark ? '/vincent-by-lit-white-logo.png' : '/vincent-by-lit-logo.png'}
-                alt="Vincent by Lit Protocol"
-                className="h-8"
-              />
+              <Link to="/" className="flex items-center">
+                <img
+                  src={isDark ? '/vincent-by-lit-white-logo.png' : '/vincent-by-lit-logo.png'}
+                  alt="Vincent by Lit Protocol"
+                  className="h-8 cursor-pointer hover:opacity-80 transition-opacity"
+                />
+              </Link>
             </div>
             <div className="flex items-center gap-2">
               <Button

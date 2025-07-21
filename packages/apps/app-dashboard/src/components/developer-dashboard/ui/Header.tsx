@@ -1,13 +1,19 @@
 import { ConnectButton } from '@rainbow-me/rainbowkit';
-
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/shared/ui/button';
 
 export default function Header() {
   return (
     <div className="flex justify-between items-center p-6 border-b">
-      <a href="/" className="flex items-center">
-        <img src="/vincent-by-lit-logo.png" alt="Vincent" width={150} height={40} />
-      </a>
+      <Link to="/" className="flex items-center">
+        <img
+          src="/vincent-by-lit-logo.png"
+          alt="Vincent"
+          width={150}
+          height={40}
+          className="cursor-pointer hover:opacity-80 transition-opacity"
+        />
+      </Link>
       <ConnectButton.Custom>
         {({ account, chain, openAccountModal, openConnectModal, mounted }) => {
           if (!mounted) {

@@ -10,13 +10,13 @@ import {
   ChevronRight,
   FileText,
   GitBranch,
+  User,
+  Copy,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useParams } from 'react-router-dom';
-import { useTheme } from '@/providers/ThemeProvider';
-import { theme } from '@/components/user-dashboard/consent/ui/theme';
 import { useClearAuthInfo } from '@/hooks/user-dashboard/useAuthInfo';
-import { AccountTooltip } from '@/components/user-dashboard/sidebar/AccountTooltip';
+import useReadAuthInfo from '@/hooks/user-dashboard/useAuthInfo';
 import {
   Sidebar as SidebarComponent,
   SidebarContent,
@@ -32,6 +32,7 @@ import {
   SidebarMenuSubItem,
   SidebarMenuSubButton,
 } from '@/components/shared/ui/sidebar';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/shared/ui/tooltip';
 import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
 import { App, Tool, Policy } from '@/types/developer-dashboard/appTypes';
 
@@ -42,8 +43,7 @@ interface SidebarProps {
 }
 
 export function Sidebar({ userApps, userTools, userPolicies }: SidebarProps) {
-  const { isDark } = useTheme(); // TODO: Add light/dark mode to the developer dashboard
-  const themeStyles = theme(isDark);
+  // Removed isDark and themeStyles since developer dashboard doesn't have theme toggle (yet)
   const location = useLocation();
   const params = useParams();
   const { clearAuthInfo } = useClearAuthInfo();
@@ -171,8 +171,8 @@ export function Sidebar({ userApps, userTools, userPolicies }: SidebarProps) {
                 asChild
                 className={`h-12 px-3 rounded-lg transition-all duration-200 text-xs w-full cursor-pointer ${
                   isAppActive
-                    ? `${themeStyles.itemBg} text-orange-500 font-semibold`
-                    : `text-black ${themeStyles.itemHoverBg}`
+                    ? `bg-gray-100/50 text-orange-500 font-semibold`
+                    : `text-black hover:bg-gray-100`
                 }`}
               >
                 <Link to={appRoute}>
@@ -205,8 +205,8 @@ export function Sidebar({ userApps, userTools, userPolicies }: SidebarProps) {
                       isActiveRoute(appRoute) &&
                       !location.pathname.includes('/versions') &&
                       !location.pathname.includes('/version/')
-                        ? `${themeStyles.itemBg} text-orange-500 font-semibold`
-                        : `text-black ${themeStyles.itemHoverBg}`
+                        ? `bg-gray-100/50 text-orange-500 font-semibold`
+                        : `text-black hover:bg-gray-100`
                     }`}
                   >
                     <Link to={appRoute}>
@@ -238,8 +238,8 @@ export function Sidebar({ userApps, userTools, userPolicies }: SidebarProps) {
                     onClick={() => toggleMenu('app-versions')}
                     className={`h-8 px-3 rounded-lg transition-all duration-200 text-xs w-full cursor-pointer ${
                       isActiveRoute(`${appRoute}/versions`)
-                        ? `${themeStyles.itemBg} text-orange-500 font-semibold`
-                        : `text-black ${themeStyles.itemHoverBg}`
+                        ? `bg-gray-100/50 text-orange-500 font-semibold`
+                        : `text-black hover:bg-gray-100`
                     }`}
                   >
                     <GitBranch
@@ -273,8 +273,8 @@ export function Sidebar({ userApps, userTools, userPolicies }: SidebarProps) {
                             asChild
                             className={`h-7 px-3 rounded-lg transition-all duration-200 text-xs w-full cursor-pointer ${
                               isActiveRoute(`${appRoute}/version/${version.version}`)
-                                ? `${themeStyles.itemBg} text-orange-500 font-semibold`
-                                : `text-black ${themeStyles.itemHoverBg}`
+                                ? `bg-gray-100/50 text-orange-500 font-semibold`
+                                : `text-black hover:bg-gray-100`
                             }`}
                           >
                             <Link to={`${appRoute}/version/${version.version}`}>
@@ -329,8 +329,8 @@ export function Sidebar({ userApps, userTools, userPolicies }: SidebarProps) {
                 asChild
                 className={`h-12 px-3 rounded-lg transition-all duration-200 text-xs w-full cursor-pointer ${
                   isToolActive
-                    ? `${themeStyles.itemBg} text-orange-500 font-semibold`
-                    : `text-black ${themeStyles.itemHoverBg}`
+                    ? `bg-gray-100/50 text-orange-500 font-semibold`
+                    : `text-black hover:bg-gray-100`
                 }`}
               >
                 <Link to={toolRoute}>
@@ -363,8 +363,8 @@ export function Sidebar({ userApps, userTools, userPolicies }: SidebarProps) {
                       isActiveRoute(toolRoute) &&
                       !location.pathname.includes('/versions') &&
                       !location.pathname.includes('/version/')
-                        ? `${themeStyles.itemBg} text-orange-500 font-semibold`
-                        : `text-black ${themeStyles.itemHoverBg}`
+                        ? `bg-gray-100/50 text-orange-500 font-semibold`
+                        : `text-black hover:bg-gray-100`
                     }`}
                   >
                     <Link to={toolRoute}>
@@ -396,8 +396,8 @@ export function Sidebar({ userApps, userTools, userPolicies }: SidebarProps) {
                     onClick={() => toggleMenu('tool-versions')}
                     className={`h-8 px-3 rounded-lg transition-all duration-200 text-xs w-full cursor-pointer ${
                       isActiveRoute(`${toolRoute}/versions`)
-                        ? `${themeStyles.itemBg} text-orange-500 font-semibold`
-                        : `text-black ${themeStyles.itemHoverBg}`
+                        ? `bg-gray-100/50 text-orange-500 font-semibold`
+                        : `text-black hover:bg-gray-100`
                     }`}
                   >
                     <GitBranch
@@ -431,8 +431,8 @@ export function Sidebar({ userApps, userTools, userPolicies }: SidebarProps) {
                             asChild
                             className={`h-7 px-3 rounded-lg transition-all duration-200 text-xs w-full cursor-pointer ${
                               isActiveRoute(`${toolRoute}/version/${version.version}`)
-                                ? `${themeStyles.itemBg} text-orange-500 font-semibold`
-                                : `text-black ${themeStyles.itemHoverBg}`
+                                ? `bg-gray-100/50 text-orange-500 font-semibold`
+                                : `text-black hover:bg-gray-100`
                             }`}
                           >
                             <Link to={`${toolRoute}/version/${version.version}`}>
@@ -487,8 +487,8 @@ export function Sidebar({ userApps, userTools, userPolicies }: SidebarProps) {
                 asChild
                 className={`h-12 px-3 rounded-lg transition-all duration-200 text-xs w-full cursor-pointer ${
                   isPolicyActive
-                    ? `${themeStyles.itemBg} text-orange-500 font-semibold`
-                    : `text-black ${themeStyles.itemHoverBg}`
+                    ? `bg-gray-100/50 text-orange-500 font-semibold`
+                    : `text-black hover:bg-gray-100`
                 }`}
               >
                 <Link to={policyRoute}>
@@ -521,8 +521,8 @@ export function Sidebar({ userApps, userTools, userPolicies }: SidebarProps) {
                       isActiveRoute(policyRoute) &&
                       !location.pathname.includes('/versions') &&
                       !location.pathname.includes('/version/')
-                        ? `${themeStyles.itemBg} text-orange-500 font-semibold`
-                        : `text-black ${themeStyles.itemHoverBg}`
+                        ? `bg-gray-100/50 text-orange-500 font-semibold`
+                        : `text-black hover:bg-gray-100`
                     }`}
                   >
                     <Link to={policyRoute}>
@@ -554,8 +554,8 @@ export function Sidebar({ userApps, userTools, userPolicies }: SidebarProps) {
                     onClick={() => toggleMenu('policy-versions')}
                     className={`h-8 px-3 rounded-lg transition-all duration-200 text-xs w-full cursor-pointer ${
                       isActiveRoute(`${policyRoute}/versions`)
-                        ? `${themeStyles.itemBg} text-orange-500 font-semibold`
-                        : `text-black ${themeStyles.itemHoverBg}`
+                        ? `bg-gray-100/50 text-orange-500 font-semibold`
+                        : `text-black hover:bg-gray-100`
                     }`}
                   >
                     <GitBranch
@@ -591,8 +591,8 @@ export function Sidebar({ userApps, userTools, userPolicies }: SidebarProps) {
                             asChild
                             className={`h-7 px-3 rounded-lg transition-all duration-200 text-xs w-full cursor-pointer ${
                               isActiveRoute(`${policyRoute}/version/${version.version}`)
-                                ? `${themeStyles.itemBg} text-orange-500 font-semibold`
-                                : `text-black ${themeStyles.itemHoverBg}`
+                                ? `bg-gray-100/50 text-orange-500 font-semibold`
+                                : `text-black hover:bg-gray-100`
                             }`}
                           >
                             <Link to={`${policyRoute}/version/${version.version}`}>
@@ -680,15 +680,74 @@ export function Sidebar({ userApps, userTools, userPolicies }: SidebarProps) {
     },
   ];
 
+  // Developer-specific AccountTooltip with light theme
+  const DeveloperAccountTooltip = () => {
+    const { authInfo } = useReadAuthInfo();
+
+    const handleCopyEthAddress = async () => {
+      if (authInfo?.agentPKP?.ethAddress) {
+        try {
+          await navigator.clipboard.writeText(authInfo.agentPKP.ethAddress);
+        } catch (err) {
+          console.error('Failed to copy eth address:', err);
+        }
+      }
+    };
+
+    const formatAuthInfo = () => {
+      if (!authInfo) return '';
+      return `Sign-In Type: ${authInfo.type}\nAuthenticated: ${new Date(authInfo.authenticatedAt).toLocaleString()}${authInfo.value ? `\nValue: ${authInfo.value}` : ''}`;
+    };
+
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <SidebarMenuButton
+            className={`h-10 px-3 rounded-lg transition-all duration-200 text-black hover:bg-gray-100`}
+          >
+            <User className="h-4 w-4" />
+            <span className={`font-medium text-black`}>My Account</span>
+          </SidebarMenuButton>
+        </TooltipTrigger>
+
+        {authInfo && (
+          <TooltipContent side="top" className={`bg-white border-gray-200 text-black max-w-sm`}>
+            <div className="whitespace-pre-line text-xs">
+              <div className="mb-2">{formatAuthInfo()}</div>
+              {authInfo.agentPKP?.ethAddress && (
+                <div className="flex items-center gap-2 pt-2 border-t border-gray-600">
+                  <div className="flex-1 min-w-0">
+                    <div className="text-gray-600">Agent PKP:</div>
+                    <div className={`font-mono text-xs text-black truncate`}>
+                      {authInfo.agentPKP.ethAddress}
+                    </div>
+                  </div>
+                  <button
+                    onClick={handleCopyEthAddress}
+                    className={`p-1 hover:bg-gray-100 rounded transition-colors flex-shrink-0`}
+                  >
+                    <Copy className="w-3 h-3" />
+                  </button>
+                </div>
+              )}
+            </div>
+          </TooltipContent>
+        )}
+      </Tooltip>
+    );
+  };
+
   return (
     <SidebarComponent variant="sidebar" collapsible="offcanvas" className="border-r-0">
       <SidebarHeader className="border-b border-sidebar-border h-16">
         <div className="flex items-center px-6 py-4 h-full">
-          <img
-            src={isDark ? '/vincent-by-lit-white-logo.png' : '/vincent-by-lit-logo.png'}
-            alt="Vincent by Lit Protocol"
-            className="h-8 object-contain"
-          />
+          <Link to="/" className="flex items-center">
+            <img
+              src="/vincent-by-lit-logo.png"
+              alt="Vincent by Lit Protocol"
+              className="h-8 object-contain cursor-pointer hover:opacity-80 transition-opacity"
+            />
+          </Link>
         </div>
       </SidebarHeader>
 
@@ -707,8 +766,8 @@ export function Sidebar({ userApps, userTools, userPolicies }: SidebarProps) {
                       isActive={isActiveRoute(item.route)}
                       className={`h-10 px-3 rounded-lg transition-all duration-200 ${
                         isActiveRoute(item.route)
-                          ? `${themeStyles.itemBg} text-orange-500 font-semibold`
-                          : `text-black ${themeStyles.itemHoverBg}`
+                          ? `bg-gray-100/50 text-orange-500 font-semibold`
+                          : `text-black hover:bg-gray-100`
                       }`}
                     >
                       <Link to={item.route} className="flex items-center gap-3">
@@ -734,8 +793,8 @@ export function Sidebar({ userApps, userTools, userPolicies }: SidebarProps) {
                         onClick={() => toggleMenu(item.id)}
                         className={`h-10 px-3 rounded-lg transition-all duration-200 ${
                           isActiveRoute(item.route)
-                            ? `${themeStyles.itemBg} text-orange-500 font-semibold`
-                            : `text-black ${themeStyles.itemHoverBg}`
+                            ? `bg-gray-100/50 text-orange-500 font-semibold`
+                            : `text-black hover:bg-gray-100`
                         }`}
                       >
                         <div className="flex items-center gap-3 flex-1">
@@ -773,8 +832,8 @@ export function Sidebar({ userApps, userTools, userPolicies }: SidebarProps) {
                                   isActive={isActiveRoute(child.route)}
                                   className={`h-9 px-3 rounded-lg transition-all duration-200 ${
                                     isActiveRoute(child.route)
-                                      ? `${themeStyles.itemBg} text-orange-500 font-semibold`
-                                      : `text-black ${themeStyles.itemHoverBg}`
+                                      ? `bg-gray-100/50 text-orange-500 font-semibold`
+                                      : `text-black hover:bg-gray-100`
                                   }`}
                                 >
                                   <Link to={child.route} className="flex items-center gap-3">
@@ -815,7 +874,7 @@ export function Sidebar({ userApps, userTools, userPolicies }: SidebarProps) {
                 onClick={() =>
                   window.open('https://docs.heyvincent.ai/documents/Getting_Started.html', '_blank')
                 }
-                className={`h-10 px-3 rounded-lg transition-all duration-200 text-black ${themeStyles.itemHoverBg}`}
+                className={`h-10 px-3 rounded-lg transition-all duration-200 text-black hover:bg-gray-100`}
               >
                 <div className="flex items-center gap-3">
                   <div className="text-gray-600">
@@ -829,14 +888,14 @@ export function Sidebar({ userApps, userTools, userPolicies }: SidebarProps) {
 
             {/* My Account */}
             <SidebarMenuItem>
-              <AccountTooltip />
+              <DeveloperAccountTooltip />
             </SidebarMenuItem>
 
             {/* Sign Out */}
             <SidebarMenuItem>
               <SidebarMenuButton
                 onClick={handleSignOut}
-                className={`h-10 px-3 rounded-lg transition-all duration-200 text-black ${themeStyles.itemHoverBg}`}
+                className={`h-10 px-3 rounded-lg transition-all duration-200 text-black hover:bg-gray-100`}
               >
                 <div className="flex items-center gap-3">
                   <div className="text-gray-600">

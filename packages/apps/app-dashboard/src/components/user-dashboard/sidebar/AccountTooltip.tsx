@@ -23,7 +23,7 @@ export function AccountTooltip() {
 
   const formatAuthInfo = () => {
     if (!authInfo) return '';
-    return `Sign-In Type: ${authInfo.type}\nAuthenticated: ${new Date(authInfo.authenticatedAt).toLocaleString()}${authInfo.userId ? `\nUser ID: ${authInfo.userId}` : ''}${authInfo.value ? `\nValue: ${authInfo.value}` : ''}`;
+    return `Sign-In Type: ${authInfo.type}\nAuthenticated: ${new Date(authInfo.authenticatedAt).toLocaleString()}${authInfo.value ? `\nValue: ${authInfo.value}` : ''}`;
   };
 
   return (
