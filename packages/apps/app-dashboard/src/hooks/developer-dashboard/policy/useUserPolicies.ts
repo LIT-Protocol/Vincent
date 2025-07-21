@@ -24,8 +24,12 @@ export function useUserPolicies() {
     );
   }, [allPolicies, address]);
 
+  const userPolicies = filteredPolicies.filter((policy: Policy) => !policy.isDeleted);
+  const deletedPolicies = filteredPolicies.filter((policy: Policy) => policy.isDeleted);
+
   return {
-    data: filteredPolicies,
+    data: userPolicies,
+    deletedPolicies,
     isLoading,
     isError,
     error,

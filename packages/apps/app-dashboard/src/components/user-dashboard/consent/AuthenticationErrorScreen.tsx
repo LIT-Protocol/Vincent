@@ -6,6 +6,7 @@ import { Button } from '@/components/shared/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
 import ConsentView from './Consent';
 import { useTheme } from '@/providers/ThemeProvider';
+import { Link } from 'react-router-dom';
 
 export function AuthenticationErrorScreen() {
   const { isDark, toggleTheme } = useTheme();
@@ -21,11 +22,13 @@ export function AuthenticationErrorScreen() {
         <div className={`px-6 py-4 border-b ${themeStyles.cardBorder}`}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <img
-                src={isDark ? '/vincent-by-lit-white-logo.png' : '/vincent-by-lit-logo.png'}
-                alt="Vincent by Lit Protocol"
-                className="h-8"
-              />
+              <Link to="/" className="flex items-center">
+                <img
+                  src={isDark ? '/vincent-by-lit-white-logo.png' : '/vincent-by-lit-logo.png'}
+                  alt="Vincent by Lit Protocol"
+                  className="h-8 cursor-pointer hover:opacity-80 transition-opacity"
+                />
+              </Link>
             </div>
             <div className="flex items-center gap-2">
               <Button

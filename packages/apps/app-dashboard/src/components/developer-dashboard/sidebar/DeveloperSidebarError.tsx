@@ -6,15 +6,11 @@ import {
   Shield,
   BookOpen,
   User,
-  Sun,
-  Moon,
   LogOut,
   AlertTriangle,
   ExternalLink,
   Copy,
 } from 'lucide-react';
-import { useTheme } from '@/providers/ThemeProvider';
-import { theme } from '@/components/user-dashboard/consent/ui/theme';
 import useReadAuthInfo, { useClearAuthInfo } from '@/hooks/user-dashboard/useAuthInfo';
 import {
   Sidebar,
@@ -36,8 +32,7 @@ type DeveloperSidebarErrorProps = {
 };
 
 export function DeveloperSidebarError({ error }: DeveloperSidebarErrorProps) {
-  const { isDark, toggleTheme } = useTheme();
-  const themeStyles = theme(isDark);
+  // Removed isDark and themeStyles since developer dashboard doesn't have theme toggle (yet)
   const location = useLocation();
   const { authInfo } = useReadAuthInfo();
   const { clearAuthInfo } = useClearAuthInfo();
@@ -66,18 +61,20 @@ export function DeveloperSidebarError({ error }: DeveloperSidebarErrorProps) {
 
   const formatAuthInfo = () => {
     if (!authInfo) return '';
-    return `Sign-In Type: ${authInfo.type}\nAuthenticated: ${new Date(authInfo.authenticatedAt).toLocaleString()}${authInfo.userId ? `\nUser ID: ${authInfo.userId}` : ''}${authInfo.value ? `\nValue: ${authInfo.value}` : ''}`;
+    return `Sign-In Type: ${authInfo.type}\nAuthenticated: ${new Date(authInfo.authenticatedAt).toLocaleString()}${authInfo.value ? `\nValue: ${authInfo.value}` : ''}`;
   };
 
   return (
     <Sidebar variant="sidebar" collapsible="offcanvas" className="border-r-0 w-80">
       <SidebarHeader className="border-b border-sidebar-border h-16">
         <div className="flex items-center px-6 py-4 h-full">
-          <img
-            src={isDark ? '/vincent-by-lit-white-logo.png' : '/vincent-by-lit-logo.png'}
-            alt="Vincent by Lit Protocol"
-            className="h-8 object-contain"
-          />
+          <Link to="/" className="flex items-center">
+            <img
+              src="/vincent-by-lit-logo.png"
+              alt="Vincent by Lit Protocol"
+              className="h-8 object-contain cursor-pointer hover:opacity-80 transition-opacity"
+            />
+          </Link>
         </div>
       </SidebarHeader>
 
@@ -95,8 +92,8 @@ export function DeveloperSidebarError({ error }: DeveloperSidebarErrorProps) {
                   isActive={isActiveRoute('/developer/dashboard')}
                   className={`h-10 px-3 rounded-lg transition-all duration-200 ${
                     isActiveRoute('/developer/dashboard')
-                      ? `${themeStyles.itemBg} text-orange-500 font-semibold`
-                      : `text-black ${themeStyles.itemHoverBg}`
+                      ? `bg-gray-100/50 text-orange-500 font-semibold`
+                      : `text-black hover:bg-gray-100`
                   }`}
                 >
                   <Link to="/developer/dashboard" className="flex items-center gap-3">
@@ -125,8 +122,8 @@ export function DeveloperSidebarError({ error }: DeveloperSidebarErrorProps) {
                   isActive={isActiveRoute('/developer/apps')}
                   className={`h-10 px-3 rounded-lg transition-all duration-200 ${
                     isActiveRoute('/developer/apps')
-                      ? `${themeStyles.itemBg} text-orange-500 font-semibold`
-                      : `text-black ${themeStyles.itemHoverBg}`
+                      ? `bg-gray-100/50 text-orange-500 font-semibold`
+                      : `text-black hover:bg-gray-100`
                   }`}
                 >
                   <Link to="/developer/apps" className="flex items-center gap-3">
@@ -155,8 +152,8 @@ export function DeveloperSidebarError({ error }: DeveloperSidebarErrorProps) {
                   isActive={isActiveRoute('/developer/tools')}
                   className={`h-10 px-3 rounded-lg transition-all duration-200 ${
                     isActiveRoute('/developer/tools')
-                      ? `${themeStyles.itemBg} text-orange-500 font-semibold`
-                      : `text-black ${themeStyles.itemHoverBg}`
+                      ? `bg-gray-100/50 text-orange-500 font-semibold`
+                      : `text-black hover:bg-gray-100`
                   }`}
                 >
                   <Link to="/developer/tools" className="flex items-center gap-3">
@@ -185,8 +182,8 @@ export function DeveloperSidebarError({ error }: DeveloperSidebarErrorProps) {
                   isActive={isActiveRoute('/developer/policies')}
                   className={`h-10 px-3 rounded-lg transition-all duration-200 ${
                     isActiveRoute('/developer/policies')
-                      ? `${themeStyles.itemBg} text-orange-500 font-semibold`
-                      : `text-black ${themeStyles.itemHoverBg}`
+                      ? `bg-gray-100/50 text-orange-500 font-semibold`
+                      : `text-black hover:bg-gray-100`
                   }`}
                 >
                   <Link to="/developer/policies" className="flex items-center gap-3">
@@ -236,7 +233,7 @@ export function DeveloperSidebarError({ error }: DeveloperSidebarErrorProps) {
                 onClick={() =>
                   window.open('https://docs.heyvincent.ai/documents/Getting_Started.html', '_blank')
                 }
-                className={`h-10 px-3 rounded-lg transition-all duration-200 text-black ${themeStyles.itemHoverBg}`}
+                className={`h-10 px-3 rounded-lg transition-all duration-200 text-black hover:bg-gray-100`}
               >
                 <div className="flex items-center gap-3">
                   <div className="text-gray-600">
@@ -253,7 +250,7 @@ export function DeveloperSidebarError({ error }: DeveloperSidebarErrorProps) {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <SidebarMenuButton
-                    className={`h-10 px-3 rounded-lg transition-all duration-200 text-black ${themeStyles.itemHoverBg}`}
+                    className={`h-10 px-3 rounded-lg transition-all duration-200 text-black hover:bg-gray-100`}
                   >
                     <div className="flex items-center gap-3">
                       <div className="text-gray-600">
@@ -267,7 +264,7 @@ export function DeveloperSidebarError({ error }: DeveloperSidebarErrorProps) {
                 {authInfo && (
                   <TooltipContent
                     side="top"
-                    className={`${isDark ? 'bg-black border-gray-700' : 'bg-white border-gray-200'} text-black max-w-sm`}
+                    className={`bg-white border-gray-200 text-black max-w-sm`}
                   >
                     <div className="whitespace-pre-line text-xs">
                       <div className="mb-2">{formatAuthInfo()}</div>
@@ -281,7 +278,7 @@ export function DeveloperSidebarError({ error }: DeveloperSidebarErrorProps) {
                           </div>
                           <button
                             onClick={handleCopyEthAddress}
-                            className={`p-1 ${themeStyles.itemHoverBg} rounded transition-colors flex-shrink-0`}
+                            className={`p-1 hover:bg-gray-100 rounded transition-colors flex-shrink-0`}
                           >
                             <Copy className="w-3 h-3" />
                           </button>
@@ -297,7 +294,7 @@ export function DeveloperSidebarError({ error }: DeveloperSidebarErrorProps) {
             <SidebarMenuItem>
               <SidebarMenuButton
                 onClick={handleSignOut}
-                className={`h-10 px-3 rounded-lg transition-all duration-200 text-black ${themeStyles.itemHoverBg}`}
+                className={`h-10 px-3 rounded-lg transition-all duration-200 text-black hover:bg-gray-100`}
               >
                 <div className="flex items-center gap-3">
                   <div className="text-gray-600">
@@ -309,26 +306,9 @@ export function DeveloperSidebarError({ error }: DeveloperSidebarErrorProps) {
             </SidebarMenuItem>
           </SidebarMenu>
 
-          <div className={`border-t ${isDark ? 'border-white/10' : 'border-gray-900/10'} my-2`} />
+          <div className={`border-t border-gray-900/10 my-2`} />
 
-          <SidebarMenu>
-            {/* Theme Toggle */}
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                onClick={toggleTheme}
-                className={`h-10 px-3 rounded-lg transition-all duration-200 text-black ${themeStyles.itemHoverBg}`}
-              >
-                <div className="flex items-center gap-3">
-                  <div className="text-gray-600">
-                    {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-                  </div>
-                  <span className="font-medium text-black">
-                    {isDark ? 'Light mode' : 'Dark mode'}
-                  </span>
-                </div>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
+          {/* Removed theme toggle since developer dashboard doesn't support theming */}
         </div>
       </SidebarFooter>
     </Sidebar>
