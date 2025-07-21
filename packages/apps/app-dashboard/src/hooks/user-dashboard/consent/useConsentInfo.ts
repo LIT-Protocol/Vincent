@@ -36,7 +36,6 @@ export const useConsentInfo = (appId: string): ConsentInfoState => {
     isFetching: appLoading,
     isError: appError,
   } = vincentApiClient.useGetAppQuery({ appId: Number(appId) });
-
   const {
     data: appVersions,
     isFetching: appVersionsLoading,
@@ -65,9 +64,13 @@ export const useConsentInfo = (appId: string): ConsentInfoState => {
 
   // Fetch all data when appVersions changes
   useEffect(() => {
+    // Only proceed when both queries are done loading
+    if (appLoading || appVersionsLoading) {
+      return;
+    }
+
     if (!app || !appVersions || appVersions.length === 0) {
-      // Mark data fetching as complete even if app/versions don't exist
-      // This prevents infinite loading when app doesn't exist
+      // Only mark as complete if we have a valid appId but no data AND queries are done
       setIsDataFetchingComplete(true);
       return;
     }
