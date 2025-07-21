@@ -3,7 +3,7 @@ import { useLocation } from 'react-router';
 import { cn } from '@/lib/utils';
 import { DeveloperSidebarWrapper } from '@/components/developer-dashboard/sidebar/DeveloperSidebarWrapper';
 import { AuthenticationErrorScreen } from '@/components/user-dashboard/consent/AuthenticationErrorScreen';
-import { GeneralErrorScreen } from '@/components/user-dashboard/consent/GeneralErrorScreen';
+import { ResourceNotOwnedError } from '@/components/developer-dashboard/ui/ResourceNotOwnedError';
 import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/shared/ui/sidebar';
 import { Separator } from '@/components/shared/ui/separator';
 import { useTheme } from '@/providers/ThemeProvider';
@@ -57,14 +57,6 @@ function AppLayout({ children, className }: ComponentProps<'div'>) {
     isResourceChecking = policyAddressCheck.isChecking;
   }
 
-  // Get resource type for error message
-  const getResourceType = () => {
-    if (needsAppAuthorization) return 'app';
-    if (needsToolAuthorization) return 'tool';
-    if (needsPolicyAuthorization) return 'policy';
-    return 'resource';
-  };
-
   // Common layout wrapper function
   const layoutWrapper = (content: React.ReactNode) => (
     <div className={cn('min-h-screen min-w-screen bg-gray flex', className)}>
@@ -109,9 +101,12 @@ function AppLayout({ children, className }: ComponentProps<'div'>) {
     (needsAppAuthorization || needsToolAuthorization || needsPolicyAuthorization) &&
     isResourceAuthorized === false
   ) {
+    const resourceType = needsAppAuthorization ? 'app' : needsToolAuthorization ? 'tool' : 'policy';
+
     return layoutWrapper(
-      <GeneralErrorScreen
-        errorDetails={`You don't have permission to access this ${getResourceType()}. Only the ${getResourceType()} owner can access this page.`}
+      <ResourceNotOwnedError
+        resourceType={resourceType}
+        errorDetails={`You don't have permission to access this ${resourceType}. Only the ${resourceType} owner can access this page.`}
       />,
     );
   }
