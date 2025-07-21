@@ -96,19 +96,6 @@ export function GeneralErrorScreen({ errorDetails }: GeneralErrorScreenProps) {
                     <p className={`text-sm ${themeStyles.textMuted} font-mono`}>{errorDetails}</p>
                   </div>
                 )}
-
-                <div
-                  className={`p-4 rounded-lg ${themeStyles.cardBg} border ${themeStyles.cardBorder}`}
-                >
-                  <h3 className={`text-sm font-medium ${themeStyles.text} mb-2`}>
-                    What you can do:
-                  </h3>
-                  <ul className={`text-sm ${themeStyles.textMuted} space-y-1`}>
-                    <li>• Try refreshing the page to reload the consent information</li>
-                    <li>• Go back and try again later</li>
-                    <li>• Contact support if the problem persists</li>
-                  </ul>
-                </div>
               </div>
             </CardContent>
           </Card>
