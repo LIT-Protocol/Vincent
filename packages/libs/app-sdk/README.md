@@ -10,9 +10,9 @@ npm install @lit-protocol/vincent-app-sdk
 
 # Client (Web)
 
-## VincentWebAppClient
+## WebAuthClient
 
-The Vincent Web App Client provides methods for managing user authentication, JWT tokens, and consent flows in Vincent applications.
+The Vincent Web Auth Client provides methods for managing user authentication, JWT tokens, and consent flows in Vincent applications.
 
 ### Methods
 
@@ -44,11 +44,10 @@ Removes the login JWT parameter from the current URI. Call this after you have v
 ### Basic Usage
 
 ```typescript
-import { getVincentWebAppClient, jwt } from '@lit-protocol/vincent-app-sdk';
+import { getWebAuthClient } from '@lit-protocol/vincent-app-sdk/webaAthClient';
+import { isExpired } from '@lit-protocol/vincent-app-sdk/jwt';
 
-const { isExpired } = jwt;
-
-const vincentAppClient = getVincentWebAppClient({ appId: MY_APP_ID });
+const vincentAppClient = getWebAuthClient({ appId: MY_APP_ID });
 // ... In your app logic:
 if (vincentAppClient.isLogin()) {
   // Handle app logic for the user has just logged in
@@ -101,7 +100,7 @@ Executes a Vincent Tool with the provided parameters.
 ### Tool execution
 
 ```typescript
-import { getVincentToolClient } from '@lit-protocol/vincent-app-sdk';
+import { getVincentToolClient } from '@lit-protocol/vincent-app-sdk/toolClient';
 // Import the tool you want to execute
 import { bundledVincentTool as erc20BundledTool } from '@lit-protocol/vincent-tool-erc20-approval';
 
@@ -148,17 +147,19 @@ A basic Express authentication middleware factory function is provided with the 
 See getAuthenticateUserExpressHandler() documentation to see the source for the express authentication route handler
 
 ```typescript
-import { expressAuthHelpers } from '@lit-protocol/vincent-app-sdk';
-const { authenticatedRequestHandler, getAuthenticateUserExpressHandler } = expressAuthHelpers;
+import {
+  authenticatedRequestHandler,
+  getAuthenticateUserExpressHandler,
+} from '@lit-protocol/vincent-app-sdk/expressMiddleware';
 
-import type { ExpressAuthHelpers } from '@lit-protocol/vincent-app-sdk';
+import type { AuthenticatedRequest } from '@lit-protocol/vincent-app-sdk/expressMiddleware';
 
 const { ALLOWED_AUDIENCE } = process.env;
 
 const authenticateUserMiddleware = getAuthenticateUserExpressHandler(ALLOWED_AUDIENCE);
 
 // Define an authenticated route handler
-const getUserProfile = async (req: ExpressAuthHelpers['AuthenticatedRequest'], res: Response) => {
+const getUserProfile = async (req: AuthenticatedRequest, res: Response) => {
   // Access authenticated user information
   const { pkpAddress } = req.user;
 

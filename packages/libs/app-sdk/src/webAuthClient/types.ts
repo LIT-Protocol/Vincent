@@ -1,73 +1,65 @@
 import type { VincentJWT } from '../jwt/types';
 
-/**
- * @category Interfaces
- */
-export interface VincentAppClientConfig {
+export interface WebAuthClientConfig {
   appId: string;
 }
 
-/**
- * @category Interfaces
- */
-export interface RedirectToVincentConsentPageParams {
+export interface RedirectToVincentDelegationPageParams {
   redirectUri: string;
   /** This only needs to be provided for local development with the entire stack
    * @hidden
    * */
-  consentPageUrl?: string;
+  delegationAuthPageUrl?: string;
 }
 
 /**
  * The Vincent Web Application Client is used in web apps to handle interactions with the Vincent app portal.
  *
- * - Consent page redirection
+ * - Delegation authorizxation page redirection
  * - Authentication helpers that are browser specific
  *
- * @category Interfaces
  */
-export interface VincentWebAppClient {
+export interface WebAuthClient {
   /**
-   * Redirects the user to the Vincent consent page.
+   * Redirects the user to the Vincent delegation auth page.
    *
    * If the user approves your app permissions, they will be redirected back to the `redirectUri`.
    *
-   * Use {@link VincentWebAppClient.isLogin} to detect if a user has just opened your app via the consent page
+   * Use {@link WebAuthClient.isLogin} to detect if a user has just opened your app via the delegation auth page
    *
-   * Use {@link VincentWebAppClient.decodeVincentLoginJWT} to decode and verify the {@link VincentJWT} from the page URI, and store it for later usage
+   * Use {@link WebAuthClient.decodeVincentLoginJWT} to decode and verify the {@link VincentJWT} from the page URI, and store it for later usage
    *
    * NOTE: You must register the `redirectUri` on your Vincent app for it to be considered a valid redirect target
    *
    * @example
    * ```typescript
-   *   import { getVincentWebAppClient } from '@lit-protocol/vincent-app-sdk';
+   * import { getWebAuthClient } from '@lit-protocol/vincent-app-sdk/webAuthClient';
    *
-   *   const vincentAppClient = getVincentWebAppClient({ appId: MY_APP_ID });
-   *   // ... In your app logic:
-   *   if(vincentAppClient.isLogin()) {
-   *     // Handle app logic for the user has just logged in
-   *     const { decoded, jwt } = vincentAppClient.decodeVincentLoginJWT(EXPECTED_AUDIENCE);
-   *     // Store `jwt` for later usage; the user is now logged in.
-   *   } else {
-   *     // Handle app logic for the user is already logged in (check for stored & unexpired JWT)
-   *     // ...
-   *
-   *     // Handle app logic for the user is not yet logged in
-   *    vincentAppClient.redirectToConsentPage({ redirectUri: window.location.href });
-   *   }
+   * const vincentAppClient = getWebAuthClient({ appId: MY_APP_ID });
+   * // ... In your app logic:
+   * if(vincentAppClient.isLogin()) {
+   *   // Handle app logic for the user has just logged in
+   *   const { decoded, jwt } = vincentAppClient.decodeVincentLoginJWT(EXPECTED_AUDIENCE);
+   *   // Store `jwt` for later usage; the user is now logged in.
+   * } else {
+   *   // Handle app logic for the user is already logged in (check for stored & unexpired JWT)
+   *   // ...
+   *    *   // Handle app logic for the user is not yet logged in
+   *  vincentAppClient.redirectToDelegationAuthPage({ redirectUri: window.location.href });
+   * }
    * ```
    * @function
    * @inline
    */
-  redirectToConsentPage: (redirectConfig: RedirectToVincentConsentPageParams) => void;
+  redirectToDelegationAuthPage: (redirectConfig: RedirectToVincentDelegationPageParams) => void;
 
   /**
    * Determines whether the current window location is a login URI associated with Vincent
 
    * You can use this to detect if a user is loading your app as a result of approving permissions
-   * on the Vincent consent page -- e.g. they just logged in
+   * on the Vincent delegation auth page -- e.g. they just logged in
    *
-   * See: {@link VincentWebAppClient.redirectToConsentPage} for example usage
+   * See: {@link WebAuthClient.redirectToDelegationAuthPage} for example usage
    *
    * @function
    * @inline
@@ -80,7 +72,7 @@ export interface VincentWebAppClient {
    *
    * The token is verified as part of this process; if the token is invalid or expired, this method will throw.
    *
-   * See: {@link VincentWebAppClient.redirectToConsentPage} for example usage
+   * See: {@link WebAuthClient.redirectToDelegationAuthPage} for example usage
    *
    * @param { string } expectedAudience Provide a valid `redirectUri` for your app; this is typically your app's origin
    * @function
@@ -101,9 +93,9 @@ export interface VincentWebAppClient {
    *
    * @example
    * ```typescript
-   * import { getVincentWebAppClient } from '@lit-protocol/vincent-app-sdk';
+   * import { getWebAuthClient } from '@lit-protocol/vincent-app-sdk/webAuthClient';
    *
-   * const vincentAppClient = getVincentWebAppClient({ appId: MY_APP_ID });
+   * const vincentAppClient = getWebAuthClient({ appId: MY_APP_ID });
    *
    * if (vincentAppClient.isLogin()) {
    *   const { decodedJWT, jwtStr } = vincentAppClient.decodeVincentLoginJWT();

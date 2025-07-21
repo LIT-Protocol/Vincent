@@ -9,7 +9,9 @@ import type {
   ToolExecuteResponseSuccessNoResult,
 } from './execute/types';
 
-/** @category API */
+/** Type guard function that returns true only if the passed value is a successful tool response
+ * @category API
+ * */
 export function isToolResponseSuccess(
   value: unknown
 ): value is
@@ -23,7 +25,8 @@ export function isToolResponseSuccess(
   );
 }
 
-/** @category API */
+/** Type guard function that returns true only if the passed value is a failure tool response
+ *  @category API */
 export function isToolResponseFailure(
   value: unknown
 ): value is
@@ -37,7 +40,14 @@ export function isToolResponseFailure(
   );
 }
 
-/** @category API */
+/** Type guard function that returns true only if the passed value is a failure tool response that was a runtime error
+ * This could be caused by code `throw()`ing an error from inside tool or policy code, or by errors encountered in the
+ * Vincent SDK wrapping code that handles the execution of the tool/policies.
+ *
+ * This could also be the result of a schema validation error -- use {@link isToolResponseSchemaValidationFailure} to check
+ * to see if have a data validation error.
+ *
+ *  @category API*/
 export function isToolResponseRuntimeFailure(
   value: unknown
 ): value is ToolExecuteResponseFailureNoResult<Record<string, any>> {
@@ -46,7 +56,11 @@ export function isToolResponseRuntimeFailure(
   return 'runtimeError' in value && typeof (value as any).runtimeError === 'string';
 }
 
-/** @category API */
+/** Type guard function that returns true only if the passed value is a failure tool response that was caused by
+ * a schema parsing failure.  All data inputs and outputs to / from Vincent Tools and Policies is validated using ZOD schemas.
+ *
+ * If this returns true, you can parse the `schemaValidationError` property in the response - it is a ZodError object.
+ * @category API */
 export function isToolResponseSchemaValidationFailure(
   value: unknown
 ): value is ToolExecuteResponseFailureNoResult<Record<string, any>> {

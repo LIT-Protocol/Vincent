@@ -1,23 +1,20 @@
-/** expressAuthHelpers are used to add a VincentJWT-specific authentication to your Express.js server routes
+/** Express middleware is used to add a VincentJWT-specific authentication to your Express.js server routes
  *
- * - Create an express middleware using {@link getAuthenticateUserExpressHandler}
+ * - Create express middleware using {@link getAuthenticateUserExpressHandler}
  * - Once you have added the middleware to your route, use {@link authenticatedRequestHandler} to provide
  * type-safe access to `req.user` in your downstream RequestHandler functions.
+ *
  * @example
  * ```typescript
- * import { expressAuthHelpers } from '@lit-protocol/vincent-app-sdk';
- * const { authenticatedRequestHandler, getAuthenticateUserExpressHandler } = expressAuthHelpers;
- *
- * import type { ExpressAuthHelpers } from '@lit-protocol/vincent-app-sdk';
- *
+ * import { authenticatedRequestHandler, getAuthenticateUserExpressHandler } from '@lit-protocol/vincent-app-sdk/expressMiddleware';
+ * import type { AuthenticatedRequest } from '@lit-protocol/vincent-app-sdk/expressMiddleware';
+
  * const { ALLOWED_AUDIENCE } = process.env;
- *
  *
  * const authenticateUserMiddleware = getAuthenticateUserExpressHandler(ALLOWED_AUDIENCE);
  *
- *
  * // Define an authenticated route handler
- * const getUserProfile = async (req: ExpressAuthHelpers['AuthenticatedRequest'], res: Response) => {
+ * const getUserProfile = async (req: AuthenticatedRequest, res: Response) => {
  *   // Access authenticated user information
  *   const { pkpAddress } = req.user;
  *
@@ -33,12 +30,15 @@
  * You can see the source for `getAuthenticateUserExpressHandler()` below; use this as a reference to implement
  * your own midddleware/authentication for other frameworks! Pull requests are welcome.
  *
+ * @packageDocumentation
+ * @module expressMiddleware
  * {@includeCode ./express.ts#expressHandlerTSDocExample}
- *
- * @module expressAuthHelpers
- * @category API Methods
  * */
 
-import { authenticatedRequestHandler, getAuthenticateUserExpressHandler } from './express';
+export { authenticatedRequestHandler, getAuthenticateUserExpressHandler } from './express';
 
-export { authenticatedRequestHandler, getAuthenticateUserExpressHandler };
+export type {
+  AuthenticatedRequest,
+  AuthenticatedRequestHandler,
+  ExtractRequestHandlerParams,
+} from './types';

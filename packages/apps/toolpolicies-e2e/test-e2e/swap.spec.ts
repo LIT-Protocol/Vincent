@@ -8,7 +8,10 @@ import {
 
 import { bundledVincentTool as uniswapBundledTool } from '@lit-protocol/vincent-tool-uniswap-swap';
 
-import { disconnectVincentToolClients, getVincentToolClient } from '@lit-protocol/vincent-app-sdk';
+import {
+  disconnectVincentToolClients,
+  getVincentToolClient,
+} from '@lit-protocol/vincent-app-sdk/toolClient';
 import { ethers } from 'ethers';
 import type { PermissionData } from '@lit-protocol/vincent-contracts-sdk';
 import { validateToolExecutionAndGetPolicies } from '@lit-protocol/vincent-contracts-sdk';
@@ -87,7 +90,7 @@ const removeExistingApproval = async (delegatorPkpEthAddress: string) => {
 
   expect(setupResult.success).toBe(true);
   if (setupResult.success === false) {
-    throw new Error(setupResult.error);
+    throw new Error(setupResult.runtimeError);
   }
 
   expect(BigInt(setupResult.result.approvedAmount)).toBe(0n);
@@ -122,7 +125,7 @@ const addNewApproval = async (delegatorPkpEthAddress: string, tokenAmount: numbe
 
   expect(erc20ApprovalExecutionResult.success).toBe(true);
   if (erc20ApprovalExecutionResult.success === false) {
-    throw new Error(erc20ApprovalExecutionResult.error);
+    throw new Error(erc20ApprovalExecutionResult.runtimeError);
   }
 
   expect(erc20ApprovalExecutionResult.result).toBeDefined();
@@ -369,7 +372,7 @@ describe('Uniswap Swap Tool E2E Tests', () => {
 
     if (precheckResult.success === false) {
       // A bit redundant, but typescript doesn't understand `expect().toBe(true)` is narrowing to the type.
-      throw new Error(precheckResult.error);
+      throw new Error(precheckResult.runtimeError);
     }
 
     // Verify the context is properly populated
@@ -567,7 +570,7 @@ describe('Uniswap Swap Tool E2E Tests', () => {
     expect(uniswapSwapExecutionResult.success).toBe(true);
     if (uniswapSwapExecutionResult.success === false) {
       // A bit redundant, but typescript doesn't understand `expect().toBe(true)` is narrowing to the type.
-      throw new Error(uniswapSwapExecutionResult.error);
+      throw new Error(uniswapSwapExecutionResult.runtimeError);
     }
 
     console.log(uniswapSwapExecutionResult);

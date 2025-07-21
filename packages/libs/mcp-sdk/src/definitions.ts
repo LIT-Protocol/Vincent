@@ -9,7 +9,7 @@
  */
 
 import { LitNodeClient } from '@lit-protocol/lit-node-client';
-import { generateVincentToolSessionSigs } from '@lit-protocol/vincent-app-sdk';
+import { generateVincentToolSessionSigs } from '@lit-protocol/vincent-app-sdk/toolClient';
 import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js';
 import type {
   CallToolResult,
@@ -302,10 +302,10 @@ export type VincentToolDefWithIPFS = VincentToolDef & { ipfsCid: string };
  * This schema defines the structure of a Vincent application.
  */
 export const VincentAppDefSchema = z.object({
-  id: z.string(),
+  id: z.number(),
   name: z.string(),
   description: z.string().optional(),
-  version: z.string(),
+  version: z.number(),
   tools: z.record(VincentToolDefSchema),
 });
 

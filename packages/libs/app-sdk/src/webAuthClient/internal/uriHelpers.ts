@@ -1,4 +1,4 @@
-import { verifyJWT } from '../../jwt/core/validate';
+import { verify } from '../../jwt/core/validate';
 import { JWT_URL_KEY, PRODUCTION_VINCENT_DASHBOARD_URL } from '../constants';
 
 export const decodeVincentJWTFromUri = (uri: string, expectedAudience: string) => {
@@ -9,7 +9,7 @@ export const decodeVincentJWTFromUri = (uri: string, expectedAudience: string) =
     return null;
   }
 
-  return { decodedJWT: verifyJWT(jwt, expectedAudience), jwtStr: jwt };
+  return { decodedJWT: verify(jwt, expectedAudience), jwtStr: jwt };
 };
 
 export const isLoginUri = (uri: string) => {
@@ -19,10 +19,14 @@ export const isLoginUri = (uri: string) => {
   return !!loginJwt;
 };
 
-export function composeConsentUrl(appId: string, redirectUri: string, consentPageUrl?: string) {
+export function composeDelegationAuthUrl(
+  appId: string,
+  redirectUri: string,
+  delegationAuthPageUrl?: string
+) {
   return new URL(
     `/appId/${appId}/consent?redirectUri=${redirectUri}`,
-    consentPageUrl || PRODUCTION_VINCENT_DASHBOARD_URL
+    delegationAuthPageUrl || PRODUCTION_VINCENT_DASHBOARD_URL
   );
 }
 

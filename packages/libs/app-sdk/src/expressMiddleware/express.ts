@@ -2,10 +2,8 @@ import type { NextFunction, Request, Response } from 'express';
 
 import type { AuthenticatedRequest, AuthenticatedRequestHandler } from './types';
 
-import { jwt } from '..';
+import { verify } from '../jwt';
 import { isDefinedObject } from '../jwt/core/utils';
-
-const { verify } = jwt;
 
 function assertAuthenticatedRequest(req: Request): asserts req is AuthenticatedRequest {
   if (!('user' in req) || typeof req.user !== 'object' || !req.user) {
@@ -39,13 +37,11 @@ function assertAuthenticatedRequest(req: Request): asserts req is AuthenticatedR
  * See [express.js documentation](https://expressjs.com/en/guide/writing-middleware.html) for details on writing your route handler
  * @example
  * ```typescript
- * import { expressAuthHelpers } from '@lit-protocol/vincent-app-sdk';
- * const { authenticatedRequestHandler, getAuthenticateUserExpressHandler } = expressAuthHelpers;
- *
- * import type { ExpressAuthHelpers } from '@lit-protocol/vincent-app-sdk';
+ * import { authenticatedRequestHandler, getAuthenticateUserExpressHandler } from '@lit-protocol/vincent-app-sdk/expressMiddleware';
+ * import type { AuthenticatedRequest } from '@lit-protocol/vincent-app-sdk/expressMiddleware';
  *
  * // Define an authenticated route handler
- * const getUserProfile = async (req: ExpressAuthHelpers['AuthenticatedRequest'], res: Response) => {
+ * const getUserProfile = async (req: AuthenticatedRequest, res: Response) => {
  *   // Access authenticated user information
  *   const { pkpAddress } = req.user;
  *
@@ -57,6 +53,8 @@ function assertAuthenticatedRequest(req: Request): asserts req is AuthenticatedR
  * // Use in Express route with authentication
  * app.get('/profile', authenticateUser, authenticatedRequestHandler(getUserProfile));
  * ```
+ *
+ * @category API
  */
 export const authenticatedRequestHandler =
   (handler: AuthenticatedRequestHandler) => (req: Request, res: Response, next: NextFunction) => {
@@ -82,10 +80,8 @@ export const authenticatedRequestHandler =
  *
  * @example
  * ```typescript
- * import { expressAuthHelpers } from '@lit-protocol/vincent-app-sdk';
- * const { authenticatedRequestHandler, getAuthenticateUserExpressHandler } = expressAuthHelpers;
- *
- * import type { ExpressAuthHelpers } from '@lit-protocol/vincent-app-sdk';
+ * import { authenticatedRequestHandler, getAuthenticateUserExpressHandler } from '@lit-protocol/vincent-app-sdk/expressMiddleware';
+ * import type { AuthenticatedRequest } from '@lit-protocol/vincent-app-sdk/expressMiddleware';
  *
  * // In your environment configuration
  * const ALLOWED_AUDIENCE = 'https://yourapp.example.com';
@@ -94,7 +90,7 @@ export const authenticatedRequestHandler =
  * const authenticateUser = getAuthenticateUserExpressHandler(ALLOWED_AUDIENCE);
  *
  * // Define a handler that requires authentication
- * const getProtectedResource = (req: ExpressAuthHelpers['AuthenticatedRequest'], res: Response) => {
+ * const getProtectedResource = (req: AuthenticatedRequest, res: Response) => {
  *   // The request is now authenticated
  *   // No need for type casting as the handler is properly typed
  *   const { pkpAddress } = req.user;
@@ -108,6 +104,7 @@ export const authenticatedRequestHandler =
  * You can see the source for `getAuthenticateUserExpressHandler()` below; use this as a reference to implement
  * your own midddleware/authentication for other frameworks! Pull requests are welcome.
  * {@includeCode ./express.ts#expressHandlerTSDocExample}
+ * @category API
  */
 // #region expressHandlerTSDocExample
 export const getAuthenticateUserExpressHandler =

@@ -49,12 +49,10 @@ const bigintReplacer = (key: any, value: any) => {
  * and `execute()` functionality.
  *
  * ```typescript
- * import { vincentToolClient } from '@lit-protocol/vincent-app-sdk';
+ * import { disconnectVincentToolClients, getVincentToolClient, isToolResponseFailure } from '@lit-protocol/vincent-app-sdk/toolClient';
  * import { bundledVincentTool as uniswapBundledTool } from '@lit-protocol/vincent-tool-uniswap-swap';
  * import { delegateeEthersSigner } = from './ethersSigner';
  * import { ETH_RPC_URL, BASE_RPC_URL } from './rpcConfigs';
- *
- * const { disconnectVincentToolClients, getVincentToolClient, isToolResponseFailure } = vincentToolClient;
  *
  * const uniswapToolClient = getVincentToolClient({
  *     bundledVincentTool: uniswapBundledTool,

@@ -11,7 +11,6 @@
       "outputs": ["{options.outputPath}"],
       "options": {
         "outputPath": "packages/libs/app-sdk/dist",
-        "main": "packages/libs/app-sdk/src/index.ts",
         "tsConfig": "packages/libs/app-sdk/tsconfig.lib.json",
         "assets": ["packages/libs/app-sdk/*.md"],
         "formats": ["cjs"],

@@ -1,5 +1,5 @@
 import { LIT_EVM_CHAINS } from '@lit-protocol/constants';
-import { jwt } from '@lit-protocol/vincent-app-sdk';
+import { verify } from '@lit-protocol/vincent-app-sdk/jwt';
 import { SiweMessage } from 'siwe';
 
 import { nonceManager } from './nonceManager';
@@ -7,7 +7,6 @@ import { nonceManager } from './nonceManager';
 import { env } from './env';
 
 const { EXPECTED_AUDIENCE, SIWE_EXPIRATION_TIME, VINCENT_MCP_BASE_URL } = env;
-const { verify } = jwt;
 
 const YELLOWSTONE = LIT_EVM_CHAINS.yellowstone;
 
@@ -77,17 +76,17 @@ export async function authenticateWithSiwe(
  * Authenticates a request using a JWT token. This method is specifically for delegator authentication.
  * Verifies the JWT signature and validates the app ID and version.
  *
- * @param {string} jwt - The JSON Web Token to verify
- * @param {string} appId - The expected application ID that should match the JWT payload
- * @param {string} appVersion - The expected application version that should match the JWT payload
- * @returns {string} The Ethereum address of the PKP (Programmable Key Pair) from the JWT payload
+ * @param jwt - The JSON Web Token to verify
+ * @param appId - The expected application ID that should match the JWT payload
+ * @param appVersion - The expected application version that should match the JWT payload
+ * @returns The Ethereum address of the PKP (Programmable Key Pair) from the JWT payload
  * @throws {Error} If the JWT is invalid or doesn't match the expected app ID/version
  */
-export function authenticateWithJwt(jwt: string, appId: string, appVersion: string): string {
+export function authenticateWithJwt(jwt: string, appId: number, appVersion: number): string {
   // @ts-expect-error Env var is defined or this module would have thrown
   const decodedJwt = verify(jwt, EXPECTED_AUDIENCE);
   const { id, version } = decodedJwt.payload.app;
-  if (id !== appId || version !== parseInt(appVersion)) {
+  if (id !== appId || version !== appVersion) {
     throw new Error('JWT provided is not valid for this Vincent App MCP');
   }
 

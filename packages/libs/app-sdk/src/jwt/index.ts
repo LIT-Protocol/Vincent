@@ -1,73 +1,19 @@
-/** Helper methods for working with Vincent-issues JWTs.
+/** The `jwt` module provides helper methods that allow you to decode and validate Vincent-specific JWTs.
  *
- * @module jwt
- * @namespace
- * @inline
- * @category API Methods
+ * Vincent JWTs are composed using the `did-jwt` library, but have a custom `alg` of `ES256K`, and are signed using
+ * PKP ethereum keys.
+ *
+ * Vincent JWTs are issued by the Vincent Dashboard when a user provides delegation permission for your app to their agent PKP.
+ * They are passed to your web app using a redirectUri which you configure on your app.
+ *
+ * The methods exported by the `jwt` module are low-level - you probably will just want to use {@link webAuthClient.getWebAuthClient | getWebAuthClient} to get
+ * a {@link webAuthClient.WebAuthClient | WebAuthClient} which handles the redirect process, parsing the JWT from the URL, and verifying it for you.
+ *
+ * @packageDocumentation
+ *
  */
+export { create } from './core/create';
+export { isExpired } from './core/isExpired';
+export { decode, verify } from './core/validate';
 
-import { createPKPSignedJWT } from './core/create';
-import { isJWTExpired } from './core/utils';
-import { decodeJWT, verifyJWT } from './core/validate';
-
-/** @function
- * @hidden
- * */
-export const create = createPKPSignedJWT;
-
-/** Decodes a Vincent JWT in string form and returns an {@link VincentJWT} decoded object for your use
- *
- * @function
- * @example
- * ```typescript
- *   try {
- *     const decodedVincentJWT = decode(jwt);
- *   } catch(e) {
- *    // Handle malformed JWT string case
- *   }
- *
- *   // You still need to verify the JWT!
- *  ```
- * */
-export const decode = decodeJWT;
-
-/**
- * @inline
- * @expand
- * @function
- *
- * @example
- * ```typescript
- *  try {
- *    const decodedAndVerifiedVincentJWT = verify(jwt, 'https://myapp.com');
- *   } catch(e) {
- *    // Handle invalid/expired JWT casew
- *  }
- * ```
- * */
-export const verify = verifyJWT;
-
-/**
- * When a JWT is expired, you need to use {@link VincentWebAppClient.redirectToConsentPage} to get a new JWT
- * @inline
- * @expand
- * @function
- *
- * @example
- *  ```typescript
- *   import { jwt } from '@lit-protocol/vincent-app-sdk';
- *
- *   const { decode, isExpired } = jwt;
- *
- *   const decodedVincentJWT = decode(jwt);
- *   const isJWTExpired = isExpired(decodedVincentJWT);
- *
- *   if(!isJWTExpired) {
- *     // User is logged in
- *   } else {
- *     // User needs to get a new JWT
- *     vincentWebAppClient.redirectToConsentPage({redirectUri: window.location.href });
- *   }
- * ```
- * */
-export const isExpired = isJWTExpired;
+export type { JWTConfig, VincentJWT, VincentJWTPayload } from './types';

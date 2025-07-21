@@ -37,7 +37,7 @@ The following code uses an example Vincent Tool package for reference:
 
 ```typescript
 import { ethers } from 'ethers';
-import { getVincentToolClient } from '@lit-protocol/vincent-app-sdk';
+import { getVincentToolClient } from '@lit-protocol/vincent-app-sdk/toolClient';
 import { bundledVincentTool } from '@example-org/vincent-tool-example-erc20-transfer';
 
 const ethersSigner = new ethers.Wallet(process.env.VINCENT_APP_DELEGATEE_PRIVATE_KEY);
@@ -64,7 +64,7 @@ After creating an instance of the Tool Client, the `precheck` function is now co
 
 ```typescript
 import { ethers } from 'ethers';
-import { getVincentToolClient } from '@lit-protocol/vincent-app-sdk';
+import { getVincentToolClient } from '@lit-protocol/vincent-app-sdk/toolClient';
 import { bundledVincentTool } from '@example-org/vincent-tool-example-erc20-transfer';
 
 const ethersSigner = new ethers.Wallet(process.env.VINCENT_APP_DELEGATEE_PRIVATE_KEY);
@@ -130,7 +130,7 @@ After executing the `precheck` function and getting a success result, you can ex
 
 ```typescript
 import { ethers } from 'ethers';
-import { getVincentToolClient } from '@lit-protocol/vincent-app-sdk';
+import { getVincentToolClient } from '@lit-protocol/vincent-app-sdk/toolClient';
 import { bundledVincentTool } from '@example-org/vincent-tool-example-erc20-transfer';
 
 const ethersSigner = new ethers.Wallet(process.env.VINCENT_APP_DELEGATEE_PRIVATE_KEY);

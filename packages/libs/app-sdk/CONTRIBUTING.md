@@ -43,9 +43,9 @@ pnpm typedoc
 
 ## SDK Components
 
-### VincentWebAppClient
+### WebAuthClient
 
-The Vincent Web App Client provides methods for managing user authentication, JWT tokens, and consent flows in Vincent applications.
+The Vincent Web Auth Client provides methods for managing user authentication, JWT tokens, and consent flows in Vincent applications.
 
 ### VincentToolClient
 

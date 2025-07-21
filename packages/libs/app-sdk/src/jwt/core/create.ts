@@ -17,6 +17,7 @@ import { toBase64Url } from './utils/base64';
  *
  * @param pkpWallet - The PKP Ethers wallet instance that will be used for signing
  * @returns A signing function that takes data and returns a base64url-encoded signature
+ * @private
  * @example
  * ```typescript
  * const pkpWallet = new PKPEthersWallet({ ... });
@@ -24,7 +25,7 @@ import { toBase64Url } from './utils/base64';
  * const signature = await signer('data to sign');
  * ```
  */
-export function createPKPSigner(pkpWallet: PKPEthersWallet) {
+function createPKPSigner(pkpWallet: PKPEthersWallet) {
   /**
    * The actual signer function conforming to the did-jwt signer interface
    *
@@ -58,6 +59,7 @@ export function createPKPSigner(pkpWallet: PKPEthersWallet) {
  *
  * @param config - Configuration object containing all parameters for JWT creation
  * @returns A promise that resolves to the signed JWT string
+ * @hidden
  * @example
  * ```typescript
  * const jwt = await createPKPSignedJWT({
@@ -69,7 +71,7 @@ export function createPKPSigner(pkpWallet: PKPEthersWallet) {
  * });
  * ```
  */
-export async function createPKPSignedJWT(config: JWTConfig): Promise<string> {
+export async function create(config: JWTConfig): Promise<string> {
   const { app, pkpWallet, pkp, payload, expiresInMinutes, audience, authentication } = config;
   const signer = createPKPSigner(pkpWallet);
 

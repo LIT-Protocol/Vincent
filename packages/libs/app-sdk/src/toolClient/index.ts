@@ -1,6 +1,8 @@
 /** The VincentToolClient is used to handle all interactions with VincentTools -- both local execution of its precheck()
  * method and the execution of its `execute()` method via the LIT Action runtime.  The VincentToolClient also handles calling policy
  * precheck methods when they are defined, and returns all policy precheck results along with the tool precheck result.
+ *
+ * @packageDocumentation
  */
 
 // src/lib/toolClient/index.ts

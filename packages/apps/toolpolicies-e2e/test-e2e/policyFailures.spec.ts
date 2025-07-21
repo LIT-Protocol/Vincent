@@ -1,6 +1,9 @@
 import { formatEther } from 'viem';
 
-import { disconnectVincentToolClients, getVincentToolClient } from '@lit-protocol/vincent-app-sdk';
+import {
+  disconnectVincentToolClients,
+  getVincentToolClient,
+} from '@lit-protocol/vincent-app-sdk/toolClient';
 import { ethers } from 'ethers';
 import type { PermissionData } from '@lit-protocol/vincent-contracts-sdk';
 

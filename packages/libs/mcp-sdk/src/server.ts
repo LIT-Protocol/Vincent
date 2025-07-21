@@ -10,7 +10,7 @@
 import { LIT_NETWORK } from '@lit-protocol/constants';
 import { LitNodeClient } from '@lit-protocol/lit-node-client';
 import type { LitNodeClientConfig } from '@lit-protocol/types';
-import { utils } from '@lit-protocol/vincent-app-sdk';
+import { getDelegatorsAgentPkpAddresses } from '@lit-protocol/vincent-app-sdk/utils';
 import type { Implementation } from '@modelcontextprotocol/sdk/types.js';
 import type { ServerOptions } from '@modelcontextprotocol/sdk/server/index.js';
 import type { Transport } from '@modelcontextprotocol/sdk/shared/transport.js';
@@ -25,8 +25,6 @@ import {
   VincentAppDefSchema,
   VincentToolDefWithIPFS,
 } from './definitions';
-
-const { getDelegatorsAgentPkpAddresses } = utils;
 
 export interface DelegationMcpServerConfig {
   delegateeSigner: Signer;
@@ -136,7 +134,7 @@ export async function getVincentAppServer(
 
   const server = new VincentMcpServer({
     name: _vincentAppDefinition.name,
-    version: _vincentAppDefinition.version,
+    version: String(_vincentAppDefinition.version),
   });
 
   if (delegatorPkpEthAddress) {
@@ -160,8 +158,8 @@ export async function getVincentAppServer(
       buildMcpToolName(_vincentAppDefinition, 'get-delegators-eth-addresses'),
       `Tool to get the delegators pkp Eth addresses for the ${_vincentAppDefinition.name} Vincent App.`,
       async () => {
-        const appId = parseInt(_vincentAppDefinition.id, 10);
-        const appVersion = parseInt(_vincentAppDefinition.version, 10);
+        const appId = _vincentAppDefinition.id;
+        const appVersion = _vincentAppDefinition.version;
 
         const delegatorsPkpEthAddresses = await getDelegatorsAgentPkpAddresses({
           appId,
