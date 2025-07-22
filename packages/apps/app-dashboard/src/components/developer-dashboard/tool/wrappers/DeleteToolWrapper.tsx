@@ -56,12 +56,12 @@ export function DeleteToolWrapper() {
   };
   return (
     <div className="space-y-6">
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <h1 className="text-3xl font-bold text-gray-900">Delete Tool</h1>
-          <p className="text-gray-600 mt-2">
-            Permanently delete "{tool.title}" and all its data. This action cannot be undone.
-          </p>
+      <div className="w-full max-w-2xl mx-auto">
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            <h1 className="text-3xl font-bold text-gray-900">Delete Tool</h1>
+            <p className="text-gray-600 mt-2">Delete "{tool.title}" and all its data.</p>
+          </div>
         </div>
       </div>
 

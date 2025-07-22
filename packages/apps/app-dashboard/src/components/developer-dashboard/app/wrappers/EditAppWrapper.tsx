@@ -68,10 +68,12 @@ export function EditAppWrapper() {
   // Render with page UI and form component
   return (
     <div className="space-y-6">
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <h1 className="text-3xl font-bold text-gray-900">Edit {app.name}</h1>
-          <p className="text-gray-600 mt-2">Update your application settings and configuration</p>
+      <div className="w-full max-w-2xl mx-auto">
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            <h1 className="text-3xl font-bold text-gray-900">Edit {app.name}</h1>
+            <p className="text-gray-600 mt-2">Update your application settings and configuration</p>
+          </div>
         </div>
       </div>
 
