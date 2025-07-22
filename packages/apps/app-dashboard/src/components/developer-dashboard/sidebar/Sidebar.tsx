@@ -54,8 +54,10 @@ export function Sidebar({ userApps, userTools, userPolicies }: SidebarProps) {
 
   // Get the currently active app, tool, policy from route params
   const activeAppId = params.appId ? parseInt(params.appId) : null;
-  const activeToolPackageName = params.toolId ? decodeURIComponent(params.toolId) : null;
-  const activePolicyPackageName = params.policyId ? decodeURIComponent(params.policyId) : null;
+  const activeToolPackageName = params.packageName ? decodeURIComponent(params.packageName) : null;
+  const activePolicyPackageName = params.packageName
+    ? decodeURIComponent(params.packageName)
+    : null;
 
   // Fetch versions only for active items
   // FIXME: I couldn't find a better way to do this. Otherwise we have a dynamic number of queries,
@@ -443,7 +445,7 @@ export function Sidebar({ userApps, userTools, userPolicies }: SidebarProps) {
                                     : 'text-black'
                                 }
                               >
-                                Version {version.version}
+                                {version.version}
                                 {version.version === tool.activeVersion && (
                                   <span className="ml-2 text-xs opacity-75">(Active)</span>
                                 )}
@@ -603,7 +605,7 @@ export function Sidebar({ userApps, userTools, userPolicies }: SidebarProps) {
                                     : 'text-black'
                                 }
                               >
-                                Version {version.version}
+                                {version.version}
                                 {version.version === policy.activeVersion && (
                                   <span className="ml-2 text-xs opacity-75">(Active)</span>
                                 )}

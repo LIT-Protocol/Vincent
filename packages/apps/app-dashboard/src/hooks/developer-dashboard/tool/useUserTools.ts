@@ -5,7 +5,7 @@ import { Tool } from '@/types/developer-dashboard/appTypes';
 
 export function useUserTools() {
   const { authInfo } = useReadAuthInfo();
-  const address = authInfo?.userPKP?.ethAddress;
+  const address = authInfo?.agentPKP?.ethAddress;
 
   const {
     data: allTools,
