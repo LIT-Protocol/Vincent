@@ -127,33 +127,39 @@ export default function WebAuthn({
       )}
 
       <div className="flex justify-center">
-        <div className="space-y-6 w-1/2">
-          {registerWithWebAuthn && (
-            <div className={`border rounded-lg p-4 ${theme.cardBg} ${theme.cardBorder}`}>
-              <h2 className={`text-base font-medium mb-1 ${theme.text}`}>Register a new passkey</h2>
-              <p className={`text-sm mb-3 ${theme.textMuted}`}>Create a new passkey</p>
+        <div className="w-full max-w-2xl">
+          <div className="flex flex-col lg:flex-row lg:gap-6 space-y-6 lg:space-y-0">
+            {registerWithWebAuthn && (
+              <div
+                className={`w-1/2 lg:flex-1 mx-auto lg:mx-0 border rounded-lg p-4 ${theme.cardBg} ${theme.cardBorder}`}
+              >
+                <h2 className={`text-base font-medium mb-1 ${theme.text}`}>
+                  Register a new passkey
+                </h2>
+                <p className={`text-sm mb-3 ${theme.textMuted}`}>Create a new passkey</p>
+                <Button
+                  className={`py-3 px-4 w-full font-medium text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${theme.accentBg} ${theme.accentHover}`}
+                  onClick={handleRegister}
+                  disabled={loading}
+                >
+                  {loading ? 'Creating...' : 'Create'}
+                </Button>
+              </div>
+            )}
+
+            <div
+              className={`w-1/2 lg:flex-1 mx-auto lg:mx-0 border rounded-lg p-4 ${theme.cardBg} ${theme.cardBorder}`}
+            >
+              <h2 className={`text-base font-medium mb-1 ${theme.text}`}>Sign in with passkey</h2>
+              <p className={`text-sm mb-3 ${theme.textMuted}`}>Use an existing passkey</p>
               <Button
                 className={`py-3 px-4 w-full font-medium text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${theme.accentBg} ${theme.accentHover}`}
-                onClick={handleRegister}
+                onClick={handleAuthenticate}
                 disabled={loading}
               >
-                {loading ? 'Creating...' : 'Create a passkey'}
+                {loading ? 'Signing in...' : 'Sign in'}
               </Button>
             </div>
-          )}
-
-          <div className={`border rounded-lg p-4 ${theme.cardBg} ${theme.cardBorder}`}>
-            <h2 className={`text-base font-medium mb-1 ${theme.text}`}>Sign in with passkey</h2>
-            <p className={`text-sm mb-3 ${theme.textMuted}`}>
-              Use your existing passkey to sign in
-            </p>
-            <Button
-              className={`py-3 px-4 w-full font-medium text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${theme.accentBg} ${theme.accentHover}`}
-              onClick={handleAuthenticate}
-              disabled={loading}
-            >
-              {loading ? 'Signing in...' : 'Sign in with passkey'}
-            </Button>
           </div>
         </div>
       </div>
