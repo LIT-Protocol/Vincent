@@ -14,7 +14,7 @@ function UserDashboardLayout({ children, className }: ComponentProps<'div'>) {
         className,
       )}
     >
-      <main className="flex-1 p-8 flex justify-center">{children}</main>
+      <main className="flex-1 px-4 flex justify-center">{children}</main>
     </div>
   );
 }

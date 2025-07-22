@@ -1,4 +1,4 @@
-import { Settings, ExternalLink, FileCode } from 'lucide-react';
+import { Settings } from 'lucide-react';
 import { ConsentInfoMap } from '@/hooks/user-dashboard/consent/useConsentInfo';
 import { ThemeType } from './theme';
 
@@ -25,27 +25,39 @@ export function ToolHeader({ tool, toolVersion, consentInfoMap, theme }: ToolHea
           <h4 className={`font-semibold ${theme.text}`}>
             {consentInfoMap.toolsByPackageName[tool.toolPackageName]?.title || tool.toolPackageName}
           </h4>
-          <p className={`text-sm ${theme.textMuted} font-medium`}>
+          <div className={`flex items-center gap-2 text-sm ${theme.textMuted} font-medium mt-1`}>
+            <span>
+              {tool.toolPackageName} - v{tool.toolVersion}
+            </span>
             <a
               href={`https://www.npmjs.com/package/${tool.toolPackageName}/v/${tool.toolVersion}`}
               target="_blank"
               rel="noopener noreferrer"
-              className={`${theme.linkColor} hover:underline inline-flex items-center gap-1`}
+              className="hover:opacity-75 transition-opacity"
+              title={`View ${tool.toolPackageName} on npm`}
             >
-              {tool.toolPackageName} - v{tool.toolVersion}
-              <ExternalLink className="w-3 h-3" />
+              <div className="w-4 h-4 flex items-center justify-center">
+                <img src="/npm.png" alt="npm" className="w-full h-full object-contain" />
+              </div>
             </a>
-          </p>
+            {toolVersion && (
+              <a
+                href={`https://ipfs.io/ipfs/${toolVersion.ipfsCid}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:opacity-75 transition-opacity"
+                title={`View ${toolVersion.ipfsCid} on IPFS`}
+              >
+                <div className="w-4 h-4 flex items-center justify-center">
+                  <img src="/ipfs.png" alt="IPFS" className="w-full h-full object-contain" />
+                </div>
+              </a>
+            )}
+          </div>
           {consentInfoMap.toolsByPackageName[tool.toolPackageName]?.description && (
             <p className={`text-sm ${theme.textSubtle} mt-1`}>
               {consentInfoMap.toolsByPackageName[tool.toolPackageName].description}
             </p>
-          )}
-          {toolVersion && (
-            <div className="flex items-center gap-2 mt-2">
-              <FileCode className={`w-3 h-3 ${theme.textMuted}`} />
-              <span className={`text-xs ${theme.textSubtle} font-mono`}>{toolVersion.ipfsCid}</span>
-            </div>
           )}
         </div>
       </div>

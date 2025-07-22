@@ -1,4 +1,4 @@
-import { FileText, FileCode, ExternalLink } from 'lucide-react';
+import { FileText } from 'lucide-react';
 import { ConsentInfoMap } from '@/hooks/user-dashboard/consent/useConsentInfo';
 import { Card, CardContent } from '@/components/shared/ui/card';
 import { PolicyForm, PolicyFormRef } from './PolicyForm';
@@ -45,26 +45,40 @@ export function RequiredPolicies({
                   {consentInfoMap.policiesByPackageName[policy.packageName]?.title ||
                     policy.packageName}
                 </h6>
-                <p className={`text-sm ${theme.textMuted} font-medium`}>
+                <div
+                  className={`flex items-center gap-2 text-sm ${theme.textMuted} font-medium mt-1`}
+                >
+                  <span>
+                    {policy.packageName} - v{policy.version}
+                  </span>
                   <a
                     href={`https://www.npmjs.com/package/${policy.packageName}/v/${policy.version}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className={`${theme.linkColor} hover:underline inline-flex items-center gap-1`}
+                    className="hover:opacity-75 transition-opacity"
+                    title={`View ${policy.packageName} on npm`}
                   >
-                    {policy.packageName} - v{policy.version}
-                    <ExternalLink className="w-3 h-3" />
+                    <div className="w-4 h-4 flex items-center justify-center">
+                      <img src="/npm.png" alt="npm" className="w-full h-full object-contain" />
+                    </div>
                   </a>
-                </p>
+                  <a
+                    href={`https://ipfs.io/ipfs/${policy.ipfsCid}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:opacity-75 transition-opacity"
+                    title={`View ${policy.ipfsCid} on IPFS`}
+                  >
+                    <div className="w-4 h-4 flex items-center justify-center">
+                      <img src="/ipfs.png" alt="IPFS" className="w-full h-full object-contain" />
+                    </div>
+                  </a>
+                </div>
                 {consentInfoMap.policiesByPackageName[policy.packageName]?.description && (
                   <p className={`text-sm ${theme.textSubtle} mt-2`}>
                     {consentInfoMap.policiesByPackageName[policy.packageName].description}
                   </p>
                 )}
-                <div className="flex items-center gap-2 mt-3">
-                  <FileCode className={`w-3 h-3 ${theme.textMuted}`} />
-                  <span className={`text-xs ${theme.textSubtle} font-mono`}>{policy.ipfsCid}</span>
-                </div>
 
                 {/* Policy Form */}
                 <PolicyForm

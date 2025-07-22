@@ -11,7 +11,6 @@ import { useAddPermittedActions } from '@/hooks/user-dashboard/consent/useAddPer
 import { ConsentAppHeader } from './ui/ConsentAppHeader';
 import { AppsInfo } from './ui/AppInfo';
 import { ActionButtons } from './ui/ActionButtons';
-import { InfoBanner } from './ui/InfoBanner';
 import { StatusCard } from './ui/StatusCard';
 import { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
 import { litNodeClient } from '@/utils/user-dashboard/lit';
@@ -129,9 +128,6 @@ export function ConsentPage({ consentInfoMap, readAuthInfo }: ConsentPageProps) 
         />
 
         <div className="px-6 py-8 space-y-6">
-          {/* Warning Banner */}
-          <InfoBanner theme={themeStyles} />
-
           {/* App Header */}
           <ConsentAppHeader app={consentInfoMap.app} theme={themeStyles} />
 
