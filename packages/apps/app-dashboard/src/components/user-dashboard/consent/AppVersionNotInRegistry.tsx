@@ -51,14 +51,6 @@ export function AppVersionNotInRegistryConsent({
           {/* App Header */}
           {appData && <ConsentAppHeader app={appData} theme={themeStyles} />}
 
-          {/* Status Banner */}
-          <InfoBanner
-            theme={themeStyles}
-            type="warning"
-            title="App Version Not Published"
-            message={`The app's active version (${appData.activeVersion}) is not yet published in the on-chain registry. The app developer needs to publish this version before you can grant permissions.`}
-          />
-
           {/* Info Card */}
           <Card
             className={`backdrop-blur-xl ${themeStyles.cardBg} border ${themeStyles.cardBorder}`}

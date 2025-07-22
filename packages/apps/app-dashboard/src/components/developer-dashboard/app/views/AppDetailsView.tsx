@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { App } from '@/types/developer-dashboard/appTypes';
 import { App as ContractApp } from '@lit-protocol/vincent-contracts-sdk';
 import { AppDetail } from '@/components/developer-dashboard/ui/AppDetail';
@@ -5,7 +6,8 @@ import { Logo } from '@/components/shared/ui/Logo';
 import { StatusMessage } from '@/components/shared/ui/statusMessage';
 import { AppPublishedButtons } from '../wrappers/ui/AppPublishedButtons';
 import { AppUnpublishedButtons } from '../wrappers/ui/AppUnpublishedButtons';
-import { CheckCircle, XCircle } from 'lucide-react';
+import { CheckCircle, XCircle, Share } from 'lucide-react';
+import { ConnectPageModal } from '../../ui/ConnectPageModal';
 
 interface AppDetailsViewProps {
   selectedApp: App;
@@ -20,6 +22,7 @@ export function AppDetailsView({
   blockchainAppData,
   refetchBlockchainData,
 }: AppDetailsViewProps) {
+  const [isConnectModalOpen, setIsConnectModalOpen] = useState(false);
   const isPublished = blockchainAppData !== null;
   const isAppDeletedRegistry = selectedApp.isDeleted;
 
@@ -28,164 +31,184 @@ export function AppDetailsView({
     : selectedApp.delegateeAddresses;
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <h1 className="text-3xl font-bold text-gray-900">{selectedApp.name}</h1>
-          <p className="text-gray-600 mt-2">{selectedApp.description}</p>
-        </div>
-        <div className="ml-6 flex-shrink-0">
-          {selectedApp.logo && selectedApp.logo.length >= 10 ? (
-            <Logo
-              logo={selectedApp.logo}
-              alt="App logo"
-              className="max-w-24 max-h-24 object-contain rounded-lg border shadow-sm bg-gray-50"
-            />
-          ) : (
-            <div className="w-16 h-16 bg-gray-100 rounded-lg border flex items-center justify-center">
-              <img src="/logo.svg" alt="Vincent logo" className="w-8 h-8 opacity-50" />
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Publish Status Messages */}
-      {isPublished && <StatusMessage message="This app is registered on-chain." type="info" />}
-
-      {/* App Management Actions */}
-      <div className="bg-white border rounded-lg">
-        <div className="p-6 border-b border-gray-100">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-lg font-medium text-gray-900">App Management</h3>
-              <p className="text-gray-600 text-sm mt-1">Manage your application settings</p>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-500">Registry Status:</span>
-              <span
-                className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
-                  !isAppDeletedRegistry ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                }`}
+    <>
+      <div className="space-y-6">
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            <div className="flex items-center gap-3">
+              <h1 className="text-3xl font-bold text-gray-900">{selectedApp.name}</h1>
+              <button
+                onClick={() => setIsConnectModalOpen(true)}
+                className="p-2 text-orange-600 hover:text-orange-700 hover:bg-orange-50 rounded-lg transition-colors"
+                title="Share connect page"
               >
-                {!isAppDeletedRegistry ? (
-                  <>
-                    <CheckCircle className="h-3 w-3" />
-                    Active
-                  </>
-                ) : (
-                  <>
-                    <XCircle className="h-3 w-3" />
-                    Deleted
-                  </>
-                )}
-              </span>
+                <Share className="h-5 w-5" />
+              </button>
             </div>
+            <p className="text-gray-600 mt-2">{selectedApp.description}</p>
+          </div>
+          <div className="ml-6 flex-shrink-0">
+            {selectedApp.logo && selectedApp.logo.length >= 10 ? (
+              <Logo
+                logo={selectedApp.logo}
+                alt="App logo"
+                className="max-w-24 max-h-24 object-contain rounded-lg border shadow-sm bg-gray-50"
+              />
+            ) : (
+              <div className="w-16 h-16 bg-gray-100 rounded-lg border flex items-center justify-center">
+                <img src="/logo.svg" alt="Vincent logo" className="w-8 h-8 opacity-50" />
+              </div>
+            )}
           </div>
         </div>
-        <div className="p-6">
-          {isPublished ? (
-            <AppPublishedButtons
-              appData={selectedApp}
-              appBlockchainData={blockchainAppData}
-              onOpenMutation={onOpenMutation}
-              refetchBlockchainData={refetchBlockchainData}
-            />
-          ) : (
-            <AppUnpublishedButtons onOpenMutation={onOpenMutation} />
-          )}
-        </div>
-      </div>
 
-      <div className="space-y-6">
+        {/* Publish Status Messages */}
+        {isPublished && <StatusMessage message="This app is registered on-chain." type="info" />}
+
+        {/* App Management Actions */}
         <div className="bg-white border rounded-lg">
           <div className="p-6 border-b border-gray-100">
-            <h3 className="text-lg font-medium text-gray-900">App Information</h3>
-            <p className="text-gray-600 text-sm mt-1">Application details</p>
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-medium text-gray-900">App Management</h3>
+                <p className="text-gray-600 text-sm mt-1">Manage your application settings</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-500">Registry Status:</span>
+                <span
+                  className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
+                    !isAppDeletedRegistry
+                      ? 'bg-green-100 text-green-800'
+                      : 'bg-red-100 text-red-800'
+                  }`}
+                >
+                  {!isAppDeletedRegistry ? (
+                    <>
+                      <CheckCircle className="h-3 w-3" />
+                      Active
+                    </>
+                  ) : (
+                    <>
+                      <XCircle className="h-3 w-3" />
+                      Deleted
+                    </>
+                  )}
+                </span>
+              </div>
+            </div>
           </div>
           <div className="p-6">
-            <div className="grid grid-cols-1 gap-4">
-              <AppDetail label="App ID">
-                <span className="text-gray-900 text-sm">{selectedApp.appId}</span>
-              </AppDetail>
+            {isPublished ? (
+              <AppPublishedButtons
+                appData={selectedApp}
+                appBlockchainData={blockchainAppData}
+                onOpenMutation={onOpenMutation}
+                refetchBlockchainData={refetchBlockchainData}
+              />
+            ) : (
+              <AppUnpublishedButtons onOpenMutation={onOpenMutation} />
+            )}
+          </div>
+        </div>
 
-              <AppDetail label="Active Version">
-                <span className="text-gray-900 text-sm">{selectedApp.activeVersion}</span>
-              </AppDetail>
-
-              {selectedApp.contactEmail && (
-                <AppDetail label="Contact Email">
-                  <span className="text-gray-900 text-sm">{selectedApp.contactEmail}</span>
+        <div className="space-y-6">
+          <div className="bg-white border rounded-lg">
+            <div className="p-6 border-b border-gray-100">
+              <h3 className="text-lg font-medium text-gray-900">App Information</h3>
+              <p className="text-gray-600 text-sm mt-1">Application details</p>
+            </div>
+            <div className="p-6">
+              <div className="grid grid-cols-1 gap-4">
+                <AppDetail label="App ID">
+                  <span className="text-gray-900 text-sm">{selectedApp.appId}</span>
                 </AppDetail>
-              )}
 
-              {selectedApp.appUserUrl && (
-                <AppDetail label="App User URL">
-                  <a
-                    href={selectedApp.appUserUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-600 hover:underline text-sm"
-                  >
-                    {selectedApp.appUserUrl}
-                  </a>
+                <AppDetail label="Active Version">
+                  <span className="text-gray-900 text-sm">{selectedApp.activeVersion}</span>
                 </AppDetail>
-              )}
 
-              {selectedApp.redirectUris && selectedApp.redirectUris.length > 0 && (
-                <AppDetail label="Redirect URIs">
-                  <div className="space-y-1">
-                    {selectedApp.redirectUris.map((uri) => (
-                      <div key={uri}>
-                        <span className="inline-block bg-blue-50 text-blue-700 px-2 py-1 rounded text-sm">
-                          {uri}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
+                {selectedApp.contactEmail && (
+                  <AppDetail label="Contact Email">
+                    <span className="text-gray-900 text-sm">{selectedApp.contactEmail}</span>
+                  </AppDetail>
+                )}
+
+                {selectedApp.appUserUrl && (
+                  <AppDetail label="App User URL">
+                    <a
+                      href={selectedApp.appUserUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:underline text-sm"
+                    >
+                      {selectedApp.appUserUrl}
+                    </a>
+                  </AppDetail>
+                )}
+
+                {selectedApp.redirectUris && selectedApp.redirectUris.length > 0 && (
+                  <AppDetail label="Redirect URIs">
+                    <div className="space-y-1">
+                      {selectedApp.redirectUris.map((uri) => (
+                        <div key={uri}>
+                          <span className="inline-block bg-blue-50 text-blue-700 px-2 py-1 rounded text-sm">
+                            {uri}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </AppDetail>
+                )}
+
+                {delegateeAddresses && delegateeAddresses.length > 0 && (
+                  <AppDetail label="Delegatee Addresses">
+                    <div className="space-y-1">
+                      {delegateeAddresses.map((address) => (
+                        <div key={address}>
+                          <span className="inline-block bg-blue-50 text-blue-700 px-2 py-1 rounded text-sm">
+                            {address}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </AppDetail>
+                )}
+
+                {selectedApp.deploymentStatus && (
+                  <AppDetail label="Deployment Status">
+                    <span
+                      className={`inline-block px-2 py-1 rounded text-sm font-medium ${
+                        selectedApp.deploymentStatus === 'prod'
+                          ? 'bg-green-100 text-green-800'
+                          : selectedApp.deploymentStatus === 'test'
+                            ? 'bg-yellow-100 text-yellow-800'
+                            : 'bg-gray-100 text-gray-800'
+                      }`}
+                    >
+                      {selectedApp.deploymentStatus.toUpperCase()}
+                    </span>
+                  </AppDetail>
+                )}
+
+                <AppDetail label="Created At">
+                  <span className="text-gray-900 text-sm">{selectedApp.createdAt}</span>
                 </AppDetail>
-              )}
 
-              {delegateeAddresses && delegateeAddresses.length > 0 && (
-                <AppDetail label="Delegatee Addresses">
-                  <div className="space-y-1">
-                    {delegateeAddresses.map((address) => (
-                      <div key={address}>
-                        <span className="inline-block bg-blue-50 text-blue-700 px-2 py-1 rounded text-sm">
-                          {address}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
+                <AppDetail label="Updated At" isLast>
+                  <span className="text-gray-900 text-sm">{selectedApp.updatedAt}</span>
                 </AppDetail>
-              )}
-
-              {selectedApp.deploymentStatus && (
-                <AppDetail label="Deployment Status">
-                  <span
-                    className={`inline-block px-2 py-1 rounded text-sm font-medium ${
-                      selectedApp.deploymentStatus === 'prod'
-                        ? 'bg-green-100 text-green-800'
-                        : selectedApp.deploymentStatus === 'test'
-                          ? 'bg-yellow-100 text-yellow-800'
-                          : 'bg-gray-100 text-gray-800'
-                    }`}
-                  >
-                    {selectedApp.deploymentStatus.toUpperCase()}
-                  </span>
-                </AppDetail>
-              )}
-
-              <AppDetail label="Created At">
-                <span className="text-gray-900 text-sm">{selectedApp.createdAt}</span>
-              </AppDetail>
-
-              <AppDetail label="Updated At" isLast>
-                <span className="text-gray-900 text-sm">{selectedApp.updatedAt}</span>
-              </AppDetail>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+
+      <ConnectPageModal
+        isOpen={isConnectModalOpen}
+        onClose={() => setIsConnectModalOpen(false)}
+        appId={selectedApp.appId}
+        redirectUris={selectedApp.redirectUris || []}
+      />
+    </>
   );
 }

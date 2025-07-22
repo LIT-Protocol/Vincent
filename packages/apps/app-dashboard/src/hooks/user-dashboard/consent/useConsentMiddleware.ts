@@ -50,27 +50,38 @@ export const useConsentMiddleware = ({
       return;
     }
 
+    // Wait for appData to be fully loaded before proceeding
+    if (!appData) {
+      setState({
+        isPermitted: null,
+        appExists: null,
+        activeVersionExists: null,
+        userPermittedVersion: null,
+        isLoading: true,
+        error: null,
+      });
+      return;
+    }
+
     const checkPermitted = async () => {
       try {
-        // Check if the app's active version is published in the registry (if we have app data)
-        if (appData?.activeVersion) {
-          const appVersionResult = await getAppVersion({
-            signer: readOnlySigner,
-            args: { appId, version: appData.activeVersion },
-          });
+        // Always check if the app's active version is published in the registry
+        const appVersionResult = await getAppVersion({
+          signer: readOnlySigner,
+          args: { appId, version: appData.activeVersion! },
+        });
 
-          // If getAppVersion returns null, it means the app version is not registered
-          if (appVersionResult === null) {
-            setState({
-              isPermitted: null,
-              appExists: true,
-              activeVersionExists: false,
-              userPermittedVersion: null,
-              isLoading: false,
-              error: null,
-            });
-            return;
-          }
+        // If getAppVersion returns null, it means the app version is not registered
+        if (appVersionResult === null) {
+          setState({
+            isPermitted: null,
+            appExists: true,
+            activeVersionExists: false,
+            userPermittedVersion: null,
+            isLoading: false,
+            error: null,
+          });
+          return;
         }
 
         const userApps = await getAllPermittedAppIdsForPkp({
