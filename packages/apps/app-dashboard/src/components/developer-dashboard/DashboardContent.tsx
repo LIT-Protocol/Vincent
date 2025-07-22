@@ -63,18 +63,29 @@ export function DashboardContent({
               </div>
               <div>
                 <p className="font-medium text-black">New to Vincent?</p>
-                <p className="text-sm text-gray-600">Get started with our quick start guide</p>
+                <p className="text-sm text-gray-600">
+                  Get started with the quick start guide and join the builder&apos;s thread
+                </p>
               </div>
             </div>
-            <Button
-              size="sm"
-              className="bg-orange-600 hover:bg-orange-700 text-white"
-              onClick={() =>
-                window.open('https://docs.heyvincent.ai/documents/Getting_Started.html', '_blank')
-              }
-            >
-              View Docs
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                size="sm"
+                className="bg-orange-600 hover:bg-orange-700 text-white"
+                onClick={() =>
+                  window.open('https://docs.heyvincent.ai/documents/Getting_Started.html', '_blank')
+                }
+              >
+                View Docs
+              </Button>
+              <Button
+                size="sm"
+                className="bg-orange-600 hover:bg-orange-700 text-white"
+                onClick={() => window.open('https://t.me/+vZWoA5k8jGoxZGEx', '_blank')}
+              >
+                Builder&apos;s Thread
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>

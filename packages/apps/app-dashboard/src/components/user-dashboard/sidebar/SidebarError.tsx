@@ -10,7 +10,6 @@ import {
   SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -55,11 +54,6 @@ export function SidebarError({ error }: SidebarErrorProps) {
 
       <SidebarContent className="px-4 py-6">
         <SidebarGroup className="space-y-4">
-          <SidebarGroupLabel
-            className={`px-3 text-sm font-semibold ${themeStyles.text} uppercase tracking-wide`}
-          >
-            Navigation
-          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu className="space-y-2">
               <SidebarMenuItem>
