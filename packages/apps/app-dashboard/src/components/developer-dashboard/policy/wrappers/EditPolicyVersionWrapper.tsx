@@ -79,14 +79,16 @@ export function EditPolicyVersionWrapper() {
   // Render with page UI and form component
   return (
     <div className="space-y-6">
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <h1 className="text-3xl font-bold text-gray-900">
-            Edit {policy.packageName} - Version {versionData.version}
-          </h1>
-          <p className="text-gray-600 mt-2">
-            Update the settings and configuration for this version
-          </p>
+      <div className="w-full max-w-4xl mx-auto">
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            <h1 className="text-3xl font-bold text-gray-900">
+              Edit {policy.packageName} - Version {versionData.version}
+            </h1>
+            <p className="text-gray-600 mt-2">
+              Update the settings and configuration for this version
+            </p>
+          </div>
         </div>
       </div>
 
