@@ -3,7 +3,6 @@ import { AlertTriangle, ArrowLeft, RefreshCw } from 'lucide-react';
 import { theme } from './ui/theme';
 import { ConsentAppHeader } from './ui/ConsentAppHeader';
 import { ConsentPageHeader } from './ui/ConsentPageHeader';
-import { InfoBanner } from './ui/InfoBanner';
 import { ActionCard } from './ui/ActionCard';
 import { useNavigate } from 'react-router-dom';
 import { UseReadAuthInfo } from '@/hooks/user-dashboard/useAuthInfo';
