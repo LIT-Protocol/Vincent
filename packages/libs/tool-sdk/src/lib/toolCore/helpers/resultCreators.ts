@@ -1,13 +1,14 @@
 // src/lib/toolCore/helpers/resultCreators.ts
 
-import {
+import type { z, ZodType } from 'zod';
+
+import type {
   ToolResultFailure,
   ToolResultFailureNoResult,
   ToolResultSuccess,
   ToolResultSuccessNoResult,
+  SchemaValidationError,
 } from '../../types';
-
-import { z, ZodType } from 'zod';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -23,54 +24,67 @@ export function createToolSuccessResult<T>(args?: {
 }
 
 export function createToolFailureResult({
-  message,
+  runtimeError,
+  schemaValidationError,
 }: {
-  message?: string;
+  runtimeError?: string;
+  schemaValidationError?: SchemaValidationError;
 }): ToolResultFailureNoResult;
 export function createToolFailureResult<T>({
-  message,
+  runtimeError,
   result,
+  schemaValidationError,
 }: {
   result: T;
-  message?: string;
+  runtimeError?: string;
+  schemaValidationError?: SchemaValidationError;
 }): ToolResultFailure<T>;
 export function createToolFailureResult<T>({
-  message,
+  runtimeError,
   result,
+  schemaValidationError,
 }: {
   result?: T;
-  message?: string;
+  runtimeError?: string;
+  schemaValidationError?: SchemaValidationError;
 }): ToolResultFailure<T> | ToolResultFailureNoResult {
   if (result === undefined) {
     return {
       success: false,
-      error: message,
+      runtimeError: runtimeError,
       result: undefined as never,
+      ...(schemaValidationError ? { schemaValidationError } : {}),
     };
   }
 
   return {
     success: false,
-    error: message,
+    runtimeError: runtimeError,
     result,
+    ...(schemaValidationError ? { schemaValidationError } : {}),
   };
 }
 
-export function createToolFailureNoResult(message: string): ToolResultFailureNoResult {
-  return createToolFailureResult({ message });
+export function createToolFailureNoResult(
+  runtimeError: string,
+  schemaValidationError?: SchemaValidationError,
+): ToolResultFailureNoResult {
+  return createToolFailureResult({ runtimeError, schemaValidationError });
 }
 
 export function wrapFailure<T extends z.ZodType<any, any, any>>(
   value: z.infer<T>,
-  message?: string,
+  runtimeError?: string,
+  schemaValidationError?: SchemaValidationError,
 ): ToolResultFailure<z.infer<T>> {
-  return createToolFailureResult({ result: value, message });
+  return createToolFailureResult({ result: value, runtimeError, schemaValidationError });
 }
 
 export function wrapNoResultFailure<T extends ZodType<any, any, any> | undefined>(
-  message: string,
+  runtimeError: string,
+  schemaValidationError?: SchemaValidationError,
 ): T extends ZodType<any, any, any> ? ToolResultFailure<z.infer<T>> : ToolResultFailureNoResult {
-  return createToolFailureNoResult(message) as any;
+  return createToolFailureNoResult(runtimeError, schemaValidationError) as any;
 }
 
 export function wrapSuccess<T extends z.ZodType<any, any, any>>(

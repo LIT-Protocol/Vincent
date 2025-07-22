@@ -1,3 +1,5 @@
+import type { BigNumber } from 'ethers';
+
 export interface PolicyWithParameters {
   policyIpfsCid: string;
   policyParameterValues: string;
@@ -16,7 +18,29 @@ export interface PermissionDataOnChain {
 
 export interface ToolExecutionValidation {
   isPermitted: boolean;
-  appId: string;
-  appVersion: string;
+  appId: BigNumber;
+  appVersion: BigNumber;
   policies: PolicyWithParameters[];
+}
+
+export interface AppVersionChain {
+  version: BigNumber;
+  enabled: boolean;
+  tools: {
+    toolIpfsCid: string;
+    policyIpfsCids: string[];
+  }[];
+}
+
+export interface AppChain {
+  id: BigNumber;
+  isDeleted: boolean;
+  manager: string;
+  latestVersion: BigNumber;
+  delegatees: string[];
+}
+
+export interface AppWithVersionsChain {
+  app: AppChain;
+  versions: AppVersionChain[];
 }

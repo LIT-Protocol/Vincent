@@ -1,10 +1,12 @@
 import fs from 'fs';
 import path from 'path';
-import { registry } from '../lib/openApi/baseRegistry';
+
 import { OpenApiGeneratorV3 } from '@asteasolutions/zod-to-openapi';
+
+import { addToRegistry as addAppToRegistry } from '../lib/openApi/app';
+import { registry } from '../lib/openApi/baseRegistry';
 import { addToRegistry as addPolicyToRegistry } from '../lib/openApi/policy';
 import { addToRegistry as addToolToRegistry } from '../lib/openApi/tool';
-import { addToRegistry as addAppToRegistry } from '../lib/openApi/app';
 
 addAppToRegistry(registry);
 addToolToRegistry(registry);

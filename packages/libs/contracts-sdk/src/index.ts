@@ -16,14 +16,14 @@ export { permitApp, unPermitApp, setToolPolicyParameters } from './facets/User';
 export {
   getAppById,
   getAppVersion,
-  getAppsByManager,
-  getAppByDelegatee,
-  getDelegatedAgentPkpTokenIds,
+  getAppsByManagerAddress,
+  getAppByDelegateeAddress,
+  getDelegatedPkpEthAddresses,
 } from './facets/AppView';
 
 // Facets/UserView exports
 export {
-  getAllRegisteredAgentPkps,
+  getAllRegisteredAgentPkpEthAddresses,
   getPermittedAppVersionForPkp,
   getAllPermittedAppIdsForPkp,
   getAllToolsAndPoliciesForApp,
@@ -59,8 +59,8 @@ export type {
   AppWithVersions,
   GetAppByDelegateeParams,
   GetAppByDelegateeOptions,
-  GetDelegatedAgentPkpTokenIdsParams,
-  GetDelegatedAgentPkpTokenIdsOptions,
+  GetDelegatedPkpEthAddressesParams,
+  GetDelegatedPkpEthAddressesOptions,
 } from './types/App';
 
 // Types/User exports

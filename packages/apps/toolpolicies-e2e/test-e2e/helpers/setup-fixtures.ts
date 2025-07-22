@@ -1,7 +1,7 @@
 import { ethers } from 'ethers';
 import type { PermissionData } from '@lit-protocol/vincent-contracts-sdk';
 import {
-  getAppByDelegatee,
+  getAppByDelegateeAddress,
   permitApp,
   registerApp,
   removeDelegatee,
@@ -48,13 +48,13 @@ export async function removeAppDelegateeIfNeeded(): Promise<void> {
   let registeredApp = null;
   try {
     // Use the contracts-sdk method to get the app by delegatee
-    registeredApp = await getAppByDelegatee({
+    registeredApp = await getAppByDelegateeAddress({
       signer: new ethers.Wallet(
         TEST_APP_MANAGER_PRIVATE_KEY,
         new ethers.providers.JsonRpcProvider(YELLOWSTONE_RPC_URL),
       ),
       args: {
-        delegatee: TEST_APP_DELEGATEE_ACCOUNT.address,
+        delegateeAddress: TEST_APP_DELEGATEE_ACCOUNT.address,
       },
     });
 
@@ -79,12 +79,11 @@ export async function removeAppDelegateeIfNeeded(): Promise<void> {
           new ethers.providers.JsonRpcProvider(YELLOWSTONE_RPC_URL),
         ),
         args: {
-          appId: registeredApp.id.toString(),
-          delegatee: TEST_APP_DELEGATEE_ACCOUNT.address,
+          appId: registeredApp.id,
+          delegateeAddress: TEST_APP_DELEGATEE_ACCOUNT.address,
         },
       });
 
-      expect(result.success).toBe(true);
       console.log(
         `ℹ️  Removed Delegatee from App ID: ${registeredApp.id}\nTx hash: ${result.txHash}`,
       );
@@ -127,15 +126,15 @@ export async function registerNewApp(
   testConfig: TestConfig,
   testConfigPath: string,
 ): Promise<TestConfig> {
-  const randomAppId = generateRandomAppId().toString();
-  const { txHash, newAppVersion } = await registerApp({
+  const randomAppId = generateRandomAppId();
+  const { txHash } = await registerApp({
     signer: new ethers.Wallet(
       TEST_APP_MANAGER_PRIVATE_KEY,
       new ethers.providers.JsonRpcProvider(YELLOWSTONE_RPC_URL),
     ),
     args: {
       appId: randomAppId,
-      delegatees: DELEGATEES,
+      delegateeAddresses: DELEGATEES,
       versionTools: {
         toolIpfsCids: toolIpfsCids,
         toolPolicies: toolPolicies,
@@ -143,11 +142,8 @@ export async function registerNewApp(
     },
   });
 
-  // First version should _always_ be 1
-  expect(newAppVersion).toBe('1');
-
   testConfig.appId = randomAppId;
-  testConfig.appVersion = '1';
+  testConfig.appVersion = 1;
   saveTestConfig(testConfigPath, testConfig);
   console.log(`Registered new App with ID: ${testConfig.appId}\nTx hash: ${txHash}`);
 
@@ -169,14 +165,13 @@ export async function permitAppVersionForAgentWalletPkp(
       new ethers.providers.JsonRpcProvider(YELLOWSTONE_RPC_URL),
     ),
     args: {
-      pkpTokenId: testConfig.userPkp!.tokenId!,
-      appId: testConfig.appId!.toString(),
+      pkpEthAddress: testConfig.userPkp!.ethAddress!,
+      appId: testConfig.appId!,
       appVersion: testConfig.appVersion!,
       permissionData: permissionData,
     },
   });
 
-  expect(result.success).toBe(true);
   console.log(
     `Permitted App with ID ${testConfig.appId} and version ${testConfig.appVersion} for Agent Wallet PKP with token id ${testConfig.userPkp!.tokenId}\nTx hash: ${result.txHash}`,
   );

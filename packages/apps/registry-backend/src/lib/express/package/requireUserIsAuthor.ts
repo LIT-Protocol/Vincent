@@ -1,7 +1,9 @@
-import { Request, Response, NextFunction } from 'express';
-import { RequestWithTool } from '../tool/requireTool';
-import { RequestWithPolicy } from '../policy/requirePolicy';
-import { RequestWithVincentUser } from '../requireVincentAuth';
+import type { Request, Response, NextFunction } from 'express';
+
+import type { RequestWithPolicy } from '../policy/requirePolicy';
+import type { RequestWithVincentUser } from '../requireVincentAuth';
+import type { RequestWithTool } from '../tool/requireTool';
+
 import { createDebugger } from '../../../../debug';
 
 // Create a debug instance for this middleware

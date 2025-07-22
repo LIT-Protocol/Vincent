@@ -1,11 +1,15 @@
 // src/lib/policyCore/helpers/zod.ts
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { z, ZodType } from 'zod';
-import { PolicyResponseDeny, ZodValidationDenyResult } from '../../types';
+import type { ZodType } from 'zod';
+
+import { z } from 'zod';
+
+import type { PolicyResponseDeny } from '../../types';
+
+import { bigintReplacer } from '../../utils';
 import { createDenyResult } from './resultCreators';
 import { isPolicyDenyResponse, isPolicyResponse } from './typeGuards';
-import { bigintReplacer } from '../../utils';
 
 /**
  * Matches the minimum structure of a PolicyResponse.
@@ -32,15 +36,19 @@ export function validateOrDeny<T extends ZodType<any, any, any>>(
   schema: T,
   phase: 'evaluate' | 'precheck' | 'commit',
   stage: 'input' | 'output',
-): z.infer<T> | PolicyResponseDeny<ZodValidationDenyResult> {
+): z.infer<T> | PolicyResponseDeny<never> {
   const parsed = schema.safeParse(value);
 
   if (!parsed.success) {
     const descriptor = stage === 'input' ? 'parameters' : 'result';
     const message = `Invalid ${phase} ${descriptor}.`;
-    return createDenyResult<ZodValidationDenyResult>({
-      message,
-      result: { zodError: parsed.error },
+    return createDenyResult({
+      runtimeError: message,
+      schemaValidationError: {
+        zodError: parsed.error,
+        phase,
+        stage,
+      },
     });
   }
 
@@ -63,7 +71,7 @@ export function getValidatedParamsOrDeny<
   userParamsSchema: TUserParams;
   phase: 'evaluate' | 'precheck';
 }):
-  | PolicyResponseDeny<ZodValidationDenyResult>
+  | PolicyResponseDeny<never>
   | {
       toolParams: z.infer<TToolParams>;
       userParams: z.infer<TUserParams>;

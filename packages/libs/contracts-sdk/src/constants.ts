@@ -15,3 +15,5 @@ export const COMBINED_ABI = buildDiamondInterface([
 ]);
 
 export const GAS_ADJUSTMENT_PERCENT = 120;
+
+export const DEFAULT_PAGE_SIZE = 100;

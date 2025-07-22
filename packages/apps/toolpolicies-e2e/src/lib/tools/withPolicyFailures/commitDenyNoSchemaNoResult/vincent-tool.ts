@@ -24,6 +24,7 @@ const commitDenyNoSchemaNoResultPolicy = createVincentToolPolicy({
  */
 export const vincentTool = createVincentTool({
   packageName: '@lit-protocol/test-tool@1.0.0',
+  toolDescription: 'This is a test tool.',
   toolParamsSchema: toolParams,
   supportedPolicies: supportedPoliciesForTool([commitDenyNoSchemaNoResultPolicy]),
   executeSuccessSchema: SuccessSchema,

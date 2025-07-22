@@ -9,9 +9,9 @@ import type {
   ToolExecuteResponseSuccessNoResult,
 } from './execute/types';
 
-/**
- * Runtime type guard for ToolResponse success result.
- */
+/** Type guard function that returns true only if the passed value is a successful tool response
+ * @category API
+ * */
 export function isToolResponseSuccess(
   value: unknown
 ): value is
@@ -25,9 +25,8 @@ export function isToolResponseSuccess(
   );
 }
 
-/**
- * Runtime type guard for ToolResponse failure result.
- */
+/** Type guard function that returns true only if the passed value is a failure tool response
+ *  @category API */
 export function isToolResponseFailure(
   value: unknown
 ): value is
@@ -41,9 +40,37 @@ export function isToolResponseFailure(
   );
 }
 
-/**
- * General ToolResponse shape check (success or failure).
- */
+/** Type guard function that returns true only if the passed value is a failure tool response that was a runtime error
+ * This could be caused by code `throw()`ing an error from inside tool or policy code, or by errors encountered in the
+ * Vincent SDK wrapping code that handles the execution of the tool/policies.
+ *
+ * This could also be the result of a schema validation error -- use {@link isToolResponseSchemaValidationFailure} to check
+ * to see if have a data validation error.
+ *
+ *  @category API*/
+export function isToolResponseRuntimeFailure(
+  value: unknown
+): value is ToolExecuteResponseFailureNoResult<Record<string, any>> {
+  if (!isToolResponseFailure(value)) return false;
+
+  return 'runtimeError' in value && typeof (value as any).runtimeError === 'string';
+}
+
+/** Type guard function that returns true only if the passed value is a failure tool response that was caused by
+ * a schema parsing failure.  All data inputs and outputs to / from Vincent Tools and Policies is validated using ZOD schemas.
+ *
+ * If this returns true, you can parse the `schemaValidationError` property in the response - it is a ZodError object.
+ * @category API */
+export function isToolResponseSchemaValidationFailure(
+  value: unknown
+): value is ToolExecuteResponseFailureNoResult<Record<string, any>> {
+  if (!isToolResponseFailure(value)) return false;
+  return (
+    'schemaValidationError' in value && typeof (value as any).schemaValidationError === 'object'
+  );
+}
+
+/** @hidden */
 export function isToolResponse(
   value: unknown
 ): value is ToolExecuteResponse<any, any, Record<string, any>> {
@@ -55,10 +82,7 @@ export function isToolResponse(
   );
 }
 
-/**
- * Runtime type guard for RemoteVincentToolExecutionResult.
- * Checks if a value has the shape of a RemoteVincentToolExecutionResult.
- */
+/** @hidden */
 export function isRemoteVincentToolExecutionResult(
   value: unknown
 ): value is RemoteVincentToolExecutionResult<any, any, Record<any, any>> {

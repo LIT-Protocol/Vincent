@@ -1,12 +1,12 @@
 import { decode, encode } from 'cbor2';
 import { arrayify } from 'ethers/lib/utils';
 
-import type { PermissionData } from '../types/User';
 import type {
   PermissionDataOnChain,
   PolicyWithParameters,
   ToolWithPolicies,
 } from '../types/internal';
+import type { PermissionData } from '../types/User';
 
 /**
  * Converts a policy parameters object to the flattened array format required by the contract

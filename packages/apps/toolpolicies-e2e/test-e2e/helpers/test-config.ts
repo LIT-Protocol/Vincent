@@ -1,8 +1,8 @@
 import fs from 'fs';
 
 export interface TestConfig {
-  appId: string | null;
-  appVersion: string | null;
+  appId: number | null;
+  appVersion: number | null;
   userPkp:
     | {
         tokenId: string | null;
@@ -63,8 +63,8 @@ export const saveTestConfig = (filePath: string, config: TestConfig) => {
   // Convert bigint values to strings for JSON serialization
   const serializableConfig = {
     ...config,
-    appId: config.appId !== null ? config.appId.toString() : null,
-    appVersion: config.appVersion !== null ? config.appVersion.toString() : null,
+    appId: config.appId !== null ? config.appId : null,
+    appVersion: config.appVersion !== null ? config.appVersion : null,
     capacityCreditInfo: {
       ...config.capacityCreditInfo,
       capacityTokenId: config.capacityCreditInfo?.capacityTokenId?.toString() || null,

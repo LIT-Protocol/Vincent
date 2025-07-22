@@ -1,14 +1,14 @@
+import type { Express } from 'express';
+
+import { Features } from '../../../features';
 import { Policy, PolicyVersion } from '../../mongo/policy';
+import { withSession } from '../../mongo/withSession';
+import { importPackage } from '../../packageImporter';
+import { requirePackage, withValidPackage } from '../package/requirePackage';
+import { requireUserIsAuthor } from '../package/requireUserIsAuthor';
+import { requireVincentAuth, withVincentAuth } from '../requireVincentAuth';
 import { requirePolicy, withPolicy } from './requirePolicy';
 import { requirePolicyVersion, withPolicyVersion } from './requirePolicyVersion';
-import { requireUserIsAuthor } from '../package/requireUserIsAuthor';
-import { requirePackage, withValidPackage } from '../package/requirePackage';
-import { requireVincentAuth, withVincentAuth } from '../requireVincentAuth';
-
-import type { Express } from 'express';
-import { withSession } from '../../mongo/withSession';
-import { Features } from '../../../features';
-import { importPackage } from '../../packageImporter';
 
 export function registerRoutes(app: Express) {
   // List all policies

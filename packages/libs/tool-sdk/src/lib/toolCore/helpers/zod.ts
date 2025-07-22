@@ -1,8 +1,12 @@
 // src/lib/toolCore/helpers/zod.ts
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { z, ZodType } from 'zod';
-import { ToolResultFailure, ToolResultFailureNoResult } from '../../types';
+import type { ZodType } from 'zod';
+
+import { z } from 'zod';
+
+import type { ToolResultFailure, ToolResultFailureNoResult } from '../../types';
+
 import { createToolFailureResult } from './resultCreators';
 import { isToolResult } from './typeGuards';
 
@@ -34,7 +38,7 @@ export function validateOrFail<T extends ZodType<any, any, any>>(
   schema: T,
   phase: 'precheck' | 'execute',
   stage: 'input' | 'output',
-): z.infer<T> | ToolResultFailure | ToolResultFailureNoResult {
+): z.infer<T> | ToolResultFailure<never> | ToolResultFailureNoResult {
   const effectiveSchema = schema ?? mustBeUndefinedSchema;
   const parsed = effectiveSchema.safeParse(value);
 
@@ -42,8 +46,12 @@ export function validateOrFail<T extends ZodType<any, any, any>>(
     const descriptor = stage === 'input' ? 'parameters' : 'result';
     const message = `Invalid ${phase} ${descriptor}.`;
     return createToolFailureResult({
-      message,
-      result: { zodError: parsed.error },
+      runtimeError: message,
+      schemaValidationError: {
+        zodError: parsed.error,
+        phase,
+        stage,
+      },
     });
   }
 

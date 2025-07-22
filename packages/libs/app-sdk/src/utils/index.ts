@@ -1,3 +1,3 @@
-import { getDelegatorsAgentPkpAddresses } from './delegation';
+export { getDelegatorsAgentPkpAddresses } from './delegation';
 
-export { getDelegatorsAgentPkpAddresses };
+export type { GetDelegatorsAgentPkpsParams } from './types';

@@ -1,9 +1,9 @@
 // src/type-inference-verification/create-vincent-tool-policy.ts
 
 import { z } from 'zod';
-import { createVincentPolicy } from '../lib/policyCore/vincentPolicy';
+
 import { asBundledVincentPolicy } from '../lib/policyCore/bundledPolicy/bundledPolicy';
-import { createVincentToolPolicy } from '../lib/policyCore/vincentPolicy';
+import { createVincentPolicy, createVincentToolPolicy } from '../lib/policyCore/vincentPolicy';
 
 const toolParamsSchema = z.object({
   x: z.string(),

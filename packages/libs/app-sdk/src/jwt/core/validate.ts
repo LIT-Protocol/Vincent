@@ -2,14 +2,12 @@ import * as secp256k1 from '@noble/secp256k1';
 import * as didJWT from 'did-jwt';
 import { JWT_ERROR } from 'did-jwt';
 import { ethers } from 'ethers';
-import { VincentJWT } from '../types';
-import {
-  isDefinedObject,
-  isJWTExpired,
-  processJWTSignature,
-  splitJWT,
-  validateJWTTime,
-} from './utils';
+import { arrayify, toUtf8Bytes } from 'ethers/lib/utils';
+
+import type { VincentJWT } from '../types';
+
+import { isExpired } from './isExpired';
+import { isDefinedObject, processJWTSignature, splitJWT, validateJWTTime } from './utils';
 
 /**
  * Decodes and verifies an {@link VincentJWT} token in string form
@@ -24,21 +22,37 @@ import {
  * @param {string} expectedAudience - String that should be in the audience claim(s)
  *
  * @returns {VincentJWT} The decoded VincentJWT object if it was verified successfully
+ *
+ * @category API
+ * @inline
+ * @expand
+ * @function
+ *
+ * @example
+ * ```typescript
+ *  import { verify } from '@lit-protocol/vincent-app-sdk/jwt';
+ *
+ *  try {
+ *    const decodedAndVerifiedVincentJWT = verify(jwt, 'https://myapp.com');
+ *   } catch(e) {
+ *    // Handle invalid/expired JWT casew
+ *  }
+ * ```
  */
-export function verifyJWT(jwt: string, expectedAudience: string): VincentJWT {
+export function verify(jwt: string, expectedAudience: string): VincentJWT {
   if (!expectedAudience) {
     throw new Error(`You must provide an expectedAudience`);
   }
 
-  const decoded = decodeJWT(jwt);
+  const decoded = decode(jwt);
   const { aud, exp, pkp } = decoded.payload;
 
   if (!exp) {
     throw new Error(`${JWT_ERROR.INVALID_JWT}: JWT does not contain an expiration claim (exp)`);
   }
 
-  const isExpired = isJWTExpired(decoded);
-  if (isExpired) {
+  const expired = isExpired(decoded);
+  if (expired) {
     throw new Error(`${JWT_ERROR.INVALID_JWT}: JWT expired at ${exp}`);
   }
 
@@ -67,20 +81,12 @@ export function verifyJWT(jwt: string, expectedAudience: string): VincentJWT {
     const r = signatureBytes.slice(0, 32);
     const s = signatureBytes.slice(32, 64);
 
-    // Process public key
-    let publicKey = pkp.publicKey;
-    if (publicKey.startsWith('0x')) {
-      publicKey = publicKey.substring(2);
-    }
-
-    const publicKeyBytes = Buffer.from(publicKey, 'hex');
+    const publicKeyBytes = arrayify(pkp.publicKey);
 
     // PKPEthersWallet.signMessage() adds Ethereum prefix, so we need to add it here too
     const ethPrefixedMessage = '\x19Ethereum Signed Message:\n' + signedData.length + signedData;
-    const messageBuffer = Buffer.from(ethPrefixedMessage, 'utf8');
-
-    const messageHash = ethers.utils.keccak256(messageBuffer);
-    const messageHashBytes = Buffer.from(messageHash.substring(2), 'hex');
+    const messageHash = ethers.utils.keccak256(toUtf8Bytes(ethPrefixedMessage));
+    const messageHashBytes = arrayify(messageHash);
 
     const signatureForSecp = new Uint8Array([...r, ...s]);
 
@@ -99,12 +105,42 @@ export function verifyJWT(jwt: string, expectedAudience: string): VincentJWT {
   }
 }
 
-/** This function uses the did-jwt library to decode a JWT string into its payload adding any extra Vincent fields
+/** Decodes a Vincent JWT in string form and returns an {@link VincentJWT} decoded object for your use
  *
- * @param {string} jwt - The JWT string to decode
- * @returns The decoded Vincent JWT fields
- */
-export function decodeJWT(jwt: string): VincentJWT {
+ * <div class="box info-box">
+ *   <p class="box-title info-box-title">
+ *     <span class="box-icon info-icon">Info</span> Note
+ *   </p>
+ * This method only <i><b>decodes</b></i> the JWT_ -- you still need to verify the JWT to be sure it is valid using {@link verify}.
+ * If the JWT is expired, you need to use a {@link webAuthClient.WebAuthClient | WebAuthClient} to get a new JWT.
+ *
+ * See {@link webAuthClient.getWebAuthClient | getWebAuthClient}
+ *
+ * </div>
+ * @inline
+ * @expand
+ * @function
+ * @category API
+ *
+ * @example
+ *  ```typescript
+ *   import { decode, isExpired } from '@lit-protocol/vincent-app-sdk/jwt';
+ *
+ *   const decodedVincentJWT = decode(jwt);
+ *   const isJWTExpired = isExpired(decodedVincentJWT);
+ *
+ *   if(!isJWTExpired) {
+ *     // User is logged in
+ *     // You still need to verify the JWT!
+ *   } else {
+ *     // User needs to get a new JWT
+ *     webAuthClient.redirectToDelegationAuthPage({redirectUri: window.location.href });
+ *   }
+ *
+
+ *  ```
+ * */
+export function decode(jwt: string): VincentJWT {
   const decodedJwt = didJWT.decodeJWT(jwt);
 
   const { app, authentication, pkp } = decodedJwt.payload;

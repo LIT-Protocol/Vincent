@@ -1,84 +1,159 @@
-import { Signer, Overrides } from 'ethers';
+import type { Signer, Overrides } from 'ethers';
 
 // ==================================================================================
 // App Mutation Types
 // ==================================================================================
 
+/**
+ * @category Interfaces
+ * @inline
+ * @expand
+ * */
 export interface AppVersionTools {
   toolIpfsCids: string[];
   toolPolicies: string[][];
 }
 
+/** @category Interfaces
+ * @inline
+ * @expand
+ * */
 export interface RegisterAppParams {
-  appId: string;
-  delegatees: string[];
+  appId: number;
+  delegateeAddresses: string[];
   versionTools: AppVersionTools;
 }
 
+/**
+ * @category Interfaces
+ * @inline
+ * @expand
+ * */
 export interface RegisterNextVersionParams {
-  appId: string;
+  appId: number;
   versionTools: AppVersionTools;
 }
 
+/**
+ * @category Interfaces
+ * @inline
+ * @expand
+ * */
 export interface RegisterAppOptions {
   signer: Signer;
   args: RegisterAppParams;
   overrides?: Overrides;
 }
 
+/**
+ * @category Interfaces
+ * @inline
+ * @expand
+ * */
 export interface RegisterNextVersionOptions {
   signer: Signer;
   args: RegisterNextVersionParams;
   overrides?: Overrides;
 }
+
+/**
+ * @category Interfaces
+ * @inline
+ * @expand
+ * */
 export interface EnableAppVersionParams {
-  appId: string;
-  appVersion: string;
+  appId: number;
+  appVersion: number;
   enabled: boolean;
 }
 
+/**
+ * @category Interfaces
+ * @inline
+ * @expand
+ * */
 export interface AddDelegateeParams {
-  appId: string;
-  delegatee: string;
+  appId: number;
+  delegateeAddress: string;
 }
 
+/**
+ * @category Interfaces
+ * @inline
+ * @expand
+ * */
 export interface RemoveDelegateeParams {
-  appId: string;
-  delegatee: string;
+  appId: number;
+  delegateeAddress: string;
 }
 
+/**
+ * @category Interfaces
+ * @inline
+ * @expand
+ * */
 export interface DeleteAppParams {
-  appId: string;
+  appId: number;
 }
 
+/**
+ * @category Interfaces
+ * @inline
+ * @expand
+ * */
 export interface UndeleteAppParams {
-  appId: string;
+  appId: number;
 }
 
+/**
+ * @category Interfaces
+ * @inline
+ * @expand
+ * */
 export interface EnableAppVersionOptions {
   signer: Signer;
   args: EnableAppVersionParams;
   overrides?: Overrides;
 }
 
+/**
+ * @category Interfaces
+ * @inline
+ * @expand
+ * */
 export interface AddDelegateeOptions {
   signer: Signer;
   args: AddDelegateeParams;
   overrides?: Overrides;
 }
 
+/**
+ * @category Interfaces
+ * @inline
+ * @expand
+ * */
 export interface RemoveDelegateeOptions {
   signer: Signer;
   args: RemoveDelegateeParams;
   overrides?: Overrides;
 }
 
+/**
+ * @category Interfaces
+ * @inline
+ * @expand
+ * */
 export interface DeleteAppOptions {
   signer: Signer;
   args: DeleteAppParams;
   overrides?: Overrides;
 }
 
+/**
+ * @category Interfaces
+ * @inline
+ * @expand
+ * */
 export interface UndeleteAppOptions {
   signer: Signer;
   args: UndeleteAppParams;
@@ -89,76 +164,147 @@ export interface UndeleteAppOptions {
 // App View Types
 // ==================================================================================
 
+/**
+ * @category Interfaces
+ * @inline
+ * @expand
+ * */
 export interface GetAppByIdParams {
-  appId: string;
+  appId: number;
 }
 
+/**
+ * @category Interfaces
+ * @inline
+ * @expand
+ * */
 export interface GetAppByIdOptions {
   signer: Signer;
   args: GetAppByIdParams;
 }
 
+/**
+ * @category Interfaces
+ * @inline
+ * @expand
+ * */
 export interface App {
-  id: string;
+  id: number;
   isDeleted: boolean;
   manager: string;
-  latestVersion: string;
-  delegatees: string[];
+  latestVersion: number;
+  delegateeAddresses: string[];
 }
 
+/**
+ * @category Interfaces
+ * @inline
+ * @expand
+ * */
 export interface GetAppVersionParams {
-  appId: string;
-  version: string;
+  appId: number;
+  version: number;
 }
 
+/**
+ * @category Interfaces
+ * @inline
+ * @expand
+ * */
 export interface GetAppVersionOptions {
   signer: Signer;
   args: GetAppVersionParams;
 }
 
+/**
+ * @category Interfaces
+ * @inline
+ * @expand
+ * */
 export interface Tool {
   toolIpfsCid: string;
   policyIpfsCids: string[];
 }
 
+/**
+ * @category Interfaces
+ * @inline
+ * @expand
+ * */
 export interface AppVersion {
-  version: string;
+  version: number;
   enabled: boolean;
-  delegatedAgentPkpTokenIds: string[];
   tools: Tool[];
 }
 
+/**
+ * @category Interfaces
+ * @inline
+ * @expand
+ * */
 export interface GetAppsByManagerParams {
-  manager: string;
+  managerAddress: string;
 }
 
+/**
+ * @category Interfaces
+ * @inline
+ * @expand
+ * */
 export interface GetAppsByManagerOptions {
   signer: Signer;
   args: GetAppsByManagerParams;
 }
 
+/**
+ * @category Interfaces
+ * @inline
+ * @expand
+ * */
 export interface AppWithVersions {
   app: App;
   versions: AppVersion[];
 }
 
+/**
+ * @category Interfaces
+ * @inline
+ * @expand
+ * */
 export interface GetAppByDelegateeParams {
-  delegatee: string;
+  delegateeAddress: string;
 }
 
+/**
+ * @category Interfaces
+ * @inline
+ * @expand
+ * */
 export interface GetAppByDelegateeOptions {
   signer: Signer;
   args: GetAppByDelegateeParams;
 }
 
-export interface GetDelegatedAgentPkpTokenIdsParams {
-  appId: string;
-  version: string;
-  offset: string;
-  limit: string;
+/**
+ * @category Interfaces
+ * @inline
+ * @expand
+ * */
+export interface GetDelegatedPkpEthAddressesParams {
+  appId: number;
+  version: number;
+  pageOpts?: {
+    offset?: number;
+    limit?: number;
+  };
 }
 
-export interface GetDelegatedAgentPkpTokenIdsOptions {
+/**
+ * @category Interfaces
+ * @inline
+ * @expand
+ * */
+export interface GetDelegatedPkpEthAddressesOptions {
   signer: Signer;
-  args: GetDelegatedAgentPkpTokenIdsParams;
+  args: GetDelegatedPkpEthAddressesParams;
 }

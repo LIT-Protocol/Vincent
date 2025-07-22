@@ -1,5 +1,8 @@
+import type { BaseQueryFn } from '@reduxjs/toolkit/query/react';
+
 // Empty API that will be extended with the generated endpoints
-import { type BaseQueryFn, createApi } from '@reduxjs/toolkit/query/react';
+import { createApi } from '@reduxjs/toolkit/query/react';
+
 import { tagTypes } from './tags';
 
 let baseQueryFn: BaseQueryFn = () => {

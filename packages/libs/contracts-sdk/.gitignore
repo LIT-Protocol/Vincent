@@ -7,11 +7,11 @@ out/
 /broadcast/*/31337/
 /broadcast/**/dry-run/
 
-# Docs
-docs/
-
 # Dotenv file
 .env
 
 # Ignore run build JSON files
 /broadcast/**/run-*.json
+
+# We don't commit HTML typedoc output; just json
+docs/html/**/*

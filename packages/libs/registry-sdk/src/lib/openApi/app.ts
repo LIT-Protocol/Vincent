@@ -1,4 +1,4 @@
-import { z } from '../schemas/openApiZod';
+import type { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
 
 import { appDoc, appCreate, appEdit, appSetActiveVersion } from '../schemas/app';
 import {
@@ -9,8 +9,8 @@ import {
   appVersionToolEdit,
   appVersionToolDoc,
 } from '../schemas/appVersion';
+import { z } from '../schemas/openApiZod';
 import { GenericResult, ErrorResponse, siweAuth } from './baseRegistry';
-import { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
 
 const appIdParam = z
   .number()

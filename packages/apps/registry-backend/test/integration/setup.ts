@@ -1,9 +1,11 @@
-import { configureStore } from '@reduxjs/toolkit';
-import { nodeClient } from '@lit-protocol/vincent-registry-sdk';
-import { fetchBaseQuery, setupListeners } from '@reduxjs/toolkit/query';
 import type { BaseQueryFn } from '@reduxjs/toolkit/query';
-import { SiweMessage } from 'siwe';
+
+import { configureStore } from '@reduxjs/toolkit';
+import { fetchBaseQuery, setupListeners } from '@reduxjs/toolkit/query';
 import { providers, Wallet } from 'ethers';
+import { SiweMessage } from 'siwe';
+
+import { nodeClient } from '@lit-protocol/vincent-registry-sdk';
 
 const { vincentApiClientNode, setBaseQueryFn } = nodeClient;
 
@@ -87,28 +89,32 @@ export const createWithSiweAuth = (
         args.method &&
         args.method !== 'GET';
 
+      if (!isMutation) {
+        // Non mutation endpoints don't get auth headers as of yet <3
+        return baseQuery(args, api, extraOptions);
+      }
+
       // If it's a mutation, add the SIWE authentication header
-      if (isMutation) {
-        // Generate SIWE message and signature
-        const { message, signature } = await generateSiweFn(wallet);
+      // Generate SIWE message and signature
+      const { message, signature } = await generateSiweFn(wallet);
 
-        // Format the Authorization header value - Base64 encode the payload
-        const payload = JSON.stringify({ message, signature });
-        const base64Payload = Buffer.from(payload).toString('base64');
-        const authHeader = `SIWE ${base64Payload}`;
+      // Format the Authorization header value - Base64 encode the payload
+      const payload = JSON.stringify({ message, signature });
+      const base64Payload = Buffer.from(payload).toString('base64');
+      const authHeader = `SIWE ${base64Payload}`;
 
-        // Add the authorization header to the request
-        args = {
+      // Pass the request to the original fetchBaseQuery function but with authorization headers added :tada:
+      return baseQuery(
+        {
           ...args,
           headers: {
             ...args.headers,
             authorization: authHeader,
           },
-        };
-      }
-
-      // Pass the request to the original fetchBaseQuery function
-      return baseQuery(args, api, extraOptions);
+        },
+        api,
+        extraOptions,
+      );
     };
   };
 };

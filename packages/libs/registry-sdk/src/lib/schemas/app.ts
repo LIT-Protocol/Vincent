@@ -1,7 +1,6 @@
-import { z } from './openApiZod';
-
 import { EXAMPLE_EMAIL_ADDRESS, EXAMPLE_WALLET_ADDRESS } from '../constants';
 import { baseDocAttributes } from './base';
+import { z } from './openApiZod';
 
 /** app describes all properties on an application that are NOT controlled by the DB backend
  *

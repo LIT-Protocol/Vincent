@@ -7,10 +7,11 @@
  * policy results, and context manipulation.
  */
 import { z } from 'zod';
-import { createVincentTool } from '../lib/toolCore/vincentTool';
-import { createVincentPolicy, createVincentToolPolicy } from '../lib/policyCore/vincentPolicy';
+
 import { asBundledVincentPolicy } from '../lib/policyCore/bundledPolicy/bundledPolicy';
+import { createVincentPolicy, createVincentToolPolicy } from '../lib/policyCore/vincentPolicy';
 import { supportedPoliciesForTool } from '../lib/toolCore/helpers';
+import { createVincentTool } from '../lib/toolCore/vincentTool';
 
 // Define a schema for our test cases
 const testSchema = z.object({
@@ -571,7 +572,7 @@ function testMissingTypes() {
       // Should be able to succeed with schema
       succeed({ result: 'test' });
 
-      // Should be able to fail with just an error string since no fail schema
+      // @ts-expect-error Can't return a string when no schema defined
       fail('Error message');
 
       // @ts-expect-error - Can't fail with an object when no fail schema defined

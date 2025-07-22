@@ -7,10 +7,14 @@
  * is working correctly for the allow() and deny() methods with various
  * schema configurations.
  */
-import { z, ZodUndefined } from 'zod';
-import { createVincentPolicy, createVincentToolPolicy } from '../lib/policyCore/vincentPolicy';
+import type { ZodUndefined } from 'zod';
+
+import { z } from 'zod';
+
+import type { PolicyContext } from '../lib/policyCore/policyConfig/context/types';
+
 import { asBundledVincentPolicy } from '../lib/policyCore/bundledPolicy/bundledPolicy';
-import { PolicyContext } from '../lib/policyCore/policyConfig/context/types';
+import { createVincentPolicy, createVincentToolPolicy } from '../lib/policyCore/vincentPolicy';
 
 // Base tool schema for all tests
 const baseToolSchema = z.object({
@@ -80,16 +84,13 @@ export const testRealPolicy = createVincentToolPolicy({
 export function testWithoutSchema() {
   // Function signature to test types on a PolicyContext
   function testContextSignature(context: PolicyContext<ZodUndefined, ZodUndefined>) {
-    // Valid - no schema means no args
-    context.allow();
-
     // @ts-expect-error Should error - no schema means no args allowed
     context.allow('no schema');
 
     // @ts-expect-error Should error - no schema means no args allowed
     context.allow({ no: 'schema' });
 
-    // Valid - string error is allowed with no schema
+    // @ts-expect-error Can't return a string when no schema defined
     context.deny('Error message');
 
     // Valid - no args is allowed
@@ -122,6 +123,7 @@ export function testWithoutSchema() {
       if (Math.random() > 0.5) {
         return allow();
       } else {
+        // @ts-expect-error Can't return a string when no schema defined
         return deny('Error message');
       }
     },

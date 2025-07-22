@@ -1,8 +1,9 @@
-import { Request, Response, NextFunction } from 'express';
-import { AppTool } from '../../mongo/app';
-import { createDebugger } from '../../../../debug';
+import type { Request, Response, NextFunction } from 'express';
 
-import { RequestWithAppAndVersion } from './requireAppVersion';
+import type { RequestWithAppAndVersion } from './requireAppVersion';
+
+import { createDebugger } from '../../../../debug';
+import { AppTool } from '../../mongo/app';
 
 export interface RequestWithAppVersionAndTool extends RequestWithAppAndVersion {
   vincentAppTool: InstanceType<typeof AppTool>;

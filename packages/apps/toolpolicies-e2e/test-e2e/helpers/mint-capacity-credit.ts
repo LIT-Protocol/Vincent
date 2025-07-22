@@ -1,5 +1,4 @@
 import { LitContracts } from '@lit-protocol/contracts-sdk';
-import { LIT_NETWORK } from '@lit-protocol/constants';
 import { ethers } from 'ethers';
 
 export interface CapacityCreditMintOptions {

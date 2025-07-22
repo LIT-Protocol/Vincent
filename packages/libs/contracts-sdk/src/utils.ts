@@ -1,4 +1,6 @@
-import { Contract, Signer, BigNumber, type Overrides } from 'ethers';
+import type { Signer, Overrides } from 'ethers';
+
+import { Contract, BigNumber } from 'ethers';
 
 import {
   VINCENT_DIAMOND_CONTRACT_ADDRESS,

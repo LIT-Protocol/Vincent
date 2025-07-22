@@ -8,8 +8,9 @@
  * arguments to verify TypeScript correctly enforces the type constraints.
  */
 import { z } from 'zod';
-import { createVincentPolicy, createVincentToolPolicy } from '../lib/policyCore/vincentPolicy';
+
 import { asBundledVincentPolicy } from '../lib/policyCore/bundledPolicy/bundledPolicy';
+import { createVincentPolicy, createVincentToolPolicy } from '../lib/policyCore/vincentPolicy';
 
 // Base tool schema for all tests
 const baseToolSchema = z.object({
@@ -251,7 +252,7 @@ export function testDenyFunctionWithDifferentTypes() {
     // No schema defined
 
     evaluate: async (params, { deny }) => {
-      // Valid - string error is allowed with no schema
+      // @ts-expect-error Can't return a string when no schema defined
       deny('Error message');
 
       // Valid - undefined is allowed (no error message)
@@ -263,8 +264,8 @@ export function testDenyFunctionWithDifferentTypes() {
       // @ts-expect-error - Number not allowed when no schema
       deny(123);
 
-      // Valid case to return
-      return deny('Access denied');
+      // Good to go - returning deny with no result when no schema.
+      return deny();
     },
   });
   const test3 = createVincentToolPolicy({

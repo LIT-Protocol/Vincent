@@ -13,8 +13,34 @@
     "node": "^20.11.1",
     "pnpm": "10.7.0"
   },
-  "main": "./dist/src/index.js",
-  "types": "./dist/src/index.d.ts",
+  "exports": {
+    "./package.json": "./package.json",
+    "./jwt": {
+      "import": "./dist/src/jwt/index.js",
+      "require": "./dist/src/jwt/index.js",
+      "types": "./dist/src/jwt/index.d.ts"
+    },
+    "./toolClient": {
+      "import": "./dist/src/toolClient/index.js",
+      "require": "./dist/src/toolClient/index.js",
+      "types": "./dist/src/toolClient/index.d.ts"
+    },
+    "./webAuthclient": {
+      "import": "./dist/src/webAuthClient/index.js",
+      "require": "./dist/src/webAuthClient/index.js",
+      "types": "./dist/src/webAuthClient/index.d.ts"
+    },
+    "./expressMiddleware": {
+      "import": "./dist/src/expressMiddleware/index.js",
+      "require": "./dist/src/expressMiddleware/index.js",
+      "types": "./dist/src/expressMiddleware/index.d.ts"
+    },
+    "./utils": {
+      "import": "./dist/src/utils/index.js",
+      "require": "./dist/src/utils/index.js",
+      "types": "./dist/src/utils/index.d.ts"
+    }
+  },
   "keywords": [
     "jwt",
     "authentication",

@@ -1,5 +1,6 @@
-import { Interface, Fragment } from 'ethers/lib/utils';
 import type { JsonFragment } from '@ethersproject/abi';
+
+import { Interface, Fragment } from 'ethers/lib/utils';
 
 /**
  * Deduplicates ABI entries using canonical fragment signatures.

@@ -1,5 +1,6 @@
 export { createVincentPolicy, createVincentToolPolicy } from './lib/policyCore/vincentPolicy';
 export { createVincentTool } from './lib/toolCore/vincentTool';
+export { VINCENT_TOOL_API_VERSION } from './lib/constants';
 
 export { vincentPolicyHandler } from './lib/handlers/vincentPolicyHandler';
 export { vincentToolHandler } from './lib/handlers/vincentToolHandler';
@@ -23,6 +24,7 @@ export type {
   VincentTool,
   ToolConsumerContext,
   PolicyConsumerContext,
+  SchemaValidationError,
 } from './lib/types';
 
 export type { BaseToolContext } from './lib/toolCore/toolConfig/context/types';

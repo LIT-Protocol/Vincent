@@ -1,15 +1,16 @@
+import { exec } from 'node:child_process';
+import util from 'node:util';
 import * as os from 'os';
 import * as path from 'path';
 
-import util from 'node:util';
-import { exec } from 'node:child_process';
-
 const execAsync = util.promisify(exec);
 
-import fse from 'fs-extra';
-import * as tar from 'tar';
-import { Policy, PolicyVersion } from './mongo/policy';
 import { mkdtemp, mkdir } from 'node:fs/promises';
+
+import { remove, readJSON } from 'fs-extra';
+import * as tar from 'tar';
+
+import { Policy, PolicyVersion } from './mongo/policy';
 
 // Module-level verbose logging control
 // const ENABLE_VERBOSE_LOGGING = process.env.VINCENT_VERBOSE_LOGGING === 'true' || false;
@@ -79,7 +80,7 @@ async function createTempDir(): Promise<string> {
 async function cleanupTempDir(tempDir: string): Promise<void> {
   debugLog('Cleaning up temporary directory', { tempDir });
   try {
-    await fse.remove(tempDir);
+    await remove(tempDir);
     debugLog('Temporary directory cleaned up successfully', { tempDir });
   } catch (error) {
     debugLog('Error cleaning up temporary directory', { tempDir, error: (error as Error).message });
@@ -161,7 +162,7 @@ async function readPackageMetadata(
 
   try {
     debugLog('Reading metadata file');
-    const metadata = await fse.readJSON(metadataPath, 'utf-8');
+    const metadata = await readJSON(metadataPath, 'utf-8');
     debugLog(`Metadata file read successfully from ${metadataPath}`);
 
     if (!metadata.ipfsCid) {

@@ -1,7 +1,8 @@
 // src/lib/toolCore/toolConfig/context/types.ts
 
-import { z } from 'zod';
-import {
+import type { z } from 'zod';
+
+import type {
   BaseContext,
   ToolResultFailure,
   ToolResultFailureNoResult,
@@ -62,6 +63,6 @@ export interface ToolContext<
     : (result: z.infer<SuccessSchema>) => ContextSuccess<z.infer<SuccessSchema>>;
 
   fail: FailSchema extends z.ZodUndefined
-    ? (error?: string) => ContextFailure
-    : (result: z.infer<FailSchema>, error?: string) => ContextFailure<z.infer<FailSchema>>;
+    ? () => ContextFailure
+    : (result: z.infer<FailSchema>, runtimeError?: string) => ContextFailure<z.infer<FailSchema>>;
 }

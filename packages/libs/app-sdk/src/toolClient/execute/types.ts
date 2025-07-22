@@ -5,6 +5,7 @@ import type { z } from 'zod';
 import type {
   BaseToolContext,
   PolicyEvaluationResultContext,
+  SchemaValidationError,
 } from '@lit-protocol/vincent-tool-sdk';
 
 /** @category Interfaces */
@@ -24,7 +25,8 @@ export interface ToolExecuteResponseSuccessNoResult<Policies extends Record<stri
 /** @category Interfaces */
 export interface ToolExecuteResponseFailure<Result, Policies extends Record<string, any>> {
   success: false;
-  error?: string;
+  runtimeError?: string;
+  schemaValidationError?: SchemaValidationError;
   result: Result;
   context?: BaseToolContext<PolicyEvaluationResultContext<Policies>>;
 }
@@ -32,7 +34,8 @@ export interface ToolExecuteResponseFailure<Result, Policies extends Record<stri
 /** @category Interfaces */
 export interface ToolExecuteResponseFailureNoResult<Policies extends Record<string, any>> {
   success: false;
-  error?: string;
+  runtimeError?: string;
+  schemaValidationError?: SchemaValidationError;
   result?: never;
   context?: BaseToolContext<PolicyEvaluationResultContext<Policies>>;
 }
@@ -50,6 +53,7 @@ export type ToolExecuteResponse<
       ? ToolExecuteResponseFailure<z.infer<FailSchema>, Policies>
       : ToolExecuteResponseFailureNoResult<Policies>);
 
+/** @hidden */
 export interface RemoteVincentToolExecutionResult<
   SuccessSchema extends z.ZodType | undefined,
   FailSchema extends z.ZodType | undefined,

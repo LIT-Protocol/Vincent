@@ -1,9 +1,11 @@
-import { Request, Response, NextFunction } from 'express';
-import { createDebugger } from '../../../../debug';
-import { getAppVersion } from '@lit-protocol/vincent-contracts-sdk';
-import { ethersSigner } from '../../ethersSigner';
+import type { Request, Response, NextFunction } from 'express';
 
-import { RequestWithAppAndVersion } from './requireAppVersion';
+import { getAppVersion } from '@lit-protocol/vincent-contracts-sdk';
+
+import type { RequestWithAppAndVersion } from './requireAppVersion';
+
+import { createDebugger } from '../../../../debug';
+import { ethersSigner } from '../../ethersSigner';
 
 // Create a debug instance for this middleware
 const debug = createDebugger('requireAppVersionNotOnChain');
@@ -40,8 +42,8 @@ export const requireAppVersionNotOnChain = () => {
     const result = await getAppVersion({
       signer: ethersSigner,
       args: {
-        appId: appId.toString(),
-        version: version.toString(),
+        appId: appId,
+        version: version,
       },
     });
 

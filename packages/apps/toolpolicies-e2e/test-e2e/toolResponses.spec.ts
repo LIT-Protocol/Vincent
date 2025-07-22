@@ -1,6 +1,10 @@
 import { formatEther } from 'viem';
 
-import { disconnectVincentToolClients, getVincentToolClient } from '@lit-protocol/vincent-app-sdk';
+import {
+  disconnectVincentToolClients,
+  getVincentToolClient,
+} from '@lit-protocol/vincent-app-sdk/toolClient';
+
 import { ethers } from 'ethers';
 import type { PermissionData } from '@lit-protocol/vincent-contracts-sdk';
 
@@ -24,6 +28,12 @@ import { bundledVincentTool as executeSuccessNoSchemaTool } from '../src/generat
 import { bundledVincentTool as executeSuccessWithSchemaTool } from '../src/generated/tools/success/withSchema/executeSuccessWithSchema/vincent-bundled-tool';
 import { bundledVincentTool as precheckSuccessNoSchemaTool } from '../src/generated/tools/success/noSchema/precheckSuccessNoSchema/vincent-bundled-tool';
 import { bundledVincentTool as precheckSuccessWithSchemaTool } from '../src/generated/tools/success/withSchema/precheckSuccessWithSchema/vincent-bundled-tool';
+
+// Testing invalid results schemaValidationError
+import { bundledVincentTool as executeFailInvalidSchemaTool } from '../src/generated/tools/fail/invalidSchema/executeFailInvalidSchema/vincent-bundled-tool';
+import { bundledVincentTool as executeSuccessInvalidSchemaTool } from '../src/generated/tools/fail/invalidSchema/executeSuccessInvalidSchema/vincent-bundled-tool';
+import { bundledVincentTool as precheckFailInvalidSchemaTool } from '../src/generated/tools/fail/invalidSchema/precheckFailInvalidSchema/vincent-bundled-tool';
+import { bundledVincentTool as precheckSuccessInvalidSchemaTool } from '../src/generated/tools/fail/invalidSchema/precheckSuccessInvalidSchema/vincent-bundled-tool';
 
 import {
   checkShouldMintAndFundPkp,
@@ -49,7 +59,7 @@ import { privateKeyToAccount } from 'viem/accounts';
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
 function hasError(result: any): boolean {
-  return result && !!result.error;
+  return result && !!result.runtimeError;
 }
 
 // Extend Jest timeout to 4 minutes
@@ -152,6 +162,35 @@ const getPrecheckSuccessWithSchemaToolClient = () => {
   });
 };
 
+// Tools that return invalid results
+const getExecuteFailInvalidSchemaToolClient = () => {
+  return getVincentToolClient({
+    bundledVincentTool: executeFailInvalidSchemaTool,
+    ethersSigner: getDelegateeWallet(),
+  });
+};
+
+const getExecuteSuccessInvalidSchemaToolClient = () => {
+  return getVincentToolClient({
+    bundledVincentTool: executeSuccessInvalidSchemaTool,
+    ethersSigner: getDelegateeWallet(),
+  });
+};
+
+const getPrecheckFailInvalidSchemaToolClient = () => {
+  return getVincentToolClient({
+    bundledVincentTool: precheckFailInvalidSchemaTool,
+    ethersSigner: getDelegateeWallet(),
+  });
+};
+
+const getPrecheckSuccessInvalidSchemaToolClient = () => {
+  return getVincentToolClient({
+    bundledVincentTool: precheckSuccessInvalidSchemaTool,
+    ethersSigner: getDelegateeWallet(),
+  });
+};
+
 describe('VincentToolClient failure tests', () => {
   // Define permission data for all tools and policies
   const PERMISSION_DATA: PermissionData = {
@@ -164,11 +203,18 @@ describe('VincentToolClient failure tests', () => {
     [precheckFailWithSchemaTool.ipfsCid]: {},
     [executeFailThrowErrorTool.ipfsCid]: {},
     [precheckFailThrowErrorTool.ipfsCid]: {},
+
     // Success tools
     [executeSuccessNoSchemaTool.ipfsCid]: {},
     [executeSuccessWithSchemaTool.ipfsCid]: {},
     [precheckSuccessNoSchemaTool.ipfsCid]: {},
     [precheckSuccessWithSchemaTool.ipfsCid]: {},
+
+    // Tools that return invalid results and so fail schema validation
+    [executeFailInvalidSchemaTool.ipfsCid]: {},
+    [executeSuccessInvalidSchemaTool.ipfsCid]: {},
+    [precheckFailInvalidSchemaTool.ipfsCid]: {},
+    [precheckSuccessInvalidSchemaTool.ipfsCid]: {},
   };
 
   // An array of the IPFS cid of each tool to be tested, computed from the keys of PERMISSION_DATA
@@ -337,7 +383,10 @@ describe('VincentToolClient failure tests', () => {
 
         expect(result.success).toBe(false);
         expect(hasError(result)).toBe(true);
-        expect((result as any).error).toContain('Intentional execute failure with error message');
+        if (result.success === false) {
+          expect(result.runtimeError).toContain('Invalid execute result');
+          expect(result.schemaValidationError).toBeTruthy();
+        }
       });
     });
 
@@ -351,11 +400,12 @@ describe('VincentToolClient failure tests', () => {
             delegatorPkpEthAddress: TEST_CONFIG.userPkp!.ethAddress!,
           },
         );
-
         expect(result.success).toBe(false);
         expect(hasError(result)).toBe(true);
-
-        expect((result as any).error).toContain('Intentional precheck failure with error message');
+        if (result.success === false) {
+          expect(result.runtimeError).toContain('Invalid precheck result');
+          expect(result.schemaValidationError).toBeTruthy();
+        }
       });
 
       it('should fail execute with schema', async () => {
@@ -368,8 +418,10 @@ describe('VincentToolClient failure tests', () => {
         );
 
         expect(result.success).toBe(false);
-        expect(result.result?.err).toBeDefined();
-        expect(result.result?.err).toContain('Intentional failure with schema');
+        expect(hasError(result)).toBe(false);
+        if (result.success === false) {
+          expect(result.result?.err).toContain('Intentional failure with schema');
+        }
       });
     });
 
@@ -386,7 +438,9 @@ describe('VincentToolClient failure tests', () => {
 
         expect(result.success).toBe(false);
         expect(hasError(result)).toBe(true);
-        expect((result as any).error).toContain('Intentional execute failure with thrown error');
+        if (result.success === false) {
+          expect(result.runtimeError).toContain('Intentional execute failure with thrown error');
+        }
       });
     });
 
@@ -403,8 +457,9 @@ describe('VincentToolClient failure tests', () => {
 
         expect(result.success).toBe(false);
         expect(hasError(result)).toBe(true);
-
-        expect((result as any).error).toContain('Intentional precheck failure with thrown error');
+        if (result.success === false) {
+          expect(result.runtimeError).toContain('Intentional precheck failure with thrown error');
+        }
       });
 
       it('should fail execute with schema', async () => {
@@ -512,6 +567,170 @@ describe('VincentToolClient failure tests', () => {
         expect(result.success).toBe(true);
         expect(result.result).toBeDefined();
         expect(result.result?.ok).toBe(true);
+      });
+    });
+  });
+  // Test cases for invalid parameters
+  describe('Invalid parameters tests', () => {
+    // Test calling executeSuccessWithSchema with invalid parameters
+    describe('executeSuccessWithSchema with invalid parameters', () => {
+      it('should fail with schema validation error when called with invalid parameters', async () => {
+        const client = getExecuteSuccessWithSchemaToolClient();
+        // Call with a number instead of a string for 'x'
+        const result = await client.execute(
+          { x: 42 as any }, // Invalid: x should be a string
+          {
+            delegatorPkpEthAddress: TEST_CONFIG.userPkp!.ethAddress!,
+          },
+        );
+
+        expect(result.success).toBe(false);
+        if (result.success == false) {
+          expect(result.schemaValidationError).toBeDefined();
+          expect(result.schemaValidationError?.phase).toBe('execute');
+          expect(result.schemaValidationError?.stage).toBe('input');
+          expect(result.schemaValidationError?.zodError).toBeDefined();
+        }
+      });
+    });
+
+    // Test calling precheckSuccessWithSchema with invalid parameters
+    describe('precheckSuccessWithSchema with invalid parameters', () => {
+      it('should fail with schema validation error when called with invalid parameters', async () => {
+        const client = getPrecheckSuccessWithSchemaToolClient();
+        // Call with an object that doesn't have 'x' property
+        const result = await client.precheck(
+          { y: 'invalid-param' } as any, // Invalid: missing 'x' property
+          {
+            delegatorPkpEthAddress: TEST_CONFIG.userPkp!.ethAddress!,
+          },
+        );
+
+        expect(result.success).toBe(false);
+        if (result.success == false) {
+          expect(result.schemaValidationError).toBeDefined();
+          expect(result.schemaValidationError?.phase).toBe('precheck');
+          expect(result.schemaValidationError?.stage).toBe('input');
+          expect(result.schemaValidationError?.zodError).toBeDefined();
+        }
+      });
+    });
+  });
+
+  // Test cases for invalid results
+  describe('Invalid results tests', () => {
+    // Test executeFailInvalidSchema - Execute should fail with schema validation error
+    describe('executeFailInvalidSchema', () => {
+      it('should fail with schema validation error when returning invalid result', async () => {
+        const client = getExecuteFailInvalidSchemaToolClient();
+        const result = await client.execute(
+          { x: 'test-value' },
+          {
+            delegatorPkpEthAddress: TEST_CONFIG.userPkp!.ethAddress!,
+          },
+        );
+
+        expect(result.success).toBe(false);
+        if (result.success == false) {
+          expect(result.schemaValidationError).toBeDefined();
+          expect(result.schemaValidationError?.phase).toBe('execute');
+          expect(result.schemaValidationError?.stage).toBe('output');
+          expect(result.schemaValidationError?.zodError).toBeDefined();
+        }
+      });
+    });
+
+    // Test executeSuccessInvalidSchema - Execute should fail with schema validation error
+    describe('executeSuccessInvalidSchema', () => {
+      it('should fail with schema validation error when returning invalid result', async () => {
+        const client = getExecuteSuccessInvalidSchemaToolClient();
+        const result = await client.execute(
+          { x: 'test-value' },
+          {
+            delegatorPkpEthAddress: TEST_CONFIG.userPkp!.ethAddress!,
+          },
+        );
+
+        expect(result.success).toBe(false);
+        if (result.success == false) {
+          expect(result.schemaValidationError).toBeDefined();
+          expect(result.schemaValidationError?.phase).toBe('execute');
+          expect(result.schemaValidationError?.stage).toBe('output');
+          expect(result.schemaValidationError?.zodError).toBeDefined();
+        }
+      });
+    });
+
+    // Test precheckFailInvalidSchema - Precheck should fail with schema validation error
+    describe('precheckFailInvalidSchema', () => {
+      it('should fail with schema validation error when returning invalid result', async () => {
+        const client = getPrecheckFailInvalidSchemaToolClient();
+        const result = await client.precheck(
+          { x: 'test-value' },
+          {
+            delegatorPkpEthAddress: TEST_CONFIG.userPkp!.ethAddress!,
+          },
+        );
+
+        expect(result.success).toBe(false);
+        if (result.success == false) {
+          expect(result.schemaValidationError).toBeDefined();
+          expect(result.schemaValidationError?.phase).toBe('precheck');
+          expect(result.schemaValidationError?.stage).toBe('output');
+          expect(result.schemaValidationError?.zodError).toBeDefined();
+        }
+      });
+
+      it('should succeed execute', async () => {
+        const client = getPrecheckFailInvalidSchemaToolClient();
+        const result = await client.execute(
+          { x: 'test-value' },
+          {
+            delegatorPkpEthAddress: TEST_CONFIG.userPkp!.ethAddress!,
+          },
+        );
+
+        expect(result.success).toBe(true);
+        expect(result.result).toBeDefined();
+        expect(result.result?.ok).toBe(true);
+      });
+    });
+
+    // Test precheckSuccessInvalidSchema - Precheck should fail with schema validation error
+    describe('precheckSuccessInvalidSchema', () => {
+      it('should fail with schema validation error when returning invalid result', async () => {
+        const client = getPrecheckSuccessInvalidSchemaToolClient();
+        const result = await client.precheck(
+          { x: 'test-value' },
+          {
+            delegatorPkpEthAddress: TEST_CONFIG.userPkp!.ethAddress!,
+          },
+        );
+
+        expect(result.success).toBe(false);
+        if (result.success == false) {
+          expect(result.schemaValidationError).toBeDefined();
+          expect(result.schemaValidationError?.phase).toBe('precheck');
+          expect(result.schemaValidationError?.stage).toBe('output');
+          expect(result.schemaValidationError?.zodError).toBeDefined();
+        }
+      });
+
+      it('should fail execute with schema', async () => {
+        const client = getPrecheckSuccessInvalidSchemaToolClient();
+        const result = await client.execute(
+          { x: 'test-value' },
+          {
+            delegatorPkpEthAddress: TEST_CONFIG.userPkp!.ethAddress!,
+          },
+        );
+
+        expect(result.success).toBe(false);
+        expect(result.success).toBe(false);
+        if (result.success == false) {
+          expect(result.result?.err).toBeDefined();
+          expect(result.result?.err).toContain('Intentional failure with schema');
+        }
       });
     });
   });

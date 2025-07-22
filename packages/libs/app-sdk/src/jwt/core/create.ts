@@ -1,8 +1,12 @@
 import * as didJWT from 'did-jwt';
 import { ethers } from 'ethers';
+import { arrayify } from 'ethers/lib/utils';
 
 import type { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
+
 import type { JWTConfig, VincentJWTPayload } from '../types';
+
+import { toBase64Url } from './utils/base64';
 
 /**
  * Creates a signer function compatible with did-jwt that uses a PKP wallet for signing
@@ -13,6 +17,7 @@ import type { JWTConfig, VincentJWTPayload } from '../types';
  *
  * @param pkpWallet - The PKP Ethers wallet instance that will be used for signing
  * @returns A signing function that takes data and returns a base64url-encoded signature
+ * @private
  * @example
  * ```typescript
  * const pkpWallet = new PKPEthersWallet({ ... });
@@ -20,24 +25,7 @@ import type { JWTConfig, VincentJWTPayload } from '../types';
  * const signature = await signer('data to sign');
  * ```
  */
-export function createPKPSigner(pkpWallet: PKPEthersWallet) {
-  /**
-   * Converts a hex string to a Uint8Array
-   *
-   * @param hex - The hex string to convert (with or without 0x prefix)
-   * @returns A Uint8Array representation of the hex string
-   */
-  const hexToUint8Array = (hex: string): Uint8Array => {
-    if (hex.startsWith('0x')) {
-      hex = hex.slice(2);
-    }
-    const bytes = new Uint8Array(hex.length / 2);
-    for (let i = 0; i < hex.length; i += 2) {
-      bytes[i / 2] = parseInt(hex.substring(i, i + 2), 16);
-    }
-    return bytes;
-  };
-
+function createPKPSigner(pkpWallet: PKPEthersWallet) {
   /**
    * The actual signer function conforming to the did-jwt signer interface
    *
@@ -50,22 +38,15 @@ export function createPKPSigner(pkpWallet: PKPEthersWallet) {
     const sig = await pkpWallet.signMessage(dataBytes);
     const { r, s } = ethers.utils.splitSignature(sig);
 
-    const rBytes = hexToUint8Array(r.slice(2));
-    const sBytes = hexToUint8Array(s.slice(2));
+    const rBytes = arrayify(r);
+    const sBytes = arrayify(s);
 
     // ES256K signature is r and s concatenated (64 bytes total)
     const sigBytes = new Uint8Array(64);
     sigBytes.set(rBytes, 0);
     sigBytes.set(sBytes, 32);
 
-    // Convert to base64url encoding
-    const base64Sig = Buffer.from(sigBytes)
-      .toString('base64')
-      .replace(/\+/g, '-')
-      .replace(/\//g, '_')
-      .replace(/=/g, '');
-
-    return base64Sig;
+    return toBase64Url(sigBytes);
   };
 }
 
@@ -78,6 +59,7 @@ export function createPKPSigner(pkpWallet: PKPEthersWallet) {
  *
  * @param config - Configuration object containing all parameters for JWT creation
  * @returns A promise that resolves to the signed JWT string
+ * @hidden
  * @example
  * ```typescript
  * const jwt = await createPKPSignedJWT({
@@ -89,7 +71,7 @@ export function createPKPSigner(pkpWallet: PKPEthersWallet) {
  * });
  * ```
  */
-export async function createPKPSignedJWT(config: JWTConfig): Promise<string> {
+export async function create(config: JWTConfig): Promise<string> {
   const { app, pkpWallet, pkp, payload, expiresInMinutes, audience, authentication } = config;
   const signer = createPKPSigner(pkpWallet);
 

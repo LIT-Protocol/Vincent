@@ -1,8 +1,9 @@
-import { Request, Response, NextFunction } from 'express';
-import { PolicyVersion } from '../../mongo/policy';
-import { createDebugger } from '../../../../debug';
+import type { Request, Response, NextFunction } from 'express';
 
-import { RequestWithPolicy } from './requirePolicy';
+import type { RequestWithPolicy } from './requirePolicy';
+
+import { createDebugger } from '../../../../debug';
+import { PolicyVersion } from '../../mongo/policy';
 
 // Create a debug instance for this middleware
 const debug = createDebugger('requirePolicyVersion');

@@ -18,9 +18,6 @@ export interface PKPInfo {
  */
 export const mintNewPkp = async (
   pkpOwnerPrivateKey: string,
-  vincentErc20ApprovalToolIpfsCid: string,
-  vincentUniswapSwapToolIpfsCid: string,
-  vincentSpendingLimitPolicyIpfsCid: string,
   litNetwork = 'datil',
 ): Promise<PKPInfo> => {
   // Create ethers provider and owner wallet
@@ -35,29 +32,10 @@ export const mintNewPkp = async (
 
   const mintPkpTx = await litContractClient.pkpHelperContract.write.mintNextAndAddAuthMethods(
     AUTH_METHOD_TYPE.EthWallet,
-    [
-      AUTH_METHOD_TYPE.EthWallet,
-      AUTH_METHOD_TYPE.LitAction,
-      AUTH_METHOD_TYPE.LitAction,
-      AUTH_METHOD_TYPE.LitAction,
-    ],
-    [
-      pkpOwnerWallet.address,
-      `0x${Buffer.from(ethers.utils.base58.decode(vincentErc20ApprovalToolIpfsCid)).toString(
-        'hex',
-      )}`,
-      `0x${Buffer.from(ethers.utils.base58.decode(vincentUniswapSwapToolIpfsCid)).toString('hex')}`,
-      `0x${Buffer.from(ethers.utils.base58.decode(vincentSpendingLimitPolicyIpfsCid)).toString(
-        'hex',
-      )}`,
-    ],
-    ['0x', '0x', '0x', '0x'],
-    [
-      [AUTH_METHOD_SCOPE.SignAnything],
-      [AUTH_METHOD_SCOPE.SignAnything],
-      [AUTH_METHOD_SCOPE.SignAnything],
-      [AUTH_METHOD_SCOPE.SignAnything],
-    ],
+    [AUTH_METHOD_TYPE.EthWallet],
+    [pkpOwnerWallet.address],
+    ['0x'],
+    [[AUTH_METHOD_SCOPE.SignAnything]],
     true, // addPkpEthAddressAsPermittedAddress
     false, // sendPkpToItself
     { value: await litContractClient.pkpNftContract.read.mintCost() },

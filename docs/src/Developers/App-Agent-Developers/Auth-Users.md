@@ -49,14 +49,14 @@ In addition to the payload, the JWT also includes:
 2. The User reviews the Tools your App wants to use and configures the Policies that will govern them
 3. Upon approval, the User is redirected back to your App with a signed JWT in the URL
 4. Your App extracts and verifies the JWT using `decodeVincentLoginJWT` in your frontend
-   - **Note:** For your backend it's **critical** that you verify the Vincent JWT that's submitted to your backend to authenticate the User. This is done by importing the `verify` method from the `@lit-protocol/vincent-app-sdk` package, and as shown [here](#verifying-the-vincent-jwt-on-your-backend).
+   - **Note:** For your backend it's **critical** that you verify the Vincent JWT that's submitted to your backend to authenticate the User. This is done by importing the `verify` method from the `@lit-protocol/vincent-app-sdk/jwt` package, and as shown [here](#verifying-the-vincent-jwt-on-your-backend).
 5. The verified JWT can now be stored and used to:
    - Authenticate requests to your backend APIs
    - Execute Vincent Tools on behalf of the User
 
 # How the Vincent Web App Client Works
 
-The `getVincentWebAppClient` function from the `@lit-protocol/vincent-app-sdk` package creates a Web App Client instance tied to your Vincent App’s ID. This client exposes a set of methods for handling user login, consent, and JWT management for your App's frontend.
+The `getWebAuthClient` function from the `@lit-protocol/vincent-app-sdk/webAuthClient` package creates a Web App Client instance tied to your Vincent App’s ID. This client exposes a set of methods for handling user login, consent, and JWT management for your App's frontend.
 
 The Web App Client exposes the following methods:
 
@@ -92,15 +92,15 @@ Use this method to remove the Vincent JWT query parameter from the current URL a
 
 # Creating a Web App Client
 
-To initialize the Web App Client, import and call the `getVincentWebAppClient` function with your App’s ID:
+To initialize the Web App Client, import and call the `getWebAuthClient` function with your App’s ID:
 
 ```typescript
-import { getVincentWebAppClient } from '@lit-protocol/vincent-app-sdk';
+import { getWebAuthClient } from '@lit-protocol/vincent-app-sdk/webAuthClient';
 
-const vincentAppClient = getVincentWebAppClient({ appId: process.env.MY_VINCENT_APP_ID });
+const vincentAppClient = getWebAuthClient({ appId: process.env.MY_VINCENT_APP_ID });
 ```
 
-The `getVincentWebAppClient` takes an object as an argument with the following properties:
+The `getWebAuthClient` takes an object as an argument with the following properties:
 
 - `appId`: The ID of your Vincent App.
   - This ID can be found on your [Vincent App Dashboard](https://dashboard.heyvincent.ai/):
@@ -112,11 +112,10 @@ The `getVincentWebAppClient` takes an object as an argument with the following p
 Use the following pattern to manage login and redirect flows in your frontend:
 
 ```typescript
-import { getVincentWebAppClient, jwt } from '@lit-protocol/vincent-app-sdk';
+import { getWebAuthClient } from '@lit-protocol/vincent-app-sdk/webAuthClient';
+import { isExpired } from '@lit-protocol/vincent-app-sdk/jwt';
 
-const { isExpired } = jwt;
-
-const vincentAppClient = getVincentWebAppClient({ appId: process.env.MY_VINCENT_APP_ID });
+const vincentAppClient = getWebAuthClient({ appId: process.env.MY_VINCENT_APP_ID });
 
 if (vincentAppClient.isLoginUri()) {
   const { decodedJWT, jwtStr } = vincentAppClient.decodeVincentLoginJWT(window.location.origin);
@@ -146,12 +145,10 @@ if (vincentAppClient.isLoginUri()) {
 
 ## Verifying the Vincent JWT on your backend
 
-It's critical that you verify the Vincent JWT that's submitted to your backend to authenticate the User. This is done by importing the `verify` method from the `@lit-protocol/vincent-app-sdk` package, and as shown here:
+It's critical that you verify the Vincent JWT that's submitted to your backend to authenticate the User. This is done by importing the `verify` method from the `@lit-protocol/vincent-app-sdk/jwt` package, and as shown here:
 
 ```typescript
-import { jwt } from '@lit-protocol/vincent-app-sdk';
-
-const { verify } = jwt;
+import { verify } from '@lit-protocol/vincent-app-sdk/jwt';
 
 const vincentJwtSubmittedToBackend = '...';
 const jwtAudience = 'https://my-redirect-uri.com';

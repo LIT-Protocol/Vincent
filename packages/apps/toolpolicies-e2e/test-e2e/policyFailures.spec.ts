@@ -1,6 +1,9 @@
 import { formatEther } from 'viem';
 
-import { disconnectVincentToolClients, getVincentToolClient } from '@lit-protocol/vincent-app-sdk';
+import {
+  disconnectVincentToolClients,
+  getVincentToolClient,
+} from '@lit-protocol/vincent-app-sdk/toolClient';
 import { ethers } from 'ethers';
 import type { PermissionData } from '@lit-protocol/vincent-contracts-sdk';
 
@@ -250,7 +253,7 @@ describe('VincentToolClient policy failure tests', () => {
         );
         if (result.context?.policiesContext?.allow === false) {
           const deniedPolicy = result.context?.policiesContext?.deniedPolicy;
-          expect(deniedPolicy.error).toBeDefined();
+          expect(deniedPolicy.runtimeError).toBeDefined();
         }
       });
     });
@@ -293,7 +296,7 @@ describe('VincentToolClient policy failure tests', () => {
         );
         if (result.context?.policiesContext?.allow === false) {
           const deniedPolicy = result.context?.policiesContext?.deniedPolicy;
-          expect(deniedPolicy.error).toBeDefined();
+          expect(deniedPolicy.runtimeError).toBeDefined();
         }
       });
     });
@@ -339,7 +342,7 @@ describe('VincentToolClient policy failure tests', () => {
         );
         if (result.context?.policiesContext?.allow === false) {
           const deniedPolicy = result.context?.policiesContext?.deniedPolicy;
-          expect(deniedPolicy.error).toBeDefined();
+          expect(deniedPolicy.runtimeError).toBeDefined();
         }
       });
     });
@@ -391,7 +394,7 @@ describe('VincentToolClient policy failure tests', () => {
 
         if (result.context?.policiesContext?.allow === false) {
           const deniedPolicy = result.context?.policiesContext?.deniedPolicy;
-          expect(deniedPolicy.error).toBeDefined();
+          expect(deniedPolicy.runtimeError).toBeDefined();
         }
       });
     });

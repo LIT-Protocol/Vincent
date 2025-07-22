@@ -1,5 +1,5 @@
-import { LitNodeClient } from '@lit-protocol/lit-node-client';
-import { LIT_NETWORKS_KEYS } from '@lit-protocol/types';
+import type { LitNodeClient } from '@lit-protocol/lit-node-client';
+import type { LIT_NETWORKS_KEYS } from '@lit-protocol/types';
 
 import { LitNodeClientInstance } from './LitNodeClientInstance';
 

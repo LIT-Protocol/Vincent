@@ -7,8 +7,9 @@
  * on parameters passed to allow() and deny() methods.
  */
 import { z } from 'zod';
-import { createVincentPolicy, createVincentToolPolicy } from '../lib/policyCore/vincentPolicy';
+
 import { asBundledVincentPolicy } from '../lib/policyCore/bundledPolicy/bundledPolicy';
+import { createVincentPolicy, createVincentToolPolicy } from '../lib/policyCore/vincentPolicy';
 
 // Base tool schema for all tests
 const baseToolSchema = z.object({
@@ -76,6 +77,7 @@ function testNoSchemaValidation() {
       if (Math.random() > 0.5) {
         return context.allow();
       } else {
+        // @ts-expect-error Can't return a string when no schema defined
         return context.deny('Error message');
       }
     },

@@ -5,7 +5,9 @@ import type { z } from 'zod';
 import type {
   BaseToolContext,
   PolicyEvaluationResultContext,
+  SchemaValidationError,
 } from '@lit-protocol/vincent-tool-sdk';
+
 import type {
   ToolExecuteResponseFailure,
   ToolExecuteResponseFailureNoResult,
@@ -63,15 +65,15 @@ export function createDenyEvaluationResult<PoliciesByPackageName extends Record<
   },
   deniedPolicy: {
     packageName: keyof PoliciesByPackageName;
-    result: {
-      error?: string;
-    } & (PoliciesByPackageName[keyof PoliciesByPackageName]['__schemaTypes'] extends {
+    runtimeError?: string;
+    schemaValidationError?: SchemaValidationError;
+    result: PoliciesByPackageName[keyof PoliciesByPackageName]['__schemaTypes'] extends {
       evalDenyResultSchema: infer Schema;
     }
       ? Schema extends z.ZodType
         ? z.infer<Schema>
         : undefined
-      : undefined);
+      : undefined;
   }
 ): {
   allow: false;
@@ -89,15 +91,15 @@ export function createDenyEvaluationResult<PoliciesByPackageName extends Record<
   };
   deniedPolicy: {
     packageName: keyof PoliciesByPackageName;
-    result: {
-      error?: string;
-    } & (PoliciesByPackageName[keyof PoliciesByPackageName]['__schemaTypes'] extends {
+    runtimeError?: string;
+    schemaValidationError?: SchemaValidationError;
+    result: PoliciesByPackageName[keyof PoliciesByPackageName]['__schemaTypes'] extends {
       evalDenyResultSchema: infer Schema;
     }
       ? Schema extends z.ZodType
         ? z.infer<Schema>
         : undefined
-      : undefined);
+      : undefined;
   };
 } {
   return {
@@ -136,13 +138,15 @@ export function createToolExecuteResponseSuccessNoResult<
 
 export function createToolExecuteResponseFailure<Fail, Policies extends Record<any, any>>(params: {
   result: Fail;
-  message?: string;
+  runtimeError?: string;
+  schemaValidationError?: SchemaValidationError;
   context?: BaseToolContext<PolicyEvaluationResultContext<Policies>>;
 }): ToolExecuteResponseFailure<Fail, Policies> {
   return {
     success: false,
+    runtimeError: params.runtimeError,
+    schemaValidationError: params.schemaValidationError,
     result: params.result,
-    error: params.message,
     context: params.context,
   };
 }
@@ -150,13 +154,15 @@ export function createToolExecuteResponseFailure<Fail, Policies extends Record<a
 export function createToolExecuteResponseFailureNoResult<
   Policies extends Record<any, any>,
 >(params: {
-  message?: string;
+  runtimeError?: string;
+  schemaValidationError?: SchemaValidationError;
   context?: BaseToolContext<PolicyEvaluationResultContext<Policies>>;
 }): ToolExecuteResponseFailureNoResult<Policies> {
   return {
     success: false,
+    runtimeError: params.runtimeError,
+    schemaValidationError: params.schemaValidationError,
     result: undefined,
-    error: params.message,
     context: params.context,
   };
 }

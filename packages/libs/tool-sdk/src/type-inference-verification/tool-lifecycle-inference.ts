@@ -1,11 +1,12 @@
 // src/type-inference-verification/tool-lifecycle-inference.ts
 
 import { z } from 'zod';
-import { createVincentPolicy, createVincentToolPolicy } from '../lib/policyCore/vincentPolicy';
+
 import { asBundledVincentPolicy } from '../lib/policyCore/bundledPolicy/bundledPolicy';
-import { createVincentTool } from '../lib/toolCore/vincentTool';
-import { supportedPoliciesForTool } from '../lib/toolCore/helpers';
 import { createAllowResult } from '../lib/policyCore/helpers/resultCreators';
+import { createVincentPolicy, createVincentToolPolicy } from '../lib/policyCore/vincentPolicy';
+import { supportedPoliciesForTool } from '../lib/toolCore/helpers';
+import { createVincentTool } from '../lib/toolCore/vincentTool';
 
 const toolParamsSchema = z.object({
   flag: z.boolean(),

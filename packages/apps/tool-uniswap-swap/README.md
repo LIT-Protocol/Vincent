@@ -25,7 +25,7 @@ npm install @lit-protocol/vincent-tool-uniswap-swap
 This tool can be used in Vincent apps to execute Uniswap swaps:
 
 ```typescript
-import { getVincentToolClient } from '@lit-protocol/vincent-app-sdk';
+import { getVincentToolClient } from '@lit-protocol/vincent-app-sdk/toolClient';
 import { bundledVincentTool } from '@lit-protocol/vincent-tool-uniswap-swap';
 
 // One of delegatee signers from your app's Vincent Dashboard
@@ -104,7 +104,7 @@ Before executing a swap, ensure that:
 You can use the Vincent Tool ERC20 Approval to handle token approvals:
 
 ```typescript
-import { getVincentToolClient } from '@lit-protocol/vincent-app-sdk';
+import { getVincentToolClient } from '@lit-protocol/vincent-app-sdk/toolClient';
 import { ERC20_APPROVAL_TOOL_IPFS_ID } from '@lit-protocol/vincent-tool-erc20-approval';
 
 // ... approve tokens before swap

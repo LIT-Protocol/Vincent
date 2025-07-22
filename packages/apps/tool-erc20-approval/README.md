@@ -24,7 +24,7 @@ npm install @lit-protocol/vincent-tool-erc20-approval
 This tool can be used in Vincent apps to manage ERC20 approvals:
 
 ```typescript
-import { getVincentToolClient } from '@lit-protocol/vincent-app-sdk';
+import { getVincentToolClient } from '@lit-protocol/vincent-app-sdk/toolClient';
 import { bundledVincentTool } from '@lit-protocol/vincent-tool-erc20-approval';
 
 // One of delegatee signers from your app's Vincent Dashboard

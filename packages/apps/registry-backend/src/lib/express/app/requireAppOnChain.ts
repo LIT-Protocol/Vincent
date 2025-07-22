@@ -1,6 +1,10 @@
-import { Request, Response, NextFunction } from 'express';
+import type { Request, Response, NextFunction } from 'express';
+
+import type { App } from '@lit-protocol/vincent-contracts-sdk';
+
+import { getAppById } from '@lit-protocol/vincent-contracts-sdk';
+
 import { createDebugger } from '../../../../debug';
-import { getAppById, App } from '@lit-protocol/vincent-contracts-sdk';
 import { ethersSigner } from '../../ethersSigner';
 
 // Create a specific interface for requests with on-chain app
@@ -30,7 +34,7 @@ export const requireAppOnChain = (paramName = 'appId') => {
 
       const app = await getAppById({
         signer: ethersSigner,
-        args: { appId: parsedAppId.toString() },
+        args: { appId: parsedAppId },
       });
 
       if (!app) {

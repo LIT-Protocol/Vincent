@@ -1,11 +1,6 @@
-import { utils } from 'ethers';
-import {
-  decodeContractError,
-  createContract,
-  findEventByName,
-  gasAdjustedOverrides,
-} from '../utils';
-import {
+import type { BigNumber } from 'ethers';
+
+import type {
   RegisterAppOptions,
   RegisterNextVersionOptions,
   EnableAppVersionOptions,
@@ -15,44 +10,49 @@ import {
   UndeleteAppOptions,
 } from '../types/App';
 
+import {
+  decodeContractError,
+  createContract,
+  findEventByName,
+  gasAdjustedOverrides,
+} from '../utils';
+
 /**
  * Register a new app version
- * @param signer - The ethers signer to use for the transaction. Could be a standard Ethers Signer or a PKPEthersWallet
- * @param args - Object containing appId, delegatees, and versionTools
- * @param overrides - Optional override params for the transaction call like manual gas limit
- * @returns The transaction hash and the new app version incremented on-chain. If for some reason the event is not found after a successful transaction, it will return -1.
+ *
+ * @param params
+ * @param params.signer - The ethers signer to use for the transaction. Could be a standard Ethers Signer or a PKPEthersWallet
+ * @param params.args - Object containing appId, delegatees, and versionTools
+ * @param params.overrides - Optional ethers.Override params for the transaction call (like manual gas limit)
+ *
+ * @returns The transaction hash
+
  */
-export async function registerApp({
-  signer,
-  args,
-  overrides,
-}: RegisterAppOptions): Promise<{ txHash: string; newAppVersion: string }> {
+export async function registerApp(params: RegisterAppOptions): Promise<{ txHash: string }> {
+  const {
+    signer,
+    args: { appId, delegateeAddresses, versionTools },
+    overrides,
+  } = params;
+
   const contract = createContract(signer);
 
   try {
-    const appId = utils.parseUnits(args.appId, 0);
-
     const adjustedOverrides = await gasAdjustedOverrides(
       contract,
       'registerApp',
-      [appId, args.delegatees, args.versionTools],
+      [appId, delegateeAddresses, versionTools],
       overrides,
     );
-    console.log('adjustedOverrides: ', adjustedOverrides);
 
-    const tx = await contract.registerApp(appId, args.delegatees, args.versionTools, {
+    const tx = await contract.registerApp(appId, delegateeAddresses, versionTools, {
       ...adjustedOverrides,
     });
-    const receipt = await tx.wait();
 
-    const event = findEventByName(contract, receipt.logs, 'NewAppVersionRegistered');
-    const newAppVersion = event
-      ? contract.interface.parseLog(event)?.args.appVersion.toString() || '-1'
-      : '-1';
+    await tx.wait();
 
     return {
       txHash: tx.hash,
-      newAppVersion,
     };
   } catch (error: unknown) {
     const decodedError = decodeContractError(error, contract);
@@ -62,41 +62,52 @@ export async function registerApp({
 
 /**
  * Register a new version of an existing application
- * @param signer - The ethers signer to use for the transaction. Could be a standard Ethers Signer or a PKPEthersWallet
- * @param args - Object containing appId and versionTools
- * @param overrides - Optional override params for the transaction call like manual gas limit
- * @returns The transaction hash and the new app version incremented on-chain. If for some reason the event is not found after a successful transaction, it will return -1.
+ * @param params
+ * @param params.signer - The ethers signer to use for the transaction. Could be a standard Ethers Signer or a PKPEthersWallet
+ * @param params.args - Object containing appId and versionTools
+ * @param params.overrides - Optional ethers.Override params for the transaction call (like manual gas limit)
+ * @returns The transaction hash and the new app version incremented on-chain. If for some reason the event is not found after a successful transaction, this method will throw an error.
+
  */
-export async function registerNextVersion({
-  signer,
-  args,
-  overrides,
-}: RegisterNextVersionOptions): Promise<{ txHash: string; newAppVersion: string }> {
+export async function registerNextVersion(
+  params: RegisterNextVersionOptions,
+): Promise<{ txHash: string; newAppVersion: number }> {
+  const {
+    signer,
+    args: { appId, versionTools },
+    overrides,
+  } = params;
   const contract = createContract(signer);
 
   try {
-    const appId = utils.parseUnits(args.appId, 0);
-
     const adjustedOverrides = await gasAdjustedOverrides(
       contract,
       'registerNextAppVersion',
-      [appId, args.versionTools],
+      [appId, versionTools],
       overrides,
     );
 
-    const tx = await contract.registerNextAppVersion(appId, args.versionTools, {
+    const tx = await contract.registerNextAppVersion(appId, versionTools, {
       ...adjustedOverrides,
     });
     const receipt = await tx.wait();
 
     const event = findEventByName(contract, receipt.logs, 'NewAppVersionRegistered');
-    const newAppVersion = event
-      ? contract.interface.parseLog(event)?.args.appVersion.toString() || '-1'
-      : '-1';
+
+    if (!event) {
+      throw new Error('NewAppVersionRegistered event not found');
+    }
+
+    const newAppVersion: BigNumber | undefined =
+      contract.interface.parseLog(event)?.args?.appVersion;
+
+    if (!newAppVersion) {
+      throw new Error('NewAppVersionRegistered event does not contain appVersion argument');
+    }
 
     return {
       txHash: tx.hash,
-      newAppVersion,
+      newAppVersion: newAppVersion.toNumber(),
     };
   } catch (error: unknown) {
     const decodedError = decodeContractError(error, contract);
@@ -106,37 +117,38 @@ export async function registerNextVersion({
 
 /**
  * Enable or disable a specific app version
- * @param signer - The ethers signer to use for the transaction. Could be a standard Ethers Signer or a PKPEthersWallet
- * @param args - Object containing appId, appVersion, and enabled flag
- * @param overrides - Optional override params for the transaction call like manual gas limit
- * @returns The transaction hash and a success flag
+ * @param params
+ * @param params.signer - The ethers signer to use for the transaction. Could be a standard Ethers Signer or a PKPEthersWallet
+ * @param params.args - Object containing appId, appVersion, and enabled flag state to set
+ * @param params.overrides - Optional ethers.Override params for the transaction call (like manual gas limit)
+ * @returns The transaction hash
+
  */
-export async function enableAppVersion({
-  signer,
-  args,
-  overrides,
-}: EnableAppVersionOptions): Promise<{ txHash: string; success: boolean }> {
+export async function enableAppVersion(
+  params: EnableAppVersionOptions,
+): Promise<{ txHash: string }> {
+  const {
+    signer,
+    args: { appId, appVersion, enabled },
+    overrides,
+  } = params;
   const contract = createContract(signer);
 
   try {
-    const appId = utils.parseUnits(args.appId, 0);
-    const appVersion = utils.parseUnits(args.appVersion, 0);
-
     const adjustedOverrides = await gasAdjustedOverrides(
       contract,
       'enableAppVersion',
-      [appId, appVersion, args.enabled],
+      [appId, appVersion, enabled],
       overrides,
     );
 
-    const tx = await contract.enableAppVersion(appId, appVersion, args.enabled, {
+    const tx = await contract.enableAppVersion(appId, appVersion, enabled, {
       ...adjustedOverrides,
     });
     await tx.wait();
 
     return {
       txHash: tx.hash,
-      success: true,
     };
   } catch (error: unknown) {
     const decodedError = decodeContractError(error, contract);
@@ -146,36 +158,36 @@ export async function enableAppVersion({
 
 /**
  * Add a new delegatee to an app
- * @param signer - The ethers signer to use for the transaction. Could be a standard Ethers Signer or a PKPEthersWallet
- * @param args - Object containing appId and delegatee address
- * @param overrides - Optional override params for the transaction call like manual gas limit
- * @returns The transaction hash and a success flag
+ * @param params
+ * @param params.signer - The ethers signer to use for the transaction. Could be a standard Ethers Signer or a PKPEthersWallet
+ * @param params.args - Object containing appId and delegatee address
+ * @param params.overrides - Optional ethers.Override params for the transaction call (like manual gas limit)
+ * @returns The transaction hash
+
  */
-export async function addDelegatee({
-  signer,
-  args,
-  overrides,
-}: AddDelegateeOptions): Promise<{ txHash: string; success: boolean }> {
+export async function addDelegatee(params: AddDelegateeOptions): Promise<{ txHash: string }> {
+  const {
+    signer,
+    args: { appId, delegateeAddress },
+    overrides,
+  } = params;
   const contract = createContract(signer);
 
   try {
-    const appId = utils.parseUnits(args.appId, 0);
-
     const adjustedOverrides = await gasAdjustedOverrides(
       contract,
       'addDelegatee',
-      [appId, args.delegatee],
+      [appId, delegateeAddress],
       overrides,
     );
 
-    const tx = await contract.addDelegatee(appId, args.delegatee, {
+    const tx = await contract.addDelegatee(appId, delegateeAddress, {
       ...adjustedOverrides,
     });
     await tx.wait();
 
     return {
       txHash: tx.hash,
-      success: true,
     };
   } catch (error: unknown) {
     const decodedError = decodeContractError(error, contract);
@@ -185,36 +197,36 @@ export async function addDelegatee({
 
 /**
  * Remove a delegatee from an app
- * @param signer - The ethers signer to use for the transaction. Could be a standard Ethers Signer or a PKPEthersWallet
- * @param args - Object containing appId and delegatee address
- * @param overrides - Optional override params for the transaction call like manual gas limit
- * @returns The transaction hash and a success flag
+ * @param params
+ * @param params.signer - The ethers signer to use for the transaction. Could be a standard Ethers Signer or a PKPEthersWallet
+ * @param params.args - Object containing appId and delegatee address
+ * @param params.overrides - Optional ethers.Override params for the transaction call (like manual gas limit)
+ * @returns The transaction hash
+
  */
-export async function removeDelegatee({
-  signer,
-  args,
-  overrides,
-}: RemoveDelegateeOptions): Promise<{ txHash: string; success: boolean }> {
+export async function removeDelegatee(params: RemoveDelegateeOptions): Promise<{ txHash: string }> {
+  const {
+    signer,
+    args: { appId, delegateeAddress },
+    overrides,
+  } = params;
   const contract = createContract(signer);
 
   try {
-    const appId = utils.parseUnits(args.appId, 0);
-
     const adjustedOverrides = await gasAdjustedOverrides(
       contract,
       'removeDelegatee',
-      [appId, args.delegatee],
+      [appId, delegateeAddress],
       overrides,
     );
 
-    const tx = await contract.removeDelegatee(appId, args.delegatee, {
+    const tx = await contract.removeDelegatee(appId, delegateeAddress, {
       ...adjustedOverrides,
     });
     await tx.wait();
 
     return {
       txHash: tx.hash,
-      success: true,
     };
   } catch (error: unknown) {
     const decodedError = decodeContractError(error, contract);
@@ -224,21 +236,23 @@ export async function removeDelegatee({
 
 /**
  * Delete an application by setting its isDeleted flag to true
- * @param signer - The ethers signer to use for the transaction. Could be a standard Ethers Signer or a PKPEthersWallet
- * @param args - Object containing appId
- * @param overrides - Optional override params for the transaction call like manual gas limit
+ *
+ * @param params
+ * @param params.signer - The ethers signer to use for the transaction. Could be a standard Ethers Signer or a PKPEthersWallet
+ * @param params.args - Object containing appId
+ * @param params.overrides - Optional ethers.Override params for the transaction call (like manual gas limit)
  * @returns The transaction hash and a success flag
+
  */
-export async function deleteApp({
-  signer,
-  args,
-  overrides,
-}: DeleteAppOptions): Promise<{ txHash: string; success: boolean }> {
+export async function deleteApp(params: DeleteAppOptions): Promise<{ txHash: string }> {
+  const {
+    signer,
+    args: { appId },
+    overrides,
+  } = params;
   const contract = createContract(signer);
 
   try {
-    const appId = utils.parseUnits(args.appId, 0);
-
     const adjustedOverrides = await gasAdjustedOverrides(contract, 'deleteApp', [appId], overrides);
 
     const tx = await contract.deleteApp(appId, {
@@ -248,7 +262,6 @@ export async function deleteApp({
 
     return {
       txHash: tx.hash,
-      success: true,
     };
   } catch (error: unknown) {
     const decodedError = decodeContractError(error, contract);
@@ -258,21 +271,22 @@ export async function deleteApp({
 
 /**
  * Undelete an app by setting its isDeleted flag to false
- * @param signer - The ethers signer to use for the transaction. Could be a standard Ethers Signer or a PKPEthersWallet
- * @param args - Object containing appId
- * @param overrides - Optional override params for the transaction call like manual gas limit
+ * @param params
+ * @param params.signer - The ethers signer to use for the transaction. Could be a standard Ethers Signer or a PKPEthersWallet
+ * @param params.args - Object containing appId
+ * @param params.overrides - Optional ethers.Override params for the transaction call (like manual gas limit)
  * @returns The transaction hash and a success flag
+
  */
-export async function undeleteApp({
-  signer,
-  args,
-  overrides,
-}: UndeleteAppOptions): Promise<{ txHash: string; success: boolean }> {
+export async function undeleteApp(params: UndeleteAppOptions): Promise<{ txHash: string }> {
+  const {
+    signer,
+    args: { appId },
+    overrides,
+  } = params;
   const contract = createContract(signer);
 
   try {
-    const appId = utils.parseUnits(args.appId, 0);
-
     const adjustedOverrides = await gasAdjustedOverrides(
       contract,
       'undeleteApp',
@@ -287,7 +301,6 @@ export async function undeleteApp({
 
     return {
       txHash: tx.hash,
-      success: true,
     };
   } catch (error: unknown) {
     const decodedError = decodeContractError(error, contract);

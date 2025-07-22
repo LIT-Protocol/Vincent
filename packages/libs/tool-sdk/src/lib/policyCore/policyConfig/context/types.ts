@@ -1,6 +1,7 @@
 // src/lib/policyConfig/context/types.ts
 
-import { z } from 'zod';
+import type { z } from 'zod';
+
 import type {
   PolicyResponseAllow,
   PolicyResponseAllowNoResult,
@@ -46,6 +47,9 @@ export interface PolicyContext<
     : (result: z.infer<AllowSchema>) => ContextAllowResponse<z.infer<AllowSchema>>;
 
   deny: DenySchema extends z.ZodUndefined
-    ? (error?: string) => ContextDenyResponseNoResult
-    : (result: z.infer<DenySchema>, error?: string) => ContextDenyResponse<z.infer<DenySchema>>;
+    ? () => ContextDenyResponseNoResult
+    : (
+        result: z.infer<DenySchema>,
+        runtimeError?: string,
+      ) => ContextDenyResponse<z.infer<DenySchema>>;
 }

@@ -72,6 +72,7 @@ export const useConsentInfo = (appId: string): ConsentInfoState => {
     if (!app || !appVersions || appVersions.length === 0) {
       // Only mark as complete if we have a valid appId but no data AND queries are done
       setIsDataFetchingComplete(true);
+
       return;
     }
 

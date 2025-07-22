@@ -5,7 +5,7 @@
   "type:": "module",
   "scripts": {
     "prebuild": "node scripts/copy-api-html.js",
-    "build": "pnpm unbuild",
+    "build": "tsc --noEmit -p tsconfig.app.json && pnpm unbuild",
     "start": "pnpm build && node ./dist/bin/apiServer.mjs",
     "test": "echo This package only contains e2e/integration tests. Skipping 'test' target."
   },

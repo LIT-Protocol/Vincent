@@ -1,22 +1,17 @@
 // src/lib/toolCore/toolConfig/context/toolContext.ts
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { z } from 'zod';
+import type { z } from 'zod';
+
 import type {
   PolicyEvaluationResultContext,
   ToolExecutionPolicyContext,
   ToolExecutionPolicyEvaluationResult,
   VincentPolicy,
 } from '../../../types';
-
 import type { BaseToolContext, ToolContext } from './types';
 
-import {
-  createSuccess,
-  createSuccessNoResult,
-  createFailure,
-  createFailureNoResult,
-} from './resultCreators';
+import { createSuccess, createFailure } from './resultCreators';
 
 /**
  * Builds an execution-time ToolContext for use inside `execute()` lifecycle methods.
@@ -26,18 +21,11 @@ import {
  */
 export function createExecutionToolContext<
   PolicyMapByPackageName extends Record<string, any>,
-  SuccessSchema extends z.ZodType = z.ZodUndefined,
-  FailSchema extends z.ZodType = z.ZodUndefined,
 >(params: {
   baseContext: BaseToolContext<ToolExecutionPolicyEvaluationResult<PolicyMapByPackageName>>;
-  successSchema?: SuccessSchema;
-  failSchema?: FailSchema;
   policiesByPackageName: PolicyMapByPackageName;
-}): ToolContext<SuccessSchema, FailSchema, ToolExecutionPolicyContext<PolicyMapByPackageName>> {
-  const { baseContext, successSchema, failSchema, policiesByPackageName } = params;
-
-  const succeed = successSchema ? createSuccess : createSuccessNoResult;
-  const fail = failSchema ? createFailure : createFailureNoResult;
+}): ToolContext<any, any, ToolExecutionPolicyContext<PolicyMapByPackageName>> {
+  const { baseContext, policiesByPackageName } = params;
 
   const allowedPolicies =
     {} as ToolExecutionPolicyContext<PolicyMapByPackageName>['allowedPolicies'];
@@ -63,8 +51,8 @@ export function createExecutionToolContext<
   return {
     ...baseContext,
     policiesContext: upgradedPoliciesContext,
-    succeed: succeed as ToolContext<SuccessSchema, FailSchema>['succeed'],
-    fail: fail as ToolContext<SuccessSchema, FailSchema>['fail'],
+    succeed: createSuccess as ToolContext<any, any, PolicyMapByPackageName>['succeed'],
+    fail: createFailure as ToolContext<any, any, PolicyMapByPackageName>['fail'],
   };
 }
 
@@ -74,7 +62,7 @@ export function createExecutionToolContext<
  * ensuring developers don’t call commit prematurely. Enforces policy result typing.
  */
 export function createPrecheckToolContext<
-  PolicyMap extends Record<
+  PolicyMapByPackageName extends Record<
     string,
     {
       __schemaTypes: {
@@ -84,21 +72,14 @@ export function createPrecheckToolContext<
       vincentPolicy: VincentPolicy<any, any, any, any, any, any, any, any, any, any, any, any, any>;
     }
   >,
-  SuccessSchema extends z.ZodType = z.ZodUndefined,
-  FailSchema extends z.ZodType = z.ZodUndefined,
 >(params: {
-  baseContext: BaseToolContext<PolicyEvaluationResultContext<PolicyMap>>;
-  successSchema?: SuccessSchema;
-  failSchema?: FailSchema;
-}): ToolContext<SuccessSchema, FailSchema, PolicyEvaluationResultContext<PolicyMap>> {
-  const { baseContext, successSchema, failSchema } = params;
-
-  const succeed = successSchema ? createSuccess : createSuccessNoResult;
-  const fail = failSchema ? createFailure : createFailureNoResult;
+  baseContext: BaseToolContext<PolicyEvaluationResultContext<PolicyMapByPackageName>>;
+}): ToolContext<any, any, PolicyEvaluationResultContext<PolicyMapByPackageName>> {
+  const { baseContext } = params;
 
   return {
     ...baseContext,
-    succeed: succeed as ToolContext<SuccessSchema, FailSchema, any>['succeed'],
-    fail: fail as ToolContext<SuccessSchema, FailSchema, any>['fail'],
+    succeed: createSuccess as ToolContext<any, any, PolicyMapByPackageName>['succeed'],
+    fail: createFailure as ToolContext<any, any, PolicyMapByPackageName>['fail'],
   };
 }

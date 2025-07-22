@@ -2,8 +2,8 @@
 
 import type { z } from 'zod';
 
+import type { BaseToolContext, SchemaValidationError } from '@lit-protocol/vincent-tool-sdk';
 import type { VincentPolicy } from '@lit-protocol/vincent-tool-sdk/internal';
-import type { BaseToolContext } from '@lit-protocol/vincent-tool-sdk';
 
 /* eslint-disable @typescript-eslint/no-unsafe-function-type */
 
@@ -24,7 +24,8 @@ export interface ToolPrecheckResponseSuccessNoResult<Policies extends Record<str
 /** @category Interfaces */
 export interface ToolPrecheckResponseFailure<Result, Policies extends Record<string, any>> {
   success: false;
-  error?: string;
+  runtimeError?: string;
+  schemaValidationError?: SchemaValidationError;
   result: Result;
   context?: BaseToolContext<PolicyPrecheckResultContext<Policies>>;
 }
@@ -32,7 +33,8 @@ export interface ToolPrecheckResponseFailure<Result, Policies extends Record<str
 /** @category Interfaces */
 export interface ToolPrecheckResponseFailureNoResult<Policies extends Record<string, any>> {
   success: false;
-  error?: string;
+  runtimeError?: string;
+  schemaValidationError?: SchemaValidationError;
   result?: never;
   context?: BaseToolContext<PolicyPrecheckResultContext<Policies>>;
 }
@@ -100,15 +102,17 @@ export type PolicyPrecheckResultContext<
   | {
       allow: false;
       deniedPolicy: {
-        error?: string;
+        runtimeError?: string;
         packageName: keyof Policies;
-        result: Policies[Extract<keyof Policies, string>]['__schemaTypes'] extends {
-          precheckDenyResultSchema: infer Schema;
-        }
-          ? Schema extends z.ZodType
-            ? z.infer<Schema>
-            : undefined
-          : undefined;
+        result:
+          | (Policies[Extract<keyof Policies, string>]['__schemaTypes'] extends {
+              precheckDenyResultSchema: infer Schema;
+            }
+              ? Schema extends z.ZodType
+                ? z.infer<Schema>
+                : undefined
+              : undefined)
+          | undefined;
       };
       allowedPolicies?: {
         [PolicyKey in keyof Policies]?: {

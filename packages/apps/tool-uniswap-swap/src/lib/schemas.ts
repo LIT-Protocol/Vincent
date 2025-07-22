@@ -1,4 +1,6 @@
+import { SchemaValidationError } from '@lit-protocol/vincent-tool-sdk';
 import { z } from 'zod';
+import { bundledVincentPolicy as spendingLimitBundledPolicy } from '@lit-protocol/vincent-policy-spending-limit';
 
 export const toolParamsSchema = z.object({
   ethRpcUrl: z
@@ -40,6 +42,33 @@ export const toolParamsSchema = z.object({
   tokenOutDecimals: z
     .number()
     .describe('ERC20 Token to buy decimals. For example 18 for WETH on Base.'),
+});
+
+export const precheckFailSchema = z.object({
+  reason: z
+    .string()
+    .optional()
+    .describe('The reason for failing the execution in cases where we identified the reason.'),
+});
+
+const spendingLimitCommitFailSchema = spendingLimitBundledPolicy.vincentPolicy
+  .commitDenyResultSchema
+  ? spendingLimitBundledPolicy.vincentPolicy.commitDenyResultSchema
+  : z.undefined().optional();
+
+export const executeFailSchema = z.object({
+  reason: z
+    .string()
+    .optional()
+    .describe('The reason for failing the execution in cases where we identified the reason.'),
+  spendingLimitCommitFail: z
+    .object({
+      runtimeError: z.string().optional(),
+      schemaValidationError: z.custom<SchemaValidationError>().optional(),
+      structuredCommitFailureReason: spendingLimitCommitFailSchema.optional(),
+    })
+    .optional()
+    .describe('The commit failure result'),
 });
 
 export const executeSuccessSchema = z.object({

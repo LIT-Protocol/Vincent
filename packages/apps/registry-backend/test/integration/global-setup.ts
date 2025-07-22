@@ -1,5 +1,7 @@
-import { setup as setupDevServer } from 'jest-process-manager';
 import { resolve } from 'path';
+
+import { setup as setupDevServer } from 'jest-process-manager';
+
 import { startMongoMemoryServer } from './mongodb-memory-server';
 
 module.exports = async function globalSetup() {
