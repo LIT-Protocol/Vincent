@@ -81,9 +81,9 @@ export function UpdateVersionPage({ consentInfoMap, readAuthInfo }: UpdateVersio
         await permitApp({
           signer: userPkpWallet,
           args: {
-            pkpTokenId: readAuthInfo.authInfo.agentPKP!.tokenId,
-            appId: consentInfoMap.app.appId.toString(),
-            appVersion: consentInfoMap.app.activeVersion!.toString(),
+            pkpEthAddress: readAuthInfo.authInfo.agentPKP!.ethAddress,
+            appId: Number(consentInfoMap.app.appId),
+            appVersion: Number(consentInfoMap.app.activeVersion),
             permissionData: formData,
           },
         });
@@ -126,8 +126,18 @@ export function UpdateVersionPage({ consentInfoMap, readAuthInfo }: UpdateVersio
         {/* Page Header */}
         <PageHeader
           icon={
-            <svg className="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
+            <svg
+              className="w-4 h-4 text-orange-500"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"
+              />
             </svg>
           }
           title="Update App Version"

@@ -2,6 +2,7 @@ import { Moon, Sun, LogOut, User, Copy } from 'lucide-react';
 import { Button } from '@/components/shared/ui/button';
 import { AuthInfo, useClearAuthInfo } from '@/hooks/user-dashboard/useAuthInfo';
 import { ThemeType } from './theme';
+import { Link } from 'react-router-dom';
 
 interface ConsentPageHeaderProps {
   isDark: boolean;
@@ -41,11 +42,13 @@ export function ConsentPageHeader({
     <div className={`px-6 py-4 border-b ${theme.cardBorder}`}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <img
-            src={isDark ? '/vincent-by-lit-white-logo.png' : '/vincent-by-lit-logo.png'}
-            alt="Vincent by Lit Protocol"
-            className="h-8"
-          />
+          <Link to="/" className="flex items-center">
+            <img
+              src={isDark ? '/vincent-by-lit-white-logo.png' : '/vincent-by-lit-logo.png'}
+              alt="Vincent by Lit Protocol"
+              className="h-8 cursor-pointer hover:opacity-80 transition-opacity"
+            />
+          </Link>
         </div>
         <div className="flex items-center gap-2">
           <div className="relative group">

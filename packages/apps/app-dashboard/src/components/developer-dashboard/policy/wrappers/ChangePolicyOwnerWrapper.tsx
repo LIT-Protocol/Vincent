@@ -5,7 +5,6 @@ import { getErrorMessage } from '@/utils/developer-dashboard/app-forms';
 import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
 import { ChangePolicyOwnerForm, ChangePolicyOwnerFormData } from '../forms/ChangePolicyOwnerForm';
 import Loading from '@/components/shared/ui/Loading';
-import { useAddressCheck } from '@/hooks/developer-dashboard/tool/useAddressCheck';
 
 export function ChangePolicyOwnerWrapper() {
   const { packageName } = useParams<{ packageName: string }>();
@@ -31,8 +30,6 @@ export function ChangePolicyOwnerWrapper() {
       navigate(`/developer/policies`); // Immediate navigation, otherwise query will say policy DNE
     }
   }, [isSuccess, data, policy]);
-
-  useAddressCheck(policy || null);
 
   // Loading states
   if (policyLoading) return <Loading />;

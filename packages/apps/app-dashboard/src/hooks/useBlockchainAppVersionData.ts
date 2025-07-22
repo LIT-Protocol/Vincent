@@ -3,8 +3,8 @@ import { getAppVersion, AppVersion } from '@lit-protocol/vincent-contracts-sdk';
 import { readOnlySigner } from '@/utils/developer-dashboard/readOnlySigner';
 
 export function useBlockchainAppVersionData(
-  appId: string | undefined,
-  versionId: string | undefined,
+  appId: number | undefined,
+  versionId: number | undefined,
 ) {
   const [blockchainAppVersion, setBlockchainAppVersion] = useState<AppVersion | null>(null);
   const [blockchainAppVersionError, setBlockchainAppVersionError] = useState<string | null>(null);
@@ -24,8 +24,8 @@ export function useBlockchainAppVersionData(
       const appVersionResult = await getAppVersion({
         signer: readOnlySigner,
         args: {
-          appId: appId.toString(),
-          version: versionId.toString(),
+          appId,
+          version: versionId,
         },
       });
 

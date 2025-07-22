@@ -1,10 +1,11 @@
 import { useMemo } from 'react';
-import { useAccount } from 'wagmi';
+import useReadAuthInfo from '@/hooks/user-dashboard/useAuthInfo';
 import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
 import { Policy } from '@/types/developer-dashboard/appTypes';
 
 export function useUserPolicies() {
-  const { address } = useAccount();
+  const { authInfo } = useReadAuthInfo();
+  const address = authInfo?.agentPKP?.ethAddress;
 
   const {
     data: allPolicies,
@@ -17,6 +18,7 @@ export function useUserPolicies() {
   // Filter policies by current user
   const filteredPolicies = useMemo(() => {
     if (!address || !allPolicies?.length) return [];
+
     return allPolicies.filter(
       (policy: Policy) => policy.authorWalletAddress.toLowerCase() === address.toLowerCase(),
     );

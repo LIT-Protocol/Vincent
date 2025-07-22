@@ -1,6 +1,5 @@
 import { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useAddressCheck } from '@/hooks/developer-dashboard/tool/useAddressCheck';
 import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
 import { StatusMessage } from '@/components/shared/ui/statusMessage';
 import { EditToolVersionForm, type EditToolVersionFormData } from '../forms/EditToolVersionForm';
@@ -43,8 +42,6 @@ export function EditToolVersionWrapper() {
     }
   }, [isSuccess, data, navigate, tool, versionData]);
 
-  useAddressCheck(tool || null);
-
   // Loading states
   if (toolLoading || versionLoading) return <Loading />;
 
@@ -79,14 +76,16 @@ export function EditToolVersionWrapper() {
   // Render with page UI and form component
   return (
     <div className="space-y-6">
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <h1 className="text-3xl font-bold text-gray-900">
-            Edit {tool.packageName} - Version {versionData.version}
-          </h1>
-          <p className="text-gray-600 mt-2">
-            Update the settings and configuration for this version
-          </p>
+      <div className="w-full max-w-4xl mx-auto">
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            <h1 className="text-3xl font-bold text-gray-900">
+              Edit {tool.packageName} - Version {versionData.version}
+            </h1>
+            <p className="text-gray-600 mt-2">
+              Update the settings and configuration for this version
+            </p>
+          </div>
         </div>
       </div>
 

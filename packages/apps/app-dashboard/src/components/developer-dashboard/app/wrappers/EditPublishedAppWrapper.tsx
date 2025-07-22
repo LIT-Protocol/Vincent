@@ -5,7 +5,6 @@ import { StatusMessage } from '@/components/shared/ui/statusMessage';
 import { EditPublishedAppForm, type EditPublishedAppFormData } from '../forms/EditPublishedAppForm';
 import { getErrorMessage, navigateWithDelay } from '@/utils/developer-dashboard/app-forms';
 import Loading from '@/components/shared/ui/Loading';
-import { useAddressCheck } from '@/hooks/developer-dashboard/app/useAddressCheck';
 
 export function EditPublishedAppWrapper() {
   const { appId } = useParams<{ appId: string }>();
@@ -36,8 +35,6 @@ export function EditPublishedAppWrapper() {
       navigateWithDelay(navigate, `/developer/appId/${app.appId}`);
     }
   }, [isSuccess, data, app]);
-
-  useAddressCheck(app || null);
 
   // Loading states
   if (appLoading || versionsLoading) return <Loading />;
@@ -71,10 +68,12 @@ export function EditPublishedAppWrapper() {
   // Render with page UI and form component
   return (
     <div className="space-y-6">
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <h1 className="text-3xl font-bold text-gray-900">Edit {app.name}</h1>
-          <p className="text-gray-600 mt-2">Update your application settings and configuration</p>
+      <div className="w-full max-w-2xl mx-auto">
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            <h1 className="text-3xl font-bold text-gray-900">Edit {app.name}</h1>
+            <p className="text-gray-600 mt-2">Update your application settings and configuration</p>
+          </div>
         </div>
       </div>
 

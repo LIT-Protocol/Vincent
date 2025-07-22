@@ -1,10 +1,11 @@
 import { useMemo } from 'react';
-import { useAccount } from 'wagmi';
+import useReadAuthInfo from '@/hooks/user-dashboard/useAuthInfo';
 import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
 import { App } from '@/types/developer-dashboard/appTypes';
 
 export function useUserApps() {
-  const { address } = useAccount();
+  const { authInfo } = useReadAuthInfo();
+  const address = authInfo?.agentPKP?.ethAddress;
 
   const { data: allApps, isLoading, isError, error, ...rest } = vincentApiClient.useListAppsQuery();
 

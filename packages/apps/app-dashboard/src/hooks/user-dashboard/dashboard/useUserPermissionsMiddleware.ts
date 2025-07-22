@@ -1,20 +1,23 @@
 import { readOnlySigner } from '@/utils/developer-dashboard/readOnlySigner';
-import { getAllPermittedAppIdsForPkp, getPermittedAppVersionForPkp } from '@lit-protocol/vincent-contracts-sdk';
+import {
+  getAllPermittedAppIdsForPkp,
+  getPermittedAppVersionForPkp,
+} from '@lit-protocol/vincent-contracts-sdk';
 import { useEffect, useState } from 'react';
 
 export type UseUserPermissionsMiddlewareProps = {
-  pkpTokenId: string;
+  pkpEthAddress: string;
 };
 
 export type UseUserPermissionsMiddlewareReturn = {
-  permittedApps: string[] | null;
+  permittedApps: number[] | null;
   permittedAppVersions: Record<string, string>;
   isLoading: boolean;
   error: string | null;
 };
 
 export const useUserPermissionsMiddleware = ({
-  pkpTokenId,
+  pkpEthAddress,
 }: UseUserPermissionsMiddlewareProps): UseUserPermissionsMiddlewareReturn => {
   const [state, setState] = useState<UseUserPermissionsMiddlewareReturn>({
     permittedApps: null,
@@ -25,12 +28,12 @@ export const useUserPermissionsMiddleware = ({
 
   useEffect(() => {
     // Early return if params are missing
-    if (!pkpTokenId) {
+    if (!pkpEthAddress) {
       setState({
         permittedApps: null,
         permittedAppVersions: {},
         isLoading: false,
-        error: 'Missing pkpTokenId',
+        error: 'Missing pkpEthAddress',
       });
       return;
     }
@@ -39,25 +42,28 @@ export const useUserPermissionsMiddleware = ({
       try {
         const userApps = await getAllPermittedAppIdsForPkp({
           signer: readOnlySigner,
-          args: { pkpTokenId },
+          args: { pkpEthAddress },
         });
 
         // Get app versions for each permitted app
         const appVersionPromises = userApps.map(async (appId) => {
           const version = await getPermittedAppVersionForPkp({
             signer: readOnlySigner,
-            args: { pkpTokenId, appId },
+            args: { pkpEthAddress, appId },
           });
           return { appId, version };
         });
 
         const appVersionResults = await Promise.all(appVersionPromises);
-        
+
         // Create a record mapping app ID to version
-        const permittedAppVersions = appVersionResults.reduce((acc, { appId, version }) => {
-          acc[appId] = version;
-          return acc;
-        }, {} as Record<string, string>);
+        const permittedAppVersions = appVersionResults.reduce(
+          (acc, { appId, version }) => {
+            acc[appId.toString()] = version?.toString() ?? '';
+            return acc;
+          },
+          {} as Record<string, string>,
+        );
 
         setState({
           permittedApps: userApps,
@@ -76,7 +82,7 @@ export const useUserPermissionsMiddleware = ({
     };
 
     checkPermitted();
-  }, [pkpTokenId]);
+  }, [pkpEthAddress]);
 
   return state;
 };

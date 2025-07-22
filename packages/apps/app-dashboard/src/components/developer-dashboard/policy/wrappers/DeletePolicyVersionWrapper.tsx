@@ -4,7 +4,6 @@ import {
   DeletePolicyVersionForm,
   DeletePolicyVersionFormData,
 } from '../forms/DeletePolicyVersionForm';
-import { useAddressCheck } from '@/hooks/developer-dashboard/tool/useAddressCheck';
 import { StatusMessage } from '@/components/shared/ui/statusMessage';
 import { getErrorMessage } from '@/utils/developer-dashboard/app-forms';
 import Loading from '@/components/shared/ui/Loading';
@@ -50,8 +49,6 @@ export function DeletePolicyVersionWrapper() {
       navigate(`/developer/policyId/${encodeURIComponent(packageName!)}/versions`); // Navigate immediately, no delay needed
     }
   }, [isSuccess, data, navigate]);
-
-  useAddressCheck(policy || null);
 
   // Loading states
   if (policyLoading || versionLoading) return <Loading />;
@@ -99,12 +96,14 @@ export function DeletePolicyVersionWrapper() {
   };
   return (
     <div className="space-y-6">
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <h1 className="text-3xl font-bold text-gray-900">Delete Policy Version</h1>
-          <p className="text-gray-600 mt-2">
-            Delete "{policy.title}" version {version}. This action can be undone.
-          </p>
+      <div className="w-full max-w-2xl mx-auto">
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            <h1 className="text-3xl font-bold text-gray-900">Delete Policy Version</h1>
+            <p className="text-gray-600 mt-2">
+              Delete "{policy.title}" version {version}. This action can be undone.
+            </p>
+          </div>
         </div>
       </div>
 

@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { DeleteToolVersionForm, DeleteToolVersionFormData } from '../forms/DeleteToolVersionForm';
-import { useAddressCheck } from '@/hooks/developer-dashboard/tool/useAddressCheck';
 import { StatusMessage } from '@/components/shared/ui/statusMessage';
 import { getErrorMessage } from '@/utils/developer-dashboard/app-forms';
 import Loading from '@/components/shared/ui/Loading';
@@ -47,8 +46,6 @@ export function DeleteToolVersionWrapper() {
       navigate(`/developer/toolId/${encodeURIComponent(packageName!)}/versions`); // Navigate immediately, no delay needed
     }
   }, [isSuccess, data, navigate]);
-
-  useAddressCheck(tool || null);
 
   // Loading states
   if (toolLoading || versionLoading) return <Loading />;
@@ -96,12 +93,14 @@ export function DeleteToolVersionWrapper() {
   };
   return (
     <div className="space-y-6">
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <h1 className="text-3xl font-bold text-gray-900">Delete Tool Version</h1>
-          <p className="text-gray-600 mt-2">
-            Delete "{tool.title}" version {version}. This action can be undone.
-          </p>
+      <div className="w-full max-w-2xl mx-auto">
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            <h1 className="text-3xl font-bold text-gray-900">Delete Tool Version</h1>
+            <p className="text-gray-600 mt-2">
+              Delete "{tool.title}" version {version}. This action can be undone.
+            </p>
+          </div>
         </div>
       </div>
 

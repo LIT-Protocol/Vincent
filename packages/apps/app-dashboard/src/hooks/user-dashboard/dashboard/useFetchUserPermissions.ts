@@ -4,8 +4,8 @@ import { readOnlySigner } from '@/utils/developer-dashboard/readOnlySigner';
 import { useEffect, useState } from 'react';
 
 export type UseFetchUserPermissionsProps = {
-  appId: string;
-  pkpTokenId: string;
+  appId: number;
+  pkpEthAddress: string;
 };
 
 export type UseFetchUserPermissionsReturn = {
@@ -16,7 +16,7 @@ export type UseFetchUserPermissionsReturn = {
 
 export const useFetchUserPermissions = ({
   appId,
-  pkpTokenId,
+  pkpEthAddress,
 }: UseFetchUserPermissionsProps): UseFetchUserPermissionsReturn => {
   const [state, setState] = useState<UseFetchUserPermissionsReturn>({
     existingData: {} as PermissionData,
@@ -26,7 +26,7 @@ export const useFetchUserPermissions = ({
 
   useEffect(() => {
     // Early return if params are missing
-    if (!pkpTokenId || !appId) {
+    if (!pkpEthAddress || !appId) {
       setState({
         existingData: {} as PermissionData,
         isLoading: false,
@@ -40,8 +40,8 @@ export const useFetchUserPermissions = ({
         const existingData = await getAllToolsAndPoliciesForApp({
           signer: readOnlySigner,
           args: {
-            pkpTokenId,
-            appId: appId.toString(),
+            pkpEthAddress,
+            appId,
           },
         });
 
@@ -60,7 +60,7 @@ export const useFetchUserPermissions = ({
     };
 
     checkPermitted();
-  }, [pkpTokenId, appId]);
+  }, [pkpEthAddress, appId]);
 
   return state;
 };

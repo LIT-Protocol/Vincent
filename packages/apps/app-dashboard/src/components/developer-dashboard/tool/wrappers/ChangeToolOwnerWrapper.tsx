@@ -5,7 +5,6 @@ import { StatusMessage } from '@/components/shared/ui/statusMessage';
 import { getErrorMessage } from '@/utils/developer-dashboard/app-forms';
 import { ChangeToolOwnerForm, ChangeToolOwnerFormData } from '../forms/ChangeToolOwnerForm';
 import Loading from '@/components/shared/ui/Loading';
-import { useAddressCheck } from '@/hooks/developer-dashboard/tool/useAddressCheck';
 
 export function ChangeToolOwnerWrapper() {
   const { packageName } = useParams<{ packageName: string }>();
@@ -30,8 +29,6 @@ export function ChangeToolOwnerWrapper() {
       navigate(`/developer/tools`); // Immediate navigation, otherwise query will say tool DNE
     }
   }, [isSuccess, data, navigate, tool]);
-
-  useAddressCheck(tool || null);
 
   // Loading states
   if (toolLoading) return <Loading />;
