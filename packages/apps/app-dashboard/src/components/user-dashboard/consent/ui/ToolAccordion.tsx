@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { ChevronRight } from 'lucide-react';
 import { Card, CardContent } from '@/components/shared/ui/card';
 import { ConsentInfoMap } from '@/hooks/user-dashboard/consent/useConsentInfo';
@@ -75,30 +75,25 @@ export function ToolAccordion({
         </div>
 
         {/* Expandable Content */}
-        <AnimatePresence>
-          {isExpanded && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.3, ease: 'easeInOut' }}
-              className="overflow-hidden"
-            >
-              <div className="p-3 sm:p-6 pt-4">
-                <RequiredPolicies
-                  policies={policies}
-                  consentInfoMap={consentInfoMap}
-                  theme={theme}
-                  isDark={isDark}
-                  formData={formData}
-                  onFormChange={onFormChange}
-                  onRegisterFormRef={onRegisterFormRef}
-                  toolIpfsCid={toolIpfsCid}
-                />
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <motion.div
+          initial={{ height: 0, opacity: 0 }}
+          animate={{ height: isExpanded ? 'auto' : 0, opacity: isExpanded ? 1 : 0 }}
+          transition={{ duration: 0.3, ease: 'easeInOut' }}
+          className="overflow-hidden"
+        >
+          <div className="p-3 sm:p-6 pt-4">
+            <RequiredPolicies
+              policies={policies}
+              consentInfoMap={consentInfoMap}
+              theme={theme}
+              isDark={isDark}
+              formData={formData}
+              onFormChange={onFormChange}
+              onRegisterFormRef={onRegisterFormRef}
+              toolIpfsCid={toolIpfsCid}
+            />
+          </div>
+        </motion.div>
       </CardContent>
     </Card>
   );
