@@ -8,7 +8,7 @@ import { useTheme } from '@/providers/ThemeProvider';
 import { Link } from 'react-router-dom';
 import { App } from '@/types/developer-dashboard/appTypes';
 import { Logo } from '@/components/shared/ui/Logo';
-import { ConsentFooter } from './ui/ConsentFooter';
+import { ConsentFooter } from '../ui/Footer';
 
 type AuthConnectScreenProps = {
   app: App;
@@ -25,17 +25,17 @@ export function AuthConnectScreen({ app }: AuthConnectScreenProps) {
         className={`max-w-6xl mx-auto ${themeStyles.mainCard} border ${themeStyles.mainCardBorder} rounded-2xl shadow-2xl overflow-hidden`}
       >
         {/* Header */}
-        <div className={`px-6 py-4 border-b ${themeStyles.cardBorder}`}>
+        <div className={`px-6 py-3 border-b ${themeStyles.cardBorder}`}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Link to="/" className="flex items-center">
                 <img
                   src={isDark ? '/logo-white.svg' : '/logo.svg'}
                   alt="Vincent by Lit Protocol"
-                  className="h-8 cursor-pointer hover:opacity-80 transition-opacity"
+                  className="h-4 cursor-pointer hover:opacity-80 transition-opacity"
                 />
               </Link>
-              <span className={`text-lg font-medium ${themeStyles.text}`}>
+              <span className={`text-sm font-medium ${themeStyles.text}`}>
                 Connect with Vincent
               </span>
             </div>

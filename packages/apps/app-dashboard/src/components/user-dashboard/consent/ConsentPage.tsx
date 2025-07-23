@@ -12,7 +12,7 @@ import { ConsentAppHeader } from './ui/ConsentAppHeader';
 import { AppsInfo } from './ui/AppInfo';
 import { ActionButtons } from './ui/ActionButtons';
 import { StatusCard } from './ui/StatusCard';
-import { ConsentFooter } from './ui/ConsentFooter';
+import { ConsentFooter } from '../ui/Footer';
 import { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
 import { litNodeClient } from '@/utils/user-dashboard/lit';
 import { useJwtRedirect } from '@/hooks/user-dashboard/consent/useJwtRedirect';

@@ -1,6 +1,6 @@
 import { Helmet } from 'react-helmet-async';
 import { useNavigate } from 'react-router-dom';
-import { ConsentFooter } from '@/components/user-dashboard/consent/ui/ConsentFooter';
+import { ConsentFooter } from '@/components/user-dashboard/ui/Footer';
 
 export default function RootPage() {
   const navigate = useNavigate();

@@ -1,44 +1,17 @@
 export function ConsentFooter() {
   return (
-    <div className="px-3 sm:px-6 py-2 flex flex-col items-center gap-2 text-xs">
-      <div className="flex items-center gap-1">
-        <a
-          href="https://t.me/+aa73FAF9Vp82ZjJh"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="!text-gray-400 hover:!text-gray-300 transition-colors"
-        >
-          Help
-        </a>
-        <span className="!text-gray-400"> / </span>
-        <a
-          href="https://www.litprotocol.com/legal/privacy-policy"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="!text-gray-400 hover:!text-gray-300 transition-colors"
-        >
-          Privacy
-        </a>
-        <span className="!text-gray-400"> / </span>
-        <a
-          href="https://www.litprotocol.com/legal/terms-of-service"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="!text-gray-400 hover:!text-gray-300 transition-colors"
-        >
-          Terms
-        </a>
-      </div>
-      <div className="flex items-center gap-2 !text-gray-400">
+    <div className="px-3 sm:px-6 py-2 flex flex-col items-center gap-4">
+      <div className="flex items-center gap-2 text-sm font-normal !text-gray-400">
         <span>Powered by</span>
         <a
           href="https://litprotocol.com"
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-1 !text-orange-500 hover:!text-orange-600 transition-colors"
+          className="flex items-center gap-1 font-normal no-underline !text-orange-500 hover:!text-orange-600 transition-colors"
+          style={{ textDecoration: 'none', fontWeight: 'normal', fontStyle: 'normal' }}
         >
           <svg
-            className="w-5 h-auto"
+            className="w-6 h-auto"
             width="40"
             viewBox="0 0 311 228"
             fill="none"
@@ -58,6 +31,37 @@ export function ConsentFooter() {
               fill="currentColor"
             />
           </svg>
+        </a>
+      </div>
+      <div className="flex items-center gap-1 text-sm font-normal">
+        <a
+          href="https://t.me/+aa73FAF9Vp82ZjJh"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-normal no-underline !text-gray-400 hover:!text-gray-300 transition-colors"
+          style={{ textDecoration: 'none', fontWeight: 'normal', fontStyle: 'normal' }}
+        >
+          Help
+        </a>
+        <span className="font-normal !text-gray-400"> / </span>
+        <a
+          href="https://www.litprotocol.com/legal/privacy-policy"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-normal no-underline !text-gray-400 hover:!text-gray-300 transition-colors"
+          style={{ textDecoration: 'none', fontWeight: 'normal', fontStyle: 'normal' }}
+        >
+          Privacy
+        </a>
+        <span className="font-normal !text-gray-400"> / </span>
+        <a
+          href="https://www.litprotocol.com/legal/terms-of-service"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-normal no-underline !text-gray-400 hover:!text-gray-300 transition-colors"
+          style={{ textDecoration: 'none', fontWeight: 'normal', fontStyle: 'normal' }}
+        >
+          Terms
         </a>
       </div>
     </div>
