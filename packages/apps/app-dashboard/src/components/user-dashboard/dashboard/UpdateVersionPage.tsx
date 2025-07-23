@@ -178,6 +178,7 @@ export function UpdateVersionPage({ consentInfoMap, readAuthInfo }: UpdateVersio
             theme={themeStyles}
             isLoading={isLoading}
             error={error || localError}
+            appName={consentInfoMap.app.name}
           />
         </div>
       </div>
