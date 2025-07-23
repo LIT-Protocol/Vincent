@@ -43,7 +43,7 @@ export default function ThemeProvider({ children }: ThemeProviderProps) {
       root.style.setProperty('--accent-foreground', '0 0% 100%'); // accent text
 
       // Dark theme sidebar variables to match consent components
-      root.style.setProperty('--sidebar', '220 13% 9%'); // bg-gray-900
+      root.style.setProperty('--sidebar', '0 0% 0%'); // bg-black (fully opaque)
       root.style.setProperty('--sidebar-foreground', '0 0% 100%'); // text-white
       root.style.setProperty('--sidebar-primary', '0 0% 100%'); // text-white
       root.style.setProperty('--sidebar-primary-foreground', '0 0% 0%'); // text-black
@@ -64,7 +64,7 @@ export default function ThemeProvider({ children }: ThemeProviderProps) {
       root.style.setProperty('--accent-foreground', '222 84% 5%'); // accent text
 
       // Light theme sidebar variables to match consent components
-      root.style.setProperty('--sidebar', '0 0% 100%'); // bg-white
+      root.style.setProperty('--sidebar', '210 20% 98%'); // bg-gray-50 (matches main background)
       root.style.setProperty('--sidebar-foreground', '222 84% 5%'); // text-gray-900
       root.style.setProperty('--sidebar-primary', '222 84% 5%'); // text-gray-900
       root.style.setProperty('--sidebar-primary-foreground', '0 0% 100%'); // text-white

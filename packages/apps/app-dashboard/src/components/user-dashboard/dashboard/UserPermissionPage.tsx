@@ -168,7 +168,7 @@ export function AppPermissionPage({
   const error = actionsError;
 
   return (
-    <div className="w-full">
+    <div className={`min-h-screen w-full transition-colors duration-500 ${themeStyles.bg} sm:p-4`}>
       {/* Main Card Container */}
       <div
         className={`max-w-6xl mx-auto ${themeStyles.mainCard} border ${themeStyles.mainCardBorder} rounded-2xl shadow-2xl overflow-hidden`}
@@ -195,7 +195,7 @@ export function AppPermissionPage({
           theme={themeStyles}
         />
 
-        <div className="px-6 py-8 space-y-6">
+        <div className="px-3 sm:px-6 py-6 sm:py-8 space-y-6">
           {/* App Header */}
           <ConsentAppHeader app={consentInfoMap.app} theme={themeStyles} />
 

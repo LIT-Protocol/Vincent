@@ -43,7 +43,7 @@ function UserLayoutWithSidebar({ children, className }: ComponentProps<'div'>) {
               <Separator orientation="vertical" className="mr-2 h-4" />
             </div>
           </header>
-          <main className="flex-1 p-8 flex justify-start items-start">{children}</main>
+          <main className="flex-1 sm:p-8 flex justify-start items-start">{children}</main>
         </SidebarInset>
       </SidebarProvider>
     </div>
