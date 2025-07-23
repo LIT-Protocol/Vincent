@@ -11,7 +11,7 @@ const AuthMethods = ({ setView, theme }: AuthMethodsProps) => {
     <div className="space-y-3">
       <div className="flex flex-col items-center space-y-3">
         <div
-          className={`w-1/2 py-3 px-4 flex items-center justify-between ${theme.cardBg} border ${theme.cardBorder} rounded-lg ${theme.itemHoverBg} transition-colors cursor-pointer`}
+          className={`w-full sm:w-3/4 md:w-3/4 lg:w-full py-3 px-4 flex items-center justify-between ${theme.cardBg} border ${theme.cardBorder} rounded-lg ${theme.itemHoverBg} transition-colors cursor-pointer`}
           onClick={() => setView('email')}
         >
           <div className="flex items-center">
@@ -38,7 +38,7 @@ const AuthMethods = ({ setView, theme }: AuthMethodsProps) => {
         </div>
 
         <div
-          className={`w-1/2 py-3 px-4 flex items-center justify-between ${theme.cardBg} border ${theme.cardBorder} rounded-lg ${theme.itemHoverBg} transition-colors cursor-pointer`}
+          className={`w-full sm:w-3/4 md:w-3/4 lg:w-full py-3 px-4 flex items-center justify-between ${theme.cardBg} border ${theme.cardBorder} rounded-lg ${theme.itemHoverBg} transition-colors cursor-pointer`}
           onClick={() => setView('phone')}
         >
           <div className="flex items-center">
@@ -65,7 +65,7 @@ const AuthMethods = ({ setView, theme }: AuthMethodsProps) => {
         </div>
 
         <div
-          className={`w-1/2 py-3 px-4 flex items-center justify-between ${theme.cardBg} border ${theme.cardBorder} rounded-lg ${theme.itemHoverBg} transition-colors cursor-pointer`}
+          className={`w-full sm:w-3/4 md:w-3/4 lg:w-full py-3 px-4 flex items-center justify-between ${theme.cardBg} border ${theme.cardBorder} rounded-lg ${theme.itemHoverBg} transition-colors cursor-pointer`}
           onClick={() => setView('wallet')}
         >
           <div className="flex items-center">
@@ -92,7 +92,7 @@ const AuthMethods = ({ setView, theme }: AuthMethodsProps) => {
         </div>
 
         <div
-          className={`w-1/2 py-3 px-4 flex items-center justify-between ${theme.cardBg} border ${theme.cardBorder} rounded-lg ${theme.itemHoverBg} transition-colors cursor-pointer`}
+          className={`w-full sm:w-3/4 md:w-3/4 lg:w-full py-3 px-4 flex items-center justify-between ${theme.cardBg} border ${theme.cardBorder} rounded-lg ${theme.itemHoverBg} transition-colors cursor-pointer`}
           onClick={() => setView('webauthn')}
         >
           <div className="flex items-center">

@@ -131,7 +131,7 @@ export default function WebAuthn({
           <div className="flex flex-col lg:flex-row lg:gap-6 space-y-6 lg:space-y-0">
             {registerWithWebAuthn && (
               <div
-                className={`w-1/2 lg:flex-1 mx-auto lg:mx-0 border rounded-lg p-4 ${theme.cardBg} ${theme.cardBorder}`}
+                className={`w-full lg:flex-1 mx-auto lg:mx-0 border rounded-lg p-4 ${theme.cardBg} ${theme.cardBorder}`}
               >
                 <h2 className={`text-base font-medium mb-1 ${theme.text}`}>
                   Register a new passkey
@@ -148,7 +148,7 @@ export default function WebAuthn({
             )}
 
             <div
-              className={`w-1/2 lg:flex-1 mx-auto lg:mx-0 border rounded-lg p-4 ${theme.cardBg} ${theme.cardBorder}`}
+              className={`w-full lg:flex-1 mx-auto lg:mx-0 border rounded-lg p-4 ${theme.cardBg} ${theme.cardBorder}`}
             >
               <h2 className={`text-base font-medium mb-1 ${theme.text}`}>Sign in with passkey</h2>
               <p className={`text-sm mb-3 ${theme.textMuted}`}>Use an existing passkey</p>
@@ -165,7 +165,7 @@ export default function WebAuthn({
       </div>
 
       <div className="mt-6 flex justify-center">
-        <div className="w-1/2">
+        <div className="w-full sm:w-3/4 md:w-3/4 lg:w-full max-w-2xl">
           <Button
             onClick={handleBackClick}
             className={`${theme.cardBg} ${theme.text} border ${theme.cardBorder} rounded-lg py-3 px-4 w-full font-medium text-sm ${theme.itemHoverBg} transition-colors`}

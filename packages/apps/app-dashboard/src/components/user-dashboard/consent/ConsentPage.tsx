@@ -12,6 +12,7 @@ import { ConsentAppHeader } from './ui/ConsentAppHeader';
 import { AppsInfo } from './ui/AppInfo';
 import { ActionButtons } from './ui/ActionButtons';
 import { StatusCard } from './ui/StatusCard';
+import { ConsentFooter } from './ui/ConsentFooter';
 import { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
 import { litNodeClient } from '@/utils/user-dashboard/lit';
 import { useJwtRedirect } from '@/hooks/user-dashboard/consent/useJwtRedirect';
@@ -127,7 +128,7 @@ export function ConsentPage({ consentInfoMap, readAuthInfo }: ConsentPageProps) 
           authInfo={readAuthInfo.authInfo!}
         />
 
-        <div className="px-6 py-8 space-y-6">
+        <div className="px-3 sm:px-6 py-6 sm:py-8 space-y-6">
           {/* App Header */}
           <ConsentAppHeader app={consentInfoMap.app} theme={themeStyles} />
 
@@ -156,8 +157,12 @@ export function ConsentPage({ consentInfoMap, readAuthInfo }: ConsentPageProps) 
             theme={themeStyles}
             isLoading={isLoading}
             error={error || localError}
+            appName={consentInfoMap.app.name}
           />
         </div>
+
+        {/* Footer */}
+        <ConsentFooter />
       </div>
     </div>
   );

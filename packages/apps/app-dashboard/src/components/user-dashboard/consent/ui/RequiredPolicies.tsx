@@ -31,26 +31,25 @@ export function RequiredPolicies({
   }
 
   return (
-    <div className="ml-4 space-y-3">
-      <h5 className={`text-sm font-semibold ${theme.text} mb-3`}>Policies:</h5>
+    <div className="ml-0 sm:ml-4 space-y-3">
       {policies.map((policy) => (
-        <Card key={policy.ipfsCid} className={`${theme.itemBg} border ${theme.cardBorder} ml-4`}>
-          <CardContent className="p-4">
+        <Card
+          key={policy.ipfsCid}
+          className={`${theme.itemBg} border ${theme.cardBorder} ml-0 sm:ml-4`}
+        >
+          <CardContent className="p-3 sm:p-4">
             <div className="flex items-start gap-3">
-              <div className={`p-2 rounded-lg ${theme.iconBg} border ${theme.iconBorder}`}>
+              <div
+                className={`p-2 rounded-lg ${theme.iconBg} border ${theme.iconBorder} self-start`}
+              >
                 <FileText className={`w-4 h-4 ${theme.textMuted}`} />
               </div>
-              <div className="flex-1">
-                <h6 className={`font-semibold ${theme.text}`}>
-                  {consentInfoMap.policiesByPackageName[policy.packageName]?.title ||
-                    policy.packageName}
-                </h6>
-                <div
-                  className={`flex items-center gap-2 text-sm ${theme.textMuted} font-medium mt-1`}
-                >
-                  <span>
-                    {policy.packageName} - v{policy.version}
-                  </span>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <h6 className={`font-semibold ${theme.text}`}>
+                    {consentInfoMap.policiesByPackageName[policy.packageName]?.title ||
+                      policy.packageName}
+                  </h6>
                   <a
                     href={`https://www.npmjs.com/package/${policy.packageName}/v/${policy.version}`}
                     target="_blank"
@@ -74,27 +73,31 @@ export function RequiredPolicies({
                     </div>
                   </a>
                 </div>
-                {consentInfoMap.policiesByPackageName[policy.packageName]?.description && (
-                  <p className={`text-sm ${theme.textSubtle} mt-2`}>
-                    {consentInfoMap.policiesByPackageName[policy.packageName].description}
-                  </p>
-                )}
-
-                {/* Policy Form */}
-                <PolicyForm
-                  ref={(ref) => {
-                    if (ref) {
-                      onRegisterFormRef(policy.ipfsCid, ref);
-                    }
-                  }}
-                  policy={policy}
-                  isDark={isDark}
-                  formData={formData[toolIpfsCid] || {}}
-                  onFormChange={(policyIpfsCid, data) => {
-                    onFormChange(toolIpfsCid, policyIpfsCid, data);
-                  }}
-                />
               </div>
+            </div>
+
+            {/* Description and Form - spans full width including under icon */}
+            <div className="mt-2">
+              {consentInfoMap.policiesByPackageName[policy.packageName]?.description && (
+                <p className={`text-sm ${theme.textSubtle} mb-3`}>
+                  {consentInfoMap.policiesByPackageName[policy.packageName].description}
+                </p>
+              )}
+
+              {/* Policy Form */}
+              <PolicyForm
+                ref={(ref) => {
+                  if (ref) {
+                    onRegisterFormRef(policy.ipfsCid, ref);
+                  }
+                }}
+                policy={policy}
+                isDark={isDark}
+                formData={formData[toolIpfsCid] || {}}
+                onFormChange={(policyIpfsCid, data) => {
+                  onFormChange(toolIpfsCid, policyIpfsCid, data);
+                }}
+              />
             </div>
           </CardContent>
         </Card>
