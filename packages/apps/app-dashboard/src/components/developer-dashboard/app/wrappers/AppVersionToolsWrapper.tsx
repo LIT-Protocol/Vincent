@@ -109,7 +109,6 @@ export function AppVersionToolsWrapper() {
 
       {/* Add Tools Form */}
       <CreateAppVersionToolsForm
-        versionId={Number(versionId)}
         existingTools={existingToolNames}
         onToolAdd={handleToolAdd}
         availableTools={allTools}
@@ -120,8 +119,8 @@ export function AppVersionToolsWrapper() {
         <div className="mb-4">
           <h3 className="text-lg font-medium text-gray-900">Current Tools</h3>
           <p className="text-gray-600 text-sm mt-1">
-            Tools currently associated with this version. Click the edit button to modify settings
-            inline.
+            Tools currently associated with this version. After adding and editing your tools, you
+            can publish your app version to be accessible by users.
           </p>
         </div>
         <ManageAppVersionTools
