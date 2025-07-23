@@ -86,6 +86,9 @@ export default function EthWalletAuth({ authWithEthWallet, setView, theme }: Wal
       <h1 className={`text-xl font-semibold text-center mb-2 ${theme.text}`}>
         Sign in with your Wallet
       </h1>
+      <p className={`text-sm text-center mb-6 ${theme.textMuted}`}>
+        Connect and sign with your Ethereum wallet
+      </p>
       {isWalletReady && (
         <div className="mb-4 flex justify-center">
           <div className="w-full sm:w-3/4 md:w-3/4 lg:w-full">

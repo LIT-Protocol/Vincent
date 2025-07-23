@@ -19,7 +19,7 @@ export function AuthConnectScreen({ app }: AuthConnectScreenProps) {
   const themeStyles = theme(isDark);
 
   return (
-    <div className={`min-h-screen w-full transition-colors duration-500 ${themeStyles.bg} p-4`}>
+    <div className={`min-h-screen w-full transition-colors duration-500 ${themeStyles.bg} sm:p-4`}>
       {/* Main Card Container */}
       <div
         className={`max-w-6xl mx-auto ${themeStyles.mainCard} border ${themeStyles.mainCardBorder} rounded-2xl shadow-2xl overflow-hidden`}
@@ -84,6 +84,8 @@ export function AuthConnectScreen({ app }: AuthConnectScreenProps) {
                           {app.name}
                         </button>
                       </p>
+                      {/* Dividing line */}
+                      <div className={`border-b ${themeStyles.cardBorder} pt-4`}></div>
                     </div>
                   </div>
 
