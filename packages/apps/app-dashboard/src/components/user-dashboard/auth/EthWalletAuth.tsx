@@ -85,7 +85,7 @@ export default function EthWalletAuth({ authWithEthWallet, setView, theme }: Wal
   return (
     <>
       <h1 className={`text-xl font-semibold text-center mb-2 ${theme.text}`}>
-        Sign in with your Wallet
+        Connect with your Wallet
       </h1>
       <p className={`text-sm text-center mb-6 ${theme.textMuted}`}>
         Connect and sign with your Ethereum wallet
@@ -155,7 +155,7 @@ export default function EthWalletAuth({ authWithEthWallet, setView, theme }: Wal
                     Authenticating...
                   </div>
                 ) : (
-                  'Sign In with Wallet'
+                  'Connect with Wallet'
                 )}
               </Button>
               <Button

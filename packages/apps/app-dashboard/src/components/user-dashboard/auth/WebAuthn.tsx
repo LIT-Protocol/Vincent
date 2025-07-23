@@ -147,7 +147,7 @@ export default function WebAuthn({
             <div
               className={`w-full lg:flex-1 mx-auto lg:mx-0 border rounded-lg p-4 ${theme.cardBg} ${theme.cardBorder}`}
             >
-              <h2 className={`text-base font-medium mb-1 ${theme.text}`}>Sign in with passkey</h2>
+              <h2 className={`text-base font-medium mb-1 ${theme.text}`}>Connect with passkey</h2>
               <p className={`text-sm mb-3 ${theme.textMuted}`}>Use an existing passkey</p>
               <Button
                 className={`py-3 px-4 w-full font-medium text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${theme.accentBg} ${theme.accentHover}`}
