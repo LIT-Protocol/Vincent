@@ -210,11 +210,13 @@ export function DeveloperSidebarError({ error }: DeveloperSidebarErrorProps) {
             <div className="mt-4 p-3 rounded-md border border-destructive/20 bg-destructive/5">
               <div className="flex items-start gap-3">
                 <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0 text-destructive" />
-                <div className="flex-1 space-y-1">
+                <div className="flex-1 space-y-1 min-w-0">
                   <p className="text-sm font-medium text-destructive">
                     Failed to load developer data
                   </p>
-                  <p className="text-xs text-muted-foreground">{error}</p>
+                  <p className="text-xs text-muted-foreground break-words overflow-wrap-anywhere">
+                    {error}
+                  </p>
                 </div>
               </div>
             </div>

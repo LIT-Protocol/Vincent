@@ -1,7 +1,13 @@
+import { useTheme } from '@/providers/ThemeProvider';
+import { theme } from '../consent/ui/theme';
+
 export function ConsentFooter() {
+  const { isDark } = useTheme();
+  const themeStyles = theme(isDark);
+
   return (
     <div className="px-3 sm:px-6 py-2 flex flex-col items-center gap-4">
-      <div className="flex items-center gap-2 text-sm font-normal !text-gray-400">
+      <div className={`flex items-center gap-2 text-sm font-normal ${themeStyles.textSubtle}`}>
         <span>Powered by</span>
         <a
           href="https://litprotocol.com"
@@ -11,7 +17,7 @@ export function ConsentFooter() {
           style={{ textDecoration: 'none', fontWeight: 'normal', fontStyle: 'normal' }}
         >
           <svg
-            className="w-6 h-auto"
+            className="w-5 h-auto"
             width="40"
             viewBox="0 0 311 228"
             fill="none"
@@ -33,32 +39,32 @@ export function ConsentFooter() {
           </svg>
         </a>
       </div>
-      <div className="flex items-center gap-1 text-sm font-normal">
+      <div className={`flex items-center gap-1 text-sm font-normal ${themeStyles.textSubtle}`}>
         <a
           href="https://t.me/+aa73FAF9Vp82ZjJh"
           target="_blank"
           rel="noopener noreferrer"
-          className="font-normal no-underline !text-gray-400 hover:!text-gray-300 transition-colors"
+          className={`font-normal no-underline hover:opacity-80 transition-colors ${isDark ? '!text-white/40' : '!text-gray-500'}`}
           style={{ textDecoration: 'none', fontWeight: 'normal', fontStyle: 'normal' }}
         >
           Help
         </a>
-        <span className="font-normal !text-gray-400"> / </span>
+        <span className={`font-normal ${themeStyles.textSubtle}`}> / </span>
         <a
           href="https://www.litprotocol.com/legal/privacy-policy"
           target="_blank"
           rel="noopener noreferrer"
-          className="font-normal no-underline !text-gray-400 hover:!text-gray-300 transition-colors"
+          className={`font-normal no-underline hover:opacity-80 transition-colors ${isDark ? '!text-white/40' : '!text-gray-500'}`}
           style={{ textDecoration: 'none', fontWeight: 'normal', fontStyle: 'normal' }}
         >
           Privacy
         </a>
-        <span className="font-normal !text-gray-400"> / </span>
+        <span className={`font-normal ${themeStyles.textSubtle}`}> / </span>
         <a
           href="https://www.litprotocol.com/legal/terms-of-service"
           target="_blank"
           rel="noopener noreferrer"
-          className="font-normal no-underline !text-gray-400 hover:!text-gray-300 transition-colors"
+          className={`font-normal no-underline hover:opacity-80 transition-colors ${isDark ? '!text-white/40' : '!text-gray-500'}`}
           style={{ textDecoration: 'none', fontWeight: 'normal', fontStyle: 'normal' }}
         >
           Terms

@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { permitApp } from '@lit-protocol/vincent-contracts-sdk';
 import { ConsentInfoMap } from '@/hooks/user-dashboard/consent/useConsentInfo';
@@ -27,15 +27,18 @@ export function ConsentPage({ consentInfoMap, readAuthInfo }: ConsentPageProps) 
   const { isDark, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const [localError, setLocalError] = useState<string | null>(null);
+  const [localSuccess, setLocalSuccess] = useState<string | null>(null);
   const [isConsentProcessing, setIsConsentProcessing] = useState(false);
   const formRefs = useRef<Record<string, PolicyFormRef>>({});
 
   const { formData, handleFormChange } = useConsentFormData(consentInfoMap);
   const {
     generateJWT,
+    executeRedirect,
     isLoading: isJwtLoading,
     loadingStatus: jwtLoadingStatus,
     error: jwtError,
+    redirectUrl,
   } = useJwtRedirect({ readAuthInfo });
   const {
     addPermittedActions,
@@ -44,12 +47,23 @@ export function ConsentPage({ consentInfoMap, readAuthInfo }: ConsentPageProps) 
     error: actionsError,
   } = useAddPermittedActions();
 
+  // Handle redirect when JWT is ready
+  useEffect(() => {
+    if (redirectUrl && !localSuccess) {
+      setLocalSuccess('Success! Redirecting to app...');
+      setTimeout(() => {
+        executeRedirect();
+      }, 2000);
+    }
+  }, [redirectUrl, localSuccess, executeRedirect]);
+
   // Use the theme function
   const themeStyles = theme(isDark);
 
   const handleSubmit = useCallback(async () => {
     // Clear any previous local errors
     setLocalError(null);
+    setLocalSuccess(null);
     setIsConsentProcessing(true);
 
     // Check if all forms are valid using RJSF's built-in validateForm method
@@ -89,15 +103,24 @@ export function ConsentPage({ consentInfoMap, readAuthInfo }: ConsentPageProps) 
             permissionData: formData,
           },
         });
+
+        setIsConsentProcessing(false);
+        // Show success state for 3 seconds, then redirect
+        setLocalSuccess('Permissions granted successfully!');
+        setTimeout(async () => {
+          setLocalSuccess(null);
+          await generateJWT(consentInfoMap.app, consentInfoMap.app.activeVersion!); // ! since this will be valid. Only optional in the schema doc for init creation.
+        }, 3000);
       } catch (error) {
         setLocalError(error instanceof Error ? error.message : 'Failed to permit app');
         setIsConsentProcessing(false);
         return;
       }
-      await generateJWT(consentInfoMap.app, consentInfoMap.app.activeVersion!); // ! since this will be valid. Only optional in the schema doc for init creation.
+    } else {
+      setLocalError('Some of your permissions are not valid. Please check the form and try again.');
+      setIsConsentProcessing(false);
     }
-    setIsConsentProcessing(false);
-  }, [formData, readAuthInfo, addPermittedActions]);
+  }, [formData, readAuthInfo, addPermittedActions, generateJWT, consentInfoMap.app]);
 
   const handleDecline = useCallback(() => {
     navigate(-1);
@@ -107,12 +130,12 @@ export function ConsentPage({ consentInfoMap, readAuthInfo }: ConsentPageProps) 
     formRefs.current[policyIpfsCid] = ref;
   }, []);
 
-  const isLoading = isJwtLoading || isActionsLoading || isConsentProcessing;
+  const isLoading = isJwtLoading || isActionsLoading || isConsentProcessing || !!localSuccess;
   const loadingStatus =
     jwtLoadingStatus ||
     actionsLoadingStatus ||
     (isConsentProcessing ? 'Processing consent...' : null);
-  const error = jwtError || actionsError;
+  const error = jwtError || actionsError || localError;
 
   return (
     <div className={`min-h-screen w-full transition-colors duration-500 ${themeStyles.bg} sm:p-4`}>
@@ -148,6 +171,7 @@ export function ConsentPage({ consentInfoMap, readAuthInfo }: ConsentPageProps) 
             isLoading={isLoading}
             loadingStatus={loadingStatus}
             error={error || localError}
+            success={localSuccess}
           />
 
           {/* Action Buttons */}

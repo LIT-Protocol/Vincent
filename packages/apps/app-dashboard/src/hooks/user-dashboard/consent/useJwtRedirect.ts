@@ -18,6 +18,7 @@ export const useJwtRedirect = ({ readAuthInfo }: UseJwtRedirectProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [loadingStatus, setLoadingStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [redirectUrl, setRedirectUrl] = useState<string | null>(null);
   const { redirectUri } = useUrlRedirectUri();
 
   // Generate JWT for redirection
@@ -39,6 +40,8 @@ export const useJwtRedirect = ({ readAuthInfo }: UseJwtRedirectProps) => {
       }
 
       setIsLoading(true);
+      setError(null);
+      setRedirectUrl(null);
       try {
         setLoadingStatus('Initializing Agent Wallet');
         const agentPkpWallet = new PKPEthersWallet({
@@ -65,10 +68,11 @@ export const useJwtRedirect = ({ readAuthInfo }: UseJwtRedirectProps) => {
           },
         });
 
-        setLoadingStatus('Redirecting to App');
-        const redirectUrl = new URL(redirectUri);
-        redirectUrl.searchParams.set('jwt', jwt);
-        window.location.href = redirectUrl.toString();
+        const finalRedirectUrl = new URL(redirectUri);
+        finalRedirectUrl.searchParams.set('jwt', jwt);
+        setRedirectUrl(finalRedirectUrl.toString());
+        setLoadingStatus(null);
+        setIsLoading(false);
       } catch (error) {
         setError('Failed to create JWT');
         setIsLoading(false);
@@ -78,10 +82,18 @@ export const useJwtRedirect = ({ readAuthInfo }: UseJwtRedirectProps) => {
     [readAuthInfo, redirectUri],
   );
 
+  const executeRedirect = useCallback(() => {
+    if (redirectUrl) {
+      window.location.href = redirectUrl;
+    }
+  }, [redirectUrl]);
+
   return {
     generateJWT,
+    executeRedirect,
     isLoading,
     loadingStatus,
     error,
+    redirectUrl,
   };
 };
