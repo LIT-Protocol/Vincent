@@ -5,6 +5,7 @@ import {
   getVincentToolClient,
 } from '@lit-protocol/vincent-app-sdk/toolClient';
 
+console.log({ getVincentToolClient });
 import { ethers } from 'ethers';
 import type { PermissionData } from '@lit-protocol/vincent-contracts-sdk';
 
@@ -245,8 +246,7 @@ describe('VincentToolClient failure tests', () => {
     });
     if (appManagerLitTestTokenBalance === 0n) {
       throw new Error(
-        `❌ App Manager has no Lit test tokens. Please fund ${
-          privateKeyToAccount(TEST_APP_MANAGER_PRIVATE_KEY as `0x${string}`).address
+        `❌ App Manager has no Lit test tokens. Please fund ${privateKeyToAccount(TEST_APP_MANAGER_PRIVATE_KEY as `0x${string}`).address
         } with Lit test tokens`,
       );
     } else {
