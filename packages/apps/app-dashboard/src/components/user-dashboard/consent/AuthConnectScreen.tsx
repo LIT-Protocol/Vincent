@@ -75,7 +75,7 @@ export function AuthConnectScreen({ app, readAuthInfo }: AuthConnectScreenProps)
 
                     {/* Sign in heading and app name */}
                     <div className="text-center lg:text-left space-y-2">
-                      <h1 className={`text-2xl font-semibold ${themeStyles.text}`}>Sign in</h1>
+                      <h1 className={`text-2xl font-semibold ${themeStyles.text}`}>Connect</h1>
                       <p className={`text-base ${themeStyles.text}`}>
                         to continue to{' '}
                         <button
