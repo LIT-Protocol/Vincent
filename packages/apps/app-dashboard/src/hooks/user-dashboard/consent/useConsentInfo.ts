@@ -31,6 +31,11 @@ export type ConsentInfoState = {
 export const useConsentInfo = (appId: string): ConsentInfoState => {
   const [isDataFetchingComplete, setIsDataFetchingComplete] = useState(false);
 
+  // Reset completion state when app changes
+  useEffect(() => {
+    setIsDataFetchingComplete(false);
+  }, [appId]);
+
   const {
     data: app,
     isFetching: appLoading,
