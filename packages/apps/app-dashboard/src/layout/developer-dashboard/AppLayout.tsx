@@ -19,7 +19,7 @@ function AppLayout({ children, className }: ComponentProps<'div'>) {
   const { isDark } = useTheme();
 
   // FIRST: Check basic authentication
-  const { authInfo, sessionSigs, isProcessing: authLoading } = useReadAuthInfo();
+  const { authInfo, sessionSigs, isProcessing: authLoading, error } = useReadAuthInfo();
   const isAuthenticated = authInfo?.agentPKP && sessionSigs;
 
   // Generate SIWE token when authenticated (for store mutations)
@@ -83,7 +83,11 @@ function AppLayout({ children, className }: ComponentProps<'div'>) {
 
   // Early returns for error and loading states
   if (isDeveloperRoute && !authLoading && !isAuthenticated) {
-    return <AuthenticationErrorScreen />;
+    return (
+      <AuthenticationErrorScreen
+        readAuthInfo={{ authInfo, sessionSigs, isProcessing: authLoading, error }}
+      />
+    );
   }
 
   if (isDeveloperRoute && authLoading) {

@@ -6,6 +6,7 @@ import PhoneInput from 'react-phone-number-input';
 import 'react-phone-number-input/style.css';
 import { Button } from '@/components/shared/ui/button';
 import { ThemeType } from '../consent/ui/theme';
+import StatusMessage from '../consent/StatusMessage';
 
 interface StytchOTPProps {
   method: OtpMethod;
@@ -215,11 +216,7 @@ const StytchOTP = ({ method, authWithStytch, setView, theme }: StytchOTPProps) =
                 </div>
               )}
 
-              {error && (
-                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
-                  {error}
-                </div>
-              )}
+              {error && <StatusMessage message={error} type="error" />}
 
               <div className="pt-2">
                 <Button
@@ -272,11 +269,7 @@ const StytchOTP = ({ method, authWithStytch, setView, theme }: StytchOTPProps) =
                 />
               </div>
 
-              {error && (
-                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
-                  {error}
-                </div>
-              )}
+              {error && <StatusMessage message={error} type="error" />}
 
               <div className="pt-2">
                 <Button

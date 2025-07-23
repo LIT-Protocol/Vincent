@@ -3,6 +3,7 @@ import { useSetAuthInfo } from '../../../hooks/user-dashboard/useAuthInfo';
 import { Button } from '@/components/shared/ui/button';
 import { ThemeType } from '../consent/ui/theme';
 import Loading from '@/components/shared/ui/Loading';
+import StatusMessage from '../consent/StatusMessage';
 
 interface WebAuthnProps {
   authWithWebAuthn: any;
@@ -120,11 +121,7 @@ export default function WebAuthn({
         Use passkeys for secure, passwordless login
       </p>
 
-      {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm mb-6">
-          {error}
-        </div>
-      )}
+      {error && <StatusMessage message={error} type="error" />}
 
       <div className="flex justify-center">
         <div className="w-full max-w-2xl">

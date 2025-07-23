@@ -43,7 +43,9 @@ export function PermittedAppsWrapper() {
 
   // Handle auth errors early
   if (error) {
-    return <AuthenticationErrorScreen />;
+    return (
+      <AuthenticationErrorScreen readAuthInfo={{ authInfo, sessionSigs, isProcessing, error }} />
+    );
   }
 
   // Handle missing auth or PKP token
@@ -70,7 +72,9 @@ export function PermittedAppsWrapper() {
 
   const isUserAuthed = authInfo?.userPKP && authInfo?.agentPKP && sessionSigs;
   if (!isUserAuthed) {
-    return <AuthenticationErrorScreen />;
+    return (
+      <AuthenticationErrorScreen readAuthInfo={{ authInfo, sessionSigs, isProcessing, error }} />
+    );
   }
 
   return <PermittedAppsPage apps={filteredApps} />;

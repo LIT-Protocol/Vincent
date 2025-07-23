@@ -36,7 +36,9 @@ export function UserPermissionWrapper() {
 
   const isUserAuthed = authInfo?.userPKP && authInfo?.agentPKP && sessionSigs;
   if (!isProcessing && !isUserAuthed) {
-    return <AuthenticationErrorScreen />;
+    return (
+      <AuthenticationErrorScreen readAuthInfo={{ authInfo, sessionSigs, isProcessing, error }} />
+    );
   }
 
   if (isLoading || isExistingDataLoading || permissionsLoading) {

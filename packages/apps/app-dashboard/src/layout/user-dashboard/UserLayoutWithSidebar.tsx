@@ -12,7 +12,7 @@ import { ThemedLoading } from '@/components/user-dashboard/dashboard/ui/ThemedLo
 function UserLayoutWithSidebar({ children, className }: ComponentProps<'div'>) {
   const { isDark } = useTheme();
   const themeStyles = theme(isDark);
-  const { authInfo, sessionSigs, isProcessing } = useReadAuthInfo();
+  const { authInfo, sessionSigs, isProcessing, error } = useReadAuthInfo();
 
   // Handle authentication at the layout level to prevent duplication
   const isUserAuthed = authInfo?.userPKP && authInfo?.agentPKP && sessionSigs;
@@ -22,7 +22,9 @@ function UserLayoutWithSidebar({ children, className }: ComponentProps<'div'>) {
   }
 
   if (!isUserAuthed) {
-    return <AuthenticationErrorScreen />;
+    return (
+      <AuthenticationErrorScreen readAuthInfo={{ authInfo, sessionSigs, isProcessing, error }} />
+    );
   }
 
   return (

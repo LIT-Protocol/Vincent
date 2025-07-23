@@ -1,7 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { AUTH_METHOD_TYPE } from '@lit-protocol/constants';
 import { SessionSigs, IRelayPKP } from '@lit-protocol/types';
-import { useNavigate } from 'react-router-dom';
 import { ThemeType } from './ui/theme';
 
 import useAuthenticate from '../../../hooks/user-dashboard/useAuthenticate';
@@ -11,7 +10,7 @@ import LoginMethods from '../auth/LoginMethods';
 import { getAgentPKP } from '../../../utils/user-dashboard/getAgentPKP';
 import {
   useSetAuthInfo,
-  useReadAuthInfo,
+  UseReadAuthInfo,
   useClearAuthInfo,
 } from '../../../hooks/user-dashboard/useAuthInfo';
 
@@ -20,15 +19,14 @@ import StatusMessage from './StatusMessage';
 import Loading from '@/components/shared/ui/Loading';
 
 type ConsentViewProps = {
-  isUserDashboardFlow?: boolean;
   theme: ThemeType;
+  readAuthInfo: UseReadAuthInfo;
 };
 
-export default function ConsentView({ isUserDashboardFlow = false, theme }: ConsentViewProps) {
+export default function ConsentView({ theme, readAuthInfo }: ConsentViewProps) {
   // ------ STATE AND HOOKS ------
   const { updateAuthInfo } = useSetAuthInfo();
   const { clearAuthInfo } = useClearAuthInfo();
-  const navigate = useNavigate();
 
   // Shared state for session sigs and agent PKP
   const [sessionSigs, setSessionSigs] = useState<SessionSigs>();
@@ -45,30 +43,13 @@ export default function ConsentView({ isUserDashboardFlow = false, theme }: Cons
 
   // ------ EXISTING SESSION HANDLING ------
 
-  // Check for existing auth info
+  // Use the passed-in auth info
   const {
     authInfo,
     sessionSigs: validatedSessionSigs,
     isProcessing,
     error: readError,
-  } = useReadAuthInfo();
-
-  // State to show existing account option (used in non-user flow)
-  const [showExistingAccount, setShowExistingAccount] = useState(false);
-
-  // Check for existing auth info once the validation process is complete
-  useEffect(() => {
-    if (isProcessing) return;
-    if (validatedSessionSigs) {
-      if (isUserDashboardFlow) {
-        // In user flow, automatically use existing account
-        setSessionSigs(validatedSessionSigs);
-      } else {
-        // In consent flow, show option to use existing account
-        setShowExistingAccount(true);
-      }
-    }
-  }, [validatedSessionSigs, isProcessing, isUserDashboardFlow]);
+  } = readAuthInfo;
 
   // ------ NEW AUTHENTICATION FLOW ------
 
@@ -95,35 +76,6 @@ export default function ConsentView({ isUserDashboardFlow = false, theme }: Cons
     loading: accountsLoading,
     error: accountsError,
   } = useAccounts();
-
-  // ------ NAVIGATION EFFECTS ------
-
-  // Navigate when user has completed authentication with new PKP
-  useEffect(() => {
-    if (isUserDashboardFlow && userPKP && agentPKP && sessionSigs) {
-      // Save the PKP info in localStorage for SessionValidator to use
-      try {
-        updateAuthInfo({
-          agentPKP,
-          userPKP,
-        });
-        // Navigate to apps page
-        navigate('/user/apps');
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        setStatusMessage(`Authentication Error: ${errorMessage}`);
-        setStatusType('error');
-      }
-    }
-  }, [isUserDashboardFlow, userPKP, agentPKP, sessionSigs, updateAuthInfo, navigate]);
-
-  // Navigate when user has existing validated session
-  useEffect(() => {
-    if (isUserDashboardFlow && validatedSessionSigs && authInfo?.userPKP) {
-      // Redirect to /apps page
-      navigate('/user/apps');
-    }
-  }, [isUserDashboardFlow, validatedSessionSigs, authInfo?.userPKP, navigate]);
 
   // Combine errors
   const error = authError || accountsError || sessionError || readError;
@@ -232,17 +184,13 @@ export default function ConsentView({ isUserDashboardFlow = false, theme }: Cons
 
   // Cleanup effect for consent flow
   useEffect(() => {
-    // Only add the cleanup for the non-user flow
-    if (!isUserDashboardFlow) {
-      return () => {
-        // Cleanup web3 connection when component unmounts
-        if (sessionSigs) {
-          clearAuthInfo();
-        }
-      };
-    }
-    return;
-  }, [clearAuthInfo, sessionSigs, isUserDashboardFlow]);
+    return () => {
+      // Cleanup web3 connection when component unmounts
+      if (sessionSigs) {
+        clearAuthInfo();
+      }
+    };
+  }, [clearAuthInfo, sessionSigs]);
 
   // ------ RENDER CONTENT ------
 
@@ -254,12 +202,6 @@ export default function ConsentView({ isUserDashboardFlow = false, theme }: Cons
 
     // If authenticated with a new PKP and session sigs
     if (userPKP && agentPKP && sessionSigs) {
-      // User flow: The navigation is handled in useEffect
-      if (isUserDashboardFlow) {
-        // Return loading state or empty component while navigation happens
-        return <Loading />;
-      }
-
       // Consent flow: save PKP info and refresh the page so ConsentPageWrapper can re-evaluate
       try {
         updateAuthInfo({
@@ -275,14 +217,8 @@ export default function ConsentView({ isUserDashboardFlow = false, theme }: Cons
       return <Loading />;
     }
 
-    // If we're not showing the existing account and have validated session sigs
-    if (
-      !isUserDashboardFlow &&
-      !showExistingAccount &&
-      validatedSessionSigs &&
-      authInfo?.userPKP &&
-      authInfo?.agentPKP
-    ) {
+    // If we have validated session sigs from existing auth, show completion message
+    if (validatedSessionSigs && authInfo?.userPKP && authInfo?.agentPKP) {
       return (
         <div className="text-center py-8">
           <h1 className={`text-lg font-semibold ${theme.text}`}>Authentication Complete</h1>
@@ -291,12 +227,6 @@ export default function ConsentView({ isUserDashboardFlow = false, theme }: Cons
           </p>
         </div>
       );
-    }
-
-    // If we have validated session sigs from an existing session in user flow
-    if (isUserDashboardFlow && validatedSessionSigs && authInfo?.userPKP) {
-      // Return loading state or empty component while navigation happens
-      return <Loading />;
     }
 
     // If authenticated but no accounts found

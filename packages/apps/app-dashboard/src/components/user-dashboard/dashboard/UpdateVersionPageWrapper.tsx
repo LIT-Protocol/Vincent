@@ -31,7 +31,9 @@ export function UpdateVersionPageWrapper() {
 
   const isUserAuthed = authInfo?.userPKP && authInfo?.agentPKP && sessionSigs;
   if (!isProcessing && !isUserAuthed) {
-    return <AuthenticationErrorScreen />;
+    return (
+      <AuthenticationErrorScreen readAuthInfo={{ authInfo, sessionSigs, isProcessing, error }} />
+    );
   }
 
   if (isLoading || isProcessing || isPermittedLoading) {

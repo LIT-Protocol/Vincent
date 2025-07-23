@@ -45,7 +45,12 @@ export function ConsentPageWrapper() {
 
   // Now that we have data, check authentication
   if (!isUserAuthed) {
-    return <AuthConnectScreen app={data.app} />;
+    return (
+      <AuthConnectScreen
+        app={data.app}
+        readAuthInfo={{ authInfo, sessionSigs, isProcessing, error }}
+      />
+    );
   }
 
   if (isError || error || isPermittedError) {

@@ -7,8 +7,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import ConsentView from './Consent';
 import { useTheme } from '@/providers/ThemeProvider';
 import { Link } from 'react-router-dom';
+import { UseReadAuthInfo } from '@/hooks/user-dashboard/useAuthInfo';
 
-export function AuthenticationErrorScreen() {
+type AuthenticationErrorScreenProps = {
+  readAuthInfo: UseReadAuthInfo;
+};
+
+export function AuthenticationErrorScreen({ readAuthInfo }: AuthenticationErrorScreenProps) {
   const { isDark, toggleTheme } = useTheme();
   const themeStyles = theme(isDark);
 
@@ -69,7 +74,7 @@ export function AuthenticationErrorScreen() {
                       transition={{ duration: 0.3, ease: 'easeInOut' }}
                       className="overflow-hidden"
                     >
-                      <ConsentView isUserDashboardFlow={false} theme={themeStyles} />
+                      <ConsentView theme={themeStyles} readAuthInfo={readAuthInfo} />
                     </motion.div>
                   </AnimatePresence>
                 </div>

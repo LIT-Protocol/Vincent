@@ -2,19 +2,20 @@ import { Card, CardContent } from '@/components/shared/ui/card';
 import { Sun, Moon } from 'lucide-react';
 import { theme } from './ui/theme';
 import { Button } from '@/components/shared/ui/button';
-import { motion, AnimatePresence } from 'framer-motion';
 import ConsentView from './Consent';
 import { useTheme } from '@/providers/ThemeProvider';
 import { Link } from 'react-router-dom';
 import { App } from '@/types/developer-dashboard/appTypes';
 import { Logo } from '@/components/shared/ui/Logo';
 import { ConsentFooter } from '../ui/Footer';
+import { UseReadAuthInfo } from '@/hooks/user-dashboard/useAuthInfo';
 
 type AuthConnectScreenProps = {
   app: App;
+  readAuthInfo: UseReadAuthInfo;
 };
 
-export function AuthConnectScreen({ app }: AuthConnectScreenProps) {
+export function AuthConnectScreen({ app, readAuthInfo }: AuthConnectScreenProps) {
   const { isDark, toggleTheme } = useTheme();
   const themeStyles = theme(isDark);
 
@@ -91,17 +92,7 @@ export function AuthConnectScreen({ app }: AuthConnectScreenProps) {
 
                   {/* ConsentView Section */}
                   <div className="flex-1 min-w-0">
-                    <AnimatePresence>
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0 }}
-                        transition={{ duration: 0.3, ease: 'easeInOut' }}
-                        className="overflow-hidden"
-                      >
-                        <ConsentView isUserDashboardFlow={false} theme={themeStyles} />
-                      </motion.div>
-                    </AnimatePresence>
+                    <ConsentView theme={themeStyles} readAuthInfo={readAuthInfo} />
                   </div>
                 </div>
               </div>
