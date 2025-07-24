@@ -64,6 +64,29 @@ export const BASE_PUBLIC_CLIENT = createPublicClient({
   transport: http(BASE_RPC_URL),
 });
 
+export const ETH_CHAIN = defineChain({
+  id: 1,
+  name: 'Ethereum Mainnet',
+  network: 'mainnet',
+  nativeCurrency: {
+    decimals: 18,
+    name: 'Ether',
+    symbol: 'ETH',
+  },
+  rpcUrls: {
+    default: {
+      http: [ETH_RPC_URL],
+    },
+    public: {
+      http: [ETH_RPC_URL],
+    },
+  },
+});
+export const ETH_PUBLIC_CLIENT = createPublicClient({
+  chain: ETH_CHAIN,
+  transport: http(ETH_RPC_URL),
+});
+
 type DatilWalletClient = WalletClient<Transport, typeof DATIL_CHAIN, Account>;
 
 export const TEST_FUNDER_PRIVATE_KEY = getEnv('TEST_FUNDER_PRIVATE_KEY');

@@ -4,8 +4,10 @@
   "version": "0.1.1",
   "dependencies": {
     "@lit-protocol/vincent-app-sdk": "workspace:*",
+    "@lit-protocol/vincent-policy-contract-whitelist": "workspace:*",
     "@lit-protocol/vincent-policy-spending-limit": "workspace:*",
     "@lit-protocol/vincent-tool-erc20-approval": "workspace:*",
+    "@lit-protocol/vincent-tool-transaction-signer": "workspace:*",
     "@lit-protocol/vincent-tool-sdk": "workspace:*",
     "@lit-protocol/vincent-tool-uniswap-swap": "workspace:*",
     "@lit-protocol/vincent-contracts-sdk": "workspace:*",
