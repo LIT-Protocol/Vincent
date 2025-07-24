@@ -25,6 +25,9 @@
   "references": [
     {
       "path": "../tool-sdk/tsconfig.lib.json"
+    },
+    {
+      "path": "../contracts-sdk/tsconfig.lib.json"
     }
   ]
 }

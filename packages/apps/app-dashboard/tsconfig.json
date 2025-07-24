@@ -9,6 +9,12 @@
   "files": [],
   "references": [
     {
+      "path": "../../libs/registry-sdk"
+    },
+    {
+      "path": "../../libs/contracts-sdk"
+    },
+    {
       "path": "../../libs/app-sdk"
     },
     {

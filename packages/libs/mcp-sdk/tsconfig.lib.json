@@ -23,7 +23,7 @@
   "exclude": ["node_modules", "dist", "tests", "**/*.spec.ts", "**/*.test.ts"],
   "references": [
     {
-      "path": "../tool-sdk/tsconfig.lib.json"
+      "path": "../app-sdk/tsconfig.lib.json"
     }
   ]
 }
