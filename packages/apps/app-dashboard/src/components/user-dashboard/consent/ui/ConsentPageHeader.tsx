@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from 'react';
 import { Moon, Sun, LogOut, User, Copy } from 'lucide-react';
 import { Button } from '@/components/shared/ui/button';
 import { AuthInfo, useClearAuthInfo } from '@/hooks/user-dashboard/useAuthInfo';
-import { useNavigate } from 'react-router-dom';
 import { ThemeType } from './theme';
 
 interface ConsentPageHeaderProps {
@@ -41,10 +40,6 @@ export function ConsentPageHeader({
   const handleSignOut = async () => {
     await clearAuthInfo();
     window.location.reload();
-  };
-
-  const handleDashboardClick = () => {
-    navigate('/user/apps');
   };
 
   const handleCopyEthAddress = async () => {
