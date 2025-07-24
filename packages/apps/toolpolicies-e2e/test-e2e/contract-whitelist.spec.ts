@@ -91,6 +91,8 @@ describe('Contract Whitelist Tool E2E Tests', () => {
     return Object.keys(PERMISSION_DATA[toolIpfsCid]);
   });
 
+  const providerBase = new ethers.providers.JsonRpcProvider(BASE_RPC_URL);
+
   let TEST_CONFIG: TestConfig;
   type RawTransaction = {
     to: string;
@@ -195,9 +197,6 @@ describe('Contract Whitelist Tool E2E Tests', () => {
         `ℹ️  App Manager has ${formatEther(appManagerLitTestTokenBalance)} Lit test tokens`,
       );
     }
-
-    // Get the current nonce for the PKP address
-    const providerBase = new ethers.providers.JsonRpcProvider(BASE_RPC_URL);
 
     // ERC20 transfer function signature: transfer(address,uint256)
     const erc20Interface = new ethers.utils.Interface([
@@ -364,6 +363,9 @@ describe('Contract Whitelist Tool E2E Tests', () => {
     // Verify policies context
     expect(precheckResult.context?.policiesContext).toBeDefined();
     expect(precheckResult.context?.policiesContext.allow).toBe(true);
+    expect(precheckResult.context?.policiesContext.evaluatedPolicies).toContain(
+      '@lit-protocol/vincent-policy-contract-whitelist',
+    );
 
     // The tool precheck should return the deserialized transaction
     expect(precheckResult.result).toBeDefined();
@@ -596,5 +598,171 @@ describe('Contract Whitelist Tool E2E Tests', () => {
 
   it('should send the signed transaction on ETH Mainnet to transfer WETH to the delegatee', async () => {
     await testSend(SIGNED_ERC20_TRANSFER_TRANSACTION_ON_ETH, ETH_PUBLIC_CLIENT, ETH_WETH_ADDRESS);
+  });
+
+  const getSerializedERC20TransferFromTransactionOnBase = async () => {
+    const providerBase = new ethers.providers.JsonRpcProvider(BASE_RPC_URL);
+
+    // ERC20 transfer function signature: transfer(address,uint256)
+    const erc20Interface = new ethers.utils.Interface([
+      'function transferFrom(address from, address to, uint256 value) public returns (bool)',
+    ]);
+
+    // Create the transaction data
+    const transactionData = erc20Interface.encodeFunctionData(
+      'transferFrom',
+      [
+        TEST_CONFIG.userPkp!.ethAddress!,
+        TEST_APP_DELEGATEE_ACCOUNT.address,
+        ethers.utils.parseUnits('0.0000077', 18),
+      ], // 0.0000077 WETH
+    );
+
+    const erc20TransferFromTransactionBase = {
+      from: TEST_CONFIG.userPkp!.ethAddress!,
+      to: BASE_WETH_ADDRESS,
+      value: '0x00',
+      data: transactionData,
+    };
+
+    // Estimate gas limit for the transaction
+    const estimatedGasLimitBase = await providerBase.estimateGas(erc20TransferFromTransactionBase);
+
+    // Add a 5% buffer to the estimated gas
+    const gasLimitBase = estimatedGasLimitBase.mul(105).div(100);
+
+    // Create the transaction object
+    const RAW_ERC20_TRANSFER_FROM_TRANSACTION_ON_BASE = {
+      to: erc20TransferFromTransactionBase.to,
+      value: erc20TransferFromTransactionBase.value,
+      data: erc20TransferFromTransactionBase.data,
+      chainId: 8453, // Base Mainnet
+      nonce: await providerBase.getTransactionCount(TEST_CONFIG.userPkp!.ethAddress!),
+      gasPrice: (await providerBase.getGasPrice()).toHexString(),
+      gasLimit: gasLimitBase.toHexString(),
+    };
+
+    return {
+      serializedTransaction: ethers.utils.serializeTransaction(
+        RAW_ERC20_TRANSFER_FROM_TRANSACTION_ON_BASE,
+      ),
+      rawTransaction: RAW_ERC20_TRANSFER_FROM_TRANSACTION_ON_BASE,
+    };
+  };
+
+  it('should fail precheck because the function selector is not whitelisted', async () => {
+    const { serializedTransaction, rawTransaction } =
+      await getSerializedERC20TransferFromTransactionOnBase();
+
+    // Test: Run precheck on Transaction Signer Tool
+    const transactionSignerToolClient = getTransactionSignerToolClient();
+
+    // Call the precheck method with the serialized transaction
+    const precheckResult = await transactionSignerToolClient.precheck(
+      {
+        serializedTransaction,
+      },
+      {
+        delegatorPkpEthAddress: TEST_CONFIG.userPkp!.ethAddress!,
+      },
+    );
+
+    // Verify the precheck was successful
+    expect(precheckResult).toBeDefined();
+    console.log('precheckResult', util.inspect(precheckResult, { depth: 10 }));
+    expect(precheckResult.success).toBe(true);
+
+    if (precheckResult.success === false) {
+      throw new Error(precheckResult.runtimeError);
+    }
+
+    // Verify the context is properly populated
+    expect(precheckResult.context).toBeDefined();
+    expect(precheckResult.context?.delegation.delegateeAddress).toBeDefined();
+    expect(precheckResult.context?.delegation.delegatorPkpInfo.ethAddress).toBe(
+      TEST_CONFIG.userPkp!.ethAddress!,
+    );
+
+    // Verify policies context shows the transaction was denied
+    expect(precheckResult.context?.policiesContext).toBeDefined();
+    expect(precheckResult.context?.policiesContext.allow).toBe(false);
+    expect(precheckResult.context?.policiesContext.evaluatedPolicies).toContain(
+      '@lit-protocol/vincent-policy-contract-whitelist',
+    );
+
+    // Verify the denied policy details
+    expect(precheckResult.context?.policiesContext.deniedPolicy).toBeDefined();
+    expect(precheckResult.context?.policiesContext.deniedPolicy?.packageName).toBe(
+      '@lit-protocol/vincent-policy-contract-whitelist',
+    );
+
+    const deniedPolicy = precheckResult.context?.policiesContext.deniedPolicy;
+    expect(deniedPolicy?.result).toBeDefined();
+    expect(deniedPolicy?.result?.reason).toBe('Function selector not whitelisted');
+    expect(deniedPolicy?.result?.chainId).toBe(8453);
+    expect(deniedPolicy?.result?.contractAddress).toBe(BASE_WETH_ADDRESS);
+    expect(deniedPolicy?.result?.functionSelector).toBe(
+      ethers.utils.id('transferFrom(address,address,uint256)').slice(0, 10),
+    );
+
+    // The tool precheck should still return the deserialized transaction
+    expect(precheckResult.result).toBeDefined();
+    const deserializedUnsignedTransaction = precheckResult.result?.deserializedUnsignedTransaction;
+    expect(deserializedUnsignedTransaction.to).toBe(rawTransaction.to);
+    expect(deserializedUnsignedTransaction.value).toBe('0x00');
+    expect(deserializedUnsignedTransaction.data).toBe(rawTransaction.data);
+    expect(deserializedUnsignedTransaction.chainId).toBe(rawTransaction.chainId);
+    expect(deserializedUnsignedTransaction.nonce).toBe(rawTransaction.nonce);
+    expect(deserializedUnsignedTransaction.gasPrice).toBe(rawTransaction.gasPrice);
+    expect(deserializedUnsignedTransaction.gasLimit).toBe(rawTransaction.gasLimit);
+  });
+
+  it('should fail execute because the function selector is not whitelisted', async () => {
+    const { serializedTransaction } = await getSerializedERC20TransferFromTransactionOnBase();
+
+    // Test: Run precheck on Transaction Signer Tool
+    const transactionSignerToolClient = getTransactionSignerToolClient();
+
+    // Call the precheck method with the serialized transaction
+    const executeResult = await transactionSignerToolClient.execute(
+      {
+        serializedTransaction,
+      },
+      {
+        delegatorPkpEthAddress: TEST_CONFIG.userPkp!.ethAddress!,
+      },
+    );
+
+    // Verify the execute was successful
+    expect(executeResult).toBeDefined();
+    console.log('executeResult', util.inspect(executeResult, { depth: 10 }));
+    expect(executeResult.success).toBe(false);
+
+    // Verify the context is properly populated
+    expect(executeResult.context).toBeDefined();
+    expect(executeResult.context?.delegation.delegateeAddress).toBeDefined();
+    expect(executeResult.context?.delegation.delegatorPkpInfo.ethAddress).toBe(
+      TEST_CONFIG.userPkp!.ethAddress!,
+    );
+
+    // Verify policies context shows the transaction was denied
+    const policiesContext = executeResult.context?.policiesContext;
+    expect(policiesContext).toBeDefined();
+    expect(policiesContext!.allow).toBe(false);
+    expect(policiesContext!.evaluatedPolicies).toContain(
+      '@lit-protocol/vincent-policy-contract-whitelist',
+    );
+
+    // Verify the denied policy details
+    const deniedPolicy = policiesContext!.deniedPolicy;
+    expect(deniedPolicy).toBeDefined();
+    expect(deniedPolicy?.packageName).toBe('@lit-protocol/vincent-policy-contract-whitelist');
+    expect(deniedPolicy?.result).toBeDefined();
+    expect(deniedPolicy?.result?.reason).toBe('Function selector not whitelisted');
+    expect(deniedPolicy?.result?.chainId).toBe(8453);
+    expect(deniedPolicy?.result?.contractAddress).toBe(BASE_WETH_ADDRESS);
+    expect(deniedPolicy?.result?.functionSelector).toBe(
+      ethers.utils.id('transferFrom(address,address,uint256)').slice(0, 10),
+    );
   });
 });

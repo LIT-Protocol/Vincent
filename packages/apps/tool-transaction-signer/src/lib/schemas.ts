@@ -64,6 +64,8 @@ export const executeSuccessSchema = z.object({
   }),
 });
 
-export const executeFailSchema = z.object({
-  error: z.string().describe('A string containing the error message if the execution failed.'),
-});
+export const executeFailSchema = z
+  .object({
+    error: z.string().describe('A string containing the error message if the execution failed.'),
+  })
+  .optional();
