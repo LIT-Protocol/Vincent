@@ -24,6 +24,9 @@ export const precheckAllowResultSchema = z.object({
     .string()
     .describe('The contract address the serialized transaction is being sent to'),
   functionSelector: z.string().describe('The function selector of the serialized transaction'),
+  wildcardUsed: z
+    .boolean()
+    .describe('Whether the wildcard "*" was used to allow this function selector'),
 });
 
 export const precheckDenyResultSchema = z.object({
@@ -48,6 +51,9 @@ export const evalAllowResultSchema = z.object({
     .string()
     .describe('The contract address the serialized transaction is being sent to'),
   functionSelector: z.string().describe('The function selector of the serialized transaction'),
+  wildcardUsed: z
+    .boolean()
+    .describe('Whether the wildcard "*" was used to allow this function selector'),
 });
 
 export const evalDenyResultSchema = z.object({

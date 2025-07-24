@@ -57,7 +57,10 @@ export const vincentPolicy = createVincentPolicy({
         });
       }
 
-      if (!functionWhitelist.functionSelectors.includes(functionSelector)) {
+      const hasSpecificSelector = functionWhitelist.functionSelectors.includes(functionSelector);
+      const hasWildcard = functionWhitelist.functionSelectors.includes('*');
+
+      if (!hasSpecificSelector && !hasWildcard) {
         return deny({
           reason: 'Function selector not whitelisted',
           chainId,
@@ -70,6 +73,7 @@ export const vincentPolicy = createVincentPolicy({
         chainId,
         contractAddress,
         functionSelector,
+        wildcardUsed: hasWildcard && !hasSpecificSelector,
       });
     } catch (error) {
       console.error('Precheck error:', error);
@@ -113,7 +117,10 @@ export const vincentPolicy = createVincentPolicy({
         });
       }
 
-      if (!functionWhitelist.functionSelectors.includes(functionSelector)) {
+      const hasSpecificSelector = functionWhitelist.functionSelectors.includes(functionSelector);
+      const hasWildcard = functionWhitelist.functionSelectors.includes('*');
+
+      if (!hasSpecificSelector && !hasWildcard) {
         return deny({
           reason: 'Function selector not whitelisted',
           chainId,
@@ -126,6 +133,7 @@ export const vincentPolicy = createVincentPolicy({
         chainId,
         contractAddress,
         functionSelector,
+        wildcardUsed: hasWildcard && !hasSpecificSelector,
       });
     } catch (error) {
       console.error('Precheck error:', error);
