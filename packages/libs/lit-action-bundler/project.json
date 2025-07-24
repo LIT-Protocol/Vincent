@@ -1,0 +1,9 @@
+{
+  "name": "@lit-protocol/lit-action-bundler",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/libs/lit-action-bundler/src",
+  "projectType": "library",
+  "tags": [],
+  "// targets": "to see all targets run: nx show project @lit-protocol/lit-action-bundler --web",
+  "targets": {}
+}
