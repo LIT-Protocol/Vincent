@@ -2,12 +2,14 @@ import { useParams } from 'react-router';
 import { ConsentPage } from './ConsentPage';
 import { ConsentPageSkeleton } from './ConsentPageSkeleton';
 import { GeneralErrorScreen } from './GeneralErrorScreen';
+import { BadRedirectUriError } from './BadRedirectUriError';
 import { AuthConnectScreen } from './AuthConnectScreen';
 import { useConsentInfo } from '@/hooks/user-dashboard/consent/useConsentInfo';
 import { useConsentMiddleware } from '@/hooks/user-dashboard/consent/useConsentMiddleware';
 import useReadAuthInfo from '@/hooks/user-dashboard/useAuthInfo';
 import { ReturningUserConsent } from './ReturningUserConsent';
 import { AppVersionNotInRegistryConsent } from './AppVersionNotInRegistry';
+import { useUriPrecheck } from '@/hooks/user-dashboard/consent/useUriPrecheck';
 
 export function ConsentPageWrapper() {
   const { appId } = useParams();
@@ -27,6 +29,14 @@ export function ConsentPageWrapper() {
     appData: data?.app,
   });
 
+  const {
+    result: isRedirectUriAuthorized,
+    error: redirectUriError,
+    redirectUri,
+  } = useUriPrecheck({
+    authorizedRedirectUris: data?.app?.redirectUris,
+  });
+
   // Early return if required params are missing
   if (!appId) {
     return <GeneralErrorScreen errorDetails="App ID was not provided" />;
@@ -39,6 +49,16 @@ export function ConsentPageWrapper() {
 
   if (isLoading || isProcessing || isPermittedLoading) {
     return <ConsentPageSkeleton />;
+  }
+
+  // Check for redirect URI validation errors
+  if (isRedirectUriAuthorized === false || redirectUriError) {
+    return (
+      <BadRedirectUriError
+        redirectUri={redirectUri || undefined}
+        authorizedUris={data.app?.redirectUris}
+      />
+    );
   }
 
   const isUserAuthed = authInfo?.userPKP && authInfo?.agentPKP && sessionSigs;
