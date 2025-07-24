@@ -1,3 +1,17 @@
+## 3.4.0 (2025-07-24)
+
+### 🚀 Features
+
+- ### Add logo support for tools and policies ([6ef30e41](https://github.com/LIT-Protocol/Vincent/commit/6ef30e41))
+
+  - Added optional `logo` property to endpoint definitions for both tools and policies during creationg and editing
+
+- Add new `setActiveVersion` endpoint definition to allow atomic setting of activeVersion on apps without using the general edit endpoint ([169b6a1e](https://github.com/LIT-Protocol/Vincent/commit/169b6a1e))
+
+### ❤️ Thank You
+
+- Daryl Collins
+
 ## 3.3.2 (2025-07-09)
 
 ### 🚀 Features
