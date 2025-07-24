@@ -1,5 +1,6 @@
 import { Settings } from 'lucide-react';
 import { ConsentInfoMap } from '@/hooks/user-dashboard/consent/useConsentInfo';
+import { Logo } from '@/components/shared/ui/Logo';
 import { ThemeType } from './theme';
 
 interface ToolHeaderProps {
@@ -15,10 +16,20 @@ interface ToolHeaderProps {
 }
 
 export function ToolHeader({ tool, toolVersion, consentInfoMap, theme }: ToolHeaderProps) {
+  const toolData = consentInfoMap.toolsByPackageName[tool.toolPackageName];
+
   return (
     <div className="flex items-center gap-3">
-      <div className={`p-2 rounded-lg ${theme.iconBg} border ${theme.iconBorder}`}>
-        <Settings className={`w-5 h-5 ${theme.textMuted}`} />
+      <div>
+        {toolData?.logo && toolData.logo.length >= 10 ? (
+          <Logo
+            logo={toolData.logo}
+            alt={`${tool.toolPackageName} logo`}
+            className="w-7 h-7 object-contain"
+          />
+        ) : (
+          <Settings className={`w-7 h-7 ${theme.textMuted}`} />
+        )}
       </div>
       <div className="flex-1">
         <div className="flex items-center gap-2">

@@ -11,15 +11,15 @@ import {
   CardTitle,
 } from '@/components/shared/ui/card';
 import { docSchemas } from '@lit-protocol/vincent-registry-sdk';
-import { TextField, LongTextField } from '../../form-fields';
+import { TextField, LongTextField, ImageUploadField } from '../../form-fields';
 import { DeploymentStatusSelectField } from '../../form-fields/array/DeploymentStatusSelectField';
 
 const { toolDoc } = docSchemas;
 
-const { packageName, description, title, activeVersion, deploymentStatus } = toolDoc.shape;
+const { packageName, description, title, logo, activeVersion, deploymentStatus } = toolDoc.shape;
 
 export const CreateToolSchema = z
-  .object({ packageName, description, title, activeVersion, deploymentStatus })
+  .object({ packageName, description, title, logo, activeVersion, deploymentStatus })
   .strict();
 
 export type CreateToolFormData = z.infer<typeof CreateToolSchema>;
@@ -40,6 +40,10 @@ export function CreateToolForm({ onSubmit, isSubmitting = false }: CreateToolFor
   const {
     register,
     handleSubmit,
+    watch,
+    setValue,
+    setError,
+    clearErrors,
     formState: { errors },
     control,
   } = form;
@@ -78,6 +82,16 @@ export function CreateToolForm({ onSubmit, isSubmitting = false }: CreateToolFor
               label="Title"
               placeholder="Enter tool title (user-readable)"
               required
+            />
+
+            <ImageUploadField
+              name="logo"
+              watch={watch}
+              setValue={setValue}
+              control={control}
+              setError={setError}
+              clearErrors={clearErrors}
+              label="Logo"
             />
 
             <TextField

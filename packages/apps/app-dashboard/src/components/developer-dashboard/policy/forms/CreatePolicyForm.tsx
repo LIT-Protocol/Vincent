@@ -11,15 +11,15 @@ import {
   CardTitle,
 } from '@/components/shared/ui/card';
 import { docSchemas } from '@lit-protocol/vincent-registry-sdk';
-import { TextField, LongTextField } from '../../form-fields';
+import { TextField, LongTextField, ImageUploadField } from '../../form-fields';
 import { DeploymentStatusSelectField } from '../../form-fields/array/DeploymentStatusSelectField';
 
 const { policyDoc } = docSchemas;
 
-const { packageName, description, title, activeVersion, deploymentStatus } = policyDoc.shape;
+const { packageName, description, title, logo, activeVersion, deploymentStatus } = policyDoc.shape;
 
 export const CreatePolicySchema = z
-  .object({ packageName, description, title, activeVersion, deploymentStatus })
+  .object({ packageName, description, title, logo, activeVersion, deploymentStatus })
   .strict();
 
 export type CreatePolicyFormData = z.infer<typeof CreatePolicySchema>;
@@ -40,6 +40,10 @@ export function CreatePolicyForm({ onSubmit, isSubmitting = false }: CreatePolic
   const {
     register,
     handleSubmit,
+    watch,
+    setValue,
+    setError,
+    clearErrors,
     formState: { errors },
     control,
   } = form;
@@ -78,6 +82,16 @@ export function CreatePolicyForm({ onSubmit, isSubmitting = false }: CreatePolic
               label="Title"
               placeholder="Enter policy title (user-readable)"
               required
+            />
+
+            <ImageUploadField
+              name="logo"
+              watch={watch}
+              setValue={setValue}
+              control={control}
+              setError={setError}
+              clearErrors={clearErrors}
+              label="Logo"
             />
 
             <TextField

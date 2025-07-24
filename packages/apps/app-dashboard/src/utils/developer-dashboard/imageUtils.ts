@@ -11,7 +11,7 @@ export interface ImageUploadResult {
 
 export const DEFAULT_IMAGE_OPTIONS: ImageValidationOptions = {
   allowedTypes: ['image/jpeg', 'image/jpg', 'image/gif'],
-  maxSize: 5 * 1024 * 1024, // 5MB
+  maxSize: 100 * 1024, // 100KB
   requireSquare: true,
 };
 

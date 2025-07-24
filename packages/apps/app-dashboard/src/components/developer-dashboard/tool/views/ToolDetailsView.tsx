@@ -1,5 +1,6 @@
 import { Tool, ToolVersion } from '@/types/developer-dashboard/appTypes';
 import { Badge } from '@/components/shared/ui/badge';
+import { Logo } from '@/components/shared/ui/Logo';
 import { Edit, Plus, ArrowLeftRight, Trash2 } from 'lucide-react';
 
 interface ToolOverviewProps {
@@ -26,6 +27,19 @@ export default function ToolOverview({
                   {keyword}
                 </Badge>
               ))}
+            </div>
+          )}
+        </div>
+        <div className="ml-6 flex-shrink-0">
+          {tool.logo && tool.logo.length >= 10 ? (
+            <Logo
+              logo={tool.logo}
+              alt="Tool logo"
+              className="max-w-24 max-h-24 object-contain rounded-lg border shadow-sm bg-gray-50"
+            />
+          ) : (
+            <div className="w-16 h-16 bg-gray-100 rounded-lg border flex items-center justify-center">
+              <img src="/logo.svg" alt="Vincent logo" className="w-8 h-8 opacity-50" />
             </div>
           )}
         </div>
