@@ -4,7 +4,6 @@ import { theme } from './ui/theme';
 import { Button } from '@/components/shared/ui/button';
 import ConsentView from './Consent';
 import { useTheme } from '@/providers/ThemeProvider';
-import { Link } from 'react-router-dom';
 import { App } from '@/types/developer-dashboard/appTypes';
 import { Logo } from '@/components/shared/ui/Logo';
 import { ConsentFooter } from '../ui/Footer';
@@ -29,13 +28,11 @@ export function AuthConnectScreen({ app, readAuthInfo }: AuthConnectScreenProps)
         <div className={`px-6 py-3 border-b ${themeStyles.cardBorder}`}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Link to="/" className="flex items-center">
-                <img
-                  src={isDark ? '/logo-white.svg' : '/logo.svg'}
-                  alt="Vincent by Lit Protocol"
-                  className="h-4 cursor-pointer hover:opacity-80 transition-opacity"
-                />
-              </Link>
+              <img
+                src={isDark ? '/logo-white.svg' : '/logo.svg'}
+                alt="Vincent by Lit Protocol"
+                className="h-4 transition-opacity"
+              />
               <span className={`text-sm font-medium ${themeStyles.text}`}>
                 Connect with Vincent
               </span>
