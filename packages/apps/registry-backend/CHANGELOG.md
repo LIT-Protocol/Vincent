@@ -1,3 +1,34 @@
+# 2.0.0 (2025-07-24)
+
+### 🚀 Features
+
+- ### Add logo support for tools and policies ([6ef30e41](https://github.com/LIT-Protocol/Vincent/commit/6ef30e41))
+
+  - Defined a new optional `logo` property for both tools and policies models
+  - Implemented `logo` property support when creating tools & policies
+
+- Define explicit `setActiveVersion` route handler for app entity ([6aa13539](https://github.com/LIT-Protocol/Vincent/commit/6aa13539))
+
+### 🩹 Fixes
+
+- Modify delete and undelete logic to leave child entity documents alone ([afc5a72a](https://github.com/LIT-Protocol/Vincent/commit/afc5a72a))
+
+  This fixes a case where deleting then undeleting an appVersion would leave AppVersionTools in an inconsistent state relative to on-chain state.
+
+### ⚠️ Breaking Changes
+
+- Add integration with chain data to restrict operations on entities that have been published on-chain ([2395c577](https://github.com/LIT-Protocol/Vincent/commit/2395c577))
+
+  Implemented on-chain check for random appId selection that runs before we create the app in the registry
+
+### 🧱 Updated Dependencies
+
+- Updated registry-sdk to 3.4.0
+
+### ❤️ Thank You
+
+- Daryl Collins
+
 ## 1.4.0 (2025-07-10)
 
 ### 🚀 Features
