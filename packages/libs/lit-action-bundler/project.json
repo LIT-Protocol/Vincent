@@ -1,9 +1,64 @@
 {
-  "name": "@lit-protocol/lit-action-bundler",
+  "name": "lit-action-bundler",
   "$schema": "../../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "packages/libs/lit-action-bundler/src",
   "projectType": "library",
   "tags": [],
   "// targets": "to see all targets run: nx show project @lit-protocol/lit-action-bundler --web",
-  "targets": {}
+  "targets": {
+    "clean": {},
+    "dev": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "packages/libs/lit-action-bundler/dist",
+        "tsConfig": "packages/libs/lit-action-bundler/tsconfig.lib.json",
+        "assets": ["packages/libs/lit-action-bundler/*.md"],
+        "formats": ["cjs"],
+        "watch": true
+      }
+    },
+    "typedoc:build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "pnpm typedoc --skipErrorChecking --logLevel Verbose --options ./typedoc-configs/json.config.js"
+        ],
+        "cwd": "{projectRoot}",
+        "tty": true
+      }
+    },
+    "typedoc:watch": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "pnpm typedoc --watch --logLevel Verbose --options ./typedoc-configs/html.config.js",
+          "node ./scripts/typedocServer.mjs"
+        ],
+        "cwd": "{projectRoot}",
+        "tty": true
+      }
+    },
+    "typedoc:watch:json": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "pnpm typedoc --watch --logLevel Verbose --options ./typedoc-configs/json.config.js"
+        ],
+        "cwd": "{projectRoot}",
+        "tty": true
+      }
+    },
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "packages/libs/lit-action-bundler/dist",
+        "main": "packages/libs/lit-action-bundler/src/index.ts",
+        "tsConfig": "packages/libs/lit-action-bundler/tsconfig.lib.json",
+        "assets": ["packages/libs/lit-action-bundler/*.md"],
+        "formats": ["cjs"]
+      }
+    }
+  }
 }
