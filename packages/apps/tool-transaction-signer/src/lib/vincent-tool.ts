@@ -13,7 +13,11 @@ import {
   precheckSuccessSchema,
   toolParamsSchema,
 } from './schemas';
-import { signTx } from './lit-action-helpers/sign-tx';
+import {
+  buildTransactionForSigning,
+  serializeTransactionForResponse,
+  signTx,
+} from './lit-action-helpers';
 
 const ContractWhitelistPolicy = createVincentToolPolicy({
   toolParamsSchema,
@@ -39,23 +43,11 @@ export const vincentTool = createVincentTool({
     const { serializedTransaction } = toolParams;
 
     try {
-      // Try to parse the serialized transaction
-      const transaction = ethers.utils.parseTransaction(serializedTransaction);
-
       return succeed({
-        deserializedUnsignedTransaction: {
-          to: transaction.to,
-          nonce: transaction.nonce,
-          gasLimit: transaction.gasLimit.toHexString(),
-          gasPrice: transaction.gasPrice?.toHexString(),
-          data: transaction.data,
-          value: transaction.value.toHexString(),
-          chainId: transaction.chainId,
-          type: transaction.type ?? undefined,
-          accessList: transaction.accessList,
-          maxPriorityFeePerGas: transaction.maxPriorityFeePerGas?.toHexString(),
-          maxFeePerGas: transaction.maxFeePerGas?.toHexString(),
-        },
+        deserializedUnsignedTransaction: serializeTransactionForResponse(
+          // Try to parse the serialized transaction
+          ethers.utils.parseTransaction(serializedTransaction),
+        ),
       });
     } catch (error) {
       return fail({
@@ -69,63 +61,24 @@ export const vincentTool = createVincentTool({
 
     try {
       const transaction = ethers.utils.parseTransaction(serializedTransaction);
-
-      const txToSign: ethers.Transaction = {
-        to: transaction.to,
-        nonce: transaction.nonce,
-        gasLimit: transaction.gasLimit,
-        gasPrice: transaction.gasPrice,
-        data: transaction.data,
-        value: transaction.value,
-        chainId: transaction.chainId,
-      };
-
-      // Only include optional properties if they are defined
-      if (transaction.type !== null && transaction.type !== undefined) {
-        txToSign.type = transaction.type;
-      }
-      if (transaction.accessList !== undefined) {
-        txToSign.accessList = transaction.accessList;
-      }
-      if (transaction.maxPriorityFeePerGas !== undefined) {
-        txToSign.maxPriorityFeePerGas = transaction.maxPriorityFeePerGas;
-      }
-      if (transaction.maxFeePerGas !== undefined) {
-        txToSign.maxFeePerGas = transaction.maxFeePerGas;
-      }
-
-      const signedTransaction = await signTx(publicKey, txToSign, 'serializedTxSignature');
-      console.log('signedTransaction', signedTransaction);
-
+      const signedTransaction = await signTx(
+        publicKey,
+        buildTransactionForSigning(transaction),
+        'serializedTxSignature',
+      );
       const parsedSignedTx = ethers.utils.parseTransaction(signedTransaction);
+
+      const deserializedSignedTransaction = serializeTransactionForResponse(transaction, {
+        hash: parsedSignedTx.hash as string,
+        from: parsedSignedTx.from as string,
+        v: parsedSignedTx.v as number,
+        r: parsedSignedTx.r as string,
+        s: parsedSignedTx.s as string,
+      });
 
       return succeed({
         signedTransaction,
-        deserializedSignedTransaction: {
-          hash: parsedSignedTx.hash,
-
-          to: parsedSignedTx.to,
-          from: parsedSignedTx.from,
-          nonce: parsedSignedTx.nonce,
-
-          gasLimit: parsedSignedTx.gasLimit.toHexString(),
-          gasPrice: parsedSignedTx.gasPrice?.toHexString(),
-
-          data: parsedSignedTx.data,
-          value: parsedSignedTx.value.toHexString(),
-          chainId: parsedSignedTx.chainId,
-
-          v: parsedSignedTx.v,
-          r: parsedSignedTx.r,
-          s: parsedSignedTx.s,
-
-          type: parsedSignedTx.type ?? undefined,
-
-          accessList: parsedSignedTx.accessList,
-
-          maxPriorityFeePerGas: parsedSignedTx.maxPriorityFeePerGas?.toHexString(),
-          maxFeePerGas: parsedSignedTx.maxFeePerGas?.toHexString(),
-        },
+        deserializedSignedTransaction,
       });
     } catch (error) {
       return fail({

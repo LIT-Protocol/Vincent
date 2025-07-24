@@ -34,10 +34,13 @@ export const precheckFailSchema = z.object({
 export const executeSuccessSchema = z.object({
   signedTransaction: z.string().describe('The signed transaction'),
   deserializedSignedTransaction: z.object({
-    hash: z.string().optional().describe('The transaction hash'),
+    hash: z.string().describe('The transaction hash'),
 
-    to: z.string().nullable().optional().describe('The address the transaction is being sent to'),
-    from: z.string().nullable().optional().describe('The address the transaction is sent from'),
+    to: z
+      .string()
+      .nullable()
+      .describe('The address the transaction is being sent to (null for contract creation)'),
+    from: z.string().describe('The address the transaction is sent from'),
     nonce: z.number().describe('The transaction nonce'),
 
     gasLimit: z.string().describe('The gas limit'),
@@ -47,9 +50,9 @@ export const executeSuccessSchema = z.object({
     value: z.string().describe('The value sent'),
     chainId: z.number().describe('The chain ID'),
 
-    v: z.number().optional().describe('The v value of the signature'),
-    r: z.string().optional().describe('The r value of the signature'),
-    s: z.string().optional().describe('The s value of the signature'),
+    v: z.number().describe('The v value of the signature'),
+    r: z.string().describe('The r value of the signature'),
+    s: z.string().describe('The s value of the signature'),
 
     type: z.number().nullable().optional().describe('The transaction type'),
 
