@@ -68,11 +68,34 @@ export const vincentTool = createVincentTool({
     const { publicKey } = delegatorPkpInfo;
 
     try {
-      const signedTransaction = await signTx(
-        publicKey,
-        ethers.utils.parseTransaction(serializedTransaction),
-        'serializedTxSignature',
-      );
+      const transaction = ethers.utils.parseTransaction(serializedTransaction);
+
+      const txToSign: ethers.Transaction = {
+        to: transaction.to,
+        nonce: transaction.nonce,
+        gasLimit: transaction.gasLimit,
+        gasPrice: transaction.gasPrice,
+        data: transaction.data,
+        value: transaction.value,
+        chainId: transaction.chainId,
+      };
+
+      // Only include optional properties if they are defined
+      if (transaction.type !== null && transaction.type !== undefined) {
+        txToSign.type = transaction.type;
+      }
+      if (transaction.accessList !== undefined) {
+        txToSign.accessList = transaction.accessList;
+      }
+      if (transaction.maxPriorityFeePerGas !== undefined) {
+        txToSign.maxPriorityFeePerGas = transaction.maxPriorityFeePerGas;
+      }
+      if (transaction.maxFeePerGas !== undefined) {
+        txToSign.maxFeePerGas = transaction.maxFeePerGas;
+      }
+
+      const signedTransaction = await signTx(publicKey, txToSign, 'serializedTxSignature');
+      console.log('signedTransaction', signedTransaction);
 
       const parsedSignedTx = ethers.utils.parseTransaction(signedTransaction);
 

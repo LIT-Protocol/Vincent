@@ -9,7 +9,7 @@ import {
   validateToolExecutionAndGetPolicies,
   type PermissionData,
 } from '@lit-protocol/vincent-contracts-sdk';
-import { formatEther } from 'viem';
+import { formatEther, parseUnits } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import * as util from 'node:util';
 
@@ -19,7 +19,6 @@ import {
   checkShouldMintAndFundPkp,
   DATIL_PUBLIC_CLIENT,
   ETH_PUBLIC_CLIENT,
-  ETH_RPC_URL,
   getTestConfig,
   TEST_APP_DELEGATEE_ACCOUNT,
   TEST_APP_DELEGATEE_PRIVATE_KEY,
@@ -93,6 +92,17 @@ describe('Contract Whitelist Tool E2E Tests', () => {
   });
 
   let TEST_CONFIG: TestConfig;
+  let RAW_ERC20_TRANSFER_TRANSACTION: {
+    to: string;
+    value: string;
+    data: string;
+    chainId: number;
+    nonce: number;
+    gasPrice: string;
+    gasLimit: string;
+  };
+  let SERIALIZED_ERC20_TRANSFER_TRANSACTION: string;
+  let SIGNED_ERC20_TRANSFER_TRANSACTION: string;
 
   afterAll(async () => {
     console.log('Disconnecting from Lit node client...');
@@ -176,6 +186,49 @@ describe('Contract Whitelist Tool E2E Tests', () => {
         `ℹ️  App Manager has ${formatEther(appManagerLitTestTokenBalance)} Lit test tokens`,
       );
     }
+
+    // Get the current nonce for the PKP address
+    const provider = new ethers.providers.JsonRpcProvider(BASE_RPC_URL);
+
+    // ERC20 transfer function signature: transfer(address,uint256)
+    const erc20Interface = new ethers.utils.Interface([
+      'function transfer(address to, uint256 value) public returns (bool)',
+    ]);
+
+    // Create the transaction data
+    const transactionData = erc20Interface.encodeFunctionData(
+      'transfer',
+      [TEST_APP_DELEGATEE_ACCOUNT.address, ethers.utils.parseUnits('0.0000077', 18)], // 0.0000077 WETH
+    );
+
+    const erc20TransferTransactionBase = {
+      from: TEST_CONFIG.userPkp!.ethAddress!,
+      to: BASE_WETH_ADDRESS,
+      value: '0x00',
+      data: transactionData,
+    };
+
+    // Estimate gas limit for the transaction
+    const estimatedGasLimit = await provider.estimateGas(erc20TransferTransactionBase);
+
+    // Add a 5% buffer to the estimated gas
+    const gasLimit = estimatedGasLimit.mul(105).div(100);
+
+    // Create the transaction object
+    RAW_ERC20_TRANSFER_TRANSACTION = {
+      to: erc20TransferTransactionBase.to,
+      value: erc20TransferTransactionBase.value,
+      data: erc20TransferTransactionBase.data,
+      chainId: 8453, // Base Mainnet
+      nonce: await provider.getTransactionCount(TEST_CONFIG.userPkp!.ethAddress!),
+      gasPrice: (await provider.getGasPrice()).toHexString(),
+      gasLimit: gasLimit.toHexString(),
+    };
+
+    // Serialize the transaction (unsigned)
+    SERIALIZED_ERC20_TRANSFER_TRANSACTION = ethers.utils.serializeTransaction(
+      RAW_ERC20_TRANSFER_TRANSACTION,
+    );
   });
 
   // Contract Whitelist Policy doesn't need to be permitted because it doesn't sign anything
@@ -239,54 +292,13 @@ describe('Contract Whitelist Tool E2E Tests', () => {
   });
 
   it('should successfully run precheck on the Transaction Signer Tool', async () => {
-    // Get the current nonce for the PKP address
-    const provider = new ethers.providers.JsonRpcProvider(BASE_RPC_URL);
-
-    // ERC20 transfer function signature: transfer(address,uint256)
-    const erc20Interface = new ethers.utils.Interface([
-      'function transfer(address to, uint256 value) public returns (bool)',
-    ]);
-
-    // Create the transaction data
-    const transactionData = erc20Interface.encodeFunctionData(
-      'transfer',
-      [TEST_APP_DELEGATEE_ACCOUNT.address, ethers.utils.parseUnits('0.0000077', 18)], // 0.0000077 WETH
-    );
-
-    const erc20TransferTransactionBase = {
-      from: TEST_CONFIG.userPkp!.ethAddress!,
-      to: BASE_WETH_ADDRESS,
-      value: 0,
-      data: transactionData,
-    };
-
-    // Estimate gas limit for the transaction
-    const estimatedGasLimit = await provider.estimateGas(erc20TransferTransactionBase);
-
-    // Add a 5% buffer to the estimated gas
-    const gasLimit = estimatedGasLimit.mul(105).div(100);
-
-    // Create the transaction object
-    const erc20TransferTransaction = {
-      to: erc20TransferTransactionBase.to,
-      value: erc20TransferTransactionBase.value,
-      data: erc20TransferTransactionBase.data,
-      chainId: 8453, // Base Mainnet
-      nonce: await provider.getTransactionCount(TEST_CONFIG.userPkp!.ethAddress!),
-      gasPrice: (await provider.getGasPrice()).toHexString(),
-      gasLimit: gasLimit.toHexString(),
-    };
-
-    // Serialize the transaction (unsigned)
-    const serializedTransaction = ethers.utils.serializeTransaction(erc20TransferTransaction);
-
     // Test: Run precheck on Transaction Signer Tool
     const transactionSignerToolClient = getTransactionSignerToolClient();
 
     // Call the precheck method with the serialized transaction
     const precheckResult = await transactionSignerToolClient.precheck(
       {
-        serializedTransaction: serializedTransaction,
+        serializedTransaction: SERIALIZED_ERC20_TRANSFER_TRANSACTION,
       },
       {
         delegatorPkpEthAddress: TEST_CONFIG.userPkp!.ethAddress!,
@@ -317,21 +329,191 @@ describe('Contract Whitelist Tool E2E Tests', () => {
     // The tool precheck should return the deserialized transaction
     expect(precheckResult.result).toBeDefined();
     const deserializedUnsignedTransaction = precheckResult.result?.deserializedUnsignedTransaction;
-    expect(deserializedUnsignedTransaction.to).toBe(erc20TransferTransaction.to);
+    expect(deserializedUnsignedTransaction.to).toBe(RAW_ERC20_TRANSFER_TRANSACTION.to);
     expect(deserializedUnsignedTransaction.value).toBe('0x00');
-    expect(deserializedUnsignedTransaction.data).toBe(erc20TransferTransaction.data);
-    expect(deserializedUnsignedTransaction.chainId).toBe(erc20TransferTransaction.chainId);
-    expect(deserializedUnsignedTransaction.nonce).toBe(erc20TransferTransaction.nonce);
-    expect(deserializedUnsignedTransaction.gasPrice).toBe(erc20TransferTransaction.gasPrice);
-    expect(deserializedUnsignedTransaction.gasLimit).toBe(erc20TransferTransaction.gasLimit);
+    expect(deserializedUnsignedTransaction.data).toBe(RAW_ERC20_TRANSFER_TRANSACTION.data);
+    expect(deserializedUnsignedTransaction.chainId).toBe(RAW_ERC20_TRANSFER_TRANSACTION.chainId);
+    expect(deserializedUnsignedTransaction.nonce).toBe(RAW_ERC20_TRANSFER_TRANSACTION.nonce);
+    expect(deserializedUnsignedTransaction.gasPrice).toBe(RAW_ERC20_TRANSFER_TRANSACTION.gasPrice);
+    expect(deserializedUnsignedTransaction.gasLimit).toBe(RAW_ERC20_TRANSFER_TRANSACTION.gasLimit);
 
     // The policy precheck should return the permitted chainId, contractAddress, and functionSelector
     const policyPrecheckResult = (precheckResult.context?.policiesContext.allowedPolicies as any)?.[
       '@lit-protocol/vincent-policy-contract-whitelist'
     ]?.result as { chainId: number; contractAddress: string; functionSelector: string };
     expect(policyPrecheckResult).toBeDefined();
-    expect(policyPrecheckResult?.chainId).toBe(erc20TransferTransaction.chainId);
-    expect(policyPrecheckResult?.contractAddress).toBe(erc20TransferTransaction.to);
-    expect(policyPrecheckResult?.functionSelector).toBe(erc20TransferTransaction.data.slice(0, 10));
+    expect(policyPrecheckResult?.chainId).toBe(RAW_ERC20_TRANSFER_TRANSACTION.chainId);
+    expect(policyPrecheckResult?.contractAddress).toBe(RAW_ERC20_TRANSFER_TRANSACTION.to);
+    expect(policyPrecheckResult?.functionSelector).toBe(
+      RAW_ERC20_TRANSFER_TRANSACTION.data.slice(0, 10),
+    );
+  });
+
+  it('should execute the Transaction Signer Tool with the Agent Wallet PKP', async () => {
+    const transactionSignerToolClient = getTransactionSignerToolClient();
+
+    const executeResult = await transactionSignerToolClient.execute(
+      {
+        serializedTransaction: SERIALIZED_ERC20_TRANSFER_TRANSACTION,
+      },
+      {
+        delegatorPkpEthAddress: TEST_CONFIG.userPkp!.ethAddress!,
+      },
+    );
+    console.log('executeResult', util.inspect(executeResult, { depth: 10 }));
+
+    // Assert the executeResult structure and values
+    expect(executeResult).toBeDefined();
+    expect(executeResult.success).toBe(true);
+
+    // Check result object
+    expect(executeResult.result).toBeDefined();
+
+    if (!executeResult.success || !executeResult.result || 'error' in executeResult.result) {
+      throw new Error('Execute failed or returned error');
+    }
+
+    // The signed transaction will change every run, so just check it's a non-empty string
+    // Parse and validate the signed transaction
+    const signedTxHex = executeResult.result.signedTransaction;
+    expect(typeof signedTxHex).toBe('string');
+    expect(signedTxHex).toMatch(/^0x[0-9a-fA-F]+$/);
+
+    // Parse the signed transaction to validate its structure
+    const parsedSignedTx = ethers.utils.parseTransaction(signedTxHex);
+    expect(parsedSignedTx).toBeDefined();
+    expect(parsedSignedTx.hash).toBeDefined();
+    expect(parsedSignedTx.from?.toLowerCase()).toBe(TEST_CONFIG.userPkp!.ethAddress!.toLowerCase());
+    expect(parsedSignedTx.to?.toLowerCase()).toBe(RAW_ERC20_TRANSFER_TRANSACTION.to.toLowerCase());
+    expect(parsedSignedTx.nonce).toBe(RAW_ERC20_TRANSFER_TRANSACTION.nonce);
+    expect(parsedSignedTx.gasLimit.toHexString()).toBe(RAW_ERC20_TRANSFER_TRANSACTION.gasLimit);
+    expect(parsedSignedTx.gasPrice?.toHexString()).toBe(RAW_ERC20_TRANSFER_TRANSACTION.gasPrice);
+    expect(parsedSignedTx.data).toBe(RAW_ERC20_TRANSFER_TRANSACTION.data);
+    expect(parsedSignedTx.value.toHexString()).toBe(RAW_ERC20_TRANSFER_TRANSACTION.value);
+    expect(parsedSignedTx.chainId).toBe(RAW_ERC20_TRANSFER_TRANSACTION.chainId);
+    expect(parsedSignedTx.v).toBeDefined();
+    expect(parsedSignedTx.r).toBeDefined();
+    expect(parsedSignedTx.s).toBeDefined();
+
+    const deserializedSignedTransaction = executeResult.result.deserializedSignedTransaction;
+    expect(deserializedSignedTransaction).toBeDefined();
+
+    // Check fields that should match the input transaction
+    expect(deserializedSignedTransaction.to).toBe(RAW_ERC20_TRANSFER_TRANSACTION.to);
+    expect(deserializedSignedTransaction.value).toBe(RAW_ERC20_TRANSFER_TRANSACTION.value);
+    expect(deserializedSignedTransaction.data).toBe(RAW_ERC20_TRANSFER_TRANSACTION.data);
+    expect(deserializedSignedTransaction.chainId).toBe(RAW_ERC20_TRANSFER_TRANSACTION.chainId);
+    expect(deserializedSignedTransaction.nonce).toBe(RAW_ERC20_TRANSFER_TRANSACTION.nonce);
+    expect(deserializedSignedTransaction.gasLimit).toBe(RAW_ERC20_TRANSFER_TRANSACTION.gasLimit);
+    expect(deserializedSignedTransaction.gasPrice).toBe(RAW_ERC20_TRANSFER_TRANSACTION.gasPrice);
+
+    // The 'from' address should be the PKP's eth address
+    expect(deserializedSignedTransaction.from?.toLowerCase()).toBe(
+      TEST_CONFIG.userPkp!.ethAddress!.toLowerCase(),
+    );
+
+    // Validate signature components using parsed transaction
+    expect(parsedSignedTx.hash).toMatch(/^0x[0-9a-fA-F]{64}$/);
+    expect(typeof parsedSignedTx.v).toBe('number');
+    expect(parsedSignedTx.r).toMatch(/^0x[0-9a-fA-F]{64}$/);
+    expect(parsedSignedTx.s).toMatch(/^0x[0-9a-fA-F]{64}$/);
+
+    // Validate that the parsed transaction matches the deserialized one
+    expect(parsedSignedTx.hash).toBe(deserializedSignedTransaction.hash);
+    expect(parsedSignedTx.v).toBe(deserializedSignedTransaction.v);
+    expect(parsedSignedTx.r).toBe(deserializedSignedTransaction.r);
+    expect(parsedSignedTx.s).toBe(deserializedSignedTransaction.s);
+
+    // Check policiesContext
+    const policiesContext = executeResult.context?.policiesContext;
+    expect(policiesContext).toBeDefined();
+    expect(policiesContext!.allow).toBe(true);
+    expect(policiesContext!.evaluatedPolicies).toContain(
+      '@lit-protocol/vincent-policy-contract-whitelist',
+    );
+    expect(policiesContext!.allowedPolicies).toBeDefined();
+
+    const allowedPolicy =
+      policiesContext!.allowedPolicies!['@lit-protocol/vincent-policy-contract-whitelist']!;
+    expect(allowedPolicy).toBeDefined();
+    expect(allowedPolicy.result).toBeDefined();
+    expect(allowedPolicy.result.chainId).toBe(RAW_ERC20_TRANSFER_TRANSACTION.chainId);
+    expect(allowedPolicy.result.contractAddress.toLowerCase()).toBe(
+      RAW_ERC20_TRANSFER_TRANSACTION.to.toLowerCase(),
+    );
+    expect(allowedPolicy.result.functionSelector).toBe(
+      RAW_ERC20_TRANSFER_TRANSACTION.data.slice(0, 10),
+    );
+
+    // Store the signed transaction for the next test
+    SIGNED_ERC20_TRANSFER_TRANSACTION = signedTxHex;
+  });
+
+  it('should send the signed transaction Base Mainnet to transfer WETH to the delegatee', async () => {
+    const wethAbi = [
+      {
+        constant: true,
+        inputs: [{ name: '_owner', type: 'address' }],
+        name: 'balanceOf',
+        outputs: [{ name: 'balance', type: 'uint256' }],
+        type: 'function',
+      },
+    ];
+
+    // Get initial WETH balance of delegatee
+    const initialDelegateeWethBalance = (await BASE_PUBLIC_CLIENT.readContract({
+      address: BASE_WETH_ADDRESS,
+      abi: wethAbi,
+      functionName: 'balanceOf',
+      args: [TEST_APP_DELEGATEE_ACCOUNT.address],
+    })) as bigint;
+
+    // Send the signed transaction to Base Mainnet
+    const txHash = await BASE_PUBLIC_CLIENT.sendRawTransaction({
+      serializedTransaction: SIGNED_ERC20_TRANSFER_TRANSACTION as `0x${string}`,
+    });
+
+    console.log(`Transaction sent with hash: ${txHash}`);
+
+    // Wait for transaction to be mined
+    const receipt = await BASE_PUBLIC_CLIENT.waitForTransactionReceipt({
+      hash: txHash,
+    });
+
+    expect(receipt.status).toBe('success');
+    console.log(`Transaction confirmed in block ${receipt.blockNumber}`);
+
+    // Wait for the next block to be mined to ensure state changes are reflected
+    const currentBlock = await BASE_PUBLIC_CLIENT.getBlockNumber();
+    console.log(`Waiting for next block after ${currentBlock}...`);
+
+    await new Promise<void>((resolve) => {
+      const unwatch = BASE_PUBLIC_CLIENT.watchBlockNumber({
+        onBlockNumber: (blockNumber) => {
+          if (blockNumber > currentBlock) {
+            console.log(`New block mined: ${blockNumber}`);
+            unwatch();
+            resolve();
+          }
+        },
+      });
+    });
+
+    // Verify the delegatee received the WETH transfer
+    const finalDelegateeWethBalance = (await BASE_PUBLIC_CLIENT.readContract({
+      address: BASE_WETH_ADDRESS,
+      abi: wethAbi,
+      functionName: 'balanceOf',
+      args: [TEST_APP_DELEGATEE_ACCOUNT.address],
+    })) as bigint;
+
+    console.log(`Recipient WETH balance before: ${formatEther(initialDelegateeWethBalance)} WETH`);
+    console.log(`Recipient WETH balance after: ${formatEther(finalDelegateeWethBalance)} WETH`);
+
+    const expectedIncrease = parseUnits('0.0000077', 18);
+    const actualIncrease = finalDelegateeWethBalance - initialDelegateeWethBalance;
+
+    expect(actualIncrease).toBe(expectedIncrease);
+    console.log(`WETH transfer successful: ${formatEther(actualIncrease)} WETH transferred`);
   });
 });
