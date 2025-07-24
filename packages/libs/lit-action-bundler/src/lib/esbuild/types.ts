@@ -1,4 +1,4 @@
-export type GetLitActionHandlerFunc = ({
+export type GetLitActionWrapperContentFunc = ({
   outputPath,
   ipfsCid,
   sourcePath,
@@ -12,5 +12,5 @@ export type BuildLitActionOptions = {
   entryPoint: string;
   outdir: string;
   tsconfigPath: string;
-  getLitActionHandler: GetLitActionHandlerFunc;
+  getLitActionHandler?: GetLitActionWrapperContentFunc;
 };

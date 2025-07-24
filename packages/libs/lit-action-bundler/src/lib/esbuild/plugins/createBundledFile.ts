@@ -6,7 +6,7 @@ import path from 'path';
 /** @ts-expect-error No types for this pkg */
 import Hash from 'ipfs-only-hash';
 
-import type { GetLitActionHandlerFunc } from '../types';
+import type { GetLitActionWrapperContentFunc } from '../types';
 
 import { getMetadataJsonFileContent } from '../templates';
 import { assertOutputFiles, ensureDirectoryExistence } from '../utils';
@@ -16,7 +16,7 @@ export async function createBundledFile({
   getLitActionHandler,
 }: {
   sourceDir: string;
-  getLitActionHandler: GetLitActionHandlerFunc;
+  getLitActionHandler: GetLitActionWrapperContentFunc;
 }): Promise<Plugin> {
   return {
     name: `create-bundled-lit-action-file`,

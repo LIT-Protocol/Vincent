@@ -6,7 +6,7 @@ import path from 'path';
 /** @ts-expect-error No types for this pkg */
 import Hash from 'ipfs-only-hash';
 
-import { getLitActionModuleFileContent } from '../templates';
+import { getLitActionBundledCodeModuleContent } from '../templates';
 import { assertOutputFiles, ensureDirectoryExistence } from '../utils';
 
 export async function wrapIIFEInStringPlugin(): Promise<Plugin> {
@@ -27,7 +27,7 @@ export async function wrapIIFEInStringPlugin(): Promise<Plugin> {
         const content = outputFile.text;
         const ipfsCid = await Hash.of(content);
 
-        const wrapped = getLitActionModuleFileContent({ content, ipfsCid });
+        const wrapped = getLitActionBundledCodeModuleContent({ content, ipfsCid });
 
         // Use the path from the generated output file
         const outputPath = path.resolve(outputFile.path);
