@@ -9,7 +9,7 @@ interface SignatureFields {
 }
 
 interface SerializedUnsignedTransaction {
-  to?: string | null;
+  to: string;
   nonce?: number;
   gasLimit: string;
   gasPrice?: string;
@@ -23,7 +23,7 @@ interface SerializedUnsignedTransaction {
 }
 
 interface SerializedSignedTransaction extends SignatureFields {
-  to: string | null;
+  to: string;
   nonce: number;
   gasLimit: string;
   gasPrice?: string | null;
@@ -80,10 +80,17 @@ export function serializeTransactionForResponse(
   signature?: SignatureFields,
 ): SerializedUnsignedTransaction | SerializedSignedTransaction {
   if (signature) {
+    // Validate that 'to' address is provided (no contract deployment allowed)
+    if (!transaction.to) {
+      throw new Error(
+        'Transaction must have a "to" address. Contract deployment transactions are not supported.',
+      );
+    }
+
     // Build signed transaction response
     const signedTx: SerializedSignedTransaction = {
       hash: signature.hash,
-      to: transaction.to ?? null, // null for contract creation
+      to: transaction.to,
       from: signature.from,
       nonce: transaction.nonce,
       gasLimit: transaction.gasLimit.toHexString(),
@@ -100,6 +107,13 @@ export function serializeTransactionForResponse(
 
     return signedTx;
   } else {
+    // Validate that 'to' address is provided (no contract deployment allowed)
+    if (!transaction.to) {
+      throw new Error(
+        'Transaction must have a "to" address. Contract deployment transactions are not supported.',
+      );
+    }
+
     // Build unsigned transaction response
     const unsignedTx: SerializedUnsignedTransaction = {
       to: transaction.to,

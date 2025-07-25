@@ -8,7 +8,7 @@ export const toolParamsSchema = z.object({
 
 export const precheckSuccessSchema = z.object({
   deserializedUnsignedTransaction: z.object({
-    to: z.string().nullable().optional().describe('The address the transaction is being sent to'),
+    to: z.string().describe('The address the transaction is being sent to'),
     nonce: z.number().optional().describe('The transaction nonce'),
 
     gasLimit: z.string().describe('The gas limit'),
@@ -36,10 +36,7 @@ export const executeSuccessSchema = z.object({
   deserializedSignedTransaction: z.object({
     hash: z.string().describe('The transaction hash'),
 
-    to: z
-      .string()
-      .nullable()
-      .describe('The address the transaction is being sent to (null for contract creation)'),
+    to: z.string().describe('The address the transaction is being sent to'),
     from: z.string().describe('The address the transaction is sent from'),
     nonce: z.number().describe('The transaction nonce'),
 

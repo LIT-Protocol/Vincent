@@ -765,4 +765,78 @@ describe('Contract Whitelist Tool E2E Tests', () => {
       ethers.utils.id('transferFrom(address,address,uint256)').slice(0, 10),
     );
   });
+
+  it('should fail precheck when transaction has undefined "to" (contract deployment)', async () => {
+    const contractDeploymentTransaction = {
+      to: undefined, // undefined for contract deployment
+      value: '0x00',
+      data: '0x608060405234801561001057600080fd5b50', // Sample contract bytecode
+      chainId: 8453, // Base Mainnet
+      nonce: 0,
+      gasPrice: '0x9184e72a000',
+      gasLimit: '0x5208',
+    };
+
+    const serializedContractDeployment = ethers.utils.serializeTransaction(
+      contractDeploymentTransaction,
+    );
+
+    const transactionSignerToolClient = getTransactionSignerToolClient();
+    const precheckResult = await transactionSignerToolClient.precheck(
+      {
+        serializedTransaction: serializedContractDeployment,
+      },
+      {
+        delegatorPkpEthAddress: TEST_CONFIG.userPkp!.ethAddress!,
+      },
+    );
+
+    expect(precheckResult).toBeDefined();
+    console.log(
+      'precheckResult for contract deployment',
+      util.inspect(precheckResult, { depth: 10 }),
+    );
+    expect(precheckResult.success).toBe(false);
+
+    if (!precheckResult.success) {
+      expect(precheckResult.result.error).toBeDefined();
+      expect(precheckResult.result.error).toContain('Transaction must have a "to" address');
+      expect(precheckResult.result.error).toContain(
+        'Contract deployment transactions are not supported',
+      );
+    }
+  });
+
+  it('should fail execute when transaction has undefined "to" (contract deployment)', async () => {
+    const contractDeploymentTransaction = {
+      to: undefined, // undefined for contract deployment
+      value: '0x00',
+      data: '0x608060405234801561001057600080fd5b50', // Sample contract bytecode
+      chainId: 8453, // Base Mainnet
+      nonce: 0,
+      gasPrice: '0x9184e72a000',
+      gasLimit: '0x5208',
+    };
+
+    const serializedContractDeployment = ethers.utils.serializeTransaction(
+      contractDeploymentTransaction,
+    );
+
+    const transactionSignerToolClient = getTransactionSignerToolClient();
+    const executeResult = await transactionSignerToolClient.execute(
+      {
+        serializedTransaction: serializedContractDeployment,
+      },
+      {
+        delegatorPkpEthAddress: TEST_CONFIG.userPkp!.ethAddress!,
+      },
+    );
+
+    expect(executeResult).toBeDefined();
+    console.log(
+      'executeResult for contract deployment',
+      util.inspect(executeResult, { depth: 10 }),
+    );
+    expect(executeResult.success).toBe(false);
+  });
 });
