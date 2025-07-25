@@ -20,7 +20,6 @@ const ENABLE_VERBOSE_LOGGING = false;
  * Debug logging utility
  */
 function debugLog(message: string, data?: any): void {
-   
   if (ENABLE_VERBOSE_LOGGING) {
     const timestamp = new Date().toISOString();
     console.log(`[DEBUG ${timestamp}] ${message}`, data ? JSON.stringify(data, null, 2) : '');

@@ -60,7 +60,11 @@
       "tool-erc20-approval",
       "tool-uniswap-swap",
       "mcp-server",
-      "toolpolicies-e2e"
+      "toolpolicies-e2e",
+      "tool-morpho",
+      "tool-aave",
+      "tool-debridge",
+      "policy-send-counter"
     ],
     "projectsRelationship": "independent",
     "releaseTagPattern": "vincent/{projectName}/{version}",

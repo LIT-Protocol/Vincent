@@ -107,6 +107,7 @@ The Tool SDK is a core component that is used by:
 - `policy-spending-limit`: For implementing spending limit policies
 - `tool-erc20-approval`: For implementing ERC20 approval tools
 - `tool-uniswap-swap`: For implementing Uniswap swap tools
+- `tool-morpho`: For implementing Morpho tools
 
 When working on Tool SDK code, consider these consumers for context, and focus on maintaining backward compatibility and strong type safety.
 

@@ -1,0 +1,58 @@
+{
+  "name": "tool-debridge",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "src",
+  "projectType": "library",
+  "targets": {
+    "clean": {},
+    "action:build": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["tool-sdk:build"],
+      "options": {
+        "commands": ["pnpm node ./esbuild.config.js"],
+        "cwd": "packages/apps/tool-debridge",
+        "parallel": false
+      }
+    },
+    "action:deploy": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["action:build"],
+      "options": {
+        "commands": ["node tools/deploy-lit-action.js"],
+        "cwd": "packages/apps/tool-debridge"
+      }
+    },
+    "action:only:deploy": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": ["node tools/deploy-lit-action.js"],
+        "cwd": "{projectRoot}"
+      }
+    },
+    "build": {
+      "executor": "@nx/js:tsc",
+      "dependsOn": ["action:build"],
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "packages/apps/tool-debridge/dist",
+        "main": "packages/apps/tool-debridge/src/index.ts",
+        "tsConfig": "packages/apps/tool-debridge/tsconfig.lib.json",
+        "assets": [
+          "packages/apps/tool-debridge/*.md",
+          {
+            "glob": "**/*",
+            "input": "packages/apps/tool-debridge/src/generated",
+            "output": "src/generated"
+          }
+        ]
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "packages/apps/tool-debridge/jest.config.js"
+      }
+    }
+  }
+}

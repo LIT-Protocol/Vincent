@@ -1,0 +1,58 @@
+{
+  "name": "tool-aave",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "src",
+  "projectType": "library",
+  "targets": {
+    "clean": {},
+    "action:build": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["tool-sdk:build"],
+      "options": {
+        "commands": ["pnpm node ./esbuild.config.js"],
+        "cwd": "packages/apps/tool-aave",
+        "parallel": false
+      }
+    },
+    "action:deploy": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["action:build"],
+      "options": {
+        "commands": ["node tools/deploy-lit-action.js"],
+        "cwd": "packages/apps/tool-aave"
+      }
+    },
+    "action:only:deploy": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": ["node tools/deploy-lit-action.js"],
+        "cwd": "{projectRoot}"
+      }
+    },
+    "build": {
+      "executor": "@nx/js:tsc",
+      "dependsOn": ["action:build"],
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "packages/apps/tool-aave/dist",
+        "main": "packages/apps/tool-aave/src/index.ts",
+        "tsConfig": "packages/apps/tool-aave/tsconfig.lib.json",
+        "assets": [
+          "packages/apps/tool-aave/*.md",
+          {
+            "glob": "**/*",
+            "input": "packages/apps/tool-aave/src/generated",
+            "output": "src/generated"
+          }
+        ]
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "packages/apps/tool-aave/jest.config.js"
+      }
+    }
+  }
+}
