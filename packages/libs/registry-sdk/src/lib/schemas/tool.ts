@@ -29,6 +29,15 @@ const tool = z
       example:
         'A tool that manages ERC20 approvals for PKPs. Facilitates vincent-uniswap-swap-tool usage.',
     }),
+    logo: z
+      .string()
+      .optional()
+      .openapi({
+        description: 'Base64 encoded logo image',
+        example:
+          'iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAIAAAACDbGyAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAOvwAADr8BOAVTJAAAAA5JREFUGFdj/M+ACAAAAAD//wE7AnsAAAAAAElFTkSuQmCC',
+      })
+      .optional(),
     activeVersion: z.string().openapi({
       description: 'Active version of the tool',
       example: '1.0.0',
@@ -46,7 +55,7 @@ const tool = z
 
 // Avoiding using z.omit() or z.pick() due to excessive TS type inference costs
 function buildCreateToolSchema() {
-  const { activeVersion, title, description, deploymentStatus } = tool.shape;
+  const { activeVersion, title, description, deploymentStatus, logo } = tool.shape;
 
   return z
     .object({
@@ -58,6 +67,7 @@ function buildCreateToolSchema() {
       ...z
         .object({
           deploymentStatus: deploymentStatus.default('dev'),
+          logo,
         })
         .partial()
         .strict().shape,
@@ -69,12 +79,13 @@ export const toolCreate = buildCreateToolSchema();
 
 // Avoiding using z.omit() or z.pick() due to excessive TS type inference costs
 function buildEditToolSchema() {
-  const { activeVersion, title, description, deploymentStatus } = tool.shape;
+  const { activeVersion, title, description, deploymentStatus, logo } = tool.shape;
 
   return z
     .object({
       // Optional
-      ...z.object({ activeVersion, title, description, deploymentStatus }).partial().strict().shape,
+      ...z.object({ activeVersion, title, description, deploymentStatus, logo }).partial().strict()
+        .shape,
     })
     .strict();
 }

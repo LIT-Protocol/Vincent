@@ -175,7 +175,7 @@ export async function runToolPolicyPrechecks<
       }
 
       allowedPolicies[key as Key] = {
-        result: validated.result as PoliciesByPackageName[Key]['__schemaTypes'] extends {
+        result: validated as PoliciesByPackageName[Key]['__schemaTypes'] extends {
           precheckAllowResultSchema: infer Schema;
         }
           ? Schema extends z.ZodType

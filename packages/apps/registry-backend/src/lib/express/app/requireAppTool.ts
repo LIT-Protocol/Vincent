@@ -19,6 +19,7 @@ export const requireAppTool = (toolPackageNameParam = 'toolPackageName') => {
     const reqWithAppVersion = req as RequestWithAppAndVersion;
 
     // Ensure app and appVersion middleware ran first
+
     if (!reqWithAppVersion.vincentApp) {
       debug('App middleware did not run before AppTool middleware');
       res.status(500).json({

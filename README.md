@@ -14,13 +14,13 @@ Powered by Lit’s [decentralized key management network](https://developer.litp
 
 Non-custodial accounts controlled by users and backed by Lit [Programmable Key Pairs (PKPs)](https://developer.litprotocol.com/user-wallets/pkps/overview), used to delegate signing authority to Vincent Apps during Tool execution.
 
-[Learn more](https://docs.heyvincent.ai/documents/Vincent_Docs.Concepts.html#vincent-agent-wallet)
+[Learn more](https://docs.heyvincent.ai/documents/Concepts.html#vincent-agent-wallet)
 
 ## Vincent Tools
 
 Vincent Tools are immutable functions, built with [Lit Actions](https://developer.litprotocol.com/sdk/serverless-signing/overview), that define the specific operations a Vincent App can perform on behalf of users. Tools can interact with blockchains, APIs, and databases but only execute when permitted by all active Vincent Policies configured by the user.
 
-[Learn more](https://docs.heyvincent.ai/documents/Vincent_Docs.Tool_Developers.html)
+[Learn more](https://docs.heyvincent.ai/documents/Tool_Developers.html)
 
 ## Vincent Policies
 
@@ -28,7 +28,7 @@ Vincent Policies are programmable guardrails that govern how and when Tools can 
 
 Each Policy has user-configurable parameters, supports on/off-chain data access, and can persist state across executions. Users define the exact conditions under which a Vincent App can act on their behalf and can update or revoke those conditions at any time.
 
-[Learn more](https://docs.heyvincent.ai/documents/Vincent_Docs.Policy_Developers.html)
+[Learn more](https://docs.heyvincent.ai/documents/Policy_Developers.html)
 
 ## Vincent App
 
@@ -36,7 +36,7 @@ Vincent Apps enable secure, policy-governed automation on behalf of users—with
 
 Apps are bundled as versioned packages and must be approved via the Consent Page before they can execute any actions.
 
-[Learn more](https://docs.heyvincent.ai/documents/Vincent_Docs.App___Agent_Developers.html)
+[Learn more](https://docs.heyvincent.ai/documents/App___Agent_Developers.html)
 
 ## Consent Page
 
@@ -73,7 +73,7 @@ Vincent optimizes for security, interoperability, and user-control to redefine h
 
 # Useful Links
 
-- [Vincent Docs](https://docs.heyvincent.ai/modules/Vincent_Docs.html)
+- [Vincent Docs](https://docs.heyvincent.ai/modules.html)
 - [Automated Dollar-Cost Averaging Demo](https://demo.heyvincent.ai/)
 - [Telegram Community](https://t.me/+aa73FAF9Vp82ZjJh)
 

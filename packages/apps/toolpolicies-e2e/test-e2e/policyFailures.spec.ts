@@ -13,6 +13,8 @@ import { bundledVincentTool as evaluateDenyThrowErrorTool } from '../src/generat
 import { bundledVincentTool as evaluateDenyWithSchemaTool } from '../src/generated/tools/withPolicyFailures/evaluateDenyWithSchema/vincent-bundled-tool';
 import { bundledVincentTool as evaluateDenyNoSchemaErrorResultTool } from '../src/generated/tools/withPolicyFailures/evaluateDenyNoSchemaErrorResult/vincent-bundled-tool';
 import { bundledVincentTool as evaluateDenyNoSchemaNoResultTool } from '../src/generated/tools/withPolicyFailures/evaluateDenyNoSchemaNoResult/vincent-bundled-tool';
+import { bundledVincentTool as executeFailBecauseEvaluateDenyWithToolFailureSchema } from '../src/generated/tools/withPolicyFailures/evaluateDenyWithToolFailureSchema/vincent-bundled-tool';
+import { bundledVincentTool as evaluateDenyWithSchemaValidationError } from '../src/generated/tools/withPolicyFailures/evaluateDenyWithSchemaValidationError/vincent-bundled-tool';
 
 // Policy failure tools - precheck
 import { bundledVincentTool as precheckDenyThrowErrorTool } from '../src/generated/tools/withPolicyFailures/precheckDenyThrowError/vincent-bundled-tool';
@@ -24,6 +26,7 @@ import { bundledVincentTool as precheckDenyNoSchemaNoResultTool } from '../src/g
 // Evaluate policy metadata
 import evaluateDenyThrowErrorMetadata from '../src/generated/policies/deny/noSchema/evaluateDenyThrowError/vincent-policy-metadata.json';
 import evaluateDenyWithSchemaMetadata from '../src/generated/policies/deny/withSchema/evaluateDenyWithSchema/vincent-policy-metadata.json';
+import evaluateDenyWithSchemaValidationErrorMetadata from '../src/generated/policies/deny/withSchema/evaluateDenyWithSchemaValidationError/vincent-policy-metadata.json';
 import evaluateDenyNoSchemaErrorResultMetadata from '../src/generated/policies/deny/noSchema/evaluateDenyNoSchemaErrorResult/vincent-policy-metadata.json';
 import evaluateDenyNoSchemaNoResultMetadata from '../src/generated/policies/deny/noSchema/evaluateDenyNoSchemaNoResult/vincent-policy-metadata.json';
 
@@ -98,6 +101,20 @@ const getEvaluateDenyNoSchemaNoResultToolClient = () => {
   });
 };
 
+const getExecuteFailBecauseEvaluateDenyWithToolFailureSchemaToolClient = () => {
+  return getVincentToolClient({
+    bundledVincentTool: executeFailBecauseEvaluateDenyWithToolFailureSchema,
+    ethersSigner: getDelegateeWallet(),
+  });
+};
+
+const getEvaluateDenyWithSchemaValidationErrorToolClient = () => {
+  return getVincentToolClient({
+    bundledVincentTool: evaluateDenyWithSchemaValidationError,
+    ethersSigner: getDelegateeWallet(),
+  });
+};
+
 // Precheck policy failure tools
 const getPrecheckDenyThrowErrorToolClient = () => {
   return getVincentToolClient({
@@ -148,6 +165,18 @@ describe('VincentToolClient policy failure tests', () => {
     },
     [evaluateDenyNoSchemaNoResultTool.ipfsCid]: {
       [evaluateDenyNoSchemaNoResultMetadata.ipfsCid]: {
+        y: 'test-value',
+      },
+    },
+
+    [executeFailBecauseEvaluateDenyWithToolFailureSchema.ipfsCid]: {
+      [evaluateDenyWithSchemaMetadata.ipfsCid]: {
+        y: 'test-value',
+      },
+    },
+
+    [evaluateDenyWithSchemaValidationError.ipfsCid]: {
+      [evaluateDenyWithSchemaValidationErrorMetadata.ipfsCid]: {
         y: 'test-value',
       },
     },
@@ -318,6 +347,56 @@ describe('VincentToolClient policy failure tests', () => {
           '@lit-protocol/evaluateDenyNoSchemaNoResult',
         );
         expect(result.context?.policiesContext?.deniedPolicy?.result).toBeUndefined();
+      });
+    });
+
+    describe('executeFailWithSchema', () => {
+      it('should fail execute with schema when policy denies', async () => {
+        const client = getExecuteFailBecauseEvaluateDenyWithToolFailureSchemaToolClient();
+        const result = await client.execute(
+          { x: 'test-value' }, // toolParams with x: string shape
+          {
+            delegatorPkpEthAddress: TEST_CONFIG.userPkp!.ethAddress!,
+          },
+        );
+
+        expect(result.success).toBe(false);
+        if (!result.success) {
+          expect(result.result).toBeUndefined(); // eval denied, so result will be undefined
+          expect(result.context?.policiesContext.deniedPolicy?.packageName).toBe(
+            '@lit-protocol/evaluateDenyWithSchema',
+          );
+
+          expect(result.context?.policiesContext.deniedPolicy?.result).toEqual({
+            reason: 'Intentional evaluate denial with schema',
+          });
+        }
+      });
+    });
+
+    describe('executeFailWithSchemaValidationError', () => {
+      it('should fail execute with schema when policy denies', async () => {
+        const client = getEvaluateDenyWithSchemaValidationErrorToolClient();
+        const result = await client.execute(
+          { x: 'test-value' }, // toolParams with x: string shape
+          {
+            delegatorPkpEthAddress: TEST_CONFIG.userPkp!.ethAddress!,
+          },
+        );
+
+        expect(result.success).toBe(false);
+        if (!result.success) {
+          expect(result.result).toBeUndefined(); // eval denied, so result will be undefined
+          expect(result.context?.policiesContext.deniedPolicy?.packageName).toBe(
+            '@lit-protocol/evaluateDenyWithSchemaValidationError',
+          );
+          expect(result.context?.policiesContext.deniedPolicy?.result).toBeUndefined();
+          expect(result.context?.policiesContext.deniedPolicy?.runtimeError).toBe(
+            'Invalid evaluate result.',
+          );
+          expect(result.context?.policiesContext.deniedPolicy?.schemaValidationError).toBeTruthy();
+          console.log(result.context?.policiesContext.deniedPolicy?.schemaValidationError);
+        }
       });
     });
   });

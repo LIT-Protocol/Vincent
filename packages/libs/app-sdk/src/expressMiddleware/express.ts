@@ -1,20 +1,21 @@
 import type { NextFunction, Request, Response } from 'express';
 
-import type { AuthenticatedRequest, AuthenticatedRequestHandler } from './types';
+import type { AuthenticatedRequest, AuthenticatedRequestHandler, VincentJWTData } from './types';
 
 import { verify } from '../jwt';
 import { isDefinedObject } from '../jwt/core/utils';
 
-function assertAuthenticatedRequest(req: Request): asserts req is AuthenticatedRequest {
-  if (!('user' in req) || typeof req.user !== 'object' || !req.user) {
+function assertAuthenticatedRequest<const UserKey extends string>(
+  req: Request,
+  userKey: UserKey
+): asserts req is AuthenticatedRequest<UserKey> {
+  // @ts-expect-error It's an assertion
+  if (!(userKey in req) || typeof req[userKey] !== 'object' || !req[userKey]) {
     throw new Error('Request is not an AuthenticatedRequest: Missing or invalid "user" property');
   }
 
   // Cast with a type assertion
-  const user = req.user as Partial<{
-    decodedJWT: unknown;
-    rawJWT: unknown;
-  }>;
+  const user = req[userKey] as Partial<VincentJWTData>;
 
   const { decodedJWT, rawJWT } = user;
 
@@ -23,92 +24,93 @@ function assertAuthenticatedRequest(req: Request): asserts req is AuthenticatedR
   }
 }
 
-/**
- * Higher-order helper function to enforce authentication on a request handler and assert the type of `Request` that is
- * passed into your authenticated Express routes.
+/** Returns an Express middleware function to authenticate a user using a JWT token, and a type-guard wrapper function
+ * for type-safe usage of route handlers guarded by the middleware.
  *
- * This function takes an `AuthenticatedRequestHandler` and returns a new request handler
- * that verifies that the request has a 'user' property with the correct shape on it before calling the original handler.
- * If the `req.user` property isn't the correct shape, it sends a `401 Unauthorized` response to the client.
+ * The `middleware()` function:
+ * - Checks the `Authorization` header for a Bearer token, verifies the token, and checks its audience.
+ * - If the token is valid, it attaches the user information (decoded JWT, and raw JWT string) to the request object
+ * - If the token is missing or invalid, it returns a 401 Unauthorized response with an error message.
  *
- * NOTE: This does not verify signatures or any other content -- use `getAuthenticateUserExpressHandler` to create a
- * middleware that does those things and ensure that your routes use it.
+ * Designate what field on `req` should be set with the JWT with the `userKey` configuration option.
+ *
+ * The `handler()` function:
+ * - Provides a type-safe reference to `req` where the `userKey` you have provided is correctly inferred to the appropriate type
+ * - Note that it is still your responsibility to ensure you have attached the `middleware` somewhere in the chain before you use the `handler()`
+ *   - If you forget, the `handler()` function will throw an error if the expected `req[userKey]` does not exist.
  *
  * See [express.js documentation](https://expressjs.com/en/guide/writing-middleware.html) for details on writing your route handler
- * @example
- * ```typescript
- * import { authenticatedRequestHandler, getAuthenticateUserExpressHandler } from '@lit-protocol/vincent-app-sdk/expressMiddleware';
- * import type { AuthenticatedRequest } from '@lit-protocol/vincent-app-sdk/expressMiddleware';
- *
- * // Define an authenticated route handler
- * const getUserProfile = async (req: AuthenticatedRequest, res: Response) => {
- *   // Access authenticated user information
- *   const { pkpAddress } = req.user;
- *
- *   // Fetch and return user data
- *   const userData = await userRepository.findByAddress(pkpAddress);
- *   res.json(userData);
- * };
- *
- * // Use in Express route with authentication
- * app.get('/profile', authenticateUser, authenticatedRequestHandler(getUserProfile));
- * ```
- *
  * @category API
- */
-export const authenticatedRequestHandler =
-  (handler: AuthenticatedRequestHandler) => (req: Request, res: Response, next: NextFunction) => {
-    try {
-      assertAuthenticatedRequest(req);
-      return handler(req, res, next);
-    } catch {
-      res.status(401).json({ error: 'Not authenticated' });
-    }
-  };
-
-/**
- * Creates an Express middleware function to authenticate a user using a JWT token.
- *
- * This middleware checks the `Authorization` header for a Bearer token, verifies the token, and checks its audience.
- * If the token is valid, it attaches the user information (decoded JWT, raw token, and PKP address) to the request object as `req.user`.
- * If the token is missing or invalid, it returns a 401 Unauthorized response with an error message.
- *
- * NOTE: Wrap your route handler functions with `authenticatedRequestHandler()` to assert the type of `Request` and to
- * ensure that `req.user` was correctly set before your route handler is run.
- *
- * See [express.js documentation](https://expressjs.com/en/guide/writing-middleware.html) for details on writing your route handler
  *
  * @example
  * ```typescript
- * import { authenticatedRequestHandler, getAuthenticateUserExpressHandler } from '@lit-protocol/vincent-app-sdk/expressMiddleware';
- * import type { AuthenticatedRequest } from '@lit-protocol/vincent-app-sdk/expressMiddleware';
+ * import { createVincentUserMiddleware } from '@lit-protocol/vincent-app-sdk/expressMiddleware';
  *
  * // In your environment configuration
  * const ALLOWED_AUDIENCE = 'https://yourapp.example.com';
+ * const VINCENT_APP_ID = 555; // Provided by the vincent app registry
  *
- * // Create the authentication middleware
- * const authenticateUser = getAuthenticateUserExpressHandler(ALLOWED_AUDIENCE);
+ * const { middleware, handler } = createVincentUserMiddleware({
+ *  allowedAudience: ALLOWED_AUDIENCE,
+ *  requiredAppId: VINCENT_APP_ID,
+ *  userKey: 'vincentUser
+ * });
  *
- * // Define a handler that requires authentication
- * const getProtectedResource = (req: AuthenticatedRequest, res: Response) => {
- *   // The request is now authenticated
- *   // No need for type casting as the handler is properly typed
- *   const { pkpAddress } = req.user;
- *   res.json({ message: `Hello, user with PKP address ${pkpAddress}` });
- * };
+ * // Apply to routes that require authentication; req is guaranteed authenticated because it is wrapped in `handler()`
+ * app.get('/protected-resource', middleware, handler((req, res) => {
+ *     // handler() gives you the correct inferred type of `req[userKey]`
+ *     const pkpAddress = req.vincentUser.decodedJWT.payload.pkp.ethAddress;
+ *     const appInfo = req.vincentUser.decodedJWT.payload.app;
  *
- * // Apply to routes that require authentication by using authenticatedRequestHandler
- * app.get('/protected-resource', authenticateUser, authenticatedRequestHandler(getProtectedResource));
+ *     if(appInfo) {
+ *       res.json({ message: `Hello, user with PKP address ${pkpAddress}. You are authenticated for app ${appInfo.id} @ v${appInfo.version}` });
+ *       return;
+ *     }
+ *
+ *     res.json({ message: `Hello, user with PKP address ${pkpAddress}.` });
+ *   })
+ * );
  * ```
  *
- * You can see the source for `getAuthenticateUserExpressHandler()` below; use this as a reference to implement
- * your own midddleware/authentication for other frameworks! Pull requests are welcome.
- * {@includeCode ./express.ts#expressHandlerTSDocExample}
- * @category API
+ * See the code below for the implementation used by the `middleware` returned by this function. You can adapt this logic
+ * to the HTTP framework of your choice.
+ *
  */
+export function createVincentUserMiddleware<const UserKey extends string>(config: {
+  allowedAudience: string;
+  userKey: UserKey;
+  requiredAppId: number | undefined;
+}) {
+  return {
+    middleware: getAuthenticateUserExpressHandler(config),
+    handler: authenticatedRequestHandler(config.userKey),
+  };
+}
+
+function authenticatedRequestHandler<const UserKey extends string>(userKey: UserKey) {
+  return function (handler: AuthenticatedRequestHandler<UserKey>) {
+    return (req: Request, res: Response, next: NextFunction) => {
+      try {
+        assertAuthenticatedRequest(req, userKey);
+        return handler(req, res, next);
+      } catch {
+        res.status(401).json({ error: 'Not authenticated' });
+      }
+    };
+  };
+}
+
 // #region expressHandlerTSDocExample
-export const getAuthenticateUserExpressHandler =
-  (allowedAudience: string) => async (req: Request, res: Response, next: NextFunction) => {
+function getAuthenticateUserExpressHandler<const UserKey extends string>({
+  allowedAudience,
+  requiredAppId,
+  userKey,
+}: {
+  allowedAudience: string;
+  requiredAppId: number | undefined;
+  userKey: UserKey;
+}) {
+  return async (req: Request, res: Response, next: NextFunction) => {
     const authHeader = req.headers.authorization;
     if (!authHeader) {
       res.status(401).json({ error: 'No token provided' });
@@ -128,20 +130,21 @@ export const getAuthenticateUserExpressHandler =
     }
 
     try {
-      const decodedJWT = verify(rawJWT, allowedAudience);
+      const decodedJWT = verify({ jwt: rawJWT, expectedAudience: allowedAudience, requiredAppId });
       if (!decodedJWT) {
         res.status(401).json({ error: 'Invalid token' });
         return;
       }
 
-      (req as AuthenticatedRequest).user = {
+      (req as unknown as Record<string, VincentJWTData>)[userKey] = {
         decodedJWT,
         rawJWT,
-      };
+      } as VincentJWTData;
 
       next();
     } catch (e) {
       res.status(401).json({ error: `Invalid token: ${(e as Error).message}` });
     }
   };
+}
 // #endregion expressHandlerTSDocExample

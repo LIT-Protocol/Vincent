@@ -1,11 +1,6 @@
 import { ethers } from 'ethers';
 import type { PermissionData } from '@lit-protocol/vincent-contracts-sdk';
-import {
-  getAppByDelegateeAddress,
-  permitApp,
-  registerApp,
-  removeDelegatee,
-} from '@lit-protocol/vincent-contracts-sdk';
+import { getClient } from '@lit-protocol/vincent-contracts-sdk';
 import {
   DATIL_PUBLIC_CLIENT,
   DELEGATEES,
@@ -48,14 +43,13 @@ export async function removeAppDelegateeIfNeeded(): Promise<void> {
   let registeredApp = null;
   try {
     // Use the contracts-sdk method to get the app by delegatee
-    registeredApp = await getAppByDelegateeAddress({
+    registeredApp = await getClient({
       signer: new ethers.Wallet(
         TEST_APP_MANAGER_PRIVATE_KEY,
         new ethers.providers.JsonRpcProvider(YELLOWSTONE_RPC_URL),
       ),
-      args: {
-        delegateeAddress: TEST_APP_DELEGATEE_ACCOUNT.address,
-      },
+    }).getAppByDelegateeAddress({
+      delegateeAddress: TEST_APP_DELEGATEE_ACCOUNT.address,
     });
 
     if (
@@ -73,15 +67,14 @@ export async function removeAppDelegateeIfNeeded(): Promise<void> {
         `ℹ️  App Delegatee: ${TEST_APP_DELEGATEE_ACCOUNT.address} is already registered to App ID: ${registeredApp.id}. Removing Delegatee...`,
       );
 
-      const result = await removeDelegatee({
+      const result = await getClient({
         signer: new ethers.Wallet(
           TEST_APP_MANAGER_PRIVATE_KEY,
           new ethers.providers.JsonRpcProvider(YELLOWSTONE_RPC_URL),
         ),
-        args: {
-          appId: registeredApp.id,
-          delegateeAddress: TEST_APP_DELEGATEE_ACCOUNT.address,
-        },
+      }).removeDelegatee({
+        appId: registeredApp.id,
+        delegateeAddress: TEST_APP_DELEGATEE_ACCOUNT.address,
       });
 
       console.log(
@@ -127,18 +120,17 @@ export async function registerNewApp(
   testConfigPath: string,
 ): Promise<TestConfig> {
   const randomAppId = generateRandomAppId();
-  const { txHash } = await registerApp({
+  const { txHash } = await getClient({
     signer: new ethers.Wallet(
       TEST_APP_MANAGER_PRIVATE_KEY,
       new ethers.providers.JsonRpcProvider(YELLOWSTONE_RPC_URL),
     ),
-    args: {
-      appId: randomAppId,
-      delegateeAddresses: DELEGATEES,
-      versionTools: {
-        toolIpfsCids: toolIpfsCids,
-        toolPolicies: toolPolicies,
-      },
+  }).registerApp({
+    appId: randomAppId,
+    delegateeAddresses: DELEGATEES,
+    versionTools: {
+      toolIpfsCids: toolIpfsCids,
+      toolPolicies: toolPolicies,
     },
   });
 
@@ -159,17 +151,16 @@ export async function permitAppVersionForAgentWalletPkp(
   permissionData: PermissionData,
   testConfig: TestConfig,
 ): Promise<void> {
-  const result = await permitApp({
+  const result = await getClient({
     signer: new ethers.Wallet(
       TEST_AGENT_WALLET_PKP_OWNER_PRIVATE_KEY as string,
       new ethers.providers.JsonRpcProvider(YELLOWSTONE_RPC_URL),
     ),
-    args: {
-      pkpEthAddress: testConfig.userPkp!.ethAddress!,
-      appId: testConfig.appId!,
-      appVersion: testConfig.appVersion!,
-      permissionData: permissionData,
-    },
+  }).permitApp({
+    pkpEthAddress: testConfig.userPkp!.ethAddress!,
+    appId: testConfig.appId!,
+    appVersion: testConfig.appVersion!,
+    permissionData: permissionData,
   });
 
   console.log(

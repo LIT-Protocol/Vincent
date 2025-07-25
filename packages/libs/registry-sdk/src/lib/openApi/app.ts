@@ -10,7 +10,7 @@ import {
   appVersionToolDoc,
 } from '../schemas/appVersion';
 import { z } from '../schemas/openApiZod';
-import { GenericResult, ErrorResponse, siweAuth } from './baseRegistry';
+import { GenericResult, ErrorResponse, jwtAuth } from './baseRegistry';
 
 const appIdParam = z
   .number()
@@ -72,7 +72,7 @@ export function addToRegistry(registry: OpenAPIRegistry) {
     tags: ['App', 'AppVersion'],
     summary: 'Creates a new application',
     operationId: 'createApp',
-    security: [{ [siweAuth.name]: [] }],
+    security: [{ [jwtAuth.name]: [] }],
     request: {
       body: {
         content: {
@@ -150,7 +150,7 @@ export function addToRegistry(registry: OpenAPIRegistry) {
     tags: ['App'],
     summary: 'Edits an application',
     operationId: 'editApp',
-    security: [{ [siweAuth.name]: [] }],
+    security: [{ [jwtAuth.name]: [] }],
     request: {
       params: z.object({
         appId: appIdParam,
@@ -198,7 +198,7 @@ export function addToRegistry(registry: OpenAPIRegistry) {
     tags: ['App', 'AppVersion', 'AppVersionTool'],
     summary: 'Deletes an application',
     operationId: 'deleteApp',
-    security: [{ [siweAuth.name]: [] }],
+    security: [{ [jwtAuth.name]: [] }],
     request: {
       params: z.object({
         appId: appIdParam,
@@ -237,7 +237,7 @@ export function addToRegistry(registry: OpenAPIRegistry) {
     tags: ['App', 'AppVersion', 'AppVersionTool'],
     summary: 'Undeletes an application',
     operationId: 'undeleteApp',
-    security: [{ [siweAuth.name]: [] }],
+    security: [{ [jwtAuth.name]: [] }],
     request: {
       params: z.object({
         appId: appIdParam,
@@ -311,7 +311,7 @@ export function addToRegistry(registry: OpenAPIRegistry) {
     tags: ['AppVersion'],
     summary: 'Creates an application version',
     operationId: 'createAppVersion',
-    security: [{ [siweAuth.name]: [] }],
+    security: [{ [jwtAuth.name]: [] }],
     request: {
       params: z.object({
         appId: appIdParam,
@@ -395,7 +395,7 @@ export function addToRegistry(registry: OpenAPIRegistry) {
     tags: ['AppVersion'],
     summary: 'Edits an application version',
     operationId: 'editAppVersion',
-    security: [{ [siweAuth.name]: [] }],
+    security: [{ [jwtAuth.name]: [] }],
     request: {
       params: z.object({
         appId: appIdParam,
@@ -444,7 +444,7 @@ export function addToRegistry(registry: OpenAPIRegistry) {
     tags: ['AppVersion'],
     summary: 'Enables an application version',
     operationId: 'enableAppVersion',
-    security: [{ [siweAuth.name]: [] }],
+    security: [{ [jwtAuth.name]: [] }],
     request: {
       params: z.object({
         appId: appIdParam,
@@ -484,7 +484,7 @@ export function addToRegistry(registry: OpenAPIRegistry) {
     tags: ['AppVersion'],
     summary: 'Disables an application version',
     operationId: 'disableAppVersion',
-    security: [{ [siweAuth.name]: [] }],
+    security: [{ [jwtAuth.name]: [] }],
     request: {
       params: z.object({
         appId: appIdParam,
@@ -560,7 +560,7 @@ export function addToRegistry(registry: OpenAPIRegistry) {
     tags: ['AppVersionTool'],
     summary: 'Creates a tool for an application version',
     operationId: 'createAppVersionTool',
-    security: [{ [siweAuth.name]: [] }],
+    security: [{ [jwtAuth.name]: [] }],
     request: {
       params: z.object({
         appId: appIdParam,
@@ -610,7 +610,7 @@ export function addToRegistry(registry: OpenAPIRegistry) {
     tags: ['AppVersionTool'],
     summary: 'Edits a tool for an application version',
     operationId: 'editAppVersionTool',
-    security: [{ [siweAuth.name]: [] }],
+    security: [{ [jwtAuth.name]: [] }],
     request: {
       params: z.object({
         appId: appIdParam,
@@ -663,7 +663,7 @@ export function addToRegistry(registry: OpenAPIRegistry) {
     tags: ['AppVersion'],
     summary: 'Deletes an application version',
     operationId: 'deleteAppVersion',
-    security: [{ [siweAuth.name]: [] }],
+    security: [{ [jwtAuth.name]: [] }],
     request: {
       params: z.object({
         appId: appIdParam,
@@ -706,7 +706,7 @@ export function addToRegistry(registry: OpenAPIRegistry) {
     tags: ['AppVersion'],
     summary: 'Undeletes an application version',
     operationId: 'undeleteAppVersion',
-    security: [{ [siweAuth.name]: [] }],
+    security: [{ [jwtAuth.name]: [] }],
     request: {
       params: z.object({
         appId: appIdParam,
@@ -749,7 +749,7 @@ export function addToRegistry(registry: OpenAPIRegistry) {
     tags: ['AppVersionTool'],
     summary: 'Deletes a tool for an application version',
     operationId: 'deleteAppVersionTool',
-    security: [{ [siweAuth.name]: [] }],
+    security: [{ [jwtAuth.name]: [] }],
     request: {
       params: z.object({
         appId: appIdParam,
@@ -793,7 +793,7 @@ export function addToRegistry(registry: OpenAPIRegistry) {
     tags: ['AppVersionTool'],
     summary: 'Undeletes a tool for an application version',
     operationId: 'undeleteAppVersionTool',
-    security: [{ [siweAuth.name]: [] }],
+    security: [{ [jwtAuth.name]: [] }],
     request: {
       params: z.object({
         appId: appIdParam,
@@ -837,7 +837,7 @@ export function addToRegistry(registry: OpenAPIRegistry) {
     tags: ['App'],
     summary: 'Sets the active version of an application',
     operationId: 'setAppActiveVersion',
-    security: [{ [siweAuth.name]: [] }],
+    security: [{ [jwtAuth.name]: [] }],
     request: {
       params: z.object({ appId: appIdParam }),
       body: {

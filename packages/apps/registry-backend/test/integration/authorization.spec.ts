@@ -1,7 +1,6 @@
 import { fetchBaseQuery } from '@reduxjs/toolkit/query';
 import { Wallet } from 'ethers';
 
-import { registerApp } from '@lit-protocol/vincent-contracts-sdk';
 import { nodeClient } from '@lit-protocol/vincent-registry-sdk';
 
 import { expectAssertObject, hasError } from '../assertions';
@@ -9,10 +8,10 @@ import { createTestDebugger } from '../debug';
 import {
   api,
   store,
-  withSiweAuth,
-  defaultWallet,
+  withAuth,
   generateRandomEthAddresses,
-  createWithSiweAuth,
+  createWithAuth,
+  getDefaultWalletContractClient,
 } from './setup';
 
 // Create a debug instance for this file
@@ -29,12 +28,13 @@ const unauthorizedWallet = new Wallet(
 );
 
 // Create a withSiweAuth function that uses the unauthorized wallet
-const withUnauthorizedSiweAuth = createWithSiweAuth(unauthorizedWallet);
+const withUnauthorizedSiweAuth = createWithAuth(unauthorizedWallet);
 
 describe('Authorization Integration Tests', () => {
   // Test data for entities
   let testAppId: number;
   let testAppVersion: number;
+  let secondAppVersion: number;
   let testToolPackageName: string;
   let testToolVersion: string;
   let testPolicyPackageName: string;
@@ -84,20 +84,16 @@ describe('Authorization Integration Tests', () => {
     const policyIpfsCid = 'QmSK8JoXxh7sR6MP7L6YJiUnzpevbNjjtde3PeP8FfLzV3'; // Spending limit policy
 
     try {
-      const { txHash, newAppVersion } = await registerApp({
-        signer: defaultWallet,
-        args: {
-          appId: testAppId.toString(),
-          delegatees: appData.delegateeAddresses,
-          versionTools: {
-            toolIpfsCids: [toolIpfsCid],
-            toolPolicies: [[policyIpfsCid]],
-          },
+      const { txHash } = await getDefaultWalletContractClient().registerApp({
+        appId: testAppId,
+        delegateeAddresses: appData.delegateeAddresses,
+        versionTools: {
+          toolIpfsCids: [toolIpfsCid],
+          toolPolicies: [[policyIpfsCid]],
         },
       });
 
-      verboseLog({ txHash, newAppVersion });
-      expect(newAppVersion).toBe('1'); // First version should be 1
+      verboseLog({ txHash });
     } catch (error) {
       console.error('Failed to register app on contracts:', error);
       throw error;
@@ -135,7 +131,10 @@ describe('Authorization Integration Tests', () => {
       }),
     );
     expect(appVersionResult).not.toHaveProperty('error');
-    const secondAppVersion = appVersionResult.data.version;
+    const { data: secondVersionData } = appVersionResult;
+    expectAssertObject(secondVersionData);
+    secondAppVersion = secondVersionData.version;
+    expect(secondAppVersion).toBe(2); // Second version should be 2
 
     // Create AppVersionTool for the second app version (not on-chain)
     const appVersionToolResult = await store.dispatch(
@@ -166,7 +165,7 @@ describe('Authorization Integration Tests', () => {
     // Reset the API client to use the authorized wallet
     const { setBaseQueryFn } = nodeClient;
     setBaseQueryFn(
-      withSiweAuth(fetchBaseQuery({ baseUrl: `http://localhost:${process.env.PORT || 3000}` })),
+      withAuth(fetchBaseQuery({ baseUrl: `http://localhost:${process.env.PORT || 3000}` })),
     );
 
     // Delete App (this will cascade delete AppVersions and AppVersionTools)
@@ -655,7 +654,7 @@ describe('Authorization Integration Tests', () => {
       // Reset the API client to use the authorized wallet
       const { setBaseQueryFn } = nodeClient;
       setBaseQueryFn(
-        withSiweAuth(fetchBaseQuery({ baseUrl: `http://localhost:${process.env.PORT || 3000}` })),
+        withAuth(fetchBaseQuery({ baseUrl: `http://localhost:${process.env.PORT || 3000}` })),
       );
 
       // Explicitly delete both tools and the policy before creating new ones
@@ -734,7 +733,7 @@ describe('Authorization Integration Tests', () => {
       // Reset the API client to use the authorized wallet
       const { setBaseQueryFn } = nodeClient;
       setBaseQueryFn(
-        withSiweAuth(fetchBaseQuery({ baseUrl: `http://localhost:${process.env.PORT || 3000}` })),
+        withAuth(fetchBaseQuery({ baseUrl: `http://localhost:${process.env.PORT || 3000}` })),
       );
 
       // Delete the test tool and policy
@@ -755,7 +754,7 @@ describe('Authorization Integration Tests', () => {
         // Reset the API client to use the authorized wallet
         const { setBaseQueryFn } = nodeClient;
         setBaseQueryFn(
-          withSiweAuth(fetchBaseQuery({ baseUrl: `http://localhost:${process.env.PORT || 3000}` })),
+          withAuth(fetchBaseQuery({ baseUrl: `http://localhost:${process.env.PORT || 3000}` })),
         );
 
         const result = await store.dispatch(
@@ -846,7 +845,7 @@ describe('Authorization Integration Tests', () => {
         // Reset the API client to use the authorized wallet
         const { setBaseQueryFn } = nodeClient;
         setBaseQueryFn(
-          withSiweAuth(fetchBaseQuery({ baseUrl: `http://localhost:${process.env.PORT || 3000}` })),
+          withAuth(fetchBaseQuery({ baseUrl: `http://localhost:${process.env.PORT || 3000}` })),
         );
 
         const result = await store.dispatch(

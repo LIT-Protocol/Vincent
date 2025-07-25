@@ -882,6 +882,8 @@ export type Tool = {
   title: string;
   /** Tool description - displayed to users in the dashboard/Vincent Explorer UI */
   description: string;
+  /** Base64 encoded logo image */
+  logo?: string;
   /** Active version of the tool */
   activeVersion: string;
   /** Identifies if a tool is in development, test, or production. */
@@ -904,6 +906,8 @@ export type ToolRead = {
   authorWalletAddress: string;
   /** Tool description - displayed to users in the dashboard/Vincent Explorer UI */
   description: string;
+  /** Base64 encoded logo image */
+  logo?: string;
   /** Active version of the tool */
   activeVersion: string;
   /** Identifies if a tool is in development, test, or production. */
@@ -922,6 +926,8 @@ export type ToolCreate = {
   description: string;
   /** Identifies if a tool is in development, test, or production. */
   deploymentStatus?: 'dev' | 'test' | 'prod';
+  /** Base64 encoded logo image */
+  logo?: string;
 };
 export type ToolEdit = {
   /** Active version of the tool */
@@ -932,6 +938,8 @@ export type ToolEdit = {
   description?: string;
   /** Identifies if a tool is in development, test, or production. */
   deploymentStatus?: 'dev' | 'test' | 'prod';
+  /** Base64 encoded logo image */
+  logo?: string;
 };
 export type ToolVersion = {
   /** Timestamp when this was last modified */
@@ -1050,6 +1058,8 @@ export type Policy = {
   packageName: string;
   /** Policy description - displayed to users in the dashboard/Vincent Explorer UI */
   description: string;
+  /** Base64 encoded logo image */
+  logo?: string;
   /** Active version of the policy; must be an exact semver */
   activeVersion: string;
   /** Policy title for displaying to users in the dashboard/Vincent Explorer UI */
@@ -1072,6 +1082,8 @@ export type PolicyRead = {
   authorWalletAddress: string;
   /** Policy description - displayed to users in the dashboard/Vincent Explorer UI */
   description: string;
+  /** Base64 encoded logo image */
+  logo?: string;
   /** Active version of the policy; must be an exact semver */
   activeVersion: string;
   /** Policy title for displaying to users in the dashboard/Vincent Explorer UI */
@@ -1092,6 +1104,8 @@ export type PolicyCreate = {
   description: string;
   /** Identifies if a policy is in development, test, or production. */
   deploymentStatus?: 'dev' | 'test' | 'prod';
+  /** Base64 encoded logo image */
+  logo?: string;
 };
 export type PolicyEdit = {
   /** Active version of the policy; must be an exact semver */
@@ -1102,6 +1116,8 @@ export type PolicyEdit = {
   description?: string;
   /** Identifies if a policy is in development, test, or production. */
   deploymentStatus?: 'dev' | 'test' | 'prod';
+  /** Base64 encoded logo image */
+  logo?: string;
 };
 export type PolicyVersion = {
   /** Timestamp when this was last modified */

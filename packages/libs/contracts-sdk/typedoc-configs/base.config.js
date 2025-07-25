@@ -1,7 +1,7 @@
 module.exports = {
   extends: '../../../../typedoc.config.base.js',
   $schema: 'https://typedoc.org/schema.json',
-  entryPoints: ['../src/typedocRoot.ts'],
+  entryPoints: ['../src/index.ts'],
   name: 'vincent-contracts-sdk',
   tsconfig: '../tsconfig.lib.json',
   includeVersion: true,

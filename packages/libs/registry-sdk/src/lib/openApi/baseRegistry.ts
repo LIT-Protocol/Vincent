@@ -11,11 +11,11 @@ export const GenericResult = registry.register('GenericResultMessage', genericRe
 export const ChangeOwner = registry.register('ChangeOwner', changeOwner);
 
 // Define security schemes
-export const siweAuth = registry.registerComponent('securitySchemes', 'siweAuth', {
-  type: 'apiKey',
-  in: 'header',
-  name: 'Authorization',
-  description: `Sign In With Ethereum authentication (SIWE). Format is "SIWE [JSON({ message, signature })]"`,
+export const jwtAuth = registry.registerComponent('securitySchemes', 'bearerAuth', {
+  type: 'http',
+  scheme: 'bearer',
+  bearerFormat: 'JWT',
+  description: 'Vincent-issued JWTs must be used for these endpoints.',
 });
 
 // Export the registry

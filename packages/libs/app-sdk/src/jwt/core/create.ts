@@ -4,7 +4,7 @@ import { arrayify } from 'ethers/lib/utils';
 
 import type { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
 
-import type { JWTConfig, VincentJWTPayload } from '../types';
+import type { JWTConfig, BaseVincentJWTPayload } from '../types';
 
 import { toBase64Url } from './utils/base64';
 
@@ -81,7 +81,7 @@ export async function create(config: JWTConfig): Promise<string> {
 
   const walletAddress = await pkpWallet.getAddress();
 
-  const fullPayload: VincentJWTPayload = {
+  const fullPayload: BaseVincentJWTPayload = {
     ...payload,
     aud: audience,
     iat,

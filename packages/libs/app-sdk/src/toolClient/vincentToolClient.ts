@@ -106,7 +106,8 @@ const bigintReplacer = (key: any, value: any) => {
  * @typeParam PrecheckFailSchema {@removeTypeParameterCompletely}
  *
  * @param params
- * @param {ethers.Signer} params.ethersSigner  - An ethers signer that has been configured with your delegatee key
+ * @param params.ethersSigner  - An ethers signer that has been configured with your delegatee key
+ * @param params.bundledVincentTool  - The bundled vincent tool that you want to interact with
  *
  * @category API
  * */
@@ -364,7 +365,7 @@ export function getVincentToolClient<
         }) as ToolExecuteResponse<ExecuteSuccessSchema, ExecuteFailSchema, PoliciesByPackageName>;
       }
 
-      const resp: RemoteVincentToolExecutionResult<
+      const remoteVincentToolResult: RemoteVincentToolExecutionResult<
         ExecuteSuccessSchema,
         ExecuteFailSchema,
         PoliciesByPackageName
@@ -374,34 +375,48 @@ export function getVincentToolClient<
         'Parsed executeJs vincentToolExecutionResult:',
         JSON.stringify(parsedResult, bigintReplacer)
       );
-      const executionResult = resp.toolExecutionResult;
+
+      const { toolContext, toolExecutionResult } = remoteVincentToolResult;
 
       if (
-        isToolResponseSchemaValidationFailure(executionResult) ||
-        isToolResponseRuntimeFailure(executionResult)
+        isToolResponseSchemaValidationFailure(toolExecutionResult) ||
+        isToolResponseRuntimeFailure(toolExecutionResult)
       ) {
         console.log(
           'Detected runtime or schema validation error in toolExecutionResult - returning as-is:',
           JSON.stringify(
             {
-              isToolResponseRuntimeFailure: isToolResponseRuntimeFailure(executionResult),
+              isToolResponseRuntimeFailure: isToolResponseRuntimeFailure(toolExecutionResult),
               isToolResponseSchemaValidationFailure:
-                isToolResponseSchemaValidationFailure(executionResult),
-              executionResult,
+                isToolResponseSchemaValidationFailure(toolExecutionResult),
+              toolExecutionResult,
             },
             bigintReplacer
           )
         );
         // Runtime errors and schema validation errors will not have results; return them as-is.
-        return executionResult as ToolExecuteResponse<
-          ExecuteSuccessSchema,
-          ExecuteFailSchema,
-          PoliciesByPackageName
-        >;
+        return createToolExecuteResponseFailureNoResult({
+          ...(toolExecutionResult.runtimeError
+            ? { runtimeError: toolExecutionResult.runtimeError }
+            : {}),
+          ...(toolExecutionResult.schemaValidationError
+            ? { schemaValidationError: toolExecutionResult.schemaValidationError }
+            : {}),
+          context: remoteVincentToolResult.toolContext,
+        }) as ToolExecuteResponse<ExecuteSuccessSchema, ExecuteFailSchema, PoliciesByPackageName>;
+      }
+
+      // Policy eval happens before `execute()` is ever called
+      // As a result, when policies return a `deny` result, there will be no tool result
+      // so we need to skip trying to run result through the success/fail schema logic
+      if (!toolContext.policiesContext.allow) {
+        return createToolExecuteResponseFailureNoResult({
+          context: toolContext,
+        }) as ToolExecuteResponse<ExecuteSuccessSchema, ExecuteFailSchema, PoliciesByPackageName>;
       }
 
       const resultSchemaDetails = getSchemaForToolResult({
-        value: executionResult,
+        value: toolExecutionResult,
         successResultSchema: executeSuccessSchema,
         failureResultSchema: executeFailSchema,
       });
@@ -412,7 +427,7 @@ export function getVincentToolClient<
 
       // Parse returned result using appropriate execute zod schema
       const executeResult = validateOrFail(
-        executionResult.result,
+        toolExecutionResult.result,
         schemaToUse,
         'execute',
         'output'
@@ -429,17 +444,19 @@ export function getVincentToolClient<
         >;
       }
 
-      console.log('Raw toolExecutionResult was:', executionResult);
+      console.log('Raw toolExecutionResult was:', toolExecutionResult);
 
       // We parsed the result -- it may be a success or a failure; return appropriately.
-      if (isToolResponseFailure(executionResult)) {
+      if (isToolResponseFailure(toolExecutionResult)) {
         return createToolExecuteResponseFailure({
-          ...(executionResult.runtimeError ? { runtimeError: executionResult.runtimeError } : {}),
-          ...(executionResult.schemaValidationError
-            ? { schemaValidationError: executionResult.schemaValidationError }
+          ...(toolExecutionResult.runtimeError
+            ? { runtimeError: toolExecutionResult.runtimeError }
+            : {}),
+          ...(toolExecutionResult.schemaValidationError
+            ? { schemaValidationError: toolExecutionResult.schemaValidationError }
             : {}),
           result: executeResult,
-          context: resp.toolContext,
+          context: remoteVincentToolResult.toolContext,
         }) as ToolExecuteResponse<ExecuteSuccessSchema, ExecuteFailSchema, PoliciesByPackageName>;
       }
 
@@ -447,7 +464,7 @@ export function getVincentToolClient<
 
       return createToolExecuteResponseSuccess({
         result: res,
-        context: resp.toolContext,
+        context: remoteVincentToolResult.toolContext,
       }) as ToolExecuteResponse<ExecuteSuccessSchema, ExecuteFailSchema, PoliciesByPackageName>;
     },
   };

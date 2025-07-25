@@ -5,8 +5,8 @@ import type {
   PermissionDataOnChain,
   PolicyWithParameters,
   ToolWithPolicies,
-} from '../types/internal';
-import type { PermissionData } from '../types/User';
+} from '../internal/types/chain';
+import type { PermissionData } from '../types';
 
 /**
  * Converts a policy parameters object to the flattened array format required by the contract

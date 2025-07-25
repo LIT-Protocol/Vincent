@@ -9,7 +9,7 @@ import {
   toolVersionEdit,
   toolVersionDoc,
 } from '../schemas/tool';
-import { ErrorResponse, ChangeOwner, GenericResult, siweAuth } from './baseRegistry';
+import { ErrorResponse, ChangeOwner, GenericResult, jwtAuth } from './baseRegistry';
 
 const packageNameParam = z
   .string()
@@ -62,7 +62,7 @@ export function addToRegistry(registry: OpenAPIRegistry) {
     tags: ['Tool', 'ToolVersion'],
     summary: 'Creates a new tool',
     operationId: 'createTool',
-    security: [{ [siweAuth.name]: [] }],
+    security: [{ [jwtAuth.name]: [] }],
     request: {
       params: z.object({ packageName: packageNameParam }),
       body: {
@@ -141,7 +141,7 @@ export function addToRegistry(registry: OpenAPIRegistry) {
     tags: ['Tool'],
     summary: 'Edits a tool',
     operationId: 'editTool',
-    security: [{ [siweAuth.name]: [] }],
+    security: [{ [jwtAuth.name]: [] }],
     request: {
       params: z.object({ packageName: packageNameParam }),
       body: {
@@ -220,7 +220,7 @@ export function addToRegistry(registry: OpenAPIRegistry) {
     tags: ['Tool'],
     summary: "Changes a tool's owner",
     operationId: 'changeToolOwner',
-    security: [{ [siweAuth.name]: [] }],
+    security: [{ [jwtAuth.name]: [] }],
     request: {
       params: z.object({ packageName: packageNameParam }),
       body: {
@@ -266,7 +266,7 @@ export function addToRegistry(registry: OpenAPIRegistry) {
     tags: ['ToolVersion'],
     summary: 'Creates a tool version',
     operationId: 'createToolVersion',
-    security: [{ [siweAuth.name]: [] }],
+    security: [{ [jwtAuth.name]: [] }],
     request: {
       params: z.object({ packageName: packageNameParam, version: toolVersionParam }),
       body: {
@@ -345,7 +345,7 @@ export function addToRegistry(registry: OpenAPIRegistry) {
     tags: ['ToolVersion'],
     summary: 'Edits a tool version',
     operationId: 'editToolVersion',
-    security: [{ [siweAuth.name]: [] }],
+    security: [{ [jwtAuth.name]: [] }],
     request: {
       params: z.object({ packageName: packageNameParam, version: toolVersionParam }),
       body: {
@@ -391,7 +391,7 @@ export function addToRegistry(registry: OpenAPIRegistry) {
     tags: ['Tool', 'ToolVersion'],
     summary: 'Deletes a tool and all its versions',
     operationId: 'deleteTool',
-    security: [{ [siweAuth.name]: [] }],
+    security: [{ [jwtAuth.name]: [] }],
     request: {
       params: z.object({ packageName: packageNameParam }),
     },
@@ -425,7 +425,7 @@ export function addToRegistry(registry: OpenAPIRegistry) {
     tags: ['Tool', 'ToolVersion'],
     summary: 'Undeletes a tool and all its versions',
     operationId: 'undeleteTool',
-    security: [{ [siweAuth.name]: [] }],
+    security: [{ [jwtAuth.name]: [] }],
     request: {
       params: z.object({ packageName: packageNameParam }),
     },
@@ -459,7 +459,7 @@ export function addToRegistry(registry: OpenAPIRegistry) {
     tags: ['ToolVersion'],
     summary: 'Deletes a tool version',
     operationId: 'deleteToolVersion',
-    security: [{ [siweAuth.name]: [] }],
+    security: [{ [jwtAuth.name]: [] }],
     request: {
       params: z.object({
         packageName: packageNameParam,
@@ -502,7 +502,7 @@ export function addToRegistry(registry: OpenAPIRegistry) {
     tags: ['ToolVersion'],
     summary: 'Undeletes a tool version',
     operationId: 'undeleteToolVersion',
-    security: [{ [siweAuth.name]: [] }],
+    security: [{ [jwtAuth.name]: [] }],
     request: {
       params: z.object({
         packageName: packageNameParam,

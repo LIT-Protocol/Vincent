@@ -15,7 +15,7 @@ const redirectToDelegationAuthPage = ({
   redirectUri,
   delegationAuthPageUrl,
 }: {
-  appId: string;
+  appId: number;
   redirectUri: string;
   delegationAuthPageUrl?: string;
 }) =>
@@ -44,7 +44,11 @@ export const getWebAuthClient = (appClientConfig: WebAuthClientConfig): WebAuthC
     },
     isLogin: () => isLoginUri(window.location.href),
     decodeVincentLoginJWT: (expectedAudience: string) =>
-      decodeVincentJWTFromUri(window.location.href, expectedAudience),
+      decodeVincentJWTFromUri({
+        uri: window.location.href,
+        expectedAudience: expectedAudience,
+        requiredAppId: appId,
+      }),
     removeLoginJWTFromURI: () => {
       const urlWithoutJWTSearchParam = removeSearchParam({
         paramName: JWT_URL_KEY,

@@ -7,7 +7,7 @@ import type {
   ValidateToolExecutionAndGetPoliciesResult,
 } from '@lit-protocol/vincent-contracts-sdk';
 
-import { validateToolExecutionAndGetPolicies } from '@lit-protocol/vincent-contracts-sdk';
+import { getClient } from '@lit-protocol/vincent-contracts-sdk';
 
 import { bigintReplacer } from '../../utils';
 
@@ -54,17 +54,20 @@ export const getPoliciesAndAppVersion = async ({
 
   try {
     // Create a signer using the delegationRpcUrl
-    const provider = new ethers.providers.StaticJsonRpcProvider(delegationRpcUrl);
+    const signer = ethers.Wallet.createRandom().connect(
+      new ethers.providers.StaticJsonRpcProvider(delegationRpcUrl),
+    );
+
+    const contractClient = getClient({
+      signer,
+    });
 
     // Use the contracts-sdk to validate tool execution and get policies
     const validationResult: ValidateToolExecutionAndGetPoliciesResult =
-      await validateToolExecutionAndGetPolicies({
-        signer: ethers.Wallet.createRandom().connect(provider),
-        args: {
-          delegateeAddress: appDelegateeAddress,
-          pkpEthAddress: agentWalletPkpEthAddress,
-          toolIpfsCid: toolIpfsCid,
-        },
+      await contractClient.validateToolExecutionAndGetPolicies({
+        delegateeAddress: appDelegateeAddress,
+        pkpEthAddress: agentWalletPkpEthAddress,
+        toolIpfsCid: toolIpfsCid,
       });
 
     // We exit early here because !validationResult.isPermitted means appDelegateeAddress

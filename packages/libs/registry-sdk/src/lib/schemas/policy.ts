@@ -24,6 +24,15 @@ const policy = z
       description: 'Policy description - displayed to users in the dashboard/Vincent Explorer UI',
       example: 'This policy is a foo bar policy',
     }),
+    logo: z
+      .string()
+      .optional()
+      .openapi({
+        description: 'Base64 encoded logo image',
+        example:
+          'iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAIAAAACDbGyAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAOvwAADr8BOAVTJAAAAA5JREFUGFdj/M+ACAAAAAD//wE7AnsAAAAAAElFTkSuQmCC',
+      })
+      .optional(),
     activeVersion: z.string().openapi({
       description: 'Active version of the policy; must be an exact semver',
       example: '1.0.0',
@@ -45,7 +54,7 @@ const policy = z
 
 // Avoiding using z.omit() or z.pick() due to excessive TS type inference costs
 function buildCreatePolicySchema() {
-  const { activeVersion, title, description, deploymentStatus } = policy.shape;
+  const { activeVersion, title, description, deploymentStatus, logo } = policy.shape;
 
   return z
     .object({
@@ -57,6 +66,7 @@ function buildCreatePolicySchema() {
       ...z
         .object({
           deploymentStatus: deploymentStatus.default('dev'),
+          logo,
         })
         .partial()
         .strict().shape,
@@ -68,12 +78,13 @@ export const policyCreate = buildCreatePolicySchema();
 
 // Avoiding using z.omit() or z.pick() due to excessive TS type inference costs
 function buildEditPolicySchema() {
-  const { activeVersion, title, description, deploymentStatus } = policy.shape;
+  const { activeVersion, title, description, deploymentStatus, logo } = policy.shape;
 
   return z
     .object({
       // Optional
-      ...z.object({ activeVersion, title, description, deploymentStatus }).partial().strict().shape,
+      ...z.object({ activeVersion, title, description, deploymentStatus, logo }).partial().strict()
+        .shape,
     })
     .strict();
 }

@@ -18,11 +18,11 @@
   ],
   "components": {
     "securitySchemes": {
-      "siweAuth": {
-        "type": "apiKey",
-        "in": "header",
-        "name": "Authorization",
-        "description": "Sign In With Ethereum authentication (SIWE). Format is \"SIWE [JSON({ message, signature })]\""
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Vincent-issued JWTs must be used for these endpoints."
       }
     },
     "schemas": {
@@ -571,6 +571,11 @@
             "default": "dev",
             "description": "Identifies if a tool is in development, test, or production.",
             "example": "dev"
+          },
+          "logo": {
+            "type": "string",
+            "description": "Base64 encoded logo image",
+            "example": "iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAIAAAACDbGyAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAOvwAADr8BOAVTJAAAAA5JREFUGFdj/M+ACAAAAAD//wE7AnsAAAAAAElFTkSuQmCC"
           }
         },
         "required": [
@@ -609,6 +614,11 @@
             ],
             "description": "Identifies if a tool is in development, test, or production.",
             "example": "dev"
+          },
+          "logo": {
+            "type": "string",
+            "description": "Base64 encoded logo image",
+            "example": "iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAIAAAACDbGyAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAOvwAADr8BOAVTJAAAAA5JREFUGFdj/M+ACAAAAAD//wE7AnsAAAAAAElFTkSuQmCC"
           }
         },
         "additionalProperties": false
@@ -653,6 +663,11 @@
             "minLength": 10,
             "description": "Tool description - displayed to users in the dashboard/Vincent Explorer UI",
             "example": "A tool that manages ERC20 approvals for PKPs. Facilitates vincent-uniswap-swap-tool usage."
+          },
+          "logo": {
+            "type": "string",
+            "description": "Base64 encoded logo image",
+            "example": "iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAIAAAACDbGyAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAOvwAADr8BOAVTJAAAAA5JREFUGFdj/M+ACAAAAAD//wE7AnsAAAAAAElFTkSuQmCC"
           },
           "activeVersion": {
             "type": "string",
@@ -928,6 +943,11 @@
             "default": "dev",
             "description": "Identifies if a policy is in development, test, or production.",
             "example": "dev"
+          },
+          "logo": {
+            "type": "string",
+            "description": "Base64 encoded logo image",
+            "example": "iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAIAAAACDbGyAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAOvwAADr8BOAVTJAAAAA5JREFUGFdj/M+ACAAAAAD//wE7AnsAAAAAAElFTkSuQmCC"
           }
         },
         "required": [
@@ -966,6 +986,11 @@
             ],
             "description": "Identifies if a policy is in development, test, or production.",
             "example": "dev"
+          },
+          "logo": {
+            "type": "string",
+            "description": "Base64 encoded logo image",
+            "example": "iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAIAAAACDbGyAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAOvwAADr8BOAVTJAAAAA5JREFUGFdj/M+ACAAAAAD//wE7AnsAAAAAAElFTkSuQmCC"
           }
         },
         "additionalProperties": false
@@ -1004,6 +1029,11 @@
             "minLength": 10,
             "description": "Policy description - displayed to users in the dashboard/Vincent Explorer UI",
             "example": "This policy is a foo bar policy"
+          },
+          "logo": {
+            "type": "string",
+            "description": "Base64 encoded logo image",
+            "example": "iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAIAAAACDbGyAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAOvwAADr8BOAVTJAAAAA5JREFUGFdj/M+ACAAAAAD//wE7AnsAAAAAAElFTkSuQmCC"
           },
           "activeVersion": {
             "type": "string",
@@ -1335,7 +1365,7 @@
         "operationId": "createApp",
         "security": [
           {
-            "siweAuth": []
+            "bearerAuth": []
           }
         ],
         "requestBody": {
@@ -1432,7 +1462,7 @@
         "operationId": "editApp",
         "security": [
           {
-            "siweAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -1497,7 +1527,7 @@
         "operationId": "deleteApp",
         "security": [
           {
-            "siweAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -1553,7 +1583,7 @@
         "operationId": "undeleteApp",
         "security": [
           {
-            "siweAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -1653,7 +1683,7 @@
         "operationId": "createAppVersion",
         "security": [
           {
-            "siweAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -1772,7 +1802,7 @@
         "operationId": "editAppVersion",
         "security": [
           {
-            "siweAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -1845,7 +1875,7 @@
         "operationId": "deleteAppVersion",
         "security": [
           {
-            "siweAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -1912,7 +1942,7 @@
         "operationId": "enableAppVersion",
         "security": [
           {
-            "siweAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -1976,7 +2006,7 @@
         "operationId": "disableAppVersion",
         "security": [
           {
-            "siweAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -2096,7 +2126,7 @@
         "operationId": "createAppVersionTool",
         "security": [
           {
-            "siweAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -2179,7 +2209,7 @@
         "operationId": "editAppVersionTool",
         "security": [
           {
-            "siweAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -2265,7 +2295,7 @@
         "operationId": "deleteAppVersionTool",
         "security": [
           {
-            "siweAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -2342,7 +2372,7 @@
         "operationId": "undeleteAppVersion",
         "security": [
           {
-            "siweAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -2409,7 +2439,7 @@
         "operationId": "undeleteAppVersionTool",
         "security": [
           {
-            "siweAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -2486,7 +2516,7 @@
         "operationId": "setAppActiveVersion",
         "security": [
           {
-            "siweAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -2586,7 +2616,7 @@
         "operationId": "createTool",
         "security": [
           {
-            "siweAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -2693,7 +2723,7 @@
         "operationId": "editTool",
         "security": [
           {
-            "siweAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -2757,7 +2787,7 @@
         "operationId": "deleteTool",
         "security": [
           {
-            "siweAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -2854,7 +2884,7 @@
         "operationId": "changeToolOwner",
         "security": [
           {
-            "siweAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -2919,7 +2949,7 @@
         "operationId": "createToolVersion",
         "security": [
           {
-            "siweAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -3046,7 +3076,7 @@
         "operationId": "editToolVersion",
         "security": [
           {
-            "siweAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -3119,7 +3149,7 @@
         "operationId": "deleteToolVersion",
         "security": [
           {
-            "siweAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -3187,7 +3217,7 @@
         "operationId": "undeleteTool",
         "security": [
           {
-            "siweAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -3238,7 +3268,7 @@
         "operationId": "undeleteToolVersion",
         "security": [
           {
-            "siweAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -3337,7 +3367,7 @@
         "operationId": "createPolicy",
         "security": [
           {
-            "siweAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -3444,7 +3474,7 @@
         "operationId": "editPolicy",
         "security": [
           {
-            "siweAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -3508,7 +3538,7 @@
         "operationId": "deletePolicy",
         "security": [
           {
-            "siweAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -3559,7 +3589,7 @@
         "operationId": "createPolicyVersion",
         "security": [
           {
-            "siweAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -3686,7 +3716,7 @@
         "operationId": "editPolicyVersion",
         "security": [
           {
-            "siweAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -3759,7 +3789,7 @@
         "operationId": "deletePolicyVersion",
         "security": [
           {
-            "siweAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -3872,7 +3902,7 @@
         "operationId": "changePolicyOwner",
         "security": [
           {
-            "siweAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -3938,7 +3968,7 @@
         "operationId": "undeletePolicy",
         "security": [
           {
-            "siweAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -3989,7 +4019,7 @@
         "operationId": "undeletePolicyVersion",
         "security": [
           {
-            "siweAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [

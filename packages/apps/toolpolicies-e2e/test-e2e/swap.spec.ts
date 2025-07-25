@@ -159,6 +159,7 @@ const addNewApproval = async (delegatorPkpEthAddress: string, tokenAmount: numbe
 };
 
 describe('Uniswap Swap Tool E2E Tests', () => {
+  const MAX_SPENDING_LIMIT_IN_USD_CENTS = 1000000000n; // $10 USD (8 decimals)
   // Define permission data for all tools and policies
   const PERMISSION_DATA: PermissionData = {
     // ERC20 Approval Tool has no policies
@@ -167,7 +168,7 @@ describe('Uniswap Swap Tool E2E Tests', () => {
     // Uniswap Swap Tool has the Spending Limit Policy
     [uniswapBundledTool.ipfsCid]: {
       [spendingLimitPolicyMetadata.ipfsCid]: {
-        maxDailySpendingLimitInUsdCents: 1000000000n, // $10 USD (8 decimals)
+        maxDailySpendingLimitInUsdCents: MAX_SPENDING_LIMIT_IN_USD_CENTS,
       },
     },
   };
@@ -388,6 +389,18 @@ describe('Uniswap Swap Tool E2E Tests', () => {
 
     // The precheck should has no result
     expect(precheckResult.result).not.toBeDefined();
+
+    // The policy precheck should return the maxSpendingLimitInUsd and buyAmountInUsd
+    const policyPrecheckResult = (precheckResult.context?.policiesContext.allowedPolicies as any)?.[
+      '@lit-protocol/vincent-policy-spending-limit'
+    ]?.result as { maxSpendingLimitInUsd: number; buyAmountInUsd: number };
+    expect(policyPrecheckResult).toBeDefined();
+    // Max spending limit is padded to 8 decimals when returned from the policy
+    expect(policyPrecheckResult?.maxSpendingLimitInUsd).toBe(
+      Number(MAX_SPENDING_LIMIT_IN_USD_CENTS * 1000000n),
+    );
+    // Because this is a price, it will fluctuate, so we just check that it's a number and not 0
+    expect(policyPrecheckResult?.buyAmountInUsd).toBeGreaterThan(0);
   });
 
   it('should add an approval successfully when there is no approval', async () => {

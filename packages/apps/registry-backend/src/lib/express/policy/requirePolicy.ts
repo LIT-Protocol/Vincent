@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
 
-import type { RequestWithVincentUser } from '../requireVincentAuth';
+import type { RequestWithVincentUser } from '../vincentAuth';
 
 import { createDebugger } from '../../../../debug';
 import { Policy } from '../../mongo/policy';

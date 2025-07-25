@@ -523,6 +523,9 @@ importers:
       '@lit-protocol/flags':
         specifier: ^2.1.0
         version: 2.1.0
+      '@lit-protocol/vincent-app-sdk':
+        specifier: workspace:*
+        version: link:../../libs/app-sdk
       '@lit-protocol/vincent-contracts-sdk':
         specifier: workspace:*
         version: link:../../libs/contracts-sdk
@@ -562,9 +565,6 @@ importers:
       semver:
         specifier: ^7.7.2
         version: 7.7.2
-      siwe:
-        specifier: ^3.0.0
-        version: 3.0.0(ethers@5.8.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))
       tar:
         specifier: ^7.4.3
         version: 7.4.3

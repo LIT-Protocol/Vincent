@@ -15,5 +15,7 @@
 export { create } from './core/create';
 export { isExpired } from './core/isExpired';
 export { decode, verify } from './core/validate';
+export { isGeneralJWT, isAppSpecificJWT, assertIsVincentJWT } from './typeGuards';
 
-export type { JWTConfig, VincentJWT, VincentJWTPayload } from './types';
+export type { JWTConfig, VincentJWT, VincentJWTAppSpecific } from './types';
+export { getAppInfo, getPKPInfo } from './accessors';

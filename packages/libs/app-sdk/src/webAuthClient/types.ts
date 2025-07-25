@@ -1,7 +1,7 @@
-import type { VincentJWT } from '../jwt/types';
+import type { VincentJWT, VincentJWTAppSpecific } from '../jwt/types';
 
 export interface WebAuthClientConfig {
-  appId: string;
+  appId: number;
 }
 
 export interface RedirectToVincentDelegationPageParams {
@@ -39,8 +39,8 @@ export interface WebAuthClient {
    * // ... In your app logic:
    * if(vincentAppClient.isLogin()) {
    *   // Handle app logic for the user has just logged in
-   *   const { decoded, jwt } = vincentAppClient.decodeVincentLoginJWT(EXPECTED_AUDIENCE);
-   *   // Store `jwt` for later usage; the user is now logged in.
+   *   const { decoded, jwtStr } = vincentAppClient.decodeVincentLoginJWT(EXPECTED_AUDIENCE);
+   *   // Store `jwtStr` for later usage; the user is now logged in.
    * } else {
    *   // Handle app logic for the user is already logged in (check for stored & unexpired JWT)
    *   // ...
@@ -74,15 +74,15 @@ export interface WebAuthClient {
    *
    * See: {@link WebAuthClient.redirectToDelegationAuthPage} for example usage
    *
-   * @param { string } expectedAudience Provide a valid `redirectUri` for your app; this is typically your app's origin
+   * @param expectedAudience Provide a valid `redirectUri` for your app; this is typically your app's origin
    * @function
    * @inline
-   * @returns {decodedJWT: VincentJWT; jwtStr: string | null} `null` if no JWT is found, otherwise both the decoded jwt and the original JWT string is returned
+   * @returns {decodedJWT: VincentJWTAppSpecific; jwtStr: string | null} `null` if no JWT is found, otherwise both the decoded jwt and the original JWT string is returned
    * @throws {Error} If there was a JWT in the page URL, but it was invalid / could not be verified
    */
   decodeVincentLoginJWT: (
     expectedAudience: string
-  ) => { decodedJWT: VincentJWT; jwtStr: string } | null;
+  ) => { decodedJWT: VincentJWTAppSpecific; jwtStr: string } | null;
 
   /**
    * Removes the Vincent login JWT from the current window URI.

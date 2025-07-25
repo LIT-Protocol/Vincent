@@ -35,6 +35,10 @@ import { bundledVincentTool as executeSuccessInvalidSchemaTool } from '../src/ge
 import { bundledVincentTool as precheckFailInvalidSchemaTool } from '../src/generated/tools/fail/invalidSchema/precheckFailInvalidSchema/vincent-bundled-tool';
 import { bundledVincentTool as precheckSuccessInvalidSchemaTool } from '../src/generated/tools/fail/invalidSchema/precheckSuccessInvalidSchema/vincent-bundled-tool';
 
+// Tool with policy that returns precheck results
+import { bundledVincentTool as precheckSuccessWithPolicyTool } from '../src/generated/tools/withPolicySuccess/precheckSuccessWithPolicy/vincent-bundled-tool';
+import precheckAllowWithUserParamsMetadata from '../src/generated/policies/allow/withSchema/precheckAllowWithUserParams/vincent-policy-metadata.json';
+
 import {
   checkShouldMintAndFundPkp,
   DATIL_PUBLIC_CLIENT,
@@ -191,6 +195,13 @@ const getPrecheckSuccessInvalidSchemaToolClient = () => {
   });
 };
 
+const getPrecheckSuccessWithPolicyToolClient = () => {
+  return getVincentToolClient({
+    bundledVincentTool: precheckSuccessWithPolicyTool,
+    ethersSigner: getDelegateeWallet(),
+  });
+};
+
 describe('VincentToolClient failure tests', () => {
   // Define permission data for all tools and policies
   const PERMISSION_DATA: PermissionData = {
@@ -215,6 +226,13 @@ describe('VincentToolClient failure tests', () => {
     [executeSuccessInvalidSchemaTool.ipfsCid]: {},
     [precheckFailInvalidSchemaTool.ipfsCid]: {},
     [precheckSuccessInvalidSchemaTool.ipfsCid]: {},
+
+    // Tool with policy that returns precheck results
+    [precheckSuccessWithPolicyTool.ipfsCid]: {
+      [precheckAllowWithUserParamsMetadata.ipfsCid]: {
+        y: 'test-policy-param',
+      },
+    },
   };
 
   // An array of the IPFS cid of each tool to be tested, computed from the keys of PERMISSION_DATA
@@ -732,6 +750,45 @@ describe('VincentToolClient failure tests', () => {
           expect(result.result?.err).toContain('Intentional failure with schema');
         }
       });
+    });
+  });
+
+  // Test case for verifying policy precheck results are properly propagated
+  describe('Policy precheck result propagation', () => {
+    it('should include policy precheck allow results when policies return data', async () => {
+      const client = getPrecheckSuccessWithPolicyToolClient();
+      const result = await client.precheck(
+        { x: 'test-value' },
+        {
+          delegatorPkpEthAddress: TEST_CONFIG.userPkp!.ethAddress!,
+        },
+      );
+
+      // Verify the precheck succeeded
+      expect(result.success).toBe(true);
+      expect(result.result).toEqual({ ok: true });
+
+      // Verify the context and policiesContext structure
+      expect(result.context).toBeDefined();
+      expect(result.context?.policiesContext).toBeDefined();
+
+      // Verify the policy was allowed
+      const policiesContext = result.context?.policiesContext;
+      expect(policiesContext?.allow).toBe(true);
+      expect(Array.isArray(policiesContext?.evaluatedPolicies)).toBe(true);
+      expect(policiesContext?.evaluatedPolicies).toEqual(['@lit-protocol/test-policy@1.0.0']);
+
+      // Verify the policy result is properly populated
+      const allowedPolicies = policiesContext?.allowedPolicies;
+      expect(allowedPolicies).toBeDefined();
+      expect(typeof allowedPolicies).toBe('object');
+      expect(allowedPolicies?.['@lit-protocol/test-policy@1.0.0']).toBeDefined();
+
+      const policyResult = allowedPolicies?.['@lit-protocol/test-policy@1.0.0'] as {
+        result: { ok: boolean };
+      };
+      expect(policyResult).toBeDefined();
+      expect(policyResult.result).toEqual({ ok: true });
     });
   });
 });

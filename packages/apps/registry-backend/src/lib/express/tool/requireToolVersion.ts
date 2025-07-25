@@ -19,6 +19,7 @@ export const requireToolVersion = (versionParam = 'version') => {
     const reqWithTool = req as RequestWithTool;
 
     // Ensure tool middleware ran first
+
     if (!reqWithTool.vincentTool) {
       debug('Tool middleware did not run before ToolVersion middleware');
       res.status(500).json({

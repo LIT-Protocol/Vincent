@@ -6,7 +6,7 @@ import { withSession } from '../../mongo/withSession';
 import { importPackage } from '../../packageImporter';
 import { requirePackage, withValidPackage } from '../package/requirePackage';
 import { requireUserIsAuthor } from '../package/requireUserIsAuthor';
-import { requireVincentAuth, withVincentAuth } from '../requireVincentAuth';
+import { getPKPInfo, requireVincentAuth, withVincentAuth } from '../vincentAuth';
 import { requirePolicy, withPolicy } from './requirePolicy';
 import { requirePolicyVersion, withPolicyVersion } from './requirePolicyVersion';
 
@@ -31,11 +31,11 @@ export function registerRoutes(app: Express) {
   // Create new Policy
   app.post(
     '/policy/:packageName',
-    requireVincentAuth(),
+    requireVincentAuth,
     requirePackage('packageName', 'activeVersion'),
     withVincentAuth(
       withValidPackage(async (req, res) => {
-        const { description, activeVersion, title } = req.body;
+        const { description, activeVersion, title, logo } = req.body;
         const packageInfo = req.vincentPackage;
 
         // Import the package to get the metadata
@@ -50,8 +50,9 @@ export function registerRoutes(app: Express) {
           const policy = new Policy({
             title,
             packageName: packageInfo.name,
-            authorWalletAddress: req.vincentUser.address,
+            authorWalletAddress: getPKPInfo(req.vincentUser.decodedJWT).ethAddress,
             description,
+            logo,
             activeVersion,
             deploymentStatus: req.body.deploymentStatus || 'dev',
           });
@@ -105,7 +106,7 @@ export function registerRoutes(app: Express) {
   // Edit Policy
   app.put(
     '/policy/:packageName',
-    requireVincentAuth(),
+    requireVincentAuth,
     requirePolicy(),
     requireUserIsAuthor('policy'),
     withVincentAuth(
@@ -122,7 +123,7 @@ export function registerRoutes(app: Express) {
   // Change Policy Owner
   app.put(
     '/policy/:packageName/owner',
-    requireVincentAuth(),
+    requireVincentAuth,
     requirePolicy(),
     requireUserIsAuthor('policy'),
     withVincentAuth(
@@ -139,7 +140,7 @@ export function registerRoutes(app: Express) {
   // Create new Policy Version
   app.post(
     '/policy/:packageName/version/:version',
-    requireVincentAuth(),
+    requireVincentAuth,
     requirePolicy(),
     requireUserIsAuthor('policy'),
     requirePackage(),
@@ -221,7 +222,7 @@ export function registerRoutes(app: Express) {
   // Edit Policy Version
   app.put(
     '/policy/:packageName/version/:version',
-    requireVincentAuth(),
+    requireVincentAuth,
     requirePolicy(),
     requireUserIsAuthor('policy'),
     requirePolicyVersion(),
@@ -241,7 +242,7 @@ export function registerRoutes(app: Express) {
   // Delete a policy version
   app.delete(
     '/policy/:packageName/version/:version',
-    requireVincentAuth(),
+    requireVincentAuth,
     requirePolicy(),
     requireUserIsAuthor('policy'),
     requirePolicyVersion(),
@@ -267,7 +268,7 @@ export function registerRoutes(app: Express) {
   // Undelete a policy version
   app.post(
     '/policy/:packageName/version/:version/undelete',
-    requireVincentAuth(),
+    requireVincentAuth,
     requirePolicy(),
     requireUserIsAuthor('policy'),
     requirePolicyVersion(),
@@ -286,7 +287,7 @@ export function registerRoutes(app: Express) {
   // Delete a policy, along with all of its policy versions
   app.delete(
     '/policy/:packageName',
-    requireVincentAuth(),
+    requireVincentAuth,
     requirePolicy(),
     requireUserIsAuthor('policy'),
     withVincentAuth(async (req, res) => {
@@ -311,7 +312,7 @@ export function registerRoutes(app: Express) {
   // Undelete a policy, along with all of its policy versions
   app.post(
     '/policy/:packageName/undelete',
-    requireVincentAuth(),
+    requireVincentAuth,
     requirePolicy(),
     requireUserIsAuthor('policy'),
     withVincentAuth(async (req, res) => {

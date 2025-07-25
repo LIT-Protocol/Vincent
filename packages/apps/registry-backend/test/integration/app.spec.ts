@@ -1,8 +1,6 @@
-import { registerApp } from '@lit-protocol/vincent-contracts-sdk';
-
 import { expectAssertArray, expectAssertObject, hasError } from '../assertions';
 import { createTestDebugger } from '../debug';
-import { api, store, defaultWallet, generateRandomEthAddresses } from './setup';
+import { api, store, generateRandomEthAddresses, getDefaultWalletContractClient } from './setup';
 
 // Create a debug instance for this file
 const debug = createTestDebugger('app');
@@ -19,7 +17,6 @@ describe('App API Integration Tests', () => {
   });
 
   let testAppId: number | undefined;
-  const testAppVersion = 1;
 
   const appData = {
     name: 'Test App',
@@ -66,20 +63,16 @@ describe('App API Integration Tests', () => {
       const policyIpfsCid = 'QmSK8JoXxh7sR6MP7L6YJiUnzpevbNjjtde3PeP8FfLzV3'; // Spending limit policy
 
       try {
-        const { txHash, newAppVersion } = await registerApp({
-          signer: defaultWallet,
-          args: {
-            appId: testAppId.toString(),
-            delegatees: appData.delegateeAddresses,
-            versionTools: {
-              toolIpfsCids: [toolIpfsCid],
-              toolPolicies: [[policyIpfsCid]],
-            },
+        const { txHash } = await getDefaultWalletContractClient().registerApp({
+          appId: testAppId,
+          delegateeAddresses: appData.delegateeAddresses,
+          versionTools: {
+            toolIpfsCids: [toolIpfsCid],
+            toolPolicies: [[policyIpfsCid]],
           },
         });
 
-        verboseLog({ txHash, newAppVersion });
-        expect(newAppVersion).toBe('1'); // First version should be 1
+        verboseLog({ txHash });
       } catch (error) {
         console.error('Failed to register app on contracts:', error);
         throw error;
@@ -291,38 +284,6 @@ describe('App API Integration Tests', () => {
   });
 
   describe('PUT /app/:appId/version/:version', () => {
-    it('should fail to update an app version that is already on-chain', async () => {
-      store.dispatch(api.util.resetApiState());
-
-      const changes = 'Updated changes description for appVersion 1' as const;
-
-      {
-        const result = await store.dispatch(
-          api.endpoints.editAppVersion.initiate({
-            appId: testAppId!,
-            version: testAppVersion,
-            appVersionEdit: {
-              changes,
-            },
-          }),
-        );
-        verboseLog(result);
-        expect(result).toHaveProperty('error');
-        expect(hasError(result)).toBe(true);
-
-        if (hasError(result)) {
-          const { error } = result;
-          expectAssertObject(error);
-          // @ts-expect-error it's a test
-          expect(error.status).toBe(403);
-          // @ts-expect-error it's a test
-          expect(error.data.message).toBe(
-            `Operation not allowed: App version ${testAppVersion} for app ${testAppId} is already on-chain`,
-          );
-        }
-      }
-    });
-
     it('should update an app version that is not on-chain', async () => {
       store.dispatch(api.util.resetApiState());
 
@@ -367,32 +328,6 @@ describe('App API Integration Tests', () => {
   });
 
   describe('POST /app/:appId/version/:version/disable', () => {
-    it('should fail to disable an app version that is already on-chain', async () => {
-      {
-        const result = await store.dispatch(
-          api.endpoints.disableAppVersion.initiate({
-            appId: testAppId!,
-            version: testAppVersion,
-          }),
-        );
-
-        verboseLog(result);
-        expect(result).toHaveProperty('error');
-        expect(hasError(result)).toBe(true);
-
-        if (hasError(result)) {
-          const { error } = result;
-          expectAssertObject(error);
-          // @ts-expect-error it's a test
-          expect(error.status).toBe(403);
-          // @ts-expect-error it's a test
-          expect(error.data.message).toBe(
-            `Operation not allowed: App version ${testAppVersion} for app ${testAppId} is already on-chain`,
-          );
-        }
-      }
-    });
-
     it('should disable an app version that is not on-chain', async () => {
       {
         const result = await store.dispatch(
@@ -430,32 +365,6 @@ describe('App API Integration Tests', () => {
   });
 
   describe('POST /app/:appId/version/:version/enable', () => {
-    it('should fail to enable an app version that is already on-chain', async () => {
-      {
-        const result = await store.dispatch(
-          api.endpoints.enableAppVersion.initiate({
-            appId: testAppId!,
-            version: testAppVersion,
-          }),
-        );
-
-        verboseLog(result);
-        expect(result).toHaveProperty('error');
-        expect(hasError(result)).toBe(true);
-
-        if (hasError(result)) {
-          const { error } = result;
-          expectAssertObject(error);
-          // @ts-expect-error it's a test
-          expect(error.status).toBe(403);
-          // @ts-expect-error it's a test
-          expect(error.data.message).toBe(
-            `Operation not allowed: App version ${testAppVersion} for app ${testAppId} is already on-chain`,
-          );
-        }
-      }
-    });
-
     it('should enable an app version that is not on-chain', async () => {
       {
         const result = await store.dispatch(
@@ -493,31 +402,6 @@ describe('App API Integration Tests', () => {
   });
 
   describe('DELETE /app/:appId/version/:version', () => {
-    it('should fail to delete an app version that is already on-chain', async () => {
-      // Try to delete the first version which is already on-chain
-      const result = await store.dispatch(
-        api.endpoints.deleteAppVersion.initiate({
-          appId: testAppId!,
-          version: testAppVersion,
-        }),
-      );
-
-      verboseLog(result);
-      expect(result).toHaveProperty('error');
-      expect(hasError(result)).toBe(true);
-
-      if (hasError(result)) {
-        const { error } = result;
-        expectAssertObject(error);
-        // @ts-expect-error it's a test
-        expect(error.status).toBe(403);
-        // @ts-expect-error it's a test
-        expect(error.data.message).toBe(
-          `Operation not allowed: App version ${testAppVersion} for app ${testAppId} is already on-chain`,
-        );
-      }
-    });
-
     it('should delete an app version that is not on-chain', async () => {
       // Delete the second version which is not on-chain
       {

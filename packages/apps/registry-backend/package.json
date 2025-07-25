@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "@lit-protocol/flags": "^2.1.0",
+    "@lit-protocol/vincent-app-sdk": "workspace:*",
     "@lit-protocol/vincent-contracts-sdk": "workspace:*",
     "@lit-protocol/vincent-registry-sdk": "workspace:*",
     "@t3-oss/env-core": "^0.13.6",
@@ -35,7 +36,6 @@
     "normalize-package-data": "^7.0.0",
     "query-registry": "^4.0.1",
     "semver": "^7.7.2",
-    "siwe": "^3.0.0",
     "tar": "^7.4.3",
     "validate-npm-package-name": "^6.0.1",
     "zod": "^3.25.42"

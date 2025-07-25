@@ -26,6 +26,7 @@ describe('Tool API Integration Tests', () => {
     title: 'Test Tool',
     description: 'Test tool for integration tests',
     activeVersion: '1.0.0',
+    logo: 'iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAIAAAACDbGyAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAOvwAADr8BOAVTJAAAAA5JREFUGFdj/M+ACAAAAAD//wE7AnsAAAAAAElFTkSuQmCC',
   };
 
   // Test data for creating a tool version

@@ -1,16 +1,18 @@
 import type { Request, Response, NextFunction } from 'express';
 
 import type { RequestWithPolicy } from '../policy/requirePolicy';
-import type { RequestWithVincentUser } from '../requireVincentAuth';
 import type { RequestWithTool } from '../tool/requireTool';
+import type { RequestWithVincentUser } from '../vincentAuth';
 
 import { createDebugger } from '../../../../debug';
+import { getPKPInfo } from '../vincentAuth';
 
 // Create a debug instance for this middleware
 const debug = createDebugger('requireUserIsAuthor');
 
 // Combined interfaces for requests with both entity and vincent user
 export interface RequestWithToolAndVincentUser extends RequestWithTool, RequestWithVincentUser {}
+
 export interface RequestWithPolicyAndVincentUser
   extends RequestWithPolicy,
     RequestWithVincentUser {}
@@ -27,10 +29,11 @@ type EntityType = 'tool' | 'policy';
 export const requireUserIsAuthor = (entityType: EntityType) => {
   return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     debug('Processing user is author request', { entityType });
+
+    const reqWithToolAndUser = req as RequestWithToolAndVincentUser;
+
     try {
-      // Ensure authentication middleware ran first
-      debug('Checking if authentication middleware ran first');
-      if (!(req as RequestWithVincentUser).vincentUser) {
+      if (!reqWithToolAndUser.vincentUser) {
         debug('Authentication middleware did not run before requireUserIsAuthor middleware');
         res.status(500).json({
           error: 'Authentication middleware must run before requireUserIsAuthor middleware',
@@ -38,7 +41,7 @@ export const requireUserIsAuthor = (entityType: EntityType) => {
         return;
       }
 
-      const userAddress = (req as RequestWithVincentUser).vincentUser.address;
+      const userAddress = getPKPInfo(reqWithToolAndUser.vincentUser.decodedJWT).ethAddress;
       debug('Found authenticated user', { userAddress });
 
       if (entityType === 'tool') {
@@ -47,6 +50,7 @@ export const requireUserIsAuthor = (entityType: EntityType) => {
 
         // Ensure tool middleware ran first
         debug('Checking if tool middleware ran first');
+
         if (!reqWithTool.vincentTool) {
           debug('Tool middleware did not run before requireUserIsAuthor middleware');
           res.status(500).json({
@@ -82,6 +86,7 @@ export const requireUserIsAuthor = (entityType: EntityType) => {
 
         // Ensure policy middleware ran first
         debug('Checking if policy middleware ran first');
+
         if (!reqWithPolicy.vincentPolicy) {
           debug('Policy middleware did not run before requireUserIsAuthor middleware');
           res.status(500).json({

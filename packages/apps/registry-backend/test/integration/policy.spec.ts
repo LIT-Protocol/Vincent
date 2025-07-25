@@ -26,6 +26,7 @@ describe('Policy API Integration Tests', () => {
     title: 'Test Policy',
     description: 'Test policy for integration tests',
     activeVersion: '1.0.0',
+    logo: 'iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAIAAAACDbGyAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAOvwAADr8BOAVTJAAAAA5JREFUGFdj/M+ACAAAAAD//wE7AnsAAAAAAElFTkSuQmCC',
   };
 
   // Test data for creating a policy version
