@@ -14,7 +14,7 @@ type StoredJWT = {
 };
 
 const JWT_STORAGE_KEY = 'vincentDeveloperJWT';
-const EXPECTED_AUDIENCE = 'http://localhost:3000';
+const EXPECTED_AUDIENCE = 'https://staging.registry.heyvincent.ai';
 
 /**
  * Get current JWT token for request headers using PKP wallet - returns null if invalid

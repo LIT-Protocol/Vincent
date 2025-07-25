@@ -45,7 +45,9 @@ const createWithPKPAuth = (baseQuery: any) => {
 };
 
 // Configure the base query function with PKP-based SIWE authentication
-setBaseQueryFn(createWithPKPAuth(fetchBaseQuery({ baseUrl: `http://localhost:3000` })));
+setBaseQueryFn(
+  createWithPKPAuth(fetchBaseQuery({ baseUrl: `https://staging.registry.heyvincent.ai` })),
+);
 
 export const store = configureStore({
   reducer: {
