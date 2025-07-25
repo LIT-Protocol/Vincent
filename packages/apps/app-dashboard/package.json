@@ -21,7 +21,7 @@
     "@lit-protocol/pkp-ethers": "^7.2.0",
     "@lit-protocol/types": "^7.2.0",
     "@lit-protocol/vincent-app-sdk": "workspace:*",
-    "@lit-protocol/vincent-contracts-sdk": "1.0.0-4",
+    "@lit-protocol/vincent-contracts-sdk": "workspace:*",
     "@lit-protocol/vincent-registry-sdk": "workspace:*",
     "@radix-ui/react-checkbox": "^1.2.3",
     "@radix-ui/react-dialog": "^1.1.14",

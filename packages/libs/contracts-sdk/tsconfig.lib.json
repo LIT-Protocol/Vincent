@@ -1,7 +1,10 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
+    "target": "es2018",
     "outDir": "./dist",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
     "declaration": true,
     "types": [],
     "skipLibCheck": true,
