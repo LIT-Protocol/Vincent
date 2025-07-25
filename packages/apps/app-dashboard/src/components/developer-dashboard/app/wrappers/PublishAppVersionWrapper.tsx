@@ -3,11 +3,7 @@ import { useParams } from 'react-router-dom';
 import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
 import { ToolVersion, PolicyVersion } from '@/types/developer-dashboard/appTypes';
 import { StatusMessage } from '@/components/shared/ui/statusMessage';
-import {
-  registerNextVersion,
-  registerApp,
-  getAppByDelegateeAddress,
-} from '@lit-protocol/vincent-contracts-sdk';
+import { getClient } from '@lit-protocol/vincent-contracts-sdk';
 import { PublishAppVersionButton } from './ui/PublishAppVersionButton';
 import MutationButtonStates, { SkeletonButton } from '@/components/shared/ui/MutationButtonStates';
 import { initPkpSigner } from '@/utils/developer-dashboard/initPkpSigner';
@@ -210,12 +206,12 @@ export function PublishAppVersionWrapper({ isAppPublished }: { isAppPublished: b
       }
 
       const pkpSigner = await initPkpSigner({ authInfo, sessionSigs });
+      const client = getClient({ signer: pkpSigner });
 
       for (const delegatee of delegatees) {
         try {
-          const existingApp = await getAppByDelegateeAddress({
-            signer: pkpSigner,
-            args: { delegateeAddress: delegatee },
+          const existingApp = await client.getAppByDelegateeAddress({
+            delegateeAddress: delegatee,
           });
 
           if (existingApp && existingApp?.id !== Number(appId)) {
@@ -235,27 +231,21 @@ export function PublishAppVersionWrapper({ isAppPublished }: { isAppPublished: b
 
       if (!isAppPublished) {
         // App not registered - use registerApp (first-time registration)
-        await registerApp({
-          signer: pkpSigner,
-          args: {
-            appId: Number(appId),
-            delegateeAddresses: delegatees,
-            versionTools: {
-              toolIpfsCids: toolIpfsCids,
-              toolPolicies: toolPolicies,
-            },
+        await client.registerApp({
+          appId: Number(appId),
+          delegateeAddresses: delegatees,
+          versionTools: {
+            toolIpfsCids: toolIpfsCids,
+            toolPolicies: toolPolicies,
           },
         });
       } else {
         // App is registered - use registerNextVersion
-        await registerNextVersion({
-          signer: pkpSigner,
-          args: {
-            appId: Number(appId),
-            versionTools: {
-              toolIpfsCids: toolIpfsCids,
-              toolPolicies: toolPolicies,
-            },
+        await client.registerNextVersion({
+          appId: Number(appId),
+          versionTools: {
+            toolIpfsCids: toolIpfsCids,
+            toolPolicies: toolPolicies,
           },
         });
       }

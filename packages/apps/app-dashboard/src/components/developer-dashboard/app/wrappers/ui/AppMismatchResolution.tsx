@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Upload, Undo2 } from 'lucide-react';
 import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
-import { deleteApp, undeleteApp } from '@lit-protocol/vincent-contracts-sdk';
+import { getClient } from '@lit-protocol/vincent-contracts-sdk';
 import MutationButtonStates, { SkeletonButton } from '@/components/shared/ui/MutationButtonStates';
 import { StatusMessage } from '@/components/shared/ui/statusMessage';
 import { initPkpSigner } from '@/utils/developer-dashboard/initPkpSigner';
@@ -38,20 +38,15 @@ export function AppMismatchResolution({
 
     try {
       const pkpSigner = await initPkpSigner({ authInfo, sessionSigs });
+      const client = getClient({ signer: pkpSigner });
 
       if (registryDeleted) {
-        await deleteApp({
-          signer: pkpSigner,
-          args: {
-            appId: Number(appId),
-          },
+        await client.deleteApp({
+          appId: Number(appId),
         });
       } else {
-        await undeleteApp({
-          signer: pkpSigner,
-          args: {
-            appId: Number(appId),
-          },
+        await client.undeleteApp({
+          appId: Number(appId),
         });
       }
 

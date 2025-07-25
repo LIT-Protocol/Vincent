@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { permitApp } from '@lit-protocol/vincent-contracts-sdk';
+import { getClient } from '@lit-protocol/vincent-contracts-sdk';
 import { ConsentInfoMap } from '@/hooks/user-dashboard/consent/useConsentInfo';
 import { useConsentFormData } from '@/hooks/user-dashboard/consent/useConsentFormData';
 import { ConsentPageHeader } from './ui/ConsentPageHeader';
@@ -94,14 +94,12 @@ export function ConsentPage({ consentInfoMap, readAuthInfo }: ConsentPageProps) 
       });
 
       try {
-        await permitApp({
-          signer: userPkpWallet,
-          args: {
-            pkpEthAddress: readAuthInfo.authInfo.agentPKP!.ethAddress,
-            appId: Number(consentInfoMap.app.appId),
-            appVersion: Number(consentInfoMap.app.activeVersion),
-            permissionData: formData,
-          },
+        const client = getClient({ signer: userPkpWallet });
+        await client.permitApp({
+          pkpEthAddress: readAuthInfo.authInfo.agentPKP!.ethAddress,
+          appId: Number(consentInfoMap.app.appId),
+          appVersion: Number(consentInfoMap.app.activeVersion),
+          permissionData: formData,
         });
 
         setIsConsentProcessing(false);

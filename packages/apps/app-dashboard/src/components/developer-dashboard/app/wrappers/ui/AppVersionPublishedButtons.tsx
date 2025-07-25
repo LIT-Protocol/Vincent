@@ -1,10 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Power, PowerOff } from 'lucide-react';
 import { AppVersion } from '@/types/developer-dashboard/appTypes';
-import {
-  AppVersion as ContractAppVersion,
-  enableAppVersion as enableAppVersionOnChain,
-} from '@lit-protocol/vincent-contracts-sdk';
+import { AppVersion as ContractAppVersion, getClient } from '@lit-protocol/vincent-contracts-sdk';
 import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
 import MutationButtonStates, { SkeletonButton } from '@/components/shared/ui/MutationButtonStates';
 import { AppVersionMismatchResolution } from './AppVersionMismatchResolution';
@@ -64,14 +61,12 @@ export function AppVersionPublishedButtons({
 
       // Step 2: Update on-chain
       const pkpSigner = await initPkpSigner({ authInfo, sessionSigs });
+      const client = getClient({ signer: pkpSigner });
 
-      await enableAppVersionOnChain({
-        signer: pkpSigner,
-        args: {
-          appId: Number(appId),
-          appVersion: Number(versionId),
-          enabled: targetState,
-        },
+      await client.enableAppVersion({
+        appId: Number(appId),
+        appVersion: Number(versionId),
+        enabled: targetState,
       });
 
       const action = targetState ? 'enabled' : 'disabled';

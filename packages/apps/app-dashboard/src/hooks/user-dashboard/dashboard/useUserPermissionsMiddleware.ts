@@ -1,8 +1,5 @@
 import { readOnlySigner } from '@/utils/developer-dashboard/readOnlySigner';
-import {
-  getAllPermittedAppIdsForPkp,
-  getPermittedAppVersionForPkp,
-} from '@lit-protocol/vincent-contracts-sdk';
+import { getClient } from '@lit-protocol/vincent-contracts-sdk';
 import { useEffect, useState } from 'react';
 
 export type UseUserPermissionsMiddlewareProps = {
@@ -40,16 +37,16 @@ export const useUserPermissionsMiddleware = ({
 
     const checkPermitted = async () => {
       try {
-        const userApps = await getAllPermittedAppIdsForPkp({
-          signer: readOnlySigner,
-          args: { pkpEthAddress },
+        const client = getClient({ signer: readOnlySigner });
+        const userApps = await client.getAllPermittedAppIdsForPkp({
+          pkpEthAddress,
         });
 
         // Get app versions for each permitted app
         const appVersionPromises = userApps.map(async (appId) => {
-          const version = await getPermittedAppVersionForPkp({
-            signer: readOnlySigner,
-            args: { pkpEthAddress, appId },
+          const version = await client.getPermittedAppVersionForPkp({
+            pkpEthAddress,
+            appId,
           });
           return { appId, version };
         });

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Upload, Undo2 } from 'lucide-react';
 import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
-import { enableAppVersion as enableAppVersionOnChain } from '@lit-protocol/vincent-contracts-sdk';
+import { getClient } from '@lit-protocol/vincent-contracts-sdk';
 import MutationButtonStates, { SkeletonButton } from '@/components/shared/ui/MutationButtonStates';
 import { StatusMessage } from '@/components/shared/ui/statusMessage';
 import { initPkpSigner } from '@/utils/developer-dashboard/initPkpSigner';
@@ -40,14 +40,12 @@ export function AppVersionMismatchResolution({
 
     try {
       const pkpSigner = await initPkpSigner({ authInfo, sessionSigs });
+      const client = getClient({ signer: pkpSigner });
 
-      await enableAppVersionOnChain({
-        signer: pkpSigner,
-        args: {
-          appId: Number(appId),
-          appVersion: Number(versionId),
-          enabled: registryEnabled,
-        },
+      await client.enableAppVersion({
+        appId: Number(appId),
+        appVersion: Number(versionId),
+        enabled: registryEnabled,
       });
 
       const action = registryEnabled ? 'enabled' : 'disabled';

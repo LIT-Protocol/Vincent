@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { getAppVersion, AppVersion } from '@lit-protocol/vincent-contracts-sdk';
+import { getClient, AppVersion } from '@lit-protocol/vincent-contracts-sdk';
 import { readOnlySigner } from '@/utils/developer-dashboard/readOnlySigner';
 
 export function useBlockchainAppVersionData(
@@ -21,12 +21,10 @@ export function useBlockchainAppVersionData(
     setBlockchainAppVersionError(null);
 
     try {
-      const appVersionResult = await getAppVersion({
-        signer: readOnlySigner,
-        args: {
-          appId,
-          version: versionId,
-        },
+      const client = getClient({ signer: readOnlySigner });
+      const appVersionResult = await client.getAppVersion({
+        appId,
+        version: versionId,
       });
 
       if (appVersionResult === null) {

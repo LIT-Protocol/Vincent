@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { getAppById, App } from '@lit-protocol/vincent-contracts-sdk';
+import { getClient, App } from '@lit-protocol/vincent-contracts-sdk';
 import { readOnlySigner } from '@/utils/developer-dashboard/readOnlySigner';
 
 export function useBlockchainAppData(appId: number | undefined) {
@@ -18,10 +18,8 @@ export function useBlockchainAppData(appId: number | undefined) {
     setBlockchainAppError(null);
 
     try {
-      const appResult = await getAppById({
-        signer: readOnlySigner,
-        args: { appId },
-      });
+      const client = getClient({ signer: readOnlySigner });
+      const appResult = await client.getAppById({ appId });
 
       if (appResult === null) {
         // App not published - this is fine

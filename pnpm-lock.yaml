@@ -166,7 +166,7 @@ importers:
   packages/apps/app-dashboard:
     dependencies:
       '@lit-protocol/auth-browser':
-        specifier: ^7.0.8
+        specifier: ^7.2.0
         version: 7.2.0(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
       '@lit-protocol/auth-helpers':
         specifier: ^7.2.0
@@ -202,8 +202,8 @@ importers:
         specifier: workspace:*
         version: link:../../libs/app-sdk
       '@lit-protocol/vincent-contracts-sdk':
-        specifier: 1.0.0-4
-        version: 1.0.0-4(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+        specifier: workspace:*
+        version: link:../../libs/contracts-sdk
       '@lit-protocol/vincent-registry-sdk':
         specifier: workspace:*
         version: link:../../libs/registry-sdk
@@ -2390,9 +2390,6 @@ packages:
 
   '@lit-protocol/uint8arrays@7.2.0':
     resolution: {integrity: sha512-Gc+REd0RRPivUPrwMklAhrwdRmTVbs2XatZpeJpjoUlXhqIIf9gWau33GKbZI3k6vEEeVoLqJU0JqEQoeEzKMA==}
-
-  '@lit-protocol/vincent-contracts-sdk@1.0.0-4':
-    resolution: {integrity: sha512-8q/+flehWoNO+XU9WNrwgWvdEKYFQEUywlw0qcEoCLbouwuAdGS9ExXcNJe++Ubayn/ntFsuAGmW4yGGd0swFg==}
 
   '@lit-protocol/wasm@7.2.0':
     resolution: {integrity: sha512-sSm7ptR3t6h1+5UaUjBjcWyXvt7UGnkNuDdyz6khFHJyr6DT3ASv0kxupxSWistMC5tmxPVgixI/nqwI+zgSTQ==}
@@ -13679,15 +13676,6 @@ snapshots:
     transitivePeerDependencies:
       - bufferutil
       - typescript
-      - utf-8-validate
-
-  '@lit-protocol/vincent-contracts-sdk@1.0.0-4(bufferutil@4.0.9)(utf-8-validate@5.0.10)':
-    dependencies:
-      '@ethersproject/abi': 5.8.0
-      cbor2: 2.0.1
-      ethers: 5.8.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
-    transitivePeerDependencies:
-      - bufferutil
       - utf-8-validate
 
   '@lit-protocol/wasm@7.2.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)':

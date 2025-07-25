@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Plus, Users, Trash2, Edit, RotateCcw } from 'lucide-react';
-import { deleteApp, undeleteApp } from '@lit-protocol/vincent-contracts-sdk';
+import { getClient } from '@lit-protocol/vincent-contracts-sdk';
 import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
 import { App } from '@/types/developer-dashboard/appTypes';
 import { App as ContractApp } from '@lit-protocol/vincent-contracts-sdk';
@@ -58,20 +58,15 @@ export function AppPublishedButtons({
 
       // Step 2: Update on-chain
       const pkpSigner = await initPkpSigner({ authInfo, sessionSigs });
+      const client = getClient({ signer: pkpSigner });
 
       if (targetDeleted) {
-        await deleteApp({
-          signer: pkpSigner,
-          args: {
-            appId: Number(appData.appId),
-          },
+        await client.deleteApp({
+          appId: Number(appData.appId),
         });
       } else {
-        await undeleteApp({
-          signer: pkpSigner,
-          args: {
-            appId: appData.appId,
-          },
+        await client.undeleteApp({
+          appId: appData.appId,
         });
       }
 

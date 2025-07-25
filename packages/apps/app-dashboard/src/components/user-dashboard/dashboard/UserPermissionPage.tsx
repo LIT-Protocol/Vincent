@@ -1,9 +1,5 @@
 import { useState, useCallback, useRef } from 'react';
-import {
-  setToolPolicyParameters,
-  PermissionData,
-  unPermitApp,
-} from '@lit-protocol/vincent-contracts-sdk';
+import { getClient, PermissionData } from '@lit-protocol/vincent-contracts-sdk';
 import { ConsentInfoMap } from '@/hooks/user-dashboard/consent/useConsentInfo';
 import { useFormatUserPermissions } from '@/hooks/user-dashboard/dashboard/useFormatUserPermissions';
 import { theme } from '../consent/ui/theme';
@@ -89,14 +85,12 @@ export function AppPermissionPage({
 
       try {
         setLocalStatus('Setting tool policy parameters...');
-        await setToolPolicyParameters({
-          signer: agentPkpWallet,
-          args: {
-            pkpEthAddress: readAuthInfo.authInfo.agentPKP!.ethAddress,
-            appId: Number(consentInfoMap.app.appId),
-            appVersion: Number(permittedVersion),
-            policyParams: formData,
-          },
+        const client = getClient({ signer: agentPkpWallet });
+        await client.permitApp({
+          pkpEthAddress: readAuthInfo.authInfo.agentPKP!.ethAddress,
+          appId: Number(consentInfoMap.app.appId),
+          appVersion: Number(permittedVersion),
+          permissionData: formData,
         });
 
         setLocalStatus(null);
@@ -136,13 +130,11 @@ export function AppPermissionPage({
 
       setLocalStatus('Unpermitting app...');
 
-      await unPermitApp({
-        signer: agentPkpWallet,
-        args: {
-          pkpEthAddress: readAuthInfo.authInfo.agentPKP!.ethAddress,
-          appId: Number(consentInfoMap.app.appId),
-          appVersion: Number(permittedVersion),
-        },
+      const client = getClient({ signer: agentPkpWallet });
+      await client.unPermitApp({
+        pkpEthAddress: readAuthInfo.authInfo.agentPKP!.ethAddress,
+        appId: Number(consentInfoMap.app.appId),
+        appVersion: Number(permittedVersion),
       });
 
       setLocalStatus(null);

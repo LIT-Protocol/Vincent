@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef } from 'react';
-import { permitApp } from '@lit-protocol/vincent-contracts-sdk';
+import { getClient } from '@lit-protocol/vincent-contracts-sdk';
 import { ConsentInfoMap } from '@/hooks/user-dashboard/consent/useConsentInfo';
 import { useConsentFormData } from '@/hooks/user-dashboard/consent/useConsentFormData';
 import { theme } from '@/components/user-dashboard/consent/ui/theme';
@@ -78,14 +78,12 @@ export function UpdateVersionPage({ consentInfoMap, readAuthInfo }: UpdateVersio
 
       try {
         setLocalStatus('Updating to new version...');
-        await permitApp({
-          signer: userPkpWallet,
-          args: {
-            pkpEthAddress: readAuthInfo.authInfo.agentPKP!.ethAddress,
-            appId: Number(consentInfoMap.app.appId),
-            appVersion: Number(consentInfoMap.app.activeVersion),
-            permissionData: formData,
-          },
+        const client = getClient({ signer: userPkpWallet });
+        await client.permitApp({
+          pkpEthAddress: readAuthInfo.authInfo.agentPKP!.ethAddress,
+          appId: Number(consentInfoMap.app.appId),
+          appVersion: Number(consentInfoMap.app.activeVersion),
+          permissionData: formData,
         });
 
         setLocalStatus(null);

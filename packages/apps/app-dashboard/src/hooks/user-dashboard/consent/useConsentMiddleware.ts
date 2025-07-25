@@ -1,9 +1,5 @@
 import { readOnlySigner } from '@/utils/developer-dashboard/readOnlySigner';
-import {
-  getAllPermittedAppIdsForPkp,
-  getPermittedAppVersionForPkp,
-  getAppVersion,
-} from '@lit-protocol/vincent-contracts-sdk';
+import { getClient } from '@lit-protocol/vincent-contracts-sdk';
 import { useEffect, useState } from 'react';
 import { App } from '@/types/developer-dashboard/appTypes';
 
@@ -79,9 +75,10 @@ export const useConsentMiddleware = ({
         }
 
         // Always check if the app's active version is published in the registry
-        const appVersionResult = await getAppVersion({
-          signer: readOnlySigner,
-          args: { appId, version: appData.activeVersion },
+        const client = getClient({ signer: readOnlySigner });
+        const appVersionResult = await client.getAppVersion({
+          appId,
+          version: appData.activeVersion,
         });
 
         // If getAppVersion returns null, it means the app version is not registered
@@ -97,15 +94,14 @@ export const useConsentMiddleware = ({
           return;
         }
 
-        const userApps = await getAllPermittedAppIdsForPkp({
-          signer: readOnlySigner,
-          args: { pkpEthAddress },
+        const userApps = await client.getAllPermittedAppIdsForPkp({
+          pkpEthAddress,
         });
 
         if (userApps.includes(appId)) {
-          const version = await getPermittedAppVersionForPkp({
-            signer: readOnlySigner,
-            args: { pkpEthAddress, appId },
+          const version = await client.getPermittedAppVersionForPkp({
+            pkpEthAddress,
+            appId,
           });
 
           setState({

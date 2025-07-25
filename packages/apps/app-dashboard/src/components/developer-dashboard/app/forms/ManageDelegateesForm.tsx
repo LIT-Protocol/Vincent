@@ -16,7 +16,7 @@ import { Form } from '@/components/shared/ui/form';
 import { StatusMessage } from '@/components/shared/ui/statusMessage';
 import { Plus, Trash2 } from 'lucide-react';
 import { TextField } from '../../form-fields';
-import { addDelegatee, removeDelegatee } from '@lit-protocol/vincent-contracts-sdk';
+import { getClient } from '@lit-protocol/vincent-contracts-sdk';
 import { SkeletonButton } from '@/components/shared/ui/MutationButtonStates';
 import { initPkpSigner } from '@/utils/developer-dashboard/initPkpSigner';
 import useReadAuthInfo from '@/hooks/user-dashboard/useAuthInfo';
@@ -79,13 +79,11 @@ export function ManageDelegateesForm({
     // Now add the delegatee
     try {
       const pkpSigner = await initPkpSigner({ authInfo, sessionSigs });
+      const client = getClient({ signer: pkpSigner });
 
-      await addDelegatee({
-        signer: pkpSigner,
-        args: {
-          appId: Number(appId),
-          delegateeAddress: data.address,
-        },
+      await client.addDelegatee({
+        appId: Number(appId),
+        delegateeAddress: data.address,
       });
 
       refetchBlockchainData();
@@ -109,13 +107,11 @@ export function ManageDelegateesForm({
 
     try {
       const pkpSigner = await initPkpSigner({ authInfo, sessionSigs });
+      const client = getClient({ signer: pkpSigner });
 
-      await removeDelegatee({
-        signer: pkpSigner,
-        args: {
-          appId: Number(appId),
-          delegateeAddress: addressToRemove,
-        },
+      await client.removeDelegatee({
+        appId: Number(appId),
+        delegateeAddress: addressToRemove,
       });
 
       refetchBlockchainData();

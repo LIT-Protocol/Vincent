@@ -1,4 +1,4 @@
-import { getAllToolsAndPoliciesForApp, PermissionData } from '@lit-protocol/vincent-contracts-sdk';
+import { getClient, PermissionData } from '@lit-protocol/vincent-contracts-sdk';
 
 import { readOnlySigner } from '@/utils/developer-dashboard/readOnlySigner';
 import { useEffect, useState } from 'react';
@@ -37,12 +37,10 @@ export const useFetchUserPermissions = ({
 
     const checkPermitted = async () => {
       try {
-        const existingData = await getAllToolsAndPoliciesForApp({
-          signer: readOnlySigner,
-          args: {
-            pkpEthAddress,
-            appId,
-          },
+        const client = getClient({ signer: readOnlySigner });
+        const existingData = await client.getAllToolsAndPoliciesForApp({
+          pkpEthAddress,
+          appId,
         });
 
         setState({
