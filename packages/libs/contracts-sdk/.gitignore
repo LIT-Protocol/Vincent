@@ -13,5 +13,3 @@ docs/
 # Dotenv file
 .env
 
-# Ignore run build JSON files
-/broadcast/**/run-*.json

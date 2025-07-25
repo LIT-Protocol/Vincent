@@ -13,6 +13,7 @@ contract VincentBase {
     error AppVersionNotRegistered(uint256 appId, uint256 appVersion);
     error AppHasBeenDeleted(uint256 appId);
     error AppVersionNotEnabled(uint256 appId, uint256 appVersion);
+    error InvalidOffset(uint256 offset, uint256 totalCount);
 
     /**
      * @notice Validates that an app exists

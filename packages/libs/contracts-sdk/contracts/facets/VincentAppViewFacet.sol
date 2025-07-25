@@ -18,6 +18,8 @@ contract VincentAppViewFacet is VincentBase {
     using EnumerableSet for EnumerableSet.AddressSet;
     using EnumerableSet for EnumerableSet.Bytes32Set;
 
+    uint256 public constant PAGE_SIZE = 50;
+
     /**
      * @notice Thrown when trying to access a delegatee that is not registered with any app
      * @param delegatee The address of the delegatee that is not registered
@@ -34,11 +36,6 @@ contract VincentAppViewFacet is VincentBase {
      * @param manager The address of the manager with no apps
      */
     error NoAppsFoundForManager(address manager);
-
-    /**
-     * @notice Thrown when the offset and limit are invalid
-     */
-    error InvalidOffsetOrLimit();
 
     // ==================================================================================
     // Data Structures
@@ -122,24 +119,32 @@ contract VincentAppViewFacet is VincentBase {
     }
 
     /**
-     * @notice Retrieves the delegatedAgentPkpTokenIds with an offset and limit
+     * @notice Retrieves the delegatedAgentPkpTokenIds with an offset and a max page size of PAGE_SIZE
      * @param appId ID of the app to retrieve
      * @param version Version number of the app to retrieve (1-indexed)
      * @param offset The offset of the first token ID to retrieve
-     * @param limit The maximum number of token IDs to retrieve
      * @return delegatedAgentPkpTokenIds Array of delegated agent PKP token IDs
      */
-    function getDelegatedAgentPkpTokenIds(uint256 appId, uint256 version, uint256 offset, uint256 limit) external view onlyRegisteredAppVersion(appId, version) returns (uint256[] memory delegatedAgentPkpTokenIds) {
+    function getDelegatedAgentPkpTokenIds(uint256 appId, uint256 version, uint256 offset) 
+        external view onlyRegisteredAppVersion(appId, version) 
+        returns (uint256[] memory delegatedAgentPkpTokenIds) 
+    {
         VincentAppStorage.AppVersion storage versionedApp =
             VincentAppStorage.appStorage().appIdToApp[appId].appVersions[getAppVersionIndex(version)];
 
-        if (limit == 0 || offset + limit > versionedApp.delegatedAgentPkps.length()) {
-            revert InvalidOffsetOrLimit();
+        uint256 length = versionedApp.delegatedAgentPkps.length();
+        if (offset >= length) {
+            revert InvalidOffset(offset, length);
         }
 
-        delegatedAgentPkpTokenIds = new uint256[](limit);
-        for (uint256 i = 0; i < limit; i++) {
-            delegatedAgentPkpTokenIds[i] = versionedApp.delegatedAgentPkps.at(offset + i);
+        uint256 end = offset + PAGE_SIZE;
+        if (end > length) {
+            end = length;
+        }
+
+        delegatedAgentPkpTokenIds = new uint256[](end - offset);
+        for (uint256 i = offset; i < end; i++) {
+            delegatedAgentPkpTokenIds[i - offset] = versionedApp.delegatedAgentPkps.at(i);
         }
     }
 
@@ -216,48 +221,50 @@ contract VincentAppViewFacet is VincentBase {
     // ==================================================================================
 
     /**
-     * @notice Retrieves all apps managed by a specific address with all their versions
-     * @dev Finds all apps associated with the manager address and loads their complete data including versions
+     * @notice Retrieves apps managed by a specific address with all their versions, with pagination support
+     * @dev Finds apps associated with the manager address and loads their complete data including versions
      * @param manager Address of the manager to query
+     * @param offset The offset of the first app to retrieve
+     * @param limit The maximum number of apps to retrieve
      * @return appsWithVersions Array of apps with all their versions managed by the specified address
      */
-    function getAppsByManager(address manager) external view returns (AppWithVersions[] memory appsWithVersions) {
-        // Check for zero address
+    function getAppsByManager(address manager, uint256 offset, uint256 limit) external view returns (AppWithVersions[] memory appsWithVersions) {
         if (manager == address(0)) {
             revert ZeroAddressNotAllowed();
         }
 
         VincentAppStorage.AppStorage storage as_ = VincentAppStorage.appStorage();
         uint256[] memory appIds = as_.managerAddressToAppIds[manager].values();
-        uint256 appCount = appIds.length;
+        uint256 length = appIds.length;
 
-        // Check if the manager has any apps
-        if (appCount == 0) {
+        if (length == 0) {
             revert NoAppsFoundForManager(manager);
         }
 
-        appsWithVersions = new AppWithVersions[](appCount);
+        if (offset >= length) {
+            revert InvalidOffset(offset, length);
+        }
 
-        for (uint256 i = 0; i < appCount; i++) {
-            // Get the app view
+        uint256 end = offset + limit;
+        if (end > length) {
+            end = length;
+        }
+
+        uint256 resultCount = end - offset;
+        appsWithVersions = new AppWithVersions[](resultCount);
+
+        for (uint256 i = offset; i < end; i++) {
+            uint256 resultIndex = i - offset;
             App memory app = getAppById(appIds[i]);
-            appsWithVersions[i].app = app;
+            appsWithVersions[resultIndex].app = app;
 
-            // Get all versions for this app
             uint256 versionCount = app.latestVersion;
+            appsWithVersions[resultIndex].versions = new AppVersion[](versionCount);
 
-            // Only create version arrays for apps that have versions
-            if (versionCount > 0) {
-                appsWithVersions[i].versions = new AppVersion[](versionCount);
-
-                for (uint256 j = 0; j < versionCount; j++) {
-                    // Versions are 1-indexed in the contract
-                    uint256 versionNumber = j + 1;
-                    (, appsWithVersions[i].versions[j]) = getAppVersion(appIds[i], versionNumber);
-                }
-            } else {
-                // For apps with no versions, initialize an empty array
-                appsWithVersions[i].versions = new AppVersion[](0);
+            for (uint256 j = 0; j < versionCount; j++) {
+                // Versions are 1-indexed in the contract
+                uint256 versionNumber = j + 1;
+                (, appsWithVersions[resultIndex].versions[j]) = getAppVersion(appIds[i], versionNumber);
             }
         }
     }

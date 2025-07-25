@@ -15,6 +15,8 @@ contract VincentUserViewFacet is VincentBase {
     using EnumerableSet for EnumerableSet.UintSet;
     using EnumerableSet for EnumerableSet.Bytes32Set;
 
+    uint256 public constant PAGE_SIZE = 50;
+
     /**
      * @notice Thrown when a PKP is not permitted for a specific app version
      * @param pkpTokenId The PKP token ID
@@ -88,21 +90,38 @@ contract VincentUserViewFacet is VincentBase {
     }
 
     /**
-     * @dev Gets all PKP tokens that are registered as agents in the system
+     * @dev Gets all PKP tokens that are registered as agents in the system with pagination support
+     * @param userAddress The address of the user to query
+     * @param offset The offset of the first PKP token ID to retrieve
      * @return An array of PKP token IDs that are registered as agents
      */
-    function getAllRegisteredAgentPkps(address userAddress) external view returns (uint256[] memory) {
-        // Check for zero address
+    function getAllRegisteredAgentPkps(address userAddress, uint256 offset) external view returns (uint256[] memory) {
         if (userAddress == address(0)) {
             revert ZeroAddressNotAllowed();
         }
 
         VincentUserStorage.UserStorage storage us_ = VincentUserStorage.userStorage();
-        uint256[] memory pkps = us_.userAddressToRegisteredAgentPkps[userAddress].values();
+        uint256[] memory allPkps = us_.userAddressToRegisteredAgentPkps[userAddress].values();
+        uint256 length = allPkps.length;
 
-        // Check if there are any registered PKPs
-        if (pkps.length == 0) {
+        if (length == 0) {
             revert NoRegisteredPkpsFound(userAddress);
+        }
+
+        if (offset >= length) {
+            revert InvalidOffset(offset, length);
+        }
+
+        uint256 end = offset + PAGE_SIZE;
+        if (end > length) {
+            end = length;
+        }
+
+        uint256 resultCount = end - offset;
+        uint256[] memory pkps = new uint256[](resultCount);
+
+        for (uint256 i = offset; i < end; i++) {
+            pkps[i - offset] = allPkps[i];
         }
 
         return pkps;
@@ -134,12 +153,12 @@ contract VincentUserViewFacet is VincentBase {
     }
 
     /**
-     * @dev Gets all app IDs that have permissions for a specific PKP token, excluding deleted apps
+     * @dev Gets all app IDs that have permissions for a specific PKP token, excluding deleted apps, with pagination support
      * @param pkpTokenId The PKP token ID
+     * @param offset The offset of the first app ID to retrieve
      * @return An array of app IDs that have permissions for the PKP token and haven't been deleted
      */
-    function getAllPermittedAppIdsForPkp(uint256 pkpTokenId) external view returns (uint256[] memory) {
-        // Check for invalid PKP token ID
+    function getAllPermittedAppIdsForPkp(uint256 pkpTokenId, uint256 offset) external view returns (uint256[] memory) {
         if (pkpTokenId == 0) {
             revert InvalidPkpTokenId();
         }
@@ -147,14 +166,11 @@ contract VincentUserViewFacet is VincentBase {
         VincentUserStorage.UserStorage storage us_ = VincentUserStorage.userStorage();
         VincentAppStorage.AppStorage storage as_ = VincentAppStorage.appStorage();
 
-        // Get all permitted app IDs
         uint256[] memory allPermittedAppIds = us_.agentPkpTokenIdToAgentStorage[pkpTokenId].permittedApps.values();
 
-        // Create dynamic array for active apps
         uint256[] memory nonDeletedAppIds = new uint256[](allPermittedAppIds.length);
         uint256 nonDeletedCount = 0;
 
-        // Single loop to collect non-deleted apps
         for (uint256 i = 0; i < allPermittedAppIds.length; i++) {
             if (!as_.appIdToApp[allPermittedAppIds[i]].isDeleted) {
                 nonDeletedAppIds[nonDeletedCount] = allPermittedAppIds[i];
@@ -162,12 +178,27 @@ contract VincentUserViewFacet is VincentBase {
             }
         }
 
-        // Resize array to actual size
-        assembly {
-            mstore(nonDeletedAppIds, nonDeletedCount)
+        if (nonDeletedCount == 0) {
+            return new uint256[](0);
         }
 
-        return nonDeletedAppIds;
+        if (offset >= nonDeletedCount) {
+            revert InvalidOffset(offset, nonDeletedCount);
+        }
+
+        uint256 end = offset + PAGE_SIZE;
+        if (end > nonDeletedCount) {
+            end = nonDeletedCount;
+        }
+
+        uint256 resultCount = end - offset;
+        uint256[] memory result = new uint256[](resultCount);
+
+        for (uint256 i = offset; i < end; i++) {
+            result[i - offset] = nonDeletedAppIds[i];
+        }
+
+        return result;
     }
 
     /**
@@ -192,7 +223,6 @@ contract VincentUserViewFacet is VincentBase {
 
         VincentAppStorage.AppStorage storage as_ = VincentAppStorage.appStorage();
 
-        // TODO: Remove this for audit purpose on the Dashboard
         if (as_.appIdToApp[appId].isDeleted) {
             revert AppHasBeenDeleted(appId);
         }

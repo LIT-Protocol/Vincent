@@ -189,6 +189,16 @@
         "name": "manager",
         "type": "address",
         "internalType": "address"
+      },
+      {
+        "name": "offset",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "limit",
+        "type": "uint256",
+        "internalType": "uint256"
       }
     ],
     "outputs": [
@@ -374,7 +384,7 @@
   },
   {
     "type": "error",
-    "name": "InvalidOffsetOrLimit",
+    "name": "InvalidOffset",
     "inputs": []
   },
   {

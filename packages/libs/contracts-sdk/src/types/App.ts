@@ -130,6 +130,8 @@ export interface AppVersion {
 
 export interface GetAppsByManagerParams {
   manager: string;
+  offset: string;
+  limit: string;
 }
 
 export interface GetAppsByManagerOptions {
@@ -155,7 +157,6 @@ export interface GetDelegatedAgentPkpTokenIdsParams {
   appId: string;
   version: string;
   offset: string;
-  limit: string;
 }
 
 export interface GetDelegatedAgentPkpTokenIdsOptions {
