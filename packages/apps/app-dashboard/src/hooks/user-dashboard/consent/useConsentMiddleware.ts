@@ -65,10 +65,23 @@ export const useConsentMiddleware = ({
 
     const checkPermitted = async () => {
       try {
+        // Check if the app has an active version set
+        if (!appData.activeVersion) {
+          setState({
+            isPermitted: null,
+            appExists: true,
+            activeVersionExists: false,
+            userPermittedVersion: null,
+            isLoading: false,
+            error: null,
+          });
+          return;
+        }
+
         // Always check if the app's active version is published in the registry
         const appVersionResult = await getAppVersion({
           signer: readOnlySigner,
-          args: { appId, version: appData.activeVersion! },
+          args: { appId, version: appData.activeVersion },
         });
 
         // If getAppVersion returns null, it means the app version is not registered
