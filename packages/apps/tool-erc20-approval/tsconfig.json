@@ -7,6 +7,9 @@
       "path": "../../libs/tool-sdk"
     },
     {
+      "path": "../../libs/app-sdk"
+    },
+    {
       "path": "./tsconfig.lib.json"
     }
   ]

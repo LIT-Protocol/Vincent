@@ -4,10 +4,10 @@
   "include": [],
   "references": [
     {
-      "path": "../../libs/app-sdk"
+      "path": "../../libs/mcp-sdk"
     },
     {
-      "path": "../../libs/tool-sdk"
+      "path": "../../libs/app-sdk"
     }
   ]
 }

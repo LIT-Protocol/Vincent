@@ -60,7 +60,8 @@
       "tool-erc20-approval",
       "tool-uniswap-swap",
       "mcp-server",
-      "toolpolicies-e2e"
+      "toolpolicies-e2e",
+      "@lit-protocol/lit-action-bundler"
     ],
     "projectsRelationship": "independent",
     "releaseTagPattern": "vincent/{projectName}/{version}",
