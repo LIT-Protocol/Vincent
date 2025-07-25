@@ -1,7 +1,7 @@
 import { configureStore } from '@reduxjs/toolkit';
 import { fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { reactClient } from '@lit-protocol/vincent-registry-sdk';
-import { getCurrentSIWETokenForStore } from '@/hooks/developer-dashboard/useVincentApiWithSIWE';
+import { getCurrentJwtTokenForStore } from '@/hooks/developer-dashboard/useVincentApiWithJWT';
 
 const { vincentApiClientReact, setBaseQueryFn }: any = reactClient;
 
@@ -12,16 +12,19 @@ const createWithPKPAuth = (baseQuery: any) => {
     const isMutation =
       args && typeof args === 'object' && 'method' in args && args.method && args.method !== 'GET';
 
-    // If it's a mutation, add the PKP-based SIWE authentication header
+    // If it's a mutation, add the PKP-based JWT authentication header
     if (isMutation) {
-      const siweToken = await getCurrentSIWETokenForStore();
+      const jwtToken = await getCurrentJwtTokenForStore();
 
-      if (!siweToken) {
+      if (!jwtToken) {
         // No valid token, don't make the request
         return {
           error: {
             status: 401,
-            data: { message: 'Authentication required. Please authenticate with PKP.' },
+            data: {
+              message:
+                'Authentication required. Please try refreshing the page, and if the problem persists, please sign in again.',
+            },
           },
         };
       }
@@ -31,7 +34,7 @@ const createWithPKPAuth = (baseQuery: any) => {
         ...args,
         headers: {
           ...args.headers,
-          authorization: `SIWE ${siweToken}`,
+          authorization: `Bearer ${jwtToken}`,
         },
       };
     }
@@ -42,9 +45,7 @@ const createWithPKPAuth = (baseQuery: any) => {
 };
 
 // Configure the base query function with PKP-based SIWE authentication
-setBaseQueryFn(
-  createWithPKPAuth(fetchBaseQuery({ baseUrl: `https://staging.registry.heyvincent.ai` })),
-);
+setBaseQueryFn(createWithPKPAuth(fetchBaseQuery({ baseUrl: `http://localhost:3000` })));
 
 export const store = configureStore({
   reducer: {

@@ -2,7 +2,7 @@
   "name": "@lit-protocol/registry-backend",
   "version": "1.4.0",
   "private": true,
-  "type:": "module",
+  "type": "module",
   "scripts": {
     "prebuild": "node scripts/copy-api-html.js",
     "build": "tsc --noEmit -p tsconfig.app.json && pnpm unbuild",

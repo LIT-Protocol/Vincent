@@ -3,7 +3,8 @@
   "compilerOptions": {
     "baseUrl": ".",
     "target": "es2018",
-    "module": "nodenext",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
     "lib": ["dom", "esnext"],
     "importHelpers": true,
     "declaration": true,

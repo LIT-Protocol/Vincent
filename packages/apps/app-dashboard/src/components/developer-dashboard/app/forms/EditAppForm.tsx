@@ -48,6 +48,7 @@ export const EditAppSchema = z
     delegateeAddresses,
   })
   .required()
+  .partial({ logo: true })
   .strict();
 
 export type EditAppFormData = z.infer<typeof EditAppSchema>;

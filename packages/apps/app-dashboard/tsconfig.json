@@ -12,6 +12,9 @@
       "path": "../../libs/app-sdk"
     },
     {
+      "path": "../../libs/registry-sdk"
+    },
+    {
       "path": "./tsconfig.app.json"
     },
     {

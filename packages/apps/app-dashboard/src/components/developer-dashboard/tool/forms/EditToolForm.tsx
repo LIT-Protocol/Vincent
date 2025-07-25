@@ -21,6 +21,7 @@ const { packageName, description, title, logo, activeVersion, deploymentStatus }
 
 export const EditToolSchema = z
   .object({ packageName, description, title, logo, activeVersion, deploymentStatus })
+  .partial({ logo: true })
   .strict();
 
 export type EditToolFormData = z.infer<typeof EditToolSchema>;

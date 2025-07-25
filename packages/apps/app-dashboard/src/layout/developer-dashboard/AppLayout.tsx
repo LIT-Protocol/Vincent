@@ -10,7 +10,7 @@ import { useTheme } from '@/providers/ThemeProvider';
 import { useAppAddressCheck } from '@/hooks/developer-dashboard/app/useAppAddressCheck';
 import { useToolAddressCheck } from '@/hooks/developer-dashboard/tool/useToolAddressCheck';
 import { usePolicyAddressCheck } from '@/hooks/developer-dashboard/policy/usePolicyAddressCheck';
-import { getCurrentSIWEToken } from '@/hooks/developer-dashboard/useVincentApiWithSIWE';
+import { getCurrentJwt } from '@/hooks/developer-dashboard/useVincentApiWithJWT';
 import Loading from '@/components/shared/ui/Loading';
 import useReadAuthInfo from '@/hooks/user-dashboard/useAuthInfo';
 
@@ -22,10 +22,12 @@ function AppLayout({ children, className }: ComponentProps<'div'>) {
   const { authInfo, sessionSigs, isProcessing: authLoading, error } = useReadAuthInfo();
   const isAuthenticated = authInfo?.agentPKP && sessionSigs;
 
-  // Generate SIWE token when authenticated (for store mutations)
+  // Generate JWT token when authenticated (for store mutations)
   useEffect(() => {
     if (isAuthenticated && authInfo && sessionSigs) {
-      getCurrentSIWEToken(authInfo, sessionSigs).catch(console.error);
+      getCurrentJwt(authInfo, sessionSigs).catch((error) =>
+        console.error('AppLayout: Error creating JWT:', error),
+      );
     }
   }, [isAuthenticated, authInfo, sessionSigs]);
 

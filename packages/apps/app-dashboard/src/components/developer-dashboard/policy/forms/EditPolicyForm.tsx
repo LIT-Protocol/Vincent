@@ -21,6 +21,7 @@ const { packageName, description, title, logo, activeVersion, deploymentStatus }
 
 export const EditPolicySchema = z
   .object({ packageName, description, title, logo, activeVersion, deploymentStatus })
+  .partial({ logo: true })
   .strict();
 
 export type EditPolicyFormData = z.infer<typeof EditPolicySchema>;

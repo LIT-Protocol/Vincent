@@ -4,7 +4,7 @@ import { ToolVersionsListView } from '../views/ToolVersionsListView';
 import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
 import Loading from '@/components/shared/ui/Loading';
 import { StatusMessage } from '@/components/shared/ui/statusMessage';
-import { ToolVersion } from '@lit-protocol/vincent-registry-sdk/dist/src/generated/vincentApiClientReact';
+import { ToolVersion } from '@/types/developer-dashboard/appTypes';
 
 export function ToolVersionsWrapper() {
   const { packageName } = useParams<{ packageName: string }>();

@@ -24,6 +24,15 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, './src'),
     },
+    conditions: ['import', 'module', 'browser', 'default'],
+  },
+
+  optimizeDeps: {
+    include: [
+      '@lit-protocol/vincent-app-sdk/jwt',
+      '@lit-protocol/vincent-registry-sdk',
+      '@lit-protocol/vincent-contracts-sdk',
+    ],
   },
 
   build: {

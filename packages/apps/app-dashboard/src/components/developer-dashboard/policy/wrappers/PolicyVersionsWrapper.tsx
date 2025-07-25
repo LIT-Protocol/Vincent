@@ -4,7 +4,7 @@ import { PolicyVersionsListView } from '../views/PolicyVersionsListView';
 import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
 import Loading from '@/components/shared/ui/Loading';
 import { StatusMessage } from '@/components/shared/ui/statusMessage';
-import { PolicyVersion } from '@lit-protocol/vincent-registry-sdk/dist/src/generated/vincentApiClientReact';
+import { PolicyVersion } from '@/types/developer-dashboard/appTypes';
 
 export function PolicyVersionsWrapper() {
   const { packageName } = useParams<{ packageName: string }>();

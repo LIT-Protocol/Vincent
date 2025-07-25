@@ -169,10 +169,10 @@ importers:
         specifier: ^7.0.8
         version: 7.2.0(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
       '@lit-protocol/auth-helpers':
-        specifier: ^7.0.8
+        specifier: ^7.2.0
         version: 7.2.0(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
       '@lit-protocol/constants':
-        specifier: ^7.0.8
+        specifier: ^7.2.0
         version: 7.2.0(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
       '@lit-protocol/contracts':
         specifier: ^0.0.90
@@ -199,14 +199,14 @@ importers:
         specifier: ^7.2.0
         version: 7.2.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       '@lit-protocol/vincent-app-sdk':
-        specifier: 1.0.1
-        version: 1.0.1(@walletconnect/modal@2.7.0(@types/react@19.1.8)(react@19.1.0))(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
+        specifier: workspace:*
+        version: link:../../libs/app-sdk
       '@lit-protocol/vincent-contracts-sdk':
         specifier: 1.0.0-4
         version: 1.0.0-4(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       '@lit-protocol/vincent-registry-sdk':
-        specifier: ^3.4.0
-        version: 3.4.0(react-redux@9.2.0(@types/react@19.1.8)(react@19.1.0)(redux@5.0.1))(react@19.1.0)
+        specifier: workspace:*
+        version: link:../../libs/registry-sdk
       '@radix-ui/react-checkbox':
         specifier: ^1.2.3
         version: 1.3.2(@types/react-dom@19.1.6(@types/react@19.1.8))(@types/react@19.1.8)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -2391,18 +2391,8 @@ packages:
   '@lit-protocol/uint8arrays@7.2.0':
     resolution: {integrity: sha512-Gc+REd0RRPivUPrwMklAhrwdRmTVbs2XatZpeJpjoUlXhqIIf9gWau33GKbZI3k6vEEeVoLqJU0JqEQoeEzKMA==}
 
-  '@lit-protocol/vincent-app-sdk@1.0.1':
-    resolution: {integrity: sha512-ibDdrZWdrd7RkrJhqLhio/mZPACn0Hc5W7GRNzfTdFr88xu9KRjr0YwfHyc4Q1qevq6nXltZQpuno7pBKUEcxg==}
-    engines: {node: ^20.11.1, pnpm: 10.7.0}
-
   '@lit-protocol/vincent-contracts-sdk@1.0.0-4':
     resolution: {integrity: sha512-8q/+flehWoNO+XU9WNrwgWvdEKYFQEUywlw0qcEoCLbouwuAdGS9ExXcNJe++Ubayn/ntFsuAGmW4yGGd0swFg==}
-
-  '@lit-protocol/vincent-registry-sdk@3.4.0':
-    resolution: {integrity: sha512-mHuAiHiBJHsF3tSQ1iJ3vYytlMrT7BpqG6iLqM/6bOHxg2jsWeZuvW9Y+GgZcL2Cp/kqiRAe8GEHNU27bFI6Fg==}
-
-  '@lit-protocol/vincent-tool-sdk@1.0.1':
-    resolution: {integrity: sha512-wSGlLCFnL/uTqWnK3N4pQvOhPniKTG1Te3UAs+lOj+hjiiFfDQ7WPpTMqEZ7koMz8Xviq4bZTCeMOPdX5exFvA==}
 
   '@lit-protocol/wasm@7.2.0':
     resolution: {integrity: sha512-sSm7ptR3t6h1+5UaUjBjcWyXvt7UGnkNuDdyz6khFHJyr6DT3ASv0kxupxSWistMC5tmxPVgixI/nqwI+zgSTQ==}
@@ -13691,67 +13681,11 @@ snapshots:
       - typescript
       - utf-8-validate
 
-  '@lit-protocol/vincent-app-sdk@1.0.1(@walletconnect/modal@2.7.0(@types/react@19.1.8)(react@19.1.0))(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)':
-    dependencies:
-      '@lit-protocol/auth-helpers': 7.2.0(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
-      '@lit-protocol/constants': 7.2.0(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
-      '@lit-protocol/lit-node-client': 7.2.0(@walletconnect/modal@2.7.0)(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
-      '@lit-protocol/vincent-tool-sdk': 1.0.1(bufferutil@4.0.9)(utf-8-validate@5.0.10)
-      '@noble/secp256k1': 2.3.0
-      did-jwt: 8.0.17
-      ethers: 5.8.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
-      tslib: 2.8.1
-      zod: 3.25.64
-    transitivePeerDependencies:
-      - '@azure/app-configuration'
-      - '@azure/cosmos'
-      - '@azure/data-tables'
-      - '@azure/identity'
-      - '@azure/keyvault-secrets'
-      - '@azure/storage-blob'
-      - '@capacitor/preferences'
-      - '@deno/kv'
-      - '@netlify/blobs'
-      - '@planetscale/database'
-      - '@react-native-async-storage/async-storage'
-      - '@upstash/redis'
-      - '@vercel/blob'
-      - '@vercel/kv'
-      - '@walletconnect/modal'
-      - aws4fetch
-      - bufferutil
-      - db0
-      - encoding
-      - ioredis
-      - supports-color
-      - typescript
-      - uploadthing
-      - utf-8-validate
-
   '@lit-protocol/vincent-contracts-sdk@1.0.0-4(bufferutil@4.0.9)(utf-8-validate@5.0.10)':
     dependencies:
       '@ethersproject/abi': 5.8.0
       cbor2: 2.0.1
       ethers: 5.8.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
-    transitivePeerDependencies:
-      - bufferutil
-      - utf-8-validate
-
-  '@lit-protocol/vincent-registry-sdk@3.4.0(react-redux@9.2.0(@types/react@19.1.8)(react@19.1.0)(redux@5.0.1))(react@19.1.0)':
-    dependencies:
-      '@asteasolutions/zod-to-openapi': 7.3.4(zod@3.25.64)
-      '@reduxjs/toolkit': 2.8.2(react-redux@9.2.0(@types/react@19.1.8)(react@19.1.0)(redux@5.0.1))(react@19.1.0)
-      tslib: 2.8.1
-      zod: 3.25.64
-    transitivePeerDependencies:
-      - react
-      - react-redux
-
-  '@lit-protocol/vincent-tool-sdk@1.0.1(bufferutil@4.0.9)(utf-8-validate@5.0.10)':
-    dependencies:
-      ethers: 5.8.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
-      tslib: 2.8.1
-      zod: 3.25.64
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate

@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { jwt } from '@lit-protocol/vincent-app-sdk';
+import { create } from '@lit-protocol/vincent-app-sdk/jwt';
 import { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
 import { App } from '@/types/developer-dashboard/appTypes';
 import { litNodeClient } from '@/utils/user-dashboard/lit';
@@ -7,7 +7,6 @@ import { env } from '@/config/env';
 import { UseReadAuthInfo } from '../useAuthInfo';
 import { useUrlRedirectUri } from './useUrlRedirectUri';
 
-const { create } = jwt;
 const { VITE_JWT_EXPIRATION_MINUTES } = env;
 
 interface UseJwtRedirectProps {
@@ -59,7 +58,7 @@ export const useJwtRedirect = ({ readAuthInfo }: UseJwtRedirectProps) => {
           expiresInMinutes: VITE_JWT_EXPIRATION_MINUTES,
           audience: app.redirectUris,
           app: {
-            id: app.appId.toString(),
+            id: app.appId,
             version: appVersion,
           },
           authentication: {
