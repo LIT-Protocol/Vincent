@@ -34,7 +34,7 @@ export function ConnectPageModal({
 
   // Generate the connect page URL
   const generateConnectUrl = (redirectUri: string): string => {
-    return `http://dashboard.heyvincent.ai/user/consent/appId/${appId}?redirectUri=${encodeURIComponent(redirectUri)}`;
+    return `http://dashboard.heyvincent.ai/user/appId/${appId}/consent?redirectUri=${encodeURIComponent(redirectUri)}`;
   };
 
   const connectUrl = selectedRedirectUri ? generateConnectUrl(selectedRedirectUri) : '';

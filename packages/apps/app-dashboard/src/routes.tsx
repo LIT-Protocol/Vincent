@@ -237,7 +237,7 @@ const routes: RouteObject[] = [
     element: <UserDashboardLayoutWithProviders />,
     children: [
       {
-        path: '/user/consent/appId/:appId',
+        path: '/user/appId/:appId/consent',
         element: <ConsentPageWrapper />,
       },
     ],
