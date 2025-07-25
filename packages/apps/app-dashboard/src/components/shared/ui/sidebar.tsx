@@ -160,6 +160,7 @@ function Sidebar({
   collapsible?: 'offcanvas' | 'icon' | 'none';
 }) {
   const { isMobile, state, openMobile, setOpenMobile } = useSidebar();
+  const { isDark } = useTheme();
 
   if (collapsible === 'none') {
     return (
@@ -177,8 +178,6 @@ function Sidebar({
   }
 
   if (isMobile) {
-    const { isDark } = useTheme();
-
     return (
       <Sheet open={openMobile} onOpenChange={setOpenMobile} {...props}>
         <SheetContent
