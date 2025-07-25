@@ -12,7 +12,7 @@ export const precheckSuccessSchema = z.object({
     nonce: z.number().optional().describe('The transaction nonce'),
 
     gasLimit: z.string().describe('The gas limit'),
-    gasPrice: z.string().optional().describe('The gas price'),
+    gasPrice: z.string().nullable().optional().describe('The gas price'),
 
     data: z.string().describe('The data of the transaction'),
     value: z.string().describe('The value sent'),
@@ -22,8 +22,12 @@ export const precheckSuccessSchema = z.object({
 
     accessList: z.array(z.any()).optional().describe('The access list (EIP-2930)'),
 
-    maxPriorityFeePerGas: z.string().optional().describe('EIP-1559 maxPriorityFeePerGas'),
-    maxFeePerGas: z.string().optional().describe('EIP-1559 maxFeePerGas'),
+    maxPriorityFeePerGas: z
+      .string()
+      .nullable()
+      .optional()
+      .describe('EIP-1559 maxPriorityFeePerGas'),
+    maxFeePerGas: z.string().nullable().optional().describe('EIP-1559 maxFeePerGas'),
   }),
 });
 

@@ -100,20 +100,22 @@ describe('Contract Whitelist Tool E2E Tests', () => {
     data: string;
     chainId: number;
     nonce: number;
-    gasPrice: string;
+    gasPrice?: string;
     gasLimit: string;
+    maxFeePerGas?: string;
+    maxPriorityFeePerGas?: string;
+    type?: number;
   };
   let RAW_ERC20_TRANSFER_TRANSACTION_ON_BASE: RawTransaction;
   let RAW_ERC20_TRANSFER_TRANSACTION_ON_ETH: RawTransaction;
 
-  let SERIALIZED_ERC20_TRANSFER_TRANSACTION_ON_BASE: string;
   let SIGNED_ERC20_TRANSFER_TRANSACTION_ON_BASE: string;
-
-  let SERIALIZED_ERC20_TRANSFER_FROM_TRANSACTION_ON_BASE: string;
   let SIGNED_ERC20_TRANSFER_FROM_TRANSACTION_ON_BASE: string;
-
-  let SERIALIZED_ERC20_TRANSFER_TRANSACTION_ON_ETH: string;
   let SIGNED_ERC20_TRANSFER_TRANSACTION_ON_ETH: string;
+
+  // EIP-1559 transaction variables
+  let RAW_EIP1559_ERC20_TRANSFER_TRANSACTION_ON_BASE: RawTransaction;
+  let SIGNED_EIP1559_ERC20_TRANSFER_TRANSACTION_ON_BASE: string;
 
   afterAll(async () => {
     console.log('Disconnecting from Lit node client...');
@@ -222,21 +224,18 @@ describe('Contract Whitelist Tool E2E Tests', () => {
     // Add a 5% buffer to the estimated gas
     const gasLimitBase = estimatedGasLimitBase.mul(105).div(100);
 
-    // Create the transaction object
+    // Create the transaction object (without nonce - will be set dynamically)
     RAW_ERC20_TRANSFER_TRANSACTION_ON_BASE = {
       to: erc20TransferTransactionBase.to,
       value: erc20TransferTransactionBase.value,
       data: erc20TransferTransactionBase.data,
       chainId: 8453, // Base Mainnet
-      nonce: await providerBase.getTransactionCount(TEST_CONFIG.userPkp!.ethAddress!),
+      nonce: 0, // Will be set dynamically
       gasPrice: (await providerBase.getGasPrice()).toHexString(),
       gasLimit: gasLimitBase.toHexString(),
     };
 
-    // Serialize the transaction (unsigned)
-    SERIALIZED_ERC20_TRANSFER_TRANSACTION_ON_BASE = ethers.utils.serializeTransaction(
-      RAW_ERC20_TRANSFER_TRANSACTION_ON_BASE,
-    );
+    // Serialization will be done dynamically with fresh nonce
 
     // Get the current nonce for the PKP address
     const providerEth = new ethers.providers.JsonRpcProvider(ETH_RPC_URL);
@@ -254,21 +253,36 @@ describe('Contract Whitelist Tool E2E Tests', () => {
     // Add a 5% buffer to the estimated gas
     const gasLimitEth = estimatedGasLimitEth.mul(105).div(100);
 
-    // Create the transaction object
+    // Create the transaction object (without nonce - will be set dynamically)
     RAW_ERC20_TRANSFER_TRANSACTION_ON_ETH = {
       to: erc20TransferTransactionEth.to,
       value: erc20TransferTransactionEth.value,
       data: erc20TransferTransactionEth.data,
       chainId: 1, // ETH Mainnet
-      nonce: await providerEth.getTransactionCount(TEST_CONFIG.userPkp!.ethAddress!),
+      nonce: 0, // Will be set dynamically
       gasPrice: (await providerEth.getGasPrice()).toHexString(),
       gasLimit: gasLimitEth.toHexString(),
     };
 
-    // Serialize the transaction (unsigned)
-    SERIALIZED_ERC20_TRANSFER_TRANSACTION_ON_ETH = ethers.utils.serializeTransaction(
-      RAW_ERC20_TRANSFER_TRANSACTION_ON_ETH,
-    );
+    // Serialization will be done dynamically with fresh nonce
+
+    // Create EIP-1559 (Type 2) transaction for Base
+    const feeData = await providerBase.getFeeData();
+
+    // Create the EIP-1559 transaction object (without nonce - will be set dynamically)
+    RAW_EIP1559_ERC20_TRANSFER_TRANSACTION_ON_BASE = {
+      to: erc20TransferTransactionBase.to,
+      value: erc20TransferTransactionBase.value,
+      data: erc20TransferTransactionBase.data,
+      chainId: 8453, // Base Mainnet
+      nonce: 0, // Will be set dynamically
+      gasLimit: gasLimitBase.toHexString(),
+      maxFeePerGas: feeData.maxFeePerGas!.toHexString(),
+      maxPriorityFeePerGas: feeData.maxPriorityFeePerGas!.toHexString(),
+      type: 2, // EIP-1559 transaction type
+    };
+
+    // Serialization will be done dynamically with fresh nonce
   });
 
   // Contract Whitelist Policy doesn't need to be permitted because it doesn't sign anything
@@ -329,7 +343,32 @@ describe('Contract Whitelist Tool E2E Tests', () => {
     await fundAppDelegateeIfNeeded();
   });
 
-  const testPrecheck = async (serializedTransaction: string, rawTransaction: RawTransaction) => {
+  // Helper function to create serialized transaction with fresh nonce
+  const createSerializedTransaction = async (
+    rawTransaction: RawTransaction,
+  ): Promise<{ serializedTransaction: string; updatedRawTransaction: RawTransaction }> => {
+    const provider =
+      rawTransaction.chainId === 8453
+        ? new ethers.providers.JsonRpcProvider(BASE_RPC_URL)
+        : new ethers.providers.JsonRpcProvider(ETH_RPC_URL);
+
+    const currentNonce = await provider.getTransactionCount(TEST_CONFIG.userPkp!.ethAddress!);
+
+    const updatedRawTransaction = {
+      ...rawTransaction,
+      nonce: currentNonce,
+    };
+
+    const serializedTransaction = ethers.utils.serializeTransaction(updatedRawTransaction);
+
+    return { serializedTransaction, updatedRawTransaction };
+  };
+
+  const testPrecheck = async (rawTransaction: RawTransaction) => {
+    // Create serialized transaction with fresh nonce
+    const { serializedTransaction, updatedRawTransaction } =
+      await createSerializedTransaction(rawTransaction);
+
     // Test: Run precheck on Transaction Signer Tool
     const transactionSignerToolClient = getTransactionSignerToolClient();
 
@@ -370,25 +409,41 @@ describe('Contract Whitelist Tool E2E Tests', () => {
     // The tool precheck should return the deserialized transaction
     expect(precheckResult.result).toBeDefined();
     const deserializedUnsignedTransaction = precheckResult.result?.deserializedUnsignedTransaction;
-    expect(deserializedUnsignedTransaction.to).toBe(rawTransaction.to);
+    expect(deserializedUnsignedTransaction.to).toBe(updatedRawTransaction.to);
     expect(deserializedUnsignedTransaction.value).toBe('0x00');
-    expect(deserializedUnsignedTransaction.data).toBe(rawTransaction.data);
-    expect(deserializedUnsignedTransaction.chainId).toBe(rawTransaction.chainId);
-    expect(deserializedUnsignedTransaction.nonce).toBe(rawTransaction.nonce);
-    expect(deserializedUnsignedTransaction.gasPrice).toBe(rawTransaction.gasPrice);
-    expect(deserializedUnsignedTransaction.gasLimit).toBe(rawTransaction.gasLimit);
+    expect(deserializedUnsignedTransaction.data).toBe(updatedRawTransaction.data);
+    expect(deserializedUnsignedTransaction.chainId).toBe(updatedRawTransaction.chainId);
+    expect(deserializedUnsignedTransaction.nonce).toBe(updatedRawTransaction.nonce);
+    expect(deserializedUnsignedTransaction.gasLimit).toBe(updatedRawTransaction.gasLimit);
+
+    // Handle different gas pricing mechanisms
+    if (updatedRawTransaction.type === 2) {
+      // EIP-1559 transaction
+      expect(deserializedUnsignedTransaction.maxFeePerGas).toBe(updatedRawTransaction.maxFeePerGas);
+      expect(deserializedUnsignedTransaction.maxPriorityFeePerGas).toBe(
+        updatedRawTransaction.maxPriorityFeePerGas,
+      );
+      expect(deserializedUnsignedTransaction.type).toBe(2);
+    } else {
+      // Legacy transaction
+      expect(deserializedUnsignedTransaction.gasPrice).toBe(updatedRawTransaction.gasPrice);
+    }
 
     // The policy precheck should return the permitted chainId, contractAddress, and functionSelector
     const policyPrecheckResult = (precheckResult.context?.policiesContext.allowedPolicies as any)?.[
       '@lit-protocol/vincent-policy-contract-whitelist'
     ]?.result as { chainId: number; contractAddress: string; functionSelector: string };
     expect(policyPrecheckResult).toBeDefined();
-    expect(policyPrecheckResult?.chainId).toBe(rawTransaction.chainId);
-    expect(policyPrecheckResult?.contractAddress).toBe(rawTransaction.to);
-    expect(policyPrecheckResult?.functionSelector).toBe(rawTransaction.data.slice(0, 10));
+    expect(policyPrecheckResult?.chainId).toBe(updatedRawTransaction.chainId);
+    expect(policyPrecheckResult?.contractAddress).toBe(updatedRawTransaction.to);
+    expect(policyPrecheckResult?.functionSelector).toBe(updatedRawTransaction.data.slice(0, 10));
   };
 
-  const testExecute = async (serializedTransaction: string, rawTransaction: RawTransaction) => {
+  const testExecute = async (rawTransaction: RawTransaction) => {
+    // Create serialized transaction with fresh nonce
+    const { serializedTransaction, updatedRawTransaction } =
+      await createSerializedTransaction(rawTransaction);
+
     const transactionSignerToolClient = getTransactionSignerToolClient();
 
     const executeResult = await transactionSignerToolClient.execute(
@@ -423,13 +478,26 @@ describe('Contract Whitelist Tool E2E Tests', () => {
     expect(parsedSignedTx).toBeDefined();
     expect(parsedSignedTx.hash).toBeDefined();
     expect(parsedSignedTx.from?.toLowerCase()).toBe(TEST_CONFIG.userPkp!.ethAddress!.toLowerCase());
-    expect(parsedSignedTx.to?.toLowerCase()).toBe(rawTransaction.to.toLowerCase());
-    expect(parsedSignedTx.nonce).toBe(rawTransaction.nonce);
-    expect(parsedSignedTx.gasLimit.toHexString()).toBe(rawTransaction.gasLimit);
-    expect(parsedSignedTx.gasPrice?.toHexString()).toBe(rawTransaction.gasPrice);
-    expect(parsedSignedTx.data).toBe(rawTransaction.data);
-    expect(parsedSignedTx.value.toHexString()).toBe(rawTransaction.value);
-    expect(parsedSignedTx.chainId).toBe(rawTransaction.chainId);
+    expect(parsedSignedTx.to?.toLowerCase()).toBe(updatedRawTransaction.to.toLowerCase());
+    expect(parsedSignedTx.nonce).toBe(updatedRawTransaction.nonce);
+    expect(parsedSignedTx.gasLimit.toHexString()).toBe(updatedRawTransaction.gasLimit);
+
+    // Handle different gas pricing mechanisms
+    if (updatedRawTransaction.type === 2) {
+      // EIP-1559 transaction
+      expect(parsedSignedTx.maxFeePerGas?.toHexString()).toBe(updatedRawTransaction.maxFeePerGas);
+      expect(parsedSignedTx.maxPriorityFeePerGas?.toHexString()).toBe(
+        updatedRawTransaction.maxPriorityFeePerGas,
+      );
+      expect(parsedSignedTx.type).toBe(2);
+    } else {
+      // Legacy transaction
+      expect(parsedSignedTx.gasPrice?.toHexString()).toBe(updatedRawTransaction.gasPrice);
+    }
+
+    expect(parsedSignedTx.data).toBe(updatedRawTransaction.data);
+    expect(parsedSignedTx.value.toHexString()).toBe(updatedRawTransaction.value);
+    expect(parsedSignedTx.chainId).toBe(updatedRawTransaction.chainId);
     expect(parsedSignedTx.v).toBeDefined();
     expect(parsedSignedTx.r).toBeDefined();
     expect(parsedSignedTx.s).toBeDefined();
@@ -438,13 +506,26 @@ describe('Contract Whitelist Tool E2E Tests', () => {
     expect(deserializedSignedTransaction).toBeDefined();
 
     // Check fields that should match the input transaction
-    expect(deserializedSignedTransaction.to).toBe(rawTransaction.to);
-    expect(deserializedSignedTransaction.value).toBe(rawTransaction.value);
-    expect(deserializedSignedTransaction.data).toBe(rawTransaction.data);
-    expect(deserializedSignedTransaction.chainId).toBe(rawTransaction.chainId);
-    expect(deserializedSignedTransaction.nonce).toBe(rawTransaction.nonce);
-    expect(deserializedSignedTransaction.gasLimit).toBe(rawTransaction.gasLimit);
-    expect(deserializedSignedTransaction.gasPrice).toBe(rawTransaction.gasPrice);
+    expect(deserializedSignedTransaction.to).toBe(updatedRawTransaction.to);
+    expect(deserializedSignedTransaction.value).toBe(updatedRawTransaction.value);
+    expect(deserializedSignedTransaction.data).toBe(updatedRawTransaction.data);
+    expect(deserializedSignedTransaction.chainId).toBe(updatedRawTransaction.chainId);
+    expect(deserializedSignedTransaction.nonce).toBe(updatedRawTransaction.nonce);
+    expect(deserializedSignedTransaction.gasLimit).toBe(updatedRawTransaction.gasLimit);
+
+    // Handle different gas pricing mechanisms for deserialized transaction
+    if (updatedRawTransaction.type === 2) {
+      // EIP-1559 transaction
+      expect(deserializedSignedTransaction.maxFeePerGas).toBe(updatedRawTransaction.maxFeePerGas);
+      expect(deserializedSignedTransaction.maxPriorityFeePerGas).toBe(
+        updatedRawTransaction.maxPriorityFeePerGas,
+      );
+      expect(deserializedSignedTransaction.type).toBe(2);
+      expect(deserializedSignedTransaction.gasPrice).toBeNull(); // gasPrice should be null for EIP-1559
+    } else {
+      // Legacy transaction
+      expect(deserializedSignedTransaction.gasPrice).toBe(updatedRawTransaction.gasPrice);
+    }
 
     // The 'from' address should be the PKP's eth address
     expect(deserializedSignedTransaction.from?.toLowerCase()).toBe(
@@ -476,11 +557,11 @@ describe('Contract Whitelist Tool E2E Tests', () => {
       policiesContext!.allowedPolicies!['@lit-protocol/vincent-policy-contract-whitelist']!;
     expect(allowedPolicy).toBeDefined();
     expect(allowedPolicy.result).toBeDefined();
-    expect(allowedPolicy.result.chainId).toBe(rawTransaction.chainId);
+    expect(allowedPolicy.result.chainId).toBe(updatedRawTransaction.chainId);
     expect(allowedPolicy.result.contractAddress.toLowerCase()).toBe(
-      rawTransaction.to.toLowerCase(),
+      updatedRawTransaction.to.toLowerCase(),
     );
-    expect(allowedPolicy.result.functionSelector).toBe(rawTransaction.data.slice(0, 10));
+    expect(allowedPolicy.result.functionSelector).toBe(updatedRawTransaction.data.slice(0, 10));
 
     // Store the signed transaction for the next test
     return signedTxHex;
@@ -559,16 +640,12 @@ describe('Contract Whitelist Tool E2E Tests', () => {
   };
 
   it('should successfully run precheck on the Transaction Signer Tool for Base Mainnet', async () => {
-    await testPrecheck(
-      SERIALIZED_ERC20_TRANSFER_TRANSACTION_ON_BASE,
-      RAW_ERC20_TRANSFER_TRANSACTION_ON_BASE,
-    );
+    await testPrecheck(RAW_ERC20_TRANSFER_TRANSACTION_ON_BASE);
   });
 
   it('should execute the Transaction Signer Tool with the Agent Wallet PKP for Base Mainnet', async () => {
     // Store the signed transaction for the next test
     SIGNED_ERC20_TRANSFER_TRANSACTION_ON_BASE = await testExecute(
-      SERIALIZED_ERC20_TRANSFER_TRANSACTION_ON_BASE,
       RAW_ERC20_TRANSFER_TRANSACTION_ON_BASE,
     );
   });
@@ -582,16 +659,12 @@ describe('Contract Whitelist Tool E2E Tests', () => {
   });
 
   it('should successfully run precheck on the Transaction Signer Tool for ETH Mainnet', async () => {
-    await testPrecheck(
-      SERIALIZED_ERC20_TRANSFER_TRANSACTION_ON_ETH,
-      RAW_ERC20_TRANSFER_TRANSACTION_ON_ETH,
-    );
+    await testPrecheck(RAW_ERC20_TRANSFER_TRANSACTION_ON_ETH);
   });
 
   it('should execute the Transaction Signer Tool with the Agent Wallet PKP for ETH Mainnet', async () => {
     // Store the signed transaction for the next test
     SIGNED_ERC20_TRANSFER_TRANSACTION_ON_ETH = await testExecute(
-      SERIALIZED_ERC20_TRANSFER_TRANSACTION_ON_ETH,
       RAW_ERC20_TRANSFER_TRANSACTION_ON_ETH,
     );
   });
@@ -642,17 +715,15 @@ describe('Contract Whitelist Tool E2E Tests', () => {
       gasLimit: gasLimitBase.toHexString(),
     };
 
-    return {
-      serializedTransaction: ethers.utils.serializeTransaction(
-        RAW_ERC20_TRANSFER_FROM_TRANSACTION_ON_BASE,
-      ),
-      rawTransaction: RAW_ERC20_TRANSFER_FROM_TRANSACTION_ON_BASE,
-    };
+    return RAW_ERC20_TRANSFER_FROM_TRANSACTION_ON_BASE;
   };
 
   it('should fail precheck because the function selector is not whitelisted', async () => {
-    const { serializedTransaction, rawTransaction } =
-      await getSerializedERC20TransferFromTransactionOnBase();
+    const rawTransaction = await getSerializedERC20TransferFromTransactionOnBase();
+
+    // Create serialized transaction with fresh nonce
+    const { serializedTransaction, updatedRawTransaction } =
+      await createSerializedTransaction(rawTransaction);
 
     // Test: Run precheck on Transaction Signer Tool
     const transactionSignerToolClient = getTransactionSignerToolClient();
@@ -708,17 +779,20 @@ describe('Contract Whitelist Tool E2E Tests', () => {
     // The tool precheck should still return the deserialized transaction
     expect(precheckResult.result).toBeDefined();
     const deserializedUnsignedTransaction = precheckResult.result?.deserializedUnsignedTransaction;
-    expect(deserializedUnsignedTransaction.to).toBe(rawTransaction.to);
+    expect(deserializedUnsignedTransaction.to).toBe(updatedRawTransaction.to);
     expect(deserializedUnsignedTransaction.value).toBe('0x00');
-    expect(deserializedUnsignedTransaction.data).toBe(rawTransaction.data);
-    expect(deserializedUnsignedTransaction.chainId).toBe(rawTransaction.chainId);
-    expect(deserializedUnsignedTransaction.nonce).toBe(rawTransaction.nonce);
-    expect(deserializedUnsignedTransaction.gasPrice).toBe(rawTransaction.gasPrice);
-    expect(deserializedUnsignedTransaction.gasLimit).toBe(rawTransaction.gasLimit);
+    expect(deserializedUnsignedTransaction.data).toBe(updatedRawTransaction.data);
+    expect(deserializedUnsignedTransaction.chainId).toBe(updatedRawTransaction.chainId);
+    expect(deserializedUnsignedTransaction.nonce).toBe(updatedRawTransaction.nonce);
+    expect(deserializedUnsignedTransaction.gasPrice).toBe(updatedRawTransaction.gasPrice);
+    expect(deserializedUnsignedTransaction.gasLimit).toBe(updatedRawTransaction.gasLimit);
   });
 
   it('should fail execute because the function selector is not whitelisted', async () => {
-    const { serializedTransaction } = await getSerializedERC20TransferFromTransactionOnBase();
+    const rawTransaction = await getSerializedERC20TransferFromTransactionOnBase();
+
+    // Create serialized transaction with fresh nonce
+    const { serializedTransaction } = await createSerializedTransaction(rawTransaction);
 
     // Test: Run precheck on Transaction Signer Tool
     const transactionSignerToolClient = getTransactionSignerToolClient();
@@ -838,5 +912,24 @@ describe('Contract Whitelist Tool E2E Tests', () => {
       util.inspect(executeResult, { depth: 10 }),
     );
     expect(executeResult.success).toBe(false);
+  });
+
+  it('should successfully run precheck on EIP-1559 Transaction Signer Tool for Base Mainnet', async () => {
+    await testPrecheck(RAW_EIP1559_ERC20_TRANSFER_TRANSACTION_ON_BASE);
+  });
+
+  it('should execute EIP-1559 Transaction Signer Tool with the Agent Wallet PKP for Base Mainnet', async () => {
+    // Store the signed transaction for the next test
+    SIGNED_EIP1559_ERC20_TRANSFER_TRANSACTION_ON_BASE = await testExecute(
+      RAW_EIP1559_ERC20_TRANSFER_TRANSACTION_ON_BASE,
+    );
+  });
+
+  it('should send the signed EIP-1559 transaction on Base Mainnet to transfer WETH to the delegatee', async () => {
+    await testSend(
+      SIGNED_EIP1559_ERC20_TRANSFER_TRANSACTION_ON_BASE,
+      BASE_PUBLIC_CLIENT,
+      BASE_WETH_ADDRESS,
+    );
   });
 });

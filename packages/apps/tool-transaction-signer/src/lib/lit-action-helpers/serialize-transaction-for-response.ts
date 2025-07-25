@@ -12,14 +12,14 @@ interface SerializedUnsignedTransaction {
   to: string;
   nonce?: number;
   gasLimit: string;
-  gasPrice?: string;
+  gasPrice?: string | null;
   data: string;
   value: string;
   chainId: number;
   type?: number;
   accessList?: Array<{ address: string; storageKeys: string[] }>;
-  maxPriorityFeePerGas?: string;
-  maxFeePerGas?: string;
+  maxPriorityFeePerGas?: string | null;
+  maxFeePerGas?: string | null;
 }
 
 interface SerializedSignedTransaction extends SignatureFields {
@@ -46,8 +46,11 @@ function addOptionalFields(
   serialized: SerializedUnsignedTransaction | SerializedSignedTransaction,
   transaction: ethers.Transaction,
 ): void {
-  if (transaction.gasPrice !== undefined) {
+  if (transaction.gasPrice !== undefined && transaction.gasPrice !== null) {
     serialized.gasPrice = transaction.gasPrice.toHexString();
+  } else if (transaction.gasPrice === null) {
+    // For EIP-1559 transactions, gasPrice is null
+    serialized.gasPrice = null;
   }
   if (transaction.type !== null && transaction.type !== undefined) {
     serialized.type = transaction.type;
@@ -55,10 +58,10 @@ function addOptionalFields(
   if (transaction.accessList !== undefined) {
     serialized.accessList = transaction.accessList;
   }
-  if (transaction.maxPriorityFeePerGas !== undefined) {
+  if (transaction.maxPriorityFeePerGas !== undefined && transaction.maxPriorityFeePerGas !== null) {
     serialized.maxPriorityFeePerGas = transaction.maxPriorityFeePerGas.toHexString();
   }
-  if (transaction.maxFeePerGas !== undefined) {
+  if (transaction.maxFeePerGas !== undefined && transaction.maxFeePerGas !== null) {
     serialized.maxFeePerGas = transaction.maxFeePerGas.toHexString();
   }
 }
