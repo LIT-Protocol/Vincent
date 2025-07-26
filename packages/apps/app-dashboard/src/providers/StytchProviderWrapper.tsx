@@ -8,10 +8,6 @@ const { VITE_STYTCH_PUBLIC_TOKEN } = env;
 
 const stychtClient = new StytchUIClient(VITE_STYTCH_PUBLIC_TOKEN);
 
-export default function RainbowKitProviderWrapper({
-  children,
-}: {
-  children: ReactNode;
-}) {
+export default function RainbowKitProviderWrapper({ children }: { children: ReactNode }) {
   return <StytchProvider stytch={stychtClient}>{children}</StytchProvider>;
 }

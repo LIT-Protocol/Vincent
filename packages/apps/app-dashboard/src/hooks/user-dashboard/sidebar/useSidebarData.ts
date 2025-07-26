@@ -52,7 +52,7 @@ export function useSidebarData({ pkpTokenId }: UseSidebarDataProps): UseSidebarD
     if (permittedApps === null) {
       return;
     }
-    
+
     // Reset states when starting fetch
     setIsLoading(true);
     setError(null);
@@ -61,7 +61,7 @@ export function useSidebarData({ pkpTokenId }: UseSidebarDataProps): UseSidebarD
       try {
         // Set permitted app versions from permissions
         setPermittedAppVersions(permittedVersionsFromHook || {});
-        
+
         // If no permitted apps, we're done immediately
         if (!permittedApps.length) {
           setApps([]);
@@ -73,11 +73,9 @@ export function useSidebarData({ pkpTokenId }: UseSidebarDataProps): UseSidebarD
         // Fetch all apps first
         const appsResponse = await triggerGetApps();
         const allApps = appsResponse.data || [];
-        
+
         // Filter apps based on permitted app IDs
-        const filteredApps = allApps.filter((app) => 
-          permittedApps.includes(app.appId.toString())
-        );
+        const filteredApps = allApps.filter((app) => permittedApps.includes(app.appId.toString()));
 
         setApps(filteredApps);
 
@@ -96,7 +94,7 @@ export function useSidebarData({ pkpTokenId }: UseSidebarDataProps): UseSidebarD
 
         const results = await Promise.all(versionPromises);
         const versionsMap: Record<string, any[]> = {};
-        
+
         results.forEach(({ appId, versions }) => {
           versionsMap[appId] = versions;
         });
@@ -120,4 +118,4 @@ export function useSidebarData({ pkpTokenId }: UseSidebarDataProps): UseSidebarD
     isLoading,
     error,
   };
-} 
+}

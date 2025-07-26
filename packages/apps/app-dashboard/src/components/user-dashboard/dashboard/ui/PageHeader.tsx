@@ -13,7 +13,9 @@ export function PageHeader({ icon, title, description, theme }: PageHeaderProps)
     <div className={`px-6 py-4 border-b ${theme.cardBorder}`}>
       <div className="flex items-center gap-3">
         <div className="flex-shrink-0">
-          <div className={`w-8 h-8 rounded-full ${theme.accentBg} flex items-center justify-center`}>
+          <div
+            className={`w-8 h-8 rounded-full ${theme.accentBg} flex items-center justify-center`}
+          >
             {icon}
           </div>
         </div>
@@ -24,4 +26,4 @@ export function PageHeader({ icon, title, description, theme }: PageHeaderProps)
       </div>
     </div>
   );
-} 
+}

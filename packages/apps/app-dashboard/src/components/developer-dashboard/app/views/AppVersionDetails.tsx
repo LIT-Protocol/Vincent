@@ -1,4 +1,10 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/shared/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/shared/ui/card';
 import { AppVersion, AppVersionTool } from '@/types/developer-dashboard/appTypes';
 import { AppVersionToolsDisplay } from '@/components/developer-dashboard/app/views/AppVersionToolsDisplay';
 

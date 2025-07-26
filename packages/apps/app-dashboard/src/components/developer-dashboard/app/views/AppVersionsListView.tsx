@@ -1,4 +1,10 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/shared/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/shared/ui/card';
 import { Power, PowerOff } from 'lucide-react';
 import { AppVersion } from '@/types/developer-dashboard/appTypes';
 import { UndeleteAppVersionButton } from '../wrappers';

@@ -31,10 +31,10 @@ export function PermittedAppInfo({
     <>
       {appNames.map((appName, appIndex) => {
         const versions = consentInfoMap.versionsByApp[appName];
-        
+
         // Skip if no version to use
         if (!permittedVersion) return null;
-        
+
         const version = versions.find(
           (version) => version.version.toString() === permittedVersion.toString(),
         );

@@ -1,7 +1,13 @@
 import { useState } from 'react';
 import { Button } from '@/components/shared/ui/button';
 import { Tool } from '@/types/developer-dashboard/appTypes';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/shared/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/shared/ui/card';
 import { ToolSelectorModal } from '../../ToolSelectorModal';
 import { Plus } from 'lucide-react';
 

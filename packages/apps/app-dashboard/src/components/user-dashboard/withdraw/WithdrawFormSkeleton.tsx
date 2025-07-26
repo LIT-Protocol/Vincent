@@ -7,7 +7,9 @@ export function WithdrawFormSkeleton() {
   const themeStyles = theme(isDark);
 
   return (
-    <div className={`max-w-[550px] w-full mx-auto ${themeStyles.cardBg} rounded-xl shadow-lg border ${themeStyles.cardBorder} overflow-hidden`}>
+    <div
+      className={`max-w-[550px] w-full mx-auto ${themeStyles.cardBg} rounded-xl shadow-lg border ${themeStyles.cardBorder} overflow-hidden`}
+    >
       <div className={`px-6 pt-8 pb-6 border-b ${themeStyles.cardBorder}`}>
         <Skeleton className="h-6 w-20 mb-6" />
 
@@ -72,4 +74,4 @@ export function WithdrawFormSkeleton() {
       </div>
     </div>
   );
-} 
+}

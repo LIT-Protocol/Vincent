@@ -87,7 +87,9 @@ const ErrorIcon = () => (
 );
 
 const LoadingIcon = ({ className }: { className: string }) => (
-  <div className={`w-[18px] h-[18px] border-2 ${className} border-t-transparent animate-spin rounded-full`}></div>
+  <div
+    className={`w-[18px] h-[18px] border-2 ${className} border-t-transparent animate-spin rounded-full`}
+  ></div>
 );
 
 // Icon lookup object
@@ -127,7 +129,9 @@ const StatusMessage = ({ message, type = 'info' }: StatusMessageProps) => {
     <div
       className={`flex items-start p-3 mb-4 rounded-lg text-sm leading-normal transition-all min-h-[48px] opacity-100 ${statusStyles.container}`}
     >
-      <div className={`flex justify-center items-center w-5 h-5 flex-shrink-0 ${statusStyles.icon}`}>
+      <div
+        className={`flex justify-center items-center w-5 h-5 flex-shrink-0 ${statusStyles.icon}`}
+      >
         <IconComponent className={statusStyles.icon} />
       </div>
       {shouldRenderAsHTML ? (

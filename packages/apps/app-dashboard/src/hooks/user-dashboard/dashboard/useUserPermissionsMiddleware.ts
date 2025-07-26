@@ -1,5 +1,8 @@
 import { readOnlySigner } from '@/utils/developer-dashboard/readOnlySigner';
-import { getAllPermittedAppIdsForPkp, getPermittedAppVersionForPkp } from '@lit-protocol/vincent-contracts-sdk';
+import {
+  getAllPermittedAppIdsForPkp,
+  getPermittedAppVersionForPkp,
+} from '@lit-protocol/vincent-contracts-sdk';
 import { useEffect, useState } from 'react';
 
 export type UseUserPermissionsMiddlewareProps = {
@@ -52,12 +55,15 @@ export const useUserPermissionsMiddleware = ({
         });
 
         const appVersionResults = await Promise.all(appVersionPromises);
-        
+
         // Create a record mapping app ID to version
-        const permittedAppVersions = appVersionResults.reduce((acc, { appId, version }) => {
-          acc[appId] = version;
-          return acc;
-        }, {} as Record<string, string>);
+        const permittedAppVersions = appVersionResults.reduce(
+          (acc, { appId, version }) => {
+            acc[appId] = version;
+            return acc;
+          },
+          {} as Record<string, string>,
+        );
 
         setState({
           permittedApps: userApps,

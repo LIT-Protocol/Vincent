@@ -109,7 +109,9 @@ export default function WithdrawForm({ sessionSigs, agentPKP }: WithdrawFormProp
   };
 
   return (
-    <div className={`max-w-[550px] w-full mx-auto ${themeStyles.cardBg} rounded-xl shadow-lg border ${themeStyles.cardBorder} overflow-hidden`}>
+    <div
+      className={`max-w-[550px] w-full mx-auto ${themeStyles.cardBg} rounded-xl shadow-lg border ${themeStyles.cardBorder} overflow-hidden`}
+    >
       <div className={`px-6 pt-8 pb-6 border-b ${themeStyles.cardBorder}`}>
         <h3 className={`text-xl font-semibold ${themeStyles.text} mb-6`}>Wallet</h3>
 

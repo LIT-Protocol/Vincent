@@ -57,7 +57,7 @@ export const getValidSessionSigs = async () => {
         return null;
       }
     }
-    
+
     return null; // Explicit return when walletSig is falsy
   } catch (error) {
     console.error('Error validating session:', error);

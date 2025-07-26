@@ -108,7 +108,10 @@ export function ConsentPage({ consentInfoMap, readAuthInfo }: ConsentPageProps) 
   }, []);
 
   const isLoading = isJwtLoading || isActionsLoading || isConsentProcessing;
-  const loadingStatus = jwtLoadingStatus || actionsLoadingStatus || (isConsentProcessing ? 'Processing consent...' : null);
+  const loadingStatus =
+    jwtLoadingStatus ||
+    actionsLoadingStatus ||
+    (isConsentProcessing ? 'Processing consent...' : null);
   const error = jwtError || actionsError;
 
   return (

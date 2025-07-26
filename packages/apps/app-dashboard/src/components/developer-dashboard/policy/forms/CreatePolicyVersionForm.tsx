@@ -2,7 +2,13 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Button } from '@/components/shared/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/shared/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/shared/ui/card';
 import { Form } from '@/components/shared/ui/form';
 import { TextField, LongTextField } from '../../form-fields';
 import { docSchemas } from '@lit-protocol/vincent-registry-sdk';

@@ -23,7 +23,7 @@ export const requireUserManagesApp = () => {
       const reqWithAppAndUser = req as RequestWithAppAndVincentUser;
 
       // Ensure app and authentication middleware ran first
-       
+
       if (!reqWithAppAndUser.vincentApp) {
         debug('App middleware did not run before requireUserManagesApp middleware');
         res.status(500).json({
@@ -32,7 +32,6 @@ export const requireUserManagesApp = () => {
         return;
       }
 
-       
       if (!reqWithAppAndUser.vincentUser) {
         debug('Authentication middleware did not run before requireUserManagesApp middleware');
         res.status(500).json({
