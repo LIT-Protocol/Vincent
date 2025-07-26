@@ -3,7 +3,7 @@
 import type { z } from 'zod';
 
 import type { BaseToolContext, SchemaValidationError } from '@lit-protocol/vincent-tool-sdk';
-import type { VincentPolicy } from '@lit-protocol/vincent-tool-sdk/internal';
+import type { VincentPolicy } from '@lit-protocol/vincent-tool-sdk/dist/src/internal';
 
 /* eslint-disable @typescript-eslint/no-unsafe-function-type */
 

@@ -4,7 +4,7 @@ import { ethers } from 'ethers';
 import { z } from 'zod';
 
 import type { BundledVincentTool, VincentTool } from '@lit-protocol/vincent-tool-sdk';
-import type { ToolPolicyMap } from '@lit-protocol/vincent-tool-sdk/internal';
+import type { ToolPolicyMap } from '@lit-protocol/vincent-tool-sdk/dist/src/internal';
 
 import { LIT_NETWORK } from '@lit-protocol/constants';
 import {
@@ -14,7 +14,7 @@ import {
   getSchemaForToolResult,
   LIT_DATIL_PUBKEY_ROUTER_ADDRESS,
   validateOrFail,
-} from '@lit-protocol/vincent-tool-sdk/internal';
+} from '@lit-protocol/vincent-tool-sdk/dist/src/internal';
 
 import type { RemoteVincentToolExecutionResult, ToolExecuteResponse } from './execute/types';
 import type { ToolPrecheckResponse } from './precheck/types';

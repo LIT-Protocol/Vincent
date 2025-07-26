@@ -10,7 +10,7 @@ import type {
   VincentTool,
   SchemaValidationError,
 } from '@lit-protocol/vincent-tool-sdk';
-import type { ToolPolicyMap } from '@lit-protocol/vincent-tool-sdk/internal';
+import type { ToolPolicyMap } from '@lit-protocol/vincent-tool-sdk/dist/src/internal';
 
 import {
   createDenyResult,
@@ -18,7 +18,7 @@ import {
   isPolicyDenyResponse,
   validateOrDeny,
   validatePolicies,
-} from '@lit-protocol/vincent-tool-sdk/internal';
+} from '@lit-protocol/vincent-tool-sdk/dist/src/internal';
 
 import type { PolicyPrecheckResultContext } from './types';
 

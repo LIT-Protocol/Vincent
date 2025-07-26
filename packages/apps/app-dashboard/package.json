@@ -102,6 +102,7 @@
     "react-redux": "^9.2.0",
     "typescript": "~5.7.2",
     "vite": "^6.3.0",
+    "vite-plugin-commonjs": "^0.10.4",
     "wagmi": "^2.15.6",
     "zod": "^3.25.42",
     "zustand": "^5.0.4"

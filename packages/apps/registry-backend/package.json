@@ -13,7 +13,7 @@
     "dist"
   ],
   "bin": {
-    "apiServer": "./dist/bin/apiServer.mjs"
+    "apiServer": "./dist/bin/apiServer.cjs"
   },
   "packageManager": "pnpm@10.7.0",
   "engines": {

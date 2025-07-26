@@ -3,12 +3,14 @@ import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import path from 'path';
 import { defineConfig } from 'vite';
+import commonjs from 'vite-plugin-commonjs';
 
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
     react(),
     tailwindcss(),
+    commonjs(),
     sentryVitePlugin({
       org: 'lit-protocol-lw',
       project: 'vincent-dashboard',

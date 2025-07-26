@@ -13,6 +13,7 @@
     "node": "^20.11.1",
     "pnpm": "10.7.0"
   },
+  "type": "commonjs",
   "exports": {
     "./package.json": "./package.json",
     "./jwt": {
