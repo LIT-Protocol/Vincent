@@ -33,7 +33,6 @@ export const requireUserIsAuthor = (entityType: EntityType) => {
     const reqWithToolAndUser = req as RequestWithToolAndVincentUser;
 
     try {
-       
       if (!reqWithToolAndUser.vincentUser) {
         debug('Authentication middleware did not run before requireUserIsAuthor middleware');
         res.status(500).json({
@@ -51,7 +50,7 @@ export const requireUserIsAuthor = (entityType: EntityType) => {
 
         // Ensure tool middleware ran first
         debug('Checking if tool middleware ran first');
-         
+
         if (!reqWithTool.vincentTool) {
           debug('Tool middleware did not run before requireUserIsAuthor middleware');
           res.status(500).json({
@@ -81,14 +80,13 @@ export const requireUserIsAuthor = (entityType: EntityType) => {
         }
 
         debug('User is confirmed as the author of the tool');
-         
       } else if (entityType === 'policy') {
         debug('Checking policy authorship');
         const reqWithPolicy = req as RequestWithPolicyAndVincentUser;
 
         // Ensure policy middleware ran first
         debug('Checking if policy middleware ran first');
-         
+
         if (!reqWithPolicy.vincentPolicy) {
           debug('Policy middleware did not run before requireUserIsAuthor middleware');
           res.status(500).json({

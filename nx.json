@@ -57,7 +57,9 @@
       "contracts-sdk",
       "registry-backend",
       "policy-spending-limit",
+      "policy-contract-whitelist",
       "tool-erc20-approval",
+      "tool-transaction-signer",
       "tool-uniswap-swap",
       "mcp-server",
       "toolpolicies-e2e"

@@ -13,7 +13,13 @@
       "path": "./packages/apps/policy-spending-limit"
     },
     {
+      "path": "./packages/apps/policy-contract-whitelist"
+    },
+    {
       "path": "./packages/apps/tool-erc20-approval"
+    },
+    {
+      "path": "./packages/apps/tool-transaction-signer"
     },
     {
       "path": "./packages/apps/app-dashboard"
