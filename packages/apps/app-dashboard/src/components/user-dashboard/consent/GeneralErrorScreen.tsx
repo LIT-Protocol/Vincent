@@ -3,7 +3,7 @@ import { AlertTriangle, ArrowLeft, RefreshCw, Sun, Moon } from 'lucide-react';
 import { theme } from './ui/theme';
 import { InfoBanner } from './ui/InfoBanner';
 import { ActionCard } from './ui/ActionCard';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/shared/ui/button';
 import { useTheme } from '@/providers/ThemeProvider';
 
@@ -26,7 +26,7 @@ export function GeneralErrorScreen({ errorDetails }: GeneralErrorScreenProps) {
   };
 
   return (
-    <div className={`min-h-screen w-full transition-colors duration-500 ${themeStyles.bg} p-4`}>
+    <div className={`min-h-screen w-full transition-colors duration-500 ${themeStyles.bg} sm:p-4`}>
       {/* Main Card Container */}
       <div
         className={`max-w-6xl mx-auto ${themeStyles.mainCard} border ${themeStyles.mainCardBorder} rounded-2xl shadow-2xl overflow-hidden`}
@@ -35,11 +35,13 @@ export function GeneralErrorScreen({ errorDetails }: GeneralErrorScreenProps) {
         <div className={`px-6 py-4 border-b ${themeStyles.cardBorder}`}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <img
-                src={isDark ? '/vincent-by-lit-white-logo.png' : '/vincent-by-lit-logo.png'}
-                alt="Vincent by Lit Protocol"
-                className="h-8"
-              />
+              <Link to="/" className="flex items-center">
+                <img
+                  src={isDark ? '/vincent-by-lit-white-logo.png' : '/vincent-by-lit-logo.png'}
+                  alt="Vincent by Lit Protocol"
+                  className="h-8 cursor-pointer hover:opacity-80 transition-opacity"
+                />
+              </Link>
             </div>
             <div className="flex items-center gap-2">
               <Button
@@ -94,19 +96,6 @@ export function GeneralErrorScreen({ errorDetails }: GeneralErrorScreenProps) {
                     <p className={`text-sm ${themeStyles.textMuted} font-mono`}>{errorDetails}</p>
                   </div>
                 )}
-
-                <div
-                  className={`p-4 rounded-lg ${themeStyles.cardBg} border ${themeStyles.cardBorder}`}
-                >
-                  <h3 className={`text-sm font-medium ${themeStyles.text} mb-2`}>
-                    What you can do:
-                  </h3>
-                  <ul className={`text-sm ${themeStyles.textMuted} space-y-1`}>
-                    <li>• Try refreshing the page to reload the consent information</li>
-                    <li>• Go back and try again later</li>
-                    <li>• Contact support if the problem persists</li>
-                  </ul>
-                </div>
               </div>
             </CardContent>
           </Card>

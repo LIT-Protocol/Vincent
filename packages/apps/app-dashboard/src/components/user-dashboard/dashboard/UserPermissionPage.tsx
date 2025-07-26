@@ -1,9 +1,5 @@
 import { useState, useCallback, useRef } from 'react';
-import {
-  setToolPolicyParameters,
-  PermissionData,
-  unPermitApp,
-} from '@lit-protocol/vincent-contracts-sdk';
+import { getClient, PermissionData } from '@lit-protocol/vincent-contracts-sdk';
 import { ConsentInfoMap } from '@/hooks/user-dashboard/consent/useConsentInfo';
 import { useFormatUserPermissions } from '@/hooks/user-dashboard/dashboard/useFormatUserPermissions';
 import { theme } from '../consent/ui/theme';
@@ -89,14 +85,12 @@ export function AppPermissionPage({
 
       try {
         setLocalStatus('Setting tool policy parameters...');
-        await setToolPolicyParameters({
-          signer: agentPkpWallet,
-          args: {
-            pkpTokenId: readAuthInfo.authInfo.agentPKP!.tokenId,
-            appId: consentInfoMap.app.appId.toString(),
-            appVersion: permittedVersion.toString(),
-            policyParams: formData,
-          },
+        const client = getClient({ signer: agentPkpWallet });
+        await client.permitApp({
+          pkpEthAddress: readAuthInfo.authInfo.agentPKP!.ethAddress,
+          appId: Number(consentInfoMap.app.appId),
+          appVersion: Number(permittedVersion),
+          permissionData: formData,
         });
 
         setLocalStatus(null);
@@ -136,13 +130,11 @@ export function AppPermissionPage({
 
       setLocalStatus('Unpermitting app...');
 
-      await unPermitApp({
-        signer: agentPkpWallet,
-        args: {
-          pkpTokenId: readAuthInfo.authInfo.agentPKP!.tokenId,
-          appId: consentInfoMap.app.appId.toString(),
-          appVersion: permittedVersion.toString(), // FIXME: Why is a version needed here?
-        },
+      const client = getClient({ signer: agentPkpWallet });
+      await client.unPermitApp({
+        pkpEthAddress: readAuthInfo.authInfo.agentPKP!.ethAddress,
+        appId: Number(consentInfoMap.app.appId),
+        appVersion: Number(permittedVersion),
       });
 
       setLocalStatus(null);
@@ -159,7 +151,7 @@ export function AppPermissionPage({
     }
   }, [readAuthInfo, consentInfoMap.app, permittedVersion, navigate]);
 
-  const registerFormRef = useCallback((policyIpfsCid: string, ref: PolicyFormRef) => {    
+  const registerFormRef = useCallback((policyIpfsCid: string, ref: PolicyFormRef) => {
     formRefs.current[policyIpfsCid] = ref;
   }, []);
 
@@ -168,7 +160,7 @@ export function AppPermissionPage({
   const error = actionsError;
 
   return (
-    <div className="w-full">
+    <div className={`min-h-screen w-full transition-colors duration-500 ${themeStyles.bg} sm:p-4`}>
       {/* Main Card Container */}
       <div
         className={`max-w-6xl mx-auto ${themeStyles.mainCard} border ${themeStyles.mainCardBorder} rounded-2xl shadow-2xl overflow-hidden`}
@@ -176,8 +168,18 @@ export function AppPermissionPage({
         {/* Page Header */}
         <PageHeader
           icon={
-            <svg className="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            <svg
+              className="w-4 h-4 text-orange-500"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+              />
             </svg>
           }
           title="Manage App Permissions"
@@ -185,7 +187,7 @@ export function AppPermissionPage({
           theme={themeStyles}
         />
 
-        <div className="px-6 py-8 space-y-6">
+        <div className="px-3 sm:px-6 py-6 sm:py-8 space-y-6">
           {/* App Header */}
           <ConsentAppHeader app={consentInfoMap.app} theme={themeStyles} />
 

@@ -6,13 +6,19 @@ import { Button } from '@/components/shared/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
 import ConsentView from './Consent';
 import { useTheme } from '@/providers/ThemeProvider';
+import { Link } from 'react-router-dom';
+import { UseReadAuthInfo } from '@/hooks/user-dashboard/useAuthInfo';
 
-export function AuthenticationErrorScreen() {
+type AuthenticationErrorScreenProps = {
+  readAuthInfo: UseReadAuthInfo;
+};
+
+export function AuthenticationErrorScreen({ readAuthInfo }: AuthenticationErrorScreenProps) {
   const { isDark, toggleTheme } = useTheme();
   const themeStyles = theme(isDark);
 
   return (
-    <div className={`min-h-screen w-full transition-colors duration-500 ${themeStyles.bg} p-4`}>
+    <div className={`min-h-screen w-full transition-colors duration-500 ${themeStyles.bg} sm:p-4`}>
       {/* Main Card Container */}
       <div
         className={`max-w-6xl mx-auto ${themeStyles.mainCard} border ${themeStyles.mainCardBorder} rounded-2xl shadow-2xl overflow-hidden`}
@@ -21,11 +27,13 @@ export function AuthenticationErrorScreen() {
         <div className={`px-6 py-4 border-b ${themeStyles.cardBorder}`}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <img
-                src={isDark ? '/vincent-by-lit-white-logo.png' : '/vincent-by-lit-logo.png'}
-                alt="Vincent by Lit Protocol"
-                className="h-8"
-              />
+              <Link to="/" className="flex items-center">
+                <img
+                  src={isDark ? '/vincent-by-lit-white-logo.png' : '/vincent-by-lit-logo.png'}
+                  alt="Vincent by Lit Protocol"
+                  className="h-8 cursor-pointer hover:opacity-80 transition-opacity"
+                />
+              </Link>
             </div>
             <div className="flex items-center gap-2">
               <Button
@@ -66,7 +74,7 @@ export function AuthenticationErrorScreen() {
                       transition={{ duration: 0.3, ease: 'easeInOut' }}
                       className="overflow-hidden"
                     >
-                      <ConsentView isUserDashboardFlow={false} theme={themeStyles} />
+                      <ConsentView theme={themeStyles} readAuthInfo={readAuthInfo} />
                     </motion.div>
                   </AnimatePresence>
                 </div>

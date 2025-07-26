@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Upload, RotateCcw } from 'lucide-react';
-import { ethers } from 'ethers';
-import { deleteApp, undeleteApp } from '@lit-protocol/vincent-contracts-sdk';
+import { Upload, Undo2 } from 'lucide-react';
 import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
+import { getClient } from '@lit-protocol/vincent-contracts-sdk';
 import MutationButtonStates, { SkeletonButton } from '@/components/shared/ui/MutationButtonStates';
 import { StatusMessage } from '@/components/shared/ui/statusMessage';
+import { initPkpSigner } from '@/utils/developer-dashboard/initPkpSigner';
+import useReadAuthInfo from '@/hooks/user-dashboard/useAuthInfo';
 
 type AppMismatchResolutionProps = {
   appId: number;
@@ -22,6 +23,7 @@ export function AppMismatchResolution({
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const { authInfo, sessionSigs } = useReadAuthInfo();
 
   // Registry mutations
   const [deleteAppInRegistry, { isLoading: isDeletingInRegistry, error: deleteAppError }] =
@@ -35,23 +37,16 @@ export function AppMismatchResolution({
     setIsProcessing(true);
 
     try {
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
-      await provider.send('eth_requestAccounts', []);
-      const signer = provider.getSigner();
+      const pkpSigner = await initPkpSigner({ authInfo, sessionSigs });
+      const client = getClient({ signer: pkpSigner });
 
       if (registryDeleted) {
-        await deleteApp({
-          signer: signer,
-          args: {
-            appId: appId.toString(),
-          },
+        await client.deleteApp({
+          appId: Number(appId),
         });
       } else {
-        await undeleteApp({
-          signer: signer,
-          args: {
-            appId: appId.toString(),
-          },
+        await client.undeleteApp({
+          appId: Number(appId),
         });
       }
 
@@ -167,7 +162,7 @@ export function AppMismatchResolution({
             <SkeletonButton />
           ) : (
             <>
-              <RotateCcw className="h-4 w-4" />
+              <Undo2 className="h-4 w-4" />
               Revert Registry
             </>
           )}

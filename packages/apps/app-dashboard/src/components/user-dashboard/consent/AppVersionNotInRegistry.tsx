@@ -3,7 +3,6 @@ import { AlertTriangle, ArrowLeft, RefreshCw } from 'lucide-react';
 import { theme } from './ui/theme';
 import { ConsentAppHeader } from './ui/ConsentAppHeader';
 import { ConsentPageHeader } from './ui/ConsentPageHeader';
-import { InfoBanner } from './ui/InfoBanner';
 import { ActionCard } from './ui/ActionCard';
 import { useNavigate } from 'react-router-dom';
 import { UseReadAuthInfo } from '@/hooks/user-dashboard/useAuthInfo';
@@ -33,7 +32,7 @@ export function AppVersionNotInRegistryConsent({
   };
 
   return (
-    <div className={`min-h-screen w-full transition-colors duration-500 ${themeStyles.bg} p-4`}>
+    <div className={`min-h-screen w-full transition-colors duration-500 ${themeStyles.bg} sm:p-4`}>
       {/* Main Card Container */}
       <div
         className={`max-w-6xl mx-auto ${themeStyles.mainCard} border ${themeStyles.mainCardBorder} rounded-2xl shadow-2xl overflow-hidden`}
@@ -50,14 +49,6 @@ export function AppVersionNotInRegistryConsent({
         <div className="px-6 py-8 space-y-6">
           {/* App Header */}
           {appData && <ConsentAppHeader app={appData} theme={themeStyles} />}
-
-          {/* Status Banner */}
-          <InfoBanner
-            theme={themeStyles}
-            type="warning"
-            title="App Version Not Published"
-            message={`The app's active version (${appData.activeVersion}) is not yet published in the on-chain registry. The app developer needs to publish this version before you can grant permissions.`}
-          />
 
           {/* Info Card */}
           <Card

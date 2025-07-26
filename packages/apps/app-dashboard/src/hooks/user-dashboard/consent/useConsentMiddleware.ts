@@ -1,15 +1,11 @@
 import { readOnlySigner } from '@/utils/developer-dashboard/readOnlySigner';
-import {
-  getAllPermittedAppIdsForPkp,
-  getPermittedAppVersionForPkp,
-  getAppVersion,
-} from '@lit-protocol/vincent-contracts-sdk';
+import { getClient } from '@lit-protocol/vincent-contracts-sdk';
 import { useEffect, useState } from 'react';
 import { App } from '@/types/developer-dashboard/appTypes';
 
 export type UseConsentMiddlewareProps = {
-  appId: string;
-  pkpTokenId: string;
+  appId: number;
+  pkpEthAddress: string;
   appData: App;
 };
 
@@ -24,7 +20,7 @@ export type UseConsentMiddlewareReturn = {
 
 export const useConsentMiddleware = ({
   appId,
-  pkpTokenId,
+  pkpEthAddress,
   appData,
 }: UseConsentMiddlewareProps): UseConsentMiddlewareReturn => {
   const [state, setState] = useState<UseConsentMiddlewareReturn>({
@@ -38,50 +34,74 @@ export const useConsentMiddleware = ({
 
   useEffect(() => {
     // Early return if params are missing
-    if (!appId || !pkpTokenId) {
+    if (!appId || !pkpEthAddress) {
       setState({
         isPermitted: null,
         appExists: null,
         activeVersionExists: null,
         userPermittedVersion: null,
         isLoading: false,
-        error: 'Missing appId or pkpTokenId',
+        error: 'Missing appId or pkpEthAddress',
+      });
+      return;
+    }
+
+    // Wait for appData to be fully loaded before proceeding
+    if (!appData) {
+      setState({
+        isPermitted: null,
+        appExists: null,
+        activeVersionExists: null,
+        userPermittedVersion: null,
+        isLoading: true,
+        error: null,
       });
       return;
     }
 
     const checkPermitted = async () => {
       try {
-        // Check if the app's active version is published in the registry (if we have app data)
-        if (appData?.activeVersion) {
-          const appVersionResult = await getAppVersion({
-            signer: readOnlySigner,
-            args: { appId: appId.toString(), version: appData.activeVersion.toString() },
+        // Check if the app has an active version set
+        if (!appData.activeVersion) {
+          setState({
+            isPermitted: null,
+            appExists: true,
+            activeVersionExists: false,
+            userPermittedVersion: null,
+            isLoading: false,
+            error: null,
           });
-
-          // If getAppVersion returns null, it means the app version is not registered
-          if (appVersionResult === null) {
-            setState({
-              isPermitted: null,
-              appExists: true,
-              activeVersionExists: false,
-              userPermittedVersion: null,
-              isLoading: false,
-              error: null,
-            });
-            return;
-          }
+          return;
         }
 
-        const userApps = await getAllPermittedAppIdsForPkp({
-          signer: readOnlySigner,
-          args: { pkpTokenId },
+        // Always check if the app's active version is published in the registry
+        const client = getClient({ signer: readOnlySigner });
+        const appVersionResult = await client.getAppVersion({
+          appId,
+          version: appData.activeVersion,
+        });
+
+        // If getAppVersion returns null, it means the app version is not registered
+        if (appVersionResult === null) {
+          setState({
+            isPermitted: null,
+            appExists: true,
+            activeVersionExists: false,
+            userPermittedVersion: null,
+            isLoading: false,
+            error: null,
+          });
+          return;
+        }
+
+        const userApps = await client.getAllPermittedAppIdsForPkp({
+          pkpEthAddress,
         });
 
         if (userApps.includes(appId)) {
-          const version = await getPermittedAppVersionForPkp({
-            signer: readOnlySigner,
-            args: { pkpTokenId, appId },
+          const version = await client.getPermittedAppVersionForPkp({
+            pkpEthAddress,
+            appId,
           });
 
           setState({
@@ -115,7 +135,7 @@ export const useConsentMiddleware = ({
     };
 
     checkPermitted();
-  }, [appId, pkpTokenId, appData]);
+  }, [appId, pkpEthAddress, appData]);
 
   return state;
 };

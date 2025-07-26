@@ -31,12 +31,16 @@ export type ConsentInfoState = {
 export const useConsentInfo = (appId: string): ConsentInfoState => {
   const [isDataFetchingComplete, setIsDataFetchingComplete] = useState(false);
 
+  // Reset completion state when app changes
+  useEffect(() => {
+    setIsDataFetchingComplete(false);
+  }, [appId]);
+
   const {
     data: app,
     isFetching: appLoading,
     isError: appError,
   } = vincentApiClient.useGetAppQuery({ appId: Number(appId) });
-
   const {
     data: appVersions,
     isFetching: appVersionsLoading,
@@ -65,8 +69,14 @@ export const useConsentInfo = (appId: string): ConsentInfoState => {
 
   // Fetch all data when appVersions changes
   useEffect(() => {
+    // Only proceed when both queries are done loading
+    if (appLoading || appVersionsLoading) {
+      return;
+    }
+
     if (!app || !appVersions || appVersions.length === 0) {
-      // Keep loading until we have data
+      // Only mark as complete if we have a valid appId but no data AND queries are done
+      setIsDataFetchingComplete(true);
       return;
     }
 

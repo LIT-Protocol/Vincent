@@ -72,7 +72,9 @@ export function CreateAppForm({ onSubmit, isSubmitting = false }: CreateAppFormP
     <Card className="w-full max-w-4xl mx-auto">
       <CardHeader>
         <CardTitle>Create New App</CardTitle>
-        <CardDescription>Create a new Vincent application and select initial tools</CardDescription>
+        <CardDescription>
+          Add details then select tools to request permissions from users
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>

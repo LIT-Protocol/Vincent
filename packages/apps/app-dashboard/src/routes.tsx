@@ -3,9 +3,10 @@ import AppLayout from '@/layout/developer-dashboard/AppLayout';
 import UserDashboardLayout from '@/layout/user-dashboard/UserDashboardLayout';
 import UserLayoutWithSidebar from '@/layout/user-dashboard/UserLayoutWithSidebar';
 import { AppProviders, UserProviders } from './providers';
+import ThemeProvider from '@/providers/ThemeProvider';
 import { wrap } from '@/utils/shared/components';
 
-import { ConnectWallet, Dashboard } from './pages/developer-dashboard';
+import { Dashboard } from './pages/developer-dashboard';
 import RootPage from './pages/shared/RootPage';
 
 import {
@@ -57,7 +58,6 @@ import { UserPermissionWrapper } from './components/user-dashboard/dashboard/Use
 import { ConsentPageWrapper } from './components/user-dashboard/consent/ConsentPageWraper';
 import { PermittedAppsWrapper } from './components/user-dashboard/dashboard/PermittedAppsWrapper';
 import { UpdateVersionPageWrapper } from './components/user-dashboard/dashboard/UpdateVersionPageWrapper';
-import { HomeWrapper } from './components/user-dashboard/dashboard/HomeWrapper';
 
 const AppLayoutWithProviders = wrap(() => <Outlet />, [...AppProviders, AppLayout]);
 const UserDashboardLayoutWithProviders = wrap(
@@ -69,18 +69,18 @@ const UserLayoutWithSidebarAndProviders = wrap(
   [...UserProviders, UserLayoutWithSidebar],
 );
 
+// Minimal provider wrapper for root page - only needs ThemeProvider for ConsentFooter
+// TODO: We'll need this everywhere eventually. Just keeping it simple for now.
+const RootPageWithProviders = wrap(RootPage, [ThemeProvider]);
+
 const routes: RouteObject[] = [
   {
     path: '/',
-    element: <RootPage />,
+    element: <RootPageWithProviders />,
   },
   {
     element: <AppLayoutWithProviders />,
     children: [
-      {
-        path: '/developer',
-        element: <ConnectWallet />,
-      },
       {
         path: '/developer/*',
         element: <Outlet />,
@@ -237,11 +237,7 @@ const routes: RouteObject[] = [
     element: <UserDashboardLayoutWithProviders />,
     children: [
       {
-        path: '/user',
-        element: <HomeWrapper />,
-      },
-      {
-        path: '/user/consent/appId/:appId',
+        path: '/user/appId/:appId/consent',
         element: <ConsentPageWrapper />,
       },
     ],

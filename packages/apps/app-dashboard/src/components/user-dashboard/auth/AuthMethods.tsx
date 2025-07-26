@@ -9,13 +9,9 @@ interface AuthMethodsProps {
 const AuthMethods = ({ setView, theme }: AuthMethodsProps) => {
   return (
     <div className="space-y-3">
-      <h2 className={`text-xl font-semibold mb-2 text-center ${theme.text}`}>
-        Connect to Vincent:
-      </h2>
-
       <div className="flex flex-col items-center space-y-3">
         <div
-          className={`w-1/2 py-3 px-4 flex items-center justify-between ${theme.cardBg} border ${theme.cardBorder} rounded-lg ${theme.itemHoverBg} transition-colors cursor-pointer`}
+          className={`w-full sm:w-3/4 md:w-3/4 lg:w-full py-3 px-4 flex items-center justify-between ${theme.cardBg} border ${theme.cardBorder} rounded-lg ${theme.itemHoverBg} transition-colors cursor-pointer`}
           onClick={() => setView('email')}
         >
           <div className="flex items-center">
@@ -29,7 +25,7 @@ const AuthMethods = ({ setView, theme }: AuthMethodsProps) => {
                 />
               </svg>
             </div>
-            <span className={`text-sm font-medium ${theme.text}`}>Continue with email</span>
+            <span className={`text-sm font-medium ${theme.text}`}>Email</span>
           </div>
           <svg
             className={`w-4 h-4 ${theme.textMuted}`}
@@ -42,7 +38,7 @@ const AuthMethods = ({ setView, theme }: AuthMethodsProps) => {
         </div>
 
         <div
-          className={`w-1/2 py-3 px-4 flex items-center justify-between ${theme.cardBg} border ${theme.cardBorder} rounded-lg ${theme.itemHoverBg} transition-colors cursor-pointer`}
+          className={`w-full sm:w-3/4 md:w-3/4 lg:w-full py-3 px-4 flex items-center justify-between ${theme.cardBg} border ${theme.cardBorder} rounded-lg ${theme.itemHoverBg} transition-colors cursor-pointer`}
           onClick={() => setView('phone')}
         >
           <div className="flex items-center">
@@ -56,7 +52,7 @@ const AuthMethods = ({ setView, theme }: AuthMethodsProps) => {
                 />
               </svg>
             </div>
-            <span className={`text-sm font-medium ${theme.text}`}>Continue with phone</span>
+            <span className={`text-sm font-medium ${theme.text}`}>Phone</span>
           </div>
           <svg
             className={`w-4 h-4 ${theme.textMuted}`}
@@ -69,7 +65,7 @@ const AuthMethods = ({ setView, theme }: AuthMethodsProps) => {
         </div>
 
         <div
-          className={`w-1/2 py-3 px-4 flex items-center justify-between ${theme.cardBg} border ${theme.cardBorder} rounded-lg ${theme.itemHoverBg} transition-colors cursor-pointer`}
+          className={`w-full sm:w-3/4 md:w-3/4 lg:w-full py-3 px-4 flex items-center justify-between ${theme.cardBg} border ${theme.cardBorder} rounded-lg ${theme.itemHoverBg} transition-colors cursor-pointer`}
           onClick={() => setView('wallet')}
         >
           <div className="flex items-center">
@@ -83,7 +79,7 @@ const AuthMethods = ({ setView, theme }: AuthMethodsProps) => {
                 />
               </svg>
             </div>
-            <span className={`text-sm font-medium ${theme.text}`}>Continue with wallet</span>
+            <span className={`text-sm font-medium ${theme.text}`}>Wallet</span>
           </div>
           <svg
             className={`w-4 h-4 ${theme.textMuted}`}
@@ -96,7 +92,7 @@ const AuthMethods = ({ setView, theme }: AuthMethodsProps) => {
         </div>
 
         <div
-          className={`w-1/2 py-3 px-4 flex items-center justify-between ${theme.cardBg} border ${theme.cardBorder} rounded-lg ${theme.itemHoverBg} transition-colors cursor-pointer`}
+          className={`w-full sm:w-3/4 md:w-3/4 lg:w-full py-3 px-4 flex items-center justify-between ${theme.cardBg} border ${theme.cardBorder} rounded-lg ${theme.itemHoverBg} transition-colors cursor-pointer`}
           onClick={() => setView('webauthn')}
         >
           <div className="flex items-center">
@@ -110,7 +106,7 @@ const AuthMethods = ({ setView, theme }: AuthMethodsProps) => {
                 />
               </svg>
             </div>
-            <span className={`text-sm font-medium ${theme.text}`}>Use a passkey</span>
+            <span className={`text-sm font-medium ${theme.text}`}>Passkey</span>
           </div>
           <svg
             className={`w-4 h-4 ${theme.textMuted}`}

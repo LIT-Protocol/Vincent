@@ -1,19 +1,23 @@
 import { useState } from 'react';
 import { Button } from '@/components/shared/ui/button';
 import { Tool } from '@/types/developer-dashboard/appTypes';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/shared/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/shared/ui/card';
 import { ToolSelectorModal } from '../../ToolSelectorModal';
 import { Plus } from 'lucide-react';
 
 interface CreateAppVersionToolsFormProps {
-  versionId: number;
   onToolAdd: (tool: Tool) => Promise<void>;
   existingTools?: string[]; // Array of package names already added
   availableTools: Tool[];
 }
 
 export function CreateAppVersionToolsForm({
-  versionId,
   onToolAdd,
   existingTools = [],
   availableTools,
@@ -30,8 +34,8 @@ export function CreateAppVersionToolsForm({
       <CardHeader>
         <CardTitle>Add Tools to App Version</CardTitle>
         <CardDescription>
-          Add tools to app version {versionId}. Tools will be added immediately when selected
-          (except when clicking the package name).
+          Clicking the package name will open the tool's npm page. Otherwise, tools will be added
+          immediately when selected.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -40,9 +44,6 @@ export function CreateAppVersionToolsForm({
             <Plus className="h-4 w-4 mr-2" />
             Add Tools to Version
           </Button>
-          <p className="text-sm text-gray-600 mt-2">
-            Click to browse and add tools to this app version
-          </p>
         </div>
       </CardContent>
 

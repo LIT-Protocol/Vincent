@@ -3,18 +3,25 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Form } from '@/components/shared/ui/form';
 import { Button } from '@/components/shared/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/shared/ui/card';
-import { TextField, LongTextField, SelectField } from '../../form-fields';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/shared/ui/card';
+import { TextField, LongTextField, SelectField, ImageUploadField } from '../../form-fields';
 import { docSchemas } from '@lit-protocol/vincent-registry-sdk';
 import { Tool, ToolVersion } from '@/types/developer-dashboard/appTypes';
 import { DeploymentStatusSelectField } from '../../form-fields/array/DeploymentStatusSelectField';
 
 const { toolDoc } = docSchemas;
 
-const { packageName, description, title, activeVersion, deploymentStatus } = toolDoc.shape;
+const { packageName, description, title, logo, activeVersion, deploymentStatus } = toolDoc.shape;
 
 export const EditToolSchema = z
-  .object({ packageName, description, title, activeVersion, deploymentStatus })
+  .object({ packageName, description, title, logo, activeVersion, deploymentStatus })
+  .partial({ logo: true })
   .strict();
 
 export type EditToolFormData = z.infer<typeof EditToolSchema>;
@@ -38,6 +45,7 @@ export function EditToolForm({
       packageName: toolData.packageName,
       description: toolData.description,
       title: toolData.title,
+      logo: toolData.logo,
       activeVersion: toolData.activeVersion,
       deploymentStatus: toolData.deploymentStatus,
     },
@@ -46,8 +54,12 @@ export function EditToolForm({
   const {
     register,
     handleSubmit,
-    control,
+    watch,
+    setValue,
+    setError,
+    clearErrors,
     formState: { errors },
+    control,
   } = form;
 
   // Create version options from toolVersions, showing enabled/disabled status for all versions
@@ -74,6 +86,7 @@ export function EditToolForm({
               rows={4}
               required
             />
+
             <TextField
               name="title"
               register={register}
@@ -81,6 +94,16 @@ export function EditToolForm({
               label="Title"
               placeholder="Enter tool title (user-readable)"
               required
+            />
+
+            <ImageUploadField
+              name="logo"
+              watch={watch}
+              setValue={setValue}
+              control={control}
+              setError={setError}
+              clearErrors={clearErrors}
+              label="Logo"
             />
 
             <SelectField

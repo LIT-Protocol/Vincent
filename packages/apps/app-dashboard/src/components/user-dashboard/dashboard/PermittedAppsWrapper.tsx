@@ -10,7 +10,7 @@ import { GeneralErrorScreen } from '@/components/user-dashboard/consent/GeneralE
 export function PermittedAppsWrapper() {
   const { authInfo, sessionSigs, isProcessing, error } = useReadAuthInfo();
 
-  const pkpTokenId = authInfo?.agentPKP?.tokenId || '';
+  const pkpEthAddress = authInfo?.agentPKP?.ethAddress || '';
 
   // Fetch apps from on-chain
   const {
@@ -18,7 +18,7 @@ export function PermittedAppsWrapper() {
     isLoading: permissionsLoading,
     error: UserPermissionsError,
   } = useUserPermissionsMiddleware({
-    pkpTokenId,
+    pkpEthAddress,
   });
 
   // Fetch all apps from the API
@@ -33,7 +33,7 @@ export function PermittedAppsWrapper() {
   const filteredApps = useMemo(() => {
     if (!allApps || !permittedApps?.length) return [];
 
-    return allApps.filter((app) => permittedApps.includes(app.appId.toString()));
+    return allApps.filter((app) => permittedApps.includes(app.appId));
   }, [allApps, permittedApps]);
 
   // Show skeleton while auth is processing
@@ -43,11 +43,13 @@ export function PermittedAppsWrapper() {
 
   // Handle auth errors early
   if (error) {
-    return <AuthenticationErrorScreen />;
+    return (
+      <AuthenticationErrorScreen readAuthInfo={{ authInfo, sessionSigs, isProcessing, error }} />
+    );
   }
 
   // Handle missing auth or PKP token
-  if (!pkpTokenId) {
+  if (!pkpEthAddress) {
     return <PermittedAppsSkeleton />;
   }
 
@@ -70,7 +72,9 @@ export function PermittedAppsWrapper() {
 
   const isUserAuthed = authInfo?.userPKP && authInfo?.agentPKP && sessionSigs;
   if (!isUserAuthed) {
-    return <AuthenticationErrorScreen />;
+    return (
+      <AuthenticationErrorScreen readAuthInfo={{ authInfo, sessionSigs, isProcessing, error }} />
+    );
   }
 
   return <PermittedAppsPage apps={filteredApps} />;

@@ -6,6 +6,7 @@ import PhoneInput from 'react-phone-number-input';
 import 'react-phone-number-input/style.css';
 import { Button } from '@/components/shared/ui/button';
 import { ThemeType } from '../consent/ui/theme';
+import StatusMessage from '../consent/StatusMessage';
 
 interface StytchOTPProps {
   method: OtpMethod;
@@ -179,7 +180,7 @@ const StytchOTP = ({ method, authWithStytch, setView, theme }: StytchOTPProps) =
           </p>
 
           <div className="flex justify-center">
-            <form className="space-y-4 w-1/2" onSubmit={sendPasscode}>
+            <form className="space-y-4 w-full sm:w-3/4 md:w-3/4 lg:w-full" onSubmit={sendPasscode}>
               {method === 'email' ? (
                 <div className="space-y-2">
                   <label htmlFor="email" className={`text-sm font-medium block ${theme.text}`}>
@@ -215,11 +216,7 @@ const StytchOTP = ({ method, authWithStytch, setView, theme }: StytchOTPProps) =
                 </div>
               )}
 
-              {error && (
-                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
-                  {error}
-                </div>
-              )}
+              {error && <StatusMessage message={error} type="error" />}
 
               <div className="pt-2">
                 <Button
@@ -252,7 +249,7 @@ const StytchOTP = ({ method, authWithStytch, setView, theme }: StytchOTPProps) =
           </p>
 
           <div className="flex justify-center">
-            <form className="space-y-4 w-1/2" onSubmit={authenticate}>
+            <form className="space-y-4 w-full sm:w-3/4 md:w-3/4 lg:w-full" onSubmit={authenticate}>
               <div className="space-y-2">
                 <label htmlFor="code" className={`text-sm font-medium block ${theme.text}`}>
                   Verification code
@@ -272,11 +269,7 @@ const StytchOTP = ({ method, authWithStytch, setView, theme }: StytchOTPProps) =
                 />
               </div>
 
-              {error && (
-                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
-                  {error}
-                </div>
-              )}
+              {error && <StatusMessage message={error} type="error" />}
 
               <div className="pt-2">
                 <Button

@@ -1,20 +1,17 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
-import { useAddressCheck } from '@/hooks/developer-dashboard/app/useAddressCheck';
 import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
 import { ToolVersion, PolicyVersion } from '@/types/developer-dashboard/appTypes';
 import { StatusMessage } from '@/components/shared/ui/statusMessage';
-import {
-  registerNextVersion,
-  registerApp,
-  getAppByDelegatee,
-} from '@lit-protocol/vincent-contracts-sdk';
-import { ethers } from 'ethers';
+import { getClient } from '@lit-protocol/vincent-contracts-sdk';
 import { PublishAppVersionButton } from './ui/PublishAppVersionButton';
 import MutationButtonStates, { SkeletonButton } from '@/components/shared/ui/MutationButtonStates';
+import { initPkpSigner } from '@/utils/developer-dashboard/initPkpSigner';
+import useReadAuthInfo from '@/hooks/user-dashboard/useAuthInfo';
 
 export function PublishAppVersionWrapper({ isAppPublished }: { isAppPublished: boolean }) {
   const { appId, versionId } = useParams<{ appId: string; versionId: string }>();
+  const { authInfo, sessionSigs } = useReadAuthInfo();
 
   // Fetching
   const {
@@ -137,8 +134,6 @@ export function PublishAppVersionWrapper({ isAppPublished }: { isAppPublished: b
     };
   }, [toolVersionsData, policyVersionsData]);
 
-  useAddressCheck(app || null);
-
   // Clear error message after 3 seconds
   useEffect(() => {
     if (!publishResult || publishResult.success) return;
@@ -210,21 +205,19 @@ export function PublishAppVersionWrapper({ isAppPublished }: { isAppPublished: b
         return;
       }
 
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
-      await provider.send('eth_requestAccounts', []);
-      const signer = provider.getSigner();
+      const pkpSigner = await initPkpSigner({ authInfo, sessionSigs });
+      const client = getClient({ signer: pkpSigner });
 
       for (const delegatee of delegatees) {
         try {
-          const existingApp = await getAppByDelegatee({
-            signer: signer,
-            args: { delegatee: delegatee },
+          const existingApp = await client.getAppByDelegateeAddress({
+            delegateeAddress: delegatee,
           });
 
-          if (existingApp.id !== appId) {
+          if (existingApp && existingApp?.id !== Number(appId)) {
             setPublishResult({
               success: false,
-              message: `Delegatee ${delegatee} is already registered to app ${existingApp.id}`,
+              message: `Delegatee ${delegatee} is already registered to app ${existingApp?.id}`,
             });
             return;
           }
@@ -238,27 +231,21 @@ export function PublishAppVersionWrapper({ isAppPublished }: { isAppPublished: b
 
       if (!isAppPublished) {
         // App not registered - use registerApp (first-time registration)
-        await registerApp({
-          signer: signer,
-          args: {
-            appId: appId.toString(),
-            delegatees: delegatees,
-            versionTools: {
-              toolIpfsCids: toolIpfsCids,
-              toolPolicies: toolPolicies,
-            },
+        await client.registerApp({
+          appId: Number(appId),
+          delegateeAddresses: delegatees,
+          versionTools: {
+            toolIpfsCids: toolIpfsCids,
+            toolPolicies: toolPolicies,
           },
         });
       } else {
         // App is registered - use registerNextVersion
-        await registerNextVersion({
-          signer: signer,
-          args: {
-            appId: appId.toString(),
-            versionTools: {
-              toolIpfsCids: toolIpfsCids,
-              toolPolicies: toolPolicies,
-            },
+        await client.registerNextVersion({
+          appId: Number(appId),
+          versionTools: {
+            toolIpfsCids: toolIpfsCids,
+            toolPolicies: toolPolicies,
           },
         });
       }

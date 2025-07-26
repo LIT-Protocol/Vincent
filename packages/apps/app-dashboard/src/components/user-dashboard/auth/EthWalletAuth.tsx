@@ -4,6 +4,7 @@ import { useAccount, useSignMessage, useDisconnect } from 'wagmi';
 import { useSetAuthInfo } from '../../../hooks/user-dashboard/useAuthInfo';
 import { Button } from '@/components/shared/ui/button';
 import { ThemeType } from '../consent/ui/theme';
+import StatusMessage from '../consent/StatusMessage';
 
 interface WalletAuthProps {
   authWithEthWallet: (
@@ -84,11 +85,14 @@ export default function EthWalletAuth({ authWithEthWallet, setView, theme }: Wal
   return (
     <>
       <h1 className={`text-xl font-semibold text-center mb-2 ${theme.text}`}>
-        Sign in with your Wallet
+        Connect with your Wallet
       </h1>
+      <p className={`text-sm text-center mb-6 ${theme.textMuted}`}>
+        Connect and sign with your Ethereum wallet
+      </p>
       {isWalletReady && (
         <div className="mb-4 flex justify-center">
-          <div className="w-1/2">
+          <div className="w-full sm:w-3/4 md:w-3/4 lg:w-full">
             <div className="bg-green-50 border border-green-200 rounded-lg p-3">
               <div className="flex items-center justify-center mb-2">
                 <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
@@ -105,7 +109,7 @@ export default function EthWalletAuth({ authWithEthWallet, setView, theme }: Wal
       )}
 
       <div className="flex justify-center">
-        <div className="space-y-4 w-1/2">
+        <div className="space-y-4 w-full sm:w-3/4 md:w-3/4 lg:w-full">
           {!isWalletReady ? (
             <div className="flex justify-center">
               <ConnectButton.Custom>
@@ -151,7 +155,7 @@ export default function EthWalletAuth({ authWithEthWallet, setView, theme }: Wal
                     Authenticating...
                   </div>
                 ) : (
-                  'Sign In with Wallet'
+                  'Connect with Wallet'
                 )}
               </Button>
               <Button
@@ -163,11 +167,7 @@ export default function EthWalletAuth({ authWithEthWallet, setView, theme }: Wal
             </div>
           )}
 
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded text-sm">
-              {error}
-            </div>
-          )}
+          {error && <StatusMessage message={error} type="error" />}
 
           <div className="pt-2">
             <Button

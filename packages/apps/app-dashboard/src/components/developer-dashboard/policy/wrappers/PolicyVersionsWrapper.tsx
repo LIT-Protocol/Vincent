@@ -1,11 +1,10 @@
 import { useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { PolicyVersionsListView } from '../views/PolicyVersionsListView';
-import { useAddressCheck } from '@/hooks/developer-dashboard/tool/useAddressCheck';
 import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
 import Loading from '@/components/shared/ui/Loading';
 import { StatusMessage } from '@/components/shared/ui/statusMessage';
-import { PolicyVersion } from '@lit-protocol/vincent-registry-sdk/dist/src/generated/vincentApiClientReact';
+import { PolicyVersion } from '@/types/developer-dashboard/appTypes';
 
 export function PolicyVersionsWrapper() {
   const { packageName } = useParams<{ packageName: string }>();
@@ -35,8 +34,6 @@ export function PolicyVersionsWrapper() {
 
   // Navigation
   const navigate = useNavigate();
-
-  useAddressCheck(policy || null);
 
   // Loading states first
   if (policyLoading || versionsLoading) return <Loading />;

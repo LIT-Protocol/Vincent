@@ -5,7 +5,6 @@ import { StatusMessage } from '@/components/shared/ui/statusMessage';
 import { EditPolicyForm, type EditPolicyFormData } from '../forms/EditPolicyForm';
 import { getErrorMessage, navigateWithDelay } from '@/utils/developer-dashboard/app-forms';
 import Loading from '@/components/shared/ui/Loading';
-import { useAddressCheck } from '@/hooks/developer-dashboard/tool/useAddressCheck';
 
 export function EditPolicyWrapper() {
   const { packageName } = useParams<{ packageName: string }>();
@@ -36,8 +35,6 @@ export function EditPolicyWrapper() {
       navigateWithDelay(navigate, `/developer/policyId/${encodeURIComponent(policy.packageName)}`);
     }
   }, [isSuccess, data, navigate, policy]);
-
-  useAddressCheck(policy || null);
 
   // Loading states
   if (policyLoading || versionsLoading) return <Loading />;
@@ -73,10 +70,12 @@ export function EditPolicyWrapper() {
   // Render with page UI and form component
   return (
     <div className="space-y-6">
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <h1 className="text-3xl font-bold text-gray-900">Edit {policy.packageName}</h1>
-          <p className="text-gray-600 mt-2">Update your policy settings and configuration</p>
+      <div className="w-full max-w-2xl mx-auto">
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            <h1 className="text-3xl font-bold text-gray-900">Edit {policy.packageName}</h1>
+            <p className="text-gray-600 mt-2">Update your policy settings and configuration</p>
+          </div>
         </div>
       </div>
 

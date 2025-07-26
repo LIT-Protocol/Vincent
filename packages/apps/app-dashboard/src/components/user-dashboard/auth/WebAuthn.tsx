@@ -3,6 +3,7 @@ import { useSetAuthInfo } from '../../../hooks/user-dashboard/useAuthInfo';
 import { Button } from '@/components/shared/ui/button';
 import { ThemeType } from '../consent/ui/theme';
 import Loading from '@/components/shared/ui/Loading';
+import StatusMessage from '../consent/StatusMessage';
 
 interface WebAuthnProps {
   authWithWebAuthn: any;
@@ -120,46 +121,48 @@ export default function WebAuthn({
         Use passkeys for secure, passwordless login
       </p>
 
-      {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm mb-6">
-          {error}
-        </div>
-      )}
+      {error && <StatusMessage message={error} type="error" />}
 
       <div className="flex justify-center">
-        <div className="space-y-6 w-1/2">
-          {registerWithWebAuthn && (
-            <div className={`border rounded-lg p-4 ${theme.cardBg} ${theme.cardBorder}`}>
-              <h2 className={`text-base font-medium mb-1 ${theme.text}`}>Register a new passkey</h2>
-              <p className={`text-sm mb-3 ${theme.textMuted}`}>Create a new passkey</p>
+        <div className="w-full max-w-2xl">
+          <div className="flex flex-col lg:flex-row lg:gap-6 space-y-6 lg:space-y-0">
+            {registerWithWebAuthn && (
+              <div
+                className={`w-full lg:flex-1 mx-auto lg:mx-0 border rounded-lg p-4 ${theme.cardBg} ${theme.cardBorder}`}
+              >
+                <h2 className={`text-base font-medium mb-1 ${theme.text}`}>
+                  Register a new passkey
+                </h2>
+                <p className={`text-sm mb-3 ${theme.textMuted}`}>Create a new passkey</p>
+                <Button
+                  className={`py-3 px-4 w-full font-medium text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${theme.accentBg} ${theme.accentHover}`}
+                  onClick={handleRegister}
+                  disabled={loading}
+                >
+                  {loading ? 'Creating...' : 'Create'}
+                </Button>
+              </div>
+            )}
+
+            <div
+              className={`w-full lg:flex-1 mx-auto lg:mx-0 border rounded-lg p-4 ${theme.cardBg} ${theme.cardBorder}`}
+            >
+              <h2 className={`text-base font-medium mb-1 ${theme.text}`}>Connect with passkey</h2>
+              <p className={`text-sm mb-3 ${theme.textMuted}`}>Use an existing passkey</p>
               <Button
                 className={`py-3 px-4 w-full font-medium text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${theme.accentBg} ${theme.accentHover}`}
-                onClick={handleRegister}
+                onClick={handleAuthenticate}
                 disabled={loading}
               >
-                {loading ? 'Creating...' : 'Create a passkey'}
+                {loading ? 'Signing in...' : 'Sign in'}
               </Button>
             </div>
-          )}
-
-          <div className={`border rounded-lg p-4 ${theme.cardBg} ${theme.cardBorder}`}>
-            <h2 className={`text-base font-medium mb-1 ${theme.text}`}>Sign in with passkey</h2>
-            <p className={`text-sm mb-3 ${theme.textMuted}`}>
-              Use your existing passkey to sign in
-            </p>
-            <Button
-              className={`py-3 px-4 w-full font-medium text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${theme.accentBg} ${theme.accentHover}`}
-              onClick={handleAuthenticate}
-              disabled={loading}
-            >
-              {loading ? 'Signing in...' : 'Sign in with passkey'}
-            </Button>
           </div>
         </div>
       </div>
 
       <div className="mt-6 flex justify-center">
-        <div className="w-1/2">
+        <div className="w-full sm:w-3/4 md:w-3/4 lg:w-full max-w-2xl">
           <Button
             onClick={handleBackClick}
             className={`${theme.cardBg} ${theme.text} border ${theme.cardBorder} rounded-lg py-3 px-4 w-full font-medium text-sm ${theme.itemHoverBg} transition-colors`}

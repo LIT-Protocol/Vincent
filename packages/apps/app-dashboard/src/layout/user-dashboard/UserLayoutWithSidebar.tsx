@@ -12,7 +12,7 @@ import { ThemedLoading } from '@/components/user-dashboard/dashboard/ui/ThemedLo
 function UserLayoutWithSidebar({ children, className }: ComponentProps<'div'>) {
   const { isDark } = useTheme();
   const themeStyles = theme(isDark);
-  const { authInfo, sessionSigs, isProcessing } = useReadAuthInfo();
+  const { authInfo, sessionSigs, isProcessing, error } = useReadAuthInfo();
 
   // Handle authentication at the layout level to prevent duplication
   const isUserAuthed = authInfo?.userPKP && authInfo?.agentPKP && sessionSigs;
@@ -22,7 +22,9 @@ function UserLayoutWithSidebar({ children, className }: ComponentProps<'div'>) {
   }
 
   if (!isUserAuthed) {
-    return <AuthenticationErrorScreen />;
+    return (
+      <AuthenticationErrorScreen readAuthInfo={{ authInfo, sessionSigs, isProcessing, error }} />
+    );
   }
 
   return (
@@ -43,7 +45,7 @@ function UserLayoutWithSidebar({ children, className }: ComponentProps<'div'>) {
               <Separator orientation="vertical" className="mr-2 h-4" />
             </div>
           </header>
-          <main className="flex-1 p-8 flex justify-start items-start">{children}</main>
+          <main className="flex-1 sm:p-8 flex justify-start items-start">{children}</main>
         </SidebarInset>
       </SidebarProvider>
     </div>

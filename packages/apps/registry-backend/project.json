@@ -19,7 +19,7 @@
       "executor": "@nx/jest:jest",
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
       "options": {
-        "jestConfig": "packages/apps/registry-backend/jest.config.js"
+        "jestConfig": "packages/apps/registry-backend/jest.config.cjs"
       }
     }
   }

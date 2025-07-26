@@ -112,8 +112,15 @@ export const PolicyForm = forwardRef<PolicyFormRef, PolicyFormProps>(
               margin-top: 0.25rem;
             }
             
-            .policy-form-${policy.ipfsCid} .field-error {
-              color: ${isDark ? 'rgb(248 113 113)' : 'rgb(239 68 68)'};
+            .policy-form-${policy.ipfsCid} .field-error,
+            .policy-form-${policy.ipfsCid} .text-danger,
+            .policy-form-${policy.ipfsCid} .invalid-feedback,
+            .policy-form-${policy.ipfsCid} .form-text.text-danger,
+            .policy-form-${policy.ipfsCid} .text-red-500,
+            .policy-form-${policy.ipfsCid} .error-detail,
+            .policy-form-${policy.ipfsCid} [role="alert"],
+            .policy-form-${policy.ipfsCid} .text-destructive {
+              color: ${isDark ? 'rgb(248 113 113)' : 'rgb(239 68 68)'} !important;
               font-size: 0.875rem;
               margin-top: 0.25rem;
             }

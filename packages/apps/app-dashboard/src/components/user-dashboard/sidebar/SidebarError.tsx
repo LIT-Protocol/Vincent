@@ -10,7 +10,6 @@ import {
   SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -31,9 +30,6 @@ export function SidebarError({ error }: SidebarErrorProps) {
   const { clearAuthInfo } = useClearAuthInfo();
 
   const isActiveRoute = (route: string) => {
-    if (route === '/user') {
-      return location.pathname === '/user';
-    }
     return location.pathname.startsWith(route);
   };
 
@@ -46,21 +42,18 @@ export function SidebarError({ error }: SidebarErrorProps) {
     <Sidebar variant="sidebar" collapsible="offcanvas" className="border-r-0">
       <SidebarHeader className="border-b border-sidebar-border h-16">
         <div className="flex items-center px-6 py-4 h-full">
-          <img
-            src={isDark ? '/vincent-by-lit-white-logo.png' : '/vincent-by-lit-logo.png'}
-            alt="Vincent by Lit Protocol"
-            className="h-8 object-contain"
-          />
+          <Link to="/" className="flex items-center">
+            <img
+              src={isDark ? '/vincent-by-lit-white-logo.png' : '/vincent-by-lit-logo.png'}
+              alt="Vincent by Lit Protocol"
+              className="h-8 object-contain cursor-pointer hover:opacity-80 transition-opacity"
+            />
+          </Link>
         </div>
       </SidebarHeader>
 
       <SidebarContent className="px-4 py-6">
         <SidebarGroup className="space-y-4">
-          <SidebarGroupLabel
-            className={`px-3 text-sm font-semibold ${themeStyles.text} uppercase tracking-wide`}
-          >
-            Navigation
-          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu className="space-y-2">
               <SidebarMenuItem>
@@ -91,11 +84,13 @@ export function SidebarError({ error }: SidebarErrorProps) {
                     <div className="p-3 rounded-md border border-destructive/20 bg-destructive/5">
                       <div className="flex items-start gap-3">
                         <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0 text-destructive" />
-                        <div className="flex-1 space-y-1">
+                        <div className="flex-1 space-y-1 min-w-0">
                           <p className="text-sm font-medium text-destructive">
                             Failed to load apps
                           </p>
-                          <p className="text-xs text-muted-foreground">{error}</p>
+                          <p className="text-xs text-muted-foreground break-words overflow-wrap-anywhere">
+                            {error}
+                          </p>
                         </div>
                       </div>
                     </div>

@@ -19,8 +19,8 @@ export function UpdateVersionPageWrapper() {
     isLoading: isPermittedLoading,
     error: isPermittedError,
   } = useConsentMiddleware({
-    appId: appId || '',
-    pkpTokenId: authInfo?.agentPKP?.tokenId || '',
+    appId: Number(appId),
+    pkpEthAddress: authInfo?.agentPKP?.ethAddress || '',
     appData: data?.app,
   });
 
@@ -31,7 +31,9 @@ export function UpdateVersionPageWrapper() {
 
   const isUserAuthed = authInfo?.userPKP && authInfo?.agentPKP && sessionSigs;
   if (!isProcessing && !isUserAuthed) {
-    return <AuthenticationErrorScreen />;
+    return (
+      <AuthenticationErrorScreen readAuthInfo={{ authInfo, sessionSigs, isProcessing, error }} />
+    );
   }
 
   if (isLoading || isProcessing || isPermittedLoading) {

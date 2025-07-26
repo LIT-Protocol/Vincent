@@ -1,6 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
-import { useAddressCheck } from '@/hooks/developer-dashboard/app/useAddressCheck';
 import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
 import { AppVersionTool, Tool } from '@/types/developer-dashboard/appTypes';
 import { ManageAppVersionTools } from '../views/ManageAppVersionTools';
@@ -64,12 +63,10 @@ export function AppVersionToolsWrapper() {
     return () => clearTimeout(timer);
   }, [isSuccess, data]);
 
-  useAddressCheck(app || null);
-
-  // Loading states
+  // Show loading while data is loading OR while checking authorization
   if (appLoading || versionLoading || versionToolsLoading || toolsLoading) return <Loading />;
 
-  // Error states
+  // Handle errors
   if (appError) return <StatusMessage message="Failed to load app" type="error" />;
   if (versionError) return <StatusMessage message="Failed to load version data" type="error" />;
   if (versionToolsError)
@@ -95,12 +92,14 @@ export function AppVersionToolsWrapper() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <h1 className="text-3xl font-bold text-gray-900">
-            {app.name} - Version {versionData.version} Tools
-          </h1>
-          <p className="text-gray-600 mt-2">Manage and configure tools for this app version</p>
+      <div className="w-full max-w-6xl mx-auto">
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            <h1 className="text-3xl font-bold text-gray-900">
+              {app.name} - Version {versionData.version} Tools
+            </h1>
+            <p className="text-gray-600 mt-2">Manage and configure tools for this app version</p>
+          </div>
         </div>
       </div>
 
@@ -110,7 +109,6 @@ export function AppVersionToolsWrapper() {
 
       {/* Add Tools Form */}
       <CreateAppVersionToolsForm
-        versionId={Number(versionId)}
         existingTools={existingToolNames}
         onToolAdd={handleToolAdd}
         availableTools={allTools}
@@ -121,8 +119,8 @@ export function AppVersionToolsWrapper() {
         <div className="mb-4">
           <h3 className="text-lg font-medium text-gray-900">Current Tools</h3>
           <p className="text-gray-600 text-sm mt-1">
-            Tools currently associated with this version. Click the edit button to modify settings
-            inline.
+            Tools currently associated with this version. After adding and editing your tools, you
+            can publish your app version to be accessible by users.
           </p>
         </div>
         <ManageAppVersionTools

@@ -1,10 +1,11 @@
 import { useMemo } from 'react';
-import { useAccount } from 'wagmi';
+import useReadAuthInfo from '@/hooks/user-dashboard/useAuthInfo';
 import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
 import { Tool } from '@/types/developer-dashboard/appTypes';
 
 export function useUserTools() {
-  const { address } = useAccount();
+  const { authInfo } = useReadAuthInfo();
+  const address = authInfo?.agentPKP?.ethAddress;
 
   const {
     data: allTools,
@@ -17,6 +18,7 @@ export function useUserTools() {
   // Filter tools by current user
   const filteredTools = useMemo(() => {
     if (!address || !allTools?.length) return [];
+
     return allTools.filter(
       (tool: Tool) => tool.authorWalletAddress.toLowerCase() === address.toLowerCase(),
     );

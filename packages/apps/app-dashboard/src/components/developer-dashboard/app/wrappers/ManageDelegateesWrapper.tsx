@@ -13,7 +13,7 @@ export function ManageDelegateesWrapper() {
     blockchainAppError,
     blockchainAppLoading,
     refetch: refetchBlockchainData,
-  } = useBlockchainAppData(appId);
+  } = useBlockchainAppData(Number(appId));
 
   // Loading
   if (blockchainAppLoading) return <Loading />;
@@ -22,7 +22,7 @@ export function ManageDelegateesWrapper() {
 
   return (
     <ManageDelegateesForm
-      existingDelegatees={blockchainAppData.delegatees}
+      existingDelegatees={blockchainAppData.delegateeAddresses}
       refetchBlockchainData={refetchBlockchainData}
     />
   );
