@@ -49,6 +49,7 @@
     "@swc-node/register": "~1.9.1",
     "@swc/core": "~1.5.7",
     "@swc/helpers": "~0.5.11",
+    "@swc/jest": "~0.2.36",
     "@types/jest": "^29.5.14",
     "@types/node": "^20",
     "@typescript-eslint/eslint-plugin": "^8.26.1",
@@ -85,9 +86,23 @@
     "typedoc-plugin-extras": "^4.0.0",
     "typedoc-plugin-zod": "^1.4.1",
     "typescript": "^5.8.3",
-    "typescript-eslint": "^8.29.0"
+    "typescript-eslint": "^8.29.0",
+    "verdaccio": "^6.0.5"
   },
   "overrides": {
     "typescript": "5.8.3"
+  },
+  "nx": {
+    "includedScripts": [],
+    "targets": {
+      "local-registry": {
+        "executor": "@nx/js:verdaccio",
+        "options": {
+          "port": 4873,
+          "config": ".verdaccio/config.yml",
+          "storage": "tmp/local-registry/storage"
+        }
+      }
+    }
   }
 }

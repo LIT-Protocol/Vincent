@@ -26,10 +26,10 @@
   ],
   "references": [
     {
-      "path": "../../libs/app-sdk/tsconfig.lib.json"
+      "path": "../../libs/mcp-sdk/tsconfig.lib.json"
     },
     {
-      "path": "../../libs/tool-sdk/tsconfig.lib.json"
+      "path": "../../libs/app-sdk/tsconfig.lib.json"
     }
   ]
 }

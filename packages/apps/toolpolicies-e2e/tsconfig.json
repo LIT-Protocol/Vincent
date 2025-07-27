@@ -4,10 +4,10 @@
   "include": [],
   "references": [
     {
-      "path": "../tool-uniswap-swap"
+      "path": "../../libs/contracts-sdk"
     },
     {
-      "path": "../../libs/app-sdk"
+      "path": "../tool-uniswap-swap"
     },
     {
       "path": "../../libs/tool-sdk"
@@ -17,6 +17,9 @@
     },
     {
       "path": "../policy-spending-limit"
+    },
+    {
+      "path": "../../libs/app-sdk"
     },
     {
       "path": "./tsconfig.app.json"

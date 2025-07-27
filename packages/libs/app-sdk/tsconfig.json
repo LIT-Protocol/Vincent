@@ -5,6 +5,9 @@
       "path": "../tool-sdk"
     },
     {
+      "path": "../contracts-sdk"
+    },
+    {
       "path": "./tsconfig.lib.json"
     }
   ]
