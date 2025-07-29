@@ -1,14 +1,16 @@
 import { Policy } from '@/types/developer-dashboard/appTypes';
 import { Shield } from 'lucide-react';
 import { PolicyVersionInfoView } from './PolicyVersionInfoView';
-import { useTheme } from '@/contexts/ThemeContext';
+import { useTheme } from '@/providers/ThemeProvider';
+import { explorerTheme } from '@/utils/explorer/theme';
 
-interface ToolVersionPoliciesViewProps {
+interface AbilityVersionPoliciesViewProps {
   supportedPolicies: Policy[];
 }
 
-export function ToolVersionPoliciesView({ supportedPolicies }: ToolVersionPoliciesViewProps) {
-  const { isDark, theme } = useTheme();
+export function AbilityVersionPoliciesView({ supportedPolicies }: AbilityVersionPoliciesViewProps) {
+  const { isDark } = useTheme();
+  const theme = explorerTheme(isDark);
 
   return (
     <div className="space-y-4">

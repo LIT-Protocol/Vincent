@@ -1,9 +1,11 @@
 import { Layers } from 'lucide-react';
-import { useTheme } from '@/contexts/ThemeContext';
+import { useTheme } from '@/providers/ThemeProvider';
+import { explorerTheme } from '@/utils/explorer/theme';
 import { App } from '@/types/developer-dashboard/appTypes';
 
 export function AppHero({ apps }: { apps: App[] }) {
-  const { theme } = useTheme();
+  const { isDark } = useTheme();
+  const theme = explorerTheme(isDark);
 
   return (
     <div className="relative group">

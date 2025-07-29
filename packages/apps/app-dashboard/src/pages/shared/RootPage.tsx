@@ -39,6 +39,12 @@ export default function RootPage() {
             >
               Earn
             </button>
+            <button
+              onClick={() => navigate('/explorer')}
+              className="bg-orange-500 text-white px-5 sm:px-6 py-2.5 sm:py-3 rounded-[20px] font-medium hover:bg-orange-600 transition-colors min-w-[140px] sm:min-w-[160px] text-sm sm:text-base"
+            >
+              Explore
+            </button>
           </div>
 
           <div className="text-center space-y-3 sm:space-y-4 px-2">
@@ -48,6 +54,10 @@ export default function RootPage() {
             </p>
             <p className="text-gray-500 text-xs sm:text-sm">
               <strong>Earn:</strong> Control and delegate permissions to your applications
+            </p>
+            <p className="text-gray-500 text-xs sm:text-sm">
+              <strong>Explore:</strong> Discover applications, abilities, and policies in the
+              Vincent ecosystem
             </p>
           </div>
         </main>

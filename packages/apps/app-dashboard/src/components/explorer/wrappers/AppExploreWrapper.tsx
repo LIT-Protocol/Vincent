@@ -1,6 +1,6 @@
 import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
 import { StatusMessage } from '@/components/shared/ui/statusMessage';
-import Loading from '@/components/layout/Loading';
+import Loading from '@/components/shared/ui/Loading';
 import { AppExploreView } from '../views/AppExploreView';
 import { App } from '@/types/developer-dashboard/appTypes';
 

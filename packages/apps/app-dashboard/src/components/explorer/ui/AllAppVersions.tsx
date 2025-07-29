@@ -1,5 +1,6 @@
-import { TabsContent } from '@/components/ui/tabs';
-import { useTheme } from '@/contexts/ThemeContext';
+import { TabsContent } from '@/components/shared/ui/tabs';
+import { useTheme } from '@/providers/ThemeProvider';
+import { explorerTheme } from '@/utils/explorer/theme';
 import { App, AppVersion } from '@/types/developer-dashboard/appTypes';
 import { getVersionStatusColor } from '@/utils/explorer/getStatusColor';
 import { FileText } from 'lucide-react';
@@ -11,7 +12,8 @@ interface AllAppVersionsProps {
 }
 
 export function AllAppVersions({ versions, app }: AllAppVersionsProps) {
-  const { isDark, theme } = useTheme();
+  const { isDark } = useTheme();
+  const theme = explorerTheme(isDark);
 
   return (
     <TabsContent value="all" className="mt-0">

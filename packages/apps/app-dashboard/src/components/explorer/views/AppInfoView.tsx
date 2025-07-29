@@ -1,20 +1,22 @@
-import { App, AppVersion, AppVersionTool } from '@/types/developer-dashboard/appTypes';
-import { Button } from '@/components/ui/button';
+import { App, AppVersion, AppVersionAbility } from '@/types/developer-dashboard/appTypes';
+import { Button } from '@/components/shared/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { AppInfo } from '../ui/AppInfo';
 import { AppHeader } from '../ui/AppHeader';
-import { useTheme } from '@/contexts/ThemeContext';
+import { useTheme } from '@/providers/ThemeProvider';
+import { explorerTheme } from '@/utils/explorer/theme';
 import { VersionInfo } from '../ui/VersionInfo';
 
 interface AppInfoViewProps {
   app: App;
   versions: AppVersion[];
-  versionTools: AppVersionTool[];
+  versionAbilities: AppVersionAbility[];
 }
 
-export function AppInfoView({ app, versions, versionTools }: AppInfoViewProps) {
-  const { theme } = useTheme();
+export function AppInfoView({ app, versions, versionAbilities }: AppInfoViewProps) {
+  const { isDark } = useTheme();
+  const theme = explorerTheme(isDark);
   const navigate = useNavigate();
 
   return (
@@ -33,13 +35,13 @@ export function AppInfoView({ app, versions, versionTools }: AppInfoViewProps) {
         </div>
 
         {/* Header Card */}
-        <AppHeader app={app} versions={versions} versionTools={versionTools} />
+        <AppHeader app={app} versions={versions} versionAbilities={versionAbilities} />
 
         {/* Main Content Grid */}
         <AppInfo app={app} />
 
         {/* Version Information */}
-        <VersionInfo versions={versions} versionTools={versionTools} app={app} />
+        <VersionInfo versions={versions} versionAbilities={versionAbilities} app={app} />
       </div>
     </div>
   );

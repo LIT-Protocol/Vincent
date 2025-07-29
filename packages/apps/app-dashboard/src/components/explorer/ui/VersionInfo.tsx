@@ -1,18 +1,20 @@
 import { AllAppVersions } from './AllAppVersions';
-import { Tabs, TabsTrigger, TabsList } from '@/components/ui/tabs';
+import { Tabs, TabsTrigger, TabsList } from '@/components/shared/ui/tabs';
 import { GitBranch } from 'lucide-react';
-import { App, AppVersion, AppVersionTool } from '@/types/developer-dashboard/appTypes';
-import { useTheme } from '@/contexts/ThemeContext';
+import { App, AppVersion, AppVersionAbility } from '@/types/developer-dashboard/appTypes';
+import { useTheme } from '@/providers/ThemeProvider';
+import { explorerTheme } from '@/utils/explorer/theme';
 import { ActiveAppVersion } from './ActiveAppVersion';
 
 interface VersionInfoProps {
   app: App;
   versions: AppVersion[];
-  versionTools: AppVersionTool[];
+  versionAbilities: AppVersionAbility[];
 }
 
-export function VersionInfo({ app, versions, versionTools }: VersionInfoProps) {
-  const { theme } = useTheme();
+export function VersionInfo({ app, versions, versionAbilities }: VersionInfoProps) {
+  const { isDark } = useTheme();
+  const theme = explorerTheme(isDark);
 
   return (
     versions.length > 0 && (
@@ -54,7 +56,7 @@ export function VersionInfo({ app, versions, versionTools }: VersionInfoProps) {
               </div>
             </div>
 
-            <ActiveAppVersion versions={versions} versionTools={versionTools} app={app} />
+            <ActiveAppVersion versions={versions} versionAbilities={versionAbilities} app={app} />
             <AllAppVersions versions={versions} app={app} />
           </Tabs>
         </div>

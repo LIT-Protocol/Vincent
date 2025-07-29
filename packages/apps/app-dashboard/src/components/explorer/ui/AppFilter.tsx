@@ -1,5 +1,6 @@
 import { Search, Filter } from 'lucide-react';
-import { useTheme } from '@/contexts/ThemeContext';
+import { useTheme } from '@/providers/ThemeProvider';
+import { explorerTheme } from '@/utils/explorer/theme';
 
 export function AppFilter({
   searchQuery,
@@ -16,7 +17,8 @@ export function AppFilter({
   sortBy: 'name' | 'updated' | 'version';
   setSortBy: (sortBy: string) => void;
 }) {
-  const { theme } = useTheme();
+  const { isDark } = useTheme();
+  const theme = explorerTheme(isDark);
 
   return (
     <div className="relative group">

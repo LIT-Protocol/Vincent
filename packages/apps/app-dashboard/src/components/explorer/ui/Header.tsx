@@ -1,9 +1,11 @@
 import { Code, Sun, TrendingUp, Wrench, Moon, Shield, Layers } from 'lucide-react';
 import { useNavigate } from 'react-router';
-import { useTheme } from '@/contexts/ThemeContext';
+import { useTheme } from '@/providers/ThemeProvider';
+import { explorerTheme } from '@/utils/explorer/theme';
 
 export function Header() {
-  const { isDark, theme, setIsDark } = useTheme();
+  const { isDark, toggleTheme } = useTheme();
+  const theme = explorerTheme(isDark);
   const navigate = useNavigate();
 
   return (
@@ -62,7 +64,7 @@ export function Header() {
 
             {/* Theme Toggle in Quick Actions */}
             <button
-              onClick={() => setIsDark(!isDark)}
+              onClick={toggleTheme}
               className={`group/action relative w-10 h-10 rounded-xl ${theme.itemBg} border ${theme.cardBorder} ${theme.cardHoverBorder} transition-all duration-300 flex items-center justify-center hover:scale-105`}
             >
               {isDark ? (

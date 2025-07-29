@@ -1,13 +1,15 @@
 import { Policy } from '@/types/developer-dashboard/appTypes';
 import { Shield } from 'lucide-react';
-import { useTheme } from '@/contexts/ThemeContext';
+import { useTheme } from '@/providers/ThemeProvider';
+import { explorerTheme } from '@/utils/explorer/theme';
 
 interface PolicyVersionInfoViewProps {
   policy: Policy;
 }
 
 export function PolicyVersionInfoView({ policy }: PolicyVersionInfoViewProps) {
-  const { isDark, theme } = useTheme();
+  const { isDark } = useTheme();
+  const theme = explorerTheme(isDark);
 
   return (
     <div className="group relative">

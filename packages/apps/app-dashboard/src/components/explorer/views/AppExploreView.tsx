@@ -1,10 +1,11 @@
-import { Helmet } from 'react-helmet';
+import { Helmet } from 'react-helmet-async';
 import { App } from '@/types/developer-dashboard/appTypes';
 import { useState } from 'react';
 import { AppsDisplay } from '../ui/AppsDisplay';
 import { AppFilter } from '../ui/AppFilter';
 import { AppHero } from '../ui/AppHero';
-import { useTheme } from '@/contexts/ThemeContext';
+import { useTheme } from '@/providers/ThemeProvider';
+import { explorerTheme } from '@/utils/explorer/theme';
 
 interface ExploreViewProps {
   apps: App[];
@@ -14,7 +15,8 @@ export function AppExploreView({ apps }: ExploreViewProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'prod' | 'test'>('all');
   const [sortBy, setSortBy] = useState<'name' | 'updated' | 'version'>('name');
-  const { theme } = useTheme();
+  const { isDark } = useTheme();
+  const theme = explorerTheme(isDark);
 
   const filteredApps = apps
     .filter((app) => {

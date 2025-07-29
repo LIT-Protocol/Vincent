@@ -53,6 +53,10 @@ import {
   DeletePolicyVersionWrapper,
 } from './components/developer-dashboard/policy/wrappers';
 
+import { AppExploreWrapper } from './components/explorer/wrappers/AppExploreWrapper';
+import { AppInfoWrapper } from './components/explorer/wrappers/AppInfoWrapper';
+import { ExplorerLandingPage } from './pages/explorer/ExplorerLandingPage';
+
 import { Wallet } from './pages/user-dashboard/wallet';
 import { UserPermissionWrapper } from './components/user-dashboard/dashboard/UserPermissionWrapper';
 import { ConsentPageWrapper } from './components/user-dashboard/consent/ConsentPageWraper';
@@ -234,11 +238,23 @@ const routes: RouteObject[] = [
     ],
   },
   {
+    path: '/explorer',
+    element: <ExplorerLandingPage />,
+  },
+  {
     element: <UserDashboardLayoutWithProviders />,
     children: [
       {
         path: '/user/appId/:appId/consent',
         element: <ConsentPageWrapper />,
+      },
+      {
+        path: '/explorer/apps',
+        element: <AppExploreWrapper />,
+      },
+      {
+        path: '/explorer/appId/:appId',
+        element: <AppInfoWrapper />,
       },
     ],
   },

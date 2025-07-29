@@ -3,10 +3,12 @@ import { App } from '@/types/developer-dashboard/appTypes';
 import { useNavigate } from 'react-router-dom';
 import { Logo } from '@/components/shared/ui/Logo';
 import { getStatusColor } from '../../../utils/explorer/getStatusColor';
-import { useTheme } from '@/contexts/ThemeContext';
+import { useTheme } from '@/providers/ThemeProvider';
+import { explorerTheme } from '@/utils/explorer/theme';
 
 export function AppsDisplay({ apps }: { apps: App[] }) {
-  const { isDark, theme } = useTheme();
+  const { isDark } = useTheme();
+  const theme = explorerTheme(isDark);
   const navigate = useNavigate();
 
   return (

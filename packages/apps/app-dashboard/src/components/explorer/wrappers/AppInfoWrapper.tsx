@@ -1,6 +1,6 @@
 import { useParams } from 'react-router';
 import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
-import Loading from '@/components/layout/Loading';
+import Loading from '@/components/shared/ui/Loading';
 import { StatusMessage } from '@/components/shared/ui/statusMessage';
 import { AppInfoView } from '../views/AppInfoView';
 
@@ -21,12 +21,12 @@ export function AppInfoWrapper() {
     isError: versionsError,
   } = vincentApiClient.useGetAppVersionsQuery({ appId: Number(appId) });
 
-  // Fetch version tools
+  // Fetch version abilities
   const {
-    data: versionTools,
-    isLoading: versionToolsLoading,
-    isError: versionToolsError,
-  } = vincentApiClient.useListAppVersionToolsQuery(
+    data: versionAbilities,
+    isLoading: versionAbilitysLoading,
+    isError: versionAbilitysError,
+  } = vincentApiClient.useListAppVersionAbilitiesQuery(
     {
       appId: Number(appId),
       version: app?.activeVersion || 0,
@@ -36,14 +36,15 @@ export function AppInfoWrapper() {
     },
   );
 
-  if (isLoading || versionsLoading || versionToolsLoading) return <Loading />;
+  if (isLoading || versionsLoading || versionAbilitysLoading) return <Loading />;
   if (isError) return <StatusMessage message="Failed to load app" type="error" />;
   if (versionsError) return <StatusMessage message="Failed to load app versions" type="error" />;
-  if (versionToolsError)
-    return <StatusMessage message="Failed to load version tools" type="error" />;
+  if (versionAbilitysError)
+    return <StatusMessage message="Failed to load version abilities" type="error" />;
   if (!app) return <StatusMessage message={`App ${appId} not found`} type="error" />;
   if (!versions) return <StatusMessage message={`App versions not found`} type="error" />;
-  if (!versionTools) return <StatusMessage message={`Version tools not found`} type="error" />;
+  if (!versionAbilities)
+    return <StatusMessage message={`Version abilities not found`} type="error" />;
 
-  return <AppInfoView app={app} versions={versions} versionTools={versionTools} />;
+  return <AppInfoView app={app} versions={versions} versionAbilities={versionAbilities} />;
 }

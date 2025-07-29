@@ -1,24 +1,28 @@
-import { TabsContent } from '@/components/ui/tabs';
+import { TabsContent } from '@/components/shared/ui/tabs';
 import { Database, Layers, Tag } from 'lucide-react';
-import { useTheme } from '@/contexts/ThemeContext';
+import { useTheme } from '@/providers/ThemeProvider';
+import { explorerTheme } from '@/utils/explorer/theme';
 import { getVersionStatusColor } from '@/utils/explorer/getStatusColor';
-import { App, AppVersion, AppVersionTool } from '@/types/developer-dashboard/appTypes';
-import { ToolInfoWrapper } from '../wrappers/ui/ToolInfoWrapper';
+import { App, AppVersion, AppVersionAbility } from '@/types/developer-dashboard/appTypes';
+import { AbilityInfoWrapper } from '../wrappers/ui/AbilityInfoWrapper';
 
 export function ActiveAppVersion({
   versions,
-  versionTools,
+  versionAbilities,
   app,
 }: {
   versions: AppVersion[];
-  versionTools: AppVersionTool[];
+  versionAbilities: AppVersionAbility[];
   app: App;
 }) {
-  const { isDark, theme } = useTheme();
+  const { isDark } = useTheme();
+  const theme = explorerTheme(isDark);
 
   const activeVersion = versions.find((v) => v.version === app.activeVersion);
 
-  const activeVersionTools = versionTools.filter((tool) => tool.appVersion === app.activeVersion);
+  const activeVersionAbilities = versionAbilities.filter(
+    (ability) => ability.appVersion === app.activeVersion,
+  );
 
   return (
     <TabsContent value="active" className="mt-0">
@@ -37,20 +41,23 @@ export function ActiveAppVersion({
             </span>
           </div>
 
-          {/* Version Tools */}
+          {/* Version Abilities*/}
           <div>
             <div className="flex items-center gap-3 mb-4">
               <Layers className={`w-4 h-4 ${theme.iconColorMuted}`} />
               <span className={`text-sm font-light ${theme.textMuted}`}>
-                Integrated Tools ({activeVersionTools.length})
+                Integrated Abilities ({activeVersionAbilities.length})
               </span>
             </div>
 
-            {activeVersionTools.length > 0 ? (
+            {activeVersionAbilities.length > 0 ? (
               <div className="space-y-3">
-                {activeVersionTools.map((tool) => {
+                {activeVersionAbilities.map((ability) => {
                   return (
-                    <ToolInfoWrapper appVersionTool={tool} toolPackageName={tool.toolPackageName} />
+                    <AbilityInfoWrapper
+                      appVersionAbility={ability}
+                      abilityPackageName={ability.abilityPackageName}
+                    />
                   );
                 })}
               </div>
@@ -62,7 +69,7 @@ export function ActiveAppVersion({
                   className={`w-10 h-10 ${isDark ? 'text-white/20' : 'text-black/20'} mx-auto mb-3`}
                 />
                 <p className={`${theme.textSubtle} text-sm`}>
-                  No tools configured for this version
+                  No abilities configured for this version
                 </p>
               </div>
             )}

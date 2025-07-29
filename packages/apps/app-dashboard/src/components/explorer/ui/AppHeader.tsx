@@ -1,19 +1,21 @@
-import { App, AppVersion, AppVersionTool } from '@/types/developer-dashboard/appTypes';
+import { App, AppVersion, AppVersionAbility } from '@/types/developer-dashboard/appTypes';
 import { Activity, Code, Database, ExternalLink } from 'lucide-react';
 import { getStatusColor } from '../../../utils/explorer/getStatusColor';
 import { Logo } from '@/components/shared/ui/Logo';
-import { useTheme } from '@/contexts/ThemeContext';
+import { useTheme } from '@/providers/ThemeProvider';
+import { explorerTheme } from '@/utils/explorer/theme';
 
 export function AppHeader({
   app,
   versions,
-  versionTools,
+  versionAbilities,
 }: {
   app: App;
   versions: AppVersion[];
-  versionTools: AppVersionTool[];
+  versionAbilities: AppVersionAbility[];
 }) {
-  const { isDark, theme } = useTheme();
+  const { isDark } = useTheme();
+  const theme = explorerTheme(isDark);
 
   return (
     <div className="relative group">
@@ -89,7 +91,7 @@ export function AppHeader({
                 <span
                   className={`text-sm ${theme.textSubtle} group-hover/stat:${theme.textMuted} transition-colors duration-300`}
                 >
-                  {versionTools.length} Tools
+                  {versionAbilities.length} Abilities
                 </span>
               </div>
             </div>

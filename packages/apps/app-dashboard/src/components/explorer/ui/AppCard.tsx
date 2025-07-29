@@ -1,5 +1,5 @@
 import { App } from '@/types/developer-dashboard/appTypes';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/shared/ui/button';
 import { ExternalLink, Calendar } from 'lucide-react';
 import { Logo } from '@/components/shared/ui/Logo';
 import { ExplorerTheme } from '@/utils/explorer/theme';
@@ -63,7 +63,7 @@ export const AppCard = ({ app, theme }: AppCardProps) => {
             <Button
               variant="ghost"
               size="sm"
-              onClick={(e) => {
+              onClick={(e: React.FormEvent) => {
                 e.stopPropagation();
                 window.open(app.appUserUrl, '_blank');
               }}
