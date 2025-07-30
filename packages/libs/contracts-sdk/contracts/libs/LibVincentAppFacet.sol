@@ -69,10 +69,10 @@ library LibVincentAppFacet {
     error NotAppManager(uint256 appId, address msgSender);
 
     /**
-     * @notice Error thrown when tool and policy array lengths don't match
-     * @dev This ensures each tool has appropriate policy configurations
+     * @notice Error thrown when ability and policy array lengths don't match
+     * @dev This ensures each ability has appropriate policy configurations
      */
-    error ToolsAndPoliciesLengthMismatch();
+    error AbilitiesAndPoliciesLengthMismatch();
 
     /**
      * @notice Error thrown when attempting to register a delegatee already associated with an app
@@ -100,31 +100,31 @@ library LibVincentAppFacet {
     /**
      * @notice Error thrown when trying to use an empty policy IPFS CID
      * @param appId ID of the app
-     * @param toolIndex Index of the tool in the tools array
+     * @param abilityIndex Index of the ability in the abilities array
      */
-    error EmptyPolicyIpfsCidNotAllowed(uint256 appId, uint256 toolIndex);
+    error EmptyPolicyIpfsCidNotAllowed(uint256 appId, uint256 abilityIndex);
 
     /**
-     * @notice Error thrown when a tool IPFS CID is empty
+     * @notice Error thrown when a ability IPFS CID is empty
      * @param appId ID of the app
-     * @param toolIndex Index of the tool in the tools array
+     * @param abilityIndex Index of the ability in the abilities array
      */
-    error EmptyToolIpfsCidNotAllowed(uint256 appId, uint256 toolIndex);
+    error EmptyAbilityIpfsCidNotAllowed(uint256 appId, uint256 abilityIndex);
 
     /**
-     * @notice Error thrown when a tool IPFS CID is present more than once
+     * @notice Error thrown when a ability IPFS CID is present more than once
      * @param appId ID of the app
-     * @param toolIndex Index of the tool in the tools array
+     * @param abilityIndex Index of the ability in the abilities array
      */
-    error DuplicateToolIpfsCidNotAllowed(uint256 appId, uint256 toolIndex);
+    error DuplicateAbilityIpfsCidNotAllowed(uint256 appId, uint256 abilityIndex);
 
     /**
      * @notice Error thrown when a policy IPFS CID is present more than once
      * @param appId ID of the app
-     * @param toolIndex Index of the tool in the tools array
+     * @param abilityIndex Index of the ability in the abilities array
      * @param policyIndex Index of the policy in the policies array
      */
-    error DuplicateToolPolicyIpfsCidNotAllowed(uint256 appId, uint256 toolIndex, uint256 policyIndex);
+    error DuplicateAbilityPolicyIpfsCidNotAllowed(uint256 appId, uint256 abilityIndex, uint256 policyIndex);
 
     /**
      * @notice Error thrown when a delegatee address is the zero address
@@ -132,45 +132,45 @@ library LibVincentAppFacet {
     error ZeroAddressDelegateeNotAllowed();
 
     /**
-     * @notice Error thrown when no tools are provided during app version registration
+     * @notice Error thrown when no abilities are provided during app version registration
      * @param appId ID of the app
      */
-    error NoToolsProvided(uint256 appId);
+    error NoAbilitiesProvided(uint256 appId);
 
     /**
-     * @notice Error thrown when no policies are provided for a tool
+     * @notice Error thrown when no policies are provided for a ability
      * @param appId ID of the app
-     * @param toolIndex Index of the tool with no policies
+     * @param abilityIndex Index of the ability with no policies
      */
-    error NoPoliciesProvidedForTool(uint256 appId, uint256 toolIndex);
+    error NoPoliciesProvidedForAbility(uint256 appId, uint256 abilityIndex);
 
     /**
-     * @notice Error thrown when the top-level tool arrays have mismatched lengths
-     * @param toolsLength Length of the tools array
+     * @notice Error thrown when the top-level ability arrays have mismatched lengths
+     * @param abilitiesLength Length of the abilities array
      * @param policiesLength Length of the policies array
      */
-    error ToolArrayDimensionMismatch(
-        uint256 toolsLength, uint256 policiesLength
+    error AbilityArrayDimensionMismatch(
+        uint256 abilitiesLength, uint256 policiesLength
     );
 
     /**
-     * @notice Error thrown when policy-related arrays for a specific tool have mismatched lengths
-     * @param toolIndex Index of the tool in the tools array
-     * @param policiesLength Length of the policies array for this tool
-     * @param paramMetadataLength Length of the parameter metadata array for this tool
+     * @notice Error thrown when policy-related arrays for a specific ability have mismatched lengths
+     * @param abilityIndex Index of the ability in the abilities array
+     * @param policiesLength Length of the policies array for this ability
+     * @param paramMetadataLength Length of the parameter metadata array for this ability
      */
     error PolicyArrayLengthMismatch(
-        uint256 toolIndex, uint256 policiesLength, uint256 paramMetadataLength
+        uint256 abilityIndex, uint256 policiesLength, uint256 paramMetadataLength
     );
 
     /**
      * @notice Error thrown when parameter arrays for a specific policy have mismatched lengths
-     * @param toolIndex Index of the tool in the tools array
+     * @param abilityIndex Index of the ability in the abilities array
      * @param policyIndex Index of the policy in the policies array
      * @param paramMetadataLength Length of the parameter metadata array for this policy
      */
     error ParameterArrayLengthMismatch(
-        uint256 toolIndex, uint256 policyIndex, uint256 paramMetadataLength
+        uint256 abilityIndex, uint256 policyIndex, uint256 paramMetadataLength
     );
 
     /**

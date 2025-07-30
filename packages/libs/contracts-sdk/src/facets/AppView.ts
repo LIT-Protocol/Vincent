@@ -6,7 +6,6 @@ import {
   GetAppVersionOptions,
   AppVersion,
   GetAppsByManagerOptions,
-  AppWithVersions,
   GetAppByDelegateeOptions,
   GetDelegatedAgentPkpTokenIdsOptions,
 } from '../types/App';
@@ -42,44 +41,27 @@ export async function getAppById({ signer, args }: GetAppByIdOptions): Promise<A
  * Get detailed information about a specific version of an app
  * @param signer - The ethers signer to use for the transaction. Could be a standard Ethers Signer or a PKPEthersWallet
  * @param args - Object containing appId and version
- * @returns Object containing basic app information and version-specific information including tools and policies
+ * @returns Version-specific information including abilities and policies
  */
-export async function getAppVersion({
-  signer,
-  args,
-}: GetAppVersionOptions): Promise<{ app: App; appVersion: AppVersion }> {
+export async function getAppVersion({ signer, args }: GetAppVersionOptions): Promise<AppVersion> {
   const contract = createContract(signer);
 
   try {
     const appId = utils.parseUnits(args.appId, 0);
     const version = utils.parseUnits(args.version, 0);
 
-    const [app, appVersion] = await contract.getAppVersion(appId, version);
-
-    const convertedApp: App = {
-      id: app.id.toString(),
-      isDeleted: app.isDeleted,
-      manager: app.manager,
-      latestVersion: app.latestVersion.toString(),
-      delegatees: app.delegatees,
-    };
+    const appVersion = await contract.getAppVersion(appId, version);
 
     const convertedAppVersion: AppVersion = {
       version: appVersion.version.toString(),
       enabled: appVersion.enabled,
-      delegatedAgentPkpTokenIds: appVersion.delegatedAgentPkpTokenIds.map((id: any) =>
-        id.toString(),
-      ),
-      tools: appVersion.tools.map((tool: any) => ({
-        toolIpfsCid: tool.toolIpfsCid,
-        policyIpfsCids: tool.policyIpfsCids,
+      abilities: appVersion.abilities.map((ability: any) => ({
+        abilityIpfsCid: ability.abilityIpfsCid,
+        policyIpfsCids: ability.policyIpfsCids,
       })),
     };
 
-    return {
-      app: convertedApp,
-      appVersion: convertedAppVersion,
-    };
+    return convertedAppVersion;
   } catch (error: unknown) {
     const decodedError = decodeContractError(error, contract);
     throw new Error(`Failed to Get App Version: ${decodedError}`);
@@ -89,37 +71,23 @@ export async function getAppVersion({
 /**
  * Get all apps managed by a specific address with all their versions
  * @param signer - The ethers signer to use for the transaction. Could be a standard Ethers Signer or a PKPEthersWallet
- * @param args - Object containing manager address
+ * @param args - Object containing manager address, offset, and limit
  * @returns Array of apps with all their versions managed by the specified address
  */
 export async function getAppsByManager({
   signer,
   args,
-}: GetAppsByManagerOptions): Promise<AppWithVersions[]> {
+}: GetAppsByManagerOptions): Promise<{ id: string; versionCount: string }[]> {
   const contract = createContract(signer);
 
   try {
-    const appsWithVersions = await contract.getAppsByManager(args.manager);
+    const offset = utils.parseUnits(args.offset, 0);
 
-    return appsWithVersions.map((appWithVersions: any) => ({
-      app: {
-        id: appWithVersions.app.id.toString(),
-        isDeleted: appWithVersions.app.isDeleted,
-        manager: appWithVersions.app.manager,
-        latestVersion: appWithVersions.app.latestVersion.toString(),
-        delegatees: appWithVersions.app.delegatees,
-      },
-      versions: appWithVersions.versions.map((version: any) => ({
-        version: version.version.toString(),
-        enabled: version.enabled,
-        delegatedAgentPkpTokenIds: version.delegatedAgentPkpTokenIds.map((id: any) =>
-          id.toString(),
-        ),
-        tools: version.tools.map((tool: any) => ({
-          toolIpfsCid: tool.toolIpfsCid,
-          policyIpfsCids: tool.policyIpfsCids,
-        })),
-      })),
+    const [appIds, appVersionCounts] = await contract.getAppsByManager(args.manager, offset);
+
+    return appIds.map((id: any, idx: number) => ({
+      id: id.toString(),
+      versionCount: appVersionCounts[idx].toString(),
     }));
   } catch (error: unknown) {
     const decodedError = decodeContractError(error, contract);
@@ -192,13 +160,11 @@ export async function getDelegatedAgentPkpTokenIds({
     const appId = utils.parseUnits(args.appId, 0);
     const version = utils.parseUnits(args.version, 0);
     const offset = utils.parseUnits(args.offset, 0);
-    const limit = utils.parseUnits(args.limit, 0);
 
     const delegatedAgentPkpTokenIds = await contract.getDelegatedAgentPkpTokenIds(
       appId,
       version,
       offset,
-      limit,
     );
 
     return delegatedAgentPkpTokenIds.map((id: any) => id.toString());

@@ -1,45 +1,20 @@
 [
   {
     "type": "function",
-    "name": "getAllPermittedAppIdsForPkp",
-    "inputs": [
+    "name": "AGENT_PAGE_SIZE",
+    "inputs": [],
+    "outputs": [
       {
-        "name": "pkpTokenId",
+        "name": "",
         "type": "uint256",
         "internalType": "uint256"
       }
     ],
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint256[]",
-        "internalType": "uint256[]"
-      }
-    ],
     "stateMutability": "view"
   },
   {
     "type": "function",
-    "name": "getAllRegisteredAgentPkps",
-    "inputs": [
-      {
-        "name": "userAddress",
-        "type": "address",
-        "internalType": "address"
-      }
-    ],
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint256[]",
-        "internalType": "uint256[]"
-      }
-    ],
-    "stateMutability": "view"
-  },
-  {
-    "type": "function",
-    "name": "getAllToolsAndPoliciesForApp",
+    "name": "getAllAbilitiesAndPoliciesForApp",
     "inputs": [
       {
         "name": "pkpTokenId",
@@ -54,12 +29,12 @@
     ],
     "outputs": [
       {
-        "name": "tools",
+        "name": "abilities",
         "type": "tuple[]",
-        "internalType": "struct VincentUserViewFacet.ToolWithPolicies[]",
+        "internalType": "struct VincentUserViewFacet.AbilityWithPolicies[]",
         "components": [
           {
-            "name": "toolIpfsCid",
+            "name": "abilityIpfsCid",
             "type": "string",
             "internalType": "string"
           },
@@ -81,6 +56,54 @@
             ]
           }
         ]
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getAllPermittedAppIdsForPkp",
+    "inputs": [
+      {
+        "name": "pkpTokenId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "offset",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256[]",
+        "internalType": "uint256[]"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getAllRegisteredAgentPkps",
+    "inputs": [
+      {
+        "name": "userAddress",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "offset",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256[]",
+        "internalType": "uint256[]"
       }
     ],
     "stateMutability": "view"
@@ -111,7 +134,7 @@
   },
   {
     "type": "function",
-    "name": "validateToolExecutionAndGetPolicies",
+    "name": "validateAbilityExecutionAndGetPolicies",
     "inputs": [
       {
         "name": "delegatee",
@@ -124,7 +147,7 @@
         "internalType": "uint256"
       },
       {
-        "name": "toolIpfsCid",
+        "name": "abilityIpfsCid",
         "type": "string",
         "internalType": "string"
       }
@@ -133,7 +156,7 @@
       {
         "name": "validation",
         "type": "tuple",
-        "internalType": "struct VincentUserViewFacet.ToolExecutionValidation",
+        "internalType": "struct VincentUserViewFacet.AbilityExecutionValidation",
         "components": [
           {
             "name": "isPermitted",
@@ -239,13 +262,29 @@
   },
   {
     "type": "error",
-    "name": "EmptyToolIpfsCid",
+    "name": "EmptyAbilityIpfsCid",
     "inputs": []
   },
   {
     "type": "error",
     "name": "InvalidAppId",
     "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "InvalidOffset",
+    "inputs": [
+      {
+        "name": "offset",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "totalCount",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
   },
   {
     "type": "error",

@@ -18,7 +18,7 @@ import {
 /**
  * Register a new app version
  * @param signer - The ethers signer to use for the transaction. Could be a standard Ethers Signer or a PKPEthersWallet
- * @param args - Object containing appId, delegatees, and versionTools
+ * @param args - Object containing appId, delegatees, and versionAbilities
  * @param overrides - Optional override params for the transaction call like manual gas limit
  * @returns The transaction hash and the new app version incremented on-chain. If for some reason the event is not found after a successful transaction, it will return -1.
  */
@@ -35,12 +35,12 @@ export async function registerApp({
     const adjustedOverrides = await gasAdjustedOverrides(
       contract,
       'registerApp',
-      [appId, args.delegatees, args.versionTools],
+      [appId, args.delegatees, args.versionAbilities],
       overrides,
     );
     console.log('adjustedOverrides: ', adjustedOverrides);
 
-    const tx = await contract.registerApp(appId, args.delegatees, args.versionTools, {
+    const tx = await contract.registerApp(appId, args.delegatees, args.versionAbilities, {
       ...adjustedOverrides,
     });
     const receipt = await tx.wait();
@@ -63,7 +63,7 @@ export async function registerApp({
 /**
  * Register a new version of an existing application
  * @param signer - The ethers signer to use for the transaction. Could be a standard Ethers Signer or a PKPEthersWallet
- * @param args - Object containing appId and versionTools
+ * @param args - Object containing appId and versionAbilities
  * @param overrides - Optional override params for the transaction call like manual gas limit
  * @returns The transaction hash and the new app version incremented on-chain. If for some reason the event is not found after a successful transaction, it will return -1.
  */
@@ -80,11 +80,11 @@ export async function registerNextVersion({
     const adjustedOverrides = await gasAdjustedOverrides(
       contract,
       'registerNextAppVersion',
-      [appId, args.versionTools],
+      [appId, args.versionAbilities],
       overrides,
     );
 
-    const tx = await contract.registerNextAppVersion(appId, args.versionTools, {
+    const tx = await contract.registerNextAppVersion(appId, args.versionAbilities, {
       ...adjustedOverrides,
     });
     const receipt = await tx.wait();

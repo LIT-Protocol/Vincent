@@ -13,11 +13,11 @@ library VincentAppStorage {
     bytes32 internal constant APP_STORAGE_SLOT = keccak256("lit.vincent.app.storage");
 
     struct AppVersion {
-        EnumerableSet.Bytes32Set toolIpfsCidHashes;
+        EnumerableSet.Bytes32Set abilityIpfsCidHashes;
         // EnumerableSet instead of an array since the App needs to know all the delegated Agents
         EnumerableSet.UintSet delegatedAgentPkps;
-        // Tool IPFS CID hash => Tool Policy IPFS CID hashes
-        mapping(bytes32 => EnumerableSet.Bytes32Set) toolIpfsCidHashToToolPolicyIpfsCidHashes;
+        // Ability IPFS CID hash => Ability Policy IPFS CID hashes
+        mapping(bytes32 => EnumerableSet.Bytes32Set) abilityIpfsCidHashToAbilityPolicyIpfsCidHashes;
         bool enabled;
     }
 
@@ -71,8 +71,8 @@ library VincentUserStorage {
         EnumerableSet.UintSet permittedApps;
         // App ID -> Permitted App Version
         mapping(uint256 => uint256) permittedAppVersion;
-        // App ID -> App version -> Tool IPFS CID hash -> Tool Policy storage -> Tool Policy IPFS CID hash -> User's CBOR2 encoded Policy parameter values
-        mapping(uint256 => mapping(uint256 => mapping(bytes32 => mapping(bytes32 => bytes)))) toolPolicyParameterValues;
+        // App ID -> App version -> Ability IPFS CID hash -> Ability Policy storage -> Ability Policy IPFS CID hash -> User's CBOR2 encoded Policy parameter values
+        mapping(uint256 => mapping(uint256 => mapping(bytes32 => mapping(bytes32 => bytes)))) abilityPolicyParameterValues;
     }
 
     struct UserStorage {

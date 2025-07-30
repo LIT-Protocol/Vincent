@@ -3,7 +3,7 @@ pragma solidity ^0.8.29;
 
 /// @title PKP NFT Facet Interface
 /// @notice Interface for interacting with the PKP NFT diamond facet
-/// @dev Implements minimal ERC-721 functionality needed for PKP tool policies
+/// @dev Implements minimal ERC-721 functionality needed for PKP Ownership
 interface IPKPNFTFacet {
     /// @notice Retrieves the owner of a PKP token
     /// @dev Implements ERC-721's ownerOf function

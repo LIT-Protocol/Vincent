@@ -5,7 +5,7 @@ import { Signer } from 'ethers';
 // ==================================================================================
 
 export interface AppPermissionData {
-  toolIpfsCids: string[];
+  abilityIpfsCids: string[];
   policyIpfsCids: string[][];
   policyParameterValues: string[][];
 }
@@ -35,18 +35,18 @@ export interface UnPermitAppOptions {
   overrides?: any;
 }
 
-export interface SetToolPolicyParametersParams {
+export interface SetAbilityPolicyParametersParams {
   pkpTokenId: string;
   appId: string;
   appVersion: string;
-  toolIpfsCids: string[];
+  abilityIpfsCids: string[];
   policyIpfsCids: string[][];
   policyParameterValues: string[][];
 }
 
-export interface SetToolPolicyParametersOptions {
+export interface SetAbilityPolicyParametersOptions {
   signer: Signer;
-  args: SetToolPolicyParametersParams;
+  args: SetAbilityPolicyParametersParams;
   overrides?: any;
 }
 
@@ -56,6 +56,7 @@ export interface SetToolPolicyParametersOptions {
 
 export interface GetAllRegisteredAgentPkpsParams {
   userAddress: string;
+  offset: string;
 }
 
 export interface GetAllRegisteredAgentPkpsOptions {
@@ -75,6 +76,7 @@ export interface GetPermittedAppVersionForPkpOptions {
 
 export interface GetAllPermittedAppIdsForPkpParams {
   pkpTokenId: string;
+  offset: string;
 }
 
 export interface GetAllPermittedAppIdsForPkpOptions {
@@ -82,14 +84,14 @@ export interface GetAllPermittedAppIdsForPkpOptions {
   args: GetAllPermittedAppIdsForPkpParams;
 }
 
-export interface GetAllToolsAndPoliciesForAppParams {
+export interface GetAllAbilitiesAndPoliciesForAppParams {
   pkpTokenId: string;
   appId: string;
 }
 
-export interface GetAllToolsAndPoliciesForAppOptions {
+export interface GetAllAbilitiesAndPoliciesForAppOptions {
   signer: Signer;
-  args: GetAllToolsAndPoliciesForAppParams;
+  args: GetAllAbilitiesAndPoliciesForAppParams;
 }
 
 // ==================================================================================
@@ -101,7 +103,7 @@ export interface PolicyWithParameters {
   policyParameterValues: string;
 }
 
-export interface ToolWithPolicies {
-  toolIpfsCid: string;
+export interface AbilityWithPolicies {
+  abilityIpfsCid: string;
   policies: PolicyWithParameters[];
 }

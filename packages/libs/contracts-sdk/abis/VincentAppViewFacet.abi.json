@@ -1,6 +1,19 @@
 [
   {
     "type": "function",
+    "name": "APP_PAGE_SIZE",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
     "name": "getAppByDelegatee",
     "inputs": [
       {
@@ -108,38 +121,6 @@
     ],
     "outputs": [
       {
-        "name": "app",
-        "type": "tuple",
-        "internalType": "struct VincentAppViewFacet.App",
-        "components": [
-          {
-            "name": "id",
-            "type": "uint256",
-            "internalType": "uint256"
-          },
-          {
-            "name": "isDeleted",
-            "type": "bool",
-            "internalType": "bool"
-          },
-          {
-            "name": "manager",
-            "type": "address",
-            "internalType": "address"
-          },
-          {
-            "name": "latestVersion",
-            "type": "uint256",
-            "internalType": "uint256"
-          },
-          {
-            "name": "delegatees",
-            "type": "address[]",
-            "internalType": "address[]"
-          }
-        ]
-      },
-      {
         "name": "appVersion",
         "type": "tuple",
         "internalType": "struct VincentAppViewFacet.AppVersion",
@@ -160,12 +141,12 @@
             "internalType": "uint256[]"
           },
           {
-            "name": "tools",
+            "name": "abilities",
             "type": "tuple[]",
-            "internalType": "struct VincentAppViewFacet.Tool[]",
+            "internalType": "struct VincentAppViewFacet.Ability[]",
             "components": [
               {
-                "name": "toolIpfsCid",
+                "name": "abilityIpfsCid",
                 "type": "string",
                 "internalType": "string"
               },
@@ -189,86 +170,23 @@
         "name": "manager",
         "type": "address",
         "internalType": "address"
+      },
+      {
+        "name": "offset",
+        "type": "uint256",
+        "internalType": "uint256"
       }
     ],
     "outputs": [
       {
-        "name": "appsWithVersions",
-        "type": "tuple[]",
-        "internalType": "struct VincentAppViewFacet.AppWithVersions[]",
-        "components": [
-          {
-            "name": "app",
-            "type": "tuple",
-            "internalType": "struct VincentAppViewFacet.App",
-            "components": [
-              {
-                "name": "id",
-                "type": "uint256",
-                "internalType": "uint256"
-              },
-              {
-                "name": "isDeleted",
-                "type": "bool",
-                "internalType": "bool"
-              },
-              {
-                "name": "manager",
-                "type": "address",
-                "internalType": "address"
-              },
-              {
-                "name": "latestVersion",
-                "type": "uint256",
-                "internalType": "uint256"
-              },
-              {
-                "name": "delegatees",
-                "type": "address[]",
-                "internalType": "address[]"
-              }
-            ]
-          },
-          {
-            "name": "versions",
-            "type": "tuple[]",
-            "internalType": "struct VincentAppViewFacet.AppVersion[]",
-            "components": [
-              {
-                "name": "version",
-                "type": "uint256",
-                "internalType": "uint256"
-              },
-              {
-                "name": "enabled",
-                "type": "bool",
-                "internalType": "bool"
-              },
-              {
-                "name": "delegatedAgentPkpTokenIds",
-                "type": "uint256[]",
-                "internalType": "uint256[]"
-              },
-              {
-                "name": "tools",
-                "type": "tuple[]",
-                "internalType": "struct VincentAppViewFacet.Tool[]",
-                "components": [
-                  {
-                    "name": "toolIpfsCid",
-                    "type": "string",
-                    "internalType": "string"
-                  },
-                  {
-                    "name": "policyIpfsCids",
-                    "type": "string[]",
-                    "internalType": "string[]"
-                  }
-                ]
-              }
-            ]
-          }
-        ]
+        "name": "appIds",
+        "type": "uint256[]",
+        "internalType": "uint256[]"
+      },
+      {
+        "name": "appVersionCounts",
+        "type": "uint256[]",
+        "internalType": "uint256[]"
       }
     ],
     "stateMutability": "view"
@@ -289,11 +207,6 @@
       },
       {
         "name": "offset",
-        "type": "uint256",
-        "internalType": "uint256"
-      },
-      {
-        "name": "limit",
         "type": "uint256",
         "internalType": "uint256"
       }
@@ -374,8 +287,19 @@
   },
   {
     "type": "error",
-    "name": "InvalidOffsetOrLimit",
-    "inputs": []
+    "name": "InvalidOffset",
+    "inputs": [
+      {
+        "name": "offset",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "totalCount",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
   },
   {
     "type": "error",
@@ -385,6 +309,22 @@
         "name": "manager",
         "type": "address",
         "internalType": "address"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "NoDelegatedAgentPkpsFound",
+    "inputs": [
+      {
+        "name": "appId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "version",
+        "type": "uint256",
+        "internalType": "uint256"
       }
     ]
   },

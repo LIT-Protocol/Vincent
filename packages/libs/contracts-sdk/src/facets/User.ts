@@ -3,11 +3,11 @@ import { decodeContractError, createContract, gasAdjustedOverrides } from '../ut
 import {
   PermitAppOptions,
   UnPermitAppOptions,
-  SetToolPolicyParametersOptions,
+  SetAbilityPolicyParametersOptions,
 } from '../types/User';
 
 /**
- * Permits an app version for an Agent Wallet PKP token and optionally sets tool policy parameters
+ * Permits an app version for an Agent Wallet PKP token and optionally sets ability policy parameters
  * @param signer - The ethers signer to use for the transaction. Could be a standard Ethers Signer or a PKPEthersWallet
  * @param args - Object containing pkpTokenId, appId, appVersion, and permissionData
  * @param overrides - Optional override params for the transaction call like manual gas limit
@@ -32,7 +32,7 @@ export async function permitApp({
         pkpTokenId,
         appId,
         appVersion,
-        args.permissionData.toolIpfsCids,
+        args.permissionData.abilityIpfsCids,
         args.permissionData.policyIpfsCids,
         args.permissionData.policyParameterValues,
       ],
@@ -43,7 +43,7 @@ export async function permitApp({
       pkpTokenId,
       appId,
       appVersion,
-      args.permissionData.toolIpfsCids,
+      args.permissionData.abilityIpfsCids,
       args.permissionData.policyIpfsCids,
       args.permissionData.policyParameterValues,
       {
@@ -104,17 +104,17 @@ export async function unPermitApp({
 }
 
 /**
- * Sets tool policy parameters for a specific app version
+ * Sets ability policy parameters for a specific app version
  * @param signer - The ethers signer to use for the transaction. Could be a standard Ethers Signer or a PKPEthersWallet
- * @param args - Object containing pkpTokenId, appId, appVersion, toolIpfsCids, policyIpfsCids, and policyParameterValues
+ * @param args - Object containing pkpTokenId, appId, appVersion, abilityIpfsCids, policyIpfsCids, and policyParameterValues
  * @param overrides - Optional override params for the transaction call like manual gas limit
  * @returns The transaction hash and a success flag
  */
-export async function setToolPolicyParameters({
+export async function setAbilityPolicyParameters({
   signer,
   args,
   overrides,
-}: SetToolPolicyParametersOptions): Promise<{ txHash: string; success: boolean }> {
+}: SetAbilityPolicyParametersOptions): Promise<{ txHash: string; success: boolean }> {
   const contract = createContract(signer);
 
   try {
@@ -124,23 +124,23 @@ export async function setToolPolicyParameters({
 
     const adjustedOverrides = await gasAdjustedOverrides(
       contract,
-      'setToolPolicyParameters',
+      'setAbilityPolicyParameters',
       [
         pkpTokenId,
         appId,
         appVersion,
-        args.toolIpfsCids,
+        args.abilityIpfsCids,
         args.policyIpfsCids,
         args.policyParameterValues,
       ],
       overrides,
     );
 
-    const tx = await contract.setToolPolicyParameters(
+    const tx = await contract.setAbilityPolicyParameters(
       pkpTokenId,
       appId,
       appVersion,
-      args.toolIpfsCids,
+      args.abilityIpfsCids,
       args.policyIpfsCids,
       args.policyParameterValues,
       {
@@ -155,6 +155,6 @@ export async function setToolPolicyParameters({
     };
   } catch (error: unknown) {
     const decodedError = decodeContractError(error, contract);
-    throw new Error(`Failed to Set Tool Policy Parameters: ${decodedError}`);
+    throw new Error(`Failed to Set Ability Policy Parameters: ${decodedError}`);
   }
 }

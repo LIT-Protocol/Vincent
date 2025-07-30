@@ -4,20 +4,20 @@ import { Signer } from 'ethers';
 // App Mutation Types
 // ==================================================================================
 
-export interface AppVersionTools {
-  toolIpfsCids: string[];
-  toolPolicies: string[][];
+export interface AppVersionAbilities {
+  abilityIpfsCids: string[];
+  abilityPolicies: string[][];
 }
 
 export interface RegisterAppParams {
   appId: string;
   delegatees: string[];
-  versionTools: AppVersionTools;
+  versionAbilities: AppVersionAbilities;
 }
 
 export interface RegisterNextVersionParams {
   appId: string;
-  versionTools: AppVersionTools;
+  versionAbilities: AppVersionAbilities;
 }
 
 export interface RegisterAppOptions {
@@ -116,30 +116,25 @@ export interface GetAppVersionOptions {
   args: GetAppVersionParams;
 }
 
-export interface Tool {
-  toolIpfsCid: string;
+export interface Ability {
+  abilityIpfsCid: string;
   policyIpfsCids: string[];
 }
 
 export interface AppVersion {
   version: string;
   enabled: boolean;
-  delegatedAgentPkpTokenIds: string[];
-  tools: Tool[];
+  abilities: Ability[];
 }
 
 export interface GetAppsByManagerParams {
   manager: string;
+  offset: string;
 }
 
 export interface GetAppsByManagerOptions {
   signer: Signer;
   args: GetAppsByManagerParams;
-}
-
-export interface AppWithVersions {
-  app: App;
-  versions: AppVersion[];
 }
 
 export interface GetAppByDelegateeParams {
@@ -155,7 +150,6 @@ export interface GetDelegatedAgentPkpTokenIdsParams {
   appId: string;
   version: string;
   offset: string;
-  limit: string;
 }
 
 export interface GetDelegatedAgentPkpTokenIdsOptions {

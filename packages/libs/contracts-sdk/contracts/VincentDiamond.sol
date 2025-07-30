@@ -182,7 +182,7 @@ contract VincentDiamond {
     }
 
     function getVincentAppFacetSelectors() internal pure returns (bytes4[] memory) {
-        bytes4[] memory selectors = new bytes4[](7);
+        bytes4[] memory selectors = new bytes4[](8);
         selectors[0] = VincentAppFacet.registerApp.selector;
         selectors[1] = VincentAppFacet.registerNextAppVersion.selector;
         selectors[2] = VincentAppFacet.enableAppVersion.selector;
@@ -190,16 +190,18 @@ contract VincentDiamond {
         selectors[4] = VincentAppFacet.removeDelegatee.selector;
         selectors[5] = VincentAppFacet.deleteApp.selector;
         selectors[6] = VincentAppFacet.undeleteApp.selector;
+        selectors[7] = VincentAppFacet.setDelegatee.selector;
         return selectors;
     }
 
     function getVincentAppViewFacetSelectors() internal pure returns (bytes4[] memory) {
-        bytes4[] memory selectors = new bytes4[](5);
+        bytes4[] memory selectors = new bytes4[](6);
         selectors[0] = VincentAppViewFacet.getAppById.selector;
         selectors[1] = VincentAppViewFacet.getAppVersion.selector;
         selectors[2] = VincentAppViewFacet.getAppsByManager.selector;
         selectors[3] = VincentAppViewFacet.getAppByDelegatee.selector;
         selectors[4] = VincentAppViewFacet.getDelegatedAgentPkpTokenIds.selector;
+        selectors[5] = bytes4(keccak256("APP_PAGE_SIZE()"));
         return selectors;
     }
 
@@ -207,17 +209,18 @@ contract VincentDiamond {
         bytes4[] memory selectors = new bytes4[](3);
         selectors[0] = VincentUserFacet.permitAppVersion.selector;
         selectors[1] = VincentUserFacet.unPermitAppVersion.selector;
-        selectors[2] = VincentUserFacet.setToolPolicyParameters.selector;
+        selectors[2] = VincentUserFacet.setAbilityPolicyParameters.selector;
         return selectors;
     }
 
     function getVincentUserViewFacetSelectors() internal pure returns (bytes4[] memory) {
-        bytes4[] memory selectors = new bytes4[](5);
+        bytes4[] memory selectors = new bytes4[](6);
         selectors[0] = VincentUserViewFacet.getAllRegisteredAgentPkps.selector;
         selectors[1] = VincentUserViewFacet.getPermittedAppVersionForPkp.selector;
         selectors[2] = VincentUserViewFacet.getAllPermittedAppIdsForPkp.selector;
-        selectors[3] = VincentUserViewFacet.validateToolExecutionAndGetPolicies.selector;
-        selectors[4] = VincentUserViewFacet.getAllToolsAndPoliciesForApp.selector;
+        selectors[3] = VincentUserViewFacet.validateAbilityExecutionAndGetPolicies.selector;
+        selectors[4] = VincentUserViewFacet.getAllAbilitiesAndPoliciesForApp.selector;
+        selectors[5] = bytes4(keccak256("AGENT_PAGE_SIZE()"));
         return selectors;
     }
 

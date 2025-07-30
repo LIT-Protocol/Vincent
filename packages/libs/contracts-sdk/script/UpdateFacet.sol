@@ -7,195 +7,187 @@ import {console2} from "forge-std/console2.sol";
 import {IDiamondCut} from "../contracts/diamond-base/interfaces/IDiamondCut.sol";
 import {IDiamondLoupe} from "../contracts/diamond-base/interfaces/IDiamondLoupe.sol";
 
-import {DiamondCutFacet} from "../contracts/diamond-base/facets/DiamondCutFacet.sol";
-import {DiamondLoupeFacet} from "../contracts/diamond-base/facets/DiamondLoupeFacet.sol";
-import {OwnershipFacet} from "../contracts/diamond-base/facets/OwnershipFacet.sol";
-
-// Vincent-specific facets - these are the only ones that can be updated through this script
 import {VincentAppFacet} from "../contracts/facets/VincentAppFacet.sol";
 import {VincentAppViewFacet} from "../contracts/facets/VincentAppViewFacet.sol";
 import {VincentUserFacet} from "../contracts/facets/VincentUserFacet.sol";
 import {VincentUserViewFacet} from "../contracts/facets/VincentUserViewFacet.sol";
 
-import {DiamondInit} from "../contracts/diamond-base/upgradeInitializers/DiamondInit.sol";
-import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
-
-// Import the VincentDiamond to use its selector methods
-import {VincentDiamond} from "../contracts/VincentDiamond.sol";
-import {IERC165} from "../contracts/diamond-base/interfaces/IERC165.sol";
-import {IERC173} from "../contracts/diamond-base/interfaces/IERC173.sol";
-
 /**
- * @title UpdateFacet
- * @dev Script to update a specific Vincent facet in the Vincent Diamond contract.
- *      This script is restricted to only updating Vincent-specific facets, not core Diamond facets.
+ * @title Smart UpdateFacet with Auto-Detection
+ * @dev Automatically detects what needs to be Added/Removed/Replaced by comparing 
+ *      old facet selectors (from Diamond) vs new facet selectors (from contract)
+ * 
+ * Environment Variables Required:
+ * - VINCENT_DIAMOND_ADDRESS: Diamond contract address
+ * - VINCENT_DEPLOYER_PRIVATE_KEY: Deployer private key  
+ * - FACET_TO_UPDATE: Facet name (VincentAppFacet, VincentAppViewFacet, etc.)
+ * - VINCENT_DEPLOYMENT_RPC_URL: RPC URL
  */
-contract UpdateFacet is Script {
-    using Strings for string;
+contract SmartUpdateFacet is Script {
 
-    // The address of the deployed diamond contract
     address public diamondAddress;
-    // The private key of the deployer
     uint256 private deployerPrivateKey;
-    // The facet name to update (from env)
     string public facetToUpdate;
-    // RPC URL to use
     string public rpcUrl;
 
-    /**
-     * @dev Setup function to read environment variables
-     */
-    function setUp() public {
-        // Read the diamond address from environment
-        diamondAddress = vm.envAddress("VINCENT_DIAMOND_ADDRESS");
-        require(diamondAddress != address(0), "Diamond address not set in environment");
-
-        // Read the deployer private key from environment
-        deployerPrivateKey = vm.envUint("VINCENT_DEPLOYER_PRIVATE_KEY");
-        require(deployerPrivateKey != 0, "Deployer private key not set in environment");
-
-        // Read the facet name to update from environment
-        facetToUpdate = vm.envString("FACET_TO_UPDATE");
-        require(bytes(facetToUpdate).length > 0, "Facet name not set in environment");
-
-        // Read the RPC URL from environment
-        rpcUrl = vm.envString("VINCENT_DEPLOYMENT_RPC_URL");
-        require(bytes(rpcUrl).length > 0, "RPC URL not set in environment");
-
-        // Validate facet name - only allow Vincent-specific facets
-        require(
-            isValidFacetName(facetToUpdate), string.concat("Invalid or non-upgradeable facet name: ", facetToUpdate)
-        );
+    struct UpdatePlan {
+        bytes4[] toRemove;    // Selectors only in old facet
+        bytes4[] toAdd;       // Selectors only in new facet  
+        bytes4[] toReplace;   // Selectors in both (intersection)
     }
 
-    /**
-     * @dev Runs the update facet script
-     */
-    function run() public {
-        console2.log("Updating Vincent facet:", facetToUpdate);
-        console2.log("Diamond address:", diamondAddress);
-        console2.log("Using RPC URL:", rpcUrl);
+    function setUp() public {
+        diamondAddress = vm.envAddress("VINCENT_DIAMOND_ADDRESS");
+        require(diamondAddress != address(0), "Diamond address not set");
 
-        // Start broadcasting transactions
+        deployerPrivateKey = vm.envUint("VINCENT_DEPLOYER_PRIVATE_KEY");
+        require(deployerPrivateKey != 0, "Deployer private key not set");
+
+        facetToUpdate = vm.envString("FACET_TO_UPDATE");
+        require(bytes(facetToUpdate).length > 0, "Facet name not set");
+
+        rpcUrl = vm.envString("VINCENT_DEPLOYMENT_RPC_URL");
+        require(bytes(rpcUrl).length > 0, "RPC URL not set");
+
+        require(isValidFacetName(facetToUpdate), "Invalid facet name");
+    }
+
+    function run() public {
+        console2.log("=== Smart Facet Update with Auto-Detection ===");
+        console2.log("Diamond address:", diamondAddress);
+        console2.log("Facet to update:", facetToUpdate);
+
         vm.startBroadcast(deployerPrivateKey);
 
-        // Deploy the new facet instance
-        address facetAddress = deployFacet(facetToUpdate);
-        console2.log("Deployed new facet at:", facetAddress);
+        // Step 1: Deploy new facet
+        address newFacetAddress = deployFacet(facetToUpdate);
+        console2.log("Deployed new facet at:", newFacetAddress);
 
-        // Get the function selectors to replace
-        bytes4[] memory selectors = getFacetSelectors(facetToUpdate);
-        console2.log("Number of function selectors:", selectors.length);
+        // Step 2: Get selector arrays
+        bytes4[] memory oldSelectors = getOldFacetSelectors(facetToUpdate);
+        bytes4[] memory newSelectors = getNewFacetSelectors(facetToUpdate);
 
-        // Create a facet cut struct - using IDiamondCut.FacetCut
-        IDiamondCut.FacetCut[] memory cut = new IDiamondCut.FacetCut[](1);
-        cut[0] = IDiamondCut.FacetCut({
-            facetAddress: facetAddress,
-            action: IDiamondCut.FacetCutAction.Replace,
-            functionSelectors: selectors
-        });
+        console2.log("Old facet selector count:", oldSelectors.length);
+        console2.log("New facet selector count:", newSelectors.length);
 
-        // Get the diamond cut facet instance
-        IDiamondCut diamondCut = IDiamondCut(diamondAddress);
+        // Step 3: Analyze differences and create update plan
+        UpdatePlan memory plan = createUpdatePlan(oldSelectors, newSelectors);
+        logUpdatePlan(plan);
 
-        // Execute the diamond cut
-        diamondCut.diamondCut(cut, address(0), bytes(""));
-        console2.log("Successfully updated facet:", facetToUpdate);
+        executeUpdatePlan(newFacetAddress, plan);
 
-        // Stop broadcasting transactions
+        console2.log("Successfully completed smart facet update!");
+        
         vm.stopBroadcast();
     }
 
-    /**
-     * @dev Deploys a new instance of the specified facet
-     * @param facetName The name of the facet to deploy
-     * @return facetAddress The address of the deployed facet
-     */
-    function deployFacet(string memory facetName) internal returns (address facetAddress) {
-        // Only allow deployment of Vincent-specific facets
-        if (compareStrings(facetName, "VincentAppFacet")) {
-            return address(new VincentAppFacet());
-        } else if (compareStrings(facetName, "VincentAppViewFacet")) {
-            return address(new VincentAppViewFacet());
-        } else if (compareStrings(facetName, "VincentUserFacet")) {
-            return address(new VincentUserFacet());
-        } else if (compareStrings(facetName, "VincentUserViewFacet")) {
-            return address(new VincentUserViewFacet());
-        } else {
-            revert(string.concat("Invalid or non-upgradeable facet name: ", facetName));
-        }
-    }
+    function createUpdatePlan(bytes4[] memory oldSelectors, bytes4[] memory newSelectors) 
+        internal pure returns (UpdatePlan memory plan) {
+        
+        // Count each category to size arrays properly
+        uint256 removeCount = 0;
+        uint256 addCount = 0;
+        uint256 replaceCount = 0;
 
-    /**
-     * @dev Gets the function selectors for the specified facet from the diamond
-     * @param facetName The name of the facet to get selectors for
-     * @return selectors The function selectors for the facet
-     */
-    function getFacetSelectors(string memory facetName) internal view returns (bytes4[] memory) {
-        // Get the diamond loupe facet instance
-        IDiamondLoupe diamondLoupe = IDiamondLoupe(diamondAddress);
-
-        // Get all facets in the diamond
-        IDiamondLoupe.Facet[] memory facets = diamondLoupe.facets();
-
-        // Loop through each facet to find the one with a matching name
-        for (uint256 i = 0; i < facets.length; i++) {
-            // Get the facet address
-            address facetAddress = facets[i].facetAddress;
-
-            // Check if the facet has a matching name - only check Vincent-specific facets
-            bool isTargetFacet = false;
-
-            if (compareStrings(facetName, "VincentAppFacet")) {
-                // Check for a common selector in VincentAppFacet - using a selector from the library
-                bytes4 registerAppSelector = VincentAppFacet.registerApp.selector;
-                isTargetFacet = isSameFacetType(facetAddress, registerAppSelector);
-            } else if (compareStrings(facetName, "VincentAppViewFacet")) {
-                // Check for a common selector in VincentAppViewFacet - using a selector from the library
-                bytes4 getAppSelector = VincentAppViewFacet.getAppById.selector;
-                isTargetFacet = isSameFacetType(facetAddress, getAppSelector);
-            } else if (compareStrings(facetName, "VincentUserFacet")) {
-                // Check for a common selector in VincentUserFacet - using a selector from the library
-                bytes4 registerUserSelector = VincentUserFacet.permitAppVersion.selector;
-                isTargetFacet = isSameFacetType(facetAddress, registerUserSelector);
-            } else if (compareStrings(facetName, "VincentUserViewFacet")) {
-                // Check for a common selector in VincentUserViewFacet - using a selector from the library
-                bytes4 getUserSelector = VincentUserViewFacet.getAllRegisteredAgentPkps.selector;
-                isTargetFacet = isSameFacetType(facetAddress, getUserSelector);
-            }
-
-            if (isTargetFacet) {
-                // Return the function selectors for this facet
-                return facets[i].functionSelectors;
+        // Count selectors to remove (in old but not in new)
+        for (uint256 i = 0; i < oldSelectors.length; i++) {
+            if (!contains(newSelectors, oldSelectors[i])) {
+                removeCount++;
             }
         }
 
-        // If we get here, the facet wasn't found in the diamond
-        console2.log("Warning: Facet not found in diamond. Will use default selectors.");
+        // Count selectors to add (in new but not in old)
+        for (uint256 i = 0; i < newSelectors.length; i++) {
+            if (!contains(oldSelectors, newSelectors[i])) {
+                addCount++;
+            }
+        }
 
-        // Fall back to hard-coded selectors from the selector helper functions
-        return getDefaultSelectors(facetToUpdate);
+        // Count selectors to replace (in both old and new)
+        for (uint256 i = 0; i < oldSelectors.length; i++) {
+            if (contains(newSelectors, oldSelectors[i])) {
+                replaceCount++;
+            }
+        }
+
+        plan.toRemove = new bytes4[](removeCount);
+        plan.toAdd = new bytes4[](addCount);
+        plan.toReplace = new bytes4[](replaceCount);
+
+        uint256 removeIndex = 0;
+        for (uint256 i = 0; i < oldSelectors.length; i++) {
+            if (!contains(newSelectors, oldSelectors[i])) {
+                plan.toRemove[removeIndex] = oldSelectors[i];
+                removeIndex++;
+            }
+        }
+
+        uint256 addIndex = 0;
+        for (uint256 i = 0; i < newSelectors.length; i++) {
+            if (!contains(oldSelectors, newSelectors[i])) {
+                plan.toAdd[addIndex] = newSelectors[i];
+                addIndex++;
+            }
+        }
+
+        uint256 replaceIndex = 0;
+        for (uint256 i = 0; i < oldSelectors.length; i++) {
+            if (contains(newSelectors, oldSelectors[i])) {
+                plan.toReplace[replaceIndex] = oldSelectors[i];
+                replaceIndex++;
+            }
+        }
+
+        return plan;
     }
 
-    /**
-     * @dev Checks if a facet address contains a specific function selector
-     * @param facetAddress The facet address to check
-     * @param selector The function selector to check for
-     * @return isSameType Whether the facet contains the selector
-     */
-    function isSameFacetType(address facetAddress, bytes4 selector) internal view returns (bool) {
-        IDiamondLoupe diamondLoupe = IDiamondLoupe(diamondAddress);
-        address facetForSelector = diamondLoupe.facetAddress(selector);
-        return facetForSelector == facetAddress;
+    function executeUpdatePlan(address newFacetAddress, UpdatePlan memory plan) internal {
+        // Count total cuts needed
+        uint256 cutCount = 0;
+        if (plan.toRemove.length > 0) cutCount++;
+        if (plan.toAdd.length > 0) cutCount++;
+        if (plan.toReplace.length > 0) cutCount++;
+
+        IDiamondCut.FacetCut[] memory cuts = new IDiamondCut.FacetCut[](cutCount);
+        uint256 cutIndex = 0;
+
+        // Remove cut
+        if (plan.toRemove.length > 0) {
+            console2.log("Executing REMOVE for", plan.toRemove.length, "selectors");
+            cuts[cutIndex] = IDiamondCut.FacetCut({
+                facetAddress: address(0),
+                action: IDiamondCut.FacetCutAction.Remove,
+                functionSelectors: plan.toRemove
+            });
+            cutIndex++;
+        }
+
+        // Replace cut
+        if (plan.toReplace.length > 0) {
+            console2.log("Executing REPLACE for", plan.toReplace.length, "selectors");
+            cuts[cutIndex] = IDiamondCut.FacetCut({
+                facetAddress: newFacetAddress,
+                action: IDiamondCut.FacetCutAction.Replace,
+                functionSelectors: plan.toReplace
+            });
+            cutIndex++;
+        }
+
+        // Add cut
+        if (plan.toAdd.length > 0) {
+            console2.log("Executing ADD for", plan.toAdd.length, "selectors");
+            cuts[cutIndex] = IDiamondCut.FacetCut({
+                facetAddress: newFacetAddress,
+                action: IDiamondCut.FacetCutAction.Add,
+                functionSelectors: plan.toAdd
+            });
+            cutIndex++;
+        }
+
+        IDiamondCut(diamondAddress).diamondCut(cuts, address(0), bytes(""));
     }
 
-    /**
-     * @dev Gets default function selectors for a facet if it can't be found in the diamond
-     * @param facetName The name of the facet to get selectors for
-     * @return selectors The function selectors for the facet
-     */
-    function getDefaultSelectors(string memory facetName) internal pure returns (bytes4[] memory) {
-        // Using the same selector logic as in VincentDiamond
+    function getNewFacetSelectors(string memory facetName) internal pure returns (bytes4[] memory) {
         if (compareStrings(facetName, "VincentAppFacet")) {
             return getVincentAppFacetSelectors();
         } else if (compareStrings(facetName, "VincentAppViewFacet")) {
@@ -205,15 +197,87 @@ contract UpdateFacet is Script {
         } else if (compareStrings(facetName, "VincentUserViewFacet")) {
             return getVincentUserViewFacetSelectors();
         } else {
-            revert(string.concat("Invalid or non-upgradeable facet name: ", facetName));
+            revert("Invalid facet name");
         }
     }
 
-    // The following functions replicate the selector methods from VincentDiamond
+    function getOldFacetSelectors(string memory facetName) internal view returns (bytes4[] memory) {
+        IDiamondLoupe diamondLoupe = IDiamondLoupe(diamondAddress);
+        IDiamondLoupe.Facet[] memory facets = diamondLoupe.facets();
 
-    /// @dev Get VincentAppFacet selectors
+        // Find the facet by checking for a known selector since facets don't have names
+        for (uint256 i = 0; i < facets.length; i++) {
+            if (isFacetOfType(facets[i].facetAddress, facetName)) {
+                return facets[i].functionSelectors;
+            }
+        }
+
+        revert("Facet has no selectors");
+    }
+
+    function isFacetOfType(address facetAddr, string memory facetName) internal view returns (bool) {
+        IDiamondLoupe diamondLoupe = IDiamondLoupe(diamondAddress);
+        
+        bytes4 testSelector;
+        if (compareStrings(facetName, "VincentAppFacet")) {
+            testSelector = VincentAppFacet.registerApp.selector;
+        } else if (compareStrings(facetName, "VincentAppViewFacet")) {
+            testSelector = VincentAppViewFacet.getAppById.selector;
+        } else if (compareStrings(facetName, "VincentUserFacet")) {
+            testSelector = VincentUserFacet.permitAppVersion.selector;
+        } else if (compareStrings(facetName, "VincentUserViewFacet")) {
+            testSelector = VincentUserViewFacet.getPermittedAppVersionForPkp.selector;
+        } else {
+            return false;
+        }
+        
+        return diamondLoupe.facetAddress(testSelector) == facetAddr;
+    }
+
+    function logUpdatePlan(UpdatePlan memory plan) internal pure {
+        console2.log("\n=== UPDATE PLAN ===");
+        
+        if (plan.toRemove.length > 0) {
+            console2.log("REMOVE", plan.toRemove.length, "selectors:");
+            for (uint256 i = 0; i < plan.toRemove.length; i++) {
+                console2.log("-", vm.toString(plan.toRemove[i]));
+            }
+        }
+
+        if (plan.toAdd.length > 0) {
+            console2.log("ADD", plan.toAdd.length, "selectors:");
+            for (uint256 i = 0; i < plan.toAdd.length; i++) {
+                console2.log("+", vm.toString(plan.toAdd[i]));
+            }
+        }
+
+        if (plan.toReplace.length > 0) {
+            console2.log("REPLACE", plan.toReplace.length, "selectors:");
+            for (uint256 i = 0; i < plan.toReplace.length; i++) {
+                console2.log("~", vm.toString(plan.toReplace[i]));
+            }
+        }
+
+        console2.log("==================\n");
+    }
+
+    function deployFacet(string memory facetName) internal returns (address) {
+        if (compareStrings(facetName, "VincentAppFacet")) {
+            return address(new VincentAppFacet());
+        } else if (compareStrings(facetName, "VincentAppViewFacet")) {
+            return address(new VincentAppViewFacet());
+        } else if (compareStrings(facetName, "VincentUserFacet")) {
+            return address(new VincentUserFacet());
+        } else if (compareStrings(facetName, "VincentUserViewFacet")) {
+            return address(new VincentUserViewFacet());
+        } else {
+            revert("Invalid facet name");
+        }
+    }
+
+    // Get default selectors for each facet type
     function getVincentAppFacetSelectors() internal pure returns (bytes4[] memory) {
-        bytes4[] memory selectors = new bytes4[](7);
+        bytes4[] memory selectors = new bytes4[](8);
         selectors[0] = VincentAppFacet.registerApp.selector;
         selectors[1] = VincentAppFacet.registerNextAppVersion.selector;
         selectors[2] = VincentAppFacet.enableAppVersion.selector;
@@ -221,57 +285,56 @@ contract UpdateFacet is Script {
         selectors[4] = VincentAppFacet.removeDelegatee.selector;
         selectors[5] = VincentAppFacet.deleteApp.selector;
         selectors[6] = VincentAppFacet.undeleteApp.selector;
+        selectors[7] = VincentAppFacet.setDelegatee.selector;
         return selectors;
     }
 
-    /// @dev Get VincentAppViewFacet selectors
     function getVincentAppViewFacetSelectors() internal pure returns (bytes4[] memory) {
-        bytes4[] memory selectors = new bytes4[](5);
+        bytes4[] memory selectors = new bytes4[](6);
         selectors[0] = VincentAppViewFacet.getAppById.selector;
         selectors[1] = VincentAppViewFacet.getAppVersion.selector;
         selectors[2] = VincentAppViewFacet.getAppsByManager.selector;
         selectors[3] = VincentAppViewFacet.getAppByDelegatee.selector;
         selectors[4] = VincentAppViewFacet.getDelegatedAgentPkpTokenIds.selector;
+        selectors[5] = bytes4(keccak256("APP_PAGE_SIZE()"));
         return selectors;
     }
 
-    /// @dev Get VincentUserFacet selectors
     function getVincentUserFacetSelectors() internal pure returns (bytes4[] memory) {
         bytes4[] memory selectors = new bytes4[](3);
         selectors[0] = VincentUserFacet.permitAppVersion.selector;
         selectors[1] = VincentUserFacet.unPermitAppVersion.selector;
-        selectors[2] = VincentUserFacet.setToolPolicyParameters.selector;
+        selectors[2] = VincentUserFacet.setAbilityPolicyParameters.selector;
         return selectors;
     }
 
-    /// @dev Get VincentUserViewFacet selectors
     function getVincentUserViewFacetSelectors() internal pure returns (bytes4[] memory) {
-        bytes4[] memory selectors = new bytes4[](5);
+        bytes4[] memory selectors = new bytes4[](6);
         selectors[0] = VincentUserViewFacet.getAllRegisteredAgentPkps.selector;
         selectors[1] = VincentUserViewFacet.getPermittedAppVersionForPkp.selector;
         selectors[2] = VincentUserViewFacet.getAllPermittedAppIdsForPkp.selector;
-        selectors[3] = VincentUserViewFacet.validateToolExecutionAndGetPolicies.selector;
-        selectors[4] = VincentUserViewFacet.getAllToolsAndPoliciesForApp.selector;
+        selectors[3] = VincentUserViewFacet.validateAbilityExecutionAndGetPolicies.selector;
+        selectors[4] = VincentUserViewFacet.getAllAbilitiesAndPoliciesForApp.selector;
+        selectors[5] = bytes4(keccak256("AGENT_PAGE_SIZE()"));
         return selectors;
     }
 
-    /**
-     * @dev Checks if a facet name is valid and upgradeable
-     * @param facetName The name of the facet to check
-     * @return isValid Whether the facet name is valid and upgradeable
-     */
     function isValidFacetName(string memory facetName) internal pure returns (bool) {
-        // Only allow Vincent-specific facets
-        return compareStrings(facetName, "VincentAppFacet") || compareStrings(facetName, "VincentAppViewFacet")
-            || compareStrings(facetName, "VincentUserFacet") || compareStrings(facetName, "VincentUserViewFacet");
+        return compareStrings(facetName, "VincentAppFacet") || 
+               compareStrings(facetName, "VincentAppViewFacet") ||
+               compareStrings(facetName, "VincentUserFacet") || 
+               compareStrings(facetName, "VincentUserViewFacet");
     }
 
-    /**
-     * @dev Compares two strings for equality
-     * @param a First string
-     * @param b Second string
-     * @return equal Whether the strings are equal
-     */
+    function contains(bytes4[] memory array, bytes4 selector) internal pure returns (bool) {
+        for (uint256 i = 0; i < array.length; i++) {
+            if (array[i] == selector) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     function compareStrings(string memory a, string memory b) internal pure returns (bool) {
         return keccak256(abi.encodePacked(a)) == keccak256(abi.encodePacked(b));
     }
