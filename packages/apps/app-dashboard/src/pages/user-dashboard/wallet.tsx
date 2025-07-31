@@ -1,14 +1,11 @@
 import { Helmet } from 'react-helmet-async';
-import WithdrawForm from '@/components/user-dashboard/withdraw/WithdrawForm';
+import { WithdrawForm } from '@/components/user-dashboard/withdraw/WithdrawForm';
 import { WithdrawFormSkeleton } from '@/components/user-dashboard/withdraw/WithdrawFormSkeleton';
 import useReadAuthInfo from '@/hooks/user-dashboard/useAuthInfo';
 import { useAuthGuard } from '@/hooks/user-dashboard/connect/useAuthGuard';
-import { useTheme } from '@/providers/ThemeProvider';
 import { theme } from '@/components/user-dashboard/connect/ui/theme';
 
 export function Wallet() {
-  const { isDark } = useTheme();
-  const themeStyles = theme(isDark);
   const { authInfo, sessionSigs } = useReadAuthInfo();
   const authGuardElement = useAuthGuard();
 
@@ -19,7 +16,7 @@ export function Wallet() {
           <title>Vincent | Wallet</title>
           <meta name="description" content="Vincent Wallet Dashboard" />
         </Helmet>
-        <div className={`w-full h-full flex items-center justify-center ${themeStyles.bg}`}>
+        <div className={`w-full h-full flex items-center justify-center ${theme.bg}`}>
           <WithdrawFormSkeleton />
         </div>
       </>
@@ -32,7 +29,7 @@ export function Wallet() {
         <title>Vincent | Wallet</title>
         <meta name="description" content="Your Vincent wallet dashboard" />
       </Helmet>
-      <div className={`w-full h-full flex items-center justify-center ${themeStyles.bg}`}>
+      <div className={`w-full h-full flex items-center justify-center ${theme.bg}`}>
         <WithdrawForm
           sessionSigs={sessionSigs}
           agentPKP={authInfo.agentPKP}

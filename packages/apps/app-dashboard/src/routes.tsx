@@ -3,7 +3,6 @@ import AppLayout from '@/layout/developer-dashboard/AppLayout';
 import UserDashboardLayout from '@/layout/user-dashboard/UserDashboardLayout';
 import UserLayoutWithSidebar from '@/layout/user-dashboard/UserLayoutWithSidebar';
 import { AppProviders, UserProviders } from './providers';
-import ThemeProvider from '@/providers/ThemeProvider';
 import { wrap } from '@/utils/shared/components';
 
 import { Dashboard } from './pages/developer-dashboard';
@@ -69,14 +68,10 @@ const UserLayoutWithSidebarAndProviders = wrap(
   [...UserProviders, UserLayoutWithSidebar],
 );
 
-// Minimal provider wrapper for root page - only needs ThemeProvider for ConnectFooter
-// TODO: We'll need this everywhere eventually. Just keeping it simple for now.
-const RootPageWithProviders = wrap(RootPage, [ThemeProvider]);
-
 const routes: RouteObject[] = [
   {
     path: '/',
-    element: <RootPageWithProviders />,
+    element: <RootPage />,
   },
   {
     element: <AppLayoutWithProviders />,

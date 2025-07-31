@@ -1,19 +1,17 @@
 import { motion } from 'framer-motion';
 import { Button } from '@/components/shared/ui/button';
 import { AlertCircle, Loader2, Shield } from 'lucide-react';
-import { ThemeType } from './theme';
+import { theme } from './theme';
 
 interface ActionButtonsProps {
-  theme: ThemeType;
   appName: string;
-  onDecline?: () => void;
+  onDecline: () => void;
   onSubmit: () => void;
   isLoading?: boolean;
   error?: string | null;
 }
 
 export function ActionButtons({
-  theme,
   appName,
   onDecline,
   onSubmit,

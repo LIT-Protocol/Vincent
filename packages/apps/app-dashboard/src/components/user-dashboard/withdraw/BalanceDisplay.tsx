@@ -1,7 +1,6 @@
 import React from 'react';
 import { TokenDetails } from './WithdrawForm';
 import { Button } from '@/components/shared/ui/button';
-import { useTheme } from '@/providers/ThemeProvider';
 import { theme } from '@/components/user-dashboard/connect/ui/theme';
 
 interface BalanceDisplayProps {
@@ -17,15 +16,12 @@ export const BalanceDisplay: React.FC<BalanceDisplayProps> = ({
   loading,
   refreshBalance,
 }) => {
-  const { isDark } = useTheme();
-  const themeStyles = theme(isDark);
-
   return (
-    <div className={`mb-4 p-4 border rounded-lg ${themeStyles.itemBg} ${themeStyles.cardBorder}`}>
+    <div className={`mb-4 p-4 border rounded-lg ${theme.itemBg} ${theme.cardBorder}`}>
       <div className="flex justify-between items-center">
         <div>
-          <h4 className={`font-medium ${themeStyles.text}`}>Your Balance</h4>
-          <p className={`text-2xl font-bold mt-1 ${themeStyles.text}`}>
+          <h4 className={`font-medium ${theme.text}`}>Your Balance</h4>
+          <p className={`text-2xl font-bold mt-1 ${theme.text}`}>
             {balance} {token.symbol}
           </p>
         </div>
@@ -34,7 +30,7 @@ export const BalanceDisplay: React.FC<BalanceDisplayProps> = ({
         variant="outline"
         onClick={refreshBalance}
         disabled={loading}
-        className={`${themeStyles.text} border ${themeStyles.cardBorder} hover:${themeStyles.itemHoverBg}`}
+        className={`${theme.text} border ${theme.cardBorder} hover:${theme.itemHoverBg}`}
       >
         {loading ? (
           <svg className="animate-spin h-4 w-4 mr-2" viewBox="0 0 24 24">

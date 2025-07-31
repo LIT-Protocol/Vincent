@@ -1,4 +1,4 @@
-import { useTheme } from '@/providers/ThemeProvider';
+import { isDarkMode } from '@/lib/theme';
 
 interface SidebarLogoProps {
   logo?: string | null;
@@ -10,7 +10,7 @@ interface SidebarLogoProps {
  * for both real logos and fallback Vincent logos
  */
 export function SidebarLogo({ logo, alt }: SidebarLogoProps) {
-  const { isDark } = useTheme();
+  const isDark = isDarkMode();
   const hasValidLogo = logo && logo.length >= 10;
   const fallbackLogo = isDark ? '/logo-white.svg' : '/logo.svg';
 
@@ -28,4 +28,4 @@ export function SidebarLogo({ logo, alt }: SidebarLogoProps) {
       />
     </div>
   );
-} 
+}

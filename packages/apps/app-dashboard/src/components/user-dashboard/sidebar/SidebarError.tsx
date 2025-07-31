@@ -1,7 +1,7 @@
 import { useLocation, Link } from 'react-router-dom';
 import { Package, Wallet, Sun, Moon, LogOut, AlertTriangle } from 'lucide-react';
-import { useTheme } from '@/providers/ThemeProvider';
-import { theme } from '../connect/ui/theme';
+import { theme } from '@/components/user-dashboard/connect/ui/theme';
+import { toggleTheme, isDarkMode } from '@/lib/theme';
 import { useClearAuthInfo } from '@/hooks/user-dashboard/useAuthInfo';
 import { AccountTooltip } from './AccountTooltip';
 import {
@@ -24,10 +24,9 @@ interface SidebarErrorProps {
 }
 
 export function SidebarError({ error }: SidebarErrorProps) {
-  const { isDark, toggleTheme } = useTheme();
-  const themeStyles = theme(isDark);
   const location = useLocation();
   const { clearAuthInfo } = useClearAuthInfo();
+  const isDark = isDarkMode();
 
   const isActiveRoute = (route: string) => {
     return location.pathname.startsWith(route);
@@ -62,18 +61,18 @@ export function SidebarError({ error }: SidebarErrorProps) {
                   isActive={isActiveRoute('/user/apps')}
                   className={`h-10 px-3 rounded-lg transition-all duration-200 ${
                     isActiveRoute('/user/apps')
-                      ? `${themeStyles.itemBg} text-orange-500 font-semibold`
-                      : `${themeStyles.text} ${themeStyles.itemHoverBg}`
+                      ? `${theme.itemBg} text-orange-500 font-semibold`
+                      : `${theme.text} ${theme.itemHoverBg}`
                   }`}
                 >
                   <Link to="/user/apps" className="flex items-center gap-3 w-full">
                     <div
-                      className={`${isActiveRoute('/user/apps') ? 'text-orange-500' : themeStyles.textMuted} [&>svg]:!w-5 [&>svg]:!h-5`}
+                      className={`${isActiveRoute('/user/apps') ? 'text-orange-500' : theme.textMuted} [&>svg]:!w-5 [&>svg]:!h-5`}
                     >
                       <Package className="h-4 w-4" />
                     </div>
                     <span
-                      className={`font-medium ${isActiveRoute('/user/apps') ? 'text-orange-500' : themeStyles.text}`}
+                      className={`font-medium ${isActiveRoute('/user/apps') ? 'text-orange-500' : theme.text}`}
                     >
                       Apps
                     </span>
@@ -114,18 +113,18 @@ export function SidebarError({ error }: SidebarErrorProps) {
                 isActive={isActiveRoute('/user/wallet')}
                 className={`h-10 px-3 rounded-lg transition-all duration-200 ${
                   isActiveRoute('/user/wallet')
-                    ? `${themeStyles.itemBg} text-orange-500 font-semibold`
-                    : `${themeStyles.text} ${themeStyles.itemHoverBg}`
+                    ? `${theme.itemBg} text-orange-500 font-semibold`
+                    : `${theme.text} ${theme.itemHoverBg}`
                 }`}
               >
                 <Link to="/user/wallet" className="flex items-center gap-3">
                   <div
-                    className={`${isActiveRoute('/user/wallet') ? 'text-orange-500' : themeStyles.textMuted}`}
+                    className={`${isActiveRoute('/user/wallet') ? 'text-orange-500' : theme.textMuted}`}
                   >
                     <Wallet className="h-4 w-4" />
                   </div>
                   <span
-                    className={`font-medium ${isActiveRoute('/user/wallet') ? 'text-orange-500' : themeStyles.text}`}
+                    className={`font-medium ${isActiveRoute('/user/wallet') ? 'text-orange-500' : theme.text}`}
                   >
                     Wallet
                   </span>
@@ -142,13 +141,13 @@ export function SidebarError({ error }: SidebarErrorProps) {
             <SidebarMenuItem>
               <SidebarMenuButton
                 onClick={handleSignOut}
-                className={`h-10 px-3 rounded-lg transition-all duration-200 ${themeStyles.text} ${themeStyles.itemHoverBg}`}
+                className={`h-10 px-3 rounded-lg transition-all duration-200 ${theme.text} ${theme.itemHoverBg}`}
               >
                 <div className="flex items-center gap-3">
-                  <div className={themeStyles.textMuted}>
+                  <div className={theme.textMuted}>
                     <LogOut className="h-4 w-4" />
                   </div>
-                  <span className={`font-medium ${themeStyles.text}`}>Sign out</span>
+                  <span className={`font-medium ${theme.text}`}>Sign out</span>
                 </div>
               </SidebarMenuButton>
             </SidebarMenuItem>
@@ -161,13 +160,13 @@ export function SidebarError({ error }: SidebarErrorProps) {
             <SidebarMenuItem>
               <SidebarMenuButton
                 onClick={toggleTheme}
-                className={`h-10 px-3 rounded-lg transition-all duration-200 ${themeStyles.text} ${themeStyles.itemHoverBg}`}
+                className={`h-10 px-3 rounded-lg transition-all duration-200 ${theme.text} ${theme.itemHoverBg}`}
               >
                 <div className="flex items-center gap-3">
-                  <div className={themeStyles.textMuted}>
+                  <div className={theme.textMuted}>
                     {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
                   </div>
-                  <span className={`font-medium ${themeStyles.text}`}>
+                  <span className={`font-medium ${theme.text}`}>
                     {isDark ? 'Light mode' : 'Dark mode'}
                   </span>
                 </div>

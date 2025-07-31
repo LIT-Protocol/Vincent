@@ -1,14 +1,11 @@
 import { User, Copy } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
-import { useTheme } from '@/providers/ThemeProvider';
 import { theme } from '../connect/ui/theme';
 import useReadAuthInfo from '@/hooks/user-dashboard/useAuthInfo';
 import { SidebarMenuButton } from '@/components/shared/ui/sidebar';
 
 // Inline AccountTooltip component
 export function AccountTooltip() {
-  const { isDark } = useTheme();
-  const themeStyles = theme(isDark);
   const { authInfo } = useReadAuthInfo();
   const [isTooltipOpen, setIsTooltipOpen] = useState(false);
   const tooltipRef = useRef<HTMLDivElement>(null);
@@ -51,13 +48,13 @@ export function AccountTooltip() {
   return (
     <div className="relative" ref={tooltipRef}>
       <SidebarMenuButton
-        className={`h-10 px-3 rounded-lg transition-all duration-200 ${themeStyles.text} ${themeStyles.itemHoverBg}`}
+        className={`h-10 px-3 rounded-lg transition-all duration-200 ${theme.text} ${theme.itemHoverBg}`}
         onClick={toggleTooltip}
         onMouseEnter={() => setIsTooltipOpen(true)}
         onMouseLeave={() => setIsTooltipOpen(false)}
       >
         <User className="h-4 w-4" />
-        <span className={`font-medium ${themeStyles.text}`}>My Account</span>
+        <span className={`font-medium ${theme.text}`}>My Account</span>
       </SidebarMenuButton>
       {isTooltipOpen && authInfo && (
         <div className="absolute left-0 top-full mt-2 w-64 sm:w-auto px-3 py-2 bg-black text-white text-xs rounded-md whitespace-pre-line z-50 max-w-[calc(100vw-2rem)] sm:min-w-max">

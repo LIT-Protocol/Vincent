@@ -3,14 +3,12 @@ import { ConnectInfoMap } from '@/hooks/user-dashboard/connect/useConnectInfo';
 import { Card, CardContent } from '@/components/shared/ui/card';
 import { Logo } from '@/components/shared/ui/Logo';
 import { PolicyForm, PolicyFormRef } from './PolicyForm';
-import { ThemeType } from './theme';
+import { theme } from './theme';
 import { PolicyVersion } from '@/types/developer-dashboard/appTypes';
 
 interface RequiredPoliciesProps {
   policies: Array<PolicyVersion>;
   connectInfoMap: ConnectInfoMap;
-  theme: ThemeType;
-  isDark: boolean;
   formData: Record<string, any>;
   onFormChange: (abilityIpfsCid: string, policyIpfsCid: string, data: any) => void;
   onRegisterFormRef: (policyIpfsCid: string, ref: PolicyFormRef) => void;
@@ -20,8 +18,6 @@ interface RequiredPoliciesProps {
 export function RequiredPolicies({
   policies,
   connectInfoMap,
-  theme,
-  isDark,
   formData,
   onFormChange,
   onRegisterFormRef,
@@ -102,7 +98,6 @@ export function RequiredPolicies({
                     }
                   }}
                   policy={policy}
-                  isDark={isDark}
                   formData={formData[abilityIpfsCid] || {}}
                   onFormChange={(policyIpfsCid, data) => {
                     onFormChange(abilityIpfsCid, policyIpfsCid, data);

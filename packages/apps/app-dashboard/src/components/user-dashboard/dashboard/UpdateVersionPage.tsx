@@ -13,7 +13,6 @@ import { InfoBanner } from '@/components/user-dashboard/connect/ui/InfoBanner';
 import { StatusCard } from '@/components/user-dashboard/connect/ui/StatusCard';
 import { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
 import { litNodeClient } from '@/utils/user-dashboard/lit';
-import { useTheme } from '@/providers/ThemeProvider';
 import { PageHeader } from './ui/PageHeader';
 import { useNavigate } from 'react-router-dom';
 
@@ -23,7 +22,6 @@ interface UpdateVersionPageProps {
 }
 
 export function UpdateVersionPage({ connectInfoMap, readAuthInfo }: UpdateVersionPageProps) {
-  const { isDark } = useTheme();
   const [localError, setLocalError] = useState<string | null>(null);
   const [localStatus, setLocalStatus] = useState<string | null>(null);
   const [localSuccess, setLocalSuccess] = useState<string | null>(null);
@@ -38,9 +36,6 @@ export function UpdateVersionPage({ connectInfoMap, readAuthInfo }: UpdateVersio
     loadingStatus: actionsLoadingStatus,
     error: actionsError,
   } = useAddPermittedActions();
-
-  // Use the theme function
-  const themeStyles = theme(isDark);
 
   const handleSubmit = useCallback(async () => {
     // Clear any previous local errors and success
@@ -116,10 +111,10 @@ export function UpdateVersionPage({ connectInfoMap, readAuthInfo }: UpdateVersio
   const error = actionsError;
 
   return (
-    <div className={`min-h-screen w-full transition-colors duration-500 ${themeStyles.bg} sm:p-4`}>
+    <div className={`min-h-screen w-full transition-colors duration-500 ${theme.bg} sm:p-4`}>
       {/* Main Card Container */}
       <div
-        className={`max-w-6xl mx-auto ${themeStyles.mainCard} border ${themeStyles.mainCardBorder} rounded-2xl shadow-2xl overflow-hidden`}
+        className={`max-w-6xl mx-auto ${theme.mainCard} border ${theme.mainCardBorder} rounded-2xl shadow-2xl overflow-hidden`}
       >
         {/* Page Header */}
         <PageHeader
@@ -140,21 +135,18 @@ export function UpdateVersionPage({ connectInfoMap, readAuthInfo }: UpdateVersio
           }
           title="Update App Version"
           description="Review and update permissions for the latest version"
-          theme={themeStyles}
         />
 
         <div className="px-6 py-8 space-y-6">
           {/* Warning Banner */}
-          <InfoBanner theme={themeStyles} />
+          <InfoBanner />
 
           {/* App Header */}
-          <ConnectAppHeader app={connectInfoMap.app} theme={themeStyles} />
+          <ConnectAppHeader app={connectInfoMap.app} />
 
           {/* Apps and Versions */}
           <AppsInfo
             connectInfoMap={connectInfoMap}
-            theme={themeStyles}
-            isDark={isDark}
             formData={formData}
             onFormChange={handleFormChange}
             onRegisterFormRef={registerFormRef}
@@ -162,7 +154,6 @@ export function UpdateVersionPage({ connectInfoMap, readAuthInfo }: UpdateVersio
 
           {/* Status Card */}
           <StatusCard
-            theme={themeStyles}
             isLoading={isLoading}
             loadingStatus={loadingStatus}
             error={error || localError}
@@ -173,7 +164,6 @@ export function UpdateVersionPage({ connectInfoMap, readAuthInfo }: UpdateVersio
           <ActionButtons
             onDecline={handleDecline}
             onSubmit={handleSubmit}
-            theme={themeStyles}
             isLoading={isLoading}
             error={error || localError}
             appName={connectInfoMap.app.name}

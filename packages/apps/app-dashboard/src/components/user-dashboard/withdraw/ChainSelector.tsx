@@ -1,6 +1,5 @@
 import React from 'react';
 import { LIT_CHAINS } from '@lit-protocol/constants';
-import { useTheme } from '@/providers/ThemeProvider';
 import { theme } from '@/components/user-dashboard/connect/ui/theme';
 
 interface ChainSelectorProps {
@@ -20,9 +19,6 @@ export const ChainSelector: React.FC<ChainSelectorProps> = ({
   ethAddress,
   onChange,
 }) => {
-  const { isDark } = useTheme();
-  const themeStyles = theme(isDark);
-
   const chainOptionsDict = Object.entries(LIT_CHAINS).reduce(
     (acc, [key, chain]) => {
       acc[key] = {
@@ -40,9 +36,9 @@ export const ChainSelector: React.FC<ChainSelectorProps> = ({
 
   return (
     <div className="mb-6">
-      <label className={`block text-sm font-medium mb-2 ${themeStyles.text}`}>Select Network</label>
+      <label className={`block text-sm font-medium mb-2 ${theme.text}`}>Select Network</label>
       <select
-        className={`w-full p-2 border rounded ${themeStyles.cardBg} ${themeStyles.cardBorder} ${themeStyles.text}`}
+        className={`w-full p-2 border rounded ${theme.cardBg} ${theme.cardBorder} ${theme.text}`}
         value={selectedChain}
         onChange={(e) => onChange(e.target.value)}
       >
@@ -61,7 +57,7 @@ export const ChainSelector: React.FC<ChainSelectorProps> = ({
             href={`${explorerUrl}/address/${ethAddress}`}
             target="_blank"
             rel="noopener noreferrer"
-            className={`${themeStyles.linkColor} underline flex items-center`}
+            className={`${theme.linkColor} underline flex items-center`}
           >
             <svg
               className="w-4 h-4 mr-1"

@@ -5,7 +5,6 @@ import StatusMessage from '@/components/user-dashboard/connect/StatusMessage';
 import QrReader from '@/components/user-dashboard/withdraw/WalletConnect/QrReader';
 import { useState, useCallback, useEffect } from 'react';
 import React from 'react';
-import { useTheme } from '@/providers/ThemeProvider';
 import { theme } from '@/components/user-dashboard/connect/ui/theme';
 
 // Custom hooks
@@ -23,8 +22,6 @@ export default function WalletConnectPage(params: {
   sessionSigs?: SessionSigs;
 }) {
   const { deepLink, agentPKP, sessionSigs } = params;
-  const { isDark } = useTheme();
-  const themeStyles = theme(isDark);
   const [uri, setUri] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -155,7 +152,7 @@ export default function WalletConnectPage(params: {
           {/* Manual URI input */}
           <div className="flex w-full mt-4 mb-4">
             <Input
-              className={`w-full rounded-r-none ${themeStyles.cardBg} ${themeStyles.cardBorder} ${themeStyles.text}`}
+              className={`w-full rounded-r-none ${theme.cardBg} ${theme.cardBorder} ${theme.text}`}
               placeholder="e.g. wc:a281567bb3e4..."
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setUri(e.target.value)}
               value={uri}
@@ -164,7 +161,7 @@ export default function WalletConnectPage(params: {
             />
             <Button
               variant="outline"
-              className={`rounded-l-none ${themeStyles.text} border ${themeStyles.cardBorder} hover:${themeStyles.itemHoverBg}`}
+              className={`rounded-l-none ${theme.text} border ${theme.cardBorder} hover:${theme.itemHoverBg}`}
               disabled={
                 !uri || loading || isInitializing || !client || (agentPKP && !walletRegistered)
               }

@@ -1,4 +1,4 @@
-import { useTheme } from '@/providers/ThemeProvider';
+import { isDarkMode } from '@/lib/theme';
 
 interface StatusMessageProps {
   message: string;
@@ -113,7 +113,7 @@ const isTrustedWithdrawalMessage = (message: string): boolean => {
 };
 
 const StatusMessage = ({ message, type = 'info' }: StatusMessageProps) => {
-  const { isDark } = useTheme();
+  const isDark = isDarkMode();
 
   if (!message) return <></>;
 

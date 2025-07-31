@@ -16,7 +16,6 @@ import { ConnectFooter } from '../ui/Footer';
 import { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
 import { litNodeClient } from '@/utils/user-dashboard/lit';
 import { useJwtRedirect } from '@/hooks/user-dashboard/connect/useJwtRedirect';
-import { useTheme } from '@/providers/ThemeProvider';
 
 interface ConnectPageProps {
   connectInfoMap: ConnectInfoMap;
@@ -24,7 +23,6 @@ interface ConnectPageProps {
 }
 
 export function ConnectPage({ connectInfoMap, readAuthInfo }: ConnectPageProps) {
-  const { isDark, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const [localError, setLocalError] = useState<string | null>(null);
   const [localSuccess, setLocalSuccess] = useState<string | null>(null);
@@ -56,9 +54,6 @@ export function ConnectPage({ connectInfoMap, readAuthInfo }: ConnectPageProps) 
       }, 2000);
     }
   }, [redirectUrl, localSuccess, executeRedirect]);
-
-  // Use the theme function
-  const themeStyles = theme(isDark);
 
   const handleSubmit = useCallback(async () => {
     // Clear any previous local errors
@@ -136,28 +131,21 @@ export function ConnectPage({ connectInfoMap, readAuthInfo }: ConnectPageProps) 
   const error = jwtError || actionsError || localError;
 
   return (
-    <div className={`min-h-screen w-full transition-colors duration-500 ${themeStyles.bg} sm:p-4`}>
+    <div className={`min-h-screen w-full transition-colors duration-500 ${theme.bg} sm:p-4`}>
       {/* Main Card Container */}
       <div
-        className={`max-w-6xl mx-auto ${themeStyles.mainCard} border ${themeStyles.mainCardBorder} rounded-2xl shadow-2xl overflow-hidden`}
+        className={`max-w-6xl mx-auto ${theme.mainCard} border ${theme.mainCardBorder} rounded-2xl shadow-2xl overflow-hidden`}
       >
         {/* Header */}
-        <ConnectPageHeader
-          isDark={isDark}
-          onToggleTheme={toggleTheme}
-          theme={themeStyles}
-          authInfo={readAuthInfo.authInfo!}
-        />
+        <ConnectPageHeader authInfo={readAuthInfo.authInfo!} />
 
         <div className="px-3 sm:px-6 py-6 sm:py-8 space-y-6">
           {/* App Header */}
-          <ConnectAppHeader app={connectInfoMap.app} theme={themeStyles} />
+          <ConnectAppHeader app={connectInfoMap.app} />
 
           {/* Apps and Versions */}
           <AppsInfo
             connectInfoMap={connectInfoMap}
-            theme={themeStyles}
-            isDark={isDark}
             formData={formData}
             onFormChange={handleFormChange}
             onRegisterFormRef={registerFormRef}
@@ -165,7 +153,6 @@ export function ConnectPage({ connectInfoMap, readAuthInfo }: ConnectPageProps) 
 
           {/* Status Card */}
           <StatusCard
-            theme={themeStyles}
             isLoading={isLoading}
             loadingStatus={loadingStatus}
             error={error || localError}
@@ -176,7 +163,6 @@ export function ConnectPage({ connectInfoMap, readAuthInfo }: ConnectPageProps) 
           <ActionButtons
             onDecline={handleDecline}
             onSubmit={handleSubmit}
-            theme={themeStyles}
             isLoading={isLoading}
             error={error || localError}
             appName={connectInfoMap.app.name}

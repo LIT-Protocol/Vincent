@@ -2,7 +2,7 @@ import { useState, useCallback, useRef } from 'react';
 import { getClient, PermissionData } from '@lit-protocol/vincent-contracts-sdk';
 import { ConnectInfoMap } from '@/hooks/user-dashboard/connect/useConnectInfo';
 import { useFormatUserPermissions } from '@/hooks/user-dashboard/dashboard/useFormatUserPermissions';
-import { theme } from '../connect/ui/theme';
+import { theme } from '@/components/user-dashboard/connect/ui/theme';
 import { PolicyFormRef } from '../connect/ui/PolicyForm';
 import { UseReadAuthInfo } from '@/hooks/user-dashboard/useAuthInfo';
 import { useAddPermittedActions } from '@/hooks/user-dashboard/connect/useAddPermittedActions';
@@ -10,7 +10,6 @@ import { ConnectAppHeader } from '../connect/ui/ConnectAppHeader';
 import { PermittedAppInfo } from './ui/PermittedAppInfo';
 import { UserPermissionButtons } from './ui/UserPermissionButtons';
 import { StatusCard } from '../connect/ui/StatusCard';
-import { useTheme } from '@/providers/ThemeProvider';
 import { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
 import { litNodeClient } from '@/utils/user-dashboard/lit';
 import { PageHeader } from './ui/PageHeader';
@@ -33,8 +32,6 @@ export function AppPermissionPage({
   const [localStatus, setLocalStatus] = useState<string | null>(null);
   const [localSuccess, setLocalSuccess] = useState<string | null>(null);
   const formRefs = useRef<Record<string, PolicyFormRef>>({});
-  const { isDark } = useTheme();
-  const themeStyles = theme(isDark);
   const navigate = useNavigate();
 
   const { formData, handleFormChange } = useFormatUserPermissions(connectInfoMap, existingData);
@@ -160,10 +157,10 @@ export function AppPermissionPage({
   const error = actionsError;
 
   return (
-    <div className={`min-h-screen w-full transition-colors duration-500 ${themeStyles.bg} sm:p-4`}>
+    <div className={`min-h-screen w-full transition-colors duration-500 ${theme.bg} sm:p-4`}>
       {/* Main Card Container */}
       <div
-        className={`max-w-6xl mx-auto ${themeStyles.mainCard} border ${themeStyles.mainCardBorder} rounded-2xl shadow-2xl overflow-hidden`}
+        className={`max-w-6xl mx-auto ${theme.mainCard} border ${theme.mainCardBorder} rounded-2xl shadow-2xl overflow-hidden`}
       >
         {/* Page Header */}
         <PageHeader
@@ -184,18 +181,15 @@ export function AppPermissionPage({
           }
           title="Manage App Permissions"
           description="Review and modify your permissions for this app"
-          theme={themeStyles}
         />
 
         <div className="px-3 sm:px-6 py-6 sm:py-8 space-y-6">
           {/* App Header */}
-          <ConnectAppHeader app={connectInfoMap.app} theme={themeStyles} />
+          <ConnectAppHeader app={connectInfoMap.app} />
 
           {/* Apps and Versions */}
           <PermittedAppInfo
             connectInfoMap={connectInfoMap}
-            theme={themeStyles}
-            isDark={isDark}
             formData={formData}
             onFormChange={handleFormChange}
             onRegisterFormRef={registerFormRef}
@@ -204,7 +198,6 @@ export function AppPermissionPage({
 
           {/* Status Card */}
           <StatusCard
-            theme={themeStyles}
             isLoading={isLoading}
             loadingStatus={loadingStatus}
             error={error || localError}
@@ -215,7 +208,6 @@ export function AppPermissionPage({
           <UserPermissionButtons
             onUnpermit={handleUnpermit}
             onSubmit={handleSubmit}
-            theme={themeStyles}
             isLoading={isLoading}
             error={error || localError}
           />

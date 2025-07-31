@@ -1,16 +1,14 @@
 import { AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
-import { ThemeType } from './theme';
+import { theme } from './theme';
 
 interface StatusCardProps {
-  theme: ThemeType;
   isLoading?: boolean;
   loadingStatus?: string | null;
   error?: string | null;
   success?: string | null;
 }
 
-export function StatusCard({ theme, isLoading, loadingStatus, error, success }: StatusCardProps) {
-  // Don't render if no status to show
+export function StatusCard({ isLoading, loadingStatus, error, success }: StatusCardProps) {
   if (!isLoading && !error && !success) {
     return null;
   }

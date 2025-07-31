@@ -6,7 +6,7 @@ import { ConnectInfoMap } from '@/hooks/user-dashboard/connect/useConnectInfo';
 import { AbilityHeader } from './AbilityHeader';
 import { RequiredPolicies } from './RequiredPolicies';
 import { PolicyFormRef } from './PolicyForm';
-import { ThemeType } from './theme';
+import { theme } from './theme';
 
 interface AbilityAccordionProps {
   ability: {
@@ -19,8 +19,6 @@ interface AbilityAccordionProps {
   };
   policies: Array<any>;
   connectInfoMap: ConnectInfoMap;
-  theme: ThemeType;
-  isDark: boolean;
   formData: Record<string, any>;
   onFormChange: (abilityIpfsCid: string, policyIpfsCid: string, data: any) => void;
   onRegisterFormRef: (policyIpfsCid: string, ref: PolicyFormRef) => void;
@@ -33,8 +31,6 @@ export function AbilityAccordion({
   abilityVersion,
   policies,
   connectInfoMap,
-  theme,
-  isDark,
   formData,
   onFormChange,
   onRegisterFormRef,
@@ -68,7 +64,6 @@ export function AbilityAccordion({
                 ability={ability}
                 abilityVersion={abilityVersion}
                 connectInfoMap={connectInfoMap}
-                theme={theme}
               />
             </div>
           </div>
@@ -85,8 +80,6 @@ export function AbilityAccordion({
             <RequiredPolicies
               policies={policies}
               connectInfoMap={connectInfoMap}
-              theme={theme}
-              isDark={isDark}
               formData={formData}
               onFormChange={onFormChange}
               onRegisterFormRef={onRegisterFormRef}

@@ -1,4 +1,3 @@
-import { useTheme } from '@/providers/ThemeProvider';
 import {
   Sidebar,
   SidebarContent,
@@ -14,9 +13,7 @@ import {
 } from '@/components/shared/ui/sidebar';
 
 export function SidebarSkeleton() {
-  const { isDark } = useTheme();
-
-  const skeletonClass = `animate-pulse ${isDark ? 'bg-white/10' : 'bg-gray-200'}`;
+  const skeletonClass = 'animate-pulse bg-gray-200 dark:bg-white/10';
 
   return (
     <Sidebar variant="sidebar" collapsible="offcanvas" className="border-r-0">
@@ -86,7 +83,7 @@ export function SidebarSkeleton() {
             </div>
           ))}
 
-          <div className={`border-t ${isDark ? 'border-white/10' : 'border-gray-900/10'} my-2`} />
+          <div className="border-t border-gray-900/10 dark:border-white/10 my-2" />
 
           {/* Theme toggle skeleton */}
           <div className="h-10 px-3 rounded-lg">

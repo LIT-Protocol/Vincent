@@ -1,7 +1,7 @@
 import { Settings } from 'lucide-react';
 import { ConnectInfoMap } from '@/hooks/user-dashboard/connect/useConnectInfo';
 import { Logo } from '@/components/shared/ui/Logo';
-import { ThemeType } from './theme';
+import { theme } from './theme';
 
 interface AbilityHeaderProps {
   ability: {
@@ -12,15 +12,9 @@ interface AbilityHeaderProps {
     ipfsCid: string;
   };
   connectInfoMap: ConnectInfoMap;
-  theme: ThemeType;
 }
 
-export function AbilityHeader({
-  ability,
-  abilityVersion,
-  connectInfoMap,
-  theme,
-}: AbilityHeaderProps) {
+export function AbilityHeader({ ability, abilityVersion, connectInfoMap }: AbilityHeaderProps) {
   const abilityData = connectInfoMap.abilitiesByPackageName[ability.abilityPackageName];
 
   return (

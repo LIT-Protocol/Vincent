@@ -1,16 +1,12 @@
 import { Skeleton } from '@/components/shared/ui/skeleton';
-import { useTheme } from '@/providers/ThemeProvider';
 import { theme } from '@/components/user-dashboard/connect/ui/theme';
 
 export function WithdrawFormSkeleton() {
-  const { isDark } = useTheme();
-  const themeStyles = theme(isDark);
-
   return (
     <div
-      className={`max-w-[550px] w-full mx-auto ${themeStyles.cardBg} rounded-xl shadow-lg border ${themeStyles.cardBorder} overflow-hidden`}
+      className={`max-w-[550px] w-full mx-auto ${theme.cardBg} rounded-xl shadow-lg border ${theme.cardBorder} overflow-hidden`}
     >
-      <div className={`px-6 pt-8 pb-6 border-b ${themeStyles.cardBorder}`}>
+      <div className={`px-6 pt-8 pb-6 border-b ${theme.cardBorder}`}>
         <Skeleton className="h-6 w-20 mb-6" />
 
         <div className="mb-4">
@@ -28,7 +24,7 @@ export function WithdrawFormSkeleton() {
             </div>
           </div>
 
-          <span className={`mx-8 ${themeStyles.textMuted} pointer-events-none text-lg`}>|</span>
+          <span className={`mx-8 ${theme.textMuted} pointer-events-none text-lg`}>|</span>
 
           <div className="px-4 pb-2 text-lg font-medium flex items-center gap-2">
             <Skeleton className="h-5 w-20" />
@@ -38,7 +34,7 @@ export function WithdrawFormSkeleton() {
 
         <div className="space-y-6">
           {/* Balance section skeleton */}
-          <div className={`p-4 border rounded-lg ${themeStyles.itemBg}`}>
+          <div className={`p-4 border rounded-lg ${theme.itemBg}`}>
             <div className="flex justify-between items-center">
               <div>
                 <Skeleton className="h-4 w-24 mb-1" />

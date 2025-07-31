@@ -1,10 +1,9 @@
 import { motion } from 'framer-motion';
 import { Button } from '@/components/shared/ui/button';
 import { AlertCircle, Loader2 } from 'lucide-react';
-import { ThemeType } from '@/components/user-dashboard/connect/ui/theme';
+import { theme } from '@/components/user-dashboard/connect/ui/theme';
 
 interface UserPermissionButtonsProps {
-  theme: ThemeType;
   onUnpermit?: () => void;
   onSubmit: () => void;
   isLoading?: boolean;
@@ -12,7 +11,6 @@ interface UserPermissionButtonsProps {
 }
 
 export function UserPermissionButtons({
-  theme,
   onUnpermit,
   onSubmit,
   isLoading = false,

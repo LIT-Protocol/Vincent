@@ -2,12 +2,9 @@ import { motion } from 'framer-motion';
 import { ConnectInfoMap } from '@/hooks/user-dashboard/connect/useConnectInfo';
 import { AbilityAccordion } from '@/components/user-dashboard/connect/ui/AbilityAccordion';
 import { PolicyFormRef } from '@/components/user-dashboard/connect/ui/PolicyForm';
-import { ThemeType } from '@/components/user-dashboard/connect/ui/theme';
 
 interface AppsAndVersionsProps {
   connectInfoMap: ConnectInfoMap;
-  theme: ThemeType;
-  isDark: boolean;
   formData: Record<string, any>;
   onFormChange: (abilityIpfsCid: string, policyIpfsCid: string, data: any) => void;
   onRegisterFormRef: (policyIpfsCid: string, ref: PolicyFormRef) => void;
@@ -16,8 +13,6 @@ interface AppsAndVersionsProps {
 
 export function PermittedAppInfo({
   connectInfoMap,
-  theme,
-  isDark,
   formData,
   onFormChange,
   onRegisterFormRef,
@@ -81,8 +76,6 @@ export function PermittedAppInfo({
                         abilityVersion={abilityVersion}
                         policies={visiblePolicies}
                         connectInfoMap={connectInfoMap}
-                        theme={theme}
-                        isDark={isDark}
                         formData={formData}
                         onFormChange={onFormChange}
                         onRegisterFormRef={onRegisterFormRef}

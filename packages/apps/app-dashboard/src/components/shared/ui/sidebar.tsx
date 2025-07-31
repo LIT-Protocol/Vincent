@@ -4,7 +4,6 @@ import { cva, VariantProps } from 'class-variance-authority';
 import { PanelLeftIcon } from 'lucide-react';
 
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useTheme } from '@/providers/ThemeProvider';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/shared/ui/button';
 import { Input } from '@/components/shared/ui/input';
@@ -160,7 +159,6 @@ function Sidebar({
   collapsible?: 'offcanvas' | 'icon' | 'none';
 }) {
   const { isMobile, state, openMobile, setOpenMobile } = useSidebar();
-  const { isDark } = useTheme();
 
   if (collapsible === 'none') {
     return (
@@ -181,15 +179,12 @@ function Sidebar({
     return (
       <Sheet open={openMobile} onOpenChange={setOpenMobile} {...props}>
         <SheetContent
-          data-sidebar="sidebar"
           data-slot="sidebar"
           data-mobile="true"
-          className="w-(--sidebar-width) p-0 [&>button]:hidden"
+          className="w-(--sidebar-width) p-0 [&>button]:hidden bg-gray-50 text-gray-900 dark:bg-black dark:text-white"
           style={
             {
               '--sidebar-width': SIDEBAR_WIDTH_MOBILE,
-              backgroundColor: isDark ? '#000000' : '#f9fafb',
-              color: isDark ? '#ffffff' : '#111827',
             } as React.CSSProperties
           }
           side={side}
@@ -198,13 +193,7 @@ function Sidebar({
             <SheetTitle>Sidebar</SheetTitle>
             <SheetDescription>Displays the mobile sidebar.</SheetDescription>
           </SheetHeader>
-          <div
-            className="flex h-full w-full flex-col"
-            style={{
-              backgroundColor: isDark ? '#000000' : '#f9fafb',
-              color: isDark ? '#ffffff' : '#111827',
-            }}
-          >
+          <div className="flex h-full w-full flex-col bg-gray-50 text-gray-900 dark:bg-black dark:text-white">
             {children}
           </div>
         </SheetContent>

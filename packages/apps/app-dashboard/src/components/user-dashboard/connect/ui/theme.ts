@@ -1,26 +1,25 @@
-export const theme = (isDark: boolean) => {
-  return {
-    bg: isDark ? 'bg-black' : 'bg-gray-50',
-    text: isDark ? 'text-white' : 'text-gray-900',
-    textMuted: isDark ? 'text-white/60' : 'text-gray-600',
-    textSubtle: isDark ? 'text-white/40' : 'text-gray-500',
-    cardBg: isDark ? 'bg-black/40' : 'bg-white/80',
-    cardBorder: isDark ? 'border-white/10' : 'border-gray-200',
-    cardHoverBorder: isDark ? 'hover:border-white/20' : 'hover:border-gray-300',
-    itemBg: isDark ? 'bg-white/[0.02]' : 'bg-gray-100/50',
-    itemHoverBg: isDark ? 'hover:bg-white/[0.05]' : 'hover:bg-gray-100',
-    iconBg: isDark ? 'bg-white/5' : 'bg-gray-200/50',
-    iconBorder: isDark ? 'border-white/10' : 'border-gray-300',
-    accentBg: isDark ? 'bg-white text-black' : 'bg-gray-900 text-white',
-    accentHover: isDark ? 'hover:bg-gray-100' : 'hover:bg-gray-800',
-    warningBg: isDark ? 'bg-yellow-500/10 border-yellow-500/30' : 'bg-yellow-50 border-yellow-300',
-    warningText: isDark ? 'text-yellow-400' : 'text-yellow-700',
-    successBg: isDark ? 'bg-green-500/10 border-green-500/30' : 'bg-green-50 border-green-300',
-    successText: isDark ? 'text-green-400' : 'text-green-700',
-    mainCard: isDark ? 'bg-gray-900' : 'bg-white',
-    mainCardBorder: isDark ? 'border-white/10' : 'border-gray-200',
-    linkColor: isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-500',
-  };
+// Native Tailwind theme classes - no props needed, uses dark: prefix
+export const theme = {
+  bg: 'bg-gray-50 dark:bg-black',
+  text: 'text-gray-900 dark:text-white',
+  textMuted: 'text-gray-600 dark:text-white/60',
+  textSubtle: 'text-gray-500 dark:text-white/40',
+  cardBg: 'bg-white/80 dark:bg-black/40',
+  cardBorder: 'border-gray-200 dark:border-white/10',
+  cardHoverBorder: 'hover:border-gray-300 dark:hover:border-white/20',
+  itemBg: 'bg-gray-100/50 dark:bg-white/[0.02]',
+  itemHoverBg: 'hover:bg-gray-100 dark:hover:bg-white/[0.05]',
+  iconBg: 'bg-gray-200/50 dark:bg-white/5',
+  iconBorder: 'border-gray-300 dark:border-white/10',
+  accentBg: 'bg-gray-900 text-white dark:bg-white dark:text-black',
+  accentHover: 'hover:bg-gray-800 dark:hover:bg-gray-100',
+  warningBg: 'bg-yellow-50 border-yellow-300 dark:bg-yellow-500/10 dark:border-yellow-500/30',
+  warningText: 'text-yellow-700 dark:text-yellow-400',
+  successBg: 'bg-green-50 border-green-300 dark:bg-green-500/10 dark:border-green-500/30',
+  successText: 'text-green-700 dark:text-green-400',
+  mainCard: 'bg-white dark:bg-gray-900',
+  mainCardBorder: 'border-gray-200 dark:border-white/10',
+  linkColor: 'text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300',
 };
 
-export type ThemeType = ReturnType<typeof theme>;
+export type ThemeType = typeof theme;

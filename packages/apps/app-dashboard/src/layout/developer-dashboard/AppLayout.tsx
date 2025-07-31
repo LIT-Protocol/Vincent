@@ -6,7 +6,7 @@ import { AuthenticationErrorScreen } from '@/components/user-dashboard/connect/A
 import { ResourceNotOwnedError } from '@/components/developer-dashboard/ui/ResourceNotOwnedError';
 import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/shared/ui/sidebar';
 import { Separator } from '@/components/shared/ui/separator';
-import { useTheme } from '@/providers/ThemeProvider';
+import { theme } from '@/components/user-dashboard/connect/ui/theme';
 import { useAppAddressCheck } from '@/hooks/developer-dashboard/app/useAppAddressCheck';
 import { useAbilityAddressCheck } from '@/hooks/developer-dashboard/ability/useAbilityAddressCheck';
 import { usePolicyAddressCheck } from '@/hooks/developer-dashboard/policy/usePolicyAddressCheck';
@@ -16,7 +16,6 @@ import useReadAuthInfo from '@/hooks/user-dashboard/useAuthInfo';
 
 function AppLayout({ children, className }: ComponentProps<'div'>) {
   const location = useLocation();
-  const { isDark } = useTheme();
 
   // FIRST: Check basic authentication
   const { authInfo, sessionSigs, isProcessing: authLoading, error } = useReadAuthInfo();
@@ -61,15 +60,13 @@ function AppLayout({ children, className }: ComponentProps<'div'>) {
 
   // Common layout wrapper function
   const layoutWrapper = (content: React.ReactNode) => (
-    <div className={cn('min-h-screen min-w-screen bg-gray flex', className)}>
+    <div className={cn(`min-h-screen min-w-screen ${theme.bg}`, className)}>
       <SidebarProvider style={{ '--sidebar-width': '20rem' } as React.CSSProperties}>
         <DeveloperSidebarWrapper />
         <SidebarInset>
           <header className="border-b border-sidebar-border h-16">
             <div className="flex items-center gap-2 px-6 py-4 h-full">
-              <SidebarTrigger
-                className={`-ml-1 ${isDark ? 'text-white hover:bg-white/5 [&>svg]:text-white' : 'text-gray-900 hover:bg-gray-100 [&>svg]:text-gray-900'}`}
-              />
+              <SidebarTrigger className="text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-white/5 [&>svg]:text-gray-900 dark:[&>svg]:text-white -ml-1" />
               <Separator orientation="vertical" className="mr-2 h-4" />
             </div>
           </header>

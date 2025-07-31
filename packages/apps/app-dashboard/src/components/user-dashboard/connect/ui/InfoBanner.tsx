@@ -1,15 +1,13 @@
 import { AlertTriangle, CheckCircle } from 'lucide-react';
-import { ThemeType } from './theme';
+import { theme } from './theme';
 
 interface InfoBannerProps {
-  theme: ThemeType;
   type?: 'warning' | 'success';
   title?: string;
   message?: string;
 }
 
 export function InfoBanner({
-  theme,
   type = 'warning',
   title = 'Permission Request',
   message = 'This application is requesting access to specific policies. Please review and configure the permissions below.',

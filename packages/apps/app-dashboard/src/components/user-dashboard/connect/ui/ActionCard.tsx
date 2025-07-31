@@ -1,9 +1,8 @@
 import { ReactElement, ReactNode } from 'react';
 import { AlertCircle } from 'lucide-react';
-import { ThemeType } from './theme';
+import { theme } from './theme';
 
 interface ActionCardProps {
-  theme: ThemeType;
   icon: ReactElement;
   iconBg?: string;
   title: string;
@@ -17,7 +16,6 @@ interface ActionCardProps {
 }
 
 export function ActionCard({
-  theme,
   icon,
   iconBg = 'bg-gray-500/20',
   title,
@@ -29,7 +27,7 @@ export function ActionCard({
   disabled = false,
   extraContent,
 }: ActionCardProps) {
-  const isClickable = !isLoading && !disabled;
+  const isClickable = !disabled && !isLoading;
 
   return (
     <div
@@ -52,25 +50,24 @@ export function ActionCard({
         </div>
       ) : error ? (
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-red-500/20 rounded-full flex items-center justify-center">
-            <AlertCircle className="w-4 h-4 text-red-500" />
+          <div className="w-8 h-8 flex items-center justify-center bg-red-500/20 rounded-lg">
+            <AlertCircle className="w-5 h-5 text-red-500" />
           </div>
           <div className="flex-1">
-            <h3 className={`text-sm font-medium text-red-500`}>Error occurred</h3>
-            <p className={`text-xs ${theme.textMuted}`}>{error}</p>
-            <p className={`text-xs ${theme.textMuted} mt-1`}>Click to retry</p>
+            <h3 className={`text-sm font-medium ${theme.text}`}>Error</h3>
+            <p className={`text-xs text-red-500`}>{error}</p>
           </div>
         </div>
       ) : (
         <div className="flex items-center gap-3">
-          <div className={`w-8 h-8 ${iconBg} rounded-full flex items-center justify-center`}>
+          <div className={`w-8 h-8 flex items-center justify-center ${iconBg} rounded-lg`}>
             {icon}
           </div>
           <div className="flex-1">
             <h3 className={`text-sm font-medium ${theme.text}`}>{title}</h3>
             <p className={`text-xs ${theme.textMuted}`}>{description}</p>
+            {extraContent}
           </div>
-          {extraContent && <div className="flex items-center justify-center">{extraContent}</div>}
         </div>
       )}
     </div>

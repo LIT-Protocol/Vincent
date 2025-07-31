@@ -1,7 +1,6 @@
 import { Button } from '@/components/shared/ui/button';
 import { Fragment, useState } from 'react';
 import ReactQrReader from 'react-qr-reader-es6';
-import { useTheme } from '@/providers/ThemeProvider';
 import { theme } from '@/components/user-dashboard/connect/ui/theme';
 
 /**
@@ -15,8 +14,6 @@ interface IProps {
  * Component
  */
 export default function QrReader({ onConnect }: IProps) {
-  const { isDark } = useTheme();
-  const themeStyles = theme(isDark);
   const [show, setShow] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -48,7 +45,7 @@ export default function QrReader({ onConnect }: IProps) {
             </div>
           )}
           <div
-            className={`w-full relative overflow-hidden rounded-lg border ${themeStyles.cardBorder}`}
+            className={`w-full relative overflow-hidden rounded-lg border ${theme.cardBorder}`}
             style={{ height: '300px' }}
           >
             <ReactQrReader
@@ -61,7 +58,7 @@ export default function QrReader({ onConnect }: IProps) {
           </div>
           <Button
             variant="outline"
-            className={`mt-4 ${themeStyles.text} border ${themeStyles.cardBorder} hover:${themeStyles.itemHoverBg}`}
+            className={`mt-4 ${theme.text} border ${theme.cardBorder} hover:${theme.itemHoverBg}`}
             onClick={() => setShow(false)}
           >
             Cancel Scan
@@ -69,18 +66,18 @@ export default function QrReader({ onConnect }: IProps) {
         </Fragment>
       ) : (
         <div
-          className={`w-full flex flex-col items-center justify-center p-8 border ${themeStyles.cardBorder} rounded-lg ${themeStyles.mainCard}`}
+          className={`w-full flex flex-col items-center justify-center p-8 border ${theme.cardBorder} rounded-lg ${theme.mainCard}`}
         >
           <img
-            src="/icons/qr-icon.svg"
+            src="/qrcode.svg"
             width={100}
             height={100}
             alt="qr code icon"
-            className={`mb-4 ${isDark ? 'opacity-80' : 'opacity-90'}`}
+            className="mb-4 opacity-90 dark:opacity-80"
           />
           <Button
             variant="outline"
-            className={`mt-4 w-full font-normal ${themeStyles.text} border ${themeStyles.cardBorder} hover:${themeStyles.itemHoverBg}`}
+            className={`mt-4 w-full font-normal ${theme.text} border ${theme.cardBorder} hover:${theme.itemHoverBg}`}
             onClick={onShowScanner}
             data-testid="qrcode-button"
           >

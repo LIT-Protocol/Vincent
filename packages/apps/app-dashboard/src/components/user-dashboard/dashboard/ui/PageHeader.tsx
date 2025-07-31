@@ -1,14 +1,13 @@
 import React from 'react';
-import { ThemeType } from '@/components/user-dashboard/connect/ui/theme';
+import { theme } from '@/components/user-dashboard/connect/ui/theme';
 
 interface PageHeaderProps {
   icon: React.ReactNode;
   title: string;
   description: string;
-  theme: ThemeType;
 }
 
-export function PageHeader({ icon, title, description, theme }: PageHeaderProps) {
+export function PageHeader({ icon, title, description }: PageHeaderProps) {
   return (
     <div className={`px-6 py-4 border-b ${theme.cardBorder}`}>
       <div className="flex items-center gap-3">

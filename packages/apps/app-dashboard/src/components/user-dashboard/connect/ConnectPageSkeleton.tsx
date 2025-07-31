@@ -2,24 +2,23 @@ import Skeleton, { SkeletonTheme } from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 import { Card, CardContent } from '@/components/shared/ui/card';
 import { theme } from './ui/theme';
-import { useTheme } from '@/providers/ThemeProvider';
+import { isDarkMode } from '@/lib/theme';
 
 export function ConnectPageSkeleton() {
-  const { isDark } = useTheme();
-  const themeStyles = theme(isDark);
+  const isDark = isDarkMode();
 
   return (
     <SkeletonTheme
       baseColor={isDark ? '#1f2937' : '#f3f4f6'}
       highlightColor={isDark ? '#374151' : '#e5e7eb'}
     >
-      <div className={`min-h-screen w-full transition-colors duration-500 ${themeStyles.bg}`}>
+      <div className={`min-h-screen w-full transition-colors duration-500 ${theme.bg}`}>
         {/* Main Card Container */}
         <div
-          className={`max-w-6xl mx-auto ${themeStyles.mainCard} border ${themeStyles.mainCardBorder} rounded-2xl shadow-2xl overflow-hidden`}
+          className={`max-w-6xl mx-auto ${theme.mainCard} border ${theme.mainCardBorder} rounded-2xl shadow-2xl overflow-hidden`}
         >
           {/* Header Skeleton */}
-          <div className={`px-3 sm:px-6 py-4 border-b ${themeStyles.cardBorder}`}>
+          <div className={`px-3 sm:px-6 py-4 border-b ${theme.cardBorder}`}>
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div className="flex items-center gap-3 min-w-0">
                 <Skeleton circle width={32} height={32} />
@@ -49,9 +48,7 @@ export function ConnectPageSkeleton() {
             </div>
 
             {/* Ability Accordion Skeleton */}
-            <Card
-              className={`backdrop-blur-xl ${themeStyles.cardBg} border ${themeStyles.cardBorder}`}
-            >
+            <Card className={`backdrop-blur-xl ${theme.cardBg} border ${theme.cardBorder}`}>
               <CardContent className="p-0">
                 {/* Ability Header */}
                 <div className="p-3 sm:p-6 border-b border-gray-200/10">
@@ -73,7 +70,7 @@ export function ConnectPageSkeleton() {
                 {/* Policy Content */}
                 <div className="p-3 sm:p-6 pt-4">
                   <Skeleton height={16} className="max-w-[100px] mb-3" />
-                  <Card className={`${themeStyles.itemBg} border ${themeStyles.cardBorder}`}>
+                  <Card className={`${theme.itemBg} border ${theme.cardBorder}`}>
                     <CardContent className="p-3 sm:p-4">
                       <div className="flex items-start gap-3">
                         <Skeleton circle width={32} height={32} className="self-start" />

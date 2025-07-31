@@ -2,21 +2,15 @@ import { useState, useEffect, useRef } from 'react';
 import { Moon, Sun, LogOut, User, Copy } from 'lucide-react';
 import { Button } from '@/components/shared/ui/button';
 import { AuthInfo, useClearAuthInfo } from '@/hooks/user-dashboard/useAuthInfo';
-import { ThemeType } from './theme';
+import { theme } from './theme';
+import { toggleTheme, isDarkMode } from '@/lib/theme';
 
 interface ConnectPageHeaderProps {
-  isDark: boolean;
-  theme: ThemeType;
-  onToggleTheme: () => void;
   authInfo: AuthInfo;
 }
 
-export function ConnectPageHeader({
-  isDark,
-  theme,
-  onToggleTheme,
-  authInfo,
-}: ConnectPageHeaderProps) {
+export function ConnectPageHeader({ authInfo }: ConnectPageHeaderProps) {
+  const isDark = isDarkMode();
   const { clearAuthInfo } = useClearAuthInfo();
   const [isTooltipOpen, setIsTooltipOpen] = useState(false);
   const tooltipRef = useRef<HTMLDivElement>(null);
@@ -118,7 +112,7 @@ export function ConnectPageHeader({
           <Button
             variant="ghost"
             size="sm"
-            onClick={onToggleTheme}
+            onClick={toggleTheme}
             className={`${theme.text} hover:bg-white/10 px-2 sm:px-3`}
           >
             {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}

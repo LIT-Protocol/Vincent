@@ -7,7 +7,6 @@ import { ActionCard } from './ui/ActionCard';
 import { useNavigate } from 'react-router-dom';
 import { UseReadAuthInfo } from '@/hooks/user-dashboard/useAuthInfo';
 import { App } from '@/types/developer-dashboard/appTypes';
-import { useTheme } from '@/providers/ThemeProvider';
 
 type AppVersionNotInRegistryConnectProps = {
   appData: App;
@@ -18,8 +17,6 @@ export function AppVersionNotInRegistryConnect({
   appData,
   readAuthInfo,
 }: AppVersionNotInRegistryConnectProps) {
-  const { isDark, toggleTheme } = useTheme();
-  const themeStyles = theme(isDark);
   const navigate = useNavigate();
 
   const handleGoBack = () => {
@@ -32,28 +29,21 @@ export function AppVersionNotInRegistryConnect({
   };
 
   return (
-    <div className={`min-h-screen w-full transition-colors duration-500 ${themeStyles.bg} sm:p-4`}>
+    <div className={`min-h-screen w-full transition-colors duration-500 ${theme.bg} sm:p-4`}>
       {/* Main Card Container */}
       <div
-        className={`max-w-6xl mx-auto ${themeStyles.mainCard} border ${themeStyles.mainCardBorder} rounded-2xl shadow-2xl overflow-hidden`}
+        className={`max-w-6xl mx-auto ${theme.mainCard} border ${theme.mainCardBorder} rounded-2xl shadow-2xl overflow-hidden`}
       >
         {/* Header */}
-        <ConnectPageHeader
-          isDark={isDark}
-          onToggleTheme={toggleTheme}
-          theme={themeStyles}
-          authInfo={readAuthInfo.authInfo!}
-        />
+        <ConnectPageHeader authInfo={readAuthInfo.authInfo!} />
 
         {/* Main Content */}
         <div className="px-6 py-8 space-y-6">
           {/* App Header */}
-          {appData && <ConnectAppHeader app={appData} theme={themeStyles} />}
+          {appData && <ConnectAppHeader app={appData} />}
 
           {/* Info Card */}
-          <Card
-            className={`backdrop-blur-xl ${themeStyles.cardBg} border ${themeStyles.cardBorder}`}
-          >
+          <Card className={`backdrop-blur-xl ${theme.cardBg} border ${theme.cardBorder}`}>
             <CardContent className="p-6">
               <div className="space-y-4">
                 <div className="flex items-center space-x-3">
@@ -61,23 +51,21 @@ export function AppVersionNotInRegistryConnect({
                     <AlertTriangle className="w-5 h-5 text-amber-500" />
                   </div>
                   <div>
-                    <h2 className={`text-lg font-semibold ${themeStyles.text}`}>
+                    <h2 className={`text-lg font-semibold ${theme.text}`}>
                       Version Publication Required
                     </h2>
-                    <p className={`text-sm ${themeStyles.textMuted} mt-1`}>
+                    <p className={`text-sm ${theme.textMuted} mt-1`}>
                       The app developer must publish version {appData.activeVersion} on-chain before
                       permissions can be granted for this version.
                     </p>
                   </div>
                 </div>
 
-                <div
-                  className={`p-4 rounded-lg ${themeStyles.cardBg} border ${themeStyles.cardBorder}`}
-                >
-                  <h3 className={`text-sm font-medium ${themeStyles.text} mb-2`}>
+                <div className={`p-4 rounded-lg ${theme.cardBg} border ${theme.cardBorder}`}>
+                  <h3 className={`text-sm font-medium ${theme.text} mb-2`}>
                     What needs to happen:
                   </h3>
-                  <ul className={`text-sm ${themeStyles.textMuted} space-y-1`}>
+                  <ul className={`text-sm ${theme.textMuted} space-y-1`}>
                     <li>
                       • The app developer must publish version {appData.activeVersion} in the
                       on-chain registry
@@ -91,19 +79,16 @@ export function AppVersionNotInRegistryConnect({
           </Card>
 
           {/* Options Card */}
-          <Card
-            className={`backdrop-blur-xl ${themeStyles.cardBg} border ${themeStyles.cardBorder}`}
-          >
+          <Card className={`backdrop-blur-xl ${theme.cardBg} border ${theme.cardBorder}`}>
             <CardContent className="p-6">
               <div className="space-y-4">
-                <h2 className={`text-lg font-semibold ${themeStyles.text}`}>
+                <h2 className={`text-lg font-semibold ${theme.text}`}>
                   What would you like to do?
                 </h2>
 
                 <div className="space-y-3">
                   {/* Go Back Option */}
                   <ActionCard
-                    theme={themeStyles}
                     icon={<ArrowLeft className="w-4 h-4 text-blue-500" />}
                     iconBg="bg-blue-500/20"
                     title="Go Back"
@@ -113,7 +98,6 @@ export function AppVersionNotInRegistryConnect({
 
                   {/* Retry Option */}
                   <ActionCard
-                    theme={themeStyles}
                     icon={<RefreshCw className="w-4 h-4 text-green-500" />}
                     iconBg="bg-green-500/20"
                     title="Check Again"

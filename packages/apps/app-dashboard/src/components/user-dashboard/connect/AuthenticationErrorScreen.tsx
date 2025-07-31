@@ -5,27 +5,26 @@ import { InfoBanner } from './ui/InfoBanner';
 import { Button } from '@/components/shared/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
 import ConnectView from './Connect';
-import { useTheme } from '@/providers/ThemeProvider';
 import { Link } from 'react-router-dom';
 import { UseReadAuthInfo } from '@/hooks/user-dashboard/useAuthInfo';
 import { ConnectFooter } from '../ui/Footer';
+import { toggleTheme, isDarkMode } from '@/lib/theme';
 
 type AuthenticationErrorScreenProps = {
   readAuthInfo: UseReadAuthInfo;
 };
 
 export function AuthenticationErrorScreen({ readAuthInfo }: AuthenticationErrorScreenProps) {
-  const { isDark, toggleTheme } = useTheme();
-  const themeStyles = theme(isDark);
+  const isDark = isDarkMode();
 
   return (
-    <div className={`min-h-screen w-full transition-colors duration-500 ${themeStyles.bg} sm:p-4`}>
+    <div className={`min-h-screen w-full transition-colors duration-500 ${theme.bg} sm:p-4`}>
       {/* Main Card Container */}
       <div
-        className={`max-w-6xl mx-auto ${themeStyles.mainCard} border ${themeStyles.mainCardBorder} rounded-2xl shadow-2xl overflow-hidden`}
+        className={`max-w-6xl mx-auto ${theme.mainCard} border ${theme.mainCardBorder} rounded-2xl shadow-2xl overflow-hidden`}
       >
         {/* Header */}
-        <div className={`px-6 py-4 border-b ${themeStyles.cardBorder}`}>
+        <div className={`px-6 py-4 border-b ${theme.cardBorder}`}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Link to="/" className="flex items-center">
@@ -41,7 +40,7 @@ export function AuthenticationErrorScreen({ readAuthInfo }: AuthenticationErrorS
                 variant="ghost"
                 size="sm"
                 onClick={toggleTheme}
-                className={`${themeStyles.text} hover:bg-white/10`}
+                className={`${theme.text} hover:bg-white/10`}
               >
                 {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
               </Button>
@@ -53,15 +52,12 @@ export function AuthenticationErrorScreen({ readAuthInfo }: AuthenticationErrorS
         <div className="px-6 py-8 space-y-6">
           {/* Status Banner */}
           <InfoBanner
-            theme={themeStyles}
             type="warning"
             title="Authentication Required"
             message="You need to authenticate to access this page. Please sign in to continue."
           />
           {/* Options Card */}
-          <Card
-            className={`backdrop-blur-xl ${themeStyles.cardBg} border ${themeStyles.cardBorder}`}
-          >
+          <Card className={`backdrop-blur-xl ${theme.cardBg} border ${theme.cardBorder}`}>
             <CardContent className="p-6">
               <div className="space-y-3">
                 {/* Sign In Option */}
@@ -75,7 +71,7 @@ export function AuthenticationErrorScreen({ readAuthInfo }: AuthenticationErrorS
                       transition={{ duration: 0.3, ease: 'easeInOut' }}
                       className="overflow-hidden"
                     >
-                      <ConnectView theme={themeStyles} readAuthInfo={readAuthInfo} />
+                      <ConnectView theme={theme} readAuthInfo={readAuthInfo} />
                     </motion.div>
                   </AnimatePresence>
                 </div>

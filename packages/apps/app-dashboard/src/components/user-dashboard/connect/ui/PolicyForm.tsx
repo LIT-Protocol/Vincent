@@ -8,7 +8,6 @@ import { PolicyVersion } from '@/types/developer-dashboard/appTypes';
 
 interface PolicyFormProps {
   policy: PolicyVersion;
-  isDark: boolean;
   formData: Record<string, any>;
   onFormChange: (policyIpfsCid: string, data: any) => void;
 }
@@ -18,7 +17,7 @@ export interface PolicyFormRef {
 }
 
 export const PolicyForm = forwardRef<PolicyFormRef, PolicyFormProps>(
-  ({ policy, isDark, formData, onFormChange }, ref) => {
+  ({ policy, formData, onFormChange }, ref) => {
     const formRef = useRef<any>(null);
 
     const resolvedSchema = useMemo(() => {
@@ -71,45 +70,83 @@ export const PolicyForm = forwardRef<PolicyFormRef, PolicyFormProps>(
         <style>
           {`
             .policy-form-${policy.ipfsCid} * {
-              color: ${isDark ? 'rgb(255 255 255 / 0.8)' : 'rgb(17 24 39)'} !important;
+              color: rgb(17 24 39);
+            }
+            
+            @media (prefers-color-scheme: dark) {
+              .policy-form-${policy.ipfsCid} * {
+                color: rgb(255 255 255 / 0.8);
+              }
+            }
+            
+            .dark .policy-form-${policy.ipfsCid} * {
+              color: rgb(255 255 255 / 0.8) !important;
             }
             
             .policy-form-${policy.ipfsCid} label {
-              color: ${isDark ? 'rgb(255 255 255 / 0.9)' : 'rgb(17 24 39)'};
+              color: rgb(17 24 39);
               font-weight: 500;
               margin-bottom: 0.5rem;
               display: block;
             }
             
+            .dark .policy-form-${policy.ipfsCid} label {
+              color: rgb(255 255 255 / 0.9);
+            }
+            
             .policy-form-${policy.ipfsCid} input,
             .policy-form-${policy.ipfsCid} textarea,
             .policy-form-${policy.ipfsCid} select {
-              background-color: ${isDark ? 'rgb(255 255 255 / 0.05)' : 'rgb(249 250 251)'};
-              border: 1px solid ${isDark ? 'rgb(255 255 255 / 0.1)' : 'rgb(209 213 219)'};
-              color: ${isDark ? 'rgb(255 255 255 / 0.9)' : 'rgb(17 24 39)'};
+              background-color: rgb(249 250 251);
+              border: 1px solid rgb(209 213 219);
+              color: rgb(17 24 39);
               border-radius: 0.5rem;
               padding: 0.75rem;
               width: 100%;
               transition: all 0.2s ease;
             }
             
+            .dark .policy-form-${policy.ipfsCid} input,
+            .dark .policy-form-${policy.ipfsCid} textarea,
+            .dark .policy-form-${policy.ipfsCid} select {
+              background-color: rgb(255 255 255 / 0.05);
+              border: 1px solid rgb(255 255 255 / 0.1);
+              color: rgb(255 255 255 / 0.9);
+            }
+            
             .policy-form-${policy.ipfsCid} input:focus,
             .policy-form-${policy.ipfsCid} textarea:focus,
             .policy-form-${policy.ipfsCid} select:focus {
               outline: none;
-              border-color: ${isDark ? 'rgb(255 255 255 / 0.3)' : 'rgb(59 130 246)'};
-              box-shadow: 0 0 0 3px ${isDark ? 'rgb(255 255 255 / 0.1)' : 'rgb(59 130 246 / 0.1)'};
+              border-color: rgb(59 130 246);
+              box-shadow: 0 0 0 3px rgb(59 130 246 / 0.1);
+            }
+            
+            .dark .policy-form-${policy.ipfsCid} input:focus,
+            .dark .policy-form-${policy.ipfsCid} textarea:focus,
+            .dark .policy-form-${policy.ipfsCid} select:focus {
+              border-color: rgb(255 255 255 / 0.3);
+              box-shadow: 0 0 0 3px rgb(255 255 255 / 0.1);
             }
             
             .policy-form-${policy.ipfsCid} input::placeholder,
             .policy-form-${policy.ipfsCid} textarea::placeholder {
-              color: ${isDark ? 'rgb(255 255 255 / 0.4)' : 'rgb(107 114 128)'};
+              color: rgb(107 114 128);
+            }
+            
+            .dark .policy-form-${policy.ipfsCid} input::placeholder,
+            .dark .policy-form-${policy.ipfsCid} textarea::placeholder {
+              color: rgb(255 255 255 / 0.4);
             }
             
             .policy-form-${policy.ipfsCid} .field-description {
-              color: ${isDark ? 'rgb(255 255 255 / 0.6)' : 'rgb(107 114 128)'};
+              color: rgb(107 114 128);
               font-size: 0.875rem;
               margin-top: 0.25rem;
+            }
+            
+            .dark .policy-form-${policy.ipfsCid} .field-description {
+              color: rgb(255 255 255 / 0.6);
             }
             
             .policy-form-${policy.ipfsCid} .field-error,
@@ -120,9 +157,20 @@ export const PolicyForm = forwardRef<PolicyFormRef, PolicyFormProps>(
             .policy-form-${policy.ipfsCid} .error-detail,
             .policy-form-${policy.ipfsCid} [role="alert"],
             .policy-form-${policy.ipfsCid} .text-destructive {
-              color: ${isDark ? 'rgb(248 113 113)' : 'rgb(239 68 68)'} !important;
+              color: rgb(239 68 68) !important;
               font-size: 0.875rem;
               margin-top: 0.25rem;
+            }
+            
+            .dark .policy-form-${policy.ipfsCid} .field-error,
+            .dark .policy-form-${policy.ipfsCid} .text-danger,
+            .dark .policy-form-${policy.ipfsCid} .invalid-feedback,
+            .dark .policy-form-${policy.ipfsCid} .form-text.text-danger,
+            .dark .policy-form-${policy.ipfsCid} .text-red-500,
+            .dark .policy-form-${policy.ipfsCid} .error-detail,
+            .dark .policy-form-${policy.ipfsCid} [role="alert"],
+            .dark .policy-form-${policy.ipfsCid} .text-destructive {
+              color: rgb(248 113 113) !important;
             }
             
             .policy-form-${policy.ipfsCid} button[type="submit"] {

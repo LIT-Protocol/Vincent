@@ -1,14 +1,13 @@
 import { motion } from 'framer-motion';
-import { ThemeType } from './theme';
+import { theme } from './theme';
 import { App } from '@/types/developer-dashboard/appTypes';
 import { Logo } from '@/components/shared/ui/Logo';
 
 interface ConnectAppHeaderProps {
   app: App;
-  theme: ThemeType;
 }
 
-export function ConnectAppHeader({ app, theme }: ConnectAppHeaderProps) {
+export function ConnectAppHeader({ app }: ConnectAppHeaderProps) {
   return (
     <motion.div
       className="rounded-xl p-4 sm:p-6"
