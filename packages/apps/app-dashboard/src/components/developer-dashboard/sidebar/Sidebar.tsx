@@ -12,9 +12,14 @@ import {
   GitBranch,
   User,
   Copy,
+  Sun,
+  Moon,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useParams } from 'react-router-dom';
+import { theme } from '@/components/user-dashboard/connect/ui/theme';
+import { toggleTheme } from '@/lib/theme';
+import { useTheme } from '@/hooks/useTheme';
 import { useClearAuthInfo } from '@/hooks/user-dashboard/useAuthInfo';
 import useReadAuthInfo from '@/hooks/user-dashboard/useAuthInfo';
 import {
@@ -43,10 +48,10 @@ interface SidebarProps {
 }
 
 export function Sidebar({ userApps, userAbilities, userPolicies }: SidebarProps) {
-  // Removed isDark and themeStyles since developer dashboard doesn't have theme toggle (yet)
   const location = useLocation();
   const params = useParams();
   const { clearAuthInfo } = useClearAuthInfo();
+  const isDark = useTheme();
 
   // Simple state for user interactions (like user sidebar)
   const [expandedMenus, setExpandedMenus] = useState<Set<string>>(new Set());
@@ -159,7 +164,7 @@ export function Sidebar({ userApps, userAbilities, userPolicies }: SidebarProps)
   // Render functions for each section
   const renderAppList = () => {
     if (!userApps || userApps.length === 0) {
-      return <div className="ml-4 mt-1 px-3 py-2 text-xs text-black opacity-75">No apps found</div>;
+      return <div className={`ml-4 mt-1 px-3 py-2 text-xs ${theme.textMuted}`}>No apps found</div>;
     }
 
     return (
@@ -175,22 +180,22 @@ export function Sidebar({ userApps, userAbilities, userPolicies }: SidebarProps)
                 asChild
                 className={`h-12 px-3 rounded-lg transition-all duration-200 text-xs w-full cursor-pointer ${
                   isAppActive
-                    ? `bg-gray-100/50 text-orange-500 font-semibold`
-                    : `text-black hover:bg-gray-100`
+                    ? `${theme.itemBg} text-orange-500 font-semibold`
+                    : `${theme.text} ${theme.itemHoverBg}`
                 }`}
               >
                 <Link to={appRoute}>
                   <div className="flex flex-col gap-1 flex-1 text-left">
                     <span
                       className={`font-medium truncate ${
-                        isAppActive ? 'text-orange-500' : 'text-black'
+                        isAppActive ? 'text-orange-500' : theme.text
                       }`}
                     >
                       {app.name}
                     </span>
                     <span
                       className={`text-xs opacity-75 truncate ${
-                        isAppActive ? 'text-orange-500' : 'text-black'
+                        isAppActive ? 'text-orange-500' : theme.text
                       }`}
                     >
                       ID: {app.appId}
@@ -209,8 +214,8 @@ export function Sidebar({ userApps, userAbilities, userPolicies }: SidebarProps)
                       isActiveRoute(appRoute) &&
                       !location.pathname.includes('/versions') &&
                       !location.pathname.includes('/version/')
-                        ? `bg-gray-100/50 text-orange-500 font-semibold`
-                        : `text-black hover:bg-gray-100`
+                        ? `${theme.itemBg} text-orange-500 font-semibold`
+                        : `${theme.text} ${theme.itemHoverBg}`
                     }`}
                   >
                     <Link to={appRoute}>
@@ -219,8 +224,8 @@ export function Sidebar({ userApps, userAbilities, userPolicies }: SidebarProps)
                           isActiveRoute(appRoute) &&
                           !location.pathname.includes('/versions') &&
                           !location.pathname.includes('/version/')
-                            ? '!text-orange-500'
-                            : '!text-black'
+                            ? 'text-orange-500'
+                            : theme.textMuted
                         }`}
                       />
                       <span
@@ -229,7 +234,7 @@ export function Sidebar({ userApps, userAbilities, userPolicies }: SidebarProps)
                           !location.pathname.includes('/versions') &&
                           !location.pathname.includes('/version/')
                             ? 'text-orange-500'
-                            : 'text-black'
+                            : theme.text
                         }
                       >
                         App Details
@@ -242,27 +247,27 @@ export function Sidebar({ userApps, userAbilities, userPolicies }: SidebarProps)
                     onClick={() => toggleMenu('app-versions')}
                     className={`h-8 px-3 rounded-lg transition-all duration-200 text-xs w-full cursor-pointer ${
                       isActiveRoute(`${appRoute}/versions`)
-                        ? `bg-gray-100/50 text-orange-500 font-semibold`
-                        : `text-black hover:bg-gray-100`
+                        ? `${theme.itemBg} text-orange-500 font-semibold`
+                        : `${theme.text} ${theme.itemHoverBg}`
                     }`}
                   >
                     <GitBranch
                       className={`h-3 w-3 mr-2 ${
-                        isActiveRoute(`${appRoute}/versions`) ? '!text-orange-500' : '!text-black'
+                        isActiveRoute(`${appRoute}/versions`) ? 'text-orange-500' : theme.textMuted
                       }`}
                     />
                     <span
                       className={
-                        isActiveRoute(`${appRoute}/versions`) ? 'text-orange-500' : 'text-black'
+                        isActiveRoute(`${appRoute}/versions`) ? 'text-orange-500' : theme.text
                       }
                     >
                       App Versions
                     </span>
                     <div className="ml-auto">
                       {expandedMenus.has('app-versions') ? (
-                        <ChevronDown className="h-3 w-3 !text-black" />
+                        <ChevronDown className={`h-3 w-3 ${theme.textMuted}`} />
                       ) : (
-                        <ChevronRight className="h-3 w-3 !text-black" />
+                        <ChevronRight className={`h-3 w-3 ${theme.textMuted}`} />
                       )}
                     </div>
                   </SidebarMenuSubButton>
@@ -277,8 +282,8 @@ export function Sidebar({ userApps, userAbilities, userPolicies }: SidebarProps)
                             asChild
                             className={`h-7 px-3 rounded-lg transition-all duration-200 text-xs w-full cursor-pointer ${
                               isActiveRoute(`${appRoute}/version/${version.version}`)
-                                ? `bg-gray-100/50 text-orange-500 font-semibold`
-                                : `text-black hover:bg-gray-100`
+                                ? `${theme.itemBg} text-orange-500 font-semibold`
+                                : `${theme.text} ${theme.itemHoverBg}`
                             }`}
                           >
                             <Link to={`${appRoute}/version/${version.version}`}>
@@ -286,7 +291,7 @@ export function Sidebar({ userApps, userAbilities, userPolicies }: SidebarProps)
                                 className={
                                   isActiveRoute(`${appRoute}/version/${version.version}`)
                                     ? 'text-orange-500'
-                                    : 'text-black'
+                                    : theme.text
                                 }
                               >
                                 Version {version.version}
@@ -298,7 +303,7 @@ export function Sidebar({ userApps, userAbilities, userPolicies }: SidebarProps)
                           </SidebarMenuSubButton>
                         ))
                       ) : (
-                        <div className="px-3 py-2 text-xs text-black opacity-75">
+                        <div className={`px-3 py-2 text-xs ${theme.textMuted}`}>
                           No versions available
                         </div>
                       )}
@@ -316,7 +321,7 @@ export function Sidebar({ userApps, userAbilities, userPolicies }: SidebarProps)
   const renderAbilityList = () => {
     if (!userAbilities || userAbilities.length === 0) {
       return (
-        <div className="ml-4 mt-1 px-3 py-2 text-xs text-black opacity-75">No abilities found</div>
+        <div className={`ml-4 mt-1 px-3 py-2 text-xs ${theme.textMuted}`}>No abilities found</div>
       );
     }
 
@@ -333,22 +338,22 @@ export function Sidebar({ userApps, userAbilities, userPolicies }: SidebarProps)
                 asChild
                 className={`h-12 px-3 rounded-lg transition-all duration-200 text-xs w-full cursor-pointer ${
                   isAbilityActive
-                    ? `bg-gray-100/50 text-orange-500 font-semibold`
-                    : `text-black hover:bg-gray-100`
+                    ? `${theme.itemBg} text-orange-500 font-semibold`
+                    : `${theme.text} ${theme.itemHoverBg}`
                 }`}
               >
                 <Link to={abilityRoute}>
                   <div className="flex flex-col gap-1 flex-1 text-left">
                     <span
                       className={`font-medium truncate ${
-                        isAbilityActive ? 'text-orange-500' : 'text-black'
+                        isAbilityActive ? 'text-orange-500' : theme.text
                       }`}
                     >
                       {ability.title}
                     </span>
                     <span
                       className={`text-xs opacity-75 truncate ${
-                        isAbilityActive ? 'text-orange-500' : 'text-black'
+                        isAbilityActive ? 'text-orange-500' : theme.text
                       }`}
                     >
                       {ability.packageName}
@@ -367,8 +372,8 @@ export function Sidebar({ userApps, userAbilities, userPolicies }: SidebarProps)
                       isActiveRoute(abilityRoute) &&
                       !location.pathname.includes('/versions') &&
                       !location.pathname.includes('/version/')
-                        ? `bg-gray-100/50 text-orange-500 font-semibold`
-                        : `text-black hover:bg-gray-100`
+                        ? `${theme.itemBg} text-orange-500 font-semibold`
+                        : `${theme.text} ${theme.itemHoverBg}`
                     }`}
                   >
                     <Link to={abilityRoute}>
@@ -378,7 +383,7 @@ export function Sidebar({ userApps, userAbilities, userPolicies }: SidebarProps)
                           !location.pathname.includes('/versions') &&
                           !location.pathname.includes('/version/')
                             ? '!text-orange-500'
-                            : '!text-black'
+                            : theme.textMuted
                         }`}
                       />
                       <span
@@ -387,7 +392,7 @@ export function Sidebar({ userApps, userAbilities, userPolicies }: SidebarProps)
                           !location.pathname.includes('/versions') &&
                           !location.pathname.includes('/version/')
                             ? 'text-orange-500'
-                            : 'text-black'
+                            : theme.text
                         }
                       >
                         Ability Details
@@ -400,29 +405,29 @@ export function Sidebar({ userApps, userAbilities, userPolicies }: SidebarProps)
                     onClick={() => toggleMenu('ability-versions')}
                     className={`h-8 px-3 rounded-lg transition-all duration-200 text-xs w-full cursor-pointer ${
                       isActiveRoute(`${abilityRoute}/versions`)
-                        ? `bg-gray-100/50 text-orange-500 font-semibold`
-                        : `text-black hover:bg-gray-100`
+                        ? `${theme.itemBg} text-orange-500 font-semibold`
+                        : `${theme.text} ${theme.itemHoverBg}`
                     }`}
                   >
                     <GitBranch
                       className={`h-3 w-3 mr-2 ${
                         isActiveRoute(`${abilityRoute}/versions`)
                           ? '!text-orange-500'
-                          : '!text-black'
+                          : theme.textMuted
                       }`}
                     />
                     <span
                       className={
-                        isActiveRoute(`${abilityRoute}/versions`) ? 'text-orange-500' : 'text-black'
+                        isActiveRoute(`${abilityRoute}/versions`) ? 'text-orange-500' : theme.text
                       }
                     >
                       Ability Versions
                     </span>
                     <div className="ml-auto">
                       {expandedMenus.has('ability-versions') ? (
-                        <ChevronDown className="h-3 w-3 !text-black" />
+                        <ChevronDown className={`h-3 w-3 ${theme.textMuted}`} />
                       ) : (
-                        <ChevronRight className="h-3 w-3 !text-black" />
+                        <ChevronRight className={`h-3 w-3 ${theme.textMuted}`} />
                       )}
                     </div>
                   </SidebarMenuSubButton>
@@ -437,8 +442,8 @@ export function Sidebar({ userApps, userAbilities, userPolicies }: SidebarProps)
                             asChild
                             className={`h-7 px-3 rounded-lg transition-all duration-200 text-xs w-full cursor-pointer ${
                               isActiveRoute(`${abilityRoute}/version/${version.version}`)
-                                ? `bg-gray-100/50 text-orange-500 font-semibold`
-                                : `text-black hover:bg-gray-100`
+                                ? `${theme.itemBg} text-orange-500 font-semibold`
+                                : `${theme.text} ${theme.itemHoverBg}`
                             }`}
                           >
                             <Link to={`${abilityRoute}/version/${version.version}`}>
@@ -446,7 +451,7 @@ export function Sidebar({ userApps, userAbilities, userPolicies }: SidebarProps)
                                 className={
                                   isActiveRoute(`${abilityRoute}/version/${version.version}`)
                                     ? 'text-orange-500'
-                                    : 'text-black'
+                                    : theme.text
                                 }
                               >
                                 {version.version}
@@ -458,7 +463,7 @@ export function Sidebar({ userApps, userAbilities, userPolicies }: SidebarProps)
                           </SidebarMenuSubButton>
                         ))
                       ) : (
-                        <div className="px-3 py-2 text-xs text-black opacity-75">
+                        <div className={`px-3 py-2 text-xs ${theme.textMuted}`}>
                           No versions available
                         </div>
                       )}
@@ -476,7 +481,7 @@ export function Sidebar({ userApps, userAbilities, userPolicies }: SidebarProps)
   const renderPolicyList = () => {
     if (!userPolicies || userPolicies.length === 0) {
       return (
-        <div className="ml-4 mt-1 px-3 py-2 text-xs text-black opacity-75">No policies found</div>
+        <div className={`ml-4 mt-1 px-3 py-2 text-xs ${theme.textMuted}`}>No policies found</div>
       );
     }
 
@@ -493,22 +498,22 @@ export function Sidebar({ userApps, userAbilities, userPolicies }: SidebarProps)
                 asChild
                 className={`h-12 px-3 rounded-lg transition-all duration-200 text-xs w-full cursor-pointer ${
                   isPolicyActive
-                    ? `bg-gray-100/50 text-orange-500 font-semibold`
-                    : `text-black hover:bg-gray-100`
+                    ? `${theme.itemBg} text-orange-500 font-semibold`
+                    : `${theme.text} ${theme.itemHoverBg}`
                 }`}
               >
                 <Link to={policyRoute}>
                   <div className="flex flex-col gap-1 flex-1 text-left">
                     <span
                       className={`font-medium truncate ${
-                        isPolicyActive ? 'text-orange-500' : 'text-black'
+                        isPolicyActive ? 'text-orange-500' : theme.text
                       }`}
                     >
                       {policy.title}
                     </span>
                     <span
                       className={`text-xs opacity-75 truncate ${
-                        isPolicyActive ? 'text-orange-500' : 'text-black'
+                        isPolicyActive ? 'text-orange-500' : theme.text
                       }`}
                     >
                       {policy.packageName}
@@ -527,8 +532,8 @@ export function Sidebar({ userApps, userAbilities, userPolicies }: SidebarProps)
                       isActiveRoute(policyRoute) &&
                       !location.pathname.includes('/versions') &&
                       !location.pathname.includes('/version/')
-                        ? `bg-gray-100/50 text-orange-500 font-semibold`
-                        : `text-black hover:bg-gray-100`
+                        ? `${theme.itemBg} text-orange-500 font-semibold`
+                        : `${theme.text} ${theme.itemHoverBg}`
                     }`}
                   >
                     <Link to={policyRoute}>
@@ -538,7 +543,7 @@ export function Sidebar({ userApps, userAbilities, userPolicies }: SidebarProps)
                           !location.pathname.includes('/versions') &&
                           !location.pathname.includes('/version/')
                             ? '!text-orange-500'
-                            : '!text-black'
+                            : theme.textMuted
                         }`}
                       />
                       <span
@@ -547,7 +552,7 @@ export function Sidebar({ userApps, userAbilities, userPolicies }: SidebarProps)
                           !location.pathname.includes('/versions') &&
                           !location.pathname.includes('/version/')
                             ? 'text-orange-500'
-                            : 'text-black'
+                            : theme.text
                         }
                       >
                         Policy Details
@@ -560,29 +565,29 @@ export function Sidebar({ userApps, userAbilities, userPolicies }: SidebarProps)
                     onClick={() => toggleMenu('policy-versions')}
                     className={`h-8 px-3 rounded-lg transition-all duration-200 text-xs w-full cursor-pointer ${
                       isActiveRoute(`${policyRoute}/versions`)
-                        ? `bg-gray-100/50 text-orange-500 font-semibold`
-                        : `text-black hover:bg-gray-100`
+                        ? `${theme.itemBg} text-orange-500 font-semibold`
+                        : `${theme.text} ${theme.itemHoverBg}`
                     }`}
                   >
                     <GitBranch
                       className={`h-3 w-3 mr-2 ${
                         isActiveRoute(`${policyRoute}/versions`)
                           ? '!text-orange-500'
-                          : '!text-black'
+                          : theme.textMuted
                       }`}
                     />
                     <span
                       className={
-                        isActiveRoute(`${policyRoute}/versions`) ? 'text-orange-500' : 'text-black'
+                        isActiveRoute(`${policyRoute}/versions`) ? 'text-orange-500' : theme.text
                       }
                     >
                       Policy Versions
                     </span>
                     <div className="ml-auto">
                       {expandedMenus.has('policy-versions') ? (
-                        <ChevronDown className="h-3 w-3 !text-black" />
+                        <ChevronDown className={`h-3 w-3 ${theme.textMuted}`} />
                       ) : (
-                        <ChevronRight className="h-3 w-3 !text-black" />
+                        <ChevronRight className={`h-3 w-3 ${theme.textMuted}`} />
                       )}
                     </div>
                   </SidebarMenuSubButton>
@@ -597,8 +602,8 @@ export function Sidebar({ userApps, userAbilities, userPolicies }: SidebarProps)
                             asChild
                             className={`h-7 px-3 rounded-lg transition-all duration-200 text-xs w-full cursor-pointer ${
                               isActiveRoute(`${policyRoute}/version/${version.version}`)
-                                ? `bg-gray-100/50 text-orange-500 font-semibold`
-                                : `text-black hover:bg-gray-100`
+                                ? `${theme.itemBg} text-orange-500 font-semibold`
+                                : `${theme.text} ${theme.itemHoverBg}`
                             }`}
                           >
                             <Link to={`${policyRoute}/version/${version.version}`}>
@@ -606,7 +611,7 @@ export function Sidebar({ userApps, userAbilities, userPolicies }: SidebarProps)
                                 className={
                                   isActiveRoute(`${policyRoute}/version/${version.version}`)
                                     ? 'text-orange-500'
-                                    : 'text-black'
+                                    : theme.text
                                 }
                               >
                                 {version.version}
@@ -618,7 +623,7 @@ export function Sidebar({ userApps, userAbilities, userPolicies }: SidebarProps)
                           </SidebarMenuSubButton>
                         ))
                       ) : (
-                        <div className="px-3 py-2 text-xs text-black opacity-75">
+                        <div className={`px-3 py-2 text-xs ${theme.textMuted}`}>
                           No versions available
                         </div>
                       )}
@@ -709,28 +714,31 @@ export function Sidebar({ userApps, userAbilities, userPolicies }: SidebarProps)
       <Tooltip>
         <TooltipTrigger asChild>
           <SidebarMenuButton
-            className={`h-10 px-3 rounded-lg transition-all duration-200 text-black hover:bg-gray-100`}
+            className={`h-10 px-3 rounded-lg transition-all duration-200 ${theme.text} ${theme.itemHoverBg}`}
           >
             <User className="h-4 w-4" />
-            <span className={`font-medium text-black`}>My Account</span>
+            <span className={`font-medium ${theme.text}`}>My Account</span>
           </SidebarMenuButton>
         </TooltipTrigger>
 
         {authInfo && (
-          <TooltipContent side="top" className={`bg-white border-gray-200 text-black max-w-sm`}>
+          <TooltipContent
+            side="top"
+            className={`${theme.cardBg} ${theme.cardBorder} ${theme.text} max-w-sm`}
+          >
             <div className="whitespace-pre-line text-xs">
               <div className="mb-2">{formatAuthInfo()}</div>
               {authInfo.agentPKP?.ethAddress && (
-                <div className="flex items-center gap-2 pt-2 border-t border-gray-600">
+                <div className={`flex items-center gap-2 pt-2 border-t ${theme.cardBorder}`}>
                   <div className="flex-1 min-w-0">
-                    <div className="text-gray-600">Agent PKP:</div>
-                    <div className={`font-mono text-xs text-black truncate`}>
+                    <div className={theme.textMuted}>Agent PKP:</div>
+                    <div className={`font-mono text-xs ${theme.text} truncate`}>
                       {authInfo.agentPKP.ethAddress}
                     </div>
                   </div>
                   <button
                     onClick={handleCopyEthAddress}
-                    className={`p-1 hover:bg-gray-100 rounded transition-colors flex-shrink-0`}
+                    className={`p-1 ${theme.itemHoverBg} rounded transition-colors flex-shrink-0`}
                   >
                     <Copy className="w-3 h-3" />
                   </button>
@@ -749,7 +757,7 @@ export function Sidebar({ userApps, userAbilities, userPolicies }: SidebarProps)
         <div className="flex items-center px-6 py-4 h-full">
           <Link to="/" className="flex items-center">
             <img
-              src="/vincent-by-lit-logo.png"
+              src={isDark ? '/vincent-by-lit-white-logo.png' : '/vincent-by-lit-logo.png'}
               alt="Vincent by Lit Protocol"
               className="h-8 object-contain cursor-pointer hover:opacity-80 transition-opacity"
             />
@@ -759,7 +767,9 @@ export function Sidebar({ userApps, userAbilities, userPolicies }: SidebarProps)
 
       <SidebarContent className="px-4 py-6">
         <SidebarGroup className="space-y-4">
-          <SidebarGroupLabel className="px-3 text-sm font-semibold text-black uppercase tracking-wide">
+          <SidebarGroupLabel
+            className={`px-3 text-sm font-semibold ${theme.text} uppercase tracking-wide`}
+          >
             Developer Abilities
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -772,21 +782,21 @@ export function Sidebar({ userApps, userAbilities, userPolicies }: SidebarProps)
                       isActive={isActiveRoute(item.route)}
                       className={`h-10 px-3 rounded-lg transition-all duration-200 ${
                         isActiveRoute(item.route)
-                          ? `bg-gray-100/50 text-orange-500 font-semibold`
-                          : `text-black hover:bg-gray-100`
+                          ? `${theme.itemBg} text-orange-500 font-semibold`
+                          : `${theme.text} ${theme.itemHoverBg}`
                       }`}
                     >
                       <Link to={item.route} className="flex items-center gap-3">
                         <div
                           className={`${
-                            isActiveRoute(item.route) ? 'text-orange-500' : 'text-gray-600'
+                            isActiveRoute(item.route) ? 'text-orange-500' : theme.textMuted
                           } [&>svg]:!w-5 [&>svg]:!h-5`}
                         >
                           {item.icon}
                         </div>
                         <span
                           className={`font-medium ${
-                            isActiveRoute(item.route) ? 'text-orange-500' : 'text-black'
+                            isActiveRoute(item.route) ? 'text-orange-500' : theme.text
                           }`}
                         >
                           {item.label}
@@ -799,27 +809,27 @@ export function Sidebar({ userApps, userAbilities, userPolicies }: SidebarProps)
                         onClick={() => toggleMenu(item.id)}
                         className={`h-10 px-3 rounded-lg transition-all duration-200 ${
                           isActiveRoute(item.route)
-                            ? `bg-gray-100/50 text-orange-500 font-semibold`
-                            : `text-black hover:bg-gray-100`
+                            ? `${theme.itemBg} text-orange-500 font-semibold`
+                            : `${theme.text} ${theme.itemHoverBg}`
                         }`}
                       >
                         <div className="flex items-center gap-3 flex-1">
                           <div
                             className={`${
-                              isActiveRoute(item.route) ? 'text-orange-500' : 'text-gray-600'
+                              isActiveRoute(item.route) ? 'text-orange-500' : theme.textMuted
                             } [&>svg]:!w-5 [&>svg]:!h-5`}
                           >
                             {item.icon}
                           </div>
                           <span
                             className={`font-medium ${
-                              isActiveRoute(item.route) ? 'text-orange-500' : 'text-black'
+                              isActiveRoute(item.route) ? 'text-orange-500' : theme.text
                             }`}
                           >
                             {item.label}
                           </span>
                         </div>
-                        <div className="text-gray-600">
+                        <div className={theme.textMuted}>
                           {shouldExpandMenu(item.id) ? (
                             <ChevronDown className="h-4 w-4" />
                           ) : (
@@ -838,16 +848,14 @@ export function Sidebar({ userApps, userAbilities, userPolicies }: SidebarProps)
                                   isActive={isActiveRoute(child.route)}
                                   className={`h-9 px-3 rounded-lg transition-all duration-200 ${
                                     isActiveRoute(child.route)
-                                      ? `bg-gray-100/50 text-orange-500 font-semibold`
-                                      : `text-black hover:bg-gray-100`
+                                      ? `${theme.itemBg} text-orange-500 font-semibold`
+                                      : `${theme.text} ${theme.itemHoverBg}`
                                   }`}
                                 >
                                   <Link to={child.route} className="flex items-center gap-3">
                                     <span
                                       className={`font-medium ${
-                                        isActiveRoute(child.route)
-                                          ? 'text-orange-500'
-                                          : 'text-black'
+                                        isActiveRoute(child.route) ? 'text-orange-500' : theme.text
                                       }`}
                                     >
                                       {child.label}
@@ -880,13 +888,13 @@ export function Sidebar({ userApps, userAbilities, userPolicies }: SidebarProps)
                 onClick={() =>
                   window.open('https://docs.heyvincent.ai/documents/Getting_Started.html', '_blank')
                 }
-                className={`h-10 px-3 rounded-lg transition-all duration-200 text-black hover:bg-gray-100`}
+                className={`h-10 px-3 rounded-lg transition-all duration-200 ${theme.text} ${theme.itemHoverBg}`}
               >
                 <div className="flex items-center gap-3">
-                  <div className="text-gray-600">
+                  <div className={theme.textMuted}>
                     <BookOpen className="h-4 w-4" />
                   </div>
-                  <span className="font-medium text-black">Documentation</span>
+                  <span className={`font-medium ${theme.text}`}>Documentation</span>
                   <ExternalLink className="h-3 w-3 ml-auto" />
                 </div>
               </SidebarMenuButton>
@@ -901,13 +909,34 @@ export function Sidebar({ userApps, userAbilities, userPolicies }: SidebarProps)
             <SidebarMenuItem>
               <SidebarMenuButton
                 onClick={handleSignOut}
-                className={`h-10 px-3 rounded-lg transition-all duration-200 text-black hover:bg-gray-100`}
+                className={`h-10 px-3 rounded-lg transition-all duration-200 ${theme.text} ${theme.itemHoverBg}`}
               >
                 <div className="flex items-center gap-3">
-                  <div className="text-gray-600">
+                  <div className={theme.textMuted}>
                     <LogOut className="h-4 w-4" />
                   </div>
-                  <span className="font-medium text-black">Sign out</span>
+                  <span className={`font-medium ${theme.text}`}>Sign out</span>
+                </div>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+
+          <div className={`border-t ${isDark ? 'border-white/10' : 'border-gray-900/10'} my-2`} />
+
+          <SidebarMenu>
+            {/* Theme Toggle */}
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                onClick={toggleTheme}
+                className={`h-10 px-3 rounded-lg transition-all duration-200 ${theme.text} ${theme.itemHoverBg}`}
+              >
+                <div className="flex items-center gap-3">
+                  <div className={theme.textMuted}>
+                    {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                  </div>
+                  <span className={`font-medium ${theme.text}`}>
+                    {isDark ? 'Light mode' : 'Dark mode'}
+                  </span>
                 </div>
               </SidebarMenuButton>
             </SidebarMenuItem>
