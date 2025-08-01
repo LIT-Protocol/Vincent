@@ -37,22 +37,22 @@ export const AppVersionSchema = new Schema(
 
 export const AppVersion = model('AppVersion', AppVersionSchema);
 
-export const AppToolSchema = new Schema(
+export const AppAbilitySchema = new Schema(
   {
     appId: { type: Number, required: true },
     appVersion: { type: Number, required: true },
-    toolPackageName: { type: String, required: true },
-    toolVersion: { type: String, required: true },
+    abilityPackageName: { type: String, required: true },
+    abilityVersion: { type: String, required: true },
     hiddenSupportedPolicies: [{ type: String }],
     isDeleted: { type: Boolean, default: false, index: true },
   } as const,
   { timestamps: true },
 );
 
-AppToolSchema.index(
-  // Only 1 doc per app version + tool combination
-  { appId: 1, appVersion: 1, toolPackageName: 1, toolVersion: 1 },
+AppAbilitySchema.index(
+  // Only 1 doc per app version + ability combination
+  { appId: 1, appVersion: 1, abilityPackageName: 1, abilityVersion: 1 },
   { unique: true },
 );
 
-export const AppTool = model('AppTool', AppToolSchema);
+export const AppAbility = model('AppAbility', AppAbilitySchema);

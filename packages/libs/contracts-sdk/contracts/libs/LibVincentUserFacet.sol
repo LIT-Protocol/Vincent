@@ -30,35 +30,35 @@ library LibVincentUserFacet {
     event AppVersionUnPermitted(uint256 indexed pkpTokenId, uint256 indexed appId, uint256 indexed appVersion);
 
     /**
-     * @notice Emitted when a tool policy parameters are set
+     * @notice Emitted when an ability policy parameters are set
      * @param pkpTokenId The token ID of the PKP
      * @param appId The ID of the app
      * @param appVersion The version of the app
-     * @param hashedToolIpfsCid The keccak256 hash of the tool's IPFS CID
-     * @param hashedToolPolicyIpfsCid The keccak256 hash of the tool policy's IPFS CID
+     * @param hashedAbilityIpfsCid The keccak256 hash of the ability's IPFS CID
+     * @param hashedAbilityPolicyIpfsCid The keccak256 hash of the ability policy's IPFS CID
      * @param policyParameterValues The CBOR2 encoded policy parameter values
      */
-    event ToolPolicyParametersSet(
+    event AbilityPolicyParametersSet(
         uint256 indexed pkpTokenId,
         uint256 indexed appId,
         uint256 indexed appVersion,
-        bytes32 hashedToolIpfsCid,
-        bytes32 hashedToolPolicyIpfsCid,
+        bytes32 hashedAbilityIpfsCid,
+        bytes32 hashedAbilityPolicyIpfsCid,
         bytes policyParameterValues
     );
 
     /**
-     * @notice Emitted when a tool policy parameters are removed
+     * @notice Emitted when an ability policy parameters are removed
      * @param pkpTokenId The token ID of the PKP
      * @param appId The ID of the app
      * @param appVersion The version of the app
-     * @param hashedToolIpfsCid The keccak256 hash of the tool's IPFS CID
+     * @param hashedAbilityIpfsCid The keccak256 hash of the ability's IPFS CID
      */
-    event ToolPolicyParametersRemoved(
+    event AbilityPolicyParametersRemoved(
         uint256 indexed pkpTokenId,
         uint256 indexed appId,
         uint256 indexed appVersion,
-        bytes32 hashedToolIpfsCid
+        bytes32 hashedAbilityIpfsCid
     );
 
     /**
@@ -92,65 +92,65 @@ library LibVincentUserFacet {
     error AppVersionNotEnabled(uint256 appId, uint256 appVersion);
 
     /**
-     * @notice Error thrown when tool and policy array lengths do not match
+     * @notice Error thrown when ability and policy array lengths do not match
      */
-    error ToolsAndPoliciesLengthMismatch();
+    error AbilitiesAndPoliciesLengthMismatch();
 
     /**
-     * @notice Error thrown when policy-related arrays for a specific tool have mismatched lengths
-     * @param toolIndex Index of the tool in the tools array
-     * @param policiesLength Length of the policies array for this tool
-     * @param paramValuesLength Length of the parameter values array for this tool
+     * @notice Error thrown when policy-related arrays for a specific ability have mismatched lengths
+     * @param abilityIndex Index of the ability in the abilities array
+     * @param policiesLength Length of the policies array for this ability
+     * @param paramValuesLength Length of the parameter values array for this ability
      */
     error PolicyArrayLengthMismatch(
-        uint256 toolIndex, uint256 policiesLength, uint256 paramValuesLength
+        uint256 abilityIndex, uint256 policiesLength, uint256 paramValuesLength
     );
 
     /**
      * @notice Error thrown when parameter arrays for a specific policy have mismatched lengths
-     * @param toolIndex Index of the tool in the tools array
+     * @param abilityIndex Index of the ability in the abilities array
      * @param policyIndex Index of the policy in the policies array
      * @param paramValuesLength Length of the parameter values array for this policy
      */
     error ParameterArrayLengthMismatch(
-        uint256 toolIndex, uint256 policyIndex, uint256 paramValuesLength
+        uint256 abilityIndex, uint256 policyIndex, uint256 paramValuesLength
     );
 
     /**
-     * @notice Error thrown when a tool is not registered for an app version
+     * @notice Error thrown when an ability is not registered for an app version
      * @param appId The ID of the app
      * @param appVersion The version of the app
-     * @param toolIpfsCid The IPFS CID of the tool
+     * @param abilityIpfsCid The IPFS CID of the ability
      */
-    error ToolNotRegisteredForAppVersion(uint256 appId, uint256 appVersion, string toolIpfsCid);
+    error AbilityNotRegisteredForAppVersion(uint256 appId, uint256 appVersion, string abilityIpfsCid);
 
     /**
-     * @notice Error thrown when a tool policy is not registered for an app version
+     * @notice Error thrown when an ability policy is not registered for an app version
      * @param appId The ID of the app
      * @param appVersion The version of the app
-     * @param toolIpfsCid The IPFS CID of the tool
-     * @param toolPolicyIpfsCid The IPFS CID of the tool policy
+     * @param abilityIpfsCid The IPFS CID of the ability
+     * @param abilityPolicyIpfsCid The IPFS CID of the ability policy
      */
-    error ToolPolicyNotRegisteredForAppVersion(
-        uint256 appId, uint256 appVersion, string toolIpfsCid, string toolPolicyIpfsCid
+    error AbilityPolicyNotRegisteredForAppVersion(
+        uint256 appId, uint256 appVersion, string abilityIpfsCid, string abilityPolicyIpfsCid
     );
 
     /**
-     * @notice Error thrown when a duplicate tool IPFS CID is provided
+     * @notice Error thrown when a duplicate ability IPFS CID is provided
      * @param appId The ID of the app
      * @param appVersion The version of the app
-     * @param toolIpfsCid The IPFS CID of the tool
+     * @param abilityIpfsCid The IPFS CID of the ability
      */
-    error DuplicateToolIpfsCid(uint256 appId, uint256 appVersion, string toolIpfsCid);
+    error DuplicateAbilityIpfsCid(uint256 appId, uint256 appVersion, string abilityIpfsCid);
     
     /**
-     * @notice Error thrown when a duplicate tool policy IPFS CID is provided
+     * @notice Error thrown when a duplicate ability policy IPFS CID is provided
      * @param appId The ID of the app
      * @param appVersion The version of the app
-     * @param toolIpfsCid The IPFS CID of the tool
-     * @param toolPolicyIpfsCid The IPFS CID of the tool policy
+     * @param abilityIpfsCid The IPFS CID of the ability
+     * @param abilityPolicyIpfsCid The IPFS CID of the ability policy
      */
-    error DuplicateToolPolicyIpfsCid(uint256 appId, uint256 appVersion, string toolIpfsCid, string toolPolicyIpfsCid);
+    error DuplicateAbilityPolicyIpfsCid(uint256 appId, uint256 appVersion, string abilityIpfsCid, string abilityPolicyIpfsCid);
 
     /**
      * @notice Error thrown when invalid input is provided
@@ -169,9 +169,9 @@ library LibVincentUserFacet {
     error PkpTokenDoesNotExist(uint256 pkpTokenId);
 
     /**
-     * @notice Error thrown when an empty tool IPFS CID is provided
+     * @notice Error thrown when an empty ability IPFS CID is provided
      */
-    error EmptyToolIpfsCid();
+    error EmptyAbilityIpfsCid();
 
     /**
      * @notice Error thrown when an empty policy IPFS CID is provided
@@ -179,9 +179,9 @@ library LibVincentUserFacet {
     error EmptyPolicyIpfsCid();
 
     /**
-     * @notice Error thrown when not all registered tools for an app version are provided
+     * @notice Error thrown when not all registered abilities for an app version are provided
      * @param appId The ID of the app
      * @param appVersion The version of the app
      */
-    error NotAllRegisteredToolsProvided(uint256 appId, uint256 appVersion);
+    error NotAllRegisteredAbilitiesProvided(uint256 appId, uint256 appVersion);
 }

@@ -6,7 +6,7 @@
 
 ### 🧱 Updated Dependencies
 
-- Updated tool-sdk to 1.0.2
+- Updated ability-sdk to 1.0.2
 - Updated app-sdk to 1.0.2
 
 ### ❤️ Thank You

@@ -1,0 +1,43 @@
+{
+  "name": "@lit-protocol/vincent-ability-sdk",
+  "version": "1.0.2",
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@lit-protocol/vincent-contracts-sdk": "workspace:*",
+    "ethers": "5.8.0",
+    "semver": "^7.7.2",
+    "tslib": "^2.8.1",
+    "zod": "^3.25.64"
+  },
+  "scripts": {
+    "watch:type-tests": "chokidar 'src/**/*' --initial --await-write-finish --delay 100 --silent -c './scripts/run-typecheck.sh'",
+    "typecheck": "./scripts/precommit-check.sh"
+  },
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "files": [
+    "dist/**",
+    "*.md"
+  ],
+  "exports": {
+    ".": {
+      "require": "./dist/src/index.js",
+      "import": "./dist/src/index.js"
+    },
+    "./internal": {
+      "require": "./dist/src/internal.js",
+      "import": "./dist/src/internal.js"
+    }
+  },
+  "devDependencies": {
+    "@types/semver": "^7.7.0",
+    "chokidar-cli": "^3.0.0",
+    "jsonc-eslint-parser": "^2.4.0",
+    "typedoc": "0.27.9",
+    "typedoc-material-theme": "1.3.0",
+    "typedoc-plugin-extras": "^4.0.0",
+    "typedoc-plugin-zod": "^1.4.1"
+  }
+}

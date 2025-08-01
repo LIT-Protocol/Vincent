@@ -2,7 +2,7 @@ import React from 'react';
 import { TokenDetails } from './WithdrawForm';
 import { Button } from '@/components/shared/ui/button';
 import { useTheme } from '@/providers/ThemeProvider';
-import { theme } from '@/components/user-dashboard/consent/ui/theme';
+import { theme } from '@/components/user-dashboard/connect/ui/theme';
 
 interface BalanceDisplayProps {
   balance: string;
@@ -30,9 +30,9 @@ export const BalanceDisplay: React.FC<BalanceDisplayProps> = ({
           </p>
         </div>
       </div>
-      <Button 
-        variant="outline" 
-        onClick={refreshBalance} 
+      <Button
+        variant="outline"
+        onClick={refreshBalance}
         disabled={loading}
         className={`${themeStyles.text} border ${themeStyles.cardBorder} hover:${themeStyles.itemHoverBg}`}
       >

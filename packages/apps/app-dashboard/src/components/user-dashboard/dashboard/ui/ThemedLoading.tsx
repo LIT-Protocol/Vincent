@@ -1,5 +1,5 @@
 import { useTheme } from '@/providers/ThemeProvider';
-import { theme } from '@/components/user-dashboard/consent/ui/theme';
+import { theme } from '@/components/user-dashboard/connect/ui/theme';
 
 export function ThemedLoading() {
   const { isDark } = useTheme();

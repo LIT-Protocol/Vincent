@@ -3,18 +3,25 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Form } from '@/components/shared/ui/form';
 import { Button } from '@/components/shared/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/shared/ui/card';
-import { TextField, LongTextField, SelectField } from '../../form-fields';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/shared/ui/card';
+import { TextField, LongTextField, SelectField, ImageUploadField } from '../../form-fields';
 import { docSchemas } from '@lit-protocol/vincent-registry-sdk';
 import { Policy, PolicyVersion } from '@/types/developer-dashboard/appTypes';
 import { DeploymentStatusSelectField } from '../../form-fields/array/DeploymentStatusSelectField';
 
 const { policyDoc } = docSchemas;
 
-const { packageName, description, title, activeVersion, deploymentStatus } = policyDoc.shape;
+const { packageName, description, title, logo, activeVersion, deploymentStatus } = policyDoc.shape;
 
 export const EditPolicySchema = z
-  .object({ packageName, description, title, activeVersion, deploymentStatus })
+  .object({ packageName, description, title, logo, activeVersion, deploymentStatus })
+  .partial({ logo: true })
   .strict();
 
 export type EditPolicyFormData = z.infer<typeof EditPolicySchema>;
@@ -38,6 +45,7 @@ export function EditPolicyForm({
       packageName: policyData.packageName,
       description: policyData.description,
       title: policyData.title,
+      logo: policyData.logo,
       activeVersion: policyData.activeVersion,
       deploymentStatus: policyData.deploymentStatus,
     },
@@ -46,8 +54,12 @@ export function EditPolicyForm({
   const {
     register,
     handleSubmit,
-    control,
+    watch,
+    setValue,
+    setError,
+    clearErrors,
     formState: { errors },
+    control,
   } = form;
 
   // Create version options from policyVersions, showing enabled/disabled status for all versions
@@ -74,6 +86,7 @@ export function EditPolicyForm({
               rows={4}
               required
             />
+
             <TextField
               name="title"
               register={register}
@@ -81,6 +94,16 @@ export function EditPolicyForm({
               label="Title"
               placeholder="Enter policy title (user-readable)"
               required
+            />
+
+            <ImageUploadField
+              name="logo"
+              watch={watch}
+              setValue={setValue}
+              control={control}
+              setError={setError}
+              clearErrors={clearErrors}
+              label="Logo"
             />
 
             <SelectField

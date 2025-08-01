@@ -4,7 +4,7 @@
   "files": [],
   "references": [
     {
-      "path": "./packages/apps/tool-uniswap-swap"
+      "path": "./packages/apps/ability-uniswap-swap"
     },
     {
       "path": "./packages/libs/app-sdk"
@@ -13,7 +13,13 @@
       "path": "./packages/apps/policy-spending-limit"
     },
     {
-      "path": "./packages/apps/tool-erc20-approval"
+      "path": "./packages/apps/policy-contract-whitelist"
+    },
+    {
+      "path": "./packages/apps/ability-erc20-approval"
+    },
+    {
+      "path": "./packages/apps/ability-transaction-signer"
     },
     {
       "path": "./packages/apps/app-dashboard"
@@ -22,13 +28,13 @@
       "path": "./packages/libs/contracts-sdk"
     },
     {
-      "path": "./packages/apps/toolpolicies-e2e"
+      "path": "./packages/apps/abilities-e2e"
     },
     {
       "path": "./packages/libs/registry-sdk"
     },
     {
-      "path": "./packages/libs/tool-sdk"
+      "path": "./packages/libs/ability-sdk"
     },
     {
       "path": "./packages/apps/registry-backend"

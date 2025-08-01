@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -p ./tsconfig.app.json && NODE_OPTIONS='--max-old-space-size=8192' vite build",
+    "build": "NODE_OPTIONS='--max-old-space-size=8192' tsc -p ./tsconfig.app.json && NODE_OPTIONS='--max-old-space-size=8192' vite build",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -21,9 +21,9 @@
     "@lit-protocol/misc": "^7.2.0",
     "@lit-protocol/pkp-ethers": "^7.2.0",
     "@lit-protocol/types": "^7.2.0",
-    "@lit-protocol/vincent-app-sdk": "1.0.1",
-    "@lit-protocol/vincent-contracts-sdk": "1.0.0-3",
-    "@lit-protocol/vincent-registry-sdk": "^3.3.2",
+    "@lit-protocol/vincent-app-sdk": "workspace:*",
+    "@lit-protocol/vincent-contracts-sdk": "workspace:*",
+    "@lit-protocol/vincent-registry-sdk": "workspace:*",
     "@radix-ui/react-checkbox": "^1.2.3",
     "@radix-ui/react-dialog": "^1.1.14",
     "@radix-ui/react-label": "^2.1.7",

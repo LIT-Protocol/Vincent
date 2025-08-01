@@ -125,3 +125,35 @@
 .warning-icon {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath d='M12 2L1.5 21h21L12 2z' fill='%23f39c12'/%3E%3Cpath d='M12 8v6' stroke='white' stroke-width='2' stroke-linecap='round'/%3E%3Ccircle cx='12' cy='18' r='1' fill='white'/%3E%3C/svg%3E");
 }
+
+/* TypeDoc Navigation Fixes */
+/* Fix text truncation - target all navigation text elements */
+.tsd-navigation a,
+.tsd-navigation summary > span,
+.tsd-kind-icon ~ span,
+.title {
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: initial !important;
+  word-break: break-word !important;
+}
+
+/* Keep icon and text on same line while allowing text to wrap */
+.tsd-navigation a,
+.tsd-navigation summary > span {
+  align-items: flex-start !important;
+}
+
+.tsd-kind-icon {
+  flex-shrink: 0 !important;
+}
+
+.tsd-kind-icon ~ span {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+}
+
+/* Fix only the deepest level accordions (API Methods, Interfaces, Other) */
+.tsd-small-nested-navigation details details details {
+  margin-left: 0.5rem !important;
+}

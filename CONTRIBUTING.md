@@ -7,21 +7,20 @@ Vincent is a monorepo that contains multiple projects for the Vincent Agent Wall
 The repository is managed with [Nx](https://nx.dev/) and [pnpm](https://pnpm.io/). The monorepo structure allows for sharing code between projects while maintaining separation of concerns.
 
 - `/packages`: Contains all the projects in the monorepo
-- `/tools`: Contains utility scripts for the repository
 
 ## Overview
 
 The Vincent system consists of several key components:
 
-- **app-dashboard**: A Vite React app where users interact with the Vincent system, allowing them to create apps with their tools and policies, update versions, manage delegatee addresses, and more.
-- **app-sdk**: A TypeScript SDK that exposes useful tools to interact with Vincent systems in web or Node.js environments.
+- **app-dashboard**: A Vite React app where users interact with the Vincent system, allowing them to create apps with their abilities and policies, update versions, manage delegatee addresses, and more.
+- **app-sdk**: A TypeScript SDK that exposes useful abilities to interact with Vincent systems in web or Node.js environments.
 - **contracts-sdk**: Solidity contracts that create and manage the blockchain contracts needed to enforce user-to-app delegation, record policy parameters, and store Vincent apps' onchain data.
 - **registry-sdk**: REST API for an offchain service increasing the available info that Vincent apps can show to their users, offering discoverability and auditability services.
-- **policy-spending-limit**: A policy that can be attached to tools to avoid them spending more than a user-defined limit in a specific period of time.
-- **tool-erc20-approval**: A tool to send ERC20 approve/allowance transactions from a Vincent app on behalf of the delegator.
-- **tool-sdk**: An SDK exposing utilities to develop Vincent tools and policies.
-- **tool-uniswap-swap**: A tool to trigger swaps on Uniswap from a Vincent app on behalf of the delegator.
-- **mcp-sdk**: A Model Context Protocol Wrapper that converts any Vincent app into an MCP server that can be connected to any LLM client to provide it with Vincent tools.
+- **policy-spending-limit**: A policy that can be attached to abilities to avoid them spending more than a user-defined limit in a specific period of time.
+- **ability-erc20-approval**: An ability to send ERC20 approve/allowance transactions from a Vincent app on behalf of the delegator.
+- **ability-sdk**: An SDK exposing utilities to develop Vincent abilities and policies.
+- **ability-uniswap-swap**: An ability to trigger swaps on Uniswap from a Vincent app on behalf of the delegator.
+- **mcp-sdk**: A Model Context Protocol Wrapper that converts any Vincent app into an MCP server that can be connected to any LLM client to provide it with Vincent abilities.
 - **mcp**: An MCP runner
 
 ## Getting Started
@@ -161,7 +160,7 @@ Types include:
 - `refactor`: Code changes that neither fix a bug nor add a feature
 - `perf`: Performance improvements
 - `test`: Adding or fixing tests
-- `chore`: Changes to the build process or auxiliary tools
+- `chore`: Changes to the build process or auxiliary abilities
 
 ### Release Process
 

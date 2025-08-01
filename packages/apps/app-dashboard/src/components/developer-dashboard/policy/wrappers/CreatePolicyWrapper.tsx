@@ -18,7 +18,7 @@ export function CreatePolicyWrapper() {
   // Effect
   useEffect(() => {
     if (isSuccess && data) {
-      navigateWithDelay(navigate, `/developer/policyId/${encodeURIComponent(data.packageName)}`); // Need to encodeURIComponent because packageName can contain special characters
+      navigateWithDelay(navigate, `/developer/policy/${encodeURIComponent(data.packageName)}`); // Need to encodeURIComponent because packageName can contain special characters
     }
   }, [isSuccess, data, navigate]);
 

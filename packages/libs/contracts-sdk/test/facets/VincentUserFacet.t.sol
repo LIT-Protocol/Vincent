@@ -21,9 +21,9 @@ contract VincentUserFacetTest is Test {
     uint256 constant PKP_TOKEN_ID_1 = 1;
     uint256 constant PKP_TOKEN_ID_2 = 2;
 
-    string constant TOOL_IPFS_CID_1 = "QmTool1";
-    string constant TOOL_IPFS_CID_2 = "QmTool2";
-    string constant TOOL_IPFS_CID_3 = "QmTool3";
+    string constant TOOL_IPFS_CID_1 = "QmAbility1";
+    string constant TOOL_IPFS_CID_2 = "QmAbility2";
+    string constant TOOL_IPFS_CID_3 = "QmAbility3";
 
     string constant POLICY_IPFS_CID_1 = "QmPolicy1";
     string constant POLICY_IPFS_CID_2 = "QmPolicy2";
@@ -55,7 +55,7 @@ contract VincentUserFacetTest is Test {
 
     string[][] policyIpfsCids = new string[][](2);
     bytes[][] policyParameterValues = new bytes[][](2);
-    string[] toolIpfsCids = new string[](2);
+    string[] abilityIpfsCids = new string[](2);
 
     function setUp() public {
         uint256 deployerPrivateKey = 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80;
@@ -83,8 +83,8 @@ contract VincentUserFacetTest is Test {
         policyParameterValues[0][0] = POLICY_PARAMETER_VALUES_1;
         policyParameterValues[1] = new bytes[](0);
 
-        toolIpfsCids[0] = TOOL_IPFS_CID_1;
-        toolIpfsCids[1] = TOOL_IPFS_CID_2;
+        abilityIpfsCids[0] = TOOL_IPFS_CID_1;
+        abilityIpfsCids[1] = TOOL_IPFS_CID_2;
     }
 
     function testPermitAppVersion() public {
@@ -109,7 +109,7 @@ contract VincentUserFacetTest is Test {
         vm.expectEmit(true, true, true, true);
         emit LibVincentUserFacet.AppVersionPermitted(PKP_TOKEN_ID_1, newAppId_1, newAppVersion_1);
         vm.expectEmit(true, true, true, true);
-        emit LibVincentUserFacet.ToolPolicyParametersSet(
+        emit LibVincentUserFacet.AbilityPolicyParametersSet(
             PKP_TOKEN_ID_1,
             newAppId_1,
             newAppVersion_1,
@@ -123,7 +123,7 @@ contract VincentUserFacetTest is Test {
             PKP_TOKEN_ID_1,
             newAppId_1,
             newAppVersion_1,
-            toolIpfsCids,
+            abilityIpfsCids,
             policyIpfsCids,
             policyParameterValues
         );
@@ -132,7 +132,7 @@ contract VincentUserFacetTest is Test {
         vm.expectEmit(true, true, true, true);
         emit LibVincentUserFacet.AppVersionPermitted(PKP_TOKEN_ID_1, newAppId_2, newAppVersion_2);
         vm.expectEmit(true, true, true, true);
-        emit LibVincentUserFacet.ToolPolicyParametersSet(
+        emit LibVincentUserFacet.AbilityPolicyParametersSet(
             PKP_TOKEN_ID_1,
             newAppId_2,
             newAppVersion_2,
@@ -146,7 +146,7 @@ contract VincentUserFacetTest is Test {
             PKP_TOKEN_ID_1,
             newAppId_2,
             newAppVersion_2,
-            toolIpfsCids,
+            abilityIpfsCids,
             policyIpfsCids,
             policyParameterValues
         );
@@ -159,7 +159,7 @@ contract VincentUserFacetTest is Test {
         vm.expectEmit(true, true, true, true);
         emit LibVincentUserFacet.AppVersionPermitted(PKP_TOKEN_ID_2, newAppId_3, newAppVersion_3);
         vm.expectEmit(true, true, true, true);
-        emit LibVincentUserFacet.ToolPolicyParametersSet(
+        emit LibVincentUserFacet.AbilityPolicyParametersSet(
             PKP_TOKEN_ID_2,
             newAppId_3,
             newAppVersion_3,
@@ -173,7 +173,7 @@ contract VincentUserFacetTest is Test {
             PKP_TOKEN_ID_2,
             newAppId_3,
             newAppVersion_3,
-            toolIpfsCids,
+            abilityIpfsCids,
             policyIpfsCids,
             policyParameterValues
         );
@@ -212,78 +212,78 @@ contract VincentUserFacetTest is Test {
         assertEq(permittedAppIds.length, 1);
         assertEq(permittedAppIds[0], newAppId_3);
 
-        // Check the Tool and Policies for App 1 Version 1 for PKP 1 (Frank)
-        VincentUserViewFacet.ToolWithPolicies[] memory toolsWithPolicies = vincentUserViewFacet.getAllToolsAndPoliciesForApp(PKP_TOKEN_ID_1, newAppId_1);
-        assertEq(toolsWithPolicies.length, 2);
-        assertEq(toolsWithPolicies[0].toolIpfsCid, TOOL_IPFS_CID_1);
-        assertEq(toolsWithPolicies[0].policies.length, 1);
-        assertEq(toolsWithPolicies[0].policies[0].policyIpfsCid, POLICY_IPFS_CID_1);
-        assertEq(toolsWithPolicies[0].policies[0].policyParameterValues, POLICY_PARAMETER_VALUES_1);
+        // Check the Ability and Policies for App 1 Version 1 for PKP 1 (Frank)
+        VincentUserViewFacet.AbilityWithPolicies[] memory abilitiesWithPolicies = vincentUserViewFacet.getAllAbilitiesAndPoliciesForApp(PKP_TOKEN_ID_1, newAppId_1);
+        assertEq(abilitiesWithPolicies.length, 2);
+        assertEq(abilitiesWithPolicies[0].abilityIpfsCid, TOOL_IPFS_CID_1);
+        assertEq(abilitiesWithPolicies[0].policies.length, 1);
+        assertEq(abilitiesWithPolicies[0].policies[0].policyIpfsCid, POLICY_IPFS_CID_1);
+        assertEq(abilitiesWithPolicies[0].policies[0].policyParameterValues, POLICY_PARAMETER_VALUES_1);
 
-        assertEq(toolsWithPolicies[1].toolIpfsCid, TOOL_IPFS_CID_2);
-        assertEq(toolsWithPolicies[1].policies.length, 0);
+        assertEq(abilitiesWithPolicies[1].abilityIpfsCid, TOOL_IPFS_CID_2);
+        assertEq(abilitiesWithPolicies[1].policies.length, 0);
 
-        // Check the Tool and Policies for App 2 Version 1 for PKP 1 (Frank)
-        toolsWithPolicies = vincentUserViewFacet.getAllToolsAndPoliciesForApp(PKP_TOKEN_ID_1, newAppId_2);
-        assertEq(toolsWithPolicies.length, 2);
-        assertEq(toolsWithPolicies[0].toolIpfsCid, TOOL_IPFS_CID_1);
-        assertEq(toolsWithPolicies[0].policies.length, 1);
-        assertEq(toolsWithPolicies[0].policies[0].policyIpfsCid, POLICY_IPFS_CID_1);
-        assertEq(toolsWithPolicies[0].policies[0].policyParameterValues, POLICY_PARAMETER_VALUES_1);
+        // Check the Ability and Policies for App 2 Version 1 for PKP 1 (Frank)
+        abilitiesWithPolicies = vincentUserViewFacet.getAllAbilitiesAndPoliciesForApp(PKP_TOKEN_ID_1, newAppId_2);
+        assertEq(abilitiesWithPolicies.length, 2);
+        assertEq(abilitiesWithPolicies[0].abilityIpfsCid, TOOL_IPFS_CID_1);
+        assertEq(abilitiesWithPolicies[0].policies.length, 1);
+        assertEq(abilitiesWithPolicies[0].policies[0].policyIpfsCid, POLICY_IPFS_CID_1);
+        assertEq(abilitiesWithPolicies[0].policies[0].policyParameterValues, POLICY_PARAMETER_VALUES_1);
 
-        // Check the Tool and Policies for App 3 Version 1 for PKP 2 (George)
-        toolsWithPolicies = vincentUserViewFacet.getAllToolsAndPoliciesForApp(PKP_TOKEN_ID_2, newAppId_3);
-        assertEq(toolsWithPolicies.length, 2);
-        assertEq(toolsWithPolicies[0].toolIpfsCid, TOOL_IPFS_CID_1);
-        assertEq(toolsWithPolicies[0].policies.length, 1);
-        assertEq(toolsWithPolicies[0].policies[0].policyIpfsCid, POLICY_IPFS_CID_1);
-        assertEq(toolsWithPolicies[0].policies[0].policyParameterValues, POLICY_PARAMETER_VALUES_1);
+        // Check the Ability and Policies for App 3 Version 1 for PKP 2 (George)
+        abilitiesWithPolicies = vincentUserViewFacet.getAllAbilitiesAndPoliciesForApp(PKP_TOKEN_ID_2, newAppId_3);
+        assertEq(abilitiesWithPolicies.length, 2);
+        assertEq(abilitiesWithPolicies[0].abilityIpfsCid, TOOL_IPFS_CID_1);
+        assertEq(abilitiesWithPolicies[0].policies.length, 1);
+        assertEq(abilitiesWithPolicies[0].policies[0].policyIpfsCid, POLICY_IPFS_CID_1);
+        assertEq(abilitiesWithPolicies[0].policies[0].policyParameterValues, POLICY_PARAMETER_VALUES_1);
 
-        VincentUserViewFacet.ToolExecutionValidation memory toolExecutionValidation = vincentUserViewFacet.validateToolExecutionAndGetPolicies(
+        VincentUserViewFacet.AbilityExecutionValidation memory abilityExecutionValidation = vincentUserViewFacet.validateAbilityExecutionAndGetPolicies(
             APP_DELEGATEE_CHARLIE,
             PKP_TOKEN_ID_1,
             TOOL_IPFS_CID_1
         );
-        assertTrue(toolExecutionValidation.isPermitted);
-        assertEq(toolExecutionValidation.appId, newAppId_1);
-        assertEq(toolExecutionValidation.appVersion, newAppVersion_1);
-        assertEq(toolExecutionValidation.policies.length, 1);
-        assertEq(toolExecutionValidation.policies[0].policyIpfsCid, POLICY_IPFS_CID_1);
-        assertEq(toolExecutionValidation.policies[0].policyParameterValues, POLICY_PARAMETER_VALUES_1);
+        assertTrue(abilityExecutionValidation.isPermitted);
+        assertEq(abilityExecutionValidation.appId, newAppId_1);
+        assertEq(abilityExecutionValidation.appVersion, newAppVersion_1);
+        assertEq(abilityExecutionValidation.policies.length, 1);
+        assertEq(abilityExecutionValidation.policies[0].policyIpfsCid, POLICY_IPFS_CID_1);
+        assertEq(abilityExecutionValidation.policies[0].policyParameterValues, POLICY_PARAMETER_VALUES_1);
 
-        toolExecutionValidation = vincentUserViewFacet.validateToolExecutionAndGetPolicies(
+        abilityExecutionValidation = vincentUserViewFacet.validateAbilityExecutionAndGetPolicies(
             APP_DELEGATEE_CHARLIE,
             PKP_TOKEN_ID_1,
             TOOL_IPFS_CID_2
         );
-        assertTrue(toolExecutionValidation.isPermitted);
-        assertEq(toolExecutionValidation.appId, newAppId_1);
-        assertEq(toolExecutionValidation.appVersion, newAppVersion_1);
-        assertEq(toolExecutionValidation.policies.length, 0);
+        assertTrue(abilityExecutionValidation.isPermitted);
+        assertEq(abilityExecutionValidation.appId, newAppId_1);
+        assertEq(abilityExecutionValidation.appVersion, newAppVersion_1);
+        assertEq(abilityExecutionValidation.policies.length, 0);
 
-        toolExecutionValidation = vincentUserViewFacet.validateToolExecutionAndGetPolicies(
+        abilityExecutionValidation = vincentUserViewFacet.validateAbilityExecutionAndGetPolicies(
             APP_DELEGATEE_DAVID,
             PKP_TOKEN_ID_1,
             TOOL_IPFS_CID_1
         );
-        assertTrue(toolExecutionValidation.isPermitted);
-        assertEq(toolExecutionValidation.appId, newAppId_2);
-        assertEq(toolExecutionValidation.appVersion, newAppVersion_2);
-        assertEq(toolExecutionValidation.policies.length, 1);
-        assertEq(toolExecutionValidation.policies[0].policyIpfsCid, POLICY_IPFS_CID_1);
-        assertEq(toolExecutionValidation.policies[0].policyParameterValues, POLICY_PARAMETER_VALUES_1);
+        assertTrue(abilityExecutionValidation.isPermitted);
+        assertEq(abilityExecutionValidation.appId, newAppId_2);
+        assertEq(abilityExecutionValidation.appVersion, newAppVersion_2);
+        assertEq(abilityExecutionValidation.policies.length, 1);
+        assertEq(abilityExecutionValidation.policies[0].policyIpfsCid, POLICY_IPFS_CID_1);
+        assertEq(abilityExecutionValidation.policies[0].policyParameterValues, POLICY_PARAMETER_VALUES_1);
 
-        toolExecutionValidation = vincentUserViewFacet.validateToolExecutionAndGetPolicies(
+        abilityExecutionValidation = vincentUserViewFacet.validateAbilityExecutionAndGetPolicies(
             APP_DELEGATEE_EVE,
             PKP_TOKEN_ID_2,
             TOOL_IPFS_CID_1
         );
-        assertTrue(toolExecutionValidation.isPermitted);
-        assertEq(toolExecutionValidation.appId, newAppId_3);
-        assertEq(toolExecutionValidation.appVersion, newAppVersion_3);
-        assertEq(toolExecutionValidation.policies.length, 1);
-        assertEq(toolExecutionValidation.policies[0].policyIpfsCid, POLICY_IPFS_CID_1);
-        assertEq(toolExecutionValidation.policies[0].policyParameterValues, POLICY_PARAMETER_VALUES_1);
+        assertTrue(abilityExecutionValidation.isPermitted);
+        assertEq(abilityExecutionValidation.appId, newAppId_3);
+        assertEq(abilityExecutionValidation.appVersion, newAppVersion_3);
+        assertEq(abilityExecutionValidation.policies.length, 1);
+        assertEq(abilityExecutionValidation.policies[0].policyIpfsCid, POLICY_IPFS_CID_1);
+        assertEq(abilityExecutionValidation.policies[0].policyParameterValues, POLICY_PARAMETER_VALUES_1);
     }
 
     function testUnPermitAppVersion() public {
@@ -303,7 +303,7 @@ contract VincentUserFacetTest is Test {
         vm.expectEmit(true, true, true, true);
         emit LibVincentUserFacet.AppVersionPermitted(PKP_TOKEN_ID_1, newAppId_1, newAppVersion_1);
         vm.expectEmit(true, true, true, true);
-        emit LibVincentUserFacet.ToolPolicyParametersSet(
+        emit LibVincentUserFacet.AbilityPolicyParametersSet(
             PKP_TOKEN_ID_1,
             newAppId_1,
             newAppVersion_1,
@@ -317,7 +317,7 @@ contract VincentUserFacetTest is Test {
             PKP_TOKEN_ID_1,
             newAppId_1,
             newAppVersion_1,
-            toolIpfsCids,
+            abilityIpfsCids,
             policyIpfsCids,
             policyParameterValues
         );
@@ -326,7 +326,7 @@ contract VincentUserFacetTest is Test {
         vm.expectEmit(true, true, true, true);
         emit LibVincentUserFacet.AppVersionPermitted(PKP_TOKEN_ID_1, newAppId_2, newAppVersion_2);
         vm.expectEmit(true, true, true, true);
-        emit LibVincentUserFacet.ToolPolicyParametersSet(
+        emit LibVincentUserFacet.AbilityPolicyParametersSet(
             PKP_TOKEN_ID_1,
             newAppId_2,
             newAppVersion_2,
@@ -340,7 +340,7 @@ contract VincentUserFacetTest is Test {
             PKP_TOKEN_ID_1,
             newAppId_2,
             newAppVersion_2,
-            toolIpfsCids,
+            abilityIpfsCids,
             policyIpfsCids,
             policyParameterValues
         );
@@ -374,26 +374,26 @@ contract VincentUserFacetTest is Test {
         assertEq(permittedAppIds.length, 1);
         assertEq(permittedAppIds[0], newAppId_2);
 
-        // Verify tool execution validation for App 1 is no longer permitted
-        VincentUserViewFacet.ToolExecutionValidation memory toolExecutionValidation = vincentUserViewFacet.validateToolExecutionAndGetPolicies(
+        // Verify ability execution validation for App 1 is no longer permitted
+        VincentUserViewFacet.AbilityExecutionValidation memory abilityExecutionValidation = vincentUserViewFacet.validateAbilityExecutionAndGetPolicies(
             APP_DELEGATEE_CHARLIE,
             PKP_TOKEN_ID_1,
             TOOL_IPFS_CID_1
         );
-        assertFalse(toolExecutionValidation.isPermitted);
+        assertFalse(abilityExecutionValidation.isPermitted);
 
-        // Verify tool execution validation for App 2 is still permitted
-        toolExecutionValidation = vincentUserViewFacet.validateToolExecutionAndGetPolicies(
+        // Verify ability execution validation for App 2 is still permitted
+        abilityExecutionValidation = vincentUserViewFacet.validateAbilityExecutionAndGetPolicies(
             APP_DELEGATEE_DAVID,
             PKP_TOKEN_ID_1,
             TOOL_IPFS_CID_1
         );
-        assertTrue(toolExecutionValidation.isPermitted);
-        assertEq(toolExecutionValidation.appId, newAppId_2);
-        assertEq(toolExecutionValidation.appVersion, newAppVersion_2);
+        assertTrue(abilityExecutionValidation.isPermitted);
+        assertEq(abilityExecutionValidation.appId, newAppId_2);
+        assertEq(abilityExecutionValidation.appVersion, newAppVersion_2);
     }
 
-    function testSetToolPolicyParameters_ToolPolicyNotRegisteredForAppVersion() public {
+    function testSetAbilityPolicyParameters_AbilityPolicyNotRegisteredForAppVersion() public {
         address[] memory delegatees = new address[](1);
         delegatees[0] = APP_DELEGATEE_CHARLIE;
         uint256 newAppId = 1;
@@ -405,7 +405,7 @@ contract VincentUserFacetTest is Test {
             PKP_TOKEN_ID_1,
             newAppId,
             newAppVersion,
-            toolIpfsCids,
+            abilityIpfsCids,
             policyIpfsCids,
             policyParameterValues
         );
@@ -413,7 +413,7 @@ contract VincentUserFacetTest is Test {
         // Create arrays with an unregistered policy (POLICY_IPFS_CID_3)
         string[][] memory _policyIpfsCids = new string[][](2);
         _policyIpfsCids[0] = new string[](1);
-        _policyIpfsCids[0][0] = POLICY_IPFS_CID_3; // This policy is not registered for the tool
+        _policyIpfsCids[0][0] = POLICY_IPFS_CID_3; // This policy is not registered for the ability
         _policyIpfsCids[1] = new string[](0);
 
         bytes[][] memory _policyParameterValues = new bytes[][](2);
@@ -423,24 +423,24 @@ contract VincentUserFacetTest is Test {
 
         vm.expectRevert(
             abi.encodeWithSelector(
-                LibVincentUserFacet.ToolPolicyNotRegisteredForAppVersion.selector,
+                LibVincentUserFacet.AbilityPolicyNotRegisteredForAppVersion.selector,
                 newAppId,
                 newAppVersion,
                 TOOL_IPFS_CID_1,
                 POLICY_IPFS_CID_3
             )
         );
-        vincentUserFacet.setToolPolicyParameters(
+        vincentUserFacet.setAbilityPolicyParameters(
             PKP_TOKEN_ID_1,
             newAppId,
             newAppVersion,
-            toolIpfsCids,
+            abilityIpfsCids,
             _policyIpfsCids,
             _policyParameterValues
         );
     }
 
-    function testRemoveToolPolicyParameters() public {
+    function testRemoveAbilityPolicyParameters() public {
         address[] memory delegatees = new address[](1);
         delegatees[0] = APP_DELEGATEE_CHARLIE;
         uint256 newAppId = 1;
@@ -454,7 +454,7 @@ contract VincentUserFacetTest is Test {
         vm.expectEmit(true, true, true, true);
         emit LibVincentUserFacet.AppVersionPermitted(PKP_TOKEN_ID_1, newAppId, newAppVersion);
         vm.expectEmit(true, true, true, true);
-        emit LibVincentUserFacet.ToolPolicyParametersSet(
+        emit LibVincentUserFacet.AbilityPolicyParametersSet(
             PKP_TOKEN_ID_1,
             newAppId,
             newAppVersion,
@@ -467,24 +467,24 @@ contract VincentUserFacetTest is Test {
             PKP_TOKEN_ID_1,
             newAppId,
             newAppVersion,
-            toolIpfsCids,
+            abilityIpfsCids,
             policyIpfsCids,
             policyParameterValues
         );
 
         // Verify initial policy parameters
-        VincentUserViewFacet.ToolWithPolicies[] memory toolsWithPolicies = vincentUserViewFacet.getAllToolsAndPoliciesForApp(
+        VincentUserViewFacet.AbilityWithPolicies[] memory abilitiesWithPolicies = vincentUserViewFacet.getAllAbilitiesAndPoliciesForApp(
             PKP_TOKEN_ID_1,
             newAppId
         );
-        assertEq(toolsWithPolicies.length, 2);
-        assertEq(toolsWithPolicies[0].policies.length, 1);
-        assertEq(toolsWithPolicies[0].policies[0].policyParameterValues, POLICY_PARAMETER_VALUES_1);
-        assertEq(toolsWithPolicies[1].policies.length, 0);
+        assertEq(abilitiesWithPolicies.length, 2);
+        assertEq(abilitiesWithPolicies[0].policies.length, 1);
+        assertEq(abilitiesWithPolicies[0].policies[0].policyParameterValues, POLICY_PARAMETER_VALUES_1);
+        assertEq(abilitiesWithPolicies[1].policies.length, 0);
 
-        // Create subset arrays containing only the tool and policy we want to zero out
-        string[] memory subsetToolIpfsCids = new string[](1);
-        subsetToolIpfsCids[0] = TOOL_IPFS_CID_1;
+        // Create subset arrays containing only the ability and policy we want to zero out
+        string[] memory subsetAbilityIpfsCids = new string[](1);
+        subsetAbilityIpfsCids[0] = TOOL_IPFS_CID_1;
 
         string[][] memory subsetPolicyIpfsCids = new string[][](1);
         subsetPolicyIpfsCids[0] = new string[](1);
@@ -496,7 +496,7 @@ contract VincentUserFacetTest is Test {
 
         // Expect event for setting empty policy parameters
         vm.expectEmit(true, true, true, true);
-        emit LibVincentUserFacet.ToolPolicyParametersSet(
+        emit LibVincentUserFacet.AbilityPolicyParametersSet(
             PKP_TOKEN_ID_1,
             newAppId,
             newAppVersion,
@@ -506,35 +506,35 @@ contract VincentUserFacetTest is Test {
         );
 
         // Set empty policy parameters to effectively remove them
-        vincentUserFacet.setToolPolicyParameters(
+        vincentUserFacet.setAbilityPolicyParameters(
             PKP_TOKEN_ID_1,
             newAppId,
             newAppVersion,
-            subsetToolIpfsCids,
+            subsetAbilityIpfsCids,
             subsetPolicyIpfsCids,
             emptyPolicyParameterValues
         );
         vm.stopPrank();
 
         // Verify policy parameters are removed
-        toolsWithPolicies = vincentUserViewFacet.getAllToolsAndPoliciesForApp(
+        abilitiesWithPolicies = vincentUserViewFacet.getAllAbilitiesAndPoliciesForApp(
             PKP_TOKEN_ID_1,
             newAppId
         );
-        assertEq(toolsWithPolicies.length, 2);
-        assertEq(toolsWithPolicies[0].policies.length, 1);
-        assertEq(toolsWithPolicies[0].policies[0].policyParameterValues, bytes("")); // Empty bytes after removal
-        assertEq(toolsWithPolicies[1].policies.length, 0);
+        assertEq(abilitiesWithPolicies.length, 2);
+        assertEq(abilitiesWithPolicies[0].policies.length, 1);
+        assertEq(abilitiesWithPolicies[0].policies[0].policyParameterValues, bytes("")); // Empty bytes after removal
+        assertEq(abilitiesWithPolicies[1].policies.length, 0);
 
-        // Verify tool execution validation returns empty parameters
-        VincentUserViewFacet.ToolExecutionValidation memory toolExecutionValidation = vincentUserViewFacet.validateToolExecutionAndGetPolicies(
+        // Verify ability execution validation returns empty parameters
+        VincentUserViewFacet.AbilityExecutionValidation memory abilityExecutionValidation = vincentUserViewFacet.validateAbilityExecutionAndGetPolicies(
             APP_DELEGATEE_CHARLIE,
             PKP_TOKEN_ID_1,
             TOOL_IPFS_CID_1
         );
-        assertTrue(toolExecutionValidation.isPermitted);
-        assertEq(toolExecutionValidation.policies.length, 1);
-        assertEq(toolExecutionValidation.policies[0].policyParameterValues, bytes("")); // Empty bytes after removal
+        assertTrue(abilityExecutionValidation.isPermitted);
+        assertEq(abilityExecutionValidation.policies.length, 1);
+        assertEq(abilityExecutionValidation.policies[0].policyParameterValues, bytes("")); // Empty bytes after removal
     }
 
     /**
@@ -556,7 +556,7 @@ contract VincentUserFacetTest is Test {
             PKP_TOKEN_ID_1,
             newAppId,
             newAppVersion,
-            toolIpfsCids,
+            abilityIpfsCids,
             policyIpfsCids,
             policyParameterValues
         );
@@ -574,7 +574,7 @@ contract VincentUserFacetTest is Test {
             PKP_TOKEN_ID_1,
             newAppId,
             newAppVersion,
-            toolIpfsCids,
+            abilityIpfsCids,
             policyIpfsCids,
             policyParameterValues
         );
@@ -587,7 +587,7 @@ contract VincentUserFacetTest is Test {
             PKP_TOKEN_ID_1,
             1,
             1,
-            toolIpfsCids,
+            abilityIpfsCids,
             policyIpfsCids,
             policyParameterValues
         );
@@ -605,13 +605,13 @@ contract VincentUserFacetTest is Test {
             PKP_TOKEN_ID_1,
             newAppId,
             newAppVersion + 1, // Try to permit a version that hasn't been registered
-            toolIpfsCids,
+            abilityIpfsCids,
             policyIpfsCids,
             policyParameterValues
         );
     }
 
-    function testPermitAppVersion_ToolsAndPoliciesLengthMismatch() public {
+    function testPermitAppVersion_AbilitiesAndPoliciesLengthMismatch() public {
         address[] memory delegatees = new address[](1);
         delegatees[0] = APP_DELEGATEE_CHARLIE;
         uint256 newAppId = 1;
@@ -619,22 +619,22 @@ contract VincentUserFacetTest is Test {
 
         // Create arrays with mismatched length
 
-        // Create policy arrays with different length than tools
-        string[][] memory _policyIpfsCids = new string[][](1); // Only 1 policy array for 2 tools
+        // Create policy arrays with different length than abilities
+        string[][] memory _policyIpfsCids = new string[][](1); // Only 1 policy array for 2 abilities
         _policyIpfsCids[0] = new string[](1);
         _policyIpfsCids[0][0] = POLICY_IPFS_CID_1;
 
-        bytes[][] memory _policyParameterValues = new bytes[][](1); // Only 1 parameter array for 2 tools
+        bytes[][] memory _policyParameterValues = new bytes[][](1); // Only 1 parameter array for 2 abilities
         _policyParameterValues[0] = new bytes[](1);
         _policyParameterValues[0][0] = POLICY_PARAMETER_VALUES_1;
 
         vm.startPrank(APP_USER_FRANK);
-        vm.expectRevert(abi.encodeWithSelector(LibVincentUserFacet.ToolsAndPoliciesLengthMismatch.selector));
+        vm.expectRevert(abi.encodeWithSelector(LibVincentUserFacet.AbilitiesAndPoliciesLengthMismatch.selector));
         vincentUserFacet.permitAppVersion(
             PKP_TOKEN_ID_1,
             newAppId,
             newAppVersion,
-            toolIpfsCids,
+            abilityIpfsCids,
             _policyIpfsCids,
             _policyParameterValues
         );
@@ -652,7 +652,7 @@ contract VincentUserFacetTest is Test {
             PKP_TOKEN_ID_1,
             newAppId,
             newAppVersion,
-            toolIpfsCids,
+            abilityIpfsCids,
             policyIpfsCids,
             policyParameterValues
         );
@@ -663,7 +663,7 @@ contract VincentUserFacetTest is Test {
             PKP_TOKEN_ID_1,
             newAppId,
             newAppVersion,
-            toolIpfsCids,
+            abilityIpfsCids,
             policyIpfsCids,
             policyParameterValues
         );
@@ -685,21 +685,21 @@ contract VincentUserFacetTest is Test {
             PKP_TOKEN_ID_1,
             newAppId,
             newAppVersion,
-            toolIpfsCids,
+            abilityIpfsCids,
             policyIpfsCids,
             policyParameterValues
         );
     }
 
-    function testPermitAppVersion_NotAllRegisteredToolsProvided() public {
+    function testPermitAppVersion_NotAllRegisteredAbilitiesProvided() public {
         address[] memory delegatees = new address[](1);
         delegatees[0] = APP_DELEGATEE_CHARLIE;
         uint256 newAppId = 1;
         uint256 newAppVersion = _registerBasicApp(newAppId, delegatees);
 
-        // Create arrays with only one tool instead of both registered tools
-        string[] memory _toolIpfsCids = new string[](1);
-        _toolIpfsCids[0] = TOOL_IPFS_CID_1; // Only providing first tool, missing TOOL_IPFS_CID_2
+        // Create arrays with only one ability instead of both registered abilities
+        string[] memory _abilityIpfsCids = new string[](1);
+        _abilityIpfsCids[0] = TOOL_IPFS_CID_1; // Only providing first ability, missing TOOL_IPFS_CID_2
 
         string[][] memory _policyIpfsCids = new string[][](1);
         _policyIpfsCids[0] = new string[](1);
@@ -710,35 +710,35 @@ contract VincentUserFacetTest is Test {
         _policyParameterValues[0][0] = POLICY_PARAMETER_VALUES_1;
 
         vm.startPrank(APP_USER_FRANK);
-        vm.expectRevert(abi.encodeWithSelector(LibVincentUserFacet.NotAllRegisteredToolsProvided.selector, newAppId, newAppVersion));
+        vm.expectRevert(abi.encodeWithSelector(LibVincentUserFacet.NotAllRegisteredAbilitiesProvided.selector, newAppId, newAppVersion));
         vincentUserFacet.permitAppVersion(
             PKP_TOKEN_ID_1,
             newAppId,
             newAppVersion,
-            _toolIpfsCids,
+            _abilityIpfsCids,
             _policyIpfsCids,
             _policyParameterValues
         );
     }
 
-    function testPermitAppVersion_ToolNotRegisteredForAppVersion() public {
+    function testPermitAppVersion_AbilityNotRegisteredForAppVersion() public {
         address[] memory delegatees = new address[](1);
         delegatees[0] = APP_DELEGATEE_CHARLIE;
         uint256 newAppId = 1;
         uint256 newAppVersion = _registerBasicApp(newAppId, delegatees);
 
-        // Create arrays with an unregistered tool (TOOL_IPFS_CID_3)
-        string[] memory _toolIpfsCids = new string[](2);
-        _toolIpfsCids[0] = TOOL_IPFS_CID_1;
-        _toolIpfsCids[1] = TOOL_IPFS_CID_3; // This tool is not registered for the app version
+        // Create arrays with an unregistered ability (TOOL_IPFS_CID_3)
+        string[] memory _abilityIpfsCids = new string[](2);
+        _abilityIpfsCids[0] = TOOL_IPFS_CID_1;
+        _abilityIpfsCids[1] = TOOL_IPFS_CID_3; // This ability is not registered for the app version
 
         vm.startPrank(APP_USER_FRANK);
-        vm.expectRevert(abi.encodeWithSelector(LibVincentUserFacet.ToolNotRegisteredForAppVersion.selector, newAppId, newAppVersion, TOOL_IPFS_CID_3));
+        vm.expectRevert(abi.encodeWithSelector(LibVincentUserFacet.AbilityNotRegisteredForAppVersion.selector, newAppId, newAppVersion, TOOL_IPFS_CID_3));
         vincentUserFacet.permitAppVersion(
             PKP_TOKEN_ID_1,
             newAppId,
             newAppVersion,
-            _toolIpfsCids,
+            _abilityIpfsCids,
             policyIpfsCids,
             policyParameterValues
         );
@@ -758,7 +758,7 @@ contract VincentUserFacetTest is Test {
             PKP_TOKEN_ID_1,
             newAppId,
             newAppVersion,
-            toolIpfsCids,
+            abilityIpfsCids,
             policyIpfsCids,
             policyParameterValues
         );
@@ -798,9 +798,9 @@ contract VincentUserFacetTest is Test {
     }
 
     /**
-     * ######################### setToolPolicyParameters ERROR CASES #########################
+     * ######################### setAbilityPolicyParameters ERROR CASES #########################
      */
-    function testSetToolPolicyParameters_NotPkpOwner() public {
+    function testSetAbilityPolicyParameters_NotPkpOwner() public {
         address[] memory delegatees = new address[](1);
         delegatees[0] = APP_DELEGATEE_CHARLIE;
         uint256 newAppId = 1;
@@ -811,7 +811,7 @@ contract VincentUserFacetTest is Test {
             PKP_TOKEN_ID_1,
             newAppId,
             newAppVersion,
-            toolIpfsCids,
+            abilityIpfsCids,
             policyIpfsCids,
             policyParameterValues
         );
@@ -819,30 +819,30 @@ contract VincentUserFacetTest is Test {
 
         vm.startPrank(APP_USER_GEORGE);
         vm.expectRevert(abi.encodeWithSelector(LibVincentUserFacet.NotPkpOwner.selector, PKP_TOKEN_ID_1, APP_USER_GEORGE));
-        vincentUserFacet.setToolPolicyParameters(
+        vincentUserFacet.setAbilityPolicyParameters(
             PKP_TOKEN_ID_1,
             newAppId,
             newAppVersion,
-            toolIpfsCids,
+            abilityIpfsCids,
             policyIpfsCids,
             policyParameterValues
         );
     }
 
-    function testSetToolPolicyParameters_AppNotRegistered() public {
+    function testSetAbilityPolicyParameters_AppNotRegistered() public {
         vm.startPrank(APP_USER_FRANK);
         vm.expectRevert(abi.encodeWithSelector(VincentBase.AppNotRegistered.selector, 1));
-        vincentUserFacet.setToolPolicyParameters(
+        vincentUserFacet.setAbilityPolicyParameters(
             PKP_TOKEN_ID_1,
             1,
             1,
-            toolIpfsCids,
+            abilityIpfsCids,
             policyIpfsCids,
             policyParameterValues
         );
     }
 
-    function testSetToolPolicyParameters_AppVersionNotRegistered() public {
+    function testSetAbilityPolicyParameters_AppVersionNotRegistered() public {
         address[] memory delegatees = new address[](1);
         delegatees[0] = APP_DELEGATEE_CHARLIE;
         uint256 newAppId = 1;
@@ -850,17 +850,17 @@ contract VincentUserFacetTest is Test {
 
         vm.startPrank(APP_USER_FRANK);
         vm.expectRevert(abi.encodeWithSelector(VincentBase.AppVersionNotRegistered.selector, newAppId, newAppVersion + 1));
-        vincentUserFacet.setToolPolicyParameters(
+        vincentUserFacet.setAbilityPolicyParameters(
             PKP_TOKEN_ID_1,
             newAppId,
             newAppVersion + 1, // Try to set parameters for a version that hasn't been registered
-            toolIpfsCids,
+            abilityIpfsCids,
             policyIpfsCids,
             policyParameterValues
         );
     }
 
-    function testSetToolPolicyParameters_InvalidInput() public {
+    function testSetAbilityPolicyParameters_InvalidInput() public {
         address[] memory delegatees = new address[](1);
         delegatees[0] = APP_DELEGATEE_CHARLIE;
         uint256 newAppId = 1;
@@ -872,26 +872,26 @@ contract VincentUserFacetTest is Test {
             PKP_TOKEN_ID_1,
             newAppId,
             newAppVersion,
-            toolIpfsCids,
+            abilityIpfsCids,
             policyIpfsCids,
             policyParameterValues
         );
 
-        // Now try to set parameters with an empty tool IPFS CIDs array
-        string[] memory emptyToolIpfsCids = new string[](0);
+        // Now try to set parameters with an empty ability IPFS CIDs array
+        string[] memory emptyAbilityIpfsCids = new string[](0);
 
         vm.expectRevert(abi.encodeWithSelector(LibVincentUserFacet.InvalidInput.selector));
-        vincentUserFacet.setToolPolicyParameters(
+        vincentUserFacet.setAbilityPolicyParameters(
             PKP_TOKEN_ID_1,
             newAppId,
             newAppVersion,
-            emptyToolIpfsCids,
+            emptyAbilityIpfsCids,
             policyIpfsCids,
             policyParameterValues
         );
     }
 
-    function testSetToolPolicyParameters_EmptyToolIpfsCid() public {
+    function testSetAbilityPolicyParameters_EmptyAbilityIpfsCid() public {
         address[] memory delegatees = new address[](1);
         delegatees[0] = APP_DELEGATEE_CHARLIE;
         uint256 newAppId = 1;
@@ -903,28 +903,28 @@ contract VincentUserFacetTest is Test {
             PKP_TOKEN_ID_1,
             newAppId,
             newAppVersion,
-            toolIpfsCids,
+            abilityIpfsCids,
             policyIpfsCids,
             policyParameterValues
         );
 
-        // Create arrays with an empty tool IPFS CID
-        string[] memory _toolIpfsCids = new string[](2);
-        _toolIpfsCids[0] = ""; // Empty string for first tool
-        _toolIpfsCids[1] = TOOL_IPFS_CID_2;
+        // Create arrays with an empty ability IPFS CID
+        string[] memory _abilityIpfsCids = new string[](2);
+        _abilityIpfsCids[0] = ""; // Empty string for first ability
+        _abilityIpfsCids[1] = TOOL_IPFS_CID_2;
 
-        vm.expectRevert(abi.encodeWithSelector(VincentUserViewFacet.EmptyToolIpfsCid.selector));
-        vincentUserFacet.setToolPolicyParameters(
+        vm.expectRevert(abi.encodeWithSelector(VincentUserViewFacet.EmptyAbilityIpfsCid.selector));
+        vincentUserFacet.setAbilityPolicyParameters(
             PKP_TOKEN_ID_1,
             newAppId,
             newAppVersion,
-            _toolIpfsCids,
+            _abilityIpfsCids,
             policyIpfsCids,
             policyParameterValues
         );
     }
 
-    function testSetToolPolicyParameters_NotAllRegisteredToolsProvided() public {
+    function testSetAbilityPolicyParameters_NotAllRegisteredAbilitiesProvided() public {
         address[] memory delegatees = new address[](1);
         delegatees[0] = APP_DELEGATEE_CHARLIE;
         uint256 newAppId = 1;
@@ -936,24 +936,24 @@ contract VincentUserFacetTest is Test {
             PKP_TOKEN_ID_1,
             newAppId,
             newAppVersion,
-            toolIpfsCids,
+            abilityIpfsCids,
             policyIpfsCids,
             policyParameterValues
         );
 
-        // Validate the original tool policies and parameters
-        VincentUserViewFacet.ToolWithPolicies[] memory originalToolsWithPolicies = vincentUserViewFacet.getAllToolsAndPoliciesForApp(
+        // Validate the original ability policies and parameters
+        VincentUserViewFacet.AbilityWithPolicies[] memory originalAbilitiesWithPolicies = vincentUserViewFacet.getAllAbilitiesAndPoliciesForApp(
             PKP_TOKEN_ID_1,
             newAppId
         );
-        assertEq(originalToolsWithPolicies.length, 2); // Still has both tools
-        assertEq(originalToolsWithPolicies[0].policies.length, 1);
-        assertEq(originalToolsWithPolicies[0].policies[0].policyParameterValues, POLICY_PARAMETER_VALUES_1);
-        assertEq(originalToolsWithPolicies[1].policies.length, 0); // Second tool unchanged
+        assertEq(originalAbilitiesWithPolicies.length, 2); // Still has both abilities
+        assertEq(originalAbilitiesWithPolicies[0].policies.length, 1);
+        assertEq(originalAbilitiesWithPolicies[0].policies[0].policyParameterValues, POLICY_PARAMETER_VALUES_1);
+        assertEq(originalAbilitiesWithPolicies[1].policies.length, 0); // Second ability unchanged
 
-        // Create arrays with only one tool instead of both registered tools
-        string[] memory subsetToolIpfsCids = new string[](1);
-        subsetToolIpfsCids[0] = TOOL_IPFS_CID_1; // Only providing first tool, missing TOOL_IPFS_CID_2
+        // Create arrays with only one ability instead of both registered abilities
+        string[] memory subsetAbilityIpfsCids = new string[](1);
+        subsetAbilityIpfsCids[0] = TOOL_IPFS_CID_1; // Only providing first ability, missing TOOL_IPFS_CID_2
 
         string[][] memory subsetPolicyIpfsCids = new string[][](1);
         subsetPolicyIpfsCids[0] = new string[](1);
@@ -964,7 +964,7 @@ contract VincentUserFacetTest is Test {
         subsetPolicyParameterValues[0][0] = POLICY_PARAMETER_VALUES_2;
 
          vm.expectEmit(true, true, true, true);
-        emit LibVincentUserFacet.ToolPolicyParametersSet(
+        emit LibVincentUserFacet.AbilityPolicyParametersSet(
             PKP_TOKEN_ID_1,
             newAppId,
             newAppVersion,
@@ -973,52 +973,52 @@ contract VincentUserFacetTest is Test {
             POLICY_PARAMETER_VALUES_2
         );
 
-        vincentUserFacet.setToolPolicyParameters(
+        vincentUserFacet.setAbilityPolicyParameters(
             PKP_TOKEN_ID_1,
             newAppId,
             newAppVersion,
-            subsetToolIpfsCids,
+            subsetAbilityIpfsCids,
             subsetPolicyIpfsCids,
             subsetPolicyParameterValues
         );
 
-        // Verify the parameters were updated for the first tool only
-        VincentUserViewFacet.ToolWithPolicies[] memory updatedToolsWithPolicies = vincentUserViewFacet.getAllToolsAndPoliciesForApp(
+        // Verify the parameters were updated for the first ability only
+        VincentUserViewFacet.AbilityWithPolicies[] memory updatedAbilitiesWithPolicies = vincentUserViewFacet.getAllAbilitiesAndPoliciesForApp(
             PKP_TOKEN_ID_1,
             newAppId
         );
-        assertEq(updatedToolsWithPolicies.length, 2); // Still has both tools
-        assertEq(updatedToolsWithPolicies[0].policies.length, 1);
-        assertEq(updatedToolsWithPolicies[0].policies[0].policyParameterValues, POLICY_PARAMETER_VALUES_2);
-        assertEq(updatedToolsWithPolicies[1].policies.length, 0); // Second tool unchanged
+        assertEq(updatedAbilitiesWithPolicies.length, 2); // Still has both abilities
+        assertEq(updatedAbilitiesWithPolicies[0].policies.length, 1);
+        assertEq(updatedAbilitiesWithPolicies[0].policies[0].policyParameterValues, POLICY_PARAMETER_VALUES_2);
+        assertEq(updatedAbilitiesWithPolicies[1].policies.length, 0); // Second ability unchanged
     }
 
     function _registerApp(
         uint256 appId,
         address[] memory delegatees,
-        VincentAppFacet.AppVersionTools memory versionTools
+        VincentAppFacet.AppVersionAbilities memory versionAbilities
     ) private returns (uint256) {
         vm.startPrank(APP_MANAGER_ALICE);
-        uint256 newAppVersion = vincentAppFacet.registerApp(appId, delegatees, versionTools);
+        uint256 newAppVersion = vincentAppFacet.registerApp(appId, delegatees, versionAbilities);
         vm.stopPrank();
 
         return newAppVersion;
     }
 
     function _registerBasicApp(uint256 appId, address[] memory delegatees) private returns (uint256 newAppVersion) {
-        VincentAppFacet.AppVersionTools memory versionTools;
-        versionTools.toolIpfsCids = new string[](2);
+        VincentAppFacet.AppVersionAbilities memory versionAbilities;
+        versionAbilities.abilityIpfsCids = new string[](2);
 
-        versionTools.toolIpfsCids[0] = TOOL_IPFS_CID_1;
-        versionTools.toolIpfsCids[1] = TOOL_IPFS_CID_2;
+        versionAbilities.abilityIpfsCids[0] = TOOL_IPFS_CID_1;
+        versionAbilities.abilityIpfsCids[1] = TOOL_IPFS_CID_2;
 
-        versionTools.toolPolicies = new string[][](2);
+        versionAbilities.abilityPolicies = new string[][](2);
 
-        versionTools.toolPolicies[0] = new string[](1);
-        versionTools.toolPolicies[0][0] = POLICY_IPFS_CID_1;
+        versionAbilities.abilityPolicies[0] = new string[](1);
+        versionAbilities.abilityPolicies[0][0] = POLICY_IPFS_CID_1;
 
-        versionTools.toolPolicies[1] = new string[](0);
+        versionAbilities.abilityPolicies[1] = new string[](0);
         
-        return _registerApp(appId, delegatees, versionTools);
+        return _registerApp(appId, delegatees, versionAbilities);
     }
 }

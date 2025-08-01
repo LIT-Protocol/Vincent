@@ -1,19 +1,15 @@
 import { useState, useCallback, useRef } from 'react';
-import {
-  setToolPolicyParameters,
-  PermissionData,
-  unPermitApp,
-} from '@lit-protocol/vincent-contracts-sdk';
-import { ConsentInfoMap } from '@/hooks/user-dashboard/consent/useConsentInfo';
+import { getClient, PermissionData } from '@lit-protocol/vincent-contracts-sdk';
+import { ConnectInfoMap } from '@/hooks/user-dashboard/connect/useConnectInfo';
 import { useFormatUserPermissions } from '@/hooks/user-dashboard/dashboard/useFormatUserPermissions';
-import { theme } from '../consent/ui/theme';
-import { PolicyFormRef } from '../consent/ui/PolicyForm';
+import { theme } from '../connect/ui/theme';
+import { PolicyFormRef } from '../connect/ui/PolicyForm';
 import { UseReadAuthInfo } from '@/hooks/user-dashboard/useAuthInfo';
-import { useAddPermittedActions } from '@/hooks/user-dashboard/consent/useAddPermittedActions';
-import { ConsentAppHeader } from '../consent/ui/ConsentAppHeader';
+import { useAddPermittedActions } from '@/hooks/user-dashboard/connect/useAddPermittedActions';
+import { ConnectAppHeader } from '../connect/ui/ConnectAppHeader';
 import { PermittedAppInfo } from './ui/PermittedAppInfo';
 import { UserPermissionButtons } from './ui/UserPermissionButtons';
-import { StatusCard } from '../consent/ui/StatusCard';
+import { StatusCard } from '../connect/ui/StatusCard';
 import { useTheme } from '@/providers/ThemeProvider';
 import { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
 import { litNodeClient } from '@/utils/user-dashboard/lit';
@@ -21,14 +17,14 @@ import { PageHeader } from './ui/PageHeader';
 import { useNavigate } from 'react-router-dom';
 
 interface AppPermissionPageProps {
-  consentInfoMap: ConsentInfoMap;
+  connectInfoMap: ConnectInfoMap;
   readAuthInfo: UseReadAuthInfo;
   existingData: PermissionData;
   permittedAppVersions: Record<string, string>;
 }
 
 export function AppPermissionPage({
-  consentInfoMap,
+  connectInfoMap,
   readAuthInfo,
   existingData,
   permittedAppVersions,
@@ -41,7 +37,7 @@ export function AppPermissionPage({
   const themeStyles = theme(isDark);
   const navigate = useNavigate();
 
-  const { formData, handleFormChange } = useFormatUserPermissions(consentInfoMap, existingData);
+  const { formData, handleFormChange } = useFormatUserPermissions(connectInfoMap, existingData);
 
   const {
     addPermittedActions,
@@ -51,7 +47,7 @@ export function AppPermissionPage({
   } = useAddPermittedActions();
 
   // Get the permitted version for this app
-  const appIdString = consentInfoMap.app.appId.toString();
+  const appIdString = connectInfoMap.app.appId.toString();
   const permittedVersion = permittedAppVersions[appIdString];
 
   const handleSubmit = useCallback(async () => {
@@ -84,19 +80,17 @@ export function AppPermissionPage({
       await addPermittedActions({
         wallet: agentPkpWallet,
         agentPKPTokenId: readAuthInfo.authInfo.userPKP.tokenId,
-        toolIpfsCids: Object.keys(formData),
+        abilityIpfsCids: Object.keys(formData),
       });
 
       try {
-        setLocalStatus('Setting tool policy parameters...');
-        await setToolPolicyParameters({
-          signer: agentPkpWallet,
-          args: {
-            pkpTokenId: readAuthInfo.authInfo.agentPKP!.tokenId,
-            appId: consentInfoMap.app.appId.toString(),
-            appVersion: permittedVersion.toString(),
-            policyParams: formData,
-          },
+        setLocalStatus('Setting ability policy parameters...');
+        const client = getClient({ signer: agentPkpWallet });
+        await client.setAbilityPolicyParameters({
+          pkpEthAddress: readAuthInfo.authInfo.agentPKP!.ethAddress,
+          appId: Number(connectInfoMap.app.appId),
+          appVersion: Number(permittedVersion),
+          policyParams: formData,
         });
 
         setLocalStatus(null);
@@ -113,7 +107,7 @@ export function AppPermissionPage({
     } else {
       setLocalStatus(null);
     }
-  }, [formData, readAuthInfo, addPermittedActions, consentInfoMap.app, permittedVersion]);
+  }, [formData, readAuthInfo, addPermittedActions, connectInfoMap.app, permittedVersion]);
 
   const handleUnpermit = useCallback(async () => {
     // Clear any previous local errors and success
@@ -136,13 +130,11 @@ export function AppPermissionPage({
 
       setLocalStatus('Unpermitting app...');
 
-      await unPermitApp({
-        signer: agentPkpWallet,
-        args: {
-          pkpTokenId: readAuthInfo.authInfo.agentPKP!.tokenId,
-          appId: consentInfoMap.app.appId.toString(),
-          appVersion: permittedVersion.toString(), // FIXME: Why is a version needed here?
-        },
+      const client = getClient({ signer: agentPkpWallet });
+      await client.unPermitApp({
+        pkpEthAddress: readAuthInfo.authInfo.agentPKP!.ethAddress,
+        appId: Number(connectInfoMap.app.appId),
+        appVersion: Number(permittedVersion),
       });
 
       setLocalStatus(null);
@@ -157,9 +149,9 @@ export function AppPermissionPage({
       setLocalError(error instanceof Error ? error.message : 'Failed to unpermit app');
       setLocalStatus(null);
     }
-  }, [readAuthInfo, consentInfoMap.app, permittedVersion, navigate]);
+  }, [readAuthInfo, connectInfoMap.app, permittedVersion, navigate]);
 
-  const registerFormRef = useCallback((policyIpfsCid: string, ref: PolicyFormRef) => {    
+  const registerFormRef = useCallback((policyIpfsCid: string, ref: PolicyFormRef) => {
     formRefs.current[policyIpfsCid] = ref;
   }, []);
 
@@ -168,7 +160,7 @@ export function AppPermissionPage({
   const error = actionsError;
 
   return (
-    <div className="w-full">
+    <div className={`min-h-screen w-full transition-colors duration-500 ${themeStyles.bg} sm:p-4`}>
       {/* Main Card Container */}
       <div
         className={`max-w-6xl mx-auto ${themeStyles.mainCard} border ${themeStyles.mainCardBorder} rounded-2xl shadow-2xl overflow-hidden`}
@@ -176,8 +168,18 @@ export function AppPermissionPage({
         {/* Page Header */}
         <PageHeader
           icon={
-            <svg className="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            <svg
+              className="w-4 h-4 text-orange-500"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+              />
             </svg>
           }
           title="Manage App Permissions"
@@ -185,13 +187,13 @@ export function AppPermissionPage({
           theme={themeStyles}
         />
 
-        <div className="px-6 py-8 space-y-6">
+        <div className="px-3 sm:px-6 py-6 sm:py-8 space-y-6">
           {/* App Header */}
-          <ConsentAppHeader app={consentInfoMap.app} theme={themeStyles} />
+          <ConnectAppHeader app={connectInfoMap.app} theme={themeStyles} />
 
           {/* Apps and Versions */}
           <PermittedAppInfo
-            consentInfoMap={consentInfoMap}
+            connectInfoMap={connectInfoMap}
             theme={themeStyles}
             isDark={isDark}
             formData={formData}

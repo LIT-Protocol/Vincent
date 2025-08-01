@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Vincent Dashboard is a Vite React application where users interact with the Vincent system. It allows users to create apps, manage tools and policies, update versions, manage delegatee addresses, and more. This project is part of the Vincent monorepo and is designed to be modular, maintainable, and user-friendly.
+The Vincent Dashboard is a Vite React application where users interact with the Vincent system. It allows users to create apps, manage abilities and policies, update versions, manage delegatee addresses, and more. This project is part of the Vincent monorepo and is designed to be modular, maintainable, and user-friendly.
 
 ## Setup
 

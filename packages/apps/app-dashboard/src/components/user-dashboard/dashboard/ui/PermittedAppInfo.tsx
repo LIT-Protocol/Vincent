@@ -1,23 +1,21 @@
 import { motion } from 'framer-motion';
-import { Card, CardContent } from '@/components/shared/ui/card';
-import { ConsentInfoMap } from '@/hooks/user-dashboard/consent/useConsentInfo';
-import { ToolHeader } from '@/components/user-dashboard/consent/ui/ToolHeader';
-import { RequiredPolicies } from '@/components/user-dashboard/consent/ui/RequiredPolicies';
-import { PolicyFormRef } from '@/components/user-dashboard/consent/ui/PolicyForm';
-import { ThemeType } from '@/components/user-dashboard/consent/ui/theme';
+import { ConnectInfoMap } from '@/hooks/user-dashboard/connect/useConnectInfo';
+import { AbilityAccordion } from '@/components/user-dashboard/connect/ui/AbilityAccordion';
+import { PolicyFormRef } from '@/components/user-dashboard/connect/ui/PolicyForm';
+import { ThemeType } from '@/components/user-dashboard/connect/ui/theme';
 
 interface AppsAndVersionsProps {
-  consentInfoMap: ConsentInfoMap;
+  connectInfoMap: ConnectInfoMap;
   theme: ThemeType;
   isDark: boolean;
   formData: Record<string, any>;
-  onFormChange: (toolIpfsCid: string, policyIpfsCid: string, data: any) => void;
+  onFormChange: (abilityIpfsCid: string, policyIpfsCid: string, data: any) => void;
   onRegisterFormRef: (policyIpfsCid: string, ref: PolicyFormRef) => void;
   permittedVersion?: string; // Optional prop to specify a specific version to render
 }
 
 export function PermittedAppInfo({
-  consentInfoMap,
+  connectInfoMap,
   theme,
   isDark,
   formData,
@@ -25,16 +23,16 @@ export function PermittedAppInfo({
   onRegisterFormRef,
   permittedVersion,
 }: AppsAndVersionsProps) {
-  const appNames = Object.keys(consentInfoMap.versionsByApp);
+  const appNames = Object.keys(connectInfoMap.versionsByApp);
 
   return (
     <>
       {appNames.map((appName, appIndex) => {
-        const versions = consentInfoMap.versionsByApp[appName];
-        
+        const versions = connectInfoMap.versionsByApp[appName];
+
         // Skip if no version to use
         if (!permittedVersion) return null;
-        
+
         const version = versions.find(
           (version) => version.version.toString() === permittedVersion.toString(),
         );
@@ -47,66 +45,55 @@ export function PermittedAppInfo({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: appIndex * 0.1 }}
+            className="space-y-4"
           >
-            <Card className={`backdrop-blur-xl ${theme.cardBg} border ${theme.cardBorder}`}>
-              {/* Version Content */}
-              <CardContent className="p-6">
-                {(() => {
-                  const versionKey = `${appName}-${version.version}`;
-                  const appVersionTools =
-                    consentInfoMap.appVersionToolsByAppVersion[versionKey] || [];
+            {(() => {
+              const versionKey = `${appName}-${version.version}`;
+              const appVersionAbilities =
+                connectInfoMap.appVersionAbilitiesByAppVersion[versionKey] || [];
 
-                  return (
-                    <div className="space-y-6">
-                      {appVersionTools.map((tool) => {
-                        const toolKey = `${tool.toolPackageName}-${tool.toolVersion}`;
-                        const policies =
-                          consentInfoMap.supportedPoliciesByToolVersion[toolKey] || [];
+              return (
+                <>
+                  {appVersionAbilities.map((ability) => {
+                    const abilityKey = `${ability.abilityPackageName}-${ability.abilityVersion}`;
+                    const policies =
+                      connectInfoMap.supportedPoliciesByAbilityVersion[abilityKey] || [];
 
-                        // Filter out policies that are in hiddenSupportedPolicies
-                        const visiblePolicies = policies.filter((policy) => {
-                          if (
-                            !tool.hiddenSupportedPolicies ||
-                            tool.hiddenSupportedPolicies.length === 0
-                          ) {
-                            return true; // Show all policies if no hidden policies specified
-                          }
-                          return !tool.hiddenSupportedPolicies.includes(policy.packageName);
-                        });
+                    // Filter out policies that are in hiddenSupportedPolicies
+                    const visiblePolicies = policies.filter((policy) => {
+                      if (
+                        !ability.hiddenSupportedPolicies ||
+                        ability.hiddenSupportedPolicies.length === 0
+                      ) {
+                        return true; // Show all policies if no hidden policies specified
+                      }
+                      return !ability.hiddenSupportedPolicies.includes(policy.packageName);
+                    });
 
-                        const toolVersions =
-                          consentInfoMap.toolVersionsByAppVersionTool[toolKey] || [];
-                        const toolVersion = toolVersions[0];
+                    const abilityVersions =
+                      connectInfoMap.abilityVersionsByAppVersionAbility[abilityKey] || [];
+                    const abilityVersion = abilityVersions[0];
 
-                        return (
-                          <div key={toolKey} className="space-y-4">
-                            {/* Tool Header */}
-                            <ToolHeader
-                              tool={tool}
-                              toolVersion={toolVersion}
-                              consentInfoMap={consentInfoMap}
-                              theme={theme}
-                            />
-
-                            {/* Required Policies */}
-                            <RequiredPolicies
-                              policies={visiblePolicies}
-                              consentInfoMap={consentInfoMap}
-                              theme={theme}
-                              isDark={isDark}
-                              formData={formData}
-                              onFormChange={onFormChange}
-                              onRegisterFormRef={onRegisterFormRef}
-                              toolIpfsCid={toolVersion.ipfsCid}
-                            />
-                          </div>
-                        );
-                      })}
-                    </div>
-                  );
-                })()}
-              </CardContent>
-            </Card>
+                    return (
+                      <AbilityAccordion
+                        key={abilityKey}
+                        ability={ability}
+                        abilityVersion={abilityVersion}
+                        policies={visiblePolicies}
+                        connectInfoMap={connectInfoMap}
+                        theme={theme}
+                        isDark={isDark}
+                        formData={formData}
+                        onFormChange={onFormChange}
+                        onRegisterFormRef={onRegisterFormRef}
+                        abilityIpfsCid={abilityVersion.ipfsCid}
+                        defaultExpanded={false} // All abilities start closed
+                      />
+                    );
+                  })}
+                </>
+              );
+            })()}
           </motion.div>
         );
       })}

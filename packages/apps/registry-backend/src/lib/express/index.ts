@@ -6,13 +6,14 @@ import cors from 'cors';
 import { json } from 'express';
 import * as OpenApiValidator from 'express-openapi-validator';
 
+ 
 import { openApiJson } from '@lit-protocol/vincent-registry-sdk';
 
 import { html } from '../../assets/apiHtml.json';
 import { env } from '../../env';
+import { registerRoutes as registerAbilityRoutes } from './ability/routes';
 import { registerRoutes as registerAppRoutes } from './app/routes';
 import { registerRoutes as registerPolicyRoutes } from './policy/routes';
-import { registerRoutes as registerToolRoutes } from './tool/routes';
 
 const { IS_DEVELOPMENT, CORS_ALLOWED_DOMAIN } = env;
 
@@ -23,7 +24,7 @@ const corsConfig = {
 
 export function registerRoutes(app: Express) {
   app.use(cors(corsConfig));
-  app.use(json());
+  app.use(json({ limit: '256kb' }));
 
   app.get('/openApiJson', (req, res) => {
     res.json(openApiJson);
@@ -44,7 +45,7 @@ export function registerRoutes(app: Express) {
   );
 
   registerAppRoutes(app);
-  registerToolRoutes(app);
+  registerAbilityRoutes(app);
   registerPolicyRoutes(app);
 
   // @ts-expect-error Error handler is abstract/generic

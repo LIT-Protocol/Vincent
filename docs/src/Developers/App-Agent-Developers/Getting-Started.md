@@ -5,7 +5,7 @@ title: App & Agent Developers
 
 # What is a Vincent App?
 
-Vincent Apps enable secure, policy governed automation on behalf of Vincent Users without compromising custody or control. Whether you're building autonomous agents or integrating with existing web2/web3 apps, Vincent Apps allow users to delegate specific on and off-chain actions to your app through Vincent Tools, each governed by user-configured Vincent Policies. Every action is explicitly authorized, auditable, and executed strictly within the boundaries users configure for your app — all while they retain full control of their assets and private keys.
+Vincent Apps enable secure, policy governed automation on behalf of Vincent Users without compromising custody or control. Whether you're building autonomous agents or integrating with existing web2/web3 apps, Vincent Apps allow users to delegate specific on and off-chain actions to your app through Vincent Abilities, each governed by user-configured Vincent Policies. Every action is explicitly authorized, auditable, and executed strictly within the boundaries users configure for your app — all while they retain full control of their assets and private keys.
 
 ## Real-World App Examples
 
@@ -31,12 +31,12 @@ Vincent Apps enable secure, policy governed automation on behalf of Vincent User
 **Data-Driven Automation**
 
 - **Market Data Agents**: Parse both on and off-chain data feeds, oracles, and TA indicators to execute trades only when strategies align with user-set conditions
-- **Social Sentiment Bots**: Monitor social and news sentiment and trigger Vincent Tools in response to trend shifts
+- **Social Sentiment Bots**: Monitor social and news sentiment and trigger Vincent Abilities in response to trend shifts
 
 # Next Steps
 
 - Check out the [Creating a Vincent App](./Creating-Apps.md) guide to get started
 - Learn how to [Authenticate Vincent Users](./Auth-Users.md) in your frontend app
-- See how to [execute Vincent Tools](./Executing-Tools.md) on behalf of your App Users
+- See how to [execute Vincent Abilities](./Executing-Abilities.md) on behalf of your App Users
 - Checkout the official [Automated Dollar-cost-averaging](https://demo.heyvincent.ai/) Vincent demo and explore it's [source code](https://github.com/LIT-Protocol/vincent-dca)
 - Join the [Vincent community](https://t.me/c/2038294753/3289) for support and collaboration

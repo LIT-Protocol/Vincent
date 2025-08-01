@@ -1,0 +1,37 @@
+{
+  "extends": "../../../tsconfig.base.json",
+  "files": [],
+  "include": [],
+  "references": [
+    {
+      "path": "../../libs/contracts-sdk"
+    },
+    {
+      "path": "../ability-uniswap-swap"
+    },
+    {
+      "path": "../../libs/ability-sdk"
+    },
+    {
+      "path": "../ability-erc20-approval"
+    },
+    {
+      "path": "../ability-transaction-signer"
+    },
+    {
+      "path": "../policy-contract-whitelist"
+    },
+    {
+      "path": "../policy-spending-limit"
+    },
+    {
+      "path": "../../libs/app-sdk"
+    },
+    {
+      "path": "./tsconfig.app.json"
+    },
+    {
+      "path": "./tsconfig.spec.json"
+    }
+  ]
+}

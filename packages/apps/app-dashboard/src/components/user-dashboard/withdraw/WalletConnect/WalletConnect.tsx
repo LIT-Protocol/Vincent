@@ -1,12 +1,12 @@
 import { IRelayPKP, SessionSigs } from '@lit-protocol/types';
 import { Button } from '@/components/shared/ui/button';
 import { Input } from '@/components/shared/ui/input';
-import StatusMessage from '@/components/user-dashboard/consent/StatusMessage';
+import StatusMessage from '@/components/user-dashboard/connect/StatusMessage';
 import QrReader from '@/components/user-dashboard/withdraw/WalletConnect/QrReader';
 import { useState, useCallback, useEffect } from 'react';
 import React from 'react';
 import { useTheme } from '@/providers/ThemeProvider';
-import { theme } from '@/components/user-dashboard/consent/ui/theme';
+import { theme } from '@/components/user-dashboard/connect/ui/theme';
 
 // Custom hooks
 import { useWalletConnectSession } from '../../../../hooks/user-dashboard/WalletConnect/useWalletConnectSession';

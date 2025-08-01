@@ -5,7 +5,13 @@ import { Form } from '@/components/shared/ui/form';
 import { Button } from '@/components/shared/ui/button';
 import { App } from '@/types/developer-dashboard/appTypes';
 import { docSchemas } from '@lit-protocol/vincent-registry-sdk';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/shared/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/shared/ui/card';
 import { LongTextField } from '../../form-fields';
 
 const { appVersionDoc } = docSchemas;
@@ -44,7 +50,9 @@ export function CreateAppVersionForm({
     <Card className="w-full max-w-4xl mx-auto">
       <CardHeader>
         <CardTitle>Create App Version</CardTitle>
-        <CardDescription>Create a new version of {appData.name} and select tools</CardDescription>
+        <CardDescription>
+          Create a new version of {appData.name} and select abilities
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>

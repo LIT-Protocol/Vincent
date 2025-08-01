@@ -1,9 +1,9 @@
 export const tagTypes = [
   'App',
   'AppVersion',
-  'AppVersionTool',
-  'Tool',
-  'ToolVersion',
+  'AppVersionAbility',
+  'Ability',
+  'AbilityVersion',
   'Policy',
   'PolicyVersion',
 ];

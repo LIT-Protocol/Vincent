@@ -9,7 +9,7 @@ import {
   policyVersionEdit,
   policyVersionDoc,
 } from '../schemas/policy';
-import { ErrorResponse, ChangeOwner, GenericResult, siweAuth } from './baseRegistry';
+import { ErrorResponse, ChangeOwner, GenericResult, jwtAuth } from './baseRegistry';
 
 const packageNameParam = z
   .string()
@@ -61,7 +61,7 @@ export function addToRegistry(registry: OpenAPIRegistry) {
     tags: ['Policy', 'PolicyVersion'],
     summary: 'Creates a new policy',
     operationId: 'createPolicy',
-    security: [{ [siweAuth.name]: [] }],
+    security: [{ [jwtAuth.name]: [] }],
     request: {
       params: z.object({ packageName: packageNameParam }),
       body: {
@@ -140,7 +140,7 @@ export function addToRegistry(registry: OpenAPIRegistry) {
     tags: ['Policy'],
     summary: 'Edits a policy',
     operationId: 'editPolicy',
-    security: [{ [siweAuth.name]: [] }],
+    security: [{ [jwtAuth.name]: [] }],
     request: {
       params: z.object({ packageName: packageNameParam }),
       body: {
@@ -186,7 +186,7 @@ export function addToRegistry(registry: OpenAPIRegistry) {
     tags: ['PolicyVersion'],
     summary: 'Creates a new policy version',
     operationId: 'createPolicyVersion',
-    security: [{ [siweAuth.name]: [] }],
+    security: [{ [jwtAuth.name]: [] }],
     request: {
       params: z.object({ packageName: packageNameParam, version: policyVersionParam }),
       body: {
@@ -298,7 +298,7 @@ export function addToRegistry(registry: OpenAPIRegistry) {
     tags: ['Policy'],
     summary: "Changes a policy's owner",
     operationId: 'changePolicyOwner',
-    security: [{ [siweAuth.name]: [] }],
+    security: [{ [jwtAuth.name]: [] }],
     request: {
       params: z.object({ packageName: packageNameParam }),
       body: {
@@ -344,7 +344,7 @@ export function addToRegistry(registry: OpenAPIRegistry) {
     tags: ['PolicyVersion'],
     summary: 'Edits a policy version',
     operationId: 'editPolicyVersion',
-    security: [{ [siweAuth.name]: [] }],
+    security: [{ [jwtAuth.name]: [] }],
     request: {
       params: z.object({ packageName: packageNameParam, version: policyVersionParam }),
       body: {
@@ -390,7 +390,7 @@ export function addToRegistry(registry: OpenAPIRegistry) {
     tags: ['Policy', 'PolicyVersion'],
     summary: 'Deletes a policy and all its versions',
     operationId: 'deletePolicy',
-    security: [{ [siweAuth.name]: [] }],
+    security: [{ [jwtAuth.name]: [] }],
     request: {
       params: z.object({ packageName: packageNameParam }),
     },
@@ -424,7 +424,7 @@ export function addToRegistry(registry: OpenAPIRegistry) {
     tags: ['Policy', 'PolicyVersion'],
     summary: 'Undeletes a policy and all its versions',
     operationId: 'undeletePolicy',
-    security: [{ [siweAuth.name]: [] }],
+    security: [{ [jwtAuth.name]: [] }],
     request: {
       params: z.object({ packageName: packageNameParam }),
     },
@@ -458,7 +458,7 @@ export function addToRegistry(registry: OpenAPIRegistry) {
     tags: ['PolicyVersion'],
     summary: 'Deletes a policy version',
     operationId: 'deletePolicyVersion',
-    security: [{ [siweAuth.name]: [] }],
+    security: [{ [jwtAuth.name]: [] }],
     request: {
       params: z.object({
         packageName: packageNameParam,
@@ -501,7 +501,7 @@ export function addToRegistry(registry: OpenAPIRegistry) {
     tags: ['PolicyVersion'],
     summary: 'Undeletes a policy version',
     operationId: 'undeletePolicyVersion',
-    security: [{ [siweAuth.name]: [] }],
+    security: [{ [jwtAuth.name]: [] }],
     request: {
       params: z.object({
         packageName: packageNameParam,

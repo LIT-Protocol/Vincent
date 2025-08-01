@@ -1,0 +1,54 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "rootDir": "src",
+    "outDir": "dist",
+    "emitDeclarationOnly": false,
+    "composite": true,
+    "declaration": true,
+    "declarationMap": true,
+    "types": ["node"],
+    "moduleResolution": "nodenext",
+    "module": "nodenext",
+    "esModuleInterop": true,
+    "resolveJsonModule": true
+  },
+  "include": ["src/**/*.ts", "src/**/*.json"],
+  "exclude": [
+    "out-tsc",
+    "dist",
+    "jest.config.ts",
+    "src/**/*.spec.ts",
+    "src/**/*.test.ts",
+    "eslint.config.js",
+    "eslint.config.cjs",
+    "eslint.config.mjs"
+  ],
+  "references": [
+    {
+      "path": "../../libs/contracts-sdk/tsconfig.lib.json"
+    },
+    {
+      "path": "../ability-uniswap-swap/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/ability-sdk/tsconfig.lib.json"
+    },
+    {
+      "path": "../ability-erc20-approval/tsconfig.lib.json"
+    },
+    {
+      "path": "../policy-spending-limit/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/app-sdk/tsconfig.lib.json"
+    },
+    {
+      "path": "../ability-transaction-signer/tsconfig.lib.json"
+    },
+    {
+      "path": "../policy-contract-whitelist/tsconfig.lib.json"
+    }
+  ]
+}

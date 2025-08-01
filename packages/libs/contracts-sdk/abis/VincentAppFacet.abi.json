@@ -68,17 +68,17 @@
         "internalType": "address[]"
       },
       {
-        "name": "versionTools",
+        "name": "versionAbilities",
         "type": "tuple",
-        "internalType": "struct VincentAppFacet.AppVersionTools",
+        "internalType": "struct VincentAppFacet.AppVersionAbilities",
         "components": [
           {
-            "name": "toolIpfsCids",
+            "name": "abilityIpfsCids",
             "type": "string[]",
             "internalType": "string[]"
           },
           {
-            "name": "toolPolicies",
+            "name": "abilityPolicies",
             "type": "string[][]",
             "internalType": "string[][]"
           }
@@ -104,17 +104,17 @@
         "internalType": "uint256"
       },
       {
-        "name": "versionTools",
+        "name": "versionAbilities",
         "type": "tuple",
-        "internalType": "struct VincentAppFacet.AppVersionTools",
+        "internalType": "struct VincentAppFacet.AppVersionAbilities",
         "components": [
           {
-            "name": "toolIpfsCids",
+            "name": "abilityIpfsCids",
             "type": "string[]",
             "internalType": "string[]"
           },
           {
-            "name": "toolPolicies",
+            "name": "abilityPolicies",
             "type": "string[][]",
             "internalType": "string[][]"
           }
@@ -449,7 +449,7 @@
   },
   {
     "type": "error",
-    "name": "DuplicateToolIpfsCidNotAllowed",
+    "name": "DuplicateAbilityIpfsCidNotAllowed",
     "inputs": [
       {
         "name": "appId",
@@ -457,7 +457,7 @@
         "internalType": "uint256"
       },
       {
-        "name": "toolIndex",
+        "name": "abilityIndex",
         "type": "uint256",
         "internalType": "uint256"
       }
@@ -465,7 +465,7 @@
   },
   {
     "type": "error",
-    "name": "DuplicateToolPolicyIpfsCidNotAllowed",
+    "name": "DuplicateAbilityPolicyIpfsCidNotAllowed",
     "inputs": [
       {
         "name": "appId",
@@ -473,7 +473,7 @@
         "internalType": "uint256"
       },
       {
-        "name": "toolIndex",
+        "name": "abilityIndex",
         "type": "uint256",
         "internalType": "uint256"
       },
@@ -494,7 +494,7 @@
         "internalType": "uint256"
       },
       {
-        "name": "toolIndex",
+        "name": "abilityIndex",
         "type": "uint256",
         "internalType": "uint256"
       }
@@ -502,7 +502,7 @@
   },
   {
     "type": "error",
-    "name": "EmptyToolIpfsCidNotAllowed",
+    "name": "EmptyAbilityIpfsCidNotAllowed",
     "inputs": [
       {
         "name": "appId",
@@ -510,7 +510,7 @@
         "internalType": "uint256"
       },
       {
-        "name": "toolIndex",
+        "name": "abilityIndex",
         "type": "uint256",
         "internalType": "uint256"
       }
@@ -518,7 +518,7 @@
   },
   {
     "type": "error",
-    "name": "NoToolsProvided",
+    "name": "NoAbilitiesProvided",
     "inputs": [
       {
         "name": "appId",
@@ -545,10 +545,10 @@
   },
   {
     "type": "error",
-    "name": "ToolArrayDimensionMismatch",
+    "name": "AbilityArrayDimensionMismatch",
     "inputs": [
       {
-        "name": "toolsLength",
+        "name": "abilitiesLength",
         "type": "uint256",
         "internalType": "uint256"
       },

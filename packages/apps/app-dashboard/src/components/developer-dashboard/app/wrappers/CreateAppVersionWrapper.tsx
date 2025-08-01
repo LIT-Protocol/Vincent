@@ -1,6 +1,5 @@
 import { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useAddressCheck } from '@/hooks/developer-dashboard/app/useAddressCheck';
 import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
 import { StatusMessage } from '@/components/shared/ui/statusMessage';
 import { CreateAppVersionForm, type CreateAppVersionFormData } from '../forms/CreateAppVersionForm';
@@ -30,11 +29,12 @@ export function CreateAppVersionWrapper() {
   // Effect
   useEffect(() => {
     if (isSuccess && data && app) {
-      navigateWithDelay(navigate, `/developer/appId/${app.appId}/version/${data.version}/tools`);
+      navigateWithDelay(
+        navigate,
+        `/developer/appId/${app.appId}/version/${data.version}/abilities`,
+      );
     }
   }, [isSuccess, data, navigate, app]);
-
-  useAddressCheck(app || null);
 
   // Loading states
   if (appLoading || versionsLoading) return <Loading />;
@@ -68,12 +68,14 @@ export function CreateAppVersionWrapper() {
   // Render with page UI and form component
   return (
     <div className="space-y-6">
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <h1 className="text-3xl font-bold text-gray-900">Create New Version</h1>
-          <p className="text-gray-600 mt-2">
-            Create a new version of your application with updated features
-          </p>
+      <div className="w-full max-w-4xl mx-auto">
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            <h1 className="text-3xl font-bold text-gray-900">Create New Version</h1>
+            <p className="text-gray-600 mt-2">
+              Create a new version of your application with updated features
+            </p>
+          </div>
         </div>
       </div>
 

@@ -18,9 +18,9 @@
 
 ### 🚀 Features
 
-- #### Support `deploymentStatus` for Tools and Policies ([e50ded25](https://github.com/LIT-Protocol/Vincent/commit/e50ded25))
+- #### Support `deploymentStatus` for Abilities and Policies ([e50ded25](https://github.com/LIT-Protocol/Vincent/commit/e50ded25))
 
-  - Implemented support for the `deploymentStatus` property for Tool and Policy.
+  - Implemented support for the `deploymentStatus` property for Ability and Policy.
   - It defaults to `dev` for new entities.
 
 ### 🧱 Updated Dependencies
@@ -37,11 +37,11 @@
 
 - ### Implement undelete routes for deletable entities ([f5ef06de](https://github.com/LIT-Protocol/Vincent/commit/f5ef06de))
 
-  - Added route handlers to support undeletion of `App`, `AppVersion`, `AppVersionTool`, `Tool`, `ToolVersion, `Policy`, and `PolicyVersion`
+  - Added route handlers to support undeletion of `App`, `AppVersion`, `AppVersionAbility`, `Ability`, `AbilityVersion, `Policy`, and `PolicyVersion`
 
 ### 🩹 Fixes
 
-- Return deleted appTools to the frontend ([d6a90c8f](https://github.com/LIT-Protocol/Vincent/commit/d6a90c8f))
+- Return deleted appAbilities to the frontend ([d6a90c8f](https://github.com/LIT-Protocol/Vincent/commit/d6a90c8f))
 
 ### 🧱 Updated Dependencies
 
@@ -57,14 +57,14 @@
 
 - ### Implement new delete endpoints ([e471c780](https://github.com/LIT-Protocol/Vincent/commit/e471c780))
 
-  - Implemented delete endpoints for AppVersion, and AppToolVersion, PolicyVersion, and ToolVersion
+  - Implemented delete endpoints for AppVersion, and AppAbilityVersion, PolicyVersion, and AbilityVersion
   - Updated integration tests to verify the new routes functionality and security / authorization constraints
 
 ### 🩹 Fixes
 
 - ### Bug Fix ([8d646d44](https://github.com/LIT-Protocol/Vincent/commit/8d646d44))
 
-  - Fix non-functional change owner endpoint logic for policies and tools; bug introduced in v1.0.0
+  - Fix non-functional change owner endpoint logic for policies and abilities; bug introduced in v1.0.0
   - Added explicit integration tests to verify changeOwner is working as expected, in the authorization suite
 
 ### 🧱 Updated Dependencies
@@ -141,8 +141,8 @@
 
 ### 🚀 Features
 
-- Implement detection of `supportedPolicies` and `policiesNotInRegistry` during toolVersion creation ([72881266](https://github.com/LIT-Protocol/Vincent/commit/72881266))
-- Implement loading of IPFS CID, uiSchema, jsonSchema from `vincent-tool-metadata.json` or `vincent-policy-metadata.json` files published in the NPM package. ([23dc7be0](https://github.com/LIT-Protocol/Vincent/commit/23dc7be0))
+- Implement detection of `supportedPolicies` and `policiesNotInRegistry` during abilityVersion creation ([72881266](https://github.com/LIT-Protocol/Vincent/commit/72881266))
+- Implement loading of IPFS CID, uiSchema, jsonSchema from `vincent-ability-metadata.json` or `vincent-policy-metadata.json` files published in the NPM package. ([23dc7be0](https://github.com/LIT-Protocol/Vincent/commit/23dc7be0))
 
 ### 🧱 Updated Dependencies
 
@@ -156,7 +156,7 @@
 
 ### 🚀 Features
 
-- Implemented routes for managing app tools ([13a0ce44](https://github.com/LIT-Protocol/Vincent/commit/13a0ce44))
+- Implemented routes for managing app abilities ([13a0ce44](https://github.com/LIT-Protocol/Vincent/commit/13a0ce44))
 
 ### 🧱 Updated Dependencies
 

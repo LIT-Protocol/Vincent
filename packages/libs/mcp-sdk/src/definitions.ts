@@ -9,7 +9,7 @@
  */
 
 import { LitNodeClient } from '@lit-protocol/lit-node-client';
-import { generateVincentToolSessionSigs } from '@lit-protocol/vincent-app-sdk/toolClient';
+import { generateVincentAbilitySessionSigs } from '@lit-protocol/vincent-app-sdk/abilityClient';
 import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js';
 import type {
   CallToolResult,
@@ -20,9 +20,9 @@ import { Signer } from 'ethers';
 import { z, type ZodRawShape } from 'zod';
 
 /**
- * Supported parameter types for Vincent tool parameters
+ * Supported parameter types for Vincent ability parameters
  *
- * These types define the valid parameter types that can be used in Vincent tool definitions.
+ * These types define the valid parameter types that can be used in Vincent ability definitions.
  * Each type has corresponding validation logic in the ZodSchemaMap.
  */
 const ParameterType = [
@@ -40,7 +40,7 @@ const ParameterType = [
 const ParameterTypeEnum = z.enum(ParameterType);
 
 /**
- * Type representing the supported parameter types for Vincent tool parameters
+ * Type representing the supported parameter types for Vincent ability parameters
  * @see {@link ParameterType} for the list of supported types
  */
 export type ParameterType = z.infer<typeof ParameterTypeEnum>;
@@ -49,7 +49,7 @@ export type ParameterType = z.infer<typeof ParameterTypeEnum>;
  * Mapping of parameter types to their corresponding Zod validation schemas
  *
  * This map provides validation logic for each supported parameter type.
- * It is used by the buildMcpParamDefinitions function to create Zod schemas for tool parameters.
+ * It is used by the buildMcpParamDefinitions function to create Zod schemas for ability parameters.
  *
  * @internal
  */
@@ -91,10 +91,10 @@ const ZodSchemaMap: Record<ParameterType, z.ZodTypeAny> = {
 } as const;
 
 /**
- * Builds Zod schema definitions for Vincent tool parameters
+ * Builds Zod schema definitions for Vincent ability parameters
  *
  * This function takes an array of Vincent parameter definitions and creates a Zod schema
- * that can be used to validate tool inputs. Each parameter is mapped to its corresponding
+ * that can be used to validate ability inputs. Each parameter is mapped to its corresponding
  * validation schema from the ZodSchemaMap.
  *
  * @param params - Array of Vincent parameter definitions
@@ -126,12 +126,12 @@ export function buildMcpParamDefinitions(
 ): ZodRawShape {
   const zodSchema = {} as ZodRawShape;
 
-  // Add the delegator PKP Eth address as a param. Delegatee is using the MCP and must specify which delegator to execute tools for
+  // Add the delegator PKP Eth address as a param. Delegatee is using the MCP and must specify which delegator to execute abilities for
   if (addDelegatorPkpAddress) {
     zodSchema['pkpEthAddress'] = z
       .string()
       .describe(
-        "The delegator's PKP address. The delegatee executes this tool on behalf of this delegator. Any PKP signing will be done by this delegator PKP. For example 0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045."
+        "The delegator's PKP address. The delegatee executes this ability on behalf of this delegator. Any PKP signing will be done by this delegator PKP. For example 0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045."
       );
   }
 
@@ -147,41 +147,41 @@ export function buildMcpParamDefinitions(
   return zodSchema;
 }
 
-export function buildMcpToolName(vincentAppDef: VincentAppDef, toolName: string) {
-  return `${vincentAppDef.name.toLowerCase().replace(' ', '-')}-V${vincentAppDef.version}-${toolName}`;
+export function buildMcpAbilityName(vincentAppDef: VincentAppDef, abilityName: string) {
+  return `${vincentAppDef.name.toLowerCase().replace(' ', '-')}-V${vincentAppDef.version}-${abilityName}`;
 }
 
 /**
- * Creates a IPFS CID based Vincent Tool callback function to use in other contexts such as Agent Kits
+ * Creates a IPFS CID based Vincent Ability callback function to use in other contexts such as Agent Kits
  *
- * @param litNodeClient - The Lit Node client used to execute the tool
- * @param delegateeSigner - The delegatee signer used to trigger the tool
- * @param delegatorPkpEthAddress - The delegator to execute the tool in behalf of
- * @param vincentToolDefWithIPFS - The tool definition with its IPFS CID
- * @returns A callback function that executes the tool with the provided arguments
+ * @param litNodeClient - The Lit Node client used to execute the ability
+ * @param delegateeSigner - The delegatee signer used to trigger the ability
+ * @param delegatorPkpEthAddress - The delegator to execute the ability in behalf of
+ * @param vincentAbilityDefWithIPFS - The ability definition with its IPFS CID
+ * @returns A callback function that executes the ability with the provided arguments
  * @internal
  */
-export function buildVincentToolCallback(
+export function buildVincentAbilityCallback(
   litNodeClient: LitNodeClient,
   delegateeSigner: Signer,
   delegatorPkpEthAddress: string | undefined,
-  vincentToolDefWithIPFS: VincentToolDefWithIPFS
+  vincentAbilityDefWithIPFS: VincentAbilityDefWithIPFS
 ) {
   return async (
     args: ZodRawShape,
     _extra?: RequestHandlerExtra<ServerRequest, ServerNotification>
   ): Promise<{ success: boolean; error?: string; result?: object }> => {
     try {
-      const sessionSigs = await generateVincentToolSessionSigs({
+      const sessionSigs = await generateVincentAbilitySessionSigs({
         ethersSigner: delegateeSigner,
         litNodeClient,
       });
-      const { pkpEthAddress, ...toolParams } = args;
+      const { pkpEthAddress, ...abilityParams } = args;
       const executeJsResponse = await litNodeClient.executeJs({
-        ipfsId: vincentToolDefWithIPFS.ipfsCid,
+        ipfsId: vincentAbilityDefWithIPFS.ipfsCid,
         sessionSigs,
         jsParams: {
-          toolParams,
+          abilityParams,
           context: {
             delegatorPkpEthAddress: delegatorPkpEthAddress || pkpEthAddress,
           },
@@ -193,47 +193,47 @@ export function buildVincentToolCallback(
         throw new Error(JSON.stringify(executeJsResponse, null, 2));
       }
 
-      const toolExecutionResponse = JSON.parse(executeJsResponse.response as string);
-      const { toolExecutionResult } = toolExecutionResponse;
-      const { success, error, result } = toolExecutionResult;
+      const abilityExecutionResponse = JSON.parse(executeJsResponse.response as string);
+      const { abilityExecutionResult } = abilityExecutionResponse;
+      const { success, error, result } = abilityExecutionResult;
 
       return { success, error, result };
     } catch (e) {
-      const error = `Could not successfully execute Vincent Tool. Reason (${(e as Error).message})`;
+      const error = `Could not successfully execute Vincent Ability. Reason (${(e as Error).message})`;
       return { success: false, error };
     }
   };
 }
 
 /**
- * Creates an MCP tool callback function for handling Vincent Tool execution requests
- * It is basically an MCP specific version wrapper of buildVincentToolCallback
+ * Creates an MCP ability callback function for handling Vincent Ability execution requests
+ * It is basically an MCP specific version wrapper of buildVincentAbilityCallback
  *
- * @param litNodeClient - The Lit Node client used to execute the tool
- * @param delegateeSigner - The delegatee signer used to trigger the tool
- * @param delegatorPkpEthAddress - The delegator to execute the tool in behalf of
- * @param vincentToolDefWithIPFS - The tool definition with its IPFS CID
- * @returns A callback function that executes the tool with the provided arguments
+ * @param litNodeClient - The Lit Node client used to execute the ability
+ * @param delegateeSigner - The delegatee signer used to trigger the ability
+ * @param delegatorPkpEthAddress - The delegator to execute the ability in behalf of
+ * @param vincentAbilityDefWithIPFS - The ability definition with its IPFS CID
+ * @returns A callback function that executes the ability with the provided arguments
  * @internal
  */
-export function buildMcpToolCallback(
+export function buildMcpAbilityCallback(
   litNodeClient: LitNodeClient,
   delegateeSigner: Signer,
   delegatorPkpEthAddress: string | undefined,
-  vincentToolDefWithIPFS: VincentToolDefWithIPFS
+  vincentAbilityDefWithIPFS: VincentAbilityDefWithIPFS
 ) {
-  const vincentToolCallback = buildVincentToolCallback(
+  const vincentAbilityCallback = buildVincentAbilityCallback(
     litNodeClient,
     delegateeSigner,
     delegatorPkpEthAddress,
-    vincentToolDefWithIPFS
+    vincentAbilityDefWithIPFS
   );
 
   return async (
     args: ZodRawShape,
     extra: RequestHandlerExtra<ServerRequest, ServerNotification>
   ): Promise<CallToolResult> => {
-    const { success, error, result } = await vincentToolCallback(args, extra);
+    const { success, error, result } = await vincentAbilityCallback(args, extra);
 
     return {
       content: [
@@ -249,7 +249,7 @@ export function buildMcpToolCallback(
 /**
  * Zod schema for validating Vincent parameter definitions
  *
- * This schema defines the structure of a parameter in a Vincent tool.
+ * This schema defines the structure of a parameter in a Vincent ability.
  */
 export const VincentParameterSchema = z.object({
   name: z.string(),
@@ -259,7 +259,7 @@ export const VincentParameterSchema = z.object({
 });
 
 /**
- * Type representing a parameter in a Vincent tool
+ * Type representing a parameter in a Vincent ability
  *
  * @property name - The name of the parameter
  * @property type - The type of the parameter (from ParameterType)
@@ -268,33 +268,33 @@ export const VincentParameterSchema = z.object({
 export type VincentParameter = z.infer<typeof VincentParameterSchema>;
 
 /**
- * Zod schema for validating Vincent tool definitions
+ * Zod schema for validating Vincent ability definitions
  *
- * This schema defines the structure of a tool in a Vincent application.
+ * This schema defines the structure of an ability in a Vincent application.
  */
-export const VincentToolDefSchema = z.object({
+export const VincentAbilityDefSchema = z.object({
   name: z.string(),
   description: z.string(),
   parameters: z.array(VincentParameterSchema),
 });
 
 /**
- * Type representing a tool in a Vincent application
+ * Type representing an ability in a Vincent application
  *
- * @property name - The name of the tool
- * @property description - A description of the tool
- * @property parameters - An array of parameter definitions for the tool
+ * @property name - The name of the ability
+ * @property description - A description of the ability
+ * @property parameters - An array of parameter definitions for the ability
  */
-export type VincentToolDef = z.infer<typeof VincentToolDefSchema>;
+export type VincentAbilityDef = z.infer<typeof VincentAbilityDefSchema>;
 
 /**
- * Type representing a tool in a Vincent application with its IPFS CID
+ * Type representing an ability in a Vincent application with its IPFS CID
  *
- * This extends VincentToolDef with an additional ipfsCid property.
+ * This extends VincentAbilityDef with an additional ipfsCid property.
  *
- * @property ipfsCid - The IPFS CID of the tool
+ * @property ipfsCid - The IPFS CID of the ability
  */
-export type VincentToolDefWithIPFS = VincentToolDef & { ipfsCid: string };
+export type VincentAbilityDefWithIPFS = VincentAbilityDef & { ipfsCid: string };
 
 /**
  * Zod schema for validating Vincent application definitions
@@ -306,7 +306,7 @@ export const VincentAppDefSchema = z.object({
   name: z.string(),
   description: z.string().optional(),
   version: z.number(),
-  tools: z.record(VincentToolDefSchema),
+  abilities: z.record(VincentAbilityDefSchema),
 });
 
 /**
@@ -315,6 +315,6 @@ export const VincentAppDefSchema = z.object({
  * @property id - The unique identifier of the application
  * @property name - The name of the application
  * @property version - The version of the application
- * @property tools - A record of tools in the application, where the key is the IPFS CID of the tool
+ * @property abilities - A record of abilities in the application, where the key is the IPFS CID of the ability
  */
 export type VincentAppDef = z.infer<typeof VincentAppDefSchema>;

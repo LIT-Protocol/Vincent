@@ -240,7 +240,7 @@ contract UpdateFacet is Script {
         bytes4[] memory selectors = new bytes4[](3);
         selectors[0] = VincentUserFacet.permitAppVersion.selector;
         selectors[1] = VincentUserFacet.unPermitAppVersion.selector;
-        selectors[2] = VincentUserFacet.setToolPolicyParameters.selector;
+        selectors[2] = VincentUserFacet.setAbilityPolicyParameters.selector;
         return selectors;
     }
 
@@ -250,8 +250,8 @@ contract UpdateFacet is Script {
         selectors[0] = VincentUserViewFacet.getAllRegisteredAgentPkps.selector;
         selectors[1] = VincentUserViewFacet.getPermittedAppVersionForPkp.selector;
         selectors[2] = VincentUserViewFacet.getAllPermittedAppIdsForPkp.selector;
-        selectors[3] = VincentUserViewFacet.validateToolExecutionAndGetPolicies.selector;
-        selectors[4] = VincentUserViewFacet.getAllToolsAndPoliciesForApp.selector;
+        selectors[3] = VincentUserViewFacet.validateAbilityExecutionAndGetPolicies.selector;
+        selectors[4] = VincentUserViewFacet.getAllAbilitiesAndPoliciesForApp.selector;
         return selectors;
     }
 

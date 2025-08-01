@@ -4,7 +4,7 @@
  *
  * This module provides a standard I/O (stdio) server implementation for the Model Context Protocol (MCP).
  * It creates a server that communicates through standard input and output streams, making it suitable
- * for integration with command-line tools, language models, and other processes that can communicate
+ * for integration with command-line abilities, language models, and other processes that can communicate
  * via stdio.
  *
  * The server loads a Vincent application definition from a JSON file and creates

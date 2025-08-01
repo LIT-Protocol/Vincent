@@ -1,12 +1,12 @@
 import { FC } from 'react';
 import { AUTH_METHOD_TYPE } from '@lit-protocol/constants';
 import { Button } from '@/components/shared/ui/button';
-import { ThemeType } from '../consent/ui/theme';
-import StatusMessage from '../consent/StatusMessage';
+import { ThemeType } from '../connect/ui/theme';
+import StatusMessage from '../connect/StatusMessage';
 
 interface SignUpViewProps {
   authMethodType: (typeof AUTH_METHOD_TYPE)[keyof typeof AUTH_METHOD_TYPE];
-  handleRegisterWithWebAuthn?: () => Promise<void>;
+  handleRegisterWithWebAuthn?: (displayName: string) => Promise<void>;
   authWithWebAuthn?: () => void;
   theme: ThemeType;
 }
@@ -26,7 +26,7 @@ const SignUpView: FC<SignUpViewProps> = ({
       <div className="flex flex-col space-y-3">
         <Button
           className={`${theme.accentBg} rounded-lg py-3 font-medium text-sm ${theme.accentHover} transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
-          onClick={handleRegisterWithWebAuthn}
+          onClick={() => handleRegisterWithWebAuthn?.('Vincent User')}
         >
           Create New Account
         </Button>

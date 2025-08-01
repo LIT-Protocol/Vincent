@@ -7,22 +7,18 @@ import type {
 import { JWT_URL_KEY } from './constants';
 import { uriHelpers } from './internal';
 
-const { isLoginUri, composeDelegationAuthUrl, removeSearchParam, decodeVincentJWTFromUri } =
+const { uriContainsVincentJWT, composeConnectUrl, removeSearchParam, decodeVincentJWTFromUri } =
   uriHelpers;
 
-const redirectToDelegationAuthPage = ({
+const redirectToConnectPage = ({
   appId,
   redirectUri,
-  delegationAuthPageUrl,
+  connectPageUrl,
 }: {
-  appId: string;
+  appId: number;
   redirectUri: string;
-  delegationAuthPageUrl?: string;
-}) =>
-  window.open(
-    composeDelegationAuthUrl(appId, redirectUri, delegationAuthPageUrl).toString(),
-    '_self'
-  );
+  connectPageUrl?: string;
+}) => window.open(composeConnectUrl(appId, redirectUri, connectPageUrl).toString(), '_self');
 
 /** Create a new {@link WebAuthClient} instance.
  *
@@ -32,20 +28,22 @@ export const getWebAuthClient = (appClientConfig: WebAuthClientConfig): WebAuthC
   const { appId } = appClientConfig;
 
   return {
-    redirectToDelegationAuthPage: (
-      redirectDelegationAuthPageConfig: RedirectToVincentDelegationPageParams
-    ) => {
-      const { delegationAuthPageUrl, redirectUri } = redirectDelegationAuthPageConfig;
-      redirectToDelegationAuthPage({
+    redirectToConnectPage: (redirectConnectPageConfig: RedirectToVincentDelegationPageParams) => {
+      const { connectPageUrl, redirectUri } = redirectConnectPageConfig;
+      redirectToConnectPage({
         appId,
-        delegationAuthPageUrl,
+        connectPageUrl,
         redirectUri,
       });
     },
-    isLogin: () => isLoginUri(window.location.href),
-    decodeVincentLoginJWT: (expectedAudience: string) =>
-      decodeVincentJWTFromUri(window.location.href, expectedAudience),
-    removeLoginJWTFromURI: () => {
+    uriContainsVincentJWT: () => uriContainsVincentJWT(window.location.href),
+    decodeVincentJWT: (expectedAudience: string) =>
+      decodeVincentJWTFromUri({
+        uri: window.location.href,
+        expectedAudience: expectedAudience,
+        requiredAppId: appId,
+      }),
+    removeVincentJWTFromURI: () => {
       const urlWithoutJWTSearchParam = removeSearchParam({
         paramName: JWT_URL_KEY,
         uri: window.location.href,

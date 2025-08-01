@@ -1,7 +1,15 @@
 import { verify } from '../../jwt/core/validate';
 import { JWT_URL_KEY, PRODUCTION_VINCENT_DASHBOARD_URL } from '../constants';
 
-export const decodeVincentJWTFromUri = (uri: string, expectedAudience: string) => {
+export const decodeVincentJWTFromUri = ({
+  uri,
+  expectedAudience,
+  requiredAppId,
+}: {
+  uri: string;
+  expectedAudience: string;
+  requiredAppId: number;
+}) => {
   const url = new URL(uri);
   const jwt = url.searchParams.get(JWT_URL_KEY);
 
@@ -9,24 +17,25 @@ export const decodeVincentJWTFromUri = (uri: string, expectedAudience: string) =
     return null;
   }
 
-  return { decodedJWT: verify(jwt, expectedAudience), jwtStr: jwt };
+  try {
+    return { decodedJWT: verify({ jwt, expectedAudience, requiredAppId }), jwtStr: jwt };
+  } catch (error) {
+    // Explicitly throw if the JWT doesn't contain the required appId
+    throw new Error(`Failed to decode JWT: ${(error as Error).message}`);
+  }
 };
 
-export const isLoginUri = (uri: string) => {
+export const uriContainsVincentJWT = (uri: string) => {
   const url = new URL(uri);
-  const loginJwt = url.searchParams.get(JWT_URL_KEY);
+  const connectJwt = url.searchParams.get(JWT_URL_KEY);
 
-  return !!loginJwt;
+  return !!connectJwt;
 };
 
-export function composeDelegationAuthUrl(
-  appId: string,
-  redirectUri: string,
-  delegationAuthPageUrl?: string
-) {
+export function composeConnectUrl(appId: number, redirectUri: string, connectPageUrl?: string) {
   return new URL(
-    `/appId/${appId}/consent?redirectUri=${redirectUri}`,
-    delegationAuthPageUrl || PRODUCTION_VINCENT_DASHBOARD_URL
+    `/user/appId/${String(appId)}/connect?redirectUri=${redirectUri}`,
+    connectPageUrl || PRODUCTION_VINCENT_DASHBOARD_URL
   );
 }
 

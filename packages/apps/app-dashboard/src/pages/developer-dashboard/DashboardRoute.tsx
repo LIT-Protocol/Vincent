@@ -1,6 +1,6 @@
 import DashboardPage from './DashboardPage';
 import { useUserApps } from '@/hooks/developer-dashboard/app/useUserApps';
-import { useUserTools } from '@/hooks/developer-dashboard/tool/useUserTools';
+import { useUserAbilities } from '@/hooks/developer-dashboard/ability/useUserAbilities';
 import { useUserPolicies } from '@/hooks/developer-dashboard/policy/useUserPolicies';
 import Loading from '@/components/shared/ui/Loading';
 import { StatusMessage } from '@/components/shared/ui/statusMessage';
@@ -16,11 +16,11 @@ export default function DashboardRoute() {
     error: appsErrorMsg,
   } = useUserApps();
   const {
-    data: tools,
-    isLoading: toolsLoading,
-    isError: toolsError,
-    error: toolsErrorMsg,
-  } = useUserTools();
+    data: abilities,
+    isLoading: abilitiesLoading,
+    isError: abilitiesError,
+    error: abilitiesErrorMsg,
+  } = useUserAbilities();
   const {
     data: policies,
     isLoading: policiesLoading,
@@ -28,7 +28,7 @@ export default function DashboardRoute() {
     error: policiesErrorMsg,
   } = useUserPolicies();
 
-  if (appsLoading || toolsLoading || policiesLoading) return <Loading />;
+  if (appsLoading || abilitiesLoading || policiesLoading) return <Loading />;
 
   if (appsError)
     return (
@@ -40,12 +40,12 @@ export default function DashboardRoute() {
         type="error"
       />
     );
-  if (toolsError)
+  if (abilitiesError)
     return (
       <StatusMessage
         message={getErrorMessage(
-          toolsErrorMsg as FetchBaseQueryError | SerializedError,
-          'Failed to load tools',
+          abilitiesErrorMsg as FetchBaseQueryError | SerializedError,
+          'Failed to load abilities',
         )}
         type="error"
       />
@@ -61,5 +61,5 @@ export default function DashboardRoute() {
       />
     );
 
-  return <DashboardPage apps={apps || []} tools={tools || []} policies={policies || []} />;
+  return <DashboardPage apps={apps || []} abilities={abilities || []} policies={policies || []} />;
 }

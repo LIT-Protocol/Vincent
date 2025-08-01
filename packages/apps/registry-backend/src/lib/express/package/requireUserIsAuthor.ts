@@ -1,36 +1,41 @@
 import type { Request, Response, NextFunction } from 'express';
 
+import type { RequestWithAbility } from '../ability/requireAbility.js';
 import type { RequestWithPolicy } from '../policy/requirePolicy';
-import type { RequestWithVincentUser } from '../requireVincentAuth';
-import type { RequestWithTool } from '../tool/requireTool';
+import type { RequestWithVincentUser } from '../vincentAuth';
 
 import { createDebugger } from '../../../../debug';
+import { getPKPInfo } from '../vincentAuth';
 
 // Create a debug instance for this middleware
 const debug = createDebugger('requireUserIsAuthor');
 
 // Combined interfaces for requests with both entity and vincent user
-export interface RequestWithToolAndVincentUser extends RequestWithTool, RequestWithVincentUser {}
+export interface RequestWithAbilityAndVincentUser
+  extends RequestWithAbility,
+    RequestWithVincentUser {}
+
 export interface RequestWithPolicyAndVincentUser
   extends RequestWithPolicy,
     RequestWithVincentUser {}
 
-type EntityType = 'tool' | 'policy';
+type EntityType = 'ability' | 'policy';
 
 /**
- * Middleware to check if the authenticated user is the author of the entity (tool or policy)
+ * Middleware to check if the authenticated user is the author of the entity (ability or policy)
  * It verifies that req.vincentUser.address matches the authorWalletAddress on the entity
- * This middleware should be used after requireTool/requirePolicy and requireVincentAuth
+ * This middleware should be used after requireAbility/requirePolicy and requireVincentAuth
  *
- * @param entityType - The type of entity to check ('tool' or 'policy')
+ * @param entityType - The type of entity to check ('ability' or 'policy')
  */
 export const requireUserIsAuthor = (entityType: EntityType) => {
   return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     debug('Processing user is author request', { entityType });
+
+    const reqWithAbilityAndUser = req as RequestWithAbilityAndVincentUser;
+
     try {
-      // Ensure authentication middleware ran first
-      debug('Checking if authentication middleware ran first');
-      if (!(req as RequestWithVincentUser).vincentUser) {
+      if (!reqWithAbilityAndUser.vincentUser) {
         debug('Authentication middleware did not run before requireUserIsAuthor middleware');
         res.status(500).json({
           error: 'Authentication middleware must run before requireUserIsAuthor middleware',
@@ -38,50 +43,52 @@ export const requireUserIsAuthor = (entityType: EntityType) => {
         return;
       }
 
-      const userAddress = (req as RequestWithVincentUser).vincentUser.address;
+      const userAddress = getPKPInfo(reqWithAbilityAndUser.vincentUser.decodedJWT).ethAddress;
       debug('Found authenticated user', { userAddress });
 
-      if (entityType === 'tool') {
-        debug('Checking tool authorship');
-        const reqWithTool = req as RequestWithToolAndVincentUser;
+      if (entityType === 'ability') {
+        debug('Checking ability authorship');
+        const reqWithAbility = req as RequestWithAbilityAndVincentUser;
 
-        // Ensure tool middleware ran first
-        debug('Checking if tool middleware ran first');
-        if (!reqWithTool.vincentTool) {
-          debug('Tool middleware did not run before requireUserIsAuthor middleware');
+        // Ensure ability middleware ran first
+        debug('Checking if ability middleware ran first');
+
+        if (!reqWithAbility.vincentAbility) {
+          debug('Ability middleware did not run before requireUserIsAuthor middleware');
           res.status(500).json({
-            error: 'Tool middleware must run before requireUserIsAuthor middleware',
+            error: 'Ability middleware must run before requireUserIsAuthor middleware',
           });
           return;
         }
 
-        debug('Comparing user address with tool author address', {
+        debug('Comparing user address with ability author address', {
           userAddress,
-          authorAddress: reqWithTool.vincentTool.authorWalletAddress,
-          toolPackageName: reqWithTool.vincentTool.packageName,
+          authorAddress: reqWithAbility.vincentAbility.authorWalletAddress,
+          abilityPackageName: reqWithAbility.vincentAbility.packageName,
         });
 
-        // Check if the authenticated user is the author of the tool
-        if (userAddress !== reqWithTool.vincentTool.authorWalletAddress) {
-          debug('User is not the author of the tool', {
+        // Check if the authenticated user is the author of the ability
+        if (userAddress !== reqWithAbility.vincentAbility.authorWalletAddress) {
+          debug('User is not the author of the ability', {
             userAddress,
-            authorAddress: reqWithTool.vincentTool.authorWalletAddress,
-            toolPackageName: reqWithTool.vincentTool.packageName,
+            authorAddress: reqWithAbility.vincentAbility.authorWalletAddress,
+            abilityPackageName: reqWithAbility.vincentAbility.packageName,
           });
           res.status(403).json({
             message: 'Forbidden',
-            error: 'You are not authorized to modify this tool',
+            error: 'You are not authorized to modify this ability',
           });
           return;
         }
 
-        debug('User is confirmed as the author of the tool');
+        debug('User is confirmed as the author of the ability');
       } else if (entityType === 'policy') {
         debug('Checking policy authorship');
         const reqWithPolicy = req as RequestWithPolicyAndVincentUser;
 
         // Ensure policy middleware ran first
         debug('Checking if policy middleware ran first');
+
         if (!reqWithPolicy.vincentPolicy) {
           debug('Policy middleware did not run before requireUserIsAuthor middleware');
           res.status(500).json({
@@ -114,7 +121,7 @@ export const requireUserIsAuthor = (entityType: EntityType) => {
       } else {
         debug('Invalid entity type provided', { entityType });
         res.status(500).json({
-          error: `Invalid entity type: ${entityType}. Must be 'tool' or 'policy'`,
+          error: `Invalid entity type: ${entityType}. Must be 'ability' or 'policy'`,
         });
         return;
       }

@@ -2,18 +2,18 @@
 
 ### 🩹 Fixes
 
-- #### VincentToolClient Precheck fixes ([8da32df2](https://github.com/LIT-Protocol/Vincent/commit/8da32df2))
+- #### VincentAbilityClient Precheck fixes ([8da32df2](https://github.com/LIT-Protocol/Vincent/commit/8da32df2))
 
   - Fix a case where deny results from `precheck()` were not correctly bubbled to the caller
   - Fixed incorrect return type shape - `error` is a sibling of `result` in the policiesContext- Ensured `error` is bubbled up to the caller when provided
 
-- - VincentToolClient - Expose correct policiesContext type when calling `precheck()` ([812d4fe9](https://github.com/LIT-Protocol/Vincent/commit/812d4fe9))
-- - `VincentToolClient` - Fixed case where a tool without its own `precheck()` function would return `success` result even if a policy returned an `deny` result from its `precheck()` ([71380b89](https://github.com/LIT-Protocol/Vincent/commit/71380b89))
-- - `VincentToolClient` - Fixed case where a fail response did not return the `error` or `result` response to the caller correctly ([30e32f1e](https://github.com/LIT-Protocol/Vincent/commit/30e32f1e))
+- - VincentAbilityClient - Expose correct policiesContext type when calling `precheck()` ([812d4fe9](https://github.com/LIT-Protocol/Vincent/commit/812d4fe9))
+- - `VincentAbilityClient` - Fixed case where an ability without its own `precheck()` function would return `success` result even if a policy returned an `deny` result from its `precheck()` ([71380b89](https://github.com/LIT-Protocol/Vincent/commit/71380b89))
+- - `VincentAbilityClient` - Fixed case where a fail response did not return the `error` or `result` response to the caller correctly ([30e32f1e](https://github.com/LIT-Protocol/Vincent/commit/30e32f1e))
 
 ### 🧱 Updated Dependencies
 
-- Updated tool-sdk to 1.0.2
+- Updated ability-sdk to 1.0.2
 
 ### ❤️ Thank You
 
@@ -39,7 +39,7 @@
 - **vincent-app-sdk:** Add sdk-docs TypeDocs to root of repo ([fb15599](https://github.com/LIT-Protocol/Vincent/commit/fb15599))
 - **vincent-app-sdk:** Return both the original JWT string and the decoded JWT object from `decodeVincentLoginJWT()` - Also fixed inverted logic check for `isLoginUri()`, and converted to object params for `isLoginUri()` ([c2f3a19](https://github.com/LIT-Protocol/Vincent/commit/c2f3a19))
 - **vincent-app-sdk:** Add `removeLoginJWTFromURI()` method to `VincentWebAppClient` ([17072f4](https://github.com/LIT-Protocol/Vincent/commit/17072f4))
-- **vincent-app-sdk:** Replace `pkp/delegatee-sigs` with a `VincentToolClient` - Exposes a single method, `getVincentToolClient()`, which Vincent app developers will use to interact with Vincent Tool LIT actions - Fixes existing code that created new instances of LitNodeClient and connecting to them every time the tool is interacted with, using newly minted singleton module - Initial TSDoc configurations for exposing the tool client construction and usage under a 'Vincent Tools' category. ([2052ebe](https://github.com/LIT-Protocol/Vincent/commit/2052ebe))
+- **vincent-app-sdk:** Replace `pkp/delegatee-sigs` with a `VincentAbilityClient` - Exposes a single method, `getVincentAbilityClient()`, which Vincent app developers will use to interact with Vincent Ability LIT actions - Fixes existing code that created new instances of LitNodeClient and connecting to them every time the ability is interacted with, using newly minted singleton module - Initial TSDoc configurations for exposing the ability client construction and usage under a 'Vincent Abilities' category. ([2052ebe](https://github.com/LIT-Protocol/Vincent/commit/2052ebe))
 - **vincent-app-sdk:** Define an internal module for managing a singleton instance of a LitNodeClient ([d297b0c](https://github.com/LIT-Protocol/Vincent/commit/d297b0c))
 - update vincent sdk readme ([090614d](https://github.com/LIT-Protocol/Vincent/commit/090614d))
 - added contracts class ([ef1851e](https://github.com/LIT-Protocol/Vincent/commit/ef1851e))
@@ -49,7 +49,7 @@
 - ZodSchemmaMap typo ([095f38e](https://github.com/LIT-Protocol/Vincent/commit/095f38e))
 - doc reference ([b1450f8](https://github.com/LIT-Protocol/Vincent/commit/b1450f8))
 - remove unnecessary type annotation ([c71eeac](https://github.com/LIT-Protocol/Vincent/commit/c71eeac))
-- sdk nx project linting tool ([82dd819](https://github.com/LIT-Protocol/Vincent/commit/82dd819))
+- sdk nx project linting ability ([82dd819](https://github.com/LIT-Protocol/Vincent/commit/82dd819))
 - **docs:** rename (remove API) ([a4b8e83](https://github.com/LIT-Protocol/Vincent/commit/a4b8e83))
 - **docs:** formatting fixes, custom css for :::info ([6f2fcef](https://github.com/LIT-Protocol/Vincent/commit/6f2fcef))
 - **vincent-app-sdk:** Fix import of `JWT_ERROR` to import from root of `did-jwt` package ([dd96111](https://github.com/LIT-Protocol/Vincent/commit/dd96111))

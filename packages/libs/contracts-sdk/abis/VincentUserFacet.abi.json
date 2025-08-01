@@ -19,7 +19,7 @@
         "internalType": "uint256"
       },
       {
-        "name": "toolIpfsCids",
+        "name": "abilityIpfsCids",
         "type": "string[]",
         "internalType": "string[]"
       },
@@ -39,7 +39,7 @@
   },
   {
     "type": "function",
-    "name": "setToolPolicyParameters",
+    "name": "setAbilityPolicyParameters",
     "inputs": [
       {
         "name": "pkpTokenId",
@@ -57,7 +57,7 @@
         "internalType": "uint256"
       },
       {
-        "name": "toolIpfsCids",
+        "name": "abilityIpfsCids",
         "type": "string[]",
         "internalType": "string[]"
       },
@@ -169,7 +169,7 @@
   },
   {
     "type": "event",
-    "name": "ToolPolicyParametersSet",
+    "name": "AbilityPolicyParametersSet",
     "inputs": [
       {
         "name": "pkpTokenId",
@@ -190,13 +190,13 @@
         "internalType": "uint256"
       },
       {
-        "name": "hashedToolIpfsCid",
+        "name": "hashedAbilityIpfsCid",
         "type": "bytes32",
         "indexed": false,
         "internalType": "bytes32"
       },
       {
-        "name": "hashedToolPolicyIpfsCid",
+        "name": "hashedAbilityPolicyIpfsCid",
         "type": "bytes32",
         "indexed": false,
         "internalType": "bytes32"
@@ -308,7 +308,7 @@
   },
   {
     "type": "error",
-    "name": "DuplicateToolIpfsCid",
+    "name": "DuplicateAbilityIpfsCid",
     "inputs": [
       {
         "name": "appId",
@@ -321,7 +321,7 @@
         "internalType": "uint256"
       },
       {
-        "name": "toolIpfsCid",
+        "name": "abilityIpfsCid",
         "type": "string",
         "internalType": "string"
       }
@@ -329,7 +329,7 @@
   },
   {
     "type": "error",
-    "name": "DuplicateToolPolicyIpfsCid",
+    "name": "DuplicateAbilityPolicyIpfsCid",
     "inputs": [
       {
         "name": "appId",
@@ -342,12 +342,12 @@
         "internalType": "uint256"
       },
       {
-        "name": "toolIpfsCid",
+        "name": "abilityIpfsCid",
         "type": "string",
         "internalType": "string"
       },
       {
-        "name": "toolPolicyIpfsCid",
+        "name": "abilityPolicyIpfsCid",
         "type": "string",
         "internalType": "string"
       }
@@ -360,7 +360,7 @@
   },
   {
     "type": "error",
-    "name": "EmptyToolIpfsCid",
+    "name": "EmptyAbilityIpfsCid",
     "inputs": []
   },
   {
@@ -370,7 +370,7 @@
   },
   {
     "type": "error",
-    "name": "NotAllRegisteredToolsProvided",
+    "name": "NotAllRegisteredAbilitiesProvided",
     "inputs": [
       {
         "name": "appId",
@@ -416,7 +416,7 @@
     "name": "PolicyArrayLengthMismatch",
     "inputs": [
       {
-        "name": "toolIndex",
+        "name": "abilityIndex",
         "type": "uint256",
         "internalType": "uint256"
       },
@@ -434,7 +434,7 @@
   },
   {
     "type": "error",
-    "name": "ToolNotRegisteredForAppVersion",
+    "name": "AbilityNotRegisteredForAppVersion",
     "inputs": [
       {
         "name": "appId",
@@ -447,7 +447,7 @@
         "internalType": "uint256"
       },
       {
-        "name": "toolIpfsCid",
+        "name": "abilityIpfsCid",
         "type": "string",
         "internalType": "string"
       }
@@ -455,7 +455,7 @@
   },
   {
     "type": "error",
-    "name": "ToolPolicyNotRegisteredForAppVersion",
+    "name": "AbilityPolicyNotRegisteredForAppVersion",
     "inputs": [
       {
         "name": "appId",
@@ -468,12 +468,12 @@
         "internalType": "uint256"
       },
       {
-        "name": "toolIpfsCid",
+        "name": "abilityIpfsCid",
         "type": "string",
         "internalType": "string"
       },
       {
-        "name": "toolPolicyIpfsCid",
+        "name": "abilityPolicyIpfsCid",
         "type": "string",
         "internalType": "string"
       }
@@ -481,7 +481,7 @@
   },
   {
     "type": "error",
-    "name": "ToolsAndPoliciesLengthMismatch",
+    "name": "AbilitiesAndPoliciesLengthMismatch",
     "inputs": []
   },
   {

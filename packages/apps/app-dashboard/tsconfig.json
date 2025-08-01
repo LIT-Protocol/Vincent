@@ -12,6 +12,12 @@
       "path": "../../libs/app-sdk"
     },
     {
+      "path": "../../libs/registry-sdk"
+    },
+    {
+      "path": "../../libs/contracts-sdk"
+    },
+    {
       "path": "./tsconfig.app.json"
     },
     {

@@ -4,7 +4,7 @@ import { StatusMessage } from '@/components/shared/ui/statusMessage';
 import { AppVersionPublishedButtons } from '../wrappers/ui/AppVersionPublishedButtons';
 import { AppVersionUnpublishedButtons } from '../wrappers/ui/AppVersionUnpublishedButtons';
 import { AppVersionDeletedButtons } from '../wrappers/ui/AppVersionDeletedButtons';
-import { App, AppVersion, AppVersionTool } from '@/types/developer-dashboard/appTypes';
+import { App, AppVersion, AppVersionAbility } from '@/types/developer-dashboard/appTypes';
 import {
   App as ContractApp,
   AppVersion as ContractAppVersion,
@@ -13,7 +13,7 @@ import {
 interface AppVersionDetailViewProps {
   app: App;
   versionData: AppVersion;
-  versionTools: AppVersionTool[];
+  versionAbilities: AppVersionAbility[];
   blockchainAppVersion: ContractAppVersion | null;
   blockchainAppData: ContractApp | null;
   refetchBlockchainAppVersionData: () => void;
@@ -22,7 +22,7 @@ interface AppVersionDetailViewProps {
 export function AppVersionDetailView({
   app,
   versionData,
-  versionTools,
+  versionAbilities,
   blockchainAppVersion,
   blockchainAppData,
   refetchBlockchainAppVersionData,
@@ -88,12 +88,10 @@ export function AppVersionDetailView({
               refetchBlockchainAppVersionData={refetchBlockchainAppVersionData}
             />
           ) : isVersionPublished && isAppDeletedOnChain ? (
-            <>
-              <StatusMessage
-                message="This app is deleted on-chain. Please undelete the app to enable version modification."
-                type="info"
-              />
-            </>
+            <StatusMessage
+              message="This app is deleted on-chain. Please undelete the app to enable version modification."
+              type="info"
+            />
           ) : isAppVersionDeletedRegistry ? (
             <AppVersionDeletedButtons appVersion={versionData} />
           ) : (
@@ -112,7 +110,7 @@ export function AppVersionDetailView({
         version={versionData.version}
         appName={app.name}
         versionData={versionData}
-        tools={versionTools || []}
+        abilities={versionAbilities || []}
       />
     </div>
   );

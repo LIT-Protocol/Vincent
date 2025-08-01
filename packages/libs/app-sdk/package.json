@@ -20,12 +20,12 @@
       "require": "./dist/src/jwt/index.js",
       "types": "./dist/src/jwt/index.d.ts"
     },
-    "./toolClient": {
-      "import": "./dist/src/toolClient/index.js",
-      "require": "./dist/src/toolClient/index.js",
-      "types": "./dist/src/toolClient/index.d.ts"
+    "./abilityClient": {
+      "import": "./dist/src/abilityClient/index.js",
+      "require": "./dist/src/abilityClient/index.js",
+      "types": "./dist/src/abilityClient/index.d.ts"
     },
-    "./webAuthclient": {
+    "./webAuthClient": {
       "import": "./dist/src/webAuthClient/index.js",
       "require": "./dist/src/webAuthClient/index.js",
       "types": "./dist/src/webAuthClient/index.d.ts"
@@ -56,7 +56,7 @@
     "@lit-protocol/constants": "^7.0.8",
     "@lit-protocol/lit-node-client": "^7.0.8",
     "@lit-protocol/vincent-contracts-sdk": "workspace:*",
-    "@lit-protocol/vincent-tool-sdk": "workspace:*",
+    "@lit-protocol/vincent-ability-sdk": "workspace:*",
     "@noble/secp256k1": "^2.2.3",
     "did-jwt": "^8.0.8",
     "ethers": "5.8.0",

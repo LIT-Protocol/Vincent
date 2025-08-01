@@ -9,7 +9,7 @@ Any Vincent App can be converted into a Model Protocol Server (MCP) that can be 
 
 We provide an [implementation of an MCP Server](https://github.com/LIT-Protocol/Vincent/tree/main/packages/apps/mcp), connectable through STDIO and HTTP transports. You can use it (forking or [using `npx`](https://www.npmjs.com/package/@lit-protocol/vincent-mcp-server)) with your keys and Vincent Apps or you can customize the whole process to make your own Vincent MCP Server.
 
-By following this process, your Vincent App tools will be exposed to LLMs as a set of MCP tools. The MCP server can also be extended with custom tools and prompts to suit your specific needs.
+By following this process, your Vincent App abilities will be exposed to LLMs as a set of MCP abilities. The MCP server can also be extended with custom abilities and prompts to suit your specific needs.
 
 And if you're building an AI application, check out our [OpenAI AgentKit demo](https://github.com/LIT-Protocol/Vincent-MCP-OpenAI-AgentKit) for a guide on how to integrate your Vincent App with the OpenAI AgentKit.
 
@@ -32,22 +32,22 @@ const appDef: VincentAppDef = {
   id: '8462368',
   version: '1',
   name: 'My Vincent App',
-  description: 'A Vincent application that executes tools for its delegators',
-  tools: {
+  description: 'A Vincent application that executes abilities for its delegators',
+  abilities: {
     QmIpfsCid1: {
-      name: 'myTool',
-      description: 'A tool that does something',
+      name: 'myAbility',
+      description: 'A ability that does something',
       parameters: [
         {
           name: 'param1',
           type: 'string',
-          description: 'A parameter that is used in the tool to do something',
+          description: 'A parameter that is used in the ability to do something',
           optional: true,
         },
         // Add more parameters here
       ],
     },
-    // Add the other tools in your Vincent App here
+    // Add the other abilities in your Vincent App here
   },
 };
 
@@ -59,15 +59,15 @@ You can check the [Uniswap Swap example app json](https://github.com/LIT-Protoco
 
 ## Extending the MCP Server
 
-At this moment you can add more tools, resources or prompts to the server.
+At this moment you can add more abilities, resources or prompts to the server.
 
 ```typescript
-server.tool(...);
+server.ability(...);
 server.resource(...);
 server.prompt(...);
 ```
 
-These tools, resources and prompts will be exposed in the server along with the ones from the Vincent App definition. Consider adding any other tools that you want to be executed by the LLM and that are not Vincent Tools such as tools to query balance or fetch useful data from external sources.
+These abilities, resources and prompts will be exposed in the server along with the ones from the Vincent App definition. Consider adding any other abilities that you want to be executed by the LLM and that are not Vincent Abilities such as abilities to query balance or fetch useful data from external sources.
 
 ## Picking a Transport
 
@@ -80,7 +80,7 @@ Because STDIO transport runs in your local environment, only the Vincent App del
 ```typescript
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 
-// Connect the server to a transport (e.g., stdio for CLI-based LLM tools)
+// Connect the server to a transport (e.g., stdio for CLI-based LLM abilities)
 const stdioTransport = new StdioServerTransport();
 await server.connect(stdioTransport);
 ```
@@ -98,7 +98,7 @@ But as this transport can be made public, both delegators and delegatees of the 
 ```typescript
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 
-// Connect the server to a transport (e.g., http for HTTP-based LLM tools)
+// Connect the server to a transport (e.g., http for HTTP-based LLM abilities)
 const httpTransport = new StreamableHTTPServerTransport();
 await server.connect(httpTransport);
 
@@ -114,9 +114,9 @@ Check your LLM Client documentation on how to connect to the MCP server with the
 
 You can also check the [Vincent MCP package README](https://github.com/LIT-Protocol/Vincent/tree/main/packages/apps/mcp/README.md) for examples on how to connect to the server with different modes.
 
-## Executing Tools
+## Executing Abilities
 
-When the LLM or Agent decides to execute a tool, it will send a request to the MCP server with the tool name and parameters. The MCP server will then execute the tool using the delegatee key material and return the result to the LLM.
+When the LLM or Agent decides to execute an ability, it will send a request to the MCP server with the ability name and parameters. The MCP server will then execute the ability using the delegatee key material and return the result to the LLM.
 
 # MCP Server official implementation
 
@@ -126,15 +126,15 @@ This MCP Server includes:
 
 - HTTP and STDIO transports
 - `.env` file support for environment definition
-- App definition with a custom JSON file to define which tools and params are exposed to LLMs
+- App definition with a custom JSON file to define which abilities and params are exposed to LLMs
 - Support for delegatee and delegators in HTTP transport
   - Delegators MUST authenticate with SIWE OR their Vincent JWT
   - Delegatees MUST identify with SIWE
 - Client authentication support using headers or query params to maximize compatibility
 - Delegatee extras:
-  - "get delegators" tool, to fetch the delegators info for the wrapped Vincent App
-  - An extra delegator address param in all tools. To specify on behalf of which delegator to execute the tool
-- Extra tools:
+  - "get delegators" ability, to fetch the delegators info for the wrapped Vincent App
+  - An extra delegator address param in all abilities. To specify on behalf of which delegator to execute the ability
+- Extra abilities:
   - fetch native balance
   - fetch erc20 balance
   - fetch erc20 allowance
@@ -162,7 +162,7 @@ Before deploying, you'll need to create the following two files in the root of y
     CMD ["npx", "@lit-protocol/vincent-mcp-server", "http"]
     ```
 
-2.  Create the Vincent App JSON definition file. Fill it with the data of your Vincent: ID, version, name, description and tools data. Check the [Uniswap Swap example app json](https://github.com/LIT-Protocol/Vincent/blob/main/packages/apps/mcp/vincent-app.example.json) for a complete Vincent App definition.
+2.  Create the Vincent App JSON definition file. Fill it with the data of your Vincent: ID, version, name, description and abilities data. Check the [Uniswap Swap example app json](https://github.com/LIT-Protocol/Vincent/blob/main/packages/apps/mcp/vincent-app.example.json) for a complete Vincent App definition.
 
 3.  Add both files to git. Commit and push them to your repository to use as source for Heroku or Render.
 
@@ -190,7 +190,7 @@ Before deploying, you'll need to create the following two files in the root of y
 
 # Integration with messaging APIs or LLM clients remotely
 
-To integrate with either [OpenAI API](https://platform.openai.com/docs/guides/tools-remote-mcp) or [Anthropic API](https://docs.anthropic.com/en/docs/agents-and-tools/mcp-connector), or LLM clients that connect to public MCPs, you'll have to make your MCP server publicly accessible using the HTTP transport.
+To integrate with either [OpenAI API](https://platform.openai.com/docs/guides/abilities-remote-mcp) or [Anthropic API](https://docs.anthropic.com/en/docs/agents-and-abilities/mcp-connector), or LLM clients that connect to public MCPs, you'll have to make your MCP server publicly accessible using the HTTP transport.
 
 You can host your MCP server in any provider you want, such as [Heroku](https://www.heroku.com/) or [Render](https://render.com/).
 Another option is using [ngrok](https://ngrok.com/) to expose your local process. Running `ngrok http 300` (adjusting the port if needed) will give you the public endpoint to reach your MCP.
@@ -203,7 +203,7 @@ To connect with an LLM client remotely, such as [Anthropic Custom Integrations](
 
 Ensure you are using the full endpoint, with the `/mcp` path if the client does not add that automatically. And you can pass any required authentication using headers or query params depending on the client support.
 
-Finally, activate the integration in your chat interface. Then you will have the Vincent Tools available in your LLM client.
+Finally, activate the integration in your chat interface. Then you will have the Vincent Abilities available in your LLM client.
 
 ![Configure Claude.ai with Vincent MCP](../images/claude-ai-mcp-chat.png)
 
@@ -245,7 +245,7 @@ async function delegateeUsage() {
 
   const response = await client.responses.create({
     model: 'gpt-4.1',
-    tools: [
+    abilities: [
       {
         type: 'mcp',
         server_label: 'vincent-app',
@@ -283,7 +283,7 @@ async function delegatorUsage() {
   const jwt = DELEGATOR_JWT;
   const response = await client.responses.create({
     model: 'gpt-4.1',
-    tools: [
+    abilities: [
       {
         type: 'mcp',
         server_label: 'vincent-app',
@@ -297,12 +297,12 @@ async function delegatorUsage() {
         // server_url: `${VINCENT_MCP_BASE_URL}/mcp?jwt=${jwt}`,
       },
     ],
-    input: 'Tell me which blockchain tools do I have available',
+    input: 'Tell me which blockchain abilities do I have available',
   });
 
   console.log(response.output_text);
   // Output:
-  // Here are the blockchain tools you have available through this interface:
+  // Here are the blockchain abilities you have available through this interface:
   //
   // ---
   //
@@ -327,7 +327,7 @@ async function delegatorUsage() {
   // ---
   //
   // ### Supported Blockchains*
-  // These tools generally work with EVM-compatible chains like Ethereum, Base, and others (where Uniswap operates).
+  // These abilities generally work with EVM-compatible chains like Ethereum, Base, and others (where Uniswap operates).
   //
   // ---
   //
@@ -390,7 +390,7 @@ async function delegateeUsage() {
         // Anthropic AI SDK mcp_servers only supports "authorization: Bearer" tokens, so query params must be used to pass SIWE signature and base 64 encoded message
         url: `${VINCENT_MCP_BASE_URL}/mcp?b64message=${base64Message}&signature=${signature}`, // The URL of the MCP server
         name: 'vincent-app',
-        tool_configuration: {
+        ability_configuration: {
           enabled: true,
         },
       },
@@ -416,15 +416,15 @@ async function delegateeUsage() {
   //     text: "I'll help you check your delegators and then get the native balance for the first one on Base blockchain."
   //   },
   //   {
-  //     type: 'mcp_tool_use',
-  //     id: 'mcptoolu_01QEn19nFMqAi9xKBAKgGFGv',
+  //     type: 'mcp_ability_use',
+  //     id: 'mcpabilityu_01QEn19nFMqAi9xKBAKgGFGv',
   //     name: 'uniswap-swap-V4-get-delegators-info',
   //     input: {},
   //     server_name: 'vincent-app'
   //   },
   //   {
-  //     type: 'mcp_tool_result',
-  //     tool_use_id: 'mcptoolu_01QEn19nFMqAi9xKBAKgGFGv',
+  //     type: 'mcp_ability_result',
+  //     ability_use_id: 'mcpabilityu_01QEn19nFMqAi9xKBAKgGFGv',
   //     is_error: false,
   //     content: [ [Object] ]
   //   },
@@ -433,8 +433,8 @@ async function delegateeUsage() {
   //     text: "Now I'll check the native balance on Base blockchain (chain ID 8453) for the first delegator with address `0x2b0e8EBA44FE6Fdc87dE6ADfa3367417D97Fd22f`:"
   //   },
   //   {
-  //     type: 'mcp_tool_use',
-  //     id: 'mcptoolu_01CZ83YZH5m9qNNUdRNmHKxj',
+  //     type: 'mcp_ability_use',
+  //     id: 'mcpabilityu_01CZ83YZH5m9qNNUdRNmHKxj',
   //     name: 'uniswap-swap-V4-native-balance',
   //     input: {
   //       chainId: 8453,
@@ -443,8 +443,8 @@ async function delegateeUsage() {
   //     server_name: 'vincent-app'
   //   },
   //   {
-  //     type: 'mcp_tool_result',
-  //     tool_use_id: 'mcptoolu_01CZ83YZH5m9qNNUdRNmHKxj',
+  //     type: 'mcp_ability_result',
+  //     ability_use_id: 'mcpabilityu_01CZ83YZH5m9qNNUdRNmHKxj',
   //     is_error: false,
   //     content: [ [Object] ]
   //   },
@@ -478,7 +478,7 @@ async function delegatorUsage() {
         type: 'url',
         url: `${VINCENT_MCP_BASE_URL}/mcp`, // The URL of the MCP server
         name: 'vincent-app',
-        tool_configuration: {
+        ability_configuration: {
           enabled: true,
         },
         authorization_token: jwt, // MCP Server receives headers['authorization'] = `Bearer ${jwt}`
@@ -492,7 +492,7 @@ async function delegatorUsage() {
         content: [
           {
             type: 'text',
-            text: 'Tell me which blockchain tools do I have available',
+            text: 'Tell me which blockchain abilities do I have available',
           },
         ],
       },
@@ -504,27 +504,27 @@ async function delegatorUsage() {
   // [
   //   {
   //     type: 'text',
-  //     text: 'Based on the tools available to me, you have access to the following blockchain tools for interacting with Uniswap V3 and ERC20 tokens:\n' +
+  //     text: 'Based on the abilities available to me, you have access to the following blockchain abilities for interacting with Uniswap V3 and ERC20 tokens:\n' +
   //       '\n' +
-  //       '## **Balance Checking Tools:**\n' +
+  //       '## **Balance Checking Abilities:**\n' +
   //       '1. **Native Balance Checker** - Get the native token balance (like ETH) for a PKP address on any chain\n' +
   //       '2. **ERC20 Balance Checker** - Get the balance of any ERC20 token for a PKP address on any chain\n' +
   //       '\n' +
-  //       '## **Token Approval Tools:**\n' +
+  //       '## **Token Approval Abilities:**\n' +
   //       '3. **ERC20 Allowance Checker** - Check how much of an ERC20 token a spender (like Uniswap router) is allowed to spend\n' +
   //       '4. **ERC20 Approval** - Approve an ERC20 token for spending by the Uniswap V3 Router contract\n' +
   //       '\n' +
-  //       '## **Trading Tools:**\n' +
+  //       '## **Trading Abilities:**\n' +
   //       '5. **Uniswap V3 Swap** - Execute token swaps on Uniswap V3, selling a specific amount of one token to get another token\n' +
   //       '\n' +
-  //       'These tools work together to enable a complete Uniswap trading workflow:\n' +
+  //       'These abilities work together to enable a complete Uniswap trading workflow:\n' +
   //       '- Check balances to see what tokens you have available\n' +
   //       '- Check/set allowances so Uniswap can spend your tokens\n' +
   //       '- Execute swaps to trade between different tokens\n' +
   //       '\n' +
-  //       'The tools support multiple blockchains (you specify the chain ID) and work with PKP (Programmable Key Pair) addresses. All tools require RPC URLs for blockchain connectivity.\n' +
+  //       'The abilities support multiple blockchains (you specify the chain ID) and work with PKP (Programmable Key Pair) addresses. All abilities require RPC URLs for blockchain connectivity.\n' +
   //       '\n' +
-  //       'Would you like me to help you use any of these tools for a specific task?'
+  //       'Would you like me to help you use any of these abilities for a specific task?'
   //   }
   // ]
 }

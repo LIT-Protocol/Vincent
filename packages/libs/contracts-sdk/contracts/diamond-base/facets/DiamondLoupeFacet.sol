@@ -16,7 +16,7 @@ import {IERC165} from "../interfaces/IERC165.sol";
 contract DiamondLoupeFacet is IDiamondLoupe, IERC165 {
     // Diamond Loupe Functions
     ////////////////////////////////////////////////////////////////////
-    /// These functions are expected to be called frequently by tools.
+    /// These functions are expected to be called frequently by abilities.
     //
     // struct Facet {
     //     address facetAddress;

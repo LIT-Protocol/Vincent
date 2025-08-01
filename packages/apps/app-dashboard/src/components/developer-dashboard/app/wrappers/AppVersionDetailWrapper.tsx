@@ -1,6 +1,5 @@
 import { useParams } from 'react-router-dom';
 import { StatusMessage } from '@/components/shared/ui/statusMessage';
-import { useAddressCheck } from '@/hooks/developer-dashboard/app/useAddressCheck';
 import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
 import Loading from '@/components/shared/ui/Loading';
 import { AppVersionDetailView } from '@/components/developer-dashboard/app/views/AppVersionDetailView';
@@ -28,18 +27,19 @@ export function AppVersionDetailWrapper() {
     isError: versionError,
   } = vincentApiClient.useGetAppVersionQuery({ appId: Number(appId), version: Number(versionId) });
 
-  // Fetch version tools from API
+  // Fetch version abilities from API
   const {
-    data: versionTools,
-    isLoading: versionToolsLoading,
-    isError: versionToolsError,
-  } = vincentApiClient.useListAppVersionToolsQuery({
+    data: versionAbilities,
+    isLoading: versionAbilitiesLoading,
+    isError: versionAbilitiesError,
+  } = vincentApiClient.useListAppVersionAbilitiesQuery({
     appId: Number(appId),
     version: Number(versionId),
   });
 
-  const { blockchainAppData, blockchainAppError, blockchainAppLoading } =
-    useBlockchainAppData(appId);
+  const { blockchainAppData, blockchainAppError, blockchainAppLoading } = useBlockchainAppData(
+    Number(appId),
+  );
 
   // Fetch blockchain app and version data
   const {
@@ -47,16 +47,14 @@ export function AppVersionDetailWrapper() {
     blockchainAppVersionError,
     blockchainAppVersionLoading,
     refetch: refetchBlockchainAppVersionData,
-  } = useBlockchainAppVersionData(appId, versionId);
-
-  useAddressCheck(app || null);
+  } = useBlockchainAppVersionData(Number(appId), Number(versionId));
 
   // Loading states first
   if (
     appLoading ||
     versionsLoading ||
     versionLoading ||
-    versionToolsLoading ||
+    versionAbilitiesLoading ||
     blockchainAppLoading ||
     blockchainAppVersionLoading
   )
@@ -70,8 +68,8 @@ export function AppVersionDetailWrapper() {
   if (blockchainAppVersionError)
     return <StatusMessage message="Failed to load on-chain app version data" type="error" />;
   if (versionError) return <StatusMessage message="Failed to load version data" type="error" />;
-  if (versionToolsError)
-    return <StatusMessage message="Failed to load version tools" type="error" />;
+  if (versionAbilitiesError)
+    return <StatusMessage message="Failed to load version abilities" type="error" />;
   if (!app) return <StatusMessage message={`App ${appId} not found`} type="error" />;
   if (!versionData)
     return <StatusMessage message={`Version ${versionId} not found`} type="error" />;
@@ -80,7 +78,7 @@ export function AppVersionDetailWrapper() {
     <AppVersionDetailView
       app={app}
       versionData={versionData}
-      versionTools={versionTools || []}
+      versionAbilities={versionAbilities || []}
       blockchainAppVersion={blockchainAppVersion}
       blockchainAppData={blockchainAppData}
       refetchBlockchainAppVersionData={refetchBlockchainAppVersionData}

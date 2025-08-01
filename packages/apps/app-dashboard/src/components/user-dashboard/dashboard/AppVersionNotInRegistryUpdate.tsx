@@ -1,9 +1,9 @@
 import { Card, CardContent } from '@/components/shared/ui/card';
 import { AlertTriangle, ArrowLeft, RefreshCw } from 'lucide-react';
-import { theme } from '@/components/user-dashboard/consent/ui/theme';
-import { ConsentAppHeader } from '@/components/user-dashboard/consent/ui/ConsentAppHeader';
-import { InfoBanner } from '@/components/user-dashboard/consent/ui/InfoBanner';
-import { ActionCard } from '@/components/user-dashboard/consent/ui/ActionCard';
+import { theme } from '@/components/user-dashboard/connect/ui/theme';
+import { ConnectAppHeader } from '@/components/user-dashboard/connect/ui/ConnectAppHeader';
+import { InfoBanner } from '@/components/user-dashboard/connect/ui/InfoBanner';
+import { ActionCard } from '@/components/user-dashboard/connect/ui/ActionCard';
 import { useNavigate } from 'react-router-dom';
 import { UseReadAuthInfo } from '@/hooks/user-dashboard/useAuthInfo';
 import { App } from '@/types/developer-dashboard/appTypes';
@@ -29,7 +29,7 @@ export function AppVersionNotInRegistryUpdate({ appData }: AppVersionNotInRegist
   };
 
   return (
-    <div className={`min-h-screen w-full transition-colors duration-500 ${themeStyles.bg} p-4`}>
+    <div className={`min-h-screen w-full transition-colors duration-500 ${themeStyles.bg} sm:p-4`}>
       {/* Main Card Container */}
       <div
         className={`max-w-6xl mx-auto ${themeStyles.mainCard} border ${themeStyles.mainCardBorder} rounded-2xl shadow-2xl overflow-hidden`}
@@ -37,7 +37,7 @@ export function AppVersionNotInRegistryUpdate({ appData }: AppVersionNotInRegist
         {/* Main Content */}
         <div className="px-6 py-8 space-y-6">
           {/* App Header */}
-          {appData && <ConsentAppHeader app={appData} theme={themeStyles} />}
+          {appData && <ConnectAppHeader app={appData} theme={themeStyles} />}
 
           {/* Status Banner */}
           <InfoBanner

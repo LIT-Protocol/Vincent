@@ -5,29 +5,29 @@ title: Creating Vincent Policies
 
 # What is a Vincent Policy?
 
-<!-- TODO Link to Vincent Tool definition when it's available -->
+<!-- TODO Link to Vincent Ability definition when it's available -->
 
-A Vincent Policy is a function built using [Lit Actions](https://developer.litprotocol.com/sdk/serverless-signing/overview) and is a programmable guardrail for Vincent Tool executions. These policies have user-configurable parameters and determine whether a Vincent App can execute specific Vincent Tools on behalf of a Vincent App User, ensuring that autonomous agents and Vincent Apps operate strictly within user-defined boundaries.
+A Vincent Policy is a function built using [Lit Actions](https://developer.litprotocol.com/sdk/serverless-signing/overview) and is a programmable guardrail for Vincent Ability executions. These policies have user-configurable parameters and determine whether a Vincent App can execute specific Vincent Abilities on behalf of a Vincent App User, ensuring that autonomous agents and Vincent Apps operate strictly within user-defined boundaries.
 
 ## Key Capabilities of Vincent Policies
 
 - **Flexible Data Access:** Read and write both on and off-chain data to any blockchain network or HTTP-accessible API or database
 - **Stateful Policy Management:** Persist data across executions to track cumulative metrics and implement sophisticated rules like spending limits, rate limiting, and usage quotas
 - **Cryptographic Capabilities:** Utilize Lit Protocol's [Encryption and Access Control ](https://developer.litprotocol.com/sdk/access-control/intro) features for computing over private data within Lit's secure [Trusted Execution Environment (TEE)](https://en.wikipedia.org/wiki/Trusted_execution_environment)
-- **Type-Safe Development:** Strongly-typed Zod schemas ensure parameter validation and clear interfaces between Vincent Tools and Policies, and both utilize packages installed from NPM to extend functionality
+- **Type-Safe Development:** Strongly-typed Zod schemas ensure parameter validation and clear interfaces between Vincent Abilities and Policies, and both utilize packages installed from NPM to extend functionality
 
 ### Real-World Policy Examples
 
 **Financial Controls**
 
-- **Daily Spending Limits**: Track cumulative spending by storing transaction amounts on or off-chain and deny Vincent Tool execution when limits are exceeded
+- **Daily Spending Limits**: Track cumulative spending by storing transaction amounts on or off-chain and deny Vincent Ability execution when limits are exceeded
 - **Multi-Signature Requirements**: Require additional approvals for high-value transactions by integrating with on or off-chain approval systems
 - **Token Allowlists**: Restrict transactions to specific token types or verified contract addresses
 
 **Access Management**
 
 - **Membership Gates**: Verify ownership of on-chain assets (like NFTs), or off-chain data (like Discord roles) before allowing access to premium features
-- **Time-Based Restrictions**: Only allow Vincent Tool execution during specific hours, days, or based on cooldown periods
+- **Time-Based Restrictions**: Only allow Vincent Ability execution during specific hours, days, or based on cooldown periods
 
 **Usage Limits**
 
@@ -38,23 +38,23 @@ A Vincent Policy is a function built using [Lit Actions](https://developer.litpr
 **Risk Management**
 
 - **Transaction Pattern Analysis**: Monitor spending patterns and flag suspicious activity that deviates from normal behavior
-- **Circuit Breakers**: Automatically disable tools when unusual activity is detected or system-wide limits are reached
+- **Circuit Breakers**: Automatically disable abilities when unusual activity is detected or system-wide limits are reached
 - **Emergency Stops**: Implement admin-controlled emergency stops that can pause policy-governed operations
 
 # How a Vincent Policy Works
 
 A Vincent Policy consists of three main lifecycle methods executed in the following order:
 
-1. **Precheck**: Executed by the Vincent Tool's `precheck` function, your policy's precheck logic provides the Vincent Tool executor with a best-effort validation that your policy should permit the execution of the Vincent Tool given current policy conditions
-   - This function is executed locally by the Vincent Tool executor outside of the Lit Action environment
-2. **Evaluate**: Executed by the Vincent Tool's `execute` function, this is the validation logic that determines whether or not your policy permits the execution of the Vincent Tool based on given input parameters and current policy state
+1. **Precheck**: Executed by the Vincent Ability's `precheck` function, your policy's precheck logic provides the Vincent Ability executor with a best-effort validation that your policy should permit the execution of the Vincent Ability given current policy conditions
+   - This function is executed locally by the Vincent Ability executor outside of the Lit Action environment
+2. **Evaluate**: Executed by the Vincent Ability's `execute` function, this is the validation logic that determines whether or not your policy permits the execution of the Vincent Ability based on given input parameters and current policy state
    - This function is executed in the Lit Action environment
-3. **Commit**: An optional function used to commit results and update any state the policy depends on, executed after all the Vincent Policies registered by the Vincent User have been evaluated, and the Vincent Tool has executed successfully
+3. **Commit**: An optional function used to commit results and update any state the policy depends on, executed after all the Vincent Policies registered by the Vincent User have been evaluated, and the Vincent Ability has executed successfully
    - This function is executed in the Lit Action environment
 
 # Defining Your Vincent Policy
 
-Vincent Policies are created by calling the `createVincentPolicy` function from the `@lit-protocol/vincent-tool-sdk` package. This function takes a single object as a parameter that defines your policy's lifecycle methods, parameter schemas, and return value schemas.
+Vincent Policies are created by calling the `createVincentPolicy` function from the `@lit-protocol/vincent-ability-sdk` package. This function takes a single object as a parameter that defines your policy's lifecycle methods, parameter schemas, and return value schemas.
 
 The basic structure of a Vincent Policy definition is as follows:
 
@@ -62,16 +62,16 @@ The basic structure of a Vincent Policy definition is as follows:
 export const vincentPolicy = createVincentPolicy({
   packageName: '@my-npm-org/vincent-policy-my-name' as const,
 
-  toolParamsSchema,
+  abilityParamsSchema,
   userParamsSchema,
 
   precheckAllowResultSchema,
   precheckDenyResultSchema,
-  precheck: async ({ toolParams, userParams }, policyContext) => {},
+  precheck: async ({ abilityParams, userParams }, policyContext) => {},
 
   evalAllowResultSchema,
   evalDenyResultSchema,
-  evaluate: async ({ toolParams, userParams }, policyContext) => {},
+  evaluate: async ({ abilityParams, userParams }, policyContext) => {},
 
   commitParamsSchema,
   commitAllowResultSchema,
@@ -82,10 +82,10 @@ export const vincentPolicy = createVincentPolicy({
 
 ## `packageName`
 
-The `packageName` serves as the unique identifier for your policy within the Vincent ecosystem. This **must exactly match** the NPM package name you publish your policy under, as Vincent Tool authors will use this identifier to install and integrate your policy into their tools.
+The `packageName` serves as the unique identifier for your policy within the Vincent ecosystem. This **must exactly match** the NPM package name you publish your policy under, as Vincent Ability authors will use this identifier to install and integrate your policy into their abilities.
 
 ```typescript
-import { createVincentPolicy } from '@lit-protocol/vincent-tool-sdk';
+import { createVincentPolicy } from '@lit-protocol/vincent-ability-sdk';
 
 const vincentPolicy = createVincentPolicy({
   packageName: '@my-npm-org/vincent-policy-my-name' as const,
@@ -95,11 +95,11 @@ const vincentPolicy = createVincentPolicy({
 
 ## The `policyContext` Argument
 
-The `policyContext` argument is provided and managed by the Vincent Tool SDK. It's an object containing the following properties and is passed as an argument to your policy's `precheck`, `evaluate`, and `commit` functions:
+The `policyContext` argument is provided and managed by the Vincent Ability SDK. It's an object containing the following properties and is passed as an argument to your policy's `precheck`, `evaluate`, and `commit` functions:
 
 ```typescript
 interface PolicyContext {
-  toolIpfsCid: string;
+  abilityIpfsCid: string;
   appId: number;
   appVersion: number;
   delegation: {
@@ -117,11 +117,11 @@ interface PolicyContext {
 
 Where:
 
-- `toolIpfsCid`: The IPFS CID of the Vincent Tool that is being executed
-- `appId`: The ID of the Vincent App the Vincent Tool is being executed for
-- `appVersion`: The version of the Vincent App the Vincent Tool is being executed for
+- `abilityIpfsCid`: The IPFS CID of the Vincent Ability that is being executed
+- `appId`: The ID of the Vincent App the Vincent Ability is being executed for
+- `appVersion`: The version of the Vincent App the Vincent Ability is being executed for
 - `delegation`:
-  - `delegateeAddress`: The Ethereum address of the Vincent Tool executor
+  - `delegateeAddress`: The Ethereum address of the Vincent Ability executor
   - `delegatorPkpInfo`:
     <!-- TODO: Add link to Vincent Agent Wallet docs -->
     - `tokenId`: The token ID of the Vincent App User's Vincent Agent Wallet
@@ -132,20 +132,20 @@ Where:
 
 ## Parameter Schemas
 
-### `toolParamsSchema`
+### `abilityParamsSchema`
 
-This Zod schema defines the structure of parameters that Vincent Tools will pass to your policy. The Vincent Tool receives these parameters from the tool executor, and the Vincent Tool SDK handles passing these parameters to your policy as `toolParams`. These parameters should be the what your policy requires to make it's checks and validations.
+This Zod schema defines the structure of parameters that Vincent Abilities will pass to your policy. The Vincent Ability receives these parameters from the ability executor, and the Vincent Ability SDK handles passing these parameters to your policy as `abilityParams`. These parameters should be the what your policy requires to make it's checks and validations.
 
-For example, if you are building a spending limit policy, you might define the `toolParamsSchema` as follows:
+For example, if you are building a spending limit policy, you might define the `abilityParamsSchema` as follows:
 
 ```typescript
-import { createVincentPolicy } from '@lit-protocol/vincent-tool-sdk';
+import { createVincentPolicy } from '@lit-protocol/vincent-ability-sdk';
 import { z } from 'zod';
 
 const vincentPolicy = createVincentPolicy({
   // ... other policy definitions
 
-  toolParamsSchema: z.object({
+  abilityParamsSchema: z.object({
     tokenAddress: z.string(),
     amount: z.number(),
   }),
@@ -156,12 +156,12 @@ Your policy can then check whether spending `amount` of `tokenAddress` would exc
 
 ### `userParamsSchema`
 
-This Zod schema defines the structure of the on-chain parameters that Vincent App Users configure for your policy. These parameters are fetched from the Vincent smart contract during execution of a Vincent Policy's `precheck` and `evaluate` functions. They are unique to each Vincent Tool and Vincent App union, and cannot be altered by the Vincent App or tool executor during execution.
+This Zod schema defines the structure of the on-chain parameters that Vincent App Users configure for your policy. These parameters are fetched from the Vincent smart contract during execution of a Vincent Policy's `precheck` and `evaluate` functions. They are unique to each Vincent Ability and Vincent App union, and cannot be altered by the Vincent App or ability executor during execution.
 
-These parameters are meant to be used to define the guardrails that Vincent App Users want to place on the Vincent Apps for executing Vincent Tools. For example, if you are building a spending limit policy, you might define the `userParamsSchema` as follows:
+These parameters are meant to be used to define the guardrails that Vincent App Users want to place on the Vincent Apps for executing Vincent Abilities. For example, if you are building a spending limit policy, you might define the `userParamsSchema` as follows:
 
 ```typescript
-import { createVincentPolicy } from '@lit-protocol/vincent-tool-sdk';
+import { createVincentPolicy } from '@lit-protocol/vincent-ability-sdk';
 import { z } from 'zod';
 
 const vincentPolicy = createVincentPolicy({
@@ -178,14 +178,14 @@ This would allow the Vincent App User to specify how much of a token they are al
 
 ## Precheck Function
 
-The `precheck` function is intended to be executed locally by the Vincent Tool executor to provide a best-effort check that the policy shouldn't fail when the policy's `evaluate` function is called.
+The `precheck` function is intended to be executed locally by the Vincent Ability executor to provide a best-effort check that the policy shouldn't fail when the policy's `evaluate` function is called.
 
-Executing a Vincent Tool using the Lit network is an operation that cost both time and money, so your `precheck` function should do whatever validation it can to ensure that the policy won't fail when the `evaluate` function is called.
+Executing a Vincent Ability using the Lit network is an operation that cost both time and money, so your `precheck` function should do whatever validation it can to ensure that the policy won't fail when the `evaluate` function is called.
 
 In the case of our spending limit policy example, this would include a call to the spending limit database/smart contract to check if the amount of tokens the Vincent App is attempting to spend exceeds the spending limit the Vincent App User has set for the Vincent App:
 
 ```typescript
-import { createVincentPolicy } from '@lit-protocol/vincent-tool-sdk';
+import { createVincentPolicy } from '@lit-protocol/vincent-ability-sdk';
 import { z } from 'zod';
 
 import { checkSpendingLimit } from './my-policy-code';
@@ -193,8 +193,8 @@ import { checkSpendingLimit } from './my-policy-code';
 const vincentPolicy = createVincentPolicy({
   // ... other policy definitions
 
-  precheck: async ({ toolParams, userParams }, policyContext) => {
-    const { amount, tokenAddress } = toolParams;
+  precheck: async ({ abilityParams, userParams }, policyContext) => {
+    const { amount, tokenAddress } = abilityParams;
     const { dailySpendingLimit, allowedTokens } = userParams;
 
     const isTokenAllowed = allowedTokens.includes(tokenAddress);
@@ -231,16 +231,16 @@ const vincentPolicy = createVincentPolicy({
 });
 ```
 
-Two arguments are passed to your policy's `precheck` function by the Vincent Tool SDK. The first is an object containing the `toolParams` and `userParams` that adhere to the `toolParamsSchema` and `userParamsSchema` you have defined for your policy. The second is the [`policyContext`](#the-policycontext-argument) managed by the Vincent Tool SDK that contains helper methods for returning `allow` and `deny` results, as well as some metadata about the Vincent App that the policy is being executed for.
+Two arguments are passed to your policy's `precheck` function by the Vincent Ability SDK. The first is an object containing the `abilityParams` and `userParams` that adhere to the `abilityParamsSchema` and `userParamsSchema` you have defined for your policy. The second is the [`policyContext`](#the-policycontext-argument) managed by the Vincent Ability SDK that contains helper methods for returning `allow` and `deny` results, as well as some metadata about the Vincent App that the policy is being executed for.
 
 ### `precheckAllowResultSchema`
 
 This Zod schema defines the structure of successful `precheck` results. What's included in the returned object is up to you, but ideally it includes details about why the `precheck` passed.
 
-The following schema returns useful information to the Vincent Tool executor about the current policy state for the Vincent App User and Vincent App combo:
+The following schema returns useful information to the Vincent Ability executor about the current policy state for the Vincent App User and Vincent App combo:
 
 ```typescript
-import { createVincentPolicy } from '@lit-protocol/vincent-tool-sdk';
+import { createVincentPolicy } from '@lit-protocol/vincent-ability-sdk';
 import { z } from 'zod';
 
 const vincentPolicy = createVincentPolicy({
@@ -254,18 +254,18 @@ const vincentPolicy = createVincentPolicy({
 });
 ```
 
-Specifying `maxDailySpendingLimit` allows the Vincent Tool executor to adapt to the Vincent App User modifying their spending limit for the Vincent App. `currentDailySpending` is useful to know so that the Vincent App can understand how much of the spending limit has been used, and `allowedTokens` allows the Vincent App to avoid trying to spend tokens that will cause the policy to fail.
+Specifying `maxDailySpendingLimit` allows the Vincent Ability executor to adapt to the Vincent App User modifying their spending limit for the Vincent App. `currentDailySpending` is useful to know so that the Vincent App can understand how much of the spending limit has been used, and `allowedTokens` allows the Vincent App to avoid trying to spend tokens that will cause the policy to fail.
 
 ### `precheckDenyResultSchema`
 
 This Zod schema defines the structure of a failed `precheck` result. What's included in the returned object is up to you, but ideally it includes details about why the `precheck` failed.
 
-The following schema returns additional information to the Vincent Tool executor that would allow them to adapt their execution request so that the policy's `precheck` validation checks don't fail:
+The following schema returns additional information to the Vincent Ability executor that would allow them to adapt their execution request so that the policy's `precheck` validation checks don't fail:
 
-> **Note:** If any unhandled error occurs during execution of your policy's `precheck` function, the Vincent Tool SDK will automatically return a `deny` result with the error message.
+> **Note:** If any unhandled error occurs during execution of your policy's `precheck` function, the Vincent Ability SDK will automatically return a `deny` result with the error message.
 
 ```typescript
-import { createVincentPolicy } from '@lit-protocol/vincent-tool-sdk';
+import { createVincentPolicy } from '@lit-protocol/vincent-ability-sdk';
 import { z } from 'zod';
 
 const vincentPolicy = createVincentPolicy({
@@ -284,14 +284,14 @@ For the above schema, the `reason` string allows the `precheck` function to retu
 
 ## Evaluate Function
 
-The `evaluate` function is the validation logic executed in the beginning of the Vincent Tool's `execute` function, used to inform the tool whether it can execute the tool logic.
+The `evaluate` function is the validation logic executed in the beginning of the Vincent Ability's `execute` function, used to inform the ability whether it can execute the ability logic.
 
-It's may be similar in logic to the `precheck` function, but the `evaluate` function has the ability to deny Vincent Tool execution if your policy returns the `deny` result. Additionally, while the `precheck` function is executed locally by the Vincent Tool executor, the `evaluate` function is executed in the Lit Action environment during the execution of the tool's `execute` function, and has access to the full Lit Action environment (for more information on what's available to you within the Lit Action environment see the Lit Protocol [Lit Action](https://developer.litprotocol.com/sdk/serverless-signing/overview) docs).
+It's may be similar in logic to the `precheck` function, but the `evaluate` function has the ability to deny Vincent Ability execution if your policy returns the `deny` result. Additionally, while the `precheck` function is executed locally by the Vincent Ability executor, the `evaluate` function is executed in the Lit Action environment during the execution of the ability's `execute` function, and has access to the full Lit Action environment (for more information on what's available to you within the Lit Action environment see the Lit Protocol [Lit Action](https://developer.litprotocol.com/sdk/serverless-signing/overview) docs).
 
 In the case of our spending limit policy example, the `evaluate` function is going to be identical to the `precheck` function:
 
 ```typescript
-import { createVincentPolicy } from '@lit-protocol/vincent-tool-sdk';
+import { createVincentPolicy } from '@lit-protocol/vincent-ability-sdk';
 import { z } from 'zod';
 
 import { checkSpendingLimit } from './my-policy-code';
@@ -299,8 +299,8 @@ import { checkSpendingLimit } from './my-policy-code';
 const vincentPolicy = createVincentPolicy({
   // ... other policy definitions
 
-  evaluate: async ({ toolParams, userParams }, policyContext) => {
-    const { amount, tokenAddress } = toolParams;
+  evaluate: async ({ abilityParams, userParams }, policyContext) => {
+    const { amount, tokenAddress } = abilityParams;
     const { dailySpendingLimit, allowedTokens } = userParams;
 
     const isTokenAllowed = allowedTokens.includes(tokenAddress);
@@ -337,16 +337,16 @@ const vincentPolicy = createVincentPolicy({
 });
 ```
 
-Two arguments are passed to your policy's `evaluate` function by the Vincent Tool SDK. The first is an object containing the `toolParams` and `userParams` that adhere to the `toolParamsSchema` and `userParamsSchema` you have defined for your policy, and the second is the same [`policyContext`](#the-policycontext-argument) passed to the `precheck` function.
+Two arguments are passed to your policy's `evaluate` function by the Vincent Ability SDK. The first is an object containing the `abilityParams` and `userParams` that adhere to the `abilityParamsSchema` and `userParamsSchema` you have defined for your policy, and the second is the same [`policyContext`](#the-policycontext-argument) passed to the `precheck` function.
 
 ### `evalAllowResultSchema`
 
-This Zod schema defines the structure of a successful `evaluate` result. What's included in the returned object is up to you, but ideally it includes details about why the `evaluate` function is allowing the Vincent Tool execution.
+This Zod schema defines the structure of a successful `evaluate` result. What's included in the returned object is up to you, but ideally it includes details about why the `evaluate` function is allowing the Vincent Ability execution.
 
-The following schema returns useful information to the Vincent Tool executor about the current policy state for the Vincent App User and Vincent App combo:
+The following schema returns useful information to the Vincent Ability executor about the current policy state for the Vincent App User and Vincent App combo:
 
 ```typescript
-import { createVincentPolicy } from '@lit-protocol/vincent-tool-sdk';
+import { createVincentPolicy } from '@lit-protocol/vincent-ability-sdk';
 import { z } from 'zod';
 
 const vincentPolicy = createVincentPolicy({
@@ -362,14 +362,14 @@ const vincentPolicy = createVincentPolicy({
 
 ### `evalDenyResultSchema`
 
-This Zod schema defines the structure of a denied `evaluate` result. What's included in the returned object is up to you, but ideally it includes details about why the `evaluate` function is denying the Vincent Tool execution.
+This Zod schema defines the structure of a denied `evaluate` result. What's included in the returned object is up to you, but ideally it includes details about why the `evaluate` function is denying the Vincent Ability execution.
 
-The following schema returns additional information to the Vincent Tool executor that would allow the Vincent Tool executor to adapt their execution request so that the policy's `evaluate` validation checks don't fail:
+The following schema returns additional information to the Vincent Ability executor that would allow the Vincent Ability executor to adapt their execution request so that the policy's `evaluate` validation checks don't fail:
 
-> **Note:** If any unhandled error occurs during execution of your policy's `evaluate` function, the Vincent Tool SDK will automatically return a `deny` result with the error message.
+> **Note:** If any unhandled error occurs during execution of your policy's `evaluate` function, the Vincent Ability SDK will automatically return a `deny` result with the error message.
 
 ```typescript
-import { createVincentPolicy } from '@lit-protocol/vincent-tool-sdk';
+import { createVincentPolicy } from '@lit-protocol/vincent-ability-sdk';
 import { z } from 'zod';
 
 const vincentPolicy = createVincentPolicy({
@@ -386,12 +386,12 @@ const vincentPolicy = createVincentPolicy({
 
 ## Commit Function
 
-The `commit` function is called by the Vincent Tool's `execute` method after all the Vincent Policies registered by the Vincent User have been evaluated and returned `allow` results, and the Vincent Tool's execution logic has been successfully executed. This function is **optional**, and is only required if you need to update any state that the policy depends on, after the Vincent Tool executes.
+The `commit` function is called by the Vincent Ability's `execute` method after all the Vincent Policies registered by the Vincent User have been evaluated and returned `allow` results, and the Vincent Ability's execution logic has been successfully executed. This function is **optional**, and is only required if you need to update any state that the policy depends on, after the Vincent Ability executes.
 
 For the spending limit policy example, the `commit` function would be used to update the spending limit database/smart contract with the amount of tokens the Vincent App has spent on behalf of the Vincent App User:
 
 ```typescript
-import { createVincentPolicy } from '@lit-protocol/vincent-tool-sdk';
+import { createVincentPolicy } from '@lit-protocol/vincent-ability-sdk';
 import { z } from 'zod';
 
 import { updateSpentAmount } from './my-policy-code';
@@ -429,9 +429,9 @@ const vincentPolicy = createVincentPolicy({
 });
 ```
 
-Two arguments are passed to your policy's `commit` function by the Vincent Tool SDK. The first is an object adhering to the `commitParamsSchema` you have defined for your policy, and the second is the same [`policyContext`](#the-policycontext-argument) passed to the `precheck` and `evaluate` functions.
+Two arguments are passed to your policy's `commit` function by the Vincent Ability SDK. The first is an object adhering to the `commitParamsSchema` you have defined for your policy, and the second is the same [`policyContext`](#the-policycontext-argument) passed to the `precheck` and `evaluate` functions.
 
-Notice that unlike the `precheck` and `evaluate` functions, the `commit` functions does **not** receive the `toolParams` and `userParams` arguments. If you need access to any of the variables specified in those objects, make sure to include them in the `commitParamsSchema` you have defined for your policy.
+Notice that unlike the `precheck` and `evaluate` functions, the `commit` functions does **not** receive the `abilityParams` and `userParams` arguments. If you need access to any of the variables specified in those objects, make sure to include them in the `commitParamsSchema` you have defined for your policy.
 
 ### `commitParamsSchema`
 
@@ -440,7 +440,7 @@ The `params` argument provided to your `commit` function will follow the structu
 For the spending limit policy example, the following parameters are required in order to update the amount of tokens that have been spent by the Vincent App on behalf of the Vincent App User:
 
 ```typescript
-import { createVincentPolicy } from '@lit-protocol/vincent-tool-sdk';
+import { createVincentPolicy } from '@lit-protocol/vincent-ability-sdk';
 import { z } from 'zod';
 
 import { updateSpentAmount } from './my-policy-code';
@@ -462,7 +462,7 @@ This Zod schema defines the structure of an `allow` result from your policy's `c
 For the spending limit policy example, the following schema returns useful information about the state updates that were committed:
 
 ```typescript
-import { createVincentPolicy } from '@lit-protocol/vincent-tool-sdk';
+import { createVincentPolicy } from '@lit-protocol/vincent-ability-sdk';
 import { z } from 'zod';
 
 const vincentPolicy = createVincentPolicy({
@@ -477,18 +477,18 @@ const vincentPolicy = createVincentPolicy({
 });
 ```
 
-These details provide transparency about what was updated during the commit phase, allowing the Vincent Tool executor to understand the current state after the successful execution of the Vincent Tool.
+These details provide transparency about what was updated during the commit phase, allowing the Vincent Ability executor to understand the current state after the successful execution of the Vincent Ability.
 
 ### `commitDenyResultSchema`
 
 This Zod schema defines the structure of a failed `commit` result. What's included in the returned object is up to you, but ideally it includes details about why the `commit` function failed to update the policy's state.
 
-The following schema returns information that would help the Vincent Tool executor understand why the `commit` function failed to update the policy's state, as well as the data the `commit` function was attempting to update it's state with:
+The following schema returns information that would help the Vincent Ability executor understand why the `commit` function failed to update the policy's state, as well as the data the `commit` function was attempting to update it's state with:
 
-> **Note:** If any unhandled error occurs during execution of your policy's `commit` function, the Vincent Tool SDK will automatically return a `deny` result with the error message.
+> **Note:** If any unhandled error occurs during execution of your policy's `commit` function, the Vincent Ability SDK will automatically return a `deny` result with the error message.
 
 ```typescript
-import { createVincentPolicy } from '@lit-protocol/vincent-tool-sdk';
+import { createVincentPolicy } from '@lit-protocol/vincent-ability-sdk';
 import { z } from 'zod';
 
 const vincentPolicy = createVincentPolicy({
@@ -506,18 +506,18 @@ const vincentPolicy = createVincentPolicy({
 
 # Wrapping Up
 
-This guide has covered the basics of creating a Vincent Policy to be consumed by Vincent Tools. You've learned how to define the policy's `precheck`, `evaluate`, and `commit` functions, as well as the schemas for the parameters required by the policy's `precheck`, `evaluate`, and `commit` functions.
+This guide has covered the basics of creating a Vincent Policy to be consumed by Vincent Abilities. You've learned how to define the policy's `precheck`, `evaluate`, and `commit` functions, as well as the schemas for the parameters required by the policy's `precheck`, `evaluate`, and `commit` functions.
 
 For the spending limit policy example we've been building throughout this guide, the final policy definition would look like the following:
 
 ```typescript
-import { createVincentPolicy } from '@lit-protocol/vincent-tool-sdk';
+import { createVincentPolicy } from '@lit-protocol/vincent-ability-sdk';
 import { z } from 'zod';
 
 const vincentPolicy = createVincentPolicy({
   packageName: '@my-npm-org/vincent-policy-my-name' as const,
 
-  toolParamsSchema: z.object({
+  abilityParamsSchema: z.object({
     tokenAddress: z.string(),
     amount: z.number(),
   }),
@@ -537,8 +537,8 @@ const vincentPolicy = createVincentPolicy({
     currentDailySpending: z.number(),
     allowedTokens: z.array(z.string()),
   }),
-  precheck: async ({ toolParams, userParams }, policyContext) => {
-    const { amount, tokenAddress } = toolParams;
+  precheck: async ({ abilityParams, userParams }, policyContext) => {
+    const { amount, tokenAddress } = abilityParams;
     const { dailySpendingLimit, allowedTokens } = userParams;
 
     const isTokenAllowed = allowedTokens.includes(tokenAddress);
@@ -584,8 +584,8 @@ const vincentPolicy = createVincentPolicy({
     currentDailySpending: z.number(),
     allowedTokens: z.array(z.string()),
   }),
-  evaluate: async ({ toolParams, userParams }, policyContext) => {
-    const { amount, tokenAddress } = toolParams;
+  evaluate: async ({ abilityParams, userParams }, policyContext) => {
+    const { amount, tokenAddress } = abilityParams;
     const { dailySpendingLimit, allowedTokens } = userParams;
 
     const isTokenAllowed = allowedTokens.includes(tokenAddress);

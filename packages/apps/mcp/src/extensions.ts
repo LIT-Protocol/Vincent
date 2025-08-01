@@ -1,8 +1,8 @@
 /**
  * Server extensions for Vincent MCP
  *
- * This module provides functionality to extend an MCP server with additional tools
- * for Vincent applications. These tools enable the server to provide information
+ * This module provides functionality to extend an MCP server with additional abilities
+ * for Vincent applications. These abilities enable the server to provide information
  * about delegators, PKP balances, tokens, and token allowances.
  *
  * The extensions enhance the base MCP server with blockchain-specific capabilities
@@ -14,7 +14,7 @@
  */
 
 import { LIT_EVM_CHAINS } from '@lit-protocol/constants';
-import { buildMcpToolName, VincentAppDef } from '@lit-protocol/vincent-mcp-sdk';
+import { buildMcpAbilityName, VincentAppDef } from '@lit-protocol/vincent-mcp-sdk';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { ethers } from 'ethers';
 import { z } from 'zod';
@@ -54,9 +54,9 @@ function getLitSupportedChainData(chainId: number) {
 }
 
 /**
- * Extends an MCP server with additional tools for Vincent applications
+ * Extends an MCP server with additional abilities for Vincent applications
  *
- * This function adds several tools to an MCP server that provide blockchain-specific
+ * This function adds several abilities to an MCP server that provide blockchain-specific
  * capabilities useful for Vincent applications:
  *
  * 1. `get-delegators-info`: Gets information about the delegators for the Vincent app
@@ -64,12 +64,12 @@ function getLitSupportedChainData(chainId: number) {
  * 3. `token-info`: Gets information about an ERC20 token on a specific chain
  * 4. `token-allowance`: Gets information about token allowances for a PKP address
  *
- * These tools enhance the base MCP server with capabilities that allow LLMs to
+ * These abilities enhance the base MCP server with capabilities that allow LLMs to
  * query and interact with blockchain data.
  *
  * @param server - The MCP server to extend
  * @param vincentAppDefinition - The Vincent application definition
- * @param delegateeSigner - The Ethereum signer used to execute the tools
+ * @param delegateeSigner - The Ethereum signer used to execute the abilities
  *
  * @example
  * ```typescript
@@ -89,17 +89,17 @@ function getLitSupportedChainData(chainId: number) {
  *   id: '8462368',
  *   name: 'My Vincent App',
  *   version: '1',
- *   tools: {
- *     // Your tools here
+ *   abilities: {
+ *     // Your abilities here
  *   }
  * };
  *
  * // Create a signer
  * const delegateeSigner = new ethers.Wallet('YOUR_PRIVATE_KEY');
  *
- * // Extend the server with additional tools
+ * // Extend the server with additional abilities
  * extendVincentServer(server, appDef, delegateeSigner);
- * // Now the server has additional tools to query blockchain data
+ * // Now the server has additional abilities to query blockchain data
  * ```
  */
 export function extendVincentServer(
@@ -107,9 +107,9 @@ export function extendVincentServer(
   vincentAppDefinition: VincentAppDef,
   delegateeSigner: ethers.Signer,
 ) {
-  // Add more resources, tools, and prompts as needed
+  // Add more resources, abilities, and prompts as needed
   server.tool(
-    buildMcpToolName(vincentAppDefinition, 'native-balance'),
+    buildMcpAbilityName(vincentAppDefinition, 'native-balance'),
     'Resource to get the native balance for a given PKP ETH address on a given chain.',
     {
       chainId: z.coerce
@@ -138,7 +138,7 @@ export function extendVincentServer(
   );
 
   server.tool(
-    buildMcpToolName(vincentAppDefinition, 'erc20-balance'),
+    buildMcpAbilityName(vincentAppDefinition, 'erc20-balance'),
     'Resource to get the ERC20 balance for a given PKP ETH address on a given chain.',
     {
       chainId: z.coerce
@@ -176,7 +176,7 @@ export function extendVincentServer(
   );
 
   server.tool(
-    buildMcpToolName(vincentAppDefinition, 'erc20-allowance'),
+    buildMcpAbilityName(vincentAppDefinition, 'erc20-allowance'),
     'Resource to get the ERC20 allowance for a given PKP ETH address on a given chain.',
     {
       chainId: z.coerce

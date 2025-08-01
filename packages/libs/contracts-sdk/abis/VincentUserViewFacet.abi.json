@@ -39,7 +39,7 @@
   },
   {
     "type": "function",
-    "name": "getAllToolsAndPoliciesForApp",
+    "name": "getAllAbilitiesAndPoliciesForApp",
     "inputs": [
       {
         "name": "pkpTokenId",
@@ -54,12 +54,12 @@
     ],
     "outputs": [
       {
-        "name": "tools",
+        "name": "abilities",
         "type": "tuple[]",
-        "internalType": "struct VincentUserViewFacet.ToolWithPolicies[]",
+        "internalType": "struct VincentUserViewFacet.AbilityWithPolicies[]",
         "components": [
           {
-            "name": "toolIpfsCid",
+            "name": "abilityIpfsCid",
             "type": "string",
             "internalType": "string"
           },
@@ -111,7 +111,7 @@
   },
   {
     "type": "function",
-    "name": "validateToolExecutionAndGetPolicies",
+    "name": "validateAbilityExecutionAndGetPolicies",
     "inputs": [
       {
         "name": "delegatee",
@@ -124,7 +124,7 @@
         "internalType": "uint256"
       },
       {
-        "name": "toolIpfsCid",
+        "name": "abilityIpfsCid",
         "type": "string",
         "internalType": "string"
       }
@@ -133,7 +133,7 @@
       {
         "name": "validation",
         "type": "tuple",
-        "internalType": "struct VincentUserViewFacet.ToolExecutionValidation",
+        "internalType": "struct VincentUserViewFacet.AbilityExecutionValidation",
         "components": [
           {
             "name": "isPermitted",
@@ -239,7 +239,7 @@
   },
   {
     "type": "error",
-    "name": "EmptyToolIpfsCid",
+    "name": "EmptyAbilityIpfsCid",
     "inputs": []
   },
   {

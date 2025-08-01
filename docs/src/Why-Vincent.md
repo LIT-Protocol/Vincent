@@ -17,15 +17,15 @@ Vincent optimizes for security, interoperability, and user-control to redefine h
 
 - **Verifiable, Fine-Grained Policies**: Users have full control over the policies they set and can revoke them at any time. Policies are fine-grained to specific operations and verifiable on-chain.
 
-- **Cross-Platform Automation**: With Vincent, agents can operate seamlessly across any blockchain or off-chain platform. Build agent-powered apps and tools for DeFi, TradFi, E-Commerce, and more.
+- **Cross-Platform Automation**: With Vincent, agents can operate seamlessly across any blockchain or off-chain platform. Build agent-powered apps and abilities for DeFi, TradFi, E-Commerce, and more.
 
-- **Agent Marketplace**: Vincent will eventually serve as a marketplace for Vincent-powered apps and tools, enabling them to be discovered and interacted with by end users.
+- **Agent Marketplace**: Vincent will eventually serve as a marketplace for Vincent-powered apps and abilities, enabling them to be discovered and interacted with by end users.
 
 - **Open Source**: Fork, customize, and contribute to the [Vincent codebase](https://github.com/LIT-Protocol/Vincent) to shape the future of the agent-driven and user-controlled Web.
 
 ## Get Started in Minutes
 
-If you're a developer looking to deploy your first Vincent-enabled application or tool, head on over to the [Getting Started](./Developers/Getting-Started.md) page.
+If you're a developer looking to deploy your first Vincent-enabled application or ability, head on over to the [Getting Started](./Developers/Getting-Started.md) page.
 
 If you're looking to give Vincent a try as a user, check out the official demo showcasing [automated dollar-cost-averaging](https://demo.heyvincent.ai/).
 

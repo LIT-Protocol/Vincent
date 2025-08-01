@@ -1,0 +1,224 @@
+// src/lib/handlers/evaluatePolicies.ts
+
+import { z } from 'zod';
+
+import type { AbilityPolicyMap } from '../abilityCore/helpers';
+import type { ValidatedPolicyMap } from '../abilityCore/helpers/validatePolicies';
+import type {
+  BaseContext,
+  PolicyEvaluationResultContext,
+  PolicyResponse,
+  PolicyResponseDeny,
+  PolicyResponseDenyNoResult,
+  VincentPolicy,
+  VincentAbility,
+  SchemaValidationError,
+} from '../types';
+
+import {
+  createDenyResult,
+  getSchemaForPolicyResponseResult,
+  isPolicyDenyResponse,
+  isPolicyResponse,
+  validateOrDeny,
+} from '../policyCore/helpers';
+import {
+  createAllowEvaluationResult,
+  createAllowResult,
+  createDenyEvaluationResult,
+  returnNoResultDeny,
+} from '../policyCore/helpers/resultCreators';
+
+declare const Lit: {
+  Actions: {
+    setResponse: (response: { response: string }) => void;
+    call: (params: { ipfsId: string; params: Record<string, unknown> }) => Promise<string>;
+    getRpcUrl: (args: { chain: string }) => Promise<string>;
+  };
+};
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+export async function evaluatePolicies<
+  AbilityParamsSchema extends z.ZodType,
+  PolicyMap extends AbilityPolicyMap<any, any>,
+  PoliciesByPackageName extends PolicyMap['policyByPackageName'],
+>({
+  vincentAbility,
+  context,
+  validatedPolicies,
+  vincentAbilityApiVersion,
+}: {
+  vincentAbility: VincentAbility<
+    AbilityParamsSchema,
+    keyof PoliciesByPackageName & string,
+    PolicyMap,
+    PoliciesByPackageName,
+    any,
+    any,
+    any,
+    any
+  >;
+  context: BaseContext;
+  validatedPolicies: ValidatedPolicyMap<z.infer<AbilityParamsSchema>, PoliciesByPackageName>;
+  vincentAbilityApiVersion: string;
+}): Promise<PolicyEvaluationResultContext<PoliciesByPackageName>> {
+  const evaluatedPolicies: PolicyEvaluationResultContext<PoliciesByPackageName>['evaluatedPolicies'] =
+    [];
+  let policyDeniedResult: PolicyEvaluationResultContext<PoliciesByPackageName>['deniedPolicy'] =
+    undefined;
+  const rawAllowedPolicies: Partial<{
+    [K in keyof PoliciesByPackageName]: { result: unknown };
+  }> = {};
+
+  for (const { policyPackageName, abilityPolicyParams } of validatedPolicies) {
+    evaluatedPolicies.push(policyPackageName);
+
+    const policy = vincentAbility.supportedPolicies.policyByPackageName[policyPackageName];
+    try {
+      const litActionResponse = await Lit.Actions.call({
+        ipfsId: policy.ipfsCid,
+        params: {
+          abilityParams: abilityPolicyParams,
+          context: {
+            abilityIpfsCid: context.abilityIpfsCid,
+            delegatorPkpEthAddress: context.delegation.delegatorPkpInfo.ethAddress,
+          },
+          vincentAbilityApiVersion,
+        },
+      });
+
+      console.log(
+        `evaluated ${String(policyPackageName)} policy, result is:`,
+        JSON.stringify(litActionResponse),
+      );
+      const result = parseAndValidateEvaluateResult({
+        litActionResponse,
+        vincentPolicy: policy.vincentPolicy,
+      });
+
+      if (isPolicyDenyResponse(result)) {
+        policyDeniedResult = {
+          ...(result as PolicyResponseDeny<typeof policy.vincentPolicy.evalDenyResultSchema>),
+          packageName: policyPackageName,
+        };
+      } else {
+        rawAllowedPolicies[policyPackageName] = {
+          result: result.result as typeof policy.vincentPolicy.evalAllowResultSchema,
+        };
+      }
+    } catch (err) {
+      const denyResult = createDenyResult({
+        runtimeError: err instanceof Error ? err.message : 'Unknown error',
+      });
+      policyDeniedResult = { ...denyResult, packageName: policyPackageName };
+    }
+  }
+
+  if (policyDeniedResult) {
+    return createDenyEvaluationResult({
+      allowedPolicies:
+        rawAllowedPolicies as PolicyEvaluationResultContext<PoliciesByPackageName>['allowedPolicies'],
+      evaluatedPolicies,
+      deniedPolicy: policyDeniedResult,
+    });
+  }
+
+  return createAllowEvaluationResult({
+    evaluatedPolicies,
+    allowedPolicies:
+      rawAllowedPolicies as PolicyEvaluationResultContext<PoliciesByPackageName>['allowedPolicies'],
+  });
+}
+
+function parseAndValidateEvaluateResult<
+  EvalAllowResult extends z.ZodType | undefined = undefined,
+  EvalDenyResult extends z.ZodType | undefined = undefined,
+>({
+  litActionResponse,
+  vincentPolicy,
+}: {
+  litActionResponse: string;
+  vincentPolicy: VincentPolicy<
+    string,
+    z.ZodType,
+    any,
+    any,
+    any,
+    EvalAllowResult,
+    EvalDenyResult,
+    any,
+    any,
+    any
+  >;
+}): PolicyResponse<EvalAllowResult, EvalDenyResult> {
+  let parsedLitActionResponse: unknown;
+  try {
+    parsedLitActionResponse = JSON.parse(litActionResponse);
+  } catch (error) {
+    console.log('rawLitActionResponse (parsePolicyExecutionResult)', litActionResponse);
+    throw new Error(
+      `Failed to JSON parse Lit Action Response: ${error instanceof Error ? error.message : String(error)}. rawLitActionResponse in request logs (parsePolicyExecutionResult)`,
+    );
+  }
+
+  try {
+    console.log('parseAndValidateEvaluateResult', JSON.stringify(parsedLitActionResponse));
+
+    if (
+      isPolicyDenyResponse(parsedLitActionResponse) &&
+      (parsedLitActionResponse.schemaValidationError || parsedLitActionResponse.runtimeError)
+    ) {
+      console.log(
+        'parsedLitActionResponse is a deny response with a runtime error or schema validation error; skipping schema validation',
+      );
+      return parsedLitActionResponse as PolicyResponse<EvalAllowResult, EvalDenyResult>;
+    }
+
+    if (!isPolicyResponse(parsedLitActionResponse)) {
+      throw new Error(`Invalid response from policy: ${JSON.stringify(parsedLitActionResponse)}`);
+    }
+
+    const { schemaToUse, parsedType } = getSchemaForPolicyResponseResult({
+      value: parsedLitActionResponse,
+      denyResultSchema: vincentPolicy.evalDenyResultSchema || z.undefined(),
+      allowResultSchema: vincentPolicy.evalAllowResultSchema || z.undefined(),
+    });
+
+    console.log('parsedType', parsedType);
+
+    const parsedResult = validateOrDeny(
+      (parsedLitActionResponse as PolicyResponse<any, any>).result,
+      schemaToUse,
+      'evaluate',
+      'output',
+    ) as PolicyResponse<EvalAllowResult, EvalDenyResult>;
+
+    if (isPolicyDenyResponse(parsedResult)) {
+      // Failed schema parsing!
+      return parsedResult;
+    }
+
+    if (isPolicyDenyResponse(parsedLitActionResponse)) {
+      return createDenyResult({
+        runtimeError: parsedLitActionResponse.runtimeError,
+        schemaValidationError: parsedLitActionResponse.schemaValidationError,
+        result: parsedResult,
+      }) as PolicyResponse<EvalAllowResult, EvalDenyResult>;
+    }
+
+    return createAllowResult({
+      result: parsedResult,
+    }) as PolicyResponse<EvalAllowResult, EvalDenyResult>;
+  } catch (err) {
+    console.log(
+      'parseAndValidateEvaluateResult error; returning noResultDeny',
+      (err as Error).message,
+      (err as Error).stack,
+    );
+    return returnNoResultDeny<EvalDenyResult>(
+      err instanceof Error ? err.message : 'Unknown error',
+    ) as unknown as EvalDenyResult extends z.ZodType
+      ? PolicyResponseDeny<z.infer<EvalDenyResult> | SchemaValidationError>
+      : PolicyResponseDenyNoResult;
+  }
+}

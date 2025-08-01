@@ -2,9 +2,9 @@ import { useCallback, useState, useEffect } from 'react';
 import { SessionSigs, IRelayPKP } from '@lit-protocol/types';
 import { LIT_CHAINS } from '@lit-protocol/constants';
 import WalletConnectPage from '@/components/user-dashboard/withdraw/WalletConnect/WalletConnect';
-import StatusMessage from '@/components/user-dashboard/consent/StatusMessage';
+import StatusMessage from '@/components/user-dashboard/connect/StatusMessage';
 import { useTheme } from '@/providers/ThemeProvider';
-import { theme } from '@/components/user-dashboard/consent/ui/theme';
+import { theme } from '@/components/user-dashboard/connect/ui/theme';
 
 import { ChainSelector, TokenSelector, WithdrawPanel, BalanceDisplay } from '.';
 import { StatusType } from '@/types/shared/StatusType';
@@ -109,7 +109,9 @@ export default function WithdrawForm({ sessionSigs, agentPKP }: WithdrawFormProp
   };
 
   return (
-    <div className={`max-w-[550px] w-full mx-auto ${themeStyles.cardBg} rounded-xl shadow-lg border ${themeStyles.cardBorder} overflow-hidden`}>
+    <div
+      className={`max-w-[550px] w-full mx-auto ${themeStyles.cardBg} rounded-xl shadow-lg border ${themeStyles.cardBorder} overflow-hidden`}
+    >
       <div className={`px-6 pt-8 pb-6 border-b ${themeStyles.cardBorder}`}>
         <h3 className={`text-xl font-semibold ${themeStyles.text} mb-6`}>Wallet</h3>
 

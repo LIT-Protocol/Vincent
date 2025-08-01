@@ -1,27 +1,30 @@
 import { configureStore } from '@reduxjs/toolkit';
 import { fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { reactClient } from '@lit-protocol/vincent-registry-sdk';
-import { getCurrentSIWEToken } from '@/hooks/developer-dashboard/useVincentApiWithSIWE';
+import { getCurrentJwtTokenForStore } from '@/hooks/developer-dashboard/useVincentApiWithJWT';
 
 const { vincentApiClientReact, setBaseQueryFn }: any = reactClient;
 
-// Create a wrapper function that adds SIWE authentication headers to mutation requests
-const createWithSiweAuth = (baseQuery: any) => {
+// Create a wrapper function that adds PKP-based SIWE authentication headers to mutation requests
+const createWithPKPAuth = (baseQuery: any) => {
   return async (args: any, api: any, extraOptions: any) => {
     // Check if this is a mutation request (has a method other than GET or undefined)
     const isMutation =
       args && typeof args === 'object' && 'method' in args && args.method && args.method !== 'GET';
 
-    // If it's a mutation, add the SIWE authentication header
+    // If it's a mutation, add the PKP-based JWT authentication header
     if (isMutation) {
-      const siweToken = await getCurrentSIWEToken();
+      const jwtToken = await getCurrentJwtTokenForStore();
 
-      if (!siweToken) {
+      if (!jwtToken) {
         // No valid token, don't make the request
         return {
           error: {
             status: 401,
-            data: { message: 'Authentication required. Please sign in with your wallet.' },
+            data: {
+              message:
+                'Authentication required. Please try refreshing the page, and if the problem persists, please sign in again.',
+            },
           },
         };
       }
@@ -31,7 +34,7 @@ const createWithSiweAuth = (baseQuery: any) => {
         ...args,
         headers: {
           ...args.headers,
-          authorization: `SIWE ${siweToken}`,
+          authorization: `Bearer ${jwtToken}`,
         },
       };
     }
@@ -41,9 +44,9 @@ const createWithSiweAuth = (baseQuery: any) => {
   };
 };
 
-// Configure the base query function with SIWE authentication
+// Configure the base query function with PKP-based SIWE authentication
 setBaseQueryFn(
-  createWithSiweAuth(fetchBaseQuery({ baseUrl: `https://staging.registry.heyvincent.ai` })),
+  createWithPKPAuth(fetchBaseQuery({ baseUrl: `https://staging.registry.heyvincent.ai` })),
 );
 
 export const store = configureStore({

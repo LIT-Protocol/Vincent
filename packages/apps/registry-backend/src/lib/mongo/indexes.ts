@@ -1,4 +1,4 @@
-// PolicyVersions and ToolVersions are NPM package versions; we want 1 doc per package name and version combo
+// PolicyVersions and AbilityVersions are NPM package versions; we want 1 doc per package name and version combo
 export const uniquePackageVersion = [{ packageName: 1, version: 1 }, { unique: true }] as const;
 
 // Optimizes performance when finding groups of specific packageName + versions that are not deleted - isDeleted being first is _INTENTIONAL_.

@@ -24,12 +24,12 @@ export interface ServerConfig {
  *
  * This function creates an MCP server for a Vincent application and extends it
  * with additional functionality. It uses the delegatee private key from the
- * environment to create a signer that can execute Vincent tools on behalf of users.
+ * environment to create a signer that can execute Vincent abilities on behalf of users.
  *
  * The server is created using the Vincent SDK's `getVincentAppServer` function
  * and then extended with additional capabilities using the `extendVincentServer` function.
  *
- * @param vincentAppDef - The Vincent application definition containing the tools to register
+ * @param vincentAppDef - The Vincent application definition containing the abilities to register
  * @param {ServerConfig} serverConfig - The server configuration
  * @returns A configured and extended MCP server instance
  *
@@ -44,8 +44,8 @@ export interface ServerConfig {
  *   id: '8462368',
  *   name: 'My Vincent App',
  *   version: '1',
- *   tools: {
- *     // Your tools here
+ *   abilities: {
+ *     // Your abilities here
  *   }
  * };
  *

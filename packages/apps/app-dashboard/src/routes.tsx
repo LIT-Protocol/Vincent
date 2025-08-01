@@ -3,9 +3,10 @@ import AppLayout from '@/layout/developer-dashboard/AppLayout';
 import UserDashboardLayout from '@/layout/user-dashboard/UserDashboardLayout';
 import UserLayoutWithSidebar from '@/layout/user-dashboard/UserLayoutWithSidebar';
 import { AppProviders, UserProviders } from './providers';
+import ThemeProvider from '@/providers/ThemeProvider';
 import { wrap } from '@/utils/shared/components';
 
-import { ConnectWallet, Dashboard } from './pages/developer-dashboard';
+import { Dashboard } from './pages/developer-dashboard';
 import RootPage from './pages/shared/RootPage';
 
 import {
@@ -13,7 +14,7 @@ import {
   AppOverviewWrapper,
   AppVersionDetailWrapper,
   AppVersionsWrapper,
-  AppVersionToolsWrapper,
+  AppVersionAbilitiesWrapper,
   CreateAppVersionWrapper,
   EditAppVersionWrapper,
   EditAppWrapper,
@@ -25,18 +26,18 @@ import {
 } from './components/developer-dashboard/app/wrappers';
 
 import {
-  ToolsWrapper,
-  ToolOverviewWrapper,
-  CreateToolWrapper,
-  EditToolWrapper,
-  CreateToolVersionWrapper,
-  ChangeToolOwnerWrapper,
-  ToolVersionsWrapper,
-  ToolVersionDetailsWrapper,
-  EditToolVersionWrapper,
-  DeleteToolWrapper,
-  DeleteToolVersionWrapper,
-} from './components/developer-dashboard/tool/wrappers';
+  AbilitiesWrapper,
+  AbilityOverviewWrapper,
+  CreateAbilityWrapper,
+  EditAbilityWrapper,
+  CreateAbilityVersionWrapper,
+  ChangeAbilityOwnerWrapper,
+  AbilityVersionsWrapper,
+  AbilityVersionDetailsWrapper,
+  EditAbilityVersionWrapper,
+  DeleteAbilityWrapper,
+  DeleteAbilityVersionWrapper,
+} from '@/components/developer-dashboard/ability/wrappers';
 
 import {
   PoliciesWrapper,
@@ -54,10 +55,9 @@ import {
 
 import { Wallet } from './pages/user-dashboard/wallet';
 import { UserPermissionWrapper } from './components/user-dashboard/dashboard/UserPermissionWrapper';
-import { ConsentPageWrapper } from './components/user-dashboard/consent/ConsentPageWraper';
+import { ConnectPageWrapper } from './components/user-dashboard/connect/ConnectPageWraper';
 import { PermittedAppsWrapper } from './components/user-dashboard/dashboard/PermittedAppsWrapper';
 import { UpdateVersionPageWrapper } from './components/user-dashboard/dashboard/UpdateVersionPageWrapper';
-import { HomeWrapper } from './components/user-dashboard/dashboard/HomeWrapper';
 
 const AppLayoutWithProviders = wrap(() => <Outlet />, [...AppProviders, AppLayout]);
 const UserDashboardLayoutWithProviders = wrap(
@@ -69,18 +69,18 @@ const UserLayoutWithSidebarAndProviders = wrap(
   [...UserProviders, UserLayoutWithSidebar],
 );
 
+// Minimal provider wrapper for root page - only needs ThemeProvider for ConnectFooter
+// TODO: We'll need this everywhere eventually. Just keeping it simple for now.
+const RootPageWithProviders = wrap(RootPage, [ThemeProvider]);
+
 const routes: RouteObject[] = [
   {
     path: '/',
-    element: <RootPage />,
+    element: <RootPageWithProviders />,
   },
   {
     element: <AppLayoutWithProviders />,
     children: [
-      {
-        path: '/developer',
-        element: <ConnectWallet />,
-      },
       {
         path: '/developer/*',
         element: <Outlet />,
@@ -134,56 +134,56 @@ const routes: RouteObject[] = [
             element: <EditAppVersionWrapper />,
           },
           {
-            path: 'appId/:appId/version/:versionId/tools',
-            element: <AppVersionToolsWrapper />,
+            path: 'appId/:appId/version/:versionId/abilities',
+            element: <AppVersionAbilitiesWrapper />,
           },
           {
             path: 'appId/:appId/version/:versionId/delete-version',
             element: <DeleteAppVersionWrapper />,
           },
           {
-            path: 'tools',
-            element: <ToolsWrapper />,
+            path: 'abilities',
+            element: <AbilitiesWrapper />,
           },
           {
-            path: 'create-tool',
-            element: <CreateToolWrapper />,
+            path: 'create-ability',
+            element: <CreateAbilityWrapper />,
           },
           {
-            path: 'toolId/:packageName',
-            element: <ToolOverviewWrapper />,
+            path: 'ability/:packageName',
+            element: <AbilityOverviewWrapper />,
           },
           {
-            path: 'toolId/:packageName/edit-tool',
-            element: <EditToolWrapper />,
+            path: 'ability/:packageName/edit-ability',
+            element: <EditAbilityWrapper />,
           },
           {
-            path: 'toolId/:packageName/create-tool-version',
-            element: <CreateToolVersionWrapper />,
+            path: 'ability/:packageName/create-ability-version',
+            element: <CreateAbilityVersionWrapper />,
           },
           {
-            path: 'toolId/:packageName/change-tool-owner',
-            element: <ChangeToolOwnerWrapper />,
+            path: 'ability/:packageName/change-ability-owner',
+            element: <ChangeAbilityOwnerWrapper />,
           },
           {
-            path: 'toolId/:packageName/versions',
-            element: <ToolVersionsWrapper />,
+            path: 'ability/:packageName/versions',
+            element: <AbilityVersionsWrapper />,
           },
           {
-            path: 'toolId/:packageName/version/:version',
-            element: <ToolVersionDetailsWrapper />,
+            path: 'ability/:packageName/version/:version',
+            element: <AbilityVersionDetailsWrapper />,
           },
           {
-            path: 'toolId/:packageName/version/:version/edit-version',
-            element: <EditToolVersionWrapper />,
+            path: 'ability/:packageName/version/:version/edit-version',
+            element: <EditAbilityVersionWrapper />,
           },
           {
-            path: 'toolId/:packageName/delete-tool',
-            element: <DeleteToolWrapper />,
+            path: 'ability/:packageName/delete-ability',
+            element: <DeleteAbilityWrapper />,
           },
           {
-            path: 'toolId/:packageName/version/:version/delete-version',
-            element: <DeleteToolVersionWrapper />,
+            path: 'ability/:packageName/version/:version/delete-version',
+            element: <DeleteAbilityVersionWrapper />,
           },
           {
             path: 'policies',
@@ -194,39 +194,39 @@ const routes: RouteObject[] = [
             element: <CreatePolicyWrapper />,
           },
           {
-            path: 'policyId/:packageName',
+            path: 'policy/:packageName',
             element: <PolicyOverviewWrapper />,
           },
           {
-            path: 'policyId/:packageName/edit-policy',
+            path: 'policy/:packageName/edit-policy',
             element: <EditPolicyWrapper />,
           },
           {
-            path: 'policyId/:packageName/create-policy-version',
+            path: 'policy/:packageName/create-policy-version',
             element: <CreatePolicyVersionWrapper />,
           },
           {
-            path: 'policyId/:packageName/change-policy-owner',
+            path: 'policy/:packageName/change-policy-owner',
             element: <ChangePolicyOwnerWrapper />,
           },
           {
-            path: 'policyId/:packageName/versions',
+            path: 'policy/:packageName/versions',
             element: <PolicyVersionsWrapper />,
           },
           {
-            path: 'policyId/:packageName/version/:version',
+            path: 'policy/:packageName/version/:version',
             element: <PolicyVersionDetailsWrapper />,
           },
           {
-            path: 'policyId/:packageName/version/:version/edit-version',
+            path: 'policy/:packageName/version/:version/edit-version',
             element: <EditPolicyVersionWrapper />,
           },
           {
-            path: 'policyId/:packageName/delete-policy',
+            path: 'policy/:packageName/delete-policy',
             element: <DeletePolicyWrapper />,
           },
           {
-            path: 'policyId/:packageName/version/:version/delete-version',
+            path: 'policy/:packageName/version/:version/delete-version',
             element: <DeletePolicyVersionWrapper />,
           },
         ],
@@ -237,12 +237,8 @@ const routes: RouteObject[] = [
     element: <UserDashboardLayoutWithProviders />,
     children: [
       {
-        path: '/user',
-        element: <HomeWrapper />,
-      },
-      {
-        path: '/user/consent/appId/:appId',
-        element: <ConsentPageWrapper />,
+        path: '/user/appId/:appId/connect',
+        element: <ConnectPageWrapper />,
       },
     ],
   },

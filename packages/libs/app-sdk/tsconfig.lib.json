@@ -21,10 +21,13 @@
     "composite": true
   },
   "include": ["src"],
-  "exclude": ["node_modules", "dist", "tests", "**/*.spec.ts", "**/*.test.ts", "toolClient"],
+  "exclude": ["node_modules", "dist", "tests", "**/*.spec.ts", "**/*.test.ts", "abilityClient"],
   "references": [
     {
-      "path": "../tool-sdk/tsconfig.lib.json"
+      "path": "../ability-sdk/tsconfig.lib.json"
+    },
+    {
+      "path": "../contracts-sdk/tsconfig.lib.json"
     }
   ]
 }

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const toolParamsSchema = z.object({
+export const abilityParamsSchema = z.object({
   ethRpcUrl: z
     .string()
     .describe(

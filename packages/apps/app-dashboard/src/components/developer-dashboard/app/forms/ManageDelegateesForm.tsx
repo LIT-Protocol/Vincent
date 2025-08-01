@@ -16,8 +16,10 @@ import { Form } from '@/components/shared/ui/form';
 import { StatusMessage } from '@/components/shared/ui/statusMessage';
 import { Plus, Trash2 } from 'lucide-react';
 import { TextField } from '../../form-fields';
-import { addDelegatee, removeDelegatee } from '@lit-protocol/vincent-contracts-sdk';
+import { getClient } from '@lit-protocol/vincent-contracts-sdk';
 import { SkeletonButton } from '@/components/shared/ui/MutationButtonStates';
+import { initPkpSigner } from '@/utils/developer-dashboard/initPkpSigner';
+import useReadAuthInfo from '@/hooks/user-dashboard/useAuthInfo';
 
 const AddDelegateeSchema = z.object({
   address: z.string().refine((val) => ethers.utils.isAddress(val), {
@@ -37,6 +39,7 @@ export function ManageDelegateesForm({
   refetchBlockchainData,
 }: ManageDelegateesFormProps) {
   const { appId } = useParams<{ appId: string }>();
+  const { authInfo, sessionSigs } = useReadAuthInfo();
   const [error, setError] = useState<string>('');
   const [removingDelegatee, setRemovingDelegatee] = useState<string | null>(null);
 
@@ -75,16 +78,12 @@ export function ManageDelegateesForm({
 
     // Now add the delegatee
     try {
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
-      await provider.send('eth_requestAccounts', []);
-      const signer = provider.getSigner();
+      const pkpSigner = await initPkpSigner({ authInfo, sessionSigs });
+      const client = getClient({ signer: pkpSigner });
 
-      await addDelegatee({
-        signer: signer,
-        args: {
-          appId: appId,
-          delegatee: data.address,
-        },
+      await client.addDelegatee({
+        appId: Number(appId),
+        delegateeAddress: data.address,
       });
 
       refetchBlockchainData();
@@ -107,16 +106,12 @@ export function ManageDelegateesForm({
     setRemovingDelegatee(addressToRemove);
 
     try {
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
-      await provider.send('eth_requestAccounts', []);
-      const signer = provider.getSigner();
+      const pkpSigner = await initPkpSigner({ authInfo, sessionSigs });
+      const client = getClient({ signer: pkpSigner });
 
-      await removeDelegatee({
-        signer: signer,
-        args: {
-          appId: appId,
-          delegatee: addressToRemove,
-        },
+      await client.removeDelegatee({
+        appId: Number(appId),
+        delegateeAddress: addressToRemove,
       });
 
       refetchBlockchainData();

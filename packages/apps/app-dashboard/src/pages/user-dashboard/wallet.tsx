@@ -2,9 +2,9 @@ import { Helmet } from 'react-helmet-async';
 import WithdrawForm from '@/components/user-dashboard/withdraw/WithdrawForm';
 import { WithdrawFormSkeleton } from '@/components/user-dashboard/withdraw/WithdrawFormSkeleton';
 import useReadAuthInfo from '@/hooks/user-dashboard/useAuthInfo';
-import { useAuthGuard } from '@/hooks/user-dashboard/consent/useAuthGuard';
+import { useAuthGuard } from '@/hooks/user-dashboard/connect/useAuthGuard';
 import { useTheme } from '@/providers/ThemeProvider';
-import { theme } from '@/components/user-dashboard/consent/ui/theme';
+import { theme } from '@/components/user-dashboard/connect/ui/theme';
 
 export function Wallet() {
   const { isDark } = useTheme();

@@ -2,7 +2,7 @@
   "extends": "../../../tsconfig.base.json",
   "references": [
     {
-      "path": "../tool-sdk"
+      "path": "../app-sdk"
     },
     {
       "path": "./tsconfig.lib.json"

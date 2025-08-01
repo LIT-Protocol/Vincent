@@ -1,15 +1,21 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/shared/ui/card';
-import { AppVersion, AppVersionTool } from '@/types/developer-dashboard/appTypes';
-import { AppVersionToolsDisplay } from '@/components/developer-dashboard/app/views/AppVersionToolsDisplay';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/shared/ui/card';
+import { AppVersion, AppVersionAbility } from '@/types/developer-dashboard/appTypes';
+import { AppVersionAbilitiesDisplay } from '@/components/developer-dashboard/app/views/AppVersionAbilitiesDisplay.tsx';
 
 interface VersionDetailsProps {
   version: number;
   appName?: string;
   versionData: AppVersion;
-  tools: AppVersionTool[];
+  abilities: AppVersionAbility[];
 }
 
-export function VersionDetails({ version, versionData, tools }: VersionDetailsProps) {
+export function VersionDetails({ version, versionData, abilities }: VersionDetailsProps) {
   if (!versionData) {
     return (
       <div className="p-6">
@@ -43,13 +49,13 @@ export function VersionDetails({ version, versionData, tools }: VersionDetailsPr
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-gray-900">Associated Tools</CardTitle>
+          <CardTitle className="text-gray-900">Associated Abilities</CardTitle>
           <CardDescription className="text-gray-700">
-            Tools included in this version
+            Abilities included in this version
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <AppVersionToolsDisplay tools={tools} />
+          <AppVersionAbilitiesDisplay abilities={abilities} />
         </CardContent>
       </Card>
     </div>

@@ -2,7 +2,7 @@ module.exports = {
   extends: '../../../../typedoc.config.base.js',
   $schema: 'https://typedoc.org/schema.json',
   entryPoints: [
-    '../src/toolClient/index.ts',
+    '../src/abilityClient/index.ts',
     '../src/jwt/index.ts',
     '../src/webAuthClient/index.ts',
     '../src/expressMiddleware/index.ts',

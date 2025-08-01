@@ -59,7 +59,7 @@ Alternatively, you can use Postman or any other MCP debugger. LLM clients should
 ## Project Structure
 
 - `src/`: Source code
-  - `extensions.ts`: MCP Server extender to provide more than the tools in the Vincent App
+  - `extensions.ts`: MCP Server extender to provide more than the abilities in the Vincent App
   - `http.ts`: HTTP transport implementation
   - `server.ts`: MCP Server builder
   - `stdio.ts`: STDIO transport implementation

@@ -8,7 +8,6 @@ import { useBlockchainAppData } from '@/hooks/useBlockchainAppData';
 export function AppOverviewWrapper() {
   const { appId } = useParams<{ appId: string }>();
 
-  // Fetching app data from API
   const {
     data: app,
     isLoading: appLoading,
@@ -21,13 +20,15 @@ export function AppOverviewWrapper() {
     blockchainAppError,
     blockchainAppLoading,
     refetch: refetchBlockchainData,
-  } = useBlockchainAppData(appId);
+  } = useBlockchainAppData(Number(appId));
 
   // Navigation
   const navigate = useNavigate();
 
   // Loading
   if (appLoading || blockchainAppLoading) return <Loading />;
+
+  // Combined error states
   if (appError || blockchainAppError)
     return <StatusMessage message="Failed to load app" type="error" />;
   if (!app) return <StatusMessage message={`App ${appId} not found`} type="error" />;

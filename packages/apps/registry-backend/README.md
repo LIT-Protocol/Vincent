@@ -1,14 +1,14 @@
 # Vincent API
 
-A RESTful API service for managing tools, policies, and applications in the Vincent ecosystem. Built with Express.js, TypeScript, and MongoDB.
+A RESTful API service for managing abilities, policies, and applications in the Vincent ecosystem. Built with Express.js, TypeScript, and MongoDB.
 
 ## Overview
 
 Vincent API provides a secure, scalable backend for managing:
 
-- **Tools** - Reusable code components with versioning support
+- **Abilities** - Reusable code components with versioning support
 - **Policies** - Access control and governance rules with versioning
-- **Applications** - Complete applications built using tools and policies
+- **Applications** - Complete applications built using abilities and policies
 
 ## Features
 

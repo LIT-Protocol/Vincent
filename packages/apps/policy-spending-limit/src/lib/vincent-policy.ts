@@ -1,4 +1,4 @@
-import { createVincentPolicy } from '@lit-protocol/vincent-tool-sdk';
+import { createVincentPolicy } from '@lit-protocol/vincent-ability-sdk';
 
 import { sendSpendTx } from './policy-helpers/send-spend-tx';
 import { checkIfBuyAmountAllowed } from './policy-helpers/check-spending-limit';
@@ -10,7 +10,7 @@ import {
   evalDenyResultSchema,
   precheckAllowResultSchema,
   precheckDenyResultSchema,
-  toolParamsSchema,
+  abilityParamsSchema,
   userParamsSchema,
 } from './schemas';
 
@@ -29,7 +29,7 @@ declare const Lit: {
 export const vincentPolicy = createVincentPolicy({
   packageName: '@lit-protocol/vincent-policy-spending-limit' as const,
 
-  toolParamsSchema,
+  abilityParamsSchema,
   userParamsSchema,
   commitParamsSchema,
 
@@ -43,10 +43,10 @@ export const vincentPolicy = createVincentPolicy({
   commitDenyResultSchema,
 
   precheck: async (
-    { toolParams, userParams },
+    { abilityParams, userParams },
     { allow, deny, appId, delegation: { delegatorPkpInfo } },
   ) => {
-    console.log('Prechecking spending limit policy', { toolParams, userParams });
+    console.log('Prechecking spending limit policy', { abilityParams, userParams });
     const { ethAddress } = delegatorPkpInfo;
     const {
       buyAmount,
@@ -55,7 +55,7 @@ export const vincentPolicy = createVincentPolicy({
       chainIdForUniswap,
       tokenAddress,
       tokenDecimals,
-    } = toolParams;
+    } = abilityParams;
     const { maxDailySpendingLimitInUsdCents } = userParams;
 
     const { buyAmountAllowed, buyAmountInUsd, adjustedMaxDailySpendingLimit } =
@@ -83,12 +83,12 @@ export const vincentPolicy = createVincentPolicy({
         });
   },
   evaluate: async (
-    { toolParams, userParams },
+    { abilityParams, userParams },
     { allow, deny, appId, delegation: { delegatorPkpInfo } },
   ) => {
     const { ethAddress } = delegatorPkpInfo;
 
-    console.log('Evaluating spending limit policy', JSON.stringify(toolParams));
+    console.log('Evaluating spending limit policy', JSON.stringify(abilityParams));
     const {
       buyAmount,
       ethRpcUrl,
@@ -96,7 +96,7 @@ export const vincentPolicy = createVincentPolicy({
       chainIdForUniswap,
       tokenAddress,
       tokenDecimals,
-    } = toolParams;
+    } = abilityParams;
     const { maxDailySpendingLimitInUsdCents } = userParams;
 
     const checkBuyAmountResponse = await Lit.Actions.runOnce(

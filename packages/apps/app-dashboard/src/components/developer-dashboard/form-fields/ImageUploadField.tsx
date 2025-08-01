@@ -1,6 +1,12 @@
 import { useState } from 'react';
 import { Button } from '@/components/shared/ui/button';
-import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/shared/ui/form';
+import {
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/shared/ui/form';
 import {
   UseFormWatch,
   UseFormSetValue,
@@ -76,7 +82,7 @@ export function ImageUploadField({
   const displayUrl =
     previewUrl ||
     (currentValue && !currentValue.startsWith('data:')
-      ? `data:image/jpeg;base64,${currentValue}`
+      ? `data:image/svg+xml;base64,${currentValue}`
       : currentValue) ||
     null;
 
@@ -110,16 +116,14 @@ export function ImageUploadField({
               <div className="space-y-2">
                 <input
                   type="file"
-                  accept="image/jpeg,image/jpg,image/gif"
+                  accept="image/svg+xml"
                   onChange={handleFileChange}
                   disabled={isUploading}
                   className={`w-full px-2 py-1.5 text-sm border rounded-md border-gray-300 file:mr-4 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:bg-gray-50 file:text-gray-700 hover:file:bg-gray-100 ${
                     isUploading ? 'opacity-50 cursor-not-allowed' : ''
                   }`}
                 />
-                <div className="text-xs text-gray-600">
-                  Upload a square JPG, JPEG, or GIF image (max 5MB)
-                </div>
+                <div className="text-xs text-gray-600">Upload an SVG (max ~128KB)</div>
 
                 {isUploading && (
                   <div className="flex items-center space-x-2 text-xs text-gray-600">

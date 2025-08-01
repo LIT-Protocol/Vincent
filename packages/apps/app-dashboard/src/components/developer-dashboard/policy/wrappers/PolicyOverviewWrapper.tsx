@@ -3,7 +3,6 @@ import PolicyDetailsView from '../views/PolicyDetailsView';
 import Loading from '@/components/shared/ui/Loading';
 import { StatusMessage } from '@/components/shared/ui/statusMessage';
 import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
-import { useAddressCheck } from '@/hooks/developer-dashboard/tool/useAddressCheck';
 
 export function PolicyOverviewWrapper() {
   const { packageName } = useParams<{ packageName: string }>();
@@ -30,10 +29,10 @@ export function PolicyOverviewWrapper() {
   // Navigation
   const navigate = useNavigate();
 
-  useAddressCheck(policy || null);
-
-  // Loading
+  // Show loading while data is loading
   if (policyLoading || activePolicyVersionLoading) return <Loading />;
+
+  // Handle errors
   if (policyError || activePolicyVersionError)
     return <StatusMessage message="Failed to load policy" type="error" />;
   if (!policy) return <StatusMessage message={`Policy ${packageName} not found`} type="error" />;
@@ -43,7 +42,7 @@ export function PolicyOverviewWrapper() {
     );
 
   const handleOpenMutation = (mutationType: string) => {
-    navigate(`/developer/policyId/${encodeURIComponent(packageName!)}/${mutationType}`);
+    navigate(`/developer/policy/${encodeURIComponent(packageName!)}/${mutationType}`);
   };
 
   return (

@@ -4,7 +4,7 @@ This document provides guidelines for contributing to the Vincent SDK project.
 
 ## Overview
 
-The Vincent SDK is a TypeScript SDK that exposes useful tools to interact with Vincent systems in web or Node.js environments. It provides client libraries for both frontend applications and backend services.
+The Vincent SDK is a TypeScript SDK that exposes useful abilities to interact with Vincent systems in web or Node.js environments. It provides client libraries for both frontend applications and backend services.
 
 ## Setup
 
@@ -39,17 +39,16 @@ pnpm typedoc
   - `app/`: Web utilities to authenticate against Vincent Apps in clients
   - `express-authentication-middleware/`: Express middleware wrapper to properly validate clients JWT server side
   - `jwt/`: Utility functions to work with Vincent JWT between Vincent Apps client and server
-  - `tool/`: Utility functions to work with Vincent Tools
 
 ## SDK Components
 
 ### WebAuthClient
 
-The Vincent Web Auth Client provides methods for managing user authentication, JWT tokens, and consent flows in Vincent applications.
+The Vincent Web Auth Client provides methods for managing user authentication, JWT tokens, and connect flows in Vincent applications.
 
-### VincentToolClient
+### VincentAbilityClient
 
-The Vincent Tool Client uses an ethers signer for your delegatee account to run Vincent Tools on behalf of your app users.
+The Vincent Ability Client uses an ethers signer for your delegatee account to run Vincent Abilities on behalf of your app users.
 
 ## Coding Standards
 

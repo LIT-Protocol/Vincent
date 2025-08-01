@@ -19,15 +19,15 @@ contract VincentAppFacet is VincentBase {
     using EnumerableSet for EnumerableSet.Bytes32Set;
 
     /**
-     * @title AppVersionTools
-     * @notice Structure containing tools and policies for an app version
+     * @title AppVersionAbilities
+     * @notice Structure containing abilities and policies for an app version
      * @dev Used when registering a new app version
-     * @param toolIpfsCids Array of IPFS CIDs pointing to tool metadata
-     * @param toolPolicies 2D array of policy identifiers for each tool
+     * @param abilityIpfsCids Array of IPFS CIDs pointing to ability metadata
+     * @param abilityPolicies 2D array of policy identifiers for each ability
      */
-    struct AppVersionTools {
-        string[] toolIpfsCids;
-        string[][] toolPolicies;
+    struct AppVersionAbilities {
+        string[] abilityIpfsCids;
+        string[][] abilityPolicies;
     }
 
     /**
@@ -41,13 +41,13 @@ contract VincentAppFacet is VincentBase {
     }
 
     /**
-     * @notice Register a new application with initial version, tools, and policies
+     * @notice Register a new application with initial version, abilities, and policies
      * @dev This function combines app registration and first version registration in one call
      * @param appId The ID of the app to register
      * @param delegatees List of addresses authorized to act on behalf of the app
-     * @param versionTools Tools and policies for the app version
+     * @param versionAbilities Abilities and policies for the app version
      */
-    function registerApp(uint256 appId, address[] calldata delegatees, AppVersionTools calldata versionTools)
+    function registerApp(uint256 appId, address[] calldata delegatees, AppVersionAbilities calldata versionAbilities)
         external returns (uint256 newAppVersion)
     {
         if (appId == 0) {
@@ -57,7 +57,7 @@ contract VincentAppFacet is VincentBase {
         _registerApp(appId, delegatees);
         emit LibVincentAppFacet.NewAppRegistered(appId, msg.sender);
 
-        newAppVersion = _registerNextAppVersion(appId, versionTools);
+        newAppVersion = _registerNextAppVersion(appId, versionAbilities);
         emit LibVincentAppFacet.NewAppVersionRegistered(appId, newAppVersion, msg.sender);
     }
 
@@ -65,17 +65,17 @@ contract VincentAppFacet is VincentBase {
      * @notice Register a new version of an existing application
      * @dev Only the app manager can register new versions of an existing app
      * @param appId ID of the app for which to register a new version
-     * @param versionTools Tools and policies for the app version
+     * @param versionAbilities Abilities and policies for the app version
      * @return newAppVersion The version number of the newly registered app version
      */
-    function registerNextAppVersion(uint256 appId, AppVersionTools calldata versionTools)
+    function registerNextAppVersion(uint256 appId, AppVersionAbilities calldata versionAbilities)
         external
         appNotDeleted(appId)
         onlyAppManager(appId)
         onlyRegisteredApp(appId)
         returns (uint256 newAppVersion)
     {
-        newAppVersion = _registerNextAppVersion(appId, versionTools);
+        newAppVersion = _registerNextAppVersion(appId, versionAbilities);
 
         emit LibVincentAppFacet.NewAppVersionRegistered(appId, newAppVersion, msg.sender);
     }
@@ -238,32 +238,32 @@ contract VincentAppFacet is VincentBase {
     }
 
     /**
-     * @dev Registers a new version of an app, associating tools and policies with it.
-     * This function ensures that all provided tools, policies, and parameters are correctly stored
-     * and linked to the new app version. Also ensures that no duplicate tool or policy IPFS CIDs are added.
+     * @dev Registers a new version of an app, associating abilities and policies with it.
+     * This function ensures that all provided abilities, policies, and parameters are correctly stored
+     * and linked to the new app version. Also ensures that no duplicate ability or policy IPFS CIDs are added.
      *
-     * @notice This function is used internally to register a new app version and its associated tools and policies.
+     * @notice This function is used internally to register a new app version and its associated abilities and policies.
      * @notice App versions are enabled by default when registered.
      *
      * @param appId The ID of the app for which a new version is being registered.
-     * @param versionTools An AppVersionTools struct containing the tools, policies, and parameters for the new app version.
+     * @param versionAbilities An AppVersionAbilities struct containing the abilities, policies, and parameters for the new app version.
      * @return newAppVersion The newly created version number for the app.
      */
-    function _registerNextAppVersion(uint256 appId, AppVersionTools calldata versionTools)
+    function _registerNextAppVersion(uint256 appId, AppVersionAbilities calldata versionAbilities)
         internal
         returns (uint256 newAppVersion)
     {
-        // Step 1: Check that at least one tool is provided
-        if (versionTools.toolIpfsCids.length == 0) {
-            revert LibVincentAppFacet.NoToolsProvided(appId);
+        // Step 1: Check that at least one ability is provided
+        if (versionAbilities.abilityIpfsCids.length == 0) {
+            revert LibVincentAppFacet.NoAbilitiesProvided(appId);
         }
 
         // Check array lengths at top level
-        uint256 toolCount = versionTools.toolIpfsCids.length;
-        if (toolCount != versionTools.toolPolicies.length) {
-            revert LibVincentAppFacet.ToolArrayDimensionMismatch(
-                toolCount,
-                versionTools.toolPolicies.length
+        uint256 abilityCount = versionAbilities.abilityIpfsCids.length;
+        if (abilityCount != versionAbilities.abilityPolicies.length) {
+            revert LibVincentAppFacet.AbilityArrayDimensionMismatch(
+                abilityCount,
+                versionAbilities.abilityPolicies.length
             );
         }
 
@@ -280,54 +280,54 @@ contract VincentAppFacet is VincentBase {
         versionedApp.enabled = true; // App versions are enabled by default
 
         // Store this once outside the loop instead of repeatedly accessing it
-        EnumerableSet.Bytes32Set storage toolIpfsCidHashes = versionedApp.toolIpfsCidHashes;
+        EnumerableSet.Bytes32Set storage abilityIpfsCidHashes = versionedApp.abilityIpfsCidHashes;
 
-        // Step 6: Iterate through each tool to register it with the new app version.
-        for (uint256 i = 0; i < toolCount; i++) {
-            string memory toolIpfsCid = versionTools.toolIpfsCids[i]; // Cache calldata value
+        // Step 6: Iterate through each ability to register it with the new app version.
+        for (uint256 i = 0; i < abilityCount; i++) {
+            string memory abilityIpfsCid = versionAbilities.abilityIpfsCids[i]; // Cache calldata value
 
-            // Validate tool IPFS CID is not empty
-            if (bytes(toolIpfsCid).length == 0) {
-                revert LibVincentAppFacet.EmptyToolIpfsCidNotAllowed(appId, i);
+            // Validate ability IPFS CID is not empty
+            if (bytes(abilityIpfsCid).length == 0) {
+                revert LibVincentAppFacet.EmptyAbilityIpfsCidNotAllowed(appId, i);
             }
 
-            bytes32 hashedToolCid = keccak256(abi.encodePacked(toolIpfsCid));
+            bytes32 hashedAbilityCid = keccak256(abi.encodePacked(abilityIpfsCid));
 
-            // Step 6.1: Register the tool IPFS CID globally if it hasn't been added already.
-            if (!toolIpfsCidHashes.add(hashedToolCid)) {
-                revert LibVincentAppFacet.DuplicateToolIpfsCidNotAllowed(appId, i);
+            // Step 6.1: Register the ability IPFS CID globally if it hasn't been added already.
+            if (!abilityIpfsCidHashes.add(hashedAbilityCid)) {
+                revert LibVincentAppFacet.DuplicateAbilityIpfsCidNotAllowed(appId, i);
             }
 
-            // First check if the tool is already registered in global storage
+            // First check if the ability is already registered in global storage
             // before trying to register it again
-            if (bytes(ls.ipfsCidHashToIpfsCid[hashedToolCid]).length == 0) {
-                ls.ipfsCidHashToIpfsCid[hashedToolCid] = toolIpfsCid;
-                emit LibVincentAppFacet.NewLitActionRegistered(hashedToolCid);
+            if (bytes(ls.ipfsCidHashToIpfsCid[hashedAbilityCid]).length == 0) {
+                ls.ipfsCidHashToIpfsCid[hashedAbilityCid] = abilityIpfsCid;
+                emit LibVincentAppFacet.NewLitActionRegistered(hashedAbilityCid);
             }
 
-            // Step 7: Iterate through policies linked to this tool.
-            uint256 policyCount = versionTools.toolPolicies[i].length;
+            // Step 7: Iterate through policies linked to this ability.
+            uint256 policyCount = versionAbilities.abilityPolicies[i].length;
 
             for (uint256 j = 0; j < policyCount; j++) {
-                string memory policyIpfsCid = versionTools.toolPolicies[i][j]; // Cache calldata value
+                string memory policyIpfsCid = versionAbilities.abilityPolicies[i][j]; // Cache calldata value
 
                 // Validate non-empty policy IPFS CID
                 if (bytes(policyIpfsCid).length == 0) {
                     revert LibVincentAppFacet.EmptyPolicyIpfsCidNotAllowed(appId, j);
                 }
 
-                bytes32 hashedToolPolicy = keccak256(abi.encodePacked(policyIpfsCid));
-                EnumerableSet.Bytes32Set storage toolPolicyIpfsCidHashes = versionedApp.toolIpfsCidHashToToolPolicyIpfsCidHashes[hashedToolCid];
+                bytes32 hashedAbilityPolicy = keccak256(abi.encodePacked(policyIpfsCid));
+                EnumerableSet.Bytes32Set storage abilityPolicyIpfsCidHashes = versionedApp.abilityIpfsCidHashToAbilityPolicyIpfsCidHashes[hashedAbilityCid];
 
-                // Step 7.1: Add the policy hash to the ToolPolicies
-                if (!toolPolicyIpfsCidHashes.add(hashedToolPolicy)) {
-                    revert LibVincentAppFacet.DuplicateToolPolicyIpfsCidNotAllowed(appId, i, j);
+                // Step 7.1: Add the policy hash to the AbilityPolicies
+                if (!abilityPolicyIpfsCidHashes.add(hashedAbilityPolicy)) {
+                    revert LibVincentAppFacet.DuplicateAbilityPolicyIpfsCidNotAllowed(appId, i, j);
                 }
 
                 // Step 7.3: Store the policy IPFS CID globally if it's not already stored.
-                if (bytes(ls.ipfsCidHashToIpfsCid[hashedToolPolicy]).length == 0) {
-                    ls.ipfsCidHashToIpfsCid[hashedToolPolicy] = policyIpfsCid;
-                    emit LibVincentAppFacet.NewLitActionRegistered(hashedToolPolicy);
+                if (bytes(ls.ipfsCidHashToIpfsCid[hashedAbilityPolicy]).length == 0) {
+                    ls.ipfsCidHashToIpfsCid[hashedAbilityPolicy] = policyIpfsCid;
+                    emit LibVincentAppFacet.NewLitActionRegistered(hashedAbilityPolicy);
                 }
             }
         }

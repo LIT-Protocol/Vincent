@@ -4,7 +4,7 @@ This document provides guidelines for contributing to the Vincent MCP SDK projec
 
 ## Overview
 
-The Vincent MCP SDK is a TypeScript SDK that exposes useful tools to transform a Vincent App into a Model Context Protocol (MCP) Server.
+The Vincent MCP SDK is a TypeScript SDK that exposes useful abilities to transform a Vincent App into a Model Context Protocol (MCP) Server.
 
 ## Setup
 
@@ -14,14 +14,14 @@ Follow the global setup instructions in the repository root [CONTRIBUTING.md](..
 
 - `src/`: Source code
   - `index.ts`: Main entry point
-  - `definitions.ts`: Zod schemas and its derived types that define a Vincent App or Tool properties needed for MCP
+  - `definitions.ts`: Zod schemas and its derived types that define a Vincent App or Ability properties needed for MCP
   - `server.ts`: Utility functions to transform from a Vincent App definition to an MCP server
 
 ## SDK Components
 
 ### MCP Transformation
 
-This SDK provides tools to transform your Vincent application into an MCP server, exposing your tools to LLMs or AI Agents.
+This SDK provides abilities to transform your Vincent application into an MCP server, exposing your abilities to LLMs or AI Agents.
 
 ## Coding Standards
 
@@ -83,7 +83,7 @@ When working with AI-powered editors like Cursor, GitHub Copilot, or other AI as
 The MCP SDK is a related to the following Vincent projects:
 
 - `app-sdk`: Vincent App SDK utility functions
-- `tool-sdk`: Vincent Tool management and execution functions
+- `ability-sdk`: Vincent Ability management and execution functions
 - `mcp`: Vincent MCP Server runner
 
 When working on MCP SDK code, consider these dependencies and consumers for context.

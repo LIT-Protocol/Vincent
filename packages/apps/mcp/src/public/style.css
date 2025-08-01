@@ -123,13 +123,13 @@ body, html {
   margin: 0 0 1.5rem 0;
 }
 
-.tools-container {
+.abilities-container {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
 }
 
-.tool-card {
+.ability-card {
   background-color: #111827;
   border: 1px solid #374151;
   border-radius: 0.5rem;
@@ -137,19 +137,19 @@ body, html {
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.tool-card:hover {
+.ability-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
-.tool-name {
+.ability-name {
   font-size: 1.25rem;
   font-weight: 600;
   color: #f3f4f6;
   margin: 0 0 0.75rem 0;
 }
 
-.tool-description {
+.ability-description {
   color: #d1d5db;
   margin-bottom: 1.25rem;
   line-height: 1.6;

@@ -1,0 +1,72 @@
+{
+  "name": "ability-sdk",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/libs/ability-sdk/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "clean": {},
+    "dev": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "packages/libs/ability-sdk/dist",
+        "main": "packages/libs/ability-sdk/src/index.ts",
+        "tsConfig": "packages/libs/ability-sdk/tsconfig.lib.json",
+        "assets": ["packages/libs/ability-sdk/*.md"],
+        "formats": ["cjs"],
+        "watch": true
+      }
+    },
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "packages/libs/ability-sdk/dist",
+        "main": "packages/libs/ability-sdk/src/index.ts",
+        "tsConfig": "packages/libs/ability-sdk/tsconfig.lib.json",
+        "assets": ["packages/libs/ability-sdk/*.md"],
+        "formats": ["cjs"]
+      }
+    },
+    "typedoc:build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "pnpm typedoc --skipErrorChecking --logLevel Verbose --options ./typedoc-configs/json.config.js"
+        ],
+        "cwd": "{projectRoot}",
+        "tty": true
+      }
+    },
+    "typedoc:watch": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "pnpm typedoc --watch --logLevel Verbose --options ./typedoc-configs/html.config.js",
+          "node ./scripts/typedocServer.mjs"
+        ],
+        "cwd": "{projectRoot}",
+        "tty": true
+      }
+    },
+    "typedoc:watch:json": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "pnpm typedoc --watch --logLevel Verbose --options ./typedoc-configs/json.config.js"
+        ],
+        "cwd": "{projectRoot}",
+        "tty": true
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "packages/libs/ability-sdk/jest.config.js",
+        "passWithNoTests": true
+      }
+    }
+  }
+}

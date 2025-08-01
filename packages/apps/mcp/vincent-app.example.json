@@ -2,8 +2,8 @@
   "id": "485",
   "version": "5",
   "name": "Uniswap Swap",
-  "description": "This app offers tools to approve ERC20 token allowances and perform swaps on uniswap",
-  "tools": {
+  "description": "This app offers abilities to approve ERC20 token allowances and perform swaps on uniswap",
+  "abilities": {
     "QmWHK5KsJitDwW1zHRoiJQdQECASzSjjphp4Rg8YqB6BsX": {
       "name": "erc20-approval",
       "description": "Allow an ERC20 token spending, up to a limit, to the Uniswap v3 Router contract. This is necessary to make trades on Uniswap.",

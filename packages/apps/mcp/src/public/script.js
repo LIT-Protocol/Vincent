@@ -5,7 +5,7 @@ let appDefinition = null;
  * Vincent MCP Server - App Definition Display
  *
  * This script fetches the app definition from the server and displays it
- * in a user-friendly format, including the app details and available tools.
+ * in a user-friendly format, including the app details and available abilities.
  */
 
 /**
@@ -231,7 +231,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const appName = document.getElementById('app-name');
   const appDescription = document.getElementById('app-description');
   const appVersion = document.getElementById('app-version');
-  const toolsContainer = document.getElementById('tools-container');
+  const abilitiesContainer = document.getElementById('abilities-container');
   const approveButton = document.getElementById('approve-button');
   const connectButton = document.getElementById('connect-button');
 
@@ -326,7 +326,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       approveButton.addEventListener('click', () => {
         if (appDefinition?.id) {
           const currentUrl = encodeURIComponent(window.location.origin);
-          window.location.href = `https://dashboard.heyvincent.ai/appId/${appDefinition.id}/consent?redirectUri=${currentUrl}`;
+          window.location.href = `https://dashboard.heyvincent.ai/appId/${appDefinition.id}/connect?redirectUri=${currentUrl}`;
         } else {
           console.error('App definition not loaded');
         }
@@ -352,44 +352,44 @@ document.addEventListener('DOMContentLoaded', async () => {
  * @param {Object} appDef - The app definition object
  */
 function displayAppDefinition(appDef) {
-  const { name, description, version, tools } = appDef;
+  const { name, description, version, abilities } = appDef;
 
   document.getElementById('app-name').textContent = name;
   document.getElementById('app-description').textContent = description;
   document.getElementById('app-version').textContent = `v${version}`;
 
-  const toolsContainer = document.getElementById('tools-container');
-  toolsContainer.innerHTML = '';
+  const abilitiesContainer = document.getElementById('abilities-container');
+  abilitiesContainer.innerHTML = '';
 
-  Object.values(tools).forEach((tool) => {
-    const toolElement = createToolElement(tool);
-    toolsContainer.appendChild(toolElement);
+  Object.values(abilities).forEach((ability) => {
+    const abilityElement = createAbilityElement(ability);
+    abilitiesContainer.appendChild(abilityElement);
   });
 }
 
 /**
- * Creates a DOM element for a tool
- * @param {Object} tool - The tool object
- * @returns {HTMLElement} The created tool element
+ * Creates a DOM element for an ability
+ * @param {Object} ability - The ability object
+ * @returns {HTMLElement} The created ability element
  */
-function createToolElement(tool) {
-  const toolElement = document.createElement('div');
-  toolElement.className = 'tool-card';
+function createAbilityElement(ability) {
+  const abilityElement = document.createElement('div');
+  abilityElement.className = 'ability-card';
 
-  toolElement.innerHTML = `
-    <h3 class="tool-name">${escapeHtml(tool.name)}</h3>
-    <p class="tool-description">${escapeHtml(tool.description)}</p>
+  abilityElement.innerHTML = `
+    <h3 class="ability-name">${escapeHtml(ability.name)}</h3>
+    <p class="ability-description">${escapeHtml(ability.description)}</p>
   `;
 
-  if (tool.parameters && tool.parameters.length > 0) {
+  if (ability.parameters && ability.parameters.length > 0) {
     const parametersTitle = document.createElement('div');
     parametersTitle.className = 'parameters-title';
     parametersTitle.textContent = 'Parameters';
-    toolElement.appendChild(parametersTitle);
+    abilityElement.appendChild(parametersTitle);
 
     const parametersList = document.createElement('div');
 
-    tool.parameters.forEach((param) => {
+    ability.parameters.forEach((param) => {
       const paramElement = document.createElement('div');
       paramElement.className = 'parameter-item';
 
@@ -409,10 +409,10 @@ function createToolElement(tool) {
       parametersList.appendChild(paramElement);
     });
 
-    toolElement.appendChild(parametersList);
+    abilityElement.appendChild(parametersList);
   }
 
-  return toolElement;
+  return abilityElement;
 }
 
 /**

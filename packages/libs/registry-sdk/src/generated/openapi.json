@@ -3,7 +3,7 @@
   "info": {
     "title": "Vincent Registry API",
     "version": "1.0.3",
-    "description": "API for Vincent App, Tool, and Policy Registry"
+    "description": "API for Vincent App, Ability, and Policy Registry"
   },
   "servers": [
     {
@@ -18,11 +18,11 @@
   ],
   "components": {
     "securitySchemes": {
-      "siweAuth": {
-        "type": "apiKey",
-        "in": "header",
-        "name": "Authorization",
-        "description": "Sign In With Ethereum authentication (SIWE). Format is \"SIWE [JSON({ message, signature })]\""
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Vincent-issued JWTs must be used for these endpoints."
       }
     },
     "schemas": {
@@ -431,7 +431,7 @@
         ],
         "additionalProperties": false
       },
-      "AppVersionToolCreate": {
+      "AppVersionAbilityCreate": {
         "type": "object",
         "properties": {
           "hiddenSupportedPolicies": {
@@ -439,24 +439,24 @@
             "items": {
               "type": "string"
             },
-            "description": "Policies that are supported by this tool, but are hidden from users of this app specifically",
+            "description": "Policies that are supported by this ability, but are hidden from users of this app specifically",
             "example": [
               "@vincent/foo-bar-policy-1",
               "@vincent/foo-bar-policy-2"
             ]
           },
-          "toolVersion": {
+          "abilityVersion": {
             "type": "string",
-            "description": "Tool version",
+            "description": "Ability version",
             "example": "1.0.0"
           }
         },
         "required": [
-          "toolVersion"
+          "abilityVersion"
         ],
         "additionalProperties": false
       },
-      "AppVersionToolEdit": {
+      "AppVersionAbilityEdit": {
         "type": "object",
         "properties": {
           "hiddenSupportedPolicies": {
@@ -464,7 +464,7 @@
             "items": {
               "type": "string"
             },
-            "description": "Policies that are supported by this tool, but are hidden from users of this app specifically",
+            "description": "Policies that are supported by this ability, but are hidden from users of this app specifically",
             "example": [
               "@vincent/foo-bar-policy-1",
               "@vincent/foo-bar-policy-2"
@@ -473,7 +473,7 @@
         },
         "additionalProperties": false
       },
-      "AppVersionTool": {
+      "AppVersionAbility": {
         "type": "object",
         "properties": {
           "_id": {
@@ -503,14 +503,14 @@
             "example": 2,
             "readOnly": true
           },
-          "toolPackageName": {
+          "abilityPackageName": {
             "type": "string",
-            "description": "Tool package name",
+            "description": "Ability package name",
             "example": "@vincent/foo-bar"
           },
-          "toolVersion": {
+          "abilityVersion": {
             "type": "string",
-            "description": "Tool version",
+            "description": "Ability version",
             "example": "1.0.0"
           },
           "hiddenSupportedPolicies": {
@@ -518,7 +518,7 @@
             "items": {
               "type": "string"
             },
-            "description": "Policies that are supported by this tool, but are hidden from users of this app specifically",
+            "description": "Policies that are supported by this ability, but are hidden from users of this app specifically",
             "example": [
               "@vincent/foo-bar-policy-1",
               "@vincent/foo-bar-policy-2"
@@ -526,7 +526,7 @@
           },
           "isDeleted": {
             "type": "boolean",
-            "description": "Whether or not this AppVersionTool is deleted",
+            "description": "Whether or not this AppVersionAbility is deleted",
             "example": false
           }
         },
@@ -536,30 +536,30 @@
           "createdAt",
           "appId",
           "appVersion",
-          "toolPackageName",
-          "toolVersion"
+          "abilityPackageName",
+          "abilityVersion"
         ],
         "additionalProperties": false
       },
-      "ToolCreate": {
+      "AbilityCreate": {
         "type": "object",
         "properties": {
           "activeVersion": {
             "type": "string",
-            "description": "Active version of the tool",
+            "description": "Active version of the ability",
             "example": "1.0.0"
           },
           "title": {
             "type": "string",
             "minLength": 2,
-            "description": "Tool title - displayed to users in the dashboard/Vincent Explorer UI",
-            "example": "ERC20 Approval Tool"
+            "description": "Ability title - displayed to users in the dashboard/Vincent Explorer UI",
+            "example": "ERC20 Approval Ability"
           },
           "description": {
             "type": "string",
             "minLength": 10,
-            "description": "Tool description - displayed to users in the dashboard/Vincent Explorer UI",
-            "example": "A tool that manages ERC20 approvals for PKPs. Facilitates vincent-uniswap-swap-tool usage."
+            "description": "Ability description - displayed to users in the dashboard/Vincent Explorer UI",
+            "example": "An ability that manages ERC20 approvals for PKPs. Facilitates vincent-uniswap-swap-ability usage."
           },
           "deploymentStatus": {
             "type": "string",
@@ -569,8 +569,13 @@
               "prod"
             ],
             "default": "dev",
-            "description": "Identifies if a tool is in development, test, or production.",
+            "description": "Identifies if an ability is in development, test, or production.",
             "example": "dev"
+          },
+          "logo": {
+            "type": "string",
+            "description": "Base64 encoded logo image",
+            "example": "iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAIAAAACDbGyAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAOvwAADr8BOAVTJAAAAA5JREFUGFdj/M+ACAAAAAD//wE7AnsAAAAAAElFTkSuQmCC"
           }
         },
         "required": [
@@ -580,25 +585,25 @@
         ],
         "additionalProperties": false
       },
-      "ToolEdit": {
+      "AbilityEdit": {
         "type": "object",
         "properties": {
           "activeVersion": {
             "type": "string",
-            "description": "Active version of the tool",
+            "description": "Active version of the ability",
             "example": "1.0.0"
           },
           "title": {
             "type": "string",
             "minLength": 2,
-            "description": "Tool title - displayed to users in the dashboard/Vincent Explorer UI",
-            "example": "ERC20 Approval Tool"
+            "description": "Ability title - displayed to users in the dashboard/Vincent Explorer UI",
+            "example": "ERC20 Approval Ability"
           },
           "description": {
             "type": "string",
             "minLength": 10,
-            "description": "Tool description - displayed to users in the dashboard/Vincent Explorer UI",
-            "example": "A tool that manages ERC20 approvals for PKPs. Facilitates vincent-uniswap-swap-tool usage."
+            "description": "Ability description - displayed to users in the dashboard/Vincent Explorer UI",
+            "example": "An ability that manages ERC20 approvals for PKPs. Facilitates vincent-uniswap-swap-ability usage."
           },
           "deploymentStatus": {
             "type": "string",
@@ -607,13 +612,18 @@
               "test",
               "prod"
             ],
-            "description": "Identifies if a tool is in development, test, or production.",
+            "description": "Identifies if an ability is in development, test, or production.",
             "example": "dev"
+          },
+          "logo": {
+            "type": "string",
+            "description": "Base64 encoded logo image",
+            "example": "iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAIAAAACDbGyAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAOvwAADr8BOAVTJAAAAA5JREFUGFdj/M+ACAAAAAD//wE7AnsAAAAAAElFTkSuQmCC"
           }
         },
         "additionalProperties": false
       },
-      "Tool": {
+      "Ability": {
         "type": "object",
         "properties": {
           "_id": {
@@ -633,14 +643,14 @@
           },
           "packageName": {
             "type": "string",
-            "description": "Tool NPM package name",
-            "example": "@lit-protocol/vincent-erc20-approval-tool"
+            "description": "Ability NPM package name",
+            "example": "@lit-protocol/vincent-erc20-approval-ability"
           },
           "title": {
             "type": "string",
             "minLength": 2,
-            "description": "Tool title - displayed to users in the dashboard/Vincent Explorer UI",
-            "example": "ERC20 Approval Tool"
+            "description": "Ability title - displayed to users in the dashboard/Vincent Explorer UI",
+            "example": "ERC20 Approval Ability"
           },
           "authorWalletAddress": {
             "type": "string",
@@ -651,12 +661,17 @@
           "description": {
             "type": "string",
             "minLength": 10,
-            "description": "Tool description - displayed to users in the dashboard/Vincent Explorer UI",
-            "example": "A tool that manages ERC20 approvals for PKPs. Facilitates vincent-uniswap-swap-tool usage."
+            "description": "Ability description - displayed to users in the dashboard/Vincent Explorer UI",
+            "example": "An ability that manages ERC20 approvals for PKPs. Facilitates vincent-uniswap-swap-ability usage."
+          },
+          "logo": {
+            "type": "string",
+            "description": "Base64 encoded logo image",
+            "example": "iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAIAAAACDbGyAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAOvwAADr8BOAVTJAAAAA5JREFUGFdj/M+ACAAAAAD//wE7AnsAAAAAAElFTkSuQmCC"
           },
           "activeVersion": {
             "type": "string",
-            "description": "Active version of the tool",
+            "description": "Active version of the ability",
             "example": "1.0.0"
           },
           "deploymentStatus": {
@@ -666,12 +681,12 @@
               "test",
               "prod"
             ],
-            "description": "Identifies if a tool is in development, test, or production.",
+            "description": "Identifies if an ability is in development, test, or production.",
             "example": "dev"
           },
           "isDeleted": {
             "type": "boolean",
-            "description": "Whether or not this Tool is deleted",
+            "description": "Whether or not this Ability is deleted",
             "example": false
           }
         },
@@ -687,7 +702,7 @@
         ],
         "additionalProperties": false
       },
-      "ToolVersionCreate": {
+      "AbilityVersionCreate": {
         "type": "object",
         "properties": {
           "changes": {
@@ -702,7 +717,7 @@
         ],
         "additionalProperties": false
       },
-      "ToolVersionEdit": {
+      "AbilityVersionEdit": {
         "type": "object",
         "properties": {
           "changes": {
@@ -717,7 +732,7 @@
         ],
         "additionalProperties": false
       },
-      "ToolVersion": {
+      "AbilityVersion": {
         "type": "object",
         "properties": {
           "_id": {
@@ -737,12 +752,12 @@
           },
           "packageName": {
             "type": "string",
-            "description": "Tool NPM package name",
-            "example": "@lit-protocol/vincent-erc20-approval-tool"
+            "description": "Ability NPM package name",
+            "example": "@lit-protocol/vincent-erc20-approval-ability"
           },
           "version": {
             "type": "string",
-            "description": "Tool version - must be an exact semver.",
+            "description": "Ability version - must be an exact semver.",
             "example": "1.0.0"
           },
           "changes": {
@@ -849,7 +864,7 @@
             "additionalProperties": {
               "type": "string"
             },
-            "description": "Supported policies. These are detected from 'dependencies' in the tool's package.json.",
+            "description": "Supported policies. These are detected from 'dependencies' in the ability's package.json.",
             "example": {
               "@lit-protocol/vincent-spending-limit-policy": "1.0.0",
               "@lit-protocol/vincent-rate-limit-policy": "0.0.1"
@@ -858,7 +873,7 @@
           },
           "ipfsCid": {
             "type": "string",
-            "description": "IPFS CID of the code that implements this tool.",
+            "description": "IPFS CID of the code that implements this ability.",
             "example": "QmdoY1VUxVvxShBQK5B6PP2jZFVw7PMTJ3qy2aiCARjMqo",
             "readOnly": true
           },
@@ -867,7 +882,7 @@
             "items": {
               "type": "string"
             },
-            "description": "Policy versions that are not in the registry but are supported by this tool",
+            "description": "Policy versions that are not in the registry but are supported by this ability",
             "example": [
               "@lit-protocol/vincent-spending-limit-policy@1.0.1"
             ],
@@ -875,7 +890,7 @@
           },
           "isDeleted": {
             "type": "boolean",
-            "description": "Whether or not this ToolVersion is deleted",
+            "description": "Whether or not this AbilityVersion is deleted",
             "example": false
           }
         },
@@ -928,6 +943,11 @@
             "default": "dev",
             "description": "Identifies if a policy is in development, test, or production.",
             "example": "dev"
+          },
+          "logo": {
+            "type": "string",
+            "description": "Base64 encoded logo image",
+            "example": "iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAIAAAACDbGyAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAOvwAADr8BOAVTJAAAAA5JREFUGFdj/M+ACAAAAAD//wE7AnsAAAAAAElFTkSuQmCC"
           }
         },
         "required": [
@@ -966,6 +986,11 @@
             ],
             "description": "Identifies if a policy is in development, test, or production.",
             "example": "dev"
+          },
+          "logo": {
+            "type": "string",
+            "description": "Base64 encoded logo image",
+            "example": "iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAIAAAACDbGyAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAOvwAADr8BOAVTJAAAAA5JREFUGFdj/M+ACAAAAAD//wE7AnsAAAAAAElFTkSuQmCC"
           }
         },
         "additionalProperties": false
@@ -1004,6 +1029,11 @@
             "minLength": 10,
             "description": "Policy description - displayed to users in the dashboard/Vincent Explorer UI",
             "example": "This policy is a foo bar policy"
+          },
+          "logo": {
+            "type": "string",
+            "description": "Base64 encoded logo image",
+            "example": "iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAIAAAACDbGyAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAOvwAADr8BOAVTJAAAAA5JREFUGFdj/M+ACAAAAAD//wE7AnsAAAAAAElFTkSuQmCC"
           },
           "activeVersion": {
             "type": "string",
@@ -1260,22 +1290,22 @@
           "$ref": "#/components/schemas/AppVersion"
         }
       },
-      "AppVersionToolList": {
+      "AppVersionAbilityList": {
         "type": "array",
         "items": {
-          "$ref": "#/components/schemas/AppVersionTool"
+          "$ref": "#/components/schemas/AppVersionAbility"
         }
       },
-      "ToolList": {
+      "AbilityList": {
         "type": "array",
         "items": {
-          "$ref": "#/components/schemas/Tool"
+          "$ref": "#/components/schemas/Ability"
         }
       },
-      "ToolVersionList": {
+      "AbilityVersionList": {
         "type": "array",
         "items": {
-          "$ref": "#/components/schemas/ToolVersion"
+          "$ref": "#/components/schemas/AbilityVersion"
         }
       },
       "PolicyList": {
@@ -1335,7 +1365,7 @@
         "operationId": "createApp",
         "security": [
           {
-            "siweAuth": []
+            "bearerAuth": []
           }
         ],
         "requestBody": {
@@ -1432,7 +1462,7 @@
         "operationId": "editApp",
         "security": [
           {
-            "siweAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -1491,13 +1521,13 @@
         "tags": [
           "App",
           "AppVersion",
-          "AppVersionTool"
+          "AppVersionAbility"
         ],
         "summary": "Deletes an application",
         "operationId": "deleteApp",
         "security": [
           {
-            "siweAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -1547,13 +1577,13 @@
         "tags": [
           "App",
           "AppVersion",
-          "AppVersionTool"
+          "AppVersionAbility"
         ],
         "summary": "Undeletes an application",
         "operationId": "undeleteApp",
         "security": [
           {
-            "siweAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -1653,7 +1683,7 @@
         "operationId": "createAppVersion",
         "security": [
           {
-            "siweAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -1772,7 +1802,7 @@
         "operationId": "editAppVersion",
         "security": [
           {
-            "siweAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -1845,7 +1875,7 @@
         "operationId": "deleteAppVersion",
         "security": [
           {
-            "siweAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -1912,7 +1942,7 @@
         "operationId": "enableAppVersion",
         "security": [
           {
-            "siweAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -1976,7 +2006,7 @@
         "operationId": "disableAppVersion",
         "security": [
           {
-            "siweAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -2031,13 +2061,13 @@
         }
       }
     },
-    "/app/{appId}/version/{version}/tools": {
+    "/app/{appId}/version/{version}/abilities": {
       "get": {
         "tags": [
-          "AppVersionTool"
+          "AppVersionAbility"
         ],
-        "summary": "Lists all tools for an application version",
-        "operationId": "listAppVersionTools",
+        "summary": "Lists all abilities for an application version",
+        "operationId": "listAppVersionAbilities",
         "parameters": [
           {
             "schema": {
@@ -2066,7 +2096,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AppVersionToolList"
+                  "$ref": "#/components/schemas/AppVersionAbilityList"
                 }
               }
             }
@@ -2087,16 +2117,16 @@
         }
       }
     },
-    "/app/{appId}/version/{appVersion}/tool/{toolPackageName}": {
+    "/app/{appId}/version/{appVersion}/ability/{abilityPackageName}": {
       "post": {
         "tags": [
-          "AppVersionTool"
+          "AppVersionAbility"
         ],
-        "summary": "Creates a tool for an application version",
-        "operationId": "createAppVersionTool",
+        "summary": "Creates an ability for an application version",
+        "operationId": "createAppVersionAbility",
         "security": [
           {
-            "siweAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -2127,17 +2157,17 @@
             "required": true,
             "description": "The NPM package name",
             "example": "@vincent/foo-bar",
-            "name": "toolPackageName",
+            "name": "abilityPackageName",
             "in": "path"
           }
         ],
         "requestBody": {
-          "description": "Tool configuration for the application version",
+          "description": "Ability configuration for the application version",
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/AppVersionToolCreate"
+                "$ref": "#/components/schemas/AppVersionAbilityCreate"
               }
             }
           }
@@ -2148,7 +2178,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AppVersionTool"
+                  "$ref": "#/components/schemas/AppVersionAbility"
                 }
               }
             }
@@ -2173,13 +2203,13 @@
       },
       "put": {
         "tags": [
-          "AppVersionTool"
+          "AppVersionAbility"
         ],
-        "summary": "Edits a tool for an application version",
-        "operationId": "editAppVersionTool",
+        "summary": "Edits an ability for an application version",
+        "operationId": "editAppVersionAbility",
         "security": [
           {
-            "siweAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -2210,17 +2240,17 @@
             "required": true,
             "description": "The NPM package name",
             "example": "@vincent/foo-bar",
-            "name": "toolPackageName",
+            "name": "abilityPackageName",
             "in": "path"
           }
         ],
         "requestBody": {
-          "description": "Updated tool configuration for the application version",
+          "description": "Updated ability configuration for the application version",
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/AppVersionToolEdit"
+                "$ref": "#/components/schemas/AppVersionAbilityEdit"
               }
             }
           }
@@ -2231,7 +2261,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AppVersionTool"
+                  "$ref": "#/components/schemas/AppVersionAbility"
                 }
               }
             }
@@ -2240,7 +2270,7 @@
             "description": "Invalid input"
           },
           "404": {
-            "description": "Application, version, or tool not found"
+            "description": "Application, version, or ability not found"
           },
           "422": {
             "description": "Validation exception"
@@ -2259,13 +2289,13 @@
       },
       "delete": {
         "tags": [
-          "AppVersionTool"
+          "AppVersionAbility"
         ],
-        "summary": "Deletes a tool for an application version",
-        "operationId": "deleteAppVersionTool",
+        "summary": "Deletes an ability for an application version",
+        "operationId": "deleteAppVersionAbility",
         "security": [
           {
-            "siweAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -2296,7 +2326,7 @@
             "required": true,
             "description": "The NPM package name",
             "example": "@vincent/foo-bar",
-            "name": "toolPackageName",
+            "name": "abilityPackageName",
             "in": "path"
           }
         ],
@@ -2315,7 +2345,7 @@
             "description": "Invalid input"
           },
           "404": {
-            "description": "Application, version, or tool not found"
+            "description": "Application, version, or ability not found"
           },
           "422": {
             "description": "Validation exception"
@@ -2342,7 +2372,7 @@
         "operationId": "undeleteAppVersion",
         "security": [
           {
-            "siweAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -2400,16 +2430,16 @@
         }
       }
     },
-    "/app/{appId}/version/{appVersion}/tool/{toolPackageName}/undelete": {
+    "/app/{appId}/version/{appVersion}/ability/{abilityPackageName}/undelete": {
       "post": {
         "tags": [
-          "AppVersionTool"
+          "AppVersionAbility"
         ],
-        "summary": "Undeletes a tool for an application version",
-        "operationId": "undeleteAppVersionTool",
+        "summary": "Undeletes an ability for an application version",
+        "operationId": "undeleteAppVersionAbility",
         "security": [
           {
-            "siweAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -2440,7 +2470,7 @@
             "required": true,
             "description": "The NPM package name",
             "example": "@vincent/foo-bar",
-            "name": "toolPackageName",
+            "name": "abilityPackageName",
             "in": "path"
           }
         ],
@@ -2459,7 +2489,7 @@
             "description": "Invalid input"
           },
           "404": {
-            "description": "Application, version, or tool not found"
+            "description": "Application, version, or ability not found"
           },
           "422": {
             "description": "Validation exception"
@@ -2486,7 +2516,7 @@
         "operationId": "setAppActiveVersion",
         "security": [
           {
-            "siweAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -2545,20 +2575,20 @@
         }
       }
     },
-    "/tools": {
+    "/abilities": {
       "get": {
         "tags": [
-          "Tool"
+          "Ability"
         ],
-        "summary": "Lists all tools",
-        "operationId": "listAllTools",
+        "summary": "Lists all abilities",
+        "operationId": "listAllAbilities",
         "responses": {
           "200": {
             "description": "Successful operation",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ToolList"
+                  "$ref": "#/components/schemas/AbilityList"
                 }
               }
             }
@@ -2576,17 +2606,17 @@
         }
       }
     },
-    "/tool/{packageName}": {
+    "/ability/{packageName}": {
       "post": {
         "tags": [
-          "Tool",
-          "ToolVersion"
+          "Ability",
+          "AbilityVersion"
         ],
-        "summary": "Creates a new tool",
-        "operationId": "createTool",
+        "summary": "Creates a new ability",
+        "operationId": "createAbility",
         "security": [
           {
-            "siweAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -2602,12 +2632,12 @@
           }
         ],
         "requestBody": {
-          "description": "Developer-defined tool details",
+          "description": "Developer-defined ability details",
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ToolCreate"
+                "$ref": "#/components/schemas/AbilityCreate"
               }
             }
           }
@@ -2618,7 +2648,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Tool"
+                  "$ref": "#/components/schemas/Ability"
                 }
               }
             }
@@ -2643,10 +2673,10 @@
       },
       "get": {
         "tags": [
-          "Tool"
+          "Ability"
         ],
-        "summary": "Fetches a tool",
-        "operationId": "getTool",
+        "summary": "Fetches an ability",
+        "operationId": "getAbility",
         "parameters": [
           {
             "schema": {
@@ -2665,13 +2695,13 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Tool"
+                  "$ref": "#/components/schemas/Ability"
                 }
               }
             }
           },
           "404": {
-            "description": "Tool not found"
+            "description": "Ability not found"
           },
           "default": {
             "description": "Unexpected error",
@@ -2687,13 +2717,13 @@
       },
       "put": {
         "tags": [
-          "Tool"
+          "Ability"
         ],
-        "summary": "Edits a tool",
-        "operationId": "editTool",
+        "summary": "Edits an ability",
+        "operationId": "editAbility",
         "security": [
           {
-            "siweAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -2709,12 +2739,12 @@
           }
         ],
         "requestBody": {
-          "description": "Developer-defined updated tool details",
+          "description": "Developer-defined updated ability details",
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ToolEdit"
+                "$ref": "#/components/schemas/AbilityEdit"
               }
             }
           }
@@ -2725,7 +2755,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Tool"
+                  "$ref": "#/components/schemas/Ability"
                 }
               }
             }
@@ -2750,14 +2780,14 @@
       },
       "delete": {
         "tags": [
-          "Tool",
-          "ToolVersion"
+          "Ability",
+          "AbilityVersion"
         ],
-        "summary": "Deletes a tool and all its versions",
-        "operationId": "deleteTool",
+        "summary": "Deletes an ability and all its versions",
+        "operationId": "deleteAbility",
         "security": [
           {
-            "siweAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -2784,7 +2814,7 @@
             }
           },
           "404": {
-            "description": "Tool not found"
+            "description": "Ability not found"
           },
           "default": {
             "description": "Unexpected error",
@@ -2799,13 +2829,13 @@
         }
       }
     },
-    "/tool/{packageName}/versions": {
+    "/ability/{packageName}/versions": {
       "get": {
         "tags": [
-          "ToolVersion"
+          "AbilityVersion"
         ],
-        "summary": "Fetches all versions of a tool",
-        "operationId": "getToolVersions",
+        "summary": "Fetches all versions of an ability",
+        "operationId": "getAbilityVersions",
         "parameters": [
           {
             "schema": {
@@ -2824,13 +2854,13 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ToolVersionList"
+                  "$ref": "#/components/schemas/AbilityVersionList"
                 }
               }
             }
           },
           "404": {
-            "description": "Tool not found"
+            "description": "Ability not found"
           },
           "default": {
             "description": "Unexpected error",
@@ -2845,16 +2875,16 @@
         }
       }
     },
-    "/tool/{packageName}/owner": {
+    "/ability/{packageName}/owner": {
       "put": {
         "tags": [
-          "Tool"
+          "Ability"
         ],
-        "summary": "Changes a tool's owner",
-        "operationId": "changeToolOwner",
+        "summary": "Changes an ability's owner",
+        "operationId": "changeAbilityOwner",
         "security": [
           {
-            "siweAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -2870,7 +2900,7 @@
           }
         ],
         "requestBody": {
-          "description": "Developer-defined updated tool details",
+          "description": "Developer-defined updated ability details",
           "required": true,
           "content": {
             "application/json": {
@@ -2886,7 +2916,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Tool"
+                  "$ref": "#/components/schemas/Ability"
                 }
               }
             }
@@ -2910,16 +2940,16 @@
         }
       }
     },
-    "/tool/{packageName}/version/{version}": {
+    "/ability/{packageName}/version/{version}": {
       "post": {
         "tags": [
-          "ToolVersion"
+          "AbilityVersion"
         ],
-        "summary": "Creates a tool version",
-        "operationId": "createToolVersion",
+        "summary": "Creates an ability version",
+        "operationId": "createAbilityVersion",
         "security": [
           {
-            "siweAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -2938,7 +2968,7 @@
               "type": "string"
             },
             "required": true,
-            "description": "NPM semver of the target tool version",
+            "description": "NPM semver of the target ability version",
             "example": "2.1.0",
             "name": "version",
             "in": "path"
@@ -2950,7 +2980,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ToolVersionCreate"
+                "$ref": "#/components/schemas/AbilityVersionCreate"
               }
             }
           }
@@ -2961,7 +2991,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ToolVersion"
+                  "$ref": "#/components/schemas/AbilityVersion"
                 }
               }
             }
@@ -2986,10 +3016,10 @@
       },
       "get": {
         "tags": [
-          "ToolVersion"
+          "AbilityVersion"
         ],
-        "summary": "Fetches a tool version",
-        "operationId": "getToolVersion",
+        "summary": "Fetches an ability version",
+        "operationId": "getAbilityVersion",
         "parameters": [
           {
             "schema": {
@@ -3006,7 +3036,7 @@
               "type": "string"
             },
             "required": true,
-            "description": "NPM semver of the target tool version",
+            "description": "NPM semver of the target ability version",
             "example": "2.1.0",
             "name": "version",
             "in": "path"
@@ -3018,13 +3048,13 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ToolVersion"
+                  "$ref": "#/components/schemas/AbilityVersion"
                 }
               }
             }
           },
           "404": {
-            "description": "Tool version not found"
+            "description": "Ability version not found"
           },
           "default": {
             "description": "Unexpected error",
@@ -3040,13 +3070,13 @@
       },
       "put": {
         "tags": [
-          "ToolVersion"
+          "AbilityVersion"
         ],
-        "summary": "Edits a tool version",
-        "operationId": "editToolVersion",
+        "summary": "Edits an ability version",
+        "operationId": "editAbilityVersion",
         "security": [
           {
-            "siweAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -3065,7 +3095,7 @@
               "type": "string"
             },
             "required": true,
-            "description": "NPM semver of the target tool version",
+            "description": "NPM semver of the target ability version",
             "example": "2.1.0",
             "name": "version",
             "in": "path"
@@ -3077,7 +3107,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ToolVersionEdit"
+                "$ref": "#/components/schemas/AbilityVersionEdit"
               }
             }
           }
@@ -3088,7 +3118,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ToolVersion"
+                  "$ref": "#/components/schemas/AbilityVersion"
                 }
               }
             }
@@ -3113,13 +3143,13 @@
       },
       "delete": {
         "tags": [
-          "ToolVersion"
+          "AbilityVersion"
         ],
-        "summary": "Deletes a tool version",
-        "operationId": "deleteToolVersion",
+        "summary": "Deletes an ability version",
+        "operationId": "deleteAbilityVersion",
         "security": [
           {
-            "siweAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -3138,7 +3168,7 @@
               "type": "string"
             },
             "required": true,
-            "description": "NPM semver of the target tool version",
+            "description": "NPM semver of the target ability version",
             "example": "2.1.0",
             "name": "version",
             "in": "path"
@@ -3159,7 +3189,7 @@
             "description": "Invalid input"
           },
           "404": {
-            "description": "Tool or version not found"
+            "description": "Ability or version not found"
           },
           "422": {
             "description": "Validation exception"
@@ -3177,17 +3207,17 @@
         }
       }
     },
-    "/tool/{packageName}/undelete": {
+    "/ability/{packageName}/undelete": {
       "post": {
         "tags": [
-          "Tool",
-          "ToolVersion"
+          "Ability",
+          "AbilityVersion"
         ],
-        "summary": "Undeletes a tool and all its versions",
-        "operationId": "undeleteTool",
+        "summary": "Undeletes an ability and all its versions",
+        "operationId": "undeleteAbility",
         "security": [
           {
-            "siweAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -3214,7 +3244,7 @@
             }
           },
           "404": {
-            "description": "Tool not found"
+            "description": "Ability not found"
           },
           "default": {
             "description": "Unexpected error",
@@ -3229,16 +3259,16 @@
         }
       }
     },
-    "/tool/{packageName}/version/{version}/undelete": {
+    "/ability/{packageName}/version/{version}/undelete": {
       "post": {
         "tags": [
-          "ToolVersion"
+          "AbilityVersion"
         ],
-        "summary": "Undeletes a tool version",
-        "operationId": "undeleteToolVersion",
+        "summary": "Undeletes an ability version",
+        "operationId": "undeleteAbilityVersion",
         "security": [
           {
-            "siweAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -3257,7 +3287,7 @@
               "type": "string"
             },
             "required": true,
-            "description": "NPM semver of the target tool version",
+            "description": "NPM semver of the target ability version",
             "example": "2.1.0",
             "name": "version",
             "in": "path"
@@ -3278,7 +3308,7 @@
             "description": "Invalid input"
           },
           "404": {
-            "description": "Tool or version not found"
+            "description": "Ability or version not found"
           },
           "422": {
             "description": "Validation exception"
@@ -3337,7 +3367,7 @@
         "operationId": "createPolicy",
         "security": [
           {
-            "siweAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -3444,7 +3474,7 @@
         "operationId": "editPolicy",
         "security": [
           {
-            "siweAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -3508,7 +3538,7 @@
         "operationId": "deletePolicy",
         "security": [
           {
-            "siweAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -3559,7 +3589,7 @@
         "operationId": "createPolicyVersion",
         "security": [
           {
-            "siweAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -3686,7 +3716,7 @@
         "operationId": "editPolicyVersion",
         "security": [
           {
-            "siweAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -3759,7 +3789,7 @@
         "operationId": "deletePolicyVersion",
         "security": [
           {
-            "siweAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -3872,7 +3902,7 @@
         "operationId": "changePolicyOwner",
         "security": [
           {
-            "siweAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -3938,7 +3968,7 @@
         "operationId": "undeletePolicy",
         "security": [
           {
-            "siweAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -3989,7 +4019,7 @@
         "operationId": "undeletePolicyVersion",
         "security": [
           {
-            "siweAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [

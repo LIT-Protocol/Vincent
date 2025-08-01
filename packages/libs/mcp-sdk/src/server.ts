@@ -18,12 +18,12 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { Signer } from 'ethers';
 
 import {
-  buildMcpToolName,
+  buildMcpAbilityName,
   buildMcpParamDefinitions,
-  buildMcpToolCallback,
+  buildMcpAbilityCallback,
   VincentAppDef,
   VincentAppDefSchema,
-  VincentToolDefWithIPFS,
+  VincentAbilityDefWithIPFS,
 } from './definitions';
 
 export interface DelegationMcpServerConfig {
@@ -59,17 +59,17 @@ export class VincentMcpServer extends McpServer {
     await this.litNodeClient.disconnect();
   }
 
-  vincentTool(
+  vincentAbility(
     name: string,
-    toolData: VincentToolDefWithIPFS,
+    ability: VincentAbilityDefWithIPFS,
     delegateeSigner: Signer,
     delegatorPkpEthAddress?: string
   ) {
     this.tool(
       name,
-      toolData.description,
-      buildMcpParamDefinitions(toolData.parameters, !delegatorPkpEthAddress),
-      buildMcpToolCallback(this.litNodeClient, delegateeSigner, delegatorPkpEthAddress, toolData)
+      ability.description,
+      buildMcpParamDefinitions(ability.parameters, !delegatorPkpEthAddress),
+      buildMcpAbilityCallback(this.litNodeClient, delegateeSigner, delegatorPkpEthAddress, ability)
     );
   }
 }
@@ -77,12 +77,12 @@ export class VincentMcpServer extends McpServer {
 /**
  * Creates an MCP server for a Vincent application
  *
- * This function configures an MCP server with the tools defined in the Vincent application definition.
- * Each tool is registered with the server and configured to use the provided delegatee signer for execution.
+ * This function configures an MCP server with the abilities defined in the Vincent application definition.
+ * Each ability is registered with the server and configured to use the provided delegatee signer for execution.
  *
  * Check (MCP Typescript SDK docs)[https://github.com/modelcontextprotocol/typescript-sdk] for more details on MCP server definition.
  *
- * @param vincentAppDefinition - The Vincent application definition containing the tools to register
+ * @param vincentAppDefinition - The Vincent application definition containing the abilities to register
  * @param {DelegationMcpServerConfig} config - The server configuration
  * @returns A configured MCP server instance
  *
@@ -101,16 +101,16 @@ export class VincentMcpServer extends McpServer {
  *   id: '8462368',
  *   version: '1',
  *   name: 'My Vincent App',
- *   description: 'A Vincent application that executes tools for its delegators',
- *   tools: {
+ *   description: 'A Vincent application that executes abilities for its delegators',
+ *   abilities: {
  *     'QmIpfsCid1': {
- *       name: 'myTool',
- *       description: 'A tool that does something',
+ *       name: 'myAbility',
+ *       description: 'An ability that does something',
  *       parameters: [
  *         {
  *           name: 'param1',
  *           type: 'string',
- *           description: 'A parameter that is used in the tool to do something'
+ *           description: 'A parameter that is used in the ability to do something'
  *         }
  *       ]
  *     }
@@ -139,8 +139,8 @@ export async function getVincentAppServer(
 
   if (delegatorPkpEthAddress) {
     server.tool(
-      buildMcpToolName(_vincentAppDefinition, 'get-current-agent-pkp-address'),
-      `Tool to get your agent pkp eth address in use for the ${_vincentAppDefinition.name} Vincent App MCP.`,
+      buildMcpAbilityName(_vincentAppDefinition, 'get-current-agent-pkp-address'),
+      `Ability to get your agent pkp eth address in use for the ${_vincentAppDefinition.name} Vincent App MCP.`,
       async () => {
         return {
           content: [
@@ -155,8 +155,8 @@ export async function getVincentAppServer(
   } else {
     // In delegatee mode (no delegator), user has to be able to fetch its delegators and select which one to operate on behalf of
     server.tool(
-      buildMcpToolName(_vincentAppDefinition, 'get-delegators-eth-addresses'),
-      `Tool to get the delegators pkp Eth addresses for the ${_vincentAppDefinition.name} Vincent App.`,
+      buildMcpAbilityName(_vincentAppDefinition, 'get-delegators-eth-addresses'),
+      `Ability to get the delegators pkp Eth addresses for the ${_vincentAppDefinition.name} Vincent App.`,
       async () => {
         const appId = _vincentAppDefinition.id;
         const appVersion = _vincentAppDefinition.version;
@@ -180,8 +180,8 @@ export async function getVincentAppServer(
   }
 
   server.tool(
-    buildMcpToolName(_vincentAppDefinition, 'get-current-vincent-app-info'),
-    `Tool to get the ${_vincentAppDefinition.name} Vincent App info.`,
+    buildMcpAbilityName(_vincentAppDefinition, 'get-current-vincent-app-info'),
+    `Ability to get the ${_vincentAppDefinition.name} Vincent App info.`,
     async () => {
       const appInfo = {
         id: _vincentAppDefinition.id,
@@ -201,10 +201,10 @@ export async function getVincentAppServer(
     }
   );
 
-  Object.entries(_vincentAppDefinition.tools).forEach(([toolIpfsCid, tool]) => {
-    server.vincentTool(
-      buildMcpToolName(_vincentAppDefinition, tool.name),
-      { ipfsCid: toolIpfsCid, ...tool },
+  Object.entries(_vincentAppDefinition.abilities).forEach(([abilityIpfsCid, ability]) => {
+    server.vincentAbility(
+      buildMcpAbilityName(_vincentAppDefinition, ability.name),
+      { ipfsCid: abilityIpfsCid, ...ability },
       config.delegateeSigner,
       config.delegatorPkpEthAddress
     );

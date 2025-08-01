@@ -18,37 +18,37 @@ To define the Vincent App that will be transformed into an MCP Server, a JSON de
   "id": "8462368", // The Id of the Vincent App
   "version": "1", // The version of the Vincent App
   "name": "My Vincent App", // Name of the Vincent App. Can be overriden, doesn't have to be the same as in the registry.
-  "description": "A Vincent application that executes tools for its delegators", // Description of the Vincent App. Can be overriden, doesn't have to be the same as in the registry.
-  "tools": {
-    // Any tool that you want to expose to the LLM has to be included using its IPFS CID as key in this object. If a tool is not included, it is not exposed as an MCP Server tool.
+  "description": "A Vincent application that executes abilities for its delegators", // Description of the Vincent App. Can be overriden, doesn't have to be the same as in the registry.
+  "abilities": {
+    // Any ability that you want to expose to the LLM has to be included using its IPFS CID as key in this object. If an ability is not included, it is not exposed as an MCP Server ability.
     "QmIpfsCid1": {
-      "name": "myTool", // Name of the tool. Can be overriden, doesn't have to be the same as in the registry.
-      "description": "A tool that does something", // Description of the tool. Can be overriden, doesn't have to be the same as in the registry.
-      // All parameters of the tool have to be added under this array or the LLM won't be able to see them or provide values for it
+      "name": "myAbility", // Name of the ability. Can be overriden, doesn't have to be the same as in the registry.
+      "description": "An ability that does something", // Description of the ability. Can be overriden, doesn't have to be the same as in the registry.
+      // All parameters of the ability have to be added under this array or the LLM won't be able to see them or provide values for it
       "parameters": [
         {
           "name": "param1", // Name of the param. Cannot be overriden.
-          "type": "string", // Type of the param. Must be the type the tool expects.
-          "description": "A parameter that is used in the tool to do something" // Description of the param. Can be overriden.
+          "type": "string", // Type of the param. Must be the type the ability expects.
+          "description": "A parameter that is used in the ability to do something" // Description of the param. Can be overriden.
         }
         // ...rest of params you want to expose.
-        // Any optional param that is not included here will be exposed by the tool.
+        // Any optional param that is not included here will be exposed by the ability.
       ]
     }
   }
 }
 ```
 
-For any value that can be overriden, consider that those are the hints the LLM uses to know how to use the tool. Therefore, those are good places to provide any information you want the LLM to know about the tool such as units, formats, examples or pre-conditions to check.
+For any value that can be overriden, consider that those are the hints the LLM uses to know how to use the ability. Therefore, those are good places to provide any information you want the LLM to know about the ability such as units, formats, examples or pre-conditions to check.
 
 If you are the owner of the app, most of the data can be obtained from the Vincent App page in the Vincent dashboard.
 
-If you are not the owner of the app, the tool fields and its included tools IPFS CIDs are shown in the consent screen.
+If you are not the owner of the app, the ability fields and its included abilities IPFS CIDs are shown in the connect screen.
 
-The IPFS CID can also be obtained from the bundled tool code published in npm. For example [vincent-tool-metadata.json](../tool-erc20-approval/src/generated/vincent-tool-metadata.json) for our ERC20 approval tool.
-To get the tool params from source code, you can check the tool schemas such as [schemas.ts](../tool-erc20-approval/src/lib/schemas.ts) for our ERC20 approval tool.
+The IPFS CID can also be obtained from the bundled ability code published in npm. For example [vincent-ability-metadata.json](../ability-erc20-approval/src/generated/vincent-ability-metadata.json) for our ERC20 approval ability.
+To get the ability params from source code, you can check the ability schemas such as [schemas.ts](../ability-erc20-approval/src/lib/schemas.ts) for our ERC20 approval ability.
 
-Any tool created using our [Tools and Policies SDK](https://www.npmjs.com/package/@lit-protocol/vincent-tool-sdk) will provide those files.
+Any ability created using our [Abilities and Policies SDK](https://www.npmjs.com/package/@lit-protocol/vincent-ability-sdk) will provide those files.
 
 # Running
 
@@ -97,7 +97,7 @@ Other optional environment variables include:
 
 Consider that a SIWE message must have a valid nonce, so it will become invalid after reaching the expiration time or the nonce has been discarded.
 
-You can set these environment variables in your shell before running the commands, or use a tool like `dotenvx`:
+You can set these environment variables in your shell before running the commands, or use an ability like `dotenvx`:
 
 ```bash
 dotenvx run -f /path/to/.env -- npx @lit-protocol/vincent-mcp-server http
@@ -133,14 +133,14 @@ HTTP mode requires one of two forms of authentication:
   3. Request an MCP server session at `POST /mcp` passing the `authorization` header with the following content `SIWE-V1 b64message="<base64_encoded_message>" signature="<hex_signature>"`
   - If your LLM client does not support passing the `authorization` header, you can still pass the delegator jwt in the `jwt` query param of the SIWE message and its signature in `b64message` and `signature` query params. However, using `authentication` header is preferred as query params might be logged or used for caching or tracing purposes.
 - A delegator JWT in `authorization` header.
-  - JWT can be obtained from the Vincent App consent screen.
+  - JWT can be obtained from the Vincent App connect screen.
   - This server displays a JWT collection website at its base URL (`GET /`). You can add the server URL as a redirect URL in your Vincent App to give customers the complete link they can use in any LLM client with support for HTTP MCPs
 
 # Development
 
 ## STDIO mode
 
-When integrating with LLM tools or frameworks, you can configure the Vincent MCP server to run `typescript` directly with `tsx`. Here's an example configuration:
+When integrating with LLM abilities or frameworks, you can configure the Vincent MCP server to run `typescript` directly with `tsx`. Here's an example configuration:
 
 ```json
 {

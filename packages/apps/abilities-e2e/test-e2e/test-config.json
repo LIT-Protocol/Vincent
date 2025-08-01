@@ -1,0 +1,16 @@
+{
+  "appId": 73276123204,
+  "appVersion": 1,
+  "userPkp": {
+    "tokenId": "82104276824339269971064922653638509343882443844866538545851912408514686622617",
+    "ethAddress": "0x716c4a18D1FA9E8f55629cCfCbD5cB0ceaE05024",
+    "pkpPubkey": "0x048bbc2754457f84ac079c23ce399796e510aa79aa9d86b9d03aac6f3033ef5db3b178653fbb618a4d10397312ba19689c3826fd74e5d9e7171bcc6b801924f533"
+  },
+  "capacityCreditInfo": {
+    "capacityTokenIdStr": "232741",
+    "capacityTokenId": "232741",
+    "requestsPerKilosecond": 80,
+    "daysUntilUTCMidnightExpiration": 25,
+    "mintedAtUtc": "2025-07-09T11:55:26.170Z"
+  }
+}

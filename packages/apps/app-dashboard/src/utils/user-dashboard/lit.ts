@@ -20,10 +20,10 @@ import { getPkpNftContract } from './get-pkp-nft-contract';
 import { addPayee } from './addPayee';
 import { env } from '@/config/env';
 
-const { VITE_DOMAIN, VITE_ENV, VITE_STYTCH_PROJECT_ID } = env;
+const { VITE_ENV, VITE_STYTCH_PROJECT_ID } = env;
 
-export const DOMAIN = VITE_DOMAIN || 'localhost';
-export const ORIGIN = VITE_ENV === 'production' ? `https://${DOMAIN}` : `http://${DOMAIN}:3000`;
+export const DOMAIN = VITE_ENV === 'development' ? 'localhost:5173' : 'dashboard.heyvincent.ai';
+export const ORIGIN = VITE_ENV === 'development' ? `http://${DOMAIN}` : `https://${DOMAIN}`;
 
 export const SELECTED_LIT_NETWORK = LIT_NETWORK.Datil as LIT_NETWORKS_KEYS;
 
@@ -135,26 +135,24 @@ export async function authenticateWithEthWallet(
 /**
  * Register new WebAuthn credential
  */
-export async function registerWebAuthn(): Promise<IRelayPKP> {
+export async function registerWebAuthn(displayName: string): Promise<IRelayPKP> {
   const webAuthnProvider = getWebAuthnProvider();
   // Register new WebAuthn credential
   const options = await webAuthnProvider.register();
 
+  const passkeyName = displayName;
+
   if (options.user) {
-    const displayName =
-      prompt('Enter display name for your passkey:', 'Vincent User') || 'Vincent User';
-    options.user.displayName = displayName;
-    options.user.name = displayName.toLowerCase().replace(/\s+/g, '-');
+    options.user.displayName = passkeyName;
+    options.user.name = passkeyName.toLowerCase().replace(/\s+/g, '-');
     // Make sure id exists - use name as id if missing
     if (!options.user.id) {
       options.user.id = options.user.name;
     }
   } else {
-    const displayName =
-      prompt('Enter display name for your passkey:', 'Vincent User') || 'Vincent User';
-    const userName = displayName.toLowerCase().replace(/\s+/g, '-');
+    const userName = passkeyName.toLowerCase().replace(/\s+/g, '-');
     options.user = {
-      displayName: displayName,
+      displayName: passkeyName,
       name: userName,
       id: userName,
     };

@@ -2,7 +2,7 @@ import { Button } from '@/components/shared/ui/button';
 import { Fragment, useState } from 'react';
 import ReactQrReader from 'react-qr-reader-es6';
 import { useTheme } from '@/providers/ThemeProvider';
-import { theme } from '@/components/user-dashboard/consent/ui/theme';
+import { theme } from '@/components/user-dashboard/connect/ui/theme';
 
 /**
  * Types
@@ -59,16 +59,18 @@ export default function QrReader({ onConnect }: IProps) {
               style={{ width: '100%', height: '100%' }}
             />
           </div>
-          <Button 
-            variant="outline" 
-            className={`mt-4 ${themeStyles.text} border ${themeStyles.cardBorder} hover:${themeStyles.itemHoverBg}`} 
+          <Button
+            variant="outline"
+            className={`mt-4 ${themeStyles.text} border ${themeStyles.cardBorder} hover:${themeStyles.itemHoverBg}`}
             onClick={() => setShow(false)}
           >
             Cancel Scan
           </Button>
         </Fragment>
       ) : (
-        <div className={`w-full flex flex-col items-center justify-center p-8 border ${themeStyles.cardBorder} rounded-lg ${themeStyles.mainCard}`}>
+        <div
+          className={`w-full flex flex-col items-center justify-center p-8 border ${themeStyles.cardBorder} rounded-lg ${themeStyles.mainCard}`}
+        >
           <img
             src="/icons/qr-icon.svg"
             width={100}

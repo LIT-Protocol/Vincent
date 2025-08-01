@@ -1,7 +1,7 @@
 import React from 'react';
 import { LIT_CHAINS } from '@lit-protocol/constants';
 import { useTheme } from '@/providers/ThemeProvider';
-import { theme } from '@/components/user-dashboard/consent/ui/theme';
+import { theme } from '@/components/user-dashboard/connect/ui/theme';
 
 interface ChainSelectorProps {
   selectedChain: string;

@@ -17,7 +17,7 @@ describe('Supported Policies Integration Tests', () => {
 
   // Package names for testing
   const policyPackageName = '@lit-protocol/vincent-policy-spending-limit';
-  const toolPackageName = '@lit-protocol/vincent-tool-uniswap-swap';
+  const abilityPackageName = '@lit-protocol/vincent-ability-uniswap-swap';
 
   // Test data for creating a policy
   const policyData = {
@@ -26,15 +26,15 @@ describe('Supported Policies Integration Tests', () => {
     activeVersion: '1.0.0',
   };
 
-  // Test data for creating a tool
-  const toolData = {
-    title: 'Uniswap Swap Tool',
-    description: 'A tool for swapping tokens on Uniswap',
+  // Test data for creating an ability
+  const abilityData = {
+    title: 'Uniswap Swap Ability',
+    description: 'An ability for swapping tokens on Uniswap',
     activeVersion: '1.0.0',
   };
 
-  // Test data for creating a tool version
-  const toolVersionData = {
+  // Test data for creating an ability version
+  const abilityVersionData = {
     changes: 'Initial version',
   };
 
@@ -47,11 +47,13 @@ describe('Supported Policies Integration Tests', () => {
       // Ignore errors if the policy doesn't exist
     }
 
-    // Delete the tool if it exists
+    // Delete the ability if it exists
     try {
-      await store.dispatch(api.endpoints.deleteTool.initiate({ packageName: toolPackageName }));
+      await store.dispatch(
+        api.endpoints.deleteAbility.initiate({ packageName: abilityPackageName }),
+      );
     } catch (error) {
-      // Ignore errors if the tool doesn't exist
+      // Ignore errors if the ability doesn't exist
     }
 
     // Reset the API cache
@@ -67,19 +69,21 @@ describe('Supported Policies Integration Tests', () => {
       // Ignore errors if the policy doesn't exist
     }
 
-    // Delete the tool if it exists
+    // Delete the ability if it exists
     try {
-      await store.dispatch(api.endpoints.deleteTool.initiate({ packageName: toolPackageName }));
+      await store.dispatch(
+        api.endpoints.deleteAbility.initiate({ packageName: abilityPackageName }),
+      );
     } catch (error) {
-      // Ignore errors if the tool doesn't exist
+      // Ignore errors if the ability doesn't exist
     }
 
     // Reset the API cache
     store.dispatch(api.util.resetApiState());
   });
 
-  describe('Tool with supported policy', () => {
-    it('should register policy v1.0.0 and then successfully register tool v1.0.0 that depends on it', async () => {
+  describe('Ability with supported policy', () => {
+    it('should register policy v1.0.0 and then successfully register ability v1.0.0 that depends on it', async () => {
       // First, create the policy
       const policyResult = await store.dispatch(
         api.endpoints.createPolicy.initiate({
@@ -91,90 +95,94 @@ describe('Supported Policies Integration Tests', () => {
       verboseLog(policyResult);
       expect(policyResult).not.toHaveProperty('error');
 
-      // Now create the tool that depends on the policy
-      const toolResult = await store.dispatch(
-        api.endpoints.createTool.initiate({
-          packageName: toolPackageName,
-          toolCreate: toolData,
+      // Now create the ability that depends on the policy
+      const abilityResult = await store.dispatch(
+        api.endpoints.createAbility.initiate({
+          packageName: abilityPackageName,
+          abilityCreate: abilityData,
         }),
       );
 
-      verboseLog(toolResult);
-      expect(toolResult).not.toHaveProperty('error');
+      verboseLog(abilityResult);
+      expect(abilityResult).not.toHaveProperty('error');
 
-      // Verify the tool was created successfully
-      const { data: toolResultData } = toolResult;
-      expectAssertObject(toolResultData);
-      expect(toolResultData).toHaveProperty('packageName', toolPackageName);
+      // Verify the ability was created successfully
+      const { data: abilityResultData } = abilityResult;
+      expectAssertObject(abilityResultData);
+      expect(abilityResultData).toHaveProperty('packageName', abilityPackageName);
 
-      // Get the tool version to verify supportedPolicies
-      const toolVersionResult = await store.dispatch(
-        api.endpoints.getToolVersion.initiate({
-          packageName: toolPackageName,
+      // Get the ability version to verify supportedPolicies
+      const abilityVersionResult = await store.dispatch(
+        api.endpoints.getAbilityVersion.initiate({
+          packageName: abilityPackageName,
           version: '1.0.0',
         }),
       );
 
-      verboseLog(toolVersionResult);
-      expect(toolVersionResult).not.toHaveProperty('error');
+      verboseLog(abilityVersionResult);
+      expect(abilityVersionResult).not.toHaveProperty('error');
 
-      const { data: toolVersionData } = toolVersionResult;
-      expectAssertObject(toolVersionData);
+      const { data: abilityVersionData } = abilityVersionResult;
+      expectAssertObject(abilityVersionData);
 
       // Verify supportedPolicies contains the policy
-      expect(toolVersionData).toHaveProperty('supportedPolicies');
-      expect(toolVersionData.supportedPolicies).toHaveProperty(policyPackageName);
-      expect(toolVersionData.supportedPolicies[policyPackageName]).toBe('1.0.0');
+      expect(abilityVersionData).toHaveProperty('supportedPolicies');
+      expect(abilityVersionData.supportedPolicies).toHaveProperty(policyPackageName);
+      expect(abilityVersionData.supportedPolicies[policyPackageName]).toBe('1.0.0');
 
       // Verify policiesNotInRegistry is empty
-      expect(toolVersionData).toHaveProperty('policiesNotInRegistry');
-      expect(toolVersionData.policiesNotInRegistry).toHaveLength(0);
+      expect(abilityVersionData).toHaveProperty('policiesNotInRegistry');
+      expect(abilityVersionData.policiesNotInRegistry).toHaveLength(0);
     });
   });
 
-  describe('Tool with policy not in registry', () => {
+  describe('Ability with policy not in registry', () => {
     it('should identify when registering v1.0.1 when policy v1.0.1 is not in registry', async () => {
-      // Try to create tool version 1.0.1 that depends on policy version 1.0.1 (which doesn't exist yet)
-      const toolVersionResult = await store.dispatch(
-        api.endpoints.createToolVersion.initiate({
-          packageName: toolPackageName,
+      // Try to create ability version 1.0.1 that depends on policy version 1.0.1 (which doesn't exist yet)
+      const abilityVersionResult = await store.dispatch(
+        api.endpoints.createAbilityVersion.initiate({
+          packageName: abilityPackageName,
           version: '1.0.1',
-          toolVersionCreate: toolVersionData,
+          abilityVersionCreate: abilityVersionData,
         }),
       );
 
-      verboseLog(toolVersionResult);
-      expect(toolVersionResult).not.toHaveProperty('error');
+      verboseLog(abilityVersionResult);
+      expect(abilityVersionResult).not.toHaveProperty('error');
 
-      const getToolVersion = await store.dispatch(
-        api.endpoints.getToolVersion.initiate({
-          packageName: toolPackageName,
+      const getAbilityVersion = await store.dispatch(
+        api.endpoints.getAbilityVersion.initiate({
+          packageName: abilityPackageName,
           version: '1.0.1',
         }),
       );
 
-      const { data: toolVersionResultData } = getToolVersion;
-      expectAssertObject(toolVersionResultData);
+      const { data: abilityVersionResultData } = getAbilityVersion;
+      expectAssertObject(abilityVersionResultData);
 
-      expect(toolVersionResultData).toHaveProperty('policiesNotInRegistry');
-      expectAssertArray(toolVersionResultData.policiesNotInRegistry);
-      expect(toolVersionResultData.policiesNotInRegistry).toContain(`${policyPackageName}@1.0.1`);
+      expect(abilityVersionResultData).toHaveProperty('policiesNotInRegistry');
+      expectAssertArray(abilityVersionResultData.policiesNotInRegistry);
+      expect(abilityVersionResultData.policiesNotInRegistry).toContain(
+        `${policyPackageName}@1.0.1`,
+      );
     });
 
-    it('should successfully register tool v1.0.1 after registering policy v1.0.1', async () => {
-      // Delete the tool if it exists
+    it('should successfully register ability v1.0.1 after registering policy v1.0.1', async () => {
+      // Delete the ability if it exists
       try {
-        await store.dispatch(api.endpoints.deleteTool.initiate({ packageName: toolPackageName }));
+        await store.dispatch(
+          api.endpoints.deleteAbility.initiate({ packageName: abilityPackageName }),
+        );
       } catch (error) {
-        // Ignore errors if the tool doesn't exist
+        // Ignore errors if the ability doesn't exist
       }
       store.dispatch(api.util.resetApiState());
 
-      // Now create the tool that depends on the policy
+      // Now create the ability that depends on the policy
       await store.dispatch(
-        api.endpoints.createTool.initiate({
-          packageName: toolPackageName,
-          toolCreate: toolData,
+        api.endpoints.createAbility.initiate({
+          packageName: abilityPackageName,
+          abilityCreate: abilityData,
         }),
       );
 
@@ -192,29 +200,29 @@ describe('Supported Policies Integration Tests', () => {
       verboseLog(policyVersionResult);
       expect(policyVersionResult).not.toHaveProperty('error');
 
-      // Now try to create tool version 1.0.1 again
-      const toolVersionResult = await store.dispatch(
-        api.endpoints.createToolVersion.initiate({
-          packageName: toolPackageName,
+      // Now try to create ability version 1.0.1 again
+      const abilityVersionResult = await store.dispatch(
+        api.endpoints.createAbilityVersion.initiate({
+          packageName: abilityPackageName,
           version: '1.0.1',
-          toolVersionCreate: toolVersionData,
+          abilityVersionCreate: abilityVersionData,
         }),
       );
 
-      verboseLog(toolVersionResult);
-      expect(toolVersionResult).not.toHaveProperty('error');
+      verboseLog(abilityVersionResult);
+      expect(abilityVersionResult).not.toHaveProperty('error');
 
-      const { data: toolVersionResultData } = toolVersionResult;
-      expectAssertObject(toolVersionResultData);
+      const { data: abilityVersionResultData } = abilityVersionResult;
+      expectAssertObject(abilityVersionResultData);
 
       // Verify supportedPolicies contains the policy
-      expect(toolVersionResultData).toHaveProperty('supportedPolicies');
-      expect(toolVersionResultData.supportedPolicies).toHaveProperty(policyPackageName);
-      expect(toolVersionResultData.supportedPolicies[policyPackageName]).toBe('1.0.1');
+      expect(abilityVersionResultData).toHaveProperty('supportedPolicies');
+      expect(abilityVersionResultData.supportedPolicies).toHaveProperty(policyPackageName);
+      expect(abilityVersionResultData.supportedPolicies[policyPackageName]).toBe('1.0.1');
 
       // Verify policiesNotInRegistry is empty
-      expect(toolVersionResultData).toHaveProperty('policiesNotInRegistry');
-      expect(toolVersionResultData.policiesNotInRegistry).toHaveLength(0);
+      expect(abilityVersionResultData).toHaveProperty('policiesNotInRegistry');
+      expect(abilityVersionResultData.policiesNotInRegistry).toHaveLength(0);
     });
   });
 });

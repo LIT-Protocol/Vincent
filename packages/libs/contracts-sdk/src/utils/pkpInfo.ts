@@ -9,7 +9,7 @@ const PUBKEY_ROUTER_ABI = [
 ];
 
 // FIXME: Use the js-sdk contracts-sdk instead, once we get tree-shaking under control.
-// FIXME: Right now, importing the contracts-sdk would make _every_ vincent tool and policy LA import all network ABIs which is multiple-MBs of source
+// FIXME: Right now, importing the contracts-sdk would make _every_ vincent ability and policy LA import all network ABIs which is multiple-MBs of source
 
 /**
  * Get the PKP token ID for a given PKP Ethereum address

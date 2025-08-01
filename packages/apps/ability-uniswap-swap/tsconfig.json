@@ -1,0 +1,25 @@
+{
+  "extends": "../../../tsconfig.base.json",
+  "files": [],
+  "include": [],
+  "references": [
+    {
+      "path": "../../libs/ability-sdk"
+    },
+    {
+      "path": "../policy-spending-limit"
+    },
+    {
+      "path": "../../libs/app-sdk"
+    },
+    {
+      "path": "./tsconfig.lib.json"
+    },
+    {
+      "path": "./tsconfig.spec.json"
+    },
+    {
+      "path": "./test/tsconfig.spec.json"
+    }
+  ]
+}

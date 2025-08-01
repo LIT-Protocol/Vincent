@@ -1,0 +1,54 @@
+{
+  "name": "abilities-e2e",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/apps/abilities-e2e/src",
+  "projectType": "application",
+  "tags": [],
+  "targets": {
+    "clean": {},
+    "test": {
+      "command": "echo 'Test target disabled for this project - only \"test-e2e\"'"
+    },
+    "test-e2e-deploy-abilityPolicies-in-other-projects-and-build-dist": {
+      "dependsOn": [
+        "policy-spending-limit:action:deploy",
+        "ability-uniswap-swap:action:deploy",
+        "ability-erc20-approval:action:deploy",
+        "ability-transaction-signer:action:deploy",
+        "policy-contract-whitelist:action:deploy",
+        "^build"
+      ]
+    },
+    "test-e2e": {
+      "dependsOn": ["test-e2e-deploy-abilityPolicies-in-other-projects-and-build-dist"],
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/test-output/jest/{projectRoot}"],
+      "options": {
+        "jestConfig": "{projectRoot}/jest.config.js"
+      }
+    },
+    "action:build": {
+      "dependsOn": ["ability-sdk:build"],
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": ["node scripts/buildAllActions.js"],
+        "cwd": "packages/apps/abilities-e2e"
+      }
+    },
+    "action:only:deploy": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": ["node scripts/deployAllActions.js"],
+        "cwd": "packages/apps/abilities-e2e"
+      }
+    },
+    "action:deploy": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["action:build"],
+      "options": {
+        "commands": ["node scripts/deployAllActions.js"],
+        "cwd": "packages/apps/abilities-e2e"
+      }
+    }
+  }
+}

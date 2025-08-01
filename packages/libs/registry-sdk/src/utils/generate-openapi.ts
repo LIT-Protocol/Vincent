@@ -3,13 +3,13 @@ import path from 'path';
 
 import { OpenApiGeneratorV3 } from '@asteasolutions/zod-to-openapi';
 
+import { addToRegistry as addAbilityToRegistry } from '../lib/openApi/ability';
 import { addToRegistry as addAppToRegistry } from '../lib/openApi/app';
 import { registry } from '../lib/openApi/baseRegistry';
 import { addToRegistry as addPolicyToRegistry } from '../lib/openApi/policy';
-import { addToRegistry as addToolToRegistry } from '../lib/openApi/tool';
 
 addAppToRegistry(registry);
-addToolToRegistry(registry);
+addAbilityToRegistry(registry);
 addPolicyToRegistry(registry);
 
 const generator = new OpenApiGeneratorV3(registry.definitions);
@@ -19,7 +19,7 @@ const openApiDocument = generator.generateDocument({
   info: {
     title: 'Vincent Registry API',
     version: '1.0.3',
-    description: 'API for Vincent App, Tool, and Policy Registry',
+    description: 'API for Vincent App, Ability, and Policy Registry',
   },
   servers: [
     { url: 'https://staging.registry.heyvincent.ai' },

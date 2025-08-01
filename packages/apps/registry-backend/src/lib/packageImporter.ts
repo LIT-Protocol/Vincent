@@ -57,9 +57,9 @@ export interface ImportPackageOptions {
   version: string;
 
   /**
-   * Type of package (tool or policy)
+   * Type of package (ability or policy)
    */
-  type: 'tool' | 'policy';
+  type: 'ability' | 'policy';
 }
 
 /**
@@ -145,17 +145,17 @@ async function downloadAndExtractPackage(
 /**
  * Reads metadata from a package
  * @param packageDir Path to the extracted package
- * @param type Type of package (tool or policy)
+ * @param type Type of package (ability or policy)
  * @returns Package metadata
  */
 async function readPackageMetadata(
   packageDir: string,
-  type: 'tool' | 'policy',
+  type: 'ability' | 'policy',
 ): Promise<PackageMetadata> {
   debugLog('Reading package metadata', { packageDir, type });
 
   const metadataFileName =
-    type === 'tool' ? 'vincent-tool-metadata.json' : 'vincent-policy-metadata.json';
+    type === 'ability' ? 'vincent-ability-metadata.json' : 'vincent-policy-metadata.json';
   const metadataPath = path.join(packageDir, 'dist/src/generated/', metadataFileName);
 
   debugLog('Metadata file path determined', { metadataFileName, metadataPath });

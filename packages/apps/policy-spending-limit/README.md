@@ -1,15 +1,15 @@
 # Vincent Policy Spending Limit
 
-A policy that can be attached to Vincent tools to avoid them spending more than a user-defined limit in a specific period of time.
+A policy that can be attached to Vincent abilities to avoid them spending more than a user-defined limit in a specific period of time.
 
 ## Overview
 
-The Vincent Policy Spending Limit is part of the Vincent Tools ecosystem and is built using the Vincent Tool SDK. It allows users to set spending limits for tools that interact with their funds, providing an additional layer of security and control.
+The Vincent Policy Spending Limit is part of the Vincent Abilities ecosystem and is built using the Vincent Ability SDK. It allows users to set spending limits for abilities that interact with their funds, providing an additional layer of security and control.
 
 ## Features
 
 - Set maximum spending limits per period
-- Track spending across multiple tools
+- Track spending across multiple abilities
 - Configurable by users through the Vincent Dashboard
 
 ## Installation
@@ -20,30 +20,30 @@ npm install @lit-protocol/vincent-policy-spending-limit
 
 ## Usage
 
-This policy can be integrated with Vincent Tools to enforce spending limits:
+This policy can be integrated with Vincent Abilities to enforce spending limits:
 
 ```typescript
 import {
-  createVincentToolPolicy,
-  createVincentTool,
-  supportedPoliciesForTool,
-} from '@lit-protocol/vincent-tool-sdk';
+  createVincentAbilityPolicy,
+  createVincentAbility,
+  supportedPoliciesForAbility,
+} from '@lit-protocol/vincent-ability-sdk';
 import { bundledVincentPolicy } from '@lit-protocol/vincent-policy-spending-limit';
 
-const toolParamsSchema = z.object({
+const abilityParamsSchema = z.object({
   buy: z.boolean(),
 });
 
-const spendingLimitPolicy = createVincentToolPolicy({
-  toolParamsSchema,
+const spendingLimitPolicy = createVincentAbilityPolicy({
+  abilityParamsSchema,
   bundledVincentPolicy,
-  toolParameterMappings: { buy: 'buyAmount' },
+  abilityParameterMappings: { buy: 'buyAmount' },
 });
 
-export const myTokenSwapTool = createVincentTool({
-  toolParamsSchema,
-  supportedPolicies: supportedPoliciesForTool([spendingLimitPolicy]),
-  // ... rest of tool implementation
+export const myTokenSwapAbility = createVincentAbility({
+  abilityParamsSchema,
+  supportedPolicies: supportedPoliciesForAbility([spendingLimitPolicy]),
+  // ... rest of ability implementation
 });
 ```
 

@@ -1,7 +1,13 @@
 import { useNavigate } from 'react-router';
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/shared/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/shared/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/shared/ui/card';
 import { formatDate } from '@/utils/developer-dashboard/formatDateAndTime';
 import { UndeletePolicyButton } from '../wrappers';
 import { Policy } from '@/types/developer-dashboard/appTypes';
@@ -42,7 +48,7 @@ export function PolicyListView({ policies, deletedPolicies }: PolicyListViewProp
               key={policy.packageName}
               className="cursor-pointer hover:shadow-md transition-shadow"
               onClick={() =>
-                navigate(`/developer/policyId/${encodeURIComponent(policy.packageName)}`)
+                navigate(`/developer/policy/${encodeURIComponent(policy.packageName)}`)
               }
             >
               <CardHeader>
@@ -71,7 +77,7 @@ export function PolicyListView({ policies, deletedPolicies }: PolicyListViewProp
       {deletedPolicies && deletedPolicies.length > 0 && (
         <div className="space-y-4">
           <div className="border-t pt-6">
-            <h3 className="text-lg font-medium text-gray-600 mb-4">Deleted Tools</h3>
+            <h3 className="text-lg font-medium text-gray-600 mb-4">Deleted Abilities</h3>
             <div className="grid grid-cols-1 gap-4">
               {deletedPolicies.map((policy) => (
                 <Card key={policy.packageName} className="border-dashed">

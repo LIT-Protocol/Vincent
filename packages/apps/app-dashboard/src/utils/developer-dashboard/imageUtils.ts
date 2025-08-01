@@ -10,9 +10,9 @@ export interface ImageUploadResult {
 }
 
 export const DEFAULT_IMAGE_OPTIONS: ImageValidationOptions = {
-  allowedTypes: ['image/jpeg', 'image/jpg', 'image/gif'],
-  maxSize: 5 * 1024 * 1024, // 5MB
-  requireSquare: true,
+  allowedTypes: ['image/svg+xml'],
+  maxSize: 128 * 1024, // 128KB
+  requireSquare: false, // SVGs don't have inherent dimensions like raster images
 };
 
 /**
@@ -34,7 +34,7 @@ export const processImageUpload = async (
 
   // Validate file size
   if (maxSize && file.size > maxSize) {
-    throw new Error(`File size must be less than ${Math.round(maxSize / (1024 * 1024))}MB`);
+    throw new Error(`File size must be less than ${Math.round(maxSize / 1024)}KB`);
   }
 
   // Create preview URL

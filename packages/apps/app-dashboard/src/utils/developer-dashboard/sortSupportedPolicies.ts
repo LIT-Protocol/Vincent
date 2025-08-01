@@ -1,13 +1,16 @@
-import { Policy, ToolVersion } from '@/types/developer-dashboard/appTypes';
+import { Policy, AbilityVersion } from '@/types/developer-dashboard/appTypes';
 
-export const sortedSupportedPolicies = (allPolicies: Policy[], toolVersionData: ToolVersion) => {
-  if (!toolVersionData.supportedPolicies) {
+export const sortedSupportedPolicies = (
+  allPolicies: Policy[],
+  abilityVersionData: AbilityVersion,
+) => {
+  if (!abilityVersionData.supportedPolicies) {
     return [];
   }
 
-  const supportedPolicyNames = Array.isArray(toolVersionData.supportedPolicies)
-    ? toolVersionData.supportedPolicies
-    : Object.keys(toolVersionData.supportedPolicies);
+  const supportedPolicyNames = Array.isArray(abilityVersionData.supportedPolicies)
+    ? abilityVersionData.supportedPolicies
+    : Object.keys(abilityVersionData.supportedPolicies);
 
   return allPolicies.filter((policy: Policy) =>
     (supportedPolicyNames as string[]).includes(policy.packageName),

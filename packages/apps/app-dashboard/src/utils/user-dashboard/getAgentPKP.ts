@@ -6,7 +6,7 @@ import { SELECTED_LIT_NETWORK } from './lit';
  * Get Agent PKP for a user address
  *
  * Finds an Agent PKP owned by the user that is different from their current PKP.
- * This is used for consent delegation and other agent-related operations.
+ * This is used for connect delegation and other agent-related operations.
  *
  * @param userAddress The ETH address of the user's current PKP
  * @returns Promise<IRelayPKP> The Agent PKP details, or null if none found

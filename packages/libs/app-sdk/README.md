@@ -12,34 +12,34 @@ npm install @lit-protocol/vincent-app-sdk
 
 ## WebAuthClient
 
-The Vincent Web Auth Client provides methods for managing user authentication, JWT tokens, and consent flows in Vincent applications.
+The Vincent Web Auth Client provides methods for managing user authentication, JWT tokens, and connect flows in Vincent applications.
 
 ### Methods
 
-#### redirectToConsentPage()
+#### redirectToConnectPage()
 
-Redirects the user to the Vincent consent page to obtain authorization. Once the user has completed the vincent consent flow
+Redirects the user to the Vincent connect page to obtain authorization. Once the user has completed the vincent connect flow
 they will be redirected back to your app with a signed JWT that you can use to authenticate requests against your backend APIs
 
 - When a JWT is expired, you need to use this method to get a new JWT
 
-#### isLoginUri()
+#### uriContainsVincentJWT()
 
-Checks if the current window location contains a Vincent login JWT. You can use this method to know that you should update login state with the newly provided JWT
+Checks if the current window location contains a Vincent connect JWT. You can use this method to know that you should update connect state with the newly provided JWT
 
-- Returns: Boolean indicating if the URI contains a login JWT
+- Returns: Boolean indicating if the URI contains a connect JWT
 
-#### decodeVincentLoginJWT(expectedAudience)
+#### decodeVincentJWT(expectedAudience)
 
-Decodes a Vincent login JWT. Performs basic sanity check but does not perform full verify() logic. You will want to run `verify()` from the jwt tools to verify the JWT is fully valid and not expired etc.
+Decodes a Vincent connect JWT. Performs basic sanity check but does not perform full verify() logic. You will want to run `verify()` from the jwt abilities to verify the JWT is fully valid and not expired etc.
 
 - The expected audience is typically your app's domain -- it should be one of your valid redirectUri values from your Vincent app configuration
 
 - Returns: An object containing both the original JWT string and the decoded JWT object
 
-#### removeLoginJWTFromURI()
+#### removeVincentJWTFromURI()
 
-Removes the login JWT parameter from the current URI. Call this after you have verified and stored the JWT for later usage.
+Removes the connect JWT parameter from the current URI. Call this after you have verified and stored the JWT for later usage.
 
 ### Basic Usage
 
@@ -49,9 +49,9 @@ import { isExpired } from '@lit-protocol/vincent-app-sdk/jwt';
 
 const vincentAppClient = getWebAuthClient({ appId: MY_APP_ID });
 // ... In your app logic:
-if (vincentAppClient.isLogin()) {
+if (vincentAppClient.uriContainsVincentJWT()) {
   // Handle app logic for the user has just logged in
-  const { decoded, jwt } = vincentAppClient.decodeVincentLoginJWT(window.location.origin);
+  const { decoded, jwt } = vincentAppClient.decodeVincentJWT(window.location.origin);
   // Store `jwt` for later usage; the user is now logged in.
 } else {
   // Handle app logic for the user is _already logged in_ (check for stored & unexpired JWT)
@@ -59,12 +59,12 @@ if (vincentAppClient.isLogin()) {
   const jwt = localStorage.getItem('VINCENT_AUTH_JWT');
   if (jwt && isExpired(jwt)) {
     // User must re-log in
-    vincentAppClient.redirectToConsentPage({ redirectUri: window.location.href });
+    vincentAppClient.redirectToConnectPage({ redirectUri: window.location.href });
   }
 
   if (!jwt) {
     // Handle app logic for the user is not yet logged in
-    vincentAppClient.redirectToConsentPage({ redirectUri: window.location.href });
+    vincentAppClient.redirectToConnectPage({ redirectUri: window.location.href });
   }
 }
 ```
@@ -73,63 +73,63 @@ if (vincentAppClient.isLogin()) {
 
 In your backend, you will have to verify the JWT to make sure the user has granted you the required permissions to act on their behalf.
 
-## VincentToolClient
+## VincentAbilityClient
 
-The Vincent Tool Client uses an ethers signer for your delegatee account to run Vincent Tools on behalf of your app users.
+The Vincent Ability Client uses an ethers signer for your delegatee account to run Vincent Abilities on behalf of your app users.
 
-This client will typically be used by an AI agent or your app backend service, as it requires a signer that conforms to the ethers v5 signer API, and with access to your delegatee account's private key to authenticate with the LIT network when executing the Vincent Tool.
+This client will typically be used by an AI agent or your app backend service, as it requires a signer that conforms to the ethers v5 signer API, and with access to your delegatee account's private key to authenticate with the LIT network when executing the Vincent Ability.
 
 ### Configuration
 
 ```typescript
-interface VincentToolClientConfig {
+interface VincentAbilityClientConfig {
   ethersSigner: ethers.Signer; // An ethers v5 compatible signer
-  vincentToolCid: string; // The CID of the Vincent Tool to execute
+  vincentAbilityCid: string; // The CID of the Vincent Ability to execute
 }
 ```
 
 ### Methods
 
-#### execute(params: VincentToolParams): Promise<ExecuteJsResponse>
+#### execute(params: VincentAbilityParams): Promise<ExecuteJsResponse>
 
-Executes a Vincent Tool with the provided parameters.
+Executes a Vincent Ability with the provided parameters.
 
-- `params`: Record<string, unknown> - Parameters to pass to the Vincent Tool
+- `params`: Record<string, unknown> - Parameters to pass to the Vincent Ability
 - Returns: Promise resolving to an ExecuteJsResponse from the LIT network
 
-### Tool execution
+### Ability execution
 
 ```typescript
-import { getVincentToolClient } from '@lit-protocol/vincent-app-sdk/toolClient';
-// Import the tool you want to execute
-import { bundledVincentTool as erc20BundledTool } from '@lit-protocol/vincent-tool-erc20-approval';
+import { getVincentAbilityClient } from '@lit-protocol/vincent-app-sdk/abilityClient';
+// Import the ability you want to execute
+import { bundledVincentAbility as erc20BundledAbility } from '@lit-protocol/vincent-ability-erc20-approval';
 
 // One of delegatee signers from your app's Vincent Dashboard
 const delegateeSigner = new ethers.Wallet('YOUR_DELEGATEE_PRIVATE_KEY');
 
-// Initialize the Vincent Tool Client
-const toolClient = getVincentToolClient({
+// Initialize the Vincent Ability Client
+const abilityClient = getVincentAbilityClient({
   ethersSigner: delegateeSigner,
-  bundledVincentTool: erc20BundledTool,
+  bundledVincentAbility: erc20BundledAbility,
 });
 const delegatorPkpEthAddress = '0x09182301238';
 
-const toolParams = {
-  // Fill with the params your tool needs
+const abilityParams = {
+  // Fill with the params your ability needs
 };
 
-// Run precheck to see if tool should be executed
-const precheckResult = await client.precheck(toolParams, {
+// Run precheck to see if ability should be executed
+const precheckResult = await client.precheck(abilityParams, {
   delegatorPkpEthAddress,
 });
 
 if (precheckResult.success === true) {
-  // Execute the Vincent Tool
-  const executeResult = await client.execute(toolParams, {
+  // Execute the Vincent Ability
+  const executeResult = await client.execute(abilityParams, {
     delegatorPkpEthAddress,
   });
 
-  // ...tool has executed, you can check `executeResult` for details
+  // ...ability has executed, you can check `executeResult` for details
 }
 ```
 
@@ -176,13 +176,13 @@ app.get('/profile', authenticateUser, authenticatedRequestHandler(getUserProfile
 
 ### Overview
 
-The JWT authentication system in Vincent SDK allows for secure communication between user applications and Vincent Tools. JWTs are used to verify user consent and authorize tool executions.
+The JWT authentication system in Vincent SDK allows for secure communication between user applications and Vincent Abilities. JWTs are used to verify user connect and authorize ability executions.
 
 ### Authentication Flow
 
-1. User initiates an action requiring Vincent Tool access
-2. Application redirects to the Vincent consent page using `VincentWebAppClient.redirectToConsentPage()`
-3. User provides consent for the requested tools/policies
+1. User initiates an action requiring Vincent Ability access
+2. Application redirects to the Vincent connect page using `VincentWebAppClient.redirectToConnectPage()`
+3. User provides login for the requested abilities/policies
 4. User is redirected back to the application with a JWT in the URL
 5. Application validates and stores the JWT using `VincentWebAppClient` methods
 6. JWT is used to authenticate with the app backend
@@ -202,7 +202,7 @@ When JWT validation fails, descriptive error messages are thrown to help with tr
 ### Usage Notes
 
 - JWTs have an expiration time after which they are no longer valid
-- When a JWT expires, redirect the user to the consent page to obtain a new one using the `VincentWebAppClient`
+- When a JWT expires, redirect the user to the connect page to obtain a new one using the `VincentWebAppClient`
 
 ## Release
 

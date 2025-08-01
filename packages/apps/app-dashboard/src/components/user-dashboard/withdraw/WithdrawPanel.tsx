@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTheme } from '@/providers/ThemeProvider';
-import { theme } from '@/components/user-dashboard/consent/ui/theme';
+import { theme } from '@/components/user-dashboard/connect/ui/theme';
 
 import { Button } from '@/components/shared/ui/button';
 
@@ -68,7 +68,9 @@ export const WithdrawPanel: React.FC<WithdrawPanelProps> = ({
               placeholder="0.0"
               className={`flex-1 p-2 border rounded-l ${themeStyles.cardBg} ${themeStyles.cardBorder} ${themeStyles.text}`}
             />
-            <span className={`p-2 ${themeStyles.itemBg} border border-l-0 rounded-r ${themeStyles.cardBorder} ${themeStyles.text}`}>
+            <span
+              className={`p-2 ${themeStyles.itemBg} border border-l-0 rounded-r ${themeStyles.cardBorder} ${themeStyles.text}`}
+            >
               {tokenSymbol || 'ETH'}
             </span>
           </div>

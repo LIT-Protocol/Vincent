@@ -5,7 +5,9 @@ import userViewFacetAbi from '../abis/VincentUserViewFacet.abi.json';
 import { buildDiamondInterface } from './buildDiamondInterface';
 
 // TODO!: Pull from the ABI after re-publishing
-export const VINCENT_DIAMOND_CONTRACT_ADDRESS = '0xa1979393bbe7D59dfFBEB38fE5eCf9BDdFE6f4aD';
+// FIXME: Ensure dev and prod point to different contracts
+export const VINCENT_DIAMOND_CONTRACT_ADDRESS_DEV = '0xa1979393bbe7D59dfFBEB38fE5eCf9BDdFE6f4aD';
+export const VINCENT_DIAMOND_CONTRACT_ADDRESS_PROD = '0xa1979393bbe7D59dfFBEB38fE5eCf9BDdFE6f4aD';
 
 export const COMBINED_ABI = buildDiamondInterface([
   appFacetAbi,

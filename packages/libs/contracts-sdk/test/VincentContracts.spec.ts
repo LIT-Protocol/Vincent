@@ -11,7 +11,7 @@ import { LIT_NETWORK, LIT_ABILITY } from '@lit-protocol/constants';
 import { LitNodeClient } from '@lit-protocol/lit-node-client';
 import { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
 
-import type { AppVersionTools } from '../src/index';
+import type { AppVersionAbilities } from '../src/index';
 
 import {
   registerApp,
@@ -30,8 +30,8 @@ import {
   getAllRegisteredAgentPkpEthAddresses,
   getPermittedAppVersionForPkp,
   getAllPermittedAppIdsForPkp,
-  getAllToolsAndPoliciesForApp,
-  setToolPolicyParameters,
+  getAllAbilitiesAndPoliciesForApp,
+  setAbilityPolicyParameters,
   unPermitApp,
 } from '../src/index';
 import { expectAssertArray, expectAssertObject } from './assertions';
@@ -78,16 +78,16 @@ describe('VincentContracts', () => {
     const delegatees = [ethers.Wallet.createRandom().address];
 
     // Register initial app version
-    const initialVersionTools: AppVersionTools = {
-      toolIpfsCids: [generateRandomIpfsCid()],
-      toolPolicies: [[]],
+    const initialVersionAbilities: AppVersionAbilities = {
+      abilityIpfsCids: [generateRandomIpfsCid()],
+      abilityPolicies: [[]],
     };
     const initialAppVersion = await registerApp({
       signer: appManagerSigner,
       args: {
         appId,
         delegateeAddresses: delegatees,
-        versionTools: initialVersionTools,
+        versionAbilities: initialVersionAbilities,
       },
       overrides: {
         gasLimit: 10000000,
@@ -165,18 +165,18 @@ describe('VincentContracts', () => {
     expect(appByDelegateeResult.delegateeAddresses).toEqual(delegatees);
 
     // Register next app version
-    const nextVersionTools: AppVersionTools = {
-      toolIpfsCids: [initialVersionTools.toolIpfsCids[0], generateRandomIpfsCid()], // one existing & one new tool
-      toolPolicies: [
-        [generateRandomIpfsCid()], // new policy for the existing tool
-        [generateRandomIpfsCid(), generateRandomIpfsCid()], // new policy for the new tool
+    const nextVersionAbilities: AppVersionAbilities = {
+      abilityIpfsCids: [initialVersionAbilities.abilityIpfsCids[0], generateRandomIpfsCid()], // one existing & one new ability
+      abilityPolicies: [
+        [generateRandomIpfsCid()], // new policy for the existing ability
+        [generateRandomIpfsCid(), generateRandomIpfsCid()], // new policy for the new ability
       ],
     };
     const nextAppVersion = await registerNextVersion({
       signer: appManagerSigner,
       args: {
         appId,
-        versionTools: nextVersionTools,
+        versionAbilities: nextVersionAbilities,
       },
     });
     console.log('Next version registration result:', nextAppVersion);
@@ -279,8 +279,8 @@ describe('VincentContracts', () => {
         appVersion: nextAppVersion.newAppVersion,
         // Pre-CBOR2 payload for this case was:
         // permissionData: {
-        //   toolIpfsCids: nextVersionTools.toolIpfsCids,
-        //   policyIpfsCids: nextVersionTools.toolPolicies,
+        //   abilityIpfsCids: nextVersionAbilities.abilityIpfsCids,
+        //   policyIpfsCids: nextVersionAbilities.abilityPolicies,
         //   policyParameterValues: [
         //     ['0xa1781f6d61784461696c795370656e64696e674c696d6974496e55736443656e7473653130303030'], // CBOR2 encoded {"maxDailySpendingLimitInUsdCents": "10000"}
         //     [
@@ -291,17 +291,17 @@ describe('VincentContracts', () => {
         // },
         // PermissionData from user-space should always be POJO
         permissionData: {
-          [nextVersionTools.toolIpfsCids[0]]: {
-            [nextVersionTools.toolPolicies[0][0]]: {
+          [nextVersionAbilities.abilityIpfsCids[0]]: {
+            [nextVersionAbilities.abilityPolicies[0][0]]: {
               maxDailySpendingLimitInUsdCents: '10000',
             },
           },
-          [nextVersionTools.toolIpfsCids[1]]: {
-            [nextVersionTools.toolPolicies[1][0]]: {
+          [nextVersionAbilities.abilityIpfsCids[1]]: {
+            [nextVersionAbilities.abilityPolicies[1][0]]: {
               maxDailySpendingLimitInUsdCents: '50000',
               tokenAddress: '0x4200000000000000000000000000000000000006',
             },
-            // [nextVersionTools.toolPolicies[1][1]]: Omitted entirely rather than `0x`, because it has no params in this case.
+            // [nextVersionAbilities.abilityPolicies[1][1]]: Omitted entirely rather than `0x`, because it has no params in this case.
           },
         },
       },
@@ -341,17 +341,17 @@ describe('VincentContracts', () => {
     console.log('All permitted app ids for pkp result:', allPermittedAppIdsForPkpResult);
     expect(allPermittedAppIdsForPkpResult.length).toBeGreaterThan(0);
 
-    // Get all tools and policies for app
-    const allToolsAndPoliciesForAppResult = await getAllToolsAndPoliciesForApp({
+    // Get all abilities and policies for app
+    const allAbilitiesAndPoliciesForAppResult = await getAllAbilitiesAndPoliciesForApp({
       signer: userSigner,
       args: {
         pkpEthAddress: userSigner.address,
         appId,
       },
     });
-    expectAssertObject(allToolsAndPoliciesForAppResult);
-    console.log('All tools and policies for app result:', allToolsAndPoliciesForAppResult);
-    expect(Object.keys(allToolsAndPoliciesForAppResult).length).toBeGreaterThan(0); // Weak test since the order of the tool is not guaranteed
+    expectAssertObject(allAbilitiesAndPoliciesForAppResult);
+    console.log('All abilities and policies for app result:', allAbilitiesAndPoliciesForAppResult);
+    expect(Object.keys(allAbilitiesAndPoliciesForAppResult).length).toBeGreaterThan(0); // Weak test since the order of the ability is not guaranteed
 
     await litNodeClient.disconnect();
 
@@ -371,24 +371,24 @@ describe('VincentContracts', () => {
     expectAssertArray(delegatedAgentPkpTokenIdsResult);
     expect(delegatedAgentPkpTokenIdsResult.length).toBeGreaterThan(0);
 
-    // Set tool policy parameters
-    const setToolPolicyParametersResult = await setToolPolicyParameters({
+    // Set ability policy parameters
+    const setAbilityPolicyParametersResult = await setAbilityPolicyParameters({
       signer: pkpEthersWallet,
       args: {
         pkpEthAddress: pkpEthersWallet.address,
         appId,
         appVersion: nextAppVersion.newAppVersion,
         // Pre-CBOR2 payload for this case was:
-        // toolIpfsCids: [],
-        // policyIpfsCids: [[nextVersionTools.toolPolicies[1][1]]], // second policy was never set by the Agent
+        // abilityIpfsCids: [],
+        // policyIpfsCids: [[nextVersionAbilities.abilityPolicies[1][1]]], // second policy was never set by the Agent
         // policyParameterValues: [
         //   [
         //     '0xa2781f6d61784461696c795370656e64696e674c696d6974496e55736443656e74736535303030306c746f6b656e41646472657373782a307834323030303030303030303030303030303030303030303030303030303030303030303030303036',
         //   ], //
         // ],
         policyParams: {
-          [nextVersionTools.toolIpfsCids[1]]: {
-            [nextVersionTools.toolPolicies[1][1]]: {
+          [nextVersionAbilities.abilityIpfsCids[1]]: {
+            [nextVersionAbilities.abilityPolicies[1][1]]: {
               maxDailySpendingLimitInUsdCents: '50000',
               tokenAddress: '0x4200000000000000000000000000000000000006',
             },
@@ -396,8 +396,8 @@ describe('VincentContracts', () => {
         },
       },
     });
-    console.log('Set tool policy parameters result:', setToolPolicyParametersResult);
-    expect(setToolPolicyParametersResult).toHaveProperty('txHash');
+    console.log('Set ability policy parameters result:', setAbilityPolicyParametersResult);
+    expect(setAbilityPolicyParametersResult).toHaveProperty('txHash');
 
     // Unpermit app
     const unpermitAppResult = await unPermitApp({

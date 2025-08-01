@@ -2,10 +2,10 @@
 // First, we test the OpenAPI endpoints to ensure the API spec is available
 import './openapi.spec';
 // Then we test the core entity endpoints, in sequence since they all have mutations that could break eachother
-import './tool.spec';
+import './ability.spec';
 import './policy.spec';
 import './app.spec';
-import './appVersionTool.spec';
+import './appVersionAbility.spec';
 import './supportedPolicies.spec';
 import './authorization.spec';
 

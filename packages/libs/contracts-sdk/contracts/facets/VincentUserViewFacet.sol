@@ -52,9 +52,9 @@ contract VincentUserViewFacet is VincentBase {
     error InvalidAppId();
 
     /**
-     * @notice Thrown when an empty tool IPFS CID is provided
+     * @notice Thrown when an empty ability IPFS CID is provided
      */
-    error EmptyToolIpfsCid();
+    error EmptyAbilityIpfsCid();
 
     /**
      * @notice Thrown when a zero address is provided
@@ -67,18 +67,18 @@ contract VincentUserViewFacet is VincentBase {
      */
     error NoRegisteredPkpsFound(address userAddress);
 
-    // Struct to hold the result of tool execution validation and policy retrieval
-    struct ToolExecutionValidation {
-        bool isPermitted; // Whether the delegatee is permitted to use the PKP to execute the tool
+    // Struct to hold the result of ability execution validation and policy retrieval
+    struct AbilityExecutionValidation {
+        bool isPermitted; // Whether the delegatee is permitted to use the PKP to execute the ability
         uint256 appId; // The ID of the app associated with the delegatee
         uint256 appVersion; // The permitted app version
         PolicyWithParameters[] policies; // All policies with their parameters
     }
 
-    // Struct to represent a tool with all its policies and parameters
-    struct ToolWithPolicies {
-        string toolIpfsCid; // The IPFS CID of the tool
-        PolicyWithParameters[] policies; // All policies associated with this tool and their parameters
+    // Struct to represent an ability with all its policies and parameters
+    struct AbilityWithPolicies {
+        string abilityIpfsCid; // The IPFS CID of the ability
+        PolicyWithParameters[] policies; // All policies associated with this ability and their parameters
     }
 
     // Struct to represent a policy with its parameters
@@ -171,15 +171,15 @@ contract VincentUserViewFacet is VincentBase {
     }
 
     /**
-     * @dev Gets all permitted tools, policies, and policy parameters for a specific app and PKP
+     * @dev Gets all permitted abilities, policies, and policy parameters for a specific app and PKP
      * @param pkpTokenId The PKP token ID
      * @param appId The app ID
-     * @return tools An array of tools with their policies and parameters
+     * @return abilities An array of abilities with their policies and parameters
      */
-    function getAllToolsAndPoliciesForApp(uint256 pkpTokenId, uint256 appId)
+    function getAllAbilitiesAndPoliciesForApp(uint256 pkpTokenId, uint256 appId)
         external
         view
-        returns (ToolWithPolicies[] memory tools)
+        returns (AbilityWithPolicies[] memory abilities)
     {
         // Check for invalid PKP token ID and app ID
         if (pkpTokenId == 0) {
@@ -204,40 +204,40 @@ contract VincentUserViewFacet is VincentBase {
 
         // If no version is permitted (appVersion == 0), return an empty array
         if (appVersion == 0) {
-            return new ToolWithPolicies[](0);
+            return new AbilityWithPolicies[](0);
         }
 
         // Get the app version
         VincentAppStorage.AppVersion storage versionedApp =
             as_.appIdToApp[appId].appVersions[getAppVersionIndex(appVersion)];
 
-        // Get all tool hashes for this app version
-        bytes32[] memory toolHashes = versionedApp.toolIpfsCidHashes.values();
-        uint256 toolCount = toolHashes.length;
+        // Get all ability hashes for this app version
+        bytes32[] memory abilityHashes = versionedApp.abilityIpfsCidHashes.values();
+        uint256 abilityCount = abilityHashes.length;
 
         // Create the result array
-        tools = new ToolWithPolicies[](toolCount);
+        abilities = new AbilityWithPolicies[](abilityCount);
 
-        // For each tool, get its policies and parameters
-        for (uint256 i = 0; i < toolCount; i++) {
-            bytes32 toolHash = toolHashes[i];
-            tools[i] = _getToolWithPolicies(toolHash, pkpTokenId, appId, appVersion, versionedApp, us_, ls_);
+        // For each ability, get its policies and parameters
+        for (uint256 i = 0; i < abilityCount; i++) {
+            bytes32 abilityHash = abilityHashes[i];
+            abilities[i] = _getAbilityWithPolicies(abilityHash, pkpTokenId, appId, appVersion, versionedApp, us_, ls_);
         }
 
-        return tools;
+        return abilities;
     }
 
     /**
-     * @dev Validates if a delegatee is permitted to execute a tool with a PKP and returns all relevant policies
+     * @dev Validates if a delegatee is permitted to execute an ability with a PKP and returns all relevant policies
      * @param delegatee The address of the delegatee
      * @param pkpTokenId The PKP token ID
-     * @param toolIpfsCid The IPFS CID of the tool
+     * @param abilityIpfsCid The IPFS CID of the ability
      * @return validation A struct containing validation result and policy information
      */
-    function validateToolExecutionAndGetPolicies(address delegatee, uint256 pkpTokenId, string calldata toolIpfsCid)
+    function validateAbilityExecutionAndGetPolicies(address delegatee, uint256 pkpTokenId, string calldata abilityIpfsCid)
         external
         view
-        returns (ToolExecutionValidation memory validation)
+        returns (AbilityExecutionValidation memory validation)
     {
         // Check for invalid inputs
         if (delegatee == address(0)) {
@@ -248,8 +248,8 @@ contract VincentUserViewFacet is VincentBase {
             revert InvalidPkpTokenId();
         }
 
-        if (bytes(toolIpfsCid).length == 0) {
-            revert EmptyToolIpfsCid();
+        if (bytes(abilityIpfsCid).length == 0) {
+            revert EmptyAbilityIpfsCid();
         }
 
         VincentAppStorage.AppStorage storage as_ = VincentAppStorage.appStorage();
@@ -272,8 +272,8 @@ contract VincentUserViewFacet is VincentBase {
             revert AppHasBeenDeleted(appId);
         }
 
-        // Hash the tool IPFS CID once to avoid repeated hashing
-        bytes32 hashedToolIpfsCid = keccak256(abi.encodePacked(toolIpfsCid));
+        // Hash the ability IPFS CID once to avoid repeated hashing
+        bytes32 hashedAbilityIpfsCid = keccak256(abi.encodePacked(abilityIpfsCid));
 
         // Get the permitted app version for this PKP and app
         uint256 appVersion = us_.agentPkpTokenIdToAgentStorage[pkpTokenId].permittedAppVersion[appId];
@@ -285,31 +285,31 @@ contract VincentUserViewFacet is VincentBase {
 
         validation.appVersion = appVersion;
 
-        // Check if the app version is enabled and the tool is registered for this app version
+        // Check if the app version is enabled and the ability is registered for this app version
         VincentAppStorage.AppVersion storage versionedApp =
             as_.appIdToApp[appId].appVersions[getAppVersionIndex(appVersion)];
 
-        if (!versionedApp.enabled || !versionedApp.toolIpfsCidHashes.contains(hashedToolIpfsCid)) {
+        if (!versionedApp.enabled || !versionedApp.abilityIpfsCidHashes.contains(hashedAbilityIpfsCid)) {
             return validation;
         }
 
-        // If we've reached here, the tool is permitted
+        // If we've reached here, the ability is permitted
         validation.isPermitted = true;
 
-        // Get all policies registered for this tool in the app version
-        EnumerableSet.Bytes32Set storage toolPolicyIpfsCidHashes =
-            versionedApp.toolIpfsCidHashToToolPolicyIpfsCidHashes[hashedToolIpfsCid];
+        // Get all policies registered for this ability in the app version
+        EnumerableSet.Bytes32Set storage abilityPolicyIpfsCidHashes =
+            versionedApp.abilityIpfsCidHashToAbilityPolicyIpfsCidHashes[hashedAbilityIpfsCid];
 
-        // Get all policy hashes for this tool from the app version
-        bytes32[] memory allPolicyHashes = toolPolicyIpfsCidHashes.values();
+        // Get all policy hashes for this ability from the app version
+        bytes32[] memory allPolicyHashes = abilityPolicyIpfsCidHashes.values();
         uint256 policyCount = allPolicyHashes.length;
 
         // Create the policies array
         validation.policies = new PolicyWithParameters[](policyCount);
 
-        // Get the tool policy storage for this PKP, app, app version, and tool
-        mapping(bytes32 => bytes) storage toolPolicyParameterValues =
-            us_.agentPkpTokenIdToAgentStorage[pkpTokenId].toolPolicyParameterValues[appId][appVersion][hashedToolIpfsCid];
+        // Get the ability policy storage for this PKP, app, app version, and ability
+        mapping(bytes32 => bytes) storage abilityPolicyParameterValues =
+            us_.agentPkpTokenIdToAgentStorage[pkpTokenId].abilityPolicyParameterValues[appId][appVersion][hashedAbilityIpfsCid];
 
         // For each policy, get all its parameters
         for (uint256 i = 0; i < policyCount; i++) {
@@ -317,55 +317,55 @@ contract VincentUserViewFacet is VincentBase {
 
             // Get the policy IPFS CID
             validation.policies[i].policyIpfsCid = ls_.ipfsCidHashToIpfsCid[policyHash];
-            validation.policies[i].policyParameterValues = toolPolicyParameterValues[policyHash];
+            validation.policies[i].policyParameterValues = abilityPolicyParameterValues[policyHash];
         }
 
         return validation;
     }
 
     /**
-     * @dev Internal function to get a tool with its policies and parameters
-     * @param toolHash The hash of the tool IPFS CID
+     * @dev Internal function to get an ability with its policies and parameters
+     * @param abilityHash The hash of the ability IPFS CID
      * @param pkpTokenId The PKP token ID
      * @param appId The app ID
      * @param appVersion The app version
      * @param versionedApp The versioned app storage
      * @param us_ The user storage
      * @param ls_ The lit action storage
-     * @return toolWithPolicies The tool with its policies and parameters
+     * @return abilityWithPolicies The ability with its policies and parameters
      */
-    function _getToolWithPolicies(
-        bytes32 toolHash,
+    function _getAbilityWithPolicies(
+        bytes32 abilityHash,
         uint256 pkpTokenId,
         uint256 appId,
         uint256 appVersion,
         VincentAppStorage.AppVersion storage versionedApp,
         VincentUserStorage.UserStorage storage us_,
         VincentLitActionStorage.LitActionStorage storage ls_
-    ) internal view returns (ToolWithPolicies memory toolWithPolicies) {
-        // Get the tool IPFS CID
-        toolWithPolicies.toolIpfsCid = ls_.ipfsCidHashToIpfsCid[toolHash];
+    ) internal view returns (AbilityWithPolicies memory abilityWithPolicies) {
+        // Get the ability IPFS CID
+        abilityWithPolicies.abilityIpfsCid = ls_.ipfsCidHashToIpfsCid[abilityHash];
 
-        // Get all policies registered for this tool in the app version
-        EnumerableSet.Bytes32Set storage toolPolicyIpfsCidHashes =
-            versionedApp.toolIpfsCidHashToToolPolicyIpfsCidHashes[toolHash];
+        // Get all policies registered for this ability in the app version
+        EnumerableSet.Bytes32Set storage abilityPolicyIpfsCidHashes =
+            versionedApp.abilityIpfsCidHashToAbilityPolicyIpfsCidHashes[abilityHash];
 
-        // Get all policy hashes for this tool from the app version
-        bytes32[] memory allPolicyHashes = toolPolicyIpfsCidHashes.values();
+        // Get all policy hashes for this ability from the app version
+        bytes32[] memory allPolicyHashes = abilityPolicyIpfsCidHashes.values();
         uint256 policyCount = allPolicyHashes.length;
 
-        // Create the policies array for this tool
-        toolWithPolicies.policies = new PolicyWithParameters[](policyCount);
+        // Create the policies array for this ability
+        abilityWithPolicies.policies = new PolicyWithParameters[](policyCount);
 
-        // Get the tool policy storage for this PKP, app, and tool
-        mapping(bytes32 => bytes) storage toolPolicyParameterValues =
-            us_.agentPkpTokenIdToAgentStorage[pkpTokenId].toolPolicyParameterValues[appId][appVersion][toolHash];
+        // Get the ability policy storage for this PKP, app, and ability
+        mapping(bytes32 => bytes) storage abilityPolicyParameterValues =
+            us_.agentPkpTokenIdToAgentStorage[pkpTokenId].abilityPolicyParameterValues[appId][appVersion][abilityHash];
 
         // For each policy, get all its parameters
         for (uint256 i = 0; i < policyCount; i++) {
             bytes32 policyHash = allPolicyHashes[i];
-            toolWithPolicies.policies[i].policyIpfsCid = ls_.ipfsCidHashToIpfsCid[policyHash];
-            toolWithPolicies.policies[i].policyParameterValues = toolPolicyParameterValues[policyHash];
+            abilityWithPolicies.policies[i].policyIpfsCid = ls_.ipfsCidHashToIpfsCid[policyHash];
+            abilityWithPolicies.policies[i].policyParameterValues = abilityPolicyParameterValues[policyHash];
         }
     }
 }

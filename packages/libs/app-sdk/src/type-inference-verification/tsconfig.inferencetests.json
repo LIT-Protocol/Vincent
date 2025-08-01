@@ -11,7 +11,7 @@
   },
   "references": [
     {
-      "path": "../../../tool-sdk"
+      "path": "../../../ability-sdk"
     }
   ],
   "include": ["./**/*.ts"],

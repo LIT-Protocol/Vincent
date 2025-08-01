@@ -60,7 +60,7 @@ export const fromPackageJson = z.object({
   }),
 });
 
-// Request body for changing a tool/policy owner
+// Request body for changing an ability/policy owner
 export const changeOwner = z.object({
   authorWalletAddress: z.string().openapi({
     description: 'New owner address',

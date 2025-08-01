@@ -2,19 +2,23 @@ import type { Signer, Overrides } from 'ethers';
 
 import { Contract, BigNumber } from 'ethers';
 
-import {
-  VINCENT_DIAMOND_CONTRACT_ADDRESS,
-  COMBINED_ABI,
-  GAS_ADJUSTMENT_PERCENT,
-} from './constants';
+import { COMBINED_ABI, GAS_ADJUSTMENT_PERCENT } from './constants';
 
 /**
- * Creates an Ethers Contract instance with the provided signer. For internal use only.
- * @param signer - The ethers signer to use for transactions. Could be a standard Ethers Signer or a PKPEthersWallet
+ * Creates an Ethers Contract instance with the provided signer. For internal use / local chain dev only
  * @returns Contract instance to be used internally for calling Vincent Contracts functions
+ *
+ * @internal
+ * @category Internal
  */
-export function createContract(signer: Signer): Contract {
-  return new Contract(VINCENT_DIAMOND_CONTRACT_ADDRESS, COMBINED_ABI, signer);
+export function createContract({
+  signer,
+  contractAddress,
+}: {
+  signer: Signer;
+  contractAddress: string;
+}): Contract {
+  return new Contract(contractAddress, COMBINED_ABI, signer);
 }
 
 /**

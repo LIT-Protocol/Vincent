@@ -16,8 +16,8 @@
 
 - #### Minor schema improvements ([4e092830](https://github.com/LIT-Protocol/Vincent/commit/4e092830))
 
-  - Added minimum lengths for App/Tool/Policy name/title and description/changes. Requirement of unique App `redirectUris`, and Tool title is required
-  - Added `isDeleted` to all App/Tool/Policy objects
+  - Added minimum lengths for App/Ability/Policy name/title and description/changes. Requirement of unique App `redirectUris`, and Ability title is required
+  - Added `isDeleted` to all App/Ability/Policy objects
   - Exports `changeOwner` from the `baseSchemas`
 
 ### ❤️ Thank You
@@ -28,9 +28,9 @@
 
 ### 🚀 Features
 
-- #### Support `deploymentStatus` for Tools and Policies ([72a54eff](https://github.com/LIT-Protocol/Vincent/commit/72a54eff))
+- #### Support `deploymentStatus` for Abilities and Policies ([72a54eff](https://github.com/LIT-Protocol/Vincent/commit/72a54eff))
 
-  - Defined `deploymentStatus` property for Tool and Policy. It defaults to `dev` for new entities.
+  - Defined `deploymentStatus` property for Ability and Policy. It defaults to `dev` for new entities.
 
 ### ❤️ Thank You
 
@@ -42,7 +42,7 @@
 
 - ### Define undelete routes for deletable entities ([6812fa02](https://github.com/LIT-Protocol/Vincent/commit/6812fa02))
 
-  - Added endpoint definitions to support undeletion of `App`, `AppVersion`, `AppVersionTool`, `Tool`, `ToolVersion, `Policy`, and `PolicyVersion`
+  - Added endpoint definitions to support undeletion of `App`, `AppVersion`, `AppVersionAbility`, `Ability`, `AbilityVersion, `Policy`, and `PolicyVersion`
 
 ### ❤️ Thank You
 
@@ -54,7 +54,7 @@
 
 - ### Define new delete endpoints ([ad7c85e9](https://github.com/LIT-Protocol/Vincent/commit/ad7c85e9))
 
-  - Defined delete endpoints for AppVersion, and AppToolVersion, PolicyVersion, and ToolVersion
+  - Defined delete endpoints for AppVersion, and AppAbilityVersion, PolicyVersion, and AbilityVersion
 
 ### ❤️ Thank You
 
@@ -105,7 +105,7 @@
 
 ### 🚀 Features
 
-- Add `policiesNotInRegistry` to `toolVersion` type ([cd6bc46c](https://github.com/LIT-Protocol/Vincent/commit/cd6bc46c))
+- Add `policiesNotInRegistry` to `abilityVersion` type ([cd6bc46c](https://github.com/LIT-Protocol/Vincent/commit/cd6bc46c))
 
 ### ❤️ Thank You
 
@@ -115,7 +115,7 @@
 
 ### 🚀 Features
 
-- Add endpoint to allow editing of `supportedPolicies` for app tools. ([2615143d](https://github.com/LIT-Protocol/Vincent/commit/2615143d))
+- Add endpoint to allow editing of `supportedPolicies` for app abilities. ([2615143d](https://github.com/LIT-Protocol/Vincent/commit/2615143d))
 
 ### ❤️ Thank You
 
@@ -176,11 +176,11 @@
 - Fix regression in OpenAPI spec - remove /api/v1 prefix ([bcc809b7](https://github.com/LIT-Protocol/Vincent/commit/bcc809b7))
 - Fixed the response of POST /policy to only return the Policy, not the PolicyVersion ([455702af](https://github.com/LIT-Protocol/Vincent/commit/455702af))
 
-  Added a new ChangeOwner schema for changing the owner address of tools and policies
+  Added a new ChangeOwner schema for changing the owner address of abilities and policies
   Added appId property on CreateApp. We need this because:
   The contract will generate the unique appId, which is sent by the client to our registry
-  New EditApp schema. The OpenAPI spec was using the schema for CreateApp, but since it'll include an appId, tools, and policies, we can no longer use it. It also removes managerAddress from the schema, since (I believe) we decided that it cannot be changed as the app manager
-  Created a simple GetToolPolicy schema in base.ts. Since the packageName is part of the route parameters and not the request body, we can't have a shared schema for the OpenAPI routes and rendering forms on the FE here. Because of this, we'll use this simple schema for the forms, and it will take the given packageName and use it as a route parameter. I couldn't think of a implementation for this that allows for a shared schema without making packageName part of the request body. This will cover rendering forms for GET tool/policy version(s)
+  New EditApp schema. The OpenAPI spec was using the schema for CreateApp, but since it'll include an appId, abilities, and policies, we can no longer use it. It also removes managerAddress from the schema, since (I believe) we decided that it cannot be changed as the app manager
+  Created a simple GetAbilityPolicy schema in base.ts. Since the packageName is part of the route parameters and not the request body, we can't have a shared schema for the OpenAPI routes and rendering forms on the FE here. Because of this, we'll use this simple schema for the forms, and it will take the given packageName and use it as a route parameter. I couldn't think of a implementation for this that allows for a shared schema without making packageName part of the request body. This will cover rendering forms for GET tool/policy version(s)
 
 - Add `creationSchemas` export with ZOD schemas for creation payloads ([455702af](https://github.com/LIT-Protocol/Vincent/commit/455702af))
 - Add `version` to policy creation schema ([455702af](https://github.com/LIT-Protocol/Vincent/commit/455702af))
@@ -193,7 +193,7 @@
 
 ### 🩹 Fixes
 
-- - Add `version` property to create new tool endpoint ([5266cd2](https://github.com/LIT-Protocol/Vincent/commit/5266cd2))
+- - Add `version` property to create new ability endpoint ([5266cd2](https://github.com/LIT-Protocol/Vincent/commit/5266cd2))
 
 ### ❤️ Thank You
 

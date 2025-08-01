@@ -9,29 +9,29 @@ There are different types of developers in the Vincent ecosystem depending on wh
 
 ## App & Agent Developers
 
-You’re an App & Agent Developer if you're building an app or autonomous agent that uses Vincent Tools & Policies to perform actions on behalf of Vincent Users.
+You’re an App & Agent Developer if you're building an app or autonomous agent that uses Vincent Abilities & Policies to perform actions on behalf of Vincent Users.
 
 [Get started with App & Agent Development](./App-Agent-Developers/Getting-Started.md) and learn how to:
 
 - Create and configure a Vincent App
-- Install and use the Vincent App SDK to execute Vincent Tools governed by user-defined Vincent Policies<!-- TODO Link to SDK -->
+- Install and use the Vincent App SDK to execute Vincent Abilities governed by user-defined Vincent Policies<!-- TODO Link to SDK -->
 
-## Tool Developers
+## Ability Developers
 
-Tool Developers create custom tools that enable Vincent Apps to perform specific actions on behalf of users.
+Ability Developers create custom abilities that enable Vincent Apps to perform specific actions on behalf of users.
 
-[Get started with Tool Development](./Tool-Developers/Getting-Started.md) and learn how to:
+[Get started with Ability Development](./Ability-Developers/Getting-Started.md) and learn how to:
 
-- Install and use the [Vincent Tool SDK](https://www.npmjs.com/package/@lit-protocol/vincent-tool-sdk) to define your custom tool logic
-- Declare the Vincent Policies your tool supports
-- Publish and register your tool for Vincent App developers to use
+- Install and use the [Vincent Ability SDK](https://www.npmjs.com/package/@lit-protocol/vincent-ability-sdk) to define your custom ability logic
+- Declare the Vincent Policies your ability supports
+- Publish and register your ability for Vincent App developers to use
 
 ## Policy Developers
 
-Policy Developers define rules that govern how and when Vincent Tools can be executed by Vincent Apps to execute actions on behalf of Vincent Users.
+Policy Developers define rules that govern how and when Vincent Abilities can be executed by Vincent Apps to execute actions on behalf of Vincent Users.
 
 [Get started with Policy Development](./Policy-Developers/Getting-Started.md) and learn how to:
 
-- Install and use the [Vincent Tool SDK](https://www.npmjs.com/package/@lit-protocol/vincent-tool-sdk) to define your custom policy logic
-- Enable fine-grained, user-defined control over tool execution
+- Install and use the [Vincent Ability SDK](https://www.npmjs.com/package/@lit-protocol/vincent-ability-sdk) to define your custom policy logic
+- Enable fine-grained, user-defined control over ability execution
 - Publish and register your policy for Vincent App developers to use

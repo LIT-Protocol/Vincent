@@ -83,8 +83,8 @@ export async function authenticateWithSiwe(
  * @throws {Error} If the JWT is invalid or doesn't match the expected app ID/version
  */
 export function authenticateWithJwt(jwt: string, appId: number, appVersion: number): string {
-  // @ts-expect-error Env var is defined or this module would have thrown
-  const decodedJwt = verify(jwt, EXPECTED_AUDIENCE);
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const decodedJwt = verify({ jwt, expectedAudience: EXPECTED_AUDIENCE!, requiredAppId: appId });
   const { id, version } = decodedJwt.payload.app;
   if (id !== appId || version !== appVersion) {
     throw new Error('JWT provided is not valid for this Vincent App MCP');
