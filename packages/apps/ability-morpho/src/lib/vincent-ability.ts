@@ -14,17 +14,20 @@ import {
 
 import {
   ERC4626_VAULT_ABI,
+  MORPHO_MARKET_ABI,
   ERC20_ABI,
   isValidAddress,
   parseAmount,
   validateOperationRequirements,
-  executeMorphoOperation,
+  executeMorphoVaultOperation,
+  executeMorphoMarketOperation,
 } from './helpers';
 import { ethers } from 'ethers';
 
 export const vincentAbility = createVincentAbility({
   packageName: '@lit-protocol/vincent-ability-morpho' as const,
-  abilityDescription: 'Withdraw, deposit, or redeem from a Morpho Vault.' as const,
+  abilityDescription:
+    'Interact with Morpho Vaults (deposit, withdraw, redeem) and Markets (supply, withdrawCollateral).' as const,
   abilityParamsSchema,
   supportedPolicies: supportedPoliciesForAbility([]),
 
@@ -41,20 +44,32 @@ export const vincentAbility = createVincentAbility({
         abilityParams,
       });
 
-      const { operation, vaultAddress, amount, onBehalfOf, rpcUrl } = abilityParams;
+      const { operation, contractAddress, marketId, amount, onBehalfOf, rpcUrl } = abilityParams;
 
       // Validate operation
       if (!Object.values(MorphoOperation).includes(operation)) {
         return fail({
           error:
-            '[@lit-protocol/vincent-ability-morpho/precheck] Invalid operation. Must be deposit, withdraw, or redeem',
+            '[@lit-protocol/vincent-ability-morpho/precheck] Invalid operation. Must be vault_deposit, vault_withdraw, vault_redeem, market_supply, or market_withdrawCollateral',
         });
       }
 
-      // Validate vault address
-      if (!isValidAddress(vaultAddress)) {
+      // Check if market operations have required marketId
+      const isMarketOperation = [
+        MorphoOperation.MARKET_SUPPLY,
+        MorphoOperation.MARKET_WITHDRAW_COLLATERAL,
+      ].includes(operation);
+      if (isMarketOperation && !marketId) {
         return fail({
-          error: '[@lit-protocol/vincent-ability-morpho/precheck] Invalid vault address format',
+          error:
+            '[@lit-protocol/vincent-ability-morpho/precheck] Market ID is required for market operations',
+        });
+      }
+
+      // Validate contract address
+      if (!isValidAddress(contractAddress)) {
+        return fail({
+          error: '[@lit-protocol/vincent-ability-morpho/precheck] Invalid contract address format',
         });
       }
 
@@ -92,31 +107,55 @@ export const vincentAbility = createVincentAbility({
       // Get PKP address
       const pkpAddress = delegatorPkpInfo.ethAddress;
 
-      // Get vault info and validate vault exists
-      let vaultAssetAddress: string;
+      // Initialize variables
+      let assetAddress: string;
       let assetDecimals: number;
       let userBalance = '0';
       let allowance = '0';
       let vaultShares = '0';
+      let collateralBalance = '0';
 
       try {
-        const vaultContract = new ethers.Contract(vaultAddress, ERC4626_VAULT_ABI, provider);
-        vaultAssetAddress = await vaultContract.asset();
-        vaultShares = (await vaultContract.balanceOf(pkpAddress)).toString();
+        if (isMarketOperation) {
+          // Handle market operations
+          const marketContract = new ethers.Contract(contractAddress, MORPHO_MARKET_ABI, provider);
 
-        const assetContract = new ethers.Contract(vaultAssetAddress, ERC20_ABI, provider);
-        userBalance = (await assetContract.balanceOf(pkpAddress)).toString();
-        allowance = (await assetContract.allowance(pkpAddress, vaultAddress)).toString();
+          // Get market params from marketId
+          const marketParams = await marketContract.idToMarketParams(marketId);
+          assetAddress =
+            operation === MorphoOperation.MARKET_SUPPLY
+              ? marketParams.loanToken
+              : marketParams.collateralToken;
 
-        if (operation === MorphoOperation.REDEEM) {
-          // we're redeeming shares, so need to use the decimals from the shares contract, not the assets contract
-          assetDecimals = await vaultContract.decimals();
-        } else {
+          // Get user position in the market
+          const position = await marketContract.position(marketId, pkpAddress);
+          collateralBalance = position.collateral.toString();
+
+          // Get asset info
+          const assetContract = new ethers.Contract(assetAddress, ERC20_ABI, provider);
           assetDecimals = await assetContract.decimals();
+          userBalance = (await assetContract.balanceOf(pkpAddress)).toString();
+          allowance = (await assetContract.allowance(pkpAddress, contractAddress)).toString();
+        } else {
+          // Handle vault operations
+          const vaultContract = new ethers.Contract(contractAddress, ERC4626_VAULT_ABI, provider);
+          assetAddress = await vaultContract.asset();
+          vaultShares = (await vaultContract.balanceOf(pkpAddress)).toString();
+
+          const assetContract = new ethers.Contract(assetAddress, ERC20_ABI, provider);
+          userBalance = (await assetContract.balanceOf(pkpAddress)).toString();
+          allowance = (await assetContract.allowance(pkpAddress, contractAddress)).toString();
+
+          if (operation === MorphoOperation.VAULT_REDEEM) {
+            // we're redeeming shares, so need to use the decimals from the shares contract, not the assets contract
+            assetDecimals = await vaultContract.decimals();
+          } else {
+            assetDecimals = await assetContract.decimals();
+          }
         }
       } catch (error) {
         return fail({
-          error: `[@lit-protocol/vincent-ability-morpho/precheck] Invalid vault address or vault not found on network: ${error}`,
+          error: `[@lit-protocol/vincent-ability-morpho/precheck] Invalid contract address or contract not found on network: ${error}`,
         });
       }
 
@@ -130,6 +169,7 @@ export const vincentAbility = createVincentAbility({
         allowance,
         vaultShares,
         convertedAmount,
+        collateralBalance,
       );
 
       if (!operationChecks.valid) {
@@ -141,31 +181,70 @@ export const vincentAbility = createVincentAbility({
       // Estimate gas for the operation
       let estimatedGas = 0;
       try {
-        const vaultContract = new ethers.Contract(vaultAddress, ERC4626_VAULT_ABI, provider);
         const targetAddress = onBehalfOf || pkpAddress;
 
-        switch (operation) {
-          case MorphoOperation.DEPOSIT:
-            estimatedGas = (
-              await vaultContract.estimateGas.deposit(convertedAmount, targetAddress, {
-                from: pkpAddress,
-              })
-            ).toNumber();
-            break;
-          case MorphoOperation.WITHDRAW:
-            estimatedGas = (
-              await vaultContract.estimateGas.withdraw(convertedAmount, pkpAddress, pkpAddress, {
-                from: pkpAddress,
-              })
-            ).toNumber();
-            break;
-          case MorphoOperation.REDEEM:
-            estimatedGas = (
-              await vaultContract.estimateGas.redeem(convertedAmount, pkpAddress, pkpAddress, {
-                from: pkpAddress,
-              })
-            ).toNumber();
-            break;
+        if (isMarketOperation) {
+          const marketContract = new ethers.Contract(contractAddress, MORPHO_MARKET_ABI, provider);
+          const marketParams = await marketContract.idToMarketParams(marketId);
+          const marketParamsTuple = [
+            marketParams.loanToken,
+            marketParams.collateralToken,
+            marketParams.oracle,
+            marketParams.irm,
+            marketParams.lltv,
+          ];
+
+          switch (operation) {
+            case MorphoOperation.MARKET_SUPPLY:
+              estimatedGas = (
+                await marketContract.estimateGas.supply(
+                  marketParamsTuple,
+                  convertedAmount,
+                  0, // shares (0 means all assets)
+                  targetAddress,
+                  '0x', // empty data
+                  { from: pkpAddress },
+                )
+              ).toNumber();
+              break;
+            case MorphoOperation.MARKET_WITHDRAW_COLLATERAL:
+              estimatedGas = (
+                await marketContract.estimateGas.withdrawCollateral(
+                  marketParamsTuple,
+                  convertedAmount,
+                  pkpAddress,
+                  pkpAddress,
+                  { from: pkpAddress },
+                )
+              ).toNumber();
+              break;
+          }
+        } else {
+          const vaultContract = new ethers.Contract(contractAddress, ERC4626_VAULT_ABI, provider);
+
+          switch (operation) {
+            case MorphoOperation.VAULT_DEPOSIT:
+              estimatedGas = (
+                await vaultContract.estimateGas.deposit(convertedAmount, targetAddress, {
+                  from: pkpAddress,
+                })
+              ).toNumber();
+              break;
+            case MorphoOperation.VAULT_WITHDRAW:
+              estimatedGas = (
+                await vaultContract.estimateGas.withdraw(convertedAmount, pkpAddress, pkpAddress, {
+                  from: pkpAddress,
+                })
+              ).toNumber();
+              break;
+            case MorphoOperation.VAULT_REDEEM:
+              estimatedGas = (
+                await vaultContract.estimateGas.redeem(convertedAmount, pkpAddress, pkpAddress, {
+                  from: pkpAddress,
+                })
+              ).toNumber();
+              break;
+          }
         }
       } catch (error) {
         console.warn(
@@ -182,11 +261,12 @@ export const vincentAbility = createVincentAbility({
       // Enhanced validation passed
       const successResult = {
         operationValid: true,
-        vaultValid: true,
+        contractValid: true,
         amountValid: true,
         userBalance,
         allowance,
-        vaultShares,
+        vaultShares: isMarketOperation ? undefined : vaultShares,
+        collateralBalance: isMarketOperation ? collateralBalance : undefined,
         estimatedGas,
       };
 
@@ -210,7 +290,8 @@ export const vincentAbility = createVincentAbility({
     try {
       const {
         operation,
-        vaultAddress,
+        contractAddress,
+        marketId,
         amount,
         onBehalfOf,
         chain,
@@ -222,7 +303,8 @@ export const vincentAbility = createVincentAbility({
 
       console.log('[@lit-protocol/vincent-ability-morpho/execute] Executing Morpho Ability', {
         operation,
-        vaultAddress,
+        contractAddress,
+        marketId,
         amount,
         chain,
       });
@@ -251,17 +333,33 @@ export const vincentAbility = createVincentAbility({
       }
 
       const { chainId } = await provider.getNetwork();
+      const isMarketOperation =
+        operation === MorphoOperation.MARKET_SUPPLY ||
+        operation === MorphoOperation.MARKET_WITHDRAW_COLLATERAL;
 
-      // Get vault asset address and decimals
-      const vaultContract = new ethers.Contract(vaultAddress, ERC4626_VAULT_ABI, provider);
-      const vaultAssetAddress = await vaultContract.asset();
-      const assetContract = new ethers.Contract(vaultAssetAddress, ERC20_ABI, provider);
+      // Get asset address and decimals
+      let assetAddress: string;
       let assetDecimals: number;
-      if (operation === MorphoOperation.REDEEM) {
-        // we're redeeming shares, so need to use the decimals from the shares contract, not the assets contract
-        assetDecimals = await vaultContract.decimals();
-      } else {
+
+      if (isMarketOperation) {
+        const marketContract = new ethers.Contract(contractAddress, MORPHO_MARKET_ABI, provider);
+        const marketParams = await marketContract.idToMarketParams(marketId);
+        assetAddress =
+          operation === MorphoOperation.MARKET_SUPPLY
+            ? marketParams.loanToken
+            : marketParams.collateralToken;
+        const assetContract = new ethers.Contract(assetAddress, ERC20_ABI, provider);
         assetDecimals = await assetContract.decimals();
+      } else {
+        const vaultContract = new ethers.Contract(contractAddress, ERC4626_VAULT_ABI, provider);
+        assetAddress = await vaultContract.asset();
+        const assetContract = new ethers.Contract(assetAddress, ERC20_ABI, provider);
+        if (operation === MorphoOperation.VAULT_REDEEM) {
+          // we're redeeming shares, so need to use the decimals from the shares contract, not the assets contract
+          assetDecimals = await vaultContract.decimals();
+        } else {
+          assetDecimals = await assetContract.decimals();
+        }
       }
 
       console.log('[@lit-protocol/vincent-ability-morpho/execute] Asset decimals:', assetDecimals);
@@ -281,54 +379,108 @@ export const vincentAbility = createVincentAbility({
       const pkpAddress = ethers.utils.computeAddress(pkpPublicKey);
       console.log('[@lit-protocol/vincent-ability-morpho/execute] PKP Address:', pkpAddress);
 
-      // Prepare transaction based on operation
-      let functionName: string;
-      let args: any[];
+      // Prepare and execute transaction based on operation type
+      let txHash: string;
 
-      switch (operation) {
-        case MorphoOperation.DEPOSIT:
-          functionName = 'deposit';
-          args = [convertedAmount, onBehalfOf || pkpAddress];
-          break;
+      if (isMarketOperation) {
+        // Handle market operations
+        const marketContract = new ethers.Contract(contractAddress, MORPHO_MARKET_ABI, provider);
+        const marketParams = await marketContract.idToMarketParams(marketId);
+        const marketParamsTuple = [
+          marketParams.loanToken,
+          marketParams.collateralToken,
+          marketParams.oracle,
+          marketParams.irm,
+          marketParams.lltv,
+        ];
 
-        case MorphoOperation.WITHDRAW:
-          functionName = 'withdraw';
-          args = [convertedAmount, pkpAddress, pkpAddress];
-          break;
+        let functionName: string;
+        let args: any[];
 
-        case MorphoOperation.REDEEM:
-          functionName = 'redeem';
-          args = [convertedAmount, pkpAddress, pkpAddress];
-          break;
+        switch (operation) {
+          case MorphoOperation.MARKET_SUPPLY:
+            functionName = 'supply';
+            args = [
+              marketParamsTuple,
+              convertedAmount,
+              0, // shares (0 means all assets)
+              onBehalfOf || pkpAddress,
+              '0x', // empty data
+            ];
+            break;
 
-        default:
-          throw new Error(`Unsupported operation: ${operation}`);
+          case MorphoOperation.MARKET_WITHDRAW_COLLATERAL:
+            functionName = 'withdrawCollateral';
+            args = [marketParamsTuple, convertedAmount, pkpAddress, pkpAddress];
+            break;
+
+          default:
+            throw new Error(`Unsupported market operation: ${operation}`);
+        }
+
+        txHash = await executeMorphoMarketOperation({
+          provider,
+          pkpPublicKey,
+          marketAddress: contractAddress,
+          marketId: marketId!,
+          functionName,
+          args,
+          chainId,
+          alchemyGasSponsor,
+          alchemyGasSponsorApiKey,
+          alchemyGasSponsorPolicyId,
+        });
+      } else {
+        // Handle vault operations
+        let functionName: string;
+        let args: any[];
+
+        switch (operation) {
+          case MorphoOperation.VAULT_DEPOSIT:
+            functionName = 'deposit';
+            args = [convertedAmount, onBehalfOf || pkpAddress];
+            break;
+
+          case MorphoOperation.VAULT_WITHDRAW:
+            functionName = 'withdraw';
+            args = [convertedAmount, pkpAddress, pkpAddress];
+            break;
+
+          case MorphoOperation.VAULT_REDEEM:
+            functionName = 'redeem';
+            args = [convertedAmount, pkpAddress, pkpAddress];
+            break;
+
+          default:
+            throw new Error(`Unsupported vault operation: ${operation}`);
+        }
+
+        txHash = await executeMorphoVaultOperation({
+          provider,
+          pkpPublicKey,
+          vaultAddress: contractAddress,
+          functionName,
+          args,
+          chainId,
+          alchemyGasSponsor,
+          alchemyGasSponsorApiKey,
+          alchemyGasSponsorPolicyId,
+        });
       }
-
-      // Execute the operation using the unified function
-      const txHash = await executeMorphoOperation({
-        provider,
-        pkpPublicKey,
-        vaultAddress,
-        functionName,
-        args,
-        chainId,
-        alchemyGasSponsor,
-        alchemyGasSponsorApiKey,
-        alchemyGasSponsorPolicyId,
-      });
 
       console.log('[@lit-protocol/vincent-ability-morpho/execute] Morpho operation successful', {
         txHash,
         operation,
-        vaultAddress,
+        contractAddress,
+        marketId,
         amount,
       });
 
       return succeed({
         txHash,
         operation,
-        vaultAddress,
+        contractAddress,
+        marketId: isMarketOperation ? marketId : undefined,
         amount,
         timestamp: Date.now(),
       });

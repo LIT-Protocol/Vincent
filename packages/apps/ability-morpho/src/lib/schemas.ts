@@ -1,12 +1,16 @@
 import { z } from 'zod';
 
 /**
- * Morpho Vault operation types
+ * Morpho operation types for both Vaults and Markets
  */
 export enum MorphoOperation {
-  DEPOSIT = 'deposit',
-  WITHDRAW = 'withdraw',
-  REDEEM = 'redeem',
+  // Vault operations
+  VAULT_DEPOSIT = 'vault_deposit',
+  VAULT_WITHDRAW = 'vault_withdraw',
+  VAULT_REDEEM = 'vault_redeem',
+  // Market operations
+  MARKET_SUPPLY = 'market_supply',
+  MARKET_WITHDRAW_COLLATERAL = 'market_withdrawCollateral',
 }
 
 /**
@@ -15,11 +19,18 @@ export enum MorphoOperation {
 export const abilityParamsSchema = z.object({
   operation: z
     .nativeEnum(MorphoOperation)
-    .describe('The Morpho Vault operation to perform (deposit, withdraw, redeem)'),
-  vaultAddress: z
+    .describe(
+      'The Morpho operation to perform (vault_deposit, vault_withdraw, vault_redeem, market_supply, market_withdrawCollateral)',
+    ),
+  contractAddress: z
     .string()
-    .regex(/^0x[a-fA-F0-9]{40}$/, 'Invalid vault address')
-    .describe('The address of the Morpho Vault contract'),
+    .regex(/^0x[a-fA-F0-9]{40}$/, 'Invalid vault or market contract address')
+    .describe('The address of the Morpho vault or market contract'),
+  marketId: z
+    .string()
+    .regex(/^0x[a-fA-F0-9]{64}$/, 'Invalid market ID')
+    .optional()
+    .describe('The market ID (required for market operations)'),
   amount: z
     .string()
     .regex(/^\d*\.?\d+$/, 'Invalid amount format')
@@ -53,14 +64,20 @@ export const abilityParamsSchema = z.object({
  */
 export const precheckSuccessSchema = z.object({
   operationValid: z.boolean().describe('Whether the requested operation is valid'),
-  vaultValid: z.boolean().describe('Whether the specified vault address is valid'),
+  contractValid: z
+    .boolean()
+    .describe('Whether the specified vault or market contract address is valid'),
   amountValid: z.boolean().describe('Whether the specified amount is valid'),
   userBalance: z.string().optional().describe("The user's current balance of the underlying asset"),
-  allowance: z
+  allowance: z.string().optional().describe('The current allowance approved for the contract'),
+  vaultShares: z
     .string()
     .optional()
-    .describe('The current allowance approved for the vault contract'),
-  vaultShares: z.string().optional().describe("The user's current balance of vault shares"),
+    .describe("The user's current balance of vault shares (for vault operations)"),
+  collateralBalance: z
+    .string()
+    .optional()
+    .describe("The user's collateral balance in the market (for market operations)"),
   estimatedGas: z.number().optional().describe('Estimated gas cost for the operation'),
 });
 
@@ -79,7 +96,10 @@ export const executeSuccessSchema = z.object({
   operation: z
     .nativeEnum(MorphoOperation)
     .describe('The type of Morpho operation that was executed'),
-  vaultAddress: z.string().describe('The address of the vault involved in the operation'),
+  contractAddress: z
+    .string()
+    .describe('The vault or market address of the contract involved in the operation'),
+  marketId: z.string().optional().describe('The market ID for market operations'),
   amount: z.string().describe('The amount of tokens involved in the operation'),
   timestamp: z.number().describe('The Unix timestamp when the operation was executed'),
 });
