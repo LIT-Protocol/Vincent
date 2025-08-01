@@ -6,7 +6,7 @@ import { providers, Wallet } from 'ethers';
 
 import { create } from '@lit-protocol/vincent-app-sdk/jwt';
 import { getClient } from '@lit-protocol/vincent-contracts-sdk';
-// eslint-disable-next-line @nx/enforce-module-boundaries
+ 
 import { nodeClient } from '@lit-protocol/vincent-registry-sdk';
 
 const { vincentApiClientNode, setBaseQueryFn } = nodeClient;

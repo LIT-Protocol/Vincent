@@ -1,4 +1,3 @@
-// @ts-expect-error No types for this pkg
 import normalizePackage from 'normalize-package-data';
 import * as queryRegistry from 'query-registry';
 import { valid, clean } from 'semver';
@@ -65,7 +64,6 @@ export async function getPackageInfo({
 
     const targetVersion = packument.versions[version];
 
-     
     if (!targetVersion) {
       throw new Error(`Could not find ${packageName}@${version} on NPM`);
     }

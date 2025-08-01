@@ -1,7 +1,7 @@
 import { fetchBaseQuery } from '@reduxjs/toolkit/query';
 import { Wallet } from 'ethers';
 
-// eslint-disable-next-line @nx/enforce-module-boundaries
+ 
 import { nodeClient } from '@lit-protocol/vincent-registry-sdk';
 
 import { expectAssertObject, hasError } from '../assertions';

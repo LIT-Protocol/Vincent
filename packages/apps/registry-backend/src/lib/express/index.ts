@@ -6,7 +6,7 @@ import cors from 'cors';
 import { json } from 'express';
 import * as OpenApiValidator from 'express-openapi-validator';
 
-// eslint-disable-next-line @nx/enforce-module-boundaries
+ 
 import { openApiJson } from '@lit-protocol/vincent-registry-sdk';
 
 import { html } from '../../assets/apiHtml.json';

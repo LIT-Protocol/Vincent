@@ -5,6 +5,7 @@ import {
   getVincentAbilityClient,
 } from '@lit-protocol/vincent-app-sdk/abilityClient';
 
+console.log({ getVincentToolClient });
 import { ethers } from 'ethers';
 import type { PermissionData } from '@lit-protocol/vincent-contracts-sdk';
 
