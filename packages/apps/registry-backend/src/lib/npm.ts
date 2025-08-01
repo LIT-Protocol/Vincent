@@ -65,7 +65,7 @@ export async function getPackageInfo({
 
     const targetVersion = packument.versions[version];
 
-     
+
     if (!targetVersion) {
       throw new Error(`Could not find ${packageName}@${version} on NPM`);
     }

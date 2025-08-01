@@ -28,4 +28,4 @@ export function SidebarLogo({ logo, alt }: SidebarLogoProps) {
       />
     </div>
   );
-} 
+}
