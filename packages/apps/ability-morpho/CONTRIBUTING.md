@@ -4,7 +4,7 @@ This document provides guidelines for contributing to the Vincent Ability Morpho
 
 ## Overview
 
-The Vincent Ability Morpho is a ability to send deposit, withdraw or redeem Morpho transactions from a Vincent app on behalf of the delegator. It's part of the Vincent Abilities ecosystem and is built using the Vincent Ability SDK.
+The Vincent Ability Morpho is a ability to send deposit, withdraw or redeem Morpho vault transactions and supply or withdrawCollateral Morpho market transactions from a Vincent app on behalf of the delegator. It's part of the Vincent Abilities ecosystem and is built using the Vincent Ability SDK.
 
 ## Setup
 

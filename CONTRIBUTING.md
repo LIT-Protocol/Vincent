@@ -23,7 +23,7 @@ The Vincent system consists of several key components:
 - **ability-debridge**: An ability to utilize cross-chain bridging through Debridge from a Vincent app on behalf of the delegator.
 - **ability-transaction-signer**: An ability to sign transactions from a Vincent app on behalf of the delegator.
 - **ability-uniswap-swap**: An ability to trigger swaps on Uniswap from a Vincent app on behalf of the delegator.
-- **ability-morpho**: An ability to operate on Morpho vaults from a Vincent app on behalf of the delegator.
+- **ability-morpho**: An ability to operate on Morpho vaults and markets from a Vincent app on behalf of the delegator.
 - **policy-contract-whitelist**: A policy that restricts interactions to a predefined set of whitelisted contract addresses.
 - **policy-send-counter**: A policy that limits the number of transactions that can be sent within a specific time period.
 - **mcp-sdk**: A Model Context Protocol Wrapper that converts any Vincent app into an MCP server that can be connected to any LLM client to provide it with Vincent abilities.

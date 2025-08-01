@@ -1,11 +1,14 @@
 # Vincent Ability Morpho
 
-A ability to interact with Morpho vaults (deposit, withdraw, redeem) from a Vincent app on behalf of the delegator.
+An ability to interact with Morpho vaults (deposit, withdraw, redeem) or markets (supply,
+withdrawCollateral) from a Vincent app on behalf of the delegator.
 
 ## Overview
 
-The Vincent Ability Morpho is part of the Vincent Abilities ecosystem and is built using the Vincent Ability SDK. It allows
-Vincent apps to interact with Morpho vaults on behalf of users, enabling seamless integration with DeFi yield
+The Vincent Ability Morpho is part of the Vincent Abilities ecosystem and is built using the Vincent
+Ability SDK. It allows
+Vincent apps to interact with Morpho vaults on behalf of users, enabling seamless integration with
+DeFi yield
 strategies.
 
 ## Features
@@ -28,7 +31,7 @@ This ability can be used in Vincent apps to interact with Morpho vaults:
 
 ```typescript
 import { getVincentAbilityClient } from '@lit-protocol/vincent-app-sdk/abilityClient';
-import { bundledVincentAbility } from '@lit-protocol/vincent-ability-morpho';
+import { bundledVincentAbility, MorphoOperation } from '@lit-protocol/vincent-ability-morpho';
 
 // One of delegatee signers from your app's Vincent Dashboard
 const delegateeSigner = new ethers.Wallet('YOUR_DELEGATEE_PRIVATE_KEY');
@@ -41,10 +44,11 @@ const abilityClient = getVincentAbilityClient({
 const delegatorPkpEthAddress = '0x09182301238'; // The delegator PKP Eth Address
 
 const abilityParams = {
-  operation: 'deposit', // 'deposit', 'withdraw', or 'redeem'
-  vaultAddress: '0x1234...', // The Morpho vault address
-  amount: '1.0', // Amount to deposit/withdraw/redeem
-  chain: 'base', // The chain where the vault is deployed
+  operation: MorphoOperation.VAULT_DEPOSIT, // The morpho operation, can apply to vault or market
+  marketId: '0x1234...', // The market id. Mandatory for market operations
+  vaultAddress: '0x1234...', // The Morpho vault or market contract address
+  amount: '1.0', // Amount to deposit/withdraw/redeem in the vault or supply/withdrawCollateral in the market
+  chain: 'base', // The chain where the contract is deployed
   onBehalfOf: '0xabcd...', // Optional: address to receive vault shares (defaults to delegator)
 };
 
@@ -81,16 +85,22 @@ The ability supports the following operations on Morpho vaults:
 - **WITHDRAW** - Withdraw assets from a Morpho vault
 - **REDEEM** - Redeem vault shares for underlying assets
 
+And the following operations on Morpho markets:
+
+- **SUPPLY** - Supply collateral to a Morpho market to earn yield
+- **WITHDRAW_COLLATERAL** - Withdraw collateral from a Morpho market
+
 ## Parameters
 
-| Parameter      | Type                                  | Required | Description                                              |
-| -------------- | ------------------------------------- | -------- | -------------------------------------------------------- |
-| `operation`    | `"deposit" \| "withdraw" \| "redeem"` | ✅       | The vault operation to perform                           |
-| `vaultAddress` | `string`                              | ✅       | Morpho vault contract address (0x format)                |
-| `amount`       | `string`                              | ✅       | Amount as string (assets for deposit, shares for redeem) |
-| `chain`        | `string`                              | ✅       | Chain identifier (e.g., "base")                          |
-| `onBehalfOf`   | `string`                              | ❌       | Address to receive tokens (defaults to sender)           |
-| `rpcUrl`       | `string`                              | ❌       | Custom RPC URL (for precheck validation)                 |
+| Parameter      | Type                                                                                                      | Required | Description                                                              |
+| -------------- | --------------------------------------------------------------------------------------------------------- | -------- | ------------------------------------------------------------------------ |
+| `operation`    | `"vault_deposit" \| "vault_withdraw" \| "vault_redeem" \| "market_supply" \| "market_withdrawCollateral"` | ✅       | The vault or market operation to perform. Can use `MorphoOperation` enum |
+| `marketId`     | `string`                                                                                                  | ❌       | The market id. Mandatory for market operations                           |
+| `vaultAddress` | `string`                                                                                                  | ✅       | Morpho vault contract address (0x format)                                |
+| `amount`       | `string`                                                                                                  | ✅       | Amount as string (assets for deposit, shares for redeem)                 |
+| `chain`        | `string`                                                                                                  | ✅       | Chain identifier (e.g., "base")                                          |
+| `onBehalfOf`   | `string`                                                                                                  | ❌       | Address to receive tokens (defaults to sender)                           |
+| `rpcUrl`       | `string`                                                                                                  | ❌       | Custom RPC URL (for precheck validation)                                 |
 
 ## Supported Networks
 
@@ -118,7 +128,8 @@ nx e2e ability-morpho-e2e
 
 ## Contributing
 
-Please see [CONTRIBUTING.md](../../../CONTRIBUTING.md) for guidelines on how to contribute to this project.
+Please see [CONTRIBUTING.md](../../../CONTRIBUTING.md) for guidelines on how to contribute to this
+project.
 
 ## License
 
