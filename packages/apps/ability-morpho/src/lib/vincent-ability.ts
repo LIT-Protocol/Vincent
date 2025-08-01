@@ -333,9 +333,10 @@ export const vincentAbility = createVincentAbility({
       }
 
       const { chainId } = await provider.getNetwork();
-      const isMarketOperation =
-        operation === MorphoOperation.MARKET_SUPPLY ||
-        operation === MorphoOperation.MARKET_WITHDRAW_COLLATERAL;
+      const isMarketOperation = [
+        MorphoOperation.MARKET_SUPPLY,
+        MorphoOperation.MARKET_WITHDRAW_COLLATERAL,
+      ].includes(operation);
 
       // Get asset address and decimals
       let assetAddress: string;
@@ -383,6 +384,12 @@ export const vincentAbility = createVincentAbility({
       let txHash: string;
 
       if (isMarketOperation) {
+        if (!marketId) {
+          return fail({
+            error:
+              '[@lit-protocol/vincent-ability-morpho/execute] Market ID is required for market operations',
+          });
+        }
         // Handle market operations
         const marketContract = new ethers.Contract(contractAddress, MORPHO_MARKET_ABI, provider);
         const marketParams = await marketContract.idToMarketParams(marketId);
@@ -422,7 +429,7 @@ export const vincentAbility = createVincentAbility({
           provider,
           pkpPublicKey,
           marketAddress: contractAddress,
-          marketId: marketId!,
+          marketId,
           functionName,
           args,
           chainId,
