@@ -1,4 +1,4 @@
-import type { VincentJWT, VincentJWTAppSpecific } from '../jwt/types';
+import type { VincentJWTAppUser } from '../jwt/types';
 
 export interface WebAuthClientConfig {
   appId: number;
@@ -16,7 +16,7 @@ export interface RedirectToVincentDelegationPageParams {
  * The Vincent Web Application Client is used in web apps to handle interactions with the Vincent app portal.
  *
  * - Connect page redirection
- * - Authentication helpers that are browser specific
+ * - Authentication helpers that are browser-specific
  *
  */
 export interface WebAuthClient {
@@ -27,7 +27,7 @@ export interface WebAuthClient {
    *
    * Use {@link WebAuthClient.uriContainsVincentJWT} to detect if a user has just opened your app via the Connect page
    *
-   * Use {@link WebAuthClient.decodeVincentJWT} to decode and verify the {@link VincentJWT} from the page URI, and store it for later usage
+   * Use {@link WebAuthClient.decodeVincentJWTFromUri} to decode and verify the {@link VincentJWTAppUser} from the page URI, and store it for later usage
    *
    * NOTE: You must register the `redirectUri` on your Vincent app for it to be considered a valid redirect target
    *
@@ -39,7 +39,7 @@ export interface WebAuthClient {
    * // ... In your app logic:
    * if(vincentAppClient.uriContainsVincentJWT()) {
    *   // Handle app logic for the user has just logged in
-   *   const { decoded, jwtStr } = vincentAppClient.decodeVincentJWT(EXPECTED_AUDIENCE);
+   *   const { decoded, jwtStr } = vincentAppClient.decodeVincentJWTFromUri(EXPECTED_AUDIENCE);
    *   // Store `jwtStr` for later usage; the user is now logged in.
    * } else {
    *   // Handle app logic for the user is already logged in (check for stored & unexpired JWT)
@@ -80,9 +80,9 @@ export interface WebAuthClient {
    * @returns {decodedJWT: VincentJWTAppSpecific; jwtStr: string | null} `null` if no JWT is found, otherwise both the decoded jwt and the original JWT string is returned
    * @throws {Error} If there was a JWT in the page URL, but it was invalid / could not be verified
    */
-  decodeVincentJWT: (
+  decodeVincentJWTFromUri: (
     expectedAudience: string
-  ) => { decodedJWT: VincentJWTAppSpecific; jwtStr: string } | null;
+  ) => Promise<{ decodedJWT: VincentJWTAppUser; jwtStr: string } | null>;
 
   /**
    * Removes the Vincent connect JWT from the current window URI.
@@ -98,7 +98,7 @@ export interface WebAuthClient {
    * const vincentAppClient = getWebAuthClient({ appId: MY_APP_ID });
    *
    * if (vincentAppClient.uriContainsVincentJWT()) {
-   *   const { decodedJWT, jwtStr } = vincentAppClient.decodeVincentJWT();
+   *   const { decodedJWT, jwtStr } = vincentAppClient.decodeVincentJWTFromUri(EXPECTED_AUDIENCE);
    *   // Store the JWT and use it for authentication
    *
    *   // Now we can remove the JWT from the URL searchParams

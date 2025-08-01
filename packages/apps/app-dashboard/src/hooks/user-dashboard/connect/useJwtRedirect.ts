@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { create } from '@lit-protocol/vincent-app-sdk/jwt';
+import { createAppUserJWT } from '@lit-protocol/vincent-app-sdk/jwt';
 import { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
 import { App } from '@/types/developer-dashboard/appTypes';
 import { litNodeClient } from '@/utils/user-dashboard/lit';
@@ -51,10 +51,9 @@ export const useJwtRedirect = ({ readAuthInfo }: UseJwtRedirectProps) => {
         await agentPkpWallet.init();
 
         setLoadingStatus('Signing JWT Token');
-        const jwt = await create({
+        const jwt = await createAppUserJWT({
           pkpWallet: agentPkpWallet,
-          pkp: readAuthInfo.authInfo.agentPKP,
-          payload: {},
+          pkpInfo: readAuthInfo.authInfo.agentPKP,
           expiresInMinutes: VITE_JWT_EXPIRATION_MINUTES,
           audience: app.redirectUris,
           app: {

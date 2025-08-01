@@ -2,7 +2,7 @@ import type { NextFunction, Request, Response } from 'express';
 
 import type { AuthenticatedRequest, AuthenticatedRequestHandler, VincentJWTData } from './types';
 
-import { verify } from '../jwt';
+import { verifyVincentAppUserJWT, verifyVincentPlatformJWT } from '../jwt';
 import { isDefinedObject } from '../jwt/core/utils';
 
 function assertAuthenticatedRequest<const UserKey extends string>(
@@ -130,7 +130,18 @@ function getAuthenticateUserExpressHandler<const UserKey extends string>({
     }
 
     try {
-      const decodedJWT = verify({ jwt: rawJWT, expectedAudience: allowedAudience, requiredAppId });
+      const decodedJWT =
+        requiredAppId !== undefined
+          ? await verifyVincentAppUserJWT({
+              jwt: rawJWT,
+              expectedAudience: allowedAudience,
+              requiredAppId,
+            })
+          : await verifyVincentPlatformJWT({
+              jwt: rawJWT,
+              expectedAudience: allowedAudience,
+            });
+
       if (!decodedJWT) {
         res.status(401).json({ error: 'Invalid token' });
         return;

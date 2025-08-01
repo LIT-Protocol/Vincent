@@ -1,7 +1,7 @@
 /** The `jwt` module provides helper methods that allow you to decode and validate Vincent-specific JWTs.
  *
- * Vincent JWTs are composed using the `did-jwt` library, but have a custom `alg` of `ES256K`, and are signed using
- * PKP ethereum keys.
+ * Vincent JWTs are signed using `alg: ES256K`.  The signed data is EIP191 compliant.
+ *
  *
  * Vincent JWTs are issued by the Vincent Dashboard when a user provides delegation permission for your app to their agent PKP.
  * They are passed to your web app using a redirectUri which you configure on your app.
@@ -12,10 +12,36 @@
  * @packageDocumentation
  *
  */
-export { create } from './core/create';
+export { createPlatformUserJWT, createDelegateeJWT, createAppUserJWT } from './core/create';
 export { isExpired } from './core/isExpired';
-export { decode, verify } from './core/validate';
-export { isGeneralJWT, isAppSpecificJWT, assertIsVincentJWT } from './typeGuards';
+export {
+  verifyVincentAppUserJWT,
+  verifyVincentPlatformJWT,
+  verifyVincentDelegateeJWT,
+} from './core/verify';
+export { isAppUser, isPlatformUser, isAnyVincentJWT, isDelegateee } from './typeGuards';
 
-export type { JWTConfig, VincentJWT, VincentJWTAppSpecific } from './types';
-export { getAppInfo, getPKPInfo } from './accessors';
+export type {
+  DecodedJWT,
+  AnyVincentJWT,
+  VincentJWTPlatformUser,
+  VincentJWTAppUser,
+  VincentJWTDelegatee,
+  VincentJWTRole,
+  CreatePlatformUserJWTParams,
+  CreateAppUserJWTParams,
+  CreateDelegateeJWTParams,
+  PKPAuthenticationMethod,
+  PayloadWithoutInternallySetKeys,
+  InternallySetPayloadKeys,
+} from './types';
+export {
+  getAppInfo,
+  getPKPInfo,
+  getRole,
+  getSubjectAddress,
+  getIssuerAddress,
+  getAudience,
+  getPublicKey,
+  getAuthentication,
+} from './accessors';

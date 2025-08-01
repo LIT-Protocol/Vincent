@@ -1,110 +1,119 @@
-import * as didJWT from 'did-jwt';
-import { ethers } from 'ethers';
-import { arrayify } from 'ethers/lib/utils';
+import { arrayify, splitSignature, toUtf8Bytes } from 'ethers/lib/utils';
 
-import type { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
+import type {
+  CreateAppUserJWTParams,
+  CreateDelegateeJWTParams,
+  CreatePlatformUserJWTParams,
+  CreateJWSConfig,
+  JWTWalletSigner,
+} from '../types';
 
-import type { JWTConfig, BaseVincentJWTPayload } from '../types';
-
+import { VINCENT_JWT_API_VERSION } from '../constants';
 import { toBase64Url } from './utils/base64';
 
-/**
- * Creates a signer function compatible with did-jwt that uses a PKP wallet for signing
- *
- * This function returns a signing function that conforms to the did-jwt library's
- * signer interface. When called, it signs data using the PKP wallet, formatting
- * the signature according to ES256K requirements (without recovery parameter).
- *
- * @param pkpWallet - The PKP Ethers wallet instance that will be used for signing
- * @returns A signing function that takes data and returns a base64url-encoded signature
- * @private
- * @example
- * ```typescript
- * const pkpWallet = new PKPEthersWallet({ ... });
- * const signer = createPKPSigner(pkpWallet);
- * const signature = await signer('data to sign');
- * ```
- */
-function createPKPSigner(pkpWallet: PKPEthersWallet) {
-  /**
-   * The actual signer function conforming to the did-jwt signer interface
-   *
-   * @param data - The data to sign, either as a string or Uint8Array
-   * @returns A promise that resolves to the base64url-encoded signature
-   */
+function createES256KSigner(wallet: JWTWalletSigner) {
   return async (data: string | Uint8Array): Promise<string> => {
-    const dataBytes = typeof data === 'string' ? Uint8Array.from(Buffer.from(data, 'utf8')) : data;
-
-    const sig = await pkpWallet.signMessage(dataBytes);
-    const { r, s } = ethers.utils.splitSignature(sig);
-
-    const rBytes = arrayify(r);
-    const sBytes = arrayify(s);
-
-    // ES256K signature is r and s concatenated (64 bytes total)
+    const messageBytes = typeof data === 'string' ? toUtf8Bytes(data) : data;
+    const sig = await wallet.signMessage(messageBytes);
+    const { r, s } = splitSignature(sig);
     const sigBytes = new Uint8Array(64);
-    sigBytes.set(rBytes, 0);
-    sigBytes.set(sBytes, 32);
-
+    sigBytes.set(arrayify(r), 0);
+    sigBytes.set(arrayify(s), 32);
     return toBase64Url(sigBytes);
   };
 }
 
-/**
- * Creates a JWT signed by a PKP wallet using the ES256K algorithm
- *
- * This function creates a JWT with the provided payload, adding standard claims
- * like iat (issued at), exp (expiration), and iss (issuer). It also includes the
- * PKP public key in the payload, which is used for verification.
- *
- * @param config - Configuration object containing all parameters for JWT creation
- * @returns A promise that resolves to the signed JWT string
- * @hidden
- * @example
- * ```typescript
- * const jwt = await createPKPSignedJWT({
- *   pkpWallet: pkpWallet,
- *   pkp: pkpInfo,
- *   payload: { name: "Lit Protocol User", customField: "value" },
- *   expiresInMinutes: 30, // expires in 30 minutes
- *   audience: "example.com" // audience domain
- * });
- * ```
- */
-export async function create(config: JWTConfig): Promise<string> {
-  const { app, pkpWallet, pkp, payload, expiresInMinutes, audience, authentication } = config;
-  const signer = createPKPSigner(pkpWallet);
+async function createJWS({ payload, wallet, config }: CreateJWSConfig) {
+  const { expiresInMinutes, audience, subjectAddress, role } = config;
 
-  // iat and exp are expressed in seconds https://datatracker.ietf.org/doc/html/rfc7519
   const iat = Math.floor(Date.now() / 1000);
-  const exp = iat + expiresInMinutes * 60;
-
-  const walletAddress = await pkpWallet.getAddress();
-
-  const fullPayload: BaseVincentJWTPayload = {
+  const exp = <number>(payload.nbf || Math.floor(Date.now() / 1000) + expiresInMinutes * 60);
+  const header = { alg: 'ES256K', typ: 'JWT' };
+  const _payload = {
     ...payload,
-    aud: audience,
     iat,
     exp,
-    iss: `did:ethr:${walletAddress}`,
-    pkp,
-    app,
-    authentication: {
-      type: authentication.type,
-      ...(authentication.value ? { value: authentication.value } : {}),
-    },
+    iss: await wallet.getAddress(),
+    publicKey: wallet.publicKey,
+    aud: audience,
+    role,
+    ...(subjectAddress ? { sub: subjectAddress } : {}),
+
+    __vincentJWTApiVersion: VINCENT_JWT_API_VERSION,
   };
 
-  const jwt = await didJWT.createJWT(
-    fullPayload,
-    {
-      issuer: `did:ethr:${walletAddress}`,
-      signer,
-    },
-    {
-      alg: 'ES256K',
-    }
-  );
+  const signingInput = [
+    toBase64Url(toUtf8Bytes(JSON.stringify(header))),
+    toBase64Url(toUtf8Bytes(JSON.stringify(_payload))),
+  ].join('.');
 
-  return jwt;
+  const signature = await createES256KSigner(wallet)(signingInput);
+
+  // JWS Compact Serialization
+  // https://www.rfc-editor.org/rfc/rfc7515#section-7.1
+  return [signingInput, signature].join('.');
+}
+
+/**
+ * Create JWT for a platform user
+ * @category API > Create
+ * */
+export async function createPlatformUserJWT(config: CreatePlatformUserJWTParams): Promise<string> {
+  const { pkpWallet, pkpInfo, authentication, audience, expiresInMinutes, payload = {} } = config;
+
+  return createJWS({
+    payload: {
+      ...payload,
+      pkpInfo,
+      authentication,
+    },
+    wallet: pkpWallet,
+    config: { audience, expiresInMinutes, role: 'platform-user' },
+  });
+}
+
+/** Create JWT for an app-scoped user
+ * @category API > Create
+ * */
+export async function createAppUserJWT(config: CreateAppUserJWTParams): Promise<string> {
+  const {
+    app,
+    pkpWallet,
+    pkpInfo,
+    authentication,
+    audience,
+    expiresInMinutes,
+    payload = {},
+  } = config;
+
+  return createJWS({
+    payload: {
+      ...payload,
+      pkpInfo,
+      app,
+      authentication,
+    },
+    wallet: pkpWallet,
+    config: { audience, expiresInMinutes, role: 'app-user' },
+  });
+}
+
+/**
+ * Creates a JWT for an app delegatee (Ethereum account that may act on behalf of a user).
+ *
+ * If your use-case is to authenticate with a service on behalf of a specific delegator, you must provide a valid `subjectAddress`
+ * which should be a valid delegator for your Delegatee address.
+ *
+ * @category API > Create
+ */
+export async function createDelegateeJWT(config: CreateDelegateeJWTParams): Promise<string> {
+  const { ethersWallet, subjectAddress, audience, expiresInMinutes, payload = {} } = config;
+
+  console.log('Creating delegatee JWT');
+
+  return createJWS({
+    payload,
+    wallet: ethersWallet,
+    config: { audience, expiresInMinutes, subjectAddress, role: 'app-delegatee' },
+  });
 }

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { NextFunction, Request, RequestHandler, Response } from 'express';
 
-import type { VincentJWT } from '../jwt/types';
+import type { VincentJWTAppUser, VincentJWTPlatformUser } from '../jwt/types';
 
 /** Extract the params type from the original Express.js RequestHandler
  *
@@ -35,7 +35,7 @@ export type AuthenticatedRequestHandler<
 ) => void | Promise<void>;
 
 export interface VincentJWTData {
-  decodedJWT: VincentJWT;
+  decodedJWT: VincentJWTPlatformUser | VincentJWTAppUser;
   rawJWT: string;
 }
 

@@ -1,12 +1,12 @@
-import type { VincentJWT } from '../types';
+import type { AnyVincentJWT } from '../types';
 
 /** Checks if a JWT is expired based on its 'exp' claim
  *
  * @returns true if expired, false otherwise
  * @param decodedJWT
- * @category API
+ * @category API > Verify
  */
-export function isExpired(decodedJWT: VincentJWT): boolean {
+export function isExpired(decodedJWT: AnyVincentJWT): boolean {
   const { payload } = decodedJWT;
 
   // Tokens that never expire are treated as expired for security.

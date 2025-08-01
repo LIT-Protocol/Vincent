@@ -1,7 +1,6 @@
 import { SessionSigs } from '@lit-protocol/types';
 import { AuthInfo } from '@/hooks/user-dashboard/useAuthInfo';
-import { create, verify } from '@lit-protocol/vincent-app-sdk/jwt';
-import type { JWTConfig } from '@lit-protocol/vincent-app-sdk/jwt';
+import { createPlatformUserJWT, verifyVincentPlatformJWT } from '@lit-protocol/vincent-app-sdk/jwt';
 import { initPkpSigner } from '@/utils/developer-dashboard/initPkpSigner';
 import { env } from '@/config/env';
 
@@ -42,10 +41,9 @@ export const getCurrentJwt = async (
           localStorage.removeItem(JWT_STORAGE_KEY);
         } else if (Date.now() < data.expiresAt) {
           // Check if token is still valid
-          verify({
+          verifyVincentPlatformJWT({
             jwt: data.token,
             expectedAudience: EXPECTED_AUDIENCE,
-            requiredAppId: undefined,
           });
           return data.token;
         }
@@ -63,9 +61,10 @@ export const getCurrentJwt = async (
     const pkpWallet = await initPkpSigner({ authInfo, sessionSigs });
 
     // Create JWT configuration
-    const jwtConfig: JWTConfig = {
+    // Create JWT using app-SDK
+    const jwt = await createPlatformUserJWT({
       pkpWallet,
-      pkp: authInfo.agentPKP,
+      pkpInfo: authInfo.agentPKP,
       payload: {
         name: 'Vincent Platform User',
       },
@@ -75,10 +74,7 @@ export const getCurrentJwt = async (
         type: authInfo.type,
         ...(authInfo.value ? { value: authInfo.value } : {}),
       },
-    };
-
-    // Create JWT using app-SDK
-    const jwt = await create(jwtConfig);
+    });
 
     const expiresAt = Date.now() + VITE_JWT_EXPIRATION_MINUTES * 60 * 1000;
     const storedData: StoredJWT = { token: jwt, address, expiresAt };
@@ -106,10 +102,9 @@ export const getCurrentJwtTokenForStore = async (): Promise<string | null> => {
 
     // Check if token is still valid
     if (Date.now() < data.expiresAt) {
-      verify({
+      verifyVincentPlatformJWT({
         jwt: data.token,
         expectedAudience: EXPECTED_AUDIENCE,
-        requiredAppId: undefined,
       });
       return data.token;
     }

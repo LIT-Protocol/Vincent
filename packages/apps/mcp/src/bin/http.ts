@@ -211,7 +211,7 @@ app.post('/mcp', async (req: Request, res: Response) => {
           ? // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             await authenticateWithSiwe(message!, signature!)
           : // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            authenticateWithJwt(jwt!, vincentAppDef.id, vincentAppDef.version);
+            await authenticateWithJwt(jwt!, vincentAppDef.id, vincentAppDef.version);
       } catch (e) {
         console.error(`Client authentication failed: ${(e as Error).message}`);
         return sendJsonRPCErrorResponse(

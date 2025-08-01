@@ -41,14 +41,14 @@ In addition to the payload, the JWT also includes:
 - `signature`: A signature from the User’s Agent Wallet proving the JWT was signed using their Agent Wallet
 - `data`: The raw, unsigned payload string used during signing
 
-> **Note:** To access these claims, use [decodeVincentJWT](#decodevincentjwt) in your frontend.
+> **Note:** To access these claims, use [decodeVincentJWTFromUri](#decodevincentjwt) in your frontend.
 
 ## Authentication Flow
 
 1. Your App redirects the user to the Vincent Connect Page using `redirectToConnectPage`
 2. The User reviews the Abilities your App wants to use and configures the Policies that will govern them
 3. Upon approval, the User is redirected back to your App with a signed JWT in the URL
-4. Your App extracts and verifies the JWT using `decodeVincentJWT` in your frontend
+4. Your App extracts and verifies the JWT using `decodeVincentJWTFromUri` in your frontend
    - **Note:** For your backend it's **critical** that you verify the Vincent JWT that's submitted to your backend to authenticate the User. This is done by importing the `verify` method from the `@lit-protocol/vincent-app-sdk/jwt` package, and as shown [here](#verifying-the-vincent-jwt-on-your-backend).
 5. The verified JWT can now be stored and used to:
    - Authenticate requests to your backend APIs
@@ -74,7 +74,7 @@ Returns `true` if the current URL contains a Vincent connect JWT, indicating the
 
 If this method returns `false`, you should use the `redirectToConnectPage` method to to authenticate the User.
 
-## `decodeVincentJWT`
+## `decodeVincentJWTFromUri`
 
 Extracts and verifies the Vincent connect JWT returned in the URL after a user completes the Connect flow.
 
@@ -88,7 +88,7 @@ If the JWT is valid, it returns the decoded JWT object containing identity and d
 
 ## `removeVincentJWTFromURI`
 
-Use this method to remove the Vincent JWT query parameter from the current URL after you’ve extracted and stored it. You should call this method after you've called `decodeVincentJWT`, validated the JWT, and stored it locally to be used when making authenticated requests to your backend APIs.
+Use this method to remove the Vincent JWT query parameter from the current URL after you’ve extracted and stored it. You should call this method after you've called `decodeVincentJWTFromUri`, validated the JWT, and stored it locally to be used when making authenticated requests to your backend APIs.
 
 # Creating a Web App Client
 
@@ -118,7 +118,7 @@ import { isExpired } from '@lit-protocol/vincent-app-sdk/jwt';
 const vincentAppClient = getWebAuthClient({ appId: process.env.MY_VINCENT_APP_ID });
 
 if (vincentAppClient.uriContainsVincentJWT()) {
-  const { decodedJWT, jwtStr } = vincentAppClient.decodeVincentJWT(window.location.origin);
+  const { decodedJWT, jwtStr } = vincentAppClient.decodeVincentJWTFromUri(window.location.origin);
 
   // Store JWT for later use
   localStorage.setItem('VINCENT_AUTH_JWT', jwtStr);
@@ -171,7 +171,7 @@ You’ve learned how to:
 
 - Redirect users to the Vincent Connect Page using `redirectToConnectPage`
 - Detect when a User returns from the Connect flow with `uriContainsVincentJWT`
-- Decode and validate the returned JWT using `decodeVincentJWT`
+- Decode and validate the returned JWT using `decodeVincentJWTFromUri`
 - Store the JWT for authenticated requests to your backend APIs
 - Re-initiate the Connect flow when a JWT is missing or expired
 

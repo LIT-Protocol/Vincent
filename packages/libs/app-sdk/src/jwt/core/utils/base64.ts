@@ -32,6 +32,7 @@ export function fromBase64(base64: string): Uint8Array {
 /**
  * Converts a Uint8Array to a base64url-encoded string.
  * Works in all JS environments (Node.js, Deno, browser, Web Workers).
+ *
  * No Buffer polyfill requirement.
  */
 export function toBase64Url(bytes: Uint8Array): string {

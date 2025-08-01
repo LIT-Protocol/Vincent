@@ -37,7 +37,7 @@ export const getWebAuthClient = (appClientConfig: WebAuthClientConfig): WebAuthC
       });
     },
     uriContainsVincentJWT: () => uriContainsVincentJWT(window.location.href),
-    decodeVincentJWT: (expectedAudience: string) =>
+    decodeVincentJWTFromUri: (expectedAudience: string) =>
       decodeVincentJWTFromUri({
         uri: window.location.href,
         expectedAudience: expectedAudience,

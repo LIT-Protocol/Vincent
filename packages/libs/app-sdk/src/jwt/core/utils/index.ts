@@ -1,4 +1,4 @@
 export { isDefinedObject } from './definedObject';
 export { validateJWTTime } from './validateJWTTime';
-export { splitJWT } from './splitJWT';
-export { processJWTSignature } from './processJWTSignature';
+export { fromBase64, toBase64Url } from './base64';
+export { verifyES256KSignature } from './verifyES256KSignature';

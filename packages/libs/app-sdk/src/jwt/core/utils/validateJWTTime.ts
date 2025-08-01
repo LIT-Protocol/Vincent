@@ -1,4 +1,4 @@
-import { JWT_ERROR } from 'did-jwt';
+import { JWT_ERROR } from '../../constants';
 
 /** Validates JWT time claims (iat and nbf)
  * @ignore

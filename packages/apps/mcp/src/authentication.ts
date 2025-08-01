@@ -1,5 +1,5 @@
 import { LIT_EVM_CHAINS } from '@lit-protocol/constants';
-import { verify } from '@lit-protocol/vincent-app-sdk/jwt';
+import { verifyVincentAppUserJWT } from '@lit-protocol/vincent-app-sdk/jwt';
 import { SiweMessage } from 'siwe';
 
 import { nonceManager } from './nonceManager';
@@ -82,9 +82,16 @@ export async function authenticateWithSiwe(
  * @returns The Ethereum address of the PKP (Programmable Key Pair) from the JWT payload
  * @throws {Error} If the JWT is invalid or doesn't match the expected app ID/version
  */
-export function authenticateWithJwt(jwt: string, appId: number, appVersion: number): string {
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const decodedJwt = verify({ jwt, expectedAudience: EXPECTED_AUDIENCE!, requiredAppId: appId });
+export async function authenticateWithJwt(
+  jwt: string,
+  appId: number,
+  appVersion: number,
+): Promise<string> {
+  const decodedJwt = await verifyVincentAppUserJWT({
+    jwt,
+    expectedAudience: EXPECTED_AUDIENCE!,
+    requiredAppId: appId,
+  });
   const { id, version } = decodedJwt.payload.app;
   if (id !== appId || version !== appVersion) {
     throw new Error('JWT provided is not valid for this Vincent App MCP');

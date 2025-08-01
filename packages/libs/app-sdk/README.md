@@ -51,7 +51,7 @@ const vincentAppClient = getWebAuthClient({ appId: MY_APP_ID });
 // ... In your app logic:
 if (vincentAppClient.uriContainsVincentJWT()) {
   // Handle app logic for the user has just logged in
-  const { decoded, jwt } = vincentAppClient.decodeVincentJWT(window.location.origin);
+  const { decoded, jwt } = vincentAppClient.decodeVincentJWTFromUri(window.location.origin);
   // Store `jwt` for later usage; the user is now logged in.
 } else {
   // Handle app logic for the user is _already logged in_ (check for stored & unexpired JWT)
