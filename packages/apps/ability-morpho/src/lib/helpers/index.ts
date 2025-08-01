@@ -1,6 +1,8 @@
 import { laUtils } from '@lit-protocol/vincent-scaffold-sdk';
 import { ethers } from 'ethers';
 
+import { MorphoOperation } from '../schemas';
+
 /**
  * Well-known token addresses across different chains
  * Using official Circle USDC and canonical WETH addresses
@@ -161,12 +163,114 @@ export const ERC4626_VAULT_ABI: any[] = [
     stateMutability: 'view',
     type: 'function',
   },
-];
+] as const;
+
+/**
+ * Morpho Market ABI - Essential methods for supply and withdraw operations
+ */
+export const MORPHO_MARKET_ABI: any[] = [
+  // Supply
+  {
+    inputs: [
+      {
+        components: [
+          { internalType: 'address', name: 'loanToken', type: 'address' },
+          { internalType: 'address', name: 'collateralToken', type: 'address' },
+          { internalType: 'address', name: 'oracle', type: 'address' },
+          { internalType: 'address', name: 'irm', type: 'address' },
+          { internalType: 'uint256', name: 'lltv', type: 'uint256' },
+        ],
+        internalType: 'struct MarketParams',
+        name: 'marketParams',
+        type: 'tuple',
+      },
+      { internalType: 'uint256', name: 'assets', type: 'uint256' },
+      { internalType: 'uint256', name: 'shares', type: 'uint256' },
+      { internalType: 'address', name: 'onBehalf', type: 'address' },
+      { internalType: 'bytes', name: 'data', type: 'bytes' },
+    ],
+    name: 'supply',
+    outputs: [
+      { internalType: 'uint256', name: 'assetsSupplied', type: 'uint256' },
+      { internalType: 'uint256', name: 'sharesSupplied', type: 'uint256' },
+    ],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  // Withdraw Collateral
+  {
+    inputs: [
+      {
+        components: [
+          { internalType: 'address', name: 'loanToken', type: 'address' },
+          { internalType: 'address', name: 'collateralToken', type: 'address' },
+          { internalType: 'address', name: 'oracle', type: 'address' },
+          { internalType: 'address', name: 'irm', type: 'address' },
+          { internalType: 'uint256', name: 'lltv', type: 'uint256' },
+        ],
+        internalType: 'struct MarketParams',
+        name: 'marketParams',
+        type: 'tuple',
+      },
+      { internalType: 'uint256', name: 'assets', type: 'uint256' },
+      { internalType: 'address', name: 'onBehalf', type: 'address' },
+      { internalType: 'address', name: 'receiver', type: 'address' },
+    ],
+    name: 'withdrawCollateral',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  // Position (to check collateral balance)
+  {
+    inputs: [
+      { internalType: 'bytes32', name: 'id', type: 'bytes32' },
+      { internalType: 'address', name: 'user', type: 'address' },
+    ],
+    name: 'position',
+    outputs: [
+      { internalType: 'uint256', name: 'supplyShares', type: 'uint256' },
+      { internalType: 'uint128', name: 'borrowShares', type: 'uint128' },
+      { internalType: 'uint128', name: 'collateral', type: 'uint128' },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  // Market (to check market info)
+  {
+    inputs: [{ internalType: 'bytes32', name: 'id', type: 'bytes32' }],
+    name: 'market',
+    outputs: [
+      { internalType: 'uint128', name: 'totalSupplyAssets', type: 'uint128' },
+      { internalType: 'uint128', name: 'totalSupplyShares', type: 'uint128' },
+      { internalType: 'uint128', name: 'totalBorrowAssets', type: 'uint128' },
+      { internalType: 'uint128', name: 'totalBorrowShares', type: 'uint128' },
+      { internalType: 'uint128', name: 'lastUpdate', type: 'uint128' },
+      { internalType: 'uint128', name: 'fee', type: 'uint128' },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  // IdToMarketParams (to get market params from ID)
+  {
+    inputs: [{ internalType: 'bytes32', name: 'id', type: 'bytes32' }],
+    name: 'idToMarketParams',
+    outputs: [
+      { internalType: 'address', name: 'loanToken', type: 'address' },
+      { internalType: 'address', name: 'collateralToken', type: 'address' },
+      { internalType: 'address', name: 'oracle', type: 'address' },
+      { internalType: 'address', name: 'irm', type: 'address' },
+      { internalType: 'uint256', name: 'lltv', type: 'uint256' },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+] as const;
 
 /**
  * ERC20 Token ABI - Essential methods only
  */
-export const ERC20_ABI: any[] = [
+export const ERC20_ABI = [
   {
     inputs: [{ internalType: 'address', name: 'account', type: 'address' }],
     name: 'balanceOf',
@@ -201,7 +305,7 @@ export const ERC20_ABI: any[] = [
     stateMutability: 'view',
     type: 'function',
   },
-];
+] as const;
 
 /**
  * Supported chain type
@@ -346,39 +450,41 @@ export function formatAmount(amount: string, decimals = 18): string {
 }
 
 /**
- * Validate operation-specific requirements for Morpho vaults
+ * Validate operation-specific requirements for Morpho vaults and markets
  */
 export async function validateOperationRequirements(
-  operation: string,
+  operation: MorphoOperation,
   userBalance: string,
   allowance: string,
   vaultShares: string,
   convertedAmount: string,
+  collateralBalance?: string,
 ): Promise<{ valid: boolean; error?: string }> {
   const userBalanceBN = BigInt(userBalance);
   const allowanceBN = BigInt(allowance);
   const vaultSharesBN = BigInt(vaultShares);
   const convertedAmountBN = BigInt(convertedAmount);
+  const collateralBalanceBN = collateralBalance ? BigInt(collateralBalance) : 0n;
 
   switch (operation) {
-    case 'deposit':
+    case 'vault_deposit':
       // Check if user has enough balance
       if (userBalanceBN < convertedAmountBN) {
         return {
           valid: false,
-          error: `Insufficient balance for deposit operation. You have ${userBalance} and need ${convertedAmount}`,
+          error: `Insufficient balance for ${operation} operation. You have ${userBalance} and need ${convertedAmount}`,
         };
       }
       // Check if user has approved vault to spend tokens
       if (allowanceBN < convertedAmountBN) {
         return {
           valid: false,
-          error: `Insufficient allowance for deposit operation. Please approve vault to spend your tokens first. You have ${allowance} and need ${convertedAmount}`,
+          error: `Insufficient allowance for ${operation} operation. Please approve vault to spend your tokens first. You have ${allowance} and need ${convertedAmount}`,
         };
       }
       break;
 
-    case 'withdraw':
+    case 'vault_withdraw':
       // For withdraw, we need to check if user has enough vault shares
       if (vaultSharesBN === 0n) {
         return {
@@ -389,7 +495,7 @@ export async function validateOperationRequirements(
       // Note: We'll need to convert the amount to shares in the actual implementation
       break;
 
-    case 'redeem':
+    case 'vault_redeem':
       // For redeem, we need to check if user has enough vault shares
       if (vaultSharesBN === 0n) {
         return {
@@ -402,6 +508,33 @@ export async function validateOperationRequirements(
         return {
           valid: false,
           error: `Insufficient vault shares for redeem operation. You have ${vaultShares} shares and need ${convertedAmount} shares`,
+        };
+      }
+      break;
+
+    case 'market_supply':
+      // Check if user has enough balance
+      if (userBalanceBN < convertedAmountBN) {
+        return {
+          valid: false,
+          error: `Insufficient balance for market supply operation. You have ${userBalance} and need ${convertedAmount}`,
+        };
+      }
+      // Check if user has approved market to spend tokens
+      if (allowanceBN < convertedAmountBN) {
+        return {
+          valid: false,
+          error: `Insufficient allowance for market supply operation. Please approve market to spend your tokens first. You have ${allowance} and need ${convertedAmount}`,
+        };
+      }
+      break;
+
+    case 'market_withdrawCollateral':
+      // Check if user has enough collateral balance
+      if (collateralBalanceBN < convertedAmountBN) {
+        return {
+          valid: false,
+          error: `Insufficient collateral balance for withdrawal. You have ${collateralBalance} and need ${convertedAmount}`,
         };
       }
       break;
@@ -1184,9 +1317,96 @@ export async function getVaultDiscoverySummary(chainId: number) {
 }
 
 /**
- * Generic function to execute any Morpho operation, with optional gas sponsorship
+ * Execute Morpho market operations (supply/withdrawCollateral)
  */
-export async function executeMorphoOperation({
+export async function executeMorphoMarketOperation({
+  provider,
+  pkpPublicKey,
+  marketAddress,
+  marketId,
+  functionName,
+  args,
+  chainId,
+  alchemyGasSponsor,
+  alchemyGasSponsorApiKey,
+  alchemyGasSponsorPolicyId,
+}: {
+  provider?: ethers.providers.JsonRpcProvider;
+  pkpPublicKey: string;
+  marketAddress: string;
+  marketId: string;
+  functionName: string;
+  args: any[];
+  chainId: number;
+  alchemyGasSponsor?: boolean;
+  alchemyGasSponsorApiKey?: string;
+  alchemyGasSponsorPolicyId?: string;
+}): Promise<string> {
+  console.log(
+    `[@lit-protocol/vincent-ability-morpho/executeMorphoMarketOperation] Starting ${functionName} operation`,
+    { sponsored: !!alchemyGasSponsor, marketId },
+  );
+
+  // Use gas sponsorship if enabled and all required parameters are provided
+  if (alchemyGasSponsor && alchemyGasSponsorApiKey && alchemyGasSponsorPolicyId) {
+    console.log(
+      `[@lit-protocol/vincent-ability-morpho/executeMorphoMarketOperation] Using EIP-7702 gas sponsorship`,
+      { marketAddress, functionName, args, policyId: alchemyGasSponsorPolicyId },
+    );
+
+    try {
+      return await laUtils.transaction.handler.sponsoredGasContractCall({
+        pkpPublicKey,
+        abi: MORPHO_MARKET_ABI,
+        contractAddress: marketAddress,
+        functionName,
+        args,
+        chainId,
+        eip7702AlchemyApiKey: alchemyGasSponsorApiKey,
+        eip7702AlchemyPolicyId: alchemyGasSponsorPolicyId,
+      });
+    } catch (error) {
+      console.error(
+        `[@lit-protocol/vincent-ability-morpho/executeMorphoMarketOperation] EIP-7702 operation failed:`,
+        error,
+      );
+      throw error;
+    }
+  } else {
+    // Use regular transaction without gas sponsorship
+    console.log(
+      `[@lit-protocol/vincent-ability-morpho/executeMorphoMarketOperation] Using regular transaction`,
+    );
+
+    if (!provider) {
+      throw new Error('Provider is required for non-sponsored transactions');
+    }
+
+    try {
+      return await laUtils.transaction.handler.contractCall({
+        provider,
+        pkpPublicKey,
+        callerAddress: ethers.utils.computeAddress(pkpPublicKey),
+        abi: MORPHO_MARKET_ABI,
+        contractAddress: marketAddress,
+        functionName,
+        args,
+        chainId,
+      });
+    } catch (error) {
+      console.error(
+        `[@lit-protocol/vincent-ability-morpho/executeMorphoMarketOperation] Regular transaction failed:`,
+        error,
+      );
+      throw error;
+    }
+  }
+}
+
+/**
+ * Generic function to execute any Morpho Vault operation, with optional gas sponsorship
+ */
+export async function executeMorphoVaultOperation({
   provider,
   pkpPublicKey,
   vaultAddress,
@@ -1197,7 +1417,7 @@ export async function executeMorphoOperation({
   alchemyGasSponsorApiKey,
   alchemyGasSponsorPolicyId,
 }: {
-  provider?: any;
+  provider?: ethers.providers.JsonRpcProvider;
   pkpPublicKey: string;
   vaultAddress: string;
   functionName: string;
@@ -1208,14 +1428,14 @@ export async function executeMorphoOperation({
   alchemyGasSponsorPolicyId?: string;
 }): Promise<string> {
   console.log(
-    `[@lit-protocol/vincent-ability-morpho/executeMorphoOperation] Starting ${functionName} operation`,
+    `[@lit-protocol/vincent-ability-morpho/executeMorphoVaultOperation] Starting ${functionName} operation`,
     { sponsored: !!alchemyGasSponsor },
   );
 
   // Use gas sponsorship if enabled and all required parameters are provided
   if (alchemyGasSponsor && alchemyGasSponsorApiKey && alchemyGasSponsorPolicyId) {
     console.log(
-      `[@lit-protocol/vincent-ability-morpho/executeMorphoOperation] Using EIP-7702 gas sponsorship`,
+      `[@lit-protocol/vincent-ability-morpho/executeMorphoVaultOperation] Using EIP-7702 gas sponsorship`,
       { vaultAddress, functionName, args, policyId: alchemyGasSponsorPolicyId },
     );
 
@@ -1232,7 +1452,7 @@ export async function executeMorphoOperation({
       });
     } catch (error) {
       console.error(
-        `[@lit-protocol/vincent-ability-morpho/executeMorphoOperation] EIP-7702 operation failed:`,
+        `[@lit-protocol/vincent-ability-morpho/executeMorphoVaultOperation] EIP-7702 operation failed:`,
         error,
       );
       throw error;
@@ -1240,7 +1460,7 @@ export async function executeMorphoOperation({
   } else {
     // Use regular transaction without gas sponsorship
     console.log(
-      `[@lit-protocol/vincent-ability-morpho/executeMorphoOperation] Using regular transaction`,
+      `[@lit-protocol/vincent-ability-morpho/executeMorphoVaultOperation] Using regular transaction`,
     );
 
     if (!provider) {
@@ -1260,7 +1480,7 @@ export async function executeMorphoOperation({
       });
     } catch (error) {
       console.error(
-        `[@lit-protocol/vincent-ability-morpho/executeMorphoOperation] Regular transaction failed:`,
+        `[@lit-protocol/vincent-ability-morpho/executeMorphoVaultOperation] Regular transaction failed:`,
         error,
       );
       throw error;
