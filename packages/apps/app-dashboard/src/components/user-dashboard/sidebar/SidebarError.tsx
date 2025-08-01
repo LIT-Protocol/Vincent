@@ -1,9 +1,10 @@
 import { useLocation, Link } from 'react-router-dom';
 import { Package, Wallet, Sun, Moon, LogOut, AlertTriangle } from 'lucide-react';
 import { theme } from '@/components/user-dashboard/connect/ui/theme';
-import { toggleTheme, isDarkMode } from '@/lib/theme';
+import { toggleTheme } from '@/lib/theme';
+import { useTheme } from '@/hooks/useTheme';
 import { useClearAuthInfo } from '@/hooks/user-dashboard/useAuthInfo';
-import { AccountTooltip } from './AccountTooltip';
+import { AccountTooltip } from '@/components/shared/AccountTooltip';
 import {
   Sidebar,
   SidebarContent,
@@ -26,7 +27,7 @@ interface SidebarErrorProps {
 export function SidebarError({ error }: SidebarErrorProps) {
   const location = useLocation();
   const { clearAuthInfo } = useClearAuthInfo();
-  const isDark = isDarkMode();
+  const isDark = useTheme();
 
   const isActiveRoute = (route: string) => {
     return location.pathname.startsWith(route);
@@ -134,7 +135,7 @@ export function SidebarError({ error }: SidebarErrorProps) {
 
             {/* My Account with tooltip */}
             <SidebarMenuItem>
-              <AccountTooltip />
+              <AccountTooltip theme={theme} />
             </SidebarMenuItem>
 
             {/* Sign Out */}

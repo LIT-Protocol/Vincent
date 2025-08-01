@@ -2,11 +2,12 @@ import React from 'react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
 import { Package, Wallet, Loader2, Sun, Moon, LogOut, TriangleAlert } from 'lucide-react';
 import { theme } from '@/components/user-dashboard/connect/ui/theme';
-import { toggleTheme, isDarkMode } from '@/lib/theme';
+import { toggleTheme } from '@/lib/theme';
+import { useTheme } from '@/hooks/useTheme';
 import { App } from '@/types/developer-dashboard/appTypes';
 import { SidebarLogo } from './SidebarLogo';
 import { useClearAuthInfo } from '@/hooks/user-dashboard/useAuthInfo';
-import { AccountTooltip } from './AccountTooltip';
+import { AccountTooltip } from '@/components/shared/AccountTooltip';
 import {
   Sidebar,
   SidebarContent,
@@ -142,7 +143,7 @@ export function AppSidebar({
   const location = useLocation();
   const navigate = useNavigate();
   const { clearAuthInfo } = useClearAuthInfo();
-  const isDark = isDarkMode();
+  const isDark = useTheme();
 
   const menuItems = getMainMenuItems(apps, isLoadingApps, permittedAppVersions, appVersionsMap);
 
@@ -375,7 +376,7 @@ export function AppSidebar({
 
             {/* My Account with tooltip */}
             <SidebarMenuItem>
-              <AccountTooltip />
+              <AccountTooltip theme={theme} />
             </SidebarMenuItem>
 
             {/* Sign Out */}

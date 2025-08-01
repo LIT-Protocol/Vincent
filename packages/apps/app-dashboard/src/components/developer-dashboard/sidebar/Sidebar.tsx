@@ -10,8 +10,6 @@ import {
   ChevronRight,
   FileText,
   GitBranch,
-  User,
-  Copy,
   Sun,
   Moon,
 } from 'lucide-react';
@@ -21,7 +19,6 @@ import { theme } from '@/components/user-dashboard/connect/ui/theme';
 import { toggleTheme } from '@/lib/theme';
 import { useTheme } from '@/hooks/useTheme';
 import { useClearAuthInfo } from '@/hooks/user-dashboard/useAuthInfo';
-import useReadAuthInfo from '@/hooks/user-dashboard/useAuthInfo';
 import {
   Sidebar as SidebarComponent,
   SidebarContent,
@@ -37,7 +34,7 @@ import {
   SidebarMenuSubItem,
   SidebarMenuSubButton,
 } from '@/components/shared/ui/sidebar';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/shared/ui/tooltip';
+import { AccountTooltip } from '@/components/shared/AccountTooltip';
 import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
 import { App, Ability, Policy } from '@/types/developer-dashboard/appTypes';
 
@@ -691,66 +688,6 @@ export function Sidebar({ userApps, userAbilities, userPolicies }: SidebarProps)
     },
   ];
 
-  // Developer-specific AccountTooltip with light theme
-  const DeveloperAccountTooltip = () => {
-    const { authInfo } = useReadAuthInfo();
-
-    const handleCopyEthAddress = async () => {
-      if (authInfo?.agentPKP?.ethAddress) {
-        try {
-          await navigator.clipboard.writeText(authInfo.agentPKP.ethAddress);
-        } catch (err) {
-          console.error('Failed to copy eth address:', err);
-        }
-      }
-    };
-
-    const formatAuthInfo = () => {
-      if (!authInfo) return '';
-      return `Sign-In Type: ${authInfo.type}\nAuthenticated: ${new Date(authInfo.authenticatedAt).toLocaleString()}${authInfo.value ? `\nValue: ${authInfo.value}` : ''}`;
-    };
-
-    return (
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <SidebarMenuButton
-            className={`h-10 px-3 rounded-lg transition-all duration-200 ${theme.text} ${theme.itemHoverBg}`}
-          >
-            <User className="h-4 w-4" />
-            <span className={`font-medium ${theme.text}`}>My Account</span>
-          </SidebarMenuButton>
-        </TooltipTrigger>
-
-        {authInfo && (
-          <TooltipContent
-            side="top"
-            className={`${theme.cardBg} ${theme.cardBorder} ${theme.text} max-w-sm`}
-          >
-            <div className="whitespace-pre-line text-xs">
-              <div className="mb-2">{formatAuthInfo()}</div>
-              {authInfo.agentPKP?.ethAddress && (
-                <div className={`flex items-center gap-2 pt-2 border-t ${theme.cardBorder}`}>
-                  <div className="flex-1 min-w-0">
-                    <div className={theme.textMuted}>Agent PKP:</div>
-                    <div className={`font-mono text-xs ${theme.text} truncate`}>
-                      {authInfo.agentPKP.ethAddress}
-                    </div>
-                  </div>
-                  <button
-                    onClick={handleCopyEthAddress}
-                    className={`p-1 ${theme.itemHoverBg} rounded transition-colors flex-shrink-0`}
-                  >
-                    <Copy className="w-3 h-3" />
-                  </button>
-                </div>
-              )}
-            </div>
-          </TooltipContent>
-        )}
-      </Tooltip>
-    );
-  };
-
   return (
     <SidebarComponent variant="sidebar" collapsible="offcanvas" className="border-r-0">
       <SidebarHeader className="border-b border-sidebar-border h-16">
@@ -902,7 +839,7 @@ export function Sidebar({ userApps, userAbilities, userPolicies }: SidebarProps)
 
             {/* My Account */}
             <SidebarMenuItem>
-              <DeveloperAccountTooltip />
+              <AccountTooltip theme={theme} />
             </SidebarMenuItem>
 
             {/* Sign Out */}
