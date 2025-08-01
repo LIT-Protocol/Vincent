@@ -19,7 +19,13 @@ The Vincent system consists of several key components:
 - **policy-spending-limit**: A policy that can be attached to abilities to avoid them spending more than a user-defined limit in a specific period of time.
 - **ability-erc20-approval**: An ability to send ERC20 approve/allowance transactions from a Vincent app on behalf of the delegator.
 - **ability-sdk**: An SDK exposing utilities to develop Vincent abilities and policies.
+- **ability-aave**: An ability to interact with Aave protocol from a Vincent app on behalf of the delegator.
+- **ability-debridge**: An ability to utilize cross-chain bridging through Debridge from a Vincent app on behalf of the delegator.
+- **ability-transaction-signer**: An ability to sign transactions from a Vincent app on behalf of the delegator.
 - **ability-uniswap-swap**: An ability to trigger swaps on Uniswap from a Vincent app on behalf of the delegator.
+- **ability-morpho**: An ability to operate on Morpho vaults from a Vincent app on behalf of the delegator.
+- **policy-contract-whitelist**: A policy that restricts interactions to a predefined set of whitelisted contract addresses.
+- **policy-send-counter**: A policy that limits the number of transactions that can be sent within a specific time period.
 - **mcp-sdk**: A Model Context Protocol Wrapper that converts any Vincent app into an MCP server that can be connected to any LLM client to provide it with Vincent abilities.
 - **mcp**: An MCP runner
 

@@ -104,9 +104,15 @@ When working with AI-powered editors like Cursor, GitHub Copilot, or other AI as
 
 The Ability SDK is a core component that is used by:
 
-- `policy-spending-limit`: For implementing spending limit policies
+- `ability-aave`: For implementing Aave abilities
+- `ability-debridge`: For implementing Debridge abilities
 - `ability-erc20-approval`: For implementing ERC20 approval abilities
+- `ability-morpho`: For implementing Morpho abilities
+- `ability-transaction-signer`: For implementing transaction signing abilities
 - `ability-uniswap-swap`: For implementing Uniswap swap abilities
+- `policy-contract-whitelist`: For implementing contract whitelist policies
+- `policy-send-counter`: For implementing transaction counter policies
+- `policy-spending-limit`: For implementing spending limit policies
 
 When working on Ability SDK code, consider these consumers for context, and focus on maintaining backward compatibility and strong type safety.
 

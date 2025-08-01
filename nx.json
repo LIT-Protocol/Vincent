@@ -62,7 +62,11 @@
       "ability-uniswap-swap",
       "ability-evm-transaction-signer",
       "mcp-server",
-      "abilities-e2e"
+      "abilities-e2e",
+      "ability-morpho",
+      "ability-aave",
+      "ability-debridge",
+      "policy-send-counter"
     ],
     "projectsRelationship": "independent",
     "releaseTagPattern": "vincent/{projectName}/{version}",

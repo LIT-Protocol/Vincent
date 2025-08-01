@@ -19,7 +19,6 @@ export async function startMongoMemoryServer(): Promise<string> {
  * Stop the in-memory MongoDB server
  */
 export async function stopMongoMemoryServer(): Promise<void> {
-   
   if (mongoServer) {
     await mongoServer.stop();
     console.log('MongoDB Memory Server stopped');

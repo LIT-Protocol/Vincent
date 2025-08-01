@@ -17,7 +17,7 @@
     "action:only:deploy": {
       "executor": "nx:run-commands",
       "options": {
-        "commands": ["node tools/deploy-lit-action.js"],
+        "commands": ["node scripts/deploy-lit-action.js"],
         "cwd": "{projectRoot}"
       }
     },
@@ -25,7 +25,7 @@
       "executor": "nx:run-commands",
       "dependsOn": ["action:build"],
       "options": {
-        "commands": ["node tools/deploy-lit-action.js"],
+        "commands": ["node scripts/deploy-lit-action.js"],
         "cwd": "packages/apps/policy-contract-whitelist"
       }
     },

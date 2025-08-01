@@ -26,7 +26,7 @@ nx test ability-erc20-approval
 
 ### Building the Lit Action
 
-Build the policy:
+Build the tool:
 
 ```bash
 nx action:build ability-erc20-approval
@@ -34,7 +34,7 @@ nx action:build ability-erc20-approval
 
 ### Deploying the Lit Action to IPFS
 
-Building will be done automatically. Deploy the policy:
+Building will be done automatically. Deploy the tool:
 
 ```bash
 nx action:deploy ability-erc20-approval

@@ -1,0 +1,33 @@
+{
+  "name": "@lit-protocol/vincent-ability-morpho",
+  "version": "0.0.6",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "vault-search": "tsx examples/vault-search.ts"
+  },
+  "dependencies": {
+    "@lit-protocol/vincent-scaffold-sdk": "^1.1.6",
+    "@lit-protocol/vincent-ability-sdk": "workspace:*",
+    "ethers": "^5.8.0",
+    "tslib": "2.8.1",
+    "zod": "^3.25.64"
+  },
+  "peerDependencies": {
+    "@lit-protocol/vincent-app-sdk": "workspace:^"
+  },
+  "devDependencies": {
+    "esbuild": "^0.19.12",
+    "esbuild-plugin-polyfill-node": "^0.3.0",
+    "ipfs-only-hash": "^4.0.0",
+    "tsx": "^4.19.4"
+  },
+  "main": "./dist/src/index.js",
+  "module": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "files": [
+    "dist/**",
+    "*.md"
+  ]
+}
