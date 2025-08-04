@@ -62,7 +62,8 @@
       "ability-uniswap-swap",
       "ability-evm-transaction-signer",
       "mcp-server",
-      "abilities-e2e"
+      "abilities-e2e",
+      "example-vincent-testing-tool"
     ],
     "projectsRelationship": "independent",
     "releaseTagPattern": "vincent/{projectName}/{version}",
