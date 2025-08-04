@@ -1,6 +1,6 @@
 {
   "name": "@lit-protocol/vincent-contracts-sdk",
-  "version": "1.0.0",
+  "version": "1.0.0-beta.2",
   "description": "Lit Protocol Vincent Contracts",
   "author": "Lit Protocol",
   "license": "ISC",
