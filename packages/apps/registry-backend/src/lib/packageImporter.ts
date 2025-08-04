@@ -7,7 +7,8 @@ const execAsync = util.promisify(exec);
 
 import { mkdtemp, mkdir } from 'node:fs/promises';
 
-import { remove, readJSON } from 'fs-extra';
+import fs from 'fs-extra';
+const { remove, readJSON } = fs;
 import * as tar from 'tar';
 
 import { Policy, PolicyVersion } from './mongo/policy';
@@ -20,7 +21,6 @@ const ENABLE_VERBOSE_LOGGING = false;
  * Debug logging utility
  */
 function debugLog(message: string, data?: any): void {
-   
   if (ENABLE_VERBOSE_LOGGING) {
     const timestamp = new Date().toISOString();
     console.log(`[DEBUG ${timestamp}] ${message}`, data ? JSON.stringify(data, null, 2) : '');
