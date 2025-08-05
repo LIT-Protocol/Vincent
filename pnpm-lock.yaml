@@ -733,14 +733,14 @@ importers:
         specifier: ^2.1.0
         version: 2.1.0
       '@lit-protocol/vincent-app-sdk':
-        specifier: 1.0.3-beta.4
-        version: 1.0.3-beta.4(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
+        specifier: 1.0.3-beta.7
+        version: 1.0.3-beta.7(@walletconnect/modal@2.7.0(@types/react@19.1.8)(react@19.1.0))(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
       '@lit-protocol/vincent-contracts-sdk':
-        specifier: 1.0.0-beta.2
-        version: 1.0.0-beta.2(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+        specifier: 1.0.0-beta.3
+        version: 1.0.0-beta.3(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       '@lit-protocol/vincent-registry-sdk':
-        specifier: 3.3.2-beta.2
-        version: 3.3.2-beta.2(react-redux@9.2.0(@types/react@19.1.8)(react@19.1.0)(redux@5.0.1))(react@19.1.0)
+        specifier: 3.3.2-beta.3
+        version: 3.3.2-beta.3(react-redux@9.2.0(@types/react@19.1.8)(react@19.1.0)(redux@5.0.1))(react@19.1.0)
       '@t3-oss/env-core':
         specifier: ^0.13.6
         version: 0.13.8(typescript@5.8.3)(zod@3.25.64)
@@ -2490,21 +2490,21 @@ packages:
   '@lit-protocol/uint8arrays@7.2.0':
     resolution: {integrity: sha512-Gc+REd0RRPivUPrwMklAhrwdRmTVbs2XatZpeJpjoUlXhqIIf9gWau33GKbZI3k6vEEeVoLqJU0JqEQoeEzKMA==}
 
-  '@lit-protocol/vincent-ability-sdk@0.0.4-ea':
-    resolution: {integrity: sha512-jzJdjdKPxnlL4nFCEJMdCII4CxdXe1RIvS3yKvLfd86aiup5lCBNsNW2kGStbMu//b8Ywez/DSboguGoHT24lw==}
+  '@lit-protocol/vincent-ability-sdk@0.0.7-mma':
+    resolution: {integrity: sha512-4AM4eSKY65NWadgeG7LYL9k2i8LmfvtVn/K+KuFRE8AKqG5GSfgF6PFnAKLPbpozCVF7nR/6i04WZrDXOZH8XQ==}
 
-  '@lit-protocol/vincent-app-sdk@1.0.3-beta.4':
-    resolution: {integrity: sha512-WJP83Uwcuzv+Z9TIHW90Dau/ZNnfn5or509ISs56Pm0RRrwnkBjn/nmfoKWvxgoAkOSp27zSLq2bitgDeq0Rsg==}
+  '@lit-protocol/vincent-app-sdk@1.0.3-beta.7':
+    resolution: {integrity: sha512-sF3GseXQ6gW3/wMbwyZMI6caoanMIuxg9gUlbk+IydWBi3/ODfs5genwoV1bmRHvoOPtEUJWqrXNLrbOFNUiDg==}
     engines: {node: ^20.11.1, pnpm: 10.7.0}
 
-  '@lit-protocol/vincent-contracts-sdk@0.0.4-ea':
-    resolution: {integrity: sha512-Sx8J0hMKvX9ChAgenN+4gAiK5UIa7CCCxW9ACN5Ck5uwe/tW+F0YLJLMdLwshQ+OVWp9EiYc0F9sxa0K2JBAoQ==}
+  '@lit-protocol/vincent-contracts-sdk@0.0.7-mma':
+    resolution: {integrity: sha512-mRzOxISd7VoCKlUxX4C7MMV0EaxaUwPcKnGCOaU9x+flcz3+uIg9CuCN8hOnURaRSl2j6abbdTqct81/jcrg4w==}
 
-  '@lit-protocol/vincent-contracts-sdk@1.0.0-beta.2':
-    resolution: {integrity: sha512-UAQMzs2tNsrZJkM9enkthy/bgf4Ex3PB65l+npKQvxJ1YHD2EBqcSjR00e+ijlXUcBivO68TunzTjGPYJx/lHQ==}
+  '@lit-protocol/vincent-contracts-sdk@1.0.0-beta.3':
+    resolution: {integrity: sha512-0pr2y/3BQUCTXZ0/CED9j/dQ0lBq+22XybLjQZZjKuEEBlzb5X5kZVuwIT/Nm81cE1ST6gVMb2ogeTB1zl0/SA==}
 
-  '@lit-protocol/vincent-registry-sdk@3.3.2-beta.2':
-    resolution: {integrity: sha512-cqiYwAwi1DX+XEed3LekxSKdT5psJQlBUkprHzpLsLkjAeUFEMrU+poqMR9rgNMuxn8HzfecX3vPx573UVIjFA==}
+  '@lit-protocol/vincent-registry-sdk@3.3.2-beta.3':
+    resolution: {integrity: sha512-AetnGA0uKRKCIzvUo0PrcrcxDgpQYd4iZti1HfkBtbFu7Fo4jOnw0oweyTnCfRuTL6RCBhIrae/HLksRwvwixw==}
 
   '@lit-protocol/vincent-tool-sdk@1.0.1':
     resolution: {integrity: sha512-wSGlLCFnL/uTqWnK3N4pQvOhPniKTG1Te3UAs+lOj+hjiiFfDQ7WPpTMqEZ7koMz8Xviq4bZTCeMOPdX5exFvA==}
@@ -13802,9 +13802,9 @@ snapshots:
       - typescript
       - utf-8-validate
 
-  '@lit-protocol/vincent-ability-sdk@0.0.4-ea(bufferutil@4.0.9)(utf-8-validate@5.0.10)':
+  '@lit-protocol/vincent-ability-sdk@0.0.7-mma(bufferutil@4.0.9)(utf-8-validate@5.0.10)':
     dependencies:
-      '@lit-protocol/vincent-contracts-sdk': 0.0.4-ea(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+      '@lit-protocol/vincent-contracts-sdk': 0.0.7-mma(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       ethers: 5.8.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       semver: 7.7.2
       tslib: 2.8.1
@@ -13813,15 +13813,14 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  '@lit-protocol/vincent-app-sdk@1.0.3-beta.4(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)':
+  '@lit-protocol/vincent-app-sdk@1.0.3-beta.7(@walletconnect/modal@2.7.0(@types/react@19.1.8)(react@19.1.0))(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)':
     dependencies:
       '@lit-protocol/auth-helpers': 7.2.0(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
       '@lit-protocol/constants': 7.2.0(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
       '@lit-protocol/lit-node-client': 7.2.0(@walletconnect/modal@2.7.0(@types/react@19.1.8)(react@19.1.0))(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
-      '@lit-protocol/vincent-ability-sdk': 0.0.4-ea(bufferutil@4.0.9)(utf-8-validate@5.0.10)
-      '@lit-protocol/vincent-contracts-sdk': 1.0.0-beta.2(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+      '@lit-protocol/vincent-ability-sdk': 0.0.7-mma(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+      '@lit-protocol/vincent-contracts-sdk': 1.0.0-beta.3(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       '@noble/secp256k1': 2.3.0
-      did-jwt: 8.0.17
       ethers: 5.8.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       tslib: 2.8.1
       zod: 3.25.64
@@ -13851,7 +13850,7 @@ snapshots:
       - uploadthing
       - utf-8-validate
 
-  '@lit-protocol/vincent-contracts-sdk@0.0.4-ea(bufferutil@4.0.9)(utf-8-validate@5.0.10)':
+  '@lit-protocol/vincent-contracts-sdk@0.0.7-mma(bufferutil@4.0.9)(utf-8-validate@5.0.10)':
     dependencies:
       '@ethersproject/abi': 5.8.0
       cbor2: 2.0.1
@@ -13860,7 +13859,7 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  '@lit-protocol/vincent-contracts-sdk@1.0.0-beta.2(bufferutil@4.0.9)(utf-8-validate@5.0.10)':
+  '@lit-protocol/vincent-contracts-sdk@1.0.0-beta.3(bufferutil@4.0.9)(utf-8-validate@5.0.10)':
     dependencies:
       '@ethersproject/abi': 5.8.0
       cbor2: 2.0.1
@@ -13869,7 +13868,7 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  '@lit-protocol/vincent-registry-sdk@3.3.2-beta.2(react-redux@9.2.0(@types/react@19.1.8)(react@19.1.0)(redux@5.0.1))(react@19.1.0)':
+  '@lit-protocol/vincent-registry-sdk@3.3.2-beta.3(react-redux@9.2.0(@types/react@19.1.8)(react@19.1.0)(redux@5.0.1))(react@19.1.0)':
     dependencies:
       '@asteasolutions/zod-to-openapi': 7.3.4(zod@3.25.64)
       '@reduxjs/toolkit': 2.8.2(react-redux@9.2.0(@types/react@19.1.8)(react@19.1.0)(redux@5.0.1))(react@19.1.0)
