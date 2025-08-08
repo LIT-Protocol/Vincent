@@ -70,7 +70,7 @@ export const vincentAbility = createVincentAbility({
       alchemyGasSponsor,
       alchemyGasSponsorApiKey,
       alchemyGasSponsorPolicyId,
-    } = toolParams;
+    } = abilityParams;
 
     const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
 
