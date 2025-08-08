@@ -326,6 +326,40 @@ importers:
         specifier: ^4.0.0
         version: 4.0.0
 
+  packages/apps/ability-erc20-transfer:
+    dependencies:
+      '@lit-protocol/vincent-ability-sdk':
+        specifier: workspace:*
+        version: link:../../libs/ability-sdk
+      '@lit-protocol/vincent-app-sdk':
+        specifier: workspace:^
+        version: link:../../libs/app-sdk
+      '@lit-protocol/vincent-policy-send-counter':
+        specifier: workspace:*
+        version: link:../policy-send-counter
+      '@lit-protocol/vincent-scaffold-sdk':
+        specifier: 1.1.5
+        version: 1.1.5(@lit-protocol/vincent-app-sdk@packages+libs+app-sdk)(@lit-protocol/vincent-tool-sdk@1.0.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(@tanstack/query-core@5.80.7)(@types/react@19.1.8)(bufferutil@4.0.9)(immer@10.1.1)(react@19.1.0)(typescript@5.8.3)(use-sync-external-store@1.4.0(react@19.1.0))(utf-8-validate@5.0.10)(zod@3.25.64)
+      ethers:
+        specifier: ^5.8.0
+        version: 5.8.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+      tslib:
+        specifier: 2.8.1
+        version: 2.8.1
+      zod:
+        specifier: ^3.25.64
+        version: 3.25.64
+    devDependencies:
+      esbuild:
+        specifier: ^0.19.12
+        version: 0.19.12
+      esbuild-plugin-polyfill-node:
+        specifier: ^0.3.0
+        version: 0.3.0(esbuild@0.19.12)
+      ipfs-only-hash:
+        specifier: ^4.0.0
+        version: 4.0.0
+
   packages/apps/ability-evm-transaction-signer:
     dependencies:
       '@lit-protocol/vincent-ability-sdk':
@@ -781,9 +815,9 @@ importers:
       '@lit-protocol/vincent-app-sdk':
         specifier: workspace:^
         version: link:../../libs/app-sdk
-      '@uniswap/sdk-core':
-        specifier: ^7.7.2
-        version: 7.7.2
+      '@lit-protocol/vincent-scaffold-sdk':
+        specifier: ^1.1.6
+        version: 1.1.7(@lit-protocol/vincent-app-sdk@packages+libs+app-sdk)(@lit-protocol/vincent-tool-sdk@1.0.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(@tanstack/query-core@5.80.7)(@types/react@19.1.8)(bufferutil@4.0.9)(immer@10.1.1)(react@19.1.0)(typescript@5.8.3)(use-sync-external-store@1.4.0(react@19.1.0))(utf-8-validate@5.0.10)(zod@3.25.64)
       ethers:
         specifier: ^5.8.0
         version: 5.8.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
@@ -2670,6 +2704,14 @@ packages:
 
   '@lit-protocol/vincent-registry-sdk@4.0.0':
     resolution: {integrity: sha512-/Dm7fQEgwLK6GuKrKUsfKxqONXCTeDBx5iYZY8ehbi5Qnmy0c9Hm9kxWz/YluR9czEYvezY/otc4hLSdhe0V+g==}
+
+  '@lit-protocol/vincent-scaffold-sdk@1.1.5':
+    resolution: {integrity: sha512-+pzW5JCjiYPF5aQRf/NeTtclvor6gp9Nkf3SIKsTYcboof/bqe5bfxaF1ghKuZBOMVzNTesn0id6Zej4UPLVMw==}
+    engines: {node: '>=16.0.0'}
+    hasBin: true
+    peerDependencies:
+      '@lit-protocol/vincent-app-sdk': '*'
+      '@lit-protocol/vincent-tool-sdk': '*'
 
   '@lit-protocol/vincent-scaffold-sdk@1.1.7':
     resolution: {integrity: sha512-5IMYCz+D3i0v9aJhvFamJqhNMh9ESSabpnTKiRK64bY1DJEapJtrvnrxqScYYdDibtraJ6rK9vj+M1/Jndqgyw==}
@@ -9193,6 +9235,14 @@ packages:
       typescript:
         optional: true
 
+  ox@0.8.6:
+    resolution: {integrity: sha512-eiKcgiVVEGDtEpEdFi1EGoVVI48j6icXHce9nFwCNM7CKG3uoCXKdr4TPhS00Iy1TR2aWSF1ltPD0x/YgqIL9w==}
+    peerDependencies:
+      typescript: 5.8.3
+    peerDependenciesMeta:
+      typescript:
+        optional: true
+
   p-limit@2.3.0:
     resolution: {integrity: sha512-//88mFWSJx8lxCzwdAABTJL2MyWB12+eIY7MDL2SqLmAkeKU9qxRvWuSyTjm3FUmpBEMuFfckAIqEaVGUDxb6w==}
     engines: {node: '>=6'}
@@ -11292,6 +11342,14 @@ packages:
 
   viem@2.31.3:
     resolution: {integrity: sha512-q3JGI5QFB4LEiLfg9f2ZwjUygAn2W0wMLtj++7E/L2i8Y7zKAkR4TEEOhwBn7gyYXpuc7f1vfd26PJbkEKuj5w==}
+    peerDependencies:
+      typescript: 5.8.3
+    peerDependenciesMeta:
+      typescript:
+        optional: true
+
+  viem@2.33.3:
+    resolution: {integrity: sha512-aWDr6i6r3OfNCs0h9IieHFhn7xQJJ8YsuA49+9T5JRyGGAkWhLgcbLq2YMecgwM7HdUZpx1vPugZjsShqNi7Gw==}
     peerDependencies:
       typescript: 5.8.3
     peerDependenciesMeta:
@@ -14393,6 +14451,33 @@ snapshots:
       - react
       - react-redux
 
+  '@lit-protocol/vincent-scaffold-sdk@1.1.5(@lit-protocol/vincent-app-sdk@packages+libs+app-sdk)(@lit-protocol/vincent-tool-sdk@1.0.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(@tanstack/query-core@5.80.7)(@types/react@19.1.8)(bufferutil@4.0.9)(immer@10.1.1)(react@19.1.0)(typescript@5.8.3)(use-sync-external-store@1.4.0(react@19.1.0))(utf-8-validate@5.0.10)(zod@3.25.64)':
+    dependencies:
+      '@lit-protocol/contracts-sdk': 7.2.3(ethers@5.7.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))
+      '@lit-protocol/vincent-app-sdk': link:packages/libs/app-sdk
+      '@lit-protocol/vincent-tool-sdk': 1.0.2(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+      '@wagmi/core': 2.17.3(@tanstack/query-core@5.80.7)(@types/react@19.1.8)(immer@10.1.1)(react@19.1.0)(typescript@5.8.3)(use-sync-external-store@1.4.0(react@19.1.0))(viem@2.33.3(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64))
+      chalk: 4.1.2
+      dotenv: 16.5.0
+      esbuild: 0.19.12
+      esbuild-plugin-polyfill-node: 0.3.0(esbuild@0.19.12)
+      ethers: 5.7.2(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+      inquirer: 8.2.6
+      ipfs-only-hash: 4.0.0
+      viem: 2.33.3(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)
+    transitivePeerDependencies:
+      - '@tanstack/query-core'
+      - '@types/react'
+      - bufferutil
+      - encoding
+      - immer
+      - react
+      - supports-color
+      - typescript
+      - use-sync-external-store
+      - utf-8-validate
+      - zod
+
   '@lit-protocol/vincent-scaffold-sdk@1.1.7(@lit-protocol/vincent-app-sdk@packages+libs+app-sdk)(@lit-protocol/vincent-tool-sdk@1.0.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(@tanstack/query-core@5.80.7)(@types/react@19.1.8)(bufferutil@4.0.9)(immer@10.1.1)(react@19.1.0)(typescript@5.8.3)(use-sync-external-store@1.4.0(react@19.1.0))(utf-8-validate@5.0.10)(zod@3.25.64)':
     dependencies:
       '@account-kit/infra': 4.52.2(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(viem@2.31.3(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64))
@@ -17268,6 +17353,21 @@ snapshots:
       eventemitter3: 5.0.1
       mipd: 0.0.7(typescript@5.8.3)
       viem: 2.31.3(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)
+      zustand: 5.0.0(@types/react@19.1.8)(immer@10.1.1)(react@19.1.0)(use-sync-external-store@1.4.0(react@19.1.0))
+    optionalDependencies:
+      '@tanstack/query-core': 5.80.7
+      typescript: 5.8.3
+    transitivePeerDependencies:
+      - '@types/react'
+      - immer
+      - react
+      - use-sync-external-store
+
+  '@wagmi/core@2.17.3(@tanstack/query-core@5.80.7)(@types/react@19.1.8)(immer@10.1.1)(react@19.1.0)(typescript@5.8.3)(use-sync-external-store@1.4.0(react@19.1.0))(viem@2.33.3(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64))':
+    dependencies:
+      eventemitter3: 5.0.1
+      mipd: 0.0.7(typescript@5.8.3)
+      viem: 2.33.3(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)
       zustand: 5.0.0(@types/react@19.1.8)(immer@10.1.1)(react@19.1.0)(use-sync-external-store@1.4.0(react@19.1.0))
     optionalDependencies:
       '@tanstack/query-core': 5.80.7
@@ -23572,6 +23672,21 @@ snapshots:
     transitivePeerDependencies:
       - zod
 
+  ox@0.8.6(typescript@5.8.3)(zod@3.25.64):
+    dependencies:
+      '@adraffy/ens-normalize': 1.11.0
+      '@noble/ciphers': 1.3.0
+      '@noble/curves': 1.9.2
+      '@noble/hashes': 1.8.0
+      '@scure/bip32': 1.7.0
+      '@scure/bip39': 1.6.0
+      abitype: 1.0.8(typescript@5.8.3)(zod@3.25.64)
+      eventemitter3: 5.0.1
+    optionalDependencies:
+      typescript: 5.8.3
+    transitivePeerDependencies:
+      - zod
+
   p-limit@2.3.0:
     dependencies:
       p-try: 2.2.0
@@ -25950,6 +26065,23 @@ snapshots:
       abitype: 1.0.8(typescript@5.8.3)(zod@3.25.64)
       isows: 1.0.7(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))
       ox: 0.8.1(typescript@5.8.3)(zod@3.25.64)
+      ws: 8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+    optionalDependencies:
+      typescript: 5.8.3
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
+      - zod
+
+  viem@2.33.3(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64):
+    dependencies:
+      '@noble/curves': 1.9.2
+      '@noble/hashes': 1.8.0
+      '@scure/bip32': 1.7.0
+      '@scure/bip39': 1.6.0
+      abitype: 1.0.8(typescript@5.8.3)(zod@3.25.64)
+      isows: 1.0.7(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))
+      ox: 0.8.6(typescript@5.8.3)(zod@3.25.64)
       ws: 8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10)
     optionalDependencies:
       typescript: 5.8.3

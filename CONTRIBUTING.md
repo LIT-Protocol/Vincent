@@ -18,6 +18,7 @@ The Vincent system consists of several key components:
 - **registry-sdk**: REST API for an offchain service increasing the available info that Vincent apps can show to their users, offering discoverability and auditability services.
 - **policy-spending-limit**: A policy that can be attached to abilities to avoid them spending more than a user-defined limit in a specific period of time.
 - **ability-erc20-approval**: An ability to send ERC20 approve/allowance transactions from a Vincent app on behalf of the delegator.
+- **ability-erc20-transfer**: An ability to send ERC20 transfer transactions from a Vincent app on behalf of the delegator.
 - **ability-sdk**: An SDK exposing utilities to develop Vincent abilities and policies.
 - **ability-aave**: An ability to interact with Aave protocol from a Vincent app on behalf of the delegator.
 - **ability-debridge**: An ability to utilize cross-chain bridging through Debridge from a Vincent app on behalf of the delegator.

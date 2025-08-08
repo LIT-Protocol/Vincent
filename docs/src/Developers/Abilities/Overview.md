@@ -5,6 +5,7 @@ children:
   - ./Aave.md
   - ./Debridge.md
   - ./Erc20Approval.md
+  - ./Erc20Transfer.md
   - ./EvmTransactionSigner.md
   - ./Morpho.md
   - ./UniswapSwap.md
@@ -19,4 +20,5 @@ children:
 | [Uniswap Swap](./UniswapSwap.md)                    | DeFi Protocol | Perform token swaps via Uniswap V3, enabling decentralized exchange functionality without manual user approvals.                            |
 | [deBridge](./Debridge.md)                           | Cross-Chain   | Bridge tokens across multiple blockchains using the deBridge protocol, streamlining cross-chain transfers.                                  |
 | [ERC20 Approval](./Erc20Approval.md)                | Utility       | Manage ERC20 token allowances, a foundational step for enabling DeFi operations like swaps, lending, and liquidity provision.               |
+| [ERC20 Transfer](./Erc20Transfer.md)                | Utility       | Transfers ERC20 tokens, a basic operation of fungible assets.                                                                               |
 | [EVM Transaction Signer](./EvmTransactionSigner.md) | Utility       | Sign arbitrary EVM transactions, allowing interaction with any smart contract—even those without a dedicated Vincent Ability.               |

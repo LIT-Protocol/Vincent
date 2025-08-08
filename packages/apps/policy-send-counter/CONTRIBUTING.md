@@ -4,7 +4,7 @@ This document provides guidelines for contributing to the Vincent Policy Send Co
 
 ## Overview
 
-The Vincent Policy Send Counter is a policy that can be attached to abilities to avoid them spending more than a user-defined limit in a specific period of time. It's part of the Vincent Tools ecosystem and is built using the Vincent Tool SDK.
+The Vincent Policy Send Counter is a policy that can be attached to abilities to avoid them spending more than a user-defined limit in a specific period of time. It's part of the Vincent Abilities ecosystem and is built using the Vincent Tool SDK.
 
 ## Setup
 
@@ -47,19 +47,19 @@ nx action:deploy policy-spending-limit
 
 ## Policy Development Guidelines
 
-1. Use the Vincent Tool SDK to create policies
+1. Use the Vincent Ability SDK to create policies
 2. Define clear schemas for ability parameters and user parameters
 3. Implement the policy lifecycle methods (evaluate, commit)
 4. Handle errors gracefully
 5. Write comprehensive tests for all functionality
 6. Document the policy's purpose and usage
 
-## Integration with Tools
+## Integration with Abilities
 
-This policy can be integrated with various Vincent Tools to enforce sending limits. When developing or modifying the policy, consider how it will be used by abilities such as:
+This policy can be integrated with various Vincent Abilities to enforce sending limits. When developing or modifying the policy, consider how it will be used by abilities such as:
 
-- Vincent Tool ERC20 Approval
-- Vincent Tool Uniswap Swap
+- Vincent Ability ERC20 Approval
+- Vincent Ability Uniswap Swap
 
 ## Testing
 

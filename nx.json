@@ -59,6 +59,7 @@
       "policy-spending-limit",
       "policy-contract-whitelist",
       "ability-erc20-approval",
+      "ability-erc20-transfer",
       "ability-uniswap-swap",
       "ability-evm-transaction-signer",
       "mcp-server",
