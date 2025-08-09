@@ -162,7 +162,7 @@ export default function ConnectView({ theme, readAuthInfo }: ConnectViewProps) {
 
     let currentMessage = '';
     if (authLoading) {
-      currentMessage = 'Authenticating your credentials...';
+      currentMessage = 'Please sign the message in your wallet';
     } else if (accountsLoading) {
       currentMessage = 'Fetching your Vincent Wallet...';
     } else if (sessionLoading) {
@@ -202,7 +202,7 @@ export default function ConnectView({ theme, readAuthInfo }: ConnectViewProps) {
   const renderContent = () => {
     // Use the stable loading state
     if (isStableLoading) {
-      return <Loading />;
+      return <Loading text={loadingMessage} />;
     }
 
     // If authenticated with a new PKP and session sigs
@@ -219,7 +219,7 @@ export default function ConnectView({ theme, readAuthInfo }: ConnectViewProps) {
         setStatusType('error');
       }
       window.location.reload();
-      return <Loading />;
+      return <Loading text="Finalizing authentication..." />;
     }
 
     // If we have validated session sigs from existing auth, show completion message

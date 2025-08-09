@@ -14,7 +14,6 @@ export default defineConfig({
       project: 'vincent-dashboard',
     }),
   ],
-
   define: {
     global: 'globalThis',
     'process.env': process.env,
