@@ -1,17 +1,32 @@
 import { ReactNode } from 'react';
-import { http, createConfig, WagmiProvider } from 'wagmi';
-import { injected } from 'wagmi/connectors';
+import { WagmiProvider } from 'wagmi';
+import { createAppKit } from '@reown/appkit/react';
+import { WagmiAdapter } from '@reown/appkit-adapter-wagmi';
+import { mainnet, polygon, arbitrum, optimism, base } from '@reown/appkit/networks';
 
-import { yellowstone } from '@/config/chains.ts';
+import { env } from '@/config/env';
 
-const wagmiConfig = createConfig({
-  chains: [yellowstone],
-  connectors: [injected()],
-  transports: {
-    [yellowstone.id]: http(),
+const { VITE_WALLETCONNECT_PROJECT_ID } = env;
+
+// Single unified wagmi configuration through AppKit
+const wagmiAdapter = new WagmiAdapter({
+  projectId: VITE_WALLETCONNECT_PROJECT_ID,
+  networks: [mainnet, polygon, arbitrum, optimism, base],
+});
+
+createAppKit({
+  adapters: [wagmiAdapter],
+  networks: [mainnet, polygon, arbitrum, optimism, base],
+  projectId: VITE_WALLETCONNECT_PROJECT_ID,
+  metadata: {
+    name: 'Vincent',
+    description: 'Vincent Dashboard',
+    url: typeof window !== 'undefined' ? window.location.origin : 'https://dashboard.heyvincent.ai',
+    icons: ['https://dashboard.heyvincent.ai/logo.svg'],
   },
+  themeMode: 'dark',
 });
 
 export default function WagmiProviderWrapper({ children }: { children: ReactNode }) {
-  return <WagmiProvider config={wagmiConfig}>{children}</WagmiProvider>;
+  return <WagmiProvider config={wagmiAdapter.wagmiConfig}>{children}</WagmiProvider>;
 }
