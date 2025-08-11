@@ -10,14 +10,14 @@ type initPkpSignerProps = {
 };
 
 export const initPkpSigner = async ({ authInfo, sessionSigs }: initPkpSignerProps) => {
-  if (!authInfo || !sessionSigs || !authInfo.agentPKP) {
+  if (!authInfo || !sessionSigs || !authInfo.userPKP) {
     throw new Error('No auth info or session sigs found');
   }
 
   try {
     const pkpWallet = new PKPEthersWallet({
       controllerSessionSigs: sessionSigs,
-      pkpPubKey: authInfo.agentPKP.publicKey,
+      pkpPubKey: authInfo.userPKP.publicKey,
       litNodeClient: litNodeClient,
       rpc: LIT_RPC.CHRONICLE_YELLOWSTONE,
     });
