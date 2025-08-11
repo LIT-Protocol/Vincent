@@ -12,9 +12,10 @@ interface AccountTooltipProps {
     cardBg?: string;
     cardBorder?: string;
   };
+  isDeveloperDashboard?: boolean;
 }
 
-export function AccountTooltip({ theme }: AccountTooltipProps) {
+export function AccountTooltip({ theme, isDeveloperDashboard = false }: AccountTooltipProps) {
   const { authInfo } = useReadAuthInfo();
   const [isOpen, setIsOpen] = useState(false);
   const [isClient, setIsClient] = useState(false);
@@ -57,10 +58,15 @@ export function AccountTooltip({ theme }: AccountTooltipProps) {
     return undefined;
   }, [isOpen, isClient]);
 
+  // Get the appropriate address based on dashboard type
+  const ethAddress = isDeveloperDashboard
+    ? authInfo?.userPKP?.ethAddress
+    : authInfo?.agentPKP?.ethAddress;
+
   const handleCopyEthAddress = async () => {
-    if (authInfo?.agentPKP?.ethAddress && isClient) {
+    if (ethAddress && isClient) {
       try {
-        await navigator.clipboard.writeText(authInfo.agentPKP.ethAddress);
+        await navigator.clipboard.writeText(ethAddress);
       } catch (err) {
         console.error('Failed to copy eth address:', err);
       }
@@ -115,7 +121,7 @@ export function AccountTooltip({ theme }: AccountTooltipProps) {
           <TooltipContent side="top" className={tooltipClassName}>
             <div className="whitespace-pre-line text-xs">
               <div className="mb-2 break-words">{formatAuthInfo()}</div>
-              {authInfo.agentPKP?.ethAddress && (
+              {ethAddress && (
                 <div className={`flex items-start gap-2 pt-2 border-t ${borderClassName}`}>
                   <div className="flex-1 min-w-0">
                     <div
@@ -128,7 +134,7 @@ export function AccountTooltip({ theme }: AccountTooltipProps) {
                     <div
                       className={`font-mono text-xs break-all ${theme.cardBg && theme.cardBorder ? 'text-black' : 'text-white'}`}
                     >
-                      {authInfo.agentPKP.ethAddress}
+                      {ethAddress}
                     </div>
                   </div>
                   <button

@@ -834,7 +834,7 @@ export function Sidebar({ userApps, userAbilities, userPolicies }: SidebarProps)
 
             {/* My Account */}
             <SidebarMenuItem>
-              <AccountTooltip theme={theme} />
+              <AccountTooltip theme={theme} isDeveloperDashboard={true} />
             </SidebarMenuItem>
 
             {/* Sign Out */}

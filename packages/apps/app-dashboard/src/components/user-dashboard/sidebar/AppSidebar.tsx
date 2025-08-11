@@ -376,7 +376,7 @@ export function AppSidebar({
 
             {/* My Account with tooltip */}
             <SidebarMenuItem>
-              <AccountTooltip theme={theme} />
+              <AccountTooltip theme={theme} isDeveloperDashboard={false} />
             </SidebarMenuItem>
 
             {/* Sign Out */}
