@@ -16,7 +16,7 @@ interface AddressCheckResult {
 export function useAppAddressCheck(): AddressCheckResult {
   const { appId } = useParams<{ appId: string }>();
   const { authInfo, isProcessing: authLoading } = useReadAuthInfo();
-  const address = authInfo?.agentPKP?.ethAddress;
+  const address = authInfo?.userPKP?.ethAddress;
 
   // Fetch app data
   const {
