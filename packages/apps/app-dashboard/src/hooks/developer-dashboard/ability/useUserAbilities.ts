@@ -5,7 +5,7 @@ import { Ability } from '@/types/developer-dashboard/appTypes';
 
 export function useUserAbilities() {
   const { authInfo } = useReadAuthInfo();
-  const address = authInfo?.agentPKP?.ethAddress;
+  const address = authInfo?.userPKP?.ethAddress;
 
   const {
     data: allAbilities,

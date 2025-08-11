@@ -5,7 +5,7 @@ import { Policy } from '@/types/developer-dashboard/appTypes';
 
 export function useUserPolicies() {
   const { authInfo } = useReadAuthInfo();
-  const address = authInfo?.agentPKP?.ethAddress;
+  const address = authInfo?.userPKP?.ethAddress;
 
   const {
     data: allPolicies,
