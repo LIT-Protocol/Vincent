@@ -7,7 +7,7 @@ import { SidebarError } from './SidebarError';
 
 export function SidebarWrapper() {
   const { authInfo, isProcessing, error } = useReadAuthInfo();
-  const pkpEthAddress = authInfo?.agentPKP?.ethAddress || '';
+  const pkpEthAddress = authInfo?.userPKP?.ethAddress || '';
 
   // Early return if required params are missing
   if (!pkpEthAddress && !isProcessing) {

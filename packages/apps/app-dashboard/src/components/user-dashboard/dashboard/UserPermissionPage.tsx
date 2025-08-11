@@ -82,11 +82,11 @@ export function AppPermissionPage({
     });
 
     if (allValid) {
-      if (
-        !readAuthInfo.authInfo?.userPKP ||
-        !readAuthInfo.authInfo?.agentPKP ||
-        !readAuthInfo.sessionSigs
-      ) {
+      // Get the agent PKP for this specific app
+      const appId = connectInfoMap.app.appId;
+      const currentAppAgentPKP = readAuthInfo.authInfo?.agentPKPs?.[appId];
+
+      if (!readAuthInfo.authInfo?.userPKP || !currentAppAgentPKP || !readAuthInfo.sessionSigs) {
         setLocalError('Missing authentication information. Please try refreshing the page.');
         setLocalStatus(null);
         return;
@@ -104,7 +104,7 @@ export function AppPermissionPage({
       setLocalStatus('Adding permitted actions...');
       await addPermittedActions({
         wallet: userPkpWallet,
-        agentPKPTokenId: readAuthInfo.authInfo.agentPKP.tokenId,
+        agentPKPTokenId: currentAppAgentPKP.tokenId,
         abilityIpfsCids: Object.keys(formData),
       });
 
@@ -112,7 +112,7 @@ export function AppPermissionPage({
         setLocalStatus('Setting ability policy parameters...');
         const client = getClient({ signer: userPkpWallet });
         await client.setAbilityPolicyParameters({
-          pkpEthAddress: readAuthInfo.authInfo.agentPKP!.ethAddress,
+          pkpEthAddress: currentAppAgentPKP.ethAddress,
           appId: Number(connectInfoMap.app.appId),
           appVersion: Number(permittedVersion),
           policyParams: formData,
@@ -152,7 +152,11 @@ export function AppPermissionPage({
     setLocalError(null);
     setLocalSuccess(null);
 
-    if (!readAuthInfo.authInfo?.userPKP || !readAuthInfo.sessionSigs) {
+    // Get the agent PKP for this specific app
+    const appId = connectInfoMap.app.appId;
+    const currentAppAgentPKP = readAuthInfo.authInfo?.agentPKPs?.[appId];
+
+    if (!readAuthInfo.authInfo?.userPKP || !currentAppAgentPKP || !readAuthInfo.sessionSigs) {
       setLocalError('Missing authentication information. Please try refreshing the page.');
       setLocalStatus(null);
       return;
@@ -170,7 +174,7 @@ export function AppPermissionPage({
 
       const client = getClient({ signer: agentPkpWallet });
       await client.unPermitApp({
-        pkpEthAddress: readAuthInfo.authInfo.agentPKP!.ethAddress,
+        pkpEthAddress: currentAppAgentPKP.ethAddress,
         appId: Number(connectInfoMap.app.appId),
         appVersion: Number(permittedVersion),
       });

@@ -73,11 +73,11 @@ export function UpdateVersionPage({ connectInfoMap, readAuthInfo }: UpdateVersio
     });
 
     if (allValid) {
-      if (
-        !readAuthInfo.authInfo?.userPKP ||
-        !readAuthInfo.authInfo?.agentPKP ||
-        !readAuthInfo.sessionSigs
-      ) {
+      // Get the agent PKP for this specific app
+      const appId = connectInfoMap.app.appId;
+      const currentAppAgentPKP = readAuthInfo.authInfo?.agentPKPs?.[appId];
+
+      if (!readAuthInfo.authInfo?.userPKP || !currentAppAgentPKP || !readAuthInfo.sessionSigs) {
         setLocalError('Missing authentication information. Please try refreshing the page.');
         setLocalStatus(null);
         return;
@@ -94,7 +94,7 @@ export function UpdateVersionPage({ connectInfoMap, readAuthInfo }: UpdateVersio
       setLocalStatus('Adding permitted actions...');
       await addPermittedActions({
         wallet: userPkpWallet,
-        agentPKPTokenId: readAuthInfo.authInfo.agentPKP.tokenId,
+        agentPKPTokenId: currentAppAgentPKP.tokenId,
         abilityIpfsCids: Object.keys(formData),
       });
 
@@ -102,7 +102,7 @@ export function UpdateVersionPage({ connectInfoMap, readAuthInfo }: UpdateVersio
         setLocalStatus('Updating to new version...');
         const client = getClient({ signer: userPkpWallet });
         await client.permitApp({
-          pkpEthAddress: readAuthInfo.authInfo.agentPKP!.ethAddress,
+          pkpEthAddress: currentAppAgentPKP.ethAddress,
           appId: Number(connectInfoMap.app.appId),
           appVersion: Number(connectInfoMap.app.activeVersion),
           permissionData: formData,

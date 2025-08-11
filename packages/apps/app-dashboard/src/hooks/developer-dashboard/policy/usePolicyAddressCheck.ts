@@ -16,7 +16,7 @@ interface AddressCheckResult {
 export function usePolicyAddressCheck(): AddressCheckResult {
   const { packageName } = useParams<{ packageName: string }>();
   const { authInfo, isProcessing: authLoading } = useReadAuthInfo();
-  const address = authInfo?.agentPKP?.ethAddress;
+  const address = authInfo?.userPKP?.ethAddress;
 
   // Fetch policy data
   const {

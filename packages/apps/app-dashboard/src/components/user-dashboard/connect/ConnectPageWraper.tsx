@@ -26,7 +26,7 @@ export function ConnectPageWrapper() {
     error: isPermittedError,
   } = useConnectMiddleware({
     appId: Number(appId),
-    pkpEthAddress: authInfo?.agentPKP?.ethAddress || '',
+    pkpEthAddress: authInfo?.agentPKPs?.[Number(appId)].ethAddress || '',
     appData: data?.app,
   });
 
@@ -76,7 +76,7 @@ export function ConnectPageWrapper() {
     );
   } else if (isLoading || isProcessing || isPermittedLoading) {
     // Check if we need auth skeleton or connect page skeleton
-    const isUserAuthed = authInfo?.userPKP && authInfo?.agentPKP && sessionSigs;
+    const isUserAuthed = authInfo?.userPKP && sessionSigs;
     content = <UnifiedConnectSkeleton mode={isUserAuthed ? 'consent' : 'auth'} />;
   }
 
@@ -87,7 +87,7 @@ export function ConnectPageWrapper() {
   ) {
     content = <UnifiedConnectSkeleton mode="consent" />;
   } else {
-    const isUserAuthed = authInfo?.userPKP && authInfo?.agentPKP && sessionSigs;
+    const isUserAuthed = authInfo?.userPKP && sessionSigs;
 
     // Now that we have data, check authentication
     if (!isUserAuthed) {

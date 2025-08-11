@@ -19,7 +19,7 @@ export function HomeWrapper() {
     );
   }
 
-  const isUserAuthed = authInfo?.userPKP && authInfo?.agentPKP && sessionSigs;
+  const isUserAuthed = authInfo?.userPKP && sessionSigs;
 
   // If authenticated, redirect to /user/apps
   if (isUserAuthed) {

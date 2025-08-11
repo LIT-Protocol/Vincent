@@ -2,12 +2,14 @@ import { useEffect, useState, useCallback } from 'react';
 import { IRelayPKP, SessionSigs } from '@lit-protocol/types';
 import { getValidSessionSigs } from '../../utils/user-dashboard/getValidSessionSigs';
 import { disconnectWeb3 } from '@lit-protocol/auth-browser';
+import { AgentPKPMap } from '../../utils/user-dashboard/getAgentPKP';
+
 // Define interfaces for the authentication info
 export interface AuthInfo {
   type: string;
   authenticatedAt: string;
-  agentPKP?: IRelayPKP;
-  userPKP?: IRelayPKP;
+  agentPKPs?: AgentPKPMap; // Map of appId to agent PKPs
+  userPKP?: IRelayPKP; // Root user identity
   value?: string;
   userId?: string;
 }

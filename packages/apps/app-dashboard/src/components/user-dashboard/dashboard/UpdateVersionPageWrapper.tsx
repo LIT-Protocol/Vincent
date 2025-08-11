@@ -22,7 +22,7 @@ export function UpdateVersionPageWrapper() {
     error: isPermittedError,
   } = useConnectMiddleware({
     appId: Number(appId),
-    pkpEthAddress: authInfo?.agentPKP?.ethAddress || '',
+    pkpEthAddress: authInfo?.agentPKPs?.[Number(appId)]?.ethAddress || '',
     appData: data?.app,
   });
 
@@ -35,7 +35,7 @@ export function UpdateVersionPageWrapper() {
     return <GeneralErrorScreen errorDetails="App ID was not provided" />;
   }
 
-  const isUserAuthed = authInfo?.userPKP && authInfo?.agentPKP && sessionSigs;
+  const isUserAuthed = authInfo?.userPKP && sessionSigs;
   if (!isProcessing && !isUserAuthed) {
     return (
       <AuthenticationErrorScreen readAuthInfo={{ authInfo, sessionSigs, isProcessing, error }} />

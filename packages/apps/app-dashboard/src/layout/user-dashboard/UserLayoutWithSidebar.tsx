@@ -18,7 +18,7 @@ function UserLayoutWithSidebar({ children, className }: ComponentProps<'div'>) {
     location.pathname === '/user/apps' || location.pathname === '/user/wallet';
 
   // Handle authentication at the layout level to prevent duplication
-  const isUserAuthed = authInfo?.userPKP && authInfo?.agentPKP && sessionSigs;
+  const isUserAuthed = authInfo?.userPKP && sessionSigs;
 
   if (isProcessing) {
     return <ThemedLoading />;
@@ -75,7 +75,7 @@ function UserLayoutWithSidebar({ children, className }: ComponentProps<'div'>) {
 
               {/* Content wrapper to match component structure */}
               <div
-                className={`min-h-screen w-full p-2 sm:p-4 md:p-6 relative flex justify-center items-start ${hideSvgBackground ? 'pt-6' : 'pt-24 sm:pt-28 md:pt-32 lg:pt-40'}`}
+                className={`min-h-full w-full p-2 sm:p-4 md:p-6 relative flex justify-center items-start ${hideSvgBackground ? 'pt-6' : 'pt-24 sm:pt-28 md:pt-32 lg:pt-40'}`}
               >
                 {children}
               </div>

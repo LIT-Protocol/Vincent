@@ -54,9 +54,9 @@ export function DeveloperSidebarError({ error }: DeveloperSidebarErrorProps) {
   };
 
   const handleCopyEthAddress = async () => {
-    if (authInfo?.agentPKP?.ethAddress) {
+    if (authInfo?.userPKP?.ethAddress) {
       try {
-        await navigator.clipboard.writeText(authInfo.agentPKP.ethAddress);
+        await navigator.clipboard.writeText(authInfo.userPKP.ethAddress);
       } catch (err) {
         console.error('Failed to copy eth address:', err);
       }
@@ -271,12 +271,12 @@ export function DeveloperSidebarError({ error }: DeveloperSidebarErrorProps) {
                   >
                     <div className="whitespace-pre-line text-xs">
                       <div className="mb-2">{formatAuthInfo()}</div>
-                      {authInfo.agentPKP?.ethAddress && (
+                      {authInfo.userPKP?.ethAddress && (
                         <div className="flex items-center gap-2 pt-2 border-t ${theme.cardBorder}">
                           <div className="flex-1 min-w-0">
                             <div className="${theme.textMuted}">Vincent Wallet Address:</div>
                             <div className="font-mono text-xs ${theme.text} truncate">
-                              {authInfo.agentPKP.ethAddress}
+                              {authInfo.userPKP.ethAddress}
                             </div>
                           </div>
                           <button

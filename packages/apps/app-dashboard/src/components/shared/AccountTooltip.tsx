@@ -58,9 +58,9 @@ export function AccountTooltip({ theme }: AccountTooltipProps) {
   }, [isOpen, isClient]);
 
   const handleCopyEthAddress = async () => {
-    if (authInfo?.agentPKP?.ethAddress && isClient) {
+    if (authInfo?.userPKP?.ethAddress && isClient) {
       try {
-        await navigator.clipboard.writeText(authInfo.agentPKP.ethAddress);
+        await navigator.clipboard.writeText(authInfo.userPKP.ethAddress);
       } catch (err) {
         console.error('Failed to copy eth address:', err);
       }
@@ -115,7 +115,7 @@ export function AccountTooltip({ theme }: AccountTooltipProps) {
           <TooltipContent side="top" className={tooltipClassName}>
             <div className="whitespace-pre-line text-xs">
               <div className="mb-2 break-words">{formatAuthInfo()}</div>
-              {authInfo.agentPKP?.ethAddress && (
+              {authInfo.userPKP?.ethAddress && (
                 <div className={`flex items-start gap-2 pt-2 border-t ${borderClassName}`}>
                   <div className="flex-1 min-w-0">
                     <div
@@ -128,7 +128,7 @@ export function AccountTooltip({ theme }: AccountTooltipProps) {
                     <div
                       className={`font-mono text-xs break-all ${theme.cardBg && theme.cardBorder ? 'text-black' : 'text-white'}`}
                     >
-                      {authInfo.agentPKP.ethAddress}
+                      {authInfo.userPKP.ethAddress}
                     </div>
                   </div>
                   <button

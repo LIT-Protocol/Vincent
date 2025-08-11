@@ -1,13 +1,12 @@
 import { useEffect, useState, useCallback } from 'react';
 import { AUTH_METHOD_TYPE } from '@lit-protocol/constants';
-import { SessionSigs, IRelayPKP } from '@lit-protocol/types';
+import { SessionSigs } from '@lit-protocol/types';
 import { ThemeType } from './ui/theme';
-
 import useAuthenticate from '../../../hooks/user-dashboard/useAuthenticate';
 import useAccounts from '../../../hooks/user-dashboard/useAccounts';
 import { registerWebAuthn, getSessionSigs } from '../../../utils/user-dashboard/lit';
 import ConnectMethods from '../auth/ConnectMethods';
-import { getAgentPKP } from '../../../utils/user-dashboard/getAgentPKP';
+import { getAgentPKPs, AgentPKPMap } from '../../../utils/user-dashboard/getAgentPKP';
 import {
   useSetAuthInfo,
   UseReadAuthInfo,
@@ -28,9 +27,9 @@ export default function ConnectView({ theme, readAuthInfo }: ConnectViewProps) {
   const { updateAuthInfo } = useSetAuthInfo();
   const { clearAuthInfo } = useClearAuthInfo();
 
-  // Shared state for session sigs and agent PKP
+  // Shared state for session sigs and agent PKPs
   const [sessionSigs, setSessionSigs] = useState<SessionSigs>();
-  const [agentPKP, setAgentPKP] = useState<IRelayPKP>();
+  const [agentPKPs, setAgentPKPs] = useState<AgentPKPMap>();
   const [sessionError, setSessionError] = useState<Error>();
 
   // Status message state
@@ -118,21 +117,22 @@ export default function ConnectView({ theme, readAuthInfo }: ConnectViewProps) {
       });
       setSessionSigs(sigs);
 
-      // After getting user PKP session sigs, try to get the agent PKP
+      // After getting user PKP session sigs, fetch the agent PKPs
       try {
-        const agentPkpInfo = await getAgentPKP(userPKP.ethAddress);
-        setAgentPKP(agentPkpInfo);
+        const fetchedAgentPKPs = await getAgentPKPs(userPKP.ethAddress);
+        setAgentPKPs(fetchedAgentPKPs);
       } catch (agentError) {
-        console.error('Error handling Agent PKP:', agentError);
+        console.error('Error handling Agent PKPs:', agentError);
         setStatusMessage(`Agent PKP Error: ${agentError}`);
         setStatusType('error');
+        return;
       }
     } catch (err) {
       setSessionError(err as Error);
     } finally {
       setSessionLoading(false);
     }
-  }, [authMethod, userPKP, setSessionSigs, setAgentPKP, setSessionError, setSessionLoading]);
+  }, [authMethod, userPKP, setSessionSigs, setSessionError, setSessionLoading]);
 
   // If user is authenticated, fetch accounts
   useEffect(() => {
@@ -206,11 +206,11 @@ export default function ConnectView({ theme, readAuthInfo }: ConnectViewProps) {
     }
 
     // If authenticated with a new PKP and session sigs
-    if (userPKP && agentPKP && sessionSigs) {
+    if (userPKP && agentPKPs && sessionSigs) {
       // Connect flow: save PKP info and refresh the page so ConnectPageWrapper can re-evaluate
       try {
         updateAuthInfo({
-          agentPKP,
+          agentPKPs,
           userPKP,
         });
       } catch (error) {
@@ -223,7 +223,7 @@ export default function ConnectView({ theme, readAuthInfo }: ConnectViewProps) {
     }
 
     // If we have validated session sigs from existing auth, show completion message
-    if (validatedSessionSigs && authInfo?.userPKP && authInfo?.agentPKP) {
+    if (validatedSessionSigs && authInfo?.userPKP) {
       return (
         <div className="text-center py-8">
           <h1 className={`text-lg font-semibold ${theme.text}`}>Authentication Complete</h1>

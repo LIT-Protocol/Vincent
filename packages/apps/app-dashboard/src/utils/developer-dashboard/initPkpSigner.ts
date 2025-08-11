@@ -7,17 +7,28 @@ import { AuthInfo } from '@/hooks/user-dashboard/useAuthInfo';
 type initPkpSignerProps = {
   authInfo: AuthInfo | null;
   sessionSigs: SessionSigs | null;
+  appId?: number; // Optional: if provided, uses agent PKP for this app; otherwise uses user PKP
 };
 
-export const initPkpSigner = async ({ authInfo, sessionSigs }: initPkpSignerProps) => {
-  if (!authInfo || !sessionSigs || !authInfo.agentPKP) {
+export const initPkpSigner = async ({ authInfo, sessionSigs, appId }: initPkpSignerProps) => {
+  if (!authInfo || !sessionSigs || !authInfo.userPKP) {
     throw new Error('No auth info or session sigs found');
+  }
+
+  // Determine which PKP to use
+  let pkpToUse;
+  if (appId && authInfo.agentPKPs?.[appId]) {
+    // Use agent PKP for the specified app
+    pkpToUse = authInfo.agentPKPs[appId];
+  } else {
+    // Fall back to user PKP
+    pkpToUse = authInfo.userPKP;
   }
 
   try {
     const pkpWallet = new PKPEthersWallet({
       controllerSessionSigs: sessionSigs,
-      pkpPubKey: authInfo.agentPKP.publicKey,
+      pkpPubKey: pkpToUse.publicKey,
       litNodeClient: litNodeClient,
       rpc: LIT_RPC.CHRONICLE_YELLOWSTONE,
     });

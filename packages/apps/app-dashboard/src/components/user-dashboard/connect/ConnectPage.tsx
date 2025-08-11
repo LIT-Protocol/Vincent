@@ -14,7 +14,8 @@ import { ActionButtons } from './ui/ActionButtons';
 import { StatusCard } from './ui/StatusCard';
 import { ConnectFooter } from '../ui/Footer';
 import { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
-import { litNodeClient } from '@/utils/user-dashboard/lit';
+import { BigNumber } from 'ethers';
+import { litNodeClient, mintPKPToExistingPKP } from '@/utils/user-dashboard/lit';
 import { useJwtRedirect } from '@/hooks/user-dashboard/connect/useJwtRedirect';
 
 interface ConnectPageProps {
@@ -67,11 +68,7 @@ export function ConnectPage({ connectInfoMap, readAuthInfo }: ConnectPageProps) 
     });
 
     if (allValid) {
-      if (
-        !readAuthInfo.authInfo?.agentPKP ||
-        !readAuthInfo.authInfo?.userPKP ||
-        !readAuthInfo.sessionSigs
-      ) {
+      if (!readAuthInfo.authInfo?.userPKP || !readAuthInfo.sessionSigs) {
         setLocalError('Missing authentication information. Please try refreshing the page.');
         setIsConnectProcessing(false);
         return;
@@ -85,17 +82,54 @@ export function ConnectPage({ connectInfoMap, readAuthInfo }: ConnectPageProps) 
         litNodeClient: litNodeClient,
       });
       await userPkpWallet.init();
+      const client = getClient({ signer: userPkpWallet });
 
+      let agentPkp;
+
+      try {
+        // Use the existing Agent PKPs from auth info
+        const existingAgentPkps = readAuthInfo.authInfo.agentPKPs || {};
+
+        // Find an available PKP (one with no permitted apps) or create a new one
+        let availablePkp = null;
+        for (const pkp of Object.values(existingAgentPkps)) {
+          const pkpAppIds = await client.getAllPermittedAppIdsForPkp({
+            pkpEthAddress: pkp.ethAddress,
+            offset: '0',
+          });
+
+          if (pkpAppIds.length === 0) {
+            availablePkp = pkp;
+            break;
+          }
+        }
+
+        if (availablePkp) {
+          // Reuse available PKP
+          agentPkp = availablePkp;
+        } else {
+          // All PKPs are in use, mint a new one
+          const tokenIdString = BigNumber.from(readAuthInfo.authInfo.userPKP.tokenId).toHexString();
+          agentPkp = await mintPKPToExistingPKP({
+            ...readAuthInfo.authInfo.userPKP,
+            tokenId: tokenIdString,
+          });
+        }
+      } catch (error) {
+        setLocalError('Failed to fetch Agent PKP information');
+        console.log(error);
+        setIsConnectProcessing(false);
+        return;
+      }
       await addPermittedActions({
         wallet: userPkpWallet,
-        agentPKPTokenId: readAuthInfo.authInfo.agentPKP.tokenId,
+        agentPKPTokenId: agentPkp.tokenId,
         abilityIpfsCids: Object.keys(formData),
       });
 
       try {
-        const client = getClient({ signer: userPkpWallet });
         await client.permitApp({
-          pkpEthAddress: readAuthInfo.authInfo.agentPKP!.ethAddress,
+          pkpEthAddress: agentPkp.ethAddress,
           appId: Number(connectInfoMap.app.appId),
           appVersion: Number(connectInfoMap.app.activeVersion),
           permissionData: formData,

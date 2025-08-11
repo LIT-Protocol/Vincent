@@ -16,7 +16,7 @@ interface AddressCheckResult {
 export function useAbilityAddressCheck(): AddressCheckResult {
   const { packageName } = useParams<{ packageName: string }>();
   const { authInfo, isProcessing: authLoading } = useReadAuthInfo();
-  const address = authInfo?.agentPKP?.ethAddress;
+  const address = authInfo?.userPKP?.ethAddress;
 
   // Fetch ability data
   const {

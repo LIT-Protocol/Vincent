@@ -23,9 +23,9 @@ export function ConnectPageHeader({ authInfo }: ConnectPageHeaderProps) {
   };
 
   const handleCopyEthAddress = async () => {
-    if (authInfo.agentPKP?.ethAddress) {
+    if (authInfo.userPKP?.ethAddress) {
       try {
-        await navigator.clipboard.writeText(authInfo.agentPKP.ethAddress);
+        await navigator.clipboard.writeText(authInfo.userPKP.ethAddress);
         setIsCopied(true);
         setTimeout(() => setIsCopied(false), 2000);
       } catch (err) {
@@ -72,14 +72,14 @@ export function ConnectPageHeader({ authInfo }: ConnectPageHeaderProps) {
                 <div className={`text-xs whitespace-pre-line break-words ${theme.text}`}>
                   {formatAuthInfo()}
                 </div>
-                {authInfo.agentPKP?.ethAddress && (
+                {authInfo.userPKP?.ethAddress && (
                   <div className="flex items-start gap-2 pt-2 border-t border-gray-600">
                     <div className="flex-1 min-w-0">
                       <div className="text-gray-500 dark:text-gray-300 text-xs">
                         Vincent Wallet Address:
                       </div>
                       <div className="font-mono text-xs break-all">
-                        {authInfo.agentPKP.ethAddress}
+                        {authInfo.userPKP.ethAddress}
                       </div>
                     </div>
                     <button

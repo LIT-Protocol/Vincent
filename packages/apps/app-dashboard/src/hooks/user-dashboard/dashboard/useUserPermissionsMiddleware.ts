@@ -1,9 +1,10 @@
 import { readOnlySigner } from '@/utils/developer-dashboard/readOnlySigner';
 import { getClient } from '@lit-protocol/vincent-contracts-sdk';
 import { useEffect, useState } from 'react';
+import { AgentPKPMap } from '@/utils/user-dashboard/getAgentPKP';
 
 export type UseUserPermissionsMiddlewareProps = {
-  pkpEthAddress: string;
+  agentPKPs: AgentPKPMap;
 };
 
 export type UseUserPermissionsMiddlewareReturn = {
@@ -14,7 +15,7 @@ export type UseUserPermissionsMiddlewareReturn = {
 };
 
 export const useUserPermissionsMiddleware = ({
-  pkpEthAddress,
+  agentPKPs,
 }: UseUserPermissionsMiddlewareProps): UseUserPermissionsMiddlewareReturn => {
   const [state, setState] = useState<UseUserPermissionsMiddlewareReturn>({
     permittedApps: null,
@@ -24,14 +25,12 @@ export const useUserPermissionsMiddleware = ({
   });
 
   useEffect(() => {
-    // Early return if params are missing. Assme this to be loading though.
-    // If the auth info is malformed, it'll be caught by the authentication
-    // anyways.
-    if (!pkpEthAddress) {
+    // Early return if no agent PKPs available
+    if (!agentPKPs || !Object.keys(agentPKPs).length) {
       setState({
-        permittedApps: null,
+        permittedApps: [],
         permittedAppVersions: {},
-        isLoading: true,
+        isLoading: false,
         error: null,
       });
       return;
@@ -40,16 +39,15 @@ export const useUserPermissionsMiddleware = ({
     const checkPermitted = async () => {
       try {
         const client = getClient({ signer: readOnlySigner });
-        const userApps = await client.getAllPermittedAppIdsForPkp({
-          pkpEthAddress,
-          offset: '0', // TODO: Make this configurable?
-        });
 
-        // Get app versions for each permitted app
-        const appVersionPromises = userApps.map(async (appId) => {
+        // Get app IDs directly from agentPKPs keys (since it's a 1-to-1 mapping)
+        const permittedAppIds = Object.keys(agentPKPs || {}).map(Number);
+
+        // Get app versions for each agent PKP/app pair
+        const appVersionPromises = Object.entries(agentPKPs || {}).map(async ([appId, pkp]) => {
           const version = await client.getPermittedAppVersionForPkp({
-            pkpEthAddress,
-            appId,
+            pkpEthAddress: pkp.ethAddress,
+            appId: Number(appId),
           });
           return { appId, version };
         });
@@ -66,7 +64,7 @@ export const useUserPermissionsMiddleware = ({
         );
 
         setState({
-          permittedApps: userApps,
+          permittedApps: permittedAppIds,
           permittedAppVersions,
           isLoading: false,
           error: null,
@@ -82,7 +80,7 @@ export const useUserPermissionsMiddleware = ({
     };
 
     checkPermitted();
-  }, [pkpEthAddress]);
+  }, [agentPKPs]);
 
   return state;
 };

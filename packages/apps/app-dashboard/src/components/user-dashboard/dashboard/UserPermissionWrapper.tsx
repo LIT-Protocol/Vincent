@@ -20,7 +20,7 @@ export function UserPermissionWrapper() {
     error: isExistingDataError,
   } = useFetchUserPermissions({
     appId: Number(appId),
-    pkpEthAddress: authInfo?.agentPKP?.ethAddress || '',
+    pkpEthAddress: authInfo?.agentPKPs?.[Number(appId)]?.ethAddress || '',
   });
 
   // Get permitted app versions for this user
@@ -29,7 +29,7 @@ export function UserPermissionWrapper() {
     isLoading: permissionsLoading,
     error: permissionsError,
   } = useUserPermissionsMiddleware({
-    pkpEthAddress: authInfo?.agentPKP?.ethAddress || '',
+    agentPKPs: authInfo?.agentPKPs || {},
   });
 
   const { result: isRedirectUriAuthorized, redirectUri } = useUriPrecheck({
@@ -40,7 +40,7 @@ export function UserPermissionWrapper() {
     return <ManagePagesSkeleton />;
   }
 
-  const isUserAuthed = authInfo?.userPKP && authInfo?.agentPKP && sessionSigs;
+  const isUserAuthed = authInfo?.userPKP && sessionSigs;
   if (!isProcessing && !isUserAuthed) {
     return (
       <AuthenticationErrorScreen readAuthInfo={{ authInfo, sessionSigs, isProcessing, error }} />
