@@ -57,7 +57,7 @@
     "bun": "^1.2.5",
     "chokidar-cli": "^3.0.0",
     "esbuild": "^0.19.2",
-    "esbuild-plugin-polyfill-node": "^0.3.0",
+    "@lit-protocol/esbuild-plugin-polyfill-node": "^0.3.0",
     "eslint": "^9.22.0",
     "eslint-config-next": "15.1.7",
     "eslint-config-prettier": "^10.1.1",

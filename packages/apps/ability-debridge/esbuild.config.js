@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 const esbuild = require('esbuild');
-const { polyfillNode } = require('esbuild-plugin-polyfill-node');
+const { polyfillNode } = require('@lit-protocol/esbuild-plugin-polyfill-node');
 const Hash = require('ipfs-only-hash');
 
 function aliasFetch() {

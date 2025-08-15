@@ -1,6 +1,7 @@
 import { ethers } from 'ethers';
 
-import { getUniswapQuote, signTx } from '.';
+import { getUniswapQuote } from './get-uniswap-quote';
+import { signTx } from './sign-tx';
 
 declare const Lit: {
   Actions: {

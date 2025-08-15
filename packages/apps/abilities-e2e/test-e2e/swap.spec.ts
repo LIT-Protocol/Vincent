@@ -89,6 +89,7 @@ const removeExistingApproval = async (delegatorPkpEthAddress: string) => {
       tokenAddress: '0x4200000000000000000000000000000000000006', // WETH
       tokenDecimals: 18,
       tokenAmount: 0,
+      alchemyGasSponsor: false,
     },
     {
       delegatorPkpEthAddress,
@@ -124,6 +125,7 @@ const addNewApproval = async (delegatorPkpEthAddress: string, tokenAmount: numbe
       tokenAddress: '0x4200000000000000000000000000000000000006', // WETH
       tokenDecimals: 18,
       tokenAmount,
+      alchemyGasSponsor: false,
     },
     {
       delegatorPkpEthAddress,
