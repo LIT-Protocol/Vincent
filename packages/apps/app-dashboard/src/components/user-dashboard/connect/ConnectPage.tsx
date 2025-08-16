@@ -38,7 +38,13 @@ export function ConnectPage({
   const [isConnectProcessing, setIsConnectProcessing] = useState(false);
   const formRefs = useRef<Record<string, PolicyFormRef>>({});
 
-  const { formData, handleFormChange } = useConnectFormData(connectInfoMap);
+  const { 
+    formData, 
+    selectedPolicies, 
+    handleFormChange, 
+    handlePolicySelectionChange, 
+    getSelectedFormData 
+  } = useConnectFormData(connectInfoMap);
   const {
     generateJWT,
     executeRedirect,
@@ -70,9 +76,13 @@ export function ConnectPage({
     setLocalSuccess(null);
     setIsConnectProcessing(true);
 
-    // Check if all forms are valid using RJSF's built-in validateForm method
-    const allValid = Object.values(formRefs.current).every((formRef) => {
-      return formRef.validateForm();
+    // Check if all forms for selected policies are valid using RJSF's built-in validateForm method
+    const allValid = Object.keys(formRefs.current).every((policyIpfsCid) => {
+      // Only validate forms for selected policies
+      if (!selectedPolicies[policyIpfsCid]) {
+        return true; // Skip validation for unselected policies
+      }
+      return formRefs.current[policyIpfsCid].validateForm();
     });
 
     if (allValid) {
@@ -82,7 +92,8 @@ export function ConnectPage({
         return;
       }
 
-      console.log('formData', formData);
+      const selectedFormData = getSelectedFormData();
+      console.log('selectedFormData', JSON.stringify(selectedFormData, (_, value) => value === undefined ? 'undefined' : value, 2));
 
       const userPkpWallet = new PKPEthersWallet({
         controllerSessionSigs: readAuthInfo.sessionSigs,
@@ -94,16 +105,15 @@ export function ConnectPage({
       await addPermittedActions({
         wallet: userPkpWallet,
         agentPKPTokenId: agentPKP.tokenId,
-        abilityIpfsCids: Object.keys(formData),
+        abilityIpfsCids: Object.keys(selectedFormData),
       });
-
       try {
         const client = getClient({ signer: userPkpWallet });
         await client.permitApp({
           pkpEthAddress: agentPKP.ethAddress,
           appId: Number(connectInfoMap.app.appId),
           appVersion: Number(connectInfoMap.app.activeVersion),
-          permissionData: formData,
+          permissionData: selectedFormData,
         });
 
         setIsConnectProcessing(false);
@@ -132,7 +142,7 @@ export function ConnectPage({
       setLocalError('Some of your permissions are not valid. Please check the form and try again.');
       setIsConnectProcessing(false);
     }
-  }, [formData, readAuthInfo, addPermittedActions, generateJWT, connectInfoMap.app]);
+  }, [getSelectedFormData, readAuthInfo, addPermittedActions, generateJWT, connectInfoMap.app]);
 
   const handleDecline = useCallback(() => {
     navigate(-1);
@@ -169,6 +179,8 @@ export function ConnectPage({
           formData={formData}
           onFormChange={handleFormChange}
           onRegisterFormRef={registerFormRef}
+          selectedPolicies={selectedPolicies}
+          onPolicySelectionChange={handlePolicySelectionChange}
         />
 
         {/* Status Card */}

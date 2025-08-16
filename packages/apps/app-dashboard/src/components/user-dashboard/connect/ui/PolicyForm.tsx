@@ -1,4 +1,4 @@
-import { useMemo, forwardRef, useImperativeHandle, useRef } from 'react';
+import { useMemo, forwardRef, useImperativeHandle, useRef, useEffect } from 'react';
 import { RJSFSchema, UiSchema, createSchemaUtils } from '@rjsf/utils';
 import Form from '@rjsf/shadcn';
 import validator from '@rjsf/validator-ajv8';
@@ -51,6 +51,7 @@ export const PolicyForm = forwardRef<PolicyFormRef, PolicyFormProps>(
         return null;
       }
     }, [policy.parameters?.jsonSchema, policy.parameters?.uiSchema, policy.ipfsCid]);
+
 
     useImperativeHandle(ref, () => ({
       validateForm: () => {
