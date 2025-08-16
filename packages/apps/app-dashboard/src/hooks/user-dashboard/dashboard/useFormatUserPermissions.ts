@@ -8,10 +8,12 @@ export function useFormatUserPermissions(
   targetVersion?: number,
 ) {
   const [formData, setFormData] = useState<Record<string, any>>({});
+  const [selectedPolicies, setSelectedPolicies] = useState<Record<string, boolean>>({});
 
-  // Initialize formData with all policies (including hidden ones with empty values)
+  // Initialize formData and selectedPolicies
   useEffect(() => {
     const initialFormData: Record<string, any> = {};
+    const initialSelectedPolicies: Record<string, boolean> = {};
 
     const appNames = Object.keys(connectInfoMap.versionsByApp);
     appNames.forEach((appName) => {
@@ -35,19 +37,29 @@ export function useFormatUserPermissions(
           if (abilityVersion) {
             initialFormData[abilityVersion.ipfsCid] = {};
 
-            // Add all policies (including hidden ones) with empty values
+            // Process all policies for this ability
             policies.forEach((policy) => {
-              // Initialize with empty object
-              initialFormData[abilityVersion.ipfsCid][policy.ipfsCid] = {};
-
-              // If we have initial permission data, use it to prepopulate
+              const isHidden = ability.hiddenSupportedPolicies?.includes(policy.packageName);
+              
+              // Skip hidden policies entirely - they should never be in formData or selectedPolicies
+              if (isHidden) {
+                return;
+              }
+              
+              // Check if policy exists in initial permission data
               if (
                 initialPermissionData &&
                 initialPermissionData[abilityVersion.ipfsCid] &&
-                initialPermissionData[abilityVersion.ipfsCid][policy.ipfsCid]
+                initialPermissionData[abilityVersion.ipfsCid][policy.ipfsCid] !== undefined
               ) {
-                initialFormData[abilityVersion.ipfsCid][policy.ipfsCid] =
-                  initialPermissionData[abilityVersion.ipfsCid][policy.ipfsCid] || {};
+                const policyData = initialPermissionData[abilityVersion.ipfsCid][policy.ipfsCid];
+                initialFormData[abilityVersion.ipfsCid][policy.ipfsCid] = policyData || {};
+                
+                // Policy exists in data, so it's selected
+                initialSelectedPolicies[policy.ipfsCid] = true;
+              } else {
+                // Policy doesn't exist in data, so it's not selected
+                initialSelectedPolicies[policy.ipfsCid] = false;
               }
             });
           }
@@ -56,6 +68,7 @@ export function useFormatUserPermissions(
     });
 
     setFormData(initialFormData);
+    setSelectedPolicies(initialSelectedPolicies);
   }, [connectInfoMap, initialPermissionData, targetVersion]);
 
   const handleFormChange = useCallback(
@@ -71,8 +84,20 @@ export function useFormatUserPermissions(
     [],
   );
 
+  const handlePolicySelectionChange = useCallback(
+    (_abilityIpfsCid: string, policyIpfsCid: string, selected: boolean) => {
+      setSelectedPolicies((prev) => ({
+        ...prev,
+        [policyIpfsCid]: selected,
+      }));
+    },
+    [],
+  );
+
   return {
     formData,
     handleFormChange,
+    selectedPolicies,
+    handlePolicySelectionChange,
   };
 }

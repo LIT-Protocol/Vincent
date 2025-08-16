@@ -10,6 +10,12 @@ interface AppsAndVersionsProps {
   formData: Record<string, any>;
   onFormChange: (abilityIpfsCid: string, policyIpfsCid: string, data: any) => void;
   onRegisterFormRef: (policyIpfsCid: string, ref: PolicyFormRef) => void;
+  selectedPolicies: Record<string, boolean>;
+  onPolicySelectionChange: (
+    abilityIpfsCid: string,
+    policyIpfsCid: string,
+    selected: boolean,
+  ) => void;
   permittedVersion?: string; // Optional prop to specify a specific version to render
 }
 
@@ -18,6 +24,8 @@ export function PermittedAppInfo({
   formData,
   onFormChange,
   onRegisterFormRef,
+  selectedPolicies,
+  onPolicySelectionChange,
   permittedVersion,
 }: AppsAndVersionsProps) {
   const appNames = Object.keys(connectInfoMap.versionsByApp);
@@ -102,6 +110,8 @@ export function PermittedAppInfo({
                         onRegisterFormRef={onRegisterFormRef}
                         abilityIpfsCid={abilityVersion.ipfsCid}
                         defaultExpanded={false} // All abilities start closed
+                        selectedPolicies={selectedPolicies}
+                        onPolicySelectionChange={onPolicySelectionChange}
                       />
                     );
                   })}

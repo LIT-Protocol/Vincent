@@ -112,12 +112,13 @@ export function useConnectFormData(connectInfoMap: ConnectInfoMap) {
             
             filteredAbilityData[policyIpfsCid] = processedPolicyData;
           } else {
-            // If no form data or empty object, set entire policy to undefined
-            // This handles cases where no form fields have been initialized yet
-            filteredAbilityData[policyIpfsCid] = undefined;
+            // If no form data or empty object, include empty object
+            // The contract SDK will validate this against the policy schema
+            filteredAbilityData[policyIpfsCid] = {};
           }
         }
-        // If not selected, don't include the policy at all (omit it)
+        // If not selected or hidden, don't include the policy at all (omit it)
+        // This is the only way to mark a policy as disabled
       });
       
       // Always include the ability, even if no policies are selected

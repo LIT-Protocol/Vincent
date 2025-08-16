@@ -59,7 +59,13 @@ export function UpdateVersionPage({
     }
   }, [redirectUrl, localSuccess, executeRedirect]);
 
-  const { formData, handleFormChange } = useConnectFormData(connectInfoMap);
+  const { 
+    formData, 
+    selectedPolicies,
+    handleFormChange,
+    handlePolicySelectionChange,
+    getSelectedFormData
+  } = useConnectFormData(connectInfoMap);
 
   const {
     addPermittedActions,
@@ -93,11 +99,13 @@ export function UpdateVersionPage({
       });
       await userPkpWallet.init();
 
+      const selectedFormData = getSelectedFormData();
+      
       setLocalStatus('Adding permitted actions...');
       await addPermittedActions({
         wallet: userPkpWallet,
         agentPKPTokenId: agentPKP.tokenId,
-        abilityIpfsCids: Object.keys(formData),
+        abilityIpfsCids: Object.keys(selectedFormData),
       });
 
       try {
@@ -107,7 +115,7 @@ export function UpdateVersionPage({
           pkpEthAddress: agentPKP.ethAddress,
           appId: Number(connectInfoMap.app.appId),
           appVersion: Number(connectInfoMap.app.activeVersion),
-          permissionData: formData,
+          permissionData: selectedFormData,
         });
 
         setLocalStatus(null);
@@ -181,6 +189,8 @@ export function UpdateVersionPage({
           formData={formData}
           onFormChange={handleFormChange}
           onRegisterFormRef={registerFormRef}
+          selectedPolicies={selectedPolicies}
+          onPolicySelectionChange={handlePolicySelectionChange}
         />
 
         {/* Status Card */}
