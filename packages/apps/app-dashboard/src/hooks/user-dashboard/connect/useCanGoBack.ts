@@ -11,4 +11,3 @@ export function useCanGoBack(): boolean {
 
   return canGoBack;
 }
- 

@@ -52,6 +52,21 @@ export const PolicyForm = forwardRef<PolicyFormRef, PolicyFormProps>(
       }
     }, [policy.parameters?.jsonSchema, policy.parameters?.uiSchema, policy.ipfsCid]);
 
+    // Initialize form with undefined values for all fields
+    useEffect(() => {
+      if (
+        resolvedSchema?.jsonSchema?.properties &&
+        Object.keys(formData[policy.ipfsCid] || {}).length === 0
+      ) {
+        const initialData: Record<string, any> = {};
+        Object.keys(resolvedSchema.jsonSchema.properties).forEach((fieldName) => {
+          initialData[fieldName] = undefined;
+        });
+
+        // Call onFormChange to set the initial structure
+        onFormChange(policy.ipfsCid, { formData: initialData });
+      }
+    }, [resolvedSchema, policy.ipfsCid, formData, onFormChange]);
 
     useImperativeHandle(ref, () => ({
       validateForm: () => {
