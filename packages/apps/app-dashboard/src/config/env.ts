@@ -35,5 +35,6 @@ export const env = createEnv({
     VITE_VINCENT_BASE_RPC: z.string(),
     VITE_DASHBOARD_URL: z.string(),
     VITE_VINCENT_YIELD_MINIMUM_DEPOSIT: z.coerce.number().default(50),
+    VITE_ZERION_API_KEY: z.string(),
   },
 });

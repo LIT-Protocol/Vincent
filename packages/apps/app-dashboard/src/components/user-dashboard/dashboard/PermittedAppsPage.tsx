@@ -1,11 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { App } from '@/types/developer-dashboard/appTypes';
 import { theme } from '@/components/user-dashboard/connect/ui/theme';
 import { Card, CardContent } from '@/components/shared/ui/card';
 import { Logo } from '@/components/shared/ui/Logo';
-import { Package, Info, Copy, Check } from 'lucide-react';
+import { Package, Info, Copy, Check, TrendingUp, TrendingDown, DollarSign } from 'lucide-react';
 import { AgentAppPermission } from '@/utils/user-dashboard/getAgentPKP';
+import { useZerionPortfolio } from '@/hooks/user-dashboard/dashboard/useZerionPortfolio';
+import { useZerionCharts } from '@/hooks/user-dashboard/dashboard/useZerionCharts';
 
 type PermittedAppsPageProps = {
   apps: App[];
@@ -17,8 +19,60 @@ export function PermittedAppsPage({ apps, permittedPKPs }: PermittedAppsPageProp
   const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
   const [activeTooltip, setActiveTooltip] = useState<string | null>(null);
 
+  // Get the first agent address for Zerion API calls
+  const firstAgentAddress = permittedPKPs[0]?.pkp?.ethAddress || '';
+  
+  // Zerion hooks
+  const { data: portfolioData, isLoading: portfolioLoading, error: portfolioError } = useZerionPortfolio({
+    address: firstAgentAddress
+  });
+  
+  const { data: chartsData, isLoading: chartsLoading, error: chartsError } = useZerionCharts({
+    address: firstAgentAddress,
+    period: 'day'
+  });
+
+  // Console log the Zerion data
+  useEffect(() => {
+    if (portfolioData) {
+      console.log('Zerion Portfolio Data:', portfolioData);
+    }
+  }, [portfolioData]);
+
+  useEffect(() => {
+    if (chartsData) {
+      console.log('Zerion Charts Data:', chartsData);
+    }
+  }, [chartsData]);
+
+  // Helper function to format portfolio value
+  const getPortfolioValue = () => {
+    if (!portfolioData?.data?.attributes?.total?.positions) return null;
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(portfolioData.data.attributes.total.positions);
+  };
+
+  // Helper function to get 24h change
+  const get24hChange = () => {
+    if (!portfolioData?.data?.attributes?.changes) return null;
+    const { percent_1d, absolute_1d } = portfolioData.data.attributes.changes;
+    return {
+      percentage: percent_1d,
+      absolute: absolute_1d,
+    };
+  };
+
+  // Helper function to get position count from chart points
+  const getPositionCount = () => {
+    return chartsData?.data?.attributes?.points?.length || 0;
+  };
+
   const handleAppClick = (appId: string) => {
-    navigate(`/user/appId/${appId}`);
+    navigate(`/user/appId/${appId}/portfolio`);
   };
 
   const handleCopyAddress = async (address: string, e: React.MouseEvent) => {
@@ -69,7 +123,7 @@ export function PermittedAppsPage({ apps, permittedPKPs }: PermittedAppsPageProp
             key={app.appId}
             className={`py-0 gap-0 backdrop-blur-xl ${theme.mainCard} border ${theme.cardBorder} ${theme.cardHoverBorder} cursor-pointer transition-all duration-200 hover:shadow-lg`}
             onClick={() => handleAppClick(app.appId.toString())}
-            style={{ height: '160px' }}
+            style={{ height: '220px' }}
           >
             <CardContent className="p-3 relative">
               {/* Top right badges container */}
@@ -143,8 +197,68 @@ export function PermittedAppsPage({ apps, permittedPKPs }: PermittedAppsPageProp
 
                 {/* Description */}
                 {app.description && (
-                  <p className={`text-sm ${theme.textMuted} line-clamp-3`}>{app.description}</p>
+                  <p className={`text-sm ${theme.textMuted} line-clamp-2`}>{app.description}</p>
                 )}
+
+                {/* Zerion Data Section */}
+                <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+                  {portfolioLoading || chartsLoading ? (
+                    <div className="flex items-center gap-2">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+                      <span className={`text-xs ${theme.textMuted}`}>Loading portfolio...</span>
+                    </div>
+                  ) : portfolioError || chartsError ? (
+                    <div className="flex items-center gap-2">
+                      <span className={`text-xs text-red-500`}>Portfolio data unavailable</span>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {/* Portfolio Value */}
+                      {getPortfolioValue() && (
+                        <div className="flex items-center gap-2">
+                          <DollarSign className={`w-3 h-3 ${theme.textMuted}`} />
+                          <span className={`text-sm font-semibold ${theme.text}`}>
+                            {getPortfolioValue()}
+                          </span>
+                        </div>
+                      )}
+
+                      {/* 24h Change */}
+                      {(() => {
+                        const change = get24hChange();
+                        if (!change || typeof change.percentage !== 'number') return null;
+                        
+                        return (
+                          <div className="flex items-center gap-2">
+                            {change.percentage >= 0 ? (
+                              <TrendingUp className="w-3 h-3 text-green-500" />
+                            ) : (
+                              <TrendingDown className="w-3 h-3 text-red-500" />
+                            )}
+                            <span
+                              className={`text-xs font-medium ${
+                                change.percentage >= 0 ? 'text-green-500' : 'text-red-500'
+                              }`}
+                            >
+                              {change.percentage >= 0 ? '+' : ''}
+                              {change.percentage.toFixed(2)}% (24h)
+                            </span>
+                          </div>
+                        );
+                      })()}
+
+                      {/* Chart Data Points */}
+                      {getPositionCount() > 0 && (
+                        <div className="flex items-center gap-2">
+                          <Package className={`w-3 h-3 ${theme.textMuted}`} />
+                          <span className={`text-xs ${theme.textMuted}`}>
+                            {getPositionCount()} data points (24h)
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
             </CardContent>
           </Card>
