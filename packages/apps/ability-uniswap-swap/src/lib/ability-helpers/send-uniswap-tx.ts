@@ -53,6 +53,7 @@ export const sendUniswapTx = async ({
           tokenInAmount,
           tokenOutAddress,
           tokenOutDecimals,
+          recipient: pkpEthAddress,
         });
 
         const { route } = uniswapQuoteResponse;

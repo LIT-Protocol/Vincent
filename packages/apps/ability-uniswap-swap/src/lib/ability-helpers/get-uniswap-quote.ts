@@ -10,6 +10,7 @@ export const getUniswapQuote = async ({
   tokenInAmount,
   tokenOutAddress,
   tokenOutDecimals,
+  recipient,
 }: {
   rpcUrl: string;
   chainId: number;
@@ -18,6 +19,7 @@ export const getUniswapQuote = async ({
   tokenInAmount: number;
   tokenOutAddress: string;
   tokenOutDecimals: number;
+  recipient: string;
 }): Promise<{
   bestQuote: ethers.BigNumber;
   bestFee: number;
@@ -32,6 +34,7 @@ export const getUniswapQuote = async ({
     tokenInAmount,
     tokenOutAddress,
     tokenOutDecimals,
+    recipient,
   });
 
   const provider = new ethers.providers.StaticJsonRpcProvider(rpcUrl);
@@ -59,7 +62,7 @@ export const getUniswapQuote = async ({
 
   console.log('Getting route from AlphaRouter...');
   const routeResult = await router.route(amountIn, tokenOut, TradeType.EXACT_INPUT, {
-    recipient: ethers.constants.AddressZero, // Will be replaced with actual recipient
+    recipient,
     slippageTolerance: slippagePercent,
     deadline: Math.floor(Date.now() / 1000 + 1800), // 30 minutes from now
     type: SwapType.SWAP_ROUTER_02,
