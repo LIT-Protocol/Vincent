@@ -10,6 +10,7 @@ export const checkUniswapPoolExists = async ({
   tokenInAmount,
   tokenOutAddress,
   tokenOutDecimals,
+  pkpEthAddress,
 }: {
   rpcUrl: string;
   chainId: number;
@@ -18,6 +19,7 @@ export const checkUniswapPoolExists = async ({
   tokenInAmount: number;
   tokenOutAddress: `0x${string}`;
   tokenOutDecimals: number;
+  pkpEthAddress: string;
 }) => {
   try {
     await getUniswapQuote({
@@ -28,6 +30,7 @@ export const checkUniswapPoolExists = async ({
       tokenInAmount,
       tokenOutAddress,
       tokenOutDecimals,
+      recipient: pkpEthAddress,
     });
     return true;
   } catch (error) {

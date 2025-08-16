@@ -16,6 +16,7 @@ export const getTokenAmountInUsd = async ({
   tokenAddress,
   tokenAmount,
   tokenDecimals,
+  pkpEthAddress,
 }: {
   ethRpcUrl: string;
   rpcUrlForUniswap: string;
@@ -23,6 +24,7 @@ export const getTokenAmountInUsd = async ({
   tokenAddress: string;
   tokenDecimals: number;
   tokenAmount: number;
+  pkpEthAddress: string;
 }): Promise<ethers.BigNumber> => {
   console.log(`Getting token amount in USD (getTokenAmountInUsd)`, {
     ethRpcUrl,
@@ -72,6 +74,7 @@ export const getTokenAmountInUsd = async ({
     tokenOutDecimals: 18,
     rpcUrl: rpcUrlForUniswap,
     chainId: chainIdForUniswap,
+    recipient: pkpEthAddress,
   });
 
   // Convert WETH amount to USD

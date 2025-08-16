@@ -128,6 +128,7 @@ export const vincentAbility = createVincentAbility({
         tokenInAmount,
         tokenOutAddress: tokenOutAddress as `0x${string}`,
         tokenOutDecimals,
+        pkpEthAddress: delegatorPkpAddress,
       });
     } catch (err) {
       return fail({
@@ -170,6 +171,7 @@ export const vincentAbility = createVincentAbility({
         tokenAddress: tokenInAddress,
         tokenAmount: tokenInAmount,
         tokenDecimals: tokenInDecimals,
+        pkpEthAddress: delegatorPkpAddress,
       });
 
       const { maxSpendingLimitInUsd } = spendingLimitPolicyContext.result;

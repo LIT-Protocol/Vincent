@@ -15,6 +15,8 @@ import {
 import { ethers } from 'ethers';
 import type { PermissionData } from '@lit-protocol/vincent-contracts-sdk';
 import { getClient } from '@lit-protocol/vincent-contracts-sdk';
+import { Token, CurrencyAmount, TradeType, Percent } from '@uniswap/sdk-core';
+import { AlphaRouter, SwapType } from '@uniswap/smart-order-router';
 
 import {
   BASE_PUBLIC_CLIENT,
@@ -43,6 +45,12 @@ import * as util from 'node:util';
 import { privateKeyToAccount } from 'viem/accounts';
 
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
+
+// Default spender address for ERC20 approvals - will be dynamically determined by AlphaRouter
+let UNISWAP_SPENDER_ADDRESS = '0x2626664c2603336E57B271c5C0b26F421741e481';
+
+// Swap amount in WETH
+const SWAP_AMOUNT = 0.0003;
 
 // Extend Jest timeout to 4 minutes
 jest.setTimeout(240000);
@@ -85,7 +93,7 @@ const removeExistingApproval = async (delegatorPkpEthAddress: string) => {
     {
       rpcUrl: BASE_RPC_URL,
       chainId: 8453,
-      spenderAddress: '0x2626664c2603336E57B271c5C0b26F421741e481', // Uniswap V3 Router 02 on Base
+      spenderAddress: UNISWAP_SPENDER_ADDRESS,
       tokenAddress: '0x4200000000000000000000000000000000000006', // WETH
       tokenDecimals: 18,
       tokenAmount: 0,
@@ -105,10 +113,20 @@ const removeExistingApproval = async (delegatorPkpEthAddress: string) => {
 
   if (setupResult.result.approvalTxHash) {
     console.log('waiting for approval tx to finalize', setupResult.result.approvalTxHash);
-    await BASE_PUBLIC_CLIENT.waitForTransactionReceipt({
+    const receipt = await BASE_PUBLIC_CLIENT.waitForTransactionReceipt({
       hash: setupResult.result.approvalTxHash as `0x${string}`,
     });
     console.log('approval TX is GTG! continuing');
+    // Wait for next block to ensure blockchain state is updated
+    console.log(`waiting for next block after block ${receipt.blockNumber}...`);
+    const targetBlockNumber = receipt.blockNumber + 1n;
+    let currentBlockNumber = receipt.blockNumber;
+
+    while (currentBlockNumber < targetBlockNumber) {
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // Wait 1 second
+      currentBlockNumber = await BASE_PUBLIC_CLIENT.getBlockNumber();
+    }
+    console.log(`next block ${currentBlockNumber} confirmed, blockchain state should be updated`);
   }
 
   return setupResult;
@@ -121,7 +139,7 @@ const addNewApproval = async (delegatorPkpEthAddress: string, tokenAmount: numbe
     {
       rpcUrl: BASE_RPC_URL,
       chainId: 8453,
-      spenderAddress: '0x2626664c2603336E57B271c5C0b26F421741e481', // Uniswap V3 Router 02 on Base
+      spenderAddress: UNISWAP_SPENDER_ADDRESS,
       tokenAddress: '0x4200000000000000000000000000000000000006', // WETH
       tokenDecimals: 18,
       tokenAmount,
@@ -149,9 +167,7 @@ const addNewApproval = async (delegatorPkpEthAddress: string, tokenAmount: numbe
     '0x4200000000000000000000000000000000000006',
   );
   expect(erc20ApprovalExecutionResult.result.tokenDecimals).toBe(18);
-  expect(erc20ApprovalExecutionResult.result.spenderAddress).toBe(
-    '0x2626664c2603336E57B271c5C0b26F421741e481',
-  );
+  expect(erc20ApprovalExecutionResult.result.spenderAddress).toBe(UNISWAP_SPENDER_ADDRESS);
 
   if (erc20ApprovalExecutionResult.result.approvalTxHash) {
     console.log(
@@ -165,6 +181,54 @@ const addNewApproval = async (delegatorPkpEthAddress: string, tokenAmount: numbe
   }
 
   return erc20ApprovalExecutionResult;
+};
+
+// Helper to get the router address that AlphaRouter will use for our swap
+const getUniswapRouterAddress = async (): Promise<string> => {
+  console.log('Getting Uniswap router address from AlphaRouter...');
+
+  const provider = new ethers.providers.JsonRpcProvider(BASE_RPC_URL);
+  const router = new AlphaRouter({ chainId: 8453, provider });
+
+  // Create token instances
+  const tokenIn = new Token(
+    8453,
+    '0x4200000000000000000000000000000000000006',
+    18,
+    'WETH',
+    'Wrapped Ether',
+  );
+  const tokenOut = new Token(
+    8453,
+    '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+    6,
+    'USDC',
+    'USD Coin',
+  );
+
+  // Convert amount to proper format
+  const amountIn = CurrencyAmount.fromRawAmount(
+    tokenIn,
+    ethers.utils.parseUnits(SWAP_AMOUNT.toString(), 18).toString(),
+  );
+
+  // Get route from AlphaRouter to determine which router address it will use
+  const slippagePercent = new Percent(50, 10000); // 0.5% slippage
+  const routeResult = await router.route(amountIn, tokenOut, TradeType.EXACT_INPUT, {
+    recipient: ethers.constants.AddressZero,
+    slippageTolerance: slippagePercent,
+    deadline: Math.floor(Date.now() / 1000 + 1800),
+    type: SwapType.SWAP_ROUTER_02,
+  });
+
+  if (!routeResult || !routeResult.methodParameters) {
+    throw new Error('Failed to get route from AlphaRouter');
+  }
+
+  const routerAddress = routeResult.methodParameters.to;
+  console.log('AlphaRouter will use router address:', routerAddress);
+
+  return routerAddress;
 };
 
 describe('Uniswap Swap Ability E2E Tests', () => {
@@ -202,6 +266,9 @@ describe('Uniswap Swap Ability E2E Tests', () => {
     TEST_CONFIG = getTestConfig(TEST_CONFIG_PATH);
     TEST_CONFIG = await checkShouldMintAndFundPkp(TEST_CONFIG);
     TEST_CONFIG = await checkShouldMintCapacityCredit(TEST_CONFIG);
+
+    // Dynamically determine the router address that AlphaRouter will use
+    UNISWAP_SPENDER_ADDRESS = await getUniswapRouterAddress();
 
     // The Agent Wallet PKP needs to have Base ETH and WETH
     // in order to execute the ERC20 Approval and Uniswap Swap Abilities
@@ -325,18 +392,18 @@ describe('Uniswap Swap Ability E2E Tests', () => {
         provider,
         tokenAddress: '0x4200000000000000000000000000000000000006', // WETH
         owner: TEST_CONFIG.userPkp!.ethAddress!,
-        spender: '0x2626664c2603336E57B271c5C0b26F421741e481', // Uniswap V3 Router 02 on Base
+        spender: UNISWAP_SPENDER_ADDRESS,
       });
 
       // Convert tokenAmount to bigint for comparison
-      const requiredAllowance = ethers.utils.parseUnits('0.0000077', 18).toBigInt();
+      const requiredAllowance = ethers.utils.parseUnits(SWAP_AMOUNT.toString(), 18).toBigInt();
 
       // Only add approval if the current allowance is less than the required amount
       if (currentAllowance < requiredAllowance) {
         // Setup: Approve WETH for Uniswap Router
         const erc20ApprovalExecutionResult = await addNewApproval(
           TEST_CONFIG.userPkp!.ethAddress!,
-          0.0000077,
+          SWAP_AMOUNT,
         );
         console.log('erc20ApprovalExecutionResult', erc20ApprovalExecutionResult);
         console.log({ erc20ApprovalExecutionResult });
@@ -358,7 +425,7 @@ describe('Uniswap Swap Ability E2E Tests', () => {
         chainIdForUniswap: 8453,
         tokenInAddress: '0x4200000000000000000000000000000000000006', // WETH
         tokenInDecimals: 18,
-        tokenInAmount: 0.0000077,
+        tokenInAmount: SWAP_AMOUNT,
         tokenOutAddress: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', // USDC on Base
         tokenOutDecimals: 8,
       },
@@ -423,7 +490,7 @@ describe('Uniswap Swap Ability E2E Tests', () => {
       provider,
       tokenAddress: '0x4200000000000000000000000000000000000006', // WETH
       owner: TEST_CONFIG.userPkp!.ethAddress!,
-      spender: '0x2626664c2603336E57B271c5C0b26F421741e481', // Uniswap V3 Router 02 on Base
+      spender: UNISWAP_SPENDER_ADDRESS,
     });
 
     // If there's an existing allowance, remove it first
@@ -433,11 +500,20 @@ describe('Uniswap Swap Ability E2E Tests', () => {
       await removeExistingApproval(TEST_CONFIG.userPkp!.ethAddress!);
 
       // Verify the allowance is now 0
+      console.log(
+        'current allowance after removal',
+        await getCurrentAllowance({
+          provider,
+          tokenAddress: '0x4200000000000000000000000000000000000006', // WETH
+          owner: TEST_CONFIG.userPkp!.ethAddress!,
+          spender: UNISWAP_SPENDER_ADDRESS,
+        }),
+      );
       currentAllowance = await getCurrentAllowance({
         provider,
         tokenAddress: '0x4200000000000000000000000000000000000006', // WETH
         owner: TEST_CONFIG.userPkp!.ethAddress!,
-        spender: '0x2626664c2603336E57B271c5C0b26F421741e481', // Uniswap V3 Router 02 on Base
+        spender: UNISWAP_SPENDER_ADDRESS,
       });
 
       expect(currentAllowance).toBe(0n);
@@ -446,7 +522,7 @@ describe('Uniswap Swap Ability E2E Tests', () => {
     // Test: Add a new approval
     const erc20ApprovalExecutionResult = await addNewApproval(
       TEST_CONFIG.userPkp!.ethAddress!,
-      0.0000077,
+      SWAP_AMOUNT,
     );
 
     console.log('erc20ApprovalExecutionResult', erc20ApprovalExecutionResult);
@@ -477,25 +553,25 @@ describe('Uniswap Swap Ability E2E Tests', () => {
       provider,
       tokenAddress: '0x4200000000000000000000000000000000000006', // WETH
       owner: TEST_CONFIG.userPkp!.ethAddress!,
-      spender: '0x2626664c2603336E57B271c5C0b26F421741e481', // Uniswap V3 Router 02 on Base
+      spender: UNISWAP_SPENDER_ADDRESS,
     });
 
     if (!(currentAllowance > 0n)) {
       // Setup: Add an approval so our test case will be guaranteed one already exists
-      await addNewApproval(TEST_CONFIG.userPkp!.ethAddress!, 0.0000077);
+      await addNewApproval(TEST_CONFIG.userPkp!.ethAddress!, SWAP_AMOUNT);
 
       // Verify the allowance is now greater than 0
       currentAllowance = await getCurrentAllowance({
         provider,
         tokenAddress: '0x4200000000000000000000000000000000000006', // WETH
         owner: TEST_CONFIG.userPkp!.ethAddress!,
-        spender: '0x2626664c2603336E57B271c5C0b26F421741e481', // Uniswap V3 Router 02 on Base
+        spender: UNISWAP_SPENDER_ADDRESS,
       });
     }
 
     expect(currentAllowance).toBeGreaterThan(0n);
     // Convert tokenAmount to bigint for comparison
-    const requiredAllowance = ethers.utils.parseUnits('0.0000077', 18).toBigInt();
+    const requiredAllowance = ethers.utils.parseUnits(SWAP_AMOUNT.toString(), 18).toBigInt();
 
     // Verify the current allowance is sufficient
     expect(currentAllowance).toBeGreaterThanOrEqual(requiredAllowance);
@@ -505,7 +581,7 @@ describe('Uniswap Swap Ability E2E Tests', () => {
     // Test: Execute with existing approval
     const erc20ApprovalExecutionResult = await addNewApproval(
       TEST_CONFIG.userPkp!.ethAddress!,
-      0.0000077,
+      SWAP_AMOUNT,
     );
 
     console.log({ erc20ApprovalExecutionResult });
@@ -525,9 +601,7 @@ describe('Uniswap Swap Ability E2E Tests', () => {
       '0x4200000000000000000000000000000000000006',
     );
     expect(erc20ApprovalExecutionResult.result.tokenDecimals).toBe(18);
-    expect(erc20ApprovalExecutionResult.result.spenderAddress).toBe(
-      '0x2626664c2603336E57B271c5C0b26F421741e481',
-    );
+    expect(erc20ApprovalExecutionResult.result.spenderAddress).toBe(UNISWAP_SPENDER_ADDRESS);
   });
 
   it('should execute the Uniswap Swap Ability with the Agent Wallet PKP', async () => {
@@ -548,17 +622,17 @@ describe('Uniswap Swap Ability E2E Tests', () => {
       provider,
       tokenAddress: '0x4200000000000000000000000000000000000006', // WETH
       owner: TEST_CONFIG.userPkp!.ethAddress!,
-      spender: '0x2626664c2603336E57B271c5C0b26F421741e481', // Uniswap V3 Router 02 on Base
+      spender: UNISWAP_SPENDER_ADDRESS,
     });
 
     // Convert tokenAmount to bigint for comparison
-    const requiredAllowance = ethers.utils.parseUnits('0.0000077', 18).toBigInt();
+    const requiredAllowance = ethers.utils.parseUnits(SWAP_AMOUNT.toString(), 18).toBigInt();
 
     // Only add approval if the current allowance is less than the required amount
     if (currentAllowance < requiredAllowance) {
       console.log(`Existing allowance (${currentAllowance}) is insufficient, adding approval...`);
       // Ensure we have a valid approval before executing the swap
-      await addNewApproval(TEST_CONFIG.userPkp!.ethAddress!, 0.0000077);
+      await addNewApproval(TEST_CONFIG.userPkp!.ethAddress!, SWAP_AMOUNT);
     } else {
       console.log(`Existing allowance (${currentAllowance}) is sufficient, skipping approval`);
     }
@@ -571,7 +645,7 @@ describe('Uniswap Swap Ability E2E Tests', () => {
         chainIdForUniswap: 8453,
         tokenInAddress: '0x4200000000000000000000000000000000000006', // WETH
         tokenInDecimals: 18,
-        tokenInAmount: 0.0000077,
+        tokenInAmount: SWAP_AMOUNT,
         tokenOutAddress: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', // USDC on Base
         tokenOutDecimals: 8,
       },
