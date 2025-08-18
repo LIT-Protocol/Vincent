@@ -237,6 +237,7 @@ export interface SetAbilityPolicyParametersParams {
   appId: number;
   appVersion: number;
   policyParams: PermissionData;
+  deletePolicyIpfsCids: string[];
 }
 
 /**
@@ -399,7 +400,9 @@ export interface ContractClient {
   unPermitApp(params: UnPermitAppParams, overrides?: Overrides): ReturnType<typeof _unPermitApp>;
 
   /** Sets ability policy parameters for a specific app version
+   * Note that omitting parameters from `policyParams` does not remove any existing values; this function allows atomic/sparse updates.
    *
+   * To remove existing policy parameters, provide their IPFS CIDs in the `deletePolicyIpfsCids` param.
    * @returns { txHash } The transaction hash that set the policy parameters
    */
   setAbilityPolicyParameters(
