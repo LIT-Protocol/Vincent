@@ -63,7 +63,7 @@ export function AppPermissionPage({
   const appIdString = connectInfoMap.app.appId.toString();
   const permittedVersion = permittedAppVersions[appIdString];
 
-  const { formData, handleFormChange, selectedPolicies, handlePolicySelectionChange } = 
+  const { formData, handleFormChange, selectedPolicies, handlePolicySelectionChange } =
     useFormatUserPermissions(connectInfoMap, existingData, Number(permittedVersion));
 
   // Console logs for debugging
@@ -86,7 +86,7 @@ export function AppPermissionPage({
     console.log('[UserPermissionPage] formData:', formData);
     console.log('[UserPermissionPage] selectedPolicies:', selectedPolicies);
     console.log('[UserPermissionPage] existingData:', existingData);
-    
+
     // Clear any previous local errors and success
     setLocalError(null);
     setLocalSuccess(null);
@@ -111,73 +111,80 @@ export function AppPermissionPage({
       });
       await userPkpWallet.init();
 
-      const policyParameters: Record<string, any> = {};
-      const deletePolicyIpfsCids: string[] = [];
-      
-      // Track which policies exist in the current permission data
-      const existingPolicies = new Set<string>();
+      const policyParams: Record<string, any> = {};
+      const deletePermissionData: Record<string, string[]> = {};
+
+      // Track which policies exist in the current permission data per ability
+      const existingPoliciesByAbility: Record<string, string[]> = {};
       if (existingData) {
         Object.keys(existingData).forEach((abilityIpfsCid) => {
           const abilityData = existingData[abilityIpfsCid];
           if (abilityData && typeof abilityData === 'object') {
-            Object.keys(abilityData).forEach((policyIpfsCid) => {
-              existingPolicies.add(policyIpfsCid);
-            });
+            existingPoliciesByAbility[abilityIpfsCid] = Object.keys(abilityData);
           }
         });
       }
-      
+
       // Build policy parameters and deletion list
       Object.keys(formData).forEach((abilityIpfsCid) => {
         const abilityData = formData[abilityIpfsCid];
         const filteredAbilityData: Record<string, any> = {};
-        
+
+        // Collect selected policies for updates
         Object.keys(abilityData).forEach((policyIpfsCid) => {
           if (selectedPolicies[policyIpfsCid]) {
-            // Include selected policy
             filteredAbilityData[policyIpfsCid] = abilityData[policyIpfsCid] || {};
-          } else {
-            // Add unselected policy to delete list if it existed before
-            if (existingPolicies.has(policyIpfsCid)) {
-              deletePolicyIpfsCids.push(policyIpfsCid);
-            }
           }
         });
-        
-        if (Object.keys(filteredAbilityData).length > 0) {
-          policyParameters[abilityIpfsCid] = filteredAbilityData;
+
+        const hasUpdates = Object.keys(filteredAbilityData).length > 0;
+
+        if (hasUpdates) {
+          // If we are updating this ability, do NOT include deletions for the same ability (avoids overlap)
+          policyParams[abilityIpfsCid] = filteredAbilityData;
+        } else {
+          // No updates for this ability; if there were previously enabled policies, delete them
+          const previouslyEnabled = existingPoliciesByAbility[abilityIpfsCid] || [];
+          if (previouslyEnabled.length > 0) {
+            // Delete all previously enabled policies that are not selected
+            const toDelete = previouslyEnabled.filter((cid) => !selectedPolicies[cid]);
+            if (toDelete.length > 0) {
+              deletePermissionData[abilityIpfsCid] = toDelete;
+            }
+          }
         }
       });
 
       console.log('[UserPermissionPage] Built parameters:');
-      console.log('[UserPermissionPage] policyParameters:', JSON.stringify(policyParameters, null, 2));
-      console.log('[UserPermissionPage] deletePolicyIpfsCids:', deletePolicyIpfsCids);
+      console.log('[UserPermissionPage] policyParams:', JSON.stringify(policyParams, null, 2));
+      console.log('[UserPermissionPage] deletePermissionData:', deletePermissionData);
 
       // We should do this in case there was ever an error doing this previously
       setLocalStatus('Adding permitted actions...');
-      // Get all ability CIDs from both existing data and new parameters
-      const allAbilityIpfsCids = new Set([
+      // Get all ability CIDs from existing data, new parameters, and deletion-only abilities
+      const allAbilityIpfsCids = [
         ...Object.keys(existingData || {}),
-        ...Object.keys(policyParameters)
-      ]);
+        ...Object.keys(policyParams),
+        ...Object.keys(deletePermissionData),
+      ];
+
       await addPermittedActions({
         wallet: userPkpWallet,
         agentPKPTokenId: agentPKP.tokenId,
-        abilityIpfsCids: Array.from(allAbilityIpfsCids),
+        abilityIpfsCids: allAbilityIpfsCids,
       });
 
       try {
         setLocalStatus('Setting ability policy parameters...');
         const client = getClient({ signer: userPkpWallet });
-        // @ts-ignore - New API format not yet in types
         const result = await client.setAbilityPolicyParameters({
           pkpEthAddress: agentPKP.ethAddress,
           appId: Number(connectInfoMap.app.appId),
           appVersion: Number(permittedVersion),
-          policyParameters: policyParameters,
-          deletePolicyIpfsCids: deletePolicyIpfsCids,
+          policyParams,
+          deletePermissionData: deletePermissionData,
         });
-        
+
         console.log('[UserPermissionPage] setAbilityPolicyParameters result:', result);
 
         setLocalStatus(null);

@@ -90,14 +90,14 @@ export async function setAbilityPolicyParameters(
 ): Promise<{ txHash: string }> {
   const {
     contract,
-    args: { appId, appVersion, pkpEthAddress, policyParams },
+    args: { appId, appVersion, pkpEthAddress, policyParams, deletePermissionData },
     overrides,
   } = params;
 
   try {
     const pkpTokenId = await getPkpTokenId({ pkpEthAddress, signer: contract.signer });
 
-    const flattenedParams = encodePermissionDataForChain(policyParams);
+    const flattenedParams = encodePermissionDataForChain(policyParams, deletePermissionData);
 
     const adjustedOverrides = await gasAdjustedOverrides(
       contract,

@@ -3,7 +3,7 @@ const path = require('path');
 module.exports = {
   preset: '../../../jest.preset.js',
   testEnvironment: 'node',
-  testMatch: ['**/VincentContracts.spec.ts'],
+  testMatch: ['**/*.spec.ts'],
   transformIgnorePatterns: [
     // PNPM style: scoped packages with `.` become `+`, and non-scoped stay the same
     '<rootDir>/node_modules/.pnpm/(?!(@noble\\+secp256k1|cbor2|@cto\\.af\\+wtf8)@)',

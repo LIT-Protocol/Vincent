@@ -230,13 +230,29 @@ export interface UnPermitAppParams {
 }
 
 /**
+ * Represents a nested map of existing policy entries to delete, keyed by ability.
+ * Keys are ability IPFS CIDs, values are arrays of policy IPFS CIDs that should be removed for that ability.
+ *
+ * Used by setAbilityPolicyParameters to request deletions without providing new parameters.
+ *
+ * @example
+ * {
+ *   "abilityCidA": ["policyCid1", "policyCid2"],
+ *   "abilityCidB": ["policyCid3"]
+ * }
+ *
  * @category Interfaces
  * */
+export interface DeletePermissionData {
+  [abilityIpfsCid: string]: string[];
+}
+
 export interface SetAbilityPolicyParametersParams {
   pkpEthAddress: string;
   appId: number;
   appVersion: number;
-  policyParams: PermissionData;
+  policyParams?: PermissionData;
+  deletePermissionData?: DeletePermissionData;
 }
 
 /**
@@ -399,7 +415,9 @@ export interface ContractClient {
   unPermitApp(params: UnPermitAppParams, overrides?: Overrides): ReturnType<typeof _unPermitApp>;
 
   /** Sets ability policy parameters for a specific app version
+   * Note that omitting parameters from `policyParams` does not remove any existing values; this function allows atomic/sparse updates.
    *
+   * To remove existing policy parameters, provide their IPFS CIDs in the `deletePermissionData` param.
    * @returns { txHash } The transaction hash that set the policy parameters
    */
   setAbilityPolicyParameters(
