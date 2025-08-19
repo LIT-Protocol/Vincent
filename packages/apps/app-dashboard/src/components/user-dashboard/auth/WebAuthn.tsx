@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useSetAuthInfo } from '../../../hooks/user-dashboard/useAuthInfo';
 import { Button } from '@/components/shared/ui/button';
 import { ThemeType } from '../connect/ui/theme';
-import Loading from '@/components/shared/ui/Loading';
 import StatusMessage from '../connect/StatusMessage';
 import { PasskeyNameInput } from '@/components/shared/ui/PasskeyNameInput';
 
@@ -21,7 +20,8 @@ export default function WebAuthn({
   clearError,
   theme,
 }: WebAuthnProps) {
-  const [loading, setLoading] = useState<boolean>(false);
+  const [registerLoading, setRegisterLoading] = useState<boolean>(false);
+  const [authLoading, setAuthLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
   const [passkeyName, setPasskeyName] = useState<string>('Vincent Passkey');
   const { setAuthInfo } = useSetAuthInfo();
@@ -44,7 +44,7 @@ export default function WebAuthn({
       return;
     }
 
-    setLoading(true);
+    setRegisterLoading(true);
     setError('');
     try {
       await registerWithWebAuthn(passkeyName.trim());
@@ -73,11 +73,11 @@ export default function WebAuthn({
 
       setError(errorMessage);
     }
-    setLoading(false);
+    setRegisterLoading(false);
   }
 
   async function handleAuthenticate() {
-    setLoading(true);
+    setAuthLoading(true);
     setError('');
     try {
       await authWithWebAuthn();
@@ -115,11 +115,7 @@ export default function WebAuthn({
 
       setError(errorMessage);
     }
-    setLoading(false);
-  }
-
-  if (loading) {
-    return <Loading />;
+    setAuthLoading(false);
   }
 
   return (
@@ -152,9 +148,9 @@ export default function WebAuthn({
               <Button
                 className={`${theme.accentBg} rounded-xl py-3 px-4 w-full font-medium text-sm ${theme.accentHover} transition-all duration-200 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2`}
                 onClick={handleRegister}
-                disabled={loading || !passkeyName.trim()}
+                disabled={registerLoading || authLoading || !passkeyName.trim()}
               >
-                {loading ? (
+                {registerLoading ? (
                   <>
                     <svg
                       className="w-4 h-4 animate-spin"
@@ -190,9 +186,9 @@ export default function WebAuthn({
             <Button
               className={`${theme.accentBg} rounded-xl py-3 px-4 w-full font-medium text-sm ${theme.accentHover} transition-all duration-200 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 ${registerWithWebAuthn ? 'mt-3' : ''}`}
               onClick={handleAuthenticate}
-              disabled={loading}
+              disabled={authLoading || registerLoading}
             >
-              {loading ? (
+              {authLoading ? (
                 <>
                   <svg
                     className="w-4 h-4 animate-spin"

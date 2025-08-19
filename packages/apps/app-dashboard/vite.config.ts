@@ -14,7 +14,15 @@ export default defineConfig({
       project: 'vincent-dashboard',
     }),
   ],
-
+  server: {
+    proxy: {
+      '/api/yield': {
+        target: 'https://api.yield.heyvincent.ai',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/yield/, ''),
+      },
+    },
+  },
   define: {
     global: 'globalThis',
     'process.env': process.env,

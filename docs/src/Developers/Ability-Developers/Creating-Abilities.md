@@ -5,6 +5,13 @@ title: Creating Vincent Abilities
 
 # How a Vincent Ability Works
 
+<div class="box info-box">
+  <p class="box-title info-box-title">
+    <span class="box-icon info-icon">Info</span> Note
+  </p>
+  <p>Ensure that all the policies consumed by your ability are published on NPM</p>
+</div>
+
 A Vincent Ability consists of two main lifecycle methods executed in the following order:
 
 1. **Precheck**: Executed locally by the Vincent Ability executor, this function provides a best-effort check that the ability execution shouldn't fail

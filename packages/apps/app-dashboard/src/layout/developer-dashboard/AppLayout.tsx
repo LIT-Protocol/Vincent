@@ -19,7 +19,7 @@ function AppLayout({ children, className }: ComponentProps<'div'>) {
 
   // FIRST: Check basic authentication
   const { authInfo, sessionSigs, isProcessing: authLoading, error } = useReadAuthInfo();
-  const isAuthenticated = authInfo?.agentPKP && sessionSigs;
+  const isAuthenticated = authInfo?.userPKP && sessionSigs;
 
   // Generate JWT token when authenticated (for store mutations)
   useEffect(() => {

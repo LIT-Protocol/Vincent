@@ -1,6 +1,6 @@
 {
   "name": "@lit-protocol/registry-backend",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "private": true,
   "scripts": {
     "prebuild": "node scripts/copy-api-html.js",
@@ -23,7 +23,7 @@
     "@lit-protocol/flags": "^2.1.0",
     "@lit-protocol/vincent-app-sdk": "^2.0.0",
     "@lit-protocol/vincent-contracts-sdk": "^1.0.1",
-    "@lit-protocol/vincent-registry-sdk": "^4.0.0",
+    "@lit-protocol/vincent-registry-sdk": "^4.1.0",
     "@t3-oss/env-core": "^0.13.6",
     "cors": "^2.8.5",
     "debug": "^4.4.1",

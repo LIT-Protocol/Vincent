@@ -1,12 +1,13 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getClient } from '@lit-protocol/vincent-contracts-sdk';
+import { IRelayPKP } from '@lit-protocol/types';
 import { ConnectInfoMap } from '@/hooks/user-dashboard/connect/useConnectInfo';
 import { useConnectFormData } from '@/hooks/user-dashboard/connect/useConnectFormData';
 import { ConnectPageHeader } from './ui/ConnectPageHeader';
 import { theme } from './ui/theme';
 import { PolicyFormRef } from './ui/PolicyForm';
-import { UseReadAuthInfo } from '@/hooks/user-dashboard/useAuthInfo';
+import { ReadAuthInfo } from '@/hooks/user-dashboard/useAuthInfo';
 import { useAddPermittedActions } from '@/hooks/user-dashboard/connect/useAddPermittedActions';
 import { ConnectAppHeader } from './ui/ConnectAppHeader';
 import { AppsInfo } from './ui/AppInfo';
@@ -14,15 +15,23 @@ import { ActionButtons } from './ui/ActionButtons';
 import { StatusCard } from './ui/StatusCard';
 import { ConnectFooter } from '../ui/Footer';
 import { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
-import { litNodeClient } from '@/utils/user-dashboard/lit';
+import { litNodeClient, mintPKPToExistingPKP } from '@/utils/user-dashboard/lit';
 import { useJwtRedirect } from '@/hooks/user-dashboard/connect/useJwtRedirect';
+import { BigNumber } from 'ethers';
 
 interface ConnectPageProps {
   connectInfoMap: ConnectInfoMap;
-  readAuthInfo: UseReadAuthInfo;
+  readAuthInfo: ReadAuthInfo;
+  agentPKP: IRelayPKP;
+  isLastUnpermittedPKP: boolean;
 }
 
-export function ConnectPage({ connectInfoMap, readAuthInfo }: ConnectPageProps) {
+export function ConnectPage({
+  connectInfoMap,
+  readAuthInfo,
+  agentPKP,
+  isLastUnpermittedPKP,
+}: ConnectPageProps) {
   const navigate = useNavigate();
   const [localError, setLocalError] = useState<string | null>(null);
   const [localSuccess, setLocalSuccess] = useState<string | null>(null);
@@ -37,7 +46,7 @@ export function ConnectPage({ connectInfoMap, readAuthInfo }: ConnectPageProps) 
     loadingStatus: jwtLoadingStatus,
     error: jwtError,
     redirectUrl,
-  } = useJwtRedirect({ readAuthInfo });
+  } = useJwtRedirect({ readAuthInfo, agentPKP });
   const {
     addPermittedActions,
     isLoading: isActionsLoading,
@@ -67,11 +76,7 @@ export function ConnectPage({ connectInfoMap, readAuthInfo }: ConnectPageProps) 
     });
 
     if (allValid) {
-      if (
-        !readAuthInfo.authInfo?.agentPKP ||
-        !readAuthInfo.authInfo?.userPKP ||
-        !readAuthInfo.sessionSigs
-      ) {
+      if (!agentPKP || !readAuthInfo.authInfo?.userPKP || !readAuthInfo.sessionSigs) {
         setLocalError('Missing authentication information. Please try refreshing the page.');
         setIsConnectProcessing(false);
         return;
@@ -88,22 +93,33 @@ export function ConnectPage({ connectInfoMap, readAuthInfo }: ConnectPageProps) 
 
       await addPermittedActions({
         wallet: userPkpWallet,
-        agentPKPTokenId: readAuthInfo.authInfo.agentPKP.tokenId,
+        agentPKPTokenId: agentPKP.tokenId,
         abilityIpfsCids: Object.keys(formData),
       });
 
       try {
         const client = getClient({ signer: userPkpWallet });
         await client.permitApp({
-          pkpEthAddress: readAuthInfo.authInfo.agentPKP!.ethAddress,
+          pkpEthAddress: agentPKP.ethAddress,
           appId: Number(connectInfoMap.app.appId),
           appVersion: Number(connectInfoMap.app.activeVersion),
           permissionData: formData,
         });
 
         setIsConnectProcessing(false);
+
+        // If this was the last unpermitted PKP, mint a new one for future apps
+        if (isLastUnpermittedPKP) {
+          const tokenIdString = BigNumber.from(readAuthInfo.authInfo.userPKP.tokenId).toHexString();
+          await mintPKPToExistingPKP({
+            ...readAuthInfo.authInfo.userPKP,
+            tokenId: tokenIdString,
+          });
+        }
+
         // Show success state for 3 seconds, then redirect
         setLocalSuccess('Permissions granted successfully!');
+        setIsConnectProcessing(false);
         setTimeout(async () => {
           setLocalSuccess(null);
           await generateJWT(connectInfoMap.app, connectInfoMap.app.activeVersion!); // ! since this will be valid. Only optional in the schema doc for init creation.

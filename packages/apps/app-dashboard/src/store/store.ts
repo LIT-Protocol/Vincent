@@ -6,10 +6,13 @@ import { env } from '@/config/env';
 
 const { VITE_ENV } = env;
 
-const BASE_URL =
-  VITE_ENV === 'staging'
-    ? `https://staging.registry.heyvincent.ai`
-    : `https://registry.heyvincent.ai`;
+const BASE_URL_MAPPING = {
+  development: 'http://localhost:3000',
+  staging: 'https://staging.registry.heyvincent.ai',
+  production: 'https://registry.heyvincent.ai',
+};
+
+const BASE_URL = BASE_URL_MAPPING[VITE_ENV as keyof typeof BASE_URL_MAPPING];
 
 const { vincentApiClientReact, setBaseQueryFn }: any = reactClient;
 

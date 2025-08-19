@@ -8,7 +8,7 @@ import { useReadAuthInfo } from '@/hooks/user-dashboard/useAuthInfo';
 export function useAuthGuard() {
   const { authInfo, sessionSigs, isProcessing } = useReadAuthInfo();
   const navigate = useNavigate();
-  const userIsAuthed = authInfo?.userPKP && authInfo?.agentPKP && sessionSigs;
+  const userIsAuthed = authInfo?.userPKP && sessionSigs;
   if (!isProcessing && !userIsAuthed) {
     navigate(`/user`, { replace: true });
   }

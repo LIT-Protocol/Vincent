@@ -444,6 +444,57 @@ describe('App API Integration Tests', () => {
     });
   });
 
+  describe('POST /app/:appId/sponsorDelegateesPayment', () => {
+    it('should sponsor delegatees for payment', async () => {
+      const delegateeAddresses = generateRandomEthAddresses(2);
+
+      verboseLog(`POST /app/:appId/sponsorDelegateesPayment: ${delegateeAddresses.join(',')}`);
+
+      // Create a new app for this test
+      const newAppData = {
+        name: 'Payment Test App',
+        description: 'Test app for payment sponsorship',
+        contactEmail: 'payment@example.com',
+        appUserUrl: 'https://example.com/payment-app',
+        logo: 'https://example.com/payment-logo.png',
+        redirectUris: ['https://example.com/payment-callback'],
+        delegateeAddresses,
+      };
+
+      // Create the app
+      const createResult = await store.dispatch(
+        api.endpoints.createApp.initiate({
+          appCreate: newAppData,
+        }),
+      );
+
+      verboseLog(createResult);
+      expect(createResult).not.toHaveProperty('error');
+
+      const { data: appData } = createResult;
+      expectAssertObject(appData);
+
+      const paymentAppId = appData.appId;
+
+      // Call the sponsorDelegateesPayment endpoint
+      const result = await store.dispatch(
+        api.endpoints.sponsorDelegateesPayment.initiate({ appId: paymentAppId }),
+      );
+
+      verboseLog(result);
+      expect(result).not.toHaveProperty('error');
+
+      const { data } = result;
+      expectAssertObject(data);
+
+      expect(data).toHaveProperty('message');
+      expect(data.message).toContain('sponsored for LIT chain usage costs');
+
+      // Clean up - delete the app
+      await store.dispatch(api.endpoints.deleteApp.initiate({ appId: paymentAppId }));
+    });
+  });
+
   describe('DELETE /app/:appId', () => {
     it('should delete an app and its versions', async () => {
       {

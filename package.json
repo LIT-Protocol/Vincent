@@ -31,7 +31,8 @@
     "make:contracts": "cd packages/lib/contracts-sdk && make",
     "gen:contracts": "bun run make:contracts get-abis run-postbuild-scripts",
     "clean": "nx reset && nx run-many --target=clean --all && rm -Rf node_modules bun.lock",
-    "prepare": "husky"
+    "prepare": "husky",
+    "bulk-publish": "sh ./scripts/bulk-publish.sh"
   },
   "dependencies": {
     "tslib": "2.8.1"

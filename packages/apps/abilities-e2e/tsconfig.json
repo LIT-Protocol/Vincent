@@ -16,6 +16,9 @@
       "path": "../ability-erc20-approval"
     },
     {
+      "path": "../ability-erc20-transfer"
+    },
+    {
       "path": "../ability-evm-transaction-signer"
     },
     {
@@ -23,6 +26,9 @@
     },
     {
       "path": "../policy-spending-limit"
+    },
+    {
+      "path": "../policy-send-counter"
     },
     {
       "path": "../../libs/app-sdk"

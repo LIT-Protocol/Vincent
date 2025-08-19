@@ -1,6 +1,6 @@
 {
   "name": "@lit-protocol/vincent-registry-sdk",
-  "version": "4.0.0",
+  "version": "4.1.0",
   "description": "Vincent Registry API definitions and generated code",
   "packageManager": "pnpm@10.7.0",
   "private": false,

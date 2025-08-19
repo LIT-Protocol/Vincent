@@ -6,7 +6,6 @@
   },
   "dependencies": {
     "@lit-protocol/vincent-ability-sdk": "workspace:*",
-    "@uniswap/sdk-core": "^7.7.2",
     "@lit-protocol/vincent-scaffold-sdk": "^1.1.7",
     "ethers": "^5.8.0",
     "tslib": "2.8.1",

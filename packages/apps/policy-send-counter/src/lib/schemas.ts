@@ -1,71 +1,100 @@
 import { z } from 'zod';
 
+/**
+ * Ability parameters schema - matches the ability this policy works with
+ */
 export const abilityParamsSchema = z.object({
-  ethRpcUrl: z
+  to: z
     .string()
-    .describe(
-      'An Ethereum Mainnet RPC Endpoint. This is used to check USD <> ETH prices via Chainlink.',
-    ),
-  rpcUrlForUniswap: z
+    .min(1, 'Recipient address cannot be empty')
+    .describe("The recipient's address the underlying ability will send to."),
+  amount: z
     .string()
-    .describe(
-      'An RPC endpoint for any chain that is supported by the Uniswap. Must work for the chain specified in chainIdForUniswap.',
-    ),
-  chainIdForUniswap: z
-    .number()
-    .describe('The chain ID to execute the transaction on. For example: 8453 for Base.'),
-  tokenAddress: z
-    .string()
-    .describe(
-      'ERC20 Token address to spend/sell. For example 0x4200000000000000000000000000000000000006 for WETH on Base.',
-    ),
-  tokenDecimals: z
-    .number()
-    .describe('ERC20 Token to spend/sell decimals. For example 18 for WETH on Base.'),
-  buyAmount: z
-    .number()
-    .describe('Amount of token to spend/sell. For example 0.00001 for 0.00001 WETH.'),
+    .min(1, 'Amount cannot be empty')
+    .describe('The amount to send as a string (units/format depend on the underlying ability).'),
 });
 
+/**
+ * User parameters schema - policy configuration set by the user
+ */
 export const userParamsSchema = z.object({
-  maxDailySpendingLimitInUsdCents: z
-    .bigint()
-    .describe('The maximum daily spending limit in USD cents, as a BigInt.'),
+  maxSends: z
+    .number()
+    .positive()
+    .describe('Maximum number of sends allowed within the configured time window.'),
+  timeWindowSeconds: z
+    .number()
+    .positive()
+    .describe('Length of the counting window in seconds (e.g., 10 = 10 seconds).'),
 });
 
+/**
+ * Commit parameters schema - data passed to commit phase
+ */
+export const commitParamsSchema = z.object({
+  currentCount: z
+    .number()
+    .describe('The number of sends recorded in the current time window at commit time.'),
+  maxSends: z.number().describe('The maximum number of sends allowed in the time window.'),
+  remainingSends: z.number().describe('How many sends remain available in the current window.'),
+  timeWindowSeconds: z.number().describe('The duration of the time window in seconds.'),
+});
+
+/**
+ * Precheck allow result schema
+ */
 export const precheckAllowResultSchema = z.object({
-  maxSpendingLimitInUsd: z.number().describe("The user's daily spending limit in USD."),
-  buyAmountInUsd: z.number().describe('The value of the tokens to be spent, in USD.'),
+  currentCount: z.number().describe('The number of sends already made in the current window.'),
+  maxSends: z.number().describe('The maximum number of sends allowed in the current window.'),
+  remainingSends: z.number().describe('How many sends are still allowed before hitting the limit.'),
+  timeWindowSeconds: z.number().describe('The duration of the time window in seconds.'),
 });
 
+/**
+ * Precheck deny result schema
+ */
 export const precheckDenyResultSchema = z.object({
-  reason: z
-    .literal('Attempted buy amount exceeds daily limit')
-    .describe('The reason for denying the precheck.'),
-  maxSpendingLimitInUsd: z.number().describe("The user's daily spending limit in USD."),
-  buyAmountInUsd: z.number().describe('The value of the tokens to be spent, in USD.'),
+  reason: z.string().describe('The reason for denying the precheck.'),
+  currentCount: z.number().describe('The number of sends already made in the current window.'),
+  maxSends: z.number().describe('The maximum number of sends allowed in the current window.'),
+  secondsUntilReset: z.number().describe('Number of seconds remaining until the counter resets.'),
 });
 
+/**
+ * Evaluate allow result schema
+ */
 export const evalAllowResultSchema = z.object({
-  maxSpendingLimitInUsd: z.number().describe("The user's daily spending limit in USD."),
-  buyAmountInUsd: z.number().describe('The value of the tokens to be spent, in USD.'),
+  currentCount: z.number().describe('The number of sends already made in the current window.'),
+  maxSends: z.number().describe('The maximum number of sends allowed in the current window.'),
+  remainingSends: z.number().describe('How many sends are still allowed before hitting the limit.'),
+  timeWindowSeconds: z.number().describe('The duration of the time window in seconds.'),
 });
 
+/**
+ * Evaluate deny result schema
+ */
 export const evalDenyResultSchema = z.object({
   reason: z.string().describe('The reason for denying the evaluation.'),
-  maxSpendingLimitInUsd: z.number().optional().describe("The user's daily spending limit in USD."),
-  buyAmountInUsd: z.number().optional().describe('The value of the tokens to be spent, in USD.'),
+  currentCount: z.number().describe('The number of sends already made in the current window.'),
+  maxSends: z.number().describe('The maximum number of sends allowed in the current window.'),
+  secondsUntilReset: z.number().describe('Number of seconds remaining until the counter resets.'),
+  timeWindowSeconds: z.number().describe('The duration of the time window in seconds.'),
 });
 
-export const commitParamsSchema = z.object({
-  amountSpentUsd: z.number().describe('The amount spent for this transaction, in USD.'),
-  maxSpendingLimitInUsd: z.number().describe("The user's daily spending limit in USD."),
-});
-
+/**
+ * Commit allow result schema
+ */
 export const commitAllowResultSchema = z.object({
-  spendTxHash: z.string().describe('The hash of the transaction recording the amount spent.'),
+  recorded: z.boolean().describe('Whether the send was recorded in the policy state.'),
+  newCount: z.number().describe('The updated number of sends recorded after this commit.'),
+  remainingSends: z
+    .number()
+    .describe('How many sends remain available in the current window after commit.'),
 });
 
+/**
+ * Commit deny result schema (though commit rarely denies)
+ */
 export const commitDenyResultSchema = z.object({
-  error: z.string().describe('A string containing the error message if the commit failed.'),
+  reason: z.string().describe('A string containing the error message if the commit failed.'),
 });

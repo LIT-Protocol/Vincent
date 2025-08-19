@@ -5,13 +5,13 @@ import { Button } from '@/components/shared/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
 import ConnectView from './Connect';
 import { Link } from 'react-router-dom';
-import { UseReadAuthInfo } from '@/hooks/user-dashboard/useAuthInfo';
+import { ReadAuthInfo } from '@/hooks/user-dashboard/useAuthInfo';
 import { ConnectFooter } from '../ui/Footer';
 import { toggleTheme } from '@/lib/theme';
 import { useTheme } from '@/hooks/useTheme';
 
 type AuthenticationErrorScreenProps = {
-  readAuthInfo: UseReadAuthInfo;
+  readAuthInfo: ReadAuthInfo;
 };
 
 export function AuthenticationErrorScreen({ readAuthInfo }: AuthenticationErrorScreenProps) {

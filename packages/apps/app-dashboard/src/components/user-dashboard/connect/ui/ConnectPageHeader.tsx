@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Moon, Sun, LogOut, User, Copy, Check } from 'lucide-react';
+import { Moon, Sun, LogOut, User } from 'lucide-react';
 import { Button } from '@/components/shared/ui/button';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/shared/ui/tooltip';
 import { AuthInfo, useClearAuthInfo } from '@/hooks/user-dashboard/useAuthInfo';
@@ -15,27 +15,15 @@ export function ConnectPageHeader({ authInfo }: ConnectPageHeaderProps) {
   const isDark = useTheme();
   const { clearAuthInfo } = useClearAuthInfo();
   const [isTooltipOpen, setIsTooltipOpen] = useState(false);
-  const [isCopied, setIsCopied] = useState(false);
 
   const handleSignOut = async () => {
     await clearAuthInfo();
     window.location.reload();
   };
 
-  const handleCopyEthAddress = async () => {
-    if (authInfo.agentPKP?.ethAddress) {
-      try {
-        await navigator.clipboard.writeText(authInfo.agentPKP.ethAddress);
-        setIsCopied(true);
-        setTimeout(() => setIsCopied(false), 2000);
-      } catch (err) {
-        console.error('Failed to copy eth address:', err);
-      }
-    }
-  };
 
   const formatAuthInfo = () => {
-    return `Sign-In Type: ${authInfo.type}\nAuthenticated: ${new Date(authInfo.authenticatedAt).toLocaleString()}`;
+    return `Sign-In Type: ${authInfo.type}\nAuthenticated: ${new Date(authInfo.authenticatedAt).toLocaleString()}${authInfo.value ? `\nValue: ${authInfo.value}` : ''}`;
   };
 
   return (
@@ -72,26 +60,6 @@ export function ConnectPageHeader({ authInfo }: ConnectPageHeaderProps) {
                 <div className={`text-xs whitespace-pre-line break-words ${theme.text}`}>
                   {formatAuthInfo()}
                 </div>
-                {authInfo.agentPKP?.ethAddress && (
-                  <div className="flex items-start gap-2 pt-2 border-t border-gray-600">
-                    <div className="flex-1 min-w-0">
-                      <div className="text-gray-500 dark:text-gray-300 text-xs">
-                        Vincent Wallet Address:
-                      </div>
-                      <div className="font-mono text-xs break-all">
-                        {authInfo.agentPKP.ethAddress}
-                      </div>
-                    </div>
-                    <button
-                      onClick={handleCopyEthAddress}
-                      className={`p-1 ${theme.itemHoverBg} rounded transition-colors flex-shrink-0 ${theme.text} ${
-                        isCopied ? 'text-green-500' : ''
-                      }`}
-                    >
-                      {isCopied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
-                    </button>
-                  </div>
-                )}
                 <div className="pt-2 border-t border-gray-600">
                   <button
                     onClick={handleSignOut}

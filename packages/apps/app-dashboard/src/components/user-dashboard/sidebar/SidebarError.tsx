@@ -1,5 +1,5 @@
 import { useLocation, Link } from 'react-router-dom';
-import { Package, Wallet, Sun, Moon, LogOut, AlertTriangle } from 'lucide-react';
+import { Package, Sun, Moon, LogOut, AlertTriangle } from 'lucide-react';
 import { theme } from '@/components/user-dashboard/connect/ui/theme';
 import { toggleTheme } from '@/lib/theme';
 import { useTheme } from '@/hooks/useTheme';
@@ -44,9 +44,9 @@ export function SidebarError({ error }: SidebarErrorProps) {
         <div className="flex items-center px-6 py-4 h-full">
           <Link to="/" className="flex items-center">
             <img
-              src={isDark ? '/vincent-by-lit-white-logo.png' : '/vincent-by-lit-logo.png'}
+              src={isDark ? '/vincent-main-logo-white.png' : '/vincent-main-logo.png'}
               alt="Vincent by Lit Protocol"
-              className="h-8 object-contain cursor-pointer hover:opacity-80 transition-opacity"
+              className="h-6 object-contain cursor-pointer hover:opacity-80 transition-opacity"
             />
           </Link>
         </div>
@@ -107,32 +107,6 @@ export function SidebarError({ error }: SidebarErrorProps) {
       <SidebarFooter className="border-t border-sidebar-border">
         <div className="p-4 space-y-2">
           <SidebarMenu>
-            {/* Wallet */}
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                asChild
-                isActive={isActiveRoute('/user/wallet')}
-                className={`h-10 px-3 rounded-lg transition-all duration-200 ${
-                  isActiveRoute('/user/wallet')
-                    ? `${theme.itemBg} text-orange-500 font-semibold`
-                    : `${theme.text} ${theme.itemHoverBg}`
-                }`}
-              >
-                <Link to="/user/wallet" className="flex items-center gap-3">
-                  <div
-                    className={`${isActiveRoute('/user/wallet') ? 'text-orange-500' : theme.textMuted}`}
-                  >
-                    <Wallet className="h-4 w-4" />
-                  </div>
-                  <span
-                    className={`font-medium ${isActiveRoute('/user/wallet') ? 'text-orange-500' : theme.text}`}
-                  >
-                    Wallet
-                  </span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-
             {/* My Account with tooltip */}
             <SidebarMenuItem>
               <AccountTooltip theme={theme} />

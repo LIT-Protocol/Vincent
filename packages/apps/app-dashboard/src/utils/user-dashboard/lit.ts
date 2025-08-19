@@ -350,7 +350,16 @@ export async function mintPKPToExistingPKP(pkp: IRelayPKP): Promise<IRelayPKP> {
   );
 
   if (!agentMintResponse.ok) {
-    throw new Error('Failed to mint PKP to existing PKP');
+    const errorText = await agentMintResponse.text();
+    console.log('Full minting error response:', {
+      status: agentMintResponse.status,
+      statusText: agentMintResponse.statusText,
+      errorText,
+      requestBody,
+    });
+    throw new Error(
+      `Failed to mint PKP to existing PKP: ${agentMintResponse.status} ${agentMintResponse.statusText} - ${errorText}`,
+    );
   }
 
   const agentMintResponseJson = await agentMintResponse.json();
@@ -360,7 +369,9 @@ export async function mintPKPToExistingPKP(pkp: IRelayPKP): Promise<IRelayPKP> {
   const txReceipt = await provider.waitForTransaction(agentMintResponseJson.requestId);
 
   if (txReceipt.status !== 1) {
-    throw new Error('Transaction failed');
+    throw new Error(
+      `Transaction failed with status: ${txReceipt.status}. Transaction hash: ${agentMintResponseJson.requestId}`,
+    );
   }
 
   // Get the token ID from the transaction logs
@@ -374,12 +385,16 @@ export async function mintPKPToExistingPKP(pkp: IRelayPKP): Promise<IRelayPKP> {
   });
 
   if (!mintEvent) {
-    throw new Error('Failed to find PKPMinted event in transaction logs');
+    throw new Error(
+      `Failed to find PKPMinted event in transaction logs. Found ${txReceipt.logs.length} logs. Transaction hash: ${agentMintResponseJson.requestId}`,
+    );
   }
 
   const tokenId = pkpNft.interface.parseLog(mintEvent).args.tokenId;
   if (!tokenId) {
-    throw new Error('Token ID not found in mint event');
+    throw new Error(
+      `Token ID not found in mint event. Transaction hash: ${agentMintResponseJson.requestId}`,
+    );
   }
 
   // Get the public key and eth address from the PKP NFT contract

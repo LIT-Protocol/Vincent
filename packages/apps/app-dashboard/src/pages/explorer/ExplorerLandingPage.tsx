@@ -107,7 +107,7 @@ export function ExplorerLandingPage() {
         </main>
 
         {/* Footer */}
-        <div className="px-3 sm:px-6 py-2 flex flex-col items-center gap-4 mt-auto">
+        <div className="px-3 sm:px-6 py-2 flex flex-col items-center gap-2 mt-auto">
           <div className="flex items-center gap-2 text-sm font-normal text-gray-500">
             <span>Powered by</span>
             <a

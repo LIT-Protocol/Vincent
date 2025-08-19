@@ -1,4 +1,5 @@
 import { useJwtRedirect } from '@/hooks/user-dashboard/connect/useJwtRedirect';
+import { IRelayPKP } from '@lit-protocol/types';
 import { Settings, ArrowRight, RefreshCw } from 'lucide-react';
 import { theme } from '@/components/user-dashboard/connect/ui/theme';
 import { ConnectAppHeader } from './ui/ConnectAppHeader';
@@ -7,7 +8,7 @@ import { ConnectFooter } from '../ui/Footer';
 import { InfoBanner } from './ui/InfoBanner';
 import { ActionCard } from './ui/ActionCard';
 import { useNavigate } from 'react-router-dom';
-import { UseReadAuthInfo } from '@/hooks/user-dashboard/useAuthInfo';
+import { ReadAuthInfo } from '@/hooks/user-dashboard/useAuthInfo';
 import { App, AppVersion } from '@/types/developer-dashboard/appTypes';
 import { useState, useEffect } from 'react';
 import { useCanGoBack } from '@/hooks/user-dashboard/connect/useCanGoBack';
@@ -18,7 +19,8 @@ type ReturningUserConnectProps = {
   versionData: AppVersion;
   activeVersionData?: AppVersion;
   redirectUri?: string;
-  readAuthInfo: UseReadAuthInfo;
+  readAuthInfo: ReadAuthInfo;
+  agentPKP: IRelayPKP;
 };
 
 export function ReturningUserConnect({
@@ -28,13 +30,14 @@ export function ReturningUserConnect({
   activeVersionData,
   redirectUri,
   readAuthInfo,
+  agentPKP,
 }: ReturningUserConnectProps) {
   const navigate = useNavigate();
   const canGoBack = useCanGoBack();
   const [localSuccess, setLocalSuccess] = useState<string | null>(null);
   const [isContinueLoading, setIsContinueLoading] = useState(false);
   const { generateJWT, executeRedirect, isLoading, loadingStatus, error, redirectUrl } =
-    useJwtRedirect({ readAuthInfo });
+    useJwtRedirect({ readAuthInfo, agentPKP });
 
   // Handle redirect when JWT is ready
   useEffect(() => {

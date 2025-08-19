@@ -694,9 +694,9 @@ export function Sidebar({ userApps, userAbilities, userPolicies }: SidebarProps)
         <div className="flex items-center px-6 py-4 h-full">
           <Link to="/" className="flex items-center">
             <img
-              src={isDark ? '/vincent-by-lit-white-logo.png' : '/vincent-by-lit-logo.png'}
+              src={isDark ? '/vincent-main-logo-white.png' : '/vincent-main-logo.png'}
               alt="Vincent by Lit Protocol"
-              className="h-8 object-contain cursor-pointer hover:opacity-80 transition-opacity"
+              className="h-6 object-contain cursor-pointer hover:opacity-80 transition-opacity"
             />
           </Link>
         </div>

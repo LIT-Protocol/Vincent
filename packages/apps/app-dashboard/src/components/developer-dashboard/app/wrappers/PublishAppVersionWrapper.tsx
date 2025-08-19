@@ -36,6 +36,8 @@ export function PublishAppVersionWrapper({ isAppPublished }: { isAppPublished: b
     version: Number(versionId),
   });
 
+  const [sponsorDelegateesPayment] = vincentApiClient.useSponsorDelegateesPaymentMutation();
+
   // Lazy queries for fetching ability and policy versions
   const [
     triggerGetAbilityVersion,
@@ -254,6 +256,9 @@ export function PublishAppVersionWrapper({ isAppPublished }: { isAppPublished: b
           }
         }
       }
+
+      // Add the delegatee addresses to the Payment DB contract on the backend, with our master address as the payer
+      await sponsorDelegateesPayment({ appId: Number(appId) });
 
       if (!isAppPublished) {
         // App not registered - use registerApp (first-time registration)

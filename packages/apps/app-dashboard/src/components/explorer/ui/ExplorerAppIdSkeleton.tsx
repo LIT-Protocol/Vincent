@@ -17,10 +17,10 @@ export function ExplorerAppIdSkeleton() {
             {/* App Info */}
             <div className="flex-1 min-w-0">
               <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-3">
-                <Skeleton className="h-10 w-48" />
+                <Skeleton className="h-10 w-full max-w-48" />
                 <Skeleton className="h-6 w-16 rounded-full" />
               </div>
-              <Skeleton className="h-4 w-96 mb-6" />
+              <Skeleton className="h-4 w-full max-w-96 mb-6" />
 
               {/* Quick Stats */}
               <div className="flex items-center gap-8">
@@ -76,13 +76,13 @@ export function ExplorerAppIdSkeleton() {
                 {/* Contact Email */}
                 <div className="bg-black/[0.02] border border-black/5 rounded-xl p-4">
                   <Skeleton className="h-3 w-20 mb-1" />
-                  <Skeleton className="h-4 w-48" />
+                  <Skeleton className="h-4 w-full max-w-48" />
                 </div>
 
                 {/* App URL */}
                 <div className="bg-black/[0.02] border border-black/5 rounded-xl p-4">
                   <Skeleton className="h-3 w-12 mb-1" />
-                  <Skeleton className="h-4 w-56" />
+                  <Skeleton className="h-4 w-full max-w-56" />
                 </div>
               </div>
             </div>
@@ -103,7 +103,7 @@ export function ExplorerAppIdSkeleton() {
           <div className="space-y-4">
             <div className="flex items-center gap-3 mb-4">
               <Skeleton className="w-4 h-4" />
-              <Skeleton className="h-4 w-48" />
+              <Skeleton className="h-4 w-full max-w-48" />
             </div>
 
             {/* Ability Cards */}

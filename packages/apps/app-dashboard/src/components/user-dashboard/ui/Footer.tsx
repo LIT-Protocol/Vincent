@@ -5,8 +5,11 @@ export function ConnectFooter() {
     <div
       className={`px-3 sm:px-6 py-3 border-t ${theme.cardBorder} ${theme.cardBg} flex flex-col items-center gap-2`}
     >
+      <div className={`flex flex-col items-center gap-1 text-xs font-medium ${theme.text}`}>
+        <div className="flex flex-col items-center gap-1 text-sm font-normal"></div>
+        <span>Securing Autonomy</span>
+      </div>
       <div className={`flex items-center gap-2 text-xs font-medium ${theme.text}`}>
-        <span>Powered by</span>
         <a
           href="https://litprotocol.com"
           target="_blank"

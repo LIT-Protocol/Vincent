@@ -1,3 +1,19 @@
+## 2.1.0 (2025-08-15)
+
+### 🚀 Features
+
+- ## Add gas sponsorship for LIT chain usage by delegatees ([3d693e16](https://github.com/LIT-Protocol/Vincent/commit/3d693e16))
+
+  - New endpoint added (`/app/{appId}/sponsorDelegateesPayment`) which sponsors gas usage on Yellowstone for all delegateeAddresses on the target app
+
+### 🧱 Updated Dependencies
+
+- Updated registry-sdk to 4.1.0
+
+### ❤️ Thank You
+
+- Daryl Collins
+
 # 2.0.0 (2025-08-05)
 
 ### 🚀 Features

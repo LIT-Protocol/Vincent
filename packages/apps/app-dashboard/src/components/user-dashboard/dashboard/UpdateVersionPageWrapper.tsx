@@ -9,12 +9,23 @@ import useReadAuthInfo from '@/hooks/user-dashboard/useAuthInfo';
 import { useUriPrecheck } from '@/hooks/user-dashboard/connect/useUriPrecheck';
 import { BadRedirectUriError } from '@/components/user-dashboard/connect/BadRedirectUriError';
 import { AppVersionNotInRegistryUpdate } from './AppVersionNotInRegistryUpdate';
+import { useAgentPKPForApp } from '@/hooks/user-dashboard/useAgentPKPForApp';
 
 export function UpdateVersionPageWrapper() {
   const { appId } = useParams();
 
   const { authInfo, sessionSigs, isProcessing, error } = useReadAuthInfo();
   const { isLoading, isError, errors, data } = useConnectInfo(appId || '');
+
+  const userAddress = authInfo?.userPKP?.ethAddress || '';
+
+  // Get agent PKP for this specific app
+  const {
+    agentPKP,
+    loading: agentPKPLoading,
+    error: agentPKPError,
+  } = useAgentPKPForApp(userAddress, appId ? Number(appId) : undefined);
+
   const {
     appExists,
     activeVersionExists,
@@ -22,7 +33,7 @@ export function UpdateVersionPageWrapper() {
     error: isPermittedError,
   } = useConnectMiddleware({
     appId: Number(appId),
-    pkpEthAddress: authInfo?.agentPKP?.ethAddress || '',
+    pkpEthAddress: agentPKP?.ethAddress || '',
     appData: data?.app,
   });
 
@@ -35,18 +46,38 @@ export function UpdateVersionPageWrapper() {
     return <GeneralErrorScreen errorDetails="App ID was not provided" />;
   }
 
-  const isUserAuthed = authInfo?.userPKP && authInfo?.agentPKP && sessionSigs;
+  // Wait for ALL critical data to load before making routing decisions
+  const isUserAuthed = authInfo?.userPKP && sessionSigs;
+
+  // Check if we have finished loading but got no data (invalid appId)
+  const hasFinishedLoadingButNoData = !isLoading && !data;
+
+  const isAllDataLoaded =
+    data &&
+    !isLoading &&
+    !isProcessing &&
+    // Only wait for permissions and agent PKP if user is authenticated
+    (isUserAuthed ? !isPermittedLoading && !agentPKPLoading && agentPKP : true);
+
+  // Authentication check - must be done before other business logic
   if (!isProcessing && !isUserAuthed) {
     return (
       <AuthenticationErrorScreen readAuthInfo={{ authInfo, sessionSigs, isProcessing, error }} />
     );
   }
 
-  if (isLoading || isProcessing || isPermittedLoading) {
+  // Check for invalid appId first (finished loading but no data OR has error)
+  if (hasFinishedLoadingButNoData || (isError && errors.length > 0)) {
+    const errorMessage =
+      isError && errors.length > 0 ? errors.join(', ') : `App with ID ${appId} not found`;
+    return <GeneralErrorScreen errorDetails={errorMessage} />;
+  }
+
+  if (!isAllDataLoaded) {
     return <ManagePagesSkeleton />;
   }
 
-  // Check for redirect URI validation errors (only when redirectUri is provided but invalid)
+  // Check for redirect URI validation errors (highest priority)
   if (isRedirectUriAuthorized === false && redirectUri) {
     return (
       <BadRedirectUriError
@@ -56,18 +87,16 @@ export function UpdateVersionPageWrapper() {
     );
   }
 
-  if (isError || error || isPermittedError) {
+  // Check for any errors
+  if (isError || error || isPermittedError || agentPKPError) {
     const errorMessage =
       errors.length > 0
         ? errors.join(', ')
-        : (error ?? isPermittedError ?? 'An unknown error occurred');
+        : String(error ?? isPermittedError ?? agentPKPError ?? 'An unknown error occurred');
     return <GeneralErrorScreen errorDetails={errorMessage} />;
   }
 
-  if (!data || !authInfo || !sessionSigs) {
-    return <ManagePagesSkeleton />;
-  }
-
+  // Check for unpublished app version
   if (appExists === true && activeVersionExists === false) {
     return (
       <AppVersionNotInRegistryUpdate
@@ -81,6 +110,7 @@ export function UpdateVersionPageWrapper() {
     <UpdateVersionPage
       connectInfoMap={data}
       readAuthInfo={{ authInfo, sessionSigs, isProcessing, error }}
+      agentPKP={agentPKP!}
     />
   );
 }

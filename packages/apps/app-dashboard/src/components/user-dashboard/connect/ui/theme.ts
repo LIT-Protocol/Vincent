@@ -4,7 +4,7 @@ export const theme = {
   text: 'text-gray-900 dark:text-white',
   textMuted: 'text-gray-600 dark:text-white/60',
   textSubtle: 'text-gray-500 dark:text-white/40',
-  cardBg: 'bg-white/80 dark:bg-black/40',
+  cardBg: 'bg-white dark:bg-black',
   cardBorder: 'border-gray-200 dark:border-white/10',
   cardHoverBorder: 'hover:border-gray-300 dark:hover:border-white/20',
   itemBg: 'bg-gray-100/50 dark:bg-white/[0.02]',

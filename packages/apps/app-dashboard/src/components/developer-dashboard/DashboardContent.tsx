@@ -58,7 +58,7 @@ export function DashboardContent({
       {/* Announcement Card */}
       <Card className="mb-12 border border-orange-200 dark:border-orange-500/30 bg-orange-50/50 dark:bg-orange-500/10">
         <CardContent className="p-6">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 bg-orange-100 dark:bg-orange-500/20 rounded-full flex items-center justify-center">
                 <BookOpen className="h-4 w-4 text-orange-600" />
@@ -70,7 +70,7 @@ export function DashboardContent({
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
               <Button
                 size="sm"
                 className="bg-orange-600 hover:bg-orange-700 text-white"

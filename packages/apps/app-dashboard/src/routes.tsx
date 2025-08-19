@@ -273,7 +273,7 @@ const routes: RouteObject[] = [
             element: <PermittedAppsWrapper />,
           },
           {
-            path: 'wallet',
+            path: 'appId/:appId/wallet',
             element: <Wallet />,
           },
         ],

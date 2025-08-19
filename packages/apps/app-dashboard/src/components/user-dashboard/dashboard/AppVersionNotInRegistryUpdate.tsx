@@ -1,17 +1,16 @@
-import { Card, CardContent } from '@/components/shared/ui/card';
-import { AlertTriangle, ArrowLeft, RefreshCw } from 'lucide-react';
+import { ArrowLeft, RefreshCw } from 'lucide-react';
 import { theme } from '@/components/user-dashboard/connect/ui/theme';
 import { ConnectAppHeader } from '@/components/user-dashboard/connect/ui/ConnectAppHeader';
 import { InfoBanner } from '@/components/user-dashboard/connect/ui/InfoBanner';
 import { ActionCard } from '@/components/user-dashboard/connect/ui/ActionCard';
 import { useNavigate } from 'react-router-dom';
-import { UseReadAuthInfo } from '@/hooks/user-dashboard/useAuthInfo';
+import { ReadAuthInfo } from '@/hooks/user-dashboard/useAuthInfo';
 import { App } from '@/types/developer-dashboard/appTypes';
 import { useCanGoBack } from '@/hooks/user-dashboard/connect/useCanGoBack';
 
 type AppVersionNotInRegistryUpdateProps = {
   appData: App;
-  readAuthInfo: UseReadAuthInfo;
+  readAuthInfo: ReadAuthInfo;
 };
 
 export function AppVersionNotInRegistryUpdate({ appData }: AppVersionNotInRegistryUpdateProps) {
@@ -28,90 +27,38 @@ export function AppVersionNotInRegistryUpdate({ appData }: AppVersionNotInRegist
   };
 
   return (
-    <div className={`min-h-screen w-full transition-colors duration-500 ${theme.bg} sm:p-4`}>
-      {/* Main Card Container */}
-      <div
-        className={`max-w-6xl mx-auto ${theme.mainCard} border ${theme.mainCardBorder} rounded-2xl shadow-2xl overflow-hidden`}
-      >
-        {/* Main Content */}
-        <div className="px-6 py-8 space-y-6">
-          {/* App Header */}
-          {appData && <ConnectAppHeader app={appData} />}
+    <div
+      className={`w-full max-w-md mx-auto ${theme.mainCard} border ${theme.mainCardBorder} rounded-2xl shadow-2xl overflow-hidden relative z-10 origin-center`}
+    >
+      {/* Main Content */}
+      <div className="px-3 sm:px-4 py-6 sm:py-8 space-y-6">
+        {/* App Header */}
+        {appData && <ConnectAppHeader app={appData} />}
 
-          {/* Status Banner */}
-          <InfoBanner
-            type="warning"
-            title="App Version Not Published"
-            message={`The app's active version (${appData.activeVersion}) is not yet published in the on-chain registry. The app developer needs to publish this version before you can grant permissions.`}
+        {/* Status Banner */}
+        <InfoBanner
+          type="warning"
+          title="App Version Not Published"
+          message={`The app's active version (${appData.activeVersion}) is not yet published in the on-chain registry. The app developer needs to publish this version before you can grant permissions.`}
+        />
+
+        {/* Action Options */}
+        <div className="space-y-3">
+          <ActionCard
+            icon={<ArrowLeft className="w-4 h-4 text-blue-500" />}
+            iconBg="bg-blue-500/20"
+            title="Go Back"
+            description=""
+            onClick={handleGoBack}
+            disabled={!canGoBack}
           />
-
-          {/* Info Card */}
-          <Card className={`backdrop-blur-xl ${theme.cardBg} border ${theme.cardBorder}`}>
-            <CardContent className="p-6">
-              <div className="space-y-4">
-                <div className="flex items-center space-x-3">
-                  <div className="p-2 bg-amber-500/20 rounded-lg">
-                    <AlertTriangle className="w-5 h-5 text-amber-500" />
-                  </div>
-                  <div>
-                    <h2 className={`text-lg font-semibold ${theme.text}`}>
-                      Version Publication Required
-                    </h2>
-                    <p className={`text-sm ${theme.textMuted} mt-1`}>
-                      The app developer must publish version {appData.activeVersion} on-chain before
-                      permissions can be granted for this version.
-                    </p>
-                  </div>
-                </div>
-
-                <div className={`p-4 rounded-lg ${theme.cardBg} border ${theme.cardBorder}`}>
-                  <h3 className={`text-sm font-medium ${theme.text} mb-2`}>
-                    What needs to happen:
-                  </h3>
-                  <ul className={`text-sm ${theme.textMuted} space-y-1`}>
-                    <li>
-                      • The app developer must publish version {appData.activeVersion} in the
-                      on-chain registry
-                    </li>
-                    <li>• Once published, you'll be able to grant permissions for this version</li>
-                    <li>• Contact the app developer if you need assistance</li>
-                  </ul>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Options Card */}
-          <Card className={`backdrop-blur-xl ${theme.cardBg} border ${theme.cardBorder}`}>
-            <CardContent className="p-6">
-              <div className="space-y-4">
-                <h2 className={`text-lg font-semibold ${theme.text}`}>
-                  What would you like to do?
-                </h2>
-
-                <div className="space-y-3">
-                  {/* Go Back Option */}
-                  <ActionCard
-                    icon={<ArrowLeft className="w-4 h-4 text-blue-500" />}
-                    iconBg="bg-blue-500/20"
-                    title="Go Back"
-                    description="Return to the previous page"
-                    onClick={handleGoBack}
-                    disabled={!canGoBack}
-                  />
-
-                  {/* Retry Option */}
-                  <ActionCard
-                    icon={<RefreshCw className="w-4 h-4 text-green-500" />}
-                    iconBg="bg-green-500/20"
-                    title="Check Again"
-                    description="Refresh to check if the version has been published"
-                    onClick={handleRetry}
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <ActionCard
+            icon={<RefreshCw className="w-4 h-4 text-green-500" />}
+            iconBg="bg-green-500/20"
+            title="Check Again"
+            description=""
+            onClick={handleRetry}
+          />
         </div>
       </div>
     </div>

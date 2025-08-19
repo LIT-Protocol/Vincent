@@ -2,13 +2,13 @@ import { theme } from './ui/theme';
 import ConnectView from './Connect';
 import { App } from '@/types/developer-dashboard/appTypes';
 import { ConnectFooter } from '../ui/Footer';
-import { UseReadAuthInfo } from '@/hooks/user-dashboard/useAuthInfo';
+import { ReadAuthInfo } from '@/hooks/user-dashboard/useAuthInfo';
 import { ConnectAppHeader } from './ui/ConnectAppHeader';
 import { useTheme } from '@/hooks/useTheme';
 
 type AuthConnectScreenProps = {
   app: App;
-  readAuthInfo: UseReadAuthInfo;
+  readAuthInfo: ReadAuthInfo;
 };
 
 export function AuthConnectScreen({ app, readAuthInfo }: AuthConnectScreenProps) {

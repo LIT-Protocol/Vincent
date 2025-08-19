@@ -3,6 +3,7 @@
 /packages/apps/ability-aave
 /packages/apps/ability-debridge
 /packages/apps/ability-erc20-approval
+/packages/apps/ability-erc20-transfer
 /packages/apps/ability-evm-transaction-signer
 /packages/apps/ability-morpho
 /packages/apps/ability-uniswap-swap

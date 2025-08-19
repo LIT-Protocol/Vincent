@@ -9,7 +9,7 @@ The Vincent Policy Send Counter is part of the Vincent Abilities ecosystem and i
 ## Features
 
 - Set maximum transaction limits per time period
-- Track transaction counts across multiple abilitys
+- Track transaction counts across multiple abilities
 - Configurable by users through the Vincent Dashboard
 
 ## Installation

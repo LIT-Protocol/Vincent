@@ -7,10 +7,10 @@ import { SidebarError } from './SidebarError';
 
 export function SidebarWrapper() {
   const { authInfo, isProcessing, error } = useReadAuthInfo();
-  const pkpEthAddress = authInfo?.agentPKP?.ethAddress || '';
+  const userAddress = authInfo?.userPKP?.ethAddress || '';
 
   // Early return if required params are missing
-  if (!pkpEthAddress && !isProcessing) {
+  if (!userAddress && !isProcessing) {
     return <SidebarSkeleton />;
   }
 
@@ -24,13 +24,13 @@ export function SidebarWrapper() {
     return <StatusMessage message="Authentication failed" type="error" />;
   }
 
-  // Now we have stable pkpTokenId, so we can call the consolidated hook
-  return <SidebarWithData pkpEthAddress={pkpEthAddress} />;
+  // Now we have stable userAddress, so we can call the consolidated hook
+  return <SidebarWithData userAddress={userAddress} />;
 }
 
-function SidebarWithData({ pkpEthAddress }: { pkpEthAddress: string }) {
+function SidebarWithData({ userAddress }: { userAddress: string }) {
   const { apps, permittedAppVersions, appVersionsMap, isLoading, error } = useSidebarData({
-    pkpEthAddress,
+    userAddress,
   });
 
   // Show skeleton while data is loading

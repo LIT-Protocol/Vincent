@@ -25,12 +25,22 @@ export const useFetchUserPermissions = ({
   });
 
   useEffect(() => {
-    // Early return if params are missing
-    if (!pkpEthAddress || !appId) {
+    // Early return if appId is missing (this is a real error)
+    if (!appId) {
       setState({
         existingData: {} as PermissionData,
         isLoading: false,
-        error: 'Missing necessary parameters to fetch user permissions',
+        error: 'Missing appId',
+      });
+      return;
+    }
+
+    // If pkpEthAddress is missing, stay in loading state (auth might still be loading)
+    if (!pkpEthAddress) {
+      setState({
+        existingData: {} as PermissionData,
+        isLoading: true,
+        error: null,
       });
       return;
     }

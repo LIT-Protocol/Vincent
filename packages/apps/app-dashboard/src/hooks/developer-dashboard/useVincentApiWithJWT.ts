@@ -23,11 +23,11 @@ export const getCurrentJwt = async (
   authInfo: AuthInfo,
   sessionSigs: SessionSigs,
 ): Promise<string | null> => {
-  if (!authInfo?.agentPKP?.ethAddress || !authInfo?.agentPKP || !sessionSigs) {
+  if (!authInfo?.userPKP?.ethAddress || !authInfo?.userPKP || !sessionSigs) {
     return null;
   }
 
-  const address = authInfo.agentPKP.ethAddress;
+  const address = authInfo.userPKP.ethAddress;
 
   // Check if stored token is still valid
   const stored = localStorage.getItem(JWT_STORAGE_KEY);
@@ -65,7 +65,7 @@ export const getCurrentJwt = async (
     // Create JWT using app-SDK
     const jwt = await createPlatformUserJWT({
       pkpWallet,
-      pkpInfo: authInfo.agentPKP,
+      pkpInfo: authInfo.userPKP,
       payload: {
         name: 'Vincent Platform User',
       },

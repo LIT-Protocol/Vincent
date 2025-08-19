@@ -1,0 +1,72 @@
+.marquee {
+  overflow: hidden;
+  white-space: nowrap;
+  position: relative;
+  width: 100%;
+  max-width: 100vw;
+  mask: linear-gradient(90deg, transparent, white 10%, white 90%, transparent);
+}
+
+.marqueeGroup {
+  display: flex;
+  animation: marquee 45s linear infinite;
+  width: max-content;
+}
+
+
+.logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 32px;
+  margin-right: 16px;
+  filter: brightness(0) saturate(100%);
+  transition: filter 0.3s ease;
+  flex-shrink: 0;
+}
+
+.logo:hover {
+  filter: brightness(0) saturate(100%);
+}
+
+.logo img {
+  max-height: 24px;
+  width: auto;
+  object-fit: contain;
+}
+
+/* The --logo-count variable must be set on .marqueeGroup by the parent component to match the number of logo items */
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(calc(-76px * var(--logo-count)));
+  }
+}
+
+@media (min-width: 640px) {
+  .logo {
+    width: 120px;
+    height: 48px;
+    margin-right: 32px;
+  }
+  
+  .logo img {
+    max-height: 32px;
+  }
+  
+  @keyframes marquee {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(calc(-152px * var(--logo-count)));
+    }
+  }
+  
+  .marqueeGroup {
+    animation: marquee 45s linear infinite;
+  }
+}

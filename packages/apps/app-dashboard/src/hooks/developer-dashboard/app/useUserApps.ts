@@ -5,7 +5,7 @@ import { App } from '@/types/developer-dashboard/appTypes';
 
 export function useUserApps() {
   const { authInfo } = useReadAuthInfo();
-  const address = authInfo?.agentPKP?.ethAddress;
+  const address = authInfo?.userPKP?.ethAddress;
 
   const { data: allApps, isLoading, isError, error, ...rest } = vincentApiClient.useListAppsQuery();
 

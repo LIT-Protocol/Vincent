@@ -6,7 +6,6 @@ import { HelmetProvider } from 'react-helmet-async';
 import routes from './routes';
 import { initializeTheme } from '@/lib/theme';
 
-import '@rainbow-me/rainbowkit/styles.css';
 import './index.css';
 
 // Initialize theme before React renders

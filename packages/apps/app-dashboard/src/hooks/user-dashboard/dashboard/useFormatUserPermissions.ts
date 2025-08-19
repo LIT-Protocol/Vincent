@@ -5,6 +5,7 @@ import { PermissionData } from '@lit-protocol/vincent-contracts-sdk';
 export function useFormatUserPermissions(
   connectInfoMap: ConnectInfoMap,
   initialPermissionData?: PermissionData | null,
+  targetVersion?: number,
 ) {
   const [formData, setFormData] = useState<Record<string, any>>({});
 
@@ -16,7 +17,7 @@ export function useFormatUserPermissions(
     appNames.forEach((appName) => {
       const versions = connectInfoMap.versionsByApp[appName];
       const activeVersion = versions.find(
-        (version) => version.version === connectInfoMap.app.activeVersion,
+        (version) => version.version === (targetVersion || connectInfoMap.app.activeVersion),
       );
 
       if (activeVersion) {
@@ -55,7 +56,7 @@ export function useFormatUserPermissions(
     });
 
     setFormData(initialFormData);
-  }, [connectInfoMap, initialPermissionData]);
+  }, [connectInfoMap, initialPermissionData, targetVersion]);
 
   const handleFormChange = useCallback(
     (abilityIpfsCid: string, policyIpfsCid: string, data: any) => {

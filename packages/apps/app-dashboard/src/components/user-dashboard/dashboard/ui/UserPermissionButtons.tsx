@@ -6,7 +6,9 @@ import { theme } from '@/components/user-dashboard/connect/ui/theme';
 interface UserPermissionButtonsProps {
   onUnpermit?: () => void;
   onSubmit: () => void;
-  isLoading?: boolean;
+  isLoading?: boolean; // For disabled state (includes success states)
+  isGranting?: boolean; // For Grant Permissions spinner/text
+  isUnpermitting?: boolean; // For Unpermit button spinner/text
   error?: string | null;
 }
 
@@ -14,6 +16,8 @@ export function UserPermissionButtons({
   onUnpermit,
   onSubmit,
   isLoading = false,
+  isGranting = false,
+  isUnpermitting = false,
   error,
 }: UserPermissionButtonsProps) {
   return (
@@ -27,10 +31,11 @@ export function UserPermissionButtons({
           <Button
             variant="ghost"
             onClick={onUnpermit}
-            className={`w-full sm:w-auto px-6 py-2 border ${theme.cardBorder} ${theme.text} hover:bg-red-500/10 hover:text-red-400 hover:border-red-400/30`}
+            className={`w-full sm:w-auto px-6 py-2 border ${theme.cardBorder} ${theme.text} hover:bg-red-500/10 hover:text-red-400 hover:border-red-400/30 flex items-center justify-center gap-2`}
             disabled={isLoading}
           >
-            Unpermit App
+            {isUnpermitting && <Loader2 className="w-4 h-4 animate-spin" />}
+            {isUnpermitting ? 'Unpermitting...' : 'Unpermit App'}
           </Button>
         </motion.div>
         <motion.div
@@ -43,9 +48,9 @@ export function UserPermissionButtons({
             className={`w-full sm:w-auto px-6 py-2 ${error ? 'bg-red-500/20 border-red-500/30 text-red-400' : `${theme.accentBg} ${theme.accentHover}`} border-0 flex items-center justify-center gap-2`}
             disabled={isLoading}
           >
-            {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
+            {isGranting && <Loader2 className="w-4 h-4 animate-spin" />}
             {error && <AlertCircle className="w-4 h-4" />}
-            {error ? 'Retry' : isLoading ? 'Processing...' : 'Grant Permissions'}
+            {error ? 'Retry' : isGranting ? 'Processing...' : 'Update Permissions'}
           </Button>
         </motion.div>
       </div>

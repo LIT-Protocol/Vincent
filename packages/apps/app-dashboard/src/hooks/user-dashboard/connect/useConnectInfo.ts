@@ -269,11 +269,9 @@ export const useConnectInfo = (appId: string): ConnectInfoState => {
       policiesInfoError ||
       (!appLoading && !app && isDataFetchingComplete),
     errors:
-      !appLoading && !app && isDataFetchingComplete
+      appError || appVersionsError || (!appLoading && !app && isDataFetchingComplete)
         ? ['App not found']
-        : appVersionsError
-          ? [`Failed to fetch app versions`]
-          : [],
+        : [],
     data: connectInfoMap,
   };
 };

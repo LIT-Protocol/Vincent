@@ -1,4 +1,4 @@
-import { User, Copy } from 'lucide-react';
+import { User } from 'lucide-react';
 import useReadAuthInfo from '@/hooks/user-dashboard/useAuthInfo';
 import { SidebarMenuButton } from '@/components/shared/ui/sidebar';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/shared/ui/tooltip';
@@ -57,15 +57,6 @@ export function AccountTooltip({ theme }: AccountTooltipProps) {
     return undefined;
   }, [isOpen, isClient]);
 
-  const handleCopyEthAddress = async () => {
-    if (authInfo?.agentPKP?.ethAddress && isClient) {
-      try {
-        await navigator.clipboard.writeText(authInfo.agentPKP.ethAddress);
-      } catch (err) {
-        console.error('Failed to copy eth address:', err);
-      }
-    }
-  };
 
   const formatAuthInfo = () => {
     if (!authInfo || !isClient) return '';
@@ -78,7 +69,6 @@ export function AccountTooltip({ theme }: AccountTooltipProps) {
       ? `!bg-white border border-gray-200 !text-black max-w-sm shadow-lg`
       : '!bg-black !text-white max-w-sm shadow-lg';
 
-  const borderClassName = theme.cardBg && theme.cardBorder ? 'border-gray-300' : 'border-gray-600';
 
   return (
     <div ref={tooltipRef}>
@@ -114,31 +104,7 @@ export function AccountTooltip({ theme }: AccountTooltipProps) {
         {authInfo && (
           <TooltipContent side="top" className={tooltipClassName}>
             <div className="whitespace-pre-line text-xs">
-              <div className="mb-2 break-words">{formatAuthInfo()}</div>
-              {authInfo.agentPKP?.ethAddress && (
-                <div className={`flex items-start gap-2 pt-2 border-t ${borderClassName}`}>
-                  <div className="flex-1 min-w-0">
-                    <div
-                      className={
-                        theme.cardBg && theme.cardBorder ? 'text-gray-600' : 'text-gray-300'
-                      }
-                    >
-                      Vincent Wallet Address:
-                    </div>
-                    <div
-                      className={`font-mono text-xs break-all ${theme.cardBg && theme.cardBorder ? 'text-black' : 'text-white'}`}
-                    >
-                      {authInfo.agentPKP.ethAddress}
-                    </div>
-                  </div>
-                  <button
-                    onClick={handleCopyEthAddress}
-                    className={`p-1 ${theme.itemHoverBg || 'hover:bg-gray-700'} rounded transition-colors flex-shrink-0`}
-                  >
-                    <Copy className="w-3 h-3" />
-                  </button>
-                </div>
-              )}
+              <div className="break-words">{formatAuthInfo()}</div>
             </div>
           </TooltipContent>
         )}

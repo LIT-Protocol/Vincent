@@ -18,7 +18,7 @@ function UserLayoutWithSidebar({ children, className }: ComponentProps<'div'>) {
     location.pathname === '/user/apps' || location.pathname === '/user/wallet';
 
   // Handle authentication at the layout level to prevent duplication
-  const isUserAuthed = authInfo?.userPKP && authInfo?.agentPKP && sessionSigs;
+  const isUserAuthed = authInfo?.userPKP && sessionSigs;
 
   if (isProcessing) {
     return <ThemedLoading />;

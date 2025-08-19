@@ -1,5 +1,6 @@
 import type { Express } from 'express';
 
+import { env } from '../../../env';
 import { Features } from '../../../features';
 import { getContractClient } from '../../contractClient';
 import { App, AppAbility, AppVersion } from '../../mongo/app';
@@ -11,6 +12,8 @@ import { requireAppOnChain, withAppOnChain } from './requireAppOnChain';
 import { requireAppVersion, withAppVersion } from './requireAppVersion';
 import { requireAppVersionNotOnChain } from './requireAppVersionNotOnChain';
 import { requireUserManagesApp } from './requireUserManagesApp';
+
+const { LIT_RELAYER_API_KEY, LIT_PAYER_SECRET_KEY } = env;
 
 const NEW_APP_APPVERSION = 1;
 const MAX_APPID_RETRY_ATTEMPTS = 20;
@@ -109,7 +112,6 @@ export function registerRoutes(app: Express) {
 
             success = true;
           } catch (error: any) {
-             
             // Check if the error is due to duplicate appId
             if (error.code === 11000 && error.keyPattern && error.keyPattern.appId) {
               // This is a duplicate key error for appId, try again with a new appId
@@ -345,7 +347,6 @@ export function registerRoutes(app: Express) {
           res.status(201).json(savedAppAbility);
           return;
         } catch (error: any) {
-           
           if (error.code === 11000 && error.keyPattern) {
             res.status(409).json({
               message: `The ability ${abilityPackageName} is already associated with this app version.`,
@@ -599,6 +600,40 @@ export function registerRoutes(app: Express) {
         );
 
         res.json({ message: 'App activeVersion updated successfully' });
+        return;
+      }),
+    ),
+  );
+
+  // Register delegatee addresses in the payment DB contract via the relayer
+  // so that the app dev doesn't have to think about RLI NFTs
+  app.post(
+    '/app/:appId/sponsorDelegateesPayment',
+    requireVincentAuth,
+    requireApp(),
+    requireUserManagesApp(),
+    withVincentAuth(
+      withApp(async (req, res) => {
+        const { delegateeAddresses } = req.vincentApp;
+
+        const response = await fetch('https://datil-relayer.getlit.dev/add-users', {
+          method: 'POST',
+          headers: {
+            'api-key': LIT_RELAYER_API_KEY,
+            'payer-secret-key': LIT_PAYER_SECRET_KEY,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(delegateeAddresses),
+        });
+
+        if (!response.ok) {
+          const text = await response.text();
+          throw new Error(
+            `Failed to add delegatees as payees -- status: ${response.status} - ${text}`,
+          );
+        }
+
+        res.json({ message: 'Delegatees are sponsored for LIT chain usage costs' });
         return;
       }),
     ),

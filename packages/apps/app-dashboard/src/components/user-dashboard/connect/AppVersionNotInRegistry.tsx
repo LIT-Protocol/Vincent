@@ -5,13 +5,13 @@ import { ConnectPageHeader } from './ui/ConnectPageHeader';
 import { ActionCard } from './ui/ActionCard';
 import { InfoBanner } from './ui/InfoBanner';
 import { useNavigate } from 'react-router-dom';
-import { UseReadAuthInfo } from '@/hooks/user-dashboard/useAuthInfo';
+import { ReadAuthInfo } from '@/hooks/user-dashboard/useAuthInfo';
 import { App } from '@/types/developer-dashboard/appTypes';
 import { useCanGoBack } from '@/hooks/user-dashboard/connect/useCanGoBack';
 
 type AppVersionNotInRegistryConnectProps = {
   appData: App;
-  readAuthInfo: UseReadAuthInfo;
+  readAuthInfo: ReadAuthInfo;
 };
 
 export function AppVersionNotInRegistryConnect({

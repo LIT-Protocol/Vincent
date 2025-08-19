@@ -2,7 +2,7 @@
   "name": "policy-send-counter",
   "$schema": "../../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "src",
-  "projdeploy-lit-action.jsectType": "library",
+  "projectType": "library",
   "targets": {
     "clean": {},
     "action:build": {

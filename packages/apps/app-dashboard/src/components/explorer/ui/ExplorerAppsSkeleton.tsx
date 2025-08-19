@@ -14,8 +14,8 @@ export function ExplorerAppsSkeleton() {
             <div className="mb-6">
               <Skeleton className="h-8 w-48 rounded-full" />
             </div>
-            <Skeleton className="h-16 w-96 mb-6" />
-            <Skeleton className="h-4 w-80" />
+            <Skeleton className="h-16 w-full max-w-96 mb-6" />
+            <Skeleton className="h-4 w-full max-w-80" />
           </div>
         </div>
 

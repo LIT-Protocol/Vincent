@@ -1,51 +1,29 @@
-import { isDarkMode } from '@/lib/theme';
-
 interface StatusMessageProps {
   message: string;
   type?: 'info' | 'warning' | 'success' | 'error';
 }
 
-// Define theme-aware styles outside the component
+// Define theme-aware styles using Tailwind dark: classes
 const statusClasses = {
   info: {
-    light: {
-      container: 'bg-blue-50 text-blue-700 border border-blue-200',
-      icon: 'text-blue-700',
-    },
-    dark: {
-      container: 'bg-blue-950/50 text-blue-200 border border-blue-800',
-      icon: 'text-blue-400',
-    },
+    container:
+      'bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/50 dark:text-blue-200 dark:border-blue-800',
+    icon: 'text-blue-700 dark:text-blue-400',
   },
   warning: {
-    light: {
-      container: 'bg-yellow-50 text-yellow-700 border border-yellow-200',
-      icon: 'text-yellow-700',
-    },
-    dark: {
-      container: 'bg-yellow-950/50 text-yellow-200 border border-yellow-800',
-      icon: 'text-yellow-400',
-    },
+    container:
+      'bg-yellow-50 text-yellow-700 border border-yellow-200 dark:bg-yellow-950/50 dark:text-yellow-200 dark:border-yellow-800',
+    icon: 'text-yellow-700 dark:text-yellow-400',
   },
   success: {
-    light: {
-      container: 'bg-green-50 text-green-700 border border-green-200',
-      icon: 'text-green-700',
-    },
-    dark: {
-      container: 'bg-green-950/50 text-green-200 border border-green-800',
-      icon: 'text-green-400',
-    },
+    container:
+      'bg-green-50 text-green-700 border border-green-200 dark:bg-green-950/50 dark:text-green-200 dark:border-green-800',
+    icon: 'text-green-700 dark:text-green-400',
   },
   error: {
-    light: {
-      container: 'bg-red-50 text-red-700 border border-red-200',
-      icon: 'text-red-700',
-    },
-    dark: {
-      container: 'bg-red-950/50 text-red-200 border border-red-800',
-      icon: 'text-red-400',
-    },
+    container:
+      'bg-red-50 text-red-700 border border-red-200 dark:bg-red-950/50 dark:text-red-200 dark:border-red-800',
+    icon: 'text-red-700 dark:text-red-400',
   },
 } as const;
 
@@ -113,14 +91,12 @@ const isTrustedWithdrawalMessage = (message: string): boolean => {
 };
 
 const StatusMessage = ({ message, type = 'info' }: StatusMessageProps) => {
-  const isDark = isDarkMode();
-
   if (!message) return <></>;
 
   const shouldRenderAsHTML = isTrustedWithdrawalMessage(message);
 
-  // Simple lookup instead of switch recreation
-  const statusStyles = statusClasses[type][isDark ? 'dark' : 'light'];
+  // Simple lookup for status styles
+  const statusStyles = statusClasses[type];
 
   // Get the appropriate icon component
   const IconComponent = iconComponents[type];

@@ -26,7 +26,7 @@ export const abilityParamsSchema = z.object({
     .refine((val) => parseFloat(val) > 0, 'Amount must be greater than 0')
     .describe('The amount of tokens to deposit/withdraw/redeem, as a string'),
   chain: z.string().describe('The blockchain network where the vault is deployed'),
-  rpcUrl: z.string().optional().describe('Custom RPC URL (optional, uses default if not provided)'),
+  rpcUrl: z.string().optional().describe('RPC URL used for precheck validations'),
   // Gas sponsorship parameters for EIP-7702
   alchemyGasSponsor: z
     .boolean()
