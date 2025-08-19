@@ -2,6 +2,7 @@ import { ethers } from 'ethers';
 
 import { getUniswapQuote } from './get-uniswap-quote';
 import { signTx } from './sign-tx';
+import { getGasParams } from './get-gas-params';
 
 declare const Lit: {
   Actions: {
@@ -62,19 +63,19 @@ export const sendUniswapTx = async ({
           throw new Error('Failed to get valid route from Uniswap');
         }
 
-        // Get gas estimates
-        const gasPrice = await uniswapRpcProvider.getGasPrice();
-        const maxPriorityFeePerGas = gasPrice.div(10); // 10% of gas price
-        const maxFeePerGas = gasPrice.mul(2); // 2x gas price for safety
-
-        // Use the gas estimate from the route
-        const estimatedGas = route.estimatedGasUsed.add(route.estimatedGasUsed.div(10)); // Add 10% buffer
+        // Use getGasParams helper which handles block/feeData fetching and applies 50% buffer
+        const { estimatedGas, maxFeePerGas, maxPriorityFeePerGas } = await getGasParams(
+          uniswapRpcProvider,
+          route.estimatedGasUsed,
+        );
 
         console.log('Swap transaction details (sendUniswapTx)', {
           to: route.methodParameters.to,
-          calldata: route.methodParameters.calldata,
-          value: route.methodParameters.value,
-          estimatedGas: estimatedGas.toString(),
+          calldata: route.methodParameters.calldata.slice(0, 10) + '...',
+          routeEstimatedGas: route.estimatedGasUsed.toString(),
+          adjustedGasLimit: estimatedGas.toString(),
+          maxPriorityFeePerGas: `${ethers.utils.formatUnits(maxPriorityFeePerGas, 'gwei')} gwei`,
+          maxFeePerGas: `${ethers.utils.formatUnits(maxFeePerGas, 'gwei')} gwei`,
         });
 
         return JSON.stringify({

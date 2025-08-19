@@ -37,7 +37,7 @@ export const getTokenAmountInUsd = async ({
     ethMainnetEthUsdChainlinkFeed: ETH_MAINNET_ETH_USD_CHAINLINK_FEED,
   });
 
-  const provider = new ethers.providers.JsonRpcProvider(rpcUrlForUniswap);
+  const provider = new ethers.providers.StaticJsonRpcProvider(rpcUrlForUniswap);
   const tokenInContract = new ethers.Contract(
     tokenAddress,
     ['function symbol() view returns (string)'],
