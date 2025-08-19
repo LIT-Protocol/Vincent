@@ -62,6 +62,14 @@ library LibVincentAppFacet {
     event AppUndeleted(uint40 indexed appId);
 
     /**
+     * @notice Emitted when the manager is updated for all apps managed by a specific old manager address
+     * @param oldManager The address of the old manager that was replaced
+     * @param newManager The new manager address that was assigned
+     * @param appCount The number of apps that had their manager updated
+     */
+    event ManagerUpdatedForAllApps(address indexed oldManager, address indexed newManager, uint256 appCount);
+
+    /**
      * @notice Error thrown when a non-manager attempts to modify an app
      * @param appId ID of the app being modified
      * @param msgSender Address that attempted the unauthorized modification
@@ -202,4 +210,16 @@ library LibVincentAppFacet {
      * @param appId ID of the app
      */
     error AppAlreadyRegistered(uint40 appId);
+
+    /**
+     * @notice Error thrown when the old and new manager addresses are the same
+     * @param oldManager The old manager address
+     * @param newManager The new manager address
+     */
+    error SameManagerAddresses(address oldManager, address newManager);
+
+    /**
+     * @notice Error thrown when the manager address is the zero address
+     */
+    error ZeroManagerAddressNotAllowed();
 }

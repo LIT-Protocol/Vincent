@@ -68,22 +68,20 @@ update-facet: ## Update a specific facet in the Vincent Diamond contract. Usage:
 			echo "Error: VINCENT_DEV_DIAMOND_ADDRESS is not set in .env for dev deployment"; \
 			exit 1; \
 		fi; \
-		DIAMOND_ADDRESS=$(VINCENT_DEV_DIAMOND_ADDRESS); \
-		echo "Using DEV diamond address: $(VINCENT_DEV_DIAMOND_ADDRESS)"; \
 	else \
 		if [ -z "$(VINCENT_PROD_DIAMOND_ADDRESS)" ]; then \
 			echo "Error: VINCENT_PROD_DIAMOND_ADDRESS is not set in .env for prod deployment"; \
 			exit 1; \
 		fi; \
-		DIAMOND_ADDRESS=$(VINCENT_PROD_DIAMOND_ADDRESS); \
-		echo "Using PROD diamond address: $(VINCENT_PROD_DIAMOND_ADDRESS)"; \
 	fi
 	@echo "Updating facet $(FACET_NAME) in the Vincent Diamond contract on Datil network..."
 	@echo "Deployment type: $(DEPLOYMENT_TYPE)"
-	@FACET_TO_UPDATE=$(FACET_NAME) forge script script/UpdateFacet.sol:SmartUpdateFacet -vvv \
-		--broadcast \
-		--private-key $(VINCENT_DEPLOYER_PRIVATE_KEY) \
-		--rpc-url $(VINCENT_DEPLOYMENT_RPC_URL)
+	@VINCENT_DIAMOND_ADDRESS=$$(if [ "$(DEPLOYMENT_TYPE)" = "dev" ]; then echo "$(VINCENT_DEV_DIAMOND_ADDRESS)"; else echo "$(VINCENT_PROD_DIAMOND_ADDRESS)"; fi); \
+		echo "Using diamond address: $$VINCENT_DIAMOND_ADDRESS"; \
+		FACET_TO_UPDATE=$(FACET_NAME) VINCENT_DIAMOND_ADDRESS=$$VINCENT_DIAMOND_ADDRESS forge script script/UpdateFacet.sol:SmartUpdateFacet -vvv \
+			--broadcast \
+			--private-key $(VINCENT_DEPLOYER_PRIVATE_KEY) \
+			--rpc-url $(VINCENT_DEPLOYMENT_RPC_URL)
 
 get-abis: ## Get human-readable ABIs for all facets
 	@mkdir -p abis
