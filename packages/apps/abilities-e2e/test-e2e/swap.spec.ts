@@ -46,8 +46,8 @@ import { privateKeyToAccount } from 'viem/accounts';
 
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
-// Universal Router address for ERC20 approvals - consistent across all swaps
-const UNISWAP_SPENDER_ADDRESS = '0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD';
+// Spender address for ERC20 approvals - will be dynamically determined by AlphaRouter
+let UNISWAP_SPENDER_ADDRESS: string | null = null;
 
 // Swap amount in WETH
 const SWAP_AMOUNT = 0.0003;
@@ -93,7 +93,7 @@ const removeExistingApproval = async (delegatorPkpEthAddress: string) => {
     {
       rpcUrl: BASE_RPC_URL,
       chainId: 8453,
-      spenderAddress: UNISWAP_SPENDER_ADDRESS,
+      spenderAddress: UNISWAP_SPENDER_ADDRESS!,
       tokenAddress: '0x4200000000000000000000000000000000000006', // WETH
       tokenDecimals: 18,
       tokenAmount: 0,
@@ -139,7 +139,7 @@ const addNewApproval = async (delegatorPkpEthAddress: string, tokenAmount: numbe
     {
       rpcUrl: BASE_RPC_URL,
       chainId: 8453,
-      spenderAddress: UNISWAP_SPENDER_ADDRESS,
+      spenderAddress: UNISWAP_SPENDER_ADDRESS!,
       tokenAddress: '0x4200000000000000000000000000000000000006', // WETH
       tokenDecimals: 18,
       tokenAmount,
@@ -184,7 +184,7 @@ const addNewApproval = async (delegatorPkpEthAddress: string, tokenAmount: numbe
 };
 
 // Helper to get the router address that AlphaRouter will use for our swap
-const getUniswapRouterAddress = async (): Promise<string> => {
+const getUniswapRouterAddress = async (recipient: string): Promise<string> => {
   console.log('Getting Uniswap router address from AlphaRouter...');
 
   const provider = new ethers.providers.JsonRpcProvider(BASE_RPC_URL);
@@ -215,7 +215,7 @@ const getUniswapRouterAddress = async (): Promise<string> => {
   // Get route from AlphaRouter to determine which router address it will use
   const slippagePercent = new Percent(50, 10000); // 0.5% slippage
   const routeResult = await router.route(amountIn, tokenOut, TradeType.EXACT_INPUT, {
-    recipient: ethers.constants.AddressZero,
+    recipient,
     slippageTolerance: slippagePercent,
     deadline: Math.floor(Date.now() / 1000 + 1800),
     type: SwapType.SWAP_ROUTER_02,
@@ -266,6 +266,9 @@ describe('Uniswap Swap Ability E2E Tests', () => {
     TEST_CONFIG = getTestConfig(TEST_CONFIG_PATH);
     TEST_CONFIG = await checkShouldMintAndFundPkp(TEST_CONFIG);
     TEST_CONFIG = await checkShouldMintCapacityCredit(TEST_CONFIG);
+
+    // Dynamically determine the router address that AlphaRouter will use
+    UNISWAP_SPENDER_ADDRESS = await getUniswapRouterAddress(TEST_CONFIG.userPkp!.ethAddress!);
 
     // The Agent Wallet PKP needs to have Base ETH and WETH
     // in order to execute the ERC20 Approval and Uniswap Swap Abilities
@@ -389,7 +392,7 @@ describe('Uniswap Swap Ability E2E Tests', () => {
         provider,
         tokenAddress: '0x4200000000000000000000000000000000000006', // WETH
         owner: TEST_CONFIG.userPkp!.ethAddress!,
-        spender: UNISWAP_SPENDER_ADDRESS,
+        spender: UNISWAP_SPENDER_ADDRESS!,
       });
 
       // Convert tokenAmount to bigint for comparison
@@ -487,7 +490,7 @@ describe('Uniswap Swap Ability E2E Tests', () => {
       provider,
       tokenAddress: '0x4200000000000000000000000000000000000006', // WETH
       owner: TEST_CONFIG.userPkp!.ethAddress!,
-      spender: UNISWAP_SPENDER_ADDRESS,
+      spender: UNISWAP_SPENDER_ADDRESS!,
     });
 
     // If there's an existing allowance, remove it first
@@ -503,14 +506,14 @@ describe('Uniswap Swap Ability E2E Tests', () => {
           provider,
           tokenAddress: '0x4200000000000000000000000000000000000006', // WETH
           owner: TEST_CONFIG.userPkp!.ethAddress!,
-          spender: UNISWAP_SPENDER_ADDRESS,
+          spender: UNISWAP_SPENDER_ADDRESS!,
         }),
       );
       currentAllowance = await getCurrentAllowance({
         provider,
         tokenAddress: '0x4200000000000000000000000000000000000006', // WETH
         owner: TEST_CONFIG.userPkp!.ethAddress!,
-        spender: UNISWAP_SPENDER_ADDRESS,
+        spender: UNISWAP_SPENDER_ADDRESS!,
       });
 
       expect(currentAllowance).toBe(0n);
@@ -550,7 +553,7 @@ describe('Uniswap Swap Ability E2E Tests', () => {
       provider,
       tokenAddress: '0x4200000000000000000000000000000000000006', // WETH
       owner: TEST_CONFIG.userPkp!.ethAddress!,
-      spender: UNISWAP_SPENDER_ADDRESS,
+      spender: UNISWAP_SPENDER_ADDRESS!,
     });
 
     if (!(currentAllowance > 0n)) {
@@ -562,7 +565,7 @@ describe('Uniswap Swap Ability E2E Tests', () => {
         provider,
         tokenAddress: '0x4200000000000000000000000000000000000006', // WETH
         owner: TEST_CONFIG.userPkp!.ethAddress!,
-        spender: UNISWAP_SPENDER_ADDRESS,
+        spender: UNISWAP_SPENDER_ADDRESS!,
       });
     }
 
@@ -619,14 +622,11 @@ describe('Uniswap Swap Ability E2E Tests', () => {
       provider,
       tokenAddress: '0x4200000000000000000000000000000000000006', // WETH
       owner: TEST_CONFIG.userPkp!.ethAddress!,
-      spender: UNISWAP_SPENDER_ADDRESS,
+      spender: UNISWAP_SPENDER_ADDRESS!,
     });
 
     // Convert tokenAmount to bigint for comparison
     const requiredAllowance = ethers.utils.parseUnits(SWAP_AMOUNT.toString(), 18).toBigInt();
-
-    // Log the router address being used for consistency checking
-    console.log(`Using router address for approval checks: ${UNISWAP_SPENDER_ADDRESS}`);
 
     // Only add approval if the current allowance is less than the required amount
     if (currentAllowance < requiredAllowance) {
@@ -635,18 +635,6 @@ describe('Uniswap Swap Ability E2E Tests', () => {
       await addNewApproval(TEST_CONFIG.userPkp!.ethAddress!, SWAP_AMOUNT);
     } else {
       console.log(`Existing allowance (${currentAllowance}) is sufficient, skipping approval`);
-    }
-
-    // Double-check what router the Vincent ability will actually use
-    console.log('Verifying router address consistency before swap execution...');
-    const actualRouterAddress = await getUniswapRouterAddress();
-    console.log(`Actual router address that will be used: ${actualRouterAddress}`);
-
-    if (actualRouterAddress !== UNISWAP_SPENDER_ADDRESS) {
-      console.warn(`⚠️  Router address mismatch detected!`);
-      console.warn(`  Expected: ${UNISWAP_SPENDER_ADDRESS}`);
-      console.warn(`  Actual: ${actualRouterAddress}`);
-      console.warn(`This may cause the swap to fail due to insufficient allowance`);
     }
 
     const uniswapSwapAbilityClient = getUniswapSwapAbilityClient();

@@ -5,9 +5,7 @@ import {
 } from '@lit-protocol/vincent-ability-sdk';
 import { bundledVincentPolicy } from '@lit-protocol/vincent-policy-spending-limit';
 
-import { CHAIN_TO_ADDRESSES_MAP } from '@uniswap/sdk-core';
-
-import { getTokenAmountInUsd, sendUniswapTx } from './ability-helpers';
+import { getTokenAmountInUsd, sendUniswapTx, getUniswapQuote } from './ability-helpers';
 import {
   checkNativeTokenBalance,
   checkTokenInBalance,
@@ -79,12 +77,30 @@ export const vincentAbility = createVincentAbility({
       });
     }
 
-    const uniswapRouterAddress = CHAIN_TO_ADDRESSES_MAP[
-      chainIdForUniswap as keyof typeof CHAIN_TO_ADDRESSES_MAP
-    ].swapRouter02Address as `0x${string}`;
-    if (uniswapRouterAddress === undefined) {
+    // Get the actual router address that AlphaRouter will use by getting a quote
+    let uniswapRouterAddress: string;
+    try {
+      const quoteResponse = await getUniswapQuote({
+        rpcUrl: rpcUrlForUniswap,
+        chainId: chainIdForUniswap,
+        tokenInAddress,
+        tokenInDecimals,
+        tokenInAmount,
+        tokenOutAddress,
+        tokenOutDecimals,
+        recipient: delegatorPkpAddress,
+      });
+
+      if (!quoteResponse.route || !quoteResponse.route.methodParameters) {
+        return fail({
+          reason: `Failed to get router address from Uniswap quote (UniswapSwapAbilityPrecheck)`,
+        });
+      }
+
+      uniswapRouterAddress = quoteResponse.route.methodParameters.to;
+    } catch (err) {
       return fail({
-        reason: `Uniswap router address not found for chainId ${chainIdForUniswap} (UniswapSwapAbilityPrecheck)`,
+        reason: `Error getting router address from Uniswap: ${err instanceof Error ? err.message : String(err)}`,
       });
     }
 
