@@ -6,6 +6,7 @@ import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "../LibVincentDiamondStorage.sol";
 import "../VincentBase.sol";
 import "../libs/LibVincentAppFacet.sol";
+import "../diamond-base/libraries/LibDiamond.sol";
 
 /**
  * @title VincentAppFacet
@@ -376,5 +377,43 @@ contract VincentAppFacet is VincentBase {
                 }
             }
         }
+    }
+
+    /**
+     * @notice Update the manager address for all apps managed by a specific old manager address
+     * @dev Only the contract owner can call this function
+     * @param oldManager The address of the old manager to replace
+     * @param newManager The new manager address to assign
+     */
+    function ownerUpdateManagerForAllApps(address oldManager, address newManager) external {
+        LibDiamond.enforceIsContractOwner();
+
+        if (oldManager == address(0)) revert LibVincentAppFacet.ZeroManagerAddressNotAllowed();
+        if (newManager == address(0)) revert LibVincentAppFacet.ZeroManagerAddressNotAllowed();
+        if (oldManager == newManager) revert LibVincentAppFacet.SameManagerAddresses(oldManager, newManager);
+
+        VincentAppStorage.AppStorage storage as_ = VincentAppStorage.appStorage();
+        EnumerableSet.UintSet storage appIds = as_.managerAddressToAppIds[oldManager];
+        uint256 appCount = appIds.length();
+
+        if (appCount == 0) {
+            return;
+        }
+
+        for (uint256 i = 0; i < appCount; i++) {
+            uint40 appId = uint40(appIds.at(i));
+            VincentAppStorage.App storage app = as_.appIdToApp[appId];
+            app.manager = newManager;
+        }
+
+        EnumerableSet.UintSet storage newManagerAppIds = as_.managerAddressToAppIds[newManager];
+        for (uint256 i = 0; i < appCount; i++) {
+            uint40 appId = uint40(appIds.at(i));
+            newManagerAppIds.add(appId);
+        }
+
+        delete as_.managerAddressToAppIds[oldManager];
+
+        emit LibVincentAppFacet.ManagerUpdatedForAllApps(oldManager, newManager, appCount);
     }
 }

@@ -277,7 +277,7 @@ contract SmartUpdateFacet is Script {
 
     // Get default selectors for each facet type
     function getVincentAppFacetSelectors() internal pure returns (bytes4[] memory) {
-        bytes4[] memory selectors = new bytes4[](8);
+        bytes4[] memory selectors = new bytes4[](9);
         selectors[0] = VincentAppFacet.registerApp.selector;
         selectors[1] = VincentAppFacet.registerNextAppVersion.selector;
         selectors[2] = VincentAppFacet.enableAppVersion.selector;
@@ -286,6 +286,7 @@ contract SmartUpdateFacet is Script {
         selectors[5] = VincentAppFacet.deleteApp.selector;
         selectors[6] = VincentAppFacet.undeleteApp.selector;
         selectors[7] = VincentAppFacet.setDelegatee.selector;
+        selectors[8] = VincentAppFacet.ownerUpdateManagerForAllApps.selector;
         return selectors;
     }
 
