@@ -55,6 +55,24 @@
   },
   {
     "type": "function",
+    "name": "ownerUpdateManagerForAllApps",
+    "inputs": [
+      {
+        "name": "oldManager",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "newManager",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
     "name": "registerApp",
     "inputs": [
       {
@@ -264,6 +282,31 @@
         "type": "address",
         "indexed": true,
         "internalType": "address"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "ManagerUpdatedForAllApps",
+    "inputs": [
+      {
+        "name": "oldManager",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      },
+      {
+        "name": "newManager",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      },
+      {
+        "name": "appCount",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
       }
     ],
     "anonymous": false
@@ -595,12 +638,33 @@
   },
   {
     "type": "error",
+    "name": "SameManagerAddresses",
+    "inputs": [
+      {
+        "name": "oldManager",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "newManager",
+        "type": "address",
+        "internalType": "address"
+      }
+    ]
+  },
+  {
+    "type": "error",
     "name": "ZeroAddressDelegateeNotAllowed",
     "inputs": []
   },
   {
     "type": "error",
     "name": "ZeroAppIdNotAllowed",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "ZeroManagerAddressNotAllowed",
     "inputs": []
   }
 ]
