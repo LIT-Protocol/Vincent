@@ -18311,7 +18311,7 @@ snapshots:
       '@uniswap/v4-sdk': 1.21.4(hardhat@2.26.3(bufferutil@4.0.9)(ts-node@10.9.2(@swc/core@1.5.29(@swc/helpers@0.5.17))(@types/node@22.7.5)(typescript@5.8.3))(typescript@5.8.3)(utf-8-validate@5.0.10))
       async-retry: 1.3.3
       await-timeout: 1.1.1
-      axios: 0.21.4
+      axios: 0.21.4(debug@4.4.1)
       brotli: 1.3.3
       bunyan: 1.8.15
       bunyan-blackhole: 1.1.1(bunyan@1.8.15)
@@ -20386,12 +20386,6 @@ snapshots:
 
   axe-core@4.10.3: {}
 
-  axios@0.21.4:
-    dependencies:
-      follow-redirects: 1.15.9(debug@4.4.1)
-    transitivePeerDependencies:
-      - debug
-
   axios@0.21.4(debug@4.4.1):
     dependencies:
       follow-redirects: 1.15.9(debug@4.4.1)
@@ -21426,6 +21420,10 @@ snapshots:
   debug@4.3.4:
     dependencies:
       ms: 2.1.2
+
+  debug@4.4.1:
+    dependencies:
+      ms: 2.1.3
 
   debug@4.4.1(supports-color@8.1.1):
     dependencies:
@@ -26066,7 +26064,7 @@ snapshots:
     dependencies:
       '@assemblyscript/loader': 0.9.4
       bl: 5.1.0
-      debug: 4.4.1(supports-color@8.1.1)
+      debug: 4.4.1
       minimist: 1.2.8
       node-fetch: 2.7.0
       readable-stream: 3.6.2

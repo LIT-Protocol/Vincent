@@ -5,9 +5,15 @@ import { AlphaRouter, SwapType } from '@uniswap/smart-order-router';
 import { BASE_RPC_URL, TEST_FUNDER_PRIVATE_KEY } from './helpers';
 
 describe('Uniswap AlphaRouter Direct Test', () => {
-  const WETH_ADDRESS = '0x4200000000000000000000000000000000000006';
-  const USDC_ADDRESS = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913';
-  const SWAP_AMOUNT = 0.0003;
+  const SWAP_AMOUNT = 29;
+  const SWAP_TOKEN_IN_ADDRESS = '0x4ed4E862860beD51a9570b96d89aF5E1B0Efefed'; // DEGEN
+  const SWAP_TOKEN_IN_DECIMALS = 18;
+
+  // const SWAP_AMOUNT = 0.0003;
+  // const SWAP_TOKEN_IN_ADDRESS = '0x4200000000000000000000000000000000000006'; // WETH
+  // const SWAP_TOKEN_IN_DECIMALS = 18;
+  const SWAP_TOKEN_OUT_ADDRESS = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'; // USDC
+  const SWAP_TOKEN_OUT_DECIMALS = 6;
 
   let wallet: ethers.Wallet;
   let provider: ethers.providers.JsonRpcProvider;
@@ -26,13 +32,13 @@ describe('Uniswap AlphaRouter Direct Test', () => {
     const router = new AlphaRouter({ chainId: 8453, provider });
 
     // Create token instances
-    const tokenIn = new Token(8453, WETH_ADDRESS, 18, 'WETH', 'Wrapped Ether');
-    const tokenOut = new Token(8453, USDC_ADDRESS, 6, 'USDC', 'USD Coin');
+    const tokenIn = new Token(8453, SWAP_TOKEN_IN_ADDRESS, SWAP_TOKEN_IN_DECIMALS);
+    const tokenOut = new Token(8453, SWAP_TOKEN_OUT_ADDRESS, SWAP_TOKEN_OUT_DECIMALS);
 
     // Convert amount to proper format
     const amountIn = CurrencyAmount.fromRawAmount(
       tokenIn,
-      ethers.utils.parseUnits(SWAP_AMOUNT.toString(), 18).toString(),
+      ethers.utils.parseUnits(SWAP_AMOUNT.toString(), SWAP_TOKEN_IN_DECIMALS).toString(),
     );
 
     console.log('Getting route from AlphaRouter...', {
@@ -71,13 +77,13 @@ describe('Uniswap AlphaRouter Direct Test', () => {
     const router = new AlphaRouter({ chainId: 8453, provider });
 
     // Create token instances
-    const tokenIn = new Token(8453, WETH_ADDRESS, 18, 'WETH', 'Wrapped Ether');
-    const tokenOut = new Token(8453, USDC_ADDRESS, 6, 'USDC', 'USD Coin');
+    const tokenIn = new Token(8453, SWAP_TOKEN_IN_ADDRESS, SWAP_TOKEN_IN_DECIMALS);
+    const tokenOut = new Token(8453, SWAP_TOKEN_OUT_ADDRESS, SWAP_TOKEN_OUT_DECIMALS);
 
     // Convert amount to proper format
     const amountIn = CurrencyAmount.fromRawAmount(
       tokenIn,
-      ethers.utils.parseUnits(SWAP_AMOUNT.toString(), 18).toString(),
+      ethers.utils.parseUnits(SWAP_AMOUNT.toString(), SWAP_TOKEN_IN_DECIMALS).toString(),
     );
 
     // Get route
@@ -102,89 +108,72 @@ describe('Uniswap AlphaRouter Direct Test', () => {
 
     // Check wallet balances first
     const ethBalance = await provider.getBalance(wallet.address);
-    const wethContract = new ethers.Contract(
-      WETH_ADDRESS,
+    const tokenInContract = new ethers.Contract(
+      SWAP_TOKEN_IN_ADDRESS,
       ['function balanceOf(address) view returns (uint256)'],
       provider,
     );
-    const wethBalance = await wethContract.balanceOf(wallet.address);
+    const tokenInBalance = await tokenInContract.balanceOf(wallet.address);
 
     console.log('Wallet balances:', {
       eth: ethers.utils.formatEther(ethBalance),
-      weth: ethers.utils.formatUnits(wethBalance, 18),
+      tokenIn: ethers.utils.formatUnits(tokenInBalance, SWAP_TOKEN_IN_DECIMALS),
     });
 
     // Check current allowance
-    const wethErc20Contract = new ethers.Contract(
-      WETH_ADDRESS,
+    const tokenInErc20Contract = new ethers.Contract(
+      SWAP_TOKEN_IN_ADDRESS,
       ['function allowance(address,address) view returns (uint256)'],
       provider,
     );
-    const currentAllowance = await wethErc20Contract.allowance(wallet.address, to);
-    const requiredAmount = ethers.utils.parseUnits(SWAP_AMOUNT.toString(), 18);
+    const currentAllowance = await tokenInErc20Contract.allowance(wallet.address, to);
+    const requiredAmount = ethers.utils.parseUnits(SWAP_AMOUNT.toString(), SWAP_TOKEN_IN_DECIMALS);
 
-    console.log('Current allowance:', ethers.utils.formatUnits(currentAllowance, 18), 'WETH');
-    console.log('Required amount:', ethers.utils.formatUnits(requiredAmount, 18), 'WETH');
-    console.log('WETH balance:', ethers.utils.formatUnits(wethBalance, 18), 'WETH');
+    console.log(
+      'Current allowance:',
+      ethers.utils.formatUnits(currentAllowance, SWAP_TOKEN_IN_DECIMALS),
+      'tokenIn',
+    );
+    console.log(
+      'Required amount:',
+      ethers.utils.formatUnits(requiredAmount, SWAP_TOKEN_IN_DECIMALS),
+      'tokenIn',
+    );
+    console.log(
+      'tokenIn balance:',
+      ethers.utils.formatUnits(tokenInBalance, SWAP_TOKEN_IN_DECIMALS),
+      'tokenIn',
+    );
 
     // Check if we have sufficient balance and allowance
-    if (wethBalance.lt(requiredAmount)) {
-      console.log('❌ Insufficient WETH balance for swap');
+    if (tokenInBalance.lt(requiredAmount)) {
+      console.log('❌ Insufficient tokenIn balance for swap');
 
       // Check if we have ETH to wrap
       if (ethBalance.lt(requiredAmount)) {
-        console.log('❌ Insufficient ETH balance to wrap to WETH');
+        console.log('❌ Insufficient ETH balance to wrap to tokenIn');
         return; // Skip test if insufficient ETH
       }
-
-      console.log('💫 Wrapping ETH to WETH...');
-
-      const wethContractWithSigner = new ethers.Contract(
-        WETH_ADDRESS,
-        ['function deposit() payable'],
-        wallet,
-      );
-
-      try {
-        const wrapTx = await wethContractWithSigner.deposit({ value: requiredAmount });
-        console.log('Wrap transaction sent:', wrapTx.hash);
-
-        const wrapReceipt = await wrapTx.wait();
-        console.log('Wrap transaction mined in block:', wrapReceipt.blockNumber);
-
-        // Verify we now have WETH
-        const newWethBalance = await wethContract.balanceOf(wallet.address);
-        console.log('New WETH balance:', ethers.utils.formatUnits(newWethBalance, 18), 'WETH');
-
-        if (newWethBalance.lt(requiredAmount)) {
-          throw new Error('Wrap transaction failed to provide sufficient WETH');
-        }
-
-        console.log('✅ ETH wrapped to WETH successfully');
-      } catch (wrapError) {
-        console.error('❌ Wrap transaction failed:', wrapError);
-        return; // Skip test if wrapping fails
-      }
     } else {
-      console.log('✅ Sufficient WETH balance');
+      console.log('✅ Sufficient tokenIn balance');
     }
 
     // If allowance is insufficient, perform approval transaction
     if (currentAllowance.lt(requiredAmount)) {
       console.log('❌ Insufficient allowance - performing approval transaction...');
 
-      const wethContractWithSigner = new ethers.Contract(
-        WETH_ADDRESS,
+      const tokenInContractWithSigner = new ethers.Contract(
+        SWAP_TOKEN_IN_ADDRESS,
         ['function approve(address spender, uint256 amount) returns (bool)'],
         wallet,
       );
 
       console.log(
-        `Approving ${ethers.utils.formatUnits(requiredAmount, 18)} WETH to router ${to}...`,
+        `Approving ${ethers.utils.formatUnits(requiredAmount, SWAP_TOKEN_IN_DECIMALS)} tokenIn to router ${to}...`,
       );
 
       try {
-        const approveTx = await wethContractWithSigner.approve(to, requiredAmount);
+        const approveTx = await tokenInContractWithSigner.approve(to, requiredAmount);
         console.log('Approval transaction sent:', approveTx.hash);
 
         const approvalReceipt = await approveTx.wait();
@@ -194,8 +183,12 @@ describe('Uniswap AlphaRouter Direct Test', () => {
         await new Promise((resolve) => setTimeout(resolve, 1000));
 
         // Verify the allowance was set correctly
-        const newAllowance = await wethErc20Contract.allowance(wallet.address, to);
-        console.log('New allowance:', ethers.utils.formatUnits(newAllowance, 18), 'WETH');
+        const newAllowance = await tokenInErc20Contract.allowance(wallet.address, to);
+        console.log(
+          'New allowance:',
+          ethers.utils.formatUnits(newAllowance, SWAP_TOKEN_IN_DECIMALS),
+          'tokenIn',
+        );
 
         if (newAllowance.lt(requiredAmount)) {
           console.warn('⚠️ Approval transaction completed but allowance still insufficient');
@@ -217,17 +210,17 @@ describe('Uniswap AlphaRouter Direct Test', () => {
     console.log('✅ Ready for actual swap execution');
 
     // Get balances before swap
-    const wethBalanceBefore = await wethContract.balanceOf(wallet.address);
-    const usdcContract = new ethers.Contract(
-      USDC_ADDRESS,
+    const tokenInBalanceBefore = await tokenInContract.balanceOf(wallet.address);
+    const tokenOutContract = new ethers.Contract(
+      SWAP_TOKEN_OUT_ADDRESS,
       ['function balanceOf(address) view returns (uint256)'],
       provider,
     );
-    const usdcBalanceBefore = await usdcContract.balanceOf(wallet.address);
+    const tokenOutBalanceBefore = await tokenOutContract.balanceOf(wallet.address);
 
     console.log('Balances before swap:', {
-      weth: ethers.utils.formatUnits(wethBalanceBefore, 18),
-      usdc: ethers.utils.formatUnits(usdcBalanceBefore, 6),
+      tokenIn: ethers.utils.formatUnits(tokenInBalanceBefore, SWAP_TOKEN_IN_DECIMALS),
+      tokenOut: ethers.utils.formatUnits(tokenOutBalanceBefore, SWAP_TOKEN_OUT_DECIMALS),
     });
 
     // Execute the actual swap transaction
@@ -260,32 +253,32 @@ describe('Uniswap AlphaRouter Direct Test', () => {
       await new Promise((resolve) => setTimeout(resolve, 2000));
 
       // Check balances after swap
-      const wethBalanceAfter = await wethContract.balanceOf(wallet.address);
-      const usdcBalanceAfter = await usdcContract.balanceOf(wallet.address);
+      const tokenInBalanceAfter = await tokenInContract.balanceOf(wallet.address);
+      const tokenOutBalanceAfter = await tokenOutContract.balanceOf(wallet.address);
 
       console.log('Balances after swap:', {
-        weth: ethers.utils.formatUnits(wethBalanceAfter, 18),
-        usdc: ethers.utils.formatUnits(usdcBalanceAfter, 6),
+        tokenIn: ethers.utils.formatUnits(tokenInBalanceAfter, SWAP_TOKEN_IN_DECIMALS),
+        tokenOut: ethers.utils.formatUnits(tokenOutBalanceAfter, SWAP_TOKEN_OUT_DECIMALS),
       });
 
       // Calculate the changes
-      const wethChange = wethBalanceBefore.sub(wethBalanceAfter);
-      const usdcChange = usdcBalanceAfter.sub(usdcBalanceBefore);
+      const tokenInChange = tokenInBalanceBefore.sub(tokenInBalanceAfter);
+      const tokenOutChange = tokenOutBalanceAfter.sub(tokenOutBalanceBefore);
 
       console.log('Balance changes:', {
-        wethSpent: ethers.utils.formatUnits(wethChange, 18),
-        usdcReceived: ethers.utils.formatUnits(usdcChange, 6),
+        tokenInSpent: ethers.utils.formatUnits(tokenInChange, SWAP_TOKEN_IN_DECIMALS),
+        tokenOutReceived: ethers.utils.formatUnits(tokenOutChange, SWAP_TOKEN_OUT_DECIMALS),
       });
 
       // Verify the swap was successful
-      if (wethChange.gt(0) && usdcChange.gt(0)) {
+      if (tokenInChange.gt(0) && tokenOutChange.gt(0)) {
         console.log('✅ Swap executed successfully!');
 
         // Calculate effective exchange rate
         const rate =
-          parseFloat(ethers.utils.formatUnits(usdcChange, 6)) /
-          parseFloat(ethers.utils.formatUnits(wethChange, 18));
-        console.log(`Exchange rate: 1 WETH = ${rate.toFixed(2)} USDC`);
+          parseFloat(ethers.utils.formatUnits(tokenOutChange, SWAP_TOKEN_OUT_DECIMALS)) /
+          parseFloat(ethers.utils.formatUnits(tokenInChange, SWAP_TOKEN_IN_DECIMALS));
+        console.log(`Exchange rate: 1 tokenIn = ${rate.toFixed(2)} tokenOut`);
       } else {
         throw new Error('Swap failed - no balance changes detected');
       }
@@ -306,7 +299,7 @@ describe('Uniswap AlphaRouter Direct Test', () => {
             // STF likely means insufficient balance, allowance, or swap conditions not met
             if (decoded === 'STF') {
               console.error('STF Error Analysis:');
-              console.error('- Check WETH balance is sufficient');
+              console.error('- Check tokenIn balance is sufficient');
               console.error('- Check allowance to router is sufficient');
               console.error('- Verify swap amount meets pool minimums');
               console.error('- Ensure pool has sufficient liquidity');

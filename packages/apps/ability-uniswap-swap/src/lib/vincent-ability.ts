@@ -91,13 +91,13 @@ export const vincentAbility = createVincentAbility({
         recipient: delegatorPkpAddress,
       });
 
-      if (!quoteResponse.route || !quoteResponse.route.methodParameters) {
+      if (!quoteResponse || !quoteResponse.methodParameters) {
         return fail({
           reason: `Failed to get router address from Uniswap quote (UniswapSwapAbilityPrecheck)`,
         });
       }
 
-      uniswapRouterAddress = quoteResponse.route.methodParameters.to;
+      uniswapRouterAddress = quoteResponse.methodParameters.to;
     } catch (err) {
       return fail({
         reason: `Error getting router address from Uniswap: ${err instanceof Error ? err.message : String(err)}`,

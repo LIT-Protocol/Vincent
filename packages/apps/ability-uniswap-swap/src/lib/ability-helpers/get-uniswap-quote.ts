@@ -20,26 +20,21 @@ export async function getUniswapQuote({
   tokenOutAddress: string;
   tokenOutDecimals: number;
   recipient: string;
-}): Promise<{
-  bestQuote: ethers.BigNumber;
-  bestFee: number;
-  amountOutMin: ethers.BigNumber;
-  route: SwapRoute;
-}> {
-  const activeTimeouts = new Set<any>();
+}): Promise<SwapRoute> {
+  const activeTimeouts = new Set<NodeJS.Timeout>();
   const realSetTimeout = global.setTimeout;
   const realClearTimeout = global.clearTimeout;
 
-  global.setTimeout = ((fn: any, ms?: any, ...args: any[]) => {
-    const id = realSetTimeout(fn, ms as any, ...args);
+  global.setTimeout = ((fn: (...args: unknown[]) => void, ms?: number, ...args: unknown[]) => {
+    const id = realSetTimeout(fn, ms as number, ...args);
     activeTimeouts.add(id);
     return id;
-  }) as unknown as typeof setTimeout;
+  }) as typeof setTimeout;
 
-  global.clearTimeout = ((id: any) => {
+  global.clearTimeout = ((id: NodeJS.Timeout) => {
     activeTimeouts.delete(id);
     return realClearTimeout(id);
-  }) as unknown as typeof clearTimeout;
+  }) as typeof clearTimeout;
 
   const provider = new ethers.providers.StaticJsonRpcProvider(rpcUrl);
   const router = new AlphaRouter({ chainId, provider });
@@ -71,49 +66,49 @@ export async function getUniswapQuote({
       throw new Error('Failed to get quote from Uniswap (no route)');
     }
 
-    const bestQuote = ethers.BigNumber.from(routeResult.quote.quotient.toString());
-    const amountOutMin = ethers.BigNumber.from(routeResult.quoteGasAdjusted.quotient.toString())
-      .mul(10000 - 50)
-      .div(10000);
-
     console.log('Route details:', {
-      route: routeResult.route.map((r) => ({
+      routes: routeResult.route.map((r) => ({
         protocol: r.protocol,
         pools:
           'pools' in r.route
-            ? r.route.pools.map((p: any) => ({
-                token0: p.token0.symbol || p.token0.address,
-                token1: p.token1.symbol || p.token1.address,
-                fee: 'fee' in p ? p.fee : 'N/A',
+            ? r.route.pools.map((p) => ({
+                token0:
+                  p.token0.symbol ||
+                  (p.token0.isToken ? p.token0.address.slice(0, 6) : p.token0.name),
+                token1:
+                  p.token1.symbol ||
+                  (p.token1.isToken ? p.token1.address.slice(0, 6) : p.token1.name),
+                fee: 'fee' in p ? `${p.fee / 10000}%` : 'N/A',
               }))
             : 'pairs' in r.route
-              ? r.route.pairs.map((p: any) => ({
-                  token0: p.token0.symbol || p.token0.address,
-                  token1: p.token1.symbol || p.token1.address,
-                  fee: 'V2',
+              ? r.route.pairs.map((p) => ({
+                  token0:
+                    p.token0.symbol ||
+                    (p.token0.isToken ? p.token0.address.slice(0, 6) : p.token0.name),
+                  token1:
+                    p.token1.symbol ||
+                    (p.token1.isToken ? p.token1.address.slice(0, 6) : p.token1.name),
+                  type: 'V2',
                 }))
               : [],
+        portion: `${(r.percent * 100).toFixed(1)}%`,
       })),
       quote: {
-        raw: bestQuote.toString(),
-        formatted: ethers.utils.formatUnits(bestQuote, tokenOutDecimals),
+        amount: routeResult.quote.toExact(),
+        gasAdjusted: routeResult.quoteGasAdjusted.toExact(),
+        formatted: ethers.utils.formatUnits(
+          routeResult.quote.quotient.toString(),
+          tokenOutDecimals,
+        ),
       },
-      minimumOutput: {
-        raw: amountOutMin.toString(),
-        formatted: ethers.utils.formatUnits(amountOutMin, tokenOutDecimals),
+      gas: {
+        estimated: routeResult.estimatedGasUsed.toString(),
+        costUSD: routeResult.estimatedGasUsedUSD.toFixed(4),
       },
-      estimatedGasUsedUSD: routeResult.estimatedGasUsedUSD.toFixed(2),
     });
 
-    let bestFee = 3000;
-    if (routeResult.route.length > 0) {
-      const first = (routeResult.route[0] as any).route;
-      if ('pools' in first && first.pools?.[0]?.fee) bestFee = first.pools[0].fee;
-    }
-
     console.log('AlphaRouter completed successfully');
-
-    return { bestQuote, bestFee, amountOutMin, route: routeResult };
+    return routeResult;
   } finally {
     console.log('Performing cleanup of AlphaRouter resources...');
 
@@ -127,8 +122,8 @@ export async function getUniswapQuote({
     activeTimeouts.clear();
 
     // Restore globals to avoid side effects
-    global.setTimeout = realSetTimeout as any;
-    global.clearTimeout = realClearTimeout as any;
+    global.setTimeout = realSetTimeout;
+    global.clearTimeout = realClearTimeout;
 
     console.log('AlphaRouter cleanup completed');
   }

@@ -46,7 +46,7 @@ export const sendUniswapTx = async ({
     async () => {
       try {
         console.log('Getting Uniswap quote for swap (sendUniswapTx)');
-        const uniswapQuoteResponse = await getUniswapQuote({
+        const route = await getUniswapQuote({
           rpcUrl,
           chainId,
           tokenInAddress,
@@ -57,8 +57,6 @@ export const sendUniswapTx = async ({
           recipient: pkpEthAddress,
         });
 
-        const { route } = uniswapQuoteResponse;
-
         if (!route || !route.methodParameters) {
           throw new Error('Failed to get valid route from Uniswap');
         }
@@ -66,7 +64,7 @@ export const sendUniswapTx = async ({
         // Use getGasParams helper which handles block/feeData fetching and applies 50% buffer
         const { estimatedGas, maxFeePerGas, maxPriorityFeePerGas } = await getGasParams(
           uniswapRpcProvider,
-          route.estimatedGasUsed,
+          ethers.BigNumber.from(route.estimatedGasUsed),
         );
 
         console.log('Swap transaction details (sendUniswapTx)', {

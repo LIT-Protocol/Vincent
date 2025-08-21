@@ -44,13 +44,17 @@ import { checkShouldMintCapacityCredit } from './helpers/check-mint-capcity-cred
 import * as util from 'node:util';
 import { privateKeyToAccount } from 'viem/accounts';
 
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
-
 // Spender address for ERC20 approvals - will be dynamically determined by AlphaRouter
 let UNISWAP_SPENDER_ADDRESS: string | null = null;
 
-// Swap amount in WETH
-const SWAP_AMOUNT = 0.0003;
+const SWAP_AMOUNT = 50;
+const SWAP_TOKEN_IN_ADDRESS = '0x4ed4E862860beD51a9570b96d89aF5E1B0Efefed'; // DEGEN
+const SWAP_TOKEN_IN_DECIMALS = 18;
+// const SWAP_AMOUNT = 0.0003;
+// const SWAP_TOKEN_IN_ADDRESS = '0x4200000000000000000000000000000000000006'; // WETH
+// const SWAP_TOKEN_IN_DECIMALS = 18;
+const SWAP_TOKEN_OUT_ADDRESS = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'; // USDC
+const SWAP_TOKEN_OUT_DECIMALS = 6;
 
 // Extend Jest timeout to 4 minutes
 jest.setTimeout(240000);
@@ -94,8 +98,8 @@ const removeExistingApproval = async (delegatorPkpEthAddress: string) => {
       rpcUrl: BASE_RPC_URL,
       chainId: 8453,
       spenderAddress: UNISWAP_SPENDER_ADDRESS!,
-      tokenAddress: '0x4200000000000000000000000000000000000006', // WETH
-      tokenDecimals: 18,
+      tokenAddress: SWAP_TOKEN_IN_ADDRESS,
+      tokenDecimals: SWAP_TOKEN_IN_DECIMALS,
       tokenAmount: 0,
       alchemyGasSponsor: false,
     },
@@ -140,8 +144,8 @@ const addNewApproval = async (delegatorPkpEthAddress: string, tokenAmount: numbe
       rpcUrl: BASE_RPC_URL,
       chainId: 8453,
       spenderAddress: UNISWAP_SPENDER_ADDRESS!,
-      tokenAddress: '0x4200000000000000000000000000000000000006', // WETH
-      tokenDecimals: 18,
+      tokenAddress: SWAP_TOKEN_IN_ADDRESS,
+      tokenDecimals: SWAP_TOKEN_IN_DECIMALS,
       tokenAmount,
       alchemyGasSponsor: false,
     },
@@ -163,10 +167,8 @@ const addNewApproval = async (delegatorPkpEthAddress: string, tokenAmount: numbe
     expect(BigInt(erc20ApprovalExecutionResult.result.approvedAmount)).toBe(0n);
   }
 
-  expect(erc20ApprovalExecutionResult.result.tokenAddress).toBe(
-    '0x4200000000000000000000000000000000000006',
-  );
-  expect(erc20ApprovalExecutionResult.result.tokenDecimals).toBe(18);
+  expect(erc20ApprovalExecutionResult.result.tokenAddress).toBe(SWAP_TOKEN_IN_ADDRESS);
+  expect(erc20ApprovalExecutionResult.result.tokenDecimals).toBe(SWAP_TOKEN_IN_DECIMALS);
   expect(erc20ApprovalExecutionResult.result.spenderAddress).toBe(UNISWAP_SPENDER_ADDRESS);
 
   if (erc20ApprovalExecutionResult.result.approvalTxHash) {
@@ -191,20 +193,8 @@ const getUniswapRouterAddress = async (recipient: string): Promise<string> => {
   const router = new AlphaRouter({ chainId: 8453, provider });
 
   // Create token instances
-  const tokenIn = new Token(
-    8453,
-    '0x4200000000000000000000000000000000000006',
-    18,
-    'WETH',
-    'Wrapped Ether',
-  );
-  const tokenOut = new Token(
-    8453,
-    '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
-    6,
-    'USDC',
-    'USD Coin',
-  );
+  const tokenIn = new Token(8453, SWAP_TOKEN_IN_ADDRESS, SWAP_TOKEN_IN_DECIMALS);
+  const tokenOut = new Token(8453, SWAP_TOKEN_OUT_ADDRESS, SWAP_TOKEN_OUT_DECIMALS);
 
   // Convert amount to proper format
   const amountIn = CurrencyAmount.fromRawAmount(
@@ -390,7 +380,7 @@ describe('Uniswap Swap Ability E2E Tests', () => {
       // Check the current allowance
       const currentAllowance = await getCurrentAllowance({
         provider,
-        tokenAddress: '0x4200000000000000000000000000000000000006', // WETH
+        tokenAddress: SWAP_TOKEN_IN_ADDRESS,
         owner: TEST_CONFIG.userPkp!.ethAddress!,
         spender: UNISWAP_SPENDER_ADDRESS!,
       });
@@ -423,11 +413,11 @@ describe('Uniswap Swap Ability E2E Tests', () => {
         ethRpcUrl: ETH_RPC_URL,
         rpcUrlForUniswap: BASE_RPC_URL,
         chainIdForUniswap: 8453,
-        tokenInAddress: '0x4200000000000000000000000000000000000006', // WETH
-        tokenInDecimals: 18,
+        tokenInAddress: SWAP_TOKEN_IN_ADDRESS,
+        tokenInDecimals: SWAP_TOKEN_IN_DECIMALS,
         tokenInAmount: SWAP_AMOUNT,
-        tokenOutAddress: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', // USDC on Base
-        tokenOutDecimals: 8,
+        tokenOutAddress: SWAP_TOKEN_OUT_ADDRESS,
+        tokenOutDecimals: SWAP_TOKEN_OUT_DECIMALS,
       },
       {
         delegatorPkpEthAddress: TEST_CONFIG.userPkp!.ethAddress!,
@@ -488,7 +478,7 @@ describe('Uniswap Swap Ability E2E Tests', () => {
     // Check the current allowance
     let currentAllowance = await getCurrentAllowance({
       provider,
-      tokenAddress: '0x4200000000000000000000000000000000000006', // WETH
+      tokenAddress: SWAP_TOKEN_IN_ADDRESS,
       owner: TEST_CONFIG.userPkp!.ethAddress!,
       spender: UNISWAP_SPENDER_ADDRESS!,
     });
@@ -504,14 +494,14 @@ describe('Uniswap Swap Ability E2E Tests', () => {
         'current allowance after removal',
         await getCurrentAllowance({
           provider,
-          tokenAddress: '0x4200000000000000000000000000000000000006', // WETH
+          tokenAddress: SWAP_TOKEN_IN_ADDRESS,
           owner: TEST_CONFIG.userPkp!.ethAddress!,
           spender: UNISWAP_SPENDER_ADDRESS!,
         }),
       );
       currentAllowance = await getCurrentAllowance({
         provider,
-        tokenAddress: '0x4200000000000000000000000000000000000006', // WETH
+        tokenAddress: SWAP_TOKEN_IN_ADDRESS,
         owner: TEST_CONFIG.userPkp!.ethAddress!,
         spender: UNISWAP_SPENDER_ADDRESS!,
       });
@@ -551,7 +541,7 @@ describe('Uniswap Swap Ability E2E Tests', () => {
     // Check the current allowance
     let currentAllowance = await getCurrentAllowance({
       provider,
-      tokenAddress: '0x4200000000000000000000000000000000000006', // WETH
+      tokenAddress: SWAP_TOKEN_IN_ADDRESS,
       owner: TEST_CONFIG.userPkp!.ethAddress!,
       spender: UNISWAP_SPENDER_ADDRESS!,
     });
@@ -563,7 +553,7 @@ describe('Uniswap Swap Ability E2E Tests', () => {
       // Verify the allowance is now greater than 0
       currentAllowance = await getCurrentAllowance({
         provider,
-        tokenAddress: '0x4200000000000000000000000000000000000006', // WETH
+        tokenAddress: SWAP_TOKEN_IN_ADDRESS,
         owner: TEST_CONFIG.userPkp!.ethAddress!,
         spender: UNISWAP_SPENDER_ADDRESS!,
       });
@@ -597,10 +587,8 @@ describe('Uniswap Swap Ability E2E Tests', () => {
 
     // Allowance will decrease after swap
     expect(BigInt(erc20ApprovalExecutionResult.result.approvedAmount)).toBeGreaterThan(0n);
-    expect(erc20ApprovalExecutionResult.result.tokenAddress).toBe(
-      '0x4200000000000000000000000000000000000006',
-    );
-    expect(erc20ApprovalExecutionResult.result.tokenDecimals).toBe(18);
+    expect(erc20ApprovalExecutionResult.result.tokenAddress).toBe(SWAP_TOKEN_IN_ADDRESS);
+    expect(erc20ApprovalExecutionResult.result.tokenDecimals).toBe(SWAP_TOKEN_IN_DECIMALS);
     expect(erc20ApprovalExecutionResult.result.spenderAddress).toBe(UNISWAP_SPENDER_ADDRESS);
   });
 
@@ -620,7 +608,7 @@ describe('Uniswap Swap Ability E2E Tests', () => {
     // Check the current allowance
     const currentAllowance = await getCurrentAllowance({
       provider,
-      tokenAddress: '0x4200000000000000000000000000000000000006', // WETH
+      tokenAddress: SWAP_TOKEN_IN_ADDRESS,
       owner: TEST_CONFIG.userPkp!.ethAddress!,
       spender: UNISWAP_SPENDER_ADDRESS!,
     });
@@ -643,11 +631,11 @@ describe('Uniswap Swap Ability E2E Tests', () => {
         ethRpcUrl: ETH_RPC_URL,
         rpcUrlForUniswap: BASE_RPC_URL,
         chainIdForUniswap: 8453,
-        tokenInAddress: '0x4200000000000000000000000000000000000006', // WETH
-        tokenInDecimals: 18,
+        tokenInAddress: SWAP_TOKEN_IN_ADDRESS,
+        tokenInDecimals: SWAP_TOKEN_IN_DECIMALS,
         tokenInAmount: SWAP_AMOUNT,
-        tokenOutAddress: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', // USDC on Base
-        tokenOutDecimals: 8,
+        tokenOutAddress: SWAP_TOKEN_OUT_ADDRESS,
+        tokenOutDecimals: SWAP_TOKEN_OUT_DECIMALS,
       },
       {
         delegatorPkpEthAddress: TEST_CONFIG.userPkp!.ethAddress!,

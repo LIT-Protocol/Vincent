@@ -1,9 +1,9 @@
 import { ethers } from 'ethers';
+import { WETH9 } from '@uniswap/sdk-core';
 
 import { calculateUsdValue } from './calculate-usd-value';
 import { getUniswapQuote } from './get-uniswap-quote';
 
-const ETH_MAINNET_WETH_ADDRESS = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2';
 /**
  * Source: https://docs.chain.link/data-feeds/price-feeds/addresses/?network=ethereum&page=1&search=ETH%2FUSD
  */
@@ -31,7 +31,7 @@ export const getTokenAmountInUsd = async ({
     tokenAddress,
     tokenAmount,
     tokenDecimals,
-    ethMainnetWethAddress: ETH_MAINNET_WETH_ADDRESS,
+    ethMainnetWethAddress: WETH9[1].address,
     ethMainnetEthUsdChainlinkFeed: ETH_MAINNET_ETH_USD_CHAINLINK_FEED,
   });
 
@@ -55,11 +55,17 @@ export const getTokenAmountInUsd = async ({
     });
   }
 
+  // Get WETH address for the specific chain
+  const wethToken = WETH9[chainIdForUniswap];
+  if (!wethToken) {
+    throw new Error(`WETH not available on chain ${chainIdForUniswap}`);
+  }
+
   console.log(`Getting price in WETH from Uniswap (getTokenAmountInUsd)`, {
     tokenInAddress: tokenAddress,
     tokenInDecimals: tokenDecimals,
     tokenInAmount: tokenAmount,
-    tokenOutAddress: ETH_MAINNET_WETH_ADDRESS,
+    tokenOutAddress: wethToken.address,
     tokenOutDecimals: 18,
     rpcUrl: rpcUrlForUniswap,
     chainId: chainIdForUniswap,
@@ -69,7 +75,7 @@ export const getTokenAmountInUsd = async ({
     tokenInAddress: tokenAddress,
     tokenInDecimals: tokenDecimals,
     tokenInAmount: tokenAmount,
-    tokenOutAddress: ETH_MAINNET_WETH_ADDRESS,
+    tokenOutAddress: wethToken.address,
     tokenOutDecimals: 18,
     rpcUrl: rpcUrlForUniswap,
     chainId: chainIdForUniswap,
