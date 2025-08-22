@@ -113,6 +113,10 @@ contract VincentUserFacet is VincentBase {
         // .add will not add the app ID again if it is already registered
         agentStorage.permittedApps.add(appId);
 
+        // Add the app ID to the User's historical permitted apps set (never removed)
+        // .add will not add the app ID again if it is already registered
+        agentStorage.allPermittedApps.add(appId);
+
         // Set the new permitted app version
         agentStorage.permittedAppVersion[appId] = appVersion;
 
@@ -157,6 +161,10 @@ contract VincentUserFacet is VincentBase {
 
         // Remove the App Version from the User's Permitted App Versions
         us_.agentPkpTokenIdToAgentStorage[pkpTokenId].permittedAppVersion[appId] = 0;
+
+        // Add the App ID to the User's historical permitted apps set
+        // This ensures apps permitted before the allPermittedApps tracking was added are captured
+        us_.agentPkpTokenIdToAgentStorage[pkpTokenId].allPermittedApps.add(appId);
 
         // Remove the app from the User's permitted apps set
         us_.agentPkpTokenIdToAgentStorage[pkpTokenId].permittedApps.remove(appId);
