@@ -92,13 +92,15 @@ contract VincentUserViewFacet is VincentBase {
 
     /**
      * @notice Represents permitted app information for a PKP
-     * @dev Contains app ID and its permitted version
+     * @dev Contains app ID, permitted version, and whether that version is enabled
      * @param appId The ID of the permitted app
      * @param version The permitted version of the app
+     * @param versionEnabled Whether the permitted version is currently enabled
      */
     struct PermittedApp {
         uint40 appId;
         uint24 version;
+        bool versionEnabled;
     }
 
     /**
@@ -111,6 +113,7 @@ contract VincentUserViewFacet is VincentBase {
         uint256 pkpTokenId;
         PermittedApp[] permittedApps;
     }
+
 
     /**
      * @dev Gets all PKP tokens that are registered as agents in the system with pagination support
@@ -176,58 +179,77 @@ contract VincentUserViewFacet is VincentBase {
     }
 
     /**
-     * @dev Gets all app IDs that have permissions for a specific PKP token, excluding deleted apps, with pagination support
-     * @param pkpTokenId The PKP token ID
-     * @param offset The offset of the first app ID to retrieve
-     * @return An array of app IDs that have permissions for the PKP token and haven't been deleted
+     * @notice Retrieves permitted apps with their versions for multiple PKPs with pagination
+     * @dev Takes an array of PKP token IDs and returns their permitted apps, excluding deleted apps
+     * @param pkpTokenIds Array of PKP token IDs to query
+     * @param offset The offset of the first app to retrieve for each PKP
+     * @return results Array of PkpPermittedApps structs, each containing a PKP token ID and its permitted apps
      */
-    function getAllPermittedAppIdsForPkp(uint256 pkpTokenId, uint256 offset) external view returns (uint40[] memory) {
-        if (pkpTokenId == 0) {
-            revert InvalidPkpTokenId();
-        }
-
+    function getPermittedAppsForPkps(
+        uint256[] memory pkpTokenIds, 
+        uint256 offset
+    ) 
+        public 
+        view 
+        returns (PkpPermittedApps[] memory results) 
+    {
         VincentUserStorage.UserStorage storage us_ = VincentUserStorage.userStorage();
         VincentAppStorage.AppStorage storage as_ = VincentAppStorage.appStorage();
-
-        EnumerableSet.UintSet storage permittedAppSet = us_.agentPkpTokenIdToAgentStorage[pkpTokenId].permittedApps;
-        uint256 permittedAppCount = permittedAppSet.length();
-
-        uint40[] memory nonDeletedAppIds = new uint40[](permittedAppCount);
-        uint256 nonDeletedCount = 0;
-
-        for (uint256 i = 0; i < permittedAppCount; i++) {
-            uint40 appId = uint40(permittedAppSet.at(i));
-            if (!as_.appIdToApp[appId].isDeleted) {
-                nonDeletedAppIds[nonDeletedCount] = appId;
-                nonDeletedCount++;
+        
+        results = new PkpPermittedApps[](pkpTokenIds.length);
+        
+        for (uint256 i = 0; i < pkpTokenIds.length; i++) {
+            uint256 pkpTokenId = pkpTokenIds[i];
+            
+            if (pkpTokenId == 0) {
+                revert InvalidPkpTokenId();
+            }
+            
+            VincentUserStorage.AgentStorage storage agentStorage = us_.agentPkpTokenIdToAgentStorage[pkpTokenId];
+            EnumerableSet.UintSet storage permittedApps = agentStorage.permittedApps;
+            uint256 permittedAppCount = permittedApps.length();
+            
+            // First, collect non-deleted apps
+            PermittedApp[] memory nonDeletedApps = new PermittedApp[](permittedAppCount);
+            uint256 nonDeletedCount = 0;
+            
+            for (uint256 j = 0; j < permittedAppCount; j++) {
+                uint40 appId = uint40(permittedApps.at(j));
+                if (!as_.appIdToApp[appId].isDeleted) {
+                    uint24 version = agentStorage.permittedAppVersion[appId];
+                    bool enabled = as_.appIdToApp[appId].appVersions[getAppVersionIndex(version)].enabled;
+                    nonDeletedApps[nonDeletedCount] = PermittedApp({
+                        appId: appId,
+                        version: version,
+                        versionEnabled: enabled
+                    });
+                    nonDeletedCount++;
+                }
+            }
+            
+            // Apply pagination
+            uint256 start = offset;
+            uint256 end = offset + AGENT_PAGE_SIZE;
+            
+            if (start >= nonDeletedCount) {
+                // Offset beyond available items
+                results[i].pkpTokenId = pkpTokenId;
+                results[i].permittedApps = new PermittedApp[](0);
+                continue;
+            }
+            
+            if (end > nonDeletedCount) {
+                end = nonDeletedCount;
+            }
+            
+            uint256 resultCount = end - start;
+            results[i].pkpTokenId = pkpTokenId;
+            results[i].permittedApps = new PermittedApp[](resultCount);
+            
+            for (uint256 k = 0; k < resultCount; k++) {
+                results[i].permittedApps[k] = nonDeletedApps[start + k];
             }
         }
-
-        if (nonDeletedCount == 0) {
-            return new uint40[](0);
-        }
-
-        assembly {
-            mstore(nonDeletedAppIds, nonDeletedCount)
-        }
-
-        if (offset >= nonDeletedCount) {
-            revert InvalidOffset(offset, nonDeletedCount);
-        }
-
-        uint256 end = offset + AGENT_PAGE_SIZE;
-        if (end > nonDeletedCount) {
-            end = nonDeletedCount;
-        }
-
-        uint256 resultCount = end - offset;
-        uint40[] memory result = new uint40[](resultCount);
-
-        for (uint256 i = offset; i < end; i++) {
-            result[i - offset] = nonDeletedAppIds[i];
-        }
-
-        return result;
     }
 
     /**
@@ -383,7 +405,7 @@ contract VincentUserViewFacet is VincentBase {
         return validation;
     }
 
-    /**
+         /**
      * @dev Internal function to get an ability with its policies and parameters
      * @param abilityHash The hash of the ability IPFS CID
      * @param pkpTokenId The PKP token ID
@@ -429,38 +451,4 @@ contract VincentUserViewFacet is VincentBase {
         }
     }
 
-    /**
-     * @notice Retrieves permitted apps with their versions for multiple PKPs
-     * @dev Takes an array of PKP token IDs and returns their permitted apps indexed by PKP token ID
-     * @param pkpTokenIds Array of PKP token IDs to query
-     * @return results Array of PkpPermittedApps structs, each containing a PKP token ID and its permitted apps
-     */
-    function getPermittedAppsForPkps(uint256[] calldata pkpTokenIds) 
-        external 
-        view 
-        returns (PkpPermittedApps[] memory results) 
-    {
-        VincentUserStorage.UserStorage storage us = VincentUserStorage.userStorage();
-        results = new PkpPermittedApps[](pkpTokenIds.length);
-        
-        for (uint256 i = 0; i < pkpTokenIds.length; i++) {
-            uint256 pkpTokenId = pkpTokenIds[i];
-            VincentUserStorage.AgentStorage storage agentStorage = us.agentPkpTokenIdToAgentStorage[pkpTokenId];
-            
-            uint256 numPermittedApps = agentStorage.permittedApps.length();
-            
-            results[i].pkpTokenId = pkpTokenId;
-            results[i].permittedApps = new PermittedApp[](numPermittedApps);
-            
-            for (uint256 j = 0; j < numPermittedApps; j++) {
-                uint40 appId = uint40(agentStorage.permittedApps.at(j));
-                uint24 version = agentStorage.permittedAppVersion[appId];
-                
-                results[i].permittedApps[j] = PermittedApp({
-                    appId: appId,
-                    version: version
-                });
-            }
-        }
-    }
 }

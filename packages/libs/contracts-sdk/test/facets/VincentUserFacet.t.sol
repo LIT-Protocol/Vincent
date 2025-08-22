@@ -201,16 +201,21 @@ contract VincentUserFacetTest is Test {
         permittedAppVersion = vincentUserViewFacet.getPermittedAppVersionForPkp(PKP_TOKEN_ID_2, newAppId_3);
         assertEq(permittedAppVersion, newAppVersion_3);
 
-        // Check that Frank has permitted App IDs
-        uint40[] memory permittedAppIds = vincentUserViewFacet.getAllPermittedAppIdsForPkp(PKP_TOKEN_ID_1, 0);
-        assertEq(permittedAppIds.length, 2);
-        assertEq(permittedAppIds[0], newAppId_1);
-        assertEq(permittedAppIds[1], newAppId_2);
+        // Check that Frank has permitted App IDs using the new function
+        uint256[] memory pkpTokenIds = new uint256[](1);
+        pkpTokenIds[0] = PKP_TOKEN_ID_1;
+        VincentUserViewFacet.PkpPermittedApps[] memory permittedAppsResults = vincentUserViewFacet.getPermittedAppsForPkps(pkpTokenIds, 0);
+        assertEq(permittedAppsResults.length, 1);
+        assertEq(permittedAppsResults[0].pkpTokenId, PKP_TOKEN_ID_1);
+        assertEq(permittedAppsResults[0].permittedApps.length, 2);
+        assertEq(permittedAppsResults[0].permittedApps[0].appId, newAppId_1);
+        assertEq(permittedAppsResults[0].permittedApps[1].appId, newAppId_2);
 
         // Check that George has permitted App IDs
-        permittedAppIds = vincentUserViewFacet.getAllPermittedAppIdsForPkp(PKP_TOKEN_ID_2, 0);
-        assertEq(permittedAppIds.length, 1);
-        assertEq(permittedAppIds[0], newAppId_3);
+        pkpTokenIds[0] = PKP_TOKEN_ID_2;
+        permittedAppsResults = vincentUserViewFacet.getPermittedAppsForPkps(pkpTokenIds, 0);
+        assertEq(permittedAppsResults[0].permittedApps.length, 1);
+        assertEq(permittedAppsResults[0].permittedApps[0].appId, newAppId_3);
 
         // Check the Ability and Policies for App 1 Version 1 for PKP 1 (Frank)
         VincentUserViewFacet.AbilityWithPolicies[] memory abilitiesWithPolicies = vincentUserViewFacet.getAllAbilitiesAndPoliciesForApp(PKP_TOKEN_ID_1, newAppId_1);
@@ -347,10 +352,12 @@ contract VincentUserFacetTest is Test {
         vm.stopPrank();
 
         // Verify initial state
-        uint40[] memory permittedAppIds = vincentUserViewFacet.getAllPermittedAppIdsForPkp(PKP_TOKEN_ID_1, 0);
-        assertEq(permittedAppIds.length, 2);
-        assertEq(permittedAppIds[0], newAppId_1);
-        assertEq(permittedAppIds[1], newAppId_2);
+        uint256[] memory pkpTokenIds = new uint256[](1);
+        pkpTokenIds[0] = PKP_TOKEN_ID_1;
+        VincentUserViewFacet.PkpPermittedApps[] memory permittedAppsResults = vincentUserViewFacet.getPermittedAppsForPkps(pkpTokenIds, 0);
+        assertEq(permittedAppsResults[0].permittedApps.length, 2);
+        assertEq(permittedAppsResults[0].permittedApps[0].appId, newAppId_1);
+        assertEq(permittedAppsResults[0].permittedApps[1].appId, newAppId_2);
 
         // Expect event for unpermit
         vm.startPrank(APP_USER_FRANK);
@@ -370,9 +377,9 @@ contract VincentUserFacetTest is Test {
         assertEq(permittedAppVersion, newAppVersion_2);
 
         // Verify permitted apps list is updated
-        permittedAppIds = vincentUserViewFacet.getAllPermittedAppIdsForPkp(PKP_TOKEN_ID_1, 0);
-        assertEq(permittedAppIds.length, 1);
-        assertEq(permittedAppIds[0], newAppId_2);
+        permittedAppsResults = vincentUserViewFacet.getPermittedAppsForPkps(pkpTokenIds, 0);
+        assertEq(permittedAppsResults[0].permittedApps.length, 1);
+        assertEq(permittedAppsResults[0].permittedApps[0].appId, newAppId_2);
 
         // Verify ability execution validation for App 1 is no longer permitted
         VincentUserViewFacet.AbilityExecutionValidation memory abilityExecutionValidation = vincentUserViewFacet.validateAbilityExecutionAndGetPolicies(
