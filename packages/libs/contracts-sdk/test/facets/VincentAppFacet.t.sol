@@ -653,6 +653,24 @@ contract VincentAppFacetTest is Test {
         );
         vm.stopPrank();
 
+        // Test getPermittedAppsForPkps before deleting the app
+        uint256[] memory pkpTokenIds = new uint256[](2);
+        pkpTokenIds[0] = PKP_TOKEN_ID_1; // This PKP has permitted apps
+        pkpTokenIds[1] = PKP_TOKEN_ID_2; // This PKP has no permitted apps
+        
+        VincentUserViewFacet.PkpPermittedApps[] memory permittedAppsResults = vincentUserViewFacet.getPermittedAppsForPkps(pkpTokenIds);
+        assertEq(permittedAppsResults.length, 2);
+        
+        // PKP_TOKEN_ID_1 should have 1 permitted app
+        assertEq(permittedAppsResults[0].pkpTokenId, PKP_TOKEN_ID_1);
+        assertEq(permittedAppsResults[0].permittedApps.length, 1);
+        assertEq(permittedAppsResults[0].permittedApps[0].appId, newAppId);
+        assertEq(permittedAppsResults[0].permittedApps[0].version, newAppVersion);
+        
+        // PKP_TOKEN_ID_2 should have no permitted apps
+        assertEq(permittedAppsResults[1].pkpTokenId, PKP_TOKEN_ID_2);
+        assertEq(permittedAppsResults[1].permittedApps.length, 0);
+
         vm.startPrank(APP_MANAGER_ALICE);
         vm.expectEmit(true, true, true, true);
         emit LibVincentAppFacet.AppDeleted(newAppId);
@@ -697,6 +715,17 @@ contract VincentAppFacetTest is Test {
 
         vm.expectRevert(abi.encodeWithSelector(VincentBase.InvalidOffset.selector, 1, 1));
         vincentAppViewFacet.getDelegatedAgentPkpTokenIds(newAppId, newAppVersion, 1);
+
+        // Test the new getPermittedAppsForPkps function
+        uint256[] memory pkpTokenIds = new uint256[](1);
+        pkpTokenIds[0] = PKP_TOKEN_ID_1;
+        
+        VincentUserViewFacet.PkpPermittedApps[] memory permittedAppsResults = vincentUserViewFacet.getPermittedAppsForPkps(pkpTokenIds);
+        assertEq(permittedAppsResults.length, 1);
+        assertEq(permittedAppsResults[0].pkpTokenId, PKP_TOKEN_ID_1);
+        assertEq(permittedAppsResults[0].permittedApps.length, 1);
+        assertEq(permittedAppsResults[0].permittedApps[0].appId, newAppId);
+        assertEq(permittedAppsResults[0].permittedApps[0].version, newAppVersion);
     }
 
     function _registerApp(

@@ -91,6 +91,28 @@ contract VincentUserViewFacet is VincentBase {
     }
 
     /**
+     * @notice Represents permitted app information for a PKP
+     * @dev Contains app ID and its permitted version
+     * @param appId The ID of the permitted app
+     * @param version The permitted version of the app
+     */
+    struct PermittedApp {
+        uint40 appId;
+        uint24 version;
+    }
+
+    /**
+     * @notice Represents the result for a single PKP's permitted apps
+     * @dev Contains the PKP token ID and its array of permitted apps
+     * @param pkpTokenId The PKP token ID
+     * @param permittedApps Array of permitted apps for this PKP
+     */
+    struct PkpPermittedApps {
+        uint256 pkpTokenId;
+        PermittedApp[] permittedApps;
+    }
+
+    /**
      * @dev Gets all PKP tokens that are registered as agents in the system with pagination support
      * @param userAddress The address of the user to query
      * @param offset The offset of the first PKP token ID to retrieve
@@ -404,6 +426,41 @@ contract VincentUserViewFacet is VincentBase {
             bytes32 policyHash = allPolicyHashes[i];
             abilityWithPolicies.policies[i].policyIpfsCid = ls_.ipfsCidHashToIpfsCid[policyHash];
             abilityWithPolicies.policies[i].policyParameterValues = abilityPolicyParameterValues[policyHash];
+        }
+    }
+
+    /**
+     * @notice Retrieves permitted apps with their versions for multiple PKPs
+     * @dev Takes an array of PKP token IDs and returns their permitted apps indexed by PKP token ID
+     * @param pkpTokenIds Array of PKP token IDs to query
+     * @return results Array of PkpPermittedApps structs, each containing a PKP token ID and its permitted apps
+     */
+    function getPermittedAppsForPkps(uint256[] calldata pkpTokenIds) 
+        external 
+        view 
+        returns (PkpPermittedApps[] memory results) 
+    {
+        VincentUserStorage.UserStorage storage us = VincentUserStorage.userStorage();
+        results = new PkpPermittedApps[](pkpTokenIds.length);
+        
+        for (uint256 i = 0; i < pkpTokenIds.length; i++) {
+            uint256 pkpTokenId = pkpTokenIds[i];
+            VincentUserStorage.AgentStorage storage agentStorage = us.agentPkpTokenIdToAgentStorage[pkpTokenId];
+            
+            uint256 numPermittedApps = agentStorage.permittedApps.length();
+            
+            results[i].pkpTokenId = pkpTokenId;
+            results[i].permittedApps = new PermittedApp[](numPermittedApps);
+            
+            for (uint256 j = 0; j < numPermittedApps; j++) {
+                uint40 appId = uint40(agentStorage.permittedApps.at(j));
+                uint24 version = agentStorage.permittedAppVersion[appId];
+                
+                results[i].permittedApps[j] = PermittedApp({
+                    appId: appId,
+                    version: version
+                });
+            }
         }
     }
 }
