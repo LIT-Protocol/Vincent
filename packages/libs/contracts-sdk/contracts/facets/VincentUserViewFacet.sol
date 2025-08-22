@@ -306,9 +306,7 @@ contract VincentUserViewFacet is VincentBase {
             for (uint256 j = 0; j < allAppCount; j++) {
                 uint40 appId = uint40(allApps.at(j));
                 if (!as_.appIdToApp[appId].isDeleted) {
-                    bool isCurrentlyPermitted = permittedApps.contains(appId);
-                    
-                    if (isCurrentlyPermitted) {
+                    if (permittedApps.contains(appId)) {
                         // Add to permitted apps with full details
                         uint24 version = agentStorage.permittedAppVersion[appId];
                         bool enabled = as_.appIdToApp[appId].appVersions[getAppVersionIndex(version)].enabled;
@@ -326,40 +324,41 @@ contract VincentUserViewFacet is VincentBase {
                 }
             }
             
-            // Apply pagination separately to permitted and historical apps
+            // Apply pagination to combined total
+            uint256 totalCount = permittedCount + historicalCount;
+            uint256 start = offset;
+            uint256 end = offset + AGENT_PAGE_SIZE;
             
-            // Paginate permitted apps
-            uint256 permittedStart = offset;
-            uint256 permittedEnd = offset + AGENT_PAGE_SIZE;
-            if (permittedStart >= permittedCount) {
-                // Offset beyond available permitted apps
+            if (start >= totalCount) {
+                // Offset beyond available items
+                results[i].pkpTokenId = pkpTokenId;
                 results[i].permittedApps = new PermittedApp[](0);
-            } else {
-                if (permittedEnd > permittedCount) {
-                    permittedEnd = permittedCount;
-                }
-                uint256 permittedResultCount = permittedEnd - permittedStart;
-                results[i].permittedApps = new PermittedApp[](permittedResultCount);
-                for (uint256 k = 0; k < permittedResultCount; k++) {
-                    results[i].permittedApps[k] = tempPermittedApps[permittedStart + k];
-                }
+                results[i].historicalAppIds = new uint40[](0);
+                continue;
             }
             
-            // Paginate historical apps
-            uint256 historicalStart = offset;
-            uint256 historicalEnd = offset + AGENT_PAGE_SIZE;
-            if (historicalStart >= historicalCount) {
-                // Offset beyond available historical apps
-                results[i].historicalAppIds = new uint40[](0);
-            } else {
-                if (historicalEnd > historicalCount) {
-                    historicalEnd = historicalCount;
-                }
-                uint256 historicalResultCount = historicalEnd - historicalStart;
-                results[i].historicalAppIds = new uint40[](historicalResultCount);
-                for (uint256 k = 0; k < historicalResultCount; k++) {
-                    results[i].historicalAppIds[k] = tempHistoricalAppIds[historicalStart + k];
-                }
+            if (end > totalCount) {
+                end = totalCount;
+            }
+            
+            // Determine how to split the paginated results
+            uint256 permittedStart = start < permittedCount ? start : permittedCount;
+            uint256 permittedEnd = end < permittedCount ? end : permittedCount;
+            uint256 historicalStart = start > permittedCount ? start - permittedCount : 0;
+            uint256 historicalEnd = end > permittedCount ? end - permittedCount : 0;
+            
+            // Copy permitted apps within pagination range
+            uint256 permittedResultCount = permittedEnd - permittedStart;
+            results[i].permittedApps = new PermittedApp[](permittedResultCount);
+            for (uint256 k = 0; k < permittedResultCount; k++) {
+                results[i].permittedApps[k] = tempPermittedApps[permittedStart + k];
+            }
+            
+            // Copy historical app IDs within pagination range
+            uint256 historicalResultCount = historicalEnd - historicalStart;
+            results[i].historicalAppIds = new uint40[](historicalResultCount);
+            for (uint256 k = 0; k < historicalResultCount; k++) {
+                results[i].historicalAppIds[k] = tempHistoricalAppIds[historicalStart + k];
             }
             
             results[i].pkpTokenId = pkpTokenId;
