@@ -159,17 +159,57 @@ contract VincentUserFacet is VincentBase {
             .delegatedAgentPkps
             .remove(pkpTokenId);
 
-        // Remove the App Version from the User's Permitted App Versions
-        us_.agentPkpTokenIdToAgentStorage[pkpTokenId].permittedAppVersion[appId] = 0;
-
         // Add the App ID to the User's historical permitted apps set
         // This ensures apps permitted before the allPermittedApps tracking was added are captured
         us_.agentPkpTokenIdToAgentStorage[pkpTokenId].allPermittedApps.add(appId);
 
         // Remove the app from the User's permitted apps set
+        // NOTE: We keep the permittedAppVersion[appId] value to remember the last permitted version
         us_.agentPkpTokenIdToAgentStorage[pkpTokenId].permittedApps.remove(appId);
 
         emit LibVincentUserFacet.AppVersionUnPermitted(pkpTokenId, appId, appVersion);
+    }
+
+    /**
+     * @notice Re-permits the last permitted version of an app for a PKP
+     * @dev This function allows quick re-enabling of an app using the previously permitted version
+     * @param pkpTokenId The token ID of the PKP to re-permit the app for
+     * @param appId The ID of the app to re-permit
+     */
+    function rePermitApp(uint256 pkpTokenId, uint40 appId)
+        external
+        appNotDeleted(appId)
+        onlyPkpOwner(pkpTokenId)
+    {
+        VincentUserStorage.UserStorage storage us_ = VincentUserStorage.userStorage();
+        VincentUserStorage.AgentStorage storage agentStorage = us_.agentPkpTokenIdToAgentStorage[pkpTokenId];
+        
+        // Check if app is already permitted
+        if (agentStorage.permittedApps.contains(appId)) {
+            revert LibVincentUserFacet.AppVersionAlreadyPermitted(pkpTokenId, appId, agentStorage.permittedAppVersion[appId]);
+        }
+        
+        // Get the last permitted version
+        uint24 lastVersion = agentStorage.permittedAppVersion[appId];
+        if (lastVersion == 0) {
+            revert LibVincentUserFacet.AppNotPreviouslyPermitted(pkpTokenId, appId);
+        }
+        
+        // Verify the last version is enabled
+        VincentAppStorage.AppStorage storage as_ = VincentAppStorage.appStorage();
+        VincentAppStorage.AppVersion storage appVersion = as_.appIdToApp[appId].appVersions[getAppVersionIndex(lastVersion)];
+        
+        if (!appVersion.enabled) {
+            revert AppVersionNotEnabled(appId, lastVersion);
+        }
+        
+        // Add the PKP Token ID to the app version's delegated agent PKPs
+        appVersion.delegatedAgentPkps.add(pkpTokenId);
+        
+        // Add the app ID to the User's permitted apps set
+        agentStorage.permittedApps.add(appId);
+        
+        emit LibVincentUserFacet.AppVersionRePermitted(pkpTokenId, appId, lastVersion);
     }
 
     /**

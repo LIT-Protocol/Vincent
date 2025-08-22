@@ -658,7 +658,7 @@ contract VincentAppFacetTest is Test {
         pkpTokenIds[0] = PKP_TOKEN_ID_1; // This PKP has permitted apps
         pkpTokenIds[1] = PKP_TOKEN_ID_2; // This PKP has no permitted apps
         
-        VincentUserViewFacet.PkpPermittedApps[] memory permittedAppsResults = vincentUserViewFacet.getPermittedAppsForPkps(pkpTokenIds, 0);
+        VincentUserViewFacet.PkpPermittedApps[] memory permittedAppsResults = vincentUserViewFacet.getPermittedAppsForPkps(pkpTokenIds, 0, false);
         assertEq(permittedAppsResults.length, 2);
         
         // PKP_TOKEN_ID_1 should have 1 permitted app
@@ -721,7 +721,7 @@ contract VincentAppFacetTest is Test {
         uint256[] memory pkpTokenIds = new uint256[](1);
         pkpTokenIds[0] = PKP_TOKEN_ID_1;
         
-        VincentUserViewFacet.PkpPermittedApps[] memory permittedAppsResults = vincentUserViewFacet.getPermittedAppsForPkps(pkpTokenIds, 0);
+        VincentUserViewFacet.PkpPermittedApps[] memory permittedAppsResults = vincentUserViewFacet.getPermittedAppsForPkps(pkpTokenIds, 0, false);
         assertEq(permittedAppsResults.length, 1);
         assertEq(permittedAppsResults[0].pkpTokenId, PKP_TOKEN_ID_1);
         assertEq(permittedAppsResults[0].permittedApps.length, 1);

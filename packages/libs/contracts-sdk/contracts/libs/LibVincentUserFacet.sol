@@ -30,6 +30,14 @@ library LibVincentUserFacet {
     event AppVersionUnPermitted(uint256 indexed pkpTokenId, uint40 indexed appId, uint24 indexed appVersion);
 
     /**
+     * @notice Emitted when an app is re-permitted for a PKP using its last permitted version
+     * @param pkpTokenId The token ID of the PKP
+     * @param appId The ID of the app being re-permitted
+     * @param appVersion The version of the app being re-permitted
+     */
+    event AppVersionRePermitted(uint256 indexed pkpTokenId, uint40 indexed appId, uint24 indexed appVersion);
+
+    /**
      * @notice Emitted when an ability policy parameters are set
      * @param pkpTokenId The token ID of the PKP
      * @param appId The ID of the app
@@ -83,6 +91,13 @@ library LibVincentUserFacet {
      * @param appVersion The version of the app
      */
     error AppVersionNotPermitted(uint256 pkpTokenId, uint40 appId, uint24 appVersion);
+
+    /**
+     * @notice Error thrown when trying to re-permit an app that was never previously permitted
+     * @param pkpTokenId The token ID of the PKP
+     * @param appId The ID of the app that was never permitted
+     */
+    error AppNotPreviouslyPermitted(uint256 pkpTokenId, uint40 appId);
 
     /**
      * @notice Error thrown when an app version is not enabled

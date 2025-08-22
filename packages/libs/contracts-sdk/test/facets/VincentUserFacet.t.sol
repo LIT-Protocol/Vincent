@@ -190,21 +190,27 @@ contract VincentUserFacetTest is Test {
         assertEq(registeredAgentPkps[0], PKP_TOKEN_ID_2);
 
         // Check that Frank has permitted App 1 Version 1
-        uint24 permittedAppVersion = vincentUserViewFacet.getPermittedAppVersionForPkp(PKP_TOKEN_ID_1, newAppId_1);
+        (uint24 permittedAppVersion, bool isCurrentlyPermitted, bool versionEnabled) = vincentUserViewFacet.getPermittedAppVersionForPkp(PKP_TOKEN_ID_1, newAppId_1);
         assertEq(permittedAppVersion, newAppVersion_1);
+        assertTrue(isCurrentlyPermitted);
+        assertTrue(versionEnabled);
 
         // Check that Frank has permitted App 2 Version 1
-        permittedAppVersion = vincentUserViewFacet.getPermittedAppVersionForPkp(PKP_TOKEN_ID_1, newAppId_2);
+        (permittedAppVersion, isCurrentlyPermitted, versionEnabled) = vincentUserViewFacet.getPermittedAppVersionForPkp(PKP_TOKEN_ID_1, newAppId_2);
         assertEq(permittedAppVersion, newAppVersion_2);
+        assertTrue(isCurrentlyPermitted);
+        assertTrue(versionEnabled);
 
         // Check that George has permitted App 3 Version 1
-        permittedAppVersion = vincentUserViewFacet.getPermittedAppVersionForPkp(PKP_TOKEN_ID_2, newAppId_3);
+        (permittedAppVersion, isCurrentlyPermitted, versionEnabled) = vincentUserViewFacet.getPermittedAppVersionForPkp(PKP_TOKEN_ID_2, newAppId_3);
         assertEq(permittedAppVersion, newAppVersion_3);
+        assertTrue(isCurrentlyPermitted);
+        assertTrue(versionEnabled);
 
         // Check that Frank has permitted App IDs using the new function
         uint256[] memory pkpTokenIds = new uint256[](1);
         pkpTokenIds[0] = PKP_TOKEN_ID_1;
-        VincentUserViewFacet.PkpPermittedApps[] memory permittedAppsResults = vincentUserViewFacet.getPermittedAppsForPkps(pkpTokenIds, 0);
+        VincentUserViewFacet.PkpPermittedApps[] memory permittedAppsResults = vincentUserViewFacet.getPermittedAppsForPkps(pkpTokenIds, 0, false);
         assertEq(permittedAppsResults.length, 1);
         assertEq(permittedAppsResults[0].pkpTokenId, PKP_TOKEN_ID_1);
         assertEq(permittedAppsResults[0].permittedApps.length, 2);
@@ -213,13 +219,13 @@ contract VincentUserFacetTest is Test {
 
         // Check that George has permitted App IDs
         pkpTokenIds[0] = PKP_TOKEN_ID_2;
-        permittedAppsResults = vincentUserViewFacet.getPermittedAppsForPkps(pkpTokenIds, 0);
+        permittedAppsResults = vincentUserViewFacet.getPermittedAppsForPkps(pkpTokenIds, 0, false);
         assertEq(permittedAppsResults[0].permittedApps.length, 1);
         assertEq(permittedAppsResults[0].permittedApps[0].appId, newAppId_3);
 
-        // Test getAllAppsForPkps function - Frank should have 2 permitted apps, no historical apps yet
+        // Test getPermittedAppsForPkps function - Frank should have 2 permitted apps, no historical apps yet
         pkpTokenIds[0] = PKP_TOKEN_ID_1;
-        VincentUserViewFacet.PkpAllApps[] memory allAppsResults = vincentUserViewFacet.getAllAppsForPkps(pkpTokenIds, 0);
+        VincentUserViewFacet.PkpPermittedApps[] memory allAppsResults = vincentUserViewFacet.getPermittedAppsForPkps(pkpTokenIds, 0, true);
         assertEq(allAppsResults.length, 1);
         assertEq(allAppsResults[0].pkpTokenId, PKP_TOKEN_ID_1);
         assertEq(allAppsResults[0].permittedApps.length, 2);
@@ -229,14 +235,14 @@ contract VincentUserFacetTest is Test {
         assertEq(allAppsResults[0].permittedApps[1].appId, newAppId_2);
         assertEq(allAppsResults[0].permittedApps[1].version, newAppVersion_2);
         assertTrue(allAppsResults[0].permittedApps[1].versionEnabled);
-        assertEq(allAppsResults[0].historicalAppIds.length, 0); // No historical apps yet
+        assertEq(allAppsResults[0].historicalApps.length, 0); // No historical apps yet
 
         // Test George's apps
         pkpTokenIds[0] = PKP_TOKEN_ID_2;
-        allAppsResults = vincentUserViewFacet.getAllAppsForPkps(pkpTokenIds, 0);
+        allAppsResults = vincentUserViewFacet.getPermittedAppsForPkps(pkpTokenIds, 0, true);
         assertEq(allAppsResults[0].permittedApps.length, 1);
         assertEq(allAppsResults[0].permittedApps[0].appId, newAppId_3);
-        assertEq(allAppsResults[0].historicalAppIds.length, 0); // No historical apps yet
+        assertEq(allAppsResults[0].historicalApps.length, 0); // No historical apps yet
 
         // Check the Ability and Policies for App 1 Version 1 for PKP 1 (Frank)
         VincentUserViewFacet.AbilityWithPolicies[] memory abilitiesWithPolicies = vincentUserViewFacet.getAllAbilitiesAndPoliciesForApp(PKP_TOKEN_ID_1, newAppId_1);
@@ -375,7 +381,7 @@ contract VincentUserFacetTest is Test {
         // Verify initial state
         uint256[] memory pkpTokenIds = new uint256[](1);
         pkpTokenIds[0] = PKP_TOKEN_ID_1;
-        VincentUserViewFacet.PkpPermittedApps[] memory permittedAppsResults = vincentUserViewFacet.getPermittedAppsForPkps(pkpTokenIds, 0);
+        VincentUserViewFacet.PkpPermittedApps[] memory permittedAppsResults = vincentUserViewFacet.getPermittedAppsForPkps(pkpTokenIds, 0, false);
         assertEq(permittedAppsResults[0].permittedApps.length, 2);
         assertEq(permittedAppsResults[0].permittedApps[0].appId, newAppId_1);
         assertEq(permittedAppsResults[0].permittedApps[1].appId, newAppId_2);
@@ -389,21 +395,23 @@ contract VincentUserFacetTest is Test {
         vincentUserFacet.unPermitAppVersion(PKP_TOKEN_ID_1, newAppId_1, newAppVersion_1);
         vm.stopPrank();
 
-        // Verify App 1 is no longer permitted
-        uint24 permittedAppVersion = vincentUserViewFacet.getPermittedAppVersionForPkp(PKP_TOKEN_ID_1, newAppId_1);
-        assertEq(permittedAppVersion, 0);
+        // Verify App 1 is no longer permitted but version is preserved
+        (uint24 permittedAppVersion, bool isCurrentlyPermitted, bool versionEnabled) = vincentUserViewFacet.getPermittedAppVersionForPkp(PKP_TOKEN_ID_1, newAppId_1);
+        assertEq(permittedAppVersion, newAppVersion_1); // Version is preserved for re-permit functionality
+        assertFalse(isCurrentlyPermitted); // Should not be currently permitted
 
         // Verify App 2 is still permitted
-        permittedAppVersion = vincentUserViewFacet.getPermittedAppVersionForPkp(PKP_TOKEN_ID_1, newAppId_2);
+        (permittedAppVersion, isCurrentlyPermitted, versionEnabled) = vincentUserViewFacet.getPermittedAppVersionForPkp(PKP_TOKEN_ID_1, newAppId_2);
         assertEq(permittedAppVersion, newAppVersion_2);
+        assertTrue(isCurrentlyPermitted); // Should still be permitted
 
         // Verify permitted apps list is updated
-        permittedAppsResults = vincentUserViewFacet.getPermittedAppsForPkps(pkpTokenIds, 0);
+        permittedAppsResults = vincentUserViewFacet.getPermittedAppsForPkps(pkpTokenIds, 0, false);
         assertEq(permittedAppsResults[0].permittedApps.length, 1);
         assertEq(permittedAppsResults[0].permittedApps[0].appId, newAppId_2);
 
-        // Test getAllAppsForPkps function after unpermitting - should show App 2 as permitted and App 1 as historical
-        VincentUserViewFacet.PkpAllApps[] memory allAppsResults = vincentUserViewFacet.getAllAppsForPkps(pkpTokenIds, 0);
+        // Test getPermittedAppsForPkps function after unpermitting - should show App 2 as permitted and App 1 as historical
+        VincentUserViewFacet.PkpPermittedApps[] memory allAppsResults = vincentUserViewFacet.getPermittedAppsForPkps(pkpTokenIds, 0, true);
         assertEq(allAppsResults[0].pkpTokenId, PKP_TOKEN_ID_1);
         
         // Should have 1 permitted app (App 2)
@@ -413,8 +421,16 @@ contract VincentUserFacetTest is Test {
         assertTrue(allAppsResults[0].permittedApps[0].versionEnabled);
         
         // Should have 1 historical app (App 1 that was unpermitted)
-        assertEq(allAppsResults[0].historicalAppIds.length, 1);
-        assertEq(allAppsResults[0].historicalAppIds[0], newAppId_1);
+        assertEq(allAppsResults[0].historicalApps.length, 1);
+        assertEq(allAppsResults[0].historicalApps[0].appId, newAppId_1);
+        assertEq(allAppsResults[0].historicalApps[0].version, newAppVersion_1);
+        assertTrue(allAppsResults[0].historicalApps[0].versionEnabled);
+
+        // Test getPermittedAppsForPkps with includeHistorical=false - should only return permitted apps
+        allAppsResults = vincentUserViewFacet.getPermittedAppsForPkps(pkpTokenIds, 0, false);
+        assertEq(allAppsResults[0].permittedApps.length, 1); // Only App 2 permitted
+        assertEq(allAppsResults[0].permittedApps[0].appId, newAppId_2);
+        assertEq(allAppsResults[0].historicalApps.length, 0); // No historical apps when not requested
 
         // Verify ability execution validation for App 1 is no longer permitted
         VincentUserViewFacet.AbilityExecutionValidation memory abilityExecutionValidation = vincentUserViewFacet.validateAbilityExecutionAndGetPolicies(
@@ -433,6 +449,50 @@ contract VincentUserFacetTest is Test {
         assertTrue(abilityExecutionValidation.isPermitted);
         assertEq(abilityExecutionValidation.appId, newAppId_2);
         assertEq(abilityExecutionValidation.appVersion, newAppVersion_2);
+
+        // Test rePermitApp function - re-enable App 1 using the preserved version
+        vm.startPrank(APP_USER_FRANK);
+        vm.expectEmit(true, true, true, true);
+        emit LibVincentUserFacet.AppVersionRePermitted(PKP_TOKEN_ID_1, newAppId_1, newAppVersion_1);
+        
+        vincentUserFacet.rePermitApp(PKP_TOKEN_ID_1, newAppId_1);
+        vm.stopPrank();
+
+        // Verify App 1 is now permitted again with the same version
+        (permittedAppVersion, isCurrentlyPermitted, versionEnabled) = vincentUserViewFacet.getPermittedAppVersionForPkp(PKP_TOKEN_ID_1, newAppId_1);
+        assertEq(permittedAppVersion, newAppVersion_1);
+        assertTrue(isCurrentlyPermitted); // Should be permitted again
+
+        // Verify App 1 appears in permitted apps list again
+        permittedAppsResults = vincentUserViewFacet.getPermittedAppsForPkps(pkpTokenIds, 0, false);
+        assertEq(permittedAppsResults[0].permittedApps.length, 2); // Both apps permitted again
+        
+        // Find App 1 in the results (order might vary)
+        bool foundApp1 = false;
+        for (uint256 i = 0; i < permittedAppsResults[0].permittedApps.length; i++) {
+            if (permittedAppsResults[0].permittedApps[i].appId == newAppId_1) {
+                assertEq(permittedAppsResults[0].permittedApps[i].version, newAppVersion_1);
+                assertTrue(permittedAppsResults[0].permittedApps[i].versionEnabled);
+                foundApp1 = true;
+                break;
+            }
+        }
+        assertTrue(foundApp1, "App 1 should be found in permitted apps after re-permit");
+
+        // Verify getPermittedAppsForPkps shows App 1 is no longer in historical (moved back to permitted)
+        allAppsResults = vincentUserViewFacet.getPermittedAppsForPkps(pkpTokenIds, 0, true);
+        assertEq(allAppsResults[0].permittedApps.length, 2); // Both apps permitted
+        assertEq(allAppsResults[0].historicalApps.length, 0); // No historical apps
+
+        // Verify ability execution validation for App 1 works again
+        abilityExecutionValidation = vincentUserViewFacet.validateAbilityExecutionAndGetPolicies(
+            APP_DELEGATEE_CHARLIE,
+            PKP_TOKEN_ID_1,
+            ABILITY_IPFS_CID_1
+        );
+        assertTrue(abilityExecutionValidation.isPermitted);
+        assertEq(abilityExecutionValidation.appId, newAppId_1);
+        assertEq(abilityExecutionValidation.appVersion, newAppVersion_1);
     }
 
     function testSetAbilityPolicyParameters_AbilityPolicyNotRegisteredForAppVersion() public {
