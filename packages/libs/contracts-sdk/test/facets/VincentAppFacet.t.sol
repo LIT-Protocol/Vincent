@@ -32,6 +32,8 @@ contract VincentAppFacetTest is Test {
     bytes constant POLICY_PARAMETER_VALUES_2 = abi.encode(2);
     bytes constant POLICY_PARAMETER_VALUES_3 = abi.encode(3);
 
+    uint256 constant DEPLOYER_PRIVATE_KEY = 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80;
+
     address APP_MANAGER_ALICE = makeAddr("Alice");
     address APP_MANAGER_BOB = makeAddr("Bob");
 
@@ -49,8 +51,7 @@ contract VincentAppFacetTest is Test {
     VincentUserViewFacet public vincentUserViewFacet;
 
     function setUp() public {
-        uint256 deployerPrivateKey = 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80;
-        vm.setEnv("VINCENT_DEPLOYER_PRIVATE_KEY", vm.toString(deployerPrivateKey));
+        vm.setEnv("VINCENT_DEPLOYER_PRIVATE_KEY", vm.toString(DEPLOYER_PRIVATE_KEY));
 
         DeployVincentDiamond deployScript = new DeployVincentDiamond();
         MockPKPNftFacet mockPkpNft = new MockPKPNftFacet();
@@ -390,6 +391,43 @@ contract VincentAppFacetTest is Test {
         
         assertEq(appVersion.version, newAppVersion);
         assertTrue(appVersion.enabled);
+    }
+
+    function testOwnerUpdateManager() public {
+        uint40 newAppId = 1;
+        _registerBasicApp(newAppId);
+
+        vm.startPrank(vm.addr(DEPLOYER_PRIVATE_KEY));
+
+        VincentAppViewFacet.App memory app = vincentAppViewFacet.getAppById(newAppId);
+        assertEq(app.manager, APP_MANAGER_ALICE);
+
+        vm.expectEmit(true, true, true, true);
+        emit LibVincentAppFacet.ManagerUpdatedForAllApps(APP_MANAGER_ALICE, APP_MANAGER_BOB, 1);
+        vincentAppFacet.ownerUpdateManagerForAllApps(APP_MANAGER_ALICE, APP_MANAGER_BOB);
+
+        app = vincentAppViewFacet.getAppById(newAppId);
+        assertEq(app.manager, APP_MANAGER_BOB);
+
+        // Doesn't change the manager for apps if they don't have any
+        vincentAppFacet.ownerUpdateManagerForAllApps(APP_MANAGER_ALICE, APP_MANAGER_BOB);
+        vm.stopPrank();
+
+        vm.expectRevert(abi.encodeWithSelector(VincentAppViewFacet.NoAppsFoundForManager.selector, APP_MANAGER_ALICE));
+        vincentAppViewFacet.getAppsByManager(APP_MANAGER_ALICE, 0);
+    }
+
+    /**
+     * ######################### ownerUpdateManagerForAllApps ERROR CASES #########################
+     */
+    function testOwnerUpdateManager_NotOwner() public {
+        uint40 newAppId = 1;
+        _registerBasicApp(newAppId);
+
+        vm.startPrank(APP_MANAGER_ALICE);
+        vm.expectRevert("LibDiamond: Must be contract owner");
+        vincentAppFacet.ownerUpdateManagerForAllApps(APP_MANAGER_ALICE, APP_MANAGER_BOB);
+        vm.stopPrank();
     }
 
     /**
