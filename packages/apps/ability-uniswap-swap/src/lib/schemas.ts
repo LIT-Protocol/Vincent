@@ -42,6 +42,26 @@ export const abilityParamsSchema = z.object({
   tokenOutDecimals: z
     .number()
     .describe('ERC20 Token to buy decimals. For example 18 for WETH on Base.'),
+
+  route: z
+    .object({
+      to: z.string().describe('The router contract address'),
+      calldata: z.string().describe('The encoded transaction data'),
+      estimatedGasUsed: z.string().describe('The estimated gas usage for the swap'),
+    })
+    .describe('Pre-computed Uniswap route data from precheck')
+    .nullable(),
+});
+
+export const precheckSuccessSchema = z.object({
+  route: z
+    .object({
+      to: z.string().describe('The router contract address'),
+      calldata: z.string().describe('The encoded transaction data'),
+      estimatedGasUsed: z.string().describe('The estimated gas usage for the swap'),
+    })
+    .describe('The pre-computed Uniswap route data')
+    .nullable(),
 });
 
 export const precheckFailSchema = z.object({
@@ -49,6 +69,10 @@ export const precheckFailSchema = z.object({
     .string()
     .optional()
     .describe('The reason for failing the execution in cases where we identified the reason.'),
+  erc20SpenderAddress: z
+    .string()
+    .optional()
+    .describe('The Uniswap router address that will be used to spend the ERC20 token'),
 });
 
 const spendingLimitCommitFailSchema = spendingLimitBundledPolicy.vincentPolicy

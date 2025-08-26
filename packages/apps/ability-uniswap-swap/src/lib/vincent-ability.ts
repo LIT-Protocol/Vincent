@@ -5,16 +5,17 @@ import {
 } from '@lit-protocol/vincent-ability-sdk';
 import { bundledVincentPolicy } from '@lit-protocol/vincent-policy-spending-limit';
 
-import { getTokenAmountInUsd, sendUniswapTx, getUniswapQuote } from './ability-helpers';
+import { getTokenAmountInUsd, sendUniswapTxWithRoute, getUniswapQuote } from './ability-helpers';
 import {
   checkNativeTokenBalance,
   checkTokenInBalance,
-  checkUniswapPoolExists,
+  validateUniswapRoute,
 } from './ability-checks';
 import {
   executeFailSchema,
   executeSuccessSchema,
   precheckFailSchema,
+  precheckSuccessSchema,
   abilityParamsSchema,
 } from './schemas';
 import { ethers } from 'ethers';
@@ -47,6 +48,7 @@ export const vincentAbility = createVincentAbility({
   executeSuccessSchema,
   executeFailSchema,
 
+  precheckSuccessSchema,
   precheckFailSchema,
 
   precheck: async ({ abilityParams }, { succeed, fail, delegation: { delegatorPkpInfo } }) => {
@@ -77,50 +79,9 @@ export const vincentAbility = createVincentAbility({
       });
     }
 
-    // Get the actual router address that AlphaRouter will use by getting a quote
-    let uniswapRouterAddress: string;
-    try {
-      const quoteResponse = await getUniswapQuote({
-        rpcUrl: rpcUrlForUniswap,
-        chainId: chainIdForUniswap,
-        tokenInAddress,
-        tokenInDecimals,
-        tokenInAmount,
-        tokenOutAddress,
-        tokenOutDecimals,
-        recipient: delegatorPkpAddress,
-      });
-
-      if (!quoteResponse || !quoteResponse.methodParameters) {
-        return fail({
-          reason: `Failed to get router address from Uniswap quote (UniswapSwapAbilityPrecheck)`,
-        });
-      }
-
-      uniswapRouterAddress = quoteResponse.methodParameters.to;
-    } catch (err) {
-      return fail({
-        reason: `Error getting router address from Uniswap: ${err instanceof Error ? err.message : String(err)}`,
-      });
-    }
-
     const requiredAmount = ethers.utils
       .parseUnits(tokenInAmount.toString(), tokenInDecimals)
       .toBigInt();
-
-    try {
-      await checkErc20Allowance({
-        provider,
-        tokenAddress: tokenInAddress as `0x${string}`,
-        owner: delegatorPkpAddress as `0x${string}`,
-        spender: uniswapRouterAddress,
-        tokenAmount: requiredAmount,
-      });
-    } catch (err) {
-      return fail({
-        reason: `ERC20 allowance check error: ${err instanceof Error ? err.message : String(err)}`,
-      });
-    }
 
     try {
       await checkTokenInBalance({
@@ -135,24 +96,56 @@ export const vincentAbility = createVincentAbility({
       });
     }
 
+    // Get the full Uniswap route that will be used for the swap
+    let quoteResponse: Awaited<ReturnType<typeof getUniswapQuote>>;
+    let uniswapRouterAddress: string;
     try {
-      await checkUniswapPoolExists({
+      quoteResponse = await getUniswapQuote({
         rpcUrl: rpcUrlForUniswap,
         chainId: chainIdForUniswap,
-        tokenInAddress: tokenInAddress as `0x${string}`,
+        tokenInAddress,
         tokenInDecimals,
         tokenInAmount,
-        tokenOutAddress: tokenOutAddress as `0x${string}`,
+        tokenOutAddress,
         tokenOutDecimals,
-        pkpEthAddress: delegatorPkpAddress,
+        recipient: delegatorPkpAddress,
       });
+
+      if (!quoteResponse || !quoteResponse.methodParameters) {
+        return fail({
+          reason: `Failed to get route from Uniswap quote (UniswapSwapAbilityPrecheck)`,
+        });
+      }
+
+      uniswapRouterAddress = quoteResponse.methodParameters.to;
     } catch (err) {
       return fail({
-        reason: `Check uniswap pool exists error: ${err instanceof Error ? err.message : String(err)}`,
+        reason: `Error getting route from Uniswap: ${err instanceof Error ? err.message : String(err)}`,
       });
     }
 
-    return succeed();
+    try {
+      await checkErc20Allowance({
+        provider,
+        tokenAddress: tokenInAddress as `0x${string}`,
+        owner: delegatorPkpAddress as `0x${string}`,
+        spender: uniswapRouterAddress,
+        tokenAmount: requiredAmount,
+      });
+    } catch (err) {
+      return fail({
+        reason: `ERC20 allowance check error: ${err instanceof Error ? err.message : String(err)}`,
+        erc20SpenderAddress: uniswapRouterAddress,
+      });
+    }
+
+    return succeed({
+      route: {
+        to: uniswapRouterAddress,
+        calldata: quoteResponse.methodParameters.calldata,
+        estimatedGasUsed: quoteResponse.estimatedGasUsed.toString(),
+      },
+    });
   },
   execute: async (
     { abilityParams },
@@ -168,9 +161,26 @@ export const vincentAbility = createVincentAbility({
       tokenInAddress,
       tokenInDecimals,
       tokenInAmount,
-      tokenOutAddress,
-      tokenOutDecimals,
+      route,
     } = abilityParams;
+
+    if (route === null) {
+      return fail({
+        reason: 'No Uniswap route provided, execute precheck to obtain a route.',
+      });
+    }
+
+    // Validate the route to ensure it's calling a legitimate Uniswap router
+    const routeValidation = validateUniswapRoute({
+      route,
+      chainId: chainIdForUniswap,
+    });
+
+    if (!routeValidation.valid) {
+      return fail({
+        reason: `Route validation failed: ${routeValidation.reason}`,
+      });
+    }
 
     // Commit spending limit before we submit the TX. We'd rather the tx fail and we count the spend erroneously
     // than to have the commit fail but the tx succeed, and we erroneously don't track the spend!
@@ -251,16 +261,12 @@ export const vincentAbility = createVincentAbility({
       }
     }
 
-    const swapTxHash = await sendUniswapTx({
+    const swapTxHash = await sendUniswapTxWithRoute({
       rpcUrl: rpcUrlForUniswap,
       chainId: chainIdForUniswap,
       pkpEthAddress: delegatorPkpAddress as `0x${string}`,
       pkpPublicKey: delegatorPublicKey,
-      tokenInAddress: tokenInAddress as `0x${string}`,
-      tokenOutAddress: tokenOutAddress as `0x${string}`,
-      tokenInDecimals,
-      tokenOutDecimals,
-      tokenInAmount,
+      route,
     });
 
     return succeed({
