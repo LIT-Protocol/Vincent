@@ -39,6 +39,24 @@
   },
   {
     "type": "function",
+    "name": "rePermitApp",
+    "inputs": [
+      {
+        "name": "pkpTokenId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "appId",
+        "type": "uint40",
+        "internalType": "uint40"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
     "name": "setAbilityPolicyParameters",
     "inputs": [
       {
@@ -144,6 +162,31 @@
   {
     "type": "event",
     "name": "AppVersionPermitted",
+    "inputs": [
+      {
+        "name": "pkpTokenId",
+        "type": "uint256",
+        "indexed": true,
+        "internalType": "uint256"
+      },
+      {
+        "name": "appId",
+        "type": "uint40",
+        "indexed": true,
+        "internalType": "uint40"
+      },
+      {
+        "name": "appVersion",
+        "type": "uint24",
+        "indexed": true,
+        "internalType": "uint24"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "AppVersionRePermitted",
     "inputs": [
       {
         "name": "pkpTokenId",
@@ -275,6 +318,27 @@
   },
   {
     "type": "error",
+    "name": "AppNeverPermitted",
+    "inputs": [
+      {
+        "name": "pkpTokenId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "appId",
+        "type": "uint40",
+        "internalType": "uint40"
+      },
+      {
+        "name": "appVersion",
+        "type": "uint24",
+        "internalType": "uint24"
+      }
+    ]
+  },
+  {
+    "type": "error",
     "name": "AppNotRegistered",
     "inputs": [
       {
@@ -293,6 +357,22 @@
         "type": "uint256",
         "internalType": "uint256"
       },
+      {
+        "name": "appId",
+        "type": "uint40",
+        "internalType": "uint40"
+      },
+      {
+        "name": "appVersion",
+        "type": "uint24",
+        "internalType": "uint24"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "AppVersionNotEnabled",
+    "inputs": [
       {
         "name": "appId",
         "type": "uint40",

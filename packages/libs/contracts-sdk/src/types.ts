@@ -20,6 +20,7 @@ import type {
 } from './internal/app/AppView';
 import type {
   permitApp as _permitApp,
+  rePermitApp as _rePermitApp,
   setAbilityPolicyParameters as _setAbilityPolicyParameters,
   unPermitApp as _unPermitApp,
 } from './internal/user/User';
@@ -27,8 +28,10 @@ import type {
   getAllPermittedAppIdsForPkp as _getAllPermittedAppIdsForPkp,
   getAllRegisteredAgentPkpEthAddresses as _getAllRegisteredAgentPkpEthAddresses,
   getAllAbilitiesAndPoliciesForApp as _getAllAbilitiesAndPoliciesForApp,
+  getLastPermittedAppVersionForPkp as _getLastPermittedAppVersionForPkp,
   getPermittedAppVersionForPkp as _getPermittedAppVersionForPkp,
   getPermittedAppsForPkps as _getPermittedAppsForPkps,
+  getUnpermittedAppsForPkps as _getUnpermittedAppsForPkps,
   validateAbilityExecutionAndGetPolicies as _validateAbilityExecutionAndGetPolicies,
 } from './internal/user/UserView';
 
@@ -233,6 +236,14 @@ export interface UnPermitAppParams {
 /**
  * @category Interfaces
  * */
+export interface RePermitAppParams {
+  pkpEthAddress: string;
+  appId: number;
+}
+
+/**
+ * @category Interfaces
+ * */
 export interface SetAbilityPolicyParametersParams {
   pkpEthAddress: string;
   appId: number;
@@ -305,6 +316,39 @@ export interface ValidateAbilityExecutionAndGetPoliciesParams {
   delegateeAddress: string;
   pkpEthAddress: string;
   abilityIpfsCid: string;
+}
+
+/**
+ * @category Interfaces
+ * */
+export interface GetLastPermittedAppVersionParams {
+  pkpEthAddress: string;
+  appId: number;
+}
+
+/**
+ * @category Interfaces
+ * */
+export interface UnpermittedApp {
+  appId: number;
+  previousPermittedVersion: number;
+  versionEnabled: boolean;
+}
+
+/**
+ * @category Interfaces
+ * */
+export interface PkpUnpermittedApps {
+  pkpTokenId: string;
+  unpermittedApps: UnpermittedApp[];
+}
+
+/**
+ * @category Interfaces
+ * */
+export interface GetUnpermittedAppsForPkpsParams {
+  pkpEthAddresses: string[];
+  offset: string;
 }
 /** @category API */
 export interface ContractClient {
@@ -480,4 +524,24 @@ export interface ContractClient {
   validateAbilityExecutionAndGetPolicies(
     params: ValidateAbilityExecutionAndGetPoliciesParams,
   ): ReturnType<typeof _validateAbilityExecutionAndGetPolicies>;
+
+  /** Re-permits an app using the last permitted version for a PKP
+   *
+   * @returns { txHash } The transaction hash that re-permitted the app
+   */
+  rePermitApp(params: RePermitAppParams, overrides?: Overrides): ReturnType<typeof _rePermitApp>;
+
+  /** Get the last permitted version for a specific app and PKP
+   *
+   * @returns The last permitted app version, or null if never permitted
+   */
+  getLastPermittedAppVersionForPkp(
+    params: GetLastPermittedAppVersionParams,
+  ): ReturnType<typeof _getLastPermittedAppVersionForPkp>;
+
+  /** Get unpermitted apps for multiple PKPs with their last permitted versions
+   *
+   * @returns Array of PkpUnpermittedApps containing unpermitted app details for each PKP
+   */
+  getUnpermittedAppsForPkps(params: GetUnpermittedAppsForPkpsParams): Promise<PkpUnpermittedApps[]>;
 }

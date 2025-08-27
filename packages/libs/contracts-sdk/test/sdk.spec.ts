@@ -201,10 +201,13 @@ describe('Vincent Contracts SDK E2E', () => {
       expect(result[0].pkpTokenId).toBe(TEST_CONFIG.userPkp!.tokenId);
 
       expect(result[0]).toHaveProperty('permittedApps');
-      expect(result[0].permittedApps).toHaveLength(1);
-      expect(result[0].permittedApps[0].appId).toBe(TEST_CONFIG.appId);
-      expect(result[0].permittedApps[0].version).toBe(TEST_CONFIG.appVersion);
-      expect(result[0].permittedApps[0].versionEnabled).toBe(true);
+      expect(result[0].permittedApps.length).toBeGreaterThan(0);
+
+      // Find our test app in the permitted apps
+      const testApp = result[0].permittedApps.find((app) => app.appId === TEST_CONFIG.appId);
+      expect(testApp).toBeDefined();
+      expect(testApp!.version).toBe(TEST_CONFIG.appVersion);
+      expect(testApp!.versionEnabled).toBe(true);
     });
 
     it('should get all registered agent PKPs', async () => {
@@ -282,6 +285,47 @@ describe('Vincent Contracts SDK E2E', () => {
       // Should not find our test app in the results
       const testApp = result[0].permittedApps.find((app) => app.appId === TEST_CONFIG.appId);
       expect(testApp).toBeUndefined();
+    });
+
+    it('should get unpermitted apps for PKPs', async () => {
+      const result = await USER_CLIENT.getUnpermittedAppsForPkps({
+        pkpEthAddresses: [TEST_CONFIG.userPkp!.ethAddress!],
+        offset: '0',
+      });
+      expect(result).toHaveLength(1);
+      expect(result[0].pkpTokenId).toBe(TEST_CONFIG.userPkp!.tokenId);
+      expect(result[0]).toHaveProperty('unpermittedApps');
+      expect(result[0].unpermittedApps.length).toBeGreaterThan(0);
+
+      // Find our test app in the unpermitted apps
+      const testApp = result[0].unpermittedApps.find((app) => app.appId === TEST_CONFIG.appId);
+      expect(testApp).toBeDefined();
+      expect(testApp!.previousPermittedVersion).toBe(TEST_CONFIG.appVersion);
+      expect(testApp!.versionEnabled).toBe(true);
+    });
+
+    it('should get last permitted app version', async () => {
+      const lastPermittedVersion = await USER_CLIENT.getLastPermittedAppVersionForPkp({
+        pkpEthAddress: TEST_CONFIG.userPkp!.ethAddress!,
+        appId: TEST_CONFIG.appId!,
+      });
+      expect(lastPermittedVersion).toBe(TEST_CONFIG.appVersion);
+    });
+
+    it('should re-permit app using last permitted version', async () => {
+      // Re-permit using the new function
+      const rePermitResult = await USER_CLIENT.rePermitApp({
+        pkpEthAddress: TEST_CONFIG.userPkp!.ethAddress!,
+        appId: TEST_CONFIG.appId!,
+      });
+      expect(rePermitResult).toHaveProperty('txHash');
+
+      // Verify app is permitted again
+      const permittedVersion = await USER_CLIENT.getPermittedAppVersionForPkp({
+        pkpEthAddress: TEST_CONFIG.userPkp!.ethAddress!,
+        appId: TEST_CONFIG.appId!,
+      });
+      expect(permittedVersion).toBe(TEST_CONFIG.appVersion);
     });
   });
 

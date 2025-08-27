@@ -113,8 +113,15 @@ contract VincentUserFacet is VincentBase {
         // .add will not add the app ID again if it is already registered
         agentStorage.permittedApps.add(appId);
 
+        // Add the app ID to the User's historical permitted apps set (never removed)
+        // .add will not add the app ID again if it is already registered
+        agentStorage.allPermittedApps.add(appId);
+
         // Set the new permitted app version
         agentStorage.permittedAppVersion[appId] = appVersion;
+        
+        // Store this version as the last permitted version for potential re-permitting
+        agentStorage.lastPermittedVersion[appId] = appVersion;
 
         // Add pkpTokenId to the User's registered agent PKPs
         // .add will not add the PKP Token ID again if it is already registered
@@ -155,13 +162,71 @@ contract VincentUserFacet is VincentBase {
             .delegatedAgentPkps
             .remove(pkpTokenId);
 
+        // Store the version as last permitted before removing (for potential re-permitting)
+        // This handles existing permitted Apps before the lastPermittedVersion tracking was added
+        us_.agentPkpTokenIdToAgentStorage[pkpTokenId].lastPermittedVersion[appId] = appVersion;
+
         // Remove the App Version from the User's Permitted App Versions
         us_.agentPkpTokenIdToAgentStorage[pkpTokenId].permittedAppVersion[appId] = 0;
 
         // Remove the app from the User's permitted apps set
         us_.agentPkpTokenIdToAgentStorage[pkpTokenId].permittedApps.remove(appId);
 
+        // Add the App ID to the User's historical permitted apps set
+        // This ensures apps permitted before the allPermittedApps tracking was added are captured
+        us_.agentPkpTokenIdToAgentStorage[pkpTokenId].allPermittedApps.add(appId);
+
         emit LibVincentUserFacet.AppVersionUnPermitted(pkpTokenId, appId, appVersion);
+    }
+
+    /**
+     * @notice Re-permits a previously unpermitted app with its last permitted version
+     * @dev This function allows a PKP owner to quickly re-authorize an app that was previously unpermitted,
+     *      using the last version that was permitted. The app must have been previously permitted
+     *      (exists in allPermittedApps) and the last permitted version must still be enabled.
+     *
+     * @param pkpTokenId The token ID of the PKP to re-permit the app for
+     * @param appId The ID of the app to re-permit
+     */
+    function rePermitApp(uint256 pkpTokenId, uint40 appId)
+        external
+        appNotDeleted(appId)
+        onlyPkpOwner(pkpTokenId)
+    {
+        VincentUserStorage.UserStorage storage us_ = VincentUserStorage.userStorage();
+        VincentUserStorage.AgentStorage storage agentStorage = us_.agentPkpTokenIdToAgentStorage[pkpTokenId];
+        
+        // Check if app is currently permitted
+        if (agentStorage.permittedApps.contains(appId)) {
+            revert LibVincentUserFacet.AppVersionAlreadyPermitted(pkpTokenId, appId, agentStorage.permittedAppVersion[appId]);
+        }
+        
+        // Check if app was ever permitted (exists in allPermittedApps)
+        if (!agentStorage.allPermittedApps.contains(appId)) {
+            revert LibVincentUserFacet.AppNeverPermitted(pkpTokenId, appId, 0);
+        }
+        
+        // Get the last permitted version
+        // Note: lastPermittedVersion should never be 0 here because:
+        // - If app is currently permitted, we already reverted above
+        // - If app was unpermitted, unPermitAppVersion sets lastPermittedVersion
+        uint24 lastPermittedVersion = agentStorage.lastPermittedVersion[appId];
+        
+        // Check if the last permitted version is still enabled
+        VincentAppStorage.AppStorage storage as_ = VincentAppStorage.appStorage();
+        VincentAppStorage.AppVersion storage appVersion =
+            as_.appIdToApp[appId].appVersions[getAppVersionIndex(lastPermittedVersion)];
+            
+        if (!appVersion.enabled) {
+            revert LibVincentUserFacet.AppVersionNotEnabled(appId, lastPermittedVersion);
+        }
+        
+        // Re-permit the app with the last permitted version
+        appVersion.delegatedAgentPkps.add(pkpTokenId);
+        agentStorage.permittedApps.add(appId);
+        agentStorage.permittedAppVersion[appId] = lastPermittedVersion;
+        
+        emit LibVincentUserFacet.AppVersionRePermitted(pkpTokenId, appId, lastPermittedVersion);
     }
 
     /**

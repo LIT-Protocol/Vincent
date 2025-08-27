@@ -206,22 +206,25 @@ contract VincentDiamond {
     }
 
     function getVincentUserFacetSelectors() internal pure returns (bytes4[] memory) {
-        bytes4[] memory selectors = new bytes4[](3);
+        bytes4[] memory selectors = new bytes4[](4);
         selectors[0] = VincentUserFacet.permitAppVersion.selector;
         selectors[1] = VincentUserFacet.unPermitAppVersion.selector;
         selectors[2] = VincentUserFacet.setAbilityPolicyParameters.selector;
+        selectors[3] = VincentUserFacet.rePermitApp.selector;
         return selectors;
     }
 
     function getVincentUserViewFacetSelectors() internal pure returns (bytes4[] memory) {
-        bytes4[] memory selectors = new bytes4[](7);
+        bytes4[] memory selectors = new bytes4[](9);
         selectors[0] = VincentUserViewFacet.getAllRegisteredAgentPkps.selector;
         selectors[1] = VincentUserViewFacet.getPermittedAppVersionForPkp.selector;
         selectors[2] = VincentUserViewFacet.getAllPermittedAppIdsForPkp.selector;
         selectors[3] = VincentUserViewFacet.validateAbilityExecutionAndGetPolicies.selector;
         selectors[4] = VincentUserViewFacet.getAllAbilitiesAndPoliciesForApp.selector;
         selectors[5] = VincentUserViewFacet.getPermittedAppsForPkps.selector;
-        selectors[6] = bytes4(keccak256("AGENT_PAGE_SIZE()"));
+        selectors[6] = VincentUserViewFacet.getLastPermittedAppVersionForPkp.selector;
+        selectors[7] = VincentUserViewFacet.getUnpermittedAppsForPkps.selector;
+        selectors[8] = bytes4(keccak256("AGENT_PAGE_SIZE()"));
         return selectors;
     }
 

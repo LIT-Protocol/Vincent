@@ -4,6 +4,7 @@ import type {
   PermissionData,
   ValidateAbilityExecutionAndGetPoliciesResult,
   PkpPermittedApps,
+  PkpUnpermittedApps,
 } from '../../types';
 import type { AbilityWithPolicies, AbilityExecutionValidation } from '../types/chain';
 import type {
@@ -13,7 +14,10 @@ import type {
   GetAllAbilitiesAndPoliciesForAppOptions,
   GetPermittedAppsForPkpsOptions,
   ValidateAbilityExecutionAndGetPoliciesOptions,
+  GetLastPermittedAppVersionOptions,
+  GetUnpermittedAppsForPkpsOptions,
   ContractPkpPermittedApps,
+  ContractPkpUnpermittedApps,
 } from './types.ts';
 
 import { decodeContractError } from '../../utils';
@@ -184,5 +188,67 @@ export async function validateAbilityExecutionAndGetPolicies(
   } catch (error: unknown) {
     const decodedError = decodeContractError(error, contract);
     throw new Error(`Failed to Validate Ability Execution And Get Policies: ${decodedError}`);
+  }
+}
+
+export async function getLastPermittedAppVersionForPkp(
+  params: GetLastPermittedAppVersionOptions,
+): Promise<number | null> {
+  const {
+    contract,
+    args: { pkpEthAddress, appId },
+  } = params;
+
+  try {
+    const pkpTokenId = await getPkpTokenId({ pkpEthAddress, signer: contract.signer });
+
+    const lastPermittedVersion: number = await contract.getLastPermittedAppVersionForPkp(
+      pkpTokenId,
+      appId,
+    );
+
+    if (!lastPermittedVersion) return null;
+
+    return lastPermittedVersion;
+  } catch (error: unknown) {
+    const decodedError = decodeContractError(error, contract);
+    throw new Error(`Failed to Get Last Permitted App Version: ${decodedError}`);
+  }
+}
+
+export async function getUnpermittedAppsForPkps(
+  params: GetUnpermittedAppsForPkpsOptions,
+): Promise<PkpUnpermittedApps[]> {
+  const {
+    contract,
+    args: { pkpEthAddresses, offset },
+  } = params;
+
+  try {
+    // Convert PKP ETH addresses to token IDs
+    const pkpTokenIds: BigNumber[] = [];
+    for (const pkpEthAddress of pkpEthAddresses) {
+      const pkpTokenId = await getPkpTokenId({ pkpEthAddress, signer: contract.signer });
+      pkpTokenIds.push(pkpTokenId);
+    }
+
+    // Call the contract method with token IDs
+    const results: ContractPkpUnpermittedApps[] = await contract.getUnpermittedAppsForPkps(
+      pkpTokenIds,
+      offset,
+    );
+
+    // Convert BigNumber token IDs back to strings for the response
+    return results.map((result: ContractPkpUnpermittedApps) => ({
+      pkpTokenId: result.pkpTokenId.toString(),
+      unpermittedApps: result.unpermittedApps.map((app) => ({
+        appId: app.appId,
+        previousPermittedVersion: app.previousPermittedVersion,
+        versionEnabled: app.versionEnabled,
+      })),
+    }));
+  } catch (error: unknown) {
+    const decodedError = decodeContractError(error, contract);
+    throw new Error(`Failed to Get Unpermitted Apps For PKPs: ${decodedError}`);
   }
 }

@@ -73,6 +73,10 @@ library VincentUserStorage {
         mapping(uint40 => uint24) permittedAppVersion;
         // App ID -> App version -> Ability IPFS CID hash -> Ability Policy storage -> Ability Policy IPFS CID hash -> User's CBOR2 encoded Policy parameter values
         mapping(uint40 => mapping(uint24 => mapping(bytes32 => mapping(bytes32 => bytes)))) abilityPolicyParameterValues;
+        // Set of all App IDs that have ever been permitted (complete historical record, contains unpermitted apps too)
+        EnumerableSet.UintSet allPermittedApps;
+        // App ID -> Last Permitted App Version (for re-permitting unpermitted apps)
+        mapping(uint40 => uint24) lastPermittedVersion;
     }
 
     struct UserStorage {

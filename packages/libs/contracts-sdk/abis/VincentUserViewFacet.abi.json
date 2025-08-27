@@ -110,6 +110,30 @@
   },
   {
     "type": "function",
+    "name": "getLastPermittedAppVersionForPkp",
+    "inputs": [
+      {
+        "name": "pkpTokenId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "appId",
+        "type": "uint40",
+        "internalType": "uint40"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint24",
+        "internalType": "uint24"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
     "name": "getPermittedAppVersionForPkp",
     "inputs": [
       {
@@ -175,6 +199,59 @@
               },
               {
                 "name": "version",
+                "type": "uint24",
+                "internalType": "uint24"
+              },
+              {
+                "name": "versionEnabled",
+                "type": "bool",
+                "internalType": "bool"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getUnpermittedAppsForPkps",
+    "inputs": [
+      {
+        "name": "pkpTokenIds",
+        "type": "uint256[]",
+        "internalType": "uint256[]"
+      },
+      {
+        "name": "offset",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "results",
+        "type": "tuple[]",
+        "internalType": "struct VincentUserViewFacet.PkpUnpermittedApps[]",
+        "components": [
+          {
+            "name": "pkpTokenId",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "unpermittedApps",
+            "type": "tuple[]",
+            "internalType": "struct VincentUserViewFacet.UnpermittedApp[]",
+            "components": [
+              {
+                "name": "appId",
+                "type": "uint40",
+                "internalType": "uint40"
+              },
+              {
+                "name": "previousPermittedVersion",
                 "type": "uint24",
                 "internalType": "uint24"
               },

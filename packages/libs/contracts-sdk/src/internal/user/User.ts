@@ -1,6 +1,7 @@
 import type {
   PermitAppOptions,
   UnPermitAppOptions,
+  RePermitAppOptions,
   SetAbilityPolicyParametersOptions,
 } from './types';
 
@@ -82,6 +83,37 @@ export async function unPermitApp({
   } catch (error: unknown) {
     const decodedError = decodeContractError(error, contract);
     throw new Error(`Failed to UnPermit App: ${decodedError}`);
+  }
+}
+
+export async function rePermitApp(params: RePermitAppOptions): Promise<{ txHash: string }> {
+  const {
+    contract,
+    args: { pkpEthAddress, appId },
+    overrides,
+  } = params;
+
+  try {
+    const pkpTokenId = await getPkpTokenId({ pkpEthAddress, signer: contract.signer });
+
+    const adjustedOverrides = await gasAdjustedOverrides(
+      contract,
+      'rePermitApp',
+      [pkpTokenId, appId],
+      overrides,
+    );
+
+    const tx = await contract.rePermitApp(pkpTokenId, appId, {
+      ...adjustedOverrides,
+    });
+    await tx.wait();
+
+    return {
+      txHash: tx.hash,
+    };
+  } catch (error: unknown) {
+    const decodedError = decodeContractError(error, contract);
+    throw new Error(`Failed to Re-Permit App: ${decodedError}`);
   }
 }
 

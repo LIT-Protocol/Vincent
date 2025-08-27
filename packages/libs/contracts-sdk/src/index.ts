@@ -15,11 +15,15 @@ export type {
   GetDelegatedPkpEthAddressesParams,
   GetAllAbilitiesAndPoliciesForAppParams,
   GetAllPermittedAppIdsForPkpParams,
+  GetLastPermittedAppVersionParams,
   GetPermittedAppVersionForPkpParams,
+  GetPermittedAppsForPkpsParams,
+  GetUnpermittedAppsForPkpsParams,
   GetAllRegisteredAgentPkpsParams,
   SetAbilityPolicyParametersParams,
   UnPermitAppParams,
   PermitAppParams,
+  RePermitAppParams,
   AbilityPolicyParameterData,
   Ability,
   App,
@@ -28,6 +32,10 @@ export type {
   ValidateAbilityExecutionAndGetPoliciesResult,
   PermissionData,
   AppVersion,
+  PermittedApp,
+  PkpPermittedApps,
+  UnpermittedApp,
+  PkpUnpermittedApps,
 } from './types';
 
 export { getTestClient, clientFromContract, getClient } from './contractClient';
