@@ -18,7 +18,7 @@
     "@lit-protocol/vincent-policy-send-counter": "workspace:*",
     "@lit-protocol/vincent-scaffold-sdk": "^1.1.7",
     "esbuild": "^0.25.5",
-    "esbuild-plugin-polyfill-node": "^0.3.0",
+    "@lit-protocol/esbuild-plugin-polyfill-node": "^0.3.0",
     "ethers": "5.8.0",
     "ipfs-only-hash": "^4.0.0",
     "tslib": "2.8.1",

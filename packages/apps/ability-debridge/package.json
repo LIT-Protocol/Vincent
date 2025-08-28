@@ -20,7 +20,7 @@
   },
   "devDependencies": {
     "esbuild": "^0.19.12",
-    "esbuild-plugin-polyfill-node": "^0.3.0",
+    "@lit-protocol/esbuild-plugin-polyfill-node": "^0.3.0",
     "ipfs-only-hash": "^4.0.0",
     "tsx": "^4.19.4"
   },
