@@ -1,4 +1,4 @@
-import { useMemo, forwardRef, useImperativeHandle, useRef } from 'react';
+import { useMemo, forwardRef, useImperativeHandle, useRef, useEffect } from 'react';
 import { RJSFSchema, UiSchema, createSchemaUtils } from '@rjsf/utils';
 import Form from '@rjsf/shadcn';
 import validator from '@rjsf/validator-ajv8';
@@ -51,6 +51,22 @@ export const PolicyForm = forwardRef<PolicyFormRef, PolicyFormProps>(
         return null;
       }
     }, [policy.parameters?.jsonSchema, policy.parameters?.uiSchema, policy.ipfsCid]);
+
+    // Initialize form with undefined values for all fields
+    useEffect(() => {
+      if (
+        resolvedSchema?.jsonSchema?.properties &&
+        Object.keys(formData[policy.ipfsCid] || {}).length === 0
+      ) {
+        const initialData: Record<string, any> = {};
+        Object.keys(resolvedSchema.jsonSchema.properties).forEach((fieldName) => {
+          initialData[fieldName] = undefined;
+        });
+
+        // Call onFormChange to set the initial structure
+        onFormChange(policy.ipfsCid, { formData: initialData });
+      }
+    }, [resolvedSchema, policy.ipfsCid, formData, onFormChange]);
 
     useImperativeHandle(ref, () => ({
       validateForm: () => {

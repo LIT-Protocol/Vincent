@@ -10,6 +10,12 @@ interface AppsAndVersionsProps {
   formData: Record<string, any>;
   onFormChange: (abilityIpfsCid: string, policyIpfsCid: string, data: any) => void;
   onRegisterFormRef: (policyIpfsCid: string, ref: PolicyFormRef) => void;
+  selectedPolicies: Record<string, boolean>;
+  onPolicySelectionChange: (
+    abilityIpfsCid: string,
+    policyIpfsCid: string,
+    selected: boolean,
+  ) => void;
 }
 
 export function AppsInfo({
@@ -17,6 +23,8 @@ export function AppsInfo({
   formData,
   onFormChange,
   onRegisterFormRef,
+  selectedPolicies,
+  onPolicySelectionChange,
 }: AppsAndVersionsProps) {
   const appNames = Object.keys(connectInfoMap.versionsByApp);
 
@@ -97,6 +105,8 @@ export function AppsInfo({
                         onRegisterFormRef={onRegisterFormRef}
                         abilityIpfsCid={abilityVersion.ipfsCid}
                         defaultExpanded={false} // All abilities start closed
+                        selectedPolicies={selectedPolicies}
+                        onPolicySelectionChange={onPolicySelectionChange}
                       />
                     );
                   })}

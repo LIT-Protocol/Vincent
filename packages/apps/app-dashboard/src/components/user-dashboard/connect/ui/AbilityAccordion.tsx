@@ -23,6 +23,12 @@ interface AbilityAccordionProps {
   onRegisterFormRef: (policyIpfsCid: string, ref: PolicyFormRef) => void;
   abilityIpfsCid: string;
   defaultExpanded?: boolean;
+  selectedPolicies: Record<string, boolean>;
+  onPolicySelectionChange: (
+    abilityIpfsCid: string,
+    policyIpfsCid: string,
+    selected: boolean,
+  ) => void;
 }
 
 export function AbilityAccordion({
@@ -35,6 +41,8 @@ export function AbilityAccordion({
   onRegisterFormRef,
   abilityIpfsCid,
   defaultExpanded = true,
+  selectedPolicies,
+  onPolicySelectionChange,
 }: AbilityAccordionProps) {
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
 
@@ -86,6 +94,8 @@ export function AbilityAccordion({
                 onFormChange={onFormChange}
                 onRegisterFormRef={onRegisterFormRef}
                 abilityIpfsCid={abilityIpfsCid}
+                selectedPolicies={selectedPolicies}
+                onPolicySelectionChange={onPolicySelectionChange}
               />
             </div>
           </motion.div>

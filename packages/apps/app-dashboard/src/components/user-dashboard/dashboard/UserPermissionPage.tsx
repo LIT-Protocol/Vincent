@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { getClient, PermissionData } from '@lit-protocol/vincent-contracts-sdk';
 import { IRelayPKP } from '@lit-protocol/types';
 import { ConnectInfoMap } from '@/hooks/user-dashboard/connect/useConnectInfo';
@@ -16,7 +16,6 @@ import { litNodeClient } from '@/utils/user-dashboard/lit';
 import { PageHeader } from './ui/PageHeader';
 import { useJwtRedirect } from '@/hooks/user-dashboard/connect/useJwtRedirect';
 import { useUrlRedirectUri } from '@/hooks/user-dashboard/connect/useUrlRedirectUri';
-import { useEffect } from 'react';
 
 interface AppPermissionPageProps {
   connectInfoMap: ConnectInfoMap;
@@ -64,11 +63,16 @@ export function AppPermissionPage({
   const appIdString = connectInfoMap.app.appId.toString();
   const permittedVersion = permittedAppVersions[appIdString];
 
-  const { formData, handleFormChange } = useFormatUserPermissions(
-    connectInfoMap,
-    existingData,
-    Number(permittedVersion),
-  );
+  const { formData, handleFormChange, selectedPolicies, handlePolicySelectionChange } = 
+    useFormatUserPermissions(connectInfoMap, existingData, Number(permittedVersion));
+
+  // Console logs for debugging
+  useEffect(() => {
+    console.log('[UserPermissionPage] Initialized with:');
+    console.log('[UserPermissionPage] existingData:', existingData);
+    console.log('[UserPermissionPage] formData:', formData);
+    console.log('[UserPermissionPage] selectedPolicies:', selectedPolicies);
+  }, [existingData, formData, selectedPolicies]);
 
   const {
     addPermittedActions,
@@ -78,6 +82,11 @@ export function AppPermissionPage({
   } = useAddPermittedActions();
 
   const handleSubmit = useCallback(async () => {
+    console.log('[UserPermissionPage] Starting submission with:');
+    console.log('[UserPermissionPage] formData:', formData);
+    console.log('[UserPermissionPage] selectedPolicies:', selectedPolicies);
+    console.log('[UserPermissionPage] existingData:', existingData);
+    
     // Clear any previous local errors and success
     setLocalError(null);
     setLocalSuccess(null);
@@ -102,23 +111,74 @@ export function AppPermissionPage({
       });
       await userPkpWallet.init();
 
+      const policyParameters: Record<string, any> = {};
+      const deletePolicyIpfsCids: string[] = [];
+      
+      // Track which policies exist in the current permission data
+      const existingPolicies = new Set<string>();
+      if (existingData) {
+        Object.keys(existingData).forEach((abilityIpfsCid) => {
+          const abilityData = existingData[abilityIpfsCid];
+          if (abilityData && typeof abilityData === 'object') {
+            Object.keys(abilityData).forEach((policyIpfsCid) => {
+              existingPolicies.add(policyIpfsCid);
+            });
+          }
+        });
+      }
+      
+      // Build policy parameters and deletion list
+      Object.keys(formData).forEach((abilityIpfsCid) => {
+        const abilityData = formData[abilityIpfsCid];
+        const filteredAbilityData: Record<string, any> = {};
+        
+        Object.keys(abilityData).forEach((policyIpfsCid) => {
+          if (selectedPolicies[policyIpfsCid]) {
+            // Include selected policy
+            filteredAbilityData[policyIpfsCid] = abilityData[policyIpfsCid] || {};
+          } else {
+            // Add unselected policy to delete list if it existed before
+            if (existingPolicies.has(policyIpfsCid)) {
+              deletePolicyIpfsCids.push(policyIpfsCid);
+            }
+          }
+        });
+        
+        if (Object.keys(filteredAbilityData).length > 0) {
+          policyParameters[abilityIpfsCid] = filteredAbilityData;
+        }
+      });
+
+      console.log('[UserPermissionPage] Built parameters:');
+      console.log('[UserPermissionPage] policyParameters:', JSON.stringify(policyParameters, null, 2));
+      console.log('[UserPermissionPage] deletePolicyIpfsCids:', deletePolicyIpfsCids);
+
       // We should do this in case there was ever an error doing this previously
       setLocalStatus('Adding permitted actions...');
+      // Get all ability CIDs from both existing data and new parameters
+      const allAbilityIpfsCids = new Set([
+        ...Object.keys(existingData || {}),
+        ...Object.keys(policyParameters)
+      ]);
       await addPermittedActions({
         wallet: userPkpWallet,
         agentPKPTokenId: agentPKP.tokenId,
-        abilityIpfsCids: Object.keys(formData),
+        abilityIpfsCids: Array.from(allAbilityIpfsCids),
       });
 
       try {
         setLocalStatus('Setting ability policy parameters...');
         const client = getClient({ signer: userPkpWallet });
-        await client.setAbilityPolicyParameters({
+        // @ts-ignore - New API format not yet in types
+        const result = await client.setAbilityPolicyParameters({
           pkpEthAddress: agentPKP.ethAddress,
           appId: Number(connectInfoMap.app.appId),
           appVersion: Number(permittedVersion),
-          policyParams: formData,
+          policyParameters: policyParameters,
+          deletePolicyIpfsCids: deletePolicyIpfsCids,
         });
+        
+        console.log('[UserPermissionPage] setAbilityPolicyParameters result:', result);
 
         setLocalStatus(null);
         // Show success state for 3 seconds, then handle redirect or clear success
@@ -143,6 +203,7 @@ export function AppPermissionPage({
     }
   }, [
     formData,
+    selectedPolicies,
     readAuthInfo,
     addPermittedActions,
     connectInfoMap.app,
@@ -238,6 +299,8 @@ export function AppPermissionPage({
           formData={formData}
           onFormChange={handleFormChange}
           onRegisterFormRef={registerFormRef}
+          selectedPolicies={selectedPolicies}
+          onPolicySelectionChange={handlePolicySelectionChange}
           permittedVersion={permittedVersion}
         />
 
