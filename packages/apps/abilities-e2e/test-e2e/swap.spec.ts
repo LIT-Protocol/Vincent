@@ -1,10 +1,6 @@
 import { formatEther } from 'viem';
 import { vincentPolicyMetadata as spendingLimitPolicyMetadata } from '@lit-protocol/vincent-policy-spending-limit';
-import {
-  bundledVincentAbility as erc20BundledAbility,
-  checkNativeTokenBalance,
-  getCurrentAllowance,
-} from '@lit-protocol/vincent-ability-erc20-approval';
+import { bundledVincentAbility as erc20BundledAbility } from '@lit-protocol/vincent-ability-erc20-approval';
 
 import { bundledVincentAbility as uniswapBundledAbility } from '@lit-protocol/vincent-ability-uniswap-swap';
 
@@ -15,8 +11,6 @@ import {
 import { ethers } from 'ethers';
 import type { PermissionData } from '@lit-protocol/vincent-contracts-sdk';
 import { getClient } from '@lit-protocol/vincent-contracts-sdk';
-import { Token, CurrencyAmount, TradeType, Percent } from '@uniswap/sdk-core';
-import { AlphaRouter, SwapType } from '@uniswap/smart-order-router';
 
 import {
   BASE_PUBLIC_CLIENT,
@@ -44,7 +38,7 @@ import { checkShouldMintCapacityCredit } from './helpers/check-mint-capcity-cred
 import * as util from 'node:util';
 import { privateKeyToAccount } from 'viem/accounts';
 
-const SWAP_AMOUNT = 50;
+const SWAP_AMOUNT = 80;
 const SWAP_TOKEN_IN_ADDRESS = '0x4ed4E862860beD51a9570b96d89aF5E1B0Efefed'; // DEGEN
 const SWAP_TOKEN_IN_DECIMALS = 18;
 
@@ -52,14 +46,13 @@ const SWAP_TOKEN_IN_DECIMALS = 18;
 // const SWAP_TOKEN_IN_ADDRESS = '0x4200000000000000000000000000000000000006'; // WETH
 // const SWAP_TOKEN_IN_DECIMALS = 18;
 
-const SWAP_TOKEN_OUT_ADDRESS = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'; // USDC
-const SWAP_TOKEN_OUT_DECIMALS = 6;
+// const SWAP_TOKEN_OUT_ADDRESS = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'; // USDC
+// const SWAP_TOKEN_OUT_DECIMALS = 6;
+const SWAP_TOKEN_OUT_ADDRESS = '0x4200000000000000000000000000000000000006'; // WETH
+const SWAP_TOKEN_OUT_DECIMALS = 18;
 
 const RPC_URL = BASE_RPC_URL;
 const CHAIN_ID = 8453;
-
-// Spender address for ERC20 approvals - will be dynamically determined by AlphaRouter
-const UNISWAP_SPENDER_ADDRESS: string | null = null;
 
 // Extend Jest timeout to 4 minutes
 jest.setTimeout(240000);
@@ -354,7 +347,6 @@ describe('Uniswap Swap Ability E2E Tests', () => {
         tokenInAmount: SWAP_AMOUNT,
         tokenOutAddress: SWAP_TOKEN_OUT_ADDRESS,
         tokenOutDecimals: SWAP_TOKEN_OUT_DECIMALS,
-        route: null,
       },
       {
         delegatorPkpEthAddress: TEST_CONFIG.userPkp!.ethAddress!,
@@ -394,7 +386,6 @@ describe('Uniswap Swap Ability E2E Tests', () => {
           tokenInAmount: SWAP_AMOUNT,
           tokenOutAddress: SWAP_TOKEN_OUT_ADDRESS,
           tokenOutDecimals: SWAP_TOKEN_OUT_DECIMALS,
-          route: null,
         },
         {
           delegatorPkpEthAddress: TEST_CONFIG.userPkp!.ethAddress!,
@@ -465,6 +456,7 @@ describe('Uniswap Swap Ability E2E Tests', () => {
         tokenInAmount: SWAP_AMOUNT,
         tokenOutAddress: SWAP_TOKEN_OUT_ADDRESS,
         tokenOutDecimals: SWAP_TOKEN_OUT_DECIMALS,
+        tokenOutAmount: SWAP_AMOUNT,
         route: UNISWAP_ROUTE,
       },
       {
