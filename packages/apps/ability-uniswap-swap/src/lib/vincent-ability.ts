@@ -61,6 +61,7 @@ export const vincentAbility = createVincentAbility({
       tokenInAmount,
       tokenOutAddress,
       tokenOutDecimals,
+      slippageTolerance,
     } = abilityParams;
 
     console.log('Prechecking UniswapSwapAbility', JSON.stringify(abilityParams, bigintReplacer, 2));
@@ -116,6 +117,7 @@ export const vincentAbility = createVincentAbility({
         tokenOutAddress,
         tokenOutDecimals,
         recipient: delegatorPkpAddress,
+        slippageTolerance,
       });
 
       if (!quoteResponse || !quoteResponse.methodParameters) {

@@ -38,10 +38,20 @@ export const abilityParamsSchema = z.object({
     .describe(
       'ERC20 Token address to buy. For example 0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C for SPX600 on Base.',
     ),
+  slippageTolerance: z
+    .number()
+    .int()
+    .min(1)
+    .max(10000)
+    .optional()
+    .describe(
+      'The slippage tolerance for the swap in basis points (1 basis point = 0.01%). For example 50 for 0.5%, 100 for 1%, 300 for 3%. Must be between 1 (0.01%) and 10000 (100%).',
+    ),
   tokenOutDecimals: z
     .number()
     .optional()
     .describe('ERC20 Token to buy decimals. For example 18 for WETH on Base.'),
+
   route: z
     .object({
       to: z.string().describe('The router contract address'),

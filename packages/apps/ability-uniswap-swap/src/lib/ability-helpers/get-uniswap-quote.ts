@@ -11,6 +11,7 @@ export async function getUniswapQuote({
   tokenOutAddress,
   tokenOutDecimals,
   recipient,
+  slippageTolerance,
 }: {
   rpcUrl: string;
   chainId: number;
@@ -20,6 +21,7 @@ export async function getUniswapQuote({
   tokenOutAddress: string;
   tokenOutDecimals: number;
   recipient: string;
+  slippageTolerance?: number;
 }): Promise<SwapRoute> {
   const activeTimeouts = new Set<NodeJS.Timeout>();
   const realSetTimeout = global.setTimeout;
@@ -45,7 +47,9 @@ export async function getUniswapQuote({
       tokenIn,
       ethers.utils.parseUnits(tokenInAmount.toString(), tokenInDecimals).toString(),
     );
-    const slippage = new Percent(50, 10_000); // 0.5%
+    // User provides slippage in basis points (e.g., 50 for 0.5%, 100 for 1%)
+    // Default to 50 basis points (0.5%) if not provided
+    const slippage = new Percent(slippageTolerance ?? 50, 10_000);
 
     console.log('Amount conversion:', {
       original: tokenInAmount,
