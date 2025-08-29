@@ -149,7 +149,7 @@ function validateDecoded(
       // V2 swap functions
       case 'swapExactTokensForTokens': {
         // swapExactTokensForTokens(uint256 amountIn, uint256 amountOutMin, address[] path, address to)
-        const [amountIn, amountOutMin, path, to] = decoded.args;
+        const [amountIn, _amountOutMin, path, to] = decoded.args;
         if (!equalAmount(asBigNumber(amountIn), tokenInAmountRaw))
           return {
             valid: false,
@@ -175,7 +175,7 @@ function validateDecoded(
 
       case 'swapTokensForExactTokens': {
         // swapTokensForExactTokens(uint256 amountOut, uint256 amountInMax, address[] path, address to)
-        const [amountOut, amountInMax, path, to] = decoded.args;
+        const [_amountOut, amountInMax, path, to] = decoded.args;
         if (asBigNumber(amountInMax).gt(asBigNumber(tokenInAmountRaw)))
           return {
             valid: false,
