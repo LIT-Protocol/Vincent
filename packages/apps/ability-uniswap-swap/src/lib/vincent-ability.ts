@@ -5,7 +5,7 @@ import {
 } from '@lit-protocol/vincent-ability-sdk';
 import { bundledVincentPolicy } from '@lit-protocol/vincent-policy-spending-limit';
 
-import { getTokenAmountInUsd, sendUniswapTxWithRoute, getUniswapQuote } from './ability-helpers';
+import { getTokenAmountInUsd, sendUniswapTxWithRoute } from './ability-helpers';
 import {
   checkNativeTokenBalance,
   checkTokenInBalance,
@@ -15,7 +15,6 @@ import {
   executeFailSchema,
   executeSuccessSchema,
   precheckFailSchema,
-  precheckSuccessSchema,
   abilityParamsSchema,
 } from './schemas';
 import { ethers } from 'ethers';
@@ -48,10 +47,11 @@ export const vincentAbility = createVincentAbility({
   executeSuccessSchema,
   executeFailSchema,
 
-  precheckSuccessSchema,
   precheckFailSchema,
 
   precheck: async ({ abilityParams }, { succeed, fail, delegation: { delegatorPkpInfo } }) => {
+    console.log('Prechecking UniswapSwapAbility', JSON.stringify(abilityParams, bigintReplacer, 2));
+
     // TODO: Rewrite checks to use `createAllowResult` and `createDenyResult` so we always know when we get a runtime err
     const {
       rpcUrlForUniswap,
@@ -60,20 +60,10 @@ export const vincentAbility = createVincentAbility({
       tokenInDecimals,
       tokenInAmount,
       tokenOutAddress,
-      tokenOutDecimals,
-      slippageTolerance,
+      route,
     } = abilityParams;
 
-    console.log('Prechecking UniswapSwapAbility', JSON.stringify(abilityParams, bigintReplacer, 2));
-
-    if (tokenOutDecimals === undefined) {
-      return fail({
-        reason: 'tokenOutDecimals is required for precheck',
-      });
-    }
-
     const delegatorPkpAddress = delegatorPkpInfo.ethAddress;
-
     const provider = new ethers.providers.JsonRpcProvider(rpcUrlForUniswap);
 
     try {
@@ -104,57 +94,39 @@ export const vincentAbility = createVincentAbility({
       });
     }
 
-    // Get the full Uniswap route that will be used for the swap
-    let quoteResponse: Awaited<ReturnType<typeof getUniswapQuote>>;
-    let uniswapRouterAddress: string;
-    try {
-      quoteResponse = await getUniswapQuote({
-        rpcUrl: rpcUrlForUniswap,
-        chainId: chainIdForUniswap,
-        tokenInAddress,
-        tokenInDecimals,
-        tokenInAmount,
-        tokenOutAddress,
-        tokenOutDecimals,
-        recipient: delegatorPkpAddress,
-        slippageTolerance,
-      });
+    // Validate the provided route to ensure it's legitimate and uses correct parameters
+    const routeValidation = validateUniswapRoute({
+      route,
+      chainId: chainIdForUniswap,
+      tokenInAddress,
+      tokenInAmount: ethers.utils.parseUnits(tokenInAmount.toString(), tokenInDecimals).toString(),
+      tokenOutAddress,
+      expectedRecipient: delegatorPkpAddress,
+    });
 
-      if (!quoteResponse || !quoteResponse.methodParameters) {
-        return fail({
-          reason: `Failed to get route from Uniswap quote (UniswapSwapAbilityPrecheck)`,
-        });
-      }
-
-      uniswapRouterAddress = quoteResponse.methodParameters.to;
-    } catch (err) {
+    if (!routeValidation.valid) {
       return fail({
-        reason: `Error getting route from Uniswap: ${err instanceof Error ? err.message : String(err)}`,
+        reason: `Route validation failed: ${routeValidation.reason}`,
       });
     }
 
+    // Check ERC20 allowance for the router specified in the route
     try {
       await checkErc20Allowance({
         provider,
         tokenAddress: tokenInAddress as `0x${string}`,
         owner: delegatorPkpAddress as `0x${string}`,
-        spender: uniswapRouterAddress,
+        spender: route.to,
         tokenAmount: requiredAmount,
       });
     } catch (err) {
       return fail({
-        reason: `Error when checking ERC20 allowance for Uniswap router: ${uniswapRouterAddress}: ${err instanceof Error ? err.message : String(err)}`,
-        erc20SpenderAddress: uniswapRouterAddress,
+        reason: `ERC20 allowance check error: ${err instanceof Error ? err.message : String(err)}`,
+        erc20SpenderAddress: route.to,
       });
     }
 
-    return succeed({
-      route: {
-        to: uniswapRouterAddress,
-        calldata: quoteResponse.methodParameters.calldata,
-        estimatedGasUsed: quoteResponse.estimatedGasUsed.toString(),
-      },
-    });
+    return succeed();
   },
   execute: async (
     { abilityParams },
@@ -162,7 +134,6 @@ export const vincentAbility = createVincentAbility({
   ) => {
     console.log('Executing UniswapSwapAbility', JSON.stringify(abilityParams, bigintReplacer, 2));
 
-    const { ethAddress: delegatorPkpAddress, publicKey: delegatorPublicKey } = delegatorPkpInfo;
     const {
       ethRpcUrl,
       rpcUrlForUniswap,
@@ -173,12 +144,6 @@ export const vincentAbility = createVincentAbility({
       tokenOutAddress,
       route,
     } = abilityParams;
-
-    if (route === undefined) {
-      return fail({
-        reason: 'No Uniswap route provided, execute precheck to obtain a route.',
-      });
-    }
 
     // Validate the route to ensure it's calling a legitimate Uniswap router
     // and that it uses the correct tokenInAddress, tokenInAmount, and recipient
@@ -193,7 +158,7 @@ export const vincentAbility = createVincentAbility({
       tokenInAddress,
       tokenInAmount: ethers.utils.parseUnits(tokenInAmount.toString(), tokenInDecimals).toString(),
       tokenOutAddress,
-      expectedRecipient: delegatorPkpAddress,
+      expectedRecipient: delegatorPkpInfo.ethAddress,
     });
 
     if (!routeValidation.valid) {
@@ -217,7 +182,7 @@ export const vincentAbility = createVincentAbility({
         tokenAddress: tokenInAddress,
         tokenAmount: tokenInAmount,
         tokenDecimals: tokenInDecimals,
-        pkpEthAddress: delegatorPkpAddress,
+        pkpEthAddress: delegatorPkpInfo.ethAddress,
       });
 
       const { maxSpendingLimitInUsd } = spendingLimitPolicyContext.result;
@@ -284,8 +249,8 @@ export const vincentAbility = createVincentAbility({
     const swapTxHash = await sendUniswapTxWithRoute({
       rpcUrl: rpcUrlForUniswap,
       chainId: chainIdForUniswap,
-      pkpEthAddress: delegatorPkpAddress as `0x${string}`,
-      pkpPublicKey: delegatorPublicKey,
+      pkpEthAddress: delegatorPkpInfo.ethAddress as `0x${string}`,
+      pkpPublicKey: delegatorPkpInfo.publicKey,
       route,
     });
 

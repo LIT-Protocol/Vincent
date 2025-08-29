@@ -47,29 +47,13 @@ export const abilityParamsSchema = z.object({
     .describe(
       'The slippage tolerance for the swap in basis points (1 basis point = 0.01%). For example 50 for 0.5%, 100 for 1%, 300 for 3%. Must be between 1 (0.01%) and 10000 (100%).',
     ),
-  tokenOutDecimals: z
-    .number()
-    .optional()
-    .describe('ERC20 Token to buy decimals. For example 18 for WETH on Base.'),
-
   route: z
     .object({
       to: z.string().describe('The router contract address'),
       calldata: z.string().describe('The encoded transaction data'),
       estimatedGasUsed: z.string().describe('The estimated gas usage for the swap'),
     })
-    .describe('Pre-computed Uniswap route data from precheck')
-    .optional(),
-});
-
-export const precheckSuccessSchema = z.object({
-  route: z
-    .object({
-      to: z.string().describe('The router contract address'),
-      calldata: z.string().describe('The encoded transaction data'),
-      estimatedGasUsed: z.string().describe('The estimated gas usage for the swap'),
-    })
-    .describe('The pre-computed Uniswap route data'),
+    .describe('Pre-computed Uniswap route data obtained from getUniswapQuote utility'),
 });
 
 export const precheckFailSchema = z.object({

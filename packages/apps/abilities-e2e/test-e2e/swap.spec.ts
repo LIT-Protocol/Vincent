@@ -2,7 +2,10 @@ import { formatEther } from 'viem';
 import { vincentPolicyMetadata as spendingLimitPolicyMetadata } from '@lit-protocol/vincent-policy-spending-limit';
 import { bundledVincentAbility as erc20BundledAbility } from '@lit-protocol/vincent-ability-erc20-approval';
 
-import { bundledVincentAbility as uniswapBundledAbility } from '@lit-protocol/vincent-ability-uniswap-swap';
+import {
+  bundledVincentAbility as uniswapBundledAbility,
+  getUniswapQuote,
+} from '@lit-protocol/vincent-ability-uniswap-swap';
 
 import {
   disconnectVincentAbilityClients,
@@ -87,53 +90,6 @@ const getUniswapSwapAbilityClient = () => {
   });
 };
 
-// Helper methods for common test behaviors
-const removeExistingApproval = async (spenderAddress: string, delegatorPkpEthAddress: string) => {
-  console.log('Removing approval...');
-  const setupClient = getErc20ApprovalAbilityClient();
-  const setupResult = await setupClient.execute(
-    {
-      rpcUrl: RPC_URL,
-      chainId: CHAIN_ID,
-      spenderAddress,
-      tokenAddress: SWAP_TOKEN_IN_ADDRESS,
-      tokenDecimals: SWAP_TOKEN_IN_DECIMALS,
-      tokenAmount: 0,
-      alchemyGasSponsor: false,
-    },
-    {
-      delegatorPkpEthAddress,
-    },
-  );
-
-  expect(setupResult.success).toBe(true);
-  if (setupResult.success === false) {
-    throw new Error(setupResult.runtimeError);
-  }
-
-  expect(BigInt(setupResult.result.approvedAmount)).toBe(0n);
-
-  if (setupResult.result.approvalTxHash) {
-    console.log('waiting for approval tx to finalize', setupResult.result.approvalTxHash);
-    const receipt = await BASE_PUBLIC_CLIENT.waitForTransactionReceipt({
-      hash: setupResult.result.approvalTxHash as `0x${string}`,
-    });
-
-    // Wait for next block to ensure blockchain state is updated
-    console.log(`waiting for next block after block ${receipt.blockNumber}...`);
-    const targetBlockNumber = receipt.blockNumber + 1n;
-    let currentBlockNumber = receipt.blockNumber;
-
-    while (currentBlockNumber < targetBlockNumber) {
-      await new Promise((resolve) => setTimeout(resolve, 1000)); // Wait 1 second
-      currentBlockNumber = await BASE_PUBLIC_CLIENT.getBlockNumber();
-    }
-    console.log(`next block ${currentBlockNumber} confirmed`);
-  }
-
-  return setupResult;
-};
-
 const addNewApproval = async (
   spenderAddress: string,
   delegatorPkpEthAddress: string,
@@ -141,6 +97,8 @@ const addNewApproval = async (
 ) => {
   console.log(`Adding approval for spender ${spenderAddress} for amount: ${tokenAmount}...`);
   const erc20ApprovalAbilityClient = getErc20ApprovalAbilityClient();
+
+  console.log('Executing ERC20 approval...');
   const erc20ApprovalExecutionResult = await erc20ApprovalAbilityClient.execute(
     {
       rpcUrl: RPC_URL,
@@ -333,11 +291,115 @@ describe('Uniswap Swap Ability E2E Tests', () => {
     expect(policyParams?.maxDailySpendingLimitInUsdCents).toBe(1000000000n);
   });
 
+  it('should generate a Uniswap route for the swap', async () => {
+    console.log('Generating Uniswap route...');
+    const quoteResponse = await getUniswapQuote({
+      rpcUrl: RPC_URL,
+      chainId: CHAIN_ID,
+      tokenInAddress: SWAP_TOKEN_IN_ADDRESS,
+      tokenInDecimals: SWAP_TOKEN_IN_DECIMALS,
+      tokenInAmount: SWAP_AMOUNT,
+      tokenOutAddress: SWAP_TOKEN_OUT_ADDRESS,
+      tokenOutDecimals: SWAP_TOKEN_OUT_DECIMALS,
+      recipient: TEST_CONFIG.userPkp!.ethAddress!,
+      slippageTolerance: 50, // 0.5% in basis points
+    });
+
+    console.log('Quote received:', quoteResponse);
+    expect(quoteResponse).toBeDefined();
+    expect(quoteResponse.methodParameters).toBeDefined();
+    expect(quoteResponse.methodParameters?.to).toBeDefined();
+    expect(quoteResponse.methodParameters?.calldata).toBeDefined();
+    expect(quoteResponse.estimatedGasUsed).toBeDefined();
+
+    // Format and store the route for use in subsequent tests
+    UNISWAP_ROUTE = {
+      to: quoteResponse.methodParameters!.to,
+      calldata: quoteResponse.methodParameters!.calldata,
+      estimatedGasUsed: quoteResponse.estimatedGasUsed.toString(),
+    };
+
+    console.log('Generated route:', UNISWAP_ROUTE);
+  });
+
+  it('should handle ERC20 allowance for the Uniswap router', async () => {
+    // Ensure we have a route from the generate route test
+    expect(UNISWAP_ROUTE).toBeDefined();
+    if (!UNISWAP_ROUTE) {
+      throw new Error(
+        'No precomputed route available, one should be obtained from the generate route test.',
+      );
+    }
+
+    // Extract spender address from the generated route
+    const erc20SpenderAddress = UNISWAP_ROUTE.to;
+    console.log(`Using spender address from generated route: ${erc20SpenderAddress}`);
+
+    // First, check if allowance is needed using precheck
+    const erc20ApprovalAbilityClient = getErc20ApprovalAbilityClient();
+    const precheckResult = await erc20ApprovalAbilityClient.precheck(
+      {
+        rpcUrl: RPC_URL,
+        chainId: CHAIN_ID,
+        spenderAddress: erc20SpenderAddress,
+        tokenAddress: SWAP_TOKEN_IN_ADDRESS,
+        tokenDecimals: SWAP_TOKEN_IN_DECIMALS,
+        tokenAmount: SWAP_AMOUNT,
+        alchemyGasSponsor: false,
+      },
+      {
+        delegatorPkpEthAddress: TEST_CONFIG.userPkp!.ethAddress!,
+      },
+    );
+
+    console.log('ERC20 approval precheck result:', precheckResult);
+    expect(precheckResult).toBeDefined();
+    expect(precheckResult.success).toBe(true);
+
+    if ('noNativeTokenBalance' in precheckResult.result) {
+      throw new Error('No native token balance');
+    }
+
+    // Check if allowance is already sufficient based on alreadyApproved flag
+    if (precheckResult.result.alreadyApproved) {
+      console.log(
+        'Sufficient allowance already exists (currentAllowance:',
+        precheckResult.result.currentAllowance,
+        '), skipping execute',
+      );
+      expect(precheckResult.result.alreadyApproved).toBe(true);
+    } else {
+      console.log(
+        'Insufficient allowance detected (currentAllowance:',
+        precheckResult.result?.currentAllowance,
+        '), executing approval...',
+      );
+      // Need to add approval
+      const erc20ApprovalExecutionResult = await addNewApproval(
+        erc20SpenderAddress,
+        TEST_CONFIG.userPkp!.ethAddress!,
+        SWAP_AMOUNT,
+      );
+      console.log('ERC20 approval completed:', erc20ApprovalExecutionResult);
+
+      expect(erc20ApprovalExecutionResult.success).toBe(true);
+      expect(BigInt(erc20ApprovalExecutionResult.result.approvedAmount)).toBeGreaterThan(0n);
+      expect(erc20ApprovalExecutionResult.result.spenderAddress).toBe(erc20SpenderAddress);
+    }
+  });
+
   it('should successfully run precheck on the Uniswap Swap Ability', async () => {
+    // Ensure we have a route from the generate route test
+    expect(UNISWAP_ROUTE).toBeDefined();
+    if (!UNISWAP_ROUTE) {
+      throw new Error(
+        'No precomputed route available, one should be obtained from the generate route test.',
+      );
+    }
+
     const uniswapSwapAbilityClient = getUniswapSwapAbilityClient();
 
-    // First attempt: Run precheck without any approvals
-    let precheckResult = await uniswapSwapAbilityClient.precheck(
+    const precheckResult = await uniswapSwapAbilityClient.precheck(
       {
         ethRpcUrl: ETH_RPC_URL,
         rpcUrlForUniswap: RPC_URL,
@@ -346,55 +408,15 @@ describe('Uniswap Swap Ability E2E Tests', () => {
         tokenInDecimals: SWAP_TOKEN_IN_DECIMALS,
         tokenInAmount: SWAP_AMOUNT,
         tokenOutAddress: SWAP_TOKEN_OUT_ADDRESS,
-        tokenOutDecimals: SWAP_TOKEN_OUT_DECIMALS,
+        route: UNISWAP_ROUTE,
       },
       {
         delegatorPkpEthAddress: TEST_CONFIG.userPkp!.ethAddress!,
       },
     );
+
     expect(precheckResult).toBeDefined();
-    console.log('First precheckResult', util.inspect(precheckResult, { depth: 10 }));
-
-    // Check if precheck failed due to insufficient allowance
-    if (
-      !precheckResult.success &&
-      precheckResult.result?.reason?.includes('ERC20 allowance check error')
-    ) {
-      console.log('Precheck failed due to insufficient allowance, handling approval...');
-
-      // Extract spender address from failed precheck response
-      const erc20SpenderAddress = precheckResult.result?.erc20SpenderAddress;
-      expect(erc20SpenderAddress).toBeDefined();
-      console.log(`Using spender address from failed precheck: ${erc20SpenderAddress}`);
-
-      // Approve tokens for the spender address returned by precheck failure
-      const erc20ApprovalExecutionResult = await addNewApproval(
-        erc20SpenderAddress!,
-        TEST_CONFIG.userPkp!.ethAddress!,
-        SWAP_AMOUNT,
-      );
-      console.log('ERC20 approval completed:', erc20ApprovalExecutionResult);
-
-      // Retry precheck after approval
-      precheckResult = await uniswapSwapAbilityClient.precheck(
-        {
-          ethRpcUrl: ETH_RPC_URL,
-          rpcUrlForUniswap: RPC_URL,
-          chainIdForUniswap: CHAIN_ID,
-          tokenInAddress: SWAP_TOKEN_IN_ADDRESS,
-          tokenInDecimals: SWAP_TOKEN_IN_DECIMALS,
-          tokenInAmount: SWAP_AMOUNT,
-          tokenOutAddress: SWAP_TOKEN_OUT_ADDRESS,
-          tokenOutDecimals: SWAP_TOKEN_OUT_DECIMALS,
-        },
-        {
-          delegatorPkpEthAddress: TEST_CONFIG.userPkp!.ethAddress!,
-        },
-      );
-      // Verify the precheck was successful
-      expect(precheckResult).toBeDefined();
-      console.log('Second precheckResult', util.inspect(precheckResult, { depth: 10 }));
-    }
+    console.log('Precheck result', util.inspect(precheckResult, { depth: 10 }));
 
     if (precheckResult.success === false) {
       throw new Error(precheckResult.runtimeError);
@@ -411,17 +433,6 @@ describe('Uniswap Swap Ability E2E Tests', () => {
     expect(precheckResult.context?.policiesContext).toBeDefined();
     expect(precheckResult.context?.policiesContext.allow).toBe(true);
 
-    // The precheck should return route data
-    expect(precheckResult.result).toBeDefined();
-    expect(precheckResult.result.route).toBeDefined();
-    expect(precheckResult.result.route).not.toBeNull();
-    expect(precheckResult.result.route!.to).toBeDefined();
-    expect(precheckResult.result.route!.calldata).toBeDefined();
-    expect(precheckResult.result.route!.estimatedGasUsed).toBeDefined();
-
-    // Store the route for use in the execute test
-    UNISWAP_ROUTE = precheckResult.result!.route;
-
     // The policy precheck should return the maxSpendingLimitInUsd and buyAmountInUsd
     const policyPrecheckResult =
       precheckResult.context?.policiesContext.allowedPolicies?.[
@@ -437,11 +448,11 @@ describe('Uniswap Swap Ability E2E Tests', () => {
   });
 
   it('should execute the Uniswap Swap Ability with the Agent Wallet PKP', async () => {
-    // Ensure we have a route from the precheck test
+    // Ensure we have a route from the generate route test
     expect(UNISWAP_ROUTE).toBeDefined();
     if (!UNISWAP_ROUTE) {
       throw new Error(
-        'No precomputed route available, one should be obtained from the precheck test.',
+        'No precomputed route available, one should be obtained from the generate route test.',
       );
     }
 
@@ -455,8 +466,6 @@ describe('Uniswap Swap Ability E2E Tests', () => {
         tokenInDecimals: SWAP_TOKEN_IN_DECIMALS,
         tokenInAmount: SWAP_AMOUNT,
         tokenOutAddress: SWAP_TOKEN_OUT_ADDRESS,
-        tokenOutDecimals: SWAP_TOKEN_OUT_DECIMALS,
-        tokenOutAmount: SWAP_AMOUNT,
         route: UNISWAP_ROUTE,
       },
       {
