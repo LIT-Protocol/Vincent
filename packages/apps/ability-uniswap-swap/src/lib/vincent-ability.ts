@@ -143,7 +143,7 @@ export const vincentAbility = createVincentAbility({
       });
     } catch (err) {
       return fail({
-        reason: `ERC20 allowance check error: ${err instanceof Error ? err.message : String(err)}`,
+        reason: `Error when checking ERC20 allowance for Uniswap router: ${uniswapRouterAddress}: ${err instanceof Error ? err.message : String(err)}`,
         erc20SpenderAddress: uniswapRouterAddress,
       });
     }
