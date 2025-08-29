@@ -64,6 +64,13 @@ export const vincentAbility = createVincentAbility({
     } = abilityParams;
 
     console.log('Prechecking UniswapSwapAbility', JSON.stringify(abilityParams, bigintReplacer, 2));
+
+    if (tokenOutDecimals === undefined) {
+      return fail({
+        reason: 'tokenOutDecimals is required for precheck',
+      });
+    }
+
     const delegatorPkpAddress = delegatorPkpInfo.ethAddress;
 
     const provider = new ethers.providers.JsonRpcProvider(rpcUrlForUniswap);
@@ -161,19 +168,30 @@ export const vincentAbility = createVincentAbility({
       tokenInAddress,
       tokenInDecimals,
       tokenInAmount,
+      tokenOutAddress,
       route,
     } = abilityParams;
 
-    if (route === null) {
+    if (route === undefined) {
       return fail({
         reason: 'No Uniswap route provided, execute precheck to obtain a route.',
       });
     }
 
     // Validate the route to ensure it's calling a legitimate Uniswap router
+    // and that it uses the correct tokenInAddress, tokenInAmount, and recipient
+    //
+    // NOTE: There's a possibility that we record a spend amount that is greater than the actual spend amount.
+    // This is because the provided Uniswap route could use the exactOutputSingle or exactOutput methods,
+    // which would use the tokenInAmount as the maximum amount to swap for tokenOut, which doesn't necessarily
+    // have to be the full tokenInAmount if Uniswap finds a more efficient price.
     const routeValidation = validateUniswapRoute({
       route,
       chainId: chainIdForUniswap,
+      tokenInAddress,
+      tokenInAmount: ethers.utils.parseUnits(tokenInAmount.toString(), tokenInDecimals).toString(),
+      tokenOutAddress,
+      expectedRecipient: delegatorPkpAddress,
     });
 
     if (!routeValidation.valid) {

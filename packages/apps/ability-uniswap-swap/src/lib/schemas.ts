@@ -33,7 +33,6 @@ export const abilityParamsSchema = z.object({
     .describe(
       'Amount of token to sell. For example 0.00001 for 0.00001 WETH. Must be greater than 0.',
     ),
-
   tokenOutAddress: z
     .string()
     .describe(
@@ -41,8 +40,8 @@ export const abilityParamsSchema = z.object({
     ),
   tokenOutDecimals: z
     .number()
+    .optional()
     .describe('ERC20 Token to buy decimals. For example 18 for WETH on Base.'),
-
   route: z
     .object({
       to: z.string().describe('The router contract address'),
@@ -50,7 +49,7 @@ export const abilityParamsSchema = z.object({
       estimatedGasUsed: z.string().describe('The estimated gas usage for the swap'),
     })
     .describe('Pre-computed Uniswap route data from precheck')
-    .nullable(),
+    .optional(),
 });
 
 export const precheckSuccessSchema = z.object({
@@ -60,8 +59,7 @@ export const precheckSuccessSchema = z.object({
       calldata: z.string().describe('The encoded transaction data'),
       estimatedGasUsed: z.string().describe('The estimated gas usage for the swap'),
     })
-    .describe('The pre-computed Uniswap route data')
-    .nullable(),
+    .describe('The pre-computed Uniswap route data'),
 });
 
 export const precheckFailSchema = z.object({
