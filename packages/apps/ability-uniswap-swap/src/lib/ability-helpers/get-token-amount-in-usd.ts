@@ -95,7 +95,7 @@ export const getTokenAmountInUsd = async ({
 
   console.log('Calculated token amount in USDC (getTokenAmountInUsd)', {
     amountInWeth: ethers.utils.formatUnits(bestQuote, 18),
-    amountInUsdc: ethers.utils.formatUnits(amountInUsdc, 8),
+    amountInUsdc: ethers.utils.formatUnits(amountInUsdc, 6),
   });
 
   return amountInUsdc;
