@@ -13,7 +13,7 @@
     "module": "nodenext",
     "esModuleInterop": true
   },
-  "include": ["src/**/*.ts", "src/generated/vincent-ability-metadata.json"],
+  "include": ["src/**/*.ts", "src/generated/vincent-ability-metadata.json", "src/**/*.json"],
   "references": [
     {
       "path": "../../libs/ability-sdk/tsconfig.lib.json"

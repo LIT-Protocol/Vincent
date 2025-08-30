@@ -14,7 +14,7 @@ export const checkTokenInBalance = async ({
 }) => {
   const contract = getErc20Contract(tokenInAddress, provider);
 
-  const tokenInBalance = await contract.balanceOf(pkpEthAddress);
+  const tokenInBalance: ethers.BigNumber = await contract.balanceOf(pkpEthAddress);
 
   // Convert bigint to BigNumber for comparison
   const tokenInAmountBN = ethers.BigNumber.from(tokenInAmount.toString());

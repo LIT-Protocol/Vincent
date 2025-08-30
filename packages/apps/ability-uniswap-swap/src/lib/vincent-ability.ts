@@ -5,13 +5,11 @@ import {
 } from '@lit-protocol/vincent-ability-sdk';
 import { bundledVincentPolicy } from '@lit-protocol/vincent-policy-spending-limit';
 
-import { CHAIN_TO_ADDRESSES_MAP } from '@uniswap/sdk-core';
-
-import { getTokenAmountInUsd, sendUniswapTx } from './ability-helpers';
+import { getTokenAmountInUsd, sendUniswapTxWithRoute } from './ability-helpers';
 import {
   checkNativeTokenBalance,
   checkTokenInBalance,
-  checkUniswapPoolExists,
+  validateUniswapRoute,
 } from './ability-checks';
 import {
   executeFailSchema,
@@ -52,6 +50,8 @@ export const vincentAbility = createVincentAbility({
   precheckFailSchema,
 
   precheck: async ({ abilityParams }, { succeed, fail, delegation: { delegatorPkpInfo } }) => {
+    console.log('Prechecking UniswapSwapAbility', JSON.stringify(abilityParams, bigintReplacer, 2));
+
     // TODO: Rewrite checks to use `createAllowResult` and `createDenyResult` so we always know when we get a runtime err
     const {
       rpcUrlForUniswap,
@@ -60,12 +60,10 @@ export const vincentAbility = createVincentAbility({
       tokenInDecimals,
       tokenInAmount,
       tokenOutAddress,
-      tokenOutDecimals,
+      route,
     } = abilityParams;
 
-    console.log('Prechecking UniswapSwapAbility', JSON.stringify(abilityParams, bigintReplacer, 2));
     const delegatorPkpAddress = delegatorPkpInfo.ethAddress;
-
     const provider = new ethers.providers.JsonRpcProvider(rpcUrlForUniswap);
 
     try {
@@ -79,32 +77,9 @@ export const vincentAbility = createVincentAbility({
       });
     }
 
-    const uniswapRouterAddress = CHAIN_TO_ADDRESSES_MAP[
-      chainIdForUniswap as keyof typeof CHAIN_TO_ADDRESSES_MAP
-    ].swapRouter02Address as `0x${string}`;
-    if (uniswapRouterAddress === undefined) {
-      return fail({
-        reason: `Uniswap router address not found for chainId ${chainIdForUniswap} (UniswapSwapAbilityPrecheck)`,
-      });
-    }
-
     const requiredAmount = ethers.utils
       .parseUnits(tokenInAmount.toString(), tokenInDecimals)
       .toBigInt();
-
-    try {
-      await checkErc20Allowance({
-        provider,
-        tokenAddress: tokenInAddress as `0x${string}`,
-        owner: delegatorPkpAddress as `0x${string}`,
-        spender: uniswapRouterAddress,
-        tokenAmount: requiredAmount,
-      });
-    } catch (err) {
-      return fail({
-        reason: `ERC20 allowance check error: ${err instanceof Error ? err.message : String(err)}`,
-      });
-    }
 
     try {
       await checkTokenInBalance({
@@ -119,19 +94,35 @@ export const vincentAbility = createVincentAbility({
       });
     }
 
+    // Validate the provided route to ensure it's legitimate and uses correct parameters
+    const routeValidation = validateUniswapRoute({
+      route,
+      chainId: chainIdForUniswap,
+      tokenInAddress,
+      tokenInAmount: ethers.utils.parseUnits(tokenInAmount.toString(), tokenInDecimals).toString(),
+      tokenOutAddress,
+      expectedRecipient: delegatorPkpAddress,
+    });
+
+    if (!routeValidation.valid) {
+      return fail({
+        reason: `Route validation failed: ${routeValidation.reason}`,
+      });
+    }
+
+    // Check ERC20 allowance for the router specified in the route
     try {
-      await checkUniswapPoolExists({
-        rpcUrl: rpcUrlForUniswap,
-        chainId: chainIdForUniswap,
-        tokenInAddress: tokenInAddress as `0x${string}`,
-        tokenInDecimals,
-        tokenInAmount,
-        tokenOutAddress: tokenOutAddress as `0x${string}`,
-        tokenOutDecimals,
+      await checkErc20Allowance({
+        provider,
+        tokenAddress: tokenInAddress as `0x${string}`,
+        owner: delegatorPkpAddress as `0x${string}`,
+        spender: route.to,
+        tokenAmount: requiredAmount,
       });
     } catch (err) {
       return fail({
-        reason: `Check uniswap pool exists error: ${err instanceof Error ? err.message : String(err)}`,
+        reason: `ERC20 allowance check error: ${err instanceof Error ? err.message : String(err)}`,
+        erc20SpenderAddress: route.to,
       });
     }
 
@@ -143,7 +134,6 @@ export const vincentAbility = createVincentAbility({
   ) => {
     console.log('Executing UniswapSwapAbility', JSON.stringify(abilityParams, bigintReplacer, 2));
 
-    const { ethAddress: delegatorPkpAddress, publicKey: delegatorPublicKey } = delegatorPkpInfo;
     const {
       ethRpcUrl,
       rpcUrlForUniswap,
@@ -152,8 +142,30 @@ export const vincentAbility = createVincentAbility({
       tokenInDecimals,
       tokenInAmount,
       tokenOutAddress,
-      tokenOutDecimals,
+      route,
     } = abilityParams;
+
+    // Validate the route to ensure it's calling a legitimate Uniswap router
+    // and that it uses the correct tokenInAddress, tokenInAmount, and recipient
+    //
+    // NOTE: There's a possibility that we record a spend amount that is greater than the actual spend amount.
+    // This is because the provided Uniswap route could use the exactOutputSingle or exactOutput methods,
+    // which would use the tokenInAmount as the maximum amount to swap for tokenOut, which doesn't necessarily
+    // have to be the full tokenInAmount if Uniswap finds a more efficient price.
+    const routeValidation = validateUniswapRoute({
+      route,
+      chainId: chainIdForUniswap,
+      tokenInAddress,
+      tokenInAmount: ethers.utils.parseUnits(tokenInAmount.toString(), tokenInDecimals).toString(),
+      tokenOutAddress,
+      expectedRecipient: delegatorPkpInfo.ethAddress,
+    });
+
+    if (!routeValidation.valid) {
+      return fail({
+        reason: `Route validation failed: ${routeValidation.reason}`,
+      });
+    }
 
     // Commit spending limit before we submit the TX. We'd rather the tx fail and we count the spend erroneously
     // than to have the commit fail but the tx succeed, and we erroneously don't track the spend!
@@ -170,6 +182,7 @@ export const vincentAbility = createVincentAbility({
         tokenAddress: tokenInAddress,
         tokenAmount: tokenInAmount,
         tokenDecimals: tokenInDecimals,
+        pkpEthAddress: delegatorPkpInfo.ethAddress,
       });
 
       const { maxSpendingLimitInUsd } = spendingLimitPolicyContext.result;
@@ -233,16 +246,12 @@ export const vincentAbility = createVincentAbility({
       }
     }
 
-    const swapTxHash = await sendUniswapTx({
+    const swapTxHash = await sendUniswapTxWithRoute({
       rpcUrl: rpcUrlForUniswap,
       chainId: chainIdForUniswap,
-      pkpEthAddress: delegatorPkpAddress as `0x${string}`,
-      pkpPublicKey: delegatorPublicKey,
-      tokenInAddress: tokenInAddress as `0x${string}`,
-      tokenOutAddress: tokenOutAddress as `0x${string}`,
-      tokenInDecimals,
-      tokenOutDecimals,
-      tokenInAmount,
+      pkpEthAddress: delegatorPkpInfo.ethAddress as `0x${string}`,
+      pkpPublicKey: delegatorPkpInfo.publicKey,
+      route,
     });
 
     return succeed({
