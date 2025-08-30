@@ -133,12 +133,47 @@ describe('Vincent Contracts SDK E2E', () => {
     });
 
     it('should get all apps by manager', async () => {
-      const result = await APP_CLIENT.getAppsByManagerAddress({
-        managerAddress: APP_MANAGER_SIGNER.address,
-        offset: '0',
-      });
-      expect(result.length).toBeGreaterThan(0);
-      const testApp = result.find((app) => app.id === TEST_CONFIG.appId);
+      const PAGE_SIZE = 50;
+      let offset = 0;
+      let testApp = null;
+      let allApps: any[] = [];
+
+      // Keep querying until we find the app or reach the last page
+      while (true) {
+        const result = await APP_CLIENT.getAppsByManagerAddress({
+          managerAddress: APP_MANAGER_SIGNER.address,
+          offset: offset.toString(),
+        });
+
+        console.log(
+          `Page ${Math.floor(offset / PAGE_SIZE) + 1}: Found ${result.length} apps (offset: ${offset})`,
+        );
+        allApps = [...allApps, ...result];
+
+        // Look for our test app in this batch
+        testApp = result.find((app) => app.id === TEST_CONFIG.appId);
+        if (testApp) {
+          console.log(
+            `Found test app with ID ${TEST_CONFIG.appId} on page ${Math.floor(offset / PAGE_SIZE) + 1}`,
+          );
+          break;
+        }
+
+        // If we got less than PAGE_SIZE results, we've reached the last page
+        if (result.length < PAGE_SIZE) {
+          console.log(`Reached last page. Total apps searched: ${allApps.length}`);
+          break;
+        }
+
+        // Move to next page
+        offset += PAGE_SIZE;
+      }
+
+      console.log(`Manager address: ${APP_MANAGER_SIGNER.address}`);
+      console.log(`Looking for app ID: ${TEST_CONFIG.appId} (type: ${typeof TEST_CONFIG.appId})`);
+      console.log(`Total apps found for manager: ${allApps.length}`);
+
+      expect(allApps.length).toBeGreaterThan(0);
       expect(testApp).toBeDefined();
     });
   });
@@ -158,10 +193,11 @@ describe('Vincent Contracts SDK E2E', () => {
             maxDailySpendingLimitInUsdCents: '10000',
             tokenAddress: '0x4200000000000000000000000000000000000006',
           },
-          [ABILITY_POLICIES[1][1]]: {
-            maxDailySpendingLimitInUsdCents: '10000',
-            tokenAddress: '0x4200000000000000000000000000000000000006',
-          },
+          // Omitting to test partial policies allowance are permitted
+          // [ABILITY_POLICIES[1][1]]: {
+          //   maxDailySpendingLimitInUsdCents: '10000',
+          //   tokenAddress: '0x4200000000000000000000000000000000000006',
+          // },
         },
       };
       const result = await USER_CLIENT.permitApp({
@@ -187,16 +223,52 @@ describe('Vincent Contracts SDK E2E', () => {
         pkpEthAddress: TEST_CONFIG.userPkp!.ethAddress!,
         offset: '0',
       });
+      console.log('(should getAllPermittedAppIdsForPkp) allPermittedAppIds', allPermittedAppIds);
       expect(allPermittedAppIds).toContain(TEST_CONFIG.appId);
     });
 
     it('should get all registered agent PKPs', async () => {
-      const agentPkps = await USER_CLIENT.getAllRegisteredAgentPkpEthAddresses({
-        userPkpAddress: USER_SIGNER.address, // Using PKP address as user PKP
-        offset: '0',
-      });
-      expect(agentPkps.length).toBeGreaterThan(0);
-      expect(agentPkps).toContain(TEST_CONFIG.userPkp!.ethAddress!);
+      const PAGE_SIZE = 50;
+      let offset = 0;
+      let targetPkp: string | undefined;
+      let allPkps: string[] = [];
+
+      // Keep querying until we find the PKP or reach the last page
+      while (true) {
+        const agentPkps = await USER_CLIENT.getAllRegisteredAgentPkpEthAddresses({
+          userPkpAddress: USER_SIGNER.address, // Using PKP address as user PKP
+          offset: offset.toString(),
+        });
+
+        console.log(
+          `Page ${Math.floor(offset / PAGE_SIZE) + 1}: Found ${agentPkps.length} PKPs (offset: ${offset})`,
+        );
+        allPkps = [...allPkps, ...agentPkps];
+
+        // Look for our test PKP in this batch
+        if (agentPkps.includes(TEST_CONFIG.userPkp!.ethAddress!)) {
+          targetPkp = TEST_CONFIG.userPkp!.ethAddress!;
+          console.log(`Found test PKP ${targetPkp} on page ${Math.floor(offset / PAGE_SIZE) + 1}`);
+          break;
+        }
+
+        // If we got less than PAGE_SIZE results, we've reached the last page
+        if (agentPkps.length < PAGE_SIZE) {
+          console.log(`Reached last page. Total PKPs searched: ${allPkps.length}`);
+          break;
+        }
+
+        // Move to next page
+        offset += PAGE_SIZE;
+      }
+
+      console.log(`User PKP address: ${USER_SIGNER.address}`);
+      console.log(`Looking for PKP: ${TEST_CONFIG.userPkp!.ethAddress!}`);
+      console.log(`Total agent PKPs found: ${allPkps.length}`);
+
+      expect(allPkps.length).toBeGreaterThan(0);
+      expect(targetPkp).toBeDefined();
+      expect(allPkps).toContain(TEST_CONFIG.userPkp!.ethAddress!);
     });
 
     it('should get all abilities and policies for app', async () => {
@@ -208,13 +280,20 @@ describe('Vincent Contracts SDK E2E', () => {
       expectAssertObject(result);
       // Assert that all expected ability IPFS CIDs are present
       expect(Object.keys(result)).toEqual(expect.arrayContaining(ABILITY_IPFS_CIDS));
+
+      // Define the actually permitted policies (matching permissionData structure)
+      const PERMITTED_POLICIES = [
+        ABILITY_POLICIES[0], // All policies for first ability
+        [ABILITY_POLICIES[1][0]], // Only the first policy for second ability
+      ];
+
       // For each ability, assert that all expected policy IPFS CIDs are present
       for (let i = 0; i < ABILITY_IPFS_CIDS.length; i++) {
         const abilityCid = ABILITY_IPFS_CIDS[i];
         expect(result).toHaveProperty(abilityCid);
         expectAssertObject(result[abilityCid]);
         expect(Object.keys(result[abilityCid])).toEqual(
-          expect.arrayContaining(ABILITY_POLICIES[i]),
+          expect.arrayContaining(PERMITTED_POLICIES[i]),
         );
       }
     });
@@ -225,6 +304,7 @@ describe('Vincent Contracts SDK E2E', () => {
         version: TEST_CONFIG.appVersion!,
         offset: 0,
       });
+      console.log('(should get delegated PKP addresses for app version) result', result);
       expectAssertArray(result);
       expect(result.length).toBeGreaterThan(0);
       expect(result).toContain(TEST_CONFIG.userPkp!.ethAddress!);
@@ -236,9 +316,9 @@ describe('Vincent Contracts SDK E2E', () => {
         appId: TEST_CONFIG.appId!,
         appVersion: TEST_CONFIG.appVersion!,
         policyParams: {
-          [ABILITY_IPFS_CIDS[0]]: {
-            [ABILITY_POLICIES[0][0]]: {
-              maxDailySpendingLimitInUsdCents: '15000',
+          [ABILITY_IPFS_CIDS[1]]: {
+            [ABILITY_POLICIES[1][1]]: {
+              maxDailySpendingLimitInUsdCents: '10000',
               tokenAddress: '0x4200000000000000000000000000000000000006',
             },
           },
@@ -260,6 +340,7 @@ describe('Vincent Contracts SDK E2E', () => {
         pkpEthAddress: TEST_CONFIG.userPkp!.ethAddress!,
         offset: '0',
       });
+      console.log('(should unpermit app and verify exclusion from results) result', result);
       expect(result).toHaveLength(0);
       // Should not find our test app in the results
       const testApp = result.find((app) => app === TEST_CONFIG.appId);
