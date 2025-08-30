@@ -90,7 +90,7 @@ export async function setAbilityPolicyParameters(
 ): Promise<{ txHash: string }> {
   const {
     contract,
-    args: { appId, appVersion, pkpEthAddress, policyParams },
+    args: { appId, appVersion, pkpEthAddress, policyParams, deletePolicyIpfsCids },
     overrides,
   } = params;
 
@@ -109,6 +109,7 @@ export async function setAbilityPolicyParameters(
         flattenedParams.abilityIpfsCids,
         flattenedParams.policyIpfsCids,
         flattenedParams.policyParameterValues,
+        deletePolicyIpfsCids,
       ],
       overrides,
     );
@@ -120,6 +121,7 @@ export async function setAbilityPolicyParameters(
       flattenedParams.abilityIpfsCids,
       flattenedParams.policyIpfsCids,
       flattenedParams.policyParameterValues,
+      deletePolicyIpfsCids,
       {
         ...adjustedOverrides,
       },
