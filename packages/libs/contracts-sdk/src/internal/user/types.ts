@@ -1,8 +1,11 @@
+import type { BigNumber } from 'ethers';
+
 import type {
   GetAllPermittedAppIdsForPkpParams,
   GetAllRegisteredAgentPkpsParams,
   GetAllAbilitiesAndPoliciesForAppParams,
   GetPermittedAppVersionForPkpParams,
+  GetPermittedAppsForPkpsParams,
   PermitAppParams,
   SetAbilityPolicyParametersParams,
   UnPermitAppParams,
@@ -82,6 +85,29 @@ export interface GetAllAbilitiesAndPoliciesForAppOptions extends BaseOptions {
  * @inline
  * @expand
  * */
+export interface GetPermittedAppsForPkpsOptions extends BaseOptions {
+  args: GetPermittedAppsForPkpsParams;
+}
+
+/**
+ * @category Interfaces
+ * @inline
+ * @expand
+ * */
 export interface ValidateAbilityExecutionAndGetPoliciesOptions extends BaseOptions {
   args: ValidateAbilityExecutionAndGetPoliciesParams;
+}
+
+/**
+ * @category Interfaces
+ * @inline
+ * @expand
+ * */
+export interface ContractPkpPermittedApps {
+  pkpTokenId: BigNumber;
+  permittedApps: {
+    appId: number;
+    version: number;
+    versionEnabled: boolean;
+  }[];
 }

@@ -309,13 +309,14 @@ contract SmartUpdateFacet is Script {
     }
 
     function getVincentUserViewFacetSelectors() internal pure returns (bytes4[] memory) {
-        bytes4[] memory selectors = new bytes4[](6);
+        bytes4[] memory selectors = new bytes4[](7);
         selectors[0] = VincentUserViewFacet.getAllRegisteredAgentPkps.selector;
         selectors[1] = VincentUserViewFacet.getPermittedAppVersionForPkp.selector;
         selectors[2] = VincentUserViewFacet.getAllPermittedAppIdsForPkp.selector;
         selectors[3] = VincentUserViewFacet.validateAbilityExecutionAndGetPolicies.selector;
         selectors[4] = VincentUserViewFacet.getAllAbilitiesAndPoliciesForApp.selector;
-        selectors[5] = bytes4(keccak256("AGENT_PAGE_SIZE()"));
+        selectors[5] = VincentUserViewFacet.getPermittedAppsForPkps.selector;
+        selectors[6] = bytes4(keccak256("AGENT_PAGE_SIZE()"));
         return selectors;
     }
 

@@ -212,6 +212,48 @@ contract VincentUserFacetTest is Test {
         assertEq(permittedAppIds.length, 1);
         assertEq(permittedAppIds[0], newAppId_3);
 
+        // Test getPermittedAppsForPkps for both PKPs
+        uint256[] memory pkpTokenIds = new uint256[](2);
+        pkpTokenIds[0] = PKP_TOKEN_ID_1;
+        pkpTokenIds[1] = PKP_TOKEN_ID_2;
+        VincentUserViewFacet.PkpPermittedApps[] memory permittedAppsResults = vincentUserViewFacet.getPermittedAppsForPkps(pkpTokenIds, 0, 10);
+        assertEq(permittedAppsResults.length, 2);
+        
+        // Check Frank's apps (PKP 1)
+        assertEq(permittedAppsResults[0].pkpTokenId, PKP_TOKEN_ID_1);
+        assertEq(permittedAppsResults[0].permittedApps.length, 2);
+        assertEq(permittedAppsResults[0].permittedApps[0].appId, newAppId_1);
+        assertEq(permittedAppsResults[0].permittedApps[0].version, newAppVersion_1);
+        assertTrue(permittedAppsResults[0].permittedApps[0].versionEnabled);
+        assertEq(permittedAppsResults[0].permittedApps[1].appId, newAppId_2);
+        assertEq(permittedAppsResults[0].permittedApps[1].version, newAppVersion_2);
+        assertTrue(permittedAppsResults[0].permittedApps[1].versionEnabled);
+        
+        // Check George's apps (PKP 2)
+        assertEq(permittedAppsResults[1].pkpTokenId, PKP_TOKEN_ID_2);
+        assertEq(permittedAppsResults[1].permittedApps.length, 1);
+        assertEq(permittedAppsResults[1].permittedApps[0].appId, newAppId_3);
+        assertEq(permittedAppsResults[1].permittedApps[0].version, newAppVersion_3);
+        assertTrue(permittedAppsResults[1].permittedApps[0].versionEnabled);
+        
+        // Test pagination - page size 1
+        VincentUserViewFacet.PkpPermittedApps[] memory page1 = vincentUserViewFacet.getPermittedAppsForPkps(pkpTokenIds, 0, 1);
+        assertEq(page1[0].permittedApps.length, 1); // PKP 1 gets first app
+        assertEq(page1[0].permittedApps[0].appId, newAppId_1);
+        assertEq(page1[1].permittedApps.length, 1); // PKP 2 gets first app
+        assertEq(page1[1].permittedApps[0].appId, newAppId_3);
+        
+        // Test pagination - offset 1
+        VincentUserViewFacet.PkpPermittedApps[] memory page2 = vincentUserViewFacet.getPermittedAppsForPkps(pkpTokenIds, 1, 1);
+        assertEq(page2[0].permittedApps.length, 1); // PKP 1 gets second app
+        assertEq(page2[0].permittedApps[0].appId, newAppId_2);
+        assertEq(page2[1].permittedApps.length, 0); // PKP 2 has no more apps
+        
+        // Test pagination - offset beyond all apps
+        VincentUserViewFacet.PkpPermittedApps[] memory emptyPage = vincentUserViewFacet.getPermittedAppsForPkps(pkpTokenIds, 5, 10);
+        assertEq(emptyPage[0].permittedApps.length, 0); // PKP 1 empty
+        assertEq(emptyPage[1].permittedApps.length, 0); // PKP 2 empty
+
         // Check the Ability and Policies for App 1 Version 1 for PKP 1 (Frank)
         VincentUserViewFacet.AbilityWithPolicies[] memory abilitiesWithPolicies = vincentUserViewFacet.getAllAbilitiesAndPoliciesForApp(PKP_TOKEN_ID_1, newAppId_1);
         assertEq(abilitiesWithPolicies.length, 2);
@@ -391,6 +433,17 @@ contract VincentUserFacetTest is Test {
         assertTrue(abilityExecutionValidation.isPermitted);
         assertEq(abilityExecutionValidation.appId, newAppId_2);
         assertEq(abilityExecutionValidation.appVersion, newAppVersion_2);
+
+        // Test getPermittedAppsForPkps after unpermitting App 1
+        uint256[] memory pkpTokenIds = new uint256[](1);
+        pkpTokenIds[0] = PKP_TOKEN_ID_1;
+        VincentUserViewFacet.PkpPermittedApps[] memory permittedAppsResults = vincentUserViewFacet.getPermittedAppsForPkps(pkpTokenIds, 0, 10);
+        assertEq(permittedAppsResults.length, 1);
+        assertEq(permittedAppsResults[0].pkpTokenId, PKP_TOKEN_ID_1);
+        assertEq(permittedAppsResults[0].permittedApps.length, 1); // Only App 2 remains
+        assertEq(permittedAppsResults[0].permittedApps[0].appId, newAppId_2);
+        assertEq(permittedAppsResults[0].permittedApps[0].version, newAppVersion_2);
+        assertTrue(permittedAppsResults[0].permittedApps[0].versionEnabled);
     }
 
     function testSetAbilityPolicyParameters_AbilityPolicyNotRegisteredForAppVersion() public {

@@ -28,6 +28,7 @@ import type {
   getAllRegisteredAgentPkpEthAddresses as _getAllRegisteredAgentPkpEthAddresses,
   getAllAbilitiesAndPoliciesForApp as _getAllAbilitiesAndPoliciesForApp,
   getPermittedAppVersionForPkp as _getPermittedAppVersionForPkp,
+  getPermittedAppsForPkps as _getPermittedAppsForPkps,
   validateAbilityExecutionAndGetPolicies as _validateAbilityExecutionAndGetPolicies,
 } from './internal/user/UserView';
 
@@ -266,6 +267,32 @@ export interface GetAllPermittedAppIdsForPkpParams {
 /**
  * @category Interfaces
  * */
+export interface PermittedApp {
+  appId: number;
+  version: number;
+  versionEnabled: boolean;
+}
+
+/**
+ * @category Interfaces
+ * */
+export interface PkpPermittedApps {
+  pkpTokenId: string;
+  permittedApps: PermittedApp[];
+}
+
+/**
+ * @category Interfaces
+ * */
+export interface GetPermittedAppsForPkpsParams {
+  pkpEthAddresses: string[];
+  offset: string;
+  pageSize: string;
+}
+
+/**
+ * @category Interfaces
+ * */
 export interface GetAllAbilitiesAndPoliciesForAppParams {
   pkpEthAddress: string;
   appId: number;
@@ -425,11 +452,18 @@ export interface ContractClient {
 
   /** Get all app IDs that have permissions for a specific PKP token, excluding deleted apps
    *
+   * @deprecated Use getPermittedAppsForPkps instead
    * @returns Array of app IDs that have permissions for the PKP token and haven't been deleted
    */
   getAllPermittedAppIdsForPkp(
     params: GetAllPermittedAppIdsForPkpParams,
   ): ReturnType<typeof _getAllPermittedAppIdsForPkp>;
+
+  /** Get permitted apps for multiple PKPs with detailed information including versions and enabled status
+   *
+   * @returns Array of PkpPermittedApps containing permitted app details for each PKP
+   */
+  getPermittedAppsForPkps(params: GetPermittedAppsForPkpsParams): Promise<PkpPermittedApps[]>;
 
   /** Get all permitted abilities, policies, and policy parameters for a specific app and PKP in a nested object structure
    *

@@ -134,6 +134,64 @@
   },
   {
     "type": "function",
+    "name": "getPermittedAppsForPkps",
+    "inputs": [
+      {
+        "name": "pkpTokenIds",
+        "type": "uint256[]",
+        "internalType": "uint256[]"
+      },
+      {
+        "name": "offset",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "pageSize",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "results",
+        "type": "tuple[]",
+        "internalType": "struct VincentUserViewFacet.PkpPermittedApps[]",
+        "components": [
+          {
+            "name": "pkpTokenId",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "permittedApps",
+            "type": "tuple[]",
+            "internalType": "struct VincentUserViewFacet.PermittedApp[]",
+            "components": [
+              {
+                "name": "appId",
+                "type": "uint40",
+                "internalType": "uint40"
+              },
+              {
+                "name": "version",
+                "type": "uint24",
+                "internalType": "uint24"
+              },
+              {
+                "name": "versionEnabled",
+                "type": "bool",
+                "internalType": "bool"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
     "name": "validateAbilityExecutionAndGetPolicies",
     "inputs": [
       {
