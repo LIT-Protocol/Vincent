@@ -4,7 +4,7 @@ import {
   disconnectVincentAbilityClients,
   getVincentAbilityClient,
 } from '@lit-protocol/vincent-app-sdk/abilityClient';
-import { getTestClient } from '@lit-protocol/vincent-contracts-sdk';
+import { getClient } from '@lit-protocol/vincent-contracts-sdk';
 import { formatEther } from 'viem';
 import type { ContractClient, PermissionData } from '@lit-protocol/vincent-contracts-sdk';
 import { privateKeyToAccount } from 'viem/accounts';
@@ -194,7 +194,7 @@ describe('ERC20 Approval Ability E2E Tests', () => {
     TEST_CONFIG = await checkShouldMintAndFundPkp(TEST_CONFIG);
     TEST_CONFIG = await checkShouldMintCapacityCredit(TEST_CONFIG);
 
-    contractClient = getTestClient({
+    contractClient = getClient({
       signer: new ethers.Wallet(
         TEST_APP_MANAGER_PRIVATE_KEY,
         new ethers.providers.JsonRpcProvider(YELLOWSTONE_RPC_URL),

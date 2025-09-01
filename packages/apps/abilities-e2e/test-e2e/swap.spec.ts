@@ -14,7 +14,7 @@ import {
 } from '@lit-protocol/vincent-app-sdk/abilityClient';
 import { ethers } from 'ethers';
 import type { PermissionData } from '@lit-protocol/vincent-contracts-sdk';
-import { getTestClient } from '@lit-protocol/vincent-contracts-sdk';
+import { getClient } from '@lit-protocol/vincent-contracts-sdk';
 
 import {
   BASE_PUBLIC_CLIENT,
@@ -47,7 +47,7 @@ import { privateKeyToAccount } from 'viem/accounts';
 // Extend Jest timeout to 4 minutes
 jest.setTimeout(240000);
 
-const contractClient = getTestClient({
+const contractClient = getClient({
   signer: new ethers.Wallet(
     TEST_APP_MANAGER_PRIVATE_KEY,
     new ethers.providers.JsonRpcProvider(YELLOWSTONE_RPC_URL),
