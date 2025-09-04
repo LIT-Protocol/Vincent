@@ -5,6 +5,7 @@
     "access": "public"
   },
   "dependencies": {
+    "@lit-protocol/vincent-app-sdk": "workspace:*",
     "@lit-protocol/vincent-ability-sdk": "workspace:*",
     "@lit-protocol/vincent-policy-spending-limit": "workspace:*",
     "@uniswap/sdk-core": "^7.7.2",

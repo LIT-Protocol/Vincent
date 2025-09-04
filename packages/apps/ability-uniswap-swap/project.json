@@ -49,6 +49,7 @@
     },
     "test": {
       "executor": "@nx/jest:jest",
+      "dependsOn": ["build", "action:deploy"],
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
       "options": {
         "jestConfig": "{projectRoot}/test/jest.config.js",

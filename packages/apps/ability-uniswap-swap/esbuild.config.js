@@ -118,16 +118,22 @@ const wrapIIFEInStringPlugin = {
 
 (async () => {
   try {
+    const sharedConfig = {
+      tsconfig: './tsconfig.lib.json',
+      bundle: true,
+      minify: false,
+      sourcemap: false,
+      treeShaking: true,
+      metafile: true,
+      outdir: './src/generated/',
+      platform: 'browser',
+      write: false,
+    };
+
     await esbuild
       .build({
-        tsconfig: './tsconfig.lib.json',
+        ...sharedConfig,
         entryPoints: ['./src/lib/lit-action.ts'],
-        bundle: true,
-        minify: false,
-        sourcemap: false,
-        treeShaking: true,
-        metafile: true,
-        outdir: './src/generated/',
         plugins: [
           aliasFetch(),
           polyfillNode({
@@ -148,8 +154,6 @@ const wrapIIFEInStringPlugin = {
           wrapIIFEInStringPlugin,
           createBundledAbilityFile,
         ],
-        platform: 'browser',
-        write: false,
       })
       .then((result) => {
         result.outputFiles.forEach((file) => {
@@ -164,8 +168,71 @@ const wrapIIFEInStringPlugin = {
       });
 
     console.log('✅ Vincent ability built successfully');
+
+    await esbuild
+      .build({
+        ...sharedConfig,
+        entryPoints: ['./src/lib/prepare/lit-action.ts'],
+        plugins: [
+          aliasFetch(),
+          polyfillNode({
+            globals: {
+              Buffer: true,
+              process: true,
+            },
+            modules: {
+              crypto: true,
+              http: true,
+              https: true,
+              stream: true,
+              zlib: true,
+              url: true,
+              util: true,
+            },
+          }),
+          {
+            name: 'wrap-prepare-iife-in-string',
+            setup(build) {
+              build.initialOptions.write = false;
+
+              build.onEnd(async (result) => {
+                if (result.errors.length > 0) {
+                  console.error('Build failed with errors:', result.errors);
+                  return;
+                }
+
+                const outputFile = result.outputFiles[0];
+                const content = outputFile.text;
+                const ipfsCid = await Hash.of(content);
+
+                const wrapped = litActionModuleCode({ content, ipfsCid });
+                const outputPath = path.resolve('./src/generated/lit-action-prepare.js');
+                ensureDirectoryExistence(outputPath);
+                fs.writeFileSync(outputPath, wrapped);
+
+                const metadataContent = metadataJsonFile({ ipfsCid });
+                const metadataPath = path.resolve('./src/generated/vincent-prepare-metadata.json');
+                fs.writeFileSync(metadataPath, metadataContent);
+              });
+            },
+          },
+        ],
+      })
+      .then((result) => {
+        result.outputFiles.forEach((file) => {
+          const bytes = file.text.length;
+          const mbInBinary = (bytes / (1024 * 1024)).toFixed(4);
+          const mbInDecimal = (bytes / 1_000_000).toFixed(4);
+
+          console.log(
+            `✅ prepare-${file.path.split('/').pop()}\n- ${mbInDecimal} MB (in decimal)\n- ${mbInBinary} MB (in binary)`,
+          );
+        });
+      });
+
+    console.log('✅ All lit actions built successfully');
   } catch (e) {
-    console.error('❌ Error building Vincent ability: ', e);
+    console.error('❌ Error building lit actions: ', e);
     process.exit(1);
   }
 })();

@@ -66,7 +66,7 @@ export const getTokenAmountInUsd = async ({
   console.log(`Getting price in WETH from Uniswap (getTokenAmountInUsd)`, {
     tokenInAddress: tokenAddress,
     tokenInDecimals: tokenDecimals,
-    tokenInAmount: tokenAmount,
+    tokenInAmount: tokenAmount.toString(),
     tokenOutAddress: wethToken.address,
     tokenOutDecimals: 18,
     rpcUrl: rpcUrlForUniswap,
@@ -74,13 +74,10 @@ export const getTokenAmountInUsd = async ({
   });
 
   const route = await getUniswapQuote({
-    tokenInAddress: tokenAddress,
-    tokenInDecimals: tokenDecimals,
-    tokenInAmount: tokenAmount,
-    tokenOutAddress: wethToken.address,
-    tokenOutDecimals: 18,
     rpcUrl: rpcUrlForUniswap,
-    chainId: chainIdForUniswap,
+    tokenInAddress: tokenAddress,
+    tokenInAmount: tokenAmount.toString(),
+    tokenOutAddress: wethToken.address,
     recipient: pkpEthAddress,
   });
 

@@ -4,22 +4,16 @@ import { ethers } from 'ethers';
 
 export async function getUniswapQuote({
   rpcUrl,
-  chainId,
   tokenInAddress,
-  tokenInDecimals,
   tokenInAmount,
   tokenOutAddress,
-  tokenOutDecimals,
   recipient,
   slippageTolerance,
 }: {
   rpcUrl: string;
-  chainId: number;
   tokenInAddress: string;
-  tokenInDecimals: number;
-  tokenInAmount: number;
+  tokenInAmount: string;
   tokenOutAddress: string;
-  tokenOutDecimals: number;
   recipient: string;
   slippageTolerance?: number;
 }): Promise<SwapRoute> {
@@ -39,6 +33,21 @@ export async function getUniswapQuote({
   }) as typeof clearTimeout;
 
   const provider = new ethers.providers.StaticJsonRpcProvider(rpcUrl);
+  const [network, tokenInDecimals, tokenOutDecimals] = await Promise.all([
+    provider.getNetwork(),
+    new ethers.Contract(
+      tokenInAddress,
+      ['function decimals() view returns (uint8)'],
+      provider,
+    ).decimals(),
+    new ethers.Contract(
+      tokenOutAddress,
+      ['function decimals() view returns (uint8)'],
+      provider,
+    ).decimals(),
+  ]);
+  const chainId = network.chainId;
+
   const router = new AlphaRouter({ chainId, provider });
   try {
     const tokenIn = new Token(chainId, tokenInAddress, tokenInDecimals);
@@ -69,48 +78,6 @@ export async function getUniswapQuote({
     if (!routeResult || !routeResult.quote) {
       throw new Error('Failed to get quote from Uniswap (no route)');
     }
-
-    console.log('Route details:', {
-      routes: routeResult.route.map((r) => ({
-        protocol: r.protocol,
-        pools:
-          'pools' in r.route
-            ? r.route.pools.map((p) => ({
-                token0:
-                  p.token0.symbol ||
-                  (p.token0.isToken ? p.token0.address.slice(0, 6) : p.token0.name),
-                token1:
-                  p.token1.symbol ||
-                  (p.token1.isToken ? p.token1.address.slice(0, 6) : p.token1.name),
-                fee: 'fee' in p ? `${p.fee / 10000}%` : 'N/A',
-              }))
-            : 'pairs' in r.route
-              ? r.route.pairs.map((p) => ({
-                  token0:
-                    p.token0.symbol ||
-                    (p.token0.isToken ? p.token0.address.slice(0, 6) : p.token0.name),
-                  token1:
-                    p.token1.symbol ||
-                    (p.token1.isToken ? p.token1.address.slice(0, 6) : p.token1.name),
-                  type: 'V2',
-                }))
-              : [],
-        portion: `${(r.percent * 100).toFixed(1)}%`,
-      })),
-      quote: {
-        amount: routeResult.quote.toExact(),
-        gasAdjusted: routeResult.quoteGasAdjusted.toExact(),
-        formatted: ethers.utils.formatUnits(
-          routeResult.quote.quotient.toString(),
-          tokenOutDecimals,
-        ),
-      },
-      gas: {
-        estimated: routeResult.estimatedGasUsed.toString(),
-        costUSD: routeResult.estimatedGasUsedUSD.toFixed(4),
-      },
-    });
-
     console.log('AlphaRouter completed successfully');
     return routeResult;
   } finally {
