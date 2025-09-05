@@ -7,40 +7,54 @@ if (!PINATA_JWT) {
   throw new Error('PINATA_JWT environment variable is not set in root .env file');
 }
 
+async function deployLitAction(outputFile, metadataFile, description) {
+  const generatedDir = path.join(__dirname, '../src/generated');
+  const filePath = path.join(generatedDir, outputFile);
+
+  if (!fs.existsSync(filePath)) {
+    throw new Error(
+      `Bundled ${description} code string not found at ${filePath}. Please run pnpm node ./esbuild.config.js first.`,
+    );
+  }
+
+  const litActionCodeString = require(filePath);
+
+  console.log(`Deploying ${outputFile} to IPFS...`);
+  const ipfsCid = await uploadToIPFS(outputFile, litActionCodeString.code);
+
+  const cidJsonPath = path.join(generatedDir, metadataFile);
+  const metadata = fs.readFileSync(cidJsonPath);
+  const { ipfsCid: metadataIpfsCid } = JSON.parse(metadata);
+
+  if (ipfsCid !== metadataIpfsCid) {
+    throw new Error(
+      `IPFS CID mismatch in ${metadataFile}. Expected: ${metadataIpfsCid}, got: ${ipfsCid}`,
+    );
+  }
+
+  console.log(`✅ Successfully deployed ${description}`);
+  console.log(`ℹ️  Deployed ${outputFile} to IPFS: ${ipfsCid}`);
+
+  return ipfsCid;
+}
+
 (async () => {
   try {
-    const outputFile = 'lit-action.js';
+    // Deploy main Vincent ability lit action
+    await deployLitAction(
+      'lit-action.js',
+      'vincent-ability-metadata.json',
+      'Vincent Ability Lit Action',
+    );
 
-    const generatedDir = path.join(__dirname, '../src/generated');
-    const filePath = path.join(generatedDir, outputFile);
-    if (!fs.existsSync(filePath)) {
-      throw new Error(
-        `Bundled Lit Action code string not found at ${filePath}. Please run pnpx nx run vincent-ability-uniswap-swap:action:build first.`,
-      );
-    }
-    const litActionCodeString = require(filePath);
+    // Deploy prepare lit action
+    await deployLitAction(
+      'lit-action-prepare.js',
+      'vincent-prepare-metadata.json',
+      'Prepare Lit Action',
+    );
 
-    console.log(`Deploying ${outputFile} to IPFS...`);
-    const ipfsCid = await uploadToIPFS(outputFile, litActionCodeString.code);
-
-    const cidJsonPath = path.join(generatedDir, 'vincent-ability-metadata.json');
-
-    const metadata = fs.readFileSync(cidJsonPath);
-    const { ipfsCid: metadataIpfsCid } = JSON.parse(metadata);
-    if (ipfsCid !== metadataIpfsCid) {
-      throw new Error(
-        `IPFS CID mismatch in vincent-policy-metadata.json. Expected: ${metadataIpfsCid}, got: ${ipfsCid}`,
-      );
-    }
-
-    // const cidJsonContent = {
-    //   ipfsCid,
-    // };
-    // fs.writeFileSync(cidJsonPath, JSON.stringify(cidJsonContent, null, 2), 'utf8');
-
-    console.log('✅ Successfully deployed Lit Action');
-    console.log(`ℹ️  Deployed ${outputFile} to IPFS: ${ipfsCid}`);
-    // console.log(`ℹ️  Saved vincent-ability-metadata.json to: ${cidJsonPath}`);
+    console.log('✅ All lit actions deployed successfully');
   } catch (error) {
     console.error('❌ Error in deploy process:', error);
     process.exit(1);

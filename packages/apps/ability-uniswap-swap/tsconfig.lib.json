@@ -13,13 +13,14 @@
     "module": "nodenext",
     "esModuleInterop": true
   },
-  "include": ["src/**/*.ts", "src/generated/vincent-ability-metadata.json"],
+  "include": [
+    "src/**/*.ts",
+    "src/generated/vincent-ability-metadata.json",
+    "src/generated/vincent-prepare-metadata.json"
+  ],
   "references": [
     {
       "path": "../../libs/ability-sdk/tsconfig.lib.json"
-    },
-    {
-      "path": "../policy-spending-limit/tsconfig.lib.json"
     },
     {
       "path": "../../libs/app-sdk/tsconfig.lib.json"

@@ -8,10 +8,10 @@ export interface GasParams {
 
 export const getGasParams = async (
   provider: ethers.providers.Provider,
-  block: ethers.providers.Block,
-  feeData: ethers.providers.FeeData,
   estimatedGas: ethers.BigNumber,
 ): Promise<GasParams> => {
+  // Fetch block and fee data
+  const [block, feeData] = await Promise.all([provider.getBlock('latest'), provider.getFeeData()]);
   // Determine baseFeePerGas, with multiple fallbacks
   let baseFeePerGas = block.baseFeePerGas;
   if (baseFeePerGas == null) {
@@ -32,8 +32,8 @@ export const getGasParams = async (
   // Calculate maxFeePerGas as the sum of baseFee and priority fee
   const maxFeePerGas = baseFeePerGas.add(maxPriorityFeePerGas);
 
-  // Add a 20% buffer to the estimated gas limit
-  const estimatedGasWithBuffer = estimatedGas.mul(120).div(100);
+  // Add a 50% buffer to the estimated gas limit for complex swaps
+  const estimatedGasWithBuffer = estimatedGas.mul(150).div(100);
 
   return {
     estimatedGas: estimatedGasWithBuffer,

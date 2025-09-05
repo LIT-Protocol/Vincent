@@ -7,9 +7,6 @@
       "path": "../../libs/ability-sdk"
     },
     {
-      "path": "../policy-spending-limit"
-    },
-    {
       "path": "../../libs/app-sdk"
     },
     {

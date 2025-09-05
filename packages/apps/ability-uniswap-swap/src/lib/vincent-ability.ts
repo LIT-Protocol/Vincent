@@ -1,39 +1,20 @@
 import {
   createVincentAbility,
-  createVincentAbilityPolicy,
   supportedPoliciesForAbility,
 } from '@lit-protocol/vincent-ability-sdk';
-import { bundledVincentPolicy } from '@lit-protocol/vincent-policy-spending-limit';
+import { ethers } from 'ethers';
 
-import { CHAIN_TO_ADDRESSES_MAP } from '@uniswap/sdk-core';
-
-import { getTokenAmountInUsd, sendUniswapTx } from './ability-helpers';
-import {
-  checkNativeTokenBalance,
-  checkTokenInBalance,
-  checkUniswapPoolExists,
-} from './ability-checks';
+import { sendUniswapTx } from './ability-helpers';
+import { checkNativeTokenBalance, checkTokenInBalance } from './ability-checks';
 import {
   executeFailSchema,
   executeSuccessSchema,
   precheckFailSchema,
   abilityParamsSchema,
 } from './schemas';
-import { ethers } from 'ethers';
 import { checkErc20Allowance } from './ability-checks/check-erc20-allowance';
-
-const SpendingLimitPolicy = createVincentAbilityPolicy({
-  abilityParamsSchema,
-  bundledVincentPolicy,
-  abilityParameterMappings: {
-    rpcUrlForUniswap: 'rpcUrlForUniswap',
-    chainIdForUniswap: 'chainIdForUniswap',
-    ethRpcUrl: 'ethRpcUrl',
-    tokenInAddress: 'tokenAddress',
-    tokenInDecimals: 'tokenDecimals',
-    tokenInAmount: 'buyAmount',
-  },
-});
+import { validateSignedUniswapQuote } from './prepare/validate-signed-uniswap-quote';
+import VincentPrepareMetadata from '../generated/vincent-prepare-metadata.json';
 
 export const bigintReplacer = (key: any, value: any) => {
   return typeof value === 'bigint' ? value.toString() : value;
@@ -44,7 +25,7 @@ export const vincentAbility = createVincentAbility({
   abilityDescription: 'Performs a swap between two ERC20 tokens using Uniswap' as const,
 
   abilityParamsSchema,
-  supportedPolicies: supportedPoliciesForAbility([SpendingLimitPolicy]),
+  supportedPolicies: supportedPoliciesForAbility([]),
 
   executeSuccessSchema,
   executeFailSchema,
@@ -52,26 +33,30 @@ export const vincentAbility = createVincentAbility({
   precheckFailSchema,
 
   precheck: async ({ abilityParams }, { succeed, fail, delegation: { delegatorPkpInfo } }) => {
-    // TODO: Rewrite checks to use `createAllowResult` and `createDenyResult` so we always know when we get a runtime err
-    const {
-      rpcUrlForUniswap,
-      chainIdForUniswap,
-      tokenInAddress,
-      tokenInDecimals,
-      tokenInAmount,
-      tokenOutAddress,
-      tokenOutDecimals,
-    } = abilityParams;
-
     console.log('Prechecking UniswapSwapAbility', JSON.stringify(abilityParams, bigintReplacer, 2));
-    const delegatorPkpAddress = delegatorPkpInfo.ethAddress;
 
-    const provider = new ethers.providers.JsonRpcProvider(rpcUrlForUniswap);
+    // TODO: Rewrite checks to use `createAllowResult` and `createDenyResult` so we always know when we get a runtime err
+    const { rpcUrlForUniswap, signedUniswapQuote } = abilityParams;
+    const { quote } = signedUniswapQuote;
+
+    try {
+      validateSignedUniswapQuote({
+        prepareSuccessResult: signedUniswapQuote,
+        expectedSignerEthAddress: VincentPrepareMetadata.pkpEthAddress,
+      });
+    } catch (error) {
+      return fail({
+        reason: `Uniswap quote validation failed: ${error instanceof Error ? error.message : String(error)}`,
+      });
+    }
+
+    const delegatorPkpAddress = delegatorPkpInfo.ethAddress;
+    const provider = new ethers.providers.StaticJsonRpcProvider(rpcUrlForUniswap);
 
     try {
       await checkNativeTokenBalance({
         provider,
-        pkpEthAddress: delegatorPkpAddress as `0x${string}`,
+        pkpEthAddress: delegatorPkpAddress,
       });
     } catch (err) {
       return fail({
@@ -79,38 +64,15 @@ export const vincentAbility = createVincentAbility({
       });
     }
 
-    const uniswapRouterAddress = CHAIN_TO_ADDRESSES_MAP[
-      chainIdForUniswap as keyof typeof CHAIN_TO_ADDRESSES_MAP
-    ].swapRouter02Address as `0x${string}`;
-    if (uniswapRouterAddress === undefined) {
-      return fail({
-        reason: `Uniswap router address not found for chainId ${chainIdForUniswap} (UniswapSwapAbilityPrecheck)`,
-      });
-    }
-
     const requiredAmount = ethers.utils
-      .parseUnits(tokenInAmount.toString(), tokenInDecimals)
+      .parseUnits(quote.amountIn, quote.tokenInDecimals)
       .toBigInt();
-
-    try {
-      await checkErc20Allowance({
-        provider,
-        tokenAddress: tokenInAddress as `0x${string}`,
-        owner: delegatorPkpAddress as `0x${string}`,
-        spender: uniswapRouterAddress,
-        tokenAmount: requiredAmount,
-      });
-    } catch (err) {
-      return fail({
-        reason: `ERC20 allowance check error: ${err instanceof Error ? err.message : String(err)}`,
-      });
-    }
 
     try {
       await checkTokenInBalance({
         provider,
-        pkpEthAddress: delegatorPkpAddress as `0x${string}`,
-        tokenInAddress: tokenInAddress as `0x${string}`,
+        pkpEthAddress: delegatorPkpAddress,
+        tokenInAddress: quote.tokenIn,
         tokenInAmount: requiredAmount,
       });
     } catch (err) {
@@ -119,135 +81,53 @@ export const vincentAbility = createVincentAbility({
       });
     }
 
+    // Check ERC20 allowance for the router specified in the route
     try {
-      await checkUniswapPoolExists({
-        rpcUrl: rpcUrlForUniswap,
-        chainId: chainIdForUniswap,
-        tokenInAddress: tokenInAddress as `0x${string}`,
-        tokenInDecimals,
-        tokenInAmount,
-        tokenOutAddress: tokenOutAddress as `0x${string}`,
-        tokenOutDecimals,
+      await checkErc20Allowance({
+        provider,
+        tokenAddress: quote.tokenIn,
+        owner: delegatorPkpAddress,
+        spender: quote.to,
+        tokenAmount: requiredAmount,
       });
     } catch (err) {
       return fail({
-        reason: `Check uniswap pool exists error: ${err instanceof Error ? err.message : String(err)}`,
+        reason: `ERC20 allowance check error: ${err instanceof Error ? err.message : String(err)}`,
+        erc20SpenderAddress: quote.to,
       });
     }
 
     return succeed();
   },
-  execute: async (
-    { abilityParams },
-    { succeed, fail, policiesContext, delegation: { delegatorPkpInfo } },
-  ) => {
+  execute: async ({ abilityParams }, { succeed, fail, delegation: { delegatorPkpInfo } }) => {
     console.log('Executing UniswapSwapAbility', JSON.stringify(abilityParams, bigintReplacer, 2));
 
-    const { ethAddress: delegatorPkpAddress, publicKey: delegatorPublicKey } = delegatorPkpInfo;
-    const {
-      ethRpcUrl,
-      rpcUrlForUniswap,
-      chainIdForUniswap,
-      tokenInAddress,
-      tokenInDecimals,
-      tokenInAmount,
-      tokenOutAddress,
-      tokenOutDecimals,
-    } = abilityParams;
+    const { rpcUrlForUniswap, signedUniswapQuote } = abilityParams;
+    const { quote } = signedUniswapQuote;
 
-    // Commit spending limit before we submit the TX. We'd rather the tx fail and we count the spend erroneously
-    // than to have the commit fail but the tx succeed, and we erroneously don't track the spend!
-    const spendingLimitPolicyContext =
-      policiesContext.allowedPolicies['@lit-protocol/vincent-policy-spending-limit'];
-
-    let spendLimitCommitTxHash: string | undefined;
-
-    if (spendingLimitPolicyContext !== undefined) {
-      const tokenInAmountInUsd = await getTokenAmountInUsd({
-        ethRpcUrl,
-        rpcUrlForUniswap,
-        chainIdForUniswap,
-        tokenAddress: tokenInAddress,
-        tokenAmount: tokenInAmount,
-        tokenDecimals: tokenInDecimals,
+    try {
+      validateSignedUniswapQuote({
+        prepareSuccessResult: signedUniswapQuote,
+        expectedSignerEthAddress: VincentPrepareMetadata.pkpEthAddress,
       });
-
-      const { maxSpendingLimitInUsd } = spendingLimitPolicyContext.result;
-
-      console.log(
-        'Spending limit policy commit',
-        JSON.stringify(spendingLimitPolicyContext, bigintReplacer, 2),
-      );
-
-      try {
-        const commitResult = await spendingLimitPolicyContext.commit({
-          amountSpentUsd: tokenInAmountInUsd.toNumber(),
-          maxSpendingLimitInUsd,
-        });
-
-        console.log(
-          'Spending limit policy commit result',
-          JSON.stringify(commitResult, bigintReplacer, 2),
-        );
-        if (commitResult.allow) {
-          spendLimitCommitTxHash = commitResult.result.spendTxHash;
-        } else {
-          if (commitResult.runtimeError) {
-            // Handle either an error that was `throw()`n from the commit method and wrapped by the sdk
-            // Or an explicit schema validation error on input params or output result
-            return fail({
-              reason:
-                'Commit spending limit policy spending limit adjustment due to un-structured error response.',
-              spendingLimitCommitFail: {
-                runtimeError: commitResult.runtimeError,
-                schemaValidationError: commitResult.schemaValidationError,
-              },
-            });
-          }
-
-          // In this case we should have a result that is the shape of the commitDenyResultSchema from the policy to return
-          return fail({
-            reason:
-              'Commit spending limit policy spending limit adjustment denied with structured result',
-            spendingLimitCommitFail: {
-              structuredCommitFailureReason: commitResult.result,
-              runtimeError: commitResult.runtimeError,
-              schemaValidationError: commitResult.schemaValidationError,
-            },
-          });
-        }
-
-        console.log(
-          `Committed spending limit policy for transaction: ${spendLimitCommitTxHash} (UniswapSwapAbilityExecute)`,
-        );
-      } catch (commitErr) {
-        // Commit methods are wrapped in code so that this should only happen if we encounter an error
-        // _inside_ the wrapping code in the vincent-ability-sdk -- but let's handle it Just In Case :tm:
-        return fail({
-          reason:
-            'Commit spending limit policy spending limit adjustment due to unexpected runtime error.',
-          spendingLimitCommitFail: {
-            runtimeError: commitErr instanceof Error ? commitErr.message : String(commitErr),
-          },
-        });
-      }
+    } catch (error) {
+      return fail({
+        reason: `Uniswap quote validation failed: ${error instanceof Error ? error.message : String(error)}`,
+      });
     }
 
     const swapTxHash = await sendUniswapTx({
       rpcUrl: rpcUrlForUniswap,
-      chainId: chainIdForUniswap,
-      pkpEthAddress: delegatorPkpAddress as `0x${string}`,
-      pkpPublicKey: delegatorPublicKey,
-      tokenInAddress: tokenInAddress as `0x${string}`,
-      tokenOutAddress: tokenOutAddress as `0x${string}`,
-      tokenInDecimals,
-      tokenOutDecimals,
-      tokenInAmount,
+      chainId: quote.chainId,
+      pkpEthAddress: delegatorPkpInfo.ethAddress,
+      pkpPublicKey: delegatorPkpInfo.publicKey,
+      uniswapTxData: {
+        to: quote.to,
+        calldata: quote.calldata,
+        estimatedGasUsed: quote.estimatedGasUsed,
+      },
     });
 
-    return succeed({
-      swapTxHash,
-      spendTxHash: spendLimitCommitTxHash,
-    });
+    return succeed({ swapTxHash });
   },
 });

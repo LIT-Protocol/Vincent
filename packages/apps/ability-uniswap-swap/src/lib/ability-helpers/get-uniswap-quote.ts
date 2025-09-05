@@ -2,128 +2,100 @@ import { Token, CurrencyAmount, TradeType, Percent } from '@uniswap/sdk-core';
 import { AlphaRouter, SwapType, SwapRoute } from '@uniswap/smart-order-router';
 import { ethers } from 'ethers';
 
-export const getUniswapQuote = async ({
+export async function getUniswapQuote({
   rpcUrl,
-  chainId,
   tokenInAddress,
-  tokenInDecimals,
   tokenInAmount,
   tokenOutAddress,
-  tokenOutDecimals,
+  recipient,
+  slippageTolerance,
 }: {
   rpcUrl: string;
-  chainId: number;
   tokenInAddress: string;
-  tokenInDecimals: number;
-  tokenInAmount: number;
+  tokenInAmount: string;
   tokenOutAddress: string;
-  tokenOutDecimals: number;
-}): Promise<{
-  bestQuote: ethers.BigNumber;
-  bestFee: number;
-  amountOutMin: ethers.BigNumber;
-  route: SwapRoute;
-}> => {
-  console.log('Getting Uniswap Quote (getUniswapQuote)', {
-    rpcUrl,
-    chainId,
-    tokenInAddress,
-    tokenInDecimals,
-    tokenInAmount,
-    tokenOutAddress,
-    tokenOutDecimals,
-  });
+  recipient: string;
+  slippageTolerance?: number;
+}): Promise<SwapRoute> {
+  const activeTimeouts = new Set<NodeJS.Timeout>();
+  const realSetTimeout = global.setTimeout;
+  const realClearTimeout = global.clearTimeout;
+
+  global.setTimeout = ((fn: (...args: unknown[]) => void, ms?: number, ...args: unknown[]) => {
+    const id = realSetTimeout(fn, ms as number, ...args);
+    activeTimeouts.add(id);
+    return id;
+  }) as typeof setTimeout;
+
+  global.clearTimeout = ((id: NodeJS.Timeout) => {
+    activeTimeouts.delete(id);
+    return realClearTimeout(id);
+  }) as typeof clearTimeout;
 
   const provider = new ethers.providers.StaticJsonRpcProvider(rpcUrl);
+  const [network, tokenInDecimals, tokenOutDecimals] = await Promise.all([
+    provider.getNetwork(),
+    new ethers.Contract(
+      tokenInAddress,
+      ['function decimals() view returns (uint8)'],
+      provider,
+    ).decimals(),
+    new ethers.Contract(
+      tokenOutAddress,
+      ['function decimals() view returns (uint8)'],
+      provider,
+    ).decimals(),
+  ]);
+  const chainId = network.chainId;
+
   const router = new AlphaRouter({ chainId, provider });
-
-  // Create token instances
-  const tokenIn = new Token(chainId, tokenInAddress, tokenInDecimals);
-  const tokenOut = new Token(chainId, tokenOutAddress, tokenOutDecimals);
-
-  // Convert amount to proper format
-  const amountIn = CurrencyAmount.fromRawAmount(
-    tokenIn,
-    ethers.utils.parseUnits(tokenInAmount.toString(), tokenInDecimals).toString(),
-  );
-
-  console.log('Amount conversion:', {
-    original: tokenInAmount,
-    decimals: tokenInDecimals,
-    wei: amountIn.quotient.toString(),
-    formatted: amountIn.toExact(),
-  });
-
-  // Get quote from AlphaRouter (supports both single and multi-hop)
-  const slippagePercent = new Percent(50, 10000); // 0.5% slippage
-
-  console.log('Getting route from AlphaRouter...');
-  const routeResult = await router.route(amountIn, tokenOut, TradeType.EXACT_INPUT, {
-    recipient: ethers.constants.AddressZero, // Will be replaced with actual recipient
-    slippageTolerance: slippagePercent,
-    deadline: Math.floor(Date.now() / 1000 + 1800), // 30 minutes from now
-    type: SwapType.SWAP_ROUTER_02,
-  });
-
-  if (!routeResult || !routeResult.quote) {
-    throw new Error(
-      'Failed to get quote from Uniswap. No valid route found for this token pair (getUniswapQuote)',
+  try {
+    const tokenIn = new Token(chainId, tokenInAddress, tokenInDecimals);
+    const tokenOut = new Token(chainId, tokenOutAddress, tokenOutDecimals);
+    const amountIn = CurrencyAmount.fromRawAmount(
+      tokenIn,
+      ethers.utils.parseUnits(tokenInAmount.toString(), tokenInDecimals).toString(),
     );
-  }
+    // User provides slippage in basis points (e.g., 50 for 0.5%, 100 for 1%)
+    // Default to 50 basis points (0.5%) if not provided
+    const slippage = new Percent(slippageTolerance ?? 50, 10_000);
 
-  const bestQuote = ethers.BigNumber.from(routeResult.quote.quotient.toString());
+    console.log('Amount conversion:', {
+      original: tokenInAmount,
+      decimals: tokenInDecimals,
+      wei: amountIn.quotient.toString(),
+      formatted: amountIn.toExact(),
+    });
 
-  // Calculate minimum output with slippage
-  const amountOutMin = ethers.BigNumber.from(routeResult.quoteGasAdjusted.quotient.toString())
-    .mul(10000 - 50)
-    .div(10000); // 0.5% slippage
+    console.log('Getting route from AlphaRouter...');
+    const routeResult = await router.route(amountIn, tokenOut, TradeType.EXACT_INPUT, {
+      recipient,
+      slippageTolerance: slippage,
+      deadline: Math.floor(Date.now() / 1000 + 1800),
+      type: SwapType.SWAP_ROUTER_02,
+    });
 
-  console.log('Route details:', {
-    route: routeResult.route.map((r) => ({
-      protocol: r.protocol,
-      pools:
-        'pools' in r.route
-          ? r.route.pools.map((p: any) => ({
-              token0: p.token0.symbol || p.token0.address,
-              token1: p.token1.symbol || p.token1.address,
-              fee: 'fee' in p ? p.fee : 'N/A',
-            }))
-          : 'pairs' in r.route
-            ? r.route.pairs.map((p: any) => ({
-                token0: p.token0.symbol || p.token0.address,
-                token1: p.token1.symbol || p.token1.address,
-                fee: 'V2',
-              }))
-            : [],
-    })),
-    quote: {
-      raw: bestQuote.toString(),
-      formatted: ethers.utils.formatUnits(bestQuote, tokenOutDecimals),
-    },
-    minimumOutput: {
-      raw: amountOutMin.toString(),
-      formatted: ethers.utils.formatUnits(amountOutMin, tokenOutDecimals),
-    },
-    estimatedGasUsedUSD: routeResult.estimatedGasUsedUSD.toFixed(2),
-  });
-
-  // For compatibility, we'll use the first pool's fee as bestFee
-  // In multi-hop scenarios, this represents the first hop's fee
-  let bestFee = 3000; // Default to 0.3%
-  if (routeResult.route.length > 0) {
-    const firstRoute = routeResult.route[0].route;
-    if ('pools' in firstRoute && firstRoute.pools.length > 0) {
-      const firstPool = firstRoute.pools[0];
-      if ('fee' in firstPool) {
-        bestFee = firstPool.fee;
-      }
+    if (!routeResult || !routeResult.quote) {
+      throw new Error('Failed to get quote from Uniswap (no route)');
     }
-  }
+    console.log('AlphaRouter completed successfully');
+    return routeResult;
+  } finally {
+    console.log('Performing cleanup of AlphaRouter resources...');
 
-  return {
-    bestQuote,
-    bestFee,
-    amountOutMin,
-    route: routeResult,
-  };
-};
+    provider.removeAllListeners();
+
+    // Clear any timers created during this call
+    console.log(`Clearing ${activeTimeouts.size} timeouts`);
+    for (const id of Array.from(activeTimeouts)) {
+      realClearTimeout(id);
+    }
+    activeTimeouts.clear();
+
+    // Restore globals to avoid side effects
+    global.setTimeout = realSetTimeout;
+    global.clearTimeout = realClearTimeout;
+
+    console.log('AlphaRouter cleanup completed');
+  }
+}
