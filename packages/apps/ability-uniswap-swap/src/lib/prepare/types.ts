@@ -8,22 +8,47 @@ export interface QuoteParams {
 }
 
 export interface PrepareUniswapRoute {
+  chainId: number;
   to: string;
   value: string;
   calldata: string;
+  quote: string;
   estimatedGasUsed: string;
   estimatedGasUsedUSD: string;
-  signature: string;
+  blockNumber: string;
+  tokenIn: string;
+  tokenInDecimals: number;
+  amountIn: string;
+  tokenOut: string;
+  tokenOutDecimals: number;
+  amountOut: string;
+  timestamp: number;
 }
 
 export interface PrepareSuccessResult {
-  success: true;
-  result: PrepareUniswapRoute;
+  quote: PrepareUniswapRoute;
+  signature: string;
 }
 
-export interface PrepareErrorResult {
+export interface PrepareErrorResponse {
   success: false;
   error: string;
 }
 
-export type PrepareResult = PrepareSuccessResult | PrepareErrorResult;
+export interface PrepareSuccessResponse {
+  success: true;
+  quote: PrepareUniswapRoute;
+}
+
+export interface PrepareErrorResponse {
+  success: false;
+  error: string;
+}
+
+export type PrepareResponse = PrepareSuccessResponse | PrepareErrorResponse;
+
+export type PrepareSignedUniswapQuote = PrepareSuccessResult & {
+  dataSigned: string;
+  signerPublicKey: string;
+  signerEthAddress: string;
+};

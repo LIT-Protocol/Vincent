@@ -1,10 +1,11 @@
 import { formatEther } from 'viem';
-import { vincentPolicyMetadata as spendingLimitPolicyMetadata } from '@lit-protocol/vincent-policy-spending-limit';
 import { bundledVincentAbility as erc20BundledAbility } from '@lit-protocol/vincent-ability-erc20-approval';
 
 import {
   bundledVincentAbility as uniswapBundledAbility,
   getUniswapQuote,
+  type PrepareSignedUniswapQuote,
+  getSignedUniswapQuote,
 } from '@lit-protocol/vincent-ability-uniswap-swap';
 
 import {
@@ -14,6 +15,7 @@ import {
 import { ethers } from 'ethers';
 import type { PermissionData } from '@lit-protocol/vincent-contracts-sdk';
 import { getClient } from '@lit-protocol/vincent-contracts-sdk';
+import { LitNodeClient } from '@lit-protocol/lit-node-client';
 
 import {
   BASE_PUBLIC_CLIENT,
@@ -36,10 +38,11 @@ import {
   registerNewApp,
   removeAppDelegateeIfNeeded,
 } from './helpers/setup-fixtures';
-
-import { checkShouldMintCapacityCredit } from './helpers/check-mint-capcity-credit';
 import * as util from 'node:util';
 import { privateKeyToAccount } from 'viem/accounts';
+
+import { checkShouldMintCapacityCredit } from './helpers/check-mint-capcity-credit';
+import { LIT_NETWORK } from '@lit-protocol/constants';
 
 const SWAP_AMOUNT = 80;
 const SWAP_TOKEN_IN_ADDRESS = '0x4ed4E862860beD51a9570b96d89aF5E1B0Efefed'; // DEGEN
@@ -146,22 +149,16 @@ const addNewApproval = async (
 };
 
 describe('Uniswap Swap Ability E2E Tests', () => {
-  const MAX_SPENDING_LIMIT_IN_USD_CENTS = 1000000000n; // $10 USD (8 decimals)
-
   // Store the route from precheck for use in execute
-  let UNISWAP_ROUTE: { to: string; calldata: string; estimatedGasUsed: string } | null = null;
+  let SIGNED_UNISWAP_QUOTE: PrepareSignedUniswapQuote | null = null;
 
   // Define permission data for all abilities and policies
   const PERMISSION_DATA: PermissionData = {
     // ERC20 Approval Ability has no policies
     [erc20BundledAbility.ipfsCid]: {},
 
-    // Uniswap Swap Ability has the Spending Limit Policy
-    [uniswapBundledAbility.ipfsCid]: {
-      [spendingLimitPolicyMetadata.ipfsCid]: {
-        maxDailySpendingLimitInUsdCents: MAX_SPENDING_LIMIT_IN_USD_CENTS,
-      },
-    },
+    // Uniswap Swap Ability has no policies
+    [uniswapBundledAbility.ipfsCid]: {},
   };
 
   // An array of the IPFS cid of each ability to be tested, computed from the keys of PERMISSION_DATA
@@ -174,6 +171,7 @@ describe('Uniswap Swap Ability E2E Tests', () => {
   });
 
   let TEST_CONFIG: TestConfig;
+  let LIT_NODE_CLIENT: LitNodeClient;
 
   afterAll(async () => {
     console.log('Disconnecting from Lit node client...');
@@ -229,15 +227,21 @@ describe('Uniswap Swap Ability E2E Tests', () => {
     }
 
     await fundAppDelegateeIfNeeded();
+
+    LIT_NODE_CLIENT = new LitNodeClient({
+      litNetwork: LIT_NETWORK.Datil,
+      debug: true,
+    });
+    await LIT_NODE_CLIENT.connect();
   });
 
-  it('should permit the ERC20 Approval Ability, Uniswap Swap Ability, and Spending Limit Policy for the Agent Wallet PKP', async () => {
+  afterAll(async () => {
+    await LIT_NODE_CLIENT.disconnect();
+  });
+
+  it('should permit the ERC20 Approval Ability and the Uniswap Swap Ability for the Agent Wallet PKP', async () => {
     await permitAbilitiesForAgentWalletPkp(
-      [
-        erc20BundledAbility.ipfsCid,
-        uniswapBundledAbility.ipfsCid,
-        spendingLimitPolicyMetadata.ipfsCid,
-      ],
+      [erc20BundledAbility.ipfsCid, uniswapBundledAbility.ipfsCid],
       TEST_CONFIG,
     );
   });
@@ -281,58 +285,59 @@ describe('Uniswap Swap Ability E2E Tests', () => {
     expect(validationResult.appVersion).toBe(TEST_CONFIG.appVersion!);
 
     // Check that we have the spending limit policy
-    expect(Object.keys(validationResult.decodedPolicies)).toContain(
-      spendingLimitPolicyMetadata.ipfsCid,
-    );
-
-    // Check the policy parameters
-    const policyParams = validationResult.decodedPolicies[spendingLimitPolicyMetadata.ipfsCid];
-    expect(policyParams).toBeDefined();
-    expect(policyParams?.maxDailySpendingLimitInUsdCents).toBe(1000000000n);
+    console.log('validationResult.decodedPolicies', validationResult.decodedPolicies);
+    // expect(Object.keys(validationResult.decodedPolicies)).toContain(
+    //   spendingLimitPolicyMetadata.ipfsCid,
+    // );
   });
 
   it('should generate a Uniswap route for the swap', async () => {
     console.log('Generating Uniswap route...');
-    const quoteResponse = await getUniswapQuote({
-      rpcUrl: RPC_URL,
-      chainId: CHAIN_ID,
-      tokenInAddress: SWAP_TOKEN_IN_ADDRESS,
-      tokenInDecimals: SWAP_TOKEN_IN_DECIMALS,
-      tokenInAmount: SWAP_AMOUNT,
-      tokenOutAddress: SWAP_TOKEN_OUT_ADDRESS,
-      tokenOutDecimals: SWAP_TOKEN_OUT_DECIMALS,
-      recipient: TEST_CONFIG.userPkp!.ethAddress!,
-      slippageTolerance: 50, // 0.5% in basis points
+    SIGNED_UNISWAP_QUOTE = await getSignedUniswapQuote({
+      quoteParams: {
+        rpcUrl: RPC_URL,
+        tokenInAddress: SWAP_TOKEN_IN_ADDRESS,
+        tokenInAmount: SWAP_AMOUNT.toString(),
+        tokenOutAddress: SWAP_TOKEN_OUT_ADDRESS,
+        recipient: TEST_CONFIG.userPkp!.ethAddress!,
+      },
+      ethersSigner: getDelegateeWallet(),
+      litNodeClient: LIT_NODE_CLIENT,
     });
 
-    console.log('Quote received:', quoteResponse);
-    expect(quoteResponse).toBeDefined();
-    expect(quoteResponse.methodParameters).toBeDefined();
-    expect(quoteResponse.methodParameters?.to).toBeDefined();
-    expect(quoteResponse.methodParameters?.calldata).toBeDefined();
-    expect(quoteResponse.estimatedGasUsed).toBeDefined();
+    console.log('Signed Uniswap quote:', SIGNED_UNISWAP_QUOTE);
+    const { quote } = SIGNED_UNISWAP_QUOTE;
+    expect(quote.chainId).toBe(CHAIN_ID);
+    expect(quote.to).toMatch(/^0x[0-9a-fA-F]{40}$/);
+    expect(quote.value).toMatch(/^0x[0-9a-fA-F]+$/);
+    expect(quote.calldata).toMatch(/^0x[0-9a-fA-F]+$/);
 
-    // Format and store the route for use in subsequent tests
-    UNISWAP_ROUTE = {
-      to: quoteResponse.methodParameters!.to,
-      calldata: quoteResponse.methodParameters!.calldata,
-      estimatedGasUsed: quoteResponse.estimatedGasUsed.toString(),
-    };
+    expect(quote.tokenIn.toLowerCase()).toMatch(SWAP_TOKEN_IN_ADDRESS.toLowerCase());
+    expect(quote.amountIn).toMatch(SWAP_AMOUNT.toString());
+    expect(quote.tokenInDecimals).toBe(SWAP_TOKEN_IN_DECIMALS);
 
-    console.log('Generated route:', UNISWAP_ROUTE);
+    expect(quote.tokenOut.toLowerCase()).toMatch(SWAP_TOKEN_OUT_ADDRESS.toLowerCase());
+    expect(quote.amountOut).toMatch(/^\d+(\.\d+)?$/);
+    expect(quote.tokenOutDecimals).toBe(SWAP_TOKEN_OUT_DECIMALS);
+
+    expect(quote.quote).toMatch(/^\d+(\.\d+)?$/);
+    expect(quote.estimatedGasUsed).toMatch(/^\d+$/);
+    expect(quote.estimatedGasUsedUSD).toMatch(/^\d+(\.\d+)?$/);
+    expect(typeof quote.blockNumber).toBe('string');
+    expect(typeof quote.timestamp).toBe('number');
   });
 
   it('should handle ERC20 allowance for the Uniswap router', async () => {
     // Ensure we have a route from the generate route test
-    expect(UNISWAP_ROUTE).toBeDefined();
-    if (!UNISWAP_ROUTE) {
+    expect(SIGNED_UNISWAP_QUOTE).toBeDefined();
+    if (!SIGNED_UNISWAP_QUOTE) {
       throw new Error(
         'No precomputed route available, one should be obtained from the generate route test.',
       );
     }
 
     // Extract spender address from the generated route
-    const erc20SpenderAddress = UNISWAP_ROUTE.to;
+    const erc20SpenderAddress = SIGNED_UNISWAP_QUOTE.quote.to;
     console.log(`Using spender address from generated route: ${erc20SpenderAddress}`);
 
     // First, check if allowance is needed using precheck
@@ -390,8 +395,8 @@ describe('Uniswap Swap Ability E2E Tests', () => {
 
   it('should successfully run precheck on the Uniswap Swap Ability', async () => {
     // Ensure we have a route from the generate route test
-    expect(UNISWAP_ROUTE).toBeDefined();
-    if (!UNISWAP_ROUTE) {
+    expect(SIGNED_UNISWAP_QUOTE).toBeDefined();
+    if (!SIGNED_UNISWAP_QUOTE) {
       throw new Error(
         'No precomputed route available, one should be obtained from the generate route test.',
       );
@@ -401,14 +406,11 @@ describe('Uniswap Swap Ability E2E Tests', () => {
 
     const precheckResult = await uniswapSwapAbilityClient.precheck(
       {
-        ethRpcUrl: ETH_RPC_URL,
         rpcUrlForUniswap: RPC_URL,
-        chainIdForUniswap: CHAIN_ID,
-        tokenInAddress: SWAP_TOKEN_IN_ADDRESS,
-        tokenInDecimals: SWAP_TOKEN_IN_DECIMALS,
-        tokenInAmount: SWAP_AMOUNT,
-        tokenOutAddress: SWAP_TOKEN_OUT_ADDRESS,
-        route: UNISWAP_ROUTE,
+        signedUniswapQuote: {
+          quote: SIGNED_UNISWAP_QUOTE.quote,
+          signature: SIGNED_UNISWAP_QUOTE.signature,
+        },
       },
       {
         delegatorPkpEthAddress: TEST_CONFIG.userPkp!.ethAddress!,
@@ -432,25 +434,13 @@ describe('Uniswap Swap Ability E2E Tests', () => {
     // Verify policies context
     expect(precheckResult.context?.policiesContext).toBeDefined();
     expect(precheckResult.context?.policiesContext.allow).toBe(true);
-
-    // The policy precheck should return the maxSpendingLimitInUsd and buyAmountInUsd
-    const policyPrecheckResult =
-      precheckResult.context?.policiesContext.allowedPolicies?.[
-        '@lit-protocol/vincent-policy-spending-limit'
-      ]?.result;
-    expect(policyPrecheckResult).toBeDefined();
-    // Max spending limit is padded to 8 decimals when returned from the policy
-    expect(policyPrecheckResult?.maxSpendingLimitInUsd).toBe(
-      Number(MAX_SPENDING_LIMIT_IN_USD_CENTS * 1000000n),
-    );
-    // Because this is a price, it will fluctuate, so we just check that it's a number and not 0
-    expect(policyPrecheckResult?.buyAmountInUsd).toBeGreaterThan(0);
+    expect(precheckResult.context?.policiesContext.evaluatedPolicies.length).toBe(0);
   });
 
   it('should execute the Uniswap Swap Ability with the Agent Wallet PKP', async () => {
     // Ensure we have a route from the generate route test
-    expect(UNISWAP_ROUTE).toBeDefined();
-    if (!UNISWAP_ROUTE) {
+    expect(SIGNED_UNISWAP_QUOTE).toBeDefined();
+    if (!SIGNED_UNISWAP_QUOTE) {
       throw new Error(
         'No precomputed route available, one should be obtained from the generate route test.',
       );
@@ -459,14 +449,11 @@ describe('Uniswap Swap Ability E2E Tests', () => {
     const uniswapSwapAbilityClient = getUniswapSwapAbilityClient();
     const uniswapSwapExecutionResult = await uniswapSwapAbilityClient.execute(
       {
-        ethRpcUrl: ETH_RPC_URL,
         rpcUrlForUniswap: RPC_URL,
-        chainIdForUniswap: CHAIN_ID,
-        tokenInAddress: SWAP_TOKEN_IN_ADDRESS,
-        tokenInDecimals: SWAP_TOKEN_IN_DECIMALS,
-        tokenInAmount: SWAP_AMOUNT,
-        tokenOutAddress: SWAP_TOKEN_OUT_ADDRESS,
-        route: UNISWAP_ROUTE,
+        signedUniswapQuote: {
+          quote: SIGNED_UNISWAP_QUOTE.quote,
+          signature: SIGNED_UNISWAP_QUOTE.signature,
+        },
       },
       {
         delegatorPkpEthAddress: TEST_CONFIG.userPkp!.ethAddress!,
@@ -485,7 +472,6 @@ describe('Uniswap Swap Ability E2E Tests', () => {
 
     expect(uniswapSwapExecutionResult.result).toBeDefined();
     expect(uniswapSwapExecutionResult.result.swapTxHash).toBeDefined();
-    expect(uniswapSwapExecutionResult.result.spendTxHash).toBeDefined();
 
     const swapTxHash = uniswapSwapExecutionResult.result.swapTxHash;
     expect(swapTxHash).toMatch(/^0x[a-fA-F0-9]{64}$/);
@@ -494,13 +480,5 @@ describe('Uniswap Swap Ability E2E Tests', () => {
       hash: swapTxHash as `0x${string}`,
     });
     expect(swapTxReceipt.status).toBe('success');
-
-    const spendTxHash = uniswapSwapExecutionResult.result.spendTxHash;
-    expect(spendTxHash).toMatch(/^0x[a-fA-F0-9]{64}$/);
-
-    const spendTxReceipt = await DATIL_PUBLIC_CLIENT.waitForTransactionReceipt({
-      hash: spendTxHash as `0x${string}`,
-    });
-    expect(spendTxReceipt.status).toBe('success');
   });
 });

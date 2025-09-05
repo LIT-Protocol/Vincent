@@ -69,7 +69,7 @@ async function createPkpForPrepareAction() {
       'IPFS CID not found in prepare metadata. Please deploy the prepare lit action first.',
     );
   }
-  console.log(`ℹ️  Using IPFS CID: ${ipfsCid}`);
+  console.log(`ℹ️  Using Prepare Lit Action with IPFS CID: ${ipfsCid}`);
 
   console.log('🔄 Minting new PKP...');
   const tx = await litContracts.pkpHelperContract.write.mintNextAndAddAuthMethods(

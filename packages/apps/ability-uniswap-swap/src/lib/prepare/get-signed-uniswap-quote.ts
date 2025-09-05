@@ -2,8 +2,14 @@ import { ethers } from 'ethers';
 import { LitNodeClient } from '@lit-protocol/lit-node-client';
 import { generateVincentAbilitySessionSigs } from '@lit-protocol/vincent-app-sdk/abilityClient';
 
-import type { PrepareResult, QuoteParams } from './types';
+import type {
+  PrepareResponse,
+  PrepareSignedUniswapQuote,
+  PrepareSuccessResult,
+  QuoteParams,
+} from './types';
 import VincentPrepareMetadata from '../../generated/vincent-prepare-metadata.json';
+import { validateSignedUniswapQuote } from './validate-signed-uniswap-quote';
 
 export const getSignedUniswapQuote = async ({
   quoteParams,
@@ -13,15 +19,18 @@ export const getSignedUniswapQuote = async ({
   quoteParams: QuoteParams;
   ethersSigner: ethers.Signer;
   litNodeClient: LitNodeClient;
-}) => {
+}): Promise<PrepareSignedUniswapQuote> => {
   const sessionSigs = await generateVincentAbilitySessionSigs({ ethersSigner, litNodeClient });
 
-  const { ipfsCid, pkpPublicKey } = VincentPrepareMetadata;
+  const { ipfsCid, pkpPublicKey, pkpEthAddress } = VincentPrepareMetadata;
   if (!ipfsCid) {
     throw new Error('Prepare Lit Action IPFS CID is not set');
   }
   if (!pkpPublicKey) {
     throw new Error('Prepare Lit Action PKP Public Key is not set');
+  }
+  if (!pkpEthAddress) {
+    throw new Error('Prepare Lit Action PKP Eth Address is not set');
   }
 
   const result = await litNodeClient.executeJs({
@@ -33,47 +42,36 @@ export const getSignedUniswapQuote = async ({
     },
   });
 
-  if (!result.signatures['prepare-uniswap-route-signature']) {
+  const signature = result.signatures['prepare-uniswap-route-signature'];
+  if (!signature) {
     throw new Error('No signature of Uniswap Quote from Prepare Lit Action');
   }
 
-  if (!result.response) {
+  const prepareResponse = result.response as PrepareResponse;
+  if (!prepareResponse) {
     throw new Error(`No response from Lit Action: ${JSON.stringify(result)}`);
   }
 
-  const parsedResult = result.response as PrepareResult;
-
-  if (!parsedResult.success) {
-    throw new Error(parsedResult.error);
+  if (!prepareResponse.success) {
+    throw new Error(prepareResponse.error);
   }
 
-  // Validate the signature
-  const signature = result.signatures['prepare-uniswap-route-signature'];
-  const { to, value, calldata, estimatedGasUsed, estimatedGasUsedUSD } = parsedResult.result;
+  const uniswapQuote = prepareResponse.quote;
 
-  // The message that was signed (without the signature field)
-  const messageToSign = JSON.stringify({
-    to,
-    value,
-    calldata,
-    estimatedGasUsed,
-    estimatedGasUsedUSD,
+  const prepareSuccessResult: PrepareSuccessResult = {
+    quote: uniswapQuote,
+    signature: signature.signature,
+  };
+
+  validateSignedUniswapQuote({
+    prepareSuccessResult,
+    expectedSignerEthAddress: pkpEthAddress,
   });
 
-  // Verify the signature matches what was signed
-  const messageHash = ethers.utils.hashMessage(messageToSign);
-  const recoveredAddress = ethers.utils.recoverAddress(messageHash, signature.signature);
-  const pkpEthAddress = ethers.utils.computeAddress('0x' + signature.publicKey);
-
-  if (recoveredAddress !== pkpEthAddress) {
-    throw new Error('Signature validation failed: recovered address does not match PKP address');
-  }
-
-  // Return the result with the actual signature from the signatures object
   return {
-    ...parsedResult.result,
-    signature: signature.signature,
+    ...prepareSuccessResult,
     dataSigned: signature.dataSigned,
     signerPublicKey: signature.publicKey,
+    signerEthAddress: pkpEthAddress,
   };
 };

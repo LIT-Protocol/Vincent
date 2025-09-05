@@ -1,5 +1,7 @@
+import deterministicJsonStringify from 'json-stable-stringify';
+
 import { getUniswapQuote } from '../ability-helpers/get-uniswap-quote';
-import type { QuoteParams, PrepareSuccessResult } from './types';
+import type { QuoteParams, PrepareSuccessResponse, PrepareErrorResponse } from './types';
 
 declare const Lit: {
   Actions: {
@@ -33,12 +35,38 @@ declare const pkpPublicKey: string;
         try {
           const quoteResult = await getUniswapQuote(quoteParams);
 
+          if (!quoteResult.methodParameters) {
+            throw new Error('No method parameters returned from quote');
+          }
+
           return JSON.stringify({
             status: 'success',
             quoteResult: {
-              ...quoteResult,
+              chainId: quoteResult.trade.inputAmount.currency.isNative
+                ? quoteResult.trade.inputAmount.currency.wrapped.chainId
+                : quoteResult.trade.inputAmount.currency.chainId,
+              to: quoteResult.methodParameters.to,
+              value: quoteResult.methodParameters.value,
+              calldata: quoteResult.methodParameters.calldata,
+              quote: quoteResult.quote.toExact(),
               estimatedGasUsed: quoteResult.estimatedGasUsed.toString(),
               estimatedGasUsedUSD: quoteResult.estimatedGasUsedUSD.toExact(),
+              blockNumber: quoteResult.blockNumber.toString(),
+              tokenIn: quoteResult.trade.inputAmount.currency.isNative
+                ? quoteResult.trade.inputAmount.currency.wrapped.address
+                : quoteResult.trade.inputAmount.currency.address,
+              tokenInDecimals: quoteResult.trade.inputAmount.currency.isNative
+                ? quoteResult.trade.inputAmount.currency.wrapped.decimals
+                : quoteResult.trade.inputAmount.currency.decimals,
+              amountIn: quoteResult.trade.inputAmount.toExact(),
+              tokenOut: quoteResult.trade.outputAmount.currency.isNative
+                ? quoteResult.trade.outputAmount.currency.wrapped.address
+                : quoteResult.trade.outputAmount.currency.address,
+              amountOut: quoteResult.trade.outputAmount.toExact(),
+              tokenOutDecimals: quoteResult.trade.outputAmount.currency.isNative
+                ? quoteResult.trade.outputAmount.currency.wrapped.decimals
+                : quoteResult.trade.outputAmount.currency.decimals,
+              timestamp: Date.now(),
             },
           });
         } catch (error) {
@@ -55,40 +83,36 @@ declare const pkpPublicKey: string;
     }
     const { quoteResult } = parsedQuoteResponse;
 
-    if (!quoteResult.methodParameters) {
-      throw new Error('No method parameters returned from quote');
+    const deterministicallyStringifiedQuoteResult = deterministicJsonStringify(quoteResult);
+    if (!deterministicallyStringifiedQuoteResult) {
+      throw new Error('Failed to stringify Uniswap quote');
     }
 
-    const formattedUniswapQuote = {
-      to: quoteResult.methodParameters.to,
-      value: quoteResult.methodParameters.value,
-      calldata: quoteResult.methodParameters.calldata,
-      estimatedGasUsed: quoteResult.estimatedGasUsed,
-      estimatedGasUsedUSD: quoteResult.estimatedGasUsedUSD,
-    };
-
-    const signature = await Lit.Actions.ethPersonalSignMessageEcdsa({
-      message: JSON.stringify(formattedUniswapQuote),
+    const signatureSuccess = await Lit.Actions.ethPersonalSignMessageEcdsa({
+      message: deterministicallyStringifiedQuoteResult,
       publicKey: pkpPublicKey,
       sigName: 'prepare-uniswap-route-signature',
     });
+    if (!signatureSuccess) {
+      throw new Error('Failed to sign Uniswap quote');
+    }
 
-    const successResponse: PrepareSuccessResult = {
+    const successResponse: PrepareSuccessResponse = {
       success: true,
-      result: {
-        ...formattedUniswapQuote,
-        signature,
-      },
+      quote: quoteResult,
     };
 
     Lit.Actions.setResponse({ response: JSON.stringify(successResponse) });
   } catch (error) {
     console.error('Error creating Uniswap quote:', error);
+
+    const errorResponse: PrepareErrorResponse = {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    };
+
     Lit.Actions.setResponse({
-      response: JSON.stringify({
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
-      }),
+      response: JSON.stringify(errorResponse),
     });
   }
 })();
