@@ -5,9 +5,9 @@ const { LitContracts } = require('@lit-protocol/contracts-sdk');
 const { ethers } = require('ethers');
 
 // Environment variables
-const TEST_APP_DELEGATEE_PRIVATE_KEY = process.env.TEST_APP_DELEGATEE_PRIVATE_KEY;
-if (!TEST_APP_DELEGATEE_PRIVATE_KEY) {
-  throw new Error('TEST_APP_DELEGATEE_PRIVATE_KEY environment variable is not set');
+const UNISWAP_QUOTE_SIGNER_PRIVATE_KEY = process.env.UNISWAP_QUOTE_SIGNER_PRIVATE_KEY;
+if (!UNISWAP_QUOTE_SIGNER_PRIVATE_KEY) {
+  throw new Error('UNISWAP_QUOTE_SIGNER_PRIVATE_KEY environment variable is not set');
 }
 
 const YELLOWSTONE_RPC_URL = process.env.YELLOWSTONE_RPC_URL;
@@ -44,7 +44,7 @@ async function createPkpForPrepareAction() {
 
   // Setup contracts client
   const provider = new ethers.providers.JsonRpcProvider(YELLOWSTONE_RPC_URL);
-  const signer = new ethers.Wallet(TEST_APP_DELEGATEE_PRIVATE_KEY, provider);
+  const signer = new ethers.Wallet(UNISWAP_QUOTE_SIGNER_PRIVATE_KEY, provider);
 
   const litContracts = new LitContracts({
     signer,
