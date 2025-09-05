@@ -64,17 +64,12 @@ function metadataJsonFile({ ipfsCid }) {
 function createOrUpdatePrepareMetadata({ ipfsCid, metadataPath }) {
   let existingMetadata = {};
 
-  // Try to read existing metadata to preserve PKP info
   if (fs.existsSync(metadataPath)) {
-    try {
-      const existingContent = fs.readFileSync(metadataPath, 'utf8');
-      existingMetadata = JSON.parse(existingContent);
-    } catch (error) {
-      console.log('Could not parse existing metadata, creating new file');
-    }
+    const existingContent = fs.readFileSync(metadataPath, 'utf8');
+    existingMetadata = JSON.parse(existingContent);
   }
 
-  // Update only the ipfsCid, preserve everything else (e.g. PKP info)
+  // Update only the ipfsCid, preserve everything else if exists (e.g. PKP info)
   const updatedMetadata = {
     ...existingMetadata,
     ipfsCid: ipfsCid,
