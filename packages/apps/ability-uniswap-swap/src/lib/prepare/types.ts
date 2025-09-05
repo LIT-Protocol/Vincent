@@ -6,6 +6,7 @@ export interface QuoteParams {
   recipient: string;
   slippageTolerance?: number;
 }
+
 export interface PrepareUniswapRoute {
   to: string;
   value: string;
@@ -13,7 +14,6 @@ export interface PrepareUniswapRoute {
   estimatedGasUsed: string;
   estimatedGasUsedUSD: string;
   signature: string;
-  timestamp: number;
 }
 
 export interface PrepareSuccessResult {

@@ -29,6 +29,15 @@
         "cwd": "{projectRoot}"
       }
     },
+    "action:create-pkp": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["action:deploy"],
+      "options": {
+        "commands": ["node scripts/create-pkp-for-prepare.js", "nx run ability-uniswap-swap:build"],
+        "cwd": "{projectRoot}",
+        "parallel": false
+      }
+    },
     "build": {
       "executor": "@nx/js:tsc",
       "dependsOn": ["action:build"],

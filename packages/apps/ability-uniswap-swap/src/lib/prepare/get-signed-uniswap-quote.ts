@@ -16,23 +16,64 @@ export const getSignedUniswapQuote = async ({
 }) => {
   const sessionSigs = await generateVincentAbilitySessionSigs({ ethersSigner, litNodeClient });
 
+  const { ipfsCid, pkpPublicKey } = VincentPrepareMetadata;
+  if (!ipfsCid) {
+    throw new Error('Prepare Lit Action IPFS CID is not set');
+  }
+  if (!pkpPublicKey) {
+    throw new Error('Prepare Lit Action PKP Public Key is not set');
+  }
+
   const result = await litNodeClient.executeJs({
-    ipfsId: VincentPrepareMetadata.ipfsCid,
+    ipfsId: ipfsCid,
     sessionSigs,
     jsParams: {
       quoteParams,
+      pkpPublicKey: pkpPublicKey.replace(/^0x/, ''),
     },
   });
 
-  if (!result.success) {
-    throw new Error(JSON.stringify(result));
+  if (!result.signatures['prepare-uniswap-route-signature']) {
+    throw new Error('No signature of Uniswap Quote from Prepare Lit Action');
   }
 
-  const parsedResult = JSON.parse(result.response as string) as PrepareResult;
+  if (!result.response) {
+    throw new Error(`No response from Lit Action: ${JSON.stringify(result)}`);
+  }
+
+  const parsedResult = result.response as PrepareResult;
 
   if (!parsedResult.success) {
     throw new Error(parsedResult.error);
   }
 
-  return parsedResult.result;
+  // Validate the signature
+  const signature = result.signatures['prepare-uniswap-route-signature'];
+  const { to, value, calldata, estimatedGasUsed, estimatedGasUsedUSD } = parsedResult.result;
+
+  // The message that was signed (without the signature field)
+  const messageToSign = JSON.stringify({
+    to,
+    value,
+    calldata,
+    estimatedGasUsed,
+    estimatedGasUsedUSD,
+  });
+
+  // Verify the signature matches what was signed
+  const messageHash = ethers.utils.hashMessage(messageToSign);
+  const recoveredAddress = ethers.utils.recoverAddress(messageHash, signature.signature);
+  const pkpEthAddress = ethers.utils.computeAddress('0x' + signature.publicKey);
+
+  if (recoveredAddress !== pkpEthAddress) {
+    throw new Error('Signature validation failed: recovered address does not match PKP address');
+  }
+
+  // Return the result with the actual signature from the signatures object
+  return {
+    ...parsedResult.result,
+    signature: signature.signature,
+    dataSigned: signature.dataSigned,
+    signerPublicKey: signature.publicKey,
+  };
 };

@@ -61,6 +61,28 @@ function metadataJsonFile({ ipfsCid }) {
 `;
 }
 
+function createOrUpdatePrepareMetadata({ ipfsCid, metadataPath }) {
+  let existingMetadata = {};
+
+  // Try to read existing metadata to preserve PKP info
+  if (fs.existsSync(metadataPath)) {
+    try {
+      const existingContent = fs.readFileSync(metadataPath, 'utf8');
+      existingMetadata = JSON.parse(existingContent);
+    } catch (error) {
+      console.log('Could not parse existing metadata, creating new file');
+    }
+  }
+
+  // Update only the ipfsCid, preserve everything else (e.g. PKP info)
+  const updatedMetadata = {
+    ...existingMetadata,
+    ipfsCid: ipfsCid,
+  };
+
+  return JSON.stringify(updatedMetadata, null, 2);
+}
+
 const createBundledAbilityFile = {
   name: 'create-vincent-bundled-ability-file',
   setup(build) {
@@ -210,8 +232,8 @@ const wrapIIFEInStringPlugin = {
                 ensureDirectoryExistence(outputPath);
                 fs.writeFileSync(outputPath, wrapped);
 
-                const metadataContent = metadataJsonFile({ ipfsCid });
                 const metadataPath = path.resolve('./src/generated/vincent-prepare-metadata.json');
+                const metadataContent = createOrUpdatePrepareMetadata({ ipfsCid, metadataPath });
                 fs.writeFileSync(metadataPath, metadataContent);
               });
             },
