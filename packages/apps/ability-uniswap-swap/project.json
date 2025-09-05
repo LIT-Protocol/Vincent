@@ -7,7 +7,7 @@
     "clean": {},
     "action:build": {
       "executor": "nx:run-commands",
-      "dependsOn": ["ability-sdk:build", "policy-spending-limit:build"],
+      "dependsOn": ["ability-sdk:build"],
       "options": {
         "commands": ["pnpm node ./esbuild.config.js"],
         "cwd": "{projectRoot}",

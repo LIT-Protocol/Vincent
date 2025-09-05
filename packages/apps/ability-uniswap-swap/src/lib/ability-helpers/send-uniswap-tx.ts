@@ -104,7 +104,7 @@ export const sendUniswapTx = async ({
     maxPriorityFeePerGas: unsignedSwapTx.maxPriorityFeePerGas.toString(),
   });
 
-  const signedSwapTx = await signTx(pkpPublicKey, unsignedSwapTx, 'spendingLimitSig');
+  const signedSwapTx = await signTx(pkpPublicKey, unsignedSwapTx, 'uniswapSwapSig');
 
   console.log(`Broadcasting swap transaction with pre-computed route (sendUniswapTx)`);
   const swapTxResponse = await Lit.Actions.runOnce(
