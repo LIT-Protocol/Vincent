@@ -1,16 +1,18 @@
 import { useEffect, useState } from 'react';
 import { IRelayPKP } from '@lit-protocol/types';
-import { getAgentPKPs, getAgentPKPForApp } from '../../utils/user-dashboard/getAgentPKP';
+import { getAgentPkps } from '../../utils/user-dashboard/getAgentPkps';
 import { env } from '@/config/env';
 
-export function useAgentPKPForApp(userAddress: string | undefined, appId: number | undefined) {
+export function useAgentPkpForApp(userAddress: string | undefined, appId: number | undefined) {
   const [agentPKP, setAgentPKP] = useState<IRelayPKP | null>(null);
+  const [permittedVersion, setPermittedVersion] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
     if (!userAddress || appId === undefined) {
       setAgentPKP(null);
+      setPermittedVersion(null);
       setError(null);
       return;
     }
@@ -20,7 +22,7 @@ export function useAgentPKPForApp(userAddress: string | undefined, appId: number
 
     const fetchAgentPKP = async () => {
       try {
-        const agentPKPs = await getAgentPKPs(userAddress);
+        const agentPKPs = await getAgentPkps(userAddress);
 
         // Check if this is Vincent Yield and we have unpermitted fallback
         if (appId === Number(env.VITE_VINCENT_YIELD_APPID)) {
@@ -28,16 +30,26 @@ export function useAgentPKPForApp(userAddress: string | undefined, appId: number
           const hadUnpermittedFallback = agentPKPs.length === 1 && agentPKPs[0].appId === -1;
           if (hadUnpermittedFallback) {
             setAgentPKP(agentPKPs[0].pkp);
+            setPermittedVersion(null);
             setLoading(false);
             return;
           }
         }
 
-        const pkp = getAgentPKPForApp(agentPKPs, appId);
-        setAgentPKP(pkp);
+        // Find the permission entry for this specific app
+        const appPermission = agentPKPs.find((p) => p.appId === appId);
+
+        if (appPermission) {
+          setAgentPKP(appPermission.pkp);
+          setPermittedVersion(appPermission.permittedVersion);
+        } else {
+          setAgentPKP(null);
+          setPermittedVersion(null);
+        }
       } catch (err) {
         setError(err as Error);
         setAgentPKP(null);
+        setPermittedVersion(null);
       } finally {
         setLoading(false);
       }
@@ -46,5 +58,5 @@ export function useAgentPKPForApp(userAddress: string | undefined, appId: number
     fetchAgentPKP();
   }, [userAddress, appId]);
 
-  return { agentPKP, loading, error };
+  return { agentPKP, permittedVersion, loading, error };
 }

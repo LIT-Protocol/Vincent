@@ -8,6 +8,7 @@ import { getClient } from '@lit-protocol/vincent-contracts-sdk';
 export type AgentAppPermission = {
   appId: number;
   pkp: IRelayPKP;
+  permittedVersion: number | null;
 };
 
 /**
@@ -20,7 +21,7 @@ export type AgentAppPermission = {
  * @returns Promise<AgentAppPermission[]> Array of permitted agent PKPs
  * @throws Error if there's an issue with the contract calls
  */
-export async function getAgentPKPs(userAddress: string): Promise<AgentAppPermission[]> {
+export async function getAgentPkps(userAddress: string): Promise<AgentAppPermission[]> {
   try {
     const pkpNftContract = getPkpNftContract(SELECTED_LIT_NETWORK);
 
@@ -55,29 +56,51 @@ export async function getAgentPKPs(userAddress: string): Promise<AgentAppPermiss
       (pkp) => pkp.ethAddress.toLowerCase() !== userAddress.toLowerCase(),
     );
 
-    // For each agent PKP, fetch its appIds and categorize them
-    const pkpPermissionPromises = agentPKPs.map(async (pkp) => {
-      const client = getClient({ signer: readOnlySigner });
-      const appIds = await client.getAllPermittedAppIdsForPkp({
-        pkpEthAddress: pkp.ethAddress,
-        offset: '0',
-      });
+    // Fetch all permitted apps for all agent PKPs in a single call
+    const client = getClient({ signer: readOnlySigner });
+    const pkpEthAddresses = agentPKPs.map((pkp) => pkp.ethAddress);
 
-      return { pkp, appIds };
+    const permittedAppsArray = await client.getPermittedAppsForPkps({
+      pkpEthAddresses,
+      offset: '0',
     });
 
-    const results = await Promise.all(pkpPermissionPromises);
+    // Convert the array results to our format
+    const pkpToPermittedAppsMap = new Map<
+      string,
+      Array<{ appId: number; version: number | null }>
+    >();
+    for (const pkpPermittedApps of permittedAppsArray) {
+      // Find the PKP by matching tokenId
+      const pkp = agentPKPs.find((p) => p.tokenId === pkpPermittedApps.pkpTokenId);
+      if (pkp) {
+        const appsWithVersions = pkpPermittedApps.permittedApps.map((app) => ({
+          appId: app.appId,
+          version: app.version,
+        }));
+        pkpToPermittedAppsMap.set(pkp.ethAddress, appsWithVersions);
+      }
+    }
+
+    const results = agentPKPs.map((pkp) => ({
+      pkp,
+      appsWithVersions: pkpToPermittedAppsMap.get(pkp.ethAddress) || [],
+    }));
 
     const permitted: AgentAppPermission[] = [];
     let unpermittedAgentPKP: IRelayPKP | null = null;
 
     for (const result of results) {
-      const { pkp, appIds } = result;
+      const { pkp, appsWithVersions } = result;
 
-      if (appIds.length > 0) {
-        // PKP has permitted apps - add each app-PKP pair
-        for (const appId of appIds) {
-          permitted.push({ appId, pkp });
+      if (appsWithVersions.length > 0) {
+        // PKP has permitted apps - add each app-PKP pair with version
+        for (const app of appsWithVersions) {
+          permitted.push({
+            appId: app.appId,
+            pkp,
+            permittedVersion: app.version,
+          });
         }
       } else {
         // Store the first unpermitted agent PKP we find
@@ -89,10 +112,14 @@ export async function getAgentPKPs(userAddress: string): Promise<AgentAppPermiss
 
     // If no permitted PKPs found but we have an unpermitted agent PKP, return it with appId -1
     if (permitted.length === 0 && unpermittedAgentPKP) {
-      permitted.push({ appId: -1, pkp: unpermittedAgentPKP });
+      permitted.push({
+        appId: -1,
+        pkp: unpermittedAgentPKP,
+        permittedVersion: null,
+      });
     }
 
-    console.log('[getAgentPKPs] Final result:', {
+    console.log('[getAgentPkps] Final result:', {
       permittedCount: permitted.length,
       permitted: permitted,
     });
@@ -110,7 +137,7 @@ export async function getAgentPKPs(userAddress: string): Promise<AgentAppPermiss
 /**
  * Get the Agent PKP for a specific app ID
  *
- * @param agentPKPs Result from getAgentPKPs
+ * @param agentPKPs Result from getAgentPkps
  * @param appId The app ID to get the PKP for
  * @returns The PKP for the app, or null if not found
  */

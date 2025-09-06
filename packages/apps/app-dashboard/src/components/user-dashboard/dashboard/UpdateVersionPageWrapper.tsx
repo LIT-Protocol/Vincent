@@ -4,12 +4,12 @@ import { ManagePagesSkeleton } from '../connect/ManagePagesSkeleton';
 import { GeneralErrorScreen } from '@/components/user-dashboard/connect/GeneralErrorScreen';
 import { AuthenticationErrorScreen } from '@/components/user-dashboard/connect/AuthenticationErrorScreen';
 import { useConnectInfo } from '@/hooks/user-dashboard/connect/useConnectInfo';
-import { useConnectMiddleware } from '@/hooks/user-dashboard/connect/useConnectMiddleware';
+import { useCheckAppVersionExists } from '@/hooks/user-dashboard/connect/useCheckAppVersionExists';
 import useReadAuthInfo from '@/hooks/user-dashboard/useAuthInfo';
 import { useUriPrecheck } from '@/hooks/user-dashboard/connect/useUriPrecheck';
 import { BadRedirectUriError } from '@/components/user-dashboard/connect/BadRedirectUriError';
 import { AppVersionNotInRegistryUpdate } from './AppVersionNotInRegistryUpdate';
-import { useAgentPKPForApp } from '@/hooks/user-dashboard/useAgentPKPForApp';
+import { useAgentPkpForApp } from '@/hooks/user-dashboard/useAgentPkpForApp';
 
 export function UpdateVersionPageWrapper() {
   const { appId } = useParams();
@@ -24,14 +24,14 @@ export function UpdateVersionPageWrapper() {
     agentPKP,
     loading: agentPKPLoading,
     error: agentPKPError,
-  } = useAgentPKPForApp(userAddress, appId ? Number(appId) : undefined);
+  } = useAgentPkpForApp(userAddress, appId ? Number(appId) : undefined);
 
   const {
     appExists,
     activeVersionExists,
-    isLoading: isPermittedLoading,
-    error: isPermittedError,
-  } = useConnectMiddleware({
+    isLoading: isVersionCheckLoading,
+    error: isVersionCheckError,
+  } = useCheckAppVersionExists({
     appId: Number(appId),
     pkpEthAddress: agentPKP?.ethAddress || '',
     appData: data?.app,
@@ -56,8 +56,8 @@ export function UpdateVersionPageWrapper() {
     data &&
     !isLoading &&
     !isProcessing &&
-    // Only wait for permissions and agent PKP if user is authenticated
-    (isUserAuthed ? !isPermittedLoading && !agentPKPLoading && agentPKP : true);
+    // Only wait for version check and agent PKP if user is authenticated
+    (isUserAuthed ? !isVersionCheckLoading && !agentPKPLoading && agentPKP : true);
 
   // Authentication check - must be done before other business logic
   if (!isProcessing && !isUserAuthed) {
@@ -88,11 +88,11 @@ export function UpdateVersionPageWrapper() {
   }
 
   // Check for any errors
-  if (isError || error || isPermittedError || agentPKPError) {
+  if (isError || error || isVersionCheckError || agentPKPError) {
     const errorMessage =
       errors.length > 0
         ? errors.join(', ')
-        : String(error ?? isPermittedError ?? agentPKPError ?? 'An unknown error occurred');
+        : String(error ?? isVersionCheckError ?? agentPKPError ?? 'An unknown error occurred');
     return <GeneralErrorScreen errorDetails={errorMessage} />;
   }
 

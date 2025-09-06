@@ -4,14 +4,14 @@ import { WithdrawForm } from '@/components/user-dashboard/withdraw/WithdrawForm'
 import { WithdrawFormSkeleton } from '@/components/user-dashboard/withdraw/WithdrawFormSkeleton';
 import useReadAuthInfo from '@/hooks/user-dashboard/useAuthInfo';
 import { useAuthGuard } from '@/hooks/user-dashboard/connect/useAuthGuard';
-import { useAgentPKPForApp } from '@/hooks/user-dashboard/useAgentPKPForApp';
+import { useAgentPkpForApp } from '@/hooks/user-dashboard/useAgentPkpForApp';
 
 export function Wallet() {
   const { appId } = useParams();
   const { authInfo, sessionSigs } = useReadAuthInfo();
   const authGuardElement = useAuthGuard();
 
-  const { agentPKP, loading: agentPKPLoading } = useAgentPKPForApp(
+  const { agentPKP, loading: agentPKPLoading } = useAgentPkpForApp(
     authInfo?.userPKP?.ethAddress,
     appId ? Number(appId) : undefined,
   );

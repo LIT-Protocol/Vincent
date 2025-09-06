@@ -5,7 +5,7 @@ import { theme } from '@/components/user-dashboard/connect/ui/theme';
 import { Card, CardContent } from '@/components/shared/ui/card';
 import { Logo } from '@/components/shared/ui/Logo';
 import { Package, Info, Copy, Check, Wallet } from 'lucide-react';
-import { AgentAppPermission } from '@/utils/user-dashboard/getAgentPKP';
+import { AgentAppPermission } from '@/utils/user-dashboard/getAgentPkps';
 
 type PermittedAppsPageProps = {
   apps: App[];

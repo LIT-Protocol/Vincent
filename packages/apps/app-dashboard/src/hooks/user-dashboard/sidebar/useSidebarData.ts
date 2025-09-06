@@ -1,11 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
-import { useUserPermissionsForApps } from '@/hooks/user-dashboard/dashboard/useUserPermissionsForApps';
-import { useAllAgentApps } from '@/hooks/user-dashboard/useAllAgentApps';
+import { AgentAppPermission } from '@/utils/user-dashboard/getAgentPkps';
 import { App } from '@/types/developer-dashboard/appTypes';
 
 interface UseSidebarDataProps {
-  userAddress: string;
+  agentAppPermissions: AgentAppPermission[];
 }
 
 interface UseSidebarDataReturn {
@@ -16,70 +15,39 @@ interface UseSidebarDataReturn {
   error: string | null;
 }
 
-export function useSidebarData({ userAddress }: UseSidebarDataProps): UseSidebarDataReturn {
+export function useSidebarData({ agentAppPermissions }: UseSidebarDataProps): UseSidebarDataReturn {
   const [isLoading, setIsLoading] = useState(true);
   const [apps, setApps] = useState<App[]>([]);
   const [permittedAppVersions, setPermittedAppVersions] = useState<Record<string, string>>({});
   const [appVersionsMap, setAppVersionsMap] = useState<Record<string, any[]>>({});
   const [error, setError] = useState<string | null>(null);
 
-  // Get all agent app permissions to get the list of agent PKPs
-  const {
-    permittedPKPs: agentAppPermissions,
-    loading: agentPermissionsLoading,
-    error: agentPermissionsError,
-  } = useAllAgentApps(userAddress);
-
-  // Get agent PKPs from permissions
-  const allAgentPKPs = agentAppPermissions.map((p) => p.pkp);
-
-  // Get permissions data for all agent PKPs
-  const {
-    permittedAppVersions: permittedVersionsFromHook,
-    isLoading: permissionsLoading,
-    error: permissionsError,
-  } = useUserPermissionsForApps({ agentPKPs: allAgentPKPs });
+  // Build permitted app versions from the provided agent app permissions (memoized to prevent infinite loops)
+  const permittedVersionsFromHook = useMemo(() => {
+    return agentAppPermissions.reduce(
+      (acc, agentPkp) => {
+        if (agentPkp.permittedVersion !== null) {
+          acc[agentPkp.appId.toString()] = agentPkp.permittedVersion.toString();
+        }
+        return acc;
+      },
+      {} as Record<string, string>,
+    );
+  }, [agentAppPermissions]);
 
   // Lazy queries
   const [triggerGetApps] = vincentApiClient.useLazyListAppsQuery();
   const [triggerGetAppVersions] = vincentApiClient.useLazyGetAppVersionsQuery();
 
-  // Fetch all data when permissions are ready
+  // Fetch all data when agentAppPermissions changes
   useEffect(() => {
-    // Don't start if agent permissions or PKP permissions are still loading
-    if (agentPermissionsLoading || permissionsLoading) {
-      return;
-    }
-
-    // Handle permissions errors
-    if (agentPermissionsError) {
-      setError(`Failed to load agent permissions: ${agentPermissionsError}`);
-      setIsLoading(false);
-      return;
-    }
-
-    // Handle permissions error
-    if (permissionsError) {
-      setError(`Failed to load permissions: ${permissionsError}`);
-      setIsLoading(false);
-      return;
-    }
-
-    // If no permitted apps and we have confirmed agent permissions, we can finish early
-    if (Object.keys(permittedVersionsFromHook).length === 0 && agentAppPermissions.length === 0) {
-      console.log(
-        '[useSidebarData] No permitted apps and no agent permissions, setting empty state and finishing loading',
-      );
+    // If no permitted apps, set empty state and finish
+    if (Object.keys(permittedVersionsFromHook).length === 0) {
+      console.log('[useSidebarData] No permitted apps, setting empty state');
       setApps([]);
       setPermittedAppVersions({});
       setAppVersionsMap({});
       setIsLoading(false);
-      return;
-    }
-
-    // Don't proceed if we don't have real permitted apps data yet
-    if (Object.keys(permittedVersionsFromHook).length === 0) {
-      console.log('[useSidebarData] Waiting for permitted apps data, not proceeding...');
       return;
     }
 
@@ -141,13 +109,7 @@ export function useSidebarData({ userAddress }: UseSidebarDataProps): UseSidebar
     };
 
     fetchAllData();
-  }, [
-    agentPermissionsLoading,
-    agentAppPermissions.length,
-    permissionsLoading,
-    permissionsError,
-    permittedVersionsFromHook,
-  ]); // Dependencies from permissions hook
+  }, [permittedVersionsFromHook]);
 
   return {
     apps,

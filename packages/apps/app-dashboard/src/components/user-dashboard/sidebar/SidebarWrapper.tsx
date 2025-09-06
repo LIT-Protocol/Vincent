@@ -3,6 +3,7 @@ import { SidebarSkeleton } from './SidebarSkeleton';
 import { StatusMessage } from '@/components/shared/ui/statusMessage';
 import useReadAuthInfo from '@/hooks/user-dashboard/useAuthInfo';
 import { useSidebarData } from '@/hooks/user-dashboard/sidebar/useSidebarData';
+import { useAllAgentApps } from '@/hooks/user-dashboard/useAllAgentApps';
 import { SidebarError } from './SidebarError';
 
 export function SidebarWrapper() {
@@ -29,9 +30,26 @@ export function SidebarWrapper() {
 }
 
 function SidebarWithData({ userAddress }: { userAddress: string }) {
-  const { apps, permittedAppVersions, appVersionsMap, isLoading, error } = useSidebarData({
-    userAddress,
+  // Get agent app permissions first
+  const {
+    permittedPKPs: agentAppPermissions,
+    loading: permissionsLoading,
+    error: permissionsError,
+  } = useAllAgentApps(userAddress);
+
+  // Get app details and versions based on those permissions
+  const {
+    apps,
+    permittedAppVersions,
+    appVersionsMap,
+    isLoading: appsLoading,
+    error: appsError,
+  } = useSidebarData({
+    agentAppPermissions,
   });
+
+  const isLoading = permissionsLoading || appsLoading;
+  const error = permissionsError?.message || appsError;
 
   // Show skeleton while data is loading
   if (isLoading) {

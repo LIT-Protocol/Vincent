@@ -5,9 +5,9 @@ import { GeneralErrorScreen } from './GeneralErrorScreen';
 import { BadRedirectUriError } from './BadRedirectUriError';
 import { AuthConnectScreen } from './AuthConnectScreen';
 import { useConnectInfo } from '@/hooks/user-dashboard/connect/useConnectInfo';
-import { useConnectMiddleware } from '@/hooks/user-dashboard/connect/useConnectMiddleware';
+import { useCheckAppVersionExists } from '@/hooks/user-dashboard/connect/useCheckAppVersionExists';
 import useReadAuthInfo from '@/hooks/user-dashboard/useAuthInfo';
-import { useAgentPKPForApp } from '@/hooks/user-dashboard/useAgentPKPForApp';
+import { useAgentPkpForApp } from '@/hooks/user-dashboard/useAgentPkpForApp';
 import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
 import { ReturningUserConnect } from './ReturningUserConnect';
 import { AppVersionNotInRegistryConnect } from './AppVersionNotInRegistry';
@@ -19,25 +19,27 @@ export function ConnectPageWrapper() {
   const { authInfo, sessionSigs, isProcessing, error } = useReadAuthInfo();
   const {
     agentPKP,
+    permittedVersion,
     loading: agentPKPLoading,
     error: agentPKPError,
-  } = useAgentPKPForApp(authInfo?.userPKP?.ethAddress, appId ? Number(appId) : undefined);
+  } = useAgentPkpForApp(authInfo?.userPKP?.ethAddress, appId ? Number(appId) : undefined);
   const { isLoading, isError, errors, data } = useConnectInfo(appId || '');
   const {
-    isPermitted,
     appExists,
     activeVersionExists,
-    userPermittedVersion,
-    isLoading: isPermittedLoading,
-    error: isPermittedError,
-  } = useConnectMiddleware({
+    isLoading: isVersionCheckLoading,
+    error: isVersionCheckError,
+  } = useCheckAppVersionExists({
     appId: Number(appId),
     pkpEthAddress: agentPKP?.ethAddress || '',
     appData: data?.app,
   });
 
-  // When there's no agentPKP, override the permissions loading state
-  const actualIsPermittedLoading = !agentPKP && !agentPKPLoading ? false : isPermittedLoading;
+  // Derive isPermitted from permittedVersion
+  const isPermitted = permittedVersion !== null;
+
+  // When there's no agentPKP, override the version check loading state
+  const actualIsVersionCheckLoading = !agentPKP && !agentPKPLoading ? false : isVersionCheckLoading;
 
   const { result: isRedirectUriAuthorized, redirectUri } = useUriPrecheck({
     authorizedRedirectUris: data?.app?.redirectUris,
@@ -51,10 +53,10 @@ export function ConnectPageWrapper() {
   } = vincentApiClient.useGetAppVersionQuery(
     {
       appId: Number(appId),
-      version: userPermittedVersion || 0,
+      version: permittedVersion || 0,
     },
     {
-      skip: !userPermittedVersion, // Only fetch if user has a permitted version
+      skip: !permittedVersion, // Only fetch if user has a permitted version
     },
   );
 
@@ -73,9 +75,9 @@ export function ConnectPageWrapper() {
     data &&
     !isLoading &&
     !isProcessing &&
-    // Only wait for permissions and agent PKP loading if user is authenticated
-    (isUserAuthed ? !actualIsPermittedLoading && !agentPKPLoading : true) &&
-    (!userPermittedVersion || !versionDataLoading);
+    // Only wait for version check and agent PKP loading if user is authenticated
+    (isUserAuthed ? !actualIsVersionCheckLoading && !agentPKPLoading : true) &&
+    (!permittedVersion || !versionDataLoading);
 
   // Now make routing decisions with complete information
   let content;
@@ -105,12 +107,12 @@ export function ConnectPageWrapper() {
     );
   }
   // Check for any errors
-  else if (isError || error || isPermittedError || versionDataError || agentPKPError) {
+  else if (isError || error || isVersionCheckError || versionDataError || agentPKPError) {
     const errorMessage =
       errors.length > 0
         ? errors.join(', ')
         : (error ??
-          isPermittedError ??
+          isVersionCheckError ??
           agentPKPError?.message ??
           (versionDataError ? String(versionDataError) : undefined) ??
           'An unknown error occurred');
@@ -126,11 +128,11 @@ export function ConnectPageWrapper() {
       );
     }
     // Check for existing user permissions
-    else if (isPermitted === true && userPermittedVersion && versionData) {
+    else if (isPermitted === true && permittedVersion && versionData) {
       content = (
         <ReturningUserConnect
           appData={data.app}
-          version={userPermittedVersion}
+          version={permittedVersion}
           versionData={versionData}
           activeVersionData={activeVersionData}
           redirectUri={redirectUri || undefined}

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { getAgentPKPs, AgentAppPermission } from '../../utils/user-dashboard/getAgentPKP';
+import { getAgentPkps, AgentAppPermission } from '../../utils/user-dashboard/getAgentPkps';
 
 export function useAllAgentApps(userAddress: string | undefined) {
   const [permittedPKPs, setPermittedPKPs] = useState<AgentAppPermission[]>([]);
@@ -18,7 +18,7 @@ export function useAllAgentApps(userAddress: string | undefined) {
 
     const fetchAllPermissions = async () => {
       try {
-        const agentPKPs = await getAgentPKPs(userAddress);
+        const agentPKPs = await getAgentPkps(userAddress);
 
         setPermittedPKPs(agentPKPs);
       } catch (err) {
