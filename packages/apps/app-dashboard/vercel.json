@@ -1,4 +1,5 @@
 {
+  "outputDirectory": "dist",
   "rewrites": [
     {
       "source": "/((?!api/|assets/|_next/|favicon.ico|.*\\.).*)",
