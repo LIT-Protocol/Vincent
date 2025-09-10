@@ -59,7 +59,33 @@ export const useReadAuthInfo = (): ReadAuthInfo => {
         setIsProcessing(false);
       }
     };
+
+    // Initial load
     loadAuthInfo();
+
+    // Listen for storage changes (including from same tab)
+    const handleStorageChange = (e: Event) => {
+      console.log(
+        '[useReadAuthInfo] Storage change event:',
+        e.type,
+        e instanceof StorageEvent ? e.key : 'custom event',
+      );
+      if (e instanceof StorageEvent && e.key !== AUTH_INFO_KEY) {
+        console.log('[useReadAuthInfo] Ignoring storage event for different key');
+        return;
+      }
+
+      console.log('[useReadAuthInfo] Handling storage change, reloading auth info...');
+      setIsProcessing(true);
+      loadAuthInfo();
+    };
+
+    // Listen for custom events (from same tab)
+    window.addEventListener('auth-info-updated', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('auth-info-updated', handleStorageChange);
+    };
   }, []);
 
   return { authInfo, sessionSigs, isProcessing, error };
@@ -103,6 +129,10 @@ export const useSetAuthInfo = (): UseSetAuthInfo => {
       }
 
       localStorage.setItem(AUTH_INFO_KEY, JSON.stringify(updatedAuthInfo));
+
+      // Dispatch custom event to notify same-tab listeners
+      window.dispatchEvent(new CustomEvent('auth-info-updated'));
+
       return true;
     } catch (err) {
       const error = err as Error;
