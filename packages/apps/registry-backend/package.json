@@ -37,7 +37,7 @@
     "semver": "^7.7.2",
     "tar": "^7.4.3",
     "validate-npm-package-name": "^6.0.1",
-    "zod": "^3.25.42"
+    "zod": "^4.1.8"
   },
   "devDependencies": {
     "@reduxjs/toolkit": "^2.8.2",
