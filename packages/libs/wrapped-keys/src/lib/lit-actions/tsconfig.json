@@ -1,0 +1,8 @@
+{
+  "extends": "../../../tsconfig.json",
+  "compilerOptions": {
+    "types": [],
+    "typeRoots": []
+  },
+  "include": ["./**/*.ts", "./lit-actions-global.d.ts"]
+}

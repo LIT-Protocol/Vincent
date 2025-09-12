@@ -6,6 +6,14 @@
   "tags": [],
   "targets": {
     "clean": {},
+    "action:build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": ["pnpm node ./esbuild.config.js"],
+        "cwd": "{projectRoot}",
+        "parallel": false
+      }
+    },
     "dev": {
       "executor": "@nx/js:tsc",
       "outputs": ["{options.outputPath}"],
@@ -20,12 +28,20 @@
     },
     "build": {
       "executor": "@nx/js:tsc",
+      "dependsOn": ["action:build"],
       "outputs": ["{options.outputPath}"],
       "options": {
         "outputPath": "packages/libs/wrapped-keys/dist",
         "main": "packages/libs/wrapped-keys/src/index.ts",
         "tsConfig": "packages/libs/wrapped-keys/tsconfig.lib.json",
-        "assets": ["packages/libs/wrapped-keys/*.md"],
+        "assets": [
+          "packages/libs/wrapped-keys/*.md",
+          {
+            "glob": "**/*",
+            "input": "packages/libs/wrapped-keys/src/lib/lit-actions/generated",
+            "output": "src/lib/lit-actions/generated"
+          }
+        ],
         "formats": ["cjs"]
       }
     },
