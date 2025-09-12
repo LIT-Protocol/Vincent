@@ -62,24 +62,22 @@ export default function RootPage() {
 
         {/* Footer */}
         <div className="px-3 sm:px-6 py-2 flex flex-col items-center gap-2 mt-auto">
-          <div className="flex flex-col items-center gap-1 text-sm font-normal">
-            <span className="text-black text-base font-semibold">Securing Autonomy</span>
-          </div>
           <div className="flex items-center gap-2 text-sm font-normal text-gray-500">
             <a
               href="https://litprotocol.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1 font-normal no-underline !text-orange-500 hover:!text-orange-600 transition-colors"
-              style={{ textDecoration: 'none', fontWeight: 'normal', fontStyle: 'normal' }}
+              className="inline-flex items-center gap-1.5 font-semibold no-underline !text-orange-500 hover:!text-orange-600 transition-colors"
+              style={{ textDecoration: 'none', fontWeight: '600', fontStyle: 'normal' }}
             >
               <svg
-                className="w-5 h-auto"
+                className="w-4 h-auto"
                 width="40"
                 viewBox="0 0 311 228"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
                 aria-label="Lit Protocol logo"
+                style={{ marginTop: '-2px' }}
               >
                 <path
                   d="M311 104.987V51.9125H256.038V29.2084L256.245 0.621826H202.816V174.264C202.816 181.242 204.193 188.153 206.866 194.599C209.54 201.045 213.459 206.9 218.398 211.83C223.337 216.76 229.2 220.667 235.652 223.328C242.103 225.989 249.016 227.352 255.994 227.338L311 227.25V175.045H269.794C267.969 175.047 266.162 174.689 264.477 173.992C262.791 173.295 261.259 172.272 259.969 170.982C258.679 169.692 257.656 168.16 256.959 166.474C256.262 164.789 255.904 162.982 255.906 161.157V140.517H256.053C256.053 128.723 256.053 116.929 256.053 104.943L311 104.987Z"
@@ -94,6 +92,7 @@ export default function RootPage() {
                   fill="currentColor"
                 />
               </svg>
+              <span>Securing Autonomy</span>
             </a>
           </div>
           <div className="flex items-center gap-1 text-sm font-normal text-black">
