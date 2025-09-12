@@ -1,0 +1,88 @@
+{
+	"id": 0,
+	"name": "vincent-ability-sdk",
+	"variant": "project",
+	"kind": 1,
+	"flags": {},
+	"children": [
+		{
+			"id": 1,
+			"name": "placeholder",
+			"variant": "declaration",
+			"kind": 32,
+			"flags": {
+				"isConst": true
+			},
+			"sources": [
+				{
+					"fileName": "index.ts",
+					"line": 1,
+					"character": 13
+				}
+			],
+			"type": {
+				"type": "literal",
+				"value": "wrapped-keys package"
+			},
+			"defaultValue": "'wrapped-keys package'"
+		}
+	],
+	"groups": [
+		{
+			"title": "Variables",
+			"children": [
+				1
+			]
+		}
+	],
+	"packageName": "@lit-protocol/vincent-wrapped-keys",
+	"packageVersion": "0.1.0",
+	"readme": [
+		{
+			"kind": "text",
+			"text": "# @lit-protocol/vincent-wrapped-keys\n\nThis library was generated with [Nx](https://nx.dev).\n\n## Building\n\nRun "
+		},
+		{
+			"kind": "code",
+			"text": "`nx build wrapped-keys`"
+		},
+		{
+			"kind": "text",
+			"text": " to build the library.\n\n## Usage\n\nThis package provides wrapped keys functionality for the Vincent protocol.\n\n## Development\n\n### Type Testing\n\nRun "
+		},
+		{
+			"kind": "code",
+			"text": "`npm run watch:type-tests`"
+		},
+		{
+			"kind": "text",
+			"text": " to watch for type changes and run type tests automatically.\n\nRun "
+		},
+		{
+			"kind": "code",
+			"text": "`npm run typecheck`"
+		},
+		{
+			"kind": "text",
+			"text": " to run type tests once.\n\n### Documentation\n\nDocumentation is generated using TypeDoc. Build the docs with the appropriate Nx command."
+		}
+	],
+	"symbolIdMap": {
+		"0": {
+			"sourceFileName": "src/index.ts",
+			"qualifiedName": ""
+		},
+		"1": {
+			"sourceFileName": "src/index.ts",
+			"qualifiedName": "placeholder"
+		}
+	},
+	"files": {
+		"entries": {
+			"1": "src/index.ts"
+		},
+		"reflections": {
+			"1": 0
+		}
+	}
+}
