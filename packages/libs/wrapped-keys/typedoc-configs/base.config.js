@@ -2,7 +2,7 @@ module.exports = {
   extends: '../../../../typedoc.config.base.js',
   $schema: 'https://typedoc.org/schema.json',
   entryPoints: ['../src/index.ts'],
-  name: 'vincent-ability-sdk',
+  name: 'vincent-wrapped-keys',
   tsconfig: '../tsconfig.lib.json',
   includeVersion: true,
   navigation: {

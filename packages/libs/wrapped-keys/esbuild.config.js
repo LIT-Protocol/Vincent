@@ -37,6 +37,13 @@ module.exports = {
 `;
 }
 
+function metadataJsonFile({ ipfsCid }) {
+  return `{
+  "ipfsCid": "${ipfsCid}"
+}
+`;
+}
+
 const wrapIIFEInStringPlugin = {
   name: 'wrap-iife-in-string',
   setup(build) {
@@ -58,6 +65,11 @@ const wrapIIFEInStringPlugin = {
         const outputPath = path.resolve(outputFile.path);
         ensureDirectoryExistence(outputPath);
         fs.writeFileSync(outputPath, wrapped);
+
+        // Write metadata JSON file following Vincent ability pattern
+        const metadataPath = outputPath.replace('.js', '-metadata.json');
+        const metadataContent = metadataJsonFile({ ipfsCid });
+        fs.writeFileSync(metadataPath, metadataContent);
       }
     });
   },

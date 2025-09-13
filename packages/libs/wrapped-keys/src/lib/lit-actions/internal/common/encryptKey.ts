@@ -1,4 +1,4 @@
-import { VINCENT_PREFIX } from '../../constants';
+import { VINCENT_PREFIX } from '../../../constants';
 
 /* global Lit */
 

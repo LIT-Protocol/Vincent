@@ -1,4 +1,4 @@
-import { VINCENT_PREFIX } from './constants';
+import { VINCENT_PREFIX } from '../constants';
 
 export function removeSaltFromDecryptedKey(decryptedPrivateKey: string) {
   if (!decryptedPrivateKey.startsWith(VINCENT_PREFIX)) {

@@ -4,5 +4,5 @@
     "types": [],
     "typeRoots": []
   },
-  "include": ["./**/*.ts", "./lit-actions-global.d.ts"]
+  "include": ["./**/*.ts", "./lit-actions-global.d.ts", "../constants.ts"]
 }
