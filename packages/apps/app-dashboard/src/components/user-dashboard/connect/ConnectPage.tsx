@@ -25,7 +25,11 @@ interface ConnectPageProps {
   previouslyPermittedPKP?: IRelayPKP | null;
 }
 
-export function ConnectPage({ connectInfoMap, readAuthInfo, previouslyPermittedPKP }: ConnectPageProps) {
+export function ConnectPage({
+  connectInfoMap,
+  readAuthInfo,
+  previouslyPermittedPKP,
+}: ConnectPageProps) {
   const navigate = useNavigate();
   const [localError, setLocalError] = useState<string | null>(null);
   const [localSuccess, setLocalSuccess] = useState<string | null>(null);
@@ -33,12 +37,12 @@ export function ConnectPage({ connectInfoMap, readAuthInfo, previouslyPermittedP
   const [agentPKP, setAgentPKP] = useState<IRelayPKP | null>(null);
   const formRefs = useRef<Record<string, PolicyFormRef>>({});
 
-  const { 
-    formData, 
-    selectedPolicies, 
-    handleFormChange, 
-    handlePolicySelectionChange, 
-    getSelectedFormData 
+  const {
+    formData,
+    selectedPolicies,
+    handleFormChange,
+    handlePolicySelectionChange,
+    getSelectedFormData,
   } = useConnectFormData(connectInfoMap);
   const {
     generateJWT,
@@ -100,7 +104,14 @@ export function ConnectPage({ connectInfoMap, readAuthInfo, previouslyPermittedP
       }
 
       const selectedFormData = getSelectedFormData();
-      console.log('selectedFormData', JSON.stringify(selectedFormData, (_, value) => value === undefined ? 'undefined' : value, 2));
+      console.log(
+        'selectedFormData',
+        JSON.stringify(
+          selectedFormData,
+          (_, value) => (value === undefined ? 'undefined' : value),
+          2,
+        ),
+      );
 
       const userPkpWallet = new PKPEthersWallet({
         controllerSessionSigs: readAuthInfo.sessionSigs,

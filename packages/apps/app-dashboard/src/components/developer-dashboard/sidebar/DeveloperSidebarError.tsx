@@ -52,7 +52,6 @@ export function DeveloperSidebarError({ error }: DeveloperSidebarErrorProps) {
     window.location.reload();
   };
 
-
   const formatAuthInfo = () => {
     if (!authInfo) return '';
     return `Sign-In Type: ${authInfo.type}\nAuthenticated: ${new Date(authInfo.authenticatedAt).toLocaleString()}${authInfo.value ? `\nValue: ${authInfo.value}` : ''}`;

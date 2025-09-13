@@ -17,7 +17,6 @@ This Vincent Ability is intended to be used with Vincent Policies, such as the [
 The Transaction Signer Ability is built using the Vincent Ability SDK and provides a secure way to sign Ethereum transactions. Here's how it operates:
 
 1. **Precheck Phase**: Validates the transaction structure and runs policy checks
-
    - Deserializes the provided serialized transaction using ethers.js
    - Validates all required fields are present (nonce, gasPrice, gasLimit, etc.)
    - Returns deserialized transaction details for review
@@ -29,7 +28,6 @@ The Transaction Signer Ability is built using the Vincent Ability SDK and provid
 ### Workflow
 
 1. **Precheck Phase**: Validates the transaction structure and runs policy checks
-
    - Deserializes the provided serialized transaction using ethers.js
    - Validates all required fields are present (nonce, gasPrice, gasLimit, etc.)
    - Returns deserialized transaction details for review

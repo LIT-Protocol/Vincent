@@ -21,7 +21,6 @@ export function ConnectPageHeader({ authInfo }: ConnectPageHeaderProps) {
     window.location.reload();
   };
 
-
   const formatAuthInfo = () => {
     return `Sign-In Type: ${authInfo.type}\nAuthenticated: ${new Date(authInfo.authenticatedAt).toLocaleString()}${authInfo.value ? `\nValue: ${authInfo.value}` : ''}`;
   };

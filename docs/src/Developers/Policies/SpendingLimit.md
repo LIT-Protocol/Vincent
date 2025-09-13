@@ -19,17 +19,14 @@ The Spending Limit Policy enables Vincent App Users to set daily USD spending li
 The Spending Limit Policy is built using the [Vincent Policy SDK](../Policy-Developers/Creating-Policies.md) and operates through a three-phase validation and tracking system:
 
 1. **Precheck Phase**: Validates proposed spending against current limits
-
    - Calculates the USD value of the token transaction using Uniswap to quote the token amount in ETH, and then uses Chainlink price feeds to convert the ETH amount to USD
    - Checks the calculated USD spend amount against the Vincent App User's configured daily spending limit
    - Returns allow/deny decision with spending details for validation
 
 2. **Evaluate Phase**: Re-validates spending during ability execution
-
    - Performs the same USD calculation and Spending Limit validation as `precheck`
 
 3. **Commit Phase**: Records the actual spend to the blockchain
-
    - Submits a transaction to the [Lit Chronicle Yellowstone blockchain](https://developer.litprotocol.com/connecting-to-a-lit-network/lit-blockchains/chronicle-yellowstone) to record the spent amount of USD in the Spending Limit contract
    - Returns the transaction hash of the spending update transaction
 

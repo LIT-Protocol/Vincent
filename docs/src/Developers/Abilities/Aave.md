@@ -17,7 +17,6 @@ The Aave Ability enables Vincent Apps to interact with the Aave V3 lending proto
 The Aave Ability is built using the [Vincent Ability SDK](../Ability-Developers/Creating-Abilities.md) and operates in two phases:
 
 1. **Precheck Phase**: Validates all prerequisites for the Aave operation
-
    - Validates operation type, asset address, and amount format
    - Performs all operation-specific checks, including:
      - Ensuring sufficient token balance and allowance (for supply/repay)
@@ -26,7 +25,6 @@ The Aave Ability is built using the [Vincent Ability SDK](../Ability-Developers/
    - Returns detailed validation results, including available markets
 
 2. **Execution Phase**: Executes the Aave protocol operation
-
    - Retrieves Aave contract addresses for the specified chain
    - Constructs and signs the appropriate Aave protocol transaction
    - Submits the transaction to the blockchain

@@ -1096,12 +1096,18 @@ importers:
       '@types/express':
         specifier: ^5.0.1
         version: 5.0.3
+      '@types/react':
+        specifier: ^19.0.10
+        version: 19.1.12
       chokidar-cli:
         specifier: ^3.0.0
         version: 3.0.0
       live-server:
         specifier: ^1.2.2
         version: 1.2.2
+      react:
+        specifier: ^19.0.0
+        version: 19.1.1
       typedoc:
         specifier: 0.27.9
         version: 0.27.9(typescript@5.8.3)

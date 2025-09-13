@@ -39,6 +39,11 @@
       "import": "./dist/src/utils/index.js",
       "require": "./dist/src/utils/index.js",
       "types": "./dist/src/utils/index.d.ts"
+    },
+    "./react": {
+      "import": "./dist/src/react/index.js",
+      "require": "./dist/src/react/index.js",
+      "types": "./dist/src/react/index.d.ts"
     }
   },
   "keywords": [
@@ -62,6 +67,14 @@
     "tslib": "^2.8.1",
     "zod": "3.25.64"
   },
+  "peerDependencies": {
+    "react": "^19.0.0"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    }
+  },
   "sideEffects": false,
   "files": [
     "dist/**/*",
@@ -71,8 +84,10 @@
     "@lit-protocol/pkp-ethers": "^7.2.3",
     "@lit-protocol/types": "^7.2.3",
     "@types/express": "^5.0.1",
+    "@types/react": "^19.0.10",
     "chokidar-cli": "^3.0.0",
     "live-server": "^1.2.2",
+    "react": "^19.0.0",
     "typedoc": "0.27.9",
     "typedoc-material-theme": "1.3.0",
     "typedoc-plugin-extras": "^4.0.0",

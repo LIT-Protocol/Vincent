@@ -57,7 +57,6 @@ export function AccountTooltip({ theme }: AccountTooltipProps) {
     return undefined;
   }, [isOpen, isClient]);
 
-
   const formatAuthInfo = () => {
     if (!authInfo || !isClient) return '';
     return `Sign-In Type: ${authInfo.type}\nAuthenticated: ${new Date(authInfo.authenticatedAt).toLocaleString()}${authInfo.value ? `\nValue: ${authInfo.value}` : ''}`;
@@ -68,7 +67,6 @@ export function AccountTooltip({ theme }: AccountTooltipProps) {
     theme.cardBg && theme.cardBorder
       ? `!bg-white border border-gray-200 !text-black max-w-sm shadow-lg`
       : '!bg-black !text-white max-w-sm shadow-lg';
-
 
   return (
     <div ref={tooltipRef}>

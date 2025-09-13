@@ -30,21 +30,21 @@ export function initZendesk() {
   // Configure widget settings before loading
   window.zESettings = {
     webWidget: {
-      color: { 
-        theme: '#ea580c'
+      color: {
+        theme: '#ea580c',
       },
       launcher: {
         label: {
-          '*': 'Help'
+          '*': 'Help',
         },
         mobile: {
-          labelVisible: false
-        }
-      }
-    }
+          labelVisible: false,
+        },
+      },
+    },
   };
 
-  // Add custom CSS before widget loads  
+  // Add custom CSS before widget loads
   const style = document.createElement('style');
   style.textContent = `
     #launcher {
@@ -66,7 +66,7 @@ export function initZendesk() {
   script.id = 'ze-snippet';
   script.src = `https://static.zdassets.com/ekr/snippet.js?key=0f0d79fc-9fa4-4a27-846d-389524cad855`;
   script.async = true;
-  
+
   // Apply additional styling after widget loads
   script.onload = () => {
     setTimeout(() => {
@@ -79,6 +79,6 @@ export function initZendesk() {
       }
     }, 500);
   };
-  
+
   document.head.appendChild(script);
 }

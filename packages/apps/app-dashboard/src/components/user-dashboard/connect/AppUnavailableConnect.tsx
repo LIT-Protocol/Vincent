@@ -15,10 +15,10 @@ interface AppUnavailableConnectProps {
   activeVersion?: number;
 }
 
-export function AppUnavailableConnect({ 
-  appData, 
+export function AppUnavailableConnect({
+  appData,
   readAuthInfo,
-  activeVersion
+  activeVersion,
 }: AppUnavailableConnectProps) {
   const navigate = useNavigate();
 

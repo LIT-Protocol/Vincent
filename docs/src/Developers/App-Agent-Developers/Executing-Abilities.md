@@ -16,7 +16,6 @@ This guide will walk you through the process of using the Ability Client to exec
 The Vincent App SDK exports a function called `getVincentAbilityClient` that creates a wrapper around the Vincent Ability you'd like to execute on behalf of an App User. This function returns an instance of the Ability Client with two methods that are used to execute the Ability:
 
 1. **Precheck**: Executes the Vincent Ability's `precheck` function to provide quick and cost-free feedback on whether the Ability execution is likely to succeed. This function also:
-
    - Validates the Ability parameters you provide against the Vincent Ability's requirements
    - Evaluates the `precheck` function for any Vincent Policies the User has configured for your App
      - **Note:** Execution of the Ability's `precheck` logic will **not** happen unless all of the registered Vincent Policies pass their prechecks

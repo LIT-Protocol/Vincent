@@ -17,10 +17,10 @@ interface DisabledVersionConnectProps {
   connectInfoMap: ConnectInfoMap;
 }
 
-export function DisabledVersionConnect({ 
-  appData, 
+export function DisabledVersionConnect({
+  appData,
   readAuthInfo,
-  connectInfoMap
+  connectInfoMap,
 }: DisabledVersionConnectProps) {
   const navigate = useNavigate();
   const [showConnectPage, setShowConnectPage] = useState(false);
@@ -35,12 +35,7 @@ export function DisabledVersionConnect({
 
   // If user has clicked to update, show the ConnectPage
   if (showConnectPage) {
-    return (
-      <ConnectPage
-        connectInfoMap={connectInfoMap}
-        readAuthInfo={readAuthInfo}
-      />
-    );
+    return <ConnectPage connectInfoMap={connectInfoMap} readAuthInfo={readAuthInfo} />;
   }
 
   // Show the disabled version message

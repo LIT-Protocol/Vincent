@@ -18,7 +18,6 @@ The deBridge Ability enables Vincent Apps to bridge tokens across multiple block
 The deBridge Ability is built using the [Vincent Ability SDK](../Ability-Developers/Creating-Abilities.md) and operates in two phases:
 
 1. **Precheck Phase**: Validates all prerequisites for the bridge operation
-
    - Validates source and destination chain IDs and token addresses
    - Ensures source and destination chains are different
    - Verifies the user has sufficient balance of the source token
@@ -27,7 +26,6 @@ The deBridge Ability is built using the [Vincent Ability SDK](../Ability-Develop
    - Returns bridge details including estimated destination amount and fees
 
 2. **Execution Phase**: Executes the cross-chain bridge transaction
-
    - Verifies token allowance for ERC-20 tokens (if needed)
    - Retrieves transaction data from deBridge API
    - Signs and submits the bridge transaction to the source chain

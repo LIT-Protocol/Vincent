@@ -22,7 +22,11 @@ interface RepermitConnectProps {
   redirectUri?: string;
 }
 
-export function RepermitConnect({ appData, previouslyPermittedPKP, readAuthInfo }: RepermitConnectProps) {
+export function RepermitConnect({
+  appData,
+  previouslyPermittedPKP,
+  readAuthInfo,
+}: RepermitConnectProps) {
   const navigate = useNavigate();
   const [localError, setLocalError] = useState<string | null>(null);
   const [localSuccess, setLocalSuccess] = useState<string | null>(null);
@@ -96,9 +100,8 @@ export function RepermitConnect({ appData, previouslyPermittedPKP, readAuthInfo 
   }, [navigate]);
 
   const isLoading = isJwtLoading || isConnectProcessing || !!localSuccess;
-  const loadingStatus = 
-    jwtLoadingStatus || 
-    (isConnectProcessing ? 'Re-permitting app...' : localSuccess || null);
+  const loadingStatus =
+    jwtLoadingStatus || (isConnectProcessing ? 'Re-permitting app...' : localSuccess || null);
   const error = jwtError || localError;
 
   return (

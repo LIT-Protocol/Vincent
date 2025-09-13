@@ -89,7 +89,6 @@ export function registerRoutes(app: Express) {
             res.status(201).json(savedPolicy);
             return;
           } catch (error: any) {
-             
             if (error.code === 11000 && error.keyPattern && error.keyPattern.packageName) {
               res.status(409).json({
                 message: `The policy ${packageInfo.name} is already in the Vincent Registry.`,
@@ -181,7 +180,6 @@ export function registerRoutes(app: Express) {
             res.status(201).json(savedVersion);
             return;
           } catch (error: any) {
-             
             if (error.code === 11000 && error.keyPattern && error.keyPattern.packageName) {
               res.status(409).json({
                 message: `The policy ${packageInfo.name}@${packageInfo.version} is already in the Vincent Registry.`,

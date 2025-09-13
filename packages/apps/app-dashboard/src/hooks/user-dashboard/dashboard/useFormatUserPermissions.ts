@@ -40,12 +40,12 @@ export function useFormatUserPermissions(
             // Process all policies for this ability
             policies.forEach((policy) => {
               const isHidden = ability.hiddenSupportedPolicies?.includes(policy.packageName);
-              
+
               // Skip hidden policies entirely - they should never be in formData or selectedPolicies
               if (isHidden) {
                 return;
               }
-              
+
               // Check if policy exists in initial permission data
               if (
                 initialPermissionData &&
@@ -54,7 +54,7 @@ export function useFormatUserPermissions(
               ) {
                 const policyData = initialPermissionData[abilityVersion.ipfsCid][policy.ipfsCid];
                 initialFormData[abilityVersion.ipfsCid][policy.ipfsCid] = policyData || {};
-                
+
                 // Policy exists in data, so it's selected
                 initialSelectedPolicies[policy.ipfsCid] = true;
               } else {

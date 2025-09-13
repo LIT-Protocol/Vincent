@@ -16,7 +16,13 @@ export function InfoBanner({
   const isOrange = type === 'orange';
   const isBlue = type === 'blue';
   const isRed = type === 'red';
-  const Icon = isRed ? XCircle : isSuccess || isOrange ? CheckCircle : isBlue ? Info : AlertTriangle;
+  const Icon = isRed
+    ? XCircle
+    : isSuccess || isOrange
+      ? CheckCircle
+      : isBlue
+        ? Info
+        : AlertTriangle;
 
   let bgClass, iconClass;
   if (isRed) {

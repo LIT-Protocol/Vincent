@@ -59,12 +59,12 @@ export function UpdateVersionPage({
     }
   }, [redirectUrl, localSuccess, executeRedirect]);
 
-  const { 
-    formData, 
+  const {
+    formData,
     selectedPolicies,
     handleFormChange,
     handlePolicySelectionChange,
-    getSelectedFormData
+    getSelectedFormData,
   } = useConnectFormData(connectInfoMap);
 
   const {
@@ -100,7 +100,7 @@ export function UpdateVersionPage({
       await userPkpWallet.init();
 
       const selectedFormData = getSelectedFormData();
-      
+
       setLocalStatus('Adding permitted actions...');
       await addPermittedActions({
         wallet: userPkpWallet,

@@ -18,7 +18,6 @@ The Morpho Ability enables Vincent Apps to interact with Morpho lending vaults o
 The Morpho Ability is built using the [Vincent Ability SDK](../Ability-Developers/Creating-Abilities.md) and operates in two phases:
 
 1. **Precheck Phase**: Validates all prerequisites for the Morpho operation
-
    - Validates operation type, vault address, and amount format
    - Verifies the vault exists using the built-in Morpho Vault client and retrieves asset information
    - For deposits, checks the Vincent App User's Vincent Wallet's token balance and allowance
@@ -28,7 +27,6 @@ The Morpho Ability is built using the [Vincent Ability SDK](../Ability-Developer
    - Returns detailed validation results with current balance/shares
 
 2. **Execution Phase**: Executes the Morpho vault operation
-
    - Discovers and retrieves vault information using the Morpho Vault API, which enables filtering by asset, chain, APY, TVL, and more
    - Constructs the appropriate Morpho vault transaction using ERC-4626 standard methods
    - Signs and submits the transaction (with optional EIP-7702 Alchemy gas sponsorship)

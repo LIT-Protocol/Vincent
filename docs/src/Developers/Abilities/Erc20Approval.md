@@ -17,13 +17,11 @@ The ERC20 Approval Ability enables Vincent Apps to manage ERC20 token allowances
 The ERC20 Approval Ability is built using the [Vincent Ability SDK](../Ability-Developers/Creating-Abilities.md) and operates in two phases:
 
 1. **Precheck Phase**: Validates the request and checks existing allowances
-
    - Verifies the user has a non-zero native token balance for gas fees
    - Retrieves the current allowance for the specified spender and token
    - Returns whether the requested amount is already approved, and what the current allowance is
 
 2. **Execution Phase**: If needed, creates and submits the approval transaction
-
    - If the current allowance already matches the requested amount, returns success without creating a new transaction
    - Otherwise, creates and signs an ERC20 approve transaction for the exact requested amount
    - Returns the transaction hash and approval details

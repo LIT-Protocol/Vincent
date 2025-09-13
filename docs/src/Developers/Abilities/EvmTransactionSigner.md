@@ -19,7 +19,6 @@ This Vincent Ability also supports the [Contract Whitelist Policy](../Policies/C
 The EVM Transaction Signer Ability is built using the [Vincent Ability SDK](../Ability-Developers/Creating-Abilities.md) and operates in two phases:
 
 1. **Precheck Phase**: Validates the transaction structure and runs policy checks
-
    - Deserializes the provided serialized transaction using ethers.js
    - Validates all required fields are present (nonce, gasPrice, gasLimit, etc.)
    - Returns the deserialized unsigned transaction for as confirmation

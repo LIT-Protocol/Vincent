@@ -14,7 +14,6 @@ title: How Abilities Work
 A Vincent Ability consists of two main lifecycle methods executed in the following order:
 
 1. **Precheck**: Executed locally by the Vincent Ability executor, this function provides a best-effort check that the ability execution shouldn't fail
-
    - Before the execution of your ability's `precheck` function, the Vincent Ability SDK will execute the `precheck` functions of the Vincent Policies
    - If all Vincent Policies return `allow` results, the Vincent Ability's `precheck` function will be executed
    - This function is where you'd perform checks such as validating the Vincent Wallet has sufficient token balances, has the appropriate on-chain approvals to make token transfers, or anything else your ability can validate before executing the ability's logic

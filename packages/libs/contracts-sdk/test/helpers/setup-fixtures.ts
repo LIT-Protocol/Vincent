@@ -31,7 +31,7 @@ export async function removeAppDelegateeIfNeeded(): Promise<void> {
     if (
       registeredApp &&
       registeredApp.manager !==
-      privateKeyToAccount(TEST_APP_MANAGER_PRIVATE_KEY as `0x${string}`).address
+        privateKeyToAccount(TEST_APP_MANAGER_PRIVATE_KEY as `0x${string}`).address
     ) {
       throw new Error(
         `❌ App Delegatee: ${TEST_APP_DELEGATEE_ACCOUNT.address} is already registered to App ID: ${registeredApp.id}, and TEST_APP_MANAGER_PRIVATE_KEY is not the owner of the App`,

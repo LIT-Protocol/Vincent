@@ -95,6 +95,15 @@ export interface PKPAuthenticationMethod {
   value?: string;
 }
 
+/**
+ *
+ * @category Interfaces
+ */
+export interface AppInfo {
+  id: number;
+  version: number;
+}
+
 /** All valid Vincent JWT roles
  *
  * @category Interfaces
@@ -127,10 +136,7 @@ export interface VincentJWTPlatformUser extends DecodedJWT {
 export interface VincentJWTAppUser extends DecodedJWT {
   payload: VincentPKPPayload & {
     role: 'app-user';
-    app: {
-      id: number;
-      version: number;
-    };
+    app: AppInfo;
   };
 }
 
@@ -174,10 +180,7 @@ export type CreatePlatformUserJWTParams = VincentPKPJWTParams;
  * @category Interfaces
  */
 export interface CreateAppUserJWTParams extends VincentPKPJWTParams {
-  app: {
-    id: number;
-    version: number;
-  };
+  app: AppInfo;
 }
 
 /**
