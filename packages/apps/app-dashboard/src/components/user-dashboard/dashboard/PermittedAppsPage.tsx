@@ -32,9 +32,11 @@ export function PermittedAppsPage({ apps, permittedPKPs }: PermittedAppsPageProp
   return (
     <div className="w-full flex justify-center md:justify-start px-3 sm:px-6 pt-6">
       <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6 max-w-[1600px] place-items-center md:place-items-start">
-        {apps.map((app) => {
+        {apps.map((app, index) => {
           const permission = permittedPKPs.find((p) => p.appId === app.appId);
-          return <PermittedAppCard key={app.appId} app={app} permission={permission} />;
+          return (
+            <PermittedAppCard key={app.appId} app={app} permission={permission} index={index} />
+          );
         })}
       </div>
     </div>

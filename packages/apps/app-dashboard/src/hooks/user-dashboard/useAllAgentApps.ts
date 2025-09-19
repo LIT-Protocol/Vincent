@@ -1,36 +1,22 @@
-import { useEffect, useState } from 'react';
-import { getAgentPkps, AgentAppPermission } from '../../utils/user-dashboard/getAgentPkps';
+import { useGetPermittedAgentAppsQuery } from '@/store/agentPkpsApi';
 
 export function useAllAgentApps(userAddress: string | undefined) {
-  const [permittedPKPs, setPermittedPKPs] = useState<AgentAppPermission[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
+  const {
+    data: permittedPKPs = [],
+    isLoading: loading,
+    error: queryError,
+  } = useGetPermittedAgentAppsQuery(userAddress || '', {
+    skip: !userAddress,
+  });
 
-  useEffect(() => {
-    if (!userAddress) {
-      setPermittedPKPs([]);
-      setError(null);
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-
-    const fetchAllPermissions = async () => {
-      try {
-        const { permitted } = await getAgentPkps(userAddress);
-
-        setPermittedPKPs(permitted);
-      } catch (err) {
-        setError(err as Error);
-        setPermittedPKPs([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchAllPermissions();
-  }, [userAddress]);
+  // Convert RTK Query error to Error object for compatibility
+  const error = queryError
+    ? new Error(
+        typeof queryError === 'object' && 'error' in queryError
+          ? String(queryError.error)
+          : 'Failed to fetch agent apps',
+      )
+    : null;
 
   return { permittedPKPs, loading, error };
 }

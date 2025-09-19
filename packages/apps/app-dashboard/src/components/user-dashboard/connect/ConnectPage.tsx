@@ -198,7 +198,7 @@ export function ConnectPage({
           appVersion: Number(connectInfoMap.app.activeVersion),
           permissionData: selectedFormData,
         });
-
+        
         setIsConnectProcessing(false);
         setLocalSuccess('Permissions granted successfully!');
         console.log('agentPKP:', agentPKP);

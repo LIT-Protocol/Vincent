@@ -1,10 +1,10 @@
 import { useState, useEffect, useMemo } from 'react';
 import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
-import { AgentAppPermission } from '@/utils/user-dashboard/getAgentPkps';
+import { useGetPermittedAgentAppsQuery } from '@/store/agentPkpsApi';
 import { App } from '@/types/developer-dashboard/appTypes';
 
 interface UseSidebarDataProps {
-  agentAppPermissions: AgentAppPermission[];
+  userAddress: string;
 }
 
 interface UseSidebarDataReturn {
@@ -15,14 +15,23 @@ interface UseSidebarDataReturn {
   error: string | null;
 }
 
-export function useSidebarData({ agentAppPermissions }: UseSidebarDataProps): UseSidebarDataReturn {
-  const [isLoading, setIsLoading] = useState(true);
+export function useSidebarData({ userAddress }: UseSidebarDataProps): UseSidebarDataReturn {
   const [apps, setApps] = useState<App[]>([]);
   const [permittedAppVersions, setPermittedAppVersions] = useState<Record<string, string>>({});
   const [appVersionsMap, setAppVersionsMap] = useState<Record<string, any[]>>({});
+  const [appsLoading, setAppsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Build permitted app versions from the provided agent app permissions (memoized to prevent infinite loops)
+  // Get agent app permissions using RTK Query
+  const {
+    data: agentAppPermissions = [],
+    isLoading: permissionsLoading,
+    error: permissionsError,
+  } = useGetPermittedAgentAppsQuery(userAddress, {
+    skip: !userAddress,
+  });
+
+  // Build permitted app versions from the agent app permissions (memoized to prevent infinite loops)
   const permittedVersionsFromHook = useMemo(() => {
     return agentAppPermissions.reduce(
       (acc, agentPkp) => {
@@ -44,15 +53,15 @@ export function useSidebarData({ agentAppPermissions }: UseSidebarDataProps): Us
     // If no permitted apps, set empty state and finish
     if (Object.keys(permittedVersionsFromHook).length === 0) {
       console.log('[useSidebarData] No permitted apps, setting empty state');
-      setApps([]);
-      setPermittedAppVersions({});
-      setAppVersionsMap({});
-      setIsLoading(false);
+      setApps((prev) => prev.length === 0 ? prev : []);
+      setPermittedAppVersions((prev) => Object.keys(prev).length === 0 ? prev : {});
+      setAppVersionsMap((prev) => Object.keys(prev).length === 0 ? prev : {});
+      setAppsLoading(false);
       return;
     }
 
     // Reset states when starting fetch
-    setIsLoading(true);
+    setAppsLoading(true);
     setError(null);
 
     const fetchAllData = async () => {
@@ -64,7 +73,7 @@ export function useSidebarData({ agentAppPermissions }: UseSidebarDataProps): Us
         if (Object.keys(permittedVersionsFromHook).length === 0) {
           setApps([]);
           setAppVersionsMap({});
-          setIsLoading(false);
+          setAppsLoading(false);
           return;
         }
 
@@ -82,7 +91,7 @@ export function useSidebarData({ agentAppPermissions }: UseSidebarDataProps): Us
         // If no filtered apps, we're done
         if (!filteredApps.length) {
           setAppVersionsMap({});
-          setIsLoading(false);
+          setAppsLoading(false);
           return;
         }
 
@@ -100,22 +109,31 @@ export function useSidebarData({ agentAppPermissions }: UseSidebarDataProps): Us
         });
 
         setAppVersionsMap(versionsMap);
-        setIsLoading(false);
+        setAppsLoading(false);
       } catch (error) {
         console.error('Error fetching sidebar data:', error);
         setError(error instanceof Error ? error.message : 'Failed to fetch sidebar data');
-        setIsLoading(false); // Only set false on failure (with error)
+      } finally {
+        setAppsLoading(false);
       }
     };
 
     fetchAllData();
-  }, [permittedVersionsFromHook]);
+  }, [permittedVersionsFromHook, triggerGetApps, triggerGetAppVersions]);
+
+  // Combine loading states and errors
+  const isLoading = permissionsLoading || appsLoading;
+  const combinedError = permissionsError
+    ? typeof permissionsError === 'object' && 'error' in permissionsError
+      ? String(permissionsError.error)
+      : 'Failed to fetch agent apps'
+    : error;
 
   return {
     apps,
     permittedAppVersions,
     appVersionsMap,
     isLoading,
-    error,
+    error: combinedError,
   };
 }

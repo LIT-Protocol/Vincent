@@ -3,6 +3,7 @@ import { fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { reactClient } from '@lit-protocol/vincent-registry-sdk';
 import { getCurrentJwtTokenForStore } from '@/hooks/developer-dashboard/useVincentApiWithJWT';
 import { env } from '@/config/env';
+import { agentPkpsApi } from './agentPkpsApi';
 
 const { VITE_ENV } = env;
 
@@ -61,11 +62,15 @@ setBaseQueryFn(createWithPKPAuth(fetchBaseQuery({ baseUrl: BASE_URL })));
 export const store = configureStore({
   reducer: {
     vincentApi: (vincentApiClientReact as any).reducer,
+    agentPkpsApi: agentPkpsApi.reducer,
   },
   // Adding the api middleware enables caching, invalidation, polling,
   // and other useful features of `rtk-query`.
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat((vincentApiClientReact as any).middleware),
+    getDefaultMiddleware().concat(
+      (vincentApiClientReact as any).middleware,
+      agentPkpsApi.middleware,
+    ),
 });
 
 export type RootState = ReturnType<typeof store.getState>;

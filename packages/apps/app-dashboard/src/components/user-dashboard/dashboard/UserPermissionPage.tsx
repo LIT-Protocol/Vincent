@@ -259,7 +259,7 @@ export function AppPermissionPage({
         appId: Number(connectInfoMap.app.appId),
         appVersion: Number(permittedVersion),
       });
-
+      
       setLocalStatus(null);
       // Show success state until redirect
       setLocalSuccess('App unpermitted successfully!');

@@ -117,7 +117,7 @@ export function UpdateVersionPage({
           appVersion: Number(connectInfoMap.app.activeVersion),
           permissionData: selectedFormData,
         });
-
+        
         setLocalStatus(null);
         // Show success state for 3 seconds, then redirect or reload
         setLocalSuccess('Version updated successfully!');

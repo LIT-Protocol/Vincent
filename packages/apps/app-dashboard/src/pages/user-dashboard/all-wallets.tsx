@@ -1,11 +1,11 @@
 import { Helmet } from 'react-helmet-async';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { WithdrawForm } from '@/components/user-dashboard/withdraw/WithdrawForm';
 import { WithdrawFormSkeleton } from '@/components/user-dashboard/withdraw/WithdrawFormSkeleton';
 import { WalletModal } from '@/components/user-dashboard/wallet/WalletModal';
 import useReadAuthInfo from '@/hooks/user-dashboard/useAuthInfo';
 import { useAuthGuard } from '@/hooks/user-dashboard/connect/useAuthGuard';
-import { getAgentPkps } from '@/utils/user-dashboard/getAgentPkps';
+import { useGetAgentPkpsQuery } from '@/store/agentPkpsApi';
 import { IRelayPKP } from '@lit-protocol/types';
 import { theme } from '@/components/user-dashboard/connect/ui/theme';
 import { useWalletConnectStoreActions } from '@/components/user-dashboard/withdraw/WalletConnect/WalletConnectStore';
@@ -15,53 +15,47 @@ export function AllWallets() {
   const authGuardElement = useAuthGuard();
   const [showModal, setShowModal] = useState(true);
   const [selectedPKP, setSelectedPKP] = useState<IRelayPKP | null>(null);
-  const [allAgentPKPs, setAllAgentPKPs] = useState<IRelayPKP[]>([]);
-  const [loading, setLoading] = useState(true);
   const { clearSessionsForAddress, setCurrentWalletAddress } = useWalletConnectStoreActions();
 
+  const { data: agentPkpsData, isLoading: loading } = useGetAgentPkpsQuery(
+    authInfo?.userPKP?.ethAddress || '',
+    {
+      skip: !authInfo?.userPKP?.ethAddress,
+    },
+  );
+
+  // Memoize the unique PKPs calculation
+  const allAgentPKPs = useMemo(() => {
+    if (!agentPkpsData) return [];
+
+    const { permitted, unpermitted } = agentPkpsData;
+
+    // Collect all unique PKPs
+    const pkpMap = new Map<string, IRelayPKP>();
+
+    permitted.forEach((item) => {
+      if (!pkpMap.has(item.pkp.ethAddress)) {
+        pkpMap.set(item.pkp.ethAddress, item.pkp);
+      }
+    });
+
+    unpermitted.forEach((item) => {
+      if (!pkpMap.has(item.pkp.ethAddress)) {
+        pkpMap.set(item.pkp.ethAddress, item.pkp);
+      }
+    });
+
+    return Array.from(pkpMap.values());
+  }, [agentPkpsData]);
+
+  // Set first PKP as selected by default when data changes
   useEffect(() => {
-    const fetchAgentPKPs = async () => {
-      if (!authInfo?.userPKP?.ethAddress) {
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const { permitted, unpermitted } = await getAgentPkps(authInfo.userPKP.ethAddress);
-
-        // Collect all unique PKPs
-        const pkpMap = new Map<string, IRelayPKP>();
-
-        permitted.forEach((item) => {
-          if (!pkpMap.has(item.pkp.ethAddress)) {
-            pkpMap.set(item.pkp.ethAddress, item.pkp);
-          }
-        });
-
-        unpermitted.forEach((item) => {
-          if (!pkpMap.has(item.pkp.ethAddress)) {
-            pkpMap.set(item.pkp.ethAddress, item.pkp);
-          }
-        });
-
-        const uniquePKPs = Array.from(pkpMap.values());
-        setAllAgentPKPs(uniquePKPs);
-
-        // Set first PKP as selected by default
-        if (uniquePKPs.length > 0) {
-          const firstPKP = uniquePKPs[0];
-          setSelectedPKP(firstPKP);
-          setCurrentWalletAddress(firstPKP.ethAddress);
-        }
-      } catch (error) {
-        console.error('Failed to fetch agent PKPs:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchAgentPKPs();
-  }, [authInfo?.userPKP?.ethAddress]);
+    if (allAgentPKPs.length > 0 && !selectedPKP) {
+      const firstPKP = allAgentPKPs[0];
+      setSelectedPKP(firstPKP);
+      setCurrentWalletAddress(firstPKP.ethAddress);
+    }
+  }, [allAgentPKPs, selectedPKP, setCurrentWalletAddress]);
 
   const handleReopenModal = () => {
     setShowModal(true);
