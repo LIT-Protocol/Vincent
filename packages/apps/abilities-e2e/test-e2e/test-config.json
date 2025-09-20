@@ -1,16 +1,16 @@
 {
-  "appId": 95050375588,
+  "appId": 63160545517,
   "appVersion": 1,
   "userPkp": {
-    "tokenId": "82104276824339269971064922653638509343882443844866538545851912408514686622617",
-    "ethAddress": "0x716c4a18D1FA9E8f55629cCfCbD5cB0ceaE05024",
-    "pkpPubkey": "0x048bbc2754457f84ac079c23ce399796e510aa79aa9d86b9d03aac6f3033ef5db3b178653fbb618a4d10397312ba19689c3826fd74e5d9e7171bcc6b801924f533"
+    "tokenId": "3642086617849255502636868489753780819830331370694537145307432406587444605687",
+    "ethAddress": "0xB82aBD54a142811Cb925FA949A43fC84078AeBad",
+    "pkpPubkey": "0x04c020d8bb0a778ab1a1a2375102751cd4e899682acb16d567fb1c445528567996a124848748bd4d581e82b8463f05acc2f5fc9cd9cd9f853c49c94dea3e17ab78"
   },
   "capacityCreditInfo": {
-    "capacityTokenIdStr": "253142",
-    "capacityTokenId": "253142",
+    "capacityTokenIdStr": "281826",
+    "capacityTokenId": "281826",
     "requestsPerKilosecond": 80,
     "daysUntilUTCMidnightExpiration": 25,
-    "mintedAtUtc": "2025-08-05T18:41:28.375Z"
+    "mintedAtUtc": "2025-09-18T06:56:26.487Z"
   }
 }
