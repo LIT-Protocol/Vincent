@@ -67,7 +67,8 @@
       "ability-morpho",
       "ability-aave",
       "ability-debridge",
-      "policy-send-counter"
+      "policy-send-counter",
+      "wrapped-keys"
     ],
     "projectsRelationship": "independent",
     "releaseTagPattern": "vincent/{projectName}/{version}",

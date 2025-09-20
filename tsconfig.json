@@ -59,6 +59,9 @@
     },
     {
       "path": "./packages/apps/policy-send-counter"
+    },
+    {
+      "path": "./packages/libs/wrapped-keys"
     }
   ]
 }
