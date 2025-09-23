@@ -28,7 +28,7 @@
     },
     "build": {
       "executor": "@nx/js:tsc",
-      "dependsOn": ["action:build"],
+      "dependsOn": ["action:build", { "target": "build", "projects": "contracts-sdk" }],
       "outputs": ["{options.outputPath}"],
       "options": {
         "outputPath": "packages/libs/wrapped-keys/dist",

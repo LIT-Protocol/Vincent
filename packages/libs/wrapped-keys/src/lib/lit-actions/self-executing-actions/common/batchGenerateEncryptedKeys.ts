@@ -7,6 +7,5 @@ import { batchGenerateEncryptedKeys } from '../../raw-action-functions/common/ba
 declare const actions: BatchGenerateEncryptedKeysParams['actions'];
 declare const accessControlConditions: BatchGenerateEncryptedKeysParams['accessControlConditions'];
 
- 
 (async () =>
   litActionHandler(async () => batchGenerateEncryptedKeys({ actions, accessControlConditions })))();
