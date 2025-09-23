@@ -1,4 +1,5 @@
 import { IRelayPKP, SessionSigs } from '@lit-protocol/types';
+import * as Sentry from '@sentry/react';
 import { Button } from '@/components/shared/ui/button';
 import { Input } from '@/components/shared/ui/input';
 import StatusMessage from '@/components/user-dashboard/connect/StatusMessage';
@@ -8,8 +9,8 @@ import React from 'react';
 import { theme } from '@/components/user-dashboard/connect/ui/theme';
 
 // Custom hooks
-import { useWalletConnectSession } from '../../../../hooks/user-dashboard/WalletConnect/useWalletConnectSession';
-import { useWalletConnectRequests } from '../../../../hooks/user-dashboard/WalletConnect/useWalletConnectRequests';
+import { useWalletConnectSession } from '@/hooks/user-dashboard/WalletConnect/useWalletConnectSession';
+import { useWalletConnectRequests } from '@/hooks/user-dashboard/WalletConnect/useWalletConnectRequests';
 
 // UI Components
 import { SessionProposal } from './SessionProposal';
@@ -84,6 +85,7 @@ export default function WalletConnectPage(params: {
         setStatus({ message: 'Successfully paired with dApp', type: 'success' });
       } catch (error) {
         console.error('WalletConnect error:', error);
+        Sentry.captureException(error);
         setStatus({
           message:
             error instanceof Error ? error.message : 'Failed to connect. Invalid URI format.',
@@ -114,6 +116,7 @@ export default function WalletConnectPage(params: {
           type: 'success',
         });
       } catch (error) {
+        Sentry.captureException(error);
         setStatus({
           message: error instanceof Error ? error.message : 'Failed to approve request',
           type: 'error',
@@ -129,6 +132,7 @@ export default function WalletConnectPage(params: {
         await handleRejectRequest(request);
         setStatus({ message: 'Request rejected', type: 'success' });
       } catch (error) {
+        Sentry.captureException(error);
         setStatus({
           message: error instanceof Error ? error.message : 'Failed to reject request',
           type: 'error',
