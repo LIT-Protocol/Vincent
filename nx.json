@@ -69,7 +69,8 @@
       "ability-debridge",
       "policy-send-counter",
       "wrapped-keys",
-      "ability-sol-transaction-signer"
+      "ability-sol-transaction-signer",
+      "policy-sol-contract-whitelist"
     ],
     "projectsRelationship": "independent",
     "releaseTagPattern": "vincent/{projectName}/{version}",
