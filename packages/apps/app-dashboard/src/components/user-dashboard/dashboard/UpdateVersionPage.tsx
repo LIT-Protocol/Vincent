@@ -117,7 +117,7 @@ export function UpdateVersionPage({
           appVersion: Number(connectInfoMap.app.activeVersion),
           permissionData: selectedFormData,
         });
-        
+
         setLocalStatus(null);
         // Show success state for 3 seconds, then redirect or reload
         setLocalSuccess('Version updated successfully!');
@@ -134,7 +134,7 @@ export function UpdateVersionPage({
       } catch (error) {
         setLocalError(error instanceof Error ? error.message : 'Failed to update version');
         setLocalStatus(null);
-        return;
+        throw error;
       }
     } else {
       setLocalError('Some of your permissions are not valid. Please check the form and try again.');

@@ -216,7 +216,7 @@ export function AppPermissionPage({
       } catch (error) {
         setLocalError(error instanceof Error ? error.message : 'Failed to permit app');
         setLocalStatus(null);
-        return;
+        throw error;
       }
     } else {
       setLocalError('Some of your permissions are not valid. Please check the form and try again.');
@@ -259,7 +259,7 @@ export function AppPermissionPage({
         appId: Number(connectInfoMap.app.appId),
         appVersion: Number(permittedVersion),
       });
-      
+
       setLocalStatus(null);
       // Show success state until redirect
       setLocalSuccess('App unpermitted successfully!');
@@ -270,6 +270,7 @@ export function AppPermissionPage({
     } catch (error) {
       setLocalError(error instanceof Error ? error.message : 'Failed to unpermit app');
       setLocalStatus(null);
+      throw error;
     }
   }, [readAuthInfo, connectInfoMap.app, permittedVersion]);
 
