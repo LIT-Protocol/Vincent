@@ -15,6 +15,7 @@
         "ability-uniswap-swap:action:deploy",
         "ability-erc20-approval:action:deploy",
         "ability-erc20-transfer:action:deploy",
+        "ability-sol-transaction-signer:action:deploy",
         "ability-evm-transaction-signer:action:deploy",
         "policy-contract-whitelist:action:deploy",
         "policy-send-counter:action:deploy",

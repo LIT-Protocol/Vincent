@@ -3,7 +3,7 @@ import {
   supportedPoliciesForAbility,
   getSolanaKeyPairFromWrappedKey,
 } from '@lit-protocol/vincent-ability-sdk';
-import type { Transaction, VersionedTransaction } from '@solana/web3.js';
+import { Transaction } from '@solana/web3.js';
 
 import {
   executeFailSchema,
@@ -11,7 +11,11 @@ import {
   precheckFailSchema,
   abilityParamsSchema,
 } from './schemas';
-import { signSolanaTransaction, deserializeTransaction } from './lit-action-helpers';
+import {
+  signSolanaTransaction,
+  deserializeTransaction,
+  verifyBlockhashForCluster,
+} from './lit-action-helpers';
 
 export const vincentAbility = createVincentAbility({
   packageName: '@lit-protocol/vincent-ability-sol-transaction-signer' as const,
@@ -26,10 +30,18 @@ export const vincentAbility = createVincentAbility({
   executeFailSchema,
 
   precheck: async ({ abilityParams }, { succeed, fail }) => {
-    const { serializedTransaction } = abilityParams;
+    const { serializedTransaction, cluster } = abilityParams;
 
     try {
-      deserializeTransaction(serializedTransaction);
+      const transaction = deserializeTransaction(serializedTransaction);
+
+      // Verify blockhash matches the specified cluster
+      const verification = await verifyBlockhashForCluster(transaction, cluster);
+      if (!verification.valid) {
+        return fail({
+          error: verification.error,
+        });
+      }
 
       return succeed();
     } catch (error) {
@@ -40,8 +52,13 @@ export const vincentAbility = createVincentAbility({
   },
 
   execute: async ({ abilityParams }, { succeed, fail, delegation: { delegatorPkpInfo } }) => {
-    const { serializedTransaction, ciphertext, dataToEncryptHash, legacyTransactionOptions } =
-      abilityParams;
+    const {
+      serializedTransaction,
+      cluster,
+      ciphertext,
+      dataToEncryptHash,
+      legacyTransactionOptions,
+    } = abilityParams;
     const { tokenId } = delegatorPkpInfo;
 
     try {
@@ -51,28 +68,33 @@ export const vincentAbility = createVincentAbility({
         dataToEncryptHash,
       });
 
-      const { transaction, version } = deserializeTransaction(serializedTransaction);
+      const transaction = deserializeTransaction(serializedTransaction);
+
+      // Verify blockhash is still valid for the specified cluster before signing
+      const verification = await verifyBlockhashForCluster(transaction, cluster);
+      if (!verification.valid) {
+        return fail({
+          error: verification.error,
+        });
+      }
 
       signSolanaTransaction({
         solanaKeypair,
         transaction,
-        version,
       });
 
       let signedSerializedTransaction: string;
-      if (version === 'legacy') {
-        const legacyTx = transaction as Transaction;
-        if (!legacyTx.feePayer) legacyTx.feePayer = solanaKeypair.publicKey;
+      if (transaction instanceof Transaction) {
+        if (!transaction.feePayer) transaction.feePayer = solanaKeypair.publicKey;
 
         signedSerializedTransaction = Buffer.from(
-          legacyTx.serialize({
+          transaction.serialize({
             requireAllSignatures: legacyTransactionOptions?.requireAllSignatures ?? true,
             verifySignatures: legacyTransactionOptions?.verifySignatures ?? false,
           }),
         ).toString('base64');
       } else {
-        const versionedTx = transaction as VersionedTransaction;
-        signedSerializedTransaction = Buffer.from(versionedTx.serialize()).toString('base64');
+        signedSerializedTransaction = Buffer.from(transaction.serialize()).toString('base64');
       }
 
       return succeed({

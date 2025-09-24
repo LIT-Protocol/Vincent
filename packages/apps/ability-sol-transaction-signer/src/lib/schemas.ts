@@ -1,6 +1,9 @@
 import { z } from 'zod';
 
 export const abilityParamsSchema = z.object({
+  cluster: z
+    .enum(['devnet', 'testnet', 'mainnet-beta'])
+    .describe('The Solana cluster the transaction is intended for (used to verify blockhash)'),
   serializedTransaction: z
     .string()
     .describe(
