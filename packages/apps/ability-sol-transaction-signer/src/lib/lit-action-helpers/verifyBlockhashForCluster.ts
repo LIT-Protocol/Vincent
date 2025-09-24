@@ -1,10 +1,14 @@
-import { Transaction, VersionedTransaction, Connection, clusterApiUrl } from '@solana/web3.js';
-import type { Cluster } from '@solana/web3.js';
+import { Transaction, VersionedTransaction, Connection } from '@solana/web3.js';
 
-export async function verifyBlockhashForCluster(
-  transaction: Transaction | VersionedTransaction,
-  cluster: string,
-): Promise<{ valid: true } | { valid: false; error: string }> {
+export async function verifyBlockhashForCluster({
+  transaction,
+  cluster,
+  rpcUrl,
+}: {
+  transaction: Transaction | VersionedTransaction;
+  cluster: string;
+  rpcUrl: string;
+}): Promise<{ valid: true } | { valid: false; error: string }> {
   // Extract blockhash from the transaction based on version
   let blockhash: string | undefined;
 
@@ -22,7 +26,7 @@ export async function verifyBlockhashForCluster(
   }
 
   // Verify the blockhash is valid for the specified cluster
-  const connection = new Connection(clusterApiUrl(cluster as Cluster), 'confirmed');
+  const connection = new Connection(rpcUrl, 'confirmed');
   try {
     const isValid = await connection.isBlockhashValid(blockhash);
     if (!isValid.value) {

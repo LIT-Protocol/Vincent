@@ -33,6 +33,7 @@ import {
   TestConfig,
   YELLOWSTONE_RPC_URL,
   TEST_SOLANA_FUNDER_PRIVATE_KEY,
+  SOL_RPC_URL,
 } from './helpers';
 import {
   fundAppDelegateeIfNeeded,
@@ -49,6 +50,8 @@ import { LIT_NETWORK } from '@lit-protocol/constants';
 
 import { api } from '@lit-protocol/vincent-wrapped-keys';
 const { getVincentRegistryAccessControlCondition } = api;
+
+const SOLANA_CLUSTER = 'mainnet-beta';
 
 // Extend Jest timeout to 4 minutes
 jest.setTimeout(240000);
@@ -84,7 +87,7 @@ const fundIfNeeded = async ({
   txSendAmount: number;
   faucetFundAmount: number;
 }) => {
-  const connection = new Connection(clusterApiUrl('devnet'), 'confirmed');
+  const connection = new Connection(clusterApiUrl(SOLANA_CLUSTER), 'confirmed');
   const balance = await connection.getBalance(keypair.publicKey);
   console.log('[fundIfNeeded] Current keypair balance:', balance / LAMPORTS_PER_SOL, 'SOL');
 
@@ -162,7 +165,7 @@ const createSolanaTransferTransaction = async (
   );
 
   // Fetch recent blockhash from the network
-  const connection = new Connection(clusterApiUrl('devnet'), 'confirmed');
+  const connection = new Connection(clusterApiUrl(SOLANA_CLUSTER), 'confirmed');
   const { blockhash } = await connection.getLatestBlockhash();
   transaction.recentBlockhash = blockhash;
   transaction.feePayer = from;
@@ -175,7 +178,7 @@ const createSolanaVersionedTransferTransaction = async (
   to: PublicKey,
   lamports: number,
 ) => {
-  const connection = new Connection(clusterApiUrl('devnet'), 'confirmed');
+  const connection = new Connection(clusterApiUrl(SOLANA_CLUSTER), 'confirmed');
   const { blockhash } = await connection.getLatestBlockhash();
 
   const instructions = [
@@ -196,7 +199,7 @@ const createSolanaVersionedTransferTransaction = async (
 };
 
 const submitAndVerifyTransaction = async (signedTransactionBase64: string, testName: string) => {
-  const connection = new Connection(clusterApiUrl('devnet'), 'confirmed');
+  const connection = new Connection(clusterApiUrl(SOLANA_CLUSTER), 'confirmed');
   const signedTxBuffer = Buffer.from(signedTransactionBase64, 'base64');
 
   console.log(`[${testName}] Submitting transaction to Solana network`);
@@ -391,7 +394,8 @@ describe('Solana Transaction Signer Ability E2E Tests', () => {
     const client = getSolanaTransactionSignerAbilityClient();
     const precheckResult = await client.precheck(
       {
-        cluster: 'devnet',
+        rpcUrl: SOL_RPC_URL,
+        cluster: SOLANA_CLUSTER,
         serializedTransaction: SERIALIZED_TRANSACTION,
         ciphertext: CIPHERTEXT,
         dataToEncryptHash: DATA_TO_ENCRYPT_HASH,
@@ -414,7 +418,7 @@ describe('Solana Transaction Signer Ability E2E Tests', () => {
     const client = getSolanaTransactionSignerAbilityClient();
     const executeResult = await client.execute(
       {
-        cluster: 'devnet',
+        cluster: SOLANA_CLUSTER,
         serializedTransaction: SERIALIZED_TRANSACTION,
         ciphertext: CIPHERTEXT,
         dataToEncryptHash: DATA_TO_ENCRYPT_HASH,
@@ -456,7 +460,7 @@ describe('Solana Transaction Signer Ability E2E Tests', () => {
     const client = getSolanaTransactionSignerAbilityClient();
     const executeResult = await client.execute(
       {
-        cluster: 'devnet',
+        cluster: SOLANA_CLUSTER,
         serializedTransaction,
         ciphertext: CIPHERTEXT,
         dataToEncryptHash: DATA_TO_ENCRYPT_HASH,
@@ -503,7 +507,7 @@ describe('Solana Transaction Signer Ability E2E Tests', () => {
     const client = getSolanaTransactionSignerAbilityClient();
     const executeResult = await client.execute(
       {
-        cluster: 'devnet',
+        cluster: SOLANA_CLUSTER,
         serializedTransaction,
         ciphertext: CIPHERTEXT,
         dataToEncryptHash: DATA_TO_ENCRYPT_HASH,
@@ -540,7 +544,7 @@ describe('Solana Transaction Signer Ability E2E Tests', () => {
     const client = getSolanaTransactionSignerAbilityClient();
     const precheckResult = await client.precheck(
       {
-        cluster: 'devnet',
+        cluster: SOLANA_CLUSTER,
         serializedTransaction: VERSIONED_SERIALIZED_TRANSACTION,
         ciphertext: CIPHERTEXT,
         dataToEncryptHash: DATA_TO_ENCRYPT_HASH,
@@ -563,7 +567,7 @@ describe('Solana Transaction Signer Ability E2E Tests', () => {
     const client = getSolanaTransactionSignerAbilityClient();
     const executeResult = await client.execute(
       {
-        cluster: 'devnet',
+        cluster: SOLANA_CLUSTER,
         serializedTransaction: VERSIONED_SERIALIZED_TRANSACTION,
         ciphertext: CIPHERTEXT,
         dataToEncryptHash: DATA_TO_ENCRYPT_HASH,
