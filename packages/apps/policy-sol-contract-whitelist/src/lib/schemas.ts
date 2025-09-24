@@ -4,10 +4,6 @@ export const abilityParamsSchema = z.object({
   serializedTransaction: z
     .string()
     .describe('The base64 encoded serialized Solana transaction to be evaluated'),
-  versionedTransaction: z
-    .boolean()
-    .optional()
-    .describe('Whether this is a versioned transaction (v0) or legacy transaction'),
 });
 
 export const userParamsSchema = z.object({
@@ -20,6 +16,10 @@ export const precheckAllowResultSchema = z.object({
   programIds: z
     .array(z.string())
     .describe('The program IDs found in the transaction that were allowed'),
+  version: z
+    .union([z.literal('legacy'), z.literal(0)])
+    .optional()
+    .describe('The transaction version (legacy or 0 for versioned)'),
 });
 
 export const precheckDenyResultSchema = z.object({
@@ -31,6 +31,10 @@ export const evalAllowResultSchema = z.object({
   programIds: z
     .array(z.string())
     .describe('The program IDs found in the transaction that were allowed'),
+  version: z
+    .union([z.literal('legacy'), z.literal(0)])
+    .optional()
+    .describe('The transaction version (legacy or 0 for versioned)'),
 });
 
 export const evalDenyResultSchema = z.object({
