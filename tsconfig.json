@@ -62,6 +62,9 @@
     },
     {
       "path": "./packages/libs/wrapped-keys"
+    },
+    {
+      "path": "./packages/apps/ability-sol-transaction-signer"
     }
   ]
 }
