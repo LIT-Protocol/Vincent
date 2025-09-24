@@ -1,0 +1,88 @@
+{
+  "name": "wrapped-keys",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/libs/wrapped-keys/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "clean": {},
+    "action:build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": ["pnpm node ./esbuild.config.js"],
+        "cwd": "{projectRoot}",
+        "parallel": false
+      }
+    },
+    "dev": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "packages/libs/wrapped-keys/dist",
+        "main": "packages/libs/wrapped-keys/src/index.ts",
+        "tsConfig": "packages/libs/wrapped-keys/tsconfig.lib.json",
+        "assets": ["packages/libs/wrapped-keys/*.md"],
+        "formats": ["cjs"],
+        "watch": true
+      }
+    },
+    "build": {
+      "executor": "@nx/js:tsc",
+      "dependsOn": ["action:build", { "target": "build", "projects": "contracts-sdk" }],
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "packages/libs/wrapped-keys/dist",
+        "main": "packages/libs/wrapped-keys/src/index.ts",
+        "tsConfig": "packages/libs/wrapped-keys/tsconfig.lib.json",
+        "assets": [
+          "packages/libs/wrapped-keys/*.md",
+          {
+            "glob": "**/*",
+            "input": "packages/libs/wrapped-keys/src/lib/lit-actions/generated",
+            "output": "src/lib/lit-actions/generated"
+          }
+        ],
+        "formats": ["cjs"]
+      }
+    },
+    "typedoc:build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "pnpm typedoc --skipErrorChecking --logLevel Verbose --options ./typedoc-configs/json.config.js"
+        ],
+        "cwd": "{projectRoot}",
+        "tty": true
+      }
+    },
+    "typedoc:watch": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "pnpm typedoc --watch --logLevel Verbose --options ./typedoc-configs/html.config.js",
+          "node ./scripts/typedocServer.mjs"
+        ],
+        "cwd": "{projectRoot}",
+        "tty": true
+      }
+    },
+    "typedoc:watch:json": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "pnpm typedoc --watch --logLevel Verbose --options ./typedoc-configs/json.config.js"
+        ],
+        "cwd": "{projectRoot}",
+        "tty": true
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "packages/libs/wrapped-keys/jest.config.js",
+        "passWithNoTests": true
+      }
+    }
+  }
+}

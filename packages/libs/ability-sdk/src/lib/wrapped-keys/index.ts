@@ -1,0 +1,1 @@
+export { getSolanaKeyPairFromWrappedKey } from './getSolanaKeyPairFromWrappedKey';
