@@ -1,4 +1,5 @@
 import { createVincentPolicy } from '@lit-protocol/vincent-ability-sdk';
+import { clusterApiUrl } from '@solana/web3.js';
 
 import {
   evalAllowResultSchema,
@@ -14,6 +15,12 @@ import {
   verifyBlockhashForCluster,
 } from './lit-action-helpers';
 
+declare const Lit: {
+  Actions: {
+    getRpcUrl: (params: { chain: string }) => Promise<string>;
+  };
+};
+
 export const vincentPolicy = createVincentPolicy({
   packageName: '@lit-protocol/vincent-policy-sol-contract-whitelist' as const,
 
@@ -27,13 +34,22 @@ export const vincentPolicy = createVincentPolicy({
   evalDenyResultSchema,
 
   precheck: async ({ abilityParams, userParams }, { allow, deny }) => {
-    const { serializedTransaction, cluster } = abilityParams;
+    const { serializedTransaction, cluster, rpcUrl } = abilityParams;
     const { whitelist } = userParams;
+
+    if (!rpcUrl) {
+      console.log(
+        '[@lit-protocol/vincent-policy-sol-contract-whitelist] rpcUrl not provided using @solana/web3.js default',
+      );
+    }
 
     const transaction = deserializeTransaction(serializedTransaction);
 
-    // Verify blockhash matches the specified cluster
-    const verification = await verifyBlockhashForCluster(transaction, cluster);
+    const verification = await verifyBlockhashForCluster({
+      transaction,
+      cluster,
+      rpcUrl: rpcUrl || clusterApiUrl(cluster),
+    });
     if (!verification.valid) {
       return deny({
         reason: verification.error,
@@ -60,8 +76,17 @@ export const vincentPolicy = createVincentPolicy({
 
     const transaction = deserializeTransaction(serializedTransaction);
 
-    // Verify blockhash matches the specified cluster
-    const verification = await verifyBlockhashForCluster(transaction, cluster);
+    const litChainIdentifier = {
+      devnet: 'solanaDevnet',
+      testnet: 'solanaTestnet',
+      'mainnet-beta': 'solana',
+    };
+
+    const verification = await verifyBlockhashForCluster({
+      transaction,
+      cluster,
+      rpcUrl: await Lit.Actions.getRpcUrl({ chain: litChainIdentifier[cluster] }),
+    });
     if (!verification.valid) {
       return deny({
         reason: verification.error,

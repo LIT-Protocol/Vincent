@@ -29,6 +29,7 @@ const ProgramWhitelistPolicy = createVincentAbilityPolicy({
   abilityParamsSchema,
   bundledVincentPolicy,
   abilityParameterMappings: {
+    rpcUrl: 'rpcUrl',
     cluster: 'cluster',
     serializedTransaction: 'serializedTransaction',
   },
