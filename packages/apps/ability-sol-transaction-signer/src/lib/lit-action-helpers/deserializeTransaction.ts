@@ -7,15 +7,17 @@ export function deserializeTransaction(serializedTransaction: string): {
   const transactionBuffer = Buffer.from(serializedTransaction, 'base64');
 
   try {
-    const vtx = VersionedTransaction.deserialize(transactionBuffer);
-    console.log(`[deserializeTransaction] detected versioned transaction v0`);
-    return { transaction: vtx, version: 0 };
+    const versionedTransaction = VersionedTransaction.deserialize(transactionBuffer);
+    console.log(
+      `[deserializeTransaction] detected versioned transaction: ${versionedTransaction.version}`,
+    );
+    return { transaction: versionedTransaction, version: versionedTransaction.version };
   } catch {
     // If VersionedTransaction.deserialize fails, try legacy format
     try {
-      const ltx = Transaction.from(transactionBuffer);
+      const legacyTransaction = Transaction.from(transactionBuffer);
       console.log(`[deserializeTransaction] detected legacy transaction`);
-      return { transaction: ltx, version: 'legacy' };
+      return { transaction: legacyTransaction, version: 'legacy' };
     } catch (legacyError) {
       throw new Error(
         `Failed to deserialize transaction: ${legacyError instanceof Error ? legacyError.message : String(legacyError)}`,
