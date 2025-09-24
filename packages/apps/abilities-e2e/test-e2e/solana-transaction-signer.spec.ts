@@ -1,5 +1,6 @@
 import { formatEther } from 'viem';
 import { bundledVincentAbility as solTransactionSignerBundledAbility } from '@lit-protocol/vincent-ability-sol-transaction-signer';
+import { vincentPolicyMetadata as solContractWhitelistPolicyMetadata } from '@lit-protocol/vincent-policy-sol-contract-whitelist';
 
 import {
   disconnectVincentAbilityClients,
@@ -235,15 +236,20 @@ const submitAndVerifyTransaction = async (signedTransactionBase64: string, testN
 describe('Solana Transaction Signer Ability E2E Tests', () => {
   // Define permission data for all abilities and policies
   const PERMISSION_DATA: PermissionData = {
-    // Solana Transaction Signer Ability has no policies
-    [solTransactionSignerBundledAbility.ipfsCid]: {},
+    [solTransactionSignerBundledAbility.ipfsCid]: {
+      [solContractWhitelistPolicyMetadata.ipfsCid]: {
+        whitelist: {
+          devnet: [],
+        },
+      },
+    },
   };
 
   // An array of the IPFS cid of each ability to be tested, computed from the keys of PERMISSION_DATA
-  const TOOL_IPFS_IDS: string[] = Object.keys(PERMISSION_DATA);
+  const ABILITY_IPFS_IDS: string[] = Object.keys(PERMISSION_DATA);
 
-  // Define the policies for each ability, computed from TOOL_IPFS_IDS and PERMISSION_DATA
-  const TOOL_POLICIES = TOOL_IPFS_IDS.map((abilityIpfsCid) => {
+  // Define the policies for each ability, computed from ABILITY_IPFS_IDS and PERMISSION_DATA
+  const ABILITY_POLICIES = ABILITY_IPFS_IDS.map((abilityIpfsCid) => {
     // Get the policy IPFS CIDs for this ability from PERMISSION_DATA
     return Object.keys(PERMISSION_DATA[abilityIpfsCid]);
   });
@@ -355,7 +361,12 @@ describe('Solana Transaction Signer Ability E2E Tests', () => {
   });
 
   it('should register a new App', async () => {
-    TEST_CONFIG = await registerNewApp(TOOL_IPFS_IDS, TOOL_POLICIES, TEST_CONFIG, TEST_CONFIG_PATH);
+    TEST_CONFIG = await registerNewApp(
+      ABILITY_IPFS_IDS,
+      ABILITY_POLICIES,
+      TEST_CONFIG,
+      TEST_CONFIG_PATH,
+    );
   });
 
   it('should permit the App version for the Agent Wallet PKP', async () => {
@@ -366,7 +377,7 @@ describe('Solana Transaction Signer Ability E2E Tests', () => {
     const validationResult = await contractClient.validateAbilityExecutionAndGetPolicies({
       delegateeAddress: TEST_APP_DELEGATEE_ACCOUNT.address,
       pkpEthAddress: TEST_CONFIG.userPkp!.ethAddress!,
-      abilityIpfsCid: TOOL_IPFS_IDS[0],
+      abilityIpfsCid: ABILITY_IPFS_IDS[0],
     });
 
     expect(validationResult).toBeDefined();

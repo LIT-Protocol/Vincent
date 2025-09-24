@@ -11,7 +11,7 @@ export function extractProgramIds(transaction: Transaction | VersionedTransactio
     return Array.from(programIds);
   }
 
-  // Versioned transaction (v0)
+  // Versioned transaction
   const message = transaction.message;
   const staticKeys = message.staticAccountKeys;
 

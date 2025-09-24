@@ -207,6 +207,9 @@ importers:
       '@lit-protocol/vincent-policy-send-counter':
         specifier: workspace:*
         version: link:../policy-send-counter
+      '@lit-protocol/vincent-policy-sol-contract-whitelist':
+        specifier: workspace:*
+        version: link:../policy-sol-contract-whitelist
       '@lit-protocol/vincent-policy-spending-limit':
         specifier: workspace:*
         version: link:../policy-spending-limit
@@ -463,6 +466,9 @@ importers:
       '@lit-protocol/vincent-app-sdk':
         specifier: workspace:^
         version: link:../../libs/app-sdk
+      '@lit-protocol/vincent-policy-sol-contract-whitelist':
+        specifier: workspace:*
+        version: link:../policy-sol-contract-whitelist
       '@solana/web3.js':
         specifier: ^1.98.4
         version: 1.98.4(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)

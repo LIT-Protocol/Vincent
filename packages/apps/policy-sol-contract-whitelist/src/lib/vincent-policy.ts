@@ -8,7 +8,11 @@ import {
   abilityParamsSchema,
   userParamsSchema,
 } from './schemas';
-import { checkWhitelist } from './lit-action-helpers';
+import {
+  checkWhitelist,
+  deserializeTransaction,
+  verifyBlockhashForCluster,
+} from './lit-action-helpers';
 
 export const vincentPolicy = createVincentPolicy({
   packageName: '@lit-protocol/vincent-policy-sol-contract-whitelist' as const,
@@ -23,40 +27,58 @@ export const vincentPolicy = createVincentPolicy({
   evalDenyResultSchema,
 
   precheck: async ({ abilityParams, userParams }, { allow, deny }) => {
-    const { serializedTransaction } = abilityParams;
+    const { serializedTransaction, cluster } = abilityParams;
     const { whitelist } = userParams;
 
-    const result = checkWhitelist(serializedTransaction, whitelist);
+    const transaction = deserializeTransaction(serializedTransaction);
+
+    // Verify blockhash matches the specified cluster
+    const verification = await verifyBlockhashForCluster(transaction, cluster);
+    if (!verification.valid) {
+      return deny({
+        reason: verification.error,
+      });
+    }
+
+    const result = checkWhitelist({ cluster, transaction, whitelist });
 
     if (!result.ok) {
       return deny({
         reason: result.reason,
-        programIds: result.programIds,
+        nonWhitelistedProgramIds: result.nonWhitelistedProgramIds,
       });
     }
 
     return allow({
-      programIds: result.programIds,
-      version: result.version,
+      whitelistedProgramIds: result.whitelistedProgramIds,
     });
   },
 
   evaluate: async ({ abilityParams, userParams }, { allow, deny }) => {
-    const { serializedTransaction } = abilityParams;
+    const { serializedTransaction, cluster } = abilityParams;
     const { whitelist } = userParams;
 
-    const result = checkWhitelist(serializedTransaction, whitelist);
+    const transaction = deserializeTransaction(serializedTransaction);
+
+    // Verify blockhash matches the specified cluster
+    const verification = await verifyBlockhashForCluster(transaction, cluster);
+    if (!verification.valid) {
+      return deny({
+        reason: verification.error,
+      });
+    }
+
+    const result = checkWhitelist({ cluster, transaction, whitelist });
 
     if (!result.ok) {
       return deny({
         reason: result.reason,
-        programIds: result.programIds,
+        nonWhitelistedProgramIds: result.nonWhitelistedProgramIds,
       });
     }
 
     return allow({
-      programIds: result.programIds,
-      version: result.version,
+      whitelistedProgramIds: result.whitelistedProgramIds,
     });
   },
 });

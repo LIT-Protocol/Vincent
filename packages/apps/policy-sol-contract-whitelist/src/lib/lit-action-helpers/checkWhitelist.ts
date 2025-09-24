@@ -1,47 +1,52 @@
-import { TransactionVersion } from '@solana/web3.js';
+import { Transaction, VersionedTransaction } from '@solana/web3.js';
 
-import { deserializeTransaction } from './deserializeTransaction';
 import { extractProgramIds } from './extractProgramIds';
 
+type AllowedClusters = 'devnet' | 'testnet' | 'mainnet-beta';
+
 export function checkWhitelist({
-  serializedTransaction,
+  cluster,
+  transaction,
   whitelist,
 }: {
-  serializedTransaction: string;
-  whitelist: string[];
+  cluster: AllowedClusters;
+  transaction: Transaction | VersionedTransaction;
+  whitelist: Partial<Record<AllowedClusters, string[]>>;
 }):
   | {
       ok: true;
-      programIds: string[];
-      version: TransactionVersion;
+      whitelistedProgramIds: string[];
     }
   | {
       ok: false;
       reason: string;
-      programIds?: string[];
-      version?: TransactionVersion;
+      nonWhitelistedProgramIds?: string[];
     } {
   try {
-    const { transaction, version } = deserializeTransaction(serializedTransaction);
-    const programIds = extractProgramIds(transaction);
-
-    // Use Set for O(1) whitelist lookups
-    const whitelistSet = new Set(whitelist);
-    const nonWhitelistedPrograms = programIds.filter((programId) => !whitelistSet.has(programId));
-
-    if (nonWhitelistedPrograms.length > 0) {
+    const clusterWhitelist = whitelist[cluster];
+    if (!clusterWhitelist) {
       return {
         ok: false,
-        reason: 'Program not whitelisted',
-        programIds: nonWhitelistedPrograms,
-        version,
+        reason: `Cluster: ${cluster} has no whitelisted program IDs`,
+      };
+    }
+
+    const programIds = extractProgramIds(transaction);
+    const nonWhitelistedProgramIds = programIds.filter(
+      (programId) => !clusterWhitelist.includes(programId),
+    );
+
+    if (nonWhitelistedProgramIds.length > 0) {
+      return {
+        ok: false,
+        reason: 'Transaction includes non-whitelisted program IDs',
+        nonWhitelistedProgramIds,
       };
     }
 
     return {
       ok: true,
-      programIds,
-      version,
+      whitelistedProgramIds: programIds,
     };
   } catch (error) {
     return {

@@ -1,43 +1,49 @@
 import { z } from 'zod';
 
 export const abilityParamsSchema = z.object({
+  cluster: z
+    .enum(['devnet', 'testnet', 'mainnet-beta'])
+    .describe('The Solana cluster the transaction is intended for (used to verify blockhash)'),
   serializedTransaction: z
     .string()
     .describe('The base64 encoded serialized Solana transaction to be evaluated'),
 });
 
 export const userParamsSchema = z.object({
-  whitelist: z
-    .array(z.string())
-    .describe('Array of whitelisted Solana program IDs (base58 encoded public keys)'),
+  whitelist: z.record(
+    z
+      .enum(['devnet', 'testnet', 'mainnet-beta'])
+      .describe('The Solana cluster the transaction is intended for'),
+    z
+      .array(z.string())
+      .describe('Array of whitelisted Solana program IDs (base58 encoded public keys)'),
+  ),
 });
 
 export const precheckAllowResultSchema = z.object({
-  programIds: z
+  whitelistedProgramIds: z
     .array(z.string())
     .describe('The program IDs found in the transaction that were allowed'),
-  version: z
-    .union([z.literal('legacy'), z.literal(0)])
-    .optional()
-    .describe('The transaction version (legacy or 0 for versioned)'),
 });
 
 export const precheckDenyResultSchema = z.object({
   reason: z.string().describe('The reason for denying the precheck.'),
-  programIds: z.array(z.string()).describe('The program IDs that were not whitelisted').optional(),
+  nonWhitelistedProgramIds: z
+    .array(z.string())
+    .describe('The program IDs that were not whitelisted')
+    .optional(),
 });
 
 export const evalAllowResultSchema = z.object({
-  programIds: z
+  whitelistedProgramIds: z
     .array(z.string())
     .describe('The program IDs found in the transaction that were allowed'),
-  version: z
-    .union([z.literal('legacy'), z.literal(0)])
-    .optional()
-    .describe('The transaction version (legacy or 0 for versioned)'),
 });
 
 export const evalDenyResultSchema = z.object({
   reason: z.string().describe('The reason for denying the evaluation.'),
-  programIds: z.array(z.string()).describe('The program IDs that were not whitelisted').optional(),
+  nonWhitelistedProgramIds: z
+    .array(z.string())
+    .describe('The program IDs that were not whitelisted')
+    .optional(),
 });

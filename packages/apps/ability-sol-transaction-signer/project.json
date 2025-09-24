@@ -7,7 +7,7 @@
     "clean": {},
     "action:build": {
       "executor": "nx:run-commands",
-      "dependsOn": ["ability-sdk:build"],
+      "dependsOn": ["ability-sdk:build", "policy-sol-contract-whitelist:build"],
       "options": {
         "commands": ["pnpm node ./esbuild.config.js"],
         "cwd": "packages/apps/ability-sol-transaction-signer",

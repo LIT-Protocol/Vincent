@@ -2,7 +2,9 @@ import {
   createVincentAbility,
   supportedPoliciesForAbility,
   getSolanaKeyPairFromWrappedKey,
+  createVincentAbilityPolicy,
 } from '@lit-protocol/vincent-ability-sdk';
+import { bundledVincentPolicy } from '@lit-protocol/vincent-policy-sol-contract-whitelist';
 import { Transaction } from '@solana/web3.js';
 
 import {
@@ -17,12 +19,21 @@ import {
   verifyBlockhashForCluster,
 } from './lit-action-helpers';
 
+const ProgramWhitelistPolicy = createVincentAbilityPolicy({
+  abilityParamsSchema,
+  bundledVincentPolicy,
+  abilityParameterMappings: {
+    cluster: 'cluster',
+    serializedTransaction: 'serializedTransaction',
+  },
+});
+
 export const vincentAbility = createVincentAbility({
   packageName: '@lit-protocol/vincent-ability-sol-transaction-signer' as const,
   abilityDescription:
     'Sign a Solana transaction using a Vincent Agent Wallet with encrypted private key.' as const,
   abilityParamsSchema,
-  supportedPolicies: supportedPoliciesForAbility([]),
+  supportedPolicies: supportedPoliciesForAbility([ProgramWhitelistPolicy]),
 
   precheckFailSchema,
 
