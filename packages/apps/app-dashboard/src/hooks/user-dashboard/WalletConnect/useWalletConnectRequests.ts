@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import * as Sentry from '@sentry/react';
 import { LIT_CHAINS } from '@lit-protocol/constants';
 import { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
 import {
@@ -118,6 +119,7 @@ export function useWalletConnectRequests(client: any, currentWalletAddress: stri
         return { success: true, method };
       } catch (error) {
         console.error('Failed to approve request:', error);
+        Sentry.captureException(error);
 
         if (request?.id && request?.topic) {
           try {
@@ -136,6 +138,7 @@ export function useWalletConnectRequests(client: any, currentWalletAddress: stri
             });
           } catch (responseError) {
             console.error('Failed to send error response:', responseError);
+            Sentry.captureException(responseError);
           }
         }
 
@@ -244,6 +247,7 @@ async function handleSendTransaction(pkpWallet: PKPEthersWallet, methodParams: a
       }
     } catch (feeError) {
       console.error('Failed to fetch fee data:', feeError);
+      Sentry.captureException(feeError);
       throw new Error('Failed to fetch fee data');
     }
   }

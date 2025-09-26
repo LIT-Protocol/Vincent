@@ -1,4 +1,5 @@
 import { useParams } from 'react-router';
+import * as Sentry from '@sentry/react';
 import { UpdateVersionPage } from './UpdateVersionPage';
 import { ManagePagesSkeleton } from '../connect/ManagePagesSkeleton';
 import { GeneralErrorScreen } from '@/components/user-dashboard/connect/GeneralErrorScreen';
@@ -70,6 +71,8 @@ export function UpdateVersionPageWrapper() {
   if (hasFinishedLoadingButNoData || (isError && errors.length > 0)) {
     const errorMessage =
       isError && errors.length > 0 ? errors.join(', ') : `App with ID ${appId} not found`;
+    const error = new Error(errorMessage);
+    Sentry.captureException(error);
     return <GeneralErrorScreen errorDetails={errorMessage} />;
   }
 
@@ -93,6 +96,8 @@ export function UpdateVersionPageWrapper() {
       errors.length > 0
         ? errors.join(', ')
         : String(error ?? isVersionCheckError ?? agentPKPError ?? 'An unknown error occurred');
+    const errorToLog = agentPKPError || isVersionCheckError || error || new Error(errorMessage);
+    Sentry.captureException(errorToLog);
     return <GeneralErrorScreen errorDetails={errorMessage} />;
   }
 

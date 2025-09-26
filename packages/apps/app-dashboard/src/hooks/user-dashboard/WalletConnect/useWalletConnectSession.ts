@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import * as Sentry from '@sentry/react';
 import { IRelayPKP, SessionSigs } from '@lit-protocol/types';
 import {
   useWalletConnectClient,
@@ -68,6 +69,7 @@ export function useWalletConnectSession(agentPKP?: IRelayPKP, sessionSigs?: Sess
         });
       } catch (initError) {
         console.error('Failed to initialize WalletConnect:', initError);
+        Sentry.captureException(initError);
         setStatus({
           message: 'Failed to initialize WalletConnect. Please try refreshing the page.',
           type: 'error',
@@ -109,6 +111,7 @@ export function useWalletConnectSession(agentPKP?: IRelayPKP, sessionSigs?: Sess
         setStatus({ message: 'PKP wallet registered successfully', type: 'success' });
       } catch (err) {
         console.error('Failed to register PKP wallet:', err);
+        Sentry.captureException(err);
         setStatus({
           message: `Failed to register PKP wallet: ${err instanceof Error ? err.message : 'Unknown error'}`,
           type: 'error',
@@ -185,6 +188,7 @@ export function useWalletConnectSession(agentPKP?: IRelayPKP, sessionSigs?: Sess
       refreshSessions();
     } catch (error) {
       console.error('Failed to approve session:', error);
+      Sentry.captureException(error);
 
       setStatus({
         message: error instanceof Error ? error.message : 'Failed to approve session',
@@ -214,6 +218,7 @@ export function useWalletConnectSession(agentPKP?: IRelayPKP, sessionSigs?: Sess
       setPendingProposal(null);
     } catch (error) {
       console.error('Failed to reject session:', error);
+      Sentry.captureException(error);
       setStatus({
         message: error instanceof Error ? error.message : 'Failed to reject session',
         type: 'error',
@@ -233,6 +238,7 @@ export function useWalletConnectSession(agentPKP?: IRelayPKP, sessionSigs?: Sess
         await disconnectSession(topic, refreshSessions);
       } catch (error) {
         console.error('Failed to disconnect session:', error);
+        Sentry.captureException(error);
         setStatus({
           message: error instanceof Error ? error.message : 'Failed to disconnect session.',
           type: 'error',
@@ -300,6 +306,7 @@ export function useWalletConnectSession(agentPKP?: IRelayPKP, sessionSigs?: Sess
                 console.log(`Disconnected session: ${topic.slice(0, 8)}...`);
               } catch (error) {
                 console.error(`Failed to disconnect session ${topic}:`, error);
+                Sentry.captureException(error);
               }
             }
 
@@ -311,6 +318,7 @@ export function useWalletConnectSession(agentPKP?: IRelayPKP, sessionSigs?: Sess
           }
         } catch (error) {
           console.error('Failed to disconnect sessions on wallet change:', error);
+          Sentry.captureException(error);
         }
       };
 

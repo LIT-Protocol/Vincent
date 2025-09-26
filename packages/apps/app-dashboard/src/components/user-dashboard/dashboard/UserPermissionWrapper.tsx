@@ -1,4 +1,5 @@
 import { useParams } from 'react-router';
+import * as Sentry from '@sentry/react';
 import { ManagePagesSkeleton } from '../connect/ManagePagesSkeleton';
 import { GeneralErrorScreen } from '../connect/GeneralErrorScreen';
 import { AuthenticationErrorScreen } from '../connect/AuthenticationErrorScreen';
@@ -74,6 +75,8 @@ export function UserPermissionWrapper() {
   if (hasFinishedLoadingButNoData || (isError && errors.length > 0)) {
     const errorMessage =
       isError && errors.length > 0 ? errors.join(', ') : `App with ID ${appId} not found`;
+    const error = new Error(errorMessage);
+    Sentry.captureException(error);
     return <GeneralErrorScreen errorDetails={errorMessage} />;
   }
 
@@ -97,6 +100,8 @@ export function UserPermissionWrapper() {
       errors.length > 0
         ? errors.join(', ')
         : String(error ?? agentPKPError ?? 'An unknown error occurred');
+    const errorToLog = isExistingDataError || agentPKPError || error || new Error(errorMessage);
+    Sentry.captureException(errorToLog);
     return <GeneralErrorScreen errorDetails={errorMessage} />;
   }
 

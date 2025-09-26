@@ -1,4 +1,5 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
+import * as Sentry from '@sentry/react';
 import { getAgentPkps } from '@/utils/user-dashboard/getAgentPkps';
 import type { AgentPkpsResult, AgentAppPermission } from '@/utils/user-dashboard/getAgentPkps';
 
@@ -15,9 +16,7 @@ export const agentPkpsApi = createApi({
           return { data: result };
         } catch (error) {
           console.error('Failed to fetch agent PKPs:', error);
-          setTimeout(() => {
-            throw error;
-          }, 0);
+          Sentry.captureException(error);
           return {
             error: {
               status: 'FETCH_ERROR',
@@ -35,9 +34,7 @@ export const agentPkpsApi = createApi({
           return { data: result.permitted };
         } catch (error) {
           console.error('Failed to fetch permitted agent apps:', error);
-          setTimeout(() => {
-            throw error;
-          }, 0);
+          Sentry.captureException(error);
           return {
             error: {
               status: 'FETCH_ERROR',
@@ -56,9 +53,7 @@ export const agentPkpsApi = createApi({
           return { data: result.unpermitted };
         } catch (error) {
           console.error('Failed to fetch unpermitted agent apps:', error);
-          setTimeout(() => {
-            throw error;
-          }, 0);
+          Sentry.captureException(error);
           return {
             error: {
               status: 'FETCH_ERROR',

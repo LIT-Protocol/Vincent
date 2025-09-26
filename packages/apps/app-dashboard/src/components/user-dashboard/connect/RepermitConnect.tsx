@@ -92,6 +92,7 @@ export function RepermitConnect({
     } catch (error) {
       setLocalError(error instanceof Error ? error.message : 'Failed to re-permit app');
       setIsConnectProcessing(false);
+      throw error;
     }
   }, [readAuthInfo, previouslyPermittedPKP, appData]);
 

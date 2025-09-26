@@ -1,4 +1,5 @@
 import { useParams } from 'react-router';
+import * as Sentry from '@sentry/react';
 import { ConnectPage } from './ConnectPage';
 import { UnifiedConnectSkeleton } from './UnifiedConnectSkeleton';
 import { GeneralErrorScreen } from './GeneralErrorScreen';
@@ -91,6 +92,8 @@ export function ConnectPageWrapper() {
   if (hasFinishedLoadingButNoData || (isError && errors.length > 0)) {
     const errorMessage =
       isError && errors.length > 0 ? errors.join(', ') : `App with ID ${appId} not found`;
+    const error = new Error(errorMessage);
+    Sentry.captureException(error);
     content = <GeneralErrorScreen errorDetails={errorMessage} />;
   } else if (!isAllDataLoaded) {
     content = <UnifiedConnectSkeleton mode={isUserAuthed ? 'consent' : 'auth'} />;
@@ -121,6 +124,8 @@ export function ConnectPageWrapper() {
           agentPKPError?.message ??
           (versionDataError ? String(versionDataError) : undefined) ??
           'An unknown error occurred');
+    const errorToLog = agentPKPError || versionDataError || error || new Error(errorMessage);
+    Sentry.captureException(errorToLog);
     content = <GeneralErrorScreen errorDetails={errorMessage} />;
   } else {
     // Check authentication
