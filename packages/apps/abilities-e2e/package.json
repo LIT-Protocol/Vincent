@@ -1,7 +1,7 @@
 {
   "name": "@lit-protocol/vincent-abilities-e2e",
   "private": true,
-  "version": "1.1.1",
+  "version": "1.1.2",
   "dependencies": {
     "@aa-sdk/core": "^4.53.1",
     "@account-kit/infra": "^4.53.1",

@@ -917,11 +917,11 @@ importers:
         specifier: ^2.1.0
         version: 2.1.0
       '@lit-protocol/vincent-app-sdk':
-        specifier: ^2.2.0
-        version: 2.2.0(bufferutil@4.0.9)(react@19.1.1)(typescript@5.8.3)(utf-8-validate@5.0.10)
+        specifier: ^2.2.1
+        version: 2.2.1(bufferutil@4.0.9)(react@19.1.1)(typescript@5.8.3)(utf-8-validate@5.0.10)
       '@lit-protocol/vincent-contracts-sdk':
-        specifier: ^1.2.0
-        version: 1.2.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+        specifier: ^1.3.0
+        version: 1.3.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       '@lit-protocol/vincent-registry-sdk':
         specifier: ^4.1.0
         version: 4.1.0(react-redux@9.2.0(@types/react@19.1.12)(react@19.1.1)(redux@5.0.1))(react@19.1.1)
@@ -2796,11 +2796,11 @@ packages:
   '@lit-protocol/uint8arrays@7.3.0':
     resolution: {integrity: sha512-aloOYVdv9/f7sBFvs/iniAZ9Ii76QLz8VzNA/2ggz9q/NjlSF8bf4YrcOMDiaQ5/pSAxOQNNhiJkv35XuNxtiA==}
 
-  '@lit-protocol/vincent-ability-sdk@2.1.0':
-    resolution: {integrity: sha512-GTC02zh/Kzqsnph4n6QTDH8t95ylTpFPHp9ImYehLTWw93vdSLWi8DR25TjtQ2Uet+RtrmLiMH0wnhJ3gWuYVw==}
+  '@lit-protocol/vincent-ability-sdk@2.2.0':
+    resolution: {integrity: sha512-y2jgEKQThG0Ew5jvbwcT+n6Q0APQAn7uQjO4WQ5MKEkGLa8HCy8g4PJpFFG1LtyfVomV5EmbQP/ZLCvegBEQJQ==}
 
-  '@lit-protocol/vincent-app-sdk@2.2.0':
-    resolution: {integrity: sha512-RyBBPDR2B1VK0JV0FU9SXIDXYBZBVwpwg9h+PAVz3avB6LsMgw5oJ6PLy4AFr/VDk57oN/JkXtjrNqIIcMWHCA==}
+  '@lit-protocol/vincent-app-sdk@2.2.1':
+    resolution: {integrity: sha512-Yr9uPOnKVIf7v+ktXE4We7s/pHFCFlOrHIUlfSY3hvrVDaM3pxpTxqDO6JaZYVkH182oA2owxyDRYK60cGau0g==}
     engines: {node: ^20.11.1, pnpm: 10.7.0}
     peerDependencies:
       react: ^19.0.0
@@ -2808,8 +2808,8 @@ packages:
       react:
         optional: true
 
-  '@lit-protocol/vincent-contracts-sdk@1.2.0':
-    resolution: {integrity: sha512-/b6OKSVQ9zO6Or/7yRxQv0Ex2tvukYe1310CdLb3gdEhmbdPRLTdqWJoJ3/cQIneevKM4edKtD92VI+HTgg2RQ==}
+  '@lit-protocol/vincent-contracts-sdk@1.3.0':
+    resolution: {integrity: sha512-UBoLlAKdwYh5FzVIdnyvnZDPXsHQEw/LuYgJiVFv5cBxU+4ifWWt9HejxuH51A/imS6ZU3yCbcdq7WwnbkaIEA==}
 
   '@lit-protocol/vincent-registry-sdk@4.1.0':
     resolution: {integrity: sha512-5IH2oJUs6RDQlyiudbm4hCbw3pqxeK7SUDGP9UZMLZJkbTDcY0jSdowvF63ar0idJTQtVGcZJxXHA1UqSXQx1Q==}
@@ -15305,10 +15305,11 @@ snapshots:
       - typescript
       - utf-8-validate
 
-  '@lit-protocol/vincent-ability-sdk@2.1.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)':
+  '@lit-protocol/vincent-ability-sdk@2.2.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)':
     dependencies:
-      '@lit-protocol/vincent-contracts-sdk': 1.2.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+      '@lit-protocol/vincent-contracts-sdk': 1.3.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       ethers: 5.8.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+      ethers-v6: ethers@6.15.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       semver: 7.7.2
       tslib: 2.8.1
       zod: 3.25.64
@@ -15316,13 +15317,13 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  '@lit-protocol/vincent-app-sdk@2.2.0(bufferutil@4.0.9)(react@19.1.1)(typescript@5.8.3)(utf-8-validate@5.0.10)':
+  '@lit-protocol/vincent-app-sdk@2.2.1(bufferutil@4.0.9)(react@19.1.1)(typescript@5.8.3)(utf-8-validate@5.0.10)':
     dependencies:
       '@lit-protocol/auth-helpers': 7.3.0(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
       '@lit-protocol/constants': 7.3.0(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
       '@lit-protocol/lit-node-client': 7.3.0(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
-      '@lit-protocol/vincent-ability-sdk': 2.1.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
-      '@lit-protocol/vincent-contracts-sdk': 1.2.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+      '@lit-protocol/vincent-ability-sdk': 2.2.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+      '@lit-protocol/vincent-contracts-sdk': 1.3.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       '@noble/secp256k1': 2.3.0
       ethers: 5.8.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       tslib: 2.8.1
@@ -15356,7 +15357,7 @@ snapshots:
       - uploadthing
       - utf-8-validate
 
-  '@lit-protocol/vincent-contracts-sdk@1.2.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)':
+  '@lit-protocol/vincent-contracts-sdk@1.3.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)':
     dependencies:
       '@ethersproject/abi': 5.8.0
       cbor2: 2.0.1
@@ -18358,7 +18359,7 @@ snapshots:
       '@uniswap/v4-sdk': 1.21.4(hardhat@2.26.3(bufferutil@4.0.9)(ts-node@10.9.2(@swc/core@1.5.29(@swc/helpers@0.5.17))(@types/node@22.7.5)(typescript@5.8.3))(typescript@5.8.3)(utf-8-validate@5.0.10))
       async-retry: 1.3.3
       await-timeout: 1.1.1
-      axios: 0.21.4
+      axios: 0.21.4(debug@4.4.1)
       brotli: 1.3.3
       bunyan: 1.8.15
       bunyan-blackhole: 1.1.1(bunyan@1.8.15)
@@ -20257,12 +20258,6 @@ snapshots:
   await-timeout@1.1.1: {}
 
   axe-core@4.10.3: {}
-
-  axios@0.21.4:
-    dependencies:
-      follow-redirects: 1.15.11(debug@4.4.1)
-    transitivePeerDependencies:
-      - debug
 
   axios@0.21.4(debug@4.4.1):
     dependencies:

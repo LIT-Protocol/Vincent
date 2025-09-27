@@ -1,3 +1,18 @@
+# 5.0.0 (2025-09-25)
+
+### ⚠️ Breaking Changes
+
+- Remove estimatedGasUsed and estimatedGasUsedUSD values from signed uniswap quote. Added new ability params: gasBufferPercentage and baseFeePerGasBufferPercentage for adding buffers to uniswap swap transaction ([8170cda4](https://github.com/LIT-Protocol/Vincent/commit/8170cda4))
+
+### 🧱 Updated Dependencies
+
+- Updated ability-sdk to 2.2.0
+- Updated app-sdk to 2.2.1
+
+### ❤️ Thank You
+
+- Wyatt Barnes @spacesailor24
+
 # 4.0.0 (2025-09-18)
 
 ### ⚠️ Breaking Changes

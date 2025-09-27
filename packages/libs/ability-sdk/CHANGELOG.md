@@ -1,3 +1,17 @@
+## 2.2.0 (2025-09-25)
+
+### 🚀 Features
+
+- Export new populateTransaction method which utilizes ethers v6 to populate a minimal transaction object with nonce, chain id, and gas data ([8170cda4](https://github.com/LIT-Protocol/Vincent/commit/8170cda4))
+
+### 🧱 Updated Dependencies
+
+- Updated contracts-sdk to 1.3.0
+
+### ❤️ Thank You
+
+- Wyatt Barnes @spacesailor24
+
 ## 2.1.0 (2025-09-11)
 
 ### 🚀 Features
