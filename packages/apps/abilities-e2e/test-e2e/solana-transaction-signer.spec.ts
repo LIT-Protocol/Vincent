@@ -303,7 +303,10 @@ describe('Solana Transaction Signer Ability E2E Tests', () => {
     [solTransactionSignerBundledAbility.ipfsCid]: {
       [solContractWhitelistPolicyMetadata.ipfsCid]: {
         whitelist: {
-          devnet: ['11111111111111111111111111111111'],
+          devnet: [
+            '11111111111111111111111111111111',
+            'MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr',
+          ],
           'mainnet-beta': [],
         },
       },
@@ -724,6 +727,75 @@ describe('Solana Transaction Signer Ability E2E Tests', () => {
       cluster: SOLANA_CLUSTER,
       signedTransactionBase64: signedTransaction,
       testName: 'should succeed when all signatures are provided with requireAllSignatures: true',
+    });
+  });
+
+  it('should execute a transaction with SPL Memo program', async () => {
+    // SPL Memo Program ID (same on all networks)
+    const MEMO_PROGRAM_ID = new PublicKey('MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr');
+
+    // Create a memo instruction
+    const memoText = 'Hello from Vincent Ability Test!';
+    const memoInstruction = {
+      keys: [],
+      programId: MEMO_PROGRAM_ID,
+      data: Buffer.from(memoText, 'utf-8'),
+    };
+
+    // Create transaction with memo instruction
+    const transaction = new Transaction();
+    transaction.add(memoInstruction);
+
+    // Add a small transfer to make the transaction more realistic
+    transaction.add(
+      SystemProgram.transfer({
+        fromPubkey: TEST_SOLANA_KEYPAIR.publicKey,
+        toPubkey: TEST_SOLANA_KEYPAIR.publicKey,
+        lamports: 1,
+      }),
+    );
+
+    // Fetch recent blockhash from the network
+    const connection = new Connection(clusterApiUrl(SOLANA_CLUSTER), 'confirmed');
+    const { blockhash } = await connection.getLatestBlockhash();
+    transaction.recentBlockhash = blockhash;
+    transaction.feePayer = TEST_SOLANA_KEYPAIR.publicKey;
+
+    const serializedTransaction = transaction
+      .serialize({ requireAllSignatures: false })
+      .toString('base64');
+
+    const client = getSolanaTransactionSignerAbilityClient();
+    const executeResult = await client.execute(
+      {
+        cluster: SOLANA_CLUSTER,
+        serializedTransaction,
+        ciphertext: CIPHERTEXT,
+        dataToEncryptHash: DATA_TO_ENCRYPT_HASH,
+        legacyTransactionOptions: {
+          requireAllSignatures: true,
+          verifySignatures: true,
+        },
+      },
+      { delegatorPkpEthAddress: TEST_CONFIG.userPkp!.ethAddress! },
+    );
+
+    console.log(
+      '[should execute a transaction with SPL Memo program]',
+      util.inspect(executeResult, { depth: 10 }),
+    );
+
+    expect(executeResult.success).toBe(true);
+    expect(executeResult.result).toBeDefined();
+    expect(executeResult.context?.policiesContext?.allow).toBe(true);
+
+    const signedTransaction = (executeResult.result! as { signedTransaction: string })
+      .signedTransaction;
+
+    await submitAndVerifyTransaction({
+      cluster: SOLANA_CLUSTER,
+      signedTransactionBase64: signedTransaction,
+      testName: 'should execute a transaction with SPL Memo program',
     });
   });
 
