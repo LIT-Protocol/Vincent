@@ -29,7 +29,6 @@ const ProgramWhitelistPolicy = createVincentAbilityPolicy({
   abilityParamsSchema,
   bundledVincentPolicy,
   abilityParameterMappings: {
-    rpcUrl: 'rpcUrl',
     cluster: 'cluster',
     serializedTransaction: 'serializedTransaction',
   },
@@ -48,13 +47,7 @@ export const vincentAbility = createVincentAbility({
   executeFailSchema,
 
   precheck: async ({ abilityParams }, { succeed, fail }) => {
-    const { serializedTransaction, cluster, rpcUrl } = abilityParams;
-
-    if (!rpcUrl) {
-      console.log(
-        '[@lit-protocol/vincent-ability-sol-transaction-signer] rpcUrl not provided using @solana/web3.js default',
-      );
-    }
+    const { serializedTransaction, cluster } = abilityParams;
 
     try {
       const transaction = deserializeTransaction(serializedTransaction);
@@ -63,7 +56,7 @@ export const vincentAbility = createVincentAbility({
       const verification = await verifyBlockhashForCluster({
         transaction,
         cluster,
-        rpcUrl: rpcUrl || clusterApiUrl(cluster),
+        rpcUrl: clusterApiUrl(cluster),
       });
       if (!verification.valid) {
         return fail({
@@ -123,6 +116,8 @@ export const vincentAbility = createVincentAbility({
 
       let signedSerializedTransaction: string;
       if (transaction instanceof Transaction) {
+        console.log('[vincent-ability] transaction deserialized as legacy transaction');
+
         if (!transaction.feePayer) transaction.feePayer = solanaKeypair.publicKey;
 
         signedSerializedTransaction = Buffer.from(
@@ -132,6 +127,7 @@ export const vincentAbility = createVincentAbility({
           }),
         ).toString('base64');
       } else {
+        console.log('[vincent-ability] transaction deserialized as versioned transaction');
         signedSerializedTransaction = Buffer.from(transaction.serialize()).toString('base64');
       }
 

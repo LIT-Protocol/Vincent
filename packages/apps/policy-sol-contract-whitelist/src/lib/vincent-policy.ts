@@ -34,21 +34,15 @@ export const vincentPolicy = createVincentPolicy({
   evalDenyResultSchema,
 
   precheck: async ({ abilityParams, userParams }, { allow, deny }) => {
-    const { serializedTransaction, cluster, rpcUrl } = abilityParams;
+    const { serializedTransaction, cluster } = abilityParams;
     const { whitelist } = userParams;
-
-    if (!rpcUrl) {
-      console.log(
-        '[@lit-protocol/vincent-policy-sol-contract-whitelist] rpcUrl not provided using @solana/web3.js default',
-      );
-    }
 
     const transaction = deserializeTransaction(serializedTransaction);
 
     const verification = await verifyBlockhashForCluster({
       transaction,
       cluster,
-      rpcUrl: rpcUrl || clusterApiUrl(cluster),
+      rpcUrl: clusterApiUrl(cluster),
     });
     if (!verification.valid) {
       return deny({
