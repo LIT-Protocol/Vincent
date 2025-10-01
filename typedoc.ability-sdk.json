@@ -1,0 +1,19 @@
+{
+  "entryPoints": ["packages/libs/ability-sdk/src/index.ts"],
+  "out": "docs/api-reference/ability-sdk",
+  "plugin": [
+    "typedoc-plugin-markdown",
+    "typedoc-plugin-frontmatter",
+    "./typedoc-custom-plugin.mjs"
+  ],
+  "tsconfig": "packages/libs/ability-sdk/tsconfig.lib.json",
+  "fileExtension": ".mdx",
+  "skipErrorChecking": true,
+  "excludeInternal": false,
+  "excludePrivate": true,
+  "excludeProtected": true,
+  "sanitizeComments": true,
+  "hidePageHeader": true,
+  "hideBreadcrumbs": true,
+  "hidePageTitle": true
+}

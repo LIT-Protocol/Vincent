@@ -1,0 +1,84 @@
+---
+title: expressMiddleware
+---
+
+Express middleware is used to add a VincentJWT-specific authentication to your Express.js server routes
+
+All functionality is encapsulated into a single factory function -- see [createVincentUserMiddleware](./functions/createVincentUserMiddleware) for details
+
+You can see the source for the Express authentication handler below; use this as a reference to implement
+your own midddleware/authentication for other frameworks! Pull requests are welcome.
+
+```ts
+function getAuthenticateUserExpressHandler&lt;const UserKey extends string&gt;({
+  allowedAudience,
+  requiredAppId,
+  userKey,
+}: {
+  allowedAudience: string;
+  requiredAppId: number | undefined;
+  userKey: UserKey;
+}) {
+  return async (req: Request, res: Response, next: NextFunction) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+      res.status(401).json({ error: 'No token provided' });
+      return;
+    }
+
+    const parts = authHeader.split(' ');
+    if (parts.length !== 2) {
+      res.status(401).json({ error: `Invalid authorization header - expected "Bearer &lt;token&gt;"` });
+      return;
+    }
+
+    const [scheme, rawJWT] = parts;
+    if (!/^Bearer$/i.test(scheme)) {
+      res.status(401).json({ error: `Expected "Bearer" scheme, got "${scheme}"` });
+      return;
+    }
+
+    try {
+      const decodedJWT =
+        requiredAppId != null
+          ? await verifyVincentAppUserJWT({
+              jwt: rawJWT,
+              expectedAudience: allowedAudience,
+              requiredAppId,
+            })
+          : await verifyVincentPlatformJWT({
+              jwt: rawJWT,
+              expectedAudience: allowedAudience,
+            });
+
+      if (!decodedJWT) {
+        res.status(401).json({ error: 'Invalid token' });
+        return;
+      }
+
+      (req as unknown as Record&lt;string, VincentJWTData&gt;)[userKey] = {
+        decodedJWT,
+        rawJWT,
+      } as VincentJWTData;
+
+      next();
+    } catch (e) {
+      res.status(401).json({ error: `Invalid token: ${(e as Error).message}` });
+    }
+  };
+}
+```
+
+## API
+
+- [createVincentUserMiddleware](./functions/createVincentUserMiddleware)
+
+## Interfaces
+
+- [AuthenticatedRequest](./type-aliases/AuthenticatedRequest)
+- [AuthenticatedRequestHandler](./type-aliases/AuthenticatedRequestHandler)
+- [ExtractRequestHandlerParams](./type-aliases/ExtractRequestHandlerParams)
+
+## Other
+
+- [VincentJWTData](./interfaces/VincentJWTData)

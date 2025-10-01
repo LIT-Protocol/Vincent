@@ -1,0 +1,152 @@
+---
+title: WebAuthClient
+---
+
+Defined in: [app-sdk/src/webAuthClient/types.ts:22](https://github.com/LIT-Protocol/Vincent/blob/1c902a7c278246adaf4479901c6e2d38e00321e5/packages/libs/app-sdk/src/webAuthClient/types.ts#L22)
+
+The Vincent Web Application Client is used in web apps to handle interactions with the Vincent app portal.
+
+- Connect page redirection
+- Authentication helpers that are browser-specific
+
+## Properties
+
+### decodeVincentJWTFromUri()
+
+> **decodeVincentJWTFromUri**: (`expectedAudience`) => `Promise`\<`null` \| \{ `decodedJWT`: [`VincentJWTAppUser`](/api-reference/app-sdk/jwt/interfaces/VincentJWTAppUser); `jwtStr`: `string`; \}\>
+
+Defined in: [app-sdk/src/webAuthClient/types.ts:83](https://github.com/LIT-Protocol/Vincent/blob/1c902a7c278246adaf4479901c6e2d38e00321e5/packages/libs/app-sdk/src/webAuthClient/types.ts#L83)
+
+**`Function`**
+
+Extracts a decoded/parsed Vincent JWT (JSON Web Token) from the current window location
+
+The token is verified as part of this process; if the token is invalid or expired, this method will throw.
+
+See: [WebAuthClient.redirectToConnectPage](./#redirecttoconnectpage) for example usage
+
+#### Parameters
+
+##### expectedAudience
+
+`string`
+
+Provide a valid `redirectUri` for your app; this is typically your app's origin
+
+#### Returns
+
+`Promise`\<`null` \| \{ `decodedJWT`: [`VincentJWTAppUser`](/api-reference/app-sdk/jwt/interfaces/VincentJWTAppUser); `jwtStr`: `string`; \}\>
+
+`null` if no JWT is found, otherwise both the decoded jwt and the original JWT string is returned
+
+#### Throws
+
+If there was a JWT in the page URL, but it was invalid / could not be verified
+
+***
+
+### redirectToConnectPage()
+
+> **redirectToConnectPage**: (`redirectConfig`) => `void`
+
+Defined in: [app-sdk/src/webAuthClient/types.ts:54](https://github.com/LIT-Protocol/Vincent/blob/1c902a7c278246adaf4479901c6e2d38e00321e5/packages/libs/app-sdk/src/webAuthClient/types.ts#L54)
+
+**`Function`**
+
+Redirects the user to the Vincent Connect page.
+
+If the user approves your app permissions, they will be redirected back to the `redirectUri`.
+
+Use [WebAuthClient.uriContainsVincentJWT](./#uricontainsvincentjwt) to detect if a user has just opened your app via the Connect page
+
+Use [WebAuthClient.decodeVincentJWTFromUri](./#decodevincentjwtfromuri) to decode and verify the [VincentJWTAppUser](/api-reference/app-sdk/jwt/interfaces/VincentJWTAppUser) from the page URI, and store it for later usage
+
+NOTE: You must register the `redirectUri` on your Vincent app for it to be considered a valid redirect target
+
+#### Parameters
+
+##### redirectConfig
+
+[`RedirectToVincentDelegationPageParams`](./RedirectToVincentDelegationPageParams)
+
+#### Returns
+
+`void`
+
+#### Example
+
+```typescript
+import { getWebAuthClient } from '@lit-protocol/vincent-app-sdk/webAuthClient';
+
+const vincentAppClient = getWebAuthClient({ appId: MY_APP_ID });
+// ... In your app logic:
+if(vincentAppClient.uriContainsVincentJWT()) {
+  // Handle app logic for the user has just logged in
+  const { decoded, jwtStr } = vincentAppClient.decodeVincentJWTFromUri(EXPECTED_AUDIENCE);
+  // Store `jwtStr` for later usage; the user is now logged in.
+} else {
+  // Handle app logic for the user is already logged in (check for stored & unexpired JWT)
+  // ...
+   *   // Handle app logic for the user is not yet logged in
+ vincentAppClient.redirectToConnectPage({ redirectUri: window.location.href });
+}
+```
+
+***
+
+### removeVincentJWTFromURI()
+
+> **removeVincentJWTFromURI**: () => `void`
+
+Defined in: [app-sdk/src/webAuthClient/types.ts:112](https://github.com/LIT-Protocol/Vincent/blob/1c902a7c278246adaf4479901c6e2d38e00321e5/packages/libs/app-sdk/src/webAuthClient/types.ts#L112)
+
+**`Function`**
+
+Removes the Vincent connect JWT from the current window URI.
+
+This is useful for cleaning up the URL after decoding and storing the JWT,
+ensuring the redirect URL looks clean for the user and no sensitive information
+is exposed in the URI.
+
+#### Returns
+
+`void`
+
+#### Example
+
+```typescript
+import { getWebAuthClient } from '@lit-protocol/vincent-app-sdk/webAuthClient';
+
+const vincentAppClient = getWebAuthClient({ appId: MY_APP_ID });
+
+if (vincentAppClient.uriContainsVincentJWT()) {
+  const { decodedJWT, jwtStr } = vincentAppClient.decodeVincentJWTFromUri(EXPECTED_AUDIENCE);
+  // Store the JWT and use it for authentication
+
+  // Now we can remove the JWT from the URL searchParams
+  vincentAppClient.removeVincentJWTFromURI();
+}
+```
+
+***
+
+### uriContainsVincentJWT()
+
+> **uriContainsVincentJWT**: () => `boolean`
+
+Defined in: [app-sdk/src/webAuthClient/types.ts:68](https://github.com/LIT-Protocol/Vincent/blob/1c902a7c278246adaf4479901c6e2d38e00321e5/packages/libs/app-sdk/src/webAuthClient/types.ts#L68)
+
+**`Function`**
+
+Determines whether the current window location contains a Vincent JWT
+
+You can use this to detect if a user is loading your app as a result of approving permissions
+on the Vincent Connect page -- e.g. they just logged in
+
+See: [WebAuthClient.redirectToConnectPage](./#redirecttoconnectpage) for example usage
+
+#### Returns
+
+`boolean`
+
+`true` if the current window URI contains a Vincent JWT, otherwise `false`.

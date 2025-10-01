@@ -1,0 +1,112 @@
+---
+title: Defining Parameters
+---
+
+Define the structure and validation for your Policy's parameters using Zod schemas. Policies use two distinct parameter types to maintain security boundaries.
+
+## Parameters from Abilities
+
+The `abilityParamsSchema` defines what parameters Vincent Abilities must provide when your Policy evaluates their execution request. The Vincent Ability receives these parameters from the ability executor, and the Vincent Ability SDK handles passing these parameters to your policy as `abilityParams`.
+
+### Schema Definition
+
+<ParamField path="abilityParamsSchema" type="ZodSchema" required>
+  A Zod schema object that defines the structure and validation rules for parameters passed from Abilities to your Policy. These parameters should be what your policy requires to make its checks and validations.
+</ParamField>
+
+```typescript
+import { createVincentPolicy } from '@lit-protocol/vincent-ability-sdk';
+import { z } from 'zod';
+
+const vincentPolicy = createVincentPolicy({
+  // ... other policy definitions
+
+  abilityParamsSchema: z.object({
+    tokenAddress: z.string(),
+    amount: z.number(),
+  }),
+});
+```
+
+Your policy can then check whether spending `amount` of `tokenAddress` would exceed the Vincent App User's configured spending limit by querying its database or smart contract.
+
+### Common Patterns
+
+<Tabs>
+  <Tab title="Financial Policies">
+    ```typescript
+    const abilityParamsSchema = z.object({
+      tokenAddress: z.string(),
+      amount: z.number().positive(),
+      // Optional price/value context
+      usdValue: z.number().positive().optional(),
+      pricePerToken: z.number().positive().optional(),
+    });
+    ```
+  </Tab>
+  <Tab title="Access Control">
+    ```typescript
+    const abilityParamsSchema = z.object({
+      resourceId: z.string(),
+      action: z.enum(["read", "write", "execute"]),
+      // Context for permission checking
+      requesterAddress: z.string(),
+      timestamp: z.number(),
+    });
+    ```
+  </Tab>
+  <Tab title="Rate Limiting">
+    ```typescript
+    const abilityParamsSchema = z.object({
+      operationType: z.string(),
+      // Minimal params for rate limiting
+      timestamp: z.number(),
+      resourceIdentifier: z.string().optional(),
+    });
+    ```
+  </Tab>
+</Tabs>
+
+## User-Defined Parameters
+
+The `userParamsSchema` defines the structure of on-chain parameters that Vincent App Users configure for your policy. These parameters are fetched from the Vincent smart contract during execution of your Policy's precheck and evaluate functions.
+
+### Schema Definition
+
+<ParamField path="userParamsSchema" type="ZodSchema" required>
+  A Zod schema object that defines user-configurable boundaries stored securely on-chain. These parameters are unique to each Ability and App combination, and cannot be altered by the App or ability executor during execution.
+</ParamField>
+
+```typescript
+import { createVincentPolicy } from '@lit-protocol/vincent-ability-sdk';
+import { z } from 'zod';
+
+const vincentPolicy = createVincentPolicy({
+  // ... other policy definitions
+
+  userParamsSchema: z.object({
+    dailySpendingLimit: z.number(),
+    allowedTokens: z.array(z.string()).optional(),
+  }),
+});
+```
+
+This would allow the Vincent App User to specify how much of a token they are allowing the Vincent App to spend on their behalf in a day, as well as the specific tokens that are allowed to be spent.
+
+## Validation Best Practices
+
+1. **Keep Ability Params Minimal** - Only require parameters you actually need for policy decisions
+2. **Make User Params Flexible** - Provide sensible defaults and optional parameters for user convenience
+3. **Use Descriptive Validation** - Add custom error messages to help with debugging
+4. **Consider Future Needs** - Design schemas that can evolve without breaking existing deployments
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Precheck Function" icon="check" href="/ability/policy/precheck-function">
+    Use your parameters in local validation logic
+  </Card>
+  <Card title="Evaluate Function" icon="magnifying-glass" href="/ability/policy/evaluate-function">
+    Implement validation logic with your parameters
+  </Card>
+</CardGroup>

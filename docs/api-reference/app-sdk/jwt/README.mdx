@@ -1,0 +1,59 @@
+---
+title: jwt
+---
+
+The `jwt` module provides helper methods that allow you to decode and validate Vincent-specific JWTs.
+
+Vincent JWTs are signed using `alg: ES256K`.  The signed data is EIP191 compliant.
+
+Vincent JWTs are issued by the Vincent Dashboard when a user provides delegation permission for your app to their agent PKP.
+They are passed to your web app using a redirectUri which you configure on your app.
+
+The methods exported by the `jwt` module are low-level - you probably will just want to use [getWebAuthClient](/api-reference/app-sdk/webAuthClient/functions/getWebAuthClient) to get
+a [WebAuthClient](/api-reference/app-sdk/webAuthClient/interfaces/WebAuthClient) which handles the redirect process, parsing the JWT from the URL, and verifying it for you.
+
+## API > Accessors
+
+- [getAppInfo](./functions/getAppInfo)
+- [getAudience](./functions/getAudience)
+- [getAuthentication](./functions/getAuthentication)
+- [getIssuerAddress](./functions/getIssuerAddress)
+- [getPKPInfo](./functions/getPKPInfo)
+- [getPublicKey](./functions/getPublicKey)
+- [getRole](./functions/getRole)
+- [getSubjectAddress](./functions/getSubjectAddress)
+
+## API > Create
+
+- [createAppUserJWT](./functions/createAppUserJWT)
+- [createDelegateeJWT](./functions/createDelegateeJWT)
+- [createPlatformUserJWT](./functions/createPlatformUserJWT)
+
+## API > Type Guards
+
+- [isAnyVincentJWT](./functions/isAnyVincentJWT)
+- [isAppUser](./functions/isAppUser)
+- [isDelegatee](./functions/isDelegatee)
+- [isPlatformUser](./functions/isPlatformUser)
+
+## API > Verify
+
+- [isExpired](./functions/isExpired)
+- [verifyVincentAppUserJWT](./functions/verifyVincentAppUserJWT)
+- [verifyVincentDelegateeJWT](./functions/verifyVincentDelegateeJWT)
+- [verifyVincentPlatformJWT](./functions/verifyVincentPlatformJWT)
+
+## Interfaces
+
+- [CreateAppUserJWTParams](./interfaces/CreateAppUserJWTParams)
+- [CreateDelegateeJWTParams](./interfaces/CreateDelegateeJWTParams)
+- [DecodedJWT](./interfaces/DecodedJWT)
+- [PKPAuthenticationMethod](./interfaces/PKPAuthenticationMethod)
+- [VincentJWTAppUser](./interfaces/VincentJWTAppUser)
+- [VincentJWTDelegatee](./interfaces/VincentJWTDelegatee)
+- [VincentJWTPlatformUser](./interfaces/VincentJWTPlatformUser)
+- [AnyVincentJWT](./type-aliases/AnyVincentJWT)
+- [CreatePlatformUserJWTParams](./type-aliases/CreatePlatformUserJWTParams)
+- [InternallySetPayloadKeys](./type-aliases/InternallySetPayloadKeys)
+- [PayloadWithoutInternallySetKeys](./type-aliases/PayloadWithoutInternallySetKeys)
+- [VincentJWTRole](./type-aliases/VincentJWTRole)

@@ -1,0 +1,38 @@
+---
+title: PolicyConfigCommitFunction
+---
+
+> **PolicyConfigCommitFunction**\<`CommitParams`, `CommitAllowResult`, `CommitDenyResult`\> = (`args`, `context`) => `Promise`\<`EnforcePolicyResponse`\<`CommitAllowResult` *extends* `z.ZodUndefined` ? `ContextAllowResponseNoResult` : `ContextAllowResponse`\<`z.infer`\<`CommitAllowResult`\>\> \| `CommitDenyResult` *extends* `z.ZodUndefined` ? `ContextDenyResponseNoResult` : `ContextDenyResponse`\<`z.infer`\<`CommitDenyResult`\>\>\>\>
+
+Defined in: [policyCore/policyConfig/types.ts:44](https://github.com/LIT-Protocol/Vincent/blob/1c902a7c278246adaf4479901c6e2d38e00321e5/packages/libs/ability-sdk/src/lib/policyCore/policyConfig/types.ts#L44)
+
+Unlike `evaluate()` and `precheck()`, commit receives specific arguments provided by the ability during its `execute()` phase
+instead of than `abilityParams` and `userParams` that the ability was called with.
+
+## Type Parameters
+
+### CommitParams
+
+`CommitParams` *extends* `z.ZodType` = `z.ZodUndefined`
+
+### CommitAllowResult
+
+`CommitAllowResult` *extends* `z.ZodType` = `z.ZodUndefined`
+
+### CommitDenyResult
+
+`CommitDenyResult` *extends* `z.ZodType` = `z.ZodUndefined`
+
+## Parameters
+
+### args
+
+`CommitParams` *extends* `z.ZodType` ? `z.infer`\<`CommitParams`\> : `undefined`
+
+### context
+
+[`PolicyContext`](/api-reference/ability-sdk/interfaces/PolicyContext)\<`CommitAllowResult`, `CommitDenyResult`\>
+
+## Returns
+
+`Promise`\<`EnforcePolicyResponse`\<`CommitAllowResult` *extends* `z.ZodUndefined` ? `ContextAllowResponseNoResult` : `ContextAllowResponse`\<`z.infer`\<`CommitAllowResult`\>\> \| `CommitDenyResult` *extends* `z.ZodUndefined` ? `ContextDenyResponseNoResult` : `ContextDenyResponse`\<`z.infer`\<`CommitDenyResult`\>\>\>\>

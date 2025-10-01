@@ -1,0 +1,14 @@
+---
+title: PayloadWithoutInternallySetKeys
+---
+
+> **PayloadWithoutInternallySetKeys** = `DisallowKeys`\<`Record`\<`string`, `any`\>, [`InternallySetPayloadKeys`](./InternallySetPayloadKeys)\>
+
+Defined in: [app-sdk/src/jwt/types.ts:37](https://github.com/LIT-Protocol/Vincent/blob/1c902a7c278246adaf4479901c6e2d38e00321e5/packages/libs/app-sdk/src/jwt/types.ts#L37)
+
+Many standard payload properties are set automatically on Vincent JWTs, and will be overridden if you try to pass them
+in the raw `payload` when creating a new JWT.
+
+This interface identifies the keys that should not be provided in your `payload`, as they are internally managed.
+
+See [InternallySetPayloadKeys](./InternallySetPayloadKeys) for the list.

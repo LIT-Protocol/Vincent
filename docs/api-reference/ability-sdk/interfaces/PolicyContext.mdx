@@ -1,0 +1,101 @@
+---
+title: PolicyContext
+---
+
+Defined in: [policyCore/policyConfig/context/types.ts:41](https://github.com/LIT-Protocol/Vincent/blob/1c902a7c278246adaf4479901c6e2d38e00321e5/packages/libs/ability-sdk/src/lib/policyCore/policyConfig/context/types.ts#L41)
+
+**`Expand`**
+
+## Type Parameters
+
+### AllowSchema
+
+`AllowSchema` *extends* `z.ZodType` = `z.ZodUndefined`
+
+### DenySchema
+
+`DenySchema` *extends* `z.ZodType` = `z.ZodUndefined`
+
+## Properties
+
+### abilityIpfsCid
+
+> **abilityIpfsCid**: `string`
+
+Defined in: [types.ts:439](https://github.com/LIT-Protocol/Vincent/blob/1c902a7c278246adaf4479901c6e2d38e00321e5/packages/libs/ability-sdk/src/lib/types.ts#L439)
+
+#### Inherited from
+
+`BaseContext.abilityIpfsCid`
+
+***
+
+### allow
+
+> **allow**: `AllowSchema` *extends* `ZodUndefined` ? () => `ContextAllowResponseNoResult` : (`result`) => `ContextAllowResponse`\<`TypeOf`\<`AllowSchema`\>\>
+
+Defined in: [policyCore/policyConfig/context/types.ts:45](https://github.com/LIT-Protocol/Vincent/blob/1c902a7c278246adaf4479901c6e2d38e00321e5/packages/libs/ability-sdk/src/lib/policyCore/policyConfig/context/types.ts#L45)
+
+***
+
+### appId
+
+> **appId**: `number`
+
+Defined in: [types.ts:440](https://github.com/LIT-Protocol/Vincent/blob/1c902a7c278246adaf4479901c6e2d38e00321e5/packages/libs/ability-sdk/src/lib/types.ts#L440)
+
+#### Inherited from
+
+`BaseContext.appId`
+
+***
+
+### appVersion
+
+> **appVersion**: `number`
+
+Defined in: [types.ts:441](https://github.com/LIT-Protocol/Vincent/blob/1c902a7c278246adaf4479901c6e2d38e00321e5/packages/libs/ability-sdk/src/lib/types.ts#L441)
+
+#### Inherited from
+
+`BaseContext.appVersion`
+
+***
+
+### delegation
+
+> **delegation**: `object`
+
+Defined in: [types.ts:442](https://github.com/LIT-Protocol/Vincent/blob/1c902a7c278246adaf4479901c6e2d38e00321e5/packages/libs/ability-sdk/src/lib/types.ts#L442)
+
+#### delegateeAddress
+
+> **delegateeAddress**: `string`
+
+#### delegatorPkpInfo
+
+> **delegatorPkpInfo**: `object`
+
+##### delegatorPkpInfo.ethAddress
+
+> **ethAddress**: `string`
+
+##### delegatorPkpInfo.publicKey
+
+> **publicKey**: `string`
+
+##### delegatorPkpInfo.tokenId
+
+> **tokenId**: `string`
+
+#### Inherited from
+
+`BaseContext.delegation`
+
+***
+
+### deny
+
+> **deny**: `DenySchema` *extends* `ZodUndefined` ? () => `ContextDenyResponseNoResult` : (`result`, `runtimeError?`) => `ContextDenyResponse`\<`TypeOf`\<`DenySchema`\>\>
+
+Defined in: [policyCore/policyConfig/context/types.ts:49](https://github.com/LIT-Protocol/Vincent/blob/1c902a7c278246adaf4479901c6e2d38e00321e5/packages/libs/ability-sdk/src/lib/policyCore/policyConfig/context/types.ts#L49)

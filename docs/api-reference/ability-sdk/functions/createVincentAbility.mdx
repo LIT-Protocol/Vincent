@@ -1,0 +1,87 @@
+---
+title: createVincentAbility
+---
+
+> **createVincentAbility**\<`AbilityParamsSchema`, `PkgNames`, `PolicyMap`, `PolicyMapByPackageName`, `PrecheckSuccessSchema`, `PrecheckFailSchema`, `ExecuteSuccessSchema`, `ExecuteFailSchema`\>(`AbilityConfig`): [`VincentAbility`](/api-reference/ability-sdk/type-aliases/VincentAbility)\<`AbilityParamsSchema`, `PkgNames`, `PolicyMap`, `PolicyMapByPackageName`, `ExecuteSuccessSchema`, `ExecuteFailSchema`, `PrecheckSuccessSchema`, `PrecheckFailSchema`\>
+
+Defined in: [abilityCore/vincentAbility.ts:77](https://github.com/LIT-Protocol/Vincent/blob/1c902a7c278246adaf4479901c6e2d38e00321e5/packages/libs/ability-sdk/src/lib/abilityCore/vincentAbility.ts#L77)
+
+The `createVincentAbility()` method is used to define an ability's lifecycle methods and ensure that arguments provided to the ability's
+lifecycle methods, as well as their return values, are validated and fully type-safe by defining ZOD schemas for them.
+
+```typescript
+const exampleSimpleAbility = createVincentAbility({
+    packageName: '@lit-protocol/yesability@1.0.0',
+    abilityDescription: 'Yes Ability description',
+    abilityParamsSchema: testSchema,
+    supportedPolicies: supportedPoliciesForAbility([testPolicy]),
+
+    precheck: async (params, { succeed, fail }) => {
+      // Should allow succeed() with no arguments
+      succeed();
+
+      // Should allow fail() with string error
+      fail('Error message');
+
+      // @ts-expect-error - Should not allow succeed() with arguments when no schema
+      succeed({ message: 'test' });
+
+      // @ts-expect-error - Should not allow fail() with object when no schema
+      fail({ error: 'test' });
+
+      return succeed();
+    },
+
+    execute: async (params, { succeed }) => {
+      // Should allow succeed() with no arguments
+      succeed();
+
+      // @ts-expect-error - Should not allow succeed() with arguments when no schema
+      return succeed({ data: 'test' });
+    },
+  });
+```
+
+## Type Parameters
+
+### AbilityParamsSchema
+
+`AbilityParamsSchema` *extends* `ZodType`\<`any`, `ZodTypeDef`, `any`\>
+
+### PkgNames
+
+`PkgNames` *extends* `string`
+
+### PolicyMap
+
+`PolicyMap` *extends* `AbilityPolicyMap`\<`any`, `PkgNames`\>
+
+### PolicyMapByPackageName
+
+`PolicyMapByPackageName` *extends* `{ [K in string]: any }`
+
+### PrecheckSuccessSchema
+
+`PrecheckSuccessSchema` *extends* `ZodType`\<`any`, `ZodTypeDef`, `any`\> = `ZodUndefined`
+
+### PrecheckFailSchema
+
+`PrecheckFailSchema` *extends* `ZodType`\<`any`, `ZodTypeDef`, `any`\> = `ZodUndefined`
+
+### ExecuteSuccessSchema
+
+`ExecuteSuccessSchema` *extends* `ZodType`\<`any`, `ZodTypeDef`, `any`\> = `ZodUndefined`
+
+### ExecuteFailSchema
+
+`ExecuteFailSchema` *extends* `ZodType`\<`any`, `ZodTypeDef`, `any`\> = `ZodUndefined`
+
+## Parameters
+
+### AbilityConfig
+
+`VincentAbilityConfig`\<`AbilityParamsSchema`, `PkgNames`, `PolicyMap`, `PolicyMapByPackageName`, `PrecheckSuccessSchema`, `PrecheckFailSchema`, `ExecuteSuccessSchema`, `ExecuteFailSchema`, `AbilityConfigLifecycleFunction`\<`AbilityParamsSchema`, `PolicyEvaluationResultContext`\<`PolicyMapByPackageName`\>, `PrecheckSuccessSchema`, `PrecheckFailSchema`\>, `AbilityConfigLifecycleFunction`\<`AbilityParamsSchema`, `AbilityExecutionPolicyContext`\<`PolicyMapByPackageName`\>, `ExecuteSuccessSchema`, `ExecuteFailSchema`\>\>
+
+## Returns
+
+[`VincentAbility`](/api-reference/ability-sdk/type-aliases/VincentAbility)\<`AbilityParamsSchema`, `PkgNames`, `PolicyMap`, `PolicyMapByPackageName`, `ExecuteSuccessSchema`, `ExecuteFailSchema`, `PrecheckSuccessSchema`, `PrecheckFailSchema`\>

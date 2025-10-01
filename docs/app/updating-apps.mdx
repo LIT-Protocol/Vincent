@@ -1,0 +1,138 @@
+---
+title: Updating Your App
+---
+
+Vincent Apps use versioning to ensure user trust and security. When users delegate to your App, they delegate to a specific version with an immutable set of Abilities and Policies that cannot be changed without their explicit consent.
+
+## Version Changes
+
+<Tabs>
+  <Tab title="Requires New Version">
+    <ParamField path="abilities" type="array">
+      Adding, updating, or removing Vincent Abilities from your App
+    </ParamField>
+    <ParamField path="policies" type="array">
+      Modifying Vincent Policies for your App's Abilities
+    </ParamField>
+  </Tab>
+  <Tab title="Can Change Anytime">
+    <ParamField path="delegatees" type="array">
+      App Delegatees authorized for all versions
+    </ParamField>
+    <ParamField path="redirectUris" type="array">
+      Redirect URIs for the Vincent Connect page
+    </ParamField>
+    <ParamField path="deploymentStatus" type="string">
+      Deployment status (DEV, TEST, PROD)
+    </ParamField>
+    <ParamField path="appDetails" type="object">
+      App details including name, description, and logo
+    </ParamField>
+  </Tab>
+</Tabs>
+
+## Version Lifecycle
+
+<Steps>
+  <Step title="Create">
+    Initialize the version off-chain with your chosen Abilities and Policies. Changes are still possible at this stage.
+  </Step>
+
+  <Step title="Publish">
+    Register the version on-chain in the Vincent App Registry. Once published, the version becomes immutable and available for user delegation.
+  </Step>
+</Steps>
+
+<Warning>
+Published versions cannot be modified. To make changes, create and publish a new version.
+</Warning>
+
+## How to Create a New Version
+
+<Steps>
+    <Step title="Navigate to the Developer Dashboard">
+        Go to the [Vincent Developer Dashboard](https://dashboard.heyvincent.ai/developer/dashboard)
+    </Step>
+
+    <Step title="Access App Details">
+        Select the App Details menu item from the sidebar menu
+
+        <img
+          src="/images/app/updating/image-2.png"
+          alt="App Details menu in sidebar"
+          className="rounded-lg"
+        />
+    </Step>
+
+    <Step title="Create New Version">
+        Click `Create App Version`
+
+        <img
+          src="/images/app/updating/image-3.png"
+          alt="Create App Version button"
+          className="rounded-lg"
+        />
+    </Step>
+
+    <Step title="Describe Your Changes">
+        Provide a description of changes made to the application since your previous version
+
+        <img
+          src="/images/app/updating/image-4.png"
+          alt="Version changes description field"
+          className="rounded-lg"
+        />
+    </Step>
+
+    <Step title="Configure Abilities and Policies">
+        Similar to creating the first version, you'll be redirected to add Abilities to your app version and configure policies
+
+        <img
+          src="/images/app/updating/image-5.png"
+          alt="Configure Abilities and Policies interface"
+          className="rounded-lg"
+        />
+    </Step>
+
+    <Step title="Publish the App Version">
+        On the left sidebar, click **Apps**, then **App Versions**, and select your new version to navigate to the App Version management page. Click the **Publish App Version** button to register the App Version as published in the Vincent Registry smart contract
+
+        <img
+          src="/images/app/updating/image-6.png"
+          alt="Publish App Version button"
+          className="rounded-lg"
+        />
+    </Step>
+
+    <Step title="Set as Active Version">
+        For users to see the version update, update the App's active version through the `Edit App` page
+
+        <img
+          src="/images/app/updating/image-7.png"
+          alt="Set active version interface"
+          className="rounded-lg"
+        />
+
+        And done! Now new users will permit your new app version, and existing users will be notified when they go to authenticate.
+    </Step>
+</Steps>
+
+## FAQ
+
+<Accordion title="What happens when I disable an App Version?">
+  Disabling an App Version immediately prevents users on that version from using your App. They'll be prompted to upgrade to the latest enabled version. Your delegatees won't be able to execute Abilities for users who only authorized the disabled version. Disabled versions can be re-enabled at any time.
+</Accordion>
+
+<Accordion title="When are users notified about new versions?">
+  Users are only notified when you set a new version as the active App Version. They won't see notifications for versions you create or publish but don't activate. Upgrade prompts appear when a new active version is available (optional if current version is enabled) or when their version is disabled (mandatory).
+</Accordion>
+
+<Accordion title="Why is versioning important?">
+  Versioning is fundamental to Vincent's trust model. Every version is immutable once published, transparent in what it authorizes, and requires explicit opt-in from users for upgrades. This gives you control over your App's evolution without compromising user permissions.
+</Accordion>
+
+## Next Steps
+
+<Card title="Deprecating App Versions" icon="ban" href="/app/deprecating-app-versions" color="#FF4205">
+  Learn how to disable old versions and manage user upgrades
+</Card>

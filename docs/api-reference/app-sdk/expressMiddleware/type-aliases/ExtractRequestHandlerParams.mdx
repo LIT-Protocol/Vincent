@@ -1,0 +1,17 @@
+---
+title: ExtractRequestHandlerParams
+---
+
+> **ExtractRequestHandlerParams**\<`T`\> = `T` *extends* `RequestHandler`\<infer P, infer ResBody, infer ReqBody, infer ReqQuery, infer Locals\> ? \[`P`, `ResBody`, `ReqBody`, `ReqQuery`, `Locals`\] : `never`
+
+Defined in: [app-sdk/src/expressMiddleware/types.ts:12](https://github.com/LIT-Protocol/Vincent/blob/1c902a7c278246adaf4479901c6e2d38e00321e5/packages/libs/app-sdk/src/expressMiddleware/types.ts#L12)
+
+Extract the params type from the original Express.js RequestHandler
+
+You probably don't need this type; see [createVincentUserMiddleware](/api-reference/app-sdk/expressMiddleware/functions/createVincentUserMiddleware) for details
+
+## Type Parameters
+
+### T
+
+`T`

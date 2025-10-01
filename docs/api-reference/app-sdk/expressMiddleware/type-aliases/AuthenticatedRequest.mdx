@@ -1,0 +1,33 @@
+---
+title: AuthenticatedRequest
+---
+
+> **AuthenticatedRequest**\<`UserKey`, `P`, `ResBody`, `ReqBody`, `ReqQuery`\> = `Request`\<`P`, `ResBody`, `ReqBody`, `ReqQuery`\> & `{ [K in UserKey]: VincentJWTData }`
+
+Defined in: [app-sdk/src/expressMiddleware/types.ts:48](https://github.com/LIT-Protocol/Vincent/blob/1c902a7c278246adaf4479901c6e2d38e00321e5/packages/libs/app-sdk/src/expressMiddleware/types.ts#L48)
+
+An interface that extends the Express.js Request interface to include authenticated user data
+
+You probably don't need this type; see [createVincentUserMiddleware](/api-reference/app-sdk/expressMiddleware/functions/createVincentUserMiddleware) for details
+
+## Type Parameters
+
+### UserKey
+
+`UserKey` *extends* `string`
+
+### P
+
+`P` = `any`
+
+### ResBody
+
+`ResBody` = `any`
+
+### ReqBody
+
+`ReqBody` = `any`
+
+### ReqQuery
+
+`ReqQuery` = `any`

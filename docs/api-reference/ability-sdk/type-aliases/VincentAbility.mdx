@@ -1,0 +1,97 @@
+---
+title: VincentAbility
+---
+
+> **VincentAbility**\<`AbilityParamsSchema`, `PkgNames`, `PolicyMap`, `PoliciesByPackageName`, `ExecuteSuccessSchema`, `ExecuteFailSchema`, `PrecheckSuccessSchema`, `PrecheckFailSchema`, `ExecuteFn`, `PrecheckFn`\> = `object`
+
+Defined in: [types.ts:387](https://github.com/LIT-Protocol/Vincent/blob/1c902a7c278246adaf4479901c6e2d38e00321e5/packages/libs/ability-sdk/src/lib/types.ts#L387)
+
+## Type Parameters
+
+### AbilityParamsSchema
+
+`AbilityParamsSchema` *extends* `z.ZodType`
+
+### PkgNames
+
+`PkgNames` *extends* `string`
+
+### PolicyMap
+
+`PolicyMap` *extends* `AbilityPolicyMap`\<`any`, `PkgNames`\>
+
+### PoliciesByPackageName
+
+`PoliciesByPackageName` *extends* `PolicyMap`\[`"policyByPackageName"`\]
+
+### ExecuteSuccessSchema
+
+`ExecuteSuccessSchema` *extends* `z.ZodType` \| `undefined` = `undefined`
+
+### ExecuteFailSchema
+
+`ExecuteFailSchema` *extends* `z.ZodType` \| `undefined` = `undefined`
+
+### PrecheckSuccessSchema
+
+`PrecheckSuccessSchema` *extends* `z.ZodType` \| `undefined` = `undefined`
+
+### PrecheckFailSchema
+
+`PrecheckFailSchema` *extends* `z.ZodType` \| `undefined` = `undefined`
+
+### ExecuteFn
+
+`ExecuteFn` = `AbilityLifecycleFunction`\<`AbilityParamsSchema`, `AbilityExecutionPolicyContext`\<`PoliciesByPackageName`\>, `ExecuteSuccessSchema`, `ExecuteFailSchema`\>
+
+### PrecheckFn
+
+`PrecheckFn` = `undefined` \| `AbilityLifecycleFunction`\<`AbilityParamsSchema`, `PolicyEvaluationResultContext`\<`PoliciesByPackageName`\>, `PrecheckSuccessSchema`, `PrecheckFailSchema`\>
+
+## Properties
+
+### abilityDescription
+
+> **abilityDescription**: `string`
+
+Defined in: [types.ts:412](https://github.com/LIT-Protocol/Vincent/blob/1c902a7c278246adaf4479901c6e2d38e00321e5/packages/libs/ability-sdk/src/lib/types.ts#L412)
+
+***
+
+### abilityParamsSchema
+
+> **abilityParamsSchema**: `AbilityParamsSchema`
+
+Defined in: [types.ts:415](https://github.com/LIT-Protocol/Vincent/blob/1c902a7c278246adaf4479901c6e2d38e00321e5/packages/libs/ability-sdk/src/lib/types.ts#L415)
+
+***
+
+### execute
+
+> **execute**: `ExecuteFn`
+
+Defined in: [types.ts:414](https://github.com/LIT-Protocol/Vincent/blob/1c902a7c278246adaf4479901c6e2d38e00321e5/packages/libs/ability-sdk/src/lib/types.ts#L414)
+
+***
+
+### packageName
+
+> **packageName**: `string`
+
+Defined in: [types.ts:411](https://github.com/LIT-Protocol/Vincent/blob/1c902a7c278246adaf4479901c6e2d38e00321e5/packages/libs/ability-sdk/src/lib/types.ts#L411)
+
+***
+
+### precheck?
+
+> `optional` **precheck**: `PrecheckFn`
+
+Defined in: [types.ts:413](https://github.com/LIT-Protocol/Vincent/blob/1c902a7c278246adaf4479901c6e2d38e00321e5/packages/libs/ability-sdk/src/lib/types.ts#L413)
+
+***
+
+### supportedPolicies
+
+> **supportedPolicies**: `PolicyMap`
+
+Defined in: [types.ts:416](https://github.com/LIT-Protocol/Vincent/blob/1c902a7c278246adaf4479901c6e2d38e00321e5/packages/libs/ability-sdk/src/lib/types.ts#L416)

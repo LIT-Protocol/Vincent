@@ -1,0 +1,138 @@
+---
+title: createVincentUserMiddleware
+---
+
+> **createVincentUserMiddleware**\<`UserKey`\>(`config`): `object`
+
+Defined in: [app-sdk/src/expressMiddleware/express.ts:79](https://github.com/LIT-Protocol/Vincent/blob/1c902a7c278246adaf4479901c6e2d38e00321e5/packages/libs/app-sdk/src/expressMiddleware/express.ts#L79)
+
+Returns an Express middleware function to authenticate a user using a JWT token, and a type-guard wrapper function
+for type-safe usage of route handlers guarded by the middleware.
+
+The `middleware()` function:
+- Checks the `Authorization` header for a Bearer token, verifies the token, and checks its audience.
+- If the token is valid, it attaches the user information (decoded JWT, and raw JWT string) to the request object
+- If the token is missing or invalid, it returns a 401 Unauthorized response with an error message.
+
+Designate what field on `req` should be set with the JWT with the `userKey` configuration option.
+
+The `handler()` function:
+- Provides a type-safe reference to `req` where the `userKey` you have provided is correctly inferred to the appropriate type
+- Note that it is still your responsibility to ensure you have attached the `middleware` somewhere in the chain before you use the `handler()`
+  - If you forget, the `handler()` function will throw an error if the expected `req[userKey]` does not exist.
+
+See [express.js documentation](https://expressjs.com/en/guide/writing-middleware.html) for details on writing your route handler
+
+## Type Parameters
+
+### UserKey
+
+`UserKey` *extends* `string`
+
+## Parameters
+
+### config
+
+#### allowedAudience
+
+`string`
+
+#### requiredAppId
+
+`undefined` \| `number`
+
+#### userKey
+
+`UserKey`
+
+## Returns
+
+`object`
+
+### handler()
+
+> **handler**: (`handler`) => (`req`, `res`, `next`) => `void` \| `Promise`\<`void`\>
+
+#### Parameters
+
+##### handler
+
+[`AuthenticatedRequestHandler`](/api-reference/app-sdk/expressMiddleware/type-aliases/AuthenticatedRequestHandler)\<`UserKey`\>
+
+#### Returns
+
+> (`req`, `res`, `next`): `void` \| `Promise`\<`void`\>
+
+##### Parameters
+
+###### req
+
+`Request`
+
+###### res
+
+`Response`
+
+###### next
+
+`NextFunction`
+
+##### Returns
+
+`void` \| `Promise`\<`void`\>
+
+### middleware()
+
+> **middleware**: (`req`, `res`, `next`) => `Promise`\<`void`\>
+
+#### Parameters
+
+##### req
+
+`Request`
+
+##### res
+
+`Response`
+
+##### next
+
+`NextFunction`
+
+#### Returns
+
+`Promise`\<`void`\>
+
+## Example
+
+```typescript
+import { createVincentUserMiddleware } from '@lit-protocol/vincent-app-sdk/expressMiddleware';
+
+// In your environment configuration
+const ALLOWED_AUDIENCE = 'https://yourapp.example.com';
+const VINCENT_APP_ID = 555; // Provided by the vincent app registry
+
+const { middleware, handler } = createVincentUserMiddleware({
+ allowedAudience: ALLOWED_AUDIENCE,
+ requiredAppId: VINCENT_APP_ID,
+ userKey: 'vincentUser',
+});
+
+// Apply to routes that require authentication; req is guaranteed authenticated because it is wrapped in `handler()`
+app.get('/protected-resource', middleware, handler((req, res) => {
+    // handler() gives you the correct inferred type of `req[userKey]`
+    const pkpAddress = req.vincentUser.decodedJWT.payload.pkp.ethAddress;
+    const appInfo = req.vincentUser.decodedJWT.payload.app;
+
+    if(appInfo) {
+      res.json({ message: `Hello, user with PKP address ${pkpAddress}. You are authenticated for app ${appInfo.id} @ v${appInfo.version}` });
+      return;
+    }
+
+    res.json({ message: `Hello, user with PKP address ${pkpAddress}.` });
+  })
+);
+```
+
+See the code below for the implementation used by the `middleware` returned by this function. You can adapt this logic
+to the HTTP framework of your choice.

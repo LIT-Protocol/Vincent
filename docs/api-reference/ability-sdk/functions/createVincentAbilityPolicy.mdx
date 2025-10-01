@@ -1,0 +1,172 @@
+---
+title: createVincentAbilityPolicy
+---
+
+> **createVincentAbilityPolicy**\<`PackageName`, `IpfsCid`, `VincentAbilityApiVersion`, `AbilityParamsSchema`, `PolicyAbilityParams`, `UserParams`, `PrecheckAllowResult`, `PrecheckDenyResult`, `EvalAllowResult`, `EvalDenyResult`, `CommitParams`, `CommitAllowResult`, `CommitDenyResult`\>(`config`): `object`
+
+Defined in: [policyCore/vincentPolicy.ts:363](https://github.com/LIT-Protocol/Vincent/blob/1c902a7c278246adaf4479901c6e2d38e00321e5/packages/libs/ability-sdk/src/lib/policyCore/vincentPolicy.ts#L363)
+
+`createVincentAbilityPolicy()` is used to bind a policy to a specific ability. You must provide a `abilityParameterMappings` argument
+which instructs the ability which of its abilityParams should be passed to the Vincent Policy during evaluation, and
+defines what the argument passed to the ability should be.
+
+For example, a Ability might receive an argument called `tokenInAmount`, but it may need to pass that as `buyAmount` to a
+policy that uses the `tokenInAmount` for its own purposes.
+
+```typescript
+import { bundledVincentPolicy } from '@lit-protocol/vincent-policy-spending-limit';
+
+const SpendingLimitPolicy = createVincentAbilityPolicy({
+  abilityParamsSchema,
+  bundledVincentPolicy,
+  abilityParameterMappings: {
+    rpcUrlForUniswap: 'rpcUrlForUniswap',
+    chainIdForUniswap: 'chainIdForUniswap',
+    ethRpcUrl: 'ethRpcUrl',
+    tokenInAddress: 'tokenAddress',
+    tokenInDecimals: 'tokenDecimals',
+    tokenInAmount: 'buyAmount',
+  },
+});
+```
+
+## Type Parameters
+
+### PackageName
+
+`PackageName` *extends* `string`
+
+### IpfsCid
+
+`IpfsCid` *extends* `string`
+
+### VincentAbilityApiVersion
+
+`VincentAbilityApiVersion` *extends* `string`
+
+### AbilityParamsSchema
+
+`AbilityParamsSchema` *extends* `ZodType`\<`any`, `ZodTypeDef`, `any`\>
+
+### PolicyAbilityParams
+
+`PolicyAbilityParams` *extends* `ZodType`\<`any`, `ZodTypeDef`, `any`\>
+
+### UserParams
+
+`UserParams` *extends* `ZodType`\<`any`, `ZodTypeDef`, `any`\> = `ZodUndefined`
+
+### PrecheckAllowResult
+
+`PrecheckAllowResult` *extends* `ZodType`\<`any`, `ZodTypeDef`, `any`\> = `ZodUndefined`
+
+### PrecheckDenyResult
+
+`PrecheckDenyResult` *extends* `ZodType`\<`any`, `ZodTypeDef`, `any`\> = `ZodUndefined`
+
+### EvalAllowResult
+
+`EvalAllowResult` *extends* `ZodType`\<`any`, `ZodTypeDef`, `any`\> = `ZodUndefined`
+
+### EvalDenyResult
+
+`EvalDenyResult` *extends* `ZodType`\<`any`, `ZodTypeDef`, `any`\> = `ZodUndefined`
+
+### CommitParams
+
+`CommitParams` *extends* `ZodType`\<`any`, `ZodTypeDef`, `any`\> = `ZodUndefined`
+
+### CommitAllowResult
+
+`CommitAllowResult` *extends* `ZodType`\<`any`, `ZodTypeDef`, `any`\> = `ZodUndefined`
+
+### CommitDenyResult
+
+`CommitDenyResult` *extends* `ZodType`\<`any`, `ZodTypeDef`, `any`\> = `ZodUndefined`
+
+## Parameters
+
+### config
+
+#### abilityParameterMappings
+
+`Partial`\<`{ [K in keyof z.infer<AbilityParamsSchema>]: keyof z.infer<PolicyAbilityParams> }`\>
+
+#### abilityParamsSchema
+
+`AbilityParamsSchema`
+
+#### bundledVincentPolicy
+
+[`BundledVincentPolicy`](/api-reference/ability-sdk/type-aliases/BundledVincentPolicy)\<\{ `abilityParamsSchema`: `PolicyAbilityParams`; `commit?`: `CommitLifecycleFunction`\<`CommitParams`, `CommitAllowResult`, `CommitDenyResult`\>; `commitAllowResultSchema?`: `CommitAllowResult`; `commitDenyResultSchema?`: `CommitDenyResult`; `commitParamsSchema?`: `CommitParams`; `evalAllowResultSchema?`: `EvalAllowResult`; `evalDenyResultSchema?`: `EvalDenyResult`; `evaluate`: `PolicyLifecycleFunction`; `packageName`: `PackageName`; `precheck?`: `PolicyLifecycleFunction`\<`PolicyAbilityParams`, `UserParams`, `PrecheckAllowResult`, `PrecheckDenyResult`\>; `precheckAllowResultSchema?`: `PrecheckAllowResult`; `precheckDenyResultSchema?`: `PrecheckDenyResult`; `userParamsSchema?`: `UserParams`; \}, `IpfsCid`, `VincentAbilityApiVersion`\>
+
+## Returns
+
+`object`
+
+A Vincent Policy that is configured to work with the provided ability
+A Vincent Policy that is configured to work with the provided ability
+
+### abilityParameterMappings
+
+> **abilityParameterMappings**: `Partial`\<\{ \[K in string \| number \| symbol\]: keyof TypeOf\<PolicyAbilityParams\> \}\>
+
+### ipfsCid
+
+> **ipfsCid**: `IpfsCid`
+
+### vincentPolicy
+
+> **vincentPolicy**: `object`
+
+#### vincentPolicy.abilityParamsSchema
+
+> **abilityParamsSchema**: `PolicyAbilityParams`
+
+#### vincentPolicy.commit?
+
+> `optional` **commit**: `CommitLifecycleFunction`\<`CommitParams`, `CommitAllowResult`, `CommitDenyResult`\>
+
+#### vincentPolicy.commitAllowResultSchema?
+
+> `optional` **commitAllowResultSchema**: `CommitAllowResult`
+
+#### vincentPolicy.commitDenyResultSchema?
+
+> `optional` **commitDenyResultSchema**: `CommitDenyResult`
+
+#### vincentPolicy.commitParamsSchema?
+
+> `optional` **commitParamsSchema**: `CommitParams`
+
+#### vincentPolicy.evalAllowResultSchema?
+
+> `optional` **evalAllowResultSchema**: `EvalAllowResult`
+
+#### vincentPolicy.evalDenyResultSchema?
+
+> `optional` **evalDenyResultSchema**: `EvalDenyResult`
+
+#### vincentPolicy.evaluate
+
+> **evaluate**: `PolicyLifecycleFunction`
+
+#### vincentPolicy.packageName
+
+> **packageName**: `PackageName`
+
+#### vincentPolicy.precheck?
+
+> `optional` **precheck**: `PolicyLifecycleFunction`\<`PolicyAbilityParams`, `UserParams`, `PrecheckAllowResult`, `PrecheckDenyResult`\>
+
+#### vincentPolicy.precheckAllowResultSchema?
+
+> `optional` **precheckAllowResultSchema**: `PrecheckAllowResult`
+
+#### vincentPolicy.precheckDenyResultSchema?
+
+> `optional` **precheckDenyResultSchema**: `PrecheckDenyResult`
+
+#### vincentPolicy.userParamsSchema?
+
+> `optional` **userParamsSchema**: `UserParams`

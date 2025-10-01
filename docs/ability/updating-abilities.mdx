@@ -1,0 +1,78 @@
+---
+title: Updating Abilities
+---
+
+Updated Vincent Abilities need to be added to our database before they can be accessible to application developers.
+
+<Steps>
+  <Step title="Log into the Vincent Developer Dashboard">
+    Go to the [Vincent Developer Dashboard](https://dashboard.heyvincent.ai) and log in with your preferred authentication method.
+
+    <img
+      src="/images/ability/updating/image-1.png"
+      alt="Vincent Developer Dashboard login"
+      className="rounded-lg"
+    />
+  </Step>
+
+  <Step title="Access Your Vincent Ability">
+    After logging in, navigate to your ability through the sidebar menu.
+
+    <img
+      src="/images/ability/updating/image-2.png"
+      alt="Navigate to ability in sidebar"
+      className="rounded-lg"
+    />
+  </Step>
+
+  <Step title="Create Ability Version">
+    Click the **Create Ability Version** button to create a new version of your existing ability.
+
+    <img
+      src="/images/ability/updating/image-3.png"
+      alt="Create Ability Version button"
+      className="rounded-lg"
+    />
+  </Step>
+
+  <Step title="Fill in Version Details">
+    Complete the form with your new version information:
+
+    <img
+      src="/images/ability/updating/image-4.png"
+      alt="Version details form"
+      className="rounded-lg"
+    />
+
+    <ParamField path="Version" type="string" required>
+      The new Ability version you'd like to add to the Vincent database.
+    </ParamField>
+
+    <ParamField path="Changes" type="string" required>
+      Changes made to the ability since the previous version.
+    </ParamField>
+
+    <Note>This version must be published to `npm`. The `changes` field is editable.</Note>
+  </Step>
+
+  <Step title="Version Successfully Created">
+    Your new ability version has been successfully added to the Vincent database and is now available for app developers to use.
+
+    <img
+      src="/images/ability/updating/image-5.png"
+      alt="Version creation success confirmation"
+      className="rounded-lg"
+    />
+  </Step>
+</Steps>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Ability Quick Start" icon="rocket" href="/ability/quickstart">
+    Build your first Ability with the starter kit
+  </Card>
+  <Card title="Supporting Policies" icon="shield-check" href="/ability/supporting-policies">
+    Learn how to integrate Policies with your Abilities
+  </Card>
+</CardGroup>

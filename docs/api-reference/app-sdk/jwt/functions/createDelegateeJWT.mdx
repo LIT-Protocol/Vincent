@@ -1,0 +1,21 @@
+---
+title: createDelegateeJWT
+---
+
+> **createDelegateeJWT**(`config`): `Promise`\<`string`\>
+
+Defined in: [app-sdk/src/jwt/core/create.ts:116](https://github.com/LIT-Protocol/Vincent/blob/1c902a7c278246adaf4479901c6e2d38e00321e5/packages/libs/app-sdk/src/jwt/core/create.ts#L116)
+
+Creates a JWT for an app delegatee (Ethereum account that may act on behalf of a user).
+
+You must provide a valid `subjectAddress`, which must be a valid delegator for your Delegatee address.
+
+## Parameters
+
+### config
+
+[`CreateDelegateeJWTParams`](/api-reference/app-sdk/jwt/interfaces/CreateDelegateeJWTParams)
+
+## Returns
+
+`Promise`\<`string`\>

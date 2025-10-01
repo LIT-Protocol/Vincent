@@ -1,0 +1,226 @@
+---
+title: Quick Start
+---
+
+Create your first Vincent Ability in under 10 minutes using the Vincent Starter Kit.
+
+## Prerequisites
+
+<CardGroup cols={2}>
+  <Card title="Node.js" icon="node" href="https://nodejs.org/en/download">
+    Version 20.19.4 or higher
+  </Card>
+  <Card title="Corepack" icon="box" href="https://github.com/nodejs/corepack">
+    Version 20.19.4 or higher
+  </Card>
+  <Card title="Pinata Account" icon="cloud" href="https://pinata.cloud">
+    For IPFS storage of your Ability code
+  </Card>
+  <Card title="Starter Kit" icon="rocket" href="https://github.com/LIT-Protocol/vincent-ability-starter-kit">
+    Clone the Vincent Starter Kit repository for quick setup
+  </Card>
+</CardGroup>
+
+## Setup
+
+<Steps>
+  <Step title="Clone the Starter Kit">
+    ```bash
+    git clone git@github.com:LIT-Protocol/vincent-ability-starter-kit.git
+    cd vincent-ability-starter-kit
+    ```
+  </Step>
+
+  <Step title="Ensure Corepack is Updated">
+    ```bash
+    # Verify your corepack version (should be > 0.31.0)
+    corepack -v
+
+    # If needed, update corepack to the latest version
+    npm install -g corepack@latest
+
+    # Enable Corepack globally
+    corepack enable
+    ```
+  </Step>
+
+  <Step title="Run Bootstrap">
+    ```bash
+    corepack enable pnpm
+    pnpm bootstrap
+    ```
+
+    The bootstrap will prompt you for:
+    - **Pinata JWT**: Get from [Pinata](https://pinata.cloud) after creating an account
+    - **Test wallet private key**: Fund with test tokens from the [Lit Faucet](https://faucet.litprotocol.com)
+  </Step>
+
+  <Step title="Verify Setup">
+    ```bash
+    pnpm test-e2e
+    ```
+
+    If successful, you'll see all tests passing and your environment is ready.
+  </Step>
+</Steps>
+
+## Create Your Ability
+
+<Steps>
+  <Step title="Copy the Template">
+    ```bash
+    # Replace 'my-ability' with your desired package name
+    mkdir -p packages/my-ability
+    rsync -a --exclude='node_modules/' --exclude='dist/' \
+      packages/ability-native-send/ packages/my-ability/
+    ```
+  </Step>
+
+  <Step title="Update Package Configuration">
+    **1. Edit `packages/my-ability/package.json`:**
+    ```json
+    {
+      "name": "@your-org/my-ability",
+      "version": "0.0.1",
+      "description": "Your ability description here"
+    }
+    ```
+
+    **2. Edit `packages/my-ability/project.json`:**
+
+    Replace all occurrences of `ability-native-send` with `my-ability`:
+    - `"name": "my-ability"`
+    - `"sourceRoot": "packages/my-ability/src"`
+    - `"cwd": "packages/my-ability"` (all instances)
+    - `"input": "packages/my-ability/src/generated"`
+    - `"outputPath": "packages/my-ability/dist"`
+    - `"main": "packages/my-ability/src/index.ts"`
+    - `"tsConfig": "packages/my-ability/tsconfig.lib.json"`
+    - All asset paths
+
+    **3. Edit `packages/my-ability/tsconfig.lib.json`:**
+
+    Remove the policy-counter reference if not using it:
+    ```json
+    {
+      "references": []  // Remove policy-counter reference
+    }
+    ```
+
+    **4. Update `nx.json` in repository root:**
+
+    Add your package to the release projects:
+    ```json
+    {
+      "release": {
+        "projects": ["ability-native-send", "policy-counter", "test-e2e", "my-ability"]
+      }
+    }
+    ```
+  </Step>
+
+  <Step title="Update the Main Index File">
+    Edit `packages/my-ability/src/index.ts`:
+
+    Update the comment to reflect your ability name.
+  </Step>
+
+  <Step title="Update Jest Configuration">
+    Edit `packages/my-ability/jest.config.js`:
+
+    ```javascript
+    module.exports = {
+      displayName: '@your-org/my-ability', // Update this
+      // ... rest of config
+    };
+    ```
+  </Step>
+
+  <Step title="Define Your Ability Logic">
+    Edit `packages/my-ability/src/lib/vincent-ability.ts`:
+
+    ```typescript
+    export const vincentAbility = createVincentAbility({
+      packageName: '@your-org/my-ability',
+      abilityDescription: 'What your ability does',
+
+      // There are other configurations here, not covered in the Quick Start.
+      // Please read the other guides for more details.
+
+      // Validation - runs locally
+      precheck: async ({ abilityParams }, { fail, succeed }) => {
+        // Validate inputs, check balances, etc.
+        return succeed({ /* validation passed */ });
+      },
+
+      // Execution - runs in Lit Action environment
+      execute: async ({ abilityParams }, { fail, succeed }) => {
+        // Your ability's main logic
+        // Has access to sign with user's PKP wallet
+        return succeed({ /* result data */ });
+      }
+    });
+    ```
+  </Step>
+
+  <Step title="Build and Test">
+    ```bash
+    pnpm install
+    pnpm nx build my-ability
+    pnpm test-e2e
+    ```
+  </Step>
+
+  <Step title="Deploy to IPFS">
+    ```bash
+    pnpm nx action:deploy my-ability
+    ```
+
+    Your Ability is now deployed and ready to be used by Vincent Apps!
+  </Step>
+
+  <Step title="Publish Your Ability">
+  When you're prepared, you can publish the Ability to `npm`. This will make it publishable
+  in the Vincent Registry.
+    ```bash
+    cd packages/my-ability
+    pnpm publish
+    ```
+  </Step>
+
+  <Step title="Register in Vincent Registry">
+    See the [Publishing Guide](/ability/publishing) for details on registering your Ability in the Vincent Registry.
+  </Step>
+</Steps>
+
+## Quick Commands
+
+<ParamField path="build" type="command">
+  `pnpm nx build my-ability` - Build your Ability package
+</ParamField>
+
+<ParamField path="test" type="command">
+  `pnpm test-e2e` - Run end-to-end tests with the Vincent system
+</ParamField>
+
+<ParamField path="deploy" type="command">
+  `pnpm nx action:deploy my-ability` - Deploy to IPFS via Pinata
+</ParamField>
+
+<ParamField path="clean" type="command">
+  `pnpm clean` - Remove build artifacts
+</ParamField>
+
+## What's Next?
+
+<CardGroup cols={3}>
+  <Card title="Ability Structure" icon="code" href="/ability/explaining-abilities">
+    Learn how Abilities work under the hood
+  </Card>
+  <Card title="Example Abilities" icon="github" href="https://github.com/LIT-Protocol/vincent-starter-kit/tree/main/packages">
+    Study the included examples
+  </Card>
+  <Card title="Integration Guide" icon="link" href="/ability/policy/explaining-policies">
+    Connect Abilites with Policies
+  </Card>
+</CardGroup>

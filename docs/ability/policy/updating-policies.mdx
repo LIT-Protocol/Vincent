@@ -1,0 +1,86 @@
+---
+title: Updating Policies
+---
+
+Updated Vincent Policies need to be added to our database before they can be accessible to application developers.
+
+<Steps>
+  <Step title="Log into the Vincent Developer Dashboard">
+    Go to the [Vincent Developer Dashboard](https://dashboard.heyvincent.ai) and log in with your preferred authentication method.
+
+    <img
+      src="/images/policy/updating/image-1.png"
+      alt="Vincent Developer Dashboard login"
+      className="rounded-lg"
+    />
+  </Step>
+
+  <Step title="Access Your Vincent Policy">
+    After logging in, navigate to your policy through the sidebar menu.
+
+    <img
+      src="/images/policy/updating/image-2.png"
+      alt="Navigate to policy in sidebar"
+      className="rounded-lg"
+    />
+  </Step>
+
+  <Step title="Create Policy Version">
+    Click the **Create Policy Version** button to create a new version of your existing policy.
+
+    <img
+      src="/images/policy/updating/image-3.png"
+      alt="Create Policy Version button"
+      className="rounded-lg"
+    />
+  </Step>
+
+  <Step title="Fill in Version Details">
+    Complete the form with your new version information and click **Create Version**.
+
+    <img
+      src="/images/policy/updating/image-4.png"
+      alt="Version details form"
+      className="rounded-lg"
+    />
+
+    <ParamField path="Version" type="string" required>
+      The new Policy version you'd like to add to the Vincent database.
+    </ParamField>
+
+    <ParamField path="Changes" type="string" required>
+      Changes made to the policy since the previous version.
+    </ParamField>
+
+    <Note>This version must be published to `npm`. The `changes` field is editable.</Note>
+  </Step>
+
+  <Step title="Success!">
+    Your new policy version has been successfully added to the Vincent database and is now available for Ability developers to use.
+  </Step>
+</Steps>
+
+## FAQ
+
+<AccordionGroup>
+  <Accordion title="What if version creation failed?" icon="triangle-exclamation">
+    If your policy version creation fails, try these solutions:
+
+    - **Check npm publication**: Make sure the policy version is published on npm and publicly accessible
+    - **Verify policy setup**: Ensure the policy is published properly with all required metadata
+    - **Review implementation**: Check that your policy follows the correct structure and conventions
+
+    For detailed guidance on setting up policies correctly, see our [Policy Quick Start guide](/ability/policy/quickstart).
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Policy Quick Start" icon="rocket" href="/ability/policy/quickstart">
+    Build your first Policy with the starter kit
+  </Card>
+  <Card title="Publishing Policies" icon="upload" href="/ability/policy/publishing">
+    Publish your updated Policy version
+  </Card>
+</CardGroup>

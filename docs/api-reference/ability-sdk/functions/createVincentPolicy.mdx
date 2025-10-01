@@ -1,0 +1,114 @@
+---
+title: createVincentPolicy
+---
+
+> **createVincentPolicy**\<`PackageName`, `PolicyAbilityParams`, `UserParams`, `PrecheckAllowResult`, `PrecheckDenyResult`, `EvalAllowResult`, `EvalDenyResult`, `CommitParams`, `CommitAllowResult`, `CommitDenyResult`\>(`PolicyConfig`): `object`
+
+Defined in: [policyCore/vincentPolicy.ts:56](https://github.com/LIT-Protocol/Vincent/blob/1c902a7c278246adaf4479901c6e2d38e00321e5/packages/libs/ability-sdk/src/lib/policyCore/vincentPolicy.ts#L56)
+
+The `createVincentPolicy()` method is used to define a policy's lifecycle methods and ensure that arguments provided to the ability's
+lifecycle methods, as well as their return values, are validated and fully type-safe by defining ZOD schemas for them.
+
+## Type Parameters
+
+### PackageName
+
+`PackageName` *extends* `string`
+
+### PolicyAbilityParams
+
+`PolicyAbilityParams` *extends* `ZodType`\<`any`, `ZodTypeDef`, `any`\>
+
+### UserParams
+
+`UserParams` *extends* `ZodType`\<`any`, `ZodTypeDef`, `any`\> = `ZodUndefined`
+
+### PrecheckAllowResult
+
+`PrecheckAllowResult` *extends* `ZodType`\<`any`, `ZodTypeDef`, `any`\> = `ZodUndefined`
+
+### PrecheckDenyResult
+
+`PrecheckDenyResult` *extends* `ZodType`\<`any`, `ZodTypeDef`, `any`\> = `ZodUndefined`
+
+### EvalAllowResult
+
+`EvalAllowResult` *extends* `ZodType`\<`any`, `ZodTypeDef`, `any`\> = `ZodUndefined`
+
+### EvalDenyResult
+
+`EvalDenyResult` *extends* `ZodType`\<`any`, `ZodTypeDef`, `any`\> = `ZodUndefined`
+
+### CommitParams
+
+`CommitParams` *extends* `ZodType`\<`any`, `ZodTypeDef`, `any`\> = `ZodUndefined`
+
+### CommitAllowResult
+
+`CommitAllowResult` *extends* `ZodType`\<`any`, `ZodTypeDef`, `any`\> = `ZodUndefined`
+
+### CommitDenyResult
+
+`CommitDenyResult` *extends* `ZodType`\<`any`, `ZodTypeDef`, `any`\> = `ZodUndefined`
+
+## Parameters
+
+### PolicyConfig
+
+`VincentPolicyConfig`\<`PackageName`, `PolicyAbilityParams`, `UserParams`, `PrecheckAllowResult`, `PrecheckDenyResult`, `EvalAllowResult`, `EvalDenyResult`, `CommitParams`, `CommitAllowResult`, `CommitDenyResult`, [`PolicyConfigLifecycleFunction`](/api-reference/ability-sdk/type-aliases/PolicyConfigLifecycleFunction)\<`PolicyAbilityParams`, `UserParams`, `EvalAllowResult`, `EvalDenyResult`\>, [`PolicyConfigLifecycleFunction`](/api-reference/ability-sdk/type-aliases/PolicyConfigLifecycleFunction)\<`PolicyAbilityParams`, `UserParams`, `PrecheckAllowResult`, `PrecheckDenyResult`\>, [`PolicyConfigCommitFunction`](/api-reference/ability-sdk/type-aliases/PolicyConfigCommitFunction)\<`CommitParams`, `CommitAllowResult`, `CommitDenyResult`\>\>
+
+## Returns
+
+`object`
+
+### abilityParamsSchema
+
+> **abilityParamsSchema**: `PolicyAbilityParams`
+
+### commit?
+
+> `optional` **commit**: `CommitLifecycleFunction`\<`CommitParams`, `CommitAllowResult`, `CommitDenyResult`\>
+
+### commitAllowResultSchema?
+
+> `optional` **commitAllowResultSchema**: `CommitAllowResult`
+
+### commitDenyResultSchema?
+
+> `optional` **commitDenyResultSchema**: `CommitDenyResult`
+
+### commitParamsSchema?
+
+> `optional` **commitParamsSchema**: `CommitParams`
+
+### evalAllowResultSchema?
+
+> `optional` **evalAllowResultSchema**: `EvalAllowResult`
+
+### evalDenyResultSchema?
+
+> `optional` **evalDenyResultSchema**: `EvalDenyResult`
+
+### evaluate
+
+> **evaluate**: `PolicyLifecycleFunction`
+
+### packageName
+
+> **packageName**: `PackageName`
+
+### precheck?
+
+> `optional` **precheck**: `PolicyLifecycleFunction`\<`PolicyAbilityParams`, `UserParams`, `PrecheckAllowResult`, `PrecheckDenyResult`\>
+
+### precheckAllowResultSchema?
+
+> `optional` **precheckAllowResultSchema**: `PrecheckAllowResult`
+
+### precheckDenyResultSchema?
+
+> `optional` **precheckDenyResultSchema**: `PrecheckDenyResult`
+
+### userParamsSchema?
+
+> `optional` **userParamsSchema**: `UserParams`

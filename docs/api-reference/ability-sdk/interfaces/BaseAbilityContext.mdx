@@ -1,0 +1,90 @@
+---
+title: BaseAbilityContext
+---
+
+Defined in: [abilityCore/abilityConfig/context/types.ts:18](https://github.com/LIT-Protocol/Vincent/blob/1c902a7c278246adaf4479901c6e2d38e00321e5/packages/libs/ability-sdk/src/lib/abilityCore/abilityConfig/context/types.ts#L18)
+
+BaseAbilityContext is returned with ability execution results, and contains information about the app, delegation, and
+policy evaluation results for any policies that the user had enabled for the ability.
+
+## Type Parameters
+
+### Policies
+
+`Policies`
+
+## Properties
+
+### abilityIpfsCid
+
+> **abilityIpfsCid**: `string`
+
+Defined in: [types.ts:439](https://github.com/LIT-Protocol/Vincent/blob/1c902a7c278246adaf4479901c6e2d38e00321e5/packages/libs/ability-sdk/src/lib/types.ts#L439)
+
+#### Inherited from
+
+`BaseContext.abilityIpfsCid`
+
+***
+
+### appId
+
+> **appId**: `number`
+
+Defined in: [types.ts:440](https://github.com/LIT-Protocol/Vincent/blob/1c902a7c278246adaf4479901c6e2d38e00321e5/packages/libs/ability-sdk/src/lib/types.ts#L440)
+
+#### Inherited from
+
+`BaseContext.appId`
+
+***
+
+### appVersion
+
+> **appVersion**: `number`
+
+Defined in: [types.ts:441](https://github.com/LIT-Protocol/Vincent/blob/1c902a7c278246adaf4479901c6e2d38e00321e5/packages/libs/ability-sdk/src/lib/types.ts#L441)
+
+#### Inherited from
+
+`BaseContext.appVersion`
+
+***
+
+### delegation
+
+> **delegation**: `object`
+
+Defined in: [types.ts:442](https://github.com/LIT-Protocol/Vincent/blob/1c902a7c278246adaf4479901c6e2d38e00321e5/packages/libs/ability-sdk/src/lib/types.ts#L442)
+
+#### delegateeAddress
+
+> **delegateeAddress**: `string`
+
+#### delegatorPkpInfo
+
+> **delegatorPkpInfo**: `object`
+
+##### delegatorPkpInfo.ethAddress
+
+> **ethAddress**: `string`
+
+##### delegatorPkpInfo.publicKey
+
+> **publicKey**: `string`
+
+##### delegatorPkpInfo.tokenId
+
+> **tokenId**: `string`
+
+#### Inherited from
+
+`BaseContext.delegation`
+
+***
+
+### policiesContext
+
+> **policiesContext**: `Policies`
+
+Defined in: [abilityCore/abilityConfig/context/types.ts:19](https://github.com/LIT-Protocol/Vincent/blob/1c902a7c278246adaf4479901c6e2d38e00321e5/packages/libs/ability-sdk/src/lib/abilityCore/abilityConfig/context/types.ts#L19)

@@ -1,0 +1,29 @@
+---
+title: verifyVincentAppUserJWT
+---
+
+> **verifyVincentAppUserJWT**(`__namedParameters`): `Promise`\<[`VincentJWTAppUser`](/api-reference/app-sdk/jwt/interfaces/VincentJWTAppUser)\>
+
+Defined in: [app-sdk/src/jwt/core/verify.ts:71](https://github.com/LIT-Protocol/Vincent/blob/1c902a7c278246adaf4479901c6e2d38e00321e5/packages/libs/app-sdk/src/jwt/core/verify.ts#L71)
+
+Verify a JWT that must decode to a VincentAppUserJWT
+
+## Parameters
+
+### \_\_namedParameters
+
+#### expectedAudience
+
+`string`
+
+#### jwt
+
+`string`
+
+#### requiredAppId
+
+`number`
+
+## Returns
+
+`Promise`\<[`VincentJWTAppUser`](/api-reference/app-sdk/jwt/interfaces/VincentJWTAppUser)\>

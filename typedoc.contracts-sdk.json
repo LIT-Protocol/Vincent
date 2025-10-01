@@ -1,0 +1,19 @@
+{
+  "entryPoints": ["packages/libs/contracts-sdk/src/index.ts"],
+  "out": "docs/api-reference/contracts-sdk",
+  "plugin": [
+    "typedoc-plugin-markdown",
+    "typedoc-plugin-frontmatter",
+    "./typedoc-custom-plugin.mjs"
+  ],
+  "tsconfig": "packages/libs/contracts-sdk/tsconfig.lib.json",
+  "fileExtension": ".mdx",
+  "skipErrorChecking": true,
+  "excludeInternal": false,
+  "excludePrivate": true,
+  "excludeProtected": true,
+  "sanitizeComments": true,
+  "hidePageHeader": true,
+  "hideBreadcrumbs": true,
+  "hidePageTitle": true
+}

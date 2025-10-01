@@ -1,0 +1,115 @@
+---
+title: getVincentAbilityClient
+---
+
+> **getVincentAbilityClient**\<`IpfsCid`, `AbilityParamsSchema`, `PkgNames`, `PolicyMap`, `PoliciesByPackageName`, `ExecuteSuccessSchema`, `ExecuteFailSchema`, `PrecheckSuccessSchema`, `PrecheckFailSchema`\>(`params`): [`VincentAbilityClient`](/api-reference/app-sdk/abilityClient/interfaces/VincentAbilityClient)\<`AbilityParamsSchema`, `PoliciesByPackageName`, `ExecuteSuccessSchema`, `ExecuteFailSchema`, `PrecheckSuccessSchema`, `PrecheckFailSchema`\>
+
+Defined in: [app-sdk/src/abilityClient/vincentAbilityClient.ts:114](https://github.com/LIT-Protocol/Vincent/blob/1c902a7c278246adaf4479901c6e2d38e00321e5/packages/libs/app-sdk/src/abilityClient/vincentAbilityClient.ts#L114)
+
+A VincentAbilityClient provides a type-safe interface for executing abilities, for both `precheck()`
+and `execute()` functionality.
+
+```typescript
+import { disconnectVincentAbilityClients, getVincentAbilityClient, isAbilityResponseFailure } from '@lit-protocol/vincent-app-sdk/abilityClient';
+import { bundledVincentAbility as uniswapBundledAbility } from '@lit-protocol/vincent-ability-uniswap-swap';
+import { delegateeEthersSigner } = from './ethersSigner';
+import { ETH_RPC_URL, BASE_RPC_URL } from './rpcConfigs';
+
+const uniswapAbilityClient = getVincentAbilityClient({
+    bundledVincentAbility: uniswapBundledAbility,
+    ethersSigner: delegateeEthersSigner,
+  });
+
+// First, call `precheck()` to get a best-estimate result indicating that the ability execution in the LIT action runtime will not fail
+const precheckResult = await uniswapSwapAbilityClient.precheck({
+    ethRpcUrl: ETH_RPC_URL,
+    rpcUrlForUniswap: BASE_RPC_URL,
+    chainIdForUniswap: 8453, // Base
+    tokenInAddress: '0x4200000000000000000000000000000000000006', // WETH
+    tokenInDecimals: 18,
+    tokenInAmount: 0.0000077,
+    tokenOutAddress: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', // USDC on Base
+    tokenOutDecimals: 8,
+  },
+  {
+    delegatorPkpEthAddress: '0x123456789123456789123456789...',
+  });
+
+const uniswapSwapExecutionResult = await uniswapSwapAbilityClient.execute({
+  ethRpcUrl: ETH_RPC_URL,
+  rpcUrlForUniswap: BASE_RPC_URL,
+  chainIdForUniswap: 8453,
+  tokenInAddress: '0x4200000000000000000000000000000000000006', // WETH
+  tokenInDecimals: 18,
+  tokenInAmount: 0.0000077,
+  tokenOutAddress: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', // USDC on Base
+  tokenOutDecimals: 8,
+},
+{
+  delegatorPkpEthAddress: '0x123456789123456789123456789...',
+});
+
+if(isAbilityResponseFailure(uniswapSwapExecutionResult)) {
+  ...handle failure
+} else {
+ ...handle result
+}
+```
+
+## Type Parameters
+
+### IpfsCid
+
+`IpfsCid` *extends* `string`
+
+### AbilityParamsSchema
+
+`AbilityParamsSchema` *extends* `ZodType`\<`any`, `ZodTypeDef`, `any`\>
+
+### PkgNames
+
+`PkgNames` *extends* `string`
+
+### PolicyMap
+
+`PolicyMap` *extends* `AbilityPolicyMap`\<`any`, `PkgNames`\>
+
+### PoliciesByPackageName
+
+`PoliciesByPackageName` *extends* `{ [K in string]: any }`
+
+### ExecuteSuccessSchema
+
+`ExecuteSuccessSchema` *extends* `ZodType`\<`any`, `ZodTypeDef`, `any`\> = `ZodUndefined`
+
+### ExecuteFailSchema
+
+`ExecuteFailSchema` *extends* `ZodType`\<`any`, `ZodTypeDef`, `any`\> = `ZodUndefined`
+
+### PrecheckSuccessSchema
+
+`PrecheckSuccessSchema` *extends* `ZodType`\<`any`, `ZodTypeDef`, `any`\> = `ZodUndefined`
+
+### PrecheckFailSchema
+
+`PrecheckFailSchema` *extends* `ZodType`\<`any`, `ZodTypeDef`, `any`\> = `ZodUndefined`
+
+## Parameters
+
+### params
+
+#### bundledVincentAbility
+
+`BundledVincentAbility`\<`VincentAbility`\<`AbilityParamsSchema`, `PkgNames`, `PolicyMap`, `PoliciesByPackageName`, `ExecuteSuccessSchema`, `ExecuteFailSchema`, `PrecheckSuccessSchema`, `PrecheckFailSchema`, `any`, `any`\>, `IpfsCid`\>
+
+The bundled vincent ability that you want to interact with
+
+#### ethersSigner
+
+`Signer`
+
+An ethers signer that has been configured with your delegatee key
+
+## Returns
+
+[`VincentAbilityClient`](/api-reference/app-sdk/abilityClient/interfaces/VincentAbilityClient)\<`AbilityParamsSchema`, `PoliciesByPackageName`, `ExecuteSuccessSchema`, `ExecuteFailSchema`, `PrecheckSuccessSchema`, `PrecheckFailSchema`\>

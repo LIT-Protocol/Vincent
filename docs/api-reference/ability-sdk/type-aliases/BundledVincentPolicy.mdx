@@ -1,0 +1,44 @@
+---
+title: BundledVincentPolicy
+---
+
+> **BundledVincentPolicy**\<`VP`, `IpfsCid`, `VincentAbilityApiVersion`\> = `object`
+
+Defined in: [policyCore/bundledPolicy/types.ts:16](https://github.com/LIT-Protocol/Vincent/blob/1c902a7c278246adaf4479901c6e2d38e00321e5/packages/libs/ability-sdk/src/lib/policyCore/bundledPolicy/types.ts#L16)
+
+A VincentPolicy bundled with an IPFS CID
+This ensures only correctly constructed objects are assignable.
+
+## Type Parameters
+
+### VP
+
+`VP` *extends* `VincentPolicy`\<`any`, `any`, `any`, `any`, `any`, `any`, `any`, `any`, `any`, `any`, `any`, `any`, `any`\>
+
+The Vincent Policy that was bundled for usage
+
+### IpfsCid
+
+`IpfsCid` *extends* `string` = `string`
+
+The IPFS CID that the bundled ability was published to
+
+### VincentAbilityApiVersion
+
+`VincentAbilityApiVersion` *extends* `string` = `string`
+
+## Properties
+
+### ipfsCid
+
+> `readonly` **ipfsCid**: `IpfsCid`
+
+Defined in: [policyCore/bundledPolicy/types.ts:22](https://github.com/LIT-Protocol/Vincent/blob/1c902a7c278246adaf4479901c6e2d38e00321e5/packages/libs/ability-sdk/src/lib/policyCore/bundledPolicy/types.ts#L22)
+
+***
+
+### vincentPolicy
+
+> `readonly` **vincentPolicy**: `VP`
+
+Defined in: [policyCore/bundledPolicy/types.ts:23](https://github.com/LIT-Protocol/Vincent/blob/1c902a7c278246adaf4479901c6e2d38e00321e5/packages/libs/ability-sdk/src/lib/policyCore/bundledPolicy/types.ts#L23)

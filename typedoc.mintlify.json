@@ -1,0 +1,24 @@
+{
+  "entryPoints": [
+    "packages/libs/app-sdk/src/abilityClient/index.ts",
+    "packages/libs/app-sdk/src/jwt/index.ts",
+    "packages/libs/app-sdk/src/webAuthClient/index.ts",
+    "packages/libs/app-sdk/src/expressMiddleware/index.ts"
+  ],
+  "out": "docs/api-reference/app-sdk",
+  "plugin": [
+    "typedoc-plugin-markdown",
+    "typedoc-plugin-frontmatter",
+    "./typedoc-custom-plugin.mjs"
+  ],
+  "tsconfig": "packages/libs/app-sdk/tsconfig.lib.json",
+  "fileExtension": ".mdx",
+  "skipErrorChecking": true,
+  "excludeInternal": false,
+  "excludePrivate": true,
+  "excludeProtected": true,
+  "sanitizeComments": true,
+  "hidePageHeader": true,
+  "hideBreadcrumbs": true,
+  "hidePageTitle": true
+}

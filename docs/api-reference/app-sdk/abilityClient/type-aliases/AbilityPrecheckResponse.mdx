@@ -1,0 +1,21 @@
+---
+title: AbilityPrecheckResponse
+---
+
+> **AbilityPrecheckResponse**\<`SuccessSchema`, `FailSchema`, `Policies`\> = `SuccessSchema` *extends* `z.ZodType` ? [`AbilityPrecheckResponseSuccess`](/api-reference/app-sdk/abilityClient/interfaces/AbilityPrecheckResponseSuccess)\<`z.infer`\<`SuccessSchema`\>, `Policies`\> : [`AbilityPrecheckResponseSuccessNoResult`](/api-reference/app-sdk/abilityClient/interfaces/AbilityPrecheckResponseSuccessNoResult)\<`Policies`\> \| `FailSchema` *extends* `z.ZodType` ? [`AbilityPrecheckResponseFailure`](/api-reference/app-sdk/abilityClient/interfaces/AbilityPrecheckResponseFailure)\<`z.infer`\<`FailSchema`\>, `Policies`\> : [`AbilityPrecheckResponseFailureNoResult`](/api-reference/app-sdk/abilityClient/interfaces/AbilityPrecheckResponseFailureNoResult)\<`Policies`\>
+
+Defined in: [app-sdk/src/abilityClient/precheck/types.ts:43](https://github.com/LIT-Protocol/Vincent/blob/1c902a7c278246adaf4479901c6e2d38e00321e5/packages/libs/app-sdk/src/abilityClient/precheck/types.ts#L43)
+
+## Type Parameters
+
+### SuccessSchema
+
+`SuccessSchema` *extends* `z.ZodType` \| `undefined`
+
+### FailSchema
+
+`FailSchema` *extends* `z.ZodType` \| `undefined`
+
+### Policies
+
+`Policies` *extends* `Record`\<`string`, `any`\>

@@ -1,0 +1,418 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "mint",
+  "name": "Mint Starter Kit",
+  "colors": {
+    "primary": "#FF4205",
+    "light": "#FF6B35",
+    "dark": "#CC3300"
+  },
+  "favicon": "/favicon.svg",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Concepts",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": [
+              "concepts/introduction/about",
+              "concepts/introduction/security",
+              "concepts/apps/about",
+              "concepts/abilities/about",
+              "concepts/policies/about",
+              {
+                "group": "Wallets",
+                "pages": [
+                  "concepts/wallets/about",
+                  "concepts/wallets/user-accounts",
+                  "concepts/wallets/agent-wallets"
+                ]
+              },
+              "concepts/ai-agents/about"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "App Developers",
+        "groups": [
+          {
+            "group": "Introduction",
+            "pages": [
+              "app/quickstart",
+              "app/explaining-apps",
+              "app/updating-apps",
+              "app/deprecating-app-versions",
+              "app/authenticating-users"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Ability Developers",
+        "groups": [
+          {
+            "group": "Abilities",
+            "expanded": true,
+            "pages": [
+              "ability/quickstart",
+              "ability/explaining-abilities",
+              {
+                "group": "Creating Abilities",
+                "pages": [
+                  "ability/parameter-schemas",
+                  "ability/supporting-policies",
+                  "ability/precheck-function",
+                  "ability/execute-function"
+                ]
+              },
+              {
+                "group": "Publishing Abilities",
+                "pages": ["ability/publishing", "ability/updating-abilities"]
+              },
+              {
+                "group": "Official Abilities",
+                "pages": [
+                  "ability/official-abilities/overview",
+                  "ability/official-abilities/aave",
+                  "ability/official-abilities/debridge",
+                  "ability/official-abilities/erc20-approval",
+                  "ability/official-abilities/erc20-transfer",
+                  "ability/official-abilities/evm-transaction-signer",
+                  "ability/official-abilities/morpho",
+                  "ability/official-abilities/uniswap-swap"
+                ]
+              }
+            ]
+          },
+          {
+            "group": "Policies",
+            "expanded": true,
+            "pages": [
+              "ability/policy/quickstart",
+              "ability/policy/explaining-policies",
+              {
+                "group": "Policy Guides",
+                "pages": [
+                  "ability/policy/parameter-schemas",
+                  "ability/policy/precheck-function",
+                  "ability/policy/evaluate-function",
+                  "ability/policy/commit-function"
+                ]
+              },
+              {
+                "group": "Publishing Policies",
+                "pages": ["ability/policy/publishing", "ability/policy/updating-policies"]
+              },
+              {
+                "group": "Official Policies",
+                "pages": [
+                  "ability/policy/official-policies/overview",
+                  "ability/policy/official-policies/contract-whitelist",
+                  "ability/policy/official-policies/spending-limit"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "ability-sdk",
+            "pages": [
+              "api-reference/ability-sdk/README",
+              {
+                "group": "Functions",
+                "pages": [
+                  "api-reference/ability-sdk/functions/createVincentAbility",
+                  "api-reference/ability-sdk/functions/createVincentAbilityPolicy",
+                  "api-reference/ability-sdk/functions/createVincentPolicy",
+                  "api-reference/ability-sdk/functions/supportedPoliciesForAbility"
+                ]
+              },
+              {
+                "group": "Variables",
+                "pages": ["api-reference/ability-sdk/variables/VINCENT_TOOL_API_VERSION"]
+              },
+              {
+                "group": "Interfaces",
+                "pages": [
+                  "api-reference/ability-sdk/interfaces/BaseAbilityContext",
+                  "api-reference/ability-sdk/interfaces/PolicyContext",
+                  "api-reference/ability-sdk/interfaces/SchemaValidationError"
+                ]
+              },
+              {
+                "group": "Type Aliases",
+                "pages": [
+                  "api-reference/ability-sdk/type-aliases/BundledVincentAbility",
+                  "api-reference/ability-sdk/type-aliases/BundledVincentPolicy",
+                  "api-reference/ability-sdk/type-aliases/PolicyConfigCommitFunction",
+                  "api-reference/ability-sdk/type-aliases/PolicyConfigLifecycleFunction",
+                  "api-reference/ability-sdk/type-aliases/VincentAbility"
+                ]
+              }
+            ]
+          },
+          {
+            "group": "app-sdk",
+            "pages": [
+              "api-reference/app-sdk/README",
+              {
+                "group": "abilityClient",
+                "pages": [
+                  "api-reference/app-sdk/abilityClient/README",
+                  {
+                    "group": "Functions",
+                    "pages": [
+                      "api-reference/app-sdk/abilityClient/functions/getVincentAbilityClient",
+                      "api-reference/app-sdk/abilityClient/functions/isAbilityResponseFailure",
+                      "api-reference/app-sdk/abilityClient/functions/isAbilityResponseRuntimeFailure",
+                      "api-reference/app-sdk/abilityClient/functions/isAbilityResponseSchemaValidationFailure",
+                      "api-reference/app-sdk/abilityClient/functions/isAbilityResponseSuccess"
+                    ]
+                  },
+                  {
+                    "group": "Variables",
+                    "pages": [
+                      "api-reference/app-sdk/abilityClient/variables/disconnectVincentAbilityClients"
+                    ]
+                  },
+                  {
+                    "group": "Interfaces",
+                    "pages": [
+                      "api-reference/app-sdk/abilityClient/interfaces/AbilityClientContext",
+                      "api-reference/app-sdk/abilityClient/interfaces/AbilityExecuteResponseFailure",
+                      "api-reference/app-sdk/abilityClient/interfaces/AbilityExecuteResponseFailureNoResult",
+                      "api-reference/app-sdk/abilityClient/interfaces/AbilityExecuteResponseSuccess",
+                      "api-reference/app-sdk/abilityClient/interfaces/AbilityExecuteResponseSuccessNoResult",
+                      "api-reference/app-sdk/abilityClient/interfaces/AbilityPrecheckResponseFailure",
+                      "api-reference/app-sdk/abilityClient/interfaces/AbilityPrecheckResponseFailureNoResult",
+                      "api-reference/app-sdk/abilityClient/interfaces/AbilityPrecheckResponseSuccess",
+                      "api-reference/app-sdk/abilityClient/interfaces/AbilityPrecheckResponseSuccessNoResult",
+                      "api-reference/app-sdk/abilityClient/interfaces/BaseAbilityContext",
+                      "api-reference/app-sdk/abilityClient/interfaces/VincentAbilityClient"
+                    ]
+                  },
+                  {
+                    "group": "Type Aliases",
+                    "pages": [
+                      "api-reference/app-sdk/abilityClient/type-aliases/AbilityExecuteResponse",
+                      "api-reference/app-sdk/abilityClient/type-aliases/AbilityPrecheckResponse"
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "expressMiddleware",
+                "pages": [
+                  "api-reference/app-sdk/expressMiddleware/README",
+                  {
+                    "group": "Functions",
+                    "pages": [
+                      "api-reference/app-sdk/expressMiddleware/functions/createVincentUserMiddleware"
+                    ]
+                  },
+                  {
+                    "group": "Interfaces",
+                    "pages": ["api-reference/app-sdk/expressMiddleware/interfaces/VincentJWTData"]
+                  },
+                  {
+                    "group": "Type Aliases",
+                    "pages": [
+                      "api-reference/app-sdk/expressMiddleware/type-aliases/AuthenticatedRequest",
+                      "api-reference/app-sdk/expressMiddleware/type-aliases/AuthenticatedRequestHandler",
+                      "api-reference/app-sdk/expressMiddleware/type-aliases/ExtractRequestHandlerParams"
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "jwt",
+                "pages": [
+                  "api-reference/app-sdk/jwt/README",
+                  {
+                    "group": "Accessors",
+                    "pages": [
+                      "api-reference/app-sdk/jwt/functions/getAppInfo",
+                      "api-reference/app-sdk/jwt/functions/getAudience",
+                      "api-reference/app-sdk/jwt/functions/getAuthentication",
+                      "api-reference/app-sdk/jwt/functions/getIssuerAddress",
+                      "api-reference/app-sdk/jwt/functions/getPKPInfo",
+                      "api-reference/app-sdk/jwt/functions/getPublicKey",
+                      "api-reference/app-sdk/jwt/functions/getRole",
+                      "api-reference/app-sdk/jwt/functions/getSubjectAddress"
+                    ]
+                  },
+                  {
+                    "group": "Create",
+                    "pages": [
+                      "api-reference/app-sdk/jwt/functions/createAppUserJWT",
+                      "api-reference/app-sdk/jwt/functions/createDelegateeJWT",
+                      "api-reference/app-sdk/jwt/functions/createPlatformUserJWT"
+                    ]
+                  },
+                  {
+                    "group": "Type Guards",
+                    "pages": [
+                      "api-reference/app-sdk/jwt/functions/isAnyVincentJWT",
+                      "api-reference/app-sdk/jwt/functions/isAppUser",
+                      "api-reference/app-sdk/jwt/functions/isDelegatee",
+                      "api-reference/app-sdk/jwt/functions/isPlatformUser"
+                    ]
+                  },
+                  {
+                    "group": "Verify",
+                    "pages": [
+                      "api-reference/app-sdk/jwt/functions/isExpired",
+                      "api-reference/app-sdk/jwt/functions/verifyVincentAppUserJWT",
+                      "api-reference/app-sdk/jwt/functions/verifyVincentDelegateeJWT",
+                      "api-reference/app-sdk/jwt/functions/verifyVincentPlatformJWT"
+                    ]
+                  },
+                  {
+                    "group": "Interfaces",
+                    "pages": [
+                      "api-reference/app-sdk/jwt/interfaces/CreateAppUserJWTParams",
+                      "api-reference/app-sdk/jwt/interfaces/CreateDelegateeJWTParams",
+                      "api-reference/app-sdk/jwt/interfaces/DecodedJWT",
+                      "api-reference/app-sdk/jwt/interfaces/PKPAuthenticationMethod",
+                      "api-reference/app-sdk/jwt/interfaces/VincentJWTAppUser",
+                      "api-reference/app-sdk/jwt/interfaces/VincentJWTDelegatee",
+                      "api-reference/app-sdk/jwt/interfaces/VincentJWTPlatformUser"
+                    ]
+                  },
+                  {
+                    "group": "Type Aliases",
+                    "pages": [
+                      "api-reference/app-sdk/jwt/type-aliases/AnyVincentJWT",
+                      "api-reference/app-sdk/jwt/type-aliases/CreatePlatformUserJWTParams",
+                      "api-reference/app-sdk/jwt/type-aliases/InternallySetPayloadKeys",
+                      "api-reference/app-sdk/jwt/type-aliases/PayloadWithoutInternallySetKeys",
+                      "api-reference/app-sdk/jwt/type-aliases/VincentJWTRole"
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "webAuthClient",
+                "pages": [
+                  "api-reference/app-sdk/webAuthClient/README",
+                  {
+                    "group": "Functions",
+                    "pages": ["api-reference/app-sdk/webAuthClient/functions/getWebAuthClient"]
+                  },
+                  {
+                    "group": "Interfaces",
+                    "pages": [
+                      "api-reference/app-sdk/webAuthClient/interfaces/RedirectToVincentDelegationPageParams",
+                      "api-reference/app-sdk/webAuthClient/interfaces/WebAuthClient",
+                      "api-reference/app-sdk/webAuthClient/interfaces/WebAuthClientConfig"
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "group": "contracts-sdk",
+            "pages": [
+              "api-reference/contracts-sdk/README",
+              {
+                "group": "Functions",
+                "pages": [
+                  "api-reference/contracts-sdk/functions/createContract",
+                  "api-reference/contracts-sdk/functions/getClient",
+                  "api-reference/contracts-sdk/functions/getTestClient"
+                ]
+              },
+              {
+                "group": "Interfaces",
+                "pages": [
+                  "api-reference/contracts-sdk/interfaces/Ability",
+                  "api-reference/contracts-sdk/interfaces/AbilityPolicyParameterData",
+                  "api-reference/contracts-sdk/interfaces/AddDelegateeParams",
+                  "api-reference/contracts-sdk/interfaces/App",
+                  "api-reference/contracts-sdk/interfaces/AppVersion",
+                  "api-reference/contracts-sdk/interfaces/AppVersionAbilities",
+                  "api-reference/contracts-sdk/interfaces/ContractClient",
+                  "api-reference/contracts-sdk/interfaces/DeleteAppParams",
+                  "api-reference/contracts-sdk/interfaces/EnableAppVersionParams",
+                  "api-reference/contracts-sdk/interfaces/GetAllAbilitiesAndPoliciesForAppParams",
+                  "api-reference/contracts-sdk/interfaces/GetAllPermittedAppIdsForPkpParams",
+                  "api-reference/contracts-sdk/interfaces/GetAllRegisteredAgentPkpsParams",
+                  "api-reference/contracts-sdk/interfaces/GetAppByDelegateeParams",
+                  "api-reference/contracts-sdk/interfaces/GetAppByIdParams",
+                  "api-reference/contracts-sdk/interfaces/GetAppVersionParams",
+                  "api-reference/contracts-sdk/interfaces/GetAppsByManagerParams",
+                  "api-reference/contracts-sdk/interfaces/GetDelegatedPkpEthAddressesParams",
+                  "api-reference/contracts-sdk/interfaces/GetLastPermittedAppVersionParams",
+                  "api-reference/contracts-sdk/interfaces/GetPermittedAppVersionForPkpParams",
+                  "api-reference/contracts-sdk/interfaces/GetPermittedAppsForPkpsParams",
+                  "api-reference/contracts-sdk/interfaces/GetUnpermittedAppsForPkpsParams",
+                  "api-reference/contracts-sdk/interfaces/IsDelegateePermittedParams",
+                  "api-reference/contracts-sdk/interfaces/PermissionData",
+                  "api-reference/contracts-sdk/interfaces/PermitAppParams",
+                  "api-reference/contracts-sdk/interfaces/PermittedApp",
+                  "api-reference/contracts-sdk/interfaces/PkpPermittedApps",
+                  "api-reference/contracts-sdk/interfaces/PkpUnpermittedApps",
+                  "api-reference/contracts-sdk/interfaces/RePermitAppParams",
+                  "api-reference/contracts-sdk/interfaces/RegisterAppParams",
+                  "api-reference/contracts-sdk/interfaces/RegisterNextVersionParams",
+                  "api-reference/contracts-sdk/interfaces/RemoveDelegateeParams",
+                  "api-reference/contracts-sdk/interfaces/SetAbilityPolicyParametersParams",
+                  "api-reference/contracts-sdk/interfaces/SetDelegateeParams",
+                  "api-reference/contracts-sdk/interfaces/UnPermitAppParams",
+                  "api-reference/contracts-sdk/interfaces/UndeleteAppParams",
+                  "api-reference/contracts-sdk/interfaces/UnpermittedApp",
+                  "api-reference/contracts-sdk/interfaces/ValidateAbilityExecutionAndGetPoliciesParams",
+                  "api-reference/contracts-sdk/interfaces/ValidateAbilityExecutionAndGetPoliciesResult"
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "global": {
+      "anchors": [
+        {
+          "anchor": "Blog",
+          "href": "https://spark.litprotocol.com/",
+          "icon": "newspaper"
+        }
+      ]
+    }
+  },
+  "logo": {
+    "light": "/logo/light.png",
+    "dark": "/logo/dark.png"
+  },
+  "navbar": {
+    "links": [
+      {
+        "label": "Support",
+        "href": "https://t.me/c/2038294753/1"
+      }
+    ],
+    "primary": {
+      "type": "button",
+      "label": "Dashboard",
+      "href": "https://dashboard.heyvincent.ai"
+    }
+  },
+  "contextual": {
+    "options": ["copy", "view", "chatgpt", "claude", "perplexity", "mcp", "cursor", "vscode"]
+  },
+  "footer": {
+    "socials": {
+      "x": "https://x.com/LitProtocol",
+      "telegram": "https://t.me/c/2038294753/1",
+      "github": "https://github.com/LIT-Protocol/Vincent",
+      "linkedin": "https://linkedin.com/company/lit-protocol"
+    }
+  }
+}

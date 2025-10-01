@@ -1,0 +1,55 @@
+---
+title: AuthenticatedRequestHandler
+---
+
+> **AuthenticatedRequestHandler**\<`UserKey`, `P`, `ResBody`, `ReqBody`, `ReqQuery`, `Locals`\> = (`req`, `res`, `next`) => `void` \| `Promise`\<`void`\>
+
+Defined in: [app-sdk/src/expressMiddleware/types.ts:24](https://github.com/LIT-Protocol/Vincent/blob/1c902a7c278246adaf4479901c6e2d38e00321e5/packages/libs/app-sdk/src/expressMiddleware/types.ts#L24)
+
+An Express.js RequestHandler that guarantees the request is authenticated with a PKP address
+
+You probably don't need this type; see [createVincentUserMiddleware](/api-reference/app-sdk/expressMiddleware/functions/createVincentUserMiddleware) for details
+
+## Type Parameters
+
+### UserKey
+
+`UserKey` *extends* `string`
+
+### P
+
+`P` = [`ExtractRequestHandlerParams`](./ExtractRequestHandlerParams)\<`RequestHandler`\>\[`0`\]
+
+### ResBody
+
+`ResBody` = [`ExtractRequestHandlerParams`](./ExtractRequestHandlerParams)\<`RequestHandler`\>\[`1`\]
+
+### ReqBody
+
+`ReqBody` = [`ExtractRequestHandlerParams`](./ExtractRequestHandlerParams)\<`RequestHandler`\>\[`2`\]
+
+### ReqQuery
+
+`ReqQuery` = [`ExtractRequestHandlerParams`](./ExtractRequestHandlerParams)\<`RequestHandler`\>\[`3`\]
+
+### Locals
+
+`Locals` *extends* `Record`\<`string`, `any`\> = [`ExtractRequestHandlerParams`](./ExtractRequestHandlerParams)\<`RequestHandler`\>\[`4`\]
+
+## Parameters
+
+### req
+
+[`AuthenticatedRequest`](./AuthenticatedRequest)\<`UserKey`, `P`, `ResBody`, `ReqBody`, `ReqQuery`\>
+
+### res
+
+`Response`\<`ResBody`, `Locals`\>
+
+### next
+
+`NextFunction`
+
+## Returns
+
+`void` \| `Promise`\<`void`\>

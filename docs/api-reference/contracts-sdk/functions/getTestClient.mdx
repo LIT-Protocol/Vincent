@@ -1,0 +1,24 @@
+---
+title: getTestClient
+---
+
+> **getTestClient**(`__namedParameters`): [`ContractClient`](/api-reference/contracts-sdk/interfaces/ContractClient)
+
+Defined in: [contractClient.ts:108](https://github.com/LIT-Protocol/Vincent/blob/1c902a7c278246adaf4479901c6e2d38e00321e5/packages/libs/contracts-sdk/src/contractClient.ts#L108)
+
+Get an instance of the contract client that is configured to use a 'development' instance of the contract just for testing purposes
+
+State in the development contract should not be considered permanent.  Use [getClient](./getClient) for usage outside of
+development or CI flows
+
+## Parameters
+
+### \_\_namedParameters
+
+#### signer
+
+`Signer`
+
+## Returns
+
+[`ContractClient`](/api-reference/contracts-sdk/interfaces/ContractClient)
