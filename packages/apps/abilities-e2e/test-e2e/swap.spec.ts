@@ -5,6 +5,7 @@ import {
   bundledVincentAbility as uniswapBundledAbility,
   type PrepareSignedUniswapQuote,
   getSignedUniswapQuote,
+  CheckErc20AllowanceResultFailure,
 } from '@lit-protocol/vincent-ability-uniswap-swap';
 
 import {
@@ -42,20 +43,24 @@ import { privateKeyToAccount } from 'viem/accounts';
 import { checkShouldMintCapacityCredit } from './helpers/check-mint-capcity-credit';
 import { LIT_NETWORK } from '@lit-protocol/constants';
 
-const SWAP_AMOUNT = 80;
-const SWAP_TOKEN_IN_ADDRESS = '0x4ed4E862860beD51a9570b96d89aF5E1B0Efefed'; // DEGEN
-const SWAP_TOKEN_IN_DECIMALS = 18;
+// const SWAP_AMOUNT = 80;
+// const SWAP_TOKEN_IN_ADDRESS = '0x4ed4E862860beD51a9570b96d89aF5E1B0Efefed'; // DEGEN
+// const SWAP_TOKEN_IN_DECIMALS = 18;
 
 // const SWAP_AMOUNT = 0.0003;
 // const SWAP_TOKEN_IN_ADDRESS = '0x4200000000000000000000000000000000000006'; // WETH
 // const SWAP_TOKEN_IN_DECIMALS = 18;
 
+const SWAP_AMOUNT = 0.75;
+const SWAP_TOKEN_IN_ADDRESS = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'; // USDC
+const SWAP_TOKEN_IN_DECIMALS = 6;
+
 // const SWAP_TOKEN_OUT_ADDRESS = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'; // USDC
 // const SWAP_TOKEN_OUT_DECIMALS = 6;
-const SWAP_TOKEN_OUT_ADDRESS = '0x4200000000000000000000000000000000000006'; // WETH
-const SWAP_TOKEN_OUT_DECIMALS = 18;
-// const SWAP_TOKEN_OUT_ADDRESS = '0x4ed4E862860beD51a9570b96d89aF5E1B0Efefed'; // DEGEN
+// const SWAP_TOKEN_OUT_ADDRESS = '0x4200000000000000000000000000000000000006'; // WETH
 // const SWAP_TOKEN_OUT_DECIMALS = 18;
+const SWAP_TOKEN_OUT_ADDRESS = '0x4ed4E862860beD51a9570b96d89aF5E1B0Efefed'; // DEGEN
+const SWAP_TOKEN_OUT_DECIMALS = 18;
 
 const RPC_URL = BASE_RPC_URL;
 const CHAIN_ID = 8453;
@@ -284,11 +289,11 @@ describe('Uniswap Swap Ability E2E Tests', () => {
     expect(validationResult.appId).toBe(TEST_CONFIG.appId!);
     expect(validationResult.appVersion).toBe(TEST_CONFIG.appVersion!);
 
-    // Check that we have the spending limit policy
-    console.log('validationResult.decodedPolicies', validationResult.decodedPolicies);
-    // expect(Object.keys(validationResult.decodedPolicies)).toContain(
-    //   spendingLimitPolicyMetadata.ipfsCid,
-    // );
+    console.log(
+      '[contractClient.validateAbilityExecutionAndGetPolicies.decodedPolicies]',
+      validationResult.decodedPolicies,
+    );
+    expect(Object.keys(validationResult.decodedPolicies)).toHaveLength(0);
   });
 
   it('should fail precheck when signed quote recipient does not match delegator PKP ETH address', async () => {
@@ -412,6 +417,52 @@ describe('Uniswap Swap Ability E2E Tests', () => {
     expect(quote.quote).toMatch(/^\d+(\.\d+)?$/);
     expect(typeof quote.blockNumber).toBe('string');
     expect(typeof quote.timestamp).toBe('number');
+  });
+
+  it('should fail precheck because of insufficient tokenIn allowance', async () => {
+    // Ensure we have a route from the generate route test
+    expect(SIGNED_UNISWAP_QUOTE).toBeDefined();
+    if (!SIGNED_UNISWAP_QUOTE) {
+      throw new Error(
+        'No precomputed route available, one should be obtained from the generate route test.',
+      );
+    }
+
+    const uniswapSwapAbilityClient = getUniswapSwapAbilityClient();
+
+    // Try to precheck with the malicious quote
+    const precheckResult = await uniswapSwapAbilityClient.precheck(
+      {
+        rpcUrlForUniswap: RPC_URL,
+        signedUniswapQuote: {
+          quote: SIGNED_UNISWAP_QUOTE.quote,
+          signature: SIGNED_UNISWAP_QUOTE.signature,
+        },
+      },
+      {
+        delegatorPkpEthAddress: TEST_CONFIG.userPkp!.ethAddress!,
+      },
+    );
+    console.log(
+      '[should fail precheck because of insufficient tokenIn allowance]',
+      util.inspect(precheckResult, { depth: 10 }),
+    );
+
+    // Precheck should fail with recipient validation error
+    expect(precheckResult).toBeDefined();
+    expect(precheckResult.success).toBe(false);
+
+    expect(precheckResult.result).toBeDefined();
+    const innerResult = precheckResult.result! as unknown as CheckErc20AllowanceResultFailure;
+    expect(innerResult.reason).toBe(
+      `[checkErc20Allowance] Address ${TEST_CONFIG.userPkp!.ethAddress!} has insufficient ERC20 allowance for spender ${SIGNED_UNISWAP_QUOTE.quote.to} for token ${SWAP_TOKEN_IN_ADDRESS}`,
+    );
+    expect(innerResult.spenderAddress).toBe(SIGNED_UNISWAP_QUOTE.quote.to);
+    expect(innerResult.tokenAddress).toBe(SWAP_TOKEN_IN_ADDRESS);
+    expect(innerResult.requiredAllowance).toBe(
+      ethers.utils.parseUnits(SWAP_AMOUNT.toString(), SWAP_TOKEN_IN_DECIMALS).toString(),
+    );
+    expect(innerResult.currentAllowance).toBe('0');
   });
 
   it('should handle ERC20 allowance for the Uniswap router', async () => {

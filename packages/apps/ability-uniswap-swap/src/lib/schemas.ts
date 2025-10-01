@@ -37,15 +37,50 @@ export const abilityParamsSchema = z.object({
     .describe('Percent added to baseFeePerGas when computing maxFeePerGas (default 0).'),
 });
 
+export const precheckSuccessSchema = z.object({
+  nativeTokenBalance: z.string().describe('The balance of the native token used for gas fees'),
+  tokenInAddress: z.string().describe('The address of the input token used for the swap'),
+  tokenInBalance: z.string().describe('The balance of the input token used for the swap'),
+  currentTokenInAllowanceForSpender: z
+    .string()
+    .describe('The current allowance of the input token used for the swap'),
+  spenderAddress: z.string().describe('The Uniswap router address that will be used for the swap'),
+});
+
 export const precheckFailSchema = z.object({
   reason: z
     .string()
-    .optional()
     .describe('The reason for failing the execution in cases where we identified the reason.'),
-  erc20SpenderAddress: z
+  spenderAddress: z
     .string()
     .optional()
-    .describe('The Uniswap router address that will be used to spend the ERC20 token'),
+    .describe('The Uniswap router address that will be used to spend the ERC20 token')
+    .optional(),
+  tokenAddress: z
+    .string()
+    .optional()
+    .describe('The address of the input token for the swap')
+    .optional(),
+  requiredTokenAmount: z
+    .string()
+    .optional()
+    .describe('The required amount of the input token for the swap')
+    .optional(),
+  tokenBalance: z
+    .string()
+    .optional()
+    .describe('The balance of the input token used for the swap')
+    .optional(),
+  currentAllowance: z
+    .string()
+    .optional()
+    .describe('The current allowance of the input token used for the swap for the ERC20 spender')
+    .optional(),
+  requiredAllowance: z
+    .string()
+    .optional()
+    .describe('The required allowance of the input token used for the swap for the ERC20 spender')
+    .optional(),
 });
 
 export const executeFailSchema = z.object({

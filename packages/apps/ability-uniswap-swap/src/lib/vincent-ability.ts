@@ -5,10 +5,11 @@ import {
 import { ethers } from 'ethers';
 
 import { sendUniswapTx } from './ability-helpers';
-import { checkNativeTokenBalance, checkTokenInBalance } from './ability-checks';
+import { checkNativeTokenBalance, checkErc20Balance } from './ability-checks';
 import {
   executeFailSchema,
   executeSuccessSchema,
+  precheckSuccessSchema,
   precheckFailSchema,
   abilityParamsSchema,
 } from './schemas';
@@ -30,6 +31,7 @@ export const vincentAbility = createVincentAbility({
   executeSuccessSchema,
   executeFailSchema,
 
+  precheckSuccessSchema,
   precheckFailSchema,
 
   precheck: async ({ abilityParams }, { succeed, fail, delegation: { delegatorPkpInfo } }) => {
@@ -54,51 +56,57 @@ export const vincentAbility = createVincentAbility({
     const delegatorPkpAddress = delegatorPkpInfo.ethAddress;
     const provider = new ethers.providers.StaticJsonRpcProvider(rpcUrlForUniswap);
 
-    try {
-      await checkNativeTokenBalance({
-        provider,
-        pkpEthAddress: delegatorPkpAddress,
-      });
-    } catch (err) {
+    const checkNativeTokenBalanceResult = await checkNativeTokenBalance({
+      provider,
+      pkpEthAddress: delegatorPkpAddress,
+    });
+    if (!checkNativeTokenBalanceResult.success) {
       return fail({
-        reason: `Native token balance error: ${err instanceof Error ? err.message : String(err)}`,
+        reason: checkNativeTokenBalanceResult.reason,
       });
     }
 
-    const requiredAmount = ethers.utils
-      .parseUnits(quote.amountIn, quote.tokenInDecimals)
-      .toBigInt();
+    const requiredTokenInAmount = ethers.utils.parseUnits(quote.amountIn, quote.tokenInDecimals);
 
-    try {
-      await checkTokenInBalance({
-        provider,
-        pkpEthAddress: delegatorPkpAddress,
-        tokenInAddress: quote.tokenIn,
-        tokenInAmount: requiredAmount,
-      });
-    } catch (err) {
+    const checkErc20BalanceResult = await checkErc20Balance({
+      provider,
+      pkpEthAddress: delegatorPkpAddress,
+      tokenAddress: quote.tokenIn,
+      requiredTokenAmount: requiredTokenInAmount,
+    });
+    if (!checkErc20BalanceResult.success) {
       return fail({
-        reason: `tokenIn balance check error: ${err instanceof Error ? err.message : String(err)}`,
+        reason: checkErc20BalanceResult.reason,
+        tokenAddress: checkErc20BalanceResult.tokenAddress,
+        requiredTokenAmount: checkErc20BalanceResult.requiredTokenAmount.toString(),
+        tokenBalance: checkErc20BalanceResult.tokenBalance.toString(),
       });
     }
 
-    // Check ERC20 allowance for the router specified in the route
-    try {
-      await checkErc20Allowance({
-        provider,
-        tokenAddress: quote.tokenIn,
-        owner: delegatorPkpAddress,
-        spender: quote.to,
-        tokenAmount: requiredAmount,
-      });
-    } catch (err) {
+    const checkErc20AllowanceResult = await checkErc20Allowance({
+      provider,
+      tokenAddress: quote.tokenIn,
+      owner: delegatorPkpAddress,
+      spender: quote.to,
+      requiredAllowance: requiredTokenInAmount,
+    });
+    if (!checkErc20AllowanceResult.success) {
       return fail({
-        reason: `ERC20 allowance check error: ${err instanceof Error ? err.message : String(err)}`,
-        erc20SpenderAddress: quote.to,
+        reason: checkErc20AllowanceResult.reason,
+        spenderAddress: checkErc20AllowanceResult.spenderAddress,
+        tokenAddress: checkErc20AllowanceResult.tokenAddress,
+        requiredAllowance: checkErc20AllowanceResult.requiredAllowance.toString(),
+        currentAllowance: checkErc20AllowanceResult.currentAllowance.toString(),
       });
     }
 
-    return succeed();
+    return succeed({
+      nativeTokenBalance: checkNativeTokenBalanceResult.ethBalance.toString(),
+      tokenInAddress: checkErc20BalanceResult.tokenAddress,
+      tokenInBalance: checkErc20BalanceResult.tokenBalance.toString(),
+      currentTokenInAllowanceForSpender: checkErc20AllowanceResult.currentAllowance.toString(),
+      spenderAddress: checkErc20AllowanceResult.spenderAddress,
+    });
   },
   execute: async ({ abilityParams }, { succeed, fail, delegation: { delegatorPkpInfo } }) => {
     console.log('Executing UniswapSwapAbility', JSON.stringify(abilityParams, bigintReplacer, 2));
