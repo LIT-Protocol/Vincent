@@ -16,7 +16,7 @@ Run `nx build ability-sdk` to build the library.
 
 This library provides a type-safe lifecycle system for defining and composing **policies** and **abilities**, with strong TypeScript inference support throughout.
 
-## 🧩 Core Concepts
+## Core Concepts
 
 - **Policies** encapsulate decision logic (precheck, evaluate, commit) and define their input/output schemas.
 - **Abilities** orchestrate multiple policies and expose `precheck` and `execute` lifecycle methods.
@@ -25,7 +25,7 @@ This library provides a type-safe lifecycle system for defining and composing **
 
 ---
 
-### 🔁 Calling `commit()` on a Policy from within a Ability
+### Calling `commit()` on a Policy from within a Ability
 
 Policies can define a `commit()` lifecycle method to finalize changes once an ability executes successfully. These `commit()` functions are injected automatically into the `allowedPolicies` object of the `AbilityContext`.
 
@@ -212,6 +212,6 @@ export const myTokenSwapAbility = createVincentAbility({
 });
 ```
 
-## 🧠 Tip
+## Tip
 
 Ability and policy authors should export the result of `createVincentPolicy()` / `createVincentAbility()`

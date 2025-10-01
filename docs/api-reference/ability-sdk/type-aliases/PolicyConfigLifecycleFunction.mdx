@@ -4,7 +4,7 @@ title: PolicyConfigLifecycleFunction
 
 > **PolicyConfigLifecycleFunction**\<`AbilityParams`, `UserParams`, `AllowResult`, `DenyResult`\> = (`args`, `ctx`) => `Promise`\<`EnforcePolicyResponse`\<`AllowResult` *extends* `z.ZodUndefined` ? `ContextAllowResponseNoResult` : `ContextAllowResponse`\<`z.infer`\<`AllowResult`\>\> \| `DenyResult` *extends* `z.ZodUndefined` ? `ContextDenyResponseNoResult` : `ContextDenyResponse`\<`z.infer`\<`DenyResult`\>\>\>\>
 
-Defined in: [policyCore/policyConfig/types.ts:17](https://github.com/LIT-Protocol/Vincent/blob/5462864f5b471985671134e594d93faefcbfeb7e/packages/libs/ability-sdk/src/lib/policyCore/policyConfig/types.ts#L17)
+Defined in: [policyCore/policyConfig/types.ts:17](https://github.com/LIT-Protocol/Vincent/blob/59bbcc58961d006596c8c80671cc1200f69f2946/packages/libs/ability-sdk/src/lib/policyCore/policyConfig/types.ts#L17)
 
 `evaluate()` and `precheck()` functions that you define when using `createVincentPolicy()` will match this function signature.
 Note that the arguments and return types are inferred based on the ZOD schemas that you pass to `createVincentPolicy`
