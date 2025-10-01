@@ -12,7 +12,7 @@ npm install @lit-protocol/vincent-app-sdk
 
 ## Usage
 
-## Client (Web)
+# Client (Web)
 
 ## WebAuthClient
 
@@ -73,7 +73,7 @@ if (vincentAppClient.uriContainsVincentJWT()) {
 }
 ```
 
-## Backend
+# Backend
 
 In your backend, you will have to verify the JWT to make sure the user has granted you the required permissions to act on their behalf.
 
@@ -94,11 +94,11 @@ interface VincentAbilityClientConfig {
 
 ### Methods
 
-#### execute(params: VincentAbilityParams): Promise&lt;ExecuteJsResponse&gt;
+#### execute(params: VincentAbilityParams): Promise<ExecuteJsResponse>
 
 Executes a Vincent Ability with the provided parameters.
 
-- `params`: Record&lt;string, unknown&gt; - Parameters to pass to the Vincent Ability
+- `params`: Record<string, unknown> - Parameters to pass to the Vincent Ability
 - Returns: Promise resolving to an ExecuteJsResponse from the LIT network
 
 ### Ability execution

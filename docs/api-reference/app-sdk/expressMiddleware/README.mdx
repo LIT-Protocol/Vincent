@@ -10,7 +10,7 @@ You can see the source for the Express authentication handler below; use this as
 your own midddleware/authentication for other frameworks! Pull requests are welcome.
 
 ```ts
-function getAuthenticateUserExpressHandler&lt;const UserKey extends string&gt;({
+function getAuthenticateUserExpressHandler<const UserKey extends string>({
   allowedAudience,
   requiredAppId,
   userKey,
@@ -28,7 +28,7 @@ function getAuthenticateUserExpressHandler&lt;const UserKey extends string&gt;({
 
     const parts = authHeader.split(' ');
     if (parts.length !== 2) {
-      res.status(401).json({ error: `Invalid authorization header - expected "Bearer &lt;token&gt;"` });
+      res.status(401).json({ error: `Invalid authorization header - expected "Bearer <token>"` });
       return;
     }
 
@@ -56,7 +56,7 @@ function getAuthenticateUserExpressHandler&lt;const UserKey extends string&gt;({
         return;
       }
 
-      (req as unknown as Record&lt;string, VincentJWTData&gt;)[userKey] = {
+      (req as unknown as Record<string, VincentJWTData>)[userKey] = {
         decodedJWT,
         rawJWT,
       } as VincentJWTData;
