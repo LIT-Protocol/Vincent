@@ -2,7 +2,7 @@
 title: ContractClient
 ---
 
-Defined in: [types.ts:380](https://github.com/LIT-Protocol/Vincent/blob/1ec4d670031700c70e1e2ba1640f87d4b5f07fe8/packages/libs/contracts-sdk/src/types.ts#L380)
+Defined in: [types.ts:380](https://github.com/LIT-Protocol/Vincent/blob/5462864f5b471985671134e594d93faefcbfeb7e/packages/libs/contracts-sdk/src/types.ts#L380)
 
 ## Methods
 
@@ -10,7 +10,7 @@ Defined in: [types.ts:380](https://github.com/LIT-Protocol/Vincent/blob/1ec4d670
 
 > **addDelegatee**(`params`, `overrides?`): `Promise`\<\{ `txHash`: `string`; \}\>
 
-Defined in: [types.ts:410](https://github.com/LIT-Protocol/Vincent/blob/1ec4d670031700c70e1e2ba1640f87d4b5f07fe8/packages/libs/contracts-sdk/src/types.ts#L410)
+Defined in: [types.ts:410](https://github.com/LIT-Protocol/Vincent/blob/5462864f5b471985671134e594d93faefcbfeb7e/packages/libs/contracts-sdk/src/types.ts#L410)
 
 Add a new delegatee to an app
 
@@ -36,7 +36,7 @@ The hash of the transaction that added the new delegatee
 
 > **deleteApp**(`params`, `overrides?`): `Promise`\<\{ `txHash`: `string`; \}\>
 
-Defined in: [types.ts:432](https://github.com/LIT-Protocol/Vincent/blob/1ec4d670031700c70e1e2ba1640f87d4b5f07fe8/packages/libs/contracts-sdk/src/types.ts#L432)
+Defined in: [types.ts:432](https://github.com/LIT-Protocol/Vincent/blob/5462864f5b471985671134e594d93faefcbfeb7e/packages/libs/contracts-sdk/src/types.ts#L432)
 
 Delete an application by setting its isDeleted flag to true
 
@@ -62,7 +62,7 @@ The hash of the transaction that marked the app deleted
 
 > **enableAppVersion**(`params`, `overrides?`): `Promise`\<\{ `txHash`: `string`; \}\>
 
-Defined in: [types.ts:401](https://github.com/LIT-Protocol/Vincent/blob/1ec4d670031700c70e1e2ba1640f87d4b5f07fe8/packages/libs/contracts-sdk/src/types.ts#L401)
+Defined in: [types.ts:401](https://github.com/LIT-Protocol/Vincent/blob/5462864f5b471985671134e594d93faefcbfeb7e/packages/libs/contracts-sdk/src/types.ts#L401)
 
 Enable or disable a specific app version
 
@@ -88,7 +88,7 @@ The hash of the transaction that set the app enabled state
 
 > **getAllAbilitiesAndPoliciesForApp**(`params`): `Promise`\<[`PermissionData`](./PermissionData)\>
 
-Defined in: [types.ts:544](https://github.com/LIT-Protocol/Vincent/blob/1ec4d670031700c70e1e2ba1640f87d4b5f07fe8/packages/libs/contracts-sdk/src/types.ts#L544)
+Defined in: [types.ts:544](https://github.com/LIT-Protocol/Vincent/blob/5462864f5b471985671134e594d93faefcbfeb7e/packages/libs/contracts-sdk/src/types.ts#L544)
 
 Get all permitted abilities, policies, and policy parameters for a specific app and PKP in a nested object structure
 
@@ -110,7 +110,7 @@ Nested object structure where keys are ability IPFS CIDs and values are objects 
 
 > **getAllPermittedAppIdsForPkp**(`params`): `Promise`\<`number`[]\>
 
-Defined in: [types.ts:530](https://github.com/LIT-Protocol/Vincent/blob/1ec4d670031700c70e1e2ba1640f87d4b5f07fe8/packages/libs/contracts-sdk/src/types.ts#L530)
+Defined in: [types.ts:530](https://github.com/LIT-Protocol/Vincent/blob/5462864f5b471985671134e594d93faefcbfeb7e/packages/libs/contracts-sdk/src/types.ts#L530)
 
 Get all app IDs that have permissions for a specific PKP token, excluding deleted apps
 
@@ -136,7 +136,7 @@ Use getPermittedAppsForPkps instead
 
 > **getAllRegisteredAgentPkpEthAddresses**(`params`): `Promise`\<`string`[]\>
 
-Defined in: [types.ts:513](https://github.com/LIT-Protocol/Vincent/blob/1ec4d670031700c70e1e2ba1640f87d4b5f07fe8/packages/libs/contracts-sdk/src/types.ts#L513)
+Defined in: [types.ts:513](https://github.com/LIT-Protocol/Vincent/blob/5462864f5b471985671134e594d93faefcbfeb7e/packages/libs/contracts-sdk/src/types.ts#L513)
 
 Get all PKP tokens that are registered as agents for a specific user address
 
@@ -158,7 +158,7 @@ Array of PKP eth addresses that are registered as agents for the user. Empty arr
 
 > **getAppByDelegateeAddress**(`params`): `Promise`\<`null` \| [`App`](./App)\>
 
-Defined in: [types.ts:470](https://github.com/LIT-Protocol/Vincent/blob/1ec4d670031700c70e1e2ba1640f87d4b5f07fe8/packages/libs/contracts-sdk/src/types.ts#L470)
+Defined in: [types.ts:470](https://github.com/LIT-Protocol/Vincent/blob/5462864f5b471985671134e594d93faefcbfeb7e/packages/libs/contracts-sdk/src/types.ts#L470)
 
 Get the app associated with a delegatee address
 
@@ -180,7 +180,7 @@ Detailed view of the app the delegatee is associated with
 
 > **getAppById**(`params`): `Promise`\<`null` \| [`App`](./App)\>
 
-Defined in: [types.ts:444](https://github.com/LIT-Protocol/Vincent/blob/1ec4d670031700c70e1e2ba1640f87d4b5f07fe8/packages/libs/contracts-sdk/src/types.ts#L444)
+Defined in: [types.ts:444](https://github.com/LIT-Protocol/Vincent/blob/5462864f5b471985671134e594d93faefcbfeb7e/packages/libs/contracts-sdk/src/types.ts#L444)
 
 Get detailed information about an app by its ID
 
@@ -202,7 +202,7 @@ Detailed view of the app containing its metadata and relationships, or null if t
 
 > **getAppIdByDelegatee**(`params`): `Promise`\<`null` \| `number`\>
 
-Defined in: [types.ts:450](https://github.com/LIT-Protocol/Vincent/blob/1ec4d670031700c70e1e2ba1640f87d4b5f07fe8/packages/libs/contracts-sdk/src/types.ts#L450)
+Defined in: [types.ts:450](https://github.com/LIT-Protocol/Vincent/blob/5462864f5b471985671134e594d93faefcbfeb7e/packages/libs/contracts-sdk/src/types.ts#L450)
 
 Get the app ID for a specific delegatee address
 
@@ -224,7 +224,7 @@ The app ID for the specified delegatee address
 
 > **getAppsByManagerAddress**(`params`): `Promise`\<`object`[]\>
 
-Defined in: [types.ts:462](https://github.com/LIT-Protocol/Vincent/blob/1ec4d670031700c70e1e2ba1640f87d4b5f07fe8/packages/libs/contracts-sdk/src/types.ts#L462)
+Defined in: [types.ts:462](https://github.com/LIT-Protocol/Vincent/blob/5462864f5b471985671134e594d93faefcbfeb7e/packages/libs/contracts-sdk/src/types.ts#L462)
 
 Get all apps managed by a specific address with all their versions
 
@@ -246,7 +246,7 @@ Array of apps with all their versions managed by the specified address
 
 > **getAppVersion**(`params`): `Promise`\<`null` \| \{ `appVersion`: [`AppVersion`](./AppVersion); \}\>
 
-Defined in: [types.ts:456](https://github.com/LIT-Protocol/Vincent/blob/1ec4d670031700c70e1e2ba1640f87d4b5f07fe8/packages/libs/contracts-sdk/src/types.ts#L456)
+Defined in: [types.ts:456](https://github.com/LIT-Protocol/Vincent/blob/5462864f5b471985671134e594d93faefcbfeb7e/packages/libs/contracts-sdk/src/types.ts#L456)
 
 Get detailed information about a specific version of an app
 
@@ -268,7 +268,7 @@ Object containing basic app information and version-specific information includi
 
 > **getDelegatedPkpEthAddresses**(`params`): `Promise`\<`string`[]\>
 
-Defined in: [types.ts:482](https://github.com/LIT-Protocol/Vincent/blob/1ec4d670031700c70e1e2ba1640f87d4b5f07fe8/packages/libs/contracts-sdk/src/types.ts#L482)
+Defined in: [types.ts:482](https://github.com/LIT-Protocol/Vincent/blob/5462864f5b471985671134e594d93faefcbfeb7e/packages/libs/contracts-sdk/src/types.ts#L482)
 
 Get delegated agent PKP token IDs for a specific app version with pagination
 
@@ -294,7 +294,7 @@ Array of delegated agent PKP token IDs
 
 > **getLastPermittedAppVersionForPkp**(`params`): `Promise`\<`null` \| `number`\>
 
-Defined in: [types.ts:574](https://github.com/LIT-Protocol/Vincent/blob/1ec4d670031700c70e1e2ba1640f87d4b5f07fe8/packages/libs/contracts-sdk/src/types.ts#L574)
+Defined in: [types.ts:574](https://github.com/LIT-Protocol/Vincent/blob/5462864f5b471985671134e594d93faefcbfeb7e/packages/libs/contracts-sdk/src/types.ts#L574)
 
 Get the last permitted version for a specific app and PKP
 
@@ -316,7 +316,7 @@ The last permitted app version, or null if never permitted
 
 > **getPermittedAppsForPkps**(`params`): `Promise`\<[`PkpPermittedApps`](./PkpPermittedApps)[]\>
 
-Defined in: [types.ts:538](https://github.com/LIT-Protocol/Vincent/blob/1ec4d670031700c70e1e2ba1640f87d4b5f07fe8/packages/libs/contracts-sdk/src/types.ts#L538)
+Defined in: [types.ts:538](https://github.com/LIT-Protocol/Vincent/blob/5462864f5b471985671134e594d93faefcbfeb7e/packages/libs/contracts-sdk/src/types.ts#L538)
 
 Get permitted apps for multiple PKPs with detailed information including versions and enabled status
 
@@ -338,7 +338,7 @@ Array of PkpPermittedApps containing permitted app details for each PKP
 
 > **getPermittedAppVersionForPkp**(`params`): `Promise`\<`null` \| `number`\>
 
-Defined in: [types.ts:521](https://github.com/LIT-Protocol/Vincent/blob/1ec4d670031700c70e1e2ba1640f87d4b5f07fe8/packages/libs/contracts-sdk/src/types.ts#L521)
+Defined in: [types.ts:521](https://github.com/LIT-Protocol/Vincent/blob/5462864f5b471985671134e594d93faefcbfeb7e/packages/libs/contracts-sdk/src/types.ts#L521)
 
 Get the permitted app version for a specific PKP token and app
 
@@ -360,7 +360,7 @@ The permitted app version for the PKP token and app
 
 > **getUnpermittedAppsForPkps**(`params`): `Promise`\<[`PkpUnpermittedApps`](./PkpUnpermittedApps)[]\>
 
-Defined in: [types.ts:582](https://github.com/LIT-Protocol/Vincent/blob/1ec4d670031700c70e1e2ba1640f87d4b5f07fe8/packages/libs/contracts-sdk/src/types.ts#L582)
+Defined in: [types.ts:582](https://github.com/LIT-Protocol/Vincent/blob/5462864f5b471985671134e594d93faefcbfeb7e/packages/libs/contracts-sdk/src/types.ts#L582)
 
 Get unpermitted apps for multiple PKPs with their last permitted versions
 
@@ -382,7 +382,7 @@ Array of PkpUnpermittedApps containing unpermitted app details for each PKP
 
 > **isDelegateePermitted**(`params`): `Promise`\<`boolean`\>
 
-Defined in: [types.ts:560](https://github.com/LIT-Protocol/Vincent/blob/1ec4d670031700c70e1e2ba1640f87d4b5f07fe8/packages/libs/contracts-sdk/src/types.ts#L560)
+Defined in: [types.ts:560](https://github.com/LIT-Protocol/Vincent/blob/5462864f5b471985671134e594d93faefcbfeb7e/packages/libs/contracts-sdk/src/types.ts#L560)
 
 Check if a delegatee is permitted to execute an ability with a PKP
 
@@ -404,7 +404,7 @@ Boolean indicating whether the delegatee has permission
 
 > **permitApp**(`params`, `overrides?`): `Promise`\<\{ `txHash`: `string`; \}\>
 
-Defined in: [types.ts:490](https://github.com/LIT-Protocol/Vincent/blob/1ec4d670031700c70e1e2ba1640f87d4b5f07fe8/packages/libs/contracts-sdk/src/types.ts#L490)
+Defined in: [types.ts:490](https://github.com/LIT-Protocol/Vincent/blob/5462864f5b471985671134e594d93faefcbfeb7e/packages/libs/contracts-sdk/src/types.ts#L490)
 
 Permits an app version for an Agent Wallet PKP token and optionally sets ability policy parameters
 
@@ -430,7 +430,7 @@ The transaction hash that permitted the app
 
 > **registerApp**(`params`, `overrides?`): `Promise`\<\{ `txHash`: `string`; \}\>
 
-Defined in: [types.ts:385](https://github.com/LIT-Protocol/Vincent/blob/1ec4d670031700c70e1e2ba1640f87d4b5f07fe8/packages/libs/contracts-sdk/src/types.ts#L385)
+Defined in: [types.ts:385](https://github.com/LIT-Protocol/Vincent/blob/5462864f5b471985671134e594d93faefcbfeb7e/packages/libs/contracts-sdk/src/types.ts#L385)
 
 Registers a new app with its initial appVersion (v1)'s permissions
 
@@ -456,7 +456,7 @@ Registers a new app with its initial appVersion (v1)'s permissions
 
 > **registerNextVersion**(`params`, `overrides?`): `Promise`\<\{ `newAppVersion`: `number`; `txHash`: `string`; \}\>
 
-Defined in: [types.ts:392](https://github.com/LIT-Protocol/Vincent/blob/1ec4d670031700c70e1e2ba1640f87d4b5f07fe8/packages/libs/contracts-sdk/src/types.ts#L392)
+Defined in: [types.ts:392](https://github.com/LIT-Protocol/Vincent/blob/5462864f5b471985671134e594d93faefcbfeb7e/packages/libs/contracts-sdk/src/types.ts#L392)
 
 Register a new version on an existing application
 
@@ -486,7 +486,7 @@ The transaction hash and the new app version incremented on-chain.
 
 > **removeDelegatee**(`params`, `overrides?`): `Promise`\<\{ `txHash`: `string`; \}\>
 
-Defined in: [types.ts:416](https://github.com/LIT-Protocol/Vincent/blob/1ec4d670031700c70e1e2ba1640f87d4b5f07fe8/packages/libs/contracts-sdk/src/types.ts#L416)
+Defined in: [types.ts:416](https://github.com/LIT-Protocol/Vincent/blob/5462864f5b471985671134e594d93faefcbfeb7e/packages/libs/contracts-sdk/src/types.ts#L416)
 
 Remove a delegatee from an app
 
@@ -512,7 +512,7 @@ The hash of the transaction that removed the existing delegatee
 
 > **rePermitApp**(`params`, `overrides?`): `Promise`\<\{ `txHash`: `string`; \}\>
 
-Defined in: [types.ts:568](https://github.com/LIT-Protocol/Vincent/blob/1ec4d670031700c70e1e2ba1640f87d4b5f07fe8/packages/libs/contracts-sdk/src/types.ts#L568)
+Defined in: [types.ts:568](https://github.com/LIT-Protocol/Vincent/blob/5462864f5b471985671134e594d93faefcbfeb7e/packages/libs/contracts-sdk/src/types.ts#L568)
 
 Re-permits an app using the last permitted version for a PKP
 
@@ -538,7 +538,7 @@ The transaction hash that re-permitted the app
 
 > **setAbilityPolicyParameters**(`params`, `overrides?`): `Promise`\<\{ `txHash`: `string`; \}\>
 
-Defined in: [types.ts:504](https://github.com/LIT-Protocol/Vincent/blob/1ec4d670031700c70e1e2ba1640f87d4b5f07fe8/packages/libs/contracts-sdk/src/types.ts#L504)
+Defined in: [types.ts:504](https://github.com/LIT-Protocol/Vincent/blob/5462864f5b471985671134e594d93faefcbfeb7e/packages/libs/contracts-sdk/src/types.ts#L504)
 
 Sets ability policy parameters for a specific app version
 Note that omitting parameters from `policyParams` does not remove any existing values; this function allows atomic/sparse updates.
@@ -567,7 +567,7 @@ The transaction hash that set the policy parameters
 
 > **setDelegatee**(`params`, `overrides?`): `Promise`\<\{ `txHash`: `string`; \}\>
 
-Defined in: [types.ts:425](https://github.com/LIT-Protocol/Vincent/blob/1ec4d670031700c70e1e2ba1640f87d4b5f07fe8/packages/libs/contracts-sdk/src/types.ts#L425)
+Defined in: [types.ts:425](https://github.com/LIT-Protocol/Vincent/blob/5462864f5b471985671134e594d93faefcbfeb7e/packages/libs/contracts-sdk/src/types.ts#L425)
 
 Set delegatees for an app (replaces all existing delegatees)
 
@@ -593,7 +593,7 @@ The hash of the transaction that set the delegatees
 
 > **undeleteApp**(`params`, `overrides?`): `Promise`\<\{ `txHash`: `string`; \}\>
 
-Defined in: [types.ts:438](https://github.com/LIT-Protocol/Vincent/blob/1ec4d670031700c70e1e2ba1640f87d4b5f07fe8/packages/libs/contracts-sdk/src/types.ts#L438)
+Defined in: [types.ts:438](https://github.com/LIT-Protocol/Vincent/blob/5462864f5b471985671134e594d93faefcbfeb7e/packages/libs/contracts-sdk/src/types.ts#L438)
 
 Undelete an app by setting its isDeleted flag to false
 
@@ -619,7 +619,7 @@ The hash of the transaction that undeleted the app
 
 > **unPermitApp**(`params`, `overrides?`): `Promise`\<\{ `txHash`: `string`; \}\>
 
-Defined in: [types.ts:496](https://github.com/LIT-Protocol/Vincent/blob/1ec4d670031700c70e1e2ba1640f87d4b5f07fe8/packages/libs/contracts-sdk/src/types.ts#L496)
+Defined in: [types.ts:496](https://github.com/LIT-Protocol/Vincent/blob/5462864f5b471985671134e594d93faefcbfeb7e/packages/libs/contracts-sdk/src/types.ts#L496)
 
 Revokes permission for a PKP to use a specific app version
 
@@ -645,7 +645,7 @@ The transaction hash that remoked permission for the app
 
 > **validateAbilityExecutionAndGetPolicies**(`params`): `Promise`\<[`ValidateAbilityExecutionAndGetPoliciesResult`](./ValidateAbilityExecutionAndGetPoliciesResult)\>
 
-Defined in: [types.ts:552](https://github.com/LIT-Protocol/Vincent/blob/1ec4d670031700c70e1e2ba1640f87d4b5f07fe8/packages/libs/contracts-sdk/src/types.ts#L552)
+Defined in: [types.ts:552](https://github.com/LIT-Protocol/Vincent/blob/5462864f5b471985671134e594d93faefcbfeb7e/packages/libs/contracts-sdk/src/types.ts#L552)
 
 Validates ability execution and gets policies for a specific ability
 
