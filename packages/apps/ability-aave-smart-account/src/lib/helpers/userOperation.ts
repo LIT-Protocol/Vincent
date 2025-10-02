@@ -2,7 +2,7 @@ import { ethers } from 'ethers';
 import { z } from 'zod';
 
 import { LIGHT_ACCOUNT_INIT_CODE } from './lightAccount';
-import { SimulateUserOperationAssetChangesResponse } from './simulation';
+import type { SimulateUserOperationAssetChangesResponse } from './simulation';
 
 const userOpBaseSchema = z.object({
   sender: z
