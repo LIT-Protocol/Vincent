@@ -1,5 +1,5 @@
 import { formatEther } from 'viem';
-import { bundledVincentAbility as erc20BundledAbility } from '@lit-protocol/vincent-ability-erc20-approval';
+import { bundledVincentAbility as erc20BundledAbility } from '@lit-protocol/vincent-ability-uniswap-erc20-approval';
 
 import {
   bundledVincentAbility as uniswapBundledAbility,
@@ -98,24 +98,23 @@ const getUniswapSwapAbilityClient = () => {
   });
 };
 
-const addNewApproval = async (
-  spenderAddress: string,
-  delegatorPkpEthAddress: string,
-  tokenAmount: number,
-) => {
-  console.log(`Adding approval for spender ${spenderAddress} for amount: ${tokenAmount}...`);
+const addNewApproval = async ({
+  prepareSignedUniswapQuote,
+  delegatorPkpEthAddress,
+}: {
+  prepareSignedUniswapQuote: PrepareSignedUniswapQuote;
+  delegatorPkpEthAddress: string;
+}) => {
+  console.log(
+    `Adding approval for spender ${prepareSignedUniswapQuote.quote.to} for amount: ${prepareSignedUniswapQuote.quote.amountIn}...`,
+  );
   const erc20ApprovalAbilityClient = getErc20ApprovalAbilityClient();
 
   console.log('Executing ERC20 approval...');
   const erc20ApprovalExecutionResult = await erc20ApprovalAbilityClient.execute(
     {
       rpcUrl: RPC_URL,
-      chainId: CHAIN_ID,
-      spenderAddress,
-      tokenAddress: SWAP_TOKEN_IN_ADDRESS,
-      tokenAmount: ethers.utils
-        .parseUnits(tokenAmount.toString(), SWAP_TOKEN_IN_DECIMALS)
-        .toString(),
+      signedUniswapQuote: prepareSignedUniswapQuote,
       alchemyGasSponsor: false,
     },
     {
@@ -130,14 +129,16 @@ const addNewApproval = async (
 
   expect(erc20ApprovalExecutionResult.result).toBeDefined();
 
-  if (tokenAmount > 0) {
+  if (BigInt(prepareSignedUniswapQuote.quote.amountIn) > 0n) {
     expect(BigInt(erc20ApprovalExecutionResult.result.approvedAmount)).toBeGreaterThan(0n);
   } else {
     expect(BigInt(erc20ApprovalExecutionResult.result.approvedAmount)).toBe(0n);
   }
 
   expect(erc20ApprovalExecutionResult.result.tokenAddress).toBe(SWAP_TOKEN_IN_ADDRESS);
-  expect(erc20ApprovalExecutionResult.result.spenderAddress).toBe(spenderAddress);
+  expect(erc20ApprovalExecutionResult.result.spenderAddress).toBe(
+    prepareSignedUniswapQuote.quote.to,
+  );
 
   if (erc20ApprovalExecutionResult.result.approvalTxHash) {
     console.log(
@@ -334,7 +335,7 @@ describe('Uniswap Swap Ability E2E Tests', () => {
     expect(precheckResult.success).toBe(false);
 
     expect(precheckResult.result).toBeDefined();
-    expect(precheckResult.result!.reason).toBe(
+    expect((precheckResult.result! as { reason: string }).reason).toBe(
       `Uniswap quote validation failed: Signature validation failed: the recipient address in the quote: ${maliciousRecipient} does not match expected recipient address: ${TEST_CONFIG.userPkp!.ethAddress!}`,
     );
   });
@@ -483,12 +484,7 @@ describe('Uniswap Swap Ability E2E Tests', () => {
     const precheckResult = await erc20ApprovalAbilityClient.precheck(
       {
         rpcUrl: RPC_URL,
-        chainId: CHAIN_ID,
-        spenderAddress: erc20SpenderAddress,
-        tokenAddress: SWAP_TOKEN_IN_ADDRESS,
-        tokenAmount: ethers.utils
-          .parseUnits(SWAP_AMOUNT.toString(), SWAP_TOKEN_IN_DECIMALS)
-          .toString(),
+        signedUniswapQuote: SIGNED_UNISWAP_QUOTE,
         alchemyGasSponsor: false,
       },
       {
@@ -498,37 +494,36 @@ describe('Uniswap Swap Ability E2E Tests', () => {
 
     console.log('ERC20 approval precheck result:', precheckResult);
     expect(precheckResult).toBeDefined();
-    expect(precheckResult.success).toBe(true);
 
-    if ('noNativeTokenBalance' in precheckResult.result) {
-      throw new Error('No native token balance');
-    }
-
-    // Check if allowance is already sufficient based on alreadyApproved flag
-    if (precheckResult.result.alreadyApproved) {
-      console.log(
-        'Sufficient allowance already exists (currentAllowance:',
-        precheckResult.result.currentAllowance,
-        '), skipping execute',
-      );
-      expect(precheckResult.result.alreadyApproved).toBe(true);
-    } else {
+    if (precheckResult.success === false) {
       console.log(
         'Insufficient allowance detected (currentAllowance:',
         precheckResult.result?.currentAllowance,
         '), executing approval...',
       );
       // Need to add approval
-      const erc20ApprovalExecutionResult = await addNewApproval(
-        erc20SpenderAddress,
-        TEST_CONFIG.userPkp!.ethAddress!,
-        SWAP_AMOUNT,
-      );
+      const erc20ApprovalExecutionResult = await addNewApproval({
+        prepareSignedUniswapQuote: SIGNED_UNISWAP_QUOTE,
+        delegatorPkpEthAddress: TEST_CONFIG.userPkp!.ethAddress!,
+      });
       console.log('ERC20 approval completed:', erc20ApprovalExecutionResult);
 
       expect(erc20ApprovalExecutionResult.success).toBe(true);
       expect(BigInt(erc20ApprovalExecutionResult.result.approvedAmount)).toBeGreaterThan(0n);
       expect(erc20ApprovalExecutionResult.result.spenderAddress).toBe(erc20SpenderAddress);
+    } else {
+      console.log(
+        'Sufficient allowance already exists (currentAllowance:',
+        precheckResult.result.currentAllowance,
+        '), skipping execute',
+      );
+      expect(BigInt(precheckResult.result.currentAllowance)).toBeGreaterThanOrEqual(
+        BigInt(SIGNED_UNISWAP_QUOTE.quote.amountIn),
+      );
+    }
+
+    if ('noNativeTokenBalance' in precheckResult.result) {
+      throw new Error('No native token balance');
     }
   });
 

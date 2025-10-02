@@ -50,7 +50,7 @@ export const precheckSuccessSchema = z.object({
 export const precheckFailSchema = z.object({
   reason: z
     .string()
-    .describe('The reason for failing the execution in cases where we identified the reason.'),
+    .describe('The reason for failing the precheck in cases where we identified the reason.'),
   spenderAddress: z
     .string()
     .optional()

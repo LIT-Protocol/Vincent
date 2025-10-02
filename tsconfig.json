@@ -7,6 +7,9 @@
       "path": "./packages/apps/ability-uniswap-swap"
     },
     {
+      "path": "./packages/apps/ability-uniswap-erc20-approval"
+    },
+    {
       "path": "./packages/libs/app-sdk"
     },
     {
