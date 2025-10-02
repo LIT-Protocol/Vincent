@@ -281,12 +281,6 @@ importers:
 
   packages/apps/ability-aave-smart-account:
     dependencies:
-      '@alchemy/aa-accounts':
-        specifier: ^3.19.0
-        version: 3.19.0(typescript@5.8.3)(viem@2.37.8(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64))
-      '@alchemy/aa-core':
-        specifier: ^3.19.0
-        version: 3.19.0(typescript@5.8.3)(viem@2.37.8(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64))
       '@bgd-labs/aave-address-book':
         specifier: ^4.19.3
         version: 4.29.1(viem@2.37.8(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64))
@@ -296,18 +290,12 @@ importers:
       '@lit-protocol/vincent-app-sdk':
         specifier: workspace:^
         version: link:../../libs/app-sdk
-      '@lit-protocol/vincent-scaffold-sdk':
-        specifier: ^1.1.6
-        version: 1.1.8(@lit-protocol/vincent-app-sdk@packages+libs+app-sdk)(@lit-protocol/vincent-tool-sdk@1.0.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(@tanstack/query-core@5.87.1)(@types/node@22.7.5)(@types/react@19.1.12)(bufferutil@4.0.9)(immer@10.1.3)(react@19.1.1)(typescript@5.8.3)(use-sync-external-store@1.5.0(react@19.1.1))(utf-8-validate@5.0.10)(zod@3.25.64)
       ethers:
         specifier: ^5.8.0
         version: 5.8.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       tslib:
         specifier: 2.8.1
         version: 2.8.1
-      viem:
-        specifier: ^2.37.8
-        version: 2.37.8(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)
       zod:
         specifier: ^3.25.64
         version: 3.25.64
@@ -1308,16 +1296,6 @@ packages:
 
   '@adraffy/ens-normalize@1.11.0':
     resolution: {integrity: sha512-/3DDPKHqqIqxUULp8yP4zODUY1i+2xvVWsv8A79xGWdCAG+8sb0hRh0Rk2QyOJUnnbyPUAZYcpBuRe3nS2OIUg==}
-
-  '@alchemy/aa-accounts@3.19.0':
-    resolution: {integrity: sha512-cdR8H9LveeUyBWFkmoqU7hZnFoqmdyPQDYZRtFr9aF+3zWAQYYJ/13Vz7aoVQ4lZ57+JQj7fN5vSVn2gFI47yA==}
-    peerDependencies:
-      viem: 2.8.6
-
-  '@alchemy/aa-core@3.19.0':
-    resolution: {integrity: sha512-gVSesLsXORMuiA3w/w+4eQikzrikpj1XN2Sbrcik0v25AKH5QrHn0HddhyrN1aCFW2NoXjyhwxlySiTDVfTgxQ==}
-    peerDependencies:
-      viem: 2.8.6
 
   '@apidevtools/json-schema-ref-parser@11.7.2':
     resolution: {integrity: sha512-4gY54eEGEstClvEkGnwVkTkrx0sqwemEFG5OSRRn3tD91XH0+Q8XIkYIfo7IwEWPpJZwILb9GUXeShtplRc/eA==}
@@ -12588,22 +12566,6 @@ snapshots:
   '@adraffy/ens-normalize@1.10.1': {}
 
   '@adraffy/ens-normalize@1.11.0': {}
-
-  '@alchemy/aa-accounts@3.19.0(typescript@5.8.3)(viem@2.37.8(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64))':
-    dependencies:
-      '@alchemy/aa-core': 3.19.0(typescript@5.8.3)(viem@2.37.8(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64))
-      viem: 2.37.8(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)
-    transitivePeerDependencies:
-      - typescript
-
-  '@alchemy/aa-core@3.19.0(typescript@5.8.3)(viem@2.37.8(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64))':
-    dependencies:
-      abitype: 0.8.11(typescript@5.8.3)(zod@3.25.64)
-      eventemitter3: 5.0.1
-      viem: 2.37.8(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)
-      zod: 3.25.64
-    transitivePeerDependencies:
-      - typescript
 
   '@apidevtools/json-schema-ref-parser@11.7.2':
     dependencies:
