@@ -1,0 +1,287 @@
+---
+title: Publishing
+---
+
+This section will cover the steps to publish a new Vincent App and the minimum possible steps to execute an ability on behalf of a user.
+
+<Steps>
+  <Step title="Log into the Vincent Developer Dashboard">
+    Go to the [Vincent Developer Dashboard](https://dashboard.heyvincent.ai/developer/dashboard) and log in with your preferred authentication method.
+
+    <img
+      src="/images/app/publishing/image-1.png"
+      alt="Vincent Developer Dashboard login page"
+      className="rounded-lg"
+    />
+  </Step>
+
+  <Step title="Create a New Vincent App">
+    After logging in, click the **Create an app** button to access the [Create App Page](https://dashboard.heyvincent.ai/developer/create-app)
+
+    <img
+      src="/images/app/publishing/image-2.png"
+      alt="Create an app button in Vincent Dashboard"
+      className="rounded-lg"
+    />
+  </Step>
+
+  <Step title="Fill in the App Details">
+    <Tabs>
+      <Tab title="Required Values">
+        The following field requires a specific value:
+
+        <ParamField path="Delegatee Addresses" type="string" required>
+          This can be any EOA you have access to the private key of
+        </ParamField>
+      </Tab>
+
+      <Tab title="Test Values">
+        You can use test values for these fields:
+
+        <ParamField path="App Name" type="string" required>
+          The name of your Vincent App
+        </ParamField>
+
+        <ParamField path="Contact Email" type="string" required>
+          Email address for app-related communications
+        </ParamField>
+
+        <ParamField path="Description" type="string" required>
+          Brief description of what your app does
+        </ParamField>
+
+        <ParamField path="App User URL" type="string" required>
+          The URL where users will access your app
+        </ParamField>
+
+        <ParamField path="Redirect URIs" type="string" required>
+          OAuth redirect URIs for your app
+        </ParamField>
+      </Tab>
+    </Tabs>
+
+    Once you've filled in the required fields, click the **Create App** button to create your new Vincent App.
+
+    <Info>
+    If you misinput any of these, don't worry. These are editable after app creation as well.
+    </Info>
+
+    <img
+      src="/images/app/publishing/image-3.png"
+      alt="App details form"
+      className="rounded-lg"
+    />
+  </Step>
+
+  <Step title="Add Vincent Abilities">
+    After creating your Vincent App, you'll be directed to the Add Abilities page. Click the **Add Abilities to Version** button, and select your abilities to add them to your Vincent App.
+
+    <Note>
+      In this example, we will be using **ERC20 Approval** and **Uniswap Swap**.
+    </Note>
+
+    You will then want to click the **Publish App Version** button that appears below the abilities.
+
+    <img
+      src="/images/app/publishing/image-4.png"
+      alt="Add Abilities to Version interface"
+      className="rounded-lg"
+    />
+  </Step>
+
+  <Step title="Publish the App Version">
+    Click the **Publish App Version** button to register the App Version as published in the Vincent Registry smart contract.
+
+    <img
+      src="/images/app/publishing/image-6.png"
+      alt="Publish App Version button"
+      className="rounded-lg"
+    />
+  </Step>
+
+  <Step title="Permit Your App">
+    On your app page, click the share button to view the Connect Page URL. Navigate to your app's Connect Page and grant permissions to your application.
+
+    <img
+      src="/images/app/publishing/image-7-1.png"
+      alt="Share button to get Connect Page URL"
+      className="rounded-lg"
+    />
+
+    <img
+      src="/images/app/publishing/image-7-2.png"
+      alt="Connect Page with app permissions"
+      className="rounded-lg"
+    />
+
+    <img
+      src="/images/app/publishing/image-7-3.png"
+      alt="Grant permissions interface"
+      className="rounded-lg"
+    />
+  </Step>
+
+  <Step title="Execute Code on Behalf of Your User">
+    Once permissions are granted, you can execute abilities on behalf of the user. If you'd like to run this example, please ensure
+    that the delegator Vincent Wallet you're swapping for has enough native tokens for gas and enough of the token you plan to swap. This
+    example currently swaps **USDC** for **WETH** on **Base Mainnet**:
+
+    ```typescript
+      import { ethers } from 'ethers';
+      import { LitNodeClient } from '@lit-protocol/lit-node-client';
+      import { getSignedUniswapQuote, bundledVincentAbility as uniswapBundledAbility } from '@lit-protocol/vincent-ability-uniswap-swap';
+      import { bundledVincentAbility as erc20BundledAbility } from '@lit-protocol/vincent-ability-erc20-approval';
+      import { getVincentAbilityClient } from '@lit-protocol/vincent-app-sdk/abilityClient';
+
+      const DELEGATEE_PRIVATE_KEY = "YOUR-DELEGATEE-PRIVATE-KEY-HERE";
+      const delegatorPkpEthAddress = "YOUR-DELEGATOR-WALLET-ADDRESS-HERE";
+      const RPC_URL = "https://base.llamarpc.com";
+      const CHAIN_ID = 8453;
+      const TOKEN_IN = '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913'; // USDC
+      const TOKEN_OUT = '0x4200000000000000000000000000000000000006'; // WETH
+      const TOKEN_IN_DECIMALS = 6;
+      const SWAP_AMOUNT = 0.1;
+
+      const yellowstoneProvider = new ethers.providers.JsonRpcProvider("https://yellowstone-rpc.litprotocol.com/");
+      const delegateeSigner = new ethers.Wallet(DELEGATEE_PRIVATE_KEY, yellowstoneProvider);
+
+      console.log('Delegatee address:', delegateeSigner.address);
+
+      console.log('Initializing Lit Node Client...');
+      const litNodeClient = new LitNodeClient({
+        litNetwork: 'datil',
+        debug: true,
+      });
+
+      await litNodeClient.connect();
+      console.log('Connected to Lit Network');
+
+      console.log('Generating signed Uniswap quote...');
+      const signedUniswapQuote = await getSignedUniswapQuote({
+        quoteParams: {
+          rpcUrl: RPC_URL,
+          tokenInAddress: TOKEN_IN,
+          tokenInAmount: SWAP_AMOUNT.toString(),
+          tokenOutAddress: TOKEN_OUT,
+          recipient: delegatorPkpEthAddress,
+        },
+        ethersSigner: delegateeSigner,
+        litNodeClient,
+      });
+
+      console.log('Signed quote generated:', JSON.stringify(signedUniswapQuote, null, 2));
+
+      // Step 1: Check and approve ERC20 if needed
+      console.log('\n=== Step 1: ERC20 Approval ===');
+      const uniswapRouterAddress = signedUniswapQuote.quote.to;
+      console.log('Uniswap router address:', uniswapRouterAddress);
+
+      const erc20ApprovalAbilityClient = getVincentAbilityClient({
+        bundledVincentAbility: erc20BundledAbility,
+        ethersSigner: delegateeSigner,
+      });
+
+      // Precheck if approval is needed
+      console.log('Checking if ERC20 approval is needed...');
+      const approvalPrecheckResult = await erc20ApprovalAbilityClient.precheck(
+        {
+          rpcUrl: RPC_URL,
+          chainId: CHAIN_ID,
+          spenderAddress: uniswapRouterAddress,
+          tokenAddress: TOKEN_IN,
+          tokenAmount: ethers.utils.parseUnits(SWAP_AMOUNT.toString(), TOKEN_IN_DECIMALS).toString(),
+          alchemyGasSponsor: false,
+        },
+        {
+          delegatorPkpEthAddress,
+        }
+      );
+
+      console.log('Approval precheck result:', JSON.stringify(approvalPrecheckResult, null, 2));
+
+      if (!approvalPrecheckResult.success) {
+        throw new Error(`Approval precheck failed: ${approvalPrecheckResult.runtimeError}`);
+      }
+
+      if ('noNativeTokenBalance' in approvalPrecheckResult.result) {
+        throw new Error('PKP has no native token balance for gas');
+      }
+
+      if (!approvalPrecheckResult.result.alreadyApproved) {
+        console.log('Executing ERC20 approval...');
+        const approvalExecutionResult = await erc20ApprovalAbilityClient.execute(
+          {
+            rpcUrl: RPC_URL,
+            chainId: CHAIN_ID,
+            spenderAddress: uniswapRouterAddress,
+            tokenAddress: TOKEN_IN,
+            tokenAmount: ethers.utils.parseUnits(SWAP_AMOUNT.toString(), TOKEN_IN_DECIMALS).toString(),
+            alchemyGasSponsor: false,
+          },
+          {
+            delegatorPkpEthAddress,
+          }
+        );
+
+        console.log('Approval execution result:', JSON.stringify(approvalExecutionResult, null, 2));
+
+        if (!approvalExecutionResult.success) {
+          throw new Error(`Approval execution failed: ${approvalExecutionResult.runtimeError}`);
+        }
+
+        console.log('ERC20 approval successful! Tx hash:', approvalExecutionResult.result.approvalTxHash);
+      } else {
+        console.log('Sufficient allowance already exists, skipping approval');
+      }
+
+      // Step 2: Execute the swap
+      console.log('\n=== Step 2: Execute Uniswap Swap ===');
+      const uniswapSwapAbilityClient = getVincentAbilityClient({
+        bundledVincentAbility: uniswapBundledAbility,
+        ethersSigner: delegateeSigner,
+      });
+
+      console.log('Executing Uniswap swap...');
+      const swapExecutionResult = await uniswapSwapAbilityClient.execute(
+        {
+          rpcUrlForUniswap: RPC_URL,
+          signedUniswapQuote: {
+            quote: signedUniswapQuote.quote,
+            signature: signedUniswapQuote.signature,
+          },
+        },
+        {
+          delegatorPkpEthAddress,
+        }
+      );
+
+      console.log('Swap execution result:', JSON.stringify(swapExecutionResult, null, 2));
+
+      if (!swapExecutionResult.success) {
+        throw new Error(`Swap execution failed: ${swapExecutionResult.runtimeError}`);
+      }
+
+      console.log('\n✅ Swap successful! Tx hash:', swapExecutionResult.result.swapTxHash);
+      console.log('View on BaseScan:', `https://basescan.org/tx/${swapExecutionResult.result.swapTxHash}`);
+
+      litNodeClient.disconnect();
+      console.log('\nDisconnected from Lit Network');
+    ```
+
+    Congratulations! You've successfully executed your first Vincent Ability on behalf of a user. Your app can now perform ERC20 approvals and Uniswap swaps within the permissions granted by the user.
+  </Step>
+</Steps>
+
+## Next Steps
+
+<Columns cols={3}>
+  <Card title="Explaining Apps" icon="book" href="/app/explaining-apps" color="#FF4205">
+    Learn the fundamentals of Vincent App development
+  </Card>
+  <Card title="Updating Apps" icon="rotate" href="/app/updating-apps" color="#FF4205">
+    Learn how to update and version your Vincent Apps
+  </Card>
+  <Card title="Authenticating Users" icon="lock" href="/app/authenticating-users" color="#FF4205">
+    Implement secure user authentication in your app
+  </Card>
+</Columns>

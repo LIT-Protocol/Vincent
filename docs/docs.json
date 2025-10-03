@@ -41,6 +41,7 @@
             "pages": [
               "app/quickstart",
               "app/explaining-apps",
+              "app/publishing",
               "app/updating-apps",
               "app/deprecating-app-versions",
               "app/authenticating-users"
