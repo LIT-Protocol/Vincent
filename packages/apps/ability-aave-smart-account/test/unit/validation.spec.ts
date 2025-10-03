@@ -1,15 +1,16 @@
 import { getATokens, getAaveAddresses } from '../../src/lib/helpers/aave';
 import { validateSimulation } from '../../src/lib/helpers/validation';
-import type { UserOp } from '../src/lib/helpers/userOperation';
-import type {
-  SimulateAssetChange,
-  SimulateAssetChangesError,
-  SimulateUserOperationAssetChangesResponse,
-} from '../src/lib/helpers/simulation';
+import type { UserOp } from '../../src/lib/helpers/userOperation';
+import {
+  SimulateAssetType,
+  SimulateChangeType,
+  type SimulateAssetChange,
+  type SimulateAssetChangesError,
+  type SimulateUserOperationAssetChangesResponse,
+} from '../../src/lib/helpers/simulation';
 import { ENTRY_POINT, SMART_ACCOUNT_ADDRESS, CHAIN_ID } from '../helpers/test-variables';
 
 const ZERO = '0x0000000000000000000000000000000000000000';
-
 const sender = SMART_ACCOUNT_ADDRESS;
 const entryPointAddress = ENTRY_POINT;
 const aavePoolAddress = getAaveAddresses(CHAIN_ID).POOL;
@@ -18,16 +19,26 @@ const aaveATokens = getATokens(CHAIN_ID);
 const baseUserOp: UserOp = {
   sender,
   callData: '0x',
+  maxFeePerGas: '0x59682F00', // 1.5 gwei (adjust to network conditions)
+  maxPriorityFeePerGas: '0x3B9ACA00', // 1 gwei
+  paymasterAndData: '0x',
+  signature:
+    '0xfffffffffffffffffffffffffffffff0000000000000000000000000000000007aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa1c',
 };
 
 const makeChange = (over: Partial<SimulateAssetChange>): SimulateAssetChange => ({
-  rawAmount: '1',
   amount: '0.000001',
+  assetType: SimulateAssetType.NATIVE,
+  changeType: SimulateChangeType.TRANSFER,
   contractAddress: null,
-  tokenId: null,
   decimals: 18,
-  name: 'Token',
+  from: ZERO,
   logo: null,
+  name: 'Token',
+  rawAmount: '1',
+  symbol: 'ETH',
+  to: ZERO,
+  tokenId: null,
   ...over,
 });
 
@@ -35,7 +46,7 @@ const makeResponse = (
   changes: SimulateAssetChange[],
   error: SimulateAssetChangesError | null = null,
 ): SimulateUserOperationAssetChangesResponse => ({
-  changes: changes as any,
+  changes,
   error,
 });
 
@@ -43,8 +54,8 @@ describe('validateSimulation', () => {
   it('passes valid native and ERC20 scenarios (based on doc example)', () => {
     const simulation = makeResponse([
       makeChange({
-        assetType: 'NATIVE',
-        changeType: 'TRANSFER',
+        assetType: SimulateAssetType.NATIVE,
+        changeType: SimulateChangeType.TRANSFER,
         from: sender,
         to: entryPointAddress,
         contractAddress: null,
@@ -52,36 +63,36 @@ describe('validateSimulation', () => {
         name: 'Ethereum',
       }),
       makeChange({
-        assetType: 'ERC20',
-        changeType: 'TRANSFER',
+        assetType: SimulateAssetType.ERC20,
+        changeType: SimulateChangeType.TRANSFER,
         from: ZERO,
         to: sender,
         symbol: 'aBasUSDC',
       }),
       makeChange({
-        assetType: 'ERC20',
-        changeType: 'TRANSFER',
+        assetType: SimulateAssetType.ERC20,
+        changeType: SimulateChangeType.TRANSFER,
         from: sender,
         to: ZERO,
         symbol: 'aBasUSDC',
       }),
       makeChange({
-        assetType: 'ERC20',
-        changeType: 'APPROVE',
+        assetType: SimulateAssetType.ERC20,
+        changeType: SimulateChangeType.APPROVE,
         from: sender,
         to: aavePoolAddress,
         symbol: 'USDC',
       }),
       makeChange({
-        assetType: 'ERC20',
-        changeType: 'TRANSFER',
+        assetType: SimulateAssetType.ERC20,
+        changeType: SimulateChangeType.TRANSFER,
         from: sender,
         to: aavePoolAddress,
         symbol: 'USDC',
       }),
       makeChange({
-        assetType: 'ERC20',
-        changeType: 'TRANSFER',
+        assetType: SimulateAssetType.ERC20,
+        changeType: SimulateChangeType.TRANSFER,
         from: aavePoolAddress,
         to: sender,
         symbol: 'USDC',
@@ -115,8 +126,8 @@ describe('validateSimulation', () => {
   it('fails when native transfer is not to entry point', () => {
     const simulation = makeResponse([
       makeChange({
-        assetType: 'NATIVE',
-        changeType: 'TRANSFER',
+        assetType: SimulateAssetType.NATIVE,
+        changeType: SimulateChangeType.TRANSFER,
         from: sender,
         to: aavePoolAddress,
         contractAddress: null,
@@ -138,8 +149,8 @@ describe('validateSimulation', () => {
   it('fails when approve is not to aave pool', () => {
     const simulation = makeResponse([
       makeChange({
-        assetType: 'ERC20',
-        changeType: 'APPROVE',
+        assetType: SimulateAssetType.ERC20,
+        changeType: SimulateChangeType.APPROVE,
         from: sender,
         to: entryPointAddress,
       }),
@@ -159,7 +170,12 @@ describe('validateSimulation', () => {
   it('fails when ERC20 transfer involves address outside allowed set', () => {
     const random = '0x1111111111111111111111111111111111111111';
     const simulation = makeResponse([
-      makeChange({ assetType: 'ERC20', changeType: 'TRANSFER', from: sender, to: random }),
+      makeChange({
+        assetType: SimulateAssetType.ERC20,
+        changeType: SimulateChangeType.TRANSFER,
+        from: sender,
+        to: random,
+      }),
     ]);
 
     expect(() =>
@@ -176,12 +192,12 @@ describe('validateSimulation', () => {
   it('fails for unsupported asset type', () => {
     const simulation = makeResponse([
       makeChange({
-        assetType: 'ERC721',
-        changeType: 'TRANSFER' as any,
+        assetType: SimulateAssetType.ERC721,
+        changeType: SimulateChangeType.TRANSFER,
         from: sender,
         to: aavePoolAddress,
       }),
-    ] as any);
+    ]);
 
     expect(() =>
       validateSimulation({
@@ -197,12 +213,13 @@ describe('validateSimulation', () => {
   it('fails for unsupported ERC20 change type', () => {
     const simulation = makeResponse([
       makeChange({
-        assetType: 'ERC20',
+        assetType: SimulateAssetType.ERC20,
+        // @ts-expect-error this test is an invalid changeType
         changeType: 'UNKNOWN',
         from: sender,
         to: aavePoolAddress,
       }),
-    ] as any);
+    ]);
 
     expect(() =>
       validateSimulation({
