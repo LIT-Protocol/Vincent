@@ -8,13 +8,12 @@ import {
   type SimulateAssetChangesError,
   type SimulateUserOperationAssetChangesResponse,
 } from '../../src/lib/helpers/simulation';
-import { ENTRY_POINT, SMART_ACCOUNT_ADDRESS, CHAIN_ID } from '../helpers/test-variables';
 
 const ZERO = '0x0000000000000000000000000000000000000000';
-const sender = SMART_ACCOUNT_ADDRESS;
-const entryPointAddress = ENTRY_POINT;
-const aavePoolAddress = getAaveAddresses(CHAIN_ID).POOL;
-const aaveATokens = getATokens(CHAIN_ID);
+const sender = '0x09e840c213CFBd709a681590ea232479D2D063a9';
+const entryPointAddress = '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789';
+const aavePoolAddress = getAaveAddresses(8453).POOL;
+const aaveATokens = getATokens(8453);
 
 const baseUserOp: UserOp = {
   sender,

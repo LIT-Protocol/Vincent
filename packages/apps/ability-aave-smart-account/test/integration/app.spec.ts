@@ -97,8 +97,15 @@ describe('it should create, validate and sign an aave user op', () => {
     expect(precheckResult.success).toBeTruthy();
     expect(precheckResult.result).toBeDefined();
 
-    const { simulationChanges: precheckSimulationChanges, userOp: precheckUserOp } =
-      precheckResult.result;
+    // @ts-expect-error - can have error or the success fields
+    const {
+      error: precheckError,
+      simulationChanges: precheckSimulationChanges,
+      userOp: precheckUserOp,
+    } = precheckResult.result;
+
+    // precheckError
+    expect(precheckError).toBeUndefined();
 
     // simulationChanges
     expect(precheckSimulationChanges).toBeDefined();
@@ -134,8 +141,15 @@ describe('it should create, validate and sign an aave user op', () => {
     expect(executeResult.success).toBeTruthy();
     expect(executeResult.result).toBeDefined();
 
-    const { simulationChanges: executeSimulationChanges, userOp: executeUserOp } =
-      executeResult.result;
+    // @ts-expect-error - can have error or the success fields
+    const {
+      error: executeError,
+      simulationChanges: executeSimulationChanges,
+      userOp: executeUserOp,
+    } = executeResult.result;
+
+    // executeError
+    expect(executeError).toBeUndefined();
 
     // simulationChanges
     expect(executeSimulationChanges).toBeDefined();
