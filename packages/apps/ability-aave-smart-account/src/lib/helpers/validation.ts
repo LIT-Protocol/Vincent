@@ -1,14 +1,8 @@
 import { ethers } from 'ethers';
 
 import { getAaveAddresses, getATokens } from './aave';
-import { assertValidEntryPointAddress, getUserOpVersion, getSmartAccountNonce } from './entryPoint';
-import {
-  estimateUserOperationGas,
-  getUserOpInitCode,
-  simulateUserOp,
-  UserOp,
-  UserOpv060,
-} from './userOperation';
+import { assertValidEntryPointAddress, getSmartAccountNonce } from './entryPoint';
+import { estimateUserOperationGas, simulateUserOp, UserOp } from './userOperation';
 import { SimulateUserOperationAssetChangesResponse } from './simulation';
 
 interface ValidateSimulationParams {
@@ -107,8 +101,6 @@ export const validateUserOp = async (params: ProccessUserOpParams) => {
   const { POOL: aavePoolAddress } = getAaveAddresses(network.chainId);
   const aaveATokens = getATokens(network.chainId);
 
-  const userOpVersion = getUserOpVersion(entryPointAddress);
-
   // Complete userOp optional fields
   if (!_userOp.nonce) {
     _userOp.nonce = ethers.utils.hexValue(
@@ -128,16 +120,6 @@ export const validateUserOp = async (params: ProccessUserOpParams) => {
     if (gasEst?.callGasLimit) _userOp.callGasLimit = gasEst.callGasLimit;
     if (gasEst?.verificationGasLimit) _userOp.verificationGasLimit = gasEst.verificationGasLimit;
     if (gasEst?.preVerificationGas) _userOp.preVerificationGas = gasEst.preVerificationGas;
-  }
-  if (userOpVersion === '0.6.0') {
-    const _userOp060 = _userOp as UserOpv060;
-
-    if (!('initCode' in _userOp)) {
-      _userOp060.initCode = await getUserOpInitCode({
-        accountAddress: _userOp.sender,
-        provider,
-      });
-    }
   }
 
   // TODO Decode userOp to get token, pool and amount and validate there is nothing extra in the userOp

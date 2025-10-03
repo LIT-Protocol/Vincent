@@ -1,7 +1,6 @@
 import { ethers } from 'ethers';
 import { z } from 'zod';
 
-import { LIGHT_ACCOUNT_INIT_CODE } from './lightAccount';
 import type { SimulateUserOperationAssetChangesResponse } from './simulation';
 
 const userOpBaseSchema = z.object({
@@ -92,7 +91,7 @@ export const userOpv060Schema = userOpBaseSchema.extend({
     .regex(/^0x[0-9a-f]*$/)
     .default('0x')
     .describe(
-      'The initCode of the account (needed if the account is not yet on-chain and needs creation)',
+      'The initCode of the account if the account is not yet on-chain and needs creation. If the account is already on-chain, omit this field.',
     ),
   paymasterAndData: z
     .string()
@@ -156,18 +155,6 @@ export const estimateUserOperationGas = async ({
   userOp: UserOp;
 }) => {
   return await provider.send('eth_estimateUserOperationGas', [userOp, entryPointAddress]);
-};
-
-export const getUserOpInitCode = async ({
-  accountAddress,
-  provider,
-}: {
-  accountAddress: string;
-  provider: ethers.providers.JsonRpcProvider;
-}) => {
-  // Use smart account code or default initCode if it is not yet deployed
-  const saCode = await provider.getCode(accountAddress);
-  return saCode && saCode !== '0x' ? '0x' : LIGHT_ACCOUNT_INIT_CODE;
 };
 
 export const simulateUserOp = async ({
