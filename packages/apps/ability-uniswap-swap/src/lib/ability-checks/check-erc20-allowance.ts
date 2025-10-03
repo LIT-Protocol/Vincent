@@ -1,31 +1,44 @@
 import { ethers } from 'ethers';
-import { getErc20Contract } from './getErc20Contract';
+
+import { getErc20Allowance } from '../ability-helpers/get-erc20-allowance';
+import { CheckErc20AllowanceResult } from '../types';
 
 export const checkErc20Allowance = async ({
   provider,
   tokenAddress,
   owner,
   spender,
-  tokenAmount,
+  requiredAllowance,
 }: {
   provider: ethers.providers.StaticJsonRpcProvider;
   tokenAddress: string;
   owner: string;
   spender: string;
-  tokenAmount: bigint;
-}): Promise<ethers.BigNumber> => {
-  const contract = getErc20Contract(tokenAddress, provider);
+  requiredAllowance: ethers.BigNumber;
+}): Promise<CheckErc20AllowanceResult> => {
+  const currentAllowance = await getErc20Allowance({
+    provider,
+    tokenAddress,
+    owner,
+    spender,
+  });
 
-  const currentAllowance = await contract.allowance(owner, spender);
-
-  // Convert bigint to BigNumber for comparison
-  const tokenAmountBN = ethers.BigNumber.from(tokenAmount.toString());
-
-  if (currentAllowance.lt(tokenAmountBN)) {
-    throw new Error(
-      `Address ${owner} has insufficient ERC20 allowance for spender ${spender} for token ${tokenAddress} (checkErc20Allowance)`,
-    );
+  if (currentAllowance.lt(requiredAllowance)) {
+    return {
+      success: false,
+      reason: `[checkErc20Allowance] Address ${owner} has insufficient ERC20 allowance for spender ${spender} for token ${tokenAddress}`,
+      spenderAddress: spender,
+      tokenAddress: tokenAddress,
+      requiredAllowance,
+      currentAllowance,
+    };
   }
 
-  return currentAllowance;
+  return {
+    success: true,
+    spenderAddress: spender,
+    tokenAddress: tokenAddress,
+    requiredAllowance,
+    currentAllowance,
+  };
 };

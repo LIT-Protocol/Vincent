@@ -5,6 +5,8 @@
     "access": "public"
   },
   "dependencies": {
+    "@account-kit/infra": "^4.53.1",
+    "@account-kit/smart-contracts": "^4.53.1",
     "@lit-protocol/vincent-contracts-sdk": "workspace:*",
     "ethers": "5.8.0",
     "ethers-v6": "npm:ethers@^6",
