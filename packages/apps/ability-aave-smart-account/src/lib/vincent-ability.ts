@@ -116,11 +116,19 @@ export const vincentAbility = createVincentAbility({
         '[@lit-protocol/vincent-ability-aave-smart-account] signing user operation hash:',
         message,
       );
-      processedUserOp.signature = await Lit.Actions.signAndCombineEcdsa({
+      const sig = await Lit.Actions.signAndCombineEcdsa({
         toSign: message,
         sigName: 'user-operation-signature',
-        publicKey: delegatorPkpInfo.publicKey,
+        publicKey: delegatorPkpInfo.publicKey.replace(/^0x/, ''),
       });
+      const signature = JSON.parse(sig);
+
+      const joinSignature = ethers.utils.joinSignature({
+        r: '0x' + signature.r.substring(2),
+        s: '0x' + signature.s,
+        v: signature.v,
+      });
+      processedUserOp.signature = joinSignature;
 
       console.log('[@lit-protocol/vincent-ability-aave-smart-account] signed user operation');
       return succeed({

@@ -1,6 +1,6 @@
 {
   "name": "@lit-protocol/vincent-ability-aave-smart-account",
-  "version": "0.2.1",
+  "version": "0.0.5-mma",
   "publishConfig": {
     "access": "public"
   },
@@ -16,6 +16,7 @@
   },
   "devDependencies": {
     "@lit-protocol/esbuild-plugin-polyfill-node": "^0.3.0",
+    "@lit-protocol/vincent-app-sdk": "workspace:^",
     "esbuild": "^0.19.12",
     "ipfs-only-hash": "^4.0.0"
   },

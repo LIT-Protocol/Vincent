@@ -70,8 +70,8 @@ async function buildTxBundle(
   return [approveTx, supplyTx, withdrawTx];
 }
 
-describe('it should create and validate an aave user op', () => {
-  it('simulates a valid user op', async () => {
+describe('User ops simulation', () => {
+  it('it should create and validate an aave user op', async () => {
     if (!precheck) {
       throw new Error('Precheck is not defined');
     }
