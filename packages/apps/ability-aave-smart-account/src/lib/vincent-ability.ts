@@ -11,8 +11,8 @@ import {
   precheckSuccessSchema,
   abilityParamsSchema,
 } from './schemas';
-import { hashUnpackedUserOp } from './helpers/entryPoint';
-import { getUserOpVersion, UserOpv060 } from './helpers/userOperation';
+import { getUserOpVersion, hashUnpackedUserOp } from './helpers/entryPoint';
+import { UserOpv060 } from './helpers/userOperation';
 import { validateUserOp } from './helpers/validation';
 
 export const vincentAbility = createVincentAbility({
@@ -98,7 +98,7 @@ export const vincentAbility = createVincentAbility({
         '[@lit-protocol/vincent-ability-aave-smart-account] preparing user operation signature...',
       );
       const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
-      const userOpVersion = getUserOpVersion(processedUserOp);
+      const userOpVersion = getUserOpVersion(entryPointAddress);
 
       let message: Uint8Array;
       if (userOpVersion === '0.6.0') {

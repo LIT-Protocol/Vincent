@@ -1,11 +1,10 @@
 import { ethers } from 'ethers';
 
 import { getAaveAddresses, getATokens } from './aave';
-import { assertValidEntryPointAddress, getSmartAccountNonce } from './entryPoint';
+import { assertValidEntryPointAddress, getUserOpVersion, getSmartAccountNonce } from './entryPoint';
 import {
   estimateUserOperationGas,
   getUserOpInitCode,
-  getUserOpVersion,
   simulateUserOp,
   UserOp,
   UserOpv060,
@@ -108,7 +107,7 @@ export const validateUserOp = async (params: ProccessUserOpParams) => {
   const { POOL: aavePoolAddress } = getAaveAddresses(network.chainId);
   const aaveATokens = getATokens(network.chainId);
 
-  const userOpVersion = getUserOpVersion(_userOp);
+  const userOpVersion = getUserOpVersion(entryPointAddress);
 
   // Complete userOp optional fields
   if (!_userOp.nonce) {

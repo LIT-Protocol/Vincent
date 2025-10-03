@@ -2,12 +2,17 @@ import { ethers } from 'ethers';
 
 import type { UserOpv060 } from './userOperation';
 
+const COMMON_ENTRYPOINTS_VERSIONS: Record<string, string> = {
+  '0x0000000071727De22E5E9d8BAf0edAc6f37da032': '0.7.0',
+  '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789': '0.6.0',
+};
+
 export const entryPointIface = new ethers.utils.Interface([
   'function getNonce(address sender, uint192 key) view returns (uint256)',
 ]);
 
 // Unpacked (v0.6-style) tuple
-export const unpackedEntryPointIface = new ethers.utils.Interface([
+export const v060EntryPointIface = new ethers.utils.Interface([
   'function getUserOpHash((address sender,uint256 nonce,bytes initCode,bytes callData,uint256 callGasLimit,uint256 verificationGasLimit,uint256 preVerificationGas,uint256 maxFeePerGas,uint256 maxPriorityFeePerGas,bytes paymasterAndData,bytes signature)) view returns (bytes32)',
 ]);
 
@@ -19,7 +24,7 @@ export const getEntryPointContract = (
 export const getUnpackedEntryPointContract = (
   entryPointAddress: string,
   provider: ethers.providers.JsonRpcProvider,
-) => new ethers.Contract(entryPointAddress, unpackedEntryPointIface, provider);
+) => new ethers.Contract(entryPointAddress, v060EntryPointIface, provider);
 
 export const assertValidEntryPointAddress = async (
   entryPointAddress: string,
@@ -32,6 +37,15 @@ export const assertValidEntryPointAddress = async (
   }
 
   return true;
+};
+
+export const getUserOpVersion = (entryPointAddress: string) => {
+  const version = COMMON_ENTRYPOINTS_VERSIONS[entryPointAddress];
+  if (!version) {
+    throw new Error('Entry point version not supported');
+  }
+
+  return version;
 };
 
 export const getSmartAccountNonce = async ({
@@ -72,7 +86,7 @@ export const hashUnpackedUserOp = async ({
     signature: '0x',
   };
 
-  const epUnpacked = new ethers.Contract(entryPointAddress, unpackedEntryPointIface, provider);
+  const epUnpacked = new ethers.Contract(entryPointAddress, v060EntryPointIface, provider);
   const hash = await epUnpacked.getUserOpHash(unpacked);
 
   return ethers.utils.arrayify(hash);

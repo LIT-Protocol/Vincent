@@ -146,14 +146,6 @@ export type UserOpv070 = z.infer<typeof userOpv070Schema>;
 export const userOpSchema = z.union([userOpv060Schema, userOpv070Schema]);
 export type UserOp = z.infer<typeof userOpSchema>;
 
-export const getUserOpVersion = (userOp: UserOp) => {
-  if ('paymaster' in userOp) {
-    return '0.7.0';
-  } else {
-    return '0.6.0';
-  }
-};
-
 export const estimateUserOperationGas = async ({
   entryPointAddress,
   provider,
