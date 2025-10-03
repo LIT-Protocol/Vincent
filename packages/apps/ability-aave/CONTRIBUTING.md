@@ -37,7 +37,7 @@ nx action:build ability-aave
 Building will be done automatically. Deploy the ability:
 
 ```bash
-nx action:deploy ability-erc20-approval
+nx action:deploy ability-aave
 ```
 
 ## Project Structure
@@ -47,7 +47,7 @@ nx action:deploy ability-erc20-approval
 
 ## Ability Development Guidelines
 
-1. Use the Vincent Ability SDK to create abilitys
+1. Use the Vincent Ability SDK to create abilities
 2. Define clear schemas for ability parameters
 3. Implement the ability lifecycle methods (precheck, execute)
 4. Handle errors gracefully
