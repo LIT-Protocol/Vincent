@@ -31,6 +31,7 @@ const ProgramWhitelistPolicy = createVincentAbilityPolicy({
   abilityParamsSchema,
   bundledVincentPolicy,
   abilityParameterMappings: {
+    rpcUrl: 'rpcUrl',
     cluster: 'cluster',
     serializedTransaction: 'serializedTransaction',
   },
@@ -49,7 +50,7 @@ export const vincentAbility = createVincentAbility({
   executeFailSchema,
 
   precheck: async ({ abilityParams }, { succeed, fail }) => {
-    const { serializedTransaction, cluster } = abilityParams;
+    const { serializedTransaction, cluster, rpcUrl } = abilityParams;
 
     try {
       const transaction = deserializeTransaction(serializedTransaction);
@@ -58,7 +59,7 @@ export const vincentAbility = createVincentAbility({
       const verification = await verifyBlockhashForCluster({
         transaction,
         cluster,
-        rpcUrl: clusterApiUrl(cluster),
+        rpcUrl: rpcUrl || clusterApiUrl(cluster),
       });
       if (!verification.valid) {
         return fail({

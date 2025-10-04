@@ -34,7 +34,7 @@ export const vincentPolicy = createVincentPolicy({
   evalDenyResultSchema,
 
   precheck: async ({ abilityParams, userParams }, { allow, deny }) => {
-    const { serializedTransaction, cluster } = abilityParams;
+    const { serializedTransaction, cluster, rpcUrl } = abilityParams;
     const { whitelist } = userParams;
 
     const transaction = deserializeTransaction(serializedTransaction);
@@ -42,7 +42,7 @@ export const vincentPolicy = createVincentPolicy({
     const verification = await verifyBlockhashForCluster({
       transaction,
       cluster,
-      rpcUrl: clusterApiUrl(cluster),
+      rpcUrl: rpcUrl || clusterApiUrl(cluster),
     });
     if (!verification.valid) {
       return deny({

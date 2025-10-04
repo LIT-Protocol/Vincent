@@ -1,6 +1,12 @@
 import { z } from 'zod';
 
 export const abilityParamsSchema = z.object({
+  rpcUrl: z
+    .string()
+    .describe(
+      'The RPC URL to use for the Solana cluster the transaction is intended for (used to verify blockhash). Only available for precheck, execute will use the Lit provided RPC URL.',
+    )
+    .nullable(),
   cluster: z
     .enum(['devnet', 'testnet', 'mainnet-beta'])
     .describe('The Solana cluster the transaction is intended for (used to verify blockhash)'),

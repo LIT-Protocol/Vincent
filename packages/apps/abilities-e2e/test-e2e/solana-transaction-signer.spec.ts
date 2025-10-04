@@ -466,6 +466,7 @@ describe('Solana Transaction Signer Ability E2E Tests', () => {
     const client = getSolanaTransactionSignerAbilityClient();
     const precheckResult = await client.precheck(
       {
+        rpcUrl: null,
         cluster: SOLANA_CLUSTER,
         serializedTransaction: SERIALIZED_TRANSACTION,
         ciphertext: CIPHERTEXT,
@@ -519,6 +520,7 @@ describe('Solana Transaction Signer Ability E2E Tests', () => {
     const client = getSolanaTransactionSignerAbilityClient();
     const precheckResult = await client.precheck(
       {
+        rpcUrl: null,
         cluster: 'mainnet-beta',
         serializedTransaction,
         ciphertext: CIPHERTEXT,
@@ -561,6 +563,7 @@ describe('Solana Transaction Signer Ability E2E Tests', () => {
     const client = getSolanaTransactionSignerAbilityClient();
     const executeResult = await client.execute(
       {
+        rpcUrl: null,
         cluster: SOLANA_CLUSTER,
         serializedTransaction: SERIALIZED_TRANSACTION,
         ciphertext: CIPHERTEXT,
@@ -615,6 +618,7 @@ describe('Solana Transaction Signer Ability E2E Tests', () => {
     const client = getSolanaTransactionSignerAbilityClient();
     const precheckResult = await client.precheck(
       {
+        rpcUrl: null,
         cluster: SOLANA_CLUSTER,
         serializedTransaction: VERSIONED_SERIALIZED_TRANSACTION,
         ciphertext: CIPHERTEXT,
@@ -638,6 +642,7 @@ describe('Solana Transaction Signer Ability E2E Tests', () => {
     const client = getSolanaTransactionSignerAbilityClient();
     const executeResult = await client.execute(
       {
+        rpcUrl: null,
         cluster: SOLANA_CLUSTER,
         serializedTransaction: VERSIONED_SERIALIZED_TRANSACTION,
         ciphertext: CIPHERTEXT,
@@ -698,6 +703,7 @@ describe('Solana Transaction Signer Ability E2E Tests', () => {
     const client = getSolanaTransactionSignerAbilityClient();
     const executeResult = await client.execute(
       {
+        rpcUrl: null,
         cluster: SOLANA_CLUSTER,
         serializedTransaction,
         ciphertext: CIPHERTEXT,
@@ -770,6 +776,7 @@ describe('Solana Transaction Signer Ability E2E Tests', () => {
     const client = getSolanaTransactionSignerAbilityClient();
     const executeResult = await client.execute(
       {
+        rpcUrl: null,
         cluster: SOLANA_CLUSTER,
         serializedTransaction,
         ciphertext: CIPHERTEXT,
@@ -841,6 +848,7 @@ describe('Solana Transaction Signer Ability E2E Tests', () => {
     // Execute the transaction
     const executeResult = await client.execute(
       {
+        rpcUrl: null,
         cluster: SOLANA_CLUSTER,
         serializedTransaction,
         ciphertext: CIPHERTEXT,
