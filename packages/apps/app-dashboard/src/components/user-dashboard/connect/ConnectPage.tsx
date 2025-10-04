@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import * as Sentry from '@sentry/react';
 import { getClient } from '@lit-protocol/vincent-contracts-sdk';
 import { IRelayPKP } from '@lit-protocol/types';
 import { ConnectInfoMap } from '@/hooks/user-dashboard/connect/useConnectInfo';
@@ -19,6 +20,7 @@ import { litNodeClient, mintPKPToExistingPKP } from '@/utils/user-dashboard/lit'
 import { useJwtRedirect } from '@/hooks/user-dashboard/connect/useJwtRedirect';
 import { BigNumber } from 'ethers';
 import { addPayee } from '@/utils/user-dashboard/addPayee';
+import { usePendingAppConnectPkp } from '@/hooks/user-dashboard/connect/usePendingAppConnectPkp';
 
 interface ConnectPageProps {
   connectInfoMap: ConnectInfoMap;
@@ -37,6 +39,9 @@ export function ConnectPage({
   const [isConnectProcessing, setIsConnectProcessing] = useState(false);
   const [agentPKP, setAgentPKP] = useState<IRelayPKP | null>(null);
   const formRefs = useRef<Record<string, PolicyFormRef>>({});
+  const { pendingPKP, setPendingPKP, clearPendingPKP } = usePendingAppConnectPkp(
+    connectInfoMap.app.appId,
+  );
 
   const {
     formData,
@@ -121,24 +126,51 @@ export function ConnectPage({
       });
       await userPkpWallet.init();
 
-      let agentPKP: IRelayPKP;
-      if (previouslyPermittedPKP) {
-        // Reuse the previously permitted PKP
+      let agentPKP: IRelayPKP | undefined;
+
+      // Check for pending PKP or use previously permitted PKP
+      if (pendingPKP) {
+        console.log('Found pending PKP from previous attempt:', pendingPKP.ethAddress);
+        agentPKP = pendingPKP;
+      } else if (previouslyPermittedPKP) {
+        console.log('Reusing previously permitted PKP:', previouslyPermittedPKP.ethAddress);
         agentPKP = previouslyPermittedPKP;
-        console.log('Reusing previously permitted PKP:', agentPKP.ethAddress);
       } else {
-        // Mint a new PKP
-        const tokenIdString = BigNumber.from(readAuthInfo.authInfo.userPKP.tokenId).toHexString();
-        agentPKP = await mintPKPToExistingPKP({
-          ...readAuthInfo.authInfo.userPKP,
-          tokenId: tokenIdString,
-        });
-        console.log('Minted new PKP:', agentPKP.ethAddress);
+        // Step 1: Mint new PKP
+        try {
+          const tokenIdString = BigNumber.from(readAuthInfo.authInfo.userPKP.tokenId).toHexString();
+          agentPKP = await mintPKPToExistingPKP({
+            ...readAuthInfo.authInfo.userPKP,
+            tokenId: tokenIdString,
+          });
+          console.log('Minted new PKP:', agentPKP.ethAddress);
+
+          // Save to localStorage in case we fail in subsequent steps
+          setPendingPKP(agentPKP);
+        } catch (error) {
+          setLocalError(error instanceof Error ? error.message : 'Failed to mint PKP');
+          setIsConnectProcessing(false);
+          Sentry.captureException(error, {
+            extra: {
+              context: 'ConnectPage.mintPKPToExistingPKP',
+              userPKPTokenId: readAuthInfo.authInfo.userPKP.tokenId,
+            },
+          });
+          return;
+        }
       }
+
+      if (!agentPKP) {
+        setLocalError('Failed to initialize PKP');
+        setIsConnectProcessing(false);
+        return;
+      }
+
       setAgentPKP(agentPKP);
 
       const client = getClient({ signer: userPkpWallet });
 
+      // Step 2: Add permitted actions (idempotent - adding them again is safe)
       try {
         await addPermittedActions({
           wallet: userPkpWallet,
@@ -161,7 +193,7 @@ export function ConnectPage({
             await addPayee(readAuthInfo.authInfo.userPKP.ethAddress);
             console.log('Successfully added payee, retrying addPermittedActions');
 
-            // Retry only addPermittedActions
+            // Retry addPermittedActions
             await addPermittedActions({
               wallet: userPkpWallet,
               agentPKPTokenId: agentPKP.tokenId,
@@ -174,23 +206,35 @@ export function ConnectPage({
                 : 'Failed after addPayee attempt',
             );
             setIsConnectProcessing(false);
-            throw retryError;
+            Sentry.captureException(retryError, {
+              extra: {
+                context: 'ConnectPage.addPermittedActions.retryAfterAddPayee',
+                agentPKPTokenId: agentPKP.tokenId,
+              },
+            });
+            return;
           }
         } else if (isInsufficientFunds) {
-          // Insufficient funds - show helpful message with faucet link
+          // Insufficient funds - show helpful message with faucet link (don't log to Sentry - expected)
           const customMessage = `Insufficient testnet funds. Authentication Address (testnet only): ${readAuthInfo.authInfo.userPKP.ethAddress}. Please fund it with the faucet here:`;
           setLocalError(customMessage);
           setIsConnectProcessing(false);
-          throw new Error(customMessage);
+          return;
         } else {
           // Other error - log to Sentry and fail
+          Sentry.captureException(error, {
+            extra: {
+              context: 'ConnectPage.addPermittedActions',
+              agentPKPTokenId: agentPKP.tokenId,
+            },
+          });
           setLocalError(error instanceof Error ? error.message : 'Failed to add permitted actions');
           setIsConnectProcessing(false);
-          throw error;
+          return;
         }
       }
 
-      // Then, try permitApp (no retry logic needed here)
+      // Step 3: Permit app
       try {
         await client.permitApp({
           pkpEthAddress: agentPKP.ethAddress,
@@ -199,13 +243,24 @@ export function ConnectPage({
           permissionData: selectedFormData,
         });
 
+        // Clear the pending PKP on success
+        clearPendingPKP();
+
         setIsConnectProcessing(false);
         setLocalSuccess('Permissions granted successfully!');
         console.log('agentPKP:', agentPKP);
       } catch (error) {
+        Sentry.captureException(error, {
+          extra: {
+            context: 'ConnectPage.permitApp',
+            agentPKPAddress: agentPKP.ethAddress,
+            appId: connectInfoMap.app.appId,
+            appVersion: connectInfoMap.app.activeVersion,
+          },
+        });
         setLocalError(error instanceof Error ? error.message : 'Failed to permit app');
         setIsConnectProcessing(false);
-        throw error;
+        return;
       }
     } else {
       setLocalError('Some of your permissions are not valid. Please check the form and try again.');

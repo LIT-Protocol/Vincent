@@ -1,11 +1,13 @@
 import {
   createVincentAbility,
   supportedPoliciesForAbility,
-  getSolanaKeyPairFromWrappedKey,
   createVincentAbilityPolicy,
 } from '@lit-protocol/vincent-ability-sdk';
 import { bundledVincentPolicy } from '@lit-protocol/vincent-policy-sol-contract-whitelist';
 import { clusterApiUrl, Transaction } from '@solana/web3.js';
+import { api } from '@lit-protocol/vincent-wrapped-keys';
+
+const getSolanaKeyPairFromWrappedKey = api.litActionHelpers.getSolanaKeyPairFromWrappedKey;
 
 import {
   executeFailSchema,
@@ -84,7 +86,7 @@ export const vincentAbility = createVincentAbility({
 
     try {
       const solanaKeypair = await getSolanaKeyPairFromWrappedKey({
-        agentWalletPkpTokenId: tokenId,
+        delegatorPkpTokenId: tokenId,
         ciphertext,
         dataToEncryptHash,
       });

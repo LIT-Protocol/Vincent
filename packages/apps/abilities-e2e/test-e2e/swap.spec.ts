@@ -410,8 +410,6 @@ describe('Uniswap Swap Ability E2E Tests', () => {
     expect(quote.tokenOutDecimals).toBe(SWAP_TOKEN_OUT_DECIMALS);
 
     expect(quote.quote).toMatch(/^\d+(\.\d+)?$/);
-    expect(quote.estimatedGasUsed).toMatch(/^\d+$/);
-    expect(quote.estimatedGasUsedUSD).toMatch(/^\d+(\.\d+)?$/);
     expect(typeof quote.blockNumber).toBe('string');
     expect(typeof quote.timestamp).toBe('number');
   });

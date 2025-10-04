@@ -15,8 +15,6 @@ export const abilityParamsSchema = z.object({
         value: z.string().describe('The value to send with the transaction'),
         calldata: z.string().describe('The encoded transaction data'),
         quote: z.string().describe('Expected output amount as decimal string'),
-        estimatedGasUsed: z.string().describe('Estimated gas usage as integer string'),
-        estimatedGasUsedUSD: z.string().describe('Estimated gas cost in USD as decimal string'),
         blockNumber: z.string().describe('Block number when quote was generated'),
         tokenIn: z.string().describe('Input token address'),
         amountIn: z.string().describe('Input amount as decimal string'),
@@ -29,6 +27,14 @@ export const abilityParamsSchema = z.object({
       signature: z.string().describe('The signature of the Uniswap quote'),
     })
     .describe('Signed Uniswap quote from Prepare Lit Action'),
+  gasBufferPercentage: z
+    .number()
+    .optional()
+    .describe('Percent added to estimated gas limit (default 50).'),
+  baseFeePerGasBufferPercentage: z
+    .number()
+    .optional()
+    .describe('Percent added to baseFeePerGas when computing maxFeePerGas (default 0).'),
 });
 
 export const precheckFailSchema = z.object({

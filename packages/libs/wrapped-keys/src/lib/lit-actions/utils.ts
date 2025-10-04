@@ -1,11 +1,11 @@
-import { VINCENT_PREFIX } from '../constants';
+import { LIT_PREFIX } from '../constants';
 
 export function removeSaltFromDecryptedKey(decryptedPrivateKey: string) {
-  if (!decryptedPrivateKey.startsWith(VINCENT_PREFIX)) {
+  if (!decryptedPrivateKey.startsWith(LIT_PREFIX)) {
     throw new Error(
-      `PKey was not encrypted with salt; all wrapped keys must be prefixed with '${VINCENT_PREFIX}'`,
+      `PKey was not encrypted with salt; all wrapped keys must be prefixed with '${LIT_PREFIX}'`,
     );
   }
 
-  return decryptedPrivateKey.slice(VINCENT_PREFIX.length);
+  return decryptedPrivateKey.slice(LIT_PREFIX.length);
 }

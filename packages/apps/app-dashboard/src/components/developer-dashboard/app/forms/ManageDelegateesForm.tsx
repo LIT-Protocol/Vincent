@@ -19,6 +19,7 @@ import { TextField } from '../../form-fields';
 import { getClient } from '@lit-protocol/vincent-contracts-sdk';
 import { SkeletonButton } from '@/components/shared/ui/MutationButtonStates';
 import { initPkpSigner } from '@/utils/developer-dashboard/initPkpSigner';
+import { addPayee } from '@/utils/user-dashboard/addPayee';
 import useReadAuthInfo from '@/hooks/user-dashboard/useAuthInfo';
 
 const AddDelegateeSchema = z.object({
@@ -78,6 +79,10 @@ export function ManageDelegateesForm({
 
     // Now add the delegatee
     try {
+      // First, add the specific delegatee address as a payee
+      // if an error happens, at least it won't be written to chain
+      await addPayee(data.address);
+
       const pkpSigner = await initPkpSigner({ authInfo, sessionSigs });
       const client = getClient({ signer: pkpSigner });
 

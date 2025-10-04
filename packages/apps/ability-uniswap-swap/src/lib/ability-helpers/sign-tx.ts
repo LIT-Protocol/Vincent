@@ -10,7 +10,11 @@ declare const Lit: {
   };
 };
 
-export const signTx = async (pkpPublicKey: string, tx: ethers.Transaction, sigName: string) => {
+export const signTx = async (
+  pkpPublicKey: string,
+  tx: ethers.UnsignedTransaction,
+  sigName: string,
+) => {
   // Remove 0x prefix if it exists, Lit expects a hex string without 0x prefix
   const publicKeyForLit = pkpPublicKey.replace(/^0x/, '');
   console.log(`Signing using PKP Public Key: ${publicKeyForLit} (signTx)`);

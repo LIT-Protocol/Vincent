@@ -1,6 +1,6 @@
 import React from 'react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
-import { Package, Loader2, Sun, Moon, LogOut, TriangleAlert, HelpCircle } from 'lucide-react';
+import { Package, Sun, Moon, LogOut, TriangleAlert, HelpCircle, User, Code } from 'lucide-react';
 import { theme } from '@/components/user-dashboard/connect/ui/theme';
 import { toggleTheme } from '@/lib/theme';
 import { useTheme } from '@/hooks/useTheme';
@@ -39,7 +39,6 @@ interface MenuItem {
 
 const getMainMenuItems = (
   apps: App[],
-  isLoadingApps: boolean,
   permittedAppVersions: Record<string, string> = {},
   appVersionsMap: Record<string, any[]> = {},
 ): MenuItem[] => {
@@ -50,17 +49,8 @@ const getMainMenuItems = (
       icon: <Package className="h-4 w-4" />,
       route: '/user/apps',
       type: 'section',
-      children: isLoadingApps
-        ? [
-            {
-              id: 'loading',
-              label: 'Loading...',
-              icon: <Loader2 className="h-4 w-4 animate-spin" />,
-              route: '#',
-              type: 'link',
-            },
-          ]
-        : apps.length === 0
+      children:
+        apps.length === 0
           ? [
               {
                 id: 'no-apps',
@@ -131,21 +121,19 @@ interface AppSidebarProps {
   apps: App[];
   permittedAppVersions?: Record<string, string>;
   appVersionsMap?: Record<string, any[]>;
-  isLoadingApps?: boolean;
 }
 
 export function AppSidebar({
   apps = [],
   permittedAppVersions = {},
   appVersionsMap = {},
-  isLoadingApps = false,
 }: AppSidebarProps) {
   const location = useLocation();
   const navigate = useNavigate();
   const { clearAuthInfo } = useClearAuthInfo();
   const isDark = useTheme();
 
-  const menuItems = getMainMenuItems(apps, isLoadingApps, permittedAppVersions, appVersionsMap);
+  const menuItems = getMainMenuItems(apps, permittedAppVersions, appVersionsMap);
 
   const isActiveRoute = (route: string) => {
     return location.pathname.startsWith(route);
@@ -163,11 +151,11 @@ export function AppSidebar({
     <Sidebar variant="sidebar" collapsible="offcanvas" className="border-r-0">
       <SidebarHeader className="border-b border-sidebar-border h-16">
         <div className="flex items-center px-6 py-4 h-full">
-          <Link to="/" className="flex items-center">
+          <Link to="/">
             <img
               src={isDark ? '/vincent-main-logo-white.png' : '/vincent-main-logo.png'}
               alt="Vincent by Lit Protocol"
-              className="h-6 object-contain cursor-pointer hover:opacity-80 transition-opacity"
+              className="h-6 object-contain cursor-pointer"
             />
           </Link>
         </div>
@@ -347,6 +335,69 @@ export function AppSidebar({
       <SidebarFooter className="border-t border-sidebar-border">
         <div className="p-4 space-y-2">
           <SidebarMenu>
+            {/* Dashboard Switcher */}
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                asChild
+                isActive={location.pathname.startsWith('/user')}
+                className={`h-10 px-3 rounded-lg transition-all duration-200 ${
+                  location.pathname.startsWith('/user')
+                    ? `${theme.itemBg} text-orange-500`
+                    : `${theme.text} ${theme.itemHoverBg}`
+                }`}
+              >
+                <Link to="/user/apps">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={
+                        location.pathname.startsWith('/user') ? 'text-orange-500' : theme.textMuted
+                      }
+                    >
+                      <User className="h-4 w-4" />
+                    </div>
+                    <span
+                      className={`font-medium ${location.pathname.startsWith('/user') ? 'text-orange-500' : theme.text}`}
+                    >
+                      User Dashboard
+                    </span>
+                  </div>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                asChild
+                isActive={location.pathname.startsWith('/developer')}
+                className={`h-10 px-3 rounded-lg transition-all duration-200 ${
+                  location.pathname.startsWith('/developer')
+                    ? `${theme.itemBg} text-orange-500`
+                    : `${theme.text} ${theme.itemHoverBg}`
+                }`}
+              >
+                <Link to="/developer/dashboard">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={
+                        location.pathname.startsWith('/developer')
+                          ? 'text-orange-500'
+                          : theme.textMuted
+                      }
+                    >
+                      <Code className="h-4 w-4" />
+                    </div>
+                    <span
+                      className={`font-medium ${location.pathname.startsWith('/developer') ? 'text-orange-500' : theme.text}`}
+                    >
+                      Developer Dashboard
+                    </span>
+                  </div>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+
+            <div className={`border-t ${isDark ? 'border-white/10' : 'border-gray-900/10'} my-2`} />
+
             {/* My Account with tooltip */}
             <SidebarMenuItem>
               <AccountTooltip theme={theme} />

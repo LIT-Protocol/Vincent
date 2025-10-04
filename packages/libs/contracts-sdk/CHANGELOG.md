@@ -1,3 +1,13 @@
+## 1.3.0 (2025-09-25)
+
+### 🚀 Features
+
+- Add new isDelegateePermitted function that returns a boolean representing whether a given Delegatee is permitted to execute a Vincent Ability using a given Agent Wallet PKP ([4a51a1c9](https://github.com/LIT-Protocol/Vincent/commit/4a51a1c9))
+
+### ❤️ Thank You
+
+- Wyatt Barnes @spacesailor24
+
 ## 1.2.0 (2025-09-11)
 
 ### 🚀 Features

@@ -1,4 +1,8 @@
+import type { LitNamespace } from '../Lit';
+
 import { AbortError } from './abortError';
+
+declare const Lit: typeof LitNamespace;
 
 export async function litActionHandler(actionFunc: () => Promise<unknown>) {
   try {

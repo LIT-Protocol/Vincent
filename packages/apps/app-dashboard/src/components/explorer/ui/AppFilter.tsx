@@ -42,8 +42,8 @@ export function AppFilter({
                 className="px-3 py-2 rounded-lg bg-white/50 border border-black/10 text-black text-sm transition-all duration-300 focus:outline-none focus:border-black/20"
               >
                 <option value="all">All Status</option>
-                <option value="prod">Production</option>
-                <option value="test">Test</option>
+                <option value="prod">Live</option>
+                <option value="test">Beta</option>
               </select>
             </div>
 

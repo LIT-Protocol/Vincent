@@ -1,6 +1,8 @@
-import { VINCENT_PREFIX } from '../../../constants';
+import type { LitNamespace } from '../../../Lit';
 
-/* global Lit */
+import { LIT_PREFIX } from '../../../constants';
+
+declare const Lit: typeof LitNamespace;
 
 /**
  * @private
@@ -21,7 +23,7 @@ export async function encryptPrivateKey({
 }> {
   const { ciphertext, dataToEncryptHash } = await Lit.Actions.encrypt({
     accessControlConditions,
-    to_encrypt: new TextEncoder().encode(VINCENT_PREFIX + privateKey),
+    to_encrypt: new TextEncoder().encode(LIT_PREFIX + privateKey),
   });
 
   return {

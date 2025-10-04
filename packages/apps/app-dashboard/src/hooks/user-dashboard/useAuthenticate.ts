@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react';
 import { AuthMethod } from '@lit-protocol/types';
+import * as Sentry from '@sentry/react';
 import {
   authenticateWithWebAuthn,
   authenticateWithStytch,
@@ -47,6 +48,14 @@ export default function useAuthenticate() {
           !err.message.includes('privacy-considerations-client'))
       ) {
         setError(err as Error);
+        Sentry.addBreadcrumb({
+          category: 'auth.webauthn',
+          message: 'WebAuthn authentication failed',
+          level: 'error',
+          data: {
+            error: err instanceof Error ? err.message : String(err),
+          },
+        });
       }
     } finally {
       setLoading(false);
@@ -79,6 +88,16 @@ export default function useAuthenticate() {
         });
       } catch (err) {
         setError(err as Error);
+        Sentry.addBreadcrumb({
+          category: 'auth.stytch',
+          message: 'Stytch authentication failed',
+          level: 'error',
+          data: {
+            method,
+            userId,
+            error: err instanceof Error ? err.message : String(err),
+          },
+        });
       } finally {
         setLoading(false);
       }
@@ -108,6 +127,15 @@ export default function useAuthenticate() {
           (!err.message.includes('User rejected') && !err.message.includes('user rejected'))
         ) {
           setError(err as Error);
+          Sentry.addBreadcrumb({
+            category: 'auth.wallet',
+            message: 'Ethereum wallet authentication failed',
+            level: 'error',
+            data: {
+              address,
+              error: err instanceof Error ? err.message : String(err),
+            },
+          });
         }
       } finally {
         setLoading(false);

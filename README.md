@@ -72,7 +72,7 @@ Vincent optimizes for security, interoperability, and user-control to redefine h
 # Useful Links
 
 - [Vincent Docs](https://docs.heyvincent.ai/modules.html)
-- [Automated Dollar-Cost Averaging Demo](https://demo.heyvincent.ai/)
+- [Automated Dollar-Cost Averaging Demo](https://dca.heyvincent.ai/)
 - [Telegram Community](https://t.me/+aa73FAF9Vp82ZjJh)
 
 # Contributing

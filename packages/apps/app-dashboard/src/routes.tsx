@@ -63,6 +63,7 @@ import { UserPermissionWrapper } from './components/user-dashboard/dashboard/Use
 import { ConnectPageWrapper } from './components/user-dashboard/connect/ConnectPageWraper';
 import { PermittedAppsWrapper } from './components/user-dashboard/dashboard/PermittedAppsWrapper';
 import { UpdateVersionPageWrapper } from './components/user-dashboard/dashboard/UpdateVersionPageWrapper';
+import { RepermitConnectPageWrapper } from './components/user-dashboard/dashboard/RepermitConnectPageWrapper';
 
 const AppLayoutWithProviders = wrap(() => <Outlet />, [...AppProviders, AppLayout]);
 const UserDashboardLayoutWithProviders = wrap(
@@ -273,6 +274,10 @@ const routes: RouteObject[] = [
           {
             path: 'appId/:appId/update-version',
             element: <UpdateVersionPageWrapper />,
+          },
+          {
+            path: 'appId/:appId/repermit',
+            element: <RepermitConnectPageWrapper />,
           },
           {
             path: 'apps',

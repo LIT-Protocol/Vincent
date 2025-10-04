@@ -27,16 +27,12 @@ import {
   storeEncryptedKeyBatch,
   getVincentRegistryAccessControlCondition,
 } from './lib/api';
-import {
-  CHAIN_YELLOWSTONE,
-  VINCENT_PREFIX,
-  NETWORK_SOLANA,
-  KEYTYPE_ED25519,
-} from './lib/constants';
+import { CHAIN_YELLOWSTONE, LIT_PREFIX, NETWORK_SOLANA, KEYTYPE_ED25519 } from './lib/constants';
+import { getSolanaKeyPairFromWrappedKey } from './lib/lit-actions-client';
 
 export const constants = {
   CHAIN_YELLOWSTONE,
-  VINCENT_PREFIX,
+  LIT_PREFIX,
   NETWORK_SOLANA,
   KEYTYPE_ED25519,
 };
@@ -49,6 +45,9 @@ export const api = {
   storeEncryptedKeyBatch,
   batchGeneratePrivateKeys,
   getVincentRegistryAccessControlCondition,
+  litActionHelpers: {
+    getSolanaKeyPairFromWrappedKey,
+  },
 };
 
 export {

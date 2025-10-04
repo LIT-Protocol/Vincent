@@ -1,9 +1,31 @@
 import { IRelayPKP } from '@lit-protocol/types';
 import { ethers } from 'ethers';
-import { getPkpNftContract } from './get-pkp-nft-contract';
-import { SELECTED_LIT_NETWORK } from './lit';
-import { readOnlySigner } from '../developer-dashboard/readOnlySigner';
-import { getClient } from '@lit-protocol/vincent-contracts-sdk';
+import { env } from '@/config/env';
+
+const { VITE_VINCENT_DATIL_CONTRACT, VITE_DATIL_PKP_CONTRACT, VITE_VINCENT_YELLOWSTONE_RPC } = env;
+
+// Create contract instance for the new PKP methods
+const PKP_INFO_ABI = [
+  'function getPkpInfoFromOwnerAddress(address owner, uint256 pageSize, uint256 pageIndex) public view returns (tuple(uint256 tokenId, bytes pubkey, address ethAddress)[] memory)',
+];
+
+// Fetch both permitted and unpermitted apps for all agent PKPs
+const VINCENT_CONTRACT_ABI = [
+  'function getPermittedAppsForPkps(uint256[] pkpTokenIds, uint256 offset, uint256 pageSize) public view returns (tuple(uint256 pkpTokenId, tuple(uint40 appId, uint24 version, bool versionEnabled)[] permittedApps)[] results)',
+  'function getUnpermittedAppsForPkps(uint256[] pkpTokenIds, uint256 offset) public view returns (tuple(uint256 pkpTokenId, tuple(uint40 appId, uint24 previousPermittedVersion, bool versionEnabled)[] unpermittedApps)[] results)',
+];
+
+type PkpInfo = {
+  tokenId: ethers.BigNumber;
+  pubkey: string;
+  ethAddress: string;
+};
+
+type ProcessedPkpInfo = {
+  tokenId: string;
+  publicKey: string;
+  ethAddress: string;
+};
 
 export type AgentAppPermission = {
   appId: number;
@@ -29,52 +51,43 @@ export type AgentPkpsResult = {
  */
 export async function getAgentPkps(userAddress: string): Promise<AgentPkpsResult> {
   try {
-    const pkpNftContract = getPkpNftContract(SELECTED_LIT_NETWORK);
+    const yellowstoneProvider = new ethers.providers.JsonRpcProvider(VITE_VINCENT_YELLOWSTONE_RPC);
+    const pkpInfoContract = new ethers.Contract(
+      VITE_DATIL_PKP_CONTRACT,
+      PKP_INFO_ABI,
+      yellowstoneProvider,
+    );
 
-    const balance = await pkpNftContract.balanceOf(userAddress);
-    if (balance.toNumber() === 0) {
+    // Temporarily config this to 100
+    const pkpInfoArray = await pkpInfoContract.getPkpInfoFromOwnerAddress(userAddress, 100, 0);
+
+    if (pkpInfoArray.length === 0) {
       return { permitted: [], unpermitted: [] };
     }
 
-    // Get all token IDs in parallel first
-    const tokenIds = await Promise.all(
-      Array.from({ length: balance.toNumber() }, (_, i) =>
-        pkpNftContract.tokenOfOwnerByIndex(userAddress, i),
-      ),
-    );
-
-    // Then get all PKP data in parallel
-    const pkpDataPromises = tokenIds.map(async (tokenId) => {
-      const [publicKey] = await Promise.all([pkpNftContract.getPubkey(tokenId)]);
-      const ethAddress = ethers.utils.computeAddress(publicKey);
-
-      return {
-        tokenId: tokenId.toString(),
-        publicKey,
-        ethAddress,
-      };
-    });
-
-    const allPKPs = await Promise.all(pkpDataPromises);
+    // Convert the returned data to our expected format
+    const allPKPs: ProcessedPkpInfo[] = pkpInfoArray.map((pkpInfo: PkpInfo) => ({
+      tokenId: pkpInfo.tokenId.toString(),
+      publicKey: pkpInfo.pubkey,
+      ethAddress: pkpInfo.ethAddress,
+    }));
 
     // Filter out PKPs where the ethAddress matches the userAddress (userPKP)
     const agentPKPs = allPKPs.filter(
-      (pkp) => pkp.ethAddress.toLowerCase() !== userAddress.toLowerCase(),
+      (pkp: ProcessedPkpInfo) => pkp.ethAddress.toLowerCase() !== userAddress.toLowerCase(),
     );
 
-    // Fetch both permitted and unpermitted apps for all agent PKPs
-    const client = getClient({ signer: readOnlySigner });
-    const pkpEthAddresses = agentPKPs.map((pkp) => pkp.ethAddress);
+    const vincentContract = new ethers.Contract(
+      VITE_VINCENT_DATIL_CONTRACT,
+      VINCENT_CONTRACT_ABI,
+      yellowstoneProvider,
+    );
+
+    const agentTokenIds = agentPKPs.map((pkp) => pkp.tokenId);
 
     const [permittedAppsArray, unpermittedAppsArray] = await Promise.all([
-      client.getPermittedAppsForPkps({
-        pkpEthAddresses,
-        offset: '0',
-      }),
-      client.getUnpermittedAppsForPkps({
-        pkpEthAddresses,
-        offset: '0',
-      }),
+      vincentContract.getPermittedAppsForPkps(agentTokenIds, 0, 50), // Default page size
+      vincentContract.getUnpermittedAppsForPkps(agentTokenIds, 0),
     ]);
 
     // Convert the permitted apps results to our format
@@ -83,13 +96,15 @@ export async function getAgentPkps(userAddress: string): Promise<AgentPkpsResult
       Array<{ appId: number; version: number | null }>
     >();
     for (const pkpPermittedApps of permittedAppsArray) {
-      // Find the PKP by matching tokenId
-      const pkp = agentPKPs.find((p) => p.tokenId === pkpPermittedApps.pkpTokenId);
+      const tokenId = pkpPermittedApps.pkpTokenId.toString();
+      const pkp = agentPKPs.find((p: ProcessedPkpInfo) => p.tokenId === tokenId);
       if (pkp) {
-        const appsWithVersions = pkpPermittedApps.permittedApps.map((app) => ({
-          appId: app.appId,
-          version: app.version,
-        }));
+        const appsWithVersions = pkpPermittedApps.permittedApps.map(
+          (app: { appId: number; version: number; versionEnabled: boolean }) => ({
+            appId: app.appId,
+            version: app.version,
+          }),
+        );
         pkpToPermittedAppsMap.set(pkp.ethAddress, appsWithVersions);
       }
     }
@@ -100,14 +115,16 @@ export async function getAgentPkps(userAddress: string): Promise<AgentPkpsResult
       Array<{ appId: number; previousPermittedVersion: number | null; versionEnabled: boolean }>
     >();
     for (const pkpUnpermittedApps of unpermittedAppsArray) {
-      // Find the PKP by matching tokenId
-      const pkp = agentPKPs.find((p) => p.tokenId === pkpUnpermittedApps.pkpTokenId);
+      const tokenId = pkpUnpermittedApps.pkpTokenId.toString();
+      const pkp = agentPKPs.find((p: ProcessedPkpInfo) => p.tokenId === tokenId);
       if (pkp) {
-        const appsWithVersions = pkpUnpermittedApps.unpermittedApps.map((app) => ({
-          appId: app.appId,
-          previousPermittedVersion: app.previousPermittedVersion,
-          versionEnabled: app.versionEnabled,
-        }));
+        const appsWithVersions = pkpUnpermittedApps.unpermittedApps.map(
+          (app: { appId: number; previousPermittedVersion: number; versionEnabled: boolean }) => ({
+            appId: app.appId,
+            previousPermittedVersion: app.previousPermittedVersion,
+            versionEnabled: app.versionEnabled,
+          }),
+        );
         pkpToUnpermittedAppsMap.set(pkp.ethAddress, appsWithVersions);
       }
     }

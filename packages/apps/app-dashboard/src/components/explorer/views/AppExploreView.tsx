@@ -12,7 +12,7 @@ interface ExploreViewProps {
 
 export function AppExploreView({ apps }: ExploreViewProps) {
   const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'prod' | 'test'>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'prod' | 'test'>('prod');
   const [sortBy, setSortBy] = useState<'name' | 'updated' | 'version'>('name');
 
   const filteredApps = apps

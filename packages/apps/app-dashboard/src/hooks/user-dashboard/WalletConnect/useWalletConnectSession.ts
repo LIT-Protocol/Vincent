@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import * as Sentry from '@sentry/react';
 import { IRelayPKP, SessionSigs } from '@lit-protocol/types';
 import {
   useWalletConnectClient,
@@ -68,6 +69,14 @@ export function useWalletConnectSession(agentPKP?: IRelayPKP, sessionSigs?: Sess
         });
       } catch (initError) {
         console.error('Failed to initialize WalletConnect:', initError);
+        Sentry.addBreadcrumb({
+          category: 'walletconnect.init',
+          message: 'Failed to initialize WalletConnect client',
+          level: 'error',
+          data: {
+            error: initError instanceof Error ? initError.message : String(initError),
+          },
+        });
         setStatus({
           message: 'Failed to initialize WalletConnect. Please try refreshing the page.',
           type: 'error',
@@ -109,6 +118,15 @@ export function useWalletConnectSession(agentPKP?: IRelayPKP, sessionSigs?: Sess
         setStatus({ message: 'PKP wallet registered successfully', type: 'success' });
       } catch (err) {
         console.error('Failed to register PKP wallet:', err);
+        Sentry.addBreadcrumb({
+          category: 'walletconnect.pkp',
+          message: 'Failed to register PKP wallet',
+          level: 'error',
+          data: {
+            pkpAddress: agentPKP?.ethAddress,
+            error: err instanceof Error ? err.message : String(err),
+          },
+        });
         setStatus({
           message: `Failed to register PKP wallet: ${err instanceof Error ? err.message : 'Unknown error'}`,
           type: 'error',
@@ -185,6 +203,16 @@ export function useWalletConnectSession(agentPKP?: IRelayPKP, sessionSigs?: Sess
       refreshSessions();
     } catch (error) {
       console.error('Failed to approve session:', error);
+      Sentry.addBreadcrumb({
+        category: 'walletconnect.session',
+        message: 'Failed to approve session proposal',
+        level: 'error',
+        data: {
+          proposalId: pendingProposal?.id,
+          agentPkpAddress: agentPKP?.ethAddress,
+          error: error instanceof Error ? error.message : String(error),
+        },
+      });
 
       setStatus({
         message: error instanceof Error ? error.message : 'Failed to approve session',
@@ -214,6 +242,15 @@ export function useWalletConnectSession(agentPKP?: IRelayPKP, sessionSigs?: Sess
       setPendingProposal(null);
     } catch (error) {
       console.error('Failed to reject session:', error);
+      Sentry.addBreadcrumb({
+        category: 'walletconnect.session',
+        message: 'Failed to reject session proposal',
+        level: 'error',
+        data: {
+          proposalId: pendingProposal?.id,
+          error: error instanceof Error ? error.message : String(error),
+        },
+      });
       setStatus({
         message: error instanceof Error ? error.message : 'Failed to reject session',
         type: 'error',
@@ -233,6 +270,15 @@ export function useWalletConnectSession(agentPKP?: IRelayPKP, sessionSigs?: Sess
         await disconnectSession(topic, refreshSessions);
       } catch (error) {
         console.error('Failed to disconnect session:', error);
+        Sentry.addBreadcrumb({
+          category: 'walletconnect.session',
+          message: 'Failed to disconnect session',
+          level: 'error',
+          data: {
+            sessionTopic: topic,
+            error: error instanceof Error ? error.message : String(error),
+          },
+        });
         setStatus({
           message: error instanceof Error ? error.message : 'Failed to disconnect session.',
           type: 'error',
@@ -300,6 +346,15 @@ export function useWalletConnectSession(agentPKP?: IRelayPKP, sessionSigs?: Sess
                 console.log(`Disconnected session: ${topic.slice(0, 8)}...`);
               } catch (error) {
                 console.error(`Failed to disconnect session ${topic}:`, error);
+                Sentry.addBreadcrumb({
+                  category: 'walletconnect.cleanup',
+                  message: 'Failed to disconnect old session during wallet change',
+                  level: 'warning',
+                  data: {
+                    sessionTopic: topic,
+                    error: error instanceof Error ? error.message : String(error),
+                  },
+                });
               }
             }
 
@@ -311,6 +366,15 @@ export function useWalletConnectSession(agentPKP?: IRelayPKP, sessionSigs?: Sess
           }
         } catch (error) {
           console.error('Failed to disconnect sessions on wallet change:', error);
+          Sentry.addBreadcrumb({
+            category: 'walletconnect.cleanup',
+            message: 'Failed to cleanup sessions during wallet change',
+            level: 'error',
+            data: {
+              agentPkpAddress: agentPKP?.ethAddress,
+              error: error instanceof Error ? error.message : String(error),
+            },
+          });
         }
       };
 

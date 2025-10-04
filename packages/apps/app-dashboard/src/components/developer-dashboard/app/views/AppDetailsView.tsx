@@ -7,7 +7,7 @@ import { StatusMessage } from '@/components/shared/ui/statusMessage';
 import { AppPublishedButtons } from '../wrappers/ui/AppPublishedButtons';
 import { AppUnpublishedButtons } from '../wrappers/ui/AppUnpublishedButtons';
 import { UndeleteAppButton } from '../wrappers/ui/UndeleteAppButton';
-import { CheckCircle, XCircle, Share } from 'lucide-react';
+import { CheckCircle, XCircle, Share, Copy } from 'lucide-react';
 import { ConnectPageModal } from '../../ui/ConnectPageModal';
 import { Link } from 'react-router-dom';
 
@@ -25,8 +25,19 @@ export function AppDetailsView({
   refetchBlockchainData,
 }: AppDetailsViewProps) {
   const [isConnectModalOpen, setIsConnectModalOpen] = useState(false);
+  const [copySuccess, setCopySuccess] = useState(false);
   const isPublished = blockchainAppData !== null;
   const isAppDeletedRegistry = selectedApp.isDeleted;
+
+  const copyAppId = async () => {
+    try {
+      await navigator.clipboard.writeText(selectedApp.appId.toString());
+      setCopySuccess(true);
+      setTimeout(() => setCopySuccess(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy app ID:', err);
+    }
+  };
 
   const delegateeAddresses = isPublished
     ? blockchainAppData.delegateeAddresses
@@ -49,7 +60,30 @@ export function AppDetailsView({
                 <Share className="h-5 w-5" />
               </button>
             </div>
-            <p className="text-gray-600 dark:text-white/60 mt-2">{selectedApp.description}</p>
+
+            {/* App ID with Copy Button */}
+            <div className="flex items-center gap-2 mt-2">
+              <span className="text-sm text-gray-600 dark:text-white/60">App ID:</span>
+              <code className="text-sm font-mono bg-gray-100 dark:bg-white/10 px-2 py-1 rounded text-neutral-800 dark:text-white">
+                {selectedApp.appId}
+              </code>
+              <button
+                onClick={copyAppId}
+                className="p-1 text-orange-600 hover:text-orange-700 hover:bg-orange-50 dark:hover:bg-orange-500/10 rounded transition-colors"
+                title={copySuccess ? 'Copied!' : 'Copy App ID'}
+              >
+                <Copy
+                  className={`h-4 w-4 ${copySuccess ? 'text-green-600 dark:text-green-400' : 'text-orange-600'}`}
+                />
+              </button>
+              {copySuccess && (
+                <span className="text-xs text-green-600 dark:text-green-400 font-medium">
+                  Copied!
+                </span>
+              )}
+            </div>
+
+            <p className="text-gray-600 dark:text-white/60 mt-3">{selectedApp.description}</p>
           </div>
           <div className="ml-6 flex-shrink-0">
             {selectedApp.logo && selectedApp.logo.length >= 10 ? (
@@ -84,10 +118,19 @@ export function AppDetailsView({
           </div>
         )}
         {!selectedApp.activeVersion && (
-          <StatusMessage
-            message="Your app doesn’t have an active App version yet. Set the active version in the App Management section below to allow users to grant permissions to your App."
-            type="warning"
-          />
+          <div className="flex items-center p-3 mb-4 rounded-lg text-sm leading-normal w-full transition-all min-h-[48px] opacity-100 bg-yellow-50 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 border border-yellow-200 dark:border-yellow-700/30">
+            <span className="ml-3 transition-opacity">
+              Your App version 1 is not published, and users cannot grant permissions to your App.
+              Go{' '}
+              <Link
+                to={`/developer/appId/${selectedApp.appId}/version/1`}
+                className="underline hover:no-underline font-medium"
+              >
+                here
+              </Link>{' '}
+              to publish the App version on-chain.
+            </span>
+          </div>
         )}
 
         {/* App Management Actions */}

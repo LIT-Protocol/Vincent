@@ -1,7 +1,9 @@
-/* global Lit */
+import type { LitNamespace } from '../../../Lit';
 
 import { AbortError } from '../../abortError';
 import { removeSaltFromDecryptedKey } from '../../utils';
+
+declare const Lit: typeof LitNamespace;
 
 interface TryDecryptToSingleNodeParams {
   accessControlConditions: string;

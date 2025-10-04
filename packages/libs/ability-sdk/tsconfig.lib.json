@@ -11,10 +11,5 @@
     "composite": true
   },
   "include": ["src/**/*.ts"],
-  "references": [
-    {
-      "path": "../contracts-sdk/tsconfig.lib.json"
-    }
-  ],
   "exclude": ["jest.config.ts", "src/**/*.spec.ts", "src/**/*.test.ts"]
 }

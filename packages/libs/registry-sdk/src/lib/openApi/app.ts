@@ -881,34 +881,4 @@ export function addToRegistry(registry: OpenAPIRegistry) {
       },
     },
   });
-
-  // POST /app/:appId/sponsorDelegateesPayment - Add delegatee addresses to the payment DB contract via the relayer
-  registry.registerPath({
-    method: 'post',
-    path: '/app/{appId}/sponsorDelegateesPayment',
-    summary: 'Sponsor LIT chain usage costs for app delegatee addresses ',
-    operationId: 'sponsorDelegateesPayment',
-    security: [{ [jwtAuth.name]: [] }],
-    request: {
-      params: z.object({ appId: appIdParam }),
-    },
-    responses: {
-      200: {
-        description: 'OK - Current app delegatee addresses are sponsored for LIT chain usage costs',
-        content: {
-          'application/json': {
-            schema: GenericResult,
-          },
-        },
-      },
-      default: {
-        description: 'Unexpected error',
-        content: {
-          'application/json': {
-            schema: ErrorResponse,
-          },
-        },
-      },
-    },
-  });
 }

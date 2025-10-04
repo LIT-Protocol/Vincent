@@ -58,9 +58,28 @@ export default function EthWalletAuth({ authWithEthWallet, setView, theme }: Wal
     }
   }, [appKitInitialized, VITE_WALLETCONNECT_PROJECT_ID, VITE_DASHBOARD_URL]);
 
+  // Clean up AppKit when component unmounts or after successful authentication
+  useEffect(() => {
+    return () => {
+      if (appKitRef.current) {
+        try {
+          // Close any open modals first
+          if (appKitRef.current.close) {
+            appKitRef.current.close();
+          }
+          // Clear the AppKit instance to free up WalletConnect resources
+          appKitRef.current = null;
+        } catch (error) {
+          console.error('Error cleaning up AppKit:', error);
+        }
+      }
+    };
+  }, []);
+
   const openWalletModal = () => {
     if (appKitRef.current) {
-      appKitRef.current.open();
+      // Open the connect view specifically, not the account view
+      appKitRef.current.open({ view: 'Connect' });
     }
   };
 
@@ -86,6 +105,22 @@ export default function EthWalletAuth({ authWithEthWallet, setView, theme }: Wal
       };
 
       await authWithEthWallet(address, signMessage);
+
+      // Clean up AppKit after successful authentication to prevent conflicts with WalletKit
+      if (appKitRef.current) {
+        try {
+          console.log('Cleaning up WalletConnect auth provider after successful authentication');
+          // Close any open modals
+          if (appKitRef.current.close) {
+            appKitRef.current.close();
+          }
+          // Clear the AppKit instance reference to free up WalletConnect Core storage
+          appKitRef.current = null;
+          setAppKitInitialized(false);
+        } catch (cleanupError) {
+          console.error('Error cleaning up AppKit after auth:', cleanupError);
+        }
+      }
     } catch (err: any) {
       console.error('Error authenticating with wallet:', err);
       let errorMessage = 'Failed to authenticate with wallet. Please try again.';

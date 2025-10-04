@@ -16,7 +16,7 @@ import { generateRequestId, getBaseRequestParams, makeRequest } from './utils';
  * @returns { Promise<StoredKeyMetadata[]> } The private key metadata objects
  */
 export async function listPrivateKeyMetadata(params: ListKeysParams): Promise<StoredKeyMetadata[]> {
-  const { litNetwork, jwtToken, agentWalletAddress } = params;
+  const { litNetwork, jwtToken, delegatorAddress } = params;
 
   const requestId = generateRequestId();
   const { baseUrl, initParams } = getBaseRequestParams({
@@ -27,7 +27,7 @@ export async function listPrivateKeyMetadata(params: ListKeysParams): Promise<St
   });
 
   return makeRequest<StoredKeyMetadata[]>({
-    url: `${baseUrl}/delegatee/encrypted/${agentWalletAddress}`,
+    url: `${baseUrl}/delegatee/encrypted/${delegatorAddress}`,
     init: initParams,
     requestId,
   });
@@ -40,7 +40,7 @@ export async function listPrivateKeyMetadata(params: ListKeysParams): Promise<St
  * @returns { Promise<StoredKeyData> } The private key data object
  */
 export async function fetchPrivateKey(params: FetchKeyParams): Promise<StoredKeyData> {
-  const { litNetwork, jwtToken, id, agentWalletAddress } = params;
+  const { litNetwork, jwtToken, id, delegatorAddress } = params;
 
   const requestId = generateRequestId();
   const { baseUrl, initParams } = getBaseRequestParams({
@@ -51,7 +51,7 @@ export async function fetchPrivateKey(params: FetchKeyParams): Promise<StoredKey
   });
 
   return makeRequest<StoredKeyData>({
-    url: `${baseUrl}/delegatee/encrypted/${agentWalletAddress}/${id}`,
+    url: `${baseUrl}/delegatee/encrypted/${delegatorAddress}/${id}`,
     init: initParams,
     requestId,
   });

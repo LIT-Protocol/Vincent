@@ -51,27 +51,27 @@ export function getFirstSessionSig(pkpSessionSigs: SessionSigsMap): AuthSig {
  * via the Vincent registry contract's isDelegateePermitted method
  *
  * This function creates an ACC utilize the Vincent Delegatee's address derived from the inner Auth Sig of the provided Session Signatures,
- * the Agent Wallet's PKP token ID derived from the provided Agent Wallet's address, and the IPFS CID of the executing Lit Action.
+ * the delegator's PKP token ID derived from the provided delegator's address, and the IPFS CID of the executing Lit Action.
  *
  * @returns AccsEVMParams - Access control condition for Vincent registry validation
  */
 export async function getVincentRegistryAccessControlCondition({
-  agentWalletAddress,
-  agentWalletPkpTokenId,
+  delegatorAddress,
+  delegatorPkpTokenId,
 }: {
-  agentWalletAddress?: string;
-  agentWalletPkpTokenId?: string;
+  delegatorAddress?: string;
+  delegatorPkpTokenId?: string;
 }): Promise<AccsEVMParams> {
-  let agentPkpTokenId = agentWalletPkpTokenId;
+  let _delegatorPkpTokenId = delegatorPkpTokenId;
 
-  if (agentWalletAddress) {
-    if (!ethers.utils.isAddress(agentWalletAddress)) {
-      throw new Error(`agentWalletAddress is not a valid Ethereum Address: ${agentWalletAddress}`);
+  if (delegatorAddress) {
+    if (!ethers.utils.isAddress(delegatorAddress)) {
+      throw new Error(`delegatorAddress is not a valid Ethereum Address: ${delegatorAddress}`);
     }
 
-    agentPkpTokenId = (
+    _delegatorPkpTokenId = (
       await getPkpTokenId({
-        pkpEthAddress: agentWalletAddress,
+        pkpEthAddress: delegatorAddress,
         signer: ethers.Wallet.createRandom().connect(
           new ethers.providers.StaticJsonRpcProvider(LIT_RPC.CHRONICLE_YELLOWSTONE),
         ),
@@ -79,9 +79,9 @@ export async function getVincentRegistryAccessControlCondition({
     ).toString();
   }
 
-  if (!agentPkpTokenId) {
+  if (!_delegatorPkpTokenId) {
     throw new Error(
-      'The agent wallet address or PKP token ID is required to create an access control conditions',
+      'The delegator address or PKP token ID is required to create an access control conditions',
     );
   }
 
@@ -116,7 +116,7 @@ export async function getVincentRegistryAccessControlCondition({
     functionAbi,
     chain: CHAIN_YELLOWSTONE,
     functionName: 'isDelegateePermitted',
-    functionParams: [':userAddress', agentPkpTokenId, ':currentActionIpfsId'],
+    functionParams: [':userAddress', _delegatorPkpTokenId, ':currentActionIpfsId'],
     returnValueTest: {
       key: 'isPermitted',
       comparator: '=',

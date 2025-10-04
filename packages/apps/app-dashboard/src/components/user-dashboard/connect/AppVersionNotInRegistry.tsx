@@ -12,11 +12,13 @@ import { useCanGoBack } from '@/hooks/user-dashboard/connect/useCanGoBack';
 type AppVersionNotInRegistryConnectProps = {
   appData: App;
   readAuthInfo: ReadAuthInfo;
+  hasActiveVersion?: boolean;
 };
 
 export function AppVersionNotInRegistryConnect({
   appData,
   readAuthInfo,
+  hasActiveVersion = false,
 }: AppVersionNotInRegistryConnectProps) {
   const navigate = useNavigate();
   const canGoBack = useCanGoBack();
@@ -35,7 +37,7 @@ export function AppVersionNotInRegistryConnect({
       className={`max-w-md mx-auto ${theme.mainCard} border ${theme.mainCardBorder} rounded-2xl shadow-2xl overflow-hidden relative z-10 origin-center`}
     >
       {/* Header */}
-      <ConnectPageHeader authInfo={readAuthInfo.authInfo!} />
+      {readAuthInfo.authInfo && <ConnectPageHeader authInfo={readAuthInfo.authInfo} />}
 
       <div className="px-3 sm:px-4 py-6 sm:py-8 space-y-6">
         {/* App Header */}
@@ -47,8 +49,12 @@ export function AppVersionNotInRegistryConnect({
         {/* Version Publication Warning */}
         <InfoBanner
           type="warning"
-          title="Version Publication Required"
-          message="The app developer must publish the active version on-chain before permissions can be granted for this version."
+          title={hasActiveVersion ? 'Version Not Published' : 'App Not Yet Published'}
+          message={
+            hasActiveVersion
+              ? `The app developer must publish version ${appData.activeVersion} on-chain before permissions can be granted. Please contact the app developer or try again later.`
+              : 'The app developer must publish App version 1 on-chain before permissions can be granted. Please contact the app developer or try again later.'
+          }
         />
 
         {/* Options */}

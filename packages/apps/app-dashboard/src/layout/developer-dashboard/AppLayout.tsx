@@ -60,7 +60,7 @@ function AppLayout({ children, className }: ComponentProps<'div'>) {
 
   // Common layout wrapper function
   const layoutWrapper = (content: React.ReactNode) => (
-    <div className={cn(`min-h-screen min-w-screen ${theme.bg}`, className)}>
+    <div className={cn(`min-h-screen ${theme.bg}`, className)}>
       <SidebarProvider style={{ '--sidebar-width': '20rem' } as React.CSSProperties}>
         <DeveloperSidebarWrapper />
         <SidebarInset>

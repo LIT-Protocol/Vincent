@@ -52,7 +52,7 @@ export function AppVersionDetailView({
       )}
       {!app.activeVersion && (
         <StatusMessage
-          message="Your app has no active version set. Users cannot grant permissions until you set an active version. You can set an active version by editing the app in the app management section."
+          message="Your App version 1 needs to be published. Until it is, users cannot grant permissions. To publish, click the `Publish App Version` button on this page."
           type="warning"
         />
       )}

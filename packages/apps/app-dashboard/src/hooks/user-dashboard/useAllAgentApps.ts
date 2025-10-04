@@ -1,36 +1,36 @@
-import { useEffect, useState } from 'react';
-import { getAgentPkps, AgentAppPermission } from '../../utils/user-dashboard/getAgentPkps';
+import {
+  useGetPermittedAgentAppsQuery,
+  useGetUnpermittedAgentAppsQuery,
+} from '@/store/agentPkpsApi';
 
 export function useAllAgentApps(userAddress: string | undefined) {
-  const [permittedPKPs, setPermittedPKPs] = useState<AgentAppPermission[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
+  const {
+    data: permittedPkps = [],
+    isLoading: permittedLoading,
+    error: permittedError,
+  } = useGetPermittedAgentAppsQuery(userAddress || '', {
+    skip: !userAddress,
+  });
 
-  useEffect(() => {
-    if (!userAddress) {
-      setPermittedPKPs([]);
-      setError(null);
-      return;
-    }
+  const {
+    data: unpermittedPkps = [],
+    isLoading: unpermittedLoading,
+    error: unpermittedError,
+  } = useGetUnpermittedAgentAppsQuery(userAddress || '', {
+    skip: !userAddress,
+  });
 
-    setLoading(true);
-    setError(null);
+  const loading = permittedLoading || unpermittedLoading;
+  const queryError = permittedError || unpermittedError;
 
-    const fetchAllPermissions = async () => {
-      try {
-        const { permitted } = await getAgentPkps(userAddress);
+  // Convert RTK Query error to Error object for compatibility
+  const error = queryError
+    ? new Error(
+        typeof queryError === 'object' && 'error' in queryError
+          ? String(queryError.error)
+          : 'Failed to fetch agent apps',
+      )
+    : null;
 
-        setPermittedPKPs(permitted);
-      } catch (err) {
-        setError(err as Error);
-        setPermittedPKPs([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchAllPermissions();
-  }, [userAddress]);
-
-  return { permittedPKPs, loading, error };
+  return { permittedPkps, unpermittedPkps, loading, error };
 }

@@ -222,9 +222,7 @@ export function DeveloperSidebarError({ error }: DeveloperSidebarErrorProps) {
             {/* Documentation */}
             <SidebarMenuItem>
               <SidebarMenuButton
-                onClick={() =>
-                  window.open('https://docs.heyvincent.ai/documents/Getting_Started.html', '_blank')
-                }
+                onClick={() => window.open('https://docs.heyvincent.ai', '_blank')}
                 className={`h-10 px-3 rounded-lg transition-all duration-200 ${theme.text} ${theme.itemHoverBg}`}
               >
                 <div className="flex items-center gap-3">

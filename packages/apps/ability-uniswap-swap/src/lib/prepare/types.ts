@@ -14,8 +14,6 @@ export interface PrepareUniswapRoute {
   value: string;
   calldata: string;
   quote: string;
-  estimatedGasUsed: string;
-  estimatedGasUsedUSD: string;
   blockNumber: string;
   tokenIn: string;
   tokenInDecimals: number;

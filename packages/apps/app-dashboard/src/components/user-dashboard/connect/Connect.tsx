@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
+import * as Sentry from '@sentry/react';
 import { AUTH_METHOD_TYPE } from '@lit-protocol/constants';
 import { SessionSigs } from '@lit-protocol/types';
 import { ThemeType } from './ui/theme';
@@ -81,19 +82,48 @@ export default function ConnectView({ theme, readAuthInfo }: ConnectViewProps) {
       if (errorMessage.includes('User rejected') || errorMessage.includes('user rejected')) {
         // User cancelled authentication - no action needed
       } else {
+        // Capture the error with full breadcrumb trail
+        Sentry.captureException(error, {
+          extra: {
+            context: 'Connect.authentication',
+            errorSource: authError
+              ? 'authentication'
+              : accountsError
+                ? 'accounts'
+                : sessionError
+                  ? 'session'
+                  : 'readAuth',
+          },
+        });
         setStatusMessage(`Authentication Error: ${errorMessage}`);
         setStatusType('error');
       }
     } else {
       setStatusMessage('');
     }
-  }, [error]);
+  }, [error, authError, accountsError, sessionError, readError]);
 
   // Register with WebAuthn
   async function handleRegisterWithWebAuthn(displayName: string) {
-    const newPKP = await registerWebAuthn(displayName);
-    if (newPKP) {
-      setuserPKP(newPKP);
+    try {
+      const newPKP = await registerWebAuthn(displayName);
+      if (newPKP) {
+        setuserPKP(newPKP);
+      }
+    } catch (error) {
+      // Error will be logged by the effect that monitors authError/accountsError
+      // The registerWebAuthn error is already breadcrumbed in lit.ts
+      console.error('Failed to register WebAuthn:', error);
+      Sentry.captureException(error, {
+        extra: {
+          context: 'Connect.registerWebAuthn',
+          displayName,
+        },
+      });
+      setStatusMessage(
+        `Registration failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
+      setStatusType('error');
     }
   }
 

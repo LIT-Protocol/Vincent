@@ -166,15 +166,6 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['App'],
       }),
-      sponsorDelegateesPayment: build.mutation<
-        SponsorDelegateesPaymentApiResponse,
-        SponsorDelegateesPaymentApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/app/${encodeURIComponent(String(queryArg.appId))}/sponsorDelegateesPayment`,
-          method: 'POST',
-        }),
-      }),
       listAllAbilities: build.query<ListAllAbilitiesApiResponse, ListAllAbilitiesApiArg>({
         query: () => ({ url: `/abilities` }),
         providesTags: ['Ability'],
@@ -525,12 +516,6 @@ export type SetAppActiveVersionApiArg = {
   appId: number;
   /** The version to set as active */
   appSetActiveVersion: AppSetActiveVersion;
-};
-export type SponsorDelegateesPaymentApiResponse =
-  /** status 200 OK - Current app delegatee addresses are sponsored for LIT chain usage costs */ GenericResultMessage;
-export type SponsorDelegateesPaymentApiArg = {
-  /** ID of the target application */
-  appId: number;
 };
 export type ListAllAbilitiesApiResponse = /** status 200 Successful operation */ AbilityListRead;
 export type ListAllAbilitiesApiArg = void;
@@ -1284,7 +1269,6 @@ export const {
   useUndeleteAppVersionMutation,
   useUndeleteAppVersionAbilityMutation,
   useSetAppActiveVersionMutation,
-  useSponsorDelegateesPaymentMutation,
   useListAllAbilitiesQuery,
   useLazyListAllAbilitiesQuery,
   useCreateAbilityMutation,

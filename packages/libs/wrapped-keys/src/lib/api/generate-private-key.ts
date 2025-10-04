@@ -6,7 +6,7 @@ import { storePrivateKey } from '../service-client';
 import { getKeyTypeFromNetwork, getVincentRegistryAccessControlCondition } from './utils';
 
 /**
- * Generates a random private key inside a Lit Action for Vincent Agent Wallets,
+ * Generates a random private key inside a Lit Action for Vincent delegators,
  * and persists the key and its metadata to the Vincent wrapped keys service.
  *
  * This function requires both session signatures (for Lit network authentication) and
@@ -15,15 +15,15 @@ import { getKeyTypeFromNetwork, getVincentRegistryAccessControlCondition } from 
  *
  * @param { GeneratePrivateKeyParams } params - Required parameters to generate the private key
  *
- * @returns { Promise<GeneratePrivateKeyResult> } - The publicKey of the generated random private key and the Vincent Agent Wallet Address associated with the Wrapped Key
+ * @returns { Promise<GeneratePrivateKeyResult> } - The publicKey of the generated random private key and the Vincent delegator Address associated with the Wrapped Key
  */
 export async function generatePrivateKey(
   params: GeneratePrivateKeyParams,
 ): Promise<GeneratePrivateKeyResult> {
-  const { agentWalletAddress, jwtToken, network, litNodeClient, memo } = params;
+  const { delegatorAddress, jwtToken, network, litNodeClient, memo } = params;
 
   const allowDelegateeToDecrypt = await getVincentRegistryAccessControlCondition({
-    agentWalletAddress,
+    delegatorAddress,
   });
 
   const litActionIpfsCid = getLitActionCid(network, 'generateEncryptedKey');
@@ -47,7 +47,7 @@ export async function generatePrivateKey(
   });
 
   return {
-    agentWalletAddress,
+    delegatorAddress,
     id,
     generatedPublicKey: publicKey,
   };

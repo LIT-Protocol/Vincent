@@ -102,12 +102,24 @@ export function ConnectPageWrapper() {
       />
     );
   }
-  // Check for unpublished app version
+  // Check for unpublished app version (check this early, before auth)
+  else if (!data.app?.activeVersion) {
+    // App has no active version set (version 1 not published)
+    content = (
+      <AppVersionNotInRegistryConnect
+        appData={data.app}
+        readAuthInfo={{ authInfo, sessionSigs, isProcessing, error }}
+        hasActiveVersion={false}
+      />
+    );
+  }
+  // Check for unpublished app version (active version set but not on chain)
   else if (appExists === true && activeVersionExists === false && isPermitted !== true) {
     content = (
       <AppVersionNotInRegistryConnect
         appData={data.app}
         readAuthInfo={{ authInfo, sessionSigs, isProcessing, error }}
+        hasActiveVersion={true}
       />
     );
   }

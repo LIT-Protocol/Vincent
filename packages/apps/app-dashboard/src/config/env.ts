@@ -23,6 +23,7 @@ export const env = createEnv({
   clientPrefix: 'VITE_',
   client: {
     VITE_VINCENT_DATIL_CONTRACT: z.string(),
+    VITE_DATIL_PKP_CONTRACT: z.string(),
     VITE_STYTCH_PUBLIC_TOKEN: z.string(),
     VITE_STYTCH_PROJECT_ID: z.string(),
     VITE_WALLETCONNECT_PROJECT_ID: z.string(),

@@ -19,11 +19,11 @@ interface BaseApiParams {
  * Parameters for fetching a specific encrypted private key from the Vincent wrapped keys service.
  *
  * @typedef {BaseApiParams & Object} FetchKeyParams
- * @property {string} agentWalletAddress - The Vincent Agent Wallet address associated with the key
+ * @property {string} delegatorAddress - The Vincent Agent Wallet address associated with the key
  * @property {string} id - The unique identifier (UUID v4) of the encrypted private key to fetch
  */
 export type FetchKeyParams = BaseApiParams & {
-  agentWalletAddress: string;
+  delegatorAddress: string;
   id: string;
 };
 
@@ -31,10 +31,10 @@ export type FetchKeyParams = BaseApiParams & {
  * Parameters for listing all encrypted private key metadata for a Vincent Agent Wallet.
  *
  * @typedef {BaseApiParams & Object} ListKeysParams
- * @property {string} agentWalletAddress - The Vincent Agent Wallet address to list keys for
+ * @property {string} delegatorAddress - The Vincent Agent Wallet address to list keys for
  */
 export type ListKeysParams = BaseApiParams & {
-  agentWalletAddress: string;
+  delegatorAddress: string;
 };
 
 /**

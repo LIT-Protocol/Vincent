@@ -1,6 +1,7 @@
 import { ethers } from 'ethers';
 import { JsonRpcProvider as V6JsonRpcProvider, Contract as V6Contract } from 'ethers-v6';
 import { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
+import * as Sentry from '@sentry/react';
 import { StatusType } from '@/types/shared/StatusType';
 import { sendTokenTransaction, sendNativeTransaction } from './transactionService';
 import { LitNodeClient } from '@lit-protocol/lit-node-client';
@@ -115,6 +116,14 @@ export const handleSubmit = async (
         showStatus(`Detected token: ${symbol}`, 'info');
       } catch (error: unknown) {
         console.error('Error fetching token details:', error);
+        Sentry.captureException(error, {
+          extra: {
+            context: 'withdrawHandler.fetchTokenDetails',
+            tokenAddress,
+            chainId,
+            agentPkpAddress: agentPKP.ethAddress,
+          },
+        });
         showStatus(
           'Could not fetch token details. Please check token address and network and try again.',
           'error',
@@ -267,6 +276,15 @@ export const handleSubmit = async (
     }
   } catch (err: unknown) {
     console.error('Error submitting withdrawal:', err);
+    Sentry.captureException(err, {
+      extra: {
+        context: 'withdrawHandler.handleSubmit',
+        chainId,
+        isCustomToken,
+        tokenAddress: isCustomToken ? tokenAddress : undefined,
+        agentPkpAddress: agentPKP.ethAddress,
+      },
+    });
     showStatus('Failed to submit withdrawal', 'error');
     return { success: false };
   } finally {

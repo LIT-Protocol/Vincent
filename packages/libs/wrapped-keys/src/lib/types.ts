@@ -19,13 +19,13 @@ export type GeneratePrivateKeyAction = ApiParamsSupportedNetworks & {
  * @typedef BaseApiParams
  * @property {SessionSigsMap} delegateeSessionSigs - The Session Signatures produced by the Vincent Delegatee for authenticating with the Lit network to execute Lit Actions and decrypt keys.
  * @property {string} jwtToken - The JWT token from the Vincent Delegatee for authenticating with the Vincent wrapped keys service lambdas.
- * @property {string} agentWalletAddress - The Vincent Agent Wallet Address that the wrapped keys will be associated with.
+ * @property {string} delegatorAddress - The Vincent delegator Wallet Address that the wrapped keys will be associated with.
  * @property {ILitNodeClient} litNodeClient - The Lit Node Client used for executing the Lit Action and identifying which wrapped keys backend service to communicate with.
  */
 export interface BaseApiParams {
   delegateeSessionSigs: SessionSigsMap;
   jwtToken: string;
-  agentWalletAddress: string;
+  delegatorAddress: string;
   litNodeClient: ILitNodeClient;
 }
 
@@ -44,12 +44,12 @@ export type GeneratePrivateKeyParams = BaseApiParams &
   };
 
 /** @typedef GeneratePrivateKeyResult
- * @property { string } agentWalletAddress The Vincent Agent Wallet Address that the key was linked to
+ * @property { string } delegatorAddress The Vincent delegator Wallet Address that the key was linked to
  * @property { string } generatedPublicKey The public key component of the newly generated keypair
  * @property { string } id The unique identifier (UUID V4) of the encrypted private key
  */
 export interface GeneratePrivateKeyResult {
-  agentWalletAddress: string;
+  delegatorAddress: string;
   generatedPublicKey: string;
   id: string;
 }
@@ -69,7 +69,7 @@ export interface BatchGeneratePrivateKeysActionResult {
 
 /** Result structure for batch generate operations */
 export interface BatchGeneratePrivateKeysResult {
-  agentWalletAddress: string;
+  delegatorAddress: string;
   results: BatchGeneratePrivateKeysActionResult[];
 }
 
@@ -79,7 +79,7 @@ export interface BatchGeneratePrivateKeysResult {
  *
  * @typedef StoredKeyMetadata
  * @property { string } publicKey The public key of the encrypted private key
- * @property { string } pkpAddress The Vincent Agent Wallet address that is associated with the encrypted private key
+ * @property { string } pkpAddress The Vincent delegator PKP address that is associated with the encrypted private key
  * @property { string } keyType The type of key that was encrypted -- e.g. ed25519, K256, etc.
  * @property { string } memo A (typically) user-provided descriptor for the encrypted private key
  * @property { string } id The unique identifier (UUID V4) of the encrypted private key
@@ -109,7 +109,7 @@ export interface StoredKeyData extends StoredKeyMetadata {
  * Includes the unique identifier which is necessary to get the encrypted ciphertext and dataToEncryptHash in the future
  *
  * @typedef StoreEncryptedKeyResult
- * @property { string } pkpAddress The Vincent Agent Wallet Address that the key was linked to
+ * @property { string } pkpAddress The Vincent delegator PKP address that the key was linked to
  * @property { string } id The unique identifier (UUID V4) of the encrypted private key
  */
 export interface StoreEncryptedKeyResult {
@@ -121,7 +121,7 @@ export interface StoreEncryptedKeyResult {
  * Includes an array of unique identifiers, which are necessary to get the encrypted ciphertext and dataToEncryptHash in the future
  *
  * @typedef StoreEncryptedKeyBatchResult
- * @property { string } pkpAddress The Vincent Agent Wallet Address that the key was linked to
+ * @property { string } pkpAddress The Vincent delegator PKP address that the key was linked to
  * @property { string[] } ids Array of the unique identifiers (UUID V4) of the encrypted private keys in the same order provided
  */
 export interface StoreEncryptedKeyBatchResult {

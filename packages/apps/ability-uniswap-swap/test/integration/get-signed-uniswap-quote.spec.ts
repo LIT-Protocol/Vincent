@@ -66,8 +66,6 @@ describe('getSignedUniswapQuote', () => {
     expect(quote.tokenOutDecimals).toBeGreaterThan(0);
 
     expect(quote.quote).toMatch(/^\d+(\.\d+)?$/);
-    expect(quote.estimatedGasUsed).toMatch(/^\d+$/);
-    expect(quote.estimatedGasUsedUSD).toMatch(/^\d+(\.\d+)?$/);
     expect(typeof quote.blockNumber).toBe('string');
     expect(typeof quote.timestamp).toBe('number');
 
@@ -138,8 +136,6 @@ describe('getSignedUniswapQuote', () => {
     expect(quote.tokenOutDecimals).toBeGreaterThan(0);
 
     expect(quote.quote).toMatch(/^\d+(\.\d+)?$/);
-    expect(quote.estimatedGasUsed).toMatch(/^\d+$/);
-    expect(quote.estimatedGasUsedUSD).toMatch(/^\d+(\.\d+)?$/);
     expect(typeof quote.blockNumber).toBe('string');
     expect(typeof quote.timestamp).toBe('number');
 

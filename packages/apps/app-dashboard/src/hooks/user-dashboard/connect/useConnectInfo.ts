@@ -1,3 +1,6 @@
+import { useMemo, useEffect, useState } from 'react';
+import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
+import * as Sentry from '@sentry/react';
 import {
   AppVersionAbility,
   AppVersion,
@@ -7,8 +10,6 @@ import {
   Ability,
   Policy,
 } from '@/types/developer-dashboard/appTypes';
-import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
-import { useMemo, useEffect, useState } from 'react';
 
 export type ConnectInfoMap = {
   app: App;
@@ -34,12 +35,14 @@ export const useConnectInfo = (
   useActiveVersion = true,
 ): ConnectInfoState => {
   const [isDataFetchingComplete, setIsDataFetchingComplete] = useState(false);
-  const [currentlyFetchingVersions, setCurrentlyFetchingVersions] = useState<string>('');
+  const [currentlyFetchingVersions, setCurrentlyFetchingVersions] = useState<string | null>(null);
+  const versionsKey = versionsToFetch ? versionsToFetch.sort().join(',') : '';
 
   // Reset completion state when app changes
   useEffect(() => {
     setIsDataFetchingComplete(false);
-    setCurrentlyFetchingVersions('');
+    setCurrentlyFetchingVersions(null);
+    setFetchErrors([]);
   }, [appId]);
 
   const {
@@ -76,6 +79,7 @@ export const useConnectInfo = (
   >({});
   const [abilitiesData, setAbilitiesData] = useState<Record<string, Ability>>({});
   const [policiesData, setPoliciesData] = useState<Record<string, Policy>>({});
+  const [fetchErrors, setFetchErrors] = useState<string[]>([]);
 
   // Fetch all data when appVersions changes
   useEffect(() => {
@@ -96,7 +100,9 @@ export const useConnectInfo = (
     }
 
     // Determine what versions we'll be fetching
-    const targetVersionsKey = JSON.stringify(versionsToFetch || [app?.activeVersion]);
+    const targetVersionsKey = versionsToFetch
+      ? versionsToFetch.sort().join(',')
+      : app?.activeVersion?.toString() || '';
 
     // Check if we're already fetching or have fetched these versions
     if (currentlyFetchingVersions === targetVersionsKey) {
@@ -107,62 +113,213 @@ export const useConnectInfo = (
 
     const fetchAllData = async () => {
       try {
-        // Step 1: Fetch version abilities
+        // Step 1: Fetch version abilities in parallel
         const versionAbilitiesData: Record<string, AppVersionAbility[]> = {};
+        const errors: string[] = [];
 
         // Only fetch abilities for specified versions or just the active version
         const versionsToProcess = versionsToFetch
           ? appVersions.filter((v) => versionsToFetch.includes(v.version))
           : appVersions.filter((v) => v.version === app?.activeVersion);
 
-        for (const version of versionsToProcess) {
-          const result = await triggerListAppVersionAbilities({
+        // Parallelize version abilities fetching
+        const versionAbilitiesPromises = versionsToProcess.map((version) => {
+          const versionKey = `${appId}-${version.version}`;
+          return triggerListAppVersionAbilities({
             appId: Number(appId),
             version: Number(version.version),
-          });
+          })
+            .unwrap()
+            .then((data) => [versionKey, data || []] as const)
+            .catch((error) => {
+              console.error(`Failed to fetch abilities for version ${version.version}:`, error);
+              return [versionKey, []] as const;
+            });
+        });
 
-          const versionKey = `${appId}-${version.version}`;
-          versionAbilitiesData[versionKey] = result.data || [];
-        }
+        const versionAbilitiesResults = await Promise.all(versionAbilitiesPromises);
+        Object.assign(versionAbilitiesData, Object.fromEntries(versionAbilitiesResults));
 
         setVersionAbilitiesData(versionAbilitiesData);
 
-        // Step 2: Fetch ability versions and parent abilities
+        // Step 2: Fetch ability versions and parent abilities in parallel
         const abilityVersions: Record<string, AbilityVersion> = {};
         const abilities: Record<string, Ability> = {};
 
-        for (const [_, abilitiesList] of Object.entries(versionAbilitiesData)) {
+        // Collect all unique abilities to fetch
+        const abilityFetchMap = new Map<string, { packageName: string; version: string }>();
+        const parentAbilitySet = new Set<string>();
+
+        for (const abilitiesList of Object.values(versionAbilitiesData)) {
           for (const ability of abilitiesList) {
-            const abilityVersionResult = await triggerGetAbilityVersion({
+            const abilityKey = `${ability.abilityPackageName}-${ability.abilityVersion}`;
+            abilityFetchMap.set(abilityKey, {
               packageName: ability.abilityPackageName,
               version: ability.abilityVersion,
             });
-
-            const abilityKey = `${ability.abilityPackageName}-${ability.abilityVersion}`;
-            if (abilityVersionResult.data) {
-              abilityVersions[abilityKey] = abilityVersionResult.data;
-            }
-
-            // Fetch parent ability info if we haven't already
-            if (!abilities[ability.abilityPackageName]) {
-              const abilityResult = await triggerGetAbility({
-                packageName: ability.abilityPackageName,
-              });
-
-              if (abilityResult.data) {
-                abilities[ability.abilityPackageName] = abilityResult.data;
-              }
-            }
+            parentAbilitySet.add(ability.abilityPackageName);
           }
         }
+
+        // Parallelize ability version fetching
+        const abilityVersionPromises = Array.from(abilityFetchMap.entries()).map(
+          ([abilityKey, { packageName, version }]) => {
+            return triggerGetAbilityVersion({
+              packageName,
+              version,
+            })
+              .unwrap()
+              .then((data) => [abilityKey, data] as const)
+              .catch((error) => {
+                console.error(`Failed to fetch ability version ${packageName}@${version}:`, error);
+                Sentry.addBreadcrumb({
+                  category: 'api.vincent',
+                  message: `Failed to fetch ability version ${packageName}@${version}`,
+                  level: 'error',
+                  data: {
+                    packageName,
+                    version,
+                    error: error instanceof Error ? error.message : String(error),
+                  },
+                });
+                return [abilityKey, null] as const;
+              });
+          },
+        );
+
+        // Parallelize parent ability fetching
+        const parentAbilityPromises = Array.from(parentAbilitySet).map((packageName) => {
+          return triggerGetAbility({
+            packageName,
+          })
+            .unwrap()
+            .then((data) => [packageName, data] as const)
+            .catch((error) => {
+              console.error(`Failed to fetch ability ${packageName}:`, error);
+              Sentry.addBreadcrumb({
+                category: 'api.vincent',
+                message: `Failed to fetch ability ${packageName}`,
+                level: 'error',
+                data: {
+                  packageName,
+                  error: error instanceof Error ? error.message : String(error),
+                },
+              });
+              return [packageName, null] as const;
+            });
+        });
+
+        // Wait for all ability-related fetches to complete
+        const [abilityVersionResults, parentAbilityResults] = await Promise.all([
+          Promise.all(abilityVersionPromises),
+          Promise.all(parentAbilityPromises),
+        ]);
+
+        // Process ability version results
+        abilityVersionResults.forEach(([abilityKey, data]) => {
+          if (data) {
+            abilityVersions[abilityKey] = data;
+          } else {
+            const [packageName, version] = abilityKey.split('@');
+            errors.push(`Failed to load ability version: ${packageName}@${version}`);
+          }
+        });
+
+        // Process parent ability results
+        parentAbilityResults.forEach(([packageName, data]) => {
+          if (data) {
+            abilities[packageName] = data;
+          } else {
+            errors.push(`Failed to load ability: ${packageName}`);
+          }
+        });
 
         setAbilityVersionsData(abilityVersions);
         setAbilitiesData(abilities);
 
-        // Step 3: Fetch supported policies and parent policy info
+        // Update errors if any abilities failed to load
+        if (errors.length > 0) {
+          setFetchErrors((prev) => [...prev, ...errors]);
+        }
+
+        // Step 3: Fetch supported policies and parent policy info in parallel
         const supportedPoliciesData: Record<string, PolicyVersion[]> = {};
         const policies: Record<string, Policy> = {};
 
+        // Collect all unique policies to fetch
+        const policyFetchMap = new Map<string, { packageName: string; version: string }>();
+        const parentPolicySet = new Set<string>();
+
+        for (const abilityVersion of Object.values(abilityVersions)) {
+          if (abilityVersion.supportedPolicies) {
+            for (const [policyPackageName, policyVersion] of Object.entries(
+              abilityVersion.supportedPolicies,
+            )) {
+              const policyKey = `${policyPackageName}-${policyVersion}`;
+              policyFetchMap.set(policyKey, {
+                packageName: policyPackageName,
+                version: policyVersion,
+              });
+              parentPolicySet.add(policyPackageName);
+            }
+          }
+        }
+
+        // Parallelize policy version fetching
+        const policyVersionPromises = Array.from(policyFetchMap.values()).map(
+          ({ packageName, version }) => {
+            return triggerGetPolicyVersion({
+              packageName,
+              version,
+            })
+              .unwrap()
+              .then((data) => [packageName, version, data] as const)
+              .catch((error) => {
+                console.error(`Failed to fetch policy version ${packageName}@${version}:`, error);
+                Sentry.addBreadcrumb({
+                  category: 'api.vincent',
+                  message: `Failed to fetch policy version ${packageName}@${version}`,
+                  level: 'error',
+                  data: {
+                    packageName,
+                    version,
+                    error: error instanceof Error ? error.message : String(error),
+                  },
+                });
+                return [packageName, version, null] as const;
+              });
+          },
+        );
+
+        // Parallelize parent policy fetching
+        const parentPolicyPromises = Array.from(parentPolicySet).map((packageName) => {
+          return triggerGetPolicy({
+            packageName,
+          })
+            .unwrap()
+            .then((data) => [packageName, data] as const)
+            .catch((error) => {
+              console.error(`Failed to fetch policy ${packageName}:`, error);
+              Sentry.addBreadcrumb({
+                category: 'api.vincent',
+                message: `Failed to fetch policy ${packageName}`,
+                level: 'error',
+                data: {
+                  packageName,
+                  error: error instanceof Error ? error.message : String(error),
+                },
+              });
+              return [packageName, null] as const;
+            });
+        });
+
+        // Wait for all policy-related fetches to complete
+        const [policyVersionResults, parentPolicyResults] = await Promise.all([
+          Promise.all(policyVersionPromises),
+          Promise.all(parentPolicyPromises),
+        ]);
+
+        // Process policy results and group by ability
         for (const [abilityKey, abilityVersion] of Object.entries(abilityVersions)) {
           const abilityPolicies: PolicyVersion[] = [];
 
@@ -170,24 +327,13 @@ export const useConnectInfo = (
             for (const [policyPackageName, policyVersion] of Object.entries(
               abilityVersion.supportedPolicies,
             )) {
-              const policyVersionResult = await triggerGetPolicyVersion({
-                packageName: policyPackageName,
-                version: policyVersion,
-              });
-
-              if (policyVersionResult.data) {
-                abilityPolicies.push(policyVersionResult.data);
-              }
-
-              // Fetch parent policy info if we haven't already
-              if (!policies[policyPackageName]) {
-                const policyResult = await triggerGetPolicy({
-                  packageName: policyPackageName,
-                });
-
-                if (policyResult.data) {
-                  policies[policyPackageName] = policyResult.data;
-                }
+              const policyResult = policyVersionResults.find(
+                ([pkgName, ver]) => pkgName === policyPackageName && ver === policyVersion,
+              );
+              if (policyResult && policyResult[2]) {
+                abilityPolicies.push(policyResult[2]);
+              } else if (policyResult && !policyResult[2]) {
+                errors.push(`Failed to load policy version: ${policyPackageName}@${policyVersion}`);
               }
             }
           }
@@ -195,13 +341,41 @@ export const useConnectInfo = (
           supportedPoliciesData[abilityKey] = abilityPolicies;
         }
 
+        // Process parent policy results
+        parentPolicyResults.forEach(([packageName, data]) => {
+          if (data) {
+            policies[packageName] = data;
+          } else {
+            errors.push(`Failed to load policy: ${packageName}`);
+          }
+        });
+
         setSupportedPoliciesData(supportedPoliciesData);
         setPoliciesData(policies);
+
+        // Update errors if any policies failed to load
+        if (errors.length > 0) {
+          setFetchErrors((prev) => [...prev, ...errors]);
+        }
 
         // Mark data fetching as complete
         setIsDataFetchingComplete(true);
       } catch (error) {
         console.error('Error fetching connect info:', error);
+
+        // Capture to Sentry (skip 404s as those are expected)
+        const is404 =
+          typeof error === 'object' && error !== null && 'status' in error && error.status === 404;
+        if (!is404) {
+          Sentry.captureException(error, {
+            extra: {
+              context: 'useConnectInfo.fetchAllData',
+              appId,
+              useActiveVersion,
+            },
+          });
+        }
+
         // Still mark as complete even if there was an error
         setIsDataFetchingComplete(true);
       }
@@ -209,12 +383,19 @@ export const useConnectInfo = (
 
     fetchAllData();
   }, [
-    appVersions?.length,
+    appVersions,
     appId,
-    app?.appId,
-    JSON.stringify(versionsToFetch),
+    app,
+    versionsKey,
     useActiveVersion,
     currentlyFetchingVersions,
+    appLoading,
+    appVersionsLoading,
+    triggerListAppVersionAbilities,
+    triggerGetAbilityVersion,
+    triggerGetPolicyVersion,
+    triggerGetAbility,
+    triggerGetPolicy,
   ]);
 
   // Construct ConnectInfoMap from available data
@@ -287,21 +468,20 @@ export const useConnectInfo = (
     policiesData,
   ]);
 
+  const hasError =
+    appError ||
+    appVersionsError ||
+    abilitiesError ||
+    abilityVersionsError ||
+    policiesError ||
+    abilitiesInfoError ||
+    policiesInfoError ||
+    (!appLoading && !app && isDataFetchingComplete);
+
   return {
     isLoading: !isDataFetchingComplete || (!useActiveVersion && !versionsToFetch),
-    isError:
-      appError ||
-      appVersionsError ||
-      abilitiesError ||
-      abilityVersionsError ||
-      policiesError ||
-      abilitiesInfoError ||
-      policiesInfoError ||
-      (!appLoading && !app && isDataFetchingComplete),
-    errors:
-      appError || appVersionsError || (!appLoading && !app && isDataFetchingComplete)
-        ? ['App not found']
-        : [],
+    isError: hasError || fetchErrors.length > 0,
+    errors: hasError ? ['App not found'] : fetchErrors,
     data: connectInfoMap,
   };
 };

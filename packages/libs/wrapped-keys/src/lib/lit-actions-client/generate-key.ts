@@ -28,14 +28,14 @@ interface GeneratePrivateKeyLitActionResult {
 }
 
 /**
- * Executes a Lit Action to generate a single encrypted private key for a Vincent Agent Wallet.
+ * Executes a Lit Action to generate a single encrypted private key for a Vincent delegator.
  *
  * This function directly invokes the Lit Action that generates a Solana keypair and encrypts
  * it with the provided access control conditions. The key is generated inside the secure
  * Lit Action environment and returned encrypted, ensuring the raw private key is never exposed.
  *
  * @param {GeneratePrivateKeyLitActionParams} params - Parameters for key generation including
- *   delegatee session signatures, access control conditions, and the agent wallet address
+ *   delegatee session signatures, access control conditions, and the delegator address
  *
  * @returns {Promise<GeneratePrivateKeyLitActionResult>} The generated encrypted private key data
  *   containing the ciphertext, dataToEncryptHash, and public key
@@ -47,7 +47,7 @@ interface GeneratePrivateKeyLitActionResult {
  * const result = await generateKeyWithLitAction({
  *   litNodeClient,
  *   delegateeSessionSigs,
- *   agentWalletAddress: '0x...',
+ *   delegatorAddress: '0x...',
  *   accessControlConditions: [...],
  *   litActionIpfsCid: 'Qm...',
  *   network: 'solana',
@@ -61,14 +61,14 @@ export async function generateKeyWithLitAction({
   delegateeSessionSigs,
   litActionIpfsCid,
   accessControlConditions,
-  agentWalletAddress,
+  delegatorAddress,
 }: GeneratePrivateKeyLitActionParams): Promise<GeneratePrivateKeyLitActionResult> {
   const result = await litNodeClient.executeJs({
     useSingleNode: true,
     sessionSigs: delegateeSessionSigs,
     ipfsId: litActionIpfsCid,
     jsParams: {
-      agentWalletAddress,
+      delegatorAddress,
       accessControlConditions,
     },
   });

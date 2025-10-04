@@ -73,9 +73,21 @@ export function SidebarSkeleton() {
 
       <SidebarFooter className="border-t border-sidebar-border">
         <div className="p-4 space-y-2">
-          {/* Wallet, My Account, Sign out skeletons */}
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="h-10 px-3 rounded-lg">
+          {/* Dashboard Switcher - 2 items */}
+          {[1, 2].map((i) => (
+            <div key={`dashboard-${i}`} className="h-10 px-3 rounded-lg">
+              <div className="flex items-center gap-3">
+                <div className={`w-4 h-4 rounded ${skeletonClass}`} />
+                <div className={`h-4 w-28 rounded ${skeletonClass}`} />
+              </div>
+            </div>
+          ))}
+
+          <div className="border-t border-gray-900/10 dark:border-white/10 my-2" />
+
+          {/* My Account, Sign out - 2 items */}
+          {[1, 2].map((i) => (
+            <div key={`account-${i}`} className="h-10 px-3 rounded-lg">
               <div className="flex items-center gap-3">
                 <div className={`w-4 h-4 rounded ${skeletonClass}`} />
                 <div className={`h-4 w-20 rounded ${skeletonClass}`} />
@@ -85,13 +97,15 @@ export function SidebarSkeleton() {
 
           <div className="border-t border-gray-900/10 dark:border-white/10 my-2" />
 
-          {/* Theme toggle skeleton */}
-          <div className="h-10 px-3 rounded-lg">
-            <div className="flex items-center gap-3">
-              <div className={`w-4 h-4 rounded ${skeletonClass}`} />
-              <div className={`h-4 w-16 rounded ${skeletonClass}`} />
+          {/* FAQ, Theme toggle - 2 items */}
+          {[1, 2].map((i) => (
+            <div key={`settings-${i}`} className="h-10 px-3 rounded-lg">
+              <div className="flex items-center gap-3">
+                <div className={`w-4 h-4 rounded ${skeletonClass}`} />
+                <div className={`h-4 w-16 rounded ${skeletonClass}`} />
+              </div>
             </div>
-          </div>
+          ))}
         </div>
       </SidebarFooter>
     </Sidebar>

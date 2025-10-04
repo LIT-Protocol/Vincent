@@ -3,7 +3,7 @@ import type { ListEncryptedKeyMetadataParams, StoredKeyMetadata } from '../types
 import { listPrivateKeyMetadata } from '../service-client';
 
 /**
- * Get list of metadata for previously encrypted and persisted private keys for Vincent Agent Wallets.
+ * Get list of metadata for previously encrypted and persisted private keys for Vincent delegators.
  * Note that this method does include the `ciphertext` or `dataToEncryptHash` values necessary to decrypt the keys.
  * To get those values, call `getEncryptedKey()` with the `id` for the appropriate key returned by this method.
  *
@@ -15,11 +15,11 @@ import { listPrivateKeyMetadata } from '../service-client';
 export async function listEncryptedKeyMetadata(
   params: ListEncryptedKeyMetadataParams,
 ): Promise<StoredKeyMetadata[]> {
-  const { jwtToken, agentWalletAddress, litNodeClient } = params;
+  const { jwtToken, delegatorAddress, litNodeClient } = params;
 
   return listPrivateKeyMetadata({
     jwtToken,
-    agentWalletAddress,
+    delegatorAddress,
     litNetwork: litNodeClient.config.litNetwork,
   });
 }

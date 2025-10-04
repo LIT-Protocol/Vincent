@@ -15,7 +15,19 @@ export function Header({ showBackButton = false }: HeaderProps) {
         <div className="flex items-center justify-between min-w-0">
           {/* Left side: Navigation */}
           <div className="flex items-center gap-1 sm:gap-2 lg:gap-4 min-w-0 flex-1 mr-2">
-            {/* Back Button (conditional) */}
+            {/* Home Button - always shown on apps page */}
+            {!showBackButton && (
+              <button
+                onClick={() => navigate('/')}
+                className="group flex items-center gap-2 text-gray-600 hover:text-black bg-transparent hover:bg-black/5 border border-black/10 hover:border-black/20 transition-all duration-300 rounded-full px-2 lg:px-3 py-1.5 text-sm font-medium shrink-0"
+                aria-label="Back to Home"
+              >
+                <ArrowLeft className="w-4 h-4 transition-transform duration-300 group-hover:-translate-x-1" />
+                <span className="hidden xl:inline">Home</span>
+              </button>
+            )}
+
+            {/* Back Button (for detail pages) */}
             {showBackButton && (
               <button
                 onClick={() => navigate('/explorer/apps')}

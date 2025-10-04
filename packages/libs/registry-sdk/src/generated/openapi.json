@@ -2575,51 +2575,6 @@
         }
       }
     },
-    "/app/{appId}/sponsorDelegateesPayment": {
-      "post": {
-        "summary": "Sponsor LIT chain usage costs for app delegatee addresses ",
-        "operationId": "sponsorDelegateesPayment",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "schema": {
-              "type": "number"
-            },
-            "required": true,
-            "description": "ID of the target application",
-            "example": 132,
-            "name": "appId",
-            "in": "path"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK - Current app delegatee addresses are sponsored for LIT chain usage costs",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/GenericResultMessage"
-                }
-              }
-            }
-          },
-          "default": {
-            "description": "Unexpected error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/abilities": {
       "get": {
         "tags": [

@@ -50,8 +50,6 @@ declare const pkpPublicKey: string;
               value: quoteResult.methodParameters.value,
               calldata: quoteResult.methodParameters.calldata,
               quote: quoteResult.quote.toExact(),
-              estimatedGasUsed: quoteResult.estimatedGasUsed.toString(),
-              estimatedGasUsedUSD: quoteResult.estimatedGasUsedUSD.toExact(),
               blockNumber: quoteResult.blockNumber.toString(),
               tokenIn: quoteResult.trade.inputAmount.currency.isNative
                 ? quoteResult.trade.inputAmount.currency.wrapped.address

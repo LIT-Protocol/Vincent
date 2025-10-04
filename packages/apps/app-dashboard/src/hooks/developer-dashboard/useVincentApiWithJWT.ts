@@ -2,6 +2,7 @@ import { SessionSigs } from '@lit-protocol/types';
 import { AuthInfo } from '@/hooks/user-dashboard/useAuthInfo';
 import { createPlatformUserJWT, verifyVincentPlatformJWT } from '@lit-protocol/vincent-app-sdk/jwt';
 import { initPkpSigner } from '@/utils/developer-dashboard/initPkpSigner';
+import { addPayee } from '@/utils/user-dashboard/addPayee';
 import { env } from '@/config/env';
 
 const { VITE_ENV, VITE_JWT_EXPIRATION_MINUTES } = env;
@@ -83,6 +84,7 @@ export const getCurrentJwt = async (
     return jwt;
   } catch (error) {
     console.error('Error creating JWT token with PKP:', error);
+    await addPayee(address);
     return null;
   }
 };

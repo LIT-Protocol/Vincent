@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef } from 'react';
+import * as Sentry from '@sentry/react';
 import { getClient } from '@lit-protocol/vincent-contracts-sdk';
 import { IRelayPKP } from '@lit-protocol/types';
 import { ConnectInfoMap } from '@/hooks/user-dashboard/connect/useConnectInfo';
@@ -134,6 +135,13 @@ export function UpdateVersionPage({
       } catch (error) {
         setLocalError(error instanceof Error ? error.message : 'Failed to update version');
         setLocalStatus(null);
+        Sentry.captureException(error, {
+          extra: {
+            context: 'UpdateVersionPage.handleAccept',
+            appId: connectInfoMap.app.appId,
+            newVersion: connectInfoMap.app.activeVersion,
+          },
+        });
         return;
       }
     } else {

@@ -29,5 +29,4 @@ export type {
 
 export type { BaseAbilityContext } from './lib/abilityCore/abilityConfig/context/types';
 
-// Wrapped Keys utilities
-export { getSolanaKeyPairFromWrappedKey } from './lib/wrapped-keys';
+export { populateTransaction } from './lib/abilityHelpers';
