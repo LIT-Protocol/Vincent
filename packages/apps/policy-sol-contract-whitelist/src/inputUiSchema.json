@@ -5,23 +5,31 @@
       "whitelist": {
         "type": "object",
         "title": "Whitelist",
-        "description": "Mapping of chain IDs to whitelisted contracts and their allowed function selectors.",
-        "additionalProperties": {
-          "type": "object",
-          "additionalProperties": {
-            "type": "object",
-            "properties": {
-              "functionSelectors": {
-                "type": "array",
-                "title": "Function Selectors",
-                "items": {
-                  "type": "string"
-                }
-              }
-            },
-            "required": ["functionSelectors"]
+        "description": "Whitelisted Solana program IDs per cluster",
+        "properties": {
+          "devnet": {
+            "type": "array",
+            "title": "Devnet",
+            "items": {
+              "type": "string"
+            }
+          },
+          "testnet": {
+            "type": "array",
+            "title": "Testnet",
+            "items": {
+              "type": "string"
+            }
+          },
+          "mainnet-beta": {
+            "type": "array",
+            "title": "Mainnet Beta",
+            "items": {
+              "type": "string"
+            }
           }
-        }
+        },
+        "required": ["devnet", "testnet", "mainnet-beta"]
       }
     },
     "required": ["whitelist"]
@@ -31,17 +39,28 @@
       "ui:options": {
         "orderable": false
       },
-      "ui:description": "Use chain IDs as keys. Each chain ID maps to a set of contract addresses.",
+      "ui:description": "Each cluster maps to an array of whitelisted program IDs (base58 encoded public keys).",
       "additionalProperties": {
-        "ui:description": "Use contract addresses as keys. Each contract maps to an array of function selectors, which may include specific selectors and/or a wildcard '*' to grant permission for all functions on that contract.",
-        "additionalProperties": {
-          "functionSelectors": {
-            "ui:widget": "textarea",
-            "ui:options": {
-              "rows": 3
-            },
-            "ui:placeholder": "0xabcdef01\n0xabcdef02"
-          }
+        "devnet": {
+          "ui:widget": "textarea",
+          "ui:options": {
+            "rows": 5
+          },
+          "ui:placeholder": "11111111111111111111111111111111\nMemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"
+        },
+        "testnet": {
+          "ui:widget": "textarea",
+          "ui:options": {
+            "rows": 5
+          },
+          "ui:placeholder": "11111111111111111111111111111111\nMemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"
+        },
+        "mainnet-beta": {
+          "ui:widget": "textarea",
+          "ui:options": {
+            "rows": 5
+          },
+          "ui:placeholder": "11111111111111111111111111111111\nMemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"
         }
       }
     }
