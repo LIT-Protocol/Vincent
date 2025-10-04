@@ -60,9 +60,7 @@ export function DeleteAbilityWrapper() {
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <h1 className="text-3xl font-bold text-neutral-800 dark:text-white">Delete Ability</h1>
-            <p className="text-gray-600 dark:text-white/60 mt-2">
-              Delete "{ability.title}"?
-            </p>
+            <p className="text-gray-600 dark:text-white/60 mt-2">Delete "{ability.title}"?</p>
           </div>
         </div>
       </div>
