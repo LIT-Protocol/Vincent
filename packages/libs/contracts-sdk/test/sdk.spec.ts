@@ -245,6 +245,7 @@ describe('Vincent Contracts SDK E2E', () => {
       expect(testApp).toBeDefined();
       expect(testApp!.version).toBe(TEST_CONFIG.appVersion);
       expect(testApp!.versionEnabled).toBe(true);
+      expect(testApp!.isDeleted).toBe(false);
     });
 
     it('should get all registered agent PKPs', async () => {
@@ -382,6 +383,7 @@ describe('Vincent Contracts SDK E2E', () => {
       expect(testApp).toBeDefined();
       expect(testApp!.previousPermittedVersion).toBe(TEST_CONFIG.appVersion);
       expect(testApp!.versionEnabled).toBe(true);
+      expect(testApp!.isDeleted).toBe(false);
     });
 
     it('should get last permitted app version', async () => {

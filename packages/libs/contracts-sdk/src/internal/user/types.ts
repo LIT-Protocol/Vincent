@@ -149,6 +149,7 @@ export interface ContractPkpPermittedApps {
     appId: number;
     version: number;
     versionEnabled: boolean;
+    isDeleted: boolean;
   }[];
 }
 
@@ -163,5 +164,6 @@ export interface ContractPkpUnpermittedApps {
     appId: number;
     previousPermittedVersion: number;
     versionEnabled: boolean;
+    isDeleted: boolean;
   }[];
 }

@@ -671,11 +671,17 @@ contract VincentAppFacetTest is Test {
 
         assertEq(vincentAppViewFacet.getAppById(newAppId).isDeleted, true);
 
-        // Verify deleted app is filtered out from getPermittedAppsForPkps
+        // Verify deleted app is still returned but with isDeleted flag set to true
         permittedAppsResults = vincentUserViewFacet.getPermittedAppsForPkps(pkpTokenIds, 0, 10);
         assertEq(permittedAppsResults.length, 1);
         assertEq(permittedAppsResults[0].pkpTokenId, PKP_TOKEN_ID_1);
-        assertEq(permittedAppsResults[0].permittedApps.length, 0); // Deleted app should not appear
+        assertEq(permittedAppsResults[0].permittedApps.length, 1); // Deleted app should still appear
+        assertEq(permittedAppsResults[0].permittedApps[0].appId, newAppId);
+        assertTrue(permittedAppsResults[0].permittedApps[0].isDeleted); // isDeleted flag should be true
+
+        // Verify permitted app version is still returned even if the app has been deleted
+        uint24 permittedAppVersion = vincentUserViewFacet.getPermittedAppVersionForPkp(PKP_TOKEN_ID_1, newAppId);
+        assertEq(permittedAppVersion, newAppVersion);
     }
 
     function test_fetchDelegatedAgentPkpTokenIds() public {
