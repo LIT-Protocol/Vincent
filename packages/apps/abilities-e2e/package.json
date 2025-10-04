@@ -12,6 +12,7 @@
     "@lit-protocol/vincent-ability-evm-transaction-signer": "workspace:*",
     "@lit-protocol/vincent-ability-sdk": "workspace:*",
     "@lit-protocol/vincent-ability-sol-transaction-signer": "workspace:*",
+    "@lit-protocol/vincent-policy-sol-contract-whitelist": "workspace:*",
     "@lit-protocol/vincent-ability-uniswap-swap": "workspace:*",
     "@lit-protocol/vincent-app-sdk": "workspace:*",
     "@lit-protocol/vincent-contracts-sdk": "workspace:*",

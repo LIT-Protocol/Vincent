@@ -1,7 +1,9 @@
 import {
   createVincentAbility,
   supportedPoliciesForAbility,
+  createVincentAbilityPolicy,
 } from '@lit-protocol/vincent-ability-sdk';
+import { bundledVincentPolicy } from '@lit-protocol/vincent-policy-sol-contract-whitelist';
 import { clusterApiUrl, Transaction } from '@solana/web3.js';
 import { api } from '@lit-protocol/vincent-wrapped-keys';
 
@@ -25,12 +27,22 @@ declare const Lit: {
   };
 };
 
+const ProgramWhitelistPolicy = createVincentAbilityPolicy({
+  abilityParamsSchema,
+  bundledVincentPolicy,
+  abilityParameterMappings: {
+    rpcUrl: 'rpcUrl',
+    cluster: 'cluster',
+    serializedTransaction: 'serializedTransaction',
+  },
+});
+
 export const vincentAbility = createVincentAbility({
   packageName: '@lit-protocol/vincent-ability-sol-transaction-signer' as const,
   abilityDescription:
     'Sign a Solana transaction using a Vincent Agent Wallet with encrypted private key.' as const,
   abilityParamsSchema,
-  supportedPolicies: supportedPoliciesForAbility([]),
+  supportedPolicies: supportedPoliciesForAbility([ProgramWhitelistPolicy]),
 
   precheckFailSchema,
 
@@ -39,12 +51,6 @@ export const vincentAbility = createVincentAbility({
 
   precheck: async ({ abilityParams }, { succeed, fail }) => {
     const { serializedTransaction, cluster, rpcUrl } = abilityParams;
-
-    if (!rpcUrl) {
-      console.log(
-        '[@lit-protocol/vincent-ability-sol-transaction-signer] rpcUrl not provided using @solana/web3.js default',
-      );
-    }
 
     try {
       const transaction = deserializeTransaction(serializedTransaction);
@@ -113,6 +119,8 @@ export const vincentAbility = createVincentAbility({
 
       let signedSerializedTransaction: string;
       if (transaction instanceof Transaction) {
+        console.log('[vincent-ability] transaction deserialized as legacy transaction');
+
         if (!transaction.feePayer) transaction.feePayer = solanaKeypair.publicKey;
 
         signedSerializedTransaction = Buffer.from(
@@ -122,6 +130,7 @@ export const vincentAbility = createVincentAbility({
           }),
         ).toString('base64');
       } else {
+        console.log('[vincent-ability] transaction deserialized as versioned transaction');
         signedSerializedTransaction = Buffer.from(transaction.serialize()).toString('base64');
       }
 

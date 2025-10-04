@@ -1,0 +1,68 @@
+{
+  "jsonSchema": {
+    "type": "object",
+    "properties": {
+      "whitelist": {
+        "type": "object",
+        "title": "Whitelist",
+        "description": "Whitelisted Solana program IDs per cluster",
+        "properties": {
+          "devnet": {
+            "type": "array",
+            "title": "Devnet",
+            "items": {
+              "type": "string"
+            }
+          },
+          "testnet": {
+            "type": "array",
+            "title": "Testnet",
+            "items": {
+              "type": "string"
+            }
+          },
+          "mainnet-beta": {
+            "type": "array",
+            "title": "Mainnet Beta",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": ["devnet", "testnet", "mainnet-beta"]
+      }
+    },
+    "required": ["whitelist"]
+  },
+  "uiSchema": {
+    "whitelist": {
+      "ui:options": {
+        "orderable": false
+      },
+      "ui:description": "Each cluster maps to an array of whitelisted program IDs (base58 encoded public keys).",
+      "additionalProperties": {
+        "devnet": {
+          "ui:widget": "textarea",
+          "ui:options": {
+            "rows": 5
+          },
+          "ui:placeholder": "11111111111111111111111111111111\nMemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"
+        },
+        "testnet": {
+          "ui:widget": "textarea",
+          "ui:options": {
+            "rows": 5
+          },
+          "ui:placeholder": "11111111111111111111111111111111\nMemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"
+        },
+        "mainnet-beta": {
+          "ui:widget": "textarea",
+          "ui:options": {
+            "rows": 5
+          },
+          "ui:placeholder": "11111111111111111111111111111111\nMemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"
+        }
+      }
+    }
+  }
+}

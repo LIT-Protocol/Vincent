@@ -10,8 +10,8 @@ export function signSolanaTransaction({
 }): string {
   try {
     if (transaction instanceof Transaction) {
-      // Sign legacy transaction
-      transaction.sign(solanaKeypair);
+      // Use partialSign to preserve existing signatures
+      transaction.partialSign(solanaKeypair);
 
       if (!transaction.signature) {
         throw new Error('Transaction signature is null');

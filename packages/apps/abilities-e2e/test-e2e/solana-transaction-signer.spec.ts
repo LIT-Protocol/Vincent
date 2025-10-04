@@ -1,5 +1,6 @@
 import { formatEther } from 'viem';
 import { bundledVincentAbility as solTransactionSignerBundledAbility } from '@lit-protocol/vincent-ability-sol-transaction-signer';
+import { vincentPolicyMetadata as solContractWhitelistPolicyMetadata } from '@lit-protocol/vincent-policy-sol-contract-whitelist';
 import { constants } from '@lit-protocol/vincent-wrapped-keys';
 
 const { LIT_PREFIX } = constants;
@@ -22,6 +23,7 @@ import {
   LAMPORTS_PER_SOL,
   Connection,
   clusterApiUrl,
+  Cluster,
 } from '@solana/web3.js';
 
 import {
@@ -35,7 +37,6 @@ import {
   TestConfig,
   YELLOWSTONE_RPC_URL,
   TEST_SOLANA_FUNDER_PRIVATE_KEY,
-  SOL_RPC_URL,
 } from './helpers';
 import {
   fundAppDelegateeIfNeeded,
@@ -152,11 +153,17 @@ const fundIfNeeded = async ({
   }
 };
 
-const createSolanaTransferTransaction = async (
-  from: PublicKey,
-  to: PublicKey,
-  lamports: number,
-) => {
+const createSolanaTransferTransaction = async ({
+  cluster,
+  from,
+  to,
+  lamports,
+}: {
+  cluster: Cluster;
+  from: PublicKey;
+  to: PublicKey;
+  lamports: number;
+}) => {
   const transaction = new Transaction();
   transaction.add(
     SystemProgram.transfer({
@@ -167,7 +174,7 @@ const createSolanaTransferTransaction = async (
   );
 
   // Fetch recent blockhash from the network
-  const connection = new Connection(clusterApiUrl(SOLANA_CLUSTER), 'confirmed');
+  const connection = new Connection(clusterApiUrl(cluster), 'confirmed');
   const { blockhash } = await connection.getLatestBlockhash();
   transaction.recentBlockhash = blockhash;
   transaction.feePayer = from;
@@ -175,12 +182,18 @@ const createSolanaTransferTransaction = async (
   return transaction;
 };
 
-const createSolanaVersionedTransferTransaction = async (
-  from: PublicKey,
-  to: PublicKey,
-  lamports: number,
-) => {
-  const connection = new Connection(clusterApiUrl(SOLANA_CLUSTER), 'confirmed');
+const createSolanaVersionedTransferTransaction = async ({
+  cluster,
+  from,
+  to,
+  lamports,
+}: {
+  cluster: Cluster;
+  from: PublicKey;
+  to: PublicKey;
+  lamports: number;
+}) => {
+  const connection = new Connection(clusterApiUrl(cluster), 'confirmed');
   const { blockhash } = await connection.getLatestBlockhash();
 
   const instructions = [
@@ -200,8 +213,56 @@ const createSolanaVersionedTransferTransaction = async (
   return new VersionedTransaction(messageV0);
 };
 
-const submitAndVerifyTransaction = async (signedTransactionBase64: string, testName: string) => {
-  const connection = new Connection(clusterApiUrl(SOLANA_CLUSTER), 'confirmed');
+const createMultiSignatureTransaction = async ({
+  cluster,
+  from,
+  to,
+  lamports,
+  additionalSigner,
+}: {
+  cluster: Cluster;
+  from: PublicKey;
+  to: PublicKey;
+  lamports: number;
+  additionalSigner: PublicKey;
+}) => {
+  const transaction = new Transaction();
+  transaction.add(
+    SystemProgram.transfer({
+      fromPubkey: from,
+      toPubkey: to,
+      lamports,
+    }),
+  );
+
+  // Add the additional signer to make this transaction require multiple signatures
+  transaction.add(
+    SystemProgram.transfer({
+      fromPubkey: additionalSigner,
+      toPubkey: to,
+      lamports: 1, // Minimal transfer amount
+    }),
+  );
+
+  // Fetch recent blockhash from the network
+  const connection = new Connection(clusterApiUrl(cluster), 'confirmed');
+  const { blockhash } = await connection.getLatestBlockhash();
+  transaction.recentBlockhash = blockhash;
+  transaction.feePayer = from;
+
+  return transaction;
+};
+
+const submitAndVerifyTransaction = async ({
+  cluster,
+  signedTransactionBase64,
+  testName,
+}: {
+  cluster: Cluster;
+  signedTransactionBase64: string;
+  testName: string;
+}) => {
+  const connection = new Connection(clusterApiUrl(cluster), 'confirmed');
   const signedTxBuffer = Buffer.from(signedTransactionBase64, 'base64');
 
   console.log(`[${testName}] Submitting transaction to Solana network`);
@@ -241,21 +302,30 @@ const submitAndVerifyTransaction = async (signedTransactionBase64: string, testN
 describe('Solana Transaction Signer Ability E2E Tests', () => {
   // Define permission data for all abilities and policies
   const PERMISSION_DATA: PermissionData = {
-    // Solana Transaction Signer Ability has no policies
-    [solTransactionSignerBundledAbility.ipfsCid]: {},
+    [solTransactionSignerBundledAbility.ipfsCid]: {
+      [solContractWhitelistPolicyMetadata.ipfsCid]: {
+        whitelist: {
+          devnet: [
+            '11111111111111111111111111111111',
+            'MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr',
+          ],
+          'mainnet-beta': [],
+        },
+      },
+    },
   };
 
   // An array of the IPFS cid of each ability to be tested, computed from the keys of PERMISSION_DATA
-  const TOOL_IPFS_IDS: string[] = Object.keys(PERMISSION_DATA);
+  const ABILITY_IPFS_IDS: string[] = Object.keys(PERMISSION_DATA);
 
-  // Define the policies for each ability, computed from TOOL_IPFS_IDS and PERMISSION_DATA
-  const TOOL_POLICIES = TOOL_IPFS_IDS.map((abilityIpfsCid) => {
+  // Define the policies for each ability, computed from ABILITY_IPFS_IDS and PERMISSION_DATA
+  const ABILITY_POLICIES = ABILITY_IPFS_IDS.map((abilityIpfsCid) => {
     // Get the policy IPFS CIDs for this ability from PERMISSION_DATA
     return Object.keys(PERMISSION_DATA[abilityIpfsCid]);
   });
 
-  const FAUCET_FUND_AMOUNT = 0.01 * LAMPORTS_PER_SOL;
-  const TX_SEND_AMOUNT = 0.001 * LAMPORTS_PER_SOL;
+  const FAUCET_FUND_AMOUNT = 0.001 * LAMPORTS_PER_SOL;
+  const TX_SEND_AMOUNT = 0.00001 * LAMPORTS_PER_SOL;
 
   let TEST_CONFIG: TestConfig;
   let LIT_NODE_CLIENT: LitNodeClient;
@@ -319,21 +389,23 @@ describe('Solana Transaction Signer Ability E2E Tests', () => {
       faucetFundAmount: FAUCET_FUND_AMOUNT,
     });
 
-    const transaction = await createSolanaTransferTransaction(
-      TEST_SOLANA_KEYPAIR.publicKey,
-      TEST_SOLANA_KEYPAIR.publicKey,
-      TX_SEND_AMOUNT,
-    );
+    const transaction = await createSolanaTransferTransaction({
+      cluster: SOLANA_CLUSTER,
+      from: TEST_SOLANA_KEYPAIR.publicKey,
+      to: TEST_SOLANA_KEYPAIR.publicKey,
+      lamports: TX_SEND_AMOUNT,
+    });
 
     SERIALIZED_TRANSACTION = transaction
       .serialize({ requireAllSignatures: false })
       .toString('base64');
 
-    const versionedTransaction = await createSolanaVersionedTransferTransaction(
-      TEST_SOLANA_KEYPAIR.publicKey,
-      TEST_SOLANA_KEYPAIR.publicKey,
-      TX_SEND_AMOUNT,
-    );
+    const versionedTransaction = await createSolanaVersionedTransferTransaction({
+      cluster: SOLANA_CLUSTER,
+      from: TEST_SOLANA_KEYPAIR.publicKey,
+      to: TEST_SOLANA_KEYPAIR.publicKey,
+      lamports: TX_SEND_AMOUNT,
+    });
 
     VERSIONED_SERIALIZED_TRANSACTION = Buffer.from(versionedTransaction.serialize()).toString(
       'base64',
@@ -361,7 +433,12 @@ describe('Solana Transaction Signer Ability E2E Tests', () => {
   });
 
   it('should register a new App', async () => {
-    TEST_CONFIG = await registerNewApp(TOOL_IPFS_IDS, TOOL_POLICIES, TEST_CONFIG, TEST_CONFIG_PATH);
+    TEST_CONFIG = await registerNewApp(
+      ABILITY_IPFS_IDS,
+      ABILITY_POLICIES,
+      TEST_CONFIG,
+      TEST_CONFIG_PATH,
+    );
   });
 
   it('should permit the App version for the Agent Wallet PKP', async () => {
@@ -372,21 +449,24 @@ describe('Solana Transaction Signer Ability E2E Tests', () => {
     const validationResult = await contractClient.validateAbilityExecutionAndGetPolicies({
       delegateeAddress: TEST_APP_DELEGATEE_ACCOUNT.address,
       pkpEthAddress: TEST_CONFIG.userPkp!.ethAddress!,
-      abilityIpfsCid: TOOL_IPFS_IDS[0],
+      abilityIpfsCid: ABILITY_IPFS_IDS[0],
     });
 
     expect(validationResult).toBeDefined();
     expect(validationResult.isPermitted).toBe(true);
     expect(validationResult.appId).toBe(TEST_CONFIG.appId!);
     expect(validationResult.appVersion).toBe(TEST_CONFIG.appVersion!);
-    expect(Object.keys(validationResult.decodedPolicies)).toHaveLength(0);
+    expect(Object.keys(validationResult.decodedPolicies)).toHaveLength(1);
+    expect(Object.keys(validationResult.decodedPolicies)).toContain(
+      solContractWhitelistPolicyMetadata.ipfsCid,
+    );
   });
 
   it('should run precheck and validate transaction deserialization', async () => {
     const client = getSolanaTransactionSignerAbilityClient();
     const precheckResult = await client.precheck(
       {
-        rpcUrl: SOL_RPC_URL,
+        rpcUrl: null,
         cluster: SOLANA_CLUSTER,
         serializedTransaction: SERIALIZED_TRANSACTION,
         ciphertext: CIPHERTEXT,
@@ -404,12 +484,86 @@ describe('Solana Transaction Signer Ability E2E Tests', () => {
     if (!precheckResult.success) {
       throw new Error(precheckResult.runtimeError);
     }
+
+    expect(precheckResult.context).toBeDefined();
+    expect(precheckResult.context?.policiesContext).toBeDefined();
+    expect(precheckResult.context?.policiesContext?.allow).toBe(true);
+
+    const policyName = '@lit-protocol/vincent-policy-sol-contract-whitelist';
+    expect(precheckResult.context?.policiesContext?.evaluatedPolicies).toContain(policyName);
+    expect(precheckResult.context?.policiesContext?.allowedPolicies).toBeDefined();
+    expect(precheckResult.context?.policiesContext?.allowedPolicies?.[policyName]).toBeDefined();
+    expect(
+      precheckResult.context?.policiesContext?.allowedPolicies?.[policyName]?.result,
+    ).toBeDefined();
+    expect(
+      precheckResult.context?.policiesContext?.allowedPolicies?.[policyName]?.result
+        ?.whitelistedProgramIds,
+    ).toBeDefined();
+    expect(
+      precheckResult.context?.policiesContext?.allowedPolicies?.[policyName]?.result
+        ?.whitelistedProgramIds,
+    ).toContain('11111111111111111111111111111111');
+  });
+
+  it('should run precheck and deny because the program ID is not whitelisted', async () => {
+    const transaction = await createSolanaTransferTransaction({
+      cluster: 'mainnet-beta',
+      from: TEST_SOLANA_KEYPAIR.publicKey,
+      to: TEST_SOLANA_KEYPAIR.publicKey,
+      lamports: TX_SEND_AMOUNT,
+    });
+    const serializedTransaction = transaction
+      .serialize({ requireAllSignatures: false })
+      .toString('base64');
+
+    const client = getSolanaTransactionSignerAbilityClient();
+    const precheckResult = await client.precheck(
+      {
+        rpcUrl: null,
+        cluster: 'mainnet-beta',
+        serializedTransaction,
+        ciphertext: CIPHERTEXT,
+        dataToEncryptHash: DATA_TO_ENCRYPT_HASH,
+      },
+      { delegatorPkpEthAddress: TEST_CONFIG.userPkp!.ethAddress! },
+    );
+
+    console.log(
+      '[should run precheck and deny because the program ID is not whitelisted]',
+      util.inspect(precheckResult, { depth: 10 }),
+    );
+
+    expect(precheckResult.success).toBe(true);
+    if (!precheckResult.success) {
+      throw new Error(precheckResult.runtimeError);
+    }
+
+    expect(precheckResult.context).toBeDefined();
+    expect(precheckResult.context?.policiesContext).toBeDefined();
+    expect(precheckResult.context?.policiesContext?.allow).toBe(false);
+
+    const policyName = '@lit-protocol/vincent-policy-sol-contract-whitelist';
+    expect(precheckResult.context?.policiesContext?.evaluatedPolicies).toContain(policyName);
+    expect(precheckResult.context?.policiesContext?.deniedPolicy).toBeDefined();
+    expect(precheckResult.context?.policiesContext?.deniedPolicy?.packageName).toBe(policyName);
+    expect(precheckResult.context?.policiesContext?.deniedPolicy?.result).toBeDefined();
+    expect(precheckResult.context?.policiesContext?.deniedPolicy?.result?.reason).toBe(
+      'Transaction includes non-whitelisted program IDs',
+    );
+    expect(
+      precheckResult.context?.policiesContext?.deniedPolicy?.result?.nonWhitelistedProgramIds,
+    ).toBeDefined();
+    expect(
+      precheckResult.context?.policiesContext?.deniedPolicy?.result?.nonWhitelistedProgramIds,
+    ).toContain('11111111111111111111111111111111');
   });
 
   it('should run execute and return a signed transaction', async () => {
     const client = getSolanaTransactionSignerAbilityClient();
     const executeResult = await client.execute(
       {
+        rpcUrl: null,
         cluster: SOLANA_CLUSTER,
         serializedTransaction: SERIALIZED_TRANSACTION,
         ciphertext: CIPHERTEXT,
@@ -426,51 +580,25 @@ describe('Solana Transaction Signer Ability E2E Tests', () => {
     expect(executeResult.success).toBe(true);
     expect(executeResult.result).toBeDefined();
 
-    const signedTransaction = (executeResult.result! as { signedTransaction: string })
-      .signedTransaction;
+    expect(executeResult.context).toBeDefined();
+    expect(executeResult.context?.policiesContext).toBeDefined();
+    expect(executeResult.context?.policiesContext?.allow).toBe(true);
 
-    // Validate it's a base64 encoded string using regex
-    const base64Regex = /^[A-Za-z0-9+/]+=*$/;
-    expect(signedTransaction).toMatch(base64Regex);
-
-    await submitAndVerifyTransaction(
-      signedTransaction,
-      'should run execute and return a signed transaction',
-    );
-  });
-
-  it('should run execute with requireAllSignatures set to false', async () => {
-    const transaction = await createSolanaTransferTransaction(
-      TEST_SOLANA_KEYPAIR.publicKey,
-      TEST_SOLANA_KEYPAIR.publicKey,
-      TX_SEND_AMOUNT,
-    );
-    const serializedTransaction = transaction
-      .serialize({ requireAllSignatures: false })
-      .toString('base64');
-
-    const client = getSolanaTransactionSignerAbilityClient();
-    const executeResult = await client.execute(
-      {
-        cluster: SOLANA_CLUSTER,
-        serializedTransaction,
-        ciphertext: CIPHERTEXT,
-        dataToEncryptHash: DATA_TO_ENCRYPT_HASH,
-        legacyTransactionOptions: {
-          requireAllSignatures: false,
-          verifySignatures: false,
-        },
-      },
-      { delegatorPkpEthAddress: TEST_CONFIG.userPkp!.ethAddress! },
-    );
-
-    console.log(
-      '[should run execute with requireAllSignatures set to false]',
-      util.inspect(executeResult, { depth: 10 }),
-    );
-
-    expect(executeResult.success).toBe(true);
-    expect(executeResult.result).toBeDefined();
+    const policyName = '@lit-protocol/vincent-policy-sol-contract-whitelist';
+    expect(executeResult.context?.policiesContext?.evaluatedPolicies).toContain(policyName);
+    expect(executeResult.context?.policiesContext?.allowedPolicies).toBeDefined();
+    expect(executeResult.context?.policiesContext?.allowedPolicies?.[policyName]).toBeDefined();
+    expect(
+      executeResult.context?.policiesContext?.allowedPolicies?.[policyName]?.result,
+    ).toBeDefined();
+    expect(
+      executeResult.context?.policiesContext?.allowedPolicies?.[policyName]?.result
+        ?.whitelistedProgramIds,
+    ).toBeDefined();
+    expect(
+      executeResult.context?.policiesContext?.allowedPolicies?.[policyName]?.result
+        ?.whitelistedProgramIds,
+    ).toContain('11111111111111111111111111111111');
 
     const signedTransaction = (executeResult.result! as { signedTransaction: string })
       .signedTransaction;
@@ -479,63 +607,18 @@ describe('Solana Transaction Signer Ability E2E Tests', () => {
     const base64Regex = /^[A-Za-z0-9+/]+=*$/;
     expect(signedTransaction).toMatch(base64Regex);
 
-    // Note: This transaction should still be valid since it's fully signed
-    await submitAndVerifyTransaction(
-      signedTransaction,
-      'should run execute with requireAllSignatures set to false',
-    );
-  });
-
-  it('should run execute with validateSignatures set to true', async () => {
-    const transaction = await createSolanaTransferTransaction(
-      TEST_SOLANA_KEYPAIR.publicKey,
-      TEST_SOLANA_KEYPAIR.publicKey,
-      TX_SEND_AMOUNT,
-    );
-    const serializedTransaction = transaction
-      .serialize({ requireAllSignatures: false })
-      .toString('base64');
-
-    const client = getSolanaTransactionSignerAbilityClient();
-    const executeResult = await client.execute(
-      {
-        cluster: SOLANA_CLUSTER,
-        serializedTransaction,
-        ciphertext: CIPHERTEXT,
-        dataToEncryptHash: DATA_TO_ENCRYPT_HASH,
-        legacyTransactionOptions: {
-          requireAllSignatures: true,
-          verifySignatures: true,
-        },
-      },
-      { delegatorPkpEthAddress: TEST_CONFIG.userPkp!.ethAddress! },
-    );
-
-    console.log(
-      '[should run execute with validateSignatures set to true]',
-      util.inspect(executeResult, { depth: 10 }),
-    );
-
-    expect(executeResult.success).toBe(true);
-    expect(executeResult.result).toBeDefined();
-
-    const signedTransaction = (executeResult.result! as { signedTransaction: string })
-      .signedTransaction;
-
-    // Validate it's a base64 encoded string using regex
-    const base64Regex = /^[A-Za-z0-9+/]+=*$/;
-    expect(signedTransaction).toMatch(base64Regex);
-
-    await submitAndVerifyTransaction(
-      signedTransaction,
-      'should run execute with validateSignatures set to true',
-    );
+    await submitAndVerifyTransaction({
+      cluster: SOLANA_CLUSTER,
+      signedTransactionBase64: signedTransaction,
+      testName: 'should run execute and return a signed transaction',
+    });
   });
 
   it('should run precheck and validate versioned transaction deserialization', async () => {
     const client = getSolanaTransactionSignerAbilityClient();
     const precheckResult = await client.precheck(
       {
+        rpcUrl: null,
         cluster: SOLANA_CLUSTER,
         serializedTransaction: VERSIONED_SERIALIZED_TRANSACTION,
         ciphertext: CIPHERTEXT,
@@ -559,6 +642,7 @@ describe('Solana Transaction Signer Ability E2E Tests', () => {
     const client = getSolanaTransactionSignerAbilityClient();
     const executeResult = await client.execute(
       {
+        rpcUrl: null,
         cluster: SOLANA_CLUSTER,
         serializedTransaction: VERSIONED_SERIALIZED_TRANSACTION,
         ciphertext: CIPHERTEXT,
@@ -582,9 +666,212 @@ describe('Solana Transaction Signer Ability E2E Tests', () => {
     const base64Regex = /^[A-Za-z0-9+/]+=*$/;
     expect(signedTransaction).toMatch(base64Regex);
 
-    await submitAndVerifyTransaction(
-      signedTransaction,
-      'should run execute and return a signed versioned transaction',
+    await submitAndVerifyTransaction({
+      cluster: SOLANA_CLUSTER,
+      signedTransactionBase64: signedTransaction,
+      testName: 'should run execute and return a signed versioned transaction',
+    });
+  });
+
+  it('should succeed when all signatures are provided with requireAllSignatures: true', async () => {
+    // Create a second keypair for additional signer
+    const additionalSigner = Keypair.generate();
+
+    // Fund the additional signer
+    await fundIfNeeded({
+      keypair: additionalSigner,
+      txSendAmount: 2, // Minimal amount for the second transfer
+      faucetFundAmount: FAUCET_FUND_AMOUNT,
+    });
+
+    // Create a transaction requiring multiple signatures
+    const multiSigTransaction = await createMultiSignatureTransaction({
+      cluster: SOLANA_CLUSTER,
+      from: TEST_SOLANA_KEYPAIR.publicKey,
+      to: TEST_SOLANA_KEYPAIR.publicKey,
+      lamports: TX_SEND_AMOUNT,
+      additionalSigner: additionalSigner.publicKey,
+    });
+
+    // Only sign with the additional signer - let the ability sign with TEST_SOLANA_KEYPAIR
+    multiSigTransaction.partialSign(additionalSigner);
+
+    const serializedTransaction = multiSigTransaction
+      .serialize({ requireAllSignatures: false }) // Allow partial signing
+      .toString('base64');
+
+    const client = getSolanaTransactionSignerAbilityClient();
+    const executeResult = await client.execute(
+      {
+        rpcUrl: null,
+        cluster: SOLANA_CLUSTER,
+        serializedTransaction,
+        ciphertext: CIPHERTEXT,
+        dataToEncryptHash: DATA_TO_ENCRYPT_HASH,
+        legacyTransactionOptions: {
+          requireAllSignatures: true,
+          verifySignatures: true,
+        },
+      },
+      { delegatorPkpEthAddress: TEST_CONFIG.userPkp!.ethAddress! },
+    );
+
+    console.log(
+      '[should succeed when all signatures are provided with requireAllSignatures: true]',
+      util.inspect(executeResult, { depth: 10 }),
+    );
+
+    expect(executeResult.success).toBe(true);
+    expect(executeResult.result).toBeDefined();
+
+    const signedTransaction = (executeResult.result! as { signedTransaction: string })
+      .signedTransaction;
+
+    // Validate it's a base64 encoded string using regex
+    const base64Regex = /^[A-Za-z0-9+/]+=*$/;
+    expect(signedTransaction).toMatch(base64Regex);
+
+    await submitAndVerifyTransaction({
+      cluster: SOLANA_CLUSTER,
+      signedTransactionBase64: signedTransaction,
+      testName: 'should succeed when all signatures are provided with requireAllSignatures: true',
+    });
+  });
+
+  it('should execute a transaction with SPL Memo program', async () => {
+    // SPL Memo Program ID (same on all networks)
+    const MEMO_PROGRAM_ID = new PublicKey('MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr');
+
+    // Create a memo instruction
+    const memoText = 'Hello from Vincent Ability Test!';
+    const memoInstruction = {
+      keys: [],
+      programId: MEMO_PROGRAM_ID,
+      data: Buffer.from(memoText, 'utf-8'),
+    };
+
+    // Create transaction with memo instruction
+    const transaction = new Transaction();
+    transaction.add(memoInstruction);
+
+    // Add a small transfer to make the transaction more realistic
+    transaction.add(
+      SystemProgram.transfer({
+        fromPubkey: TEST_SOLANA_KEYPAIR.publicKey,
+        toPubkey: TEST_SOLANA_KEYPAIR.publicKey,
+        lamports: 1,
+      }),
+    );
+
+    // Fetch recent blockhash from the network
+    const connection = new Connection(clusterApiUrl(SOLANA_CLUSTER), 'confirmed');
+    const { blockhash } = await connection.getLatestBlockhash();
+    transaction.recentBlockhash = blockhash;
+    transaction.feePayer = TEST_SOLANA_KEYPAIR.publicKey;
+
+    const serializedTransaction = transaction
+      .serialize({ requireAllSignatures: false })
+      .toString('base64');
+
+    const client = getSolanaTransactionSignerAbilityClient();
+    const executeResult = await client.execute(
+      {
+        rpcUrl: null,
+        cluster: SOLANA_CLUSTER,
+        serializedTransaction,
+        ciphertext: CIPHERTEXT,
+        dataToEncryptHash: DATA_TO_ENCRYPT_HASH,
+        legacyTransactionOptions: {
+          requireAllSignatures: true,
+          verifySignatures: true,
+        },
+      },
+      { delegatorPkpEthAddress: TEST_CONFIG.userPkp!.ethAddress! },
+    );
+
+    console.log(
+      '[should execute a transaction with SPL Memo program]',
+      util.inspect(executeResult, { depth: 10 }),
+    );
+
+    expect(executeResult.success).toBe(true);
+    expect(executeResult.result).toBeDefined();
+    expect(executeResult.context?.policiesContext?.allow).toBe(true);
+
+    const signedTransaction = (executeResult.result! as { signedTransaction: string })
+      .signedTransaction;
+
+    await submitAndVerifyTransaction({
+      cluster: SOLANA_CLUSTER,
+      signedTransactionBase64: signedTransaction,
+      testName: 'should execute a transaction with SPL Memo program',
+    });
+  });
+
+  it('should fail when not all signatures are provided with requireAllSignatures: true', async () => {
+    // Create a second keypair for additional signer
+    const additionalSigner = Keypair.generate();
+
+    // Fund the additional signer
+    await fundIfNeeded({
+      keypair: additionalSigner,
+      txSendAmount: 2, // Minimal amount for the second transfer
+      faucetFundAmount: FAUCET_FUND_AMOUNT,
+    });
+
+    // Create a transaction requiring multiple signatures
+    // The transaction needs signatures from both TEST_SOLANA_KEYPAIR and additionalSigner
+    const multiSigTransaction = await createMultiSignatureTransaction({
+      cluster: SOLANA_CLUSTER,
+      from: TEST_SOLANA_KEYPAIR.publicKey,
+      to: TEST_SOLANA_KEYPAIR.publicKey,
+      lamports: TX_SEND_AMOUNT,
+      additionalSigner: additionalSigner.publicKey,
+    });
+
+    // Debug: Check required signatures
+    const msg = multiSigTransaction.compileMessage();
+    console.log('numRequiredSignatures:', msg.header.numRequiredSignatures);
+    console.log(
+      'required signer keys:',
+      msg.accountKeys.slice(0, msg.header.numRequiredSignatures).map((k) => k.toBase58()),
+    );
+
+    // Don't sign with either signer - let the ability sign with TEST_SOLANA_KEYPAIR
+    // The additionalSigner signature will be missing
+    const serializedTransaction = multiSigTransaction
+      .serialize({ requireAllSignatures: false }) // Set to false to allow serialization without signatures
+      .toString('base64');
+
+    const client = getSolanaTransactionSignerAbilityClient();
+
+    // Execute the transaction
+    const executeResult = await client.execute(
+      {
+        rpcUrl: null,
+        cluster: SOLANA_CLUSTER,
+        serializedTransaction,
+        ciphertext: CIPHERTEXT,
+        dataToEncryptHash: DATA_TO_ENCRYPT_HASH,
+        legacyTransactionOptions: {
+          requireAllSignatures: true,
+          verifySignatures: true,
+        },
+      },
+      { delegatorPkpEthAddress: TEST_CONFIG.userPkp!.ethAddress! },
+    );
+
+    console.log(
+      '[should fail when not all signatures are provided with requireAllSignatures: true]',
+      'Result:',
+      util.inspect(executeResult, { depth: 10 }),
+    );
+
+    expect(executeResult.success).toBe(false);
+    expect(executeResult.result).toBeDefined();
+    expect((executeResult.result as { error: string }).error).toBeDefined();
+    expect((executeResult.result as { error: string }).error).toContain(
+      `Missing signature for public key [\`${additionalSigner.publicKey.toBase58()}\`]`,
     );
   });
 });

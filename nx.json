@@ -67,8 +67,7 @@
       "ability-morpho",
       "ability-aave",
       "ability-debridge",
-      "policy-send-counter",
-      "ability-sol-transaction-signer"
+      "policy-send-counter"
     ],
     "projectsRelationship": "independent",
     "releaseTagPattern": "vincent/{projectName}/{version}",
