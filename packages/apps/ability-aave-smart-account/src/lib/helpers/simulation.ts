@@ -1,3 +1,5 @@
+import { ethers } from 'ethers';
+import { UserOp } from 'src/lib/helpers/userOperation';
 import { z } from 'zod';
 
 // Types copied from @account-kit/infra
@@ -61,3 +63,19 @@ export const simulateUserOperationAssetChangesResponseSchema = z
 export type SimulateUserOperationAssetChangesResponse = z.infer<
   typeof simulateUserOperationAssetChangesResponseSchema
 >;
+
+export const simulateUserOp = async ({
+  entryPoint,
+  provider,
+  userOp,
+}: {
+  entryPoint: string;
+  provider: ethers.providers.JsonRpcProvider;
+  userOp: UserOp;
+}) => {
+  // Simulate UserOperation https://www.alchemy.com/docs/wallets/api-reference/bundler-api/useroperation-simulation-endpoints/alchemy-simulate-user-operation-asset-changes
+  return (await provider.send('alchemy_simulateUserOperationAssetChanges', [
+    userOp,
+    entryPoint,
+  ])) as SimulateUserOperationAssetChangesResponse;
+};

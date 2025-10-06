@@ -1,8 +1,6 @@
 import { ethers } from 'ethers';
 import { z } from 'zod';
 
-import type { SimulateUserOperationAssetChangesResponse } from './simulation';
-
 const userOpBaseSchema = z.object({
   sender: z
     .string()
@@ -155,20 +153,4 @@ export const estimateUserOperationGas = async ({
   userOp: UserOp;
 }) => {
   return await provider.send('eth_estimateUserOperationGas', [userOp, entryPointAddress]);
-};
-
-export const simulateUserOp = async ({
-  entryPoint,
-  provider,
-  userOp,
-}: {
-  entryPoint: string;
-  provider: ethers.providers.JsonRpcProvider;
-  userOp: UserOp;
-}) => {
-  // Simulate UserOperation https://www.alchemy.com/docs/wallets/api-reference/bundler-api/useroperation-simulation-endpoints/alchemy-simulate-user-operation-asset-changes
-  return (await provider.send('alchemy_simulateUserOperationAssetChanges', [
-    userOp,
-    entryPoint,
-  ])) as SimulateUserOperationAssetChangesResponse;
 };

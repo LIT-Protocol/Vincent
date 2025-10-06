@@ -2,8 +2,8 @@ import { ethers } from 'ethers';
 
 import { getAaveAddresses, getATokens } from './aave';
 import { assertValidEntryPointAddress, getSmartAccountNonce } from './entryPoint';
-import { estimateUserOperationGas, simulateUserOp, UserOp } from './userOperation';
-import { SimulateUserOperationAssetChangesResponse } from './simulation';
+import { estimateUserOperationGas, UserOp } from './userOperation';
+import { SimulateUserOperationAssetChangesResponse, simulateUserOp } from './simulation';
 
 interface ValidateSimulationParams {
   aaveATokens: Record<string, string>;
