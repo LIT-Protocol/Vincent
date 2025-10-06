@@ -93,7 +93,7 @@ export const validateUserOp = async (params: ProccessUserOpParams) => {
   const { entryPointAddress, userOp, rpcUrl } = params;
   const _userOp = { ...userOp };
 
-  const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
+  const provider = new ethers.providers.StaticJsonRpcProvider(rpcUrl);
 
   await assertValidEntryPointAddress(entryPointAddress, provider);
 

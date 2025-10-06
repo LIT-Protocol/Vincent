@@ -97,7 +97,7 @@ export const vincentAbility = createVincentAbility({
       console.log(
         '[@lit-protocol/vincent-ability-aave-smart-account] preparing user operation signature...',
       );
-      const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
+      const provider = new ethers.providers.StaticJsonRpcProvider(rpcUrl);
       const userOpVersion = getUserOpVersion(entryPointAddress);
 
       let message: Uint8Array;
