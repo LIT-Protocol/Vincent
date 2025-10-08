@@ -1,7 +1,7 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
-  "name": "Mint Starter Kit",
+  "name": "Vincent Docs",
   "colors": {
     "primary": "#FF4205",
     "light": "#FF6B35",
@@ -41,7 +41,7 @@
             "pages": [
               "app/quickstart",
               "app/explaining-apps",
-              "app/publishing",
+              "app/publishing-apps",
               "app/updating-apps",
               "app/deprecating-app-versions",
               "app/authenticating-users"
