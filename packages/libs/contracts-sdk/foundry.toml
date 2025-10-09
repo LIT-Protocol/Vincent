@@ -2,8 +2,12 @@
 src = "src"
 out = "out"
 libs = ["node_modules", "lib"]
+solc_version = "0.8.29"
+evm_version = "prague"
+bytecode_hash = "none"
+cbor_metadata = false
 
-remappings = ["forge-std/=lib/forge-std/src/"]
+remappings = ["forge-std/=lib/forge-std/src/", "@aave-dao/aave-v3-origin/=node_modules/@aave-dao/aave-v3-origin/"]
 via_ir = true
 
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options

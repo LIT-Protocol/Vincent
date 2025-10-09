@@ -14,26 +14,25 @@ import {VincentUserViewFacet} from "../contracts/facets/VincentUserViewFacet.sol
 
 /**
  * @title Smart UpdateFacet with Auto-Detection
- * @dev Automatically detects what needs to be Added/Removed/Replaced by comparing 
+ * @dev Automatically detects what needs to be Added/Removed/Replaced by comparing
  *      old facet selectors (from Diamond) vs new facet selectors (from contract)
- * 
+ *
  * Environment Variables Required:
  * - VINCENT_DIAMOND_ADDRESS: Diamond contract address
- * - VINCENT_DEPLOYER_PRIVATE_KEY: Deployer private key  
+ * - VINCENT_DEPLOYER_PRIVATE_KEY: Deployer private key
  * - FACET_TO_UPDATE: Facet name (VincentAppFacet, VincentAppViewFacet, etc.)
  * - VINCENT_DEPLOYMENT_RPC_URL: RPC URL
  */
 contract SmartUpdateFacet is Script {
-
     address public diamondAddress;
     uint256 private deployerPrivateKey;
     string public facetToUpdate;
     string public rpcUrl;
 
     struct UpdatePlan {
-        bytes4[] toRemove;    // Selectors only in old facet
-        bytes4[] toAdd;       // Selectors only in new facet  
-        bytes4[] toReplace;   // Selectors in both (intersection)
+        bytes4[] toRemove; // Selectors only in old facet
+        bytes4[] toAdd; // Selectors only in new facet
+        bytes4[] toReplace; // Selectors in both (intersection)
     }
 
     function setUp() public {
@@ -77,13 +76,15 @@ contract SmartUpdateFacet is Script {
         executeUpdatePlan(newFacetAddress, plan);
 
         console2.log("Successfully completed smart facet update!");
-        
+
         vm.stopBroadcast();
     }
 
-    function createUpdatePlan(bytes4[] memory oldSelectors, bytes4[] memory newSelectors) 
-        internal pure returns (UpdatePlan memory plan) {
-        
+    function createUpdatePlan(bytes4[] memory oldSelectors, bytes4[] memory newSelectors)
+        internal
+        pure
+        returns (UpdatePlan memory plan)
+    {
         // Count each category to size arrays properly
         uint256 removeCount = 0;
         uint256 addCount = 0;
@@ -155,9 +156,7 @@ contract SmartUpdateFacet is Script {
         if (plan.toRemove.length > 0) {
             console2.log("Executing REMOVE for", plan.toRemove.length, "selectors");
             cuts[cutIndex] = IDiamondCut.FacetCut({
-                facetAddress: address(0),
-                action: IDiamondCut.FacetCutAction.Remove,
-                functionSelectors: plan.toRemove
+                facetAddress: address(0), action: IDiamondCut.FacetCutAction.Remove, functionSelectors: plan.toRemove
             });
             cutIndex++;
         }
@@ -177,9 +176,7 @@ contract SmartUpdateFacet is Script {
         if (plan.toAdd.length > 0) {
             console2.log("Executing ADD for", plan.toAdd.length, "selectors");
             cuts[cutIndex] = IDiamondCut.FacetCut({
-                facetAddress: newFacetAddress,
-                action: IDiamondCut.FacetCutAction.Add,
-                functionSelectors: plan.toAdd
+                facetAddress: newFacetAddress, action: IDiamondCut.FacetCutAction.Add, functionSelectors: plan.toAdd
             });
             cutIndex++;
         }
@@ -217,7 +214,7 @@ contract SmartUpdateFacet is Script {
 
     function isFacetOfType(address facetAddr, string memory facetName) internal view returns (bool) {
         IDiamondLoupe diamondLoupe = IDiamondLoupe(diamondAddress);
-        
+
         bytes4 testSelector;
         if (compareStrings(facetName, "VincentAppFacet")) {
             testSelector = VincentAppFacet.registerApp.selector;
@@ -230,13 +227,13 @@ contract SmartUpdateFacet is Script {
         } else {
             return false;
         }
-        
+
         return diamondLoupe.facetAddress(testSelector) == facetAddr;
     }
 
     function logUpdatePlan(UpdatePlan memory plan) internal pure {
         console2.log("\n=== UPDATE PLAN ===");
-        
+
         if (plan.toRemove.length > 0) {
             console2.log("REMOVE", plan.toRemove.length, "selectors:");
             for (uint256 i = 0; i < plan.toRemove.length; i++) {
@@ -325,10 +322,8 @@ contract SmartUpdateFacet is Script {
     }
 
     function isValidFacetName(string memory facetName) internal pure returns (bool) {
-        return compareStrings(facetName, "VincentAppFacet") || 
-               compareStrings(facetName, "VincentAppViewFacet") ||
-               compareStrings(facetName, "VincentUserFacet") || 
-               compareStrings(facetName, "VincentUserViewFacet");
+        return compareStrings(facetName, "VincentAppFacet") || compareStrings(facetName, "VincentAppViewFacet")
+            || compareStrings(facetName, "VincentUserFacet") || compareStrings(facetName, "VincentUserViewFacet");
     }
 
     function contains(bytes4[] memory array, bytes4 selector) internal pure returns (bool) {

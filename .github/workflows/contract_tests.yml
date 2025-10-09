@@ -1,0 +1,61 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+env:
+  FOUNDRY_PROFILE: ci
+
+jobs:
+  check:
+    strategy:
+      fail-fast: true
+
+    name: Contract Blockchain Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./packages/libs/contracts-sdk
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.7.0
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: nightly
+
+      - name: Run Forge fmt
+        run: |
+          forge fmt --check
+        id: fmt
+
+      - name: Install dependencies
+        run: |
+          pnpm install
+
+      - name: Run Forge build
+        run: |
+          forge build --sizes
+        id: build
+
+      - name: Run Regular Forge tests
+        run: |
+          forge test --ffi -vvv --no-match-path 'test/**/*ForkTest*.t.sol'
+        id: test
+
+      - name: Run Forked Forge tests
+        env:
+          BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
+        run: |
+          forge test --ffi -vvv --match-path 'test/**/*ForkTest*.t.sol' --fork-url "$BASE_RPC_URL"
+        id: test-forked
