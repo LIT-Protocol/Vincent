@@ -217,30 +217,7 @@ export function ConnectPageWrapper() {
   }
 
   return (
-    <div className="min-h-screen w-full transition-colors duration-500 p-2 sm:p-4 md:p-6 relative flex justify-center items-start pt-24 sm:pt-28 md:pt-32 lg:pt-40 overflow-hidden">
-      {/* Left SVG - positioned from left */}
-      <div
-        className="absolute top-0 left-0 w-[600px] h-[600px] z-0"
-        style={{
-          backgroundImage: `url('/connect-static-left.svg')`,
-          backgroundRepeat: 'no-repeat',
-          backgroundSize: 'contain',
-        }}
-      ></div>
-
-      {/* Right SVG - positioned from right */}
-      <div
-        className="absolute top-0 z-0"
-        style={{
-          left: 'max(600px, calc(100vw - 600px))',
-          width: '600px',
-          height: '600px',
-          backgroundImage: `url('/connect-static-right.svg')`,
-          backgroundRepeat: 'no-repeat',
-          backgroundSize: 'contain',
-        }}
-      ></div>
-
+    <div className="w-full transition-colors duration-500 p-2 sm:p-4 md:p-6 relative flex justify-center items-start pt-16 sm:pt-20 md:pt-24 lg:pt-28">
       {content}
     </div>
   );

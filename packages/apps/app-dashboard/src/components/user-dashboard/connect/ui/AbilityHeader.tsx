@@ -1,7 +1,7 @@
 import { Settings } from 'lucide-react';
 import { ConnectInfoMap } from '@/hooks/user-dashboard/connect/useConnectInfo';
 import { Logo } from '@/components/shared/ui/Logo';
-import { theme } from './theme';
+import { theme, fonts } from './theme';
 
 interface AbilityHeaderProps {
   ability: {
@@ -32,7 +32,7 @@ export function AbilityHeader({ ability, abilityVersion, connectInfoMap }: Abili
       </div>
       <div className="flex-1">
         <div className="flex items-center gap-2">
-          <h4 className={`text-sm font-semibold ${theme.text}`}>
+          <h4 className={`text-sm font-semibold ${theme.text}`} style={fonts.heading}>
             {connectInfoMap.abilitiesByPackageName[ability.abilityPackageName]?.title ||
               ability.abilityPackageName}
           </h4>
@@ -62,7 +62,7 @@ export function AbilityHeader({ ability, abilityVersion, connectInfoMap }: Abili
           )}
         </div>
         {connectInfoMap.abilitiesByPackageName[ability.abilityPackageName]?.description && (
-          <p className={`text-xs ${theme.textSubtle} mt-1`}>
+          <p className={`text-xs ${theme.textSubtle} mt-1`} style={fonts.body}>
             {connectInfoMap.abilitiesByPackageName[ability.abilityPackageName].description}
           </p>
         )}

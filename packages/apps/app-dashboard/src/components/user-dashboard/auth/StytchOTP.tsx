@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useStytch } from '@stytch/react';
 import { z } from 'zod';
 import { Button } from '@/components/shared/ui/button';
@@ -26,17 +26,23 @@ const codeSchema = z
 /**
  * One-time passcodes can be sent via phone number through Stytch
  */
-const StytchOTP = ({ method, authWithStytch, setView, theme }: StytchOTPProps) => {
+const StytchOTP = ({ method, authWithStytch, theme }: StytchOTPProps) => {
   const [step, setStep] = useState<OtpStep>('submit');
   const [userId, setUserId] = useState<string>('');
   const [methodId, setMethodId] = useState<string>('');
   const [code, setCode] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
+  const [isNavigating, setIsNavigating] = useState<boolean>(false);
   const [countryCode, setCountryCode] = useState<string>('+1');
   const [countryName, setCountryName] = useState<string>('United States');
   const [phoneNumber, setPhoneNumber] = useState<string>('');
   const stytchClient = useStytch();
+
+  // Reset navigation state when component mounts
+  useEffect(() => {
+    setIsNavigating(false);
+  }, []);
 
   // Handle phone number changes and combine with country code
   const handlePhoneChange = (value: string) => {
@@ -283,24 +289,7 @@ const StytchOTP = ({ method, authWithStytch, setView, theme }: StytchOTPProps) =
                 </div>
               )}
 
-              {error && <StatusMessage message={error} type="error" />}
-
-              <div className="pt-2">
-                <Button
-                  onClick={() => setView('default')}
-                  className={`${theme.cardBg} ${theme.text} border ${theme.cardBorder} rounded-xl py-3 px-4 w-full font-medium text-sm ${theme.itemHoverBg} transition-all duration-200 hover:shadow-sm flex items-center justify-center gap-2`}
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M10 19l-7-7m0 0l7-7m-7 7h18"
-                    />
-                  </svg>
-                  Back
-                </Button>
-              </div>
+              {error && !isNavigating && <StatusMessage message={error} type="error" />}
             </form>
           </div>
         </>
@@ -342,10 +331,11 @@ const StytchOTP = ({ method, authWithStytch, setView, theme }: StytchOTPProps) =
                 </div>
               </div>
 
-              {error && <StatusMessage message={error} type="error" />}
+              {error && !isNavigating && <StatusMessage message={error} type="error" />}
 
               <div className="pt-2">
                 <Button
+                  type="button"
                   onClick={() => setStep('submit')}
                   className={`${theme.cardBg} ${theme.text} border ${theme.cardBorder} rounded-xl py-3 px-4 w-full font-medium text-sm ${theme.itemHoverBg} transition-all duration-200 hover:shadow-sm flex items-center justify-center gap-2`}
                 >

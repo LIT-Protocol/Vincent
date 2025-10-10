@@ -12,25 +12,11 @@ interface WebAuthnProps {
   theme: ThemeType;
 }
 
-export default function WebAuthn({
-  authWithWebAuthn,
-  setView,
-  registerWithWebAuthn,
-  clearError,
-  theme,
-}: WebAuthnProps) {
+export default function WebAuthn({ authWithWebAuthn, registerWithWebAuthn, theme }: WebAuthnProps) {
   const [registerLoading, setRegisterLoading] = useState<boolean>(false);
   const [authLoading, setAuthLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
   const [passkeyName, setPasskeyName] = useState<string>('Vincent Passkey');
-
-  const handleBackClick = () => {
-    // Clear the error from the parent component when going back
-    if (clearError) {
-      clearError();
-    }
-    setView('default');
-  };
 
   async function handleRegister() {
     if (!registerWithWebAuthn) {
@@ -205,21 +191,6 @@ export default function WebAuthn({
                   Sign in with existing passkey
                 </>
               )}
-            </Button>
-
-            <Button
-              onClick={handleBackClick}
-              className={`${theme.cardBg} ${theme.text} border ${theme.cardBorder} rounded-xl py-3 px-4 w-full font-medium text-sm ${theme.itemHoverBg} transition-all duration-200 hover:shadow-sm flex items-center justify-center gap-2 mt-3`}
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M10 19l-7-7m0 0l7-7m-7 7h18"
-                />
-              </svg>
-              Back
             </Button>
           </div>
         </div>
