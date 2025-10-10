@@ -1,7 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { PermittedAppsPage } from './PermittedAppsPage';
 import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
-import { PermittedAppsSkeleton } from './PermittedAppsSkeleton';
 import { useReadAuthInfo } from '@/hooks/user-dashboard/useAuthInfo';
 import { AuthenticationErrorScreen } from '../connect/AuthenticationErrorScreen';
 import { GeneralErrorScreen } from '@/components/user-dashboard/connect/GeneralErrorScreen';
@@ -9,6 +8,8 @@ import { VincentYieldModal } from '../landing/VincentYieldModal';
 import { ConnectToVincentYieldModal } from '../landing/ConnectToVincentYieldModal';
 import { env } from '@/config/env';
 import { useAllAgentApps } from '@/hooks/user-dashboard/useAllAgentApps';
+import Loading from '@/components/shared/ui/Loading';
+import { useFetchAppVersionsMap } from '@/hooks/user-dashboard/dashboard/useFetchAppVersionsMap';
 
 type FilterState = 'permitted' | 'unpermitted' | 'all';
 
@@ -29,6 +30,8 @@ export function PermittedAppsWrapper() {
     loading: permissionsLoading,
     error: permissionsError,
   } = useAllAgentApps(userAddress);
+
+  const { appVersionsMap } = useFetchAppVersionsMap({ userAddress });
 
   // Fetch all apps from the API
   const {
@@ -95,9 +98,9 @@ export function PermittedAppsWrapper() {
     }
   }, [isUserAuthed, showConnectModal, unconnectedPKP, vincentYieldPKP, permittedPkps.length]);
 
-  // Show skeleton while auth is processing
+  // Show loading while auth is processing
   if (isProcessing) {
-    return <PermittedAppsSkeleton />;
+    return <Loading />;
   }
 
   // Handle auth errors early
@@ -107,12 +110,12 @@ export function PermittedAppsWrapper() {
 
   // Handle missing auth or user address
   if (!userAddress) {
-    return <PermittedAppsSkeleton />;
+    return <Loading />;
   }
 
-  // Show skeleton while data is being fetched
+  // Show loading while data is being fetched
   if (permissionsLoading || appsLoading || !appsSuccess) {
-    return <PermittedAppsSkeleton />;
+    return <Loading />;
   }
 
   // Handle errors
@@ -133,6 +136,7 @@ export function PermittedAppsWrapper() {
         unpermittedPkps={unpermittedPkps}
         filterState={filterState}
         setFilterState={setFilterState}
+        appVersionsMap={appVersionsMap}
       />
       {showVincentYieldModal && !vincentYieldPKP && (
         <VincentYieldModal

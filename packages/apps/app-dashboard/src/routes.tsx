@@ -2,6 +2,7 @@ import { Outlet, RouteObject } from 'react-router';
 import AppLayout from '@/layout/developer-dashboard/AppLayout';
 import UserDashboardLayout from '@/layout/user-dashboard/UserDashboardLayout';
 import UserLayoutWithSidebar from '@/layout/user-dashboard/UserLayoutWithSidebar';
+import GlobeLayout from '@/layout/shared/GlobeLayout';
 import { AppProviders, UserProviders } from './providers';
 import { wrap } from '@/utils/shared/components';
 
@@ -56,7 +57,7 @@ import { AppExploreWrapper } from './components/explorer/wrappers/AppExploreWrap
 import { AppInfoWrapper } from './components/explorer/wrappers/AppInfoWrapper';
 import { ExplorerLandingPage } from './pages/explorer/ExplorerLandingPage';
 
-import { Wallet } from './pages/user-dashboard/wallet';
+import { WalletPageWrapper } from './pages/user-dashboard/WalletPageWrapper';
 import { AllWallets } from './pages/user-dashboard/all-wallets';
 import { FAQ } from './pages/user-dashboard/faq';
 import { UserPermissionWrapper } from './components/user-dashboard/dashboard/UserPermissionWrapper';
@@ -77,12 +78,61 @@ const UserLayoutWithSidebarAndProviders = wrap(
 
 const routes: RouteObject[] = [
   {
-    path: '/',
-    element: <RootPage />,
-  },
-  {
     path: '/faq',
     element: <FAQ />,
+  },
+  {
+    element: <GlobeLayout />,
+    children: [
+      {
+        path: '/',
+        element: <RootPage />,
+      },
+      {
+        element: <UserLayoutWithSidebarAndProviders />,
+        children: [
+          {
+            path: '/user/*',
+            element: <Outlet />,
+            children: [
+              {
+                path: 'appId/:appId',
+                element: <UserPermissionWrapper />,
+              },
+              {
+                path: 'appId/:appId/update-version',
+                element: <UpdateVersionPageWrapper />,
+              },
+              {
+                path: 'appId/:appId/repermit',
+                element: <RepermitConnectPageWrapper />,
+              },
+              {
+                path: 'apps',
+                element: <PermittedAppsWrapper />,
+              },
+              {
+                path: 'appId/:appId/wallet',
+                element: <WalletPageWrapper />,
+              },
+              {
+                path: 'all-wallets',
+                element: <AllWallets />,
+              },
+            ],
+          },
+        ],
+      },
+      {
+        element: <UserDashboardLayoutWithProviders />,
+        children: [
+          {
+            path: '/user/appId/:appId/connect',
+            element: <ConnectPageWrapper />,
+          },
+        ],
+      },
+    ],
   },
   {
     element: <AppLayoutWithProviders />,
@@ -247,51 +297,12 @@ const routes: RouteObject[] = [
     element: <UserDashboardLayoutWithProviders />,
     children: [
       {
-        path: '/user/appId/:appId/connect',
-        element: <ConnectPageWrapper />,
-      },
-      {
         path: '/explorer/apps',
         element: <AppExploreWrapper />,
       },
       {
         path: '/explorer/appId/:appId',
         element: <AppInfoWrapper />,
-      },
-    ],
-  },
-  {
-    element: <UserLayoutWithSidebarAndProviders />,
-    children: [
-      {
-        path: '/user/*',
-        element: <Outlet />,
-        children: [
-          {
-            path: 'appId/:appId',
-            element: <UserPermissionWrapper />,
-          },
-          {
-            path: 'appId/:appId/update-version',
-            element: <UpdateVersionPageWrapper />,
-          },
-          {
-            path: 'appId/:appId/repermit',
-            element: <RepermitConnectPageWrapper />,
-          },
-          {
-            path: 'apps',
-            element: <PermittedAppsWrapper />,
-          },
-          {
-            path: 'appId/:appId/wallet',
-            element: <Wallet />,
-          },
-          {
-            path: 'all-wallets',
-            element: <AllWallets />,
-          },
-        ],
       },
     ],
   },

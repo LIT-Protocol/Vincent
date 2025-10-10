@@ -1,5 +1,4 @@
 import { useState, useCallback, useEffect } from 'react';
-import { createPortal } from 'react-dom';
 import * as Sentry from '@sentry/react';
 import { getClient } from '@lit-protocol/vincent-contracts-sdk';
 import { IRelayPKP } from '@lit-protocol/types';
@@ -9,14 +8,14 @@ import { ReadAuthInfo } from '@/hooks/user-dashboard/useAuthInfo';
 import { useJwtRedirect } from '@/hooks/user-dashboard/connect/useJwtRedirect';
 import { useUrlRedirectUri } from '@/hooks/user-dashboard/connect/useUrlRedirectUri';
 import { StatusCard } from '../connect/ui/StatusCard';
-import { theme, fonts } from '../connect/ui/theme';
+import { theme } from '../connect/ui/theme';
 import { InfoBanner } from '../connect/ui/InfoBanner';
 import { App } from '@/types/developer-dashboard/appTypes';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
 import { ConnectAppHeader } from '../connect/ui/ConnectAppHeader';
 import { PageHeader } from './ui/PageHeader';
 import { ActionButtons } from '../connect/ui/ActionButtons';
+import { Breadcrumb } from '@/components/shared/ui/Breadcrumb';
 
 interface RepermitConnectPageProps {
   appData: App;
@@ -129,30 +128,11 @@ export function RepermitConnectPage({
     jwtLoadingStatus || (isConnectProcessing ? 'Re-permitting app...' : localSuccess || null);
   const error = jwtError || localError;
 
-  const breadcrumbContainer =
-    typeof document !== 'undefined' ? document.getElementById('header-breadcrumb') : null;
-
-  const breadcrumb = (
-    <div className="flex items-center gap-2">
-      <button
-        onClick={() => navigate('/user/apps')}
-        className={`flex items-center gap-2 ${theme.textMuted} hover:${theme.text} transition-colors`}
-        style={fonts.heading}
-      >
-        <ArrowLeft className="w-4 h-4" />
-        <span className="text-sm font-medium">Apps</span>
-      </button>
-      <span className={`${theme.textMuted}`}>/</span>
-      <span className={`text-sm font-medium ${theme.text}`} style={fonts.heading}>
-        {appData.name}
-      </span>
-    </div>
-  );
-
   return (
     <>
-      {/* Render breadcrumb into header bar via portal */}
-      {breadcrumbContainer && createPortal(breadcrumb, breadcrumbContainer)}
+      <Breadcrumb
+        items={[{ label: 'Apps', onClick: () => navigate('/user/apps') }, { label: appData.name }]}
+      />
 
       <div className="w-full max-w-md mx-auto relative z-10 flex items-center min-h-[calc(100vh-4rem)] -mt-32">
         <div
