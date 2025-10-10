@@ -31,7 +31,7 @@ export function initZendesk() {
   window.zESettings = {
     webWidget: {
       color: {
-        theme: '#ea580c',
+        theme: '#FF4205',
       },
       launcher: {
         label: {

@@ -6,7 +6,7 @@ import StatusMessage from '@/components/user-dashboard/connect/StatusMessage';
 import QrReader from '@/components/user-dashboard/withdraw/WalletConnect/QrReader';
 import { useState, useCallback, useEffect } from 'react';
 import React from 'react';
-import { theme } from '@/components/user-dashboard/connect/ui/theme';
+import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
 
 // Custom hooks
 import { useWalletConnectSession } from '@/hooks/user-dashboard/WalletConnect/useWalletConnectSession';
@@ -16,13 +16,15 @@ import { useWalletConnectRequests } from '@/hooks/user-dashboard/WalletConnect/u
 import { SessionProposal } from './SessionProposal';
 import { ActiveSessions } from './ActiveSessions';
 import { PendingRequests } from './PendingRequests';
+import LoadingLock from '@/components/shared/ui/LoadingLock';
 
 export default function WalletConnectPage(params: {
   deepLink?: string;
   agentPKP?: IRelayPKP;
   sessionSigs?: SessionSigs;
+  onSwitchToManual?: () => void;
 }) {
-  const { deepLink, agentPKP, sessionSigs } = params;
+  const { deepLink, agentPKP, sessionSigs, onSwitchToManual } = params;
   const [uri, setUri] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -170,12 +172,7 @@ export default function WalletConnectPage(params: {
       {/* Show loading state while PKP wallet is initializing */}
       {shouldWaitForWallet && !walletRegistered ? (
         <div className="w-full flex justify-center items-center py-8">
-          <div className="flex flex-col items-center space-y-4">
-            <StatusMessage
-              message={status.message || 'Initializing PKP Wallet...'}
-              type={status.type || 'info'}
-            />
-          </div>
+          <LoadingLock />
         </div>
       ) : (
         <>
@@ -191,15 +188,17 @@ export default function WalletConnectPage(params: {
           {/* OR divider */}
           <div className="flex items-center my-4">
             <div className={`flex-1 border-t ${theme.cardBorder}`}></div>
-            <span className={`px-3 text-sm ${theme.textMuted}`}>OR</span>
+            <span className={`px-3 text-sm ${theme.textMuted}`} style={fonts.heading}>
+              OR
+            </span>
             <div className={`flex-1 border-t ${theme.cardBorder}`}></div>
           </div>
 
           {/* Manual URI input */}
           <div className="w-full mb-4">
             <Input
-              className={`w-full ${theme.cardBg} ${theme.cardBorder} ${theme.text}`}
-              placeholder="Paste WalletConnect URI (e.g. wc:a281567bb3e4...)"
+              className={`w-full ${theme.itemBg} ${theme.cardBorder} ${theme.text} text-xs sm:text-sm placeholder:text-xs sm:placeholder:text-sm`}
+              placeholder="Paste WalletConnect URI (e.g. wc:a281...)"
               onChange={handleUriChange}
               value={uri}
               data-testid="uri-input"
@@ -208,19 +207,20 @@ export default function WalletConnectPage(params: {
           </div>
 
           {/* Manual Withdraw Button */}
-          <div className="mt-4 text-center">
-            <Button
-              variant="ghost"
-              className="text-sm text-orange-500 hover:text-orange-600 transition-colors"
-              onClick={() => {
-                // This will be handled by parent component to switch tabs
-                const event = new CustomEvent('switchToManualWithdraw');
-                window.dispatchEvent(event);
-              }}
-            >
-              Issues with WalletConnect? Click here to manually withdraw.
-            </Button>
-          </div>
+          {onSwitchToManual && (
+            <div className="mt-4 text-center px-2">
+              <Button
+                variant="ghost"
+                className="text-sm transition-colors whitespace-normal h-auto py-2 leading-relaxed"
+                style={{ color: theme.brandOrange, ...fonts.body }}
+                onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.8')}
+                onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
+                onClick={onSwitchToManual}
+              >
+                Issues with WalletConnect? Click here to manually withdraw.
+              </Button>
+            </div>
+          )}
 
           {/* Session Proposal */}
           {pendingProposal && !loading && (
