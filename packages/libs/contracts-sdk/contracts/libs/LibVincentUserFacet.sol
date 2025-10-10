@@ -63,10 +63,7 @@ library LibVincentUserFacet {
      * @param hashedAbilityIpfsCid The keccak256 hash of the ability's IPFS CID
      */
     event AbilityPolicyParametersRemoved(
-        uint256 indexed pkpTokenId,
-        uint40 indexed appId,
-        uint24 indexed appVersion,
-        bytes32 hashedAbilityIpfsCid
+        uint256 indexed pkpTokenId, uint40 indexed appId, uint24 indexed appVersion, bytes32 hashedAbilityIpfsCid
     );
 
     /**
@@ -110,9 +107,7 @@ library LibVincentUserFacet {
      * @param policiesLength Length of the policies array for this ability
      * @param paramValuesLength Length of the parameter values array for this ability
      */
-    error PolicyArrayLengthMismatch(
-        uint256 abilityIndex, uint256 policiesLength, uint256 paramValuesLength
-    );
+    error PolicyArrayLengthMismatch(uint256 abilityIndex, uint256 policiesLength, uint256 paramValuesLength);
 
     /**
      * @notice Error thrown when parameter arrays for a specific policy have mismatched lengths
@@ -120,9 +115,7 @@ library LibVincentUserFacet {
      * @param policyIndex Index of the policy in the policies array
      * @param paramValuesLength Length of the parameter values array for this policy
      */
-    error ParameterArrayLengthMismatch(
-        uint256 abilityIndex, uint256 policyIndex, uint256 paramValuesLength
-    );
+    error ParameterArrayLengthMismatch(uint256 abilityIndex, uint256 policyIndex, uint256 paramValuesLength);
 
     /**
      * @notice Error thrown when an ability is not registered for an app version
@@ -150,7 +143,7 @@ library LibVincentUserFacet {
      * @param abilityIpfsCid The IPFS CID of the ability
      */
     error DuplicateAbilityIpfsCid(uint40 appId, uint24 appVersion, string abilityIpfsCid);
-    
+
     /**
      * @notice Error thrown when a duplicate ability policy IPFS CID is provided
      * @param appId The ID of the app
@@ -158,7 +151,9 @@ library LibVincentUserFacet {
      * @param abilityIpfsCid The IPFS CID of the ability
      * @param abilityPolicyIpfsCid The IPFS CID of the ability policy
      */
-    error DuplicateAbilityPolicyIpfsCid(uint40 appId, uint24 appVersion, string abilityIpfsCid, string abilityPolicyIpfsCid);
+    error DuplicateAbilityPolicyIpfsCid(
+        uint40 appId, uint24 appVersion, string abilityIpfsCid, string abilityPolicyIpfsCid
+    );
 
     /**
      * @notice Error thrown when invalid input is provided

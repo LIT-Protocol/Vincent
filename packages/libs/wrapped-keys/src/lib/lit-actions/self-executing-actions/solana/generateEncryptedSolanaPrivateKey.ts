@@ -6,7 +6,6 @@ import { generateEncryptedSolanaPrivateKey } from '../../raw-action-functions/so
 // Using local declarations to avoid _every file_ thinking these are always in scope
 declare const accessControlConditions: GenerateEncryptedSolanaPrivateKeyParams['accessControlConditions'];
 
- 
 (async () =>
   litActionHandler(async () =>
     generateEncryptedSolanaPrivateKey({

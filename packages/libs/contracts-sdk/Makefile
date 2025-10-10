@@ -99,4 +99,15 @@ get-abis: ## Get human-readable ABIs for all facets
 	@forge inspect VincentUserFacet abi --json > abis/VincentUserFacet.abi.json
 	@echo "Getting ABI for VincentUserViewFacet..."
 	@forge inspect VincentUserViewFacet abi --json > abis/VincentUserViewFacet.abi.json
+
+	@echo "Merging facet ABIs into abis/FeeDiamond.abi.json..."
+	@jq -s '[.[].abi] | add | unique_by(.type, .name, ((.inputs // []) | map(.type) | join(",")))' \
+		out/OwnershipFacet.sol/OwnershipFacet.json \
+		out/FeeViewsFacet.sol/FeeViewsFacet.json \
+		out/FeeAdminFacet.sol/FeeAdminFacet.json \
+		out/MorphoPerfFeeFacet.sol/MorphoPerfFeeFacet.json \
+		out/AavePerfFeeFacet.sol/AavePerfFeeFacet.json \
+		> abis/FeeDiamond.abi.json
+	@echo "✅ Combined ABI written to abis/FeeDiamond.abi.json"
+
 	@echo "ABIs written to abis/*.abi.json"
