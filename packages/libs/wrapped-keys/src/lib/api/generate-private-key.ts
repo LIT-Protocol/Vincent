@@ -42,6 +42,7 @@ export async function generatePrivateKey(
       keyType: getKeyTypeFromNetwork(network),
       dataToEncryptHash,
       memo,
+      delegatorAddress,
     },
     litNetwork: litNodeClient.config.litNetwork,
   });

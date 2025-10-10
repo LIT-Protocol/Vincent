@@ -43,6 +43,7 @@ export async function batchGeneratePrivateKeys(
     return {
       ...generateEncryptedPrivateKey,
       keyType: getKeyTypeFromNetwork('solana'),
+      delegatorAddress,
     };
   });
 

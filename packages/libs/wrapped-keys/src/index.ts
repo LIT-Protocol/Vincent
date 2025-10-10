@@ -1,4 +1,8 @@
-import type { SupportedNetworks } from './lib/service-client/types';
+import type {
+  SupportedNetworks,
+  StoreKeyParams,
+  StoreKeyBatchParams,
+} from './lib/service-client/types';
 import type {
   GetEncryptedKeyDataParams,
   GeneratePrivateKeyParams,
@@ -68,4 +72,6 @@ export {
   BatchGeneratePrivateKeysResult,
   Network,
   KeyType,
+  StoreKeyParams,
+  StoreKeyBatchParams,
 };

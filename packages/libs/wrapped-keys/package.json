@@ -18,6 +18,12 @@
     "dist/**",
     "*.md"
   ],
+  "exports": {
+    ".": {
+      "require": "./dist/src/index.js",
+      "import": "./dist/src/index.js"
+    }
+  },
   "devDependencies": {
     "@types/semver": "^7.7.0",
     "chokidar-cli": "^3.0.0",

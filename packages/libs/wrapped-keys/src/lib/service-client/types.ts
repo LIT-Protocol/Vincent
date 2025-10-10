@@ -60,7 +60,7 @@ export type SupportedNetworks = Extract<LIT_NETWORK_VALUES, 'datil'>;
 export interface StoreKeyParams extends BaseApiParams {
   storedKeyMetadata: Pick<
     StoredKeyData,
-    'publicKey' | 'keyType' | 'dataToEncryptHash' | 'ciphertext' | 'memo'
+    'publicKey' | 'keyType' | 'dataToEncryptHash' | 'ciphertext' | 'memo' | 'delegatorAddress'
   >;
 }
 
@@ -80,7 +80,7 @@ export interface StoreKeyParams extends BaseApiParams {
 export interface StoreKeyBatchParams extends BaseApiParams {
   storedKeyMetadataBatch: Pick<
     StoredKeyData,
-    'publicKey' | 'keyType' | 'dataToEncryptHash' | 'ciphertext' | 'memo'
+    'publicKey' | 'keyType' | 'dataToEncryptHash' | 'ciphertext' | 'memo' | 'delegatorAddress'
   >[];
 }
 

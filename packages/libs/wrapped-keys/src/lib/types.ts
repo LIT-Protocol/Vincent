@@ -103,7 +103,7 @@ export interface StoredKeyMetadata {
 export interface StoredKeyData extends StoredKeyMetadata {
   ciphertext: string;
   dataToEncryptHash: string;
-  vincentWalletAddress: string;
+  delegatorAddress: string;
 }
 
 /** Result of storing a private key in the wrapped keys backend service
