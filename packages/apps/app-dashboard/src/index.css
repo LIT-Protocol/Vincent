@@ -16,6 +16,14 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     --radius: 0.625rem;
+
+    /* Theme-dependent colors for components */
+    --globe-bg: #ffffff;
+    --globe-dots: #000000;
+    --logo-filter-invert: 0;
+    --bg-gradient-light: radial-gradient(circle, rgba(0,0,0,0.08) 1px, transparent 1px);
+    --bg-gradient-dark: radial-gradient(circle, rgba(255,255,255,0.08) 1px, transparent 1px);
+    --bg-gradient: var(--bg-gradient-light);
     --background: oklch(1 0 0);
     --foreground: oklch(0.145 0 0);
     --card: oklch(1 0 0);
@@ -130,6 +138,12 @@ button:focus-visible {
     --sidebar-accent-foreground: oklch(0.985 0 0);
     --sidebar-border: oklch(1 0 0 / 10%);
     --sidebar-ring: oklch(0.556 0 0);
+
+    /* Theme-dependent colors for components */
+    --globe-bg: #030712;
+    --globe-dots: #ffffff;
+    --logo-filter-invert: 1;
+    --bg-gradient: var(--bg-gradient-dark);
 }
 
 @theme inline {

@@ -1,6 +1,7 @@
-import { useParams } from 'react-router';
+import { useParams, useNavigate } from 'react-router';
+import { useEffect } from 'react';
 import { UpdateVersionPage } from './UpdateVersionPage';
-import { ManagePagesSkeleton } from '../connect/ManagePagesSkeleton';
+import Loading from '@/components/shared/ui/Loading';
 import { GeneralErrorScreen } from '@/components/user-dashboard/connect/GeneralErrorScreen';
 import { AuthenticationErrorScreen } from '@/components/user-dashboard/connect/AuthenticationErrorScreen';
 import { useConnectInfo } from '@/hooks/user-dashboard/connect/useConnectInfo';
@@ -13,6 +14,7 @@ import { useAgentPkpForApp } from '@/hooks/user-dashboard/useAgentPkpForApp';
 
 export function UpdateVersionPageWrapper() {
   const { appId } = useParams();
+  const navigate = useNavigate();
 
   const { authInfo, sessionSigs, isProcessing, error } = useReadAuthInfo();
   const { isLoading, isError, errors, data } = useConnectInfo(appId || '');
@@ -22,6 +24,7 @@ export function UpdateVersionPageWrapper() {
   // Get agent PKP for this specific app
   const {
     agentPKP,
+    permittedVersion,
     loading: agentPKPLoading,
     error: agentPKPError,
   } = useAgentPkpForApp(userAddress, appId ? Number(appId) : undefined);
@@ -59,6 +62,24 @@ export function UpdateVersionPageWrapper() {
     // Only wait for version check and agent PKP if user is authenticated
     (isUserAuthed ? !isVersionCheckLoading && !agentPKPLoading && agentPKP : true);
 
+  // Redirect if no update is available (version matches or no permitted version)
+  useEffect(() => {
+    if (
+      isAllDataLoaded &&
+      data?.app &&
+      permittedVersion !== null &&
+      permittedVersion !== undefined
+    ) {
+      const activeVersion = data.app.activeVersion?.toString();
+      const permitted = permittedVersion.toString();
+
+      // If versions match or no active version, redirect to manage page
+      if (!activeVersion || permitted === activeVersion) {
+        navigate(`/user/appId/${appId}`, { replace: true });
+      }
+    }
+  }, [isAllDataLoaded, data, permittedVersion, appId, navigate]);
+
   // Authentication check - must be done before other business logic
   if (!isProcessing && !isUserAuthed) {
     return (
@@ -74,7 +95,16 @@ export function UpdateVersionPageWrapper() {
   }
 
   if (!isAllDataLoaded) {
-    return <ManagePagesSkeleton />;
+    return <Loading />;
+  }
+
+  // If no update is available, show loading while redirect happens
+  if (permittedVersion !== null && permittedVersion !== undefined && data?.app) {
+    const activeVersion = data.app.activeVersion?.toString();
+    const permitted = permittedVersion.toString();
+    if (!activeVersion || permitted === activeVersion) {
+      return <Loading />;
+    }
   }
 
   // Check for redirect URI validation errors (highest priority)

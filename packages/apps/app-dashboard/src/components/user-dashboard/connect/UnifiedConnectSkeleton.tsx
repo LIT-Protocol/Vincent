@@ -42,13 +42,9 @@ export function UnifiedConnectSkeleton({ mode }: UnifiedConnectSkeletonProps) {
               <Skeleton width={16} height={16} />
               <Skeleton height={16} width={120} />
             </div>
-            {/* Show header buttons only in consent mode */}
-            <div
-              className={`flex items-center gap-0.5 flex-shrink-0 transition-opacity duration-500 ${
-                mode === 'consent' ? 'opacity-100' : 'opacity-0'
-              }`}
-            >
-              <Skeleton width={32} height={32} />
+            {/* Always show theme toggle, only show user icon in consent mode */}
+            <div className="flex items-center gap-0.5 flex-shrink-0">
+              {mode === 'consent' && <Skeleton width={32} height={32} />}
               <Skeleton width={32} height={32} />
             </div>
           </div>
@@ -87,7 +83,7 @@ export function UnifiedConnectSkeleton({ mode }: UnifiedConnectSkeletonProps) {
                 <>
                   {/* Email method */}
                   <div
-                    className={`w-full sm:w-3/4 md:w-3/4 lg:w-full py-3 px-4 flex items-center justify-between ${theme.cardBg} border ${theme.cardBorder} rounded-lg`}
+                    className={`w-full sm:w-3/4 md:w-3/4 lg:w-full py-3 px-4 flex items-center justify-between ${theme.itemBg} border ${theme.cardBorder} rounded-lg`}
                   >
                     <div className="flex items-center">
                       <Skeleton width={20} height={20} className="mr-3 flex-shrink-0" />
@@ -98,7 +94,7 @@ export function UnifiedConnectSkeleton({ mode }: UnifiedConnectSkeletonProps) {
 
                   {/* Phone method */}
                   <div
-                    className={`w-full sm:w-3/4 md:w-3/4 lg:w-full py-3 px-4 flex items-center justify-between ${theme.cardBg} border ${theme.cardBorder} rounded-lg`}
+                    className={`w-full sm:w-3/4 md:w-3/4 lg:w-full py-3 px-4 flex items-center justify-between ${theme.itemBg} border ${theme.cardBorder} rounded-lg`}
                   >
                     <div className="flex items-center">
                       <Skeleton width={20} height={20} className="mr-3 flex-shrink-0" />
@@ -109,7 +105,7 @@ export function UnifiedConnectSkeleton({ mode }: UnifiedConnectSkeletonProps) {
 
                   {/* Wallet method */}
                   <div
-                    className={`w-full sm:w-3/4 md:w-3/4 lg:w-full py-3 px-4 flex items-center justify-between ${theme.cardBg} border ${theme.cardBorder} rounded-lg`}
+                    className={`w-full sm:w-3/4 md:w-3/4 lg:w-full py-3 px-4 flex items-center justify-between ${theme.itemBg} border ${theme.cardBorder} rounded-lg`}
                   >
                     <div className="flex items-center">
                       <Skeleton width={20} height={20} className="mr-3 flex-shrink-0" />
@@ -120,7 +116,7 @@ export function UnifiedConnectSkeleton({ mode }: UnifiedConnectSkeletonProps) {
 
                   {/* Passkey method */}
                   <div
-                    className={`w-full sm:w-3/4 md:w-3/4 lg:w-full py-3 px-4 flex items-center justify-between ${theme.cardBg} border ${theme.cardBorder} rounded-lg`}
+                    className={`w-full sm:w-3/4 md:w-3/4 lg:w-full py-3 px-4 flex items-center justify-between ${theme.itemBg} border ${theme.cardBorder} rounded-lg`}
                   >
                     <div className="flex items-center">
                       <Skeleton width={20} height={20} className="mr-3 flex-shrink-0" />
@@ -134,7 +130,7 @@ export function UnifiedConnectSkeleton({ mode }: UnifiedConnectSkeletonProps) {
                 <>
                   {/* Single Ability Accordion - Closed */}
                   <div
-                    className={`w-full backdrop-blur-xl ${theme.cardBg} border ${theme.cardBorder} rounded-lg overflow-hidden`}
+                    className={`w-full backdrop-blur-xl ${theme.itemBg} border ${theme.cardBorder} rounded-lg overflow-hidden`}
                   >
                     <div className="py-2 px-2 sm:py-2.5 sm:px-3">
                       <div className="flex items-center gap-3">
@@ -178,14 +174,6 @@ export function UnifiedConnectSkeleton({ mode }: UnifiedConnectSkeletonProps) {
               )}
             </div>
           </div>
-        </div>
-
-        {/* Footer Skeleton - Same for both modes */}
-        <div
-          className={`px-3 sm:px-6 py-3 border-t ${theme.cardBorder} ${theme.cardBg} flex flex-col items-center gap-2`}
-        >
-          <Skeleton height={14} width={120} />
-          <Skeleton height={12} width={150} />
         </div>
       </div>
     </SkeletonTheme>

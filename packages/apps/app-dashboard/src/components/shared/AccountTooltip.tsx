@@ -1,8 +1,9 @@
+import { useState, useEffect, useRef } from 'react';
 import { User } from 'lucide-react';
+import { fonts, theme as appTheme } from '@/components/user-dashboard/connect/ui/theme';
 import useReadAuthInfo from '@/hooks/user-dashboard/useAuthInfo';
 import { SidebarMenuButton } from '@/components/shared/ui/sidebar';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/shared/ui/tooltip';
-import { useState, useEffect, useRef } from 'react';
 
 interface AccountTooltipProps {
   theme: {
@@ -62,12 +63,6 @@ export function AccountTooltip({ theme }: AccountTooltipProps) {
     return `Sign-In Type: ${authInfo.type}\nAuthenticated: ${new Date(authInfo.authenticatedAt).toLocaleString()}${authInfo.value ? `\nValue: ${authInfo.value}` : ''}`;
   };
 
-  // Use theme-based colors or fallback to dark theme with solid background
-  const tooltipClassName =
-    theme.cardBg && theme.cardBorder
-      ? `!bg-white border border-gray-200 !text-black max-w-sm shadow-lg`
-      : '!bg-black !text-white max-w-sm shadow-lg';
-
   return (
     <div ref={tooltipRef}>
       <Tooltip
@@ -85,6 +80,7 @@ export function AccountTooltip({ theme }: AccountTooltipProps) {
         <TooltipTrigger asChild>
           <SidebarMenuButton
             className={`h-10 px-3 rounded-lg transition-all duration-200 ${theme.text} ${theme.itemHoverBg} md:cursor-default cursor-pointer`}
+            style={fonts.heading}
             onClick={(e) => {
               e.stopPropagation();
               e.preventDefault();
@@ -94,13 +90,24 @@ export function AccountTooltip({ theme }: AccountTooltipProps) {
               }
             }}
           >
-            <User className="h-4 w-4" />
+            <div className={theme.textMuted}>
+              <User className="h-4 w-4" />
+            </div>
             <span className={`font-medium ${theme.text}`}>My Account</span>
           </SidebarMenuButton>
         </TooltipTrigger>
 
         {authInfo && (
-          <TooltipContent side="top" className={tooltipClassName}>
+          <TooltipContent
+            side="top"
+            className={`${appTheme.mainCard} border ${appTheme.mainCardBorder} ${appTheme.text} max-w-sm shadow-lg`}
+            style={{
+              ...fonts.body,
+              backgroundImage:
+                'radial-gradient(circle, rgba(0,0,0,0.08) 1px, transparent 1px), radial-gradient(circle, rgba(255,255,255,0.08) 1px, transparent 1px)',
+              backgroundSize: '24px 24px',
+            }}
+          >
             <div className="whitespace-pre-line text-xs">
               <div className="break-words">{formatAuthInfo()}</div>
             </div>

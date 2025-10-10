@@ -2,24 +2,26 @@ import { useState, useEffect, useMemo } from 'react';
 import * as Sentry from '@sentry/react';
 import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
 import { useGetPermittedAgentAppsQuery } from '@/store/agentPkpsApi';
-import { App } from '@/types/developer-dashboard/appTypes';
+import { App, AppVersion } from '@/types/developer-dashboard/appTypes';
 
-interface UseSidebarDataProps {
+interface useFetchAppVersionsMapProps {
   userAddress: string;
 }
 
-interface UseSidebarDataReturn {
+interface useFetchAppVersionsMapReturn {
   apps: App[];
   permittedAppVersions: Record<string, string>;
-  appVersionsMap: Record<string, any[]>;
+  appVersionsMap: Record<string, AppVersion[]>;
   isLoading: boolean;
   error: string | null;
 }
 
-export function useSidebarData({ userAddress }: UseSidebarDataProps): UseSidebarDataReturn {
+export function useFetchAppVersionsMap({
+  userAddress,
+}: useFetchAppVersionsMapProps): useFetchAppVersionsMapReturn {
   const [apps, setApps] = useState<App[]>([]);
   const [permittedAppVersions, setPermittedAppVersions] = useState<Record<string, string>>({});
-  const [appVersionsMap, setAppVersionsMap] = useState<Record<string, any[]>>({});
+  const [appVersionsMap, setAppVersionsMap] = useState<Record<string, AppVersion[]>>({});
   const [appsLoading, setAppsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -53,7 +55,7 @@ export function useSidebarData({ userAddress }: UseSidebarDataProps): UseSidebar
   useEffect(() => {
     // If no permitted apps, set empty state and finish
     if (Object.keys(permittedVersionsFromHook).length === 0) {
-      console.log('[useSidebarData] No permitted apps, setting empty state');
+      console.log('[useFetchAppVersionsMap] No permitted apps, setting empty state');
       setApps((prev) => (prev.length === 0 ? prev : []));
       setPermittedAppVersions((prev) => (Object.keys(prev).length === 0 ? prev : {}));
       setAppVersionsMap((prev) => (Object.keys(prev).length === 0 ? prev : {}));
@@ -103,7 +105,7 @@ export function useSidebarData({ userAddress }: UseSidebarDataProps): UseSidebar
         });
 
         const results = await Promise.all(versionPromises);
-        const versionsMap: Record<string, any[]> = {};
+        const versionsMap: Record<string, AppVersion[]> = {};
 
         results.forEach(({ appId, versions }) => {
           versionsMap[appId] = versions;
@@ -118,7 +120,7 @@ export function useSidebarData({ userAddress }: UseSidebarDataProps): UseSidebar
         // Capture to Sentry
         Sentry.captureException(error, {
           extra: {
-            context: 'useSidebarData.fetchAllData',
+            context: 'useFetchAppVersionsMap.fetchAllData',
             userAddress,
           },
         });

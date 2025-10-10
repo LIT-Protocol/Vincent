@@ -1,20 +1,24 @@
 import { Helmet } from 'react-helmet-async';
 import { useState, useEffect, useMemo } from 'react';
-import { WithdrawForm } from '@/components/user-dashboard/withdraw/WithdrawForm';
-import { WithdrawFormSkeleton } from '@/components/user-dashboard/withdraw/WithdrawFormSkeleton';
 import { WalletModal } from '@/components/user-dashboard/wallet/WalletModal';
+import WalletConnectPage from '@/components/user-dashboard/withdraw/WalletConnect/WalletConnect';
+import { ManualWithdraw } from '@/components/user-dashboard/withdraw/manual/ManualWithdrawForm';
 import useReadAuthInfo from '@/hooks/user-dashboard/useAuthInfo';
 import { useAuthGuard } from '@/hooks/user-dashboard/connect/useAuthGuard';
 import { useGetAgentPkpsQuery } from '@/store/agentPkpsApi';
 import { IRelayPKP } from '@lit-protocol/types';
-import { theme } from '@/components/user-dashboard/connect/ui/theme';
+import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
 import { useWalletConnectStoreActions } from '@/components/user-dashboard/withdraw/WalletConnect/WalletConnectStore';
+import Loading from '@/components/shared/ui/Loading';
+import { Button } from '@/components/shared/ui/button';
+import { HelpCircle } from 'lucide-react';
 
 export function AllWallets() {
   const { authInfo, sessionSigs } = useReadAuthInfo();
   const authGuardElement = useAuthGuard();
   const [showModal, setShowModal] = useState(true);
   const [selectedPKP, setSelectedPKP] = useState<IRelayPKP | null>(null);
+  const [activeTab, setActiveTab] = useState<'walletconnect' | 'manual'>('walletconnect');
   const { clearSessionsForAddress, setCurrentWalletAddress } = useWalletConnectStoreActions();
 
   const { data: agentPkpsData, isLoading: loading } = useGetAgentPkpsQuery(
@@ -83,7 +87,7 @@ export function AllWallets() {
           <meta name="description" content="Vincent All Wallets Dashboard" />
         </Helmet>
         <div className="w-full h-full flex items-center justify-center">
-          <WithdrawFormSkeleton />
+          <Loading />
         </div>
       </>
     );
@@ -111,38 +115,85 @@ export function AllWallets() {
         <title>Vincent | All Wallets</title>
         <meta name="description" content="Your Vincent wallets dashboard" />
       </Helmet>
-      <div className="w-full h-full flex flex-col items-center justify-center">
-        {/* PKP Selector Dropdown */}
-        <div className="max-w-xl w-full mx-auto mb-4">
-          <div
-            className={`flex items-center gap-3 p-4 rounded-lg ${theme.mainCard} border ${theme.mainCardBorder}`}
+      <div className="w-full max-w-4xl mx-auto relative z-10 space-y-3 sm:space-y-4 lg:space-y-6">
+        {/* PKP Selector */}
+        <div
+          className={`backdrop-blur-xl ${theme.mainCard} border ${theme.mainCardBorder} rounded-lg p-3 sm:p-4 lg:p-6`}
+        >
+          <label className={`text-sm font-medium ${theme.text} mb-2 block`} style={fonts.heading}>
+            Select Wallet:
+          </label>
+          <select
+            value={selectedPKP.ethAddress}
+            onChange={(e) => handlePKPChange(e.target.value)}
+            className={`w-full px-3 py-2 rounded-lg border ${theme.cardBorder} ${theme.mainCard} ${theme.text} focus:outline-none focus:ring-2`}
+            style={{ ...fonts.body, '--tw-ring-color': theme.brandOrange } as React.CSSProperties}
           >
-            <label className={`text-sm font-medium ${theme.text}`}>Select Vincent Wallet:</label>
-            <select
-              value={selectedPKP.ethAddress}
-              onChange={(e) => handlePKPChange(e.target.value)}
-              className={`flex-1 px-3 py-2 rounded-lg border ${theme.cardBorder} ${theme.mainCard} ${theme.text} focus:outline-none focus:ring-2 focus:ring-orange-500`}
-            >
-              {allAgentPKPs.map((pkp) => (
-                <option
-                  key={pkp.ethAddress}
-                  value={pkp.ethAddress}
-                  className={`${theme.mainCard} ${theme.text}`}
-                >
-                  {pkp.ethAddress}
-                </option>
-              ))}
-            </select>
-          </div>
+            {allAgentPKPs.map((pkp) => (
+              <option
+                key={pkp.ethAddress}
+                value={pkp.ethAddress}
+                className={`${theme.mainCard} ${theme.text}`}
+              >
+                {pkp.ethAddress}
+              </option>
+            ))}
+          </select>
         </div>
 
-        {/* Wallet Form */}
-        <WithdrawForm
-          sessionSigs={sessionSigs}
-          agentPKP={selectedPKP}
-          onHelpClick={handleReopenModal}
-          showHelpButton={!showModal}
-        />
+        {/* Main Wallet Card */}
+        <div
+          className={`backdrop-blur-xl ${theme.mainCard} border ${theme.mainCardBorder} rounded-lg p-4 sm:p-5 lg:p-6 space-y-4 sm:space-y-5 lg:space-y-6 mb-20 sm:mb-6`}
+        >
+          {/* Header with Help Button */}
+          <div className="flex items-center justify-between">
+            <h2
+              className={`text-base sm:text-lg font-semibold ${theme.text}`}
+              style={fonts.heading}
+            >
+              {activeTab === 'walletconnect' ? 'Connect & Manage' : 'Manual Withdraw'}
+            </h2>
+            {showModal === false && (
+              <button
+                onClick={handleReopenModal}
+                className={`p-1.5 rounded-md hover:${theme.itemHoverBg} transition-colors`}
+                title="Connection Help"
+              >
+                <HelpCircle className="w-5 h-5" style={{ color: theme.brandOrange }} />
+              </button>
+            )}
+          </div>
+
+          {/* Content */}
+          <div className="space-y-3 sm:space-y-4">
+            {activeTab === 'walletconnect' ? (
+              <WalletConnectPage
+                agentPKP={selectedPKP}
+                sessionSigs={sessionSigs}
+                onSwitchToManual={() => setActiveTab('manual')}
+              />
+            ) : (
+              <>
+                <ManualWithdraw agentPKP={selectedPKP} sessionSigs={sessionSigs} />
+
+                {/* Divider */}
+                <div className={`border-t ${theme.cardBorder}`} />
+
+                {/* Back to WalletConnect Button */}
+                <Button
+                  onClick={() => setActiveTab('walletconnect')}
+                  variant="ghost"
+                  className="w-full transition-colors"
+                  style={{ color: theme.brandOrange }}
+                  onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.8')}
+                  onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
+                >
+                  Click here to go back to WalletConnect
+                </Button>
+              </>
+            )}
+          </div>
+        </div>
       </div>
       <WalletModal isOpen={showModal} onClose={() => setShowModal(false)} />
     </>
