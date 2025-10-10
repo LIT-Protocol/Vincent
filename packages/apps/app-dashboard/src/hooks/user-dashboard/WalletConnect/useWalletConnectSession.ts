@@ -115,7 +115,7 @@ export function useWalletConnectSession(agentPKP?: IRelayPKP, sessionSigs?: Sess
         refreshSessions();
 
         setWalletRegistered(true);
-        setStatus({ message: 'PKP wallet registered successfully', type: 'success' });
+        setStatus({ message: 'Wallet initialized successfully!', type: 'success' });
       } catch (err) {
         console.error('Failed to register PKP wallet:', err);
         Sentry.addBreadcrumb({
