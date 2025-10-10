@@ -2,7 +2,7 @@ import { Button } from '@/components/shared/ui/button';
 import { DAppIcon, DAppIconFallback } from './DAppIcon';
 import { WalletConnectCard } from './WalletConnectCard';
 import { useEffect } from 'react';
-import { theme } from '@/components/user-dashboard/connect/ui/theme';
+import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
 
 type Session = {
   topic: string;
@@ -121,7 +121,7 @@ function SessionItem({
 
   return (
     <div
-      className={`flex items-center justify-between gap-2 py-2 px-3 ${theme.cardBg} rounded-lg border ${theme.cardBorder} shadow-sm transition-all hover:shadow-md`}
+      className={`flex items-center justify-between gap-2 py-2 px-3 ${theme.itemBg} rounded-lg border ${theme.cardBorder} shadow-sm transition-all hover:shadow-md`}
     >
       <div className="flex items-center gap-2">
         {dappIcon ? (
@@ -136,13 +136,16 @@ function SessionItem({
               target="_blank"
               rel="noopener noreferrer"
               className={`font-medium ${theme.text} hover:underline`}
+              style={fonts.heading}
             >
               {dappName}
             </a>
           ) : (
-            <span className={`font-medium ${theme.text}`}>{dappName}</span>
+            <span className={`font-medium ${theme.text}`} style={fonts.heading}>
+              {dappName}
+            </span>
           )}
-          <div className={`text-xs ${theme.textMuted}`}>
+          <div className={`text-xs ${theme.textMuted}`} style={fonts.body}>
             <span>Session: {sessionTopic.slice(0, 8)}...</span>
             {walletAddressDisplay && <span className="ml-2">{walletAddressDisplay}</span>}
           </div>
@@ -153,7 +156,8 @@ function SessionItem({
         variant="outline"
         onClick={() => onDisconnect(sessionTopic)}
         disabled={disconnecting === sessionTopic}
-        className={`h-8 px-3 text-xs border ${theme.cardBorder} ${theme.text} hover:${theme.itemHoverBg}`}
+        className={`h-8 px-3 text-sm border ${theme.cardBorder} ${theme.text} hover:${theme.itemHoverBg}`}
+        style={fonts.heading}
       >
         {disconnecting === sessionTopic ? 'Disconnecting...' : 'Disconnect'}
       </Button>
