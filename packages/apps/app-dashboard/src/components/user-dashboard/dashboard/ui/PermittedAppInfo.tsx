@@ -84,7 +84,7 @@ export function PermittedAppInfo({
                       return (
                         <div
                           key={abilityKey}
-                          className={`backdrop-blur-xl ${theme.cardBg} border ${theme.cardBorder} rounded-lg overflow-hidden`}
+                          className={`backdrop-blur-xl ${theme.itemBg} border ${theme.cardBorder} rounded-lg overflow-hidden`}
                         >
                           <div className="py-2 px-2 sm:py-2.5 sm:px-3">
                             <AbilityHeader

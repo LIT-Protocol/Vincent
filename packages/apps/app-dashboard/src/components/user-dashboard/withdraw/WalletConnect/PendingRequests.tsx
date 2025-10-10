@@ -4,7 +4,7 @@ import { DAppIcon, DAppIconFallback } from './DAppIcon';
 import { ethers } from 'ethers';
 import { IWalletKit } from '@reown/walletkit';
 import { PenTool, Send, FileText, HelpCircle } from 'lucide-react';
-import { theme } from '@/components/user-dashboard/connect/ui/theme';
+import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
 
 interface PendingRequest {
   id: string;
@@ -112,11 +112,14 @@ function RequestItem({
               target="_blank"
               rel="noopener noreferrer"
               className={`text-sm font-medium hover:underline ${theme.text}`}
+              style={fonts.heading}
             >
               {dAppInfo.name}
             </a>
           ) : (
-            <span className={`text-sm font-medium ${theme.text}`}>{dAppInfo.name}</span>
+            <span className={`text-sm font-medium ${theme.text}`} style={fonts.heading}>
+              {dAppInfo.name}
+            </span>
           )}
         </div>
       </div>
@@ -124,7 +127,9 @@ function RequestItem({
       {/* Request Info */}
       <div className="flex items-center gap-2 mb-2">
         {icon && <span className={theme.text}>{icon}</span>}
-        <p className={`font-medium ${theme.text}`}>{description}</p>
+        <p className={`font-medium ${theme.text}`} style={fonts.heading}>
+          {description}
+        </p>
       </div>
 
       {details}
@@ -133,7 +138,8 @@ function RequestItem({
         <Button
           size="sm"
           variant="outline"
-          className="text-xs border-gray-200 text-gray-800 hover:bg-gray-50 dark:border-gray-800 dark:text-gray-200 dark:hover:bg-black"
+          className="text-sm border-gray-200 text-gray-800 hover:bg-gray-50 dark:border-gray-800 dark:text-gray-200 dark:hover:bg-black"
+          style={fonts.heading}
           onClick={onApprove}
           disabled={processing}
         >
@@ -142,7 +148,8 @@ function RequestItem({
         <Button
           size="sm"
           variant="outline"
-          className="text-xs hover:bg-opacity-50 border-gray-200 text-gray-800 dark:border-gray-800 dark:text-gray-200 dark:hover:bg-black"
+          className="text-sm hover:bg-opacity-50 border-gray-200 text-gray-800 dark:border-gray-800 dark:text-gray-200 dark:hover:bg-black"
+          style={fonts.heading}
           onClick={onReject}
           disabled={processing}
         >

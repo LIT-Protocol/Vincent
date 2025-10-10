@@ -2,7 +2,7 @@ import { Button } from '@/components/shared/ui/button';
 import { DAppIcon, DAppIconFallback } from './DAppIcon';
 import { WalletConnectCard } from './WalletConnectCard';
 import { ChevronDown, ChevronUp } from 'lucide-react';
-import { theme } from '@/components/user-dashboard/connect/ui/theme';
+import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
 import { useState } from 'react';
 
 type SessionMetadata = {
@@ -63,10 +63,18 @@ export function SessionProposal({
             <DAppIconFallback name={dappName} size="md" className="mr-3 flex-shrink-0" />
           )}
           <div>
-            <p className={`font-semibold ${theme.text}`}>{dappName}</p>
-            {dappUrl && <p className={`text-xs ${theme.textMuted}`}>{dappUrl}</p>}
+            <p className={`font-semibold ${theme.text}`} style={fonts.heading}>
+              {dappName}
+            </p>
+            {dappUrl && (
+              <p className={`text-xs ${theme.textMuted}`} style={fonts.body}>
+                {dappUrl}
+              </p>
+            )}
             {dappDescription && (
-              <p className={`text-xs mt-1 ${theme.textMuted}`}>{dappDescription}</p>
+              <p className={`text-xs mt-1 ${theme.textMuted}`} style={fonts.body}>
+                {dappDescription}
+              </p>
             )}
           </div>
         </div>
@@ -78,7 +86,9 @@ export function SessionProposal({
               onClick={() => setShowPermissions(!showPermissions)}
               className={`w-full flex items-center justify-between p-1 rounded hover:${theme.itemHoverBg} transition-colors`}
             >
-              <span className={`font-medium text-xs ${theme.text}`}>Requesting permission to:</span>
+              <span className={`font-medium text-xs ${theme.text}`} style={fonts.heading}>
+                Requesting permission to:
+              </span>
               {showPermissions ? (
                 <ChevronUp className={`w-3 h-3 ${theme.textMuted}`} />
               ) : (
@@ -87,7 +97,10 @@ export function SessionProposal({
             </button>
             {showPermissions && (
               <div className={`mt-2 p-2`}>
-                <ul className={`list-disc ml-4 text-xs space-y-1 ${theme.textMuted}`}>
+                <ul
+                  className={`list-disc ml-4 text-xs space-y-1 ${theme.textMuted}`}
+                  style={fonts.body}
+                >
                   {permissions.map((permission, i) => (
                     <li key={i}>{permission}</li>
                   ))}
@@ -105,7 +118,8 @@ export function SessionProposal({
             onClick={onApprove}
             disabled={processing || !walletRegistered}
             data-testid="approve-session-button"
-            className={`border ${theme.cardBorder} ${theme.text} hover:${theme.itemHoverBg}`}
+            className={`text-sm border ${theme.cardBorder} ${theme.text} hover:${theme.itemHoverBg}`}
+            style={fonts.heading}
           >
             {processing ? 'Processing...' : 'Approve Connection'}
           </Button>
@@ -115,7 +129,8 @@ export function SessionProposal({
             onClick={onReject}
             disabled={processing}
             data-testid="reject-session-button"
-            className={`border ${theme.cardBorder} ${theme.text} hover:${theme.itemHoverBg}`}
+            className={`text-sm border ${theme.cardBorder} ${theme.text} hover:${theme.itemHoverBg}`}
+            style={fonts.heading}
           >
             Reject
           </Button>

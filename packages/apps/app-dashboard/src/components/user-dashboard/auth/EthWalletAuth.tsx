@@ -17,7 +17,7 @@ interface WalletAuthProps {
   theme: ThemeType;
 }
 
-export default function EthWalletAuth({ authWithEthWallet, setView, theme }: WalletAuthProps) {
+export default function EthWalletAuth({ authWithEthWallet, theme }: WalletAuthProps) {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
   const [appKitInitialized, setAppKitInitialized] = useState(false);
@@ -237,21 +237,6 @@ export default function EthWalletAuth({ authWithEthWallet, setView, theme }: Wal
           )}
 
           {error && <StatusMessage message={error} type="error" />}
-
-          <Button
-            onClick={() => setView('default')}
-            className={`w-full ${theme.cardBg} ${theme.text} border ${theme.cardBorder} ${theme.itemHoverBg} rounded-xl py-3 px-4 font-medium text-sm transition-all duration-200 hover:shadow-sm flex items-center justify-center gap-2`}
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M10 19l-7-7m0 0l7-7m-7 7h18"
-              />
-            </svg>
-            Back
-          </Button>
         </div>
       </div>
     </>

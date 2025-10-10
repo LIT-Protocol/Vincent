@@ -50,7 +50,7 @@ export const WithdrawPanel: React.FC<WithdrawPanelProps> = ({
   };
 
   return (
-    <div className={`p-3 border rounded mb-4 ${theme.cardBg} ${theme.cardBorder}`}>
+    <div className={`p-3 border rounded mb-4 ${theme.mainCard} ${theme.cardBorder}`}>
       <TokenSelector
         isCustomToken={isCustomToken}
         customTokenAddress={customTokenAddress}
@@ -65,7 +65,7 @@ export const WithdrawPanel: React.FC<WithdrawPanelProps> = ({
             value={withdrawAddress}
             onChange={(e) => setWithdrawAddress(e.target.value)}
             placeholder="0x..."
-            className={`w-full p-2 border rounded text-sm ${theme.cardBg} ${theme.cardBorder} ${theme.text}`}
+            className={`w-full p-2 border rounded text-sm ${theme.mainCard} ${theme.cardBorder} ${theme.text}`}
           />
         </div>
         <div>
@@ -76,7 +76,7 @@ export const WithdrawPanel: React.FC<WithdrawPanelProps> = ({
               value={withdrawAmount}
               onChange={handleAmountChange}
               placeholder="0.0"
-              className={`w-full p-2 border rounded text-sm ${theme.cardBg} ${theme.cardBorder} ${theme.text}`}
+              className={`w-full p-2 border rounded text-sm ${theme.mainCard} ${theme.cardBorder} ${theme.text}`}
             />
           ) : (
             <div className="flex">
@@ -85,7 +85,7 @@ export const WithdrawPanel: React.FC<WithdrawPanelProps> = ({
                 value={withdrawAmount}
                 onChange={handleAmountChange}
                 placeholder="0.0"
-                className={`flex-1 p-2 border rounded-l text-sm ${theme.cardBg} ${theme.cardBorder} ${theme.text}`}
+                className={`flex-1 p-2 border rounded-l text-sm ${theme.mainCard} ${theme.cardBorder} ${theme.text}`}
               />
               <span
                 className={`p-2 text-sm ${theme.itemBg} border border-l-0 rounded-r ${theme.cardBorder} ${theme.text}`}

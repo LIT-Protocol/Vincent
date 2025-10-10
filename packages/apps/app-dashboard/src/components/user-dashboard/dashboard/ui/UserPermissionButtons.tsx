@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { Button } from '@/components/shared/ui/button';
 import { AlertCircle, Loader2 } from 'lucide-react';
-import { theme } from '@/components/user-dashboard/connect/ui/theme';
+import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
 
 interface UserPermissionButtonsProps {
   onUnpermit?: () => void;
@@ -22,7 +22,7 @@ export function UserPermissionButtons({
 }: UserPermissionButtonsProps) {
   return (
     <div className="space-y-2">
-      <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 pt-4">
+      <div className="flex flex-col sm:flex-row justify-center gap-2">
         <motion.div
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
@@ -33,9 +33,12 @@ export function UserPermissionButtons({
             onClick={onUnpermit}
             className={`w-full sm:w-auto px-6 py-2 border ${theme.cardBorder} ${theme.text} hover:bg-red-500/10 hover:text-red-400 hover:border-red-400/30 flex items-center justify-center gap-2`}
             disabled={isLoading}
+            style={fonts.heading}
           >
-            {isUnpermitting && <Loader2 className="w-4 h-4 animate-spin" />}
-            {isUnpermitting ? 'Unpermitting...' : 'Unpermit App'}
+            {isUnpermitting && <Loader2 className="w-4 h-4 animate-spin -mt-px" />}
+            <span className="leading-none">
+              {isUnpermitting ? 'Unpermitting...' : 'Unpermit App'}
+            </span>
           </Button>
         </motion.div>
         <motion.div
@@ -47,10 +50,13 @@ export function UserPermissionButtons({
             onClick={onSubmit}
             className={`w-full sm:w-auto px-6 py-2 ${error ? 'bg-red-500/20 border-red-500/30 text-red-400' : `${theme.accentBg} ${theme.accentHover}`} border-0 flex items-center justify-center gap-2`}
             disabled={isLoading}
+            style={fonts.heading}
           >
-            {isGranting && <Loader2 className="w-4 h-4 animate-spin" />}
-            {error && <AlertCircle className="w-4 h-4" />}
-            {error ? 'Retry' : isGranting ? 'Processing...' : 'Update Permissions'}
+            {isGranting && <Loader2 className="w-4 h-4 animate-spin -mt-px" />}
+            {error && <AlertCircle className="w-4 h-4 -mt-px" />}
+            <span className="leading-none">
+              {error ? 'Retry' : isGranting ? 'Processing...' : 'Update Permissions'}
+            </span>
           </Button>
         </motion.div>
       </div>
