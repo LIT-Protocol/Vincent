@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/shared/ui/button';
 import { Input } from '@/components/shared/ui/input';
 import { Separator } from '@/components/shared/ui/separator';
+import { theme } from '@/components/user-dashboard/connect/ui/theme';
 import {
   Sheet,
   SheetContent,
@@ -181,7 +182,7 @@ function Sidebar({
         <SheetContent
           data-slot="sidebar"
           data-mobile="true"
-          className="w-(--sidebar-width) p-0 [&>button]:hidden bg-gray-50 text-gray-900 dark:bg-black dark:text-white"
+          className={cn('w-(--sidebar-width) p-0 [&>button]:hidden', theme.bg)}
           style={
             {
               '--sidebar-width': SIDEBAR_WIDTH_MOBILE,
@@ -193,9 +194,7 @@ function Sidebar({
             <SheetTitle>Sidebar</SheetTitle>
             <SheetDescription>Displays the mobile sidebar.</SheetDescription>
           </SheetHeader>
-          <div className="flex h-full w-full flex-col bg-gray-50 text-gray-900 dark:bg-black dark:text-white">
-            {children}
-          </div>
+          <div className={cn('flex h-full w-full flex-col', theme.bg)}>{children}</div>
         </SheetContent>
       </Sheet>
     );
@@ -304,7 +303,7 @@ function SidebarInset({ className, ...props }: React.ComponentProps<'main'>) {
     <main
       data-slot="sidebar-inset"
       className={cn(
-        'bg-background relative flex w-full flex-1 flex-col',
+        'relative flex w-full flex-1 flex-col',
         'md:peer-data-[variant=inset]:m-2 md:peer-data-[variant=inset]:ml-0 md:peer-data-[variant=inset]:rounded-xl md:peer-data-[variant=inset]:shadow-sm md:peer-data-[variant=inset]:peer-data-[state=collapsed]:ml-2',
         className,
       )}

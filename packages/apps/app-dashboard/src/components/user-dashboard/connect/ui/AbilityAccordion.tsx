@@ -52,13 +52,13 @@ export function AbilityAccordion({
 
   return (
     <div
-      className={`backdrop-blur-xl ${theme.cardBg} border ${theme.cardBorder} rounded-lg overflow-hidden`}
+      className={`backdrop-blur-xl ${theme.itemBg} border ${theme.cardBorder} rounded-lg overflow-hidden`}
     >
       <div className="p-0">
         {/* Clickable Header */}
         <div
           onClick={toggleExpanded}
-          className={`py-2 px-2 sm:py-2.5 sm:px-3 cursor-pointer ${theme.itemHoverBg} transition-colors ${policies.length > 0 ? `border-b ${theme.cardBorder} ${!isExpanded ? 'border-b-0' : ''}` : ''}`}
+          className={`py-2 px-2 sm:py-2.5 sm:px-3 ${policies.length > 0 ? 'cursor-pointer' : ''} ${policies.length > 0 ? theme.itemHoverBg : ''} transition-colors ${policies.length > 0 ? `border-b ${theme.cardBorder} ${!isExpanded ? 'border-b-0' : ''}` : ''}`}
         >
           <div className="flex items-center gap-3">
             <div className="flex-1">

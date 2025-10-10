@@ -1,5 +1,5 @@
 import { AlertTriangle, CheckCircle, Info, XCircle } from 'lucide-react';
-import { theme } from './theme';
+import { theme, fonts } from './theme';
 
 interface InfoBannerProps {
   type?: 'warning' | 'success' | 'orange' | 'blue' | 'red';
@@ -47,10 +47,15 @@ export function InfoBanner({
       <div className="flex items-center gap-3">
         <Icon className={`w-5 h-5 ${iconClass}`} />
         <div>
-          <p className={`text-sm font-medium ${theme.text}`} style={{ fontSize: '13px' }}>
+          <p
+            className={`text-sm font-medium ${theme.text}`}
+            style={{ fontSize: '13px', ...fonts.heading }}
+          >
             {title}
           </p>
-          <div className={`text-xs ${theme.textMuted} mt-0.5`}>{message}</div>
+          <div className={`text-xs ${theme.textMuted} mt-0.5`} style={fonts.body}>
+            {message}
+          </div>
         </div>
       </div>
     </div>

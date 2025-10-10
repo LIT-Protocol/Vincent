@@ -2,7 +2,7 @@ import { FileText } from 'lucide-react';
 import { ConnectInfoMap } from '@/hooks/user-dashboard/connect/useConnectInfo';
 import { Logo } from '@/components/shared/ui/Logo';
 import { PolicyForm, PolicyFormRef } from './PolicyForm';
-import { theme } from './theme';
+import { fonts, theme } from './theme';
 import { PolicyVersion } from '@/types/developer-dashboard/appTypes';
 
 interface RequiredPoliciesProps {
@@ -58,7 +58,7 @@ export function RequiredPolicies({
               </div>
               <div className="flex-1 -mt-2">
                 <div className="flex items-center gap-2">
-                  <h4 className={`text-sm font-semibold ${theme.text}`}>
+                  <h4 className={`text-sm font-semibold ${theme.text}`} style={fonts.heading}>
                     {connectInfoMap.policiesByPackageName[policy.packageName]?.title ||
                       policy.packageName}
                   </h4>
@@ -86,7 +86,7 @@ export function RequiredPolicies({
                   </a>
                 </div>
                 {connectInfoMap.policiesByPackageName[policy.packageName]?.description && (
-                  <p className={`text-xs ${theme.textSubtle} mt-1`}>
+                  <p className={`text-xs ${theme.textSubtle} mt-1`} style={fonts.body}>
                     {connectInfoMap.policiesByPackageName[policy.packageName].description}
                   </p>
                 )}
