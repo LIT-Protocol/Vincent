@@ -94,7 +94,7 @@ export interface StoredKeyMetadata {
   id: string;
 }
 
-/** Complete encrypted private key data, including the `ciphertext` and `dataToEncryptHash` necessary to decrypt the key
+/** Complete encrypted private key data, including the `ciphertext`, `dataToEncryptHash` and `vincentWalletAddress` necessary to decrypt the key
  *
  * @extends StoredKeyMetadata
  * @property { string } ciphertext The base64 encoded, salted & encrypted private key
@@ -103,6 +103,7 @@ export interface StoredKeyMetadata {
 export interface StoredKeyData extends StoredKeyMetadata {
   ciphertext: string;
   dataToEncryptHash: string;
+  vincentWalletAddress: string;
 }
 
 /** Result of storing a private key in the wrapped keys backend service
