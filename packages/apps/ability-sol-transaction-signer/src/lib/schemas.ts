@@ -10,8 +10,18 @@ export const abilityParamsSchema = z.object({
     .describe(
       'The base64 encoded serialized Solana transaction to be evaluated and signed (transaction type is auto-detected)',
     ),
-  ciphertext: z.string().describe('The encrypted private key ciphertext for the Agent Wallet'),
-  dataToEncryptHash: z.string().describe('SHA-256 hash of the encrypted data for verification'),
+  accessControlConditions: z
+    .any()
+    .describe('The access control conditions for the Wrapped Key')
+    .optional(),
+  ciphertext: z
+    .string()
+    .describe('The encrypted private key ciphertext for the Agent Wallet')
+    .optional(),
+  dataToEncryptHash: z
+    .string()
+    .describe('SHA-256 hash of the encrypted data for verification')
+    .optional(),
   legacyTransactionOptions: z
     .object({
       requireAllSignatures: z

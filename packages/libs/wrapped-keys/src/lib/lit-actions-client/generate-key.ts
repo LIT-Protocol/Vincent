@@ -20,11 +20,13 @@ interface GeneratePrivateKeyLitActionParams extends GeneratePrivateKeyParams {
  * @property {string} ciphertext - The encrypted private key
  * @property {string} dataToEncryptHash - The hash of the encrypted data (used for decryption verification)
  * @property {string} publicKey - The public key of the generated keypair
+ * @property {string} accessControlConditions - The access control conditions that will gate decryption of the generated key
  */
 interface GeneratePrivateKeyLitActionResult {
   ciphertext: string;
   dataToEncryptHash: string;
   publicKey: string;
+  accessControlConditions: string;
 }
 
 /**

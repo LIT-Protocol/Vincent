@@ -6,7 +6,7 @@ declare const Lit: typeof LitNamespace;
 
 /**
  * @private
- * @returns { Promise<{ciphertext: string, dataToEncryptHash: string, publicKey: string}> } - The ciphertext & dataToEncryptHash which are the result of the encryption, and the publicKey of the newly generated Wrapped Key.
+ * @returns { Promise<{ciphertext: string, dataToEncryptHash: string, publicKey: string, accessControlConditions: string}> } - The ciphertext & dataToEncryptHash which are the result of the encryption, the publicKey of the newly generated Wrapped Key, and the access control conditions used for encryption.
  */
 export async function encryptPrivateKey({
   accessControlConditions,
@@ -20,6 +20,7 @@ export async function encryptPrivateKey({
   ciphertext: string;
   dataToEncryptHash: string;
   publicKey: string;
+  accessControlConditions: string;
 }> {
   const { ciphertext, dataToEncryptHash } = await Lit.Actions.encrypt({
     accessControlConditions,
@@ -30,5 +31,6 @@ export async function encryptPrivateKey({
     ciphertext,
     dataToEncryptHash,
     publicKey,
+    accessControlConditions,
   };
 }
