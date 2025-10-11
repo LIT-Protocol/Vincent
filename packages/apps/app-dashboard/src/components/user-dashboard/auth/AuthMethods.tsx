@@ -1,22 +1,41 @@
-import { Dispatch, SetStateAction } from 'react';
-import { ThemeType } from '../connect/ui/theme';
+import { Dispatch, SetStateAction, useEffect } from 'react';
+import { theme as themeImport, fonts } from '../connect/ui/theme';
 
 interface AuthMethodsProps {
   setView: Dispatch<SetStateAction<string>>;
-  theme: ThemeType;
+  clearError?: () => void;
 }
 
-const AuthMethods = ({ setView, theme }: AuthMethodsProps) => {
+const AuthMethods = ({ setView, clearError }: AuthMethodsProps) => {
+  useEffect(() => {
+    if (clearError) {
+      clearError();
+    }
+  }, [clearError]);
+
   return (
     <div className="space-y-3">
+      <div className="text-center mb-6">
+        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2" style={fonts.heading}>
+          Authentication Required
+        </h2>
+        <p className="text-xs text-gray-600 dark:text-white/60" style={fonts.body}>
+          Please login in or sign up to continue.
+        </p>
+      </div>
       <div className="flex flex-col items-center space-y-3">
         <div
-          className={`w-full sm:w-3/4 md:w-3/4 lg:w-full py-3 px-4 flex items-center justify-between ${theme.cardBg} border ${theme.cardBorder} rounded-lg ${theme.itemHoverBg} transition-colors cursor-pointer`}
+          className={`w-full sm:w-3/4 md:w-3/4 lg:w-full py-3 px-4 flex items-center justify-between bg-white dark:bg-gray-950 border border-gray-200 dark:border-white/10 rounded-lg hover:bg-gray-100 dark:hover:bg-white/[0.05] transition-colors cursor-pointer`}
           onClick={() => setView('email')}
         >
           <div className="flex items-center">
-            <div className={`w-5 h-5 mr-3 flex items-center justify-center ${theme.textMuted}`}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-4 h-4">
+            <div className={`w-5 h-5 mr-3 flex items-center justify-center`}>
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke={themeImport.brandOrange}
+                className="w-4 h-4"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -25,10 +44,15 @@ const AuthMethods = ({ setView, theme }: AuthMethodsProps) => {
                 />
               </svg>
             </div>
-            <span className={`text-sm font-medium ${theme.text}`}>Email</span>
+            <span
+              className={`text-sm font-medium text-gray-900 dark:text-white`}
+              style={fonts.heading}
+            >
+              Email
+            </span>
           </div>
           <svg
-            className={`w-4 h-4 ${theme.textMuted}`}
+            className={`w-4 h-4 text-gray-600 dark:text-white/60`}
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -38,12 +62,17 @@ const AuthMethods = ({ setView, theme }: AuthMethodsProps) => {
         </div>
 
         <div
-          className={`w-full sm:w-3/4 md:w-3/4 lg:w-full py-3 px-4 flex items-center justify-between ${theme.cardBg} border ${theme.cardBorder} rounded-lg ${theme.itemHoverBg} transition-colors cursor-pointer`}
+          className={`w-full sm:w-3/4 md:w-3/4 lg:w-full py-3 px-4 flex items-center justify-between bg-white dark:bg-gray-950 border border-gray-200 dark:border-white/10 rounded-lg hover:bg-gray-100 dark:hover:bg-white/[0.05] transition-colors cursor-pointer`}
           onClick={() => setView('phone')}
         >
           <div className="flex items-center">
-            <div className={`w-5 h-5 mr-3 flex items-center justify-center ${theme.textMuted}`}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-4 h-4">
+            <div className={`w-5 h-5 mr-3 flex items-center justify-center`}>
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke={themeImport.brandOrange}
+                className="w-4 h-4"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -52,10 +81,15 @@ const AuthMethods = ({ setView, theme }: AuthMethodsProps) => {
                 />
               </svg>
             </div>
-            <span className={`text-sm font-medium ${theme.text}`}>Phone</span>
+            <span
+              className={`text-sm font-medium text-gray-900 dark:text-white`}
+              style={fonts.heading}
+            >
+              Phone
+            </span>
           </div>
           <svg
-            className={`w-4 h-4 ${theme.textMuted}`}
+            className={`w-4 h-4 text-gray-600 dark:text-white/60`}
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -65,12 +99,17 @@ const AuthMethods = ({ setView, theme }: AuthMethodsProps) => {
         </div>
 
         <div
-          className={`w-full sm:w-3/4 md:w-3/4 lg:w-full py-3 px-4 flex items-center justify-between ${theme.cardBg} border ${theme.cardBorder} rounded-lg ${theme.itemHoverBg} transition-colors cursor-pointer`}
+          className={`w-full sm:w-3/4 md:w-3/4 lg:w-full py-3 px-4 flex items-center justify-between bg-white dark:bg-gray-950 border border-gray-200 dark:border-white/10 rounded-lg hover:bg-gray-100 dark:hover:bg-white/[0.05] transition-colors cursor-pointer`}
           onClick={() => setView('wallet')}
         >
           <div className="flex items-center">
-            <div className={`w-5 h-5 mr-3 flex items-center justify-center ${theme.textMuted}`}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-4 h-4">
+            <div className={`w-5 h-5 mr-3 flex items-center justify-center`}>
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke={themeImport.brandOrange}
+                className="w-4 h-4"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -79,10 +118,15 @@ const AuthMethods = ({ setView, theme }: AuthMethodsProps) => {
                 />
               </svg>
             </div>
-            <span className={`text-sm font-medium ${theme.text}`}>Wallet</span>
+            <span
+              className={`text-sm font-medium text-gray-900 dark:text-white`}
+              style={fonts.heading}
+            >
+              Wallet
+            </span>
           </div>
           <svg
-            className={`w-4 h-4 ${theme.textMuted}`}
+            className={`w-4 h-4 text-gray-600 dark:text-white/60`}
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -92,12 +136,17 @@ const AuthMethods = ({ setView, theme }: AuthMethodsProps) => {
         </div>
 
         <div
-          className={`w-full sm:w-3/4 md:w-3/4 lg:w-full py-3 px-4 flex items-center justify-between ${theme.cardBg} border ${theme.cardBorder} rounded-lg ${theme.itemHoverBg} transition-colors cursor-pointer`}
+          className={`w-full sm:w-3/4 md:w-3/4 lg:w-full py-3 px-4 flex items-center justify-between bg-white dark:bg-gray-950 border border-gray-200 dark:border-white/10 rounded-lg hover:bg-gray-100 dark:hover:bg-white/[0.05] transition-colors cursor-pointer`}
           onClick={() => setView('webauthn')}
         >
           <div className="flex items-center">
-            <div className={`w-5 h-5 mr-3 flex items-center justify-center ${theme.textMuted}`}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-4 h-4">
+            <div className={`w-5 h-5 mr-3 flex items-center justify-center`}>
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke={themeImport.brandOrange}
+                className="w-4 h-4"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -106,10 +155,15 @@ const AuthMethods = ({ setView, theme }: AuthMethodsProps) => {
                 />
               </svg>
             </div>
-            <span className={`text-sm font-medium ${theme.text}`}>Passkey</span>
+            <span
+              className={`text-sm font-medium text-gray-900 dark:text-white`}
+              style={fonts.heading}
+            >
+              Passkey
+            </span>
           </div>
           <svg
-            className={`w-4 h-4 ${theme.textMuted}`}
+            className={`w-4 h-4 text-gray-600 dark:text-white/60`}
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
