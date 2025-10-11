@@ -1,3 +1,5 @@
+import { getVincentWrappedKeysAccs } from '@lit-protocol/vincent-contracts-sdk';
+
 import type {
   BatchGeneratePrivateKeysParams,
   BatchGeneratePrivateKeysResult,
@@ -7,7 +9,7 @@ import type {
 import { batchGenerateKeysWithLitAction } from '../lit-actions-client';
 import { getLitActionCommonCid } from '../lit-actions-client/utils';
 import { storePrivateKeyBatch } from '../service-client';
-import { getKeyTypeFromNetwork, getVincentRegistryAccessControlCondition } from './utils';
+import { getKeyTypeFromNetwork } from './utils';
 
 /**
  * Generates multiple random private keys inside a Lit Action for Vincent delegators,
@@ -26,7 +28,7 @@ export async function batchGeneratePrivateKeys(
 ): Promise<BatchGeneratePrivateKeysResult> {
   const { jwtToken, delegatorAddress, litNodeClient } = params;
 
-  const allowDelegateeToDecrypt = await getVincentRegistryAccessControlCondition({
+  const allowDelegateeToDecrypt = await getVincentWrappedKeysAccs({
     delegatorAddress,
   });
 
@@ -38,12 +40,14 @@ export async function batchGeneratePrivateKeys(
     accessControlConditions: [allowDelegateeToDecrypt],
   });
 
-  const keyParamsBatch = actionResults.map((keyData) => {
+  const keyParamsBatch = actionResults.map((keyData, index) => {
     const { generateEncryptedPrivateKey } = keyData;
     return {
       ...generateEncryptedPrivateKey,
       keyType: getKeyTypeFromNetwork('solana'),
       delegatorAddress,
+      accessControlConditions:
+        actionResults[index].generateEncryptedPrivateKey.accessControlConditions,
     };
   });
 

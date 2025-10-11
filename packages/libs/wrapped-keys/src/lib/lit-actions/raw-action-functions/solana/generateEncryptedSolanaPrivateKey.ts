@@ -18,6 +18,7 @@ export async function generateEncryptedSolanaPrivateKey({
   ciphertext: string;
   dataToEncryptHash: string;
   publicKey: string;
+  accessControlConditions: string;
 }> {
   const { privateKey, publicKey } = generateSolanaPrivateKey();
 

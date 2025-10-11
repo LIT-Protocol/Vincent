@@ -27,9 +27,16 @@ export async function storeEncryptedKeyBatch(
       memo,
       dataToEncryptHash,
       ciphertext,
+      accessControlConditions,
     }): Pick<
       StoredKeyData,
-      'publicKey' | 'keyType' | 'dataToEncryptHash' | 'ciphertext' | 'memo' | 'delegatorAddress'
+      | 'publicKey'
+      | 'keyType'
+      | 'dataToEncryptHash'
+      | 'ciphertext'
+      | 'memo'
+      | 'delegatorAddress'
+      | 'accessControlConditions'
     > => ({
       publicKey,
       memo,
@@ -37,6 +44,7 @@ export async function storeEncryptedKeyBatch(
       ciphertext,
       keyType,
       delegatorAddress,
+      accessControlConditions,
     }),
   );
 

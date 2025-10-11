@@ -2,7 +2,6 @@ import { Keypair } from '@solana/web3.js';
 
 import type { LitNamespace } from '../Lit';
 
-import { getVincentRegistryAccessControlCondition } from '../api/utils';
 import { LIT_PREFIX } from '../constants';
 
 declare const Lit: typeof LitNamespace;
@@ -17,22 +16,17 @@ declare const Lit: typeof LitNamespace;
  * @throws Error if the decrypted private key is not prefixed with 'lit_' or if decryption fails
  */
 export async function getSolanaKeyPairFromWrappedKey({
-  delegatorAddress,
   ciphertext,
   dataToEncryptHash,
+  accessControlConditions,
 }: {
   delegatorAddress: string;
   ciphertext: string;
   dataToEncryptHash: string;
+  accessControlConditions: string;
 }): Promise<Keypair> {
-  const accessControlConditions = [
-    await getVincentRegistryAccessControlCondition({
-      delegatorAddress,
-    }),
-  ];
-
   const decryptedPrivateKey = await Lit.Actions.decryptAndCombine({
-    accessControlConditions,
+    accessControlConditions: JSON.parse(accessControlConditions),
     ciphertext,
     dataToEncryptHash,
     chain: 'ethereum',

@@ -29,7 +29,6 @@ import {
   listEncryptedKeyMetadata,
   batchGeneratePrivateKeys,
   storeEncryptedKeyBatch,
-  getVincentRegistryAccessControlCondition,
 } from './lib/api';
 import { CHAIN_YELLOWSTONE, LIT_PREFIX, NETWORK_SOLANA, KEYTYPE_ED25519 } from './lib/constants';
 import { getSolanaKeyPairFromWrappedKey } from './lib/lit-actions-client';
@@ -48,7 +47,6 @@ export const api = {
   storeEncryptedKey,
   storeEncryptedKeyBatch,
   batchGeneratePrivateKeys,
-  getVincentRegistryAccessControlCondition,
   litActionHelpers: {
     getSolanaKeyPairFromWrappedKey,
   },

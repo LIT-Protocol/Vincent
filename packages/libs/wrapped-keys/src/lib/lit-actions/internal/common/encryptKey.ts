@@ -20,6 +20,7 @@ export async function encryptPrivateKey({
   ciphertext: string;
   dataToEncryptHash: string;
   publicKey: string;
+  accessControlConditions: string;
 }> {
   const { ciphertext, dataToEncryptHash } = await Lit.Actions.encrypt({
     accessControlConditions,
@@ -30,5 +31,6 @@ export async function encryptPrivateKey({
     ciphertext,
     dataToEncryptHash,
     publicKey,
+    accessControlConditions,
   };
 }

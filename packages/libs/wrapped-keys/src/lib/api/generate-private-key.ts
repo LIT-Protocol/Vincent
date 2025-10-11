@@ -1,9 +1,11 @@
+import { getVincentWrappedKeysAccs } from '@lit-protocol/vincent-contracts-sdk';
+
 import type { GeneratePrivateKeyParams, GeneratePrivateKeyResult } from '../types';
 
 import { generateKeyWithLitAction } from '../lit-actions-client';
 import { getLitActionCid } from '../lit-actions-client/utils';
 import { storePrivateKey } from '../service-client';
-import { getKeyTypeFromNetwork, getVincentRegistryAccessControlCondition } from './utils';
+import { getKeyTypeFromNetwork } from './utils';
 
 /**
  * Generates a random private key inside a Lit Action for Vincent delegators,
@@ -22,17 +24,18 @@ export async function generatePrivateKey(
 ): Promise<GeneratePrivateKeyResult> {
   const { delegatorAddress, jwtToken, network, litNodeClient, memo } = params;
 
-  const allowDelegateeToDecrypt = await getVincentRegistryAccessControlCondition({
+  const allowDelegateeToDecrypt = await getVincentWrappedKeysAccs({
     delegatorAddress,
   });
 
   const litActionIpfsCid = getLitActionCid(network, 'generateEncryptedKey');
 
-  const { ciphertext, dataToEncryptHash, publicKey } = await generateKeyWithLitAction({
-    ...params,
-    litActionIpfsCid,
-    accessControlConditions: [allowDelegateeToDecrypt],
-  });
+  const { ciphertext, dataToEncryptHash, publicKey, accessControlConditions } =
+    await generateKeyWithLitAction({
+      ...params,
+      litActionIpfsCid,
+      accessControlConditions: [allowDelegateeToDecrypt],
+    });
 
   const { id } = await storePrivateKey({
     jwtToken,
@@ -43,6 +46,7 @@ export async function generatePrivateKey(
       dataToEncryptHash,
       memo,
       delegatorAddress,
+      accessControlConditions,
     },
     litNetwork: litNodeClient.config.litNetwork,
   });

@@ -56,11 +56,18 @@ export type SupportedNetworks = Extract<LIT_NETWORK_VALUES, 'datil'>;
  * @property {string} storedKeyMetadata.dataToEncryptHash - SHA-256 hash of the ciphertext for verification
  * @property {string} storedKeyMetadata.ciphertext - The base64 encoded, encrypted private key
  * @property {string} storedKeyMetadata.memo - User-provided descriptor for the key
+ * @property {string} storedKeyMetadata.delegatorAddress - The Vincent delegator wallet address associated with the key
  */
 export interface StoreKeyParams extends BaseApiParams {
   storedKeyMetadata: Pick<
     StoredKeyData,
-    'publicKey' | 'keyType' | 'dataToEncryptHash' | 'ciphertext' | 'memo' | 'delegatorAddress'
+    | 'publicKey'
+    | 'keyType'
+    | 'dataToEncryptHash'
+    | 'ciphertext'
+    | 'memo'
+    | 'delegatorAddress'
+    | 'accessControlConditions'
   >;
 }
 
@@ -76,11 +83,19 @@ export interface StoreKeyParams extends BaseApiParams {
  * @property {string} storedKeyMetadataBatch[].dataToEncryptHash - SHA-256 hash of the ciphertext for verification
  * @property {string} storedKeyMetadataBatch[].ciphertext - The base64 encoded, encrypted private key
  * @property {string} storedKeyMetadataBatch[].memo - User-provided descriptor for the key
+ * @property {string} storedKeyMetadataBatch[].delegatorAddress - The Vincent delegator wallet address associated with the key
+ * @property {string} storedKeyMetadataBatch[].accessControlConditions - The serialized access control conditions that will gate decryption of the generated key
  */
 export interface StoreKeyBatchParams extends BaseApiParams {
   storedKeyMetadataBatch: Pick<
     StoredKeyData,
-    'publicKey' | 'keyType' | 'dataToEncryptHash' | 'ciphertext' | 'memo' | 'delegatorAddress'
+    | 'publicKey'
+    | 'keyType'
+    | 'dataToEncryptHash'
+    | 'ciphertext'
+    | 'memo'
+    | 'delegatorAddress'
+    | 'accessControlConditions'
   >[];
 }
 

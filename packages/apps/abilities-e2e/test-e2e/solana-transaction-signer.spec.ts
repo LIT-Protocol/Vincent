@@ -10,7 +10,7 @@ import {
 } from '@lit-protocol/vincent-app-sdk/abilityClient';
 import { ethers } from 'ethers';
 import type { PermissionData } from '@lit-protocol/vincent-contracts-sdk';
-import { getClient } from '@lit-protocol/vincent-contracts-sdk';
+import { getClient, getVincentWrappedKeysAccs } from '@lit-protocol/vincent-contracts-sdk';
 import { LitNodeClient } from '@lit-protocol/lit-node-client';
 import {
   Keypair,
@@ -49,9 +49,6 @@ import { privateKeyToAccount } from 'viem/accounts';
 
 import { checkShouldMintCapacityCredit } from './helpers/check-mint-capcity-credit';
 import { LIT_NETWORK } from '@lit-protocol/constants';
-
-import { api } from '@lit-protocol/vincent-wrapped-keys';
-const { getVincentRegistryAccessControlCondition } = api;
 
 const SOLANA_CLUSTER = 'devnet';
 
@@ -262,7 +259,7 @@ describe('Solana Transaction Signer Ability E2E Tests', () => {
   let TEST_SOLANA_KEYPAIR: Keypair;
   let CIPHERTEXT: string;
   let DATA_TO_ENCRYPT_HASH: string;
-  let EVM_CONTRACT_CONDITION: any;
+  let VINCENT_WRAPPED_KEYS_ACC_CONDITIONS: any;
   let SERIALIZED_TRANSACTION: string;
   let VERSIONED_SERIALIZED_TRANSACTION: string;
 
@@ -302,7 +299,7 @@ describe('Solana Transaction Signer Ability E2E Tests', () => {
     });
     await LIT_NODE_CLIENT.connect();
 
-    EVM_CONTRACT_CONDITION = await getVincentRegistryAccessControlCondition({
+    VINCENT_WRAPPED_KEYS_ACC_CONDITIONS = await getVincentWrappedKeysAccs({
       delegatorAddress: TEST_CONFIG.userPkp!.ethAddress!,
     });
 
@@ -340,7 +337,7 @@ describe('Solana Transaction Signer Ability E2E Tests', () => {
     );
 
     const { ciphertext, dataToEncryptHash } = await LIT_NODE_CLIENT.encrypt({
-      evmContractConditions: [EVM_CONTRACT_CONDITION],
+      unifiedAccessControlConditions: VINCENT_WRAPPED_KEYS_ACC_CONDITIONS,
       dataToEncrypt: new TextEncoder().encode(
         `${LIT_PREFIX}${Buffer.from(TEST_SOLANA_KEYPAIR.secretKey).toString('hex')}`,
       ),

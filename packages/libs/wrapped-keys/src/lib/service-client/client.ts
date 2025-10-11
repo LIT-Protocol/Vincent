@@ -27,7 +27,7 @@ export async function listPrivateKeyMetadata(params: ListKeysParams): Promise<St
   });
 
   return makeRequest<StoredKeyMetadata[]>({
-    url: `${baseUrl}/delegatee/encrypted/${delegatorAddress}`,
+    url: `${baseUrl}/delegatee/encrypted?delegatorAddress=${encodeURIComponent(delegatorAddress)}`,
     init: initParams,
     requestId,
   });
@@ -51,7 +51,7 @@ export async function fetchPrivateKey(params: FetchKeyParams): Promise<StoredKey
   });
 
   return makeRequest<StoredKeyData>({
-    url: `${baseUrl}/delegatee/encrypted/${delegatorAddress}/${id}`,
+    url: `${baseUrl}/delegatee/encrypted/${id}?delegatorAddress=${encodeURIComponent(delegatorAddress)}`,
     init: initParams,
     requestId,
   });
