@@ -98,18 +98,47 @@ async function getPlatformUserAccessControlConditions({
     new ethers.providers.StaticJsonRpcProvider(LIT_RPC.CHRONICLE_YELLOWSTONE),
   );
 
-  const pkpNftContractAddress = contractAddresses.PKPNFT;
-  if (!pkpNftContractAddress) {
+  const pkpNftContractInfo: { address: string; abi: any[] } = contractAddresses.PKPNFT;
+  console.log('pkpNftContractInfo.abi', pkpNftContractInfo.abi);
+  if (!pkpNftContractInfo) {
     throw new Error('PKP NFT contract address not found for Datil network');
   }
 
+  // return {
+  //   contractAddress: pkpNftContractAddress,
+  //   standardContractType: 'ERC721',
+  //   chain: CHAIN_YELLOWSTONE,
+  //   method: 'ownerOf',
+  //   parameters: [delegatorPkpTokenId],
+  //   returnValueTest: {
+  //     comparator: '=',
+  //     value: ':userAddress',
+  //   },
+  // };
   return {
-    contractAddress: pkpNftContractAddress,
-    standardContractType: 'ERC721',
+    contractAddress: pkpNftContractInfo.address,
+    functionAbi: {
+      type: 'function',
+      name: 'ownerOf',
+      inputs: [
+        {
+          name: 'tokenId',
+          type: 'uint256',
+        },
+      ],
+      outputs: [
+        {
+          name: '',
+          type: 'address',
+        },
+      ],
+      stateMutability: 'view',
+    },
     chain: CHAIN_YELLOWSTONE,
-    method: 'ownerOf',
-    parameters: [delegatorPkpTokenId],
+    functionName: 'ownerOf',
+    functionParams: [delegatorPkpTokenId],
     returnValueTest: {
+      key: '',
       comparator: '=',
       value: ':userAddress',
     },

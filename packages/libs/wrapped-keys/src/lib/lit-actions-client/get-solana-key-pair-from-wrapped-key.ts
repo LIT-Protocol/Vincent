@@ -23,10 +23,10 @@ export async function getSolanaKeyPairFromWrappedKey({
   delegatorAddress: string;
   ciphertext: string;
   dataToEncryptHash: string;
-  accessControlConditions: string;
+  accessControlConditions: any[];
 }): Promise<Keypair> {
   const decryptedPrivateKey = await Lit.Actions.decryptAndCombine({
-    accessControlConditions: JSON.parse(accessControlConditions),
+    accessControlConditions,
     ciphertext,
     dataToEncryptHash,
     chain: 'ethereum',

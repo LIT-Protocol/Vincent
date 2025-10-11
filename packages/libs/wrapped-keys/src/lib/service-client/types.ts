@@ -57,6 +57,7 @@ export type SupportedNetworks = Extract<LIT_NETWORK_VALUES, 'datil'>;
  * @property {string} storedKeyMetadata.ciphertext - The base64 encoded, encrypted private key
  * @property {string} storedKeyMetadata.memo - User-provided descriptor for the key
  * @property {string} storedKeyMetadata.delegatorAddress - The Vincent delegator wallet address associated with the key
+ * @property {string} storedKeyMetadata.accessControlConditions - The serialized access control conditions that will gate decryption of the generated key
  */
 export interface StoreKeyParams extends BaseApiParams {
   storedKeyMetadata: Pick<

@@ -28,7 +28,7 @@ export async function batchGeneratePrivateKeys(
 ): Promise<BatchGeneratePrivateKeysResult> {
   const { jwtToken, delegatorAddress, litNodeClient } = params;
 
-  const allowDelegateeToDecrypt = await getVincentWrappedKeysAccs({
+  const vincentWrappedKeysAccs = await getVincentWrappedKeysAccs({
     delegatorAddress,
   });
 
@@ -37,7 +37,7 @@ export async function batchGeneratePrivateKeys(
   const actionResults = await batchGenerateKeysWithLitAction({
     ...params,
     litActionIpfsCid,
-    accessControlConditions: [allowDelegateeToDecrypt],
+    accessControlConditions: vincentWrappedKeysAccs,
   });
 
   const keyParamsBatch = actionResults.map((keyData, index) => {

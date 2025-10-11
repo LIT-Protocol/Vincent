@@ -73,17 +73,42 @@ export const vincentAbility = createVincentAbility({
     const {
       serializedTransaction,
       cluster,
+      accessControlConditions,
       ciphertext,
       dataToEncryptHash,
       legacyTransactionOptions,
     } = abilityParams;
     const { ethAddress } = delegatorPkpInfo;
 
+    if (!accessControlConditions) {
+      return fail({
+        error: `[@lit-protocol/vincent-ability-sol-transaction-signer] accessControlConditions not provided`,
+      });
+    }
+
+    if (!ciphertext) {
+      return fail({
+        error: `[@lit-protocol/vincent-ability-sol-transaction-signer] ciphertext not provided`,
+      });
+    }
+
+    if (!dataToEncryptHash) {
+      return fail({
+        error: `[@lit-protocol/vincent-ability-sol-transaction-signer] dataToEncryptHash not provided`,
+      });
+    }
+
+    console.log(
+      '[@lit-protocol/vincent-ability-sol-transaction-signer] accessControlConditions',
+      accessControlConditions,
+    );
+
     try {
       const solanaKeypair = await getSolanaKeyPairFromWrappedKey({
         delegatorAddress: ethAddress,
         ciphertext,
         dataToEncryptHash,
+        accessControlConditions,
       });
 
       const transaction = deserializeTransaction(serializedTransaction);

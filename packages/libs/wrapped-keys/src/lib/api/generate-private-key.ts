@@ -24,7 +24,7 @@ export async function generatePrivateKey(
 ): Promise<GeneratePrivateKeyResult> {
   const { delegatorAddress, jwtToken, network, litNodeClient, memo } = params;
 
-  const allowDelegateeToDecrypt = await getVincentWrappedKeysAccs({
+  const vincentWrappedKeysAccs = await getVincentWrappedKeysAccs({
     delegatorAddress,
   });
 
@@ -34,7 +34,7 @@ export async function generatePrivateKey(
     await generateKeyWithLitAction({
       ...params,
       litActionIpfsCid,
-      accessControlConditions: [allowDelegateeToDecrypt],
+      accessControlConditions: vincentWrappedKeysAccs,
     });
 
   const { id } = await storePrivateKey({
