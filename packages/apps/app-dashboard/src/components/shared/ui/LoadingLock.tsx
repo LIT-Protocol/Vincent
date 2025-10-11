@@ -1,4 +1,5 @@
 import { theme } from '@/components/user-dashboard/connect/ui/theme';
+import { useRef, useEffect, useState } from 'react';
 
 interface LoadingLockProps {
   text?: string;
@@ -153,7 +154,19 @@ const keyholeDots = [
 
 export default function LoadingLock({ text }: LoadingLockProps) {
   const totalDots = lockDots.length;
-  const animationDuration = 1.5; // seconds
+  const animationDuration = 1.5; // seconds (1500ms)
+  const animationDurationMs = animationDuration * 1000;
+
+  // Calculate the animation offset to make it appear continuous across remounts
+  const mountTimeRef = useRef<number>(Date.now());
+  const [animationOffset, setAnimationOffset] = useState<number>(0);
+
+  useEffect(() => {
+    // Calculate how many milliseconds into the animation cycle we are
+    const elapsed = Date.now() - mountTimeRef.current;
+    const offset = -(elapsed % animationDurationMs) / 1000; // Convert back to seconds
+    setAnimationOffset(offset);
+  }, [animationDurationMs]);
 
   return (
     <div className="flex flex-col items-center justify-center py-8 sm:py-12 lg:py-16">
@@ -164,7 +177,9 @@ export default function LoadingLock({ text }: LoadingLockProps) {
       >
         {/* Animated lock outline */}
         {lockDots.map((dot, index) => {
-          const delay = -(index / totalDots) * animationDuration;
+          // Combine the per-dot delay with the global animation offset
+          const dotDelay = -(index / totalDots) * animationDuration;
+          const totalDelay = dotDelay + animationOffset;
           return (
             <div
               key={`lock-${index}`}
@@ -175,7 +190,7 @@ export default function LoadingLock({ text }: LoadingLockProps) {
                 left: `${dot.x * 1.5}px`,
                 top: `${dot.y * 1.5}px`,
                 backgroundColor: theme.brandOrange,
-                animation: `dotChase ${animationDuration}s ease-in-out ${delay}s infinite`,
+                animation: `dotChase ${animationDuration}s ease-in-out ${totalDelay}s infinite`,
               }}
             />
           );

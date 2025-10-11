@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useStytch } from '@stytch/react';
 import { z } from 'zod';
 import { Button } from '@/components/shared/ui/button';
-import { ThemeType } from '../connect/ui/theme';
+import { ThemeType, fonts } from '../connect/ui/theme';
 import StatusMessage from '../connect/StatusMessage';
 import { countryCodes } from '@/utils/user-dashboard/countryCodes';
 import CountryCodeSelector from '@/components/shared/ui/CountryCodeSelector';
@@ -213,9 +213,16 @@ const StytchOTP = ({ method, authWithStytch, theme }: StytchOTPProps) => {
             <form className="space-y-4 w-4/5" onSubmit={sendPasscode}>
               {method === 'email' ? (
                 <div className="space-y-2">
-                  <label htmlFor="email" className={`text-sm font-medium block ${theme.text}`}>
+                  <label
+                    htmlFor="email"
+                    className={`text-sm font-medium block ${theme.text}`}
+                    style={fonts.heading}
+                  >
                     Email Address
                   </label>
+                  <p className={`text-xs ${theme.textMuted} mb-2`} style={fonts.body}>
+                    We'll send a 6-digit verification code to your email address.
+                  </p>
                   <div className="relative">
                     <input
                       id="email"
@@ -224,6 +231,7 @@ const StytchOTP = ({ method, authWithStytch, theme }: StytchOTPProps) => {
                       type="email"
                       name="email"
                       className={`w-full px-3 py-2 pr-16 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${theme.cardBg} ${theme.cardBorder} ${theme.text}`}
+                      style={fonts.body}
                       placeholder="your@email.com"
                       autoComplete="email"
                     />
@@ -242,9 +250,16 @@ const StytchOTP = ({ method, authWithStytch, theme }: StytchOTPProps) => {
                 </div>
               ) : (
                 <div className="space-y-2">
-                  <label htmlFor="phone" className={`text-sm font-medium block ${theme.text}`}>
+                  <label
+                    htmlFor="phone"
+                    className={`text-sm font-medium block ${theme.text}`}
+                    style={fonts.heading}
+                  >
                     Phone Number
                   </label>
+                  <p className={`text-xs ${theme.textMuted} mb-2`} style={fonts.body}>
+                    We'll send a 6-digit verification code to your phone via SMS.
+                  </p>
                   <div className="flex gap-1">
                     <CountryCodeSelector
                       selectedCountryCode={countryCode}
@@ -268,6 +283,7 @@ const StytchOTP = ({ method, authWithStytch, theme }: StytchOTPProps) => {
                         value={phoneNumber}
                         onChange={(e) => handlePhoneChange(e.target.value)}
                         className={`w-full px-3 py-2 pr-16 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${theme.cardBg} ${theme.cardBorder} ${theme.text}`}
+                        style={fonts.body}
                         placeholder="(555) 000-0000"
                       />
                       <button
@@ -283,7 +299,7 @@ const StytchOTP = ({ method, authWithStytch, theme }: StytchOTPProps) => {
                       </button>
                     </div>
                   </div>
-                  <p className={`text-xs ${theme.textMuted}`}>
+                  <p className={`text-xs ${theme.textMuted}`} style={fonts.body}>
                     You can also paste a full international number (e.g., +14155552671)
                   </p>
                 </div>
@@ -300,7 +316,11 @@ const StytchOTP = ({ method, authWithStytch, theme }: StytchOTPProps) => {
           <div className="flex justify-center">
             <form className="space-y-4 w-4/5" onSubmit={authenticate}>
               <div className="space-y-2">
-                <label htmlFor="code" className={`text-sm font-medium block ${theme.text}`}>
+                <label
+                  htmlFor="code"
+                  className={`text-sm font-medium block ${theme.text}`}
+                  style={fonts.heading}
+                >
                   Verification Code
                 </label>
                 <div className="relative">
@@ -314,6 +334,7 @@ const StytchOTP = ({ method, authWithStytch, theme }: StytchOTPProps) => {
                     maxLength={6}
                     name="code"
                     className={`w-full px-3 py-2 pr-16 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-center tracking-widest text-lg ${theme.cardBg} ${theme.cardBorder} ${theme.text}`}
+                    style={fonts.body}
                     placeholder="000000"
                     autoComplete="one-time-code"
                   />
@@ -338,6 +359,7 @@ const StytchOTP = ({ method, authWithStytch, theme }: StytchOTPProps) => {
                   type="button"
                   onClick={() => setStep('submit')}
                   className={`${theme.cardBg} ${theme.text} border ${theme.cardBorder} rounded-xl py-3 px-4 w-full font-medium text-sm ${theme.itemHoverBg} transition-all duration-200 hover:shadow-sm flex items-center justify-center gap-2`}
+                  style={fonts.heading}
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path

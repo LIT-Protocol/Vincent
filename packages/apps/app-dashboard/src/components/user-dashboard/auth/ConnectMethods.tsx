@@ -1,5 +1,7 @@
-import { useState, Dispatch, SetStateAction } from 'react';
+import { Dispatch, SetStateAction } from 'react';
 import { ThemeType } from '../connect/ui/theme';
+import { motion, AnimatePresence } from 'framer-motion';
+import { AuthView } from '../connect/Connect';
 
 import AuthMethods from './AuthMethods';
 import WebAuthn from './WebAuthn';
@@ -21,9 +23,9 @@ interface ConnectProps {
   registerWithWebAuthn?: (credentialId: string) => Promise<void>;
   clearError?: () => void;
   theme: ThemeType;
+  view: AuthView;
+  setView: (view: AuthView) => void;
 }
-
-type AuthView = 'default' | 'email' | 'phone' | 'wallet' | 'webauthn';
 
 export default function ConnectMethods({
   authWithWebAuthn,
@@ -32,48 +34,89 @@ export default function ConnectMethods({
   registerWithWebAuthn,
   clearError,
   theme,
+  view,
+  setView,
 }: ConnectProps) {
-  const [view, setView] = useState<AuthView>('default');
-
   return (
-    <>
+    <AnimatePresence mode="wait">
       {view === 'default' && (
-        <>
-          <AuthMethods setView={setView as Dispatch<SetStateAction<string>>} theme={theme} />
-        </>
+        <motion.div
+          key="default"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2, ease: 'easeInOut' }}
+        >
+          <AuthMethods
+            setView={setView as Dispatch<SetStateAction<string>>}
+            clearError={clearError}
+          />
+        </motion.div>
       )}
       {view === 'email' && (
-        <StytchOTP
-          method="email"
-          authWithStytch={authWithStytch}
-          setView={setView as Dispatch<SetStateAction<string>>}
-          theme={theme}
-        />
+        <motion.div
+          key="email"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2, ease: 'easeInOut' }}
+        >
+          <StytchOTP
+            method="email"
+            authWithStytch={authWithStytch}
+            setView={setView as Dispatch<SetStateAction<string>>}
+            theme={theme}
+          />
+        </motion.div>
       )}
       {view === 'phone' && (
-        <StytchOTP
-          method="phone"
-          authWithStytch={authWithStytch}
-          setView={setView as Dispatch<SetStateAction<string>>}
-          theme={theme}
-        />
+        <motion.div
+          key="phone"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2, ease: 'easeInOut' }}
+        >
+          <StytchOTP
+            method="phone"
+            authWithStytch={authWithStytch}
+            setView={setView as Dispatch<SetStateAction<string>>}
+            theme={theme}
+          />
+        </motion.div>
       )}
       {view === 'wallet' && (
-        <EthWalletAuth
-          authWithEthWallet={authWithEthWallet}
-          setView={setView as Dispatch<SetStateAction<string>>}
-          theme={theme}
-        />
+        <motion.div
+          key="wallet"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2, ease: 'easeInOut' }}
+        >
+          <EthWalletAuth
+            authWithEthWallet={authWithEthWallet}
+            setView={setView as Dispatch<SetStateAction<string>>}
+            theme={theme}
+          />
+        </motion.div>
       )}
       {view === 'webauthn' && (
-        <WebAuthn
-          authWithWebAuthn={authWithWebAuthn}
-          registerWithWebAuthn={registerWithWebAuthn}
-          setView={setView as Dispatch<SetStateAction<string>>}
-          clearError={clearError}
-          theme={theme}
-        />
+        <motion.div
+          key="webauthn"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2, ease: 'easeInOut' }}
+        >
+          <WebAuthn
+            authWithWebAuthn={authWithWebAuthn}
+            registerWithWebAuthn={registerWithWebAuthn}
+            setView={setView as Dispatch<SetStateAction<string>>}
+            clearError={clearError}
+            theme={theme}
+          />
+        </motion.div>
       )}
-    </>
+    </AnimatePresence>
   );
 }

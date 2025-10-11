@@ -1,3 +1,18 @@
+// Simple event emitter for theme changes
+type ThemeChangeListener = (isDark: boolean) => void;
+const listeners = new Set<ThemeChangeListener>();
+
+export const subscribeToThemeChanges = (listener: ThemeChangeListener) => {
+  listeners.add(listener);
+  return () => {
+    listeners.delete(listener);
+  };
+};
+
+const notifyThemeChange = (isDark: boolean) => {
+  listeners.forEach((listener) => listener(isDark));
+};
+
 // Native Tailwind theme utilities - no React state needed
 export const toggleTheme = () => {
   const html = document.documentElement;
@@ -6,9 +21,11 @@ export const toggleTheme = () => {
   if (isDark) {
     html.classList.remove('dark');
     localStorage.setItem('theme', 'light');
+    notifyThemeChange(false);
   } else {
     html.classList.add('dark');
     localStorage.setItem('theme', 'dark');
+    notifyThemeChange(true);
   }
 };
 

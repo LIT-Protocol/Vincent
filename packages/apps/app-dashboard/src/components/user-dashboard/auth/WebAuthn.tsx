@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Button } from '@/components/shared/ui/button';
-import { ThemeType } from '../connect/ui/theme';
+import { ThemeType, fonts } from '../connect/ui/theme';
 import StatusMessage from '../connect/StatusMessage';
 import { PasskeyNameInput } from '@/components/shared/ui/PasskeyNameInput';
 
@@ -97,10 +97,13 @@ export default function WebAuthn({ authWithWebAuthn, registerWithWebAuthn, theme
         <div className="space-y-4 w-4/5">
           {registerWithWebAuthn && (
             <div className="space-y-2">
-              <label className={`text-sm font-medium block ${theme.text}`}>
+              <label className={`text-sm font-medium block ${theme.text}`} style={fonts.heading}>
                 Passkey Name
                 <span className="text-red-500 ml-1">*</span>
               </label>
+              <p className={`text-xs ${theme.textMuted}`} style={fonts.body}>
+                Use your device's biometrics or security key to create or sign in with a passkey.
+              </p>
               <PasskeyNameInput
                 value={passkeyName}
                 onChange={setPasskeyName}
@@ -120,6 +123,7 @@ export default function WebAuthn({ authWithWebAuthn, registerWithWebAuthn, theme
             {registerWithWebAuthn && (
               <Button
                 className={`${theme.accentBg} rounded-xl py-3 px-4 w-full font-medium text-sm ${theme.accentHover} transition-all duration-200 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2`}
+                style={fonts.heading}
                 onClick={handleRegister}
                 disabled={registerLoading || authLoading || !passkeyName.trim()}
               >
@@ -158,6 +162,7 @@ export default function WebAuthn({ authWithWebAuthn, registerWithWebAuthn, theme
 
             <Button
               className={`${theme.accentBg} rounded-xl py-3 px-4 w-full font-medium text-sm ${theme.accentHover} transition-all duration-200 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 ${registerWithWebAuthn ? 'mt-3' : ''}`}
+              style={fonts.heading}
               onClick={handleAuthenticate}
               disabled={authLoading || registerLoading}
             >
