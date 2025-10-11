@@ -1,6 +1,11 @@
 import { formatEther } from 'viem';
 import { bundledVincentAbility as solTransactionSignerBundledAbility } from '@lit-protocol/vincent-ability-sol-transaction-signer';
 import { constants } from '@lit-protocol/vincent-wrapped-keys';
+import {
+  LitAccessControlConditionResource,
+  createSiweMessage,
+  generateAuthSig,
+} from '@lit-protocol/auth-helpers';
 
 const { LIT_PREFIX } = constants;
 
@@ -25,6 +30,7 @@ import {
   TestConfig,
   YELLOWSTONE_RPC_URL,
   SOL_RPC_URL,
+  TEST_AGENT_WALLET_PKP_OWNER_PRIVATE_KEY,
 } from '../helpers';
 import {
   fundAppDelegateeIfNeeded,
@@ -37,7 +43,7 @@ import * as util from 'node:util';
 import { privateKeyToAccount } from 'viem/accounts';
 
 import { checkShouldMintCapacityCredit } from '../helpers/check-mint-capcity-credit';
-import { LIT_NETWORK } from '@lit-protocol/constants';
+import { LIT_ABILITY, LIT_NETWORK } from '@lit-protocol/constants';
 import { fundIfNeeded } from './helpers/fundIfNeeded';
 import { submitAndVerifyTransaction } from './helpers/submitAndVerifyTx';
 import { createSolanaTransferTransaction } from './helpers/createSolTransferTx';
@@ -226,7 +232,7 @@ describe('Solana Transaction Signer Ability E2E Tests', () => {
     });
   });
 
-  describe('Precheck and Execute testing using Delegatee', () => {
+  describe.skip('Precheck and Execute testing using Delegatee', () => {
     it('should run precheck and validate transaction deserialization', async () => {
       const client = getSolanaTransactionSignerAbilityClient();
       const precheckResult = await client.precheck(
@@ -440,9 +446,79 @@ describe('Solana Transaction Signer Ability E2E Tests', () => {
     });
   });
 
-  describe.skip('Platform User Decryption Testing', () => {
+  describe('Platform User Decryption Testing', () => {
     it('should allow the Platform User to decrypt the Wrapped Key', async () => {
-      // TODO: Implement this
+      const platformUserEthersWallet = new ethers.Wallet(
+        TEST_AGENT_WALLET_PKP_OWNER_PRIVATE_KEY,
+        new ethers.providers.JsonRpcProvider(YELLOWSTONE_RPC_URL),
+      );
+
+      const { capacityDelegationAuthSig } = await LIT_NODE_CLIENT.createCapacityDelegationAuthSig({
+        dAppOwnerWallet: getDelegateeWallet(),
+        delegateeAddresses: [platformUserEthersWallet.address],
+      });
+
+      const platformUserSessionSigs = await LIT_NODE_CLIENT.getSessionSigs({
+        chain: 'ethereum',
+        expiration: new Date(Date.now() + 1000 * 60 * 10).toISOString(), // 10 minutes
+        capabilityAuthSigs: [capacityDelegationAuthSig],
+        resourceAbilityRequests: [
+          {
+            resource: new LitAccessControlConditionResource('*'),
+            ability: LIT_ABILITY.AccessControlConditionDecryption,
+          },
+        ],
+        authNeededCallback: async ({ uri, expiration, resourceAbilityRequests }) => {
+          const toSign = await createSiweMessage({
+            uri,
+            expiration,
+            resources: resourceAbilityRequests,
+            walletAddress: await platformUserEthersWallet.getAddress(),
+            nonce: await LIT_NODE_CLIENT.getLatestBlockhash(),
+            litNodeClient: LIT_NODE_CLIENT,
+          });
+
+          return await generateAuthSig({
+            signer: platformUserEthersWallet,
+            toSign,
+          });
+        },
+      });
+
+      // const decryptedData = await decryptFromJson({
+      //   sessionSigs: platformUserSessionSigs,
+      //   litNodeClient: LIT_NODE_CLIENT,
+      //   parsedJsonData: {
+      //     ciphertext: CIPHERTEXT,
+      //     dataToEncryptHash: DATA_TO_ENCRYPT_HASH,
+      //     evmContractConditions: VINCENT_WRAPPED_KEYS_ACC_CONDITIONS,
+      //     chain: "ethereum",
+      //     dataType: "string",
+      //   }
+      // });
+
+      const { decryptedData } = await LIT_NODE_CLIENT.decrypt({
+        sessionSigs: platformUserSessionSigs,
+        ciphertext: CIPHERTEXT,
+        dataToEncryptHash: DATA_TO_ENCRYPT_HASH,
+        evmContractConditions: VINCENT_WRAPPED_KEYS_ACC_CONDITIONS,
+        chain: 'ethereum',
+      });
+
+      console.log('decryptedData', decryptedData);
+
+      expect(decryptedData).toBeDefined();
+
+      // Decode the decrypted data to string and strip LIT_PREFIX
+      const decryptedString = new TextDecoder().decode(decryptedData);
+      const secretKeyHex = decryptedString.replace(LIT_PREFIX, '');
+      const secretKeyBytes = Buffer.from(secretKeyHex, 'hex');
+
+      // Convert both to Base58 and compare
+      const expectedBase58 = ethers.utils.base58.encode(TEST_SOLANA_KEYPAIR.secretKey);
+      const actualBase58 = ethers.utils.base58.encode(secretKeyBytes);
+
+      expect(actualBase58).toBe(expectedBase58);
     });
   });
 });

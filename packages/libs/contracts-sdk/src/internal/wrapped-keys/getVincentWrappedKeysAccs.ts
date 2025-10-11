@@ -1,6 +1,6 @@
 import { ethers } from 'ethers';
 
-import type { AccsEVMParams, UnifiedAccessControlConditions } from '@lit-protocol/types';
+import type { AccsEVMParams, EvmContractConditions } from '@lit-protocol/types';
 
 import { LIT_NETWORK, LIT_RPC } from '@lit-protocol/constants';
 import { LitContracts } from '@lit-protocol/contracts-sdk';
@@ -27,7 +27,7 @@ export async function getVincentWrappedKeysAccs({
   delegatorAddress,
 }: {
   delegatorAddress: string;
-}): Promise<UnifiedAccessControlConditions> {
+}): Promise<EvmContractConditions> {
   if (!ethers.utils.isAddress(delegatorAddress)) {
     throw new Error(`delegatorAddress is not a valid Ethereum Address: ${delegatorAddress}`);
   }

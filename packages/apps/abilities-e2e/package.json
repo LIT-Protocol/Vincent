@@ -6,6 +6,7 @@
     "@aa-sdk/core": "^4.53.1",
     "@account-kit/infra": "^4.53.1",
     "@account-kit/smart-contracts": "^4.53.1",
+    "@lit-protocol/encryption": "^7.3.1",
     "@lit-protocol/esbuild-plugin-polyfill-node": "^0.3.0",
     "@lit-protocol/vincent-ability-erc20-approval": "workspace:*",
     "@lit-protocol/vincent-ability-erc20-transfer": "workspace:*",
@@ -29,8 +30,8 @@
   },
   "devDependencies": {
     "@dotenvx/dotenvx": "^1.44.2",
-    "@lit-protocol/auth-helpers": "^7.3.0",
-    "@lit-protocol/constants": "^7.2.3",
+    "@lit-protocol/auth-helpers": "^7.3.1",
+    "@lit-protocol/constants": "^7.3.1",
     "@lit-protocol/contracts-sdk": "^7.2.3",
     "@lit-protocol/lit-node-client": "^7.2.3",
     "viem": "2.29.2"
