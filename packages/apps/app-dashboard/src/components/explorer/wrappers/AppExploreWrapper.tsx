@@ -13,9 +13,12 @@ export const AppExploreWrapper = () => {
   // Loading states
   if (isLoading) {
     return (
-      <div className="w-full relative z-10">
+      <div className="w-full relative">
         <ExplorerNav />
-        <div className="min-h-screen flex items-center justify-center">
+        <div
+          className="flex items-center justify-center"
+          style={{ minHeight: 'calc(100vh - 200px)', paddingTop: '4rem' }}
+        >
           <LoadingLock />
         </div>
       </div>
