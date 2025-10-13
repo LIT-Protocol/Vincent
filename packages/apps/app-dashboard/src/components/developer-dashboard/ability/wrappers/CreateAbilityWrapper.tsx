@@ -16,7 +16,10 @@ export function CreateAbilityWrapper() {
   // Effect
   useEffect(() => {
     if (isSuccess && data) {
-      navigateWithDelay(navigate, `/developer/ability/${encodeURIComponent(data.packageName)}`); // Need to encodeURIComponent because packageName can contain special characters
+      navigateWithDelay(
+        navigate,
+        `/developer/abilities/ability/${encodeURIComponent(data.packageName)}`,
+      ); // Need to encodeURIComponent because packageName can contain special characters
     }
   }, [isSuccess, data, navigate]);
 

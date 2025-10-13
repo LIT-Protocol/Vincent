@@ -32,7 +32,7 @@ export function EditAppWrapper() {
   // Effect
   useEffect(() => {
     if (isSuccess && data && app) {
-      navigateWithDelay(navigate, `/developer/appId/${app.appId}`);
+      navigateWithDelay(navigate, `/developer/apps/appId/${app.appId}`);
     }
   }, [isSuccess, data, app]);
 

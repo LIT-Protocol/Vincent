@@ -1,15 +1,11 @@
 import { useNavigate } from 'react-router';
-import { Plus } from 'lucide-react';
-import { Button } from '@/components/shared/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/shared/ui/card';
+import { Plus, Package } from 'lucide-react';
 import { Logo } from '@/components/shared/ui/Logo';
 import { App } from '@/types/developer-dashboard/appTypes';
+import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
+import { motion } from 'framer-motion';
+import { useState, useEffect } from 'react';
+import { AppCard } from '../../ui/AppCard';
 
 interface AppsListViewProps {
   apps: App[];
@@ -18,117 +14,136 @@ interface AppsListViewProps {
 
 export function AppsListView({ apps, deletedApps }: AppsListViewProps) {
   const navigate = useNavigate();
+  const [showContent, setShowContent] = useState(false);
+
+  useEffect(() => {
+    setShowContent(true);
+  }, []);
 
   return (
-    <div className="space-y-6">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: showContent ? 1 : 0 }}
+      transition={{ duration: 0.5, ease: 'easeInOut' }}
+      className="w-full"
+    >
       {apps.length === 0 ? (
-        <div className="border dark:border-white/10 rounded-lg p-8 text-center">
-          <h2 className="text-xl font-semibold mb-4 text-neutral-800 dark:text-white">
-            No Apps Yet
-          </h2>
-          <p className="text-gray-600 dark:text-white/60 mb-6">
-            Create your first app to get started with Vincent.
-          </p>
-          <Button
-            variant="outline"
-            className="text-gray-700 dark:text-white dark:border-white/20 hover:!border-orange-500 focus:!border-orange-500"
-            onClick={() => navigate('/developer/create-app')}
-          >
-            <Plus className="h-4 w-4 mr-2 font-bold text-gray-700 dark:text-white" />
-            Create App
-          </Button>
+        <div className="flex items-center justify-center min-h-[400px] w-full">
+          <div className="text-center max-w-md mx-auto px-6">
+            <div
+              className={`inline-flex items-center justify-center w-16 h-16 rounded-full ${theme.itemBg} border ${theme.cardBorder} mb-6`}
+            >
+              <Package className={`w-8 h-8 ${theme.textMuted}`} />
+            </div>
+            <h3 className={`text-xl font-semibold mb-2 ${theme.text}`} style={fonts.heading}>
+              No Apps Yet
+            </h3>
+            <p className={`text-sm ${theme.textMuted} leading-relaxed mb-6`} style={fonts.body}>
+              Create your first app to get started with Vincent.
+            </p>
+            <button
+              onClick={() => navigate('/developer/apps/create-app')}
+              className="px-4 py-2 rounded-lg text-sm font-semibold text-white transition-colors inline-flex items-center gap-2"
+              style={{ backgroundColor: theme.brandOrange, ...fonts.heading }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = theme.brandOrangeDarker;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = theme.brandOrange;
+              }}
+            >
+              <Plus className="h-4 w-4" />
+              Create App
+            </button>
+          </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-6">
+        <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
           {apps.map((app) => (
-            <Card
-              key={app.appId}
-              className="cursor-pointer hover:shadow-md dark:hover:bg-white/[0.02] dark:border-white/10 transition-shadow"
-              onClick={() => navigate(`/developer/appId/${app.appId}`)}
-            >
-              <CardHeader>
-                <CardTitle className="flex justify-between items-center text-neutral-800 dark:text-white">
-                  <div className="flex items-center gap-3">
-                    <Logo
-                      logo={app.logo}
-                      alt={`${app.name} logo`}
-                      className="w-8 h-8 rounded-md object-cover flex-shrink-0"
-                    />
-                    <span>{app.name}</span>
-                  </div>
-                  <div className="flex gap-2">
-                    <span className="text-xs px-2 py-1 rounded-full bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-white/70">
+            <AppCard key={app.appId} onClick={() => navigate(`/developer/apps/appId/${app.appId}`)}>
+              <div className="flex items-start gap-3 mb-4">
+                <Logo
+                  logo={app.logo}
+                  alt={`${app.name} logo`}
+                  className="w-12 h-12 rounded-lg object-cover flex-shrink-0"
+                />
+                <div className="flex-1 min-w-0">
+                  <h3
+                    className={`font-semibold ${theme.text} truncate text-lg mb-1`}
+                    style={fonts.heading}
+                  >
+                    {app.name}
+                  </h3>
+                  <div className="flex gap-2 flex-wrap">
+                    <span
+                      className={`text-xs px-2 py-1 rounded-md ${theme.itemBg}`}
+                      style={fonts.body}
+                    >
                       v{app.activeVersion}
                     </span>
-                    <span className="text-xs px-2 py-1 rounded-full bg-gray-100 dark:bg-neutral-800 text-gray-700 dark:text-white/70 uppercase">
+                    <span
+                      className={`text-xs px-2 py-1 rounded-md ${theme.itemBg} uppercase`}
+                      style={fonts.body}
+                    >
                       {app.deploymentStatus}
                     </span>
                   </div>
-                </CardTitle>
-                <CardDescription className="text-gray-700 dark:text-white/60">
-                  {app.description}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-sm text-gray-700 dark:text-white/60">
-                  <div>
-                    <span className="font-medium">App ID:</span> {app.appId}
-                  </div>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+              <p className={`text-sm ${theme.textMuted} line-clamp-2 mb-3`} style={fonts.body}>
+                {app.description}
+              </p>
+              <div className={`text-xs ${theme.textSubtle} font-mono`}>ID: {app.appId}</div>
+            </AppCard>
           ))}
         </div>
       )}
       {/* Deleted Apps Section */}
       {deletedApps && deletedApps.length > 0 && (
-        <div className="space-y-4">
-          <div className="border-t pt-6">
-            <h3 className="text-lg font-medium text-gray-600 dark:text-white/60 mb-4">
-              Deleted Apps
-            </h3>
-            <div className="grid grid-cols-1 gap-4">
-              {deletedApps.map((app) => (
-                <Card
-                  key={app.appId}
-                  className="border-dashed dark:border-white/10 cursor-pointer hover:shadow-md dark:hover:bg-white/[0.02] transition-shadow"
-                  onClick={() => navigate(`/developer/appId/${app.appId}`)}
+        <div className="mt-8 pt-8 border-t border-gray-200 dark:border-white/10">
+          <h3 className={`text-lg font-semibold ${theme.textMuted} mb-4`} style={fonts.heading}>
+            Deleted Apps
+          </h3>
+          <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
+            {deletedApps.map((app) => (
+              <AppCard
+                key={app.appId}
+                onClick={() => navigate(`/developer/apps/appId/${app.appId}`)}
+                variant="deleted"
+              >
+                <div className="flex items-start gap-3 mb-4">
+                  <Logo
+                    logo={app.logo}
+                    alt={`${app.name} logo`}
+                    className="w-12 h-12 rounded-lg object-cover flex-shrink-0 grayscale"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <h3
+                      className={`font-semibold ${theme.textMuted} truncate text-lg mb-1 line-through`}
+                      style={fonts.heading}
+                    >
+                      {app.name}
+                    </h3>
+                    <span
+                      className="text-xs px-2 py-1 rounded-md bg-red-500/10 text-red-500 dark:text-red-400"
+                      style={fonts.body}
+                    >
+                      DELETED
+                    </span>
+                  </div>
+                </div>
+                <p
+                  className={`text-sm ${theme.textSubtle} line-clamp-2 mb-3 line-through`}
+                  style={fonts.body}
                 >
-                  <CardHeader>
-                    <CardTitle className="flex justify-between items-start text-gray-600 dark:text-white/60">
-                      <div className="flex items-center gap-3">
-                        <Logo
-                          logo={app.logo}
-                          alt={`${app.name} logo`}
-                          className="w-8 h-8 rounded-md object-cover flex-shrink-0 grayscale"
-                        />
-                        <span className="line-through">{app.name}</span>
-                      </div>
-                      <div className="flex flex-col items-end gap-2">
-                        <div className="flex gap-2">
-                          <span className="text-xs px-2 py-1 rounded-full bg-red-50 text-red-400">
-                            DELETED
-                          </span>
-                        </div>
-                      </div>
-                    </CardTitle>
-                    <CardDescription className="text-gray-500 dark:text-white/40 line-through">
-                      {app.description}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-sm text-gray-700 dark:text-white/60">
-                      <div>
-                        <span className="font-medium">App ID:</span> {app.appId}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                  {app.description}
+                </p>
+                <div className={`text-xs ${theme.textSubtle} font-mono`}>ID: {app.appId}</div>
+              </AppCard>
+            ))}
           </div>
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }

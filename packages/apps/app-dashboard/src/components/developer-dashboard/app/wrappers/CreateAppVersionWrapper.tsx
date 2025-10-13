@@ -31,7 +31,7 @@ export function CreateAppVersionWrapper() {
     if (isSuccess && data && app) {
       navigateWithDelay(
         navigate,
-        `/developer/appId/${app.appId}/version/${data.version}/abilities`,
+        `/developer/apps/appId/${app.appId}/version/${data.version}/abilities`,
       );
     }
   }, [isSuccess, data, navigate, app]);

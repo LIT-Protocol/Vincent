@@ -108,7 +108,7 @@ export function AppDetailsView({
               Your active App version ({selectedApp.activeVersion}) is not published, and users
               cannot grant permissions to your App. Go{' '}
               <Link
-                to={`/developer/appId/${selectedApp.appId}/version/${selectedApp.activeVersion}`}
+                to={`/developer/apps/appId/${selectedApp.appId}/version/${selectedApp.activeVersion}`}
                 className="underline hover:no-underline font-medium"
               >
                 here
@@ -123,7 +123,7 @@ export function AppDetailsView({
               Your App version 1 is not published, and users cannot grant permissions to your App.
               Go{' '}
               <Link
-                to={`/developer/appId/${selectedApp.appId}/version/1`}
+                to={`/developer/apps/appId/${selectedApp.appId}/version/1`}
                 className="underline hover:no-underline font-medium"
               >
                 here

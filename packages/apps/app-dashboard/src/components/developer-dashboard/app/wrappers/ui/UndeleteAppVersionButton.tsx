@@ -21,7 +21,7 @@ export function UndeleteAppVersionButton({ appVersion }: UndeleteAppVersionWrapp
   // Effect
   useEffect(() => {
     if (isSuccess && data && appVersion) {
-      navigate(`/developer/appId/${appVersion.appId}`);
+      navigate(`/developer/apps/appId/${appVersion.appId}`);
     }
   }, [isSuccess, data, appVersion]);
 

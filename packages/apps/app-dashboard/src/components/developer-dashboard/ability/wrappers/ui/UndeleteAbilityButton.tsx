@@ -22,7 +22,7 @@ export function UndeleteAbilityButton({ ability }: UndeleteAbilityWrapperProps) 
   // Effect
   useEffect(() => {
     if (isSuccess && data && ability) {
-      navigate(`/developer/ability/${encodeURIComponent(ability.packageName)}`);
+      navigate(`/developer/abilities/ability/${encodeURIComponent(ability.packageName)}`);
     }
   }, [isSuccess, data, ability]);
 

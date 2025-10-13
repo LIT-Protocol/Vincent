@@ -46,7 +46,7 @@ export function DeletePolicyVersionWrapper() {
   // Effect
   useEffect(() => {
     if (isSuccess && data) {
-      navigate(`/developer/policy/${encodeURIComponent(packageName!)}/versions`); // Navigate immediately, no delay needed
+      navigate(`/developer/policies/policy/${encodeURIComponent(packageName!)}/versions`); // Navigate immediately, no delay needed
     }
   }, [isSuccess, data, navigate]);
 

@@ -32,7 +32,10 @@ export function EditPolicyWrapper() {
   // Effect
   useEffect(() => {
     if (isSuccess && data && policy) {
-      navigateWithDelay(navigate, `/developer/policy/${encodeURIComponent(policy.packageName)}`);
+      navigateWithDelay(
+        navigate,
+        `/developer/policies/policy/${encodeURIComponent(policy.packageName)}`,
+      );
     }
   }, [isSuccess, data, navigate, policy]);
 

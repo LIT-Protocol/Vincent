@@ -31,7 +31,10 @@ export function EditAppVersionWrapper() {
   // Effect
   useEffect(() => {
     if (isSuccess && data && app && versionData) {
-      navigateWithDelay(navigate, `/developer/appId/${app.appId}/version/${versionData.version}`);
+      navigateWithDelay(
+        navigate,
+        `/developer/apps/appId/${app.appId}/version/${versionData.version}`,
+      );
     }
   }, [isSuccess, data, navigate, app, versionData]);
 

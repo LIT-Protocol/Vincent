@@ -42,7 +42,7 @@ export function AbilityOverviewWrapper() {
     );
 
   const handleOpenMutation = (mutationType: string) => {
-    navigate(`/developer/ability/${encodeURIComponent(packageName!)}/${mutationType}`);
+    navigate(`/developer/abilities/ability/${encodeURIComponent(packageName!)}/${mutationType}`);
   };
 
   return (

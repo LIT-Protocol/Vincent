@@ -40,7 +40,7 @@ export function EditAbilityVersionWrapper() {
     if (isSuccess && data && ability && versionData) {
       navigateWithDelay(
         navigate,
-        `/developer/ability/${encodeURIComponent(ability.packageName)}/version/${versionData.version}`,
+        `/developer/abilities/ability/${encodeURIComponent(ability.packageName)}/version/${versionData.version}`,
       );
     }
   }, [isSuccess, data, navigate, ability, versionData]);

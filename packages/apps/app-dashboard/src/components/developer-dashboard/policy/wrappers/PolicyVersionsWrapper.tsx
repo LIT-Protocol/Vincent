@@ -45,7 +45,7 @@ export function PolicyVersionsWrapper() {
   if (!versions) return <StatusMessage message="No policy versions found" type="info" />;
 
   const handleVersionClick = (version: string) => {
-    navigate(`/developer/policy/${encodeURIComponent(packageName!)}/version/${version}`);
+    navigate(`/developer/policies/policy/${encodeURIComponent(packageName!)}/version/${version}`);
   };
 
   return (
