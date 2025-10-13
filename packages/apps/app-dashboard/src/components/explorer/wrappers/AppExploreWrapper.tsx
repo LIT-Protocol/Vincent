@@ -1,7 +1,8 @@
 import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
 import { AppExploreView } from '../views/AppExploreView';
-import { ExplorerAppsSkeleton } from '../ui/ExplorerAppsSkeleton';
+import LoadingLock from '@/components/shared/ui/LoadingLock';
 import { ExplorerErrorPage } from '../ui/ExplorerErrorPage';
+import { ExplorerNav } from '../ui/ExplorerNav';
 import { App } from '@/types/developer-dashboard/appTypes';
 
 export const AppExploreWrapper = () => {
@@ -10,7 +11,16 @@ export const AppExploreWrapper = () => {
   const activeApps = apps?.filter((app: App) => app.deploymentStatus !== 'dev') || [];
 
   // Loading states
-  if (isLoading) return <ExplorerAppsSkeleton />;
+  if (isLoading) {
+    return (
+      <div className="w-full relative z-10">
+        <ExplorerNav />
+        <div className="min-h-screen flex items-center justify-center">
+          <LoadingLock />
+        </div>
+      </div>
+    );
+  }
 
   // Error states
   if (isError) {

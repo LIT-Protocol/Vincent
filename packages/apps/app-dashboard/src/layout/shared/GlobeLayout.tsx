@@ -11,24 +11,30 @@ function GlobeLayoutInner() {
   const { shouldOffset } = useGlobeOffset();
 
   // Check if we should show the globe (only on specific routes)
-  const showGlobe = location.pathname === '/' || location.pathname.startsWith('/user/');
+  const showGlobe =
+    location.pathname === '/' ||
+    location.pathname.startsWith('/user/') ||
+    location.pathname.startsWith('/explorer/') ||
+    location.pathname === '/faq';
 
   return (
     <>
       {/* Persistent globe layer - stays mounted across route changes */}
-      {showGlobe && (
-        <div
-          key="globe-container"
-          className="fixed inset-0 transition-all duration-300"
-          style={{
-            zIndex: 0,
-            // On desktop with sidebar open, offset the globe to center it in the main content area
-            left: shouldOffset ? '7rem' : '0',
-          }}
-        >
-          <DitheredGlobe key="persistent-globe" />
-        </div>
-      )}
+      <div
+        key="globe-container"
+        className="fixed inset-0 transition-all duration-300"
+        style={{
+          zIndex: 0,
+          // On desktop with sidebar open, offset the globe to center it in the main content area
+          left: shouldOffset ? '7rem' : '0',
+          // Hide instead of unmounting to prevent WebGL context loss
+          opacity: showGlobe ? 1 : 0,
+          pointerEvents: showGlobe ? 'auto' : 'none',
+          visibility: showGlobe ? 'visible' : 'hidden',
+        }}
+      >
+        <DitheredGlobe key="persistent-globe" />
+      </div>
 
       {/* Child routes render here - no wrapper to avoid blocking globe */}
       <Outlet />

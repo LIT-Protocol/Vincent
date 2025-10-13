@@ -16,3 +16,5 @@ export const UserProviders = [
   WagmiProviderWrapper,
   QueryClientProviderWrapper,
 ];
+
+export const PublicProviders = [ReduxProvider, QueryClientProviderWrapper];

@@ -30,9 +30,9 @@ export function AbilityHeader({ ability, abilityVersion, connectInfoMap }: Abili
           <Settings className={`w-7 h-7 ${theme.textMuted}`} />
         )}
       </div>
-      <div className="flex-1">
+      <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <h4 className={`text-sm font-semibold ${theme.text}`} style={fonts.heading}>
+          <h4 className={`text-sm font-semibold ${theme.text} break-words`} style={fonts.heading}>
             {connectInfoMap.abilitiesByPackageName[ability.abilityPackageName]?.title ||
               ability.abilityPackageName}
           </h4>
@@ -62,7 +62,7 @@ export function AbilityHeader({ ability, abilityVersion, connectInfoMap }: Abili
           )}
         </div>
         {connectInfoMap.abilitiesByPackageName[ability.abilityPackageName]?.description && (
-          <p className={`text-xs ${theme.textSubtle} mt-1`} style={fonts.body}>
+          <p className={`text-xs ${theme.textSubtle} mt-1 break-words`} style={fonts.body}>
             {connectInfoMap.abilitiesByPackageName[ability.abilityPackageName].description}
           </p>
         )}

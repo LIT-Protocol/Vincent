@@ -43,6 +43,14 @@ export default function RootPage() {
     }, 500);
   }, [navigate]);
 
+  const handleExploreClick = useCallback(() => {
+    setIsTransitioning(true);
+    // Wait for fade out to complete before navigating
+    setTimeout(() => {
+      navigate('/explorer/apps', { state: { fromTransition: true } });
+    }, 500);
+  }, [navigate]);
+
   // Memoize scale calculations
   const globeScale = useMemo(() => {
     // Scale content to match the globe (which scales with viewport height)
@@ -86,15 +94,15 @@ export default function RootPage() {
       >
         {/* Main content area - all layers in same grid cell */}
         <div className="relative row-start-1 col-start-1">
-          {/* Navigation - Top Center (mobile), Bottom Left (desktop) */}
+          {/* Navigation - Top Right (desktop), Top Center (mobile) */}
           <div
             className="flex z-20 gap-1 md:gap-2 transition-opacity duration-500"
             style={{
               opacity: showContent && !isTransitioning ? 1 : 0,
-              position: isMobile ? 'absolute' : 'fixed',
-              top: isMobile ? '1rem' : 'auto',
-              bottom: isMobile ? 'auto' : '1.5rem',
-              left: isMobile ? '50%' : '1.5rem',
+              position: 'fixed',
+              top: isMobile ? '1rem' : '1.5rem',
+              right: isMobile ? 'auto' : '1.5rem',
+              left: isMobile ? '50%' : 'auto',
               transform: isMobile ? 'translateX(-50%)' : 'none',
             }}
           >
@@ -108,7 +116,7 @@ export default function RootPage() {
               Contact Us
             </a>
             <a
-              href="https://docs.litprotocol.com"
+              href="https://docs.heyvincent.ai/"
               target="_blank"
               rel="noopener noreferrer"
               className="px-2.5 py-1.5 md:px-3 md:py-1.5 rounded-lg text-xs md:text-sm transition-colors no-underline !text-gray-900 dark:!text-white hover:bg-gray-100 dark:hover:bg-gray-800 whitespace-nowrap"
@@ -282,7 +290,7 @@ export default function RootPage() {
                     Build
                   </button>
                   <button
-                    onClick={() => navigate('/explorer')}
+                    onClick={handleExploreClick}
                     className="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 rounded font-semibold border border-gray-900 dark:border-gray-100 transition-all hover:!border-[#FF4205]"
                     style={{
                       padding: isMobile

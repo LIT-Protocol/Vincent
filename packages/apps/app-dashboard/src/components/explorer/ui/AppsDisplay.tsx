@@ -1,10 +1,29 @@
-import { Calendar, Search, Tag } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { App } from '@/types/developer-dashboard/appTypes';
 import { useNavigate } from 'react-router-dom';
 import { Logo } from '@/components/shared/ui/Logo';
+import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
+import { useCallback } from 'react';
 
-export function AppsDisplay({ apps }: { apps: App[] }) {
+interface AppsDisplayProps {
+  apps: App[];
+  onNavigate?: (path: string) => void;
+}
+
+export function AppsDisplay({ apps, onNavigate }: AppsDisplayProps) {
   const navigate = useNavigate();
+
+  const handleAppClick = useCallback(
+    (appId: number) => {
+      const path = `/explorer/appId/${appId}`;
+      if (onNavigate) {
+        onNavigate(path);
+      } else {
+        navigate(path);
+      }
+    },
+    [navigate, onNavigate],
+  );
 
   const getDisplayStatus = (status: string | undefined): string => {
     const normalizedStatus = status?.toLowerCase() || 'prod';
@@ -19,81 +38,78 @@ export function AppsDisplay({ apps }: { apps: App[] }) {
   };
 
   return (
-    <div className="relative group">
-      <div className="absolute inset-0 bg-black/5 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
-      <div className="relative bg-white/40 backdrop-blur-xl border border-black/10 rounded-2xl p-6 hover:border-black/20 transition-all duration-500">
-        {/* Table View */}
-        <div className="space-y-4">
-          {/* Table Header */}
-          <div className="grid grid-cols-12 gap-4 px-4 py-3 text-sm font-medium text-gray-500">
-            <div className="col-span-6 sm:col-span-5">Application</div>
-            <div className="col-span-3 sm:col-span-2">Status</div>
-            <div className="col-span-3 sm:col-span-2">Version</div>
-            <div className="hidden sm:block sm:col-span-3">Updated</div>
-          </div>
-
-          {/* Table Rows */}
-          <div className="space-y-2">
-            {apps.map((app) => (
+    <div className="relative">
+      {apps.length === 0 ? (
+        <div className={`p-12 rounded-xl ${theme.itemBg} border ${theme.cardBorder} text-center`}>
+          <Search className={`w-12 h-12 ${theme.textMuted} mx-auto mb-4`} />
+          <p className={`${theme.textMuted} text-base mb-2`} style={fonts.heading}>
+            No applications found
+          </p>
+          <p className={`${theme.textSubtle} text-sm`} style={fonts.body}>
+            Try adjusting your search or filter criteria
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+          {apps.map((app) => (
+            <div
+              key={app.appId}
+              onClick={() => handleAppClick(app.appId)}
+              className={`group relative rounded-xl md:rounded-2xl border ${theme.cardBorder} ${theme.cardHoverBorder} overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-lg bg-white dark:bg-gray-950`}
+            >
+              {/* App Logo/Image Header */}
               <div
-                key={app.appId}
-                className="group/row grid grid-cols-12 gap-4 px-4 py-4 rounded-xl bg-black/[0.02] border border-black/5 hover:border-black/10 cursor-pointer transition-all duration-300"
-                onClick={() => navigate(`/explorer/appId/${app.appId}`)}
+                className={`relative h-24 md:h-32 ${theme.iconBg} border-b ${theme.cardBorder} flex items-center justify-center p-4 md:p-6`}
               >
-                {/* Application Info */}
-                <div className="col-span-6 sm:col-span-5 flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg overflow-hidden bg-black/5 border border-black/5 flex items-center justify-center flex-shrink-0">
-                    <Logo
-                      logo={app.logo}
-                      alt={`${app.name} logo`}
-                      className="w-full h-full object-fill"
-                    />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="font-medium text-black truncate">{app.name}</p>
-                    <p className="text-sm text-gray-500 truncate">
-                      {app.description || 'No description'}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Status */}
-                <div className="col-span-3 sm:col-span-2 flex items-center">
-                  <span className="px-3 py-1 rounded-full text-xs font-medium border border-orange-500 !bg-orange-50 !text-orange-700">
-                    {getDisplayStatus(app.deploymentStatus)}
-                  </span>
-                </div>
-
-                {/* Version */}
-                <div className="col-span-3 sm:col-span-2 flex items-center">
-                  <div className="flex items-center gap-1">
-                    <Tag className="w-3 h-3 text-black/40" />
-                    <span className="text-sm text-black">v{app.activeVersion}</span>
-                  </div>
-                </div>
-
-                {/* Updated */}
-                <div className="hidden sm:flex sm:col-span-3 items-center">
-                  <div className="flex items-center gap-1">
-                    <Calendar className="w-3 h-3 text-black/40" />
-                    <span className="text-sm text-gray-600">
-                      {new Date(app.updatedAt).toLocaleDateString()}
-                    </span>
-                  </div>
+                <div className="w-16 h-16 md:w-20 md:h-20 rounded-lg md:rounded-xl overflow-hidden">
+                  <Logo
+                    logo={app.logo}
+                    alt={`${app.name} logo`}
+                    className="w-full h-full object-cover"
+                  />
                 </div>
               </div>
-            ))}
-          </div>
-        </div>
 
-        {apps.length === 0 && (
-          <div className="p-12 rounded-xl bg-black/[0.02] border border-black/5 text-center">
-            <Search className="w-12 h-12 text-black/20 mx-auto mb-4" />
-            <p className="text-gray-500 text-base mb-2">No applications found</p>
-            <p className="text-gray-500 text-sm">Try adjusting your search or filter criteria</p>
-          </div>
-        )}
-      </div>
+              {/* Card Content */}
+              <div className="p-3 md:p-4">
+                {/* App Name */}
+                <h3
+                  className={`text-base md:text-lg font-semibold ${theme.text} mb-1 md:mb-1.5 line-clamp-1`}
+                  style={fonts.heading}
+                >
+                  {app.name}
+                </h3>
+
+                {/* Description */}
+                <p
+                  className={`text-xs md:text-sm ${theme.textMuted} mb-2 md:mb-3 line-clamp-2 min-h-[2rem] md:min-h-[2.5rem]`}
+                  style={fonts.body}
+                >
+                  {app.description || 'No description available'}
+                </p>
+
+                {/* Metadata */}
+                <div className="flex items-center justify-between gap-2 pt-2 md:pt-3 border-t border-gray-200 dark:border-white/10">
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="px-2.5 py-1 rounded-full text-xs font-medium text-white"
+                      style={{ ...fonts.heading, backgroundColor: theme.brandOrange }}
+                    >
+                      {getDisplayStatus(app.deploymentStatus)}
+                    </span>
+                    <span className={`text-xs ${theme.textMuted}`} style={fonts.body}>
+                      v{app.activeVersion}
+                    </span>
+                  </div>
+                  <span className={`text-xs ${theme.textSubtle}`} style={fonts.body}>
+                    {new Date(app.updatedAt).toLocaleDateString()}
+                  </span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
