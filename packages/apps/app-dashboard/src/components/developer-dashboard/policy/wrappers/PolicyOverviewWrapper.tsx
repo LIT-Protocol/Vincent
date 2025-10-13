@@ -42,7 +42,7 @@ export function PolicyOverviewWrapper() {
     );
 
   const handleOpenMutation = (mutationType: string) => {
-    navigate(`/developer/policy/${encodeURIComponent(packageName!)}/${mutationType}`);
+    navigate(`/developer/policies/policy/${encodeURIComponent(packageName!)}/${mutationType}`);
   };
 
   return (

@@ -34,7 +34,7 @@ export function AppOverviewWrapper() {
   if (!app) return <StatusMessage message={`App ${appId} not found`} type="error" />;
 
   const handleOpenMutation = (mutationType: string) => {
-    navigate(`/developer/appId/${appId}/${mutationType}`);
+    navigate(`/developer/apps/appId/${appId}/${mutationType}`);
   };
 
   return (

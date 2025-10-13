@@ -15,6 +15,7 @@ function GlobeLayoutInner() {
     location.pathname === '/' ||
     location.pathname.startsWith('/user/') ||
     location.pathname.startsWith('/explorer/') ||
+    location.pathname.startsWith('/developer/') ||
     location.pathname === '/faq';
 
   return (

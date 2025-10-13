@@ -158,7 +158,7 @@ export function AppVersionAbilitiesWrapper() {
               </div>
             </div>
             <Button
-              onClick={() => navigate(`/developer/appId/${appId}/version/${versionId}`)}
+              onClick={() => navigate(`/developer/apps/appId/${appId}/version/${versionId}`)}
               className="bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600 text-white px-4 py-2 flex items-center gap-2 font-medium"
             >
               Publish App Version

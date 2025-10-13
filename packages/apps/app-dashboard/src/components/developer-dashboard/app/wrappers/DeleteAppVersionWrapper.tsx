@@ -45,7 +45,7 @@ export function DeleteAppVersionWrapper() {
   // Effect
   useEffect(() => {
     if (isSuccess && data) {
-      navigate(`/developer/appId/${appId}/versions`); // Navigate immediately, no delay needed
+      navigate(`/developer/apps/appId/${appId}/versions`); // Navigate immediately, no delay needed
     }
   }, [isSuccess, data, navigate]);
 

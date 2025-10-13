@@ -31,7 +31,7 @@ export function CreateAbilityVersionWrapper() {
     if (isSuccess && data && ability) {
       navigateWithDelay(
         navigate,
-        `/developer/ability/${encodeURIComponent(ability.packageName)}/version/${data.version}`,
+        `/developer/abilities/ability/${encodeURIComponent(ability.packageName)}/version/${data.version}`,
       );
     }
   }, [isSuccess, data, navigate, ability]);

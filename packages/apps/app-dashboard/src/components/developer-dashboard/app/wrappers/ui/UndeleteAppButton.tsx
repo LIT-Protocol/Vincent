@@ -22,7 +22,7 @@ export function UndeleteAppButton({ app }: UndeleteAppWrapperProps) {
   // Effect
   useEffect(() => {
     if (isSuccess && data && app) {
-      navigate(`/developer/appId/${app.appId}`);
+      navigate(`/developer/apps/appId/${app.appId}`);
     }
   }, [isSuccess, data, app]);
 

@@ -22,7 +22,7 @@ export function UndeletePolicyButton({ policy }: UndeletePolicyWrapperProps) {
   // Effect
   useEffect(() => {
     if (isSuccess && data && policy) {
-      navigate(`/developer/policy/${encodeURIComponent(policy.packageName)}`);
+      navigate(`/developer/policies/policy/${encodeURIComponent(policy.packageName)}`);
     }
   }, [isSuccess, data, policy]);
 

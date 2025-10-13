@@ -41,7 +41,7 @@ export function AppVersionsWrapper() {
   if (!app) return <StatusMessage message={`App ${appId} not found`} type="error" />;
 
   const handleVersionClick = (version: number) => {
-    navigate(`/developer/appId/${appId}/version/${version}`);
+    navigate(`/developer/apps/appId/${appId}/version/${version}`);
   };
 
   return (
