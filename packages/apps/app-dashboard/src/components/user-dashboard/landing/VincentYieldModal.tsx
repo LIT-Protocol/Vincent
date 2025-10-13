@@ -6,7 +6,7 @@ import {
   DialogTitle,
 } from '@/components/shared/ui/dialog';
 import { Button } from '@/components/shared/ui/button';
-import { theme } from '../connect/ui/theme';
+import { theme, fonts } from '../connect/ui/theme';
 import { ExternalLink } from 'lucide-react';
 
 interface VincentYieldModalProps {
@@ -34,16 +34,26 @@ export function VincentYieldModal({ onClose }: VincentYieldModalProps) {
         onEscapeKeyDown={(e) => e.preventDefault()}
       >
         <DialogHeader className={`px-3 sm:px-6 pt-4 pb-6 border-b ${theme.cardBorder}`}>
-          <DialogTitle className={`text-lg font-semibold ${theme.text} text-center`}>
+          <DialogTitle
+            className={`text-lg font-semibold ${theme.text} text-center`}
+            style={fonts.heading}
+          >
             Welcome to Vincent
           </DialogTitle>
-          <div className="text-xs uppercase tracking-widest font-medium text-orange-500 text-center mt-1">
+          <div
+            className="text-xs uppercase tracking-widest font-medium text-center mt-1"
+            style={{ ...fonts.heading, color: theme.brandOrange }}
+          >
             EARLY ACCESS
           </div>
-          <DialogDescription className={`${theme.textMuted} text-sm text-center mt-2`}>
+          <DialogDescription
+            className={`${theme.textMuted} text-sm text-center mt-2`}
+            style={fonts.body}
+          >
             Vincent powers the next wave of user-owned finance and agent-driven automation for Web3.
-            Deposit at least 50 USDC <span className="text-orange-500">on Base Mainnet</span> to get
-            started with Vincent Yield.
+            Deposit at least 50 USDC{' '}
+            <span style={{ color: theme.brandOrange }}>on Base Mainnet</span> to get started with
+            Vincent Yield.
           </DialogDescription>
         </DialogHeader>
 
@@ -53,13 +63,14 @@ export function VincentYieldModal({ onClose }: VincentYieldModalProps) {
               window.open('https://yield.heyvincent.ai', '_blank');
               onClose();
             }}
-            className="w-full font-normal tracking-wide transition-all duration-200 border text-white flex items-center justify-center gap-2"
+            className="w-full tracking-wide transition-all duration-200 border text-white flex items-center justify-center gap-2 hover:bg-[#E03A04]"
             style={{
+              ...fonts.heading,
               borderRadius: '0.5rem',
               fontSize: 'clamp(0.75rem, 3vw, 0.875rem)',
               padding: 'clamp(0.25rem, 1vw, 0.375rem) clamp(1rem, 4vw, 1.5rem)',
-              backgroundColor: '#e55a1a',
-              borderColor: '#e55a1a',
+              backgroundColor: theme.brandOrange,
+              borderColor: theme.brandOrange,
             }}
           >
             Visit Vincent Yield

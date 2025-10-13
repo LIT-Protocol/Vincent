@@ -1,8 +1,7 @@
 import React from 'react';
 import { useLocation, Link } from 'react-router-dom';
-import { Package, Sun, Moon, LogOut, HelpCircle, User, Code } from 'lucide-react';
+import { Package, LogOut, HelpCircle } from 'lucide-react';
 import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
-import { toggleTheme } from '@/lib/theme';
 import { useTheme } from '@/hooks/useTheme';
 import { useClearAuthInfo } from '@/hooks/user-dashboard/useAuthInfo';
 import { AccountTooltip } from '@/components/shared/AccountTooltip';
@@ -109,85 +108,6 @@ export function AppSidebar() {
       <SidebarFooter className="border-t border-sidebar-border">
         <div className="p-4 space-y-2">
           <SidebarMenu>
-            {/* Dashboard Switcher */}
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                asChild
-                isActive={location.pathname.startsWith('/user')}
-                className={`h-10 px-3 rounded-lg transition-all duration-200 ${
-                  location.pathname.startsWith('/user')
-                    ? `${theme.itemBg}`
-                    : `${theme.text} ${theme.itemHoverBg}`
-                }`}
-                style={fonts.heading}
-              >
-                <Link to="/user/apps">
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={location.pathname.startsWith('/user') ? '' : theme.textMuted}
-                      style={
-                        location.pathname.startsWith('/user') ? { color: theme.brandOrange } : {}
-                      }
-                    >
-                      <User className="h-4 w-4" />
-                    </div>
-                    <span
-                      className={`font-medium ${location.pathname.startsWith('/user') ? '' : theme.text}`}
-                      style={
-                        location.pathname.startsWith('/user') ? { color: theme.brandOrange } : {}
-                      }
-                    >
-                      User Dashboard
-                    </span>
-                  </div>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                asChild
-                isActive={location.pathname.startsWith('/developer')}
-                className={`h-auto py-2 px-3 rounded-lg transition-all duration-200 ${
-                  location.pathname.startsWith('/developer')
-                    ? `${theme.itemBg}`
-                    : `${theme.text} ${theme.itemHoverBg}`
-                }`}
-                style={fonts.heading}
-              >
-                <Link to="/developer/dashboard">
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={`flex-shrink-0 ${
-                        location.pathname.startsWith('/developer') ? '' : theme.textMuted
-                      }`}
-                      style={
-                        location.pathname.startsWith('/developer')
-                          ? { color: theme.brandOrange }
-                          : {}
-                      }
-                    >
-                      <Code className="h-4 w-4" />
-                    </div>
-                    <span
-                      className={`font-medium leading-tight ${location.pathname.startsWith('/developer') ? '' : theme.text}`}
-                      style={
-                        location.pathname.startsWith('/developer')
-                          ? { color: theme.brandOrange }
-                          : {}
-                      }
-                    >
-                      Developer
-                      <br />
-                      Dashboard
-                    </span>
-                  </div>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-
-            <div className={`border-t ${isDark ? 'border-white/10' : 'border-gray-900/10'} my-2`} />
-
             {/* My Account with tooltip */}
             <SidebarMenuItem>
               <AccountTooltip theme={theme} />
@@ -228,24 +148,6 @@ export function AppSidebar() {
                     <span className={`font-medium ${theme.text}`}>FAQ</span>
                   </div>
                 </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-
-            {/* Theme Toggle */}
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                onClick={toggleTheme}
-                className={`h-10 px-3 rounded-lg transition-all duration-200 ${theme.text} ${theme.itemHoverBg}`}
-                style={fonts.heading}
-              >
-                <div className="flex items-center gap-3">
-                  <div className={theme.textMuted}>
-                    {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-                  </div>
-                  <span className={`font-medium ${theme.text}`}>
-                    {isDark ? 'Light mode' : 'Dark mode'}
-                  </span>
-                </div>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>

@@ -7,13 +7,13 @@ import {
   SidebarTrigger,
   useSidebar,
 } from '@/components/shared/ui/sidebar';
-import { Separator } from '@/components/shared/ui/separator';
 import useReadAuthInfo from '@/hooks/user-dashboard/useAuthInfo';
 import { AuthenticationErrorScreen } from '@/components/user-dashboard/connect/AuthenticationErrorScreen';
 import Loading from '@/components/shared/ui/Loading';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Footer } from '@/components/shared/Footer';
 import { useGlobeOffset } from '@/contexts/GlobeOffsetContext';
+import { ExplorerNav } from '@/components/explorer/ui/ExplorerNav';
 
 // Component that updates globe offset based on sidebar state
 function SidebarOffsetSync() {
@@ -36,6 +36,7 @@ function SidebarOffsetSync() {
 function UserLayoutWithSidebar({ children, className }: ComponentProps<'div'>) {
   const { authInfo, sessionSigs, isProcessing, error } = useReadAuthInfo();
   const location = useLocation();
+  const navigate = useNavigate();
 
   // Check if navigating from a transition (e.g., from RootPage)
   const [isTransitioning, setIsTransitioning] = useState(() => {
@@ -69,6 +70,7 @@ function UserLayoutWithSidebar({ children, className }: ComponentProps<'div'>) {
       // Not transitioning, show auth screen immediately
       setShowAuthScreen(true);
     }
+    return undefined;
   }, [isTransitioning]);
 
   // Handle authentication at the layout level to prevent duplication
@@ -88,21 +90,14 @@ function UserLayoutWithSidebar({ children, className }: ComponentProps<'div'>) {
     >
       <SidebarProvider style={{ '--sidebar-width': '14rem' } as React.CSSProperties}>
         <SidebarOffsetSync />
-        <div className="flex h-screen w-full relative z-10">
+        <ExplorerNav onNavigate={(path) => navigate(path)} sidebarTrigger={<SidebarTrigger />} />
+        <div className="flex h-screen w-full relative z-10 pt-16">
           <AppSidebar />
           <SidebarInset className="flex-1 overflow-hidden flex flex-col">
-            <header className="flex h-16 shrink-0 items-center justify-between gap-2 border-b px-4">
-              <div className="flex items-center gap-2">
-                <SidebarTrigger />
-                <Separator orientation="vertical" className="mr-2 h-4" />
-                {/* Page title/breadcrumb will be rendered here by child pages if needed */}
-                <div id="header-breadcrumb"></div>
-              </div>
-            </header>
             <main className="flex-1 overflow-auto relative overflow-x-hidden flex flex-col">
               {/* Content wrapper to match component structure */}
               <div
-                className={`flex-1 w-full p-2 sm:p-4 md:p-6 relative flex justify-center items-start`}
+                className={`flex-1 w-full p-2 sm:p-4 md:p-6 pt-6 sm:pt-8 relative flex justify-center items-start`}
               >
                 {content}
               </div>

@@ -3,7 +3,8 @@ import AppLayout from '@/layout/developer-dashboard/AppLayout';
 import UserDashboardLayout from '@/layout/user-dashboard/UserDashboardLayout';
 import UserLayoutWithSidebar from '@/layout/user-dashboard/UserLayoutWithSidebar';
 import GlobeLayout from '@/layout/shared/GlobeLayout';
-import { AppProviders, UserProviders } from './providers';
+import PublicLayout from '@/layout/shared/PublicLayout';
+import { AppProviders, UserProviders, PublicProviders } from './providers';
 import { wrap } from '@/utils/shared/components';
 
 import { Dashboard } from './pages/developer-dashboard';
@@ -55,7 +56,6 @@ import {
 
 import { AppExploreWrapper } from './components/explorer/wrappers/AppExploreWrapper';
 import { AppInfoWrapper } from './components/explorer/wrappers/AppInfoWrapper';
-import { ExplorerLandingPage } from './pages/explorer/ExplorerLandingPage';
 
 import { WalletPageWrapper } from './pages/user-dashboard/WalletPageWrapper';
 import { AllWallets } from './pages/user-dashboard/all-wallets';
@@ -75,12 +75,9 @@ const UserLayoutWithSidebarAndProviders = wrap(
   () => <Outlet />,
   [...UserProviders, UserLayoutWithSidebar],
 );
+const PublicLayoutWithProviders = wrap(() => <Outlet />, [...PublicProviders, PublicLayout]);
 
 const routes: RouteObject[] = [
-  {
-    path: '/faq',
-    element: <FAQ />,
-  },
   {
     element: <GlobeLayout />,
     children: [
@@ -129,6 +126,23 @@ const routes: RouteObject[] = [
           {
             path: '/user/appId/:appId/connect',
             element: <ConnectPageWrapper />,
+          },
+        ],
+      },
+      {
+        element: <PublicLayoutWithProviders />,
+        children: [
+          {
+            path: '/explorer/apps',
+            element: <AppExploreWrapper />,
+          },
+          {
+            path: '/explorer/appId/:appId',
+            element: <AppInfoWrapper />,
+          },
+          {
+            path: '/faq',
+            element: <FAQ />,
           },
         ],
       },
@@ -286,23 +300,6 @@ const routes: RouteObject[] = [
             element: <DeletePolicyVersionWrapper />,
           },
         ],
-      },
-    ],
-  },
-  {
-    path: '/explorer',
-    element: <ExplorerLandingPage />,
-  },
-  {
-    element: <UserDashboardLayoutWithProviders />,
-    children: [
-      {
-        path: '/explorer/apps',
-        element: <AppExploreWrapper />,
-      },
-      {
-        path: '/explorer/appId/:appId',
-        element: <AppInfoWrapper />,
       },
     ],
   },

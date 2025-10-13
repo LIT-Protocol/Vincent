@@ -251,72 +251,64 @@ export function FAQ() {
   };
 
   return (
-    <div
-      className={`min-h-screen transition-colors duration-500 ${theme.bg}`}
-      style={{
-        backgroundImage: 'var(--bg-gradient)',
-        backgroundSize: '24px 24px',
-      }}
-    >
+    <>
       <Helmet>
         <title>FAQ - Vincent Dashboard</title>
       </Helmet>
 
-      <main className="flex-1 sm:px-4 flex justify-center relative overflow-hidden">
-        <div className="container mx-auto px-4 pt-8 pb-8 max-w-4xl relative z-10">
-          {/* Breadcrumbs */}
-          <div className="mb-6">
-            <button
-              onClick={() => navigate('/')}
-              className={`flex items-center gap-2 ${theme.textMuted} hover:${theme.text} transition-colors`}
-              style={fonts.heading}
-            >
-              <ArrowLeft className="w-4 h-4" />
-              <span className="text-sm font-medium">Home</span>
-            </button>
-          </div>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-2xl" style={fonts.heading}>
-                Frequently Asked Questions
-              </CardTitle>
-              <p className={`${theme.textMuted} mt-2`} style={fonts.body}>
-                Find answers to common questions about using Vincent
-              </p>
-            </CardHeader>
-            <CardContent>
-              <div className={`divide-y ${theme.cardBorder}`}>
-                {faqData.map((item, index) => (
-                  <FAQItem
-                    key={index}
-                    question={item.question}
-                    answer={item.answer}
-                    isOpen={openItems.has(index)}
-                    onToggle={() => toggleItem(index)}
-                    setExpandedImage={setExpandedImage}
-                  />
-                ))}
-              </div>
-              <div className={`mt-8 pt-6 border-t ${theme.cardBorder}`}>
-                <div className="text-center">
-                  <p className={`${theme.textMuted} mb-4`} style={fonts.body}>
-                    Ready to manage your Vincent apps?
-                  </p>
-                  <Button
-                    onClick={() => navigate('/user/apps')}
-                    className="text-white"
-                    style={{ ...fonts.heading, backgroundColor: theme.brandOrange }}
-                  >
-                    <WalletIcon className="w-4 h-4 mr-2" />
-                    Go to My Apps
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+      <div className="container mx-auto px-4 pt-8 pb-8 max-w-4xl relative z-10">
+        {/* Breadcrumbs */}
+        <div className="mb-6">
+          <button
+            onClick={() => navigate(-1)}
+            className={`flex items-center gap-2 ${theme.textMuted} hover:${theme.text} transition-colors`}
+            style={fonts.heading}
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span className="text-sm font-medium">Back</span>
+          </button>
         </div>
-      </main>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-2xl" style={fonts.heading}>
+              Frequently Asked Questions
+            </CardTitle>
+            <p className={`${theme.textMuted} mt-2`} style={fonts.body}>
+              Find answers to common questions about using Vincent
+            </p>
+          </CardHeader>
+          <CardContent>
+            <div className={`divide-y ${theme.cardBorder}`}>
+              {faqData.map((item, index) => (
+                <FAQItem
+                  key={index}
+                  question={item.question}
+                  answer={item.answer}
+                  isOpen={openItems.has(index)}
+                  onToggle={() => toggleItem(index)}
+                  setExpandedImage={setExpandedImage}
+                />
+              ))}
+            </div>
+            <div className={`mt-8 pt-6 border-t ${theme.cardBorder}`}>
+              <div className="text-center">
+                <p className={`${theme.textMuted} mb-4`} style={fonts.body}>
+                  Ready to manage your Vincent apps?
+                </p>
+                <Button
+                  onClick={() => navigate('/user/apps')}
+                  className="text-white"
+                  style={{ ...fonts.heading, backgroundColor: theme.brandOrange }}
+                >
+                  <WalletIcon className="w-4 h-4 mr-2" />
+                  Go to My Apps
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Image Modal */}
       <AnimatePresence>
@@ -355,6 +347,6 @@ export function FAQ() {
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+    </>
   );
 }

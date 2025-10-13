@@ -1,9 +1,9 @@
 import { App } from '@/types/developer-dashboard/appTypes';
 import { Logo } from '@/components/shared/ui/Logo';
 import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
-import { ExternalLink, Shield, TriangleAlert, Wallet } from 'lucide-react';
+import { ExternalLink, Shield, TriangleAlert, Wallet, ChevronDown, ChevronUp } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Breadcrumb } from '@/components/shared/ui/Breadcrumb';
 import { getAppVersionStatus } from '@/utils/user-dashboard/getAppVersionStatus';
 
@@ -19,6 +19,7 @@ export function AppPermissionDashboardHeader({
   appVersionsMap = {},
 }: AppPermissionDashboardHeaderProps) {
   const navigate = useNavigate();
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
 
   const versionStatus = useMemo(
     () =>
@@ -30,6 +31,8 @@ export function AppPermissionDashboardHeader({
       }),
     [app, permittedVersion, appVersionsMap],
   );
+
+  const isDescriptionLong = app.description && app.description.length > 200;
 
   return (
     <>
@@ -43,8 +46,8 @@ export function AppPermissionDashboardHeader({
       >
         <div className="space-y-3 sm:space-y-4 lg:space-y-6">
           {/* Top Section: App Info and Actions */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
-            <div className="flex items-center gap-3">
+          <div className="flex flex-col sm:flex-row items-start justify-between gap-3 sm:gap-4">
+            <div className="flex items-start gap-3 flex-1 min-w-0">
               <div
                 className={`p-2 sm:p-2.5 lg:p-3 rounded-xl sm:rounded-2xl ${theme.iconBg} border ${theme.iconBorder} flex-shrink-0`}
               >
@@ -54,24 +57,43 @@ export function AppPermissionDashboardHeader({
                   className="w-10 h-10 sm:w-11 sm:h-11 lg:w-12 lg:h-12"
                 />
               </div>
-              <div>
+              <div className="flex-1 min-w-0">
                 <h1
-                  className={`text-xl sm:text-xl lg:text-2xl font-bold ${theme.text}`}
+                  className={`text-xl sm:text-xl lg:text-2xl font-bold ${theme.text} break-words`}
                   style={fonts.heading}
                 >
                   {app.name}
                 </h1>
                 {app.description && (
-                  <p
-                    className={`text-xs sm:text-sm ${theme.textMuted} mt-0.5 sm:mt-1 max-w-2xl`}
-                    style={fonts.body}
-                  >
-                    {app.description}
-                  </p>
+                  <>
+                    <p
+                      className={`text-xs sm:text-sm ${theme.textMuted} mt-0.5 sm:mt-1 break-words ${!isDescriptionExpanded && isDescriptionLong ? 'line-clamp-3' : ''}`}
+                      style={{ ...fonts.body, wordBreak: 'break-word', overflowWrap: 'anywhere' }}
+                    >
+                      {app.description}
+                    </p>
+                    {isDescriptionLong && (
+                      <button
+                        onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
+                        className={`mt-1 text-xs font-medium flex items-center gap-1 ${theme.textMuted} hover:${theme.text} transition-colors duration-300`}
+                        style={fonts.heading}
+                      >
+                        {isDescriptionExpanded ? (
+                          <>
+                            Show less <ChevronUp className="w-3 h-3" />
+                          </>
+                        ) : (
+                          <>
+                            Show more <ChevronDown className="w-3 h-3" />
+                          </>
+                        )}
+                      </button>
+                    )}
+                  </>
                 )}
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-start gap-2 flex-shrink-0">
               <button
                 onClick={() => navigate(`/user/appId/${app.appId}/wallet`)}
                 className={`flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg transition-colors border ${theme.cardBorder} bg-white dark:bg-gray-950 hover:${theme.itemHoverBg}`}

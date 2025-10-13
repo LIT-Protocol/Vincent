@@ -1,8 +1,9 @@
 import { useParams } from 'react-router';
 import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
 import { AppInfoView } from '../views/AppInfoView';
-import { ExplorerAppIdSkeleton } from '../ui/ExplorerAppIdSkeleton';
+import LoadingLock from '@/components/shared/ui/LoadingLock';
 import { ExplorerErrorPage } from '../ui/ExplorerErrorPage';
+import { ExplorerNav } from '../ui/ExplorerNav';
 
 export function AppInfoWrapper() {
   const { appId } = useParams<{ appId: string }>();
@@ -36,7 +37,20 @@ export function AppInfoWrapper() {
     },
   );
 
-  if (isLoading || versionsLoading || versionAbilitysLoading) return <ExplorerAppIdSkeleton />;
+  if (isLoading || versionsLoading || versionAbilitysLoading) {
+    console.log('[AppInfoWrapper] Rendering loading state');
+    return (
+      <div className="w-full relative">
+        <ExplorerNav />
+        <div
+          className="flex items-center justify-center"
+          style={{ minHeight: 'calc(100vh - 200px)', paddingTop: '4rem' }}
+        >
+          <LoadingLock />
+        </div>
+      </div>
+    );
+  }
 
   // Handle main app loading error
   if (isError) {
