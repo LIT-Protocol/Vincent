@@ -38,15 +38,12 @@ contract AerodromeSwapFeeFacet {
 
         // swap the tokens
         amounts = IRouter(LibFeeStorage.getStorage().aerodromeRouter).swapExactTokensForTokens(
-            amountIn, amountOutMin, routes, address(this), deadline
+            amountIn, amountOutMin, routes, msg.sender, deadline
         );
 
         // add the input token to the collected fees list
         LibFeeStorage.getStorage().tokensWithCollectedFees.add(routes[0].from);
-
-        // transfer the tokens to the recipient
-        IERC20(routes[routes.length - 1].to).transfer(to, amounts[amounts.length - 1]);
-
+        
         // return the amounts just like aerodrome
         return amounts;
     }
