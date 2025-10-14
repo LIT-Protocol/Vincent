@@ -102,7 +102,7 @@ contract MorphoFeeForkTest is Test {
         console.log("d.vaultShares", d.vaultShares);
         console.log("d.vaultProvider", d.vaultProvider);
         // confirm that the user has the vault shares
-        uint256 feeContractVaultShares = morphoVault.balanceOf(address(morphoPerfFeeFacet));
+        uint256 feeContractVaultShares = morphoVault.balanceOf(address(APP_USER_ALICE));
         console.log("feeContractVaultShares", feeContractVaultShares);
         assertEq(feeContractVaultShares, d.vaultShares);
 
@@ -135,6 +135,8 @@ contract MorphoFeeForkTest is Test {
         assertEq(expectedTotalWithdrawal > depositAmount, true);
 
         vm.startPrank(APP_USER_ALICE);
+        morphoVault.approve(address(morphoPerfFeeFacet), d.vaultShares);
+        console.log("approved Morpho Vault shares to fee contract");
         morphoPerfFeeFacet.withdrawFromMorpho(address(morphoVault));
         vm.stopPrank();
 
@@ -204,7 +206,7 @@ contract MorphoFeeForkTest is Test {
         console.log("d.vaultShares", d.vaultShares);
         console.log("d.vaultProvider", d.vaultProvider);
         // confirm that the user has the vault shares
-        uint256 feeContractVaultShares = morphoVault.balanceOf(address(morphoPerfFeeFacet));
+        uint256 feeContractVaultShares = morphoVault.balanceOf(address(APP_USER_ALICE));
         console.log("feeContractVaultShares", feeContractVaultShares);
         assertEq(feeContractVaultShares, d.vaultShares);
 
@@ -219,6 +221,7 @@ contract MorphoFeeForkTest is Test {
         assertEq(expectedTotalWithdrawal < depositAmount, true);
 
         vm.startPrank(APP_USER_ALICE);
+        morphoVault.approve(address(morphoPerfFeeFacet), d.vaultShares);
         morphoPerfFeeFacet.withdrawFromMorpho(address(morphoVault));
         vm.stopPrank();
 
@@ -280,7 +283,7 @@ contract MorphoFeeForkTest is Test {
         console.log("d.vaultShares", d.vaultShares);
         console.log("d.vaultProvider", d.vaultProvider);
         // confirm that the user has the vault shares
-        uint256 feeContractVaultShares = morphoVault.balanceOf(address(morphoPerfFeeFacet));
+        uint256 feeContractVaultShares = morphoVault.balanceOf(address(APP_USER_ALICE));
         console.log("feeContractVaultShares", feeContractVaultShares);
         assertEq(feeContractVaultShares, d.vaultShares);
 
@@ -312,7 +315,7 @@ contract MorphoFeeForkTest is Test {
         console.log("d.vaultShares", d.vaultShares);
         console.log("d.vaultProvider", d.vaultProvider);
         // confirm that the user has the vault shares
-        feeContractVaultShares = morphoVault.balanceOf(address(morphoPerfFeeFacet));
+        feeContractVaultShares = morphoVault.balanceOf(address(APP_USER_ALICE));
         console.log("feeContractVaultShares", feeContractVaultShares);
         assertEq(feeContractVaultShares, d.vaultShares);
 
@@ -340,6 +343,7 @@ contract MorphoFeeForkTest is Test {
         assertEq(expectedTotalWithdrawal > depositAmount, true);
 
         vm.startPrank(APP_USER_ALICE);
+        morphoVault.approve(address(morphoPerfFeeFacet), d.vaultShares);
         morphoPerfFeeFacet.withdrawFromMorpho(address(morphoVault));
         vm.stopPrank();
 

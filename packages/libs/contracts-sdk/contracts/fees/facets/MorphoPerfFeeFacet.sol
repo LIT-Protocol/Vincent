@@ -46,7 +46,7 @@ contract MorphoPerfFeeFacet {
         asset.approve(vaultAddress, assetAmount);
 
         // send it into morpho
-        uint256 vaultShares = vault.deposit(assetAmount, address(this));
+        uint256 vaultShares = vault.deposit(assetAmount, msg.sender);
 
         // track the deposit
         LibFeeStorage.Deposit storage deposit = LibFeeStorage.getStorage().deposits[msg.sender][vaultAddress];
@@ -91,7 +91,7 @@ contract MorphoPerfFeeFacet {
 
         // perform the withdrawal with morpho
         // and send the assets to this contract
-        uint256 withdrawAssetAmount = vault.redeem(depositVaultShares, address(this), address(this));
+        uint256 withdrawAssetAmount = vault.redeem(depositVaultShares, address(this), msg.sender);
 
         uint256 performanceFeeAmount = 0;
         if (withdrawAssetAmount > depositAssetAmount) {

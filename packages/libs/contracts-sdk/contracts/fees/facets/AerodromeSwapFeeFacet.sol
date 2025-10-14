@@ -38,7 +38,7 @@ contract AerodromeSwapFeeFacet {
 
         // swap the tokens
         amounts = IRouter(LibFeeStorage.getStorage().aerodromeRouter).swapExactTokensForTokens(
-            amountIn, amountOutMin, routes, msg.sender, deadline
+            amountIn, amountOutMin, routes, to, deadline
         );
 
         // add the input token to the collected fees list
