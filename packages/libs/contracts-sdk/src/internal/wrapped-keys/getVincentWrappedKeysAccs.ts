@@ -21,7 +21,7 @@ const CHAIN_YELLOWSTONE = 'yellowstone' as const;
  *
  * @param delegatorAddress - The address of the delegator
  *
- * @returns UnifiedAccessControlConditions - Access control conditions authorizing a valid delegatee OR a platform user that is the owner of the delegator's PKP token
+ * @returns EvmContractConditions - Access control conditions authorizing a valid delegatee OR a platform user that is the owner of the delegator's PKP token
  */
 export async function getVincentWrappedKeysAccs({
   delegatorAddress,
@@ -76,8 +76,8 @@ async function getDelegateeAccessControlConditions({
 
   return {
     contractAddress: VINCENT_DIAMOND_CONTRACT_ADDRESS_PROD,
-    functionAbi,
     chain: CHAIN_YELLOWSTONE,
+    functionAbi,
     functionName: 'isDelegateePermitted',
     functionParams: [':userAddress', delegatorPkpTokenId, ':currentActionIpfsId'],
     returnValueTest: {
@@ -104,19 +104,9 @@ async function getPlatformUserAccessControlConditions({
     throw new Error('PKP NFT contract address not found for Datil network');
   }
 
-  // return {
-  //   contractAddress: pkpNftContractAddress,
-  //   standardContractType: 'ERC721',
-  //   chain: CHAIN_YELLOWSTONE,
-  //   method: 'ownerOf',
-  //   parameters: [delegatorPkpTokenId],
-  //   returnValueTest: {
-  //     comparator: '=',
-  //     value: ':userAddress',
-  //   },
-  // };
   return {
     contractAddress: pkpNftContractInfo.address,
+    chain: CHAIN_YELLOWSTONE,
     functionAbi: {
       type: 'function',
       name: 'ownerOf',
@@ -134,7 +124,6 @@ async function getPlatformUserAccessControlConditions({
       ],
       stateMutability: 'view',
     },
-    chain: CHAIN_YELLOWSTONE,
     functionName: 'ownerOf',
     functionParams: [delegatorPkpTokenId],
     returnValueTest: {

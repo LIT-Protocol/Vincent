@@ -22,7 +22,7 @@ export async function storeEncryptedKey(
     ciphertext,
     memo,
     delegatorAddress,
-    accessControlConditions,
+    evmContractConditions,
   } = params;
 
   return storePrivateKey({
@@ -33,7 +33,7 @@ export async function storeEncryptedKey(
       ciphertext,
       memo,
       delegatorAddress,
-      accessControlConditions,
+      evmContractConditions,
     },
     jwtToken,
     litNetwork: litNodeClient.config.litNetwork,

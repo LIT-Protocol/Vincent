@@ -37,7 +37,7 @@ export async function batchGeneratePrivateKeys(
   const actionResults = await batchGenerateKeysWithLitAction({
     ...params,
     litActionIpfsCid,
-    accessControlConditions: vincentWrappedKeysAccs,
+    evmContractConditions: vincentWrappedKeysAccs,
   });
 
   const keyParamsBatch = actionResults.map((keyData, index) => {
@@ -46,8 +46,7 @@ export async function batchGeneratePrivateKeys(
       ...generateEncryptedPrivateKey,
       keyType: getKeyTypeFromNetwork('solana'),
       delegatorAddress,
-      accessControlConditions:
-        actionResults[index].generateEncryptedPrivateKey.accessControlConditions,
+      evmContractConditions: actionResults[index].generateEncryptedPrivateKey.evmContractConditions,
     };
   });
 

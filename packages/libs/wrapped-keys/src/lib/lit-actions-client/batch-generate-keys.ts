@@ -1,4 +1,4 @@
-import type { AccessControlConditions } from '@lit-protocol/types';
+import type { EvmContractConditions } from '@lit-protocol/types';
 
 import type { BatchGeneratePrivateKeysParams, Network } from '../types';
 
@@ -7,11 +7,11 @@ import { postLitActionValidation } from './utils';
 /**
  * Extended parameters for batch key generation with Lit Actions
  * @extends BatchGeneratePrivateKeysParams
- * @property {AccessControlConditions} accessControlConditions - The access control conditions that will gate decryption of the generated keys
+ * @property {EvmContractConditions} evmContractConditions - The evm contract access control conditions that will gate decryption of the generated keys
  * @property {string} litActionIpfsCid - IPFS CID of the Lit Action to execute
  */
 interface BatchGeneratePrivateKeysWithLitActionParams extends BatchGeneratePrivateKeysParams {
-  accessControlConditions: AccessControlConditions;
+  evmContractConditions: EvmContractConditions;
   litActionIpfsCid: string;
 }
 
@@ -21,14 +21,14 @@ interface BatchGeneratePrivateKeysWithLitActionParams extends BatchGeneratePriva
  * @property {string} dataToEncryptHash - The hash of the encrypted data (used for decryption verification)
  * @property {string} publicKey - The public key of the generated keypair
  * @property {string} memo - User-provided descriptor for the key
- * @property {string} accessControlConditions - The access control conditions that will gate decryption of the generated key
+ * @property {string} evmContractConditions - The evm contract access control conditions that will gate decryption of the generated key
  */
 interface GeneratePrivateKeyLitActionResult {
   ciphertext: string;
   dataToEncryptHash: string;
   publicKey: string;
   memo: string;
-  accessControlConditions: string;
+  evmContractConditions: string;
 }
 
 /**
@@ -47,11 +47,11 @@ interface BatchGeneratePrivateKeysWithLitActionResult {
  * Executes a Lit Action to generate multiple encrypted private keys in batch for Vincent Agent Wallets.
  *
  * This function directly invokes the Lit Action that generates multiple Solana keypairs and encrypts
- * them with the provided access control conditions. The keys are generated inside the secure
+ * them with the provided evm contract access control conditions. The keys are generated inside the secure
  * Lit Action environment and returned encrypted, ensuring the raw private keys are never exposed.
  *
  * @param {BatchGeneratePrivateKeysWithLitActionParams} args - Parameters for batch key generation including
- *   delegatee session signatures, access control conditions, and actions specifying key generation details
+ *   delegatee session signatures, evm contract access control conditions, and actions specifying key generation details
  *
  * @returns {Promise<BatchGeneratePrivateKeysWithLitActionResult[]>} Array of results, one for each generated key,
  *   containing the encrypted private key, public key, and optional message signatures
@@ -61,13 +61,8 @@ interface BatchGeneratePrivateKeysWithLitActionResult {
 export async function batchGenerateKeysWithLitAction(
   args: BatchGeneratePrivateKeysWithLitActionParams,
 ): Promise<BatchGeneratePrivateKeysWithLitActionResult[]> {
-  const {
-    accessControlConditions,
-    litNodeClient,
-    actions,
-    delegateeSessionSigs,
-    litActionIpfsCid,
-  } = args;
+  const { evmContractConditions, litNodeClient, actions, delegateeSessionSigs, litActionIpfsCid } =
+    args;
 
   const result = await litNodeClient.executeJs({
     useSingleNode: true,
@@ -75,7 +70,7 @@ export async function batchGenerateKeysWithLitAction(
     ipfsId: litActionIpfsCid,
     jsParams: {
       actions,
-      accessControlConditions,
+      evmContractConditions,
     },
   });
 

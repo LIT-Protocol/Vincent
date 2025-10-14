@@ -27,7 +27,7 @@ export async function storeEncryptedKeyBatch(
       memo,
       dataToEncryptHash,
       ciphertext,
-      accessControlConditions,
+      evmContractConditions,
     }): Pick<
       StoredKeyData,
       | 'publicKey'
@@ -36,7 +36,7 @@ export async function storeEncryptedKeyBatch(
       | 'ciphertext'
       | 'memo'
       | 'delegatorAddress'
-      | 'accessControlConditions'
+      | 'evmContractConditions'
     > => ({
       publicKey,
       memo,
@@ -44,7 +44,7 @@ export async function storeEncryptedKeyBatch(
       ciphertext,
       keyType,
       delegatorAddress,
-      accessControlConditions,
+      evmContractConditions,
     }),
   );
 

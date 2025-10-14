@@ -18,15 +18,15 @@ declare const Lit: typeof LitNamespace;
 export async function getSolanaKeyPairFromWrappedKey({
   ciphertext,
   dataToEncryptHash,
-  accessControlConditions,
+  evmContractConditions,
 }: {
   delegatorAddress: string;
   ciphertext: string;
   dataToEncryptHash: string;
-  accessControlConditions: any[];
+  evmContractConditions: any[];
 }): Promise<Keypair> {
   const decryptedPrivateKey = await Lit.Actions.decryptAndCombine({
-    accessControlConditions,
+    accessControlConditions: evmContractConditions,
     ciphertext,
     dataToEncryptHash,
     chain: 'ethereum',

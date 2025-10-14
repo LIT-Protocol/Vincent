@@ -100,13 +100,13 @@ export interface StoredKeyMetadata {
  * @property { string } ciphertext The base64 encoded, salted & encrypted private key
  * @property { string } dataToEncryptHash SHA-256 of the ciphertext
  * @property { string } delegatorAddress The Vincent delegator wallet address associated with the key
- * @property { string } accessControlConditions The serialized access control conditions that will gate decryption of the generated key
+ * @property { string } evmContractConditions The serialized evm contract access control conditions that will gate decryption of the generated key
  */
 export interface StoredKeyData extends StoredKeyMetadata {
   ciphertext: string;
   dataToEncryptHash: string;
   delegatorAddress: string;
-  accessControlConditions: string;
+  evmContractConditions: string;
 }
 
 /** Result of storing a private key in the wrapped keys backend service
@@ -153,7 +153,7 @@ export type GetEncryptedKeyDataParams = BaseApiParams & {
  * @property { string } ciphertext The base64 encoded, salted & encrypted private key
  * @property { string } dataToEncryptHash SHA-256 of the ciphertext
  * @property { string } memo A (typically) user-provided descriptor for the encrypted private key
- * @property { string } accessControlConditions The serialized access control conditions that will gate decryption of the generated key
+ * @property { string } evmContractConditions The serialized evm contract access control conditions that will gate decryption of the generated key
  */
 export type StoreEncryptedKeyParams = BaseApiParams & {
   publicKey: string;
@@ -161,7 +161,7 @@ export type StoreEncryptedKeyParams = BaseApiParams & {
   ciphertext: string;
   dataToEncryptHash: string;
   memo: string;
-  accessControlConditions: string;
+  evmContractConditions: string;
 };
 
 /** @typedef StoreEncryptedKeyBatchParams
@@ -175,6 +175,6 @@ export type StoreEncryptedKeyBatchParams = BaseApiParams & {
     ciphertext: string;
     dataToEncryptHash: string;
     memo: string;
-    accessControlConditions: string;
+    evmContractConditions: string;
   }>;
 };

@@ -7,7 +7,7 @@ import { JWT_AUTHORIZATION_SCHEMA_PREFIX, SERVICE_URL_BY_LIT_NETWORK } from './c
 /**
  * Creates an Authorization header value for JWT token authentication.
  *
- * @param {string} jwtToken - The JWT token from Vincent delegatee authentication
+ * @param {string} jwtToken - The JWT token from Vincent delegatee or Vincent platform user authentication
  * @returns {string} Complete Authorization header value with Bearer prefix
  *
  * @internal
@@ -184,7 +184,7 @@ export function generateRequestId(): string {
  * @example
  * ```typescript
  * const result = await makeRequest<StoredKeyData>({
- *   url: 'https://wrapped.litprotocol.com/delegatee/encrypted/0x123/abc-def',
+ *   url: 'https://wrapped.litprotocol.com/delegated/encrypted/0x123/abc-def',
  *   init: { method: 'GET', headers: { ... } },
  *   requestId: 'req123'
  * });

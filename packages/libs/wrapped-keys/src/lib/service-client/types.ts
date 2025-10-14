@@ -57,7 +57,7 @@ export type SupportedNetworks = Extract<LIT_NETWORK_VALUES, 'datil'>;
  * @property {string} storedKeyMetadata.ciphertext - The base64 encoded, encrypted private key
  * @property {string} storedKeyMetadata.memo - User-provided descriptor for the key
  * @property {string} storedKeyMetadata.delegatorAddress - The Vincent delegator wallet address associated with the key
- * @property {string} storedKeyMetadata.accessControlConditions - The serialized access control conditions that will gate decryption of the generated key
+ * @property {string} storedKeyMetadata.evmContractConditions - The serialized evm contract access control conditions that will gate decryption of the generated key
  */
 export interface StoreKeyParams extends BaseApiParams {
   storedKeyMetadata: Pick<
@@ -68,7 +68,7 @@ export interface StoreKeyParams extends BaseApiParams {
     | 'ciphertext'
     | 'memo'
     | 'delegatorAddress'
-    | 'accessControlConditions'
+    | 'evmContractConditions'
   >;
 }
 
@@ -85,7 +85,7 @@ export interface StoreKeyParams extends BaseApiParams {
  * @property {string} storedKeyMetadataBatch[].ciphertext - The base64 encoded, encrypted private key
  * @property {string} storedKeyMetadataBatch[].memo - User-provided descriptor for the key
  * @property {string} storedKeyMetadataBatch[].delegatorAddress - The Vincent delegator wallet address associated with the key
- * @property {string} storedKeyMetadataBatch[].accessControlConditions - The serialized access control conditions that will gate decryption of the generated key
+ * @property {string} storedKeyMetadataBatch[].evmContractConditions - The serialized evm contract access control conditions that will gate decryption of the generated key
  */
 export interface StoreKeyBatchParams extends BaseApiParams {
   storedKeyMetadataBatch: Pick<
@@ -96,7 +96,7 @@ export interface StoreKeyBatchParams extends BaseApiParams {
     | 'ciphertext'
     | 'memo'
     | 'delegatorAddress'
-    | 'accessControlConditions'
+    | 'evmContractConditions'
   >[];
 }
 

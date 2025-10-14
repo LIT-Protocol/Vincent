@@ -30,11 +30,11 @@ export async function generatePrivateKey(
 
   const litActionIpfsCid = getLitActionCid(network, 'generateEncryptedKey');
 
-  const { ciphertext, dataToEncryptHash, publicKey, accessControlConditions } =
+  const { ciphertext, dataToEncryptHash, publicKey, evmContractConditions } =
     await generateKeyWithLitAction({
       ...params,
       litActionIpfsCid,
-      accessControlConditions: vincentWrappedKeysAccs,
+      evmContractConditions: vincentWrappedKeysAccs,
     });
 
   const { id } = await storePrivateKey({
@@ -46,7 +46,7 @@ export async function generatePrivateKey(
       dataToEncryptHash,
       memo,
       delegatorAddress,
-      accessControlConditions,
+      evmContractConditions,
     },
     litNetwork: litNodeClient.config.litNetwork,
   });
