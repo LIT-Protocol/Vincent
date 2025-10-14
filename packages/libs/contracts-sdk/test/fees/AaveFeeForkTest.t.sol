@@ -112,26 +112,27 @@ contract AaveFeeForkTest is Test {
 
         // confirm that the fee contract has the aTokens
         ERC20 aToken = ERC20(aavePool.getReserveAToken(REAL_USDC));
-        uint256 feeContractAaveTokens = aToken.balanceOf(address(aavePerfFeeFacet));
-        console.log("feeContractAaveTokens", feeContractAaveTokens);
+        uint256 userAaveTokens = aToken.balanceOf(address(APP_USER_ALICE));
+        console.log("userAaveTokens", userAaveTokens);
         // due to aave fees / rounding math, we get back 1 or 2 less aToken than we deposited.  bound the result to between 0 and 2
         uint256 differenceFromExpectedAmount =
-            (depositAmount / 10 ** erc20Decimals) - (feeContractAaveTokens / 10 ** aToken.decimals());
+            (depositAmount / 10 ** erc20Decimals) - (userAaveTokens / 10 ** aToken.decimals());
         assertGe(differenceFromExpectedAmount, 0);
         assertLe(differenceFromExpectedAmount, 2);
 
         // advance timestamp to 1 week from now to accrue interest, to simulate profit
-        // aave is rebasing so this should just be a bigger of aTokens after 1 week
+        // aave is rebasing so this should just be a bigger value of aTokens after 1 week
         vm.warp(block.timestamp + 1 weeks);
-        uint256 expectedTotalWithdrawal = aToken.balanceOf(address(aavePerfFeeFacet));
+        uint256 userAaveTokensAfter1Week = aToken.balanceOf(address(APP_USER_ALICE));
         console.log(
-            "expectedTotalWithdrawal - aka the aTokens in the fee contract after 1 week", expectedTotalWithdrawal
+            "userAaveTokensAfter1Week - aka the aTokens the user has after 1 week", userAaveTokensAfter1Week
         );
-        assertGt(expectedTotalWithdrawal, feeContractAaveTokens);
+        assertGt(userAaveTokensAfter1Week, userAaveTokens);
 
         // now, do the withdrawal
         vm.startPrank(APP_USER_ALICE);
-        aavePerfFeeFacet.withdrawFromAave(REAL_USDC);
+        aToken.approve(address(aavePerfFeeFacet), userAaveTokensAfter1Week);
+        aavePerfFeeFacet.withdrawFromAave(REAL_USDC, userAaveTokensAfter1Week);
         vm.stopPrank();
 
         // confirm the deposit is zeroed out
@@ -149,7 +150,7 @@ contract AaveFeeForkTest is Test {
         uint256 userBalance = underlyingERC20.balanceOf(APP_USER_ALICE);
         uint256 feeContractBalance = underlyingERC20.balanceOf(address(aavePerfFeeFacet));
 
-        uint256 expectedTotalProfit = expectedTotalWithdrawal - depositAmount;
+        uint256 expectedTotalProfit = userAaveTokensAfter1Week - depositAmount;
         uint256 expectedUserProfit =
             expectedTotalProfit - (expectedTotalProfit * performanceFeePercentage / BASIS_POINT_DIVISOR);
         uint256 expectedFeeContractProfit = expectedTotalProfit * performanceFeePercentage / BASIS_POINT_DIVISOR;
@@ -209,17 +210,18 @@ contract AaveFeeForkTest is Test {
 
         // confirm that the fee contract has the aTokens
         ERC20 aToken = ERC20(aavePool.getReserveAToken(REAL_USDC));
-        uint256 feeContractAaveTokens = aToken.balanceOf(address(aavePerfFeeFacet));
-        console.log("feeContractAaveTokens", feeContractAaveTokens);
+        uint256 userAaveTokens = aToken.balanceOf(address(APP_USER_ALICE));
+        console.log("userAaveTokens", userAaveTokens);
         // due to aave fees / rounding math, we get back 1 or 2 less aToken than we deposited.  bound the result to between 0 and 2
         uint256 differenceFromExpectedAmount =
-            (depositAmount / 10 ** erc20Decimals) - (feeContractAaveTokens / 10 ** aToken.decimals());
+            (depositAmount / 10 ** erc20Decimals) - (userAaveTokens / 10 ** aToken.decimals());
         assertGe(differenceFromExpectedAmount, 0);
         assertLe(differenceFromExpectedAmount, 2);
 
         // now, do the withdrawal
         vm.startPrank(APP_USER_ALICE);
-        aavePerfFeeFacet.withdrawFromAave(REAL_USDC);
+        aToken.approve(address(aavePerfFeeFacet), userAaveTokens);
+        aavePerfFeeFacet.withdrawFromAave(REAL_USDC, userAaveTokens);
         vm.stopPrank();
 
         // confirm the deposit is zeroed out
@@ -292,11 +294,11 @@ contract AaveFeeForkTest is Test {
 
         // confirm that the fee contract has the aTokens
         ERC20 aToken = ERC20(aavePool.getReserveAToken(REAL_USDC));
-        uint256 feeContractAaveTokens = aToken.balanceOf(address(aavePerfFeeFacet));
-        console.log("feeContractAaveTokens", feeContractAaveTokens);
+        uint256 userAaveTokens = aToken.balanceOf(address(APP_USER_ALICE));
+        console.log("userAaveTokens", userAaveTokens);
         // due to aave fees / rounding math, we get back 1 or 2 less aToken than we deposited.  bound the result to between 0 and 2
         uint256 differenceFromExpectedAmount =
-            (depositAmount / 10 ** erc20Decimals) - (feeContractAaveTokens / 10 ** aToken.decimals());
+            (depositAmount / 10 ** erc20Decimals) - (userAaveTokens / 10 ** aToken.decimals());
         assertGe(differenceFromExpectedAmount, 0);
         assertLe(differenceFromExpectedAmount, 2);
 
@@ -327,26 +329,27 @@ contract AaveFeeForkTest is Test {
         console.log("d.vaultProvider", d.vaultProvider);
 
         // confirm that the fee contract has the aTokens
-        feeContractAaveTokens = aToken.balanceOf(address(aavePerfFeeFacet));
-        console.log("feeContractAaveTokens", feeContractAaveTokens);
+        userAaveTokens = aToken.balanceOf(address(APP_USER_ALICE));
+        console.log("userAaveTokens", userAaveTokens);
         // due to aave fees / rounding math, we get back 1 or 2 less aToken than we deposited.  bound the result to between 0 and 2
         differenceFromExpectedAmount =
-            (depositAmount / 10 ** erc20Decimals) - (feeContractAaveTokens / 10 ** aToken.decimals());
+            (depositAmount / 10 ** erc20Decimals) - (userAaveTokens / 10 ** aToken.decimals());
         assertGe(differenceFromExpectedAmount, 0);
         assertLe(differenceFromExpectedAmount, 2);
 
         // advance timestamp to 1 week from now to accrue interest, to simulate profit
         // aave is rebasing so this should just be a bigger of aTokens after 1 week
         vm.warp(block.timestamp + 1 weeks);
-        uint256 expectedTotalWithdrawal = aToken.balanceOf(address(aavePerfFeeFacet));
+        uint256 expectedTotalWithdrawal = aToken.balanceOf(address(APP_USER_ALICE));
         console.log(
-            "expectedTotalWithdrawal - aka the aTokens in the fee contract after 1 week", expectedTotalWithdrawal
+            "expectedTotalWithdrawal - aka the aTokens in the user's account after 1 week", expectedTotalWithdrawal
         );
-        assertGt(expectedTotalWithdrawal, feeContractAaveTokens);
+        assertGt(expectedTotalWithdrawal, userAaveTokens);
 
         // now, do the withdrawal
         vm.startPrank(APP_USER_ALICE);
-        aavePerfFeeFacet.withdrawFromAave(REAL_USDC);
+        aToken.approve(address(aavePerfFeeFacet), expectedTotalWithdrawal);
+        aavePerfFeeFacet.withdrawFromAave(REAL_USDC, expectedTotalWithdrawal);
         vm.stopPrank();
 
         // confirm the deposit is zeroed out

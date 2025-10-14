@@ -17,4 +17,4 @@ LATEST_BLOCK=$(cast block-number --rpc-url "$BASE_RPC_URL")
 echo "Latest Base block number: $LATEST_BLOCK"
 
 # run the tests
-forge test --ffi -vvv --fork-url "$BASE_RPC_URL" --fork-block-number "$LATEST_BLOCK" MorphoFee
+forge test --ffi -vvv --fork-url "$BASE_RPC_URL" --fork-block-number "$LATEST_BLOCK"

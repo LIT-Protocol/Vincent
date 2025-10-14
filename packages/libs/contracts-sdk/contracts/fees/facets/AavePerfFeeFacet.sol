@@ -46,7 +46,7 @@ contract AavePerfFeeFacet {
         asset.approve(address(aave), assetAmount);
 
         // send it into aave
-        aave.supply(poolAsset, assetAmount, address(this), 0);
+        aave.supply(poolAsset, assetAmount, msg.sender, 0);
 
         // track the deposit
         LibFeeStorage.Deposit storage deposit = LibFeeStorage.getStorage().deposits[msg.sender][poolAsset];
@@ -66,7 +66,7 @@ contract AavePerfFeeFacet {
      * @notice Withdraws funds from Aave.  Only supports full withdrawals.
      * @param poolAsset the address of the pool asset to withdraw from
      */
-    function withdrawFromAave(address poolAsset) external {
+    function withdrawFromAave(address poolAsset, uint256 amount) external {
         // lookup the corresponding deposit
         LibFeeStorage.Deposit memory deposit = LibFeeStorage.getStorage().deposits[msg.sender][poolAsset];
         if (deposit.assetAmount == 0) revert DepositNotFound(msg.sender, poolAsset);
@@ -86,10 +86,14 @@ contract AavePerfFeeFacet {
         // get the aave pool contract and asset
         IPool aave = IPool(LibFeeStorage.getStorage().aavePool);
         IERC20 asset = IERC20(poolAsset);
+        IERC20 aToken = IERC20(aave.getReserveAToken(poolAsset));
+
+        // transfer the aave tokens to this contract, so we can we use them to withdraw from aave
+        aToken.transferFrom(msg.sender, address(this), amount);
+        aToken.approve(address(aave), amount);
 
         // withdraw the assets from aave into this contract
-        // set the amount to max to withdraw all assets per aave docs
-        uint256 withdrawAssetAmount = aave.withdraw(poolAsset, type(uint256).max, address(this));
+        uint256 withdrawAssetAmount = aave.withdraw(poolAsset, amount, address(this));
 
         uint256 performanceFeeAmount = 0;
         if (withdrawAssetAmount > depositAssetAmount) {
