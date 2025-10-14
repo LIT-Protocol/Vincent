@@ -77,9 +77,9 @@ contract MorphoFeeTest is Test {
         console.log("d.vaultShares", d.vaultShares);
         console.log("d.vaultProvider", d.vaultProvider);
         // confirm that the fee contract has the vault shares
-        uint256 feeContractVaultShares = mockERC4626.balanceOf(address(morphoPerfFeeFacet));
-        console.log("feeContractVaultShares", feeContractVaultShares);
-        assertEq(feeContractVaultShares, d.vaultShares);
+        uint256 userVaultShares = mockERC4626.balanceOf(address(APP_USER_ALICE));
+        console.log("userVaultShares", userVaultShares);
+        assertEq(userVaultShares, d.vaultShares);
 
         // confirm that the asset is in the userVaultOrPoolAssetAddresses set
         address[] memory userVaultOrPoolAssetAddresses = feeViewsFacet.userVaultOrPoolAssetAddresses(APP_USER_ALICE);
@@ -95,6 +95,7 @@ contract MorphoFeeTest is Test {
         assertEq(expectedTotalWithdrawal > depositAmount, true);
 
         vm.startPrank(APP_USER_ALICE);
+        mockERC4626.approve(address(morphoPerfFeeFacet), d.vaultShares);
         morphoPerfFeeFacet.withdrawFromMorpho(address(mockERC4626));
         vm.stopPrank();
 
@@ -169,9 +170,9 @@ contract MorphoFeeTest is Test {
         console.log("d.vaultShares", d.vaultShares);
         console.log("d.vaultProvider", d.vaultProvider);
         // confirm that the fee contract has the vault shares
-        uint256 feeContractVaultShares = mockERC4626.balanceOf(address(morphoPerfFeeFacet));
-        console.log("feeContractVaultShares", feeContractVaultShares);
-        assertEq(feeContractVaultShares, d.vaultShares);
+        uint256 userVaultShares = mockERC4626.balanceOf(address(APP_USER_ALICE));
+        console.log("userVaultShares", userVaultShares);
+        assertEq(userVaultShares, d.vaultShares);
 
         // confirm that the asset is in the userVaultOrPoolAssetAddresses set
         address[] memory userVaultOrPoolAssetAddresses = feeViewsFacet.userVaultOrPoolAssetAddresses(APP_USER_ALICE);
@@ -199,9 +200,9 @@ contract MorphoFeeTest is Test {
         console.log("d.vaultShares", d.vaultShares);
         console.log("d.vaultProvider", d.vaultProvider);
         // confirm that the fee contract has the vault shares
-        feeContractVaultShares = mockERC4626.balanceOf(address(morphoPerfFeeFacet));
-        console.log("feeContractVaultShares", feeContractVaultShares);
-        assertEq(feeContractVaultShares, d.vaultShares);
+        userVaultShares = mockERC4626.balanceOf(address(APP_USER_ALICE));
+        console.log("userVaultShares", userVaultShares);
+        assertEq(userVaultShares, d.vaultShares);
 
         // send more assets to the vault to create profit
         mockERC20.mint(address(mockERC4626), 100);
@@ -212,6 +213,7 @@ contract MorphoFeeTest is Test {
         assertEq(expectedTotalWithdrawal > depositAmount, true);
 
         vm.startPrank(APP_USER_ALICE);
+        mockERC4626.approve(address(morphoPerfFeeFacet), d.vaultShares);
         morphoPerfFeeFacet.withdrawFromMorpho(address(mockERC4626));
         vm.stopPrank();
 

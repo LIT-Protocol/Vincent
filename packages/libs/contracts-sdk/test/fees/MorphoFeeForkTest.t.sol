@@ -102,9 +102,9 @@ contract MorphoFeeForkTest is Test {
         console.log("d.vaultShares", d.vaultShares);
         console.log("d.vaultProvider", d.vaultProvider);
         // confirm that the user has the vault shares
-        uint256 feeContractVaultShares = morphoVault.balanceOf(address(APP_USER_ALICE));
-        console.log("feeContractVaultShares", feeContractVaultShares);
-        assertEq(feeContractVaultShares, d.vaultShares);
+        uint256 userVaultShares = morphoVault.balanceOf(address(APP_USER_ALICE));
+        console.log("userVaultShares", userVaultShares);
+        assertEq(userVaultShares, d.vaultShares);
 
         // confirm that the asset is in the userVaultOrPoolAssetAddresses set
         address[] memory userVaultOrPoolAssetAddresses = feeViewsFacet.userVaultOrPoolAssetAddresses(APP_USER_ALICE);
@@ -206,9 +206,9 @@ contract MorphoFeeForkTest is Test {
         console.log("d.vaultShares", d.vaultShares);
         console.log("d.vaultProvider", d.vaultProvider);
         // confirm that the user has the vault shares
-        uint256 feeContractVaultShares = morphoVault.balanceOf(address(APP_USER_ALICE));
-        console.log("feeContractVaultShares", feeContractVaultShares);
-        assertEq(feeContractVaultShares, d.vaultShares);
+        uint256 userVaultShares = morphoVault.balanceOf(address(APP_USER_ALICE));
+        console.log("userVaultShares", userVaultShares);
+        assertEq(userVaultShares, d.vaultShares);
 
         // confirm that the asset is in the userVaultOrPoolAssetAddresses set
         address[] memory userVaultOrPoolAssetAddresses = feeViewsFacet.userVaultOrPoolAssetAddresses(APP_USER_ALICE);
@@ -283,9 +283,9 @@ contract MorphoFeeForkTest is Test {
         console.log("d.vaultShares", d.vaultShares);
         console.log("d.vaultProvider", d.vaultProvider);
         // confirm that the user has the vault shares
-        uint256 feeContractVaultShares = morphoVault.balanceOf(address(APP_USER_ALICE));
-        console.log("feeContractVaultShares", feeContractVaultShares);
-        assertEq(feeContractVaultShares, d.vaultShares);
+        uint256 userVaultShares = morphoVault.balanceOf(address(APP_USER_ALICE));
+        console.log("userVaultShares", userVaultShares);
+        assertEq(userVaultShares, d.vaultShares);
 
         // confirm that the asset is in the userVaultOrPoolAssetAddresses set
         address[] memory userVaultOrPoolAssetAddresses = feeViewsFacet.userVaultOrPoolAssetAddresses(APP_USER_ALICE);
@@ -315,9 +315,9 @@ contract MorphoFeeForkTest is Test {
         console.log("d.vaultShares", d.vaultShares);
         console.log("d.vaultProvider", d.vaultProvider);
         // confirm that the user has the vault shares
-        feeContractVaultShares = morphoVault.balanceOf(address(APP_USER_ALICE));
-        console.log("feeContractVaultShares", feeContractVaultShares);
-        assertEq(feeContractVaultShares, d.vaultShares);
+        userVaultShares = morphoVault.balanceOf(address(APP_USER_ALICE));
+        console.log("userVaultShares", userVaultShares);
+        assertEq(userVaultShares, d.vaultShares);
 
         // find the underlying morpho market and advance timestamp to 1 week from now to accrue interest, to simulate profit
         uint256 withdrawalQueueLength = morphoVault.withdrawQueueLength();
