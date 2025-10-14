@@ -10,9 +10,9 @@ export const abilityParamsSchema = z.object({
     .describe(
       'The base64 encoded serialized Solana transaction to be evaluated and signed (transaction type is auto-detected)',
     ),
-  accessControlConditions: z
+  evmContractConditions: z
     .any()
-    .describe('The access control conditions for the Wrapped Key')
+    .describe('The evm contract access control conditions for the Wrapped Key')
     .optional(),
   ciphertext: z
     .string()

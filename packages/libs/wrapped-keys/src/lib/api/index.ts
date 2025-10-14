@@ -5,3 +5,4 @@ export { getEncryptedKey } from './get-encrypted-key';
 export { storeEncryptedKey } from './store-encrypted-key';
 export { storeEncryptedKeyBatch } from './store-encrypted-key-batch';
 export { getKeyTypeFromNetwork } from './utils';
+export { decryptVincentWrappedKey } from './decrypt-wrapped-key';

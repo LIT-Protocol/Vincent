@@ -1,11 +1,7 @@
 import { formatEther } from 'viem';
 import { bundledVincentAbility as solTransactionSignerBundledAbility } from '@lit-protocol/vincent-ability-sol-transaction-signer';
-import { constants } from '@lit-protocol/vincent-wrapped-keys';
-import {
-  LitAccessControlConditionResource,
-  createSiweMessage,
-  generateAuthSig,
-} from '@lit-protocol/auth-helpers';
+import { constants, api } from '@lit-protocol/vincent-wrapped-keys';
+const { decryptVincentWrappedKey } = api;
 
 const { LIT_PREFIX } = constants;
 
@@ -43,7 +39,7 @@ import * as util from 'node:util';
 import { privateKeyToAccount } from 'viem/accounts';
 
 import { checkShouldMintCapacityCredit } from '../helpers/check-mint-capcity-credit';
-import { LIT_ABILITY, LIT_NETWORK } from '@lit-protocol/constants';
+import { LIT_NETWORK } from '@lit-protocol/constants';
 import { fundIfNeeded } from './helpers/fundIfNeeded';
 import { submitAndVerifyTransaction } from './helpers/submitAndVerifyTx';
 import { createSolanaTransferTransaction } from './helpers/createSolTransferTx';
@@ -261,7 +257,7 @@ describe('Solana Transaction Signer Ability E2E Tests', () => {
         {
           cluster: SOLANA_CLUSTER,
           serializedTransaction: SERIALIZED_TRANSACTION,
-          accessControlConditions: VINCENT_WRAPPED_KEYS_ACC_CONDITIONS,
+          evmContractConditions: VINCENT_WRAPPED_KEYS_ACC_CONDITIONS,
           ciphertext: CIPHERTEXT,
           dataToEncryptHash: DATA_TO_ENCRYPT_HASH,
         },
@@ -306,7 +302,7 @@ describe('Solana Transaction Signer Ability E2E Tests', () => {
         {
           cluster: SOLANA_CLUSTER,
           serializedTransaction,
-          accessControlConditions: VINCENT_WRAPPED_KEYS_ACC_CONDITIONS,
+          evmContractConditions: VINCENT_WRAPPED_KEYS_ACC_CONDITIONS,
           ciphertext: CIPHERTEXT,
           dataToEncryptHash: DATA_TO_ENCRYPT_HASH,
           legacyTransactionOptions: {
@@ -356,7 +352,7 @@ describe('Solana Transaction Signer Ability E2E Tests', () => {
         {
           cluster: SOLANA_CLUSTER,
           serializedTransaction,
-          accessControlConditions: VINCENT_WRAPPED_KEYS_ACC_CONDITIONS,
+          evmContractConditions: VINCENT_WRAPPED_KEYS_ACC_CONDITIONS,
           ciphertext: CIPHERTEXT,
           dataToEncryptHash: DATA_TO_ENCRYPT_HASH,
           legacyTransactionOptions: {
@@ -416,7 +412,7 @@ describe('Solana Transaction Signer Ability E2E Tests', () => {
         {
           cluster: SOLANA_CLUSTER,
           serializedTransaction: VERSIONED_SERIALIZED_TRANSACTION,
-          accessControlConditions: VINCENT_WRAPPED_KEYS_ACC_CONDITIONS,
+          evmContractConditions: VINCENT_WRAPPED_KEYS_ACC_CONDITIONS,
           ciphertext: CIPHERTEXT,
           dataToEncryptHash: DATA_TO_ENCRYPT_HASH,
         },
@@ -458,65 +454,26 @@ describe('Solana Transaction Signer Ability E2E Tests', () => {
         delegateeAddresses: [platformUserEthersWallet.address],
       });
 
-      const platformUserSessionSigs = await LIT_NODE_CLIENT.getSessionSigs({
-        chain: 'ethereum',
-        expiration: new Date(Date.now() + 1000 * 60 * 10).toISOString(), // 10 minutes
-        capabilityAuthSigs: [capacityDelegationAuthSig],
-        resourceAbilityRequests: [
-          {
-            resource: new LitAccessControlConditionResource('*'),
-            ability: LIT_ABILITY.AccessControlConditionDecryption,
-          },
-        ],
-        authNeededCallback: async ({ uri, expiration, resourceAbilityRequests }) => {
-          const toSign = await createSiweMessage({
-            uri,
-            expiration,
-            resources: resourceAbilityRequests,
-            walletAddress: await platformUserEthersWallet.getAddress(),
-            nonce: await LIT_NODE_CLIENT.getLatestBlockhash(),
-            litNodeClient: LIT_NODE_CLIENT,
-          });
-
-          return await generateAuthSig({
-            signer: platformUserEthersWallet,
-            toSign,
-          });
-        },
-      });
-
-      // const decryptedData = await decryptFromJson({
-      //   sessionSigs: platformUserSessionSigs,
-      //   litNodeClient: LIT_NODE_CLIENT,
-      //   parsedJsonData: {
-      //     ciphertext: CIPHERTEXT,
-      //     dataToEncryptHash: DATA_TO_ENCRYPT_HASH,
-      //     evmContractConditions: VINCENT_WRAPPED_KEYS_ACC_CONDITIONS,
-      //     chain: "ethereum",
-      //     dataType: "string",
-      //   }
-      // });
-
-      const { decryptedData } = await LIT_NODE_CLIENT.decrypt({
-        sessionSigs: platformUserSessionSigs,
+      const decryptedKey = await decryptVincentWrappedKey({
+        ethersSigner: platformUserEthersWallet,
         ciphertext: CIPHERTEXT,
         dataToEncryptHash: DATA_TO_ENCRYPT_HASH,
-        evmContractConditions: VINCENT_WRAPPED_KEYS_ACC_CONDITIONS,
-        chain: 'ethereum',
+        // The Wrapped Keys Service should return the evmContractConditions as a string,
+        // so we're mocking the evmContractConditions as a string
+        evmContractConditions: JSON.stringify(VINCENT_WRAPPED_KEYS_ACC_CONDITIONS),
+        capacityDelegationAuthSig,
       });
 
-      console.log('decryptedData', decryptedData);
+      console.log('decryptedKey', decryptedKey);
 
-      expect(decryptedData).toBeDefined();
+      expect(decryptedKey).toBeDefined();
 
       // Decode the decrypted data to string and strip LIT_PREFIX
-      const decryptedString = new TextDecoder().decode(decryptedData);
-      const secretKeyHex = decryptedString.replace(LIT_PREFIX, '');
-      const secretKeyBytes = Buffer.from(secretKeyHex, 'hex');
+      const decryptedKeyBytes = Buffer.from(decryptedKey, 'hex');
 
       // Convert both to Base58 and compare
       const expectedBase58 = ethers.utils.base58.encode(TEST_SOLANA_KEYPAIR.secretKey);
-      const actualBase58 = ethers.utils.base58.encode(secretKeyBytes);
+      const actualBase58 = ethers.utils.base58.encode(decryptedKeyBytes);
 
       expect(actualBase58).toBe(expectedBase58);
     });

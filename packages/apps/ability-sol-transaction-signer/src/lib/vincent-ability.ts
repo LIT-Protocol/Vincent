@@ -73,16 +73,16 @@ export const vincentAbility = createVincentAbility({
     const {
       serializedTransaction,
       cluster,
-      accessControlConditions,
+      evmContractConditions,
       ciphertext,
       dataToEncryptHash,
       legacyTransactionOptions,
     } = abilityParams;
     const { ethAddress } = delegatorPkpInfo;
 
-    if (!accessControlConditions) {
+    if (!evmContractConditions) {
       return fail({
-        error: `[@lit-protocol/vincent-ability-sol-transaction-signer] accessControlConditions not provided`,
+        error: `[@lit-protocol/vincent-ability-sol-transaction-signer] evmContractConditions not provided`,
       });
     }
 
@@ -99,8 +99,8 @@ export const vincentAbility = createVincentAbility({
     }
 
     console.log(
-      '[@lit-protocol/vincent-ability-sol-transaction-signer] accessControlConditions',
-      accessControlConditions,
+      '[@lit-protocol/vincent-ability-sol-transaction-signer] evmContractConditions',
+      evmContractConditions,
     );
 
     try {
@@ -108,7 +108,7 @@ export const vincentAbility = createVincentAbility({
         delegatorAddress: ethAddress,
         ciphertext,
         dataToEncryptHash,
-        accessControlConditions,
+        evmContractConditions,
       });
 
       const transaction = deserializeTransaction(serializedTransaction);
