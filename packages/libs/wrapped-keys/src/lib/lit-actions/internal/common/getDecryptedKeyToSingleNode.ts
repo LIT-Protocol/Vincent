@@ -6,20 +6,20 @@ import { removeSaltFromDecryptedKey } from '../../utils';
 declare const Lit: typeof LitNamespace;
 
 interface TryDecryptToSingleNodeParams {
-  accessControlConditions: string;
+  evmContractConditions: string;
   ciphertext: string;
   dataToEncryptHash: string;
 }
 
 async function tryDecryptToSingleNode({
-  accessControlConditions,
+  evmContractConditions,
   ciphertext,
   dataToEncryptHash,
 }: TryDecryptToSingleNodeParams): Promise<string | undefined> {
   try {
     // May be undefined, since we're using `decryptToSingleNode`
     return await Lit.Actions.decryptToSingleNode({
-      accessControlConditions,
+      accessControlConditions: evmContractConditions,
       ciphertext,
       dataToEncryptHash,
       chain: 'ethereum',
@@ -31,18 +31,18 @@ async function tryDecryptToSingleNode({
 }
 
 interface GetDecryptedKeyToSingleNodeParams {
-  accessControlConditions: string; // Define a more specific type if possible
+  evmContractConditions: string; // Define a more specific type if possible
   ciphertext: string; // Define a more specific type if possible
   dataToEncryptHash: string; // Define a more specific type if possible
 }
 
 export async function getDecryptedKeyToSingleNode({
-  accessControlConditions,
+  evmContractConditions,
   ciphertext,
   dataToEncryptHash,
 }: GetDecryptedKeyToSingleNodeParams): Promise<string> {
   const decryptedPrivateKey = await tryDecryptToSingleNode({
-    accessControlConditions,
+    evmContractConditions,
     ciphertext,
     dataToEncryptHash,
   });

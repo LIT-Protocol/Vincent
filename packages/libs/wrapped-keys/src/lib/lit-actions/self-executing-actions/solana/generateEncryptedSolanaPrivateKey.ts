@@ -4,11 +4,11 @@ import { litActionHandler } from '../../litActionHandler';
 import { generateEncryptedSolanaPrivateKey } from '../../raw-action-functions/solana/generateEncryptedSolanaPrivateKey';
 
 // Using local declarations to avoid _every file_ thinking these are always in scope
-declare const accessControlConditions: GenerateEncryptedSolanaPrivateKeyParams['accessControlConditions'];
+declare const evmContractConditions: GenerateEncryptedSolanaPrivateKeyParams['evmContractConditions'];
 
 (async () =>
   litActionHandler(async () =>
     generateEncryptedSolanaPrivateKey({
-      accessControlConditions,
+      evmContractConditions,
     }),
   ))();
