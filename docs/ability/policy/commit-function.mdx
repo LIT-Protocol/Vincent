@@ -1,0 +1,191 @@
+---
+title: Policy Commit Function
+---
+
+The commit function updates your Policy's state after successful Ability execution. This is crucial for maintaining accurate tracking of limits, counters, and other stateful information.
+
+<Warning>
+If your Policy is stateful (tracks spending, counts executions, etc.), you MUST implement a commit function. Without it, your Policy will make incorrect decisions in future executions.
+</Warning>
+
+## Function Parameters
+
+The commit function receives two parameters:
+
+<ParamField path="params" type="object" required>
+  Object adhering to the `commitParamsSchema` you have defined for your policy. This should include the specific parameters that your policy needs to update the state your policy depends on for its validation checks.
+</ParamField>
+
+<Note>
+Notice that unlike the precheck and evaluate functions, the commit function does not receive the `abilityParams` and `userParams` arguments. If you need access to any of those variables, make sure to include them in the `commitParamsSchema` you have defined for your policy.
+</Note>
+
+<ParamField path="policyContext" type="object" required>
+  Context object provided by the SDK with helpers and metadata
+  <Expandable title="properties">
+    <ParamField path="abilityIpfsCid" type="string">
+      The IPFS CID of the Vincent Ability that was executed
+    </ParamField>
+    <ParamField path="appId" type="number">
+      The ID of the Vincent App the Vincent Ability was executed for
+    </ParamField>
+    <ParamField path="appVersion" type="number">
+      The version of the Vincent App the Vincent Ability was executed for
+    </ParamField>
+    <ParamField path="delegation" type="object">
+      Information about the execution delegation
+      <Expandable title="properties">
+        <ParamField path="delegateeAddress" type="string">
+          The Ethereum address of the Vincent Ability executor
+        </ParamField>
+        <ParamField path="delegatorPkpInfo" type="object">
+          User's Vincent Wallet information
+          <Expandable title="properties">
+            <ParamField path="tokenId" type="string">
+              The token ID of the Vincent App User's Vincent Wallet
+            </ParamField>
+            <ParamField path="ethAddress" type="string">
+              The Ethereum address of the App User's Vincent Wallet
+            </ParamField>
+            <ParamField path="publicKey" type="string">
+              The public key of the App User's Vincent Wallet
+            </ParamField>
+          </Expandable>
+        </ParamField>
+      </Expandable>
+    </ParamField>
+    <ParamField path="allow" type="function">
+      Helper method for returning an allow result from your policy's commit function
+    </ParamField>
+    <ParamField path="deny" type="function">
+      Helper method for returning a deny result from your policy's commit function
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+## Response Schemas
+
+### Allow Response
+
+<ParamField path="commitAllowResultSchema" type="ZodSchema" required>
+  A Zod schema that defines the structure of successful commit results. Include details about what state was updated, such as new spending totals or execution counts.
+</ParamField>
+
+### Deny Response
+
+<ParamField path="commitDenyResultSchema" type="ZodSchema" required>
+  A Zod schema that defines the structure of failed commit results. Include details about why the commit failed and what data was being updated.
+</ParamField>
+
+<Tabs>
+  <Tab title="Allow Schema">
+    ```typescript
+    import { createVincentPolicy } from '@lit-protocol/vincent-ability-sdk';
+    import { z } from 'zod';
+
+    const vincentPolicy = createVincentPolicy({
+      // ... other policy definitions
+
+      commitAllowResultSchema: z.object({
+        updatedDailySpending: z.number(),
+        remainingDailyLimit: z.number(),
+      }),
+    });
+    ```
+  </Tab>
+  <Tab title="Deny Schema">
+    ```typescript
+    import { createVincentPolicy } from '@lit-protocol/vincent-ability-sdk';
+    import { z } from 'zod';
+
+    const vincentPolicy = createVincentPolicy({
+      // ... other policy definitions
+
+      commitDenyResultSchema: z.object({
+        reason: z.string(),
+        vincentAppId: z.number(),
+        spenderAddress: z.string(),
+        spentAmount: z.number(),
+        spentTokenAddress: z.string(),
+      }),
+    });
+    ```
+  </Tab>
+</Tabs>
+
+<Note>
+If any unhandled error occurs during commit, the Vincent Ability SDK automatically returns a deny result with the error message.
+</Note>
+
+## Example Implementation
+
+```typescript
+import { createVincentPolicy } from '@lit-protocol/vincent-ability-sdk';
+import { z } from 'zod';
+
+const vincentPolicy = createVincentPolicy({
+  // ... other policy definitions
+
+  commitParamsSchema: z.object({
+    spentAmount: z.number(),
+    tokenAddress: z.string(),
+  }),
+
+  commitAllowResultSchema: z.object({
+    updatedDailySpending: z.number(),
+    remainingDailyLimit: z.number(),
+  }),
+
+  commitDenyResultSchema: z.object({
+    reason: z.string(),
+    vincentAppId: z.number(),
+    spenderAddress: z.string(),
+    spentAmount: z.number(),
+    spentTokenAddress: z.string(),
+  }),
+
+  commit: async (params, policyContext) => {
+    const { spentAmount, tokenAddress } = params;
+
+    try {
+      const { updatedDailySpending, remainingDailyLimit } = await updateSpentAmount({
+        vincentAppId: policyContext.appId,
+        spenderAddress: policyContext.delegation.delegatorPkpInfo.ethAddress,
+        spentAmount,
+        spentTokenAddress: tokenAddress,
+      });
+
+      return policyContext.allow({
+        updatedDailySpending,
+        remainingDailyLimit,
+      });
+    } catch (error) {
+      return policyContext.deny({
+        reason: 'Failed to update spending limit',
+        vincentAppId: policyContext.appId,
+        spenderAddress: policyContext.delegation.delegatorPkpInfo.ethAddress,
+        spentAmount,
+        spentTokenAddress: tokenAddress,
+      });
+    }
+  },
+});
+```
+
+## Best Practices
+
+1. **Always Implement for Stateful Policies** - Any Policy that tracks limits, counts, or cumulative data needs a commit function
+2. **Handle Partial Failures** - Design for scenarios where some updates succeed and others fail
+3. **Use Transactions** - Ensure atomicity when updating multiple records or contracts
+4. **Log State Changes** - Maintain audit trails of all policy state modifications
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Publishing Policies" icon="upload" href="/ability/policy/publishing">
+    Publish your Policy for use in Vincent Apps
+  </Card>
+  <Card title="Policy Quick Start" icon="rocket" href="/ability/policy/quickstart">
+    Build your first Policy from scratch
+  </Card>
+</CardGroup>

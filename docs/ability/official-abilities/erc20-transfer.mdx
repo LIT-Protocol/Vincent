@@ -1,0 +1,327 @@
+---
+title: ERC20 Transfer
+---
+
+The ERC20 Transfer Ability enables Vincent Apps to send ERC20 tokens on behalf of Vincent Users
+using their Vincent Wallet (PKP). It performs thorough prechecks, enforces policy constraints, and
+executes transfers securely inside Lit Actions.
+
+## Key Features
+
+- Secure transaction signing with Vincent Wallets (PKP)
+- Automatic token decimals detection from the token contract
+- Balance checks for both native gas and token amounts
+- Policy integration (e.g., send-counter rate limiting)
+- Clear success and error result schemas
+
+## How It Works
+
+The ERC20 Transfer Ability is built using the Vincent Ability SDK and operates in two phases:
+
+<Steps>
+  <Step title="Precheck Phase">
+    Validates recipient address, token address, and amount:
+
+    - Validates recipient address, token address, and amount
+    - Requires a valid `rpcUrl` to connect to the network
+    - Reads token `decimals` from the contract and parses the amount accordingly
+    - Checks the Vincent Wallet token balance and estimates transfer gas, then verifies native balance is sufficient
+  </Step>
+
+  <Step title="Execution Phase">
+    Executes the ERC20 transfer transaction:
+
+    - Uses the provided `chain` name to obtain an RPC via `Lit.Actions.getRpcUrl({ chain })`
+    - Reads token `decimals` and parses the amount to smallest units
+    - Commits allowed policies (e.g., rate-limiting) before the transfer
+    - Calls `transfer(to, amount)` on the ERC-20 contract via `laUtils` and returns the `txHash`
+  </Step>
+</Steps>
+
+## Getting Started
+
+Depending on your role in the Vincent Ecosystem, you'll be interacting with this Ability in different ways. Click on the link below that matches your role to see how to get started:
+
+- **Vincent App Developers**: If you're building a Vincent App that needs to transfer ERC20 tokens, go [here](#adding-the-ability-to-your-vincent-app).
+- **Vincent App Delegatees**: If you're executing this ability on behalf of Vincent App Users, go [here](#executing-the-ability-as-a-vincent-app-delegatee).
+
+## Adding the Ability to your Vincent App
+
+If you want to enable your App Delegatees to transfer ERC20 tokens on behalf of your Vincent App Users, you can add this Ability to your App.
+
+Adding Abilities to your Vincent App is done using the [Vincent App Dashboard](https://dashboard.heyvincent.ai/). Visit the [Create Vincent App](/app/quickstart) guide to learn more about how to add Abilities to your App during creation, or check out the [Updating Your App](/app/updating-apps) guide to learn how to add Abilities to an existing App.
+
+## Executing the Ability as a Vincent App Delegatee
+
+Before executing ERC20 transfer operations, the following conditions must be met. You can use the Ability's `precheck` function to check if these conditions are met, or you can check them manually.
+
+- **Gas Balance**: The Vincent App User's Vincent Wallet must have sufficient native tokens (ETH, MATIC, etc.) to pay for the transfer transaction gas fees.
+
+- **Token Balance**: The Vincent App User's Vincent Wallet must have sufficient balance of the ERC20 token to cover the transfer amount.
+
+- **Valid Addresses**: The recipient address and token contract address must be valid Ethereum addresses.
+
+<Info>
+To learn more about executing Vincent Abilities, see the [Executing Abilities](/ability/explaining-abilities) guide.
+</Info>
+
+### Executing the `precheck` Function
+
+This Ability's `precheck` function validates all prerequisites for executing an ERC20 token transfer and provides detailed validation information.
+
+<Tabs>
+  <Tab title="Parameters">
+    Before executing the `precheck` function, you'll need to provide the following parameters for the ERC20 transfer operation:
+
+    ```typescript
+    {
+      /** RPC URL used for precheck validations */
+      rpcUrl: string;
+      /** Chain name used during execute (e.g., 'base', 'ethereum', 'polygon') */
+      chain: string;
+      /** Recipient address */
+      to: string;
+      /** ERC-20 token contract address */
+      tokenAddress: string;
+      /** Amount in human-readable string (e.g., "1.23") */
+      amount: string;
+    }
+    ```
+
+    **Notes:**
+    - `amount` must be a positive decimal string
+    - Token decimals are read from the token contract; you do not pass `tokenDecimals`
+  </Tab>
+
+  <Tab title="Implementation">
+    To execute `precheck`, you'll need to:
+
+    - Create an instance of the `VincentAbilityClient` using the `getVincentAbilityClient` function (imported from `@lit-protocol/vincent-app-sdk/abilityClient`)
+      - Pass in the Ability's `bundledVincentAbility` object (imported from `@lit-protocol/vincent-ability-erc20-transfer`)
+      - Pass in the `ethersSigner` you'll be using to sign the request to Lit with your Delegatee private key
+    - Prepare the required parameters to call the `precheck` function
+    - Use the `VincentAbilityClient` instance to call the `precheck` function
+
+    ```typescript
+    import { getVincentAbilityClient } from '@lit-protocol/vincent-app-sdk/abilityClient';
+    import { bundledVincentAbility } from '@lit-protocol/vincent-ability-erc20-transfer';
+
+    // Create ability client
+    const abilityClient = getVincentAbilityClient({
+      bundledVincentAbility,
+      ethersSigner: yourEthersSigner,
+    });
+
+    // Prepare parameters - Example: Transfer 10.5 USDC on Base
+    const transferParams = {
+      rpcUrl: 'https://base.llamarpc.com',
+      chain: 'base',
+      to: '0x1234...abcd',
+      tokenAddress: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', // USDC on Base
+      amount: '10.5',
+    };
+
+    const precheckResult = await abilityClient.precheck(transferParams, {
+      delegatorPkpEthAddress: '0x...', // The Vincent App User's Vincent Wallet address
+    });
+
+    if (precheckResult.success) {
+      const { addressValid, amountValid, tokenAddressValid, estimatedGas, userBalance } =
+        precheckResult.result;
+      console.log('Address valid:', addressValid);
+      console.log('Amount valid:', amountValid);
+      console.log('Token address valid:', tokenAddressValid);
+      console.log('Estimated gas:', estimatedGas);
+      console.log('User balance:', userBalance);
+    } else {
+      // Handle different types of failures
+      if (precheckResult.runtimeError) {
+        console.error('Runtime error:', precheckResult.runtimeError);
+      }
+      if (precheckResult.schemaValidationError) {
+        console.error('Schema validation error:', precheckResult.schemaValidationError);
+      }
+      if (precheckResult.result) {
+        console.error('Transfer precheck failed:', precheckResult.result.error);
+      }
+    }
+    ```
+  </Tab>
+
+  <Tab title="Response">
+    **Success Response**
+
+    A successful `precheck` response will contain detailed validation information:
+
+    ```typescript
+    {
+      /**
+       * Whether the recipient address is valid
+       */
+      addressValid: boolean;
+      /**
+       * Whether the transfer amount is valid
+       */
+      amountValid: boolean;
+      /**
+       * Whether the token contract address is valid
+       */
+      tokenAddressValid: boolean;
+      /**
+       * Estimated gas cost for the transfer
+       */
+      estimatedGas: string;
+      /**
+       * User's current token balance
+       */
+      userBalance: string;
+    }
+    ```
+
+    **Failure Response**
+
+    A failure `precheck` response will contain:
+
+    ```typescript
+    {
+      /**
+       * A string containing the error message if the precheck failed
+       */
+      error: string;
+    }
+    ```
+  </Tab>
+</Tabs>
+
+### Executing the `execute` Function
+
+This Ability's `execute` function performs the actual ERC20 token transfer.
+
+<Tabs>
+  <Tab title="Parameters">
+    The `execute` function expects the same parameters as the `precheck` function:
+
+    ```typescript
+    {
+      /** RPC URL used for precheck validations */
+      rpcUrl: string;
+      /** Chain name used during execute (e.g., 'base', 'ethereum', 'polygon') */
+      chain: string;
+      /** Recipient address */
+      to: string;
+      /** ERC-20 token contract address */
+      tokenAddress: string;
+      /** Amount in human-readable string (e.g., "1.23") */
+      amount: string;
+    }
+    ```
+  </Tab>
+
+  <Tab title="Implementation">
+    The `execute` function can be called using the same `VincentAbilityClient` instance:
+
+    ```typescript
+    const executeResult = await abilityClient.execute(transferParams, {
+      delegatorPkpEthAddress: '0x...', // The Vincent App User's Vincent Wallet address
+    });
+
+    if (executeResult.success) {
+      const { txHash, to, amount, tokenAddress, timestamp } = executeResult.result;
+
+      console.log('Transfer transaction hash:', txHash);
+      console.log('Recipient:', to);
+      console.log('Amount:', amount);
+      console.log('Token address:', tokenAddress);
+      console.log('Timestamp:', timestamp);
+    } else {
+      // Handle different types of failures
+      if (executeResult.runtimeError) {
+        console.error('Runtime error:', executeResult.runtimeError);
+      }
+      if (executeResult.schemaValidationError) {
+        console.error('Schema validation error:', executeResult.schemaValidationError);
+      }
+      if (executeResult.result) {
+        console.error('Transfer execution failed:', executeResult.result.error);
+      }
+    }
+    ```
+  </Tab>
+
+  <Tab title="Response">
+    **Success Response**
+
+    A successful `execute` response will contain:
+
+    ```typescript
+    {
+      /**
+       * The transaction hash of the executed transfer
+       */
+      txHash: string;
+      /**
+       * The recipient address
+       */
+      to: string;
+      /**
+       * The amount transferred
+       */
+      amount: string;
+      /**
+       * The token contract address
+       */
+      tokenAddress: string;
+      /**
+       * The Unix timestamp when the transfer was executed
+       */
+      timestamp: number;
+    }
+    ```
+
+    **Failure Response**
+
+    A failure `execute` response will contain:
+
+    ```typescript
+    {
+      /**
+       * A string containing the error message if the execution failed
+       */
+      error: string;
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Important Considerations
+
+<AccordionGroup>
+  <Accordion title="Gas Requirements" icon="gas-pump">
+    The Vincent Wallet must have enough native tokens to pay for gas. Precheck attempts to estimate gas and compare against the wallet's native balance.
+  </Accordion>
+
+  <Accordion title="Token Decimals" icon="calculator">
+    The ability reads `decimals` from the token contract; do not pass `tokenDecimals`.
+  </Accordion>
+
+  <Accordion title="Supported Chains" icon="link">
+    The `chain` parameter is used to obtain an RPC during execution via `Lit.Actions.getRpcUrl`. Use [supported EVM chain names](https://developer.litprotocol.com/resources/supported-chains) (e.g., `base`, `ethereum`).
+  </Accordion>
+
+  <Accordion title="Policy Integration" icon="shield">
+    The ability commits allowed policy updates before executing the transfer (e.g., send-counter rate limiting).
+  </Accordion>
+</AccordionGroup>
+
+## Error Handling
+
+<AccordionGroup>
+  <Accordion title="Common Failure Scenarios" icon="bug">
+    - **Insufficient Gas Balance**: The Vincent App User's Vincent Wallet doesn't have enough native tokens for gas fees
+    - **Insufficient Token Balance**: The Vincent App User's Vincent Wallet doesn't have enough tokens to cover the transfer amount
+    - **Invalid Addresses**: Invalid recipient address or token contract address
+    - **Invalid Amount**: Transfer amount is not a valid positive number
+    - **Network Issues**: RPC URL inaccessible or network connectivity problems
+    - **Policy Violations**: Transfer violates configured policies (e.g., rate limiting)
+  </Accordion>
+</AccordionGroup>

@@ -1,0 +1,433 @@
+---
+title: Aave
+---
+
+The Aave Ability enables Vincent Apps to interact with the Aave V3 lending protocol on behalf of Vincent Users. This allows Vincent Apps to provide comprehensive DeFi functionality including supplying assets as collateral, borrowing against collateral, repaying debt, and withdrawing assets.
+
+## Key Features
+
+- **Comprehensive DeFi Operations**: Supports all core Aave V3 operations (supply, withdraw, borrow, repay) using Vincent Wallets within a Trusted Execution Environment
+- **Multi-Chain Support**: Works across multiple networks where Aave V3 is deployed including Ethereum, Polygon, Arbitrum, Optimism, Base, and many more
+- **Intelligent Validation**: Performs comprehensive precheck validation including balance checks, allowance verification, and borrowing capacity analysis
+
+## How It Works
+
+The Aave Ability is built using the Vincent Ability SDK and operates in two phases:
+
+<Steps>
+  <Step title="Precheck Phase">
+    Validates all prerequisites for the Aave operation:
+
+    - Validates operation type, asset address, and amount format
+    - Performs all operation-specific checks, including:
+      - Ensuring sufficient token balance and allowance (for supply/repay)
+      - Verifying borrowing capacity and collateral (for borrow)
+    - Estimates gas costs for the operation
+    - Returns detailed validation results, including available markets
+  </Step>
+
+  <Step title="Execution Phase">
+    Executes the Aave protocol operation:
+
+    - Retrieves Aave contract addresses for the specified chain
+    - Constructs and signs the appropriate Aave protocol transaction
+    - Submits the transaction to the blockchain
+    - Returns transaction hash and operation details
+  </Step>
+</Steps>
+
+## Getting Started
+
+Depending on your role in the Vincent Ecosystem, you'll be interacting with this Ability in different ways. Click on the link below that matches your role to see how to get started:
+
+- **Vincent App Developers**: If you're building a Vincent App that needs to interact with Aave, go [here](#adding-the-ability-to-your-vincent-app).
+- **Vincent App Delegatees**: If you're executing this ability on behalf of Vincent App Users, go [here](#executing-the-ability-as-a-vincent-app-delegatee).
+
+## Adding the Ability to your Vincent App
+
+If you want to enable your App Delegatees to perform Aave operations on behalf of your Vincent App Users, you can add this Ability to your App.
+
+Adding Abilities to your Vincent App is done using the [Vincent App Dashboard](https://dashboard.heyvincent.ai/). Visit the [Create Vincent App](/app/quickstart) guide to learn more about how to add Abilities to your App during creation, or check out the [Updating Your App](/app/updating-apps) guide to learn how to add Abilities to an existing App.
+
+## Executing the Ability as a Vincent App Delegatee
+
+Before executing Aave operations, the following conditions must be met. You can use the Ability's `precheck` function to check if these conditions are met, or you can check them manually.
+
+- **Native Token Balance for Gas Fees**: The Vincent App User's Vincent Wallet must have enough native tokens (ETH, MATIC, etc.) to cover the transaction gas fees for the Aave operation.
+
+- **ERC20 Token Approval**: For supply and repay operations, the Vincent App User's Vincent Wallet must have approved the Aave Pool contract to spend the tokens.
+
+<Info>
+To learn more about executing Vincent Abilities, see the [Executing Abilities](/ability/explaining-abilities) guide.
+</Info>
+
+<Note>
+If your Vincent App has enabled the [ERC20 Approval Ability](./erc20-approval), you can use it to handle submitting the approval transaction using the Vincent Wallet.
+</Note>
+
+### Operation-Specific Requirements
+
+Each Aave operation has specific validation requirements that are checked during the precheck phase:
+
+<Tabs>
+  <Tab title="Supply">
+    **Requirements for Supply Operation:**
+
+    - Vincent Wallet must have sufficient token balance to cover the supply amount
+    - Aave Pool contract must be approved to spend the required token amount
+    - Both balance and allowance must be greater than or equal to the supply amount
+  </Tab>
+
+  <Tab title="Withdraw">
+    **Requirements for Withdraw Operation:**
+
+    - The Vincent App User's Vincent Wallet must have collateral deposited in the Aave protocol
+    - The withdrawal must not compromise the account's health factor
+    - Sufficient `aToken` balance (Aave deposit receipts) to cover the withdrawal
+  </Tab>
+
+  <Tab title="Borrow">
+    **Requirements for Borrow Operation:**
+
+    - The Vincent App User's Vincent Wallet must have sufficient borrowing capacity based on deposited collateral
+    - Interest rate mode must be specified (`1` for Stable Rate, `2` for Variable Rate)
+    - The borrow amount must not exceed available borrowing capacity
+  </Tab>
+
+  <Tab title="Repay">
+    **Requirements for Repay Operation:**
+
+    - The Vincent App User's Vincent Wallet must have sufficient token balance to cover the repayment amount
+    - Aave Pool contract must be approved to spend the repayment tokens
+    - Outstanding debt must exist for the specified asset and interest rate mode
+  </Tab>
+</Tabs>
+
+### Executing the `precheck` Function
+
+This Ability's `precheck` function validates all prerequisites for executing the specified Aave operation and provides detailed account information.
+
+<Tabs>
+  <Tab title="Parameters">
+    Before executing the `precheck` function, you'll need to provide the following parameters for the Aave operation:
+
+    ```typescript
+    {
+      /**
+       * The AAVE operation to perform (supply, withdraw, borrow, repay)
+       */
+      operation: 'supply' | 'withdraw' | 'borrow' | 'repay';
+      /**
+       * The token contract address for the operation
+       */
+      asset: string;
+      /**
+       * The amount of tokens to use in the operation, as a string
+       */
+      amount: string;
+      /**
+       * The blockchain network to perform the operation on
+       */
+      chain: string;
+      /**
+       * Interest rate mode: 1 for Stable, 2 for Variable
+       * (required for borrow operations, optional for repay)
+       */
+      interestRateMode?: 1 | 2;
+      /**
+       * Custom RPC URL (optional, uses default if not provided)
+       */
+      rpcUrl?: string;
+    }
+    ```
+  </Tab>
+
+  <Tab title="Implementation">
+    To execute `precheck`, you'll need to:
+
+    - Create an instance of the `VincentAbilityClient` using the `getVincentAbilityClient` function (imported from `@lit-protocol/vincent-app-sdk/abilityClient`)
+      - Pass in the Ability's `bundledVincentAbility` object (imported from `@lit-protocol/vincent-ability-aave`)
+      - Pass in the `ethersSigner` you'll be using to sign the request to Lit with your Delegatee private key
+    - Prepare the required parameters to call the `precheck` function
+    - Use the `VincentAbilityClient` instance to call the `precheck` function
+
+    ```typescript
+    import { getVincentAbilityClient } from '@lit-protocol/vincent-app-sdk/abilityClient';
+    import { bundledVincentAbility } from '@lit-protocol/vincent-ability-aave';
+
+    // Create ability client
+    const abilityClient = getVincentAbilityClient({
+      bundledVincentAbility: bundledVincentAbility,
+      ethersSigner: yourEthersSigner,
+    });
+
+    // Example: Supply WETH as collateral on Sepolia
+    const aaveParams = {
+      operation: 'supply' as const,
+      asset: '0xC558DBdd856501FCd9aaF1E62eae57A9F0629a3c', // WETH on Sepolia
+      amount: '0.01', // 0.01 WETH
+      chain: 'sepolia',
+      rpcUrl: 'https://eth-sepolia.g.alchemy.com/v2/YOUR_KEY', // Optional for precheck
+    };
+
+    const precheckResult = await abilityClient.precheck(aaveParams, {
+      delegatorPkpEthAddress: '0x...', // The Vincent App User's Vincent Wallet address
+    });
+
+    if (precheckResult.success) {
+      const result = precheckResult.result;
+      console.log('Operation valid:', result.operationValid);
+      console.log('User balance:', result.userBalance);
+      console.log('Current allowance:', result.allowance);
+      console.log('Borrow capacity:', result.borrowCapacity);
+      console.log('Estimated gas:', result.estimatedGas);
+    } else {
+      // Handle different types of failures
+      if (precheckResult.runtimeError) {
+        console.error('Runtime error:', precheckResult.runtimeError);
+      }
+      if (precheckResult.schemaValidationError) {
+        console.error('Schema validation error:', precheckResult.schemaValidationError);
+      }
+      if (precheckResult.result) {
+        console.error('Aave precheck failed:', precheckResult.result.error);
+      }
+    }
+    ```
+  </Tab>
+
+  <Tab title="Response">
+    **Success Response**
+
+    A successful `precheck` response will contain detailed validation information:
+
+    ```typescript
+    {
+      /**
+       * Whether the requested operation is valid
+       */
+      operationValid: boolean;
+      /**
+       * Whether the specified asset is valid for the operation
+       */
+      assetValid: boolean;
+      /**
+       * Whether the specified amount is valid
+       */
+      amountValid: boolean;
+      /**
+       * The user's current balance of the specified asset
+       */
+      userBalance?: string;
+      /**
+       * The current allowance approved for the AAVE contract
+       */
+      allowance?: string;
+      /**
+       * The user's current borrow capacity in USD
+       */
+      borrowCapacity?: string;
+      /**
+       * Estimated gas cost for the operation
+       */
+      estimatedGas?: number;
+      /**
+       * Available markets and their addresses
+       */
+      availableMarkets?: Record<string, string>;
+      /**
+       * List of supported blockchain networks
+       */
+      supportedChains?: string[];
+    }
+    ```
+
+    **Failure Response**
+
+    A failure `precheck` response will contain:
+
+    ```typescript
+    {
+      /**
+       * A string containing the error message if the precheck failed
+       */
+      error: string;
+    }
+    ```
+  </Tab>
+</Tabs>
+
+### Executing the `execute` Function
+
+This Ability's `execute` function performs the actual Aave protocol operation.
+
+<Tabs>
+  <Tab title="Parameters">
+    The `execute` function expects the same parameters as the `precheck` function (except `rpcUrl` which is not allowed):
+
+    ```typescript
+    {
+      /**
+       * The AAVE operation to perform (supply, withdraw, borrow, repay)
+       */
+      operation: 'supply' | 'withdraw' | 'borrow' | 'repay';
+      /**
+       * The token contract address for the operation
+       */
+      asset: string;
+      /**
+       * The amount of tokens to use in the operation, as a string
+       */
+      amount: string;
+      /**
+       * The blockchain network to perform the operation on
+       */
+      chain: string;
+      /**
+       * Interest rate mode: 1 for Stable, 2 for Variable
+       * (required for borrow operations, optional for repay)
+       */
+      interestRateMode?: 1 | 2;
+      // Note: rpcUrl is NOT allowed in execute
+    }
+    ```
+
+    <Warning>
+    The `rpcUrl` parameter is not allowed in the `execute` function for security reasons. Only the `chain` parameter should be used.
+    </Warning>
+  </Tab>
+
+  <Tab title="Implementation">
+    The `execute` function can be called using the same `VincentAbilityClient` instance:
+
+    ```typescript
+    // Remove rpcUrl for execute - chain parameter is used instead
+    const executeParams = {
+      operation: 'supply' as const,
+      asset: '0xC558DBdd856501FCd9aaF1E62eae57A9F0629a3c', // WETH on Sepolia
+      amount: '0.01', // 0.01 WETH
+      chain: 'sepolia',
+    };
+
+    const executeResult = await abilityClient.execute(executeParams, {
+      delegatorPkpEthAddress: '0x...', // The Vincent App User's Vincent Wallet address
+    });
+
+    if (executeResult.success) {
+      const result = executeResult.result;
+
+      console.log('Transaction hash:', result.txHash);
+      console.log('Operation:', result.operation);
+      console.log('Asset:', result.asset);
+      console.log('Amount:', result.amount);
+      console.log('Timestamp:', result.timestamp);
+    } else {
+      // Handle different types of failures
+      if (executeResult.runtimeError) {
+        console.error('Runtime error:', executeResult.runtimeError);
+      }
+      if (executeResult.schemaValidationError) {
+        console.error('Schema validation error:', executeResult.schemaValidationError);
+      }
+      if (executeResult.result) {
+        console.error('Aave execution failed:', executeResult.result.error);
+      }
+    }
+    ```
+  </Tab>
+
+  <Tab title="Response">
+    **Success Response**
+
+    A successful `execute` response will contain:
+
+    ```typescript
+    {
+      /**
+       * The transaction hash of the executed operation
+       */
+      txHash: string;
+      /**
+       * The type of AAVE operation that was executed
+       */
+      operation: 'supply' | 'withdraw' | 'borrow' | 'repay';
+      /**
+       * The token address involved in the operation
+       */
+      asset: string;
+      /**
+       * The amount of tokens involved in the operation
+       */
+      amount: string;
+      /**
+       * The Unix timestamp when the operation was executed
+       */
+      timestamp: number;
+      /**
+       * The interest rate mode used (1 for Stable, 2 for Variable)
+       */
+      interestRateMode?: number;
+    }
+    ```
+
+    **Failure Response**
+
+    A failure `execute` response will contain:
+
+    ```typescript
+    {
+      /**
+       * A string containing the error message if the execution failed
+       */
+      error: string;
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Supported Networks
+
+The Aave Ability supports operations on the following networks where Aave V3 is deployed:
+
+| Network Type | Supported Chains |
+|--------------|------------------|
+| **Mainnets** | `ethereum`, `polygon`, `avalanche`, `arbitrum`, `optimism`, `base`, `fantom`, `bnb`, `gnosis`, `scroll`, `metis`, `linea`, `zksync` |
+| **Testnets** | `sepolia`, `basesepolia`, `arbitrumsepolia`, `optimismsepolia`, `avalanchefuji`, `scrollsepolia` |
+
+## Important Considerations
+
+<AccordionGroup>
+  <Accordion title="Amount Format" icon="calculator">
+    The `amount` parameter should be specified in human-readable format (e.g., "1.5" for 1.5 tokens), not in wei or smallest units.
+  </Accordion>
+
+  <Accordion title="Chain Parameter vs RPC URL" icon="link">
+    - For `precheck`: You can provide either `chain` or `rpcUrl`
+    - For `execute`: Only `chain` is allowed, `rpcUrl` will cause an error
+
+    This is a security feature to prevent RPC URL injection attacks.
+  </Accordion>
+
+  <Accordion title="Gas Estimation" icon="gas-pump">
+    The precheck function provides gas estimation, but actual gas usage may vary depending on network conditions.
+  </Accordion>
+
+  <Accordion title="Health Factor Management" icon="heart-pulse">
+    Monitor your health factor when borrowing. A health factor below 1.0 triggers liquidation.
+
+    **Important**: The Vincent Aave Ability does not validate health factor during the precheck phase. While the ability fetches the Vincent App User's Vincent Wallet's account data (including health factor), it only validates borrowing capacity and does not proactively check if a borrow operation would result in an unhealthy position. Health factor validation occurs at the Aave protocol level during transaction execution, and may result in failed transactions.
+  </Accordion>
+</AccordionGroup>
+
+## Error Handling
+
+<AccordionGroup>
+  <Accordion title="Common Failure Scenarios" icon="bug">
+    - **Insufficient Balance**: Not enough tokens for supply/repay operations
+    - **Missing Approval**: Token not approved for Aave contract spending
+    - **Insufficient Borrowing Capacity**: Attempting to borrow more than collateral allows
+    - **Invalid Chain**: Chain not supported by Aave V3
+    - **Health Factor Risk**: Operation would result in unhealthy position
+    - **Invalid Asset**: Token not supported on the specified Aave market
+  </Accordion>
+</AccordionGroup>

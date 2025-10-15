@@ -1,0 +1,32 @@
+---
+title: abilityClient
+---
+
+The VincentAbilityClient is used to handle all interactions with VincentAbilities -- both local execution of its precheck()
+method and the execution of its `execute()` method via the LIT Action runtime.  The VincentAbilityClient also handles calling policy
+precheck methods when they are defined, and returns all policy precheck results along with the ability precheck result.
+
+## API
+
+- [disconnectVincentAbilityClients](./variables/disconnectVincentAbilityClients)
+- [getVincentAbilityClient](./functions/getVincentAbilityClient)
+- [isAbilityResponseFailure](./functions/isAbilityResponseFailure)
+- [isAbilityResponseRuntimeFailure](./functions/isAbilityResponseRuntimeFailure)
+- [isAbilityResponseSchemaValidationFailure](./functions/isAbilityResponseSchemaValidationFailure)
+- [isAbilityResponseSuccess](./functions/isAbilityResponseSuccess)
+
+## Interfaces
+
+- [AbilityClientContext](./interfaces/AbilityClientContext)
+- [AbilityExecuteResponseFailure](./interfaces/AbilityExecuteResponseFailure)
+- [AbilityExecuteResponseFailureNoResult](./interfaces/AbilityExecuteResponseFailureNoResult)
+- [AbilityExecuteResponseSuccess](./interfaces/AbilityExecuteResponseSuccess)
+- [AbilityExecuteResponseSuccessNoResult](./interfaces/AbilityExecuteResponseSuccessNoResult)
+- [AbilityPrecheckResponseFailure](./interfaces/AbilityPrecheckResponseFailure)
+- [AbilityPrecheckResponseFailureNoResult](./interfaces/AbilityPrecheckResponseFailureNoResult)
+- [AbilityPrecheckResponseSuccess](./interfaces/AbilityPrecheckResponseSuccess)
+- [AbilityPrecheckResponseSuccessNoResult](./interfaces/AbilityPrecheckResponseSuccessNoResult)
+- [BaseAbilityContext](./interfaces/BaseAbilityContext)
+- [VincentAbilityClient](./interfaces/VincentAbilityClient)
+- [AbilityExecuteResponse](./type-aliases/AbilityExecuteResponse)
+- [AbilityPrecheckResponse](./type-aliases/AbilityPrecheckResponse)

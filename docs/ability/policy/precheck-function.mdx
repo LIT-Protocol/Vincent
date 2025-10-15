@@ -1,0 +1,147 @@
+---
+title: Policy Precheck Function
+---
+
+The precheck function provides fast, local validation before committing to expensive Lit Action execution. It's your Policy's first line of defense against invalid requests.
+
+<Note>
+The precheck function is executed locally by the Vincent Ability executor to provide a best-effort check that the policy shouldn't fail when the policy's evaluate function is called.
+</Note>
+
+## Function Parameters
+
+The precheck function receives two parameters:
+
+<ParamField path="params" type="object" required>
+  Object containing the ability and user parameters
+  <Expandable title="properties">
+    <ParamField path="abilityParams" type="object">
+      Parameters matching your `abilityParamsSchema` definition
+    </ParamField>
+    <ParamField path="userParams" type="object">
+      Parameters matching your `userParamsSchema` definition
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField path="policyContext" type="object" required>
+  Context object provided by the SDK with helpers and metadata
+  <Expandable title="properties">
+    <ParamField path="abilityIpfsCid" type="string">
+      The IPFS CID of the Vincent Ability that is being executed
+    </ParamField>
+    <ParamField path="appId" type="number">
+      The ID of the Vincent App the Vincent Ability is being executed for
+    </ParamField>
+    <ParamField path="appVersion" type="number">
+      The version of the Vincent App the Vincent Ability is being executed for
+    </ParamField>
+    <ParamField path="delegation" type="object">
+      Information about the execution delegation
+      <Expandable title="properties">
+        <ParamField path="delegateeAddress" type="string">
+          The Ethereum address of the Vincent Ability executor
+        </ParamField>
+        <ParamField path="delegatorPkpInfo" type="object">
+          User's Vincent Wallet information
+          <Expandable title="properties">
+            <ParamField path="tokenId" type="string">
+              The token ID of the Vincent App User's Vincent Wallet
+            </ParamField>
+            <ParamField path="ethAddress" type="string">
+              The Ethereum address of the App User's Vincent Wallet
+            </ParamField>
+            <ParamField path="publicKey" type="string">
+              The public key of the App User's Vincent Wallet
+            </ParamField>
+          </Expandable>
+        </ParamField>
+      </Expandable>
+    </ParamField>
+    <ParamField path="allow" type="function">
+      Helper method for returning an allow result from your policy's precheck function
+    </ParamField>
+    <ParamField path="deny" type="function">
+      Helper method for returning a deny result from your policy's precheck function
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+## Response Schemas
+
+### Allow Response
+
+<ParamField path="precheckAllowResultSchema" type="ZodSchema" required>
+  A Zod schema that defines the structure of successful precheck results. Include details about why the precheck passed, such as current spending limits and remaining quotas.
+</ParamField>
+
+### Deny Response
+
+<ParamField path="precheckDenyResultSchema" type="ZodSchema" required>
+  A Zod schema that defines the structure of failed precheck results. Include details about why the precheck failed, such as exceeded limits or disallowed tokens.
+</ParamField>
+
+## Example Implementation
+
+```typescript
+import { createVincentPolicy } from '@lit-protocol/vincent-ability-sdk';
+import { z } from 'zod';
+
+const vincentPolicy = createVincentPolicy({
+  // ... other policy definitions
+
+  precheck: async ({ abilityParams, userParams }, policyContext) => {
+    const { amount, tokenAddress } = abilityParams;
+    const { dailySpendingLimit, allowedTokens } = userParams;
+
+    const isTokenAllowed = allowedTokens.includes(tokenAddress);
+    const { isSpendingLimitExceeded, currentDailySpending } = await checkSpendingLimit(
+      tokenAddress,
+      amount,
+      dailySpendingLimit,
+    );
+
+    if (!isTokenAllowed) {
+      return policyContext.deny({
+        reason: 'Token not allowed',
+        maxDailySpendingLimit: dailySpendingLimit,
+        currentDailySpending,
+        allowedTokens: allowedTokens,
+      });
+    }
+
+    if (isSpendingLimitExceeded) {
+      return policyContext.deny({
+        reason: 'Spending limit exceeded',
+        maxDailySpendingLimit: dailySpendingLimit,
+        currentDailySpending,
+        allowedTokens: allowedTokens,
+      });
+    }
+
+    return policyContext.allow({
+      maxDailySpendingLimit: dailySpendingLimit,
+      currentDailySpending,
+      allowedTokens: allowedTokens,
+    });
+  },
+});
+```
+
+## Best Practices
+
+1. **Validate Early** - Check user parameters first before expensive operations
+2. **Return Helpful Context** - Include current state information in responses
+3. **Handle Errors Gracefully** - Provide clear error messages for debugging
+4. **Keep It Fast** - Avoid expensive blockchain calls in precheck
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Evaluate Function" icon="magnifying-glass" href="/ability/policy/evaluate-function">
+    Implement final validation with blockchain access
+  </Card>
+  <Card title="Commit Function" icon="database" href="/ability/policy/commit-function">
+    Update state after successful execution
+  </Card>
+</CardGroup>

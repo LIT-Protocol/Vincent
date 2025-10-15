@@ -1,4 +1,4 @@
-# Vincent SDK
+# app-sdk
 
 ## Installation
 
@@ -8,9 +8,9 @@ npm install @lit-protocol/vincent-app-sdk
 
 ## Usage
 
-# Client (Web)
+## Client (Web)
 
-## WebAuthClient
+### WebAuthClient
 
 The Vincent Web Auth Client provides methods for managing user authentication, JWT tokens, and connect flows in Vincent applications.
 
@@ -69,11 +69,11 @@ if (vincentAppClient.uriContainsVincentJWT()) {
 }
 ```
 
-# Backend
+## Backend
 
 In your backend, you will have to verify the JWT to make sure the user has granted you the required permissions to act on their behalf.
 
-## VincentAbilityClient
+### VincentAbilityClient
 
 The Vincent Ability Client uses an ethers signer for your delegatee account to run Vincent Abilities on behalf of your app users.
 
@@ -90,11 +90,11 @@ interface VincentAbilityClientConfig {
 
 ### Methods
 
-#### execute(params: VincentAbilityParams): Promise<ExecuteJsResponse>
+#### execute(params: VincentAbilityParams): Promise&lt;ExecuteJsResponse&gt;
 
 Executes a Vincent Ability with the provided parameters.
 
-- `params`: Record<string, unknown> - Parameters to pass to the Vincent Ability
+- `params`: Record&lt;string, unknown&gt; - Parameters to pass to the Vincent Ability
 - Returns: Promise resolving to an ExecuteJsResponse from the LIT network
 
 ### Ability execution

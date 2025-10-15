@@ -1,0 +1,261 @@
+---
+title: Execute Function
+---
+
+The execute function contains your Ability's core logic and runs in the Lit Action environment with access to signing capabilities. This is where the actual work happens.
+
+## Function Parameters
+
+The execute function receives two parameters:
+
+<ParamField path="params" type="object" required>
+  Object containing the ability parameters
+  <Expandable title="properties">
+    <ParamField path="abilityParams" type="object">
+      Parameters matching your `abilityParamsSchema` definition
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField path="abilityContext" type="object" required>
+  Context object provided by the SDK with helpers and metadata
+  <Expandable title="properties">
+    <ParamField path="succeed" type="function">
+      Helper function to return a success result matching your `executeSuccessSchema`
+    </ParamField>
+    <ParamField path="fail" type="function">
+      Helper function to return a failure result matching your `executeFailSchema`
+    </ParamField>
+    <ParamField path="delegation" type="object">
+      Contains `delegatorPkpInfo` with the Vincent Wallet address executing the ability
+    </ParamField>
+    <ParamField path="policiesContext" type="object">
+      Policy evaluation results and commit functions
+    </ParamField>
+    <ParamField path="appId" type="number">
+      ID of the Vincent App executing this Ability
+    </ParamField>
+    <ParamField path="appVersion" type="number">
+      Version of the Vincent App
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+## Response Schemas
+
+### Success Response
+
+<ParamField path="executeSuccessSchema" type="ZodSchema" required>
+  A Zod schema that defines the structure of successful execution results. Include details about the completed operation, such as transaction hashes, amounts transferred, or other relevant outcomes.
+</ParamField>
+
+### Failure Response
+
+<ParamField path="executeFailSchema" type="ZodSchema" required>
+  A Zod schema that defines the structure of failed execution results. Include error details to help the executor understand what went wrong, including error codes, reasons, and relevant context.
+</ParamField>
+
+<Tabs>
+  <Tab title="Success Schema">
+    ```typescript
+    import { createVincentAbility } from '@lit-protocol/vincent-ability-sdk';
+    import { z } from 'zod';
+
+    const vincentAbility = createVincentAbility({
+      // ... other ability definitions
+
+      executeSuccessSchema: z.object({
+        transactionHash: z.string(),
+        policyCommitResults: z.record(z.any()).optional(),
+        amountTransferred: z.number().optional(),
+        gasUsed: z.number().optional(),
+      }),
+    });
+    ```
+  </Tab>
+  <Tab title="Failure Schema">
+    ```typescript
+    import { createVincentAbility } from '@lit-protocol/vincent-ability-sdk';
+    import { z } from 'zod';
+
+    const vincentAbility = createVincentAbility({
+      // ... other ability definitions
+
+      executeFailSchema: z.object({
+        error: z.string(),
+        errorCode: z.string().optional(),
+        reason: z.string().optional(),
+        revertReason: z.string().optional(),
+      }),
+    });
+    ```
+  </Tab>
+</Tabs>
+
+<Note>
+If any unhandled error occurs during execution, the Vincent Ability SDK automatically returns a fail result with the error message.
+</Note>
+
+## Executing Vincent Policy Commit Functions
+
+After your ability's execute function successfully completes, the last step should be calling the commit functions for any supported Vincent Policies that have them. These commit functions allow policies to update their internal state based on what actions your ability performed.
+
+<Warning>
+Your ability's execute function should always call the commit functions for any supported Vincent Policies that have a commit function defined. Failing to do so could cause the Vincent Policies to operate incorrectly.
+</Warning>
+
+For our token transfer ability example, after successfully executing the transfer, we call the Vincent spending limit policy's commit function to update the amount spent:
+
+```typescript
+import { createVincentAbility } from '@lit-protocol/vincent-ability-sdk';
+import { createErc20TransferTransaction } from './my-ability-code';
+
+const vincentAbility = createVincentAbility({
+  // ... other ability definitions
+
+  execute: async ({ abilityParams }, abilityContext) => {
+    const { tokenAddress, amountToSend, recipientAddress } = abilityParams;
+    const { policiesContext } = abilityContext;
+
+    // previous code omitted for brevity
+    const transferTransaction = createErc20TransferTransaction(
+      tokenAddress,
+      recipientAddress,
+      amountToSend
+    );
+
+    const transferTransactionHash = await transferTransaction.send();
+
+    const spendingLimitPolicyContext =
+      policiesContext.allowedPolicies['@lit-protocol/vincent-policy-spending-limit'];
+
+    let spendTransactionHash: string | undefined;
+
+    if (spendingLimitPolicyContext !== undefined) {
+      const commitResult = await spendingLimitPolicyContext.commit({
+        spentAmount: amountToSend,
+        tokenAddress,
+      });
+
+      if (commitResult.allow) {
+        spendTransactionHash = commitResult.result.spendTransactionHash;
+      } else {
+        return abilityContext.fail({
+          error: commitResult.error ?? 'Unknown error occurred while committing spending limit policy',
+        });
+      }
+    }
+
+    return abilityContext.succeed({
+      transferTransactionHash,
+      spendTransactionHash,
+    });
+  },
+});
+```
+
+## Example Implementation
+
+<Accordion title="Full token transfer ability implementation">
+  ```typescript
+  import { createVincentAbility } from '@lit-protocol/vincent-ability-sdk';
+  import { z } from 'zod';
+
+  import { createErc20TransferTransaction } from './my-ability-code';
+
+  const vincentAbility = createVincentAbility({
+    // ... other ability definitions
+
+    executeSuccessSchema: z.object({
+      transferTransactionHash: z.string(),
+      spendTransactionHash: z.string().optional(),
+    }),
+
+    executeFailSchema: z.object({
+      error: z.string(),
+      errorCode: z.string().optional(),
+      revertReason: z.string().optional(),
+      transferTransaction: z.object({
+        to: z.string(),
+        value: z.string(),
+        data: z.string(),
+        gasLimit: z.string(),
+        gasPrice: z.string(),
+        maxFeePerGas: z.string(),
+        maxPriorityFeePerGas: z.string(),
+        nonce: z.number(),
+        chainId: z.number(),
+        type: z.number(),
+      }).optional(),
+    }),
+
+    execute: async ({ abilityParams }, abilityContext) => {
+      const { tokenAddress, amountToSend, recipientAddress } = abilityParams;
+
+      const transferTransaction = createErc20TransferTransaction(
+        tokenAddress,
+        recipientAddress,
+        amountToSend,
+      );
+
+      let estimatedGas;
+      try {
+        // Estimate gas to catch potential revert reasons early
+        estimatedGas = await transferTransaction.estimateGas();
+      } catch (error) {
+        // Handle gas estimation failures (transaction would revert)
+        if (error.code === 'UNPREDICTABLE_GAS_LIMIT') {
+          return abilityContext.fail({
+            error: 'Transaction reverted during gas estimation/transaction simulation',
+            errorCode: error.code,
+            revertReason: error.reason || 'Unknown revert reason',
+            transferTransaction,
+          });
+        }
+
+        // Let the Vincent Ability SDK handle the error
+        throw error;
+      }
+
+      const transferTransactionHash = await transferTransaction.send();
+
+      // Handle Policy commits
+      const spendingLimitPolicyContext =
+        abilityContext.policiesContext?.allowedPolicies?.['@lit-protocol/vincent-policy-spending-limit'];
+
+      let spendTransactionHash: string | undefined;
+
+      if (spendingLimitPolicyContext !== undefined) {
+        const commitResult = await spendingLimitPolicyContext.commit({
+          spentAmount: amountToSend,
+          tokenAddress,
+        });
+
+        if (commitResult.allow) {
+          spendTransactionHash = commitResult.result.spendTransactionHash;
+        } else {
+          return abilityContext.fail({
+            error: commitResult.error ?? 'Unknown error occurred while committing spending limit policy',
+          });
+        }
+      }
+
+      return abilityContext.succeed({
+        transferTransactionHash,
+        spendTransactionHash,
+      });
+    },
+  });
+  ```
+</Accordion>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Supporting Policies" icon="shield" href="/ability/supporting-policies">
+    Learn how to integrate Vincent Policies with your Ability
+  </Card>
+  <Card title="Publishing" icon="upload" href="/ability/publishing">
+    Deploy and publish your Ability to the Vincent Registry
+  </Card>
+</CardGroup>
