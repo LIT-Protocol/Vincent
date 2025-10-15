@@ -96,7 +96,7 @@ contract DeployFeeDiamond is Script {
         for (uint256 i = 0; i < cuts.length; i++) {
             for (uint256 j = 0; j < cuts[i].functionSelectors.length; j++) {
                 bytes4 selector = cuts[i].functionSelectors[j];
-                for(uint256 k = 0; k < selectors.length; k++) {
+                for (uint256 k = 0; k < selectors.length; k++) {
                     if (selectors[k] == selector) {
                         console.log("Duplicate selector!");
                         console.log(vm.toString(selector));
@@ -105,7 +105,6 @@ contract DeployFeeDiamond is Script {
                 selectors[i * 100 + j] = selector;
             }
         }
-        
 
         // Deploy the Diamond with the diamondCut facet and all other facets in one transaction
         Fee diamond = new Fee{salt: create2Salt}(

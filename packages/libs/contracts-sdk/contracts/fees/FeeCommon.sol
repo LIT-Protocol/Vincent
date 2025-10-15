@@ -4,7 +4,7 @@ pragma solidity ^0.8.29;
 import {FeeUtils} from "./FeeUtils.sol";
 
 contract FeeCommon {
-        /* ========== MODIFIERS ========== */
+    /* ========== MODIFIERS ========== */
     modifier nonZeroAppId(uint40 appId) {
         if (appId == 0) {
             revert FeeUtils.ZeroAppId();

@@ -22,7 +22,11 @@ contract FeeViewsFacet {
      * @param vaultAddress the vault to get the deposit for
      * @return the deposit for the user and vault
      */
-    function deposits(uint40 appId, address user, address vaultAddress) external view returns (LibFeeStorage.Deposit memory) {
+    function deposits(uint40 appId, address user, address vaultAddress)
+        external
+        view
+        returns (LibFeeStorage.Deposit memory)
+    {
         return LibFeeStorage.getStorage().deposits[appId][user][vaultAddress];
     }
 

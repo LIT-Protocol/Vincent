@@ -7,7 +7,11 @@ import "forge-std/console.sol";
 import {VincentAppFacet} from "../contracts/facets/VincentAppFacet.sol";
 
 contract TestCommon is Test {
-    function _createBasicVersionAbilities(string memory abilityIpfsCid1, string memory abilityIpfsCid2, string memory policyIpfsCid1) public pure returns (VincentAppFacet.AppVersionAbilities memory) {
+    function _createBasicVersionAbilities(
+        string memory abilityIpfsCid1,
+        string memory abilityIpfsCid2,
+        string memory policyIpfsCid1
+    ) public pure returns (VincentAppFacet.AppVersionAbilities memory) {
         VincentAppFacet.AppVersionAbilities memory versionAbilities;
         versionAbilities.abilityIpfsCids = new string[](2);
 

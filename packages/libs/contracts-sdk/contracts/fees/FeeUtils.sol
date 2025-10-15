@@ -4,7 +4,6 @@ pragma solidity ^0.8.29;
 import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "./LibFeeStorage.sol";
 
-
 library FeeUtils {
     using EnumerableSet for EnumerableSet.AddressSet;
 

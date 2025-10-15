@@ -18,7 +18,7 @@ import {OwnershipFacet} from "../../contracts/diamond-base/facets/OwnershipFacet
 import {VincentDiamond} from "../../contracts/VincentDiamond.sol";
 import {VincentAppFacet} from "../../contracts/facets/VincentAppFacet.sol";
 import {VincentAppViewFacet} from "../../contracts/facets/VincentAppViewFacet.sol";
-import { MockPKPNftFacet } from "../mocks/MockPKPNftFacet.sol";
+import {MockPKPNftFacet} from "../mocks/MockPKPNftFacet.sol";
 
 import {USDC} from "../ABIs/USDC.sol";
 import {IPool} from "@aave-dao/aave-v3-origin/src/contracts/interfaces/IPool.sol";
@@ -93,7 +93,9 @@ contract AaveFeeForkTest is TestCommon {
         vm.startPrank(APP_MANAGER_BOB);
         address[] memory delegatees = new address[](1);
         delegatees[0] = APP_DELEGATEE_BOB;
-        vincentAppFacet.registerApp(DEV_APP_ID, delegatees, _createBasicVersionAbilities("QmAbility1", "QmAbility2", "QmPolicy1"));
+        vincentAppFacet.registerApp(
+            DEV_APP_ID, delegatees, _createBasicVersionAbilities("QmAbility1", "QmAbility2", "QmPolicy1")
+        );
         vm.stopPrank();
 
         // set the vincent app contract address in the fee diamond
@@ -191,7 +193,8 @@ contract AaveFeeForkTest is TestCommon {
         assertEq(feeContractBalance, expectedFeeContractProfit);
 
         // test that the MockERC20 is in the set of tokens that have collected fees for the foundation
-        address[] memory tokensWithCollectedFees = feeAdminFacet.tokensWithCollectedFees(LibFeeStorage.LIT_FOUNDATION_APP_ID);
+        address[] memory tokensWithCollectedFees =
+            feeAdminFacet.tokensWithCollectedFees(LibFeeStorage.LIT_FOUNDATION_APP_ID);
         assertEq(tokensWithCollectedFees.length, 1);
         assertEq(tokensWithCollectedFees[0], address(underlyingERC20));
 
@@ -201,13 +204,15 @@ contract AaveFeeForkTest is TestCommon {
         assertEq(tokensWithCollectedFees[0], address(underlyingERC20));
 
         // check the collected fees for the app for the foundation
-        uint256 litCollectedAppFees = feeViewsFacet.collectedAppFees(LibFeeStorage.LIT_FOUNDATION_APP_ID, address(underlyingERC20));
+        uint256 litCollectedAppFees =
+            feeViewsFacet.collectedAppFees(LibFeeStorage.LIT_FOUNDATION_APP_ID, address(underlyingERC20));
         // check the collected fees for the app
         uint256 appCollectedAppFees = feeViewsFacet.collectedAppFees(DEV_APP_ID, address(underlyingERC20));
         assertEq(litCollectedAppFees + appCollectedAppFees, expectedFeeContractProfit);
 
         // calculate the split expected for the lit foundation, and for the app
-        uint256 expectedLitCollectedAppFees = expectedFeeContractProfit * feeAdminFacet.litAppFeeSplitPercentage() / BASIS_POINT_DIVISOR;
+        uint256 expectedLitCollectedAppFees =
+            expectedFeeContractProfit * feeAdminFacet.litAppFeeSplitPercentage() / BASIS_POINT_DIVISOR;
         uint256 expectedAppCollectedAppFees = expectedFeeContractProfit - expectedLitCollectedAppFees;
         assertEq(litCollectedAppFees, expectedLitCollectedAppFees);
         assertEq(appCollectedAppFees, expectedAppCollectedAppFees);
@@ -437,7 +442,8 @@ contract AaveFeeForkTest is TestCommon {
         assertEq(feeContractBalance, expectedFeeContractProfit);
 
         // test that the MockERC20 is in the set of tokens that have collected fees for the foundation
-        address[] memory tokensWithCollectedFees = feeAdminFacet.tokensWithCollectedFees(LibFeeStorage.LIT_FOUNDATION_APP_ID);
+        address[] memory tokensWithCollectedFees =
+            feeAdminFacet.tokensWithCollectedFees(LibFeeStorage.LIT_FOUNDATION_APP_ID);
         assertEq(tokensWithCollectedFees.length, 1);
         assertEq(tokensWithCollectedFees[0], address(underlyingERC20));
 
@@ -445,15 +451,17 @@ contract AaveFeeForkTest is TestCommon {
         tokensWithCollectedFees = feeAdminFacet.tokensWithCollectedFees(DEV_APP_ID);
         assertEq(tokensWithCollectedFees.length, 1);
         assertEq(tokensWithCollectedFees[0], address(underlyingERC20));
-        
+
         // check the collected fees for the app for the foundation
-        uint256 litCollectedAppFees = feeViewsFacet.collectedAppFees(LibFeeStorage.LIT_FOUNDATION_APP_ID, address(underlyingERC20));
+        uint256 litCollectedAppFees =
+            feeViewsFacet.collectedAppFees(LibFeeStorage.LIT_FOUNDATION_APP_ID, address(underlyingERC20));
         // check the collected fees for the app
         uint256 appCollectedAppFees = feeViewsFacet.collectedAppFees(DEV_APP_ID, address(underlyingERC20));
         assertEq(litCollectedAppFees + appCollectedAppFees, expectedFeeContractProfit);
 
         // calculate the split expected for the lit foundation, and for the app
-        uint256 expectedLitCollectedAppFees = expectedFeeContractProfit * feeAdminFacet.litAppFeeSplitPercentage() / BASIS_POINT_DIVISOR;
+        uint256 expectedLitCollectedAppFees =
+            expectedFeeContractProfit * feeAdminFacet.litAppFeeSplitPercentage() / BASIS_POINT_DIVISOR;
         uint256 expectedAppCollectedAppFees = expectedFeeContractProfit - expectedLitCollectedAppFees;
         assertEq(litCollectedAppFees, expectedLitCollectedAppFees);
         assertEq(appCollectedAppFees, expectedAppCollectedAppFees);

@@ -549,7 +549,9 @@ contract VincentAppFacetTest is TestCommon {
         uint40 appId2 = 2;
         address[] memory delegatees = new address[](1);
         delegatees[0] = APP_DELEGATEE_DAVID;
-        _registerApp(appId2, delegatees, _createBasicVersionAbilities(ABILITY_IPFS_CID_1, ABILITY_IPFS_CID_2, POLICY_IPFS_CID_1));
+        _registerApp(
+            appId2, delegatees, _createBasicVersionAbilities(ABILITY_IPFS_CID_1, ABILITY_IPFS_CID_2, POLICY_IPFS_CID_1)
+        );
 
         vm.startPrank(APP_MANAGER_ALICE);
         vm.expectRevert(
@@ -755,7 +757,9 @@ contract VincentAppFacetTest is TestCommon {
         address[] memory delegatees = new address[](1);
         delegatees[0] = APP_DELEGATEE_CHARLIE;
 
-        newAppVersion = _registerApp(appId, delegatees, _createBasicVersionAbilities(ABILITY_IPFS_CID_1, ABILITY_IPFS_CID_2, POLICY_IPFS_CID_1));
+        newAppVersion = _registerApp(
+            appId, delegatees, _createBasicVersionAbilities(ABILITY_IPFS_CID_1, ABILITY_IPFS_CID_2, POLICY_IPFS_CID_1)
+        );
         assertEq(newAppVersion, 1);
     }
 }

@@ -106,7 +106,6 @@ contract MorphoPerfFeeFacet is FeeCommon {
 
         // add the token to the set of tokens that have collected fees
         FeeUtils.splitFees(appId, address(asset), performanceFeeAmount);
-        
 
         // no need to send the performance fee anywhere
         // because it's collected in this contract, and
