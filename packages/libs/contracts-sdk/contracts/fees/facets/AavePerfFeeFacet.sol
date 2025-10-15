@@ -63,6 +63,8 @@ contract AavePerfFeeFacet is FeeCommon {
         // add the pool asset address to the set of vault or pool asset addresses
         // so the user can find their deposits later
         LibFeeStorage.getStorage().userVaultOrPoolAssetAddresses[msg.sender].add(poolAsset);
+
+        emit FeeUtils.DepositAdded(appId, poolAsset, assetAmount, VAULT_PROVIDER);
     }
 
     /**
@@ -118,5 +120,7 @@ contract AavePerfFeeFacet is FeeCommon {
         // so we can just transfer the difference without the perf fee to
         // the user
         asset.transfer(msg.sender, withdrawAssetAmount - performanceFeeAmount);
+
+        emit FeeUtils.DepositWithdrawn(appId, poolAsset, depositAssetAmount, VAULT_PROVIDER);
     }
 }

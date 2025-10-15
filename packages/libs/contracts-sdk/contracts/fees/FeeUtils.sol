@@ -14,7 +14,9 @@ library FeeUtils {
     error ZeroAppId();
 
     /* ========== EVENTS ========== */
-    event FeeCollected(uint40 indexed appId, uint256 indexed amount);
+    event DepositAdded(uint40 indexed appId, address indexed token, uint256 amount, uint256 vaultProvider);
+    event DepositWithdrawn(uint40 indexed appId, address indexed token, uint256 amount, uint256 vaultProvider);
+    event FeeCollected(uint40 indexed appId, address indexed token, uint256 amount);
     event AppFeesWithdrawn(uint40 indexed appId, address indexed tokenAddress, uint256 amount);
     event PerformanceFeePercentageSet(uint256 newPerformanceFeePercentage);
     event SwapFeePercentageSet(uint256 newSwapFeePercentage);
@@ -37,7 +39,7 @@ library FeeUtils {
         LibFeeStorage.getStorage().collectedAppFees[LibFeeStorage.LIT_FOUNDATION_APP_ID][address(token)] += litAmount;
         LibFeeStorage.getStorage().collectedAppFees[appId][address(token)] += appAmount;
 
-        emit FeeCollected(LibFeeStorage.LIT_FOUNDATION_APP_ID, litAmount);
-        emit FeeCollected(appId, appAmount);
+        emit FeeCollected(LibFeeStorage.LIT_FOUNDATION_APP_ID, token, litAmount);
+        emit FeeCollected(appId, token, appAmount);
     }
 }
