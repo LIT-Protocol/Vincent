@@ -124,9 +124,7 @@ contract AaveFeeForkTest is Test {
         // aave is rebasing so this should just be a bigger value of aTokens after 1 week
         vm.warp(block.timestamp + 1 weeks);
         uint256 userAaveTokensAfter1Week = aToken.balanceOf(address(APP_USER_ALICE));
-        console.log(
-            "userAaveTokensAfter1Week - aka the aTokens the user has after 1 week", userAaveTokensAfter1Week
-        );
+        console.log("userAaveTokensAfter1Week - aka the aTokens the user has after 1 week", userAaveTokensAfter1Week);
         assertGt(userAaveTokensAfter1Week, userAaveTokens);
 
         // now, do the withdrawal

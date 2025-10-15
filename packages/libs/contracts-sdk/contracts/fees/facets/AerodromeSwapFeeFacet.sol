@@ -43,7 +43,7 @@ contract AerodromeSwapFeeFacet {
 
         // add the input token to the collected fees list
         LibFeeStorage.getStorage().tokensWithCollectedFees.add(routes[0].from);
-        
+
         // return the amounts just like aerodrome
         return amounts;
     }
