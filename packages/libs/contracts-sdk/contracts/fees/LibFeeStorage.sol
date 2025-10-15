@@ -9,15 +9,20 @@ library LibFeeStorage {
 
     bytes32 internal constant FEE_STORAGE_SLOT = keccak256("lit.vincent.fee.storage");
 
+    // app id 0 is the lit foundation
+    uint40 internal constant LIT_FOUNDATION_APP_ID = 0;
+
     struct Deposit {
-        uint256 assetAmount;
-        uint256 vaultShares;
+        uint256 assetAmount; // the amount of assets deposited
+        uint256 vaultShares; // the amount of vault shares received - not relevant for Aave because it's rebasing
         uint256 vaultProvider; // 1 = Morpho, 2 = Aave
     }
 
     struct FeeStorage {
-        // maps user address to a vault to a deposit
-        mapping(address => mapping(address => Deposit)) deposits;
+        // Vincent App Diamond contract address
+        address vincentAppDiamond;
+        // maps appId to a user address to a vault/pool asset addres to a deposit
+        mapping(uint40 => mapping(address => mapping(address => Deposit))) deposits;
         // performance fee percentage, expressed in basis points
         // so 1000 = 10%.  multiply percentage by 100 to get basis points
         uint256 performanceFeePercentage;
@@ -27,7 +32,8 @@ library LibFeeStorage {
         // set of tokens that have collected fees
         // used to track which tokens have collected fees
         // so we know where to look for collected fees
-        EnumerableSet.AddressSet tokensWithCollectedFees;
+        // maps app id to a set of tokens that have collected fees
+        mapping(uint40 => EnumerableSet.AddressSet) tokensWithCollectedFees;
         // aave pool contract address for this chain
         address aavePool;
         // aerodrome router contract address for this chain
@@ -37,6 +43,12 @@ library LibFeeStorage {
         // and if the vincent app disappears, the user can grab this set
         // and then call deposits(userAddress, addressFromThisSet) to find their deposits
         mapping(address => EnumerableSet.AddressSet) userVaultOrPoolAssetAddresses;
+        // maps app id to a token address to the fees collected that should go to the app that initiated the action
+        // based on the litAppFeeSplitPercentage and the amount of fees collected for that app
+        mapping(uint40 => mapping(address => uint256)) collectedAppFees;
+        // Lit / App fee split percentage, expressed in basis points
+        // so 1000 = 10% goes to Lit, 90% goes to the app that initiated the action.  multiply percentage by 100 to get basis points
+        uint256 litAppFeeSplitPercentage;
     }
 
     function getStorage() internal pure returns (FeeStorage storage as_) {

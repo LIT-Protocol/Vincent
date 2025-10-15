@@ -17,12 +17,13 @@ contract FeeViewsFacet {
 
     /**
      * @notice Gets the deposit for a user and vault
+     * @param appId the app id to get the deposit for
      * @param user the user to get the deposit for
      * @param vaultAddress the vault to get the deposit for
      * @return the deposit for the user and vault
      */
-    function deposits(address user, address vaultAddress) external view returns (LibFeeStorage.Deposit memory) {
-        return LibFeeStorage.getStorage().deposits[user][vaultAddress];
+    function deposits(uint40 appId, address user, address vaultAddress) external view returns (LibFeeStorage.Deposit memory) {
+        return LibFeeStorage.getStorage().deposits[appId][user][vaultAddress];
     }
 
     /**
@@ -53,5 +54,15 @@ contract FeeViewsFacet {
      */
     function userVaultOrPoolAssetAddressesAtIndex(address user, uint256 index) external view returns (address) {
         return LibFeeStorage.getStorage().userVaultOrPoolAssetAddresses[user].at(index);
+    }
+
+    /**
+     * @notice Gets the collectedAppFees for a given app id
+     * @param appId the app id to get the collectedAppFees for
+     * @param tokenAddress the token address to get the collectedAppFees for
+     * @return the collectedAppFees for the given app id
+     */
+    function collectedAppFees(uint40 appId, address tokenAddress) external view returns (uint256) {
+        return LibFeeStorage.getStorage().collectedAppFees[appId][tokenAddress];
     }
 }

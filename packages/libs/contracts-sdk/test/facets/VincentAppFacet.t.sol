@@ -15,8 +15,9 @@ import {VincentUserViewFacet} from "../../contracts/facets/VincentUserViewFacet.
 
 import {LibVincentAppFacet} from "../../contracts/libs/LibVincentAppFacet.sol";
 import {VincentBase} from "../../contracts/VincentBase.sol";
+import {TestCommon} from "../TestCommon.sol";
 
-contract VincentAppFacetTest is Test {
+contract VincentAppFacetTest is TestCommon {
     uint256 constant PKP_TOKEN_ID_1 = 1;
     uint256 constant PKP_TOKEN_ID_2 = 2;
 
@@ -548,7 +549,7 @@ contract VincentAppFacetTest is Test {
         uint40 appId2 = 2;
         address[] memory delegatees = new address[](1);
         delegatees[0] = APP_DELEGATEE_DAVID;
-        _registerApp(appId2, delegatees, _createBasicVersionAbilities());
+        _registerApp(appId2, delegatees, _createBasicVersionAbilities(ABILITY_IPFS_CID_1, ABILITY_IPFS_CID_2, POLICY_IPFS_CID_1));
 
         vm.startPrank(APP_MANAGER_ALICE);
         vm.expectRevert(
@@ -754,24 +755,7 @@ contract VincentAppFacetTest is Test {
         address[] memory delegatees = new address[](1);
         delegatees[0] = APP_DELEGATEE_CHARLIE;
 
-        newAppVersion = _registerApp(appId, delegatees, _createBasicVersionAbilities());
+        newAppVersion = _registerApp(appId, delegatees, _createBasicVersionAbilities(ABILITY_IPFS_CID_1, ABILITY_IPFS_CID_2, POLICY_IPFS_CID_1));
         assertEq(newAppVersion, 1);
-    }
-
-    function _createBasicVersionAbilities() private pure returns (VincentAppFacet.AppVersionAbilities memory) {
-        VincentAppFacet.AppVersionAbilities memory versionAbilities;
-        versionAbilities.abilityIpfsCids = new string[](2);
-
-        versionAbilities.abilityIpfsCids[0] = ABILITY_IPFS_CID_1;
-        versionAbilities.abilityIpfsCids[1] = ABILITY_IPFS_CID_2;
-
-        versionAbilities.abilityPolicies = new string[][](2);
-
-        versionAbilities.abilityPolicies[0] = new string[](1);
-        versionAbilities.abilityPolicies[0][0] = POLICY_IPFS_CID_1;
-
-        versionAbilities.abilityPolicies[1] = new string[](0);
-
-        return versionAbilities;
     }
 }

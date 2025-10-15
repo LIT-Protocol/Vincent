@@ -5,13 +5,15 @@ import "../LibFeeStorage.sol";
 import {IPool} from "@aave-dao/aave-v3-origin/src/contracts/interfaces/IPool.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
+import {FeeCommon} from "../FeeCommon.sol";
+import {FeeUtils} from "../FeeUtils.sol";
 
 /**
  * @title AavePerfFeeFacet
  * @notice A facet of the Fee Diamond that manages Aave performance fees
  * @dev This contract simply tracks Aave deposits and takes a performance fee from the withdrawals
  */
-contract AavePerfFeeFacet {
+contract AavePerfFeeFacet is FeeCommon {
     using EnumerableSet for EnumerableSet.AddressSet;
     /* ========== ERRORS ========== */
 
@@ -31,10 +33,11 @@ contract AavePerfFeeFacet {
 
     /**
      * @notice Deposits assets into Aave
+     * @param appId the app id that is depositing the funds
      * @param poolAsset the address of the pool asset to deposit into
      * @param assetAmount the amount of assets to deposit
      */
-    function depositToAave(address poolAsset, uint256 assetAmount) external {
+    function depositToAave(uint40 appId, address poolAsset, uint256 assetAmount) external nonZeroAppId(appId) {
         // get the aave pool contract and asset
         IPool aave = IPool(LibFeeStorage.getStorage().aavePool);
         IERC20 asset = IERC20(poolAsset);
@@ -49,7 +52,7 @@ contract AavePerfFeeFacet {
         aave.supply(poolAsset, assetAmount, msg.sender, 0);
 
         // track the deposit
-        LibFeeStorage.Deposit storage deposit = LibFeeStorage.getStorage().deposits[msg.sender][poolAsset];
+        LibFeeStorage.Deposit storage deposit = LibFeeStorage.getStorage().deposits[appId][msg.sender][poolAsset];
         if (deposit.vaultProvider != 0 && deposit.vaultProvider != VAULT_PROVIDER) {
             revert DepositAlreadyExistsWithAnotherProvider(msg.sender, poolAsset);
         }
@@ -64,11 +67,13 @@ contract AavePerfFeeFacet {
 
     /**
      * @notice Withdraws funds from Aave.  Only supports full withdrawals.
+     * @param appId the app id that is withdrawing the funds
      * @param poolAsset the address of the pool asset to withdraw from
+     * @param amount the amount of assets to withdraw
      */
-    function withdrawFromAave(address poolAsset, uint256 amount) external {
+    function withdrawFromAave(uint40 appId, address poolAsset, uint256 amount) external nonZeroAppId(appId) {
         // lookup the corresponding deposit
-        LibFeeStorage.Deposit memory deposit = LibFeeStorage.getStorage().deposits[msg.sender][poolAsset];
+        LibFeeStorage.Deposit memory deposit = LibFeeStorage.getStorage().deposits[appId][msg.sender][poolAsset];
         if (deposit.assetAmount == 0) revert DepositNotFound(msg.sender, poolAsset);
 
         if (deposit.vaultProvider != VAULT_PROVIDER) revert NotAavePool(msg.sender, poolAsset);
@@ -77,7 +82,7 @@ contract AavePerfFeeFacet {
 
         // zero out the struct now before we call any other
         // contracts to prevent reentrancy attacks
-        delete LibFeeStorage.getStorage().deposits[msg.sender][poolAsset];
+        delete LibFeeStorage.getStorage().deposits[appId][msg.sender][poolAsset];
 
         // remove the pool asset address from the set of vault or pool asset addresses
         // so the user can't find their deposits later
@@ -105,9 +110,7 @@ contract AavePerfFeeFacet {
         }
 
         // add the token to the set of tokens that have collected fees
-        if (performanceFeeAmount > 0) {
-            LibFeeStorage.getStorage().tokensWithCollectedFees.add(address(asset));
-        }
+        FeeUtils.splitFees(appId, address(asset), performanceFeeAmount);
 
         // no need to send the performance fee anywhere
         // because it's collected in this contract, and

@@ -6,21 +6,24 @@ import {ERC4626} from "@openzeppelin/contracts/token/ERC20/extensions/ERC4626.so
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import {IRouter} from "@aerodrome/contracts/interfaces/IRouter.sol";
+import {FeeUtils} from "../FeeUtils.sol";
+import {FeeCommon} from "../FeeCommon.sol";
 
 /**
  * @title AerodromeSwapFeeFacet
  * @notice A facet of the Fee Diamond that manages Aerodrome swap fees
  */
-contract AerodromeSwapFeeFacet {
+contract AerodromeSwapFeeFacet is FeeCommon {
     using EnumerableSet for EnumerableSet.AddressSet;
 
     function swapExactTokensForTokensOnAerodrome(
+        uint40 appId,
         uint256 amountIn,
         uint256 amountOutMin,
         IRouter.Route[] calldata routes,
         address to,
         uint256 deadline
-    ) external returns (uint256[] memory amounts) {
+    ) external nonZeroAppId(appId) returns (uint256[] memory amounts) {
         // first, transfer the amountIn to this contract
         IERC20(routes[0].from).transferFrom(msg.sender, address(this), amountIn);
 
@@ -42,7 +45,7 @@ contract AerodromeSwapFeeFacet {
         );
 
         // add the input token to the collected fees list
-        LibFeeStorage.getStorage().tokensWithCollectedFees.add(routes[0].from);
+        FeeUtils.splitFees(appId, routes[0].from, fee);
 
         // return the amounts just like aerodrome
         return amounts;
