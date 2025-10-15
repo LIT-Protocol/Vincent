@@ -60,10 +60,6 @@ contract AavePerfFeeFacet is FeeCommon {
         deposit.assetAmount += assetAmount;
         deposit.vaultProvider = VAULT_PROVIDER;
 
-        // add the pool asset address to the set of vault or pool asset addresses
-        // so the user can find their deposits later
-        LibFeeStorage.getStorage().userVaultOrPoolAssetAddresses[msg.sender].add(poolAsset);
-
         emit FeeUtils.DepositAdded(appId, poolAsset, assetAmount, VAULT_PROVIDER);
     }
 
@@ -85,10 +81,6 @@ contract AavePerfFeeFacet is FeeCommon {
         // zero out the struct now before we call any other
         // contracts to prevent reentrancy attacks
         delete LibFeeStorage.getStorage().deposits[appId][msg.sender][poolAsset];
-
-        // remove the pool asset address from the set of vault or pool asset addresses
-        // so the user can't find their deposits later
-        LibFeeStorage.getStorage().userVaultOrPoolAssetAddresses[msg.sender].remove(poolAsset);
 
         // get the aave pool contract and asset
         IPool aave = IPool(LibFeeStorage.getStorage().aavePool);

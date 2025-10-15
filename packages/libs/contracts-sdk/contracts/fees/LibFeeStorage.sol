@@ -38,16 +38,11 @@ library LibFeeStorage {
         address aavePool;
         // aerodrome router contract address for this chain
         address aerodromeRouter;
-        // maps user address to a set of vault or pool asset addresses
-        // this means the user has deposited into this vault or pool
-        // and if the vincent app disappears, the user can grab this set
-        // and then call deposits(userAddress, addressFromThisSet) to find their deposits
-        mapping(address => EnumerableSet.AddressSet) userVaultOrPoolAssetAddresses;
         // maps app id to a token address to the fees collected that should go to the app that initiated the action
         // based on the litAppFeeSplitPercentage and the amount of fees collected for that app
         mapping(uint40 => mapping(address => uint256)) collectedAppFees;
-        // Lit / App fee split percentage, expressed in basis points
-        // so 1000 = 10% goes to Lit, 90% goes to the app that initiated the action.  multiply percentage by 100 to get basis points
+        // Lit Foundation / App fee split percentage, expressed in basis points
+        // so 1000 = 10% goes to Lit Foundation, 90% goes to the app that initiated the action.  multiply percentage by 100 to get basis points
         uint256 litAppFeeSplitPercentage;
     }
 

@@ -91,20 +91,21 @@ contract DeployFeeDiamond is Script {
         AerodromeSwapFeeFacet aerodromeSwapFeeFacet = new AerodromeSwapFeeFacet{salt: create2Salt}();
         cuts[6] = contractToFacetCutAdd("AerodromeSwapFeeFacet", address(aerodromeSwapFeeFacet));
 
-        // if you get an error deploying below, it's likely "LibDiamondCut: Can't add function that already exists" so uncomment this code to find the duplicate function
-        bytes4[] memory selectors = new bytes4[](cuts.length * 100);
-        for (uint256 i = 0; i < cuts.length; i++) {
-            for (uint256 j = 0; j < cuts[i].functionSelectors.length; j++) {
-                bytes4 selector = cuts[i].functionSelectors[j];
-                for (uint256 k = 0; k < selectors.length; k++) {
-                    if (selectors[k] == selector) {
-                        console.log("Duplicate selector!");
-                        console.log(vm.toString(selector));
-                    }
-                }
-                selectors[i * 100 + j] = selector;
-            }
-        }
+        // if you get an error deploying below, it's likely "LibDiamondCut: Can't add function that already exists" so uncomment this code to find the duplicate function selector.  then use `forge inspect <contractname> mi`
+        // to find the matching selector.
+        // bytes4[] memory selectors = new bytes4[](cuts.length * 100);
+        // for (uint256 i = 0; i < cuts.length; i++) {
+        //     for (uint256 j = 0; j < cuts[i].functionSelectors.length; j++) {
+        //         bytes4 selector = cuts[i].functionSelectors[j];
+        //         for (uint256 k = 0; k < selectors.length; k++) {
+        //             if (selectors[k] == selector) {
+        //                 console.log("Duplicate selector!");
+        //                 console.log(vm.toString(selector));
+        //             }
+        //         }
+        //         selectors[i * 100 + j] = selector;
+        //     }
+        // }
 
         // Deploy the Diamond with the diamondCut facet and all other facets in one transaction
         Fee diamond = new Fee{salt: create2Salt}(
