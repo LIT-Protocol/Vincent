@@ -1,10 +1,12 @@
+import { useState, useRef, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
+
 import { App, AppVersion } from '@/types/developer-dashboard/appTypes';
 import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
 import { Package, ChevronDown, Check, Filter } from 'lucide-react';
 import { AgentAppPermission } from '@/utils/user-dashboard/getAgentPkps';
 import { PermittedAppCard } from './ui/PermittedAppCard';
-import { useState, useRef, useEffect } from 'react';
-import { motion } from 'framer-motion';
 
 type FilterState = 'permitted' | 'unpermitted' | 'all';
 
@@ -183,9 +185,22 @@ export function PermittedAppsPage({
                 <h3 className={`text-xl font-semibold mb-2 ${theme.text}`} style={fonts.heading}>
                   {emptyState.title}
                 </h3>
-                <p className={`text-sm ${theme.textMuted} leading-relaxed`} style={fonts.body}>
+                <p className={`text-sm ${theme.textMuted} leading-relaxed mb-4`} style={fonts.body}>
                   {emptyState.description}
                 </p>
+                {filterState === 'permitted' && (
+                  <p className={`text-sm ${theme.textMuted} leading-relaxed`} style={fonts.body}>
+                    To find applications, visit the{' '}
+                    <Link
+                      to="/explorer/apps"
+                      className="font-medium hover:underline"
+                      style={{ color: theme.brandOrange }}
+                    >
+                      Explorer
+                    </Link>
+                    .
+                  </p>
+                )}
               </div>
             </div>
           ) : (

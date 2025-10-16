@@ -31,8 +31,7 @@ export const theme = {
 // Font families as style objects for inline styles
 export const fonts = {
   heading: {
-    fontFamily:
-      "'ITC Avant Garde Gothic', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+    fontFamily: "'Glacial Indifference', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
   },
   body: {
     fontFamily:

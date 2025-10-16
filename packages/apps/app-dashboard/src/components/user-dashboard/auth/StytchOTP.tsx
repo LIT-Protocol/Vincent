@@ -239,10 +239,9 @@ const StytchOTP = ({ method, authWithStytch, theme }: StytchOTPProps) => {
                       type="submit"
                       disabled={loading || !isInputValid}
                       className={`absolute right-2 top-1/2 -translate-y-1/2 font-medium text-sm disabled:cursor-not-allowed transition-colors ${
-                        isInputValid && !loading
-                          ? 'text-orange-500 hover:text-orange-600'
-                          : `${theme.textMuted} opacity-50`
+                        isInputValid && !loading ? '' : `${theme.textMuted} opacity-50`
                       }`}
+                      style={isInputValid && !loading ? { color: theme.brandOrange } : undefined}
                     >
                       {loading ? '...' : 'Submit'}
                     </button>
@@ -290,10 +289,9 @@ const StytchOTP = ({ method, authWithStytch, theme }: StytchOTPProps) => {
                         type="submit"
                         disabled={loading || !isInputValid}
                         className={`absolute right-2 top-1/2 -translate-y-1/2 font-medium text-sm disabled:cursor-not-allowed transition-colors z-10 ${
-                          isInputValid && !loading
-                            ? 'text-orange-500 hover:text-orange-600'
-                            : `${theme.textMuted} opacity-50`
+                          isInputValid && !loading ? '' : `${theme.textMuted} opacity-50`
                         }`}
+                        style={isInputValid && !loading ? { color: theme.brandOrange } : undefined}
                       >
                         {loading ? '...' : 'Submit'}
                       </button>
@@ -342,10 +340,9 @@ const StytchOTP = ({ method, authWithStytch, theme }: StytchOTPProps) => {
                     type="submit"
                     disabled={loading || code.length !== 6}
                     className={`absolute right-2 top-1/2 -translate-y-1/2 font-medium text-sm disabled:cursor-not-allowed transition-colors ${
-                      code.length === 6 && !loading
-                        ? 'text-orange-500 hover:text-orange-600'
-                        : `${theme.textMuted} opacity-50`
+                      code.length === 6 && !loading ? '' : `${theme.textMuted} opacity-50`
                     }`}
+                    style={code.length === 6 && !loading ? { color: theme.brandOrange } : undefined}
                   >
                     {loading ? '...' : 'Submit'}
                   </button>

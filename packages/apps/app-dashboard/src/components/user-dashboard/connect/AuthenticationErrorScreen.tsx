@@ -1,5 +1,5 @@
 import { Sun, Moon, ArrowLeft } from 'lucide-react';
-import { theme } from './ui/theme';
+import { theme, fonts } from './ui/theme';
 import { Button } from '@/components/shared/ui/button';
 import { motion } from 'framer-motion';
 import ConnectView, { AuthView } from './Connect';
@@ -71,7 +71,7 @@ export function AuthenticationErrorScreen({
                   />
                   <span
                     className={`text-sm font-medium ${theme.text} mt-0.5`}
-                    style={{ fontFamily: "'ITC Avant Garde Gothic', sans-serif" }}
+                    style={fonts.heading}
                   >
                     Vincent Connect
                   </span>
@@ -154,7 +154,7 @@ export function AuthenticationErrorScreen({
                         />
                         <span
                           className={`text-sm font-medium ${theme.text} mt-0.5`}
-                          style={{ fontFamily: "'ITC Avant Garde Gothic', sans-serif" }}
+                          style={fonts.heading}
                         >
                           Vincent Connect
                         </span>
