@@ -38,7 +38,7 @@ export function DashboardContent({
     >
       <div className="max-w-5xl mx-auto px-4 sm:px-6">
         {/* Greeting Section */}
-        <div className="text-center mb-10 sm:mb-12">
+        <div className="text-center mb-10 sm:mb-12 pt-8">
           <h1
             className={`text-3xl sm:text-4xl font-semibold ${theme.text} mb-3`}
             style={fonts.heading}

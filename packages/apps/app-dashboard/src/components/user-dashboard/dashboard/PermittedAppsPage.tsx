@@ -92,8 +92,8 @@ export function PermittedAppsPage({
       <div className="flex gap-6 items-start">
         {/* Main content area */}
         <div className="flex-1 min-w-0">
-          {/* Mobile dropdown - shown on smaller screens */}
-          <div className="lg:hidden w-full mb-4">
+          {/* Filter dropdown - shown on all screen sizes */}
+          <div className="w-full mb-4 flex justify-end">
             <div className="relative" ref={dropdownRef}>
               <button
                 onClick={() => setShowDropdown(!showDropdown)}
@@ -109,7 +109,7 @@ export function PermittedAppsPage({
 
               {showDropdown && (
                 <div
-                  className={`absolute left-0 top-full mt-2 min-w-[140px] rounded-lg shadow-lg border ${theme.mainCardBorder} ${theme.mainCard} z-50`}
+                  className={`absolute right-0 top-full mt-2 min-w-[140px] rounded-lg shadow-lg border ${theme.mainCardBorder} ${theme.mainCard} z-50`}
                 >
                   <div className="p-1">
                     <button
@@ -208,64 +208,6 @@ export function PermittedAppsPage({
               })}
             </div>
           )}
-        </div>
-
-        {/* Right sidebar - Filter section */}
-        <div className="hidden lg:block w-48 flex-shrink-0 sticky top-6">
-          <div className={`${theme.mainCard} border ${theme.mainCardBorder} rounded-lg p-4`}>
-            <div className="flex items-center gap-2 mb-4">
-              <Filter className={`h-4 w-4 ${theme.textMuted}`} />
-              <h3 className={`text-sm font-semibold ${theme.text}`} style={fonts.heading}>
-                Filter Apps
-              </h3>
-            </div>
-            <div className="space-y-1">
-              <button
-                onClick={() => setFilterState('permitted')}
-                className={`w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-all duration-200 ${
-                  filterState === 'permitted' ? 'text-white' : `${theme.text} ${theme.itemHoverBg}`
-                }`}
-                style={
-                  filterState === 'permitted'
-                    ? { ...fonts.heading, backgroundColor: theme.brandOrange }
-                    : fonts.heading
-                }
-              >
-                <span>Permitted</span>
-                {filterState === 'permitted' && <Check className="h-4 w-4" />}
-              </button>
-              <button
-                onClick={() => setFilterState('unpermitted')}
-                className={`w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-all duration-200 ${
-                  filterState === 'unpermitted'
-                    ? 'text-white'
-                    : `${theme.text} ${theme.itemHoverBg}`
-                }`}
-                style={
-                  filterState === 'unpermitted'
-                    ? { ...fonts.heading, backgroundColor: theme.brandOrange }
-                    : fonts.heading
-                }
-              >
-                <span>Unpermitted</span>
-                {filterState === 'unpermitted' && <Check className="h-4 w-4" />}
-              </button>
-              <button
-                onClick={() => setFilterState('all')}
-                className={`w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-all duration-200 ${
-                  filterState === 'all' ? 'text-white' : `${theme.text} ${theme.itemHoverBg}`
-                }`}
-                style={
-                  filterState === 'all'
-                    ? { ...fonts.heading, backgroundColor: theme.brandOrange }
-                    : fonts.heading
-                }
-              >
-                <span>All Apps</span>
-                {filterState === 'all' && <Check className="h-4 w-4" />}
-              </button>
-            </div>
-          </div>
         </div>
       </div>
     </motion.div>

@@ -178,11 +178,11 @@ function Sidebar({
 
   if (isMobile) {
     return (
-      <Sheet open={openMobile} onOpenChange={setOpenMobile} {...props}>
+      <Sheet open={openMobile} onOpenChange={setOpenMobile} modal={false} {...props}>
         <SheetContent
           data-slot="sidebar"
           data-mobile="true"
-          className={cn('w-(--sidebar-width) p-0 [&>button]:hidden', theme.bg)}
+          className={cn('w-(--sidebar-width) p-0 pt-[61px]', theme.bg)}
           style={
             {
               '--sidebar-width': SIDEBAR_WIDTH_MOBILE,
@@ -240,7 +240,7 @@ function Sidebar({
           data-sidebar="sidebar"
           data-slot="sidebar-inner"
           className={cn(
-            'flex h-full w-full flex-col group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:shadow-sm',
+            'flex h-full w-full flex-col group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:shadow-sm pt-[61px]',
             'bg-sidebar group-data-[variant=floating]:border-sidebar-border',
           )}
         >
@@ -252,7 +252,7 @@ function Sidebar({
 }
 
 function SidebarTrigger({ className, onClick, ...props }: React.ComponentProps<typeof Button>) {
-  const { toggleSidebar } = useSidebar();
+  const { toggleSidebar, isMobile, openMobile, setOpenMobile } = useSidebar();
 
   return (
     <Button
@@ -263,7 +263,12 @@ function SidebarTrigger({ className, onClick, ...props }: React.ComponentProps<t
       className={cn('size-7', className)}
       onClick={(event) => {
         onClick?.(event);
-        toggleSidebar();
+        // On mobile, directly set the state for immediate response
+        if (isMobile && openMobile) {
+          setOpenMobile(false);
+        } else {
+          toggleSidebar();
+        }
       }}
       {...props}
     >
