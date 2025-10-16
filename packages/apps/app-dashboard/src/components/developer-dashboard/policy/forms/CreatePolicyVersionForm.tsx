@@ -1,18 +1,15 @@
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Button } from '@/components/shared/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/shared/ui/card';
 import { Form } from '@/components/shared/ui/form';
+import { StatusMessage } from '@/components/shared/ui/statusMessage';
 import { TextField, LongTextField } from '../../form-fields';
 import { docSchemas } from '@lit-protocol/vincent-registry-sdk';
 import { Policy } from '@/types/developer-dashboard/appTypes';
+import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
+import { extractErrorMessage } from '@/utils/developer-dashboard/app-forms';
 
 const { policyVersionDoc } = docSchemas;
 
@@ -28,11 +25,10 @@ interface CreatePolicyVersionFormProps {
   isSubmitting: boolean;
 }
 
-export function CreatePolicyVersionForm({
-  policy,
-  onSubmit,
-  isSubmitting,
-}: CreatePolicyVersionFormProps) {
+export function CreatePolicyVersionForm({ onSubmit, isSubmitting }: CreatePolicyVersionFormProps) {
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
+
   const form = useForm<CreatePolicyVersionFormData>({
     resolver: zodResolver(CreatePolicyVersionSchema),
     defaultValues: {
@@ -48,43 +44,59 @@ export function CreatePolicyVersionForm({
   } = form;
 
   const handleFormSubmit = async (data: CreatePolicyVersionFormData) => {
-    await onSubmit(data);
+    setSubmitError(null);
+    setSubmitSuccess(false);
+    try {
+      await onSubmit(data);
+      setSubmitSuccess(true);
+    } catch (error) {
+      console.error('Failed to create policy version:', error);
+      setSubmitError(extractErrorMessage(error, 'Failed to create policy version'));
+    }
   };
 
   return (
-    <Card className="w-full max-w-2xl mx-auto">
-      <CardHeader>
-        <CardTitle>Create Policy Version</CardTitle>
-        <CardDescription>Create a new version for {policy.packageName}</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Form {...form}>
-          <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
-            <TextField
-              name="version"
-              register={register}
-              error={errors.version?.message}
-              label="Version"
-              placeholder="1.0.0"
-              required
-            />
+    <Form {...form}>
+      <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
+        <div className="space-y-6">
+          <TextField
+            name="version"
+            register={register}
+            error={errors.version?.message}
+            label="Version"
+            placeholder="1.0.0"
+            required
+          />
 
-            <LongTextField
-              name="changes"
-              register={register}
-              error={errors.changes?.message}
-              label="Changes"
-              placeholder="Describe what changed in this version..."
-              rows={4}
-              required
-            />
+          <LongTextField
+            name="changes"
+            register={register}
+            error={errors.changes?.message}
+            label="Changes"
+            placeholder="Describe what changed in this version..."
+            rows={4}
+            required
+          />
 
-            <Button type="submit" className="w-full" disabled={isSubmitting}>
+          {/* Status Messages */}
+          {submitError && <StatusMessage message={submitError} type="error" />}
+          {submitSuccess && (
+            <StatusMessage message="Policy version created successfully!" type="success" />
+          )}
+
+          {/* Submit Button */}
+          <div>
+            <Button
+              type="submit"
+              className="w-full"
+              style={{ backgroundColor: theme.brandOrange, ...fonts.body }}
+              disabled={isSubmitting}
+            >
               {isSubmitting ? 'Creating Version...' : 'Create Version'}
             </Button>
-          </form>
-        </Form>
-      </CardContent>
-    </Card>
+          </div>
+        </div>
+      </form>
+    </Form>
   );
 }

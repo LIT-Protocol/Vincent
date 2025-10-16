@@ -63,11 +63,9 @@ export function EditAbilityWrapper() {
   }
 
   const handleSubmit = async (data: EditAbilityFormData) => {
-    const { packageName, ...abilityEditData } = data;
-
     await editAbility({
-      packageName,
-      abilityEdit: { ...abilityEditData },
+      packageName: ability.packageName,
+      abilityEdit: data,
     });
   };
 

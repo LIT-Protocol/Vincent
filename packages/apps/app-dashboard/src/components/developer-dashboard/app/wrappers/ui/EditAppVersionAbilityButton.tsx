@@ -1,13 +1,14 @@
 import { useEffect } from 'react';
-import { StatusMessage } from '@/components/shared/ui/statusMessage';
+import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
 import {
   EditAppVersionAbilityForm,
   type EditAppVersionAbilityFormData,
 } from '../../forms/EditAppVersionAbilityForm.tsx';
 import { AppVersionAbility } from '@/types/developer-dashboard/appTypes';
 import { getErrorMessage } from '@/utils/developer-dashboard/app-forms';
-import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
 import { sortedSupportedPolicies } from '@/utils/developer-dashboard/sortSupportedPolicies';
+import LoadingLock from '@/components/shared/ui/LoadingLock';
+import { StatusMessage } from '@/components/shared/ui/statusMessage';
 
 interface EditAppVersionAbilityButtonProps {
   appId: number;
@@ -55,8 +56,7 @@ export function EditAppVersionAbilityButton({
   }, [isSuccess, data, onSuccess]);
 
   // Loading states
-  if (isLoadingPolicies || isLoadingAbilityVersion)
-    return <StatusMessage message="Loading..." type="info" />;
+  if (isLoadingPolicies || isLoadingAbilityVersion) return <LoadingLock />;
   if (isErrorPolicies) return <StatusMessage message="Failed to load policies" type="error" />;
   if (isErrorAbilityVersion)
     return <StatusMessage message="Failed to load ability version data" type="error" />;
@@ -68,10 +68,8 @@ export function EditAppVersionAbilityButton({
 
   const supportedPolicies = sortedSupportedPolicies(allPolicies || [], abilityVersionData);
 
-  // Mutation
-  if (isLoading) {
-    return <StatusMessage message="Updating ability..." type="info" />;
-  }
+  // Mutation states
+  if (isLoading) return <LoadingLock />;
 
   if (isSuccess && data) {
     return <StatusMessage message="Ability updated successfully!" type="success" />;

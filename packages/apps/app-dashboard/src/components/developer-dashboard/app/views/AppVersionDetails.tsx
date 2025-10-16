@@ -7,6 +7,7 @@ import {
 } from '@/components/shared/ui/card';
 import { AppVersion, AppVersionAbility } from '@/types/developer-dashboard/appTypes';
 import { AppVersionAbilitiesDisplay } from '@/components/developer-dashboard/app/views/AppVersionAbilitiesDisplay.tsx';
+import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
 
 interface VersionDetailsProps {
   version: number;
@@ -42,8 +43,8 @@ export function VersionDetails({ version, versionData, abilities }: VersionDetai
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="p-4 bg-gray-50 dark:bg-white/5 rounded-lg border dark:border-white/10">
-              <p className="text-neutral-800 dark:text-white text-sm whitespace-pre-wrap">
+            <div className={`p-4 ${theme.itemBg} rounded-lg border ${theme.mainCardBorder}`}>
+              <p className={`${theme.text} text-sm whitespace-pre-wrap`} style={fonts.body}>
                 {versionData.changes}
               </p>
             </div>

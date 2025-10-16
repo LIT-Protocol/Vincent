@@ -1,11 +1,12 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { RotateCcw } from 'lucide-react';
 import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
 import { StatusMessage } from '@/components/shared/ui/statusMessage';
 import { getErrorMessage } from '@/utils/developer-dashboard/app-forms';
 import Loading from '@/components/shared/ui/Loading';
-import { ArchiveRestore } from 'lucide-react';
 import { Policy } from '@/types/developer-dashboard/appTypes';
+import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
 
 interface UndeletePolicyWrapperProps {
   policy: Policy;
@@ -54,11 +55,15 @@ export function UndeletePolicyButton({ policy }: UndeletePolicyWrapperProps) {
 
   return (
     <button
-      onClick={() => handleSubmit()}
-      className="inline-flex items-center gap-2 px-4 py-2 border border-green-200 dark:border-green-500/30 rounded-lg text-sm font-medium text-green-600 dark:text-green-400 bg-white dark:bg-neutral-800 hover:bg-green-50 dark:hover:bg-green-500/10 transition-colors relative z-10 !opacity-100 shadow-sm"
+      onClick={(e) => {
+        e.stopPropagation();
+        handleSubmit();
+      }}
+      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${theme.itemBg} hover:bg-green-500/10 text-green-600 dark:text-green-400 border border-transparent hover:border-green-500/30`}
+      style={fonts.body}
     >
-      <ArchiveRestore className="h-4 w-4" />
-      Undelete Policy
+      <RotateCcw className="h-3.5 w-3.5" />
+      Restore
     </button>
   );
 }

@@ -34,7 +34,7 @@ export function SelectField({
 }: SelectFieldProps) {
   return (
     <div className="space-y-2">
-      <Label>
+      <Label className="whitespace-nowrap">
         {label}
         {required && <span className="text-red-500 dark:text-red-400 ml-1">*</span>}
       </Label>

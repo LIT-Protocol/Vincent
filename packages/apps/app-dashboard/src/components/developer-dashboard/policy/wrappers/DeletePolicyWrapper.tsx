@@ -66,7 +66,7 @@ export function DeletePolicyWrapper() {
       </div>
 
       <DeletePolicyForm
-        title={policy.title || ''}
+        policyPackageName={policy.packageName}
         onSubmit={handleSubmit}
         isSubmitting={isLoading}
       />

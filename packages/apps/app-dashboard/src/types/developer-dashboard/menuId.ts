@@ -1,7 +1,7 @@
 export type MenuId =
-  | 'create-app'
-  | 'create-ability'
-  | 'create-policy'
-  | 'app'
-  | 'ability'
-  | 'policy';
+  | 'apps/create-app'
+  | 'abilities/create-ability'
+  | 'policies/create-policy'
+  | 'apps'
+  | 'abilities'
+  | 'policies';

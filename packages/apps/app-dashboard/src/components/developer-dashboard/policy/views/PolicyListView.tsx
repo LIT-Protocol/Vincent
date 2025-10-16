@@ -1,130 +1,182 @@
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
-import { Plus } from 'lucide-react';
-import { Button } from '@/components/shared/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/shared/ui/card';
+import { Plus, Shield } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { formatDate } from '@/utils/developer-dashboard/formatDateAndTime';
 import { UndeletePolicyButton } from '../wrappers';
 import { Policy } from '@/types/developer-dashboard/appTypes';
+import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
+import { PolicyCard } from '../../ui/PolicyCard';
+import { Logo } from '@/components/shared/ui/Logo';
 
 interface PolicyListViewProps {
   policies: Policy[];
   deletedPolicies: Policy[];
+  onCreatePolicy: () => void;
 }
 
-export function PolicyListView({ policies, deletedPolicies }: PolicyListViewProps) {
+export function PolicyListView({ policies, deletedPolicies, onCreatePolicy }: PolicyListViewProps) {
   const navigate = useNavigate();
+  const [showContent, setShowContent] = useState(false);
+
+  useEffect(() => {
+    setShowContent(true);
+  }, []);
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-neutral-800 dark:text-white">Your Policies</h1>
-      </div>
-
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: showContent ? 1 : 0 }}
+      transition={{ duration: 0.5, ease: 'easeInOut' }}
+      className="w-full space-y-8"
+    >
       {policies.length === 0 ? (
-        <div className="border dark:border-white/10 rounded-lg p-8 text-center">
-          <h2 className="text-xl font-semibold mb-4 text-neutral-800 dark:text-white">
-            No Policies Yet
-          </h2>
-          <p className="text-gray-600 dark:text-white/60 mb-6">
-            Create your first policy to get started with Vincent.
-          </p>
-          <Button
-            variant="outline"
-            className="text-gray-700 dark:text-white dark:border-white/20"
-            onClick={() => navigate('/developer/create-policy')}
-          >
-            <Plus className="h-4 w-4 mr-2 font-bold text-gray-700 dark:text-white" />
-            Create Policy
-          </Button>
+        <div className="flex items-center justify-center min-h-[400px] w-full">
+          <div className="text-center max-w-md mx-auto px-6">
+            <div
+              className={`inline-flex items-center justify-center w-16 h-16 rounded-full ${theme.itemBg} border ${theme.cardBorder} mb-6`}
+            >
+              <Shield className={`w-8 h-8 ${theme.textMuted}`} />
+            </div>
+            <h3 className={`text-xl font-semibold mb-2 ${theme.text}`} style={fonts.heading}>
+              No Policies Yet
+            </h3>
+            <p className={`text-sm ${theme.textMuted} leading-relaxed mb-6`} style={fonts.body}>
+              Create your first policy to get started with Vincent.
+            </p>
+            <button
+              onClick={onCreatePolicy}
+              className="px-4 py-2 rounded-lg text-sm font-semibold text-white transition-colors inline-flex items-center gap-2"
+              style={{ backgroundColor: theme.brandOrange, ...fonts.heading }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = theme.brandOrangeDarker;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = theme.brandOrange;
+              }}
+            >
+              <Plus className="h-4 w-4" />
+              Create Policy
+            </button>
+          </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-6">
-          {policies.map((policy) => (
-            <Card
-              key={policy.packageName}
-              className="cursor-pointer hover:shadow-md dark:hover:bg-white/[0.02] dark:border-white/10 transition-shadow"
-              onClick={() =>
-                navigate(`/developer/policy/${encodeURIComponent(policy.packageName)}`)
-              }
-            >
-              <CardHeader>
-                <CardTitle className="text-neutral-800 dark:text-white">
-                  {policy.packageName}
-                </CardTitle>
-                <CardDescription className="text-gray-700 dark:text-white/60">
-                  {policy.description || 'No description available'}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-sm text-gray-700 dark:text-white/60">
-                  <div className="space-y-1">
-                    <div>
-                      <span className="font-medium">Version:</span> {policy.activeVersion}
-                    </div>
-                    <div>
-                      <span className="font-medium">Created:</span> {formatDate(policy.createdAt)}
-                    </div>
+        <>
+          <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
+            {policies.map((policy) => (
+              <PolicyCard
+                key={policy.packageName}
+                onClick={() =>
+                  navigate(`/developer/policies/policy/${encodeURIComponent(policy.packageName)}`)
+                }
+              >
+                <div className="flex items-start gap-3 mb-4">
+                  <Logo
+                    logo={policy.logo}
+                    alt={`${policy.packageName} logo`}
+                    className="w-12 h-12 rounded-lg object-cover flex-shrink-0"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <h3
+                      className={`font-semibold ${theme.text} truncate text-lg mb-1`}
+                      style={fonts.heading}
+                    >
+                      {policy.packageName}
+                    </h3>
+                    <span
+                      className={`text-xs px-2 py-1 rounded-md ${theme.itemBg}`}
+                      style={fonts.body}
+                    >
+                      v{policy.activeVersion}
+                    </span>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                <p className={`text-sm ${theme.textMuted} line-clamp-2 mb-3`} style={fonts.body}>
+                  {policy.description || 'No description available'}
+                </p>
+                <div className={`text-xs ${theme.textSubtle}`} style={fonts.body}>
+                  Created: {formatDate(policy.createdAt)}
+                </div>
+              </PolicyCard>
+            ))}
+          </div>
+
+          {/* Create Another Policy CTA */}
+          <div className="pt-8 border-t border-gray-200 dark:border-white/10">
+            <div className="flex flex-col items-center justify-center py-6">
+              <h3 className={`text-lg font-semibold ${theme.text} mb-4`} style={fonts.heading}>
+                Ready to create another policy?
+              </h3>
+              <button
+                onClick={onCreatePolicy}
+                className="px-4 py-2 rounded-lg text-sm font-semibold text-white transition-colors inline-flex items-center gap-2"
+                style={{ backgroundColor: theme.brandOrange, ...fonts.heading }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = theme.brandOrangeDarker;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = theme.brandOrange;
+                }}
+              >
+                <Plus className="h-4 w-4" />
+                Create Policy
+              </button>
+            </div>
+          </div>
+        </>
       )}
       {/* Deleted Policies Section */}
       {deletedPolicies && deletedPolicies.length > 0 && (
-        <div className="space-y-4">
-          <div className="border-t dark:border-white/10 pt-6">
-            <h3 className="text-lg font-medium text-gray-600 dark:text-white/60 mb-4">
-              Deleted Policies
-            </h3>
-            <div className="grid grid-cols-1 gap-4">
-              {deletedPolicies.map((policy) => (
-                <Card key={policy.packageName} className="border-dashed dark:border-white/20">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="flex justify-between items-start text-gray-600 dark:text-white/60">
-                      <div className="flex items-center gap-3">
-                        <span className="line-through">{policy.packageName}</span>
-                        <span className="text-xs px-2 py-1 rounded-full bg-red-50 dark:bg-red-900/20 text-red-400">
-                          DELETED
-                        </span>
-                        <span className="text-xs px-2 py-1 rounded-full bg-gray-100 dark:bg-white/10 text-gray-500 dark:text-white/50">
-                          v{policy.activeVersion}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <UndeletePolicyButton policy={policy} />
-                      </div>
-                    </CardTitle>
-                    <CardDescription className="text-gray-500 dark:text-white/40 line-through">
-                      {policy.description}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="pt-2">
-                    <div className="text-sm text-gray-500 dark:text-white/40">
-                      <div className="space-y-1">
-                        <div>
-                          <span className="font-medium">Version:</span> {policy.activeVersion}
-                        </div>
-                        <div>
-                          <span className="font-medium">Created:</span>{' '}
-                          {formatDate(policy.createdAt)}
-                        </div>
-                      </div>
+        <div className="mt-8 pt-8 border-t border-gray-200 dark:border-white/10">
+          <h3 className={`text-lg font-semibold ${theme.textMuted} mb-4`} style={fonts.heading}>
+            Deleted Policies
+          </h3>
+          <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
+            {deletedPolicies.map((policy) => (
+              <PolicyCard key={policy.packageName} variant="deleted">
+                <div className="flex items-start gap-3 mb-4">
+                  <Logo
+                    logo={policy.logo}
+                    alt={`${policy.packageName} logo`}
+                    className="w-12 h-12 rounded-lg object-cover flex-shrink-0"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <h3
+                      className={`font-semibold ${theme.text} truncate text-lg mb-1`}
+                      style={fonts.heading}
+                    >
+                      {policy.packageName}
+                    </h3>
+                    <div className="flex gap-2 items-center flex-wrap">
+                      <span
+                        className={`text-xs px-2 py-1 rounded-md ${theme.itemBg}`}
+                        style={fonts.body}
+                      >
+                        v{policy.activeVersion}
+                      </span>
+                      <span
+                        className="text-xs px-2 py-1 rounded-md bg-red-500/10 text-red-500 dark:text-red-400"
+                        style={fonts.body}
+                      >
+                        Deleted
+                      </span>
                     </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                  </div>
+                </div>
+                <p className={`text-sm ${theme.textMuted} line-clamp-2 mb-3`} style={fonts.body}>
+                  {policy.description || 'No description available'}
+                </p>
+                <div className="flex items-center justify-between gap-2">
+                  <div className={`text-xs ${theme.textSubtle}`} style={fonts.body}>
+                    Created: {formatDate(policy.createdAt)}
+                  </div>
+                  <UndeletePolicyButton policy={policy} />
+                </div>
+              </PolicyCard>
+            ))}
           </div>
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }

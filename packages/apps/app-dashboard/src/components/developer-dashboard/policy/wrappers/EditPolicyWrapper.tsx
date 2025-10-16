@@ -62,11 +62,9 @@ export function EditPolicyWrapper() {
   }
 
   const handleSubmit = async (data: EditPolicyFormData) => {
-    const { packageName, ...policyEditData } = data;
-
     await editPolicy({
-      packageName,
-      policyEdit: { ...policyEditData },
+      packageName: policy.packageName,
+      policyEdit: data,
     });
   };
 

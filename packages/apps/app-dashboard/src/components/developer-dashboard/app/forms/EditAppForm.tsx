@@ -1,25 +1,23 @@
-import { z } from 'zod';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { docSchemas } from '@lit-protocol/vincent-registry-sdk';
+
 import { Form } from '@/components/shared/ui/form';
 import { Button } from '@/components/shared/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/shared/ui/card';
+import { StatusMessage } from '@/components/shared/ui/statusMessage';
 import {
   TextField,
   LongTextField,
   ArrayField,
+  DeploymentStatusSelectField,
   NumberSelectField,
   ImageUploadField,
-} from '../../form-fields';
-import { docSchemas } from '@lit-protocol/vincent-registry-sdk';
+} from '@/components/developer-dashboard/form-fields';
 import { App, AppVersion } from '@/types/developer-dashboard/appTypes';
-import { DeploymentStatusSelectField } from '../../form-fields/array/DeploymentStatusSelectField';
+import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
+import { extractErrorMessage } from '@/utils/developer-dashboard/app-forms';
 
 const { appDoc } = docSchemas;
 
@@ -48,7 +46,7 @@ export const EditAppSchema = z
     delegateeAddresses,
   })
   .required()
-  .partial({ logo: true })
+  .partial({ logo: true, activeVersion: true })
   .strict();
 
 export type EditAppFormData = z.infer<typeof EditAppSchema>;
@@ -58,6 +56,7 @@ interface EditAppFormProps {
   appVersions: AppVersion[];
   onSubmit: (data: EditAppFormData) => Promise<void>;
   isSubmitting?: boolean;
+  isPublished?: boolean;
 }
 
 export function EditAppForm({
@@ -65,7 +64,11 @@ export function EditAppForm({
   appVersions,
   onSubmit,
   isSubmitting = false,
+  isPublished = false,
 }: EditAppFormProps) {
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
+
   const form = useForm<EditAppFormData>({
     resolver: zodResolver(EditAppSchema),
     defaultValues: {
@@ -92,6 +95,18 @@ export function EditAppForm({
     formState: { errors },
   } = form;
 
+  const handleFormSubmit = async (data: EditAppFormData) => {
+    setSubmitError(null);
+    setSubmitSuccess(false);
+    try {
+      await onSubmit(data);
+      setSubmitSuccess(true);
+    } catch (error) {
+      console.error('Failed to update app:', error);
+      setSubmitError(extractErrorMessage(error, 'Failed to update app'));
+    }
+  };
+
   // Create version options from appVersions, showing enabled/disabled status for all versions
   const versionOptions = appVersions.map((version) => ({
     value: version.version,
@@ -99,14 +114,26 @@ export function EditAppForm({
   }));
 
   return (
-    <Card className="w-full max-w-2xl mx-auto">
-      <CardHeader>
-        <CardTitle>Edit App</CardTitle>
-        <CardDescription>Update an existing application</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Form {...form}>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <Form {...form}>
+      <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
+        <div className="space-y-8">
+          {/* Two-column grid for sections with aligned rows */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-8 gap-y-6 items-start">
+            {/* Headers */}
+            <h3
+              className={`text-sm font-semibold ${theme.text} uppercase tracking-wider`}
+              style={fonts.heading}
+            >
+              Basic Information
+            </h3>
+            <h3
+              className={`text-sm font-semibold ${theme.text} uppercase tracking-wider`}
+              style={fonts.heading}
+            >
+              Configuration
+            </h3>
+
+            {/* Row 1 */}
             <TextField
               name="name"
               register={register}
@@ -114,7 +141,6 @@ export function EditAppForm({
               label="App Name"
               placeholder="Enter app name"
             />
-
             <TextField
               name="contactEmail"
               register={register}
@@ -123,6 +149,7 @@ export function EditAppForm({
               placeholder="contact@example.com"
             />
 
+            {/* Row 2 */}
             <LongTextField
               name="description"
               register={register}
@@ -131,7 +158,6 @@ export function EditAppForm({
               placeholder="Describe your application"
               rows={4}
             />
-
             <TextField
               name="appUserUrl"
               register={register}
@@ -140,6 +166,7 @@ export function EditAppForm({
               placeholder="https://yourapp.com"
             />
 
+            {/* Row 3 */}
             <ImageUploadField
               name="logo"
               watch={watch}
@@ -149,6 +176,36 @@ export function EditAppForm({
               clearErrors={clearErrors}
               label="Logo"
             />
+            <div className="space-y-6">
+              <DeploymentStatusSelectField
+                error={errors.deploymentStatus?.message}
+                control={control}
+              />
+
+              {isPublished && (
+                <NumberSelectField
+                  name="activeVersion"
+                  error={errors.activeVersion?.message}
+                  control={control}
+                  label="Active Version"
+                  options={versionOptions}
+                  required
+                />
+              )}
+            </div>
+          </div>
+
+          {/* Divider */}
+          <div className={`border-t ${theme.cardBorder}`} />
+
+          {/* Advanced - Full width */}
+          <div className="space-y-6">
+            <h3
+              className={`text-sm font-semibold ${theme.text} uppercase tracking-wider`}
+              style={fonts.heading}
+            >
+              Advanced
+            </h3>
 
             <ArrayField
               name="redirectUris"
@@ -170,27 +227,25 @@ export function EditAppForm({
               placeholder="0x1234567890123456789012345678901234567890"
               required
             />
+          </div>
 
-            <DeploymentStatusSelectField
-              error={errors.deploymentStatus?.message}
-              control={control}
-            />
+          {/* Status Messages */}
+          {submitError && <StatusMessage message={submitError} type="error" />}
+          {submitSuccess && <StatusMessage message="App updated successfully!" type="success" />}
 
-            <NumberSelectField
-              name="activeVersion"
-              error={errors.activeVersion?.message}
-              control={control}
-              label="Active Version"
-              options={versionOptions}
-              required
-            />
-
-            <Button type="submit" className="w-full" disabled={isSubmitting}>
-              Update App
+          {/* Submit Button */}
+          <div>
+            <Button
+              type="submit"
+              className="w-full"
+              style={{ backgroundColor: theme.brandOrange, ...fonts.body }}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Updating...' : 'Update App'}
             </Button>
-          </form>
-        </Form>
-      </CardContent>
-    </Card>
+          </div>
+        </div>
+      </form>
+    </Form>
   );
 }
