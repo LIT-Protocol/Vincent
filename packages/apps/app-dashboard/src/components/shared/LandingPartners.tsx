@@ -1,6 +1,7 @@
 import React from 'react';
 import { logos } from './ExternalLogos';
 import { env } from '@/config/env';
+import { fonts } from '@/components/user-dashboard/connect/ui/theme';
 
 const LandingPartners: React.FC = () => {
   return (
@@ -8,7 +9,7 @@ const LandingPartners: React.FC = () => {
       <div className="max-w-lg mx-auto px-3">
         <p
           className="flex justify-center items-center mb-2 text-gray-900 dark:text-white text-xs tracking-wide font-medium"
-          style={{ fontFamily: "'ITC Avant Garde Gothic', sans-serif" }}
+          style={fonts.heading}
         >
           <a
             href="https://dune.com/lit_protocol/tvm-in-lit-protocol-mainnets"

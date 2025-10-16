@@ -6,6 +6,7 @@ import { logos } from '../../components/shared/ExternalLogos';
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useTheme } from '@/hooks/useTheme';
 import { toggleTheme } from '@/lib/theme';
+import { fonts } from '@/components/user-dashboard/connect/ui/theme';
 
 const CIRCLE_SIZE = 70;
 
@@ -111,7 +112,7 @@ export default function RootPage() {
               target="_blank"
               rel="noopener noreferrer"
               className="px-2.5 py-1.5 md:px-3 md:py-1.5 rounded-lg text-xs md:text-sm transition-colors no-underline !text-gray-900 dark:!text-white hover:bg-gray-100 dark:hover:bg-gray-800 whitespace-nowrap"
-              style={{ fontFamily: "'ITC Avant Garde Gothic', sans-serif" }}
+              style={fonts.heading}
             >
               Contact Us
             </a>
@@ -120,7 +121,7 @@ export default function RootPage() {
               target="_blank"
               rel="noopener noreferrer"
               className="px-2.5 py-1.5 md:px-3 md:py-1.5 rounded-lg text-xs md:text-sm transition-colors no-underline !text-gray-900 dark:!text-white hover:bg-gray-100 dark:hover:bg-gray-800 whitespace-nowrap"
-              style={{ fontFamily: "'ITC Avant Garde Gothic', sans-serif" }}
+              style={fonts.heading}
             >
               Docs
             </a>
@@ -129,7 +130,7 @@ export default function RootPage() {
               target="_blank"
               rel="noopener noreferrer"
               className="px-2.5 py-1.5 md:px-3 md:py-1.5 rounded-lg text-xs md:text-sm transition-colors no-underline !text-gray-900 dark:!text-white hover:bg-gray-100 dark:hover:bg-gray-800 whitespace-nowrap"
-              style={{ fontFamily: "'ITC Avant Garde Gothic', sans-serif" }}
+              style={fonts.heading}
             >
               Blog
             </a>
@@ -258,13 +259,13 @@ export default function RootPage() {
                   onClick={handleEarnClick}
                   className="text-white rounded font-semibold transition-colors hover:bg-[#E03A04]"
                   style={{
+                    ...fonts.heading,
                     backgroundColor: '#FF4205',
                     padding: isMobile
                       ? `${1.2 * globeScale}vh ${2.4 * globeScale}vh`
                       : `${0.8 * globeScale}vh ${1.6 * globeScale}vh`,
                     fontSize: isMobile ? `${2.2 * globeScale}vh` : `${1.6 * globeScale}vh`,
                     minWidth: isMobile ? `${16 * globeScale}vh` : `${11.2 * globeScale}vh`,
-                    fontFamily: "'ITC Avant Garde Gothic', sans-serif",
                   }}
                 >
                   Earn
@@ -279,12 +280,12 @@ export default function RootPage() {
                     onClick={() => navigate('/developer/dashboard')}
                     className="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 rounded font-semibold border border-gray-900 dark:border-gray-100 transition-all hover:!border-[#FF4205]"
                     style={{
+                      ...fonts.heading,
                       padding: isMobile
                         ? `${1.2 * globeScale}vh ${2.4 * globeScale}vh`
                         : `${0.8 * globeScale}vh ${1.6 * globeScale}vh`,
                       fontSize: isMobile ? `${2.2 * globeScale}vh` : `${1.6 * globeScale}vh`,
                       minWidth: isMobile ? `${16 * globeScale}vh` : `${11.2 * globeScale}vh`,
-                      fontFamily: "'ITC Avant Garde Gothic', sans-serif",
                     }}
                   >
                     Build
@@ -293,12 +294,12 @@ export default function RootPage() {
                     onClick={handleExploreClick}
                     className="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 rounded font-semibold border border-gray-900 dark:border-gray-100 transition-all hover:!border-[#FF4205]"
                     style={{
+                      ...fonts.heading,
                       padding: isMobile
                         ? `${1.2 * globeScale}vh ${2.4 * globeScale}vh`
                         : `${0.8 * globeScale}vh ${1.6 * globeScale}vh`,
                       fontSize: isMobile ? `${2.2 * globeScale}vh` : `${1.6 * globeScale}vh`,
                       minWidth: isMobile ? `${16 * globeScale}vh` : `${11.2 * globeScale}vh`,
-                      fontFamily: "'ITC Avant Garde Gothic', sans-serif",
                     }}
                   >
                     Explore

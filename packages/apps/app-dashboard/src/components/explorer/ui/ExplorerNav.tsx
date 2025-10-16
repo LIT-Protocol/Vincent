@@ -3,7 +3,7 @@ import { toggleTheme } from '@/lib/theme';
 import { useCallback, useState } from 'react';
 import { Menu, X } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
-import { theme } from '@/components/user-dashboard/connect/ui/theme';
+import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
 
 interface ExplorerNavProps {
   onNavigate?: (path: string) => void;
@@ -70,7 +70,7 @@ export function ExplorerNav({ onNavigate, sidebarTrigger }: ExplorerNavProps) {
                 onClick={() => handleNavigation('/user/apps')}
                 className="px-3 py-1.5 rounded-lg text-sm transition-colors no-underline hover:bg-gray-100 dark:hover:bg-gray-800 leading-none"
                 style={{
-                  fontFamily: "'ITC Avant Garde Gothic', sans-serif",
+                  ...fonts.heading,
                   color: isUser ? theme.brandOrange : undefined,
                 }}
               >
@@ -80,7 +80,7 @@ export function ExplorerNav({ onNavigate, sidebarTrigger }: ExplorerNavProps) {
                 onClick={() => handleNavigation('/developer/dashboard')}
                 className="px-3 py-1.5 rounded-lg text-sm transition-colors no-underline hover:bg-gray-100 dark:hover:bg-gray-800 leading-none"
                 style={{
-                  fontFamily: "'ITC Avant Garde Gothic', sans-serif",
+                  ...fonts.heading,
                   color: isDeveloper ? theme.brandOrange : undefined,
                 }}
               >
@@ -90,7 +90,7 @@ export function ExplorerNav({ onNavigate, sidebarTrigger }: ExplorerNavProps) {
                 onClick={() => handleNavigation('/explorer/apps')}
                 className="px-3 py-1.5 rounded-lg text-sm transition-colors no-underline hover:bg-gray-100 dark:hover:bg-gray-800 leading-none"
                 style={{
-                  fontFamily: "'ITC Avant Garde Gothic', sans-serif",
+                  ...fonts.heading,
                   color: isExplorer ? theme.brandOrange : undefined,
                 }}
               >
@@ -108,7 +108,7 @@ export function ExplorerNav({ onNavigate, sidebarTrigger }: ExplorerNavProps) {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="px-2.5 py-1.5 md:px-3 md:py-1.5 rounded-lg text-xs md:text-sm transition-colors no-underline !text-gray-900 dark:!text-white hover:bg-gray-100 dark:hover:bg-gray-800 whitespace-nowrap leading-none"
-                style={{ fontFamily: "'ITC Avant Garde Gothic', sans-serif" }}
+                style={fonts.heading}
               >
                 Contact Us
               </a>
@@ -117,7 +117,7 @@ export function ExplorerNav({ onNavigate, sidebarTrigger }: ExplorerNavProps) {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="px-2.5 py-1.5 md:px-3 md:py-1.5 rounded-lg text-xs md:text-sm transition-colors no-underline !text-gray-900 dark:!text-white hover:bg-gray-100 dark:hover:bg-gray-800 whitespace-nowrap leading-none"
-                style={{ fontFamily: "'ITC Avant Garde Gothic', sans-serif" }}
+                style={fonts.heading}
               >
                 Docs
               </a>
@@ -126,7 +126,7 @@ export function ExplorerNav({ onNavigate, sidebarTrigger }: ExplorerNavProps) {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="px-2.5 py-1.5 md:px-3 md:py-1.5 rounded-lg text-xs md:text-sm transition-colors no-underline !text-gray-900 dark:!text-white hover:bg-gray-100 dark:hover:bg-gray-800 whitespace-nowrap leading-none"
-                style={{ fontFamily: "'ITC Avant Garde Gothic', sans-serif" }}
+                style={fonts.heading}
               >
                 Blog
               </a>
@@ -191,7 +191,7 @@ export function ExplorerNav({ onNavigate, sidebarTrigger }: ExplorerNavProps) {
               <div className="flex flex-col gap-2">
                 <h3
                   className="px-3 pb-2 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400"
-                  style={{ fontFamily: "'ITC Avant Garde Gothic', sans-serif" }}
+                  style={fonts.heading}
                 >
                   Navigate
                 </h3>
@@ -199,7 +199,7 @@ export function ExplorerNav({ onNavigate, sidebarTrigger }: ExplorerNavProps) {
                   onClick={() => handleNavigation('/user/apps')}
                   className="px-3 py-2 rounded-lg text-sm transition-colors text-left hover:bg-gray-100 dark:hover:bg-gray-800"
                   style={{
-                    fontFamily: "'ITC Avant Garde Gothic', sans-serif",
+                    ...fonts.heading,
                     color: isUser ? theme.brandOrange : undefined,
                   }}
                 >
@@ -209,7 +209,7 @@ export function ExplorerNav({ onNavigate, sidebarTrigger }: ExplorerNavProps) {
                   onClick={() => handleNavigation('/developer/dashboard')}
                   className="px-3 py-2 rounded-lg text-sm transition-colors text-left hover:bg-gray-100 dark:hover:bg-gray-800"
                   style={{
-                    fontFamily: "'ITC Avant Garde Gothic', sans-serif",
+                    ...fonts.heading,
                     color: isDeveloper ? theme.brandOrange : undefined,
                   }}
                 >
@@ -219,7 +219,7 @@ export function ExplorerNav({ onNavigate, sidebarTrigger }: ExplorerNavProps) {
                   onClick={() => handleNavigation('/explorer/apps')}
                   className="px-3 py-2 rounded-lg text-sm transition-colors text-left hover:bg-gray-100 dark:hover:bg-gray-800"
                   style={{
-                    fontFamily: "'ITC Avant Garde Gothic', sans-serif",
+                    ...fonts.heading,
                     color: isExplorer ? theme.brandOrange : undefined,
                   }}
                 >
@@ -234,7 +234,7 @@ export function ExplorerNav({ onNavigate, sidebarTrigger }: ExplorerNavProps) {
               <div className="flex flex-col gap-2">
                 <h3
                   className="px-3 pb-2 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400"
-                  style={{ fontFamily: "'ITC Avant Garde Gothic', sans-serif" }}
+                  style={fonts.heading}
                 >
                   Resources
                 </h3>
@@ -243,7 +243,7 @@ export function ExplorerNav({ onNavigate, sidebarTrigger }: ExplorerNavProps) {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="px-3 py-2 rounded-lg text-sm transition-colors text-left no-underline !text-gray-900 dark:!text-white hover:bg-gray-100 dark:hover:bg-gray-800"
-                  style={{ fontFamily: "'ITC Avant Garde Gothic', sans-serif" }}
+                  style={fonts.heading}
                 >
                   Contact Us
                 </a>
@@ -252,7 +252,7 @@ export function ExplorerNav({ onNavigate, sidebarTrigger }: ExplorerNavProps) {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="px-3 py-2 rounded-lg text-sm transition-colors text-left no-underline !text-gray-900 dark:!text-white hover:bg-gray-100 dark:hover:bg-gray-800"
-                  style={{ fontFamily: "'ITC Avant Garde Gothic', sans-serif" }}
+                  style={fonts.heading}
                 >
                   Docs
                 </a>
@@ -261,7 +261,7 @@ export function ExplorerNav({ onNavigate, sidebarTrigger }: ExplorerNavProps) {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="px-3 py-2 rounded-lg text-sm transition-colors text-left no-underline !text-gray-900 dark:!text-white hover:bg-gray-100 dark:hover:bg-gray-800"
-                  style={{ fontFamily: "'ITC Avant Garde Gothic', sans-serif" }}
+                  style={fonts.heading}
                 >
                   Blog
                 </a>

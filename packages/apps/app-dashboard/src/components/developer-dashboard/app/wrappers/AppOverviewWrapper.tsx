@@ -1,7 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
+import { getClient } from '@lit-protocol/vincent-contracts-sdk';
+import * as Sentry from '@sentry/react';
 
+import { initPkpSigner } from '@/utils/developer-dashboard/initPkpSigner';
+import useReadAuthInfo from '@/hooks/user-dashboard/useAuthInfo';
 import { AppDetailsView } from '../views/AppDetailsView';
 import { EditAppForm } from '../forms/EditAppForm';
 import { CreateAppVersionForm } from '../forms/CreateAppVersionForm';
@@ -36,6 +40,7 @@ export function AppOverviewWrapper() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [currentView, setCurrentView] = useState<ViewType>('details');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { authInfo, sessionSigs } = useReadAuthInfo();
 
   const {
     data: app,
@@ -142,9 +147,37 @@ export function AppOverviewWrapper() {
   const handleDeleteAppSubmit = async () => {
     setIsSubmitting(true);
     try {
+      const isPublished = blockchainAppData !== null;
+
+      // Step 1: Delete in registry (always do this)
       await deleteApp({ appId: Number(appId) }).unwrap();
 
-      // Success - navigate back to apps list immediately
+      // Step 2: If published on-chain, also delete on-chain
+      if (isPublished) {
+        try {
+          const pkpSigner = await initPkpSigner({ authInfo, sessionSigs });
+          const client = getClient({ signer: pkpSigner });
+
+          await client.deleteApp({
+            appId: Number(appId),
+          });
+        } catch (onChainError) {
+          console.error('Failed to delete app on-chain:', onChainError);
+          // If on-chain deletion fails, log to Sentry but still navigate away
+          // The mismatch resolution UI will handle fixing the inconsistent state
+          Sentry.captureException(onChainError, {
+            extra: {
+              context: 'AppOverviewWrapper.handleDeleteAppSubmit',
+              appId: appId,
+              registryDeleted: true,
+              onChainDeleted: false,
+              userPkp: authInfo?.userPKP?.ethAddress,
+            },
+          });
+        }
+      }
+
+      // Success - navigate back to apps list
       navigate('/developer/apps');
     } catch (error) {
       console.error('Failed to delete app:', error);

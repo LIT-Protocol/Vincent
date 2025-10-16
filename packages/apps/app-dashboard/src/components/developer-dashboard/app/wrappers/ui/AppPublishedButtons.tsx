@@ -5,7 +5,7 @@ import { getClient } from '@lit-protocol/vincent-contracts-sdk';
 import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
 import { App } from '@/types/developer-dashboard/appTypes';
 import { App as ContractApp } from '@lit-protocol/vincent-contracts-sdk';
-import MutationButtonStates, { SkeletonButton } from '@/components/shared/ui/MutationButtonStates';
+import MutationButtonStates from '@/components/shared/ui/MutationButtonStates';
 import { AppMismatchResolution } from './AppMismatchResolution';
 import { initPkpSigner } from '@/utils/developer-dashboard/initPkpSigner';
 import useReadAuthInfo from '@/hooks/user-dashboard/useAuthInfo';
@@ -46,16 +46,16 @@ export function AppPublishedButtons({
     setIsProcessing(true);
 
     try {
-      // Step 1: Update registry
-      await undeleteAppInRegistry({
-        appId: appData.appId,
-      });
-
-      // Step 2: Update on-chain
+      // Step 1: Update on-chain first (if published)
       const pkpSigner = await initPkpSigner({ authInfo, sessionSigs });
       const client = getClient({ signer: pkpSigner });
 
       await client.undeleteApp({
+        appId: appData.appId,
+      });
+
+      // Step 2: Update registry (only after on-chain succeeds)
+      await undeleteAppInRegistry({
         appId: appData.appId,
       });
 
@@ -198,24 +198,16 @@ export function AppPublishedButtons({
       )}
 
       {/* Undelete button when deleted */}
-      {registryDeleted &&
-        (isLoading ? (
-          <div className="flex items-center justify-center">
-            <SkeletonButton />
-          </div>
-        ) : (
-          <ActionButton
-            icon={RotateCcw}
-            title="Undelete App"
-            description="Restore this app to active status"
-            onClick={handleUndelete}
-            variant="success"
-            iconBg="rgb(220 252 231)"
-            iconColor="rgb(22 163 74)"
-            borderColor="rgb(187 247 208 / 0.5)"
-            hoverBorderColor="rgb(34 197 94)"
-          />
-        ))}
+      {registryDeleted && (
+        <ActionButton
+          icon={RotateCcw}
+          title="Undelete App"
+          description="Restore this app to active status"
+          onClick={handleUndelete}
+          isLoading={isLoading}
+          variant="success"
+        />
+      )}
     </div>
   );
 }

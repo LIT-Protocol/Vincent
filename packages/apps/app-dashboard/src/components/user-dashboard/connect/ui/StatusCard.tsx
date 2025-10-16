@@ -1,5 +1,5 @@
 import { AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
-import { theme } from './theme';
+import { theme, fonts } from './theme';
 
 interface StatusCardProps {
   isLoading?: boolean;
@@ -51,10 +51,7 @@ export function StatusCard({
           className={`w-5 h-5 ${textClass} ${isLoading && !success && !error ? 'animate-spin' : ''}`}
         />
         <div className="flex-1 min-w-0">
-          <p
-            className={`text-sm font-medium ${textClass}`}
-            style={{ fontFamily: "'ITC Avant Garde Gothic', sans-serif" }}
-          >
+          <p className={`text-sm font-medium ${textClass}`} style={fonts.heading}>
             {title}
           </p>
           <div className={`text-xs ${textClass} mt-1`}>
