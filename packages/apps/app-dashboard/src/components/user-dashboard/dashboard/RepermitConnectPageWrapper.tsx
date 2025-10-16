@@ -30,11 +30,6 @@ export function RepermitConnectPageWrapper() {
     error: appError,
   } = vincentApiClient.useGetAppQuery({ appId: Number(appId) }, { skip: !appId });
 
-  // Early return if required params are missing
-  if (!appId) {
-    return <GeneralErrorScreen errorDetails="App ID was not provided" />;
-  }
-
   const isUserAuthed = authInfo?.userPKP && sessionSigs;
 
   // Check if we have finished loading but got no data (invalid appId)
@@ -49,11 +44,16 @@ export function RepermitConnectPageWrapper() {
 
   // Redirect if app is already permitted
   useEffect(() => {
-    if (isAllDataLoaded && permittedVersion !== null) {
+    if (isAllDataLoaded && permittedVersion !== null && appId) {
       // App is already permitted, redirect to normal manage page
       navigate(`/user/appId/${appId}`, { replace: true });
     }
   }, [isAllDataLoaded, permittedVersion, appId, navigate]);
+
+  // Early return if required params are missing
+  if (!appId) {
+    return <GeneralErrorScreen errorDetails="App ID was not provided" />;
+  }
 
   // Authentication check - must be done before other business logic
   if (!isProcessing && !isUserAuthed) {
