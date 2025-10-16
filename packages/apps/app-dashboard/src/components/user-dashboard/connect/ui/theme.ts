@@ -31,7 +31,7 @@ export const theme = {
 // Font families as style objects for inline styles
 export const fonts = {
   heading: {
-    fontFamily: "'Glacial Indifference', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+    fontFamily: "'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
   },
   body: {
     fontFamily:
