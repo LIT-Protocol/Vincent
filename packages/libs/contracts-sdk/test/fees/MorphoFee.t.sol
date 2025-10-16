@@ -16,7 +16,6 @@ import {OwnershipFacet} from "../../contracts/diamond-base/facets/OwnershipFacet
 import {MockERC4626} from "../mocks/MockERC4626.sol";
 import {MockERC20} from "../mocks/MockERC20.sol";
 
-
 contract MorphoFeeTest is FeeTestCommon {
     uint256 constant BASIS_POINT_DIVISOR = 10000;
 

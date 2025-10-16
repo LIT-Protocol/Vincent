@@ -61,7 +61,7 @@ contract MorphoFeeForkTest is FeeTestCommon {
         vm.stopPrank();
         morpho = Morpho(morphoVault.MORPHO());
         erc20Decimals = underlyingERC20.decimals();
-        
+
         address vincentDiamondAddress = _deployVincentDiamondAndBasicApp(APP_MANAGER_BOB, APP_DELEGATEE_BOB, DEV_APP_ID);
 
         // set the vincent app contract address in the fee diamond
@@ -358,7 +358,6 @@ contract MorphoFeeForkTest is FeeTestCommon {
         assertEq(d.vaultShares, 0);
         assertEq(d.vaultProvider, 0);
 
-
         // confirm the profit went to the fee contract, and some went to the user
         uint256 userBalance = underlyingERC20.balanceOf(APP_USER_ALICE);
         uint256 feeContractBalance = underlyingERC20.balanceOf(address(morphoPerfFeeFacet));
@@ -376,7 +375,7 @@ contract MorphoFeeForkTest is FeeTestCommon {
         assertEq(userBalance, depositAmount + expectedUserProfit);
         assertEq(feeContractBalance, expectedFeeContractProfit);
 
-         // test that the underlyingERC20 is in the set of tokens that have collected fees for the foundation
+        // test that the underlyingERC20 is in the set of tokens that have collected fees for the foundation
         address[] memory tokensWithCollectedFees =
             feeAdminFacet.tokensWithCollectedFees(LibFeeStorage.LIT_FOUNDATION_APP_ID);
         assertEq(tokensWithCollectedFees.length, 1);
