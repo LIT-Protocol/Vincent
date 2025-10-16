@@ -21,7 +21,7 @@ library LibFeeStorage {
     struct FeeStorage {
         // Vincent App Diamond contract address
         address vincentAppDiamond;
-        // maps appId to a user address to a vault/pool asset addres to a deposit
+        // maps appId to a user address to a vault/pool asset address to a deposit
         mapping(uint40 => mapping(address => mapping(address => Deposit))) deposits;
         // performance fee percentage, expressed in basis points
         // so 1000 = 10%.  multiply percentage by 100 to get basis points
