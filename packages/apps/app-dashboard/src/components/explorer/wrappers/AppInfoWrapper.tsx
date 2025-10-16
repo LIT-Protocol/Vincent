@@ -58,7 +58,6 @@ export function AppInfoWrapper() {
       <ExplorerErrorPage
         title="Failed to Load App"
         message="We couldn't load the application details. This might be due to a network issue or the app may no longer exist."
-        showBackButton={true}
       />
     );
   }
@@ -69,7 +68,6 @@ export function AppInfoWrapper() {
       <ExplorerErrorPage
         title="Failed to Load App Versions"
         message="We couldn't load the version history for this application."
-        showBackButton={true}
       />
     );
   }
@@ -80,7 +78,6 @@ export function AppInfoWrapper() {
       <ExplorerErrorPage
         title="Failed to Load Version Abilities"
         message="We couldn't load the capabilities for this app version."
-        showBackButton={true}
       />
     );
   }
@@ -91,7 +88,6 @@ export function AppInfoWrapper() {
       <ExplorerErrorPage
         title="App Not Found"
         message={`Application ${appId} could not be found. It may have been removed or the ID is incorrect.`}
-        showBackButton={true}
       />
     );
   }
@@ -101,7 +97,6 @@ export function AppInfoWrapper() {
       <ExplorerErrorPage
         title="No Versions Available"
         message="This application has no version information available."
-        showBackButton={true}
       />
     );
   }
@@ -111,7 +106,6 @@ export function AppInfoWrapper() {
       <ExplorerErrorPage
         title="Version Capabilities Unavailable"
         message="The capabilities for this app version are not available."
-        showBackButton={true}
       />
     );
   }
