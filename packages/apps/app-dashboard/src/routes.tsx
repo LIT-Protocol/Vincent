@@ -23,28 +23,16 @@ import {
   AbilitiesWrapper,
   AbilityOverviewWrapper,
   CreateAbilityWrapper,
-  EditAbilityWrapper,
-  CreateAbilityVersionWrapper,
-  ChangeAbilityOwnerWrapper,
   AbilityVersionsWrapper,
   AbilityVersionDetailsWrapper,
-  EditAbilityVersionWrapper,
-  DeleteAbilityWrapper,
-  DeleteAbilityVersionWrapper,
 } from '@/components/developer-dashboard/ability/wrappers';
 
 import {
   PoliciesWrapper,
   PolicyOverviewWrapper,
   CreatePolicyWrapper,
-  EditPolicyWrapper,
-  CreatePolicyVersionWrapper,
-  ChangePolicyOwnerWrapper,
   PolicyVersionsWrapper,
   PolicyVersionDetailsWrapper,
-  EditPolicyVersionWrapper,
-  DeletePolicyWrapper,
-  DeletePolicyVersionWrapper,
 } from './components/developer-dashboard/policy/wrappers';
 
 import { AppExploreWrapper } from './components/explorer/wrappers/AppExploreWrapper';
@@ -197,36 +185,12 @@ const routes: RouteObject[] = [
                     element: <AbilityOverviewWrapper />,
                   },
                   {
-                    path: 'ability/:packageName/edit-ability',
-                    element: <EditAbilityWrapper />,
-                  },
-                  {
-                    path: 'ability/:packageName/create-ability-version',
-                    element: <CreateAbilityVersionWrapper />,
-                  },
-                  {
-                    path: 'ability/:packageName/change-ability-owner',
-                    element: <ChangeAbilityOwnerWrapper />,
-                  },
-                  {
                     path: 'ability/:packageName/versions',
                     element: <AbilityVersionsWrapper />,
                   },
                   {
                     path: 'ability/:packageName/version/:version',
                     element: <AbilityVersionDetailsWrapper />,
-                  },
-                  {
-                    path: 'ability/:packageName/version/:version/edit-version',
-                    element: <EditAbilityVersionWrapper />,
-                  },
-                  {
-                    path: 'ability/:packageName/delete-ability',
-                    element: <DeleteAbilityWrapper />,
-                  },
-                  {
-                    path: 'ability/:packageName/version/:version/delete-version',
-                    element: <DeleteAbilityVersionWrapper />,
                   },
                 ],
               },
@@ -247,36 +211,12 @@ const routes: RouteObject[] = [
                     element: <PolicyOverviewWrapper />,
                   },
                   {
-                    path: 'policy/:packageName/edit-policy',
-                    element: <EditPolicyWrapper />,
-                  },
-                  {
-                    path: 'policy/:packageName/create-policy-version',
-                    element: <CreatePolicyVersionWrapper />,
-                  },
-                  {
-                    path: 'policy/:packageName/change-policy-owner',
-                    element: <ChangePolicyOwnerWrapper />,
-                  },
-                  {
                     path: 'policy/:packageName/versions',
                     element: <PolicyVersionsWrapper />,
                   },
                   {
                     path: 'policy/:packageName/version/:version',
                     element: <PolicyVersionDetailsWrapper />,
-                  },
-                  {
-                    path: 'policy/:packageName/version/:version/edit-version',
-                    element: <EditPolicyVersionWrapper />,
-                  },
-                  {
-                    path: 'policy/:packageName/delete-policy',
-                    element: <DeletePolicyWrapper />,
-                  },
-                  {
-                    path: 'policy/:packageName/version/:version/delete-version',
-                    element: <DeletePolicyVersionWrapper />,
                   },
                 ],
               },
