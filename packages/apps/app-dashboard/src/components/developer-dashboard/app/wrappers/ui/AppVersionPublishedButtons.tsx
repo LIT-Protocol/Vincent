@@ -3,10 +3,12 @@ import { Power, PowerOff } from 'lucide-react';
 import { AppVersion } from '@/types/developer-dashboard/appTypes';
 import { AppVersion as ContractAppVersion, getClient } from '@lit-protocol/vincent-contracts-sdk';
 import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
-import MutationButtonStates, { SkeletonButton } from '@/components/shared/ui/MutationButtonStates';
+import MutationButtonStates from '@/components/shared/ui/MutationButtonStates';
 import { AppVersionMismatchResolution } from './AppVersionMismatchResolution';
 import { initPkpSigner } from '@/utils/developer-dashboard/initPkpSigner';
 import useReadAuthInfo from '@/hooks/user-dashboard/useAuthInfo';
+import { theme } from '@/components/user-dashboard/connect/ui/theme';
+import { ActionButton } from '@/components/developer-dashboard/ui/ActionButton';
 
 interface AppVersionPublishedButtonsProps {
   appId: number;
@@ -75,12 +77,14 @@ export function AppVersionPublishedButtons({
       setTimeout(() => {
         refetchBlockchainAppVersionData();
       }, 3000);
-    } catch (error: any) {
-      if (error?.message?.includes('user rejected')) {
+    } catch (error) {
+      console.error('Failed to toggle app version:', error);
+      const message = error instanceof Error ? error.message : String(error);
+      if (message.includes('user rejected')) {
         setError('Transaction rejected.');
       } else {
         const action = targetState ? 'enable' : 'disable';
-        setError(error.message || `Failed to ${action} app version. Please try again.`);
+        setError(`Failed to ${action} app version. Please try again.`);
       }
     } finally {
       setIsProcessing(false);
@@ -99,10 +103,17 @@ export function AppVersionPublishedButtons({
   const isLoading = isProcessing || isEnabling || isDisabling;
 
   if (error || enableAppVersionError || disableAppVersionError) {
+    const extractMessage = (err: unknown): string | null => {
+      if (!err) return null;
+      if (typeof err === 'object' && 'message' in err) {
+        return String(err.message);
+      }
+      return null;
+    };
     const errorMessage =
       error ||
-      (enableAppVersionError as any)?.message ||
-      (disableAppVersionError as any)?.message ||
+      extractMessage(enableAppVersionError) ||
+      extractMessage(disableAppVersionError) ||
       'Failed to update app version.';
     return <MutationButtonStates type="error" errorMessage={errorMessage} />;
   }
@@ -126,45 +137,33 @@ export function AppVersionPublishedButtons({
 
   // Show regular enable/disable buttons when states are in sync
   return (
-    <div className="flex flex-wrap gap-3">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
       {/* Enable Button - Only show when disabled */}
       {!registryEnabled && (
-        <button
+        <ActionButton
+          icon={Power}
+          title="Enable App Version"
+          description="Make version available for use"
           onClick={() => handleVersionToggle(true)}
-          disabled={isLoading}
-          className={`inline-flex items-center gap-2 px-4 py-2 border rounded-lg text-sm font-medium bg-white dark:bg-neutral-800 transition-colors border-green-300 dark:border-green-500/30 text-green-700 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-500/10 ${
-            isLoading ? 'opacity-50 cursor-not-allowed' : ''
-          }`}
-        >
-          {isLoading ? (
-            <SkeletonButton />
-          ) : (
-            <>
-              <Power className="h-4 w-4" />
-              Enable App Version
-            </>
-          )}
-        </button>
+          isLoading={isLoading}
+          variant="success"
+          borderColor="rgb(134 239 172 / 0.3)"
+          hoverBorderColor={theme.brandOrange}
+        />
       )}
 
       {/* Disable Button - Only show when enabled */}
       {registryEnabled && (
-        <button
+        <ActionButton
+          icon={PowerOff}
+          title="Disable App Version"
+          description="Disable this version from use"
           onClick={() => handleVersionToggle(false)}
-          disabled={isLoading}
-          className={`inline-flex items-center gap-2 px-4 py-2 border rounded-lg text-sm font-medium bg-white dark:bg-neutral-800 transition-colors border-red-300 dark:border-red-500/30 text-red-700 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 ${
-            isLoading ? 'opacity-50 cursor-not-allowed' : ''
-          }`}
-        >
-          {isLoading ? (
-            <SkeletonButton />
-          ) : (
-            <>
-              <PowerOff className="h-4 w-4" />
-              Disable App Version
-            </>
-          )}
-        </button>
+          isLoading={isLoading}
+          variant="danger"
+          borderColor="rgb(252 165 165 / 0.3)"
+          hoverBorderColor={theme.brandOrange}
+        />
       )}
     </div>
   );

@@ -66,7 +66,7 @@ export function DeleteAbilityWrapper() {
       </div>
 
       <DeleteAbilityForm
-        title={ability.title || ''}
+        abilityPackageName={ability.packageName}
         onSubmit={handleSubmit}
         isSubmitting={isLoading}
       />

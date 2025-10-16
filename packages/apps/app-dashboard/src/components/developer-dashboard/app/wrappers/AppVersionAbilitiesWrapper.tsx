@@ -1,13 +1,16 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { ArrowRight, CheckCircle2 } from 'lucide-react';
 import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
+
 import { AppVersionAbility, Ability } from '@/types/developer-dashboard/appTypes';
 import { ManageAppVersionAbilities } from '../views/ManageAppVersionAbilities.tsx';
 import { CreateAppVersionAbilitiesForm } from '../forms/CreateAppVersionAbilitiesForm.tsx';
 import Loading from '@/components/shared/ui/Loading';
 import { StatusMessage } from '@/components/shared/ui/statusMessage';
 import { Button } from '@/components/shared/ui/button';
-import { ArrowRight, CheckCircle2 } from 'lucide-react';
+import { Breadcrumb } from '@/components/shared/ui/Breadcrumb';
+import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
 
 export function AppVersionAbilitiesWrapper() {
   const { appId, versionId } = useParams<{ appId: string; versionId: string }>();
@@ -100,73 +103,94 @@ export function AppVersionAbilitiesWrapper() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="w-full max-w-6xl mx-auto">
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <h1 className="text-3xl font-bold text-neutral-800 dark:text-white">
-              {app.name} - Version {versionData.version} Abilities
-            </h1>
-            <p className="text-gray-600 dark:text-white/60 mt-2">
-              Manage and configure abilities for this app version
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {isLoading && <StatusMessage message="Adding ability..." type="info" />}
-      {showSuccess && <StatusMessage message="Ability added successfully!" type="success" />}
-      {isError && <StatusMessage message="Failed to add ability" type="error" />}
-
-      {/* Add Abilities Form */}
-      <CreateAppVersionAbilitiesForm
-        existingAbilities={existingAbilityNames}
-        onAbilityAdd={handleAbilityAdd}
-        availableAbilities={allAbilities}
+    <>
+      <Breadcrumb
+        items={[
+          { label: 'Apps', onClick: () => navigate('/developer/apps') },
+          { label: app.name, onClick: () => navigate(`/developer/apps/appId/${appId}`) },
+          {
+            label: `Version ${versionData.version}`,
+            onClick: () => navigate(`/developer/apps/appId/${appId}/version/${versionId}`),
+          },
+          { label: 'Abilities' },
+        ]}
       />
 
-      {/* Current Abilities List */}
-      <div>
-        <div className="mb-4">
-          <h3 className="text-lg font-medium text-neutral-800 dark:text-white">
-            Current Abilities
-          </h3>
-          <p className="text-gray-600 dark:text-white/60 text-sm mt-1">
-            Abilities currently associated with this version. After adding and editing your
-            abilities, you can publish your app version to be accessible by users.
-          </p>
-        </div>
-        <ManageAppVersionAbilities
-          abilities={activeAbilities}
-          deletedAbilities={deletedAbilities}
-          appId={Number(appId)}
-          versionId={Number(versionId)}
+      <div className="space-y-6">
+        {/* Add Abilities Form */}
+        <CreateAppVersionAbilitiesForm
+          existingAbilities={existingAbilityNames}
+          onAbilityAdd={handleAbilityAdd}
+          availableAbilities={allAbilities}
         />
-      </div>
 
-      {activeAbilities.length > 0 && (
-        <div className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 border border-green-200 dark:border-green-500/30 rounded-lg p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0" />
-              <div>
-                <h3 className="font-medium text-neutral-800 dark:text-white">Ready to Publish?</h3>
-                <p className="text-gray-600 dark:text-white/70 text-sm">
-                  Your app version has {activeAbilities.length} abilit
-                  {activeAbilities.length === 1 ? 'y' : 'ies'} configured.
-                </p>
-              </div>
-            </div>
-            <Button
-              onClick={() => navigate(`/developer/apps/appId/${appId}/version/${versionId}`)}
-              className="bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600 text-white px-4 py-2 flex items-center gap-2 font-medium"
-            >
-              Publish App Version
-              <ArrowRight className="h-4 w-4" />
-            </Button>
+        {/* Status messages */}
+        {isLoading && <StatusMessage message="Adding ability..." type="info" />}
+        {showSuccess && <StatusMessage message="Ability added successfully!" type="success" />}
+        {isError && <StatusMessage message="Failed to add ability" type="error" />}
+
+        {/* Current Abilities Section */}
+        <div
+          className={`${theme.mainCard} border ${theme.mainCardBorder} rounded-xl overflow-hidden`}
+        >
+          <div className={`p-6 border-b ${theme.cardBorder}`}>
+            <h3 className={`text-lg font-semibold ${theme.text} mb-1`} style={fonts.heading}>
+              Current Abilities
+            </h3>
+            <p className={`text-sm ${theme.textMuted}`} style={fonts.body}>
+              Abilities currently associated with this version. After adding and editing your
+              abilities, you can publish your app version to be accessible by users.
+            </p>
+          </div>
+          <div className="p-6">
+            <ManageAppVersionAbilities
+              abilities={activeAbilities}
+              deletedAbilities={deletedAbilities}
+              appId={Number(appId)}
+              versionId={Number(versionId)}
+            />
           </div>
         </div>
-      )}
-    </div>
+
+        {activeAbilities.length > 0 && (
+          <div
+            className={`${theme.mainCard} border rounded-xl p-6`}
+            style={{ borderColor: theme.brandOrange }}
+          >
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="flex items-start gap-3">
+                <CheckCircle2
+                  className="h-5 w-5 flex-shrink-0 mt-0.5"
+                  style={{ color: theme.brandOrange }}
+                />
+                <div>
+                  <h3 className={`font-semibold ${theme.text}`} style={fonts.heading}>
+                    Ready to Publish?
+                  </h3>
+                  <p className={`text-sm ${theme.textMuted} mt-1`} style={fonts.body}>
+                    Your app version has {activeAbilities.length} abilit
+                    {activeAbilities.length === 1 ? 'y' : 'ies'} configured.
+                  </p>
+                </div>
+              </div>
+              <Button
+                onClick={() => navigate(`/developer/apps/appId/${appId}/version/${versionId}`)}
+                className="w-full sm:w-auto text-white"
+                style={{ backgroundColor: theme.brandOrange }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = theme.brandOrangeDarker;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = theme.brandOrange;
+                }}
+              >
+                Publish App Version
+                <ArrowRight className="h-4 w-4 ml-2" />
+              </Button>
+            </div>
+          </div>
+        )}
+      </div>
+    </>
   );
 }

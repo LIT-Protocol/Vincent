@@ -1,4 +1,3 @@
-import { createPortal } from 'react-dom';
 import { ArrowLeft } from 'lucide-react';
 import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
 
@@ -12,19 +11,16 @@ interface BreadcrumbProps {
 }
 
 /**
- * Shared breadcrumb component that renders into the header via portal.
+ * Shared breadcrumb component for page navigation.
  * Used across multiple pages for consistent navigation.
  */
 export function Breadcrumb({ items }: BreadcrumbProps) {
-  const breadcrumbContainer =
-    typeof document !== 'undefined' ? document.getElementById('header-breadcrumb') : null;
-
-  if (!breadcrumbContainer || items.length === 0) {
+  if (items.length === 0) {
     return null;
   }
 
-  const breadcrumb = (
-    <div className="flex items-center gap-2">
+  return (
+    <div className="flex items-center gap-2 mb-6">
       {items.map((item, index) => {
         const isFirst = index === 0;
         const isLast = index === items.length - 1;
@@ -59,6 +55,4 @@ export function Breadcrumb({ items }: BreadcrumbProps) {
       })}
     </div>
   );
-
-  return createPortal(breadcrumb, breadcrumbContainer);
 }

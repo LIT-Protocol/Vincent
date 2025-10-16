@@ -3,6 +3,7 @@ import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-
 import Loading from '@/components/shared/ui/Loading';
 import { StatusMessage } from '@/components/shared/ui/statusMessage';
 import { AbilityVersionDetailsView } from '../views/AbilityVersionDetailsView';
+import { Breadcrumb } from '@/components/shared/ui/Breadcrumb';
 
 export function AbilityVersionDetailsWrapper() {
   const { packageName, version } = useParams<{ packageName: string; version: string }>();
@@ -42,10 +43,23 @@ export function AbilityVersionDetailsWrapper() {
   };
 
   return (
-    <AbilityVersionDetailsView
-      ability={ability}
-      version={versionData}
-      onOpenMutation={onOpenMutation}
-    />
+    <>
+      <Breadcrumb
+        items={[
+          { label: 'Abilities', onClick: () => navigate('/developer/abilities') },
+          {
+            label: ability.title || ability.packageName,
+            onClick: () =>
+              navigate(`/developer/abilities/ability/${encodeURIComponent(packageName!)}`),
+          },
+          { label: `Version ${version}` },
+        ]}
+      />
+      <AbilityVersionDetailsView
+        ability={ability}
+        version={versionData}
+        onOpenMutation={onOpenMutation}
+      />
+    </>
   );
 }

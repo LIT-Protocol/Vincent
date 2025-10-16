@@ -16,14 +16,7 @@ import {
   AppVersionDetailWrapper,
   AppVersionsWrapper,
   AppVersionAbilitiesWrapper,
-  CreateAppVersionWrapper,
-  EditAppVersionWrapper,
-  EditAppWrapper,
-  EditPublishedAppWrapper,
-  DeleteAppWrapper,
   CreateAppWrapper,
-  DeleteAppVersionWrapper,
-  ManageDelegateesWrapper,
 } from './components/developer-dashboard/app/wrappers';
 
 import {
@@ -174,44 +167,16 @@ const routes: RouteObject[] = [
                     element: <AppOverviewWrapper />,
                   },
                   {
-                    path: 'appId/:appId/edit-published-app',
-                    element: <EditPublishedAppWrapper />,
-                  },
-                  {
-                    path: 'appId/:appId/edit-app',
-                    element: <EditAppWrapper />,
-                  },
-                  {
-                    path: 'appId/:appId/manage-delegatees',
-                    element: <ManageDelegateesWrapper />,
-                  },
-                  {
-                    path: 'appId/:appId/delete-app',
-                    element: <DeleteAppWrapper />,
-                  },
-                  {
                     path: 'appId/:appId/versions',
                     element: <AppVersionsWrapper />,
-                  },
-                  {
-                    path: 'appId/:appId/create-app-version',
-                    element: <CreateAppVersionWrapper />,
                   },
                   {
                     path: 'appId/:appId/version/:versionId',
                     element: <AppVersionDetailWrapper />,
                   },
                   {
-                    path: 'appId/:appId/version/:versionId/edit',
-                    element: <EditAppVersionWrapper />,
-                  },
-                  {
                     path: 'appId/:appId/version/:versionId/abilities',
                     element: <AppVersionAbilitiesWrapper />,
-                  },
-                  {
-                    path: 'appId/:appId/version/:versionId/delete-version',
-                    element: <DeleteAppVersionWrapper />,
                   },
                 ],
               },
