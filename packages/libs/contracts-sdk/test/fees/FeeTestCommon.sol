@@ -11,16 +11,17 @@ import {DeployFeeDiamond} from "../../script/DeployFeeDiamond.sol";
 
 import {MockPKPNftFacet} from "../mocks/MockPKPNftFacet.sol";
 
-
 contract FeeTestCommon is TestCommon {
-
     function _deployFeeDiamond() public returns (address) {
         DeployFeeDiamond deployScript = new DeployFeeDiamond();
         address diamondAddress = deployScript.deployToNetwork("test", keccak256("testSalt"));
         return diamondAddress;
     }
 
-    function _deployVincentDiamondAndBasicApp(address appManager, address appDelegatee, uint40 appId) public returns (address) {
+    function _deployVincentDiamondAndBasicApp(address appManager, address appDelegatee, uint40 appId)
+        public
+        returns (address)
+    {
         DeployVincentDiamond vincentDeployScript = new DeployVincentDiamond();
         MockPKPNftFacet mockPkpNft = new MockPKPNftFacet();
 

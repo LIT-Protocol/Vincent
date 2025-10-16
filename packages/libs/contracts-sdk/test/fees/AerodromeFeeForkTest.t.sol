@@ -77,7 +77,6 @@ contract AerodromeFeeForkTest is FeeTestCommon {
         vm.startPrank(owner);
         feeAdminFacet.setVincentAppDiamond(vincentDiamondAddress);
         vm.stopPrank();
-
     }
 
     function testSingleRouteSingleSwap() public {
@@ -104,8 +103,7 @@ contract AerodromeFeeForkTest is FeeTestCommon {
         uint256 userWethBalanceBefore = WETHErc20.balanceOf(APP_USER_ALICE);
 
         aerodromeSwapFeeFacet.swapExactTokensForTokensOnAerodrome(
-            DEV_APP_ID,
-            swapAmount, expectedOutput, routes, APP_USER_ALICE, block.timestamp + 1 minutes
+            DEV_APP_ID, swapAmount, expectedOutput, routes, APP_USER_ALICE, block.timestamp + 1 minutes
         );
         vm.stopPrank();
         console.log("swapped USDC to WETH");
@@ -199,8 +197,8 @@ contract AerodromeFeeForkTest is FeeTestCommon {
         uint256 userWethBalanceBefore = WETHErc20.balanceOf(APP_USER_ALICE);
 
         // first swap
-        aerodromeSwapFeeFacet.swapExactTokensForTokensOnAerodrome(DEV_APP_ID,
-            swapAmount, expectedOutput, routes, APP_USER_ALICE, block.timestamp + 1 minutes
+        aerodromeSwapFeeFacet.swapExactTokensForTokensOnAerodrome(
+            DEV_APP_ID, swapAmount, expectedOutput, routes, APP_USER_ALICE, block.timestamp + 1 minutes
         );
         vm.stopPrank();
         console.log("swapped USDC to WETH");
@@ -239,8 +237,7 @@ contract AerodromeFeeForkTest is FeeTestCommon {
         userWethBalanceBefore = WETHErc20.balanceOf(APP_USER_ALICE);
 
         aerodromeSwapFeeFacet.swapExactTokensForTokensOnAerodrome(
-            DEV_APP_ID,
-            swapAmount, expectedOutput, routes, APP_USER_ALICE, block.timestamp + 1 minutes
+            DEV_APP_ID, swapAmount, expectedOutput, routes, APP_USER_ALICE, block.timestamp + 1 minutes
         );
         vm.stopPrank();
         console.log("swapped USDC to WETH again");

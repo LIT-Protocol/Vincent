@@ -4,7 +4,6 @@ pragma solidity ^0.8.29;
 import "forge-std/Test.sol";
 import "forge-std/console.sol";
 
-
 import {Fee} from "../../contracts/fees/Fee.sol";
 import {FeeViewsFacet} from "../../contracts/fees/facets/FeeViewsFacet.sol";
 import {FeeAdminFacet} from "../../contracts/fees/facets/FeeAdminFacet.sol";
@@ -111,7 +110,6 @@ contract AaveFeeForkTest is FeeTestCommon {
         assertEq(d.assetAmount, depositAmount);
         console.log("d.vaultShares", d.vaultShares);
         console.log("d.vaultProvider", d.vaultProvider);
-
 
         // confirm that the fee contract has the aTokens
         ERC20 aToken = ERC20(aavePool.getReserveAToken(REAL_USDC));
