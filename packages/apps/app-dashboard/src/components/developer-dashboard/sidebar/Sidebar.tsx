@@ -11,7 +11,6 @@ import {
   SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -71,17 +70,7 @@ export function Sidebar() {
       collapsible="offcanvas"
       className="border-r-0 bg-white dark:bg-gray-950"
     >
-      <SidebarHeader className="border-b border-sidebar-border h-16">
-        <div className="flex items-center px-6 py-4 h-full">
-          <Link to="/">
-            <img
-              src={isDark ? '/vincent-main-logo-white.png' : '/vincent-main-logo.png'}
-              alt="Vincent by Lit Protocol"
-              className="h-8 object-contain cursor-pointer"
-            />
-          </Link>
-        </div>
-      </SidebarHeader>
+      {/* SidebarHeader hidden - logo is now in ExplorerNav */}
 
       <SidebarContent className="px-4 py-6">
         <SidebarGroup className="space-y-4">

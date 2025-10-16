@@ -135,7 +135,7 @@ export default function RootPage() {
             </a>
             <button
               onClick={toggleDarkMode}
-              className="px-2 py-1 md:px-2 md:py-1.5 rounded-lg transition-colors !text-gray-900 dark:!text-white hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center justify-center"
+              className="px-2 py-1.5 md:px-2 md:py-1.5 rounded-lg transition-colors !text-gray-900 dark:!text-white hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center justify-center -mt-0.5"
               aria-label="Toggle dark mode"
             >
               {isDarkMode ? (

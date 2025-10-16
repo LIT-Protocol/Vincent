@@ -98,7 +98,7 @@ function AppLayout({ children, className }: ComponentProps<'div'>) {
       <SidebarProvider style={{ '--sidebar-width': '14rem' } as React.CSSProperties}>
         <SidebarOffsetSync />
         <ExplorerNav onNavigate={(path) => navigate(path)} sidebarTrigger={<SidebarTrigger />} />
-        <div className="flex h-screen w-full relative z-10 pt-16">
+        <div className="flex h-screen w-full relative z-10 pt-[61px]">
           <DeveloperSidebarWrapper />
           <SidebarInset className="flex-1 overflow-hidden flex flex-col">
             <main className="flex-1 overflow-auto relative overflow-x-hidden flex flex-col">
