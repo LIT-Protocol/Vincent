@@ -34,17 +34,14 @@ export function ExplorerNav({ onNavigate, sidebarTrigger }: ExplorerNavProps) {
   const isUser = location.pathname.startsWith('/user');
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-[60] bg-white/80 dark:bg-gray-950/80 backdrop-blur-md border-b border-gray-200 dark:border-white/10 pointer-events-auto">
+    <nav className="fixed top-0 left-0 right-0 z-40 bg-white/80 dark:bg-gray-950/80 backdrop-blur-md border-b border-gray-200 dark:border-white/10 pointer-events-auto">
       <div className="px-6 sm:px-8 py-3">
         <div className="flex items-center justify-between">
           {/* Left side: Sidebar trigger (mobile only), Logo and main nav links */}
           <div className="flex items-center gap-3 sm:gap-6">
             {/* Sidebar trigger for mobile */}
             {sidebarTrigger && (
-              <div
-                className="md:hidden flex items-center relative z-[70]"
-                style={{ paddingTop: '10px' }}
-              >
+              <div className="md:hidden flex items-center relative" style={{ paddingTop: '10px' }}>
                 {sidebarTrigger}
               </div>
             )}
