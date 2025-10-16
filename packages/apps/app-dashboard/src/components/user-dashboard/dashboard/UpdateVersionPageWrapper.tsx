@@ -44,11 +44,6 @@ export function UpdateVersionPageWrapper() {
     authorizedRedirectUris: data?.app?.redirectUris,
   });
 
-  // Early return if required params are missing
-  if (!appId) {
-    return <GeneralErrorScreen errorDetails="App ID was not provided" />;
-  }
-
   // Wait for ALL critical data to load before making routing decisions
   const isUserAuthed = authInfo?.userPKP && sessionSigs;
 
@@ -68,7 +63,8 @@ export function UpdateVersionPageWrapper() {
       isAllDataLoaded &&
       data?.app &&
       permittedVersion !== null &&
-      permittedVersion !== undefined
+      permittedVersion !== undefined &&
+      appId
     ) {
       const activeVersion = data.app.activeVersion?.toString();
       const permitted = permittedVersion.toString();
@@ -79,6 +75,11 @@ export function UpdateVersionPageWrapper() {
       }
     }
   }, [isAllDataLoaded, data, permittedVersion, appId, navigate]);
+
+  // Early return if required params are missing
+  if (!appId) {
+    return <GeneralErrorScreen errorDetails="App ID was not provided" />;
+  }
 
   // Authentication check - must be done before other business logic
   if (!isProcessing && !isUserAuthed) {
