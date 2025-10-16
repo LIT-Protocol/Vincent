@@ -4,8 +4,6 @@ pragma solidity ^0.8.29;
 import "forge-std/Test.sol";
 import "forge-std/console.sol";
 
-import {DeployFeeDiamond} from "../../script/DeployFeeDiamond.sol";
-import {DeployVincentDiamond} from "../../script/DeployVincentDiamond.sol";
 
 import {Fee} from "../../contracts/fees/Fee.sol";
 import {FeeViewsFacet} from "../../contracts/fees/facets/FeeViewsFacet.sol";
@@ -13,19 +11,17 @@ import {FeeAdminFacet} from "../../contracts/fees/facets/FeeAdminFacet.sol";
 import {AavePerfFeeFacet} from "../../contracts/fees/facets/AavePerfFeeFacet.sol";
 import {LibFeeStorage} from "../../contracts/fees/LibFeeStorage.sol";
 import {FeeUtils} from "../../contracts/fees/FeeUtils.sol";
-import {OwnershipFacet} from "../../contracts/diamond-base/facets/OwnershipFacet.sol";
 
 import {VincentDiamond} from "../../contracts/VincentDiamond.sol";
 import {VincentAppFacet} from "../../contracts/facets/VincentAppFacet.sol";
 import {VincentAppViewFacet} from "../../contracts/facets/VincentAppViewFacet.sol";
-import {MockPKPNftFacet} from "../mocks/MockPKPNftFacet.sol";
 
 import {USDC} from "../ABIs/USDC.sol";
 import {IPool} from "@aave-dao/aave-v3-origin/src/contracts/interfaces/IPool.sol";
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import {TestCommon} from "../TestCommon.sol";
+import {FeeTestCommon} from "./FeeTestCommon.sol";
 
-contract AaveFeeForkTest is TestCommon {
+contract AaveFeeForkTest is FeeTestCommon {
     uint256 constant BASIS_POINT_DIVISOR = 10000;
 
     address owner;
@@ -45,7 +41,6 @@ contract AaveFeeForkTest is TestCommon {
     FeeViewsFacet public feeViewsFacet;
     FeeAdminFacet public feeAdminFacet;
     AavePerfFeeFacet public aavePerfFeeFacet;
-    OwnershipFacet public ownershipFacet;
 
     USDC public underlyingERC20;
     IPool public aavePool;
@@ -56,15 +51,11 @@ contract AaveFeeForkTest is TestCommon {
         vm.setEnv("VINCENT_DEPLOYER_PRIVATE_KEY", vm.toString(deployerPrivateKey));
         owner = vm.addr(deployerPrivateKey);
 
-        DeployFeeDiamond deployScript = new DeployFeeDiamond();
-
-        address diamondAddress = deployScript.deployToNetwork("test", keccak256("testSalt"));
-        feeDiamond = Fee(payable(diamondAddress));
+        address diamondAddress = _deployFeeDiamond();
 
         feeViewsFacet = FeeViewsFacet(diamondAddress);
         feeAdminFacet = FeeAdminFacet(diamondAddress);
         aavePerfFeeFacet = AavePerfFeeFacet(diamondAddress);
-        ownershipFacet = OwnershipFacet(diamondAddress);
 
         // set the aave pool address in the fee diamond
         vm.startPrank(owner);
@@ -81,24 +72,11 @@ contract AaveFeeForkTest is TestCommon {
         vm.stopPrank();
         erc20Decimals = underlyingERC20.decimals();
 
-        DeployVincentDiamond vincentDeployScript = new DeployVincentDiamond();
-        MockPKPNftFacet mockPkpNft = new MockPKPNftFacet();
-
-        diamondAddress = vincentDeployScript.deployToNetwork("test", address(mockPkpNft));
-        VincentAppFacet vincentAppFacet = VincentAppFacet(diamondAddress);
-
-        // register the app
-        vm.startPrank(APP_MANAGER_BOB);
-        address[] memory delegatees = new address[](1);
-        delegatees[0] = APP_DELEGATEE_BOB;
-        vincentAppFacet.registerApp(
-            DEV_APP_ID, delegatees, _createBasicVersionAbilities("QmAbility1", "QmAbility2", "QmPolicy1")
-        );
-        vm.stopPrank();
+        address vincentDiamondAddress = _deployVincentDiamondAndBasicApp(APP_MANAGER_BOB, APP_DELEGATEE_BOB, DEV_APP_ID);
 
         // set the vincent app contract address in the fee diamond
         vm.startPrank(owner);
-        feeAdminFacet.setVincentAppDiamond(diamondAddress);
+        feeAdminFacet.setVincentAppDiamond(vincentDiamondAddress);
         vm.stopPrank();
     }
 
@@ -193,7 +171,7 @@ contract AaveFeeForkTest is TestCommon {
         assertEq(tokensWithCollectedFees.length, 1);
         assertEq(tokensWithCollectedFees[0], address(underlyingERC20));
 
-        // check the collected fees for the app for the foundation
+        // check the collected fees for the foundation
         uint256 litCollectedAppFees =
             feeViewsFacet.collectedAppFees(LibFeeStorage.LIT_FOUNDATION_APP_ID, address(underlyingERC20));
         // check the collected fees for the app
@@ -224,7 +202,7 @@ contract AaveFeeForkTest is TestCommon {
         feeAdminFacet.withdrawAppFees(DEV_APP_ID, address(underlyingERC20));
         vm.stopPrank();
 
-        // confirm the profit went to the owner
+        // confirm the profit went to the app manager
         assertEq(underlyingERC20.balanceOf(APP_MANAGER_BOB), expectedAppCollectedAppFees);
 
         // confirm that the token is no longer in the set of tokens that have collected fees
