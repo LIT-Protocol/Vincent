@@ -116,11 +116,7 @@ contract MorphoFeeForkTest is FeeTestCommon {
         vm.warp(block.timestamp + 1 weeks);
         morpho.accrueInterest(
             Morpho.MarketParams({
-                loanToken: loanToken,
-                collateralToken: collateralToken,
-                oracle: oracle,
-                irm: irm,
-                lltv: lltv
+                loanToken: loanToken, collateralToken: collateralToken, oracle: oracle, irm: irm, lltv: lltv
             })
         );
 
@@ -333,11 +329,7 @@ contract MorphoFeeForkTest is FeeTestCommon {
         vm.warp(block.timestamp + 1 weeks);
         morpho.accrueInterest(
             Morpho.MarketParams({
-                loanToken: loanToken,
-                collateralToken: collateralToken,
-                oracle: oracle,
-                irm: irm,
-                lltv: lltv
+                loanToken: loanToken, collateralToken: collateralToken, oracle: oracle, irm: irm, lltv: lltv
             })
         );
 

@@ -271,8 +271,10 @@ contract VincentUserFacetTest is Test {
         assertEq(abilitiesWithPolicies[0].policies[0].policyIpfsCid, POLICY_IPFS_CID_1);
         assertEq(abilitiesWithPolicies[0].policies[0].policyParameterValues, POLICY_PARAMETER_VALUES_1);
 
-        VincentUserViewFacet.AbilityExecutionValidation memory abilityExecutionValidation = vincentUserViewFacet
-            .validateAbilityExecutionAndGetPolicies(APP_DELEGATEE_CHARLIE, PKP_TOKEN_ID_1, ABILITY_IPFS_CID_1);
+        VincentUserViewFacet.AbilityExecutionValidation memory abilityExecutionValidation =
+            vincentUserViewFacet.validateAbilityExecutionAndGetPolicies(
+                APP_DELEGATEE_CHARLIE, PKP_TOKEN_ID_1, ABILITY_IPFS_CID_1
+            );
         assertTrue(abilityExecutionValidation.isPermitted);
         assertEq(abilityExecutionValidation.appId, newAppId_1);
         assertEq(abilityExecutionValidation.appVersion, newAppVersion_1);
@@ -402,8 +404,10 @@ contract VincentUserFacetTest is Test {
         assertEq(permittedAppIds[0], newAppId_2);
 
         // Verify ability execution validation for App 1 is no longer permitted
-        VincentUserViewFacet.AbilityExecutionValidation memory abilityExecutionValidation = vincentUserViewFacet
-            .validateAbilityExecutionAndGetPolicies(APP_DELEGATEE_CHARLIE, PKP_TOKEN_ID_1, ABILITY_IPFS_CID_1);
+        VincentUserViewFacet.AbilityExecutionValidation memory abilityExecutionValidation =
+            vincentUserViewFacet.validateAbilityExecutionAndGetPolicies(
+                APP_DELEGATEE_CHARLIE, PKP_TOKEN_ID_1, ABILITY_IPFS_CID_1
+            );
         assertFalse(abilityExecutionValidation.isPermitted);
 
         bool isPermitted =
@@ -635,8 +639,10 @@ contract VincentUserFacetTest is Test {
         assertEq(abilitiesWithPolicies[1].policies.length, 0);
 
         // Verify ability execution validation returns empty parameters
-        VincentUserViewFacet.AbilityExecutionValidation memory abilityExecutionValidation = vincentUserViewFacet
-            .validateAbilityExecutionAndGetPolicies(APP_DELEGATEE_CHARLIE, PKP_TOKEN_ID_1, ABILITY_IPFS_CID_1);
+        VincentUserViewFacet.AbilityExecutionValidation memory abilityExecutionValidation =
+            vincentUserViewFacet.validateAbilityExecutionAndGetPolicies(
+                APP_DELEGATEE_CHARLIE, PKP_TOKEN_ID_1, ABILITY_IPFS_CID_1
+            );
         assertTrue(abilityExecutionValidation.isPermitted);
         assertEq(abilityExecutionValidation.policies.length, 1);
         assertEq(abilityExecutionValidation.policies[0].policyParameterValues, bytes("")); // Empty bytes after removal
