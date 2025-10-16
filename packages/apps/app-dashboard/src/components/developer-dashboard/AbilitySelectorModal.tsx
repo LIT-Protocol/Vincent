@@ -123,10 +123,10 @@ export function AbilitySelectorModal({
   existingAbilities,
   availableAbilities,
 }: AbilitySelectorModalProps) {
-  // Filter out already added abilities and abilities with 'dev' status
+  // Filter out already added abilities
   const filteredAbilities = availableAbilities.filter(
     (ability) =>
-      !existingAbilities.includes(ability.packageName) && ability.deploymentStatus !== 'dev',
+      !existingAbilities.includes(ability.packageName)
   );
 
   const handleRowClick = async (event: RowClickedEvent) => {
