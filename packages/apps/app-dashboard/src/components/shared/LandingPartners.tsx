@@ -17,7 +17,7 @@ const LandingPartners: React.FC = () => {
             rel="noopener noreferrer"
             className="!text-gray-900 dark:!text-white hover:!text-orange-500 transition-colors !no-underline"
             style={{ textDecoration: 'none' }}
-          >            $250M+ Managed
+          >
             ${env.VITE_LIT_TOTAL_MANAGED} Managed
           </a>
           <span className="mx-2">•</span>
