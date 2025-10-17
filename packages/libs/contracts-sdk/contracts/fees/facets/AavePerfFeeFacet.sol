@@ -87,7 +87,7 @@ contract AavePerfFeeFacet is FeeCommon {
         IERC20 asset = IERC20(poolAsset);
         IERC20 aToken = IERC20(aave.getReserveAToken(poolAsset));
 
-        // transfer the aave tokens to this contract, so we can we use them to withdraw from aave
+        // transfer the aave tokens to this contract, so we can use them to withdraw from aave
         aToken.transferFrom(msg.sender, address(this), amount);
         aToken.approve(address(aave), amount);
 
