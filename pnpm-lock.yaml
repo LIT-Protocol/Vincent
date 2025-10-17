@@ -177,6 +177,9 @@ importers:
       '@lit-protocol/esbuild-plugin-polyfill-node':
         specifier: ^0.3.0
         version: 0.3.0(esbuild@0.25.10)
+      '@lit-protocol/vincent-ability-aerodrome-swap':
+        specifier: workspace:*
+        version: link:../ability-aerodrome-swap
       '@lit-protocol/vincent-ability-erc20-approval':
         specifier: workspace:*
         version: link:../ability-erc20-approval
@@ -228,6 +231,9 @@ importers:
       ipfs-only-hash:
         specifier: ^4.0.0
         version: 4.0.0
+      sugar-sdk:
+        specifier: file:vendor/sugar-sdk-0.2.1.tgz
+        version: file:packages/apps/abilities-e2e/vendor/sugar-sdk-0.2.1.tgz(@wagmi/core@2.21.2(@tanstack/query-core@5.90.2)(@types/react@19.2.2)(immer@10.1.3)(react@19.2.0)(typescript@5.8.3)(use-sync-external-store@1.6.0(react@19.2.0))(viem@2.29.2(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)))(graphology-types@0.24.8)(viem@2.29.2(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64))
       tslib:
         specifier: 2.8.1
         version: 2.8.1
@@ -271,6 +277,40 @@ importers:
       ethers:
         specifier: ^5.8.0
         version: 5.8.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+      tslib:
+        specifier: 2.8.1
+        version: 2.8.1
+      zod:
+        specifier: ^3.25.64
+        version: 3.25.64
+    devDependencies:
+      '@lit-protocol/esbuild-plugin-polyfill-node':
+        specifier: ^0.3.0
+        version: 0.3.0(esbuild@0.19.12)
+      esbuild:
+        specifier: ^0.19.12
+        version: 0.19.12
+      ipfs-only-hash:
+        specifier: ^4.0.0
+        version: 4.0.0
+
+  packages/apps/ability-aerodrome-swap:
+    dependencies:
+      '@lit-protocol/vincent-ability-sdk':
+        specifier: workspace:*
+        version: link:../../libs/ability-sdk
+      '@lit-protocol/vincent-app-sdk':
+        specifier: workspace:^
+        version: link:../../libs/app-sdk
+      '@lit-protocol/vincent-scaffold-sdk':
+        specifier: ^1.1.7
+        version: 1.1.8(@lit-protocol/vincent-app-sdk@packages+libs+app-sdk)(@lit-protocol/vincent-tool-sdk@1.0.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(@tanstack/query-core@5.90.2)(@types/node@22.7.5)(@types/react@19.2.2)(bufferutil@4.0.9)(immer@10.1.3)(react@19.2.0)(typescript@5.8.3)(use-sync-external-store@1.6.0(react@19.2.0))(utf-8-validate@5.0.10)(zod@3.25.64)
+      ethers:
+        specifier: ^5.8.0
+        version: 5.8.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+      sugar-sdk:
+        specifier: file:vendor/sugar-sdk-0.2.1.tgz
+        version: file:packages/apps/ability-aerodrome-swap/vendor/sugar-sdk-0.2.1.tgz(@wagmi/core@2.21.2(@tanstack/query-core@5.90.2)(@types/react@19.2.2)(immer@10.1.3)(react@19.2.0)(typescript@5.8.3)(use-sync-external-store@1.6.0(react@19.2.0))(viem@2.38.0(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)))(graphology-types@0.24.8)(viem@2.38.0(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64))
       tslib:
         specifier: 2.8.1
         version: 2.8.1
@@ -8089,6 +8129,24 @@ packages:
   graphemer@1.4.0:
     resolution: {integrity: sha512-EtKwoO6kxCL9WO5xipiHTZlSzBm7WLT627TqC/uVRd0HKmq8NXyebnNYxDoBi7wt8eTWrUrKXCOVaFq9x1kgag==}
 
+  graphology-simple-path@0.2.0:
+    resolution: {integrity: sha512-4cGMWbVuJM0zlKDUx6dS6JGGLddizDPe8PsTokXVz2eTeHYg07qa5TgwIco15ta2RMM05+xy8N1mFnpS85y0kw==}
+    peerDependencies:
+      graphology-types: '>=0.20.0'
+
+  graphology-types@0.24.8:
+    resolution: {integrity: sha512-hDRKYXa8TsoZHjgEaysSRyPdT6uB78Ci8WnjgbStlQysz7xR52PInxNsmnB7IBOM1BhikxkNyCVEFgmPKnpx3Q==}
+
+  graphology-utils@1.8.0:
+    resolution: {integrity: sha512-Pa7SW30OMm8fVtyH49b3GJ/uxlMHGfXly50wIhlcc7ZoX9ahZa7sPBz+obo4WZClrRV6wh3tIu0GJoI42eao1A==}
+    peerDependencies:
+      graphology-types: '>=0.19.0'
+
+  graphology@0.25.4:
+    resolution: {integrity: sha512-33g0Ol9nkWdD6ulw687viS8YJQBxqG5LWII6FI6nul0pq6iM2t5EKquOTFDbyTblRB3O9I+7KX4xI8u5ffekAQ==}
+    peerDependencies:
+      graphology-types: '>=0.24.0'
+
   graphql-request@3.7.0:
     resolution: {integrity: sha512-dw5PxHCgBneN2DDNqpWu8QkbbJ07oOziy8z+bK/TAXufsOLaETuVO4GkXrbs0WjhdKhBMN3BkpN/RIvUHkmNUQ==}
     peerDependencies:
@@ -9630,6 +9688,9 @@ packages:
   mnemonist@0.38.5:
     resolution: {integrity: sha512-bZTFT5rrPKtPJxj8KSV0WkPyNxl72vQepqqVUAW2ARUpUSF2qXMB6jZj7hW5/k7C1rtpzqbD/IIbJwLXUjCHeg==}
 
+  mnemonist@0.39.8:
+    resolution: {integrity: sha512-vyWo2K3fjrUw8YeeZ1zF0fy6Mu59RHokURlld8ymdUPjMlD9EC9ov1/YPqTgqRvUN9nTr3Gqfz29LYAmu0PHPQ==}
+
   mocha@10.8.2:
     resolution: {integrity: sha512-VZlYo/WE8t1tstuRmqgeyBgCbJc/lEdopaa+axcKzTBJ+UIdlAB9XnmvTCAH4pwR4ElNInaedhEBmZD8iCSVEg==}
     engines: {node: '>= 14.0.0'}
@@ -10787,6 +10848,9 @@ packages:
   radix3@1.1.2:
     resolution: {integrity: sha512-b484I/7b8rDEdSDKckSSBA8knMpcdsXudlE/LNL639wFoHKwLbEkQFZHWEYwDC0wa0FKUcCY+GAF73Z7wxNVFA==}
 
+  ramda@0.30.1:
+    resolution: {integrity: sha512-tEF5I22zJnuclswcZMc8bDIrwRHRzf+NqVEmqg50ShAZMP7MWeR/RGDthfM/p+BlqvF2fXAzpn8i+SJcYD3alw==}
+
   randombytes@2.1.0:
     resolution: {integrity: sha512-vYl3iOX+4CKUWuxGi9Ukhie6fsqXqS9FE2Zaic4tNFD2N2QQaXOMFbuKK4QmDHC0JO6B1Zp41J0LpT0oR68amQ==}
 
@@ -11677,6 +11741,20 @@ packages:
     engines: {node: ^18.12.0 || ^20.9.0 || >=22.0}
     peerDependencies:
       postcss: ^8.4.32
+
+  sugar-sdk@file:packages/apps/abilities-e2e/vendor/sugar-sdk-0.2.1.tgz:
+    resolution: {integrity: sha512-OVCS8JB+hwB88zXM8uwH7VUr5u1GG0rkYaxEd25AUklCUXmrBEpyHQJTNWyyam+nzrA8aCcnlY/HRHjc/vh/pw==, tarball: file:packages/apps/abilities-e2e/vendor/sugar-sdk-0.2.1.tgz}
+    version: 0.2.1
+    peerDependencies:
+      '@wagmi/core': ^2.0.0
+      viem: ^2.0.0
+
+  sugar-sdk@file:packages/apps/ability-aerodrome-swap/vendor/sugar-sdk-0.2.1.tgz:
+    resolution: {integrity: sha512-OVCS8JB+hwB88zXM8uwH7VUr5u1GG0rkYaxEd25AUklCUXmrBEpyHQJTNWyyam+nzrA8aCcnlY/HRHjc/vh/pw==, tarball: file:packages/apps/ability-aerodrome-swap/vendor/sugar-sdk-0.2.1.tgz}
+    version: 0.2.1
+    peerDependencies:
+      '@wagmi/core': ^2.0.0
+      viem: ^2.0.0
 
   superstruct@1.0.4:
     resolution: {integrity: sha512-7JpaAoX2NGyoFlI9NBh66BQXGONc+uE+MRS5i2iOBKuS4e+ccgMDjATgZldkah+33DakBxDHiss9kvUcGAO8UQ==}
@@ -19671,6 +19749,21 @@ snapshots:
       - react
       - use-sync-external-store
 
+  '@wagmi/core@2.21.2(@tanstack/query-core@5.90.2)(@types/react@19.2.2)(immer@10.1.3)(react@19.2.0)(typescript@5.8.3)(use-sync-external-store@1.6.0(react@19.2.0))(viem@2.29.2(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64))':
+    dependencies:
+      eventemitter3: 5.0.1
+      mipd: 0.0.7(typescript@5.8.3)
+      viem: 2.29.2(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)
+      zustand: 5.0.0(@types/react@19.2.2)(immer@10.1.3)(react@19.2.0)(use-sync-external-store@1.6.0(react@19.2.0))
+    optionalDependencies:
+      '@tanstack/query-core': 5.90.2
+      typescript: 5.8.3
+    transitivePeerDependencies:
+      - '@types/react'
+      - immer
+      - react
+      - use-sync-external-store
+
   '@wallet-standard/base@1.1.0': {}
 
   '@wallet-standard/wallet@1.1.0':
@@ -23901,6 +23994,24 @@ snapshots:
 
   graphemer@1.4.0: {}
 
+  graphology-simple-path@0.2.0(graphology-types@0.24.8):
+    dependencies:
+      graphology-types: 0.24.8
+      graphology-utils: 1.8.0(graphology-types@0.24.8)
+      mnemonist: 0.39.8
+
+  graphology-types@0.24.8: {}
+
+  graphology-utils@1.8.0(graphology-types@0.24.8):
+    dependencies:
+      graphology-types: 0.24.8
+
+  graphology@0.25.4(graphology-types@0.24.8):
+    dependencies:
+      events: 3.3.0
+      graphology-types: 0.24.8
+      obliterator: 2.0.5
+
   graphql-request@3.7.0(graphql@15.10.1):
     dependencies:
       cross-fetch: 3.2.0
@@ -25919,6 +26030,10 @@ snapshots:
     dependencies:
       obliterator: 2.0.5
 
+  mnemonist@0.39.8:
+    dependencies:
+      obliterator: 2.0.5
+
   mocha@10.8.2:
     dependencies:
       ansi-colors: 4.1.3
@@ -27253,6 +27368,8 @@ snapshots:
 
   radix3@1.1.2: {}
 
+  ramda@0.30.1: {}
+
   randombytes@2.1.0:
     dependencies:
       safe-buffer: 5.2.1
@@ -28279,6 +28396,26 @@ snapshots:
       browserslist: 4.26.3
       postcss: 8.5.6
       postcss-selector-parser: 7.1.0
+
+  sugar-sdk@file:packages/apps/abilities-e2e/vendor/sugar-sdk-0.2.1.tgz(@wagmi/core@2.21.2(@tanstack/query-core@5.90.2)(@types/react@19.2.2)(immer@10.1.3)(react@19.2.0)(typescript@5.8.3)(use-sync-external-store@1.6.0(react@19.2.0))(viem@2.29.2(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)))(graphology-types@0.24.8)(viem@2.29.2(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)):
+    dependencies:
+      '@wagmi/core': 2.21.2(@tanstack/query-core@5.90.2)(@types/react@19.2.2)(immer@10.1.3)(react@19.2.0)(typescript@5.8.3)(use-sync-external-store@1.6.0(react@19.2.0))(viem@2.29.2(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64))
+      graphology: 0.25.4(graphology-types@0.24.8)
+      graphology-simple-path: 0.2.0(graphology-types@0.24.8)
+      ramda: 0.30.1
+      viem: 2.29.2(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)
+    transitivePeerDependencies:
+      - graphology-types
+
+  sugar-sdk@file:packages/apps/ability-aerodrome-swap/vendor/sugar-sdk-0.2.1.tgz(@wagmi/core@2.21.2(@tanstack/query-core@5.90.2)(@types/react@19.2.2)(immer@10.1.3)(react@19.2.0)(typescript@5.8.3)(use-sync-external-store@1.6.0(react@19.2.0))(viem@2.38.0(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)))(graphology-types@0.24.8)(viem@2.38.0(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)):
+    dependencies:
+      '@wagmi/core': 2.21.2(@tanstack/query-core@5.90.2)(@types/react@19.2.2)(immer@10.1.3)(react@19.2.0)(typescript@5.8.3)(use-sync-external-store@1.4.0(react@19.2.0))(viem@2.38.0(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64))
+      graphology: 0.25.4(graphology-types@0.24.8)
+      graphology-simple-path: 0.2.0(graphology-types@0.24.8)
+      ramda: 0.30.1
+      viem: 2.38.0(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)
+    transitivePeerDependencies:
+      - graphology-types
 
   superstruct@1.0.4: {}
 

@@ -68,7 +68,8 @@
       "ability-aave",
       "ability-debridge",
       "policy-send-counter",
-      "ability-sol-transaction-signer"
+      "ability-sol-transaction-signer",
+      "ability-aerodrome-swap"
     ],
     "projectsRelationship": "independent",
     "releaseTagPattern": "vincent/{projectName}/{version}",
