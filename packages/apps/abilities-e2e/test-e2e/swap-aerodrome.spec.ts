@@ -513,7 +513,7 @@ describe('Aerodrome Swap Ability E2E Tests', () => {
       expect(approvalTxHash).toMatch(/^0x[a-fA-F0-9]{64}$/);
 
       console.log(
-        '[should make a new ERC20 approval transaction for the Uniswap router] sponsored approval tx hash',
+        '[should make a new ERC20 approval transaction for the Aerodrome Universal Router] sponsored approval tx hash',
         approvalTxHash,
       );
 
