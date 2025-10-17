@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+export const DEFAULT_AERODROME_SWAP_SLIPPAGE = 0.005;
+
 export const abilityParamsSchema = z.object({
   action: z
     .enum(['approve', 'swap'])
@@ -20,7 +22,7 @@ export const abilityParamsSchema = z.object({
     .number()
     .min(0)
     .max(1)
-    .default(0.005)
+    .default(DEFAULT_AERODROME_SWAP_SLIPPAGE)
     .optional()
     .describe('Slippage tolerance as decimal (e.g., 0.005 for 0.5%, default 0.5%)'),
   gasBufferPercentage: z

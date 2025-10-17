@@ -11,6 +11,7 @@ import {
   precheckFailSchema,
   precheckSuccessSchema,
   abilityParamsSchema,
+  DEFAULT_AERODROME_SWAP_SLIPPAGE,
 } from './schemas';
 import { AbilityAction, CheckNativeTokenBalanceResultSuccess } from './types';
 import { checkErc20Allowance, checkErc20Balance, checkNativeTokenBalance } from './ability-checks';
@@ -218,8 +219,7 @@ export const vincentAbility = createVincentAbility({
       baseFeePerGasBufferPercentage,
     } = abilityParams;
 
-    // If you update the default slippage here, make sure to update the default slippage in the Zod schema as well.
-    const SLIPPAGE = slippage ?? 0.005;
+    const SLIPPAGE = slippage ?? DEFAULT_AERODROME_SWAP_SLIPPAGE;
 
     const provider = new ethers.providers.StaticJsonRpcProvider(rpcUrl);
     const sugarConfigBaseMainnet = getDefaultConfig({
@@ -388,8 +388,7 @@ export const vincentAbility = createVincentAbility({
       const sugarExecuteSwapParams = executeSwapParams({
         config: sugarConfigBaseMainnet.sugarConfig,
         chainId,
-        // @ts-expect-error Type 'string' is not assignable to type '`0x${string}`'
-        commands: planner.commands,
+        commands: planner.commands as `0x${string}`,
         inputs: planner.inputs,
         value: amount,
       });
