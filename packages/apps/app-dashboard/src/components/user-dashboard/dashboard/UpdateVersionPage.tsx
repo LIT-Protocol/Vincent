@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import * as Sentry from '@sentry/react';
 import { getClient } from '@lit-protocol/vincent-contracts-sdk';
 import { IRelayPKP } from '@lit-protocol/types';
@@ -10,7 +10,6 @@ import { ReadAuthInfo } from '@/hooks/user-dashboard/useAuthInfo';
 import { useAddPermittedActions } from '@/hooks/user-dashboard/connect/useAddPermittedActions';
 import { ConnectAppHeader } from '@/components/user-dashboard/connect/ui/ConnectAppHeader';
 import { AppsInfo } from '@/components/user-dashboard/connect/ui/AppInfo';
-import { ActionButtons } from '@/components/user-dashboard/connect/ui/ActionButtons';
 import { StatusCard } from '@/components/user-dashboard/connect/ui/StatusCard';
 import { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
 import { litNodeClient } from '@/utils/user-dashboard/lit';
@@ -18,7 +17,8 @@ import { PageHeader } from './ui/PageHeader';
 import { useNavigate } from 'react-router-dom';
 import { useJwtRedirect } from '@/hooks/user-dashboard/connect/useJwtRedirect';
 import { useUrlRedirectUri } from '@/hooks/user-dashboard/connect/useUrlRedirectUri';
-import { useEffect } from 'react';
+import { ActionButtons } from '@/components/user-dashboard/connect/ui/ActionButtons';
+import { Breadcrumb } from '@/components/shared/ui/Breadcrumb';
 
 interface UpdateVersionPageProps {
   connectInfoMap: ConnectInfoMap;
@@ -163,61 +163,79 @@ export function UpdateVersionPage({
   const error = jwtError || actionsError;
 
   return (
-    <div
-      className={`w-full max-w-md mx-auto ${theme.mainCard} border ${theme.mainCardBorder} rounded-2xl shadow-2xl overflow-hidden relative z-10 origin-center`}
-    >
-      {/* Page Header */}
-      <PageHeader
-        icon={
-          <svg
-            className="w-4 h-4 text-orange-500"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"
-            />
-          </svg>
-        }
-        title="Update App Version"
-        description="Review and update permissions for the latest version"
+    <>
+      <Breadcrumb
+        items={[
+          {
+            label: connectInfoMap.app.name,
+            onClick: () => navigate(`/user/appId/${connectInfoMap.app.appId}`),
+          },
+          { label: 'Update Version' },
+        ]}
       />
 
-      <div className="px-3 sm:px-4 py-6 sm:py-8 space-y-6">
-        {/* App Header */}
-        <ConnectAppHeader app={connectInfoMap.app} />
+      <div className="w-full max-w-md mx-auto relative z-10 flex items-center min-h-[calc(100vh-4rem)] -mt-32">
+        <div
+          className={`w-full ${theme.mainCard} border ${theme.mainCardBorder} rounded-2xl shadow-2xl overflow-hidden relative z-10 origin-center`}
+        >
+          {/* Page Header */}
+          <PageHeader
+            icon={
+              <svg
+                className="w-4 h-4"
+                style={{ color: theme.brandOrange }}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"
+                />
+              </svg>
+            }
+            title="Update App Version"
+            description="Review and update permissions for the latest version"
+            linkUrl={connectInfoMap.app.appUserUrl}
+            linkText="Open App"
+          />
 
-        {/* Apps and Versions */}
-        <AppsInfo
-          connectInfoMap={connectInfoMap}
-          formData={formData}
-          onFormChange={handleFormChange}
-          onRegisterFormRef={registerFormRef}
-          selectedPolicies={selectedPolicies}
-          onPolicySelectionChange={handlePolicySelectionChange}
-        />
+          <div className="px-3 sm:px-4 py-6 sm:py-8 space-y-6">
+            {/* App Header */}
+            <ConnectAppHeader app={connectInfoMap.app} />
 
-        {/* Status Card */}
-        <StatusCard
-          isLoading={isLoading}
-          loadingStatus={loadingStatus}
-          error={error || localError}
-          success={localSuccess}
-        />
+            {/* Apps and Versions */}
+            <AppsInfo
+              connectInfoMap={connectInfoMap}
+              formData={formData}
+              onFormChange={handleFormChange}
+              onRegisterFormRef={registerFormRef}
+              selectedPolicies={selectedPolicies}
+              onPolicySelectionChange={handlePolicySelectionChange}
+            />
 
-        {/* Action Buttons */}
-        <ActionButtons
-          onDecline={handleDecline}
-          onSubmit={handleSubmit}
-          isLoading={isLoading}
-          error={error || localError}
-          appName={connectInfoMap.app.name}
-        />
+            {/* Status Card */}
+            <StatusCard
+              isLoading={isLoading}
+              loadingStatus={loadingStatus}
+              error={error || localError}
+              success={localSuccess}
+            />
+
+            {/* Action Buttons */}
+            <ActionButtons
+              onDecline={handleDecline}
+              onSubmit={handleSubmit}
+              isLoading={isLoading}
+              error={error || localError}
+              appName={connectInfoMap.app.name}
+              submitText="Update Version"
+            />
+          </div>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

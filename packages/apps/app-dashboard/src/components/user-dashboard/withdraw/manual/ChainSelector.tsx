@@ -37,7 +37,7 @@ export const ChainSelector: React.FC<ChainSelectorProps> = ({
   return (
     <div>
       <select
-        className={`w-full p-2 border rounded text-sm ${theme.cardBg} ${theme.cardBorder} ${theme.text}`}
+        className={`w-full p-2 border rounded text-sm ${theme.mainCard} ${theme.cardBorder} ${theme.text}`}
         value={selectedChain}
         onChange={(e) => onChange(e.target.value)}
       >
@@ -59,7 +59,10 @@ export const ChainSelector: React.FC<ChainSelectorProps> = ({
             href={`${explorerUrl}/address/${ethAddress}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="!text-orange-500 hover:!text-orange-600 underline flex items-center"
+            className="underline flex items-center"
+            style={{ color: theme.brandOrange }}
+            onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.8')}
+            onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
           >
             <svg
               className="w-4 h-4 mr-1"

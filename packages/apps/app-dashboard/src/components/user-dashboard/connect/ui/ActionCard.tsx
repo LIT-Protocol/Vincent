@@ -1,6 +1,6 @@
 import { ReactElement, ReactNode } from 'react';
 import { AlertCircle } from 'lucide-react';
-import { theme } from './theme';
+import { fonts, theme } from './theme';
 
 interface ActionCardProps {
   icon: ReactElement;
@@ -48,7 +48,9 @@ export function ActionCard({
             <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-green-500"></div>
           </div>
           <div className="flex-1">
-            <h3 className={`text-sm font-medium ${theme.text}`}>{loadingStatus || 'Loading...'}</h3>
+            <h3 className={`text-sm font-medium ${theme.text}`} style={fonts.heading}>
+              {loadingStatus || 'Loading...'}
+            </h3>
             <p className={`text-xs ${theme.textMuted}`}>
               Please wait while we process your request
             </p>
@@ -60,7 +62,9 @@ export function ActionCard({
             <AlertCircle className="w-5 h-5 text-red-500" />
           </div>
           <div className="flex-1">
-            <h3 className={`text-sm font-medium ${theme.text}`}>Error</h3>
+            <h3 className={`text-sm font-medium ${theme.text}`} style={fonts.heading}>
+              Error
+            </h3>
             <p className={`text-xs text-red-500`}>{error}</p>
           </div>
         </div>
@@ -70,7 +74,9 @@ export function ActionCard({
             {icon}
           </div>
           <div className="flex-1">
-            <h3 className={`text-sm font-medium ${theme.text}`}>{title}</h3>
+            <h3 className={`text-sm font-medium ${theme.text}`} style={fonts.heading}>
+              {title}
+            </h3>
             <p className={`text-xs ${theme.textMuted}`}>{description}</p>
             {extraContent}
           </div>

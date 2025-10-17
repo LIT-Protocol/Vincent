@@ -1,11 +1,13 @@
 import { z } from 'zod';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Form } from '@/components/shared/ui/form';
 import { Button } from '@/components/shared/ui/button';
-import { Card, CardContent } from '@/components/shared/ui/card';
 import { NumberSelectField, TextField } from '../../form-fields';
 import { App, AppVersion } from '@/types/developer-dashboard/appTypes';
+import { AlertCircle, CheckCircle } from 'lucide-react';
+import { extractErrorMessage } from '@/utils/developer-dashboard/app-forms';
 
 function buildConfirmationString(title: string, version: number): string {
   return `I want to delete app ${title} version ${version}`;
@@ -50,6 +52,9 @@ export function DeleteAppVersionForm({
   onSubmit,
   isSubmitting = false,
 }: DeleteAppVersionFormProps) {
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
+
   const DeleteAppVersionSchema = createDeleteAppVersionSchema(
     app.name,
     version,
@@ -82,57 +87,82 @@ export function DeleteAppVersionForm({
       label: `Version ${version.version}`,
     }));
 
-  return (
-    <Card className="w-full max-w-2xl mx-auto dark:bg-neutral-800 dark:border-white/10">
-      <CardContent>
-        <Form {...form}>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
-              To confirm deletion, please type the following exactly:
-            </p>
-            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-500/30 rounded-lg p-4">
-              <code className="bg-red-100 dark:bg-red-900/30 px-2 py-1 rounded text-sm font-mono text-red-900 dark:text-red-200">
-                {expectedConfirmation}
-              </code>
-            </div>
+  const handleFormSubmit = async (data: DeleteAppVersionFormData) => {
+    setSubmitError(null);
+    setSubmitSuccess(false);
+    try {
+      await onSubmit(data);
+      setSubmitSuccess(true);
+    } catch (error) {
+      console.error('Failed to delete app version:', error);
+      setSubmitError(extractErrorMessage(error, 'Failed to delete app version'));
+    }
+  };
 
-            <TextField
-              name="confirmation"
-              register={register}
-              error={errors.confirmation?.message}
-              label="Confirmation"
-              placeholder=""
+  return (
+    <Form {...form}>
+      <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
+        <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
+          To confirm deletion, please type the following exactly:
+        </p>
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-500/30 rounded-lg p-4">
+          <code className="bg-red-100 dark:bg-red-900/30 px-2 py-1 rounded text-sm font-mono text-red-900 dark:text-red-200">
+            {expectedConfirmation}
+          </code>
+        </div>
+
+        <TextField
+          name="confirmation"
+          register={register}
+          error={errors.confirmation?.message}
+          label="Confirmation"
+          placeholder=""
+          required
+        />
+
+        {version === app.activeVersion && (
+          <div className="space-y-4">
+            <div className="text-sm text-red-500 dark:text-red-400">
+              This is the active version of the app. Please choose a new active version before
+              deleting this one.
+            </div>
+            <NumberSelectField
+              name="activeVersion"
+              error={errors.activeVersion?.message}
+              control={control}
+              label="New Active Version"
+              options={versionOptions}
               required
             />
+          </div>
+        )}
 
-            {version === app.activeVersion && (
-              <div className="space-y-4">
-                <div className="text-sm text-red-500 dark:text-red-400">
-                  This is the active version of the app. Please choose a new active version before
-                  deleting this one.
-                </div>
-                <NumberSelectField
-                  name="activeVersion"
-                  error={errors.activeVersion?.message}
-                  control={control}
-                  label="New Active Version"
-                  options={versionOptions}
-                  required
-                />
-              </div>
-            )}
+        {/* Status Messages */}
+        {submitError && (
+          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+            <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400 flex-shrink-0" />
+            <span className="text-sm text-red-600 dark:text-red-400">{submitError}</span>
+          </div>
+        )}
 
-            <Button
-              type="submit"
-              variant="destructive"
-              className="w-full"
-              disabled={isSubmitting || !isValid}
-            >
-              {isSubmitting ? 'Deleting App Version...' : 'Delete App Version'}
-            </Button>
-          </form>
-        </Form>
-      </CardContent>
-    </Card>
+        {submitSuccess && (
+          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
+            <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400 flex-shrink-0" />
+            <span className="text-sm text-green-600 dark:text-green-400">
+              App version deleted successfully!
+            </span>
+          </div>
+        )}
+
+        <Button
+          type="submit"
+          variant="destructive"
+          className="w-full"
+          disabled={isSubmitting || !isValid}
+        >
+          {isSubmitting ? 'Deleting App Version...' : 'Delete App Version'}
+        </Button>
+      </form>
+    </Form>
   );
 }

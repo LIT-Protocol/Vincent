@@ -14,7 +14,6 @@ import { ConnectAppHeader } from './ui/ConnectAppHeader';
 import { AppsInfo } from './ui/AppInfo';
 import { ActionButtons } from './ui/ActionButtons';
 import { StatusCard } from './ui/StatusCard';
-import { ConnectFooter } from '../ui/Footer';
 import { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
 import { litNodeClient, mintPKPToExistingPKP } from '@/utils/user-dashboard/lit';
 import { useJwtRedirect } from '@/hooks/user-dashboard/connect/useJwtRedirect';
@@ -329,9 +328,6 @@ export function ConnectPage({
           appName={connectInfoMap.app.name}
         />
       </div>
-
-      {/* Footer */}
-      <ConnectFooter />
     </div>
   );
 }

@@ -23,12 +23,13 @@ export const TokenSelector: React.FC<TokenSelectorProps> = ({
           type="radio"
           checked={!isCustomToken}
           onChange={() => setIsCustomToken(false)}
-          className="mr-2 w-3 h-3 text-orange-500 bg-gray-100 border-gray-300 focus:ring-orange-500 dark:focus:ring-orange-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-          style={{ accentColor: '#f97316' }}
+          className="mr-2 w-3 h-3 bg-gray-100 border-gray-300 dark:bg-gray-700 dark:border-gray-600"
+          style={{ accentColor: theme.brandOrange }}
         />
         <label
           htmlFor="ethToken"
-          className={`text-sm cursor-pointer ${!isCustomToken ? 'text-orange-500 font-medium' : 'text-gray-400'}`}
+          className={`text-sm cursor-pointer ${!isCustomToken ? 'font-medium' : 'text-gray-400'}`}
+          style={!isCustomToken ? { color: theme.brandOrange } : undefined}
         >
           Withdraw Native Asset
         </label>
@@ -40,12 +41,13 @@ export const TokenSelector: React.FC<TokenSelectorProps> = ({
           type="radio"
           checked={isCustomToken}
           onChange={() => setIsCustomToken(true)}
-          className="mr-2 w-3 h-3 text-orange-500 bg-gray-100 border-gray-300 focus:ring-orange-500 dark:focus:ring-orange-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-          style={{ accentColor: '#f97316' }}
+          className="mr-2 w-3 h-3 bg-gray-100 border-gray-300 dark:bg-gray-700 dark:border-gray-600"
+          style={{ accentColor: theme.brandOrange }}
         />
         <label
           htmlFor="erc20Token"
-          className={`text-sm cursor-pointer ${isCustomToken ? 'text-orange-500 font-medium' : 'text-gray-400'}`}
+          className={`text-sm cursor-pointer ${isCustomToken ? 'font-medium' : 'text-gray-400'}`}
+          style={isCustomToken ? { color: theme.brandOrange } : undefined}
         >
           Withdraw ERC-20 Token
         </label>
@@ -60,7 +62,7 @@ export const TokenSelector: React.FC<TokenSelectorProps> = ({
               value={customTokenAddress}
               onChange={(e) => setCustomTokenAddress(e.target.value)}
               placeholder="0x..."
-              className={`w-full p-2 border rounded text-sm ${theme.cardBg} ${theme.cardBorder} ${theme.text}`}
+              className={`w-full p-2 border rounded text-sm ${theme.mainCard} ${theme.cardBorder} ${theme.text}`}
             />
             <p className={`text-xs ${theme.textMuted} mt-1`}>
               Enter the ERC-20 token contract address.

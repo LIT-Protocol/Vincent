@@ -7,14 +7,15 @@ import { litNodeClient } from '@/utils/user-dashboard/lit';
 import { ReadAuthInfo } from '@/hooks/user-dashboard/useAuthInfo';
 import { useJwtRedirect } from '@/hooks/user-dashboard/connect/useJwtRedirect';
 import { useUrlRedirectUri } from '@/hooks/user-dashboard/connect/useUrlRedirectUri';
-import { ConnectAppHeader } from '../connect/ui/ConnectAppHeader';
 import { StatusCard } from '../connect/ui/StatusCard';
-import { ActionButtons } from '../connect/ui/ActionButtons';
 import { theme } from '../connect/ui/theme';
 import { InfoBanner } from '../connect/ui/InfoBanner';
-import { PageHeader } from './ui/PageHeader';
 import { App } from '@/types/developer-dashboard/appTypes';
 import { useNavigate } from 'react-router-dom';
+import { ConnectAppHeader } from '../connect/ui/ConnectAppHeader';
+import { PageHeader } from './ui/PageHeader';
+import { ActionButtons } from '../connect/ui/ActionButtons';
+import { Breadcrumb } from '@/components/shared/ui/Breadcrumb';
 
 interface RepermitConnectPageProps {
   appData: App;
@@ -119,8 +120,8 @@ export function RepermitConnectPage({
   }, [readAuthInfo, previouslyPermittedPKP, appData, effectiveRedirectUri, generateJWT]);
 
   const handleDecline = useCallback(() => {
-    navigate(`/user/appId/${appData.appId}`);
-  }, [appData.appId, navigate]);
+    navigate('/user/apps');
+  }, [navigate]);
 
   const isLoading = isJwtLoading || isConnectProcessing || !!localSuccess;
   const loadingStatus =
@@ -128,60 +129,69 @@ export function RepermitConnectPage({
   const error = jwtError || localError;
 
   return (
-    <div
-      className={`w-full max-w-md mx-auto ${theme.mainCard} border ${theme.mainCardBorder} rounded-2xl shadow-2xl overflow-hidden relative z-10 origin-center`}
-    >
-      {/* Page Header */}
-      <PageHeader
-        icon={
-          <svg
-            className="w-4 h-4 text-orange-500"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-            />
-          </svg>
-        }
-        title="Re-permit App"
-        description="Restore your previous permissions for this app"
-        linkUrl={appData.appUserUrl}
-        linkText="Open App"
+    <>
+      <Breadcrumb
+        items={[{ label: 'Apps', onClick: () => navigate('/user/apps') }, { label: appData.name }]}
       />
 
-      <div className="px-3 sm:px-4 py-6 sm:py-8 space-y-6">
-        {/* App Header */}
-        <ConnectAppHeader app={appData} />
+      <div className="w-full max-w-md mx-auto relative z-10 flex items-center min-h-[calc(100vh-4rem)] -mt-32">
+        <div
+          className={`w-full ${theme.mainCard} border ${theme.mainCardBorder} rounded-2xl shadow-2xl overflow-hidden relative z-10 origin-center`}
+        >
+          {/* Page Header */}
+          <PageHeader
+            icon={
+              <svg
+                className="w-4 h-4"
+                style={{ color: theme.brandOrange }}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                />
+              </svg>
+            }
+            title="Re-permit App"
+            description="Restore your previous permissions for this app"
+            linkUrl={appData.appUserUrl}
+            linkText="Open App"
+          />
 
-        {/* Re-permit Information */}
-        <InfoBanner
-          type="blue"
-          title="Previously Connected"
-          message="You've previously connected to this app. Re-permitting will restore your previous permissions."
-        />
+          <div className="px-3 sm:px-4 py-6 sm:py-8 space-y-6">
+            {/* App Header */}
+            <ConnectAppHeader app={appData} />
 
-        {/* Status Card */}
-        <StatusCard
-          isLoading={isLoading}
-          loadingStatus={loadingStatus}
-          error={error}
-          success={localSuccess}
-        />
+            {/* Re-permit Information */}
+            <InfoBanner
+              type="blue"
+              title="Previously Connected"
+              message="You've previously connected to this app. Re-permitting will restore your previous permissions."
+            />
 
-        {/* Action Buttons */}
-        <ActionButtons
-          onDecline={handleDecline}
-          onSubmit={handleSubmit}
-          isLoading={isLoading}
-          error={error}
-          appName={appData.name}
-        />
+            {/* Status Card */}
+            <StatusCard
+              isLoading={isLoading}
+              loadingStatus={loadingStatus}
+              error={error}
+              success={localSuccess}
+            />
+
+            {/* Action Buttons */}
+            <ActionButtons
+              onDecline={handleDecline}
+              onSubmit={handleSubmit}
+              isLoading={isLoading}
+              error={error}
+              appName={appData.name}
+            />
+          </div>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

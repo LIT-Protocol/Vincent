@@ -1,6 +1,6 @@
 import { Card, CardContent } from '@/components/shared/ui/card';
 import { AlertTriangle, ArrowLeft, RefreshCw, Sun, Moon } from 'lucide-react';
-import { theme } from './ui/theme';
+import { theme, fonts } from './ui/theme';
 import { ActionCard } from './ui/ActionCard';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/shared/ui/button';
@@ -40,7 +40,10 @@ export function BadRedirectUriError({ redirectUri, authorizedUris }: BadRedirect
               alt="Vincent by Lit Protocol"
               className="h-4 w-4 flex-shrink-0"
             />
-            <span className={`text-sm font-medium ${theme.text} truncate mt-0.5`}>
+            <span
+              className={`text-sm font-medium ${theme.text} truncate mt-0.5`}
+              style={fonts.heading}
+            >
               Vincent Connect
             </span>
           </div>
@@ -59,15 +62,15 @@ export function BadRedirectUriError({ redirectUri, authorizedUris }: BadRedirect
 
       <div className="px-3 sm:px-4 py-6 sm:py-8 space-y-6">
         {/* Error Details Card */}
-        <Card className={`${theme.cardBg} border ${theme.cardBorder}`}>
+        <Card className={`${theme.itemBg} border ${theme.cardBorder}`}>
           <CardContent className="p-3">
             <div className="flex items-center space-x-3">
               <AlertTriangle className="w-5 h-5 text-red-500" />
               <div>
-                <h2 className={`text-sm font-semibold ${theme.text}`}>
+                <h2 className={`text-sm font-semibold ${theme.text}`} style={fonts.heading}>
                   Redirect URI Not Authorized
                 </h2>
-                <p className={`text-xs ${theme.textMuted} mt-0.5`}>
+                <p className={`text-xs ${theme.textMuted} mt-0.5`} style={fonts.body}>
                   The redirect URI is not authorized for this app.
                 </p>
               </div>
@@ -77,16 +80,20 @@ export function BadRedirectUriError({ redirectUri, authorizedUris }: BadRedirect
 
         {/* Redirect URI Info */}
         {redirectUri && (
-          <div className={`p-4 rounded-lg ${theme.cardBg} border ${theme.cardBorder}`}>
-            <h3 className={`text-xs font-medium ${theme.text} mb-2`}>Requested Redirect URI</h3>
+          <div className={`p-4 rounded-lg ${theme.itemBg} border ${theme.cardBorder}`}>
+            <h3 className={`text-xs font-medium ${theme.text} mb-2`} style={fonts.heading}>
+              Requested Redirect URI
+            </h3>
             <p className={`text-xs ${theme.textMuted} font-mono break-all`}>{redirectUri}</p>
           </div>
         )}
 
         {/* Authorized URIs */}
         {authorizedUris && authorizedUris.length > 0 && (
-          <div className={`p-4 rounded-lg ${theme.cardBg} border ${theme.cardBorder}`}>
-            <h3 className={`text-xs font-medium ${theme.text} mb-2`}>Authorized Redirect URIs</h3>
+          <div className={`p-4 rounded-lg ${theme.itemBg} border ${theme.cardBorder}`}>
+            <h3 className={`text-xs font-medium ${theme.text} mb-2`} style={fonts.heading}>
+              Authorized Redirect URIs
+            </h3>
             <div className="space-y-1">
               {authorizedUris.map((uri, index) => (
                 <p key={index} className={`text-xs ${theme.textMuted} font-mono break-all`}>

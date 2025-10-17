@@ -1,4 +1,6 @@
-import { Edit, Plus, Trash2 } from 'lucide-react';
+import { Edit, Trash2, Plus, List } from 'lucide-react';
+import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
+import { ActionButton } from '@/components/developer-dashboard/ui/ActionButton';
 
 interface AppUnpublishedButtonsProps {
   onOpenMutation: (mutationType: string) => void;
@@ -6,28 +8,65 @@ interface AppUnpublishedButtonsProps {
 
 export function AppUnpublishedButtons({ onOpenMutation }: AppUnpublishedButtonsProps) {
   return (
-    <div className="flex flex-wrap gap-3">
-      <button
-        onClick={() => onOpenMutation('edit-app')}
-        className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-white/20 rounded-lg text-sm font-medium text-gray-700 dark:text-white/80 bg-white dark:bg-neutral-800 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
-      >
-        <Edit className="h-4 w-4" />
-        Edit App
-      </button>
-      <button
-        onClick={() => onOpenMutation('create-app-version')}
-        className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-white/20 rounded-lg text-sm font-medium text-gray-700 dark:text-white/80 bg-white dark:bg-neutral-800 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
-      >
-        <Plus className="h-4 w-4" />
-        Create App Version
-      </button>
-      <button
-        onClick={() => onOpenMutation('delete-app')}
-        className="inline-flex items-center gap-2 px-4 py-2 border border-red-200 dark:border-red-500/30 rounded-lg text-sm font-medium text-red-600 dark:text-red-400 bg-white dark:bg-neutral-800 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
-      >
-        <Trash2 className="h-4 w-4" />
-        Delete App
-      </button>
+    <div className="space-y-6">
+      {/* App Management Section */}
+      <div>
+        <h4 className={`text-sm font-semibold ${theme.text} mb-3`} style={fonts.heading}>
+          App Management
+        </h4>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <ActionButton
+            icon={Edit}
+            title="Edit App"
+            description="Update app details and settings"
+            onClick={() => onOpenMutation('edit-app')}
+            variant="orange"
+            iconBg={`${theme.brandOrange}1A`}
+            iconColor={theme.brandOrange}
+            hoverBorderColor={theme.brandOrange}
+          />
+
+          <ActionButton
+            icon={Trash2}
+            title="Delete App"
+            description="Permanently remove this app"
+            onClick={() => onOpenMutation('delete-app')}
+            variant="danger"
+            borderColor="rgb(254 202 202 / 0.5)"
+            hoverBorderColor="rgb(239 68 68)"
+          />
+        </div>
+      </div>
+
+      {/* Version Management Section */}
+      <div>
+        <h4 className={`text-sm font-semibold ${theme.text} mb-3`} style={fonts.heading}>
+          Version Management
+        </h4>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <ActionButton
+            icon={List}
+            title="View Versions"
+            description="View and manage app versions"
+            onClick={() => onOpenMutation('versions')}
+            variant="orange"
+            iconBg={`${theme.brandOrange}1A`}
+            iconColor={theme.brandOrange}
+            hoverBorderColor={theme.brandOrange}
+          />
+
+          <ActionButton
+            icon={Plus}
+            title="New Version"
+            description="Create a new version of your app"
+            onClick={() => onOpenMutation('create-app-version')}
+            variant="orange"
+            iconBg={`${theme.brandOrange}1A`}
+            iconColor={theme.brandOrange}
+            hoverBorderColor={theme.brandOrange}
+          />
+        </div>
+      </div>
     </div>
   );
 }

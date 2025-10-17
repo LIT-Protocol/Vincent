@@ -1,14 +1,17 @@
+import { useState, useEffect } from 'react';
 import { PolicyVersion, Policy } from '@/types/developer-dashboard/appTypes';
-import { Badge } from '@/components/shared/ui/badge';
-import { Calendar, GitCommit, Package } from 'lucide-react';
+import { Package, Plus } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { UndeletePolicyVersionButton } from '../../policy/wrappers';
-import { formatDate } from '@/utils/developer-dashboard/formatDateAndTime';
+import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
+import { VersionCard } from '@/components/developer-dashboard/ui/VersionCard';
 
 interface PolicyVersionsListViewProps {
   activeVersions: PolicyVersion[];
   deletedVersions: PolicyVersion[];
   policy: Policy;
   onVersionClick?: (version: string) => void;
+  onCreateVersion?: () => void;
 }
 
 export function PolicyVersionsListView({
@@ -16,139 +19,143 @@ export function PolicyVersionsListView({
   activeVersions,
   deletedVersions,
   onVersionClick,
+  onCreateVersion,
 }: PolicyVersionsListViewProps) {
+  const [showContent, setShowContent] = useState(false);
+
+  useEffect(() => {
+    setShowContent(true);
+  }, []);
+
+  const renderVersionCard = (version: PolicyVersion) => (
+    <VersionCard
+      key={version.version}
+      version={parseInt(version.version)}
+      activeVersion={policy.activeVersion ? parseInt(policy.activeVersion) : undefined}
+      createdAt={version.createdAt}
+      onClick={() => onVersionClick?.(version.version)}
+    />
+  );
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <h1 className="text-3xl font-bold text-neutral-800 dark:text-white">Policy Versions</h1>
-          <p className="text-gray-600 dark:text-white/60 mt-2">
-            All versions for <span className="font-mono">{policy.packageName}</span>
-          </p>
-          <div className="flex items-center gap-2 mt-3">
-            <Badge
-              variant="outline"
-              className="bg-gray-100 dark:bg-neutral-800 text-neutral-800 dark:text-white border-gray-300 dark:border-gray-600"
-            >
-              <Package className="h-3 w-3 mr-1" />
-              Active: {policy.activeVersion}
-            </Badge>
-            <Badge
-              variant="outline"
-              className="bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-white/80 border-gray-200 dark:border-gray-600"
-            >
-              {activeVersions.length} version{activeVersions.length !== 1 ? 's' : ''}
-            </Badge>
-          </div>
-        </div>
-      </div>
-
-      <div className="space-y-4">
-        {activeVersions.map((version) => (
-          <div
-            key={version.version}
-            className={`bg-white dark:bg-neutral-800 shadow rounded-lg border ${
-              version.version === policy.activeVersion
-                ? 'border-gray-300 ring-1 ring-gray-200 dark:border-gray-600 dark:ring-gray-700'
-                : 'border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20'
-            } transition-colors ${onVersionClick ? 'cursor-pointer hover:shadow-md' : ''}`}
-            onClick={onVersionClick ? () => onVersionClick(version.version) : undefined}
-          >
-            <div className="p-6">
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-2">
-                    <GitCommit className="h-5 w-5 text-gray-500" />
-                    <h3 className="text-lg font-semibold text-neutral-800 dark:text-white">
-                      Version {version.version}
-                    </h3>
-                  </div>
-                  {version.version === policy.activeVersion && (
-                    <Badge className="bg-green-100 text-green-800 border-green-200">Active</Badge>
-                  )}
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: showContent ? 1 : 0 }}
+      transition={{ duration: 0.5, ease: 'easeInOut' }}
+      className="w-full space-y-8"
+    >
+      {/* Empty State */}
+      {activeVersions.length === 0 ? (
+        <div
+          className={`${theme.mainCard} border ${theme.mainCardBorder} rounded-xl overflow-hidden`}
+        >
+          <div className="p-6">
+            <div className="flex items-center justify-center min-h-[200px] w-full">
+              <div className="text-center max-w-md mx-auto px-6">
+                <div
+                  className={`inline-flex items-center justify-center w-16 h-16 rounded-full ${theme.itemBg} border ${theme.cardBorder} mb-6`}
+                >
+                  <Package className={`w-8 h-8 ${theme.textMuted}`} />
                 </div>
-                <div className="flex items-center gap-2 text-sm text-gray-500">
-                  <Calendar className="h-4 w-4" />
-                  {formatDate(version.createdAt)}
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                {version.changes && (
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-700 mb-1">Changes</h4>
-                    <p className="text-sm text-gray-600">{version.changes}</p>
-                  </div>
-                )}
+                <h3 className={`text-xl font-semibold mb-2 ${theme.text}`} style={fonts.heading}>
+                  No Versions Yet
+                </h3>
+                <p className={`text-sm ${theme.textMuted} leading-relaxed`} style={fonts.body}>
+                  Create your first version for {policy.packageName} to get started.
+                </p>
               </div>
             </div>
           </div>
-        ))}
-      </div>
-
-      {activeVersions.length === 0 && (
-        <div className="bg-white shadow rounded-lg p-8 text-center">
-          <GitCommit className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-neutral-800 dark:text-white mb-2">
-            No versions found
-          </h3>
-          <p className="text-gray-600 dark:text-white/60">
-            This policy doesn't have any versions yet. Create the first version to get started.
-          </p>
         </div>
-      )}
-      {deletedVersions.length > 0 && (
-        <div className="space-y-4">
-          <div className="border-t pt-6">
-            <h3 className="text-lg font-medium text-gray-600 mb-4">Deleted Policy Versions</h3>
-            <div className="space-y-4">
-              {deletedVersions.map((version) => (
-                <div
-                  key={version.version}
-                  className="bg-white shadow rounded-lg border border-dashed border-gray-300"
-                >
-                  <div className="p-6">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex items-center gap-3">
-                        <div className="flex items-center gap-2">
-                          <GitCommit className="h-5 w-5 text-gray-400" />
-                          <h3 className="text-lg font-semibold text-gray-500 line-through">
-                            Version {version.version}
-                          </h3>
-                        </div>
-                        <Badge className="bg-red-50 text-red-400 border-red-200">DELETED</Badge>
-                        {version.version === policy.activeVersion && (
-                          <Badge className="bg-gray-100 text-gray-500 border-gray-200">
-                            Active
-                          </Badge>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-2 text-sm text-gray-400">
-                          <Calendar className="h-4 w-4" />
-                          {formatDate(version.createdAt)}
-                        </div>
-                        <div className="relative z-10 bg-white rounded-lg opacity-100">
-                          <UndeletePolicyVersionButton policyVersion={version} />
-                        </div>
-                      </div>
-                    </div>
+      ) : (
+        <>
+          {/* Active Versions Section */}
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className={`text-lg font-semibold ${theme.text}`} style={fonts.heading}>
+                Policy Versions
+              </h3>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+              {activeVersions.map(renderVersionCard)}
+            </div>
+          </div>
 
-                    <div className="space-y-4">
-                      {version.changes && (
-                        <div>
-                          <h4 className="text-sm font-medium text-gray-500 mb-1">Changes</h4>
-                          <p className="text-sm text-gray-400 line-through">{version.changes}</p>
-                        </div>
+          {/* Create Version CTA */}
+          {onCreateVersion && (
+            <div className="pt-8 border-t border-gray-200 dark:border-white/10">
+              <div className="flex flex-col items-center justify-center py-6">
+                <h3 className={`text-lg font-semibold ${theme.text} mb-4`} style={fonts.heading}>
+                  Ready to create another version?
+                </h3>
+                <button
+                  onClick={onCreateVersion}
+                  className="px-4 py-2 rounded-lg text-sm font-semibold text-white transition-colors inline-flex items-center gap-2"
+                  style={{ backgroundColor: theme.brandOrange, ...fonts.heading }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = theme.brandOrangeDarker;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = theme.brandOrange;
+                  }}
+                >
+                  <Plus className="h-4 w-4" />
+                  Create Version
+                </button>
+              </div>
+            </div>
+          )}
+        </>
+      )}
+      {/* Deleted Versions Section */}
+      {deletedVersions && deletedVersions.length > 0 && (
+        <div className="mt-8 pt-8 border-t border-gray-200 dark:border-white/10">
+          <h3 className={`text-lg font-semibold ${theme.textMuted} mb-4`} style={fonts.heading}>
+            Deleted Versions
+          </h3>
+          <div className="grid gap-4">
+            {deletedVersions.map((version) => (
+              <div
+                key={version.version}
+                className={`${theme.mainCard} border border-dashed border-gray-200 dark:border-white/10 rounded-xl overflow-hidden`}
+              >
+                <div className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <h3
+                        className={`text-lg font-semibold ${theme.textMuted} line-through`}
+                        style={fonts.heading}
+                      >
+                        Version {version.version}
+                      </h3>
+                      <span
+                        className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400"
+                        style={fonts.heading}
+                      >
+                        DELETED
+                      </span>
+                      {version.version === policy.activeVersion && (
+                        <span
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${theme.itemBg} ${theme.textMuted}`}
+                          style={fonts.heading}
+                        >
+                          Active
+                        </span>
                       )}
                     </div>
+                    <div className="flex flex-col items-end gap-2">
+                      <UndeletePolicyVersionButton policyVersion={version} />
+                    </div>
                   </div>
+                  <p className={`text-sm ${theme.textSubtle} mt-2 line-through`} style={fonts.body}>
+                    Created: {new Date(version.createdAt).toLocaleDateString()}
+                  </p>
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }

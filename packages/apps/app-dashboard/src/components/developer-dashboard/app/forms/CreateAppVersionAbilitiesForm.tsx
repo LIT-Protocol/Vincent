@@ -1,15 +1,9 @@
 import { useState } from 'react';
 import { Button } from '@/components/shared/ui/button';
 import { Ability } from '@/types/developer-dashboard/appTypes';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/shared/ui/card';
 import { AbilitySelectorModal } from '../../AbilitySelectorModal';
 import { Plus } from 'lucide-react';
+import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
 
 interface CreateAppVersionAbilitiesFormProps {
   onAbilityAdd: (ability: Ability) => Promise<void>;
@@ -30,24 +24,35 @@ export function CreateAppVersionAbilitiesForm({
   };
 
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle className="text-neutral-800 dark:text-white">
+    <div className={`${theme.mainCard} border ${theme.mainCardBorder} rounded-xl overflow-hidden`}>
+      <div className={`p-6 border-b ${theme.cardBorder}`}>
+        <h3 className={`text-lg font-semibold ${theme.text} mb-1`} style={fonts.heading}>
           Add Abilities to App Version
-        </CardTitle>
-        <CardDescription>
+        </h3>
+        <p className={`text-sm ${theme.textMuted}`} style={fonts.body}>
           Clicking the package name will open the ability's npm page. Otherwise, abilities will be
           added immediately when selected.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
+        </p>
+      </div>
+      <div className="p-6">
         <div className="text-center py-8">
-          <Button type="button" onClick={() => setIsModalOpen(true)} className="px-6 py-3">
+          <Button
+            type="button"
+            onClick={() => setIsModalOpen(true)}
+            className="text-white"
+            style={{ backgroundColor: theme.brandOrange }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = theme.brandOrangeDarker;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = theme.brandOrange;
+            }}
+          >
             <Plus className="h-4 w-4 mr-2" />
             Add Abilities to Version
           </Button>
         </div>
-      </CardContent>
+      </div>
 
       <AbilitySelectorModal
         isOpen={isModalOpen}
@@ -56,6 +61,6 @@ export function CreateAppVersionAbilitiesForm({
         existingAbilities={existingAbilities}
         availableAbilities={availableAbilities}
       />
-    </Card>
+    </div>
   );
 }

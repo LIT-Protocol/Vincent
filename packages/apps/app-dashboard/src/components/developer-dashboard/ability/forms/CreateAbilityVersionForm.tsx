@@ -1,18 +1,15 @@
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Button } from '@/components/shared/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/shared/ui/card';
 import { Form } from '@/components/shared/ui/form';
+import { StatusMessage } from '@/components/shared/ui/statusMessage';
 import { TextField, LongTextField } from '../../form-fields';
 import { docSchemas } from '@lit-protocol/vincent-registry-sdk';
 import { Ability } from '@/types/developer-dashboard/appTypes';
+import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
+import { extractErrorMessage } from '@/utils/developer-dashboard/app-forms';
 
 const { abilityVersionDoc } = docSchemas;
 
@@ -29,10 +26,12 @@ interface CreateAbilityVersionFormProps {
 }
 
 export function CreateAbilityVersionForm({
-  ability,
   onSubmit,
   isSubmitting,
 }: CreateAbilityVersionFormProps) {
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
+
   const form = useForm<CreateAbilityVersionFormData>({
     resolver: zodResolver(CreateAbilityVersionSchema),
     defaultValues: {
@@ -48,43 +47,59 @@ export function CreateAbilityVersionForm({
   } = form;
 
   const handleFormSubmit = async (data: CreateAbilityVersionFormData) => {
-    await onSubmit(data);
+    setSubmitError(null);
+    setSubmitSuccess(false);
+    try {
+      await onSubmit(data);
+      setSubmitSuccess(true);
+    } catch (error) {
+      console.error('Failed to create ability version:', error);
+      setSubmitError(extractErrorMessage(error, 'Failed to create ability version'));
+    }
   };
 
   return (
-    <Card className="w-full max-w-2xl mx-auto">
-      <CardHeader>
-        <CardTitle>Create Ability Version</CardTitle>
-        <CardDescription>Create a new version for {ability.packageName}</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Form {...form}>
-          <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
-            <TextField
-              name="version"
-              register={register}
-              error={errors.version?.message}
-              label="Version"
-              placeholder="1.0.0"
-              required
-            />
+    <Form {...form}>
+      <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
+        <div className="space-y-6">
+          <TextField
+            name="version"
+            register={register}
+            error={errors.version?.message}
+            label="Version"
+            placeholder="1.0.0"
+            required
+          />
 
-            <LongTextField
-              name="changes"
-              register={register}
-              error={errors.changes?.message}
-              label="Changes"
-              placeholder="Describe what changed in this version..."
-              rows={4}
-              required
-            />
+          <LongTextField
+            name="changes"
+            register={register}
+            error={errors.changes?.message}
+            label="Changes"
+            placeholder="Describe what changed in this version..."
+            rows={4}
+            required
+          />
 
-            <Button type="submit" className="w-full" disabled={isSubmitting}>
+          {/* Status Messages */}
+          {submitError && <StatusMessage message={submitError} type="error" />}
+          {submitSuccess && (
+            <StatusMessage message="Ability version created successfully!" type="success" />
+          )}
+
+          {/* Submit Button */}
+          <div>
+            <Button
+              type="submit"
+              className="w-full"
+              style={{ backgroundColor: theme.brandOrange, ...fonts.body }}
+              disabled={isSubmitting}
+            >
               {isSubmitting ? 'Creating Version...' : 'Create Version'}
             </Button>
-          </form>
-        </Form>
-      </CardContent>
-    </Card>
+          </div>
+        </div>
+      </form>
+    </Form>
   );
 }

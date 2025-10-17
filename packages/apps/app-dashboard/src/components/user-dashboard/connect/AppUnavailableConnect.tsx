@@ -4,7 +4,6 @@ import { ReadAuthInfo } from '@/hooks/user-dashboard/useAuthInfo';
 import { ConnectPageHeader } from './ui/ConnectPageHeader';
 import { ConnectAppHeader } from './ui/ConnectAppHeader';
 import { ActionButtons } from './ui/ActionButtons';
-import { ConnectFooter } from '../ui/Footer';
 import { theme } from './ui/theme';
 import { InfoBanner } from './ui/InfoBanner';
 import { App } from '@/types/developer-dashboard/appTypes';
@@ -66,9 +65,6 @@ export function AppUnavailableConnect({
           declineText="Visit App"
         />
       </div>
-
-      {/* Footer */}
-      <ConnectFooter />
     </div>
   );
 }

@@ -5,6 +5,7 @@ import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-
 import Loading from '@/components/shared/ui/Loading';
 import { StatusMessage } from '@/components/shared/ui/statusMessage';
 import { AbilityVersion } from '@/types/developer-dashboard/appTypes';
+import { Breadcrumb } from '@/components/shared/ui/Breadcrumb';
 
 export function AbilityVersionsWrapper() {
   const { packageName } = useParams<{ packageName: string }>();
@@ -46,15 +47,35 @@ export function AbilityVersionsWrapper() {
   if (!versions) return <StatusMessage message="No ability versions found" type="info" />;
 
   const handleVersionClick = (version: string) => {
-    navigate(`/developer/ability/${encodeURIComponent(packageName!)}/version/${version}`);
+    navigate(`/developer/abilities/ability/${encodeURIComponent(packageName!)}/version/${version}`);
+  };
+
+  const handleCreateVersion = () => {
+    navigate(
+      `/developer/abilities/ability/${encodeURIComponent(packageName!)}?action=create-ability-version`,
+    );
   };
 
   return (
-    <AbilityVersionsListView
-      activeVersions={activeVersions}
-      deletedVersions={deletedVersions}
-      ability={ability}
-      onVersionClick={handleVersionClick}
-    />
+    <>
+      <Breadcrumb
+        items={[
+          { label: 'Abilities', onClick: () => navigate('/developer/abilities') },
+          {
+            label: ability.title || ability.packageName,
+            onClick: () =>
+              navigate(`/developer/abilities/ability/${encodeURIComponent(packageName!)}`),
+          },
+          { label: 'Versions' },
+        ]}
+      />
+      <AbilityVersionsListView
+        activeVersions={activeVersions}
+        deletedVersions={deletedVersions}
+        ability={ability}
+        onVersionClick={handleVersionClick}
+        onCreateVersion={handleCreateVersion}
+      />
+    </>
   );
 }

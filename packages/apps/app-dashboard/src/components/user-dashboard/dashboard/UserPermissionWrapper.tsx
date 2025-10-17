@@ -1,5 +1,5 @@
 import { useParams } from 'react-router';
-import { ManagePagesSkeleton } from '../connect/ManagePagesSkeleton';
+import Loading from '@/components/shared/ui/Loading';
 import { GeneralErrorScreen } from '../connect/GeneralErrorScreen';
 import { AuthenticationErrorScreen } from '../connect/AuthenticationErrorScreen';
 import { useConnectInfo } from '@/hooks/user-dashboard/connect/useConnectInfo';
@@ -9,6 +9,7 @@ import { BadRedirectUriError } from '@/components/user-dashboard/connect/BadRedi
 import { AppPermissionPage } from './UserPermissionPage';
 import { useFetchUserPermissions } from '@/hooks/user-dashboard/dashboard/useFetchUserPermissions';
 import { useAgentPkpForApp } from '@/hooks/user-dashboard/useAgentPkpForApp';
+import { useFetchAppVersionsMap } from '@/hooks/user-dashboard/dashboard/useFetchAppVersionsMap';
 
 export function UserPermissionWrapper() {
   const { appId } = useParams();
@@ -23,6 +24,8 @@ export function UserPermissionWrapper() {
     loading: agentPKPLoading,
     error: agentPKPError,
   } = useAgentPkpForApp(userAddress, appId ? Number(appId) : undefined);
+
+  const { appVersionsMap } = useFetchAppVersionsMap({ userAddress });
 
   const {
     existingData,
@@ -78,7 +81,7 @@ export function UserPermissionWrapper() {
   }
 
   if (!isAllDataLoaded) {
-    return <ManagePagesSkeleton />;
+    return <Loading />;
   }
 
   // Check for redirect URI validation errors (highest priority)
@@ -109,6 +112,7 @@ export function UserPermissionWrapper() {
       permittedAppVersions={
         appId && permittedVersion ? { [appId]: permittedVersion.toString() } : {}
       }
+      appVersionsMap={appVersionsMap}
     />
   );
 }

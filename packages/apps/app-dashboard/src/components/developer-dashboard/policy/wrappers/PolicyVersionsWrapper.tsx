@@ -5,6 +5,7 @@ import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-
 import Loading from '@/components/shared/ui/Loading';
 import { StatusMessage } from '@/components/shared/ui/statusMessage';
 import { PolicyVersion } from '@/types/developer-dashboard/appTypes';
+import { Breadcrumb } from '@/components/shared/ui/Breadcrumb';
 
 export function PolicyVersionsWrapper() {
   const { packageName } = useParams<{ packageName: string }>();
@@ -45,15 +46,35 @@ export function PolicyVersionsWrapper() {
   if (!versions) return <StatusMessage message="No policy versions found" type="info" />;
 
   const handleVersionClick = (version: string) => {
-    navigate(`/developer/policy/${encodeURIComponent(packageName!)}/version/${version}`);
+    navigate(`/developer/policies/policy/${encodeURIComponent(packageName!)}/version/${version}`);
+  };
+
+  const handleCreateVersion = () => {
+    navigate(
+      `/developer/policies/policy/${encodeURIComponent(packageName!)}?action=create-policy-version`,
+    );
   };
 
   return (
-    <PolicyVersionsListView
-      activeVersions={activeVersions}
-      deletedVersions={deletedVersions}
-      policy={policy}
-      onVersionClick={handleVersionClick}
-    />
+    <>
+      <Breadcrumb
+        items={[
+          { label: 'Policies', onClick: () => navigate('/developer/policies') },
+          {
+            label: policy.title || policy.packageName,
+            onClick: () =>
+              navigate(`/developer/policies/policy/${encodeURIComponent(packageName!)}`),
+          },
+          { label: 'Versions' },
+        ]}
+      />
+      <PolicyVersionsListView
+        activeVersions={activeVersions}
+        deletedVersions={deletedVersions}
+        policy={policy}
+        onVersionClick={handleVersionClick}
+        onCreateVersion={handleCreateVersion}
+      />
+    </>
   );
 }

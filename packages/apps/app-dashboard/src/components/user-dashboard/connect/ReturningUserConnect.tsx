@@ -4,7 +4,6 @@ import { Settings, ArrowRight, RefreshCw } from 'lucide-react';
 import { theme } from '@/components/user-dashboard/connect/ui/theme';
 import { ConnectAppHeader } from './ui/ConnectAppHeader';
 import { ConnectPageHeader } from './ui/ConnectPageHeader';
-import { ConnectFooter } from '../ui/Footer';
 import { InfoBanner } from './ui/InfoBanner';
 import { ActionCard } from './ui/ActionCard';
 import { useNavigate } from 'react-router-dom';
@@ -218,9 +217,6 @@ export function ReturningUserConnect({
           </div>
         </div>
       </div>
-
-      {/* Footer */}
-      <ConnectFooter />
     </div>
   );
 }

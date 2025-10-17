@@ -1,9 +1,9 @@
-import Loading from '@/components/shared/ui/Loading';
 import { StatusMessage } from '@/components/shared/ui/statusMessage';
 import { AppVersionAbility } from '@/types/developer-dashboard/appTypes';
 import { sortedSupportedPolicies } from '@/utils/developer-dashboard/sortSupportedPolicies';
 import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
 import { AbilityVersionPoliciesView } from '../../views/AbilityVersionPoliciesView';
+import LoadingLock from '@/components/shared/ui/LoadingLock';
 
 interface AbilityVersionPoliciesWrapperProps {
   appAbilityVersion: AppVersionAbility;
@@ -36,7 +36,12 @@ export function AbilityVersionPoliciesWrapper({
     (policy) => !appAbilityVersion.hiddenSupportedPolicies?.includes(policy.packageName),
   );
 
-  if (isLoadingPolicies || isLoadingAbilityVersionData) return <Loading />;
+  if (isLoadingPolicies || isLoadingAbilityVersionData)
+    return (
+      <div className="py-4">
+        <LoadingLock />
+      </div>
+    );
   if (isErrorPolicies)
     return <StatusMessage message="Failed to load supported policies" type="error" />;
   if (isErrorAbilityVersionData)

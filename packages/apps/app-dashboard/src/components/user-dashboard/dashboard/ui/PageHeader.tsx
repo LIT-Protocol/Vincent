@@ -38,9 +38,12 @@ export function PageHeader({
             href={linkUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1 !text-orange-600 hover:!text-orange-700 font-medium text-sm underline"
+            className="flex items-center gap-1 font-medium text-sm underline"
+            style={{ color: theme.brandOrange }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = theme.brandOrangeDarker)}
+            onMouseLeave={(e) => (e.currentTarget.style.color = theme.brandOrange)}
           >
-            <ExternalLink className="w-4 h-4 text-orange-600" />
+            <ExternalLink className="w-4 h-4" style={{ color: theme.brandOrange }} />
             {linkText}
           </a>
         )}

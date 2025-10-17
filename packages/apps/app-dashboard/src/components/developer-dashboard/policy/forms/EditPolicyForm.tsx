@@ -1,26 +1,23 @@
+import { useState } from 'react';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Form } from '@/components/shared/ui/form';
 import { Button } from '@/components/shared/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/shared/ui/card';
+import { StatusMessage } from '@/components/shared/ui/statusMessage';
 import { TextField, LongTextField, SelectField, ImageUploadField } from '../../form-fields';
 import { docSchemas } from '@lit-protocol/vincent-registry-sdk';
 import { Policy, PolicyVersion } from '@/types/developer-dashboard/appTypes';
 import { DeploymentStatusSelectField } from '../../form-fields/array/DeploymentStatusSelectField';
+import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
+import { extractErrorMessage } from '@/utils/developer-dashboard/app-forms';
 
 const { policyDoc } = docSchemas;
 
-const { packageName, description, title, logo, activeVersion, deploymentStatus } = policyDoc.shape;
+const { description, title, logo, activeVersion, deploymentStatus } = policyDoc.shape;
 
 export const EditPolicySchema = z
-  .object({ packageName, description, title, logo, activeVersion, deploymentStatus })
+  .object({ description, title, logo, activeVersion, deploymentStatus })
   .partial({ logo: true })
   .strict();
 
@@ -39,10 +36,12 @@ export function EditPolicyForm({
   onSubmit,
   isSubmitting = false,
 }: EditPolicyFormProps) {
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
+
   const form = useForm<EditPolicyFormData>({
     resolver: zodResolver(EditPolicySchema),
     defaultValues: {
-      packageName: policyData.packageName,
       description: policyData.description,
       title: policyData.title,
       logo: policyData.logo,
@@ -62,70 +61,85 @@ export function EditPolicyForm({
     control,
   } = form;
 
-  // Create version options from policyVersions, showing enabled/disabled status for all versions
+  const handleFormSubmit = async (data: EditPolicyFormData) => {
+    setSubmitError(null);
+    setSubmitSuccess(false);
+    try {
+      await onSubmit(data);
+      setSubmitSuccess(true);
+    } catch (error) {
+      console.error('Failed to update policy:', error);
+      setSubmitError(extractErrorMessage(error, 'Failed to update policy'));
+    }
+  };
+
+  // Create version options from policyVersions
   const versionOptions = policyVersions.map((version) => ({
     value: version.version,
     label: `Version ${version.version}`,
   }));
 
   return (
-    <Card className="w-full max-w-2xl mx-auto">
-      <CardHeader>
-        <CardTitle>Edit Policy</CardTitle>
-        <CardDescription>Update an existing policy</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Form {...form}>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            <LongTextField
-              name="description"
-              register={register}
-              error={errors.description?.message}
-              label="Description"
-              placeholder="Describe your policy"
-              rows={4}
-              required
-            />
+    <Form {...form}>
+      <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
+        <div className="space-y-8">
+          <LongTextField
+            name="description"
+            register={register}
+            error={errors.description?.message}
+            label="Description"
+            placeholder="Describe your policy"
+            rows={4}
+            required
+          />
 
-            <TextField
-              name="title"
-              register={register}
-              error={errors.title?.message}
-              label="Title"
-              placeholder="Enter policy title (user-readable)"
-              required
-            />
+          <TextField
+            name="title"
+            register={register}
+            error={errors.title?.message}
+            label="Title"
+            placeholder="Enter policy title (user-readable)"
+            required
+          />
 
-            <ImageUploadField
-              name="logo"
-              watch={watch}
-              setValue={setValue}
-              control={control}
-              setError={setError}
-              clearErrors={clearErrors}
-              label="Logo"
-            />
+          <ImageUploadField
+            name="logo"
+            watch={watch}
+            setValue={setValue}
+            control={control}
+            setError={setError}
+            clearErrors={clearErrors}
+            label="Logo"
+          />
 
-            <SelectField
-              name="activeVersion"
-              error={errors.activeVersion?.message}
-              control={control}
-              label="Active Version"
-              options={versionOptions}
-              required
-            />
+          <SelectField
+            name="activeVersion"
+            error={errors.activeVersion?.message}
+            control={control}
+            label="Active Version"
+            options={versionOptions}
+            required
+          />
 
-            <DeploymentStatusSelectField
-              error={errors.deploymentStatus?.message}
-              control={control}
-            />
+          <DeploymentStatusSelectField error={errors.deploymentStatus?.message} control={control} />
 
-            <Button type="submit" className="w-full" disabled={isSubmitting}>
-              Update Policy
+          {/* Status Messages */}
+          {submitError && <StatusMessage message={submitError} type="error" />}
+          {submitSuccess && <StatusMessage message="Policy updated successfully!" type="success" />}
+
+          {/* Submit Button */}
+          <div>
+            <Button
+              type="submit"
+              className="w-full"
+              style={{ backgroundColor: theme.brandOrange, ...fonts.body }}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Updating...' : 'Update Policy'}
             </Button>
-          </form>
-        </Form>
-      </CardContent>
-    </Card>
+          </div>
+        </div>
+      </form>
+    </Form>
   );
 }

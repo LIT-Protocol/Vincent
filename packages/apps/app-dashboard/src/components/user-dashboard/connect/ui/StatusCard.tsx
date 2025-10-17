@@ -1,5 +1,5 @@
 import { AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
-import { theme } from './theme';
+import { theme, fonts } from './theme';
 
 interface StatusCardProps {
   isLoading?: boolean;
@@ -20,24 +20,24 @@ export function StatusCard({
     return null;
   }
 
-  let icon, bgClass, iconClass, title, message;
+  let icon, bgClass, textClass, title, message;
 
   if (error) {
     icon = AlertCircle;
-    bgClass = 'bg-red-50/50 border-red-200/50';
-    iconClass = 'text-red-500';
+    bgClass = theme.errorBg;
+    textClass = theme.errorText;
     title = 'Error';
     message = error;
   } else if (success) {
     icon = CheckCircle;
     bgClass = theme.successBg;
-    iconClass = theme.successText;
+    textClass = theme.successText;
     title = 'Success';
     message = success;
   } else if (isLoading) {
     icon = Loader2;
-    bgClass = 'bg-blue-50/50 border-blue-200/50';
-    iconClass = 'text-blue-500';
+    bgClass = theme.infoBg;
+    textClass = theme.infoText;
     title = 'Processing';
     message = loadingStatus || 'Please wait...';
   }
@@ -48,11 +48,13 @@ export function StatusCard({
     <div className={`rounded-lg p-4 border ${bgClass}`}>
       <div className="flex items-center gap-3">
         <Icon
-          className={`w-5 h-5 ${iconClass} ${isLoading && !success && !error ? 'animate-spin' : ''}`}
+          className={`w-5 h-5 ${textClass} ${isLoading && !success && !error ? 'animate-spin' : ''}`}
         />
         <div className="flex-1 min-w-0">
-          <p className={`text-sm font-medium ${theme.text}`}>{title}</p>
-          <div className={`text-xs ${theme.textMuted} mt-1`}>
+          <p className={`text-sm font-medium ${textClass}`} style={fonts.heading}>
+            {title}
+          </p>
+          <div className={`text-xs ${textClass} mt-1`}>
             <p
               style={{
                 display: '-webkit-box',
