@@ -71,7 +71,7 @@ export function Sidebar() {
       collapsible="offcanvas"
       className="border-r-0 bg-white dark:bg-gray-950"
     >
-      <SidebarHeader className="px-4 py-4 -mt-[61px] md:mt-0 mb-0 shrink-0 border-b border-gray-200 dark:border-gray-800">
+      <SidebarHeader className="px-4 py-4 -mt-[61px] md:hidden mb-0 shrink-0 border-b border-gray-200 dark:border-gray-800">
         <Link to="/developer/dashboard" className="flex items-center">
           <img
             src={isDark ? '/vincent-main-logo-white.png' : '/vincent-main-logo.png'}
