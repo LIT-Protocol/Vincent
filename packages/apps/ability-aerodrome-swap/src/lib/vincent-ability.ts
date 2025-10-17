@@ -77,7 +77,7 @@ export const vincentAbility = createVincentAbility({
       });
     }
 
-    const requiredTokenInAmount = ethers.utils.parseUnits(amountIn, sugarTokenIn.decimals);
+    const requiredTokenInAmount = ethers.BigNumber.from(amountIn);
 
     // 3. We retrieve the current allowance of the input token for the spender from the delegator
     const checkErc20AllowanceResult = await checkErc20Allowance({
@@ -96,14 +96,8 @@ export const vincentAbility = createVincentAbility({
     if (action === AbilityAction.Approve) {
       return succeed({
         nativeTokenBalance: checkNativeTokenBalanceResultSuccess?.ethBalance.toString(),
-        currentTokenInAllowanceForSpender: ethers.utils.formatUnits(
-          checkErc20AllowanceResult.currentAllowance,
-          sugarTokenIn.decimals,
-        ),
-        requiredTokenInAllowance: ethers.utils.formatUnits(
-          checkErc20AllowanceResult.requiredAllowance,
-          sugarTokenIn.decimals,
-        ),
+        currentTokenInAllowanceForSpender: checkErc20AllowanceResult.currentAllowance.toString(),
+        requiredTokenInAllowance: checkErc20AllowanceResult.requiredAllowance.toString(),
         spenderAddress: sugarChainConfigBaseMainnet.UNIVERSAL_ROUTER_ADDRESS,
       });
     }
@@ -115,14 +109,8 @@ export const vincentAbility = createVincentAbility({
         reason: checkErc20AllowanceResult.reason,
         spenderAddress: checkErc20AllowanceResult.spenderAddress,
         tokenAddress: checkErc20AllowanceResult.tokenAddress,
-        requiredAllowance: ethers.utils.formatUnits(
-          checkErc20AllowanceResult.requiredAllowance,
-          sugarTokenIn.decimals,
-        ),
-        currentAllowance: ethers.utils.formatUnits(
-          checkErc20AllowanceResult.currentAllowance,
-          sugarTokenIn.decimals,
-        ),
+        requiredAllowance: checkErc20AllowanceResult.requiredAllowance.toString(),
+        currentAllowance: checkErc20AllowanceResult.currentAllowance.toString(),
       });
     }
 
@@ -138,14 +126,8 @@ export const vincentAbility = createVincentAbility({
       return fail({
         reason: checkErc20BalanceResult.reason,
         tokenAddress: checkErc20BalanceResult.tokenAddress,
-        requiredTokenAmount: ethers.utils.formatUnits(
-          checkErc20BalanceResult.requiredTokenAmount,
-          sugarTokenIn.decimals,
-        ),
-        tokenBalance: ethers.utils.formatUnits(
-          checkErc20BalanceResult.tokenBalance,
-          sugarTokenIn.decimals,
-        ),
+        requiredTokenAmount: checkErc20BalanceResult.requiredTokenAmount.toString(),
+        tokenBalance: checkErc20BalanceResult.tokenBalance.toString(),
       });
     }
 
@@ -184,18 +166,9 @@ export const vincentAbility = createVincentAbility({
     return succeed({
       nativeTokenBalance: checkNativeTokenBalanceResultSuccess?.ethBalance.toString(),
       tokenInAddress: sugarTokenIn.address,
-      tokenInBalance: ethers.utils.formatUnits(
-        checkErc20BalanceResult.tokenBalance,
-        sugarTokenIn.decimals,
-      ),
-      currentTokenInAllowanceForSpender: ethers.utils.formatUnits(
-        checkErc20AllowanceResult.currentAllowance,
-        sugarTokenIn.decimals,
-      ),
-      requiredTokenInAllowance: ethers.utils.formatUnits(
-        checkErc20AllowanceResult.requiredAllowance,
-        sugarTokenIn.decimals,
-      ),
+      tokenInBalance: checkErc20BalanceResult.tokenBalance.toString(),
+      currentTokenInAllowanceForSpender: checkErc20AllowanceResult.currentAllowance.toString(),
+      requiredTokenInAllowance: checkErc20AllowanceResult.requiredAllowance.toString(),
       spenderAddress: sugarChainConfigBaseMainnet.UNIVERSAL_ROUTER_ADDRESS,
       quote: {
         tokenInAmount: ethers.utils.formatUnits(quote.amount, sugarTokenIn.decimals),
@@ -242,7 +215,7 @@ export const vincentAbility = createVincentAbility({
       });
     }
 
-    const requiredTokenInAmount = ethers.utils.parseUnits(amountIn, sugarTokenIn.decimals);
+    const requiredTokenInAmount = ethers.BigNumber.from(amountIn);
 
     // 2. If the ability action is approve, we return success if allowance is sufficient, otherwise we send a new approval transaction
     let approvalTxHash: string | undefined;
@@ -273,14 +246,8 @@ export const vincentAbility = createVincentAbility({
           '[@lit-protocol/vincent-ability-aerodrome-swap execute] Allowance is sufficient, returning success',
         );
         return succeed({
-          currentAllowance: ethers.utils.formatUnits(
-            checkErc20AllowanceResult.currentAllowance,
-            sugarTokenIn.decimals,
-          ),
-          requiredAllowance: ethers.utils.formatUnits(
-            checkErc20AllowanceResult.requiredAllowance,
-            sugarTokenIn.decimals,
-          ),
+          currentAllowance: checkErc20AllowanceResult.currentAllowance.toString(),
+          requiredAllowance: checkErc20AllowanceResult.requiredAllowance.toString(),
         });
       } else {
         if (checkErc20AllowanceResult.reason.includes('insufficient ERC20 allowance for spender')) {

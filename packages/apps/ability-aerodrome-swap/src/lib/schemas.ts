@@ -16,7 +16,7 @@ export const abilityParamsSchema = z.object({
   amountIn: z
     .string()
     .describe(
-      'The amount to swap in decimal string (Example: 2.123456 for 2.123456 USDC (6 decimals), or .000001 for 0.000001 WETH (18 decimals))',
+      'The amount to swap in the smallest unit (Example: 2123456 for 2.123456 USDC (6 decimals), or 10000000000000000 for 0.01 WETH (18 decimals))',
     ),
   slippage: z
     .number()
@@ -52,7 +52,7 @@ export const precheckSuccessSchema = z.object({
   nativeTokenBalance: z
     .string()
     .describe(
-      "The balance of the Vincent delegator's native token used for gas fees if alchemyGasSponsor is not enabled",
+      "The balance of the Vincent delegator's native token in the smallest unit used for gas fees if alchemyGasSponsor is not enabled",
     )
     .optional(),
   tokenInAddress: z
@@ -61,18 +61,22 @@ export const precheckSuccessSchema = z.object({
     .optional(),
   tokenInBalance: z
     .string()
-    .describe("The balance of the Vincent delegator's input token used for the swap")
+    .describe(
+      "The balance of the Vincent delegator's input token in the smallest unit used for the swap",
+    )
     .optional(),
   currentTokenInAllowanceForSpender: z
     .string()
-    .describe("The current allowance of the Vincent delegator's input token used for the swap"),
+    .describe(
+      "The current allowance of the Vincent delegator's input token in the smallest unit used for the swap",
+    ),
   spenderAddress: z
     .string()
     .describe('The Aerodrome Universal Router address that will be used for the swap'),
   requiredTokenInAllowance: z
     .string()
     .describe(
-      "The required allowance of the Vincent delegator's input token for the swap for the ERC20 spender (Aerodrome Universal Router address)",
+      "The required allowance of the Vincent delegator's input token in the smallest unit for the swap for the ERC20 spender (Aerodrome Universal Router address)",
     )
     .optional(),
   quote: z
@@ -93,22 +97,24 @@ export const precheckFailSchema = z.object({
   tokenAddress: z.string().describe('The address of the input token for the swap').optional(),
   requiredTokenAmount: z
     .string()
-    .describe('The required amount of the input token for the swap')
+    .describe('The required amount of the input token in the smallest unit for the swap')
     .optional(),
   tokenBalance: z
     .string()
-    .describe("The balance of the Vincent delegator's input token used for the swap")
+    .describe(
+      "The balance of the Vincent delegator's input token in the smallest unit used for the swap",
+    )
     .optional(),
   currentAllowance: z
     .string()
     .describe(
-      "The current allowance of the Vincent delegator's input token used for the swap for the ERC20 spender (Aerodrome Universal Router address)",
+      "The current allowance of the Vincent delegator's input token in the smallest unit used for the swap for the ERC20 spender (Aerodrome Universal Router address)",
     )
     .optional(),
   requiredAllowance: z
     .string()
     .describe(
-      "The required allowance of the Vincent delegator's input token used for the swap for the ERC20 spender (Aerodrome Universal Router address)",
+      "The required allowance of the Vincent delegator's input token in the smallest unit used for the swap for the ERC20 spender (Aerodrome Universal Router address)",
     )
     .optional(),
 });
@@ -136,13 +142,13 @@ export const executeSuccessSchema = z.object({
   currentAllowance: z
     .string()
     .describe(
-      "The current allowance of the Vincent delegator's input token used for the swap for the ERC20 spender (Aerodrome Universal Router address)",
+      "The current allowance of the Vincent delegator's input token in the smallest unit used for the swap for the ERC20 spender (Aerodrome Universal Router address)",
     )
     .optional(),
   requiredAllowance: z
     .string()
     .describe(
-      "The required allowance of the Vincent delegator's input token used for the swap for the ERC20 spender (Aerodrome Universal Router address)",
+      "The required allowance of the Vincent delegator's input token in the smallest unit used for the swap for the ERC20 spender (Aerodrome Universal Router address)",
     )
     .optional(),
 });

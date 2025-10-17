@@ -45,18 +45,13 @@ const ALCHEMY_GAS_SPONSOR_API_KEY = getEnv('ALCHEMY_GAS_SPONSOR_API_KEY');
 const ALCHEMY_GAS_SPONSOR_POLICY_ID = getEnv('ALCHEMY_GAS_SPONSOR_POLICY_ID');
 const EXPECTED_AERODROME_UNIVERSAL_ROUTER_ADDRESS = '0x01D40099fCD87C018969B0e8D4aB1633Fb34763C';
 
-// const SWAP_AMOUNT = 0.0003;
+// const SWAP_AMOUNT = '300000000000000'; // 0.0003 WETH (18 decimals)
 // const SWAP_TOKEN_IN_ADDRESS = '0x4200000000000000000000000000000000000006'; // WETH
 // const SWAP_TOKEN_IN_DECIMALS = 18;
 
-const SWAP_AMOUNT = 0.1;
+const SWAP_AMOUNT = '10000'; // 0.01 USDC (6 decimals)
 const SWAP_TOKEN_IN_ADDRESS = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'; // USDC
 const SWAP_TOKEN_IN_DECIMALS = 6;
-
-const EXPECTED_SWAP_AMOUNT = ethers.utils.formatUnits(
-  ethers.utils.parseUnits(SWAP_AMOUNT.toString(), SWAP_TOKEN_IN_DECIMALS),
-  SWAP_TOKEN_IN_DECIMALS,
-);
 
 // const SWAP_TOKEN_OUT_ADDRESS = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'; // USDC
 // const SWAP_TOKEN_OUT_DECIMALS = 6;
@@ -268,8 +263,8 @@ describe('Aerodrome Swap Ability E2E Tests', () => {
       );
       expect(innerResult.spenderAddress).toBe(EXPECTED_AERODROME_UNIVERSAL_ROUTER_ADDRESS);
       expect(innerResult.tokenAddress).toBe(SWAP_TOKEN_IN_ADDRESS.toLowerCase());
-      expect(innerResult.requiredAllowance).toBe(EXPECTED_SWAP_AMOUNT);
-      expect(innerResult.currentAllowance).toBe('0.0');
+      expect(innerResult.requiredAllowance).toBe(SWAP_AMOUNT.toString());
+      expect(innerResult.currentAllowance).toBe('0');
     });
 
     it('should make a new ERC20 approval transaction for the Aerodrome Universal Router', async () => {
@@ -340,8 +335,8 @@ describe('Aerodrome Swap Ability E2E Tests', () => {
 
       expect(executeResult.result).toBeDefined();
       expect(executeResult.result.approvalTxHash).toBeUndefined();
-      expect(executeResult.result.currentAllowance!).toBe(EXPECTED_SWAP_AMOUNT);
-      expect(executeResult.result.requiredAllowance!).toBe(EXPECTED_SWAP_AMOUNT);
+      expect(executeResult.result.currentAllowance!).toBe(SWAP_AMOUNT.toString());
+      expect(executeResult.result.requiredAllowance!).toBe(SWAP_AMOUNT.toString());
     });
 
     it('should successfully run precheck on the Aerodrome Swap Ability', async () => {
@@ -469,8 +464,8 @@ describe('Aerodrome Swap Ability E2E Tests', () => {
       );
       expect(innerResult.spenderAddress).toBe(EXPECTED_AERODROME_UNIVERSAL_ROUTER_ADDRESS);
       expect(innerResult.tokenAddress).toBe(SWAP_TOKEN_IN_ADDRESS.toLowerCase());
-      expect(innerResult.requiredAllowance).toBe(EXPECTED_SWAP_AMOUNT);
-      expect(innerResult.currentAllowance).toBe('0.0');
+      expect(innerResult.requiredAllowance).toBe(SWAP_AMOUNT.toString());
+      expect(innerResult.currentAllowance).toBe('0');
     });
 
     it('should make a new ERC20 approval transaction for the Aerodrome Universal Router', async () => {
@@ -554,8 +549,8 @@ describe('Aerodrome Swap Ability E2E Tests', () => {
 
       expect(executeResult.result).toBeDefined();
       expect(executeResult.result.approvalTxHash).toBeUndefined();
-      expect(executeResult.result.currentAllowance!).toBe(EXPECTED_SWAP_AMOUNT);
-      expect(executeResult.result.requiredAllowance!).toBe(EXPECTED_SWAP_AMOUNT);
+      expect(executeResult.result.currentAllowance!).toBe(SWAP_AMOUNT.toString());
+      expect(executeResult.result.requiredAllowance!).toBe(SWAP_AMOUNT.toString());
     });
 
     it('should successfully run precheck on the Aerodrome Swap Ability', async () => {
@@ -609,12 +604,12 @@ describe('Aerodrome Swap Ability E2E Tests', () => {
           .toBigInt(),
       ).toBeGreaterThan(0n);
       expect(precheckResult.result!.currentTokenInAllowanceForSpender as string).toBe(
-        EXPECTED_SWAP_AMOUNT,
+        SWAP_AMOUNT.toString(),
       );
       expect(precheckResult.result!.spenderAddress).toBe(
         EXPECTED_AERODROME_UNIVERSAL_ROUTER_ADDRESS,
       );
-      expect(precheckResult.result!.requiredTokenInAllowance!).toBe(EXPECTED_SWAP_AMOUNT);
+      expect(precheckResult.result!.requiredTokenInAllowance!).toBe(SWAP_AMOUNT.toString());
     });
 
     it('should execute the Aerodrome Swap Ability with the Agent Wallet PKP', async () => {
