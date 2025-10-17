@@ -3,11 +3,19 @@ import { z } from 'zod';
 export const abilityParamsSchema = z.object({
   action: z
     .enum(['approve', 'swap'])
-    .describe('Dictates whether to perform an ERC20 approval or a swap using the sugar-sdk'),
-  rpcUrl: z.string().describe('An RPC endpoint for Base chain (Aerodrome only operates on Base)'),
+    .describe('Dictates whether to perform an ERC20 approval or a swap'),
+  rpcUrl: z
+    .string()
+    .describe(
+      'An RPC endpoint for Base mainnet, used to check balances, allowances, and to send approval and swap transactions',
+    ),
   tokenInAddress: z.string().describe('The address of the token to swap from'),
   tokenOutAddress: z.string().describe('The address of the token to swap to'),
-  amountIn: z.string().describe('The amount to swap in smallest unit (wei) as a string'),
+  amountIn: z
+    .string()
+    .describe(
+      'The amount to swap in decimal string (Example: 2.123456 for 2.123456 USDC (6 decimals), or .000001 for 0.000001 WETH (18 decimals))',
+    ),
   slippage: z
     .number()
     .min(0)
@@ -42,7 +50,7 @@ export const precheckSuccessSchema = z.object({
   nativeTokenBalance: z
     .string()
     .describe(
-      'The balance of the native token used for gas fees if alchemyGasSponsor is not enabled',
+      "The balance of the Vincent delegator's native token used for gas fees if alchemyGasSponsor is not enabled",
     )
     .optional(),
   tokenInAddress: z
@@ -51,15 +59,19 @@ export const precheckSuccessSchema = z.object({
     .optional(),
   tokenInBalance: z
     .string()
-    .describe('The balance of the input token used for the swap')
+    .describe("The balance of the Vincent delegator's input token used for the swap")
     .optional(),
   currentTokenInAllowanceForSpender: z
     .string()
-    .describe('The current allowance of the input token used for the swap'),
-  spenderAddress: z.string().describe('The Uniswap router address that will be used for the swap'),
+    .describe("The current allowance of the Vincent delegator's input token used for the swap"),
+  spenderAddress: z
+    .string()
+    .describe('The Aerodrome Universal Router address that will be used for the swap'),
   requiredTokenInAllowance: z
     .string()
-    .describe('The required allowance of the input token for the swap for the ERC20 spender')
+    .describe(
+      "The required allowance of the Vincent delegator's input token for the swap for the ERC20 spender (Aerodrome Universal Router address)",
+    )
     .optional(),
   quote: z
     .object({
@@ -81,14 +93,21 @@ export const precheckFailSchema = z.object({
     .string()
     .describe('The required amount of the input token for the swap')
     .optional(),
-  tokenBalance: z.string().describe('The balance of the input token used for the swap').optional(),
+  tokenBalance: z
+    .string()
+    .describe("The balance of the Vincent delegator's input token used for the swap")
+    .optional(),
   currentAllowance: z
     .string()
-    .describe('The current allowance of the input token used for the swap for the ERC20 spender')
+    .describe(
+      "The current allowance of the Vincent delegator's input token used for the swap for the ERC20 spender (Aerodrome Universal Router address)",
+    )
     .optional(),
   requiredAllowance: z
     .string()
-    .describe('The required allowance of the input token used for the swap for the ERC20 spender')
+    .describe(
+      "The required allowance of the Vincent delegator's input token used for the swap for the ERC20 spender (Aerodrome Universal Router address)",
+    )
     .optional(),
 });
 
@@ -114,10 +133,14 @@ export const executeSuccessSchema = z.object({
     .describe('The hash of the user operation that was executed'),
   currentAllowance: z
     .string()
-    .describe('The current allowance of the input token used for the swap for the ERC20 spender')
+    .describe(
+      "The current allowance of the Vincent delegator's input token used for the swap for the ERC20 spender (Aerodrome Universal Router address)",
+    )
     .optional(),
   requiredAllowance: z
     .string()
-    .describe('The required allowance of the input token used for the swap for the ERC20 spender')
+    .describe(
+      "The required allowance of the Vincent delegator's input token used for the swap for the ERC20 spender (Aerodrome Universal Router address)",
+    )
     .optional(),
 });
