@@ -54,7 +54,7 @@ export function AppInfoView({ app, versions, versionAbilities }: AppInfoViewProp
         className={`transition-opacity duration-500 ${showContent && !isTransitioning ? 'opacity-100' : 'opacity-0'}`}
       >
         {/* Back Button and Hero Section */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 pt-20 sm:pt-24 pb-4 sm:pb-6">
+        <div className="pt-20 sm:pt-24 pb-4 sm:pb-6">
           {/* Back Button */}
           <button
             onClick={() => handleNavigateWithTransition('/explorer/apps')}
@@ -69,7 +69,7 @@ export function AppInfoView({ app, versions, versionAbilities }: AppInfoViewProp
         </div>
 
         {/* Main Content - Two Column Layout */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 pb-8 sm:pb-12">
+        <div className="pb-8 sm:pb-12">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
             {/* Left Sidebar - App Info */}
             <div className="lg:col-span-1">
