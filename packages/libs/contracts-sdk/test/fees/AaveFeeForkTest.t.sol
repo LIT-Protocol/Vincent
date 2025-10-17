@@ -395,7 +395,7 @@ contract AaveFeeForkTest is FeeTestCommon {
         assertEq(tokensWithCollectedFees.length, 1);
         assertEq(tokensWithCollectedFees[0], address(underlyingERC20));
 
-        // check the collected fees for the app for the foundation
+        // check the collected fees for the foundation
         uint256 litCollectedAppFees =
             feeViewsFacet.collectedAppFees(LibFeeStorage.LIT_FOUNDATION_APP_ID, address(underlyingERC20));
         // check the collected fees for the app
@@ -426,7 +426,7 @@ contract AaveFeeForkTest is FeeTestCommon {
         feeAdminFacet.withdrawAppFees(DEV_APP_ID, address(underlyingERC20));
         vm.stopPrank();
 
-        // confirm the profit went to the owner
+        // confirm the profit went to the app manager
         assertEq(underlyingERC20.balanceOf(APP_MANAGER_BOB), expectedAppCollectedAppFees);
 
         // confirm that the token is no longer in the set of tokens that have collected fees
