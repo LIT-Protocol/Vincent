@@ -116,7 +116,7 @@ export const executeFailSchema = z.object({
 });
 
 export const executeSuccessSchema = z.object({
-  swapTxHash: z.string().describe('The hash of the swapping transaction on uniswap').optional(),
+  swapTxHash: z.string().describe('The hash of the swapping transaction on Aerodrome').optional(),
   swapTxUserOperationHash: z
     .string()
     .optional()
