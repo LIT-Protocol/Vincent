@@ -542,7 +542,7 @@ describe('Aerodrome Swap Ability E2E Tests', () => {
         },
       );
       console.log(
-        '[should not make a new ERC20 approval transaction for the Uniswap router, and return the current allowance]',
+        '[should not make a new ERC20 approval transaction for the Aerodrome Universal Router, and return the current allowance]',
         util.inspect(executeResult, { depth: 10 }),
       );
 
