@@ -96,8 +96,8 @@ contract AavePerfFeeFacet {
             // there's a profit, calculate fee
             // performance fee is in basis points
             // so divide by 10000 to use it as a percentage
-            performanceFeeAmount =
-                (withdrawAssetAmount - depositAssetAmount) * LibFeeStorage.getStorage().performanceFeePercentage / 10000;
+            performanceFeeAmount = (withdrawAssetAmount - depositAssetAmount)
+                * LibFeeStorage.getStorage().performanceFeePercentage / 10000;
         }
 
         // add the token to the set of tokens that have collected fees

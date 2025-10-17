@@ -1,0 +1,4 @@
+**/**/vincent-contract-caller-config.json
+!.env.test.example
+test/test-config.json
+#src/generated/**/*
