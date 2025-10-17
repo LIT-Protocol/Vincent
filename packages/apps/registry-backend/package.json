@@ -21,9 +21,9 @@
   },
   "dependencies": {
     "@lit-protocol/flags": "^2.1.0",
-    "@lit-protocol/vincent-app-sdk": "workspace:*",
-    "@lit-protocol/vincent-contracts-sdk": "workspace:*",
-    "@lit-protocol/vincent-registry-sdk": "workspace:*",
+    "@lit-protocol/vincent-app-sdk": "^2.2.3",
+    "@lit-protocol/vincent-contracts-sdk": "^1.3.0",
+    "@lit-protocol/vincent-registry-sdk": "^4.2.0",
     "@t3-oss/env-core": "^0.13.6",
     "cors": "^2.8.5",
     "debug": "^4.4.1",
