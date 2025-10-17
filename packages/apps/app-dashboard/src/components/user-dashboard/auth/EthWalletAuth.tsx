@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { createAppKit } from '@reown/appkit/react';
 import { WagmiAdapter } from '@reown/appkit-adapter-wagmi';
 import { mainnet, polygon, arbitrum, optimism, base, AppKitNetwork } from '@reown/appkit/networks';
-import { useAccount, useSignMessage, useDisconnect } from 'wagmi';
+import { useAccount, useSignMessage, useDisconnect, useConfig } from 'wagmi';
 import { Button } from '@/components/shared/ui/button';
 import { ThemeType } from '../connect/ui/theme';
 import StatusMessage from '../connect/StatusMessage';
@@ -24,21 +24,30 @@ export default function EthWalletAuth({ authWithEthWallet, setView, theme }: Wal
   const { address, isConnected } = useAccount();
   const { signMessageAsync } = useSignMessage();
   const { disconnect } = useDisconnect();
+  const wagmiConfig = useConfig();
   const appKitRef = useRef<any>(null);
 
   const { VITE_WALLETCONNECT_PROJECT_ID, VITE_DASHBOARD_URL } = env;
 
-  // Initialize AppKit on demand
+  // Initialize AppKit on demand - wrap existing wagmi config in WagmiAdapter
   useEffect(() => {
-    if (!appKitInitialized) {
+    if (!appKitInitialized && wagmiConfig) {
       const allNetworks = [mainnet, polygon, arbitrum, optimism, base] as [
         AppKitNetwork,
         ...AppKitNetwork[],
       ];
 
+      // Create a WagmiAdapter that wraps the existing config from WagmiProviderWrapper
       const wagmiAdapter = new WagmiAdapter({
         projectId: VITE_WALLETCONNECT_PROJECT_ID,
         networks: allNetworks,
+      });
+
+      // Override the adapter's wagmiConfig with the one from the provider
+      // This ensures AppKit uses the same config instance as the wagmi hooks
+      Object.defineProperty(wagmiAdapter, 'wagmiConfig', {
+        get: () => wagmiConfig,
+        configurable: true,
       });
 
       appKitRef.current = createAppKit({
@@ -56,7 +65,7 @@ export default function EthWalletAuth({ authWithEthWallet, setView, theme }: Wal
 
       setAppKitInitialized(true);
     }
-  }, [appKitInitialized, VITE_WALLETCONNECT_PROJECT_ID, VITE_DASHBOARD_URL]);
+  }, [appKitInitialized, wagmiConfig, VITE_WALLETCONNECT_PROJECT_ID, VITE_DASHBOARD_URL]);
 
   // Clean up AppKit when component unmounts or after successful authentication
   useEffect(() => {
@@ -141,22 +150,6 @@ export default function EthWalletAuth({ authWithEthWallet, setView, theme }: Wal
 
   return (
     <>
-      {isWalletReady && (
-        <div className="mb-4 flex justify-center">
-          <div className="w-4/5">
-            <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-              <div className="flex items-center justify-center mb-2">
-                <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                <span className="text-sm font-medium text-green-800">Connected Wallet</span>
-              </div>
-              <div className="rounded p-2 border bg-white border-green-300">
-                <div className="text-[10px] break-all text-center text-black">{address}</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
       <div className="flex justify-center">
         <div className="space-y-4 w-4/5">
           {!isWalletReady ? (
@@ -178,7 +171,18 @@ export default function EthWalletAuth({ authWithEthWallet, setView, theme }: Wal
               </Button>
             </div>
           ) : (
-            <div>
+            <div className="space-y-3">
+              <div className={`${theme.successBg} border ${theme.cardBorder} rounded-lg p-3`}>
+                <div className="flex items-center justify-center mb-2">
+                  <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                  <span className={`text-sm font-medium ${theme.successText}`}>
+                    Connected Wallet
+                  </span>
+                </div>
+                <div className={`rounded p-2 border ${theme.cardBg} ${theme.cardBorder}`}>
+                  <div className={`text-[10px] break-all text-center ${theme.text}`}>{address}</div>
+                </div>
+              </div>
               <Button
                 onClick={authenticate}
                 disabled={loading}

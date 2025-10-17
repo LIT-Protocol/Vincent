@@ -20,6 +20,7 @@
     "@lit-protocol/vincent-policy-spending-limit": "workspace:*",
     "@lit-protocol/vincent-scaffold-sdk": "^1.1.7",
     "@lit-protocol/vincent-wrapped-keys": "workspace:*",
+    "@lit-protocol/vincent-ability-aerodrome-swap": "workspace:*",
     "@solana/web3.js": "^1.98.4",
     "esbuild": "^0.25.5",
     "ethers": "5.8.0",
