@@ -5,13 +5,15 @@ import "../LibFeeStorage.sol";
 import {ERC4626} from "@openzeppelin/contracts/token/ERC20/extensions/ERC4626.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
+import {FeeCommon} from "../FeeCommon.sol";
+import {FeeUtils} from "../FeeUtils.sol";
 
 /**
  * @title MorphoPerfFeeFacet
  * @notice A facet of the Fee Diamond that manages Morpho performance fees
  * @dev This contract simply tracks morpho deposits and takes a performance fee from the withdrawals
  */
-contract MorphoPerfFeeFacet {
+contract MorphoPerfFeeFacet is FeeCommon {
     using EnumerableSet for EnumerableSet.AddressSet;
     /* ========== ERRORS ========== */
 
@@ -34,7 +36,7 @@ contract MorphoPerfFeeFacet {
      * @param vaultAddress the address of the vault to deposit into
      * @param assetAmount the amount of assets to deposit
      */
-    function depositToMorpho(address vaultAddress, uint256 assetAmount) external {
+    function depositToMorpho(uint40 appId, address vaultAddress, uint256 assetAmount) external nonZeroAppId(appId) {
         // get the vault and asset
         ERC4626 vault = ERC4626(vaultAddress);
         IERC20 asset = IERC20(vault.asset());
@@ -46,10 +48,10 @@ contract MorphoPerfFeeFacet {
         asset.approve(vaultAddress, assetAmount);
 
         // send it into morpho
-        uint256 vaultShares = vault.deposit(assetAmount, address(this));
+        uint256 vaultShares = vault.deposit(assetAmount, msg.sender);
 
         // track the deposit
-        LibFeeStorage.Deposit storage deposit = LibFeeStorage.getStorage().deposits[msg.sender][vaultAddress];
+        LibFeeStorage.Deposit storage deposit = LibFeeStorage.getStorage().deposits[appId][msg.sender][vaultAddress];
         if (deposit.vaultProvider != 0 && deposit.vaultProvider != VAULT_PROVIDER) {
             revert DepositAlreadyExistsWithAnotherProvider(msg.sender, vaultAddress);
         }
@@ -57,19 +59,15 @@ contract MorphoPerfFeeFacet {
         deposit.assetAmount += assetAmount;
         deposit.vaultShares += vaultShares;
         deposit.vaultProvider = VAULT_PROVIDER;
-
-        // add the vault address to the set of vault or pool asset addresses
-        // so the user can find their deposits later
-        LibFeeStorage.getStorage().userVaultOrPoolAssetAddresses[msg.sender].add(vaultAddress);
     }
 
     /**
      * @notice Withdraws funds from Morpho.  Only supports full withdrawals.
      * @param vaultAddress the address of the vault to withdraw from
      */
-    function withdrawFromMorpho(address vaultAddress) external {
+    function withdrawFromMorpho(uint40 appId, address vaultAddress) external nonZeroAppId(appId) {
         // lookup the corresponding deposit
-        LibFeeStorage.Deposit memory deposit = LibFeeStorage.getStorage().deposits[msg.sender][vaultAddress];
+        LibFeeStorage.Deposit memory deposit = LibFeeStorage.getStorage().deposits[appId][msg.sender][vaultAddress];
         if (deposit.assetAmount == 0) revert DepositNotFound(msg.sender, vaultAddress);
 
         if (deposit.vaultProvider != VAULT_PROVIDER) revert NotMorphoVault(msg.sender, vaultAddress);
@@ -79,11 +77,7 @@ contract MorphoPerfFeeFacet {
 
         // zero out the struct now before we call any other
         // contracts to prevent reentrancy attacks
-        delete LibFeeStorage.getStorage().deposits[msg.sender][vaultAddress];
-
-        // remove the vault address from the set of vault or pool asset addresses
-        // so the user can't find their deposits later
-        LibFeeStorage.getStorage().userVaultOrPoolAssetAddresses[msg.sender].remove(vaultAddress);
+        delete LibFeeStorage.getStorage().deposits[appId][msg.sender][vaultAddress];
 
         // get the vault and asset
         ERC4626 vault = ERC4626(vaultAddress);
@@ -91,7 +85,7 @@ contract MorphoPerfFeeFacet {
 
         // perform the withdrawal with morpho
         // and send the assets to this contract
-        uint256 withdrawAssetAmount = vault.redeem(depositVaultShares, address(this), address(this));
+        uint256 withdrawAssetAmount = vault.redeem(depositVaultShares, address(this), msg.sender);
 
         uint256 performanceFeeAmount = 0;
         if (withdrawAssetAmount > depositAssetAmount) {
@@ -103,9 +97,7 @@ contract MorphoPerfFeeFacet {
         }
 
         // add the token to the set of tokens that have collected fees
-        if (performanceFeeAmount > 0) {
-            LibFeeStorage.getStorage().tokensWithCollectedFees.add(address(asset));
-        }
+        FeeUtils.splitFees(appId, address(asset), performanceFeeAmount);
 
         // no need to send the performance fee anywhere
         // because it's collected in this contract, and
