@@ -25,6 +25,14 @@ library FeeUtils {
     event VincentAppDiamondSet(address newVincentAppDiamond);
 
     /* ========== FUNCTIONS ========== */
+
+    /**
+     * @notice Internal function used to split the fees between the lit foundation and the app
+     * @param appId the app id that is collecting the fees
+     * @param token the token address that the fees are being paid in, like USDC for example
+     * @param amount the amount of fees to split between the lit foundation and the app
+     * @dev the fees are split based on the litAppFeeSplitPercentage
+     */
     function splitFees(uint40 appId, address token, uint256 amount) internal {
         if (amount == 0) return;
         uint256 litAmount = amount * LibFeeStorage.getStorage().litAppFeeSplitPercentage / 10000;
