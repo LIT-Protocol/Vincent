@@ -1,5 +1,6 @@
 import React from 'react';
 import styles from './LandingPartners.module.css';
+import { env } from '@/config/env';
 
 const logos = [
   {
@@ -88,7 +89,7 @@ const LandingPartners: React.FC = () => {
             className="!text-gray-600 hover:!text-orange-500 transition-colors !no-underline"
             style={{ textDecoration: 'none' }}
           >
-            $250M+ Managed
+            ${env.VITE_LIT_TOTAL_MANAGED} Managed
           </a>
           <span className="mx-2">•</span>
           Works With All Crypto

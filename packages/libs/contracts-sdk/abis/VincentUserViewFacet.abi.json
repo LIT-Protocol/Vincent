@@ -206,6 +206,11 @@
                 "name": "versionEnabled",
                 "type": "bool",
                 "internalType": "bool"
+              },
+              {
+                "name": "isDeleted",
+                "type": "bool",
+                "internalType": "bool"
               }
             ]
           }
@@ -257,6 +262,11 @@
               },
               {
                 "name": "versionEnabled",
+                "type": "bool",
+                "internalType": "bool"
+              },
+              {
+                "name": "isDeleted",
                 "type": "bool",
                 "internalType": "bool"
               }

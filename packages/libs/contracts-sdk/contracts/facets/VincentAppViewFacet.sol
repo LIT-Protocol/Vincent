@@ -1,4 +1,3 @@
-
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.29;
 
@@ -122,9 +121,11 @@ contract VincentAppViewFacet is VincentBase {
      * @param offset The offset of the first token ID to retrieve
      * @return delegatedAgentPkpTokenIds Array of delegated agent PKP token IDs
      */
-    function getDelegatedAgentPkpTokenIds(uint40 appId, uint24 version, uint256 offset) 
-        external view onlyRegisteredAppVersion(appId, version) 
-        returns (uint256[] memory delegatedAgentPkpTokenIds) 
+    function getDelegatedAgentPkpTokenIds(uint40 appId, uint24 version, uint256 offset)
+        external
+        view
+        onlyRegisteredAppVersion(appId, version)
+        returns (uint256[] memory delegatedAgentPkpTokenIds)
     {
         VincentAppStorage.AppVersion storage versionedApp =
             VincentAppStorage.appStorage().appIdToApp[appId].appVersions[getAppVersionIndex(version)];
@@ -168,8 +169,7 @@ contract VincentAppViewFacet is VincentBase {
         VincentAppStorage.App storage storedApp = as_.appIdToApp[appId];
 
         // Step 2: Retrieve the specific version data
-        VincentAppStorage.AppVersion storage storedVersionedApp =
-            storedApp.appVersions[getAppVersionIndex(version)];
+        VincentAppStorage.AppVersion storage storedVersionedApp = storedApp.appVersions[getAppVersionIndex(version)];
 
         // Step 3: Set basic version information (excluding delegatedAgentPkpTokenIds)
         appVersion.version = version;
@@ -226,7 +226,11 @@ contract VincentAppViewFacet is VincentBase {
      * @return appIds Array of app IDs managed by the specified address
      * @return appVersionCounts Array of version counts for each app ID
      */
-    function getAppsByManager(address manager, uint256 offset) external view returns (uint40[] memory appIds, uint24[] memory appVersionCounts) {
+    function getAppsByManager(address manager, uint256 offset)
+        external
+        view
+        returns (uint40[] memory appIds, uint24[] memory appVersionCounts)
+    {
         if (manager == address(0)) {
             revert ZeroAddressNotAllowed();
         }

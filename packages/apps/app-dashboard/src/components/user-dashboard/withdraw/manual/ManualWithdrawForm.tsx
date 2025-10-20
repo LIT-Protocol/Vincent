@@ -1,4 +1,5 @@
 import { useCallback, useState, useEffect } from 'react';
+import * as Sentry from '@sentry/react';
 import { SessionSigs, IRelayPKP } from '@lit-protocol/types';
 import { LIT_CHAINS } from '@lit-protocol/constants';
 import StatusMessage from '@/components/user-dashboard/connect/StatusMessage';
@@ -80,7 +81,8 @@ export const ManualWithdraw: React.FC<ManualWithdrawProps> = ({ sessionSigs, age
       };
       setNativeToken(token);
       showStatus('Balance successfully fetched', 'success');
-    } catch (error: unknown) {
+    } catch (error) {
+      Sentry.captureException(error);
       showStatus(`Error: ${(error as Error).message || 'Error fetching balance'}`, 'error');
     } finally {
       setLoading(false);

@@ -74,9 +74,7 @@ export function DashboardContent({
               <Button
                 size="sm"
                 className="bg-orange-600 hover:bg-orange-700 text-white"
-                onClick={() =>
-                  window.open('https://docs.heyvincent.ai/documents/Getting_Started.html', '_blank')
-                }
+                onClick={() => window.open('https://docs.heyvincent.ai', '_blank')}
               >
                 View Docs
               </Button>

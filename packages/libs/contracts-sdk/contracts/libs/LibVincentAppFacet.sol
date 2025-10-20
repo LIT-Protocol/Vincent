@@ -149,9 +149,7 @@ library LibVincentAppFacet {
      * @param abilitiesLength Length of the abilities array
      * @param policiesLength Length of the policies array
      */
-    error AbilityArrayDimensionMismatch(
-        uint256 abilitiesLength, uint256 policiesLength
-    );
+    error AbilityArrayDimensionMismatch(uint256 abilitiesLength, uint256 policiesLength);
 
     /**
      * @notice Error thrown when policy-related arrays for a specific ability have mismatched lengths
@@ -159,9 +157,7 @@ library LibVincentAppFacet {
      * @param policiesLength Length of the policies array for this ability
      * @param paramMetadataLength Length of the parameter metadata array for this ability
      */
-    error PolicyArrayLengthMismatch(
-        uint256 abilityIndex, uint256 policiesLength, uint256 paramMetadataLength
-    );
+    error PolicyArrayLengthMismatch(uint256 abilityIndex, uint256 policiesLength, uint256 paramMetadataLength);
 
     /**
      * @notice Error thrown when parameter arrays for a specific policy have mismatched lengths
@@ -169,9 +165,7 @@ library LibVincentAppFacet {
      * @param policyIndex Index of the policy in the policies array
      * @param paramMetadataLength Length of the parameter metadata array for this policy
      */
-    error ParameterArrayLengthMismatch(
-        uint256 abilityIndex, uint256 policyIndex, uint256 paramMetadataLength
-    );
+    error ParameterArrayLengthMismatch(uint256 abilityIndex, uint256 policyIndex, uint256 paramMetadataLength);
 
     /**
      * @notice Error thrown when the app is already deleted

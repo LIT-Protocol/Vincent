@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import * as Sentry from '@sentry/react';
 import { LIT_CHAINS } from '@lit-protocol/constants';
 import { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
 import {
@@ -118,6 +119,16 @@ export function useWalletConnectRequests(client: any, currentWalletAddress: stri
         return { success: true, method };
       } catch (error) {
         console.error('Failed to approve request:', error);
+        Sentry.addBreadcrumb({
+          category: 'walletconnect.request',
+          message: 'Failed to approve WalletConnect request',
+          level: 'error',
+          data: {
+            requestId: request?.id,
+            requestMethod: request?.params?.request?.method,
+            error: error instanceof Error ? error.message : String(error),
+          },
+        });
 
         if (request?.id && request?.topic) {
           try {
@@ -136,6 +147,16 @@ export function useWalletConnectRequests(client: any, currentWalletAddress: stri
             });
           } catch (responseError) {
             console.error('Failed to send error response:', responseError);
+            Sentry.addBreadcrumb({
+              category: 'walletconnect.request',
+              message: 'Failed to send error response to dApp',
+              level: 'warning',
+              data: {
+                requestId: request?.id,
+                error:
+                  responseError instanceof Error ? responseError.message : String(responseError),
+              },
+            });
           }
         }
 
@@ -244,6 +265,15 @@ async function handleSendTransaction(pkpWallet: PKPEthersWallet, methodParams: a
       }
     } catch (feeError) {
       console.error('Failed to fetch fee data:', feeError);
+      Sentry.addBreadcrumb({
+        category: 'walletconnect.transaction',
+        message: 'Failed to fetch fee data for transaction',
+        level: 'error',
+        data: {
+          chainId,
+          error: feeError instanceof Error ? feeError.message : String(feeError),
+        },
+      });
       throw new Error('Failed to fetch fee data');
     }
   }

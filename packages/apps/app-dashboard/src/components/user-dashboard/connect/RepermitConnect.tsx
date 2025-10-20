@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import * as Sentry from '@sentry/react';
 import { getClient } from '@lit-protocol/vincent-contracts-sdk';
 import { IRelayPKP } from '@lit-protocol/types';
 import { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
@@ -92,6 +93,14 @@ export function RepermitConnect({
     } catch (error) {
       setLocalError(error instanceof Error ? error.message : 'Failed to re-permit app');
       setIsConnectProcessing(false);
+      Sentry.captureException(error, {
+        extra: {
+          context: 'RepermitConnect.handleAccept',
+          appId: appData.appId,
+          pkpAddress: previouslyPermittedPKP.ethAddress,
+        },
+      });
+      return;
     }
   }, [readAuthInfo, previouslyPermittedPKP, appData]);
 

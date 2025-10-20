@@ -129,6 +129,7 @@ export async function getPermittedAppsForPkps(
         appId: app.appId,
         version: app.version,
         versionEnabled: app.versionEnabled,
+        isDeleted: app.isDeleted,
       })),
     }));
   } catch (error: unknown) {
@@ -247,6 +248,7 @@ export async function getUnpermittedAppsForPkps(
         appId: app.appId,
         previousPermittedVersion: app.previousPermittedVersion,
         versionEnabled: app.versionEnabled,
+        isDeleted: app.isDeleted,
       })),
     }));
   } catch (error: unknown) {

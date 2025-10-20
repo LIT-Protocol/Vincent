@@ -35,6 +35,7 @@ export const env = createEnv({
     VITE_DOMAIN: z.string().optional(),
     VITE_ENV: z.enum(['development', 'staging', 'production']).default('staging').optional(),
     VITE_VINCENT_YIELD_APPID: z.coerce.number(),
+    VITE_LIT_TOTAL_MANAGED: z.string().default('340M+'),
     VITE_DASHBOARD_URL: z.string(),
     VITE_VINCENT_YIELD_MINIMUM_DEPOSIT: z.coerce.number().default(50),
   },

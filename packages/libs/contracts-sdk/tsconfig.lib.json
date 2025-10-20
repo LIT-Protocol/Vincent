@@ -15,6 +15,7 @@
     "abis/VincentAppFacet.abi.json",
     "abis/VincentAppViewFacet.abi.json",
     "abis/VincentUserFacet.abi.json",
-    "abis/VincentUserViewFacet.abi.json"
+    "abis/VincentUserViewFacet.abi.json",
+    "abis/FeeDiamond.abi.json"
   ]
 }

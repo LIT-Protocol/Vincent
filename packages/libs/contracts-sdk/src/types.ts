@@ -299,6 +299,7 @@ export interface PermittedApp {
   appId: number;
   version: number;
   versionEnabled: boolean;
+  isDeleted: boolean;
 }
 
 /**
@@ -359,6 +360,7 @@ export interface UnpermittedApp {
   appId: number;
   previousPermittedVersion: number;
   versionEnabled: boolean;
+  isDeleted: boolean;
 }
 
 /**
@@ -514,7 +516,7 @@ export interface ContractClient {
     params: GetAllRegisteredAgentPkpsParams,
   ): ReturnType<typeof _getAllRegisteredAgentPkpEthAddresses>;
 
-  /** Get the permitted app version for a specific PKP token and app
+  /** Get the permitted app version for a specific PKP token and app, even if the app has been deleted
    *
    * @returns The permitted app version for the PKP token and app
    */
@@ -522,10 +524,10 @@ export interface ContractClient {
     params: GetPermittedAppVersionForPkpParams,
   ): ReturnType<typeof _getPermittedAppVersionForPkp>;
 
-  /** Get all app IDs that have permissions for a specific PKP token, excluding deleted apps
+  /** Get all app IDs that have permissions for a specific PKP token, including deleted apps
    *
    * @deprecated Use getPermittedAppsForPkps instead
-   * @returns Array of app IDs that have permissions for the PKP token and haven't been deleted
+   * @returns Array of app IDs that have permissions for the PKP token (including deleted apps)
    */
   getAllPermittedAppIdsForPkp(
     params: GetAllPermittedAppIdsForPkpParams,

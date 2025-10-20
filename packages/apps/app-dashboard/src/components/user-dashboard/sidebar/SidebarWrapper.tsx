@@ -49,7 +49,6 @@ function SidebarWithData({ userAddress }: { userAddress: string }) {
       apps={apps}
       permittedAppVersions={permittedAppVersions}
       appVersionsMap={appVersionsMap}
-      isLoadingApps={isLoading}
     />
   );
 }

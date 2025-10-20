@@ -1,7 +1,7 @@
 import { ethers, type UnsignedTransaction } from 'ethers';
 
 import { signTx } from './sign-tx';
-import { populateTransaction } from '@lit-protocol/vincent-ability-sdk';
+import { populateTransaction, sponsoredGasRawTransaction } from '@lit-protocol/vincent-ability-sdk';
 
 declare const Lit: {
   Actions: {
@@ -25,6 +25,9 @@ export const sendUniswapTx = async ({
   calldata,
   gasBufferPercentage,
   baseFeePerGasBufferPercentage,
+  alchemyGasSponsor,
+  alchemyGasSponsorApiKey,
+  alchemyGasSponsorPolicyId,
 }: {
   rpcUrl: string;
   chainId: number;
@@ -35,7 +38,29 @@ export const sendUniswapTx = async ({
   calldata: string;
   gasBufferPercentage?: number;
   baseFeePerGasBufferPercentage?: number;
+  alchemyGasSponsor?: boolean;
+  alchemyGasSponsorApiKey?: string;
+  alchemyGasSponsorPolicyId?: string;
 }): Promise<string> => {
+  if (alchemyGasSponsor) {
+    console.log('[sendUniswapTx] Alchemy gas sponsor is enabled');
+
+    if (!alchemyGasSponsorApiKey || !alchemyGasSponsorPolicyId) {
+      throw new Error(
+        '[sendUniswapTx] Alchemy gas sponsor is enabled, but API key or policy ID is not provided.',
+      );
+    }
+    return await sponsoredGasRawTransaction({
+      pkpPublicKey,
+      to,
+      value,
+      data: calldata,
+      chainId,
+      eip7702AlchemyApiKey: alchemyGasSponsorApiKey,
+      eip7702AlchemyPolicyId: alchemyGasSponsorPolicyId,
+    });
+  }
+
   console.log('Estimating gas for Swap transaction using pre-computed route (sendUniswapTx)');
 
   const populateTxResponse = await Lit.Actions.runOnce(

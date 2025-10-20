@@ -13,14 +13,22 @@ const { VITE_JWT_EXPIRATION_MINUTES } = env;
 interface UseJwtRedirectProps {
   readAuthInfo: ReadAuthInfo;
   agentPKP: IRelayPKP | null;
+  redirectUriOverride?: string;
 }
 
-export const useJwtRedirect = ({ readAuthInfo, agentPKP }: UseJwtRedirectProps) => {
+export const useJwtRedirect = ({
+  readAuthInfo,
+  agentPKP,
+  redirectUriOverride,
+}: UseJwtRedirectProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [loadingStatus, setLoadingStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [redirectUrl, setRedirectUrl] = useState<string | null>(null);
-  const { redirectUri } = useUrlRedirectUri();
+  const { redirectUri: queryRedirectUri } = useUrlRedirectUri();
+
+  // Use override if provided, otherwise use query param
+  const redirectUri = redirectUriOverride || queryRedirectUri;
 
   // Generate JWT for redirection
   const generateJWT = useCallback(
@@ -74,7 +82,7 @@ export const useJwtRedirect = ({ readAuthInfo, agentPKP }: UseJwtRedirectProps) 
         return;
       }
     },
-    [readAuthInfo, redirectUri, agentPKP],
+    [readAuthInfo, redirectUri, agentPKP, redirectUriOverride],
   );
 
   const executeRedirect = useCallback(() => {

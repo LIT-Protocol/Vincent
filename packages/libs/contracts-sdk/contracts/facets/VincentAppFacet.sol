@@ -48,7 +48,8 @@ contract VincentAppFacet is VincentBase {
      * @param versionAbilities Abilities and policies for the app version
      */
     function registerApp(uint40 appId, address[] calldata delegatees, AppVersionAbilities calldata versionAbilities)
-        external returns (uint24 newAppVersion)
+        external
+        returns (uint24 newAppVersion)
     {
         if (appId == 0) {
             revert LibVincentAppFacet.ZeroAppIdNotAllowed();
@@ -181,7 +182,7 @@ contract VincentAppFacet is VincentBase {
         VincentAppStorage.App storage app = as_.appIdToApp[appId];
 
         address[] memory currentDelegatees = app.delegatees.values();
-        
+
         // Remove all current delegatees
         for (uint256 i = 0; i < currentDelegatees.length; i++) {
             address currentDelegatee = currentDelegatees[i];
@@ -193,7 +194,7 @@ contract VincentAppFacet is VincentBase {
         // Add new delegatees
         for (uint256 i = 0; i < delegatees.length; i++) {
             address delegatee = delegatees[i];
-            
+
             if (delegatee == address(0)) {
                 revert LibVincentAppFacet.ZeroAddressDelegateeNotAllowed();
             }
@@ -307,8 +308,7 @@ contract VincentAppFacet is VincentBase {
         uint256 abilityCount = versionAbilities.abilityIpfsCids.length;
         if (abilityCount != versionAbilities.abilityPolicies.length) {
             revert LibVincentAppFacet.AbilityArrayDimensionMismatch(
-                abilityCount,
-                versionAbilities.abilityPolicies.length
+                abilityCount, versionAbilities.abilityPolicies.length
             );
         }
 
@@ -362,7 +362,8 @@ contract VincentAppFacet is VincentBase {
                 }
 
                 bytes32 hashedAbilityPolicy = keccak256(abi.encodePacked(policyIpfsCid));
-                EnumerableSet.Bytes32Set storage abilityPolicyIpfsCidHashes = versionedApp.abilityIpfsCidHashToAbilityPolicyIpfsCidHashes[hashedAbilityCid];
+                EnumerableSet.Bytes32Set storage abilityPolicyIpfsCidHashes =
+                    versionedApp.abilityIpfsCidHashToAbilityPolicyIpfsCidHashes[hashedAbilityCid];
 
                 // Step 7.1: Add the policy hash to the AbilityPolicies
                 if (!abilityPolicyIpfsCidHashes.add(hashedAbilityPolicy)) {

@@ -13,6 +13,8 @@ import {
   GitBranch,
   Sun,
   Moon,
+  User,
+  Code,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useParams, useNavigate } from 'react-router-dom';
@@ -693,11 +695,11 @@ export function Sidebar({ userApps, userAbilities, userPolicies }: SidebarProps)
     <SidebarComponent variant="sidebar" collapsible="offcanvas" className="border-r-0">
       <SidebarHeader className="border-b border-sidebar-border h-16">
         <div className="flex items-center px-6 py-4 h-full">
-          <Link to="/" className="flex items-center">
+          <Link to="/">
             <img
               src={isDark ? '/vincent-main-logo-white.png' : '/vincent-main-logo.png'}
               alt="Vincent by Lit Protocol"
-              className="h-6 object-contain cursor-pointer hover:opacity-80 transition-opacity"
+              className="h-6 object-contain cursor-pointer"
             />
           </Link>
         </div>
@@ -815,6 +817,71 @@ export function Sidebar({ userApps, userAbilities, userPolicies }: SidebarProps)
       <SidebarFooter className="border-t border-sidebar-border">
         <div className="p-4 space-y-2">
           <SidebarMenu>
+            {/* Dashboard Switcher */}
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                asChild
+                isActive={location.pathname.startsWith('/user')}
+                className={`h-10 px-3 rounded-lg transition-all duration-200 ${
+                  location.pathname.startsWith('/user')
+                    ? `${theme.itemBg} text-orange-500`
+                    : `${theme.text} ${theme.itemHoverBg}`
+                }`}
+              >
+                <Link to="/user/apps">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={
+                        location.pathname.startsWith('/user') ? 'text-orange-500' : theme.textMuted
+                      }
+                    >
+                      <User className="h-4 w-4" />
+                    </div>
+                    <span
+                      className={`font-medium ${location.pathname.startsWith('/user') ? 'text-orange-500' : theme.text}`}
+                    >
+                      User Dashboard
+                    </span>
+                  </div>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                asChild
+                isActive={location.pathname.startsWith('/developer')}
+                className={`h-10 px-3 rounded-lg transition-all duration-200 ${
+                  location.pathname.startsWith('/developer')
+                    ? `${theme.itemBg} text-orange-500`
+                    : `${theme.text} ${theme.itemHoverBg}`
+                }`}
+              >
+                <Link to="/developer/dashboard">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={
+                        location.pathname.startsWith('/developer')
+                          ? 'text-orange-500'
+                          : theme.textMuted
+                      }
+                    >
+                      <Code className="h-4 w-4" />
+                    </div>
+                    <span
+                      className={`font-medium ${location.pathname.startsWith('/developer') ? 'text-orange-500' : theme.text}`}
+                    >
+                      Developer Dashboard
+                    </span>
+                  </div>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+
+            <div
+              className={`border-t ${isDark ? 'border-white/10' : 'border-neutral-800/10'} my-2`}
+            />
+
             {/* My Account */}
             <SidebarMenuItem>
               <AccountTooltip theme={theme} />
@@ -844,9 +911,7 @@ export function Sidebar({ userApps, userAbilities, userPolicies }: SidebarProps)
             {/* Documentation */}
             <SidebarMenuItem>
               <SidebarMenuButton
-                onClick={() =>
-                  window.open('https://docs.heyvincent.ai/documents/Getting_Started.html', '_blank')
-                }
+                onClick={() => window.open('https://docs.heyvincent.ai', '_blank')}
                 className={`h-10 px-3 rounded-lg transition-all duration-200 ${theme.text} ${theme.itemHoverBg}`}
               >
                 <div className="flex items-center gap-3">

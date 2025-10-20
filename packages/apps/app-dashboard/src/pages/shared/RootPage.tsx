@@ -17,17 +17,19 @@ export default function RootPage() {
       </Helmet>
       <div className="flex flex-col min-h-screen bg-white text-center p-3 sm:p-5 font-sans relative overflow-x-hidden">
         <main className="flex flex-col items-center flex-1 justify-center pt-16 sm:pt-20">
-          <img
-            src="/vincent-main-logo.png"
-            alt="Vincent by Lit Protocol - Delegation Platform for user owned automation"
-            className="max-w-[320px] sm:max-w-[400px] mb-3 sm:mb-5"
-            width="400"
-            height="107"
-            style={{ aspectRatio: '2051/549', maxWidth: '100%', height: 'auto' }}
-            loading="eager"
-            decoding="sync"
-            fetchPriority="high"
-          />
+          <div className="px-8 mb-3 sm:mb-5">
+            <img
+              src="/vincent-main-logo.png"
+              alt="Vincent by Lit Protocol - Delegation Platform for user owned automation"
+              className="max-w-[240px] sm:max-w-[400px] mx-auto"
+              width="400"
+              height="107"
+              style={{ aspectRatio: '2051/549', maxWidth: '100%', height: 'auto' }}
+              loading="eager"
+              decoding="sync"
+              fetchPriority="high"
+            />
+          </div>
           <p className="text-gray-600 mb-6 sm:mb-8 max-w-md text-base sm:text-lg px-2">
             The portal for intelligent finance.
           </p>

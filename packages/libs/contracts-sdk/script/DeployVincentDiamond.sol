@@ -24,7 +24,9 @@ import "../contracts/diamond-base/interfaces/IERC173.sol";
  * @custom:env DATIL_PKP_NFT_CONTRACT_ADDRESS - PKP NFT contract address on Datil
  */
 contract DeployVincentDiamond is Script {
-    /** @notice Error thrown when required environment variables are missing */
+    /**
+     * @notice Error thrown when required environment variables are missing
+     */
     error MissingEnvironmentVariable(string name);
 
     /**
@@ -127,13 +129,17 @@ contract DeployVincentDiamond is Script {
         return address(diamond);
     }
 
-    /** @notice Deploy to Datil network */
+    /**
+     * @notice Deploy to Datil network
+     */
     function deployToDatil() public returns (address) {
         address pkpNFTAddress = vm.envAddress("DATIL_PKP_NFT_CONTRACT_ADDRESS");
         return deployToNetwork("Datil", pkpNFTAddress);
     }
 
-    /** @notice Main deployment function */
+    /**
+     * @notice Main deployment function
+     */
     function run() public {
         // Deploy to all networks
         deployToDatil();

@@ -1,5 +1,7 @@
-import { configureStore } from '@reduxjs/toolkit';
+import { configureStore, isRejectedWithValue } from '@reduxjs/toolkit';
+import type { Middleware } from '@reduxjs/toolkit';
 import { fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import * as Sentry from '@sentry/react';
 import { reactClient } from '@lit-protocol/vincent-registry-sdk';
 import { getCurrentJwtTokenForStore } from '@/hooks/developer-dashboard/useVincentApiWithJWT';
 import { env } from '@/config/env';
@@ -59,6 +61,22 @@ const createWithPKPAuth = (baseQuery: any) => {
 // Configure the base query function with PKP-based SIWE authentication
 setBaseQueryFn(createWithPKPAuth(fetchBaseQuery({ baseUrl: BASE_URL })));
 
+/**
+ * RTK Query Error Logger Middleware
+ * Captures all RTK Query errors and logs them to Sentry
+ */
+export const rtkQueryErrorLogger: Middleware = () => (next) => (action) => {
+  if (isRejectedWithValue(action)) {
+    Sentry.captureException(action.payload, {
+      extra: {
+        context: 'RTK Query Error',
+      },
+    });
+  }
+
+  return next(action);
+};
+
 export const store = configureStore({
   reducer: {
     vincentApi: (vincentApiClientReact as any).reducer,
@@ -70,6 +88,7 @@ export const store = configureStore({
     getDefaultMiddleware().concat(
       (vincentApiClientReact as any).middleware,
       agentPkpsApi.middleware,
+      rtkQueryErrorLogger,
     ),
 });
 

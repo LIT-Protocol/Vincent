@@ -1,3 +1,13 @@
+# 2.0.0 (2025-10-08)
+
+### ⚠️ Breaking Changes
+
+- getPermittedAppsForPkps and getUnpermittedAppsForPkps now return deleted Apps. A new isDeleted property has been added to the return value of these methods to indicate if each returned App is currently marked as deleted ([bb2bb563](https://github.com/LIT-Protocol/Vincent/commit/bb2bb563))
+
+### ❤️ Thank You
+
+- Wyatt Barnes @spacesailor24
+
 ## 1.3.0 (2025-09-25)
 
 ### 🚀 Features

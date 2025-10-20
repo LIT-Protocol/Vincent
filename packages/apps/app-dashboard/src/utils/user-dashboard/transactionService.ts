@@ -6,6 +6,7 @@ import {
   TransactionRequest,
 } from 'ethers-v6';
 import { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
+import * as Sentry from '@sentry/react';
 
 interface TokenDetails {
   address: string;
@@ -59,6 +60,14 @@ async function sendTransaction({
       receipt: receipt || undefined,
     };
   } catch (error: unknown) {
+    Sentry.captureException(error, {
+      extra: {
+        context: 'transactionService.sendTransaction',
+        to: txOptions.to,
+        value: txOptions.value?.toString(),
+        pkpAddress: pkpWallet.address,
+      },
+    });
     if ((error as Error).message.includes('insufficient funds for intrinsic transaction cost')) {
       return {
         success: false,
@@ -110,6 +119,14 @@ export async function sendNativeTransaction({
       provider,
     });
   } catch (error: unknown) {
+    Sentry.captureException(error, {
+      extra: {
+        context: 'transactionService.sendNativeTransaction',
+        recipientAddress,
+        amount: amount.toString(),
+        pkpAddress: pkpWallet.address,
+      },
+    });
     return {
       success: false,
       hash: '',
@@ -152,6 +169,16 @@ export async function sendTokenTransaction({
       gasLimit = ethers.BigNumber.from(estimatedGas.toString()).mul(110).div(100);
       console.log('Estimated gas for token transfer:', gasLimit.toString());
     } catch (err: unknown) {
+      Sentry.captureException(err, {
+        extra: {
+          context: 'transactionService.sendTokenTransaction.estimateGas',
+          tokenAddress: tokenDetails.address,
+          tokenSymbol: tokenDetails.symbol,
+          recipientAddress,
+          amount: amount.toString(),
+          pkpAddress: pkpWallet.address,
+        },
+      });
       return {
         success: false,
         hash: '',
@@ -193,6 +220,16 @@ export async function sendTokenTransaction({
     });
   } catch (error: unknown) {
     console.error('Error sending token transaction:', error);
+    Sentry.captureException(error, {
+      extra: {
+        context: 'transactionService.sendTokenTransaction',
+        tokenAddress: tokenDetails.address,
+        tokenSymbol: tokenDetails.symbol,
+        recipientAddress,
+        amount: amount.toString(),
+        pkpAddress: pkpWallet.address,
+      },
+    });
     return {
       success: false,
       hash: '',

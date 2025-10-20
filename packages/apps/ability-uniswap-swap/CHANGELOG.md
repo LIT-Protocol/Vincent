@@ -1,3 +1,43 @@
+# 8.0.0 (2025-10-08)
+
+### ⚠️ Breaking Changes
+
+- Remove the ApproveAndSwap Ability Action from the Uniswap Swap Ability, and format returned tokenIn allowances and balances as decimal strings ([0b80ad90](https://github.com/LIT-Protocol/Vincent/commit/0b80ad90))
+
+### ❤️ Thank You
+
+- Wyatt Barnes @spacesailor24
+
+# 7.0.0 (2025-10-08)
+
+### ⚠️ Breaking Changes
+
+- The nativeTokenBalance, tokenInAddress, tokenInBalance properties of the Uniswap Ability Precheck success response have been made optional and can now possibly return undefined ([6069020e](https://github.com/LIT-Protocol/Vincent/commit/6069020e))
+
+### 🧱 Updated Dependencies
+
+- Updated ability-sdk to 2.3.1
+- Updated app-sdk to 2.2.3
+
+### ❤️ Thank You
+
+- Wyatt Barnes @spacesailor24
+
+# 6.0.0 (2025-10-06)
+
+### ⚠️ Breaking Changes
+
+- Adds new Ability parameters that dictate what the Ability does (e.g. ERC20 allowance approvals, Uniswap Swaps, or both). Additionally, adds support for Alchemy gas sponsorship of both ERC20 approval and Uniswap swap txs. The Ability now returns failure reponses for known errors like insufficient balances or allowances ([39b5e217](https://github.com/LIT-Protocol/Vincent/commit/39b5e217))
+
+### 🧱 Updated Dependencies
+
+- Updated ability-sdk to 2.3.0
+- Updated app-sdk to 2.2.2
+
+### ❤️ Thank You
+
+- Wyatt Barnes @spacesailor24
+
 # 5.0.0 (2025-09-25)
 
 ### ⚠️ Breaking Changes

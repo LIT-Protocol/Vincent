@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import * as Sentry from '@sentry/react';
 import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
 import { useGetPermittedAgentAppsQuery } from '@/store/agentPkpsApi';
 import { App } from '@/types/developer-dashboard/appTypes';
@@ -53,9 +54,9 @@ export function useSidebarData({ userAddress }: UseSidebarDataProps): UseSidebar
     // If no permitted apps, set empty state and finish
     if (Object.keys(permittedVersionsFromHook).length === 0) {
       console.log('[useSidebarData] No permitted apps, setting empty state');
-      setApps((prev) => prev.length === 0 ? prev : []);
-      setPermittedAppVersions((prev) => Object.keys(prev).length === 0 ? prev : {});
-      setAppVersionsMap((prev) => Object.keys(prev).length === 0 ? prev : {});
+      setApps((prev) => (prev.length === 0 ? prev : []));
+      setPermittedAppVersions((prev) => (Object.keys(prev).length === 0 ? prev : {}));
+      setAppVersionsMap((prev) => (Object.keys(prev).length === 0 ? prev : {}));
       setAppsLoading(false);
       return;
     }
@@ -113,6 +114,14 @@ export function useSidebarData({ userAddress }: UseSidebarDataProps): UseSidebar
       } catch (error) {
         console.error('Error fetching sidebar data:', error);
         setError(error instanceof Error ? error.message : 'Failed to fetch sidebar data');
+
+        // Capture to Sentry
+        Sentry.captureException(error, {
+          extra: {
+            context: 'useSidebarData.fetchAllData',
+            userAddress,
+          },
+        });
       } finally {
         setAppsLoading(false);
       }

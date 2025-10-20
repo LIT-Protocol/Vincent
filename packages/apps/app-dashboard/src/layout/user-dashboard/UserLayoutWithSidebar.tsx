@@ -6,7 +6,7 @@ import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/shar
 import { Separator } from '@/components/shared/ui/separator';
 import useReadAuthInfo from '@/hooks/user-dashboard/useAuthInfo';
 import { AuthenticationErrorScreen } from '@/components/user-dashboard/connect/AuthenticationErrorScreen';
-import { ThemedLoading } from '@/components/user-dashboard/dashboard/ui/ThemedLoading';
+import Loading from '@/components/shared/ui/Loading';
 import { useLocation } from 'react-router-dom';
 
 function UserLayoutWithSidebar({ children, className }: ComponentProps<'div'>) {
@@ -20,24 +20,15 @@ function UserLayoutWithSidebar({ children, className }: ComponentProps<'div'>) {
   // Handle authentication at the layout level to prevent duplication
   const isUserAuthed = authInfo?.userPKP && sessionSigs;
 
-  if (isProcessing) {
-    return <ThemedLoading />;
-  }
-
-  if (!isUserAuthed) {
-    return (
-      <AuthenticationErrorScreen readAuthInfo={{ authInfo, sessionSigs, isProcessing, error }} />
-    );
-  }
-
-  return (
+  // Common layout wrapper function
+  const layoutWrapper = (content: React.ReactNode) => (
     <div
       className={cn(
         `min-h-screen min-w-screen transition-colors duration-500 ${theme.bg}`,
         className,
       )}
     >
-      <SidebarProvider>
+      <SidebarProvider style={{ '--sidebar-width': '20rem' } as React.CSSProperties}>
         <div className="flex h-screen w-full">
           <SidebarWrapper />
           <SidebarInset className="flex-1 overflow-hidden">
@@ -77,7 +68,7 @@ function UserLayoutWithSidebar({ children, className }: ComponentProps<'div'>) {
               <div
                 className={`min-h-screen w-full p-2 sm:p-4 md:p-6 relative flex justify-center items-start ${hideSvgBackground ? 'pt-6' : 'pt-24 sm:pt-28 md:pt-32 lg:pt-40'}`}
               >
-                {children}
+                {content}
               </div>
             </main>
           </SidebarInset>
@@ -85,6 +76,18 @@ function UserLayoutWithSidebar({ children, className }: ComponentProps<'div'>) {
       </SidebarProvider>
     </div>
   );
+
+  if (!isUserAuthed && !isProcessing) {
+    return (
+      <AuthenticationErrorScreen readAuthInfo={{ authInfo, sessionSigs, isProcessing, error }} />
+    );
+  }
+
+  if (isProcessing) {
+    return layoutWrapper(<Loading />);
+  }
+
+  return layoutWrapper(children);
 }
 
 export default UserLayoutWithSidebar;

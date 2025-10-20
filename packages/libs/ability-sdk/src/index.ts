@@ -29,4 +29,8 @@ export type {
 
 export type { BaseAbilityContext } from './lib/abilityCore/abilityConfig/context/types';
 
-export { populateTransaction } from './lib/abilityHelpers';
+export {
+  populateTransaction,
+  sponsoredGasRawTransaction,
+  sponsoredGasContractCall,
+} from './lib/abilityHelpers';

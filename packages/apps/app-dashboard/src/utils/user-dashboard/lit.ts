@@ -15,6 +15,7 @@ import {
 import { AuthMethod, IRelayPKP, SessionSigs, LIT_NETWORKS_KEYS } from '@lit-protocol/types';
 import { LitActionResource, LitPKPResource } from '@lit-protocol/auth-helpers';
 import { ethers } from 'ethers';
+import * as Sentry from '@sentry/react';
 import { getPkpNftContract } from './get-pkp-nft-contract';
 import { addPayee } from './addPayee';
 import { env } from '@/config/env';
@@ -166,7 +167,19 @@ export async function registerWebAuthn(displayName: string): Promise<IRelayPKP> 
     !userResponse.pkpPublicKey ||
     !userResponse.pkpEthAddress
   ) {
-    throw new Error('Minting failed: Invalid response data');
+    const error = new Error('Minting failed: Invalid response data');
+    Sentry.addBreadcrumb({
+      category: 'auth.webauthn',
+      message: 'WebAuthn PKP minting failed',
+      level: 'error',
+      data: {
+        responseStatus: userResponse.status,
+        hasPkpTokenId: !!userResponse.pkpTokenId,
+        hasPkpPublicKey: !!userResponse.pkpPublicKey,
+        hasPkpEthAddress: !!userResponse.pkpEthAddress,
+      },
+    });
+    throw error;
   }
   const userPKP: IRelayPKP = {
     tokenId: userResponse.pkpTokenId,
@@ -178,6 +191,15 @@ export async function registerWebAuthn(displayName: string): Promise<IRelayPKP> 
     await addPayee(userPKP.ethAddress);
   } catch (err) {
     console.warn('Failed to add payee', err);
+    Sentry.addBreadcrumb({
+      category: 'auth.webauthn',
+      message: 'Failed to add payee for new PKP',
+      level: 'warning',
+      data: {
+        pkpEthAddress: userPKP.ethAddress,
+        error: err instanceof Error ? err.message : String(err),
+      },
+    });
     throw err;
   }
 
@@ -202,7 +224,17 @@ export async function authenticateWithStytch(
 ): Promise<AuthMethod> {
   const provider = method === 'email' ? getStytchEmailOtpProvider() : getStytchSmsOtpProvider();
   if (!provider) {
-    throw new Error('Failed to initialize Stytch provider');
+    const error = new Error('Failed to initialize Stytch provider');
+    Sentry.addBreadcrumb({
+      category: 'auth.stytch',
+      message: 'Failed to initialize Stytch provider',
+      level: 'error',
+      data: {
+        method,
+        userId,
+      },
+    });
+    throw error;
   }
   return await provider.authenticate({ accessToken, userId });
 }
@@ -286,19 +318,42 @@ export async function mintPKP(authMethod: AuthMethod): Promise<IRelayPKP> {
         };
         break;
       }
-      throw new Error('Invalid response data');
+      const error = new Error('Invalid response data');
+      Sentry.addBreadcrumb({
+        category: 'auth.mint',
+        message: 'PKP minting poll returned invalid data',
+        level: 'error',
+        data: {
+          attemptsRemaining: attempts,
+        },
+      });
+      throw error;
     } catch (err) {
       console.warn('Minting failed, retrying...', err);
       await new Promise((resolve) => setTimeout(resolve, 1000));
       attempts--;
       if (attempts === 0) {
+        Sentry.addBreadcrumb({
+          category: 'auth.mint',
+          message: 'PKP minting failed after all retry attempts',
+          level: 'error',
+          data: {
+            error: err instanceof Error ? err.message : String(err),
+          },
+        });
         throw new Error('Minting failed after all attempts');
       }
     }
   }
 
   if (!response) {
-    throw new Error('Minting failed');
+    const error = new Error('Minting failed');
+    Sentry.addBreadcrumb({
+      category: 'auth.mint',
+      message: 'PKP minting completed with no response',
+      level: 'error',
+    });
+    throw error;
   }
 
   const userPKP: IRelayPKP = {
@@ -311,6 +366,15 @@ export async function mintPKP(authMethod: AuthMethod): Promise<IRelayPKP> {
     await addPayee(userPKP.ethAddress);
   } catch (err) {
     console.warn('Failed to add payee', err);
+    Sentry.addBreadcrumb({
+      category: 'auth.mint',
+      message: 'Failed to add payee for minted PKP',
+      level: 'warning',
+      data: {
+        pkpEthAddress: userPKP.ethAddress,
+        error: err instanceof Error ? err.message : String(err),
+      },
+    });
     throw err;
   }
 
@@ -347,15 +411,21 @@ export async function mintPKPToExistingPKP(pkp: IRelayPKP): Promise<IRelayPKP> {
 
   if (!agentMintResponse.ok) {
     const errorText = await agentMintResponse.text();
-    console.log('Full minting error response:', {
-      status: agentMintResponse.status,
-      statusText: agentMintResponse.statusText,
-      errorText,
-      requestBody,
-    });
-    throw new Error(
+    const error = new Error(
       `Failed to mint PKP to existing PKP: ${agentMintResponse.status} ${agentMintResponse.statusText} - ${errorText}`,
     );
+    Sentry.addBreadcrumb({
+      category: 'auth.mint',
+      message: 'Failed to mint agent PKP from parent PKP',
+      level: 'error',
+      data: {
+        status: agentMintResponse.status,
+        statusText: agentMintResponse.statusText,
+        parentPkpAddress: pkp.ethAddress,
+        parentPkpTokenId: pkp.tokenId,
+      },
+    });
+    throw error;
   }
 
   const agentMintResponseJson = await agentMintResponse.json();
@@ -365,9 +435,20 @@ export async function mintPKPToExistingPKP(pkp: IRelayPKP): Promise<IRelayPKP> {
   const txReceipt = await provider.waitForTransaction(agentMintResponseJson.requestId);
 
   if (txReceipt.status !== 1) {
-    throw new Error(
+    const error = new Error(
       `Transaction failed with status: ${txReceipt.status}. Transaction hash: ${agentMintResponseJson.requestId}`,
     );
+    Sentry.addBreadcrumb({
+      category: 'auth.mint',
+      message: 'Agent PKP minting transaction failed',
+      level: 'error',
+      data: {
+        txStatus: txReceipt.status,
+        txHash: agentMintResponseJson.requestId,
+        parentPkpAddress: pkp.ethAddress,
+      },
+    });
+    throw error;
   }
 
   // Get the token ID from the transaction logs
@@ -381,16 +462,37 @@ export async function mintPKPToExistingPKP(pkp: IRelayPKP): Promise<IRelayPKP> {
   });
 
   if (!mintEvent) {
-    throw new Error(
+    const error = new Error(
       `Failed to find PKPMinted event in transaction logs. Found ${txReceipt.logs.length} logs. Transaction hash: ${agentMintResponseJson.requestId}`,
     );
+    Sentry.addBreadcrumb({
+      category: 'auth.mint',
+      message: 'No PKPMinted event found in transaction logs',
+      level: 'error',
+      data: {
+        logsCount: txReceipt.logs.length,
+        txHash: agentMintResponseJson.requestId,
+        parentPkpAddress: pkp.ethAddress,
+      },
+    });
+    throw error;
   }
 
   const tokenId = pkpNft.interface.parseLog(mintEvent).args.tokenId;
   if (!tokenId) {
-    throw new Error(
+    const error = new Error(
       `Token ID not found in mint event. Transaction hash: ${agentMintResponseJson.requestId}`,
     );
+    Sentry.addBreadcrumb({
+      category: 'auth.mint',
+      message: 'Token ID not found in PKPMinted event',
+      level: 'error',
+      data: {
+        txHash: agentMintResponseJson.requestId,
+        parentPkpAddress: pkp.ethAddress,
+      },
+    });
+    throw error;
   }
 
   // Get the public key and eth address from the PKP NFT contract

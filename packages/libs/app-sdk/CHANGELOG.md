@@ -1,3 +1,16 @@
+## 2.2.3 (2025-10-08)
+
+### 🧱 Updated Dependencies
+
+- Updated ability-sdk to 2.3.1
+- Updated contracts-sdk to 2.0.0
+
+## 2.2.2 (2025-10-06)
+
+### 🧱 Updated Dependencies
+
+- Updated ability-sdk to 2.3.0
+
 ## 2.2.1 (2025-09-25)
 
 ### 🧱 Updated Dependencies

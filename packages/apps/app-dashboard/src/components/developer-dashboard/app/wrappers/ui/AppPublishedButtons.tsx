@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import * as Sentry from '@sentry/react';
 import { Plus, Users, Trash2, Edit, RotateCcw } from 'lucide-react';
 import { getClient } from '@lit-protocol/vincent-contracts-sdk';
 import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
@@ -28,8 +29,6 @@ export function AppPublishedButtons({
   const { authInfo, sessionSigs } = useReadAuthInfo();
 
   // Registry mutations
-  const [deleteAppInRegistry, { isLoading: isDeletingInRegistry, error: deleteAppError }] =
-    vincentApiClient.useDeleteAppMutation();
   const [undeleteAppInRegistry, { isLoading: isUndeletingInRegistry, error: undeleteAppError }] =
     vincentApiClient.useUndeleteAppMutation();
 
@@ -39,39 +38,26 @@ export function AppPublishedButtons({
   // Determine if there's a mismatch (only when not processing)
   const hasMismatch = !isProcessing && registryDeleted !== onChainDeleted;
 
-  // Unified handler for app toggle (delete/undelete)
-  const handleAppToggle = async (targetDeleted: boolean) => {
+  // Handler for app undelete
+  const handleUndelete = async () => {
     setError(null);
     setIsProcessing(true);
 
     try {
       // Step 1: Update registry
-      if (targetDeleted) {
-        await deleteAppInRegistry({
-          appId: appData.appId,
-        });
-      } else {
-        await undeleteAppInRegistry({
-          appId: appData.appId,
-        });
-      }
+      await undeleteAppInRegistry({
+        appId: appData.appId,
+      });
 
       // Step 2: Update on-chain
       const pkpSigner = await initPkpSigner({ authInfo, sessionSigs });
       const client = getClient({ signer: pkpSigner });
 
-      if (targetDeleted) {
-        await client.deleteApp({
-          appId: Number(appData.appId),
-        });
-      } else {
-        await client.undeleteApp({
-          appId: appData.appId,
-        });
-      }
+      await client.undeleteApp({
+        appId: appData.appId,
+      });
 
-      const action = targetDeleted ? 'deleted' : 'undeleted';
-      setSuccess(`App ${action} successfully!`);
+      setSuccess(`App undeleted successfully!`);
 
       setTimeout(() => {
         refetchBlockchainData();
@@ -80,8 +66,13 @@ export function AppPublishedButtons({
       if (error?.message?.includes('user rejected')) {
         setError('Transaction rejected.');
       } else {
-        const action = targetDeleted ? 'delete' : 'undelete';
-        setError(error.message || `Failed to ${action} app. Please try again.`);
+        setError(error.message || `Failed to undelete app. Please try again.`);
+        Sentry.captureException(error, {
+          extra: {
+            context: 'AppPublishedButtons.undeleteApp',
+            userPkp: authInfo?.userPKP?.ethAddress,
+          },
+        });
       }
     } finally {
       setIsProcessing(false);
@@ -97,14 +88,10 @@ export function AppPublishedButtons({
     return () => clearTimeout(timer);
   }, [error]);
 
-  const isLoading = isProcessing || isDeletingInRegistry || isUndeletingInRegistry;
+  const isLoading = isProcessing || isUndeletingInRegistry;
 
-  if (error || deleteAppError || undeleteAppError) {
-    const errorMessage =
-      error ||
-      (deleteAppError as any)?.message ||
-      (undeleteAppError as any)?.message ||
-      'Failed to update app.';
+  if (error || undeleteAppError) {
+    const errorMessage = error || (undeleteAppError as any)?.message || 'Failed to update app.';
     return <MutationButtonStates type="error" errorMessage={errorMessage} />;
   }
 
@@ -152,18 +139,11 @@ export function AppPublishedButtons({
             Manage Delegatees
           </button>
           <button
-            onClick={() => handleAppToggle(true)}
-            disabled={isLoading}
-            className="inline-flex items-center gap-2 px-4 py-2 border border-red-200 dark:border-red-500/30 rounded-lg text-sm font-medium text-red-600 dark:text-red-400 bg-white dark:bg-neutral-800 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            onClick={() => onOpenMutation('delete-app')}
+            className="inline-flex items-center gap-2 px-4 py-2 border border-red-200 dark:border-red-500/30 rounded-lg text-sm font-medium text-red-600 dark:text-red-400 bg-white dark:bg-neutral-800 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
           >
-            {isLoading ? (
-              <SkeletonButton />
-            ) : (
-              <>
-                <Trash2 className="h-4 w-4" />
-                Delete App
-              </>
-            )}
+            <Trash2 className="h-4 w-4" />
+            Delete App
           </button>
         </>
       )}
@@ -171,20 +151,16 @@ export function AppPublishedButtons({
       {/* Undelete button when deleted */}
       {registryDeleted && (
         <button
-          onClick={() => handleAppToggle(!registryDeleted)}
+          onClick={handleUndelete}
           disabled={isLoading}
-          className={`inline-flex items-center gap-2 px-4 py-2 border rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
-            registryDeleted
-              ? 'border-green-300 dark:border-green-500/30 text-green-700 dark:text-green-400 bg-green-50 dark:bg-neutral-800 hover:bg-green-50 dark:hover:bg-green-500/10'
-              : 'border-red-200 dark:border-red-500/30 text-red-600 dark:text-red-400 bg-red-50 dark:bg-neutral-800 hover:bg-red-50 dark:hover:bg-red-500/10'
-          }`}
+          className="inline-flex items-center gap-2 px-4 py-2 border border-green-300 dark:border-green-500/30 rounded-lg text-sm font-medium text-green-700 dark:text-green-400 bg-green-50 dark:bg-neutral-800 hover:bg-green-100 dark:hover:bg-green-500/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isLoading ? (
             <SkeletonButton />
           ) : (
             <>
               <RotateCcw className="h-4 w-4" />
-              {registryDeleted ? 'Undelete App' : 'Delete App'}
+              Undelete App
             </>
           )}
         </button>

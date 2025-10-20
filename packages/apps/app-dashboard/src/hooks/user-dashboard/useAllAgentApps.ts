@@ -1,13 +1,27 @@
-import { useGetPermittedAgentAppsQuery } from '@/store/agentPkpsApi';
+import {
+  useGetPermittedAgentAppsQuery,
+  useGetUnpermittedAgentAppsQuery,
+} from '@/store/agentPkpsApi';
 
 export function useAllAgentApps(userAddress: string | undefined) {
   const {
-    data: permittedPKPs = [],
-    isLoading: loading,
-    error: queryError,
+    data: permittedPkps = [],
+    isLoading: permittedLoading,
+    error: permittedError,
   } = useGetPermittedAgentAppsQuery(userAddress || '', {
     skip: !userAddress,
   });
+
+  const {
+    data: unpermittedPkps = [],
+    isLoading: unpermittedLoading,
+    error: unpermittedError,
+  } = useGetUnpermittedAgentAppsQuery(userAddress || '', {
+    skip: !userAddress,
+  });
+
+  const loading = permittedLoading || unpermittedLoading;
+  const queryError = permittedError || unpermittedError;
 
   // Convert RTK Query error to Error object for compatibility
   const error = queryError
@@ -18,5 +32,5 @@ export function useAllAgentApps(userAddress: string | undefined) {
       )
     : null;
 
-  return { permittedPKPs, loading, error };
+  return { permittedPkps, unpermittedPkps, loading, error };
 }

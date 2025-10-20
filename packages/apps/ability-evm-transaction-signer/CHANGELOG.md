@@ -1,3 +1,19 @@
+## 0.1.4 (2025-10-08)
+
+### 🧱 Updated Dependencies
+
+- Updated ability-sdk to 2.3.1
+- Updated app-sdk to 2.2.3
+- Updated policy-contract-whitelist to 1.1.4
+
+## 0.1.3 (2025-10-06)
+
+### 🧱 Updated Dependencies
+
+- Updated ability-sdk to 2.3.0
+- Updated app-sdk to 2.2.2
+- Updated policy-contract-whitelist to 1.1.3
+
 ## 0.1.2 (2025-09-25)
 
 ### 🧱 Updated Dependencies

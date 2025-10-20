@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
+import * as Sentry from '@sentry/react';
 import { getClient, PermissionData } from '@lit-protocol/vincent-contracts-sdk';
 import { IRelayPKP } from '@lit-protocol/types';
 import { ConnectInfoMap } from '@/hooks/user-dashboard/connect/useConnectInfo';
@@ -216,6 +217,13 @@ export function AppPermissionPage({
       } catch (error) {
         setLocalError(error instanceof Error ? error.message : 'Failed to permit app');
         setLocalStatus(null);
+        Sentry.captureException(error, {
+          extra: {
+            context: 'UserPermissionPage.handleSubmit',
+            appId: connectInfoMap.app.appId,
+            permittedVersion,
+          },
+        });
         return;
       }
     } else {
@@ -259,7 +267,7 @@ export function AppPermissionPage({
         appId: Number(connectInfoMap.app.appId),
         appVersion: Number(permittedVersion),
       });
-      
+
       setLocalStatus(null);
       // Show success state until redirect
       setLocalSuccess('App unpermitted successfully!');
@@ -270,6 +278,13 @@ export function AppPermissionPage({
     } catch (error) {
       setLocalError(error instanceof Error ? error.message : 'Failed to unpermit app');
       setLocalStatus(null);
+      Sentry.captureException(error, {
+        extra: {
+          context: 'UserPermissionPage.handleUnpermit',
+          appId: connectInfoMap.app.appId,
+          permittedVersion,
+        },
+      });
     }
   }, [readAuthInfo, connectInfoMap.app, permittedVersion]);
 

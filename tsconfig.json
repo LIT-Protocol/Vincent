@@ -59,6 +59,12 @@
     },
     {
       "path": "./packages/apps/policy-send-counter"
+    },
+    {
+      "path": "./packages/libs/wrapped-keys"
+    },
+    {
+      "path": "./packages/apps/ability-sol-transaction-signer"
     }
   ]
 }
