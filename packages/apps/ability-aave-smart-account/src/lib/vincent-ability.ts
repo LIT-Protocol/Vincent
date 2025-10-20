@@ -2,7 +2,7 @@ import {
   createVincentAbility,
   supportedPoliciesForAbility,
 } from '@lit-protocol/vincent-ability-sdk';
-import { ethers } from 'ethers';
+import { Hex } from 'viem';
 
 import {
   executeFailSchema,
@@ -11,14 +11,13 @@ import {
   precheckSuccessSchema,
   abilityParamsSchema,
 } from './schemas';
-import { getUserOpVersion, hashUnpackedUserOp } from './helpers/entryPoint';
-import { UserOpv060 } from './helpers/userOperation';
+import { signUserOperation } from './helpers/signUserOperation';
 import { validateUserOp } from './helpers/validation';
 
 export const vincentAbility = createVincentAbility({
   packageName: '@lit-protocol/vincent-ability-aave-smart-account' as const,
   abilityDescription:
-    'A Vincent ability to do AAVE protocol operations using smart accounts user operations',
+    'A Vincent ability to do AAVE protocol operations using ZeroDev v3.3 smart accounts user operations with Session Keys',
   abilityParamsSchema,
   supportedPolicies: supportedPoliciesForAbility([]),
 
@@ -50,7 +49,7 @@ export const vincentAbility = createVincentAbility({
         rpcUrl,
       });
       console.log(
-        '[@lit-protocol/vincent-ability-aave-smart-account] final user operation validated:',
+        '[@lit-protocol/vincent-ability-aave-smart-account] user user operation validated:',
         userOp,
       );
 
@@ -78,7 +77,8 @@ export const vincentAbility = createVincentAbility({
         delegatorPkpInfo,
       });
 
-      const { entryPointAddress, userOp, rpcUrl } = abilityParams;
+      const { entryPointAddress, userOp, rpcUrl, serializedZeroDevPermissionAccount } =
+        abilityParams;
 
       console.log(
         '[@lit-protocol/vincent-ability-aave-smart-account] validating user operation:',
@@ -90,45 +90,20 @@ export const vincentAbility = createVincentAbility({
         rpcUrl,
       });
       console.log(
-        '[@lit-protocol/vincent-ability-aave-smart-account] final user operation validated:',
+        '[@lit-protocol/vincent-ability-aave-smart-account] user operation validated:',
         userOp,
       );
 
       console.log(
         '[@lit-protocol/vincent-ability-aave-smart-account] preparing user operation signature...',
       );
-      const provider = new ethers.providers.StaticJsonRpcProvider(rpcUrl);
-      const userOpVersion = getUserOpVersion(entryPointAddress);
 
-      let message: Uint8Array;
-      if (userOpVersion === '0.6.0') {
-        const userOp060 = processedUserOp as UserOpv060;
-        message = await hashUnpackedUserOp({
-          entryPointAddress,
-          provider,
-          userOp: userOp060,
-        });
-      } else {
-        throw new Error('Only 0.6.0 userOp is supported');
-      }
-
-      console.log(
-        '[@lit-protocol/vincent-ability-aave-smart-account] signing user operation hash:',
-        message,
-      );
-      const sig = await Lit.Actions.signAndCombineEcdsa({
-        toSign: message,
-        sigName: 'user-operation-signature',
-        publicKey: delegatorPkpInfo.publicKey.replace(/^0x/, ''),
+      userOp.signature = await signUserOperation({
+        pkpPublicKey: delegatorPkpInfo.publicKey as Hex,
+        rpcUrl,
+        serializedZeroDevPermissionAccount,
+        userOp,
       });
-      const signature = JSON.parse(sig);
-
-      const joinSignature = ethers.utils.joinSignature({
-        r: '0x' + signature.r.substring(2),
-        s: '0x' + signature.s,
-        v: signature.v,
-      });
-      processedUserOp.signature = joinSignature;
 
       console.log('[@lit-protocol/vincent-ability-aave-smart-account] signed user operation');
       return succeed({

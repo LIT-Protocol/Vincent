@@ -1,9 +1,28 @@
-import { ethers, type ContractInterface } from 'ethers';
+import {
+  AaveV3Ethereum,
+  AaveV3Polygon,
+  AaveV3Avalanche,
+  AaveV3Arbitrum,
+  AaveV3Optimism,
+  AaveV3Base,
+  AaveV3BNB,
+  AaveV3Gnosis,
+  AaveV3Scroll,
+  AaveV3Metis,
+  AaveV3Linea,
+  AaveV3ZkSync,
+  AaveV3Sepolia,
+  AaveV3BaseSepolia,
+  AaveV3ArbitrumSepolia,
+  AaveV3OptimismSepolia,
+  AaveV3ScrollSepolia,
+} from '@bgd-labs/aave-address-book';
+import { Abi, Address } from 'viem';
 
 /**
- * AAVE v3 Pool Contract ABI - Essential methods only
+ * AAVE v3 Pool Contract ABI
  */
-export const AAVE_POOL_ABI: ContractInterface = [
+export const AAVE_POOL_ABI: Abi = [
   // Supply
   {
     inputs: [
@@ -17,7 +36,6 @@ export const AAVE_POOL_ABI: ContractInterface = [
     stateMutability: 'nonpayable',
     type: 'function',
   },
-
   // Withdraw
   {
     inputs: [
@@ -30,7 +48,6 @@ export const AAVE_POOL_ABI: ContractInterface = [
     stateMutability: 'nonpayable',
     type: 'function',
   },
-
   // Borrow
   {
     inputs: [
@@ -45,7 +62,6 @@ export const AAVE_POOL_ABI: ContractInterface = [
     stateMutability: 'nonpayable',
     type: 'function',
   },
-
   // Repay
   {
     inputs: [
@@ -85,39 +101,30 @@ export const AAVE_POOL_ABI: ContractInterface = [
   },
 ];
 
-export const aaveIface = new ethers.utils.Interface(AAVE_POOL_ABI);
-
 /**
  * Chain id to Aave Address Book mapping
  */
-export const CHAIN_TO_AAVE_ADDRESS_BOOK: Record<number, () => any> = {
+const CHAIN_TO_AAVE_ADDRESS_BOOK: Record<number, any> = {
   // Mainnets
-  1: () => require('@bgd-labs/aave-address-book').AaveV3Ethereum,
-  137: () => require('@bgd-labs/aave-address-book').AaveV3Polygon,
-  43114: () => require('@bgd-labs/aave-address-book').AaveV3Avalanche,
-  42161: () => require('@bgd-labs/aave-address-book').AaveV3Arbitrum,
-  10: () => require('@bgd-labs/aave-address-book').AaveV3Optimism,
-  8453: () => require('@bgd-labs/aave-address-book').AaveV3Base,
-  250: () => require('@bgd-labs/aave-address-book').AaveV3Fantom,
-  56: () => require('@bgd-labs/aave-address-book').AaveV3BNB,
-  100: () => require('@bgd-labs/aave-address-book').AaveV3Gnosis,
-  534352: () => require('@bgd-labs/aave-address-book').AaveV3Scroll,
-  1088: () => require('@bgd-labs/aave-address-book').AaveV3Metis,
-  59144: () => require('@bgd-labs/aave-address-book').AaveV3Linea,
-  324: () => require('@bgd-labs/aave-address-book').AaveV3ZkSync,
+  1: AaveV3Ethereum,
+  137: AaveV3Polygon,
+  43114: AaveV3Avalanche,
+  42161: AaveV3Arbitrum,
+  10: AaveV3Optimism,
+  8453: AaveV3Base,
+  56: AaveV3BNB,
+  100: AaveV3Gnosis,
+  534352: AaveV3Scroll,
+  1088: AaveV3Metis,
+  59144: AaveV3Linea,
+  324: AaveV3ZkSync,
   // Testnets
-  11155111: () => require('@bgd-labs/aave-address-book').AaveV3Sepolia,
-  84532: () => require('@bgd-labs/aave-address-book').AaveV3BaseSepolia,
-  421614: () => require('@bgd-labs/aave-address-book').AaveV3ArbitrumSepolia,
-  11155420: () => require('@bgd-labs/aave-address-book').AaveV3OptimismSepolia,
-  43113: () => require('@bgd-labs/aave-address-book').AaveV3AvalancheFuji,
-  534351: () => require('@bgd-labs/aave-address-book').AaveV3ScrollSepolia,
+  11155111: AaveV3Sepolia,
+  84532: AaveV3BaseSepolia,
+  421614: AaveV3ArbitrumSepolia,
+  11155420: AaveV3OptimismSepolia,
+  534351: AaveV3ScrollSepolia,
 } as const;
-
-/**
- * Supported chain names
- */
-export type SupportedChain = keyof typeof CHAIN_TO_AAVE_ADDRESS_BOOK;
 
 /**
  * Get AAVE addresses for a specific chain using the Aave Address Book
@@ -126,7 +133,7 @@ export function getAaveAddresses(chainId: number) {
   // First try to get from the official Address Book
   if (chainId in CHAIN_TO_AAVE_ADDRESS_BOOK) {
     try {
-      const addressBook = CHAIN_TO_AAVE_ADDRESS_BOOK[chainId]();
+      const addressBook = CHAIN_TO_AAVE_ADDRESS_BOOK[chainId];
       return {
         POOL: addressBook.POOL,
         POOL_ADDRESSES_PROVIDER: addressBook.POOL_ADDRESSES_PROVIDER,
@@ -146,12 +153,12 @@ export function getAaveAddresses(chainId: number) {
 /**
  * Get ATokens (aave deposit representation tokens) for a specific chain using the Aave Address Book
  */
-export function getATokens(chainId: number): Record<string, string> {
+export function getATokens(chainId: number): Record<string, Address> {
   // First try to get from the official Address Book
   if (chainId in CHAIN_TO_AAVE_ADDRESS_BOOK) {
     try {
-      const addressBook = CHAIN_TO_AAVE_ADDRESS_BOOK[chainId]();
-      const aTokens: Record<string, string> = {};
+      const addressBook = CHAIN_TO_AAVE_ADDRESS_BOOK[chainId];
+      const aTokens: Record<string, Address> = {};
 
       // Extract asset addresses from the address book
       // The address book contains ASSETS object with token addresses
@@ -180,12 +187,12 @@ export function getATokens(chainId: number): Record<string, string> {
 /**
  * Get available markets (asset addresses) for a specific chain using the Aave Address Book
  */
-export function getAvailableMarkets(chainId: number): Record<string, string> {
+export function getAvailableMarkets(chainId: number): Record<string, Address> {
   // First try to get from the official Address Book
   if (chainId in CHAIN_TO_AAVE_ADDRESS_BOOK) {
     try {
-      const addressBook = CHAIN_TO_AAVE_ADDRESS_BOOK[chainId]();
-      const markets: Record<string, string> = {};
+      const addressBook = CHAIN_TO_AAVE_ADDRESS_BOOK[chainId];
+      const markets: Record<string, Address> = {};
 
       // Extract asset addresses from the address book
       // The address book contains ASSETS object with token addresses

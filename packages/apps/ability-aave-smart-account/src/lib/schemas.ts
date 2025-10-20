@@ -1,7 +1,8 @@
 import { z } from 'zod';
 
-import { userOpSchema } from './helpers/userOperation';
 import { simulateAssetChangeSchema } from './helpers/simulation';
+import { addressSchema } from './helpers/schemas';
+import { userOpSchema } from './helpers/userOperation';
 
 /**
  * Ability parameters schema - defines the input parameters for the AAVE Smart Account ability
@@ -10,15 +11,18 @@ export const abilityParamsSchema = z.object({
   userOp: userOpSchema.describe(
     'User operation to sign and execute. This MUST be a valid UserOperation object as defined in the UserOperation schemas.',
   ),
-  entryPointAddress: z
-    .string()
-    .regex(/^0x[0-9a-fA-F]{40}$/)
-    .describe(
-      'EntryPoint to use for the simulation. This MUST be one of the EntryPoints returned by the supportedEntryPoints RPC call.',
-    ),
+  entryPointAddress: addressSchema.describe(
+    'EntryPoint to use for the simulation. This MUST be one of the EntryPoints returned by the supportedEntryPoints RPC call.',
+  ),
   rpcUrl: z
     .string()
+    .url()
     .describe('Alchemy RPC URL for the desired chain. Will be used to simulate the transaction.'),
+  serializedZeroDevPermissionAccount: z
+    .string()
+    .describe(
+      'Serialized ZeroDev permission account. AKA Session key. The permitted signer that will sign the userOp.',
+    ),
 });
 
 /**

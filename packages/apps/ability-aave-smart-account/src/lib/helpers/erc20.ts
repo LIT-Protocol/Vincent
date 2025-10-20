@@ -1,9 +1,9 @@
-import { ethers, type ContractInterface } from 'ethers';
+import { Abi } from 'viem';
 
 /**
  * ERC20 Token ABI - Essential methods only
  */
-export const ERC20_ABI: ContractInterface = [
+export const ERC20_ABI: Abi = [
   {
     inputs: [{ internalType: 'address', name: 'account', type: 'address' }],
     name: 'balanceOf',
@@ -32,15 +32,20 @@ export const ERC20_ABI: ContractInterface = [
     type: 'function',
   },
   {
+    inputs: [
+      { internalType: 'address', name: 'spender', type: 'address' },
+      { internalType: 'uint256', name: 'addedValue', type: 'uint256' },
+    ],
+    name: 'increaseAllowance',
+    outputs: [{ name: 'ok', type: 'bool' }],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
     inputs: [],
     name: 'decimals',
     outputs: [{ internalType: 'uint8', name: '', type: 'uint8' }],
     stateMutability: 'view',
     type: 'function',
   },
-];
-
-export const erc20Iface = new ethers.utils.Interface(ERC20_ABI);
-
-export const getErc20Contract = (provider: ethers.providers.JsonRpcProvider, address: string) =>
-  new ethers.Contract(address, ERC20_ABI, provider);
+] as const;

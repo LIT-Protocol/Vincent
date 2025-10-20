@@ -1,19 +1,18 @@
-import { ethers } from 'ethers';
+import { Address, createPublicClient, http, zeroAddress } from 'viem';
 
 import { getAaveAddresses, getATokens } from './aave';
-import { assertValidEntryPointAddress, getSmartAccountNonce } from './entryPoint';
-import { estimateUserOperationGas, UserOp } from './userOperation';
+import { decodeUserOp } from './decoding';
+import { assertValidEntryPointAddress } from './entryPoint';
+import { UserOp } from './userOperation';
 import { SimulateUserOperationAssetChangesResponse, simulateUserOp } from './simulation';
 
 interface ValidateSimulationParams {
   aaveATokens: Record<string, string>;
-  aavePoolAddress: string;
-  entryPointAddress: string;
+  aavePoolAddress: Address;
+  entryPointAddress: Address;
   simulation: SimulateUserOperationAssetChangesResponse;
   userOp: UserOp;
 }
-
-const ZERO = '0x0000000000000000000000000000000000000000';
 
 export const validateSimulation = ({
   aaveATokens,
@@ -31,7 +30,7 @@ export const validateSimulation = ({
   const entryPoint = entryPointAddress.toLowerCase();
   const pool = aavePoolAddress.toLowerCase();
   const aTokens = Object.values(aaveATokens).map((aToken) => aToken.toLowerCase());
-  const allowed = new Set([ZERO, sender, pool, ...aTokens]);
+  const allowed = new Set([zeroAddress, sender, pool, ...aTokens]);
 
   simulation.changes.forEach((c, idx) => {
     const assetType = c.assetType;
@@ -84,63 +83,51 @@ export const validateSimulation = ({
 };
 
 interface ProccessUserOpParams {
-  entryPointAddress: string;
+  entryPointAddress: Address;
   userOp: UserOp;
   rpcUrl: string;
 }
 
 export const validateUserOp = async (params: ProccessUserOpParams) => {
   const { entryPointAddress, userOp, rpcUrl } = params;
-  const _userOp = { ...userOp };
 
-  const provider = new ethers.providers.StaticJsonRpcProvider(rpcUrl);
+  const publicClient = createPublicClient({
+    transport: http(rpcUrl),
+  });
+  const chainId = await publicClient.getChainId();
 
-  await assertValidEntryPointAddress(entryPointAddress, provider);
+  await assertValidEntryPointAddress(entryPointAddress, publicClient);
 
-  const network = await provider.detectNetwork();
-  const { POOL: aavePoolAddress } = getAaveAddresses(network.chainId);
-  const aaveATokens = getATokens(network.chainId);
+  const { POOL: aavePoolAddress } = getAaveAddresses(chainId);
+  const aaveATokens = getATokens(chainId);
 
-  // Complete userOp optional fields
-  if (!_userOp.nonce) {
-    _userOp.nonce = ethers.utils.hexValue(
-      await getSmartAccountNonce({
-        entryPointAddress,
-        provider,
-        accountAddress: _userOp.sender,
-      }),
-    );
-  }
-  if (!_userOp.callGasLimit || !_userOp.preVerificationGas || !_userOp.verificationGasLimit) {
-    const gasEst = await estimateUserOperationGas({
-      entryPointAddress,
-      provider,
-      userOp: _userOp,
-    });
-    if (gasEst?.callGasLimit) _userOp.callGasLimit = gasEst.callGasLimit;
-    if (gasEst?.verificationGasLimit) _userOp.verificationGasLimit = gasEst.verificationGasLimit;
-    if (gasEst?.preVerificationGas) _userOp.preVerificationGas = gasEst.preVerificationGas;
+  // Decode userOp to ensure bundled txs are allowed
+  const decodeResult = await decodeUserOp({
+    aaveATokens,
+    aavePoolAddress,
+    entryPointAddress,
+    userOp,
+  });
+  if (!decodeResult.ok) {
+    throw new Error(`User operation calldata decoding failed: Errors: ${decodeResult.reasons}`);
   }
 
-  // TODO Decode userOp to get token, pool and amount and validate there is nothing extra in the userOp
-  // Also the calldata will define the smart account implementation for initCode
-
-  // Simulate userOp
+  // Simulate userOp and validate changes
   const simulation = await simulateUserOp({
-    provider,
+    publicClient,
+    userOp,
     entryPoint: entryPointAddress,
-    userOp: _userOp,
   });
   validateSimulation({
     aaveATokens,
     aavePoolAddress,
-    simulation,
     entryPointAddress,
-    userOp: _userOp,
+    simulation,
+    userOp,
   });
 
   return {
+    userOp,
     simulationChanges: simulation.changes,
-    userOp: _userOp,
   };
 };

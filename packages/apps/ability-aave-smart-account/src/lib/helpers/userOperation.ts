@@ -1,20 +1,15 @@
-import { ethers } from 'ethers';
 import { z } from 'zod';
 
+import { addressSchema, hexSchema } from './schemas';
+
 const userOpBaseSchema = z.object({
-  sender: z
-    .string()
-    .regex(/^0x[0-9a-fA-F]{40}$/)
-    .describe('The account making the operation'),
+  sender: addressSchema.describe('The account making the operation'),
   nonce: z
     .string()
     .regex(/^0x([1-9a-fA-F]+[0-9a-fA-F]*|0)$/)
     .optional()
     .describe('Account nonce or creation salt'),
-  callData: z
-    .string()
-    .regex(/^0x[0-9a-fA-F]*$/)
-    .describe('Data for operation call'),
+  callData: hexSchema.describe('Data for operation call'),
   callGasLimit: z
     .string()
     .regex(/^0x([1-9a-fA-F]+[0-9a-fA-F]{0,15})|0$/)
@@ -42,11 +37,7 @@ const userOpBaseSchema = z.object({
     .optional()
     .default('0x3B9ACA00') // 1 gwei
     .describe('Max priority fee per gas (EIP-1559)'),
-  signature: z
-    .string()
-    .regex(/^0x[0-9a-fA-F]*$/)
-    .optional()
-    .describe('Data passed during verification.'),
+  signature: hexSchema.optional().describe('Data passed during verification.'),
   eip7702Auth: z
     .object({
       chain_id: z
@@ -54,11 +45,7 @@ const userOpBaseSchema = z.object({
         .regex(/^0x([1-9a-fA-F]+[0-9a-fA-F]{0,15})|0$/)
         .optional()
         .describe('The chain Id of the authorization'),
-      address: z
-        .string()
-        .regex(/^0x[0-9a-fA-F]{40}$/)
-        .optional()
-        .describe('The address of the authorization'),
+      address: addressSchema.optional().describe('The address of the authorization'),
       nonce: z
         .string()
         .regex(/^0x([1-9a-fA-F]+[0-9a-fA-F]{0,15})|0$/)
@@ -83,50 +70,20 @@ const userOpBaseSchema = z.object({
     .optional(),
 });
 
-export const userOpv060Schema = userOpBaseSchema.extend({
-  initCode: z
-    .string()
-    .regex(/^0x[0-9a-fA-F]*$/)
-    .default('0x')
-    .describe(
-      'The initCode of the account if the account is not yet on-chain and needs creation. If the account is already on-chain, omit this field.',
-    ),
-  paymasterAndData: z
-    .string()
-    .regex(/^0x[0-9a-fA-F]*$/)
-    .optional()
-    .default('0x')
-    .describe('Paymaster address and extra data'),
-});
-
-export type UserOpv060 = z.infer<typeof userOpv060Schema>;
-
 export const userOpv070Schema = userOpBaseSchema.extend({
-  paymaster: z
-    .string()
-    .regex(/^0x[0-9a-fA-F]{40}$/)
-    .optional()
-    .describe('Paymaster contract address'),
-  paymasterData: z
-    .string()
-    .regex(/^0x[0-9a-fA-F]*$/)
-    .optional()
-    .describe('Data for paymaster'),
+  paymaster: addressSchema.optional().describe('Paymaster contract address'),
+  paymasterData: hexSchema.optional().describe('Data for paymaster'),
   paymasterVerificationGasLimit: z
     .string()
     .regex(/^0x([1-9a-fA-F]+[0-9a-fA-F]{0,15})|0$/)
     .optional()
     .describe('The gas limit for paymaster verification.'),
-  factory: z
-    .string()
-    .regex(/^0x[0-9a-fA-F]{40}$/)
+  factory: addressSchema
     .optional()
     .describe(
       'The account factory address (needed if and only if the account is not yet on-chain and needs to be created)',
     ),
-  factoryData: z
-    .string()
-    .regex(/^0x[0-9a-fA-F]*$/)
+  factoryData: hexSchema
     .optional()
     .describe('Data for the account factory (only if the account factory exists)'),
   paymasterPostOpGasLimit: z
@@ -140,17 +97,6 @@ export const userOpv070Schema = userOpBaseSchema.extend({
 
 export type UserOpv070 = z.infer<typeof userOpv070Schema>;
 
-export const userOpSchema = z.union([userOpv060Schema, userOpv070Schema]);
+// Use z.union when adding new userOp versions
+export const userOpSchema = userOpv070Schema;
 export type UserOp = z.infer<typeof userOpSchema>;
-
-export const estimateUserOperationGas = async ({
-  entryPointAddress,
-  provider,
-  userOp,
-}: {
-  entryPointAddress: string;
-  provider: ethers.providers.JsonRpcProvider;
-  userOp: UserOp;
-}) => {
-  return await provider.send('eth_estimateUserOperationGas', [userOp, entryPointAddress]);
-};

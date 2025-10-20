@@ -1,13 +1,11 @@
-import { ethers } from 'ethers';
-import { UserOp } from 'src/lib/helpers/userOperation';
+import { type PublicClient } from 'viem';
 import { z } from 'zod';
+
+import { hexSchema } from './schemas';
+import { UserOp } from './userOperation';
 
 // Types copied from @account-kit/infra
 // Zod schemas are created for runtime validation; types are derived from them to ensure consistency
-
-// Hex string schema and type
-export const hexSchema = z.string().regex(/^0x[0-9a-fA-F]*$/);
-export type Hex = z.infer<typeof hexSchema>; // Originally called Address
 
 // Enums and their schemas
 export enum SimulateAssetType {
@@ -66,16 +64,18 @@ export type SimulateUserOperationAssetChangesResponse = z.infer<
 
 export const simulateUserOp = async ({
   entryPoint,
-  provider,
+  publicClient,
   userOp,
 }: {
   entryPoint: string;
-  provider: ethers.providers.JsonRpcProvider;
+  publicClient: PublicClient;
   userOp: UserOp;
 }) => {
   // Simulate UserOperation https://www.alchemy.com/docs/wallets/api-reference/bundler-api/useroperation-simulation-endpoints/alchemy-simulate-user-operation-asset-changes
-  return (await provider.send('alchemy_simulateUserOperationAssetChanges', [
-    userOp,
-    entryPoint,
-  ])) as SimulateUserOperationAssetChangesResponse;
+  return (await publicClient.request({
+    // @ts-expect-error viem types do not include this method
+    method: 'alchemy_simulateUserOperationAssetChanges',
+    // @ts-expect-error viem types do not include this method
+    params: [userOp, entryPoint],
+  })) as SimulateUserOperationAssetChangesResponse;
 };
