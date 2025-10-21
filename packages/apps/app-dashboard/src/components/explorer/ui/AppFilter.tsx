@@ -32,7 +32,7 @@ export function AppFilter({
               placeholder="Search applications..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className={`w-full pl-10 pr-4 py-3 rounded-xl ${theme.itemBg} border ${theme.cardBorder} ${theme.text} ${theme.textMuted} transition-all duration-300 focus:outline-none`}
+              className={`w-full pl-10 pr-4 py-3 rounded-xl ${theme.itemBg} border ${theme.cardBorder} ${theme.text} ${theme.textMuted} transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-[#FF4205]`}
               style={fonts.body}
             />
           </div>
@@ -44,7 +44,7 @@ export function AppFilter({
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className={`px-3 py-2 rounded-lg bg-white dark:bg-gray-900 border ${theme.cardBorder} ${theme.text} text-sm transition-all duration-300 focus:outline-none hover:border-gray-300 dark:hover:border-white/20 cursor-pointer`}
+                className={`px-3 py-2 rounded-lg bg-white dark:bg-gray-900 border ${theme.cardBorder} ${theme.text} text-sm transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-[#FF4205] hover:border-gray-300 dark:hover:border-white/20 cursor-pointer`}
                 style={fonts.heading}
               >
                 <option
@@ -71,7 +71,7 @@ export function AppFilter({
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className={`px-3 py-2 rounded-lg bg-white dark:bg-gray-900 border ${theme.cardBorder} ${theme.text} text-sm transition-all duration-300 focus:outline-none hover:border-gray-300 dark:hover:border-white/20 cursor-pointer`}
+              className={`px-3 py-2 rounded-lg bg-white dark:bg-gray-900 border ${theme.cardBorder} ${theme.text} text-sm transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-[#FF4205] hover:border-gray-300 dark:hover:border-white/20 cursor-pointer`}
               style={fonts.heading}
             >
               <option

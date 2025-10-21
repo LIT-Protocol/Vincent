@@ -41,9 +41,7 @@ export function ExplorerNav({ onNavigate, sidebarTrigger }: ExplorerNavProps) {
           <div className="flex items-center gap-3 sm:gap-6">
             {/* Sidebar trigger for mobile */}
             {sidebarTrigger && (
-              <div className="md:hidden flex items-center relative" style={{ paddingTop: '10px' }}>
-                {sidebarTrigger}
-              </div>
+              <div className="md:hidden flex items-center relative pt-2.5">{sidebarTrigger}</div>
             )}
             {/* Logo */}
             <button
@@ -62,7 +60,7 @@ export function ExplorerNav({ onNavigate, sidebarTrigger }: ExplorerNavProps) {
             </button>
 
             {/* Desktop Nav Links */}
-            <div className="hidden md:flex items-center gap-1" style={{ paddingTop: '10px' }}>
+            <div className="hidden md:flex items-center gap-1 pt-2.5">
               <button
                 onClick={() => handleNavigation('/user/apps')}
                 className="px-3 py-1.5 rounded-lg text-sm transition-colors no-underline hover:bg-gray-100 dark:hover:bg-gray-800 leading-none"
@@ -97,7 +95,7 @@ export function ExplorerNav({ onNavigate, sidebarTrigger }: ExplorerNavProps) {
           </div>
 
           {/* Right side: Utility links and mobile menu */}
-          <div className="flex items-center gap-1 md:gap-2" style={{ paddingTop: '10px' }}>
+          <div className="flex items-center gap-1 md:gap-2 pt-2.5">
             {/* Desktop utility links */}
             <div className="hidden md:flex items-center gap-1 md:gap-2">
               <a

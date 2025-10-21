@@ -1,8 +1,9 @@
 import { Dispatch, SetStateAction, useEffect } from 'react';
 import { theme as themeImport, fonts } from '../connect/ui/theme';
+import { AuthView } from '../connect/Connect';
 
 interface AuthMethodsProps {
-  setView: Dispatch<SetStateAction<string>>;
+  setView: Dispatch<SetStateAction<AuthView>>;
   clearError?: () => void;
 }
 

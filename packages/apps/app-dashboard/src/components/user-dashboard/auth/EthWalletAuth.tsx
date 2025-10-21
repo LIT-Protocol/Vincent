@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, Dispatch, SetStateAction } from 'react';
 import { createAppKit } from '@reown/appkit/react';
 import { WagmiAdapter } from '@reown/appkit-adapter-wagmi';
 import { mainnet, polygon, arbitrum, optimism, base, AppKitNetwork } from '@reown/appkit/networks';
@@ -7,13 +7,14 @@ import { Button } from '@/components/shared/ui/button';
 import { ThemeType, fonts } from '../connect/ui/theme';
 import StatusMessage from '../connect/StatusMessage';
 import { env } from '@/config/env';
+import { AuthView } from '../connect/Connect';
 
 interface WalletAuthProps {
   authWithEthWallet: (
     address: string,
     signMessage: (message: string) => Promise<string>,
   ) => Promise<void>;
-  setView: (view: string) => void;
+  setView: Dispatch<SetStateAction<AuthView>>;
   theme: ThemeType;
 }
 

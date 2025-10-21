@@ -24,7 +24,7 @@ interface ConnectProps {
   clearError?: () => void;
   theme: ThemeType;
   view: AuthView;
-  setView: (view: AuthView) => void;
+  setView: Dispatch<SetStateAction<AuthView>>;
 }
 
 export default function ConnectMethods({
@@ -47,10 +47,7 @@ export default function ConnectMethods({
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2, ease: 'easeInOut' }}
         >
-          <AuthMethods
-            setView={setView as Dispatch<SetStateAction<string>>}
-            clearError={clearError}
-          />
+          <AuthMethods setView={setView} clearError={clearError} />
         </motion.div>
       )}
       {view === 'email' && (
@@ -64,7 +61,7 @@ export default function ConnectMethods({
           <StytchOTP
             method="email"
             authWithStytch={authWithStytch}
-            setView={setView as Dispatch<SetStateAction<string>>}
+            setView={setView}
             theme={theme}
           />
         </motion.div>
@@ -80,7 +77,7 @@ export default function ConnectMethods({
           <StytchOTP
             method="phone"
             authWithStytch={authWithStytch}
-            setView={setView as Dispatch<SetStateAction<string>>}
+            setView={setView}
             theme={theme}
           />
         </motion.div>
@@ -93,11 +90,7 @@ export default function ConnectMethods({
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2, ease: 'easeInOut' }}
         >
-          <EthWalletAuth
-            authWithEthWallet={authWithEthWallet}
-            setView={setView as Dispatch<SetStateAction<string>>}
-            theme={theme}
-          />
+          <EthWalletAuth authWithEthWallet={authWithEthWallet} setView={setView} theme={theme} />
         </motion.div>
       )}
       {view === 'webauthn' && (
@@ -111,7 +104,7 @@ export default function ConnectMethods({
           <WebAuthn
             authWithWebAuthn={authWithWebAuthn}
             registerWithWebAuthn={registerWithWebAuthn}
-            setView={setView as Dispatch<SetStateAction<string>>}
+            setView={setView}
             clearError={clearError}
             theme={theme}
           />

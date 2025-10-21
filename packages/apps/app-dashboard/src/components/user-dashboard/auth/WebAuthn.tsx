@@ -1,12 +1,13 @@
-import { useState } from 'react';
+import { useState, Dispatch, SetStateAction } from 'react';
 import { Button } from '@/components/shared/ui/button';
 import { ThemeType, fonts } from '../connect/ui/theme';
 import StatusMessage from '../connect/StatusMessage';
 import { PasskeyNameInput } from '@/components/shared/ui/PasskeyNameInput';
+import { AuthView } from '../connect/Connect';
 
 interface WebAuthnProps {
   authWithWebAuthn: any;
-  setView: React.Dispatch<React.SetStateAction<string>>;
+  setView: Dispatch<SetStateAction<AuthView>>;
   registerWithWebAuthn?: (displayName: string) => Promise<void>;
   clearError?: () => void;
   theme: ThemeType;

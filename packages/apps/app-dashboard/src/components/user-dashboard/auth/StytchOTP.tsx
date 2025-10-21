@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Dispatch, SetStateAction } from 'react';
 import { useStytch } from '@stytch/react';
 import { z } from 'zod';
 import { Button } from '@/components/shared/ui/button';
@@ -7,11 +7,12 @@ import StatusMessage from '../connect/StatusMessage';
 import { countryCodes } from '@/utils/user-dashboard/countryCodes';
 import CountryCodeSelector from '@/components/shared/ui/CountryCodeSelector';
 import validator from 'validator';
+import { AuthView } from '../connect/Connect';
 
 interface StytchOTPProps {
   method: OtpMethod;
   authWithStytch: any;
-  setView: React.Dispatch<React.SetStateAction<string>>;
+  setView: Dispatch<SetStateAction<AuthView>>;
   theme: ThemeType;
 }
 
