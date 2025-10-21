@@ -1,6 +1,6 @@
 {
   "name": "@lit-protocol/vincent-ability-aave-smart-account",
-  "version": "0.0.7-mma",
+  "version": "0.0.8-mma",
   "publishConfig": {
     "access": "public"
   },
@@ -9,7 +9,6 @@
     "@lit-protocol/vincent-ability-sdk": "workspace:*",
     "@zerodev/permissions": "^5.6.2",
     "@zerodev/sdk": "^5.5.4",
-    "ethers": "^5.8.0",
     "tslib": "2.8.1",
     "viem": "^2.38.3",
     "zod": "^3.25.64"
