@@ -190,13 +190,14 @@ Currently, `packages/apps/registry-backend` specifies version numbers for the lo
 Make sure to replace `YOUR_OTP` with your one-time password.
 
 ```bash
-pnpm nx release publish -p ability-sdk app-sdk mcp-sdk contracts-sdk registry-backend policy-spending-limit policy-contract-whitelist ability-erc20-approval ability-erc20-transfer ability-uniswap-swap ability-evm-transaction-signer mcp-server abilities-e2e ability-morpho ability-aave ability-debridge policy-send-counter --otp=YOUR_OTP
+pnpm nx release publish -p ability-sdk app-sdk mcp-sdk contracts-sdk registry-backend policy-spending-limit policy-contract-whitelist ability-erc20-approval ability-erc20-transfer ability-uniswap-swap ability-evm-transaction-signer mcp-server abilities-e2e ability-morpho ability-aave ability-debridge policy-send-counter ability-aerodrome-swap --otp=YOUR_OTP
 ```
 
-7. Revert the changes made to `packages/apps/registry-backend/package.json` in step 2: replace `workspace:*` with the new version numbers for each Vincent dependency package after step 6
-8. Run `pnpm clean && pnpm i && pnpm build`
-9. Commit the `pnpm-lock.yaml`, push your changes, and push the generated git tags with `git push --tags`
-10. Open a PR against the `main` branch from your `release/YYYY-MM-DD` branch
+7. Publish the Abilities and Policies to IPFS: `pnpx nx run-many --target=action:only:deploy --all`
+8. Revert the changes made to `packages/apps/registry-backend/package.json` in step 2: replace `workspace:*` with the new version numbers for each Vincent dependency package after step 6
+9. Run `pnpm clean && pnpm i && pnpm build`
+10. Commit the `pnpm-lock.yaml`, push your changes, and push the generated git tags with `git push --tags`
+11. Open a PR against the `main` branch from your `release/YYYY-MM-DD` branch
 
 ## For AI Editors and IDEs
 
