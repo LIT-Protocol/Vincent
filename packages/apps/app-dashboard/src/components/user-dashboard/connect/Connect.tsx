@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, Dispatch, SetStateAction } from 'react';
 import * as Sentry from '@sentry/react';
 import { AUTH_METHOD_TYPE } from '@lit-protocol/constants';
 import { SessionSigs } from '@lit-protocol/types';
@@ -20,7 +20,7 @@ type ConnectViewProps = {
   theme: ThemeType;
   readAuthInfo: ReadAuthInfo;
   view?: AuthView;
-  setView?: (view: AuthView) => void;
+  setView?: Dispatch<SetStateAction<AuthView>>;
 };
 
 export default function ConnectView({
