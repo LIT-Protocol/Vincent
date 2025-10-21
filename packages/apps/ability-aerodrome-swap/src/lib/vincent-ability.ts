@@ -37,11 +37,7 @@ export const sugarSdkQuoteBigintReviver = (key: any, value: any) => {
       key === 'pool_fee' ||
       key === 'balanceValue')
   ) {
-    try {
-      return BigInt(value);
-    } catch {
-      return value;
-    }
+    return BigInt(value);
   }
   return value;
 };
