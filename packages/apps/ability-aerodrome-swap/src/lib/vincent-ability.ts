@@ -15,12 +15,35 @@ import {
 } from './schemas';
 import { AbilityAction, CheckNativeTokenBalanceResultSuccess } from './types';
 import { checkErc20Allowance, checkErc20Balance, checkNativeTokenBalance } from './ability-checks';
-import { executeSwapParams, getChainConfig, getSwapVars } from 'sugar-sdk/primitives';
+import { executeSwapParams, getChainConfig, getSwapVars, type Quote } from 'sugar-sdk/primitives';
 import { findSupportedTokenOnBase } from './ability-helpers/find-supported-token-on-base';
 import { sendAerodromeSwapTx, sendErc20ApprovalTx } from './ability-helpers';
 
 export const bigintReplacer = (key: any, value: any) => {
   return typeof value === 'bigint' ? value.toString() : value;
+};
+
+export const sugarSdkQuoteBigintReviver = (key: any, value: any) => {
+  // Convert string values that were BigInts back to BigInt for the
+  // Sugar SDK Quote object:
+  // sugar-sdk/dist/primitives/externals/app/src/hooks/types.d.ts
+  if (
+    typeof value === 'string' &&
+    (key === 'amount' ||
+      key === 'amountOut' ||
+      key === 'priceImpact' ||
+      key === 'balance' ||
+      key === 'price' ||
+      key === 'pool_fee' ||
+      key === 'balanceValue')
+  ) {
+    try {
+      return BigInt(value);
+    } catch {
+      return value;
+    }
+  }
+  return value;
 };
 
 export const vincentAbility = createVincentAbility({
@@ -305,19 +328,45 @@ export const vincentAbility = createVincentAbility({
       }
 
       // 3.2 Get the swap quote
-      // TODO Wrap in runOnce
       console.log('[@lit-protocol/vincent-ability-aerodrome-swap execute] Getting swap quote');
-      const quote = await getQuoteForSwap({
-        config: sugarConfigBaseMainnet,
-        fromToken: sugarTokenIn,
-        toToken: sugarTokenOut,
-        amountIn: requiredTokenInAmount.toBigInt(),
-      });
-      if (quote === null) {
+      const quoteResponse = await Lit.Actions.runOnce(
+        { waitForResponse: true, name: 'Aerodrome swap quote' },
+        async () => {
+          try {
+            const quote = await getQuoteForSwap({
+              config: sugarConfigBaseMainnet,
+              fromToken: sugarTokenIn,
+              toToken: sugarTokenOut,
+              amountIn: requiredTokenInAmount.toBigInt(),
+            });
+            if (quote === null) {
+              return JSON.stringify({
+                status: 'error',
+                error: 'No Aerodrome swap quote available for the desired swap tokens and amounts',
+              });
+            }
+            return JSON.stringify(
+              {
+                status: 'success',
+                quote,
+              },
+              bigintReplacer,
+            );
+          } catch (error) {
+            return JSON.stringify({
+              status: 'error',
+              error: error instanceof Error ? error.message : String(error),
+            });
+          }
+        },
+      );
+      const parsedQuoteResponse = JSON.parse(quoteResponse, sugarSdkQuoteBigintReviver);
+      if (parsedQuoteResponse.status === 'error') {
         return fail({
-          reason: 'No Aerodrome swap quote available for the desired swap tokens and amounts',
+          reason: parsedQuoteResponse.error,
         });
       }
+      const { quote }: { quote: Quote } = parsedQuoteResponse;
 
       // 3.3 Get the Sugar calldata for the swap quote
       console.log(
