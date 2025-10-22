@@ -1,5 +1,6 @@
 import { Upload, CheckCircle, XCircle } from 'lucide-react';
 import { ActionButton } from '@/components/developer-dashboard/ui/ActionButton';
+import { theme } from '@/components/user-dashboard/connect/ui/theme';
 
 interface PublishAppVersionButtonProps {
   isSubmitting?: boolean;
@@ -54,6 +55,7 @@ export function PublishAppVersionButton({
       disabled={!!hasSuccess}
       isLoading={isSubmitting}
       variant={getVariant()}
+      borderColor={!hasSuccess && !hasError ? theme.brandOrange : undefined}
       className="w-full"
     />
   );
