@@ -63,6 +63,15 @@ export function getAppVersionStatus({
     detailText = 'Your permissions are current';
   }
 
+  // Check if both versions are disabled (highest priority - worst case)
+  if (permittedVersionEnabled === false && activeVersionEnabled === false) {
+    warningType = 'red';
+    statusText = 'Versions Disabled';
+    statusColor = 'text-red-600 dark:text-red-400';
+    bgColor = 'bg-red-500/10';
+    detailText = 'Both your version and the latest version are disabled';
+  }
+
   // Check for version mismatch OR if permitted version is disabled but active is enabled
   // This gives priority to updating when an update can fix the problem
   if (hasVersionMismatch || (permittedVersionEnabled === false && activeVersionEnabled === true)) {
@@ -72,11 +81,11 @@ export function getAppVersionStatus({
     bgColor = 'bg-yellow-500/10';
 
     if (hasVersionMismatch && permittedVersionEnabled === false) {
-      detailText = 'Your version is disabled. Update to the latest version';
+      detailText = 'Your version is disabled. Click here to update to the latest version!';
     } else if (permittedVersionEnabled === false) {
-      detailText = 'Your version is disabled. Please update';
+      detailText = 'Your version is disabled. Click here to update to the latest version!';
     } else {
-      detailText = 'A newer version is available';
+      detailText = 'A newer version is available. Click here to update!';
     }
   }
 
@@ -87,15 +96,6 @@ export function getAppVersionStatus({
     statusColor = 'text-orange-600 dark:text-orange-400';
     bgColor = 'bg-orange-500/10';
     detailText = 'The latest version has been disabled';
-  }
-
-  // Check if both versions are disabled (highest priority - worst case)
-  if (permittedVersionEnabled === false && activeVersionEnabled === false) {
-    warningType = 'red';
-    statusText = 'Versions Disabled';
-    statusColor = 'text-red-600 dark:text-red-400';
-    bgColor = 'bg-red-500/10';
-    detailText = 'Both your version and the latest version are disabled';
   }
 
   const result: VersionStatusResult = {

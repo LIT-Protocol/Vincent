@@ -7,6 +7,7 @@ import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
 import { Package, ChevronDown, Check, Filter } from 'lucide-react';
 import { AgentAppPermission } from '@/utils/user-dashboard/getAgentPkps';
 import { PermittedAppCard } from './ui/PermittedAppCard';
+import { VincentYieldPromotionCard } from './ui/VincentYieldPromotionCard';
 
 type FilterState = 'permitted' | 'unpermitted' | 'all';
 
@@ -17,6 +18,7 @@ type PermittedAppsPageProps = {
   filterState: FilterState;
   setFilterState: (state: FilterState) => void;
   appVersionsMap: Record<string, AppVersion[]>;
+  hasVincentYieldPKP: boolean;
 };
 
 export function PermittedAppsPage({
@@ -26,6 +28,7 @@ export function PermittedAppsPage({
   unpermittedPkps,
   filterState,
   setFilterState,
+  hasVincentYieldPKP,
 }: PermittedAppsPageProps) {
   const [showDropdown, setShowDropdown] = useState(false);
   const [showContent, setShowContent] = useState(false);
@@ -174,7 +177,12 @@ export function PermittedAppsPage({
               )}
             </div>
           </div>
-          {apps.length === 0 ? (
+          {apps.length === 0 && !hasVincentYieldPKP && filterState === 'permitted' ? (
+            <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
+              {/* Show only Vincent Yield card when no other apps and on permitted filter */}
+              <VincentYieldPromotionCard index={0} />
+            </div>
+          ) : apps.length === 0 ? (
             <div className="flex items-center justify-center min-h-[400px] w-full lg:mr-48">
               <div className="text-center max-w-md mx-auto px-6">
                 <div
@@ -205,18 +213,25 @@ export function PermittedAppsPage({
             </div>
           ) : (
             <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
+              {/* Show Vincent Yield promotion card first if not permitted and on permitted filter */}
+              {!hasVincentYieldPKP && filterState === 'permitted' && (
+                <VincentYieldPromotionCard index={0} />
+              )}
               {apps.map((app, index) => {
                 const permittedPermission = permittedPkps.find((p) => p.appId === app.appId);
                 const unpermittedPermission = unpermittedPkps.find((p) => p.appId === app.appId);
                 const permission = permittedPermission || unpermittedPermission;
                 const isUnpermitted = !!unpermittedPermission && !permittedPermission;
+                // Adjust index for animation delay if Vincent Yield card is shown
+                const cardIndex =
+                  !hasVincentYieldPKP && filterState === 'permitted' ? index + 1 : index;
                 return (
                   <PermittedAppCard
                     key={app.appId}
                     app={app}
                     permission={permission}
                     isUnpermitted={isUnpermitted}
-                    index={index}
+                    index={cardIndex}
                     appVersionsMap={appVersionsMap}
                   />
                 );

@@ -99,17 +99,10 @@ export function ReturningUserConnect({
             message={`Your permitted version (${version}) has been disabled by the app developer. You must update your permissions to continue using this app.`}
           />
         ) : version !== appData.activeVersion ? (
-          <>
-            <InfoBanner
-              type="orange"
-              title="App Already Permitted"
-              message="You've previously granted permissions to this app."
-            />
-            <InfoBanner
-              title="Version Update Available"
-              message={`You're using version ${version}, but the app has updated to version ${appData.activeVersion}. Update your permissions to access the latest features.`}
-            />
-          </>
+          <InfoBanner
+            title="Version Update Available"
+            message={`You're using version ${version}, but the app has updated to version ${appData.activeVersion}. Update your permissions to access the latest features.`}
+          />
         ) : (
           <InfoBanner
             type="orange"
@@ -183,22 +176,43 @@ export function ReturningUserConnect({
               </>
             ) : versionData && !versionData.enabled ? (
               /* Update Version Option - Primary action when version is disabled */
-              <ActionCard
-                icon={<RefreshCw className="w-4 h-4 text-orange-500" />}
-                iconBg="bg-orange-500/20"
-                title="Update Version"
-                description=""
-                onClick={handleUpdateVersion}
-              />
+              <>
+                <ActionCard
+                  icon={<RefreshCw className="w-4 h-4 text-orange-500" />}
+                  iconBg="bg-orange-500/20"
+                  title="Update to Active Version"
+                  description="Required to continue using this app"
+                  onClick={handleUpdateVersion}
+                />
+                <ActionCard
+                  icon={<Settings className="w-4 h-4 text-gray-500" />}
+                  iconBg="bg-gray-500/20"
+                  title="Manage App"
+                  description="View settings or unpermit this app"
+                  onClick={handleEditParameters}
+                />
+              </>
             ) : (
-              /* Edit Parameters Option - Show when version is enabled */
-              <ActionCard
-                icon={<Settings className="w-4 h-4 text-gray-500" />}
-                iconBg="bg-gray-500/20"
-                title="Edit Permissions"
-                description=""
-                onClick={handleEditParameters}
-              />
+              <>
+                {/* Show Update Version button when version update is available */}
+                {version !== appData.activeVersion && (
+                  <ActionCard
+                    icon={<RefreshCw className="w-4 h-4 text-orange-500" />}
+                    iconBg="bg-orange-500/20"
+                    title="Update to Latest Version"
+                    description=""
+                    onClick={handleUpdateVersion}
+                  />
+                )}
+                {/* Edit Parameters Option - Show when version is enabled */}
+                <ActionCard
+                  icon={<Settings className="w-4 h-4 text-gray-500" />}
+                  iconBg="bg-gray-500/20"
+                  title="Edit Permissions"
+                  description=""
+                  onClick={handleEditParameters}
+                />
+              </>
             )}
 
             {/* Continue Option - Only show if version is enabled and not both versions disabled */}
