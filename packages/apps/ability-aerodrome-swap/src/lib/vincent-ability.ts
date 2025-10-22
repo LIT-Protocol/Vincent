@@ -2,7 +2,7 @@ import {
   createVincentAbility,
   supportedPoliciesForAbility,
 } from '@lit-protocol/vincent-ability-sdk';
-import { base, getCallDataForSwap, getDefaultConfig, getQuoteForSwap } from 'sugar-sdk';
+import { base, getDefaultConfig, getQuoteForSwap, swap } from 'sugar-sdk';
 import { ethers } from 'ethers';
 
 import {
@@ -15,7 +15,7 @@ import {
 } from './schemas';
 import { AbilityAction, CheckNativeTokenBalanceResultSuccess } from './types';
 import { checkErc20Allowance, checkErc20Balance, checkNativeTokenBalance } from './ability-checks';
-import { executeSwapParams, getChainConfig, getSwapVars, type Quote } from 'sugar-sdk/primitives';
+import { getChainConfig, type Quote } from 'sugar-sdk/primitives';
 import { findSupportedTokenOnBase } from './ability-helpers/find-supported-token-on-base';
 import { sendAerodromeSwapTx, sendErc20ApprovalTx } from './ability-helpers';
 
@@ -364,69 +364,28 @@ export const vincentAbility = createVincentAbility({
       }
       const { quote }: { quote: Quote } = parsedQuoteResponse;
 
-      // 3.3 Get the Sugar calldata for the swap quote
-      console.log(
-        '[@lit-protocol/vincent-ability-aerodrome-swap execute] Getting Sugar calldata for swap quote',
-      );
-      const sugarCallDataForSwap = await getCallDataForSwap({
+      // 3.3 Get the swap calldata
+      console.log('[@lit-protocol/vincent-ability-aerodrome-swap execute] Getting swap calldata');
+      const swapData = await swap({
         config: sugarConfigBaseMainnet,
-        fromToken: quote.fromToken,
-        toToken: quote.toToken,
-        amountIn: requiredTokenInAmount.toBigInt(),
+        quote,
         account: delegatorPkpInfo.ethAddress as `0x${string}`,
         slippage: SLIPPAGE,
-      });
-      if (sugarCallDataForSwap === null) {
-        return fail({
-          reason: 'Unable to generate call data for the Aerodrome swap quote',
-        });
-      }
-
-      // 3.4 Get the Sugar swap vars for the swap quote
-      console.log(
-        '[@lit-protocol/vincent-ability-aerodrome-swap execute] Getting Sugar swap vars for swap quote',
-      );
-      const { chainId, planner, amount } = getSwapVars(
-        sugarConfigBaseMainnet.sugarConfig,
-        quote,
-        `${Math.ceil(SLIPPAGE * 100)}`,
-        delegatorPkpInfo.ethAddress as `0x${string}`,
-      );
-
-      // 3.5 Get the Sugar execute swap params for the swap quote
-      console.log(
-        '[@lit-protocol/vincent-ability-aerodrome-swap execute] Getting Sugar execute swap params for swap quote',
-      );
-      const sugarExecuteSwapParams = executeSwapParams({
-        config: sugarConfigBaseMainnet.sugarConfig,
-        chainId,
-        commands: planner.commands as `0x${string}`,
-        inputs: planner.inputs,
-        value: amount,
+        unsignedTransactionOnly: true,
       });
 
-      // 3.6 ABI encode the swap params for ethers calldata
-      console.log(
-        '[@lit-protocol/vincent-ability-aerodrome-swap execute] ABI encoding swap params for ethers calldata',
-      );
-      const executeInterface = new ethers.utils.Interface(sugarExecuteSwapParams.abi);
-      const encodedCalldataForEthers = executeInterface.encodeFunctionData(
-        'execute(bytes,bytes[])',
-        [planner.commands, planner.inputs],
-      );
-
-      // 3.7 Send the swap transaction
+      // 3.4 Send the swap transaction
       console.log(
         '[@lit-protocol/vincent-ability-aerodrome-swap execute] Sending swap transaction',
       );
       const txHash = await sendAerodromeSwapTx({
         rpcUrl,
-        chainId: base.id,
+        chainId: swapData.chainId,
         pkpEthAddress: delegatorPkpInfo.ethAddress,
         pkpPublicKey: delegatorPkpInfo.publicKey,
-        to: sugarChainConfigBaseMainnet.UNIVERSAL_ROUTER_ADDRESS,
-        value: amount.toString(),
-        calldata: encodedCalldataForEthers,
+        to: swapData.to,
+        value: swapData.value.toString(),
+        calldata: swapData.data,
         gasBufferPercentage,
         baseFeePerGasBufferPercentage,
         alchemyGasSponsor,
