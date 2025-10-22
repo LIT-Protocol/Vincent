@@ -1,0 +1,76 @@
+---
+title: 'Abilities'
+---
+
+Vincent Abilities define exactly what apps can do with your wallet. These building blocks enable secure delegation of specific permissions—from DeFi automation to cross-chain transfers—giving you granular control over each app's capabilities.
+
+## Key Features
+
+- **Flexible Data Access:** Read and write on-chain and off-chain data across any network
+- **Policy-Driven Execution:** Execute abilities only when permitted by user policies
+- **Cryptographic Capabilities:** Sign transactions and encrypt data with conditional access
+- **Type-Safe Development:** Strongly-typed schemas ensure parameter validation and clear interfaces between Abilities and Policies
+
+## Get Started
+
+<Columns cols={2}>
+  <Card title="Quick Start" icon="rocket" href="/ability/quickstart" color="#FF4205">
+    Build your first ability
+  </Card>
+  <Card title="Explaining Abilities" icon="hammer" href="/ability/explaining-abilities" color="#FF4205">
+    Learn how to create custom abilities
+  </Card>
+</Columns>
+
+## Verified Abilities
+
+### DeFi Protocols
+
+<Columns cols={3}>
+  <Card title="Aave" icon="percent" href="/ability/official-abilities/aave" color="#FF4205">
+    Supply, borrow, repay, and withdraw assets with Aave V3 lending protocol
+  </Card>
+  <Card title="Morpho" icon="coins" href="/ability/official-abilities/morpho" color="#FF4205">
+    Access Morpho lending vaults for yield generation and position management
+  </Card>
+  <Card title="Uniswap Swap" icon="shuffle" href="/ability/official-abilities/uniswap-swap" color="#FF4205">
+    Perform token swaps via Uniswap V3 without manual approvals
+  </Card>
+</Columns>
+
+### Cross-Chain
+
+<Columns cols={2}>
+  <Card title="deBridge" icon="link" href="/ability/official-abilities/debridge" color="#FF4205">
+    Bridge tokens across multiple blockchains seamlessly
+  </Card>
+</Columns>
+
+### Utility
+
+<Columns cols={3}>
+  <Card title="ERC20 Approval" icon="check" href="/ability/official-abilities/erc20-approval" color="#FF4205">
+    Manage token allowances for DeFi operations
+  </Card>
+  <Card title="ERC20 Transfer" icon="arrow-right" href="/ability/official-abilities/erc20-transfer" color="#FF4205">
+    Transfer ERC20 tokens between addresses
+  </Card>
+  <Card title="EVM Transaction Signer" icon="pen" href="/ability/official-abilities/evm-transaction-signer" color="#FF4205">
+    Sign arbitrary EVM transactions for any smart contract
+  </Card>
+</Columns>
+
+<Note>
+If you need to sign EVM transactions that aren't covered by a specific Vincent Ability, use the **EVM Transaction Signer** to interact with any smart contract, even those without a dedicated Vincent Ability.
+</Note>
+
+## Learn More
+
+<Columns cols={2}>
+  <Card title="Policies" icon="shield-check" href="/concepts/policies/about" color="#FF4205">
+    Learn about policy enforcement
+  </Card>
+  <Card title="Apps" icon="cube" href="/concepts/apps/about" color="#FF4205">
+    Build apps that use Vincent abilities
+  </Card>
+</Columns>

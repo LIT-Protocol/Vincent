@@ -1,0 +1,94 @@
+---
+title: BaseAbilityContext
+---
+
+Defined in: ability-sdk/dist/src/lib/abilityCore/abilityConfig/context/types.d.ts:8
+
+BaseAbilityContext is returned with ability execution results, and contains information about the app, delegation, and
+policy evaluation results for any policies that the user had enabled for the ability.
+
+## Extends
+
+- `BaseContext`
+
+## Type Parameters
+
+### Policies
+
+`Policies`
+
+## Properties
+
+### abilityIpfsCid
+
+> **abilityIpfsCid**: `string`
+
+Defined in: ability-sdk/dist/src/lib/types.d.ts:248
+
+#### Inherited from
+
+`BaseContext.abilityIpfsCid`
+
+***
+
+### appId
+
+> **appId**: `number`
+
+Defined in: ability-sdk/dist/src/lib/types.d.ts:249
+
+#### Inherited from
+
+`BaseContext.appId`
+
+***
+
+### appVersion
+
+> **appVersion**: `number`
+
+Defined in: ability-sdk/dist/src/lib/types.d.ts:250
+
+#### Inherited from
+
+`BaseContext.appVersion`
+
+***
+
+### delegation
+
+> **delegation**: `object`
+
+Defined in: ability-sdk/dist/src/lib/types.d.ts:251
+
+#### delegateeAddress
+
+> **delegateeAddress**: `string`
+
+#### delegatorPkpInfo
+
+> **delegatorPkpInfo**: `object`
+
+##### delegatorPkpInfo.ethAddress
+
+> **ethAddress**: `string`
+
+##### delegatorPkpInfo.publicKey
+
+> **publicKey**: `string`
+
+##### delegatorPkpInfo.tokenId
+
+> **tokenId**: `string`
+
+#### Inherited from
+
+`BaseContext.delegation`
+
+***
+
+### policiesContext
+
+> **policiesContext**: `Policies`
+
+Defined in: ability-sdk/dist/src/lib/abilityCore/abilityConfig/context/types.d.ts:9

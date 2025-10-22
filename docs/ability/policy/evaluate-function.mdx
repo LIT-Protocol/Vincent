@@ -1,0 +1,196 @@
+---
+title: Policy Evaluate Function
+---
+
+The evaluate function provides final validation with full blockchain access in the Lit Action environment. This is where your Policy makes the definitive allow/deny decision.
+
+## Function Parameters
+
+The evaluate function receives two parameters:
+
+<ParamField path="params" type="object" required>
+  Object containing the ability and user parameters
+  <Expandable title="properties">
+    <ParamField path="abilityParams" type="object">
+      Parameters matching your `abilityParamsSchema` definition
+    </ParamField>
+    <ParamField path="userParams" type="object">
+      Parameters matching your `userParamsSchema` definition
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField path="policyContext" type="object" required>
+  Context object provided by the SDK with helpers and metadata
+  <Expandable title="properties">
+    <ParamField path="abilityIpfsCid" type="string">
+      The IPFS CID of the Vincent Ability that is being executed
+    </ParamField>
+    <ParamField path="appId" type="number">
+      The ID of the Vincent App the Vincent Ability is being executed for
+    </ParamField>
+    <ParamField path="appVersion" type="number">
+      The version of the Vincent App the Vincent Ability is being executed for
+    </ParamField>
+    <ParamField path="delegation" type="object">
+      Information about the execution delegation
+      <Expandable title="properties">
+        <ParamField path="delegateeAddress" type="string">
+          The Ethereum address of the Vincent Ability executor
+        </ParamField>
+        <ParamField path="delegatorPkpInfo" type="object">
+          User's Vincent Wallet information
+          <Expandable title="properties">
+            <ParamField path="tokenId" type="string">
+              The token ID of the Vincent App User's Vincent Wallet
+            </ParamField>
+            <ParamField path="ethAddress" type="string">
+              The Ethereum address of the App User's Vincent Wallet
+            </ParamField>
+            <ParamField path="publicKey" type="string">
+              The public key of the App User's Vincent Wallet
+            </ParamField>
+          </Expandable>
+        </ParamField>
+      </Expandable>
+    </ParamField>
+    <ParamField path="allow" type="function">
+      Helper method for returning an allow result from your policy's evaluate function
+    </ParamField>
+    <ParamField path="deny" type="function">
+      Helper method for returning a deny result from your policy's evaluate function
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+## Response Schemas
+
+### Allow Response
+
+<ParamField path="evalAllowResultSchema" type="ZodSchema" required>
+  A Zod schema that defines the structure of successful evaluation results. Include details about why the evaluation passed, such as current state and validation context.
+</ParamField>
+
+### Deny Response
+
+<ParamField path="evalDenyResultSchema" type="ZodSchema" required>
+  A Zod schema that defines the structure of failed evaluation results. Include details about why the evaluation failed, such as exceeded limits or validation errors.
+</ParamField>
+
+<Tabs>
+  <Tab title="Allow Schema">
+    ```typescript
+    import { createVincentPolicy } from '@lit-protocol/vincent-ability-sdk';
+    import { z } from 'zod';
+
+    const vincentPolicy = createVincentPolicy({
+      // ... other policy definitions
+
+      evalAllowResultSchema: z.object({
+        maxDailySpendingLimit: z.number(),
+        currentDailySpending: z.number(),
+        allowedTokens: z.array(z.string()),
+      }),
+    });
+    ```
+  </Tab>
+  <Tab title="Deny Schema">
+    ```typescript
+    import { createVincentPolicy } from '@lit-protocol/vincent-ability-sdk';
+    import { z } from 'zod';
+
+    const vincentPolicy = createVincentPolicy({
+      // ... other policy definitions
+
+      evalDenyResultSchema: z.object({
+        reason: z.string(),
+        maxDailySpendingLimit: z.number(),
+        currentDailySpending: z.number(),
+        allowedTokens: z.array(z.string()),
+      }),
+    });
+    ```
+  </Tab>
+</Tabs>
+
+<Note>
+If any unhandled error occurs during evaluation, the Vincent Ability SDK automatically returns a deny result with the error message.
+</Note>
+
+## Example Implementation
+
+```typescript
+import { createVincentPolicy } from '@lit-protocol/vincent-ability-sdk';
+import { z } from 'zod';
+
+const vincentPolicy = createVincentPolicy({
+  // ... other policy definitions
+
+  evalAllowResultSchema: z.object({
+    maxDailySpendingLimit: z.number(),
+    currentDailySpending: z.number(),
+    allowedTokens: z.array(z.string()),
+  }),
+
+  evalDenyResultSchema: z.object({
+    reason: z.string(),
+    maxDailySpendingLimit: z.number(),
+    currentDailySpending: z.number(),
+    allowedTokens: z.array(z.string()),
+  }),
+
+  evaluate: async ({ abilityParams, userParams }, policyContext) => {
+    const { amount, tokenAddress } = abilityParams;
+    const { dailySpendingLimit, allowedTokens } = userParams;
+
+    const isTokenAllowed = allowedTokens.includes(tokenAddress);
+    const { isSpendingLimitExceeded, currentDailySpending } = await checkSpendingLimit(
+      tokenAddress,
+      amount,
+      dailySpendingLimit,
+    );
+
+    if (!isTokenAllowed) {
+      return policyContext.deny({
+        reason: 'Token not allowed',
+        maxDailySpendingLimit: dailySpendingLimit,
+        currentDailySpending,
+        allowedTokens: allowedTokens,
+      });
+    }
+
+    if (isSpendingLimitExceeded) {
+      return policyContext.deny({
+        reason: 'Spending limit exceeded',
+        maxDailySpendingLimit: dailySpendingLimit,
+        currentDailySpending,
+        allowedTokens: allowedTokens,
+      });
+    }
+
+    return policyContext.allow({
+      maxDailySpendingLimit: dailySpendingLimit,
+      currentDailySpending,
+      allowedTokens: allowedTokens,
+    });
+  },
+});
+```
+
+## Best Practices
+
+1. **Use Fresh Data** - Query current state rather than relying on cached values
+2. **Consistent with Precheck** - Apply the same validation logic as your precheck function
+3. **Handle Errors Gracefully** - Provide clear error messages for debugging
+4. **Return Context** - Include current state information in allow/deny responses
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Commit Function" icon="database" href="/ability/policy/commit-function">
+    Update policy state after successful execution
+  </Card>
+  <Card title="Publishing Policies" icon="rocket" href="/ability/policy/publishing">
+    Publish your policy for use in Vincent Apps
+  </Card>
+</CardGroup>

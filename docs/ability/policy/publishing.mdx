@@ -1,0 +1,88 @@
+---
+title: Publishing Policies
+---
+
+Vincent Policies need to be published to our database before they can be accessible to application developers.
+
+<Steps>
+  <Step title="Log into the Vincent Developer Dashboard">
+    Go to the [Vincent Developer Dashboard](https://dashboard.heyvincent.ai) and log in with your preferred authentication method.
+
+    <img
+      src="/images/policy/publishing/image-1.png"
+      alt="Vincent Developer Dashboard login"
+      className="rounded-lg"
+    />
+  </Step>
+
+  <Step title="Create a New Vincent Policy">
+    After logging in, click the **Create a policy** button to access the [Create Policy Page](https://dashboard.heyvincent.ai/developer/create-policy).
+
+    <img
+      src="/images/policy/publishing/image-2.png"
+      alt="Create policy button"
+      className="rounded-lg"
+    />
+  </Step>
+
+  <Step title="Fill in the Policy Details">
+    Complete the form with your policy information:
+
+    <img
+      src="/images/policy/publishing/image-3.png"
+      alt="Policy details form"
+      className="rounded-lg"
+    />
+
+    <ParamField path="Package Name" type="string" required>
+      The published `npm` package name
+    </ParamField>
+
+    <ParamField path="Description" type="string" required>
+      The policy description
+    </ParamField>
+
+    <ParamField path="Title" type="string" required>
+      The policy title
+    </ParamField>
+
+    <ParamField path="Logo" type="image" required>
+      Image of your policy shown to users during delegation
+    </ParamField>
+
+    <ParamField path="Active Version" type="string" required>
+      The policy version which will be used by app creators
+    </ParamField>
+
+    <ParamField path="Deployment Status" type="string">
+      The current status of the policy
+    </ParamField>
+
+    <Note>This version must be published to `npm`. Aside from the package name, all other metadata is editable.</Note>
+  </Step>
+
+  <Step title="Policy Successfully Created">
+    Your policy has been successfully published to the Vincent database and is now available for app developers to use.
+
+    <img
+      src="/images/policy/publishing/image-4.png"
+      alt="Policy creation success confirmation"
+      className="rounded-lg"
+    />
+  </Step>
+</Steps>
+
+## Updating Your Policy
+
+When you want to release a new version of your policy, you'll need to update our database with the new version information. We'll cover the version update process in the next section.
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Policy Quick Start" icon="rocket" href="/ability/policy/quickstart">
+    Build your first Policy with the starter kit
+  </Card>
+  <Card title="Parameter Schemas" icon="code" href="/ability/policy/parameter-schemas">
+    Define user parameters and ability interfaces
+  </Card>
+</CardGroup>

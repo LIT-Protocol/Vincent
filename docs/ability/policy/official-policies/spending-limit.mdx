@@ -1,0 +1,349 @@
+---
+title: Spending Limit
+---
+
+The Spending Limit Policy enables Vincent App Users to set daily USD spending limits that restrict how much value Vincent Apps can spend on their behalf. This policy provides financial controls and risk management for DeFi operations by tracking and enforcing spending limits across all supported Vincent Abilities.
+
+## Key Features
+
+- **Daily USD Limits**: Set maximum daily spending amounts in USD, with rolling 24-hour windows
+- **Real-time USD Conversion**: Automatically converts token amounts to USD using Uniswap quotes and Chainlink price feeds
+- **Multi-Chain Support**: Works across any EVM-compatible network supported by Uniswap
+- **Blockchain-Enforced Tracking**: Records all spending to an on-chain contract for transparent, tamper-proof tracking
+- **Per-App Isolation**: Spending limits are tracked separately for each Vincent App to prevent cross-app interference
+
+## How It Works
+
+The Spending Limit Policy is built using the Vincent Policy SDK and operates through a three-phase validation and tracking system:
+
+<Steps>
+  <Step title="Precheck Phase">
+    Validates proposed spending against current limits:
+
+    - Calculates the USD value of the token transaction using Uniswap to quote the token amount in ETH, and then uses Chainlink price feeds to convert the ETH amount to USD
+    - Checks the calculated USD spend amount against the Vincent App User's configured daily spending limit
+    - Returns allow/deny decision with spending details for validation
+  </Step>
+
+  <Step title="Evaluate Phase">
+    Re-validates spending during ability execution:
+
+    - Performs the same USD calculation and Spending Limit validation as `precheck`
+    - Ensures spending limits are still valid at execution time
+  </Step>
+
+  <Step title="Commit Phase">
+    Records the actual spend to the blockchain:
+
+    - Submits a transaction to the [Lit Chronicle Yellowstone blockchain](https://developer.litprotocol.com/connecting-to-a-lit-network/lit-blockchains/chronicle-yellowstone) to record the spent amount of USD in the Spending Limit contract
+    - Returns the transaction hash of the spending update transaction
+  </Step>
+</Steps>
+
+## Getting Started
+
+Depending on your role in the Vincent Ecosystem, you'll be interacting with this Policy in different ways. Click on the link below that matches your role to see how to get started with this Policy:
+
+- **Vincent App Managers**: If you've created or are creating a Vincent App and you want to enable this Policy for your users to govern the execution of Vincent Abilities, go [here](#adding-the-policy-to-your-vincent-app).
+- **Vincent App Delegatees**: If you are a delegatee of a Vincent App that has a Vincent Ability enabled that supports this Policy, go [here](#executing-a-vincent-ability-that-supports-this-policy).
+- **Vincent Ability Developers**: If you've created or are creating a Vincent Ability and you want to support this Policy, go [here](#supporting-the-policy-in-your-vincent-ability).
+
+## Adding the Policy to your Vincent App
+
+Your Vincent App can only enable this Policy for Abilities that have been specifically configured to support it. Each Ability must be individually configured—having one compatible Ability doesn't automatically enable this Policy for all Abilities in your App.
+
+If the Abilities your App uses have not been configured to support this Policy, you can contact the developers of those Abilities to request that they do so, or you can fork their code and [enable the Policy yourself](#supporting-the-policy-in-your-vincent-ability) (also see the [Ability Quickstart Guide](../../quickstart) to learn more about how to create your own Vincent Ability).
+
+## Executing a Vincent Ability that Supports this Policy
+
+If you are a Delegatee to a Vincent App that has a Vincent Ability enabled that supports this Policy, there are several important considerations for executing Vincent Abilities on behalf of your users.
+
+### What's the Spending Limit
+
+Vincent App Users set the daily spending limit for each Vincent App that has this Policy enabled for a Vincent Ability. If multiple Vincent Abilities that support this are enabled for a Vincent App, the spending limit is shared across all of them.
+
+Additionally, the App User can update the spending limit at any time, so you cannot rely on what the spending limit is when you execute an Ability on behalf of your users, and you should call the Vincent Ability's `precheck` function to check the spending limit before executing any Ability.
+
+### Checking the Spending Limit
+
+When you execute an Ability's `precheck` function, and the Vincent User has enabled this Policy for the Ability, the `precheck` function of this Policy will also execute. This Policy's `precheck` function will perform the same validation as the actual execution of the Policy, which will convert the token buy amount to ETH, then use Chainlink to convert the ETH amount to USD, and then check the calculated USD spend amount against the Vincent App User's daily spending limit for the Vincent App you're a Delegatee of.
+
+<Tabs>
+  <Tab title="Allow Response">
+    If the proposed token buy amount is within the Vincent App User's daily spending limit, the `precheck` function will return an Allow Response with the structure:
+
+    ```typescript
+    {
+      /**
+       * The user's maximum daily spending limit in USD
+       */
+      maxSpendingLimitInUsd: number;
+      /**
+       * The calculated USD value of the proposed token buy amount
+       */
+      buyAmountInUsd: number;
+    }
+    ```
+  </Tab>
+
+  <Tab title="Deny Response">
+    If the proposed token buy amount exceeds the Vincent App User's daily spending limit for the Vincent App you're a Delegatee of, the `precheck` function will return a Deny Response with the structure:
+
+    ```typescript
+    {
+      /**
+       * The string: "Attempted buy amount exceeds daily limit"
+       */
+      reason: string;
+      /**
+       * The user's maximum daily spending limit in USD
+       */
+      maxSpendingLimitInUsd: number;
+      /**
+       * The calculated USD value of the proposed token buy amount
+       */
+      buyAmountInUsd: number;
+    }
+    ```
+  </Tab>
+</Tabs>
+
+### The Policy's `evaluate` Function
+
+When you execute an Ability's `execute` function, and the Vincent User has enabled this Policy for the Ability, the `evaluate` function of this Policy will also execute. This Policy's `evaluate` function will perform the same validation as `precheck` function, returning the same Allow and Deny responses.
+
+If a Deny response is returned, the Ability's `execute` function will cease execution and return a Failure response.
+
+## Supporting this Policy in your Vincent Ability
+
+If you'd like to provide the users of your Vincent Ability with spending limit controls, you can integrate this Policy into your Ability.
+
+<Tabs>
+  <Tab title="Installation">
+    Start by installing the `@lit-protocol/vincent-policy-spending-limit` package:
+
+    ```bash
+    npm install --save @lit-protocol/vincent-policy-spending-limit
+    ```
+  </Tab>
+
+  <Tab title="Configuration">
+    After installing the Policy, create an instance of `VincentAbilityPolicy` that configures the Policy specifically for your Ability:
+
+    ```typescript
+    import { createVincentAbilityPolicy } from '@lit-protocol/vincent-ability-sdk';
+    import { bundledVincentPolicy } from '@lit-protocol/vincent-policy-spending-limit';
+
+    const SpendingLimitPolicy = createVincentAbilityPolicy({
+      abilityParamsSchema: z.object({
+        /* your Ability's params schema */
+      }),
+      bundledVincentPolicy, // This is imported from the Spending Limit Policy package
+      abilityParameterMappings: {
+        ethRpcUrl: 'ethRpcUrl',
+        rpcUrlForUniswap: 'rpcUrlForUniswap',
+        chainIdForUniswap: 'chainIdForUniswap',
+        tokenInAddress: 'tokenAddress',
+        tokenInDecimals: 'tokenDecimals',
+        tokenInAmount: 'buyAmount',
+      },
+    });
+    ```
+
+    **Expected Input Parameters**
+
+    The Spending Limit Policy expects the following input parameters from your Vincent Ability:
+
+    ```typescript
+    {
+      /**
+       * An Ethereum Mainnet RPC Endpoint. This is used to check USD <> ETH prices via Chainlink.
+       */
+      ethRpcUrl: string;
+      /**
+       * An RPC endpoint for any chain that is supported by the Uniswap. Must work for the chain specified in chainIdForUniswap.
+       */
+      rpcUrlForUniswap: string;
+      /**
+       * The chain ID to execute the transaction on. For example: 8453 for Base.
+       */
+      chainIdForUniswap: number;
+      /**
+       * The decimals of the token being spent. For example: 18 for WETH on Base.
+       */
+      tokenDecimals: number;
+      /**
+       * The amount of tokens being spent. For example: 0.00001 for 0.00001 WETH.
+       */
+      buyAmount: number;
+    }
+    ```
+
+    **Configuring Parameter Mappings**
+
+    Because the Policy is executed within the context of your Ability's execution, you need to provide the Policy with its expected input parameters. To do this, you specify the `abilityParameterMappings` property which maps the input parameter names your Ability receives when the `precheck` or `execute` function is called, to the parameter names the Policy expects.
+
+    In the above example, the object keys of `abilityParameterMappings` are the parameter names your Ability expects, and the object values are the parameter names the Policy expects e.g. `tokenInAddress` is an Ability parameter that's being mapped to the Policy's required `tokenAddress` parameter.
+  </Tab>
+
+  <Tab title="Integration">
+    The last step to have your Vincent Ability support the Spending Limit Policy is to add the `VincentAbilityPolicy` instance to your Vincent Ability's `supportedPolicies` array:
+
+    ```typescript
+    const vincentAbility = createVincentAbility({
+      packageName: '@your-org/vincent-ability-your-ability-name' as const,
+      abilityDescription: 'Your ability description.' as const,
+      abilityParamsSchema: z.object({
+        /* your Ability's params schema */
+      }),
+      supportedPolicies: supportedPoliciesForAbility([SpendingLimitPolicy]),
+    });
+    ```
+
+    At this point your Vincent Ability is configured to support the Spending Limit Policy, and Vincent Apps which enable your Ability will now be able to enable their users to set daily spending limits for operations performed by your Ability.
+  </Tab>
+</Tabs>
+
+## The Spending Limit Contract
+
+Deployed to the [Lit Chronicle Yellowstone blockchain](https://developer.litprotocol.com/connecting-to-a-lit-network/lit-blockchains/chronicle-yellowstone) blockchain at the address: [0x756fa449de893446b26e10c6c66e62ccabee908c](https://yellowstone-explorer.litprotocol.com/address/0x756fA449De893446B26e10C6C66E62ccabeE908C), the Spending Limit contract tracks spending for each Vincent App User using a sliding window mechanism.
+
+### Contract Interface
+
+The contract provides the following functions and events:
+
+<Tabs>
+  <Tab title="View Functions">
+    **checkLimit**
+
+    ```javascript
+    function checkLimit(address user, uint256 appId, uint256 amountToSpend, uint256 userMaxSpendLimit, uint256 duration) returns (bool)
+    ```
+
+    - Validates if a proposed spend would remain within the user's spending limit
+    - Returns `true` if the spend is allowed, `false` otherwise
+
+    **getAppSpendHistory**
+
+    ```javascript
+    function getAppSpendHistory(address user, uint256 appId, uint256 duration) returns (Spend[] memory history)
+    ```
+
+    - Retrieves detailed spending history for a specific Vincent App within a time window
+    - Returns array of `Spend` structs with `timestamp` and `runningSpend` fields
+
+    **getAppsSpentInDuration**
+
+    ```javascript
+    function getAppsSpentInDuration(address user, uint256[] appIds, uint256 duration) returns (uint256)
+    ```
+
+    - Calculates total spent across multiple specified Vincent Apps within a time window
+    - Returns the total amount in USD (8 decimal precision)
+
+    **getTotalSpent**
+
+    ```javascript
+    function getTotalSpent(address user, uint256 duration) returns (uint256)
+    ```
+
+    - Calculates total spent across ALL Vincent Apps for a user within a time window
+    - Returns the total amount in USD (8 decimal precision)
+  </Tab>
+
+  <Tab title="State-Changing Functions">
+    **spend**
+
+    ```javascript
+    function spend(uint256 appId, uint256 amount, uint256 userMaxSpendLimit, uint256 duration) returns (bool)
+    ```
+
+    - Records a spend for the caller if it doesn't exceed the limit
+    - Reverts with `SpendLimitExceeded` if the limit would be exceeded
+    - Emits a `Spent` event upon successful recording
+
+    **Data Structures**
+
+    `Spend` struct:
+
+    ```javascript
+    struct Spend {
+        uint256 timestamp;    // When the spend occurred
+        uint256 runningSpend; // Cumulative spending up to this point (USD with 8 decimals)
+    }
+    ```
+
+    All USD amounts use 8-decimal precision (e.g., $1.55 = 155000000) for consistency with Chainlink price feeds.
+  </Tab>
+
+  <Tab title="Events">
+    **Spent**
+
+    ```javascript
+    event Spent(address indexed spender, uint256 indexed appId, uint256 amount, uint256 timestamp)
+    ```
+
+    - Emitted when a spend is successfully recorded
+    - Indexed by spender address and Vincent App ID for efficient filtering
+  </Tab>
+
+  <Tab title="Custom Errors">
+    **SpendLimitExceeded**
+
+    ```javascript
+    error SpendLimitExceeded(address user, uint256 appId, uint256 amount, uint256 limit)
+    ```
+
+    - Thrown when a spend would exceed the Vincent App User's limit
+
+    **EmptyAppIdsArray**
+
+    ```javascript
+    error EmptyAppIdsArray(address user)
+    ```
+
+    - Thrown when an empty app ID array is provided to functions that require app IDs
+
+    **ZeroAppIdNotAllowed**
+
+    ```javascript
+    error ZeroAppIdNotAllowed(address user)
+    ```
+
+    - Thrown when app ID 0 is provided (reserved value)
+
+    **ZeroDurationQuery**
+
+    ```javascript
+    error ZeroDurationQuery(address user)
+    ```
+
+    - Thrown when a zero duration is provided for time-based queries
+  </Tab>
+</Tabs>
+
+
+## Important Considerations
+
+<AccordionGroup>
+  <Accordion title="Network Requirements" icon="link">
+    The Policy supports the networks supported by the [@uniswap/sdk-core](https://www.npmjs.com/package/@uniswap/sdk-core) package where Uniswap V3 is deployed. Ensure the `chainIdForUniswap` corresponds to one of the [supported networks](https://github.com/Uniswap/sdks/blob/main/sdks/sdk-core/src/chains.ts).
+  </Accordion>
+
+  <Accordion title="Sliding Time Windows" icon="clock">
+    Spending limits are enforced over a continuous 24-hour lookback window from the current time. As time moves forward, older transactions automatically fall outside the window and no longer count against the spending limit.
+  </Accordion>
+
+  <Accordion title="Gas Considerations" icon="gas-pump">
+    The Policy commit phase requires a transaction on the [Lit Chronicle Yellowstone blockchain](https://developer.litprotocol.com/connecting-to-a-lit-network/lit-blockchains/chronicle-yellowstone) to record the spent amount of USD in the Spending Limit contract. The Vincent App User's Vincent Wallet must have sufficient Lit test tokens to pay for the gas fee of the spending update transaction.
+
+    Lit test tokens can be obtained from the [Lit Testnet Faucet](https://chronicle-yellowstone-faucet.getlit.dev/).
+  </Accordion>
+
+  <Accordion title="Error Handling" icon="bug">
+    Common scenarios where spending limits may be exceeded or validation may fail:
+
+    - **Limit Exceeded**: Transaction amount pushes daily spending over the configured limit
+    - **Uniswap Quote Failures**: Unable to get token price quotes from Uniswap, this could be caused by the token not being supported by Uniswap, or there not being enough liquidity for a quote for the `tokenInAddress` / ETH pair
+  </Accordion>
+</AccordionGroup>

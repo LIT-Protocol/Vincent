@@ -1,0 +1,91 @@
+---
+title: Explaining Apps
+---
+
+Understanding how Vincent Apps work is essential for building secure, user-controlled automation. This guide explains the key components and their relationships.
+
+## Vincent Apps
+
+Vincent Apps enable automated execution of on-chain and off-chain actions on behalf of users while maintaining strict user control through programmable permissions.
+
+<ParamField path="appId" type="number">
+  Unique identifier for your Vincent App across all versions
+</ParamField>
+
+<ParamField path="version" type="number">
+  Immutable version number ensuring users know exactly what they've authorized
+</ParamField>
+
+ The core execution logic of Apps is composed of Vincent Abilities and Vincent Policies working together.
+
+### Vincent Abilities
+
+Modular, executable functions that define what your App can do. Each Ability is an `npm` package containing the logic for specific actions.
+
+<CardGroup cols={3}>
+  <Card title="On-Chain Actions" icon="ethereum">
+    Token transfers, swaps, staking, lending, and smart contract interactions
+  </Card>
+  <Card title="Off-Chain Actions" icon="globe">
+    API calls, database operations, notifications, and external service integrations
+  </Card>
+  <Card title="Learn More" icon="book" href="/concepts/abilities/about">
+    Deep dive into how Vincent Abilities work
+  </Card>
+</CardGroup>
+
+### Vincent Policies
+
+Programmable guardrails that users configure to control how Abilities execute. Each Policy is an `npm` package that defines specific constraints and boundaries.
+
+<CardGroup cols={3}>
+  <Card title="Financial Controls" icon="dollar-sign">
+    Spending limits, budget caps, and value restrictions
+  </Card>
+  <Card title="Operational Controls" icon="shield-check">
+    Token allowlists, time windows, and rate limiting
+  </Card>
+  <Card title="Learn More" icon="book" href="/concepts/policies/about">
+    Deep dive into how Vincent Policies work
+  </Card>
+</CardGroup>
+
+#### Version Immutability
+
+App versions are immutable once published to ensure trust and transparency. Users delegate to a specific version with a fixed set of Abilities and Policies that cannot be changed without their explicit consent.
+
+<Info>
+When you need to modify Abilities or Policies, you must create a new version. See [Updating Your App](/app/updating-apps) for details on versioning and what requires a new version.
+</Info>
+
+### App Delegatees
+
+Ethereum addresses authorized to execute Abilities on behalf of users. These addresses act as the operational layer of your App.
+
+<CardGroup cols={2}>
+  <Card title="EOA Delegatees" icon="key">
+    Externally owned accounts for manual or automated execution using private keys
+  </Card>
+  <Card title="Smart Contract Delegatees" icon="code">
+    Contract addresses for programmatic execution with on-chain logic
+  </Card>
+</CardGroup>
+
+<AccordionGroup>
+  <Accordion title="Security Best Practices" icon="shield-check">
+    <Steps>
+      <Step title="Secure Key Storage">
+        Use hardware security modules or secure key management services for production delegatee private keys
+      </Step>
+      <Step title="Regular Key Rotation">
+        Implement a key rotation schedule to minimize exposure from potential compromises
+      </Step>
+      <Step title="Environment Separation">
+        Use different delegatee addresses for development, testing, and production environments
+      </Step>
+      <Step title="Activity Monitoring">
+        Set up logging and alerts for all delegatee transactions and Ability executions
+      </Step>
+    </Steps>
+  </Accordion>
+</AccordionGroup>
