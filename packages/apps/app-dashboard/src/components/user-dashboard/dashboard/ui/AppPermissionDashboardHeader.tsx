@@ -145,23 +145,30 @@ export function AppPermissionDashboardHeader({
         {versionStatus.warningType === 'yellow' ? (
           <button
             onClick={() => navigate(`/user/appId/${app.appId}/update-version`)}
-            className={`backdrop-blur-xl ${theme.itemBg} border ${theme.cardBorder} hover:border-orange-500 rounded-lg p-2.5 sm:p-3 lg:p-4 hover:${theme.itemHoverBg} transition-all w-full text-left`}
+            className={`backdrop-blur-xl ${theme.itemBg} border-2 rounded-lg p-2.5 sm:p-3 lg:p-4 hover:${theme.itemHoverBg} transition-all w-full text-left animate-pulse hover:animate-none`}
+            style={{ borderColor: theme.brandOrange }}
           >
             <div className="flex items-center gap-2 sm:gap-3">
-              <div className={`p-1.5 sm:p-2 rounded-lg ${versionStatus.bgColor} flex-shrink-0`}>
-                <TriangleAlert className={`w-4 h-4 sm:w-5 sm:h-5 ${versionStatus.statusColor}`} />
+              <div
+                className={`p-1.5 sm:p-2 rounded-lg flex-shrink-0`}
+                style={{ backgroundColor: 'rgba(255, 66, 5, 0.2)' }}
+              >
+                <TriangleAlert
+                  className={`w-4 h-4 sm:w-5 sm:h-5`}
+                  style={{ color: theme.brandOrange }}
+                />
               </div>
               <div className="flex-1 min-w-0">
                 <p
-                  className={`text-sm font-semibold ${versionStatus.statusColor} leading-tight flex items-center gap-1.5`}
-                  style={fonts.heading}
+                  className={`text-sm font-semibold leading-tight flex items-center gap-1.5`}
+                  style={{ ...fonts.heading, color: theme.brandOrange }}
                 >
                   {versionStatus.statusText}
                   <span className="text-lg relative -top-1">→</span>
                 </p>
                 <p
-                  className={`text-[10px] sm:text-xs ${theme.textMuted} mt-0.5 leading-tight line-clamp-2`}
-                  style={fonts.body}
+                  className={`text-[10px] sm:text-xs mt-0.5 leading-tight line-clamp-2`}
+                  style={{ ...fonts.body, color: theme.brandOrange, opacity: 0.8 }}
                   title={versionStatus.detailText}
                 >
                   {versionStatus.detailText}

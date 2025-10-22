@@ -163,7 +163,7 @@ export function UpdateVersionPage({
   const error = jwtError || actionsError;
 
   return (
-    <>
+    <div className="w-full flex flex-col">
       <Breadcrumb
         items={[
           {
@@ -174,7 +174,7 @@ export function UpdateVersionPage({
         ]}
       />
 
-      <div className="w-full max-w-md mx-auto relative z-10 flex items-center min-h-[calc(100vh-4rem)] -mt-32">
+      <div className="w-full max-w-md mx-auto relative z-10 flex items-center justify-center flex-1 py-8">
         <div
           className={`w-full ${theme.mainCard} border ${theme.mainCardBorder} rounded-2xl shadow-2xl overflow-hidden relative z-10 origin-center`}
         >
@@ -236,6 +236,6 @@ export function UpdateVersionPage({
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }

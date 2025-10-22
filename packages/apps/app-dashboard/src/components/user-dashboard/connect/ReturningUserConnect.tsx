@@ -197,19 +197,19 @@ export function ReturningUserConnect({
                 {/* Show Update Version button when version update is available */}
                 {version !== appData.activeVersion && (
                   <ActionCard
-                    icon={<RefreshCw className="w-4 h-4 text-orange-500" />}
+                    icon={<RefreshCw className="w-4 h-4" style={{ color: theme.brandOrange }} />}
                     iconBg="bg-orange-500/20"
                     title="Update to Latest Version"
-                    description=""
+                    description="Recommended - Get access to the latest features and improvements"
                     onClick={handleUpdateVersion}
                   />
                 )}
                 {/* Edit Parameters Option - Show when version is enabled */}
                 <ActionCard
-                  icon={<Settings className="w-4 h-4 text-gray-500" />}
-                  iconBg="bg-gray-500/20"
+                  icon={<Settings className="w-4 h-4" style={{ color: theme.brandOrange }} />}
+                  iconBg="bg-orange-500/20"
                   title="Edit Permissions"
-                  description=""
+                  description="Review or modify app permissions and settings"
                   onClick={handleEditParameters}
                 />
               </>
@@ -218,10 +218,10 @@ export function ReturningUserConnect({
             {/* Continue Option - Only show if version is enabled and not both versions disabled */}
             {!(versionData && !versionData.enabled) && (
               <ActionCard
-                icon={<ArrowRight className="w-4 h-4 text-orange-500" />}
+                icon={<ArrowRight className="w-4 h-4" style={{ color: theme.brandOrange }} />}
                 iconBg="bg-orange-500/20"
                 title={`Continue to ${appData.name}`}
-                description=""
+                description="Proceed with your current permissions"
                 onClick={handleContinue}
                 isLoading={isContinueLoading || isLoading || !!localSuccess}
                 loadingStatus={localSuccess || loadingStatus}
