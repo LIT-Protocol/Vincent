@@ -11,3 +11,6 @@ export type {
   CheckErc20AllowanceResultFailure,
 } from './lib/types';
 export { AbilityAction } from './lib/types';
+
+// sugar-sdk re-export
+export { getDefaultConfig, base, type Token, getListedTokens } from 'sugar-sdk';
