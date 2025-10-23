@@ -1,9 +1,10 @@
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { PermittedAppsPage } from './PermittedAppsPage';
 import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
 import { useReadAuthInfo } from '@/hooks/user-dashboard/useAuthInfo';
 import { AuthenticationErrorScreen } from '../connect/AuthenticationErrorScreen';
 import { GeneralErrorScreen } from '@/components/user-dashboard/connect/GeneralErrorScreen';
+import { VincentYieldModal } from '../landing/VincentYieldModal';
 import { ConnectToVincentYieldModal } from '../landing/ConnectToVincentYieldModal';
 import { env } from '@/config/env';
 import { useAllAgentApps } from '@/hooks/user-dashboard/useAllAgentApps';
@@ -17,7 +18,8 @@ export function PermittedAppsWrapper() {
   const { authInfo, sessionSigs, isProcessing, error } = readAuthInfo;
 
   const userAddress = authInfo?.userPKP?.ethAddress || '';
-  const [showConnectModal, setShowConnectModal] = useState(false);
+  const [showVincentYieldModal, setShowVincentYieldModal] = useState(false);
+  const [hasUserDismissedModal, setHasUserDismissedModal] = useState(false);
   const [filterState, setFilterState] = useState<FilterState>('permitted');
 
   // Fetch all agent app permissions
@@ -67,26 +69,26 @@ export function PermittedAppsWrapper() {
 
   const isUserAuthed = authInfo?.userPKP && sessionSigs;
 
-  // Find the agent PKP that's permitted for Vincent Yield
-  const vincentYieldPKP = permittedPkps.find(
-    (pkp) => pkp.appId === Number(env.VITE_VINCENT_YIELD_APPID),
-  );
+  // Check if Vincent Yield app is permitted or unpermitted (i.e., user has any connection to it)
+  const vincentYieldAppId = Number(env.VITE_VINCENT_YIELD_APPID);
+  const hasVincentYieldPerms =
+    permittedPkps.some((p) => p.appId === vincentYieldAppId) ||
+    unpermittedPkps.some((p) => p.appId === vincentYieldAppId);
 
-  // Find PKPs with appId = -1 (unconnected PKPs)
+  // Find PKPs with appId = -1 (unconnected PKPs - for migration)
   const unconnectedPKP = permittedPkps.find((pkp) => pkp.appId === -1);
 
-  // Show connect modal for unconnected PKPs (but not when there are no PKPs at all)
-  React.useEffect(() => {
-    if (
-      isUserAuthed &&
-      !showConnectModal &&
-      unconnectedPKP &&
-      !vincentYieldPKP &&
-      permittedPkps.length > 0
-    ) {
-      setShowConnectModal(true);
+  // Show Vincent Yield modal if user is authenticated but doesn't have permissions
+  useEffect(() => {
+    if (isUserAuthed && !hasUserDismissedModal) {
+      if (!hasVincentYieldPerms && !showVincentYieldModal) {
+        setShowVincentYieldModal(true);
+      } else if (hasVincentYieldPerms && showVincentYieldModal) {
+        // Close modal if Vincent Yield perms are now detected
+        setShowVincentYieldModal(false);
+      }
     }
-  }, [isUserAuthed, showConnectModal, unconnectedPKP, vincentYieldPKP, permittedPkps.length]);
+  }, [isUserAuthed, hasVincentYieldPerms, showVincentYieldModal, hasUserDismissedModal]);
 
   // Show loading while auth is processing
   if (isProcessing) {
@@ -127,11 +129,23 @@ export function PermittedAppsWrapper() {
         filterState={filterState}
         setFilterState={setFilterState}
         appVersionsMap={appVersionsMap}
-        hasVincentYieldPKP={!!vincentYieldPKP}
       />
-      {showConnectModal && unconnectedPKP && (
-        <ConnectToVincentYieldModal agentPKP={unconnectedPKP.pkp} />
-      )}
+      {showVincentYieldModal && unconnectedPKP ? (
+        <ConnectToVincentYieldModal
+          agentPKP={unconnectedPKP.pkp}
+          onClose={() => {
+            setShowVincentYieldModal(false);
+            setHasUserDismissedModal(true);
+          }}
+        />
+      ) : showVincentYieldModal ? (
+        <VincentYieldModal
+          onClose={() => {
+            setShowVincentYieldModal(false);
+            setHasUserDismissedModal(true);
+          }}
+        />
+      ) : null}
     </>
   );
 }
