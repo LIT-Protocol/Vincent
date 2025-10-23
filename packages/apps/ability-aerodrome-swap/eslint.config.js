@@ -19,8 +19,6 @@ module.exports = [
           ignoredDependencies: [
             // It's a peerDependency to ensure people don't try to use the wrong VincentAbilityClient with it -- not directly used.
             '@lit-protocol/vincent-app-sdk',
-            // Installing from Github release URL causes eslint to throw an error about the package version not being found.
-            'sugar-sdk',
           ],
         },
       ],
