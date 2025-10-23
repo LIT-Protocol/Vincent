@@ -14,12 +14,12 @@ export default function DashboardPage({ apps, abilities, policies }: DashboardPa
 
   const handleMenuSelection = (id: MenuId) => {
     const routes: Record<MenuId, string> = {
-      'create-app': '/developer/create-app',
-      'create-ability': '/developer/create-ability',
-      'create-policy': '/developer/create-policy',
-      app: '/developer/apps',
-      ability: '/developer/abilities',
-      policy: '/developer/policies',
+      'apps/create-app': '/developer/apps/create-app',
+      'abilities/create-ability': '/developer/abilities/create-ability',
+      'policies/create-policy': '/developer/policies/create-policy',
+      apps: '/developer/apps',
+      abilities: '/developer/abilities',
+      policies: '/developer/policies',
     };
 
     const route = routes[id];

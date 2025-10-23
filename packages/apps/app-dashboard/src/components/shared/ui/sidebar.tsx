@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/shared/ui/button';
 import { Input } from '@/components/shared/ui/input';
 import { Separator } from '@/components/shared/ui/separator';
+import { theme } from '@/components/user-dashboard/connect/ui/theme';
 import {
   Sheet,
   SheetContent,
@@ -177,11 +178,11 @@ function Sidebar({
 
   if (isMobile) {
     return (
-      <Sheet open={openMobile} onOpenChange={setOpenMobile} {...props}>
+      <Sheet open={openMobile} onOpenChange={setOpenMobile} modal={true} {...props}>
         <SheetContent
           data-slot="sidebar"
           data-mobile="true"
-          className="w-(--sidebar-width) p-0 [&>button]:hidden bg-gray-50 text-gray-900 dark:bg-black dark:text-white"
+          className={cn('w-(--sidebar-width) p-0 pt-[61px]', theme.bg)}
           style={
             {
               '--sidebar-width': SIDEBAR_WIDTH_MOBILE,
@@ -193,9 +194,7 @@ function Sidebar({
             <SheetTitle>Sidebar</SheetTitle>
             <SheetDescription>Displays the mobile sidebar.</SheetDescription>
           </SheetHeader>
-          <div className="flex h-full w-full flex-col bg-gray-50 text-gray-900 dark:bg-black dark:text-white">
-            {children}
-          </div>
+          <div className={cn('flex h-full w-full flex-col', theme.bg)}>{children}</div>
         </SheetContent>
       </Sheet>
     );
@@ -241,7 +240,7 @@ function Sidebar({
           data-sidebar="sidebar"
           data-slot="sidebar-inner"
           className={cn(
-            'flex h-full w-full flex-col group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:shadow-sm',
+            'flex h-full w-full flex-col group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:shadow-sm pt-[61px]',
             'bg-sidebar group-data-[variant=floating]:border-sidebar-border',
           )}
         >
@@ -253,7 +252,7 @@ function Sidebar({
 }
 
 function SidebarTrigger({ className, onClick, ...props }: React.ComponentProps<typeof Button>) {
-  const { toggleSidebar } = useSidebar();
+  const { toggleSidebar, isMobile, openMobile, setOpenMobile } = useSidebar();
 
   return (
     <Button
@@ -264,7 +263,12 @@ function SidebarTrigger({ className, onClick, ...props }: React.ComponentProps<t
       className={cn('size-7', className)}
       onClick={(event) => {
         onClick?.(event);
-        toggleSidebar();
+        // On mobile, directly set the state for immediate response
+        if (isMobile && openMobile) {
+          setOpenMobile(false);
+        } else {
+          toggleSidebar();
+        }
       }}
       {...props}
     >
@@ -304,7 +308,7 @@ function SidebarInset({ className, ...props }: React.ComponentProps<'main'>) {
     <main
       data-slot="sidebar-inset"
       className={cn(
-        'bg-background relative flex w-full flex-1 flex-col',
+        'relative flex w-full flex-1 flex-col',
         'md:peer-data-[variant=inset]:m-2 md:peer-data-[variant=inset]:ml-0 md:peer-data-[variant=inset]:rounded-xl md:peer-data-[variant=inset]:shadow-sm md:peer-data-[variant=inset]:peer-data-[state=collapsed]:ml-2',
         className,
       )}

@@ -134,7 +134,7 @@ export const ManualWithdraw: React.FC<ManualWithdrawProps> = ({ sessionSigs, age
         <div className="flex flex-col h-full">
           <h5 className={`text-sm font-medium mb-3 ${theme.text}`}>Network</h5>
           <div
-            className={`p-4 border rounded ${theme.cardBg} ${theme.cardBorder} flex-1 flex flex-col justify-center`}
+            className={`p-4 border rounded ${theme.mainCard} ${theme.cardBorder} flex-1 flex flex-col justify-center`}
           >
             <ChainSelector
               selectedChain={selectedChain}
@@ -147,7 +147,7 @@ export const ManualWithdraw: React.FC<ManualWithdrawProps> = ({ sessionSigs, age
         <div className="flex flex-col h-full">
           <h5 className={`text-sm font-medium mb-3 ${theme.text}`}>Your Native Token Balance</h5>
           <div
-            className={`p-4 border rounded ${theme.cardBg} ${theme.cardBorder} flex-1 flex flex-col justify-center`}
+            className={`p-4 border rounded ${theme.mainCard} ${theme.cardBorder} flex-1 flex flex-col justify-center`}
           >
             <div className="text-center">
               <div className={`text-sm font-semibold ${theme.text} mb-3`}>

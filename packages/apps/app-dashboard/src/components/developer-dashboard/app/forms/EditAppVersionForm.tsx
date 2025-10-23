@@ -1,18 +1,16 @@
-import { z } from 'zod';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { docSchemas } from '@lit-protocol/vincent-registry-sdk';
+
 import { Form } from '@/components/shared/ui/form';
 import { Button } from '@/components/shared/ui/button';
+import { StatusMessage } from '@/components/shared/ui/statusMessage';
 import { AppVersion } from '@/types/developer-dashboard/appTypes';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/shared/ui/card';
-import { LongTextField } from '../../form-fields';
-import { docSchemas } from '@lit-protocol/vincent-registry-sdk';
+import { LongTextField } from '@/components/developer-dashboard/form-fields';
+import { theme } from '@/components/user-dashboard/connect/ui/theme';
+import { extractErrorMessage } from '@/utils/developer-dashboard/app-forms';
 
 const { appVersionDoc } = docSchemas;
 
@@ -38,6 +36,9 @@ export function EditAppVersionForm({
   onSubmit,
   isSubmitting = false,
 }: EditAppVersionFormProps) {
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
+
   const form = useForm<EditAppVersionFormData>({
     resolver: zodResolver(EditAppVersionSchema),
     defaultValues: {
@@ -51,31 +52,46 @@ export function EditAppVersionForm({
     formState: { errors },
   } = form;
 
-  return (
-    <Card className="w-full max-w-4xl mx-auto">
-      <CardHeader>
-        <CardTitle>Edit App Version {versionData?.version}</CardTitle>
-        <CardDescription>Update the changes description for this version</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Form {...form}>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            <LongTextField
-              name="changes"
-              register={register}
-              error={errors.changes?.message}
-              label="Changes"
-              placeholder="Describe what changed in this version..."
-              rows={4}
-              required
-            />
+  const handleFormSubmit = async (data: EditAppVersionFormData) => {
+    setSubmitError(null);
+    setSubmitSuccess(false);
+    try {
+      await onSubmit(data);
+      setSubmitSuccess(true);
+    } catch (error) {
+      console.error('Failed to update app version:', error);
+      setSubmitError(extractErrorMessage(error, 'Failed to update app version'));
+    }
+  };
 
-            <Button type="submit" className="w-full" disabled={isSubmitting}>
-              {isSubmitting ? 'Updating Version...' : 'Update Version'}
-            </Button>
-          </form>
-        </Form>
-      </CardContent>
-    </Card>
+  return (
+    <Form {...form}>
+      <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
+        <LongTextField
+          name="changes"
+          register={register}
+          error={errors.changes?.message}
+          label="Changes"
+          placeholder="Describe what changed in this version..."
+          rows={4}
+          required
+        />
+
+        {/* Status Messages */}
+        {submitError && <StatusMessage message={submitError} type="error" />}
+        {submitSuccess && (
+          <StatusMessage message="App version updated successfully!" type="success" />
+        )}
+
+        <Button
+          type="submit"
+          className="w-full"
+          style={{ backgroundColor: theme.brandOrange }}
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? 'Updating Version...' : 'Update Version'}
+        </Button>
+      </form>
+    </Form>
   );
 }

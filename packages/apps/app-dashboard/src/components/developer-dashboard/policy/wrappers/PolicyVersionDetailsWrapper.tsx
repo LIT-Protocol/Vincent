@@ -3,6 +3,7 @@ import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-
 import Loading from '@/components/shared/ui/Loading';
 import { StatusMessage } from '@/components/shared/ui/statusMessage';
 import { PolicyVersionDetailsView } from '../views/PolicyVersionDetailsView';
+import { Breadcrumb } from '@/components/shared/ui/Breadcrumb';
 
 export function PolicyVersionDetailsWrapper() {
   const { packageName, version } = useParams<{ packageName: string; version: string }>();
@@ -39,15 +40,28 @@ export function PolicyVersionDetailsWrapper() {
 
   const onOpenMutation = (mutationType: string) => {
     navigate(
-      `/developer/policy/${encodeURIComponent(packageName!)}/version/${version}/${mutationType}`,
+      `/developer/policies/policy/${encodeURIComponent(packageName!)}/version/${version}/${mutationType}`,
     );
   };
 
   return (
-    <PolicyVersionDetailsView
-      policy={policy}
-      version={versionData}
-      onOpenMutation={onOpenMutation}
-    />
+    <>
+      <Breadcrumb
+        items={[
+          { label: 'Policies', onClick: () => navigate('/developer/policies') },
+          {
+            label: policy.title || policy.packageName,
+            onClick: () =>
+              navigate(`/developer/policies/policy/${encodeURIComponent(packageName!)}`),
+          },
+          { label: `Version ${version}` },
+        ]}
+      />
+      <PolicyVersionDetailsView
+        policy={policy}
+        version={versionData}
+        onOpenMutation={onOpenMutation}
+      />
+    </>
   );
 }

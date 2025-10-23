@@ -1,18 +1,20 @@
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { App } from '@/types/developer-dashboard/appTypes';
-import { theme } from '@/components/user-dashboard/connect/ui/theme';
+import { App, AppVersion } from '@/types/developer-dashboard/appTypes';
+import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
 import { Card, CardContent } from '@/components/shared/ui/card';
 import { Logo } from '@/components/shared/ui/Logo';
-import { Copy, Check, Wallet, Settings, RefreshCw } from 'lucide-react';
+import { Settings, RefreshCw, Shield, TriangleAlert, Wallet } from 'lucide-react';
 import { AgentAppPermission } from '@/utils/user-dashboard/getAgentPkps';
+import { getAppVersionStatus } from '@/utils/user-dashboard/getAppVersionStatus';
 
 type PermittedAppCardProps = {
   app: App;
   permission: AgentAppPermission | undefined;
   isUnpermitted?: boolean;
   index?: number;
+  appVersionsMap: Record<string, AppVersion[]>;
 };
 
 export function PermittedAppCard({
@@ -20,9 +22,19 @@ export function PermittedAppCard({
   permission,
   isUnpermitted = false,
   index = 0,
+  appVersionsMap,
 }: PermittedAppCardProps) {
   const navigate = useNavigate();
-  const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
+
+  const versionStatus = useMemo(
+    () =>
+      getAppVersionStatus({
+        app,
+        permittedVersion: permission?.permittedVersion?.toString(),
+        appVersionsMap,
+      }),
+    [app, permission?.permittedVersion, appVersionsMap],
+  );
 
   const handleManageClick = () => {
     if (isUnpermitted) {
@@ -32,106 +44,112 @@ export function PermittedAppCard({
     }
   };
 
-  const handleWalletClick = () => {
-    navigate(`/user/appId/${app.appId}/wallet`);
-  };
-
-  const handleCopyAddress = async (address: string) => {
-    try {
-      await navigator.clipboard.writeText(address);
-      setCopiedAddress(address);
-      setTimeout(() => setCopiedAddress(null), 2000);
-    } catch (err) {
-      console.error('Failed to copy address:', err);
-    }
-  };
-
-  const truncateAddress = (address: string) => {
-    if (address.length <= 10) return address;
-    return `${address.slice(0, 6)}...${address.slice(-4)}`;
-  };
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.1 }}
-      className="w-full max-w-sm"
+      className="w-full"
     >
       <Card
-        className={`py-0 gap-0 backdrop-blur-xl ${theme.mainCard} border ${theme.cardBorder} ${theme.cardHoverBorder} transition-all duration-200 hover:shadow-lg w-full`}
+        className={`py-0 gap-0 backdrop-blur-xl ${theme.mainCard} border ${theme.cardBorder} ${theme.cardHoverBorder} transition-all duration-200 hover:shadow-lg w-full flex flex-col overflow-hidden`}
       >
-        <CardContent className="p-4">
-          <div className="flex flex-col gap-3">
-            {/* Logo and Title Row */}
-            <div className="flex items-start justify-between">
-              <div className="flex items-center gap-3">
-                <Logo
-                  logo={app.logo}
-                  alt={`${app.name} logo`}
-                  className="w-12 h-12 rounded-lg object-cover"
-                />
-                <div>
-                  <h3 className={`font-semibold ${theme.text}`}>{app.name}</h3>
-                  {permission?.permittedVersion && (
-                    <span className={`text-xs ${theme.textMuted}`}>
-                      v{permission.permittedVersion}
-                    </span>
-                  )}
-                </div>
+        <CardContent className="p-4 flex flex-col gap-3">
+          {/* Top section - Logo, Title and Status */}
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-center gap-3 min-w-0 flex-1">
+              <Logo
+                logo={app.logo}
+                alt={`${app.name} logo`}
+                className="w-16 h-16 rounded-lg object-cover flex-shrink-0"
+              />
+              <div className="flex flex-col justify-center min-w-0 flex-1">
+                <h3
+                  className={`text-base font-semibold leading-tight ${theme.text}`}
+                  style={fonts.heading}
+                >
+                  {app.name}
+                </h3>
+                {permission?.permittedVersion && (
+                  <span className={`text-sm ${theme.textMuted} leading-tight`}>
+                    v{permission.permittedVersion}
+                  </span>
+                )}
               </div>
             </div>
+          </div>
 
-            {/* Vincent Wallet Address */}
-            {permission && (
+          {/* Bottom section - Status and Buttons grouped together */}
+          <div className="flex flex-col gap-2 w-full">
+            {/* Status Card */}
+            {permission && !isUnpermitted && (
               <div
-                className={`flex items-center justify-between p-2 rounded-lg ${theme.itemBg} border ${theme.cardBorder}`}
+                className={`flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg ${theme.itemBg} border ${theme.cardBorder}`}
               >
-                <div className="flex flex-col">
-                  <span className={`text-xs ${theme.textMuted} mb-1`}>Vincent Wallet</span>
-                  <span className={`font-mono text-sm ${theme.text}`}>
-                    {truncateAddress(permission.pkp.ethAddress)}
-                  </span>
-                </div>
-                <button
-                  onClick={() => handleCopyAddress(permission.pkp.ethAddress)}
-                  className={`p-1.5 hover:${theme.itemBg} rounded transition-colors`}
-                  title="Copy address"
-                >
-                  {copiedAddress === permission.pkp.ethAddress ? (
-                    <Check className="w-4 h-4 text-green-600" />
+                <div className={`flex-shrink-0`}>
+                  {versionStatus.warningType ? (
+                    <TriangleAlert className={`w-4 h-4 ${versionStatus.statusColor}`} />
                   ) : (
-                    <Copy className={`w-4 h-4 ${theme.textMuted}`} />
+                    <Shield className={`w-4 h-4 ${versionStatus.statusColor}`} />
                   )}
-                </button>
+                </div>
+                <p
+                  className={`text-xs font-medium ${versionStatus.statusColor} leading-none mt-0.5`}
+                  style={fonts.heading}
+                >
+                  {versionStatus.statusText}
+                </p>
               </div>
             )}
 
-            {/* Action Buttons */}
-            <div className="flex flex-col gap-2">
+            {/* Access Wallet button for unpermitted apps */}
+            {isUnpermitted && (
               <button
-                onClick={handleWalletClick}
-                className={`w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium transition-colors`}
+                onClick={() => navigate(`/user/appId/${app.appId}/wallet`)}
+                className={`w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors border ${theme.cardBorder} bg-white dark:bg-gray-950 hover:${theme.itemHoverBg}`}
+                style={{
+                  ...fonts.heading,
+                  color: theme.brandOrange,
+                }}
               >
-                <Wallet className="w-4 h-4" />
-                <span>Access Wallet</span>
+                <Wallet className="w-4 h-4 flex-shrink-0 -mt-px" />
+                <span className="leading-none">Access Wallet</span>
               </button>
-              <button
-                onClick={handleManageClick}
-                className={`w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg ${
-                  isUnpermitted
-                    ? 'bg-slate-500 hover:bg-slate-600 text-white'
-                    : `border ${theme.cardBorder} ${theme.cardBg} hover:${theme.itemBg} ${theme.text}`
-                } text-sm font-medium transition-colors`}
-              >
-                {isUnpermitted ? (
-                  <RefreshCw className="w-4 h-4" />
-                ) : (
-                  <Settings className="w-4 h-4" />
-                )}
-                <span>{isUnpermitted ? 'Repermit App' : 'Manage Permissions'}</span>
-              </button>
-            </div>
+            )}
+
+            <button
+              onClick={handleManageClick}
+              className={`w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
+                isUnpermitted
+                  ? 'bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600 dark:text-slate-100 border border-slate-300 dark:border-slate-600'
+                  : 'text-white'
+              }`}
+              style={
+                isUnpermitted
+                  ? fonts.heading
+                  : {
+                      ...fonts.heading,
+                      backgroundColor: theme.brandOrange,
+                    }
+              }
+              onMouseEnter={(e) => {
+                if (!isUnpermitted) {
+                  e.currentTarget.style.backgroundColor = theme.brandOrangeDarker;
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isUnpermitted) {
+                  e.currentTarget.style.backgroundColor = theme.brandOrange;
+                }
+              }}
+            >
+              {isUnpermitted ? (
+                <RefreshCw className="w-4 h-4 flex-shrink-0 -mt-px" />
+              ) : (
+                <Settings className="w-4 h-4 flex-shrink-0 -mt-px" />
+              )}
+              <span className="leading-none">{isUnpermitted ? 'Repermit App' : 'Manage App'}</span>
+            </button>
           </div>
         </CardContent>
       </Card>

@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { Button } from '@/components/shared/ui/button';
 import { AlertCircle, Loader2 } from 'lucide-react';
-import { theme } from './theme';
+import { fonts, theme } from './theme';
 
 interface ActionButtonsProps {
   appName: string;
@@ -26,7 +26,7 @@ export function ActionButtons({
     <div className="space-y-4">
       {/* Trust Warning */}
       <div className="flex justify-center text-center">
-        <p className={`text-sm ${theme.textSubtle} leading-relaxed`}>
+        <p className={`text-sm ${theme.textSubtle} leading-relaxed`} style={fonts.body}>
           Make sure you trust <span className={`font-medium ${theme.text}`}>{appName}</span>.
           <br />
           By connecting, you may be sharing sensitive account permissions.
@@ -44,6 +44,7 @@ export function ActionButtons({
             variant="ghost"
             onClick={onDecline}
             className={`w-full sm:w-auto px-6 py-2 border ${theme.cardBorder} ${theme.text} hover:bg-red-500/10 hover:text-red-400 hover:border-red-400/30`}
+            style={fonts.heading}
             disabled={isLoading}
           >
             {declineText}
@@ -57,6 +58,7 @@ export function ActionButtons({
           <Button
             onClick={onSubmit}
             className={`w-full sm:w-auto px-6 py-2 ${error ? 'bg-red-500/20 border-red-500/30 text-red-400' : `${theme.accentBg} ${theme.accentHover}`} border-0 flex items-center justify-center gap-2`}
+            style={fonts.heading}
             disabled={isLoading}
           >
             {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}

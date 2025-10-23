@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { theme } from './theme';
+import { theme, fonts } from './theme';
 import { App } from '@/types/developer-dashboard/appTypes';
 import { Logo } from '@/components/shared/ui/Logo';
 
@@ -21,20 +21,12 @@ export function ConnectAppHeader({ app }: ConnectAppHeaderProps) {
         >
           <Logo logo={app.logo} alt={app.name} className="w-8 h-8 sm:w-10 sm:h-10" />
         </div>
-        <div className="flex-1 text-center sm:text-left min-w-0">
+        <div className="flex-1 min-w-0 text-center sm:text-left">
           <h2 className={`text-lg sm:text-xl font-bold ${theme.text} break-words`}>{app.name}</h2>
           {app.description && (
             <p
-              className={`text-xs sm:text-sm ${theme.textMuted} mt-1`}
-              style={{
-                display: '-webkit-box',
-                WebkitLineClamp: 3,
-                WebkitBoxOrient: 'vertical',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                wordBreak: 'break-word',
-                maxWidth: '100%',
-              }}
+              className={`text-xs sm:text-sm ${theme.textMuted} mt-1 break-words line-clamp-3`}
+              style={{ ...fonts.body, wordBreak: 'break-word', overflowWrap: 'anywhere' }}
             >
               {app.description}
             </p>
