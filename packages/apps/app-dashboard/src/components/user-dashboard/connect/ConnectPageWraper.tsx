@@ -20,6 +20,7 @@ import { useUriPrecheck } from '@/hooks/user-dashboard/connect/useUriPrecheck';
 import { useFetchUserPermissions } from '@/hooks/user-dashboard/dashboard/useFetchUserPermissions';
 import { useAgentPkpForApp } from '@/hooks/user-dashboard/useAgentPkpForApp';
 import useReadAuthInfo from '@/hooks/user-dashboard/useAuthInfo';
+import { hasConfigurablePolicies } from '@/utils/user-dashboard/hasConfigurablePolicies';
 
 type ViewMode = 'consent' | 'edit-permissions' | 'update-version';
 
@@ -171,6 +172,8 @@ export function ConnectPageWrapper() {
     }
     // Check for existing user permissions
     else if (isPermitted === true && permittedVersion && versionData) {
+      const hasPolicies = hasConfigurablePolicies(data, permittedVersion, appId);
+
       // Toggle between consent, edit permissions, and update version views
       if (viewMode === 'edit-permissions') {
         content = (
@@ -204,6 +207,7 @@ export function ConnectPageWrapper() {
             activeVersionData={activeVersionData}
             readAuthInfo={{ authInfo, sessionSigs, isProcessing, error }}
             agentPKP={agentPKP!}
+            hasConfigurablePolicies={hasPolicies}
             onEditPermissions={() => setViewMode('edit-permissions')}
             onUpdateVersion={() => setViewMode('update-version')}
           />

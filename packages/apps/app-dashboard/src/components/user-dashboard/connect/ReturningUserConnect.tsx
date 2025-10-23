@@ -20,6 +20,7 @@ type ReturningUserConnectProps = {
   activeVersionData?: AppVersion;
   readAuthInfo: ReadAuthInfo;
   agentPKP: IRelayPKP;
+  hasConfigurablePolicies: boolean;
   onEditPermissions: () => void;
   onUpdateVersion: () => void;
 };
@@ -31,6 +32,7 @@ export function ReturningUserConnect({
   activeVersionData,
   readAuthInfo,
   agentPKP,
+  hasConfigurablePolicies,
   onEditPermissions,
   onUpdateVersion,
 }: ReturningUserConnectProps) {
@@ -195,18 +197,29 @@ export function ReturningUserConnect({
                     icon={<RefreshCw className="w-4 h-4" style={{ color: theme.brandOrange }} />}
                     iconBg="bg-orange-500/20"
                     title="Update to Latest Version"
-                    description="Recommended - Get access to the latest features and improvements"
+                    description="Recommended for the latest features and improvements"
                     onClick={handleUpdateVersion}
                   />
                 )}
-                {/* Edit Parameters Option - Show when version is enabled */}
-                <ActionCard
-                  icon={<Settings className="w-4 h-4" style={{ color: theme.brandOrange }} />}
-                  iconBg="bg-orange-500/20"
-                  title="Edit Permissions"
-                  description="Review or modify app permissions and settings"
-                  onClick={handleEditParameters}
-                />
+                {/* Edit Parameters Option - Show when there are configurable policies */}
+                {hasConfigurablePolicies ? (
+                  <ActionCard
+                    icon={<Settings className="w-4 h-4" style={{ color: theme.brandOrange }} />}
+                    iconBg="bg-orange-500/20"
+                    title="Edit Permissions"
+                    description="Review or modify app permissions and settings"
+                    onClick={handleEditParameters}
+                  />
+                ) : (
+                  /* Manage App Option - Show when no configurable policies */
+                  <ActionCard
+                    icon={<Settings className="w-4 h-4" style={{ color: theme.brandOrange }} />}
+                    iconBg="bg-orange-500/20"
+                    title="Manage App"
+                    description="View app details or unpermit this app"
+                    onClick={() => navigate(`/user/appId/${appData.appId}`)}
+                  />
+                )}
               </>
             )}
 

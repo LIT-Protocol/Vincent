@@ -1,22 +1,24 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import * as Sentry from '@sentry/react';
-import { getClient, PermissionData } from '@lit-protocol/vincent-contracts-sdk';
+import { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
 import { IRelayPKP } from '@lit-protocol/types';
-import { ConnectInfoMap } from '@/hooks/user-dashboard/connect/useConnectInfo';
-import { useFormatUserPermissions } from '@/hooks/user-dashboard/dashboard/useFormatUserPermissions';
+import { getClient, PermissionData } from '@lit-protocol/vincent-contracts-sdk';
+
 import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
 import { PolicyFormRef } from '../connect/ui/PolicyForm';
-import { ReadAuthInfo } from '@/hooks/user-dashboard/useAuthInfo';
-import { useAddPermittedActions } from '@/hooks/user-dashboard/connect/useAddPermittedActions';
+import { StatusCard } from '../connect/ui/StatusCard';
+import { AppPermissionDashboardHeader } from './ui/AppPermissionDashboardHeader';
 import { PermittedAppInfo } from './ui/PermittedAppInfo';
 import { UserPermissionButtons } from './ui/UserPermissionButtons';
-import { StatusCard } from '../connect/ui/StatusCard';
-import { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
-import { litNodeClient } from '@/utils/user-dashboard/lit';
-import { AppPermissionDashboardHeader } from './ui/AppPermissionDashboardHeader';
+import { useAddPermittedActions } from '@/hooks/user-dashboard/connect/useAddPermittedActions';
+import { ConnectInfoMap } from '@/hooks/user-dashboard/connect/useConnectInfo';
 import { useJwtRedirect } from '@/hooks/user-dashboard/connect/useJwtRedirect';
 import { useUrlRedirectUri } from '@/hooks/user-dashboard/connect/useUrlRedirectUri';
+import { useFormatUserPermissions } from '@/hooks/user-dashboard/dashboard/useFormatUserPermissions';
+import { ReadAuthInfo } from '@/hooks/user-dashboard/useAuthInfo';
 import { AppVersion } from '@/types/developer-dashboard/appTypes';
+import { hasConfigurablePolicies } from '@/utils/user-dashboard/hasConfigurablePolicies';
+import { litNodeClient } from '@/utils/user-dashboard/lit';
 
 interface AppPermissionPageProps {
   connectInfoMap: ConnectInfoMap;
@@ -37,6 +39,11 @@ export function AppPermissionPage({
   appVersionsMap,
   onBackToConsent,
 }: AppPermissionPageProps) {
+  const appIdString = connectInfoMap.app.appId.toString();
+  const permittedVersion = permittedAppVersions[appIdString];
+
+  // Check if there are any configurable policies
+  const hasPolicies = hasConfigurablePolicies(connectInfoMap, permittedVersion, appIdString);
   const [localError, setLocalError] = useState<string | null>(null);
   const [localStatus, setLocalStatus] = useState<string | null>(null);
   const [localSuccess, setLocalSuccess] = useState<string | null>(null);
@@ -64,9 +71,6 @@ export function AppPermissionPage({
       }, 2000);
     }
   }, [redirectUrl, localSuccess, executeRedirect]);
-
-  const appIdString = connectInfoMap.app.appId.toString();
-  const permittedVersion = permittedAppVersions[appIdString];
 
   const { formData, handleFormChange, selectedPolicies, handlePolicySelectionChange } =
     useFormatUserPermissions(connectInfoMap, existingData, Number(permittedVersion));
@@ -353,6 +357,7 @@ export function AppPermissionPage({
           isGranting={isGranting}
           isUnpermitting={isUnpermitting}
           error={error || localError}
+          hasConfigurablePolicies={hasPolicies}
         />
       </div>
 

@@ -11,6 +11,7 @@ interface UserPermissionButtonsProps {
   isGranting?: boolean; // For Grant Permissions spinner/text
   isUnpermitting?: boolean; // For Unpermit button spinner/text
   error?: string | null;
+  hasConfigurablePolicies?: boolean;
 }
 
 export function UserPermissionButtons({
@@ -21,6 +22,7 @@ export function UserPermissionButtons({
   isGranting = false,
   isUnpermitting = false,
   error,
+  hasConfigurablePolicies = true,
 }: UserPermissionButtonsProps) {
   return (
     <div className="space-y-2">
@@ -59,20 +61,26 @@ export function UserPermissionButtons({
           </Button>
         </motion.div>
         <motion.div
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
+          whileHover={hasConfigurablePolicies ? { scale: 1.02 } : {}}
+          whileTap={hasConfigurablePolicies ? { scale: 0.98 } : {}}
           className="w-full sm:w-auto"
         >
           <Button
             onClick={onSubmit}
-            className={`w-full sm:w-auto px-6 py-2 ${error ? 'bg-red-500/20 border-red-500/30 text-red-400' : `${theme.accentBg} ${theme.accentHover}`} border-0 flex items-center justify-center gap-2`}
-            disabled={isLoading}
+            className={`w-full sm:w-auto px-6 py-2 ${error ? 'bg-red-500/20 border-red-500/30 text-red-400' : hasConfigurablePolicies ? `${theme.accentBg} ${theme.accentHover}` : 'bg-gray-500/20 border-gray-500/30 text-gray-400 cursor-not-allowed'} border-0 flex items-center justify-center gap-2`}
+            disabled={isLoading || !hasConfigurablePolicies}
             style={fonts.heading}
           >
             {isGranting && <Loader2 className="w-4 h-4 animate-spin -mt-px" />}
             {error && <AlertCircle className="w-4 h-4 -mt-px" />}
             <span className="leading-none">
-              {error ? 'Retry' : isGranting ? 'Processing...' : 'Update Permissions'}
+              {error
+                ? 'Retry'
+                : isGranting
+                  ? 'Processing...'
+                  : hasConfigurablePolicies
+                    ? 'Update Permissions'
+                    : 'No Configurable Policies'}
             </span>
           </Button>
         </motion.div>
