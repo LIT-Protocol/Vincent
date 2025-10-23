@@ -303,8 +303,8 @@ importers:
         specifier: ^5.8.0
         version: 5.8.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       sugar-sdk:
-        specifier: file:vendor/sugar-sdk-0.3.0.tgz
-        version: file:packages/apps/ability-aerodrome-swap/vendor/sugar-sdk-0.3.0.tgz(@wagmi/core@2.21.2(@tanstack/query-core@5.90.2)(@types/react@19.2.2)(immer@10.1.3)(react@19.2.0)(typescript@5.8.3)(use-sync-external-store@1.6.0(react@19.2.0))(viem@2.38.0(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)))(graphology-types@0.24.8)(viem@2.38.0(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64))
+        specifier: file:vendor/sugar-sdk-0.3.0-alpha.1.tgz
+        version: file:packages/apps/ability-aerodrome-swap/vendor/sugar-sdk-0.3.0-alpha.1.tgz(@wagmi/core@2.21.2(@tanstack/query-core@5.90.2)(@types/react@19.2.2)(immer@10.1.3)(react@19.2.0)(typescript@5.8.3)(use-sync-external-store@1.6.0(react@19.2.0))(viem@2.38.0(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)))(graphology-types@0.24.8)(viem@2.38.0(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64))
       tslib:
         specifier: 2.8.1
         version: 2.8.1
@@ -11736,9 +11736,9 @@ packages:
     peerDependencies:
       postcss: ^8.4.32
 
-  sugar-sdk@file:packages/apps/ability-aerodrome-swap/vendor/sugar-sdk-0.3.0.tgz:
-    resolution: {integrity: sha512-fkw2KCi76O953aPSH5UFsjABF45pwL4WTOVIv+X0g9OM+m6Z7pe1jl5Up96+WNkiONHiTsExGOqoP3VrynVBPw==, tarball: file:packages/apps/ability-aerodrome-swap/vendor/sugar-sdk-0.3.0.tgz}
-    version: 0.3.0
+  sugar-sdk@file:packages/apps/ability-aerodrome-swap/vendor/sugar-sdk-0.3.0-alpha.1.tgz:
+    resolution: {integrity: sha512-u+IHdfwgzsrMOHObv0wsUyhaKvSm8/pVPEYSE+iKgfd63N50sB18aHpEoAfkE5ZZ7lTljEDVMsB5ATncxDyFTg==, tarball: file:packages/apps/ability-aerodrome-swap/vendor/sugar-sdk-0.3.0-alpha.1.tgz}
+    version: 0.3.0-alpha.1
     peerDependencies:
       '@wagmi/core': ^2.0.0
       viem: ^2.x
@@ -28374,7 +28374,7 @@ snapshots:
       postcss: 8.5.6
       postcss-selector-parser: 7.1.0
 
-  sugar-sdk@file:packages/apps/ability-aerodrome-swap/vendor/sugar-sdk-0.3.0.tgz(@wagmi/core@2.21.2(@tanstack/query-core@5.90.2)(@types/react@19.2.2)(immer@10.1.3)(react@19.2.0)(typescript@5.8.3)(use-sync-external-store@1.6.0(react@19.2.0))(viem@2.38.0(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)))(graphology-types@0.24.8)(viem@2.38.0(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)):
+  sugar-sdk@file:packages/apps/ability-aerodrome-swap/vendor/sugar-sdk-0.3.0-alpha.1.tgz(@wagmi/core@2.21.2(@tanstack/query-core@5.90.2)(@types/react@19.2.2)(immer@10.1.3)(react@19.2.0)(typescript@5.8.3)(use-sync-external-store@1.6.0(react@19.2.0))(viem@2.38.0(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)))(graphology-types@0.24.8)(viem@2.38.0(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)):
     dependencies:
       '@wagmi/core': 2.21.2(@tanstack/query-core@5.90.2)(@types/react@19.2.2)(immer@10.1.3)(react@19.2.0)(typescript@5.8.3)(use-sync-external-store@1.4.0(react@19.2.0))(viem@2.38.0(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64))
       graphology: 0.25.4(graphology-types@0.24.8)
