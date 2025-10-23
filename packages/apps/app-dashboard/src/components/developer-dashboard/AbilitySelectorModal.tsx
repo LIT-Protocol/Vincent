@@ -163,6 +163,21 @@ export function AbilitySelectorModal({
             {existingAbilities.length > 0 &&
               ` (${existingAbilities.length} abilities already added)`}
           </DialogDescription>
+          <div
+            className="mt-3 p-2.5 rounded-lg text-xs"
+            style={{
+              backgroundColor: 'rgba(255, 66, 5, 0.08)',
+              border: '1px solid rgba(255, 66, 5, 0.2)',
+              ...fonts.body,
+            }}
+          >
+            <span style={{ color: theme.brandOrange, fontWeight: 600 }}>Note:</span>{' '}
+            <span className={theme.text}>
+              Don't see your Ability? Abilities with the{' '}
+              <span style={{ color: theme.brandOrange, fontWeight: 500 }}>dev</span> deployment
+              status aren't shown here!
+            </span>
+          </div>
         </DialogHeader>
 
         <div className={`flex-1 min-h-0 border ${theme.mainCardBorder} rounded-lg overflow-hidden`}>
