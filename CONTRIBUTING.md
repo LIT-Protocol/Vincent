@@ -183,9 +183,10 @@ Currently, `packages/apps/registry-backend` specifies version numbers for the lo
 ```
 
 3. Run `pnpm clean && pnpm i && pnpm build`
-4. Run `pnpm nx release --skip-publish --dry-run` and verify the output is expected
-5. Run `pnpm nx release --skip-publish` to consume the version plans, bump the version in the `package.json` files, and generate the `CHANGELOG.md` files for each package
-6. Run the following to publish the packages, excluding the `registry-sdk` package:
+4. Commit generated files and `pnpm-lock.yaml` with the commit message: `chore: pnpm i && pnpm build`
+5. Run `pnpm nx release --skip-publish --dry-run` and verify the output is expected
+6. Run `pnpm nx release --skip-publish` to consume the version plans, bump the version in the `package.json` files, and generate the `CHANGELOG.md` files for each package
+7. Run the following to publish the packages, excluding the `registry-sdk` package:
 
 Make sure to replace `YOUR_OTP` with your one-time password.
 
