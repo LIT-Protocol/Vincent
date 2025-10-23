@@ -25,6 +25,7 @@ interface AppPermissionPageProps {
   existingData: PermissionData;
   permittedAppVersions: Record<string, string>;
   appVersionsMap: Record<string, AppVersion[]>;
+  onBackToConsent?: () => void;
 }
 
 export function AppPermissionPage({
@@ -34,6 +35,7 @@ export function AppPermissionPage({
   existingData,
   permittedAppVersions,
   appVersionsMap,
+  onBackToConsent,
 }: AppPermissionPageProps) {
   const [localError, setLocalError] = useState<string | null>(null);
   const [localStatus, setLocalStatus] = useState<string | null>(null);
@@ -346,6 +348,7 @@ export function AppPermissionPage({
         <UserPermissionButtons
           onUnpermit={handleUnpermit}
           onSubmit={handleSubmit}
+          onBackToConsent={onBackToConsent}
           isLoading={isLoading}
           isGranting={isGranting}
           isUnpermitting={isUnpermitting}

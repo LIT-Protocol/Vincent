@@ -1,11 +1,12 @@
 import { motion } from 'framer-motion';
 import { Button } from '@/components/shared/ui/button';
-import { AlertCircle, Loader2 } from 'lucide-react';
+import { AlertCircle, Loader2, ArrowLeft } from 'lucide-react';
 import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
 
 interface UserPermissionButtonsProps {
   onUnpermit?: () => void;
   onSubmit: () => void;
+  onBackToConsent?: () => void;
   isLoading?: boolean; // For disabled state (includes success states)
   isGranting?: boolean; // For Grant Permissions spinner/text
   isUnpermitting?: boolean; // For Unpermit button spinner/text
@@ -15,6 +16,7 @@ interface UserPermissionButtonsProps {
 export function UserPermissionButtons({
   onUnpermit,
   onSubmit,
+  onBackToConsent,
   isLoading = false,
   isGranting = false,
   isUnpermitting = false,
@@ -22,6 +24,21 @@ export function UserPermissionButtons({
 }: UserPermissionButtonsProps) {
   return (
     <div className="space-y-2">
+      {/* Back to Sign In button - only show when callback is provided */}
+      {onBackToConsent && (
+        <div className="flex justify-center mb-2">
+          <Button
+            variant="ghost"
+            onClick={onBackToConsent}
+            className={`px-4 py-2 ${theme.text} hover:bg-orange-500/10 flex items-center gap-2`}
+            disabled={isLoading}
+            style={fonts.heading}
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Back to Sign In</span>
+          </Button>
+        </div>
+      )}
       <div className="flex flex-col sm:flex-row justify-center gap-2">
         <motion.div
           whileHover={{ scale: 1.02 }}

@@ -24,7 +24,7 @@ export function InfoBanner({
         ? Info
         : AlertTriangle;
 
-  let bgClass, iconClass;
+  let bgClass, iconClass, iconStyle, containerStyle;
   if (isRed) {
     bgClass = 'bg-red-50 border-red-300 dark:bg-red-500/10 dark:border-red-500/30';
     iconClass = 'text-red-700 dark:text-red-400';
@@ -32,8 +32,12 @@ export function InfoBanner({
     bgClass = 'bg-blue-50 border-blue-300 dark:bg-blue-500/10 dark:border-blue-500/30';
     iconClass = 'text-blue-700 dark:text-blue-400';
   } else if (isOrange) {
-    bgClass = 'bg-orange-50 border-orange-300 dark:bg-orange-500/10 dark:border-orange-500/30';
-    iconClass = 'text-orange-700 dark:text-orange-400';
+    // Use brand orange colors
+    containerStyle = {
+      backgroundColor: `${theme.brandOrange}10`, // 10% opacity
+      borderColor: `${theme.brandOrange}30`, // 30% opacity
+    };
+    iconStyle = { color: theme.brandOrange };
   } else if (isSuccess) {
     bgClass = theme.successBg;
     iconClass = theme.successText;
@@ -43,9 +47,9 @@ export function InfoBanner({
   }
 
   return (
-    <div className={`rounded-lg p-3 border ${bgClass}`}>
+    <div className={`rounded-lg p-3 border ${bgClass}`} style={containerStyle}>
       <div className="flex items-center gap-3">
-        <Icon className={`w-5 h-5 ${iconClass}`} />
+        <Icon className={`w-5 h-5 ${iconClass || ''}`} style={iconStyle} />
         <div>
           <p
             className={`text-sm font-medium ${theme.text}`}

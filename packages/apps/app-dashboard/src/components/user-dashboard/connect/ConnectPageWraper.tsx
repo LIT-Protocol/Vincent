@@ -1,23 +1,31 @@
+import { useState } from 'react';
 import { useParams } from 'react-router';
-import { ConnectPage } from './ConnectPage';
-import { UnifiedConnectSkeleton } from './UnifiedConnectSkeleton';
-import { GeneralErrorScreen } from './GeneralErrorScreen';
-import { BadRedirectUriError } from './BadRedirectUriError';
-import { AuthConnectScreen } from './AuthConnectScreen';
-import { useConnectInfo } from '@/hooks/user-dashboard/connect/useConnectInfo';
-import { useCheckAppVersionExists } from '@/hooks/user-dashboard/connect/useCheckAppVersionExists';
-import useReadAuthInfo from '@/hooks/user-dashboard/useAuthInfo';
-import { useAgentPkpForApp } from '@/hooks/user-dashboard/useAgentPkpForApp';
 import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
-import { ReturningUserConnect } from './ReturningUserConnect';
-import { AppVersionNotInRegistryConnect } from './AppVersionNotInRegistry';
-import { useUriPrecheck } from '@/hooks/user-dashboard/connect/useUriPrecheck';
-import { RepermitConnect } from './RepermitConnect';
-import { DisabledVersionConnect } from './DisabledVersionConnect';
+
 import { AppUnavailableConnect } from './AppUnavailableConnect';
+import { AppVersionNotInRegistryConnect } from './AppVersionNotInRegistry';
+import { AuthConnectScreen } from './AuthConnectScreen';
+import { BadRedirectUriError } from './BadRedirectUriError';
+import { ConnectPage } from './ConnectPage';
+import { DisabledVersionConnect } from './DisabledVersionConnect';
+import { EditPermissionsCard } from './EditPermissionsCard';
+import { GeneralErrorScreen } from './GeneralErrorScreen';
+import { RepermitConnect } from './RepermitConnect';
+import { ReturningUserConnect } from './ReturningUserConnect';
+import { UnifiedConnectSkeleton } from './UnifiedConnectSkeleton';
+import { UpdateVersionCard } from './UpdateVersionCard';
+import { useCheckAppVersionExists } from '@/hooks/user-dashboard/connect/useCheckAppVersionExists';
+import { useConnectInfo } from '@/hooks/user-dashboard/connect/useConnectInfo';
+import { useUriPrecheck } from '@/hooks/user-dashboard/connect/useUriPrecheck';
+import { useFetchUserPermissions } from '@/hooks/user-dashboard/dashboard/useFetchUserPermissions';
+import { useAgentPkpForApp } from '@/hooks/user-dashboard/useAgentPkpForApp';
+import useReadAuthInfo from '@/hooks/user-dashboard/useAuthInfo';
+
+type ViewMode = 'consent' | 'edit-permissions' | 'update-version';
 
 export function ConnectPageWrapper() {
   const { appId } = useParams();
+  const [viewMode, setViewMode] = useState<ViewMode>('consent');
 
   const { authInfo, sessionSigs, isProcessing, error } = useReadAuthInfo();
   const {
@@ -28,7 +36,15 @@ export function ConnectPageWrapper() {
     error: agentPKPError,
   } = useAgentPkpForApp(authInfo?.userPKP?.ethAddress, appId ? Number(appId) : undefined);
 
-  const { isLoading, isError, errors, data } = useConnectInfo(appId || '');
+  const versionsToFetch =
+    viewMode === 'edit-permissions' && permittedVersion ? [permittedVersion] : undefined;
+  const useActiveVersion = viewMode !== 'edit-permissions';
+
+  const { isLoading, isError, errors, data } = useConnectInfo(
+    appId || '',
+    versionsToFetch,
+    useActiveVersion,
+  );
   const {
     appExists,
     activeVersionExists,
@@ -70,6 +86,12 @@ export function ConnectPageWrapper() {
     ? data.versionsByApp[appId!]?.find((v) => v.version === data.app.activeVersion)
     : undefined;
 
+  // Fetch user permissions data (only when user is permitted and editing permissions)
+  const { existingData, isLoading: isExistingDataLoading } = useFetchUserPermissions({
+    appId: Number(appId),
+    pkpEthAddress: agentPKP?.ethAddress || '',
+  });
+
   // Wait for ALL critical data to load before making routing decisions
   const isUserAuthed = authInfo?.userPKP && sessionSigs;
 
@@ -82,7 +104,9 @@ export function ConnectPageWrapper() {
     !isProcessing &&
     // Only wait for version check and agent PKP loading if user is authenticated
     (isUserAuthed ? !actualIsVersionCheckLoading && !agentPKPLoading : true) &&
-    (!permittedVersion || !versionDataLoading);
+    (!permittedVersion || !versionDataLoading) &&
+    // When showing edit permissions, also wait for permissions data
+    (viewMode !== 'edit-permissions' || !isExistingDataLoading);
 
   // Now make routing decisions with complete information
   let content;
@@ -94,12 +118,13 @@ export function ConnectPageWrapper() {
     content = <GeneralErrorScreen errorDetails={errorMessage} />;
   } else if (!isAllDataLoaded) {
     content = <UnifiedConnectSkeleton mode={isUserAuthed ? 'consent' : 'auth'} />;
-  } else if (isRedirectUriAuthorized === false && redirectUri) {
+  } else if (!redirectUri) {
     content = (
-      <BadRedirectUriError
-        redirectUri={redirectUri || undefined}
-        authorizedUris={data.app?.redirectUris}
-      />
+      <GeneralErrorScreen errorDetails="No redirect URI provided. This page is for app authentication flow only." />
+    );
+  } else if (isRedirectUriAuthorized === false) {
+    content = (
+      <BadRedirectUriError redirectUri={redirectUri} authorizedUris={data.app?.redirectUris} />
     );
   }
   // Check for unpublished app version (check this early, before auth)
@@ -146,17 +171,44 @@ export function ConnectPageWrapper() {
     }
     // Check for existing user permissions
     else if (isPermitted === true && permittedVersion && versionData) {
-      content = (
-        <ReturningUserConnect
-          appData={data.app}
-          version={permittedVersion}
-          versionData={versionData}
-          activeVersionData={activeVersionData}
-          redirectUri={redirectUri || undefined}
-          readAuthInfo={{ authInfo, sessionSigs, isProcessing, error }}
-          agentPKP={agentPKP!}
-        />
-      );
+      // Toggle between consent, edit permissions, and update version views
+      if (viewMode === 'edit-permissions') {
+        content = (
+          <EditPermissionsCard
+            connectInfoMap={data}
+            readAuthInfo={{ authInfo, sessionSigs, isProcessing, error }}
+            agentPKP={agentPKP!}
+            existingData={existingData}
+            permittedVersion={permittedVersion}
+            redirectUri={redirectUri}
+            onBackToConsent={() => setViewMode('consent')}
+          />
+        );
+      } else if (viewMode === 'update-version') {
+        content = (
+          <UpdateVersionCard
+            connectInfoMap={data}
+            readAuthInfo={{ authInfo, sessionSigs, isProcessing, error }}
+            agentPKP={agentPKP!}
+            currentVersion={permittedVersion}
+            redirectUri={redirectUri}
+            onBackToConsent={() => setViewMode('consent')}
+          />
+        );
+      } else {
+        content = (
+          <ReturningUserConnect
+            appData={data.app}
+            version={permittedVersion}
+            versionData={versionData}
+            activeVersionData={activeVersionData}
+            readAuthInfo={{ authInfo, sessionSigs, isProcessing, error }}
+            agentPKP={agentPKP!}
+            onEditPermissions={() => setViewMode('edit-permissions')}
+            onUpdateVersion={() => setViewMode('update-version')}
+          />
+        );
+      }
     }
     // Check if both user's version and active version are disabled - app is unavailable
     else if (

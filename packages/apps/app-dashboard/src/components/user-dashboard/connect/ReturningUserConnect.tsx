@@ -1,25 +1,27 @@
-import { useJwtRedirect } from '@/hooks/user-dashboard/connect/useJwtRedirect';
-import { IRelayPKP } from '@lit-protocol/types';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Settings, ArrowRight, RefreshCw } from 'lucide-react';
-import { theme } from '@/components/user-dashboard/connect/ui/theme';
+import { IRelayPKP } from '@lit-protocol/types';
+
+import { ActionCard } from './ui/ActionCard';
 import { ConnectAppHeader } from './ui/ConnectAppHeader';
 import { ConnectPageHeader } from './ui/ConnectPageHeader';
 import { InfoBanner } from './ui/InfoBanner';
-import { ActionCard } from './ui/ActionCard';
-import { useNavigate } from 'react-router-dom';
+import { theme } from './ui/theme';
+import { useCanGoBack } from '@/hooks/user-dashboard/connect/useCanGoBack';
+import { useJwtRedirect } from '@/hooks/user-dashboard/connect/useJwtRedirect';
 import { ReadAuthInfo } from '@/hooks/user-dashboard/useAuthInfo';
 import { App, AppVersion } from '@/types/developer-dashboard/appTypes';
-import { useState, useEffect } from 'react';
-import { useCanGoBack } from '@/hooks/user-dashboard/connect/useCanGoBack';
 
 type ReturningUserConnectProps = {
   appData: App;
   version: number;
   versionData: AppVersion;
   activeVersionData?: AppVersion;
-  redirectUri?: string;
   readAuthInfo: ReadAuthInfo;
   agentPKP: IRelayPKP;
+  onEditPermissions: () => void;
+  onUpdateVersion: () => void;
 };
 
 export function ReturningUserConnect({
@@ -27,9 +29,10 @@ export function ReturningUserConnect({
   version,
   versionData,
   activeVersionData,
-  redirectUri,
   readAuthInfo,
   agentPKP,
+  onEditPermissions,
+  onUpdateVersion,
 }: ReturningUserConnectProps) {
   const navigate = useNavigate();
   const canGoBack = useCanGoBack();
@@ -49,19 +52,11 @@ export function ReturningUserConnect({
   }, [redirectUrl, localSuccess, executeRedirect]);
 
   const handleEditParameters = () => {
-    const url = `/user/appId/${appData.appId}`;
-    const urlWithParams = redirectUri
-      ? `${url}?redirectUri=${encodeURIComponent(redirectUri)}`
-      : url;
-    navigate(urlWithParams);
+    onEditPermissions();
   };
 
   const handleUpdateVersion = () => {
-    const url = `/user/appId/${appData.appId}/update-version`;
-    const urlWithParams = redirectUri
-      ? `${url}?redirectUri=${encodeURIComponent(redirectUri)}`
-      : url;
-    navigate(urlWithParams);
+    onUpdateVersion();
   };
 
   const handleContinue = async () => {
