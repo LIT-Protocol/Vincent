@@ -65,10 +65,7 @@ export function FeaturedApps({ apps, onNavigate }: FeaturedAppsProps) {
               <div
                 className="absolute inset-0 z-10"
                 style={{
-                  background: `linear-gradient(to top, ${
-                    // Use lighter theme colors for gradient
-                    'rgba(255, 66, 5, 0.85)'
-                  } 0%, ${'rgba(255, 66, 5, 0.7)'} 15%, ${'rgba(255, 66, 5, 0.4)'} 30%, transparent 50%, transparent 100%)`,
+                  background: `linear-gradient(to top, ${'rgba(255, 66, 5, 0.85)'} 0%, ${'rgba(255, 66, 5, 0.7)'} 15%, ${'rgba(255, 66, 5, 0.4)'} 30%, transparent 50%, transparent 100%)`,
                 }}
               />
 
@@ -88,10 +85,10 @@ export function FeaturedApps({ apps, onNavigate }: FeaturedAppsProps) {
             <div className="absolute bottom-0 left-0 right-0 p-8 z-20">
               <div className="flex items-start justify-between mb-3">
                 <div className="flex-1">
-                  <h3 className="text-2xl font-semibold text-white mb-2" style={fonts.heading}>
+                  <h3 className={`text-2xl font-semibold ${theme.text} mb-2`} style={fonts.heading}>
                     {app.name}
                   </h3>
-                  <p className="text-white/80 text-sm line-clamp-2" style={fonts.body}>
+                  <p className={`${theme.text} text-sm line-clamp-2 opacity-80`} style={fonts.body}>
                     {app.description || 'No description available'}
                   </p>
                 </div>
@@ -99,13 +96,13 @@ export function FeaturedApps({ apps, onNavigate }: FeaturedAppsProps) {
 
               <div className="flex items-center gap-3">
                 <span
-                  className="px-3 py-1 rounded-full text-xs font-medium bg-white/20 text-white backdrop-blur-sm border border-white/30"
+                  className={`px-3 py-1 rounded-full text-xs font-medium ${theme.bg} ${theme.text} backdrop-blur-sm ${theme.cardBorder} border`}
                   style={fonts.heading}
                 >
                   v{app.activeVersion}
                 </span>
                 <span
-                  className="px-3 py-1 rounded-full text-xs font-medium bg-white/20 text-white backdrop-blur-sm border border-white/30"
+                  className={`px-3 py-1 rounded-full text-xs font-medium ${theme.bg} ${theme.text} backdrop-blur-sm ${theme.cardBorder} border`}
                   style={fonts.heading}
                 >
                   {app.deploymentStatus === 'prod'

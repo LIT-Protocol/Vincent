@@ -44,7 +44,7 @@ export function VincentYieldModal({ onClose }: VincentYieldModalProps) {
 
         <DialogHeader className={`px-4 sm:px-6 pt-6 pb-4`}>
           {/* Logo and Title */}
-          <div className="flex items-center gap-3 mb-4">
+          <div className="flex flex-col sm:flex-row items-center gap-3 mb-4">
             <div
               className="w-16 h-16 rounded-lg flex items-center justify-center flex-shrink-0"
               style={{
@@ -53,7 +53,7 @@ export function VincentYieldModal({ onClose }: VincentYieldModalProps) {
             >
               <Sparkles className="w-8 h-8 text-white" />
             </div>
-            <div className="flex flex-col justify-center min-w-0 flex-1">
+            <div className="flex flex-col justify-center min-w-0 flex-1 text-center sm:text-left">
               <DialogTitle
                 className={`text-base font-semibold leading-tight ${theme.text}`}
                 style={fonts.heading}
@@ -67,7 +67,7 @@ export function VincentYieldModal({ onClose }: VincentYieldModalProps) {
           </div>
 
           <DialogDescription
-            className={`${theme.textMuted} text-xs leading-relaxed`}
+            className={`${theme.textMuted} text-xs leading-relaxed text-center sm:text-left`}
             style={fonts.body}
           >
             Vincent powers the next wave of user-owned finance and agent-driven automation for Web3.
