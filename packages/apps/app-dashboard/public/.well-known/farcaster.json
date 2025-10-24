@@ -1,0 +1,20 @@
+{
+  "miniapp": {
+    "version": "1",
+    "name": "Vincent",
+    "homeUrl": "https://dashboard.heyvincent.ai",
+    "iconUrl": "https://dashboard.heyvincent.ai/internal-logos/farcaster-v-logo.png",
+    "splashImageUrl": "https://dashboard.heyvincent.ai/internal-logos/splash-screen.png",
+    "splashBackgroundColor": "#000000",
+    "subtitle": "User-owned automation",
+    "description": "Control delegated permissions for Web3 apps. Vincent powers user-owned finance and agent-driven automation.",
+    "primaryCategory": "finance",
+    "tags": ["automation", "web3", "defi", "delegation"],
+    "heroImageUrl": "https://dashboard.heyvincent.ai/internal-logos/farcaster-v-logo.png",
+    "tagline": "Control your automation",
+    "ogTitle": "Vincent - Delegation Platform",
+    "ogDescription": "Control delegated permissions for Web3 apps and automate your onchain assets securely.",
+    "ogImageUrl": "https://dashboard.heyvincent.ai/internal-logos/farcaster-v-logo.png",
+    "noindex": false
+  }
+}

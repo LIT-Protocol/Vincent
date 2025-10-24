@@ -46,7 +46,7 @@ export function ConnectToVincentYieldModal({ agentPKP }: ConnectToVincentYieldMo
         onPointerDownOutside={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => e.preventDefault()}
       >
-        {/* NEW badge */}
+        {/* REQUIRED badge */}
         <div
           className="absolute top-4 right-4 px-2 py-1 rounded-md text-xs font-bold tracking-wide z-10"
           style={{
@@ -60,7 +60,7 @@ export function ConnectToVincentYieldModal({ agentPKP }: ConnectToVincentYieldMo
 
         <DialogHeader className={`px-4 sm:px-6 pt-6 pb-4`}>
           {/* Logo and Title */}
-          <div className="flex items-center gap-3 mb-4">
+          <div className="flex items-center gap-3 mb-4 pr-20">
             <div
               className="w-16 h-16 rounded-lg flex items-center justify-center flex-shrink-0"
               style={{
@@ -71,7 +71,7 @@ export function ConnectToVincentYieldModal({ agentPKP }: ConnectToVincentYieldMo
             </div>
             <div className="flex flex-col justify-center min-w-0 flex-1">
               <DialogTitle
-                className={`text-base font-semibold leading-tight ${theme.text}`}
+                className={`text-base font-semibold leading-tight ${theme.text} break-words`}
                 style={fonts.heading}
               >
                 Connect to Vincent Yield

@@ -37,8 +37,8 @@ export function VincentYieldPromotionCard({ index = 0 }: VincentYieldPromotionCa
 
         <CardContent className="p-4 flex flex-col gap-3">
           {/* Top section - Logo and Title */}
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex items-center gap-3 min-w-0 flex-1">
+          <div className="flex flex-col sm:flex-row items-center sm:items-start justify-between gap-3">
+            <div className="flex flex-col sm:flex-row items-center gap-3 min-w-0 flex-1 w-full sm:w-auto">
               <div
                 className="w-16 h-16 rounded-lg flex items-center justify-center flex-shrink-0"
                 style={{
@@ -47,7 +47,7 @@ export function VincentYieldPromotionCard({ index = 0 }: VincentYieldPromotionCa
               >
                 <Sparkles className="w-8 h-8 text-white" />
               </div>
-              <div className="flex flex-col justify-center min-w-0 flex-1">
+              <div className="flex flex-col justify-center min-w-0 flex-1 text-center sm:text-left">
                 <h3
                   className={`text-base font-semibold leading-tight ${theme.text}`}
                   style={fonts.heading}
@@ -62,7 +62,10 @@ export function VincentYieldPromotionCard({ index = 0 }: VincentYieldPromotionCa
           </div>
 
           {/* Description */}
-          <div className={`text-xs ${theme.textMuted} leading-relaxed`} style={fonts.body}>
+          <div
+            className={`text-xs ${theme.textMuted} leading-relaxed text-center sm:text-left`}
+            style={fonts.body}
+          >
             Vincent powers the next wave of user-owned finance and agent-driven automation for Web3.
             Deposit at least 50 USDC on Base Mainnet to get started.
           </div>
