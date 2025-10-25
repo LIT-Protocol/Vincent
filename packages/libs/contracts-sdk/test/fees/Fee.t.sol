@@ -134,4 +134,34 @@ contract FeeTest is Test {
         vm.stopPrank();
         assertEq(feeAdminFacet.performanceFeePercentage(), NEW_PERFORMANCE_FEE_PERCENTAGE);
     }
+
+    function testSetLitAppFeeSplitPercentage() public {
+        uint256 NEW_LIT_APP_FEE_SPLIT_PERCENTAGE = 5000; // 50%
+        assertNotEq(feeAdminFacet.litAppFeeSplitPercentage(), NEW_LIT_APP_FEE_SPLIT_PERCENTAGE);
+
+        // test that a non-owner cannot set the lit app fee split percentage
+        vm.expectRevert(FeeUtils.CallerNotOwner.selector);
+        feeAdminFacet.setLitAppFeeSplitPercentage(NEW_LIT_APP_FEE_SPLIT_PERCENTAGE);
+
+        // test that the owner can set the lit app fee split percentage
+        vm.startPrank(owner);
+        feeAdminFacet.setLitAppFeeSplitPercentage(NEW_LIT_APP_FEE_SPLIT_PERCENTAGE);
+        vm.stopPrank();
+        assertEq(feeAdminFacet.litAppFeeSplitPercentage(), NEW_LIT_APP_FEE_SPLIT_PERCENTAGE);
+    }
+
+    function testSetVincentAppDiamond() public {
+        address NEW_VINCENT_APP_DIAMOND = makeAddr("VincentAppDiamond");
+        assertNotEq(feeAdminFacet.vincentAppDiamond(), NEW_VINCENT_APP_DIAMOND);
+
+        // test that a non-owner cannot set the vincent app diamond
+        vm.expectRevert(FeeUtils.CallerNotOwner.selector);
+        feeAdminFacet.setVincentAppDiamond(NEW_VINCENT_APP_DIAMOND);
+
+        // test that the owner can set the vincent app diamond
+        vm.startPrank(owner);
+        feeAdminFacet.setVincentAppDiamond(NEW_VINCENT_APP_DIAMOND);
+        vm.stopPrank();
+        assertEq(feeAdminFacet.vincentAppDiamond(), NEW_VINCENT_APP_DIAMOND);
+    }
 }
