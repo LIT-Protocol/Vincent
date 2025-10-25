@@ -1,4 +1,9 @@
 {
+  "accountAssociation": {
+    "header": "eyJmaWQiOjEzNzAyOTksInR5cGUiOiJjdXN0b2R5Iiwia2V5IjoiMHhBMDdENTk2QTkzNDFEMkY2YkM0RWYxQmM4NmJCMGUxNWExMEQxYzk1In0",
+    "payload": "eyJkb21haW4iOiJkYXNoYm9hcmQuaGV5dmluY2VudC5haSJ9",
+    "signature": "hRgY97LoEMnZEVIoaXn8wmY8gdLHnkMUOziBNfqku/oATg8iTYr9YSAVirnFiB4wR7cOA5zc83SfVLyLpvmBshs="
+  },
   "miniapp": {
     "version": "1",
     "name": "Vincent",
