@@ -1,0 +1,504 @@
+---
+title: Aerodrome Swap
+---
+
+The Aerodrome Swap Ability enables Vincent Apps to execute token swaps using Aerodrome on behalf of Vincent Users. This allows Vincent Apps to utilize the decentralized exchange without requiring Vincent App Users having to manually approve each swap transaction.
+
+## Key Features
+
+- **Secure Token Swapping**: Executes Aerodrome swaps using Vincent Wallets within Lit Protocol's secure Trusted Execution Environment
+- **Base Network Native**: Optimized for Aerodrome's native Base network deployment
+- **Comprehensive Pre-swap Validation**: Verifies token balances, allowances, pool existence, and gas fees before execution
+- **Integrated Approval Management**: Handles ERC20 token approvals within the same ability
+- **Gas Sponsorship Support**: Optional Alchemy gas sponsorship for gasless transactions
+
+## How It Works
+
+The Aerodrome Swap Ability is built using the Vincent Ability SDK and operates with two primary actions:
+
+<Steps>
+  <Step title="Approval Action">
+    Manages ERC20 token approvals for the Aerodrome Universal Router:
+
+    - Checks if the Vincent Wallet has sufficient allowance for the Aerodrome Universal Router
+    - If allowance is insufficient, creates an approval transaction signed by the Vincent Wallet
+    - Returns the current and required allowance amounts
+    - Supports both traditional gas payment and Alchemy gas sponsorship
+
+  </Step>
+
+  <Step title="Swap Action">
+    Executes the token swap on Aerodrome:
+
+    - Validates token support on Aerodrome Base network
+    - Checks sufficient token balance and allowance
+    - Generates a swap quote using the Aerodrome Sugar SDK
+    - Creates and signs the swap transaction using the Vincent Wallet
+    - Broadcasts the transaction to Base network
+    - Returns the swap transaction hash
+    - Supports both traditional gas payment and Alchemy gas sponsorship
+
+  </Step>
+</Steps>
+
+## Getting Started
+
+Depending on your role in the Vincent Ecosystem, you'll be interacting with this Ability in different ways. Click on the link below that matches your role to see how to get started:
+
+- **Vincent App Developers**: If you're building a Vincent App that needs to execute token swaps on base using Aerodrome, go [here](#adding-the-ability-to-your-vincent-app).
+- **Vincent App Delegatees**: If you're executing token swaps on behalf of Vincent App Users, go [here](#executing-the-ability-as-a-vincent-app-delegatee).
+
+## Adding the Ability to your Vincent App
+
+If you want to enable your App Delegatees to execute token swaps on behalf of your Vincent App Users, you can add this Ability to your App.
+
+Adding Abilities to your Vincent App is done using the [Vincent App Dashboard](https://dashboard.heyvincent.ai/). Visit the [Create Vincent App](/app/quickstart) guide to learn more about how to add Abilities to your App during creation, or check out the [Updating Your App](/app/updating-apps) guide to learn how to add Abilities to an existing App.
+
+## Executing the Ability as a Vincent App Delegatee
+
+Before executing Aerodrome swap operations, the following conditions must be met. You can use the Ability's `precheck` function to check if these conditions are met, or you can check them manually.
+
+- **Token Support**: Both input and output tokens must be supported by Aerodrome on Base network.
+
+- **ERC20 Token Approval**: The Vincent App User's Vincent Wallet must have approved the Aerodrome Universal Router to spend sufficient amount of the input token.
+
+- **Token & Gas Balances**: The Vincent App User's Vincent Wallet must have sufficient balance of the input token to perform the swap, and sufficient native tokens (ETH) to pay for the swap transaction gas fees (unless using Alchemy gas sponsorship).
+
+- **Pool Existence**: A valid Aerodrome pool must exist for the specified token pair on the Base network.
+
+<Info>
+  To learn more about executing Vincent Abilities, see the [Executing
+  Abilities](/ability/explaining-abilities) guide.
+</Info>
+
+### Executing the `precheck` Function
+
+This Ability's `precheck` function validates all prerequisites for executing an Aerodrome swap, without actually performing the swap or approval.
+
+<Tabs>
+  <Tab title="Parameters">
+    The `precheck` function requires the following parameters:
+
+    ```typescript
+    {
+      /**
+       * The action to perform: 'approve' for ERC20 approval, 'swap' for token swap.
+       */
+      action: 'approve' | 'swap';
+      /**
+       * An RPC endpoint for Base mainnet.
+       */
+      rpcUrl: string;
+      /**
+       * The address of the token to swap from.
+       */
+      tokenInAddress: string;
+      /**
+       * The address of the token to swap to.
+       */
+      tokenOutAddress: string;
+      /**
+       * The amount to swap in the smallest unit (e.g., 2123456 for 2.123456 USDC with 6 decimals).
+       */
+      amountIn: string;
+      /**
+       * Slippage tolerance as decimal (e.g., 0.005 for 0.5%, default 0.5%).
+       */
+      slippage?: number;
+      /**
+       * Percent added to estimated gas limit (default 50) if not using Alchemy gas sponsorship.
+       */
+      gasBufferPercentage?: number;
+      /**
+       * Percent added to baseFeePerGas when computing maxFeePerGas (default 0) if not using Alchemy gas sponsorship.
+       */
+      baseFeePerGasBufferPercentage?: number;
+      /**
+       * Whether to use Alchemy gas sponsorship for the transaction.
+       */
+      alchemyGasSponsor?: boolean;
+      /**
+       * The API key for Alchemy gas sponsorship (required if alchemyGasSponsor is true).
+       */
+      alchemyGasSponsorApiKey?: string;
+      /**
+       * The policy ID for Alchemy gas sponsorship (required if alchemyGasSponsor is true).
+       */
+      alchemyGasSponsorPolicyId?: string;
+    }
+    ```
+
+  </Tab>
+
+  <Tab title="Implementation">
+    To execute `precheck`, you'll need to:
+
+    - Create an instance of the `VincentAbilityClient` using the `getVincentAbilityClient` function (imported from `@lit-protocol/vincent-app-sdk/abilityClient`)
+      - Pass in the Ability's `bundledVincentAbility` object (imported from `@lit-protocol/vincent-ability-aerodrome-swap`)
+      - Pass in the `ethersSigner` you'll be using to sign the request to Lit with your Delegatee private key
+    - Use the `VincentAbilityClient` instance to call the `precheck` function
+
+    ```typescript
+    import { getVincentAbilityClient } from '@lit-protocol/vincent-app-sdk/abilityClient';
+    import { bundledVincentAbility, AbilityAction } from '@lit-protocol/vincent-ability-aerodrome-swap';
+    import { ethers } from 'ethers';
+
+    // Your delegatee signer (one of the delegatee signers for the Vincent App)
+    const delegateeSigner = new ethers.Wallet('YOUR_DELEGATEE_PRIVATE_KEY', provider);
+
+    // Create ability client
+    const abilityClient = getVincentAbilityClient({
+      bundledVincentAbility,
+      ethersSigner: delegateeSigner,
+    });
+
+    // Run precheck for a swap action
+    const precheckResult = await abilityClient.precheck(
+      {
+        action: AbilityAction.Swap,
+        rpcUrl: 'https://mainnet.base.org',
+        tokenInAddress: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', // USDC on Base
+        tokenOutAddress: '0x4200000000000000000000000000000000000006', // WETH on Base
+        amountIn: '10000000', // 10 USDC (6 decimals)
+        alchemyGasSponsor: false,
+      },
+      {
+        delegatorPkpEthAddress: '0x...', // The Vincent App User's Vincent Wallet address
+      },
+    );
+
+    if (precheckResult.success) {
+      console.log('Swap precheck passed, ready to execute');
+      console.log('Quote:', precheckResult.result.quote);
+    } else {
+      // Handle different types of failures
+      if (precheckResult.runtimeError) {
+        console.error('Runtime error:', precheckResult.runtimeError);
+      }
+      if (precheckResult.schemaValidationError) {
+        console.error('Schema validation error:', precheckResult.schemaValidationError);
+      }
+      if (precheckResult.result) {
+        console.error('Swap precheck failed:', precheckResult.result.reason);
+      }
+    }
+    ```
+
+  </Tab>
+
+  <Tab title="Response">
+    **Success Response (Approve Action)**
+
+    A successful `precheck` response for approve action contains:
+
+    ```typescript
+    {
+      /**
+       * The current allowance of the input token for the Aerodrome Universal Router.
+       */
+      currentTokenInAllowanceForSpender: string;
+      /**
+       * The required allowance for the swap.
+       */
+      requiredTokenInAllowance: string;
+      /**
+       * The Aerodrome Universal Router address.
+       */
+      spenderAddress: string;
+      /**
+       * The native token balance (if not using gas sponsorship).
+       */
+      nativeTokenBalance?: string;
+    }
+    ```
+
+    **Success Response (Swap Action)**
+
+    A successful `precheck` response for swap action contains:
+
+    ```typescript
+    {
+      /**
+       * The address of the input token.
+       */
+      tokenInAddress: string;
+      /**
+       * The balance of the input token.
+       */
+      tokenInBalance: string;
+      /**
+       * The current allowance of the input token.
+       */
+      currentTokenInAllowanceForSpender: string;
+      /**
+       * The required allowance for the swap.
+       */
+      requiredTokenInAllowance: string;
+      /**
+       * The Aerodrome Universal Router address.
+       */
+      spenderAddress: string;
+      /**
+       * The swap quote information.
+       */
+      quote: {
+        tokenInAmount: string;
+        tokenOutAmount: string;
+        priceImpact: string;
+      };
+      /**
+       * The native token balance (if not using gas sponsorship).
+       */
+      nativeTokenBalance?: string;
+    }
+    ```
+
+    **Failure Response**
+
+    A failure `precheck` response will contain:
+
+    ```typescript
+    {
+      /**
+       * The reason the precheck failed.
+       */
+      reason: string;
+      /**
+       * Additional context about the failure (varies by failure type).
+       */
+      spenderAddress?: string;
+      tokenAddress?: string;
+      requiredTokenAmount?: string;
+      tokenBalance?: string;
+      currentAllowance?: string;
+      requiredAllowance?: string;
+    }
+    ```
+
+  </Tab>
+</Tabs>
+
+### Executing the `execute` Function
+
+This Ability's `execute` function performs either an approval or a swap based on the specified action.
+
+<Tabs>
+  <Tab title="Parameters">
+    The `execute` function expects the same parameters as the `precheck` function:
+
+    ```typescript
+    {
+      /**
+       * The action to perform: 'approve' for ERC20 approval, 'swap' for token swap.
+       */
+      action: 'approve' | 'swap';
+      /**
+       * An RPC endpoint for Base mainnet.
+       */
+      rpcUrl: string;
+      /**
+       * The address of the token to swap from.
+       */
+      tokenInAddress: string;
+      /**
+       * The address of the token to swap to.
+       */
+      tokenOutAddress: string;
+      /**
+       * The amount to swap in the smallest unit.
+       */
+      amountIn: string;
+      /**
+       * Slippage tolerance as decimal (e.g., 0.005 for 0.5%, default 0.5%).
+       */
+      slippage?: number;
+      /**
+       * Whether to use Alchemy gas sponsorship.
+       */
+      alchemyGasSponsor?: boolean;
+      /**
+       * The API key for Alchemy gas sponsorship.
+       */
+      alchemyGasSponsorApiKey?: string;
+      /**
+       * The policy ID for Alchemy gas sponsorship.
+       */
+      alchemyGasSponsorPolicyId?: string;
+      /**
+       * Percent added to estimated gas limit (default 50).
+       */
+      gasBufferPercentage?: number;
+      /**
+       * Percent added to baseFeePerGas when computing maxFeePerGas (default 0).
+       */
+      baseFeePerGasBufferPercentage?: number;
+    }
+    ```
+
+  </Tab>
+
+  <Tab title="Implementation">
+    The `execute` function can be executed using the same `VincentAbilityClient` instance:
+
+    ```typescript
+    // First, approve the tokens if needed
+    const approveResult = await abilityClient.execute(
+      {
+        action: AbilityAction.Approve,
+        rpcUrl: 'https://mainnet.base.org',
+        tokenInAddress: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', // USDC on Base
+        tokenOutAddress: '0x4200000000000000000000000000000000000006', // WETH on Base
+        amountIn: '10000000', // 10 USDC (6 decimals)
+        alchemyGasSponsor: false,
+      },
+      {
+        delegatorPkpEthAddress: '0x...', // The Vincent App User's Vincent Wallet address
+      },
+    );
+
+    if (approveResult.success) {
+      console.log('Approval transaction:', approveResult.result.approvalTxHash);
+    }
+
+    // Then execute the swap
+    const executeResult = await abilityClient.execute(
+      {
+        action: AbilityAction.Swap,
+        rpcUrl: 'https://mainnet.base.org',
+        tokenInAddress: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', // USDC on Base
+        tokenOutAddress: '0x4200000000000000000000000000000000000006', // WETH on Base
+        amountIn: '10000000', // 10 USDC (6 decimals)
+        alchemyGasSponsor: false,
+      },
+      {
+        delegatorPkpEthAddress: '0x...', // The Vincent App User's Vincent Wallet address
+      },
+    );
+
+    if (executeResult.success) {
+      const { swapTxHash } = executeResult.result;
+      console.log('Swap transaction:', swapTxHash);
+    } else {
+      // Handle different types of failures
+      if (executeResult.runtimeError) {
+        console.error('Runtime error:', executeResult.runtimeError);
+      }
+      if (executeResult.schemaValidationError) {
+        console.error('Schema validation error:', executeResult.schemaValidationError);
+      }
+      if (executeResult.result) {
+        console.error('Swap execution failed:', executeResult.result.reason);
+      }
+    }
+    ```
+
+  </Tab>
+
+  <Tab title="Response">
+    **Success Response**
+
+    A successful `execute` response will contain:
+
+    ```typescript
+    {
+      /**
+       * The hash of the approval transaction (if action is 'approve' and approval was needed).
+       */
+      approvalTxHash?: string;
+      /**
+       * The user operation hash for the approval (if using Alchemy gas sponsorship).
+       */
+      approvalTxUserOperationHash?: string;
+      /**
+       * The hash of the swap transaction (if action is 'swap').
+       */
+      swapTxHash?: string;
+      /**
+       * The user operation hash for the swap (if using Alchemy gas sponsorship).
+       */
+      swapTxUserOperationHash?: string;
+      /**
+       * The current allowance (if action is 'approve' and no new approval was needed).
+       */
+      currentAllowance?: string;
+      /**
+       * The required allowance (if action is 'approve' and no new approval was needed).
+       */
+      requiredAllowance?: string;
+    }
+    ```
+
+    **Failure Response**
+
+    A failure `execute` response will contain:
+
+    ```typescript
+    {
+      /**
+       * The reason the execution failed.
+       */
+      reason?: string;
+    }
+    ```
+
+  </Tab>
+</Tabs>
+
+## Supported Networks
+
+The Aerodrome Swap Ability only works on Base mainnet where Aerodrome is deployed.
+
+## Important Considerations
+
+<AccordionGroup>
+  <Accordion title="Price Impact and Slippage" icon="chart-line">
+    The Ability uses a default slippage tolerance of 0.5% (0.005). The delegatee can override this by passing the optional `slippage` parameter. The slippage is specified as a decimal (e.g., 0.005 for 0.5%, 0.01 for 1%, 0.05 for 5%). The swap quote includes price impact information to help assess the trade's market impact.
+  </Accordion>
+
+<Accordion title="Integrated Approval Management" icon="check-circle">
+  The Aerodrome Swap Ability includes built-in approval management. You can use the `approve` action
+  to handle ERC20 approvals before executing swaps. The ability automatically checks if sufficient
+  allowance exists and only creates a new approval transaction if needed.
+</Accordion>
+
+<Accordion title="Gas Sponsorship" icon="gas-pump">
+  The Aerodrome Swap Ability supports Alchemy gas sponsorship for gasless transactions. When
+  enabled, transactions are submitted as ERC-4337 user operations, and gas fees are sponsored by
+  your Alchemy policy. This provides a better user experience by eliminating the need for users to
+  hold native tokens for gas.
+</Accordion>
+
+<Accordion title="Base Network Only" icon="link">
+  Aerodrome is currently only deployed on Base network. Ensure that the `rpcUrl` provided points to
+  Base mainnet. Use a private RPC endpoint for Ability executions for the best result, using a
+  public RPC endpoint may result in slower transaction execution, or failed transactions if the
+  public RPC endpoint is not able to handle the request.
+</Accordion>
+
+  <Accordion title="Token Support" icon="coins">
+    Only tokens supported by Aerodrome on Base can be swapped. The ability validates token support during the precheck phase. If a token is not supported, the precheck will fail with an appropriate error message.
+  </Accordion>
+</AccordionGroup>
+
+## Error Handling
+
+<AccordionGroup>
+  <Accordion title="Common Failure Scenarios" icon="bug">
+    - **Unsupported Token**: The input or output token is not supported by Aerodrome on Base network
+
+    - **Insufficient ERC20 Token Balance**: The Vincent Wallet doesn't have enough of the input token to perform the swap
+
+    - **Insufficient Native Token Balance**: The Vincent Wallet doesn't have enough ETH to pay for gas fees (when not using gas sponsorship)
+
+    - **Missing ERC20 Token Approval**: The Aerodrome Universal Router doesn't have permission to spend the input token
+
+    - **No Liquidity**: No Aerodrome pool exists for the specified token pair, or insufficient liquidity
+
+    - **Invalid Action**: The action parameter is neither 'approve' nor 'swap'
+
+  </Accordion>
+</AccordionGroup>
+
+## Complete Example
+
+For a complete working example showing the full workflow from approval to swap execution, including gas sponsorship, see the [swap-aerodrome.spec.ts](https://github.com/LIT-Protocol/Vincent/blob/main/packages/apps/abilities-e2e/test-e2e/swap-aerodrome.spec.ts) end-to-end test in the abilities-e2e package.

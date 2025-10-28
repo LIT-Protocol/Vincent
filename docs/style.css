@@ -1,0 +1,24 @@
+/* Custom styles for Mermaid diagrams */
+
+/* Dark background with white text for edge labels - using more specific selectors */
+.mermaid .edgeLabel,
+.edgeLabel {
+  background-color: #1a1a1a !important;
+  color: white !important;
+}
+
+.mermaid .labelBkg,
+.labelBkg {
+  fill: #1a1a1a !important;
+}
+
+.mermaid .edgeLabel span,
+.edgeLabel span {
+  color: white !important;
+}
+
+/* Override any text color from theme */
+.mermaid .edgeLabel text,
+.edgeLabel text {
+  fill: white !important;
+}

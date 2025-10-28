@@ -26,7 +26,8 @@
                 "pages": [
                   "concepts/wallets/about",
                   "concepts/wallets/user-accounts",
-                  "concepts/wallets/agent-wallets"
+                  "concepts/wallets/agent-wallets",
+                  "concepts/wallets/smart-accounts"
                 ]
               }
             ]
@@ -76,6 +77,8 @@
                 "pages": [
                   "ability/official-abilities/overview",
                   "ability/official-abilities/aave",
+                  "ability/official-abilities/aave-smart-account",
+                  "ability/official-abilities/aerodrome-swap",
                   "ability/official-abilities/debridge",
                   "ability/official-abilities/erc20-approval",
                   "ability/official-abilities/erc20-transfer",
