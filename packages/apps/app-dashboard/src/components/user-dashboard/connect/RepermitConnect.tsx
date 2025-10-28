@@ -11,7 +11,6 @@ import { ConnectPageHeader } from './ui/ConnectPageHeader';
 import { ConnectAppHeader } from './ui/ConnectAppHeader';
 import { StatusCard } from './ui/StatusCard';
 import { ActionButtons } from './ui/ActionButtons';
-import { ConnectFooter } from '../ui/Footer';
 import { theme } from './ui/theme';
 import { InfoBanner } from './ui/InfoBanner';
 import { App } from '@/types/developer-dashboard/appTypes';
@@ -153,9 +152,6 @@ export function RepermitConnect({
           appName={appData.name}
         />
       </div>
-
-      {/* Footer */}
-      <ConnectFooter />
     </div>
   );
 }

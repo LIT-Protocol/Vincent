@@ -1,18 +1,19 @@
 import { useEffect, useState, useMemo } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { ethers } from 'ethers';
 import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
 import { AbilityVersion, PolicyVersion } from '@/types/developer-dashboard/appTypes';
 import { StatusMessage } from '@/components/shared/ui/statusMessage';
 import { getClient } from '@lit-protocol/vincent-contracts-sdk';
 import { PublishAppVersionButton } from './ui/PublishAppVersionButton';
-import MutationButtonStates, { SkeletonButton } from '@/components/shared/ui/MutationButtonStates';
 import { initPkpSigner } from '@/utils/developer-dashboard/initPkpSigner';
 import useReadAuthInfo from '@/hooks/user-dashboard/useAuthInfo';
+import { theme } from '@/components/user-dashboard/connect/ui/theme';
 
 export function PublishAppVersionWrapper({ isAppPublished }: { isAppPublished: boolean }) {
   const { appId, versionId } = useParams<{ appId: string; versionId: string }>();
   const { authInfo, sessionSigs } = useReadAuthInfo();
+  const navigate = useNavigate();
 
   // Fetching
   const {
@@ -57,6 +58,7 @@ export function PublishAppVersionWrapper({ isAppPublished }: { isAppPublished: b
     success: boolean;
     message?: string;
   } | null>(null);
+  const [isPublishing, setIsPublishing] = useState(false);
 
   // Fetch ability versions and policy versions when activeAbilities changes
   useEffect(() => {
@@ -152,7 +154,7 @@ export function PublishAppVersionWrapper({ isAppPublished }: { isAppPublished: b
     return () => clearTimeout(timer);
   }, [publishResult]);
 
-  // Loading states with skeleton
+  // Loading states with skeleton matching PublishAppVersionButton layout
   if (
     appLoading ||
     versionLoading ||
@@ -160,7 +162,21 @@ export function PublishAppVersionWrapper({ isAppPublished }: { isAppPublished: b
     abilityVersionsLoading ||
     policiesLoading
   ) {
-    return <SkeletonButton />;
+    return (
+      <div
+        className={`${theme.itemBg} border border-gray-300 dark:border-gray-500/30 rounded-lg p-4`}
+      >
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-gray-100 dark:bg-gray-700">
+            <div className="h-4 w-4 bg-gray-300 dark:bg-gray-600 rounded animate-pulse" />
+          </div>
+          <div className="flex-1">
+            <div className="h-4 w-32 bg-gray-200 dark:bg-gray-600 rounded animate-pulse mb-2" />
+            <div className="h-3 w-40 bg-gray-200 dark:bg-gray-600 rounded animate-pulse" />
+          </div>
+        </div>
+      </div>
+    );
   }
 
   // Error states
@@ -181,6 +197,7 @@ export function PublishAppVersionWrapper({ isAppPublished }: { isAppPublished: b
     }
 
     setPublishResult(null);
+    setIsPublishing(true);
 
     try {
       // Check if we have any abilities at all
@@ -198,6 +215,7 @@ export function PublishAppVersionWrapper({ isAppPublished }: { isAppPublished: b
               'Cannot publish version without abilities. Please add at least one ability to this version.',
           });
         }
+        setIsPublishing(false);
         return;
       }
 
@@ -210,6 +228,7 @@ export function PublishAppVersionWrapper({ isAppPublished }: { isAppPublished: b
           message:
             'Cannot publish version without active abilities. Please add at least one ability or undelete existing abilities.',
         });
+        setIsPublishing(false);
         return;
       }
 
@@ -221,6 +240,7 @@ export function PublishAppVersionWrapper({ isAppPublished }: { isAppPublished: b
           success: false,
           message: 'Cannot publish app without delegatee addresses.',
         });
+        setIsPublishing(false);
         return;
       }
 
@@ -234,6 +254,7 @@ export function PublishAppVersionWrapper({ isAppPublished }: { isAppPublished: b
             success: false,
             message: `Invalid delegatee address: ${delegatee}. Please ensure all delegatee addresses are valid Ethereum addresses.`,
           });
+          setIsPublishing(false);
           return;
         }
 
@@ -247,11 +268,12 @@ export function PublishAppVersionWrapper({ isAppPublished }: { isAppPublished: b
               success: false,
               message: `Delegatee ${delegatee} is already registered to app ${existingApp?.id}`,
             });
+            setIsPublishing(false);
             return;
           }
-        } catch (error: any) {
+        } catch (error) {
           // If DelegateeNotRegistered, that's fine - continue
-          if (!error?.message?.includes('DelegateeNotRegistered')) {
+          if (!(error instanceof Error) || !error.message?.includes('DelegateeNotRegistered')) {
             throw error;
           }
         }
@@ -290,31 +312,33 @@ export function PublishAppVersionWrapper({ isAppPublished }: { isAppPublished: b
         success: true,
         message: 'App version published successfully!',
       });
+      setIsPublishing(false);
 
-      // Refresh the page after a short delay to show the success message
+      // Navigate to same page after a delay to reload with published state
       setTimeout(() => {
-        window.location.reload();
-      }, 3000);
+        navigate(0); // Reloads current route
+      }, 2000);
     } catch (error) {
+      console.error('Error publishing app version:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Please try again.';
+      console.error('Error details:', {
+        message: errorMessage,
+        ...(error instanceof Error && { stack: error.stack, name: error.name }),
+      });
+
       setPublishResult({
         success: false,
-        message: 'Failed to publish app version. Please try again.',
+        message: `Failed to publish app version: ${errorMessage}`,
       });
+      setIsPublishing(false);
     }
   };
 
   return (
-    <div>
-      {publishResult && publishResult.success && (
-        <MutationButtonStates type="success" successMessage={publishResult.message || 'Success'} />
-      )}
-      {publishResult && !publishResult.success && (
-        <MutationButtonStates
-          type="error"
-          errorMessage={publishResult.message || 'Failed to publish'}
-        />
-      )}
-      {!publishResult && <PublishAppVersionButton onSubmit={publishAppVersion} />}
-    </div>
+    <PublishAppVersionButton
+      onSubmit={publishAppVersion}
+      isSubmitting={isPublishing}
+      publishResult={publishResult}
+    />
   );
 }

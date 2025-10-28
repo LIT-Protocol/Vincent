@@ -1,92 +1,21 @@
 import React from 'react';
-import styles from './LandingPartners.module.css';
+import { logos } from './ExternalLogos';
 import { env } from '@/config/env';
-
-const logos = [
-  {
-    src: '/external-logos/tria.svg',
-    alt: 'Tria',
-  },
-  {
-    src: '/external-logos/aave.svg',
-    alt: 'Aave',
-  },
-  {
-    src: '/external-logos/terminal3.svg',
-    alt: 'Terminal3',
-  },
-  {
-    src: '/external-logos/deBridge.svg',
-    alt: 'deBridge',
-  },
-  {
-    src: '/external-logos/creativelabs.png',
-    alt: 'Blockchain Creative Labs',
-  },
-  {
-    src: '/external-logos/ethereum.svg',
-    alt: 'Ethereum',
-  },
-  {
-    src: '/external-logos/genius.webp',
-    alt: 'Genius',
-  },
-  {
-    src: '/external-logos/morpho.svg',
-    alt: 'Morpho',
-  },
-  {
-    src: '/external-logos/emblem.png',
-    alt: 'Emblem Vault',
-  },
-  {
-    src: '/external-logos/polymarket.svg',
-    alt: 'Polymarket',
-  },
-  {
-    src: '/external-logos/humanity.png',
-    alt: 'Humanity Protocol',
-  },
-  {
-    src: '/external-logos/uniswap.svg',
-    alt: 'Uniswap',
-  },
-  {
-    src: '/external-logos/gitcoin.svg',
-    alt: 'Gitcoin',
-  },
-  {
-    src: '/external-logos/indexnetwork.svg',
-    alt: 'Index Network',
-  },
-  {
-    src: '/external-logos/eco.png',
-    alt: 'Eco',
-  },
-  {
-    src: '/external-logos/lens.svg',
-    alt: 'Lens Protocol',
-  },
-  {
-    src: '/external-logos/streamr.svg',
-    alt: 'Streamr',
-  },
-  {
-    src: '/external-logos/solana.svg',
-    alt: 'Solana',
-  },
-];
+import { fonts } from '@/components/user-dashboard/connect/ui/theme';
 
 const LandingPartners: React.FC = () => {
   return (
-    <div className="relative bg-transparent py-16 mt-2">
-      <div className="max-w-4xl mx-auto px-8 sm:px-4">
-        <p className="flex justify-center items-center mb-10 text-gray-600 text-sm sm:text-base font-sans tracking-wide font-medium">
+    <div className="relative bg-transparent py-2">
+      <div className="max-w-lg mx-auto px-3">
+        <p
+          className="flex justify-center items-center mb-2 text-gray-900 dark:text-white text-xs tracking-wide font-medium"
+          style={fonts.heading}
+        >
           <a
             href="https://dune.com/lit_protocol/tvm-in-lit-protocol-mainnets"
             target="_blank"
             rel="noopener noreferrer"
-            className="!text-gray-600 hover:!text-orange-500 transition-colors !no-underline"
+            className="!text-gray-900 dark:!text-white hover:!text-orange-500 transition-colors !no-underline"
             style={{ textDecoration: 'none' }}
           >
             ${env.VITE_LIT_TOTAL_MANAGED} Managed
@@ -94,20 +23,31 @@ const LandingPartners: React.FC = () => {
           <span className="mx-2">•</span>
           Works With All Crypto
         </p>
-        <div className={styles.marquee}>
-          <div
-            className={styles.marqueeGroup}
-            style={{ '--logo-count': logos.length } as React.CSSProperties}
-          >
+
+        {/* Logo Grid - visible only on mobile/tablet (hidden on desktop where globe shows logos) */}
+        <div className="w-full md:hidden">
+          <div className="grid grid-cols-6 gap-2 max-w-sm mx-auto">
             {logos.map((logo, i) => (
-              <div key={`first_${i}`} className={styles.logo}>
-                <img src={logo.src} alt={logo.alt} />
-              </div>
-            ))}
-            {logos.map((logo, i) => (
-              <div key={`second_${i}`} className={styles.logo}>
-                <img src={logo.src} alt={logo.alt} />
-              </div>
+              <a
+                key={i}
+                href={logo.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                title={logo.alt}
+                className="flex items-center justify-center transition-opacity duration-200 hover:!opacity-100 cursor-pointer"
+                style={{ opacity: 0.5 }}
+              >
+                <img
+                  src={logo.src}
+                  alt={logo.alt}
+                  className="w-full h-auto object-contain"
+                  style={{
+                    maxHeight: '20px',
+                    filter: 'brightness(0) saturate(100%) invert(var(--logo-filter-invert))',
+                    pointerEvents: 'none',
+                  }}
+                />
+              </a>
             ))}
           </div>
         </div>

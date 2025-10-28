@@ -1,8 +1,8 @@
 import { AllAppVersions } from './AllAppVersions';
 import { Tabs, TabsTrigger, TabsList } from '@/components/shared/ui/tabs';
-import { GitBranch } from 'lucide-react';
 import { App, AppVersion, AppVersionAbility } from '@/types/developer-dashboard/appTypes';
 import { ActiveAppVersion } from './ActiveAppVersion';
+import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
 
 interface VersionInfoProps {
   app: App;
@@ -14,35 +14,38 @@ export function VersionInfo({ app, versions, versionAbilities }: VersionInfoProp
   return (
     versions.length > 0 && (
       <div className="group relative">
-        <div className="absolute inset-0 bg-black/5 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
-        <div className="relative bg-white/40 backdrop-blur-xl border border-black/10 rounded-2xl p-6 hover:border-black/20 transition-all duration-500">
-          <Tabs defaultValue="active" className="w-full">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 w-full">
-              <div className="flex items-center gap-3 flex-shrink-0">
-                <div className="p-2 rounded-lg bg-black/5 border border-black/5">
-                  <GitBranch className="w-5 h-5 text-black/60" />
-                </div>
-                <h2 className="text-lg font-light text-black transition-colors duration-500">
-                  Version Information
-                </h2>
-              </div>
+        <div
+          className={`relative bg-white dark:bg-gray-950 border ${theme.cardBorder} rounded-xl md:rounded-2xl p-4 sm:p-6 ${theme.cardHoverBorder} transition-all duration-500`}
+        >
+          <Tabs defaultValue="active" className="w-full !items-start">
+            <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
+              <h2
+                className={`text-base sm:text-lg font-semibold ${theme.text}`}
+                style={fonts.heading}
+              >
+                Version Information
+              </h2>
+            </div>
 
-              <div className="flex-shrink-0">
-                <TabsList className="bg-black/5 border border-black/5 rounded-full p-1 h-auto">
-                  <TabsTrigger
-                    value="active"
-                    className="!text-gray-600 hover:!text-black data-[state=active]:!text-black data-[state=active]:!bg-white data-[state=active]:shadow-sm data-[state=active]:border data-[state=active]:border-black/10 rounded-full px-6 py-2 text-sm font-medium border-0 bg-transparent h-auto transition-all duration-300 focus:outline-none"
-                  >
-                    Active Version
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="all"
-                    className="!text-gray-600 hover:!text-black data-[state=active]:!text-black data-[state=active]:!bg-white data-[state=active]:shadow-sm data-[state=active]:border data-[state=active]:border-black/10 rounded-full px-6 py-2 text-sm font-medium border-0 bg-transparent h-auto transition-all duration-300 focus:outline-none"
-                  >
-                    All Versions
-                  </TabsTrigger>
-                </TabsList>
-              </div>
+            <div className="mb-4 sm:mb-6">
+              <TabsList
+                className={`${theme.itemBg} border ${theme.cardBorder} rounded-full p-1 h-auto w-auto`}
+              >
+                <TabsTrigger
+                  value="active"
+                  className={`${theme.textMuted} hover:${theme.text} data-[state=active]:${theme.text} data-[state=active]:!bg-white data-[state=active]:dark:!bg-gray-800 data-[state=active]:shadow-sm data-[state=active]:border data-[state=active]:${theme.cardBorder} rounded-full px-3 sm:px-4 md:px-6 py-1.5 sm:py-2 text-xs sm:text-sm font-medium border-0 bg-transparent h-auto transition-all duration-300 focus:outline-none flex-1 sm:flex-initial`}
+                  style={fonts.heading}
+                >
+                  Active Version
+                </TabsTrigger>
+                <TabsTrigger
+                  value="all"
+                  className={`${theme.textMuted} hover:${theme.text} data-[state=active]:${theme.text} data-[state=active]:!bg-white data-[state=active]:dark:!bg-gray-800 data-[state=active]:shadow-sm data-[state=active]:border data-[state=active]:${theme.cardBorder} rounded-full px-3 sm:px-4 md:px-6 py-1.5 sm:py-2 text-xs sm:text-sm font-medium border-0 bg-transparent h-auto transition-all duration-300 focus:outline-none flex-1 sm:flex-initial`}
+                  style={fonts.heading}
+                >
+                  All Versions
+                </TabsTrigger>
+              </TabsList>
             </div>
 
             <ActiveAppVersion versions={versions} versionAbilities={versionAbilities} app={app} />

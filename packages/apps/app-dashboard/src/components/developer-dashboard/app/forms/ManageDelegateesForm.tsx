@@ -5,22 +5,15 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { ethers } from 'ethers';
 import { Button } from '@/components/shared/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/shared/ui/card';
 import { Form } from '@/components/shared/ui/form';
 import { StatusMessage } from '@/components/shared/ui/statusMessage';
 import { Plus, Trash2 } from 'lucide-react';
 import { TextField } from '../../form-fields';
 import { getClient } from '@lit-protocol/vincent-contracts-sdk';
-import { SkeletonButton } from '@/components/shared/ui/MutationButtonStates';
 import { initPkpSigner } from '@/utils/developer-dashboard/initPkpSigner';
 import { addPayee } from '@/utils/user-dashboard/addPayee';
 import useReadAuthInfo from '@/hooks/user-dashboard/useAuthInfo';
+import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
 
 const AddDelegateeSchema = z.object({
   address: z.string().refine((val) => ethers.utils.isAddress(val), {
@@ -92,15 +85,15 @@ export function ManageDelegateesForm({
       });
 
       refetchBlockchainData();
-    } catch (error: any) {
-      if (error?.message?.includes('user rejected')) {
+    } catch (error) {
+      console.error('Failed to add delegatee:', error);
+      const message = error instanceof Error ? error.message : String(error);
+      if (message.includes('user rejected')) {
         setError('Transaction rejected.');
-      } else if (error?.message?.includes('DelegateeAlreadyRegistered')) {
+      } else if (message.includes('DelegateeAlreadyRegistered')) {
         setError(`Delegatee ${data.address} is already registered to app ${appId}`);
       } else {
-        setError(
-          `Failed to add delegatee: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        );
+        setError(`Failed to add delegatee: ${message}`);
       }
     }
   };
@@ -120,40 +113,37 @@ export function ManageDelegateesForm({
       });
 
       refetchBlockchainData();
-    } catch (error: any) {
-      if (error?.message?.includes('user rejected')) {
+    } catch (error) {
+      console.error('Failed to remove delegatee:', error);
+      const message = error instanceof Error ? error.message : String(error);
+      if (message.includes('user rejected')) {
         setError('Transaction rejected.');
       } else {
-        setError(
-          `Failed to remove delegatee: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        );
+        setError(`Failed to remove delegatee: ${message}`);
       }
     } finally {
       setRemovingDelegatee(null);
     }
   };
 
-  // Show error state
-  if (error) {
-    return <StatusMessage message={error} type="error" />;
-  }
-
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <div>
-          <h1 className="text-2xl font-bold">Manage Delegatees</h1>
-          <p className="text-gray-600">Add or remove delegatees for your application</p>
-        </div>
-      </div>
+      {/* Error Message */}
+      {error && <StatusMessage message={error} type="error" />}
 
-      {/* Add Delegatee Form */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Add Delegatee</CardTitle>
-          <CardDescription>Enter an Ethereum address to add as a delegatee</CardDescription>
-        </CardHeader>
-        <CardContent>
+      {/* Add Delegatee Section */}
+      <div
+        className={`${theme.mainCard} border ${theme.mainCardBorder} rounded-xl overflow-hidden`}
+      >
+        <div className={`p-6 border-b ${theme.cardBorder}`}>
+          <h3 className={`text-lg font-semibold ${theme.text} mb-1`} style={fonts.heading}>
+            Add Delegatee
+          </h3>
+          <p className={`text-sm ${theme.textMuted}`} style={fonts.body}>
+            Enter an Ethereum address to add as a delegatee
+          </p>
+        </div>
+        <div className="p-6">
           <Form {...form}>
             <form
               onSubmit={handleSubmit(handleAddDelegatee)}
@@ -168,9 +158,24 @@ export function ManageDelegateesForm({
                   placeholder="0x..."
                 />
               </div>
-              <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto">
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full sm:w-auto text-white"
+                style={{ backgroundColor: theme.brandOrange }}
+                onMouseEnter={(e) => {
+                  if (!isSubmitting)
+                    e.currentTarget.style.backgroundColor = theme.brandOrangeDarker;
+                }}
+                onMouseLeave={(e) => {
+                  if (!isSubmitting) e.currentTarget.style.backgroundColor = theme.brandOrange;
+                }}
+              >
                 {isSubmitting ? (
-                  <SkeletonButton />
+                  <div className="flex items-center gap-2" style={fonts.heading}>
+                    <div className="h-4 w-4 bg-white/50 rounded animate-pulse" />
+                    <span>Adding...</span>
+                  </div>
                 ) : (
                   <>
                     <Plus className="h-4 w-4 mr-2" />
@@ -180,39 +185,58 @@ export function ManageDelegateesForm({
               </Button>
             </form>
           </Form>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
-      {/* Delegatees List */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Current Delegatees</CardTitle>
-          <CardDescription>
+      {/* Current Delegatees Section */}
+      <div
+        className={`${theme.mainCard} border ${theme.mainCardBorder} rounded-xl overflow-hidden`}
+      >
+        <div className={`p-6 border-b ${theme.cardBorder}`}>
+          <h3 className={`text-lg font-semibold ${theme.text} mb-1`} style={fonts.heading}>
+            Current Delegatees
+          </h3>
+          <p className={`text-sm ${theme.textMuted}`} style={fonts.body}>
             {existingDelegatees.length === 0
               ? 'No delegatees configured yet.'
               : `${existingDelegatees.length} delegatee${existingDelegatees.length === 1 ? '' : 's'} configured`}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
+          </p>
+        </div>
+        <div className="p-6">
+          <div className="space-y-3">
             {existingDelegatees.map((delegatee, index) => (
               <div
                 key={delegatee}
-                className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 border rounded-lg"
+                className={`flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 ${theme.itemBg} border ${theme.mainCardBorder} rounded-lg`}
               >
                 <div className="flex-1 min-w-0">
-                  <div className="font-mono text-sm break-all">{delegatee}</div>
-                  <div className="text-xs text-gray-500">Delegatee #{index + 1}</div>
+                  <div className={`font-mono text-sm break-all ${theme.text}`} style={fonts.body}>
+                    {delegatee}
+                  </div>
+                  <div className={`text-xs ${theme.textMuted} mt-1`} style={fonts.body}>
+                    Delegatee #{index + 1}
+                  </div>
                 </div>
                 <Button
-                  variant="destructive"
                   size="sm"
                   onClick={() => handleRemoveDelegatee(delegatee)}
                   disabled={removingDelegatee === delegatee}
-                  className="w-full sm:w-auto"
+                  className="w-full sm:w-auto text-white"
+                  style={{ backgroundColor: 'rgb(220 38 38)' }}
+                  onMouseEnter={(e) => {
+                    if (removingDelegatee !== delegatee)
+                      e.currentTarget.style.backgroundColor = 'rgb(185 28 28)';
+                  }}
+                  onMouseLeave={(e) => {
+                    if (removingDelegatee !== delegatee)
+                      e.currentTarget.style.backgroundColor = 'rgb(220 38 38)';
+                  }}
                 >
                   {removingDelegatee === delegatee ? (
-                    <SkeletonButton />
+                    <div className="flex items-center gap-2" style={fonts.heading}>
+                      <div className="h-4 w-4 bg-white/30 rounded animate-pulse" />
+                      <span>Removing...</span>
+                    </div>
                   ) : (
                     <>
                       <Trash2 className="h-4 w-4 mr-2" />
@@ -223,14 +247,16 @@ export function ManageDelegateesForm({
               </div>
             ))}
             {existingDelegatees.length === 0 && (
-              <div className="text-center py-8 text-gray-500">
-                <p>No delegatees configured yet.</p>
-                <p className="text-sm mt-2">Add delegatee addresses above to get started.</p>
+              <div className={`text-center py-8 ${theme.textMuted}`}>
+                <p style={fonts.body}>No delegatees configured yet.</p>
+                <p className={`text-sm mt-2`} style={fonts.body}>
+                  Add delegatee addresses above to get started.
+                </p>
               </div>
             )}
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }
