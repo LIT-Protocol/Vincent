@@ -16,10 +16,12 @@ export function ConnectAppHeader({ app }: ConnectAppHeaderProps) {
       transition={{ duration: 0.5 }}
     >
       <div className="flex flex-col sm:flex-row items-center gap-4">
-        <div
-          className={`p-3 sm:p-4 rounded-2xl ${theme.iconBg} border ${theme.iconBorder} flex-shrink-0`}
-        >
-          <Logo logo={app.logo} alt={app.name} className="w-8 h-8 sm:w-10 sm:h-10" />
+        <div className={`p-2 rounded-2xl ${theme.iconBg} border ${theme.iconBorder} flex-shrink-0`}>
+          <Logo
+            logo={app.logo}
+            alt={app.name}
+            className="w-12 h-12 sm:w-16 sm:h-16 object-contain"
+          />
         </div>
         <div className="flex-1 min-w-0 text-center sm:text-left">
           <h2 className={`text-lg sm:text-xl font-bold ${theme.text} break-words`}>{app.name}</h2>
