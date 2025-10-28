@@ -72,7 +72,7 @@ function FeaturedAppCard({ app, handleAppClick }: FeaturedAppCardProps) {
       </div>
 
       {/* Hover effect overlay */}
-      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300 z-10" />
+      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300 z-30" />
     </div>
   );
 }
