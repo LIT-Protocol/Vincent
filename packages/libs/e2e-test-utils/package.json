@@ -5,6 +5,9 @@
     "access": "public"
   },
   "dependencies": {
+    "@lit-protocol/constants": "^8.0.4",
+    "@lit-protocol/contracts-sdk": "^7.2.3",
+    "@lit-protocol/vincent-contracts-sdk": "^2.0.0",
     "ethers": "^5.7.2",
     "tslib": "^2.8.1"
   },
