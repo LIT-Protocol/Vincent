@@ -49,15 +49,19 @@ export const useAddPermittedActions = () => {
         );
 
         setLoadingStatus('Granting App Permissions');
-        // Process ability IPFS CIDs
-        for (const ipfsCid of abilityIpfsCids) {
-          if (!permittedActionSet.has(ipfsCid)) {
-            await litContracts.addPermittedAction({
-              ipfsId: ipfsCid,
-              pkpTokenId: agentPKPTokenId,
-              authMethodScopes: [AUTH_METHOD_SCOPE.SignAnything],
-            });
-          }
+        // Process ability IPFS CIDs in parallel
+        const actionsToAdd = abilityIpfsCids.filter((ipfsCid) => !permittedActionSet.has(ipfsCid));
+
+        if (actionsToAdd.length > 0) {
+          await Promise.all(
+            actionsToAdd.map((ipfsCid) =>
+              litContracts.addPermittedAction({
+                ipfsId: ipfsCid,
+                pkpTokenId: agentPKPTokenId,
+                authMethodScopes: [AUTH_METHOD_SCOPE.SignAnything],
+              }),
+            ),
+          );
         }
 
         setLoadingStatus('Permissions Added Successfully');
