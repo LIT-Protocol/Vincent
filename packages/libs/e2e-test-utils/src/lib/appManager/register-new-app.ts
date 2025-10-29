@@ -1,4 +1,4 @@
-import { getClient } from '@lit-protocol/vincent-contracts-sdk';
+import { getTestClient } from '@lit-protocol/vincent-contracts-sdk';
 
 import { getChainHelpers } from '../chain';
 
@@ -24,7 +24,7 @@ export async function registerNewApp({
 
   const appId = generateRandomAppId();
 
-  const { txHash } = await getClient({
+  const { txHash } = await getTestClient({
     signer: appManager,
   }).registerApp({
     appId,

@@ -1,4 +1,4 @@
-import { getClient } from '@lit-protocol/vincent-contracts-sdk';
+import { getTestClient } from '@lit-protocol/vincent-contracts-sdk';
 
 import { getChainHelpers } from '../chain';
 import { getAppInfo } from '../delegatee/get-app-info';
@@ -29,7 +29,7 @@ export async function registerNewAppVersion({
     wallets: { appManager },
   } = await getChainHelpers();
 
-  const { txHash, newAppVersion } = await getClient({
+  const { txHash, newAppVersion } = await getTestClient({
     signer: appManager,
   }).registerNextVersion({
     appId,

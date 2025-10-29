@@ -6,7 +6,9 @@ export {
   appManager,
   mintNewPkp,
   ensureUnexpiredCapacityToken,
-  // getEnv,
+  getEnv,
   getChainHelpers,
   createRandomVincentWallets,
 } from './lib';
+
+export type { PkpInfo } from './lib/mint-new-pkp';

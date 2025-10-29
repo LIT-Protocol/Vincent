@@ -1,6 +1,6 @@
 import { ethers, Wallet } from 'ethers';
 
-// import { getEnv } from './env';
+import { getEnv } from './env';
 
 let ethersHelpers: {
   providers: {
@@ -12,18 +12,6 @@ let ethersHelpers: {
     funder: Wallet;
     appManager: Wallet;
     agentWalletOwner: Wallet;
-  };
-};
-
-// TODO: Replace with actual environment variables
-const getEnv = () => {
-  return {
-    YELLOWSTONE_RPC_URL: '',
-    BASE_RPC_URL: '',
-    TEST_FUNDER_PRIVATE_KEY: '',
-    TEST_APP_MANAGER_PRIVATE_KEY: '',
-    TEST_APP_DELEGATEE_PRIVATE_KEY: '',
-    TEST_AGENT_WALLET_PKP_OWNER_PRIVATE_KEY: '',
   };
 };
 
