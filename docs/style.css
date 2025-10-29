@@ -31,12 +31,12 @@
 
 .light code,
 .light code[class*="language-"] {
-  background-color: #f6f8fa !important;
   color: #24292f !important;
 }
 
 .light pre code {
-  background-color: transparent !important;
+  background-color: #f6f8fa !important;
+  display: block !important;
 }
 
 /* Ensure inline code has proper styling */
