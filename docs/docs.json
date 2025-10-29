@@ -26,8 +26,7 @@
                 "pages": [
                   "concepts/wallets/about",
                   "concepts/wallets/user-accounts",
-                  "concepts/wallets/agent-wallets",
-                  "concepts/wallets/smart-accounts"
+                  "concepts/wallets/agent-wallets"
                 ]
               }
             ]
@@ -77,7 +76,6 @@
                 "pages": [
                   "ability/official-abilities/overview",
                   "ability/official-abilities/aave",
-                  "ability/official-abilities/aave-smart-account",
                   "ability/official-abilities/aerodrome-swap",
                   "ability/official-abilities/debridge",
                   "ability/official-abilities/erc20-approval",
@@ -117,6 +115,19 @@
                 ]
               }
             ]
+          }
+        ]
+      },
+      {
+        "tab": "Smart Account Developers",
+        "groups": [
+          {
+            "group": "Introduction",
+            "pages": ["smart-account/introduction/about"]
+          },
+          {
+            "group": "Abilities",
+            "pages": ["smart-account/abilities/aave-smart-account"]
           }
         ]
       },

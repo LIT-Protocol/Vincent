@@ -22,3 +22,27 @@
 .edgeLabel text {
   fill: white !important;
 }
+
+/* Fix code blocks in light mode */
+.light pre,
+.light pre[class*="language-"] {
+  background-color: #f6f8fa !important;
+}
+
+.light code,
+.light code[class*="language-"] {
+  background-color: #f6f8fa !important;
+  color: #24292f !important;
+}
+
+.light pre code {
+  background-color: transparent !important;
+}
+
+/* Ensure inline code has proper styling */
+.light :not(pre) > code {
+  background-color: rgba(175, 184, 193, 0.2) !important;
+  color: #24292f !important;
+  padding: 0.2em 0.4em !important;
+  border-radius: 6px !important;
+}
