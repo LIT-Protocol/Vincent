@@ -293,6 +293,9 @@ importers:
 
   packages/apps/ability-aerodrome-swap:
     dependencies:
+      '@dromos-labs/sdk.js':
+        specifier: 0.3.0-alpha.1
+        version: 0.3.0-alpha.1(@wagmi/core@2.20.3(@tanstack/query-core@5.87.1)(@types/react@19.1.12)(immer@10.1.3)(react@19.1.1)(typescript@5.8.3)(use-sync-external-store@1.5.0(react@19.1.1))(viem@2.37.5(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)))(graphology-types@0.24.8)(viem@2.37.5(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64))
       '@lit-protocol/vincent-ability-sdk':
         specifier: workspace:*
         version: link:../../libs/ability-sdk
@@ -302,9 +305,6 @@ importers:
       ethers:
         specifier: ^5.8.0
         version: 5.8.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
-      sugar-sdk:
-        specifier: file:vendor/sugar-sdk-0.3.0-alpha.1.tgz
-        version: file:packages/apps/ability-aerodrome-swap/vendor/sugar-sdk-0.3.0-alpha.1.tgz(@wagmi/core@2.20.3(@tanstack/query-core@5.87.1)(@types/react@19.1.12)(immer@10.1.3)(react@19.1.1)(typescript@5.8.3)(use-sync-external-store@1.5.0(react@19.1.1))(viem@2.37.5(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)))(graphology-types@0.24.8)(viem@2.37.5(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64))
       tslib:
         specifier: 2.8.1
         version: 2.8.1
@@ -2144,6 +2144,12 @@ packages:
   '@dotenvx/dotenvx@1.49.0':
     resolution: {integrity: sha512-M1cyP6YstFQCjih54SAxCqHLMMi8QqV8tenpgGE48RTXWD7vfMYJiw/6xcCDpS2h28AcLpTsFCZA863Ge9yxzA==}
     hasBin: true
+
+  '@dromos-labs/sdk.js@0.3.0-alpha.1':
+    resolution: {integrity: sha512-9e2GPtmjqzv8J2fVZn+GNK/6PGrBEtTGR04JT2fUasFaP5Z2wN3pVs4++DLfE/HRkq9YsTkHZJ1rdbJCr9XwLQ==}
+    peerDependencies:
+      '@wagmi/core': ^2.0.0
+      viem: ^2.x
 
   '@ecies/ciphers@0.2.4':
     resolution: {integrity: sha512-t+iX+Wf5nRKyNzk8dviW3Ikb/280+aEJAnw9YXvCp2tYGPSkMki+NRY+8aNLmVFv3eNtMdvViPNOPxS8SZNP+w==}
@@ -11884,13 +11890,6 @@ packages:
     peerDependencies:
       postcss: ^8.4.32
 
-  sugar-sdk@file:packages/apps/ability-aerodrome-swap/vendor/sugar-sdk-0.3.0-alpha.1.tgz:
-    resolution: {integrity: sha512-u+IHdfwgzsrMOHObv0wsUyhaKvSm8/pVPEYSE+iKgfd63N50sB18aHpEoAfkE5ZZ7lTljEDVMsB5ATncxDyFTg==, tarball: file:packages/apps/ability-aerodrome-swap/vendor/sugar-sdk-0.3.0-alpha.1.tgz}
-    version: 0.3.0-alpha.1
-    peerDependencies:
-      '@wagmi/core': ^2.0.0
-      viem: ^2.x
-
   superstruct@1.0.4:
     resolution: {integrity: sha512-7JpaAoX2NGyoFlI9NBh66BQXGONc+uE+MRS5i2iOBKuS4e+ccgMDjATgZldkah+33DakBxDHiss9kvUcGAO8UQ==}
     engines: {node: '>=14.0.0'}
@@ -14381,6 +14380,16 @@ snapshots:
       object-treeify: 1.1.33
       picomatch: 4.0.3
       which: 4.0.0
+
+  '@dromos-labs/sdk.js@0.3.0-alpha.1(@wagmi/core@2.20.3(@tanstack/query-core@5.87.1)(@types/react@19.1.12)(immer@10.1.3)(react@19.1.1)(typescript@5.8.3)(use-sync-external-store@1.5.0(react@19.1.1))(viem@2.37.5(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)))(graphology-types@0.24.8)(viem@2.37.5(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64))':
+    dependencies:
+      '@wagmi/core': 2.20.3(@tanstack/query-core@5.87.1)(@types/react@19.1.12)(immer@10.1.3)(react@19.1.1)(typescript@5.8.3)(use-sync-external-store@1.4.0(react@19.1.1))(viem@2.37.5(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64))
+      graphology: 0.25.4(graphology-types@0.24.8)
+      graphology-simple-path: 0.2.0(graphology-types@0.24.8)
+      ramda: 0.30.1
+      viem: 2.37.5(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)
+    transitivePeerDependencies:
+      - graphology-types
 
   '@ecies/ciphers@0.2.4(@noble/ciphers@1.3.0)':
     dependencies:
@@ -28495,16 +28504,6 @@ snapshots:
       browserslist: 4.25.4
       postcss: 8.5.6
       postcss-selector-parser: 7.1.0
-
-  sugar-sdk@file:packages/apps/ability-aerodrome-swap/vendor/sugar-sdk-0.3.0-alpha.1.tgz(@wagmi/core@2.20.3(@tanstack/query-core@5.87.1)(@types/react@19.1.12)(immer@10.1.3)(react@19.1.1)(typescript@5.8.3)(use-sync-external-store@1.5.0(react@19.1.1))(viem@2.37.5(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)))(graphology-types@0.24.8)(viem@2.37.5(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)):
-    dependencies:
-      '@wagmi/core': 2.20.3(@tanstack/query-core@5.87.1)(@types/react@19.1.12)(immer@10.1.3)(react@19.1.1)(typescript@5.8.3)(use-sync-external-store@1.4.0(react@19.1.1))(viem@2.37.5(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64))
-      graphology: 0.25.4(graphology-types@0.24.8)
-      graphology-simple-path: 0.2.0(graphology-types@0.24.8)
-      ramda: 0.30.1
-      viem: 2.37.5(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)
-    transitivePeerDependencies:
-      - graphology-types
 
   superstruct@1.0.4: {}
 
