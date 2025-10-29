@@ -47,9 +47,7 @@ export function ReturningUserConnect({
   useEffect(() => {
     if (redirectUrl && !localSuccess) {
       setLocalSuccess('Success! Redirecting to app...');
-      setTimeout(() => {
-        executeRedirect();
-      }, 2000);
+      executeRedirect();
     }
   }, [redirectUrl, localSuccess, executeRedirect]);
 

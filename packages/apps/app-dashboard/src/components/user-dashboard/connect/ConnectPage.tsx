@@ -68,22 +68,16 @@ export function ConnectPage({
   useEffect(() => {
     if (redirectUrl && !localSuccess) {
       setLocalSuccess('Success! Redirecting to app...');
-      setTimeout(() => {
-        executeRedirect();
-      }, 2000);
+      executeRedirect();
     }
   }, [redirectUrl, localSuccess, executeRedirect]);
 
   // Generate JWT when agentPKP is set and permissions are granted
   useEffect(() => {
     if (agentPKP && localSuccess === 'Permissions granted successfully!') {
-      const timer = setTimeout(async () => {
-        setLocalSuccess(null);
-        await generateJWT(connectInfoMap.app, connectInfoMap.app.activeVersion!);
-      }, 1000);
-      return () => clearTimeout(timer);
+      setLocalSuccess(null);
+      generateJWT(connectInfoMap.app, connectInfoMap.app.activeVersion!);
     }
-    return undefined;
   }, [agentPKP, localSuccess, generateJWT, connectInfoMap.app]);
 
   const handleSubmit = useCallback(async () => {

@@ -66,9 +66,7 @@ export function AppPermissionPage({
   useEffect(() => {
     if (redirectUrl && !localSuccess) {
       setLocalSuccess('Success! Redirecting to app...');
-      setTimeout(() => {
-        executeRedirect();
-      }, 2000);
+      executeRedirect();
     }
   }, [redirectUrl, localSuccess, executeRedirect]);
 
@@ -176,9 +174,7 @@ export function AppPermissionPage({
       if (!hasAnyChanges) {
         setLocalStatus(null);
         setLocalSuccess('Permissions are up to date.');
-        setTimeout(() => {
-          setLocalSuccess(null);
-        }, 3000);
+        setLocalSuccess(null);
         return;
       }
 
@@ -211,17 +207,15 @@ export function AppPermissionPage({
         console.log('[UserPermissionPage] setAbilityPolicyParameters result:', result);
 
         setLocalStatus(null);
-        // Show success state for 3 seconds, then handle redirect or clear success
+        // Show success state then handle redirect or clear success
         setLocalSuccess('Permissions granted successfully!');
 
         // Generate JWT for redirect (useJwtRedirect will handle if there's a redirectUri)
-        setTimeout(async () => {
-          setLocalSuccess(null);
-          // Only generate JWT if there's a redirectUri (for app redirects)
-          if (redirectUri) {
-            await generateJWT(connectInfoMap.app, Number(permittedVersion));
-          }
-        }, 3000);
+        setLocalSuccess(null);
+        // Only generate JWT if there's a redirectUri (for app redirects)
+        if (redirectUri) {
+          await generateJWT(connectInfoMap.app, Number(permittedVersion));
+        }
       } catch (error) {
         setLocalError(error instanceof Error ? error.message : 'Failed to permit app');
         setLocalStatus(null);
@@ -279,10 +273,8 @@ export function AppPermissionPage({
       setLocalStatus(null);
       // Show success state until redirect
       setLocalSuccess('App unpermitted successfully!');
-      setTimeout(() => {
-        // Force the refresh for the sidebar to update
-        window.location.href = `/user/apps`;
-      }, 3000);
+      // Force the refresh for the sidebar to update
+      window.location.href = `/user/apps`;
     } catch (error) {
       setLocalError(error instanceof Error ? error.message : 'Failed to unpermit app');
       setLocalStatus(null);

@@ -56,9 +56,7 @@ export function RepermitConnectPage({
   useEffect(() => {
     if (redirectUrl && !localSuccess) {
       setLocalSuccess('Success! Redirecting to app...');
-      setTimeout(() => {
-        executeRedirect();
-      }, 2000);
+      executeRedirect();
     }
   }, [redirectUrl, localSuccess, executeRedirect]);
 
@@ -94,17 +92,15 @@ export function RepermitConnectPage({
       setIsConnectProcessing(false);
       setLocalSuccess('App re-permitted successfully!');
 
-      // Generate JWT for redirect after short delay
-      setTimeout(async () => {
-        setLocalSuccess(null);
-        // Only generate JWT if there's an effectiveRedirectUri (for app redirects)
-        if (effectiveRedirectUri) {
-          await generateJWT(appData, appData.activeVersion!);
-        } else {
-          // Navigate to the app permissions page with full refresh to update sidebar
-          window.location.href = `/user/appId/${appData.appId}`;
-        }
-      }, 3000);
+      // Generate JWT for redirect or navigate
+      setLocalSuccess(null);
+      // Only generate JWT if there's an effectiveRedirectUri (for app redirects)
+      if (effectiveRedirectUri) {
+        await generateJWT(appData, appData.activeVersion!);
+      } else {
+        // Navigate to the app permissions page with full refresh to update sidebar
+        window.location.href = `/user/appId/${appData.appId}`;
+      }
     } catch (error) {
       setLocalError(error instanceof Error ? error.message : 'Failed to re-permit app');
       setIsConnectProcessing(false);
