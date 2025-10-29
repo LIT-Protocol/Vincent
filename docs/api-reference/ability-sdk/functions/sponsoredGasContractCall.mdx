@@ -1,0 +1,60 @@
+---
+title: sponsoredGasContractCall
+---
+
+> **sponsoredGasContractCall**(`__namedParameters`): `Promise`\<`string`\>
+
+Defined in: [abilityHelpers/gasSponsorship/sponsored-gas-contract-call.ts:25](https://github.com/LIT-Protocol/Vincent/blob/24971b3553e0b3a0f81730455f8a1892791091ad/packages/libs/ability-sdk/src/lib/abilityHelpers/gasSponsorship/sponsored-gas-contract-call.ts#L25)
+
+Handler function for making contract calls
+This function handles the preparation, signing, and sending of contract transactions
+
+## Parameters
+
+### \_\_namedParameters
+
+#### abi
+
+`any`[]
+
+#### args
+
+`any`[]
+
+#### chainId?
+
+`number`
+
+#### contractAddress
+
+`string`
+
+#### eip7702AlchemyApiKey?
+
+`string`
+
+#### eip7702AlchemyPolicyId?
+
+`string`
+
+#### functionName
+
+`string`
+
+#### overrides?
+
+\{ `value?`: `string` \| `number` \| `bigint`; \} = `{}`
+
+#### overrides.value?
+
+`string` \| `number` \| `bigint`
+
+#### pkpPublicKey
+
+`string`
+
+## Returns
+
+`Promise`\<`string`\>
+
+The UserOperation hash.  You must use the alchemy smartAccountClient.waitForUserOperationTransaction() to convert the userOp into a txHash.

@@ -2,9 +2,9 @@
 title: createVincentAbility
 ---
 
-> **createVincentAbility**\<`AbilityParamsSchema`, `PkgNames`, `PolicyMap`, `PolicyMapByPackageName`, `PrecheckSuccessSchema`, `PrecheckFailSchema`, `ExecuteSuccessSchema`, `ExecuteFailSchema`\>(`AbilityConfig`): [`VincentAbility`](/api-reference/ability-sdk/type-aliases/VincentAbility)\<`AbilityParamsSchema`, `PkgNames`, `PolicyMap`, `PolicyMapByPackageName`, `ExecuteSuccessSchema`, `ExecuteFailSchema`, `PrecheckSuccessSchema`, `PrecheckFailSchema`\>
+> **createVincentAbility**(`AbilityConfig`): [`VincentAbility`](/api-reference/ability-sdk/type-aliases/VincentAbility)\<`AbilityParamsSchema`, `PkgNames`, `PolicyMap`, `PolicyMapByPackageName`, `ExecuteSuccessSchema`, `ExecuteFailSchema`, `PrecheckSuccessSchema`, `PrecheckFailSchema`\>
 
-Defined in: [abilityCore/vincentAbility.ts:77](https://github.com/LIT-Protocol/Vincent/blob/59bbcc58961d006596c8c80671cc1200f69f2946/packages/libs/ability-sdk/src/lib/abilityCore/vincentAbility.ts#L77)
+Defined in: [abilityCore/vincentAbility.ts:77](https://github.com/LIT-Protocol/Vincent/blob/24971b3553e0b3a0f81730455f8a1892791091ad/packages/libs/ability-sdk/src/lib/abilityCore/vincentAbility.ts#L77)
 
 The `createVincentAbility()` method is used to define an ability's lifecycle methods and ensure that arguments provided to the ability's
 lifecycle methods, as well as their return values, are validated and fully type-safe by defining ZOD schemas for them.
@@ -41,40 +41,6 @@ const exampleSimpleAbility = createVincentAbility({
     },
   });
 ```
-
-## Type Parameters
-
-### AbilityParamsSchema
-
-`AbilityParamsSchema` *extends* `ZodType`\<`any`, `ZodTypeDef`, `any`\>
-
-### PkgNames
-
-`PkgNames` *extends* `string`
-
-### PolicyMap
-
-`PolicyMap` *extends* `AbilityPolicyMap`\<`any`, `PkgNames`\>
-
-### PolicyMapByPackageName
-
-`PolicyMapByPackageName` *extends* `{ [K in string]: any }`
-
-### PrecheckSuccessSchema
-
-`PrecheckSuccessSchema` *extends* `ZodType`\<`any`, `ZodTypeDef`, `any`\> = `ZodUndefined`
-
-### PrecheckFailSchema
-
-`PrecheckFailSchema` *extends* `ZodType`\<`any`, `ZodTypeDef`, `any`\> = `ZodUndefined`
-
-### ExecuteSuccessSchema
-
-`ExecuteSuccessSchema` *extends* `ZodType`\<`any`, `ZodTypeDef`, `any`\> = `ZodUndefined`
-
-### ExecuteFailSchema
-
-`ExecuteFailSchema` *extends* `ZodType`\<`any`, `ZodTypeDef`, `any`\> = `ZodUndefined`
 
 ## Parameters
 

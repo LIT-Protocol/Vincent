@@ -133,6 +133,9 @@
                   "api-reference/ability-sdk/functions/createVincentAbility",
                   "api-reference/ability-sdk/functions/createVincentAbilityPolicy",
                   "api-reference/ability-sdk/functions/createVincentPolicy",
+                  "api-reference/ability-sdk/functions/populateTransaction",
+                  "api-reference/ability-sdk/functions/sponsoredGasContractCall",
+                  "api-reference/ability-sdk/functions/sponsoredGasRawTransaction",
                   "api-reference/ability-sdk/functions/supportedPoliciesForAbility"
                 ]
               },
@@ -329,7 +332,15 @@
                 "pages": [
                   "api-reference/contracts-sdk/functions/createContract",
                   "api-reference/contracts-sdk/functions/getClient",
+                  "api-reference/contracts-sdk/functions/getPkpTokenId",
                   "api-reference/contracts-sdk/functions/getTestClient"
+                ]
+              },
+              {
+                "group": "Variables",
+                "pages": [
+                  "api-reference/contracts-sdk/variables/COMBINED_ABI",
+                  "api-reference/contracts-sdk/variables/VINCENT_DIAMOND_CONTRACT_ADDRESS_PROD"
                 ]
               },
               {

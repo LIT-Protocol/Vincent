@@ -2,51 +2,9 @@
 title: VincentAbility
 ---
 
-> **VincentAbility**\<`AbilityParamsSchema`, `PkgNames`, `PolicyMap`, `PoliciesByPackageName`, `ExecuteSuccessSchema`, `ExecuteFailSchema`, `PrecheckSuccessSchema`, `PrecheckFailSchema`, `ExecuteFn`, `PrecheckFn`\> = `object`
+> **VincentAbility** = `object`
 
-Defined in: [types.ts:387](https://github.com/LIT-Protocol/Vincent/blob/59bbcc58961d006596c8c80671cc1200f69f2946/packages/libs/ability-sdk/src/lib/types.ts#L387)
-
-## Type Parameters
-
-### AbilityParamsSchema
-
-`AbilityParamsSchema` *extends* `z.ZodType`
-
-### PkgNames
-
-`PkgNames` *extends* `string`
-
-### PolicyMap
-
-`PolicyMap` *extends* `AbilityPolicyMap`\<`any`, `PkgNames`\>
-
-### PoliciesByPackageName
-
-`PoliciesByPackageName` *extends* `PolicyMap`\[`"policyByPackageName"`\]
-
-### ExecuteSuccessSchema
-
-`ExecuteSuccessSchema` *extends* `z.ZodType` \| `undefined` = `undefined`
-
-### ExecuteFailSchema
-
-`ExecuteFailSchema` *extends* `z.ZodType` \| `undefined` = `undefined`
-
-### PrecheckSuccessSchema
-
-`PrecheckSuccessSchema` *extends* `z.ZodType` \| `undefined` = `undefined`
-
-### PrecheckFailSchema
-
-`PrecheckFailSchema` *extends* `z.ZodType` \| `undefined` = `undefined`
-
-### ExecuteFn
-
-`ExecuteFn` = `AbilityLifecycleFunction`\<`AbilityParamsSchema`, `AbilityExecutionPolicyContext`\<`PoliciesByPackageName`\>, `ExecuteSuccessSchema`, `ExecuteFailSchema`\>
-
-### PrecheckFn
-
-`PrecheckFn` = `undefined` \| `AbilityLifecycleFunction`\<`AbilityParamsSchema`, `PolicyEvaluationResultContext`\<`PoliciesByPackageName`\>, `PrecheckSuccessSchema`, `PrecheckFailSchema`\>
+Defined in: [types.ts:387](https://github.com/LIT-Protocol/Vincent/blob/24971b3553e0b3a0f81730455f8a1892791091ad/packages/libs/ability-sdk/src/lib/types.ts#L387)
 
 ## Properties
 
@@ -54,7 +12,7 @@ Defined in: [types.ts:387](https://github.com/LIT-Protocol/Vincent/blob/59bbcc58
 
 > **abilityDescription**: `string`
 
-Defined in: [types.ts:412](https://github.com/LIT-Protocol/Vincent/blob/59bbcc58961d006596c8c80671cc1200f69f2946/packages/libs/ability-sdk/src/lib/types.ts#L412)
+Defined in: [types.ts:412](https://github.com/LIT-Protocol/Vincent/blob/24971b3553e0b3a0f81730455f8a1892791091ad/packages/libs/ability-sdk/src/lib/types.ts#L412)
 
 ***
 
@@ -62,7 +20,7 @@ Defined in: [types.ts:412](https://github.com/LIT-Protocol/Vincent/blob/59bbcc58
 
 > **abilityParamsSchema**: `AbilityParamsSchema`
 
-Defined in: [types.ts:415](https://github.com/LIT-Protocol/Vincent/blob/59bbcc58961d006596c8c80671cc1200f69f2946/packages/libs/ability-sdk/src/lib/types.ts#L415)
+Defined in: [types.ts:415](https://github.com/LIT-Protocol/Vincent/blob/24971b3553e0b3a0f81730455f8a1892791091ad/packages/libs/ability-sdk/src/lib/types.ts#L415)
 
 ***
 
@@ -70,7 +28,7 @@ Defined in: [types.ts:415](https://github.com/LIT-Protocol/Vincent/blob/59bbcc58
 
 > **execute**: `ExecuteFn`
 
-Defined in: [types.ts:414](https://github.com/LIT-Protocol/Vincent/blob/59bbcc58961d006596c8c80671cc1200f69f2946/packages/libs/ability-sdk/src/lib/types.ts#L414)
+Defined in: [types.ts:414](https://github.com/LIT-Protocol/Vincent/blob/24971b3553e0b3a0f81730455f8a1892791091ad/packages/libs/ability-sdk/src/lib/types.ts#L414)
 
 ***
 
@@ -78,7 +36,7 @@ Defined in: [types.ts:414](https://github.com/LIT-Protocol/Vincent/blob/59bbcc58
 
 > **packageName**: `string`
 
-Defined in: [types.ts:411](https://github.com/LIT-Protocol/Vincent/blob/59bbcc58961d006596c8c80671cc1200f69f2946/packages/libs/ability-sdk/src/lib/types.ts#L411)
+Defined in: [types.ts:411](https://github.com/LIT-Protocol/Vincent/blob/24971b3553e0b3a0f81730455f8a1892791091ad/packages/libs/ability-sdk/src/lib/types.ts#L411)
 
 ***
 
@@ -86,7 +44,7 @@ Defined in: [types.ts:411](https://github.com/LIT-Protocol/Vincent/blob/59bbcc58
 
 > `optional` **precheck**: `PrecheckFn`
 
-Defined in: [types.ts:413](https://github.com/LIT-Protocol/Vincent/blob/59bbcc58961d006596c8c80671cc1200f69f2946/packages/libs/ability-sdk/src/lib/types.ts#L413)
+Defined in: [types.ts:413](https://github.com/LIT-Protocol/Vincent/blob/24971b3553e0b3a0f81730455f8a1892791091ad/packages/libs/ability-sdk/src/lib/types.ts#L413)
 
 ***
 
@@ -94,4 +52,4 @@ Defined in: [types.ts:413](https://github.com/LIT-Protocol/Vincent/blob/59bbcc58
 
 > **supportedPolicies**: `PolicyMap`
 
-Defined in: [types.ts:416](https://github.com/LIT-Protocol/Vincent/blob/59bbcc58961d006596c8c80671cc1200f69f2946/packages/libs/ability-sdk/src/lib/types.ts#L416)
+Defined in: [types.ts:416](https://github.com/LIT-Protocol/Vincent/blob/24971b3553e0b3a0f81730455f8a1892791091ad/packages/libs/ability-sdk/src/lib/types.ts#L416)

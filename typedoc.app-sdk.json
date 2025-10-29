@@ -9,7 +9,8 @@
   "plugin": [
     "typedoc-plugin-markdown",
     "typedoc-plugin-frontmatter",
-    "./scripts/docs/typedoc-custom-plugin.mjs"
+    "./scripts/docs/typedoc-custom-plugin.mjs",
+    "./typedoc-remove-type-params-plugin.mjs"
   ],
   "tsconfig": "packages/libs/app-sdk/tsconfig.lib.json",
   "fileExtension": ".mdx",

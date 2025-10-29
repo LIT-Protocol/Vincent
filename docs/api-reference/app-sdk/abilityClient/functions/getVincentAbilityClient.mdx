@@ -2,9 +2,9 @@
 title: getVincentAbilityClient
 ---
 
-> **getVincentAbilityClient**\<`IpfsCid`, `AbilityParamsSchema`, `PkgNames`, `PolicyMap`, `PoliciesByPackageName`, `ExecuteSuccessSchema`, `ExecuteFailSchema`, `PrecheckSuccessSchema`, `PrecheckFailSchema`\>(`params`): [`VincentAbilityClient`](/api-reference/app-sdk/abilityClient/interfaces/VincentAbilityClient)\<`AbilityParamsSchema`, `PoliciesByPackageName`, `ExecuteSuccessSchema`, `ExecuteFailSchema`, `PrecheckSuccessSchema`, `PrecheckFailSchema`\>
+> **getVincentAbilityClient**(`params`): [`VincentAbilityClient`](/api-reference/app-sdk/abilityClient/interfaces/VincentAbilityClient)\<`AbilityParamsSchema`, `PoliciesByPackageName`, `ExecuteSuccessSchema`, `ExecuteFailSchema`, `PrecheckSuccessSchema`, `PrecheckFailSchema`\>
 
-Defined in: [app-sdk/src/abilityClient/vincentAbilityClient.ts:114](https://github.com/LIT-Protocol/Vincent/blob/59bbcc58961d006596c8c80671cc1200f69f2946/packages/libs/app-sdk/src/abilityClient/vincentAbilityClient.ts#L114)
+Defined in: [app-sdk/src/abilityClient/vincentAbilityClient.ts:114](https://github.com/LIT-Protocol/Vincent/blob/24971b3553e0b3a0f81730455f8a1892791091ad/packages/libs/app-sdk/src/abilityClient/vincentAbilityClient.ts#L114)
 
 A VincentAbilityClient provides a type-safe interface for executing abilities, for both `precheck()`
 and `execute()` functionality.
@@ -55,44 +55,6 @@ if(isAbilityResponseFailure(uniswapSwapExecutionResult)) {
  ...handle result
 }
 ```
-
-## Type Parameters
-
-### IpfsCid
-
-`IpfsCid` *extends* `string`
-
-### AbilityParamsSchema
-
-`AbilityParamsSchema` *extends* `ZodType`\<`any`, `ZodTypeDef`, `any`\>
-
-### PkgNames
-
-`PkgNames` *extends* `string`
-
-### PolicyMap
-
-`PolicyMap` *extends* `AbilityPolicyMap`\<`any`, `PkgNames`\>
-
-### PoliciesByPackageName
-
-`PoliciesByPackageName` *extends* `{ [K in string]: any }`
-
-### ExecuteSuccessSchema
-
-`ExecuteSuccessSchema` *extends* `ZodType`\<`any`, `ZodTypeDef`, `any`\> = `ZodUndefined`
-
-### ExecuteFailSchema
-
-`ExecuteFailSchema` *extends* `ZodType`\<`any`, `ZodTypeDef`, `any`\> = `ZodUndefined`
-
-### PrecheckSuccessSchema
-
-`PrecheckSuccessSchema` *extends* `ZodType`\<`any`, `ZodTypeDef`, `any`\> = `ZodUndefined`
-
-### PrecheckFailSchema
-
-`PrecheckFailSchema` *extends* `ZodType`\<`any`, `ZodTypeDef`, `any`\> = `ZodUndefined`
 
 ## Parameters
 
