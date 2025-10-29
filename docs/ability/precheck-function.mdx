@@ -1,0 +1,190 @@
+---
+title: Precheck Function
+---
+
+The precheck function runs locally to validate that execution won't fail when the execute function is called. Since executing uses the Lit network (which costs time and money), precheck should validate everything possible to prevent failures.
+
+<Note>
+The Vincent Ability SDK runs Policy prechecks first. Your precheck only runs if all Policies return `allow`.
+</Note>
+
+## Function Parameters
+
+The precheck function receives two parameters:
+
+<ParamField path="params" type="object" required>
+  Object containing the ability parameters
+  <Expandable title="properties">
+    <ParamField path="abilityParams" type="object">
+      Parameters matching your `abilityParamsSchema` definition
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField path="abilityContext" type="object" required>
+  Context object provided by the SDK with helpers and metadata
+  <Expandable title="properties">
+    <ParamField path="succeed" type="function">
+      Helper function to return a success result matching your `precheckSuccessSchema`
+    </ParamField>
+    <ParamField path="fail" type="function">
+      Helper function to return a failure result matching your `precheckFailSchema`
+    </ParamField>
+    <ParamField path="delegation" type="object">
+      Contains `delegatorPkpInfo` with the Vincent Wallet address executing the ability
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+## Response Schemas
+
+### Success Response
+
+<ParamField path="precheckSuccessSchema" type="ZodSchema" required>
+  A Zod schema that defines the structure of successful precheck results. Include details that help the executor understand why the precheck passed, such as current balances and estimated costs.
+</ParamField>
+
+### Failure Response
+
+<ParamField path="precheckFailSchema" type="ZodSchema" required>
+  A Zod schema that defines the structure of failed precheck results. Include details that help the executor understand why the precheck failed, such as error reasons and relevant values.
+</ParamField>
+
+<Tabs>
+  <Tab title="Success Schema">
+    ```typescript
+    import { createVincentAbility } from '@lit-protocol/vincent-ability-sdk';
+    import { z } from 'zod';
+
+    const vincentAbility = createVincentAbility({
+      // ... other ability definitions
+
+      precheckSuccessSchema: z.object({
+        erc20TokenBalance: z.number(),
+        nativeTokenBalance: z.number(),
+        estimatedGas: z.number(),
+      }),
+    });
+    ```
+  </Tab>
+  <Tab title="Failure Schema">
+    ```typescript
+    import { createVincentAbility } from '@lit-protocol/vincent-ability-sdk';
+    import { z } from 'zod';
+
+    const vincentAbility = createVincentAbility({
+      // ... other ability definitions
+
+      precheckFailSchema: z.object({
+        reason: z.string(),
+        currentBalance: z.number().optional(),
+        requiredAmount: z.number().optional(),
+      }),
+    });
+    ```
+  </Tab>
+</Tabs>
+
+<Note>
+If any unhandled error occurs during precheck, the Vincent Ability SDK automatically returns a fail result with the error message.
+</Note>
+
+## Example Implementation
+
+```typescript
+import { createVincentAbility } from '@lit-protocol/vincent-ability-sdk';
+import { z } from 'zod';
+
+import {
+  createErc20TransferTransaction,
+  getErc20TokenBalance,
+  getNativeTokenBalance,
+} from './my-ability-code';
+
+const vincentAbility = createVincentAbility({
+  // ... other ability definitions
+
+  precheckSuccessSchema: z.object({
+    erc20TokenBalance: z.number(),
+    nativeTokenBalance: z.number(),
+    estimatedGas: z.number(),
+  }),
+
+  precheckFailSchema: z.object({
+    reason: z.string(),
+    currentBalance: z.number().optional(),
+    requiredAmount: z.number().optional(),
+  }),
+
+  precheck: async ({ abilityParams }, abilityContext) => {
+    const { tokenAddress, amountToSend, recipientAddress } = abilityParams;
+
+    // Check ERC20 token balance
+    const erc20TokenBalance = await getErc20TokenBalance(
+      abilityContext.delegation.delegatorPkpInfo.ethAddress,
+      tokenAddress,
+      amountToSend,
+    );
+
+    if (erc20TokenBalance < amountToSend) {
+      return abilityContext.fail({
+        reason: 'Insufficient token balance',
+        currentBalance: erc20TokenBalance,
+        requiredAmount: amountToSend,
+      });
+    }
+
+    // Estimate gas for transaction
+    const transferTransaction = createErc20TransferTransaction(
+      tokenAddress,
+      recipientAddress,
+      amountToSend,
+    );
+
+    let estimatedGas;
+    try {
+      estimatedGas = await transferTransaction.estimateGas();
+    } catch (error) {
+      if (error.code === 'UNPREDICTABLE_GAS_LIMIT') {
+        return abilityContext.fail({
+          reason: 'Transaction reverted during gas estimation',
+          errorCode: error.code,
+          revertReason: error.reason || 'Unknown revert reason',
+        });
+      }
+      throw error;
+    }
+
+    // Check native token balance for gas
+    const nativeTokenBalance = await getNativeTokenBalance(
+      abilityContext.delegation.delegatorPkpInfo.ethAddress,
+      estimatedGas,
+    );
+
+    if (nativeTokenBalance < estimatedGas) {
+      return abilityContext.fail({
+        reason: 'Insufficient native token balance',
+        currentBalance: nativeTokenBalance,
+        requiredAmount: estimatedGas,
+      });
+    }
+
+    return abilityContext.succeed({
+      erc20TokenBalance,
+      nativeTokenBalance,
+      estimatedGas,
+    });
+  },
+});
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Execute Function" icon="play" href="/ability/execute-function">
+    Implement your Ability's main execution logic
+  </Card>
+  <Card title="Supporting Policies" icon="shield" href="/ability/supporting-policies">
+    Learn how to integrate Vincent Policies with your Ability
+  </Card>
+</CardGroup>

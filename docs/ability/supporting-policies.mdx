@@ -1,0 +1,81 @@
+---
+title: Supporting Policies
+---
+
+Add Vincent Policy support to your Ability by creating policy objects with parameter mappings.
+
+<Note>
+Supporting a Policy doesn't make it required - App Users choose which Policies to enable.
+</Note>
+
+## Policy Configuration
+
+<ParamField path="createVincentAbilityPolicy" type="function" required>
+  Creates a policy object that maps your Ability's parameters to the Policy's requirements. This allows the Policy to access and validate the necessary parameters from your Ability.
+</ParamField>
+
+```typescript
+import {
+  createVincentAbility,
+  createVincentAbilityPolicy,
+  supportedPoliciesForAbility,
+} from '@lit-protocol/vincent-ability-sdk';
+import { bundledVincentPolicy } from '@lit-protocol/vincent-policy-spending-limit';
+import { z } from 'zod';
+
+const abilityParamsSchema = z.object({
+  tokenAddress: z.string(),
+  amountToSend: z.number(),
+  recipientAddress: z.string(),
+});
+
+const SpendingLimitPolicy = createVincentAbilityPolicy({
+  abilityParamsSchema,
+  bundledVincentPolicy,
+  abilityParameterMappings: {
+    tokenAddress: 'tokenAddress',
+    amountToSend: 'amount',
+  },
+});
+
+const vincentAbility = createVincentAbility({
+  // ... other ability definitions
+
+  abilityParamsSchema,
+
+  supportedPolicies: supportedPoliciesForAbility([SpendingLimitPolicy]),
+});
+```
+
+## How It Works
+
+<Steps>
+  <Step title="Import Policy">
+    Import `bundledVincentPolicy` from the Policy package (e.g., `@lit-protocol/vincent-policy-spending-limit`)
+  </Step>
+
+  <Step title="Create Mapping">
+    Use `createVincentAbilityPolicy` with:
+    - `abilityParamsSchema`: Your Ability's parameter schema
+    - `bundledVincentPolicy`: The imported Policy
+    - `abilityParameterMappings`: Maps your param names to Policy param names
+  </Step>
+
+  <Step title="Register Policy">
+    Add to `supportedPolicies` using `supportedPoliciesForAbility([SpendingLimitPolicy])`
+  </Step>
+</Steps>
+
+The SDK handles Policy execution and evaluation automatically.
+
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Precheck Function" icon="check" href="/ability/precheck-function">
+    Validate parameters before execution
+  </Card>
+  <Card title="Execute Function" icon="play" href="/ability/execute-function">
+    Implement your Ability's core logic
+  </Card>
+</CardGroup>
