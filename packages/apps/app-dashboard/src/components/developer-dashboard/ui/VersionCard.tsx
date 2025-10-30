@@ -2,8 +2,8 @@ import { Power, PowerOff } from 'lucide-react';
 import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
 
 interface VersionCardProps {
-  version: number;
-  activeVersion?: number;
+  version: number | string;
+  activeVersion?: number | string;
   enabled?: boolean;
   createdAt: string;
   onClick: () => void;

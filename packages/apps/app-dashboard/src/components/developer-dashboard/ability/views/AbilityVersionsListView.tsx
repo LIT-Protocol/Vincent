@@ -30,8 +30,8 @@ export function AbilityVersionsListView({
   const renderVersionCard = (version: AbilityVersion) => (
     <VersionCard
       key={version.version}
-      version={parseInt(version.version)}
-      activeVersion={ability.activeVersion ? parseInt(ability.activeVersion) : undefined}
+      version={version.version}
+      activeVersion={ability.activeVersion}
       createdAt={version.createdAt}
       onClick={() => onVersionClick?.(version.version)}
     />
