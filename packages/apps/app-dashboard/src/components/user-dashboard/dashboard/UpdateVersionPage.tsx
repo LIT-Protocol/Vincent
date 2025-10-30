@@ -54,9 +54,7 @@ export function UpdateVersionPage({
   useEffect(() => {
     if (redirectUrl && !localSuccess) {
       setLocalSuccess('Success! Redirecting to app...');
-      setTimeout(() => {
-        executeRedirect();
-      }, 2000);
+      executeRedirect();
     }
   }, [redirectUrl, localSuccess, executeRedirect]);
 
@@ -120,18 +118,16 @@ export function UpdateVersionPage({
         });
 
         setLocalStatus(null);
-        // Show success state for 3 seconds, then redirect or reload
+        // Show success state then redirect or reload
         setLocalSuccess('Version updated successfully!');
-        setTimeout(async () => {
-          setLocalSuccess(null);
-          // Only generate JWT if there's a redirectUri (for app redirects)
-          if (redirectUri) {
-            await generateJWT(connectInfoMap.app, connectInfoMap.app.activeVersion!);
-          } else {
-            // Navigate to the app permissions page with full refresh to update sidebar
-            window.location.href = `/user/appId/${connectInfoMap.app.appId}`;
-          }
-        }, 3000);
+        setLocalSuccess(null);
+        // Only generate JWT if there's a redirectUri (for app redirects)
+        if (redirectUri) {
+          await generateJWT(connectInfoMap.app, connectInfoMap.app.activeVersion!);
+        } else {
+          // Navigate to the app permissions page with full refresh to update sidebar
+          window.location.href = `/user/appId/${connectInfoMap.app.appId}`;
+        }
       } catch (error) {
         setLocalError(error instanceof Error ? error.message : 'Failed to update version');
         setLocalStatus(null);

@@ -45,21 +45,15 @@ export function RepermitConnect({
   useEffect(() => {
     if (redirectUrl && localSuccess !== 'Success! Redirecting to app...') {
       setLocalSuccess('Success! Redirecting to app...');
-      setTimeout(() => {
-        executeRedirect();
-      }, 2000);
+      executeRedirect();
     }
   }, [redirectUrl, localSuccess, executeRedirect]);
 
   // Generate JWT when re-permitting is successful
   useEffect(() => {
     if (localSuccess === 'App re-permitted successfully!') {
-      const timer = setTimeout(async () => {
-        await generateJWT(appData, appData.activeVersion!);
-      }, 1000);
-      return () => clearTimeout(timer);
+      generateJWT(appData, appData.activeVersion!);
     }
-    return undefined;
   }, [localSuccess, generateJWT, appData]);
 
   const handleSubmit = useCallback(async () => {
