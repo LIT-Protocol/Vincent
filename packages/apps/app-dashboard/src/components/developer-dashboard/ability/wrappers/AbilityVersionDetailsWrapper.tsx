@@ -5,7 +5,10 @@ import Loading from '@/components/shared/ui/Loading';
 import { StatusMessage } from '@/components/shared/ui/statusMessage';
 import { AbilityVersionDetailsView } from '../views/AbilityVersionDetailsView';
 import { Breadcrumb } from '@/components/shared/ui/Breadcrumb';
-import { EditAbilityVersionForm } from '../forms/EditAbilityVersionForm';
+import {
+  EditAbilityVersionForm,
+  EditAbilityVersionFormData,
+} from '../forms/EditAbilityVersionForm';
 import { DeleteAbilityVersionForm } from '../forms/DeleteAbilityVersionForm';
 import {
   Dialog,
@@ -67,7 +70,7 @@ export function AbilityVersionDetailsWrapper() {
     setCurrentView(mutationType as ViewType);
   };
 
-  const handleEditAbilityVersionSubmit = async (data: any) => {
+  const handleEditAbilityVersionSubmit = async (data: EditAbilityVersionFormData) => {
     setIsSubmitting(true);
     try {
       await editAbilityVersion({
@@ -76,10 +79,8 @@ export function AbilityVersionDetailsWrapper() {
         abilityVersionEdit: data,
       }).unwrap();
 
-      setTimeout(() => {
-        setCurrentView('details');
-        setIsSubmitting(false);
-      }, 1500);
+      setCurrentView('details');
+      setIsSubmitting(false);
     } catch (error) {
       console.error('Failed to update ability version:', error);
       setIsSubmitting(false);

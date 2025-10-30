@@ -6,8 +6,9 @@ import {
   ModuleRegistry,
   AllCommunityModule,
   RowClickedEvent,
+  RowClassParams,
 } from 'ag-grid-community';
-import { CheckCircle2, X } from 'lucide-react';
+import { X } from 'lucide-react';
 
 import { Ability } from '@/types/developer-dashboard/appTypes';
 import {
@@ -32,19 +33,38 @@ interface SelectedAbilityWithVersion {
 // Dynamic column definitions based on selected abilities
 const createToolGridColumns = (
   selectedAbilities: Map<string, SelectedAbilityWithVersion>,
+  onAddClick: (ability: Ability) => void,
+  onRemoveClick: (packageName: string) => void,
 ): ColDef[] => [
   {
     headerName: '',
     field: 'packageName',
-    width: 50,
-    maxWidth: 50,
-    minWidth: 50,
+    width: 80,
+    maxWidth: 80,
+    minWidth: 80,
     suppressNavigable: true,
     cellRenderer: (params: ICellRendererParams) => {
       const isSelected = selectedAbilities.has(params.value);
       return (
         <div className="flex items-center justify-center h-full">
-          {isSelected && <CheckCircle2 className="w-5 h-5" style={{ color: theme.brandOrange }} />}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              if (isSelected) {
+                onRemoveClick(params.value);
+              } else {
+                onAddClick(params.data);
+              }
+            }}
+            className={`px-3 py-1 text-xs font-semibold rounded transition-colors ${
+              isSelected
+                ? 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 hover:bg-gray-400 dark:hover:bg-gray-500'
+                : 'text-white hover:opacity-90'
+            }`}
+            style={!isSelected ? { backgroundColor: theme.brandOrange } : undefined}
+          >
+            {isSelected ? 'Added' : 'Add'}
+          </button>
         </div>
       );
     },
@@ -174,21 +194,22 @@ export function AbilitySelectorModal({
     (ability) => !existingAbilities.includes(ability.packageName) && !ability.isDeleted,
   );
 
+  const handleAddClick = (ability: Ability) => {
+    // Open version selector modal to select
+    setSelectedAbility(ability);
+    setIsVersionSelectorOpen(true);
+  };
+
   const handleRowClick = async (event: RowClickedEvent) => {
     const ability = event.data;
     if (!ability) {
       return;
     }
 
-    // If already selected, deselect it
+    // Only allow deselection via row click
     if (selectedAbilities.has(ability.packageName)) {
       handleRemoveSelection(ability.packageName);
-      return;
     }
-
-    // Open version selector modal to select
-    setSelectedAbility(ability);
-    setIsVersionSelectorOpen(true);
   };
 
   const handleVersionSelect = async (version: string) => {
@@ -254,7 +275,7 @@ export function AbilitySelectorModal({
     }
   };
 
-  const getRowClass = (params: any) => {
+  const getRowClass = (params: RowClassParams) => {
     const isSelected = selectedAbilities.has(params.data?.packageName);
     return `cursor-pointer hover:bg-gray-50 dark:hover:bg-neutral-700 ${isSelected ? 'bg-orange-50 dark:bg-orange-900/10' : ''}`;
   };
@@ -270,8 +291,8 @@ export function AbilitySelectorModal({
             Add Abilities to App Version
           </DialogTitle>
           <DialogDescription className={`${theme.textMuted}`} style={fonts.body}>
-            Click any ability to select a version. Click again to deselect. You can select multiple
-            abilities before adding them.
+            Click "Add" to select a version for an ability. Click "Added" to deselect. You can
+            select multiple abilities before adding them.
           </DialogDescription>
         </DialogHeader>
 
@@ -293,7 +314,11 @@ export function AbilitySelectorModal({
           >
             <AgGridReact
               rowData={filteredAbilities}
-              columnDefs={createToolGridColumns(selectedAbilities)}
+              columnDefs={createToolGridColumns(
+                selectedAbilities,
+                handleAddClick,
+                handleRemoveSelection,
+              )}
               defaultColDef={DEFAULT_COL_DEF}
               onRowClicked={handleRowClick}
               getRowClass={getRowClass}

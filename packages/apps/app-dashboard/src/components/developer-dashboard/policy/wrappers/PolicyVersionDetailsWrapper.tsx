@@ -5,7 +5,7 @@ import Loading from '@/components/shared/ui/Loading';
 import { StatusMessage } from '@/components/shared/ui/statusMessage';
 import { PolicyVersionDetailsView } from '../views/PolicyVersionDetailsView';
 import { Breadcrumb } from '@/components/shared/ui/Breadcrumb';
-import { EditPolicyVersionForm } from '../forms/EditPolicyVersionForm';
+import { EditPolicyVersionForm, EditPolicyVersionFormData } from '../forms/EditPolicyVersionForm';
 import { DeletePolicyVersionForm } from '../forms/DeletePolicyVersionForm';
 import {
   Dialog,
@@ -69,7 +69,7 @@ export function PolicyVersionDetailsWrapper() {
     setCurrentView(mutationType as ViewType);
   };
 
-  const handleEditPolicyVersionSubmit = async (data: any) => {
+  const handleEditPolicyVersionSubmit = async (data: EditPolicyVersionFormData) => {
     setIsSubmitting(true);
     try {
       await editPolicyVersion({
@@ -78,10 +78,8 @@ export function PolicyVersionDetailsWrapper() {
         policyVersionEdit: data,
       }).unwrap();
 
-      setTimeout(() => {
-        setCurrentView('details');
-        setIsSubmitting(false);
-      }, 1500);
+      setCurrentView('details');
+      setIsSubmitting(false);
     } catch (error) {
       console.error('Failed to update policy version:', error);
       setIsSubmitting(false);
