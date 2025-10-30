@@ -47,7 +47,7 @@
         ]
       }
     },
-    "test": {
+    "test-e2e": {
       "executor": "@nx/jest:jest",
       "dependsOn": ["e2e-test-utils:build", "action:deploy"],
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
