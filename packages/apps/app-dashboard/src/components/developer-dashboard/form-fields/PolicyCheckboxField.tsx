@@ -2,6 +2,7 @@ import { Checkbox } from '@/components/shared/ui/checkbox';
 import { Label } from '@/components/shared/ui/label';
 import { UseFormWatch, UseFormSetValue } from 'react-hook-form';
 import { Policy } from '@/types/developer-dashboard/appTypes';
+import { PolicyWithVersion } from '@/utils/developer-dashboard/sortSupportedPolicies';
 import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
 import { Info } from 'lucide-react';
 import { useState } from 'react';
@@ -13,7 +14,7 @@ interface PolicyCheckboxFieldProps {
   setValue: UseFormSetValue<any>;
   label: string;
   required?: boolean;
-  policies: Policy[];
+  policies: (Policy | PolicyWithVersion)[];
 }
 
 export function PolicyCheckboxField({
@@ -98,8 +99,20 @@ export function PolicyCheckboxField({
                     <p className={`text-xs ${theme.textMuted} font-mono`} style={fonts.body}>
                       {policy.packageName}
                     </p>
+                    {'specificVersion' in policy && policy.specificVersion && (
+                      <span
+                        className="text-xs px-1.5 py-0.5 rounded"
+                        style={{ backgroundColor: theme.brandOrange, color: 'white' }}
+                      >
+                        v{policy.specificVersion}
+                      </span>
+                    )}
                     <a
-                      href={`https://www.npmjs.com/package/${policy.packageName}`}
+                      href={`https://www.npmjs.com/package/${policy.packageName}${
+                        'specificVersion' in policy && policy.specificVersion
+                          ? `/v/${policy.specificVersion}`
+                          : ''
+                      }`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="hover:opacity-75 transition-opacity"
