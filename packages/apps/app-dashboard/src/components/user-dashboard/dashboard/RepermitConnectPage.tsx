@@ -98,8 +98,8 @@ export function RepermitConnectPage({
       if (effectiveRedirectUri) {
         await generateJWT(appData, appData.activeVersion!);
       } else {
-        // Navigate to the app permissions page with full refresh to update sidebar
-        window.location.href = `/user/appId/${appData.appId}`;
+        // Navigate to the app permissions page
+        navigate(`/user/appId/${appData.appId}`);
       }
     } catch (error) {
       setLocalError(error instanceof Error ? error.message : 'Failed to re-permit app');
