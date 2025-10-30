@@ -17,41 +17,26 @@ contract FeeViewsFacet {
 
     /**
      * @notice Gets the deposit for a user and vault
+     * @param appId the app id to get the deposit for
      * @param user the user to get the deposit for
      * @param vaultAddress the vault to get the deposit for
      * @return the deposit for the user and vault
      */
-    function deposits(address user, address vaultAddress) external view returns (LibFeeStorage.Deposit memory) {
-        return LibFeeStorage.getStorage().deposits[user][vaultAddress];
+    function deposits(uint40 appId, address user, address vaultAddress)
+        external
+        view
+        returns (LibFeeStorage.Deposit memory)
+    {
+        return LibFeeStorage.getStorage().deposits[appId][user][vaultAddress];
     }
 
     /**
-     * @notice Gets the userVaultOrPoolAssetAddresses for a user
-     * if this list gets too long and the view call is timing out,
-     * you can use the "one at a time" functions below
-     * @param user the user to get the userVaultOrPoolAssetAddresses for
-     * @return the userVaultOrPoolAssetAddresses for the user
+     * @notice Gets the collectedAppFees for a given app id
+     * @param appId the app id to get the collectedAppFees for
+     * @param tokenAddress the token address to get the collectedAppFees for
+     * @return the collectedAppFees for the given app id
      */
-    function userVaultOrPoolAssetAddresses(address user) external view returns (address[] memory) {
-        return LibFeeStorage.getStorage().userVaultOrPoolAssetAddresses[user].values();
-    }
-
-    /**
-     * @notice Gets the length of the userVaultOrPoolAssetAddresses for a user
-     * @param user the user to get the length of the userVaultOrPoolAssetAddresses for
-     * @return the length of the userVaultOrPoolAssetAddresses for the user
-     */
-    function userVaultOrPoolAssetAddressesLength(address user) external view returns (uint256) {
-        return LibFeeStorage.getStorage().userVaultOrPoolAssetAddresses[user].length();
-    }
-
-    /**
-     * @notice Gets the userVaultOrPoolAssetAddresses at the given index for a user
-     * @param user the user to get the userVaultOrPoolAssetAddresses at the given index for
-     * @param index the index to get the userVaultOrPoolAssetAddresses at
-     * @return the userVaultOrPoolAssetAddresses at the given index for the user
-     */
-    function userVaultOrPoolAssetAddressesAtIndex(address user, uint256 index) external view returns (address) {
-        return LibFeeStorage.getStorage().userVaultOrPoolAssetAddresses[user].at(index);
+    function collectedAppFees(uint40 appId, address tokenAddress) external view returns (uint256) {
+        return LibFeeStorage.getStorage().collectedAppFees[appId][tokenAddress];
     }
 }

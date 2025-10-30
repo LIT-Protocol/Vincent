@@ -44,6 +44,9 @@ contract Fee {
 
         // default to 0.25% swap fee
         LibFeeStorage.getStorage().swapFeePercentage = 25;
+
+        // default to 10% lit app fee split percentage
+        LibFeeStorage.getStorage().litAppFeeSplitPercentage = 1000;
     }
 
     /**
