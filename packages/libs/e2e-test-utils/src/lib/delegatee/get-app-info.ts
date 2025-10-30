@@ -1,4 +1,4 @@
-import { getTestClient } from '@lit-protocol/vincent-contracts-sdk';
+import { getClient } from '@lit-protocol/vincent-contracts-sdk';
 
 import { getChainHelpers } from '../chain';
 
@@ -7,7 +7,7 @@ export async function getAppInfo() {
     wallets: { appDelegatee },
   } = await getChainHelpers();
 
-  const app = await getTestClient({
+  const app = await getClient({
     signer: appDelegatee,
   }).getAppByDelegateeAddress({
     delegateeAddress: appDelegatee.address,

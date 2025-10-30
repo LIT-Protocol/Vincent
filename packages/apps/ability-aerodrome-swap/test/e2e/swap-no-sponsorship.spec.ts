@@ -13,7 +13,6 @@ import {
   disconnectVincentAbilityClients,
   getVincentAbilityClient,
 } from '@lit-protocol/vincent-app-sdk/abilityClient';
-import { z } from 'zod';
 import * as util from 'node:util';
 
 import {
@@ -21,7 +20,7 @@ import {
   bundledVincentAbility as aerodromeBundledAbility,
   type CheckErc20AllowanceResultFailure,
 } from '../../src';
-import { type Wallet, type providers } from 'ethers';
+import { ethers, type Wallet, type providers } from 'ethers';
 
 // Extend Jest timeout to 4 minutes
 jest.setTimeout(240000);
@@ -35,10 +34,7 @@ describe('Aerodrome Swap Ability E2E Tests without Gas Sponsorship', () => {
 
   const SWAP_TOKEN_OUT_ADDRESS = '0x4200000000000000000000000000000000000006'; // WETH
 
-  const envs = getEnv({
-    ALCHEMY_GAS_SPONSOR_API_KEY: z.string(),
-    ALCHEMY_GAS_SPONSOR_POLICY_ID: z.string(),
-  });
+  const ENV = getEnv();
 
   let agentPkpInfo: PkpInfo;
   let wallets: {
@@ -73,14 +69,17 @@ describe('Aerodrome Swap Ability E2E Tests without Gas Sponsorship', () => {
     // If an app exists for the delegatee, we will create a new app version with the new ipfs cids
     // Otherwise, we will create an app w/ version 1 appVersion with the new ipfs cids
     const existingApp = await delegatee.getAppInfo();
+    console.log('[beforeAll] existingApp', existingApp);
     let appId: number;
     let appVersion: number;
     if (!existingApp) {
+      console.log('[beforeAll] No existing app, registering new app');
       const newApp = await appManager.registerNewApp({ abilityIpfsCids, abilityPolicies });
       appId = newApp.appId;
       appVersion = newApp.appVersion;
     } else {
       // TODO Future optimization: Only create a new app version if the existing app version doesn't have the same ability and policy IPFS CIDs
+      console.log('[beforeAll] Existing app, registering new app version');
       const newAppVersion = await appManager.registerNewAppVersion({
         abilityIpfsCids,
         abilityPolicies,
@@ -121,7 +120,7 @@ describe('Aerodrome Swap Ability E2E Tests without Gas Sponsorship', () => {
           // @ts-expect-error - invalid ability action
           action: 'invalid',
           alchemyGasSponsor: false,
-          rpcUrl: envs.BASE_RPC_URL,
+          rpcUrl: ENV.BASE_RPC_URL,
           tokenInAddress: SWAP_TOKEN_IN_ADDRESS,
           tokenOutAddress: SWAP_TOKEN_OUT_ADDRESS,
           amountIn: SWAP_AMOUNT.toString(),
@@ -161,7 +160,7 @@ describe('Aerodrome Swap Ability E2E Tests without Gas Sponsorship', () => {
         {
           action: AbilityAction.Swap,
           alchemyGasSponsor: false,
-          rpcUrl: envs.BASE_RPC_URL,
+          rpcUrl: ENV.BASE_RPC_URL,
           tokenInAddress: SWAP_TOKEN_IN_ADDRESS,
           tokenOutAddress: SWAP_TOKEN_OUT_ADDRESS,
           amountIn: SWAP_AMOUNT.toString(),
@@ -200,7 +199,7 @@ describe('Aerodrome Swap Ability E2E Tests without Gas Sponsorship', () => {
       const executeResult = await aerodromeSwapAbilityClient.execute(
         {
           action: AbilityAction.Approve,
-          rpcUrl: envs.BASE_RPC_URL,
+          rpcUrl: ENV.BASE_RPC_URL,
           tokenInAddress: SWAP_TOKEN_IN_ADDRESS,
           tokenOutAddress: SWAP_TOKEN_OUT_ADDRESS,
           amountIn: SWAP_AMOUNT.toString(),
@@ -243,7 +242,7 @@ describe('Aerodrome Swap Ability E2E Tests without Gas Sponsorship', () => {
       const executeResult = await aerodromeSwapAbilityClient.execute(
         {
           action: AbilityAction.Approve,
-          rpcUrl: envs.BASE_RPC_URL,
+          rpcUrl: ENV.BASE_RPC_URL,
           tokenInAddress: SWAP_TOKEN_IN_ADDRESS,
           tokenOutAddress: SWAP_TOKEN_OUT_ADDRESS,
           amountIn: SWAP_AMOUNT.toString(),
@@ -280,8 +279,8 @@ describe('Aerodrome Swap Ability E2E Tests without Gas Sponsorship', () => {
 
       const precheckResult = await aerodromeSwapAbilityClient.precheck(
         {
-          action: 'swap',
-          rpcUrl: envs.BASE_RPC_URL,
+          action: AbilityAction.Swap,
+          rpcUrl: ENV.BASE_RPC_URL,
           tokenInAddress: SWAP_TOKEN_IN_ADDRESS,
           tokenOutAddress: SWAP_TOKEN_OUT_ADDRESS,
           amountIn: SWAP_AMOUNT.toString(),
@@ -301,6 +300,35 @@ describe('Aerodrome Swap Ability E2E Tests without Gas Sponsorship', () => {
       if (precheckResult.success === false) {
         throw new Error(precheckResult.runtimeError);
       }
+
+      // Verify the context is properly populated
+      expect(precheckResult.context).toBeDefined();
+      expect(precheckResult.context?.delegation.delegateeAddress).toBeDefined();
+      expect(precheckResult.context?.delegation.delegatorPkpInfo.ethAddress).toBe(
+        agentPkpInfo.ethAddress,
+      );
+
+      // Verify policies context
+      expect(precheckResult.context?.policiesContext).toBeDefined();
+      expect(precheckResult.context?.policiesContext.allow).toBe(true);
+      expect(precheckResult.context?.policiesContext.evaluatedPolicies.length).toBe(0);
+
+      // Verify the result is properly populated
+      expect(precheckResult.result).toBeDefined();
+      expect(precheckResult.result!.nativeTokenBalance).toBeDefined();
+      expect(precheckResult.result!.tokenInAddress).toBe(SWAP_TOKEN_IN_ADDRESS.toLowerCase());
+      expect(
+        ethers.utils
+          .parseUnits(precheckResult.result!.tokenInBalance as string, SWAP_TOKEN_IN_DECIMALS)
+          .toBigInt(),
+      ).toBeGreaterThan(0n);
+      expect(precheckResult.result!.currentTokenInAllowanceForSpender as string).toBe(
+        SWAP_AMOUNT.toString(),
+      );
+      expect(precheckResult.result!.spenderAddress).toBe(
+        EXPECTED_AERODROME_UNIVERSAL_ROUTER_ADDRESS,
+      );
+      expect(precheckResult.result!.requiredTokenInAllowance!).toBe(SWAP_AMOUNT.toString());
     });
 
     it('should execute the Aerodrome Swap Ability with the Agent Wallet PKP', async () => {
@@ -311,8 +339,8 @@ describe('Aerodrome Swap Ability E2E Tests without Gas Sponsorship', () => {
 
       const executeResult = await aerodromeSwapAbilityClient.execute(
         {
-          action: 'swap',
-          rpcUrl: envs.BASE_RPC_URL,
+          action: AbilityAction.Swap,
+          rpcUrl: ENV.BASE_RPC_URL,
           tokenInAddress: SWAP_TOKEN_IN_ADDRESS,
           tokenOutAddress: SWAP_TOKEN_OUT_ADDRESS,
           amountIn: SWAP_AMOUNT.toString(),
@@ -334,8 +362,6 @@ describe('Aerodrome Swap Ability E2E Tests without Gas Sponsorship', () => {
         // A bit redundant, but typescript doesn't understand `expect().toBe(true)` is narrowing to the type.
         throw new Error(executeResult.runtimeError);
       }
-
-      console.log(executeResult);
 
       expect(executeResult.result).toBeDefined();
       expect(executeResult.result.swapTxHash).toBeDefined();

@@ -8,7 +8,7 @@
     "clean": {},
     "build": {
       "executor": "@nx/js:tsc",
-      "dependsOn": ["action:build", { "target": "build", "projects": "contracts-sdk" }],
+      "dependsOn": ["action:build", "contracts-sdk:build"],
       "outputs": ["{options.outputPath}"],
       "options": {
         "outputPath": "packages/libs/e2e-test-utils/dist",

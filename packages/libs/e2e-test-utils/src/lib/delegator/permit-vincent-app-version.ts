@@ -1,6 +1,6 @@
 import type { PermissionData } from '@lit-protocol/vincent-contracts-sdk';
 
-import { getTestClient } from '@lit-protocol/vincent-contracts-sdk';
+import { getClient } from '@lit-protocol/vincent-contracts-sdk';
 
 import type { PkpInfo } from '../mint-new-pkp';
 
@@ -24,7 +24,7 @@ export async function permitAppVersionForAgentWalletPkp({
     wallets: { agentWalletOwner },
   } = await getChainHelpers();
 
-  const existingPermittedAppVersion = await getTestClient({
+  const existingPermittedAppVersion = await getClient({
     signer: agentWalletOwner,
   }).getPermittedAppVersionForPkp({
     pkpEthAddress: agentPkpInfo.ethAddress,
@@ -33,7 +33,7 @@ export async function permitAppVersionForAgentWalletPkp({
 
   if (existingPermittedAppVersion) {
     console.log(`Removing existing permission for app version ${existingPermittedAppVersion}`);
-    await getTestClient({
+    await getClient({
       signer: agentWalletOwner,
     }).unPermitApp({
       pkpEthAddress: agentPkpInfo.ethAddress,
@@ -42,7 +42,7 @@ export async function permitAppVersionForAgentWalletPkp({
     });
   }
 
-  const result = await getTestClient({
+  const result = await getClient({
     signer: agentWalletOwner,
   }).permitApp({
     pkpEthAddress: agentPkpInfo.ethAddress,

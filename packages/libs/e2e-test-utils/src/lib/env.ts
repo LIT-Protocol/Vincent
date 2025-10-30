@@ -28,6 +28,8 @@ const baseEnvSchema = {
   BASE_RPC_URL: z.string().optional().default('https://base.llamarpc.com'),
 };
 
+type InferEnvType<T extends ZodRawShape> = z.infer<z.ZodObject<T>>;
+
 export const getEnv = <T extends ZodRawShape = typeof baseEnvSchema>(additionalSchema?: T) => {
   try {
     const schema = additionalSchema ? { ...baseEnvSchema, ...additionalSchema } : baseEnvSchema;
@@ -36,7 +38,7 @@ export const getEnv = <T extends ZodRawShape = typeof baseEnvSchema>(additionalS
       emptyStringAsUndefined: true,
       runtimeEnv: process.env,
       server: schema,
-    });
+    }) as InferEnvType<typeof baseEnvSchema> & InferEnvType<T>;
   } catch (e) {
     console.error('Failed to load all required environment variables!');
     throw e;

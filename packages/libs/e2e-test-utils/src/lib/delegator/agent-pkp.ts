@@ -19,6 +19,7 @@ export const ensureAgentPkpExists = async (): Promise<PkpInfo> => {
   if (ownedPkps.length > 1) {
     console.warn(
       '> 1 PKP found for agent wallet owner. When e2e testing, we recommend that you use a _dedicated agent wallet owner account_ which always only has a single agent PKP. Using the first PKP found.',
+      ownedPkps,
     );
   }
 
