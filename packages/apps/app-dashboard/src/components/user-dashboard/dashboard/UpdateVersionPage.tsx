@@ -125,8 +125,8 @@ export function UpdateVersionPage({
         if (redirectUri) {
           await generateJWT(connectInfoMap.app, connectInfoMap.app.activeVersion!);
         } else {
-          // Navigate to the app permissions page
-          navigate(`/user/appId/${connectInfoMap.app.appId}`);
+          // Navigate to the app permissions page with full refresh to update sidebar
+          window.location.href = `/user/appId/${connectInfoMap.app.appId}`;
         }
       } catch (error) {
         setLocalError(error instanceof Error ? error.message : 'Failed to update version');

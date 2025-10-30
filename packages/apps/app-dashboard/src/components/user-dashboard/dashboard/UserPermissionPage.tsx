@@ -1,5 +1,4 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import * as Sentry from '@sentry/react';
 import { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
 import { IRelayPKP } from '@lit-protocol/types';
@@ -40,7 +39,6 @@ export function AppPermissionPage({
   appVersionsMap,
   onBackToConsent,
 }: AppPermissionPageProps) {
-  const navigate = useNavigate();
   const appIdString = connectInfoMap.app.appId.toString();
   const permittedVersion = permittedAppVersions[appIdString];
 
@@ -275,8 +273,8 @@ export function AppPermissionPage({
       setLocalStatus(null);
       // Show success state until redirect
       setLocalSuccess('App unpermitted successfully!');
-      // Navigate to apps page
-      navigate('/user/apps');
+      // Force the refresh for the sidebar to update
+      window.location.href = `/user/apps`;
     } catch (error) {
       setLocalError(error instanceof Error ? error.message : 'Failed to unpermit app');
       setLocalStatus(null);
