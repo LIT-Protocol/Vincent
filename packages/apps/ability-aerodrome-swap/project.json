@@ -47,6 +47,9 @@
         ]
       }
     },
+    "test": {
+      "command": "echo 'Test target disabled for this project - only \"test-e2e\"'"
+    },
     "test-e2e": {
       "executor": "@nx/jest:jest",
       "dependsOn": ["e2e-test-utils:build", "action:deploy"],
