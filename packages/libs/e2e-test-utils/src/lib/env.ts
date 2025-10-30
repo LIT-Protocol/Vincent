@@ -1,5 +1,7 @@
+import type { ZodRawShape } from 'zod';
+
 import { createEnv } from '@t3-oss/env-core';
-import { z, ZodRawShape } from 'zod';
+import { z } from 'zod';
 
 // Ref: https://github.com/t3-oss/t3-env/pull/145
 const booleanStrings = ['true', 'false', true, false, '1', '0', 'yes', 'no', 'y', 'n', 'on', 'off'];
