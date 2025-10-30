@@ -15,7 +15,12 @@
     "@lit-protocol/vincent-app-sdk": "workspace:^"
   },
   "devDependencies": {
+    "@aa-sdk/core": "^4.53.1",
+    "@account-kit/infra": "^4.53.1",
+    "@account-kit/smart-contracts": "^4.53.1",
     "@lit-protocol/esbuild-plugin-polyfill-node": "^0.3.0",
+    "@lit-protocol/vincent-contracts-sdk": "workspace:*",
+    "@lit-protocol/vincent-e2e-test-utils": "workspace:*",
     "esbuild": "^0.19.12",
     "ipfs-only-hash": "^4.0.0"
   },
