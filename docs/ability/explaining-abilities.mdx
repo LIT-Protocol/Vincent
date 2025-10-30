@@ -1,0 +1,184 @@
+---
+title: How Vincent Abilities Work
+---
+
+Vincent Abilities are modular, executable functions that define what operations your App can perform on behalf of users. This guide explains their structure, lifecycle, and implementation details.
+
+## Ability Lifecycle
+
+Vincent Abilities execute in two phases to ensure reliability and security:
+
+<Steps>
+  <Step title="Precheck">
+    Runs locally to validate that execution will likely succeed. This also runs `precheck` on the Vincent Policies to ensure they are valid as well
+  </Step>
+
+  <Step title="Execute">
+    Runs in the Lit Action environment to perform the actual operation. Policies also run their `evaluate` function here
+  </Step>
+</Steps>
+
+<Note>
+Only if all policies return `allow` results will your Ability's function execute. After successful execution, the Ability can optionally call Policy commit functions to update state.
+</Note>
+
+## Defining Your Ability
+
+<ParamField path="packageName" type="string" required>
+  The npm package name of your Ability (e.g., `@your-org/ability-name`)
+</ParamField>
+
+<ParamField path="abilityDescription" type="string" required>
+  A clear description of what your Ability does
+</ParamField>
+
+<ParamField path="abilityParamsSchema" type="ZodSchema" required>
+  Zod schema defining the input parameters your Ability requires
+</ParamField>
+
+<ParamField path="supportedPolicies" type="SupportedPolicies" required>
+  Array of supported Vincent Policies, created with `supportedPoliciesForAbility()`
+</ParamField>
+
+<ParamField path="precheckSuccessSchema" type="ZodSchema">
+  Zod schema for successful precheck return values
+</ParamField>
+
+<ParamField path="precheckFailSchema" type="ZodSchema">
+  Zod schema for failed precheck return values
+</ParamField>
+
+<ParamField path="precheck" type="function" required>
+  Async function that validates execution will likely succeed
+  <Expandable title="function signature">
+    ```typescript
+    (params: { abilityParams }, context: AbilityContext) => Promise<PrecheckResult>
+    ```
+  </Expandable>
+</ParamField>
+
+<ParamField path="executeSuccessSchema" type="ZodSchema">
+  Zod schema for successful execution return values
+</ParamField>
+
+<ParamField path="executeFailSchema" type="ZodSchema">
+  Zod schema for failed execution return values
+</ParamField>
+
+<ParamField path="execute" type="function" required>
+  Async function that performs the actual Ability operation
+  <Expandable title="function signature">
+    ```typescript
+    (params: { abilityParams }, context: AbilityContext) => Promise<ExecuteResult>
+    ```
+  </Expandable>
+</ParamField>
+
+## Creating Vincent Abilities
+
+Vincent Abilities are created using `createVincentAbility` from the Vincent Ability SDK:
+
+```typescript
+import { createVincentAbility } from '@lit-protocol/vincent-ability-sdk';
+
+export const vincentAbility = createVincentAbility({
+  packageName: '@your-org/ability-name',
+  abilityDescription: 'What this ability does',
+
+  abilityParamsSchema,
+  supportedPolicies: supportedPoliciesForAbility([]),
+
+  precheckSuccessSchema,
+  precheckFailSchema,
+  precheck: async ({ abilityParams }, abilityContext) => {
+    // Validation logic
+  },
+
+  executeSuccessSchema,
+  executeFailSchema,
+  execute: async ({ abilityParams }, abilityContext) => {
+    // Main execution logic
+  },
+});
+```
+
+## Example Implementation
+
+<Accordion title="Full Token Transfer Ability">
+```typescript
+import {
+  createVincentAbility,
+  createVincentAbilityPolicy,
+  supportedPoliciesForAbility,
+} from '@lit-protocol/vincent-ability-sdk';
+import { bundledVincentPolicy } from '@lit-protocol/vincent-policy-spending-limit';
+import { z } from 'zod';
+
+const abilityParamsSchema = z.object({
+  tokenAddress: z.string(),
+  amountToSend: z.number(),
+  recipientAddress: z.string(),
+});
+
+const SpendingLimitPolicy = createVincentAbilityPolicy({
+  abilityParamsSchema,
+  bundledVincentPolicy,
+  abilityParameterMappings: {
+    tokenAddress: 'tokenAddress',
+    amountToSend: 'amount',
+  },
+});
+
+export const vincentAbility = createVincentAbility({
+  packageName: '@example/token-transfer-ability',
+  abilityDescription: 'Transfer ERC20 tokens to a recipient address',
+
+  abilityParamsSchema,
+  supportedPolicies: supportedPoliciesForAbility([SpendingLimitPolicy]),
+
+  precheckSuccessSchema: z.object({
+    tokenBalance: z.number(),
+    estimatedGas: z.number(),
+  }),
+  precheckFailSchema: z.object({
+    reason: z.string(),
+    currentBalance: z.number().optional(),
+    requiredAmount: z.number().optional(),
+  }),
+
+  executeSuccessSchema: z.object({
+    transferTransactionHash: z.string(),
+    spendTransactionHash: z.string().optional(),
+  }),
+  executeFailSchema: z.object({
+    error: z.string(),
+    errorCode: z.string().optional(),
+  }),
+
+  precheck: async ({ abilityParams }, abilityContext) => {
+    // Validation logic here
+  },
+
+  execute: async ({ abilityParams }, abilityContext) => {
+    // Execution logic here
+  },
+});
+```
+</Accordion>
+
+## Deep Dive Guides
+
+<CardGroup cols={2}>
+  <Card title="Parameter Schemas" icon="code" href="/ability/parameter-schemas">
+    Define and validate your Ability's input parameters
+  </Card>
+  <Card title="Supporting Policies" icon="shield" href="/ability/supporting-policies">
+    Integrate Vincent Policies with your Ability
+  </Card>
+  <Card title="Precheck Function" icon="check" href="/ability/precheck-function">
+    Implement validation logic before execution
+  </Card>
+  <Card title="Execute Function" icon="play" href="/ability/execute-function">
+    Write your main execution logic
+  </Card>
+</CardGroup>

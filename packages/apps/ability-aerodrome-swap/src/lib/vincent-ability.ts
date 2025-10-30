@@ -2,7 +2,7 @@ import {
   createVincentAbility,
   supportedPoliciesForAbility,
 } from '@lit-protocol/vincent-ability-sdk';
-import { base, getDefaultConfig, getQuoteForSwap, swap } from 'sugar-sdk';
+import { base, getDefaultConfig, getQuoteForSwap, swap } from '@dromos-labs/sdk.js';
 import { ethers } from 'ethers';
 
 import {
@@ -15,7 +15,7 @@ import {
 } from './schemas';
 import { AbilityAction, CheckNativeTokenBalanceResultSuccess } from './types';
 import { checkErc20Allowance, checkErc20Balance, checkNativeTokenBalance } from './ability-checks';
-import { getChainConfig, type Quote } from 'sugar-sdk/primitives';
+import { getChainConfig, type Quote } from '@dromos-labs/sdk.js/primitives';
 import { findSupportedTokenOnBase } from './ability-helpers/find-supported-token-on-base';
 import { sendAerodromeSwapTx, sendErc20ApprovalTx } from './ability-helpers';
 
@@ -26,7 +26,7 @@ export const bigintReplacer = (key: any, value: any) => {
 export const sugarSdkQuoteBigintReviver = (key: any, value: any) => {
   // Convert string values that were BigInts back to BigInt for the
   // Sugar SDK Quote object:
-  // sugar-sdk/dist/primitives/externals/app/src/hooks/types.d.ts
+  // @dromos-labs/sdk.js/dist/primitives/externals/app/src/hooks/types.d.ts
   if (
     typeof value === 'string' &&
     (key === 'amount' ||

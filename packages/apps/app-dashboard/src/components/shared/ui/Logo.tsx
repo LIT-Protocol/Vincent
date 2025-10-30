@@ -6,7 +6,7 @@ interface LogoProps {
 
 /**
  * A reusable Logo component that handles fallback logic consistently.
- * Validates logo URL length and provides onError fallback to '/logo.svg'
+ * Validates logo URL length and provides onError fallback to '/internal-logos/default-app-logo.svg'
  */
 export function Logo({ logo, alt, className = '' }: LogoProps) {
   const hasValidLogo = logo && logo.length >= 10;
@@ -18,11 +18,13 @@ export function Logo({ logo, alt, className = '' }: LogoProps) {
         alt={alt}
         className={className}
         onError={(e) => {
-          e.currentTarget.src = '/logo.svg';
+          e.currentTarget.src = '/internal-logos/default-app-logo.svg';
         }}
       />
     );
   }
 
-  return <img src="/logo.svg" alt="Vincent logo" className={className} />;
+  return (
+    <img src="/internal-logos/default-app-logo.svg" alt="Default app logo" className={className} />
+  );
 }

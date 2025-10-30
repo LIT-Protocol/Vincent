@@ -12,6 +12,7 @@
     "name": "Vincent",
     "homeUrl": "https://dashboard.heyvincent.ai",
     "iconUrl": "https://dashboard.heyvincent.ai/internal-logos/farcaster-v-logo.png",
+    "imageUrl": "https://dashboard.heyvincent.ai/internal-logos/farcaster-embed-preview.png",
     "splashImageUrl": "https://dashboard.heyvincent.ai/internal-logos/splash-screen.png",
     "splashBackgroundColor": "#000000",
     "subtitle": "User-owned automation",

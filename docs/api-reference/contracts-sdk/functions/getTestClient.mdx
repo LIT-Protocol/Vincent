@@ -1,0 +1,24 @@
+---
+title: getTestClient
+---
+
+> **getTestClient**(`__namedParameters`): [`ContractClient`](/api-reference/contracts-sdk/interfaces/ContractClient)
+
+Defined in: [contractClient.ts:108](https://github.com/LIT-Protocol/Vincent/blob/4f61b0b06d818c2273457b0cc8a4e68ed21a72ed/packages/libs/contracts-sdk/src/contractClient.ts#L108)
+
+Get an instance of the contract client that is configured to use a 'development' instance of the contract just for testing purposes
+
+State in the development contract should not be considered permanent.  Use [getClient](./getClient) for usage outside of
+development or CI flows
+
+## Parameters
+
+### \_\_namedParameters
+
+#### signer
+
+[`Signer`](https://docs.ethers.org/v5/api/)
+
+## Returns
+
+[`ContractClient`](/api-reference/contracts-sdk/interfaces/ContractClient)

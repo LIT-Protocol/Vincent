@@ -1,0 +1,74 @@
+---
+title: VincentAbilityClient
+---
+
+Defined in: [app-sdk/src/abilityClient/types.ts:27](https://github.com/LIT-Protocol/Vincent/blob/4f61b0b06d818c2273457b0cc8a4e68ed21a72ed/packages/libs/app-sdk/src/abilityClient/types.ts#L27)
+
+The Vincent Ability Client is used to interact with Vincent abilities.
+
+- Precheck ability parameters and policies
+- Execute abilities remotely
+
+## Methods
+
+### execute()
+
+> **execute**(`rawAbilityParams`, `context`): `Promise`\<[`AbilityExecuteResponse`](/api-reference/app-sdk/abilityClient/type-aliases/AbilityExecuteResponse)\<`ExecuteSuccessSchema`, `ExecuteFailSchema`, `PoliciesByPackageName`\>\>
+
+Defined in: [app-sdk/src/abilityClient/types.ts:63](https://github.com/LIT-Protocol/Vincent/blob/4f61b0b06d818c2273457b0cc8a4e68ed21a72ed/packages/libs/app-sdk/src/abilityClient/types.ts#L63)
+
+Executes the ability with the given parameters.
+
+This method validates the ability parameters, executes the ability remotely, and returns the result.
+
+#### Parameters
+
+##### rawAbilityParams
+
+`TypeOf`\<`AbilityParamsSchema`\>
+
+The parameters to be passed to the ability
+
+##### context
+
+[`AbilityClientContext`](./AbilityClientContext)
+
+The context for the ability execution, including the delegator PKP Ethereum address
+
+#### Returns
+
+`Promise`\<[`AbilityExecuteResponse`](/api-reference/app-sdk/abilityClient/type-aliases/AbilityExecuteResponse)\<`ExecuteSuccessSchema`, `ExecuteFailSchema`, `PoliciesByPackageName`\>\>
+
+A promise that resolves to a AbilityResponse containing the execution result
+
+***
+
+### precheck()
+
+> **precheck**(`rawAbilityParams`, `context`): `Promise`\<[`AbilityPrecheckResponse`](/api-reference/app-sdk/abilityClient/type-aliases/AbilityPrecheckResponse)\<`PrecheckSuccessSchema`, `PrecheckFailSchema`, `PoliciesByPackageName`\>\>
+
+Defined in: [app-sdk/src/abilityClient/types.ts:44](https://github.com/LIT-Protocol/Vincent/blob/4f61b0b06d818c2273457b0cc8a4e68ed21a72ed/packages/libs/app-sdk/src/abilityClient/types.ts#L44)
+
+Performs a precheck of the ability parameters and policies.
+
+This method validates the ability parameters and checks if the policies allow the ability to be executed.
+
+#### Parameters
+
+##### rawAbilityParams
+
+`TypeOf`\<`AbilityParamsSchema`\>
+
+The parameters to be passed to the ability
+
+##### context
+
+[`AbilityClientContext`](./AbilityClientContext) & `object`
+
+The context for the ability execution, including the delegator PKP Ethereum address
+
+#### Returns
+
+`Promise`\<[`AbilityPrecheckResponse`](/api-reference/app-sdk/abilityClient/type-aliases/AbilityPrecheckResponse)\<`PrecheckSuccessSchema`, `PrecheckFailSchema`, `PoliciesByPackageName`\>\>
+
+A promise that resolves to a AbilityResponse containing the precheck result
