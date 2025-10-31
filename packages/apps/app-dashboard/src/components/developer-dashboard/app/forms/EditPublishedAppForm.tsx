@@ -10,29 +10,15 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/shared/ui/card';
-import {
-  TextField,
-  LongTextField,
-  ArrayField,
-  NumberSelectField,
-  ImageUploadField,
-} from '../../form-fields';
+import { TextField, LongTextField, ArrayField, ImageUploadField } from '../../form-fields';
 import { docSchemas } from '@lit-protocol/vincent-registry-sdk';
-import { App, AppVersion } from '@/types/developer-dashboard/appTypes';
+import { App } from '@/types/developer-dashboard/appTypes';
 import { DeploymentStatusSelectField } from '../../form-fields/array/DeploymentStatusSelectField';
 
 const { appDoc } = docSchemas;
 
-const {
-  name,
-  description,
-  contactEmail,
-  appUserUrl,
-  logo,
-  redirectUris,
-  deploymentStatus,
-  activeVersion,
-} = appDoc.shape;
+const { name, description, contactEmail, appUserUrl, logo, redirectUris, deploymentStatus } =
+  appDoc.shape;
 
 export const EditPublishedAppSchema = z
   .object({
@@ -43,7 +29,6 @@ export const EditPublishedAppSchema = z
     logo,
     redirectUris,
     deploymentStatus,
-    activeVersion,
   })
   .required()
   .partial({ logo: true })
@@ -53,14 +38,12 @@ export type EditPublishedAppFormData = z.infer<typeof EditPublishedAppSchema>;
 
 interface EditPublishedAppFormProps {
   appData: App;
-  appVersions: AppVersion[];
   onSubmit: (data: EditPublishedAppFormData) => Promise<void>;
   isSubmitting?: boolean;
 }
 
 export function EditPublishedAppForm({
   appData,
-  appVersions,
   onSubmit,
   isSubmitting = false,
 }: EditPublishedAppFormProps) {
@@ -74,7 +57,6 @@ export function EditPublishedAppForm({
       logo: appData.logo,
       redirectUris: appData.redirectUris,
       deploymentStatus: appData.deploymentStatus,
-      activeVersion: appData.activeVersion,
     },
   });
 
@@ -88,12 +70,6 @@ export function EditPublishedAppForm({
     clearErrors,
     formState: { errors },
   } = form;
-
-  // Create version options from appVersions, showing enabled/disabled status for all versions
-  const versionOptions = appVersions.map((version) => ({
-    value: version.version,
-    label: `Version ${version.version} (${version.enabled ? 'Enabled' : 'Disabled'})`,
-  }));
 
   return (
     <Card className="w-full max-w-2xl mx-auto">
@@ -160,15 +136,6 @@ export function EditPublishedAppForm({
             <DeploymentStatusSelectField
               error={errors.deploymentStatus?.message}
               control={control}
-            />
-
-            <NumberSelectField
-              name="activeVersion"
-              error={errors.activeVersion?.message}
-              control={control}
-              label="Active Version"
-              options={versionOptions}
-              required
             />
 
             <Button type="submit" className="w-full" disabled={isSubmitting}>
