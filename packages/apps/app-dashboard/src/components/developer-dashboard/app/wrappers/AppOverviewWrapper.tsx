@@ -222,7 +222,6 @@ export function AppOverviewWrapper() {
           {blockchainAppData !== null ? (
             <EditPublishedAppForm
               appData={app}
-              appVersions={appVersions}
               onSubmit={handleEditAppSubmit}
               isSubmitting={isSubmitting}
             />
