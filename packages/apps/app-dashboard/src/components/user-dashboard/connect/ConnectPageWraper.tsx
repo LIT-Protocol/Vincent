@@ -7,6 +7,7 @@ import { AppVersionNotInRegistryConnect } from './AppVersionNotInRegistry';
 import { AuthConnectScreen } from './AuthConnectScreen';
 import { BadRedirectUriError } from './BadRedirectUriError';
 import { ConnectPage } from './ConnectPage';
+import { DeletedAppConnect } from './DeletedAppConnect';
 import { DisabledVersionConnect } from './DisabledVersionConnect';
 import { EditPermissionsCard } from './EditPermissionsCard';
 import { GeneralErrorScreen } from './GeneralErrorScreen';
@@ -126,6 +127,16 @@ export function ConnectPageWrapper() {
   } else if (isRedirectUriAuthorized === false) {
     content = (
       <BadRedirectUriError redirectUri={redirectUri} authorizedUris={data.app?.redirectUris} />
+    );
+  }
+  // Check if app is deleted
+  else if (data.app?.isDeleted) {
+    content = (
+      <DeletedAppConnect
+        appData={data.app}
+        hasPermission={isPermitted}
+        readAuthInfo={{ authInfo, sessionSigs, isProcessing, error }}
+      />
     );
   }
   // Check for unpublished app version (check this early, before auth)

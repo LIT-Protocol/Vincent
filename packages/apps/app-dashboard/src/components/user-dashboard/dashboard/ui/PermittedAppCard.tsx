@@ -13,6 +13,7 @@ type PermittedAppCardProps = {
   app: App;
   permission: AgentAppPermission | undefined;
   isUnpermitted?: boolean;
+  isDeleted?: boolean;
   index?: number;
   appVersionsMap: Record<string, AppVersion[]>;
 };
@@ -21,6 +22,7 @@ export function PermittedAppCard({
   app,
   permission,
   isUnpermitted = false,
+  isDeleted = false,
   index = 0,
   appVersionsMap,
 }: PermittedAppCardProps) {
@@ -81,28 +83,34 @@ export function PermittedAppCard({
 
           {/* Bottom section - Status and Buttons grouped together */}
           <div className="flex flex-col gap-2 w-full">
-            {/* Status Card */}
-            {permission && !isUnpermitted && (
+            {/* Status Card - Show status for deleted apps or version status for permitted apps */}
+            {permission && (isDeleted || !isUnpermitted) && (
               <div
                 className={`flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg ${theme.itemBg} border ${theme.cardBorder}`}
               >
                 <div className={`flex-shrink-0`}>
-                  {versionStatus.warningType ? (
+                  {isDeleted ? (
+                    <TriangleAlert className="w-4 h-4 text-red-500" />
+                  ) : versionStatus.warningType ? (
                     <TriangleAlert className={`w-4 h-4 ${versionStatus.statusColor}`} />
                   ) : (
                     <Shield className={`w-4 h-4 ${versionStatus.statusColor}`} />
                   )}
                 </div>
                 <p
-                  className={`text-xs font-medium ${versionStatus.statusColor} leading-none mt-0.5`}
+                  className={`text-xs font-medium ${isDeleted ? 'text-red-500' : versionStatus.statusColor} leading-none mt-0.5`}
                   style={fonts.heading}
                 >
-                  {versionStatus.statusText}
+                  {isDeleted
+                    ? isUnpermitted
+                      ? 'Deleted - No Permissions'
+                      : 'App Deleted'
+                    : versionStatus.statusText}
                 </p>
               </div>
             )}
 
-            {/* Access Wallet button for unpermitted apps */}
+            {/* Access Wallet button for unpermitted apps (including deleted ones) */}
             {isUnpermitted && (
               <button
                 onClick={() => navigate(`/user/appId/${app.appId}/wallet`)}
@@ -117,39 +125,65 @@ export function PermittedAppCard({
               </button>
             )}
 
-            <button
-              onClick={handleManageClick}
-              className={`w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
-                isUnpermitted
-                  ? 'bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600 dark:text-slate-100 border border-slate-300 dark:border-slate-600'
-                  : 'text-white'
-              }`}
-              style={
-                isUnpermitted
-                  ? fonts.heading
-                  : {
-                      ...fonts.heading,
-                      backgroundColor: theme.brandOrange,
-                    }
-              }
-              onMouseEnter={(e) => {
-                if (!isUnpermitted) {
+            {/* Show different button for deleted apps (but not if unpermitted - they already have wallet button) */}
+            {isDeleted && !isUnpermitted && (
+              <button
+                onClick={() => navigate(`/user/appId/${app.appId}`)}
+                className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors text-white"
+                style={{
+                  ...fonts.heading,
+                  backgroundColor: theme.brandOrange,
+                }}
+                onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = theme.brandOrangeDarker;
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!isUnpermitted) {
+                }}
+                onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = theme.brandOrange;
-                }
-              }}
-            >
-              {isUnpermitted ? (
-                <RefreshCw className="w-4 h-4 flex-shrink-0 -mt-px" />
-              ) : (
+                }}
+              >
                 <Settings className="w-4 h-4 flex-shrink-0 -mt-px" />
-              )}
-              <span className="leading-none">{isUnpermitted ? 'Repermit App' : 'Manage App'}</span>
-            </button>
+                <span className="leading-none">Manage App</span>
+              </button>
+            )}
+
+            {/* Normal manage/repermit button for non-deleted apps */}
+            {!isDeleted && (
+              <button
+                onClick={handleManageClick}
+                className={`w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
+                  isUnpermitted
+                    ? 'bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600 dark:text-slate-100 border border-slate-300 dark:border-slate-600'
+                    : 'text-white'
+                }`}
+                style={
+                  isUnpermitted
+                    ? fonts.heading
+                    : {
+                        ...fonts.heading,
+                        backgroundColor: theme.brandOrange,
+                      }
+                }
+                onMouseEnter={(e) => {
+                  if (!isUnpermitted) {
+                    e.currentTarget.style.backgroundColor = theme.brandOrangeDarker;
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!isUnpermitted) {
+                    e.currentTarget.style.backgroundColor = theme.brandOrange;
+                  }
+                }}
+              >
+                {isUnpermitted ? (
+                  <RefreshCw className="w-4 h-4 flex-shrink-0 -mt-px" />
+                ) : (
+                  <Settings className="w-4 h-4 flex-shrink-0 -mt-px" />
+                )}
+                <span className="leading-none">
+                  {isUnpermitted ? 'Repermit App' : 'Manage App'}
+                </span>
+              </button>
+            )}
           </div>
         </CardContent>
       </Card>

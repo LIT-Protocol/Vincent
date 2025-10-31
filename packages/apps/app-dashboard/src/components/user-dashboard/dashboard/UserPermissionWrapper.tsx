@@ -1,6 +1,7 @@
 import { useParams } from 'react-router';
 import Loading from '@/components/shared/ui/Loading';
 import { GeneralErrorScreen } from '../connect/GeneralErrorScreen';
+import { DeletedAppErrorScreen } from '../connect/DeletedAppErrorScreen';
 import { AuthenticationErrorScreen } from '../connect/AuthenticationErrorScreen';
 import { useConnectInfo } from '@/hooks/user-dashboard/connect/useConnectInfo';
 import useReadAuthInfo from '@/hooks/user-dashboard/useAuthInfo';
@@ -38,12 +39,13 @@ export function UserPermissionWrapper() {
 
   const versionsToFetch = permittedVersion ? [permittedVersion] : undefined;
 
-  // Use useConnectInfo with the useActiveVersion flag set to false
-  // This will make it wait for versionsToFetch instead of using activeVersion
+  // CRITICAL: When user has permissions, we MUST fetch their permitted version's policy data
+  // When user has NO permissions, fetch active version just to check if app is deleted
+  const useActiveVersion = permittedVersion === null;
   const { isLoading, isError, errors, data } = useConnectInfo(
     appId || '',
     versionsToFetch,
-    false, // Don't use activeVersion, wait for permitted version
+    useActiveVersion,
   );
 
   // Wait for permissions data to be loaded for this specific app
@@ -56,16 +58,6 @@ export function UserPermissionWrapper() {
   // Wait for ALL critical data to load before making routing decisions
   const isUserAuthed = authInfo?.userPKP && sessionSigs;
 
-  // Check if we have finished loading but got no data (invalid appId)
-  const hasFinishedLoadingButNoData = !isLoading && !data;
-
-  const isAllDataLoaded =
-    data &&
-    !isLoading &&
-    !isProcessing &&
-    // Only wait for permissions if user is authenticated
-    (isUserAuthed ? !isExistingDataLoading && !agentPKPLoading && isPermissionsReady : true);
-
   // Authentication check - must be done before other business logic
   if (!isProcessing && !isUserAuthed) {
     return (
@@ -74,11 +66,33 @@ export function UserPermissionWrapper() {
   }
 
   // Check for invalid appId first (finished loading but no data OR has error)
+  const hasFinishedLoadingButNoData = !isLoading && !data;
   if (hasFinishedLoadingButNoData || (isError && errors.length > 0)) {
     const errorMessage =
       isError && errors.length > 0 ? errors.join(', ') : `App with ID ${appId} not found`;
     return <GeneralErrorScreen errorDetails={errorMessage} />;
   }
+
+  // Early check for deleted apps - show deleted screen as soon as we have basic app data
+  if (data?.app?.isDeleted && !isLoading && !isProcessing && !agentPKPLoading) {
+    const hasPermission = permittedVersion !== null;
+    return (
+      <DeletedAppErrorScreen
+        appData={data.app}
+        hasPermission={hasPermission}
+        agentPKP={agentPKP || undefined}
+        permittedVersion={permittedVersion}
+        readAuthInfo={{ authInfo, sessionSigs, isProcessing, error }}
+      />
+    );
+  }
+
+  // For non-deleted apps, wait for all permissions data to be loaded
+  const isAllDataLoaded =
+    data &&
+    !isLoading &&
+    !isProcessing &&
+    (isUserAuthed ? !isExistingDataLoading && !agentPKPLoading && isPermissionsReady : true);
 
   if (!isAllDataLoaded) {
     return <Loading />;

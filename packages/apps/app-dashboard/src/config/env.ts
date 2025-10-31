@@ -38,5 +38,7 @@ export const env = createEnv({
     VITE_LIT_TOTAL_MANAGED: z.string().default('340M+'),
     VITE_DASHBOARD_URL: z.string(),
     VITE_VINCENT_YIELD_MINIMUM_DEPOSIT: z.coerce.number().default(50),
+    VITE_FEATURED_APP_IDS: z.string().optional(),
+    VITE_OFFICIAL_APP_IDS: z.string().optional(),
   },
 });

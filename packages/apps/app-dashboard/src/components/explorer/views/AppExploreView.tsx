@@ -7,6 +7,9 @@ import { AppFilter } from '../ui/AppFilter';
 import { ExplorerNav } from '../ui/ExplorerNav';
 import { FeaturedApps } from '../ui/FeaturedApps';
 import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
+import { env } from '@/config/env';
+
+const { VITE_OFFICIAL_APP_IDS } = env;
 
 interface ExploreViewProps {
   apps: App[];
@@ -16,12 +19,18 @@ export function AppExploreView({ apps }: ExploreViewProps) {
   const location = useLocation();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'prod' | 'test'>('prod');
+  const [statusFilter, setStatusFilter] = useState<'official' | 'all' | 'prod' | 'test'>(
+    'official',
+  );
   const [sortBy, setSortBy] = useState<'name' | 'updated' | 'version'>('name');
   const [currentPage, setCurrentPage] = useState(1);
   const [showContent, setShowContent] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const appsPerPage = 9;
+
+  const officialAppIds = VITE_OFFICIAL_APP_IDS
+    ? VITE_OFFICIAL_APP_IDS.split(',').map((id: string) => Number(id.trim()))
+    : [];
 
   useEffect(() => {
     const fromTransition = location.state?.fromTransition;
@@ -37,7 +46,16 @@ export function AppExploreView({ apps }: ExploreViewProps) {
       const matchesSearch =
         app.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         app.description?.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesStatus = statusFilter === 'all' || app.deploymentStatus === statusFilter;
+
+      let matchesStatus = false;
+      if (statusFilter === 'official') {
+        matchesStatus = officialAppIds.includes(app.appId);
+      } else if (statusFilter === 'all') {
+        matchesStatus = true;
+      } else {
+        matchesStatus = app.deploymentStatus === statusFilter;
+      }
+
       return matchesSearch && matchesStatus;
     })
     .sort((a, b) => {

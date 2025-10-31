@@ -156,7 +156,7 @@ export function AppPublishedButtons({
               <ActionButton
                 icon={Trash2}
                 title="Delete App"
-                description="Permanently remove this app"
+                description="Remove this app (this can be undone)."
                 onClick={() => onOpenMutation('delete-app')}
                 variant="danger"
                 borderColor="rgb(254 202 202 / 0.5)"

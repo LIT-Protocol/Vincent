@@ -11,8 +11,8 @@ const PKP_INFO_ABI = [
 
 // Fetch both permitted and unpermitted apps for all agent PKPs
 const VINCENT_CONTRACT_ABI = [
-  'function getPermittedAppsForPkps(uint256[] pkpTokenIds, uint256 offset, uint256 pageSize) public view returns (tuple(uint256 pkpTokenId, tuple(uint40 appId, uint24 version, bool versionEnabled)[] permittedApps)[] results)',
-  'function getUnpermittedAppsForPkps(uint256[] pkpTokenIds, uint256 offset) public view returns (tuple(uint256 pkpTokenId, tuple(uint40 appId, uint24 previousPermittedVersion, bool versionEnabled)[] unpermittedApps)[] results)',
+  'function getPermittedAppsForPkps(uint256[] pkpTokenIds, uint256 offset, uint256 pageSize) public view returns (tuple(uint256 pkpTokenId, tuple(uint40 appId, uint24 version, bool versionEnabled, bool isDeleted)[] permittedApps)[] results)',
+  'function getUnpermittedAppsForPkps(uint256[] pkpTokenIds, uint256 offset) public view returns (tuple(uint256 pkpTokenId, tuple(uint40 appId, uint24 previousPermittedVersion, bool versionEnabled, bool isDeleted)[] unpermittedApps)[] results)',
 ];
 
 type PkpInfo = {
@@ -32,6 +32,7 @@ export type AgentAppPermission = {
   pkp: IRelayPKP;
   permittedVersion: number | null;
   versionEnabled?: boolean;
+  isDeleted?: boolean;
 };
 
 export type AgentPkpsResult = {
@@ -93,16 +94,22 @@ export async function getAgentPkps(userAddress: string): Promise<AgentPkpsResult
     // Convert the permitted apps results to our format
     const pkpToPermittedAppsMap = new Map<
       string,
-      Array<{ appId: number; version: number | null }>
+      Array<{ appId: number; version: number | null; isDeleted: boolean }>
     >();
     for (const pkpPermittedApps of permittedAppsArray) {
       const tokenId = pkpPermittedApps.pkpTokenId.toString();
       const pkp = agentPKPs.find((p: ProcessedPkpInfo) => p.tokenId === tokenId);
       if (pkp) {
         const appsWithVersions = pkpPermittedApps.permittedApps.map(
-          (app: { appId: number; version: number; versionEnabled: boolean }) => ({
+          (app: {
+            appId: number;
+            version: number;
+            versionEnabled: boolean;
+            isDeleted: boolean;
+          }) => ({
             appId: app.appId,
             version: app.version,
+            isDeleted: app.isDeleted,
           }),
         );
         pkpToPermittedAppsMap.set(pkp.ethAddress, appsWithVersions);
@@ -112,17 +119,28 @@ export async function getAgentPkps(userAddress: string): Promise<AgentPkpsResult
     // Convert the unpermitted apps results to our format
     const pkpToUnpermittedAppsMap = new Map<
       string,
-      Array<{ appId: number; previousPermittedVersion: number | null; versionEnabled: boolean }>
+      Array<{
+        appId: number;
+        previousPermittedVersion: number | null;
+        versionEnabled: boolean;
+        isDeleted: boolean;
+      }>
     >();
     for (const pkpUnpermittedApps of unpermittedAppsArray) {
       const tokenId = pkpUnpermittedApps.pkpTokenId.toString();
       const pkp = agentPKPs.find((p: ProcessedPkpInfo) => p.tokenId === tokenId);
       if (pkp) {
         const appsWithVersions = pkpUnpermittedApps.unpermittedApps.map(
-          (app: { appId: number; previousPermittedVersion: number; versionEnabled: boolean }) => ({
+          (app: {
+            appId: number;
+            previousPermittedVersion: number;
+            versionEnabled: boolean;
+            isDeleted: boolean;
+          }) => ({
             appId: app.appId,
             previousPermittedVersion: app.previousPermittedVersion,
             versionEnabled: app.versionEnabled,
+            isDeleted: app.isDeleted,
           }),
         );
         pkpToUnpermittedAppsMap.set(pkp.ethAddress, appsWithVersions);
@@ -143,6 +161,7 @@ export async function getAgentPkps(userAddress: string): Promise<AgentPkpsResult
           appId: app.appId,
           pkp,
           permittedVersion: app.version,
+          isDeleted: app.isDeleted,
         });
       }
 
@@ -153,6 +172,7 @@ export async function getAgentPkps(userAddress: string): Promise<AgentPkpsResult
           pkp,
           permittedVersion: app.previousPermittedVersion,
           versionEnabled: app.versionEnabled,
+          isDeleted: app.isDeleted,
         });
       }
 

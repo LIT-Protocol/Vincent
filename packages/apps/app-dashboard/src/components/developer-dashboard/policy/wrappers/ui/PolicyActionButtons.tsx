@@ -40,7 +40,7 @@ export function PolicyActionButtons({ onOpenMutation }: PolicyActionButtonsProps
           <ActionButton
             icon={Trash2}
             title="Delete Policy"
-            description="Permanently remove this policy"
+            description="Remove this policy (this can be undone)."
             onClick={() => onOpenMutation('delete-policy')}
             variant="danger"
             borderColor="rgb(254 202 202 / 0.5)"

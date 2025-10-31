@@ -11,7 +11,7 @@ export function AppFilter({
 }: {
   searchQuery: string;
   setSearchQuery: (searchQuery: string) => void;
-  statusFilter: 'all' | 'prod' | 'test';
+  statusFilter: 'official' | 'all' | 'prod' | 'test';
   setStatusFilter: (statusFilter: string) => void;
   sortBy: 'name' | 'updated' | 'version';
   setSortBy: (sortBy: string) => void;
@@ -48,10 +48,10 @@ export function AppFilter({
                 style={fonts.heading}
               >
                 <option
-                  value="all"
+                  value="official"
                   className="bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
                 >
-                  All Status
+                  Official
                 </option>
                 <option
                   value="prod"
@@ -64,6 +64,12 @@ export function AppFilter({
                   className="bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
                 >
                   Beta
+                </option>
+                <option
+                  value="all"
+                  className="bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                >
+                  All Apps
                 </option>
               </select>
             </div>

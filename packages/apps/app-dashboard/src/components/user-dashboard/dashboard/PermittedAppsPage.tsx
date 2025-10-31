@@ -8,7 +8,7 @@ import { Package, ChevronDown, Check, Filter } from 'lucide-react';
 import { AgentAppPermission } from '@/utils/user-dashboard/getAgentPkps';
 import { PermittedAppCard } from './ui/PermittedAppCard';
 
-type FilterState = 'permitted' | 'unpermitted' | 'all';
+type FilterState = 'permitted' | 'unpermitted' | 'deleted' | 'all';
 
 type PermittedAppsPageProps = {
   apps: App[];
@@ -51,6 +51,7 @@ export function PermittedAppsPage({
     const labels = {
       permitted: 'Permitted',
       unpermitted: 'Unpermitted',
+      deleted: 'Deleted',
       all: 'All Apps',
     };
     return labels[filterState] || 'Permitted';
@@ -66,6 +67,10 @@ export function PermittedAppsPage({
       unpermitted: {
         title: 'No unpermitted applications',
         description: 'All available applications have been granted permissions.',
+      },
+      deleted: {
+        title: 'No deleted applications',
+        description: 'You have no permissions for deleted applications.',
       },
       all: {
         title: 'No applications found',
@@ -154,6 +159,25 @@ export function PermittedAppsPage({
                     </button>
                     <button
                       onClick={() => {
+                        setFilterState('deleted');
+                        setShowDropdown(false);
+                      }}
+                      className={`w-full flex items-center justify-between gap-3 px-3 h-10 rounded-md text-sm font-medium transition-all duration-200 ${
+                        filterState === 'deleted'
+                          ? 'text-white'
+                          : `${theme.text} ${theme.itemHoverBg}`
+                      }`}
+                      style={
+                        filterState === 'deleted'
+                          ? { ...fonts.heading, backgroundColor: theme.brandOrange }
+                          : fonts.heading
+                      }
+                    >
+                      <span>Deleted</span>
+                      {filterState === 'deleted' && <Check className="h-4 w-4" />}
+                    </button>
+                    <button
+                      onClick={() => {
                         setFilterState('all');
                         setShowDropdown(false);
                       }}
@@ -210,12 +234,14 @@ export function PermittedAppsPage({
                 const unpermittedPermission = unpermittedPkps.find((p) => p.appId === app.appId);
                 const permission = permittedPermission || unpermittedPermission;
                 const isUnpermitted = !!unpermittedPermission && !permittedPermission;
+                const isDeleted = permission?.isDeleted ?? false;
                 return (
                   <PermittedAppCard
                     key={app.appId}
                     app={app}
                     permission={permission}
                     isUnpermitted={isUnpermitted}
+                    isDeleted={isDeleted}
                     index={index}
                     appVersionsMap={appVersionsMap}
                   />
