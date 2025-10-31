@@ -1,4 +1,3 @@
-import { Power, PowerOff } from 'lucide-react';
 import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
 
 interface VersionCardProps {
@@ -52,11 +51,16 @@ export function VersionCard({
         </div>
         {enabled !== undefined && (
           <div className="flex items-center gap-2">
-            {enabled ? (
-              <Power className="h-4 w-4 text-green-600 dark:text-green-400" />
-            ) : (
-              <PowerOff className={`h-4 w-4 ${theme.textMuted}`} />
-            )}
+            <span
+              className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold"
+              style={{
+                backgroundColor: enabled ? 'rgb(134 239 172 / 0.2)' : 'rgb(254 202 202 / 0.2)',
+                color: enabled ? 'rgb(22 163 74)' : 'rgb(220 38 38)',
+                ...fonts.heading,
+              }}
+            >
+              {enabled ? 'Enabled' : 'Disabled'}
+            </span>
           </div>
         )}
       </div>

@@ -144,6 +144,7 @@ export function AppVersionDetailView({
               appVersionData={versionData}
               appVersionBlockchainData={blockchainAppVersion}
               refetchBlockchainAppVersionData={refetchBlockchainAppVersionData}
+              appActiveVersion={app.activeVersion}
             />
           ) : isVersionPublished && isAppDeletedOnChain ? (
             <div className={`${theme.itemBg} border ${theme.mainCardBorder} rounded-lg p-4`}>
