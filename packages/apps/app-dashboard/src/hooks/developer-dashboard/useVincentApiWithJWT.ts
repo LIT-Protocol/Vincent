@@ -15,7 +15,11 @@ type StoredJWT = {
 
 const JWT_STORAGE_KEY = 'platformUserJWT';
 const EXPECTED_AUDIENCE =
-  VITE_ENV === 'staging' ? `staging.registry.heyvincent.ai` : `registry.heyvincent.ai`;
+  VITE_ENV === 'development'
+    ? 'http://localhost:5173'
+    : VITE_ENV === 'staging'
+      ? 'staging.registry.heyvincent.ai'
+      : 'registry.heyvincent.ai';
 
 /**
  * Get current JWT token for request headers using PKP wallet - returns null if invalid
