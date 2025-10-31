@@ -9,6 +9,7 @@ import useReadAuthInfo from '@/hooks/user-dashboard/useAuthInfo';
 import { addPayee } from '@/utils/user-dashboard/addPayee';
 import { AppDetailsView } from '../views/AppDetailsView';
 import { EditAppForm } from '../forms/EditAppForm';
+import { EditPublishedAppForm } from '../forms/EditPublishedAppForm';
 import { CreateAppVersionForm } from '../forms/CreateAppVersionForm';
 import { DeleteAppForm } from '../forms/DeleteAppForm';
 import { ManageDelegateesForm } from '../forms/ManageDelegateesForm';
@@ -17,6 +18,7 @@ import { StatusMessage } from '@/components/shared/ui/statusMessage';
 import { useBlockchainAppData } from '@/hooks/useBlockchainAppData';
 import { Breadcrumb } from '@/components/shared/ui/Breadcrumb';
 import { EditAppFormData } from '../forms/EditAppForm';
+import { EditPublishedAppFormData } from '../forms/EditPublishedAppForm';
 import { CreateAppVersionFormData } from '../forms/CreateAppVersionForm';
 import {
   Dialog,
@@ -104,7 +106,7 @@ export function AppOverviewWrapper() {
     }
   };
 
-  const handleEditAppSubmit = async (data: EditAppFormData) => {
+  const handleEditAppSubmit = async (data: EditAppFormData | EditPublishedAppFormData) => {
     setIsSubmitting(true);
     try {
       // identify NEW delegatee addresses that weren't in the original app
@@ -230,13 +232,21 @@ export function AppOverviewWrapper() {
               Edit
             </DialogTitle>
           </DialogHeader>
-          <EditAppForm
-            appData={app}
-            appVersions={appVersions}
-            onSubmit={handleEditAppSubmit}
-            isSubmitting={isSubmitting}
-            isPublished={blockchainAppData !== null}
-          />
+          {blockchainAppData !== null ? (
+            <EditPublishedAppForm
+              appData={app}
+              appVersions={appVersions}
+              onSubmit={handleEditAppSubmit}
+              isSubmitting={isSubmitting}
+            />
+          ) : (
+            <EditAppForm
+              appData={app}
+              appVersions={appVersions}
+              onSubmit={handleEditAppSubmit}
+              isSubmitting={isSubmitting}
+            />
+          )}
         </DialogContent>
       </Dialog>
 

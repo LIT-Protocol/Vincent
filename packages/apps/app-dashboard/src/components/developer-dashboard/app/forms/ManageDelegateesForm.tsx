@@ -7,8 +7,16 @@ import { ethers } from 'ethers';
 import { Button } from '@/components/shared/ui/button';
 import { Form } from '@/components/shared/ui/form';
 import { StatusMessage } from '@/components/shared/ui/statusMessage';
-import { Plus, Trash2 } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/shared/ui/dialog';
+import { Plus, Trash2, Dices, Check } from 'lucide-react';
 import { TextField } from '../../form-fields';
+import { CopyButton } from '@/components/shared/ui/CopyButton';
 import { getClient } from '@lit-protocol/vincent-contracts-sdk';
 import { initPkpSigner } from '@/utils/developer-dashboard/initPkpSigner';
 import { addPayee } from '@/utils/user-dashboard/addPayee';
@@ -36,6 +44,12 @@ export function ManageDelegateesForm({
   const { authInfo, sessionSigs } = useReadAuthInfo();
   const [error, setError] = useState<string>('');
   const [removingDelegatee, setRemovingDelegatee] = useState<string | null>(null);
+  const [generatedWallet, setGeneratedWallet] = useState<{
+    address: string;
+    privateKey: string;
+  } | null>(null);
+  const [addingGeneratedWallet, setAddingGeneratedWallet] = useState(false);
+  const [isGenerateDialogOpen, setIsGenerateDialogOpen] = useState(false);
 
   const form = useForm<AddDelegateeFormData>({
     resolver: zodResolver(AddDelegateeSchema),
@@ -62,36 +76,16 @@ export function ManageDelegateesForm({
   }, [error]);
 
   const handleAddDelegatee = async (data: AddDelegateeFormData) => {
-    if (!appId) return;
-
-    // Check if delegatee is already in the current app's delegatee list
-    if (existingDelegatees.includes(data.address)) {
-      setError(`Delegatee ${data.address} is already registered to app ${appId}`);
-      return;
-    }
-
-    // Now add the delegatee
     try {
-      // First, add the specific delegatee address as a payee
-      // if an error happens, at least it won't be written to chain
-      await addPayee(data.address);
-
-      const pkpSigner = await initPkpSigner({ authInfo, sessionSigs });
-      const client = getClient({ signer: pkpSigner });
-
-      await client.addDelegatee({
-        appId: Number(appId),
-        delegateeAddress: data.address,
-      });
-
-      refetchBlockchainData();
+      await addDelegateeAddress(data.address);
+      // Success - form will remain for adding more delegatees
     } catch (error) {
       console.error('Failed to add delegatee:', error);
       const message = error instanceof Error ? error.message : String(error);
       if (message.includes('user rejected')) {
         setError('Transaction rejected.');
       } else if (message.includes('DelegateeAlreadyRegistered')) {
-        setError(`Delegatee ${data.address} is already registered to app ${appId}`);
+        // Error already set in addDelegateeAddress
       } else {
         setError(`Failed to add delegatee: ${message}`);
       }
@@ -124,6 +118,69 @@ export function ManageDelegateesForm({
     } finally {
       setRemovingDelegatee(null);
     }
+  };
+
+  const handleOpenGenerateDialog = () => {
+    const randomWallet = ethers.Wallet.createRandom();
+    setGeneratedWallet({
+      address: randomWallet.address,
+      privateKey: randomWallet.privateKey,
+    });
+    setIsGenerateDialogOpen(true);
+  };
+
+  const addDelegateeAddress = async (address: string) => {
+    if (!appId) return;
+
+    // Check if delegatee is already in the current app's delegatee list
+    if (existingDelegatees.includes(address)) {
+      setError(`Delegatee ${address} is already registered to app ${appId}`);
+      throw new Error('DelegateeAlreadyRegistered');
+    }
+
+    // Add the specific delegatee address as a payee
+    await addPayee(address);
+
+    const pkpSigner = await initPkpSigner({ authInfo, sessionSigs });
+    const client = getClient({ signer: pkpSigner });
+
+    await client.addDelegatee({
+      appId: Number(appId),
+      delegateeAddress: address,
+    });
+
+    refetchBlockchainData();
+  };
+
+  const handleConfirmAndAddWallet = async () => {
+    if (!generatedWallet) return;
+
+    setAddingGeneratedWallet(true);
+
+    try {
+      await addDelegateeAddress(generatedWallet.address);
+
+      // Success - close dialog and clear wallet
+      setGeneratedWallet(null);
+      setIsGenerateDialogOpen(false);
+    } catch (error) {
+      console.error('Failed to add generated delegatee:', error);
+      const message = error instanceof Error ? error.message : String(error);
+      if (message.includes('user rejected')) {
+        setError('Transaction rejected.');
+      } else if (message.includes('DelegateeAlreadyRegistered')) {
+        // Error already set in addDelegateeAddress
+      } else {
+        setError(`Failed to add delegatee: ${message}`);
+      }
+    } finally {
+      setAddingGeneratedWallet(false);
+    }
+  };
+
+  const handleCancelGeneration = () => {
+    setGeneratedWallet(null);
+    setIsGenerateDialogOpen(false);
   };
 
   return (
@@ -185,6 +242,19 @@ export function ManageDelegateesForm({
               </Button>
             </form>
           </Form>
+
+          {/* Generate Random Wallet Button */}
+          <div className={`pt-4 border-t ${theme.cardBorder} mt-6`}>
+            <Button
+              onClick={handleOpenGenerateDialog}
+              disabled={isSubmitting}
+              variant="outline"
+              className="w-full"
+            >
+              <Dices className="h-4 w-4 mr-2" />
+              Generate Random Wallet
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -257,6 +327,106 @@ export function ManageDelegateesForm({
           </div>
         </div>
       </div>
+
+      {/* Generate Random Wallet Dialog */}
+      <Dialog open={isGenerateDialogOpen} onOpenChange={setIsGenerateDialogOpen}>
+        <DialogContent
+          className={`sm:max-w-[550px] ${theme.mainCard} border ${theme.mainCardBorder}`}
+          onOpenAutoFocus={(e) => e.preventDefault()}
+        >
+          <DialogHeader>
+            <DialogTitle className={theme.text} style={fonts.heading}>
+              Generate Random Wallet
+            </DialogTitle>
+            <DialogDescription className={theme.textMuted} style={fonts.body}>
+              Create a new random wallet to use as a delegatee
+            </DialogDescription>
+          </DialogHeader>
+
+          {generatedWallet && (
+            <div className="space-y-4">
+              {/* Generated Address */}
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <label className={`text-sm font-medium ${theme.text}`} style={fonts.heading}>
+                    Generated Address
+                  </label>
+                  <CopyButton textToCopy={generatedWallet.address} iconSize="w-3 h-3" />
+                </div>
+                <div className={`p-3 ${theme.itemBg} border ${theme.mainCardBorder} rounded-lg`}>
+                  <code className={`text-xs ${theme.text} break-all`} style={fonts.body}>
+                    {generatedWallet.address}
+                  </code>
+                </div>
+              </div>
+
+              {/* Private Key */}
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <label className={`text-sm font-medium ${theme.text}`} style={fonts.heading}>
+                    Private Key
+                  </label>
+                  <CopyButton textToCopy={generatedWallet.privateKey} iconSize="w-3 h-3" />
+                </div>
+                <div className={`p-3 ${theme.itemBg} border ${theme.mainCardBorder} rounded-lg`}>
+                  <code className={`text-xs ${theme.text} break-all`} style={fonts.body}>
+                    {generatedWallet.privateKey}
+                  </code>
+                </div>
+              </div>
+
+              {/* Warning */}
+              <div className={`p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg`}>
+                <p className={`text-sm ${theme.text} font-medium mb-1`} style={fonts.heading}>
+                  Important: Save Your Private Key
+                </p>
+                <p className={`text-xs ${theme.textMuted}`} style={fonts.body}>
+                  Make sure you have saved the private key securely before proceeding. You will not
+                  be able to see it again after adding the delegatee.
+                </p>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button
+                  onClick={handleConfirmAndAddWallet}
+                  disabled={addingGeneratedWallet}
+                  className="flex-1 text-white"
+                  style={{ backgroundColor: theme.brandOrange }}
+                  onMouseEnter={(e) => {
+                    if (!addingGeneratedWallet)
+                      e.currentTarget.style.backgroundColor = theme.brandOrangeDarker;
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!addingGeneratedWallet)
+                      e.currentTarget.style.backgroundColor = theme.brandOrange;
+                  }}
+                >
+                  {addingGeneratedWallet ? (
+                    <div className="flex items-center gap-2" style={fonts.heading}>
+                      <div className="h-4 w-4 bg-white/50 rounded animate-pulse" />
+                      <span>Adding...</span>
+                    </div>
+                  ) : (
+                    <>
+                      <Check className="h-4 w-4 mr-2" />
+                      I've Saved the Private Key, Add Delegatee
+                    </>
+                  )}
+                </Button>
+                <Button
+                  onClick={handleCancelGeneration}
+                  disabled={addingGeneratedWallet}
+                  variant="outline"
+                  className="sm:w-auto"
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
