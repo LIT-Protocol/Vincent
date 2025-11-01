@@ -298,3 +298,34 @@ Comprehensive test suites are available in `test/fees/`:
 - Additional DeFi protocol integrations
 - More sophisticated fee calculation methods
 - Batch operations for multiple vaults
+
+# Cross-chain claiming
+
+If the fees accrue on Base, how does the app developer withdraw them? The app developer's wallet is on Chronicle, not on Base.
+
+Options:
+
+1. Lit oracle. A Lit Action queries Chronicle, and retrieves the owner for the appId. It signs the appId, the wallet address, and some kind of challenge to prevent replays (could be a recent blockhash, could be a timestamp). Before claiming, the user hits this Lit Action and gets the signed proof. They provide the signed proof with their claim txn, and the fee contract verifies it.
+2. Hyperlane cross-chains comms. This would require a txn on Chronicle, to initiate the cross-chain message, which would pop-out on Base and go to the Fee contract. The Fee contract would store the owner from this message with a timestamp. The user can then claim using the same wallet, and the Fee contract will check that the wallet sent in the cross-chain message matches the wallet they're making the txn with.
+3. Data mirroring. Every time the a developer creates an app or changes their owner address, we use a Lit Action to check that data on Chronicle, and send it into any target chains that are collecting fees. Therefore, the owner address is already present on the target chain (Base, in the example) and the user just makes a normal txn to withdraw their fees. The downside of this approach is that we have to write the owner address on every change to every chain there could be fees on, and we have to pay gas to do that. On networks like Base that's small, but on eth for example, it could get pricey, and there's a bit of a DoS attack here where the dev changes their owner address often to drain the gas from this wallet. We would have to put some restrictions in like "you can only change owner address 10 times a year" or something. But creating new apps is free and permissionless, so they can just create new apps to get around the 10 change limit and drain the wallet.
+
+We could do this via Hyperlane cross-chain messaging.
+
+## Solution
+
+We're going to go with solution 1 for simplicity and cheapness.
+
+Payload for the Lit Action to sign:
+
+```
+struct OwnerAttestation {
+    uint256 srcChainId;        // typically Chronicle chain Id
+    address srcContract;       // typically the VincentAppDiamond contract
+    address owner;             // owner address from the L3
+    uint256 appId;             // the Vincent appId that this user is an owner of
+    uint256 issuedAt;          // unix time from Lit Action
+    uint256 expiresAt;            // issuedAt + 5 minutes
+    uint256 dstChainId;        // destination chain id to prevent cross-chain replay
+    address dstContract;       // destination chain verifier contract, to prevent cross-contract replay
+}
+```

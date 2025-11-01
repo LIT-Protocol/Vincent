@@ -9,20 +9,12 @@ library FeeUtils {
 
     /* ========== ERRORS ========== */
     error CallerNotOwner();
-    error CallerNotAppManager(uint40 appId, address caller);
     error ZeroAppId();
 
     /* ========== EVENTS ========== */
     event DepositAdded(uint40 indexed appId, address indexed token, uint256 amount, uint256 vaultProvider);
     event DepositWithdrawn(uint40 indexed appId, address indexed token, uint256 amount, uint256 vaultProvider);
     event FeeCollected(uint40 indexed appId, address indexed token, uint256 amount);
-    event AppFeesWithdrawn(uint40 indexed appId, address indexed tokenAddress, uint256 amount);
-    event PerformanceFeePercentageSet(uint256 newPerformanceFeePercentage);
-    event SwapFeePercentageSet(uint256 newSwapFeePercentage);
-    event AavePoolSet(address newAavePool);
-    event AerodromeRouterSet(address newAerodromeRouter);
-    event LitAppFeeSplitPercentageSet(uint256 newLitAppFeeSplitPercentage);
-    event VincentAppDiamondSet(address newVincentAppDiamond);
 
     /* ========== FUNCTIONS ========== */
 

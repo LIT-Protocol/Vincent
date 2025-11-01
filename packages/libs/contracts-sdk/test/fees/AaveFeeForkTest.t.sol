@@ -73,10 +73,10 @@ contract AaveFeeForkTest is FeeTestCommon {
 
         address vincentDiamondAddress = _deployVincentDiamondAndBasicApp(APP_MANAGER_BOB, APP_DELEGATEE_BOB, DEV_APP_ID);
 
-        // set the vincent app contract address in the fee diamond
-        vm.startPrank(owner);
-        feeAdminFacet.setVincentAppDiamond(vincentDiamondAddress);
-        vm.stopPrank();
+        // // set the vincent app contract address in the fee diamond
+        // vm.startPrank(owner);
+        // feeAdminFacet.setVincentAppDiamond(vincentDiamondAddress);
+        // vm.stopPrank();
     }
 
     function testSingleDepositAndWithdrawFromAaveWithProfit() public {

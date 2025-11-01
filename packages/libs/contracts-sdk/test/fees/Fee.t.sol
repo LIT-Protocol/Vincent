@@ -150,18 +150,18 @@ contract FeeTest is Test {
         assertEq(feeAdminFacet.litAppFeeSplitPercentage(), NEW_LIT_APP_FEE_SPLIT_PERCENTAGE);
     }
 
-    function testSetVincentAppDiamond() public {
-        address NEW_VINCENT_APP_DIAMOND = makeAddr("VincentAppDiamond");
-        assertNotEq(feeAdminFacet.vincentAppDiamond(), NEW_VINCENT_APP_DIAMOND);
+    function testSetOwnerAttestationSigner() public {
+        address NEW_ATTESTATION_SIGNER_ADDRESS = makeAddr("SomeWalletAddress");
+        assertNotEq(feeAdminFacet.ownerAttestationSigner(), NEW_ATTESTATION_SIGNER_ADDRESS);
 
-        // test that a non-owner cannot set the vincent app diamond
+        // test that a non-owner cannot set the owner attestation signer
         vm.expectRevert(FeeUtils.CallerNotOwner.selector);
-        feeAdminFacet.setVincentAppDiamond(NEW_VINCENT_APP_DIAMOND);
+        feeAdminFacet.setOwnerAttestationSigner(NEW_ATTESTATION_SIGNER_ADDRESS);
 
-        // test that the owner can set the vincent app diamond
-        vm.startPrank(owner);
-        feeAdminFacet.setVincentAppDiamond(NEW_VINCENT_APP_DIAMOND);
+        // test that the owner can set the owner attestation signer
+        vm.startPrank(owner);   
+        feeAdminFacet.setOwnerAttestationSigner(NEW_ATTESTATION_SIGNER_ADDRESS);
         vm.stopPrank();
-        assertEq(feeAdminFacet.vincentAppDiamond(), NEW_VINCENT_APP_DIAMOND);
+        assertEq(feeAdminFacet.ownerAttestationSigner(), NEW_ATTESTATION_SIGNER_ADDRESS);
     }
 }

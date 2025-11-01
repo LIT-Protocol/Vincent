@@ -7,6 +7,8 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {FeeUtils} from "../FeeUtils.sol";
 import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import {VincentAppViewFacet} from "../../facets/VincentAppViewFacet.sol";
+import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 
 /**
  * @title FeeAdminFacet
@@ -14,8 +16,43 @@ import {VincentAppViewFacet} from "../../facets/VincentAppViewFacet.sol";
  */
 contract FeeAdminFacet {
     using EnumerableSet for EnumerableSet.AddressSet;
+    using ECDSA for bytes32;
+    using MessageHashUtils for bytes32;
 
-    /* ========== Modifiers ========== */
+    struct OwnerAttestation {
+        uint256 srcChainId;        // typically Chronicle chain Id
+        address srcContract;       // typically the VincentAppDiamond contract
+        address owner;             // owner address from the L3
+        uint256 appId;             // the Vincent appId that this user is an owner of
+        uint256 issuedAt;          // unix time from Lit Action
+        uint256 expiresAt;            // issuedAt + 5 minutes
+        uint256 dstChainId;        // destination chain id to prevent cross-chain replay
+        address dstContract;       // destination chain verifier contract, to prevent cross-contract replay
+    }
+
+
+    /* ========== ERRORS ========== */
+    error CallerNotAppManager(uint40 appId, address caller, address recoveredSigner);
+    error OwnerAttestationIncorrectSigner(address correctSigner, address recoveredSigner);
+    error OwnerAttestationIncorrectAppId(uint40 correctAppId, uint256 signedAppId);
+    error OwnerAttestationExpired(uint256 expiration);
+    error OwnerAttestationIssuedAtInFuture(uint256 issuedAt);
+    error OwnerAttestationIncorrectChainId(uint256 chainId);
+    error OwnerAttestationIncorrectDestinationContract(address dstContract);
+
+
+    /* ========== EVENTS ========== */
+    event AppFeesWithdrawn(uint40 indexed appId, address indexed tokenAddress, uint256 amount);
+    event PerformanceFeePercentageSet(uint256 newPerformanceFeePercentage);
+    event SwapFeePercentageSet(uint256 newSwapFeePercentage);
+    event AavePoolSet(address newAavePool);
+    event AerodromeRouterSet(address newAerodromeRouter);
+    event LitAppFeeSplitPercentageSet(uint256 newLitAppFeeSplitPercentage);
+    event OwnerAttestationSignerSet(address newOwnerAttestationSigner);
+
+
+
+    /* ========== MODIFIERS ========== */
     modifier onlyOwner() {
         if (msg.sender != LibDiamond.contractOwner()) {
             revert FeeUtils.CallerNotOwner();
@@ -23,29 +60,62 @@ contract FeeAdminFacet {
         _;
     }
 
-    modifier onlyAppManager(uint40 appId) {
+    modifier onlyAppManager(uint40 appId, OwnerAttestation calldata oa, bytes calldata sig) {
         // app id 0 is the lit foundation
         if (appId == LibFeeStorage.LIT_FOUNDATION_APP_ID) {
             if (msg.sender != LibDiamond.contractOwner()) {
                 revert FeeUtils.CallerNotOwner();
             }
         } else {
-            VincentAppViewFacet feeViewsFacet = VincentAppViewFacet(LibFeeStorage.getStorage().vincentAppDiamond);
-            if (msg.sender != feeViewsFacet.getAppById(appId).manager) {
-                revert FeeUtils.CallerNotAppManager(appId, msg.sender);
-            }
+            verifyOwnerAttestation(appId, oa, sig);
         }
         _;
     }
 
     /* ========== VIEWS ========== */
 
+    function verifyOwnerAttestation(uint40 appId, OwnerAttestation calldata oa, bytes calldata sig) public {
+        // verify the signature
+        bytes32 messageHash = keccak256(abi.encodePacked(
+            oa.srcChainId,
+            oa.srcContract,
+            oa.owner,
+            oa.appId,
+            oa.issuedAt,
+            oa.expiresAt,
+            oa.dstChainId,
+            oa.dstContract
+        ));
+        address signer = messageHash.toEthSignedMessageHash().recover(sig);
+        if (signer != LibFeeStorage.getStorage().ownerAttestationSigner){
+            revert OwnerAttestationIncorrectSigner(LibFeeStorage.getStorage().ownerAttestationSigner, signer);
+        }
+        if (msg.sender != oa.owner) {
+            revert CallerNotAppManager(appId, oa.owner, msg.sender);
+        }
+        if (oa.appId != appId) {
+            revert OwnerAttestationIncorrectAppId(appId, oa.appId);
+        }
+        if (oa.issuedAt > block.timestamp) {
+            revert OwnerAttestationIssuedAtInFuture(oa.issuedAt);
+        }
+        if (oa.expiresAt < block.timestamp) {
+            revert OwnerAttestationExpired(oa.expiresAt);
+        }
+        if (oa.dstChainId != block.chainid) {
+            revert OwnerAttestationIncorrectChainId(oa.dstChainId);
+        }
+        if (oa.dstContract != address(this)) {
+            revert OwnerAttestationIncorrectDestinationContract(oa.dstContract);
+        }
+    }
+
     /**
-     * @notice Gets the vincent app diamond contract address
-     * @return the vincent app diamond contract address
+     * @notice Gets the owner attestation signer wallet address
+     * @return the owner attestation signer wallet address
      */
-    function vincentAppDiamond() external view returns (address) {
-        return LibFeeStorage.getStorage().vincentAppDiamond;
+    function ownerAttestationSigner() external view returns (address) {
+        return LibFeeStorage.getStorage().ownerAttestationSigner;
     }
 
     /**
@@ -124,13 +194,13 @@ contract FeeAdminFacet {
     /* ========== MUTATIVE FUNCTIONS ========== */
 
     /**
-     * @notice Sets the vincent app diamond contract address
-     * @param newVincentAppDiamond the new vincent app diamond contract address
+     * @notice Sets the owner attestation signer contract address
+     * @param newOwnerAttestationSigner the new owner attestation signer contract address
      * @dev this can only be called by the owner
      */
-    function setVincentAppDiamond(address newVincentAppDiamond) external onlyOwner {
-        LibFeeStorage.getStorage().vincentAppDiamond = newVincentAppDiamond;
-        emit FeeUtils.VincentAppDiamondSet(newVincentAppDiamond);
+    function setOwnerAttestationSigner(address newOwnerAttestationSigner) external onlyOwner {
+        LibFeeStorage.getStorage().ownerAttestationSigner = newOwnerAttestationSigner;
+        emit OwnerAttestationSignerSet(newOwnerAttestationSigner);
     }
 
     /**
@@ -139,7 +209,7 @@ contract FeeAdminFacet {
      * @param tokenAddress the address of the token to withdraw
      * @dev this can only be called by the app manager
      */
-    function withdrawAppFees(uint40 appId, address tokenAddress) external onlyAppManager(appId) {
+    function withdrawAppFees(uint40 appId, address tokenAddress, OwnerAttestation calldata ownerAttestation, bytes calldata ownerAttestationSig) external onlyAppManager(appId, ownerAttestation, ownerAttestationSig) {
         // remove the token from the set of tokens that have collected fees
         // since we're withdrawing the full balance of the token
         LibFeeStorage.getStorage().tokensWithCollectedFees[appId].remove(tokenAddress);
@@ -155,7 +225,7 @@ contract FeeAdminFacet {
         token.transfer(msg.sender, amount);
 
         // emit the event
-        emit FeeUtils.AppFeesWithdrawn(appId, tokenAddress, amount);
+        emit AppFeesWithdrawn(appId, tokenAddress, amount);
     }
 
     /**
@@ -167,7 +237,7 @@ contract FeeAdminFacet {
      */
     function setPerformanceFeePercentage(uint256 newPerformanceFeePercentage) external onlyOwner {
         LibFeeStorage.getStorage().performanceFeePercentage = newPerformanceFeePercentage;
-        emit FeeUtils.PerformanceFeePercentageSet(newPerformanceFeePercentage);
+        emit PerformanceFeePercentageSet(newPerformanceFeePercentage);
     }
 
     /**
@@ -179,7 +249,7 @@ contract FeeAdminFacet {
      */
     function setSwapFeePercentage(uint256 newSwapFeePercentage) external onlyOwner {
         LibFeeStorage.getStorage().swapFeePercentage = newSwapFeePercentage;
-        emit FeeUtils.SwapFeePercentageSet(newSwapFeePercentage);
+        emit SwapFeePercentageSet(newSwapFeePercentage);
     }
 
     /**
@@ -189,7 +259,7 @@ contract FeeAdminFacet {
      */
     function setAavePool(address newAavePool) external onlyOwner {
         LibFeeStorage.getStorage().aavePool = newAavePool;
-        emit FeeUtils.AavePoolSet(newAavePool);
+        emit AavePoolSet(newAavePool);
     }
 
     /**
@@ -199,7 +269,7 @@ contract FeeAdminFacet {
      */
     function setAerodromeRouter(address newAerodromeRouter) external onlyOwner {
         LibFeeStorage.getStorage().aerodromeRouter = newAerodromeRouter;
-        emit FeeUtils.AerodromeRouterSet(newAerodromeRouter);
+        emit AerodromeRouterSet(newAerodromeRouter);
     }
 
     /**
@@ -211,6 +281,6 @@ contract FeeAdminFacet {
      */
     function setLitAppFeeSplitPercentage(uint256 newLitAppFeeSplitPercentage) external onlyOwner {
         LibFeeStorage.getStorage().litAppFeeSplitPercentage = newLitAppFeeSplitPercentage;
-        emit FeeUtils.LitAppFeeSplitPercentageSet(newLitAppFeeSplitPercentage);
+        emit LitAppFeeSplitPercentageSet(newLitAppFeeSplitPercentage);
     }
 }

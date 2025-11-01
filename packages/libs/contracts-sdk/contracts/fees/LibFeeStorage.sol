@@ -19,8 +19,6 @@ library LibFeeStorage {
     }
 
     struct FeeStorage {
-        // Vincent App Diamond contract address
-        address vincentAppDiamond;
         // maps appId to a user address to a vault/pool asset address to a deposit
         mapping(uint40 => mapping(address => mapping(address => Deposit))) deposits;
         // performance fee percentage, expressed in basis points
@@ -44,6 +42,8 @@ library LibFeeStorage {
         // Lit Foundation / App fee split percentage, expressed in basis points
         // so 1000 = 10% goes to Lit Foundation, 90% goes to the app that initiated the action.  multiply percentage by 100 to get basis points
         uint256 litAppFeeSplitPercentage;
+        // The address of a lit action derived wallet that will do a cross-chain read of the owner
+        address ownerAttestationSigner;
     }
 
     function getStorage() internal pure returns (FeeStorage storage as_) {

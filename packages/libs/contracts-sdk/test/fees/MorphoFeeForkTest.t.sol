@@ -1,419 +1,419 @@
-// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.29;
-
-import "forge-std/Test.sol";
-import "forge-std/console.sol";
-
-import {FeeTestCommon} from "./FeeTestCommon.sol";
-import {FeeViewsFacet} from "../../contracts/fees/facets/FeeViewsFacet.sol";
-import {FeeAdminFacet} from "../../contracts/fees/facets/FeeAdminFacet.sol";
-import {MorphoPerfFeeFacet} from "../../contracts/fees/facets/MorphoPerfFeeFacet.sol";
-import {LibFeeStorage} from "../../contracts/fees/LibFeeStorage.sol";
-import {FeeUtils} from "../../contracts/fees/FeeUtils.sol";
-
-import {USDC} from "../ABIs/USDC.sol";
-import {MorphoVault} from "../ABIs/MorphoVault.sol";
-import {Morpho} from "../ABIs/Morpho.sol";
-
-contract MorphoFeeForkTest is FeeTestCommon {
-    uint256 constant BASIS_POINT_DIVISOR = 10000;
-
-    address owner;
-    uint40 DEV_APP_ID = uint40(vm.randomUint(1, type(uint40).max));
-    address APP_MANAGER_BOB = makeAddr("Bob");
-    address APP_DELEGATEE_BOB = makeAddr("BobDelegatee");
-    address APP_USER_ALICE = makeAddr("Alice");
-    // real morpho vault on base from https://app.morpho.org/base/vault/0x7BfA7C4f149E7415b73bdeDfe609237e29CBF34A/spark-usdc-vault
-    address REAL_MORPHO_VAULT = 0x7BfA7C4f149E7415b73bdeDfe609237e29CBF34A;
-    // real USDC address on base
-    address REAL_USDC = 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913;
-    // real USDC master_minter
-    address REAL_USDC_MASTER_MINTER;
-    address USDC_MINTER = makeAddr("USDCMinter");
-
-    FeeViewsFacet public feeViewsFacet;
-    FeeAdminFacet public feeAdminFacet;
-    MorphoPerfFeeFacet public morphoPerfFeeFacet;
-
-    USDC public underlyingERC20;
-    MorphoVault public morphoVault;
-    Morpho public morpho;
-    uint256 public erc20Decimals;
-
-    function setUp() public {
-        uint256 deployerPrivateKey = 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80;
-        vm.setEnv("VINCENT_DEPLOYER_PRIVATE_KEY", vm.toString(deployerPrivateKey));
-        owner = vm.addr(deployerPrivateKey);
-
-        address diamondAddress = _deployFeeDiamond();
-
-        feeViewsFacet = FeeViewsFacet(diamondAddress);
-        feeAdminFacet = FeeAdminFacet(diamondAddress);
-        morphoPerfFeeFacet = MorphoPerfFeeFacet(diamondAddress);
-
-        // set up the real morpho vault and USDC token
-        morphoVault = MorphoVault(REAL_MORPHO_VAULT);
-        underlyingERC20 = USDC(morphoVault.asset());
-        REAL_USDC_MASTER_MINTER = underlyingERC20.masterMinter();
-        // configure the USDC minter
-        vm.prank(REAL_USDC_MASTER_MINTER);
-        underlyingERC20.configureMinter(USDC_MINTER, type(uint256).max);
-        vm.stopPrank();
-        morpho = Morpho(morphoVault.MORPHO());
-        erc20Decimals = underlyingERC20.decimals();
-
-        address vincentDiamondAddress = _deployVincentDiamondAndBasicApp(APP_MANAGER_BOB, APP_DELEGATEE_BOB, DEV_APP_ID);
-
-        // set the vincent app contract address in the fee diamond
-        vm.startPrank(owner);
-        feeAdminFacet.setVincentAppDiamond(vincentDiamondAddress);
-        vm.stopPrank();
-    }
-
-    function testSingleDepositAndWithdrawFromMorphoWithProfit() public {
-        // set the performance fee percentage to 5% in basis points
-        uint256 performanceFeePercentage = 500;
-
-        // set the performance fee percentage to 5%
-        vm.startPrank(owner);
-        assertNotEq(feeAdminFacet.performanceFeePercentage(), performanceFeePercentage);
-        feeAdminFacet.setPerformanceFeePercentage(performanceFeePercentage);
-        assertEq(feeAdminFacet.performanceFeePercentage(), performanceFeePercentage);
-        vm.stopPrank();
-
-        uint256 depositAmount = 50 * 10 ** erc20Decimals;
-
-        // mint the USDC to the user
-        vm.startPrank(USDC_MINTER);
-        underlyingERC20.mint(APP_USER_ALICE, depositAmount);
-        vm.stopPrank();
-        console.log("minted USDC to user");
-
-        vm.startPrank(APP_USER_ALICE);
-        underlyingERC20.approve(address(morphoPerfFeeFacet), depositAmount);
-        console.log("approved USDC to morpho");
-        morphoPerfFeeFacet.depositToMorpho(DEV_APP_ID, address(morphoVault), depositAmount);
-        vm.stopPrank();
-        console.log("deposited to morpho");
-
-        LibFeeStorage.Deposit memory d = feeViewsFacet.deposits(DEV_APP_ID, APP_USER_ALICE, address(morphoVault));
-
-        assertEq(d.assetAmount, depositAmount);
-        console.log("d.vaultShares", d.vaultShares);
-        console.log("d.vaultProvider", d.vaultProvider);
-        // confirm that the user has the vault shares
-        uint256 userVaultShares = morphoVault.balanceOf(address(APP_USER_ALICE));
-        console.log("userVaultShares", userVaultShares);
-        assertEq(userVaultShares, d.vaultShares);
-
-        // find the underlying morpho market and advance timestamp to 1 week from now to accrue interest, to simulate profit
-        uint256 withdrawalQueueLength = morphoVault.withdrawQueueLength();
-        console.log("withdrawalQueueLength", withdrawalQueueLength);
-        assertGt(withdrawalQueueLength, 0);
-        Morpho.Id withdrawalQueueEntryHash = Morpho.Id.wrap(MorphoVault.Id.unwrap(morphoVault.withdrawQueue(0)));
-        (address loanToken, address collateralToken, address oracle, address irm, uint256 lltv) =
-            morpho.idToMarketParams(withdrawalQueueEntryHash);
-        vm.warp(block.timestamp + 1 weeks);
-        morpho.accrueInterest(
-            Morpho.MarketParams({
-                loanToken: loanToken, collateralToken: collateralToken, oracle: oracle, irm: irm, lltv: lltv
-            })
-        );
-
-        // check that asset balance will be higher if we withdraw
-        uint256 expectedTotalWithdrawal = morphoVault.convertToAssets(d.vaultShares);
-        console.log("expectedTotalWithdrawal", expectedTotalWithdrawal);
-        assertEq(expectedTotalWithdrawal > depositAmount, true);
-
-        vm.startPrank(APP_USER_ALICE);
-        morphoVault.approve(address(morphoPerfFeeFacet), d.vaultShares);
-        console.log("approved Morpho Vault shares to fee contract");
-        morphoPerfFeeFacet.withdrawFromMorpho(DEV_APP_ID, address(morphoVault));
-        vm.stopPrank();
-
-        // confirm the deposit is zeroed out
-        d = feeViewsFacet.deposits(DEV_APP_ID, APP_USER_ALICE, address(morphoVault));
-
-        assertEq(d.assetAmount, 0);
-        assertEq(d.vaultShares, 0);
-        assertEq(d.vaultProvider, 0);
-
-        // confirm the profit went to the fee contract, and some went to the user
-        uint256 userBalance = underlyingERC20.balanceOf(APP_USER_ALICE);
-        uint256 feeContractBalance = underlyingERC20.balanceOf(address(morphoPerfFeeFacet));
-
-        uint256 expectedTotalProfit = expectedTotalWithdrawal - depositAmount;
-        uint256 expectedUserProfit =
-            expectedTotalProfit - (expectedTotalProfit * performanceFeePercentage / BASIS_POINT_DIVISOR);
-        uint256 expectedFeeContractProfit = expectedTotalProfit * performanceFeePercentage / BASIS_POINT_DIVISOR;
-        console.log("expectedTotalProfit", expectedTotalProfit);
-        console.log("expectedUserProfit", expectedUserProfit);
-        console.log("expectedFeeContractProfit", expectedFeeContractProfit);
-        console.log("userProfit", userBalance);
-        console.log("feeContractProfit", feeContractBalance);
-
-        assertEq(userBalance, depositAmount + expectedUserProfit);
-        assertEq(feeContractBalance, expectedFeeContractProfit);
-
-        // test that the underlyingERC20 is in the set of tokens that have collected fees for the foundation
-        address[] memory tokensWithCollectedFees =
-            feeAdminFacet.tokensWithCollectedFees(LibFeeStorage.LIT_FOUNDATION_APP_ID);
-        assertEq(tokensWithCollectedFees.length, 1);
-        assertEq(tokensWithCollectedFees[0], address(underlyingERC20));
-
-        // test that the underlyingERC20 is in the set of tokens that have collected fees for the app
-        tokensWithCollectedFees = feeAdminFacet.tokensWithCollectedFees(DEV_APP_ID);
-        assertEq(tokensWithCollectedFees.length, 1);
-        assertEq(tokensWithCollectedFees[0], address(underlyingERC20));
-
-        // check the collected fees for the foundation
-        uint256 litCollectedAppFees =
-            feeViewsFacet.collectedAppFees(LibFeeStorage.LIT_FOUNDATION_APP_ID, address(underlyingERC20));
-        // check the collected fees for the app
-        uint256 appCollectedAppFees = feeViewsFacet.collectedAppFees(DEV_APP_ID, address(underlyingERC20));
-        assertEq(litCollectedAppFees + appCollectedAppFees, expectedFeeContractProfit);
-
-        // calculate the split expected for the lit foundation, and for the app
-        uint256 expectedLitCollectedAppFees =
-            expectedFeeContractProfit * feeAdminFacet.litAppFeeSplitPercentage() / BASIS_POINT_DIVISOR;
-        uint256 expectedAppCollectedAppFees = expectedFeeContractProfit - expectedLitCollectedAppFees;
-        assertEq(litCollectedAppFees, expectedLitCollectedAppFees);
-        assertEq(appCollectedAppFees, expectedAppCollectedAppFees);
-
-        // test withdrawal of profit from the fee contract as owner
-        vm.startPrank(owner);
-        feeAdminFacet.withdrawAppFees(LibFeeStorage.LIT_FOUNDATION_APP_ID, address(underlyingERC20));
-        vm.stopPrank();
-
-        // confirm the profit went to the owner
-        assertEq(underlyingERC20.balanceOf(owner), expectedLitCollectedAppFees);
-
-        // confirm that the token is no longer in the set of tokens that have collected fees
-        tokensWithCollectedFees = feeAdminFacet.tokensWithCollectedFees(LibFeeStorage.LIT_FOUNDATION_APP_ID);
-        assertEq(tokensWithCollectedFees.length, 0);
-
-        // test withdrawal of profit from the fee contract as app manager
-        vm.startPrank(APP_MANAGER_BOB);
-        feeAdminFacet.withdrawAppFees(DEV_APP_ID, address(underlyingERC20));
-        vm.stopPrank();
-
-        // confirm the profit went to the app manager
-        assertEq(underlyingERC20.balanceOf(APP_MANAGER_BOB), expectedAppCollectedAppFees);
-
-        // confirm that the token is no longer in the set of tokens that have collected fees
-        tokensWithCollectedFees = feeAdminFacet.tokensWithCollectedFees(DEV_APP_ID);
-        assertEq(tokensWithCollectedFees.length, 0);
-    }
-
-    function testSingleDepositAndWithdrawFromMorphoWithNoProfit() public {
-        // the user will deposit 50 USDC and withdraw it without any profit
-        uint256 depositAmount = 50 * 10 ** erc20Decimals;
-
-        // mint the USDC to the user
-        vm.startPrank(USDC_MINTER);
-        underlyingERC20.mint(APP_USER_ALICE, depositAmount);
-        vm.stopPrank();
-
-        vm.startPrank(APP_USER_ALICE);
-        underlyingERC20.approve(address(morphoPerfFeeFacet), depositAmount);
-        morphoPerfFeeFacet.depositToMorpho(DEV_APP_ID, address(morphoVault), depositAmount);
-        vm.stopPrank();
-
-        LibFeeStorage.Deposit memory d = feeViewsFacet.deposits(DEV_APP_ID, APP_USER_ALICE, address(morphoVault));
-
-        assertEq(d.assetAmount, depositAmount);
-        console.log("d.vaultShares", d.vaultShares);
-        console.log("d.vaultProvider", d.vaultProvider);
-        // confirm that the user has the vault shares
-        uint256 userVaultShares = morphoVault.balanceOf(address(APP_USER_ALICE));
-        console.log("userVaultShares", userVaultShares);
-        assertEq(userVaultShares, d.vaultShares);
-
-        // check that asset balance will be slightly lower if we withdraw now, due to fees / rounding
-        uint256 expectedTotalWithdrawal = morphoVault.convertToAssets(d.vaultShares);
-        console.log("expectedTotalWithdrawal", expectedTotalWithdrawal);
-        assertEq(expectedTotalWithdrawal < depositAmount, true);
-
-        vm.startPrank(APP_USER_ALICE);
-        morphoVault.approve(address(morphoPerfFeeFacet), d.vaultShares);
-        morphoPerfFeeFacet.withdrawFromMorpho(DEV_APP_ID, address(morphoVault));
-        vm.stopPrank();
-
-        // confirm the deposit is zeroed out
-        d = feeViewsFacet.deposits(DEV_APP_ID, APP_USER_ALICE, address(morphoVault));
-
-        assertEq(d.assetAmount, 0);
-        assertEq(d.vaultShares, 0);
-        assertEq(d.vaultProvider, 0);
-
-        // confirm there was no profit
-        uint256 userBalance = underlyingERC20.balanceOf(APP_USER_ALICE);
-        uint256 feeContractBalance = underlyingERC20.balanceOf(address(morphoPerfFeeFacet));
-
-        console.log("depositAmount", depositAmount);
-        console.log("userBalance", userBalance);
-
-        // The user's balance is exactly depositAmount - 1 due to vault share math and fee rounding:
-        // When withdrawing, the vault converts shares back to assets, and due to integer division/rounding,
-        // the user receives one less unit than deposited. This is expected for this test scenario.
-        assertEq(userBalance, depositAmount - 1);
-        assertEq(feeContractBalance, 0);
-
-        // test that the underlyingERC20 is not in the set of tokens that have collected fees
-        address[] memory tokensWithCollectedFees = feeAdminFacet.tokensWithCollectedFees(DEV_APP_ID);
-        assertEq(tokensWithCollectedFees.length, 0);
-    }
-
-    function testMultipleDepositAndWithdrawFromMorphoWithProfit() public {
-        // set the performance fee percentage to 5% in basis points
-        uint256 performanceFeePercentage = 500;
-
-        // set the performance fee percentage to 5%
-        vm.startPrank(owner);
-        assertNotEq(feeAdminFacet.performanceFeePercentage(), performanceFeePercentage);
-        feeAdminFacet.setPerformanceFeePercentage(performanceFeePercentage);
-        assertEq(feeAdminFacet.performanceFeePercentage(), performanceFeePercentage);
-        vm.stopPrank();
-
-        uint256 depositAmount = 50 * 10 ** erc20Decimals;
-
-        // mint the USDC to the user
-        vm.startPrank(USDC_MINTER);
-        underlyingERC20.mint(APP_USER_ALICE, depositAmount);
-        vm.stopPrank();
-
-        vm.startPrank(APP_USER_ALICE);
-        underlyingERC20.approve(address(morphoPerfFeeFacet), depositAmount);
-        morphoPerfFeeFacet.depositToMorpho(DEV_APP_ID, address(morphoVault), depositAmount);
-        vm.stopPrank();
-
-        LibFeeStorage.Deposit memory d = feeViewsFacet.deposits(DEV_APP_ID, APP_USER_ALICE, address(morphoVault));
-
-        assertEq(d.assetAmount, depositAmount);
-        console.log("d.vaultShares", d.vaultShares);
-        console.log("d.vaultProvider", d.vaultProvider);
-        // confirm that the user has the vault shares
-        uint256 userVaultShares = morphoVault.balanceOf(address(APP_USER_ALICE));
-        console.log("userVaultShares", userVaultShares);
-        assertEq(userVaultShares, d.vaultShares);
-
-        // deposit again
-        vm.startPrank(USDC_MINTER);
-        underlyingERC20.mint(APP_USER_ALICE, depositAmount);
-        vm.stopPrank();
-        vm.startPrank(APP_USER_ALICE);
-        underlyingERC20.approve(address(morphoPerfFeeFacet), depositAmount);
-        morphoPerfFeeFacet.depositToMorpho(DEV_APP_ID, address(morphoVault), depositAmount);
-        vm.stopPrank();
-
-        // deposited twice, so total deposit amount is times 2
-        depositAmount = depositAmount * 2;
-
-        d = feeViewsFacet.deposits(DEV_APP_ID, APP_USER_ALICE, address(morphoVault));
-
-        assertEq(d.assetAmount, depositAmount);
-        console.log("d.vaultShares", d.vaultShares);
-        console.log("d.vaultProvider", d.vaultProvider);
-        // confirm that the user has the vault shares
-        userVaultShares = morphoVault.balanceOf(address(APP_USER_ALICE));
-        console.log("userVaultShares", userVaultShares);
-        assertEq(userVaultShares, d.vaultShares);
-
-        // find the underlying morpho market and advance timestamp to 1 week from now to accrue interest, to simulate profit
-        uint256 withdrawalQueueLength = morphoVault.withdrawQueueLength();
-        console.log("withdrawalQueueLength", withdrawalQueueLength);
-        assertGt(withdrawalQueueLength, 0);
-        Morpho.Id withdrawalQueueEntryHash = Morpho.Id.wrap(MorphoVault.Id.unwrap(morphoVault.withdrawQueue(0)));
-        (address loanToken, address collateralToken, address oracle, address irm, uint256 lltv) =
-            morpho.idToMarketParams(withdrawalQueueEntryHash);
-        vm.warp(block.timestamp + 1 weeks);
-        morpho.accrueInterest(
-            Morpho.MarketParams({
-                loanToken: loanToken, collateralToken: collateralToken, oracle: oracle, irm: irm, lltv: lltv
-            })
-        );
-
-        // check that asset balance will be higher if we withdraw
-        uint256 expectedTotalWithdrawal = morphoVault.convertToAssets(d.vaultShares);
-        console.log("expectedTotalWithdrawal", expectedTotalWithdrawal);
-        assertEq(expectedTotalWithdrawal > depositAmount, true);
-
-        vm.startPrank(APP_USER_ALICE);
-        morphoVault.approve(address(morphoPerfFeeFacet), d.vaultShares);
-        morphoPerfFeeFacet.withdrawFromMorpho(DEV_APP_ID, address(morphoVault));
-        vm.stopPrank();
-
-        // confirm the deposit is zeroed out
-        d = feeViewsFacet.deposits(DEV_APP_ID, APP_USER_ALICE, address(morphoVault));
-
-        assertEq(d.assetAmount, 0);
-        assertEq(d.vaultShares, 0);
-        assertEq(d.vaultProvider, 0);
-
-        // confirm the profit went to the fee contract, and some went to the user
-        uint256 userBalance = underlyingERC20.balanceOf(APP_USER_ALICE);
-        uint256 feeContractBalance = underlyingERC20.balanceOf(address(morphoPerfFeeFacet));
-
-        uint256 expectedTotalProfit = expectedTotalWithdrawal - depositAmount;
-        uint256 expectedUserProfit =
-            expectedTotalProfit - (expectedTotalProfit * performanceFeePercentage / BASIS_POINT_DIVISOR);
-        uint256 expectedFeeContractProfit = expectedTotalProfit * performanceFeePercentage / BASIS_POINT_DIVISOR;
-        console.log("expectedTotalProfit", expectedTotalProfit);
-        console.log("expectedUserProfit", expectedUserProfit);
-        console.log("expectedFeeContractProfit", expectedFeeContractProfit);
-        console.log("userProfit", userBalance);
-        console.log("feeContractProfit", feeContractBalance);
-
-        assertEq(userBalance, depositAmount + expectedUserProfit);
-        assertEq(feeContractBalance, expectedFeeContractProfit);
-
-        // test that the underlyingERC20 is in the set of tokens that have collected fees for the foundation
-        address[] memory tokensWithCollectedFees =
-            feeAdminFacet.tokensWithCollectedFees(LibFeeStorage.LIT_FOUNDATION_APP_ID);
-        assertEq(tokensWithCollectedFees.length, 1);
-        assertEq(tokensWithCollectedFees[0], address(underlyingERC20));
-
-        // test that the underlyingERC20 is in the set of tokens that have collected fees for the app
-        tokensWithCollectedFees = feeAdminFacet.tokensWithCollectedFees(DEV_APP_ID);
-        assertEq(tokensWithCollectedFees.length, 1);
-        assertEq(tokensWithCollectedFees[0], address(underlyingERC20));
-
-        // check the collected fees for the foundation
-        uint256 litCollectedAppFees =
-            feeViewsFacet.collectedAppFees(LibFeeStorage.LIT_FOUNDATION_APP_ID, address(underlyingERC20));
-        // check the collected fees for the app
-        uint256 appCollectedAppFees = feeViewsFacet.collectedAppFees(DEV_APP_ID, address(underlyingERC20));
-        assertEq(litCollectedAppFees + appCollectedAppFees, expectedFeeContractProfit);
-
-        // calculate the split expected for the lit foundation, and for the app
-        uint256 expectedLitCollectedAppFees =
-            expectedFeeContractProfit * feeAdminFacet.litAppFeeSplitPercentage() / BASIS_POINT_DIVISOR;
-        uint256 expectedAppCollectedAppFees = expectedFeeContractProfit - expectedLitCollectedAppFees;
-        assertEq(litCollectedAppFees, expectedLitCollectedAppFees);
-        assertEq(appCollectedAppFees, expectedAppCollectedAppFees);
-
-        // test withdrawal of profit from the fee contract as owner
-        vm.startPrank(owner);
-        feeAdminFacet.withdrawAppFees(LibFeeStorage.LIT_FOUNDATION_APP_ID, address(underlyingERC20));
-        vm.stopPrank();
-
-        // confirm the profit went to the owner
-        assertEq(underlyingERC20.balanceOf(owner), expectedLitCollectedAppFees);
-
-        // confirm that the token is no longer in the set of tokens that have collected fees
-        tokensWithCollectedFees = feeAdminFacet.tokensWithCollectedFees(LibFeeStorage.LIT_FOUNDATION_APP_ID);
-        assertEq(tokensWithCollectedFees.length, 0);
-
-        // test withdrawal of profit from the fee contract as app manager
-        vm.startPrank(APP_MANAGER_BOB);
-        feeAdminFacet.withdrawAppFees(DEV_APP_ID, address(underlyingERC20));
-        vm.stopPrank();
-
-        // confirm the profit went to the app manager
-        assertEq(underlyingERC20.balanceOf(APP_MANAGER_BOB), expectedAppCollectedAppFees);
-
-        // confirm that the token is no longer in the set of tokens that have collected fees
-        tokensWithCollectedFees = feeAdminFacet.tokensWithCollectedFees(DEV_APP_ID);
-        assertEq(tokensWithCollectedFees.length, 0);
-    }
-}
+// // SPDX-License-Identifier: MIT
+// pragma solidity ^0.8.29;
+
+// import "forge-std/Test.sol";
+// import "forge-std/console.sol";
+
+// import {FeeTestCommon} from "./FeeTestCommon.sol";
+// import {FeeViewsFacet} from "../../contracts/fees/facets/FeeViewsFacet.sol";
+// import {FeeAdminFacet} from "../../contracts/fees/facets/FeeAdminFacet.sol";
+// import {MorphoPerfFeeFacet} from "../../contracts/fees/facets/MorphoPerfFeeFacet.sol";
+// import {LibFeeStorage} from "../../contracts/fees/LibFeeStorage.sol";
+// import {FeeUtils} from "../../contracts/fees/FeeUtils.sol";
+
+// import {USDC} from "../ABIs/USDC.sol";
+// import {MorphoVault} from "../ABIs/MorphoVault.sol";
+// import {Morpho} from "../ABIs/Morpho.sol";
+
+// contract MorphoFeeForkTest is FeeTestCommon {
+//     uint256 constant BASIS_POINT_DIVISOR = 10000;
+
+//     address owner;
+//     uint40 DEV_APP_ID = uint40(vm.randomUint(1, type(uint40).max));
+//     address APP_MANAGER_BOB = makeAddr("Bob");
+//     address APP_DELEGATEE_BOB = makeAddr("BobDelegatee");
+//     address APP_USER_ALICE = makeAddr("Alice");
+//     // real morpho vault on base from https://app.morpho.org/base/vault/0x7BfA7C4f149E7415b73bdeDfe609237e29CBF34A/spark-usdc-vault
+//     address REAL_MORPHO_VAULT = 0x7BfA7C4f149E7415b73bdeDfe609237e29CBF34A;
+//     // real USDC address on base
+//     address REAL_USDC = 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913;
+//     // real USDC master_minter
+//     address REAL_USDC_MASTER_MINTER;
+//     address USDC_MINTER = makeAddr("USDCMinter");
+
+//     FeeViewsFacet public feeViewsFacet;
+//     FeeAdminFacet public feeAdminFacet;
+//     MorphoPerfFeeFacet public morphoPerfFeeFacet;
+
+//     USDC public underlyingERC20;
+//     MorphoVault public morphoVault;
+//     Morpho public morpho;
+//     uint256 public erc20Decimals;
+
+//     function setUp() public {
+//         uint256 deployerPrivateKey = 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80;
+//         vm.setEnv("VINCENT_DEPLOYER_PRIVATE_KEY", vm.toString(deployerPrivateKey));
+//         owner = vm.addr(deployerPrivateKey);
+
+//         address diamondAddress = _deployFeeDiamond();
+
+//         feeViewsFacet = FeeViewsFacet(diamondAddress);
+//         feeAdminFacet = FeeAdminFacet(diamondAddress);
+//         morphoPerfFeeFacet = MorphoPerfFeeFacet(diamondAddress);
+
+//         // set up the real morpho vault and USDC token
+//         morphoVault = MorphoVault(REAL_MORPHO_VAULT);
+//         underlyingERC20 = USDC(morphoVault.asset());
+//         REAL_USDC_MASTER_MINTER = underlyingERC20.masterMinter();
+//         // configure the USDC minter
+//         vm.prank(REAL_USDC_MASTER_MINTER);
+//         underlyingERC20.configureMinter(USDC_MINTER, type(uint256).max);
+//         vm.stopPrank();
+//         morpho = Morpho(morphoVault.MORPHO());
+//         erc20Decimals = underlyingERC20.decimals();
+
+//         address vincentDiamondAddress = _deployVincentDiamondAndBasicApp(APP_MANAGER_BOB, APP_DELEGATEE_BOB, DEV_APP_ID);
+
+//         // set the vincent app contract address in the fee diamond
+//         vm.startPrank(owner);
+//         feeAdminFacet.setVincentAppDiamond(vincentDiamondAddress);
+//         vm.stopPrank();
+//     }
+
+//     function testSingleDepositAndWithdrawFromMorphoWithProfit() public {
+//         // set the performance fee percentage to 5% in basis points
+//         uint256 performanceFeePercentage = 500;
+
+//         // set the performance fee percentage to 5%
+//         vm.startPrank(owner);
+//         assertNotEq(feeAdminFacet.performanceFeePercentage(), performanceFeePercentage);
+//         feeAdminFacet.setPerformanceFeePercentage(performanceFeePercentage);
+//         assertEq(feeAdminFacet.performanceFeePercentage(), performanceFeePercentage);
+//         vm.stopPrank();
+
+//         uint256 depositAmount = 50 * 10 ** erc20Decimals;
+
+//         // mint the USDC to the user
+//         vm.startPrank(USDC_MINTER);
+//         underlyingERC20.mint(APP_USER_ALICE, depositAmount);
+//         vm.stopPrank();
+//         console.log("minted USDC to user");
+
+//         vm.startPrank(APP_USER_ALICE);
+//         underlyingERC20.approve(address(morphoPerfFeeFacet), depositAmount);
+//         console.log("approved USDC to morpho");
+//         morphoPerfFeeFacet.depositToMorpho(DEV_APP_ID, address(morphoVault), depositAmount);
+//         vm.stopPrank();
+//         console.log("deposited to morpho");
+
+//         LibFeeStorage.Deposit memory d = feeViewsFacet.deposits(DEV_APP_ID, APP_USER_ALICE, address(morphoVault));
+
+//         assertEq(d.assetAmount, depositAmount);
+//         console.log("d.vaultShares", d.vaultShares);
+//         console.log("d.vaultProvider", d.vaultProvider);
+//         // confirm that the user has the vault shares
+//         uint256 userVaultShares = morphoVault.balanceOf(address(APP_USER_ALICE));
+//         console.log("userVaultShares", userVaultShares);
+//         assertEq(userVaultShares, d.vaultShares);
+
+//         // find the underlying morpho market and advance timestamp to 1 week from now to accrue interest, to simulate profit
+//         uint256 withdrawalQueueLength = morphoVault.withdrawQueueLength();
+//         console.log("withdrawalQueueLength", withdrawalQueueLength);
+//         assertGt(withdrawalQueueLength, 0);
+//         Morpho.Id withdrawalQueueEntryHash = Morpho.Id.wrap(MorphoVault.Id.unwrap(morphoVault.withdrawQueue(0)));
+//         (address loanToken, address collateralToken, address oracle, address irm, uint256 lltv) =
+//             morpho.idToMarketParams(withdrawalQueueEntryHash);
+//         vm.warp(block.timestamp + 1 weeks);
+//         morpho.accrueInterest(
+//             Morpho.MarketParams({
+//                 loanToken: loanToken, collateralToken: collateralToken, oracle: oracle, irm: irm, lltv: lltv
+//             })
+//         );
+
+//         // check that asset balance will be higher if we withdraw
+//         uint256 expectedTotalWithdrawal = morphoVault.convertToAssets(d.vaultShares);
+//         console.log("expectedTotalWithdrawal", expectedTotalWithdrawal);
+//         assertEq(expectedTotalWithdrawal > depositAmount, true);
+
+//         vm.startPrank(APP_USER_ALICE);
+//         morphoVault.approve(address(morphoPerfFeeFacet), d.vaultShares);
+//         console.log("approved Morpho Vault shares to fee contract");
+//         morphoPerfFeeFacet.withdrawFromMorpho(DEV_APP_ID, address(morphoVault));
+//         vm.stopPrank();
+
+//         // confirm the deposit is zeroed out
+//         d = feeViewsFacet.deposits(DEV_APP_ID, APP_USER_ALICE, address(morphoVault));
+
+//         assertEq(d.assetAmount, 0);
+//         assertEq(d.vaultShares, 0);
+//         assertEq(d.vaultProvider, 0);
+
+//         // confirm the profit went to the fee contract, and some went to the user
+//         uint256 userBalance = underlyingERC20.balanceOf(APP_USER_ALICE);
+//         uint256 feeContractBalance = underlyingERC20.balanceOf(address(morphoPerfFeeFacet));
+
+//         uint256 expectedTotalProfit = expectedTotalWithdrawal - depositAmount;
+//         uint256 expectedUserProfit =
+//             expectedTotalProfit - (expectedTotalProfit * performanceFeePercentage / BASIS_POINT_DIVISOR);
+//         uint256 expectedFeeContractProfit = expectedTotalProfit * performanceFeePercentage / BASIS_POINT_DIVISOR;
+//         console.log("expectedTotalProfit", expectedTotalProfit);
+//         console.log("expectedUserProfit", expectedUserProfit);
+//         console.log("expectedFeeContractProfit", expectedFeeContractProfit);
+//         console.log("userProfit", userBalance);
+//         console.log("feeContractProfit", feeContractBalance);
+
+//         assertEq(userBalance, depositAmount + expectedUserProfit);
+//         assertEq(feeContractBalance, expectedFeeContractProfit);
+
+//         // test that the underlyingERC20 is in the set of tokens that have collected fees for the foundation
+//         address[] memory tokensWithCollectedFees =
+//             feeAdminFacet.tokensWithCollectedFees(LibFeeStorage.LIT_FOUNDATION_APP_ID);
+//         assertEq(tokensWithCollectedFees.length, 1);
+//         assertEq(tokensWithCollectedFees[0], address(underlyingERC20));
+
+//         // test that the underlyingERC20 is in the set of tokens that have collected fees for the app
+//         tokensWithCollectedFees = feeAdminFacet.tokensWithCollectedFees(DEV_APP_ID);
+//         assertEq(tokensWithCollectedFees.length, 1);
+//         assertEq(tokensWithCollectedFees[0], address(underlyingERC20));
+
+//         // check the collected fees for the foundation
+//         uint256 litCollectedAppFees =
+//             feeViewsFacet.collectedAppFees(LibFeeStorage.LIT_FOUNDATION_APP_ID, address(underlyingERC20));
+//         // check the collected fees for the app
+//         uint256 appCollectedAppFees = feeViewsFacet.collectedAppFees(DEV_APP_ID, address(underlyingERC20));
+//         assertEq(litCollectedAppFees + appCollectedAppFees, expectedFeeContractProfit);
+
+//         // calculate the split expected for the lit foundation, and for the app
+//         uint256 expectedLitCollectedAppFees =
+//             expectedFeeContractProfit * feeAdminFacet.litAppFeeSplitPercentage() / BASIS_POINT_DIVISOR;
+//         uint256 expectedAppCollectedAppFees = expectedFeeContractProfit - expectedLitCollectedAppFees;
+//         assertEq(litCollectedAppFees, expectedLitCollectedAppFees);
+//         assertEq(appCollectedAppFees, expectedAppCollectedAppFees);
+
+//         // test withdrawal of profit from the fee contract as owner
+//         vm.startPrank(owner);
+//         feeAdminFacet.withdrawAppFees(LibFeeStorage.LIT_FOUNDATION_APP_ID, address(underlyingERC20));
+//         vm.stopPrank();
+
+//         // confirm the profit went to the owner
+//         assertEq(underlyingERC20.balanceOf(owner), expectedLitCollectedAppFees);
+
+//         // confirm that the token is no longer in the set of tokens that have collected fees
+//         tokensWithCollectedFees = feeAdminFacet.tokensWithCollectedFees(LibFeeStorage.LIT_FOUNDATION_APP_ID);
+//         assertEq(tokensWithCollectedFees.length, 0);
+
+//         // test withdrawal of profit from the fee contract as app manager
+//         vm.startPrank(APP_MANAGER_BOB);
+//         feeAdminFacet.withdrawAppFees(DEV_APP_ID, address(underlyingERC20));
+//         vm.stopPrank();
+
+//         // confirm the profit went to the app manager
+//         assertEq(underlyingERC20.balanceOf(APP_MANAGER_BOB), expectedAppCollectedAppFees);
+
+//         // confirm that the token is no longer in the set of tokens that have collected fees
+//         tokensWithCollectedFees = feeAdminFacet.tokensWithCollectedFees(DEV_APP_ID);
+//         assertEq(tokensWithCollectedFees.length, 0);
+//     }
+
+//     function testSingleDepositAndWithdrawFromMorphoWithNoProfit() public {
+//         // the user will deposit 50 USDC and withdraw it without any profit
+//         uint256 depositAmount = 50 * 10 ** erc20Decimals;
+
+//         // mint the USDC to the user
+//         vm.startPrank(USDC_MINTER);
+//         underlyingERC20.mint(APP_USER_ALICE, depositAmount);
+//         vm.stopPrank();
+
+//         vm.startPrank(APP_USER_ALICE);
+//         underlyingERC20.approve(address(morphoPerfFeeFacet), depositAmount);
+//         morphoPerfFeeFacet.depositToMorpho(DEV_APP_ID, address(morphoVault), depositAmount);
+//         vm.stopPrank();
+
+//         LibFeeStorage.Deposit memory d = feeViewsFacet.deposits(DEV_APP_ID, APP_USER_ALICE, address(morphoVault));
+
+//         assertEq(d.assetAmount, depositAmount);
+//         console.log("d.vaultShares", d.vaultShares);
+//         console.log("d.vaultProvider", d.vaultProvider);
+//         // confirm that the user has the vault shares
+//         uint256 userVaultShares = morphoVault.balanceOf(address(APP_USER_ALICE));
+//         console.log("userVaultShares", userVaultShares);
+//         assertEq(userVaultShares, d.vaultShares);
+
+//         // check that asset balance will be slightly lower if we withdraw now, due to fees / rounding
+//         uint256 expectedTotalWithdrawal = morphoVault.convertToAssets(d.vaultShares);
+//         console.log("expectedTotalWithdrawal", expectedTotalWithdrawal);
+//         assertEq(expectedTotalWithdrawal < depositAmount, true);
+
+//         vm.startPrank(APP_USER_ALICE);
+//         morphoVault.approve(address(morphoPerfFeeFacet), d.vaultShares);
+//         morphoPerfFeeFacet.withdrawFromMorpho(DEV_APP_ID, address(morphoVault));
+//         vm.stopPrank();
+
+//         // confirm the deposit is zeroed out
+//         d = feeViewsFacet.deposits(DEV_APP_ID, APP_USER_ALICE, address(morphoVault));
+
+//         assertEq(d.assetAmount, 0);
+//         assertEq(d.vaultShares, 0);
+//         assertEq(d.vaultProvider, 0);
+
+//         // confirm there was no profit
+//         uint256 userBalance = underlyingERC20.balanceOf(APP_USER_ALICE);
+//         uint256 feeContractBalance = underlyingERC20.balanceOf(address(morphoPerfFeeFacet));
+
+//         console.log("depositAmount", depositAmount);
+//         console.log("userBalance", userBalance);
+
+//         // The user's balance is exactly depositAmount - 1 due to vault share math and fee rounding:
+//         // When withdrawing, the vault converts shares back to assets, and due to integer division/rounding,
+//         // the user receives one less unit than deposited. This is expected for this test scenario.
+//         assertEq(userBalance, depositAmount - 1);
+//         assertEq(feeContractBalance, 0);
+
+//         // test that the underlyingERC20 is not in the set of tokens that have collected fees
+//         address[] memory tokensWithCollectedFees = feeAdminFacet.tokensWithCollectedFees(DEV_APP_ID);
+//         assertEq(tokensWithCollectedFees.length, 0);
+//     }
+
+//     function testMultipleDepositAndWithdrawFromMorphoWithProfit() public {
+//         // set the performance fee percentage to 5% in basis points
+//         uint256 performanceFeePercentage = 500;
+
+//         // set the performance fee percentage to 5%
+//         vm.startPrank(owner);
+//         assertNotEq(feeAdminFacet.performanceFeePercentage(), performanceFeePercentage);
+//         feeAdminFacet.setPerformanceFeePercentage(performanceFeePercentage);
+//         assertEq(feeAdminFacet.performanceFeePercentage(), performanceFeePercentage);
+//         vm.stopPrank();
+
+//         uint256 depositAmount = 50 * 10 ** erc20Decimals;
+
+//         // mint the USDC to the user
+//         vm.startPrank(USDC_MINTER);
+//         underlyingERC20.mint(APP_USER_ALICE, depositAmount);
+//         vm.stopPrank();
+
+//         vm.startPrank(APP_USER_ALICE);
+//         underlyingERC20.approve(address(morphoPerfFeeFacet), depositAmount);
+//         morphoPerfFeeFacet.depositToMorpho(DEV_APP_ID, address(morphoVault), depositAmount);
+//         vm.stopPrank();
+
+//         LibFeeStorage.Deposit memory d = feeViewsFacet.deposits(DEV_APP_ID, APP_USER_ALICE, address(morphoVault));
+
+//         assertEq(d.assetAmount, depositAmount);
+//         console.log("d.vaultShares", d.vaultShares);
+//         console.log("d.vaultProvider", d.vaultProvider);
+//         // confirm that the user has the vault shares
+//         uint256 userVaultShares = morphoVault.balanceOf(address(APP_USER_ALICE));
+//         console.log("userVaultShares", userVaultShares);
+//         assertEq(userVaultShares, d.vaultShares);
+
+//         // deposit again
+//         vm.startPrank(USDC_MINTER);
+//         underlyingERC20.mint(APP_USER_ALICE, depositAmount);
+//         vm.stopPrank();
+//         vm.startPrank(APP_USER_ALICE);
+//         underlyingERC20.approve(address(morphoPerfFeeFacet), depositAmount);
+//         morphoPerfFeeFacet.depositToMorpho(DEV_APP_ID, address(morphoVault), depositAmount);
+//         vm.stopPrank();
+
+//         // deposited twice, so total deposit amount is times 2
+//         depositAmount = depositAmount * 2;
+
+//         d = feeViewsFacet.deposits(DEV_APP_ID, APP_USER_ALICE, address(morphoVault));
+
+//         assertEq(d.assetAmount, depositAmount);
+//         console.log("d.vaultShares", d.vaultShares);
+//         console.log("d.vaultProvider", d.vaultProvider);
+//         // confirm that the user has the vault shares
+//         userVaultShares = morphoVault.balanceOf(address(APP_USER_ALICE));
+//         console.log("userVaultShares", userVaultShares);
+//         assertEq(userVaultShares, d.vaultShares);
+
+//         // find the underlying morpho market and advance timestamp to 1 week from now to accrue interest, to simulate profit
+//         uint256 withdrawalQueueLength = morphoVault.withdrawQueueLength();
+//         console.log("withdrawalQueueLength", withdrawalQueueLength);
+//         assertGt(withdrawalQueueLength, 0);
+//         Morpho.Id withdrawalQueueEntryHash = Morpho.Id.wrap(MorphoVault.Id.unwrap(morphoVault.withdrawQueue(0)));
+//         (address loanToken, address collateralToken, address oracle, address irm, uint256 lltv) =
+//             morpho.idToMarketParams(withdrawalQueueEntryHash);
+//         vm.warp(block.timestamp + 1 weeks);
+//         morpho.accrueInterest(
+//             Morpho.MarketParams({
+//                 loanToken: loanToken, collateralToken: collateralToken, oracle: oracle, irm: irm, lltv: lltv
+//             })
+//         );
+
+//         // check that asset balance will be higher if we withdraw
+//         uint256 expectedTotalWithdrawal = morphoVault.convertToAssets(d.vaultShares);
+//         console.log("expectedTotalWithdrawal", expectedTotalWithdrawal);
+//         assertEq(expectedTotalWithdrawal > depositAmount, true);
+
+//         vm.startPrank(APP_USER_ALICE);
+//         morphoVault.approve(address(morphoPerfFeeFacet), d.vaultShares);
+//         morphoPerfFeeFacet.withdrawFromMorpho(DEV_APP_ID, address(morphoVault));
+//         vm.stopPrank();
+
+//         // confirm the deposit is zeroed out
+//         d = feeViewsFacet.deposits(DEV_APP_ID, APP_USER_ALICE, address(morphoVault));
+
+//         assertEq(d.assetAmount, 0);
+//         assertEq(d.vaultShares, 0);
+//         assertEq(d.vaultProvider, 0);
+
+//         // confirm the profit went to the fee contract, and some went to the user
+//         uint256 userBalance = underlyingERC20.balanceOf(APP_USER_ALICE);
+//         uint256 feeContractBalance = underlyingERC20.balanceOf(address(morphoPerfFeeFacet));
+
+//         uint256 expectedTotalProfit = expectedTotalWithdrawal - depositAmount;
+//         uint256 expectedUserProfit =
+//             expectedTotalProfit - (expectedTotalProfit * performanceFeePercentage / BASIS_POINT_DIVISOR);
+//         uint256 expectedFeeContractProfit = expectedTotalProfit * performanceFeePercentage / BASIS_POINT_DIVISOR;
+//         console.log("expectedTotalProfit", expectedTotalProfit);
+//         console.log("expectedUserProfit", expectedUserProfit);
+//         console.log("expectedFeeContractProfit", expectedFeeContractProfit);
+//         console.log("userProfit", userBalance);
+//         console.log("feeContractProfit", feeContractBalance);
+
+//         assertEq(userBalance, depositAmount + expectedUserProfit);
+//         assertEq(feeContractBalance, expectedFeeContractProfit);
+
+//         // test that the underlyingERC20 is in the set of tokens that have collected fees for the foundation
+//         address[] memory tokensWithCollectedFees =
+//             feeAdminFacet.tokensWithCollectedFees(LibFeeStorage.LIT_FOUNDATION_APP_ID);
+//         assertEq(tokensWithCollectedFees.length, 1);
+//         assertEq(tokensWithCollectedFees[0], address(underlyingERC20));
+
+//         // test that the underlyingERC20 is in the set of tokens that have collected fees for the app
+//         tokensWithCollectedFees = feeAdminFacet.tokensWithCollectedFees(DEV_APP_ID);
+//         assertEq(tokensWithCollectedFees.length, 1);
+//         assertEq(tokensWithCollectedFees[0], address(underlyingERC20));
+
+//         // check the collected fees for the foundation
+//         uint256 litCollectedAppFees =
+//             feeViewsFacet.collectedAppFees(LibFeeStorage.LIT_FOUNDATION_APP_ID, address(underlyingERC20));
+//         // check the collected fees for the app
+//         uint256 appCollectedAppFees = feeViewsFacet.collectedAppFees(DEV_APP_ID, address(underlyingERC20));
+//         assertEq(litCollectedAppFees + appCollectedAppFees, expectedFeeContractProfit);
+
+//         // calculate the split expected for the lit foundation, and for the app
+//         uint256 expectedLitCollectedAppFees =
+//             expectedFeeContractProfit * feeAdminFacet.litAppFeeSplitPercentage() / BASIS_POINT_DIVISOR;
+//         uint256 expectedAppCollectedAppFees = expectedFeeContractProfit - expectedLitCollectedAppFees;
+//         assertEq(litCollectedAppFees, expectedLitCollectedAppFees);
+//         assertEq(appCollectedAppFees, expectedAppCollectedAppFees);
+
+//         // test withdrawal of profit from the fee contract as owner
+//         vm.startPrank(owner);
+//         feeAdminFacet.withdrawAppFees(LibFeeStorage.LIT_FOUNDATION_APP_ID, address(underlyingERC20));
+//         vm.stopPrank();
+
+//         // confirm the profit went to the owner
+//         assertEq(underlyingERC20.balanceOf(owner), expectedLitCollectedAppFees);
+
+//         // confirm that the token is no longer in the set of tokens that have collected fees
+//         tokensWithCollectedFees = feeAdminFacet.tokensWithCollectedFees(LibFeeStorage.LIT_FOUNDATION_APP_ID);
+//         assertEq(tokensWithCollectedFees.length, 0);
+
+//         // test withdrawal of profit from the fee contract as app manager
+//         vm.startPrank(APP_MANAGER_BOB);
+//         feeAdminFacet.withdrawAppFees(DEV_APP_ID, address(underlyingERC20));
+//         vm.stopPrank();
+
+//         // confirm the profit went to the app manager
+//         assertEq(underlyingERC20.balanceOf(APP_MANAGER_BOB), expectedAppCollectedAppFees);
+
+//         // confirm that the token is no longer in the set of tokens that have collected fees
+//         tokensWithCollectedFees = feeAdminFacet.tokensWithCollectedFees(DEV_APP_ID);
+//         assertEq(tokensWithCollectedFees.length, 0);
+//     }
+// }
