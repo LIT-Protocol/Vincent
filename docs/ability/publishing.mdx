@@ -1,0 +1,92 @@
+---
+title: Publishing Abilities
+---
+
+Vincent Abilities need to be published to our database before they can be accessible to application developers.
+
+<Steps>
+  <Step title="Log into the Vincent Developer Dashboard">
+    Go to the [Vincent Developer Dashboard](https://dashboard.heyvincent.ai) and log in with your preferred authentication method.
+
+    <img
+      src="/images/ability/publishing/image-1.png"
+      alt="Vincent Developer Dashboard login"
+      className="rounded-lg"
+    />
+  </Step>
+
+  <Step title="Create a New Vincent Ability">
+    After logging in, click the **Create an ability** button to access the [Create Ability Page](https://dashboard.heyvincent.ai/developer/create-ability)
+
+    <img
+      src="/images/ability/publishing/image-2.png"
+      alt="Create ability button"
+      className="rounded-lg"
+    />
+  </Step>
+
+  <Step title="Fill in the Ability Details">
+    Complete the form with your ability information:
+
+    <img
+      src="/images/ability/publishing/image-3.png"
+      alt="Ability details form"
+      className="rounded-lg"
+    />
+
+    <ParamField path="Package Name" type="string" required>
+      The published `npm` package name
+    </ParamField>
+
+    <ParamField path="Description" type="string" required>
+      The ability description
+    </ParamField>
+
+    <ParamField path="Title" type="string" required>
+      The ability title
+    </ParamField>
+
+    <ParamField path="Logo" type="image" required>
+      Image of your ability shown to users while connecting
+    </ParamField>
+
+    <ParamField path="Active Version" type="string" required>
+      The ability version which will be used by app creators
+    </ParamField>
+
+    <ParamField path="Deployment Status" type="string">
+      The current status of the ability
+    </ParamField>
+  </Step>
+
+  <Step title="Ability Successfully Created">
+    Your ability has been successfully published to the Vincent database and is now available for app developers to use.
+
+    <img
+      src="/images/ability/publishing/image-4.png"
+      alt="Ability creation success confirmation"
+      className="rounded-lg"
+    />
+  </Step>
+</Steps>
+
+<Note>This version must be published to `npm`. Aside from the package name, all other metadata is editable.</Note>
+
+<Warning>
+Abilities with the 'dev' status won't be visible to app developers. Only abilities with 'active' status can be integrated into Vincent Apps.
+</Warning>
+
+## Updating Your Ability
+
+When you want to release a new version of your ability, you'll need to update our database with the new version information. We'll cover the version update process in the next section.
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Ability Quick Start" icon="rocket" href="/ability/quickstart">
+    Build your first Ability with the starter kit
+  </Card>
+  <Card title="Supporting Policies" icon="shield-check" href="/ability/supporting-policies">
+    Learn how to integrate Policies with your Abilities
+  </Card>
+</CardGroup>

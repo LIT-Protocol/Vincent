@@ -1,23 +1,24 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, Dispatch, SetStateAction } from 'react';
 import { createAppKit } from '@reown/appkit/react';
 import { WagmiAdapter } from '@reown/appkit-adapter-wagmi';
 import { mainnet, polygon, arbitrum, optimism, base, AppKitNetwork } from '@reown/appkit/networks';
 import { useAccount, useSignMessage, useDisconnect, useConfig } from 'wagmi';
 import { Button } from '@/components/shared/ui/button';
-import { ThemeType } from '../connect/ui/theme';
+import { ThemeType, fonts } from '../connect/ui/theme';
 import StatusMessage from '../connect/StatusMessage';
 import { env } from '@/config/env';
+import { AuthView } from '../connect/Connect';
 
 interface WalletAuthProps {
   authWithEthWallet: (
     address: string,
     signMessage: (message: string) => Promise<string>,
   ) => Promise<void>;
-  setView: (view: string) => void;
+  setView: Dispatch<SetStateAction<AuthView>>;
   theme: ThemeType;
 }
 
-export default function EthWalletAuth({ authWithEthWallet, setView, theme }: WalletAuthProps) {
+export default function EthWalletAuth({ authWithEthWallet, theme }: WalletAuthProps) {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
   const [appKitInitialized, setAppKitInitialized] = useState(false);
@@ -152,12 +153,19 @@ export default function EthWalletAuth({ authWithEthWallet, setView, theme }: Wal
     <>
       <div className="flex justify-center">
         <div className="space-y-4 w-4/5">
+          <label className={`text-sm font-medium block ${theme.text}`} style={fonts.heading}>
+            Ethereum Wallet
+          </label>
+          <p className={`text-xs ${theme.textMuted}`} style={fonts.body}>
+            Connect your Ethereum wallet and sign a message to authenticate securely.
+          </p>
           {!isWalletReady ? (
             <div className="flex justify-center">
               <Button
                 onClick={openWalletModal}
                 disabled={!appKitInitialized}
                 className={`w-full ${theme.accentBg} ${theme.accentHover} rounded-xl py-3 px-4 font-medium text-sm transition-all duration-200 hover:shadow-md flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed`}
+                style={fonts.heading}
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
@@ -175,18 +183,27 @@ export default function EthWalletAuth({ authWithEthWallet, setView, theme }: Wal
               <div className={`${theme.successBg} border ${theme.cardBorder} rounded-lg p-3`}>
                 <div className="flex items-center justify-center mb-2">
                   <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                  <span className={`text-sm font-medium ${theme.successText}`}>
+                  <span
+                    className={`text-sm font-medium ${theme.successText}`}
+                    style={fonts.heading}
+                  >
                     Connected Wallet
                   </span>
                 </div>
                 <div className={`rounded p-2 border ${theme.cardBg} ${theme.cardBorder}`}>
-                  <div className={`text-[10px] break-all text-center ${theme.text}`}>{address}</div>
+                  <div
+                    className={`text-[10px] break-all text-center ${theme.text}`}
+                    style={fonts.body}
+                  >
+                    {address}
+                  </div>
                 </div>
               </div>
               <Button
                 onClick={authenticate}
                 disabled={loading}
                 className={`w-full ${theme.accentBg} ${theme.accentHover} rounded-xl py-3 px-4 font-medium text-sm transition-all duration-200 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2`}
+                style={fonts.heading}
               >
                 {loading ? (
                   <>
@@ -222,6 +239,7 @@ export default function EthWalletAuth({ authWithEthWallet, setView, theme }: Wal
               <Button
                 onClick={() => disconnect()}
                 className={`w-full ${theme.cardBg} ${theme.text} border ${theme.cardBorder} ${theme.itemHoverBg} rounded-xl py-3 px-4 font-medium text-sm transition-all duration-200 hover:shadow-sm flex items-center justify-center gap-2 mt-3`}
+                style={fonts.heading}
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
@@ -237,21 +255,6 @@ export default function EthWalletAuth({ authWithEthWallet, setView, theme }: Wal
           )}
 
           {error && <StatusMessage message={error} type="error" />}
-
-          <Button
-            onClick={() => setView('default')}
-            className={`w-full ${theme.cardBg} ${theme.text} border ${theme.cardBorder} ${theme.itemHoverBg} rounded-xl py-3 px-4 font-medium text-sm transition-all duration-200 hover:shadow-sm flex items-center justify-center gap-2`}
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M10 19l-7-7m0 0l7-7m-7 7h18"
-              />
-            </svg>
-            Back
-          </Button>
         </div>
       </div>
     </>

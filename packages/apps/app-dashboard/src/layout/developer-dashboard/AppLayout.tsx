@@ -1,11 +1,15 @@
 import { ComponentProps, useEffect } from 'react';
-import { useLocation } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
 import { cn } from '@/lib/utils';
 import { DeveloperSidebarWrapper } from '@/components/developer-dashboard/sidebar/DeveloperSidebarWrapper';
 import { AuthenticationErrorScreen } from '@/components/user-dashboard/connect/AuthenticationErrorScreen';
 import { ResourceNotOwnedError } from '@/components/developer-dashboard/ui/ResourceNotOwnedError';
-import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/shared/ui/sidebar';
-import { Separator } from '@/components/shared/ui/separator';
+import {
+  SidebarProvider,
+  SidebarInset,
+  SidebarTrigger,
+  useSidebar,
+} from '@/components/shared/ui/sidebar';
 import { theme } from '@/components/user-dashboard/connect/ui/theme';
 import { useAppAddressCheck } from '@/hooks/developer-dashboard/app/useAppAddressCheck';
 import { useAbilityAddressCheck } from '@/hooks/developer-dashboard/ability/useAbilityAddressCheck';
@@ -13,9 +17,30 @@ import { usePolicyAddressCheck } from '@/hooks/developer-dashboard/policy/usePol
 import { getCurrentJwt } from '@/hooks/developer-dashboard/useVincentApiWithJWT';
 import Loading from '@/components/shared/ui/Loading';
 import useReadAuthInfo from '@/hooks/user-dashboard/useAuthInfo';
+import { ExplorerNav } from '@/components/explorer/ui/ExplorerNav';
+import { useGlobeOffset } from '@/contexts/GlobeOffsetContext';
+
+// Component that updates globe offset based on sidebar state
+function SidebarOffsetSync() {
+  const { state, isMobile } = useSidebar();
+  const { setShouldOffset } = useGlobeOffset();
+
+  useEffect(() => {
+    setShouldOffset(!isMobile && state === 'expanded');
+  }, [state, isMobile, setShouldOffset]);
+
+  useEffect(() => {
+    return () => {
+      setShouldOffset(false);
+    };
+  }, [setShouldOffset]);
+
+  return null;
+}
 
 function AppLayout({ children, className }: ComponentProps<'div'>) {
   const location = useLocation();
+  const navigate = useNavigate();
 
   // FIRST: Check basic authentication
   const { authInfo, sessionSigs, isProcessing: authLoading, error } = useReadAuthInfo();
@@ -39,9 +64,9 @@ function AppLayout({ children, className }: ComponentProps<'div'>) {
   const isDeveloperRoute = location.pathname.startsWith('/developer');
 
   // Determine which specific authorization check is needed based on route
-  const needsAppAuthorization = location.pathname.includes('/developer/appId/');
-  const needsAbilityAuthorization = location.pathname.includes('/developer/ability/');
-  const needsPolicyAuthorization = location.pathname.includes('/developer/policy/');
+  const needsAppAuthorization = location.pathname.includes('/developer/apps/appId/');
+  const needsAbilityAuthorization = location.pathname.includes('/developer/abilities/ability/');
+  const needsPolicyAuthorization = location.pathname.includes('/developer/policies/policy/');
 
   // Select the appropriate authorization result based on the current route
   let isResourceAuthorized: boolean | null = true;
@@ -60,22 +85,27 @@ function AppLayout({ children, className }: ComponentProps<'div'>) {
 
   // Common layout wrapper function
   const layoutWrapper = (content: React.ReactNode) => (
-    <div className={cn(`min-h-screen ${theme.bg}`, className)}>
-      <SidebarProvider style={{ '--sidebar-width': '20rem' } as React.CSSProperties}>
-        <DeveloperSidebarWrapper />
-        <SidebarInset>
-          <header className="border-b border-sidebar-border h-16">
-            <div className="flex items-center gap-2 px-6 py-4 h-full">
-              <SidebarTrigger className="text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-white/5 [&>svg]:text-gray-900 dark:[&>svg]:text-white -ml-1" />
-              <Separator orientation="vertical" className="mr-2 h-4" />
-            </div>
-          </header>
-          <main className="flex-1 p-8 flex justify-center items-start">
-            <div className="w-full">
-              <div className="max-w-6xl mx-auto">{content}</div>
-            </div>
-          </main>
-        </SidebarInset>
+    <div
+      className={cn(
+        `min-h-screen min-w-screen transition-colors duration-500 ${theme.bg}`,
+        className,
+      )}
+      style={{
+        backgroundImage: 'var(--bg-gradient)',
+        backgroundSize: '24px 24px',
+      }}
+    >
+      <SidebarProvider style={{ '--sidebar-width': '14rem' } as React.CSSProperties}>
+        <SidebarOffsetSync />
+        <ExplorerNav onNavigate={(path) => navigate(path)} sidebarTrigger={<SidebarTrigger />} />
+        <div className="flex h-screen w-full relative z-10 pt-[61px]">
+          <DeveloperSidebarWrapper />
+          <SidebarInset className="flex-1 overflow-hidden flex flex-col">
+            <main className="flex-1 overflow-auto relative overflow-x-hidden flex flex-col">
+              <div className="flex-1 w-full p-2 sm:p-4 md:p-6 pt-6 sm:pt-8 relative">{content}</div>
+            </main>
+          </SidebarInset>
+        </div>
       </SidebarProvider>
     </div>
   );

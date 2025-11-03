@@ -1,4 +1,4 @@
-import { getListedTokens, type SugarWagmiConfig } from 'sugar-sdk';
+import { getListedTokens, type SugarWagmiConfig } from '@dromos-labs/sdk.js';
 
 export const findSupportedTokenOnBase = async ({
   config,

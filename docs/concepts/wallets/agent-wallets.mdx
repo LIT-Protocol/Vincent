@@ -1,0 +1,32 @@
+---
+title: 'Agent Wallets'
+---
+
+Agent Wallets handle all delegation for specific Vincent Apps. Each Agent Wallet has a one-to-one relationship with a Vincent App and maintains persistent identity even when permissions are revoked and re-granted.
+
+## Key Features
+
+- **One-to-One Relationship:** Each Agent Wallet is dedicated to a single Vincent App
+- **Persistent Identity:** Agent Wallets maintain the same identity even if permissions are revoked and re-granted
+- **Isolated Operations:** Each app operates through its own dedicated Agent Wallet
+- **Owned by User Account:** All Agent Wallets are owned and controlled by your User Account
+
+## How Agent Wallets Work
+
+1. **A new Agent Wallet is minted** when you first authorize a Vincent App, creating an isolated security boundary for that specific application.
+2. **The Agent Wallet signs delegation permissions**, specifying which abilities the app can exercise—including code execution and signing operations on the wallet's behalf.
+3. **The Agent Wallet records the authorization on-chain**, creating an immutable record of the permission grant and completing the delegation process.
+
+## Learn More
+
+<Columns cols={3}>
+  <Card title="User Accounts" icon="user" href="/concepts/wallets/user-accounts" color="#FF4205">
+    Learn about User Accounts that own Agent Wallets
+  </Card>
+  <Card title="Security Model" icon="shield" href="/concepts/introduction/security" color="#FF4205">
+    Understand Vincent's security architecture
+  </Card>
+  <Card title="Policies" icon="shield" href="/concepts/policies/about" color="#FF4205">
+    Learn how policies govern Agent Wallet operations
+  </Card>
+</Columns>

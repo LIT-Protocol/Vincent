@@ -1,0 +1,48 @@
+---
+title: sponsoredGasRawTransaction
+---
+
+> **sponsoredGasRawTransaction**(`__namedParameters`): `Promise`\<`string`\>
+
+Defined in: [abilityHelpers/gasSponsorship/sponsored-gas-raw-transaction.ts:32](https://github.com/LIT-Protocol/Vincent/blob/4f61b0b06d818c2273457b0cc8a4e68ed21a72ed/packages/libs/ability-sdk/src/lib/abilityHelpers/gasSponsorship/sponsored-gas-raw-transaction.ts#L32)
+
+Handler function for making raw transaction calls with gas sponsorship
+This function handles the preparation, signing, and sending of raw transactions
+
+## Parameters
+
+### \_\_namedParameters
+
+#### chainId
+
+`number`
+
+#### data
+
+`string`
+
+#### eip7702AlchemyApiKey
+
+`string`
+
+#### eip7702AlchemyPolicyId
+
+`string`
+
+#### pkpPublicKey
+
+`string`
+
+#### to
+
+`string`
+
+#### value
+
+`string`
+
+## Returns
+
+`Promise`\<`string`\>
+
+The UserOperation hash. You must use the alchemy smartAccountClient.waitForUserOperationTransaction() to convert the userOp into a txHash.

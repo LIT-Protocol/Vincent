@@ -2,7 +2,7 @@ import {
   createVincentAbility,
   supportedPoliciesForAbility,
 } from '@lit-protocol/vincent-ability-sdk';
-import { base, getCallDataForSwap, getDefaultConfig, getQuoteForSwap } from 'sugar-sdk';
+import { base, getDefaultConfig, getQuoteForSwap, swap } from '@dromos-labs/sdk.js';
 import { ethers } from 'ethers';
 
 import {
@@ -15,12 +15,31 @@ import {
 } from './schemas';
 import { AbilityAction, CheckNativeTokenBalanceResultSuccess } from './types';
 import { checkErc20Allowance, checkErc20Balance, checkNativeTokenBalance } from './ability-checks';
-import { executeSwapParams, getChainConfig, getSwapVars } from 'sugar-sdk/primitives';
+import { getChainConfig, type Quote } from '@dromos-labs/sdk.js/primitives';
 import { findSupportedTokenOnBase } from './ability-helpers/find-supported-token-on-base';
 import { sendAerodromeSwapTx, sendErc20ApprovalTx } from './ability-helpers';
 
 export const bigintReplacer = (key: any, value: any) => {
   return typeof value === 'bigint' ? value.toString() : value;
+};
+
+export const sugarSdkQuoteBigintReviver = (key: any, value: any) => {
+  // Convert string values that were BigInts back to BigInt for the
+  // Sugar SDK Quote object:
+  // @dromos-labs/sdk.js/dist/primitives/externals/app/src/hooks/types.d.ts
+  if (
+    typeof value === 'string' &&
+    (key === 'amount' ||
+      key === 'amountOut' ||
+      key === 'priceImpact' ||
+      key === 'balance' ||
+      key === 'price' ||
+      key === 'pool_fee' ||
+      key === 'balanceValue')
+  ) {
+    return BigInt(value);
+  }
+  return value;
 };
 
 export const vincentAbility = createVincentAbility({
@@ -305,83 +324,68 @@ export const vincentAbility = createVincentAbility({
       }
 
       // 3.2 Get the swap quote
-      // TODO Wrap in runOnce
       console.log('[@lit-protocol/vincent-ability-aerodrome-swap execute] Getting swap quote');
-      const quote = await getQuoteForSwap({
-        config: sugarConfigBaseMainnet,
-        fromToken: sugarTokenIn,
-        toToken: sugarTokenOut,
-        amountIn: requiredTokenInAmount.toBigInt(),
-      });
-      if (quote === null) {
+      const quoteResponse = await Lit.Actions.runOnce(
+        { waitForResponse: true, name: 'Aerodrome swap quote' },
+        async () => {
+          try {
+            const quote = await getQuoteForSwap({
+              config: sugarConfigBaseMainnet,
+              fromToken: sugarTokenIn,
+              toToken: sugarTokenOut,
+              amountIn: requiredTokenInAmount.toBigInt(),
+            });
+            if (quote === null) {
+              return JSON.stringify({
+                status: 'error',
+                error: 'No Aerodrome swap quote available for the desired swap tokens and amounts',
+              });
+            }
+            return JSON.stringify(
+              {
+                status: 'success',
+                quote,
+              },
+              bigintReplacer,
+            );
+          } catch (error) {
+            return JSON.stringify({
+              status: 'error',
+              error: error instanceof Error ? error.message : String(error),
+            });
+          }
+        },
+      );
+      const parsedQuoteResponse = JSON.parse(quoteResponse, sugarSdkQuoteBigintReviver);
+      if (parsedQuoteResponse.status === 'error') {
         return fail({
-          reason: 'No Aerodrome swap quote available for the desired swap tokens and amounts',
+          reason: parsedQuoteResponse.error,
         });
       }
+      const { quote }: { quote: Quote } = parsedQuoteResponse;
 
-      // 3.3 Get the Sugar calldata for the swap quote
-      console.log(
-        '[@lit-protocol/vincent-ability-aerodrome-swap execute] Getting Sugar calldata for swap quote',
-      );
-      const sugarCallDataForSwap = await getCallDataForSwap({
+      // 3.3 Get the swap calldata
+      console.log('[@lit-protocol/vincent-ability-aerodrome-swap execute] Getting swap calldata');
+      const swapData = await swap({
         config: sugarConfigBaseMainnet,
-        fromToken: quote.fromToken,
-        toToken: quote.toToken,
-        amountIn: requiredTokenInAmount.toBigInt(),
+        quote,
         account: delegatorPkpInfo.ethAddress as `0x${string}`,
         slippage: SLIPPAGE,
-      });
-      if (sugarCallDataForSwap === null) {
-        return fail({
-          reason: 'Unable to generate call data for the Aerodrome swap quote',
-        });
-      }
-
-      // 3.4 Get the Sugar swap vars for the swap quote
-      console.log(
-        '[@lit-protocol/vincent-ability-aerodrome-swap execute] Getting Sugar swap vars for swap quote',
-      );
-      const { chainId, planner, amount } = getSwapVars(
-        sugarConfigBaseMainnet.sugarConfig,
-        quote,
-        `${Math.ceil(SLIPPAGE * 100)}`,
-        delegatorPkpInfo.ethAddress as `0x${string}`,
-      );
-
-      // 3.5 Get the Sugar execute swap params for the swap quote
-      console.log(
-        '[@lit-protocol/vincent-ability-aerodrome-swap execute] Getting Sugar execute swap params for swap quote',
-      );
-      const sugarExecuteSwapParams = executeSwapParams({
-        config: sugarConfigBaseMainnet.sugarConfig,
-        chainId,
-        commands: planner.commands as `0x${string}`,
-        inputs: planner.inputs,
-        value: amount,
+        unsignedTransactionOnly: true,
       });
 
-      // 3.6 ABI encode the swap params for ethers calldata
-      console.log(
-        '[@lit-protocol/vincent-ability-aerodrome-swap execute] ABI encoding swap params for ethers calldata',
-      );
-      const executeInterface = new ethers.utils.Interface(sugarExecuteSwapParams.abi);
-      const encodedCalldataForEthers = executeInterface.encodeFunctionData(
-        'execute(bytes,bytes[])',
-        [planner.commands, planner.inputs],
-      );
-
-      // 3.7 Send the swap transaction
+      // 3.4 Send the swap transaction
       console.log(
         '[@lit-protocol/vincent-ability-aerodrome-swap execute] Sending swap transaction',
       );
       const txHash = await sendAerodromeSwapTx({
         rpcUrl,
-        chainId: base.id,
+        chainId: swapData.chainId,
         pkpEthAddress: delegatorPkpInfo.ethAddress,
         pkpPublicKey: delegatorPkpInfo.publicKey,
-        to: sugarChainConfigBaseMainnet.UNIVERSAL_ROUTER_ADDRESS,
-        value: amount.toString(),
-        calldata: encodedCalldataForEthers,
+        to: swapData.to,
+        value: swapData.value.toString(),
+        calldata: swapData.data,
         gasBufferPercentage,
         baseFeePerGasBufferPercentage,
         alchemyGasSponsor,

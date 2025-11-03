@@ -1,7 +1,7 @@
 import { Button } from '@/components/shared/ui/button';
 import { Fragment, useState, useRef, useEffect } from 'react';
 import QrScanner from 'qr-scanner';
-import { theme } from '@/components/user-dashboard/connect/ui/theme';
+import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
 
 /**
  * Types
@@ -74,6 +74,7 @@ export default function QrReaderComponent({ onConnect }: IProps) {
           <Button
             variant="outline"
             className={`mt-3 w-full ${theme.text} border ${theme.cardBorder} hover:${theme.itemHoverBg}`}
+            style={fonts.body}
             onClick={handleCloseScanner}
           >
             Cancel Scan
@@ -83,6 +84,7 @@ export default function QrReaderComponent({ onConnect }: IProps) {
         <Button
           variant="outline"
           className={`w-full font-normal ${theme.text} border ${theme.cardBorder} hover:${theme.itemHoverBg} flex items-center justify-center gap-2`}
+          style={fonts.body}
           onClick={onShowScanner}
           data-testid="qrcode-button"
         >

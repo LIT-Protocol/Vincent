@@ -1,0 +1,72 @@
+---
+title: createVincentPolicy
+---
+
+> **createVincentPolicy**(`PolicyConfig`): `object`
+
+Defined in: [policyCore/vincentPolicy.ts:56](https://github.com/LIT-Protocol/Vincent/blob/4f61b0b06d818c2273457b0cc8a4e68ed21a72ed/packages/libs/ability-sdk/src/lib/policyCore/vincentPolicy.ts#L56)
+
+The `createVincentPolicy()` method is used to define a policy's lifecycle methods and ensure that arguments provided to the ability's
+lifecycle methods, as well as their return values, are validated and fully type-safe by defining ZOD schemas for them.
+
+## Parameters
+
+### PolicyConfig
+
+`VincentPolicyConfig`\<`PackageName`, `PolicyAbilityParams`, `UserParams`, `PrecheckAllowResult`, `PrecheckDenyResult`, `EvalAllowResult`, `EvalDenyResult`, `CommitParams`, `CommitAllowResult`, `CommitDenyResult`, [`PolicyConfigLifecycleFunction`](/api-reference/ability-sdk/type-aliases/PolicyConfigLifecycleFunction)\<`PolicyAbilityParams`, `UserParams`, `EvalAllowResult`, `EvalDenyResult`\>, [`PolicyConfigLifecycleFunction`](/api-reference/ability-sdk/type-aliases/PolicyConfigLifecycleFunction)\<`PolicyAbilityParams`, `UserParams`, `PrecheckAllowResult`, `PrecheckDenyResult`\>, [`PolicyConfigCommitFunction`](/api-reference/ability-sdk/type-aliases/PolicyConfigCommitFunction)\<`CommitParams`, `CommitAllowResult`, `CommitDenyResult`\>\>
+
+## Returns
+
+`object`
+
+### abilityParamsSchema
+
+> **abilityParamsSchema**: `PolicyAbilityParams`
+
+### commit?
+
+> `optional` **commit**: `CommitLifecycleFunction`\<`CommitParams`, `CommitAllowResult`, `CommitDenyResult`\>
+
+### commitAllowResultSchema?
+
+> `optional` **commitAllowResultSchema**: `CommitAllowResult`
+
+### commitDenyResultSchema?
+
+> `optional` **commitDenyResultSchema**: `CommitDenyResult`
+
+### commitParamsSchema?
+
+> `optional` **commitParamsSchema**: `CommitParams`
+
+### evalAllowResultSchema?
+
+> `optional` **evalAllowResultSchema**: `EvalAllowResult`
+
+### evalDenyResultSchema?
+
+> `optional` **evalDenyResultSchema**: `EvalDenyResult`
+
+### evaluate
+
+> **evaluate**: `PolicyLifecycleFunction`
+
+### packageName
+
+> **packageName**: `PackageName`
+
+### precheck?
+
+> `optional` **precheck**: `PolicyLifecycleFunction`\<`PolicyAbilityParams`, `UserParams`, `PrecheckAllowResult`, `PrecheckDenyResult`\>
+
+### precheckAllowResultSchema?
+
+> `optional` **precheckAllowResultSchema**: `PrecheckAllowResult`
+
+### precheckDenyResultSchema?
+
+> `optional` **precheckDenyResultSchema**: `PrecheckDenyResult`
+
+### userParamsSchema?
+
+> `optional` **userParamsSchema**: `UserParams`

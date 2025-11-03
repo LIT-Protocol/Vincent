@@ -1,0 +1,87 @@
+---
+title: Defining Parameters
+---
+
+Define the structure and validation for your Ability's input parameters using Zod schemas.
+
+## Ability Input Parameters
+
+The `abilityParamsSchema` defines what parameters executors must provide to your Ability. These should include parameters required for your Ability's core functionality, and parameters required by any Vincent Policies your Ability supports.
+
+### Schema Parameters
+
+<ParamField path="abilityParamsSchema" type="ZodSchema" required>
+  A Zod schema object that defines the structure and validation rules for your Ability's input parameters. This schema is used to validate the `abilityParams` passed to both precheck and execute functions.
+</ParamField>
+
+```typescript
+import { createVincentAbility } from '@lit-protocol/vincent-ability-sdk';
+import { z } from 'zod';
+
+const abilityParamsSchema = z.object({
+  // Core ability parameters
+  tokenAddress: z.string().regex(/^0x[a-fA-F0-9]{40}$/, "Invalid Ethereum address"),
+  amountToSend: z.number().positive("Amount must be positive"),
+  recipientAddress: z.string().regex(/^0x[a-fA-F0-9]{40}$/, "Invalid recipient address"),
+
+  // Optional parameters
+  gasLimit: z.number().optional(),
+  customData: z.string().optional(),
+});
+
+const vincentAbility = createVincentAbility({
+  // ... other configuration
+  abilityParamsSchema,
+});
+```
+
+<Note>
+The `tokenAddress` and `amountToSend` parameters serve dual purposes: they're used by your Ability to execute the transfer, and they're also mapped to a spending limit Policy if supported. See [Supporting Policies](/ability/supporting-policies) for parameter mapping details.
+</Note>
+
+## Schema Validation Tips
+
+<CardGroup cols={2}>
+  <Card title="Use Descriptive Validation" icon="check-circle">
+    Add custom error messages to help developers understand requirements
+  </Card>
+  <Card title="Consider Policy Needs" icon="shield-check">
+    Include parameters required by your supported Policies
+  </Card>
+</CardGroup>
+
+### Common Validation Patterns
+
+<Tabs>
+  <Tab title="Ethereum Addresses">
+    ```typescript
+    address: z.string().regex(/^0x[a-fA-F0-9]{40}$/, "Invalid Ethereum address")
+    ```
+  </Tab>
+  <Tab title="Token Amounts">
+    ```typescript
+    amount: z.number().positive("Amount must be positive")
+    // or for big numbers
+    amount: z.string().regex(/^\d+$/, "Must be a valid number string")
+    ```
+  </Tab>
+</Tabs>
+
+
+## Best Practices
+
+1. **Keep It Simple** - Only require parameters you actually need for execution
+2. **Provide Clear Errors** - Use custom error messages that help developers fix issues
+3. **Consider Future Needs** - Make optional parameters for features you might add later
+4. **Document Complex Logic** - Use comments to explain conditional validation rules
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Supporting Policies" icon="shield" href="/ability/supporting-policies">
+    Learn how to integrate Policies with your parameters
+  </Card>
+  <Card title="Precheck Function" icon="check" href="/ability/precheck-function">
+    Use your parameters in validation logic
+  </Card>
+</CardGroup>

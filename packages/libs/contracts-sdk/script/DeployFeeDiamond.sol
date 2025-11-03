@@ -90,9 +90,9 @@ contract DeployFeeDiamond is Script {
         cuts[6] = contractToFacetCutAdd("AerodromeSwapFeeFacet", address(aerodromeSwapFeeFacet));
 
         // Deploy the Diamond with the diamondCut facet and all other facets in one transaction
-        Fee diamond = new Fee{
-            salt: create2Salt
-        }(cuts, FeeArgs({owner: deployerAddress, init: address(0), initCalldata: bytes("")}));
+        Fee diamond = new Fee{salt: create2Salt}(
+            cuts, FeeArgs({owner: deployerAddress, init: address(0), initCalldata: bytes("")})
+        );
 
         // Stop broadcasting transactions
         vm.stopBroadcast();

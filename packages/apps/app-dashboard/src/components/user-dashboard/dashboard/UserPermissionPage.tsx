@@ -1,22 +1,24 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import * as Sentry from '@sentry/react';
-import { getClient, PermissionData } from '@lit-protocol/vincent-contracts-sdk';
+import { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
 import { IRelayPKP } from '@lit-protocol/types';
-import { ConnectInfoMap } from '@/hooks/user-dashboard/connect/useConnectInfo';
-import { useFormatUserPermissions } from '@/hooks/user-dashboard/dashboard/useFormatUserPermissions';
-import { theme } from '@/components/user-dashboard/connect/ui/theme';
+import { getClient, PermissionData } from '@lit-protocol/vincent-contracts-sdk';
+
+import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
 import { PolicyFormRef } from '../connect/ui/PolicyForm';
-import { ReadAuthInfo } from '@/hooks/user-dashboard/useAuthInfo';
-import { useAddPermittedActions } from '@/hooks/user-dashboard/connect/useAddPermittedActions';
-import { ConnectAppHeader } from '../connect/ui/ConnectAppHeader';
+import { StatusCard } from '../connect/ui/StatusCard';
+import { AppPermissionDashboardHeader } from './ui/AppPermissionDashboardHeader';
 import { PermittedAppInfo } from './ui/PermittedAppInfo';
 import { UserPermissionButtons } from './ui/UserPermissionButtons';
-import { StatusCard } from '../connect/ui/StatusCard';
-import { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
-import { litNodeClient } from '@/utils/user-dashboard/lit';
-import { PageHeader } from './ui/PageHeader';
+import { useAddPermittedActions } from '@/hooks/user-dashboard/connect/useAddPermittedActions';
+import { ConnectInfoMap } from '@/hooks/user-dashboard/connect/useConnectInfo';
 import { useJwtRedirect } from '@/hooks/user-dashboard/connect/useJwtRedirect';
 import { useUrlRedirectUri } from '@/hooks/user-dashboard/connect/useUrlRedirectUri';
+import { useFormatUserPermissions } from '@/hooks/user-dashboard/dashboard/useFormatUserPermissions';
+import { ReadAuthInfo } from '@/hooks/user-dashboard/useAuthInfo';
+import { AppVersion } from '@/types/developer-dashboard/appTypes';
+import { hasConfigurablePolicies } from '@/utils/user-dashboard/hasConfigurablePolicies';
+import { litNodeClient } from '@/utils/user-dashboard/lit';
 
 interface AppPermissionPageProps {
   connectInfoMap: ConnectInfoMap;
@@ -24,6 +26,8 @@ interface AppPermissionPageProps {
   agentPKP: IRelayPKP;
   existingData: PermissionData;
   permittedAppVersions: Record<string, string>;
+  appVersionsMap: Record<string, AppVersion[]>;
+  onBackToConsent?: () => void;
 }
 
 export function AppPermissionPage({
@@ -32,7 +36,14 @@ export function AppPermissionPage({
   agentPKP,
   existingData,
   permittedAppVersions,
+  appVersionsMap,
+  onBackToConsent,
 }: AppPermissionPageProps) {
+  const appIdString = connectInfoMap.app.appId.toString();
+  const permittedVersion = permittedAppVersions[appIdString];
+
+  // Check if there are any configurable policies
+  const hasPolicies = hasConfigurablePolicies(connectInfoMap, permittedVersion, appIdString);
   const [localError, setLocalError] = useState<string | null>(null);
   const [localStatus, setLocalStatus] = useState<string | null>(null);
   const [localSuccess, setLocalSuccess] = useState<string | null>(null);
@@ -60,9 +71,6 @@ export function AppPermissionPage({
       }, 2000);
     }
   }, [redirectUrl, localSuccess, executeRedirect]);
-
-  const appIdString = connectInfoMap.app.appId.toString();
-  const permittedVersion = permittedAppVersions[appIdString];
 
   const { formData, handleFormChange, selectedPolicies, handlePolicySelectionChange } =
     useFormatUserPermissions(connectInfoMap, existingData, Number(permittedVersion));
@@ -299,48 +307,40 @@ export function AppPermissionPage({
   const error = jwtError || actionsError;
 
   return (
-    <div
-      className={`w-full max-w-md mx-auto ${theme.mainCard} border ${theme.mainCardBorder} rounded-2xl shadow-2xl overflow-hidden relative z-10 origin-center`}
-    >
-      {/* Page Header */}
-      <PageHeader
-        icon={
-          <svg
-            className="w-4 h-4 text-orange-500"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
-            />
-          </svg>
-        }
-        title="Manage App Permissions"
-        description="Review and modify your permissions for this app"
-        linkUrl={connectInfoMap.app.appUserUrl}
-        linkText="Open App"
+    <div className="w-full max-w-4xl mx-auto relative z-10 space-y-3 sm:space-y-4 lg:space-y-6">
+      {/* Dashboard Header with Stats */}
+      <AppPermissionDashboardHeader
+        app={connectInfoMap.app}
+        permittedVersion={permittedVersion}
+        appVersionsMap={appVersionsMap}
       />
 
-      <div className="px-3 sm:px-4 py-6 sm:py-8 space-y-6">
-        {/* App Header */}
-        <ConnectAppHeader app={connectInfoMap.app} />
+      {/* Main Card - Contains everything */}
+      <div
+        className={`backdrop-blur-xl ${theme.mainCard} border ${theme.mainCardBorder} rounded-lg p-4 sm:p-5 lg:p-6 space-y-4 sm:space-y-5 lg:space-y-6`}
+      >
+        {/* Permissions Section */}
+        <div className="space-y-3 sm:space-y-4">
+          <h2 className={`text-base sm:text-lg font-semibold ${theme.text}`} style={fonts.heading}>
+            App Permissions
+          </h2>
+          <div className="space-y-2 sm:space-y-3">
+            <PermittedAppInfo
+              connectInfoMap={connectInfoMap}
+              formData={formData}
+              onFormChange={handleFormChange}
+              onRegisterFormRef={registerFormRef}
+              selectedPolicies={selectedPolicies}
+              onPolicySelectionChange={handlePolicySelectionChange}
+              permittedVersion={permittedVersion}
+            />
+          </div>
+        </div>
 
-        {/* Apps and Versions */}
-        <PermittedAppInfo
-          connectInfoMap={connectInfoMap}
-          formData={formData}
-          onFormChange={handleFormChange}
-          onRegisterFormRef={registerFormRef}
-          selectedPolicies={selectedPolicies}
-          onPolicySelectionChange={handlePolicySelectionChange}
-          permittedVersion={permittedVersion}
-        />
+        {/* Divider */}
+        <div className={`border-t ${theme.cardBorder}`} />
 
-        {/* Status Card */}
+        {/* Status Card - Above Action Buttons */}
         <StatusCard
           isLoading={isLoading}
           loadingStatus={loadingStatus}
@@ -352,11 +352,86 @@ export function AppPermissionPage({
         <UserPermissionButtons
           onUnpermit={handleUnpermit}
           onSubmit={handleSubmit}
+          onBackToConsent={onBackToConsent}
           isLoading={isLoading}
           isGranting={isGranting}
           isUnpermitting={isUnpermitting}
           error={error || localError}
+          hasConfigurablePolicies={hasPolicies}
         />
+      </div>
+
+      {/* Coming Soon - Wallet Activity Preview */}
+      <div
+        className={`backdrop-blur-xl ${theme.mainCard} border ${theme.cardBorder} rounded-lg p-4 sm:p-5 lg:p-6 relative mb-20 sm:mb-6`}
+      >
+        {/* Coming Soon badge - upper right corner */}
+        <span
+          className={`absolute top-4 sm:top-5 lg:top-6 right-4 sm:right-5 lg:right-6 text-xs sm:text-sm font-semibold px-2 py-1 rounded bg-orange-50 border border-orange-300 dark:bg-orange-500/10 dark:border-orange-500/30`}
+          style={{ color: theme.brandOrange, ...fonts.heading }}
+        >
+          Coming Soon
+        </span>
+
+        <div className="mb-4 opacity-50">
+          <h2 className={`text-base sm:text-lg font-semibold ${theme.text}`} style={fonts.heading}>
+            Wallet Activity
+          </h2>
+        </div>
+
+        {/* Simplified line chart visual */}
+        <div className="relative h-32 sm:h-40 lg:h-48 opacity-50">
+          <svg className="w-full h-full" viewBox="0 0 400 100" preserveAspectRatio="none">
+            {/* Grid lines */}
+            <line
+              x1="0"
+              y1="25"
+              x2="400"
+              y2="25"
+              stroke="currentColor"
+              strokeWidth="0.5"
+              className={theme.textMuted}
+              opacity="0.2"
+            />
+            <line
+              x1="0"
+              y1="50"
+              x2="400"
+              y2="50"
+              stroke="currentColor"
+              strokeWidth="0.5"
+              className={theme.textMuted}
+              opacity="0.2"
+            />
+            <line
+              x1="0"
+              y1="75"
+              x2="400"
+              y2="75"
+              stroke="currentColor"
+              strokeWidth="0.5"
+              className={theme.textMuted}
+              opacity="0.2"
+            />
+
+            {/* Line graph */}
+            <polyline
+              points="0,80 50,65 100,70 150,45 200,50 250,30 300,35 350,20 400,25"
+              fill="none"
+              stroke={theme.brandOrange}
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+
+            {/* Area under line */}
+            <polygon
+              points="0,80 50,65 100,70 150,45 200,50 250,30 300,35 350,20 400,25 400,100 0,100"
+              fill={theme.brandOrange}
+              opacity="0.1"
+            />
+          </svg>
+        </div>
       </div>
     </div>
   );

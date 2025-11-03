@@ -1,14 +1,16 @@
 import { useState, useEffect } from 'react';
 import * as Sentry from '@sentry/react';
-import { Plus, Users, Trash2, Edit, RotateCcw } from 'lucide-react';
+import { Plus, Users, Trash2, Edit, RotateCcw, List } from 'lucide-react';
 import { getClient } from '@lit-protocol/vincent-contracts-sdk';
 import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
 import { App } from '@/types/developer-dashboard/appTypes';
 import { App as ContractApp } from '@lit-protocol/vincent-contracts-sdk';
-import MutationButtonStates, { SkeletonButton } from '@/components/shared/ui/MutationButtonStates';
+import MutationButtonStates from '@/components/shared/ui/MutationButtonStates';
 import { AppMismatchResolution } from './AppMismatchResolution';
 import { initPkpSigner } from '@/utils/developer-dashboard/initPkpSigner';
 import useReadAuthInfo from '@/hooks/user-dashboard/useAuthInfo';
+import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
+import { ActionButton } from '@/components/developer-dashboard/ui/ActionButton';
 
 interface AppPublishedButtonsProps {
   appData: App;
@@ -32,7 +34,7 @@ export function AppPublishedButtons({
   const [undeleteAppInRegistry, { isLoading: isUndeletingInRegistry, error: undeleteAppError }] =
     vincentApiClient.useUndeleteAppMutation();
 
-  const registryDeleted = appData.isDeleted!; // Only null for staging
+  const registryDeleted = appData.isDeleted ?? false;
   const onChainDeleted = appBlockchainData.isDeleted;
 
   // Determine if there's a mismatch (only when not processing)
@@ -44,16 +46,16 @@ export function AppPublishedButtons({
     setIsProcessing(true);
 
     try {
-      // Step 1: Update registry
-      await undeleteAppInRegistry({
-        appId: appData.appId,
-      });
-
-      // Step 2: Update on-chain
+      // Step 1: Update on-chain first (if published)
       const pkpSigner = await initPkpSigner({ authInfo, sessionSigs });
       const client = getClient({ signer: pkpSigner });
 
       await client.undeleteApp({
+        appId: appData.appId,
+      });
+
+      // Step 2: Update registry (only after on-chain succeeds)
+      await undeleteAppInRegistry({
         appId: appData.appId,
       });
 
@@ -62,11 +64,13 @@ export function AppPublishedButtons({
       setTimeout(() => {
         refetchBlockchainData();
       }, 3000);
-    } catch (error: any) {
-      if (error?.message?.includes('user rejected')) {
+    } catch (error) {
+      console.error('Failed to undelete app:', error);
+      const message = error instanceof Error ? error.message : String(error);
+      if (message.includes('user rejected')) {
         setError('Transaction rejected.');
       } else {
-        setError(error.message || `Failed to undelete app. Please try again.`);
+        setError(`Failed to undelete app. Please try again.`);
         Sentry.captureException(error, {
           extra: {
             context: 'AppPublishedButtons.undeleteApp',
@@ -91,7 +95,11 @@ export function AppPublishedButtons({
   const isLoading = isProcessing || isUndeletingInRegistry;
 
   if (error || undeleteAppError) {
-    const errorMessage = error || (undeleteAppError as any)?.message || 'Failed to update app.';
+    const errorMessage =
+      error ||
+      (undeleteAppError && typeof undeleteAppError === 'object' && 'message' in undeleteAppError
+        ? String(undeleteAppError.message)
+        : 'Failed to update app.');
     return <MutationButtonStates type="error" errorMessage={errorMessage} />;
   }
 
@@ -113,57 +121,92 @@ export function AppPublishedButtons({
 
   // Show regular delete/undelete buttons when states are in sync
   return (
-    <div className="flex flex-wrap gap-3">
+    <div className="space-y-6">
       {/* Regular buttons when not deleted */}
       {!registryDeleted && (
         <>
-          <button
-            onClick={() => onOpenMutation('edit-published-app')}
-            className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-white/20 rounded-lg text-sm font-medium text-gray-700 dark:text-white/80 bg-white dark:bg-neutral-800 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
-          >
-            <Edit className="h-4 w-4" />
-            Edit App
-          </button>
-          <button
-            onClick={() => onOpenMutation('create-app-version')}
-            className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-white/20 rounded-lg text-sm font-medium text-gray-700 dark:text-white/80 bg-white dark:bg-neutral-800 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
-          >
-            <Plus className="h-4 w-4" />
-            Create App Version
-          </button>
-          <button
-            onClick={() => onOpenMutation('manage-delegatees')}
-            className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-white/20 rounded-lg text-sm font-medium text-gray-700 dark:text-white/80 bg-white dark:bg-neutral-800 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
-          >
-            <Users className="h-4 w-4" />
-            Manage Delegatees
-          </button>
-          <button
-            onClick={() => onOpenMutation('delete-app')}
-            className="inline-flex items-center gap-2 px-4 py-2 border border-red-200 dark:border-red-500/30 rounded-lg text-sm font-medium text-red-600 dark:text-red-400 bg-white dark:bg-neutral-800 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
-          >
-            <Trash2 className="h-4 w-4" />
-            Delete App
-          </button>
+          {/* App Management Section */}
+          <div>
+            <h4 className={`text-sm font-semibold ${theme.text} mb-3`} style={fonts.heading}>
+              App Management
+            </h4>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <ActionButton
+                icon={Edit}
+                title="Edit App"
+                description="Update app details and settings"
+                onClick={() => onOpenMutation('edit-published-app')}
+                variant="orange"
+                iconBg={`${theme.brandOrange}1A`}
+                iconColor={theme.brandOrange}
+                hoverBorderColor={theme.brandOrange}
+              />
+
+              <ActionButton
+                icon={Users}
+                title="Manage Delegatees"
+                description="Update delegatee addresses"
+                onClick={() => onOpenMutation('manage-delegatees')}
+                variant="orange"
+                iconBg={`${theme.brandOrange}1A`}
+                iconColor={theme.brandOrange}
+                hoverBorderColor={theme.brandOrange}
+              />
+
+              <ActionButton
+                icon={Trash2}
+                title="Delete App"
+                description="Permanently remove this app"
+                onClick={() => onOpenMutation('delete-app')}
+                variant="danger"
+                borderColor="rgb(254 202 202 / 0.5)"
+                hoverBorderColor="rgb(239 68 68)"
+              />
+            </div>
+          </div>
+
+          {/* Version Management Section */}
+          <div>
+            <h4 className={`text-sm font-semibold ${theme.text} mb-3`} style={fonts.heading}>
+              Version Management
+            </h4>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <ActionButton
+                icon={List}
+                title="View Versions"
+                description="View and manage app versions"
+                onClick={() => onOpenMutation('versions')}
+                variant="orange"
+                iconBg={`${theme.brandOrange}1A`}
+                iconColor={theme.brandOrange}
+                hoverBorderColor={theme.brandOrange}
+              />
+
+              <ActionButton
+                icon={Plus}
+                title="New Version"
+                description="Create a new version of your app"
+                onClick={() => onOpenMutation('create-app-version')}
+                variant="orange"
+                iconBg={`${theme.brandOrange}1A`}
+                iconColor={theme.brandOrange}
+                hoverBorderColor={theme.brandOrange}
+              />
+            </div>
+          </div>
         </>
       )}
 
       {/* Undelete button when deleted */}
       {registryDeleted && (
-        <button
+        <ActionButton
+          icon={RotateCcw}
+          title="Undelete App"
+          description="Restore this app to active status"
           onClick={handleUndelete}
-          disabled={isLoading}
-          className="inline-flex items-center gap-2 px-4 py-2 border border-green-300 dark:border-green-500/30 rounded-lg text-sm font-medium text-green-700 dark:text-green-400 bg-green-50 dark:bg-neutral-800 hover:bg-green-100 dark:hover:bg-green-500/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isLoading ? (
-            <SkeletonButton />
-          ) : (
-            <>
-              <RotateCcw className="h-4 w-4" />
-              Undelete App
-            </>
-          )}
-        </button>
+          isLoading={isLoading}
+          variant="success"
+        />
       )}
     </div>
   );

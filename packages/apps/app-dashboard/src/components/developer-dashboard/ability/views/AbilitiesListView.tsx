@@ -1,130 +1,197 @@
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
-import { Plus } from 'lucide-react';
-import { Button } from '@/components/shared/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/shared/ui/card';
+import { motion } from 'framer-motion';
+import { Plus, Wrench } from 'lucide-react';
+
 import { formatDate } from '@/utils/developer-dashboard/formatDateAndTime';
-import { UndeleteAbilityButton } from '../wrappers';
+import { UndeleteAbilityButton } from '@/components/developer-dashboard/ability/wrappers';
 import { Ability } from '@/types/developer-dashboard/appTypes';
+import { AbilityCard } from '@/components/developer-dashboard/ui/AbilityCard';
+import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
+import { Logo } from '@/components/shared/ui/Logo';
 
 interface AbilitiesListViewProps {
   abilities: Ability[];
   deletedAbilities: Ability[];
+  onCreateAbility?: () => void;
 }
 
-export function AbilitiesListView({ abilities, deletedAbilities }: AbilitiesListViewProps) {
+export function AbilitiesListView({
+  abilities,
+  deletedAbilities,
+  onCreateAbility,
+}: AbilitiesListViewProps) {
   const navigate = useNavigate();
+  const [showContent, setShowContent] = useState(false);
+
+  useEffect(() => {
+    setShowContent(true);
+  }, []);
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-neutral-800 dark:text-white">Your Abilities</h1>
-      </div>
-
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: showContent ? 1 : 0 }}
+      transition={{ duration: 0.5, ease: 'easeInOut' }}
+      className="w-full space-y-8"
+    >
       {abilities.length === 0 ? (
-        <div className="border dark:border-white/10 rounded-lg p-8 text-center">
-          <h2 className="text-xl font-semibold mb-4 text-neutral-800 dark:text-white">
-            No Abilities Yet
-          </h2>
-          <p className="text-gray-600 dark:text-white/60 mb-6">
-            Create your first ability to get started with Vincent.
-          </p>
-          <Button
-            variant="outline"
-            className="text-gray-700 dark:text-white dark:border-white/20"
-            onClick={() => navigate('/developer/create-ability')}
-          >
-            <Plus className="h-4 w-4 mr-2 font-bold text-gray-700 dark:text-white" />
-            Create Ability
-          </Button>
+        <div className="flex items-center justify-center min-h-[400px] w-full">
+          <div className="text-center max-w-md mx-auto px-6">
+            <div
+              className={`inline-flex items-center justify-center w-16 h-16 rounded-full ${theme.itemBg} border ${theme.cardBorder} mb-6`}
+            >
+              <Wrench className={`w-8 h-8 ${theme.textMuted}`} />
+            </div>
+            <h3 className={`text-xl font-semibold mb-2 ${theme.text}`} style={fonts.heading}>
+              No Abilities Yet
+            </h3>
+            <p className={`text-sm ${theme.textMuted} leading-relaxed mb-6`} style={fonts.body}>
+              Create your first ability to get started with Vincent.
+            </p>
+            <button
+              onClick={() =>
+                onCreateAbility
+                  ? onCreateAbility()
+                  : navigate('/developer/abilities/create-ability')
+              }
+              className="px-4 py-2 rounded-lg text-sm font-semibold text-white transition-colors inline-flex items-center gap-2"
+              style={{ backgroundColor: theme.brandOrange, ...fonts.heading }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = theme.brandOrangeDarker;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = theme.brandOrange;
+              }}
+            >
+              <Plus className="h-4 w-4" />
+              Create Ability
+            </button>
+          </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-6">
-          {abilities.map((ability) => (
-            <Card
-              key={ability.packageName}
-              className="cursor-pointer hover:shadow-md dark:hover:bg-white/[0.02] dark:border-white/10 transition-shadow"
-              onClick={() =>
-                navigate(`/developer/ability/${encodeURIComponent(ability.packageName)}`)
-              }
-            >
-              <CardHeader>
-                <CardTitle className="text-neutral-800 dark:text-white">
-                  {ability.packageName}
-                </CardTitle>
-                <CardDescription className="text-gray-700 dark:text-white/60">
-                  {ability.description || 'No description available'}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-sm text-gray-700 dark:text-white/60">
-                  <div className="space-y-1">
-                    <div>
-                      <span className="font-medium">Version:</span> {ability.activeVersion}
-                    </div>
-                    <div>
-                      <span className="font-medium">Created:</span> {formatDate(ability.createdAt)}
-                    </div>
+        <>
+          <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
+            {abilities.map((ability) => (
+              <AbilityCard
+                key={ability.packageName}
+                onClick={() =>
+                  navigate(
+                    `/developer/abilities/ability/${encodeURIComponent(ability.packageName)}`,
+                  )
+                }
+              >
+                <div className="flex items-start gap-3 mb-4">
+                  <Logo
+                    logo={ability.logo}
+                    alt={`${ability.packageName} logo`}
+                    className="w-12 h-12 rounded-lg object-cover flex-shrink-0"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <h3
+                      className={`font-semibold ${theme.text} truncate text-lg mb-1`}
+                      style={fonts.heading}
+                    >
+                      {ability.packageName}
+                    </h3>
+                    <span
+                      className={`text-xs px-2 py-1 rounded-md ${theme.itemBg}`}
+                      style={fonts.body}
+                    >
+                      v{ability.activeVersion}
+                    </span>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                <p className={`text-sm ${theme.textMuted} line-clamp-2 mb-3`} style={fonts.body}>
+                  {ability.description || 'No description available'}
+                </p>
+                <div className={`text-xs ${theme.textSubtle}`} style={fonts.body}>
+                  Created: {formatDate(ability.createdAt)}
+                </div>
+              </AbilityCard>
+            ))}
+          </div>
+
+          {/* Create Another Ability CTA */}
+          <div className="pt-8 border-t border-gray-200 dark:border-white/10">
+            <div className="flex flex-col items-center justify-center py-6">
+              <h3 className={`text-lg font-semibold ${theme.text} mb-4`} style={fonts.heading}>
+                Ready to create another ability?
+              </h3>
+              <button
+                onClick={() =>
+                  onCreateAbility
+                    ? onCreateAbility()
+                    : navigate('/developer/abilities/create-ability')
+                }
+                className="px-4 py-2 rounded-lg text-sm font-semibold text-white transition-colors inline-flex items-center gap-2"
+                style={{ backgroundColor: theme.brandOrange, ...fonts.heading }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = theme.brandOrangeDarker;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = theme.brandOrange;
+                }}
+              >
+                <Plus className="h-4 w-4" />
+                Create Ability
+              </button>
+            </div>
+          </div>
+        </>
       )}
       {/* Deleted Abilities Section */}
       {deletedAbilities && deletedAbilities.length > 0 && (
-        <div className="space-y-4">
-          <div className="border-t pt-6">
-            <h3 className="text-lg font-medium text-gray-600 dark:text-white/60 mb-4">
-              Deleted Abilities
-            </h3>
-            <div className="grid grid-cols-1 gap-4">
-              {deletedAbilities.map((ability) => (
-                <Card key={ability.packageName} className="border-dashed dark:border-white/10">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="flex justify-between items-start text-gray-600">
-                      <div className="flex items-center gap-3">
-                        <span className="line-through">{ability.packageName}</span>
-                        <span className="text-xs px-2 py-1 rounded-full bg-red-50 text-red-400">
-                          DELETED
-                        </span>
-                        <span className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-500">
-                          v{ability.activeVersion}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <UndeleteAbilityButton ability={ability} />
-                      </div>
-                    </CardTitle>
-                    <CardDescription className="text-gray-500 line-through">
-                      {ability.description}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="pt-2">
-                    <div className="text-sm text-gray-500">
-                      <div className="space-y-1">
-                        <div>
-                          <span className="font-medium">Version:</span> {ability.activeVersion}
-                        </div>
-                        <div>
-                          <span className="font-medium">Created:</span>{' '}
-                          {formatDate(ability.createdAt)}
-                        </div>
-                      </div>
+        <div className="mt-8 pt-8 border-t border-gray-200 dark:border-white/10">
+          <h3 className={`text-lg font-semibold ${theme.textMuted} mb-4`} style={fonts.heading}>
+            Deleted Abilities
+          </h3>
+          <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
+            {deletedAbilities.map((ability) => (
+              <AbilityCard key={ability.packageName} variant="deleted">
+                <div className="flex items-start gap-3 mb-4">
+                  <Logo
+                    logo={ability.logo}
+                    alt={`${ability.packageName} logo`}
+                    className="w-12 h-12 rounded-lg object-cover flex-shrink-0"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <h3
+                      className={`font-semibold ${theme.text} truncate text-lg mb-1`}
+                      style={fonts.heading}
+                    >
+                      {ability.packageName}
+                    </h3>
+                    <div className="flex gap-2 items-center flex-wrap">
+                      <span
+                        className={`text-xs px-2 py-1 rounded-md ${theme.itemBg}`}
+                        style={fonts.body}
+                      >
+                        v{ability.activeVersion}
+                      </span>
+                      <span
+                        className="text-xs px-2 py-1 rounded-md bg-red-500/10 text-red-500 dark:text-red-400"
+                        style={fonts.body}
+                      >
+                        Deleted
+                      </span>
                     </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                  </div>
+                </div>
+                <p className={`text-sm ${theme.textMuted} line-clamp-2 mb-3`} style={fonts.body}>
+                  {ability.description || 'No description available'}
+                </p>
+                <div className="flex items-center justify-between gap-2">
+                  <div className={`text-xs ${theme.textSubtle}`} style={fonts.body}>
+                    Created: {formatDate(ability.createdAt)}
+                  </div>
+                  <UndeleteAbilityButton ability={ability} />
+                </div>
+              </AbilityCard>
+            ))}
           </div>
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }

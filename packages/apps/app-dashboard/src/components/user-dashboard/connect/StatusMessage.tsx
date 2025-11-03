@@ -1,3 +1,5 @@
+import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
+
 interface StatusMessageProps {
   message: string;
   type?: 'info' | 'warning' | 'success' | 'error';
@@ -7,27 +9,23 @@ interface StatusMessageProps {
   };
 }
 
-// Define theme-aware styles using Tailwind dark: classes
+// Define theme-aware styles using our theme system
 const statusClasses = {
   info: {
-    container:
-      'bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/50 dark:text-blue-200 dark:border-blue-800',
-    icon: 'text-blue-700 dark:text-blue-400',
+    container: `${theme.itemBg} ${theme.text} border ${theme.cardBorder}`,
+    icon: theme.textMuted,
   },
   warning: {
-    container:
-      'bg-yellow-50 text-yellow-700 border border-yellow-200 dark:bg-yellow-950/50 dark:text-yellow-200 dark:border-yellow-800',
-    icon: 'text-yellow-700 dark:text-yellow-400',
+    container: `${theme.warningBg} ${theme.warningText}`,
+    icon: theme.warningText,
   },
   success: {
-    container:
-      'bg-green-50 text-green-700 border border-green-200 dark:bg-green-950/50 dark:text-green-200 dark:border-green-800',
-    icon: 'text-green-700 dark:text-green-400',
+    container: `${theme.successBg} ${theme.successText}`,
+    icon: theme.successText,
   },
   error: {
-    container:
-      'bg-red-50 text-red-700 border border-red-200 dark:bg-red-950/50 dark:text-red-200 dark:border-red-800',
-    icon: 'text-red-700 dark:text-red-400',
+    container: `${theme.errorBg} ${theme.errorText}`,
+    icon: theme.errorText,
   },
 } as const;
 
@@ -90,8 +88,13 @@ const StatusMessage = ({ message, type = 'info', link }: StatusMessageProps) => 
 
   if (isIdle) {
     return (
-      <div className="flex items-center justify-center p-3 mb-4 rounded-lg text-sm leading-normal transition-all min-h-[48px] max-h-24 opacity-100 bg-gray-50 text-gray-500 border border-gray-200 dark:bg-black/50 dark:text-gray-400 dark:border-gray-800 overflow-hidden">
-        <span className="transition-opacity break-words text-center overflow-wrap-anywhere">
+      <div
+        className={`flex items-center justify-center p-3 mb-4 rounded-lg text-sm leading-normal transition-all min-h-[48px] max-h-24 opacity-100 ${theme.itemBg} ${theme.textMuted} border ${theme.cardBorder} overflow-hidden`}
+      >
+        <span
+          className="transition-opacity break-words text-center overflow-wrap-anywhere"
+          style={fonts.body}
+        >
           {message}
         </span>
       </div>
@@ -114,7 +117,10 @@ const StatusMessage = ({ message, type = 'info', link }: StatusMessageProps) => 
         <IconComponent className={statusStyles.icon} />
       </div>
       <div className="ml-3 flex-1 overflow-y-auto max-h-16">
-        <span className="transition-opacity break-words text-center overflow-wrap-anywhere block">
+        <span
+          className="transition-opacity break-words text-center overflow-wrap-anywhere block"
+          style={fonts.body}
+        >
           {message}
           {link && (
             <>
@@ -123,7 +129,10 @@ const StatusMessage = ({ message, type = 'info', link }: StatusMessageProps) => 
                 href={link.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="!text-orange-500 hover:!text-orange-600 underline"
+                className="underline"
+                style={{ color: theme.brandOrange }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = theme.brandOrangeDarker)}
+                onMouseLeave={(e) => (e.currentTarget.style.color = theme.brandOrange)}
               >
                 {link.text}
               </a>

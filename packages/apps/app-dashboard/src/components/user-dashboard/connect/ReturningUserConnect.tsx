@@ -1,26 +1,28 @@
-import { useJwtRedirect } from '@/hooks/user-dashboard/connect/useJwtRedirect';
-import { IRelayPKP } from '@lit-protocol/types';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Settings, ArrowRight, RefreshCw } from 'lucide-react';
-import { theme } from '@/components/user-dashboard/connect/ui/theme';
+import { IRelayPKP } from '@lit-protocol/types';
+
+import { ActionCard } from './ui/ActionCard';
 import { ConnectAppHeader } from './ui/ConnectAppHeader';
 import { ConnectPageHeader } from './ui/ConnectPageHeader';
-import { ConnectFooter } from '../ui/Footer';
 import { InfoBanner } from './ui/InfoBanner';
-import { ActionCard } from './ui/ActionCard';
-import { useNavigate } from 'react-router-dom';
+import { theme } from './ui/theme';
+import { useCanGoBack } from '@/hooks/user-dashboard/connect/useCanGoBack';
+import { useJwtRedirect } from '@/hooks/user-dashboard/connect/useJwtRedirect';
 import { ReadAuthInfo } from '@/hooks/user-dashboard/useAuthInfo';
 import { App, AppVersion } from '@/types/developer-dashboard/appTypes';
-import { useState, useEffect } from 'react';
-import { useCanGoBack } from '@/hooks/user-dashboard/connect/useCanGoBack';
 
 type ReturningUserConnectProps = {
   appData: App;
   version: number;
   versionData: AppVersion;
   activeVersionData?: AppVersion;
-  redirectUri?: string;
   readAuthInfo: ReadAuthInfo;
   agentPKP: IRelayPKP;
+  hasConfigurablePolicies: boolean;
+  onEditPermissions: () => void;
+  onUpdateVersion: () => void;
 };
 
 export function ReturningUserConnect({
@@ -28,9 +30,11 @@ export function ReturningUserConnect({
   version,
   versionData,
   activeVersionData,
-  redirectUri,
   readAuthInfo,
   agentPKP,
+  hasConfigurablePolicies,
+  onEditPermissions,
+  onUpdateVersion,
 }: ReturningUserConnectProps) {
   const navigate = useNavigate();
   const canGoBack = useCanGoBack();
@@ -50,19 +54,11 @@ export function ReturningUserConnect({
   }, [redirectUrl, localSuccess, executeRedirect]);
 
   const handleEditParameters = () => {
-    const url = `/user/appId/${appData.appId}`;
-    const urlWithParams = redirectUri
-      ? `${url}?redirectUri=${encodeURIComponent(redirectUri)}`
-      : url;
-    navigate(urlWithParams);
+    onEditPermissions();
   };
 
   const handleUpdateVersion = () => {
-    const url = `/user/appId/${appData.appId}/update-version`;
-    const urlWithParams = redirectUri
-      ? `${url}?redirectUri=${encodeURIComponent(redirectUri)}`
-      : url;
-    navigate(urlWithParams);
+    onUpdateVersion();
   };
 
   const handleContinue = async () => {
@@ -100,17 +96,10 @@ export function ReturningUserConnect({
             message={`Your permitted version (${version}) has been disabled by the app developer. You must update your permissions to continue using this app.`}
           />
         ) : version !== appData.activeVersion ? (
-          <>
-            <InfoBanner
-              type="orange"
-              title="App Already Permitted"
-              message="You've previously granted permissions to this app."
-            />
-            <InfoBanner
-              title="Version Update Available"
-              message={`You're using version ${version}, but the app has updated to version ${appData.activeVersion}. Update your permissions to access the latest features.`}
-            />
-          </>
+          <InfoBanner
+            title="Version Update Available"
+            message={`You're using version ${version}, but the app has updated to version ${appData.activeVersion}. Update your permissions to access the latest features.`}
+          />
         ) : (
           <InfoBanner
             type="orange"
@@ -184,31 +173,63 @@ export function ReturningUserConnect({
               </>
             ) : versionData && !versionData.enabled ? (
               /* Update Version Option - Primary action when version is disabled */
-              <ActionCard
-                icon={<RefreshCw className="w-4 h-4 text-orange-500" />}
-                iconBg="bg-orange-500/20"
-                title="Update Version"
-                description=""
-                onClick={handleUpdateVersion}
-              />
+              <>
+                <ActionCard
+                  icon={<RefreshCw className="w-4 h-4 text-orange-500" />}
+                  iconBg="bg-orange-500/20"
+                  title="Update to Active Version"
+                  description="Required to continue using this app"
+                  onClick={handleUpdateVersion}
+                />
+                <ActionCard
+                  icon={<Settings className="w-4 h-4 text-gray-500" />}
+                  iconBg="bg-gray-500/20"
+                  title="Manage App"
+                  description="View settings or unpermit this app"
+                  onClick={handleEditParameters}
+                />
+              </>
             ) : (
-              /* Edit Parameters Option - Show when version is enabled */
-              <ActionCard
-                icon={<Settings className="w-4 h-4 text-gray-500" />}
-                iconBg="bg-gray-500/20"
-                title="Edit Permissions"
-                description=""
-                onClick={handleEditParameters}
-              />
+              <>
+                {/* Show Update Version button when version update is available */}
+                {version !== appData.activeVersion && (
+                  <ActionCard
+                    icon={<RefreshCw className="w-4 h-4" style={{ color: theme.brandOrange }} />}
+                    iconBg="bg-orange-500/20"
+                    title="Update to Latest Version"
+                    description="Recommended for the latest features and improvements"
+                    onClick={handleUpdateVersion}
+                  />
+                )}
+                {/* Edit Parameters Option - Show when there are configurable policies */}
+                {hasConfigurablePolicies ? (
+                  <ActionCard
+                    icon={<Settings className="w-4 h-4" style={{ color: theme.brandOrange }} />}
+                    iconBg="bg-orange-500/20"
+                    title="Edit Permissions"
+                    description="Review or modify app permissions and settings"
+                    onClick={handleEditParameters}
+                  />
+                ) : (
+                  /* Manage App Option - Show when no configurable policies */
+                  <ActionCard
+                    icon={<Settings className="w-4 h-4" style={{ color: theme.brandOrange }} />}
+                    iconBg="bg-orange-500/20"
+                    title="Manage App"
+                    description="View app details or unpermit this app"
+                    onClick={() => navigate(`/user/appId/${appData.appId}`)}
+                  />
+                )}
+              </>
             )}
 
             {/* Continue Option - Only show if version is enabled and not both versions disabled */}
             {!(versionData && !versionData.enabled) && (
               <ActionCard
-                icon={<ArrowRight className="w-4 h-4 text-orange-500" />}
+                icon={<ArrowRight className="w-4 h-4" style={{ color: theme.brandOrange }} />}
                 iconBg="bg-orange-500/20"
                 title={`Continue to ${appData.name}`}
-                description=""
+                description="Proceed with your current permissions"
                 onClick={handleContinue}
                 isLoading={isContinueLoading || isLoading || !!localSuccess}
                 loadingStatus={localSuccess || loadingStatus}
@@ -218,9 +239,6 @@ export function ReturningUserConnect({
           </div>
         </div>
       </div>
-
-      {/* Footer */}
-      <ConnectFooter />
     </div>
   );
 }

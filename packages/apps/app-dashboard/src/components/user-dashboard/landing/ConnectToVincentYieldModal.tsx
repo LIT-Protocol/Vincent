@@ -7,13 +7,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/shared/ui/dialog';
-import { Button } from '@/components/shared/ui/button';
-import { theme } from '../connect/ui/theme';
-import { AlertCircle, ArrowRight } from 'lucide-react';
+import { theme, fonts } from '../connect/ui/theme';
+import { AlertCircle, ArrowRight, Sparkles } from 'lucide-react';
 import { env } from '@/config/env';
 
 interface ConnectToVincentYieldModalProps {
   agentPKP: IRelayPKP;
+  onClose?: () => void;
 }
 
 export function ConnectToVincentYieldModal({ agentPKP }: ConnectToVincentYieldModalProps) {
@@ -34,31 +34,60 @@ export function ConnectToVincentYieldModal({ agentPKP }: ConnectToVincentYieldMo
           50% { opacity: 0.8; }
         }
         button[class*="absolute top-4 right-4"] {
-          opacity: 0.15 !important;
-        }
-        button[class*="absolute top-4 right-4"]:hover {
-          opacity: 0.4 !important;
+          display: none !important;
         }
       `}</style>
       <DialogContent
-        className={`w-[calc(100%-1rem)] max-w-md mx-auto ${theme.mainCard} border ${theme.mainCardBorder} rounded-2xl shadow-2xl overflow-hidden p-0 [&>button]:hidden`}
+        className="w-[calc(100%-1rem)] max-w-md border-2 rounded-2xl shadow-2xl overflow-hidden p-0 backdrop-blur-xl"
+        style={{
+          borderColor: theme.brandOrange,
+          background: `linear-gradient(135deg, ${theme.mainCard} 0%, rgba(224, 90, 26, 0.05) 100%)`,
+        }}
         onPointerDownOutside={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => e.preventDefault()}
       >
-        <DialogHeader className={`px-3 sm:px-6 pt-4 pb-3 border-b ${theme.cardBorder}`}>
-          <div className="flex items-center justify-center mb-3">
+        {/* REQUIRED badge */}
+        <div
+          className="absolute top-4 right-4 px-2 py-1 rounded-md text-xs font-bold tracking-wide z-10"
+          style={{
+            backgroundColor: theme.brandOrange,
+            color: 'white',
+            ...fonts.heading,
+          }}
+        >
+          REQUIRED
+        </div>
+
+        <DialogHeader className={`px-4 sm:px-6 pt-6 pb-4`}>
+          {/* Logo and Title */}
+          <div className="flex items-center gap-3 mb-4 pr-20">
             <div
-              className={`inline-flex items-center justify-center w-12 h-12 rounded-full bg-orange-100 dark:bg-orange-900/30`}
+              className="w-16 h-16 rounded-lg flex items-center justify-center flex-shrink-0"
+              style={{
+                backgroundColor: theme.brandOrange,
+              }}
             >
-              <AlertCircle className="w-6 h-6 text-orange-500" />
+              <Sparkles className="w-8 h-8 text-white" />
+            </div>
+            <div className="flex flex-col justify-center min-w-0 flex-1">
+              <DialogTitle
+                className={`text-base font-semibold leading-tight ${theme.text} break-words`}
+                style={fonts.heading}
+              >
+                Connect to Vincent Yield
+              </DialogTitle>
+              <span className={`text-sm leading-tight`} style={{ color: theme.brandOrange }}>
+                Migration Required
+              </span>
             </div>
           </div>
-          <DialogTitle className={`text-lg font-semibold ${theme.text} text-center`}>
-            Architectural Update Required
-          </DialogTitle>
-          <DialogDescription className={`${theme.textMuted} text-sm text-center mt-2`}>
-            There's been an architectural change to Vincent Wallets. Your existing wallet needs to
-            be connected to Vincent Yield to continue.
+
+          <DialogDescription
+            className={`${theme.textMuted} text-xs leading-relaxed`}
+            style={fonts.body}
+          >
+            Your existing Vincent Wallet needs to be connected to Vincent Yield due to architectural
+            improvements.
           </DialogDescription>
         </DialogHeader>
 
@@ -89,37 +118,36 @@ export function ConnectToVincentYieldModal({ agentPKP }: ConnectToVincentYieldMo
           </div>
         </div>
 
-        <div className="flex px-3 sm:px-6 pt-3 pb-4 sm:pb-6 border-t border-gray-200 dark:border-gray-700">
-          <Button
+        <div className="px-4 sm:px-6 pb-6">
+          <button
             onClick={handleConnect}
             disabled={isRedirecting}
-            className={`w-full font-normal tracking-wide transition-all duration-200 border text-white flex items-center justify-center gap-2 ${
-              isRedirecting
-                ? 'bg-gray-100 dark:bg-gray-800 !text-gray-400 border-gray-200 dark:border-gray-700 cursor-not-allowed'
-                : ''
-            }`}
+            className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors text-white disabled:opacity-50 disabled:cursor-not-allowed"
             style={{
-              borderRadius: '0.5rem',
-              fontSize: 'clamp(0.75rem, 3vw, 0.875rem)',
-              padding: 'clamp(0.5rem, 1vw, 0.75rem) clamp(1rem, 4vw, 1.5rem)',
-              ...(isRedirecting
-                ? {}
-                : {
-                    backgroundColor: '#e55a1a',
-                    borderColor: '#e55a1a',
-                    animation: 'pulse 2s ease-in-out infinite',
-                  }),
+              ...fonts.heading,
+              backgroundColor: isRedirecting ? theme.textMuted : theme.brandOrange,
+              animation: isRedirecting ? 'none' : 'pulse 2s ease-in-out infinite',
+            }}
+            onMouseEnter={(e) => {
+              if (!isRedirecting) {
+                e.currentTarget.style.backgroundColor = theme.brandOrangeDarker;
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!isRedirecting) {
+                e.currentTarget.style.backgroundColor = theme.brandOrange;
+              }
             }}
           >
             {isRedirecting ? (
               'Redirecting...'
             ) : (
               <>
-                Connect to Vincent Yield
-                <ArrowRight className="w-4 h-4" />
+                <ArrowRight className="w-4 h-4 flex-shrink-0 -mt-px" />
+                <span className="leading-none">Connect to Vincent Yield</span>
               </>
             )}
-          </Button>
+          </button>
         </div>
       </DialogContent>
     </Dialog>

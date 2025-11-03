@@ -6,6 +6,7 @@ import { HelmetProvider } from 'react-helmet-async';
 import routes from './routes';
 import { initializeTheme } from '@/lib/theme';
 import { initZendesk } from '@/lib/zendesk';
+import { FarcasterReady } from '@/components/shared/FarcasterReady';
 
 import './index.css';
 
@@ -28,6 +29,7 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <HelmetProvider>
       <BrowserRouter>
+        <FarcasterReady />
         <App />
       </BrowserRouter>
     </HelmetProvider>
