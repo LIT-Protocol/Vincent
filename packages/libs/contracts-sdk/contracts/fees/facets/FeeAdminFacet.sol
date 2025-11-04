@@ -30,6 +30,8 @@ contract FeeAdminFacet is FeeCommon {
     error OwnerAttestationIssuedAtInFuture(uint256 issuedAt);
     error OwnerAttestationIncorrectChainId(uint256 chainId);
     error OwnerAttestationIncorrectDestinationContract(address dstContract);
+    error OwnerAttestationIncorrectSourceChainId(uint256 srcChainId);
+    error OwnerAttestationIncorrectSourceContract(address srcContract);
 
 
     /* ========== EVENTS ========== */
@@ -105,6 +107,12 @@ contract FeeAdminFacet is FeeCommon {
         }
         if (oa.dstContract != address(this)) {
             revert OwnerAttestationIncorrectDestinationContract(oa.dstContract);
+        }
+        if (oa.srcChainId != LibFeeStorage.CHRONICLE_YELLOWSTONE_CHAIN_ID) {
+            revert OwnerAttestationIncorrectSourceChainId(oa.srcChainId);
+        }
+        if (oa.srcContract != LibFeeStorage.getStorage().vincentAppDiamondOnYellowstone) {
+            revert OwnerAttestationIncorrectSourceContract(oa.srcContract);
         }
     }
 
