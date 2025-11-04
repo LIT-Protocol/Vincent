@@ -114,6 +114,11 @@ export class LitActionPkpEthersWallet {
     this.sigName = sigName;
     // Compute Ethereum address from public key (ethers handles uncompressed format)
     this.address = ethers.utils.computeAddress('0x' + this.pkpPublicKey);
+
+    console.log('[LitActionPkpEthersWallet] Initialized', {
+      pkpPublicKey: this.pkpPublicKey.slice(0, 20) + '...',
+      address: this.address,
+    });
   }
 
   /**
@@ -173,27 +178,19 @@ export class LitActionPkpEthersWallet {
 
     const parsedSig = JSON.parse(signatureResponse);
 
-    // Normalize r and s to ensure they have 0x prefix and are exactly 64 hex chars
-    // Lit's signAndCombineEcdsa has inconsistent formatting:
-    // - Sometimes r has "0x" prefix, sometimes it doesn't
-    // - r might have extra bytes at the start (e.g., "03" prefix for 66 chars total)
-    // - s typically doesn't have "0x" prefix and is 64 chars
+    // Normalize r and s to 32-byte values (64 hex chars + "0x" prefix = 66 total)
+    // Lit returns r/s in variable formats - we need to handle them correctly
     let rValue = parsedSig.r;
     if (typeof rValue === 'string') {
-      // Remove any "0x" prefix first
+      // Remove "0x" prefix if present
       let cleanR = rValue.replace(/^0x/i, '');
 
-      // If r is 66 chars, it might have a 2-char prefix - remove it
-      // Reference: ability-aerodrome-swap/src/lib/ability-helpers/sign-tx.ts uses substring(2)
+      // If cleanR is 66 chars, we need to strip the first 2 chars (1 byte)
+      // This matches the reference: r.substring(2) when r has "0x" prefix
       if (cleanR.length === 66) {
         cleanR = cleanR.substring(2);
-      }
-
-      // Now r should be exactly 64 hex chars
-      if (cleanR.length !== 64) {
-        throw new Error(
-          `Invalid r length: expected 64 hex chars after cleaning, got ${cleanR.length}. Original: "${rValue}"`,
-        );
+      } else if (cleanR.length !== 64) {
+        throw new Error(`Invalid r length: expected 64 or 66 hex chars, got ${cleanR.length}`);
       }
 
       rValue = '0x' + cleanR;
@@ -203,14 +200,14 @@ export class LitActionPkpEthersWallet {
 
     let sValue = parsedSig.s;
     if (typeof sValue === 'string') {
-      // Remove any "0x" prefix
-      const cleanS = sValue.replace(/^0x/i, '');
+      // Remove "0x" prefix if present
+      let cleanS = sValue.replace(/^0x/i, '');
 
-      // s should be exactly 64 hex chars
-      if (cleanS.length !== 64) {
-        throw new Error(
-          `Invalid s length: expected 64 hex chars after cleaning, got ${cleanS.length}. Original: "${sValue}"`,
-        );
+      // s should typically be 64 chars, but handle 66 just in case
+      if (cleanS.length === 66) {
+        cleanS = cleanS.substring(2);
+      } else if (cleanS.length !== 64) {
+        throw new Error(`Invalid s length: expected 64 or 66 hex chars, got ${cleanS.length}`);
       }
 
       sValue = '0x' + cleanS;
@@ -218,14 +215,17 @@ export class LitActionPkpEthersWallet {
       throw new Error(`Invalid s type: expected string, got ${typeof sValue}`);
     }
 
-    // Convert v from recovery id (0 or 1) to Ethereum format (27 or 28)
-    // Lit.Actions.signAndCombineEcdsa returns v as recovery id, not Ethereum format
-    let vValue = parsedSig.v;
-    if (vValue === 0 || vValue === 1) {
-      vValue = vValue + 27;
-    } else if (vValue !== 27 && vValue !== 28) {
-      throw new Error(`Invalid v value: expected 0, 1, 27, or 28, got ${parsedSig.v}`);
-    }
+    // Use v directly - based on reference implementation
+    // The reference (ability-aerodrome-swap) uses v as-is without conversion
+    const vValue = parsedSig.v;
+
+    console.log('[LitActionPkpEthersWallet] Before joinSignature', {
+      r: rValue,
+      s: sValue,
+      v: vValue,
+      rLength: rValue.length,
+      sLength: sValue.length,
+    });
 
     // Join signature components and return as string (ethers v5 format)
     const signature = ethers.utils.joinSignature({
@@ -233,6 +233,23 @@ export class LitActionPkpEthersWallet {
       s: sValue,
       v: vValue,
     });
+
+    // Recover address from signature for debugging
+    try {
+      const messageHash = ethers.utils.hashMessage(message);
+      const recoveredAddress = ethers.utils.recoverAddress(messageHash, signature);
+      console.log('[LitActionPkpEthersWallet] signMessage - Signature recovery check', {
+        recoveredAddress,
+        expectedAddress: this.address,
+        match: recoveredAddress.toLowerCase() === this.address.toLowerCase(),
+        signature,
+      });
+    } catch (error) {
+      console.error(
+        '[LitActionPkpEthersWallet] signMessage - Could not verify signature recovery',
+        error,
+      );
+    }
 
     return signature;
   }
@@ -335,27 +352,19 @@ export class LitActionPkpEthersWallet {
       sType: typeof parsedSig.s,
     });
 
-    // Normalize r and s to ensure they have 0x prefix and are exactly 64 hex chars
-    // Lit's signAndCombineEcdsa has inconsistent formatting:
-    // - Sometimes r has "0x" prefix, sometimes it doesn't
-    // - r might have extra bytes at the start (e.g., "03" prefix for 66 chars total)
-    // - s typically doesn't have "0x" prefix and is 64 chars
+    // Normalize r and s to 32-byte values (64 hex chars + "0x" prefix = 66 total)
+    // Lit returns r/s in variable formats - we need to handle them correctly
     let rValue = parsedSig.r;
     if (typeof rValue === 'string') {
-      // Remove any "0x" prefix first
+      // Remove "0x" prefix if present
       let cleanR = rValue.replace(/^0x/i, '');
 
-      // If r is 66 chars, it might have a 2-char prefix - remove it
-      // Reference: ability-aerodrome-swap/src/lib/ability-helpers/sign-tx.ts uses substring(2)
+      // If cleanR is 66 chars, we need to strip the first 2 chars (1 byte)
+      // This matches the reference: r.substring(2) when r has "0x" prefix
       if (cleanR.length === 66) {
         cleanR = cleanR.substring(2);
-      }
-
-      // Now r should be exactly 64 hex chars
-      if (cleanR.length !== 64) {
-        throw new Error(
-          `Invalid r length: expected 64 hex chars after cleaning, got ${cleanR.length}. Original: "${rValue}"`,
-        );
+      } else if (cleanR.length !== 64) {
+        throw new Error(`Invalid r length: expected 64 or 66 hex chars, got ${cleanR.length}`);
       }
 
       rValue = '0x' + cleanR;
@@ -365,14 +374,14 @@ export class LitActionPkpEthersWallet {
 
     let sValue = parsedSig.s;
     if (typeof sValue === 'string') {
-      // Remove any "0x" prefix
-      const cleanS = sValue.replace(/^0x/i, '');
+      // Remove "0x" prefix if present
+      let cleanS = sValue.replace(/^0x/i, '');
 
-      // s should be exactly 64 hex chars
-      if (cleanS.length !== 64) {
-        throw new Error(
-          `Invalid s length: expected 64 hex chars after cleaning, got ${cleanS.length}. Original: "${sValue}"`,
-        );
+      // s should typically be 64 chars, but handle 66 just in case
+      if (cleanS.length === 66) {
+        cleanS = cleanS.substring(2);
+      } else if (cleanS.length !== 64) {
+        throw new Error(`Invalid s length: expected 64 or 66 hex chars, got ${cleanS.length}`);
       }
 
       sValue = '0x' + cleanS;
@@ -380,27 +389,38 @@ export class LitActionPkpEthersWallet {
       throw new Error(`Invalid s type: expected string, got ${typeof sValue}`);
     }
 
+    // Use v directly - based on reference implementation
+    // The reference (ability-aerodrome-swap) uses v as-is without conversion
+    const vValue = parsedSig.v;
+
     // Convert v from recovery id (0 or 1) to Ethereum format (27 or 28)
-    // Lit.Actions.signAndCombineEcdsa returns v as recovery id, not Ethereum format
-    let vValue = parsedSig.v;
+    // This is required for proper signature verification
+    let vEthereum = vValue;
     if (vValue === 0 || vValue === 1) {
-      vValue = vValue + 27;
-    } else if (vValue !== 27 && vValue !== 28) {
-      throw new Error(`Invalid v value: expected 0, 1, 27, or 28, got ${parsedSig.v}`);
+      vEthereum = vValue + 27;
     }
 
-    // Join signature components and return as string (ethers v5 format)
+    console.log('[LitActionPkpEthersWallet] Before joinSignature', {
+      r: rValue,
+      s: sValue,
+      vOriginal: vValue,
+      vEthereum: vEthereum,
+      rLength: rValue.length,
+      sLength: sValue.length,
+    });
+
+    // Use joinSignature with the Ethereum v value
     const signature = ethers.utils.joinSignature({
       r: rValue,
       s: sValue,
-      v: vValue,
+      v: vEthereum,
     });
 
     console.log('[LitActionPkpEthersWallet] Final signature', {
       signature,
       r: rValue,
       s: sValue,
-      v: parsedSig.v,
+      v: vEthereum,
     });
 
     // Verify the signature can recover to the expected address
