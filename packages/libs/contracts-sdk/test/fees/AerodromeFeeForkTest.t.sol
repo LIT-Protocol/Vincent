@@ -1,310 +1,343 @@
-// // SPDX-License-Identifier: MIT
-// pragma solidity ^0.8.29;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.29;
 
-// import "forge-std/Test.sol";
-// import "forge-std/console.sol";
+import "forge-std/Test.sol";
+import "forge-std/console.sol";
 
-// import {DeployFeeDiamond} from "../../script/DeployFeeDiamond.sol";
+import {DeployFeeDiamond} from "../../script/DeployFeeDiamond.sol";
 
-// import {Fee} from "../../contracts/fees/Fee.sol";
-// import {FeeViewsFacet} from "../../contracts/fees/facets/FeeViewsFacet.sol";
-// import {FeeAdminFacet} from "../../contracts/fees/facets/FeeAdminFacet.sol";
-// import {AerodromeSwapFeeFacet} from "../../contracts/fees/facets/AerodromeSwapFeeFacet.sol";
-// import {LibFeeStorage} from "../../contracts/fees/LibFeeStorage.sol";
-// import {FeeUtils} from "../../contracts/fees/FeeUtils.sol";
-// import {FeeTestCommon} from "./FeeTestCommon.sol";
-// import {USDC} from "../ABIs/USDC.sol";
-// import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-// import {IRouter} from "@aerodrome/contracts/interfaces/IRouter.sol";
+import {Fee} from "../../contracts/fees/Fee.sol";
+import {FeeViewsFacet} from "../../contracts/fees/facets/FeeViewsFacet.sol";
+import {FeeAdminFacet} from "../../contracts/fees/facets/FeeAdminFacet.sol";
+import {AerodromeSwapFeeFacet} from "../../contracts/fees/facets/AerodromeSwapFeeFacet.sol";
+import {LibFeeStorage} from "../../contracts/fees/LibFeeStorage.sol";
+import {FeeUtils} from "../../contracts/fees/FeeUtils.sol";
+import {FeeTestCommon} from "./FeeTestCommon.sol";
+import {USDC} from "../ABIs/USDC.sol";
+import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import {IRouter} from "@aerodrome/contracts/interfaces/IRouter.sol";
 
-// contract AerodromeFeeForkTest is FeeTestCommon {
-//     uint256 constant BASIS_POINT_DIVISOR = 10000;
+contract AerodromeFeeForkTest is FeeTestCommon {
+    uint256 constant BASIS_POINT_DIVISOR = 10000;
 
-//     address owner;
-//     uint40 DEV_APP_ID = uint40(vm.randomUint(1, type(uint40).max));
-//     address APP_MANAGER_BOB = makeAddr("Bob");
-//     address APP_DELEGATEE_BOB = makeAddr("BobDelegatee");
-//     address APP_USER_ALICE = makeAddr("Alice");
-//     // real aerodrome router on base from https://www.aerodrome.finance/security
-//     address REAL_AERODROME_ROUTER = 0xcF77a3Ba9A5CA399B7c97c74d54e5b1Beb874E43;
-//     // real USDC address on base
-//     address REAL_USDC = 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913;
-//     // real USDC master_minter
-//     address REAL_USDC_MASTER_MINTER;
-//     address USDC_MINTER = makeAddr("USDCMinter");
-//     // real WETH address on base
-//     address REAL_WETH = 0x4200000000000000000000000000000000000006;
+    address owner;
+    uint40 DEV_APP_ID = uint40(vm.randomUint(1, type(uint40).max));
+    address APP_MANAGER_BOB = makeAddr("Bob");
+    address APP_DELEGATEE_BOB = makeAddr("BobDelegatee");
+    address APP_USER_ALICE = makeAddr("Alice");
+    // real aerodrome router on base from https://www.aerodrome.finance/security
+    address REAL_AERODROME_ROUTER = 0xcF77a3Ba9A5CA399B7c97c74d54e5b1Beb874E43;
+    // real USDC address on base
+    address REAL_USDC = 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913;
+    // real USDC master_minter
+    address REAL_USDC_MASTER_MINTER;
+    address USDC_MINTER = makeAddr("USDCMinter");
+    // real WETH address on base
+    address REAL_WETH = 0x4200000000000000000000000000000000000006;
+    address litFoundationWallet = makeAddr("LitFoundationWallet");
 
-//     FeeViewsFacet public feeViewsFacet;
-//     FeeAdminFacet public feeAdminFacet;
-//     AerodromeSwapFeeFacet public aerodromeSwapFeeFacet;
+    address ownerAttestationSigner;
+    uint256 ownerAttestationSignerPrivateKey; 
 
-//     USDC public USDCErc20;
-//     ERC20 public WETHErc20;
-//     IRouter public aerodromeRouter;
-//     uint256 public erc20Decimals;
+    Fee public feeDiamond;
+    FeeViewsFacet public feeViewsFacet;
+    FeeAdminFacet public feeAdminFacet;
+    AerodromeSwapFeeFacet public aerodromeSwapFeeFacet;
+    address public vincentDiamondAddress;
 
-//     function setUp() public {
-//         uint256 deployerPrivateKey = 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80;
-//         vm.setEnv("VINCENT_DEPLOYER_PRIVATE_KEY", vm.toString(deployerPrivateKey));
-//         owner = vm.addr(deployerPrivateKey);
+    USDC public USDCErc20;
+    ERC20 public WETHErc20;
+    IRouter public aerodromeRouter;
+    uint256 public erc20Decimals;
 
-//         address diamondAddress = _deployFeeDiamond();
+    function setUp() public {
+        uint256 deployerPrivateKey = 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80;
+        vm.setEnv("VINCENT_DEPLOYER_PRIVATE_KEY", vm.toString(deployerPrivateKey));
+        owner = vm.addr(deployerPrivateKey);
 
-//         feeViewsFacet = FeeViewsFacet(diamondAddress);
-//         feeAdminFacet = FeeAdminFacet(diamondAddress);
-//         aerodromeSwapFeeFacet = AerodromeSwapFeeFacet(diamondAddress);
+        feeDiamond = Fee(payable(_deployFeeDiamond()));
 
-//         // set the aerodrome router address in the fee diamond
-//         vm.startPrank(owner);
-//         feeAdminFacet.setAerodromeRouter(REAL_AERODROME_ROUTER);
-//         vm.stopPrank();
+        feeViewsFacet = FeeViewsFacet(address(feeDiamond));
+        feeAdminFacet = FeeAdminFacet(address(feeDiamond));
+        aerodromeSwapFeeFacet = AerodromeSwapFeeFacet(address(feeDiamond));
 
-//         // set up the real aerodrome router and USDC token
-//         aerodromeRouter = IRouter(REAL_AERODROME_ROUTER);
-//         USDCErc20 = USDC(REAL_USDC);
-//         WETHErc20 = ERC20(REAL_WETH);
-//         REAL_USDC_MASTER_MINTER = USDCErc20.masterMinter();
-//         // configure the USDC minter
-//         vm.prank(REAL_USDC_MASTER_MINTER);
-//         USDCErc20.configureMinter(USDC_MINTER, type(uint256).max);
-//         vm.stopPrank();
-//         erc20Decimals = USDCErc20.decimals();
+        vm.startPrank(owner);
+        // set the aerodrome router address in the fee diamond
+        feeAdminFacet.setAerodromeRouter(REAL_AERODROME_ROUTER);
+        // set the owner attestation signer in the fee diamond
+        (ownerAttestationSigner, ownerAttestationSignerPrivateKey) = makeAddrAndKey("OwnerAttestationSigner");
+        feeAdminFacet.setOwnerAttestationSigner(ownerAttestationSigner);
+        // set the lit foundation wallet in the fee diamond
+        feeAdminFacet.setLitFoundationWallet(litFoundationWallet);
+        vm.stopPrank();
 
-//         address vincentDiamondAddress = _deployVincentDiamondAndBasicApp(APP_MANAGER_BOB, APP_DELEGATEE_BOB, DEV_APP_ID);
+        // set up the real aerodrome router and USDC token
+        aerodromeRouter = IRouter(REAL_AERODROME_ROUTER);
+        USDCErc20 = USDC(REAL_USDC);
+        WETHErc20 = ERC20(REAL_WETH);
+        REAL_USDC_MASTER_MINTER = USDCErc20.masterMinter();
+        // configure the USDC minter
+        vm.prank(REAL_USDC_MASTER_MINTER);
+        USDCErc20.configureMinter(USDC_MINTER, type(uint256).max);
+        vm.stopPrank();
+        erc20Decimals = USDCErc20.decimals();
 
-//         // set the vincent app contract address in the fee diamond
-//         vm.startPrank(owner);
-//         feeAdminFacet.setVincentAppDiamond(vincentDiamondAddress);
-//         vm.stopPrank();
-//     }
+        vincentDiamondAddress = _deployVincentDiamondAndBasicApp(APP_MANAGER_BOB, APP_DELEGATEE_BOB, DEV_APP_ID);
 
-//     function testSingleRouteSingleSwap() public {
-//         uint256 swapAmount = 50 * 10 ** erc20Decimals;
+        // set the vincent app contract address in the fee diamond
+        vm.startPrank(owner);
+        feeAdminFacet.setVincentAppDiamondOnYellowstone(vincentDiamondAddress);
+        vm.stopPrank();
+    }
 
-//         uint256 swapFeePercentage = feeAdminFacet.swapFeePercentage();
+    function testSingleRouteSingleSwap() public {
+        uint256 swapAmount = 50 * 10 ** erc20Decimals;
 
-//         // mint the USDC to the user
-//         vm.startPrank(USDC_MINTER);
-//         USDCErc20.mint(APP_USER_ALICE, swapAmount);
-//         vm.stopPrank();
-//         console.log("minted USDC to user");
+        uint256 swapFeePercentage = feeAdminFacet.swapFeePercentage();
 
-//         vm.startPrank(APP_USER_ALICE);
-//         USDCErc20.approve(address(aerodromeSwapFeeFacet), swapAmount);
-//         console.log("approved USDC to our fee contract");
-//         // create the route
-//         IRouter.Route[] memory routes = new IRouter.Route[](1);
-//         routes[0] = IRouter.Route(address(REAL_USDC), address(REAL_WETH), false, address(0));
+        // mint the USDC to the user
+        vm.startPrank(USDC_MINTER);
+        USDCErc20.mint(APP_USER_ALICE, swapAmount);
+        vm.stopPrank();
+        console.log("minted USDC to user");
 
-//         // reduce the expected output by 0.5% for slippage
-//         uint256 expectedOutput = (aerodromeRouter.getAmountsOut(swapAmount, routes)[1] * 9950) / 10000;
+        vm.startPrank(APP_USER_ALICE);
+        USDCErc20.approve(address(aerodromeSwapFeeFacet), swapAmount);
+        console.log("approved USDC to our fee contract");
+        // create the route
+        IRouter.Route[] memory routes = new IRouter.Route[](1);
+        routes[0] = IRouter.Route(address(REAL_USDC), address(REAL_WETH), false, address(0));
 
-//         uint256 userWethBalanceBefore = WETHErc20.balanceOf(APP_USER_ALICE);
+        // reduce the expected output by 0.5% for slippage
+        uint256 expectedOutput = (aerodromeRouter.getAmountsOut(swapAmount, routes)[1] * 9950) / 10000;
 
-//         aerodromeSwapFeeFacet.swapExactTokensForTokensOnAerodrome(
-//             DEV_APP_ID, swapAmount, expectedOutput, routes, APP_USER_ALICE, block.timestamp + 1 minutes
-//         );
-//         vm.stopPrank();
-//         console.log("swapped USDC to WETH");
-//         uint256 userWethBalanceAfter = WETHErc20.balanceOf(APP_USER_ALICE);
-//         // assert that they got at least the amountOut
-//         assertGt(userWethBalanceAfter - userWethBalanceBefore, expectedOutput);
-//         console.log("userWethBalanceAfter", userWethBalanceAfter);
+        uint256 userWethBalanceBefore = WETHErc20.balanceOf(APP_USER_ALICE);
 
-//         // confirm the profit went to the fee contract, and the rest of the tokens went to the user
-//         uint256 userBalance = USDCErc20.balanceOf(APP_USER_ALICE);
-//         uint256 feeContractBalance = USDCErc20.balanceOf(address(aerodromeSwapFeeFacet));
-//         console.log("usdc userBalance", userBalance);
-//         console.log("usdc feeContractBalance", feeContractBalance);
+        aerodromeSwapFeeFacet.swapExactTokensForTokensOnAerodrome(
+            DEV_APP_ID, swapAmount, expectedOutput, routes, APP_USER_ALICE, block.timestamp + 1 minutes
+        );
+        vm.stopPrank();
+        console.log("swapped USDC to WETH");
+        uint256 userWethBalanceAfter = WETHErc20.balanceOf(APP_USER_ALICE);
+        // assert that they got at least the amountOut
+        assertGt(userWethBalanceAfter - userWethBalanceBefore, expectedOutput);
+        console.log("userWethBalanceAfter", userWethBalanceAfter);
 
-//         // the user swapped all their USDC to WETH, so their balance should be 0
-//         assertEq(userBalance, 0);
+        // confirm the profit went to the fee contract, and the rest of the tokens went to the user
+        uint256 userBalance = USDCErc20.balanceOf(APP_USER_ALICE);
+        uint256 feeContractBalance = USDCErc20.balanceOf(address(aerodromeSwapFeeFacet));
+        console.log("usdc userBalance", userBalance);
+        console.log("usdc feeContractBalance", feeContractBalance);
 
-//         uint256 expectedFee = swapAmount * swapFeePercentage / BASIS_POINT_DIVISOR;
-//         assertEq(feeContractBalance, expectedFee);
+        // the user swapped all their USDC to WETH, so their balance should be 0
+        assertEq(userBalance, 0);
 
-//         // test that USDC is in the set of tokens that have collected fees for the app
-//         address[] memory tokensWithCollectedFees = feeAdminFacet.tokensWithCollectedFees(DEV_APP_ID);
-//         assertEq(tokensWithCollectedFees.length, 1);
-//         assertEq(tokensWithCollectedFees[0], address(USDCErc20));
+        uint256 expectedFee = swapAmount * swapFeePercentage / BASIS_POINT_DIVISOR;
+        assertEq(feeContractBalance, expectedFee);
 
-//         // test that USDC is in the set of tokens that have collected fees for the foundation
-//         tokensWithCollectedFees = feeAdminFacet.tokensWithCollectedFees(LibFeeStorage.LIT_FOUNDATION_APP_ID);
-//         assertEq(tokensWithCollectedFees.length, 1);
-//         assertEq(tokensWithCollectedFees[0], address(USDCErc20));
+        // test that USDC is in the set of tokens that have collected fees for the app
+        address[] memory tokensWithCollectedFees = feeAdminFacet.tokensWithCollectedFees(DEV_APP_ID);
+        assertEq(tokensWithCollectedFees.length, 1);
+        assertEq(tokensWithCollectedFees[0], address(USDCErc20));
 
-//         // check the collected fees for the foundation
-//         uint256 litCollectedAppFees =
-//             feeViewsFacet.collectedAppFees(LibFeeStorage.LIT_FOUNDATION_APP_ID, address(USDCErc20));
-//         // check the collected fees for the app
-//         uint256 appCollectedAppFees = feeViewsFacet.collectedAppFees(DEV_APP_ID, address(USDCErc20));
-//         assertEq(litCollectedAppFees + appCollectedAppFees, expectedFee);
+        // test that USDC is in the set of tokens that have collected fees for the foundation
+        tokensWithCollectedFees = feeAdminFacet.tokensWithCollectedFees(LibFeeStorage.LIT_FOUNDATION_APP_ID);
+        assertEq(tokensWithCollectedFees.length, 1);
+        assertEq(tokensWithCollectedFees[0], address(USDCErc20));
 
-//         // calculate the split expected for the lit foundation, and for the app
-//         uint256 expectedLitCollectedAppFees =
-//             expectedFee * feeAdminFacet.litAppFeeSplitPercentage() / BASIS_POINT_DIVISOR;
-//         uint256 expectedAppCollectedAppFees = expectedFee - expectedLitCollectedAppFees;
-//         assertEq(litCollectedAppFees, expectedLitCollectedAppFees);
-//         assertEq(appCollectedAppFees, expectedAppCollectedAppFees);
+        // check the collected fees for the foundation
+        uint256 litCollectedAppFees =
+            feeViewsFacet.collectedAppFees(LibFeeStorage.LIT_FOUNDATION_APP_ID, address(USDCErc20));
+        // check the collected fees for the app
+        uint256 appCollectedAppFees = feeViewsFacet.collectedAppFees(DEV_APP_ID, address(USDCErc20));
+        assertEq(litCollectedAppFees + appCollectedAppFees, expectedFee);
 
-//         // test withdrawal of profit from the fee contract as owner
-//         vm.startPrank(owner);
-//         feeAdminFacet.withdrawAppFees(LibFeeStorage.LIT_FOUNDATION_APP_ID, address(USDCErc20));
-//         vm.stopPrank();
+        // calculate the split expected for the lit foundation, and for the app
+        uint256 expectedLitCollectedAppFees =
+            expectedFee * feeAdminFacet.litAppFeeSplitPercentage() / BASIS_POINT_DIVISOR;
+        uint256 expectedAppCollectedAppFees = expectedFee - expectedLitCollectedAppFees;
+        assertEq(litCollectedAppFees, expectedLitCollectedAppFees);
+        assertEq(appCollectedAppFees, expectedAppCollectedAppFees);
 
-//         // confirm the profit went to the owner
-//         assertEq(USDCErc20.balanceOf(owner), expectedLitCollectedAppFees);
+        // test withdrawal of profit from the fee contract as the lit foundation wallet
+        vm.startPrank(litFoundationWallet);
+        feeAdminFacet.withdrawPlatformFees(address(USDCErc20));
+        vm.stopPrank();
 
-//         // confirm that the token is no longer in the set of tokens that have collected fees
-//         tokensWithCollectedFees = feeAdminFacet.tokensWithCollectedFees(LibFeeStorage.LIT_FOUNDATION_APP_ID);
-//         assertEq(tokensWithCollectedFees.length, 0);
+        // confirm the profit went to the lit foundation wallet
+        assertEq(USDCErc20.balanceOf(litFoundationWallet), expectedLitCollectedAppFees);
 
-//         // test withdrawal of profit from the fee contract as app manager
-//         vm.startPrank(APP_MANAGER_BOB);
-//         feeAdminFacet.withdrawAppFees(DEV_APP_ID, address(USDCErc20));
-//         vm.stopPrank();
+        // confirm that the token is no longer in the set of tokens that have collected fees
+        tokensWithCollectedFees = feeAdminFacet.tokensWithCollectedFees(LibFeeStorage.LIT_FOUNDATION_APP_ID);
+        assertEq(tokensWithCollectedFees.length, 0);
 
-//         // confirm the profit went to the app manager
-//         assertEq(USDCErc20.balanceOf(APP_MANAGER_BOB), expectedAppCollectedAppFees);
+        // test withdrawal of profit from the fee contract as app manager
+        FeeUtils.OwnerAttestation memory oa = FeeUtils.OwnerAttestation({
+            srcChainId: LibFeeStorage.CHRONICLE_YELLOWSTONE_CHAIN_ID,
+            srcContract: vincentDiamondAddress,
+            owner: APP_MANAGER_BOB,
+            appId: DEV_APP_ID,
+            issuedAt: block.timestamp,
+            expiresAt: block.timestamp + 5 minutes,
+            dstChainId: block.chainid,
+            dstContract: address(feeDiamond)
+        });
+        bytes memory ownerAttestationSig = _signOwnerAttestation(oa, ownerAttestationSignerPrivateKey);
+        vm.startPrank(APP_MANAGER_BOB);
+        feeAdminFacet.withdrawAppFees(DEV_APP_ID, address(USDCErc20), oa, ownerAttestationSig);
+        vm.stopPrank();
 
-//         // confirm that the token is no longer in the set of tokens that have collected fees
-//         tokensWithCollectedFees = feeAdminFacet.tokensWithCollectedFees(DEV_APP_ID);
-//         assertEq(tokensWithCollectedFees.length, 0);
-//     }
+        // confirm the profit went to the app manager
+        assertEq(USDCErc20.balanceOf(APP_MANAGER_BOB), expectedAppCollectedAppFees);
 
-//     function testSingleRouteMultipleSwaps() public {
-//         uint256 swapAmount = 50 * 10 ** erc20Decimals;
+        // confirm that the token is no longer in the set of tokens that have collected fees
+        tokensWithCollectedFees = feeAdminFacet.tokensWithCollectedFees(DEV_APP_ID);
+        assertEq(tokensWithCollectedFees.length, 0);
+    }
 
-//         uint256 swapFeePercentage = feeAdminFacet.swapFeePercentage();
+    function testSingleRouteMultipleSwaps() public {
+        uint256 swapAmount = 50 * 10 ** erc20Decimals;
 
-//         // mint the USDC to the user
-//         vm.startPrank(USDC_MINTER);
-//         USDCErc20.mint(APP_USER_ALICE, swapAmount);
-//         vm.stopPrank();
-//         console.log("minted USDC to user");
+        uint256 swapFeePercentage = feeAdminFacet.swapFeePercentage();
 
-//         vm.startPrank(APP_USER_ALICE);
-//         USDCErc20.approve(address(aerodromeSwapFeeFacet), swapAmount);
-//         console.log("approved USDC to our fee contract");
-//         // create the route
-//         IRouter.Route[] memory routes = new IRouter.Route[](1);
-//         routes[0] = IRouter.Route(address(REAL_USDC), address(REAL_WETH), false, address(0));
+        // mint the USDC to the user
+        vm.startPrank(USDC_MINTER);
+        USDCErc20.mint(APP_USER_ALICE, swapAmount);
+        vm.stopPrank();
+        console.log("minted USDC to user");
 
-//         // reduce the expected output by 0.5% for slippage
-//         uint256 expectedOutput = (aerodromeRouter.getAmountsOut(swapAmount, routes)[1] * 9950) / 10000;
+        vm.startPrank(APP_USER_ALICE);
+        USDCErc20.approve(address(aerodromeSwapFeeFacet), swapAmount);
+        console.log("approved USDC to our fee contract");
+        // create the route
+        IRouter.Route[] memory routes = new IRouter.Route[](1);
+        routes[0] = IRouter.Route(address(REAL_USDC), address(REAL_WETH), false, address(0));
 
-//         uint256 userWethBalanceBefore = WETHErc20.balanceOf(APP_USER_ALICE);
+        // reduce the expected output by 0.5% for slippage
+        uint256 expectedOutput = (aerodromeRouter.getAmountsOut(swapAmount, routes)[1] * 9950) / 10000;
 
-//         // first swap
-//         aerodromeSwapFeeFacet.swapExactTokensForTokensOnAerodrome(
-//             DEV_APP_ID, swapAmount, expectedOutput, routes, APP_USER_ALICE, block.timestamp + 1 minutes
-//         );
-//         vm.stopPrank();
-//         console.log("swapped USDC to WETH");
-//         uint256 userWethBalanceAfter = WETHErc20.balanceOf(APP_USER_ALICE);
-//         // assert that they got at least the amountOut
-//         assertGt(userWethBalanceAfter - userWethBalanceBefore, expectedOutput);
-//         console.log("userWethBalanceAfter", userWethBalanceAfter);
+        uint256 userWethBalanceBefore = WETHErc20.balanceOf(APP_USER_ALICE);
 
-//         // confirm the profit went to the fee contract, and the rest of the tokens went to the user
-//         uint256 userBalance = USDCErc20.balanceOf(APP_USER_ALICE);
-//         uint256 feeContractBalance = USDCErc20.balanceOf(address(aerodromeSwapFeeFacet));
-//         console.log("usdc userBalance", userBalance);
-//         console.log("usdc feeContractBalance", feeContractBalance);
+        // first swap
+        aerodromeSwapFeeFacet.swapExactTokensForTokensOnAerodrome(
+            DEV_APP_ID, swapAmount, expectedOutput, routes, APP_USER_ALICE, block.timestamp + 1 minutes
+        );
+        vm.stopPrank();
+        console.log("swapped USDC to WETH");
+        uint256 userWethBalanceAfter = WETHErc20.balanceOf(APP_USER_ALICE);
+        // assert that they got at least the amountOut
+        assertGt(userWethBalanceAfter - userWethBalanceBefore, expectedOutput);
+        console.log("userWethBalanceAfter", userWethBalanceAfter);
 
-//         // the user swapped all their USDC to WETH, so their balance should be 0
-//         assertEq(userBalance, 0);
+        // confirm the profit went to the fee contract, and the rest of the tokens went to the user
+        uint256 userBalance = USDCErc20.balanceOf(APP_USER_ALICE);
+        uint256 feeContractBalance = USDCErc20.balanceOf(address(aerodromeSwapFeeFacet));
+        console.log("usdc userBalance", userBalance);
+        console.log("usdc feeContractBalance", feeContractBalance);
 
-//         uint256 expectedFee = swapAmount * swapFeePercentage / BASIS_POINT_DIVISOR;
-//         assertEq(feeContractBalance, expectedFee);
+        // the user swapped all their USDC to WETH, so their balance should be 0
+        assertEq(userBalance, 0);
 
-//         // let's do another swap before withdrawing the fee
-//         // mint more USDC to the user
-//         vm.startPrank(USDC_MINTER);
-//         USDCErc20.mint(APP_USER_ALICE, swapAmount);
-//         vm.stopPrank();
-//         console.log("minted USDC to user");
+        uint256 expectedFee = swapAmount * swapFeePercentage / BASIS_POINT_DIVISOR;
+        assertEq(feeContractBalance, expectedFee);
 
-//         // approve the fee contract to spend the USDC
-//         vm.startPrank(APP_USER_ALICE);
-//         USDCErc20.approve(address(aerodromeSwapFeeFacet), swapAmount);
-//         console.log("approved USDC to our fee contract again");
+        // let's do another swap before withdrawing the fee
+        // mint more USDC to the user
+        vm.startPrank(USDC_MINTER);
+        USDCErc20.mint(APP_USER_ALICE, swapAmount);
+        vm.stopPrank();
+        console.log("minted USDC to user");
 
-//         // reduce the expected output by 0.5% for slippage
-//         expectedOutput = (aerodromeRouter.getAmountsOut(swapAmount, routes)[1] * 9950) / 10000;
+        // approve the fee contract to spend the USDC
+        vm.startPrank(APP_USER_ALICE);
+        USDCErc20.approve(address(aerodromeSwapFeeFacet), swapAmount);
+        console.log("approved USDC to our fee contract again");
 
-//         userWethBalanceBefore = WETHErc20.balanceOf(APP_USER_ALICE);
+        // reduce the expected output by 0.5% for slippage
+        expectedOutput = (aerodromeRouter.getAmountsOut(swapAmount, routes)[1] * 9950) / 10000;
 
-//         aerodromeSwapFeeFacet.swapExactTokensForTokensOnAerodrome(
-//             DEV_APP_ID, swapAmount, expectedOutput, routes, APP_USER_ALICE, block.timestamp + 1 minutes
-//         );
-//         vm.stopPrank();
-//         console.log("swapped USDC to WETH again");
-//         userWethBalanceAfter = WETHErc20.balanceOf(APP_USER_ALICE);
-//         // assert that they got at least the amountOut
-//         assertGt(userWethBalanceAfter - userWethBalanceBefore, expectedOutput);
-//         console.log("userWethBalanceAfter", userWethBalanceAfter);
+        userWethBalanceBefore = WETHErc20.balanceOf(APP_USER_ALICE);
 
-//         // confirm the profit went to the fee contract, and the rest of the tokens went to the user
-//         userBalance = USDCErc20.balanceOf(APP_USER_ALICE);
-//         feeContractBalance = USDCErc20.balanceOf(address(aerodromeSwapFeeFacet));
-//         console.log("usdc userBalance", userBalance);
-//         console.log("usdc feeContractBalance", feeContractBalance);
+        aerodromeSwapFeeFacet.swapExactTokensForTokensOnAerodrome(
+            DEV_APP_ID, swapAmount, expectedOutput, routes, APP_USER_ALICE, block.timestamp + 1 minutes
+        );
+        vm.stopPrank();
+        console.log("swapped USDC to WETH again");
+        userWethBalanceAfter = WETHErc20.balanceOf(APP_USER_ALICE);
+        // assert that they got at least the amountOut
+        assertGt(userWethBalanceAfter - userWethBalanceBefore, expectedOutput);
+        console.log("userWethBalanceAfter", userWethBalanceAfter);
 
-//         // the user swapped all their USDC to WETH, so their balance should be 0
-//         assertEq(userBalance, 0);
+        // confirm the profit went to the fee contract, and the rest of the tokens went to the user
+        userBalance = USDCErc20.balanceOf(APP_USER_ALICE);
+        feeContractBalance = USDCErc20.balanceOf(address(aerodromeSwapFeeFacet));
+        console.log("usdc userBalance", userBalance);
+        console.log("usdc feeContractBalance", feeContractBalance);
 
-//         // since we swapped twice, the expected fee should be twice the original
-//         expectedFee = expectedFee * 2;
-//         assertEq(feeContractBalance, expectedFee);
+        // the user swapped all their USDC to WETH, so their balance should be 0
+        assertEq(userBalance, 0);
 
-//         // test that USDC is in the set of tokens that have collected fees for the app
-//         address[] memory tokensWithCollectedFees = feeAdminFacet.tokensWithCollectedFees(DEV_APP_ID);
-//         assertEq(tokensWithCollectedFees.length, 1);
-//         assertEq(tokensWithCollectedFees[0], address(USDCErc20));
+        // since we swapped twice, the expected fee should be twice the original
+        expectedFee = expectedFee * 2;
+        assertEq(feeContractBalance, expectedFee);
 
-//         // test that USDC is in the set of tokens that have collected fees for the foundation
-//         tokensWithCollectedFees = feeAdminFacet.tokensWithCollectedFees(LibFeeStorage.LIT_FOUNDATION_APP_ID);
-//         assertEq(tokensWithCollectedFees.length, 1);
-//         assertEq(tokensWithCollectedFees[0], address(USDCErc20));
+        // test that USDC is in the set of tokens that have collected fees for the app
+        address[] memory tokensWithCollectedFees = feeAdminFacet.tokensWithCollectedFees(DEV_APP_ID);
+        assertEq(tokensWithCollectedFees.length, 1);
+        assertEq(tokensWithCollectedFees[0], address(USDCErc20));
 
-//         // check the collected fees for the foundation
-//         uint256 litCollectedAppFees =
-//             feeViewsFacet.collectedAppFees(LibFeeStorage.LIT_FOUNDATION_APP_ID, address(USDCErc20));
-//         // check the collected fees for the app
-//         uint256 appCollectedAppFees = feeViewsFacet.collectedAppFees(DEV_APP_ID, address(USDCErc20));
-//         assertEq(litCollectedAppFees + appCollectedAppFees, expectedFee);
+        // test that USDC is in the set of tokens that have collected fees for the foundation
+        tokensWithCollectedFees = feeAdminFacet.tokensWithCollectedFees(LibFeeStorage.LIT_FOUNDATION_APP_ID);
+        assertEq(tokensWithCollectedFees.length, 1);
+        assertEq(tokensWithCollectedFees[0], address(USDCErc20));
 
-//         // calculate the split expected for the lit foundation, and for the app
-//         uint256 expectedLitCollectedAppFees =
-//             expectedFee * feeAdminFacet.litAppFeeSplitPercentage() / BASIS_POINT_DIVISOR;
-//         uint256 expectedAppCollectedAppFees = expectedFee - expectedLitCollectedAppFees;
-//         assertEq(litCollectedAppFees, expectedLitCollectedAppFees);
-//         assertEq(appCollectedAppFees, expectedAppCollectedAppFees);
+        // check the collected fees for the foundation
+        uint256 litCollectedAppFees =
+            feeViewsFacet.collectedAppFees(LibFeeStorage.LIT_FOUNDATION_APP_ID, address(USDCErc20));
+        // check the collected fees for the app
+        uint256 appCollectedAppFees = feeViewsFacet.collectedAppFees(DEV_APP_ID, address(USDCErc20));
+        assertEq(litCollectedAppFees + appCollectedAppFees, expectedFee);
 
-//         // test withdrawal of profit from the fee contract as owner
-//         vm.startPrank(owner);
-//         feeAdminFacet.withdrawAppFees(LibFeeStorage.LIT_FOUNDATION_APP_ID, address(USDCErc20));
-//         vm.stopPrank();
+        // calculate the split expected for the lit foundation, and for the app
+        uint256 expectedLitCollectedAppFees =
+            expectedFee * feeAdminFacet.litAppFeeSplitPercentage() / BASIS_POINT_DIVISOR;
+        uint256 expectedAppCollectedAppFees = expectedFee - expectedLitCollectedAppFees;
+        assertEq(litCollectedAppFees, expectedLitCollectedAppFees);
+        assertEq(appCollectedAppFees, expectedAppCollectedAppFees);
 
-//         // confirm the profit went to the owner
-//         assertEq(USDCErc20.balanceOf(owner), expectedLitCollectedAppFees);
+        // test withdrawal of profit from the fee contract as the lit foundation wallet
+        vm.startPrank(litFoundationWallet);
+        feeAdminFacet.withdrawPlatformFees(address(USDCErc20));
+        vm.stopPrank();
 
-//         // confirm that the token is no longer in the set of tokens that have collected fees
-//         tokensWithCollectedFees = feeAdminFacet.tokensWithCollectedFees(LibFeeStorage.LIT_FOUNDATION_APP_ID);
-//         assertEq(tokensWithCollectedFees.length, 0);
+        // confirm the profit went to the lit foundation wallet
+        assertEq(USDCErc20.balanceOf(litFoundationWallet), expectedLitCollectedAppFees);
 
-//         // test withdrawal of profit from the fee contract as app manager
-//         vm.startPrank(APP_MANAGER_BOB);
-//         feeAdminFacet.withdrawAppFees(DEV_APP_ID, address(USDCErc20));
-//         vm.stopPrank();
+        // confirm that the token is no longer in the set of tokens that have collected fees
+        tokensWithCollectedFees = feeAdminFacet.tokensWithCollectedFees(LibFeeStorage.LIT_FOUNDATION_APP_ID);
+        assertEq(tokensWithCollectedFees.length, 0);
 
-//         // confirm the profit went to the app manager
-//         assertEq(USDCErc20.balanceOf(APP_MANAGER_BOB), expectedAppCollectedAppFees);
+        // test withdrawal of profit from the fee contract as app manager
+        FeeUtils.OwnerAttestation memory oa = FeeUtils.OwnerAttestation({
+            srcChainId: LibFeeStorage.CHRONICLE_YELLOWSTONE_CHAIN_ID,
+            srcContract: vincentDiamondAddress,
+            owner: APP_MANAGER_BOB,
+            appId: DEV_APP_ID,
+            issuedAt: block.timestamp,
+            expiresAt: block.timestamp + 5 minutes,
+            dstChainId: block.chainid,
+            dstContract: address(feeDiamond)
+        });
+        bytes memory ownerAttestationSig = _signOwnerAttestation(oa, ownerAttestationSignerPrivateKey);
+        vm.startPrank(APP_MANAGER_BOB);
+        feeAdminFacet.withdrawAppFees(DEV_APP_ID, address(USDCErc20), oa, ownerAttestationSig);
+        vm.stopPrank();
 
-//         // confirm that the token is no longer in the set of tokens that have collected fees
-//         tokensWithCollectedFees = feeAdminFacet.tokensWithCollectedFees(DEV_APP_ID);
-//         assertEq(tokensWithCollectedFees.length, 0);
-//     }
-// }
+        // confirm the profit went to the app manager
+        assertEq(USDCErc20.balanceOf(APP_MANAGER_BOB), expectedAppCollectedAppFees);
+
+        // confirm that the token is no longer in the set of tokens that have collected fees
+        tokensWithCollectedFees = feeAdminFacet.tokensWithCollectedFees(DEV_APP_ID);
+        assertEq(tokensWithCollectedFees.length, 0);
+    }
+}
