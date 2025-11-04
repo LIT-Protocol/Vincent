@@ -6,6 +6,7 @@ import * as Sentry from '@sentry/react';
 
 import { initPkpSigner } from '@/utils/developer-dashboard/initPkpSigner';
 import useReadAuthInfo from '@/hooks/user-dashboard/useAuthInfo';
+import { addPayee } from '@/utils/user-dashboard/addPayee';
 import { AppDetailsView } from '../views/AppDetailsView';
 import { EditAppForm } from '../forms/EditAppForm';
 import { CreateAppVersionForm } from '../forms/CreateAppVersionForm';
@@ -106,6 +107,18 @@ export function AppOverviewWrapper() {
   const handleEditAppSubmit = async (data: EditAppFormData) => {
     setIsSubmitting(true);
     try {
+      // identify NEW delegatee addresses that weren't in the original app
+      const originalDelegateeAddresses = app?.delegateeAddresses || [];
+      const newDelegateeAddresses = (data.delegateeAddresses || []).filter(
+        (address) => !originalDelegateeAddresses.includes(address),
+      );
+
+      await Promise.all(
+        newDelegateeAddresses.map(async (address) => {
+          await addPayee(address);
+        }),
+      );
+
       await editApp({
         appId: Number(appId),
         appEdit: data,
