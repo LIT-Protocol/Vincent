@@ -44,6 +44,8 @@ library LibFeeStorage {
         uint256 litAppFeeSplitPercentage;
         // The address of a lit action derived wallet that will do a cross-chain read of the owner
         address ownerAttestationSigner;
+        // The address of the lit foundation that will receive the fees
+        address litFoundationWallet;
     }
 
     function getStorage() internal pure returns (FeeStorage storage as_) {
