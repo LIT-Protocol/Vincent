@@ -20,17 +20,6 @@ contract FeeAdminFacet is FeeCommon {
     using ECDSA for bytes32;
     using MessageHashUtils for bytes32;
 
-    struct OwnerAttestation {
-        uint256 srcChainId;        // typically Chronicle chain Id
-        address srcContract;       // typically the VincentAppDiamond contract
-        address owner;             // owner address from the L3
-        uint256 appId;             // the Vincent appId that this user is an owner of
-        uint256 issuedAt;          // unix time from Lit Action
-        uint256 expiresAt;            // issuedAt + 5 minutes
-        uint256 dstChainId;        // destination chain id to prevent cross-chain replay
-        address dstContract;       // destination chain verifier contract, to prevent cross-contract replay
-    }
-
 
     /* ========== ERRORS ========== */
     error CallerNotAppManager(uint40 appId, address caller, address recoveredSigner);
@@ -52,6 +41,7 @@ contract FeeAdminFacet is FeeCommon {
     event LitAppFeeSplitPercentageSet(uint256 newLitAppFeeSplitPercentage);
     event OwnerAttestationSignerSet(address newOwnerAttestationSigner);
     event LitFoundationWalletSet(address newLitFoundationWallet);
+    event VincentAppDiamondOnYellowstoneSet(address newVincentAppDiamondOnYellowstone);
 
 
 
@@ -63,7 +53,7 @@ contract FeeAdminFacet is FeeCommon {
         _;
     }
 
-    modifier onlyAppManager(uint40 appId, OwnerAttestation calldata oa, bytes calldata sig) {
+    modifier onlyAppManager(uint40 appId, FeeUtils.OwnerAttestation calldata oa, bytes calldata sig) {
         // app id 0 is the lit foundation
         if (appId == 0) {
             revert FeeUtils.ZeroAppId();
@@ -82,7 +72,7 @@ contract FeeAdminFacet is FeeCommon {
 
     /* ========== VIEWS ========== */
 
-    function verifyOwnerAttestation(uint40 appId, OwnerAttestation calldata oa, bytes calldata sig) public {
+    function verifyOwnerAttestation(uint40 appId, FeeUtils.OwnerAttestation calldata oa, bytes calldata sig) view public {
         // verify the signature
         bytes32 messageHash = keccak256(abi.encodePacked(
             oa.srcChainId,
@@ -207,6 +197,14 @@ contract FeeAdminFacet is FeeCommon {
         return LibFeeStorage.getStorage().litAppFeeSplitPercentage;
     }
 
+    /**
+     * @notice Gets the vincent app diamond contract address on chronicle yellowstone
+     * @return the vincent app diamond contract address on chronicle yellowstone
+     */
+    function vincentAppDiamondOnYellowstone() external view returns (address) {
+        return LibFeeStorage.getStorage().vincentAppDiamondOnYellowstone;
+    }
+
     /* ========== MUTATIVE FUNCTIONS ========== */
 
     /**
@@ -235,16 +233,16 @@ contract FeeAdminFacet is FeeCommon {
      * @param tokenAddress the address of the token to withdraw
      * @dev this can only be called by the app manager
      */
-    function withdrawAppFees(uint40 appId, address tokenAddress, OwnerAttestation calldata ownerAttestation, bytes calldata ownerAttestationSig) external onlyAppManager(appId, ownerAttestation, ownerAttestationSig) nonZeroAppId(appId) {
+    function withdrawAppFees(uint40 appId, address tokenAddress, FeeUtils.OwnerAttestation calldata ownerAttestation, bytes calldata ownerAttestationSig) external onlyAppManager(appId, ownerAttestation, ownerAttestationSig) nonZeroAppId(appId) {
         _withdrawCollectedFees(appId, tokenAddress);
     }
 
     /**
      * @notice Withdraws the collected fees for the Lit Foundation.  Only callable by the owner.
      * @param tokenAddress the address of the token to withdraw the fees for
-     * @dev this can only be called by the owner
+     * @dev this can only be called by the lit foundation wallet
      */
-    function withdrawPlatformFees(address tokenAddress, OwnerAttestation calldata ownerAttestation, bytes calldata ownerAttestationSig) external onlyLitFoundationWallet {
+    function withdrawPlatformFees(address tokenAddress) external onlyLitFoundationWallet {
         _withdrawCollectedFees(LibFeeStorage.LIT_FOUNDATION_APP_ID, tokenAddress);
     }
 
@@ -302,6 +300,16 @@ contract FeeAdminFacet is FeeCommon {
     function setLitAppFeeSplitPercentage(uint256 newLitAppFeeSplitPercentage) external onlyOwner {
         LibFeeStorage.getStorage().litAppFeeSplitPercentage = newLitAppFeeSplitPercentage;
         emit LitAppFeeSplitPercentageSet(newLitAppFeeSplitPercentage);
+    }
+
+    /**
+     * @notice Sets the vincent app diamond contract address on chronicle yellowstone
+     * @param newVincentAppDiamondOnYellowstone the new vincent app diamond contract address on chronicle yellowstone
+     * @dev this can only be called by the owner
+     */
+    function setVincentAppDiamondOnYellowstone(address newVincentAppDiamondOnYellowstone) external onlyOwner {
+        LibFeeStorage.getStorage().vincentAppDiamondOnYellowstone = newVincentAppDiamondOnYellowstone;
+        emit VincentAppDiamondOnYellowstoneSet(newVincentAppDiamondOnYellowstone);
     }
 
     /**

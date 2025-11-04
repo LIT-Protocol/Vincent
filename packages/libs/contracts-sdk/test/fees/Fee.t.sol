@@ -13,13 +13,16 @@ import {MorphoPerfFeeFacet} from "../../contracts/fees/facets/MorphoPerfFeeFacet
 import {LibFeeStorage} from "../../contracts/fees/LibFeeStorage.sol";
 import {FeeUtils} from "../../contracts/fees/FeeUtils.sol";
 import {OwnershipFacet} from "../../contracts/diamond-base/facets/OwnershipFacet.sol";
+import {FeeTestCommon} from "./FeeTestCommon.sol";
 
 import {MockERC4626} from "../mocks/MockERC4626.sol";
 import {MockERC20} from "../mocks/MockERC20.sol";
 
-contract FeeTest is Test {
+contract FeeTest is FeeTestCommon {
     address owner;
     address APP_USER_ALICE = makeAddr("Alice");
+    // mock address for the vincent app diamond on chronicle yellowstone
+    address VINCENT_APP_DIAMOND_ON_YELLOWSTONE = makeAddr("VincentAppDiamondOnYellowstone");
 
     Fee public feeDiamond;
     FeeViewsFacet public feeViewsFacet;
@@ -29,6 +32,9 @@ contract FeeTest is Test {
 
     MockERC20 public mockERC20;
     MockERC4626 public mockERC4626;
+
+    address ownerAttestationSigner;
+    uint256 ownerAttestationSignerPrivateKey; 
 
     function setUp() public {
         uint256 deployerPrivateKey = 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80;
@@ -163,5 +169,85 @@ contract FeeTest is Test {
         feeAdminFacet.setOwnerAttestationSigner(NEW_ATTESTATION_SIGNER_ADDRESS);
         vm.stopPrank();
         assertEq(feeAdminFacet.ownerAttestationSigner(), NEW_ATTESTATION_SIGNER_ADDRESS);
+    }
+
+    function testSetLitFoundationWallet() public {
+        address NEW_LIT_FOUNDATION_WALLET = makeAddr("LitFoundationWallet");
+        assertNotEq(feeAdminFacet.litFoundationWallet(), NEW_LIT_FOUNDATION_WALLET);
+
+        // test that a non-owner cannot set the lit foundation wallet
+        vm.expectRevert(FeeUtils.CallerNotOwner.selector);
+        feeAdminFacet.setLitFoundationWallet(NEW_LIT_FOUNDATION_WALLET);
+        
+        // test that the owner can set the lit foundation wallet
+        vm.startPrank(owner);
+        feeAdminFacet.setLitFoundationWallet(NEW_LIT_FOUNDATION_WALLET);
+        vm.stopPrank();
+        assertEq(feeAdminFacet.litFoundationWallet(), NEW_LIT_FOUNDATION_WALLET);
+    }
+
+    function testSetVincentAppDiamondOnYellowstone() public {
+        assertNotEq(feeAdminFacet.vincentAppDiamondOnYellowstone(), VINCENT_APP_DIAMOND_ON_YELLOWSTONE);
+
+        // test that a non-owner cannot set the vincent app diamond on chronicle yellowstone
+        vm.expectRevert(FeeUtils.CallerNotOwner.selector);
+        feeAdminFacet.setVincentAppDiamondOnYellowstone(VINCENT_APP_DIAMOND_ON_YELLOWSTONE);
+
+        // test that the owner can set the vincent app diamond on chronicle yellowstone
+        vm.startPrank(owner);
+        feeAdminFacet.setVincentAppDiamondOnYellowstone(VINCENT_APP_DIAMOND_ON_YELLOWSTONE);
+        vm.stopPrank();
+        assertEq(feeAdminFacet.vincentAppDiamondOnYellowstone(), VINCENT_APP_DIAMOND_ON_YELLOWSTONE);
+        
+    }
+
+    function testOwnerAttestationSignerUtils() public {
+        vm.startPrank(owner);
+        // set the owner attestation signer in the fee diamond
+        (ownerAttestationSigner, ownerAttestationSignerPrivateKey) = makeAddrAndKey("OwnerAttestationSigner");
+        feeAdminFacet.setOwnerAttestationSigner(ownerAttestationSigner);
+        feeAdminFacet.setVincentAppDiamondOnYellowstone(VINCENT_APP_DIAMOND_ON_YELLOWSTONE);
+        vm.stopPrank();
+
+        uint40 appId = 12345;
+
+        FeeUtils.OwnerAttestation memory oa = FeeUtils.OwnerAttestation({
+            srcChainId: LibFeeStorage.CHRONICLE_YELLOWSTONE_CHAIN_ID,
+            srcContract: VINCENT_APP_DIAMOND_ON_YELLOWSTONE,
+            owner: APP_USER_ALICE,
+            appId: appId,
+            issuedAt: block.timestamp,
+            expiresAt: block.timestamp + 5 minutes,
+            dstChainId: block.chainid,
+            dstContract: address(feeDiamond)
+        });
+
+        // sign the owner attestation using our test utils.  This would be done by a lit action in the real world.
+        bytes memory signature = _signOwnerAttestation(oa, ownerAttestationSignerPrivateKey);
+
+        console.log("signature");
+        console.logBytes(signature);
+
+        address incorrectAppManager = makeAddr("IncorrectAppManager");
+
+        bytes memory expectedRevertData = abi.encodeWithSelector(
+            FeeAdminFacet.CallerNotAppManager.selector,
+            appId,
+            APP_USER_ALICE,
+            incorrectAppManager
+        );
+
+        vm.startPrank(incorrectAppManager);
+        // check the signature without pranking / without the correct app manager
+        vm.expectRevert(expectedRevertData);
+        feeAdminFacet.verifyOwnerAttestation(appId, oa, signature);
+        vm.stopPrank();
+
+        console.log("reverted successfully, as expected");
+
+        // test that the app manager can verify the owner attestation
+        vm.startPrank(APP_USER_ALICE);
+        feeAdminFacet.verifyOwnerAttestation(appId, oa, signature);
+        vm.stopPrank();
     }
 }

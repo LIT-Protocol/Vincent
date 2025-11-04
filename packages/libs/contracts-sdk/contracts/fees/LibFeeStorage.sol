@@ -12,6 +12,9 @@ library LibFeeStorage {
     // app id 0 is the lit foundation
     uint40 internal constant LIT_FOUNDATION_APP_ID = 0;
 
+    // chronicle yellowstone chain id
+    uint256 internal constant CHRONICLE_YELLOWSTONE_CHAIN_ID = 175188;
+
     struct Deposit {
         uint256 assetAmount; // the amount of assets deposited
         uint256 vaultShares; // the amount of vault shares received - not relevant for Aave because it's rebasing
@@ -46,6 +49,9 @@ library LibFeeStorage {
         address ownerAttestationSigner;
         // The address of the lit foundation that will receive the fees
         address litFoundationWallet;
+        // the address of the vincent app diamond contract on chronicle yellowstone
+        address vincentAppDiamondOnYellowstone;
+
     }
 
     function getStorage() internal pure returns (FeeStorage storage as_) {

@@ -8,10 +8,15 @@ import {VincentAppFacet} from "../../contracts/facets/VincentAppFacet.sol";
 import {TestCommon} from "../TestCommon.sol";
 import {DeployVincentDiamond} from "../../script/DeployVincentDiamond.sol";
 import {DeployFeeDiamond} from "../../script/DeployFeeDiamond.sol";
-
 import {MockPKPNftFacet} from "../mocks/MockPKPNftFacet.sol";
+import {FeeUtils} from "../../contracts/fees/FeeUtils.sol";
+import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 
 contract FeeTestCommon is TestCommon {
+    using ECDSA for bytes32;
+    using MessageHashUtils for bytes32;
+
     function _deployFeeDiamond() public returns (address) {
         DeployFeeDiamond deployScript = new DeployFeeDiamond();
         address diamondAddress = deployScript.deployToNetwork("test", keccak256("testSalt"));
@@ -38,5 +43,20 @@ contract FeeTestCommon is TestCommon {
         vm.stopPrank();
 
         return diamondAddress;
+    }
+
+    function _signOwnerAttestation(FeeUtils.OwnerAttestation memory oa, uint256 ownerAttestationSignerPrivateKey) pure public returns (bytes memory) {
+        bytes32 message = keccak256(abi.encodePacked(
+            oa.srcChainId,
+            oa.srcContract,
+            oa.owner,
+            oa.appId,
+            oa.issuedAt,
+            oa.expiresAt,
+            oa.dstChainId, oa.dstContract));
+        bytes32 messageHash = message.toEthSignedMessageHash();
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(ownerAttestationSignerPrivateKey, messageHash);
+        bytes memory signature = abi.encodePacked(r, s, v); // note the order here is different from line above.
+        return signature;
     }
 }
