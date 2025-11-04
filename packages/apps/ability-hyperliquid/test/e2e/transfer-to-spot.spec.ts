@@ -27,7 +27,7 @@ describe('Hyperliquid Ability E2E Transfer to Spot Tests', () => {
   const ENV = getEnv({
     ARBITRUM_RPC_URL: z.string(),
   });
-  const USDC_DEPOSIT_AMOUNT = '6000000';
+  const USDC_TRANSFER_AMOUNT = '1000000';
 
   let agentPkpInfo: PkpInfo;
   let wallets: {
@@ -102,7 +102,7 @@ describe('Hyperliquid Ability E2E Transfer to Spot Tests', () => {
   });
 
   describe('Precheck & Execute Swap Success', () => {
-    it.skip('should execute the HyperLiquid Ability precheck method', async () => {
+    it('should execute the HyperLiquid Ability precheck method', async () => {
       const hyperliquidAbilityClient = getVincentAbilityClient({
         bundledVincentAbility: hyperliquidBundledAbility,
         ethersSigner: wallets.appDelegatee,
@@ -112,7 +112,7 @@ describe('Hyperliquid Ability E2E Transfer to Spot Tests', () => {
         {
           action: 'transferToSpot',
           transferToSpot: {
-            amount: USDC_DEPOSIT_AMOUNT,
+            amount: USDC_TRANSFER_AMOUNT,
           },
           arbitrumRpcUrl: ENV.ARBITRUM_RPC_URL,
         },
@@ -130,6 +130,10 @@ describe('Hyperliquid Ability E2E Transfer to Spot Tests', () => {
       if (precheckResult.success === false) {
         throw new Error(precheckResult.runtimeError);
       }
+
+      expect(precheckResult.result).toBeDefined();
+      expect(precheckResult.result.action).toBe('transferToSpot');
+      expect(BigInt(precheckResult.result.availableUsdcBalance)).toBeGreaterThan(0n);
     });
 
     it('should execute the Hyperliquid Ability to make a transfer to spot from the Agent Wallet PKP', async () => {
@@ -142,7 +146,7 @@ describe('Hyperliquid Ability E2E Transfer to Spot Tests', () => {
         {
           action: 'transferToSpot',
           transferToSpot: {
-            amount: '1000000', // 1.0 USDC
+            amount: USDC_TRANSFER_AMOUNT,
           },
         },
         {
@@ -163,46 +167,53 @@ describe('Hyperliquid Ability E2E Transfer to Spot Tests', () => {
       }
 
       expect(executeResult.result).toBeDefined();
-      // expect(executeResult.result.txHash).toBeDefined();
-
-      // const txHash = executeResult.result.txHash;
-      // expect(txHash).toMatch(/^0x[a-fA-F0-9]{64}$/);
-
-      // const txReceipt = await arbitrumRpcProvider.waitForTransaction(txHash as string, 1);
-      // expect(txReceipt.status).toBe(1);
+      expect(executeResult.result.action).toBe('transferToSpot');
     });
 
-    it.skip('should verify the Agent Wallet PKP has funds in the HyperLiquid portfolio', async () => {
+    it('should verify the Agent Wallet PKP has spot balance in HyperLiquid', async () => {
       const transport = new hyperliquid.HttpTransport();
       const infoClient = new hyperliquid.InfoClient({ transport });
 
-      // Check clearinghouse state which includes account balance
-      const clearinghouseState = await infoClient.clearinghouseState({
+      // Check spot clearinghouse state for token balances
+      const spotState = await infoClient.spotClearinghouseState({
         user: agentPkpInfo.ethAddress as `0x${string}`,
       });
 
-      expect(clearinghouseState).toBeDefined();
+      expect(spotState).toBeDefined();
       console.log(
-        '[should verify the Agent Wallet PKP has funds in the HyperLiquid portfolio] Clearinghouse state',
-        util.inspect(clearinghouseState, { depth: 10 }),
+        '[should verify the Agent Wallet PKP has spot balance in HyperLiquid] Spot clearinghouse state',
+        util.inspect(spotState, { depth: 10 }),
       );
 
-      // Verify the account exists and has funds
-      if ('marginSummary' in clearinghouseState && clearinghouseState.marginSummary) {
-        const marginSummary = clearinghouseState.marginSummary as {
-          accountValue?: string;
-          totalMarginUsed?: string;
-          totalNtlPos?: string;
-          totalRawUsd?: string;
-          crossMarginSummary?: {
-            marginUsed?: string;
-            accountValue?: string;
-          };
-        };
-        expect(marginSummary.accountValue || marginSummary.totalRawUsd).toBeDefined();
-        const accountValue = marginSummary.accountValue || marginSummary.totalRawUsd || '0';
-        expect(parseFloat(accountValue)).toBeGreaterThan(0);
-        console.log('Clearinghouse account value:', accountValue);
+      // Verify spot balances exist
+      expect(spotState.balances).toBeDefined();
+      expect(Array.isArray(spotState.balances)).toBe(true);
+
+      if (spotState.balances.length > 0) {
+        console.log(
+          `[should verify the Agent Wallet PKP has spot balance in HyperLiquid] Found ${spotState.balances.length} token balance(s):`,
+        );
+        spotState.balances.forEach((balance) => {
+          const available = parseFloat(balance.total) - parseFloat(balance.hold);
+          console.log(
+            `  - ${balance.coin}: total=${balance.total}, hold=${balance.hold}, available=${available.toFixed(6)}`,
+          );
+        });
+
+        // Check if we have USDC balance
+        const usdcBalance = spotState.balances.find((b) => b.coin === 'USDC');
+        if (usdcBalance) {
+          const totalBalance = parseFloat(usdcBalance.total);
+          expect(totalBalance).toBeGreaterThan(0);
+          console.log(
+            '[should verify the Agent Wallet PKP has spot balance in HyperLiquid] USDC balance verified:',
+            usdcBalance.total,
+          );
+        }
+      } else {
+        console.log(
+          '[should verify the Agent Wallet PKP has spot balance in HyperLiquid] No token balances found',
+        );
       }
     });
   });

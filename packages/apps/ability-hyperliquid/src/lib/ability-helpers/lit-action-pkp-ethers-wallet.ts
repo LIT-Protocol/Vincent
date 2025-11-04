@@ -1,81 +1,5 @@
+import { AbstractEthersV5Signer } from '@nktkas/hyperliquid/signing';
 import { ethers } from 'ethers';
-
-/**
- * Normalize signature component (r or s) from Lit's signAndCombineEcdsa response
- * Lit returns signature components in DER encoding which may have a prefix byte
- */
-function normalizeSignatureComponent(component: unknown): string {
-  if (typeof component !== 'string') {
-    throw new Error(`Invalid signature component type: expected string, got ${typeof component}`);
-  }
-
-  // Remove any 0x prefix
-  let cleaned = component.replace(/^0x/i, '');
-
-  // If 66 chars, strip the first 2 chars (DER encoding prefix byte)
-  if (cleaned.length === 66) {
-    cleaned = cleaned.substring(2);
-  } else if (cleaned.length !== 64) {
-    throw new Error(
-      `Invalid signature component length: expected 64 or 66 hex chars, got ${cleaned.length}`,
-    );
-  }
-
-  return '0x' + cleaned;
-}
-
-/**
- * Normalize typed data value to ensure deterministic serialization
- */
-function normalizeTypedDataValue(
-  value: Record<string, unknown>,
-  types: { [key: string]: { name: string; type: string }[] },
-): Record<string, unknown> {
-  const normalized: Record<string, unknown> = {};
-  const primaryType = Object.keys(types)[0];
-
-  if (!primaryType || !types[primaryType]) {
-    return value;
-  }
-
-  // Build normalized object in type definition order
-  const fieldOrder = types[primaryType].map((f) => f.name);
-
-  for (const fieldName of fieldOrder) {
-    if (fieldName in value) {
-      const fieldValue = value[fieldName];
-
-      // Recursively normalize nested objects
-      if (
-        typeof fieldValue === 'object' &&
-        fieldValue !== null &&
-        !Array.isArray(fieldValue) &&
-        !(fieldValue instanceof Uint8Array)
-      ) {
-        const fieldType = types[primaryType].find((f) => f.name === fieldName)?.type;
-        if (fieldType && types[fieldType]) {
-          normalized[fieldName] = normalizeTypedDataValue(
-            fieldValue as Record<string, unknown>,
-            types,
-          );
-        } else {
-          normalized[fieldName] = fieldValue;
-        }
-      } else {
-        normalized[fieldName] = fieldValue;
-      }
-    }
-  }
-
-  // Include any additional fields not in type definition
-  for (const key of Object.keys(value)) {
-    if (!(key in normalized)) {
-      normalized[key] = value[key];
-    }
-  }
-
-  return normalized;
-}
 
 /**
  * LitActionPkpEthersWallet - An ethers-compatible wallet implementation for use within Lit Actions
@@ -113,7 +37,7 @@ function normalizeTypedDataValue(
  * const signedTx = await wallet.signTransaction(transaction);
  * ```
  */
-export class LitActionPkpEthersWallet {
+export class LitActionPkpEthersWallet implements AbstractEthersV5Signer {
   private readonly pkpPublicKey: string;
   private readonly sigName: string;
   public readonly address: string;
@@ -136,19 +60,9 @@ export class LitActionPkpEthersWallet {
    * Sign a message using EIP-191 personal_sign format
    */
   async signMessage(message: string | Uint8Array): Promise<string> {
-    // Convert message to bytes
-    const messageBytes =
-      typeof message === 'string'
-        ? message.startsWith('0x')
-          ? ethers.utils.arrayify(message)
-          : ethers.utils.toUtf8Bytes(message)
-        : message;
-
-    // ECDSA requires 32-byte input - hash if needed
-    const toSign =
-      messageBytes.length === 32
-        ? messageBytes
-        : ethers.utils.arrayify(ethers.utils.keccak256(messageBytes));
+    // Use ethers' hashMessage which handles EIP-191 formatting
+    const messageHash = ethers.utils.hashMessage(message);
+    const toSign = ethers.utils.arrayify(messageHash);
 
     const signatureResponse = await Lit.Actions.signAndCombineEcdsa({
       toSign,
@@ -246,4 +160,80 @@ export class LitActionPkpEthersWallet {
       v: parsedSig.v,
     });
   }
+}
+
+/**
+ * Normalize signature component (r or s) from Lit's signAndCombineEcdsa response
+ * Lit returns signature components in DER encoding which may have a prefix byte
+ */
+function normalizeSignatureComponent(component: unknown): string {
+  if (typeof component !== 'string') {
+    throw new Error(`Invalid signature component type: expected string, got ${typeof component}`);
+  }
+
+  // Ensure hex string has 0x prefix for ethers utilities
+  const hex = component.startsWith('0x') ? component : '0x' + component;
+  const length = ethers.utils.hexDataLength(hex);
+
+  // DER encoding has prefix byte, strip it
+  if (length === 33) {
+    return ethers.utils.hexDataSlice(hex, 1);
+  } else if (length === 32) {
+    return hex;
+  } else {
+    throw new Error(`Invalid signature component length: expected 32 or 33 bytes, got ${length}`);
+  }
+}
+
+/**
+ * Normalize typed data value to ensure deterministic serialization
+ */
+function normalizeTypedDataValue(
+  value: Record<string, unknown>,
+  types: { [key: string]: { name: string; type: string }[] },
+): Record<string, unknown> {
+  const normalized: Record<string, unknown> = {};
+  const primaryType = Object.keys(types)[0];
+
+  if (!primaryType || !types[primaryType]) {
+    return value;
+  }
+
+  // Build normalized object in type definition order
+  const fieldOrder = types[primaryType].map((f) => f.name);
+
+  for (const fieldName of fieldOrder) {
+    if (fieldName in value) {
+      const fieldValue = value[fieldName];
+
+      // Recursively normalize nested objects
+      if (
+        typeof fieldValue === 'object' &&
+        fieldValue !== null &&
+        !Array.isArray(fieldValue) &&
+        !(fieldValue instanceof Uint8Array)
+      ) {
+        const fieldType = types[primaryType].find((f) => f.name === fieldName)?.type;
+        if (fieldType && types[fieldType]) {
+          normalized[fieldName] = normalizeTypedDataValue(
+            fieldValue as Record<string, unknown>,
+            types,
+          );
+        } else {
+          normalized[fieldName] = fieldValue;
+        }
+      } else {
+        normalized[fieldName] = fieldValue;
+      }
+    }
+  }
+
+  // Include any additional fields not in type definition
+  for (const key of Object.keys(value)) {
+    if (!(key in normalized)) {
+      normalized[key] = value[key];
+    }
+  }
+
+  return normalized;
 }
