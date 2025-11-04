@@ -11,21 +11,29 @@ import { bigIntReplacer } from '@lit-protocol/vincent-ability-sdk';
 import { LitActionPkpEthersWallet } from './lit-action-pkp-ethers-wallet';
 
 /**
- * Transfer deposited funds to spot trading account on Hyperliquid
+ * Transfer funds between spot and perpetuals accounts on Hyperliquid
  */
-export async function transferToSpot({
+export async function transferUsdcTo({
   transport,
   pkpPublicKey,
   amount,
+  to,
 }: {
   transport: hyperliquid.HttpTransport;
   pkpPublicKey: string;
   amount: string;
+  to: 'spot' | 'perp';
 }) {
+  if (to !== 'spot' && to !== 'perp') {
+    throw new Error(
+      '[transferUsdcTo] Invalid transfer destination. Must be either "spot" or "perp".',
+    );
+  }
+
   // Generate deterministic nonce in runOnce
   // This ensures all nodes use the same nonce and produce the same hash
   const nonceResponse = await Lit.Actions.runOnce(
-    { waitForResponse: true, name: 'HyperLiquidTransferToSpotNonce' },
+    { waitForResponse: true, name: 'HyperLiquidTransferNonce' },
     async () => {
       return Date.now().toString();
     },
@@ -34,17 +42,15 @@ export async function transferToSpot({
 
   const transferAction = parser(UsdClassTransferRequest.entries.action)({
     type: 'usdClassTransfer',
-    // Convert amount from raw units (e.g., "6000000" for 6.0 USDC) to formatted string (e.g., "6.0")
+    // Convert amount from raw units (e.g., "1000000" for 1.0 USDC) to formatted string (e.g., "1.0")
     // Hyperliquid expects the amount as a string in human-readable format
     amount: ethers.utils.formatUnits(amount, 6),
     signatureChainId: '0xa4b1', // Arbitrum mainnet chain ID: 42161
     hyperliquidChain: 'Mainnet',
-    // false means transfer to spot, true means transfer to perp
-    toPerp: false,
+    toPerp: to === 'perp',
     nonce,
   });
 
-  // Sign using user-signed action (NOT L1 action!)
   // UsdClassTransfer is a user-signed action that uses EIP-712 typed data
   const pkpEthersWallet = new LitActionPkpEthersWallet(pkpPublicKey);
   const signature = await signUserSignedAction({
@@ -54,7 +60,7 @@ export async function transferToSpot({
   });
 
   const transferResult = await Lit.Actions.runOnce(
-    { waitForResponse: true, name: 'HyperLiquidTransferToSpotRequest' },
+    { waitForResponse: true, name: 'HyperLiquidTransferRequest' },
     async () => {
       return JSON.stringify(
         {

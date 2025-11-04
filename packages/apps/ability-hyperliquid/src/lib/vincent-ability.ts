@@ -2,6 +2,7 @@ import {
   createVincentAbility,
   ERC20_ABI,
   supportedPoliciesForAbility,
+  bigintReplacer,
 } from '@lit-protocol/vincent-ability-sdk';
 import { ethers } from 'ethers';
 import * as hyperliquid from '@nktkas/hyperliquid';
@@ -14,12 +15,8 @@ import {
   precheckSuccessSchema,
   abilityParamsSchema,
 } from './schemas';
-import { sendDepositTx, transferToSpot } from './ability-helpers';
+import { sendDepositTx, transferUsdcTo } from './ability-helpers';
 import { depositPrechecks } from './ability-checks';
-
-export const bigintReplacer = (key: string, value: unknown) => {
-  return typeof value === 'bigint' ? value.toString() : value;
-};
 
 export const vincentAbility = createVincentAbility({
   packageName: '@lit-protocol/vincent-ability-hyperliquid' as const,
@@ -104,11 +101,11 @@ export const vincentAbility = createVincentAbility({
           });
         }
 
-        if (!abilityParams.transferToSpot) {
+        if (!abilityParams.transfer) {
           return fail({ action, reason: 'Transfer to spot parameters are required for precheck' });
         }
 
-        // Check if account has sufficient funds
+        // Check if account has sufficient funds in perp account
         try {
           const clearinghouseState = await infoClient.clearinghouseState({
             user: delegatorPkpInfo.ethAddress,
@@ -119,10 +116,10 @@ export const vincentAbility = createVincentAbility({
             6, // USDC has 6 decimals
           );
 
-          if (availableUsdcBalance.lt(ethers.BigNumber.from(abilityParams.transferToSpot.amount))) {
+          if (availableUsdcBalance.lt(ethers.BigNumber.from(abilityParams.transfer.amount))) {
             return fail({
               action,
-              reason: `Insufficient balance. Available: ${availableUsdcBalance} USDC, Requested: ${abilityParams.transferToSpot.amount} USDC`,
+              reason: `Insufficient perp balance. Available: ${availableUsdcBalance} USDC, Requested: ${abilityParams.transfer.amount} USDC`,
               availableUsdcBalance: availableUsdcBalance.toString(),
             });
           }
@@ -133,7 +130,59 @@ export const vincentAbility = createVincentAbility({
           });
         } catch (error) {
           const errorMessage = error instanceof Error ? error.message : String(error);
-          return fail({ action, reason: `Error checking balance: ${errorMessage}` });
+          return fail({ action, reason: `Error checking perp balance: ${errorMessage}` });
+        }
+      }
+
+      case 'transferToPerp': {
+        if (!hyperLiquidAccountAlreadyExists) {
+          return fail({
+            action,
+            reason: 'Hyperliquid account does not exist. Please deposit first.',
+          });
+        }
+
+        if (!abilityParams.transfer) {
+          return fail({ action, reason: 'Transfer to perp parameters are required for precheck' });
+        }
+
+        // Check if account has sufficient funds in spot account
+        try {
+          const spotState = await infoClient.spotClearinghouseState({
+            user: delegatorPkpInfo.ethAddress,
+          });
+
+          // Find USDC balance in spot account
+          const usdcBalance = spotState.balances.find((b) => b.coin === 'USDC');
+
+          if (!usdcBalance) {
+            return fail({
+              action,
+              reason: 'No USDC balance found in spot account',
+              availableUsdcBalance: '0',
+            });
+          }
+
+          const availableUsdcBalance = ethers.utils.parseUnits(
+            usdcBalance.total,
+            6, // USDC has 6 decimals
+          );
+
+          if (availableUsdcBalance.lt(ethers.BigNumber.from(abilityParams.transfer.amount))) {
+            return fail({
+              action,
+              reason: `Insufficient spot balance. Available: ${availableUsdcBalance} USDC, Requested: ${abilityParams.transfer.amount} USDC`,
+              availableUsdcBalance: availableUsdcBalance.toString(),
+            });
+          }
+
+          return succeed({
+            action,
+            availableUsdcBalance: availableUsdcBalance.toString(),
+          });
+        } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          return fail({ action, reason: `Error checking spot balance: ${errorMessage}` });
         }
       }
     }
@@ -185,15 +234,21 @@ export const vincentAbility = createVincentAbility({
           });
         }
 
-        case 'transferToSpot': {
-          if (!abilityParams.transferToSpot) {
-            return fail({ action, reason: 'Transfer to spot parameters are required' });
+        case 'transferToSpot':
+        case 'transferToPerp': {
+          if (!abilityParams.transfer) {
+            return fail({
+              action,
+              reason:
+                'Transfer to parameters are required for transferToSpot/transferToPerp action',
+            });
           }
 
-          const result = await transferToSpot({
+          const result = await transferUsdcTo({
             transport,
             pkpPublicKey: delegatorPkpInfo.publicKey,
-            amount: abilityParams.transferToSpot.amount,
+            amount: abilityParams.transfer.amount,
+            to: action === 'transferToSpot' ? 'spot' : 'perp',
           });
 
           if (result.transferResult.status === 'err') {

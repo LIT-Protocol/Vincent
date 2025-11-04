@@ -3,6 +3,7 @@ import { z } from 'zod';
 export const actionTypeSchema = z.enum([
   'deposit',
   'transferToSpot',
+  'transferToPerp',
   'spotBuy',
   'spotSell',
   'perpLong',
@@ -13,8 +14,12 @@ export const depositParamsSchema = z.object({
   amount: z.string().describe('Amount of USDC to deposit (minimum 6 USDC: 5 USDC + 1 USDC fee)'),
 });
 
-export const transferToSpotParamsSchema = z.object({
-  amount: z.string().describe('Amount of USDC to transfer to spot (e.g., "100.0")'),
+export const transferParamsSchema = z.object({
+  amount: z
+    .string()
+    .describe(
+      'Amount of USDC to transfer to spot or perp in smallest USDC units (e.g. "1000000" for 1.0 USDC)',
+    ),
 });
 
 export const spotTradeParamsSchema = z.object({
@@ -38,10 +43,12 @@ export const abilityParamsSchema = z
     deposit: depositParamsSchema
       .optional()
       .describe('Deposit parameters (required for deposit action)'),
-    // Transfer to spot params
-    transferToSpot: transferToSpotParamsSchema
+    // Transfer to spot or perps params
+    transfer: transferParamsSchema
       .optional()
-      .describe('Transfer to spot parameters (required for transferToSpot action)'),
+      .describe(
+        'Transfer to spot or perp parameters (required for transferToSpot/transferToPerp action)',
+      ),
     // Spot trading params
     spot: spotTradeParamsSchema
       .optional()
@@ -56,7 +63,8 @@ export const abilityParamsSchema = z
   .refine(
     (data) => {
       if (data.action === 'deposit') return !!data.deposit;
-      if (data.action === 'transferToSpot') return !!data.transferToSpot;
+      if (data.action === 'transferToSpot' || data.action === 'transferToPerp')
+        return !!data.transfer;
       if (data.action === 'spotBuy' || data.action === 'spotSell') return !!data.spot;
       if (data.action === 'perpLong' || data.action === 'perpShort') return !!data.perp;
       return false;
