@@ -4,6 +4,7 @@ import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-
 import { CreateAppForm, type CreateAppFormData } from '../forms/CreateAppForm';
 import { navigateWithDelay } from '@/utils/developer-dashboard/app-forms';
 import { Breadcrumb } from '@/components/shared/ui/Breadcrumb';
+import { addPayee } from '@/utils/user-dashboard/addPayee';
 
 export function CreateAppWrapper() {
   // Mutation
@@ -20,6 +21,13 @@ export function CreateAppWrapper() {
   }, [isSuccess, data, navigate]);
 
   const handleSubmit = async (data: CreateAppFormData) => {
+    // Add all delegatee addresses as payees before creating the app
+    await Promise.all(
+      (data.delegateeAddresses || []).map(async (address) => {
+        await addPayee(address);
+      }),
+    );
+
     await createApp({
       appCreate: { ...data },
     }).unwrap();
