@@ -457,12 +457,10 @@ export const vincentAbility = createVincentAbility({
               isLong: action === 'perpLong',
               reduceOnly: abilityParams.perp.reduceOnly,
               orderType: abilityParams.perp.orderType,
-              leverage: abilityParams.perp.leverage
-                ? {
-                    leverage: abilityParams.perp.leverage,
-                    isCross: abilityParams.perp.isCross ?? true,
-                  }
-                : undefined,
+              leverage: {
+                leverage: abilityParams.perp.leverage,
+                isCross: abilityParams.perp.isCross ?? true,
+              },
             },
             useTestnet,
           });

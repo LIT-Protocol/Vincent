@@ -62,7 +62,7 @@ export const perpTradeParamsSchema = z.object({
   symbol: z.string().describe('Perpetual symbol (e.g., "ETH")'),
   price: z.string().describe('Limit price'),
   size: z.string().describe('Order size in base asset'),
-  leverage: z.number().min(1).max(50).optional().describe('Leverage multiplier (default: 2x)'),
+  leverage: z.number().min(1).max(10).describe('Leverage multiplier (1-10x)'),
   isCross: z.boolean().optional().describe('Cross leverage (default: true)'),
   reduceOnly: z
     .boolean()

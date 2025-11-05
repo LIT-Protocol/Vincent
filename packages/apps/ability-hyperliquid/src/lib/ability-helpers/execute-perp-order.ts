@@ -28,10 +28,10 @@ export interface PerpTradeParams {
   orderType?: { type: 'limit'; tif: TimeInForce } | { type: 'market' };
   /**
    * Leverage configuration.
-   * @default { leverage: 2, isCross: true }
+   * Required parameter - must specify leverage (1-10x) and margin type.
    */
-  leverage?: {
-    leverage: number; // 1-50x
+  leverage: {
+    leverage: number; // 1-10x
     isCross: boolean; // true for cross margin, false for isolated
   };
 }
