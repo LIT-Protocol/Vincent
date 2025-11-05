@@ -1,13 +1,22 @@
+import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
+
 export function Footer() {
   return (
-    <div className="px-3 sm:px-6 py-2 flex flex-col items-center gap-2 mt-auto">
-      <div className="flex items-center gap-2 text-sm font-normal text-gray-500">
+    <div className="px-3 sm:px-6 pt-2 pb-1 flex flex-col items-center gap-1 mt-auto">
+      <div className="flex items-center gap-2 text-sm font-normal text-gray-500 dark:text-gray-400">
         <a
           href="https://litprotocol.com"
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 font-semibold no-underline !text-orange-500 hover:!text-orange-600 transition-colors"
-          style={{ textDecoration: 'none', fontWeight: '600', fontStyle: 'normal' }}
+          className="inline-flex items-center gap-1.5 font-semibold no-underline transition-colors"
+          style={{
+            textDecoration: 'none',
+            fontWeight: '600',
+            fontStyle: 'normal',
+            color: theme.brandOrange,
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.color = theme.brandOrangeDarker)}
+          onMouseLeave={(e) => (e.currentTarget.style.color = theme.brandOrange)}
         >
           <svg
             className="w-4 h-auto"
@@ -31,36 +40,26 @@ export function Footer() {
               fill="currentColor"
             />
           </svg>
-          <span>Securing Autonomy</span>
+          <span style={fonts.heading}>Securing Autonomy</span>
         </a>
       </div>
-      <div className="flex items-center gap-1 text-sm font-normal text-black">
-        <a
-          href="https://t.me/+aa73FAF9Vp82ZjJh"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="font-normal no-underline hover:opacity-80 transition-colors !text-black"
-          style={{ textDecoration: 'none', fontWeight: 'normal', fontStyle: 'normal' }}
-        >
-          Support
-        </a>
-        <span className="font-normal text-black"> / </span>
+      <div className="flex items-center gap-2 text-xs">
         <a
           href="https://www.litprotocol.com/legal/privacy-policy"
           target="_blank"
           rel="noopener noreferrer"
-          className="font-normal no-underline hover:opacity-80 transition-colors !text-black"
-          style={{ textDecoration: 'none', fontWeight: 'normal', fontStyle: 'normal' }}
+          className="hover:text-[#FF4205] transition-colors no-underline !text-gray-900 dark:!text-white"
+          style={fonts.heading}
         >
           Privacy
         </a>
-        <span className="font-normal text-black"> / </span>
+        <span className="!text-gray-900 dark:!text-white">/</span>
         <a
           href="https://www.litprotocol.com/legal/terms-of-service"
           target="_blank"
           rel="noopener noreferrer"
-          className="font-normal no-underline hover:opacity-80 transition-colors !text-black"
-          style={{ textDecoration: 'none', fontWeight: 'normal', fontStyle: 'normal' }}
+          className="hover:text-[#FF4205] transition-colors no-underline !text-gray-900 dark:!text-white"
+          style={fonts.heading}
         >
           Terms
         </a>

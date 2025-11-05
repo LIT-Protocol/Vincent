@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, Dispatch, SetStateAction } from 'react';
 import * as Sentry from '@sentry/react';
 import { AUTH_METHOD_TYPE } from '@lit-protocol/constants';
 import { SessionSigs } from '@lit-protocol/types';
@@ -12,16 +12,29 @@ import ConnectMethods from '../auth/ConnectMethods';
 
 import SignUpView from '../auth/SignUpView';
 import StatusMessage from './StatusMessage';
-import Loading from '@/components/shared/ui/Loading';
+import LoadingLock from '@/components/shared/ui/LoadingLock';
+
+export type AuthView = 'default' | 'email' | 'phone' | 'wallet' | 'webauthn';
 
 type ConnectViewProps = {
   theme: ThemeType;
   readAuthInfo: ReadAuthInfo;
+  view?: AuthView;
+  setView?: Dispatch<SetStateAction<AuthView>>;
 };
 
-export default function ConnectView({ theme, readAuthInfo }: ConnectViewProps) {
+export default function ConnectView({
+  theme,
+  readAuthInfo,
+  view: externalView,
+  setView: externalSetView,
+}: ConnectViewProps) {
   // ------ STATE AND HOOKS ------
   const { setAuthInfo } = useSetAuthInfo();
+
+  const [internalView, setInternalView] = useState<AuthView>('default');
+  const view = externalView ?? internalView;
+  const setView = externalSetView ?? setInternalView;
 
   // Shared state for session sigs and agent PKP
   const [sessionSigs, setSessionSigs] = useState<SessionSigs>();
@@ -237,13 +250,13 @@ export default function ConnectView({ theme, readAuthInfo }: ConnectViewProps) {
   const renderContent = () => {
     // Use the stable loading state
     if (isStableLoading) {
-      return <Loading text={loadingMessage} />;
+      return <LoadingLock text={loadingMessage} />;
     }
 
     // If authenticated with a new PKP and session sigs
     if (userPKP && sessionSigs) {
       // Connect flow: PKP info is saved via useEffect above
-      return <Loading text="Finalizing authentication..." />;
+      return <LoadingLock text="Finalizing authentication..." />;
     }
 
     // If we have validated session sigs from existing auth, show completion message
@@ -282,6 +295,8 @@ export default function ConnectView({ theme, readAuthInfo }: ConnectViewProps) {
         registerWithWebAuthn={handleRegisterWithWebAuthn}
         clearError={clearError}
         theme={theme}
+        view={view}
+        setView={setView}
       />
     );
   };

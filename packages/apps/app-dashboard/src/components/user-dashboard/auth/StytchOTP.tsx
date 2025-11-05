@@ -1,17 +1,18 @@
-import { useState } from 'react';
+import { useState, useEffect, Dispatch, SetStateAction } from 'react';
 import { useStytch } from '@stytch/react';
 import { z } from 'zod';
 import { Button } from '@/components/shared/ui/button';
-import { ThemeType } from '../connect/ui/theme';
+import { ThemeType, fonts } from '../connect/ui/theme';
 import StatusMessage from '../connect/StatusMessage';
 import { countryCodes } from '@/utils/user-dashboard/countryCodes';
 import CountryCodeSelector from '@/components/shared/ui/CountryCodeSelector';
 import validator from 'validator';
+import { AuthView } from '../connect/Connect';
 
 interface StytchOTPProps {
   method: OtpMethod;
   authWithStytch: any;
-  setView: React.Dispatch<React.SetStateAction<string>>;
+  setView: Dispatch<SetStateAction<AuthView>>;
   theme: ThemeType;
 }
 
@@ -26,17 +27,23 @@ const codeSchema = z
 /**
  * One-time passcodes can be sent via phone number through Stytch
  */
-const StytchOTP = ({ method, authWithStytch, setView, theme }: StytchOTPProps) => {
+const StytchOTP = ({ method, authWithStytch, theme }: StytchOTPProps) => {
   const [step, setStep] = useState<OtpStep>('submit');
   const [userId, setUserId] = useState<string>('');
   const [methodId, setMethodId] = useState<string>('');
   const [code, setCode] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
+  const [isNavigating, setIsNavigating] = useState<boolean>(false);
   const [countryCode, setCountryCode] = useState<string>('+1');
   const [countryName, setCountryName] = useState<string>('United States');
   const [phoneNumber, setPhoneNumber] = useState<string>('');
   const stytchClient = useStytch();
+
+  // Reset navigation state when component mounts
+  useEffect(() => {
+    setIsNavigating(false);
+  }, []);
 
   // Handle phone number changes and combine with country code
   const handlePhoneChange = (value: string) => {
@@ -207,9 +214,16 @@ const StytchOTP = ({ method, authWithStytch, setView, theme }: StytchOTPProps) =
             <form className="space-y-4 w-4/5" onSubmit={sendPasscode}>
               {method === 'email' ? (
                 <div className="space-y-2">
-                  <label htmlFor="email" className={`text-sm font-medium block ${theme.text}`}>
+                  <label
+                    htmlFor="email"
+                    className={`text-sm font-medium block ${theme.text}`}
+                    style={fonts.heading}
+                  >
                     Email Address
                   </label>
+                  <p className={`text-xs ${theme.textMuted} mb-2`} style={fonts.body}>
+                    We'll send a 6-digit verification code to your email address.
+                  </p>
                   <div className="relative">
                     <input
                       id="email"
@@ -218,6 +232,7 @@ const StytchOTP = ({ method, authWithStytch, setView, theme }: StytchOTPProps) =
                       type="email"
                       name="email"
                       className={`w-full px-3 py-2 pr-16 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${theme.cardBg} ${theme.cardBorder} ${theme.text}`}
+                      style={fonts.body}
                       placeholder="your@email.com"
                       autoComplete="email"
                     />
@@ -225,10 +240,9 @@ const StytchOTP = ({ method, authWithStytch, setView, theme }: StytchOTPProps) =
                       type="submit"
                       disabled={loading || !isInputValid}
                       className={`absolute right-2 top-1/2 -translate-y-1/2 font-medium text-sm disabled:cursor-not-allowed transition-colors ${
-                        isInputValid && !loading
-                          ? 'text-orange-500 hover:text-orange-600'
-                          : `${theme.textMuted} opacity-50`
+                        isInputValid && !loading ? '' : `${theme.textMuted} opacity-50`
                       }`}
+                      style={isInputValid && !loading ? { color: theme.brandOrange } : undefined}
                     >
                       {loading ? '...' : 'Submit'}
                     </button>
@@ -236,9 +250,16 @@ const StytchOTP = ({ method, authWithStytch, setView, theme }: StytchOTPProps) =
                 </div>
               ) : (
                 <div className="space-y-2">
-                  <label htmlFor="phone" className={`text-sm font-medium block ${theme.text}`}>
+                  <label
+                    htmlFor="phone"
+                    className={`text-sm font-medium block ${theme.text}`}
+                    style={fonts.heading}
+                  >
                     Phone Number
                   </label>
+                  <p className={`text-xs ${theme.textMuted} mb-2`} style={fonts.body}>
+                    We'll send a 6-digit verification code to your phone via SMS.
+                  </p>
                   <div className="flex gap-1">
                     <CountryCodeSelector
                       selectedCountryCode={countryCode}
@@ -262,45 +283,28 @@ const StytchOTP = ({ method, authWithStytch, setView, theme }: StytchOTPProps) =
                         value={phoneNumber}
                         onChange={(e) => handlePhoneChange(e.target.value)}
                         className={`w-full px-3 py-2 pr-16 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${theme.cardBg} ${theme.cardBorder} ${theme.text}`}
+                        style={fonts.body}
                         placeholder="(555) 000-0000"
                       />
                       <button
                         type="submit"
                         disabled={loading || !isInputValid}
                         className={`absolute right-2 top-1/2 -translate-y-1/2 font-medium text-sm disabled:cursor-not-allowed transition-colors z-10 ${
-                          isInputValid && !loading
-                            ? 'text-orange-500 hover:text-orange-600'
-                            : `${theme.textMuted} opacity-50`
+                          isInputValid && !loading ? '' : `${theme.textMuted} opacity-50`
                         }`}
+                        style={isInputValid && !loading ? { color: theme.brandOrange } : undefined}
                       >
                         {loading ? '...' : 'Submit'}
                       </button>
                     </div>
                   </div>
-                  <p className={`text-xs ${theme.textMuted}`}>
+                  <p className={`text-xs ${theme.textMuted}`} style={fonts.body}>
                     You can also paste a full international number (e.g., +14155552671)
                   </p>
                 </div>
               )}
 
-              {error && <StatusMessage message={error} type="error" />}
-
-              <div className="pt-2">
-                <Button
-                  onClick={() => setView('default')}
-                  className={`${theme.cardBg} ${theme.text} border ${theme.cardBorder} rounded-xl py-3 px-4 w-full font-medium text-sm ${theme.itemHoverBg} transition-all duration-200 hover:shadow-sm flex items-center justify-center gap-2`}
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M10 19l-7-7m0 0l7-7m-7 7h18"
-                    />
-                  </svg>
-                  Back
-                </Button>
-              </div>
+              {error && !isNavigating && <StatusMessage message={error} type="error" />}
             </form>
           </div>
         </>
@@ -311,7 +315,11 @@ const StytchOTP = ({ method, authWithStytch, setView, theme }: StytchOTPProps) =
           <div className="flex justify-center">
             <form className="space-y-4 w-4/5" onSubmit={authenticate}>
               <div className="space-y-2">
-                <label htmlFor="code" className={`text-sm font-medium block ${theme.text}`}>
+                <label
+                  htmlFor="code"
+                  className={`text-sm font-medium block ${theme.text}`}
+                  style={fonts.heading}
+                >
                   Verification Code
                 </label>
                 <div className="relative">
@@ -325,6 +333,7 @@ const StytchOTP = ({ method, authWithStytch, setView, theme }: StytchOTPProps) =
                     maxLength={6}
                     name="code"
                     className={`w-full px-3 py-2 pr-16 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-center tracking-widest text-lg ${theme.cardBg} ${theme.cardBorder} ${theme.text}`}
+                    style={fonts.body}
                     placeholder="000000"
                     autoComplete="one-time-code"
                   />
@@ -332,22 +341,23 @@ const StytchOTP = ({ method, authWithStytch, setView, theme }: StytchOTPProps) =
                     type="submit"
                     disabled={loading || code.length !== 6}
                     className={`absolute right-2 top-1/2 -translate-y-1/2 font-medium text-sm disabled:cursor-not-allowed transition-colors ${
-                      code.length === 6 && !loading
-                        ? 'text-orange-500 hover:text-orange-600'
-                        : `${theme.textMuted} opacity-50`
+                      code.length === 6 && !loading ? '' : `${theme.textMuted} opacity-50`
                     }`}
+                    style={code.length === 6 && !loading ? { color: theme.brandOrange } : undefined}
                   >
                     {loading ? '...' : 'Submit'}
                   </button>
                 </div>
               </div>
 
-              {error && <StatusMessage message={error} type="error" />}
+              {error && !isNavigating && <StatusMessage message={error} type="error" />}
 
               <div className="pt-2">
                 <Button
+                  type="button"
                   onClick={() => setStep('submit')}
                   className={`${theme.cardBg} ${theme.text} border ${theme.cardBorder} rounded-xl py-3 px-4 w-full font-medium text-sm ${theme.itemHoverBg} transition-all duration-200 hover:shadow-sm flex items-center justify-center gap-2`}
+                  style={fonts.heading}
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Copy, ExternalLink } from 'lucide-react';
+
 import {
   Dialog,
   DialogContent,
@@ -15,6 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/shared/ui/select';
+import { theme } from '@/components/user-dashboard/connect/ui/theme';
 
 interface ConnectPageModalProps {
   isOpen: boolean;
@@ -67,10 +69,10 @@ export function ConnectPageModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      <DialogContent className="w-full max-w-2xl bg-white dark:bg-neutral-800 overflow-hidden">
+      <DialogContent className={`w-full max-w-2xl ${theme.mainCard} overflow-hidden`}>
         <DialogHeader>
-          <DialogTitle>View Connect Page</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className={theme.text}>View Connect Page</DialogTitle>
+          <DialogDescription className={theme.textMuted}>
             Generate a link to the Vincent Connect Page for your app. Users will be redirected to
             your selected URI after granting permissions.
           </DialogDescription>
@@ -78,10 +80,7 @@ export function ConnectPageModal({
 
         <div className="space-y-4 overflow-hidden">
           <div>
-            <label
-              htmlFor="redirectUri"
-              className="block text-sm font-medium text-gray-700 dark:text-white/80 mb-2"
-            >
+            <label htmlFor="redirectUri" className={`block text-sm font-medium ${theme.text} mb-2`}>
               Select Redirect URI
             </label>
             {redirectUris.length > 0 ? (
@@ -116,7 +115,8 @@ export function ConnectPageModal({
                     </Button>
                     <Button
                       onClick={handleOpenDirectly}
-                      className="flex items-center gap-2 bg-orange-600 hover:bg-orange-700 text-white flex-shrink-0"
+                      className={`flex items-center gap-2 ${theme.accentBg} ${theme.accentHover} flex-shrink-0`}
+                      style={{ backgroundColor: theme.brandOrange }}
                     >
                       <ExternalLink className="h-4 w-4" />
                       Open Page
@@ -125,7 +125,7 @@ export function ConnectPageModal({
                 )}
               </div>
             ) : (
-              <div className="text-sm text-gray-500 dark:text-white/40 p-4 bg-gray-50 dark:bg-white/5 rounded-lg">
+              <div className={`text-sm ${theme.textSubtle} p-4 ${theme.itemBg} rounded-lg`}>
                 No redirect URIs configured. Please add redirect URIs to your app settings first.
               </div>
             )}

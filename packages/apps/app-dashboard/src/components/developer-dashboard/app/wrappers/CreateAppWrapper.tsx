@@ -1,14 +1,14 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
-import { StatusMessage } from '@/components/shared/ui/statusMessage';
 import { CreateAppForm, type CreateAppFormData } from '../forms/CreateAppForm';
-import { getErrorMessage, navigateWithDelay } from '@/utils/developer-dashboard/app-forms';
+import { navigateWithDelay } from '@/utils/developer-dashboard/app-forms';
+import { Breadcrumb } from '@/components/shared/ui/Breadcrumb';
+import { addPayee } from '@/utils/user-dashboard/addPayee';
 
 export function CreateAppWrapper() {
   // Mutation
-  const [createApp, { isLoading, isSuccess, isError, data, error }] =
-    vincentApiClient.useCreateAppMutation();
+  const [createApp, { isLoading, isSuccess, data }] = vincentApiClient.useCreateAppMutation();
 
   // Navigation
   const navigate = useNavigate();
@@ -16,31 +16,32 @@ export function CreateAppWrapper() {
   // Effect
   useEffect(() => {
     if (isSuccess && data) {
-      navigateWithDelay(navigate, `/developer/appId/${data.appId}/version/1/abilities`);
+      navigateWithDelay(navigate, `/developer/apps/appId/${data.appId}/version/1/abilities`);
     }
   }, [isSuccess, data, navigate]);
 
-  // Loading states
-  if (isLoading) {
-    return <StatusMessage message="Creating app..." type="info" />;
-  }
-
-  if (isSuccess && data) {
-    return <StatusMessage message="App created successfully!" type="success" />;
-  }
-
-  // Error states
-  if (isError && error) {
-    const errorMessage = getErrorMessage(error, 'Failed to create app');
-    return <StatusMessage message={errorMessage} type="error" />;
-  }
-
   const handleSubmit = async (data: CreateAppFormData) => {
+    // Add all delegatee addresses as payees before creating the app
+    await Promise.all(
+      (data.delegateeAddresses || []).map(async (address) => {
+        await addPayee(address);
+      }),
+    );
+
     await createApp({
       appCreate: { ...data },
-    });
+    }).unwrap();
   };
 
-  // Render pure form component
-  return <CreateAppForm onSubmit={handleSubmit} isSubmitting={isLoading} />;
+  return (
+    <>
+      <Breadcrumb
+        items={[
+          { label: 'Apps', onClick: () => navigate('/developer/apps') },
+          { label: 'Create App' },
+        ]}
+      />
+      <CreateAppForm onSubmit={handleSubmit} isSubmitting={isLoading} />
+    </>
+  );
 }

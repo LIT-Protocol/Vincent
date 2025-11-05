@@ -1,0 +1,536 @@
+---
+title: Aave Smart Account
+---
+
+The Aave Smart Account Ability enables Vincent Apps to validate and sign [ERC-4337](https://eips.ethereum.org/EIPS/eip-4337) UserOperations for Aave protocol interactions on behalf of Vincent Users using Smart Accounts. This ability provides secure, delegated signing with comprehensive validation, ensuring that all operations benefit the user and interact only with authorized Aave contracts.
+
+## Key Features
+
+- **Smart Account Integration**: Validates and signs UserOperations (ERC-4337) for Smart Accounts with session key permissions
+- **Comprehensive Validation**: Decodes, simulates, and validates all operations on-chain before signing
+- **Aave Protocol Safety**: Ensures interactions only occur with authorized Aave contracts (Pool, tokens, etc.)
+- **User Protection**: Verifies operations benefit the user with no value extraction
+- **Multi-Chain Support**: Works across networks where Aave V3 is deployed (Ethereum, Base, Arbitrum, etc.)
+
+## How It Works
+
+The Aave Smart Account Ability is built using the Vincent Ability SDK and operates in two phases:
+
+<Steps>
+  <Step title="Precheck Phase">
+    Validates the UserOperation without executing it:
+
+    - Decodes the UserOperation calldata to understand the transaction
+    - Simulates the transaction on-chain (read-only) to see effects
+    - Validates all contract interactions are with authorized Aave addresses
+    - Verifies no value is being extracted from the user
+    - Checks operations align with Aave's intended use (supply, borrow, repay, withdraw)
+    - Returns validation results without modifying blockchain state
+  </Step>
+
+  <Step title="Execution Phase">
+    Performs the same validations as precheck, then signs the UserOperation:
+
+    - Repeats all validation checks from the precheck phase
+    - Signs the UserOperation with the Agent Wallet if all checks pass
+    - Returns the signed UserOperation ready for broadcast
+    - The signed UserOperation can then be submitted to a bundler for on-chain execution
+  </Step>
+</Steps>
+
+## Getting Started
+
+Depending on your role in the Vincent Ecosystem, you'll be interacting with this Ability in different ways. Click on the link below that matches your role to see how to get started:
+
+- **Vincent App Developers**: If you're building a Vincent App that needs Smart Account integration with Aave, go [here](#adding-the-ability-to-your-vincent-app).
+- **Vincent App Delegatees**: If you're executing this ability on behalf of Vincent App Users, go [here](#executing-the-ability-as-a-vincent-app-delegatee).
+
+<Note>
+This ability is designed for Smart Account (ERC-4337) workflows. If you're using regular EOA wallets, use the standard [Aave Ability](/ability/official-abilities/aave) instead.
+</Note>
+
+## Adding the Ability to your Vincent App
+
+If you want to enable your App Delegatees to validate and sign Aave Smart Account operations on behalf of your Vincent App Users, you can add this Ability to your App.
+
+Adding Abilities to your Vincent App is done using the [Vincent App Dashboard](https://dashboard.heyvincent.ai/). Visit the [Create Vincent App](/app/quickstart) guide to learn more about how to add Abilities to your App during creation, or check out the [Updating Your App](/app/updating-apps) guide to learn how to add Abilities to an existing App.
+
+## Executing the Ability as a Vincent App Delegatee
+
+Before executing Aave Smart Account operations, the following conditions must be met:
+
+- **Smart Account Setup**: The Vincent App User must have an ERC-4337 compatible Smart Account (e.g., ZeroDev Kernel, Safe)
+
+- **Session Key Permission**: The Agent Wallet must be granted session key permissions on the Smart Account
+
+- **Valid UserOperation**: The backend service must construct a valid UserOperation containing interactions with the Aave protocol
+
+- **Gas Sponsorship (Optional)**: If using a paymaster, ensure proper paymaster data is included in the UserOperation
+
+<Info>
+To learn more about executing Vincent Abilities, see the [Executing Abilities](/ability/explaining-abilities) guide.
+</Info>
+
+### Smart Account Architecture
+
+The typical flow involves multiple components:
+
+<div align="center">
+
+```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"transparent","primaryTextColor":"#FF4205","primaryBorderColor":"#FF4205","lineColor":"#FF4205"}}}%%
+graph TD
+    A["<b>Your EOA Wallet</b><br/>"]
+    B["<b>Smart Account</b>"]
+    C["<b>Vincent Agent Wallet</b>"]
+    D["<b>Vincent Ability</b><br/><i>(Validates & Signs)</i>"]
+
+    A -->| User Controls| B
+    B -->|Grants session key to| C
+    C -->|Signs via| D
+
+    style A fill:transparent,stroke:#FF4205,stroke-width:2px,color:#FF4205
+    style B fill:transparent,stroke:#FF4205,stroke-width:2px,color:#FF4205
+    style C fill:transparent,stroke:#FF4205,stroke-width:2px,color:#FF4205
+    style D fill:transparent,stroke:#FF4205,stroke-width:2px,color:#FF4205
+
+    linkStyle 0,1,2 stroke:#FF4205,stroke-width:2px
+```
+
+</div>
+
+Learn more about Smart Accounts in the [Smart Accounts concept guide](/smart-account/introduction/about).
+
+### Executing the `precheck` Function
+
+This Ability's `precheck` function validates a UserOperation without actually signing it, allowing you to verify the operation will succeed before committing to execution.
+
+<Tabs>
+  <Tab title="Parameters">
+    Before executing the `precheck` function, you'll need to provide the following parameters:
+
+    ```typescript
+    {
+      /**
+       * The unsigned UserOperation for the Smart Account (ERC-4337 v0.7.0 format)
+       */
+      userOp: {
+        sender: string;                           // Smart Account address (hex)
+        nonce?: string;                           // Account nonce (hex string, e.g., "0x1")
+        callData: string;                         // Encoded transaction calls (hex)
+        callGasLimit?: string;                    // Gas limit for execution (hex)
+        verificationGasLimit?: string;            // Gas for verification (hex)
+        preVerificationGas?: string;              // Pre-verification gas (hex)
+        maxFeePerGas?: string;                    // Max fee per gas (hex, default: "0x59682F00")
+        maxPriorityFeePerGas?: string;            // Priority fee (hex, default: "0x3B9ACA00")
+        signature?: string;                       // Can be empty for precheck
+
+        // ERC-4337 v0.7.0 Paymaster fields (separate, not combined)
+        paymaster?: string;                       // Paymaster address (hex)
+        paymasterData?: string;                   // Paymaster-specific data (hex)
+        paymasterVerificationGasLimit?: string;   // Paymaster verification gas (hex)
+        paymasterPostOpGasLimit?: string;         // Paymaster post-op gas (hex)
+
+        // Account deployment fields (if account not yet deployed)
+        factory?: string;                         // Account factory address (hex)
+        factoryData?: string;                     // Factory deployment data (hex)
+      };
+      /**
+       * EntryPoint contract address for UserOperation validation
+       */
+      entryPointAddress: string;
+      /**
+       * The Alchemy RPC URL for on-chain simulation and validation
+       */
+      rpcUrl: string;
+    }
+    ```
+
+    **Important Notes:**
+    - **v0.7.0 Format**: This ability uses ERC-4337 v0.7.0 which has separate paymaster fields (not `paymasterAndData`)
+    - **Hex Strings**: All numeric values must be hex strings (e.g., `"0x1"`), not bigints or numbers
+    - **EntryPoint**: Must be a valid EntryPoint v0.7 address for your target network
+    - The `callData` field must contain valid Aave protocol interactions
+  </Tab>
+
+  <Tab title="Implementation">
+    To execute `precheck`, you'll need to:
+
+    - Create an instance of the `VincentAbilityClient` using the `getVincentAbilityClient` function (imported from `@lit-protocol/vincent-app-sdk/abilityClient`)
+      - Pass in the Ability's `bundledVincentAbility` object (imported from `@lit-protocol/vincent-ability-aave-smart-account`)
+      - Pass in the `ethersSigner` you'll be using to sign the request to Lit with your Delegatee private key
+    - Construct a valid UserOperation with Aave interactions
+    - Use the `VincentAbilityClient` instance to call the `precheck` function
+
+    ```typescript
+    import { getVincentAbilityClient } from '@lit-protocol/vincent-app-sdk/abilityClient';
+    import { bundledVincentAbility } from '@lit-protocol/vincent-ability-aave-smart-account';
+
+    // Create ability client
+    const abilityClient = getVincentAbilityClient({
+      bundledVincentAbility,
+      ethersSigner: yourEthersSigner,
+    });
+
+    // Example: Validate UserOperation for Aave interaction
+    const smartAccountParams = {
+      userOp: {
+        sender: '0x1234...', // Smart Account address
+        nonce: '0x1', // Hex string, not bigint
+        callData: '0x...', // Encoded Aave operation calldata
+        callGasLimit: '0x30D40', // 200000 in hex
+        verificationGasLimit: '0x186A0', // 100000 in hex
+        preVerificationGas: '0xC350', // 50000 in hex
+        maxFeePerGas: '0x59682F00', // Default: 1.5 gwei
+        maxPriorityFeePerGas: '0x3B9ACA00', // Default: 1 gwei
+        signature: '0x', // Empty for precheck
+
+        // v0.7.0 paymaster fields (if using paymaster)
+        paymaster: '0x5678...', // Optional: Paymaster address
+        paymasterData: '0x...', // Optional: Paymaster data
+        paymasterVerificationGasLimit: '0x186A0', // Optional
+        paymasterPostOpGasLimit: '0xC350', // Optional
+      },
+      entryPointAddress: '0x0000000071727De22E5E9d8baF0edAc6f37da032', // EntryPoint v0.7
+      rpcUrl: 'https://base-sepolia.g.alchemy.com/v2/YOUR_API_KEY',
+    };
+
+    const precheckResult = await abilityClient.precheck(smartAccountParams, {
+      delegatorPkpEthAddress: '0x...', // Agent Wallet address
+    });
+
+    if (precheckResult.success) {
+      console.log('UserOperation validation passed');
+      // Result contains simulation changes and validated userOp
+      const { simulationChanges, userOp } = precheckResult.result;
+      console.log('Simulation changes:', simulationChanges);
+      console.log('Validated UserOp:', userOp);
+    } else {
+      // Handle different types of failures
+      if (precheckResult.runtimeError) {
+        console.error('Runtime error:', precheckResult.runtimeError);
+      }
+      if (precheckResult.schemaValidationError) {
+        console.error('Schema validation error:', precheckResult.schemaValidationError);
+      }
+      if (precheckResult.result) {
+        console.error('Validation failed:', precheckResult.result.error);
+      }
+    }
+    ```
+  </Tab>
+
+  <Tab title="Response">
+    **Success Response**
+
+    A successful `precheck` response will contain:
+
+    ```typescript
+    {
+      /**
+       * Simulated asset changes the UserOperation will make
+       */
+      simulationChanges: Array<{
+        assetType: 'NATIVE' | 'ERC20' | 'ERC721' | 'ERC1155' | 'SPECIAL_NFT';
+        changeType: 'APPROVE' | 'TRANSFER';
+        from: string;              // Address sending the asset
+        to: string;                // Address receiving the asset
+        rawAmount?: string | null; // Raw token amount
+        amount?: string | null;    // Formatted amount
+        contractAddress?: string | null; // Token contract address
+        tokenId?: string | null;   // NFT token ID (if applicable)
+        decimals: number;          // Token decimals
+        symbol: string;            // Token symbol (e.g., "USDC")
+        name?: string | null;      // Token name
+        logo?: string | null;      // Token logo URL
+      }>;
+      /**
+       * The validated UserOperation (may be modified during validation)
+       */
+      userOp: {
+        sender: string;
+        nonce?: string;
+        callData: string;
+        callGasLimit?: string;
+        verificationGasLimit?: string;
+        preVerificationGas?: string;
+        maxFeePerGas?: string;
+        maxPriorityFeePerGas?: string;
+        signature?: string;
+        paymaster?: string;
+        paymasterData?: string;
+        paymasterVerificationGasLimit?: string;
+        paymasterPostOpGasLimit?: string;
+        factory?: string;
+        factoryData?: string;
+      };
+    }
+    ```
+
+    **Failure Response**
+
+    A failure `precheck` response will contain:
+
+    ```typescript
+    {
+      /**
+       * Error message describing why validation failed
+       */
+      error: string;
+    }
+    ```
+
+    **Notes:**
+    - `simulationChanges` shows exactly what asset transfers/approvals will occur
+    - Uses Alchemy's `alchemy_simulateUserOperationAssetChanges` for simulation
+    - Validation ensures all interactions are with authorized Aave contracts
+  </Tab>
+</Tabs>
+
+<Warning>
+**Alchemy RPC Required**: This ability requires an Alchemy RPC URL. It uses Alchemy's proprietary `alchemy_simulateUserOperationAssetChanges` method for on-chain simulation. Execution will fail if a non-Alchemy RPC URL is provided.
+</Warning>
+
+### Executing the `execute` Function
+
+This Ability's `execute` function performs the same validation as precheck, then signs the UserOperation with the Agent Wallet.
+
+<Tabs>
+  <Tab title="Parameters">
+    The `execute` function requires the same parameters as `precheck`, plus an additional parameter for signing:
+
+    ```typescript
+    {
+      /**
+       * The unsigned UserOperation for the Smart Account (ERC-4337 v0.7.0 format)
+       */
+      userOp: {
+        sender: string;
+        nonce?: string;
+        callData: string;
+        callGasLimit?: string;
+        verificationGasLimit?: string;
+        preVerificationGas?: string;
+        maxFeePerGas?: string;
+        maxPriorityFeePerGas?: string;
+        signature?: string;
+
+        // v0.7.0 Paymaster fields
+        paymaster?: string;
+        paymasterData?: string;
+        paymasterVerificationGasLimit?: string;
+        paymasterPostOpGasLimit?: string;
+
+        // Account deployment fields
+        factory?: string;
+        factoryData?: string;
+      };
+      /**
+       * EntryPoint contract address for UserOperation validation
+       */
+      entryPointAddress: string;
+      /**
+       * The Alchemy RPC URL for on-chain simulation and validation
+       */
+      rpcUrl: string;
+      /**
+       * Serialized ZeroDev permission account (session key) that will sign the UserOperation
+       * This is the permitted signer configured on the Smart Account
+       */
+      serializedZeroDevPermissionAccount: string;
+    }
+    ```
+
+    **Important Notes:**
+    - `serializedZeroDevPermissionAccount` is **REQUIRED** for execute (not needed for precheck)
+    - This contains the session key configuration that authorizes the Agent Wallet to sign
+    - All other parameters are identical to `precheck`
+  </Tab>
+
+  <Tab title="Implementation">
+    The `execute` function can be called using the same `VincentAbilityClient` instance:
+
+    ```typescript
+    // Add the serialized session key to the parameters
+    const executeParams = {
+      userOp: smartAccountParams.userOp,
+      entryPointAddress: smartAccountParams.entryPointAddress,
+      rpcUrl: smartAccountParams.rpcUrl,
+      serializedZeroDevPermissionAccount: 'SERIALIZED_SESSION_KEY_HERE', // From ZeroDev session setup
+    };
+
+    const executeResult = await abilityClient.execute(executeParams, {
+      delegatorPkpEthAddress: '0x...', // Agent Wallet address
+    });
+
+    if (executeResult.success) {
+      const { simulationChanges, userOp } = executeResult.result;
+
+      console.log('UserOperation signed successfully');
+      console.log('Signature:', userOp.signature);
+      console.log('Simulation changes:', simulationChanges);
+
+      // Now broadcast the signed UserOperation via your bundler
+      const txHash = await bundler.sendUserOperation(userOp);
+      console.log('Transaction hash:', txHash);
+    } else {
+      // Handle different types of failures
+      if (executeResult.runtimeError) {
+        console.error('Runtime error:', executeResult.runtimeError);
+      }
+      if (executeResult.schemaValidationError) {
+        console.error('Schema validation error:', executeResult.schemaValidationError);
+      }
+      if (executeResult.result) {
+        console.error('Signing failed:', executeResult.result.error);
+      }
+    }
+    ```
+  </Tab>
+
+  <Tab title="Response">
+    **Success Response**
+
+    A successful `execute` response will contain the same structure as `precheck`, but with the UserOperation now signed:
+
+    ```typescript
+    {
+      /**
+       * Simulated asset changes the UserOperation will make
+       */
+      simulationChanges: Array<{
+        assetType: 'NATIVE' | 'ERC20' | 'ERC721' | 'ERC1155' | 'SPECIAL_NFT';
+        changeType: 'APPROVE' | 'TRANSFER';
+        from: string;
+        to: string;
+        rawAmount?: string | null;
+        amount?: string | null;
+        contractAddress?: string | null;
+        tokenId?: string | null;
+        decimals: number;
+        symbol: string;
+        name?: string | null;
+        logo?: string | null;
+      }>;
+      /**
+       * The signed UserOperation ready for broadcast
+       */
+      userOp: {
+        sender: string;
+        nonce?: string;
+        callData: string;
+        callGasLimit?: string;
+        verificationGasLimit?: string;
+        preVerificationGas?: string;
+        maxFeePerGas?: string;
+        maxPriorityFeePerGas?: string;
+        signature: string;           // ✅ Now contains valid signature
+        paymaster?: string;
+        paymasterData?: string;
+        paymasterVerificationGasLimit?: string;
+        paymasterPostOpGasLimit?: string;
+        factory?: string;
+        factoryData?: string;
+      };
+    }
+    ```
+
+    **Failure Response**
+
+    A failure `execute` response will contain:
+
+    ```typescript
+    {
+      /**
+       * Error message describing why signing failed
+       */
+      error: string;
+    }
+    ```
+
+    **Notes:**
+    - The response structure is identical to `precheck`, except `userOp.signature` is now populated
+    - The signed UserOperation can be broadcast directly to a bundler
+    - `simulationChanges` provides the same asset change information
+  </Tab>
+</Tabs>
+
+## Supported Networks
+
+This ability supports Aave V3 operations on networks where ERC-4337 infrastructure, Smart Account providers, and Aave V3 are all available:
+
+| Network Type | Supported Chains |
+|--------------|------------------|
+| **Mainnets** | `ethereum`, `polygon`, `arbitrum`, `optimism`, `base`, `avalanche` |
+| **Testnets** | `sepolia`, `basesepolia`, `arbitrumsepolia`, `optimismsepolia` |
+
+<Note>
+Network support is limited by Alchemy's `alchemy_simulateUserOperationAssetChanges` API. Only networks where Alchemy supports UserOperation simulation can be used with this ability.
+</Note>
+
+## Important Considerations
+
+<AccordionGroup>
+  <Accordion title="Smart Account Compatibility" icon="puzzle-piece">
+    This ability works with ERC-4337 compliant Smart Accounts. Ensure your Smart Account implementation follows the standard and has proper session key support.
+  </Accordion>
+
+  <Accordion title="Session Key Setup" icon="key">
+    The Agent Wallet must be properly configured as a session key with appropriate permissions on the Smart Account. Without proper session key setup, signature validation will fail.
+  </Accordion>
+
+  <Accordion title="Validation Strictness" icon="shield-check">
+    The ability validates that ALL interactions are with authorized Aave contracts. Any unauthorized contract call will cause validation to fail. This is a security feature to prevent malicious operations.
+  </Accordion>
+
+  <Accordion title="On-Chain Simulation" icon="flask">
+    Operations are simulated on-chain before signing. This means the ability must connect to an actual blockchain node. Ensure proper RPC access for the target network.
+  </Accordion>
+
+  <Accordion title="Gas Estimation" icon="gas-pump">
+    Smart Account operations typically require more gas than regular transactions due to verification logic. Ensure gas limits are properly estimated and sufficient funds exist (or paymaster is configured).
+  </Accordion>
+
+  <Accordion title="UserOperation Construction" icon="code">
+    Constructing valid UserOperations requires understanding ERC-4337. Consider using Smart Account SDKs (ZeroDev, Biconomy, etc.) to generate properly formatted UserOperations.
+  </Accordion>
+</AccordionGroup>
+
+## Error Handling
+
+<AccordionGroup>
+  <Accordion title="Common Failure Scenarios" icon="bug">
+    - **Invalid UserOperation Format**: Malformed UserOperation structure or missing required fields
+    - **Unauthorized Contract Interaction**: UserOperation contains calls to non-Aave contracts
+    - **Simulation Failure**: On-chain simulation reverts or fails
+    - **Value Extraction Detected**: Operation attempts to extract value from the user
+    - **Session Key Not Configured**: Agent Wallet lacks session key permissions on Smart Account
+    - **Insufficient Gas Limits**: Gas limits too low for the operation complexity
+    - **Invalid Chain**: Chain not supported or RPC unavailable
+    - **Aave Contract Mismatch**: Operation targets non-Aave addresses
+  </Accordion>
+
+  <Accordion title="Security Validations" icon="shield-halved">
+    This ability performs extensive security checks:
+    - **Contract Allowlist**: Only Aave protocol contracts are permitted
+    - **Simulation Required**: All operations must pass on-chain simulation
+    - **No Value Extraction**: ETH/token transfers out of user control are blocked
+    - **Signature Verification**: Session key permissions are validated
+
+    If any security check fails, the operation is rejected without signing.
+  </Accordion>
+</AccordionGroup>
+
+## Learn More
+
+<Columns cols={3}>
+  <Card title="Smart Accounts" icon="microchip" href="/smart-account/introduction/about" color="#FF4205">
+    Learn about Smart Account architecture with Vincent
+  </Card>
+  <Card title="Standard Aave Ability" icon="coins" href="/ability/official-abilities/aave" color="#FF4205">
+    Use the regular Aave ability for EOA wallets
+  </Card>
+  <Card title="Agent Wallets" icon="wallet" href="/concepts/wallets/agent-wallets" color="#FF4205">
+    Understand how Agent Wallets enable delegation
+  </Card>
+</Columns>

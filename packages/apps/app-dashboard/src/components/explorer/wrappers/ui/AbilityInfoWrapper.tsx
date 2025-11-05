@@ -1,8 +1,8 @@
-import Loading from '@/components/shared/ui/Loading';
-import { StatusMessage } from '@/components/shared/ui/statusMessage';
 import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
 import { AbilityInfoView } from '../../ui/AbilityInfoView';
 import { AppVersionAbility } from '@/types/developer-dashboard/appTypes';
+import Loading from '@/components/shared/ui/Loading';
+import { StatusMessage } from '@/components/shared/ui/statusMessage';
 
 interface AbilityInfoWrapperProps {
   appVersionAbility: AppVersionAbility;

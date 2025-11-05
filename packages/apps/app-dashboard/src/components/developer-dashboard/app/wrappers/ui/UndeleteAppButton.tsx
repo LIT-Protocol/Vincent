@@ -1,11 +1,12 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { ArchiveRestore } from 'lucide-react';
 import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
+
 import { StatusMessage } from '@/components/shared/ui/statusMessage';
 import { getErrorMessage } from '@/utils/developer-dashboard/app-forms';
-import Loading from '@/components/shared/ui/Loading';
-import { ArchiveRestore } from 'lucide-react';
 import { App } from '@/types/developer-dashboard/appTypes';
+import { ActionButton } from '@/components/developer-dashboard/ui/ActionButton';
 
 interface UndeleteAppWrapperProps {
   app: App;
@@ -22,25 +23,19 @@ export function UndeleteAppButton({ app }: UndeleteAppWrapperProps) {
   // Effect
   useEffect(() => {
     if (isSuccess && data && app) {
-      navigate(`/developer/appId/${app.appId}`);
+      navigate(`/developer/apps/appId/${app.appId}`);
     }
   }, [isSuccess, data, app]);
-
-  // Loading states
-  if (isLoading) return <Loading />;
 
   // Error states
   if (!app) return <StatusMessage message={`App not found`} type="error" />;
 
-  // Mutation states
-  if (isLoading) {
-    return <StatusMessage message="Undeleting app..." type="info" />;
-  }
-
+  // Success state
   if (isSuccess && data) {
     return <StatusMessage message="App undeleted successfully!" type="success" />;
   }
 
+  // Error state
   if (isError && error) {
     const errorMessage = getErrorMessage(error, 'Failed to undelete app');
     return <StatusMessage message={errorMessage} type="error" />;
@@ -53,12 +48,13 @@ export function UndeleteAppButton({ app }: UndeleteAppWrapperProps) {
   };
 
   return (
-    <button
-      onClick={() => handleSubmit()}
-      className="inline-flex items-center gap-2 px-4 py-2 border border-green-200 dark:border-green-500/30 rounded-lg text-sm font-medium text-green-600 dark:text-green-400 bg-white dark:bg-neutral-800 hover:bg-green-50 dark:hover:bg-green-500/10 transition-colors relative z-10 !opacity-100 shadow-sm"
-    >
-      <ArchiveRestore className="h-4 w-4" />
-      Undelete App
-    </button>
+    <ActionButton
+      icon={ArchiveRestore}
+      title="Undelete App"
+      description="Restore this application from the deleted state"
+      onClick={handleSubmit}
+      isLoading={isLoading}
+      variant="success"
+    />
   );
 }

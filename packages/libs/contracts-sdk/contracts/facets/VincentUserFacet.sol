@@ -342,7 +342,8 @@ contract VincentUserFacet is VincentBase {
 
             mapping(bytes32 => bytes) storage abilityPolicyParameterValues = us_.agentPkpTokenIdToAgentStorage[
                 pkpTokenId
-            ].abilityPolicyParameterValues[appId][appVersion][hashedAbilityIpfsCid];
+            ]
+            .abilityPolicyParameterValues[appId][appVersion][hashedAbilityIpfsCid];
 
             // Step 4: Iterate through each policy associated with the ability.
             for (uint256 j = 0; j < policyCount; j++) {

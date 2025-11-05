@@ -1,36 +1,23 @@
-import { useState } from 'react';
+import { useState, Dispatch, SetStateAction } from 'react';
 import { Button } from '@/components/shared/ui/button';
-import { ThemeType } from '../connect/ui/theme';
+import { ThemeType, fonts } from '../connect/ui/theme';
 import StatusMessage from '../connect/StatusMessage';
 import { PasskeyNameInput } from '@/components/shared/ui/PasskeyNameInput';
+import { AuthView } from '../connect/Connect';
 
 interface WebAuthnProps {
   authWithWebAuthn: any;
-  setView: React.Dispatch<React.SetStateAction<string>>;
+  setView: Dispatch<SetStateAction<AuthView>>;
   registerWithWebAuthn?: (displayName: string) => Promise<void>;
   clearError?: () => void;
   theme: ThemeType;
 }
 
-export default function WebAuthn({
-  authWithWebAuthn,
-  setView,
-  registerWithWebAuthn,
-  clearError,
-  theme,
-}: WebAuthnProps) {
+export default function WebAuthn({ authWithWebAuthn, registerWithWebAuthn, theme }: WebAuthnProps) {
   const [registerLoading, setRegisterLoading] = useState<boolean>(false);
   const [authLoading, setAuthLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
   const [passkeyName, setPasskeyName] = useState<string>('Vincent Passkey');
-
-  const handleBackClick = () => {
-    // Clear the error from the parent component when going back
-    if (clearError) {
-      clearError();
-    }
-    setView('default');
-  };
 
   async function handleRegister() {
     if (!registerWithWebAuthn) {
@@ -111,10 +98,13 @@ export default function WebAuthn({
         <div className="space-y-4 w-4/5">
           {registerWithWebAuthn && (
             <div className="space-y-2">
-              <label className={`text-sm font-medium block ${theme.text}`}>
+              <label className={`text-sm font-medium block ${theme.text}`} style={fonts.heading}>
                 Passkey Name
                 <span className="text-red-500 ml-1">*</span>
               </label>
+              <p className={`text-xs ${theme.textMuted}`} style={fonts.body}>
+                Use your device's biometrics or security key to create or sign in with a passkey.
+              </p>
               <PasskeyNameInput
                 value={passkeyName}
                 onChange={setPasskeyName}
@@ -134,6 +124,7 @@ export default function WebAuthn({
             {registerWithWebAuthn && (
               <Button
                 className={`${theme.accentBg} rounded-xl py-3 px-4 w-full font-medium text-sm ${theme.accentHover} transition-all duration-200 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2`}
+                style={fonts.heading}
                 onClick={handleRegister}
                 disabled={registerLoading || authLoading || !passkeyName.trim()}
               >
@@ -172,6 +163,7 @@ export default function WebAuthn({
 
             <Button
               className={`${theme.accentBg} rounded-xl py-3 px-4 w-full font-medium text-sm ${theme.accentHover} transition-all duration-200 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 ${registerWithWebAuthn ? 'mt-3' : ''}`}
+              style={fonts.heading}
               onClick={handleAuthenticate}
               disabled={authLoading || registerLoading}
             >
@@ -205,21 +197,6 @@ export default function WebAuthn({
                   Sign in with existing passkey
                 </>
               )}
-            </Button>
-
-            <Button
-              onClick={handleBackClick}
-              className={`${theme.cardBg} ${theme.text} border ${theme.cardBorder} rounded-xl py-3 px-4 w-full font-medium text-sm ${theme.itemHoverBg} transition-all duration-200 hover:shadow-sm flex items-center justify-center gap-2 mt-3`}
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M10 19l-7-7m0 0l7-7m-7 7h18"
-                />
-              </svg>
-              Back
             </Button>
           </div>
         </div>

@@ -68,7 +68,8 @@
       "ability-aave",
       "ability-debridge",
       "policy-send-counter",
-      "ability-aerodrome-swap"
+      "ability-aerodrome-swap",
+      "e2e-test-utils"
     ],
     "projectsRelationship": "independent",
     "releaseTagPattern": "vincent/{projectName}/{version}",

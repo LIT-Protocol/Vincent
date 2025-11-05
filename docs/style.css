@@ -1,0 +1,48 @@
+/* Custom styles for Mermaid diagrams */
+
+/* Dark background with white text for edge labels - using more specific selectors */
+.mermaid .edgeLabel,
+.edgeLabel {
+  background-color: #1a1a1a !important;
+  color: white !important;
+}
+
+.mermaid .labelBkg,
+.labelBkg {
+  fill: #1a1a1a !important;
+}
+
+.mermaid .edgeLabel span,
+.edgeLabel span {
+  color: white !important;
+}
+
+/* Override any text color from theme */
+.mermaid .edgeLabel text,
+.edgeLabel text {
+  fill: white !important;
+}
+
+/* Fix code blocks in light mode */
+.light pre,
+.light pre[class*="language-"] {
+  background-color: #f6f8fa !important;
+}
+
+.light code,
+.light code[class*="language-"] {
+  color: #24292f !important;
+}
+
+.light pre code {
+  background-color: #f6f8fa !important;
+  display: block !important;
+}
+
+/* Ensure inline code has proper styling */
+.light :not(pre) > code {
+  background-color: rgba(175, 184, 193, 0.2) !important;
+  color: #24292f !important;
+  padding: 0.2em 0.4em !important;
+  border-radius: 6px !important;
+}

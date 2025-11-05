@@ -2,6 +2,7 @@ import { TabsContent } from '@/components/shared/ui/tabs';
 import { Database, Layers } from 'lucide-react';
 import { App, AppVersion, AppVersionAbility } from '@/types/developer-dashboard/appTypes';
 import { AbilityInfoWrapper } from '../wrappers/ui/AbilityInfoWrapper';
+import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
 
 export function ActiveAppVersion({
   versions,
@@ -26,8 +27,8 @@ export function ActiveAppVersion({
           {/* Version Abilities*/}
           <div>
             <div className="flex items-center gap-3 mb-4">
-              <Layers className="w-4 h-4 text-black/40" />
-              <span className="text-sm font-light text-gray-600">
+              <Layers className={`w-4 h-4 ${theme.textMuted}`} />
+              <span className={`text-sm font-medium ${theme.textMuted}`} style={fonts.heading}>
                 Integrated Abilities ({activeVersionAbilities.length})
               </span>
             </div>
@@ -44,16 +45,22 @@ export function ActiveAppVersion({
                 })}
               </div>
             ) : (
-              <div className="p-8 rounded-xl bg-black/[0.02] border border-black/5 text-center">
-                <Database className="w-10 h-10 text-black/20 mx-auto mb-3" />
-                <p className="text-gray-500 text-sm">No abilities configured for this version</p>
+              <div
+                className={`p-8 rounded-xl ${theme.itemBg} border ${theme.cardBorder} text-center`}
+              >
+                <Database className={`w-10 h-10 ${theme.textMuted} mx-auto mb-3`} />
+                <p className={`${theme.textMuted} text-sm`} style={fonts.body}>
+                  No abilities configured for this version
+                </p>
               </div>
             )}
           </div>
         </div>
       ) : (
-        <div className="p-8 text-center">
-          <p className="text-gray-500">No active version found</p>
+        <div className={`p-8 rounded-xl ${theme.itemBg} border ${theme.cardBorder} text-center`}>
+          <p className={`${theme.textMuted} text-sm`} style={fonts.body}>
+            No active version found
+          </p>
         </div>
       )}
     </TabsContent>

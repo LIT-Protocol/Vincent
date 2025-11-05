@@ -15,6 +15,7 @@ import {
   UseFormClearErrors,
 } from 'react-hook-form';
 import { processImageUpload, cleanupPreviewUrl } from '@/utils/developer-dashboard/imageUtils';
+import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
 
 interface ImageUploadFieldProps {
   name: string;
@@ -99,7 +100,9 @@ export function ImageUploadField({
           <FormControl>
             <div className="space-y-4">
               {displayUrl && (
-                <div className="relative w-32 h-32 border dark:border-white/20 rounded-lg overflow-hidden">
+                <div
+                  className={`relative w-32 h-32 border ${theme.cardBorder} rounded-lg overflow-hidden ${theme.itemBg}`}
+                >
                   <img src={displayUrl} alt="Preview" className="w-full h-full object-cover" />
                   <Button
                     type="button"
@@ -119,15 +122,24 @@ export function ImageUploadField({
                   accept="image/svg+xml"
                   onChange={handleFileChange}
                   disabled={isUploading}
-                  className={`w-full px-2 py-1.5 text-sm border rounded-md border-gray-300 dark:border-white/20 dark:bg-neutral-800 dark:text-white file:mr-4 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:bg-gray-50 dark:file:bg-white/10 file:text-gray-700 dark:file:text-white/80 hover:file:bg-gray-100 dark:hover:file:bg-white/20 ${
+                  className={`block w-full text-sm border ${theme.mainCardBorder} ${theme.bg} ${theme.text} rounded-md file:mr-2 file:py-2 file:px-4 file:rounded-l-md file:border-0 file:text-sm file:font-medium ${theme.itemBg} hover:file:bg-gray-100 dark:hover:file:bg-white/20 transition-colors ${
                     isUploading ? 'opacity-50 cursor-not-allowed' : ''
                   }`}
+                  style={fonts.body}
                 />
-                <div className="text-xs text-gray-600">Upload an SVG (max ~128KB)</div>
+                <div className={`text-xs ${theme.textMuted}`} style={fonts.body}>
+                  Upload an SVG (max ~128KB)
+                </div>
 
                 {isUploading && (
-                  <div className="flex items-center space-x-2 text-xs text-gray-600 dark:text-white/60">
-                    <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-gray-600 dark:border-neutral-800/60"></div>
+                  <div
+                    className={`flex items-center space-x-2 text-xs ${theme.textMuted}`}
+                    style={fonts.body}
+                  >
+                    <div
+                      className={`animate-spin rounded-full h-3 w-3 border-b-2`}
+                      style={{ borderColor: theme.brandOrange }}
+                    ></div>
                     <span>Processing image...</span>
                   </div>
                 )}

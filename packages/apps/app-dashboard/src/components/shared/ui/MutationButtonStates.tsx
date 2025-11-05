@@ -1,5 +1,7 @@
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
+import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
+import { CheckCircle, AlertCircle } from 'lucide-react';
 
 // Reusable skeleton button component
 export function SkeletonButton() {
@@ -32,17 +34,27 @@ export default function MutationButtonStates({
     switch (type) {
       case 'error':
         return (
-          <div className="inline-flex items-center gap-2 px-4 py-2 border border-red-300 dark:border-red-500/30 rounded-lg text-sm font-medium text-red-700 dark:text-red-400 bg-white dark:bg-neutral-800">
-            <div className="h-4 w-4 text-red-500 dark:text-red-400">⚠</div>
-            <span>{errorMessage}</span>
+          <div
+            className={`inline-flex items-center gap-2 px-4 py-2 border rounded-lg ${theme.mainCard} ${theme.mainCardBorder}`}
+            style={{ borderColor: 'rgb(254 202 202 / 0.5)' }}
+          >
+            <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
+            <span className="text-sm text-red-600 dark:text-red-400" style={fonts.body}>
+              {errorMessage}
+            </span>
           </div>
         );
 
       case 'success':
         return (
-          <div className="inline-flex items-center gap-2 px-4 py-2 border border-green-300 dark:border-green-500/30 rounded-lg text-sm font-medium text-green-700 dark:text-green-400 bg-white dark:bg-neutral-800">
-            <div className="h-4 w-4 text-green-500 dark:text-green-400">✓</div>
-            <span>{successMessage}</span>
+          <div
+            className={`inline-flex items-center gap-2 px-4 py-2 border rounded-lg ${theme.mainCard} ${theme.mainCardBorder}`}
+            style={{ borderColor: theme.brandOrange }}
+          >
+            <CheckCircle className="h-4 w-4" style={{ color: theme.brandOrange }} />
+            <span className={`text-sm ${theme.text}`} style={fonts.body}>
+              {successMessage}
+            </span>
           </div>
         );
 

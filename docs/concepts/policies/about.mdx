@@ -1,0 +1,52 @@
+---
+title: 'Policies'
+---
+
+Vincent Policies are programmable guardrails built using [Lit Actions](https://developer.litprotocol.com/sdk/serverless-signing/overview) that determine whether Vincent Apps can execute specific abilities on behalf of users, from spending limits to access control, all cryptographically enforced.
+
+## Key Features
+
+- **Flexible Data Access:** Read and write on-chain and off-chain data to any blockchain or API
+- **Stateful Management:** Persist data across executions for spending limits and usage quotas
+- **Cryptographic Security:** Utilize Lit Protocol's encryption within secure TEE environments
+- **Type-Safe Development:** Strongly-typed Zod schemas ensure parameter validation and clear interfaces
+
+## Get Started
+
+<Columns cols={2}>
+  <Card title="Quick Start" icon="rocket" href="/ability/policy/quickstart" color="#FF4205">
+    Build your first policy
+  </Card>
+  <Card title="Explaining Policies" icon="hammer" href="/ability/policy/explaining-policies" color="#FF4205">
+    Learn how to create custom policies
+  </Card>
+</Columns>
+
+## Official Policies
+
+### Financial Controls
+
+<Columns cols={2}>
+  <Card title="Spending Limit" icon="dollar-sign" href="/ability/policy/official-policies/spending-limit" color="#FF4205">
+    Set daily USD spending limits for automated transactions
+  </Card>
+</Columns>
+
+### Access Management
+
+<Columns cols={2}>
+  <Card title="Contract Whitelist" icon="list" href="/ability/policy/official-policies/contract-whitelist" color="#FF4205">
+    Restrict interactions to pre-approved smart contracts only
+  </Card>
+</Columns>
+
+## Learn More
+
+<Columns cols={2}>
+  <Card title="Abilities" icon="hammer" href="/concepts/abilities/about" color="#FF4205">
+    Explore available abilities and actions
+  </Card>
+  <Card title="Apps" icon="cube" href="/concepts/apps/about" color="#FF4205">
+    Build apps that use Vincent abilities
+  </Card>
+</Columns>

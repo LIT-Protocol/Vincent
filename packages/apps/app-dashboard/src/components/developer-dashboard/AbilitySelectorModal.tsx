@@ -1,11 +1,3 @@
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/shared/ui/dialog';
-import { Button } from '@/components/shared/ui/button';
 import { AgGridReact } from 'ag-grid-react';
 import {
   ColDef,
@@ -14,7 +6,17 @@ import {
   AllCommunityModule,
   RowClickedEvent,
 } from 'ag-grid-community';
+
 import { Ability } from '@/types/developer-dashboard/appTypes';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/shared/ui/dialog';
+import { Button } from '@/components/shared/ui/button';
+import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
 
 // Register AG Grid modules
 ModuleRegistry.registerModules([AllCommunityModule]);
@@ -148,24 +150,36 @@ export function AbilitySelectorModal({
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent
-        className="w-[85vw] max-w-6xl h-[70vh] flex flex-col !max-w-none bg-white dark:bg-neutral-800"
+        className={`w-[85vw] max-w-6xl h-[70vh] flex flex-col !max-w-none ${theme.mainCard}`}
         style={{ width: '85vw', maxWidth: '72rem' }}
       >
         <DialogHeader className="flex-shrink-0">
-          <DialogTitle className="text-neutral-800 dark:text-white">
+          <DialogTitle className={`text-lg font-semibold ${theme.text}`} style={fonts.heading}>
             Add Abilities to App Version
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className={`${theme.textMuted}`} style={fonts.body}>
             Click any ability to add it immediately to your app version.
             {existingAbilities.length > 0 &&
               ` (${existingAbilities.length} abilities already added)`}
-            {filteredAbilities.length < availableAbilities.length &&
-              ` • Showing ${filteredAbilities.length} of ${availableAbilities.length} available abilities`}
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex-1 min-h-0">
-          <div className="ag-theme-alpine h-full w-full bg-white dark:bg-neutral-800 dark:[&_.ag-root-wrapper]:!bg-transparent dark:[&_.ag-header]:!bg-neutral-700 dark:[&_.ag-header-cell]:!bg-neutral-700 dark:[&_.ag-header-cell]:!text-white dark:[&_.ag-row]:!bg-neutral-800 dark:[&_.ag-cell]:!text-white dark:[&_.ag-row-hover]:!bg-neutral-700">
+        <div className={`flex-1 min-h-0 border ${theme.mainCardBorder} rounded-lg overflow-hidden`}>
+          <div
+            className="ag-theme-alpine h-full w-full"
+            style={
+              {
+                '--ag-background-color': 'transparent',
+                '--ag-header-background-color': theme.itemBg,
+                '--ag-odd-row-background-color': theme.mainCard,
+                '--ag-row-hover-color': theme.itemBg,
+                '--ag-border-color': theme.mainCardBorder,
+                '--ag-header-foreground-color': theme.text,
+                '--ag-foreground-color': theme.text,
+                '--ag-data-color': theme.text,
+              } as React.CSSProperties
+            }
+          >
             <AgGridReact
               rowData={filteredAbilities}
               columnDefs={TOOL_GRID_COLUMNS}
@@ -181,7 +195,7 @@ export function AbilitySelectorModal({
           </div>
         </div>
 
-        <div className="flex justify-end gap-2 pt-4 border-t dark:border-neutral-600 flex-shrink-0">
+        <div className={`flex justify-end gap-2 pt-4 border-t ${theme.cardBorder} flex-shrink-0`}>
           <Button variant="outline" onClick={onClose}>
             Close
           </Button>
