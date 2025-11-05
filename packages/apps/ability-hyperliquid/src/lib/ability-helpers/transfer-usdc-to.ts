@@ -18,11 +18,13 @@ export async function transferUsdcTo({
   pkpPublicKey,
   amount,
   to,
+  useTestnet = false,
 }: {
   transport: hyperliquid.HttpTransport;
   pkpPublicKey: string;
   amount: string;
   to: 'spot' | 'perp';
+  useTestnet?: boolean;
 }) {
   if (to !== 'spot' && to !== 'perp') {
     throw new Error(
@@ -40,13 +42,19 @@ export async function transferUsdcTo({
   );
   const nonce = parseInt(nonceResponse);
 
+  // Select chain ID and network based on testnet flag
+  const signatureChainId = useTestnet
+    ? '0x66eee' // Arbitrum Sepolia testnet chain ID: 421614
+    : '0xa4b1'; // Arbitrum mainnet chain ID: 42161
+  const hyperliquidChain = useTestnet ? 'Testnet' : 'Mainnet';
+
   const transferAction = parser(UsdClassTransferRequest.entries.action)({
     type: 'usdClassTransfer',
     // Convert amount from raw units (e.g., "1000000" for 1.0 USDC) to formatted string (e.g., "1.0")
     // Hyperliquid expects the amount as a string in human-readable format
     amount: ethers.utils.formatUnits(amount, 6),
-    signatureChainId: '0xa4b1', // Arbitrum mainnet chain ID: 42161
-    hyperliquidChain: 'Mainnet',
+    signatureChainId,
+    hyperliquidChain,
     toPerp: to === 'perp',
     nonce,
   });

@@ -6,6 +6,8 @@ export const actionTypeSchema = z.enum([
   'transferToPerp',
   'spotBuy',
   'spotSell',
+  'spotCancelOrder',
+  'spotCancelAll',
   'perpLong',
   'perpShort',
 ]);
@@ -22,10 +24,38 @@ export const transferParamsSchema = z.object({
     ),
 });
 
+export const orderTypeSchema = z.discriminatedUnion('type', [
+  z.object({
+    type: z.literal('limit'),
+    tif: z
+      .enum(['Gtc', 'Ioc', 'Alo'])
+      .describe(
+        'Time in force: Gtc (Good Till Canceled), Ioc (Immediate Or Cancel), Alo (Add Liquidity Only)',
+      ),
+  }),
+  z.object({
+    type: z.literal('market'),
+  }),
+]);
+
 export const spotTradeParamsSchema = z.object({
   symbol: z.string().describe('Trading pair symbol (e.g., "HYPE/USDC")'),
   price: z.string().describe('Limit price'),
   size: z.string().describe('Order size'),
+  orderType: orderTypeSchema
+    .optional()
+    .describe(
+      'Order type: { type: "limit", tif: "Gtc" | "Ioc" | "Alo" } or { type: "market" }. Default: { type: "limit", tif: "Gtc" }',
+    ),
+});
+
+export const spotCancelOrderParamsSchema = z.object({
+  symbol: z.string().describe('Trading pair symbol (e.g., "PURR/USDC")'),
+  orderId: z.number().describe('Order ID to cancel'),
+});
+
+export const spotCancelAllParamsSchema = z.object({
+  symbol: z.string().describe('Trading pair symbol to cancel all orders for (e.g., "PURR/USDC")'),
 });
 
 export const perpTradeParamsSchema = z.object({
@@ -39,6 +69,12 @@ export const perpTradeParamsSchema = z.object({
 export const abilityParamsSchema = z
   .object({
     action: actionTypeSchema.describe('Action type to execute'),
+    // Network selection
+    useTestnet: z
+      .boolean()
+      .optional()
+      .default(false)
+      .describe('Use Hyperliquid testnet instead of mainnet (default: false)'),
     // Deposit-specific params
     deposit: depositParamsSchema
       .optional()
@@ -53,6 +89,14 @@ export const abilityParamsSchema = z
     spot: spotTradeParamsSchema
       .optional()
       .describe('Spot trading parameters (required for spotBuy/spotSell)'),
+    // Spot cancel order params
+    spotCancelOrder: spotCancelOrderParamsSchema
+      .optional()
+      .describe('Cancel specific spot order (required for spotCancelOrder action)'),
+    // Spot cancel all params
+    spotCancelAll: spotCancelAllParamsSchema
+      .optional()
+      .describe('Cancel all spot orders for a symbol (required for spotCancelAll action)'),
     // Perp trading params
     perp: perpTradeParamsSchema
       .optional()
@@ -66,6 +110,8 @@ export const abilityParamsSchema = z
       if (data.action === 'transferToSpot' || data.action === 'transferToPerp')
         return !!data.transfer;
       if (data.action === 'spotBuy' || data.action === 'spotSell') return !!data.spot;
+      if (data.action === 'spotCancelOrder') return !!data.spotCancelOrder;
+      if (data.action === 'spotCancelAll') return !!data.spotCancelAll;
       if (data.action === 'perpLong' || data.action === 'perpShort') return !!data.perp;
       return false;
     },
@@ -105,6 +151,11 @@ export const executeSuccessSchema = z.object({
   action: z.string().describe('Action that was executed'),
   txHash: z.string().optional().describe('Transaction hash (for deposit action)'),
   transferResult: z.any().optional().describe('Transfer result (for transferToSpot action)'),
+  orderResult: z.any().optional().describe('Order result (for spotBuy/spotSell action)'),
+  cancelResult: z
+    .any()
+    .optional()
+    .describe('Cancel result (for spotCancelOrder/spotCancelAll action)'),
   openOrders: z.array(z.any()).optional().describe('Open orders after execution'),
   positions: z.any().optional().describe('Positions after execution'),
 });

@@ -18,8 +18,8 @@ import { z } from 'zod';
 import { type Wallet } from 'ethers';
 import * as hyperliquid from '@nktkas/hyperliquid';
 
-import { bundledVincentAbility as hyperliquidBundledAbility } from '../../src';
-import { SymbolConverter } from '@nktkas/hyperliquid/utils';
+import { bundledVincentAbility as hyperliquidBundledAbility } from '../../../src';
+import { calculateSpotOrderParams } from './helpers';
 
 // Extend Jest timeout to 4 minutes
 jest.setTimeout(240000);
@@ -32,15 +32,6 @@ describe('Hyperliquid Ability E2E Spot Trading Tests', () => {
   const SPOT_BUY_AMOUNT_USDC = '15'; // 15 USDC worth of SOL
   const TOKEN_OUT_NAME = 'PURR';
   const TRADING_PAIR = `${TOKEN_OUT_NAME}/USDC`;
-
-  // Helper function to round to N significant figures
-  function toSignificantFigures(num: number, sigFigs: number): string {
-    if (num === 0) return '0';
-    const magnitude = Math.floor(Math.log10(Math.abs(num)));
-    const scale = Math.pow(10, sigFigs - magnitude - 1);
-    const rounded = Math.round(num * scale) / scale;
-    return rounded.toString();
-  }
 
   let agentPkpInfo: PkpInfo;
   let wallets: {
@@ -146,53 +137,21 @@ describe('Hyperliquid Ability E2E Spot Trading Tests', () => {
         ethersSigner: wallets.appDelegatee,
       });
 
-      const converter = await SymbolConverter.create({ transport });
-      const spotPairId = converter.getSpotPairId(TRADING_PAIR);
-      if (!spotPairId) {
-        throw new Error(`Unable to get spot pair ID for ${TRADING_PAIR}`);
-      }
-      console.log('[Spot Buy] Spot Pair ID', spotPairId);
+      const {
+        price: buyPrice,
+        size: buySize,
+        midPrice,
+        tokenMeta,
+      } = await calculateSpotOrderParams({
+        transport,
+        infoClient,
+        tradingPair: TRADING_PAIR,
+        tokenName: TOKEN_OUT_NAME,
+        usdcAmount: SPOT_BUY_AMOUNT_USDC,
+        isBuy: true,
+      });
 
-      // Get spot metadata to determine szDecimals
-      const spotMeta = await infoClient.spotMeta();
-      const tokenMeta = spotMeta.tokens.find((t) => t.name === TOKEN_OUT_NAME);
-      if (!tokenMeta) {
-        throw new Error(`Unable to find metadata for token ${TOKEN_OUT_NAME}`);
-      }
-      console.log(`[Spot Buy] Token: ${TOKEN_OUT_NAME}, szDecimals: ${tokenMeta.szDecimals}`);
-
-      const allMidPrices = await infoClient.allMids();
-      const midPrice = allMidPrices[spotPairId];
-
-      // Calculate buy price according to Hyperliquid rules:
-      // Max 5 significant figures, no more than (MAX_DECIMALS - szDecimals) decimal places
-      // For spot, MAX_DECIMALS = 8
-      const MAX_DECIMALS = 8;
-      const maxPriceDecimals = MAX_DECIMALS - tokenMeta.szDecimals;
-      const buyPriceRaw = parseFloat(midPrice) * 1.01;
-
-      // First apply significant figures limit (max 5)
-      let buyPrice = toSignificantFigures(buyPriceRaw, 5);
-
-      // Then check decimal places constraint
-      const [, decimalPart] = buyPrice.split('.');
-      if (decimalPart && decimalPart.length > maxPriceDecimals) {
-        // Need to round to maxPriceDecimals
-        buyPrice = parseFloat(buyPrice).toFixed(maxPriceDecimals);
-        // Remove trailing zeros
-        buyPrice = parseFloat(buyPrice).toString();
-      }
-
-      // Calculate size rounded to szDecimals
-      const rawSize = parseFloat(SPOT_BUY_AMOUNT_USDC) / parseFloat(buyPrice);
-      const multiplier = Math.pow(10, tokenMeta.szDecimals);
-      const minSize = 1 / multiplier; // Minimum size is 10^(-szDecimals)
-      let buySize = Math.max(minSize, Math.floor(rawSize * multiplier) / multiplier).toFixed(
-        tokenMeta.szDecimals,
-      );
-      // Remove trailing zeros from size
-      buySize = parseFloat(buySize).toString();
-
+      console.log(`[Spot Buy] Token: ${tokenMeta.name}, szDecimals: ${tokenMeta.szDecimals}`);
       console.log(`[Spot Buy] Mid price: ${midPrice}, Buy price: ${buyPrice}, Size: ${buySize}`);
 
       const precheckResult = await hyperliquidAbilityClient.precheck(
@@ -228,54 +187,21 @@ describe('Hyperliquid Ability E2E Spot Trading Tests', () => {
         ethersSigner: wallets.appDelegatee,
       });
 
-      const converter = await SymbolConverter.create({ transport });
-      const spotPairId = converter.getSpotPairId(TRADING_PAIR);
-      if (!spotPairId) {
-        throw new Error(`Unable to get spot pair ID for ${TRADING_PAIR}`);
-      }
-      console.log('[Spot Buy] Spot Pair ID', spotPairId);
+      const {
+        price: buyPrice,
+        size: buySize,
+        midPrice,
+        tokenMeta,
+      } = await calculateSpotOrderParams({
+        transport,
+        infoClient,
+        tradingPair: TRADING_PAIR,
+        tokenName: TOKEN_OUT_NAME,
+        usdcAmount: SPOT_BUY_AMOUNT_USDC,
+        isBuy: true,
+      });
 
-      // Get spot metadata to determine szDecimals
-      const spotMeta = await infoClient.spotMeta();
-      const tokenMeta = spotMeta.tokens.find((t) => t.name === TOKEN_OUT_NAME);
-      if (!tokenMeta) {
-        throw new Error(`Unable to find metadata for token ${TOKEN_OUT_NAME}`);
-      }
-      console.log('[Spot Buy] Token Meta', tokenMeta);
-      console.log(`[Spot Buy] Token: ${TOKEN_OUT_NAME}, szDecimals: ${tokenMeta.szDecimals}`);
-
-      const allMidPrices = await infoClient.allMids();
-      const midPrice = allMidPrices[spotPairId];
-
-      // Calculate buy price according to Hyperliquid rules:
-      // Max 5 significant figures, no more than (MAX_DECIMALS - szDecimals) decimal places
-      // For spot, MAX_DECIMALS = 8
-      const MAX_DECIMALS = 8;
-      const maxPriceDecimals = MAX_DECIMALS - tokenMeta.szDecimals;
-      const buyPriceRaw = parseFloat(midPrice) * 1.01;
-
-      // First apply significant figures limit (max 5)
-      let buyPrice = toSignificantFigures(buyPriceRaw, 5);
-
-      // Then check decimal places constraint
-      const [, decimalPart] = buyPrice.split('.');
-      if (decimalPart && decimalPart.length > maxPriceDecimals) {
-        // Need to round to maxPriceDecimals
-        buyPrice = parseFloat(buyPrice).toFixed(maxPriceDecimals);
-        // Remove trailing zeros
-        buyPrice = parseFloat(buyPrice).toString();
-      }
-
-      // Calculate size rounded to szDecimals
-      const rawSize = parseFloat(SPOT_BUY_AMOUNT_USDC) / parseFloat(buyPrice);
-      const multiplier = Math.pow(10, tokenMeta.szDecimals);
-      const minSize = 1 / multiplier; // Minimum size is 10^(-szDecimals)
-      let buySize = Math.max(minSize, Math.floor(rawSize * multiplier) / multiplier).toFixed(
-        tokenMeta.szDecimals,
-      );
-      // Remove trailing zeros from size
-      buySize = parseFloat(buySize).toString();
-
+      console.log(`[Spot Buy] Token: ${tokenMeta.name}, szDecimals: ${tokenMeta.szDecimals}`);
       console.log(`[Spot Buy] Mid price: ${midPrice}, Buy price: ${buyPrice}, Size: ${buySize}`);
 
       const executeResult = await hyperliquidAbilityClient.execute(

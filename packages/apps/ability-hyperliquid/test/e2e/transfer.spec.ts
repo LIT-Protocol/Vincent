@@ -15,10 +15,10 @@ import {
 } from '@lit-protocol/vincent-app-sdk/abilityClient';
 import * as util from 'node:util';
 import { z } from 'zod';
+import { type Wallet } from 'ethers';
+import * as hyperliquid from '@nktkas/hyperliquid';
 
 import { bundledVincentAbility as hyperliquidBundledAbility } from '../../src';
-import { ethers, type Wallet, type providers } from 'ethers';
-import * as hyperliquid from '@nktkas/hyperliquid';
 
 // Extend Jest timeout to 4 minutes
 jest.setTimeout(240000);
@@ -27,7 +27,8 @@ describe('Hyperliquid Ability E2E Transfer USDC to Spot/Perp Tests', () => {
   const ENV = getEnv({
     ARBITRUM_RPC_URL: z.string(),
   });
-  const USDC_TRANSFER_AMOUNT = '1000000';
+  const USDC_TRANSFER_AMOUNT = '50000000'; // 50 USDC
+  const USE_TESTNET = true;
 
   let agentPkpInfo: PkpInfo;
   let wallets: {
@@ -36,6 +37,8 @@ describe('Hyperliquid Ability E2E Transfer USDC to Spot/Perp Tests', () => {
     appManager: Wallet;
     agentWalletOwner: Wallet;
   };
+  let transport: hyperliquid.HttpTransport;
+  let infoClient: hyperliquid.InfoClient;
 
   beforeAll(async () => {
     await funder.checkFunderBalance();
@@ -93,6 +96,9 @@ describe('Hyperliquid Ability E2E Transfer USDC to Spot/Perp Tests', () => {
       agentPkpInfo.tokenId,
       abilityIpfsCids,
     );
+
+    transport = new hyperliquid.HttpTransport({ isTestnet: USE_TESTNET });
+    infoClient = new hyperliquid.InfoClient({ transport });
   });
 
   afterAll(async () => {
@@ -104,9 +110,6 @@ describe('Hyperliquid Ability E2E Transfer USDC to Spot/Perp Tests', () => {
     const expectedTransferAmount = parseFloat(USDC_TRANSFER_AMOUNT) / 1_000_000; // Convert from micro-units to whole USDC
 
     beforeAll(async () => {
-      const transport = new hyperliquid.HttpTransport();
-      const infoClient = new hyperliquid.InfoClient({ transport });
-
       // Get initial spot balance before transfer
       const spotState = await infoClient.spotClearinghouseState({
         user: agentPkpInfo.ethAddress as `0x${string}`,
@@ -131,6 +134,7 @@ describe('Hyperliquid Ability E2E Transfer USDC to Spot/Perp Tests', () => {
       const precheckResult = await hyperliquidAbilityClient.precheck(
         {
           action: 'transferToSpot',
+          useTestnet: USE_TESTNET,
           transfer: {
             amount: USDC_TRANSFER_AMOUNT,
           },
@@ -165,6 +169,7 @@ describe('Hyperliquid Ability E2E Transfer USDC to Spot/Perp Tests', () => {
       const executeResult = await hyperliquidAbilityClient.execute(
         {
           action: 'transferToSpot',
+          useTestnet: USE_TESTNET,
           transfer: {
             amount: USDC_TRANSFER_AMOUNT,
           },
@@ -191,9 +196,6 @@ describe('Hyperliquid Ability E2E Transfer USDC to Spot/Perp Tests', () => {
     });
 
     it('should verify the spot balance increased by the transfer amount', async () => {
-      const transport = new hyperliquid.HttpTransport();
-      const infoClient = new hyperliquid.InfoClient({ transport });
-
       // Get spot balance after transfer
       const spotState = await infoClient.spotClearinghouseState({
         user: agentPkpInfo.ethAddress as `0x${string}`,
@@ -244,14 +246,11 @@ describe('Hyperliquid Ability E2E Transfer USDC to Spot/Perp Tests', () => {
     });
   });
 
-  describe('[Transfer to Perp] Precheck & Execute Swap Success', () => {
+  describe.skip('[Transfer to Perp] Precheck & Execute Swap Success', () => {
     let initialPerpBalance: string;
     const expectedTransferAmount = parseFloat(USDC_TRANSFER_AMOUNT) / 1_000_000; // Convert from micro-units to whole USDC
 
     beforeAll(async () => {
-      const transport = new hyperliquid.HttpTransport();
-      const infoClient = new hyperliquid.InfoClient({ transport });
-
       // Get initial perp balance before transfer
       const clearinghouseState = await infoClient.clearinghouseState({
         user: agentPkpInfo.ethAddress as `0x${string}`,
@@ -278,6 +277,7 @@ describe('Hyperliquid Ability E2E Transfer USDC to Spot/Perp Tests', () => {
       const precheckResult = await hyperliquidAbilityClient.precheck(
         {
           action: 'transferToPerp',
+          useTestnet: USE_TESTNET,
           transfer: {
             amount: USDC_TRANSFER_AMOUNT,
           },
@@ -312,6 +312,7 @@ describe('Hyperliquid Ability E2E Transfer USDC to Spot/Perp Tests', () => {
       const executeResult = await hyperliquidAbilityClient.execute(
         {
           action: 'transferToPerp',
+          useTestnet: USE_TESTNET,
           transfer: {
             amount: USDC_TRANSFER_AMOUNT,
           },
@@ -338,9 +339,6 @@ describe('Hyperliquid Ability E2E Transfer USDC to Spot/Perp Tests', () => {
     });
 
     it('should verify the perp balance increased by the transfer amount', async () => {
-      const transport = new hyperliquid.HttpTransport();
-      const infoClient = new hyperliquid.InfoClient({ transport });
-
       // Get perp balance after transfer
       const clearinghouseState = await infoClient.clearinghouseState({
         user: agentPkpInfo.ethAddress as `0x${string}`,

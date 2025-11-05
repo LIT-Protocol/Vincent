@@ -1,0 +1,278 @@
+import {
+  delegator,
+  delegatee,
+  funder,
+  appManager,
+  ensureUnexpiredCapacityToken,
+  getChainHelpers,
+  getEnv,
+  type PkpInfo,
+} from '@lit-protocol/vincent-e2e-test-utils';
+import { type PermissionData } from '@lit-protocol/vincent-contracts-sdk';
+import {
+  disconnectVincentAbilityClients,
+  getVincentAbilityClient,
+} from '@lit-protocol/vincent-app-sdk/abilityClient';
+import * as util from 'node:util';
+import { z } from 'zod';
+import { type Wallet } from 'ethers';
+import * as hyperliquid from '@nktkas/hyperliquid';
+
+import { bundledVincentAbility as hyperliquidBundledAbility } from '../../../src';
+import { calculateSpotOrderParams } from './helpers';
+
+// Extend Jest timeout to 4 minutes
+jest.setTimeout(240000);
+
+describe('Hyperliquid Ability E2E Spot Sell Tests', () => {
+  const ENV = getEnv({
+    ARBITRUM_RPC_URL: z.string(),
+  });
+  const USE_TESTNET = true;
+  const SPOT_SELL_AMOUNT_USDC = '10'; // Sell ~10 USDC worth of token
+  const TOKEN_TO_SELL = 'PURR';
+  const TRADING_PAIR = `${TOKEN_TO_SELL}/USDC`;
+
+  let agentPkpInfo: PkpInfo;
+  let wallets: {
+    appDelegatee: Wallet;
+    funder: Wallet;
+    appManager: Wallet;
+    agentWalletOwner: Wallet;
+  };
+  let transport: hyperliquid.HttpTransport;
+  let infoClient: hyperliquid.InfoClient;
+
+  beforeAll(async () => {
+    await funder.checkFunderBalance();
+    await delegatee.ensureAppDelegateeFunded();
+    await appManager.ensureAppManagerFunded();
+
+    const chainHelpers = await getChainHelpers();
+    wallets = chainHelpers.wallets;
+
+    await ensureUnexpiredCapacityToken(wallets.appDelegatee);
+
+    const PERMISSION_DATA: PermissionData = {
+      // Hyperliquid Ability has no policies
+      [hyperliquidBundledAbility.ipfsCid]: {},
+    };
+
+    const abilityIpfsCids: string[] = Object.keys(PERMISSION_DATA);
+    const abilityPolicies: string[][] = abilityIpfsCids.map((abilityIpfsCid) => {
+      return Object.keys(PERMISSION_DATA[abilityIpfsCid]);
+    });
+
+    // If an app exists for the delegatee, we will create a new app version with the new ipfs cids
+    // Otherwise, we will create an app w/ version 1 appVersion with the new ipfs cids
+    const existingApp = await delegatee.getAppInfo();
+    console.log('[beforeAll] existingApp', existingApp);
+    let appId: number;
+    let appVersion: number;
+    if (!existingApp) {
+      console.log('[beforeAll] No existing app, registering new app');
+      const newApp = await appManager.registerNewApp({ abilityIpfsCids, abilityPolicies });
+      appId = newApp.appId;
+      appVersion = newApp.appVersion;
+    } else {
+      console.log('[beforeAll] Existing app, registering new app version');
+      const newAppVersion = await appManager.registerNewAppVersion({
+        abilityIpfsCids,
+        abilityPolicies,
+        appVersion: existingApp.appVersion,
+      });
+      appId = existingApp.appId;
+      appVersion = newAppVersion.appVersion;
+    }
+
+    agentPkpInfo = await delegator.getFundedAgentPkp();
+
+    await delegator.permitAppVersionForAgentWalletPkp({
+      permissionData: PERMISSION_DATA,
+      appId,
+      appVersion,
+      agentPkpInfo,
+    });
+
+    await delegator.addPermissionForAbilities(
+      wallets.agentWalletOwner,
+      agentPkpInfo.tokenId,
+      abilityIpfsCids,
+    );
+
+    transport = new hyperliquid.HttpTransport({ isTestnet: USE_TESTNET });
+    infoClient = new hyperliquid.InfoClient({ transport });
+  });
+
+  afterAll(async () => {
+    await disconnectVincentAbilityClients();
+  });
+
+  describe(`[Spot Sell] Sell ${TOKEN_TO_SELL} for USDC`, () => {
+    let initialUsdcBalance: string;
+    let initialTokenBalance: string;
+
+    beforeAll(async () => {
+      // Get initial balances before spot sell
+      const spotState = await infoClient.spotClearinghouseState({
+        user: agentPkpInfo.ethAddress as `0x${string}`,
+      });
+
+      if (spotState.balances) {
+        const usdcBalance = spotState.balances.find((b) => b.coin === 'USDC');
+        const tokenBalance = spotState.balances.find((b) => b.coin === TOKEN_TO_SELL);
+        initialUsdcBalance = usdcBalance?.total || '0';
+        initialTokenBalance = tokenBalance?.total || '0';
+        console.log(`[beforeAll] Initial USDC balance: ${initialUsdcBalance}`);
+        console.log(`[beforeAll] Initial ${TOKEN_TO_SELL} balance: ${initialTokenBalance}`);
+
+        if (parseFloat(initialTokenBalance) === 0) {
+          throw new Error(
+            `No ${TOKEN_TO_SELL} balance to sell. Please ensure you have ${TOKEN_TO_SELL} in your spot account.`,
+          );
+        }
+      } else {
+        throw new Error('No spot balances found. Please ensure funds are transferred to spot.');
+      }
+    });
+
+    it('should run precheck for spot sell', async () => {
+      const hyperliquidAbilityClient = getVincentAbilityClient({
+        bundledVincentAbility: hyperliquidBundledAbility,
+        ethersSigner: wallets.appDelegatee,
+      });
+
+      const {
+        price: sellPrice,
+        size: sellSize,
+        midPrice,
+        tokenMeta,
+      } = await calculateSpotOrderParams({
+        transport,
+        infoClient,
+        tradingPair: TRADING_PAIR,
+        tokenName: TOKEN_TO_SELL,
+        usdcAmount: SPOT_SELL_AMOUNT_USDC,
+        isBuy: false,
+      });
+
+      console.log(`[Spot Sell] Token: ${tokenMeta.name}, szDecimals: ${tokenMeta.szDecimals}`);
+      console.log(
+        `[Spot Sell] Mid price: ${midPrice}, Sell price: ${sellPrice}, Size: ${sellSize}`,
+      );
+
+      const precheckResult = await hyperliquidAbilityClient.precheck(
+        {
+          action: 'spotSell',
+          useTestnet: USE_TESTNET,
+          spot: {
+            symbol: TRADING_PAIR,
+            price: sellPrice,
+            size: sellSize,
+          },
+          arbitrumRpcUrl: ENV.ARBITRUM_RPC_URL,
+        },
+        {
+          delegatorPkpEthAddress: agentPkpInfo.ethAddress,
+        },
+      );
+
+      expect(precheckResult).toBeDefined();
+      console.log('[Spot Sell Precheck]', util.inspect(precheckResult, { depth: 10 }));
+
+      if (precheckResult.success === false) {
+        throw new Error(precheckResult.runtimeError);
+      }
+
+      expect(precheckResult.result).toBeDefined();
+      expect(precheckResult.result.action).toBe('spotSell');
+    });
+
+    it(`should execute spot sell to sell ${TOKEN_TO_SELL} for USDC`, async () => {
+      const hyperliquidAbilityClient = getVincentAbilityClient({
+        bundledVincentAbility: hyperliquidBundledAbility,
+        ethersSigner: wallets.appDelegatee,
+      });
+
+      const {
+        price: sellPrice,
+        size: sellSize,
+        midPrice,
+        tokenMeta,
+      } = await calculateSpotOrderParams({
+        transport,
+        infoClient,
+        tradingPair: TRADING_PAIR,
+        tokenName: TOKEN_TO_SELL,
+        usdcAmount: SPOT_SELL_AMOUNT_USDC,
+        isBuy: false, // Sell order
+      });
+
+      console.log(`[Spot Sell] Token: ${tokenMeta.name}, szDecimals: ${tokenMeta.szDecimals}`);
+      console.log(
+        `[Spot Sell] Mid price: ${midPrice}, Sell price: ${sellPrice}, Size: ${sellSize}`,
+      );
+
+      const executeResult = await hyperliquidAbilityClient.execute(
+        {
+          action: 'spotSell',
+          useTestnet: USE_TESTNET,
+          spot: {
+            symbol: TRADING_PAIR,
+            price: sellPrice,
+            size: sellSize,
+            orderType: { type: 'market' },
+          },
+        },
+        {
+          delegatorPkpEthAddress: agentPkpInfo.ethAddress,
+        },
+      );
+
+      expect(executeResult).toBeDefined();
+      console.log('[Spot Sell Execute]', util.inspect(executeResult, { depth: 10 }));
+
+      expect(executeResult.success).toBe(true);
+      if (executeResult.success === false) {
+        throw new Error(executeResult.runtimeError);
+      }
+
+      expect(executeResult.result).toBeDefined();
+      expect(executeResult.result.action).toBe('spotSell');
+    });
+
+    it(`should check USDC balance increased and ${TOKEN_TO_SELL} balance decreased after sell`, async () => {
+      // Wait a bit for order to potentially fill
+      await new Promise((resolve) => setTimeout(resolve, 5000));
+
+      // Get balances after sell
+      const spotState = await infoClient.spotClearinghouseState({
+        user: agentPkpInfo.ethAddress as `0x${string}`,
+      });
+
+      expect(spotState).toBeDefined();
+      console.log('[Spot Sell] State after sell', util.inspect(spotState, { depth: 10 }));
+
+      if (spotState.balances && spotState.balances.length > 0) {
+        const usdcBalance = spotState.balances.find((b) => b.coin === 'USDC');
+        const tokenBalance = spotState.balances.find((b) => b.coin === TOKEN_TO_SELL);
+
+        const finalUsdcBalance = usdcBalance?.total || '0';
+        const finalTokenBalance = tokenBalance?.total || '0';
+
+        console.log('[Spot Sell] Initial USDC:', initialUsdcBalance);
+        console.log('[Spot Sell] Final USDC:', finalUsdcBalance);
+        console.log(`[Spot Sell] Initial ${TOKEN_TO_SELL}:`, initialTokenBalance);
+        console.log(`[Spot Sell] Final ${TOKEN_TO_SELL}:`, finalTokenBalance);
+
+        // Token balance should decrease or stay same (order might not fill immediately)
+        expect(parseFloat(finalTokenBalance)).toBeLessThanOrEqual(parseFloat(initialTokenBalance));
+
+        // USDC balance should increase or stay same (order might not fill immediately)
+        expect(parseFloat(finalUsdcBalance)).toBeGreaterThanOrEqual(parseFloat(initialUsdcBalance));
+      } else {
+        throw new Error('No spot balances found after sell');
+      }
+    });
+  });
+});
