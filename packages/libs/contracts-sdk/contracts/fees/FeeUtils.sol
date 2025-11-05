@@ -11,7 +11,7 @@ library FeeUtils {
         uint256 srcChainId; // typically Chronicle chain Id
         address srcContract; // typically the VincentAppDiamond contract
         address owner; // owner address from the L3
-        uint256 appId; // the Vincent appId that this user is an owner of
+        uint40 appId; // the Vincent appId that this user is an owner of
         uint256 issuedAt; // unix time from Lit Action
         uint256 expiresAt; // issuedAt + 5 minutes
         uint256 dstChainId; // destination chain id to prevent cross-chain replay
