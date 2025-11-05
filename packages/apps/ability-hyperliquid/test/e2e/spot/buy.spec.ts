@@ -29,7 +29,7 @@ describe('Hyperliquid Ability E2E Spot Trading Tests', () => {
     ARBITRUM_RPC_URL: z.string(),
   });
   const USE_TESTNET = true;
-  const SPOT_BUY_AMOUNT_USDC = '15'; // 15 USDC worth of SOL
+  const SPOT_BUY_AMOUNT_USDC = '15';
   const TOKEN_OUT_NAME = 'PURR';
   const TRADING_PAIR = `${TOKEN_OUT_NAME}/USDC`;
 

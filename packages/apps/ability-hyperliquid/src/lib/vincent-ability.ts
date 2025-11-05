@@ -24,10 +24,11 @@ import {
   sendDepositTx,
   transferUsdcTo,
   executeSpotOrder,
-  cancelSpotOrder,
-  cancelAllSpotOrders,
+  cancelOrder,
+  cancelAllOrdersForSymbol,
+  executePerpOrder,
 } from './ability-helpers';
-import { depositPrechecks, spotTradePrechecks } from './ability-checks';
+import { depositPrechecks, spotTradePrechecks, perpTradePrechecks } from './ability-checks';
 
 export const vincentAbility = createVincentAbility({
   packageName: '@lit-protocol/vincent-ability-hyperliquid' as const,
@@ -286,6 +287,96 @@ export const vincentAbility = createVincentAbility({
           return fail({ action, reason: `Error checking open orders: ${errorMessage}` });
         }
       }
+
+      case 'perpLong':
+      case 'perpShort': {
+        if (!abilityParams.perp) {
+          return fail({ action, reason: 'Perp trade parameters are required for precheck' });
+        }
+
+        const checkResult = await perpTradePrechecks(
+          transport,
+          delegatorPkpInfo.ethAddress,
+          abilityParams.perp,
+        );
+
+        if (!checkResult.success) {
+          return fail({ action, reason: checkResult.reason || 'Unknown error' });
+        }
+
+        return succeed({ action });
+      }
+
+      case 'perpCancelOrder': {
+        if (!hyperLiquidAccountAlreadyExists) {
+          return fail({
+            action,
+            reason: 'Hyperliquid account does not exist. Please deposit first.',
+          });
+        }
+
+        if (!abilityParams.perpCancelOrder) {
+          return fail({ action, reason: 'Cancel order parameters are required for precheck' });
+        }
+
+        // Check if the order exists and is still open
+        try {
+          const openOrders = await infoClient.openOrders({
+            user: delegatorPkpInfo.ethAddress as `0x${string}`,
+          });
+
+          const orderExists = openOrders.some(
+            (order) => order.oid === abilityParams.perpCancelOrder!.orderId,
+          );
+
+          if (!orderExists) {
+            return fail({
+              action,
+              reason: `Order ${abilityParams.perpCancelOrder.orderId} not found or already filled/cancelled`,
+            });
+          }
+
+          return succeed({ action });
+        } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          return fail({ action, reason: `Error checking open orders: ${errorMessage}` });
+        }
+      }
+
+      case 'perpCancelAll': {
+        if (!hyperLiquidAccountAlreadyExists) {
+          return fail({
+            action,
+            reason: 'Hyperliquid account does not exist. Please deposit first.',
+          });
+        }
+
+        if (!abilityParams.perpCancelAll) {
+          return fail({ action, reason: 'Cancel all parameters are required for precheck' });
+        }
+
+        // Check if there are any open orders for the symbol
+        try {
+          const openOrders = await infoClient.openOrders({
+            user: delegatorPkpInfo.ethAddress as `0x${string}`,
+          });
+          const ordersForSymbol = openOrders.filter(
+            (order) => order.coin === abilityParams.perpCancelAll!.symbol,
+          );
+
+          if (ordersForSymbol.length === 0) {
+            return fail({
+              action,
+              reason: `No open orders found for ${abilityParams.perpCancelAll.symbol}`,
+            });
+          }
+
+          return succeed({ action });
+        } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          return fail({ action, reason: `Error checking open orders: ${errorMessage}` });
+        }
+      }
     }
 
     return fail({ action, reason: `Unknown action: ${action}` });
@@ -421,7 +512,7 @@ export const vincentAbility = createVincentAbility({
             return fail({ action, reason: 'Cancel order parameters are required' });
           }
 
-          const result = await cancelSpotOrder({
+          const result = await cancelOrder({
             transport,
             pkpPublicKey: delegatorPkpInfo.publicKey,
             params: {
@@ -449,10 +540,101 @@ export const vincentAbility = createVincentAbility({
             return fail({ action, reason: 'Cancel all parameters are required' });
           }
 
-          const result = await cancelAllSpotOrders({
+          const result = await cancelAllOrdersForSymbol({
             transport,
             pkpPublicKey: delegatorPkpInfo.publicKey,
             symbol: abilityParams.spotCancelAll.symbol,
+            useTestnet,
+          });
+
+          if (result.status === 'error') {
+            return fail({
+              action,
+              reason: result.reason as string,
+            });
+          }
+
+          return succeed({
+            action,
+            cancelResult: result.cancelResult,
+          });
+        }
+
+        case 'perpLong':
+        case 'perpShort': {
+          if (!abilityParams.perp) {
+            return fail({ action, reason: 'Perp trade parameters are required' });
+          }
+
+          const result = await executePerpOrder({
+            transport,
+            pkpPublicKey: delegatorPkpInfo.publicKey,
+            params: {
+              symbol: abilityParams.perp.symbol,
+              price: abilityParams.perp.price,
+              size: abilityParams.perp.size,
+              isLong: action === 'perpLong',
+              orderType: abilityParams.perp.orderType,
+              leverage: abilityParams.perp.leverage
+                ? {
+                    leverage: abilityParams.perp.leverage,
+                    isCross: abilityParams.perp.isCross ?? true,
+                  }
+                : undefined,
+            },
+            useTestnet,
+          });
+
+          if (result.status === 'error') {
+            return fail({
+              action,
+              reason: result.error,
+            });
+          }
+
+          return succeed({
+            action,
+            orderResult: result.orderResult,
+          });
+        }
+
+        case 'perpCancelOrder': {
+          if (!abilityParams.perpCancelOrder) {
+            return fail({ action, reason: 'Cancel order parameters are required' });
+          }
+
+          const result = await cancelOrder({
+            transport,
+            pkpPublicKey: delegatorPkpInfo.publicKey,
+            params: {
+              symbol: abilityParams.perpCancelOrder.symbol,
+              orderId: abilityParams.perpCancelOrder.orderId,
+            },
+            useTestnet,
+          });
+
+          if (result.status === 'error') {
+            return fail({
+              action,
+              reason: result.reason,
+            });
+          }
+
+          return succeed({
+            action,
+            cancelResult: result.cancelResult,
+          });
+        }
+
+        case 'perpCancelAll': {
+          if (!abilityParams.perpCancelAll) {
+            return fail({ action, reason: 'Cancel all parameters are required' });
+          }
+
+          const result = await cancelAllOrdersForSymbol({
+            transport,
+            pkpPublicKey: delegatorPkpInfo.publicKey,
+            symbol: abilityParams.perpCancelAll.symbol,
             useTestnet,
           });
 

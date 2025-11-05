@@ -10,6 +10,8 @@ export const actionTypeSchema = z.enum([
   'spotCancelAll',
   'perpLong',
   'perpShort',
+  'perpCancelOrder',
+  'perpCancelAll',
 ]);
 
 export const depositParamsSchema = z.object({
@@ -64,6 +66,20 @@ export const perpTradeParamsSchema = z.object({
   size: z.string().describe('Order size in base asset'),
   leverage: z.number().min(1).max(50).optional().describe('Leverage multiplier (default: 2x)'),
   isCross: z.boolean().optional().describe('Cross leverage (default: true)'),
+  orderType: orderTypeSchema
+    .optional()
+    .describe(
+      'Order type: { type: "limit", tif: "Gtc" | "Ioc" | "Alo" } or { type: "market" }. Default: { type: "limit", tif: "Gtc" }',
+    ),
+});
+
+export const perpCancelOrderParamsSchema = z.object({
+  symbol: z.string().describe('Perpetual symbol (e.g., "ETH")'),
+  orderId: z.number().describe('Order ID to cancel'),
+});
+
+export const perpCancelAllParamsSchema = z.object({
+  symbol: z.string().describe('Perpetual symbol to cancel all orders for (e.g., "ETH")'),
 });
 
 export const abilityParamsSchema = z
@@ -101,6 +117,14 @@ export const abilityParamsSchema = z
     perp: perpTradeParamsSchema
       .optional()
       .describe('Perpetual trading parameters (required for perpLong/perpShort)'),
+    // Perp cancel order params
+    perpCancelOrder: perpCancelOrderParamsSchema
+      .optional()
+      .describe('Cancel specific perp order (required for perpCancelOrder action)'),
+    // Perp cancel all params
+    perpCancelAll: perpCancelAllParamsSchema
+      .optional()
+      .describe('Cancel all perp orders for a symbol (required for perpCancelAll action)'),
     // Arbitrum RPC URL
     arbitrumRpcUrl: z.string().optional().describe('Arbitrum RPC URL (required for precheck)'),
   })
@@ -113,6 +137,8 @@ export const abilityParamsSchema = z
       if (data.action === 'spotCancelOrder') return !!data.spotCancelOrder;
       if (data.action === 'spotCancelAll') return !!data.spotCancelAll;
       if (data.action === 'perpLong' || data.action === 'perpShort') return !!data.perp;
+      if (data.action === 'perpCancelOrder') return !!data.perpCancelOrder;
+      if (data.action === 'perpCancelAll') return !!data.perpCancelAll;
       return false;
     },
     {
