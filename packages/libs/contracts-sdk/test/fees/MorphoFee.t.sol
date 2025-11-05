@@ -170,7 +170,7 @@ contract MorphoFeeTest is FeeTestCommon {
         assertEq(tokensWithCollectedFees.length, 0);
 
         // test withdrawal of profit from the fee contract as app manager
-         FeeUtils.OwnerAttestation memory oa = FeeUtils.OwnerAttestation({
+        FeeUtils.OwnerAttestation memory oa = FeeUtils.OwnerAttestation({
             srcChainId: LibFeeStorage.CHRONICLE_YELLOWSTONE_CHAIN_ID,
             srcContract: vincentDiamondAddress,
             owner: APP_MANAGER_BOB,
