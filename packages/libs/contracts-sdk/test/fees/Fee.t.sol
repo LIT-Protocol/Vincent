@@ -230,7 +230,7 @@ contract FeeTest is FeeTestCommon {
         address incorrectAppManager = makeAddr("IncorrectAppManager");
 
         bytes memory expectedRevertData = abi.encodeWithSelector(
-            FeeAdminFacet.CallerNotAppManager.selector, appId, APP_USER_ALICE, incorrectAppManager
+            FeeAdminFacet.CallerNotAppManager.selector, appId, incorrectAppManager, APP_USER_ALICE
         );
 
         vm.startPrank(incorrectAppManager);

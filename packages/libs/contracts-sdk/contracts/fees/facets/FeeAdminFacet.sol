@@ -92,7 +92,7 @@ contract FeeAdminFacet is FeeCommon {
             revert OwnerAttestationIncorrectSigner(LibFeeStorage.getStorage().ownerAttestationSigner, signer);
         }
         if (msg.sender != oa.owner) {
-            revert CallerNotAppManager(appId, oa.owner, msg.sender);
+            revert CallerNotAppManager(appId, msg.sender, oa.owner);
         }
         if (oa.appId != appId) {
             revert OwnerAttestationIncorrectAppId(appId, oa.appId);
