@@ -18,7 +18,10 @@ import { z } from 'zod';
 import { type Wallet } from 'ethers';
 import * as hyperliquid from '@nktkas/hyperliquid';
 
-import { bundledVincentAbility as hyperliquidBundledAbility } from '../../../src';
+import {
+  HyperliquidAction,
+  bundledVincentAbility as hyperliquidBundledAbility,
+} from '../../../src';
 
 // Extend Jest timeout to 4 minutes
 jest.setTimeout(240000);
@@ -31,7 +34,7 @@ describe('Hyperliquid Ability E2E Spot Cancel Order Tests', () => {
 
   // CONFIGURE THESE BEFORE RUNNING THE TEST
   const TRADING_PAIR = 'PURR/USDC'; // Trading pair for the order to cancel
-  const ORDER_ID_TO_CANCEL = 42356946079; // Replace with actual order ID from a placed order
+  const ORDER_ID_TO_CANCEL = 0; // Replace with actual order ID from a placed order
 
   let agentPkpInfo: PkpInfo;
   let wallets: {
@@ -121,9 +124,9 @@ describe('Hyperliquid Ability E2E Spot Cancel Order Tests', () => {
 
       const precheckResult = await hyperliquidAbilityClient.precheck(
         {
-          action: 'spotCancelOrder',
+          action: HyperliquidAction.CANCEL_ORDER,
           useTestnet: USE_TESTNET,
-          spotCancelOrder: {
+          cancelOrder: {
             symbol: TRADING_PAIR,
             orderId: ORDER_ID_TO_CANCEL,
           },
@@ -142,7 +145,7 @@ describe('Hyperliquid Ability E2E Spot Cancel Order Tests', () => {
       }
 
       expect(precheckResult.result).toBeDefined();
-      expect(precheckResult.result.action).toBe('spotCancelOrder');
+      expect(precheckResult.result.action).toBe(HyperliquidAction.CANCEL_ORDER);
     });
 
     it('should run execute to cancel order', async () => {
@@ -153,9 +156,9 @@ describe('Hyperliquid Ability E2E Spot Cancel Order Tests', () => {
 
       const executeResult = await hyperliquidAbilityClient.execute(
         {
-          action: 'spotCancelOrder',
+          action: HyperliquidAction.CANCEL_ORDER,
           useTestnet: USE_TESTNET,
-          spotCancelOrder: {
+          cancelOrder: {
             symbol: TRADING_PAIR,
             orderId: ORDER_ID_TO_CANCEL,
           },
@@ -177,7 +180,7 @@ describe('Hyperliquid Ability E2E Spot Cancel Order Tests', () => {
       }
 
       expect(executeResult.result).toBeDefined();
-      expect(executeResult.result.action).toBe('spotCancelOrder');
+      expect(executeResult.result.action).toBe(HyperliquidAction.CANCEL_ORDER);
       expect(executeResult.result.cancelResult).toBeDefined();
     });
 

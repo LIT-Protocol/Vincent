@@ -18,7 +18,10 @@ import { z } from 'zod';
 import { type Wallet } from 'ethers';
 import * as hyperliquid from '@nktkas/hyperliquid';
 
-import { bundledVincentAbility as hyperliquidBundledAbility } from '../../../src';
+import {
+  HyperliquidAction,
+  bundledVincentAbility as hyperliquidBundledAbility,
+} from '../../../src';
 
 // Extend Jest timeout to 4 minutes
 jest.setTimeout(240000);
@@ -39,7 +42,6 @@ describe('Hyperliquid Ability E2E Spot Cancel All Orders Tests', () => {
   };
   let transport: hyperliquid.HttpTransport;
   let infoClient: hyperliquid.InfoClient;
-  let orderCountBeforeCancel: number;
 
   beforeAll(async () => {
     await funder.checkFunderBalance();
@@ -115,9 +117,9 @@ describe('Hyperliquid Ability E2E Spot Cancel All Orders Tests', () => {
 
       const precheckResult = await hyperliquidAbilityClient.precheck(
         {
-          action: 'spotCancelAll',
+          action: HyperliquidAction.CANCEL_ALL_ORDERS_FOR_SYMBOL,
           useTestnet: USE_TESTNET,
-          spotCancelAll: {
+          cancelAllOrdersForSymbol: {
             symbol: TRADING_PAIR,
           },
           arbitrumRpcUrl: ENV.ARBITRUM_RPC_URL,
@@ -138,7 +140,7 @@ describe('Hyperliquid Ability E2E Spot Cancel All Orders Tests', () => {
       }
 
       expect(precheckResult.result).toBeDefined();
-      expect(precheckResult.result.action).toBe('spotCancelAll');
+      expect(precheckResult.result.action).toBe(HyperliquidAction.CANCEL_ALL_ORDERS_FOR_SYMBOL);
     });
 
     it('should run execute to cancel all orders', async () => {
@@ -149,9 +151,9 @@ describe('Hyperliquid Ability E2E Spot Cancel All Orders Tests', () => {
 
       const executeResult = await hyperliquidAbilityClient.execute(
         {
-          action: 'spotCancelAll',
+          action: HyperliquidAction.CANCEL_ALL_ORDERS_FOR_SYMBOL,
           useTestnet: USE_TESTNET,
-          spotCancelAll: {
+          cancelAllOrdersForSymbol: {
             symbol: TRADING_PAIR,
           },
         },
@@ -172,7 +174,7 @@ describe('Hyperliquid Ability E2E Spot Cancel All Orders Tests', () => {
       }
 
       expect(executeResult.result).toBeDefined();
-      expect(executeResult.result.action).toBe('spotCancelAll');
+      expect(executeResult.result.action).toBe(HyperliquidAction.CANCEL_ALL_ORDERS_FOR_SYMBOL);
       expect(executeResult.result.cancelResult).toBeDefined();
     });
 

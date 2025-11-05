@@ -49,8 +49,7 @@ export async function perpTradePrechecks(
     });
 
     // Check if user has any cross margin value or margin summary
-    const crossMarginSummary = perpState.crossMarginSummary;
-    if (!crossMarginSummary) {
+    if (!perpState.crossMarginSummary) {
       return {
         success: false,
         reason: 'No perp account found. Please transfer funds to perp account first.',
@@ -58,7 +57,7 @@ export async function perpTradePrechecks(
       };
     }
 
-    const accountValue = parseFloat(crossMarginSummary.accountValue);
+    const accountValue = parseFloat(perpState.crossMarginSummary.accountValue);
     if (accountValue <= 0) {
       return {
         success: false,

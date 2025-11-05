@@ -14,6 +14,12 @@ export interface PerpTradeParams {
   size: string;
   isLong: boolean; // true for long, false for short
   /**
+   * Reduce-only flag. If true, order will only reduce existing position.
+   * Use this to close positions - the order will only fill up to the position size.
+   * @default false
+   */
+  reduceOnly?: boolean;
+  /**
    * Order type configuration.
    * - For limit orders: specify { type: 'limit', tif: 'Gtc' | 'Ioc' | 'Alo' }
    * - For market orders: specify { type: 'market' }
@@ -56,7 +62,6 @@ export async function executePerpOrder({
 
   // Create PKP wallet
   const pkpWallet = new LitActionPkpEthersWallet(pkpPublicKey);
-  const pkpAddress = await pkpWallet.getAddress();
 
   // Set leverage if specified
   if (params.leverage) {
@@ -127,7 +132,7 @@ export async function executePerpOrder({
         b: params.isLong, // true for long (buy), false for short (sell)
         p: params.price,
         s: params.size,
-        r: false, // reduce only (false for opening positions)
+        r: params.reduceOnly ?? false, // reduce only (true to close positions, false for opening)
         t: orderTypeField,
       },
     ],

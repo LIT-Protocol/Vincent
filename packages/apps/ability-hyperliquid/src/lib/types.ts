@@ -1,27 +1,45 @@
 /**
- * Bridge contract address on Arbitrum Mainnet
- * Minimum deposit: 5 USDC + 1 USDC fee = 6 USDC total
+ * Action types for Hyperliquid ability
  */
+export enum HyperliquidAction {
+  DEPOSIT = 'deposit',
+  TRANSFER_TO_SPOT = 'transferToSpot',
+  TRANSFER_TO_PERP = 'transferToPerp',
+  SPOT_BUY = 'spotBuy',
+  SPOT_SELL = 'spotSell',
+  PERP_LONG = 'perpLong',
+  PERP_SHORT = 'perpShort',
+  CANCEL_ORDER = 'cancelOrder',
+  CANCEL_ALL_ORDERS_FOR_SYMBOL = 'cancelAllOrdersForSymbol',
+}
+
+/**
+ * Time-in-force options for limit orders
+ */
+export enum TimeInForce {
+  /** Good Till Canceled - order stays active until filled or manually canceled */
+  GTC = 'Gtc',
+  /** Immediate Or Cancel - order fills immediately or cancels */
+  IOC = 'Ioc',
+  /** Add Liquidity Only - order only fills if it adds liquidity (maker only) */
+  ALO = 'Alo',
+}
+
+/**
+ * Order type for trades
+ */
+export enum OrderType {
+  LIMIT = 'limit',
+  MARKET = 'market',
+}
+
 export const HYPERLIQUID_BRIDGE_ADDRESS_MAINNET = '0x2Df1c51E09aECF9cacB7bc98cB1742757f163dF7';
 
-/**
- * Bridge contract address on Arbitrum Sepolia (Testnet)
- */
 export const HYPERLIQUID_BRIDGE_ADDRESS_TESTNET = '0xEdB6e5c456B7ccA2EB1e5c7007f4Ab80426CD20F';
 
-/**
- * USDC address on Arbitrum Mainnet (standard ERC20)
- */
 export const ARBITRUM_USDC_ADDRESS_MAINNET = '0xaf88d065e77c8cC2239327C5EDb3A432268e5831';
 
-/**
- * USDC address on Arbitrum Sepolia Testnet (standard ERC20)
- */
 export const ARBITRUM_USDC_ADDRESS_TESTNET = '0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d';
-
-// Legacy exports for backwards compatibility
-export const HYPERLIQUID_BRIDGE_ADDRESS = HYPERLIQUID_BRIDGE_ADDRESS_MAINNET;
-export const ARBITRUM_USDC_ADDRESS = ARBITRUM_USDC_ADDRESS_MAINNET;
 
 export type DepositPrechecksResult = DepositPrechecksResultSuccess | DepositPrechecksResultFailure;
 

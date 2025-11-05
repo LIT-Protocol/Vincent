@@ -18,7 +18,11 @@ import { z } from 'zod';
 import { type Wallet } from 'ethers';
 import * as hyperliquid from '@nktkas/hyperliquid';
 
-import { bundledVincentAbility as hyperliquidBundledAbility } from '../../../src';
+import {
+  HyperliquidAction,
+  bundledVincentAbility as hyperliquidBundledAbility,
+  OrderType,
+} from '../../../src';
 import { calculatePerpOrderParams } from './helpers';
 
 // Extend Jest timeout to 4 minutes
@@ -163,7 +167,7 @@ describe('Hyperliquid Ability E2E Perp Long Tests', () => {
 
       const precheckResult = await hyperliquidAbilityClient.precheck(
         {
-          action: 'perpLong',
+          action: HyperliquidAction.PERP_LONG,
           useTestnet: USE_TESTNET,
           perp: {
             symbol: PERP_SYMBOL,
@@ -187,7 +191,7 @@ describe('Hyperliquid Ability E2E Perp Long Tests', () => {
       }
 
       expect(precheckResult.result).toBeDefined();
-      expect(precheckResult.result.action).toBe('perpLong');
+      expect(precheckResult.result.action).toBe(HyperliquidAction.PERP_LONG);
     });
 
     it(`should execute perp long to open long position on ${PERP_SYMBOL}`, async () => {
@@ -216,7 +220,7 @@ describe('Hyperliquid Ability E2E Perp Long Tests', () => {
 
       const executeResult = await hyperliquidAbilityClient.execute(
         {
-          action: 'perpLong',
+          action: HyperliquidAction.PERP_LONG,
           useTestnet: USE_TESTNET,
           perp: {
             symbol: PERP_SYMBOL,
@@ -224,7 +228,8 @@ describe('Hyperliquid Ability E2E Perp Long Tests', () => {
             size: longSize,
             leverage: LEVERAGE,
             isCross: IS_CROSS,
-            orderType: { type: 'market' },
+            reduceOnly: true,
+            orderType: { type: OrderType.MARKET },
           },
         },
         {
@@ -241,7 +246,7 @@ describe('Hyperliquid Ability E2E Perp Long Tests', () => {
       }
 
       expect(executeResult.result).toBeDefined();
-      expect(executeResult.result.action).toBe('perpLong');
+      expect(executeResult.result.action).toBe(HyperliquidAction.PERP_LONG);
     });
 
     it(`should check ${PERP_SYMBOL} position increased after long`, async () => {

@@ -18,7 +18,11 @@ import { z } from 'zod';
 import { type Wallet } from 'ethers';
 import * as hyperliquid from '@nktkas/hyperliquid';
 
-import { bundledVincentAbility as hyperliquidBundledAbility } from '../../../src';
+import {
+  HyperliquidAction,
+  bundledVincentAbility as hyperliquidBundledAbility,
+  OrderType,
+} from '../../../src';
 import { calculateSpotOrderParams } from './helpers';
 
 // Extend Jest timeout to 4 minutes
@@ -156,7 +160,7 @@ describe('Hyperliquid Ability E2E Spot Trading Tests', () => {
 
       const precheckResult = await hyperliquidAbilityClient.precheck(
         {
-          action: 'spotBuy',
+          action: HyperliquidAction.SPOT_BUY,
           useTestnet: USE_TESTNET,
           spot: {
             symbol: TRADING_PAIR,
@@ -178,7 +182,7 @@ describe('Hyperliquid Ability E2E Spot Trading Tests', () => {
       }
 
       expect(precheckResult.result).toBeDefined();
-      expect(precheckResult.result.action).toBe('spotBuy');
+      expect(precheckResult.result.action).toBe(HyperliquidAction.SPOT_BUY);
     });
 
     it('should execute spot buy to purchase SOL with USDC', async () => {
@@ -206,13 +210,13 @@ describe('Hyperliquid Ability E2E Spot Trading Tests', () => {
 
       const executeResult = await hyperliquidAbilityClient.execute(
         {
-          action: 'spotBuy',
+          action: HyperliquidAction.SPOT_BUY,
           useTestnet: USE_TESTNET,
           spot: {
             symbol: TRADING_PAIR,
             price: buyPrice,
             size: buySize,
-            orderType: { type: 'market' },
+            orderType: { type: OrderType.MARKET },
           },
         },
         {
@@ -229,7 +233,7 @@ describe('Hyperliquid Ability E2E Spot Trading Tests', () => {
       }
 
       expect(executeResult.result).toBeDefined();
-      expect(executeResult.result.action).toBe('spotBuy');
+      expect(executeResult.result.action).toBe(HyperliquidAction.SPOT_BUY);
     });
 
     it(`should check ${TOKEN_OUT_NAME} balance increased after buy`, async () => {

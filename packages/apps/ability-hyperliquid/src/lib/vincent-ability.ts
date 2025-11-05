@@ -93,6 +93,7 @@ export const vincentAbility = createVincentAbility({
           provider: new ethers.providers.StaticJsonRpcProvider(arbitrumRpcUrl),
           agentWalletPkpEthAddress: delegatorPkpInfo.ethAddress,
           depositAmount: abilityParams.deposit.amount,
+          useTestnet,
         });
 
         if (!result.success) {
@@ -217,77 +218,6 @@ export const vincentAbility = createVincentAbility({
         return succeed({ action });
       }
 
-      case 'spotCancelOrder': {
-        if (!hyperLiquidAccountAlreadyExists) {
-          return fail({
-            action,
-            reason: 'Hyperliquid account does not exist. Please deposit first.',
-          });
-        }
-
-        if (!abilityParams.spotCancelOrder) {
-          return fail({ action, reason: 'Cancel order parameters are required for precheck' });
-        }
-
-        // Check if the order exists and is still open
-        try {
-          const openOrders = await infoClient.openOrders({
-            user: delegatorPkpInfo.ethAddress as `0x${string}`,
-          });
-
-          const orderExists = openOrders.some(
-            (order) => order.oid === abilityParams.spotCancelOrder!.orderId,
-          );
-
-          if (!orderExists) {
-            return fail({
-              action,
-              reason: `Order ${abilityParams.spotCancelOrder.orderId} not found or already filled/cancelled`,
-            });
-          }
-
-          return succeed({ action });
-        } catch (error) {
-          const errorMessage = error instanceof Error ? error.message : String(error);
-          return fail({ action, reason: `Error checking open orders: ${errorMessage}` });
-        }
-      }
-
-      case 'spotCancelAll': {
-        if (!hyperLiquidAccountAlreadyExists) {
-          return fail({
-            action,
-            reason: 'Hyperliquid account does not exist. Please deposit first.',
-          });
-        }
-
-        if (!abilityParams.spotCancelAll) {
-          return fail({ action, reason: 'Cancel all parameters are required for precheck' });
-        }
-
-        // Check if there are any open orders for the symbol
-        try {
-          const openOrders = await infoClient.openOrders({
-            user: delegatorPkpInfo.ethAddress as `0x${string}`,
-          });
-          const ordersForSymbol = openOrders.filter(
-            (order) => order.coin === abilityParams.spotCancelAll!.symbol,
-          );
-
-          if (ordersForSymbol.length === 0) {
-            return fail({
-              action,
-              reason: `No open orders found for ${abilityParams.spotCancelAll.symbol}`,
-            });
-          }
-
-          return succeed({ action });
-        } catch (error) {
-          const errorMessage = error instanceof Error ? error.message : String(error);
-          return fail({ action, reason: `Error checking open orders: ${errorMessage}` });
-        }
-      }
-
       case 'perpLong':
       case 'perpShort': {
         if (!abilityParams.perp) {
@@ -307,7 +237,7 @@ export const vincentAbility = createVincentAbility({
         return succeed({ action });
       }
 
-      case 'perpCancelOrder': {
+      case 'cancelOrder': {
         if (!hyperLiquidAccountAlreadyExists) {
           return fail({
             action,
@@ -315,7 +245,7 @@ export const vincentAbility = createVincentAbility({
           });
         }
 
-        if (!abilityParams.perpCancelOrder) {
+        if (!abilityParams.cancelOrder) {
           return fail({ action, reason: 'Cancel order parameters are required for precheck' });
         }
 
@@ -326,13 +256,13 @@ export const vincentAbility = createVincentAbility({
           });
 
           const orderExists = openOrders.some(
-            (order) => order.oid === abilityParams.perpCancelOrder!.orderId,
+            (order) => order.oid === abilityParams.cancelOrder!.orderId,
           );
 
           if (!orderExists) {
             return fail({
               action,
-              reason: `Order ${abilityParams.perpCancelOrder.orderId} not found or already filled/cancelled`,
+              reason: `Order ${abilityParams.cancelOrder.orderId} not found or already filled/cancelled`,
             });
           }
 
@@ -343,7 +273,7 @@ export const vincentAbility = createVincentAbility({
         }
       }
 
-      case 'perpCancelAll': {
+      case 'cancelAllOrdersForSymbol': {
         if (!hyperLiquidAccountAlreadyExists) {
           return fail({
             action,
@@ -351,8 +281,11 @@ export const vincentAbility = createVincentAbility({
           });
         }
 
-        if (!abilityParams.perpCancelAll) {
-          return fail({ action, reason: 'Cancel all parameters are required for precheck' });
+        if (!abilityParams.cancelAllOrdersForSymbol) {
+          return fail({
+            action,
+            reason: 'Cancel all orders for symbol parameters are required for precheck',
+          });
         }
 
         // Check if there are any open orders for the symbol
@@ -361,13 +294,13 @@ export const vincentAbility = createVincentAbility({
             user: delegatorPkpInfo.ethAddress as `0x${string}`,
           });
           const ordersForSymbol = openOrders.filter(
-            (order) => order.coin === abilityParams.perpCancelAll!.symbol,
+            (order) => order.coin === abilityParams.cancelAllOrdersForSymbol!.symbol,
           );
 
           if (ordersForSymbol.length === 0) {
             return fail({
               action,
-              reason: `No open orders found for ${abilityParams.perpCancelAll.symbol}`,
+              reason: `No open orders found for ${abilityParams.cancelAllOrdersForSymbol.symbol}`,
             });
           }
 
@@ -377,9 +310,10 @@ export const vincentAbility = createVincentAbility({
           return fail({ action, reason: `Error checking open orders: ${errorMessage}` });
         }
       }
-    }
 
-    return fail({ action, reason: `Unknown action: ${action}` });
+      default:
+        return fail({ action, reason: `Unknown action: ${action}` });
+    }
   },
 
   execute: async ({ abilityParams }, { succeed, fail, delegation: { delegatorPkpInfo } }) => {
@@ -507,59 +441,6 @@ export const vincentAbility = createVincentAbility({
           });
         }
 
-        case 'spotCancelOrder': {
-          if (!abilityParams.spotCancelOrder) {
-            return fail({ action, reason: 'Cancel order parameters are required' });
-          }
-
-          const result = await cancelOrder({
-            transport,
-            pkpPublicKey: delegatorPkpInfo.publicKey,
-            params: {
-              symbol: abilityParams.spotCancelOrder.symbol,
-              orderId: abilityParams.spotCancelOrder.orderId,
-            },
-            useTestnet,
-          });
-
-          if (result.status === 'error') {
-            return fail({
-              action,
-              reason: result.reason,
-            });
-          }
-
-          return succeed({
-            action,
-            cancelResult: result.cancelResult,
-          });
-        }
-
-        case 'spotCancelAll': {
-          if (!abilityParams.spotCancelAll) {
-            return fail({ action, reason: 'Cancel all parameters are required' });
-          }
-
-          const result = await cancelAllOrdersForSymbol({
-            transport,
-            pkpPublicKey: delegatorPkpInfo.publicKey,
-            symbol: abilityParams.spotCancelAll.symbol,
-            useTestnet,
-          });
-
-          if (result.status === 'error') {
-            return fail({
-              action,
-              reason: result.reason as string,
-            });
-          }
-
-          return succeed({
-            action,
-            cancelResult: result.cancelResult,
-          });
-        }
-
         case 'perpLong':
         case 'perpShort': {
           if (!abilityParams.perp) {
@@ -574,6 +455,7 @@ export const vincentAbility = createVincentAbility({
               price: abilityParams.perp.price,
               size: abilityParams.perp.size,
               isLong: action === 'perpLong',
+              reduceOnly: abilityParams.perp.reduceOnly,
               orderType: abilityParams.perp.orderType,
               leverage: abilityParams.perp.leverage
                 ? {
@@ -598,8 +480,8 @@ export const vincentAbility = createVincentAbility({
           });
         }
 
-        case 'perpCancelOrder': {
-          if (!abilityParams.perpCancelOrder) {
+        case 'cancelOrder': {
+          if (!abilityParams.cancelOrder) {
             return fail({ action, reason: 'Cancel order parameters are required' });
           }
 
@@ -607,8 +489,8 @@ export const vincentAbility = createVincentAbility({
             transport,
             pkpPublicKey: delegatorPkpInfo.publicKey,
             params: {
-              symbol: abilityParams.perpCancelOrder.symbol,
-              orderId: abilityParams.perpCancelOrder.orderId,
+              symbol: abilityParams.cancelOrder.symbol,
+              orderId: abilityParams.cancelOrder.orderId,
             },
             useTestnet,
           });
@@ -626,15 +508,15 @@ export const vincentAbility = createVincentAbility({
           });
         }
 
-        case 'perpCancelAll': {
-          if (!abilityParams.perpCancelAll) {
-            return fail({ action, reason: 'Cancel all parameters are required' });
+        case 'cancelAllOrdersForSymbol': {
+          if (!abilityParams.cancelAllOrdersForSymbol) {
+            return fail({ action, reason: 'Cancel all orders for symbol parameters are required' });
           }
 
           const result = await cancelAllOrdersForSymbol({
             transport,
             pkpPublicKey: delegatorPkpInfo.publicKey,
-            symbol: abilityParams.perpCancelAll.symbol,
+            symbol: abilityParams.cancelAllOrdersForSymbol.symbol,
             useTestnet,
           });
 

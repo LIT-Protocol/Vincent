@@ -18,7 +18,11 @@ import { z } from 'zod';
 import { type Wallet } from 'ethers';
 import * as hyperliquid from '@nktkas/hyperliquid';
 
-import { bundledVincentAbility as hyperliquidBundledAbility } from '../../../src';
+import {
+  HyperliquidAction,
+  bundledVincentAbility as hyperliquidBundledAbility,
+  OrderType,
+} from '../../../src';
 import { calculatePerpOrderParams } from './helpers';
 
 // Extend Jest timeout to 4 minutes
@@ -163,7 +167,7 @@ describe('Hyperliquid Ability E2E Perp Short Tests', () => {
 
       const precheckResult = await hyperliquidAbilityClient.precheck(
         {
-          action: 'perpShort',
+          action: HyperliquidAction.PERP_SHORT,
           useTestnet: USE_TESTNET,
           perp: {
             symbol: PERP_SYMBOL,
@@ -187,7 +191,7 @@ describe('Hyperliquid Ability E2E Perp Short Tests', () => {
       }
 
       expect(precheckResult.result).toBeDefined();
-      expect(precheckResult.result.action).toBe('perpShort');
+      expect(precheckResult.result.action).toBe(HyperliquidAction.PERP_SHORT);
     });
 
     it(`should execute perp short to open short position on ${PERP_SYMBOL}`, async () => {
@@ -216,7 +220,7 @@ describe('Hyperliquid Ability E2E Perp Short Tests', () => {
 
       const executeResult = await hyperliquidAbilityClient.execute(
         {
-          action: 'perpShort',
+          action: HyperliquidAction.PERP_SHORT,
           useTestnet: USE_TESTNET,
           perp: {
             symbol: PERP_SYMBOL,
@@ -224,7 +228,7 @@ describe('Hyperliquid Ability E2E Perp Short Tests', () => {
             size: shortSize,
             leverage: LEVERAGE,
             isCross: IS_CROSS,
-            orderType: { type: 'market' },
+            orderType: { type: OrderType.MARKET },
           },
         },
         {
@@ -241,7 +245,7 @@ describe('Hyperliquid Ability E2E Perp Short Tests', () => {
       }
 
       expect(executeResult.result).toBeDefined();
-      expect(executeResult.result.action).toBe('perpShort');
+      expect(executeResult.result.action).toBe(HyperliquidAction.PERP_SHORT);
     });
 
     it(`should check ${PERP_SYMBOL} position decreased (became more negative) after short`, async () => {

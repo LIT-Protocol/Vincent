@@ -6,12 +6,10 @@ export const actionTypeSchema = z.enum([
   'transferToPerp',
   'spotBuy',
   'spotSell',
-  'spotCancelOrder',
-  'spotCancelAll',
   'perpLong',
   'perpShort',
-  'perpCancelOrder',
-  'perpCancelAll',
+  'cancelOrder',
+  'cancelAllOrdersForSymbol',
 ]);
 
 export const depositParamsSchema = z.object({
@@ -51,12 +49,12 @@ export const spotTradeParamsSchema = z.object({
     ),
 });
 
-export const spotCancelOrderParamsSchema = z.object({
+export const cancelOrderParamsSchema = z.object({
   symbol: z.string().describe('Trading pair symbol (e.g., "PURR/USDC")'),
   orderId: z.number().describe('Order ID to cancel'),
 });
 
-export const spotCancelAllParamsSchema = z.object({
+export const cancelAllOrdersForSymbolParamsSchema = z.object({
   symbol: z.string().describe('Trading pair symbol to cancel all orders for (e.g., "PURR/USDC")'),
 });
 
@@ -66,20 +64,17 @@ export const perpTradeParamsSchema = z.object({
   size: z.string().describe('Order size in base asset'),
   leverage: z.number().min(1).max(50).optional().describe('Leverage multiplier (default: 2x)'),
   isCross: z.boolean().optional().describe('Cross leverage (default: true)'),
+  reduceOnly: z
+    .boolean()
+    .optional()
+    .describe(
+      'Reduce-only: if true, order will only reduce existing position and cannot increase it (default: false). Use this to close positions without worrying about exact size.',
+    ),
   orderType: orderTypeSchema
     .optional()
     .describe(
       'Order type: { type: "limit", tif: "Gtc" | "Ioc" | "Alo" } or { type: "market" }. Default: { type: "limit", tif: "Gtc" }',
     ),
-});
-
-export const perpCancelOrderParamsSchema = z.object({
-  symbol: z.string().describe('Perpetual symbol (e.g., "ETH")'),
-  orderId: z.number().describe('Order ID to cancel'),
-});
-
-export const perpCancelAllParamsSchema = z.object({
-  symbol: z.string().describe('Perpetual symbol to cancel all orders for (e.g., "ETH")'),
 });
 
 export const abilityParamsSchema = z
@@ -105,26 +100,18 @@ export const abilityParamsSchema = z
     spot: spotTradeParamsSchema
       .optional()
       .describe('Spot trading parameters (required for spotBuy/spotSell)'),
-    // Spot cancel order params
-    spotCancelOrder: spotCancelOrderParamsSchema
-      .optional()
-      .describe('Cancel specific spot order (required for spotCancelOrder action)'),
-    // Spot cancel all params
-    spotCancelAll: spotCancelAllParamsSchema
-      .optional()
-      .describe('Cancel all spot orders for a symbol (required for spotCancelAll action)'),
     // Perp trading params
     perp: perpTradeParamsSchema
       .optional()
       .describe('Perpetual trading parameters (required for perpLong/perpShort)'),
-    // Perp cancel order params
-    perpCancelOrder: perpCancelOrderParamsSchema
+    // Cancel order params
+    cancelOrder: cancelOrderParamsSchema
       .optional()
-      .describe('Cancel specific perp order (required for perpCancelOrder action)'),
-    // Perp cancel all params
-    perpCancelAll: perpCancelAllParamsSchema
+      .describe('Cancel specific order (required for cancelOrder action)'),
+    // Cancel all orders for symbol params
+    cancelAllOrdersForSymbol: cancelAllOrdersForSymbolParamsSchema
       .optional()
-      .describe('Cancel all perp orders for a symbol (required for perpCancelAll action)'),
+      .describe('Cancel all orders for a symbol (required for cancelAllOrdersForSymbol action)'),
     // Arbitrum RPC URL
     arbitrumRpcUrl: z.string().optional().describe('Arbitrum RPC URL (required for precheck)'),
   })
@@ -134,11 +121,9 @@ export const abilityParamsSchema = z
       if (data.action === 'transferToSpot' || data.action === 'transferToPerp')
         return !!data.transfer;
       if (data.action === 'spotBuy' || data.action === 'spotSell') return !!data.spot;
-      if (data.action === 'spotCancelOrder') return !!data.spotCancelOrder;
-      if (data.action === 'spotCancelAll') return !!data.spotCancelAll;
       if (data.action === 'perpLong' || data.action === 'perpShort') return !!data.perp;
-      if (data.action === 'perpCancelOrder') return !!data.perpCancelOrder;
-      if (data.action === 'perpCancelAll') return !!data.perpCancelAll;
+      if (data.action === 'cancelOrder') return !!data.cancelOrder;
+      if (data.action === 'cancelAllOrdersForSymbol') return !!data.cancelAllOrdersForSymbol;
       return false;
     },
     {
@@ -182,6 +167,4 @@ export const executeSuccessSchema = z.object({
     .any()
     .optional()
     .describe('Cancel result (for spotCancelOrder/spotCancelAll action)'),
-  openOrders: z.array(z.any()).optional().describe('Open orders after execution'),
-  positions: z.any().optional().describe('Positions after execution'),
 });
