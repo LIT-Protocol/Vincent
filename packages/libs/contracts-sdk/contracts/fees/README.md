@@ -18,7 +18,8 @@ The Fee Diamond system allows Vincent's abilities to facilitate user withdrawals
 - **Full Withdrawal Only**: Simplified implementation that only supports full withdrawals
 - **Deterministic Deployment**: Uses Create2 for consistent addresses across EVM chains
 - **Admin Controls**: Owner can adjust fee percentages and withdraw Lit Foundation fees
-- **App Manager Controls**: App managers can withdraw their portion of collected fees
+- **App Manager Controls**: App managers with a valid oracle attestation can withdraw their portion of collected fees
+- **Oracle-Verified Fee Withdrawals**: Lit Action oracles attest to the true Chronicle Yellowstone owner before fees can be withdrawn
 - **User Recovery**: Users can discover their deposits even if the Vincent app disappears
 
 ## Architecture
@@ -62,10 +63,10 @@ Administrative functions for managing the fee system and withdrawing collected f
 - `setPerformanceFeePercentage(uint256 newPercentage)`: Sets the performance fee percentage (in basis points)
 - `setSwapFeePercentage(uint256 newPercentage)`: Sets the swap fee percentage (in basis points)
 - `setLitAppFeeSplitPercentage(uint256 newPercentage)`: Sets the Lit Foundation/App fee split percentage (in basis points)
-- `withdrawAppFees(uint40 appId, address tokenAddress)`: Withdraws collected fees for a specific app and token
+- `withdrawAppFees(uint40 appId, address tokenAddress, FeeUtils.OwnerAttestation calldata ownerAttestation, bytes calldata ownerAttestationSig)`: Withdraws collected fees for a specific app and token after verifying a Lit Action signature that attests to the Chronicle Yellowstone owner
 - `setAavePool(address newAavePool)`: Sets the Aave pool contract address
 - `setAerodromeRouter(address newAerodromeRouter)`: Sets the Aerodrome router contract address
-- `setVincentAppDiamond(address newVincentAppDiamond)`: Sets the Vincent App Diamond contract address
+- `setVincentAppDiamondOnYellowstone(address newVincentAppDiamondOnYellowstone)`: Sets the Chronicle Yellowstone Vincent App Diamond contract address used for owner lookups
 - `aerodromeRouter()`: Returns the current Aerodrome router address
 - `tokensWithCollectedFees(uint40 appId)`: Returns list of tokens that have collected fees for a specific app
 - `collectedAppFees(uint40 appId, address tokenAddress)`: Returns the amount of collected fees for a specific app and token
@@ -129,6 +130,14 @@ The fee diamond implements an automatic fee split system where collected fees ar
 2. **App Manager**: Receives the remaining percentage of fees collected from their app's actions
 3. **Automatic Split**: Fees are automatically split when collected using the `litAppFeeSplitPercentage` setting
 4. **Separate Withdrawal**: Each party can withdraw their portion independently using `withdrawAppFees()`
+
+### App Fee Withdrawal Process
+
+1. **Signature Request**: The app owner requests a signature from the Lit Action oracle. The action queries the Chronicle Yellowstone chain to confirm the current owner of the Vincent app.
+2. **Owner Attestation**: The Lit Action signs a `FeeUtils.OwnerAttestation` payload containing the source and destination chain IDs, the Vincent app diamond addresses, the appId, the verified owner wallet, and a short-lived validity window.
+3. **Transaction Submission**: The app owner submits `withdrawAppFees(appId, tokenAddress, ownerAttestation, ownerAttestationSig)` with the attestation and signature.
+4. **On-Chain Verification**: The Fee Diamond verifies the signature against the configured oracle signer and ensures the indicated owner matches the transaction sender before releasing the fees.
+5. **Fee Distribution**: After verification, the contract transfers the accumulated fees for the app and token to the caller.
 
 **Fee Split Calculation:**
 
@@ -231,11 +240,27 @@ feeAdminFacet.setLitAppFeeSplitPercentage(1000);
 // Set Aerodrome router address
 feeAdminFacet.setAerodromeRouter(aerodromeRouterAddress);
 
-// Set Vincent App Diamond address
-feeAdminFacet.setVincentAppDiamond(vincentAppDiamondAddress);
+// Set Vincent App Diamond address on Chronicle Yellowstone
+feeAdminFacet.setVincentAppDiamondOnYellowstone(vincentAppDiamondOnYellowstone);
+
+// Build owner attestation payload signed by the Lit Action oracle
+FeeUtils.OwnerAttestation memory ownerAttestation = FeeUtils.OwnerAttestation({
+    srcChainId: chronicleChainId,
+    srcContract: vincentAppDiamondOnYellowstone,
+    owner: appOwner,
+    appId: appId,
+    issuedAt: block.timestamp,
+    expiresAt: block.timestamp + 5 minutes,
+    dstChainId: block.chainid,
+    dstContract: address(feeAdminFacet)
+});
+bytes memory ownerAttestationSig = /* signature returned from Lit Action */;
+
+// Withdraw app fees after oracle verification
+feeAdminFacet.withdrawAppFees(appId, usdcAddress, ownerAttestation, ownerAttestationSig);
 
 // Withdraw Lit Foundation fees (appId 0)
-feeAdminFacet.withdrawAppFees(0, usdcAddress);
+feeAdminFacet.withdrawPlatformFees(usdcAddress);
 
 // Get list of tokens with collected fees for Lit Foundation
 address[] memory litFeeTokens = feeAdminFacet.tokensWithCollectedFees(0);
@@ -263,7 +288,7 @@ uint256 appFees = feeViewsFacet.collectedAppFees(appId, tokenAddress);
 
 - **Reentrancy Protection**: Deposit records are cleared before external calls
 - **Access Control**: Only contract owner can modify fee settings and withdraw Lit Foundation fees
-- **App Manager Access Control**: Only app managers can withdraw their app's collected fees
+- **App Manager Access Control**: Only app managers holding a valid Lit Action owner attestation can withdraw their app's collected fees
 - **Input Validation**: Comprehensive error handling for invalid operations
 - **Provider Validation**: Prevents mixing deposits between different protocols
 - **AppId Validation**: All functions require valid appId parameters
@@ -291,6 +316,7 @@ Comprehensive test suites are available in `test/fees/`:
 - `AaveFeeForkTest.t.sol`: Fork tests for Aave integration
 - `MorphoFeeForkTest.t.sol`: Fork tests for Morpho integration
 - `AerodromeFeeForkTest.t.sol`: Fork tests for Aerodrome swap integration
+- `FeeTestCommon.sol` and the fork tests include helpers that mock the Lit Action oracle by locally signing `OwnerAttestation` payloads, demonstrating how fee withdrawals are authorized.
 
 ## Future Enhancements
 
@@ -329,3 +355,5 @@ struct OwnerAttestation {
     address dstContract;       // destination chain verifier contract, to prevent cross-contract replay
 }
 ```
+
+The `withdrawAppFees` function now consumes this attestation alongside the oracle's signature. The signature must come from the configured Lit Action signer, and the attested `owner` must match the caller address. This guarantees that withdrawals on destination chains such as Base are only executed by the true app owner as recorded on the Chronicle Yellowstone chain.
