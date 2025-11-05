@@ -107,6 +107,7 @@ get-abis: ## Get human-readable ABIs for all facets
 		out/FeeAdminFacet.sol/FeeAdminFacet.json \
 		out/MorphoPerfFeeFacet.sol/MorphoPerfFeeFacet.json \
 		out/AavePerfFeeFacet.sol/AavePerfFeeFacet.json \
+		out/AerodromeSwapFeeFacet.sol/AerodromeSwapFeeFacet.json \
 		> abis/FeeDiamond.abi.json
 	@echo "✅ Combined ABI written to abis/FeeDiamond.abi.json"
 

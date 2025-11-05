@@ -1,10 +1,10 @@
 # Fee Diamond Contract System
 
-The Fee Diamond is a sophisticated smart contract system built using the Diamond Pattern (EIP-2535) that manages performance fees for DeFi protocols. It provides a unified interface for tracking deposits and withdrawals across multiple DeFi platforms while automatically collecting performance fees on profitable withdrawals.
+The Fee Diamond is a sophisticated smart contract system built using the Diamond Pattern (EIP-2535) that manages performance fees for DeFi protocols. It provides a unified interface for facilitating withdrawals and swaps across multiple DeFi platforms while automatically collecting performance fees on profitable operations.
 
 ## Overview
 
-The Fee Diamond system allows Vincent's abilities to deposit user funds into DeFi protocols (currently Morpho and Aave) and automatically collect performance fees when users withdraw their funds. The system also supports token swaps on Aerodrome DEX with automatic fee collection from input tokens. The system tracks user deposits, calculates profits, and takes a configurable percentage of the profit as a fee.
+The Fee Diamond system allows Vincent's abilities to facilitate user withdrawals from DeFi protocols (currently Morpho and Aave) and automatically collect performance fees when users withdraw their funds. The system also supports token swaps on Aerodrome DEX with automatic fee collection from input tokens. All deposits are held directly by users, and the fee diamond is used to execute withdrawals and swaps, with fees collected at that point. The system tracks user deposits, calculates profits, and takes a configurable percentage of the profit as a fee. All functionality is indexed by appId, and collected fees are split between the Lit Foundation (appId 0) and the app that initiated the action.
 
 ### Key Features
 
@@ -12,9 +12,14 @@ The Fee Diamond system allows Vincent's abilities to deposit user funds into DeF
 - **DEX Integration**: Supports token swaps on Aerodrome DEX with automatic fee collection
 - **Performance Fee Collection**: Automatically calculates and collects fees only on profits
 - **Swap Fee Collection**: Automatically collects fees from input tokens during swaps
+- **User-Held Deposits**: All deposits are held directly by users, not the fee diamond
+- **AppId Indexing**: All functionality is indexed by appId for proper fee attribution
+- **Fee Split System**: Collected fees are automatically split between Lit Foundation and app managers
 - **Full Withdrawal Only**: Simplified implementation that only supports full withdrawals
 - **Deterministic Deployment**: Uses Create2 for consistent addresses across EVM chains
-- **Admin Controls**: Owner can adjust fee percentages and withdraw collected fees
+- **Admin Controls**: Owner can adjust fee percentages and withdraw Lit Foundation fees
+- **App Manager Controls**: App managers with a valid oracle attestation can withdraw their portion of collected fees
+- **Oracle-Verified Fee Withdrawals**: Lit Action oracles attest to the true Chronicle Yellowstone owner before fees can be withdrawn
 - **User Recovery**: Users can discover their deposits even if the Vincent app disappears
 
 ## Architecture
@@ -37,8 +42,8 @@ Handles deposits and withdrawals for Morpho protocol vaults.
 
 **Key Functions:**
 
-- `depositToMorpho(address vaultAddress, uint256 assetAmount)`: Deposits assets into a Morpho vault
-- `withdrawFromMorpho(address vaultAddress)`: Withdraws all funds from a Morpho vault
+- `depositToMorpho(uint40 appId, address vaultAddress, uint256 assetAmount)`: Deposits assets into a Morpho vault
+- `withdrawFromMorpho(uint40 appId, address vaultAddress)`: Withdraws all funds from a Morpho vault
 
 #### 2. AavePerfFeeFacet
 
@@ -46,21 +51,25 @@ Handles deposits and withdrawals for Aave protocol pools.
 
 **Key Functions:**
 
-- `depositToAave(address poolAsset, uint256 assetAmount)`: Deposits assets into an Aave pool
-- `withdrawFromAave(address poolAsset)`: Withdraws all funds from an Aave pool
+- `depositToAave(uint40 appId, address poolAsset, uint256 assetAmount)`: Deposits assets into an Aave pool
+- `withdrawFromAave(uint40 appId, address poolAsset, uint256 amount)`: Withdraws funds from an Aave pool
 
 #### 3. FeeAdminFacet
 
-Administrative functions for managing the fee system.
+Administrative functions for managing the fee system and withdrawing collected fees.
 
 **Key Functions:**
 
 - `setPerformanceFeePercentage(uint256 newPercentage)`: Sets the performance fee percentage (in basis points)
-- `withdrawTokens(address tokenAddress)`: Withdraws collected fees for a specific token
+- `setSwapFeePercentage(uint256 newPercentage)`: Sets the swap fee percentage (in basis points)
+- `setLitAppFeeSplitPercentage(uint256 newPercentage)`: Sets the Lit Foundation/App fee split percentage (in basis points)
+- `withdrawAppFees(uint40 appId, address tokenAddress, FeeUtils.OwnerAttestation calldata ownerAttestation, bytes calldata ownerAttestationSig)`: Withdraws collected fees for a specific app and token after verifying a Lit Action signature that attests to the Chronicle Yellowstone owner
 - `setAavePool(address newAavePool)`: Sets the Aave pool contract address
 - `setAerodromeRouter(address newAerodromeRouter)`: Sets the Aerodrome router contract address
+- `setVincentAppDiamondOnYellowstone(address newVincentAppDiamondOnYellowstone)`: Sets the Chronicle Yellowstone Vincent App Diamond contract address used for owner lookups
 - `aerodromeRouter()`: Returns the current Aerodrome router address
-- `tokensWithCollectedFees()`: Returns list of tokens that have collected fees
+- `tokensWithCollectedFees(uint40 appId)`: Returns list of tokens that have collected fees for a specific app
+- `collectedAppFees(uint40 appId, address tokenAddress)`: Returns the amount of collected fees for a specific app and token
 
 #### 4. AerodromeSwapFeeFacet
 
@@ -68,36 +77,39 @@ Handles token swaps on Aerodrome DEX with automatic fee collection from input to
 
 **Key Functions:**
 
-- `swapExactTokensForTokensOnAerodrome(uint256 amountIn, uint256 amountOutMin, IRouter.Route[] calldata routes, address to, uint256 deadline)`: Executes token swaps on Aerodrome and collects fees from input tokens
+- `swapExactTokensForTokensOnAerodrome(uint40 appId, uint256 amountIn, uint256 amountOutMin, IRouter.Route[] calldata routes, address to, uint256 deadline)`: Executes token swaps on Aerodrome and collects fees from input tokens
 
 #### 5. FeeViewsFacet
 
-Read-only functions for querying deposit information.
+Read-only functions for querying deposit information and collected fees.
 
 **Key Functions:**
 
-- `deposits(address user, address vaultAddress)`: Returns deposit information for a user/vault pair
-- `userVaultOrPoolAssetAddresses(address user)`: Returns all vault/pool addresses a user has deposits in
+- `deposits(uint40 appId, address user, address vaultAddress)`: Returns deposit information for a user/vault pair
+- `collectedAppFees(uint40 appId, address tokenAddress)`: Returns the amount of collected fees for a specific app and token
 
 ## How It Works
 
 ### Deposit Process
 
 1. **User Authorization**: User approves the Fee Diamond to spend their tokens
-2. **Deposit Execution**: Ability calls `depositToMorpho()` or `depositToAave()`
+2. **Deposit Execution**: Ability calls `depositToMorpho()` or `depositToAave()` with the appId
 3. **Asset Transfer**: Tokens are transferred from user to the Fee Diamond contract
 4. **Protocol Interaction**: Contract deposits tokens into the target DeFi protocol
-5. **Record Keeping**: Contract records the deposit amount and vault shares for the user
+5. **Record Keeping**: Contract records the deposit amount and vault shares for the user, indexed by appId
+6. **User Receives Shares**: User receives vault shares (Morpho) or aTokens (Aave) directly
 
 ### Withdrawal Process
 
-1. **Withdrawal Request**: User calls `withdrawFromMorpho()` or `withdrawFromAave()`
-2. **Profit Calculation**: Contract calculates profit by comparing withdrawal amount to original deposit
-3. **Fee Calculation**: If there's a profit, calculates performance fee (percentage of profit)
-4. **Asset Distribution**:
-   - Performance fee remains in the contract
+1. **Withdrawal Request**: User calls `withdrawFromMorpho()` or `withdrawFromAave()` with the appId
+2. **Share Transfer**: User transfers their vault shares/aTokens to the Fee Diamond contract
+3. **Profit Calculation**: Contract calculates profit by comparing withdrawal amount to original deposit
+4. **Fee Calculation**: If there's a profit, calculates performance fee (percentage of profit)
+5. **Fee Split**: Collected fees are automatically split between Lit Foundation (appId 0) and the app (based on litAppFeeSplitPercentage)
+6. **Asset Distribution**:
+   - Performance fee remains in the contract (split between Lit Foundation and app)
    - Remaining amount (original deposit + user's share of profit) goes to user
-5. **Cleanup**: Deposit records are cleared and user's vault list is updated
+7. **Cleanup**: Deposit records are cleared and user's vault list is updated
 
 ### Aerodrome Swap Process
 
@@ -106,9 +118,35 @@ Read-only functions for querying deposit information.
 3. **Token Transfer**: Input tokens are transferred from user to the Fee Diamond contract
 4. **Fee Deduction**: Swap fee is deducted from the input amount before executing the swap
 5. **Swap Execution**: Contract executes the swap on Aerodrome DEX with the reduced input amount
-6. **Fee Collection**: The calculated fee remains in the contract and is added to the collected fees tracking
+6. **Fee Split**: The calculated fee is automatically split between Lit Foundation (appId 0) and the app (based on litAppFeeSplitPercentage)
 7. **Token Distribution**: Swapped output tokens are transferred to the user
-8. **Fee Tracking**: Input token address is added to the set of tokens with collected fees
+8. **Fee Tracking**: Input token address is added to the set of tokens with collected fees for both Lit Foundation and the app
+
+### Fee Split System
+
+The fee diamond implements an automatic fee split system where collected fees are divided between the Lit Foundation and the app that initiated the action:
+
+1. **Lit Foundation (appId 0)**: Receives a configurable percentage of all collected fees
+2. **App Manager**: Receives the remaining percentage of fees collected from their app's actions
+3. **Automatic Split**: Fees are automatically split when collected using the `litAppFeeSplitPercentage` setting
+4. **Separate Withdrawal**: Each party can withdraw their portion independently using `withdrawAppFees()`
+
+### App Fee Withdrawal Process
+
+1. **Signature Request**: The app owner requests a signature from the Lit Action oracle. The action queries the Chronicle Yellowstone chain to confirm the current owner of the Vincent app.
+2. **Owner Attestation**: The Lit Action signs a `FeeUtils.OwnerAttestation` payload containing the source and destination chain IDs, the Vincent app diamond addresses, the appId, the verified owner wallet, and a short-lived validity window.
+3. **Transaction Submission**: The app owner submits `withdrawAppFees(appId, tokenAddress, ownerAttestation, ownerAttestationSig)` with the attestation and signature.
+4. **On-Chain Verification**: The Fee Diamond verifies the signature against the configured oracle signer and ensures the indicated owner matches the transaction sender before releasing the fees.
+5. **Fee Distribution**: After verification, the contract transfers the accumulated fees for the app and token to the caller.
+
+**Fee Split Calculation:**
+
+```
+litFoundationAmount = totalFee * litAppFeeSplitPercentage / 10000
+appAmount = totalFee - litFoundationAmount
+```
+
+Where `litAppFeeSplitPercentage` is expressed in basis points (e.g., 1000 = 10% to Lit Foundation, 90% to app).
 
 ### Fee Calculation
 
@@ -142,12 +180,14 @@ Where `swapFeePercentage` is expressed in basis points (e.g., 50 = 0.5%). The fe
 
 The system uses a sophisticated storage structure to track:
 
-- **User Deposits**: Maps user address → vault address → deposit details
+- **User Deposits**: Maps appId → user address → vault address → deposit details
 - **Performance Fee Percentage**: Configurable fee rate in basis points
 - **Swap Fee Percentage**: Configurable swap fee rate in basis points
-- **Collected Fees Tracking**: Set of token addresses that have collected fees
-- **User Vault Tracking**: Set of vault/pool addresses per user for recovery
+- **Lit App Fee Split Percentage**: Configurable split rate between Lit Foundation and apps in basis points
+- **Collected Fees Tracking**: Maps appId → set of token addresses that have collected fees
+- **Collected App Fees**: Maps appId → token address → amount of collected fees
 - **Protocol Configuration**: Aave pool contract address and Aerodrome router address
+- **Vincent App Diamond**: Address of the Vincent App Diamond contract for app manager verification
 
 ## Example Usage
 
@@ -156,26 +196,31 @@ You can use the full diamond ABI with all the facets in `abis/FeeDiamond.abi.jso
 ### Basic Deposit and Withdrawal
 
 ```solidity
+uint40 appId = 12345; // Your app's ID
+
 // Deposit 1000 USDC into Morpho
-morphoPerfFeeFacet.depositToMorpho(morphoVaultAddress, 1000e6);
+morphoPerfFeeFacet.depositToMorpho(appId, morphoVaultAddress, 1000e6);
 
 // Later, withdraw all funds (with performance fee applied to profits)
-morphoPerfFeeFacet.withdrawFromMorpho(morphoVaultAddress);
+morphoPerfFeeFacet.withdrawFromMorpho(appId, morphoVaultAddress);
 ```
 
 ### Aerodrome Token Swaps
 
 ```solidity
+uint40 appId = 12345; // Your app's ID
+
 // Create swap route (USDC to WETH)
 IRouter.Route[] memory routes = new IRouter.Route[](1);
 routes[0] = IRouter.Route(usdcAddress, wethAddress, false, address(0));
 
 // Execute swap with fee collection
 aerodromeSwapFeeFacet.swapExactTokensForTokensOnAerodrome(
-    1000e6,  // 1000 USDC input
-    0,       // minimum output (adjusted internally for fees)
-    routes,  // swap route
-    userAddress, // recipient
+    appId,              // app ID
+    1000e6,             // 1000 USDC input
+    0,                  // minimum output (adjusted internally for fees)
+    routes,             // swap route
+    userAddress,        // recipient
     block.timestamp + 1 hours // deadline
 );
 ```
@@ -189,32 +234,64 @@ feeAdminFacet.setPerformanceFeePercentage(500);
 // Set swap fee to 0.5% (50 basis points)
 feeAdminFacet.setSwapFeePercentage(50);
 
+// Set Lit Foundation fee split to 10% (1000 basis points)
+feeAdminFacet.setLitAppFeeSplitPercentage(1000);
+
 // Set Aerodrome router address
 feeAdminFacet.setAerodromeRouter(aerodromeRouterAddress);
 
-// Withdraw collected USDC fees
-feeAdminFacet.withdrawTokens(usdcAddress);
+// Set Vincent App Diamond address on Chronicle Yellowstone
+feeAdminFacet.setVincentAppDiamondOnYellowstone(vincentAppDiamondOnYellowstone);
 
-// Get list of tokens with collected fees
-address[] memory feeTokens = feeAdminFacet.tokensWithCollectedFees();
+// Build owner attestation payload signed by the Lit Action oracle
+FeeUtils.OwnerAttestation memory ownerAttestation = FeeUtils.OwnerAttestation({
+    srcChainId: chronicleChainId,
+    srcContract: vincentAppDiamondOnYellowstone,
+    owner: appOwner,
+    appId: appId,
+    issuedAt: block.timestamp,
+    expiresAt: block.timestamp + 5 minutes,
+    dstChainId: block.chainid,
+    dstContract: address(feeAdminFacet)
+});
+bytes memory ownerAttestationSig = /* signature returned from Lit Action */;
+
+// Withdraw app fees after oracle verification
+feeAdminFacet.withdrawAppFees(appId, usdcAddress, ownerAttestation, ownerAttestationSig);
+
+// Withdraw Lit Foundation fees (appId 0)
+feeAdminFacet.withdrawPlatformFees(usdcAddress);
+
+// Get list of tokens with collected fees for Lit Foundation
+address[] memory litFeeTokens = feeAdminFacet.tokensWithCollectedFees(0);
+
+// Get list of tokens with collected fees for a specific app
+address[] memory appFeeTokens = feeAdminFacet.tokensWithCollectedFees(appId);
 ```
 
 ### Querying User Deposits
 
 ```solidity
-// Get deposit information for a user
-LibFeeStorage.Deposit memory deposit = feeViewsFacet.deposits(userAddress, vaultAddress);
+uint40 appId = 12345; // Your app's ID
 
-// Get all vaults a user has deposits in
-address[] memory userVaults = feeViewsFacet.userVaultOrPoolAssetAddresses(userAddress);
+// Get deposit information for a user
+LibFeeStorage.Deposit memory deposit = feeViewsFacet.deposits(appId, userAddress, vaultAddress);
+
+// Get collected fees for Lit Foundation
+uint256 litFees = feeViewsFacet.collectedAppFees(0, tokenAddress);
+
+// Get collected fees for a specific app
+uint256 appFees = feeViewsFacet.collectedAppFees(appId, tokenAddress);
 ```
 
 ## Security Features
 
 - **Reentrancy Protection**: Deposit records are cleared before external calls
-- **Access Control**: Only contract owner can modify fee settings and withdraw fees
+- **Access Control**: Only contract owner can modify fee settings and withdraw Lit Foundation fees
+- **App Manager Access Control**: Only app managers holding a valid Lit Action owner attestation can withdraw their app's collected fees
 - **Input Validation**: Comprehensive error handling for invalid operations
 - **Provider Validation**: Prevents mixing deposits between different protocols
+- **AppId Validation**: All functions require valid appId parameters
 
 ## Deployment
 
@@ -228,6 +305,8 @@ The system includes comprehensive error handling:
 - `NotMorphoVault`/`NotAavePool`: When trying to withdraw from wrong protocol
 - `DepositAlreadyExistsWithAnotherProvider`: When trying to deposit to same vault with different protocol
 - `CallerNotOwner`: When non-owner tries to call admin functions
+- `CallerNotAppManager`: When non-app-manager tries to withdraw app fees
+- `ZeroAppId`: When appId is 0 (reserved for Lit Foundation)
 
 ## Testing
 
@@ -237,6 +316,7 @@ Comprehensive test suites are available in `test/fees/`:
 - `AaveFeeForkTest.t.sol`: Fork tests for Aave integration
 - `MorphoFeeForkTest.t.sol`: Fork tests for Morpho integration
 - `AerodromeFeeForkTest.t.sol`: Fork tests for Aerodrome swap integration
+- `FeeTestCommon.sol` and the fork tests include helpers that mock the Lit Action oracle by locally signing `OwnerAttestation` payloads, demonstrating how fee withdrawals are authorized.
 
 ## Future Enhancements
 
@@ -244,3 +324,36 @@ Comprehensive test suites are available in `test/fees/`:
 - Additional DeFi protocol integrations
 - More sophisticated fee calculation methods
 - Batch operations for multiple vaults
+
+# Cross-chain claiming
+
+If the fees accrue on Base, how does the app developer withdraw them? The app developer's wallet is on Chronicle, not on Base.
+
+Options:
+
+1. Lit oracle. A Lit Action queries Chronicle, and retrieves the owner for the appId. It signs the appId, the wallet address, and some kind of challenge to prevent replays (could be a recent blockhash, could be a timestamp). Before claiming, the user hits this Lit Action and gets the signed proof. They provide the signed proof with their claim txn, and the fee contract verifies it.
+2. Hyperlane cross-chains comms. This would require a txn on Chronicle, to initiate the cross-chain message, which would pop-out on Base and go to the Fee contract. The Fee contract would store the owner from this message with a timestamp. The user can then claim using the same wallet, and the Fee contract will check that the wallet sent in the cross-chain message matches the wallet they're making the txn with.
+3. Data mirroring. Every time the a developer creates an app or changes their owner address, we use a Lit Action to check that data on Chronicle, and send it into any target chains that are collecting fees. Therefore, the owner address is already present on the target chain (Base, in the example) and the user just makes a normal txn to withdraw their fees. The downside of this approach is that we have to write the owner address on every change to every chain there could be fees on, and we have to pay gas to do that. On networks like Base that's small, but on eth for example, it could get pricey, and there's a bit of a DoS attack here where the dev changes their owner address often to drain the gas from this wallet. We would have to put some restrictions in like "you can only change owner address 10 times a year" or something. But creating new apps is free and permissionless, so they can just create new apps to get around the 10 change limit and drain the wallet.
+
+We could do this via Hyperlane cross-chain messaging.
+
+## Solution
+
+We're going to go with solution 1 for simplicity and cheapness.
+
+Payload for the Lit Action to sign:
+
+```
+struct OwnerAttestation {
+    uint256 srcChainId;        // typically Chronicle chain Id
+    address srcContract;       // typically the VincentAppDiamond contract
+    address owner;             // owner address from the L3
+    uint256 appId;             // the Vincent appId that this user is an owner of
+    uint256 issuedAt;          // unix time from Lit Action
+    uint256 expiresAt;            // issuedAt + 5 minutes
+    uint256 dstChainId;        // destination chain id to prevent cross-chain replay
+    address dstContract;       // destination chain verifier contract, to prevent cross-contract replay
+}
+```
+
+The `withdrawAppFees` function now consumes this attestation alongside the oracle's signature. The signature must come from the configured Lit Action signer, and the attested `owner` must match the caller address. This guarantees that withdrawals on destination chains such as Base are only executed by the true app owner as recorded on the Chronicle Yellowstone chain.

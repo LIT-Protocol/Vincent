@@ -2,7 +2,7 @@
 pragma solidity ^0.8.29;
 /**
  * \
- * Author: Nick Mudge <nick@perfectabstractions.com> (https://twitter.com/mudgen)
+ * Author: Nick Mudge (https://twitter.com/mudgen)
  * EIP-2535 Diamonds: https://eips.ethereum.org/EIPS/eip-2535
  *
  * Implementation of a diamond.
@@ -44,6 +44,9 @@ contract Fee {
 
         // default to 0.25% swap fee
         LibFeeStorage.getStorage().swapFeePercentage = 25;
+
+        // default to 10% lit app fee split percentage
+        LibFeeStorage.getStorage().litAppFeeSplitPercentage = 1000;
     }
 
     /**

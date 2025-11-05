@@ -517,8 +517,9 @@ contract VincentUserViewFacet is VincentBase {
         validation.policies = new PolicyWithParameters[](policyCount);
 
         // Get the ability policy storage for this PKP, app, app version, and ability
-        mapping(bytes32 => bytes) storage abilityPolicyParameterValues = us_.agentPkpTokenIdToAgentStorage[pkpTokenId]
-        .abilityPolicyParameterValues[appId][appVersion][hashedAbilityIpfsCid];
+        mapping(bytes32 => bytes) storage abilityPolicyParameterValues = us_.agentPkpTokenIdToAgentStorage[pkpTokenId].abilityPolicyParameterValues[
+            appId
+        ][appVersion][hashedAbilityIpfsCid];
 
         // For each policy, get all its parameters
         for (uint256 i = 0; i < policyCount; i++) {
