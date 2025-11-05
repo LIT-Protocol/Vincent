@@ -45,15 +45,23 @@ contract FeeTestCommon is TestCommon {
         return diamondAddress;
     }
 
-    function _signOwnerAttestation(FeeUtils.OwnerAttestation memory oa, uint256 ownerAttestationSignerPrivateKey) pure public returns (bytes memory) {
-        bytes32 message = keccak256(abi.encodePacked(
-            oa.srcChainId,
-            oa.srcContract,
-            oa.owner,
-            oa.appId,
-            oa.issuedAt,
-            oa.expiresAt,
-            oa.dstChainId, oa.dstContract));
+    function _signOwnerAttestation(FeeUtils.OwnerAttestation memory oa, uint256 ownerAttestationSignerPrivateKey)
+        public
+        pure
+        returns (bytes memory)
+    {
+        bytes32 message = keccak256(
+            abi.encodePacked(
+                oa.srcChainId,
+                oa.srcContract,
+                oa.owner,
+                oa.appId,
+                oa.issuedAt,
+                oa.expiresAt,
+                oa.dstChainId,
+                oa.dstContract
+            )
+        );
         bytes32 messageHash = message.toEthSignedMessageHash();
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(ownerAttestationSignerPrivateKey, messageHash);
         bytes memory signature = abi.encodePacked(r, s, v); // note the order here is different from line above.

@@ -34,7 +34,7 @@ contract MorphoFeeForkTest is FeeTestCommon {
     address litFoundationWallet = makeAddr("LitFoundationWallet");
 
     address ownerAttestationSigner;
-    uint256 ownerAttestationSignerPrivateKey; 
+    uint256 ownerAttestationSignerPrivateKey;
 
     Fee public feeDiamond;
     FeeViewsFacet public feeViewsFacet;
@@ -72,7 +72,7 @@ contract MorphoFeeForkTest is FeeTestCommon {
         vincentDiamondAddress = _deployVincentDiamondAndBasicApp(APP_MANAGER_BOB, APP_DELEGATEE_BOB, DEV_APP_ID);
 
         vm.startPrank(owner);
-                // set the owner attestation signer in the fee diamond
+        // set the owner attestation signer in the fee diamond
         (ownerAttestationSigner, ownerAttestationSignerPrivateKey) = makeAddrAndKey("OwnerAttestationSigner");
         feeAdminFacet.setOwnerAttestationSigner(ownerAttestationSigner);
         // set the lit foundation wallet in the fee diamond

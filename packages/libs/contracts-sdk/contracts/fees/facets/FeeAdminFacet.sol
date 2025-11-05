@@ -20,7 +20,6 @@ contract FeeAdminFacet is FeeCommon {
     using ECDSA for bytes32;
     using MessageHashUtils for bytes32;
 
-
     /* ========== ERRORS ========== */
     error CallerNotAppManager(uint40 appId, address caller, address recoveredSigner);
     error CallerNotLitFoundation();
@@ -33,7 +32,6 @@ contract FeeAdminFacet is FeeCommon {
     error OwnerAttestationIncorrectSourceChainId(uint256 srcChainId);
     error OwnerAttestationIncorrectSourceContract(address srcContract);
 
-
     /* ========== EVENTS ========== */
     event AppFeesWithdrawn(uint40 indexed appId, address indexed tokenAddress, uint256 amount);
     event PerformanceFeePercentageSet(uint256 newPerformanceFeePercentage);
@@ -44,8 +42,6 @@ contract FeeAdminFacet is FeeCommon {
     event OwnerAttestationSignerSet(address newOwnerAttestationSigner);
     event LitFoundationWalletSet(address newLitFoundationWallet);
     event VincentAppDiamondOnYellowstoneSet(address newVincentAppDiamondOnYellowstone);
-
-
 
     /* ========== MODIFIERS ========== */
     modifier onlyOwner() {
@@ -74,20 +70,25 @@ contract FeeAdminFacet is FeeCommon {
 
     /* ========== VIEWS ========== */
 
-    function verifyOwnerAttestation(uint40 appId, FeeUtils.OwnerAttestation calldata oa, bytes calldata sig) view public {
+    function verifyOwnerAttestation(uint40 appId, FeeUtils.OwnerAttestation calldata oa, bytes calldata sig)
+        public
+        view
+    {
         // verify the signature
-        bytes32 messageHash = keccak256(abi.encodePacked(
-            oa.srcChainId,
-            oa.srcContract,
-            oa.owner,
-            oa.appId,
-            oa.issuedAt,
-            oa.expiresAt,
-            oa.dstChainId,
-            oa.dstContract
-        ));
+        bytes32 messageHash = keccak256(
+            abi.encodePacked(
+                oa.srcChainId,
+                oa.srcContract,
+                oa.owner,
+                oa.appId,
+                oa.issuedAt,
+                oa.expiresAt,
+                oa.dstChainId,
+                oa.dstContract
+            )
+        );
         address signer = messageHash.toEthSignedMessageHash().recover(sig);
-        if (signer != LibFeeStorage.getStorage().ownerAttestationSigner){
+        if (signer != LibFeeStorage.getStorage().ownerAttestationSigner) {
             revert OwnerAttestationIncorrectSigner(LibFeeStorage.getStorage().ownerAttestationSigner, signer);
         }
         if (msg.sender != oa.owner) {
@@ -241,7 +242,12 @@ contract FeeAdminFacet is FeeCommon {
      * @param tokenAddress the address of the token to withdraw
      * @dev this can only be called by the app manager
      */
-    function withdrawAppFees(uint40 appId, address tokenAddress, FeeUtils.OwnerAttestation calldata ownerAttestation, bytes calldata ownerAttestationSig) external onlyAppManager(appId, ownerAttestation, ownerAttestationSig) nonZeroAppId(appId) {
+    function withdrawAppFees(
+        uint40 appId,
+        address tokenAddress,
+        FeeUtils.OwnerAttestation calldata ownerAttestation,
+        bytes calldata ownerAttestationSig
+    ) external onlyAppManager(appId, ownerAttestation, ownerAttestationSig) nonZeroAppId(appId) {
         _withdrawCollectedFees(appId, tokenAddress);
     }
 

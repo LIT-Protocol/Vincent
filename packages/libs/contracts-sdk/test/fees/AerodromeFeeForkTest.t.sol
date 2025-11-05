@@ -37,7 +37,7 @@ contract AerodromeFeeForkTest is FeeTestCommon {
     address litFoundationWallet = makeAddr("LitFoundationWallet");
 
     address ownerAttestationSigner;
-    uint256 ownerAttestationSignerPrivateKey; 
+    uint256 ownerAttestationSignerPrivateKey;
 
     Fee public feeDiamond;
     FeeViewsFacet public feeViewsFacet;

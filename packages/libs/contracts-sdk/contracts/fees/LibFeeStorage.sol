@@ -51,7 +51,6 @@ library LibFeeStorage {
         address litFoundationWallet;
         // the address of the vincent app diamond contract on chronicle yellowstone
         address vincentAppDiamondOnYellowstone;
-
     }
 
     function getStorage() internal pure returns (FeeStorage storage as_) {

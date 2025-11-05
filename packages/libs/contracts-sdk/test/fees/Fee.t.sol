@@ -34,7 +34,7 @@ contract FeeTest is FeeTestCommon {
     MockERC4626 public mockERC4626;
 
     address ownerAttestationSigner;
-    uint256 ownerAttestationSignerPrivateKey; 
+    uint256 ownerAttestationSignerPrivateKey;
 
     function setUp() public {
         uint256 deployerPrivateKey = 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80;
@@ -165,7 +165,7 @@ contract FeeTest is FeeTestCommon {
         feeAdminFacet.setOwnerAttestationSigner(NEW_ATTESTATION_SIGNER_ADDRESS);
 
         // test that the owner can set the owner attestation signer
-        vm.startPrank(owner);   
+        vm.startPrank(owner);
         feeAdminFacet.setOwnerAttestationSigner(NEW_ATTESTATION_SIGNER_ADDRESS);
         vm.stopPrank();
         assertEq(feeAdminFacet.ownerAttestationSigner(), NEW_ATTESTATION_SIGNER_ADDRESS);
@@ -178,7 +178,7 @@ contract FeeTest is FeeTestCommon {
         // test that a non-owner cannot set the lit foundation wallet
         vm.expectRevert(FeeUtils.CallerNotOwner.selector);
         feeAdminFacet.setLitFoundationWallet(NEW_LIT_FOUNDATION_WALLET);
-        
+
         // test that the owner can set the lit foundation wallet
         vm.startPrank(owner);
         feeAdminFacet.setLitFoundationWallet(NEW_LIT_FOUNDATION_WALLET);
@@ -198,7 +198,6 @@ contract FeeTest is FeeTestCommon {
         feeAdminFacet.setVincentAppDiamondOnYellowstone(VINCENT_APP_DIAMOND_ON_YELLOWSTONE);
         vm.stopPrank();
         assertEq(feeAdminFacet.vincentAppDiamondOnYellowstone(), VINCENT_APP_DIAMOND_ON_YELLOWSTONE);
-        
     }
 
     function testOwnerAttestationSignerUtils() public {
@@ -231,10 +230,7 @@ contract FeeTest is FeeTestCommon {
         address incorrectAppManager = makeAddr("IncorrectAppManager");
 
         bytes memory expectedRevertData = abi.encodeWithSelector(
-            FeeAdminFacet.CallerNotAppManager.selector,
-            appId,
-            APP_USER_ALICE,
-            incorrectAppManager
+            FeeAdminFacet.CallerNotAppManager.selector, appId, APP_USER_ALICE, incorrectAppManager
         );
 
         vm.startPrank(incorrectAppManager);
