@@ -1,11 +1,13 @@
 import { KernelV3_3AccountAbi } from '@zerodev/sdk';
 import {
-  Address,
-  Hex,
+  type Address,
+  type Hex,
   decodeAbiParameters,
   decodeFunctionData,
   getAddress,
+  hexToBigInt,
   isAddressEqual,
+  sliceHex,
 } from 'viem';
 
 import { AAVE_POOL_ABI } from './aave';
@@ -19,97 +21,67 @@ function isDelegatecallOrUnknown(execMode: Hex): boolean {
   return lastByte !== 0n; // 0x00 == CALL; others => block
 }
 
-function tryDecodeSingle(executionCalldata: Hex): LowLevelCall[] | null {
-  // Try standard ABI first (works if someone encoded tuple-ABI style)
+function tryDecodeExecute(executionCalldata: Hex): LowLevelCall[] | null {
+  // Because Execute with a single call is just an hex concatenation of the calldata,
+  // this function might produce invalid decodings. It MUST be called last, only if
+  // all other, more strict, decodings failed or if we know the calldata is a single call.
+  // Also, current implementation does not support delegate calls, it will produce
+  // invalid decodings for them.
   try {
-    const [to, value, data] = decodeAbiParameters(
-      [
-        { name: 'to', type: 'address' },
-        { name: 'value', type: 'uint256' },
-        { name: 'data', type: 'bytes' },
-      ],
-      executionCalldata,
-    );
-    return [{ to: getAddress(to), value, data }];
-  } catch {
-    // Fallback: packed layout
-    try {
-      // must start with 0x and be long enough for 20 + 32 bytes
-      if (!executionCalldata.startsWith('0x')) return null;
-      const hex = executionCalldata.slice(2);
-      const MIN = 20 * 2 + 32 * 2; // 40 + 64 nibbles
-      if (hex.length < MIN) return null;
+    const hex = executionCalldata.slice(2);
+    const MIN = 20 * 2 + 32 * 2; // address + value
+    if (hex.length < MIN) return null;
 
-      // to: first 20 bytes (40 hex chars)
-      const toHex = '0x' + hex.slice(0, 40);
-      // value: next 32 bytes (64 hex chars) big-endian uint256
-      const valueHex = '0x' + hex.slice(40, 40 + 64);
-      // data: rest
-      const dataHex = '0x' + hex.slice(40 + 64);
+    const to = getAddress(sliceHex(executionCalldata, 0, 20));
+    const value = hexToBigInt(sliceHex(executionCalldata, 20, 52));
+    const data = sliceHex(executionCalldata, 52);
 
-      const to = getAddress(toHex as Hex);
-      const value = BigInt(valueHex as Hex);
-      const data = dataHex as Hex;
-
-      return [{ to, value, data }];
-    } catch {
-      return null;
-    }
-  }
-}
-
-function tryDecodeBatchNoValue(executionCalldata: Hex): LowLevelCall[] | null {
-  try {
-    const [tos, datas] = decodeAbiParameters(
-      [
-        { name: 'to', type: 'address[]' },
-        { name: 'data', type: 'bytes[]' },
-      ],
-      executionCalldata,
-    );
-    if (tos.length !== datas.length) return null;
-    return tos.map((t: Address, i: number) => ({
-      to: getAddress(t),
-      value: 0n,
-      data: datas[i] as Hex,
-    }));
-  } catch {
+    return [
+      {
+        data,
+        to,
+        value,
+      },
+    ];
+  } catch (e) {
+    console.error('tryDecodeExecute', e);
     return null;
   }
 }
 
-function tryDecodeBatchWithValue(executionCalldata: Hex): LowLevelCall[] | null {
+function tryDecodeBatchWithValues(executionCalldata: Hex): LowLevelCall[] | null {
   try {
-    const [tos, values, datas] = decodeAbiParameters(
+    const [tuples] = decodeAbiParameters(
       [
-        { name: 'to', type: 'address[]' },
-        { name: 'value', type: 'uint256[]' },
-        { name: 'data', type: 'bytes[]' },
+        {
+          name: 'executionBatch',
+          type: 'tuple[]',
+          components: [
+            {
+              name: 'target',
+              type: 'address',
+            },
+            {
+              name: 'value',
+              type: 'uint256',
+            },
+            {
+              name: 'callData',
+              type: 'bytes',
+            },
+          ],
+        },
       ],
       executionCalldata,
     );
-    if (tos.length !== datas.length || tos.length !== values.length) return null;
-    return tos.map((t: Address, i: number) => ({
-      to: getAddress(t),
-      value: values[i] as bigint,
-      data: datas[i] as Hex,
+    if (!tuples.length) return null;
+    return tuples.map((t) => ({
+      to: getAddress(t.target),
+      value: t.value,
+      data: t.callData,
     }));
-  } catch {
-    return null;
-  }
-}
-
-function tryDecodePackedSingles(executionCalldata: Hex): LowLevelCall[] | null {
-  try {
-    const [chunks] = decodeAbiParameters([{ name: 'calls', type: 'bytes[]' }], executionCalldata);
-    const out: LowLevelCall[] = [];
-    for (const ch of chunks as Hex[]) {
-      const single = tryDecodeSingle(ch);
-      if (!single) return null; // if any chunk isn’t single, abort this shape
-      out.push(single[0]);
-    }
-    return out;
-  } catch {
+  } catch (e) {
+    console.error('tryDecodeBatchWithValues', e);
     return null;
   }
 }
@@ -129,10 +101,8 @@ function decodeKernelV33ToCalls(callData: Hex): LowLevelCall[] {
 
   // Try common inner shapes
   const shapes: ((ec: Hex) => LowLevelCall[] | null)[] = [
-    tryDecodeSingle,
-    tryDecodeBatchWithValue,
-    tryDecodeBatchNoValue,
-    tryDecodePackedSingles,
+    tryDecodeBatchWithValues,
+    tryDecodeExecute,
   ];
 
   for (const dec of shapes) {
