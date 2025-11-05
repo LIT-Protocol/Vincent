@@ -7,20 +7,20 @@ import { baseSepolia } from 'viem/chains';
 import { toLitActionAccount } from './toLitActionAccount';
 
 export interface SignUserOperationParams {
+  alchemyRpcUrl: string;
   pkpPublicKey: Hex;
-  rpcUrl: string;
   serializedZeroDevPermissionAccount: string;
   userOp: any;
 }
 
 export async function signUserOperation({
+  alchemyRpcUrl,
   pkpPublicKey,
-  rpcUrl,
   serializedZeroDevPermissionAccount,
   userOp,
 }: SignUserOperationParams) {
   const chain = baseSepolia;
-  const transport = http(rpcUrl);
+  const transport = http(alchemyRpcUrl);
   const kernelVersion = KERNEL_V3_3;
   const entryPoint = getEntryPoint('0.7');
   const publicClient = createPublicClient({

@@ -37,16 +37,16 @@ export const vincentAbility = createVincentAbility({
         delegatorPkpInfo,
       });
 
-      const { entryPointAddress, userOp, rpcUrl } = abilityParams;
+      const { entryPointAddress, userOp, alchemyRpcUrl } = abilityParams;
 
       console.log(
         '[@lit-protocol/vincent-ability-aave-smart-account] validating user operation:',
         userOp,
       );
       const { userOp: processedUserOp, simulationChanges } = await validateUserOp({
+        alchemyRpcUrl,
         entryPointAddress,
         userOp,
-        rpcUrl,
       });
       console.log(
         '[@lit-protocol/vincent-ability-aave-smart-account] user user operation validated:',
@@ -77,7 +77,7 @@ export const vincentAbility = createVincentAbility({
         delegatorPkpInfo,
       });
 
-      const { entryPointAddress, userOp, rpcUrl, serializedZeroDevPermissionAccount } =
+      const { alchemyRpcUrl, entryPointAddress, userOp, serializedZeroDevPermissionAccount } =
         abilityParams;
 
       console.log(
@@ -85,9 +85,9 @@ export const vincentAbility = createVincentAbility({
         userOp,
       );
       const { userOp: processedUserOp, simulationChanges } = await validateUserOp({
+        alchemyRpcUrl,
         entryPointAddress,
         userOp,
-        rpcUrl,
       });
       console.log(
         '[@lit-protocol/vincent-ability-aave-smart-account] user operation validated:',
@@ -99,10 +99,10 @@ export const vincentAbility = createVincentAbility({
       );
 
       userOp.signature = await signUserOperation({
-        pkpPublicKey: delegatorPkpInfo.publicKey as Hex,
-        rpcUrl,
+        alchemyRpcUrl,
         serializedZeroDevPermissionAccount,
         userOp,
+        pkpPublicKey: delegatorPkpInfo.publicKey as Hex,
       });
 
       console.log('[@lit-protocol/vincent-ability-aave-smart-account] signed user operation');

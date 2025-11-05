@@ -14,7 +14,7 @@ export const abilityParamsSchema = z.object({
   entryPointAddress: addressSchema.describe(
     'EntryPoint to use for the simulation. This MUST be one of the EntryPoints returned by the supportedEntryPoints RPC call.',
   ),
-  rpcUrl: z
+  alchemyRpcUrl: z
     .string()
     .url()
     .describe('Alchemy RPC URL for the desired chain. Will be used to simulate the transaction.'),

@@ -83,16 +83,16 @@ export const validateSimulation = ({
 };
 
 interface ProccessUserOpParams {
+  alchemyRpcUrl: string;
   entryPointAddress: Address;
   userOp: UserOp;
-  rpcUrl: string;
 }
 
 export const validateUserOp = async (params: ProccessUserOpParams) => {
-  const { entryPointAddress, userOp, rpcUrl } = params;
+  const { alchemyRpcUrl, entryPointAddress, userOp } = params;
 
   const publicClient = createPublicClient({
-    transport: http(rpcUrl),
+    transport: http(alchemyRpcUrl),
   });
   const chainId = await publicClient.getChainId();
 
