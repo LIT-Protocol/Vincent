@@ -59,17 +59,19 @@ export async function registerNewAppVersion({
         existingAbilityMap.set(ability.abilityIpfsCid, ability.policyIpfsCids);
       });
 
-      // Check if we have the same number of abilities
-      if (existingAbilityMap.size !== abilityIpfsCids.length) {
-        // Different number of abilities, need to register new version; fall through to register new version
-      } else {
+      // Check if we have the same number of abilities and compare them
+      if (existingAbilityMap.size === abilityIpfsCids.length) {
         // For each ability in the new version, check if it exists with the same policies
         const allMatch = abilityIpfsCids.every((abilityId, index) => {
           const existingPolicies = existingAbilityMap.get(abilityId);
-          if (!existingPolicies) return false; // Ability doesn't exist in current version
+          if (existingPolicies === undefined) return false; // Ability doesn't exist in current version
 
           const newPolicies = abilityPolicies[index];
-          if (!newPolicies) return false; // Handle undefined policies
+          if (newPolicies === undefined) {
+            throw new Error(
+              `Parallel arrays are not in sync: abilityPolicies[${index}] is undefined for ability '${abilityId}'.`,
+            );
+          }
 
           // Compare policy arrays (order-independent)
           if (existingPolicies.length !== newPolicies.length) return false;
