@@ -15,7 +15,7 @@ if (!PINATA_JWT) {
     const filePath = path.join(generatedDir, outputFile);
     if (!fs.existsSync(filePath)) {
       throw new Error(
-        `Bundled Lit Action code string not found at ${filePath}. Please run pnpx nx run vincent-ability-aerodrome-swap:action:build first.`,
+        `Bundled Lit Action code string not found at ${filePath}. Please run pnpx nx run ability-hyperliquid:action:build first.`,
       );
     }
     const litActionCodeString = require(filePath);
