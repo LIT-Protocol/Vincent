@@ -5,7 +5,7 @@ title: Development and Testing
 Learn how to test your Vincent abilities locally before deploying to production.
 
 <Warning>
-**Prerequisites:** This guide builds on the [Quick Start](/app/quickstart) guide. Complete the Quick Start setup before proceeding.
+**Prerequisites:** This guide builds on the [Creating an App](/app/creating-an-app) guide. Complete the app creation setup before proceeding.
 </Warning>
 
 ## Step 1: Create Your Test Execution Script
@@ -13,10 +13,10 @@ Learn how to test your Vincent abilities locally before deploying to production.
 Create a file called `test-execution.ts` in your project. This script will import the setup function from your Quick Start script and test ability execution.
 
 <Warning>
-**Important:** The code below uses the Aerodrome Swap ability as an example. You must replace the following to match your chosen ability:
+**Important:** The code below uses the EVM Transaction Signer ability as an example. You must replace the following to match your chosen ability:
 
 1. **`.env` file path** - Update `config({ path: ... })` to point to your `.env` file location
-2. **Ability import** - Replace `@lit-protocol/vincent-ability-aerodrome-swap` with your ability package
+2. **Ability import** - Replace `@@lit-protocol/vincent-ability-evm-transaction-signer` with your ability package
 3. **Ability parameters** - Update the `precheck()` and `execute()` parameters to match your ability's requirements
 
 Look for `TODO` comments in the code to locate these sections.
@@ -41,7 +41,7 @@ import {
 import * as util from 'node:util';
 import { ethers } from 'ethers';
 
-// Import your bundled ability
+// TODO: Import your bundled ability
 import { bundledVincentAbility } from '@lit-protocol/vincent-ability-evm-transaction-signer';
 
 // Import setup function from your Quick Start script
@@ -88,7 +88,7 @@ import { setupVincentDevelopmentEnvironment } from './vincent-app-setup';
       gasLimit: '0x186A0', // 100,000 gas
     });
 
-    // Run precheck
+    // TODO: Run the precheck according to your imported abilities
     console.log('\n🔍 Running precheck...');
     const precheckResult = await abilityClient.precheck(
       {
@@ -115,7 +115,7 @@ import { setupVincentDevelopmentEnvironment } from './vincent-app-setup';
     const { deserializedUnsignedTransaction } = precheckResult.result;
     console.log('✅ Precheck passed - deserialized transaction:', deserializedUnsignedTransaction);
 
-    // Execute the ability (sign the transaction)
+    // TODO: Execute according to your imported abilities
     console.log('\n⚡ Executing ability (signing transaction)...');
     const executeResult = await abilityClient.execute(
       {

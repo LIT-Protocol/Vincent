@@ -2,7 +2,7 @@
 title: Creating an App
 ---
 
-Set up your Vincent development environment and integrate it into your project using our setup scripts.
+Set up your Vincent development environment and integrate it into your project by following this guide.
 
 ## Step 1: Configure Environment Variables
 
@@ -31,22 +31,22 @@ The funder wallet will automatically fund the App Manager wallet to ensure it ha
 
 ## Step 3: Install Required Packages
 
-Install the necessary Vincent packages for your project. **Replace `@lit-protocol/vincent-ability-aerodrome-swap` with your chosen Vincent ability and policy packages:**
+Install the necessary Vincent packages for your project. **Replace `@lit-protocol/vincent-ability-evm-transaction-signer` with your chosen Vincent ability and policy packages:**
 
 <CodeGroup>
 ```bash npm
 npm install -D tsx
-npm install @lit-protocol/vincent-ability-aerodrome-swap @dotenvx/dotenvx @lit-protocol/vincent-e2e-test-utils @lit-protocol/vincent-contracts-sdk ethers@5
+npm install @lit-protocol/vincent-ability-evm-transaction-signer @dotenvx/dotenvx @lit-protocol/vincent-e2e-test-utils @lit-protocol/vincent-contracts-sdk ethers@5
 ```
 
 ```bash yarn
 yarn add -D tsx
-yarn add @lit-protocol/vincent-ability-aerodrome-swap @dotenvx/dotenvx @lit-protocol/vincent-e2e-test-utils @lit-protocol/vincent-contracts-sdk ethers@5
+yarn add @lit-protocol/vincent-ability-evm-transaction-signer @dotenvx/dotenvx @lit-protocol/vincent-e2e-test-utils @lit-protocol/vincent-contracts-sdk ethers@5
 ```
 
 ```bash pnpm
 pnpm add -D tsx
-pnpm add @lit-protocol/vincent-ability-aerodrome-swap @dotenvx/dotenvx @lit-protocol/vincent-e2e-test-utils @lit-protocol/vincent-contracts-sdk ethers@5
+pnpm add @lit-protocol/vincent-ability-evm-transaction-signer @dotenvx/dotenvx @lit-protocol/vincent-e2e-test-utils @lit-protocol/vincent-contracts-sdk ethers@5
 ```
 </CodeGroup>
 
@@ -68,10 +68,10 @@ If you're unsure about what Vincent abilities and policies to use for your app, 
 Create a file called `vincent-app-setup.ts` in your project. This script will set up your Vincent development environment.
 
 <Warning>
-**Important:** The code below uses the Aerodrome Swap ability as an example. You must replace the following to match your chosen ability and policies:
+**Important:** The code below uses the EVM Transaction Signer ability as an example. You must replace the following to match your chosen ability and policies:
 
 1. **`.env` file path** - Update `config({ path: ... })` to point to your `.env` file location
-2. **Ability import** - Replace `@lit-protocol/vincent-ability-aerodrome-swap` with your ability package
+2. **Ability import** - Replace `@lit-protocol/vincent-ability-evm-transaction-signer` with your ability package
 3. **PERMISSION_DATA object** - Update with your ability's IPFS CID and associated policies
 
 Look for `TODO` comments in the code to locate these sections.
@@ -208,23 +208,16 @@ pnpm tsx vincent-app-setup.ts
 ```
 </CodeGroup>
 
-You should see output similar to:
+The end of your terminal output should look like:
 
 ```
-0x6D9708ED15d46Caf1BcA3A6bf0eF0B056a941427 has a PKP -- using existing PKP with ethAddress: 0x67B448A84A08597EC9A2af91c65b3795453000C3, tokenId: 25486173902463030219270762983493355811257889964037840200490360463056502161384
-ℹ️  0x67B448A84A08597EC9A2af91c65b3795453000C3 has 0.01 Lit test tokens
-✅ Agent PKP: 0x67B448A84A08597EC9A2af91c65b3795453000C3
-ℹ️  Saved test config: App ID: 78065638714, App Version: 1, Agent PKP: 0x67B448A84A08597EC9A2af91c65b3795453000C3
-Auto estimatedGas:  BigNumber { _hex: '0x048f2b', _isBigNumber: true }
-Permitted App with ID 78065638714 and version 1 for Agent Wallet PKP 0x67B448A84A08597EC9A2af91c65b3795453000C3
-Tx hash: 0x51739022da7512dd5b4efc49af2324133d8672d6afc74ce62df886fc3c09acc0
-Permitting ability: QmVkCzCUcBnKcdWbbagNbeAQK1KvTot5hKHvtKpsCPvUEt with ability to sign on behalf of user's agent PKP 25486173902463030219270762983493355811257889964037840200490360463056502161384
+Permitted App with ID 68712486107 and version 1 for Agent Wallet PKP 0x88461813ec83b416fF280B3FD941717f2Dd32e1a
+Tx hash: 0x366b257b587c745e7cc61f37464ab9d790dbf6e6a1609e6647dad7c412ea1611
+Permitting ability: QmRetBjJXAAxuUbGaAMmc3j4zrXthridRXxbKdqtv5xWXg with ability to sign on behalf of user's agent PKP 88280412611163965115999398682402100726168688539098089439725236373206718863426
 Vincent development setup ready!
 ```
 
-<Success>
 **Congratulations!** You've now initialized a Vincent App for development!
-</Success>
 
 ## What's Next?
 

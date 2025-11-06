@@ -2,7 +2,7 @@
 title: Publishing Apps
 ---
 
-This section will cover the steps to publish a new Vincent App and the minimum possible steps to execute an ability on behalf of a user.
+This section will cover the steps to publish a new Vincent App and make your app permissible to Vincent users.
 
 <Steps>
   <Step title="Log into the Vincent Developer Dashboard">
@@ -76,10 +76,6 @@ This section will cover the steps to publish a new Vincent App and the minimum p
   <Step title="Add Vincent Abilities">
     After creating your Vincent App, you'll be directed to the Add Abilities page. Click the **Add Abilities to Version** button, and select your abilities to add them to your Vincent App.
 
-    <Note>
-      In this example, we will be using **ERC20 Approval** and **Uniswap Swap**.
-    </Note>
-
     You will then want to click the **Publish App Version** button that appears below the abilities.
 
     <img
@@ -122,11 +118,19 @@ This section will cover the steps to publish a new Vincent App and the minimum p
   </Step>
 </Steps>
 
+## Authenticating Users
+
+Now that your app is published and you've granted it permissions, you'll need to implement user authentication in your application. This allows your app to securely identify users and interact with their agent wallets on their behalf.
+
+<Card title="Authenticating Users" icon="lock" href="/app/authenticating-users">
+  Learn how to implement secure user authentication in your Vincent App
+</Card>
+
 <Success>
 **Congratulations!** Your Vincent App is now published and ready to execute abilities on behalf of your users!
 </Success>
 
-## Next Steps
+## Learn More
 
 <Columns cols={3}>
   <Card title="Explaining Apps" icon="book" href="/app/explaining-apps" color="#FF4205">
@@ -135,7 +139,7 @@ This section will cover the steps to publish a new Vincent App and the minimum p
   <Card title="Updating Apps" icon="rotate" href="/app/updating-apps" color="#FF4205">
     Learn how to update and version your Vincent Apps
   </Card>
-  <Card title="Authenticating Users" icon="lock" href="/app/authenticating-users" color="#FF4205">
-    Implement secure user authentication in your app
+  <Card title="Deprecating App Versions" icon="ban" href="/app/deprecating-app-versions" color="#FF4205">
+    Learn how to deprecate old versions of your Vincent Apps
   </Card>
 </Columns>
