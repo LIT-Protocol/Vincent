@@ -27,8 +27,8 @@ describe('Hyperliquid Ability E2E Deposit Tests', () => {
   const ENV = getEnv({
     ARBITRUM_RPC_URL: z.string(),
   });
-  const USDC_DEPOSIT_AMOUNT = '6000000';
-  const USE_TESTNET = false;
+  const USDC_DEPOSIT_AMOUNT = '1000000';
+  const USE_TESTNET = true;
 
   let agentPkpInfo: PkpInfo;
   let wallets: {
@@ -170,6 +170,7 @@ describe('Hyperliquid Ability E2E Deposit Tests', () => {
       const txHash = executeResult.result.txHash;
       expect(txHash).toMatch(/^0x[a-fA-F0-9]{64}$/);
 
+      const arbitrumRpcProvider = new ethers.providers.JsonRpcProvider(ENV.ARBITRUM_RPC_URL);
       const txReceipt = await arbitrumRpcProvider.waitForTransaction(txHash as string, 1);
       expect(txReceipt.status).toBe(1);
     });

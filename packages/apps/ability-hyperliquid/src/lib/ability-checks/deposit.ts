@@ -19,24 +19,23 @@ export interface DepositPrechecksResultFailure {
 export const depositPrechecks = async ({
   provider,
   agentWalletPkpEthAddress,
-  depositAmount,
+  depositAmountInMicroUsdc,
   useTestnet = false,
 }: {
   provider: ethers.providers.Provider;
   agentWalletPkpEthAddress: string;
-  depositAmount: string;
+  depositAmountInMicroUsdc: string;
   useTestnet?: boolean;
 }): Promise<DepositPrechecksResult> => {
   const usdcAddress = useTestnet ? ARBITRUM_USDC_ADDRESS_TESTNET : ARBITRUM_USDC_ADDRESS_MAINNET;
   const usdcContract = new ethers.Contract(usdcAddress, ERC20_ABI, provider);
-  const amountInMicroUsdc = ethers.utils.parseUnits(depositAmount, 6);
 
   const balance = await usdcContract.balanceOf(agentWalletPkpEthAddress);
 
-  if (balance.lt(amountInMicroUsdc)) {
+  if (balance.lt(depositAmountInMicroUsdc)) {
     return {
       success: false,
-      reason: `Insufficient USDC balance. Required: ${depositAmount} USDC, Available: ${ethers.utils.formatUnits(balance, 6)} USDC`,
+      reason: `Insufficient USDC balance. Required: ${depositAmountInMicroUsdc} USDC, Available: ${ethers.utils.formatUnits(balance, 6)} USDC`,
       balance: ethers.utils.formatUnits(balance, 6),
     };
   }

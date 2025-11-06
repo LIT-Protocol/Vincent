@@ -92,7 +92,7 @@ export const vincentAbility = createVincentAbility({
         const result = await depositPrechecks({
           provider: new ethers.providers.StaticJsonRpcProvider(arbitrumRpcUrl),
           agentWalletPkpEthAddress: delegatorPkpInfo.ethAddress,
-          depositAmount: abilityParams.deposit.amount,
+          depositAmountInMicroUsdc: abilityParams.deposit.amount,
           useTestnet,
         });
 
@@ -334,7 +334,9 @@ export const vincentAbility = createVincentAbility({
           }
 
           // Get Arbitrum RPC URL
-          const rpcUrl = await Lit.Actions.getRpcUrl({ chain: 'arbitrum' });
+          const rpcUrl = await Lit.Actions.getRpcUrl({
+            chain: useTestnet ? 'arbitrumSepolia' : 'arbitrum',
+          });
 
           // Select addresses based on network
           const bridgeAddress = ethers.utils.getAddress(
