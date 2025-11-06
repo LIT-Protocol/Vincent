@@ -1,6 +1,11 @@
 import * as hyperliquid from '@nktkas/hyperliquid';
 import { SymbolConverter } from '@nktkas/hyperliquid/utils';
-import { OrderRequest, UpdateLeverageRequest, parser } from '@nktkas/hyperliquid/api/exchange';
+import {
+  OrderRequest,
+  OrderResponse,
+  UpdateLeverageRequest,
+  parser,
+} from '@nktkas/hyperliquid/api/exchange';
 import { signL1Action } from '@nktkas/hyperliquid/signing';
 import { bigIntReplacer } from '@lit-protocol/vincent-ability-sdk';
 
@@ -36,6 +41,18 @@ export interface PerpTradeParams {
   };
 }
 
+export type PerpOrderResult = PerpOrderResultSuccess | PerpOrderResultFailure;
+
+export interface PerpOrderResultSuccess {
+  status: 'success';
+  orderResult: OrderResponse;
+}
+
+export interface PerpOrderResultFailure {
+  status: 'error';
+  error: string;
+}
+
 /**
  * Execute a perpetual trade on Hyperliquid
  */
@@ -49,7 +66,7 @@ export async function executePerpOrder({
   pkpPublicKey: string;
   params: PerpTradeParams;
   useTestnet?: boolean;
-}) {
+}): Promise<PerpOrderResult> {
   // Get converter for symbol to asset ID
   const converter = await SymbolConverter.create({ transport });
   const assetId = converter.getAssetId(params.symbol);
@@ -178,6 +195,6 @@ export async function executePerpOrder({
 
   return {
     status: 'success',
-    orderResult: parsedOrderResult.result as Record<string, unknown>,
+    orderResult: parsedOrderResult.result as OrderResponse,
   };
 }

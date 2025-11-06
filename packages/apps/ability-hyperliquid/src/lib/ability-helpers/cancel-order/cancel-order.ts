@@ -1,6 +1,6 @@
 import * as hyperliquid from '@nktkas/hyperliquid';
 import { SymbolConverter } from '@nktkas/hyperliquid/utils';
-import { CancelRequest, parser } from '@nktkas/hyperliquid/api/exchange';
+import { CancelRequest, CancelResponse, parser } from '@nktkas/hyperliquid/api/exchange';
 import { signL1Action } from '@nktkas/hyperliquid/signing';
 import { bigIntReplacer } from '@lit-protocol/vincent-ability-sdk';
 
@@ -9,6 +9,18 @@ import { LitActionPkpEthersWallet } from '../lit-action-pkp-ethers-wallet';
 export interface CancelSpotOrderParams {
   symbol: string; // e.g., "PURR/USDC"
   orderId: number; // Order ID to cancel
+}
+
+export type CancelOrderResult = CancelOrderResultSuccess | CancelOrderResultFailure;
+
+export interface CancelOrderResultSuccess {
+  status: 'success';
+  cancelResult: CancelResponse;
+}
+
+export interface CancelOrderResultFailure {
+  status: 'error';
+  reason: string;
 }
 
 /**
@@ -24,7 +36,7 @@ export async function cancelOrder({
   pkpPublicKey: string;
   params: CancelSpotOrderParams;
   useTestnet?: boolean;
-}) {
+}): Promise<CancelOrderResult> {
   // Get converter for symbol to asset ID
   const converter = await SymbolConverter.create({ transport });
   const assetId = converter.getAssetId(params.symbol);
@@ -95,6 +107,6 @@ export async function cancelOrder({
 
   return {
     status: 'success',
-    cancelResult: parsedCancelResult.result as Record<string, unknown>,
+    cancelResult: parsedCancelResult.result as CancelResponse,
   };
 }

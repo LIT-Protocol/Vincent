@@ -84,7 +84,6 @@ describe('Hyperliquid Ability E2E Perp Short Tests', () => {
       const newAppVersion = await appManager.registerNewAppVersion({
         abilityIpfsCids,
         abilityPolicies,
-        appVersion: existingApp.appVersion,
       });
       appId = existingApp.appId;
       appVersion = newAppVersion.appVersion;

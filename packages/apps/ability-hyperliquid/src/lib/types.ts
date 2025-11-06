@@ -35,21 +35,8 @@ export enum OrderType {
 
 export const HYPERLIQUID_BRIDGE_ADDRESS_MAINNET = '0x2Df1c51E09aECF9cacB7bc98cB1742757f163dF7';
 
-export const HYPERLIQUID_BRIDGE_ADDRESS_TESTNET = '0xEdB6e5c456B7ccA2EB1e5c7007f4Ab80426CD20F';
+export const HYPERLIQUID_BRIDGE_ADDRESS_TESTNET = '0xedb6e5c456b7cca2eb1e5c7007f4ab80426cd20f';
 
 export const ARBITRUM_USDC_ADDRESS_MAINNET = '0xaf88d065e77c8cC2239327C5EDb3A432268e5831';
 
 export const ARBITRUM_USDC_ADDRESS_TESTNET = '0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d';
-
-export type DepositPrechecksResult = DepositPrechecksResultSuccess | DepositPrechecksResultFailure;
-
-export interface DepositPrechecksResultSuccess {
-  success: true;
-  balance: string;
-}
-
-export interface DepositPrechecksResultFailure {
-  success: false;
-  reason: string;
-  balance: string;
-}

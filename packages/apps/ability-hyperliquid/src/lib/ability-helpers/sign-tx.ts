@@ -1,15 +1,5 @@
 import { ethers } from 'ethers';
 
-declare const Lit: {
-  Actions: {
-    signAndCombineEcdsa: (params: {
-      toSign: Uint8Array;
-      publicKey: string;
-      sigName: string;
-    }) => Promise<string>;
-  };
-};
-
 export const signTx = async (
   pkpPublicKey: string,
   tx: ethers.UnsignedTransaction,

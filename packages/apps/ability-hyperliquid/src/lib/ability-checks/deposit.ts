@@ -1,11 +1,20 @@
 import { ethers } from 'ethers';
 import { ERC20_ABI } from '@lit-protocol/vincent-ability-sdk';
 
-import {
-  ARBITRUM_USDC_ADDRESS_MAINNET,
-  ARBITRUM_USDC_ADDRESS_TESTNET,
-  DepositPrechecksResult,
-} from '../types';
+import { ARBITRUM_USDC_ADDRESS_MAINNET, ARBITRUM_USDC_ADDRESS_TESTNET } from '../types';
+
+export type DepositPrechecksResult = DepositPrechecksResultSuccess | DepositPrechecksResultFailure;
+
+export interface DepositPrechecksResultSuccess {
+  success: true;
+  balance: string;
+}
+
+export interface DepositPrechecksResultFailure {
+  success: false;
+  reason: string;
+  balance: string;
+}
 
 export const depositPrechecks = async ({
   provider,

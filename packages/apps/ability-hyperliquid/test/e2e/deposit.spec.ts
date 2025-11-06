@@ -28,6 +28,7 @@ describe('Hyperliquid Ability E2E Deposit Tests', () => {
     ARBITRUM_RPC_URL: z.string(),
   });
   const USDC_DEPOSIT_AMOUNT = '6000000';
+  const USE_TESTNET = false;
 
   let agentPkpInfo: PkpInfo;
   let wallets: {
@@ -75,7 +76,6 @@ describe('Hyperliquid Ability E2E Deposit Tests', () => {
       const newAppVersion = await appManager.registerNewAppVersion({
         abilityIpfsCids,
         abilityPolicies,
-        appVersion: existingApp.appVersion,
       });
       appId = existingApp.appId;
       appVersion = newAppVersion.appVersion;
@@ -111,6 +111,7 @@ describe('Hyperliquid Ability E2E Deposit Tests', () => {
       const precheckResult = await hyperliquidAbilityClient.precheck(
         {
           action: 'deposit',
+          useTestnet: USE_TESTNET,
           deposit: {
             amount: USDC_DEPOSIT_AMOUNT,
           },
@@ -132,7 +133,7 @@ describe('Hyperliquid Ability E2E Deposit Tests', () => {
       }
     });
 
-    it.skip('should execute the Hyperliquid Ability to make a deposit from the Agent Wallet PKP into the HyperLiquid bridge', async () => {
+    it('should execute the Hyperliquid Ability to make a deposit from the Agent Wallet PKP into the HyperLiquid bridge', async () => {
       const hyperliquidAbilityClient = getVincentAbilityClient({
         bundledVincentAbility: hyperliquidBundledAbility,
         ethersSigner: wallets.appDelegatee,
@@ -141,6 +142,7 @@ describe('Hyperliquid Ability E2E Deposit Tests', () => {
       const executeResult = await hyperliquidAbilityClient.execute(
         {
           action: 'deposit',
+          useTestnet: USE_TESTNET,
           deposit: {
             amount: USDC_DEPOSIT_AMOUNT,
           },
@@ -175,7 +177,7 @@ describe('Hyperliquid Ability E2E Deposit Tests', () => {
     // NOTE It takes about a minute for the deposit to be reflected in the portfolio.
     // This test assumes a previous deposit has been made by the Agent Wallet PKP into the HyperLiquid bridge.
     it('should verify the Agent Wallet PKP has funds in the HyperLiquid portfolio', async () => {
-      const transport = new hyperliquid.HttpTransport();
+      const transport = new hyperliquid.HttpTransport({ isTestnet: USE_TESTNET });
       const infoClient = new hyperliquid.InfoClient({ transport });
 
       // Check clearinghouse state which includes account balance

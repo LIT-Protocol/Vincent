@@ -2,6 +2,7 @@ import * as hyperliquid from '@nktkas/hyperliquid';
 import {
   UsdClassTransferRequest,
   UsdClassTransferTypes,
+  SuccessResponse,
   parser,
 } from '@nktkas/hyperliquid/api/exchange';
 import { signUserSignedAction } from '@nktkas/hyperliquid/signing';
@@ -9,6 +10,10 @@ import { ethers } from 'ethers';
 import { bigIntReplacer } from '@lit-protocol/vincent-ability-sdk';
 
 import { LitActionPkpEthersWallet } from './lit-action-pkp-ethers-wallet';
+
+export type TransferUsdcResult = {
+  transferResult: SuccessResponse;
+};
 
 /**
  * Transfer funds between spot and perpetuals accounts on Hyperliquid
@@ -25,7 +30,7 @@ export async function transferUsdcTo({
   amount: string;
   to: 'spot' | 'perp';
   useTestnet?: boolean;
-}) {
+}): Promise<TransferUsdcResult> {
   if (to !== 'spot' && to !== 'perp') {
     throw new Error(
       '[transferUsdcTo] Invalid transfer destination. Must be either "spot" or "perp".',
@@ -86,6 +91,6 @@ export async function transferUsdcTo({
 
   const parsedTransferResult = JSON.parse(transferResult);
   return {
-    transferResult: parsedTransferResult.result as Record<string, unknown>,
+    transferResult: parsedTransferResult.result as SuccessResponse,
   };
 }

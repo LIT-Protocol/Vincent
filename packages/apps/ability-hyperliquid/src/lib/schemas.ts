@@ -84,7 +84,6 @@ export const abilityParamsSchema = z
     useTestnet: z
       .boolean()
       .optional()
-      .default(false)
       .describe('Use Hyperliquid testnet instead of mainnet (default: false)'),
     // Deposit-specific params
     deposit: depositParamsSchema

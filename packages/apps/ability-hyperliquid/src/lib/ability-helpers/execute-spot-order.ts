@@ -1,6 +1,6 @@
 import * as hyperliquid from '@nktkas/hyperliquid';
 import { SymbolConverter } from '@nktkas/hyperliquid/utils';
-import { OrderRequest, parser } from '@nktkas/hyperliquid/api/exchange';
+import { OrderRequest, OrderResponse, parser } from '@nktkas/hyperliquid/api/exchange';
 import { signL1Action } from '@nktkas/hyperliquid/signing';
 import { bigIntReplacer } from '@lit-protocol/vincent-ability-sdk';
 
@@ -22,6 +22,18 @@ export interface SpotTradeParams {
   orderType?: { type: 'limit'; tif: TimeInForce } | { type: 'market' };
 }
 
+export type SpotOrderResult = SpotOrderResultSuccess | SpotOrderResultFailure;
+
+export interface SpotOrderResultSuccess {
+  status: 'success';
+  orderResult: OrderResponse;
+}
+
+export interface SpotOrderResultFailure {
+  status: 'error';
+  error: string;
+}
+
 /**
  * Execute a spot trade on Hyperliquid
  */
@@ -35,7 +47,7 @@ export async function executeSpotOrder({
   pkpPublicKey: string;
   params: SpotTradeParams;
   useTestnet?: boolean;
-}) {
+}): Promise<SpotOrderResult> {
   // Get converter for symbol to asset ID
   const converter = await SymbolConverter.create({ transport });
   const assetId = converter.getAssetId(params.symbol);
@@ -120,6 +132,6 @@ export async function executeSpotOrder({
 
   return {
     status: 'success',
-    orderResult: parsedOrderResult.result as Record<string, unknown>,
+    orderResult: parsedOrderResult.result as OrderResponse,
   };
 }

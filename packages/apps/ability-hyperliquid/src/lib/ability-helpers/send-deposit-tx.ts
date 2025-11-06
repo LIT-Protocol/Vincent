@@ -3,18 +3,6 @@ import { populateTransaction, sponsoredGasRawTransaction } from '@lit-protocol/v
 
 import { signTx } from './sign-tx';
 
-declare const Lit: {
-  Actions: {
-    runOnce: (
-      params: {
-        waitForResponse: boolean;
-        name: string;
-      },
-      callback: () => Promise<string>,
-    ) => Promise<string>;
-  };
-};
-
 export const sendDepositTx = async ({
   rpcUrl,
   chainId,

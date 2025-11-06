@@ -339,12 +339,12 @@ export const vincentAbility = createVincentAbility({
           const rpcUrl = await Lit.Actions.getRpcUrl({ chain: 'arbitrum' });
 
           // Select addresses based on network
-          const bridgeAddress = useTestnet
-            ? HYPERLIQUID_BRIDGE_ADDRESS_TESTNET
-            : HYPERLIQUID_BRIDGE_ADDRESS_MAINNET;
-          const usdcAddress = useTestnet
-            ? ARBITRUM_USDC_ADDRESS_TESTNET
-            : ARBITRUM_USDC_ADDRESS_MAINNET;
+          const bridgeAddress = ethers.utils.getAddress(
+            useTestnet ? HYPERLIQUID_BRIDGE_ADDRESS_TESTNET : HYPERLIQUID_BRIDGE_ADDRESS_MAINNET,
+          );
+          const usdcAddress = ethers.utils.getAddress(
+            useTestnet ? ARBITRUM_USDC_ADDRESS_TESTNET : ARBITRUM_USDC_ADDRESS_MAINNET,
+          );
           const chainId = useTestnet
             ? 421614 // Arbitrum Sepolia testnet
             : 42161; // Arbitrum mainnet

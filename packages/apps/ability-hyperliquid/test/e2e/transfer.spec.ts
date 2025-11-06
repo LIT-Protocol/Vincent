@@ -76,7 +76,6 @@ describe('Hyperliquid Ability E2E Transfer USDC to Spot/Perp Tests', () => {
       const newAppVersion = await appManager.registerNewAppVersion({
         abilityIpfsCids,
         abilityPolicies,
-        appVersion: existingApp.appVersion,
       });
       appId = existingApp.appId;
       appVersion = newAppVersion.appVersion;
