@@ -2,7 +2,7 @@
 title: Creating an App
 ---
 
-Build your first Vincent App and start accepting users in under 20 minutes.
+Set up your Vincent development environment and integrate it into your project using our setup scripts.
 
 ## Step 1: Configure Environment Variables
 
@@ -31,45 +31,58 @@ The funder wallet will automatically fund the App Manager wallet to ensure it ha
 
 ## Step 3: Install Required Packages
 
-Install the necessary Vincent packages for your project:
+Install the necessary Vincent packages for your project. **Replace `@lit-protocol/vincent-ability-aerodrome-swap` with your chosen Vincent ability and policy packages:**
 
 <CodeGroup>
 ```bash npm
 npm install -D tsx
-npm install @dotenvx/dotenvx @lit-protocol/vincent-e2e-test-utils @lit-protocol/vincent-contracts-sdk @lit-protocol/vincent-ability-aerodrome-swap ethers@5
+npm install @lit-protocol/vincent-ability-aerodrome-swap @dotenvx/dotenvx @lit-protocol/vincent-e2e-test-utils @lit-protocol/vincent-contracts-sdk ethers@5
 ```
 
 ```bash yarn
 yarn add -D tsx
-yarn add @dotenvx/dotenvx @lit-protocol/vincent-e2e-test-utils @lit-protocol/vincent-contracts-sdk @lit-protocol/vincent-ability-aerodrome-swap ethers@5
+yarn add @lit-protocol/vincent-ability-aerodrome-swap @dotenvx/dotenvx @lit-protocol/vincent-e2e-test-utils @lit-protocol/vincent-contracts-sdk ethers@5
 ```
 
 ```bash pnpm
 pnpm add -D tsx
-pnpm add @dotenvx/dotenvx @lit-protocol/vincent-e2e-test-utils @lit-protocol/vincent-contracts-sdk @lit-protocol/vincent-ability-aerodrome-swap ethers@5
+pnpm add @lit-protocol/vincent-ability-aerodrome-swap @dotenvx/dotenvx @lit-protocol/vincent-e2e-test-utils @lit-protocol/vincent-contracts-sdk ethers@5
 ```
 </CodeGroup>
 
-<Info>
-Replace `@lit-protocol/vincent-ability-aerodrome-swap` with your chosen Vincent ability package.
-</Info>
+### Choosing Abilities and Policies
+
+If you're unsure about what Vincent abilities and policies to use for your app, explore these resources:
+
+<CardGroup cols={2}>
+  <Card title="Official Abilities" icon="puzzle-piece" href="/ability/official-abilities">
+    Browse pre-built abilities for common use cases
+  </Card>
+  <Card title="Create Custom Ability" icon="wrench" href="/ability/quickstart">
+    Build your own ability using the Vincent Ability Starter Kit
+  </Card>
+</CardGroup>
 
 ## Step 4: Create Your Development Setup Script
 
-Create a file called `vincent-app-setup.ts` in your project with the following code. You'll need to make **three key updates**:
+Create a file called `vincent-app-setup.ts` in your project. This script will set up your Vincent development environment.
 
-### Required Updates
+<Warning>
+**Important:** The code below uses the Aerodrome Swap ability as an example. You must replace the following to match your chosen ability and policies:
 
-1. **Update the `.env` path** - Change the path to match the location of your `.env` file
-2. **Import your abilities and policies** - Replace the example import with your chosen Vincent abilities and policies
-3. **Update PERMISSION_DATA** - Configure which abilities and policies your app will use
+1. **`.env` file path** - Update `config({ path: ... })` to point to your `.env` file location
+2. **Ability import** - Replace `@lit-protocol/vincent-ability-aerodrome-swap` with your ability package
+3. **PERMISSION_DATA object** - Update with your ability's IPFS CID and associated policies
+
+Look for `TODO` comments in the code to locate these sections.
+</Warning>
 
 ```typescript
 import { config } from '@dotenvx/dotenvx';
 import { resolve } from 'path';
 
 // Load environment variables from .env file in the same directory
-// FIXME: Set this path to the location of the .env file in your project
+// TODO: Set this path to the location of the .env file in your project
 config({ path: resolve(__dirname, '../.env'), override: false });
 
 import {
@@ -82,7 +95,7 @@ import {
 import { type PermissionData } from '@lit-protocol/vincent-contracts-sdk';
 import { type Wallet } from 'ethers';
 
-// FIXME: Import your bundled abilities here.
+// TODO: Import your bundled abilities here.
 import {
   bundledVincentAbility as aerodromeBundledAbility,
 } from '@lit-protocol/vincent-ability-aerodrome-swap';
@@ -113,7 +126,7 @@ export async function setupVincentDevelopmentEnvironment(): Promise<SetupResult>
   const chainHelpers = await getChainHelpers();
   wallets = chainHelpers.wallets;
 
-  // FIXME: Update permission data with your abilities and policies
+  // TODO: Update permission data with your abilities and policies
   const PERMISSION_DATA: PermissionData = {
     // Aerodrome Swap Ability has no policies
     // If yours does, you would add the policies to this object
@@ -135,7 +148,6 @@ export async function setupVincentDevelopmentEnvironment(): Promise<SetupResult>
     appId = newApp.appId;
     appVersion = newApp.appVersion;
   } else {
-    // TODO Future optimization: Only create a new app version if the existing app version doesn't have the same ability and policy IPFS CIDs
     const newAppVersion = await appManager.registerNewAppVersion({
       abilityIpfsCids,
       abilityPolicies,
@@ -182,9 +194,19 @@ if (require.main === module) {
 
 Execute your setup script using `tsx`:
 
-```bash
+<CodeGroup>
+```bash npm
+npx tsx vincent-app-setup.ts
+```
+
+```bash yarn
+yarn tsx vincent-app-setup.ts
+```
+
+```bash pnpm
 pnpm tsx vincent-app-setup.ts
 ```
+</CodeGroup>
 
 You should see output similar to:
 
@@ -206,76 +228,14 @@ Vincent development setup ready!
 
 ## What's Next?
 
-<CardGroup cols={2}>
-  <Card title="Development and Testing" icon="flask" href="/app/development-and-testing">
-    Learn how to develop and test your Vincent App locally
-  </Card>
-  <Card title="Migrating to Production" icon="rocket" href="/app/migrating-to-production">
-    Deploy your App to production environment
-  </Card>
-</CardGroup>
-
-## Choosing Abilities and Policies
-
-If you're unsure about what Vincent abilities and policies to use for your app, explore these resources:
-
-<CardGroup cols={2}>
-  <Card title="Official Abilities" icon="puzzle-piece" href="/ability/official-abilities">
-    Browse pre-built abilities for common use cases
-  </Card>
-  <Card title="Create Custom Ability" icon="wrench" href="/ability/quickstart">
-    Build your own ability using the Vincent Ability Starter Kit
-  </Card>
-</CardGroup>
-
-# Starting from Scratch?
-
-If you're completely new to Vincent and would like an opinionated example of Vincent, you can checkout out our App
-Starter Kit!
-
-<Card title="App Starter Kit" icon="github" href="https://github.com/LIT-Protocol/vincent-starter-app">
-  Clone the Vincent App Starter Kit repository for quick setup
+<Card title="Development and Testing" icon="flask" href="/app/development-and-testing">
+  Learn how to develop and test your Vincent App locally
 </Card>
 
-## Prerequisites
+## Want a Full Example Instead?
 
-<CardGroup cols={3}>
-  <Card title="Node.js" icon="node" href="https://nodejs.org/en/download">
-    Version 20.19.4 or higher
-  </Card>
-  <Card title="pnpm" icon="box" href="https://pnpm.io/installation">
-    Version 10.7.0 or higher
-  </Card>
-  <Card title="MongoDB" icon="database" href="https://www.mongodb.com/docs/manual/installation/">
-    Local MongoDB instance or Docker container
-  </Card>
-</CardGroup>
+If you'd prefer to explore a complete working application rather than integrating Vincent into your own project, check out our App Starter Kit:
 
-
-## Video Tutorial
-
-Follow along with this comprehensive video tutorial to build your first Vincent App:
-
-<iframe
-  width="100%"
-  height="400"
-  src="https://www.youtube.com/embed/18UnAZysjEE"
-  title="Vincent App Quick Start"
-  frameborder="0"
-  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-  allowfullscreen
-></iframe>
-
-## What's Next?
-
-<CardGroup cols={3}>
-  <Card title="Test Ability Execution" icon="flask" href="/app/testing-abilities">
-    Learn how to test your abilities in development
-  </Card>
-  <Card title="Publishing Guide" icon="cloud-arrow-up" href="/app/publishing-apps">
-    Publish your App to the Vincent Registry
-  </Card>
-  <Card title="User Authentication" icon="shield-check" href="/app/authenticating-users">
-    Learn how to authenticate users in your App
-  </Card>
-</CardGroup>
+<Card title="App Starter Kit" icon="github" href="/app/app-starter-kit">
+  Explore a pre-configured template with video tutorial
+</Card>

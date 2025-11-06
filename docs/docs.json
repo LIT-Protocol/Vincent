@@ -44,7 +44,8 @@
                 "pages": [
                   "app/quickstart",
                   "app/development-and-testing",
-                  "app/migrating-to-production"
+                  "app/migrating-to-production",
+                  "app/app-starter-kit"
                 ]
               },
               "app/explaining-apps",

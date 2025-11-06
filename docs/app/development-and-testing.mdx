@@ -8,12 +8,19 @@ Learn how to test your Vincent abilities locally before deploying to production.
 **Prerequisites:** This guide builds on the [Quick Start](/app/quickstart) guide. Complete the Quick Start setup before proceeding.
 </Warning>
 
-## Overview
-
-
 ## Step 1: Create Your Test Execution Script
 
-Create a file called `test-execution.ts` in your project. This script will import the setup function from your Quick Start script and test ability execution:
+Create a file called `test-execution.ts` in your project. This script will import the setup function from your Quick Start script and test ability execution.
+
+<Warning>
+**Important:** The code below uses the Aerodrome Swap ability as an example. You must replace the following to match your chosen ability:
+
+1. **`.env` file path** - Update `config({ path: ... })` to point to your `.env` file location
+2. **Ability import** - Replace `@lit-protocol/vincent-ability-aerodrome-swap` with your ability package
+3. **Ability parameters** - Update the `precheck()` and `execute()` parameters to match your ability's requirements
+
+Look for `TODO` comments in the code to locate these sections.
+</Warning>
 
 ```typescript
 import { config } from '@dotenvx/dotenvx';
@@ -33,18 +40,18 @@ import {
 } from '@lit-protocol/vincent-app-sdk/abilityClient';
 import * as util from 'node:util';
 
-// FIXME: Import your bundled abilities here.
+// TODO: Import your bundled ability and action types
 import {
   bundledVincentAbility as aerodromeBundledAbility,
   AbilityAction,
-} from '@lit-protocol/vincent-ability-aerodrome-swap';
+} from './index';
 
 // Import setup function from your Quick Start script
 import { setupVincentDevelopmentEnvironment } from './vincent-app-setup';
 
 (async () => {
   try {
-    console.log('🚀 Starting ability execution test...\n');
+    console.log('🚀 Starting ability execution...\n');
 
     // Setup and funding
     console.log('💰 Checking balances and funding accounts...');
@@ -58,21 +65,21 @@ import { setupVincentDevelopmentEnvironment } from './vincent-app-setup';
     await ensureUnexpiredCapacityToken(wallets.appDelegatee);
     console.log('✅ All accounts funded and capacity token validated\n');
 
-    // FIXME: Create ability client with your bundled ability
+    // TODO: Create ability client with your bundled ability
     const abilityClient = getVincentAbilityClient({
       bundledVincentAbility: aerodromeBundledAbility,
       ethersSigner: wallets.appDelegatee,
     });
 
-    // FIXME: Update these parameters for your ability's precheck
-    console.log('🔍 Running precheck for approval...');
+    // TODO: Update these parameters for your ability's precheck
+    console.log('🔍 Running precheck...');
     const precheckResult = await abilityClient.precheck(
       {
         action: AbilityAction.Approve,
-        rpcUrl: 'https://base.llamarpc.com',
+        rpcUrl: 'https://base-rpc.publicnode.com',
         tokenInAddress: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', // USDC on Base
         tokenOutAddress: '0x4200000000000000000000000000000000000006', // WETH on Base
-        amountIn: '10000', // 0.01 USDC (6 decimals)
+        amountIn: '100000', // 0.1 USDC (6 decimals)
         alchemyGasSponsor: false,
       },
       {
@@ -94,15 +101,15 @@ import { setupVincentDevelopmentEnvironment } from './vincent-app-setup';
     }
     console.log('✅ Precheck passed\n');
 
-    // FIXME: Execute approval
-    console.log('⚡ Executing approval...');
+    // TODO: Execute your ability (replace parameters as needed)
+    console.log('⚡ Executing ability...');
     const approvalResult = await abilityClient.execute(
       {
         action: AbilityAction.Approve,
-        rpcUrl: 'https://base.llamarpc.com',
+        rpcUrl: 'https://base-rpc.publicnode.com',
         tokenInAddress: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', // USDC on Base
         tokenOutAddress: '0x4200000000000000000000000000000000000006', // WETH on Base
-        amountIn: '10000', // 0.01 USDC (6 decimals)
+        amountIn: '100000', // 0.1 USDC (6 decimals)
         alchemyGasSponsor: false,
       },
       {
@@ -110,10 +117,10 @@ import { setupVincentDevelopmentEnvironment } from './vincent-app-setup';
       },
     );
 
-    console.log('Approval result:', util.inspect(approvalResult, { depth: 10 }));
+    console.log('Execution result:', util.inspect(approvalResult, { depth: 10 }));
 
     if (!approvalResult.success) {
-      console.error('❌ Approval failed:');
+      console.error('❌ Execution failed:');
       if (approvalResult.runtimeError) {
         console.error('  Runtime error:', approvalResult.runtimeError);
       }
@@ -122,17 +129,17 @@ import { setupVincentDevelopmentEnvironment } from './vincent-app-setup';
       }
       return;
     }
-    console.log('✅ Approval successful\n');
+    console.log('✅ Execution successful\n');
 
-    // FIXME: Execute swap
-    console.log('⚡ Executing swap...');
+    // TODO: Execute another ability action if needed (optional - remove if not needed)
+    console.log('⚡ Executing second action...');
     const executeResult = await abilityClient.execute(
       {
         action: AbilityAction.Swap,
-        rpcUrl: 'https://base.llamarpc.com',
+        rpcUrl: 'https://base-rpc.publicnode.com',
         tokenInAddress: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', // USDC on Base
         tokenOutAddress: '0x4200000000000000000000000000000000000006', // WETH on Base
-        amountIn: '10000', // 0.01 USDC (6 decimals)
+        amountIn: '100000', // 0.1 USDC (6 decimals)
         slippage: 0.005, // 0.5% slippage
         alchemyGasSponsor: false,
       },
@@ -141,10 +148,10 @@ import { setupVincentDevelopmentEnvironment } from './vincent-app-setup';
       },
     );
 
-    console.log('Swap result:', util.inspect(executeResult, { depth: 10 }));
+    console.log('Second execution result:', util.inspect(executeResult, { depth: 10 }));
 
     if (!executeResult.success) {
-      console.error('❌ Swap failed:');
+      console.error('❌ Second execution failed:');
       if (executeResult.runtimeError) {
         console.error('  Runtime error:', executeResult.runtimeError);
       }
@@ -154,10 +161,10 @@ import { setupVincentDevelopmentEnvironment } from './vincent-app-setup';
       return;
     }
 
-    console.log('✅ Swap successful\n');
-    console.log('🎉 Test completed successfully!');
+    console.log('✅ Second execution successful\n');
+    console.log('🎉 All ability executions completed successfully!');
   } catch (error) {
-    console.error('❌ Test failed with error:', error);
+    console.error('❌ Execution failed with error:', error);
     throw error;
   } finally {
     console.log('\n🧹 Cleaning up...');
@@ -166,47 +173,28 @@ import { setupVincentDevelopmentEnvironment } from './vincent-app-setup';
 })();
 ```
 
-### Key Points
-
-1. **Imports the setup function**: The script reuses `setupVincentDevelopmentEnvironment()` from your Quick Start script
-2. **Creates an ability client**: Uses `getVincentAbilityClient()` to interact with your Vincent ability
-3. **Tests with precheck**: Validates ability parameters before execution
-4. **Executes the ability**: Performs the actual blockchain operation
-5. **Proper cleanup**: Always disconnects clients in the finally block
-
-## Step 2: Customize for Your Ability
-
-Update the FIXME comments in the script:
-
-1. **Import your ability**: Replace the Aerodrome ability import with your chosen ability
-2. **Update precheck parameters**: Change the parameters to match your ability's requirements
-3. **Update execute parameters**: Adjust execution parameters for your use case
-
-<Info>
-Each ability has different parameter requirements. Check the [Official Abilities](/ability/official-abilities/overview) documentation for parameter details.
-</Info>
-
-## Step 3: Run Your Test
+## Step 2: Run Your Test
 
 Execute your test script using `tsx`:
 
-```bash
-pnpm tsx test-execution.ts
+<CodeGroup>
+```bash npm
+npx tsx test-execution.ts
 ```
 
-You should see output similar to:
+```bash yarn
+yarn tsx test-execution.ts
+```
 
+```bash pnpm
+pnpm tsx test-execution.ts
+```
+</CodeGroup>
+
+The output will vary based on the abilities you're using and whether execution succeeds or fails. Successful executions will display transaction hashes and confirmation messages, while failures will show error details to help you debug.
 
 ## What's Next?
 
-<CardGroup cols={3}>
-  <Card title="Migrating to Production" icon="rocket" href="/app/migrating-to-production">
-    Deploy your App to production environment
-  </Card>
-  <Card title="Publishing Guide" icon="cloud-arrow-up" href="/app/publishing-apps">
-    Publish your App to the Vincent Registry
-  </Card>
-  <Card title="User Authentication" icon="shield-check" href="/app/authenticating-users">
-    Learn how to authenticate users in your App
-  </Card>
-</CardGroup>
+<Card title="Migrating to Production" icon="rocket" href="/app/migrating-to-production">
+  Deploy your App to production environment
+</Card>
