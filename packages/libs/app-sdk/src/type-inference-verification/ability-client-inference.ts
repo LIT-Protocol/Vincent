@@ -66,6 +66,7 @@ const ability = createVincentAbility({
 const client = getVincentAbilityClient({
   bundledVincentAbility: asBundledVincentAbility(ability, 'QmFakeAbility123' as const),
   ethersSigner: {} as any, // stubbed
+  debug: false,
 });
 
 export async function run() {
@@ -213,6 +214,7 @@ const fullAbility = createVincentAbility({
 const fullClient = getVincentAbilityClient({
   bundledVincentAbility: asBundledVincentAbility(fullAbility, 'QmFullAbility123' as const),
   ethersSigner: {} as any,
+  debug: false,
 });
 
 const fullParams = { count: 5 };

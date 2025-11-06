@@ -108,6 +108,7 @@ const bigintReplacer = (key: any, value: any) => {
  * @param params
  * @param params.ethersSigner  - An ethers signer that has been configured with your delegatee key
  * @param params.bundledVincentAbility  - The bundled vincent ability that you want to interact with
+ * @param params.debug - Boolean to turn debug logging of the Lit Node Client on and off.
  *
  * @category API
  * */
@@ -138,6 +139,7 @@ export function getVincentAbilityClient<
     IpfsCid
   >;
   ethersSigner: ethers.Signer;
+  debug: boolean;
 }): VincentAbilityClient<
   AbilityParamsSchema,
   PoliciesByPackageName,
@@ -146,7 +148,7 @@ export function getVincentAbilityClient<
   PrecheckSuccessSchema,
   PrecheckFailSchema
 > {
-  const { bundledVincentAbility, ethersSigner } = params;
+  const { bundledVincentAbility, ethersSigner, debug } = params;
   const { ipfsCid, vincentAbility, vincentAbilityApiVersion } = bundledVincentAbility;
 
   assertSupportedAbilityVersion(vincentAbilityApiVersion);
@@ -322,7 +324,7 @@ export function getVincentAbilityClient<
         } as AbilityExecuteResponse<ExecuteSuccessSchema, ExecuteFailSchema, PoliciesByPackageName>;
       }
 
-      const litNodeClient = await getLitNodeClientInstance({ network });
+      const litNodeClient = await getLitNodeClientInstance({ network, debug });
       const sessionSigs = await generateVincentAbilitySessionSigs({ ethersSigner, litNodeClient });
 
       const result = await litNodeClient.executeJs({

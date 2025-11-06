@@ -9,9 +9,9 @@ export class LitNodeClientInstance {
 
   private connectHandle: Promise<boolean> | null = null;
 
-  constructor({ network }: { network: LIT_NETWORKS_KEYS }) {
+  constructor({ network, debug }: { network: LIT_NETWORKS_KEYS; debug: boolean }) {
     this.litNodeClientInstance = new LitNodeClient({
-      debug: true,
+      debug,
       litNetwork: network,
     });
   }
