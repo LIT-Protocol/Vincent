@@ -11,8 +11,16 @@ import { getAppInfo } from '../delegatee/get-app-info';
  * If they match, it will return the existing appVersion without registering a new one.
  *
  * @param abilityIpfsCids - Array of ability IPFS CIDs to register
- * @param abilityPolicies - Array of policy IPFS CIDs for each ability
+ * @param abilityPolicies - Array of policy IPFS CIDs for each ability (must be parallel to abilityIpfsCids)
  * @param registerNewVersionOverride - Whether to register a new version even if the latest version already has the same abilities and policies
+ *
+ * @remarks
+ * Assumptions:
+ * - `abilityIpfsCids` and `abilityPolicies` are parallel arrays where `abilityPolicies[i]` contains
+ *   the policy CIDs for the ability at `abilityIpfsCids[i]`
+ * - The comparison is order-independent for both abilities and policies within each ability
+ * - Two app versions are considered equivalent if they have the same set of abilities (regardless of order)
+ *   and each ability has the same set of policies (regardless of order)
  */
 export async function registerNewAppVersion({
   abilityIpfsCids,
@@ -45,34 +53,39 @@ export async function registerNewAppVersion({
     });
 
     if (existingAppVersion) {
-      // Extract existing abilities and policies
-      const existingAbilityIpfsCids = existingAppVersion.appVersion.abilities.map(
-        (ability) => ability.abilityIpfsCid,
-      );
-      const existingAbilityPolicies = existingAppVersion.appVersion.abilities.map(
-        (ability) => ability.policyIpfsCids,
-      );
+      // Create a map from ability CID to its policies for easy lookup
+      const existingAbilityMap = new Map<string, string[]>();
+      existingAppVersion.appVersion.abilities.forEach((ability) => {
+        existingAbilityMap.set(ability.abilityIpfsCid, ability.policyIpfsCids);
+      });
 
-      // Compare arrays (order matters for abilities and policies)
-      const abilitiesMatch =
-        existingAbilityIpfsCids.length === abilityIpfsCids.length &&
-        existingAbilityIpfsCids.every((cid, index) => cid === abilityIpfsCids[index]);
+      // Check if we have the same number of abilities
+      if (existingAbilityMap.size !== abilityIpfsCids.length) {
+        // Different number of abilities, need to register new version; fall through to register new version
+      } else {
+        // For each ability in the new version, check if it exists with the same policies
+        const allMatch = abilityIpfsCids.every((abilityId, index) => {
+          const existingPolicies = existingAbilityMap.get(abilityId);
+          if (!existingPolicies) return false; // Ability doesn't exist in current version
 
-      const policiesMatch =
-        existingAbilityPolicies.length === abilityPolicies.length &&
-        existingAbilityPolicies.every((policies, index) => {
           const newPolicies = abilityPolicies[index];
-          return (
-            policies.length === newPolicies.length &&
-            policies.every((policy, policyIndex) => policy === newPolicies[policyIndex])
-          );
+          if (!newPolicies) return false; // Handle undefined policies
+
+          // Compare policy arrays (order-independent)
+          if (existingPolicies.length !== newPolicies.length) return false;
+
+          const sortedExisting = [...existingPolicies].sort();
+          const sortedNew = [...newPolicies].sort();
+
+          return sortedExisting.every((policy, i) => policy === sortedNew[i]);
         });
 
-      if (abilitiesMatch && policiesMatch) {
-        console.log(
-          `App version ${latestVersion} already has the same abilities and policies. Skipping registration.`,
-        );
-        return { appId, appVersion: latestVersion };
+        if (allMatch) {
+          console.log(
+            `App version ${latestVersion} already has the same abilities and policies. Skipping registration.`,
+          );
+          return { appId, appVersion: latestVersion };
+        }
       }
     }
   }
