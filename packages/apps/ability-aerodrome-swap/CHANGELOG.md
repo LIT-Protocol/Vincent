@@ -1,3 +1,9 @@
+## 0.4.1 (2025-11-06)
+
+### 🧱 Updated Dependencies
+
+- Updated app-sdk to 2.2.4
+
 ## 0.4.0 (2025-11-06)
 
 ### 🚀 Features
