@@ -1,0 +1,212 @@
+---
+title: Development and Testing
+---
+
+Learn how to test your Vincent abilities locally before deploying to production.
+
+<Warning>
+**Prerequisites:** This guide builds on the [Quick Start](/app/quickstart) guide. Complete the Quick Start setup before proceeding.
+</Warning>
+
+## Overview
+
+
+## Step 1: Create Your Test Execution Script
+
+Create a file called `test-execution.ts` in your project. This script will import the setup function from your Quick Start script and test ability execution:
+
+```typescript
+import { config } from '@dotenvx/dotenvx';
+import { resolve } from 'path';
+
+// Load environment variables from .env file in the same directory
+config({ path: resolve(__dirname, '../.env'), override: false });
+
+import {
+  funder,
+  delegatee,
+  ensureUnexpiredCapacityToken,
+} from '@lit-protocol/vincent-e2e-test-utils';
+import {
+  getVincentAbilityClient,
+  disconnectVincentAbilityClients,
+} from '@lit-protocol/vincent-app-sdk/abilityClient';
+import * as util from 'node:util';
+
+// FIXME: Import your bundled abilities here.
+import {
+  bundledVincentAbility as aerodromeBundledAbility,
+  AbilityAction,
+} from '@lit-protocol/vincent-ability-aerodrome-swap';
+
+// Import setup function from your Quick Start script
+import { setupVincentDevelopmentEnvironment } from './vincent-app-setup';
+
+(async () => {
+  try {
+    console.log('🚀 Starting ability execution test...\n');
+
+    // Setup and funding
+    console.log('💰 Checking balances and funding accounts...');
+    await funder.checkFunderBalance();
+    await delegatee.ensureAppDelegateeFunded();
+
+    // Run the setup from vincent-app-setup.ts
+    console.log('🔧 Setting up Vincent development environment...');
+    const { agentPkpInfo, wallets } = await setupVincentDevelopmentEnvironment();
+
+    await ensureUnexpiredCapacityToken(wallets.appDelegatee);
+    console.log('✅ All accounts funded and capacity token validated\n');
+
+    // FIXME: Create ability client with your bundled ability
+    const abilityClient = getVincentAbilityClient({
+      bundledVincentAbility: aerodromeBundledAbility,
+      ethersSigner: wallets.appDelegatee,
+    });
+
+    // FIXME: Update these parameters for your ability's precheck
+    console.log('🔍 Running precheck for approval...');
+    const precheckResult = await abilityClient.precheck(
+      {
+        action: AbilityAction.Approve,
+        rpcUrl: 'https://base.llamarpc.com',
+        tokenInAddress: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', // USDC on Base
+        tokenOutAddress: '0x4200000000000000000000000000000000000006', // WETH on Base
+        amountIn: '10000', // 0.01 USDC (6 decimals)
+        alchemyGasSponsor: false,
+      },
+      {
+        delegatorPkpEthAddress: agentPkpInfo.ethAddress,
+      },
+    );
+
+    console.log('Precheck result:', util.inspect(precheckResult, { depth: 10 }));
+
+    if (!precheckResult.success) {
+      console.error('❌ Precheck failed:');
+      if (precheckResult.runtimeError) {
+        console.error('  Runtime error:', precheckResult.runtimeError);
+      }
+      if (precheckResult.result) {
+        console.error('  Result:', util.inspect(precheckResult.result, { depth: 10 }));
+      }
+      return;
+    }
+    console.log('✅ Precheck passed\n');
+
+    // FIXME: Execute approval
+    console.log('⚡ Executing approval...');
+    const approvalResult = await abilityClient.execute(
+      {
+        action: AbilityAction.Approve,
+        rpcUrl: 'https://base.llamarpc.com',
+        tokenInAddress: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', // USDC on Base
+        tokenOutAddress: '0x4200000000000000000000000000000000000006', // WETH on Base
+        amountIn: '10000', // 0.01 USDC (6 decimals)
+        alchemyGasSponsor: false,
+      },
+      {
+        delegatorPkpEthAddress: agentPkpInfo.ethAddress,
+      },
+    );
+
+    console.log('Approval result:', util.inspect(approvalResult, { depth: 10 }));
+
+    if (!approvalResult.success) {
+      console.error('❌ Approval failed:');
+      if (approvalResult.runtimeError) {
+        console.error('  Runtime error:', approvalResult.runtimeError);
+      }
+      if (approvalResult.result) {
+        console.error('  Result:', util.inspect(approvalResult.result, { depth: 10 }));
+      }
+      return;
+    }
+    console.log('✅ Approval successful\n');
+
+    // FIXME: Execute swap
+    console.log('⚡ Executing swap...');
+    const executeResult = await abilityClient.execute(
+      {
+        action: AbilityAction.Swap,
+        rpcUrl: 'https://base.llamarpc.com',
+        tokenInAddress: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', // USDC on Base
+        tokenOutAddress: '0x4200000000000000000000000000000000000006', // WETH on Base
+        amountIn: '10000', // 0.01 USDC (6 decimals)
+        slippage: 0.005, // 0.5% slippage
+        alchemyGasSponsor: false,
+      },
+      {
+        delegatorPkpEthAddress: agentPkpInfo.ethAddress,
+      },
+    );
+
+    console.log('Swap result:', util.inspect(executeResult, { depth: 10 }));
+
+    if (!executeResult.success) {
+      console.error('❌ Swap failed:');
+      if (executeResult.runtimeError) {
+        console.error('  Runtime error:', executeResult.runtimeError);
+      }
+      if (executeResult.result) {
+        console.error('  Result:', util.inspect(executeResult.result, { depth: 10 }));
+      }
+      return;
+    }
+
+    console.log('✅ Swap successful\n');
+    console.log('🎉 Test completed successfully!');
+  } catch (error) {
+    console.error('❌ Test failed with error:', error);
+    throw error;
+  } finally {
+    console.log('\n🧹 Cleaning up...');
+    await disconnectVincentAbilityClients();
+  }
+})();
+```
+
+### Key Points
+
+1. **Imports the setup function**: The script reuses `setupVincentDevelopmentEnvironment()` from your Quick Start script
+2. **Creates an ability client**: Uses `getVincentAbilityClient()` to interact with your Vincent ability
+3. **Tests with precheck**: Validates ability parameters before execution
+4. **Executes the ability**: Performs the actual blockchain operation
+5. **Proper cleanup**: Always disconnects clients in the finally block
+
+## Step 2: Customize for Your Ability
+
+Update the FIXME comments in the script:
+
+1. **Import your ability**: Replace the Aerodrome ability import with your chosen ability
+2. **Update precheck parameters**: Change the parameters to match your ability's requirements
+3. **Update execute parameters**: Adjust execution parameters for your use case
+
+<Info>
+Each ability has different parameter requirements. Check the [Official Abilities](/ability/official-abilities/overview) documentation for parameter details.
+</Info>
+
+## Step 3: Run Your Test
+
+Execute your test script using `tsx`:
+
+```bash
+pnpm tsx test-execution.ts
+```
+
+You should see output similar to:
+
+
+## What's Next?
+
+<CardGroup cols={3}>
+  <Card title="Migrating to Production" icon="rocket" href="/app/migrating-to-production">
+    Deploy your App to production environment
+  </Card>
+  <Card title="Publishing Guide" icon="cloud-arrow-up" href="/app/publishing-apps">
+    Publish your App to the Vincent Registry
+  </Card>
+  <Card title="User Authentication" icon="shield-check" href="/app/authenticating-users">
+    Learn how to authenticate users in your App
+  </Card>
+</CardGroup>

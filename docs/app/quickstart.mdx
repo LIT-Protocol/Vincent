@@ -1,8 +1,237 @@
 ---
-title: Quick Start
+title: Creating an App
 ---
 
 Build your first Vincent App and start accepting users in under 20 minutes.
+
+## Step 1: Configure Environment Variables
+
+To start onboarding your application onto Vincent, add the following environment variables to your project's `.env` file:
+
+```bash
+TEST_FUNDER_PRIVATE_KEY='<Funder Private Key Here>'
+TEST_APP_MANAGER_PRIVATE_KEY='<App Manager Private Key Here>'
+TEST_APP_DELEGATEE_PRIVATE_KEY='<Delegatee Private Key here>'
+TEST_AGENT_WALLET_PKP_OWNER_PRIVATE_KEY='<Agent Wallet Owner Private Key here>'
+```
+
+<Warning>
+**Security Note:** These are test environment private keys. Never commit your `.env` file to version control. Add it to your `.gitignore` file.
+</Warning>
+
+<Info>
+The `TEST_APP_DELEGATEE_PRIVATE_KEY` and `TEST_AGENT_WALLET_PKP_OWNER_PRIVATE_KEY` are not used in the initial setup, but will be required later for testing ability execution.
+</Info>
+
+## Step 2: Fund Your Wallets
+
+Go to the [Lit Protocol Faucet](https://chronicle-yellowstone-faucet.getlit.dev/) and claim some `tstLPX` tokens for the Ethereum wallet address that corresponds to the `TEST_FUNDER_PRIVATE_KEY`.
+
+The funder wallet will automatically fund the App Manager wallet to ensure it has enough tokens to cover the gas fees necessary to interact with the Vincent Contract.
+
+## Step 3: Install Required Packages
+
+Install the necessary Vincent packages for your project:
+
+<CodeGroup>
+```bash npm
+npm install -D tsx
+npm install @dotenvx/dotenvx @lit-protocol/vincent-e2e-test-utils @lit-protocol/vincent-contracts-sdk @lit-protocol/vincent-ability-aerodrome-swap ethers@5
+```
+
+```bash yarn
+yarn add -D tsx
+yarn add @dotenvx/dotenvx @lit-protocol/vincent-e2e-test-utils @lit-protocol/vincent-contracts-sdk @lit-protocol/vincent-ability-aerodrome-swap ethers@5
+```
+
+```bash pnpm
+pnpm add -D tsx
+pnpm add @dotenvx/dotenvx @lit-protocol/vincent-e2e-test-utils @lit-protocol/vincent-contracts-sdk @lit-protocol/vincent-ability-aerodrome-swap ethers@5
+```
+</CodeGroup>
+
+<Info>
+Replace `@lit-protocol/vincent-ability-aerodrome-swap` with your chosen Vincent ability package.
+</Info>
+
+## Step 4: Create Your Development Setup Script
+
+Create a file called `vincent-app-setup.ts` in your project with the following code. You'll need to make **three key updates**:
+
+### Required Updates
+
+1. **Update the `.env` path** - Change the path to match the location of your `.env` file
+2. **Import your abilities and policies** - Replace the example import with your chosen Vincent abilities and policies
+3. **Update PERMISSION_DATA** - Configure which abilities and policies your app will use
+
+```typescript
+import { config } from '@dotenvx/dotenvx';
+import { resolve } from 'path';
+
+// Load environment variables from .env file in the same directory
+// FIXME: Set this path to the location of the .env file in your project
+config({ path: resolve(__dirname, '../.env'), override: false });
+
+import {
+  delegator,
+  delegatee,
+  appManager,
+  getChainHelpers,
+  type PkpInfo,
+} from '@lit-protocol/vincent-e2e-test-utils';
+import { type PermissionData } from '@lit-protocol/vincent-contracts-sdk';
+import { type Wallet } from 'ethers';
+
+// FIXME: Import your bundled abilities here.
+import {
+  bundledVincentAbility as aerodromeBundledAbility,
+} from '@lit-protocol/vincent-ability-aerodrome-swap';
+
+export interface SetupResult {
+  agentPkpInfo: PkpInfo;
+  wallets: {
+    appDelegatee: Wallet;
+    funder: Wallet;
+    appManager: Wallet;
+    agentWalletOwner: Wallet;
+  };
+  appId: number;
+  appVersion: number;
+}
+
+export async function setupVincentDevelopmentEnvironment(): Promise<SetupResult> {
+  let agentPkpInfo: PkpInfo;
+  let wallets: {
+    appDelegatee: Wallet;
+    funder: Wallet;
+    appManager: Wallet;
+    agentWalletOwner: Wallet;
+  };
+
+  await appManager.ensureAppManagerFunded();
+
+  const chainHelpers = await getChainHelpers();
+  wallets = chainHelpers.wallets;
+
+  // FIXME: Update permission data with your abilities and policies
+  const PERMISSION_DATA: PermissionData = {
+    // Aerodrome Swap Ability has no policies
+    // If yours does, you would add the policies to this object
+    [aerodromeBundledAbility.ipfsCid]: {},
+  };
+
+  const abilityIpfsCids: string[] = Object.keys(PERMISSION_DATA);
+  const abilityPolicies: string[][] = abilityIpfsCids.map((abilityIpfsCid) => {
+    return Object.keys(PERMISSION_DATA[abilityIpfsCid]);
+  });
+
+  // If an app exists for the delegatee, we will create a new app version with the new ipfs cids
+  // Otherwise, we will create an app w/ version 1 appVersion with the new ipfs cids
+  const existingApp = await delegatee.getAppInfo();
+  let appId: number;
+  let appVersion: number;
+  if (!existingApp) {
+    const newApp = await appManager.registerNewApp({ abilityIpfsCids, abilityPolicies });
+    appId = newApp.appId;
+    appVersion = newApp.appVersion;
+  } else {
+    // TODO Future optimization: Only create a new app version if the existing app version doesn't have the same ability and policy IPFS CIDs
+    const newAppVersion = await appManager.registerNewAppVersion({
+      abilityIpfsCids,
+      abilityPolicies,
+    });
+    appId = existingApp.appId;
+    appVersion = newAppVersion.appVersion;
+  }
+  console.log('App ID: ', appId);
+  console.log('App Version: ', appVersion);
+
+  agentPkpInfo = await delegator.getFundedAgentPkp();
+
+  await delegator.permitAppVersionForAgentWalletPkp({
+    permissionData: PERMISSION_DATA,
+    appId,
+    appVersion,
+    agentPkpInfo,
+  });
+
+  await delegator.addPermissionForAbilities(
+    wallets.agentWalletOwner,
+    agentPkpInfo.tokenId,
+    abilityIpfsCids,
+  );
+
+  return {
+    agentPkpInfo,
+    wallets,
+    appId,
+    appVersion,
+  };
+}
+
+// Run setup if this file is executed directly
+if (require.main === module) {
+  (async () => {
+    await setupVincentDevelopmentEnvironment();
+    console.log('Vincent development setup ready!');
+  })();
+}
+```
+
+## Step 5: Run the Setup Script
+
+Execute your setup script using `tsx`:
+
+```bash
+pnpm tsx vincent-app-setup.ts
+```
+
+You should see output similar to:
+
+```
+0x6D9708ED15d46Caf1BcA3A6bf0eF0B056a941427 has a PKP -- using existing PKP with ethAddress: 0x67B448A84A08597EC9A2af91c65b3795453000C3, tokenId: 25486173902463030219270762983493355811257889964037840200490360463056502161384
+ℹ️  0x67B448A84A08597EC9A2af91c65b3795453000C3 has 0.01 Lit test tokens
+✅ Agent PKP: 0x67B448A84A08597EC9A2af91c65b3795453000C3
+ℹ️  Saved test config: App ID: 78065638714, App Version: 1, Agent PKP: 0x67B448A84A08597EC9A2af91c65b3795453000C3
+Auto estimatedGas:  BigNumber { _hex: '0x048f2b', _isBigNumber: true }
+Permitted App with ID 78065638714 and version 1 for Agent Wallet PKP 0x67B448A84A08597EC9A2af91c65b3795453000C3
+Tx hash: 0x51739022da7512dd5b4efc49af2324133d8672d6afc74ce62df886fc3c09acc0
+Permitting ability: QmVkCzCUcBnKcdWbbagNbeAQK1KvTot5hKHvtKpsCPvUEt with ability to sign on behalf of user's agent PKP 25486173902463030219270762983493355811257889964037840200490360463056502161384
+Vincent development setup ready!
+```
+
+<Success>
+**Congratulations!** You've now initialized a Vincent App for development!
+</Success>
+
+## What's Next?
+
+<CardGroup cols={2}>
+  <Card title="Development and Testing" icon="flask" href="/app/development-and-testing">
+    Learn how to develop and test your Vincent App locally
+  </Card>
+  <Card title="Migrating to Production" icon="rocket" href="/app/migrating-to-production">
+    Deploy your App to production environment
+  </Card>
+</CardGroup>
+
+## Choosing Abilities and Policies
+
+If you're unsure about what Vincent abilities and policies to use for your app, explore these resources:
+
+<CardGroup cols={2}>
+  <Card title="Official Abilities" icon="puzzle-piece" href="/ability/official-abilities">
+    Browse pre-built abilities for common use cases
+  </Card>
+  <Card title="Create Custom Ability" icon="wrench" href="/ability/quickstart">
+    Build your own ability using the Vincent Ability Starter Kit
+  </Card>
+</CardGroup>
+
+# Starting from Scratch?
+
+If you're completely new to Vincent and would like an opinionated example of Vincent, you can checkout out our App
+Starter Kit!
 
 <Card title="App Starter Kit" icon="github" href="https://github.com/LIT-Protocol/vincent-starter-app">
   Clone the Vincent App Starter Kit repository for quick setup
@@ -22,6 +251,7 @@ Build your first Vincent App and start accepting users in under 20 minutes.
   </Card>
 </CardGroup>
 
+
 ## Video Tutorial
 
 Follow along with this comprehensive video tutorial to build your first Vincent App:
@@ -39,11 +269,11 @@ Follow along with this comprehensive video tutorial to build your first Vincent 
 ## What's Next?
 
 <CardGroup cols={3}>
-  <Card title="Publishing Guide" icon="cloud-arrow-up" href="/app/publishing-apps">
-    Learn how to publish your App to the Vincent Registry
+  <Card title="Test Ability Execution" icon="flask" href="/app/testing-abilities">
+    Learn how to test your abilities in development
   </Card>
-  <Card title="Understanding Apps" icon="code" href="/app/explaining-apps">
-    Deep dive into how Vincent Apps work
+  <Card title="Publishing Guide" icon="cloud-arrow-up" href="/app/publishing-apps">
+    Publish your App to the Vincent Registry
   </Card>
   <Card title="User Authentication" icon="shield-check" href="/app/authenticating-users">
     Learn how to authenticate users in your App

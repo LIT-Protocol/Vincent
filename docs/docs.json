@@ -39,7 +39,14 @@
           {
             "group": "Introduction",
             "pages": [
-              "app/quickstart",
+              {
+                "group": "Quick Start",
+                "pages": [
+                  "app/quickstart",
+                  "app/development-and-testing",
+                  "app/migrating-to-production"
+                ]
+              },
               "app/explaining-apps",
               "app/publishing-apps",
               "app/updating-apps",

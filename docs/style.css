@@ -26,7 +26,7 @@
 /* Fix code blocks in light mode */
 .light pre,
 .light pre[class*="language-"] {
-  background-color: #f6f8fa !important;
+  background-color: transparent !important;
 }
 
 .light code,
@@ -35,8 +35,7 @@
 }
 
 .light pre code {
-  background-color: #f6f8fa !important;
-  display: block !important;
+  background-color: transparent !important;
 }
 
 /* Ensure inline code has proper styling */
