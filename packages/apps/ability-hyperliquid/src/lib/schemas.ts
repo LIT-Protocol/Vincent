@@ -20,7 +20,7 @@ export const transferParamsSchema = z.object({
   amount: z
     .string()
     .describe(
-      'Amount of USDC to transfer to spot or perp in smallest USDC units (e.g. "1000000" for 1.0 USDC)',
+      'Amount of USDC to transfer to spot or perp, specified in micro-units as a string (e.g., "1000000" means 1.0 USDC; 1 USDC = 1,000,000 micro-units).',
     ),
 });
 

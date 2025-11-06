@@ -184,7 +184,7 @@ describe('Hyperliquid Ability E2E Spot Trading Tests', () => {
       expect(precheckResult.result.action).toBe(HyperliquidAction.SPOT_BUY);
     });
 
-    it('should execute spot buy to purchase SOL with USDC', async () => {
+    it(`[Spot Buy] should execute spot buy to purchase ${TOKEN_OUT_NAME} with ${SPOT_BUY_AMOUNT_USDC} USDC`, async () => {
       const hyperliquidAbilityClient = getVincentAbilityClient({
         bundledVincentAbility: hyperliquidBundledAbility,
         ethersSigner: wallets.appDelegatee,
@@ -259,10 +259,10 @@ describe('Hyperliquid Ability E2E Spot Trading Tests', () => {
         console.log(`[Spot Buy] Initial ${TOKEN_OUT_NAME}:`, initialTokenOutBalance);
         console.log(`[Spot Buy] Final ${TOKEN_OUT_NAME}:`, finalTokenOutBalance);
 
-        // Store BTC amount for sell test
+        // Store TOKEN_OUT_NAME amount for sell test
         tokenOutAmountReceived = finalTokenOutBalance;
 
-        // BTC balance should increase (order might not fill immediately)
+        // TOKEN_OUT_NAME balance should increase (order might not fill immediately)
         // We just check that the order was placed successfully
         expect(parseFloat(finalTokenOutBalance)).toBeGreaterThanOrEqual(
           parseFloat(initialTokenOutBalance),

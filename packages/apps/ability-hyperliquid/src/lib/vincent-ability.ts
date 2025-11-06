@@ -333,8 +333,6 @@ export const vincentAbility = createVincentAbility({
             return fail({ action, reason: 'Deposit parameters are required' });
           }
 
-          const useTestnet = abilityParams.useTestnet ?? false;
-
           // Get Arbitrum RPC URL
           const rpcUrl = await Lit.Actions.getRpcUrl({ chain: 'arbitrum' });
 
