@@ -391,22 +391,16 @@ export const vincentAbility = createVincentAbility({
             useTestnet: abilityParams.useTestnet ?? false,
           });
 
-          if (result.transferResult.status === 'err') {
-            return fail({
-              action,
-              reason: result.transferResult.response as string,
-            });
+          // SuccessResponse always has status "ok", errors are thrown as exceptions
+          if (result.transferResult.status === 'ok') {
+            return succeed({ action, transferResult: result.transferResult });
           }
 
-          if (result.transferResult.status === 'ok') {
-            return succeed({ action });
-          } else {
-            // Unknown response
-            return fail({
-              action,
-              reason: `Unknown response: ${JSON.stringify(result.transferResult, null, 2)}`,
-            });
-          }
+          // This should not happen with SuccessResponse type, but handle it for safety
+          return fail({
+            action,
+            reason: `Unexpected response status: ${JSON.stringify(result.transferResult, null, 2)}`,
+          });
         }
 
         case 'spotBuy':
