@@ -53,7 +53,7 @@ export const vincentAbility = createVincentAbility({
     const transport = new hyperliquid.HttpTransport({ isTestnet: useTestnet });
     const infoClient = new hyperliquid.InfoClient({ transport });
 
-    let hyperLiquidAccountAlreadyExists = false;
+    let hyperLiquidAccountAlreadyExists;
     try {
       await infoClient.clearinghouseState({ user: delegatorPkpInfo.ethAddress });
       hyperLiquidAccountAlreadyExists = true;
@@ -64,12 +64,12 @@ export const vincentAbility = createVincentAbility({
       );
 
       const errorMessage = error instanceof Error ? error.message : String(error);
-      if (!errorMessage.includes('does not exist')) {
+      if (errorMessage.includes('does not exist')) {
         hyperLiquidAccountAlreadyExists = false;
+      } else {
+        // Unknown error occurred - not a "does not exist" error
+        throw error;
       }
-
-      // Unknown error occurred
-      throw error;
     }
 
     switch (action) {

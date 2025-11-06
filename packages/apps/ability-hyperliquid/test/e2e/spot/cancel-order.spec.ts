@@ -137,7 +137,10 @@ describe('Hyperliquid Ability E2E Spot Cancel Order Tests', () => {
       );
 
       expect(precheckResult).toBeDefined();
-      console.log('Spot Cancel Order] precheckResult', util.inspect(precheckResult, { depth: 10 }));
+      console.log(
+        '[Spot Cancel Order] precheckResult',
+        util.inspect(precheckResult, { depth: 10 }),
+      );
 
       if (precheckResult.success === false) {
         throw new Error(precheckResult.runtimeError);
