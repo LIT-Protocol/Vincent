@@ -6,15 +6,44 @@ import {LibDiamond} from "../../diamond-base/libraries/LibDiamond.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {FeeUtils} from "../FeeUtils.sol";
 import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
+import {VincentAppViewFacet} from "../../facets/VincentAppViewFacet.sol";
+import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
+import {FeeCommon} from "../FeeCommon.sol";
 
 /**
  * @title FeeAdminFacet
  * @notice A facet of the Fee Diamond that a Vincent admin can use to withdraw collected fees
  */
-contract FeeAdminFacet {
+contract FeeAdminFacet is FeeCommon {
     using EnumerableSet for EnumerableSet.AddressSet;
+    using ECDSA for bytes32;
+    using MessageHashUtils for bytes32;
 
-    /* ========== Modifiers ========== */
+    /* ========== ERRORS ========== */
+    error CallerNotAppManager(uint40 appId, address caller, address recoveredSigner);
+    error CallerNotLitFoundation();
+    error OwnerAttestationIncorrectSigner(address correctSigner, address recoveredSigner);
+    error OwnerAttestationIncorrectAppId(uint40 correctAppId, uint256 signedAppId);
+    error OwnerAttestationExpired(uint256 expiration);
+    error OwnerAttestationIssuedAtInFuture(uint256 issuedAt);
+    error OwnerAttestationIncorrectChainId(uint256 chainId);
+    error OwnerAttestationIncorrectDestinationContract(address dstContract);
+    error OwnerAttestationIncorrectSourceChainId(uint256 srcChainId);
+    error OwnerAttestationIncorrectSourceContract(address srcContract);
+
+    /* ========== EVENTS ========== */
+    event AppFeesWithdrawn(uint40 indexed appId, address indexed tokenAddress, uint256 amount);
+    event PerformanceFeePercentageSet(uint256 newPerformanceFeePercentage);
+    event SwapFeePercentageSet(uint256 newSwapFeePercentage);
+    event AavePoolSet(address newAavePool);
+    event AerodromeRouterSet(address newAerodromeRouter);
+    event LitAppFeeSplitPercentageSet(uint256 newLitAppFeeSplitPercentage);
+    event OwnerAttestationSignerSet(address newOwnerAttestationSigner);
+    event LitFoundationWalletSet(address newLitFoundationWallet);
+    event VincentAppDiamondOnYellowstoneSet(address newVincentAppDiamondOnYellowstone);
+
+    /* ========== MODIFIERS ========== */
     modifier onlyOwner() {
         if (msg.sender != LibDiamond.contractOwner()) {
             revert FeeUtils.CallerNotOwner();
@@ -22,7 +51,87 @@ contract FeeAdminFacet {
         _;
     }
 
+    modifier onlyAppManager(uint40 appId, FeeUtils.OwnerAttestation calldata oa, bytes calldata sig) {
+        // app id 0 is the lit foundation
+        if (appId == 0) {
+            revert FeeUtils.ZeroAppId();
+        } else {
+            verifyOwnerAttestation(appId, oa, sig);
+        }
+        _;
+    }
+
+    modifier onlyLitFoundationWallet() {
+        if (msg.sender != LibFeeStorage.getStorage().litFoundationWallet) {
+            revert CallerNotLitFoundation();
+        }
+        _;
+    }
+
     /* ========== VIEWS ========== */
+
+    function verifyOwnerAttestation(uint40 appId, FeeUtils.OwnerAttestation calldata oa, bytes calldata sig)
+        public
+        view
+    {
+        // verify the signature
+        bytes32 messageHash = keccak256(
+            abi.encodePacked(
+                oa.srcChainId,
+                oa.srcContract,
+                oa.owner,
+                oa.appId,
+                oa.issuedAt,
+                oa.expiresAt,
+                oa.dstChainId,
+                oa.dstContract
+            )
+        );
+        address signer = messageHash.toEthSignedMessageHash().recover(sig);
+        if (signer != LibFeeStorage.getStorage().ownerAttestationSigner) {
+            revert OwnerAttestationIncorrectSigner(LibFeeStorage.getStorage().ownerAttestationSigner, signer);
+        }
+        if (msg.sender != oa.owner) {
+            revert CallerNotAppManager(appId, msg.sender, oa.owner);
+        }
+        if (oa.appId != appId) {
+            revert OwnerAttestationIncorrectAppId(appId, oa.appId);
+        }
+        if (oa.issuedAt > block.timestamp) {
+            revert OwnerAttestationIssuedAtInFuture(oa.issuedAt);
+        }
+        if (oa.expiresAt < block.timestamp) {
+            revert OwnerAttestationExpired(oa.expiresAt);
+        }
+        if (oa.dstChainId != block.chainid) {
+            revert OwnerAttestationIncorrectChainId(oa.dstChainId);
+        }
+        if (oa.dstContract != address(this)) {
+            revert OwnerAttestationIncorrectDestinationContract(oa.dstContract);
+        }
+        if (oa.srcChainId != LibFeeStorage.CHRONICLE_YELLOWSTONE_CHAIN_ID) {
+            revert OwnerAttestationIncorrectSourceChainId(oa.srcChainId);
+        }
+        if (oa.srcContract != LibFeeStorage.getStorage().vincentAppDiamondOnYellowstone) {
+            revert OwnerAttestationIncorrectSourceContract(oa.srcContract);
+        }
+    }
+
+    /**
+     * @notice Gets the lit foundation wallet address
+     * @return the lit foundation wallet address
+     */
+    function litFoundationWallet() external view returns (address) {
+        return LibFeeStorage.getStorage().litFoundationWallet;
+    }
+
+    /**
+     * @notice Gets the owner attestation signer wallet address
+     * @return the owner attestation signer wallet address
+     */
+    function ownerAttestationSigner() external view returns (address) {
+        return LibFeeStorage.getStorage().ownerAttestationSigner;
+    }
 
     /**
      * @notice Gets the performance fee percentage
@@ -46,27 +155,30 @@ contract FeeAdminFacet {
      * @notice Gets the entire list of tokens that have collected fees
      * if this list gets too long and the view call is timing out,
      * you can use the "one at a time" functions below
+     * @param appId the app id to get the tokens for
      * @return the list of tokens that have collected fees
      */
-    function tokensWithCollectedFees() external view returns (address[] memory) {
-        return LibFeeStorage.getStorage().tokensWithCollectedFees.values();
+    function tokensWithCollectedFees(uint40 appId) external view returns (address[] memory) {
+        return LibFeeStorage.getStorage().tokensWithCollectedFees[appId].values();
     }
 
     /**
      * @notice Gets the length of the tokensWithCollectedFees set
+     * @param appId the app id to get the length for
      * @return the length of the tokensWithCollectedFees set
      */
-    function tokensWithCollectedFeesLength() external view returns (uint256) {
-        return LibFeeStorage.getStorage().tokensWithCollectedFees.length();
+    function tokensWithCollectedFeesLength(uint40 appId) external view returns (uint256) {
+        return LibFeeStorage.getStorage().tokensWithCollectedFees[appId].length();
     }
 
     /**
      * @notice Gets the token at the given index in the tokensWithCollectedFees set
+     * @param appId the app id to get the token for
      * @param index the index of the token to get
      * @return the token at the given index
      */
-    function tokensWithCollectedFeesAtIndex(uint256 index) external view returns (address) {
-        return LibFeeStorage.getStorage().tokensWithCollectedFees.at(index);
+    function tokensWithCollectedFeesAtIndex(uint40 appId, uint256 index) external view returns (address) {
+        return LibFeeStorage.getStorage().tokensWithCollectedFees[appId].at(index);
     }
 
     /**
@@ -85,25 +197,67 @@ contract FeeAdminFacet {
         return LibFeeStorage.getStorage().aerodromeRouter;
     }
 
+    /**
+     * @notice Gets the litAppFeeSplitPercentage
+     * @return the litAppFeeSplitPercentage, expressed in basis points
+     * so 1000 = 10% goes to Lit, 90% goes to the app that initiated the action.  multiply percentage by 100 to get basis points
+     */
+    function litAppFeeSplitPercentage() external view returns (uint256) {
+        return LibFeeStorage.getStorage().litAppFeeSplitPercentage;
+    }
+
+    /**
+     * @notice Gets the vincent app diamond contract address on chronicle yellowstone
+     * @return the vincent app diamond contract address on chronicle yellowstone
+     */
+    function vincentAppDiamondOnYellowstone() external view returns (address) {
+        return LibFeeStorage.getStorage().vincentAppDiamondOnYellowstone;
+    }
+
     /* ========== MUTATIVE FUNCTIONS ========== */
+
+    /**
+     * @notice Sets the lit foundation wallet address
+     * @param newLitFoundationWallet the new lit foundation wallet address
+     * @dev this can only be called by the owner
+     */
+    function setLitFoundationWallet(address newLitFoundationWallet) external onlyOwner {
+        LibFeeStorage.getStorage().litFoundationWallet = newLitFoundationWallet;
+        emit LitFoundationWalletSet(newLitFoundationWallet);
+    }
+
+    /**
+     * @notice Sets the owner attestation signer contract address
+     * @param newOwnerAttestationSigner the new owner attestation signer contract address
+     * @dev this can only be called by the owner
+     */
+    function setOwnerAttestationSigner(address newOwnerAttestationSigner) external onlyOwner {
+        LibFeeStorage.getStorage().ownerAttestationSigner = newOwnerAttestationSigner;
+        emit OwnerAttestationSignerSet(newOwnerAttestationSigner);
+    }
 
     /**
      * @notice Withdraws a token from the fee contract.
      * Can only remove the full balance of the token
      * @param tokenAddress the address of the token to withdraw
-     * @dev this can only be called by the owner
+     * @dev this can only be called by the app manager
      */
-    function withdrawTokens(address tokenAddress) external onlyOwner {
-        // remove the token from the set of tokens that have collected fees
-        // since we're withdrawing the full balance of the token
-        LibFeeStorage.getStorage().tokensWithCollectedFees.remove(tokenAddress);
+    function withdrawAppFees(
+        uint40 appId,
+        address tokenAddress,
+        FeeUtils.OwnerAttestation calldata ownerAttestation,
+        bytes calldata ownerAttestationSig
+    ) external onlyAppManager(appId, ownerAttestation, ownerAttestationSig) nonZeroAppId(appId) {
+        _withdrawCollectedFees(appId, tokenAddress);
+    }
 
-        // get the token
-        IERC20 token = IERC20(tokenAddress);
-        uint256 amount = token.balanceOf(address(this));
-
-        // transfer the token to the owner
-        token.transfer(msg.sender, amount);
+    /**
+     * @notice Withdraws the collected fees for the Lit Foundation.  Only callable by the owner.
+     * @param tokenAddress the address of the token to withdraw the fees for
+     * @dev this can only be called by the lit foundation wallet
+     */
+    function withdrawPlatformFees(address tokenAddress) external onlyLitFoundationWallet {
+        _withdrawCollectedFees(LibFeeStorage.LIT_FOUNDATION_APP_ID, tokenAddress);
     }
 
     /**
@@ -115,6 +269,7 @@ contract FeeAdminFacet {
      */
     function setPerformanceFeePercentage(uint256 newPerformanceFeePercentage) external onlyOwner {
         LibFeeStorage.getStorage().performanceFeePercentage = newPerformanceFeePercentage;
+        emit PerformanceFeePercentageSet(newPerformanceFeePercentage);
     }
 
     /**
@@ -126,6 +281,7 @@ contract FeeAdminFacet {
      */
     function setSwapFeePercentage(uint256 newSwapFeePercentage) external onlyOwner {
         LibFeeStorage.getStorage().swapFeePercentage = newSwapFeePercentage;
+        emit SwapFeePercentageSet(newSwapFeePercentage);
     }
 
     /**
@@ -135,6 +291,7 @@ contract FeeAdminFacet {
      */
     function setAavePool(address newAavePool) external onlyOwner {
         LibFeeStorage.getStorage().aavePool = newAavePool;
+        emit AavePoolSet(newAavePool);
     }
 
     /**
@@ -144,5 +301,52 @@ contract FeeAdminFacet {
      */
     function setAerodromeRouter(address newAerodromeRouter) external onlyOwner {
         LibFeeStorage.getStorage().aerodromeRouter = newAerodromeRouter;
+        emit AerodromeRouterSet(newAerodromeRouter);
+    }
+
+    /**
+     * @notice Sets the litAppFeeSplitPercentage
+     * @param newLitAppFeeSplitPercentage the new litAppFeeSplitPercentage
+     * in basis points
+     * so 1000 = 10% goes to Lit, 90% goes to the app that initiated the action.  multiply percentage by 100 to get basis points
+     * @dev this can only be called by the owner
+     */
+    function setLitAppFeeSplitPercentage(uint256 newLitAppFeeSplitPercentage) external onlyOwner {
+        LibFeeStorage.getStorage().litAppFeeSplitPercentage = newLitAppFeeSplitPercentage;
+        emit LitAppFeeSplitPercentageSet(newLitAppFeeSplitPercentage);
+    }
+
+    /**
+     * @notice Sets the vincent app diamond contract address on chronicle yellowstone
+     * @param newVincentAppDiamondOnYellowstone the new vincent app diamond contract address on chronicle yellowstone
+     * @dev this can only be called by the owner
+     */
+    function setVincentAppDiamondOnYellowstone(address newVincentAppDiamondOnYellowstone) external onlyOwner {
+        LibFeeStorage.getStorage().vincentAppDiamondOnYellowstone = newVincentAppDiamondOnYellowstone;
+        emit VincentAppDiamondOnYellowstoneSet(newVincentAppDiamondOnYellowstone);
+    }
+
+    /**
+     * @notice Withdraws the collected fees for the given app and token.  Assumes auth has already been verified by the caller.
+     * @param appId the app id to withdraw the fees for
+     * @param tokenAddress the address of the token to withdraw the fees for
+     */
+    function _withdrawCollectedFees(uint40 appId, address tokenAddress) internal {
+        // remove the token from the set of tokens that have collected fees
+        // since we're withdrawing the full balance of the token
+        LibFeeStorage.getStorage().tokensWithCollectedFees[appId].remove(tokenAddress);
+
+        // get the token and amount for the app
+        IERC20 token = IERC20(tokenAddress);
+        uint256 amount = LibFeeStorage.getStorage().collectedAppFees[appId][tokenAddress];
+
+        // zero out the amount for the app
+        LibFeeStorage.getStorage().collectedAppFees[appId][tokenAddress] = 0;
+
+        // transfer the token to the app manager
+        token.transfer(msg.sender, amount);
+
+        // emit the event
+        emit AppFeesWithdrawn(appId, tokenAddress, amount);
     }
 }
