@@ -84,7 +84,6 @@ describe('Aerodrome Swap Ability E2E Tests with Alchemy Gas Sponsorship', () => 
       appId = newApp.appId;
       appVersion = newApp.appVersion;
     } else {
-      // TODO Future optimization: Only create a new app version if the existing app version doesn't have the same ability and policy IPFS CIDs
       const newAppVersion = await appManager.registerNewAppVersion({
         abilityIpfsCids,
         abilityPolicies,
