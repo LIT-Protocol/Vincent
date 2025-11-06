@@ -97,8 +97,8 @@ import { type Wallet } from 'ethers';
 
 // TODO: Import your bundled abilities here.
 import {
-  bundledVincentAbility as aerodromeBundledAbility,
-} from '@lit-protocol/vincent-ability-aerodrome-swap';
+  bundledVincentAbility,
+} from '@lit-protocol/vincent-ability-evm-transaction-signer';
 
 export interface SetupResult {
   agentPkpInfo: PkpInfo;
@@ -128,9 +128,9 @@ export async function setupVincentDevelopmentEnvironment(): Promise<SetupResult>
 
   // TODO: Update permission data with your abilities and policies
   const PERMISSION_DATA: PermissionData = {
-    // Aerodrome Swap Ability has no policies
+    // EVM Transaction Signer Ability has no policies
     // If yours does, you would add the policies to this object
-    [aerodromeBundledAbility.ipfsCid]: {},
+    [bundledVincentAbility.ipfsCid]: {},
   };
 
   const abilityIpfsCids: string[] = Object.keys(PERMISSION_DATA);

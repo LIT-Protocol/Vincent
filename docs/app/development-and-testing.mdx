@@ -39,12 +39,10 @@ import {
   disconnectVincentAbilityClients,
 } from '@lit-protocol/vincent-app-sdk/abilityClient';
 import * as util from 'node:util';
+import { ethers } from 'ethers';
 
-// TODO: Import your bundled ability and action types
-import {
-  bundledVincentAbility as aerodromeBundledAbility,
-  AbilityAction,
-} from './index';
+// Import your bundled ability
+import { bundledVincentAbility } from '@lit-protocol/vincent-ability-evm-transaction-signer';
 
 // Import setup function from your Quick Start script
 import { setupVincentDevelopmentEnvironment } from './vincent-app-setup';
@@ -67,20 +65,34 @@ import { setupVincentDevelopmentEnvironment } from './vincent-app-setup';
 
     // TODO: Create ability client with your bundled ability
     const abilityClient = getVincentAbilityClient({
-      bundledVincentAbility: aerodromeBundledAbility,
+      bundledVincentAbility: bundledVincentAbility,
       ethersSigner: wallets.appDelegatee,
     });
 
-    // TODO: Update these parameters for your ability's precheck
-    console.log('🔍 Running precheck...');
+    // Create and serialize a sample transaction (ERC20 transfer of USDC)
+    // Note: This transaction won't be submitted, so we use example values
+    console.log('📝 Creating transaction...');
+
+    const serializedTx = ethers.utils.serializeTransaction({
+      to: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', // USDC on Base
+      value: '0x00',
+      data: new ethers.utils.Interface([
+        'function transfer(address to, uint256 amount) returns (bool)',
+      ]).encodeFunctionData('transfer', [
+        '0x4200000000000000000000000000000000000006', // Recipient (WETH contract as example)
+        '100000', // 0.1 USDC (6 decimals)
+      ]),
+      chainId: 8453, // Base mainnet
+      nonce: 0, // Example nonce
+      gasPrice: '0x3B9ACA00', // Example: 1 gwei
+      gasLimit: '0x186A0', // 100,000 gas
+    });
+
+    // Run precheck
+    console.log('\n🔍 Running precheck...');
     const precheckResult = await abilityClient.precheck(
       {
-        action: AbilityAction.Approve,
-        rpcUrl: 'https://base-rpc.publicnode.com',
-        tokenInAddress: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', // USDC on Base
-        tokenOutAddress: '0x4200000000000000000000000000000000000006', // WETH on Base
-        amountIn: '100000', // 0.1 USDC (6 decimals)
-        alchemyGasSponsor: false,
+        serializedTransaction: serializedTx,
       },
       {
         delegatorPkpEthAddress: agentPkpInfo.ethAddress,
@@ -99,59 +111,25 @@ import { setupVincentDevelopmentEnvironment } from './vincent-app-setup';
       }
       return;
     }
-    console.log('✅ Precheck passed\n');
 
-    // TODO: Execute your ability (replace parameters as needed)
-    console.log('⚡ Executing ability...');
-    const approvalResult = await abilityClient.execute(
-      {
-        action: AbilityAction.Approve,
-        rpcUrl: 'https://base-rpc.publicnode.com',
-        tokenInAddress: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', // USDC on Base
-        tokenOutAddress: '0x4200000000000000000000000000000000000006', // WETH on Base
-        amountIn: '100000', // 0.1 USDC (6 decimals)
-        alchemyGasSponsor: false,
-      },
-      {
-        delegatorPkpEthAddress: agentPkpInfo.ethAddress,
-      },
-    );
+    const { deserializedUnsignedTransaction } = precheckResult.result;
+    console.log('✅ Precheck passed - deserialized transaction:', deserializedUnsignedTransaction);
 
-    console.log('Execution result:', util.inspect(approvalResult, { depth: 10 }));
-
-    if (!approvalResult.success) {
-      console.error('❌ Execution failed:');
-      if (approvalResult.runtimeError) {
-        console.error('  Runtime error:', approvalResult.runtimeError);
-      }
-      if (approvalResult.result) {
-        console.error('  Result:', util.inspect(approvalResult.result, { depth: 10 }));
-      }
-      return;
-    }
-    console.log('✅ Execution successful\n');
-
-    // TODO: Execute another ability action if needed (optional - remove if not needed)
-    console.log('⚡ Executing second action...');
+    // Execute the ability (sign the transaction)
+    console.log('\n⚡ Executing ability (signing transaction)...');
     const executeResult = await abilityClient.execute(
       {
-        action: AbilityAction.Swap,
-        rpcUrl: 'https://base-rpc.publicnode.com',
-        tokenInAddress: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', // USDC on Base
-        tokenOutAddress: '0x4200000000000000000000000000000000000006', // WETH on Base
-        amountIn: '100000', // 0.1 USDC (6 decimals)
-        slippage: 0.005, // 0.5% slippage
-        alchemyGasSponsor: false,
+        serializedTransaction: serializedTx,
       },
       {
         delegatorPkpEthAddress: agentPkpInfo.ethAddress,
       },
     );
 
-    console.log('Second execution result:', util.inspect(executeResult, { depth: 10 }));
+    console.log('Execution result:', util.inspect(executeResult, { depth: 10 }));
 
     if (!executeResult.success) {
-      console.error('❌ Second execution failed:');
+      console.error('❌ Execution failed:');
       if (executeResult.runtimeError) {
         console.error('  Runtime error:', executeResult.runtimeError);
       }
@@ -161,8 +139,8 @@ import { setupVincentDevelopmentEnvironment } from './vincent-app-setup';
       return;
     }
 
-    console.log('✅ Second execution successful\n');
-    console.log('🎉 All ability executions completed successfully!');
+    const { signedTransaction, deserializedSignedTransaction } = executeResult.result;
+    console.log('\n🎉 All ability executions completed successfully!');
   } catch (error) {
     console.error('❌ Execution failed with error:', error);
     throw error;
