@@ -9,6 +9,7 @@ export {
   getEnv,
   getChainHelpers,
   createRandomVincentWallets,
+  setupVincentDevelopmentEnvironment,
 } from './lib';
 
 export type { PkpInfo } from './lib/mint-new-pkp';
