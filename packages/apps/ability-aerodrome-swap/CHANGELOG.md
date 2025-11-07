@@ -1,3 +1,9 @@
+## 0.4.2 (2025-11-07)
+
+### 🧱 Updated Dependencies
+
+- Updated e2e-test-utils to 1.1.0
+
 ## 0.4.1 (2025-11-06)
 
 ### 🧱 Updated Dependencies
