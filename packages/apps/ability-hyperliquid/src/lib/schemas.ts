@@ -38,25 +38,55 @@ export const orderTypeSchema = z.discriminatedUnion('type', [
   }),
 ]);
 
-export const spotTradeParamsSchema = z.object({
-  symbol: z.string().describe('Trading pair symbol (e.g., "HYPE/USDC")'),
-  price: z.string().describe('Limit price'),
-  size: z.string().describe('Order size'),
-  orderType: orderTypeSchema
-    .optional()
-    .describe(
-      'Order type: { type: "limit", tif: "Gtc" | "Ioc" | "Alo" } or { type: "market" }. Default: { type: "limit", tif: "Gtc" }',
-    ),
-});
+export const spotTradeParamsSchema = z
+  .object({
+    symbol: z.string().describe('Trading pair symbol (e.g., "HYPE/USDC")'),
+    price: z.string().describe('Limit price'),
+    size: z.string().describe('Order size'),
+    orderType: orderTypeSchema
+      .optional()
+      .describe(
+        'Order type: { type: "limit", tif: "Gtc" | "Ioc" | "Alo" } or { type: "market" }. Default: { type: "limit", tif: "Gtc" }',
+      ),
+  })
+  .refine(
+    (data) => {
+      const parts = data.symbol.split('/');
+      return parts.length === 2 && parts[0] && parts[1];
+    },
+    {
+      message: 'Invalid trading pair format. Expected format: BASE/QUOTE (e.g., BTC/USDC)',
+    },
+  );
 
-export const cancelOrderParamsSchema = z.object({
-  symbol: z.string().describe('Trading pair symbol (e.g., "PURR/USDC")'),
-  orderId: z.number().describe('Order ID to cancel'),
-});
+export const cancelOrderParamsSchema = z
+  .object({
+    symbol: z.string().describe('Trading pair symbol (e.g., "PURR/USDC")'),
+    orderId: z.number().describe('Order ID to cancel'),
+  })
+  .refine(
+    (data) => {
+      const parts = data.symbol.split('/');
+      return parts.length === 2 && parts[0] && parts[1];
+    },
+    {
+      message: 'Invalid trading pair format. Expected format: BASE/QUOTE (e.g., BTC/USDC)',
+    },
+  );
 
-export const cancelAllOrdersForSymbolParamsSchema = z.object({
-  symbol: z.string().describe('Trading pair symbol to cancel all orders for (e.g., "PURR/USDC")'),
-});
+export const cancelAllOrdersForSymbolParamsSchema = z
+  .object({
+    symbol: z.string().describe('Trading pair symbol to cancel all orders for (e.g., "PURR/USDC")'),
+  })
+  .refine(
+    (data) => {
+      const parts = data.symbol.split('/');
+      return parts.length === 2 && parts[0] && parts[1];
+    },
+    {
+      message: 'Invalid trading pair format. Expected format: BASE/QUOTE (e.g., BTC/USDC)',
+    },
+  );
 
 export const perpTradeParamsSchema = z.object({
   symbol: z.string().describe('Perpetual symbol (e.g., "ETH")'),
@@ -132,24 +162,24 @@ export const abilityParamsSchema = z
 
 export const precheckSuccessSchema = z.object({
   action: z.string().describe('Action that was prechecked'),
-  hyperLiquidAccountAlreadyExists: z
-    .boolean()
-    .optional()
-    .describe('Whether the Hyperliquid account already exists'),
-  availableUsdcBalance: z
+  availableBalance: z
     .string()
     .optional()
-    .describe('The available balance of the USDC in the Hyperliquid account'),
+    .describe('The available balance of the asset in the Hyperliquid account'),
 });
 
 export const precheckFailSchema = z.object({
   action: z.string().describe('Action that was prechecked'),
   reason: z.string().describe('The reason the precheck failed'),
-  usdcBalance: z.string().optional().describe('The balance of the USDC in the agent wallet PKP'),
-  availableUsdcBalance: z
+  availableBalance: z
     .string()
     .optional()
-    .describe('The available balance of the USDC in the Hyperliquid account'),
+    .describe('The available balance of the asset in the Hyperliquid account'),
+  requiredBalance: z
+    .string()
+    .optional()
+    .describe('The required balance of the asset in the Hyperliquid account'),
+  balanceAsset: z.string().optional().describe('The asset in the Hyperliquid account'),
 });
 
 export const executeFailSchema = z.object({

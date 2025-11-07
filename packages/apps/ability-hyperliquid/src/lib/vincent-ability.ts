@@ -12,6 +12,7 @@ import {
   HYPERLIQUID_BRIDGE_ADDRESS_TESTNET,
   ARBITRUM_USDC_ADDRESS_MAINNET,
   ARBITRUM_USDC_ADDRESS_TESTNET,
+  HyperliquidAction,
 } from './types';
 import {
   executeFailSchema,
@@ -28,7 +29,15 @@ import {
   cancelAllOrdersForSymbol,
   executePerpOrder,
 } from './ability-helpers';
-import { depositPrechecks, spotTradePrechecks, perpTradePrechecks } from './ability-checks';
+import {
+  depositPrechecks,
+  spotTradePrechecks,
+  perpTradePrechecks,
+  hyperliquidAccountExists,
+  transferPrechecks,
+  cancelOrderPrechecks,
+  cancelAllOrdersForSymbolPrechecks,
+} from './ability-checks';
 
 export const vincentAbility = createVincentAbility({
   packageName: '@lit-protocol/vincent-ability-hyperliquid' as const,
@@ -53,182 +62,114 @@ export const vincentAbility = createVincentAbility({
     const transport = new hyperliquid.HttpTransport({ isTestnet: useTestnet });
     const infoClient = new hyperliquid.InfoClient({ transport });
 
-    let hyperLiquidAccountAlreadyExists;
-    try {
-      await infoClient.clearinghouseState({ user: delegatorPkpInfo.ethAddress });
-      hyperLiquidAccountAlreadyExists = true;
-    } catch (error) {
-      console.error(
-        '[@lit-protocol/vincent-ability-hyperliquid precheck] Error checking clearinghouse state',
-        error,
-      );
+    const hyperLiquidAccountExists = await hyperliquidAccountExists({
+      infoClient,
+      ethAddress: delegatorPkpInfo.ethAddress,
+    });
 
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      if (errorMessage.includes('does not exist')) {
-        hyperLiquidAccountAlreadyExists = false;
-      } else {
-        // Unknown error occurred - not a "does not exist" error
-        throw error;
+    if (action === HyperliquidAction.DEPOSIT) {
+      if (!arbitrumRpcUrl) {
+        return fail({ action, reason: 'Arbitrum RPC URL is required for precheck' });
       }
+
+      if (!abilityParams.deposit) {
+        return fail({ action, reason: 'Deposit parameters are required for precheck' });
+      }
+
+      const result = await depositPrechecks({
+        provider: new ethers.providers.StaticJsonRpcProvider(arbitrumRpcUrl),
+        agentWalletPkpEthAddress: delegatorPkpInfo.ethAddress,
+        depositAmountInMicroUsdc: abilityParams.deposit.amount,
+        useTestnet,
+      });
+
+      if (!result.success) {
+        return fail({ action, reason: result.reason, availableBalance: result.availableBalance });
+      }
+
+      return succeed({
+        action,
+      });
+    }
+
+    if (!hyperLiquidAccountExists) {
+      return fail({
+        action,
+        reason: 'Hyperliquid account does not exist. Please deposit first.',
+      });
     }
 
     switch (action) {
-      case 'deposit': {
-        if (hyperLiquidAccountAlreadyExists) {
-          return succeed({
-            action,
-            hyperLiquidAccountAlreadyExists: true,
-          });
-        }
-
-        if (!arbitrumRpcUrl) {
-          return fail({ action, reason: 'Arbitrum RPC URL is required for precheck' });
-        }
-
-        if (!abilityParams.deposit) {
-          return fail({ action, reason: 'Deposit parameters are required for precheck' });
-        }
-
-        const result = await depositPrechecks({
-          provider: new ethers.providers.StaticJsonRpcProvider(arbitrumRpcUrl),
-          agentWalletPkpEthAddress: delegatorPkpInfo.ethAddress,
-          depositAmountInMicroUsdc: abilityParams.deposit.amount,
-          useTestnet,
-        });
-
-        if (!result.success) {
-          return fail({ action, reason: result.reason, usdcBalance: result.balance });
-        }
-
-        return succeed({
-          action,
-          hyperLiquidAccountAlreadyExists: false,
-        });
-      }
-
-      case 'transferToSpot': {
-        if (!hyperLiquidAccountAlreadyExists) {
-          return fail({
-            action,
-            reason: 'Hyperliquid account does not exist. Please deposit first.',
-          });
-        }
-
+      case HyperliquidAction.TRANSFER_TO_SPOT:
+      case HyperliquidAction.TRANSFER_TO_PERP: {
         if (!abilityParams.transfer) {
           return fail({ action, reason: 'Transfer to spot parameters are required for precheck' });
         }
 
-        // Check if account has sufficient funds in perp account
-        try {
-          const clearinghouseState = await infoClient.clearinghouseState({
-            user: delegatorPkpInfo.ethAddress,
-          });
+        const result = await transferPrechecks({
+          infoClient,
+          ethAddress: delegatorPkpInfo.ethAddress,
+          params: {
+            amount: abilityParams.transfer.amount,
+            to: action === HyperliquidAction.TRANSFER_TO_SPOT ? 'spot' : 'perp',
+          },
+        });
 
-          const availableUsdcBalance = ethers.utils.parseUnits(
-            clearinghouseState.marginSummary.accountValue,
-            6, // USDC has 6 decimals
-          );
-
-          if (availableUsdcBalance.lt(ethers.BigNumber.from(abilityParams.transfer.amount))) {
-            return fail({
-              action,
-              reason: `Insufficient perp balance. Available: ${availableUsdcBalance} USDC, Requested: ${abilityParams.transfer.amount} USDC`,
-              availableUsdcBalance: availableUsdcBalance.toString(),
-            });
-          }
-
-          return succeed({
-            action,
-            availableUsdcBalance: availableUsdcBalance.toString(),
-          });
-        } catch (error) {
-          const errorMessage = error instanceof Error ? error.message : String(error);
-          return fail({ action, reason: `Error checking perp balance: ${errorMessage}` });
-        }
-      }
-
-      case 'transferToPerp': {
-        if (!hyperLiquidAccountAlreadyExists) {
+        if (!result.success) {
           return fail({
             action,
-            reason: 'Hyperliquid account does not exist. Please deposit first.',
+            reason: result.reason,
+            availableBalance: result.availableBalance,
+            requiredBalance: result.requiredBalance,
           });
         }
 
-        if (!abilityParams.transfer) {
-          return fail({ action, reason: 'Transfer to perp parameters are required for precheck' });
-        }
-
-        // Check if account has sufficient funds in spot account
-        try {
-          const spotState = await infoClient.spotClearinghouseState({
-            user: delegatorPkpInfo.ethAddress,
-          });
-
-          // Find USDC balance in spot account
-          const usdcBalance = spotState.balances.find((b) => b.coin === 'USDC');
-
-          if (!usdcBalance) {
-            return fail({
-              action,
-              reason: 'No USDC balance found in spot account',
-              availableUsdcBalance: '0',
-            });
-          }
-
-          const availableUsdcBalance = ethers.utils.parseUnits(
-            usdcBalance.total,
-            6, // USDC has 6 decimals
-          );
-
-          if (availableUsdcBalance.lt(ethers.BigNumber.from(abilityParams.transfer.amount))) {
-            return fail({
-              action,
-              reason: `Insufficient spot balance. Available: ${availableUsdcBalance} USDC, Requested: ${abilityParams.transfer.amount} USDC`,
-              availableUsdcBalance: availableUsdcBalance.toString(),
-            });
-          }
-
-          return succeed({
-            action,
-            availableUsdcBalance: availableUsdcBalance.toString(),
-          });
-        } catch (error) {
-          const errorMessage = error instanceof Error ? error.message : String(error);
-          return fail({ action, reason: `Error checking spot balance: ${errorMessage}` });
-        }
+        return succeed({
+          action,
+          availableBalance: result.availableBalance,
+        });
       }
 
-      case 'spotBuy':
-      case 'spotSell': {
+      case HyperliquidAction.SPOT_BUY:
+      case HyperliquidAction.SPOT_SELL: {
         if (!abilityParams.spot) {
           return fail({ action, reason: 'Spot trade parameters are required for precheck' });
         }
 
-        const checkResult = await spotTradePrechecks(
+        const checkResult = await spotTradePrechecks({
           transport,
-          delegatorPkpInfo.ethAddress,
-          abilityParams.spot,
-        );
+          ethAddress: delegatorPkpInfo.ethAddress,
+          params: {
+            symbol: abilityParams.spot.symbol,
+            price: abilityParams.spot.price,
+            size: abilityParams.spot.size,
+            isBuy: action === HyperliquidAction.SPOT_BUY,
+          },
+        });
 
         if (!checkResult.success) {
-          return fail({ action, reason: checkResult.reason || 'Unknown error' });
+          return fail({
+            action,
+            reason: checkResult.reason,
+          });
         }
 
         return succeed({ action });
       }
 
-      case 'perpLong':
-      case 'perpShort': {
+      case HyperliquidAction.PERP_LONG:
+      case HyperliquidAction.PERP_SHORT: {
         if (!abilityParams.perp) {
           return fail({ action, reason: 'Perp trade parameters are required for precheck' });
         }
 
-        const checkResult = await perpTradePrechecks(
+        const checkResult = await perpTradePrechecks({
           transport,
-          delegatorPkpInfo.ethAddress,
-          abilityParams.perp,
-        );
+          ethAddress: delegatorPkpInfo.ethAddress,
+          params: {
+            symbol: abilityParams.perp.symbol,
+          },
+        });
 
         if (!checkResult.success) {
           return fail({ action, reason: checkResult.reason || 'Unknown error' });
@@ -237,50 +178,30 @@ export const vincentAbility = createVincentAbility({
         return succeed({ action });
       }
 
-      case 'cancelOrder': {
-        if (!hyperLiquidAccountAlreadyExists) {
-          return fail({
-            action,
-            reason: 'Hyperliquid account does not exist. Please deposit first.',
-          });
-        }
-
+      case HyperliquidAction.CANCEL_ORDER: {
         if (!abilityParams.cancelOrder) {
           return fail({ action, reason: 'Cancel order parameters are required for precheck' });
         }
 
-        // Check if the order exists and is still open
-        try {
-          const openOrders = await infoClient.openOrders({
-            user: delegatorPkpInfo.ethAddress as `0x${string}`,
-          });
+        const result = await cancelOrderPrechecks({
+          infoClient,
+          ethAddress: delegatorPkpInfo.ethAddress,
+          params: {
+            orderId: abilityParams.cancelOrder.orderId,
+          },
+        });
 
-          const orderExists = openOrders.some(
-            (order) => order.oid === abilityParams.cancelOrder!.orderId,
-          );
-
-          if (!orderExists) {
-            return fail({
-              action,
-              reason: `Order ${abilityParams.cancelOrder.orderId} not found or already filled/cancelled`,
-            });
-          }
-
-          return succeed({ action });
-        } catch (error) {
-          const errorMessage = error instanceof Error ? error.message : String(error);
-          return fail({ action, reason: `Error checking open orders: ${errorMessage}` });
-        }
-      }
-
-      case 'cancelAllOrdersForSymbol': {
-        if (!hyperLiquidAccountAlreadyExists) {
+        if (!result.success) {
           return fail({
             action,
-            reason: 'Hyperliquid account does not exist. Please deposit first.',
+            reason: result.reason,
           });
         }
 
+        return succeed({ action });
+      }
+
+      case HyperliquidAction.CANCEL_ALL_ORDERS_FOR_SYMBOL: {
         if (!abilityParams.cancelAllOrdersForSymbol) {
           return fail({
             action,
@@ -288,27 +209,22 @@ export const vincentAbility = createVincentAbility({
           });
         }
 
-        // Check if there are any open orders for the symbol
-        try {
-          const openOrders = await infoClient.openOrders({
-            user: delegatorPkpInfo.ethAddress as `0x${string}`,
+        const result = await cancelAllOrdersForSymbolPrechecks({
+          infoClient,
+          ethAddress: delegatorPkpInfo.ethAddress,
+          params: {
+            symbol: abilityParams.cancelAllOrdersForSymbol.symbol,
+          },
+        });
+
+        if (!result.success) {
+          return fail({
+            action,
+            reason: result.reason,
           });
-          const ordersForSymbol = openOrders.filter(
-            (order) => order.coin === abilityParams.cancelAllOrdersForSymbol!.symbol,
-          );
-
-          if (ordersForSymbol.length === 0) {
-            return fail({
-              action,
-              reason: `No open orders found for ${abilityParams.cancelAllOrdersForSymbol.symbol}`,
-            });
-          }
-
-          return succeed({ action });
-        } catch (error) {
-          const errorMessage = error instanceof Error ? error.message : String(error);
-          return fail({ action, reason: `Error checking open orders: ${errorMessage}` });
         }
+
+        return succeed({ action });
       }
 
       default:
@@ -328,7 +244,7 @@ export const vincentAbility = createVincentAbility({
 
     try {
       switch (action) {
-        case 'deposit': {
+        case HyperliquidAction.DEPOSIT: {
           if (!abilityParams.deposit) {
             return fail({ action, reason: 'Deposit parameters are required' });
           }
@@ -373,8 +289,8 @@ export const vincentAbility = createVincentAbility({
           });
         }
 
-        case 'transferToSpot':
-        case 'transferToPerp': {
+        case HyperliquidAction.TRANSFER_TO_SPOT:
+        case HyperliquidAction.TRANSFER_TO_PERP: {
           if (!abilityParams.transfer) {
             return fail({
               action,
@@ -403,8 +319,8 @@ export const vincentAbility = createVincentAbility({
           });
         }
 
-        case 'spotBuy':
-        case 'spotSell': {
+        case HyperliquidAction.SPOT_BUY:
+        case HyperliquidAction.SPOT_SELL: {
           if (!abilityParams.spot) {
             return fail({ action, reason: 'Spot trade parameters are required' });
           }
@@ -435,8 +351,8 @@ export const vincentAbility = createVincentAbility({
           });
         }
 
-        case 'perpLong':
-        case 'perpShort': {
+        case HyperliquidAction.PERP_LONG:
+        case HyperliquidAction.PERP_SHORT: {
           if (!abilityParams.perp) {
             return fail({ action, reason: 'Perp trade parameters are required' });
           }
@@ -472,7 +388,7 @@ export const vincentAbility = createVincentAbility({
           });
         }
 
-        case 'cancelOrder': {
+        case HyperliquidAction.CANCEL_ORDER: {
           if (!abilityParams.cancelOrder) {
             return fail({ action, reason: 'Cancel order parameters are required' });
           }
@@ -500,7 +416,7 @@ export const vincentAbility = createVincentAbility({
           });
         }
 
-        case 'cancelAllOrdersForSymbol': {
+        case HyperliquidAction.CANCEL_ALL_ORDERS_FOR_SYMBOL: {
           if (!abilityParams.cancelAllOrdersForSymbol) {
             return fail({ action, reason: 'Cancel all orders for symbol parameters are required' });
           }

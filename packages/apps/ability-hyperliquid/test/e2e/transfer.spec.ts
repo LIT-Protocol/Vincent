@@ -27,7 +27,7 @@ describe('Hyperliquid Ability E2E Transfer USDC to Spot/Perp Tests', () => {
   const ENV = getEnv({
     ARBITRUM_RPC_URL: z.string(),
   });
-  const USDC_TRANSFER_AMOUNT = '50000000'; // 50 USDC
+  const USDC_TRANSFER_AMOUNT = '5000000'; // 5 USDC
   const USE_TESTNET = true;
 
   let agentPkpInfo: PkpInfo;
@@ -156,7 +156,7 @@ describe('Hyperliquid Ability E2E Transfer USDC to Spot/Perp Tests', () => {
 
       expect(precheckResult.result).toBeDefined();
       expect(precheckResult.result.action).toBe('transferToSpot');
-      expect(BigInt(precheckResult.result.availableUsdcBalance as string)).toBeGreaterThan(0n);
+      expect(parseFloat(precheckResult.result.availableBalance as string)).toBeGreaterThan(0);
     });
 
     it('should execute the Hyperliquid Ability to make a transfer to spot from the Agent Wallet PKP', async () => {
@@ -224,8 +224,8 @@ describe('Hyperliquid Ability E2E Transfer USDC to Spot/Perp Tests', () => {
         if (usdcBalance) {
           const finalSpotBalance = usdcBalance.total;
 
-          console.log('[Spot] Initial USDC balance:', initialSpotBalance);
-          console.log('[Spot] Final USDC balance:', finalSpotBalance);
+          console.log('[Spot] Initial balance:', initialSpotBalance);
+          console.log('[Spot] Final balance:', finalSpotBalance);
           console.log('[Spot] Expected increase:', expectedTransferAmount);
           console.log(
             '[Spot] Actual increase:',
@@ -245,7 +245,7 @@ describe('Hyperliquid Ability E2E Transfer USDC to Spot/Perp Tests', () => {
     });
   });
 
-  describe.skip('[Transfer to Perp] Precheck & Execute Swap Success', () => {
+  describe('[Transfer to Perp] Precheck & Execute Swap Success', () => {
     let initialPerpBalance: string;
     const expectedTransferAmount = parseFloat(USDC_TRANSFER_AMOUNT) / 1_000_000; // Convert from micro-units to whole USDC
 
@@ -299,7 +299,7 @@ describe('Hyperliquid Ability E2E Transfer USDC to Spot/Perp Tests', () => {
 
       expect(precheckResult.result).toBeDefined();
       expect(precheckResult.result.action).toBe('transferToPerp');
-      expect(BigInt(precheckResult.result.availableUsdcBalance as string)).toBeGreaterThan(0n);
+      expect(BigInt(precheckResult.result.availableBalance as string)).toBeGreaterThan(0n);
     });
 
     it('should execute the Hyperliquid Ability to make a transfer to perp from the Agent Wallet PKP', async () => {
@@ -359,7 +359,6 @@ describe('Hyperliquid Ability E2E Transfer USDC to Spot/Perp Tests', () => {
           withdrawable?: string;
         };
         const finalPerpBalance = marginSummary.accountValue || marginSummary.totalRawUsd || '0';
-        const withdrawable = marginSummary.withdrawable || '0';
 
         console.log('[Perps] Initial balance:', initialPerpBalance);
         console.log('[Perps] Final balance:', finalPerpBalance);
@@ -368,7 +367,6 @@ describe('Hyperliquid Ability E2E Transfer USDC to Spot/Perp Tests', () => {
           '[Perps] Actual increase:',
           parseFloat(finalPerpBalance) - parseFloat(initialPerpBalance),
         );
-        console.log('[Perps] Withdrawable:', withdrawable);
 
         // Verify the balance increased by the expected amount (with small tolerance for rounding)
         const actualIncrease = parseFloat(finalPerpBalance) - parseFloat(initialPerpBalance);
