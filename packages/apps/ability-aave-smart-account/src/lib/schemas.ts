@@ -16,6 +16,7 @@ export const abilityParamsSchema = z.object({
   ),
   alchemyRpcUrl: z
     .string()
+    .regex(/^https:\/\/[a-z0-9-]+\.g\.alchemy\.com\/v2\/.+/, { message: 'Invalid Alchemy RPC URL' })
     .url()
     .describe('Alchemy RPC URL for the desired chain. Will be used to simulate the transaction.'),
   serializedZeroDevPermissionAccount: z
