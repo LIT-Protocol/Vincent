@@ -1,16 +1,17 @@
-import {
-  delegator,
-  delegatee,
-  appManager,
-  funder,
-  getChainHelpers,
-  ensureUnexpiredCapacityToken,
-  type PkpInfo,
-} from '../index';
-import { type PermissionData } from '@lit-protocol/vincent-contracts-sdk';
-import { type Wallet } from 'ethers';
+import type { Wallet } from 'ethers';
 
-export interface SetupResult {
+import type { PermissionData } from '@lit-protocol/vincent-contracts-sdk';
+
+import type { PkpInfo } from './mint-new-pkp';
+
+import * as appManager from './appManager';
+import { getChainHelpers } from './chain';
+import * as delegatee from './delegatee';
+import * as delegator from './delegator';
+import { ensureUnexpiredCapacityToken } from './ensure-capacity-credit';
+import * as funder from './funder';
+
+export interface VincentDevEnvironment {
   agentPkpInfo: PkpInfo;
   wallets: {
     appDelegatee: Wallet;
@@ -35,11 +36,21 @@ export interface SetupResult {
  * @returns the setup result including agent PKP info, wallets, app ID, and app version
  * @example
  * ```typescript
+ * // Example with no policies
  * const permissionData = {
- *   // EVM Transaction Signer Ability has no policies
- *   // If yours does, you would add the policies to this object
  *   [bundledVincentAbility.ipfsCid]: {},
  * };
+ *
+ * // Example with policies
+ * const permissionDataWithPolicies = {
+ *   [bundledVincentAbility.ipfsCid]: {
+ *     [spendingLimitPolicy.ipfsCid]: {
+ *       limit: '1000000',
+ *       period: '86400',
+ *     },
+ *   },
+ * };
+ *
  * const result = await setupVincentDevelopmentEnvironment({ permissionData });
  * ```
  */
@@ -47,7 +58,7 @@ export const setupVincentDevelopmentEnvironment = async ({
   permissionData,
 }: {
   permissionData: PermissionData;
-}): Promise<SetupResult> => {
+}): Promise<VincentDevEnvironment> => {
   // Check and fund all required accounts
   await funder.checkFunderBalance();
   await delegatee.ensureAppDelegateeFunded();
