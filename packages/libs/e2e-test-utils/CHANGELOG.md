@@ -1,3 +1,13 @@
+## 1.1.0 (2025-11-07)
+
+### 🚀 Features
+
+- Adds a `setupVincentDevelopmentEnvironment` function to streamline/abstract the developer experience. ([4ddce811](https://github.com/LIT-Protocol/Vincent/commit/4ddce811))
+
+### ❤️ Thank You
+
+- awisniew207 @awisniew207
+
 # 1.0.0 (2025-11-06)
 
 ### 🚀 Features
