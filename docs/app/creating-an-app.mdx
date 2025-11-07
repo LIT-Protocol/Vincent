@@ -9,9 +9,26 @@ Set up your Vincent development environment and integrate it into your project b
 To start onboarding your application onto Vincent, add the following environment variables to your project's `.env` file:
 
 ```bash
+# This wallet is expected to have Lit test tokens, and will be used to:
+# - Fund the App Manager to register the Vincent App
+# - Fund the App Delegatee to be able to execute Vincent Abilities
+# You can fund this wallet with test tokens using the faucet:
+# https://chronicle-yellowstone-faucet.getlit.dev/
 TEST_FUNDER_PRIVATE_KEY='<Funder Private Key Here>'
+
+# This wallet will own the Vincent App and will be in charge of:
+# - Creating new App Versions
+# - Adding Vincent Abilities to App Versions
+# - Adding Delegatees to the App
 TEST_APP_MANAGER_PRIVATE_KEY='<App Manager Private Key Here>'
+
+# This wallet will execute the Vincent Abilities for a specific
+# Vincent App on behalf of the Vincent User
 TEST_APP_DELEGATEE_PRIVATE_KEY='<Delegatee Private Key here>'
+
+# This wallet will own the Vincent Agent Wallet that Vincent Delegatees use to
+# execute Abilities on its behalf. It’s responsible for permitting each App Version,
+# granting the App Delegatees to sign with the Agent Wallet within Abilities
 TEST_AGENT_WALLET_PKP_OWNER_PRIVATE_KEY='<Agent Wallet Owner Private Key here>'
 ```
 
@@ -27,11 +44,13 @@ The `TEST_APP_DELEGATEE_PRIVATE_KEY` and `TEST_AGENT_WALLET_PKP_OWNER_PRIVATE_KE
 
 Go to the [Lit Protocol Faucet](https://chronicle-yellowstone-faucet.getlit.dev/) and claim some `tstLPX` tokens for the Ethereum wallet address that corresponds to the `TEST_FUNDER_PRIVATE_KEY`.
 
-The funder wallet will automatically fund the App Manager wallet to ensure it has enough tokens to cover the gas fees necessary to interact with the Vincent Contract.
+The funder wallet will automatically fund the App Manager and Delegatee wallets to ensure they enough tokens to cover the gas fees necessary to interact with the Vincent Contract.
 
 ## Step 3: Install Required Packages
 
-Install the necessary Vincent packages for your project. **Replace `@lit-protocol/vincent-ability-evm-transaction-signer` with your chosen Vincent ability and policy packages:**
+Install the necessary Vincent packages for your project.
+
+**Replace `@lit-protocol/vincent-ability-evm-transaction-signer` with your chosen Vincent ability and policy packages:**
 
 <CodeGroup>
 ```bash npm
@@ -58,7 +77,13 @@ If you're unsure about what Vincent abilities and policies to use for your app, 
   <Card title="Official Abilities" icon="puzzle-piece" href="/ability/official-abilities">
     Browse pre-built abilities for common use cases
   </Card>
-  <Card title="Create Custom Ability" icon="wrench" href="/ability/quickstart">
+  <Card title="Official Policies" icon="shield-check" href="/ability/policy/official-policies">
+    Browse pre-built policies for common ability restriction requirements
+  </Card>
+</CardGroup>
+
+<CardGroup cols={1}>
+  <Card title="Need to Create a Custom Ability?" icon="wrench" href="/ability/official-abilities">
     Build your own ability using the Vincent Ability Starter Kit
   </Card>
 </CardGroup>
@@ -83,7 +108,7 @@ import { resolve } from 'path';
 
 // Load environment variables from .env file in the same directory
 // TODO: Set this path to the location of the .env file in your project
-config({ path: resolve(__dirname, '../.env'), override: false });
+config({ path: resolve(__dirname, '.env'), override: false });
 
 import {
   delegator,
