@@ -96,8 +96,8 @@ export const sendDepositTx = async ({
     { waitForResponse: true, name: '[sendDepositTx] Deposit tx sender' },
     async () => {
       try {
-        const uniswapRpcProvider = new ethers.providers.StaticJsonRpcProvider(rpcUrl);
-        const receipt = await uniswapRpcProvider.sendTransaction(signedSwapTx);
+        const rpcProvider = new ethers.providers.StaticJsonRpcProvider(rpcUrl);
+        const receipt = await rpcProvider.sendTransaction(signedSwapTx);
         return JSON.stringify({
           status: 'success',
           txHash: receipt.hash,
