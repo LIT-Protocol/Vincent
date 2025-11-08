@@ -99,6 +99,17 @@ export const AAVE_POOL_ABI: Abi = [
     stateMutability: 'view',
     type: 'function',
   },
+  // setUserUseReserveAsCollateral
+  {
+    inputs: [
+      { internalType: 'address', name: 'asset', type: 'address' },
+      { internalType: 'bool', name: 'useAsCollateral', type: 'bool' },
+    ],
+    name: 'setUserUseReserveAsCollateral',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
 ];
 
 /**
