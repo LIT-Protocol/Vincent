@@ -49,7 +49,7 @@ export const vincentAbility = createVincentAbility({
         userOp,
       });
       console.log(
-        '[@lit-protocol/vincent-ability-aave-smart-account] user user operation validated:',
+        '[@lit-protocol/vincent-ability-aave-smart-account] user operation validated:',
         userOp,
       );
 
