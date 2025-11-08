@@ -1,3 +1,29 @@
+## 0.4.2 (2025-11-07)
+
+### 🧱 Updated Dependencies
+
+- Updated e2e-test-utils to 1.1.0
+
+## 0.4.1 (2025-11-06)
+
+### 🧱 Updated Dependencies
+
+- Updated app-sdk to 2.2.4
+
+## 0.4.0 (2025-11-06)
+
+### 🚀 Features
+
+- Replace local vendor install of sugar-sdk with NPM install of @dromos-labs/sdk.js ([7c45f92b](https://github.com/LIT-Protocol/Vincent/commit/7c45f92b))
+
+### 🧱 Updated Dependencies
+
+- Updated e2e-test-utils to 1.0.0
+
+### ❤️ Thank You
+
+- Wyatt Barnes @spacesailor24
+
 ## 0.3.0 (2025-10-23)
 
 ### 🚀 Features

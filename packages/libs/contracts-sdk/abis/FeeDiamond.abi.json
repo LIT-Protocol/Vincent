@@ -1,6 +1,22 @@
 [
   {
     "type": "error",
+    "name": "CallerNotAppManager",
+    "inputs": [
+      {
+        "name": "appId",
+        "type": "uint40",
+        "internalType": "uint40"
+      },
+      {
+        "name": "caller",
+        "type": "address",
+        "internalType": "address"
+      }
+    ]
+  },
+  {
+    "type": "error",
     "name": "CallerNotOwner",
     "inputs": []
   },
@@ -69,6 +85,162 @@
     ]
   },
   {
+    "type": "error",
+    "name": "ZeroAppId",
+    "inputs": []
+  },
+  {
+    "type": "event",
+    "name": "AavePoolSet",
+    "inputs": [
+      {
+        "name": "newAavePool",
+        "type": "address",
+        "indexed": false,
+        "internalType": "address"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "AerodromeRouterSet",
+    "inputs": [
+      {
+        "name": "newAerodromeRouter",
+        "type": "address",
+        "indexed": false,
+        "internalType": "address"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "AppFeesWithdrawn",
+    "inputs": [
+      {
+        "name": "appId",
+        "type": "uint40",
+        "indexed": true,
+        "internalType": "uint40"
+      },
+      {
+        "name": "tokenAddress",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      },
+      {
+        "name": "amount",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "DepositAdded",
+    "inputs": [
+      {
+        "name": "appId",
+        "type": "uint40",
+        "indexed": true,
+        "internalType": "uint40"
+      },
+      {
+        "name": "token",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      },
+      {
+        "name": "amount",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      },
+      {
+        "name": "vaultProvider",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "DepositWithdrawn",
+    "inputs": [
+      {
+        "name": "appId",
+        "type": "uint40",
+        "indexed": true,
+        "internalType": "uint40"
+      },
+      {
+        "name": "token",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      },
+      {
+        "name": "amount",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      },
+      {
+        "name": "vaultProvider",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "FeeCollected",
+    "inputs": [
+      {
+        "name": "appId",
+        "type": "uint40",
+        "indexed": true,
+        "internalType": "uint40"
+      },
+      {
+        "name": "token",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      },
+      {
+        "name": "amount",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "LitAppFeeSplitPercentageSet",
+    "inputs": [
+      {
+        "name": "newLitAppFeeSplitPercentage",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      }
+    ],
+    "anonymous": false
+  },
+  {
     "type": "event",
     "name": "OwnershipTransferred",
     "inputs": [
@@ -82,6 +254,45 @@
         "name": "newOwner",
         "type": "address",
         "indexed": true,
+        "internalType": "address"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "PerformanceFeePercentageSet",
+    "inputs": [
+      {
+        "name": "newPerformanceFeePercentage",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "SwapFeePercentageSet",
+    "inputs": [
+      {
+        "name": "newSwapFeePercentage",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "VincentAppDiamondSet",
+    "inputs": [
+      {
+        "name": "newVincentAppDiamond",
+        "type": "address",
+        "indexed": false,
         "internalType": "address"
       }
     ],
@@ -102,8 +313,50 @@
   },
   {
     "type": "function",
+    "name": "aerodromeRouter",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "collectedAppFees",
+    "inputs": [
+      {
+        "name": "appId",
+        "type": "uint40",
+        "internalType": "uint40"
+      },
+      {
+        "name": "tokenAddress",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
     "name": "depositToAave",
     "inputs": [
+      {
+        "name": "appId",
+        "type": "uint40",
+        "internalType": "uint40"
+      },
       {
         "name": "poolAsset",
         "type": "address",
@@ -123,6 +376,11 @@
     "name": "depositToMorpho",
     "inputs": [
       {
+        "name": "appId",
+        "type": "uint40",
+        "internalType": "uint40"
+      },
+      {
         "name": "vaultAddress",
         "type": "address",
         "internalType": "address"
@@ -140,6 +398,11 @@
     "type": "function",
     "name": "deposits",
     "inputs": [
+      {
+        "name": "appId",
+        "type": "uint40",
+        "internalType": "uint40"
+      },
       {
         "name": "user",
         "type": "address",
@@ -173,6 +436,19 @@
             "internalType": "uint256"
           }
         ]
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "litAppFeeSplitPercentage",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
       }
     ],
     "stateMutability": "view"
@@ -218,6 +494,32 @@
   },
   {
     "type": "function",
+    "name": "setAerodromeRouter",
+    "inputs": [
+      {
+        "name": "newAerodromeRouter",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "setLitAppFeeSplitPercentage",
+    "inputs": [
+      {
+        "name": "newLitAppFeeSplitPercentage",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
     "name": "setPerformanceFeePercentage",
     "inputs": [
       {
@@ -231,8 +533,119 @@
   },
   {
     "type": "function",
-    "name": "tokensWithCollectedFees",
+    "name": "setSwapFeePercentage",
+    "inputs": [
+      {
+        "name": "newSwapFeePercentage",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "setVincentAppDiamond",
+    "inputs": [
+      {
+        "name": "newVincentAppDiamond",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "swapExactTokensForTokensOnAerodrome",
+    "inputs": [
+      {
+        "name": "appId",
+        "type": "uint40",
+        "internalType": "uint40"
+      },
+      {
+        "name": "amountIn",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "amountOutMin",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "routes",
+        "type": "tuple[]",
+        "internalType": "struct IRouter.Route[]",
+        "components": [
+          {
+            "name": "from",
+            "type": "address",
+            "internalType": "address"
+          },
+          {
+            "name": "to",
+            "type": "address",
+            "internalType": "address"
+          },
+          {
+            "name": "stable",
+            "type": "bool",
+            "internalType": "bool"
+          },
+          {
+            "name": "factory",
+            "type": "address",
+            "internalType": "address"
+          }
+        ]
+      },
+      {
+        "name": "to",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "deadline",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "amounts",
+        "type": "uint256[]",
+        "internalType": "uint256[]"
+      }
+    ],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "swapFeePercentage",
     "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "tokensWithCollectedFees",
+    "inputs": [
+      {
+        "name": "appId",
+        "type": "uint40",
+        "internalType": "uint40"
+      }
+    ],
     "outputs": [
       {
         "name": "",
@@ -246,6 +659,11 @@
     "type": "function",
     "name": "tokensWithCollectedFeesAtIndex",
     "inputs": [
+      {
+        "name": "appId",
+        "type": "uint40",
+        "internalType": "uint40"
+      },
       {
         "name": "index",
         "type": "uint256",
@@ -264,7 +682,13 @@
   {
     "type": "function",
     "name": "tokensWithCollectedFeesLength",
-    "inputs": [],
+    "inputs": [
+      {
+        "name": "appId",
+        "type": "uint40",
+        "internalType": "uint40"
+      }
+    ],
     "outputs": [
       {
         "name": "",
@@ -289,74 +713,53 @@
   },
   {
     "type": "function",
-    "name": "userVaultOrPoolAssetAddresses",
-    "inputs": [
-      {
-        "name": "user",
-        "type": "address",
-        "internalType": "address"
-      }
-    ],
+    "name": "vincentAppDiamond",
+    "inputs": [],
     "outputs": [
       {
         "name": "",
-        "type": "address[]",
-        "internalType": "address[]"
+        "type": "address",
+        "internalType": "address"
       }
     ],
     "stateMutability": "view"
   },
   {
     "type": "function",
-    "name": "userVaultOrPoolAssetAddressesAtIndex",
+    "name": "withdrawAppFees",
     "inputs": [
       {
-        "name": "user",
-        "type": "address",
-        "internalType": "address"
+        "name": "appId",
+        "type": "uint40",
+        "internalType": "uint40"
       },
       {
-        "name": "index",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ],
-    "outputs": [
-      {
-        "name": "",
+        "name": "tokenAddress",
         "type": "address",
         "internalType": "address"
       }
     ],
-    "stateMutability": "view"
-  },
-  {
-    "type": "function",
-    "name": "userVaultOrPoolAssetAddressesLength",
-    "inputs": [
-      {
-        "name": "user",
-        "type": "address",
-        "internalType": "address"
-      }
-    ],
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ],
-    "stateMutability": "view"
+    "outputs": [],
+    "stateMutability": "nonpayable"
   },
   {
     "type": "function",
     "name": "withdrawFromAave",
     "inputs": [
       {
+        "name": "appId",
+        "type": "uint40",
+        "internalType": "uint40"
+      },
+      {
         "name": "poolAsset",
         "type": "address",
         "internalType": "address"
+      },
+      {
+        "name": "amount",
+        "type": "uint256",
+        "internalType": "uint256"
       }
     ],
     "outputs": [],
@@ -367,20 +770,12 @@
     "name": "withdrawFromMorpho",
     "inputs": [
       {
-        "name": "vaultAddress",
-        "type": "address",
-        "internalType": "address"
-      }
-    ],
-    "outputs": [],
-    "stateMutability": "nonpayable"
-  },
-  {
-    "type": "function",
-    "name": "withdrawTokens",
-    "inputs": [
+        "name": "appId",
+        "type": "uint40",
+        "internalType": "uint40"
+      },
       {
-        "name": "tokenAddress",
+        "name": "vaultAddress",
         "type": "address",
         "internalType": "address"
       }

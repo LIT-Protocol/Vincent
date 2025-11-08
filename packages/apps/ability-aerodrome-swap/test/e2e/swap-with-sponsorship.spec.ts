@@ -1,9 +1,5 @@
 import {
-  delegator,
-  delegatee,
-  funder,
-  appManager,
-  ensureUnexpiredCapacityToken,
+  setupVincentDevelopmentEnvironment,
   getChainHelpers,
   getEnv,
   type PkpInfo,
@@ -54,59 +50,20 @@ describe('Aerodrome Swap Ability E2E Tests with Alchemy Gas Sponsorship', () => 
   let SMART_ACCOUNT_CLIENT: SmartAccountClient;
 
   beforeAll(async () => {
-    await funder.checkFunderBalance();
-    await delegatee.ensureAppDelegateeFunded();
-    await appManager.ensureAppManagerFunded();
-
-    const chainHelpers = await getChainHelpers();
-    wallets = chainHelpers.wallets;
-    baseRpcProvider = chainHelpers.providers.base;
-
-    await ensureUnexpiredCapacityToken(wallets.appDelegatee);
-
     const PERMISSION_DATA: PermissionData = {
       // Aerodrome Swap Ability has no policies
       [aerodromeBundledAbility.ipfsCid]: {},
     };
 
-    const abilityIpfsCids: string[] = Object.keys(PERMISSION_DATA);
-    const abilityPolicies: string[][] = abilityIpfsCids.map((abilityIpfsCid) => {
-      return Object.keys(PERMISSION_DATA[abilityIpfsCid]);
-    });
-
-    // If an app exists for the delegatee, we will create a new app version with the new ipfs cids
-    // Otherwise, we will create an app w/ version 1 appVersion with the new ipfs cids
-    const existingApp = await delegatee.getAppInfo();
-    let appId: number;
-    let appVersion: number;
-    if (!existingApp) {
-      const newApp = await appManager.registerNewApp({ abilityIpfsCids, abilityPolicies });
-      appId = newApp.appId;
-      appVersion = newApp.appVersion;
-    } else {
-      // TODO Future optimization: Only create a new app version if the existing app version doesn't have the same ability and policy IPFS CIDs
-      const newAppVersion = await appManager.registerNewAppVersion({
-        abilityIpfsCids,
-        abilityPolicies,
-      });
-      appId = existingApp.appId;
-      appVersion = newAppVersion.appVersion;
-    }
-
-    agentPkpInfo = await delegator.getFundedAgentPkp();
-
-    await delegator.permitAppVersionForAgentWalletPkp({
+    const setupResult = await setupVincentDevelopmentEnvironment({
       permissionData: PERMISSION_DATA,
-      appId,
-      appVersion,
-      agentPkpInfo,
     });
 
-    await delegator.addPermissionForAbilities(
-      wallets.agentWalletOwner,
-      agentPkpInfo.tokenId,
-      abilityIpfsCids,
-    );
+    agentPkpInfo = setupResult.agentPkpInfo;
+    wallets = setupResult.wallets;
+
+    const chainHelpers = await getChainHelpers();
+    baseRpcProvider = chainHelpers.providers.base;
 
     SMART_ACCOUNT_CLIENT = await createModularAccountV2Client({
       mode: '7702' as const,

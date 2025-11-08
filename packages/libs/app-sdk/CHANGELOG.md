@@ -1,3 +1,13 @@
+## 2.2.4 (2025-11-06)
+
+### 🩹 Fixes
+
+- Added debug boolean to getVincentAbilityClient() so that the user can turn off LitNodeClient debug logs ([#398](https://github.com/LIT-Protocol/Vincent/pull/398))
+
+### ❤️ Thank You
+
+- Chris Cassano @glitch003
+
 ## 2.2.3 (2025-10-08)
 
 ### 🧱 Updated Dependencies

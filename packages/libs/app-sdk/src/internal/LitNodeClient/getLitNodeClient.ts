@@ -7,8 +7,10 @@ let instance: LitNodeClientInstance | null = null;
 
 export async function getLitNodeClientInstance({
   network,
+  debug = true,
 }: {
   network: LIT_NETWORKS_KEYS;
+  debug: boolean;
 }): Promise<LitNodeClient> {
   if (instance) {
     // connect() is idempotent; if we're retrying from outside, attempt to connect again
@@ -17,7 +19,7 @@ export async function getLitNodeClientInstance({
     return instance.litNodeClient;
   }
 
-  instance = new LitNodeClientInstance({ network });
+  instance = new LitNodeClientInstance({ network, debug });
   await instance.connect();
 
   return instance.litNodeClient;

@@ -55,6 +55,10 @@ export default function EthWalletAuth({ authWithEthWallet, theme }: WalletAuthPr
         adapters: [wagmiAdapter],
         networks: [...allNetworks],
         projectId: VITE_WALLETCONNECT_PROJECT_ID,
+        featuredWalletIds: [
+          '8a0ee50d1f22f6651afcae7eb4253e52a3310b90af5daef78a8c4929a9bb99d4',
+          'fd20dc426fb37566d803205b19bbc1d4096b248ac04548e3cfb6b3a38bd033aa',
+        ],
         metadata: {
           name: 'Vincent Auth',
           description: 'Vincent Wallet Authentication',
