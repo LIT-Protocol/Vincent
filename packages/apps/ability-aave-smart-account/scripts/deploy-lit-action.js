@@ -29,7 +29,7 @@ if (!PINATA_JWT) {
     const { ipfsCid: metadataIpfsCid } = JSON.parse(metadata);
     if (ipfsCid !== metadataIpfsCid) {
       throw new Error(
-        `IPFS CID mismatch in vincent-policy-metadata.json. Expected: ${metadataIpfsCid}, got: ${ipfsCid}`,
+        `IPFS CID mismatch in vincent-ability-metadata.json. Expected: ${metadataIpfsCid}, got: ${ipfsCid}`,
       );
     }
 
