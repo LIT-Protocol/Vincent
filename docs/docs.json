@@ -43,7 +43,6 @@
                 "group": "Quick Start",
                 "pages": [
                   "app/creating-an-app",
-                  "app/development-and-testing",
                   "app/migrating-to-production",
                   "app/app-starter-kit"
                 ]
