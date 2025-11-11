@@ -22,7 +22,6 @@ fi
 
 # Construct variable names using the network name
 RPC_URL_VAR="${NETWORK_NAME}_RPC_URL"
-ETHERSCAN_API_KEY_VAR="${NETWORK_NAME}_ETHERSCAN_API_KEY"
 
 # Check for required environment variables
 MISSING_VARS=()
@@ -35,8 +34,8 @@ if [ -z "${!RPC_URL_VAR}" ]; then
   MISSING_VARS+=("$RPC_URL_VAR")
 fi
 
-if [ -z "${!ETHERSCAN_API_KEY_VAR}" ]; then
-  MISSING_VARS+=("$ETHERSCAN_API_KEY_VAR")
+if [ -z "$ETHERSCAN_API_KEY" ]; then
+  MISSING_VARS+=("ETHERSCAN_API_KEY")
 fi
 
 if [ -z "$VINCENT_PROD_DIAMOND_ADDRESS" ]; then
@@ -58,6 +57,7 @@ forge script script/DeployFeeDiamond.sol:DeployFeeDiamond \
   --private-key "$VINCENT_DEPLOYER_PRIVATE_KEY" \
   --rpc-url "${!RPC_URL_VAR}" \
   --broadcast \
+  --slow \
   --verify \
   --ffi \
-  --etherscan-api-key "${!ETHERSCAN_API_KEY_VAR}"
+  --etherscan-api-key "$ETHERSCAN_API_KEY"

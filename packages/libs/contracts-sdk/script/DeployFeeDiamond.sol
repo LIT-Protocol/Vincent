@@ -128,6 +128,7 @@ contract DeployFeeDiamond is Script {
         console.log("MorphoPerfFeeFacet:", address(morphoPerfFeeFacet));
         console.log("AavePerfFeeFacet:", address(aavePerfFeeFacet));
         console.log("AerodromeSwapFeeFacet:", address(aerodromeSwapFeeFacet));
+        console.log("Set Vincent app diamond on yellowstone to:", vincentAppDiamondOnYellowstone);
 
         return address(diamond);
     }
@@ -136,6 +137,6 @@ contract DeployFeeDiamond is Script {
      * @notice Deploy and set defaults
      */
     function deployAndSetDefaults(address vincentAppDiamondOnYellowstone) public returns (address) {
-        return deployToNetwork("Datil", keccak256("DatilSalt"), vincentAppDiamondOnYellowstone);
+        return deployToNetwork("Datil", keccak256("VincentCreate2Salt"), vincentAppDiamondOnYellowstone);
     }
 }
