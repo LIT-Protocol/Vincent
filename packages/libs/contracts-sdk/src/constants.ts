@@ -26,3 +26,7 @@ export const VINCENT_CONTRACT_ADDRESS_BOOK = {
     },
   },
 };
+
+export const VINCENT_LIT_ACTIONS_ADDRESS_BOOK = {
+  signOwnerAttestation: 'QmSWgViHHR1yZ7tGKZMCdHHCZrA6WpXrExshGaQBWiPpfe',
+};
