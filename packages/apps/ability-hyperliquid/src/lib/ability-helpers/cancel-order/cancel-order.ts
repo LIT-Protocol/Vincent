@@ -5,6 +5,7 @@ import { signL1Action } from '@nktkas/hyperliquid/signing';
 import { bigIntReplacer } from '@lit-protocol/vincent-ability-sdk';
 
 import { LitActionPkpEthersWallet } from '../lit-action-pkp-ethers-wallet';
+import { getHyperliquidNonce } from '../get-hyperliquid-nonce';
 
 export interface CancelSpotOrderParams {
   symbol: string; // e.g., "PURR/USDC"
@@ -47,15 +48,7 @@ export async function cancelOrder({
 
   // Create PKP wallet
   const pkpWallet = new LitActionPkpEthersWallet(pkpPublicKey);
-
-  // Generate deterministic nonce in runOnce
-  const nonceResponse = await Lit.Actions.runOnce(
-    { waitForResponse: true, name: 'HyperLiquidCancelOrderNonce' },
-    async () => {
-      return Date.now().toString();
-    },
-  );
-  const nonce = parseInt(nonceResponse);
+  const nonce = await getHyperliquidNonce();
 
   // Construct cancel action
   const cancelAction = parser(CancelRequest.entries.action)({

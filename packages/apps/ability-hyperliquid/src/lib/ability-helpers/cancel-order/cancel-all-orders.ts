@@ -4,6 +4,7 @@ import { CancelRequest, CancelResponse, parser } from '@nktkas/hyperliquid/api/e
 import { signL1Action } from '@nktkas/hyperliquid/signing';
 
 import { LitActionPkpEthersWallet } from '../lit-action-pkp-ethers-wallet';
+import { getHyperliquidNonce } from '../get-hyperliquid-nonce';
 
 export type CancelAllOrdersResult = CancelAllOrdersResultSuccess | CancelAllOrdersResultFailure;
 
@@ -64,14 +65,7 @@ export async function cancelAllOrdersForSymbol({
     };
   }
 
-  // Generate deterministic nonce in runOnce
-  const nonceResponse = await Lit.Actions.runOnce(
-    { waitForResponse: true, name: 'HyperLiquidCancelAllOrdersNonce' },
-    async () => {
-      return Date.now().toString();
-    },
-  );
-  const nonce = parseInt(nonceResponse);
+  const nonce = await getHyperliquidNonce();
 
   // Construct cancel action for all orders
   const cancelAction = parser(CancelRequest.entries.action)({

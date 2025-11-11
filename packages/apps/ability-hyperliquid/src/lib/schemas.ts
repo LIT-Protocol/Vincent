@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 export const actionTypeSchema = z.enum([
   'deposit',
+  'withdraw',
   'transferToSpot',
   'transferToPerp',
   'spotBuy',
@@ -14,6 +15,20 @@ export const actionTypeSchema = z.enum([
 
 export const depositParamsSchema = z.object({
   amount: z.string().describe('Amount of USDC to deposit (minimum 6 USDC: 5 USDC + 1 USDC fee)'),
+});
+
+export const withdrawParamsSchema = z.object({
+  amount: z
+    .string()
+    .describe(
+      'Amount of USDC to withdraw from Hyperliquid to L1 (Arbitrum), specified in micro-units as a string (e.g., "1000000" means 1.0 USDC; 1 USDC = 1,000,000 micro-units).',
+    ),
+  destination: z
+    .string()
+    .optional()
+    .describe(
+      'Destination address on L1 (Arbitrum) to receive the withdrawn USDC. If not provided, defaults to the Agent Wallet PKP ETH address.',
+    ),
 });
 
 export const transferParamsSchema = z.object({
@@ -119,6 +134,10 @@ export const abilityParamsSchema = z
     deposit: depositParamsSchema
       .optional()
       .describe('Deposit parameters (required for deposit action)'),
+    // Withdraw-specific params
+    withdraw: withdrawParamsSchema
+      .optional()
+      .describe('Withdraw parameters (required for withdraw action)'),
     // Transfer to spot or perps params
     transfer: transferParamsSchema
       .optional()
@@ -147,6 +166,7 @@ export const abilityParamsSchema = z
   .refine(
     (data) => {
       if (data.action === 'deposit') return !!data.deposit;
+      if (data.action === 'withdraw') return !!data.withdraw;
       if (data.action === 'transferToSpot' || data.action === 'transferToPerp')
         return !!data.transfer;
       if (data.action === 'spotBuy' || data.action === 'spotSell') return !!data.spot;
@@ -190,6 +210,7 @@ export const executeFailSchema = z.object({
 export const executeSuccessSchema = z.object({
   action: z.string().describe('Action that was executed'),
   txHash: z.string().optional().describe('Transaction hash (for deposit action)'),
+  withdrawResult: z.any().optional().describe('Withdraw result (for withdraw action)'),
   transferResult: z.any().optional().describe('Transfer result (for transferToSpot action)'),
   orderResult: z.any().optional().describe('Order result (for spotBuy/spotSell action)'),
   cancelResult: z

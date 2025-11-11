@@ -10,6 +10,7 @@ import { ethers } from 'ethers';
 import { bigIntReplacer } from '@lit-protocol/vincent-ability-sdk';
 
 import { LitActionPkpEthersWallet } from './lit-action-pkp-ethers-wallet';
+import { getHyperliquidNonce } from './get-hyperliquid-nonce';
 
 export type TransferUsdcResult = {
   transferResult: SuccessResponse;
@@ -37,15 +38,7 @@ export async function transferUsdcTo({
     );
   }
 
-  // Generate deterministic nonce in runOnce
-  // This ensures all nodes use the same nonce and produce the same hash
-  const nonceResponse = await Lit.Actions.runOnce(
-    { waitForResponse: true, name: 'HyperLiquidTransferNonce' },
-    async () => {
-      return Date.now().toString();
-    },
-  );
-  const nonce = parseInt(nonceResponse);
+  const nonce = await getHyperliquidNonce();
 
   // Select chain ID and network based on testnet flag
   const signatureChainId = useTestnet

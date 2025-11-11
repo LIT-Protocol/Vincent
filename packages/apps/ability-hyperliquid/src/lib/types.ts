@@ -3,6 +3,7 @@
  */
 export enum HyperliquidAction {
   DEPOSIT = 'deposit',
+  WITHDRAW = 'withdraw',
   TRANSFER_TO_SPOT = 'transferToSpot',
   TRANSFER_TO_PERP = 'transferToPerp',
   SPOT_BUY = 'spotBuy',

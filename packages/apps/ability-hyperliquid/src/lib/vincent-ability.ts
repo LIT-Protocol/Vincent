@@ -26,6 +26,7 @@ import {
   cancelOrder,
   cancelAllOrdersForSymbol,
   executePerpOrder,
+  withdrawUsdc,
 } from './ability-helpers';
 import {
   depositPrechecks,
@@ -35,6 +36,7 @@ import {
   transferPrechecks,
   cancelOrderPrechecks,
   cancelAllOrdersForSymbolPrechecks,
+  withdrawPrechecks,
 } from './ability-checks';
 
 export const vincentAbility = createVincentAbility({
@@ -106,6 +108,34 @@ export const vincentAbility = createVincentAbility({
     }
 
     switch (action) {
+      case HyperliquidAction.WITHDRAW: {
+        if (!abilityParams.withdraw) {
+          return fail({ action, reason: 'Withdraw parameters are required for precheck' });
+        }
+
+        const result = await withdrawPrechecks({
+          infoClient,
+          ethAddress: delegatorPkpInfo.ethAddress,
+          params: {
+            amount: abilityParams.withdraw.amount,
+          },
+        });
+
+        if (!result.success) {
+          return fail({
+            action,
+            reason: result.reason,
+            availableBalance: result.availableBalance,
+            requiredBalance: result.requiredBalance,
+          });
+        }
+
+        return succeed({
+          action,
+          availableBalance: result.availableBalance,
+        });
+      }
+
       case HyperliquidAction.TRANSFER_TO_SPOT:
       case HyperliquidAction.TRANSFER_TO_PERP: {
         if (!abilityParams.transfer) {
@@ -289,6 +319,31 @@ export const vincentAbility = createVincentAbility({
           return succeed({
             action,
             txHash,
+          });
+        }
+
+        case HyperliquidAction.WITHDRAW: {
+          if (!abilityParams.withdraw) {
+            return fail({ action, reason: 'Withdraw parameters are required' });
+          }
+
+          const result = await withdrawUsdc({
+            transport,
+            pkpPublicKey: delegatorPkpInfo.publicKey,
+            amount: abilityParams.withdraw.amount,
+            destination: abilityParams.withdraw.destination || delegatorPkpInfo.ethAddress,
+            useTestnet,
+          });
+
+          // SuccessResponse always has status "ok", errors are thrown as exceptions
+          if (result.withdrawResult.status === 'ok') {
+            return succeed({ action, withdrawResult: result.withdrawResult });
+          }
+
+          // This should not happen with SuccessResponse type, but handle it for safety
+          return fail({
+            action,
+            reason: `Unexpected response status: ${JSON.stringify(result.withdrawResult, null, 2)}`,
           });
         }
 

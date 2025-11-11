@@ -5,6 +5,7 @@ import { signL1Action } from '@nktkas/hyperliquid/signing';
 import { bigIntReplacer } from '@lit-protocol/vincent-ability-sdk';
 
 import { LitActionPkpEthersWallet } from './lit-action-pkp-ethers-wallet';
+import { getHyperliquidNonce } from './get-hyperliquid-nonce';
 
 export type TimeInForce = 'Gtc' | 'Ioc' | 'Alo';
 
@@ -58,15 +59,7 @@ export async function executeSpotOrder({
 
   // Create PKP wallet
   const pkpWallet = new LitActionPkpEthersWallet(pkpPublicKey);
-
-  // Generate deterministic nonce in runOnce
-  const nonceResponse = await Lit.Actions.runOnce(
-    { waitForResponse: true, name: 'HyperLiquidSpotOrderNonce' },
-    async () => {
-      return Date.now().toString();
-    },
-  );
-  const nonce = parseInt(nonceResponse);
+  const nonce = await getHyperliquidNonce();
 
   // Determine order type configuration
   const orderType = params.orderType || { type: 'limit', tif: 'Gtc' };
