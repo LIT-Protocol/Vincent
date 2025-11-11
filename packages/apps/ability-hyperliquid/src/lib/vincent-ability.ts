@@ -26,6 +26,7 @@ import {
   cancelOrder,
   cancelAllOrdersForSymbol,
   executePerpOrder,
+  approveBuilderFeeAction,
 } from './ability-helpers';
 import {
   depositPrechecks,
@@ -230,6 +231,10 @@ export const vincentAbility = createVincentAbility({
           });
         }
 
+        return succeed({ action });
+      }
+
+      case HyperliquidAction.APPROVE_BUILDER: {
         return succeed({ action });
       }
 
@@ -441,6 +446,19 @@ export const vincentAbility = createVincentAbility({
           return succeed({
             action,
             cancelResult: result.cancelResult,
+          });
+        }
+
+        case HyperliquidAction.APPROVE_BUILDER: {
+          const result = await approveBuilderFeeAction({
+            transport,
+            pkpPublicKey: delegatorPkpInfo.publicKey,
+            useTestnet,
+          });
+
+          return succeed({
+            action,
+            builderApproval: result,
           });
         }
 
