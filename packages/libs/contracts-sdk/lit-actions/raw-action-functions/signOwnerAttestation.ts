@@ -1,5 +1,7 @@
+import type { OwnerAttestation } from '../internal/signOwnerAttestation';
+
 import { verifyAppOwnership } from '../internal/readVincentContract';
-import { signOwnerAttestation, OwnerAttestation } from '../internal/signOwnerAttestation';
+import { signOwnerAttestation } from '../internal/signOwnerAttestation';
 
 export interface SignOwnerAttestationParams {
   srcChainId: number;

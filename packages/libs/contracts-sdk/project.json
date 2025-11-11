@@ -15,6 +15,21 @@
         "parallel": false
       }
     },
+    "action:deploy": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["action:build"],
+      "options": {
+        "commands": ["node scripts/deploy-lit-action.js"],
+        "cwd": "{projectRoot}"
+      }
+    },
+    "action:only:deploy": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": ["node scripts/deploy-lit-action.js"],
+        "cwd": "{projectRoot}"
+      }
+    },
     "test-e2e": {
       "executor": "@nx/jest:jest",
       "outputs": ["{workspaceRoot}/test-output/jest/{projectRoot}"],

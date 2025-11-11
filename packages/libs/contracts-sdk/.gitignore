@@ -16,3 +16,6 @@ docs/html/**/*
 
 # Build output
 dist/
+
+# Generated Lit Actions
+lit-actions/generated/
