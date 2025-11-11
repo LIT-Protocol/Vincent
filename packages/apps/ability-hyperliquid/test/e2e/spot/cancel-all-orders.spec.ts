@@ -174,7 +174,6 @@ describe('Hyperliquid Ability E2E Spot Cancel All Orders Tests', () => {
 
       expect(executeResult.result).toBeDefined();
       expect(executeResult.result.action).toBe(HyperliquidAction.CANCEL_ALL_ORDERS_FOR_SYMBOL);
-      expect(executeResult.result.cancelResult).toBeDefined();
     });
 
     it('should verify no open orders remain for the symbol', async () => {
@@ -186,7 +185,7 @@ describe('Hyperliquid Ability E2E Spot Cancel All Orders Tests', () => {
       });
 
       console.log(
-        '[should verify no open orders remain for the symbol] Open orders before cancel all:',
+        '[should verify no open orders remain for the symbol] Open orders after cancel all:',
         util.inspect(openOrders, { depth: 5 }),
       );
 

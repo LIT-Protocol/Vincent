@@ -29,7 +29,20 @@ describe('Hyperliquid Ability E2E Spot Sell Tests', () => {
     ARBITRUM_RPC_URL: z.string(),
   });
   const USE_TESTNET = true;
-  const SPOT_SELL_AMOUNT_USDC = '10'; // Sell ~10 USDC worth of token
+  // calculateSpotOrderParams determines how many decimals are allowed for the
+  // order size based on the szDecimals of the token being sold. It uses Math.floor()
+  // to ensure we never try to sell more than we have, and caps the sell size at
+  // maxAvailableBalance floored to the token's decimal precision.
+  //
+  // Example with PURR (szDecimals=0, only whole tokens):
+  // - Balance: 1.9986 PURR (from 2.0 minus 0.0014 fee)
+  // - Price: $5.10 per PURR
+  // - To sell $15 worth: 15/5.10 = 2.941 PURR
+  // - Math.floor(2.941) = 2.0 PURR
+  // - But maxAvailableBalance is 1.9986, so Math.floor(1.9986) = 1.0 PURR
+  // - Result: Sell order for 1.0 PURR = $5.10
+  // - The remaining 0.9986 PURR is "dust" below the minimum tradeable size
+  const SPOT_SELL_AMOUNT_USDC = '15';
   const TOKEN_TO_SELL = 'PURR';
   const TRADING_PAIR = `${TOKEN_TO_SELL}/USDC`;
 
@@ -153,6 +166,7 @@ describe('Hyperliquid Ability E2E Spot Sell Tests', () => {
         tokenName: TOKEN_TO_SELL,
         usdcAmount: SPOT_SELL_AMOUNT_USDC,
         isBuy: false,
+        maxAvailableBalance: initialTokenBalance,
       });
 
       console.log(`[Spot Sell] Token: ${tokenMeta.name}, szDecimals: ${tokenMeta.szDecimals}`);
@@ -205,6 +219,7 @@ describe('Hyperliquid Ability E2E Spot Sell Tests', () => {
         tokenName: TOKEN_TO_SELL,
         usdcAmount: SPOT_SELL_AMOUNT_USDC,
         isBuy: false, // Sell order
+        maxAvailableBalance: initialTokenBalance,
       });
 
       console.log(`[Spot Sell] Token: ${tokenMeta.name}, szDecimals: ${tokenMeta.szDecimals}`);

@@ -18,6 +18,7 @@ export interface CalculateSpotOrderParamsInput {
   usdcAmount: string;
   isBuy: boolean;
   priceMultiplier?: number; // e.g., 1.01 for buy (1% above mid), 0.99 for sell (1% below mid)
+  maxAvailableBalance?: string; // Optional: max available balance for sell orders
 }
 
 export interface SpotOrderParams {
@@ -44,6 +45,7 @@ export async function calculateSpotOrderParams({
   usdcAmount,
   isBuy,
   priceMultiplier = isBuy ? 1.01 : 0.99,
+  maxAvailableBalance,
 }: CalculateSpotOrderParamsInput): Promise<SpotOrderParams> {
   // Get spot pair ID
   const converter = await SymbolConverter.create({ transport });
@@ -87,15 +89,29 @@ export async function calculateSpotOrderParams({
   const multiplier = Math.pow(10, tokenMeta.szDecimals);
   const minSize = 1 / multiplier; // Minimum size is 10^(-szDecimals)
 
-  // Use different rounding for buy vs sell:
-  // - Buy: floor to avoid spending MORE than intended USDC amount
-  // - Sell: ceil to ensure order value meets minimum
-  const roundingFn = isBuy ? Math.floor : Math.ceil;
-  let size = Math.max(minSize, roundingFn(rawSize * multiplier) / multiplier).toFixed(
-    tokenMeta.szDecimals,
-  );
+  // Use floor to avoid over-spending (buy) or over-selling (sell)
+  let size = Math.floor(rawSize * multiplier) / multiplier;
+
+  // Ensure size meets minimum requirement
+  size = Math.max(minSize, size);
+
+  // For sell orders, cap at available balance if provided
+  if (!isBuy && maxAvailableBalance) {
+    const maxBalance = parseFloat(maxAvailableBalance);
+    // Floor the available balance to avoid trying to sell fractional dust
+    const flooredMaxBalance = Math.floor(maxBalance * multiplier) / multiplier;
+    size = Math.min(size, flooredMaxBalance);
+  }
+
+  // Final size formatting
+  size = size.toFixed(tokenMeta.szDecimals);
   // Remove trailing zeros from size
   size = parseFloat(size).toString();
+
+  console.log(
+    `[calculateSpotOrderParams] ${isBuy ? 'Buy' : 'Sell'} calculation:`,
+    `rawSize=${rawSize.toFixed(6)}, finalSize=${size}, maxBalance=${maxAvailableBalance || 'N/A'}`,
+  );
 
   return {
     price,

@@ -27,8 +27,7 @@ describe('Hyperliquid Ability E2E Deposit Tests', () => {
   const ENV = getEnv({
     ARBITRUM_RPC_URL: z.string(),
   });
-  const USDC_DEPOSIT_AMOUNT = '1000000';
-  const USE_TESTNET = true;
+  const USDC_DEPOSIT_AMOUNT = '15000000'; // 15 USDC
 
   let agentPkpInfo: PkpInfo;
   let wallets: {
@@ -111,7 +110,6 @@ describe('Hyperliquid Ability E2E Deposit Tests', () => {
       const precheckResult = await hyperliquidAbilityClient.precheck(
         {
           action: 'deposit',
-          useTestnet: USE_TESTNET,
           deposit: {
             amount: USDC_DEPOSIT_AMOUNT,
           },
@@ -142,7 +140,6 @@ describe('Hyperliquid Ability E2E Deposit Tests', () => {
       const executeResult = await hyperliquidAbilityClient.execute(
         {
           action: 'deposit',
-          useTestnet: USE_TESTNET,
           deposit: {
             amount: USDC_DEPOSIT_AMOUNT,
           },
@@ -178,7 +175,7 @@ describe('Hyperliquid Ability E2E Deposit Tests', () => {
     // NOTE It takes about a minute for the deposit to be reflected in the portfolio.
     // This test assumes a previous deposit has been made by the Agent Wallet PKP into the HyperLiquid bridge.
     it('should verify the Agent Wallet PKP has funds in the HyperLiquid portfolio', async () => {
-      const transport = new hyperliquid.HttpTransport({ isTestnet: USE_TESTNET });
+      const transport = new hyperliquid.HttpTransport({ isTestnet: false });
       const infoClient = new hyperliquid.InfoClient({ transport });
 
       // Check clearinghouse state which includes account balance

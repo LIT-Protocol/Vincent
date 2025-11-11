@@ -1,7 +1,7 @@
 import { ethers } from 'ethers';
 import { ERC20_ABI } from '@lit-protocol/vincent-ability-sdk';
 
-import { ARBITRUM_USDC_ADDRESS_MAINNET, ARBITRUM_USDC_ADDRESS_TESTNET } from '../types';
+import { ARBITRUM_USDC_ADDRESS_MAINNET } from '../types';
 
 export type DepositPrechecksResult = DepositPrechecksResultSuccess | DepositPrechecksResultFailure;
 
@@ -23,15 +23,13 @@ export const depositPrechecks = async ({
   provider,
   agentWalletPkpEthAddress,
   depositAmountInMicroUsdc,
-  useTestnet = false,
 }: {
   provider: ethers.providers.Provider;
   agentWalletPkpEthAddress: string;
   depositAmountInMicroUsdc: string;
   useTestnet?: boolean;
 }): Promise<DepositPrechecksResult> => {
-  const usdcAddress = useTestnet ? ARBITRUM_USDC_ADDRESS_TESTNET : ARBITRUM_USDC_ADDRESS_MAINNET;
-  const usdcContract = new ethers.Contract(usdcAddress, ERC20_ABI, provider);
+  const usdcContract = new ethers.Contract(ARBITRUM_USDC_ADDRESS_MAINNET, ERC20_ABI, provider);
 
   const ethBalance = await provider.getBalance(agentWalletPkpEthAddress);
   if (ethBalance.eq(0n)) {

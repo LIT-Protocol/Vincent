@@ -9,9 +9,7 @@ import * as hyperliquid from '@nktkas/hyperliquid';
 
 import {
   HYPERLIQUID_BRIDGE_ADDRESS_MAINNET,
-  HYPERLIQUID_BRIDGE_ADDRESS_TESTNET,
   ARBITRUM_USDC_ADDRESS_MAINNET,
-  ARBITRUM_USDC_ADDRESS_TESTNET,
   HyperliquidAction,
 } from './types';
 import {
@@ -68,6 +66,14 @@ export const vincentAbility = createVincentAbility({
     });
 
     if (action === HyperliquidAction.DEPOSIT) {
+      if (useTestnet) {
+        return fail({
+          action,
+          reason:
+            'Deposit is not supported on Hyperliquid testnet. Please refer to these docs for getting testnet USDC: https://hyperliquid.gitbook.io/hyperliquid-docs/onboarding/testnet-faucet',
+        });
+      }
+
       if (!arbitrumRpcUrl) {
         return fail({ action, reason: 'Arbitrum RPC URL is required for precheck' });
       }
@@ -245,40 +251,37 @@ export const vincentAbility = createVincentAbility({
     try {
       switch (action) {
         case HyperliquidAction.DEPOSIT: {
+          if (useTestnet) {
+            return fail({
+              action,
+              reason:
+                'Deposit is not supported on Hyperliquid testnet. Please refer to these docs for getting testnet USDC: https://hyperliquid.gitbook.io/hyperliquid-docs/onboarding/testnet-faucet',
+            });
+          }
+
           if (!abilityParams.deposit) {
             return fail({ action, reason: 'Deposit parameters are required' });
           }
 
           // Get Arbitrum RPC URL
           const rpcUrl = await Lit.Actions.getRpcUrl({
-            chain: useTestnet ? 'arbitrumSepolia' : 'arbitrum',
+            chain: 'arbitrum',
           });
-
-          // Select addresses based on network
-          const bridgeAddress = ethers.utils.getAddress(
-            useTestnet ? HYPERLIQUID_BRIDGE_ADDRESS_TESTNET : HYPERLIQUID_BRIDGE_ADDRESS_MAINNET,
-          );
-          const usdcAddress = ethers.utils.getAddress(
-            useTestnet ? ARBITRUM_USDC_ADDRESS_TESTNET : ARBITRUM_USDC_ADDRESS_MAINNET,
-          );
-          const chainId = useTestnet
-            ? 421614 // Arbitrum Sepolia testnet
-            : 42161; // Arbitrum mainnet
 
           // Encode ERC20 transfer function call data
           const iface = new ethers.utils.Interface(ERC20_ABI);
           const calldata = iface.encodeFunctionData('transfer', [
-            bridgeAddress,
+            HYPERLIQUID_BRIDGE_ADDRESS_MAINNET,
             abilityParams.deposit.amount,
           ]);
 
           // Send deposit transaction using helper
           const txHash = await sendDepositTx({
             rpcUrl,
-            chainId,
+            chainId: 42161, // Arbitrum mainnet
             pkpEthAddress: delegatorPkpInfo.ethAddress,
             pkpPublicKey: delegatorPkpInfo.publicKey,
-            to: usdcAddress,
+            to: ARBITRUM_USDC_ADDRESS_MAINNET,
             value: '0x0',
             calldata,
           });
