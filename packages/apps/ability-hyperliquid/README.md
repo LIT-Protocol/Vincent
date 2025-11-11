@@ -4,6 +4,7 @@
 
 A Vincent Ability for securely interacting with the Hyperliquid API.
 
+- [Vincent Ability Hyperliquid](#vincent-ability-hyperliquid)
 - [Testing the Ability](#testing-the-ability)
   - [Prerequisites](#prerequisites)
     - [Create the `.env` file](#create-the-env-file)
@@ -43,6 +44,8 @@ The E2E tests for this Ability are not expected to be ran concurrently. This is 
 8. [Cancel All Orders E2E Tests](#running-the-cancel-all-orders-e2e-tests) - Cancels all open Spot orders for the market specified by `TRADING_PAIR`.
 9. [Trade History E2E Tests](#running-the-trade-history-e2e-tests) - Fetches the Spot and Perp trade history of the Agent Wallet PKP on Hyperliquid mainnet or testnet.
 10. [Transfer to Perp E2E Tests](#running-the-transfer-to-perp-e2e-tests) - Transfers USDC from the Agent Wallet PKP's Hyperliquid spot balance to it's Hyperliquid Perp balance. The PKP must have at least a Spot balance of `USDC_TRANSFER_AMOUNT` USDC.
+11. [Perp Long E2E Tests](#running-the-perp-long-e2e-tests) - Opens a long position for the token specified by `PERP_SYMBOL` using USDC. The Agent Wallet PKP must have at least a Perp balance of `PERP_LONG_USD_NOTIONAL` USDC.
+12. [Perp Short E2E Tests](#running-the-perp-short-e2e-tests) - Opens a short position for the token specified by `PERP_SYMBOL` using USDC. The Agent Wallet PKP must have at least a Perp balance of `PERP_SHORT_USD_NOTIONAL` USDC.
 
 The E2E tests by default expected the Agent Wallet PKP to have a Perp or Spot balance of at least `15` USDC. Each test has a `const` like `USDC_TRANSFER_AMOUNT` (for the transfer E2E tests) that configures how much of the USDC balance is used to run the tests. There are order amount minimums associated with each market on Hyperliquid. So the minimum amount accepted by Hyperliquid to Spot Buy on the market `BTC/USDC` is not the same as the minimum amount accepted by Hyperliquid to Spot Buy on the market `ETH/USDC`.
 
