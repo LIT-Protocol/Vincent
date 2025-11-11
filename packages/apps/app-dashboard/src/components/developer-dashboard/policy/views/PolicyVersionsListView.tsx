@@ -30,8 +30,8 @@ export function PolicyVersionsListView({
   const renderVersionCard = (version: PolicyVersion) => (
     <VersionCard
       key={version.version}
-      version={parseInt(version.version)}
-      activeVersion={policy.activeVersion ? parseInt(policy.activeVersion) : undefined}
+      version={version.version}
+      activeVersion={policy.activeVersion}
       createdAt={version.createdAt}
       onClick={() => onVersionClick?.(version.version)}
     />

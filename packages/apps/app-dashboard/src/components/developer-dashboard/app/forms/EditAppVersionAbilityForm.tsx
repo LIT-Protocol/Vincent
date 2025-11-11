@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Form } from '@/components/shared/ui/form';
 import { Button } from '@/components/shared/ui/button';
 import { AppVersionAbility, Policy } from '@/types/developer-dashboard/appTypes';
+import { PolicyWithVersion } from '@/utils/developer-dashboard/sortSupportedPolicies';
 import { docSchemas } from '@lit-protocol/vincent-registry-sdk';
 import { PolicyCheckboxField } from '../../form-fields';
 
@@ -22,7 +23,7 @@ export type EditAppVersionAbilityFormData = z.infer<typeof EditAppVersionAbility
 
 interface EditAppVersionAbilityFormProps {
   ability: AppVersionAbility;
-  policies: Policy[];
+  policies: (Policy | PolicyWithVersion)[];
   onSubmit: (data: EditAppVersionAbilityFormData) => Promise<void>;
   onCancel: () => void;
   isSubmitting?: boolean;

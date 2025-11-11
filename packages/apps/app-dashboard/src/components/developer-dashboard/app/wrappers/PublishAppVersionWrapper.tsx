@@ -339,6 +339,8 @@ export function PublishAppVersionWrapper({ isAppPublished }: { isAppPublished: b
       onSubmit={publishAppVersion}
       isSubmitting={isPublishing}
       publishResult={publishResult}
+      versionAbilities={versionAbilities}
+      abilityVersionsData={abilityVersionsData}
     />
   );
 }

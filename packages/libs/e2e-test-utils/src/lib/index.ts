@@ -18,3 +18,7 @@ export { ensureUnexpiredCapacityToken } from './ensure-capacity-credit';
 export { getEnv } from './env';
 export { getChainHelpers } from './chain';
 export { createRandomVincentWallets } from './create-random-vincent-wallets';
+export {
+  setupVincentDevelopmentEnvironment,
+  type VincentDevEnvironment,
+} from './setup-vincent-development-environment';
