@@ -5,13 +5,11 @@ import {
   appManager,
   ensureUnexpiredCapacityToken,
   getChainHelpers,
-  getEnv,
   type PkpInfo,
 } from '@lit-protocol/vincent-e2e-test-utils';
 import { type PermissionData } from '@lit-protocol/vincent-contracts-sdk';
 import { disconnectVincentAbilityClients } from '@lit-protocol/vincent-app-sdk/abilityClient';
 import * as util from 'node:util';
-import { z } from 'zod';
 import { type Wallet } from 'ethers';
 import * as hyperliquid from '@nktkas/hyperliquid';
 
@@ -21,9 +19,6 @@ import { bundledVincentAbility as hyperliquidBundledAbility } from '../../src';
 jest.setTimeout(240000);
 
 describe('Hyperliquid Ability E2E Open Orders Tests', () => {
-  const ENV = getEnv({
-    ARBITRUM_RPC_URL: z.string(),
-  });
   const USE_TESTNET = true;
 
   let agentPkpInfo: PkpInfo;
@@ -128,7 +123,6 @@ describe('Hyperliquid Ability E2E Open Orders Tests', () => {
 
       // Get spot metadata to identify spot trading pairs
       const spotMeta = await infoClient.spotMeta();
-      const spotTokens = new Set(spotMeta.tokens.map((t) => t.name));
       const spotUniverse = spotMeta.universe.map((pair) => pair.name);
 
       console.log('[Spot Open Orders] Agent Wallet PKP ETH Address:', agentPkpInfo.ethAddress);
