@@ -1,4 +1,5 @@
 import type { SignOwnerAttestationParams } from '../raw-action-functions/signOwnerAttestation';
+
 import { signOwnerAttestationAction } from '../raw-action-functions/signOwnerAttestation';
 
 // Using local declarations to avoid _every file_ thinking these are always in scope
@@ -31,7 +32,7 @@ async function litActionHandler(actionFunc: () => Promise<unknown>) {
   }
 }
 
-(async () =>
+void (async () =>
   litActionHandler(async () =>
     signOwnerAttestationAction({
       srcChainId,

@@ -1,5 +1,6 @@
 import type { LitNodeClient } from '@lit-protocol/lit-node-client';
 import type { SessionSigsMap } from '@lit-protocol/types';
+
 import { VINCENT_DIAMOND_CONTRACT_ADDRESS_PROD, VINCENT_CONTRACT_ADDRESS_BOOK } from '../constants';
 
 export interface SignOwnerAttestationParams {
@@ -134,7 +135,7 @@ export async function signOwnerAttestation({
   try {
     const parsedResult = JSON.parse(response) as SignOwnerAttestationResult;
     return parsedResult;
-  } catch (err) {
+  } catch {
     throw new Error(`Failed to parse Lit Action response: ${response}`);
   }
 }
