@@ -69,6 +69,7 @@ import {
 } from '@lit-protocol/vincent-contracts-sdk';
 
 // Sign an owner attestation using a Lit Action
+// The Lit Action automatically gets the Chronicle Yellowstone RPC URL
 const result = await signOwnerAttestation({
   litNodeClient,
   sessionSigs,
@@ -78,7 +79,6 @@ const result = await signOwnerAttestation({
   dstChainId: 84532, // Base Sepolia
   dstContract: getBaseSepoliaFeeDiamondAddress(),
   litActionIpfsCid: 'Qm...', // From generated metadata
-  chronicleYellowstoneRpcUrl: 'https://...',
 });
 
 // Use the signature to withdraw fees

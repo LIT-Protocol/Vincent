@@ -11,8 +11,6 @@ export interface SignOwnerAttestationParams {
   dstChainId: number;
   dstContract: string;
   pkpPublicKey: string;
-  chronicleYellowstoneRpcUrl: string;
-  attestationValiditySeconds?: number; // defaults to 300 (5 minutes)
 }
 
 export interface SignOwnerAttestationResult {
@@ -40,14 +38,12 @@ export async function signOwnerAttestationAction({
   dstChainId,
   dstContract,
   pkpPublicKey,
-  chronicleYellowstoneRpcUrl,
-  attestationValiditySeconds = 300, // 5 minutes default
 }: SignOwnerAttestationParams): Promise<SignOwnerAttestationResult> {
   console.log('Starting owner attestation signing process');
   console.log(`appId: ${appId}, owner: ${owner}`);
 
   // Verify that the owner actually owns the app on Chronicle Yellowstone
-  const isOwner = await verifyAppOwnership(srcContract, appId, owner, chronicleYellowstoneRpcUrl);
+  const isOwner = await verifyAppOwnership(srcContract, appId, owner, srcChainId);
 
   if (!isOwner) {
     throw new Error(
@@ -59,6 +55,7 @@ export async function signOwnerAttestationAction({
 
   // Get current time in seconds (Unix timestamp)
   const issuedAt = Math.floor(Date.now() / 1000);
+  const attestationValiditySeconds = 300; // 5 minutes default
   const expiresAt = issuedAt + attestationValiditySeconds;
 
   // Create the attestation

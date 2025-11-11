@@ -19,8 +19,6 @@ export interface SignOwnerAttestationParams {
   dstContract: string;
   /** The IPFS CID of the deployed Lit Action */
   litActionIpfsCid: string;
-  /** RPC URL for Chronicle Yellowstone (for reading Vincent contract) */
-  chronicleYellowstoneRpcUrl: string;
   /** Source chain ID (defaults to Chronicle Yellowstone chain ID: 175188) */
   srcChainId?: number;
   /** Source contract address (defaults to Vincent Diamond on Chronicle Yellowstone) */
@@ -60,6 +58,7 @@ const CHRONICLE_YELLOWSTONE_CHAIN_ID = 175188;
  * 4. Returns the signature
  *
  * The signature can then be used to call `withdrawAppFees` on the Fee Diamond contract.
+ * The Lit Action automatically retrieves the Chronicle Yellowstone RPC URL using Lit.Actions.getRpcUrl().
  *
  * @param params - Parameters for signing the owner attestation
  * @returns Promise resolving to the signature and attestation data
@@ -76,7 +75,6 @@ const CHRONICLE_YELLOWSTONE_CHAIN_ID = 175188;
  *   dstChainId: 84532, // Base Sepolia
  *   dstContract: '0x...', // Fee Diamond address
  *   litActionIpfsCid: 'Qm...',
- *   chronicleYellowstoneRpcUrl: 'https://...',
  * });
  *
  * // Use the signature to withdraw fees
@@ -84,7 +82,7 @@ const CHRONICLE_YELLOWSTONE_CHAIN_ID = 175188;
  *   result.attestation.appId,
  *   tokenAddress,
  *   result.attestation,
- *   result.signature
+ *   result.signature,
  * );
  * ```
  */
@@ -97,7 +95,6 @@ export async function signOwnerAttestation({
   dstChainId,
   dstContract,
   litActionIpfsCid,
-  chronicleYellowstoneRpcUrl,
   srcChainId = CHRONICLE_YELLOWSTONE_CHAIN_ID,
   srcContract = VINCENT_DIAMOND_CONTRACT_ADDRESS_PROD,
   attestationValiditySeconds = 300,
@@ -113,7 +110,6 @@ export async function signOwnerAttestation({
       dstChainId,
       dstContract,
       pkpPublicKey,
-      chronicleYellowstoneRpcUrl,
       attestationValiditySeconds,
     },
   });

@@ -124,6 +124,7 @@ await litNodeClient.connect();
 const sessionSigs = await getSessionSigs(/* ... */);
 
 // Sign the owner attestation
+// The Lit Action automatically gets the Chronicle Yellowstone RPC URL
 const result = await signOwnerAttestation({
   litNodeClient,
   sessionSigs,
@@ -133,7 +134,6 @@ const result = await signOwnerAttestation({
   dstChainId: 84532, // Base Sepolia
   dstContract: getBaseSepoliaFeeDiamondAddress(),
   litActionIpfsCid: 'Qm...', // From generated metadata
-  chronicleYellowstoneRpcUrl: 'https://...',
 });
 
 // Use the signature to withdraw fees

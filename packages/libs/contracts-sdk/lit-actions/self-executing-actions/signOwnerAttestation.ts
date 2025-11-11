@@ -9,7 +9,6 @@ declare const appId: SignOwnerAttestationParams['appId'];
 declare const dstChainId: SignOwnerAttestationParams['dstChainId'];
 declare const dstContract: SignOwnerAttestationParams['dstContract'];
 declare const pkpPublicKey: SignOwnerAttestationParams['pkpPublicKey'];
-declare const chronicleYellowstoneRpcUrl: SignOwnerAttestationParams['chronicleYellowstoneRpcUrl'];
 declare const attestationValiditySeconds: SignOwnerAttestationParams['attestationValiditySeconds'];
 
 // Lit Action handler wrapper
@@ -42,7 +41,6 @@ async function litActionHandler(actionFunc: () => Promise<unknown>) {
       dstChainId,
       dstContract,
       pkpPublicKey,
-      chronicleYellowstoneRpcUrl,
       attestationValiditySeconds,
     }),
   ))();
