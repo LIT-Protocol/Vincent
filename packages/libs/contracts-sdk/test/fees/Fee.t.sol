@@ -43,7 +43,8 @@ contract FeeTest is FeeTestCommon {
 
         DeployFeeDiamond deployScript = new DeployFeeDiamond();
 
-        address diamondAddress = deployScript.deployToNetwork("test", keccak256("testSalt"), makeAddr("VincentAppDiamondOnYellowstone"));
+        address diamondAddress =
+            deployScript.deployToNetwork("test", keccak256("testSalt"), makeAddr("VincentAppDiamondOnYellowstone"));
         feeDiamond = Fee(payable(diamondAddress));
 
         feeViewsFacet = FeeViewsFacet(diamondAddress);

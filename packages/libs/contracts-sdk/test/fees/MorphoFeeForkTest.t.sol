@@ -70,7 +70,6 @@ contract MorphoFeeForkTest is FeeTestCommon {
         morpho = Morpho(morphoVault.MORPHO());
         erc20Decimals = underlyingERC20.decimals();
 
-
         vm.startPrank(owner);
         // set the owner attestation signer in the fee diamond
         (ownerAttestationSigner, ownerAttestationSignerPrivateKey) = makeAddrAndKey("OwnerAttestationSigner");

@@ -57,7 +57,10 @@ contract DeployFeeDiamond is Script {
      * @notice Deploy to a specific network
      * @param network Network name for logging
      */
-    function deployToNetwork(string memory network, bytes32 create2Salt, address vincentAppDiamondOnYellowstone) public returns (address) {
+    function deployToNetwork(string memory network, bytes32 create2Salt, address vincentAppDiamondOnYellowstone)
+        public
+        returns (address)
+    {
         // Get private key from environment variable
         uint256 deployerPrivateKey = vm.envUint("VINCENT_DEPLOYER_PRIVATE_KEY");
         if (deployerPrivateKey == 0) {
