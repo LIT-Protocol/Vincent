@@ -17,9 +17,9 @@ contract FeeTestCommon is TestCommon {
     using ECDSA for bytes32;
     using MessageHashUtils for bytes32;
 
-    function _deployFeeDiamond() public returns (address) {
+    function _deployFeeDiamond(address vincentDiamondAddress) public returns (address) {
         DeployFeeDiamond deployScript = new DeployFeeDiamond();
-        address diamondAddress = deployScript.deployToNetwork("test", keccak256("testSalt"));
+        address diamondAddress = deployScript.deployToNetwork("test", keccak256("testSalt"), vincentDiamondAddress);
         return diamondAddress;
     }
 

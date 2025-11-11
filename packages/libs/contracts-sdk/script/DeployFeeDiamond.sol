@@ -57,7 +57,7 @@ contract DeployFeeDiamond is Script {
      * @notice Deploy to a specific network
      * @param network Network name for logging
      */
-    function deployToNetwork(string memory network, bytes32 create2Salt) public returns (address) {
+    function deployToNetwork(string memory network, bytes32 create2Salt, address vincentAppDiamondOnYellowstone) public returns (address) {
         // Get private key from environment variable
         uint256 deployerPrivateKey = vm.envUint("VINCENT_DEPLOYER_PRIVATE_KEY");
         if (deployerPrivateKey == 0) {
@@ -112,6 +112,10 @@ contract DeployFeeDiamond is Script {
             cuts, FeeArgs({owner: deployerAddress, init: address(0), initCalldata: bytes("")})
         );
 
+        // set the vincent app diamond on yellowstone in the fee diamond
+        // which is needed so we can do cross-chain reads of the app owner attestation signer
+        FeeAdminFacet(address(diamond)).setVincentAppDiamondOnYellowstone(vincentAppDiamondOnYellowstone);
+
         // Stop broadcasting transactions
         vm.stopBroadcast();
 
@@ -129,17 +133,9 @@ contract DeployFeeDiamond is Script {
     }
 
     /**
-     * @notice Deploy to Datil network
+     * @notice Deploy and set defaults
      */
-    function deployToDatil() public returns (address) {
-        return deployToNetwork("Datil", keccak256("DatilSalt"));
-    }
-
-    /**
-     * @notice Main deployment function
-     */
-    function run() public {
-        // Deploy to all networks
-        deployToDatil();
+    function deployAndSetDefaults(address vincentAppDiamondOnYellowstone) public returns (address) {
+        return deployToNetwork("Datil", keccak256("DatilSalt"), vincentAppDiamondOnYellowstone);
     }
 }

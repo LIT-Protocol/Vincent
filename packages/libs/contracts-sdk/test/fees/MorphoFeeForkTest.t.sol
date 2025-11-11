@@ -51,8 +51,9 @@ contract MorphoFeeForkTest is FeeTestCommon {
         uint256 deployerPrivateKey = 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80;
         vm.setEnv("VINCENT_DEPLOYER_PRIVATE_KEY", vm.toString(deployerPrivateKey));
         owner = vm.addr(deployerPrivateKey);
+        vincentDiamondAddress = _deployVincentDiamondAndBasicApp(APP_MANAGER_BOB, APP_DELEGATEE_BOB, DEV_APP_ID);
 
-        feeDiamond = Fee(payable(_deployFeeDiamond()));
+        feeDiamond = Fee(payable(_deployFeeDiamond(vincentDiamondAddress)));
 
         feeViewsFacet = FeeViewsFacet(address(feeDiamond));
         feeAdminFacet = FeeAdminFacet(address(feeDiamond));
@@ -69,7 +70,6 @@ contract MorphoFeeForkTest is FeeTestCommon {
         morpho = Morpho(morphoVault.MORPHO());
         erc20Decimals = underlyingERC20.decimals();
 
-        vincentDiamondAddress = _deployVincentDiamondAndBasicApp(APP_MANAGER_BOB, APP_DELEGATEE_BOB, DEV_APP_ID);
 
         vm.startPrank(owner);
         // set the owner attestation signer in the fee diamond
@@ -77,8 +77,6 @@ contract MorphoFeeForkTest is FeeTestCommon {
         feeAdminFacet.setOwnerAttestationSigner(ownerAttestationSigner);
         // set the lit foundation wallet in the fee diamond
         feeAdminFacet.setLitFoundationWallet(litFoundationWallet);
-        // set the vincent app contract address in the fee diamond
-        feeAdminFacet.setVincentAppDiamondOnYellowstone(vincentDiamondAddress);
         vm.stopPrank();
     }
 

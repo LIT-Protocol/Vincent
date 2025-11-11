@@ -43,7 +43,7 @@ contract FeeTest is FeeTestCommon {
 
         DeployFeeDiamond deployScript = new DeployFeeDiamond();
 
-        address diamondAddress = deployScript.deployToNetwork("test", keccak256("testSalt"));
+        address diamondAddress = deployScript.deployToNetwork("test", keccak256("testSalt"), makeAddr("VincentAppDiamondOnYellowstone"));
         feeDiamond = Fee(payable(diamondAddress));
 
         feeViewsFacet = FeeViewsFacet(diamondAddress);
@@ -187,17 +187,18 @@ contract FeeTest is FeeTestCommon {
     }
 
     function testSetVincentAppDiamondOnYellowstone() public {
-        assertNotEq(feeAdminFacet.vincentAppDiamondOnYellowstone(), VINCENT_APP_DIAMOND_ON_YELLOWSTONE);
+        address newVincentDiamondAddress = makeAddr("NewVincentDiamondAddress");
+        assertNotEq(feeAdminFacet.vincentAppDiamondOnYellowstone(), newVincentDiamondAddress);
 
         // test that a non-owner cannot set the vincent app diamond on chronicle yellowstone
         vm.expectRevert(FeeUtils.CallerNotOwner.selector);
-        feeAdminFacet.setVincentAppDiamondOnYellowstone(VINCENT_APP_DIAMOND_ON_YELLOWSTONE);
+        feeAdminFacet.setVincentAppDiamondOnYellowstone(newVincentDiamondAddress);
 
         // test that the owner can set the vincent app diamond on chronicle yellowstone
         vm.startPrank(owner);
-        feeAdminFacet.setVincentAppDiamondOnYellowstone(VINCENT_APP_DIAMOND_ON_YELLOWSTONE);
+        feeAdminFacet.setVincentAppDiamondOnYellowstone(newVincentDiamondAddress);
         vm.stopPrank();
-        assertEq(feeAdminFacet.vincentAppDiamondOnYellowstone(), VINCENT_APP_DIAMOND_ON_YELLOWSTONE);
+        assertEq(feeAdminFacet.vincentAppDiamondOnYellowstone(), newVincentDiamondAddress);
     }
 
     function testOwnerAttestationSignerUtils() public {
