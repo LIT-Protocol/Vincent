@@ -6,10 +6,11 @@ This document summarizes the implementation of the Lit Action oracle for signing
 
 We've created a complete Lit Action implementation that:
 
-1. Reads from the Vincent Diamond contract on Chronicle Yellowstone to verify app ownership
-2. Creates an `OwnerAttestation` structure
-3. Signs it using a PKP
-4. Returns the signature for use with `withdrawAppFees` on Fee Diamond contracts
+1. Validates the provided `issuedAt` timestamp is within ±30 seconds (ensures all nodes sign the same message)
+2. Reads from the Vincent Diamond contract on Chronicle Yellowstone to verify app ownership
+3. Creates an `OwnerAttestation` structure
+4. Signs it using a PKP
+5. Returns the signature for use with `withdrawAppFees` on Fee Diamond contracts
 
 ## Files Created
 

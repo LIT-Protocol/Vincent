@@ -23,8 +23,6 @@ export interface SignOwnerAttestationParams {
   srcChainId?: number;
   /** Source contract address (defaults to Vincent Diamond on Chronicle Yellowstone) */
   srcContract?: string;
-  /** Attestation validity in seconds (defaults to 300 = 5 minutes) */
-  attestationValiditySeconds?: number;
 }
 
 export interface OwnerAttestation {
@@ -52,13 +50,17 @@ const CHRONICLE_YELLOWSTONE_CHAIN_ID = 175188;
  * Signs an owner attestation using a Lit Action
  *
  * This function executes a Lit Action that:
- * 1. Verifies the owner is actually the app manager by reading from the Vincent Diamond on Chronicle Yellowstone
- * 2. Creates an OwnerAttestation structure with the provided parameters
- * 3. Signs it using the specified PKP
- * 4. Returns the signature
+ * 1. Validates the issuedAt timestamp is within ±30 seconds of current time
+ * 2. Verifies the owner is actually the app manager by reading from the Vincent Diamond on Chronicle Yellowstone
+ * 3. Creates an OwnerAttestation structure with the provided parameters
+ * 4. Signs it using the specified PKP
+ * 5. Returns the signature
  *
  * The signature can then be used to call `withdrawAppFees` on the Fee Diamond contract.
  * The Lit Action automatically retrieves the Chronicle Yellowstone RPC URL using Lit.Actions.getRpcUrl().
+ *
+ * IMPORTANT: This function generates the `issuedAt` timestamp and passes it to all Lit nodes.
+ * This ensures all nodes sign the exact same message, which is required for signature combining.
  *
  * @param params - Parameters for signing the owner attestation
  * @returns Promise resolving to the signature and attestation data
@@ -97,8 +99,11 @@ export async function signOwnerAttestation({
   litActionIpfsCid,
   srcChainId = CHRONICLE_YELLOWSTONE_CHAIN_ID,
   srcContract = VINCENT_DIAMOND_CONTRACT_ADDRESS_PROD,
-  attestationValiditySeconds = 300,
 }: SignOwnerAttestationParams): Promise<SignOwnerAttestationResult> {
+  // Generate issuedAt timestamp here so all nodes use the same value
+  // This is critical for signature combining across the 10 parallel Lit nodes
+  const issuedAt = Math.floor(Date.now() / 1000);
+
   const result = await litNodeClient.executeJs({
     sessionSigs,
     ipfsId: litActionIpfsCid,
@@ -107,10 +112,10 @@ export async function signOwnerAttestation({
       srcContract,
       owner,
       appId,
+      issuedAt,
       dstChainId,
       dstContract,
       pkpPublicKey,
-      attestationValiditySeconds,
     },
   });
 

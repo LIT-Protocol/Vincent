@@ -6,10 +6,10 @@ declare const srcChainId: SignOwnerAttestationParams['srcChainId'];
 declare const srcContract: SignOwnerAttestationParams['srcContract'];
 declare const owner: SignOwnerAttestationParams['owner'];
 declare const appId: SignOwnerAttestationParams['appId'];
+declare const issuedAt: SignOwnerAttestationParams['issuedAt'];
 declare const dstChainId: SignOwnerAttestationParams['dstChainId'];
 declare const dstContract: SignOwnerAttestationParams['dstContract'];
 declare const pkpPublicKey: SignOwnerAttestationParams['pkpPublicKey'];
-declare const attestationValiditySeconds: SignOwnerAttestationParams['attestationValiditySeconds'];
 
 // Lit Action handler wrapper
 declare const Lit: {
@@ -38,9 +38,9 @@ async function litActionHandler(actionFunc: () => Promise<unknown>) {
       srcContract,
       owner,
       appId,
+      issuedAt,
       dstChainId,
       dstContract,
       pkpPublicKey,
-      attestationValiditySeconds,
     }),
   ))();

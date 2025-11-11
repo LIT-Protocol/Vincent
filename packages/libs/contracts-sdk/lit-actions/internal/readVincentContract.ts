@@ -15,10 +15,10 @@ declare const Lit: {
  * @returns true if the address is an owner of the app
  */
 export async function verifyAppOwnership(
+  srcChainId: number,
   vincentContractAddress: string,
   appId: number,
   owner: string,
-  srcChainId: number,
 ): Promise<boolean> {
   console.log(`Verifying app ownership for appId ${appId}, owner ${owner}`);
 
