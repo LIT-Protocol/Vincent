@@ -10,6 +10,7 @@ export const actionTypeSchema = z.enum([
   'perpShort',
   'cancelOrder',
   'cancelAllOrdersForSymbol',
+  'approveBuilder',
 ]);
 
 export const depositParamsSchema = z.object({
@@ -153,6 +154,7 @@ export const abilityParamsSchema = z
       if (data.action === 'perpLong' || data.action === 'perpShort') return !!data.perp;
       if (data.action === 'cancelOrder') return !!data.cancelOrder;
       if (data.action === 'cancelAllOrdersForSymbol') return !!data.cancelAllOrdersForSymbol;
+      if (data.action === 'approveBuilder') return true;
       return false;
     },
     {
@@ -196,4 +198,8 @@ export const executeSuccessSchema = z.object({
     .any()
     .optional()
     .describe('Cancel result (for spotCancelOrder/spotCancelAll action)'),
+  builderApproval: z
+    .any()
+    .optional()
+    .describe('Builder approval result (for approveBuilder action)'),
 });

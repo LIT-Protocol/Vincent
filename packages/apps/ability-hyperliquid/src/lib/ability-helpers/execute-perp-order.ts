@@ -10,6 +10,7 @@ import { signL1Action } from '@nktkas/hyperliquid/signing';
 import { bigIntReplacer } from '@lit-protocol/vincent-ability-sdk';
 
 import { LitActionPkpEthersWallet } from './lit-action-pkp-ethers-wallet';
+import { DEFAULT_BUILDER } from '../constants';
 
 export type TimeInForce = 'Gtc' | 'Ioc' | 'Alo';
 
@@ -140,6 +141,8 @@ export async function executePerpOrder({
       ? { limit: { tif: 'FrontendMarket' } }
       : { limit: { tif: orderType.tif } };
 
+  const builderConfig = DEFAULT_BUILDER;
+
   // Construct order action
   const orderAction = parser(OrderRequest.entries.action)({
     type: 'order',
@@ -151,6 +154,10 @@ export async function executePerpOrder({
         s: params.size,
         r: params.reduceOnly ?? false, // reduce only (true to close positions, false for opening)
         t: orderTypeField,
+        builder: {
+          b: builderConfig.address,
+          f: builderConfig.fee,
+        },
       },
     ],
     grouping: 'na',
