@@ -12,6 +12,7 @@ import { useCanGoBack } from '@/hooks/user-dashboard/connect/useCanGoBack';
 import { useJwtRedirect } from '@/hooks/user-dashboard/connect/useJwtRedirect';
 import { ReadAuthInfo } from '@/hooks/user-dashboard/useAuthInfo';
 import { App, AppVersion } from '@/types/developer-dashboard/appTypes';
+import { wait } from '@/lib/utils';
 
 type ReturningUserConnectProps = {
   appData: App;
@@ -46,8 +47,11 @@ export function ReturningUserConnect({
   // Handle redirect when JWT is ready
   useEffect(() => {
     if (redirectUrl && !localSuccess) {
-      setLocalSuccess('Success! Redirecting to app...');
-      executeRedirect();
+      (async () => {
+        setLocalSuccess('Success! Redirecting to app...');
+        await wait(1000);
+        executeRedirect();
+      })();
     }
   }, [redirectUrl, localSuccess, executeRedirect]);
 

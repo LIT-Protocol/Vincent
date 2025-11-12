@@ -19,6 +19,7 @@ import { ReadAuthInfo } from '@/hooks/user-dashboard/useAuthInfo';
 import { AppVersion } from '@/types/developer-dashboard/appTypes';
 import { hasConfigurablePolicies } from '@/utils/user-dashboard/hasConfigurablePolicies';
 import { litNodeClient } from '@/utils/user-dashboard/lit';
+import { wait } from '@/lib/utils';
 
 interface AppPermissionPageProps {
   connectInfoMap: ConnectInfoMap;
@@ -65,8 +66,11 @@ export function AppPermissionPage({
   // Handle redirect when JWT is ready
   useEffect(() => {
     if (redirectUrl && !localSuccess) {
-      setLocalSuccess('Success! Redirecting to app...');
-      executeRedirect();
+      (async () => {
+        setLocalSuccess('Success! Redirecting to app...');
+        await wait(1000);
+        executeRedirect();
+      })();
     }
   }, [redirectUrl, localSuccess, executeRedirect]);
 
@@ -174,6 +178,7 @@ export function AppPermissionPage({
       if (!hasAnyChanges) {
         setLocalStatus(null);
         setLocalSuccess('Permissions are up to date.');
+        await wait(2000);
         setLocalSuccess(null);
         return;
       }
@@ -211,6 +216,7 @@ export function AppPermissionPage({
         setLocalSuccess('Permissions granted successfully!');
 
         // Generate JWT for redirect (useJwtRedirect will handle if there's a redirectUri)
+        await wait(2000);
         setLocalSuccess(null);
         // Only generate JWT if there's a redirectUri (for app redirects)
         if (redirectUri) {
@@ -273,7 +279,8 @@ export function AppPermissionPage({
       setLocalStatus(null);
       // Show success state until redirect
       setLocalSuccess('App unpermitted successfully!');
-      // Force the refresh for the sidebar to update
+      // Force the refresh for the sidebar to update after showing success message
+      await wait(2000);
       window.location.href = `/user/apps`;
     } catch (error) {
       setLocalError(error instanceof Error ? error.message : 'Failed to unpermit app');

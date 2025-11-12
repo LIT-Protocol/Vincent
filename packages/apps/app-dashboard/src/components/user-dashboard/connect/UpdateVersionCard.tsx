@@ -20,6 +20,7 @@ import { useConnectFormData } from '@/hooks/user-dashboard/connect/useConnectFor
 import { useJwtRedirect } from '@/hooks/user-dashboard/connect/useJwtRedirect';
 import { ReadAuthInfo } from '@/hooks/user-dashboard/useAuthInfo';
 import { litNodeClient } from '@/utils/user-dashboard/lit';
+import { wait } from '@/lib/utils';
 
 interface UpdateVersionCardProps {
   connectInfoMap: ConnectInfoMap;
@@ -56,8 +57,11 @@ export function UpdateVersionCard({
   // Handle redirect when JWT is ready
   useEffect(() => {
     if (redirectUrl && !localSuccess) {
-      setLocalSuccess('Success! Redirecting to app...');
-      executeRedirect();
+      (async () => {
+        setLocalSuccess('Success! Redirecting to app...');
+        await wait(1000);
+        executeRedirect();
+      })();
     }
   }, [redirectUrl, localSuccess, executeRedirect]);
 

@@ -16,6 +16,7 @@ import { ConnectAppHeader } from '../connect/ui/ConnectAppHeader';
 import { PageHeader } from './ui/PageHeader';
 import { ActionButtons } from '../connect/ui/ActionButtons';
 import { Breadcrumb } from '@/components/shared/ui/Breadcrumb';
+import { wait } from '@/lib/utils';
 
 interface RepermitConnectPageProps {
   appData: App;
@@ -55,8 +56,11 @@ export function RepermitConnectPage({
   // Handle redirect when JWT is ready
   useEffect(() => {
     if (redirectUrl && !localSuccess) {
-      setLocalSuccess('Success! Redirecting to app...');
-      executeRedirect();
+      (async () => {
+        setLocalSuccess('Success! Redirecting to app...');
+        await wait(1000);
+        executeRedirect();
+      })();
     }
   }, [redirectUrl, localSuccess, executeRedirect]);
 
@@ -92,7 +96,8 @@ export function RepermitConnectPage({
       setIsConnectProcessing(false);
       setLocalSuccess('App re-permitted successfully!');
 
-      // Generate JWT for redirect or navigate
+      // Generate JWT for redirect or navigate after showing success message
+      await wait(2000);
       setLocalSuccess(null);
       // Only generate JWT if there's an effectiveRedirectUri (for app redirects)
       if (effectiveRedirectUri) {

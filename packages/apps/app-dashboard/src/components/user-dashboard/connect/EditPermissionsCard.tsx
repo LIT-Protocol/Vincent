@@ -19,6 +19,7 @@ import { useJwtRedirect } from '@/hooks/user-dashboard/connect/useJwtRedirect';
 import { useFormatUserPermissions } from '@/hooks/user-dashboard/dashboard/useFormatUserPermissions';
 import { ReadAuthInfo } from '@/hooks/user-dashboard/useAuthInfo';
 import { litNodeClient } from '@/utils/user-dashboard/lit';
+import { wait } from '@/lib/utils';
 
 interface EditPermissionsCardProps {
   connectInfoMap: ConnectInfoMap;
@@ -57,8 +58,11 @@ export function EditPermissionsCard({
   // Handle redirect when JWT is ready
   useEffect(() => {
     if (redirectUrl && !localSuccess) {
-      setLocalSuccess('Success! Redirecting to app...');
-      executeRedirect();
+      (async () => {
+        setLocalSuccess('Success! Redirecting to app...');
+        await wait(1000);
+        executeRedirect();
+      })();
     }
   }, [redirectUrl, localSuccess, executeRedirect]);
 
