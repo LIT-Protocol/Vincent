@@ -28,5 +28,10 @@ export const VINCENT_CONTRACT_ADDRESS_BOOK = {
 };
 
 export const VINCENT_LIT_ACTIONS_ADDRESS_BOOK = {
-  signOwnerAttestation: 'QmSWgViHHR1yZ7tGKZMCdHHCZrA6WpXrExshGaQBWiPpfe',
+  signOwnerAttestation: {
+    ipfsCid: 'QmSWgViHHR1yZ7tGKZMCdHHCZrA6WpXrExshGaQBWiPpfe',
+    derivedActionPubkey:
+      '047f155c9e782039b3be6554619b665a15223ebbd278724024563d8a01daac67dd507916d41e1ca7fb2128df039640781148fbb1020a54bab2eafbae77dbad6a87',
+    derivedActionAddress: '0x22d32f0355A7914665220dD7ff5f1983021CC2B0',
+  },
 };
