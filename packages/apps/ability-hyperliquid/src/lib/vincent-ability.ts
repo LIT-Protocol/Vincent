@@ -27,6 +27,7 @@ import {
   cancelAllOrdersForSymbol,
   executePerpOrder,
   withdrawUsdc,
+  sendSpotAsset,
 } from './ability-helpers';
 import {
   depositPrechecks,
@@ -37,6 +38,7 @@ import {
   cancelOrderPrechecks,
   cancelAllOrdersForSymbolPrechecks,
   withdrawPrechecks,
+  sendSpotAssetPrechecks,
 } from './ability-checks';
 
 export const vincentAbility = createVincentAbility({
@@ -118,6 +120,36 @@ export const vincentAbility = createVincentAbility({
           ethAddress: delegatorPkpInfo.ethAddress,
           params: {
             amount: abilityParams.withdraw.amount,
+          },
+        });
+
+        if (!result.success) {
+          return fail({
+            action,
+            reason: result.reason,
+            availableBalance: result.availableBalance,
+            requiredBalance: result.requiredBalance,
+          });
+        }
+
+        return succeed({
+          action,
+          availableBalance: result.availableBalance,
+        });
+      }
+
+      case HyperliquidAction.SEND_SPOT_ASSET: {
+        if (!abilityParams.sendSpotAsset) {
+          return fail({ action, reason: 'Send asset parameters are required for precheck' });
+        }
+
+        const result = await sendSpotAssetPrechecks({
+          infoClient,
+          ethAddress: delegatorPkpInfo.ethAddress,
+          params: {
+            destination: abilityParams.sendSpotAsset.destination,
+            token: abilityParams.sendSpotAsset.token,
+            amount: abilityParams.sendSpotAsset.amount,
           },
         });
 
@@ -344,6 +376,32 @@ export const vincentAbility = createVincentAbility({
           return fail({
             action,
             reason: `Unexpected response status: ${JSON.stringify(result.withdrawResult, null, 2)}`,
+          });
+        }
+
+        case HyperliquidAction.SEND_SPOT_ASSET: {
+          if (!abilityParams.sendSpotAsset) {
+            return fail({ action, reason: 'Send spot asset parameters are required' });
+          }
+
+          const result = await sendSpotAsset({
+            transport,
+            pkpPublicKey: delegatorPkpInfo.publicKey,
+            destination: abilityParams.sendSpotAsset.destination,
+            token: abilityParams.sendSpotAsset.token,
+            amount: abilityParams.sendSpotAsset.amount,
+            useTestnet,
+          });
+
+          // SuccessResponse always has status "ok", errors are thrown as exceptions
+          if (result.sendResult.status === 'ok') {
+            return succeed({ action, sendResult: result.sendResult });
+          }
+
+          // This should not happen with SuccessResponse type, but handle it for safety
+          return fail({
+            action,
+            reason: `Unexpected response status: ${JSON.stringify(result.sendResult, null, 2)}`,
           });
         }
 

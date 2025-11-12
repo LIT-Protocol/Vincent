@@ -112,6 +112,7 @@ describe('Hyperliquid Ability E2E Spot Cancel All Orders Tests', () => {
       const hyperliquidAbilityClient = getVincentAbilityClient({
         bundledVincentAbility: hyperliquidBundledAbility,
         ethersSigner: wallets.appDelegatee,
+        debug: false,
       });
 
       const precheckResult = await hyperliquidAbilityClient.precheck(
@@ -146,6 +147,7 @@ describe('Hyperliquid Ability E2E Spot Cancel All Orders Tests', () => {
       const hyperliquidAbilityClient = getVincentAbilityClient({
         bundledVincentAbility: hyperliquidBundledAbility,
         ethersSigner: wallets.appDelegatee,
+        debug: false,
       });
 
       const executeResult = await hyperliquidAbilityClient.execute(

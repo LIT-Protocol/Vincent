@@ -135,6 +135,7 @@ describe('Hyperliquid Ability E2E Withdraw Tests', () => {
       const hyperliquidAbilityClient = getVincentAbilityClient({
         bundledVincentAbility: hyperliquidBundledAbility,
         ethersSigner: wallets.appDelegatee,
+        debug: false,
       });
 
       const precheckResult = await hyperliquidAbilityClient.precheck(
@@ -166,6 +167,7 @@ describe('Hyperliquid Ability E2E Withdraw Tests', () => {
       const hyperliquidAbilityClient = getVincentAbilityClient({
         bundledVincentAbility: hyperliquidBundledAbility,
         ethersSigner: wallets.appDelegatee,
+        debug: false,
       });
 
       const executeResult = await hyperliquidAbilityClient.execute(

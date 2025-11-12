@@ -3,6 +3,8 @@ import { z } from 'zod';
 export const actionTypeSchema = z.enum([
   'deposit',
   'withdraw',
+  'sendSpotAsset',
+  'sendPerpUsdc',
   'transferToSpot',
   'transferToPerp',
   'spotBuy',
@@ -36,6 +38,27 @@ export const transferParamsSchema = z.object({
     .string()
     .describe(
       'Amount of USDC to transfer to spot or perp, specified in micro-units as a string (e.g., "1000000" means 1.0 USDC; 1 USDC = 1,000,000 micro-units).',
+    ),
+});
+
+export const sendSpotAssetParamsSchema = z.object({
+  destination: z
+    .string()
+    .describe('Destination Hyperliquid spot account address to send assets to'),
+  token: z.string().describe('Token symbol to send (e.g., "USDC", "PURR", etc.)'),
+  amount: z
+    .string()
+    .describe(
+      'Amount to send, specified in Hyperliquid defined micro-units as a string (e.g., USDC generally has 6 decimals, but Hyperliquid defines it as having 8 decimals so "100000000" means 1.0 USDC).',
+    ),
+});
+
+export const sendPerpUsdcParamsSchema = z.object({
+  destination: z.string().describe('Destination Hyperliquid perp account address to send USDC to'),
+  amount: z
+    .string()
+    .describe(
+      'Amount of USDC to send, specified in micro-units as a string (e.g., "1000000" means 1.0 USDC; 1 USDC = 1,000,000 micro-units).',
     ),
 });
 
@@ -138,6 +161,14 @@ export const abilityParamsSchema = z
     withdraw: withdrawParamsSchema
       .optional()
       .describe('Withdraw parameters (required for withdraw action)'),
+    // Send spot asset params
+    sendSpotAsset: sendSpotAssetParamsSchema
+      .optional()
+      .describe('Send spot asset parameters (required for sendSpotAsset action)'),
+    // Send perp USDC params
+    sendPerpUsdc: sendPerpUsdcParamsSchema
+      .optional()
+      .describe('Send perp USDC parameters (required for sendPerpUsdc action)'),
     // Transfer to spot or perps params
     transfer: transferParamsSchema
       .optional()
@@ -167,6 +198,8 @@ export const abilityParamsSchema = z
     (data) => {
       if (data.action === 'deposit') return !!data.deposit;
       if (data.action === 'withdraw') return !!data.withdraw;
+      if (data.action === 'sendSpotAsset') return !!data.sendSpotAsset;
+      if (data.action === 'sendPerpUsdc') return !!data.sendPerpUsdc;
       if (data.action === 'transferToSpot' || data.action === 'transferToPerp')
         return !!data.transfer;
       if (data.action === 'spotBuy' || data.action === 'spotSell') return !!data.spot;
@@ -211,6 +244,7 @@ export const executeSuccessSchema = z.object({
   action: z.string().describe('Action that was executed'),
   txHash: z.string().optional().describe('Transaction hash (for deposit action)'),
   withdrawResult: z.any().optional().describe('Withdraw result (for withdraw action)'),
+  sendResult: z.any().optional().describe('Send result (for sendAsset action)'),
   transferResult: z.any().optional().describe('Transfer result (for transferToSpot action)'),
   orderResult: z.any().optional().describe('Order result (for spotBuy/spotSell action)'),
   cancelResult: z
