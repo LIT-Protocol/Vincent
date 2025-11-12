@@ -111,12 +111,12 @@ export function AppOverviewWrapper() {
     try {
       // identify NEW delegatee addresses that weren't in the original app
       const originalDelegateeAddresses = app?.delegateeAddresses || [];
-      const newDelegateeAddresses = (data.delegateeAddresses || []).filter(
-        (address) => !originalDelegateeAddresses.includes(address),
-      );
+      const newDelegateeAddresses = (
+        'delegateeAddresses' in data ? data.delegateeAddresses || [] : []
+      ).filter((address: string) => !originalDelegateeAddresses.includes(address));
 
       await Promise.all(
-        newDelegateeAddresses.map(async (address) => {
+        newDelegateeAddresses.map(async (address: string) => {
           await addPayee(address);
         }),
       );
@@ -229,7 +229,7 @@ export function AppOverviewWrapper() {
         >
           <DialogHeader>
             <DialogTitle className="text-lg font-semibold" style={fonts.heading}>
-              Edit
+              Edit App
             </DialogTitle>
           </DialogHeader>
           {blockchainAppData !== null ? (
