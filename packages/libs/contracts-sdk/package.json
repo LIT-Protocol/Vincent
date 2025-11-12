@@ -25,6 +25,7 @@
     "@lit-protocol/pkp-ethers": "^7.2.3",
     "@openzeppelin/contracts": "5.3.0",
     "@types/jest": "^29.5.12",
+    "@types/node": "^20.0.0",
     "dotenv": "^16.0.0",
     "esbuild": "^0.24.2",
     "ipfs-only-hash": "^4.0.0",

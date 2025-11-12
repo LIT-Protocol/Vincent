@@ -34,7 +34,7 @@ contract DeployFeeDiamond is Script {
     function getFunctionSelectors(string memory contractName) internal returns (bytes4[] memory) {
         string[] memory inputs = new string[](3);
         inputs[0] = "node";
-        inputs[1] = "scripts/getFunctionSelectors.mjs";
+        inputs[1] = "scripts/get-function-selectors.mjs";
         inputs[2] = contractName;
         bytes4[] memory selectors = new bytes4[](0);
         bytes memory output = vm.ffi(inputs);

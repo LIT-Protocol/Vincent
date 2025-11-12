@@ -13,7 +13,7 @@
  */
 
 import { ethers } from 'ethers';
-import { LitNodeClient } from '@lit-protocol/lit-node-client';
+
 import {
   createSiweMessageWithRecaps,
   generateAuthSig,
@@ -21,8 +21,7 @@ import {
   LitPKPResource,
 } from '@lit-protocol/auth-helpers';
 import { LIT_ABILITY } from '@lit-protocol/constants';
-import * as dotenv from 'dotenv';
-import * as path from 'path';
+import { LitNodeClient } from '@lit-protocol/lit-node-client';
 
 import {
   VINCENT_CONTRACT_ADDRESS_BOOK,
@@ -32,8 +31,8 @@ import {
 } from '../../src/constants';
 import { signOwnerAttestation } from '../../src/fees/signOwnerAttestation';
 
-// Load environment variables from root .env
-dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+// Load environment variables from root .env using require
+require('dotenv').config();
 
 // Test configuration
 const BASE_SEPOLIA_RPC_URL = process.env.BASE_SEPOLIA_RPC_URL;
@@ -54,7 +53,6 @@ const LIT_ACTION_PKP_PUBKEY =
 
 // Base Sepolia addresses
 const BASE_SEPOLIA_USDC = '0x036CbD53842c5426634e7929541eC2318f3dCF7e'; // USDC on Base Sepolia
-const BASE_SEPOLIA_AAVE_POOL = '0x07eA79F68B2B3df564D0A34F8e19D9B1e339814b'; // Aave V3 Pool on Base Sepolia
 
 // ABIs
 const ERC20_ABI = [
@@ -62,12 +60,6 @@ const ERC20_ABI = [
   'function transfer(address to, uint256 amount) returns (bool)',
   'function approve(address spender, uint256 amount) returns (bool)',
   'function decimals() view returns (uint8)',
-];
-
-const AAVE_POOL_ABI = [
-  'function supply(address asset, uint256 amount, address onBehalfOf, uint16 referralCode)',
-  'function withdraw(address asset, uint256 amount, address to) returns (uint256)',
-  'function getUserAccountData(address user) view returns (uint256 totalCollateralBase, uint256 totalDebtBase, uint256 availableBorrowsBase, uint256 currentLiquidationThreshold, uint256 ltv, uint256 healthFactor)',
 ];
 
 const FEE_DIAMOND_ABI = [
@@ -151,19 +143,22 @@ describe('Owner Attestation Signing E2E', () => {
       if (existingApp.manager !== ethers.constants.AddressZero) {
         console.log('App already exists, using existing app');
       }
-    } catch (error) {
+    } catch {
       // App doesn't exist, create it
       console.log('Registering new app...');
-      const delegatees = [appOwnerWallet.address]; // Use owner as delegatee for simplicity
-      const abilities = ['QmTestAbility1', 'QmTestAbility2'];
-      const policies = ['QmTestPolicy1'];
+      // Use owner as delegatee for simplicity since the delegatee is irrelevant for this test
+      const delegatees = [appOwnerWallet.address];
 
-      const tx = await vincentDiamond.registerApp(appId, delegatees, [
-        {
-          abilities,
-          policies,
-        },
-      ]);
+      // Format: versionAbilities structure
+      // abilityIpfsCids: array of ability IPFS CIDs
+      // abilityPolicies: array of arrays, one array per ability containing that ability's policies
+      const tx = await vincentDiamond.registerApp(appId, delegatees, {
+        abilityIpfsCids: ['QmTestAbility1', 'QmTestAbility2'],
+        abilityPolicies: [
+          ['QmTestPolicy1'], // Policies for first ability
+          [], // No policies for second ability
+        ],
+      });
       await tx.wait();
       console.log('✅ App registered on Chronicle Yellowstone');
     }
