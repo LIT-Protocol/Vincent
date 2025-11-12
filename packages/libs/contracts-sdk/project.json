@@ -37,6 +37,15 @@
         "jestConfig": "{projectRoot}/jest.config.js"
       }
     },
+    "test-e2e:fees": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/test-output/jest/{projectRoot}"],
+      "options": {
+        "jestConfig": "{projectRoot}/jest.config.js",
+        "testMatch": ["<rootDir>/test/fees/**/*.e2e.spec.ts"],
+        "passWithNoTests": false
+      }
+    },
     "build:tsc": {
       "executor": "@nx/js:tsc",
       "outputs": ["{options.outputPath}"],
