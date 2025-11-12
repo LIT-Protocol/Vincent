@@ -28,6 +28,7 @@ import {
   executePerpOrder,
   withdrawUsdc,
   sendSpotAsset,
+  sendPerpUsdc,
 } from './ability-helpers';
 import {
   depositPrechecks,
@@ -39,6 +40,7 @@ import {
   cancelAllOrdersForSymbolPrechecks,
   withdrawPrechecks,
   sendSpotAssetPrechecks,
+  sendPerpUsdcPrechecks,
 } from './ability-checks';
 
 export const vincentAbility = createVincentAbility({
@@ -150,6 +152,35 @@ export const vincentAbility = createVincentAbility({
             destination: abilityParams.sendSpotAsset.destination,
             token: abilityParams.sendSpotAsset.token,
             amount: abilityParams.sendSpotAsset.amount,
+          },
+        });
+
+        if (!result.success) {
+          return fail({
+            action,
+            reason: result.reason,
+            availableBalance: result.availableBalance,
+            requiredBalance: result.requiredBalance,
+          });
+        }
+
+        return succeed({
+          action,
+          availableBalance: result.availableBalance,
+        });
+      }
+
+      case HyperliquidAction.SEND_PERP_USDC: {
+        if (!abilityParams.sendPerpUsdc) {
+          return fail({ action, reason: 'Send perp USDC parameters are required for precheck' });
+        }
+
+        const result = await sendPerpUsdcPrechecks({
+          infoClient,
+          ethAddress: delegatorPkpInfo.ethAddress,
+          params: {
+            destination: abilityParams.sendPerpUsdc.destination,
+            amount: abilityParams.sendPerpUsdc.amount,
           },
         });
 
@@ -390,6 +421,31 @@ export const vincentAbility = createVincentAbility({
             destination: abilityParams.sendSpotAsset.destination,
             token: abilityParams.sendSpotAsset.token,
             amount: abilityParams.sendSpotAsset.amount,
+            useTestnet,
+          });
+
+          // SuccessResponse always has status "ok", errors are thrown as exceptions
+          if (result.sendResult.status === 'ok') {
+            return succeed({ action, sendResult: result.sendResult });
+          }
+
+          // This should not happen with SuccessResponse type, but handle it for safety
+          return fail({
+            action,
+            reason: `Unexpected response status: ${JSON.stringify(result.sendResult, null, 2)}`,
+          });
+        }
+
+        case HyperliquidAction.SEND_PERP_USDC: {
+          if (!abilityParams.sendPerpUsdc) {
+            return fail({ action, reason: 'Send perp USDC parameters are required' });
+          }
+
+          const result = await sendPerpUsdc({
+            transport,
+            pkpPublicKey: delegatorPkpInfo.publicKey,
+            destination: abilityParams.sendPerpUsdc.destination,
+            amount: abilityParams.sendPerpUsdc.amount,
             useTestnet,
           });
 

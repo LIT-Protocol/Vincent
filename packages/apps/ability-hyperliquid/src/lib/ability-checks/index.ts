@@ -6,3 +6,4 @@ export { perpTradePrechecks } from './perp';
 export { cancelOrderPrechecks, cancelAllOrdersForSymbolPrechecks } from './cancel';
 export { withdrawPrechecks } from './withdraw-usdc';
 export { sendSpotAssetPrechecks } from './send-spot-asset';
+export { sendPerpUsdcPrechecks } from './send-perp-usdc';
