@@ -167,7 +167,7 @@ export function AppVersionPublishedButtons({
         {/* Set as Active Version Button - Only show when not active and enabled */}
         {!isActiveVersion && registryEnabled && (
           <ActionButton
-            icon={actionSuccess === 'setActive' ? CheckCircle : CheckCircle}
+            icon={CheckCircle}
             title={actionSuccess === 'setActive' ? 'Set as Active!' : 'Set as Active Version'}
             description={
               actionSuccess === 'setActive'
@@ -196,7 +196,7 @@ export function AppVersionPublishedButtons({
             onClick={() => handleVersionToggle(true)}
             isLoading={isLoading}
             disabled={actionSuccess === 'enable'}
-            variant={actionSuccess === 'enable' ? 'success' : 'success'}
+            variant="success"
             borderColor="rgb(134 239 172 / 0.3)"
             hoverBorderColor={theme.brandOrange}
           />
