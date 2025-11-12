@@ -1,0 +1,52 @@
+---
+title: setupVincentDevelopmentEnvironment
+---
+
+> **setupVincentDevelopmentEnvironment**(`permissionData`): `Promise`\<[`VincentDevEnvironment`](/api-reference/app-sdk/interfaces/VincentDevEnvironment)\>
+
+Defined in: [packages/libs/e2e-test-utils/src/lib/setup-vincent-development-environment.ts:57](https://github.com/LIT-Protocol/Vincent/blob/d66a5e996cc8ce13c89f21f810ca4c4557f46f5c/packages/libs/e2e-test-utils/src/lib/setup-vincent-development-environment.ts#L57)
+
+Helper function to set up a Vincent development environment.
+This function handles all the necessary setup steps including:
+- Checking and funding all required accounts (funder, app delegatee, app manager)
+- Registering or updating your app with abilities and policies
+- Creating or using an existing agent PKP
+- Setting up permissions for the agent PKP
+- Ensuring a valid capacity token exists
+
+## Parameters
+
+### permissionData
+
+permission data containing abilities and their policies
+
+#### permissionData
+
+[`PermissionData`](/api-reference/contracts-sdk/interfaces/PermissionData)
+
+## Returns
+
+`Promise`\<[`VincentDevEnvironment`](/api-reference/app-sdk/interfaces/VincentDevEnvironment)\>
+
+the setup result including agent PKP info, wallets, app ID, and app version
+
+## Example
+
+```typescript
+// Example with no policies
+const permissionData = {
+  [bundledVincentAbility.ipfsCid]: {},
+};
+
+// Example with policies
+const permissionDataWithPolicies = {
+  [bundledVincentAbility.ipfsCid]: {
+    [spendingLimitPolicy.ipfsCid]: {
+      limit: '1000000',
+      period: '86400',
+    },
+  },
+};
+
+const result = await setupVincentDevelopmentEnvironment({ permissionData });
+```

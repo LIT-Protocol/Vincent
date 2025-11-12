@@ -1,0 +1,23 @@
+---
+title: getEnv
+---
+
+> **getEnv**\<`T`\>(`additionalSchema?`): `object` & \{ \[k in string \| number \| symbol\]: addQuestionMarks\<baseObjectOutputType\<T\>, any\>\[k\] \}
+
+Defined in: [packages/libs/e2e-test-utils/src/lib/env.ts:35](https://github.com/LIT-Protocol/Vincent/blob/d66a5e996cc8ce13c89f21f810ca4c4557f46f5c/packages/libs/e2e-test-utils/src/lib/env.ts#L35)
+
+## Type Parameters
+
+### T
+
+`T` *extends* `ZodRawShape` = \{ `BASE_RPC_URL`: `ZodDefault`\<`ZodOptional`\<`ZodString`\>\>; `TEST_AGENT_WALLET_PKP_OWNER_PRIVATE_KEY`: `ZodString`; `TEST_APP_DELEGATEE_PRIVATE_KEY`: `ZodString`; `TEST_APP_MANAGER_PRIVATE_KEY`: `ZodString`; `TEST_FUNDER_PRIVATE_KEY`: `ZodString`; `YELLOWSTONE_RPC_URL`: `ZodDefault`\<`ZodOptional`\<`ZodString`\>\>; \}
+
+## Parameters
+
+### additionalSchema?
+
+`T`
+
+## Returns
+
+`object` & \{ \[k in string \| number \| symbol\]: addQuestionMarks\<baseObjectOutputType\<T\>, any\>\[k\] \}

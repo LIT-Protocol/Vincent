@@ -398,6 +398,30 @@
                 ]
               }
             ]
+          },
+          {
+            "group": "e2e-test-utils",
+            "pages": [
+              "api-reference/e2e-test-utils/README",
+              {
+                "group": "Functions",
+                "pages": [
+                  "api-reference/e2e-test-utils/functions/createRandomVincentWallets",
+                  "api-reference/e2e-test-utils/functions/ensureUnexpiredCapacityToken",
+                  "api-reference/e2e-test-utils/functions/getEnv",
+                  "api-reference/e2e-test-utils/functions/mintNewPkp",
+                  "api-reference/e2e-test-utils/functions/setupVincentDevelopmentEnvironment"
+                ]
+              },
+              {
+                "group": "Interfaces",
+                "pages": ["api-reference/e2e-test-utils/interfaces/VincentDevEnvironment"]
+              },
+              {
+                "group": "Type Aliases",
+                "pages": ["api-reference/e2e-test-utils/type-aliases/PkpInfo"]
+              }
+            ]
           }
         ]
       }

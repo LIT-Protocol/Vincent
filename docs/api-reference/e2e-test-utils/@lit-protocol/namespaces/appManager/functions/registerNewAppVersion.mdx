@@ -1,0 +1,42 @@
+---
+title: registerNewAppVersion
+---
+
+> **registerNewAppVersion**(`__namedParameters`): `Promise`\<\{ `appId`: `number`; `appVersion`: `number`; \}\>
+
+Defined in: [packages/libs/e2e-test-utils/src/lib/appManager/register-new-app-version.ts:25](https://github.com/LIT-Protocol/Vincent/blob/d66a5e996cc8ce13c89f21f810ca4c4557f46f5c/packages/libs/e2e-test-utils/src/lib/appManager/register-new-app-version.ts#L25)
+
+Registers a new app version. On-chain app versions are immutable, so any time you modify
+abilities or policies, you must register a new version of your app using the new ipfs CIDs
+
+This function will check if the latest app version already has the same abilities and policies.
+If they match, it will return the existing appVersion without registering a new one.
+
+## Parameters
+
+### \_\_namedParameters
+
+#### abilityIpfsCids
+
+`string`[]
+
+#### abilityPolicies
+
+`string`[][]
+
+#### registerNewVersionOverride?
+
+`boolean` = `false`
+
+## Returns
+
+`Promise`\<\{ `appId`: `number`; `appVersion`: `number`; \}\>
+
+## Remarks
+
+Assumptions:
+- `abilityIpfsCids` and `abilityPolicies` are parallel arrays where `abilityPolicies[i]` contains
+  the policy CIDs for the ability at `abilityIpfsCids[i]`
+- The comparison is order-independent for both abilities and policies within each ability
+- Two app versions are considered equivalent if they have the same set of abilities (regardless of order)
+  and each ability has the same set of policies (regardless of order)
