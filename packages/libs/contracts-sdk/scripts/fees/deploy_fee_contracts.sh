@@ -12,12 +12,13 @@ fi
 NETWORK_NAME=$(echo "$1" | tr '[:lower:]' '[:upper:]')
 
 # Load environment variables from .env file in parent directory
-if [ -f "$(dirname "$0")/../.env" ]; then
+if [ -f "$(dirname "$0")/../../.env" ]; then
   set -a  # automatically export all variables
-  source "$(dirname "$0")/../.env"
+  source "$(dirname "$0")/../../.env"
   set +a  # stop automatically exporting
 else
-  echo "Warning: .env file not found in parent directory"
+  echo "Error: .env file not found in parent directory"
+  exit 1
 fi
 
 # Construct variable names using the network name
