@@ -116,135 +116,96 @@ export function EditAppForm({
   return (
     <Form {...form}>
       <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
-        <div className="space-y-8">
-          {/* Two-column grid for sections with aligned rows */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-8 gap-y-6 items-start">
-            {/* Headers */}
-            <h3
-              className={`text-sm font-semibold ${theme.text} uppercase tracking-wider`}
-              style={fonts.heading}
-            >
-              Basic Information
-            </h3>
-            <h3
-              className={`text-sm font-semibold ${theme.text} uppercase tracking-wider`}
-              style={fonts.heading}
-            >
-              Configuration
-            </h3>
+        <TextField
+          name="name"
+          register={register}
+          error={errors.name?.message}
+          label="App Name"
+          placeholder="Enter app name"
+        />
 
-            {/* Row 1 */}
-            <TextField
-              name="name"
-              register={register}
-              error={errors.name?.message}
-              label="App Name"
-              placeholder="Enter app name"
-            />
-            <TextField
-              name="contactEmail"
-              register={register}
-              error={errors.contactEmail?.message}
-              label="Contact Email"
-              placeholder="contact@example.com"
-            />
+        <TextField
+          name="contactEmail"
+          register={register}
+          error={errors.contactEmail?.message}
+          label="Contact Email"
+          placeholder="contact@example.com"
+        />
 
-            {/* Row 2 */}
-            <LongTextField
-              name="description"
-              register={register}
-              error={errors.description?.message}
-              label="Description"
-              placeholder="Describe your application"
-              rows={4}
-            />
-            <TextField
-              name="appUserUrl"
-              register={register}
-              error={errors.appUserUrl?.message}
-              label="App User URL"
-              placeholder="https://yourapp.com"
-            />
+        <LongTextField
+          name="description"
+          register={register}
+          error={errors.description?.message}
+          label="Description"
+          placeholder="Describe your application"
+          rows={4}
+        />
 
-            {/* Row 3 */}
-            <ImageUploadField
-              name="logo"
-              watch={watch}
-              setValue={setValue}
-              control={control}
-              setError={setError}
-              clearErrors={clearErrors}
-              label="Logo"
-            />
-            <div className="space-y-6">
-              <DeploymentStatusSelectField
-                error={errors.deploymentStatus?.message}
-                control={control}
-              />
+        <TextField
+          name="appUserUrl"
+          register={register}
+          error={errors.appUserUrl?.message}
+          label="App User URL"
+          placeholder="https://yourapp.com"
+        />
 
-              {isPublished && (
-                <NumberSelectField
-                  name="activeVersion"
-                  error={errors.activeVersion?.message}
-                  control={control}
-                  label="Active Version"
-                  options={versionOptions}
-                  required
-                />
-              )}
-            </div>
-          </div>
+        <ImageUploadField
+          name="logo"
+          watch={watch}
+          setValue={setValue}
+          control={control}
+          setError={setError}
+          clearErrors={clearErrors}
+          label="Logo"
+        />
 
-          {/* Divider */}
-          <div className={`border-t ${theme.cardBorder}`} />
+        <ArrayField
+          name="redirectUris"
+          register={register}
+          error={errors.redirectUris?.message}
+          errors={errors}
+          control={control}
+          label="Redirect URIs"
+          placeholder="https://yourapp.com/callback"
+        />
 
-          {/* Advanced - Full width */}
-          <div className="space-y-6">
-            <h3
-              className={`text-sm font-semibold ${theme.text} uppercase tracking-wider`}
-              style={fonts.heading}
-            >
-              Advanced
-            </h3>
+        <DeploymentStatusSelectField error={errors.deploymentStatus?.message} control={control} />
 
-            <ArrayField
-              name="redirectUris"
-              register={register}
-              error={errors.redirectUris?.message}
-              errors={errors}
-              control={control}
-              label="Redirect URIs"
-              placeholder="https://yourapp.com/callback"
-            />
+        {isPublished && (
+          <NumberSelectField
+            name="activeVersion"
+            error={errors.activeVersion?.message}
+            control={control}
+            label="Active Version"
+            options={versionOptions}
+            required
+          />
+        )}
 
-            <ArrayField
-              name="delegateeAddresses"
-              register={register}
-              error={errors.delegateeAddresses?.message}
-              errors={errors}
-              control={control}
-              label="Delegatee Addresses"
-              placeholder="0x1234567890123456789012345678901234567890"
-              required
-            />
-          </div>
+        <ArrayField
+          name="delegateeAddresses"
+          register={register}
+          error={errors.delegateeAddresses?.message}
+          errors={errors}
+          control={control}
+          label="Delegatee Addresses"
+          placeholder="0x1234567890123456789012345678901234567890"
+          required
+        />
 
-          {/* Status Messages */}
-          {submitError && <StatusMessage message={submitError} type="error" />}
-          {submitSuccess && <StatusMessage message="App updated successfully!" type="success" />}
+        {/* Status Messages */}
+        {submitError && <StatusMessage message={submitError} type="error" />}
+        {submitSuccess && <StatusMessage message="App updated successfully!" type="success" />}
 
-          {/* Submit Button */}
-          <div>
-            <Button
-              type="submit"
-              className="w-full"
-              style={{ backgroundColor: theme.brandOrange, ...fonts.body }}
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? 'Updating...' : 'Update App'}
-            </Button>
-          </div>
-        </div>
+        {/* Submit Button */}
+        <Button
+          type="submit"
+          className="w-full"
+          style={{ backgroundColor: theme.brandOrange, ...fonts.body }}
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? 'Updating...' : 'Update App'}
+        </Button>
       </form>
     </Form>
   );
