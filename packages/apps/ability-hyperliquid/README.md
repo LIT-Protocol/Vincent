@@ -21,11 +21,14 @@ A Vincent Ability for securely interacting with the Hyperliquid API.
   - [Spot Sell E2E Tests](#spot-sell-e2e-tests)
   - [Cancel Order E2E Tests](#cancel-order-e2e-tests)
   - [Cancel All Orders E2E Tests](#cancel-all-orders-e2e-tests)
+  - [Send Spot Asset E2E Tests](#send-spot-asset-e2e-tests)
   - [Trade History E2E Tests](#trade-history-e2e-tests)
   - [Open Orders E2E Tests](#open-orders-e2e-tests)
   - [Transfer to Perp E2E Tests](#transfer-to-perp-e2e-tests)
   - [Perp Long E2E Tests](#perp-long-e2e-tests)
   - [Perp Short E2E Tests](#perp-short-e2e-tests)
+  - [Send Perp USDC E2E Tests](#send-perp-usdc-e2e-tests)
+  - [Withdraw E2E Tests](#withdraw-e2e-tests)
 
 # Testing the Ability
 
@@ -42,10 +45,13 @@ The E2E tests for this Ability are not expected to be ran concurrently. This is 
 6. [Open Orders E2E Tests](#running-the-open-orders-e2e-tests) - Fetches all open orders (Spot and Perp) for the Agent Wallet PKP, and logs them to the console.
 7. [Cancel Order E2E Tests](#running-the-cancel-order-e2e-tests) - Cancels a Spot order for the order ID specified by `ORDER_ID_TO_CANCEL`.
 8. [Cancel All Orders E2E Tests](#running-the-cancel-all-orders-e2e-tests) - Cancels all open Spot orders for the market specified by `TRADING_PAIR`.
-9. [Trade History E2E Tests](#running-the-trade-history-e2e-tests) - Fetches the Spot and Perp trade history of the Agent Wallet PKP on Hyperliquid mainnet or testnet.
-10. [Transfer to Perp E2E Tests](#running-the-transfer-to-perp-e2e-tests) - Transfers USDC from the Agent Wallet PKP's Hyperliquid spot balance to it's Hyperliquid Perp balance. The PKP must have at least a Spot balance of `USDC_TRANSFER_AMOUNT` USDC.
-11. [Perp Long E2E Tests](#running-the-perp-long-e2e-tests) - Opens a long position for the token specified by `PERP_SYMBOL` using USDC. The Agent Wallet PKP must have at least a Perp balance of `PERP_LONG_USD_NOTIONAL` USDC.
-12. [Perp Short E2E Tests](#running-the-perp-short-e2e-tests) - Opens a short position for the token specified by `PERP_SYMBOL` using USDC. The Agent Wallet PKP must have at least a Perp balance of `PERP_SHORT_USD_NOTIONAL` USDC.
+9. [Send Spot Asset E2E Tests](#running-the-send-spot-asset-e2e-tests) - Sends a spot asset (USDC or other tokens) from the Agent Wallet PKP's Hyperliquid spot balance to another Hyperliquid spot account. The PKP must have at least a Spot balance of `SPOT_ASSET_SEND_AMOUNT` USDC.
+10. [Trade History E2E Tests](#running-the-trade-history-e2e-tests) - Fetches the Spot and Perp trade history of the Agent Wallet PKP on Hyperliquid mainnet or testnet.
+11. [Transfer to Perp E2E Tests](#running-the-transfer-to-perp-e2e-tests) - Transfers USDC from the Agent Wallet PKP's Hyperliquid spot balance to it's Hyperliquid Perp balance. The PKP must have at least a Spot balance of `USDC_TRANSFER_AMOUNT` USDC.
+12. [Perp Long E2E Tests](#running-the-perp-long-e2e-tests) - Opens a long position for the token specified by `PERP_SYMBOL` using USDC. The Agent Wallet PKP must have at least a Perp balance of `PERP_LONG_USD_NOTIONAL` USDC.
+13. [Perp Short E2E Tests](#running-the-perp-short-e2e-tests) - Opens a short position for the token specified by `PERP_SYMBOL` using USDC. The Agent Wallet PKP must have at least a Perp balance of `PERP_SHORT_USD_NOTIONAL` USDC.
+14. [Send Perp USDC E2E Tests](#running-the-send-perp-usdc-e2e-tests) - Sends USDC from the Agent Wallet PKP's Hyperliquid Perp balance to another Hyperliquid perp account. The PKP must have at least a Perp balance of `USDC_SEND_AMOUNT` USDC.
+15. [Withdraw E2E Tests](#running-the-withdraw-e2e-tests) - Withdraws USDC from the Agent Wallet PKP's Hyperliquid Perp balance to the PKP's ETH address on Arbitrum. The PKP must have at least a Perp balance of `WITHDRAW_AMOUNT_USDC` USDC.
 
 The E2E tests by default expected the Agent Wallet PKP to have a Perp or Spot balance of at least `15` USDC. Each test has a `const` like `USDC_TRANSFER_AMOUNT` (for the transfer E2E tests) that configures how much of the USDC balance is used to run the tests. There are order amount minimums associated with each market on Hyperliquid. So the minimum amount accepted by Hyperliquid to Spot Buy on the market `BTC/USDC` is not the same as the minimum amount accepted by Hyperliquid to Spot Buy on the market `ETH/USDC`.
 
@@ -365,6 +371,42 @@ You should see the following logs indicating the Cancel All Orders was successfu
     abilityIpfsCid: 'QmeB5SM3UxcFYKYNffhM4VMWXSnFoZPAH8iLAXTgYPPupp',
     appId: 47700028661,
     appVersion: 4,
+    policiesContext: { allow: true, evaluatedPolicies: [], allowedPolicies: {} }
+  }
+}
+```
+
+## Send Spot Asset E2E Tests
+
+This test will work on both Hyperliquid mainnet and testnet.
+
+This test will send a spot asset (USDC or other tokens) from the Agent Wallet PKP's Hyperliquid spot balance to another Hyperliquid spot account. The PKP must have at least a Spot balance of `SEND_AMOUNT_TOKEN` of `TOKEN`.
+
+```
+pnpx nx run ability-hyperliquid:test-e2e packages/apps/ability-hyperliquid/test/e2e/spot/send-spot-asset.spec.ts
+```
+
+You should see the following logs indicating the Send Spot Asset was successful:
+
+```
+[should execute send spot asset of 1.0 USDC] {
+  success: true,
+  result: {
+    action: 'sendSpotAsset',
+    sendResult: { status: 'ok', response: { type: 'default' } }
+  },
+  context: {
+    delegation: {
+      delegateeAddress: '0xb50aBA1E265B52067aF97401C25C39efF57Fe83b',
+      delegatorPkpInfo: {
+        tokenId: '64398341638522492941822855531388288999933789608071521616433988119257635428447',
+        ethAddress: '0x17f51B528A0eA0ea19ABa0F343Dc9beED0FCc428',
+        publicKey: '0x04576960d83a4eaf042e585c1cf90035b869b087631312719fa2b96fecde30705dbf80711fc30f6435e6a0739d1f47201320563a7f51357c146421c96355f6cbe3'
+      }
+    },
+    abilityIpfsCid: 'QmQtGCkrvTJsLvvLvZWFhtrschv7N3SDC3nMzFQY95pkt1',
+    appId: 47700028661,
+    appVersion: 19,
     policiesContext: { allow: true, evaluatedPolicies: [], allowedPolicies: {} }
   }
 }
@@ -804,5 +846,77 @@ Note: if you open a position using `OrderType.MARKET`, your order is likely to b
     }
   ],
   time: 1762844136785
+}
+```
+
+## Send Perp USDC E2E Tests
+
+This test will work on both Hyperliquid mainnet and testnet.
+
+This test will send USDC from the Agent Wallet PKP's Hyperliquid Perp balance to another Hyperliquid perp account. The PKP must have at least a Perp balance of `SEND_AMOUNT_USDC` USDC.
+
+```
+pnpx nx run ability-hyperliquid:test-e2e packages/apps/ability-hyperliquid/test/e2e/perp/send-perp-usdc.spec.ts
+```
+
+You should see the following logs indicating the Send Perp USDC was successful:
+
+```
+[should execute send perp USDC of 1.0 USDC] {
+  success: true,
+  result: {
+    action: 'sendPerpUsdc',
+    sendResult: { status: 'ok', response: { type: 'default' } }
+  },
+  context: {
+    delegation: {
+      delegateeAddress: '0xb50aBA1E265B52067aF97401C25C39efF57Fe83b',
+      delegatorPkpInfo: {
+        tokenId: '64398341638522492941822855531388288999933789608071521616433988119257635428447',
+        ethAddress: '0x17f51B528A0eA0ea19ABa0F343Dc9beED0FCc428',
+        publicKey: '0x04576960d83a4eaf042e585c1cf90035b869b087631312719fa2b96fecde30705dbf80711fc30f6435e6a0739d1f47201320563a7f51357c146421c96355f6cbe3'
+      }
+    },
+    abilityIpfsCid: 'QmcKrDBzYPhBoe1CTAqrKSNcpZpDRsSuAt3PCUG5ZAWWXN',
+    appId: 47700028661,
+    appVersion: 18,
+    policiesContext: { allow: true, evaluatedPolicies: [], allowedPolicies: {} }
+  }
+}
+```
+
+## Withdraw E2E Tests
+
+This test will work on both Hyperliquid mainnet and testnet.
+
+This test will withdraw USDC from the Agent Wallet PKP's Hyperliquid Perp balance to the PKP's ETH address on Arbitrum. The PKP must have at least a Perp balance of `WITHDRAW_AMOUNT_USDC` USDC.
+
+```
+pnpx nx run ability-hyperliquid:test-e2e packages/apps/ability-hyperliquid/test/e2e/withdraw.spec.ts
+```
+
+You should see the following logs indicating the Withdraw was successful:
+
+```
+[should execute withdrawal of 5.0 USDC to Arbitrum] {
+  success: true,
+  result: {
+    action: 'withdraw',
+    withdrawResult: { status: 'ok', response: { type: 'default' } }
+  },
+  context: {
+    delegation: {
+      delegateeAddress: '0xb50aBA1E265B52067aF97401C25C39efF57Fe83b',
+      delegatorPkpInfo: {
+        tokenId: '64398341638522492941822855531388288999933789608071521616433988119257635428447',
+        ethAddress: '0x17f51B528A0eA0ea19ABa0F343Dc9beED0FCc428',
+        publicKey: '0x04576960d83a4eaf042e585c1cf90035b869b087631312719fa2b96fecde30705dbf80711fc30f6435e6a0739d1f47201320563a7f51357c146421c96355f6cbe3'
+      }
+    },
+    abilityIpfsCid: 'QmQtGCkrvTJsLvvLvZWFhtrschv7N3SDC3nMzFQY95pkt1',
+    appId: 47700028661,
+    appVersion: 19,
+    policiesContext: { allow: true, evaluatedPolicies: [], allowedPolicies: {} }
+  }
 }
 ```
