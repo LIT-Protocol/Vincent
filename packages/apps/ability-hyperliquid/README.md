@@ -380,7 +380,7 @@ You should see the following logs indicating the Cancel All Orders was successfu
 
 This test will work on both Hyperliquid mainnet and testnet.
 
-This test will send a spot asset (USDC or other tokens) from the Agent Wallet PKP's Hyperliquid spot balance to another Hyperliquid spot account. The PKP must have at least a Spot balance of `SEND_AMOUNT_TOKEN` of `TOKEN`.
+This test will send a spot asset (USDC or other tokens) from the Agent Wallet PKP's Hyperliquid spot balance to another Hyperliquid spot account. The PKP must have at least a Spot balance of `SEND_AMOUNT` of `TOKEN`.
 
 ```
 pnpx nx run ability-hyperliquid:test-e2e packages/apps/ability-hyperliquid/test/e2e/spot/send-spot-asset.spec.ts
