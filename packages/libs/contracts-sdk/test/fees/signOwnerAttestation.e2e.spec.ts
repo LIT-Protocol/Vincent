@@ -41,17 +41,17 @@ const CHRONICLE_YELLOWSTONE_RPC_URL = process.env.YELLOWSTONE_RPC_URL;
 const BASE_SEPOLIA_CHAIN_ID = 84532;
 const CHRONICLE_YELLOWSTONE_CHAIN_ID = 175188;
 const TX_WAIT_CONFIRMATIONS = 2;
+const LIT_FOUNDATION_APP_ID = 0;
 
 // Private keys from .env
 const TEST_BASE_SEPOLIA_PRIVATE_KEY = process.env.TEST_BASE_SEPOLIA_PRIVATE_KEY;
 const TEST_APP_OWNER_PRIVATE_KEY = process.env.TEST_APP_OWNER_PRIVATE_KEY;
 const AAVE_USDC_PRIVATE_KEY = process.env.AAVE_USDC_PRIVATE_KEY;
+const TEST_LIT_FOUNDATION_PRIVATE_KEY = process.env.TEST_LIT_FOUNDATION_PRIVATE_KEY;
 
 // Contract addresses
 const FEE_DIAMOND_ADDRESS = VINCENT_CONTRACT_ADDRESS_BOOK.fee.baseSepolia.address;
 const LIT_ACTION_IPFS_CID = VINCENT_LIT_ACTIONS_ADDRESS_BOOK.signOwnerAttestation.ipfsCid;
-const LIT_ACTION_PKP_PUBKEY =
-  VINCENT_LIT_ACTIONS_ADDRESS_BOOK.signOwnerAttestation.derivedActionPubkey;
 
 // Base Sepolia addresses
 const BASE_SEPOLIA_USDC = '0xba50cd2a20f6da35d788639e581bca8d0b5d4d5f'; // USDC on Base Sepolia
@@ -76,6 +76,7 @@ describe('Owner Attestation Signing E2E', () => {
   let testWallet: ethers.Wallet;
   let appOwnerWallet: ethers.Wallet;
   let fundingWallet: ethers.Wallet;
+  let litFoundationWallet: ethers.Wallet;
   let litNodeClient: LitNodeClient;
   let appId: number;
 
@@ -90,6 +91,9 @@ describe('Owner Attestation Signing E2E', () => {
     if (!AAVE_USDC_PRIVATE_KEY) {
       throw new Error('AAVE_USDC_PRIVATE_KEY not found in .env');
     }
+    if (!TEST_LIT_FOUNDATION_PRIVATE_KEY) {
+      throw new Error('TEST_LIT_FOUNDATION_PRIVATE_KEY not found in .env');
+    }
 
     // Set up providers
     baseSepoliaProvider = new ethers.providers.JsonRpcProvider(BASE_SEPOLIA_RPC_URL);
@@ -99,10 +103,12 @@ describe('Owner Attestation Signing E2E', () => {
     testWallet = new ethers.Wallet(TEST_BASE_SEPOLIA_PRIVATE_KEY, baseSepoliaProvider);
     appOwnerWallet = new ethers.Wallet(TEST_APP_OWNER_PRIVATE_KEY, yellowstoneProvider);
     fundingWallet = new ethers.Wallet(AAVE_USDC_PRIVATE_KEY, baseSepoliaProvider);
+    litFoundationWallet = new ethers.Wallet(TEST_LIT_FOUNDATION_PRIVATE_KEY, baseSepoliaProvider);
 
     console.log('Test wallet (Base Sepolia):', testWallet.address);
     console.log('App owner wallet (Chronicle Yellowstone):', appOwnerWallet.address);
     console.log('Funding wallet (Base Sepolia):', fundingWallet.address);
+    console.log('Lit Foundation wallet (Base Sepolia):', litFoundationWallet.address);
 
     // Initialize Lit Node Client
     litNodeClient = new LitNodeClient({
@@ -331,6 +337,56 @@ describe('Owner Attestation Signing E2E', () => {
     // Verify fees were cleared
     const feesAfterWithdraw = await feeDiamond.collectedAppFees(appId, BASE_SEPOLIA_USDC);
     expect(feesAfterWithdraw).toEqual(ethers.BigNumber.from(0));
+
+    // Step 9: Withdraw platform fees using Lit Foundation wallet
+    console.log('\n💎 Step 9: Withdrawing platform fees...');
+    const feeDiamondAsFoundation = new ethers.Contract(
+      FEE_DIAMOND_ADDRESS,
+      FeeDiamondAbi,
+      litFoundationWallet,
+    );
+
+    // Check platform fees before withdrawal
+    const platformFeesBefore = await feeDiamond.collectedAppFees(
+      LIT_FOUNDATION_APP_ID,
+      BASE_SEPOLIA_USDC,
+    );
+    expect(platformFeesBefore).not.toEqual(ethers.BigNumber.from(0));
+    console.log(
+      `Platform fees collected: ${ethers.utils.formatUnits(platformFeesBefore, decimals)} USDC`,
+    );
+
+    const foundationBalanceBefore = await usdc.balanceOf(litFoundationWallet.address);
+    console.log(
+      `Foundation balance before: ${ethers.utils.formatUnits(foundationBalanceBefore, decimals)} USDC`,
+    );
+
+    const withdrawPlatformFeeTx =
+      await feeDiamondAsFoundation.withdrawPlatformFees(BASE_SEPOLIA_USDC);
+    await withdrawPlatformFeeTx.wait(TX_WAIT_CONFIRMATIONS);
+    console.log('✅ Withdrawn platform fees');
+
+    // Verify platform fees arrived
+    const foundationBalanceAfter = await usdc.balanceOf(litFoundationWallet.address);
+    console.log(
+      `Foundation balance after: ${ethers.utils.formatUnits(foundationBalanceAfter, decimals)} USDC`,
+    );
+
+    const receivedPlatformFees = foundationBalanceAfter.sub(foundationBalanceBefore);
+    console.log(
+      `Received platform fees: ${ethers.utils.formatUnits(receivedPlatformFees, decimals)} USDC`,
+    );
+
+    expect(receivedPlatformFees).toEqual(platformFeesBefore);
+    expect(receivedPlatformFees.gt(0)).toBe(true);
+
+    // Verify platform fees were cleared
+    const platformFeesAfter = await feeDiamond.collectedAppFees(
+      LIT_FOUNDATION_APP_ID,
+      BASE_SEPOLIA_USDC,
+    );
+    expect(platformFeesAfter).toEqual(ethers.BigNumber.from(0));
+    console.log('✅ Platform fees cleared from contract');
 
     console.log('\n🎉 E2E test completed successfully!');
   });
