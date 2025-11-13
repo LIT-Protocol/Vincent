@@ -17,7 +17,7 @@ import { validateUserOp } from './helpers/validation';
 export const vincentAbility = createVincentAbility({
   packageName: '@lit-protocol/vincent-ability-aave-smart-account' as const,
   abilityDescription:
-    'A Vincent ability to do AAVE protocol operations using ZeroDev v3.3 smart accounts user operations with Session Keys',
+    'A Vincent ability to sign secure AAVE protocol user operations with ECDSA signatures of the delegator',
   abilityParamsSchema,
   supportedPolicies: supportedPoliciesForAbility([]),
 
@@ -37,13 +37,13 @@ export const vincentAbility = createVincentAbility({
         delegatorPkpInfo,
       });
 
-      const { entryPointAddress, userOp, alchemyRpcUrl } = abilityParams;
+      const { alchemyRpcUrl, entryPointAddress, userOp } = abilityParams;
 
       console.log(
         '[@lit-protocol/vincent-ability-aave-smart-account] validating user operation:',
         userOp,
       );
-      const { userOp: processedUserOp, simulationChanges } = await validateUserOp({
+      const { simulationChanges } = await validateUserOp({
         alchemyRpcUrl,
         entryPointAddress,
         userOp,
@@ -55,7 +55,6 @@ export const vincentAbility = createVincentAbility({
 
       return succeed({
         simulationChanges,
-        userOp: processedUserOp,
       });
     } catch (error) {
       console.error('[@lit-protocol/vincent-ability-aave-smart-account] Error:', error);
@@ -77,14 +76,13 @@ export const vincentAbility = createVincentAbility({
         delegatorPkpInfo,
       });
 
-      const { alchemyRpcUrl, entryPointAddress, userOp, serializedZeroDevPermissionAccount } =
-        abilityParams;
+      const { alchemyRpcUrl, entryPointAddress, userOp } = abilityParams;
 
       console.log(
         '[@lit-protocol/vincent-ability-aave-smart-account] validating user operation:',
         userOp,
       );
-      const { userOp: processedUserOp, simulationChanges } = await validateUserOp({
+      const { simulationChanges } = await validateUserOp({
         alchemyRpcUrl,
         entryPointAddress,
         userOp,
@@ -98,17 +96,17 @@ export const vincentAbility = createVincentAbility({
         '[@lit-protocol/vincent-ability-aave-smart-account] preparing user operation signature...',
       );
 
-      userOp.signature = await signUserOperation({
+      const signature = await signUserOperation({
         alchemyRpcUrl,
-        serializedZeroDevPermissionAccount,
+        entryPointAddress,
         userOp,
         pkpPublicKey: delegatorPkpInfo.publicKey as Hex,
       });
 
       console.log('[@lit-protocol/vincent-ability-aave-smart-account] signed user operation');
       return succeed({
+        signature,
         simulationChanges,
-        userOp: processedUserOp,
       });
     } catch (error) {
       console.error('[@lit-protocol/vincent-ability-aave-smart-account] Error:', error);
