@@ -29,9 +29,9 @@ export const VINCENT_CONTRACT_ADDRESS_BOOK = {
 
 export const VINCENT_LIT_ACTIONS_ADDRESS_BOOK = {
   signOwnerAttestation: {
-    ipfsCid: 'QmYAmbZBSZHJXbsZBjz8bcjvCwwSXxDv2DwPhqvD5gSvu9',
+    ipfsCid: 'QmUrybuAq6o9F6UWZRKdCHFgyJaE2xRfE4H1LPKJbvZq1i',
     derivedActionPubkey:
-      '0472dee39340be90f6e51bacd31a1dc3445b02cfa1f1f93090be7cb7257140f4c7fdafd08babf81c44ace02482c605fad3b55bd9baf23c9c580b6203075a6fbaa0',
-    derivedActionAddress: '0x1e74aD7eF0A72a105c2e624202ba21C72Dc5fbC1',
+      '0417d1c84b3462fde044506d5724930497e41771b534a599e1cf29501595a1a8b2cc98a828548c633500074271a9cd52b75da369b19fe4ea00e2568ed84e3e3d08',
+    derivedActionAddress: '0xb1a00C1Ac5fa7AEc678B6ea16e6b7113a035B499',
   },
 };
