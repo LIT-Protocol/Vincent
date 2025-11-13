@@ -26,7 +26,6 @@ export interface OwnerAttestation {
  * This replicates the Solidity signing logic from FeeTestCommon.sol
  *
  * @param oa - The owner attestation to sign
- * @param pkpPublicKey - The PKP public key (with 0x prefix)
  * @returns The signature bytes in r, s, v format
  */
 export async function signOwnerAttestation(oa: OwnerAttestation): Promise<string> {
@@ -73,6 +72,10 @@ export async function signOwnerAttestation(oa: OwnerAttestation): Promise<string
     s: '0x' + s,
     v: v,
   });
+
+  // recover the address from the signature
+  const recoveredAddress = ethers.utils.recoverAddress(messageHash, signature);
+  console.log('Recovered address:', recoveredAddress);
 
   console.log('Signature:', signature);
   return signature;

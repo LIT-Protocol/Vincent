@@ -94,7 +94,7 @@ async function deriveLitActionWalletAddress(litActionIpfsCid) {
     new ethers.providers.JsonRpcProvider(LIT_RPC.CHRONICLE_YELLOWSTONE),
   );
 
-  const contractClient = new LitContracts({ signer: ethersSigner });
+  const contractClient = new LitContracts({ network: 'datil', signer: ethersSigner });
   await contractClient.connect();
 
   const derivedKeyId = ethers.utils.keccak256(

@@ -22,16 +22,16 @@ export const VINCENT_CONTRACT_ADDRESS_BOOK = {
   fee: {
     baseSepolia: {
       address: '0x35705D6ad235DcA39c10B6E0EfBA84b5E90D2aC9',
-      salt: 'DatilSalt',
+      salt: 'DatilCreate2Salt',
     },
   },
 };
 
 export const VINCENT_LIT_ACTIONS_ADDRESS_BOOK = {
   signOwnerAttestation: {
-    ipfsCid: 'QmPLtPzAnXE4V49avASEPgX4vZFEHRiDxig486DSV5CFpu',
+    ipfsCid: 'QmbZ7kA9Mn3ZbjHJnRq2jAydPcB8eMPxPNqg5oJR5GyLUG',
     derivedActionPubkey:
-      '0x04fd72e0d918ca50d0e7d94916e9e013e5bdb0806733e13b23fc266fce77ced01f1e9b85098e575061c9e617921365e058fb25c26a3e7e6130bc85e3a8e726af8a',
-    derivedActionAddress: '0x3A87716A042FFEfF7905Fb624f25cAB996FdECEb',
+      '0x0427d6f8d2a9694aca823ad60d718064372e5ed7d8ab82cff0e0af7961f86072ec44fc6b0b5a6b19ffdf2a0e2e08cf5cb9c125148ee621b72eba12defca586538f',
+    derivedActionAddress: '0xDB03b39d7a7af6f437D03B61104cC3972238C563',
   },
 };

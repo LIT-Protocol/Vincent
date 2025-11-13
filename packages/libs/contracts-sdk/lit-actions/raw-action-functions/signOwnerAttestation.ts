@@ -11,7 +11,6 @@ export interface SignOwnerAttestationParams {
   issuedAt: number;
   dstChainId: number;
   dstContract: string;
-  pkpPublicKey: string;
 }
 
 export interface SignOwnerAttestationResult {
@@ -42,7 +41,6 @@ export async function signOwnerAttestationAction({
   issuedAt,
   dstChainId,
   dstContract,
-  pkpPublicKey,
 }: SignOwnerAttestationParams): Promise<SignOwnerAttestationResult> {
   console.log('Starting owner attestation signing process');
   console.log(`appId: ${appId}, owner: ${owner}, issuedAt: ${issuedAt}`);
@@ -94,7 +92,7 @@ export async function signOwnerAttestationAction({
   console.log('Created attestation:', JSON.stringify(attestation));
 
   // Sign the attestation
-  const signature = await signOwnerAttestation(attestation, pkpPublicKey);
+  const signature = await signOwnerAttestation(attestation);
 
   console.log('Attestation signed successfully');
 

@@ -10,7 +10,6 @@ declare const appId: SignOwnerAttestationParams['appId'];
 declare const issuedAt: SignOwnerAttestationParams['issuedAt'];
 declare const dstChainId: SignOwnerAttestationParams['dstChainId'];
 declare const dstContract: SignOwnerAttestationParams['dstContract'];
-declare const pkpPublicKey: SignOwnerAttestationParams['pkpPublicKey'];
 
 // Lit Action handler wrapper
 declare const Lit: {
@@ -42,6 +41,5 @@ void (async () =>
       issuedAt,
       dstChainId,
       dstContract,
-      pkpPublicKey,
     }),
   ))();

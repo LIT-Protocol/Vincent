@@ -47,11 +47,7 @@ export { getPkpTokenId } from './utils/pkpInfo';
 
 export { VINCENT_DIAMOND_CONTRACT_ADDRESS_PROD, COMBINED_ABI } from './constants';
 
-export {
-  signOwnerAttestation,
-  getBaseSepoliaFeeDiamondAddress,
-  getBaseSepoliaFeeDiamondSalt,
-} from './fees/signOwnerAttestation';
+export { signOwnerAttestation, getBaseSepoliaFeeDiamondAddress } from './fees/signOwnerAttestation';
 export type {
   SignOwnerAttestationParams,
   SignOwnerAttestationResult,

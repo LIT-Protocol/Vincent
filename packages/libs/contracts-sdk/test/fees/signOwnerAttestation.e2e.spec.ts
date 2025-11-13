@@ -278,7 +278,6 @@ describe('Owner Attestation Signing E2E', () => {
     const result = await signOwnerAttestation({
       litNodeClient,
       sessionSigs,
-      pkpPublicKey: `0x${LIT_ACTION_PKP_PUBKEY}`,
       appId,
       owner: appOwnerWallet.address,
       dstChainId: BASE_SEPOLIA_CHAIN_ID,

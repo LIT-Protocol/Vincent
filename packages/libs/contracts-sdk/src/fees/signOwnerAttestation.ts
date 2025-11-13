@@ -8,8 +8,6 @@ export interface SignOwnerAttestationParams {
   litNodeClient: LitNodeClient;
   /** Session signatures for authenticating with Lit */
   sessionSigs: SessionSigsMap;
-  /** The PKP public key that will sign the attestation (with 0x prefix) */
-  pkpPublicKey: string;
   /** The app ID to create an attestation for */
   appId: number;
   /** The owner address (the app manager) */
@@ -72,7 +70,6 @@ const CHRONICLE_YELLOWSTONE_CHAIN_ID = 175188;
  * const result = await signOwnerAttestation({
  *   litNodeClient,
  *   sessionSigs,
- *   pkpPublicKey: '0x...',
  *   appId: 12345,
  *   owner: '0x...',
  *   dstChainId: 84532, // Base Sepolia
@@ -92,7 +89,6 @@ const CHRONICLE_YELLOWSTONE_CHAIN_ID = 175188;
 export async function signOwnerAttestation({
   litNodeClient,
   sessionSigs,
-  pkpPublicKey,
   appId,
   owner,
   dstChainId,
@@ -116,7 +112,6 @@ export async function signOwnerAttestation({
       issuedAt,
       dstChainId,
       dstContract,
-      pkpPublicKey,
     },
   });
 
@@ -145,11 +140,4 @@ export async function signOwnerAttestation({
  */
 export function getBaseSepoliaFeeDiamondAddress(): string {
   return VINCENT_CONTRACT_ADDRESS_BOOK.fee.baseSepolia.address;
-}
-
-/**
- * Gets the salt used to deploy the Base Sepolia Fee Diamond
- */
-export function getBaseSepoliaFeeDiamondSalt(): string {
-  return VINCENT_CONTRACT_ADDRESS_BOOK.fee.baseSepolia.salt;
 }
