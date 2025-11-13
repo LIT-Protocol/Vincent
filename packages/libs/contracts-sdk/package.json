@@ -20,8 +20,7 @@
     "@lit-protocol/auth-helpers": "^7.2.3",
     "@lit-protocol/constants": "^7.2.3",
     "@lit-protocol/contracts-sdk": "^7.2.3",
-    "@lit-protocol/esbuild-plugin-polyfill-node": "^1.0.2",
-    "@lit-protocol/lit-node-client": "^7.2.3",
+    "@lit-protocol/esbuild-plugin-polyfill-node": "^0.3.0",
     "@lit-protocol/pkp-ethers": "^7.2.3",
     "@openzeppelin/contracts": "5.3.0",
     "@types/jest": "^29.5.12",
@@ -36,6 +35,7 @@
     "@aave-dao/aave-v3-origin": "^3.5.0"
   },
   "dependencies": {
+    "@lit-protocol/lit-node-client": "^7.2.3",
     "@ethersproject/abi": "^5.8.0",
     "@lit-protocol/types": "^7.2.3",
     "cbor2": "^2.0.1",
