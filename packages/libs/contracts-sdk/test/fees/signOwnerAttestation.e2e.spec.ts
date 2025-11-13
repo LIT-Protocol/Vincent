@@ -39,6 +39,7 @@ const BASE_SEPOLIA_RPC_URL = process.env.BASE_SEPOLIA_RPC_URL;
 const CHRONICLE_YELLOWSTONE_RPC_URL = process.env.YELLOWSTONE_RPC_URL;
 const BASE_SEPOLIA_CHAIN_ID = 84532;
 const CHRONICLE_YELLOWSTONE_CHAIN_ID = 175188;
+const TX_WAIT_CONFIRMATIONS = 2;
 
 // Private keys from .env
 const TEST_BASE_SEPOLIA_PRIVATE_KEY = process.env.TEST_BASE_SEPOLIA_PRIVATE_KEY;
@@ -52,9 +53,12 @@ const LIT_ACTION_PKP_PUBKEY =
   VINCENT_LIT_ACTIONS_ADDRESS_BOOK.signOwnerAttestation.derivedActionPubkey;
 
 // Base Sepolia addresses
-const BASE_SEPOLIA_USDC = '0x036CbD53842c5426634e7929541eC2318f3dCF7e'; // USDC on Base Sepolia
+const BASE_SEPOLIA_USDC = '0xba50cd2a20f6da35d788639e581bca8d0b5d4d5f'; // USDC on Base Sepolia
+const AAVE_POOL_ADDRESS = '0x8bAB6d1b75f19e9eD9fCe8b9BD338844fF79aE27'; // Aave Pool on Base Sepolia
 
 // ABIs
+
+const AAVE_POOL_ABI = ['function getReserveAToken(address asset) view returns (address)'];
 const ERC20_ABI = [
   'function balanceOf(address) view returns (uint256)',
   'function transfer(address to, uint256 amount) returns (bool)',
@@ -146,8 +150,9 @@ describe('Owner Attestation Signing E2E', () => {
     } catch {
       // App doesn't exist, create it
       console.log('Registering new app...');
-      // Use owner as delegatee for simplicity since the delegatee is irrelevant for this test
-      const delegatees = [appOwnerWallet.address];
+      // Use a random delegatee for simplicity since the delegatee is irrelevant for this test
+      const delegatee = ethers.Wallet.createRandom();
+      const delegatees = [delegatee.address];
 
       // Format: versionAbilities structure
       // abilityIpfsCids: array of ability IPFS CIDs
@@ -159,7 +164,7 @@ describe('Owner Attestation Signing E2E', () => {
           [], // No policies for second ability
         ],
       });
-      await tx.wait();
+      await tx.wait(TX_WAIT_CONFIRMATIONS);
       console.log('✅ App registered on Chronicle Yellowstone');
     }
 
@@ -169,25 +174,30 @@ describe('Owner Attestation Signing E2E', () => {
     const decimals = await usdc.decimals();
     const usdcDepositAmount = ethers.utils.parseUnits('5', decimals);
 
-    const fundingBalance = await usdc.balanceOf(fundingWallet.address);
-    console.log(
-      `Funding wallet USDC balance: ${ethers.utils.formatUnits(fundingBalance, decimals)} USDC`,
-    );
+    let testWalletBalance = await usdc.balanceOf(testWallet.address);
+    if (testWalletBalance.gte(usdcDepositAmount)) {
+      console.log('Test wallet already has enough USDC, skipping transfer');
+    } else {
+      const fundingBalance = await usdc.balanceOf(fundingWallet.address);
+      console.log(
+        `Funding wallet USDC balance: ${ethers.utils.formatUnits(fundingBalance, decimals)} USDC`,
+      );
 
-    if (fundingBalance.lt(usdcDepositAmount)) {
-      throw new Error('Funding wallet does not have enough USDC');
+      if (fundingBalance.lt(usdcDepositAmount)) {
+        throw new Error('Funding wallet does not have enough USDC');
+      }
+
+      const transferTx = await usdc.transfer(testWallet.address, usdcDepositAmount);
+      await transferTx.wait(TX_WAIT_CONFIRMATIONS);
+      console.log(
+        `✅ Transferred ${ethers.utils.formatUnits(usdcDepositAmount, decimals)} USDC to test wallet`,
+      );
+
+      testWalletBalance = await usdc.balanceOf(testWallet.address);
+      console.log(
+        `Test wallet USDC balance after possible transfer: ${ethers.utils.formatUnits(testWalletBalance, decimals)} USDC`,
+      );
     }
-
-    const transferTx = await usdc.transfer(testWallet.address, usdcDepositAmount);
-    await transferTx.wait();
-    console.log(
-      `✅ Transferred ${ethers.utils.formatUnits(usdcDepositAmount, decimals)} USDC to test wallet`,
-    );
-
-    const testWalletBalance = await usdc.balanceOf(testWallet.address);
-    console.log(
-      `Test wallet USDC balance: ${ethers.utils.formatUnits(testWalletBalance, decimals)} USDC`,
-    );
 
     // Step 3: Deposit USDC to Aave through Fee Diamond
     console.log('\n📥 Step 3: Depositing USDC to Aave through Fee Diamond...');
@@ -197,12 +207,12 @@ describe('Owner Attestation Signing E2E', () => {
     console.log(`Approving ${ethers.utils.formatUnits(usdcDepositAmount, decimals)} USDC...`);
 
     const approveTx = await usdcConnected.approve(FEE_DIAMOND_ADDRESS, usdcDepositAmount);
-    await approveTx.wait();
+    await approveTx.wait(TX_WAIT_CONFIRMATIONS);
     console.log('✅ Approved USDC');
 
     console.log('Depositing to Aave...');
     const depositTx = await feeDiamond.depositToAave(appId, BASE_SEPOLIA_USDC, usdcDepositAmount);
-    await depositTx.wait();
+    await depositTx.wait(TX_WAIT_CONFIRMATIONS);
     console.log('✅ Deposited to Aave');
 
     // Verify deposit
@@ -217,8 +227,24 @@ describe('Owner Attestation Signing E2E', () => {
     await new Promise((resolve) => setTimeout(resolve, 30000));
     console.log('✅ 30 secs passed, withdrawing from Aave...');
 
-    const withdrawTx = await feeDiamond.withdrawFromAave(appId, BASE_SEPOLIA_USDC);
-    await withdrawTx.wait();
+    // get aave balance so we know how much to withdraw
+    // Query aToken balance for the test wallet (to know how much to withdraw)
+    const aavePoolContract = new ethers.Contract(AAVE_POOL_ADDRESS, AAVE_POOL_ABI, testWallet);
+    const aTokenAddress = await aavePoolContract.getReserveAToken(BASE_SEPOLIA_USDC);
+    const aToken = new ethers.Contract(aTokenAddress, ERC20_ABI, testWallet);
+
+    const userAaveTokens = await aToken.balanceOf(testWallet.address);
+    console.log(
+      'User has',
+      ethers.utils.formatUnits(userAaveTokens, decimals),
+      'aTokens after waiting for profit to accrue',
+    );
+    const approveATokenTx = await aToken.approve(FEE_DIAMOND_ADDRESS, userAaveTokens);
+    await approveATokenTx.wait(TX_WAIT_CONFIRMATIONS);
+    console.log('✅ Approved aTokens');
+
+    const withdrawTx = await feeDiamond.withdrawFromAave(appId, BASE_SEPOLIA_USDC, userAaveTokens);
+    await withdrawTx.wait(TX_WAIT_CONFIRMATIONS);
     console.log('✅ Withdrawn from Aave');
 
     // Check if any fees were collected
@@ -297,7 +323,7 @@ describe('Owner Attestation Signing E2E', () => {
       result.attestation,
       result.signature,
     );
-    await withdrawFeeTx.wait();
+    await withdrawFeeTx.wait(TX_WAIT_CONFIRMATIONS);
     console.log('✅ Withdrawn app fees');
 
     // Step 8: Verify funds arrived
