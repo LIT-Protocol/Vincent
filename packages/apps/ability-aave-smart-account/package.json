@@ -1,6 +1,6 @@
 {
   "name": "@lit-protocol/vincent-ability-aave-smart-account",
-  "version": "0.0.9-mma",
+  "version": "1.0.0-mma",
   "publishConfig": {
     "access": "public"
   },
