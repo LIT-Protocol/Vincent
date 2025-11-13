@@ -2,9 +2,9 @@ import { ethers } from 'ethers';
 
 declare const Lit: {
   Actions: {
-    signAndCombineEcdsa: (params: {
+    signAsAction: (params: {
       toSign: Uint8Array;
-      publicKey: string;
+      signingScheme: string;
       sigName: string;
     }) => Promise<string>;
   };
@@ -62,9 +62,9 @@ export async function signOwnerAttestation(
   console.log('Ethereum signed message hash:', messageHash);
 
   // Sign using Lit PKP
-  const signatureResponse = await Lit.Actions.signAndCombineEcdsa({
+  const signatureResponse = await Lit.Actions.signAsAction({
     toSign: ethers.utils.arrayify(messageHash),
-    publicKey: publicKeyForLit,
+    signingScheme: 'EcdsaK256Sha256',
     sigName: 'ownerAttestation',
   });
 

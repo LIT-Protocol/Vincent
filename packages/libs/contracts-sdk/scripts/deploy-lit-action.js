@@ -1,5 +1,8 @@
 const fs = require('fs');
 const path = require('path');
+const ethers = require('ethers');
+const { LitContracts } = require('@lit-protocol/contracts-sdk');
+const { LIT_RPC } = require('@lit-protocol/constants');
 
 // Get Pinata JWT from environment variable
 const PINATA_JWT = process.env.PINATA_JWT;
@@ -34,6 +37,10 @@ async function deployLitAction(outputFile, metadataFile, description) {
 
   console.log(`✅ Successfully deployed ${description}`);
   console.log(`ℹ️  Deployed ${outputFile} to IPFS: ${ipfsCid}`);
+
+  const { derivedAddress, derivedPubkey } = await deriveLitActionWalletAddress(ipfsCid);
+  console.log(`ℹ️  Derived action wallet address: ${derivedAddress}`);
+  console.log(`ℹ️  Derived action pubkey: ${derivedPubkey}`);
 
   return ipfsCid;
 }
@@ -78,4 +85,29 @@ async function uploadToIPFS(filename, fileContent) {
     console.error('Error uploading to IPFS:', error);
     throw error;
   }
+}
+
+async function deriveLitActionWalletAddress(litActionIpfsCid) {
+  // We're only using read functions so we can use any wallet, so we create a random one.
+  let ethersSigner = new ethers.Wallet.createRandom();
+  ethersSigner = ethersSigner.connect(
+    new ethers.providers.JsonRpcProvider(LIT_RPC.CHRONICLE_YELLOWSTONE),
+  );
+
+  const contractClient = new LitContracts({ signer: ethersSigner });
+  await contractClient.connect();
+
+  const derivedKeyId = ethers.utils.keccak256(
+    ethers.utils.toUtf8Bytes(`lit_action_${litActionIpfsCid}`),
+  );
+
+  const derivedPubkey = await contractClient.pubkeyRouterContract.read.getDerivedPubkey(
+    contractClient.stakingContract.read.address,
+    derivedKeyId,
+  );
+
+  return {
+    derivedPubkey,
+    derivedAddress: ethers.utils.computeAddress(derivedPubkey),
+  };
 }
