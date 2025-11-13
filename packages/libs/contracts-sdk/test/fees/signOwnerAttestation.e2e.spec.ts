@@ -23,6 +23,7 @@ import {
 import { LIT_ABILITY } from '@lit-protocol/constants';
 import { LitNodeClient } from '@lit-protocol/lit-node-client';
 
+import FeeDiamondAbi from '../../abis/FeeDiamond.abi.json';
 import {
   VINCENT_CONTRACT_ADDRESS_BOOK,
   VINCENT_LIT_ACTIONS_ADDRESS_BOOK,
@@ -66,17 +67,6 @@ const ERC20_ABI = [
   'function decimals() view returns (uint8)',
 ];
 
-const FEE_DIAMOND_ABI = [
-  'function depositToAave(uint40 appId, address asset, uint256 amount)',
-  'function withdrawFromAave(uint40 appId, address asset)',
-  'function deposits(uint40 appId, address user, address asset) view returns (uint256 assetAmount, uint256 vaultShares, uint256 vaultProvider)',
-  'function collectedAppFees(uint40 appId, address token) view returns (uint256)',
-  'function tokensWithCollectedFees(uint40 appId) view returns (address[])',
-  'function withdrawAppFees(uint40 appId, address token, tuple(uint256 srcChainId, address srcContract, address owner, uint40 appId, uint256 issuedAt, uint256 expiresAt, uint256 dstChainId, address dstContract) ownerAttestation, bytes signature)',
-  'function setAavePool(address pool)',
-  'function ownerAttestationSigner() view returns (address)',
-];
-
 // Extend Jest timeout for E2E test (5 minutes)
 jest.setTimeout(300000);
 
@@ -117,7 +107,7 @@ describe('Owner Attestation Signing E2E', () => {
     // Initialize Lit Node Client
     litNodeClient = new LitNodeClient({
       litNetwork: 'datil-dev',
-      debug: true,
+      debug: false,
     });
     await litNodeClient.connect();
     console.log('✅ Connected to Lit Network (Datil)');
@@ -201,7 +191,7 @@ describe('Owner Attestation Signing E2E', () => {
 
     // Step 3: Deposit USDC to Aave through Fee Diamond
     console.log('\n📥 Step 3: Depositing USDC to Aave through Fee Diamond...');
-    const feeDiamond = new ethers.Contract(FEE_DIAMOND_ADDRESS, FEE_DIAMOND_ABI, testWallet);
+    const feeDiamond = new ethers.Contract(FEE_DIAMOND_ADDRESS, FeeDiamondAbi, testWallet);
     const usdcConnected = usdc.connect(testWallet);
 
     console.log(`Approving ${ethers.utils.formatUnits(usdcDepositAmount, decimals)} USDC...`);
@@ -308,7 +298,7 @@ describe('Owner Attestation Signing E2E', () => {
     const appOwnerBaseSepoliaWallet = appOwnerWallet.connect(baseSepoliaProvider);
     const feeDiamondAsOwner = new ethers.Contract(
       FEE_DIAMOND_ADDRESS,
-      FEE_DIAMOND_ABI,
+      FeeDiamondAbi,
       appOwnerBaseSepoliaWallet,
     );
 

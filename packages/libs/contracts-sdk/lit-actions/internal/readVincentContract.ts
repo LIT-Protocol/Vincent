@@ -35,17 +35,17 @@ export async function verifyAppOwnership(
     );
   }
 
-  // The ABI for the getApp function from VincentAppViewFacet
+  // The ABI for the getAppById function from VincentAppViewFacet
   // We only need the parts of the App struct we care about
   const abi = [
-    'function getApp(uint40 appId) view returns (tuple(address manager, address[] delegatees, tuple(string[] abilities, string[] policies)[] versions, uint40[] deprecatedVersionIds))',
+    'function getAppById(uint40 appId) view returns (uint40 id, bool isDeleted, address manager, uint24 latestVersion, address[] delegatees)',
   ];
 
   const contract = new ethers.Contract(vincentContractAddress, abi, provider);
 
   try {
-    const appData = await contract.getApp(appId);
-    const manager = appData[0]; // manager is the first element
+    const appData = await contract.getAppById(appId);
+    const manager = appData.manager;
 
     console.log(`App manager: ${manager}`);
     console.log(`Checking if ${owner} is the manager`);
