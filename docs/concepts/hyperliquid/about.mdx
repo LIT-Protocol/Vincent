@@ -1,0 +1,197 @@
+---
+title: 'Hyperliquid Automation'
+---
+
+Vincent enables prop traders, DEX aggregators, and exchanges to automate Hyperliquid trading with complete non-custodial control.
+
+## The Manual Approval Bottleneck
+
+Trading strategies generate signals 24/7. Manual approvals don't.
+
+<Steps>
+  <Step title="Strategy generates signal">
+    Your algorithm identifies a profitable trade
+  </Step>
+  <Step title="Wait for signature">
+    User must manually approve the transaction
+  </Step>
+  <Step title="User unavailable">
+    They're offline, asleep, or in a different timezone
+  </Step>
+  <Step title="Market moves">
+    **Opportunity expires. Trade not executed.**
+  </Step>
+</Steps>
+
+<Warning>
+  Manual signature requirements limit execution speed and trading volume. Vincent eliminates this bottleneck.
+</Warning>
+
+## Enter Vincent Agent Wallets
+
+Vincent Agent Wallets provide non-custodial delegation infrastructure for Hyperliquid. Users grant scoped trading permissions to your application once - you build the automation logic, Vincent handles secure execution while users maintain complete asset control.
+
+Think of it as delegation infrastructure: users set boundaries, you build strategies that operate within them automatically.
+
+<CodeGroup>
+  ```jsx Before Vincent
+  // Multiple signatures per trade
+  await hyperliquid.approve(order)      // User must sign
+  await hyperliquid.placeOrder(order)   // User must sign
+  await hyperliquid.confirm(order)      // User must sign
+  // Limited to user availability
+  ```
+  ```jsx With Vincent
+  // One-time delegation, your automation runs continuously
+  await hyperliquidAbilityClient.execute({
+  order: {
+  asset: 0,
+  orderType: { limit: { tif: "Gtc" } },
+  ...
+},
+{ delegatorAddress }
+})
+  // Your application executes without additional signatures
+  ```
+</CodeGroup>
+
+## How It Works
+
+<Steps>
+  <Step title="User grants permissions">
+    User approves scoped delegation - defining exactly which actions your app can perform on Hyperliquid
+  </Step>
+  <Step title="You build automation">
+    Your application logic executes trades programmatically without requiring additional signatures
+  </Step>
+  <Step title="User maintains control">
+    Users can monitor activity, adjust permissions, or revoke access anytime
+  </Step>
+</Steps>
+
+<Tip>
+  Users delegate once. Your automation runs continuously.
+</Tip>
+
+## Core Capabilities
+
+### Non-Custodial Delegation
+
+Vincent handles permission management and secure execution. Users define allowed actions and retain full custody - no private key sharing, no fund transfers, instant revocation.
+
+## Why Trading Operations Choose Vincent
+
+<Tabs>
+  <Tab title="Eliminate Execution Delays">
+    **The Problem:** Manual signatures create latency between signal generation and execution
+
+    **With Vincent:**
+    - Build automation that executes trades immediately when signals fire
+    - Operate across all timezones and market hours
+    - Scale to hundreds of daily transactions per user
+    - No waiting for user availability
+
+    **Result:** Capture more opportunities, eliminate timing-based slippage
+  </Tab>
+
+  <Tab title="Maintain Compliance">
+    **The Problem:** Traditional delegation requires custody handoff or private key sharing
+
+    **With Vincent:**
+    - Users never transfer asset custody
+    - Scoped permissions with explicit boundaries
+    - Full transaction auditability on-chain
+    - Instant revocation capability
+
+    **Result:** Build automation without compliance risk
+  </Tab>
+
+  <Tab title="Focus on Strategy">
+    **The Problem:** Building delegation infrastructure is time-consuming
+
+    **With Vincent:**
+    - Delegation infrastructure handled for you
+    - TypeScript SDK for building execution logic
+    - Optional smart contract policies for custom delegation permissions
+    - Focus on strategy, not infrastructure
+
+    **Result:** Build automated strategies faster
+  </Tab>
+</Tabs>
+
+## What You Can Build
+
+Build sophisticated trading automation on Hyperliquid that would be impractical with manual approvals:
+
+<Columns cols={3}>
+  <Card title="Trading Bots" icon="robot" color="#FF4205">
+    Hummingbot or Telegram bots for automated strategy execution
+  </Card>
+  <Card title="Scheduled Strategies" icon="clock" color="#FF4205">
+    Cron-based execution for timed trades and rebalancing
+  </Card>
+  <Card title="Copy Trading" icon="copy" color="#FF4205">
+    Mirror successful traders' positions in real-time
+  </Card>
+</Columns>
+
+<Columns cols={3}>
+  <Card title="Signal-Based Trading" icon="chart-line" color="#FF4205">
+    Execute trades automatically based on custom signals
+  </Card>
+  <Card title="Portfolio Management" icon="briefcase" color="#FF4205">
+    Automated rebalancing and risk management
+  </Card>
+  <Card title="Market Making" icon="scale-balanced" color="#FF4205">
+    Continuous liquidity provision and spread management
+  </Card>
+</Columns>
+
+## Integration
+
+<Note>
+  This is an example. I'll change it when writing the Hyperliquid ability page.
+</Note>
+
+<Steps>
+  <Step title="Install the SDK">
+    ```bash
+    npm install @vincent/sdk
+    ```
+  </Step>
+
+  <Step title="Initialize the client">
+    ```jsx
+    import { createAbilityClient } from '@vincent/sdk'
+
+    const hyperliquidAbilityClient = await createAbilityClient({
+    protocol: 'hyperliquid',
+    // Configuration details
+  })
+    ```
+  </Step>
+
+  <Step title="Build your automation">
+    ```jsx
+    // Your automation logic
+    await hyperliquidAbilityClient.execute({
+    order: {
+    asset: 0,
+    orderType: { limit: { tif: "Gtc" } },
+    isBuy: true,
+    limitPx: "2000",
+    sz: "1"
+  },
+  { delegatorAddress: user.address }
+  })
+    ```
+  </Step>
+</Steps>
+
+## The Bottom Line
+
+Manual approval processes don't scale. Vincent provides the infrastructure to build trading automation that executes at machine speed while users sleep - without asking them to trust you with their assets.
+
+<Card title="Ready to build on Vincent?" icon="rocket" href="/ability/official-abilities/hyperliquid">
+  View Hyperliquid ability documentation
+</Card>
