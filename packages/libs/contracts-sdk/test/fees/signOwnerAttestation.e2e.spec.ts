@@ -106,8 +106,8 @@ describe('Owner Attestation Signing E2E', () => {
 
     // Initialize Lit Node Client
     litNodeClient = new LitNodeClient({
-      litNetwork: 'datil-dev',
-      debug: false,
+      litNetwork: 'datil',
+      debug: true,
     });
     await litNodeClient.connect();
     console.log('✅ Connected to Lit Network (Datil)');

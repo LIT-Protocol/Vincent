@@ -29,14 +29,7 @@ export interface OwnerAttestation {
  * @param pkpPublicKey - The PKP public key (with 0x prefix)
  * @returns The signature bytes in r, s, v format
  */
-export async function signOwnerAttestation(
-  oa: OwnerAttestation,
-  pkpPublicKey: string,
-): Promise<string> {
-  // Remove 0x prefix if it exists, Lit expects a hex string without 0x prefix
-  const publicKeyForLit = pkpPublicKey.replace(/^0x/, '');
-  console.log(`Signing owner attestation using PKP Public Key: ${publicKeyForLit}`);
-
+export async function signOwnerAttestation(oa: OwnerAttestation): Promise<string> {
   // Encode the message using abi.encodePacked equivalent
   // In ethers v5, we use solidityPack for abi.encodePacked
   const packed = ethers.utils.solidityPack(
@@ -70,9 +63,16 @@ export async function signOwnerAttestation(
 
   const { r, s, v } = JSON.parse(signatureResponse);
 
+  console.log('Signature response:', signatureResponse);
+
   // Return signature in r, s, v format (65 bytes total)
   // This matches the Solidity: abi.encodePacked(r, s, v)
-  const signature = ethers.utils.solidityPack(['bytes32', 'bytes32', 'uint8'], [r, s, v]);
+  // we have to add the 0x prefix to the r and s values, and strip the 03 value from the r value.
+  const signature = ethers.utils.joinSignature({
+    r: '0x' + r.substring(2),
+    s: '0x' + s,
+    v: v,
+  });
 
   console.log('Signature:', signature);
   return signature;
