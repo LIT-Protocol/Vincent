@@ -162,7 +162,7 @@ describe('Owner Attestation Signing E2E', () => {
     console.log('\n💰 Step 2: Funding test wallet with USDC...');
     const usdc = new ethers.Contract(BASE_SEPOLIA_USDC, ERC20_ABI, fundingWallet);
     const decimals = await usdc.decimals();
-    const usdcDepositAmount = ethers.utils.parseUnits('5', decimals);
+    const usdcDepositAmount = ethers.utils.parseUnits('1000', decimals);
 
     let testWalletBalance = await usdc.balanceOf(testWallet.address);
     if (testWalletBalance.gte(usdcDepositAmount)) {
@@ -213,9 +213,9 @@ describe('Owner Attestation Signing E2E', () => {
     expect(depositInfo.assetAmount).toEqual(usdcDepositAmount);
 
     // Step 4: Withdraw from Aave (this will collect fees if there's any profit)
-    console.log('\n📤 Step 4: Waiting 30 secs for profit to accrue, then withdrawing from Aave...');
-    await new Promise((resolve) => setTimeout(resolve, 30000));
-    console.log('✅ 30 secs passed, withdrawing from Aave...');
+    console.log('\n📤 Step 4: Waiting 60 secs for profit to accrue, then withdrawing from Aave...');
+    await new Promise((resolve) => setTimeout(resolve, 60000));
+    console.log('✅ 60 secs passed, withdrawing from Aave...');
 
     // get aave balance so we know how much to withdraw
     // Query aToken balance for the test wallet (to know how much to withdraw)
