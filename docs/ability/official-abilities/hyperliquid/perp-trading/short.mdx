@@ -1,12 +1,12 @@
 ---
-title: Perp Long
+title: Perp Short
 ---
 
-The `perpLong` action enables Vincent Apps to open or increase long positions on Hyperliquid's perpetuals market using a Vincent User's HyperCore perp balance.
+The `perpShort` action enables Vincent Apps to open or increase short positions on Hyperliquid's perpetuals market using a Vincent User's HyperCore perp balance.
 
 ## Prerequisites
 
-Before executing the `perpLong` action, the following conditions must be met:
+Before executing the `perpShort` action, the following conditions must be met:
 
 - **Perp Balance on HyperCore**: The Vincent User Agent Wallet must have sufficient USDC in their HyperCore perp balance to cover the margin requirements for the position.
 - **Order Parameters**: You must provide a valid perp symbol (e.g., "SOL", "ETH"), price, size, leverage, and margin mode according to Hyperliquid's trading rules.
@@ -18,9 +18,9 @@ Before executing the `perpLong` action, the following conditions must be met:
 
 ## Executing the `precheck` Function
 
-The `precheck` function validates some prerequisites for executing a perp long, without actually performing the operation.
+The `precheck` function validates some prerequisites for executing a perp short, without actually performing the operation.
 
-For the `perpLong` action, the `precheck` function will validate the following:
+For the `perpShort` action, the `precheck` function will validate the following:
 
 - The Vincent User Agent Wallet has sufficient USDC in their HyperCore perp balance to cover the margin requirements.
 
@@ -33,15 +33,15 @@ For the `perpLong` action, the `precheck` function will validate the following:
 
     {
       /**
-       * The action to perform (must be HyperliquidAction.PERP_LONG)
+       * The action to perform (must be HyperliquidAction.PERP_SHORT)
        */
-      action: HyperliquidAction.PERP_LONG;
+      action: HyperliquidAction.PERP_SHORT;
       /**
        * Whether to use Hyperliquid testnet (optional, defaults to false)
        */
       useTestnet?: boolean;
       /**
-       * Perp long parameters
+       * Perp short parameters
        */
       perp: {
         /**
@@ -79,7 +79,7 @@ For the `perpLong` action, the `precheck` function will validate the following:
          */
         reduceOnly?: boolean;
         /**
-         * The order type for the long order (optional).
+         * The order type for the short order (optional).
          * You may specify either a limit or market order using the form:
          *   { type: "limit", tif: "Gtc" | "Ioc" | "Alo" }
          *   or
@@ -120,11 +120,11 @@ For the `perpLong` action, the `precheck` function will validate the following:
     // Run precheck
     const precheckResult = await hyperliquidAbilityClient.precheck(
       {
-        action: HyperliquidAction.PERP_LONG,
+        action: HyperliquidAction.PERP_SHORT,
         useTestnet: false, // Set to true for testnet
         perp: {
           symbol: 'SOL',
-          price: '200',
+          price: '150.5',
           size: '3',
           leverage: 2,
           isCross: true,
@@ -136,7 +136,7 @@ For the `perpLong` action, the `precheck` function will validate the following:
     );
 
     if (precheckResult.success) {
-      console.log('Perp long precheck passed, ready to execute');
+      console.log('Perp short precheck passed, ready to execute');
     } else {
       // Handle different types of failures
       if (precheckResult.runtimeError) {
@@ -146,7 +146,7 @@ For the `perpLong` action, the `precheck` function will validate the following:
         console.error('Schema validation error:', precheckResult.schemaValidationError);
       }
       if (precheckResult.result) {
-        console.error('Perp long precheck failed:', precheckResult.result.reason);
+        console.error('Perp short precheck failed:', precheckResult.result.reason);
       }
     }
     ```
@@ -163,7 +163,7 @@ For the `perpLong` action, the `precheck` function will validate the following:
       /**
        * The action that was prechecked
        */
-      action: 'perpLong';
+      action: 'perpShort';
     }
     ```
 
@@ -176,7 +176,7 @@ For the `perpLong` action, the `precheck` function will validate the following:
       /**
        * The action that was prechecked
        */
-      action: 'perpLong';
+      action: 'perpShort';
       /**
        * The reason the precheck failed, such as insufficient perp balance
        */
@@ -189,11 +189,11 @@ For the `perpLong` action, the `precheck` function will validate the following:
 
 ## Executing the `execute` Function
 
-The `execute` function performs the actual long operation, placing a long order on Hyperliquid's perpetuals market.
+The `execute` function performs the actual short operation, placing a short order on Hyperliquid's perpetuals market.
 
-For the `perpLong` action, the `execute` function will:
+For the `perpShort` action, the `execute` function will:
 
-- Place a long order for the specified perpetual at the given price and size with the specified leverage.
+- Place a short order for the specified perpetual at the given price and size with the specified leverage.
 - Return the order result from Hyperliquid.
 
 <Tabs>
@@ -201,19 +201,19 @@ For the `perpLong` action, the `execute` function will:
     The `execute` function requires the following parameters:
 
     ```typescript
-    import { HyperliquidAction } from '@lit-protocol/vincent-ability-hyperliquid';
+    import { HyperliquidAction, OrderType } from '@lit-protocol/vincent-ability-hyperliquid';
 
     {
       /**
-       * The action to perform (must be HyperliquidAction.PERP_LONG)
+       * The action to perform (must be HyperliquidAction.PERP_SHORT)
        */
-      action: HyperliquidAction.PERP_LONG;
+      action: HyperliquidAction.PERP_SHORT;
       /**
        * Whether to use Hyperliquid testnet (optional, defaults to false)
        */
       useTestnet?: boolean;
       /**
-       * Perp long parameters
+       * Perp short parameters
        */
       perp: {
         /**
@@ -229,7 +229,7 @@ For the `perpLong` action, the `execute` function will:
          */
         price: string;
         /**
-         * The size (amount of contracts) to long.
+         * The size (amount of contracts) to short.
          * Must be rounded to the asset's szDecimals.
          * Represents the notional size in the base asset.
          * https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/tick-and-lot-size#spot-price-examples
@@ -251,7 +251,7 @@ For the `perpLong` action, the `execute` function will:
          */
         reduceOnly?: boolean;
         /**
-         * The order type for the long order (optional).
+         * The order type for the short order (optional).
          * You may specify either a limit or market order using the form:
          *   { type: "limit", tif: "Gtc" | "Ioc" | "Alo" }
          *   or
@@ -275,11 +275,11 @@ For the `perpLong` action, the `execute` function will:
 
     const executeResult = await hyperliquidAbilityClient.execute(
       {
-        action: HyperliquidAction.PERP_LONG,
+        action: HyperliquidAction.PERP_SHORT,
         useTestnet: false, // Set to true for testnet
         perp: {
           symbol: 'SOL',
-          price: '200',
+          price: '150.5',
           size: '3',
           leverage: 2,
           isCross: true,
@@ -293,7 +293,7 @@ For the `perpLong` action, the `execute` function will:
 
     if (executeResult.success) {
       const { orderResult } = executeResult.result;
-      console.log('Perp long executed successfully:', orderResult);
+      console.log('Perp short executed successfully:', orderResult);
     } else {
       // Handle different types of failures
       if (executeResult.runtimeError) {
@@ -303,7 +303,7 @@ For the `perpLong` action, the `execute` function will:
         console.error('Schema validation error:', executeResult.schemaValidationError);
       }
       if (executeResult.result) {
-        console.error('Perp long execution failed:', executeResult.result.reason);
+        console.error('Perp short execution failed:', executeResult.result.reason);
       }
     }
     ```
@@ -320,7 +320,7 @@ For the `perpLong` action, the `execute` function will:
       /**
        * The action that was executed
        */
-      action: 'perpLong';
+      action: 'perpShort';
       /**
        * The order response from Hyperliquid request as defined by the Hyperliquid SDK: @nktkas/hyperliquid
        * https://github.com/nktkas/hyperliquid/blob/2233ce942eb50ef8850073b387b9918d3a54a10b/src/api/exchange/order.ts#L103-L194
@@ -338,7 +338,7 @@ For the `perpLong` action, the `execute` function will:
       /**
        * The action that was executed
        */
-      action: 'perpLong';
+      action: 'perpShort';
       /**
        * The reason the execution failed, such as insufficient perp balance
        */
@@ -375,17 +375,17 @@ For the `perpLong` action, the `execute` function will:
 
 <Accordion title="Position Management" icon="wallet">
 
-- Long positions profit when price goes up
-- Opening a long when you already have a long position will increase your position size
-- Position size is tracked as `szi` (signed size, positive for longs)
+- Short positions profit when price goes down
+- Opening a short when you already have a short position will increase your short exposure
+- Position size is tracked as `szi` (signed size, negative for shorts)
 - Uses USDC from your **HyperCore perp balance** for margin
 
-</Accordion>
+  </Accordion>
 
 <Accordion title="Getting Current Market Prices" icon="chart-line">
   You'll need to fetch the current market price before placing an order. Use the Hyperliquid API or
-  SDK to get the mid price for your perpetual, then adjust it based on your strategy (e.g., 1% above
-  mid price for market longs).
+  SDK to get the mid price for your perpetual, then adjust it based on your strategy (e.g., 1% below
+  mid price for market shorts).
 </Accordion>
 
 <Accordion title="Order Types" icon="list">
@@ -400,7 +400,7 @@ For the `perpLong` action, the `execute` function will:
 
 ## Reference Implementation
 
-For a complete working example showing the full perp long workflow including balance verification and price calculation, see the [long.spec.ts](https://github.com/LIT-Protocol/Vincent/blob/main/packages/apps/ability-hyperliquid/test/e2e/perp/long.spec.ts) end-to-end test in the `ability-hyperliquid` package.
+For a complete working example showing the full perp short workflow including balance verification and price calculation, see the [short.spec.ts](https://github.com/LIT-Protocol/Vincent/blob/main/packages/apps/ability-hyperliquid/test/e2e/perp/short.spec.ts) end-to-end test in the `ability-hyperliquid` package.
 
 ## Next Steps
 
@@ -445,9 +445,9 @@ Explore the rest of the supported Hyperliquid actions:
 <Card title="Spot Sell" href="/ability/official-abilities/hyperliquid/spot-sell" icon="tag" />
 
 <Card
-  title="Perp Short"
-  href="/ability/official-abilities/hyperliquid/perp-short"
-  icon="arrow-down-right"
+  title="Perp Long"
+  href="/ability/official-abilities/hyperliquid/perp-long"
+  icon="arrow-up-right"
 />
 
 <Card title="Cancel Order" href="/ability/official-abilities/hyperliquid/cancel-order" icon="ban" />
