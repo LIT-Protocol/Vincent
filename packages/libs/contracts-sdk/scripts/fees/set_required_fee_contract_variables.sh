@@ -13,6 +13,7 @@ fi
 # manually set your vars here
 FEE_DIAMOND_ADDRESS="0x35705D6ad235DcA39c10B6E0EfBA84b5E90D2aC9"
 OWNER_ATTESATION_SIGNER_ADDRESS="0xDB03b39d7a7af6f437D03B61104cC3972238C563"
+LIT_FOUNDATION_WALLET_ADDRESS="0xA0B61B3897439Aa32EB7A84DC9ab2d02642cc363"
 
 # per chain variables
 RPC_URL="$BASE_SEPOLIA_RPC_URL"
@@ -20,4 +21,10 @@ AAVE_POOL_ADDRESS="0x8bAB6d1b75f19e9eD9fCe8b9BD338844fF79aE27"
 
 cast send --rpc-url "$RPC_URL" --private-key "$VINCENT_DEPLOYER_PRIVATE_KEY" --confirmations 3 "$FEE_DIAMOND_ADDRESS" "setOwnerAttestationSigner(address)" "$OWNER_ATTESATION_SIGNER_ADDRESS"
 
+sleep 5
+
 cast send --rpc-url "$RPC_URL" --private-key "$VINCENT_DEPLOYER_PRIVATE_KEY" --confirmations 3 "$FEE_DIAMOND_ADDRESS" "setAavePool(address)" "$AAVE_POOL_ADDRESS"
+
+sleep 5
+
+cast send --rpc-url "$RPC_URL" --private-key "$VINCENT_DEPLOYER_PRIVATE_KEY" --confirmations 3 "$FEE_DIAMOND_ADDRESS" "setLitFoundationWallet(address)" "$LIT_FOUNDATION_WALLET_ADDRESS"
