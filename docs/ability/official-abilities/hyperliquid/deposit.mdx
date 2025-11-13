@@ -1,0 +1,377 @@
+---
+title: Deposit
+---
+
+The `deposit` action enables Vincent Apps to bridge USDC from Arbitrum into a Vincent User's HyperCore mainnet perp balance using the Hyperliquid bridge contract.
+
+<Note>
+  The `deposit` action will only work if being executed on Arbitrum mainnet, and will **not** work
+  for depositing to HyperCore testnet. To get test USDC on HyperCore testnet, follow the [testnet
+  funding process](https://hyperliquid.gitbook.io/hyperliquid-docs/onboarding/testnet-faucet), or
+  transfer test USDC from an existing HyperCore testnet account's balance.
+</Note>
+
+## Prerequisites
+
+Before executing the `deposit` action, the following conditions must be met:
+
+- **Arbitrum RPC URL**: The `precheck` function of this Ability requires a valid Arbitrum mainnet RPC URL to perform the USDC transfer to the Hyperliquid bridge contract.
+- **USDC Balance on Arbitrum**: The Vincent User Agent Wallet must have sufficient USDC on Arbitrum to cover the deposit amount.
+  - The minimum deposit amount for Hyperliquid is $5 USDC, do **not** deposit less as it will not be credited to the Vincent User's HyperCore perp balance.
+- **Native ETH for Gas**: The Vincent User Agent Wallet must have sufficient native ETH on Arbitrum to pay for the bridge transaction gas fees.
+
+<Info>
+  To learn more about executing Vincent Abilities, see the [Executing
+  Abilities](/ability/explaining-abilities) guide.
+</Info>
+
+## Executing the `precheck` Function
+
+The `precheck` function validates some prerequisites for executing a deposit, without actually performing the operation.
+
+For the `deposit` action, the `precheck` function will validate the following:
+
+- The `useTestnet` parameter is set to `false`, or wasn't provided.
+- The Vincent User Agent Wallet has a non-zero balance of native ETH on Arbitrum to pay for the bridge transaction gas fees.
+- The deposit amount is greater than or equal to the minimum deposit amount for Hyperliquid.
+- The Vincent User Agent Wallet has a sufficient USDC balance on Arbitrum to cover the deposit amount.
+
+<Tabs>
+  <Tab title="Parameters">
+    The `precheck` function requires the following parameters:
+
+    ```typescript
+    import { HyperliquidAction } from '@lit-protocol/vincent-ability-hyperliquid';
+
+    {
+      /**
+       * The action to perform (must be HyperliquidAction.DEPOSIT)
+       */
+      action: HyperliquidAction.DEPOSIT;
+      /**
+       * Deposit parameters
+       */
+      deposit: {
+        /**
+         * The amount of USDC to deposit in 6-decimal format.
+         * Example: "5000000" = 5 USDC
+         */
+        amount: string;
+      };
+      /**
+       * An RPC endpoint for Arbitrum mainnet where the deposit will be executed.
+       */
+      arbitrumRpcUrl: string;
+    }
+    ```
+
+  </Tab>
+
+  <Tab title="Implementation">
+    To execute `precheck`, you'll need to:
+
+    - Create an instance of the `VincentAbilityClient` using the `getVincentAbilityClient` function (imported from `@lit-protocol/vincent-app-sdk/abilityClient`)
+      - Pass in the Ability's `bundledVincentAbility` object (imported from `@lit-protocol/vincent-ability-hyperliquid`)
+      - Pass in the `ethersSigner` you'll be using to sign the request to Lit with your Delegatee private key
+    - Use the `VincentAbilityClient` instance to call the `precheck` function
+
+    ```typescript
+    import { getVincentAbilityClient } from '@lit-protocol/vincent-app-sdk/abilityClient';
+    import { bundledVincentAbility, HyperliquidAction } from '@lit-protocol/vincent-ability-hyperliquid';
+    import { ethers } from 'ethers';
+
+    // Your delegatee signer (one of the delegatee signers for the Vincent App)
+    const delegateeSigner = new ethers.Wallet('YOUR_DELEGATEE_PRIVATE_KEY', provider);
+
+    // Create ability client
+    const hyperliquidAbilityClient = getVincentAbilityClient({
+      bundledVincentAbility,
+      ethersSigner: delegateeSigner,
+    });
+
+    // Run precheck
+    const precheckResult = await hyperliquidAbilityClient.precheck(
+      {
+        action: HyperliquidAction.DEPOSIT,
+        deposit: {
+          amount: '5000000', // 5 USDC in 6-decimal format
+        },
+        arbitrumRpcUrl: 'https://arb1.arbitrum.io/rpc',
+      },
+      {
+        delegatorPkpEthAddress: '0x...', // The Vincent User's Vincent Wallet address
+      },
+    );
+
+    if (precheckResult.success) {
+      console.log('Deposit precheck passed, ready to execute');
+    } else {
+      // Handle different types of failures
+      if (precheckResult.runtimeError) {
+        console.error('Runtime error:', precheckResult.runtimeError);
+      }
+      if (precheckResult.schemaValidationError) {
+        console.error('Schema validation error:', precheckResult.schemaValidationError);
+      }
+      if (precheckResult.result) {
+        console.error('Deposit precheck failed:', precheckResult.result.reason);
+      }
+    }
+    ```
+
+  </Tab>
+
+  <Tab title="Response">
+    ### Success
+
+    A successful `precheck` response will contain:
+
+    ```typescript
+    {
+      /**
+       * The action that was prechecked
+       */
+      action: 'deposit';
+    }
+    ```
+
+    ### Failure
+
+    A failure `precheck` response will contain:
+
+    ```typescript
+    {
+      /**
+       * The action that was prechecked
+       */
+      action: 'deposit';
+      /**
+       * The reason the precheck failed, such as insufficient USDC balance,
+       * insufficient native ETH for gas, or invalid RPC URL.
+       */
+      reason: string;
+      /**
+       * The available USDC balance in the Vincent User's Arbitrum account (optional)
+       */
+      availableBalance?: string;
+    }
+    ```
+
+  </Tab>
+</Tabs>
+
+## Executing the `execute` Function
+
+The `execute` function performs the actual deposit by bridging USDC from Arbitrum to Vincent User's HyperCore perp balance, by transferring the USDC to the Hyperliquid bridge contract.
+
+For the `deposit` action, the `execute` function will:
+
+- Transfer the specified amount of USDC from the Vincent User Agent Wallet's Arbitrum account to the Hyperliquid bridge contract.
+- Return the transaction hash of the deposit transaction on Arbitrum.
+
+<Tabs>
+  <Tab title="Parameters">
+    The `execute` function requires the following parameters, note that the `arbitrumRpcUrl` parameter is not used because the Ability will use the Arbitrum RPC URL supplied by the Lit Nodes:
+
+    ```typescript
+    import { HyperliquidAction } from '@lit-protocol/vincent-ability-hyperliquid';
+
+    {
+      /**
+       * The action to perform (must be HyperliquidAction.DEPOSIT)
+       */
+      action: HyperliquidAction.DEPOSIT;
+      /**
+       * Deposit parameters
+       */
+      deposit: {
+        /**
+         * The amount of USDC to deposit in 6-decimal format.
+         * Example: "15000000" = 15 USDC
+         */
+        amount: string;
+      };
+    }
+    ```
+
+  </Tab>
+
+  <Tab title="Implementation">
+    The `execute` function can be executed using the same `VincentAbilityClient` instance as used for the `precheck` function:
+
+    ```typescript
+    const executeResult = await hyperliquidAbilityClient.execute(
+      {
+        action: HyperliquidAction.DEPOSIT,
+        deposit: {
+          amount: '15000000', // 15 USDC in 6-decimal format
+        },
+      },
+      {
+        delegatorPkpEthAddress: '0x...', // The Vincent User's Vincent Wallet address
+      },
+    );
+
+    if (executeResult.success) {
+      const { txHash } = executeResult.result;
+      console.log('Deposit transaction:', txHash);
+
+      // Wait for the transaction to be confirmed on Arbitrum
+      const provider = new ethers.providers.JsonRpcProvider('https://arb1.arbitrum.io/rpc');
+      const receipt = await provider.waitForTransaction(txHash, 1);
+      console.log('Transaction confirmed:', receipt.status === 1);
+    } else {
+      // Handle different types of failures
+      if (executeResult.runtimeError) {
+        console.error('Runtime error:', executeResult.runtimeError);
+      }
+      if (executeResult.schemaValidationError) {
+        console.error('Schema validation error:', executeResult.schemaValidationError);
+      }
+      if (executeResult.result) {
+        console.error('Deposit execution failed:', executeResult.result.reason);
+      }
+    }
+    ```
+
+  </Tab>
+
+  <Tab title="Response">
+    **Success Response**
+
+    A successful `execute` response will contain:
+
+    ```typescript
+    {
+      /**
+       * The action that was executed
+       */
+      action: 'deposit';
+      /**
+       * The hash of the deposit transaction on Arbitrum
+       */
+      txHash: string;
+    }
+    ```
+
+    **Failure Response**
+
+    A failure `execute` response will contain:
+
+    ```typescript
+    {
+      /**
+       * The action that was executed
+       */
+      action: 'deposit';
+      /**
+       * The reason the execution failed, such as insufficient USDC balance,
+       * insufficient native ETH for gas, or transaction failure.
+       */
+      reason?: string;
+    }
+    ```
+
+  </Tab>
+</Tabs>
+
+## Important Considerations
+
+<AccordionGroup>
+  <Accordion title="Deposit Processing Time" icon="clock">
+    After successfully executing a deposit transaction on Arbitrum, it takes some time for the funds to appear in the Vincent User's Hyperliquid portfolio. The transaction must be confirmed on Arbitrum before Hyperliquid's bridge processes the deposit.
+  </Accordion>
+
+<Accordion title="USDC Decimal Format" icon="hashtag">
+  USDC on Arbitrum uses **6 decimals**. When specifying the deposit amount, use the 6-decimal
+  format:
+  
+  - 5 USDC = `"5000000"`
+  - 15 USDC = `"15000000"`
+  - 100 USDC = `"100000000"`
+
+</Accordion>
+
+<Accordion title="Testnet Not Supported" icon="triangle-exclamation">
+  The `deposit` action only works on **Hyperliquid mainnet**. If you set `useTestnet: true`, the
+  deposit action will fail. To get test USDC on Hyperliquid testnet, you must first make a minimum 5
+  USDC deposit on mainnet, then claim test USDC through the [Hyperliquid testnet
+  faucet](https://hyperliquid.gitbook.io/hyperliquid-docs/onboarding/testnet-faucet).
+</Accordion>
+
+<Accordion title="Gas Fees on Arbitrum" icon="gas-pump">
+  The Vincent User's Vincent Wallet must have sufficient native ETH on Arbitrum to pay for the
+  bridge transaction gas fees. Ensure the wallet has at least a small amount of ETH before
+  attempting a deposit.
+</Accordion>
+
+  <Accordion title="Verifying Deposit Success" icon="check">
+    After the deposit transaction is confirmed on Arbitrum, you can verify the funds arrived in the Vincent User's Hyperliquid portfolio by checking the clearinghouse state using a [Hyperliquid SDK](https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api), or by using the [Hyperliquid API](https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/info-endpoint/perpetuals#retrieve-perpetuals-asset-contexts-includes-mark-price-current-funding-open-interest-etc).
+  </Accordion>
+</AccordionGroup>
+
+## Reference Implementation
+
+For a complete working example showing the full deposit workflow including balance verification, see the [deposit.spec.ts](https://github.com/LIT-Protocol/Vincent/blob/main/packages/apps/ability-hyperliquid/test/e2e/deposit.spec.ts) end-to-end test in the `ability-hyperliquid` package.
+
+## Next Steps
+
+Explore the rest of the supported Hyperliquid actions:
+
+<CardGroup cols={3}>
+
+<Card title="Withdraw" href="/ability/official-abilities/hyperliquid/withdraw" icon="arrow-up" />
+
+<Card
+  title="Send Spot Asset"
+  href="/ability/official-abilities/hyperliquid/send-spot-asset"
+  icon="coins"
+/>
+
+<Card
+  title="Send Perp USDC"
+  href="/ability/official-abilities/hyperliquid/send-perp-usdc"
+  icon="dollar-sign"
+/>
+
+<Card
+  title="Transfer to Spot"
+  href="/ability/official-abilities/hyperliquid/transfer-to-spot"
+  icon="arrow-right"
+/>
+
+<Card
+  title="Transfer to Perp"
+  href="/ability/official-abilities/hyperliquid/transfer-to-perp"
+  icon="arrow-left"
+/>
+
+<Card
+  title="Spot Buy"
+  href="/ability/official-abilities/hyperliquid/spot-buy"
+  icon="shopping-cart"
+/>
+
+<Card title="Spot Sell" href="/ability/official-abilities/hyperliquid/spot-sell" icon="tag" />
+
+<Card
+  title="Perp Long"
+  href="/ability/official-abilities/hyperliquid/perp-long"
+  icon="arrow-up-right"
+/>
+
+<Card
+  title="Perp Short"
+  href="/ability/official-abilities/hyperliquid/perp-short"
+  icon="arrow-down-right"
+/>
+
+<Card title="Cancel Order" href="/ability/official-abilities/hyperliquid/cancel-order" icon="ban" />
+
+<Card
+  title="Cancel All Orders"
+  href="/ability/official-abilities/hyperliquid/cancel-all-orders-for-symbol"
+  icon="trash"
+/>
+
+</CardGroup>
