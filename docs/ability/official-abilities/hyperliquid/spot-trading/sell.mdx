@@ -1,14 +1,14 @@
 ---
-title: Spot Buy
+title: Spot Sell
 ---
 
-The `spotBuy` action enables Vincent Apps to execute buy orders on Hyperliquid's spot market using a Vincent User's HyperCore spot balance.
+The `spotSell` action enables Vincent Apps to execute sell orders on Hyperliquid's spot market using a Vincent User's HyperCore spot balance.
 
 ## Prerequisites
 
-Before executing the `spotBuy` action, the following conditions must be met:
+Before executing the `spotSell` action, the following conditions must be met:
 
-- **Spot Balance on HyperCore**: The Vincent User Agent Wallet must have sufficient balance for the quote asset in their HyperCore spot balance to cover the purchase amount. The quote asset is the second asset in the trading pair (e.g., USDC in "PURR/USDC").
+- **Spot Balance on HyperCore**: The Vincent User Agent Wallet must have sufficient balance for the base asset in their HyperCore spot balance to cover the sell amount. The base asset is the first asset in the trading pair (e.g., PURR in "PURR/USDC").
 - **Order Parameters**: You must provide a valid trading pair symbol (e.g., "PURR/USDC"), price, and size according to Hyperliquid's trading rules.
 
 <Info>
@@ -18,12 +18,12 @@ Before executing the `spotBuy` action, the following conditions must be met:
 
 ## Executing the `precheck` Function
 
-The `precheck` function validates some prerequisites for executing a spot buy, without actually performing the operation.
+The `precheck` function validates some prerequisites for executing a spot sell, without actually performing the operation.
 
-For the `spotBuy` action, the `precheck` function will validate the following:
+For the `spotSell` action, the `precheck` function will validate the following:
 
 - The trading pair symbol is a valid Hyperliquid trading pair (e.g., "PURR/USDC").
-- The Vincent User Agent Wallet has sufficient balance for the quote asset in their HyperCore spot balance to cover the purchase amount. The quote asset is the second asset in the trading pair (e.g. USDC in "PURR/USDC").
+- The Vincent User Agent Wallet has sufficient balance for the base asset in their HyperCore spot balance to cover the sell amount. The base asset is the first asset in the trading pair (e.g. PURR in "PURR/USDC").
 
 <Tabs>
   <Tab title="Parameters">
@@ -34,15 +34,15 @@ For the `spotBuy` action, the `precheck` function will validate the following:
 
     {
       /**
-       * The action to perform (must be HyperliquidAction.SPOT_BUY)
+       * The action to perform (must be HyperliquidAction.SPOT_SELL)
        */
-      action: HyperliquidAction.SPOT_BUY;
+      action: HyperliquidAction.SPOT_SELL;
       /**
        * Whether to use Hyperliquid testnet (optional, defaults to false)
        */
       useTestnet?: boolean;
       /**
-       * Spot buy parameters
+       * Spot sell parameters
        */
       spot: {
         /**
@@ -79,7 +79,7 @@ For the `spotBuy` action, the `precheck` function will validate the following:
 
     ```typescript
     import { getVincentAbilityClient } from '@lit-protocol/vincent-app-sdk/abilityClient';
-    import { bundledVincentAbility, HyperliquidAction } from '@lit-protocol/vincent-ability-hyperliquid';
+    import { bundledVincentAbility } from '@lit-protocol/vincent-ability-hyperliquid';
     import { ethers } from 'ethers';
 
     // Your delegatee signer (one of the delegatee signers for the Vincent App)
@@ -94,7 +94,7 @@ For the `spotBuy` action, the `precheck` function will validate the following:
     // Run precheck
     const precheckResult = await hyperliquidAbilityClient.precheck(
       {
-        action: HyperliquidAction.SPOT_BUY,
+        action: 'spotSell',
         useTestnet: false, // Set to true for testnet
         spot: {
           symbol: 'PURR/USDC',
@@ -108,7 +108,7 @@ For the `spotBuy` action, the `precheck` function will validate the following:
     );
 
     if (precheckResult.success) {
-      console.log('Spot buy precheck passed, ready to execute');
+      console.log('Spot sell precheck passed, ready to execute');
     } else {
       // Handle different types of failures
       if (precheckResult.runtimeError) {
@@ -118,7 +118,7 @@ For the `spotBuy` action, the `precheck` function will validate the following:
         console.error('Schema validation error:', precheckResult.schemaValidationError);
       }
       if (precheckResult.result) {
-        console.error('Spot buy precheck failed:', precheckResult.result.reason);
+        console.error('Spot sell precheck failed:', precheckResult.result.reason);
       }
     }
     ```
@@ -135,7 +135,7 @@ For the `spotBuy` action, the `precheck` function will validate the following:
       /**
        * The action that was prechecked
        */
-      action: 'spotBuy';
+      action: 'spotSell';
     }
     ```
 
@@ -148,9 +148,9 @@ For the `spotBuy` action, the `precheck` function will validate the following:
       /**
        * The action that was prechecked
        */
-      action: 'spotBuy';
+      action: 'spotSell';
       /**
-       * The reason the precheck failed, such as insufficient spot balance
+       * The reason the precheck failed, such as insufficient token balance
        */
       reason: string;
     }
@@ -161,11 +161,11 @@ For the `spotBuy` action, the `precheck` function will validate the following:
 
 ## Executing the `execute` Function
 
-The `execute` function performs the actual buy operation, placing a buy order on Hyperliquid's spot market.
+The `execute` function performs the actual sell operation, placing a sell order on Hyperliquid's spot market.
 
-For the `spotBuy` action, the `execute` function will:
+For the `spotSell` action, the `execute` function will:
 
-- Place a buy order for the specified token pair at the given price and size.
+- Place a sell order for the specified token pair at the given price and size.
 - Return the order result from Hyperliquid.
 
 <Tabs>
@@ -177,15 +177,15 @@ For the `spotBuy` action, the `execute` function will:
 
     {
       /**
-       * The action to perform (must be HyperliquidAction.SPOT_BUY)
+       * The action to perform (must be HyperliquidAction.SPOT_SELL)
        */
-      action: HyperliquidAction.SPOT_BUY;
+      action: HyperliquidAction.SPOT_SELL;
       /**
        * Whether to use Hyperliquid testnet (optional, defaults to false)
        */
       useTestnet?: boolean;
       /**
-       * Spot buy parameters
+       * Spot sell parameters
        */
       spot: {
         /**
@@ -231,7 +231,7 @@ For the `spotBuy` action, the `execute` function will:
 
     const executeResult = await hyperliquidAbilityClient.execute(
       {
-        action: HyperliquidAction.SPOT_BUY,
+        action: 'spotSell',
         useTestnet: false, // Set to true for testnet
         spot: {
           symbol: 'PURR/USDC',
@@ -247,7 +247,7 @@ For the `spotBuy` action, the `execute` function will:
 
     if (executeResult.success) {
       const { orderResult } = executeResult.result;
-      console.log('Spot buy executed successfully:', orderResult);
+      console.log('Spot sell executed successfully:', orderResult);
     } else {
       // Handle different types of failures
       if (executeResult.runtimeError) {
@@ -257,7 +257,7 @@ For the `spotBuy` action, the `execute` function will:
         console.error('Schema validation error:', executeResult.schemaValidationError);
       }
       if (executeResult.result) {
-        console.error('Spot buy execution failed:', executeResult.result.reason);
+        console.error('Spot sell execution failed:', executeResult.result.reason);
       }
     }
     ```
@@ -274,7 +274,7 @@ For the `spotBuy` action, the `execute` function will:
       /**
        * The action that was executed
        */
-      action: 'spotBuy';
+      action: 'spotSell';
       /**
        * The order response from Hyperliquid request as defined by the Hyperliquid SDK: @nktkas/hyperliquid
        * https://github.com/nktkas/hyperliquid/blob/2233ce942eb50ef8850073b387b9918d3a54a10b/src/api/exchange/order.ts#L103-L194
@@ -292,9 +292,9 @@ For the `spotBuy` action, the `execute` function will:
       /**
        * The action that was executed
        */
-      action: 'spotBuy';
+      action: 'spotSell';
       /**
-       * The reason the execution failed, such as insufficient spot balance
+       * The reason the execution failed, such as insufficient token balance
        */
       reason: string;
     }
@@ -311,10 +311,18 @@ For the `spotBuy` action, the `execute` function will:
 
   </Accordion>
 
+<Accordion title="Token Dust and Minimum Size" icon="coins">
+  When selling tokens, you may encounter "dust" - small amounts below the minimum tradeable size. For example:
+
+- If a token has szDecimals=0 (only whole tokens), fractional amounts like 0.9986 cannot be sold
+- The sell size is floored to the token's precision, so 1.9986 PURR becomes 1.0 PURR for a sell order
+
+</Accordion>
+
 <Accordion title="Getting Current Market Prices" icon="chart-line">
   You'll need to fetch the current market price before placing an order. Use the Hyperliquid API or
   SDK to get the mid price for your trading pair, then adjust it based on your strategy (e.g. 1%
-  above mid price for market buys).
+  below mid price for market sells).
 </Accordion>
 
 <Accordion title="Order Types" icon="list">
@@ -329,7 +337,7 @@ For the `spotBuy` action, the `execute` function will:
 
 ## Reference Implementation
 
-For a complete working example showing the full spot buy workflow including balance verification and price calculation, see the [buy.spec.ts](https://github.com/LIT-Protocol/Vincent/blob/main/packages/apps/ability-hyperliquid/test/e2e/spot/buy.spec.ts) end-to-end test in the `ability-hyperliquid` package.
+For a complete working example showing the full spot sell workflow including balance verification and price calculation, see the [sell.spec.ts](https://github.com/LIT-Protocol/Vincent/blob/main/packages/apps/ability-hyperliquid/test/e2e/spot/sell.spec.ts) end-to-end test in the `ability-hyperliquid` package.
 
 ## Next Steps
 
@@ -365,7 +373,11 @@ Explore the rest of the supported Hyperliquid actions:
   icon="arrow-left"
 />
 
-<Card title="Spot Sell" href="/ability/official-abilities/hyperliquid/spot-sell" icon="tag" />
+<Card
+  title="Spot Buy"
+  href="/ability/official-abilities/hyperliquid/spot-buy"
+  icon="shopping-cart"
+/>
 
 <Card
   title="Perp Long"
