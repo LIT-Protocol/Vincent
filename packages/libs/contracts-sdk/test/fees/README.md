@@ -118,5 +118,6 @@ When modifying the test:
 ## Related Documentation
 
 - [Lit Actions README](../../lit-actions/README.md)
+- [Fee Lit Actions README](../../lit-actions/fees/README.md)
 - [Implementation Summary](../../IMPLEMENTATION_SUMMARY.md)
 - [Fee Contracts README](../../contracts/fees/README.md)

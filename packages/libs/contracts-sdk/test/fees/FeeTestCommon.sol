@@ -61,7 +61,7 @@ contract FeeTestCommon is TestCommon {
      * @return signature The signature bytes in r, s, v format
      *
      * @dev See packages/libs/contracts-sdk/src/fees/signOwnerAttestation.ts for the real implementation
-     * @dev See packages/libs/contracts-sdk/lit-actions/ for the Lit Action source code
+     * @dev See packages/libs/contracts-sdk/lit-actions/fees/ for the Lit Action source code
      */
     function _signOwnerAttestation(FeeUtils.OwnerAttestation memory oa, uint256 ownerAttestationSignerPrivateKey)
         public

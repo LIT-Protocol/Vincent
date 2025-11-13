@@ -79,8 +79,8 @@ const wrapIIFEInStringPlugin = {
   try {
     await esbuild
       .build({
-        tsconfig: './lit-actions/tsconfig.json',
-        entryPoints: ['./lit-actions/self-executing-actions/signOwnerAttestation.ts'],
+        tsconfig: './lit-actions/fees/tsconfig.json',
+        entryPoints: ['./lit-actions/fees/self-executing-actions/signOwnerAttestation.ts'],
         bundle: true,
         minify: false,
         sourcemap: false,
