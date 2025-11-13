@@ -194,6 +194,7 @@ After a successful test run:
 
 ## Related Documentation
 
-- [Lit Actions README](../../lit-actions/README.md)
-- [Fee Test README](../../test/fees/README.md)
-- [Implementation Summary](../../IMPLEMENTATION_SUMMARY.md)
+- [Lit Actions README](./lit-actions/README.md)
+- [Fee Lit Actions README](./lit-actions/fees/README.md)
+- [Fee Test README](./test/fees/README.md)
+- [Fee Contracts README](./contracts/fees/README.md)
