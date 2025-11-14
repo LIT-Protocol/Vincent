@@ -120,14 +120,6 @@ describe('Hyperliquid Ability E2E Approve Builder Code Tests', () => {
     });
 
     it('should execute approve builder code', async () => {
-      // Skip if builder is already approved
-      if (initialBuilderApprovalStatus) {
-        console.log(
-          '[Approve Builder Code] Builder code is already approved, skipping execution test',
-        );
-        return;
-      }
-
       const hyperliquidAbilityClient = getVincentAbilityClient({
         bundledVincentAbility: hyperliquidBundledAbility,
         ethersSigner: wallets.appDelegatee,
