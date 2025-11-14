@@ -299,7 +299,7 @@ describe('Hyperliquid Ability E2E Spot Sell Tests', () => {
 
       // If builder rewards increased, log the difference
       const rewardIncrease = parseFloat(finalBuilderRewards) - parseFloat(initialBuilderRewards);
-      console.log(`[Perp Long] Builder rewards increased by: ${rewardIncrease}`);
+      console.log(`[Spot Sell] Builder rewards increased by: ${rewardIncrease}`);
     });
   });
 });
