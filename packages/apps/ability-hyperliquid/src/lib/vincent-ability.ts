@@ -29,6 +29,7 @@ import {
   withdrawUsdc,
   sendSpotAsset,
   sendPerpUsdc,
+  approveBuilderCode,
 } from './ability-helpers';
 import {
   depositPrechecks,
@@ -41,7 +42,20 @@ import {
   withdrawPrechecks,
   sendSpotAssetPrechecks,
   sendPerpUsdcPrechecks,
+  isBuilderCodeApproved,
 } from './ability-checks';
+import { HYPERLIQUID_BUILDER_ADDRESS, HYPERLIQUID_BUILDER_FEE_RATE } from './constants';
+
+/**
+ * Convert percentage string to tenths of basis points
+ * Example: "0.05" (0.05%) = 50 tenths of basis points
+ * Formula: percentage * 1000 = tenths of basis points
+ * (since 1% = 100 basis points = 1000 tenths of basis points)
+ */
+function percentageToTenthsOfBps(percentageStr: string): number {
+  const percentage = parseFloat(percentageStr);
+  return Math.round(percentage * 1000);
+}
 
 export const vincentAbility = createVincentAbility({
   packageName: '@lit-protocol/vincent-ability-hyperliquid' as const,
@@ -70,6 +84,25 @@ export const vincentAbility = createVincentAbility({
       infoClient,
       ethAddress: delegatorPkpInfo.ethAddress,
     });
+
+    if (
+      action === HyperliquidAction.SPOT_SELL ||
+      action === HyperliquidAction.PERP_LONG ||
+      action === HyperliquidAction.PERP_SHORT
+    ) {
+      const isBuilderApproved = await isBuilderCodeApproved({
+        infoClient,
+        ethAddress: delegatorPkpInfo.ethAddress,
+        builderAddress: HYPERLIQUID_BUILDER_ADDRESS,
+      });
+
+      if (!isBuilderApproved) {
+        return fail({
+          action,
+          reason: `Builder code is not approved. Please approve the builder code: ${HYPERLIQUID_BUILDER_ADDRESS}`,
+        });
+      }
+    }
 
     if (action === HyperliquidAction.DEPOSIT) {
       if (useTestnet) {
@@ -326,6 +359,23 @@ export const vincentAbility = createVincentAbility({
         return succeed({ action });
       }
 
+      case HyperliquidAction.APPROVE_BUILDER_CODE: {
+        const isBuilderApproved = await isBuilderCodeApproved({
+          infoClient,
+          ethAddress: delegatorPkpInfo.ethAddress,
+          builderAddress: HYPERLIQUID_BUILDER_ADDRESS,
+        });
+
+        if (isBuilderApproved) {
+          return fail({
+            action,
+            reason: `Builder code ${HYPERLIQUID_BUILDER_ADDRESS} is already approved`,
+          });
+        }
+
+        return succeed({ action });
+      }
+
       default:
         return fail({ action, reason: `Unknown action: ${action}` });
     }
@@ -340,6 +390,42 @@ export const vincentAbility = createVincentAbility({
     const { action, useTestnet = false } = abilityParams;
 
     const transport = new hyperliquid.HttpTransport({ isTestnet: useTestnet });
+
+    if (
+      action === HyperliquidAction.SPOT_SELL ||
+      action === HyperliquidAction.PERP_LONG ||
+      action === HyperliquidAction.PERP_SHORT
+    ) {
+      const isBuilderApproved = await isBuilderCodeApproved({
+        infoClient: new hyperliquid.InfoClient({ transport }),
+        ethAddress: delegatorPkpInfo.ethAddress,
+        builderAddress: HYPERLIQUID_BUILDER_ADDRESS,
+      });
+
+      if (!isBuilderApproved) {
+        console.log(
+          `[@lit-protocol/vincent-ability-hyperliquid execute] Builder code: ${HYPERLIQUID_BUILDER_ADDRESS} is not approved. Approving...`,
+        );
+        const result = await approveBuilderCode({
+          transport,
+          pkpPublicKey: delegatorPkpInfo.publicKey,
+          builderAddress: HYPERLIQUID_BUILDER_ADDRESS,
+          maxFeeRate: HYPERLIQUID_BUILDER_FEE_RATE,
+          useTestnet,
+        });
+
+        if (result.approveResult.status === 'ok') {
+          console.log(
+            `[@lit-protocol/vincent-ability-hyperliquid execute] Builder code: ${HYPERLIQUID_BUILDER_ADDRESS} approved.`,
+          );
+        } else {
+          return fail({
+            action,
+            reason: `Failed to approve builder code: ${HYPERLIQUID_BUILDER_ADDRESS}`,
+          });
+        }
+      }
+    }
 
     try {
       switch (action) {
@@ -497,6 +583,14 @@ export const vincentAbility = createVincentAbility({
             return fail({ action, reason: 'Spot trade parameters are required' });
           }
 
+          const isSell = action === HyperliquidAction.SPOT_SELL;
+          const builderFee = isSell
+            ? {
+                builderAddress: HYPERLIQUID_BUILDER_ADDRESS,
+                feeInTenthsOfBps: percentageToTenthsOfBps(HYPERLIQUID_BUILDER_FEE_RATE),
+              }
+            : undefined;
+
           const result = await executeSpotOrder({
             transport,
             pkpPublicKey: delegatorPkpInfo.publicKey,
@@ -506,6 +600,7 @@ export const vincentAbility = createVincentAbility({
               size: abilityParams.spot.size,
               isBuy: action === 'spotBuy',
               orderType: abilityParams.spot.orderType,
+              builderFee,
             },
             useTestnet,
           });
@@ -542,6 +637,10 @@ export const vincentAbility = createVincentAbility({
               leverage: {
                 leverage: abilityParams.perp.leverage,
                 isCross: abilityParams.perp.isCross ?? true,
+              },
+              builderFee: {
+                builderAddress: HYPERLIQUID_BUILDER_ADDRESS,
+                feeInTenthsOfBps: percentageToTenthsOfBps(HYPERLIQUID_BUILDER_FEE_RATE),
               },
             },
             useTestnet,
@@ -611,6 +710,28 @@ export const vincentAbility = createVincentAbility({
             action,
             cancelResult: result.cancelResult,
           });
+        }
+
+        case HyperliquidAction.APPROVE_BUILDER_CODE: {
+          const result = await approveBuilderCode({
+            transport,
+            pkpPublicKey: delegatorPkpInfo.publicKey,
+            builderAddress: HYPERLIQUID_BUILDER_ADDRESS,
+            maxFeeRate: HYPERLIQUID_BUILDER_FEE_RATE,
+            useTestnet,
+          });
+
+          if (result.approveResult.status === 'ok') {
+            return succeed({
+              action,
+              approveResult: result.approveResult,
+            });
+          } else {
+            return fail({
+              action,
+              reason: `Unexpected response status: ${JSON.stringify(result.approveResult, null, 2)}`,
+            });
+          }
         }
 
         default:

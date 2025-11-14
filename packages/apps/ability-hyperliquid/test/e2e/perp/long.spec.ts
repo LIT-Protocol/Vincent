@@ -7,6 +7,7 @@ import {
   getChainHelpers,
   getEnv,
   type PkpInfo,
+  setupVincentDevelopmentEnvironment,
 } from '@lit-protocol/vincent-e2e-test-utils';
 import { type PermissionData } from '@lit-protocol/vincent-contracts-sdk';
 import {
@@ -22,6 +23,7 @@ import {
   HyperliquidAction,
   bundledVincentAbility as hyperliquidBundledAbility,
   OrderType,
+  HYPERLIQUID_BUILDER_ADDRESS,
 } from '../../../src';
 import { calculatePerpOrderParams } from './helpers';
 
@@ -63,46 +65,11 @@ describe('Hyperliquid Ability E2E Perp Long Tests', () => {
       [hyperliquidBundledAbility.ipfsCid]: {},
     };
 
-    const abilityIpfsCids: string[] = Object.keys(PERMISSION_DATA);
-    const abilityPolicies: string[][] = abilityIpfsCids.map((abilityIpfsCid) => {
-      return Object.keys(PERMISSION_DATA[abilityIpfsCid]);
-    });
-
-    // If an app exists for the delegatee, we will create a new app version with the new ipfs cids
-    // Otherwise, we will create an app w/ version 1 appVersion with the new ipfs cids
-    const existingApp = await delegatee.getAppInfo();
-    console.log('[beforeAll] existingApp', existingApp);
-    let appId: number;
-    let appVersion: number;
-    if (!existingApp) {
-      console.log('[beforeAll] No existing app, registering new app');
-      const newApp = await appManager.registerNewApp({ abilityIpfsCids, abilityPolicies });
-      appId = newApp.appId;
-      appVersion = newApp.appVersion;
-    } else {
-      console.log('[beforeAll] Existing app, registering new app version');
-      const newAppVersion = await appManager.registerNewAppVersion({
-        abilityIpfsCids,
-        abilityPolicies,
-      });
-      appId = existingApp.appId;
-      appVersion = newAppVersion.appVersion;
-    }
-
-    agentPkpInfo = await delegator.getFundedAgentPkp();
-
-    await delegator.permitAppVersionForAgentWalletPkp({
+    const vincentDevEnvironment = await setupVincentDevelopmentEnvironment({
       permissionData: PERMISSION_DATA,
-      appId,
-      appVersion,
-      agentPkpInfo,
     });
-
-    await delegator.addPermissionForAbilities(
-      wallets.agentWalletOwner,
-      agentPkpInfo.tokenId,
-      abilityIpfsCids,
-    );
+    agentPkpInfo = vincentDevEnvironment.agentPkpInfo;
+    wallets = vincentDevEnvironment.wallets;
 
     transport = new hyperliquid.HttpTransport({ isTestnet: USE_TESTNET });
     infoClient = new hyperliquid.InfoClient({ transport });
@@ -115,6 +82,7 @@ describe('Hyperliquid Ability E2E Perp Long Tests', () => {
   describe(`[Perp Long] Open long position on ${PERP_SYMBOL} with ${PERP_LONG_USD_NOTIONAL} USD notional`, () => {
     let initialAccountValue: string;
     let initialPositionSize: string;
+    let initialBuilderRewards: string;
 
     beforeAll(async () => {
       // Get initial state before opening long
@@ -138,12 +106,25 @@ describe('Hyperliquid Ability E2E Perp Long Tests', () => {
           'No perp state found. Please ensure funds are transferred to perp account.',
         );
       }
+
+      // Get initial builder rewards before perp long
+      try {
+        const referralData = await infoClient.referral({
+          user: HYPERLIQUID_BUILDER_ADDRESS,
+        });
+        initialBuilderRewards = referralData.builderRewards || '0';
+        console.log(`[beforeAll] Initial builder rewards: ${initialBuilderRewards}`);
+      } catch (error) {
+        console.warn('[beforeAll] Could not fetch initial builder rewards:', error);
+        initialBuilderRewards = '0';
+      }
     });
 
     it('should run precheck for perp long', async () => {
       const hyperliquidAbilityClient = getVincentAbilityClient({
         bundledVincentAbility: hyperliquidBundledAbility,
         ethersSigner: wallets.appDelegatee,
+        debug: false,
       });
 
       const {
@@ -197,6 +178,7 @@ describe('Hyperliquid Ability E2E Perp Long Tests', () => {
       const hyperliquidAbilityClient = getVincentAbilityClient({
         bundledVincentAbility: hyperliquidBundledAbility,
         ethersSigner: wallets.appDelegatee,
+        debug: false,
       });
 
       const {
@@ -283,6 +265,37 @@ describe('Hyperliquid Ability E2E Perp Long Tests', () => {
       const finalAccountValue = perpState.marginSummary.accountValue;
       console.log('[Perp Long] Initial account value:', initialAccountValue);
       console.log('[Perp Long] Final account value:', finalAccountValue);
+    });
+
+    it('should validate builder rewards increased after perp long', async () => {
+      // Wait a bit for order to fill and builder rewards to be credited
+      // Builder rewards are processed onchain, so we need to wait for the transaction to be processed
+      await new Promise((resolve) => setTimeout(resolve, 10000));
+
+      // Get referral data after long
+      const referralData = await infoClient.referral({
+        user: HYPERLIQUID_BUILDER_ADDRESS,
+      });
+
+      expect(referralData).toBeDefined();
+      console.log(
+        '[Perp Long] Referral data after long:',
+        util.inspect(referralData, { depth: 10 }),
+      );
+
+      const finalBuilderRewards = referralData.builderRewards || '0';
+
+      console.log('[Perp Long] Initial builder rewards:', initialBuilderRewards);
+      console.log('[Perp Long] Final builder rewards:', finalBuilderRewards);
+
+      // Builder rewards should increase after a perp long (since builder codes apply to perp orders)
+      expect(parseFloat(finalBuilderRewards)).toBeGreaterThan(parseFloat(initialBuilderRewards));
+
+      // If builder rewards increased, log the difference
+      const rewardIncrease = parseFloat(finalBuilderRewards) - parseFloat(initialBuilderRewards);
+      if (rewardIncrease > 0) {
+        console.log(`[Perp Long] Builder rewards increased by: ${rewardIncrease}`);
+      }
     });
   });
 });
