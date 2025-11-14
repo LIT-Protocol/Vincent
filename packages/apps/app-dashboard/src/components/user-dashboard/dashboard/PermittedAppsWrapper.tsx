@@ -44,18 +44,41 @@ export function PermittedAppsWrapper() {
   const { permittedApps, unpermittedApps, deletedApps } = useMemo(() => {
     if (!allApps) return { permittedApps: [], unpermittedApps: [], deletedApps: [] };
 
-    const permittedAppIds = new Set(permittedPkps.filter((p) => !p.isDeleted).map((p) => p.appId));
-    const unpermittedAppIds = new Set(
-      unpermittedPkps.filter((p) => !p.isDeleted).map((p) => p.appId),
-    );
-    const deletedAppIds = new Set([
-      ...permittedPkps.filter((p) => p.isDeleted).map((p) => p.appId),
-      ...unpermittedPkps.filter((p) => p.isDeleted).map((p) => p.appId),
-    ]);
+    // Build sets of appIds for each category in a single pass
+    const permittedAppIds = new Set<number>();
+    const unpermittedAppIds = new Set<number>();
+    const deletedAppIds = new Set<number>();
 
-    const permitted = allApps.filter((app) => permittedAppIds.has(app.appId));
-    const unpermitted = allApps.filter((app) => unpermittedAppIds.has(app.appId));
-    const deleted = allApps.filter((app) => deletedAppIds.has(app.appId));
+    permittedPkps.forEach((p) => {
+      if (p.isDeleted) {
+        deletedAppIds.add(p.appId);
+      } else {
+        permittedAppIds.add(p.appId);
+      }
+    });
+
+    unpermittedPkps.forEach((p) => {
+      if (p.isDeleted) {
+        deletedAppIds.add(p.appId);
+      } else {
+        unpermittedAppIds.add(p.appId);
+      }
+    });
+
+    // Categorize apps in a single pass
+    const permitted: typeof allApps = [];
+    const unpermitted: typeof allApps = [];
+    const deleted: typeof allApps = [];
+
+    allApps.forEach((app) => {
+      if (deletedAppIds.has(app.appId)) {
+        deleted.push(app);
+      } else if (permittedAppIds.has(app.appId)) {
+        permitted.push(app);
+      } else if (unpermittedAppIds.has(app.appId)) {
+        unpermitted.push(app);
+      }
+    });
 
     return { permittedApps: permitted, unpermittedApps: unpermitted, deletedApps: deleted };
   }, [allApps, permittedPkps, unpermittedPkps]);

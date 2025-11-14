@@ -87,7 +87,7 @@ export function DeletedAppErrorScreen({
     } finally {
       setIsUnpermitting(false);
     }
-  }, [agentPKP, authInfo, sessionSigs, appData.appId, permittedVersion, navigate]);
+  }, [agentPKP, authInfo, sessionSigs, appData.appId, permittedVersion]);
 
   return (
     <div className="w-full max-w-4xl mx-auto relative z-10 space-y-3 sm:space-y-4 lg:space-y-6">

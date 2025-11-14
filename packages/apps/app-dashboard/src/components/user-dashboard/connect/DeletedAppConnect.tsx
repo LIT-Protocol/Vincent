@@ -91,7 +91,7 @@ export function DeletedAppConnect({
     } finally {
       setIsUnpermitting(false);
     }
-  }, [agentPKP, authInfo, sessionSigs, appData.appId, permittedVersion, navigate]);
+  }, [agentPKP, authInfo, sessionSigs, appData.appId, permittedVersion]);
 
   return (
     <div

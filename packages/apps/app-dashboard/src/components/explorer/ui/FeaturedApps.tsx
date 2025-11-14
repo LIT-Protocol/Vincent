@@ -96,13 +96,13 @@ export function FeaturedApps({ apps, onNavigate }: FeaturedAppsProps) {
   );
 
   const featuredAppIds = VITE_FEATURED_APP_IDS
-    ? VITE_FEATURED_APP_IDS.split(',').map((id: string) => id.trim())
+    ? VITE_FEATURED_APP_IDS.split(',').map((id: string) => Number(id.trim()))
     : [];
 
   // Filter apps to only include featured ones, in the order specified
   const featuredApps = featuredAppIds
-    .map((appId: string) => {
-      const found = apps.find((app: App) => String(app.appId) === String(appId));
+    .map((appId: number) => {
+      const found = apps.find((app: App) => app.appId === appId);
       return found;
     })
     .filter((app: App | undefined): app is App => app !== undefined);
