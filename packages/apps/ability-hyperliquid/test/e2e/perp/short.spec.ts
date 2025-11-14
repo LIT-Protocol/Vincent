@@ -294,7 +294,7 @@ describe('Hyperliquid Ability E2E Perp Short Tests', () => {
 
       // If builder rewards increased, log the difference
       const rewardIncrease = parseFloat(finalBuilderRewards) - parseFloat(initialBuilderRewards);
-      console.log(`[Perp Long] Builder rewards increased by: ${rewardIncrease}`);
+      console.log(`[Perp Short] Builder rewards increased by: ${rewardIncrease}`);
     });
   });
 });
