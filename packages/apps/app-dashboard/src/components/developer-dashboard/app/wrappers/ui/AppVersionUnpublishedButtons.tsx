@@ -62,7 +62,7 @@ export function AppVersionUnpublishedButtons({
         <ActionButton
           icon={Trash2}
           title="Delete Version"
-          description="Permanently remove this version"
+          description="Remove this version (this can be undone)."
           onClick={() => onOpenMutation('delete-version')}
           variant="danger"
           borderColor="rgb(254 202 202 / 0.3)"

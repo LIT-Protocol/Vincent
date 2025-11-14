@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/shared/ui/button';
 import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
@@ -604,7 +605,7 @@ export const WalletModal: React.FC<WalletModalProps> = ({ isOpen, onClose }) => 
     }
   };
 
-  return (
+  return createPortal(
     <>
       <AnimatePresence>
         {isOpen && (
@@ -615,7 +616,7 @@ export const WalletModal: React.FC<WalletModalProps> = ({ isOpen, onClose }) => 
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="fixed inset-0 bg-black/50 z-50"
+              className="fixed inset-0 bg-black/50 z-[100]"
               onClick={onClose}
             />
 
@@ -629,7 +630,7 @@ export const WalletModal: React.FC<WalletModalProps> = ({ isOpen, onClose }) => 
                 stiffness: 300,
                 damping: 30,
               }}
-              className="fixed inset-0 flex items-start justify-center pt-16 sm:pt-20 md:pt-24 p-4 z-50 pointer-events-none md:pl-64"
+              className="fixed inset-0 flex items-center justify-center p-4 z-[100] pointer-events-none md:pl-64"
             >
               <div
                 className={`w-full max-w-md mx-auto ${theme.mainCard} border ${theme.mainCardBorder} rounded-2xl shadow-2xl overflow-hidden pointer-events-auto`}
@@ -671,6 +672,7 @@ export const WalletModal: React.FC<WalletModalProps> = ({ isOpen, onClose }) => 
           </motion.div>
         )}
       </AnimatePresence>
-    </>
+    </>,
+    document.body,
   );
 };

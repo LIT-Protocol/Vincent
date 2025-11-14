@@ -11,7 +11,7 @@ import { useAllAgentApps } from '@/hooks/user-dashboard/useAllAgentApps';
 import Loading from '@/components/shared/ui/Loading';
 import { useFetchAppVersionsMap } from '@/hooks/user-dashboard/dashboard/useFetchAppVersionsMap';
 
-type FilterState = 'permitted' | 'unpermitted' | 'all';
+type FilterState = 'permitted' | 'unpermitted' | 'deleted' | 'all';
 
 export function PermittedAppsWrapper() {
   const readAuthInfo = useReadAuthInfo();
@@ -40,17 +40,56 @@ export function PermittedAppsWrapper() {
     isSuccess: appsSuccess,
   } = vincentApiClient.useListAppsQuery();
 
-  // Get permitted and unpermitted apps
-  const { permittedApps, unpermittedApps } = useMemo(() => {
-    if (!allApps) return { permittedApps: [], unpermittedApps: [] };
+  // Get permitted, unpermitted, and deleted apps
+  const { permittedApps, unpermittedApps, deletedApps } = useMemo(() => {
+    if (!allApps)
+      return {
+        permittedApps: [],
+        unpermittedApps: [],
+        deletedApps: [],
+      };
 
-    const permittedAppIds = new Set(permittedPkps.map((p) => p.appId));
-    const unpermittedAppIds = new Set(unpermittedPkps.map((p) => p.appId));
+    // Build sets of appIds for each category in a single pass
+    const permittedAppIds = new Set<number>();
+    const unpermittedAppIds = new Set<number>();
+    const deletedAppIds = new Set<number>();
 
-    const permitted = allApps.filter((app) => permittedAppIds.has(app.appId));
-    const unpermitted = allApps.filter((app) => unpermittedAppIds.has(app.appId));
+    permittedPkps.forEach((p) => {
+      permittedAppIds.add(p.appId);
+      if (p.isDeleted) {
+        deletedAppIds.add(p.appId);
+      }
+    });
 
-    return { permittedApps: permitted, unpermittedApps: unpermitted };
+    unpermittedPkps.forEach((p) => {
+      unpermittedAppIds.add(p.appId);
+      if (p.isDeleted) {
+        deletedAppIds.add(p.appId);
+      }
+    });
+
+    // Categorize apps in a single pass
+    const permitted: typeof allApps = [];
+    const unpermitted: typeof allApps = [];
+    const deleted: typeof allApps = [];
+
+    allApps.forEach((app) => {
+      if (permittedAppIds.has(app.appId)) {
+        permitted.push(app);
+      } else if (unpermittedAppIds.has(app.appId)) {
+        unpermitted.push(app);
+      }
+
+      if (deletedAppIds.has(app.appId)) {
+        deleted.push(app);
+      }
+    });
+
+    return {
+      permittedApps: permitted,
+      unpermittedApps: unpermitted,
+      deletedApps: deleted,
+    };
   }, [allApps, permittedPkps, unpermittedPkps]);
 
   // Filter apps based on filter state
@@ -60,12 +99,15 @@ export function PermittedAppsWrapper() {
         return permittedApps;
       case 'unpermitted':
         return unpermittedApps;
+      case 'deleted':
+        return deletedApps;
       case 'all':
+        // permittedApps and unpermittedApps already include deleted apps, so just combine them
         return [...permittedApps, ...unpermittedApps];
       default:
         return permittedApps;
     }
-  }, [permittedApps, unpermittedApps, filterState]);
+  }, [permittedApps, unpermittedApps, deletedApps, filterState]);
 
   const isUserAuthed = authInfo?.userPKP && sessionSigs;
 

@@ -1,8 +1,11 @@
-import { App } from '@/types/developer-dashboard/appTypes';
+import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { App } from '@/types/developer-dashboard/appTypes';
 import { Logo } from '@/components/shared/ui/Logo';
 import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
-import { useCallback } from 'react';
+import { env } from '@/config/env';
+
+const { VITE_FEATURED_APP_IDS } = env;
 
 interface FeaturedAppCardProps {
   app: App;
@@ -92,15 +95,14 @@ export function FeaturedApps({ apps, onNavigate }: FeaturedAppsProps) {
     [navigate, onNavigate],
   );
 
-  const featuredAppIdsString = import.meta.env.VITE_FEATURED_APP_IDS;
-  const featuredAppIds = featuredAppIdsString
-    ? featuredAppIdsString.split(',').map((id: string) => id.trim())
+  const featuredAppIds = VITE_FEATURED_APP_IDS
+    ? VITE_FEATURED_APP_IDS.split(',').map((id: string) => Number(id.trim()))
     : [];
 
   // Filter apps to only include featured ones, in the order specified
   const featuredApps = featuredAppIds
-    .map((appId: string) => {
-      const found = apps.find((app: App) => String(app.appId) === String(appId));
+    .map((appId: number) => {
+      const found = apps.find((app: App) => app.appId === appId);
       return found;
     })
     .filter((app: App | undefined): app is App => app !== undefined);

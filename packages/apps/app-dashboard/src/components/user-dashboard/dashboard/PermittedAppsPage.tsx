@@ -8,7 +8,7 @@ import { Package, ChevronDown, Check, Filter } from 'lucide-react';
 import { AgentAppPermission } from '@/utils/user-dashboard/getAgentPkps';
 import { PermittedAppCard } from './ui/PermittedAppCard';
 
-type FilterState = 'permitted' | 'unpermitted' | 'all';
+type FilterState = 'permitted' | 'unpermitted' | 'deleted' | 'all';
 
 type PermittedAppsPageProps = {
   apps: App[];
@@ -51,6 +51,7 @@ export function PermittedAppsPage({
     const labels = {
       permitted: 'Permitted',
       unpermitted: 'Unpermitted',
+      deleted: 'Deleted',
       all: 'All Apps',
     };
     return labels[filterState] || 'Permitted';
@@ -67,6 +68,10 @@ export function PermittedAppsPage({
         title: 'No unpermitted applications',
         description: 'All available applications have been granted permissions.',
       },
+      deleted: {
+        title: 'No deleted applications',
+        description: 'You have no permissions for deleted applications.',
+      },
       all: {
         title: 'No applications found',
         description: 'There are no applications available at this time',
@@ -82,6 +87,29 @@ export function PermittedAppsPage({
   };
 
   const emptyState = getEmptyStateMessage();
+
+  // Separate active and deleted apps for display purposes (only for permitted/unpermitted views)
+  const activeApps = apps.filter((app) => {
+    const permission =
+      permittedPkps.find((p) => p.appId === app.appId) ||
+      unpermittedPkps.find((p) => p.appId === app.appId);
+    return !permission?.isDeleted;
+  });
+
+  const deletedApps = apps.filter((app) => {
+    const permission =
+      permittedPkps.find((p) => p.appId === app.appId) ||
+      unpermittedPkps.find((p) => p.appId === app.appId);
+    return permission?.isDeleted;
+  });
+
+  // Determine if we should show the deleted section separately
+  const shouldShowDeletedSection =
+    (filterState === 'permitted' || filterState === 'unpermitted') && deletedApps.length > 0;
+
+  // Apps to display in the main grid (active apps for permitted/unpermitted, all apps for deleted/all)
+  const mainGridApps =
+    filterState === 'permitted' || filterState === 'unpermitted' ? activeApps : apps;
 
   return (
     <motion.div
@@ -154,6 +182,25 @@ export function PermittedAppsPage({
                     </button>
                     <button
                       onClick={() => {
+                        setFilterState('deleted');
+                        setShowDropdown(false);
+                      }}
+                      className={`w-full flex items-center justify-between gap-3 px-3 h-10 rounded-md text-sm font-medium transition-all duration-200 ${
+                        filterState === 'deleted'
+                          ? 'text-white'
+                          : `${theme.text} ${theme.itemHoverBg}`
+                      }`}
+                      style={
+                        filterState === 'deleted'
+                          ? { ...fonts.heading, backgroundColor: theme.brandOrange }
+                          : fonts.heading
+                      }
+                    >
+                      <span>Deleted</span>
+                      {filterState === 'deleted' && <Check className="h-4 w-4" />}
+                    </button>
+                    <button
+                      onClick={() => {
                         setFilterState('all');
                         setShowDropdown(false);
                       }}
@@ -204,24 +251,76 @@ export function PermittedAppsPage({
               </div>
             </div>
           ) : (
-            <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
-              {apps.map((app, index) => {
-                const permittedPermission = permittedPkps.find((p) => p.appId === app.appId);
-                const unpermittedPermission = unpermittedPkps.find((p) => p.appId === app.appId);
-                const permission = permittedPermission || unpermittedPermission;
-                const isUnpermitted = !!unpermittedPermission && !permittedPermission;
-                return (
-                  <PermittedAppCard
-                    key={app.appId}
-                    app={app}
-                    permission={permission}
-                    isUnpermitted={isUnpermitted}
-                    index={index}
-                    appVersionsMap={appVersionsMap}
-                  />
-                );
-              })}
-            </div>
+            <>
+              {/* Main grid - active apps for permitted/unpermitted, all apps for deleted/all */}
+              <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
+                {mainGridApps.map((app, index) => {
+                  const permittedPermission = permittedPkps.find((p) => p.appId === app.appId);
+                  const unpermittedPermission = unpermittedPkps.find((p) => p.appId === app.appId);
+                  const permission = permittedPermission || unpermittedPermission;
+                  const isUnpermitted = !!unpermittedPermission && !permittedPermission;
+                  const isDeleted = permission?.isDeleted ?? false;
+                  return (
+                    <PermittedAppCard
+                      key={app.appId}
+                      app={app}
+                      permission={permission}
+                      isUnpermitted={isUnpermitted}
+                      isDeleted={isDeleted}
+                      index={index}
+                      appVersionsMap={appVersionsMap}
+                    />
+                  );
+                })}
+              </div>
+
+              {/* Show deleted apps section for permitted/unpermitted views */}
+              {shouldShowDeletedSection && (
+                <>
+                  {/* Divider */}
+                  <div className="my-8 flex items-center gap-4">
+                    <div className={`flex-1 border-t ${theme.cardBorder}`} />
+                    <div
+                      className={`px-4 py-2 rounded-lg ${theme.itemBg} ${theme.cardBorder} border`}
+                    >
+                      <p
+                        className={`text-sm font-semibold ${theme.text} whitespace-nowrap`}
+                        style={fonts.heading}
+                      >
+                        {filterState === 'permitted'
+                          ? 'Deleted Apps (Still Permitted)'
+                          : 'Deleted Apps (Unpermitted)'}
+                      </p>
+                    </div>
+                    <div className={`flex-1 border-t ${theme.cardBorder}`} />
+                  </div>
+
+                  {/* Deleted apps grid */}
+                  <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
+                    {deletedApps.map((app, index) => {
+                      const permittedPermission = permittedPkps.find((p) => p.appId === app.appId);
+                      const unpermittedPermission = unpermittedPkps.find(
+                        (p) => p.appId === app.appId,
+                      );
+                      const permission = permittedPermission || unpermittedPermission;
+                      const isUnpermitted = !!unpermittedPermission && !permittedPermission;
+                      const isDeleted = permission?.isDeleted ?? false;
+                      return (
+                        <PermittedAppCard
+                          key={app.appId}
+                          app={app}
+                          permission={permission}
+                          isUnpermitted={isUnpermitted}
+                          isDeleted={isDeleted}
+                          index={index + mainGridApps.length}
+                          appVersionsMap={appVersionsMap}
+                        />
+                      );
+                    })}
+                  </div>
+                </>
+              )}
+            </>
           )}
         </div>
       </div>
