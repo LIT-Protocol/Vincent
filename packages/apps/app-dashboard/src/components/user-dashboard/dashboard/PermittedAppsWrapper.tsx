@@ -42,7 +42,12 @@ export function PermittedAppsWrapper() {
 
   // Get permitted, unpermitted, and deleted apps
   const { permittedApps, unpermittedApps, deletedApps } = useMemo(() => {
-    if (!allApps) return { permittedApps: [], unpermittedApps: [], deletedApps: [] };
+    if (!allApps)
+      return {
+        permittedApps: [],
+        unpermittedApps: [],
+        deletedApps: [],
+      };
 
     // Build sets of appIds for each category in a single pass
     const permittedAppIds = new Set<number>();
@@ -50,18 +55,16 @@ export function PermittedAppsWrapper() {
     const deletedAppIds = new Set<number>();
 
     permittedPkps.forEach((p) => {
+      permittedAppIds.add(p.appId);
       if (p.isDeleted) {
         deletedAppIds.add(p.appId);
-      } else {
-        permittedAppIds.add(p.appId);
       }
     });
 
     unpermittedPkps.forEach((p) => {
+      unpermittedAppIds.add(p.appId);
       if (p.isDeleted) {
         deletedAppIds.add(p.appId);
-      } else {
-        unpermittedAppIds.add(p.appId);
       }
     });
 
@@ -71,16 +74,22 @@ export function PermittedAppsWrapper() {
     const deleted: typeof allApps = [];
 
     allApps.forEach((app) => {
-      if (deletedAppIds.has(app.appId)) {
-        deleted.push(app);
-      } else if (permittedAppIds.has(app.appId)) {
+      if (permittedAppIds.has(app.appId)) {
         permitted.push(app);
       } else if (unpermittedAppIds.has(app.appId)) {
         unpermitted.push(app);
       }
+
+      if (deletedAppIds.has(app.appId)) {
+        deleted.push(app);
+      }
     });
 
-    return { permittedApps: permitted, unpermittedApps: unpermitted, deletedApps: deleted };
+    return {
+      permittedApps: permitted,
+      unpermittedApps: unpermitted,
+      deletedApps: deleted,
+    };
   }, [allApps, permittedPkps, unpermittedPkps]);
 
   // Filter apps based on filter state
@@ -93,7 +102,8 @@ export function PermittedAppsWrapper() {
       case 'deleted':
         return deletedApps;
       case 'all':
-        return [...permittedApps, ...unpermittedApps, ...deletedApps];
+        // permittedApps and unpermittedApps already include deleted apps, so just combine them
+        return [...permittedApps, ...unpermittedApps];
       default:
         return permittedApps;
     }
