@@ -209,7 +209,7 @@ describe('Hyperliquid Ability E2E Perp Short Tests', () => {
             size: shortSize,
             leverage: LEVERAGE,
             isCross: IS_CROSS,
-            reduceOnly: true,
+            reduceOnly: false,
             orderType: { type: OrderType.MARKET },
           },
         },
