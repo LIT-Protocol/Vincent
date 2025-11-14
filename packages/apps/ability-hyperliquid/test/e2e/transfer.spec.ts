@@ -128,6 +128,7 @@ describe('Hyperliquid Ability E2E Transfer USDC to Spot/Perp Tests', () => {
       const hyperliquidAbilityClient = getVincentAbilityClient({
         bundledVincentAbility: hyperliquidBundledAbility,
         ethersSigner: wallets.appDelegatee,
+        debug: false,
       });
 
       const precheckResult = await hyperliquidAbilityClient.precheck(
@@ -163,6 +164,7 @@ describe('Hyperliquid Ability E2E Transfer USDC to Spot/Perp Tests', () => {
       const hyperliquidAbilityClient = getVincentAbilityClient({
         bundledVincentAbility: hyperliquidBundledAbility,
         ethersSigner: wallets.appDelegatee,
+        debug: false,
       });
 
       const executeResult = await hyperliquidAbilityClient.execute(
@@ -271,6 +273,7 @@ describe('Hyperliquid Ability E2E Transfer USDC to Spot/Perp Tests', () => {
       const hyperliquidAbilityClient = getVincentAbilityClient({
         bundledVincentAbility: hyperliquidBundledAbility,
         ethersSigner: wallets.appDelegatee,
+        debug: false,
       });
 
       const precheckResult = await hyperliquidAbilityClient.precheck(
@@ -306,6 +309,7 @@ describe('Hyperliquid Ability E2E Transfer USDC to Spot/Perp Tests', () => {
       const hyperliquidAbilityClient = getVincentAbilityClient({
         bundledVincentAbility: hyperliquidBundledAbility,
         ethersSigner: wallets.appDelegatee,
+        debug: false,
       });
 
       const executeResult = await hyperliquidAbilityClient.execute(

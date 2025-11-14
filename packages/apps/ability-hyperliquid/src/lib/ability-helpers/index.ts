@@ -6,3 +6,5 @@ export { transferUsdcTo } from './transfer-usdc-to';
 export { executeSpotOrder } from './execute-spot-order';
 export { executePerpOrder } from './execute-perp-order';
 export { withdrawUsdc } from './withdraw-usdc';
+export { sendSpotAsset } from './send-spot-asset';
+export { sendPerpUsdc } from './send-perp-usdc';
