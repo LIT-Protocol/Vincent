@@ -11,6 +11,7 @@ import { bigIntReplacer } from '@lit-protocol/vincent-ability-sdk';
 
 import { LitActionPkpEthersWallet } from './lit-action-pkp-ethers-wallet';
 import { getHyperliquidNonce } from './get-hyperliquid-nonce';
+import { getHyperliquidChainId, getHyperliquidChainName } from './get-hyperliquid-chain-id';
 
 export type SendPerpUsdcResult = {
   sendResult: SuccessResponse;
@@ -35,18 +36,12 @@ export async function sendPerpUsdc({
   const pkpWallet = new LitActionPkpEthersWallet(pkpPublicKey);
   const nonce = await getHyperliquidNonce();
 
-  // Select chain ID and network based on testnet flag
-  const signatureChainId = useTestnet
-    ? '0x66eee' // Arbitrum Sepolia testnet chain ID: 421614
-    : '0xa4b1'; // Arbitrum mainnet chain ID: 42161
-  const hyperliquidChain = useTestnet ? 'Testnet' : 'Mainnet';
-
   // Construct send action
   // UsdSend uses standard 6 decimals for USDC (not Hyperliquid's 8 decimal precision)
   const sendAction = parser(UsdSendRequest.entries.action)({
     type: 'usdSend',
-    signatureChainId,
-    hyperliquidChain,
+    signatureChainId: getHyperliquidChainId(useTestnet),
+    hyperliquidChain: getHyperliquidChainName(useTestnet),
     destination,
     // Convert amount from micro-units (6 decimals) to human-readable format
     // e.g., "1000000" -> "1.0"

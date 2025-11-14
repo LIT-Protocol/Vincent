@@ -11,6 +11,7 @@ import { bigIntReplacer } from '@lit-protocol/vincent-ability-sdk';
 
 import { LitActionPkpEthersWallet } from './lit-action-pkp-ethers-wallet';
 import { getHyperliquidNonce } from './get-hyperliquid-nonce';
+import { getHyperliquidChainId, getHyperliquidChainName } from './get-hyperliquid-chain-id';
 
 export type SendSpotAssetResult = {
   sendResult: SuccessResponse;
@@ -48,17 +49,11 @@ export async function sendSpotAsset({
   }
   console.log('[sendAsset] Token info:', tokenInfo);
 
-  // Select chain ID and network based on testnet flag
-  const signatureChainId = useTestnet
-    ? '0x66eee' // Arbitrum Sepolia testnet chain ID: 421614
-    : '0xa4b1'; // Arbitrum mainnet chain ID: 42161
-  const hyperliquidChain = useTestnet ? 'Testnet' : 'Mainnet';
-
   // Construct send action
   const sendAction = parser(SpotSendRequest.entries.action)({
     type: 'spotSend',
-    signatureChainId,
-    hyperliquidChain,
+    signatureChainId: getHyperliquidChainId(useTestnet),
+    hyperliquidChain: getHyperliquidChainName(useTestnet),
     destination,
     // Construct token identifier in the format expected by SpotSend: "name:0xaddress"
     token: `${tokenInfo.name}:${tokenInfo.tokenId}`,
