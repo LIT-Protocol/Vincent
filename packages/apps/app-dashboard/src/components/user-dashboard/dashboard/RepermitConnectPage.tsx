@@ -16,6 +16,7 @@ import { ConnectAppHeader } from '../connect/ui/ConnectAppHeader';
 import { PageHeader } from './ui/PageHeader';
 import { ActionButtons } from '../connect/ui/ActionButtons';
 import { Breadcrumb } from '@/components/shared/ui/Breadcrumb';
+import { wait } from '@/lib/utils';
 
 interface RepermitConnectPageProps {
   appData: App;
@@ -55,10 +56,11 @@ export function RepermitConnectPage({
   // Handle redirect when JWT is ready
   useEffect(() => {
     if (redirectUrl && !localSuccess) {
-      setLocalSuccess('Success! Redirecting to app...');
-      setTimeout(() => {
+      (async () => {
+        setLocalSuccess('Success! Redirecting to app...');
+        await wait(1000);
         executeRedirect();
-      }, 2000);
+      })();
     }
   }, [redirectUrl, localSuccess, executeRedirect]);
 
@@ -94,17 +96,16 @@ export function RepermitConnectPage({
       setIsConnectProcessing(false);
       setLocalSuccess('App re-permitted successfully!');
 
-      // Generate JWT for redirect after short delay
-      setTimeout(async () => {
-        setLocalSuccess(null);
-        // Only generate JWT if there's an effectiveRedirectUri (for app redirects)
-        if (effectiveRedirectUri) {
-          await generateJWT(appData, appData.activeVersion!);
-        } else {
-          // Navigate to the app permissions page with full refresh to update sidebar
-          window.location.href = `/user/appId/${appData.appId}`;
-        }
-      }, 3000);
+      // Generate JWT for redirect or navigate after showing success message
+      await wait(2000);
+      setLocalSuccess(null);
+      // Only generate JWT if there's an effectiveRedirectUri (for app redirects)
+      if (effectiveRedirectUri) {
+        await generateJWT(appData, appData.activeVersion!);
+      } else {
+        // Navigate to the app permissions page with full refresh to update sidebar
+        window.location.href = `/user/appId/${appData.appId}`;
+      }
     } catch (error) {
       setLocalError(error instanceof Error ? error.message : 'Failed to re-permit app');
       setIsConnectProcessing(false);

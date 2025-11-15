@@ -19,6 +19,7 @@ import { ReadAuthInfo } from '@/hooks/user-dashboard/useAuthInfo';
 import { AppVersion } from '@/types/developer-dashboard/appTypes';
 import { hasConfigurablePolicies } from '@/utils/user-dashboard/hasConfigurablePolicies';
 import { litNodeClient } from '@/utils/user-dashboard/lit';
+import { wait } from '@/lib/utils';
 
 interface AppPermissionPageProps {
   connectInfoMap: ConnectInfoMap;
@@ -65,10 +66,11 @@ export function AppPermissionPage({
   // Handle redirect when JWT is ready
   useEffect(() => {
     if (redirectUrl && !localSuccess) {
-      setLocalSuccess('Success! Redirecting to app...');
-      setTimeout(() => {
+      (async () => {
+        setLocalSuccess('Success! Redirecting to app...');
+        await wait(1000);
         executeRedirect();
-      }, 2000);
+      })();
     }
   }, [redirectUrl, localSuccess, executeRedirect]);
 
@@ -176,9 +178,8 @@ export function AppPermissionPage({
       if (!hasAnyChanges) {
         setLocalStatus(null);
         setLocalSuccess('Permissions are up to date.');
-        setTimeout(() => {
-          setLocalSuccess(null);
-        }, 3000);
+        await wait(2000);
+        setLocalSuccess(null);
         return;
       }
 
@@ -211,17 +212,16 @@ export function AppPermissionPage({
         console.log('[UserPermissionPage] setAbilityPolicyParameters result:', result);
 
         setLocalStatus(null);
-        // Show success state for 3 seconds, then handle redirect or clear success
+        // Show success state then handle redirect or clear success
         setLocalSuccess('Permissions granted successfully!');
 
         // Generate JWT for redirect (useJwtRedirect will handle if there's a redirectUri)
-        setTimeout(async () => {
-          setLocalSuccess(null);
-          // Only generate JWT if there's a redirectUri (for app redirects)
-          if (redirectUri) {
-            await generateJWT(connectInfoMap.app, Number(permittedVersion));
-          }
-        }, 3000);
+        await wait(2000);
+        setLocalSuccess(null);
+        // Only generate JWT if there's a redirectUri (for app redirects)
+        if (redirectUri) {
+          await generateJWT(connectInfoMap.app, Number(permittedVersion));
+        }
       } catch (error) {
         setLocalError(error instanceof Error ? error.message : 'Failed to permit app');
         setLocalStatus(null);
@@ -279,10 +279,9 @@ export function AppPermissionPage({
       setLocalStatus(null);
       // Show success state until redirect
       setLocalSuccess('App unpermitted successfully!');
-      setTimeout(() => {
-        // Force the refresh for the sidebar to update
-        window.location.href = `/user/apps`;
-      }, 3000);
+      // Force the refresh for the sidebar to update after showing success message
+      await wait(2000);
+      window.location.href = `/user/apps`;
     } catch (error) {
       setLocalError(error instanceof Error ? error.message : 'Failed to unpermit app');
       setLocalStatus(null);
