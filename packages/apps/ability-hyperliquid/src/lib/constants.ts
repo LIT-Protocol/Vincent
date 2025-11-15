@@ -1,0 +1,2 @@
+export const HYPERLIQUID_BUILDER_ADDRESS = '0x132Db5f531Ba38628F1640683354229daE04E8e6';
+export const HYPERLIQUID_BUILDER_FEE_RATE = '0.05'; // Percentage as string (e.g., "0.05" = 0.05%)

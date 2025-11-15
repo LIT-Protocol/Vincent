@@ -14,6 +14,7 @@ export enum HyperliquidAction {
   PERP_SHORT = 'perpShort',
   CANCEL_ORDER = 'cancelOrder',
   CANCEL_ALL_ORDERS_FOR_SYMBOL = 'cancelAllOrdersForSymbol',
+  APPROVE_BUILDER_CODE = 'approveBuilderCode',
 }
 
 /**

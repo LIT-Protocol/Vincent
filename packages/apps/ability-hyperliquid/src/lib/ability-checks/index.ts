@@ -7,3 +7,4 @@ export { cancelOrderPrechecks, cancelAllOrdersForSymbolPrechecks } from './cance
 export { withdrawPrechecks } from './withdraw-usdc';
 export { sendSpotAssetPrechecks } from './send-spot-asset';
 export { sendPerpUsdcPrechecks } from './send-perp-usdc';
+export { isBuilderCodeApproved } from './is-builder-code-approved';

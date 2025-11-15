@@ -40,6 +40,17 @@ export interface PerpTradeParams {
     leverage: number; // 1-10x
     isCross: boolean; // true for cross margin, false for isolated
   };
+  /**
+   * Builder fee configuration.
+   * Applies to both long and short orders for perpetuals.
+   * Fee is specified in tenths of basis points (e.g., 10 = 0.01% = 1 basis point).
+   * Maximum builder fee is 0.1% (100 tenths of basis points) for perps.
+   * @see https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/exchange-endpoint#builder-codes
+   */
+  builderFee?: {
+    builderAddress: string; // Builder address
+    feeInTenthsOfBps: number; // Fee in tenths of basis points (e.g., 10 = 0.01%)
+  };
 }
 
 export type PerpOrderResult = PerpOrderResultSuccess | PerpOrderResultFailure;
@@ -135,7 +146,22 @@ export async function executePerpOrder({
       : { limit: { tif: orderType.tif } };
 
   // Construct order action
-  const orderAction = parser(OrderRequest.entries.action)({
+  const orderActionParams: {
+    type: 'order';
+    orders: Array<{
+      a: number;
+      b: boolean;
+      p: string;
+      s: string;
+      r: boolean;
+      t: typeof orderTypeField;
+    }>;
+    grouping: 'na';
+    builder?: {
+      b: `0x${string}`;
+      f: number;
+    };
+  } = {
     type: 'order',
     orders: [
       {
@@ -148,7 +174,18 @@ export async function executePerpOrder({
       },
     ],
     grouping: 'na',
-  });
+  };
+
+  // Add builder fee if provided
+  // Builder codes apply to both long and short orders for perpetuals
+  if (params.builderFee) {
+    orderActionParams.builder = {
+      b: params.builderFee.builderAddress as `0x${string}`,
+      f: params.builderFee.feeInTenthsOfBps,
+    };
+  }
+
+  const orderAction = parser(OrderRequest.entries.action)(orderActionParams);
 
   // Sign and send
   const signature = await signL1Action({
