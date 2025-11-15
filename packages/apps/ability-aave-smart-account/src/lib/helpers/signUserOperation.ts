@@ -1,44 +1,49 @@
-import { deserializePermissionAccount } from '@zerodev/permissions';
-import { toECDSASigner } from '@zerodev/permissions/signers';
-import { KERNEL_V3_3, getEntryPoint } from '@zerodev/sdk/constants';
-import { Hex, createPublicClient, http } from 'viem';
-import { baseSepolia } from 'viem/chains';
+import { Address, createPublicClient, Hex, http } from 'viem';
+import { getUserOperationHash, UserOperation } from 'viem/account-abstraction';
 
 import { toLitActionAccount } from './toLitActionAccount';
+import { UserOp } from './userOperation';
 
 export interface SignUserOperationParams {
   alchemyRpcUrl: string;
+  entryPointAddress: Address;
   pkpPublicKey: Hex;
-  serializedZeroDevPermissionAccount: string;
-  userOp: any;
+  userOp: UserOp;
 }
 
 export async function signUserOperation({
   alchemyRpcUrl,
+  entryPointAddress,
   pkpPublicKey,
-  serializedZeroDevPermissionAccount,
   userOp,
 }: SignUserOperationParams) {
-  const chain = baseSepolia;
-  const transport = http(alchemyRpcUrl);
-  const kernelVersion = KERNEL_V3_3;
-  const entryPoint = getEntryPoint('0.7');
   const publicClient = createPublicClient({
-    chain,
-    transport,
+    transport: http(alchemyRpcUrl),
+  });
+  const chainId = await publicClient.getChainId();
+  const account = toLitActionAccount(pkpPublicKey);
+
+  const userOperationToHash: UserOperation<'0.7'> = {
+    ...userOp,
+    callGasLimit: BigInt(userOp.callGasLimit),
+    maxFeePerGas: BigInt(userOp.maxFeePerGas),
+    maxPriorityFeePerGas: BigInt(userOp.maxPriorityFeePerGas),
+    nonce: BigInt(userOp.nonce),
+    paymasterPostOpGasLimit: BigInt(userOp.paymasterPostOpGasLimit),
+    paymasterVerificationGasLimit: BigInt(userOp.paymasterVerificationGasLimit),
+    preVerificationGas: BigInt(userOp.preVerificationGas),
+    verificationGasLimit: BigInt(userOp.verificationGasLimit),
+    signature: '0x',
+  };
+
+  const userOpHash = getUserOperationHash({
+    chainId,
+    entryPointAddress,
+    entryPointVersion: '0.7',
+    userOperation: userOperationToHash,
   });
 
-  const pkpLitAccount = toLitActionAccount(pkpPublicKey);
-  const vincentAbilitySigner = await toECDSASigner({ signer: pkpLitAccount });
-  const permissionKernelAccount = await deserializePermissionAccount(
-    publicClient,
-    entryPoint,
-    kernelVersion,
-    serializedZeroDevPermissionAccount,
-    vincentAbilitySigner,
-  );
-
-  const userOperationSignature = await permissionKernelAccount.signUserOperation(userOp);
-
-  return userOperationSignature;
+  return await account.signMessage({
+    message: { raw: userOpHash },
+  });
 }

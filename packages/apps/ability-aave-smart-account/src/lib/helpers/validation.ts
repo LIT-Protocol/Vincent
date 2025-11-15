@@ -63,7 +63,7 @@ export const validateSimulation = ({
         return;
       }
       if (changeType === 'TRANSFER') {
-        if (!allowed.has(from!) || !allowed.has(to!)) {
+        if (!allowed.has(from) || !allowed.has(to)) {
           fail(
             'ERC20 TRANSFER endpoints must be within {zero address, userOp.sender or Aave addresses}',
           );
@@ -127,7 +127,6 @@ export const validateUserOp = async (params: ProccessUserOpParams) => {
   });
 
   return {
-    userOp,
     simulationChanges: simulation.changes,
   };
 };

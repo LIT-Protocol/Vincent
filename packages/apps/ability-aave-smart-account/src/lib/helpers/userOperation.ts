@@ -7,35 +7,27 @@ const userOpBaseSchema = z.object({
   nonce: z
     .string()
     .regex(/^0x([1-9a-fA-F]+[0-9a-fA-F]*|0)$/)
-    .optional()
     .describe('Account nonce or creation salt'),
   callData: hexSchema.describe('Data for operation call'),
   callGasLimit: z
     .string()
     .regex(/^0x([1-9a-fA-F]+[0-9a-fA-F]{0,15})|0$/)
-    .optional()
     .describe('Gas allocated for call'),
   verificationGasLimit: z
     .string()
     .regex(/^0x([1-9a-fA-F]+[0-9a-fA-F]{0,15})|0$/)
-    .optional()
     .describe('Gas allocated for verification'),
   preVerificationGas: z
     .string()
     .regex(/^0x([1-9a-fA-F]+[0-9a-fA-F]{0,15})|0$/)
-    .optional()
     .describe('Gas for pre-verification execution and calldata'),
   maxFeePerGas: z
     .string()
     .regex(/^0x([1-9a-fA-F]+[0-9a-fA-F]{0,15})|0$/)
-    .optional()
-    .default('0x59682F00') // 1.5 gwei (adjust to network conditions)
     .describe('Maximum fee per gas (EIP-1559)'),
   maxPriorityFeePerGas: z
     .string()
     .regex(/^0x([1-9a-fA-F]+[0-9a-fA-F]{0,15})|0$/)
-    .optional()
-    .default('0x3B9ACA00') // 1 gwei
     .describe('Max priority fee per gas (EIP-1559)'),
   signature: hexSchema.optional().describe('Data passed during verification.'),
   eip7702Auth: z
@@ -76,7 +68,6 @@ export const userOpv070Schema = userOpBaseSchema.extend({
   paymasterVerificationGasLimit: z
     .string()
     .regex(/^0x([1-9a-fA-F]+[0-9a-fA-F]{0,15})|0$/)
-    .optional()
     .describe('The gas limit for paymaster verification.'),
   factory: addressSchema
     .optional()
@@ -89,7 +80,6 @@ export const userOpv070Schema = userOpBaseSchema.extend({
   paymasterPostOpGasLimit: z
     .string()
     .regex(/^0x([1-9a-fA-F]+[0-9a-fA-F]{0,15})|0$/)
-    .optional()
     .describe(
       'The amount of gas to allocate for the paymaster post-op code (only if a paymaster exists)',
     ),

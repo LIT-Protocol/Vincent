@@ -115,7 +115,7 @@ export const AAVE_POOL_ABI: Abi = [
 /**
  * Chain id to Aave Address Book mapping
  */
-const CHAIN_TO_AAVE_ADDRESS_BOOK: Record<number, any> = {
+export const CHAIN_TO_AAVE_ADDRESS_BOOK: Record<number, any> = {
   // Mainnets
   1: AaveV3Ethereum,
   137: AaveV3Polygon,
