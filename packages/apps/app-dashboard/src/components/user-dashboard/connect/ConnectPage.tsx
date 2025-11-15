@@ -20,6 +20,7 @@ import { useJwtRedirect } from '@/hooks/user-dashboard/connect/useJwtRedirect';
 import { BigNumber } from 'ethers';
 import { addPayee } from '@/utils/user-dashboard/addPayee';
 import { usePendingAppConnectPkp } from '@/hooks/user-dashboard/connect/usePendingAppConnectPkp';
+import { wait } from '@/lib/utils';
 
 interface ConnectPageProps {
   connectInfoMap: ConnectInfoMap;
@@ -67,8 +68,11 @@ export function ConnectPage({
   // Handle redirect when JWT is ready
   useEffect(() => {
     if (redirectUrl && !localSuccess) {
-      setLocalSuccess('Success! Redirecting to app...');
-      executeRedirect();
+      (async () => {
+        setLocalSuccess('Success! Redirecting to app...');
+        await wait(1000);
+        executeRedirect();
+      })();
     }
   }, [redirectUrl, localSuccess, executeRedirect]);
 
