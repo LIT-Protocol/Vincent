@@ -1,0 +1,392 @@
+---
+title: Send Spot Asset
+---
+
+The `sendSpotAsset` action enables Vincent Apps to send spot assets (USDC or other tokens) from a Vincent User's HyperCore spot balance to another HyperCore account.
+
+## Prerequisites
+
+Before executing the `sendSpotAsset` action, the following conditions must be met:
+
+- **Spot Balance on HyperCore**: The Vincent User Agent Wallet must have sufficient balance of the specified token in their HyperCore spot account to cover the send amount.
+- **Destination Address**: You must provide a valid destination address on HyperCore to receive the tokens.
+
+<Info>
+  To learn more about executing Vincent Abilities, see the [Executing
+  Abilities](/ability/explaining-abilities) guide.
+</Info>
+
+## Executing the `precheck` Function
+
+The `precheck` function validates some prerequisites for executing a spot asset send, without actually performing the operation.
+
+For the `sendSpotAsset` action, the `precheck` function will validate the following:
+
+- The Vincent User Agent Wallet has sufficient balance of the specified token in their HyperCore spot account to cover the send amount.
+
+<Tabs>
+  <Tab title="Parameters">
+    The `precheck` function requires the following parameters:
+
+    ```typescript
+    import { HyperliquidAction } from '@lit-protocol/vincent-ability-hyperliquid';
+
+    {
+      /**
+       * The action to perform (must be HyperliquidAction.SEND_SPOT_ASSET)
+       */
+      action: HyperliquidAction.SEND_SPOT_ASSET;
+      /**
+       * Whether to use Hyperliquid testnet (optional, defaults to false)
+       */
+      useTestnet?: boolean;
+      /**
+       * Send spot asset parameters
+       */
+      sendSpotAsset: {
+        /**
+         * The destination address on HyperCore to receive the tokens
+         */
+        destination: string;
+        /**
+         * The token to send (e.g., "USDC", "PURR", etc.)
+         */
+        token: string;
+        /**
+         * The amount to send in the token's Hyperliquid precision for spot trading.
+         * For example, USDC uses 8 decimals on Hyperliquid for spot trading (not 6)
+         * Example for USDC: "100000000" = 1.0 USDC
+         * Example for PURR (5 decimals): "10000" = 1.0 PURR
+         */
+        amount: string;
+      };
+    }
+    ```
+
+  </Tab>
+
+  <Tab title="Implementation">
+    To execute `precheck`, you'll need to:
+
+    - Create an instance of the `VincentAbilityClient` using the `getVincentAbilityClient` function (imported from `@lit-protocol/vincent-app-sdk/abilityClient`)
+      - Pass in the Ability's `bundledVincentAbility` object (imported from `@lit-protocol/vincent-ability-hyperliquid`)
+      - Pass in the `ethersSigner` you'll be using to sign the request to Lit with your Delegatee private key
+    - Use the `VincentAbilityClient` instance to call the `precheck` function
+
+    ```typescript
+    import { getVincentAbilityClient } from '@lit-protocol/vincent-app-sdk/abilityClient';
+    import { bundledVincentAbility, HyperliquidAction } from '@lit-protocol/vincent-ability-hyperliquid';
+    import { ethers } from 'ethers';
+
+    // Your delegatee signer (one of the delegatee signers for the Vincent App)
+    const delegateeSigner = new ethers.Wallet('YOUR_DELEGATEE_PRIVATE_KEY', provider);
+
+    // Create ability client
+    const hyperliquidAbilityClient = getVincentAbilityClient({
+      bundledVincentAbility,
+      ethersSigner: delegateeSigner,
+    });
+
+    // Run precheck
+    const precheckResult = await hyperliquidAbilityClient.precheck(
+      {
+        action: HyperliquidAction.SEND_SPOT_ASSET,
+        useTestnet: false, // Set to true for testnet
+        sendSpotAsset: {
+          destination: '0x...', // Recipient's HyperCore address
+          token: 'USDC',
+          amount: '100000000', // 1.0 USDC (8 decimals)
+        },
+      },
+      {
+        delegatorPkpEthAddress: '0x...', // The Vincent User's Vincent Wallet address
+      },
+    );
+
+    if (precheckResult.success) {
+      console.log('Send spot asset precheck passed, ready to execute');
+    } else {
+      // Handle different types of failures
+      if (precheckResult.runtimeError) {
+        console.error('Runtime error:', precheckResult.runtimeError);
+      }
+      if (precheckResult.schemaValidationError) {
+        console.error('Schema validation error:', precheckResult.schemaValidationError);
+      }
+      if (precheckResult.result) {
+        console.error('Send spot asset precheck failed:', precheckResult.result.reason);
+      }
+    }
+    ```
+
+  </Tab>
+
+  <Tab title="Response">
+    ### Success
+
+    A successful `precheck` response will contain:
+
+    ```typescript
+    {
+      /**
+       * The action that was prechecked
+       */
+      action: 'sendSpotAsset';
+      /**
+       * The available balance of the token in the Vincent User's HyperCore spot account
+       */
+      availableBalance: string;
+    }
+    ```
+
+    ### Failure
+
+    A failure `precheck` response will contain:
+
+    ```typescript
+    {
+      /**
+       * The action that was prechecked
+       */
+      action: 'sendSpotAsset';
+      /**
+       * The reason the precheck failed, such as insufficient spot balance
+       */
+      reason: string;
+      /**
+       * The available balance of the token in the Vincent User's HyperCore spot account (optional)
+       */
+      availableBalance?: string;
+      /**
+       * The required balance of the token in the Vincent User's HyperCore spot account to cover the send amount (optional)
+       */
+      requiredBalance?: string;
+    }
+    ```
+
+  </Tab>
+</Tabs>
+
+## Executing the `execute` Function
+
+The `execute` function performs the actual send operation, transferring the specified token from the Vincent User's HyperCore spot balance to the destination address.
+
+For the `sendSpotAsset` action, the `execute` function will:
+
+- Transfer the specified amount of the token from the Vincent User Agent Wallet's HyperCore spot balance to the destination address.
+- Return the send result from Hyperliquid.
+
+<Tabs>
+  <Tab title="Parameters">
+    The `execute` function requires the following parameters:
+
+    ```typescript
+    import { HyperliquidAction } from '@lit-protocol/vincent-ability-hyperliquid';
+
+    {
+      /**
+       * The action to perform (must be HyperliquidAction.SEND_SPOT_ASSET)
+       */
+      action: HyperliquidAction.SEND_SPOT_ASSET;
+      /**
+       * Whether to use Hyperliquid testnet (optional, defaults to false)
+       */
+      useTestnet?: boolean;
+      /**
+       * Send spot asset parameters
+       */
+      sendSpotAsset: {
+        /**
+         * The destination address on HyperCore to receive the tokens
+         */
+        destination: string;
+        /**
+         * The token to send (e.g., "USDC", "PURR", etc.)
+         */
+        token: string;
+        /**
+         * The amount to send in the token's Hyperliquid precision for spot trading.
+         * For example, USDC uses 8 decimals on Hyperliquid for spot trading (not 6)
+         * Example for USDC: "100000000" = 1.0 USDC
+         * Example for PURR (5 decimals): "10000" = 1.0 PURR
+         */
+        amount: string;
+      };
+    }
+    ```
+
+  </Tab>
+
+  <Tab title="Implementation">
+    The `execute` function can be executed using the same `VincentAbilityClient` instance as used for the `precheck` function:
+
+    ```typescript
+    const executeResult = await hyperliquidAbilityClient.execute(
+      {
+        action: HyperliquidAction.SEND_SPOT_ASSET,
+        useTestnet: false, // Set to true for testnet
+        sendSpotAsset: {
+          destination: '0x...', // Recipient's HyperCore address
+          token: 'USDC',
+          amount: '100000000', // 1.0 USDC (8 decimals)
+        },
+      },
+      {
+        delegatorPkpEthAddress: '0x...', // The Vincent User's Vincent Wallet address
+      },
+    );
+
+    if (executeResult.success) {
+      const { sendResult } = executeResult.result;
+      console.log('Spot asset sent successfully:', sendResult);
+    } else {
+      // Handle different types of failures
+      if (executeResult.runtimeError) {
+        console.error('Runtime error:', executeResult.runtimeError);
+      }
+      if (executeResult.schemaValidationError) {
+        console.error('Schema validation error:', executeResult.schemaValidationError);
+      }
+      if (executeResult.result) {
+        console.error('Send spot asset execution failed:', executeResult.result.reason);
+      }
+    }
+    ```
+
+  </Tab>
+
+  <Tab title="Response">
+    **Success Response**
+
+    A successful `execute` response will contain:
+
+    ```typescript
+    {
+      /**
+       * The action that was executed
+       */
+      action: 'sendSpotAsset';
+      /**
+       * The send result from Hyperliquid request as defined by the Hyperliquid SDK: @nktkas/hyperliquid
+       * https://github.com/nktkas/hyperliquid/blob/2233ce942eb50ef8850073b387b9918d3a54a10b/src/api/exchange/_base/_schemas.ts#L49-L73
+       */
+      sendResult: SuccessResponse;
+    }
+    ```
+
+    **Failure Response**
+
+    A failure `execute` response will contain:
+
+    ```typescript
+    {
+      /**
+       * The action that was executed
+       */
+      action: 'sendSpotAsset';
+      /**
+       * The reason the execution failed, such as insufficient spot balance
+       */
+      reason: string;
+    }
+    ```
+
+  </Tab>
+</Tabs>
+
+## Important Considerations
+
+<AccordionGroup>
+  <Accordion title="Token Decimal Precision" icon="hashtag">
+    Hyperliquid uses different decimal precision for spot assets, so make sure to use the correct precision when specifying the send amount.
+    You can find the decimal precision for each token using a [Hyperliquid SDK](https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api), or by using the [Hyperliquid API](https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/info-endpoint/spot#retrieve-spot-metadata).
+
+    When specifying the send amount:
+    - **USDC**: Use 8 decimals
+      - 1.0 USDC = `"100000000"`
+      - 0.5 USDC = `"50000000"`
+      - 10 USDC = `"1000000000"`
+
+    - **Other tokens**: Check the token's specific decimal precision on Hyperliquid
+      - PURR: 5 decimals (1.0 PURR = `"100000"`)
+      - Each token may have different precision
+
+  </Accordion>
+
+<Accordion title="Send Source" icon="wallet">
+  Sends are always taken from the Vincent User's **HyperCore spot balance**. If you need to send
+  funds from the perp balance, you must first transfer them to the spot balance using the [Transfer
+  to Spot](/ability/official-abilities/hyperliquid/transfer-to-spot) action.
+</Accordion>
+
+<Accordion title="Destination Address" icon="location-dot">
+  The `destination` address must be a valid Ethereum address that exists on HyperCore. The recipient
+  will receive the tokens in their HyperCore spot account.
+</Accordion>
+
+  <Accordion title="Verifying Send Success" icon="check">
+    After the send is executed, you can verify the balances changed by checking the spot balances state for both the sender and recipient using a [Hyperliquid SDK](https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api), or by using the [Hyperliquid API](https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/info-endpoint/spot#retrieve-a-users-token-balances).
+  </Accordion>
+</AccordionGroup>
+
+## Reference Implementation
+
+For a complete working example showing the full send spot asset workflow including balance verification, see the [send-spot-asset.spec.ts](https://github.com/LIT-Protocol/Vincent/blob/main/packages/apps/ability-hyperliquid/test/e2e/spot/send-spot-asset.spec.ts) end-to-end test in the `ability-hyperliquid` package.
+
+## Next Steps
+
+Explore the rest of the supported Hyperliquid actions:
+
+<CardGroup cols={3}>
+
+<Card title="Deposit" href="/ability/official-abilities/hyperliquid/deposit" icon="arrow-down" />
+
+<Card title="Withdraw" href="/ability/official-abilities/hyperliquid/withdraw" icon="arrow-up" />
+
+<Card
+  title="Send Perp USDC"
+  href="/ability/official-abilities/hyperliquid/send-perp-usdc"
+  icon="dollar-sign"
+/>
+
+<Card
+  title="Transfer to Spot"
+  href="/ability/official-abilities/hyperliquid/transfer-to-spot"
+  icon="arrow-right"
+/>
+
+<Card
+  title="Transfer to Perp"
+  href="/ability/official-abilities/hyperliquid/transfer-to-perp"
+  icon="arrow-left"
+/>
+
+<Card
+  title="Spot Buy"
+  href="/ability/official-abilities/hyperliquid/spot-buy"
+  icon="shopping-cart"
+/>
+
+<Card title="Spot Sell" href="/ability/official-abilities/hyperliquid/spot-sell" icon="tag" />
+
+<Card
+  title="Perp Long"
+  href="/ability/official-abilities/hyperliquid/perp-long"
+  icon="arrow-up-right"
+/>
+
+<Card
+  title="Perp Short"
+  href="/ability/official-abilities/hyperliquid/perp-short"
+  icon="arrow-down-right"
+/>
+
+<Card title="Cancel Order" href="/ability/official-abilities/hyperliquid/cancel-order" icon="ban" />
+
+<Card
+  title="Cancel All Orders"
+  href="/ability/official-abilities/hyperliquid/cancel-all-orders-for-symbol"
+  icon="trash"
+/>
+
+</CardGroup>

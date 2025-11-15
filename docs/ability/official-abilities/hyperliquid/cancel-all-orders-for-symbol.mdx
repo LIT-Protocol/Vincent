@@ -1,0 +1,370 @@
+---
+title: Cancel All Orders
+---
+
+The `cancelAllOrdersForSymbol` action enables Vincent Apps to cancel all open orders for a specific symbol on Hyperliquid's spot or perpetuals market.
+
+## Prerequisites
+
+Before executing the `cancelAllOrdersForSymbol` action, the following conditions must be met:
+
+- **Symbol**: You must provide the symbol (trading pair for spot or asset for perp) for which to cancel all orders.
+
+<Info>
+  To learn more about executing Vincent Abilities, see the [Executing
+  Abilities](/ability/explaining-abilities) guide.
+</Info>
+
+## Executing the `precheck` Function
+
+The `precheck` function validates some prerequisites for executing cancel all orders, without actually performing the operation.
+
+For the `cancelAllOrdersForSymbol` action, the `precheck` function will validate the following:
+
+- Open orders for the specified symbol must exist.
+
+<Tabs>
+  <Tab title="Parameters">
+    The `precheck` function requires the following parameters:
+
+    ```typescript
+    import { HyperliquidAction } from '@lit-protocol/vincent-ability-hyperliquid';
+
+    {
+      /**
+       * The action to perform (must be HyperliquidAction.CANCEL_ALL_ORDERS_FOR_SYMBOL)
+       */
+      action: HyperliquidAction.CANCEL_ALL_ORDERS_FOR_SYMBOL;
+      /**
+       * Whether to use Hyperliquid testnet (optional, defaults to false)
+       */
+      useTestnet?: boolean;
+      /**
+       * Cancel all orders parameters
+       */
+      cancelAllOrdersForSymbol: {
+        /**
+         * The symbol for which to cancel all orders.
+         * For spot: trading pair (e.g., "PURR/USDC")
+         * For perp: base asset (e.g., "SOL", "ETH")
+         */
+        symbol: string;
+      };
+    }
+    ```
+
+  </Tab>
+
+  <Tab title="Implementation">
+    To execute `precheck`, you'll need to:
+
+    - Create an instance of the `VincentAbilityClient` using the `getVincentAbilityClient` function (imported from `@lit-protocol/vincent-app-sdk/abilityClient`)
+      - Pass in the Ability's `bundledVincentAbility` object (imported from `@lit-protocol/vincent-ability-hyperliquid`)
+      - Pass in the `ethersSigner` you'll be using to sign the request to Lit with your Delegatee private key
+    - Use the `VincentAbilityClient` instance to call the `precheck` function
+
+    ```typescript
+    import { getVincentAbilityClient } from '@lit-protocol/vincent-app-sdk/abilityClient';
+    import { bundledVincentAbility, HyperliquidAction } from '@lit-protocol/vincent-ability-hyperliquid';
+    import { ethers } from 'ethers';
+
+    // Your delegatee signer (one of the delegatee signers for the Vincent App)
+    const delegateeSigner = new ethers.Wallet('YOUR_DELEGATEE_PRIVATE_KEY', provider);
+
+    // Create ability client
+    const hyperliquidAbilityClient = getVincentAbilityClient({
+      bundledVincentAbility,
+      ethersSigner: delegateeSigner,
+    });
+
+    // Run precheck
+    const precheckResult = await hyperliquidAbilityClient.precheck(
+      {
+        action: HyperliquidAction.CANCEL_ALL_ORDERS_FOR_SYMBOL,
+        useTestnet: false, // Set to true for testnet
+        cancelAllOrdersForSymbol: {
+          symbol: 'PURR/USDC', // For spot orders, or 'PURR' for perp orders
+        },
+      },
+      {
+        delegatorPkpEthAddress: '0x...', // The Vincent User's Vincent Wallet address
+      },
+    );
+
+    if (precheckResult.success) {
+      console.log('Cancel all orders precheck passed, ready to execute');
+    } else {
+      // Handle different types of failures
+      if (precheckResult.runtimeError) {
+        console.error('Runtime error:', precheckResult.runtimeError);
+      }
+      if (precheckResult.schemaValidationError) {
+        console.error('Schema validation error:', precheckResult.schemaValidationError);
+      }
+      if (precheckResult.result) {
+        console.error('Cancel all orders precheck failed:', precheckResult.result.reason);
+      }
+    }
+    ```
+
+  </Tab>
+
+  <Tab title="Response">
+    ### Success
+
+    A successful `precheck` response will contain:
+
+    ```typescript
+    {
+      /**
+       * The action that was prechecked
+       */
+      action: 'cancelAllOrdersForSymbol';
+    }
+    ```
+
+    ### Failure
+
+    A failure `precheck` response will contain:
+
+    ```typescript
+    {
+      /**
+       * The action that was prechecked
+       */
+      action: 'cancelAllOrdersForSymbol';
+      /**
+       * The reason the precheck failed
+       */
+      reason: string;
+    }
+    ```
+
+  </Tab>
+</Tabs>
+
+## Executing the `execute` Function
+
+The `execute` function performs the actual cancel operation, removing all open orders for the specified symbol from Hyperliquid.
+
+For the `cancelAllOrdersForSymbol` action, the `execute` function will:
+
+- Cancel all open orders for the specified symbol on Hyperliquid.
+- Return the cancellation result from Hyperliquid.
+
+<Tabs>
+  <Tab title="Parameters">
+    The `execute` function requires the following parameters:
+
+    ```typescript
+    import { HyperliquidAction } from '@lit-protocol/vincent-ability-hyperliquid';
+
+    {
+      /**
+       * The action to perform (must be HyperliquidAction.CANCEL_ALL_ORDERS_FOR_SYMBOL)
+       */
+      action: HyperliquidAction.CANCEL_ALL_ORDERS_FOR_SYMBOL;
+      /**
+       * Whether to use Hyperliquid testnet (optional, defaults to false)
+       */
+      useTestnet?: boolean;
+      /**
+       * Cancel all orders parameters
+       */
+      cancelAllOrdersForSymbol: {
+        /**
+         * The symbol for which to cancel all orders.
+         * For spot: trading pair (e.g., "PURR/USDC")
+         * For perp: base asset (e.g., "SOL", "ETH")
+         */
+        symbol: string;
+      };
+    }
+    ```
+
+  </Tab>
+
+  <Tab title="Implementation">
+    The `execute` function can be executed using the same `VincentAbilityClient` instance as used for the `precheck` function:
+
+    ```typescript
+    const executeResult = await hyperliquidAbilityClient.execute(
+      {
+        action: HyperliquidAction.CANCEL_ALL_ORDERS_FOR_SYMBOL,
+        useTestnet: false, // Set to true for testnet
+        cancelAllOrdersForSymbol: {
+          symbol: 'PURR/USDC', // For spot orders, or 'PURR' for perp orders
+        },
+      },
+      {
+        delegatorPkpEthAddress: '0x...', // The Vincent User's Vincent Wallet address
+      },
+    );
+
+    if (executeResult.success) {
+      const { cancelResult } = executeResult.result;
+      console.log('All orders cancelled successfully:', cancelResult);
+    } else {
+      // Handle different types of failures
+      if (executeResult.runtimeError) {
+        console.error('Runtime error:', executeResult.runtimeError);
+      }
+      if (executeResult.schemaValidationError) {
+        console.error('Schema validation error:', executeResult.schemaValidationError);
+      }
+      if (executeResult.result) {
+        console.error('Cancel all orders execution failed:', executeResult.result.reason);
+      }
+    }
+    ```
+
+  </Tab>
+
+  <Tab title="Response">
+    **Success Response**
+
+    A successful `execute` response will contain:
+
+    ```typescript
+    {
+      /**
+       * The action that was executed
+       */
+      action: 'cancelAllOrdersForSymbol';
+      /**
+       * The order response from Hyperliquid request as defined by the Hyperliquid SDK: @nktkas/hyperliquid
+       * https://github.com/nktkas/hyperliquid/blob/2233ce942eb50ef8850073b387b9918d3a54a10b/src/api/exchange/cancel.ts#L74-L120
+       */
+      cancelResult: CancelResponse;
+    }
+    ```
+
+    **Failure Response**
+
+    A failure `execute` response will contain:
+
+    ```typescript
+    {
+      /**
+       * The action that was executed
+       */
+      action: 'cancelAllOrdersForSymbol';
+      /**
+       * The reason the execution failed
+       */
+      reason: string;
+    }
+    ```
+
+  </Tab>
+</Tabs>
+
+## Important Considerations
+
+<AccordionGroup>
+  <Accordion title="Symbol-Specific Cancellation" icon="filter">
+    This action cancels **all open orders for a specific symbol only**. Orders for other symbols will remain open.
+
+For example:
+
+- If you cancel all orders for "PURR/USDC", orders for "ETH/USDC" will not be affected
+- If you cancel all orders for "SOL" (perp), orders for "ETH" (perp) will not be affected
+
+  </Accordion>
+
+<Accordion title="Symbol Format" icon="tag">
+  The symbol format differs between spot and perpetual orders:
+
+- **Spot orders**: Use trading pair format (e.g., "PURR/USDC", "ETH/USDC")
+- **Perp orders**: Use base asset only (e.g., "SOL", "ETH", "BTC")
+
+Make sure to use the correct format for the type of orders you're cancelling.
+
+</Accordion>
+
+<Accordion title="No Orders to Cancel" icon="info-circle">
+  If there are no open orders for the specified symbol, the action will still succeed. The result
+  will indicate that the operation completed successfully, even though no orders were cancelled.
+</Accordion>
+
+<Accordion title="Both Sides Cancelled" icon="exchange-alt">
+  This action cancels **all orders for the symbol**, including:
+
+- Buy orders (bids)
+- Sell orders (asks)
+- Limit orders
+- Any other order types for the symbol
+
+All open orders for the symbol will be removed.
+
+</Accordion>
+
+  <Accordion title="Verifying Cancellation Success" icon="check">
+    After the cancellation is executed, you can verify it was successful by:
+    - Checking the open orders list using the [Hyperliquid API](https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/info-endpoint#retrieve-a-users-open-orders)
+    - Confirming the order ID no longer appears in the list
+    - Reviewing the cancellation result response
+  </Accordion>
+</AccordionGroup>
+
+## Reference Implementation
+
+For a complete working example showing the full cancel all orders workflow including verification, see the [cancel-all-orders.spec.ts](https://github.com/LIT-Protocol/Vincent/blob/main/packages/apps/ability-hyperliquid/test/e2e/spot/cancel-all-orders.spec.ts) end-to-end test in the `ability-hyperliquid` package.
+
+## Next Steps
+
+Explore the rest of the supported Hyperliquid actions:
+
+<CardGroup cols={3}>
+
+<Card title="Deposit" href="/ability/official-abilities/hyperliquid/deposit" icon="arrow-down" />
+
+<Card title="Withdraw" href="/ability/official-abilities/hyperliquid/withdraw" icon="arrow-up" />
+
+<Card
+  title="Send Spot Asset"
+  href="/ability/official-abilities/hyperliquid/send-spot-asset"
+  icon="coins"
+/>
+
+<Card
+  title="Send Perp USDC"
+  href="/ability/official-abilities/hyperliquid/send-perp-usdc"
+  icon="dollar-sign"
+/>
+
+<Card
+  title="Transfer to Spot"
+  href="/ability/official-abilities/hyperliquid/transfer-to-spot"
+  icon="arrow-right"
+/>
+
+<Card
+  title="Transfer to Perp"
+  href="/ability/official-abilities/hyperliquid/transfer-to-perp"
+  icon="arrow-left"
+/>
+
+<Card
+  title="Spot Buy"
+  href="/ability/official-abilities/hyperliquid/spot-buy"
+  icon="shopping-cart"
+/>
+
+<Card title="Spot Sell" href="/ability/official-abilities/hyperliquid/spot-sell" icon="tag" />
+
+<Card
+  title="Perp Long"
+  href="/ability/official-abilities/hyperliquid/perp-long"
+  icon="arrow-up-right"
+/>
+
+<Card
+  title="Perp Short"
+  href="/ability/official-abilities/hyperliquid/perp-short"
+  icon="arrow-down-right"
+/>
+
+<Card title="Cancel Order" href="/ability/official-abilities/hyperliquid/cancel-order" icon="ban" />
+
+</CardGroup>

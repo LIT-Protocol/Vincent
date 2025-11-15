@@ -1,0 +1,374 @@
+---
+title: Send Perp USDC
+---
+
+The `sendPerpUsdc` action enables Vincent Apps to send USDC from a Vincent User's HyperCore perp balance to another HyperCore perp account.
+
+## Prerequisites
+
+Before executing the `sendPerpUsdc` action, the following conditions must be met:
+
+- **Perp Balance on HyperCore**: The Vincent User Agent Wallet must have sufficient USDC in their HyperCore perp balance to cover the send amount.
+- **Destination Address**: You must provide a valid destination address on HyperCore to receive the USDC in their perp account.
+
+<Info>
+  To learn more about executing Vincent Abilities, see the [Executing
+  Abilities](/ability/explaining-abilities) guide.
+</Info>
+
+## Executing the `precheck` Function
+
+The `precheck` function validates some prerequisites for executing a perp USDC send, without actually performing the operation.
+
+For the `sendPerpUsdc` action, the `precheck` function will validate the following:
+
+- The Vincent User Agent Wallet has sufficient USDC in their HyperCore perp balance to cover the send amount.
+
+<Tabs>
+  <Tab title="Parameters">
+    The `precheck` function requires the following parameters:
+
+    ```typescript
+    import { HyperliquidAction } from '@lit-protocol/vincent-ability-hyperliquid';
+
+    {
+      /**
+       * The action to perform (must be HyperliquidAction.SEND_PERP_USDC)
+       */
+      action: HyperliquidAction.SEND_PERP_USDC;
+      /**
+       * Whether to use Hyperliquid testnet (optional, defaults to false)
+       */
+      useTestnet?: boolean;
+      /**
+       * Send perp USDC parameters
+       */
+      sendPerpUsdc: {
+        /**
+         * The destination address on HyperCore to receive the USDC in their perp account
+         */
+        destination: string;
+        /**
+         * The amount of USDC to send in 6-decimal format.
+         * Note: Perp USDC uses standard 6 decimals (unlike spot which uses 8)
+         * Example: "1000000" = 1.0 USDC
+         */
+        amount: string;
+      };
+    }
+    ```
+
+  </Tab>
+
+  <Tab title="Implementation">
+    To execute `precheck`, you'll need to:
+
+    - Create an instance of the `VincentAbilityClient` using the `getVincentAbilityClient` function (imported from `@lit-protocol/vincent-app-sdk/abilityClient`)
+      - Pass in the Ability's `bundledVincentAbility` object (imported from `@lit-protocol/vincent-ability-hyperliquid`)
+      - Pass in the `ethersSigner` you'll be using to sign the request to Lit with your Delegatee private key
+    - Use the `VincentAbilityClient` instance to call the `precheck` function
+
+    ```typescript
+    import { getVincentAbilityClient } from '@lit-protocol/vincent-app-sdk/abilityClient';
+    import { bundledVincentAbility, HyperliquidAction } from '@lit-protocol/vincent-ability-hyperliquid';
+    import { ethers } from 'ethers';
+
+    // Your delegatee signer (one of the delegatee signers for the Vincent App)
+    const delegateeSigner = new ethers.Wallet('YOUR_DELEGATEE_PRIVATE_KEY', provider);
+
+    // Create ability client
+    const hyperliquidAbilityClient = getVincentAbilityClient({
+      bundledVincentAbility,
+      ethersSigner: delegateeSigner,
+    });
+
+    // Run precheck
+    const precheckResult = await hyperliquidAbilityClient.precheck(
+      {
+        action: HyperliquidAction.SEND_PERP_USDC,
+        useTestnet: false, // Set to true for testnet
+        sendPerpUsdc: {
+          destination: '0x...', // Recipient's HyperCore address
+          amount: '1000000', // 1.0 USDC (6 decimals)
+        },
+      },
+      {
+        delegatorPkpEthAddress: '0x...', // The Vincent User's Vincent Wallet address
+      },
+    );
+
+    if (precheckResult.success) {
+      console.log('Send perp USDC precheck passed, ready to execute');
+    } else {
+      // Handle different types of failures
+      if (precheckResult.runtimeError) {
+        console.error('Runtime error:', precheckResult.runtimeError);
+      }
+      if (precheckResult.schemaValidationError) {
+        console.error('Schema validation error:', precheckResult.schemaValidationError);
+      }
+      if (precheckResult.result) {
+        console.error('Send perp USDC precheck failed:', precheckResult.result.reason);
+      }
+    }
+    ```
+
+  </Tab>
+
+  <Tab title="Response">
+    ### Success
+
+    A successful `precheck` response will contain:
+
+    ```typescript
+    {
+      /**
+       * The action that was prechecked
+       */
+      action: 'sendPerpUsdc';
+      /**
+       * The available USDC balance in the Vincent User's HyperCore perp account
+       */
+      availableBalance: string;
+    }
+    ```
+
+    ### Failure
+
+    A failure `precheck` response will contain:
+
+    ```typescript
+    {
+      /**
+       * The action that was prechecked
+       */
+      action: 'sendPerpUsdc';
+      /**
+       * The reason the precheck failed, such as insufficient perp balance
+       */
+      reason: string;
+      /**
+       * The available USDC balance in the Vincent User's HyperCore perp account (optional)
+       */
+      availableBalance?: string;
+      /**
+       * The required USDC balance in the Vincent User's HyperCore perp account to cover the send amount (optional)
+       */
+      requiredBalance?: string;
+    }
+    ```
+
+  </Tab>
+</Tabs>
+
+## Executing the `execute` Function
+
+The `execute` function performs the actual send operation, transferring USDC from the Vincent User's HyperCore perp balance to the destination address's perp account.
+
+For the `sendPerpUsdc` action, the `execute` function will:
+
+- Transfer the specified amount of USDC from the Vincent User Agent Wallet's HyperCore perp balance to the destination address's perp account.
+- Return the send result from Hyperliquid.
+
+<Tabs>
+  <Tab title="Parameters">
+    The `execute` function requires the following parameters:
+
+    ```typescript
+    import { HyperliquidAction } from '@lit-protocol/vincent-ability-hyperliquid';
+
+    {
+      /**
+       * The action to perform (must be HyperliquidAction.SEND_PERP_USDC)
+       */
+      action: HyperliquidAction.SEND_PERP_USDC;
+      /**
+       * Whether to use Hyperliquid testnet (optional, defaults to false)
+       */
+      useTestnet?: boolean;
+      /**
+       * Send perp USDC parameters
+       */
+      sendPerpUsdc: {
+        /**
+         * The destination address on HyperCore to receive the USDC in their perp account
+         */
+        destination: string;
+        /**
+         * The amount of USDC to send in 6-decimal format.
+         * Note: Perp USDC uses standard 6 decimals (unlike spot which uses 8)
+         * Example: "1000000" = 1.0 USDC
+         */
+        amount: string;
+      };
+    }
+    ```
+
+  </Tab>
+
+  <Tab title="Implementation">
+    The `execute` function can be executed using the same `VincentAbilityClient` instance as used for the `precheck` function:
+
+    ```typescript
+    const executeResult = await hyperliquidAbilityClient.execute(
+      {
+        action: HyperliquidAction.SEND_PERP_USDC,
+        useTestnet: false, // Set to true for testnet
+        sendPerpUsdc: {
+          destination: '0x...', // Recipient's HyperCore address
+          amount: '1000000', // 1.0 USDC (6 decimals)
+        },
+      },
+      {
+        delegatorPkpEthAddress: '0x...', // The Vincent User's Vincent Wallet address
+      },
+    );
+
+    if (executeResult.success) {
+      const { sendResult } = executeResult.result;
+      console.log('Perp USDC sent successfully:', sendResult);
+    } else {
+      // Handle different types of failures
+      if (executeResult.runtimeError) {
+        console.error('Runtime error:', executeResult.runtimeError);
+      }
+      if (executeResult.schemaValidationError) {
+        console.error('Schema validation error:', executeResult.schemaValidationError);
+      }
+      if (executeResult.result) {
+        console.error('Send perp USDC execution failed:', executeResult.result.reason);
+      }
+    }
+    ```
+
+  </Tab>
+
+  <Tab title="Response">
+    **Success Response**
+
+    A successful `execute` response will contain:
+
+    ```typescript
+    {
+      /**
+       * The action that was executed
+       */
+      action: 'sendPerpUsdc';
+      /**
+       * The send result from Hyperliquid request as defined by the Hyperliquid SDK: @nktkas/hyperliquid
+       * https://github.com/nktkas/hyperliquid/blob/2233ce942eb50ef8850073b387b9918d3a54a10b/src/api/exchange/_base/_schemas.ts#L49-L73
+       */
+      sendResult: SuccessResponse;
+    }
+    ```
+
+    **Failure Response**
+
+    A failure `execute` response will contain:
+
+    ```typescript
+    {
+      /**
+       * The action that was executed
+       */
+      action: 'sendPerpUsdc';
+      /**
+       * The reason the execution failed, such as insufficient perp balance
+       */
+      reason: string;
+    }
+    ```
+
+  </Tab>
+</Tabs>
+
+## Important Considerations
+
+<AccordionGroup>
+  <Accordion title="USDC Decimal Format" icon="hashtag">
+    Perp USDC uses **6 decimals** (standard USDC decimals). This is different from spot assets on Hyperliquid which use 8 decimals for USDC.
+
+    When specifying the send amount:
+    - 1.0 USDC = `"1000000"`
+    - 0.5 USDC = `"500000"`
+    - 10 USDC = `"10000000"`
+
+  </Accordion>
+
+<Accordion title="Send Source" icon="wallet">
+  For this action, sends are taken from the Vincent User's **HyperCore perp balance**. If you need
+  to send funds from the spot balance, you must first transfer them to the perp balance using the
+  [Transfer to Perp](/ability/official-abilities/hyperliquid/transfer-to-perp) action.
+</Accordion>
+
+<Accordion title="Destination Account" icon="location-dot">
+  The `destination` address must be a valid Ethereum address that exists on HyperCore. The recipient
+  will receive the USDC in their HyperCore **perp account** (not spot).
+</Accordion>
+
+  <Accordion title="Verifying Send Success" icon="check">
+    After the send is executed, you can verify the balances changed by checking the clearinghouse state (perp balance) for both the sender and recipient using a [Hyperliquid SDK](https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api), or by using the [Hyperliquid API](https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/info-endpoint/perpetuals#retrieve-users-perpetuals-account-summary).
+  </Accordion>
+</AccordionGroup>
+
+## Reference Implementation
+
+For a complete working example showing the full send perp USDC workflow including balance verification, see the [send-perp-usdc.spec.ts](https://github.com/LIT-Protocol/Vincent/blob/main/packages/apps/ability-hyperliquid/test/e2e/perp/send-perp-usdc.spec.ts) end-to-end test in the `ability-hyperliquid` package.
+
+## Next Steps
+
+Explore the rest of the supported Hyperliquid actions:
+
+<CardGroup cols={3}>
+
+<Card title="Deposit" href="/ability/official-abilities/hyperliquid/deposit" icon="arrow-down" />
+
+<Card title="Withdraw" href="/ability/official-abilities/hyperliquid/withdraw" icon="arrow-up" />
+
+<Card
+  title="Send Spot Asset"
+  href="/ability/official-abilities/hyperliquid/send-spot-asset"
+  icon="coins"
+/>
+
+<Card
+  title="Transfer to Spot"
+  href="/ability/official-abilities/hyperliquid/transfer-to-spot"
+  icon="arrow-right"
+/>
+
+<Card
+  title="Transfer to Perp"
+  href="/ability/official-abilities/hyperliquid/transfer-to-perp"
+  icon="arrow-left"
+/>
+
+<Card
+  title="Spot Buy"
+  href="/ability/official-abilities/hyperliquid/spot-buy"
+  icon="shopping-cart"
+/>
+
+<Card title="Spot Sell" href="/ability/official-abilities/hyperliquid/spot-sell" icon="tag" />
+
+<Card
+  title="Perp Long"
+  href="/ability/official-abilities/hyperliquid/perp-long"
+  icon="arrow-up-right"
+/>
+
+<Card
+  title="Perp Short"
+  href="/ability/official-abilities/hyperliquid/perp-short"
+  icon="arrow-down-right"
+/>
+
+<Card title="Cancel Order" href="/ability/official-abilities/hyperliquid/cancel-order" icon="ban" />
+
+<Card
+  title="Cancel All Orders"
+  href="/ability/official-abilities/hyperliquid/cancel-all-orders-for-symbol"
+  icon="trash"
+/>
+
+</CardGroup>

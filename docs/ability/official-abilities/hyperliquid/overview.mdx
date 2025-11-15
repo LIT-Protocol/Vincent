@@ -1,0 +1,140 @@
+---
+title: Overview
+---
+
+Automate trading on Hyperliquid without relying on custodial, fully-privileged API wallets or sub-accounts.
+
+With Vincent's granular, revocable, and non-custodial delegation system, you can build safe, policy enforced trading apps that execute 24/7 while users retain full control over their funds.
+
+## Why Vincent for Hyperliquid?
+
+**The Problem:** Hyperliquid enables automated trading 24/7 with sub-accounts and API wallets, but these accounts are fully-privileged. Anyone with the account secret can execute any trade and control all funds in that account. There are no built-in mechanisms to set spending limits, symbol allowlists, or other granular permissions.
+
+**The Solution:** Vincent replaces all-or-nothing sub-accounts and API wallets with granular, revocable, non-custodial delegation. Users approve exactly what your app is allowed to do and Vincent Policies automatically enforce spending caps, asset restrictions, leverage limits, and other user customized guardrails. Your app can trade 24/7 on behalf of Vincent Users, but the user always retains full custody and ultimate control over all their assets.
+
+<Note>
+  Key Point: Hyperliquid already enables automated trading via API Wallets. Vincent's value is in
+  providing **non-custodial, granular, policy enforced delegation** - turning full privilege access
+  into least privilege access with user defined guardrails.
+</Note>
+
+## Who Should Use Vincent
+
+<CardGroup cols={2}>
+
+<Card title="Apps That Trade for Users" icon="users">
+  Copy trading platforms, prop firms, and trading bots. Execute trades on behalf of users without
+  custodying their funds, while enforcing user-defined limits like spending caps, allowed symbols,
+  and leverage restrictions.
+</Card>
+
+<Card title="Apps That Automate Strategies" icon="robot">
+  Algo traders, DCA bots, and cross-protocol strategy engines. Automate Hyperliquid trades and
+  multi-chain/protocol flows (Aave, Uniswap, etc.) through one non-custodial, policy-enforced
+  delegation system.
+</Card>
+
+</CardGroup>
+
+## Core Capabilities
+
+The Hyperliquid Ability lets your app perform fully automated, non-custodial trading and account
+operations across both perpetual and spot markets.
+
+<AccordionGroup>
+
+<Accordion title="Perpetual Futures" icon="chart-candlestick">
+  
+- Open and close long/short positions
+- Select leverage (1-10x) and margin type (cross or isolated)
+- Use reduce-only orders for position management
+- Supports limit (GTC, IOC, ALO) and market orders
+
+</Accordion>
+
+<Accordion title="Spot Trading" icon="coins">
+  
+- Buy or sell any Hyperliquid spot pair
+- Supports limit (GTC, IOC, ALO) and market orders
+
+</Accordion>
+
+<Accordion title="Fund Transfers" icon="money-bill-transfer">
+  
+- Deposit USDC from Arbitrum into HyperCore using the Hyperliquid bridge
+- Withdraw back to Arbitrum from the Vincent Wallet's spot account
+- Transfer balance between spot and perp accounts
+- Send assets to other accounts on HyperCore
+
+</Accordion>
+
+<Accordion title="Order Management" icon="list-check">
+
+- Cancel individual orders by ID
+- Cancel all orders for a specific market
+
+</Accordion>
+
+</AccordionGroup>
+
+## How It Works
+
+<Steps>
+  <Step title="Create Your Vincent App">
+    You create your Vincent App that utilizes the Hyperliquid Ability and any of the other
+    registered Vincent Abilities to perform a service.
+  </Step>
+
+<Step title="Vincent Users Permit Your App">
+  After publishing your App to the Vincent Registry, Vincent Users permit your App via the Vincent
+  Connect UI, configuring which Vincent Policies you've chosen to support, setting limitations on
+  how your App can act on their behalf.
+</Step>
+
+  <Step title="Your App Executes Trades on Behalf of the Vincent User">
+    Your App now has the authorization to execute the Hyperliquid Ability on behalf of the Vincent User, executing trades within the limits set by the Vincent Policies.
+  </Step>
+</Steps>
+
+## Real-World Use Cases
+
+<CardGroup cols={3}>
+
+<Card title="Copy Trading Platforms" icon="users">
+  Users delegate to your Vincent App to mirror top traders' positions, setting guardrails like “max
+  5 ETH per trade” or allowed markets, with instant revocation anytime.
+</Card>
+
+<Card title="Trading Bots & Signal Services" icon="robot">
+  Telegram/Discord bots execute trades without ever handling secrets. Users define their own limits
+  such as max position size or daily loss caps, and the bot executes within them.
+</Card>
+
+<Card title="Multi-Protocol Strategy Engines" icon="arrows-rotate">
+  Execute arbitrage or hedging strategies across protocols like Hyperliquid, Aave, Uniswap, and
+  more. One Vincent Wallet controls all integrations with unified permissions.
+</Card>
+
+</CardGroup>
+
+## Ready to Build?
+
+<Steps>
+  <Step title="Explore the Starter Kit">
+    Clone the [Vincent App Starter Kit](https://github.com/LIT-Protocol/Vincent) and explore the Hyperliquid examples. Test strategies on Hyperliquid testnet.
+  </Step>
+
+<Step title="Decide on Your Ability Strategy">
+  Use the existing Hyperliquid Ability for standard trading operations, or create a custom Ability
+  if you need specialized functionality.
+</Step>
+
+<Step title="Build Your Vincent App">
+  Integrate the Hyperliquid Ability into your app. Implement your trading logic, user interface, and
+  strategy engine.
+</Step>
+
+  <Step title="Publish & Accept Users">
+    Publish your Vincent App through the [Vincent Dashboard](https://dashboard.heyvincent.ai/). Share your app URL with users to start accepting delegations.
+  </Step>
+</Steps>

@@ -1,0 +1,461 @@
+---
+title: Perp Long
+---
+
+The `perpLong` action enables Vincent Apps to open or increase long positions on Hyperliquid's perpetuals market using a Vincent User's HyperCore perp balance.
+
+## Prerequisites
+
+Before executing the `perpLong` action, the following conditions must be met:
+
+- **Perp Balance on HyperCore**: The Vincent User Agent Wallet must have sufficient USDC in their HyperCore perp balance to cover the margin requirements for the position.
+- **Order Parameters**: You must provide a valid perp symbol (e.g., "SOL", "ETH"), price, size, leverage, and margin mode according to Hyperliquid's trading rules.
+
+<Info>
+  To learn more about executing Vincent Abilities, see the [Executing
+  Abilities](/ability/explaining-abilities) guide.
+</Info>
+
+## Executing the `precheck` Function
+
+The `precheck` function validates some prerequisites for executing a perp long, without actually performing the operation.
+
+For the `perpLong` action, the `precheck` function will validate the following:
+
+- The Vincent User Agent Wallet has sufficient USDC in their HyperCore perp balance to cover the margin requirements.
+
+<Tabs>
+  <Tab title="Parameters">
+    The `precheck` function requires the following parameters:
+
+    ```typescript
+    import { HyperliquidAction } from '@lit-protocol/vincent-ability-hyperliquid';
+
+    {
+      /**
+       * The action to perform (must be HyperliquidAction.PERP_LONG)
+       */
+      action: HyperliquidAction.PERP_LONG;
+      /**
+       * Whether to use Hyperliquid testnet (optional, defaults to false)
+       */
+      useTestnet?: boolean;
+      /**
+       * Perp long parameters
+       */
+      perp: {
+        /**
+         * The perpetual symbol (base asset only, e.g., "SOL", "ETH", not "SOL-USD")
+         */
+        symbol: string;
+        /**
+         * The limit price for the long order.
+         * Must follow Hyperliquid's price rules:
+         * - Max 5 significant figures
+         * - Max (6 - szDecimals) decimal places for perps
+         * https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/tick-and-lot-size#spot-price-examples
+         */
+        price: string;
+        /**
+         * The size (amount of contracts) to long.
+         * Must be rounded to the asset's szDecimals.
+         * Represents the notional size in the base asset.
+         * https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/tick-and-lot-size#spot-price-examples
+         */
+        size: string;
+        /**
+         * The leverage multiplier (e.g. 2 for 2x leverage, range 1-10x)
+         */
+        leverage: number;
+        /**
+         * Whether to use cross margin (true) or isolated margin (false)
+         */
+        isCross: boolean;
+        /**
+         * If true, this order will only reduce (not increase) your position size.
+         * This is useful when you want to close part/all of an existing position but never accidentally open a larger position or flip from long to short.
+         * If false or omitted, the order can both increase and decrease your position size.
+         * Default: false.
+         */
+        reduceOnly?: boolean;
+        /**
+         * The order type for the long order (optional).
+         * You may specify either a limit or market order using the form:
+         *   { type: "limit", tif: "Gtc" | "Ioc" | "Alo" }
+         *   or
+         *   { type: "market" }
+         * Defaults to: { type: "limit", tif: "Gtc" }
+         */
+        orderType?:
+          | { type: OrderType.LIMIT; tif: 'Gtc' | 'Ioc' | 'Alo' }
+          | { type: OrderType.MARKET };
+      };
+    }
+    ```
+
+  </Tab>
+
+  <Tab title="Implementation">
+    To execute `precheck`, you'll need to:
+
+    - Create an instance of the `VincentAbilityClient` using the `getVincentAbilityClient` function (imported from `@lit-protocol/vincent-app-sdk/abilityClient`)
+      - Pass in the Ability's `bundledVincentAbility` object (imported from `@lit-protocol/vincent-ability-hyperliquid`)
+      - Pass in the `ethersSigner` you'll be using to sign the request to Lit with your Delegatee private key
+    - Use the `VincentAbilityClient` instance to call the `precheck` function
+
+    ```typescript
+    import { getVincentAbilityClient } from '@lit-protocol/vincent-app-sdk/abilityClient';
+    import { bundledVincentAbility, HyperliquidAction } from '@lit-protocol/vincent-ability-hyperliquid';
+    import { ethers } from 'ethers';
+
+    // Your delegatee signer (one of the delegatee signers for the Vincent App)
+    const delegateeSigner = new ethers.Wallet('YOUR_DELEGATEE_PRIVATE_KEY', provider);
+
+    // Create ability client
+    const hyperliquidAbilityClient = getVincentAbilityClient({
+      bundledVincentAbility,
+      ethersSigner: delegateeSigner,
+    });
+
+    // Run precheck
+    const precheckResult = await hyperliquidAbilityClient.precheck(
+      {
+        action: HyperliquidAction.PERP_LONG,
+        useTestnet: false, // Set to true for testnet
+        perp: {
+          symbol: 'SOL',
+          price: '200',
+          size: '3',
+          leverage: 2,
+          isCross: true,
+        },
+      },
+      {
+        delegatorPkpEthAddress: '0x...', // The Vincent User's Vincent Wallet address
+      },
+    );
+
+    if (precheckResult.success) {
+      console.log('Perp long precheck passed, ready to execute');
+    } else {
+      // Handle different types of failures
+      if (precheckResult.runtimeError) {
+        console.error('Runtime error:', precheckResult.runtimeError);
+      }
+      if (precheckResult.schemaValidationError) {
+        console.error('Schema validation error:', precheckResult.schemaValidationError);
+      }
+      if (precheckResult.result) {
+        console.error('Perp long precheck failed:', precheckResult.result.reason);
+      }
+    }
+    ```
+
+  </Tab>
+
+  <Tab title="Response">
+    ### Success
+
+    A successful `precheck` response will contain:
+
+    ```typescript
+    {
+      /**
+       * The action that was prechecked
+       */
+      action: 'perpLong';
+    }
+    ```
+
+    ### Failure
+
+    A failure `precheck` response will contain:
+
+    ```typescript
+    {
+      /**
+       * The action that was prechecked
+       */
+      action: 'perpLong';
+      /**
+       * The reason the precheck failed, such as insufficient perp balance
+       */
+      reason: string;
+    }
+    ```
+
+  </Tab>
+</Tabs>
+
+## Executing the `execute` Function
+
+The `execute` function performs the actual long operation, placing a long order on Hyperliquid's perpetuals market.
+
+For the `perpLong` action, the `execute` function will:
+
+- Place a long order for the specified perpetual at the given price and size with the specified leverage.
+- Return the order result from Hyperliquid.
+
+<Tabs>
+  <Tab title="Parameters">
+    The `execute` function requires the following parameters:
+
+    ```typescript
+    import { HyperliquidAction } from '@lit-protocol/vincent-ability-hyperliquid';
+
+    {
+      /**
+       * The action to perform (must be HyperliquidAction.PERP_LONG)
+       */
+      action: HyperliquidAction.PERP_LONG;
+      /**
+       * Whether to use Hyperliquid testnet (optional, defaults to false)
+       */
+      useTestnet?: boolean;
+      /**
+       * Perp long parameters
+       */
+      perp: {
+        /**
+         * The perpetual symbol (base asset only, e.g., "SOL", "ETH", not "SOL-USD")
+         */
+        symbol: string;
+        /**
+         * The limit price for the long order.
+         * Must follow Hyperliquid's price rules:
+         * - Max 5 significant figures
+         * - Max (6 - szDecimals) decimal places for perps
+         * https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/tick-and-lot-size#spot-price-examples
+         */
+        price: string;
+        /**
+         * The size (amount of contracts) to long.
+         * Must be rounded to the asset's szDecimals.
+         * Represents the notional size in the base asset.
+         * https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/tick-and-lot-size#spot-price-examples
+         */
+        size: string;
+        /**
+         * The leverage multiplier (e.g. 2 for 2x leverage, range 1-10x)
+         */
+        leverage: number;
+        /**
+         * Whether to use cross margin (true) or isolated margin (false)
+         */
+        isCross: boolean;
+        /**
+         * If true, this order will only reduce (not increase) your position size.
+         * This is useful when you want to close part/all of an existing position but never accidentally open a larger position or flip from long to short.
+         * If false or omitted, the order can both increase and decrease your position size.
+         * Default: false.
+         */
+        reduceOnly?: boolean;
+        /**
+         * The order type for the long order (optional).
+         * You may specify either a limit or market order using the form:
+         *   { type: "limit", tif: "Gtc" | "Ioc" | "Alo" }
+         *   or
+         *   { type: "market" }
+         * Defaults to: { type: "limit", tif: "Gtc" }
+         */
+        orderType?:
+          | { type: OrderType.LIMIT; tif: 'Gtc' | 'Ioc' | 'Alo' }
+          | { type: OrderType.MARKET };
+      };
+    }
+    ```
+
+  </Tab>
+
+  <Tab title="Implementation">
+    The `execute` function can be executed using the same `VincentAbilityClient` instance as used for the `precheck` function:
+
+    ```typescript
+    import { OrderType } from '@lit-protocol/vincent-ability-hyperliquid';
+
+    const executeResult = await hyperliquidAbilityClient.execute(
+      {
+        action: HyperliquidAction.PERP_LONG,
+        useTestnet: false, // Set to true for testnet
+        perp: {
+          symbol: 'SOL',
+          price: '200',
+          size: '3',
+          leverage: 2,
+          isCross: true,
+          orderType: { type: OrderType.MARKET }, // Optional: defaults to limit order with GTC time in force
+        },
+      },
+      {
+        delegatorPkpEthAddress: '0x...', // The Vincent User's Vincent Wallet address
+      },
+    );
+
+    if (executeResult.success) {
+      const { orderResult } = executeResult.result;
+      console.log('Perp long executed successfully:', orderResult);
+    } else {
+      // Handle different types of failures
+      if (executeResult.runtimeError) {
+        console.error('Runtime error:', executeResult.runtimeError);
+      }
+      if (executeResult.schemaValidationError) {
+        console.error('Schema validation error:', executeResult.schemaValidationError);
+      }
+      if (executeResult.result) {
+        console.error('Perp long execution failed:', executeResult.result.reason);
+      }
+    }
+    ```
+
+  </Tab>
+
+  <Tab title="Response">
+    **Success Response**
+
+    A successful `execute` response will contain:
+
+    ```typescript
+    {
+      /**
+       * The action that was executed
+       */
+      action: 'perpLong';
+      /**
+       * The order response from Hyperliquid request as defined by the Hyperliquid SDK: @nktkas/hyperliquid
+       * https://github.com/nktkas/hyperliquid/blob/2233ce942eb50ef8850073b387b9918d3a54a10b/src/api/exchange/order.ts#L103-L194
+       */
+      orderResult: OrderResponse;
+    }
+    ```
+
+    **Failure Response**
+
+    A failure `execute` response will contain:
+
+    ```typescript
+    {
+      /**
+       * The action that was executed
+       */
+      action: 'perpLong';
+      /**
+       * The reason the execution failed, such as insufficient perp balance
+       */
+      reason: string;
+    }
+    ```
+
+  </Tab>
+</Tabs>
+
+## Important Considerations
+
+<AccordionGroup>
+  <Accordion title="Price and Size Formatting Rules" icon="ruler">
+    Hyperliquid has strict formatting requirements for perp orders. See the [Hyperliquid API documentation](https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/tick-and-lot-size#spot-price-examples) for more details.
+
+  </Accordion>
+
+<Accordion title="Symbol Format" icon="tag">
+  Perpetual symbols use the **base asset only** (e.g., "SOL", "ETH", "BTC"), not the full pair
+  notation like "SOL-USD" or "SOL-PERP". This is different from spot markets which use pairs like
+  "PURR/USDC".
+</Accordion>
+
+<Accordion title="Leverage and Margin" icon="chart-line">
+  - Leverage controls how much position size you can open relative to the margin you put up.
+    - Example: at 2x leverage, $50 of margin allows a $100 position.
+    - Higher leverage increases both potential gains and liquidation risk.
+  - Margin modes:
+    - **Cross margin (`isCross: true`)**: Your entire perp balance backs all positions. Profits and losses are shared across positions.
+    - **Isolated margin (`isCross: false`)**: Only the margin assigned to a specific position is at risk. Other balances remain protected.
+
+  </Accordion>
+
+<Accordion title="Position Management" icon="wallet">
+
+- Long positions profit when price goes up
+- Opening a long when you already have a long position will increase your position size
+- Position size is tracked as `szi` (signed size, positive for longs)
+- Uses USDC from your **HyperCore perp balance** for margin
+
+</Accordion>
+
+<Accordion title="Getting Current Market Prices" icon="chart-line">
+  You'll need to fetch the current market price before placing an order. Use the Hyperliquid API or
+  SDK to get the mid price for your perpetual, then adjust it based on your strategy (e.g., 1% above
+  mid price for market longs).
+</Accordion>
+
+<Accordion title="Order Types" icon="list">
+  You can specify either a limit or market order using the `orderType` parameter. See the
+  [Parameters](#parameters) section for more details.
+</Accordion>
+
+  <Accordion title="Verifying Order Success" icon="check">
+    After the order is executed, you can verify the positions by checking the clearinghouse state using a [Hyperliquid SDK](https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api), or by using the [Hyperliquid API](https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/info-endpoint/perpetuals#retrieve-users-perpetuals-account-summary).
+  </Accordion>
+</AccordionGroup>
+
+## Reference Implementation
+
+For a complete working example showing the full perp long workflow including balance verification and price calculation, see the [long.spec.ts](https://github.com/LIT-Protocol/Vincent/blob/main/packages/apps/ability-hyperliquid/test/e2e/perp/long.spec.ts) end-to-end test in the `ability-hyperliquid` package.
+
+## Next Steps
+
+Explore the rest of the supported Hyperliquid actions:
+
+<CardGroup cols={3}>
+
+<Card title="Deposit" href="/ability/official-abilities/hyperliquid/deposit" icon="arrow-down" />
+
+<Card title="Withdraw" href="/ability/official-abilities/hyperliquid/withdraw" icon="arrow-up" />
+
+<Card
+  title="Send Spot Asset"
+  href="/ability/official-abilities/hyperliquid/send-spot-asset"
+  icon="coins"
+/>
+
+<Card
+  title="Send Perp USDC"
+  href="/ability/official-abilities/hyperliquid/send-perp-usdc"
+  icon="dollar-sign"
+/>
+
+<Card
+  title="Transfer to Spot"
+  href="/ability/official-abilities/hyperliquid/transfer-to-spot"
+  icon="arrow-right"
+/>
+
+<Card
+  title="Transfer to Perp"
+  href="/ability/official-abilities/hyperliquid/transfer-to-perp"
+  icon="arrow-left"
+/>
+
+<Card
+  title="Spot Buy"
+  href="/ability/official-abilities/hyperliquid/spot-buy"
+  icon="shopping-cart"
+/>
+
+<Card title="Spot Sell" href="/ability/official-abilities/hyperliquid/spot-sell" icon="tag" />
+
+<Card
+  title="Perp Short"
+  href="/ability/official-abilities/hyperliquid/perp-short"
+  icon="arrow-down-right"
+/>
+
+<Card title="Cancel Order" href="/ability/official-abilities/hyperliquid/cancel-order" icon="ban" />
+
+<Card
+  title="Cancel All Orders"
+  href="/ability/official-abilities/hyperliquid/cancel-all-orders-for-symbol"
+  icon="trash"
+/>
+
+</CardGroup>
