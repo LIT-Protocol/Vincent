@@ -60,16 +60,37 @@ Administrative functions for managing the fee system and withdrawing collected f
 
 **Key Functions:**
 
+Admin Functions (Owner only):
+
 - `setPerformanceFeePercentage(uint256 newPercentage)`: Sets the performance fee percentage (in basis points)
 - `setSwapFeePercentage(uint256 newPercentage)`: Sets the swap fee percentage (in basis points)
 - `setLitAppFeeSplitPercentage(uint256 newPercentage)`: Sets the Lit Foundation/App fee split percentage (in basis points)
-- `withdrawAppFees(uint40 appId, address tokenAddress, FeeUtils.OwnerAttestation calldata ownerAttestation, bytes calldata ownerAttestationSig)`: Withdraws collected fees for a specific app and token after verifying a Lit Action signature that attests to the Chronicle Yellowstone owner
 - `setAavePool(address newAavePool)`: Sets the Aave pool contract address
 - `setAerodromeRouter(address newAerodromeRouter)`: Sets the Aerodrome router contract address
 - `setVincentAppDiamondOnYellowstone(address newVincentAppDiamondOnYellowstone)`: Sets the Chronicle Yellowstone Vincent App Diamond contract address used for owner lookups
-- `aerodromeRouter()`: Returns the current Aerodrome router address
+- `setLitFoundationWallet(address newLitFoundationWallet)`: Sets the Lit Foundation wallet address that can withdraw platform fees
+- `setOwnerAttestationSigner(address newOwnerAttestationSigner)`: Sets the Lit Action PKP address that signs owner attestations
+
+Fee Withdrawal Functions:
+
+- `withdrawAppFees(uint40 appId, address tokenAddress, FeeUtils.OwnerAttestation calldata ownerAttestation, bytes calldata ownerAttestationSig)`: Withdraws collected fees for a specific app and token after verifying a Lit Action signature that attests to the Chronicle Yellowstone owner
+- `withdrawPlatformFees(address tokenAddress)`: Withdraws Lit Foundation fees (appId 0) for a specific token (only callable by Lit Foundation wallet)
+
+View Functions:
+
 - `tokensWithCollectedFees(uint40 appId)`: Returns list of tokens that have collected fees for a specific app
+- `tokensWithCollectedFeesLength(uint40 appId)`: Returns the count of tokens with collected fees for a specific app
+- `tokensWithCollectedFeesAtIndex(uint40 appId, uint256 index)`: Returns the token address at a specific index in the collected fees set
 - `collectedAppFees(uint40 appId, address tokenAddress)`: Returns the amount of collected fees for a specific app and token
+- `aerodromeRouter()`: Returns the current Aerodrome router address
+- `aavePool()`: Returns the current Aave pool address
+- `performanceFeePercentage()`: Returns the current performance fee percentage
+- `swapFeePercentage()`: Returns the current swap fee percentage
+- `litAppFeeSplitPercentage()`: Returns the current Lit/App fee split percentage
+- `litFoundationWallet()`: Returns the Lit Foundation wallet address
+- `ownerAttestationSigner()`: Returns the owner attestation signer address
+- `vincentAppDiamondOnYellowstone()`: Returns the Vincent App Diamond address on Chronicle Yellowstone
+- `verifyOwnerAttestation(uint40 appId, FeeUtils.OwnerAttestation calldata oa, bytes calldata sig)`: Verifies an owner attestation signature (public view function)
 
 #### 4. AerodromeSwapFeeFacet
 
@@ -187,7 +208,9 @@ The system uses a sophisticated storage structure to track:
 - **Collected Fees Tracking**: Maps appId → set of token addresses that have collected fees
 - **Collected App Fees**: Maps appId → token address → amount of collected fees
 - **Protocol Configuration**: Aave pool contract address and Aerodrome router address
-- **Vincent App Diamond**: Address of the Vincent App Diamond contract for app manager verification
+- **Vincent App Diamond on Yellowstone**: Address of the Vincent App Diamond contract on Chronicle Yellowstone for app manager verification
+- **Owner Attestation Signer**: Address of the Lit Action PKP that signs owner attestations
+- **Lit Foundation Wallet**: Address that can withdraw platform fees (appId 0)
 
 ## Example Usage
 
@@ -242,6 +265,12 @@ feeAdminFacet.setAerodromeRouter(aerodromeRouterAddress);
 
 // Set Vincent App Diamond address on Chronicle Yellowstone
 feeAdminFacet.setVincentAppDiamondOnYellowstone(vincentAppDiamondOnYellowstone);
+
+// Set Lit Foundation wallet
+feeAdminFacet.setLitFoundationWallet(litFoundationWalletAddress);
+
+// Set owner attestation signer (Lit Action PKP address)
+feeAdminFacet.setOwnerAttestationSigner(pkpAddress);
 
 // Build owner attestation payload signed by the Lit Action oracle
 FeeUtils.OwnerAttestation memory ownerAttestation = FeeUtils.OwnerAttestation({

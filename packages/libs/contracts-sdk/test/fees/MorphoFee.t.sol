@@ -43,7 +43,9 @@ contract MorphoFeeTest is FeeTestCommon {
         vm.setEnv("VINCENT_DEPLOYER_PRIVATE_KEY", vm.toString(deployerPrivateKey));
         owner = vm.addr(deployerPrivateKey);
 
-        feeDiamond = Fee(payable(_deployFeeDiamond()));
+        vincentDiamondAddress = _deployVincentDiamondAndBasicApp(APP_MANAGER_BOB, APP_DELEGATEE_BOB, DEV_APP_ID);
+
+        feeDiamond = Fee(payable(_deployFeeDiamond(vincentDiamondAddress)));
 
         feeViewsFacet = FeeViewsFacet(address(feeDiamond));
         feeAdminFacet = FeeAdminFacet(address(feeDiamond));
@@ -53,11 +55,7 @@ contract MorphoFeeTest is FeeTestCommon {
         mockERC20 = new MockERC20();
         mockERC4626 = new MockERC4626(address(mockERC20));
 
-        vincentDiamondAddress = _deployVincentDiamondAndBasicApp(APP_MANAGER_BOB, APP_DELEGATEE_BOB, DEV_APP_ID);
-
-        // set the vincent app contract address in the fee diamond
         vm.startPrank(owner);
-        feeAdminFacet.setVincentAppDiamondOnYellowstone(vincentDiamondAddress);
         // set the owner attestation signer in the fee diamond
         (ownerAttestationSigner, ownerAttestationSignerPrivateKey) = makeAddrAndKey("OwnerAttestationSigner");
         feeAdminFacet.setOwnerAttestationSigner(ownerAttestationSigner);

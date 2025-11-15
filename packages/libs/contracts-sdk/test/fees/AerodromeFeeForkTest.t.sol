@@ -55,7 +55,9 @@ contract AerodromeFeeForkTest is FeeTestCommon {
         vm.setEnv("VINCENT_DEPLOYER_PRIVATE_KEY", vm.toString(deployerPrivateKey));
         owner = vm.addr(deployerPrivateKey);
 
-        feeDiamond = Fee(payable(_deployFeeDiamond()));
+        vincentDiamondAddress = _deployVincentDiamondAndBasicApp(APP_MANAGER_BOB, APP_DELEGATEE_BOB, DEV_APP_ID);
+
+        feeDiamond = Fee(payable(_deployFeeDiamond(vincentDiamondAddress)));
 
         feeViewsFacet = FeeViewsFacet(address(feeDiamond));
         feeAdminFacet = FeeAdminFacet(address(feeDiamond));
@@ -81,13 +83,6 @@ contract AerodromeFeeForkTest is FeeTestCommon {
         USDCErc20.configureMinter(USDC_MINTER, type(uint256).max);
         vm.stopPrank();
         erc20Decimals = USDCErc20.decimals();
-
-        vincentDiamondAddress = _deployVincentDiamondAndBasicApp(APP_MANAGER_BOB, APP_DELEGATEE_BOB, DEV_APP_ID);
-
-        // set the vincent app contract address in the fee diamond
-        vm.startPrank(owner);
-        feeAdminFacet.setVincentAppDiamondOnYellowstone(vincentDiamondAddress);
-        vm.stopPrank();
     }
 
     function testSingleRouteSingleSwap() public {

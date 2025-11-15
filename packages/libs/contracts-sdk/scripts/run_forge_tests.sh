@@ -7,6 +7,13 @@ source ./.env
 # Disable automatic export of variables
 set +o allexport
 
+# Check if BASE_RPC_URL is set
+if [ -z "$BASE_RPC_URL" ]; then
+  echo "Error: BASE_RPC_URL environment variable is not set"
+  echo "Please set BASE_RPC_URL in your .env file"
+  exit 1
+fi
+
 # Get the latest Base block number and export it
 # this is necessary because if we don't pass a specific block number for `forge test`,
 # then reads will passthrough to the chain, and cause timestamp issues.
