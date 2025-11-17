@@ -54,7 +54,7 @@ export interface GeneratePrivateKeyResult {
 
 /**
  * @extends BaseApiParams
- * @property delegatorSessionSigs - The Session Signatures produced by the Vincent delegator for authenticating with the Lit network to execute Lit Actions that decrypt or generate new keys
+ * @property delegatorSessionSigs - The Session Signatures produced by the Vincent delegator for authenticating with the Lit network to execute Lit Actions that generate new keys
  */
 export type BatchGeneratePrivateKeysParams = BaseApiParams & {
   delegatorSessionSigs: SessionSigsMap;
@@ -76,7 +76,7 @@ export interface BatchGeneratePrivateKeysResult {
 /** Exporting a previously persisted key only requires valid pkpSessionSigs and a LIT Node Client instance configured for the appropriate network.
  *
  * @extends BaseApiParams
- *
+ * @property delegatorSessionSigs The Session Signatures produced by the Vincent delegator for authenticating with the Lit network to decrypts the encrypted wrapped key
  * @property id The unique identifier (UUID V4) of the encrypted private key
  */
 export type ExportPrivateKeyParams = BaseApiParams & {
