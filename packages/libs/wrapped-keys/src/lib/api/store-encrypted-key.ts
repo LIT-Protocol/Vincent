@@ -15,7 +15,15 @@ export async function storeEncryptedKey(
 ): Promise<StoreEncryptedKeyResult> {
   const { jwtToken, litNodeClient } = params;
 
-  const { publicKey, keyType, dataToEncryptHash, ciphertext, memo } = params;
+  const {
+    publicKey,
+    keyType,
+    dataToEncryptHash,
+    ciphertext,
+    memo,
+    delegatorAddress,
+    evmContractConditions,
+  } = params;
 
   return storePrivateKey({
     storedKeyMetadata: {
@@ -24,6 +32,8 @@ export async function storeEncryptedKey(
       dataToEncryptHash,
       ciphertext,
       memo,
+      delegatorAddress,
+      evmContractConditions,
     },
     jwtToken,
     litNetwork: litNodeClient.config.litNetwork,

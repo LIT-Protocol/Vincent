@@ -1,4 +1,4 @@
-import { encryptPrivateKey } from '../../internal/common/encryptKey';
+import { encryptPrivateKey } from '../../internal/common/encryptPrivateKey';
 import { generateSolanaPrivateKey } from '../../internal/solana/generatePrivateKey';
 
 interface Action {
@@ -10,22 +10,22 @@ interface Action {
 
 export interface BatchGenerateEncryptedKeysParams {
   actions: Action[];
-  accessControlConditions: string;
+  evmContractConditions: string;
 }
 
 async function processSolanaAction({
   action,
-  accessControlConditions,
+  evmContractConditions,
 }: {
   action: Action;
-  accessControlConditions: string;
+  evmContractConditions: string;
 }) {
   const { network, generateKeyParams } = action;
 
   const solanaKey = generateSolanaPrivateKey();
 
   const generatedPrivateKey = await encryptPrivateKey({
-    accessControlConditions,
+    evmContractConditions,
     publicKey: solanaKey.publicKey,
     privateKey: solanaKey.privateKey,
   });
@@ -41,7 +41,7 @@ async function processSolanaAction({
 
 async function processActions({
   actions,
-  accessControlConditions,
+  evmContractConditions,
 }: BatchGenerateEncryptedKeysParams) {
   return Promise.all(
     actions.map(async (action, ndx) => {
@@ -50,7 +50,7 @@ async function processActions({
       if (network === 'solana') {
         return await processSolanaAction({
           action,
-          accessControlConditions,
+          evmContractConditions,
         });
       } else {
         throw new Error(`Invalid network for action[${ndx}]: ${network}`);
@@ -85,12 +85,12 @@ function validateParams(actions: Action[]) {
 
 export async function batchGenerateEncryptedKeys({
   actions,
-  accessControlConditions,
+  evmContractConditions,
 }: BatchGenerateEncryptedKeysParams) {
   validateParams(actions);
 
   return processActions({
     actions,
-    accessControlConditions,
+    evmContractConditions,
   });
 }

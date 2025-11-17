@@ -7,8 +7,8 @@ import type { StoredKeyData } from '../types';
  * Base parameters required for all Vincent wrapped keys service API calls.
  *
  * @interface BaseApiParams
- * @property {string} jwtToken - JWT token for Vincent delegatee authentication with the wrapped keys service
- * @property {LIT_NETWORK_VALUES} litNetwork - The Lit network being used
+ * @property jwtToken - JWT token for Vincent delegatee authentication with the wrapped keys service
+ * @property litNetwork - The Lit network being used
  */
 interface BaseApiParams {
   jwtToken: string;
@@ -18,9 +18,8 @@ interface BaseApiParams {
 /**
  * Parameters for fetching a specific encrypted private key from the Vincent wrapped keys service.
  *
- * @typedef {BaseApiParams & Object} FetchKeyParams
- * @property {string} delegatorAddress - The Vincent Agent Wallet address associated with the key
- * @property {string} id - The unique identifier (UUID v4) of the encrypted private key to fetch
+ * @property delegatorAddress - The Vincent Agent Wallet address associated with the key
+ * @property id - The unique identifier (UUID v4) of the encrypted private key to fetch
  */
 export type FetchKeyParams = BaseApiParams & {
   delegatorAddress: string;
@@ -30,8 +29,7 @@ export type FetchKeyParams = BaseApiParams & {
 /**
  * Parameters for listing all encrypted private key metadata for a Vincent Agent Wallet.
  *
- * @typedef {BaseApiParams & Object} ListKeysParams
- * @property {string} delegatorAddress - The Vincent Agent Wallet address to list keys for
+ * @property delegatorAddress - The Vincent Agent Wallet address to list keys for
  */
 export type ListKeysParams = BaseApiParams & {
   delegatorAddress: string;
@@ -40,8 +38,6 @@ export type ListKeysParams = BaseApiParams & {
 /**
  * Supported Lit networks for Vincent wrapped keys operations.
  * Vincent only supports production 'datil' network, not test networks.
- *
- * @typedef {'datil'} SupportedNetworks
  */
 export type SupportedNetworks = Extract<LIT_NETWORK_VALUES, 'datil'>;
 
@@ -50,17 +46,25 @@ export type SupportedNetworks = Extract<LIT_NETWORK_VALUES, 'datil'>;
  *
  * @interface StoreKeyParams
  * @extends BaseApiParams
- * @property {Object} storedKeyMetadata - The encrypted key metadata to store
- * @property {string} storedKeyMetadata.publicKey - The public key of the encrypted keypair
- * @property {string} storedKeyMetadata.keyType - The type of key (e.g., 'ed25519' for Solana)
- * @property {string} storedKeyMetadata.dataToEncryptHash - SHA-256 hash of the ciphertext for verification
- * @property {string} storedKeyMetadata.ciphertext - The base64 encoded, encrypted private key
- * @property {string} storedKeyMetadata.memo - User-provided descriptor for the key
+ * @property storedKeyMetadata - The encrypted key metadata to store
+ * @property storedKeyMetadata.publicKey - The public key of the encrypted keypair
+ * @property storedKeyMetadata.keyType - The type of key (e.g., 'ed25519' for Solana)
+ * @property storedKeyMetadata.dataToEncryptHash - SHA-256 hash of the ciphertext for verification
+ * @property storedKeyMetadata.ciphertext - The base64 encoded, encrypted private key
+ * @property storedKeyMetadata.memo - User-visible descriptor for the key
+ * @property storedKeyMetadata.delegatorAddress - The Vincent delegator wallet address associated with the key
+ * @property storedKeyMetadata.evmContractConditions - The serialized evm contract access control conditions that will gate decryption of the generated key
  */
 export interface StoreKeyParams extends BaseApiParams {
   storedKeyMetadata: Pick<
     StoredKeyData,
-    'publicKey' | 'keyType' | 'dataToEncryptHash' | 'ciphertext' | 'memo'
+    | 'publicKey'
+    | 'keyType'
+    | 'dataToEncryptHash'
+    | 'ciphertext'
+    | 'memo'
+    | 'delegatorAddress'
+    | 'evmContractConditions'
   >;
 }
 
@@ -70,17 +74,25 @@ export interface StoreKeyParams extends BaseApiParams {
  *
  * @interface StoreKeyBatchParams
  * @extends BaseApiParams
- * @property {Array} storedKeyMetadataBatch - Array of encrypted key metadata to store
- * @property {string} storedKeyMetadataBatch[].publicKey - The public key of the encrypted keypair
- * @property {string} storedKeyMetadataBatch[].keyType - The type of key (e.g., 'ed25519' for Solana)
- * @property {string} storedKeyMetadataBatch[].dataToEncryptHash - SHA-256 hash of the ciphertext for verification
- * @property {string} storedKeyMetadataBatch[].ciphertext - The base64 encoded, encrypted private key
- * @property {string} storedKeyMetadataBatch[].memo - User-provided descriptor for the key
+ * @property storedKeyMetadataBatch - Array of encrypted key metadata to store
+ * @property storedKeyMetadataBatch[].publicKey - The public key of the encrypted keypair
+ * @property storedKeyMetadataBatch[].keyType - The type of key (e.g., 'ed25519' for Solana)
+ * @property storedKeyMetadataBatch[].dataToEncryptHash - SHA-256 hash of the ciphertext for verification
+ * @property storedKeyMetadataBatch[].ciphertext - The base64 encoded, encrypted private key
+ * @property storedKeyMetadataBatch[].memo - User-provided descriptor for the key
+ * @property storedKeyMetadataBatch[].delegatorAddress - The Vincent delegator wallet address associated with the key
+ * @property storedKeyMetadataBatch[].evmContractConditions - The serialized evm contract access control conditions that will gate decryption of the generated key
  */
 export interface StoreKeyBatchParams extends BaseApiParams {
   storedKeyMetadataBatch: Pick<
     StoredKeyData,
-    'publicKey' | 'keyType' | 'dataToEncryptHash' | 'ciphertext' | 'memo'
+    | 'publicKey'
+    | 'keyType'
+    | 'dataToEncryptHash'
+    | 'ciphertext'
+    | 'memo'
+    | 'delegatorAddress'
+    | 'evmContractConditions'
   >[];
 }
 
@@ -89,10 +101,10 @@ export interface StoreKeyBatchParams extends BaseApiParams {
  * Used by utility functions to build authenticated requests.
  *
  * @interface BaseRequestParams
- * @property {string} jwtToken - JWT token for Vincent delegatee authentication
- * @property {'GET' | 'POST'} method - HTTP method for the request
- * @property {LIT_NETWORKS_KEYS} litNetwork - The Lit network identifier for routing
- * @property {string} requestId - Unique identifier for request tracking and debugging
+ * @property jwtToken - JWT token for Vincent delegatee authentication
+ * @property method - HTTP method for the request
+ * @property litNetwork - The Lit network identifier for routing
+ * @property requestId - Unique identifier for request tracking and debugging
  */
 export interface BaseRequestParams {
   jwtToken: string;
