@@ -23,7 +23,7 @@ export async function getSolanaKeyPairFromWrappedKey({
   delegatorAddress: string;
   ciphertext: string;
   dataToEncryptHash: string;
-  evmContractConditions: any[];
+  evmContractConditions: unknown[];
 }): Promise<Keypair> {
   const decryptedPrivateKey = await Lit.Actions.decryptAndCombine({
     accessControlConditions: evmContractConditions,
