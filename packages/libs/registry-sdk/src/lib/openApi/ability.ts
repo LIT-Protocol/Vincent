@@ -537,4 +537,47 @@ export function addToRegistry(registry: OpenAPIRegistry) {
       },
     },
   });
+
+  // POST /ability/{packageName}/version/{version}/refresh-policies - Refresh supported policies
+  registry.registerPath({
+    method: 'post',
+    path: '/ability/{packageName}/version/{version}/refresh-policies',
+    tags: ['AbilityVersion'],
+    summary: 'Refreshes supported policies for an ability version',
+    operationId: 'refreshAbilityVersionPolicies',
+    security: [{ [jwtAuth.name]: [] }],
+    request: {
+      params: z.object({
+        packageName: packageNameParam,
+        version: abilityVersionParam,
+      }),
+    },
+    responses: {
+      200: {
+        description: 'OK - Policies successfully refreshed',
+        content: {
+          'application/json': {
+            schema: AbilityVersionRead,
+          },
+        },
+      },
+      400: {
+        description: 'Invalid input',
+      },
+      404: {
+        description: 'Ability or version not found',
+      },
+      422: {
+        description: 'Validation exception',
+      },
+      default: {
+        description: 'Unexpected error',
+        content: {
+          'application/json': {
+            schema: ErrorResponse,
+          },
+        },
+      },
+    },
+  });
 }
