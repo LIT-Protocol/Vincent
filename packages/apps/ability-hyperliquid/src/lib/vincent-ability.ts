@@ -421,7 +421,7 @@ export const vincentAbility = createVincentAbility({
         } else {
           return fail({
             action,
-            reason: `Failed to approve builder code: ${HYPERLIQUID_BUILDER_ADDRESS}`,
+            reason: `Failed to approve builder code: ${HYPERLIQUID_BUILDER_ADDRESS}. ${JSON.stringify(result.approveResult, null, 2)}`,
           });
         }
       }
