@@ -240,9 +240,6 @@ describe('Hyperliquid Ability E2E Spot Sell Tests', () => {
     });
 
     it(`should check USDC balance increased and ${TOKEN_TO_SELL} balance decreased after sell`, async () => {
-      // Wait a bit for order to potentially fill
-      await new Promise((resolve) => setTimeout(resolve, 5000));
-
       // Get balances after sell
       const spotState = await infoClient.spotClearinghouseState({
         user: agentPkpInfo.ethAddress as `0x${string}`,

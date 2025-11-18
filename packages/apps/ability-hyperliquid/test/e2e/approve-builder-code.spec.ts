@@ -151,9 +151,6 @@ describe('Hyperliquid Ability E2E Approve Builder Code Tests', () => {
     });
 
     it('should verify builder code is approved after execution', async () => {
-      // Wait a bit for approval to be processed
-      await new Promise((resolve) => setTimeout(resolve, 5000));
-
       // Check builder approval status after execution
       let finalBuilderApprovalStatus: boolean;
       try {
