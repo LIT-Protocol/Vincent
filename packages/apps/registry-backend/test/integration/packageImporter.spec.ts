@@ -3,17 +3,17 @@ import { importPackage } from '../../src/lib/packageImporter';
 describe('packageImporter integration tests', () => {
   // Define real packages to use for testing
   const policyPackage = {
-    packageName: '@lit-protocol/vincent-policy-spending-limit',
-    version: '1.0.1',
+    packageName: 'vincent-demo-policy',
+    version: '0.0.2',
     type: 'policy' as const,
-    expectedIpfsCid: 'QmNoWR1d2z6WwLB3Z2Lx3Uf38Y5V1u1DothS1xPJm9P8QH',
+    expectedIpfsCid: 'QmRm6uoZqhCjCP7TXds7umBvsmR9mjAzhkhTUqbPr9dHJS',
   };
 
   const abilityPackage = {
-    packageName: '@lit-protocol/vincent-ability-erc20-approval',
-    version: '1.0.1',
+    packageName: 'vincent-demo-ability',
+    version: '0.0.2',
     type: 'ability' as const,
-    expectedIpfsCid: 'QmWHK5KsJitDwW1zHRoiJQdQECASzSjjphp4Rg8YqB6BsX',
+    expectedIpfsCid: 'QmdZcfgQ9Kz8vNwS5owf6iBm9Co1qMGki244JSFuyPNv1W',
   };
 
   describe('Successful package imports', () => {
