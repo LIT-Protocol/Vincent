@@ -28,7 +28,7 @@ describe('Hyperliquid Ability E2E Transfer USDC to Spot/Perp Tests', () => {
   const ENV = getEnv({
     ARBITRUM_RPC_URL: z.string(),
   });
-  const USDC_TRANSFER_AMOUNT = '50000000'; // 15 USDC
+  const USDC_TRANSFER_AMOUNT = '15000000'; // 15 USDC
   const USE_TESTNET = true;
 
   let agentPkpInfo: PkpInfo;

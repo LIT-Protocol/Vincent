@@ -1,5 +1,4 @@
 import {
-  delegator,
   delegatee,
   funder,
   appManager,
