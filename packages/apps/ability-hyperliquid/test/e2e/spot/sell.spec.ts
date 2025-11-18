@@ -188,7 +188,7 @@ describe('Hyperliquid Ability E2E Spot Sell Tests', () => {
       const hyperliquidAbilityClient = getVincentAbilityClient({
         bundledVincentAbility: hyperliquidBundledAbility,
         ethersSigner: wallets.appDelegatee,
-        debug: true,
+        debug: false,
       });
 
       const {
