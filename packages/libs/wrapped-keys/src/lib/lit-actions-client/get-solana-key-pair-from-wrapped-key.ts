@@ -2,8 +2,7 @@ import { Keypair } from '@solana/web3.js';
 
 import type { LitNamespace } from '../Lit';
 
-import { getVincentRegistryAccessControlCondition } from '../api/utils';
-import { LIT_PREFIX } from '../constants';
+import { removeSaltFromDecryptedKey } from '../utils';
 
 declare const Lit: typeof LitNamespace;
 
@@ -17,35 +16,24 @@ declare const Lit: typeof LitNamespace;
  * @throws Error if the decrypted private key is not prefixed with 'lit_' or if decryption fails
  */
 export async function getSolanaKeyPairFromWrappedKey({
-  delegatorAddress,
   ciphertext,
   dataToEncryptHash,
+  evmContractConditions,
 }: {
   delegatorAddress: string;
   ciphertext: string;
   dataToEncryptHash: string;
+  evmContractConditions: unknown[];
 }): Promise<Keypair> {
-  const accessControlConditions = [
-    await getVincentRegistryAccessControlCondition({
-      delegatorAddress,
-    }),
-  ];
-
   const decryptedPrivateKey = await Lit.Actions.decryptAndCombine({
-    accessControlConditions,
+    accessControlConditions: evmContractConditions,
     ciphertext,
     dataToEncryptHash,
     chain: 'ethereum',
     authSig: null,
   });
 
-  if (!decryptedPrivateKey.startsWith(LIT_PREFIX)) {
-    throw new Error(
-      `Private key was not encrypted with salt; all wrapped keys must be prefixed with '${LIT_PREFIX}'`,
-    );
-  }
-
-  const noSaltPrivateKey = decryptedPrivateKey.slice(LIT_PREFIX.length);
+  const noSaltPrivateKey = removeSaltFromDecryptedKey(decryptedPrivateKey);
   const solanaKeypair = Keypair.fromSecretKey(Buffer.from(noSaltPrivateKey, 'hex'));
 
   return solanaKeypair;

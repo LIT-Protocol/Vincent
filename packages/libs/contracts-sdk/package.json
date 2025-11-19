@@ -18,10 +18,9 @@
   "devDependencies": {
     "@dotenvx/dotenvx": "^1.44.2",
     "@lit-protocol/auth-helpers": "^7.2.3",
-    "@lit-protocol/constants": "^7.2.3",
-    "@lit-protocol/contracts-sdk": "^7.2.3",
     "@lit-protocol/lit-node-client": "^7.2.3",
     "@lit-protocol/pkp-ethers": "^7.2.3",
+    "@lit-protocol/types": "^7.2.3",
     "@openzeppelin/contracts": "5.3.0",
     "@types/jest": "^29.5.12",
     "jest": "^29.5.0",
@@ -32,6 +31,8 @@
   },
   "dependencies": {
     "@ethersproject/abi": "^5.8.0",
+    "@lit-protocol/constants": "^7.3.1",
+    "@lit-protocol/contracts-sdk": "^7.2.3",
     "cbor2": "^2.0.1",
     "ethers": "^5.8.0"
   }

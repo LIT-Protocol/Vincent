@@ -76,6 +76,7 @@ export const vincentAbility = createVincentAbility({
       ciphertext,
       dataToEncryptHash,
       legacyTransactionOptions,
+      evmContractConditions,
     } = abilityParams;
     const { ethAddress } = delegatorPkpInfo;
 
@@ -84,6 +85,7 @@ export const vincentAbility = createVincentAbility({
         delegatorAddress: ethAddress,
         ciphertext,
         dataToEncryptHash,
+        evmContractConditions,
       });
 
       const transaction = deserializeTransaction(serializedTransaction);

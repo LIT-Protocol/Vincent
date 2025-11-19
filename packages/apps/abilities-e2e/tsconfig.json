@@ -4,25 +4,7 @@
   "include": [],
   "references": [
     {
-      "path": "../../libs/contracts-sdk"
-    },
-    {
-      "path": "../ability-uniswap-swap"
-    },
-    {
-      "path": "../../libs/ability-sdk"
-    },
-    {
-      "path": "../ability-erc20-approval"
-    },
-    {
-      "path": "../ability-erc20-transfer"
-    },
-    {
-      "path": "../ability-evm-transaction-signer"
-    },
-    {
-      "path": "../policy-contract-whitelist"
+      "path": "../../libs/wrapped-keys"
     },
     {
       "path": "../policy-spending-limit"
@@ -31,7 +13,31 @@
       "path": "../policy-send-counter"
     },
     {
+      "path": "../policy-contract-whitelist"
+    },
+    {
+      "path": "../../libs/contracts-sdk"
+    },
+    {
       "path": "../../libs/app-sdk"
+    },
+    {
+      "path": "../ability-uniswap-swap"
+    },
+    {
+      "path": "../ability-sol-transaction-signer"
+    },
+    {
+      "path": "../../libs/ability-sdk"
+    },
+    {
+      "path": "../ability-evm-transaction-signer"
+    },
+    {
+      "path": "../ability-erc20-transfer"
+    },
+    {
+      "path": "../ability-erc20-approval"
     },
     {
       "path": "./tsconfig.app.json"
