@@ -101,7 +101,7 @@ export const vincentAbility = createVincentAbility({
       });
     }
 
-    // Estimate transfer gas using populateTransaction (ethers v6) for better compatibility
+    // Estimate transfer gas using populateTransaction (uses ethers v6 internally, returns v5-compatible types)
     console.log(
       '[@agentic-ai/vincent-ability-erc20-transfer/precheck] 🔧 Estimating gas using populateTransaction...',
     );
@@ -123,7 +123,7 @@ export const vincentAbility = createVincentAbility({
         rpcUrl,
       });
 
-      estimatedGas = ethers.BigNumber.from(populatedTx.gasLimit || '0');
+      estimatedGas = ethers.BigNumber.from(populatedTx.gasLimit);
       console.log(
         '[@agentic-ai/vincent-ability-erc20-transfer/precheck] 💰 Estimated gas (from populateTransaction):',
         estimatedGas.toString(),
