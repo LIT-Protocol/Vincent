@@ -37,7 +37,7 @@ export async function getVincentWrappedKeysAccs({
       pkpEthAddress: delegatorAddress,
       signer: ethers.Wallet.createRandom().connect(
         new ethers.providers.StaticJsonRpcProvider(LIT_RPC.CHRONICLE_YELLOWSTONE),
-      ), // Read only; signer identity is irrelevant in this code path :),
+      ), // Read only; signer identity is irrelevant in this code path :)
     })
   ).toString();
 

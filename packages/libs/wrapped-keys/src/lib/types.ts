@@ -43,6 +43,7 @@ export type GeneratePrivateKeyParams = BaseApiParams &
   };
 
 /**
+ * @property delegatorAddress The Vincent delegator PKP address that is associated with the encrypted private key
  * @property generatedPublicKey The public key component of the newly generated keypair
  * @property id The unique identifier (UUID V4) of the encrypted private key
  */
@@ -76,7 +77,7 @@ export interface BatchGeneratePrivateKeysResult {
 /** Exporting a previously persisted key only requires valid pkpSessionSigs and a LIT Node Client instance configured for the appropriate network.
  *
  * @extends BaseApiParams
- * @property delegatorSessionSigs The Session Signatures produced by the Vincent delegator for authenticating with the Lit network to decrypts the encrypted wrapped key
+ * @property delegatorSessionSigs The Session Signatures produced by the Vincent delegator for authenticating with the Lit network to decrypt the encrypted wrapped key
  * @property id The unique identifier (UUID V4) of the encrypted private key
  */
 export type ExportPrivateKeyParams = BaseApiParams & {
@@ -92,6 +93,7 @@ export type ExportPrivateKeyParams = BaseApiParams & {
  * @property keyType The algorithm type of the key; this might be K256, ed25519, or other key formats.  The `keyType` will be included in the metadata returned from the wrapped keys service
  * @property memo A (typically) user-provided descriptor for the encrypted private key
  * @property id The unique identifier (UUID V4) of the encrypted private key
+ * @property litNetwork The Lit network that the client who stored the key was connected to
  */
 export interface ExportPrivateKeyResult {
   delegatorAddress: string;

@@ -29,8 +29,8 @@ export const exportPrivateKey = async ({
 
   const { decryptedData } = await litNodeClient.decrypt({
     sessionSigs: delegatorSessionSigs,
-    ciphertext: ciphertext,
-    dataToEncryptHash: dataToEncryptHash,
+    ciphertext,
+    dataToEncryptHash,
     evmContractConditions: JSON.parse(evmContractConditions),
     chain: 'ethereum',
   });
