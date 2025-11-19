@@ -271,10 +271,6 @@ describe('Hyperliquid Ability E2E Spot Sell Tests', () => {
     });
 
     it('should validate builder rewards increased after spot sell', async () => {
-      // Wait a bit for order to fill and builder rewards to be credited
-      // Builder rewards are processed onchain, so we need to wait for the transaction to be processed
-      await new Promise((resolve) => setTimeout(resolve, 10000));
-
       // Get referral data after sell
       const referralData = await infoClient.referral({
         user: HYPERLIQUID_BUILDER_ADDRESS,
