@@ -5,7 +5,6 @@
     "access": "public"
   },
   "dependencies": {
-    "@lit-protocol/auth-helpers": "^8.0.2",
     "@lit-protocol/constants": "^7.3.0",
     "@lit-protocol/types": "^7.2.3",
     "@lit-protocol/vincent-contracts-sdk": "workspace:*",
