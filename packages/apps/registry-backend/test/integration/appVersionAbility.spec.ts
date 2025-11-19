@@ -40,13 +40,13 @@ describe('AppVersionAbility API Integration Tests', () => {
   const abilityData1 = {
     title: 'Test Ability 1',
     description: 'Test ability 1 for AppVersionAbility integration tests',
-    activeVersion: '1.0.0',
+    activeVersion: '0.0.2',
   };
 
   const abilityData2 = {
     title: 'Test Ability 2',
     description: 'Test ability 2 for AppVersionAbility integration tests',
-    activeVersion: '1.0.0',
+    activeVersion: '0.0.1',
   };
 
   // Test data for creating app versions
@@ -56,18 +56,18 @@ describe('AppVersionAbility API Integration Tests', () => {
 
   // Test data for creating app version abilities
   const appVersionAbilityData1 = {
-    abilityVersion: '1.0.0',
+    abilityVersion: '0.0.2',
     hiddenSupportedPolicies: ['@vincent/policy1', '@vincent/policy2'],
   };
 
   const appVersionAbilityData2 = {
-    abilityVersion: '1.0.0',
+    abilityVersion: '0.0.1',
   };
 
   describe('Setup: Create abilities', () => {
     it('should create the first ability', async () => {
       // Generate a unique package name for testing
-      testAbilityPackageName1 = `@lit-protocol/vincent-ability-erc20-approval`;
+      testAbilityPackageName1 = `vincent-demo-ability`;
 
       const result = await store.dispatch(
         api.endpoints.createAbility.initiate({
@@ -90,7 +90,7 @@ describe('AppVersionAbility API Integration Tests', () => {
 
     it('should create the second ability', async () => {
       // Generate a unique package name for testing
-      testAbilityPackageName2 = `@lit-protocol/vincent-ability-uniswap-swap`;
+      testAbilityPackageName2 = `vincent-demo-ability-two`;
 
       const result = await store.dispatch(
         api.endpoints.createAbility.initiate({
