@@ -1,3 +1,13 @@
+## 0.1.6 (2025-11-19)
+
+### 🩹 Fixes
+
+- Update precheck gas estimation to use the `populate-transaction` function from the `@lit-protocol/vincent-ability-sdk` ([d952b973](https://github.com/LIT-Protocol/Vincent/commit/d952b973))
+
+### ❤️ Thank You
+
+- awisniew207 @awisniew207
+
 ## 0.1.5 (2025-11-06)
 
 ### 🧱 Updated Dependencies
