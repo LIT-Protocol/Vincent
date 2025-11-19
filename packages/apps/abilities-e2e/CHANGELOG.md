@@ -1,3 +1,9 @@
+## 1.1.12 (2025-11-19)
+
+### 🧱 Updated Dependencies
+
+- Updated ability-erc20-transfer to 0.1.6
+
 ## 1.1.11 (2025-11-07)
 
 ### 🧱 Updated Dependencies
