@@ -2,6 +2,7 @@ import {
   createVincentAbility,
   createVincentAbilityPolicy,
   supportedPoliciesForAbility,
+  populateTransaction,
 } from '@lit-protocol/vincent-ability-sdk';
 import { bundledVincentPolicy } from '@lit-protocol/vincent-policy-send-counter';
 import { ethers } from 'ethers';
@@ -100,12 +101,44 @@ export const vincentAbility = createVincentAbility({
       });
     }
 
-    // Estimate transfer gas and check there is enough
-    const estimatedGas = await erc20Contract.estimateGas.transfer(to, tokenAmountInSmallestUnit);
+    // Estimate transfer gas using populateTransaction (uses ethers v6 internally, returns v5-compatible types)
     console.log(
-      '[@agentic-ai/vincent-ability-erc20-transfer/precheck] 💰 Estimated gas:',
-      estimatedGas.toString(),
+      '[@agentic-ai/vincent-ability-erc20-transfer/precheck] 🔧 Estimating gas using populateTransaction...',
     );
+
+    // Encode the transfer function call
+    const transferInterface = new ethers.utils.Interface(ERC20_ABI);
+    const transferCalldata = transferInterface.encodeFunctionData('transfer', [
+      to,
+      tokenAmountInSmallestUnit,
+    ]);
+
+    let estimatedGas: ethers.BigNumber;
+    try {
+      const populatedTx = await populateTransaction({
+        to: tokenAddress,
+        from: delegation.delegatorPkpInfo.ethAddress,
+        data: transferCalldata,
+        value: '0x0',
+        rpcUrl,
+      });
+
+      estimatedGas = ethers.BigNumber.from(populatedTx.gasLimit);
+      console.log(
+        '[@agentic-ai/vincent-ability-erc20-transfer/precheck] 💰 Estimated gas (from populateTransaction):',
+        estimatedGas.toString(),
+      );
+    } catch (error) {
+      console.error(
+        '[@agentic-ai/vincent-ability-erc20-transfer/precheck] ❌ Gas estimation failed:',
+        error,
+      );
+      return fail({
+        error: `[@agentic-ai/vincent-ability-erc20-transfer/precheck] ❌ Failed to estimate gas for transfer: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      });
+    }
 
     const nativeBalance = await provider.getBalance(delegation.delegatorPkpInfo.ethAddress);
     if (!alchemyGasSponsor && nativeBalance.lt(estimatedGas)) {
