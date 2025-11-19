@@ -1,42 +1,59 @@
-import { Address, createPublicClient, http, zeroAddress } from 'viem';
+import { Address, createPublicClient, getAddress, http, zeroAddress } from 'viem';
 
 import { getAaveAddresses, getATokens } from './aave';
-import { decodeUserOp } from './decoding';
+import { decodeTransaction, decodeUserOp } from './decoding';
 import { assertValidEntryPointAddress } from './entryPoint';
+import { Transaction } from './transaction';
 import { UserOp } from './userOperation';
-import { SimulateUserOperationAssetChangesResponse, simulateUserOp } from './simulation';
+import {
+  SimulateUserOperationAssetChangesResponse,
+  simulateTransaction,
+  simulateUserOp,
+} from './simulation';
 
 interface ValidateSimulationParams {
   aaveATokens: Record<string, string>;
   aavePoolAddress: Address;
-  entryPointAddress: Address;
+  senderAddress: Address;
+  allowedNativeRecipients: Address[];
+  additionalAllowedAddresses?: Address[];
   simulation: SimulateUserOperationAssetChangesResponse;
-  userOp: UserOp;
 }
 
 export const validateSimulation = ({
   aaveATokens,
   aavePoolAddress,
-  entryPointAddress,
+  senderAddress,
+  allowedNativeRecipients,
+  additionalAllowedAddresses = [],
   simulation,
-  userOp,
 }: ValidateSimulationParams) => {
   if (simulation.error) {
     const { message, revertReason } = simulation.error;
     throw new Error(`Simulation failed - Reason: ${revertReason} - Message: ${message}`);
   }
 
-  const sender = userOp.sender.toLowerCase();
-  const entryPoint = entryPointAddress.toLowerCase();
-  const pool = aavePoolAddress.toLowerCase();
-  const aTokens = Object.values(aaveATokens).map((aToken) => aToken.toLowerCase());
-  const allowed = new Set([zeroAddress, sender, pool, ...aTokens]);
+  if (!allowedNativeRecipients.length) {
+    throw new Error('validateSimulation requires at least one allowed native recipient');
+  }
+
+  const sender = getAddress(senderAddress);
+  const nativeRecipients = new Set(allowedNativeRecipients.map(getAddress));
+  const pool = getAddress(aavePoolAddress);
+  const aTokens = Object.values(aaveATokens).map(getAddress);
+  const allowed = new Set([
+    zeroAddress,
+    sender,
+    pool,
+    ...aTokens,
+    ...additionalAllowedAddresses.map(getAddress),
+  ]);
 
   simulation.changes.forEach((c, idx) => {
     const assetType = c.assetType;
     const changeType = c.changeType;
-    const from = c.from.toLowerCase();
-    const to = c.to.toLowerCase();
+    const from = getAddress(c.from);
+    const to = getAddress(c.to);
 
     // Helper for throwing with context
     const fail = (reason: string) => {
@@ -49,8 +66,8 @@ export const validateSimulation = ({
       if (changeType !== 'TRANSFER') {
         fail('Only TRANSFER is allowed for NATIVE');
       }
-      if (from !== sender || to !== entryPoint) {
-        fail('Native transfer must be from userOp.sender to entryPointAddress');
+      if (from !== sender || !nativeRecipients.has(to)) {
+        fail('Native transfer must be from sender to an allowed recipient');
       }
       return;
     }
@@ -103,9 +120,7 @@ export const validateUserOp = async (params: ProccessUserOpParams) => {
 
   // Decode userOp to ensure bundled txs are allowed
   const decodeResult = await decodeUserOp({
-    aaveATokens,
     aavePoolAddress,
-    entryPointAddress,
     userOp,
   });
   if (!decodeResult.ok) {
@@ -121,12 +136,63 @@ export const validateUserOp = async (params: ProccessUserOpParams) => {
   validateSimulation({
     aaveATokens,
     aavePoolAddress,
-    entryPointAddress,
+    senderAddress: getAddress(userOp.sender),
+    allowedNativeRecipients: [entryPointAddress],
+    additionalAllowedAddresses: [entryPointAddress],
     simulation,
-    userOp,
   });
 
   return {
     simulationChanges: simulation.changes,
   };
 };
+
+interface ProcessTransactionParams {
+  alchemyRpcUrl: string;
+  transaction: Transaction;
+}
+
+export async function validateTransaction({
+  alchemyRpcUrl,
+  transaction,
+}: ProcessTransactionParams) {
+  const publicClient = createPublicClient({
+    transport: http(alchemyRpcUrl),
+  });
+  const chainId = await publicClient.getChainId();
+
+  const { POOL: aavePoolAddress } = getAaveAddresses(chainId);
+  const aaveATokens = getATokens(chainId);
+
+  if (!transaction.from) {
+    throw new Error('Transaction "from" address is required');
+  }
+  const senderAddress = getAddress(transaction.from);
+
+  const decodeResult = decodeTransaction({
+    aavePoolAddress,
+    transaction,
+  });
+  if (!decodeResult.ok) {
+    throw new Error(`Transaction calldata decoding failed: Errors: ${decodeResult.reasons}`);
+  }
+
+  const simulation = await simulateTransaction({
+    publicClient,
+    transaction,
+  });
+
+  const transactionTarget = getAddress(transaction.to);
+
+  validateSimulation({
+    aaveATokens,
+    aavePoolAddress,
+    senderAddress,
+    allowedNativeRecipients: [transactionTarget],
+    simulation,
+  });
+
+  return {
+    simulationChanges: simulation.changes,
+  };
+}

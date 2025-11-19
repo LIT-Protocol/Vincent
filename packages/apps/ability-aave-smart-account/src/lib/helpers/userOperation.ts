@@ -1,3 +1,4 @@
+import { Address, ByteArray, Hex, isHex, toHex } from 'viem';
 import { z } from 'zod';
 
 import { addressSchema, hexSchema } from './schemas';
@@ -62,7 +63,7 @@ const userOpBaseSchema = z.object({
     .optional(),
 });
 
-export const userOpv070Schema = userOpBaseSchema.extend({
+export const userOpV070Schema = userOpBaseSchema.extend({
   paymaster: addressSchema.optional().describe('Paymaster contract address'),
   paymasterData: hexSchema.optional().describe('Data for paymaster'),
   paymasterVerificationGasLimit: z
@@ -85,8 +86,51 @@ export const userOpv070Schema = userOpBaseSchema.extend({
     ),
 });
 
-export type UserOpv070 = z.infer<typeof userOpv070Schema>;
+export type UserOpV070 = z.infer<typeof userOpV070Schema>;
 
 // Use z.union when adding new userOp versions
-export const userOpSchema = userOpv070Schema;
+export const userOpSchema = userOpV070Schema;
 export type UserOp = z.infer<typeof userOpSchema>;
+
+// Utilities to convert generic user operations to Vincent compatible ones
+type HexLike = string | number | bigint | boolean | ByteArray;
+
+export interface GenericUserOpV070 {
+  callData: Hex;
+  callGasLimit: HexLike;
+  factory?: Address;
+  factoryData?: Hex;
+  maxFeePerGas: HexLike;
+  maxPriorityFeePerGas: HexLike;
+  nonce: HexLike;
+  paymaster?: Address;
+  paymasterData?: Hex;
+  paymasterPostOpGasLimit?: HexLike;
+  paymasterVerificationGasLimit?: HexLike;
+  preVerificationGas: HexLike;
+  signature: Hex;
+  verificationGasLimit: HexLike;
+}
+
+const hexValues = [
+  'callGasLimit',
+  'maxFeePerGas',
+  'maxPriorityFeePerGas',
+  'nonce',
+  'paymasterPostOpGasLimit',
+  'paymasterVerificationGasLimit',
+  'preVerificationGas',
+  'verificationGasLimit',
+] as const;
+
+export function toVincentUserOp(userOp: GenericUserOpV070): UserOp {
+  const _userOp = { ...userOp };
+
+  for (const key of hexValues) {
+    if (hexValues.includes(key) && _userOp[key] && !isHex(_userOp[key])) {
+      _userOp[key] = toHex(_userOp[key]);
+    }
+  }
+
+  return _userOp as UserOp;
+}

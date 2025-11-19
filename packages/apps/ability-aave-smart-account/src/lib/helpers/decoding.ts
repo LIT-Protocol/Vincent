@@ -12,6 +12,7 @@ import {
 
 import { AAVE_POOL_ABI } from './aave';
 import { ERC20_ABI } from './erc20';
+import { Transaction } from './transaction';
 import { UserOp } from './userOperation';
 
 type LowLevelCall = { to: Address; value: bigint; data: Hex };
@@ -156,7 +157,7 @@ function tryDecodeBatchWithValues(executionCalldata: Hex): LowLevelCall[] | null
   }
 }
 
-function decodeKernelV33ToCalls(callData: Hex): LowLevelCall[] {
+function decodeUserOpCalldataToLowLevelCalls(callData: Hex): LowLevelCall[] {
   const df = decodeFunctionData({ abi: smartAccountsAbi, data: callData });
   if (df.functionName !== 'execute' && df.functionName !== 'executeFromExecutor') {
     throw new Error('Not a Kernel v3.3 execute/executor call');
@@ -236,9 +237,7 @@ export type ValidationResult = {
 };
 
 interface DecodeUserOpParams {
-  aaveATokens: Record<string, string>;
   aavePoolAddress: Address;
-  entryPointAddress: Address;
   userOp: UserOp;
 }
 
@@ -246,6 +245,54 @@ export interface DecodeUserOpResult {
   ok: boolean;
   reasons: string[];
 }
+
+const evaluateCallAgainstPolicy = ({
+  aavePoolAddress,
+  call,
+  sender,
+}: {
+  aavePoolAddress: Address;
+  call: LowLevelCall;
+  sender: Address;
+}) => {
+  const reasons: string[] = [];
+  const res = decodeAaveOrERC20(call, aavePoolAddress);
+  if (res.kind === 'blocked') {
+    reasons.push(res.reason);
+    return reasons;
+  }
+
+  if (res.kind === 'aave') {
+    const fn = res.fn;
+    const args = res.args as any[];
+
+    if (fn === 'supply') {
+      const onBehalfOf = getAddress(args[2]);
+      if (!isAddressEqual(onBehalfOf, sender)) reasons.push('supply.onBehalfOf != sender');
+    } else if (fn === 'withdraw') {
+      const to = getAddress(args[2]);
+      if (!isAddressEqual(to, sender)) reasons.push('withdraw.to != sender');
+    } else if (fn === 'borrow') {
+      const onBehalfOf = getAddress(args[4]);
+      if (!isAddressEqual(onBehalfOf, sender)) reasons.push('borrow.onBehalfOf != sender');
+    } else if (fn === 'repay') {
+      const onBehalfOf = getAddress(args[3]);
+      if (!isAddressEqual(onBehalfOf, sender)) reasons.push('repay.onBehalfOf != sender');
+    } else if (fn === 'setUserUseReserveAsCollateral') {
+      // ok; self-scoped setting
+    } else {
+      reasons.push(`Aave Pool function not allowed: ${fn}`);
+    }
+  }
+
+  if (res.kind === 'erc20_approval') {
+    // Block infinite approvals
+    const amount = res.args?.[1] as bigint;
+    if (amount === 2n ** 256n - 1n) reasons.push('Infinite approval not allowed');
+  }
+
+  return reasons;
+};
 
 export const decodeUserOp = async ({
   aavePoolAddress,
@@ -257,48 +304,46 @@ export const decodeUserOp = async ({
   // Normalize account calls
   let calls: LowLevelCall[];
   try {
-    calls = decodeKernelV33ToCalls(userOp.callData);
+    calls = decodeUserOpCalldataToLowLevelCalls(userOp.callData);
   } catch (e: any) {
     return { ok: false, reasons: [`Cannot decode account callData: ${e.message}`] };
   }
 
   // Enforce per-call policy
   for (const call of calls) {
-    const res = decodeAaveOrERC20(call, aavePoolAddress);
-    if (res.kind === 'blocked') {
-      reasons.push(res.reason);
-      continue;
-    }
-
-    if (res.kind === 'aave') {
-      const fn = res.fn;
-      const args = res.args as any[];
-
-      if (fn === 'supply') {
-        const onBehalfOf = getAddress(args[2]);
-        if (!isAddressEqual(onBehalfOf, sender)) reasons.push('supply.onBehalfOf != sender');
-      } else if (fn === 'withdraw') {
-        const to = getAddress(args[2]);
-        if (!isAddressEqual(to, sender)) reasons.push('withdraw.to != sender');
-      } else if (fn === 'borrow') {
-        const onBehalfOf = getAddress(args[4]);
-        if (!isAddressEqual(onBehalfOf, sender)) reasons.push('borrow.onBehalfOf != sender');
-      } else if (fn === 'repay') {
-        const onBehalfOf = getAddress(args[3]);
-        if (!isAddressEqual(onBehalfOf, sender)) reasons.push('repay.onBehalfOf != sender');
-      } else if (fn === 'setUserUseReserveAsCollateral') {
-        // ok; self-scoped setting
-      } else {
-        reasons.push(`Aave Pool function not allowed: ${fn}`);
-      }
-    }
-
-    if (res.kind === 'erc20_approval') {
-      // Block infinite approvals
-      const amount = res.args?.[1] as bigint;
-      if (amount === 2n ** 256n - 1n) reasons.push('Infinite approval not allowed');
-    }
+    reasons.push(
+      ...evaluateCallAgainstPolicy({
+        aavePoolAddress,
+        call,
+        sender,
+      }),
+    );
   }
+
+  return { ok: reasons.length === 0, reasons };
+};
+
+interface DecodeTransactionParams {
+  aavePoolAddress: Address;
+  transaction: Transaction;
+}
+
+export const decodeTransaction = ({
+  aavePoolAddress,
+  transaction,
+}: DecodeTransactionParams): DecodeUserOpResult => {
+  const sender = getAddress(transaction.from);
+  const call: LowLevelCall = {
+    data: transaction.data,
+    to: getAddress(transaction.to),
+    value: hexToBigInt(transaction.value),
+  };
+
+  const reasons = evaluateCallAgainstPolicy({
+    aavePoolAddress,
+    call,
+    sender,
+  });
 
   return { ok: reasons.length === 0, reasons };
 };
