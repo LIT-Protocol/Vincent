@@ -221,6 +221,10 @@ export const precheckSuccessSchema = z.object({
     .string()
     .optional()
     .describe('The available balance of the asset in the Hyperliquid account'),
+  isBuilderApproved: z
+    .boolean()
+    .optional()
+    .describe('Whether the Vincent builder code is already approved by the Agent Wallet'),
 });
 
 export const precheckFailSchema = z.object({
@@ -235,6 +239,10 @@ export const precheckFailSchema = z.object({
     .optional()
     .describe('The required balance of the asset in the Hyperliquid account'),
   balanceAsset: z.string().optional().describe('The asset in the Hyperliquid account'),
+  isBuilderApproved: z
+    .boolean()
+    .optional()
+    .describe('Whether the Vincent builder code is already approved by the Agent Wallet'),
 });
 
 export const executeFailSchema = z.object({

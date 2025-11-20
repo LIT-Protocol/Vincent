@@ -85,23 +85,17 @@ export const vincentAbility = createVincentAbility({
       ethAddress: delegatorPkpInfo.ethAddress,
     });
 
+    let isBuilderApproved: boolean | undefined;
     if (
       action === HyperliquidAction.SPOT_SELL ||
       action === HyperliquidAction.PERP_LONG ||
       action === HyperliquidAction.PERP_SHORT
     ) {
-      const isBuilderApproved = await isBuilderCodeApproved({
+      isBuilderApproved = await isBuilderCodeApproved({
         infoClient,
         ethAddress: delegatorPkpInfo.ethAddress,
         builderAddress: HYPERLIQUID_BUILDER_ADDRESS,
       });
-
-      if (!isBuilderApproved) {
-        return fail({
-          action,
-          reason: `Builder code is not approved. Please approve the builder code: ${HYPERLIQUID_BUILDER_ADDRESS}`,
-        });
-      }
     }
 
     if (action === HyperliquidAction.DEPOSIT) {
@@ -283,10 +277,11 @@ export const vincentAbility = createVincentAbility({
           return fail({
             action,
             reason: checkResult.reason,
+            isBuilderApproved,
           });
         }
 
-        return succeed({ action });
+        return succeed({ action, isBuilderApproved });
       }
 
       case HyperliquidAction.PERP_LONG:
@@ -304,10 +299,10 @@ export const vincentAbility = createVincentAbility({
         });
 
         if (!checkResult.success) {
-          return fail({ action, reason: checkResult.reason || 'Unknown error' });
+          return fail({ action, reason: checkResult.reason || 'Unknown error', isBuilderApproved });
         }
 
-        return succeed({ action });
+        return succeed({ action, isBuilderApproved });
       }
 
       case HyperliquidAction.CANCEL_ORDER: {
