@@ -4,6 +4,6 @@ export function createRandomVincentWallets() {
   return {
     appDelegatee: Wallet.createRandom(),
     appManager: Wallet.createRandom(),
-    agentWalletOwner: Wallet.createRandom(),
+    platformUserPkpOwner: Wallet.createRandom(),
   };
 }

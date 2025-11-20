@@ -17,6 +17,8 @@
   },
   "devDependencies": {
     "@lit-protocol/esbuild-plugin-polyfill-node": "^0.3.0",
+    "@lit-protocol/vincent-contracts-sdk": "^2.0.0",
+    "@lit-protocol/vincent-e2e-test-utils": "workspace:*",
     "esbuild": "^0.19.12",
     "ipfs-only-hash": "^4.0.0"
   },

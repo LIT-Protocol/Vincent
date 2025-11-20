@@ -11,7 +11,7 @@ let ethersHelpers: {
     appDelegatee: Wallet;
     funder: Wallet;
     appManager: Wallet;
-    agentWalletOwner: Wallet;
+    platformUserPkpOwner: Wallet; // EOA that owns the User Platform PKP
   };
 };
 
@@ -44,7 +44,10 @@ export const getChainHelpers = async () => {
       appDelegatee: new Wallet(TEST_APP_DELEGATEE_PRIVATE_KEY, yellowstoneProvider),
       funder: new Wallet(TEST_FUNDER_PRIVATE_KEY, yellowstoneProvider),
       appManager: new Wallet(TEST_APP_MANAGER_PRIVATE_KEY, yellowstoneProvider),
-      agentWalletOwner: new Wallet(TEST_AGENT_WALLET_PKP_OWNER_PRIVATE_KEY, yellowstoneProvider),
+      platformUserPkpOwner: new Wallet(
+        TEST_AGENT_WALLET_PKP_OWNER_PRIVATE_KEY,
+        yellowstoneProvider,
+      ),
     },
   };
 

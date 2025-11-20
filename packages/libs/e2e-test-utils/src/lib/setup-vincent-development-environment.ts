@@ -13,11 +13,12 @@ import * as funder from './funder';
 
 export interface VincentDevEnvironment {
   agentPkpInfo: PkpInfo;
+  userPlatformPkpInfo: PkpInfo;
   wallets: {
     appDelegatee: Wallet;
     funder: Wallet;
     appManager: Wallet;
-    agentWalletOwner: Wallet;
+    platformUserPkpOwner: Wallet;
   };
   appId: number;
   appVersion: number;
@@ -90,7 +91,11 @@ export const setupVincentDevelopmentEnvironment = async ({
     appVersion = newAppVersion.appVersion;
   }
 
-  const agentPkpInfo = await delegator.getFundedAgentPkp();
+  // Get or create the User Platform PKP (owned by the EOA)
+  const userPlatformPkpInfo = await delegator.getFundedUserPlatformPkp();
+
+  // Get or create the Agent PKP for this app (owned by the User Platform PKP)
+  const agentPkpInfo = await delegator.getFundedAgentPkp(appId);
 
   await delegator.permitAppVersionForAgentWalletPkp({
     permissionData,
@@ -99,8 +104,11 @@ export const setupVincentDevelopmentEnvironment = async ({
     agentPkpInfo,
   });
 
+  // Note: We need to add permissions using a PKP session sig from the User Platform PKP
+  // For now, we'll still use the platformUserPkpOwner since it initially owns the PKP during minting
+  // TODO: Update this to use PKP session signatures from the User Platform PKP
   await delegator.addPermissionForAbilities(
-    wallets.agentWalletOwner,
+    wallets.platformUserPkpOwner,
     agentPkpInfo.tokenId,
     abilityIpfsCids,
   );
@@ -110,6 +118,7 @@ export const setupVincentDevelopmentEnvironment = async ({
 
   return {
     agentPkpInfo,
+    userPlatformPkpInfo,
     wallets,
     appId,
     appVersion,

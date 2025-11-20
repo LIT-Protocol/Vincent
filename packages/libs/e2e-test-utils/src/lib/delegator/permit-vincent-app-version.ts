@@ -25,11 +25,11 @@ export async function permitAppVersionForAgentWalletPkp({
   agentPkpInfo: PkpInfo;
 }): Promise<void> {
   const {
-    wallets: { agentWalletOwner },
+    wallets: { platformUserPkpOwner },
   } = await getChainHelpers();
 
   const client = getClient({
-    signer: agentWalletOwner,
+    signer: platformUserPkpOwner,
   });
 
   const existingPermittedAppVersion = await client.getPermittedAppVersionForPkp({
