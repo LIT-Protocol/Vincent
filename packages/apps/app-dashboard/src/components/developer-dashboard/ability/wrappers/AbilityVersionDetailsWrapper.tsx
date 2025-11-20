@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router';
 import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
 import Loading from '@/components/shared/ui/Loading';
 import { StatusMessage } from '@/components/shared/ui/statusMessage';
+import { wait } from '@/lib/utils';
 import { AbilityVersionDetailsView } from '../views/AbilityVersionDetailsView';
 import { Breadcrumb } from '@/components/shared/ui/Breadcrumb';
 import {
@@ -10,6 +11,7 @@ import {
   EditAbilityVersionFormData,
 } from '../forms/EditAbilityVersionForm';
 import { DeleteAbilityVersionForm } from '../forms/DeleteAbilityVersionForm';
+import { RefreshAbilityVersionPoliciesForm } from '../forms/RefreshAbilityVersionPoliciesForm';
 import {
   Dialog,
   DialogContent,
@@ -19,12 +21,17 @@ import {
 } from '@/components/shared/ui/dialog';
 import { fonts } from '@/components/user-dashboard/connect/ui/theme';
 
-type ViewType = 'details' | 'edit-version' | 'delete-version';
+type ViewType = 'details' | 'edit-version' | 'delete-version' | 'refresh-policies';
 
 export function AbilityVersionDetailsWrapper() {
   const { packageName, version } = useParams<{ packageName: string; version: string }>();
   const [currentView, setCurrentView] = useState<ViewType>('details');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [refreshResult, setRefreshResult] = useState<{
+    success: boolean;
+    supportedPolicies?: Record<string, string>;
+    error?: string;
+  } | null>(null);
 
   // Fetch ability
   const {
@@ -50,6 +57,8 @@ export function AbilityVersionDetailsWrapper() {
   // Mutations
   const [editAbilityVersion] = vincentApiClient.useEditAbilityVersionMutation();
   const [deleteAbilityVersion] = vincentApiClient.useDeleteAbilityVersionMutation();
+  const [refreshAbilityVersionPolicies] =
+    vincentApiClient.useRefreshAbilityVersionPoliciesMutation();
 
   // Navigation
   const navigate = useNavigate();
@@ -100,8 +109,37 @@ export function AbilityVersionDetailsWrapper() {
     }
   };
 
+  const handleRefreshPoliciesSubmit = async () => {
+    setIsSubmitting(true);
+    setRefreshResult(null);
+    try {
+      const result = await refreshAbilityVersionPolicies({
+        packageName: packageName!,
+        version: version!,
+      }).unwrap();
+      setRefreshResult({
+        success: true,
+        supportedPolicies: result.supportedPolicies || {},
+      });
+      setIsSubmitting(false);
+
+      // Wait 2 seconds then close the modal
+      await wait(2000);
+      setCurrentView('details');
+      setRefreshResult(null);
+    } catch (error: any) {
+      console.error('Failed to refresh policies:', error);
+      setRefreshResult({
+        success: false,
+        error: error?.data?.message || 'Failed to refresh policies',
+      });
+      setIsSubmitting(false);
+    }
+  };
+
   const handleCloseModal = () => {
     setCurrentView('details');
+    setRefreshResult(null);
   };
 
   return (
@@ -157,6 +195,22 @@ export function AbilityVersionDetailsWrapper() {
             versions={versions}
             onSubmit={handleDeleteAbilityVersionSubmit}
             isSubmitting={isSubmitting}
+          />
+        </DialogContent>
+      </Dialog>
+
+      {/* Refresh Policies Modal */}
+      <Dialog open={currentView === 'refresh-policies'} onOpenChange={handleCloseModal}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white dark:bg-gray-950">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-semibold" style={fonts.heading}>
+              Refresh Supported Policies
+            </DialogTitle>
+          </DialogHeader>
+          <RefreshAbilityVersionPoliciesForm
+            onSubmit={handleRefreshPoliciesSubmit}
+            isSubmitting={isSubmitting}
+            result={refreshResult}
           />
         </DialogContent>
       </Dialog>
