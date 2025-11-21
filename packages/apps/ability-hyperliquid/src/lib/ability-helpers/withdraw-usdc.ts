@@ -14,7 +14,7 @@ import { getHyperliquidNonce } from './get-hyperliquid-nonce';
 import { getHyperliquidChainId, getHyperliquidChainName } from './get-hyperliquid-chain-id';
 
 export type WithdrawUsdcResult = {
-  withdrawResult: SuccessResponse;
+  withdrawResult: SuccessResponse | hyperliquid.ErrorResponse;
 };
 
 /**
@@ -75,6 +75,6 @@ export async function withdrawUsdc({
 
   const parsedWithdrawResult = JSON.parse(withdrawResult);
   return {
-    withdrawResult: parsedWithdrawResult.result as SuccessResponse,
+    withdrawResult: parsedWithdrawResult.result as SuccessResponse | hyperliquid.ErrorResponse,
   };
 }

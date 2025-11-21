@@ -54,13 +54,13 @@ describe('Authorization Integration Tests', () => {
   const abilityData = {
     title: 'Auth Test Ability',
     description: 'Test ability for authorization tests',
-    activeVersion: '1.0.0',
+    activeVersion: '0.0.2',
   };
 
   const policyData = {
     title: 'Auth Test Policy',
     description: 'Test policy for authorization tests',
-    activeVersion: '1.0.0',
+    activeVersion: '0.0.2',
   };
 
   // Setup: Create all entities with the authorized wallet
@@ -80,8 +80,8 @@ describe('Authorization Integration Tests', () => {
     testAppVersion = 1; // Initial version
 
     // Register the app on the contracts using contracts-sdk
-    const abilityIpfsCid = 'QmWWBMDT3URSp8sX9mFZjhAoufSk5kia7bpp84yxq9WHFd'; // ERC20 approval ability
-    const policyIpfsCid = 'QmSK8JoXxh7sR6MP7L6YJiUnzpevbNjjtde3PeP8FfLzV3'; // Spending limit policy
+    const abilityIpfsCid = 'QmdZcfgQ9Kz8vNwS5owf6iBm9Co1qMGki244JSFuyPNv1W'; // Demo approval ability
+    const policyIpfsCid = 'QmRm6uoZqhCjCP7TXds7umBvsmR9mjAzhkhTUqbPr9dHJS'; // Demo policy
 
     try {
       const { txHash } = await getDefaultWalletContractClient().registerApp({
@@ -100,7 +100,7 @@ describe('Authorization Integration Tests', () => {
     }
 
     // Create Ability
-    testAbilityPackageName = `@lit-protocol/vincent-ability-uniswap-swap`;
+    testAbilityPackageName = `vincent-demo-ability`;
     testAbilityVersion = abilityData.activeVersion;
     const abilityResult = await store.dispatch(
       api.endpoints.createAbility.initiate({
@@ -111,7 +111,7 @@ describe('Authorization Integration Tests', () => {
     expect(abilityResult).not.toHaveProperty('error');
 
     // Create Policy
-    testPolicyPackageName = `@lit-protocol/vincent-policy-spending-limit`;
+    testPolicyPackageName = `vincent-demo-policy`;
     testPolicyVersion = policyData.activeVersion;
     const policyResult = await store.dispatch(
       api.endpoints.createPolicy.initiate({
@@ -450,7 +450,7 @@ describe('Authorization Integration Tests', () => {
       const result = await store.dispatch(
         api.endpoints.createAbilityVersion.initiate({
           packageName: testAbilityPackageName,
-          version: '1.0.1',
+          version: '0.0.3',
           abilityVersionCreate: {
             changes: 'Unauthorized changes',
           },
@@ -581,7 +581,7 @@ describe('Authorization Integration Tests', () => {
       const result = await store.dispatch(
         api.endpoints.createPolicyVersion.initiate({
           packageName: testPolicyPackageName,
-          version: '2.0.0',
+          version: '0.0.3',
           policyVersionCreate: {
             changes: 'Unauthorized changes',
           },
@@ -663,65 +663,48 @@ describe('Authorization Integration Tests', () => {
       try {
         await store.dispatch(
           api.endpoints.deleteAbility.initiate({
-            packageName: '@lit-protocol/vincent-ability-uniswap-swap',
+            packageName: 'vincent-demo-ability',
           }),
         );
-        verboseLog('Deleted @lit-protocol/vincent-ability-uniswap-swap');
+        verboseLog('Deleted vincent-demo-ability');
       } catch (error: any) {
-        verboseLog(
-          `Error deleting @lit-protocol/vincent-ability-uniswap-swap (may not exist): ${error.message}`,
-        );
-      }
-
-      try {
-        await store.dispatch(
-          api.endpoints.deleteAbility.initiate({
-            packageName: '@lit-protocol/vincent-ability-erc20-approval',
-          }),
-        );
-        verboseLog('Deleted @lit-protocol/vincent-ability-erc20-approval');
-      } catch (error: any) {
-        verboseLog(
-          `Error deleting @lit-protocol/vincent-ability-erc20-approval (may not exist): ${error.message}`,
-        );
+        verboseLog(`Error deleting vincent-demo-ability (may not exist): ${error.message}`);
       }
 
       try {
         await store.dispatch(
           api.endpoints.deletePolicy.initiate({
-            packageName: '@lit-protocol/vincent-policy-spending-limit',
+            packageName: 'vincent-demo-policy',
           }),
         );
-        verboseLog('Deleted @lit-protocol/vincent-policy-spending-limit');
+        verboseLog('Deleted vincent-demo-policy');
       } catch (error: any) {
-        verboseLog(
-          `Error deleting @lit-protocol/vincent-policy-spending-limit (may not exist): ${error.message}`,
-        );
+        verboseLog(`Error deleting vincent-demo-policy (may not exist): ${error.message}`);
       }
 
       // Create a new ability for ownership tests
-      ownershipTestAbilityPackageName = `@lit-protocol/vincent-ability-uniswap-swap`;
+      ownershipTestAbilityPackageName = `vincent-demo-ability`;
       const abilityResult = await store.dispatch(
         api.endpoints.createAbility.initiate({
           packageName: ownershipTestAbilityPackageName,
           abilityCreate: {
             title: 'Ownership Test Ability',
             description: 'Ability for testing ownership changes',
-            activeVersion: '1.0.0',
+            activeVersion: '0.0.2',
           },
         }),
       );
       expect(abilityResult).not.toHaveProperty('error');
 
       // Create a new policy for ownership tests
-      ownershipTestPolicyPackageName = `@lit-protocol/vincent-policy-spending-limit`;
+      ownershipTestPolicyPackageName = `vincent-demo-policy`;
       const policyResult = await store.dispatch(
         api.endpoints.createPolicy.initiate({
           packageName: ownershipTestPolicyPackageName,
           policyCreate: {
             title: 'Ownership Test Policy',
             description: 'Policy for testing ownership changes',
-            activeVersion: '1.0.0',
+            activeVersion: '0.0.2',
           },
         }),
       );
@@ -813,7 +796,7 @@ describe('Authorization Integration Tests', () => {
         const versionResult = await store.dispatch(
           api.endpoints.createAbilityVersion.initiate({
             packageName: ownershipTestAbilityPackageName,
-            version: '1.0.1',
+            version: '0.0.3',
             abilityVersionCreate: {
               changes: 'Version to be deleted by new owner',
             },
@@ -826,7 +809,7 @@ describe('Authorization Integration Tests', () => {
         const deleteResult = await store.dispatch(
           api.endpoints.deleteAbilityVersion.initiate({
             packageName: ownershipTestAbilityPackageName,
-            version: '1.0.1',
+            version: '0.0.3',
           }),
         );
 
@@ -904,7 +887,7 @@ describe('Authorization Integration Tests', () => {
         const versionResult = await store.dispatch(
           api.endpoints.createPolicyVersion.initiate({
             packageName: ownershipTestPolicyPackageName,
-            version: '1.0.1',
+            version: '0.0.3',
             policyVersionCreate: {
               changes: 'Version to be deleted by new owner',
             },
@@ -917,7 +900,7 @@ describe('Authorization Integration Tests', () => {
         const deleteResult = await store.dispatch(
           api.endpoints.deletePolicyVersion.initiate({
             packageName: ownershipTestPolicyPackageName,
-            version: '1.0.1',
+            version: '0.0.3',
           }),
         );
 

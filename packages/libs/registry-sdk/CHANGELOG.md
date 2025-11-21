@@ -1,3 +1,14 @@
+- ## 4.3.0 (2025-11-20)
+-
+- ### 🚀 Features
+-
+- - Added a `refreshAbilityVersionPolicies` endpoint to support policy discoverability in the event that the ability version was published to the Vincent Registry
+    before the policy version was published. ([82cdf84c](https://github.com/LIT-Protocol/Vincent/commit/82cdf84c))
+-
+- ### ❤️ Thank You
+-
+- - awisniew207 @awisniew207
+
 ## 4.2.0 (2025-09-11)
 
 ### 🚀 Features

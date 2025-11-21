@@ -20,13 +20,13 @@ describe('Ability API Integration Tests', () => {
   let testAbilityVersion: string;
 
   // Expected IPFS CID for the ability package
-  const expectedAbilityIpfsCid = 'QmWWBMDT3URSp8sX9mFZjhAoufSk5kia7bpp84yxq9WHFd';
+  const expectedAbilityIpfsCid = 'QmdZcfgQ9Kz8vNwS5owf6iBm9Co1qMGki244JSFuyPNv1W';
 
   // Test data for creating an ability
   const abilityData = {
     title: 'Test Ability',
     description: 'Test ability for integration tests',
-    activeVersion: '1.0.0',
+    activeVersion: '0.0.2',
     logo: 'iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAIAAAACDbGyAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAOvwAADr8BOAVTJAAAAA5JREFUGFdj/M+ACAAAAAD//wE7AnsAAAAAAElFTkSuQmCC',
   };
 
@@ -49,7 +49,7 @@ describe('Ability API Integration Tests', () => {
   describe('POST /ability/{packageName}', () => {
     it('should create a new ability', async () => {
       // Generate a unique package name for testing
-      testPackageName = `@lit-protocol/vincent-ability-erc20-approval`;
+      testPackageName = `vincent-demo-ability`;
       testAbilityVersion = abilityData.activeVersion;
 
       const result = await store.dispatch(
@@ -146,7 +146,7 @@ describe('Ability API Integration Tests', () => {
       const result = await store.dispatch(
         api.endpoints.createAbilityVersion.initiate({
           packageName: testPackageName,
-          version: '1.0.1',
+          version: '0.0.3',
           abilityVersionCreate: abilityVersionData,
         }),
       );
@@ -158,10 +158,10 @@ describe('Ability API Integration Tests', () => {
       expectAssertObject(data);
 
       expect(data).toHaveProperty('changes', abilityVersionData.changes);
-      expect(data).toHaveProperty('version', '1.0.1');
+      expect(data).toHaveProperty('version', '0.0.3');
 
       // Verify ipfsCid is set
-      expect(data).toHaveProperty('ipfsCid', 'QmWHK5KsJitDwW1zHRoiJQdQECASzSjjphp4Rg8YqB6BsX');
+      expect(data).toHaveProperty('ipfsCid', 'QmdZcfgQ9Kz8vNwS5owf6iBm9Co1qMGki244JSFuyPNv1W');
     });
   });
 
@@ -228,6 +228,52 @@ describe('Ability API Integration Tests', () => {
     });
   });
 
+  describe('POST /ability/{packageName}/version/{version}/refresh-policies', () => {
+    it('should refresh supported policies for an ability version', async () => {
+      store.dispatch(api.util.resetApiState());
+
+      // First, register the policy that the ability depends on
+      await store.dispatch(
+        api.endpoints.createPolicy.initiate({
+          packageName: 'vincent-demo-policy',
+          policyCreate: {
+            title: 'Demo Policy',
+            description: 'Demo policy for testing',
+            activeVersion: '0.0.2',
+          },
+        }),
+      );
+
+      // Now refresh policies
+      const result = await store.dispatch(
+        api.endpoints.refreshAbilityVersionPolicies.initiate({
+          packageName: testPackageName,
+          version: testAbilityVersion,
+        }),
+      );
+
+      verboseLog(result);
+      expect(result).not.toHaveProperty('error');
+
+      const { data } = result;
+      expectAssertObject(data);
+
+      // Verify the response contains supportedPolicies
+      expect(data).toHaveProperty('supportedPolicies');
+      expect(data).toHaveProperty('policiesNotInRegistry');
+
+      // supportedPolicies should be an object with the policy
+      expect(typeof data.supportedPolicies).toBe('object');
+      expect(data.supportedPolicies).toHaveProperty('vincent-demo-policy');
+      expect(Array.isArray(data.policiesNotInRegistry)).toBe(true);
+
+      // Clean up - delete the policy
+      await store.dispatch(
+        api.endpoints.deletePolicy.initiate({ packageName: 'vincent-demo-policy' }),
+      );
+    });
+  });
+
   describe('PUT /ability/{packageName}/version/{version}', () => {
     it('should update an ability version', async () => {
       store.dispatch(api.util.resetApiState());
@@ -275,7 +321,7 @@ describe('Ability API Integration Tests', () => {
   describe('DELETE /ability/{packageName}/version/{version}', () => {
     it('should delete an ability version', async () => {
       // Create a new version to delete
-      const versionToDelete = '1.0.1';
+      const versionToDelete = '0.0.3';
 
       const result = await store.dispatch(
         api.endpoints.deleteAbilityVersion.initiate({

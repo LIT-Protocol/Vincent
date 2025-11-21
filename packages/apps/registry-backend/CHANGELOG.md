@@ -1,3 +1,9 @@
+- ## 2.1.4 (2025-11-20)
+-
+- ### 🧱 Updated Dependencies
+-
+- - Updated registry-sdk to 4.3.0
+
 ## 2.1.3 (2025-09-25)
 
 ### 🧱 Updated Dependencies

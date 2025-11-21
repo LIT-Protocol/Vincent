@@ -265,6 +265,16 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['AbilityVersion'],
       }),
+      refreshAbilityVersionPolicies: build.mutation<
+        RefreshAbilityVersionPoliciesApiResponse,
+        RefreshAbilityVersionPoliciesApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/ability/${encodeURIComponent(String(queryArg.packageName))}/version/${encodeURIComponent(String(queryArg.version))}/refresh-policies`,
+          method: 'POST',
+        }),
+        invalidatesTags: ['AbilityVersion'],
+      }),
       listAllPolicies: build.query<ListAllPoliciesApiResponse, ListAllPoliciesApiArg>({
         query: () => ({ url: `/policies` }),
         providesTags: ['Policy'],
@@ -601,6 +611,14 @@ export type UndeleteAbilityApiArg = {
 export type UndeleteAbilityVersionApiResponse =
   /** status 200 OK - Resource successfully undeleted */ GenericResultMessage;
 export type UndeleteAbilityVersionApiArg = {
+  /** The NPM package name */
+  packageName: string;
+  /** NPM semver of the target ability version */
+  version: string;
+};
+export type RefreshAbilityVersionPoliciesApiResponse =
+  /** status 200 OK - Policies successfully refreshed */ AbilityVersionRead;
+export type RefreshAbilityVersionPoliciesApiArg = {
   /** The NPM package name */
   packageName: string;
   /** NPM semver of the target ability version */
@@ -1286,6 +1304,7 @@ export const {
   useDeleteAbilityVersionMutation,
   useUndeleteAbilityMutation,
   useUndeleteAbilityVersionMutation,
+  useRefreshAbilityVersionPoliciesMutation,
   useListAllPoliciesQuery,
   useLazyListAllPoliciesQuery,
   useCreatePolicyMutation,

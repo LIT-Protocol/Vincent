@@ -13,6 +13,7 @@ export const actionTypeSchema = z.enum([
   'perpShort',
   'cancelOrder',
   'cancelAllOrdersForSymbol',
+  'approveBuilderCode',
 ]);
 
 export const depositParamsSchema = z.object({
@@ -206,6 +207,7 @@ export const abilityParamsSchema = z
       if (data.action === 'perpLong' || data.action === 'perpShort') return !!data.perp;
       if (data.action === 'cancelOrder') return !!data.cancelOrder;
       if (data.action === 'cancelAllOrdersForSymbol') return !!data.cancelAllOrdersForSymbol;
+      if (data.action === 'approveBuilderCode') return true; // No params required
       return false;
     },
     {
@@ -219,6 +221,10 @@ export const precheckSuccessSchema = z.object({
     .string()
     .optional()
     .describe('The available balance of the asset in the Hyperliquid account'),
+  isBuilderApproved: z
+    .boolean()
+    .optional()
+    .describe('Whether the Vincent builder code is already approved by the Agent Wallet'),
 });
 
 export const precheckFailSchema = z.object({
@@ -233,6 +239,10 @@ export const precheckFailSchema = z.object({
     .optional()
     .describe('The required balance of the asset in the Hyperliquid account'),
   balanceAsset: z.string().optional().describe('The asset in the Hyperliquid account'),
+  isBuilderApproved: z
+    .boolean()
+    .optional()
+    .describe('Whether the Vincent builder code is already approved by the Agent Wallet'),
 });
 
 export const executeFailSchema = z.object({
@@ -251,4 +261,8 @@ export const executeSuccessSchema = z.object({
     .any()
     .optional()
     .describe('Cancel result (for spotCancelOrder/spotCancelAll action)'),
+  approveResult: z
+    .any()
+    .optional()
+    .describe('Approve builder code result (for approveBuilderCode action)'),
 });
