@@ -81,6 +81,34 @@
                   "ability/official-abilities/erc20-approval",
                   "ability/official-abilities/erc20-transfer",
                   "ability/official-abilities/evm-transaction-signer",
+                  {
+                    "group": "Hyperliquid",
+                    "pages": [
+                      "ability/official-abilities/hyperliquid/overview",
+                      "ability/official-abilities/hyperliquid/deposit",
+                      "ability/official-abilities/hyperliquid/withdraw",
+                      "ability/official-abilities/hyperliquid/transfer-to-spot",
+                      "ability/official-abilities/hyperliquid/transfer-to-perp",
+                      "ability/official-abilities/hyperliquid/cancel-order",
+                      "ability/official-abilities/hyperliquid/cancel-all-orders-for-symbol",
+                      {
+                        "group": "Spot Trading",
+                        "pages": [
+                          "ability/official-abilities/hyperliquid/spot-trading/send-asset",
+                          "ability/official-abilities/hyperliquid/spot-trading/buy",
+                          "ability/official-abilities/hyperliquid/spot-trading/sell"
+                        ]
+                      },
+                      {
+                        "group": "Perp Trading",
+                        "pages": [
+                          "ability/official-abilities/hyperliquid/perp-trading/send-usdc",
+                          "ability/official-abilities/hyperliquid/perp-trading/long",
+                          "ability/official-abilities/hyperliquid/perp-trading/short"
+                        ]
+                      }
+                    ]
+                  },
                   "ability/official-abilities/morpho",
                   "ability/official-abilities/uniswap-swap"
                 ]
@@ -396,6 +424,30 @@
                   "api-reference/contracts-sdk/interfaces/ValidateAbilityExecutionAndGetPoliciesParams",
                   "api-reference/contracts-sdk/interfaces/ValidateAbilityExecutionAndGetPoliciesResult"
                 ]
+              }
+            ]
+          },
+          {
+            "group": "e2e-test-utils",
+            "pages": [
+              "api-reference/e2e-test-utils/README",
+              {
+                "group": "Functions",
+                "pages": [
+                  "api-reference/e2e-test-utils/functions/createRandomVincentWallets",
+                  "api-reference/e2e-test-utils/functions/ensureUnexpiredCapacityToken",
+                  "api-reference/e2e-test-utils/functions/getEnv",
+                  "api-reference/e2e-test-utils/functions/mintNewPkp",
+                  "api-reference/e2e-test-utils/functions/setupVincentDevelopmentEnvironment"
+                ]
+              },
+              {
+                "group": "Interfaces",
+                "pages": ["api-reference/e2e-test-utils/interfaces/VincentDevEnvironment"]
+              },
+              {
+                "group": "Type Aliases",
+                "pages": ["api-reference/e2e-test-utils/type-aliases/PkpInfo"]
               }
             ]
           }

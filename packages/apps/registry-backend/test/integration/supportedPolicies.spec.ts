@@ -17,21 +17,21 @@ describe('Supported Policies Integration Tests', () => {
   });
 
   // Package names for testing
-  const policyPackageName = '@lit-protocol/vincent-policy-spending-limit';
-  const abilityPackageName = '@lit-protocol/vincent-ability-uniswap-swap';
+  const policyPackageName = 'vincent-demo-policy';
+  const abilityPackageName = 'vincent-demo-ability';
 
   // Test data for creating a policy
   const policyData = {
     title: 'Spending Limit Policy',
     description: 'A policy that enforces spending limits',
-    activeVersion: '1.0.0',
+    activeVersion: '0.0.2',
   };
 
   // Test data for creating an ability
   const abilityData = {
     title: 'Uniswap Swap Ability',
     description: 'An ability for swapping tokens on Uniswap',
-    activeVersion: '1.0.0',
+    activeVersion: '0.0.2',
   };
 
   // Test data for creating an ability version
@@ -84,7 +84,7 @@ describe('Supported Policies Integration Tests', () => {
   });
 
   describe('Ability with supported policy', () => {
-    it('should register policy v1.0.0 and then successfully register ability v1.0.0 that depends on it', async () => {
+    it('should register policy v0.0.2 and then successfully register ability v0.0.2 that depends on it', async () => {
       // First, create the policy
       const policyResult = await store.dispatch(
         api.endpoints.createPolicy.initiate({
@@ -116,7 +116,7 @@ describe('Supported Policies Integration Tests', () => {
       const abilityVersionResult = await store.dispatch(
         api.endpoints.getAbilityVersion.initiate({
           packageName: abilityPackageName,
-          version: '1.0.0',
+          version: '0.0.2',
         }),
       );
 
@@ -129,7 +129,7 @@ describe('Supported Policies Integration Tests', () => {
       // Verify supportedPolicies contains the policy
       expect(abilityVersionData).toHaveProperty('supportedPolicies');
       expect(abilityVersionData.supportedPolicies).toHaveProperty(policyPackageName);
-      expect(abilityVersionData.supportedPolicies[policyPackageName]).toBe('1.0.0');
+      expect(abilityVersionData.supportedPolicies[policyPackageName]).toBe('0.0.2');
 
       // Verify policiesNotInRegistry is empty
       expect(abilityVersionData).toHaveProperty('policiesNotInRegistry');
@@ -138,12 +138,12 @@ describe('Supported Policies Integration Tests', () => {
   });
 
   describe('Ability with policy not in registry', () => {
-    it('should identify when registering v1.0.1 when policy v1.0.1 is not in registry', async () => {
-      // Try to create ability version 1.0.1 that depends on policy version 1.0.1 (which doesn't exist yet)
+    it('should identify when registering v0.0.3 when policy v0.0.3 is not in registry', async () => {
+      // Try to create ability version 0.0.3 that depends on policy version 0.0.3 (which doesn't exist yet)
       const abilityVersionResult = await store.dispatch(
         api.endpoints.createAbilityVersion.initiate({
           packageName: abilityPackageName,
-          version: '1.0.1',
+          version: '0.0.3',
           abilityVersionCreate: abilityVersionData,
         }),
       );
@@ -154,7 +154,7 @@ describe('Supported Policies Integration Tests', () => {
       const getAbilityVersion = await store.dispatch(
         api.endpoints.getAbilityVersion.initiate({
           packageName: abilityPackageName,
-          version: '1.0.1',
+          version: '0.0.3',
         }),
       );
 
@@ -164,11 +164,11 @@ describe('Supported Policies Integration Tests', () => {
       expect(abilityVersionResultData).toHaveProperty('policiesNotInRegistry');
       expectAssertArray(abilityVersionResultData.policiesNotInRegistry);
       expect(abilityVersionResultData.policiesNotInRegistry).toContain(
-        `${policyPackageName}@1.0.1`,
+        `${policyPackageName}@0.0.3`,
       );
     });
 
-    it('should successfully register ability v1.0.1 after registering policy v1.0.1', async () => {
+    it('should successfully register ability v0.0.3 after registering policy v0.0.3', async () => {
       // Delete the ability if it exists
       try {
         await store.dispatch(
@@ -187,11 +187,11 @@ describe('Supported Policies Integration Tests', () => {
         }),
       );
 
-      // Create policy version 1.0.1
+      // Create policy version 0.0.3
       const policyVersionResult = await store.dispatch(
         api.endpoints.createPolicyVersion.initiate({
           packageName: policyPackageName,
-          version: '1.0.1',
+          version: '0.0.3',
           policyVersionCreate: {
             changes: 'Updated version',
           },
@@ -201,11 +201,11 @@ describe('Supported Policies Integration Tests', () => {
       verboseLog(policyVersionResult);
       expect(policyVersionResult).not.toHaveProperty('error');
 
-      // Now try to create ability version 1.0.1 again
+      // Now try to create ability version 0.0.3 again
       const abilityVersionResult = await store.dispatch(
         api.endpoints.createAbilityVersion.initiate({
           packageName: abilityPackageName,
-          version: '1.0.1',
+          version: '0.0.3',
           abilityVersionCreate: abilityVersionData,
         }),
       );
@@ -219,7 +219,7 @@ describe('Supported Policies Integration Tests', () => {
       // Verify supportedPolicies contains the policy
       expect(abilityVersionResultData).toHaveProperty('supportedPolicies');
       expect(abilityVersionResultData.supportedPolicies).toHaveProperty(policyPackageName);
-      expect(abilityVersionResultData.supportedPolicies[policyPackageName]).toBe('1.0.1');
+      expect(abilityVersionResultData.supportedPolicies[policyPackageName]).toBe('0.0.3');
 
       // Verify policiesNotInRegistry is empty
       expect(abilityVersionResultData).toHaveProperty('policiesNotInRegistry');

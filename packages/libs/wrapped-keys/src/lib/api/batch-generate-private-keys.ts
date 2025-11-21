@@ -1,3 +1,5 @@
+import { getVincentWrappedKeysAccs } from '@lit-protocol/vincent-contracts-sdk';
+
 import type {
   BatchGeneratePrivateKeysParams,
   BatchGeneratePrivateKeysResult,
@@ -7,7 +9,7 @@ import type {
 import { batchGenerateKeysWithLitAction } from '../lit-actions-client';
 import { getLitActionCommonCid } from '../lit-actions-client/utils';
 import { storePrivateKeyBatch } from '../service-client';
-import { getKeyTypeFromNetwork, getVincentRegistryAccessControlCondition } from './utils';
+import { getKeyTypeFromNetwork } from './utils';
 
 /**
  * Generates multiple random private keys inside a Lit Action for Vincent delegators,
@@ -26,7 +28,7 @@ export async function batchGeneratePrivateKeys(
 ): Promise<BatchGeneratePrivateKeysResult> {
   const { jwtToken, delegatorAddress, litNodeClient } = params;
 
-  const allowDelegateeToDecrypt = await getVincentRegistryAccessControlCondition({
+  const vincentWrappedKeysAccs = await getVincentWrappedKeysAccs({
     delegatorAddress,
   });
 
@@ -35,14 +37,16 @@ export async function batchGeneratePrivateKeys(
   const actionResults = await batchGenerateKeysWithLitAction({
     ...params,
     litActionIpfsCid,
-    accessControlConditions: [allowDelegateeToDecrypt],
+    evmContractConditions: vincentWrappedKeysAccs,
   });
 
-  const keyParamsBatch = actionResults.map((keyData) => {
+  const keyParamsBatch = actionResults.map((keyData, index) => {
     const { generateEncryptedPrivateKey } = keyData;
     return {
       ...generateEncryptedPrivateKey,
       keyType: getKeyTypeFromNetwork('solana'),
+      delegatorAddress,
+      evmContractConditions: actionResults[index].generateEncryptedPrivateKey.evmContractConditions,
     };
   });
 
@@ -56,17 +60,17 @@ export async function batchGeneratePrivateKeys(
     const {
       generateEncryptedPrivateKey: { memo, publicKey },
     } = actionResult;
-    const id = ids[index]; // Result of writes is in same order as provided
+    const id = ids[index]; // Result of writes is returned in the same order as provided
 
     const signature = actionResult.signMessage?.signature;
 
     return {
       ...(signature ? { signMessage: { signature } } : {}),
       generateEncryptedPrivateKey: {
+        delegatorAddress,
         memo,
         id,
         generatedPublicKey: publicKey,
-        delegatorAddress,
       },
     };
   });

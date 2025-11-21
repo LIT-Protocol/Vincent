@@ -29,7 +29,7 @@ export function AppUnpublishedButtons({ onOpenMutation }: AppUnpublishedButtonsP
           <ActionButton
             icon={Trash2}
             title="Delete App"
-            description="Permanently remove this app"
+            description="Remove this app (this can be undone)."
             onClick={() => onOpenMutation('delete-app')}
             variant="danger"
             borderColor="rgb(254 202 202 / 0.5)"
@@ -58,7 +58,7 @@ export function AppUnpublishedButtons({ onOpenMutation }: AppUnpublishedButtonsP
           <ActionButton
             icon={Plus}
             title="New Version"
-            description="Create a new version of your app"
+            description="Only one unpublished version allowed at a time"
             onClick={() => onOpenMutation('create-app-version')}
             variant="orange"
             iconBg={`${theme.brandOrange}1A`}

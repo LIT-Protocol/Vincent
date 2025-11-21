@@ -1,10 +1,11 @@
 import { Policy } from '@/types/developer-dashboard/appTypes';
+import { PolicyWithVersion } from '@/utils/developer-dashboard/sortSupportedPolicies';
 import { Shield } from 'lucide-react';
 import { PolicyVersionInfoView } from './PolicyVersionInfoView';
 import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
 
 interface AbilityVersionPoliciesViewProps {
-  supportedPolicies: Policy[];
+  supportedPolicies: (Policy | PolicyWithVersion)[];
 }
 
 export function AbilityVersionPoliciesView({ supportedPolicies }: AbilityVersionPoliciesViewProps) {

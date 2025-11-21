@@ -1,16 +1,17 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowRight, CheckCircle2 } from 'lucide-react';
+import { CheckCircle2 } from 'lucide-react';
 import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
 
 import { AppVersionAbility, Ability } from '@/types/developer-dashboard/appTypes';
 import { ManageAppVersionAbilities } from '../views/ManageAppVersionAbilities.tsx';
 import { CreateAppVersionAbilitiesForm } from '../forms/CreateAppVersionAbilitiesForm.tsx';
+import { PublishAppVersionWrapper } from './PublishAppVersionWrapper';
 import Loading from '@/components/shared/ui/Loading';
 import { StatusMessage } from '@/components/shared/ui/statusMessage';
-import { Button } from '@/components/shared/ui/button';
 import { Breadcrumb } from '@/components/shared/ui/Breadcrumb';
 import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
+import { useBlockchainAppData } from '@/hooks/useBlockchainAppData';
 
 export function AppVersionAbilitiesWrapper() {
   const { appId, versionId } = useParams<{ appId: string; versionId: string }>();
@@ -23,6 +24,8 @@ export function AppVersionAbilitiesWrapper() {
     isLoading: appLoading,
     isError: appError,
   } = vincentApiClient.useGetAppQuery({ appId: Number(appId) });
+
+  const { blockchainAppData, blockchainAppLoading } = useBlockchainAppData(Number(appId));
 
   const {
     data: versionData,
@@ -74,7 +77,13 @@ export function AppVersionAbilitiesWrapper() {
   }, [isSuccess, data]);
 
   // Show loading while data is loading OR while checking authorization
-  if (appLoading || versionLoading || versionAbilitiesLoading || abilitiesLoading)
+  if (
+    appLoading ||
+    versionLoading ||
+    versionAbilitiesLoading ||
+    abilitiesLoading ||
+    blockchainAppLoading
+  )
     return <Loading />;
 
   // Handle errors
@@ -157,36 +166,23 @@ export function AppVersionAbilitiesWrapper() {
             className={`${theme.mainCard} border rounded-xl p-6`}
             style={{ borderColor: theme.brandOrange }}
           >
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="space-y-4">
               <div className="flex items-start gap-3">
                 <CheckCircle2
                   className="h-5 w-5 flex-shrink-0 mt-0.5"
                   style={{ color: theme.brandOrange }}
                 />
-                <div>
+                <div className="flex-1">
                   <h3 className={`font-semibold ${theme.text}`} style={fonts.heading}>
-                    Ready to Publish?
+                    Ready to Publish
                   </h3>
                   <p className={`text-sm ${theme.textMuted} mt-1`} style={fonts.body}>
                     Your app version has {activeAbilities.length} abilit
-                    {activeAbilities.length === 1 ? 'y' : 'ies'} configured.
+                    {activeAbilities.length === 1 ? 'y' : 'ies'} configured and is ready to publish.
                   </p>
                 </div>
               </div>
-              <Button
-                onClick={() => navigate(`/developer/apps/appId/${appId}/version/${versionId}`)}
-                className="w-full sm:w-auto text-white"
-                style={{ backgroundColor: theme.brandOrange }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = theme.brandOrangeDarker;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = theme.brandOrange;
-                }}
-              >
-                Publish App Version
-                <ArrowRight className="h-4 w-4 ml-2" />
-              </Button>
+              <PublishAppVersionWrapper isAppPublished={blockchainAppData !== null} />
             </div>
           </div>
         )}

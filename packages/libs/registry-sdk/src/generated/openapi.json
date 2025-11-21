@@ -3326,6 +3326,73 @@
         }
       }
     },
+    "/ability/{packageName}/version/{version}/refresh-policies": {
+      "post": {
+        "tags": [
+          "AbilityVersion"
+        ],
+        "summary": "Refreshes supported policies for an ability version",
+        "operationId": "refreshAbilityVersionPolicies",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "The NPM package name",
+            "example": "@vincent/foo-bar",
+            "name": "packageName",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "NPM semver of the target ability version",
+            "example": "2.1.0",
+            "name": "version",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK - Policies successfully refreshed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AbilityVersion"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "404": {
+            "description": "Ability or version not found"
+          },
+          "422": {
+            "description": "Validation exception"
+          },
+          "default": {
+            "description": "Unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/policies": {
       "get": {
         "tags": [

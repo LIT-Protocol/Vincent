@@ -6,7 +6,7 @@ import { dirname, join } from 'path';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const rootDir = join(__dirname, '../..');
 
-const sdks = ['app-sdk', 'ability-sdk', 'contracts-sdk'];
+const sdks = ['app-sdk', 'ability-sdk', 'contracts-sdk', 'e2e-test-utils'];
 
 console.log('🚀 Generating documentation for all SDKs...\n');
 

@@ -1,0 +1,37 @@
+---
+title: permitAppVersionForAgentWalletPkp
+---
+
+> **permitAppVersionForAgentWalletPkp**(`__namedParameters`): `Promise`\<`void`\>
+
+Defined in: [packages/libs/e2e-test-utils/src/lib/delegator/permit-vincent-app-version.ts:16](https://github.com/LIT-Protocol/Vincent/blob/d66a5e996cc8ce13c89f21f810ca4c4557f46f5c/packages/libs/e2e-test-utils/src/lib/delegator/permit-vincent-app-version.ts#L16)
+
+Adds Vincent delegation permission for a specific app version for the user's Agent Wallet PKP.
+
+This function will check if the requested app version is already permitted. If it is,
+it will skip the permission step and return early. If a different version is permitted,
+it will remove the old permission before adding the new one.
+
+## Parameters
+
+### \_\_namedParameters
+
+#### agentPkpInfo
+
+[`PkpInfo`](/api-reference/app-sdk/@lit-protocol/namespaces/delegator/type-aliases/PkpInfo)
+
+#### appId
+
+`number`
+
+#### appVersion
+
+`number`
+
+#### permissionData
+
+[`PermissionData`](/api-reference/contracts-sdk/interfaces/PermissionData)
+
+## Returns
+
+`Promise`\<`void`\>

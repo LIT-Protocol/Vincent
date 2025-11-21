@@ -7,6 +7,7 @@ import type { LitNodeClient } from '@lit-protocol/lit-node-client';
 import {
   createSiweMessageWithRecaps,
   generateAuthSig,
+  LitAccessControlConditionResource,
   LitActionResource,
   LitPKPResource,
 } from '@lit-protocol/auth-helpers';
@@ -25,6 +26,11 @@ export const generateVincentAbilitySessionSigs = async ({
     resourceAbilityRequests: [
       { resource: new LitPKPResource('*'), ability: LIT_ABILITY.PKPSigning },
       { resource: new LitActionResource('*'), ability: LIT_ABILITY.LitActionExecution },
+      // This is required for abilities that use Vincent Wrapped Keys to be able to decrypt the previously encrypted wrapped key
+      {
+        resource: new LitAccessControlConditionResource('*'),
+        ability: LIT_ABILITY.AccessControlConditionDecryption,
+      },
     ],
     authNeededCallback: async ({ resourceAbilityRequests, uri }) => {
       const [walletAddress, nonce] = await Promise.all([

@@ -33,4 +33,6 @@ export {
   populateTransaction,
   sponsoredGasRawTransaction,
   sponsoredGasContractCall,
+  ERC20_ABI,
+  bigIntReplacer,
 } from './lib/abilityHelpers';

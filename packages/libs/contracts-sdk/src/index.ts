@@ -43,6 +43,8 @@ export { getTestClient, clientFromContract, getClient } from './contractClient';
 
 export { createContract } from './utils';
 
+export { getVincentWrappedKeysAccs } from './internal/wrapped-keys/getVincentWrappedKeysAccs';
+
 export { getPkpTokenId } from './utils/pkpInfo';
 
 export { VINCENT_DIAMOND_CONTRACT_ADDRESS_PROD, COMBINED_ABI } from './constants';

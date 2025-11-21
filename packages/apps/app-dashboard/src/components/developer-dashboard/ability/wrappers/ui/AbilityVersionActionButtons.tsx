@@ -1,4 +1,4 @@
-import { Edit, Trash2 } from 'lucide-react';
+import { Edit, Trash2, RefreshCw } from 'lucide-react';
 import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
 import { ActionButton } from '@/components/developer-dashboard/ui/ActionButton';
 
@@ -20,6 +20,17 @@ export function AbilityVersionActionButtons({ onOpenMutation }: AbilityVersionAc
             title="Edit Version"
             description="Update version details"
             onClick={() => onOpenMutation('edit-version')}
+            variant="orange"
+            iconBg={`${theme.brandOrange}1A`}
+            iconColor={theme.brandOrange}
+            hoverBorderColor={theme.brandOrange}
+          />
+
+          <ActionButton
+            icon={RefreshCw}
+            title="Refresh Policies"
+            description="Re-check supported policies"
+            onClick={() => onOpenMutation('refresh-policies')}
             variant="orange"
             iconBg={`${theme.brandOrange}1A`}
             iconColor={theme.brandOrange}

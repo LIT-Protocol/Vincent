@@ -284,6 +284,33 @@ export function registerRoutes(app: Express) {
     ),
   );
 
+  // Refresh supported policies for an ability version
+  app.post(
+    '/ability/:packageName/version/:version/refresh-policies',
+    requireVincentAuth,
+    requireAbility(),
+    requireUserIsAuthor('ability'),
+    requireAbilityVersion(),
+    withVincentAuth(
+      withAbilityVersion(async (req, res) => {
+        const { vincentAbilityVersion } = req;
+
+        // Re-identify supported policies from existing dependencies
+        const { supportedPolicies, policiesNotInRegistry } = await identifySupportedPolicies(
+          vincentAbilityVersion.dependencies || {},
+        );
+
+        // Update the ability version with refreshed policy data
+        vincentAbilityVersion.supportedPolicies = supportedPolicies;
+        vincentAbilityVersion.policiesNotInRegistry = policiesNotInRegistry;
+        const updatedVersion = await vincentAbilityVersion.save();
+
+        res.json(updatedVersion);
+        return;
+      }),
+    ),
+  );
+
   // Delete an ability, along with all of its ability versions
   app.delete(
     '/ability/:packageName',

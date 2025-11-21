@@ -14,6 +14,7 @@ import { ActionButtons } from './ui/ActionButtons';
 import { theme } from './ui/theme';
 import { InfoBanner } from './ui/InfoBanner';
 import { App } from '@/types/developer-dashboard/appTypes';
+import { wait } from '@/lib/utils';
 
 interface RepermitConnectProps {
   appData: App;
@@ -44,22 +45,21 @@ export function RepermitConnect({
   // Handle redirect when JWT is ready
   useEffect(() => {
     if (redirectUrl && localSuccess !== 'Success! Redirecting to app...') {
-      setLocalSuccess('Success! Redirecting to app...');
-      setTimeout(() => {
+      (async () => {
+        setLocalSuccess('Success! Redirecting to app...');
+        await wait(1000);
         executeRedirect();
-      }, 2000);
+      })();
     }
   }, [redirectUrl, localSuccess, executeRedirect]);
 
   // Generate JWT when re-permitting is successful
   useEffect(() => {
     if (localSuccess === 'App re-permitted successfully!') {
-      const timer = setTimeout(async () => {
+      (async () => {
         await generateJWT(appData, appData.activeVersion!);
-      }, 1000);
-      return () => clearTimeout(timer);
+      })();
     }
-    return undefined;
   }, [localSuccess, generateJWT, appData]);
 
   const handleSubmit = useCallback(async () => {

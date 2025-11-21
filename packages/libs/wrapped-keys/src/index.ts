@@ -1,4 +1,8 @@
-import type { SupportedNetworks } from './lib/service-client/types';
+import type {
+  SupportedNetworks,
+  StoreKeyParams,
+  StoreKeyBatchParams,
+} from './lib/service-client/types';
 import type {
   GetEncryptedKeyDataParams,
   GeneratePrivateKeyParams,
@@ -16,6 +20,8 @@ import type {
   BatchGeneratePrivateKeysResult,
   Network,
   KeyType,
+  ExportPrivateKeyParams,
+  ExportPrivateKeyResult,
 } from './lib/types';
 
 import {
@@ -25,7 +31,7 @@ import {
   listEncryptedKeyMetadata,
   batchGeneratePrivateKeys,
   storeEncryptedKeyBatch,
-  getVincentRegistryAccessControlCondition,
+  exportPrivateKey,
 } from './lib/api';
 import { CHAIN_YELLOWSTONE, LIT_PREFIX, NETWORK_SOLANA, KEYTYPE_ED25519 } from './lib/constants';
 import { getSolanaKeyPairFromWrappedKey } from './lib/lit-actions-client';
@@ -44,7 +50,7 @@ export const api = {
   storeEncryptedKey,
   storeEncryptedKeyBatch,
   batchGeneratePrivateKeys,
-  getVincentRegistryAccessControlCondition,
+  exportPrivateKey,
   litActionHelpers: {
     getSolanaKeyPairFromWrappedKey,
   },
@@ -68,4 +74,8 @@ export {
   BatchGeneratePrivateKeysResult,
   Network,
   KeyType,
+  StoreKeyParams,
+  StoreKeyBatchParams,
+  ExportPrivateKeyParams,
+  ExportPrivateKeyResult,
 };

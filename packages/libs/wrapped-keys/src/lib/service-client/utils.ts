@@ -7,8 +7,8 @@ import { JWT_AUTHORIZATION_SCHEMA_PREFIX, SERVICE_URL_BY_LIT_NETWORK } from './c
 /**
  * Creates an Authorization header value for JWT token authentication.
  *
- * @param {string} jwtToken - The JWT token from Vincent delegatee authentication
- * @returns {string} Complete Authorization header value with Bearer prefix
+ * @param jwtToken - The JWT token from Vincent delegatee or Vincent platform user authentication
+ * @returns Complete Authorization header value with Bearer prefix
  *
  * @internal
  */
@@ -20,7 +20,7 @@ function composeAuthHeader(jwtToken: string) {
  * Array of supported Lit networks for Vincent wrapped keys operations.
  * Vincent only supports production 'datil' network.
  *
- * @constant {SupportedNetworks[]}
+ * @constant
  * @internal
  */
 const supportedNetworks: SupportedNetworks[] = ['datil'];
@@ -28,10 +28,6 @@ const supportedNetworks: SupportedNetworks[] = ['datil'];
 /**
  * TypeScript assertion function that validates a Lit network is supported by Vincent.
  * Throws an error if the network is not in the supported networks list.
- *
- * @param {LIT_NETWORK_VALUES} litNetwork - The Lit network to validate
- * @throws {Error} If the network is not supported by Vincent
- *
  * @internal
  */
 function isSupportedLitNetwork(
@@ -45,11 +41,6 @@ function isSupportedLitNetwork(
 
 /**
  * Gets the service URL for the specified Lit network.
- *
- * @param {BaseRequestParams} params - Request parameters containing the Lit network
- * @returns {string} The Vincent wrapped keys service URL for the network
- * @throws {Error} If the network is not supported
- *
  * @internal
  */
 function getServiceUrl({ litNetwork }: BaseRequestParams) {
@@ -64,10 +55,10 @@ function getServiceUrl({ litNetwork }: BaseRequestParams) {
  * This function prepares the URL and headers needed for authenticated requests to the
  * Vincent wrapped keys service, including JWT authorization and correlation ID for tracking.
  *
- * @param {BaseRequestParams} requestParams - Base parameters for the request
- * @returns {Object} Object containing the base URL and initialized request parameters
- * @returns {string} returns.baseUrl - The complete service URL for the Lit network
- * @returns {RequestInit} returns.initParams - Fetch-compatible request initialization parameters
+ * @param requestParams - Base parameters for the request
+ * @returns Object containing the base URL and initialized request parameters
+ * @returns returns.baseUrl - The complete service URL for the Lit network
+ * @returns returns.initParams - Fetch-compatible request initialization parameters
  *
  * @throws {Error} If the Lit network is not supported by Vincent
  *
@@ -110,8 +101,8 @@ export function getBaseRequestParams(requestParams: BaseRequestParams): {
  * with a `message` field. However, infrastructure errors may return plain text responses.
  * This function gracefully handles both cases.
  *
- * @param {Response} response - The HTTP response from fetch()
- * @returns {Promise<string>} The error message extracted from the response
+ * @param response - The HTTP response from fetch()
+ * @returns The error message extracted from the response
  *
  * @internal
  */
@@ -134,10 +125,6 @@ async function getResponseErrorMessage(response: Response): Promise<string> {
  * However, some misbehaving infrastructure could return a 200 OK response with
  * plain text body. This function handles both cases gracefully.
  *
- * @template T - The expected type of the JSON response
- * @param {Response} response - The HTTP response from fetch()
- * @returns {Promise<T | string>} Parsed JSON response or plain text string
- *
  * @internal
  */
 async function getResponseJson<T>(response: Response): Promise<T | string> {
@@ -154,7 +141,7 @@ async function getResponseJson<T>(response: Response): Promise<T | string> {
  * The request ID is used for correlation between client and server logs,
  * making it easier to debug issues with specific requests.
  *
- * @returns {string} A random hexadecimal string to use as request ID
+ * @returns A random hexadecimal string to use as request ID
  *
  * @example
  * ```typescript
@@ -173,18 +160,18 @@ export function generateRequestId(): string {
  * with request ID for tracking.
  *
  * @template T - The expected type of the successful response
- * @param {Object} params - Request parameters
- * @param {string} params.url - The complete URL to make the request to
- * @param {RequestInit} params.init - Fetch-compatible request initialization
- * @param {string} params.requestId - Unique request ID for tracking
- * @returns {Promise<T>} The parsed response data
+ * @param params - Request parameters
+ * @param params.url - The complete URL to make the request to
+ * @param params.init - Fetch-compatible request initialization
+ * @param params.requestId - Unique request ID for tracking
+ * @returns The parsed response data
  *
  * @throws {Error} If the request fails, with Vincent-specific error formatting
  *
  * @example
  * ```typescript
  * const result = await makeRequest<StoredKeyData>({
- *   url: 'https://wrapped.litprotocol.com/delegatee/encrypted/0x123/abc-def',
+ *   url: 'https://wrapped.litprotocol.com/delegated/encrypted/0x123/abc-def',
  *   init: { method: 'GET', headers: { ... } },
  *   requestId: 'req123'
  * });

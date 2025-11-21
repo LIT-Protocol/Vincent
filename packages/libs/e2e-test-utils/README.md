@@ -1,17 +1,59 @@
-# @lit-protocol/vincent-e2e-test-utils
+E2E test utilities for the Vincent protocol, providing helper functions for setting up test environments, managing wallets, minting PKPs, and handling permissions.
 
-This library was generated with [Nx](https://nx.dev).
+## Installation
 
-## Building
+<CodeGroup>
 
-Run `nx build e2e-test-utils` to build the library.
+```bash npm
+npm install @lit-protocol/vincent-e2e-test-utils
+```
 
-## Usage
+```bash yarn
+yarn add @lit-protocol/vincent-e2e-test-utils
+```
 
-This package provides E2E test utilities for the Vincent protocol.
+```bash pnpm
+pnpm add @lit-protocol/vincent-e2e-test-utils
+```
 
-## Development
+</CodeGroup>
 
-### Documentation
+## Features
 
-Documentation is generated using TypeDoc. Build the docs with the appropriate Nx command.
+- **Quick Environment Setup**: `setupVincentDevelopmentEnvironment()` handles all the boilerplate for setting up a complete Vincent test environment
+- **Wallet Management**: Create random wallets and manage test accounts with automatic funding
+- **PKP Management**: Mint new PKPs and configure permissions
+- **Capacity Token Handling**: Ensure unexpired capacity tokens for testing
+- **Chain Helpers**: Access pre-configured providers and wallets for different networks
+
+## Quick Start
+
+The easiest way to get started is with `setupVincentDevelopmentEnvironment()`:
+
+```typescript
+import { setupVincentDevelopmentEnvironment } from '@lit-protocol/vincent-e2e-test-utils';
+
+// Define your abilities and policies
+const permissionData = {
+  [myAbility.ipfsCid]: {
+    [myPolicy.ipfsCid]: {
+      // policy configuration
+    },
+  },
+};
+
+// Set up everything with one call
+const { agentPkpInfo, wallets, appId, appVersion } = await setupVincentDevelopmentEnvironment({
+  permissionData,
+});
+
+// Now you're ready to test!
+```
+
+This single function:
+
+- Checks and funds all required accounts (funder, app delegatee, app manager)
+- Registers or updates your app with abilities and policies
+- Creates or uses an existing agent PKP
+- Sets up permissions for the agent PKP
+- Ensures a valid capacity token exists

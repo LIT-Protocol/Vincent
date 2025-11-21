@@ -40,7 +40,7 @@ export function AbilityActionButtons({ onOpenMutation }: AbilityActionButtonsPro
           <ActionButton
             icon={Trash2}
             title="Delete Ability"
-            description="Permanently remove this ability"
+            description="Remove this ability (this can be undone)."
             onClick={() => onOpenMutation('delete-ability')}
             variant="danger"
             borderColor="rgb(254 202 202 / 0.5)"

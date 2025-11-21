@@ -69,6 +69,7 @@
       "ability-debridge",
       "policy-send-counter",
       "ability-aerodrome-swap",
+      "ability-hyperliquid",
       "e2e-test-utils"
     ],
     "projectsRelationship": "independent",

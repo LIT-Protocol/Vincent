@@ -9,7 +9,7 @@ import type { FetchKeyParams, ListKeysParams, StoreKeyBatchParams, StoreKeyParam
 import { generateRequestId, getBaseRequestParams, makeRequest } from './utils';
 
 /** Fetches previously stored private key metadata from the Vincent wrapped keys service.
- * Note that this list will not include `ciphertext` or `dataToEncryptHash` necessary to decrypt the keys.
+ * Note that this list will not include `ciphertext`, `dataToEncryptHash`, or `evmContractConditions` necessary to decrypt the keys.
  * Use `fetchPrivateKey()` to get those values.
  *
  * @param { ListKeysParams } params Parameters required to fetch the private key metadata
@@ -27,14 +27,14 @@ export async function listPrivateKeyMetadata(params: ListKeysParams): Promise<St
   });
 
   return makeRequest<StoredKeyMetadata[]>({
-    url: `${baseUrl}/delegatee/encrypted/${delegatorAddress}`,
+    url: `${baseUrl}/delegated/encrypted/${encodeURIComponent(delegatorAddress)}`,
     init: initParams,
     requestId,
   });
 }
 
 /** Fetches complete previously stored private key data from the Vincent wrapped keys service.
- * Includes the `ciphertext` and `dataToEncryptHash` necessary to decrypt the key.
+ * Includes the `ciphertext`, `dataToEncryptHash`, and `evmContractConditions` necessary to decrypt the key.
  *
  * @param { FetchKeyParams } params Parameters required to fetch the private key data
  * @returns { Promise<StoredKeyData> } The private key data object
@@ -51,7 +51,7 @@ export async function fetchPrivateKey(params: FetchKeyParams): Promise<StoredKey
   });
 
   return makeRequest<StoredKeyData>({
-    url: `${baseUrl}/delegatee/encrypted/${delegatorAddress}/${id}`,
+    url: `${baseUrl}/delegated/encrypted/${encodeURIComponent(delegatorAddress)}/${id}`,
     init: initParams,
     requestId,
   });
@@ -73,8 +73,8 @@ export async function storePrivateKey(params: StoreKeyParams): Promise<StoreEncr
     requestId,
   });
 
-  const { pkpAddress, id } = await makeRequest<StoreEncryptedKeyResult>({
-    url: `${baseUrl}/delegatee/encrypted`,
+  const { delegatorAddress, id } = await makeRequest<StoreEncryptedKeyResult>({
+    url: `${baseUrl}/delegated/encrypted`,
     init: {
       ...initParams,
       body: JSON.stringify(storedKeyMetadata),
@@ -82,7 +82,7 @@ export async function storePrivateKey(params: StoreKeyParams): Promise<StoreEncr
     requestId,
   });
 
-  return { pkpAddress, id };
+  return { delegatorAddress, id };
 }
 
 /** Stores a batch of up to 25 private key metadata into the Vincent wrapped keys service backend
@@ -103,8 +103,8 @@ export async function storePrivateKeyBatch(
     requestId,
   });
 
-  const { pkpAddress, ids } = await makeRequest<StoreEncryptedKeyBatchResult>({
-    url: `${baseUrl}/delegatee/encrypted_batch`,
+  const { delegatorAddress, ids } = await makeRequest<StoreEncryptedKeyBatchResult>({
+    url: `${baseUrl}/delegated/encrypted_batch`,
     init: {
       ...initParams,
       body: JSON.stringify({ keyParamsBatch: storedKeyMetadataBatch }),
@@ -112,5 +112,5 @@ export async function storePrivateKeyBatch(
     requestId,
   });
 
-  return { pkpAddress, ids };
+  return { delegatorAddress, ids };
 }

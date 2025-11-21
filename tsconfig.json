@@ -68,6 +68,9 @@
     },
     {
       "path": "./packages/libs/e2e-test-utils"
+    },
+    {
+      "path": "./packages/apps/ability-hyperliquid"
     }
   ]
 }

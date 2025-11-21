@@ -1,5 +1,5 @@
-import { KernelV3_3AccountAbi } from '@zerodev/sdk';
 import {
+  type Abi,
   type Address,
   type Hex,
   decodeAbiParameters,
@@ -12,9 +12,80 @@ import {
 
 import { AAVE_POOL_ABI } from './aave';
 import { ERC20_ABI } from './erc20';
+import { Transaction } from './transaction';
 import { UserOp } from './userOperation';
 
 type LowLevelCall = { to: Address; value: bigint; data: Hex };
+
+// A big unified ABI of different smart account implementations
+const smartAccountsAbi: Abi = [
+  // Kernel v3.3/v3.1/v3.0
+  {
+    type: 'function',
+    name: 'execute',
+    inputs: [
+      { name: 'execMode', type: 'bytes32', internalType: 'ExecMode' },
+      { name: 'executionCalldata', type: 'bytes', internalType: 'bytes' },
+    ],
+    outputs: [],
+    stateMutability: 'payable',
+  },
+  {
+    type: 'function',
+    name: 'executeFromExecutor',
+    inputs: [
+      { name: 'execMode', type: 'bytes32', internalType: 'ExecMode' },
+      { name: 'executionCalldata', type: 'bytes', internalType: 'bytes' },
+    ],
+    outputs: [{ name: 'returnData', type: 'bytes[]', internalType: 'bytes[]' }],
+    stateMutability: 'payable',
+  },
+  {
+    type: 'function',
+    name: 'executeUserOp',
+    inputs: [
+      {
+        name: 'userOp',
+        type: 'tuple',
+        internalType: 'struct PackedUserOperation',
+        components: [
+          {
+            name: 'sender',
+            type: 'address',
+            internalType: 'address',
+          },
+          { name: 'nonce', type: 'uint256', internalType: 'uint256' },
+          { name: 'initCode', type: 'bytes', internalType: 'bytes' },
+          { name: 'callData', type: 'bytes', internalType: 'bytes' },
+          {
+            name: 'accountGasLimits',
+            type: 'bytes32',
+            internalType: 'bytes32',
+          },
+          {
+            name: 'preVerificationGas',
+            type: 'uint256',
+            internalType: 'uint256',
+          },
+          {
+            name: 'gasFees',
+            type: 'bytes32',
+            internalType: 'bytes32',
+          },
+          {
+            name: 'paymasterAndData',
+            type: 'bytes',
+            internalType: 'bytes',
+          },
+          { name: 'signature', type: 'bytes', internalType: 'bytes' },
+        ],
+      },
+      { name: 'userOpHash', type: 'bytes32', internalType: 'bytes32' },
+    ],
+    outputs: [],
+    stateMutability: 'payable',
+  },
+];
 
 function isDelegatecallOrUnknown(execMode: Hex): boolean {
   const lastByte = BigInt(execMode) & 0xffn;
@@ -22,11 +93,11 @@ function isDelegatecallOrUnknown(execMode: Hex): boolean {
 }
 
 function tryDecodeExecute(executionCalldata: Hex): LowLevelCall[] | null {
-  // Because Execute with a single call is just an hex concatenation of the calldata,
-  // this function might produce invalid decodings. It MUST be called last, only if
-  // all other, more strict, decodings failed or if we know the calldata is a single call.
-  // Also, current implementation does not support delegate calls, it will produce
-  // invalid decodings for them.
+  // Because Execute with a single call is just a hex concatenation of the calldata,
+  // this function might produce invalid decoding. It MUST be called last, only if
+  // all other, stricter, decodings failed or if we know the calldata is a single call.
+  // Also, the current implementation does not support delegate calls. It will produce
+  // an invalid decoding for them.
   try {
     const hex = executionCalldata.slice(2);
     const MIN = 20 * 2 + 32 * 2; // address + value
@@ -86,8 +157,8 @@ function tryDecodeBatchWithValues(executionCalldata: Hex): LowLevelCall[] | null
   }
 }
 
-function decodeKernelV33ToCalls(callData: Hex): LowLevelCall[] {
-  const df = decodeFunctionData({ abi: KernelV3_3AccountAbi, data: callData });
+function decodeUserOpCalldataToLowLevelCalls(callData: Hex): LowLevelCall[] {
+  const df = decodeFunctionData({ abi: smartAccountsAbi, data: callData });
   if (df.functionName !== 'execute' && df.functionName !== 'executeFromExecutor') {
     throw new Error('Not a Kernel v3.3 execute/executor call');
   }
@@ -166,9 +237,7 @@ export type ValidationResult = {
 };
 
 interface DecodeUserOpParams {
-  aaveATokens: Record<string, string>;
   aavePoolAddress: Address;
-  entryPointAddress: Address;
   userOp: UserOp;
 }
 
@@ -176,6 +245,54 @@ export interface DecodeUserOpResult {
   ok: boolean;
   reasons: string[];
 }
+
+const evaluateCallAgainstPolicy = ({
+  aavePoolAddress,
+  call,
+  sender,
+}: {
+  aavePoolAddress: Address;
+  call: LowLevelCall;
+  sender: Address;
+}) => {
+  const reasons: string[] = [];
+  const res = decodeAaveOrERC20(call, aavePoolAddress);
+  if (res.kind === 'blocked') {
+    reasons.push(res.reason);
+    return reasons;
+  }
+
+  if (res.kind === 'aave') {
+    const fn = res.fn;
+    const args = res.args as any[];
+
+    if (fn === 'supply') {
+      const onBehalfOf = getAddress(args[2]);
+      if (!isAddressEqual(onBehalfOf, sender)) reasons.push('supply.onBehalfOf != sender');
+    } else if (fn === 'withdraw') {
+      const to = getAddress(args[2]);
+      if (!isAddressEqual(to, sender)) reasons.push('withdraw.to != sender');
+    } else if (fn === 'borrow') {
+      const onBehalfOf = getAddress(args[4]);
+      if (!isAddressEqual(onBehalfOf, sender)) reasons.push('borrow.onBehalfOf != sender');
+    } else if (fn === 'repay') {
+      const onBehalfOf = getAddress(args[3]);
+      if (!isAddressEqual(onBehalfOf, sender)) reasons.push('repay.onBehalfOf != sender');
+    } else if (fn === 'setUserUseReserveAsCollateral') {
+      // ok; self-scoped setting
+    } else {
+      reasons.push(`Aave Pool function not allowed: ${fn}`);
+    }
+  }
+
+  if (res.kind === 'erc20_approval') {
+    // Block infinite approvals
+    const amount = res.args?.[1] as bigint;
+    if (amount === 2n ** 256n - 1n) reasons.push('Infinite approval not allowed');
+  }
+
+  return reasons;
+};
 
 export const decodeUserOp = async ({
   aavePoolAddress,
@@ -187,48 +304,46 @@ export const decodeUserOp = async ({
   // Normalize account calls
   let calls: LowLevelCall[];
   try {
-    calls = decodeKernelV33ToCalls(userOp.callData);
+    calls = decodeUserOpCalldataToLowLevelCalls(userOp.callData);
   } catch (e: any) {
     return { ok: false, reasons: [`Cannot decode account callData: ${e.message}`] };
   }
 
   // Enforce per-call policy
   for (const call of calls) {
-    const res = decodeAaveOrERC20(call, aavePoolAddress);
-    if (res.kind === 'blocked') {
-      reasons.push(res.reason);
-      continue;
-    }
-
-    if (res.kind === 'aave') {
-      const fn = res.fn;
-      const args = res.args as any[];
-
-      if (fn === 'supply') {
-        const onBehalfOf = getAddress(args[2]);
-        if (!isAddressEqual(onBehalfOf, sender)) reasons.push('supply.onBehalfOf != sender');
-      } else if (fn === 'withdraw') {
-        const to = getAddress(args[2]);
-        if (!isAddressEqual(to, sender)) reasons.push('withdraw.to != sender');
-      } else if (fn === 'borrow') {
-        const onBehalfOf = getAddress(args[4]);
-        if (!isAddressEqual(onBehalfOf, sender)) reasons.push('borrow.onBehalfOf != sender');
-      } else if (fn === 'repay') {
-        const onBehalfOf = getAddress(args[3]);
-        if (!isAddressEqual(onBehalfOf, sender)) reasons.push('repay.onBehalfOf != sender');
-      } else if (fn === 'setUserUseReserveAsCollateral') {
-        // ok; self-scoped setting
-      } else {
-        reasons.push(`Aave Pool function not allowed: ${fn}`);
-      }
-    }
-
-    if (res.kind === 'erc20_approval') {
-      // Block infinite approvals
-      const amount = res.args?.[1] as bigint;
-      if (amount === 2n ** 256n - 1n) reasons.push('Infinite approval not allowed');
-    }
+    reasons.push(
+      ...evaluateCallAgainstPolicy({
+        aavePoolAddress,
+        call,
+        sender,
+      }),
+    );
   }
+
+  return { ok: reasons.length === 0, reasons };
+};
+
+interface DecodeTransactionParams {
+  aavePoolAddress: Address;
+  transaction: Transaction;
+}
+
+export const decodeTransaction = ({
+  aavePoolAddress,
+  transaction,
+}: DecodeTransactionParams): DecodeUserOpResult => {
+  const sender = getAddress(transaction.from);
+  const call: LowLevelCall = {
+    data: transaction.data,
+    to: getAddress(transaction.to),
+    value: hexToBigInt(transaction.value),
+  };
+
+  const reasons = evaluateCallAgainstPolicy({
+    aavePoolAddress,
+    call,
+    sender,
+  });
 
   return { ok: reasons.length === 0, reasons };
 };

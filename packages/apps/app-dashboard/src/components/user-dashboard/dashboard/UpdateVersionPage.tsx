@@ -19,6 +19,7 @@ import { useJwtRedirect } from '@/hooks/user-dashboard/connect/useJwtRedirect';
 import { useUrlRedirectUri } from '@/hooks/user-dashboard/connect/useUrlRedirectUri';
 import { ActionButtons } from '@/components/user-dashboard/connect/ui/ActionButtons';
 import { Breadcrumb } from '@/components/shared/ui/Breadcrumb';
+import { wait } from '@/lib/utils';
 
 interface UpdateVersionPageProps {
   connectInfoMap: ConnectInfoMap;
@@ -53,10 +54,11 @@ export function UpdateVersionPage({
   // Handle redirect when JWT is ready
   useEffect(() => {
     if (redirectUrl && !localSuccess) {
-      setLocalSuccess('Success! Redirecting to app...');
-      setTimeout(() => {
+      (async () => {
+        setLocalSuccess('Success! Redirecting to app...');
+        await wait(1000);
         executeRedirect();
-      }, 2000);
+      })();
     }
   }, [redirectUrl, localSuccess, executeRedirect]);
 
@@ -120,18 +122,17 @@ export function UpdateVersionPage({
         });
 
         setLocalStatus(null);
-        // Show success state for 3 seconds, then redirect or reload
+        // Show success state then redirect or reload
         setLocalSuccess('Version updated successfully!');
-        setTimeout(async () => {
-          setLocalSuccess(null);
-          // Only generate JWT if there's a redirectUri (for app redirects)
-          if (redirectUri) {
-            await generateJWT(connectInfoMap.app, connectInfoMap.app.activeVersion!);
-          } else {
-            // Navigate to the app permissions page with full refresh to update sidebar
-            window.location.href = `/user/appId/${connectInfoMap.app.appId}`;
-          }
-        }, 3000);
+        await wait(2000);
+        setLocalSuccess(null);
+        // Only generate JWT if there's a redirectUri (for app redirects)
+        if (redirectUri) {
+          await generateJWT(connectInfoMap.app, connectInfoMap.app.activeVersion!);
+        } else {
+          // Navigate to the app permissions page with full refresh to update sidebar
+          window.location.href = `/user/appId/${connectInfoMap.app.appId}`;
+        }
       } catch (error) {
         setLocalError(error instanceof Error ? error.message : 'Failed to update version');
         setLocalStatus(null);

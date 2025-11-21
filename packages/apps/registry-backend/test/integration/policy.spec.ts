@@ -20,13 +20,13 @@ describe('Policy API Integration Tests', () => {
   let testPolicyVersion: string;
 
   // Expected IPFS CID for the policy package
-  const expectedPolicyIpfsCid = 'QmSK8JoXxh7sR6MP7L6YJiUnzpevbNjjtde3PeP8FfLzV3';
+  const expectedPolicyIpfsCid = 'QmRm6uoZqhCjCP7TXds7umBvsmR9mjAzhkhTUqbPr9dHJS';
 
   // Test data for creating a policy
   const policyData = {
     title: 'Test Policy',
     description: 'Test policy for integration tests',
-    activeVersion: '1.0.0',
+    activeVersion: '0.0.2',
     logo: 'iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAIAAAACDbGyAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAOvwAADr8BOAVTJAAAAA5JREFUGFdj/M+ACAAAAAD//wE7AnsAAAAAAElFTkSuQmCC',
   };
 
@@ -49,7 +49,7 @@ describe('Policy API Integration Tests', () => {
   describe('POST /policy', () => {
     it('should create a new policy', async () => {
       // Generate a unique package name for testing
-      testPackageName = `@lit-protocol/vincent-policy-spending-limit`;
+      testPackageName = `vincent-demo-policy`;
       testPolicyVersion = policyData.activeVersion;
 
       // Update the package name in the policy data
@@ -155,7 +155,7 @@ describe('Policy API Integration Tests', () => {
       const result = await store.dispatch(
         api.endpoints.createPolicyVersion.initiate({
           packageName: testPackageName,
-          version: '1.0.1',
+          version: '0.0.3',
           policyVersionCreate: policyVersionData,
         }),
       );
@@ -167,10 +167,10 @@ describe('Policy API Integration Tests', () => {
       expectAssertObject(data);
 
       expect(data).toHaveProperty('changes', policyVersionData.changes);
-      expect(data).toHaveProperty('version', '1.0.1');
+      expect(data).toHaveProperty('version', '0.0.3');
 
       // Verify ipfsCid is set
-      expect(data).toHaveProperty('ipfsCid', 'QmNoWR1d2z6WwLB3Z2Lx3Uf38Y5V1u1DothS1xPJm9P8QH');
+      expect(data).toHaveProperty('ipfsCid', 'QmRNa8RzGc8xaBrKcGsMNkXxe5R7ea6b5wnfoDne4g4iGb');
       // expect(typeof data.ipfsCid).toBe('string');
     });
   });
@@ -284,7 +284,7 @@ describe('Policy API Integration Tests', () => {
 
   describe('DELETE /policy/{packageName}/version/{version}', () => {
     it('should delete a policy version', async () => {
-      const versionToDelete = '1.0.1';
+      const versionToDelete = '0.0.3';
 
       const result = await store.dispatch(
         api.endpoints.deletePolicyVersion.initiate({

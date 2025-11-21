@@ -1,38 +1,21 @@
+import { useState } from 'react';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Form } from '@/components/shared/ui/form';
 import { Button } from '@/components/shared/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/shared/ui/card';
-import {
-  TextField,
-  LongTextField,
-  ArrayField,
-  NumberSelectField,
-  ImageUploadField,
-} from '../../form-fields';
+import { TextField, LongTextField, ArrayField, ImageUploadField } from '../../form-fields';
 import { docSchemas } from '@lit-protocol/vincent-registry-sdk';
-import { App, AppVersion } from '@/types/developer-dashboard/appTypes';
+import { App } from '@/types/developer-dashboard/appTypes';
 import { DeploymentStatusSelectField } from '../../form-fields/array/DeploymentStatusSelectField';
+import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
+import { StatusMessage } from '@/components/shared/ui/statusMessage';
+import { extractErrorMessage } from '@/utils/developer-dashboard/app-forms';
 
 const { appDoc } = docSchemas;
 
-const {
-  name,
-  description,
-  contactEmail,
-  appUserUrl,
-  logo,
-  redirectUris,
-  deploymentStatus,
-  activeVersion,
-} = appDoc.shape;
+const { name, description, contactEmail, appUserUrl, logo, redirectUris, deploymentStatus } =
+  appDoc.shape;
 
 export const EditPublishedAppSchema = z
   .object({
@@ -43,7 +26,6 @@ export const EditPublishedAppSchema = z
     logo,
     redirectUris,
     deploymentStatus,
-    activeVersion,
   })
   .required()
   .partial({ logo: true })
@@ -53,17 +35,18 @@ export type EditPublishedAppFormData = z.infer<typeof EditPublishedAppSchema>;
 
 interface EditPublishedAppFormProps {
   appData: App;
-  appVersions: AppVersion[];
   onSubmit: (data: EditPublishedAppFormData) => Promise<void>;
   isSubmitting?: boolean;
 }
 
 export function EditPublishedAppForm({
   appData,
-  appVersions,
   onSubmit,
   isSubmitting = false,
 }: EditPublishedAppFormProps) {
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
+
   const form = useForm<EditPublishedAppFormData>({
     resolver: zodResolver(EditPublishedAppSchema),
     defaultValues: {
@@ -74,7 +57,6 @@ export function EditPublishedAppForm({
       logo: appData.logo,
       redirectUris: appData.redirectUris,
       deploymentStatus: appData.deploymentStatus,
-      activeVersion: appData.activeVersion,
     },
   });
 
@@ -89,94 +71,89 @@ export function EditPublishedAppForm({
     formState: { errors },
   } = form;
 
-  // Create version options from appVersions, showing enabled/disabled status for all versions
-  const versionOptions = appVersions.map((version) => ({
-    value: version.version,
-    label: `Version ${version.version} (${version.enabled ? 'Enabled' : 'Disabled'})`,
-  }));
+  const handleFormSubmit = async (data: EditPublishedAppFormData) => {
+    setSubmitError(null);
+    setSubmitSuccess(false);
+    try {
+      await onSubmit(data);
+      setSubmitSuccess(true);
+    } catch (error) {
+      console.error('Failed to update app:', error);
+      setSubmitError(extractErrorMessage(error, 'Failed to update app'));
+    }
+  };
 
   return (
-    <Card className="w-full max-w-2xl mx-auto">
-      <CardHeader>
-        <CardTitle>Edit App</CardTitle>
-        <CardDescription>Update an existing application</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Form {...form}>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            <TextField
-              name="name"
-              register={register}
-              error={errors.name?.message}
-              label="App Name"
-              placeholder="Enter app name"
-            />
+    <Form {...form}>
+      <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
+        <TextField
+          name="name"
+          register={register}
+          error={errors.name?.message}
+          label="App Name"
+          placeholder="Enter app name"
+        />
 
-            <TextField
-              name="contactEmail"
-              register={register}
-              error={errors.contactEmail?.message}
-              label="Contact Email"
-              placeholder="contact@example.com"
-            />
+        <TextField
+          name="contactEmail"
+          register={register}
+          error={errors.contactEmail?.message}
+          label="Contact Email"
+          placeholder="contact@example.com"
+        />
 
-            <LongTextField
-              name="description"
-              register={register}
-              error={errors.description?.message}
-              label="Description"
-              placeholder="Describe your application"
-              rows={4}
-            />
+        <LongTextField
+          name="description"
+          register={register}
+          error={errors.description?.message}
+          label="Description"
+          placeholder="Describe your application"
+          rows={4}
+        />
 
-            <TextField
-              name="appUserUrl"
-              register={register}
-              error={errors.appUserUrl?.message}
-              label="App User URL"
-              placeholder="https://yourapp.com"
-            />
+        <TextField
+          name="appUserUrl"
+          register={register}
+          error={errors.appUserUrl?.message}
+          label="App User URL"
+          placeholder="https://yourapp.com"
+        />
 
-            <ImageUploadField
-              name="logo"
-              watch={watch}
-              setValue={setValue}
-              control={control}
-              setError={setError}
-              clearErrors={clearErrors}
-              label="Logo"
-            />
+        <ImageUploadField
+          name="logo"
+          watch={watch}
+          setValue={setValue}
+          control={control}
+          setError={setError}
+          clearErrors={clearErrors}
+          label="Logo"
+        />
 
-            <ArrayField
-              name="redirectUris"
-              register={register}
-              error={errors.redirectUris?.message}
-              errors={errors}
-              control={control}
-              label="Redirect URIs"
-              placeholder="https://yourapp.com/callback"
-            />
+        <ArrayField
+          name="redirectUris"
+          register={register}
+          error={errors.redirectUris?.message}
+          errors={errors}
+          control={control}
+          label="Redirect URIs"
+          placeholder="https://yourapp.com/callback"
+        />
 
-            <DeploymentStatusSelectField
-              error={errors.deploymentStatus?.message}
-              control={control}
-            />
+        <DeploymentStatusSelectField error={errors.deploymentStatus?.message} control={control} />
 
-            <NumberSelectField
-              name="activeVersion"
-              error={errors.activeVersion?.message}
-              control={control}
-              label="Active Version"
-              options={versionOptions}
-              required
-            />
+        {/* Status Messages */}
+        {submitError && <StatusMessage message={submitError} type="error" />}
+        {submitSuccess && <StatusMessage message="App updated successfully!" type="success" />}
 
-            <Button type="submit" className="w-full" disabled={isSubmitting}>
-              Update App
-            </Button>
-          </form>
-        </Form>
-      </CardContent>
-    </Card>
+        <Button
+          type="submit"
+          className="w-full"
+          style={{ backgroundColor: theme.brandOrange, ...fonts.body }}
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? 'Updating...' : 'Update App'}
+        </Button>
+      </form>
+    </Form>
   );
 }

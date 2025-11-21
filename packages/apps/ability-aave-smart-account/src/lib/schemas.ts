@@ -1,30 +1,48 @@
+import { entryPoint07Address } from 'viem/account-abstraction';
 import { z } from 'zod';
 
 import { simulateAssetChangeSchema } from './helpers/simulation';
-import { addressSchema } from './helpers/schemas';
+import { addressSchema, hexSchema } from './helpers/schemas';
+import { transactionSchema } from './helpers/transaction';
 import { userOpSchema } from './helpers/userOperation';
 
 /**
  * Ability parameters schema - defines the input parameters for the AAVE Smart Account ability
  */
-export const abilityParamsSchema = z.object({
+const alchemyRpcUrlSchema = z
+  .string()
+  .regex(/^https:\/\/[a-z0-9-]+\.g\.alchemy\.com\/v2\/.+/, { message: 'Invalid Alchemy RPC URL' })
+  .url()
+  .describe('Alchemy RPC URL for the desired chain. Will be used to simulate the transaction.');
+
+export const userOpAbilityParamsSchema = z.object({
   userOp: userOpSchema.describe(
     'User operation to sign and execute. This MUST be a valid UserOperation object as defined in the UserOperation schemas.',
   ),
-  entryPointAddress: addressSchema.describe(
-    'EntryPoint to use for the simulation. This MUST be one of the EntryPoints returned by the supportedEntryPoints RPC call.',
-  ),
-  alchemyRpcUrl: z
-    .string()
-    .regex(/^https:\/\/[a-z0-9-]+\.g\.alchemy\.com\/v2\/.+/, { message: 'Invalid Alchemy RPC URL' })
-    .url()
-    .describe('Alchemy RPC URL for the desired chain. Will be used to simulate the transaction.'),
-  serializedZeroDevPermissionAccount: z
-    .string()
+  entryPointAddress: addressSchema
+    .optional()
+    .default(entryPoint07Address)
     .describe(
-      'Serialized ZeroDev permission account. AKA Session key. The permitted signer that will sign the userOp.',
+      'EntryPoint to use for the simulation. Currently only v0.7 is supported. Defaults to standard v0.7 entryPoint address.',
     ),
+  alchemyRpcUrl: alchemyRpcUrlSchema,
 });
+
+export const transactionAbilityParamsSchema = z.object({
+  alchemyRpcUrl: alchemyRpcUrlSchema,
+  transaction: transactionSchema.describe(
+    'EOA transaction to simulate and validate. Only transactions targeting the supported Aave pool or approved ERC20 approvals will be accepted.',
+  ),
+});
+
+export const abilityParamsSchema = z.union([
+  userOpAbilityParamsSchema,
+  transactionAbilityParamsSchema,
+]);
+
+export type AbilityParams = z.infer<typeof abilityParamsSchema>;
+export type UserOpAbilityParams = z.infer<typeof userOpAbilityParamsSchema>;
+export type TransactionAbilityParams = z.infer<typeof transactionAbilityParamsSchema>;
 
 /**
  * Failure result schema
@@ -38,16 +56,11 @@ export const executeFailSchema = baseFailSchema;
 /**
  * Success result schema
  */
-const baseSuccessSchema = z.object({
+export const precheckSuccessSchema = z.object({
   simulationChanges: z
     .array(simulateAssetChangeSchema)
     .describe('Simulated changes user op will make to the blockchain.'),
 });
-export const precheckSuccessSchema = baseSuccessSchema.extend({
-  userOp: userOpSchema.describe('Complete user operation pending signature to execute.'),
-});
-export const executeSuccessSchema = baseSuccessSchema.extend({
-  userOp: userOpSchema.describe(
-    'Complete user operation signed and ready to be sent to the blockchain.',
-  ),
+export const executeSuccessSchema = precheckSuccessSchema.extend({
+  signature: hexSchema.describe('ECDSA signature over the received user operation or transaction.'),
 });

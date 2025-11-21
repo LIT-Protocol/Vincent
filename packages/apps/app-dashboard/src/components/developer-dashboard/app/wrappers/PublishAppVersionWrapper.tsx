@@ -314,9 +314,9 @@ export function PublishAppVersionWrapper({ isAppPublished }: { isAppPublished: b
       });
       setIsPublishing(false);
 
-      // Navigate to same page after a delay to reload with published state
+      // Navigate to version page after a delay
       setTimeout(() => {
-        navigate(0); // Reloads current route
+        navigate(`/developer/apps/appId/${appId}/version/${versionId}`);
       }, 2000);
     } catch (error) {
       console.error('Error publishing app version:', error);
@@ -339,6 +339,8 @@ export function PublishAppVersionWrapper({ isAppPublished }: { isAppPublished: b
       onSubmit={publishAppVersion}
       isSubmitting={isPublishing}
       publishResult={publishResult}
+      versionAbilities={versionAbilities}
+      abilityVersionsData={abilityVersionsData}
     />
   );
 }
