@@ -13,3 +13,9 @@ out/
 
 # We don't commit HTML typedoc output; just json
 docs/html/**/*
+
+# Build output
+dist/
+
+# Generated Lit Actions
+lit-actions/generated/

@@ -12,8 +12,18 @@
         "name": "caller",
         "type": "address",
         "internalType": "address"
+      },
+      {
+        "name": "recoveredSigner",
+        "type": "address",
+        "internalType": "address"
       }
     ]
+  },
+  {
+    "type": "error",
+    "name": "CallerNotLitFoundation",
+    "inputs": []
   },
   {
     "type": "error",
@@ -54,6 +64,33 @@
   },
   {
     "type": "error",
+    "name": "ECDSAInvalidSignature",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "ECDSAInvalidSignatureLength",
+    "inputs": [
+      {
+        "name": "length",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "ECDSAInvalidSignatureS",
+    "inputs": [
+      {
+        "name": "s",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      }
+    ]
+  },
+  {
+    "type": "error",
     "name": "NotAavePool",
     "inputs": [
       {
@@ -81,6 +118,104 @@
         "name": "vaultAddress",
         "type": "address",
         "internalType": "address"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "OwnerAttestationExpired",
+    "inputs": [
+      {
+        "name": "expiration",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "OwnerAttestationIncorrectAppId",
+    "inputs": [
+      {
+        "name": "correctAppId",
+        "type": "uint40",
+        "internalType": "uint40"
+      },
+      {
+        "name": "signedAppId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "OwnerAttestationIncorrectChainId",
+    "inputs": [
+      {
+        "name": "chainId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "OwnerAttestationIncorrectDestinationContract",
+    "inputs": [
+      {
+        "name": "dstContract",
+        "type": "address",
+        "internalType": "address"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "OwnerAttestationIncorrectSigner",
+    "inputs": [
+      {
+        "name": "correctSigner",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "recoveredSigner",
+        "type": "address",
+        "internalType": "address"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "OwnerAttestationIncorrectSourceChainId",
+    "inputs": [
+      {
+        "name": "srcChainId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "OwnerAttestationIncorrectSourceContract",
+    "inputs": [
+      {
+        "name": "srcContract",
+        "type": "address",
+        "internalType": "address"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "OwnerAttestationIssuedAtInFuture",
+    "inputs": [
+      {
+        "name": "issuedAt",
+        "type": "uint256",
+        "internalType": "uint256"
       }
     ]
   },
@@ -242,6 +377,32 @@
   },
   {
     "type": "event",
+    "name": "LitFoundationWalletSet",
+    "inputs": [
+      {
+        "name": "newLitFoundationWallet",
+        "type": "address",
+        "indexed": false,
+        "internalType": "address"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "OwnerAttestationSignerSet",
+    "inputs": [
+      {
+        "name": "newOwnerAttestationSigner",
+        "type": "address",
+        "indexed": false,
+        "internalType": "address"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
     "name": "OwnershipTransferred",
     "inputs": [
       {
@@ -287,10 +448,10 @@
   },
   {
     "type": "event",
-    "name": "VincentAppDiamondSet",
+    "name": "VincentAppDiamondOnYellowstoneSet",
     "inputs": [
       {
-        "name": "newVincentAppDiamond",
+        "name": "newVincentAppDiamondOnYellowstone",
         "type": "address",
         "indexed": false,
         "internalType": "address"
@@ -455,11 +616,37 @@
   },
   {
     "type": "function",
+    "name": "litFoundationWallet",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
     "name": "owner",
     "inputs": [],
     "outputs": [
       {
         "name": "owner_",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "ownerAttestationSigner",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
         "type": "address",
         "internalType": "address"
       }
@@ -520,6 +707,32 @@
   },
   {
     "type": "function",
+    "name": "setLitFoundationWallet",
+    "inputs": [
+      {
+        "name": "newLitFoundationWallet",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "setOwnerAttestationSigner",
+    "inputs": [
+      {
+        "name": "newOwnerAttestationSigner",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
     "name": "setPerformanceFeePercentage",
     "inputs": [
       {
@@ -546,10 +759,10 @@
   },
   {
     "type": "function",
-    "name": "setVincentAppDiamond",
+    "name": "setVincentAppDiamondOnYellowstone",
     "inputs": [
       {
-        "name": "newVincentAppDiamond",
+        "name": "newVincentAppDiamondOnYellowstone",
         "type": "address",
         "internalType": "address"
       }
@@ -713,7 +926,72 @@
   },
   {
     "type": "function",
-    "name": "vincentAppDiamond",
+    "name": "verifyOwnerAttestation",
+    "inputs": [
+      {
+        "name": "appId",
+        "type": "uint40",
+        "internalType": "uint40"
+      },
+      {
+        "name": "oa",
+        "type": "tuple",
+        "internalType": "struct FeeUtils.OwnerAttestation",
+        "components": [
+          {
+            "name": "srcChainId",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "srcContract",
+            "type": "address",
+            "internalType": "address"
+          },
+          {
+            "name": "owner",
+            "type": "address",
+            "internalType": "address"
+          },
+          {
+            "name": "appId",
+            "type": "uint40",
+            "internalType": "uint40"
+          },
+          {
+            "name": "issuedAt",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "expiresAt",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "dstChainId",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "dstContract",
+            "type": "address",
+            "internalType": "address"
+          }
+        ]
+      },
+      {
+        "name": "sig",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "vincentAppDiamondOnYellowstone",
     "inputs": [],
     "outputs": [
       {
@@ -737,6 +1015,58 @@
         "name": "tokenAddress",
         "type": "address",
         "internalType": "address"
+      },
+      {
+        "name": "ownerAttestation",
+        "type": "tuple",
+        "internalType": "struct FeeUtils.OwnerAttestation",
+        "components": [
+          {
+            "name": "srcChainId",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "srcContract",
+            "type": "address",
+            "internalType": "address"
+          },
+          {
+            "name": "owner",
+            "type": "address",
+            "internalType": "address"
+          },
+          {
+            "name": "appId",
+            "type": "uint40",
+            "internalType": "uint40"
+          },
+          {
+            "name": "issuedAt",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "expiresAt",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "dstChainId",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "dstContract",
+            "type": "address",
+            "internalType": "address"
+          }
+        ]
+      },
+      {
+        "name": "ownerAttestationSig",
+        "type": "bytes",
+        "internalType": "bytes"
       }
     ],
     "outputs": [],
@@ -776,6 +1106,19 @@
       },
       {
         "name": "vaultAddress",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "withdrawPlatformFees",
+    "inputs": [
+      {
+        "name": "tokenAddress",
         "type": "address",
         "internalType": "address"
       }
