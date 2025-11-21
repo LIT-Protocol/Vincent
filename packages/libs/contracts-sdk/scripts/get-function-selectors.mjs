@@ -22,6 +22,7 @@ function getSelectors(contract) {
     output = JSON.parse(res.stdout);
   } catch (e) {
     console.error('Failed to parse forge output as JSON:', e);
+    console.error('output was: ', res.stdout);
     process.exit(1);
   }
 
