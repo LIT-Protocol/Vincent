@@ -96,7 +96,6 @@ export const getPlatformUserPkpWallet = async (
     litNodeClient: client,
     pkpPubKey: publicKey,
     controllerSessionSigs: sessionSigs,
-    // provider: platformUserWalletOwner.provider,
   });
 
   await pkpWallet.init();

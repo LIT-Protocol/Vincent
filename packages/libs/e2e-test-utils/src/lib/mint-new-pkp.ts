@@ -1,6 +1,6 @@
 import { ethers } from 'ethers';
-
 import { AUTH_METHOD_TYPE, AUTH_METHOD_SCOPE } from '@lit-protocol/constants';
+import type { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
 
 import { getLitContractsClient } from './litContractsClient/get-lit-contract-client';
 
@@ -11,21 +11,26 @@ export type PkpInfo = { ethAddress: string; tokenId: string };
  * @param wallet wallet that will be the PKP owner and permitted auth method
  * @returns the newly minted PKP's tokenId and ethAddress
  */
-export const mintNewPkp = async ({ wallet }: { wallet: ethers.Signer }): Promise<PkpInfo> => {
-  const litContractClient = await getLitContractsClient({
-    wallet: wallet as unknown as ethers.Wallet,
-  });
+export const mintNewPkp = async ({
+  wallet,
+}: {
+  wallet: ethers.Wallet | PKPEthersWallet;
+}): Promise<PkpInfo> => {
+  const litContractClient = await getLitContractsClient({ wallet });
   await litContractClient.connect();
 
   const mintPkpTx = await litContractClient.pkpHelperContract.write.mintNextAndAddAuthMethods(
     AUTH_METHOD_TYPE.EthWallet,
     [AUTH_METHOD_TYPE.EthWallet],
-    [await wallet.getAddress()],
+    [wallet.address],
     ['0x'],
     [[AUTH_METHOD_SCOPE.SignAnything]],
     true, // addPkpEthAddressAsPermittedAddress
     false, // sendPkpToItself
-    { value: await litContractClient.pkpNftContract.read.mintCost() },
+    {
+      value: await litContractClient.pkpNftContract.read.mintCost(),
+      gasLimit: 5_000_000,
+    },
   );
 
   const mintPkpReceipt = await mintPkpTx.wait();

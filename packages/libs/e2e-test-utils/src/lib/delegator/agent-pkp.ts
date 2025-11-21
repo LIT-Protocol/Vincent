@@ -27,6 +27,8 @@ export const ensureAgentPkpExists = async (appId: number): Promise<PkpInfo> => {
 
   // Get all PKPs owned by the Platform User PKP using Lit Contracts Client
   const litContractClient = await getLitContractsClient({ wallet: platformUserWalletOwner });
+  await litContractClient.connect();
+
   const ownedPkps = await litContractClient.pkpNftContractUtils.read.getTokensInfoByAddress(
     platformUserPkp.ethAddress,
   );

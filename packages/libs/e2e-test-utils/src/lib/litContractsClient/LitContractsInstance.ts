@@ -1,6 +1,7 @@
 import type { ethers } from 'ethers';
 
 import { LitContracts } from '@lit-protocol/contracts-sdk';
+import type { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
 
 export class LitContractsInstance {
   private readonly contractsInstance: LitContracts;
@@ -9,7 +10,7 @@ export class LitContractsInstance {
 
   private connectHandle: Promise<boolean> | null = null;
 
-  constructor({ wallet }: { wallet: ethers.Wallet }) {
+  constructor({ wallet }: { wallet: ethers.Wallet | PKPEthersWallet }) {
     this.contractsInstance = new LitContracts({
       debug: true,
       network: 'datil',

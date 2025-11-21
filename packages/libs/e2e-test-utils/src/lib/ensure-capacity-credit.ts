@@ -4,10 +4,11 @@ import type { CapacityToken } from './types';
 
 import { getLitContractsClient } from './litContractsClient/get-lit-contract-client';
 
-export const ensureUnexpiredCapacityToken = async (targetWallet: ethers.Signer) => {
+export const ensureUnexpiredCapacityToken = async (targetWallet: ethers.Wallet) => {
   const litContractClient = await getLitContractsClient({
-    wallet: targetWallet as unknown as ethers.Wallet,
+    wallet: targetWallet,
   });
+  await litContractClient.connect();
 
   const existingTokens: CapacityToken[] =
     await litContractClient.rateLimitNftContractUtils.read.getTokensByOwnerAddress(
