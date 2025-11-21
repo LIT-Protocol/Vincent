@@ -80,7 +80,7 @@ export const ensureAgentPkpExists = async (appId: number): Promise<PkpInfo> => {
   // Mint a new PKP using the Platform User PKP's wallet
   // This makes the Platform User PKP the owner and controller of the Agent PKP
   const { tokenId, ethAddress } = await mintNewPkp({
-    wallet: platformUserPkpWallet as any, // PKPEthersWallet is compatible with ethers.Wallet interface
+    wallet: platformUserPkpWallet,
   });
 
   console.log(

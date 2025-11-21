@@ -11,13 +11,16 @@ export type PkpInfo = { ethAddress: string; tokenId: string };
  * @param wallet wallet that will be the PKP owner and permitted auth method
  * @returns the newly minted PKP's tokenId and ethAddress
  */
-export const mintNewPkp = async ({ wallet }: { wallet: ethers.Wallet }): Promise<PkpInfo> => {
-  const litContractClient = await getLitContractsClient({ wallet });
+export const mintNewPkp = async ({ wallet }: { wallet: ethers.Signer }): Promise<PkpInfo> => {
+  const litContractClient = await getLitContractsClient({
+    wallet: wallet as unknown as ethers.Wallet,
+  });
+  await litContractClient.connect();
 
   const mintPkpTx = await litContractClient.pkpHelperContract.write.mintNextAndAddAuthMethods(
     AUTH_METHOD_TYPE.EthWallet,
     [AUTH_METHOD_TYPE.EthWallet],
-    [wallet.address],
+    [await wallet.getAddress()],
     ['0x'],
     [[AUTH_METHOD_SCOPE.SignAnything]],
     true, // addPkpEthAddressAsPermittedAddress
@@ -45,7 +48,9 @@ export const mintNewPkp = async ({ wallet }: { wallet: ethers.Wallet }): Promise
   const tokenId = ethers.utils.keccak256('0x' + pkpMintedEvent.data.slice(130, 260));
   const ethAddress = await litContractClient.pkpNftContract.read.getEthAddress(tokenId);
 
-  console.log(`ℹ️  Minted new PKP owned by ${wallet.address} with ethAddress: ${ethAddress}`);
+  console.log(
+    `ℹ️  Minted new PKP owned by ${await wallet.getAddress()} with ethAddress: ${ethAddress}`,
+  );
 
   return {
     tokenId: ethers.BigNumber.from(tokenId).toString(),

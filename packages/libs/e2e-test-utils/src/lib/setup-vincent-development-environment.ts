@@ -96,9 +96,14 @@ export const setupVincentDevelopmentEnvironment = async ({
     appVersion = newAppVersion.appVersion;
   }
 
+  // Ensure capacity token for the EOA wallet that owns the Platform User PKP
+  await ensureUnexpiredCapacityToken(wallets.platformUserWalletOwner);
+
   // Get or create the Platform User PKP (owned by the EOA)
+  // This also ensures the PKP has ETH for gas
   const platformUserPkpInfo = await delegator.getFundedPlatformUserPkp();
-  // Get Platform User PKP wallet for signing operations
+
+  // Get Platform User PKP ethers wallet for signing operations
   const platformUserPkpWallet = await delegator.getPlatformUserPkpWallet(platformUserPkpInfo);
 
   // Get or create the Agent PKP for this app (owned by the Platform User PKP)

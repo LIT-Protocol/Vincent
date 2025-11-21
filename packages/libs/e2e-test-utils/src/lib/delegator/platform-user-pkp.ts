@@ -46,7 +46,7 @@ export const ensurePlatformUserPkpExists = async (): Promise<PkpInfo> => {
 export const ensureFundedPlatformUserPkpExists = async (): Promise<PkpInfo> => {
   const platformUserPkp = await ensurePlatformUserPkpExists();
 
-  await ensureWalletHasTestTokens({ address: platformUserPkp.ethAddress });
+  await ensureWalletHasTestTokens({ address: platformUserPkp.ethAddress, minAmountEther: '0.02' }); // 0.02 ETH
 
   return platformUserPkp;
 };
