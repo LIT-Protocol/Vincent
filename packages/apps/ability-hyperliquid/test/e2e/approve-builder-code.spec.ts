@@ -138,7 +138,6 @@ describe('Hyperliquid Ability E2E Approve Builder Code Tests', () => {
       expect(executeResult).toBeDefined();
       console.log('[Approve Builder Code Execute]', util.inspect(executeResult, { depth: 10 }));
 
-      expect(executeResult.success).toBe(true);
       if (executeResult.success === false) {
         throw new Error(executeResult.runtimeError);
       }
