@@ -13,7 +13,7 @@ export { chain };
 import * as appManager from './appManager';
 export { appManager };
 
-export { mintNewPkp } from './mint-new-pkp';
+export { mintNewPkp, type PkpInfo } from './mint-new-pkp';
 export { ensureUnexpiredCapacityToken } from './ensure-capacity-credit';
 export { getEnv } from './env';
 export { getChainHelpers } from './chain';

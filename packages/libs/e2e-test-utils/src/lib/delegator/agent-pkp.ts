@@ -1,64 +1,120 @@
 import type { PkpInfo } from '../mint-new-pkp';
 
+import { getClient } from '@lit-protocol/vincent-contracts-sdk';
+
 import { getChainHelpers } from '../chain';
 import { ensureWalletHasTestTokens } from '../funder/ensure-wallet-has-test-tokens';
 import { getLitContractsClient } from '../litContractsClient/get-lit-contract-client';
 import { mintNewPkp } from '../mint-new-pkp';
+import { getPlatformUserPkpWallet } from './get-platform-user-pkp-wallet';
+import { getFundedPlatformUserPkp } from './platform-user-pkp';
 
-// Get an existing, or mint a new one if there is no existing, agent PKP using the agent wallet owner's address
-export const ensureAgentPkpExists = async (): Promise<PkpInfo> => {
+/**
+ * Get an existing Agent PKP for a specific app ID, or mint a new one if none exists.
+ * The Agent PKP will be owned by the User Platform PKP.
+ * This function queries all Agent PKPs owned by the User Platform PKP and finds the one
+ * that has permissions for the specified app ID.
+ * @param appId the app ID to get or create an Agent PKP for
+ * @returns the Agent PKP info for the specified app
+ */
+export const ensureAgentPkpExists = async (appId: number): Promise<PkpInfo> => {
   const {
-    wallets: { agentWalletOwner },
+    wallets: { platformUserWalletOwner },
   } = await getChainHelpers();
 
-  const litContractClient = await getLitContractsClient({ wallet: agentWalletOwner });
+  // Get or create the Platform User PKP first
+  const platformUserPkp = await getFundedPlatformUserPkp();
+
+  // Get all PKPs owned by the Platform User PKP using Lit Contracts Client
+  const litContractClient = await getLitContractsClient({ wallet: platformUserWalletOwner });
   const ownedPkps = await litContractClient.pkpNftContractUtils.read.getTokensInfoByAddress(
-    agentWalletOwner.address,
+    platformUserPkp.ethAddress,
   );
 
-  if (ownedPkps.length > 1) {
-    console.warn(
-      '> 1 PKP found for agent wallet owner. When e2e testing, we recommend that you use a _dedicated agent wallet owner account_ which always only has a single agent PKP. Using the first PKP found.',
-      ownedPkps,
-    );
-  }
+  console.log(
+    `Platform User PKP ${platformUserPkp.ethAddress} owns ${ownedPkps.length} Agent PKP(s)`,
+  );
 
+  // If there are owned PKPs, query their permitted apps to find the one for this app ID
   if (ownedPkps.length > 0) {
-    console.log(
-      `${agentWalletOwner.address} has a PKP -- using existing PKP with ethAddress: ${ownedPkps[0].ethAddress}, tokenId: ${ownedPkps[0].tokenId}`,
-    );
+    const client = getClient({ signer: platformUserWalletOwner });
 
-    const { tokenId, ethAddress } = ownedPkps[0];
-    return { tokenId, ethAddress };
+    // Query all owned PKP addresses to find which one has permission for this app
+    const pkpAddresses = ownedPkps.map((pkp) => pkp.ethAddress);
+
+    // Get permitted apps for all owned PKPs
+    const permittedAppsData = await client.getPermittedAppsForPkps({
+      pkpEthAddresses: pkpAddresses,
+      offset: '0',
+    });
+
+    // Find the PKP that has permission for the specified app ID
+    for (const pkpData of permittedAppsData) {
+      const hasAppPermission = pkpData.permittedApps.some((app) => app.appId === appId);
+
+      if (hasAppPermission) {
+        const matchingPkp = ownedPkps.find((pkp) => pkp.tokenId === pkpData.pkpTokenId);
+        if (matchingPkp) {
+          console.log(
+            `Found existing Agent PKP for app ${appId} with ethAddress: ${matchingPkp.ethAddress}, tokenId: ${matchingPkp.tokenId}`,
+          );
+          return {
+            tokenId: matchingPkp.tokenId,
+            ethAddress: matchingPkp.ethAddress,
+          };
+        }
+      }
+    }
   }
 
-  console.log(`No agent PKPs found; minting a new agent PKP for ${agentWalletOwner.address}...`);
+  console.log(
+    `No Agent PKP found for app ${appId}; minting a new Agent PKP owned by Platform User PKP ${platformUserPkp.ethAddress}...`,
+  );
 
-  // Be sure the agentWalletOwner has enough test tokens to mint a new PKP
-  await ensureWalletHasTestTokens({ address: await agentWalletOwner.getAddress() });
+  // Be sure the platformUserPkp has enough test tokens to mint a new PKP
+  await ensureWalletHasTestTokens({ address: platformUserPkp.ethAddress });
 
-  const { tokenId, ethAddress } = await mintNewPkp({ wallet: agentWalletOwner });
+  // Get PKP Ethers Wallet for the Platform User PKP
+  const platformUserPkpWallet = await getPlatformUserPkpWallet(platformUserPkp);
+
+  // Mint a new PKP using the Platform User PKP's wallet
+  // This makes the Platform User PKP the owner and controller of the Agent PKP
+  const { tokenId, ethAddress } = await mintNewPkp({
+    wallet: platformUserPkpWallet as any, // PKPEthersWallet is compatible with ethers.Wallet interface
+  });
+
+  console.log(
+    `Minted new Agent PKP ${ethAddress} owned by Platform User PKP ${platformUserPkp.ethAddress}`,
+  );
 
   return { tokenId, ethAddress };
 };
 
-export const ensureFundedAgentPkpExists = async (): Promise<PkpInfo> => {
-  const agentPkp = await ensureAgentPkpExists();
+export const ensureFundedAgentPkpExists = async (appId: number): Promise<PkpInfo> => {
+  const agentPkp = await ensureAgentPkpExists(appId);
 
   await ensureWalletHasTestTokens({ address: agentPkp.ethAddress });
 
   return agentPkp;
 };
 
-const agentPkpInfo: PkpInfo | null = null;
+// Map to store Agent PKPs by app ID for the current run
+const agentPkpsByAppId: Map<number, PkpInfo> = new Map();
 
-// Returns agent Pkp info for this run.
-// This method will mint a new agent Pkp if none exists for the current agent wallet owner.
-// This method will also fund the agent Pkp if it is not already funded.
-export const getFundedAgentPkp = async (): Promise<PkpInfo> => {
-  if (agentPkpInfo) {
-    return agentPkpInfo;
+/**
+ * Returns Agent PKP info for a specific app for this run.
+ * This method will mint a new Agent PKP if none exists for the specified app.
+ * This method will also fund the Agent PKP if it is not already funded.
+ * @param appId the app ID to get a funded Agent PKP for
+ * @returns the funded Agent PKP info for the specified app
+ */
+export const getFundedAgentPkp = async (appId: number): Promise<PkpInfo> => {
+  const cached = agentPkpsByAppId.get(appId);
+  if (cached) {
+    return cached;
   }
 
-  return await ensureFundedAgentPkpExists();
+  const agentPkp = await ensureFundedAgentPkpExists(appId);
+  agentPkpsByAppId.set(appId, agentPkp);
+  return agentPkp;
 };

@@ -5,8 +5,11 @@
     "access": "public"
   },
   "dependencies": {
-    "@lit-protocol/constants": "^8.0.4",
+    "@lit-protocol/auth-helpers": "^7",
+    "@lit-protocol/constants": "^7",
     "@lit-protocol/contracts-sdk": "^7.2.3",
+    "@lit-protocol/lit-node-client": "^7",
+    "@lit-protocol/pkp-ethers": "^7.2.3",
     "@lit-protocol/vincent-contracts-sdk": "^2.0.0",
     "@t3-oss/env-core": "^0.13.8",
     "ethers": "^5.7.2",
@@ -26,6 +29,7 @@
     }
   },
   "devDependencies": {
+    "@lit-protocol/types": "^7",
     "@types/semver": "^7.7.0",
     "chokidar-cli": "^3.0.0",
     "ipfs-only-hash": "^4.0.0",

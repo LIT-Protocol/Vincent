@@ -8,7 +8,7 @@ export type PkpInfo = { ethAddress: string; tokenId: string };
 
 /**
  * Helper function to mint a new PKP and return its information
- * @param wallet wallet that will be the PKP owner
+ * @param wallet wallet that will be the PKP owner and permitted auth method
  * @returns the newly minted PKP's tokenId and ethAddress
  */
 export const mintNewPkp = async ({ wallet }: { wallet: ethers.Wallet }): Promise<PkpInfo> => {
