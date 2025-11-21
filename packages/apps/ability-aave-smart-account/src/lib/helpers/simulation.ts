@@ -68,10 +68,28 @@ export const simulateTransaction = async ({
   publicClient: PublicClient;
   transaction: Transaction;
 }) => {
+  // Convert transaction to RPC-compatible format
+  const rpcTransaction = {
+    from: transaction.from,
+    to: transaction.to,
+    data: transaction.data,
+    value: transaction.value,
+    nonce: transaction.nonce,
+    ...(transaction.gas && { gas: transaction.gas }),
+    ...(transaction.gasLimit && !transaction.gas && { gas: transaction.gasLimit }),
+    ...(transaction.gasPrice && { gasPrice: transaction.gasPrice }),
+    ...(transaction.maxFeePerGas && { maxFeePerGas: transaction.maxFeePerGas }),
+    ...(transaction.maxPriorityFeePerGas && {
+      maxPriorityFeePerGas: transaction.maxPriorityFeePerGas,
+    }),
+    ...(transaction.accessList && { accessList: transaction.accessList }),
+  };
+
   return (await publicClient.request({
     // @ts-expect-error viem types do not include this method
     method: 'alchemy_simulateAssetChanges',
-    params: [transaction],
+    // @ts-expect-error rpcTransaction format is compatible with Alchemy API
+    params: [rpcTransaction],
   })) as SimulateUserOperationAssetChangesResponse;
 };
 

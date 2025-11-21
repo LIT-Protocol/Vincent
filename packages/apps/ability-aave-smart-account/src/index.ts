@@ -6,3 +6,9 @@ export {
   getAvailableMarkets,
   getATokens,
 } from './lib/helpers/aave';
+export { type UserOp, userOpSchema, toVincentUserOp } from './lib/helpers/userOperation';
+export {
+  type Transaction,
+  transactionSchema,
+  toVincentTransaction,
+} from './lib/helpers/transaction';
