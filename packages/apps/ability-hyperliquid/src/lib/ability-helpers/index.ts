@@ -8,3 +8,4 @@ export { executePerpOrder } from './execute-perp-order';
 export { withdrawUsdc } from './withdraw-usdc';
 export { sendSpotAsset } from './send-spot-asset';
 export { sendPerpUsdc } from './send-perp-usdc';
+export { approveBuilderCode } from './approve-builder-code';

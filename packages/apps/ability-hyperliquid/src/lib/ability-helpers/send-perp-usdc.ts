@@ -14,7 +14,7 @@ import { getHyperliquidNonce } from './get-hyperliquid-nonce';
 import { getHyperliquidChainId, getHyperliquidChainName } from './get-hyperliquid-chain-id';
 
 export type SendPerpUsdcResult = {
-  sendResult: SuccessResponse;
+  sendResult: SuccessResponse | hyperliquid.ErrorResponse;
 };
 
 /**
@@ -75,6 +75,6 @@ export async function sendPerpUsdc({
 
   const parsedSendResult = JSON.parse(sendResult);
   return {
-    sendResult: parsedSendResult.result as SuccessResponse,
+    sendResult: parsedSendResult.result as SuccessResponse | hyperliquid.ErrorResponse,
   };
 }

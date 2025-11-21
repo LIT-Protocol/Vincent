@@ -7,6 +7,7 @@ import {
   getChainHelpers,
   getEnv,
   type PkpInfo,
+  setupVincentDevelopmentEnvironment,
 } from '@lit-protocol/vincent-e2e-test-utils';
 import { type PermissionData } from '@lit-protocol/vincent-contracts-sdk';
 import { disconnectVincentAbilityClients } from '@lit-protocol/vincent-app-sdk/abilityClient';
@@ -57,46 +58,11 @@ describe('Hyperliquid Ability E2E Balance Tests', () => {
       [hyperliquidBundledAbility.ipfsCid]: {},
     };
 
-    const abilityIpfsCids: string[] = Object.keys(PERMISSION_DATA);
-    const abilityPolicies: string[][] = abilityIpfsCids.map((abilityIpfsCid) => {
-      return Object.keys(PERMISSION_DATA[abilityIpfsCid]);
-    });
-
-    // If an app exists for the delegatee, we will create a new app version with the new ipfs cids
-    // Otherwise, we will create an app w/ version 1 appVersion with the new ipfs cids
-    const existingApp = await delegatee.getAppInfo();
-    console.log('[beforeAll] existingApp', existingApp);
-    let appId: number;
-    let appVersion: number;
-    if (!existingApp) {
-      console.log('[beforeAll] No existing app, registering new app');
-      const newApp = await appManager.registerNewApp({ abilityIpfsCids, abilityPolicies });
-      appId = newApp.appId;
-      appVersion = newApp.appVersion;
-    } else {
-      console.log('[beforeAll] Existing app, registering new app version');
-      const newAppVersion = await appManager.registerNewAppVersion({
-        abilityIpfsCids,
-        abilityPolicies,
-      });
-      appId = existingApp.appId;
-      appVersion = newAppVersion.appVersion;
-    }
-
-    agentPkpInfo = await delegator.getFundedAgentPkp();
-
-    await delegator.permitAppVersionForAgentWalletPkp({
+    const vincentDevEnvironment = await setupVincentDevelopmentEnvironment({
       permissionData: PERMISSION_DATA,
-      appId,
-      appVersion,
-      agentPkpInfo,
     });
-
-    await delegator.addPermissionForAbilities(
-      wallets.agentWalletOwner,
-      agentPkpInfo.tokenId,
-      abilityIpfsCids,
-    );
+    agentPkpInfo = vincentDevEnvironment.agentPkpInfo;
+    wallets = vincentDevEnvironment.wallets;
 
     transport = new hyperliquid.HttpTransport({ isTestnet: USE_TESTNET });
     infoClient = new hyperliquid.InfoClient({ transport });

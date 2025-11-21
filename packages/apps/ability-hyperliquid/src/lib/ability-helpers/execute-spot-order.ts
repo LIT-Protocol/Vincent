@@ -21,6 +21,16 @@ export interface SpotTradeParams {
    * @default { type: 'limit', tif: 'Gtc' }
    */
   orderType?: { type: 'limit'; tif: TimeInForce } | { type: 'market' };
+  /**
+   * Builder fee configuration.
+   * Only applies to sell orders (builder codes do not apply to buying side of spot trades).
+   * Fee is specified in tenths of basis points (e.g., 50 = 0.05% = 5 basis points).
+   * @see https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/exchange-endpoint#builder-codes
+   */
+  builderFee?: {
+    builderAddress: string; // Builder address
+    feeInTenthsOfBps: number; // Fee in tenths of basis points (e.g., 50 = 0.05%)
+  };
 }
 
 export type SpotOrderResult = SpotOrderResultSuccess | SpotOrderResultFailure;
@@ -71,7 +81,23 @@ export async function executeSpotOrder({
       : { limit: { tif: orderType.tif } };
 
   // Construct order action
-  const orderAction = parser(OrderRequest.entries.action)({
+  // Note: Builder codes only apply to sell orders (not buy orders) for spot trades
+  const orderActionParams: {
+    type: 'order';
+    orders: Array<{
+      a: number;
+      b: boolean;
+      p: string;
+      s: string;
+      r: boolean;
+      t: typeof orderTypeField;
+    }>;
+    grouping: 'na';
+    builder?: {
+      b: `0x${string}`;
+      f: number;
+    };
+  } = {
     type: 'order',
     orders: [
       {
@@ -84,7 +110,18 @@ export async function executeSpotOrder({
       },
     ],
     grouping: 'na',
-  });
+  };
+
+  // Add builder fee if provided and this is a sell order
+  // Builder codes do not apply to the buying side of spot trades
+  if (params.builderFee && !params.isBuy) {
+    orderActionParams.builder = {
+      b: params.builderFee.builderAddress as `0x${string}`,
+      f: params.builderFee.feeInTenthsOfBps,
+    };
+  }
+
+  const orderAction = parser(OrderRequest.entries.action)(orderActionParams);
 
   // Sign and send
   const signature = await signL1Action({
