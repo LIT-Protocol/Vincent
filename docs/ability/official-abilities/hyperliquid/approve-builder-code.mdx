@@ -78,7 +78,7 @@ For the `approveBuilderCode` action, the `precheck` function will validate the f
 
     - Create an instance of the `VincentAbilityClient` using the `getVincentAbilityClient` function (imported from `@lit-protocol/vincent-app-sdk/abilityClient`)
       - Pass in the Ability's `bundledVincentAbility` object (imported from `@lit-protocol/vincent-ability-hyperliquid`)
-      - Pass in the `ethersSigner` you'll be using to sign the request to Lit with your Delegatee private key
+      - Pass in the `ethersSigner` created using your Delegatee private key
     - Use the `VincentAbilityClient` instance to call the `precheck` function
 
     ```typescript
