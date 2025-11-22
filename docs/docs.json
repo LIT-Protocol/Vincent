@@ -91,6 +91,7 @@
                       "ability/official-abilities/hyperliquid/transfer-to-perp",
                       "ability/official-abilities/hyperliquid/cancel-order",
                       "ability/official-abilities/hyperliquid/cancel-all-orders-for-symbol",
+                      "ability/official-abilities/hyperliquid/approve-builder-code",
                       {
                         "group": "Spot Trading",
                         "pages": [

@@ -41,21 +41,30 @@ With Vincent's granular, revocable, and non-custodial delegation system, you can
 The Hyperliquid Ability lets your app perform fully automated, non-custodial trading and account
 operations across both perpetual and spot markets.
 
+<Note>
+  There is a `0.05%` [builder fee](https://hyperliquid.gitbook.io/hyperliquid-docs/trading/builder-codes) applied to all perp long and short trades as well as all spot sell trades.
+  
+  Currently, the collected fees are being pooled into the Hyperliquid builder account: `0x132Db5f531Ba38628F1640683354229daE04E8e6` with the intention of being split between the App Manager and the Vincent team at a later date.
+
+</Note>
+
 <AccordionGroup>
 
 <Accordion title="Perpetual Futures" icon="chart-candlestick">
-  
+
 - Open and close long/short positions
 - Select leverage (1-10x) and margin type (cross or isolated)
 - Use reduce-only orders for position management
 - Supports limit (GTC, IOC, ALO) and market orders
+- **Automatic `0.05%` builder fee applied to all perp long and short trades**
 
 </Accordion>
 
 <Accordion title="Spot Trading" icon="coins">
-  
+
 - Buy or sell any Hyperliquid spot pair
 - Supports limit (GTC, IOC, ALO) and market orders
+- **Automatic `0.05%` builder fee applied to all spot sell trades**
 
 </Accordion>
 
@@ -72,6 +81,14 @@ operations across both perpetual and spot markets.
 
 - Cancel individual orders by ID
 - Cancel all orders for a specific market
+
+</Accordion>
+
+<Accordion title="Builder Code Approval" icon="handshake">
+
+- Explicitly approve Hyperliquid builder code for fee collection
+- Required for perp long/short and spot sell trades (automatically approved during execution)
+- Learn more about the [approveBuilderCode](/ability/official-abilities/hyperliquid/approve-builder-code) action
 
 </Accordion>
 

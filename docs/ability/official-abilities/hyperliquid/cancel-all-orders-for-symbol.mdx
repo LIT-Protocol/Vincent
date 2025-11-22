@@ -262,15 +262,15 @@ For the `cancelAllOrdersForSymbol` action, the `execute` function will:
 ## Important Considerations
 
 <AccordionGroup>
-  <Accordion title="Symbol-Specific Cancellation" icon="filter">
-    This action cancels **all open orders for a specific symbol only**. Orders for other symbols will remain open.
+<Accordion title="Symbol-Specific Cancellation" icon="filter">
+  This action cancels **all open orders for a specific symbol only**. Orders for other symbols will remain open.
 
 For example:
 
 - If you cancel all orders for "PURR/USDC", orders for "ETH/USDC" will not be affected
 - If you cancel all orders for "SOL" (perp), orders for "ETH" (perp) will not be affected
 
-  </Accordion>
+</Accordion>
 
 <Accordion title="Symbol Format" icon="tag">
   The symbol format differs between spot and perpetual orders:
