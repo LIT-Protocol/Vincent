@@ -21,6 +21,7 @@ export const DEFAULT_PAGE_SIZE = '50';
 export const VINCENT_CONTRACT_ADDRESS_BOOK = {
   fee: {
     baseSepolia: {
+      chainId: 84532,
       address: '0x35705D6ad235DcA39c10B6E0EfBA84b5E90D2aC9',
       salt: 'DatilCreate2Salt',
     },
