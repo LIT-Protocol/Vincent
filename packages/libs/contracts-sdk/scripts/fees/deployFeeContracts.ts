@@ -1,4 +1,4 @@
-import { execSync } from 'child_process';
+import { spawn } from 'child_process';
 import * as path from 'path';
 
 import { ethers } from 'ethers';
@@ -197,7 +197,7 @@ function parseDeployedAddress(output: string): string | null {
 }
 
 /**
- * Run forge script to deploy fee contracts
+ * Run forge script to deploy fee contracts (with streaming output)
  */
 function runForgeScript(
   networkName: string,
@@ -205,42 +205,67 @@ function runForgeScript(
   privateKey: string,
   rpcUrl: string,
   etherscanApiKey: string,
-): string {
-  const projectRoot = path.resolve(__dirname, '../..');
-  const scriptPath = path.join(projectRoot, 'script/DeployFeeDiamond.sol:DeployFeeDiamond');
+): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const projectRoot = path.resolve(__dirname, '../..');
+    const scriptPath = path.join(projectRoot, 'script/DeployFeeDiamond.sol:DeployFeeDiamond');
 
-  const command = [
-    'forge script',
-    scriptPath,
-    `--sig "deployAndSetDefaults(address)" "${vincentProdDiamondAddress}"`,
-    `--private-key "${privateKey}"`,
-    `--rpc-url "${rpcUrl}"`,
-    '--broadcast',
-    '--slow',
-    '--verify',
-    '--ffi',
-    `--etherscan-api-key "${etherscanApiKey}"`,
-  ].join(' ');
+    const args = [
+      'script',
+      scriptPath,
+      '--sig',
+      'deployAndSetDefaults(address)',
+      vincentProdDiamondAddress,
+      '--private-key',
+      privateKey,
+      '--rpc-url',
+      rpcUrl,
+      '--broadcast',
+      '--slow',
+      '--verify',
+      '--ffi',
+      '--etherscan-api-key',
+      etherscanApiKey,
+    ];
 
-  try {
-    const output = execSync(command, {
-      encoding: 'utf-8',
-      stdio: 'pipe',
+    const forgeProcess = spawn('forge', args, {
       cwd: projectRoot,
       env: {
         ...process.env,
         VINCENT_DEPLOYER_PRIVATE_KEY: privateKey,
       },
+      stdio: ['inherit', 'pipe', 'pipe'],
     });
-    return output;
-  } catch (error: unknown) {
-    if (error && typeof error === 'object' && 'stdout' in error) {
-      const stdout = (error as { stdout?: string }).stdout;
-      const stderr = (error as { stderr?: string }).stderr;
-      throw new Error(`Forge script failed:\nSTDOUT: ${stdout}\nSTDERR: ${stderr}`);
-    }
-    throw error;
-  }
+
+    let stdout = '';
+    let stderr = '';
+
+    forgeProcess.stdout?.on('data', (data: Buffer) => {
+      const output = data.toString();
+      stdout += output;
+      process.stdout.write(output); // Stream to console
+    });
+
+    forgeProcess.stderr?.on('data', (data: Buffer) => {
+      const output = data.toString();
+      stderr += output;
+      process.stderr.write(output); // Stream to console
+    });
+
+    forgeProcess.on('close', (code) => {
+      if (code === 0) {
+        resolve(stdout);
+      } else {
+        reject(
+          new Error(`Forge script failed with code ${code}:\nSTDOUT: ${stdout}\nSTDERR: ${stderr}`),
+        );
+      }
+    });
+
+    forgeProcess.on('error', (error: Error) => {
+      reject(new Error(`Failed to start forge script: ${error.message}`));
+    });
+  });
 }
 
 /**
@@ -254,6 +279,58 @@ async function getAavePoolFromContract(feeDiamondAddress: string, rpcUrl: string
 }
 
 /**
+ * Get appropriate gas prices for a chain (handles Polygon and other chains with special requirements)
+ */
+async function getGasOverrides(
+  provider: ethers.providers.JsonRpcProvider,
+  chainId: number,
+): Promise<ethers.providers.TransactionRequest> {
+  const feeData = await provider.getFeeData();
+
+  // Polygon requires higher priority fees (minimum 25 gwei)
+  if (chainId === 137) {
+    // Polygon mainnet
+    const minPriorityFee = ethers.utils.parseUnits('30', 'gwei'); // Use 30 gwei to be safe
+    const maxPriorityFeePerGas = feeData.maxPriorityFeePerGas
+      ? ethers.BigNumber.from(feeData.maxPriorityFeePerGas).gt(minPriorityFee)
+        ? feeData.maxPriorityFeePerGas
+        : minPriorityFee
+      : minPriorityFee;
+
+    // maxFeePerGas should be baseFee + priorityFee
+    // For Polygon, we'll use a higher multiplier to ensure it goes through
+    const baseFee = feeData.maxFeePerGas
+      ? ethers.BigNumber.from(feeData.maxFeePerGas).sub(feeData.maxPriorityFeePerGas || 0)
+      : ethers.utils.parseUnits('50', 'gwei');
+    const maxFeePerGas = baseFee.add(maxPriorityFeePerGas);
+
+    return {
+      maxFeePerGas,
+      maxPriorityFeePerGas,
+      type: 2,
+    };
+  }
+
+  // For other EIP-1559 chains, use the fee data as-is
+  if (feeData.maxFeePerGas && feeData.maxPriorityFeePerGas) {
+    return {
+      maxFeePerGas: feeData.maxFeePerGas,
+      maxPriorityFeePerGas: feeData.maxPriorityFeePerGas,
+      type: 2,
+    };
+  }
+
+  // Fallback to legacy gas price
+  if (feeData.gasPrice) {
+    return {
+      gasPrice: feeData.gasPrice,
+    };
+  }
+
+  throw new Error('Unable to determine gas prices for this chain');
+}
+
+/**
  * Set Aave pool address on the fee diamond contract
  */
 async function setAavePoolOnContract(
@@ -261,13 +338,23 @@ async function setAavePoolOnContract(
   aavePoolAddress: string,
   privateKey: string,
   rpcUrl: string,
+  chainId: number,
 ): Promise<void> {
   const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
   const wallet = new ethers.Wallet(privateKey, provider);
   const contract = new ethers.Contract(feeDiamondAddress, FeeDiamondAbi, wallet);
 
   console.log(`   Setting Aave pool to ${aavePoolAddress}...`);
-  const tx = await contract.setAavePool(aavePoolAddress);
+
+  // Get appropriate gas overrides for this chain
+  const gasOverrides = await getGasOverrides(provider, chainId);
+  console.log(`   Gas overrides:`, {
+    maxFeePerGas: gasOverrides.maxFeePerGas?.toString(),
+    maxPriorityFeePerGas: gasOverrides.maxPriorityFeePerGas?.toString(),
+    gasPrice: gasOverrides.gasPrice?.toString(),
+  });
+
+  const tx = await contract.setAavePool(aavePoolAddress, gasOverrides);
   console.log(`   Transaction hash: ${tx.hash}`);
   await tx.wait();
   console.log(`   ✅ Aave pool set successfully`);
@@ -347,7 +434,7 @@ async function deployToChain(
     // Run deployment script
     console.log(`🚀 Deploying fee contracts to ${networkName}...`);
     try {
-      const output = runForgeScript(
+      const output = await runForgeScript(
         networkName,
         vincentProdDiamondAddress,
         privateKey,
@@ -355,14 +442,11 @@ async function deployToChain(
         etherscanApiKey,
       );
 
-      console.log('Deployment output:');
-      console.log(output);
-
       // Parse deployed address
       const deployedAddress = parseDeployedAddress(output);
       if (!deployedAddress) {
         console.error(
-          `❌ Could not parse deployed address from output. Please check the deployment logs.`,
+          `❌ Could not parse deployed address from output. Please check the deployment logs above.`,
         );
         return null;
       }
@@ -399,7 +483,7 @@ async function deployToChain(
         throw new Error('VINCENT_DEPLOYER_PRIVATE_KEY is not set in environment');
       }
 
-      await setAavePoolOnContract(feeDiamondAddress, aavePoolAddress, privateKey, rpcUrl);
+      await setAavePoolOnContract(feeDiamondAddress, aavePoolAddress, privateKey, rpcUrl, chainId);
     } else {
       console.log(`   ✅ Aave pool already set to: ${currentAavePool}`);
     }

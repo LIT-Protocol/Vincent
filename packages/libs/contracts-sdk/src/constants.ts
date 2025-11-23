@@ -30,6 +30,11 @@ export const VINCENT_CONTRACT_ADDRESS_BOOK = {
       address: '0x35705D6ad235DcA39c10B6E0EfBA84b5E90D2aC9',
       salt: 'DatilCreate2Salt',
     },
+    arbitrum: {
+      chainId: 42161,
+      address: '0x35705D6ad235DcA39c10B6E0EfBA84b5E90D2aC9',
+      salt: 'DatilCreate2Salt',
+    },
     optimism: {
       chainId: 10,
       address: '0x35705D6ad235DcA39c10B6E0EfBA84b5E90D2aC9',
