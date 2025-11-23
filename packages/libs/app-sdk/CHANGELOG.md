@@ -1,3 +1,19 @@
+## 2.5.0 (2025-11-23)
+
+### 🚀 Features
+
+- #### Add support for Vincent Wrapped Keys ([529ce1ad](https://github.com/LIT-Protocol/Vincent/commit/529ce1ad))
+  - Updated internal sessionSig creation so that the `resourceAbilityRequests` includes the ability to decrypt access-control-condition restricted resources
+
+### 🧱 Updated Dependencies
+
+- Updated ability-sdk to 2.3.4
+- Updated contracts-sdk to 5.0.0
+
+### ❤️ Thank You
+
+- Daryl Collins
+
 ## 2.2.4 (2025-11-06)
 
 ### 🩹 Fixes

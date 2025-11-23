@@ -1,3 +1,12 @@
+## 0.4.5 (2025-11-23)
+
+### 🧱 Updated Dependencies
+
+- Updated ability-sdk to 2.3.4
+- Updated app-sdk to 2.5.0
+- Updated contracts-sdk to 5.0.0
+- Updated e2e-test-utils to 1.1.3
+
 ## 0.4.2 (2025-11-07)
 
 ### 🧱 Updated Dependencies
