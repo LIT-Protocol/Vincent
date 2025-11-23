@@ -21,8 +21,8 @@
   },
   "dependencies": {
     "@lit-protocol/flags": "^2.1.0",
-    "@lit-protocol/vincent-app-sdk": "^2.2.4",
-    "@lit-protocol/vincent-contracts-sdk": "^1.3.0",
+    "@lit-protocol/vincent-app-sdk": "^2.5.0",
+    "@lit-protocol/vincent-contracts-sdk": "^5.0.0",
     "@lit-protocol/vincent-registry-sdk": "^4.3.0",
     "@t3-oss/env-core": "^0.13.6",
     "cors": "^2.8.5",
