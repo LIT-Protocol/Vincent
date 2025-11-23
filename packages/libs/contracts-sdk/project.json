@@ -69,6 +69,13 @@
           }
         ]
       }
+    },
+    "deploy:fee-contracts": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": ["pnpm ts-node scripts/fees/deployFeeContracts.ts"],
+        "cwd": "{projectRoot}"
+      }
     }
   }
 }

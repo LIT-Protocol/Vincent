@@ -326,6 +326,155 @@ uint256 appFees = feeViewsFacet.collectedAppFees(appId, tokenAddress);
 
 The contracts are deployed deterministically using Create2, ensuring the same contract address across all EVM chains when using the same deployer.
 
+### Automated Multi-Chain Deployment
+
+The fee contracts can be deployed to all Aave-supported chains using the automated deployment script at `scripts/fees/deployFeeContracts.ts`. This script handles:
+
+- **Idempotent Deployments**: Automatically skips chains that are already deployed
+- **Balance Checking**: Verifies deployer has sufficient funds before attempting deployment
+- **Aave Pool Configuration**: Automatically sets the Aave pool address from the `@bgd-labs/aave-address-book` package
+- **Gas Price Handling**: Automatically handles special gas requirements (e.g., Polygon's minimum priority fee)
+- **Real-time Progress**: Streams forge script output so you can monitor deployment progress
+- **Output Formatting**: Generates properly formatted output for copying into `constants.ts`
+
+#### Prerequisites
+
+1. **Environment Variables**: Set the following in your `.env` file:
+
+   ```bash
+   VINCENT_DEPLOYER_PRIVATE_KEY=<your-deployer-private-key>
+   VINCENT_PROD_DIAMOND_ADDRESS=<vincent-prod-diamond-address>
+   ETHERSCAN_API_KEY=<your-etherscan-api-key>
+
+   # RPC URLs for each chain (format: <NETWORK_NAME>_RPC_URL)
+   MAINNET_RPC_URL=<ethereum-mainnet-rpc-url>
+   POLYGON_RPC_URL=<polygon-mainnet-rpc-url>
+   AVALANCHE_RPC_URL=<avalanche-mainnet-rpc-url>
+   ARBITRUM_ONE_RPC_URL=<arbitrum-mainnet-rpc-url>
+   OPTIMISM_RPC_URL=<optimism-mainnet-rpc-url>
+   BASE_RPC_URL=<base-mainnet-rpc-url>
+   BNB_RPC_URL=<bnb-mainnet-rpc-url>
+   GNOSIS_RPC_URL=<gnosis-mainnet-rpc-url>
+   SCROLL_RPC_URL=<scroll-mainnet-rpc-url>
+   METIS_RPC_URL=<metis-mainnet-rpc-url>
+   LINEA_RPC_URL=<linea-mainnet-rpc-url>
+   ZKSYNC_RPC_URL=<zksync-mainnet-rpc-url>
+   SEPOLIA_RPC_URL=<sepolia-testnet-rpc-url>
+   BASE_SEPOLIA_RPC_URL=<base-sepolia-testnet-rpc-url>
+   ARBITRUM_ONE_SEPOLIA_RPC_URL=<arbitrum-sepolia-testnet-rpc-url>
+   OPTIMISM_SEPOLIA_RPC_URL=<optimism-sepolia-testnet-rpc-url>
+   SCROLL_SEPOLIA_RPC_URL=<scroll-sepolia-testnet-rpc-url>
+   ```
+
+2. **Funded Deployer Wallet**: Ensure the deployer wallet has sufficient native tokens on each chain for gas fees
+
+3. **Dependencies**: The script requires `@bgd-labs/aave-address-book` package (already included in `package.json`)
+
+#### Running the Deployment
+
+From the `packages/libs/contracts-sdk` directory, run:
+
+```bash
+nx run contracts-sdk:deploy:fee-contracts
+```
+
+Or using the shorter form:
+
+```bash
+nx deploy:fee-contracts contracts-sdk
+```
+
+#### What the Script Does
+
+1. **Checks Existing Deployments**: Reads `VINCENT_CONTRACT_ADDRESS_BOOK.fee` from `constants.ts` to determine which chains are already deployed
+
+2. **For Each Chain**:
+   - Validates RPC URL is configured
+   - Checks deployer balance (throws error if zero)
+   - If not already deployed:
+     - Runs `forge script` to deploy the fee diamond contract
+     - Streams output in real-time so you can monitor progress
+     - Parses the deployed contract address from the output
+   - If already deployed:
+     - Uses the existing address from `constants.ts`
+   - Configures Aave Pool:
+     - Checks if Aave pool is set on the deployed contract
+     - If set to `0x00...000`, fetches the correct Aave pool address from `@bgd-labs/aave-address-book`
+     - Calls `setAavePool()` with appropriate gas prices (handles Polygon's special requirements)
+
+3. **Outputs Results**: After all deployments, outputs formatted results that can be copied into `VINCENT_CONTRACT_ADDRESS_BOOK.fee` in `constants.ts`
+
+#### Supported Chains
+
+The script automatically deploys to all Aave-supported chains:
+
+**Mainnets:**
+
+- Ethereum (1)
+- Polygon (137)
+- Avalanche (43114)
+- Arbitrum (42161)
+- Optimism (10)
+- Base (8453)
+- BNB Chain (56)
+- Gnosis (100)
+- Scroll (534352)
+- Metis (1088)
+- Linea (59144)
+- ZkSync (324)
+
+**Testnets:**
+
+- Sepolia (11155111)
+- Base Sepolia (84532)
+- Arbitrum Sepolia (421614)
+- Optimism Sepolia (11155420)
+- Scroll Sepolia (534351)
+
+#### Gas Price Handling
+
+The script automatically handles special gas requirements:
+
+- **Polygon**: Sets minimum priority fee of 30 gwei (above Polygon's 25 gwei minimum)
+- **Other Chains**: Uses standard EIP-1559 fee data from the network
+
+#### Manual Deployment (Single Chain)
+
+If you need to deploy to a single chain manually, you can use the shell script:
+
+```bash
+bash scripts/fees/deploy_fee_contracts_to_one_chain.sh <network-name>
+```
+
+Example:
+
+```bash
+bash scripts/fees/deploy_fee_contracts_to_one_chain.sh base_sepolia
+```
+
+After manual deployment, you'll need to manually set the Aave pool address:
+
+```solidity
+feeAdminFacet.setAavePool(aavePoolAddress);
+```
+
+#### Updating Constants
+
+After deployment, copy the output from the script into `packages/libs/contracts-sdk/src/constants.ts`:
+
+```typescript
+export const VINCENT_CONTRACT_ADDRESS_BOOK = {
+  fee: {
+    baseSepolia: {
+      chainId: 84532,
+      address: '0x...',
+      salt: 'DatilCreate2Salt',
+    },
+    // ... other chains
+  },
+};
+```
+
 ## Error Handling
 
 The system includes comprehensive error handling:

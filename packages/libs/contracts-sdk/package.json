@@ -16,6 +16,7 @@
     "access": "public"
   },
   "devDependencies": {
+    "@bgd-labs/aave-address-book": "^4.19.3",
     "@dotenvx/dotenvx": "^1.44.2",
     "@lit-protocol/auth-helpers": "^7.2.3",
     "@lit-protocol/constants": "^7.2.3",
