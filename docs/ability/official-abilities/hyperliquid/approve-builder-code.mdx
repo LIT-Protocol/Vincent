@@ -1,0 +1,376 @@
+---
+title: Approve Builder Code
+---
+
+The `approveBuilderCode` action allows Vincent Apps to pre-authorize the Hyperliquid Ability to collect a `0.05%` builder fee on eligible trades executed by a Vincent User’s Agent Wallet.
+
+All collected fees currently flow into the Hyperliquid builder account `0x132Db5f531Ba38628F1640683354229daE04E8e6`, which will later be distributed between the App Manager and the Vincent team.
+
+<Note>
+  You usually **don’t need to call this manually**. When running `spotSell`, `perpLong`, or
+  `perpShort`, the Vincent Ability automatically checks for builder code approval and submits it if
+  missing. Use `approveBuilderCode` only if you want to **pre-approve** ahead of time and avoid an extra
+  approval during your first trade.
+</Note>
+
+## What is Hyperliquid Builder Code?
+
+Hyperliquid's [builder fee program](https://hyperliquid.gitbook.io/hyperliquid-docs/trading/builder-codes) lets applications receive a portion of trading fees on transactions they facilitate. By approving the Vincent builder code, a user’s Agent Wallet authorizes up to `0.05%` in fees to be routed to the builder account above.
+
+Hyperliquid Vincent Ability uses this mechanism to collect a **0.05% builder fee** on:
+
+- Perp long positions (`perpLong`)
+- Perp short positions (`perpShort`)
+- Spot sell orders (`spotSell`)
+
+These fees will later be split between the App Manager and the Vincent team.
+
+## Prerequisites
+
+Before executing the `approveBuilderCode` action, the following conditions must be met:
+
+- **HyperCore Account**: The Vincent User Agent Wallet must have an existing HyperCore account (created via an initial deposit).
+- **Builder Code Not Already Approved**: The precheck will fail if the builder code is already approved.
+
+<Info>
+  To learn more about executing Vincent Abilities, see the [Executing
+  Abilities](/ability/explaining-abilities) guide.
+</Info>
+
+## Executing the `precheck` Function
+
+The `precheck` function validates some prerequisites for approving the builder code, without actually performing the operation.
+
+For the `approveBuilderCode` action, the `precheck` function will validate the following:
+
+- The Vincent User Agent Wallet has a HyperCore account.
+- The builder code (`0x132Db5f531Ba38628F1640683354229daE04E8e6`) is **not** already approved.
+
+<Warning>
+  The `precheck` for `approveBuilderCode` **fails** if the builder code is already approved. This is
+  by design to prevent unnecessary approval transactions.
+</Warning>
+
+<Tabs>
+  <Tab title="Parameters">
+    The `precheck` function requires the following parameters:
+
+    ```typescript
+    import { HyperliquidAction } from '@lit-protocol/vincent-ability-hyperliquid';
+
+    {
+      /**
+       * The action to perform (must be HyperliquidAction.APPROVE_BUILDER_CODE)
+       */
+      action: HyperliquidAction.APPROVE_BUILDER_CODE;
+      /**
+       * Whether to use Hyperliquid testnet (optional, defaults to false)
+       */
+      useTestnet?: boolean;
+    }
+    ```
+
+  </Tab>
+
+  <Tab title="Implementation">
+    To execute `precheck`, you'll need to:
+
+    - Create an instance of the `VincentAbilityClient` using the `getVincentAbilityClient` function (imported from `@lit-protocol/vincent-app-sdk/abilityClient`)
+      - Pass in the Ability's `bundledVincentAbility` object (imported from `@lit-protocol/vincent-ability-hyperliquid`)
+      - Pass in the `ethersSigner` created using your Delegatee private key
+    - Use the `VincentAbilityClient` instance to call the `precheck` function
+
+    ```typescript
+    import { getVincentAbilityClient } from '@lit-protocol/vincent-app-sdk/abilityClient';
+    import { bundledVincentAbility, HyperliquidAction } from '@lit-protocol/vincent-ability-hyperliquid';
+    import { ethers } from 'ethers';
+
+    // Your delegatee signer (one of the delegatee signers for the Vincent App)
+    const delegateeSigner = new ethers.Wallet('YOUR_DELEGATEE_PRIVATE_KEY', provider);
+
+    // Create ability client
+    const hyperliquidAbilityClient = getVincentAbilityClient({
+      bundledVincentAbility,
+      ethersSigner: delegateeSigner,
+    });
+
+    // Run precheck
+    const precheckResult = await hyperliquidAbilityClient.precheck(
+      {
+        action: HyperliquidAction.APPROVE_BUILDER_CODE,
+        useTestnet: false, // Set to true for testnet
+      },
+      {
+        delegatorPkpEthAddress: '0x...', // The Vincent User's Vincent Wallet address
+      },
+    );
+
+    if (precheckResult.success) {
+      console.log('Builder code not yet approved, ready to execute');
+    } else {
+      // Handle different types of failures
+      if (precheckResult.runtimeError) {
+        console.error('Runtime error:', precheckResult.runtimeError);
+      }
+      if (precheckResult.schemaValidationError) {
+        console.error('Schema validation error:', precheckResult.schemaValidationError);
+      }
+      if (precheckResult.result) {
+        console.error('Approve builder code precheck failed:', precheckResult.result.reason);
+        // This will typically be "Builder code 0x132Db5f531Ba38628F1640683354229daE04E8e6 is already approved"
+      }
+    }
+    ```
+
+  </Tab>
+
+  <Tab title="Response">
+    ### Success
+
+    A successful `precheck` response will contain:
+
+    ```typescript
+    {
+      /**
+       * The action that was prechecked
+       */
+      action: 'approveBuilderCode';
+    }
+    ```
+
+    ### Failure
+
+    A failure `precheck` response will contain:
+
+    ```typescript
+    {
+      /**
+       * The action that was prechecked
+       */
+      action: 'approveBuilderCode';
+      /**
+       * The reason the precheck failed, typically because the builder code is already approved
+       */
+      reason: string;
+    }
+    ```
+
+  </Tab>
+</Tabs>
+
+## Executing the `execute` Function
+
+The `execute` function performs the actual builder code approval on HyperCore.
+
+For the `approveBuilderCode` action, the `execute` function will:
+
+- Approve the Vincent builder code (`0x132Db5f531Ba38628F1640683354229daE04E8e6`) with a maximum fee rate of 0.05%.
+- Return the approval result from Hyperliquid.
+
+<Note>
+  Unlike `precheck`, the `execute` function will **succeed even if the builder code is already
+  approved**.
+</Note>
+
+<Tabs>
+  <Tab title="Parameters">
+    The `execute` function requires the following parameters:
+
+    ```typescript
+    import { HyperliquidAction } from '@lit-protocol/vincent-ability-hyperliquid';
+
+    {
+      /**
+       * The action to perform (must be HyperliquidAction.APPROVE_BUILDER_CODE)
+       */
+      action: HyperliquidAction.APPROVE_BUILDER_CODE;
+      /**
+       * Whether to use Hyperliquid testnet (optional, defaults to false)
+       */
+      useTestnet?: boolean;
+    }
+    ```
+
+  </Tab>
+
+  <Tab title="Implementation">
+    The `execute` function can be executed using the same `VincentAbilityClient` instance as used for the `precheck` function:
+
+    ```typescript
+    const executeResult = await hyperliquidAbilityClient.execute(
+      {
+        action: HyperliquidAction.APPROVE_BUILDER_CODE,
+        useTestnet: false, // Set to true for testnet
+      },
+      {
+        delegatorPkpEthAddress: '0x...', // The Vincent User's Vincent Wallet address
+      },
+    );
+
+    if (executeResult.success) {
+      const { approveResult } = executeResult.result;
+      console.log('Builder code approval executed:', approveResult);
+    } else {
+      // Handle different types of failures
+      if (executeResult.runtimeError) {
+        console.error('Runtime error:', executeResult.runtimeError);
+      }
+      if (executeResult.schemaValidationError) {
+        console.error('Schema validation error:', executeResult.schemaValidationError);
+      }
+      if (executeResult.result) {
+        console.error('Approve builder code execution failed:', executeResult.result.reason);
+      }
+    }
+    ```
+
+  </Tab>
+
+  <Tab title="Response">
+    **Success Response**
+
+    A successful `execute` response will contain:
+
+    ```typescript
+    {
+      /**
+       * The action that was executed
+       */
+      action: 'approveBuilderCode';
+      /**
+       * The approval result from Hyperliquid request as defined by the Hyperliquid SDK: @nktkas/hyperliquid
+       * https://github.com/nktkas/hyperliquid/blob/2233ce942eb50ef8850073b387b9918d3a54a10b/src/api/exchange/_base/_schemas.ts#L49-L73
+       */
+      approveResult: SuccessResponse;
+    }
+    ```
+
+    **Failure Response**
+
+    A failure `execute` response will contain:
+
+    ```typescript
+    {
+      /**
+       * The action that was executed
+       */
+      action: 'approveBuilderCode';
+      /**
+       * The reason the execution failed
+       */
+      reason: string;
+    }
+    ```
+
+  </Tab>
+</Tabs>
+
+## Important Considerations
+
+<AccordionGroup>
+  <Accordion title="Automatic Approval" icon="robot">
+    When you execute `spotSell`, `perpLong`, or `perpShort` actions, the Hyperliquid Ability **automatically checks** if the builder code is approved. If not, it approves the builder code before executing the trade. You typically don't need to call `approveBuilderCode` explicitly.
+  </Accordion>
+
+<Accordion title="Builder Fee Rate" icon="percent">
+  The builder fee is hardcoded at **0.05%** (5 basis points) of the trade value. This fee is
+  collected by Vincent's builder address (`0x132Db5f531Ba38628F1640683354229daE04E8e6`) and will be
+  split between the App Manager and the Vincent team at a later date.
+</Accordion>
+
+<Accordion title="Precheck Behavior" icon="circle-exclamation">
+  The `precheck` function **fails** if the builder code is already approved. This is intentional
+  behavior to prevent redundant approval transactions. The `execute` function, however, succeeds
+  regardless of approval status.
+</Accordion>
+
+  <Accordion title="Actions That Utilize the Builders Fee" icon="check-to-slot">
+    Builder code approval is required for these actions:
+    - **spotSell**: Selling spot assets
+    - **perpLong**: Opening long perpetual positions
+    - **perpShort**: Opening short perpetual positions
+
+    The following actions do **not** require builder code approval:
+    - **spotBuy**: Buying spot assets
+    - **deposit**, **withdraw**, **transfer**, **send**, **cancelOrder**, etc.
+
+  </Accordion>
+
+  <Accordion title="Verifying Approval Status" icon="magnifying-glass">
+    You can verify if the builder code is approved by checking the precheck response. If `precheck` returns `success: false` with a reason like "Builder code ... is already approved", then the approval is already in place.
+  </Accordion>
+</AccordionGroup>
+
+## Reference Implementation
+
+For a complete working example showing the builder code approval workflow, see the [approve-builder-code.spec.ts](https://github.com/LIT-Protocol/Vincent/blob/main/packages/apps/ability-hyperliquid/test/e2e/approve-builder-code.spec.ts) end-to-end test in the `ability-hyperliquid` package.
+
+You can also see how builder code approval is automatically integrated into trading actions in these tests:
+
+- [perp/long.spec.ts](https://github.com/LIT-Protocol/Vincent/blob/main/packages/apps/ability-hyperliquid/test/e2e/perp/long.spec.ts)
+- [perp/short.spec.ts](https://github.com/LIT-Protocol/Vincent/blob/main/packages/apps/ability-hyperliquid/test/e2e/perp/short.spec.ts)
+- [spot/sell.spec.ts](https://github.com/LIT-Protocol/Vincent/blob/main/packages/apps/ability-hyperliquid/test/e2e/spot/sell.spec.ts)
+
+## Next Steps
+
+Explore the rest of the supported Hyperliquid actions:
+
+<CardGroup cols={3}>
+
+<Card title="Deposit" href="/ability/official-abilities/hyperliquid/deposit" icon="arrow-down" />
+
+<Card title="Withdraw" href="/ability/official-abilities/hyperliquid/withdraw" icon="arrow-up" />
+
+<Card
+  title="Send Spot Asset"
+  href="/ability/official-abilities/hyperliquid/send-spot-asset"
+  icon="coins"
+/>
+
+<Card
+  title="Send Perp USDC"
+  href="/ability/official-abilities/hyperliquid/send-perp-usdc"
+  icon="dollar-sign"
+/>
+
+<Card
+  title="Transfer to Spot"
+  href="/ability/official-abilities/hyperliquid/transfer-to-spot"
+  icon="arrow-right"
+/>
+
+<Card
+  title="Transfer to Perp"
+  href="/ability/official-abilities/hyperliquid/transfer-to-perp"
+  icon="arrow-left"
+/>
+
+<Card
+  title="Spot Buy"
+  href="/ability/official-abilities/hyperliquid/spot-buy"
+  icon="shopping-cart"
+/>
+
+<Card title="Spot Sell" href="/ability/official-abilities/hyperliquid/spot-sell" icon="tag" />
+
+<Card
+  title="Perp Long"
+  href="/ability/official-abilities/hyperliquid/perp-long"
+  icon="arrow-up-right"
+/>
+
+<Card
+  title="Perp Short"
+  href="/ability/official-abilities/hyperliquid/perp-short"
+  icon="arrow-down-right"
+/>
+
+<Card title="Cancel Order" href="/ability/official-abilities/hyperliquid/cancel-order" icon="ban" />
+
+<Card
+  title="Cancel All Orders"
+  href="/ability/official-abilities/hyperliquid/cancel-all-orders-for-symbol"
+  icon="trash"
+/>
+
+</CardGroup>
