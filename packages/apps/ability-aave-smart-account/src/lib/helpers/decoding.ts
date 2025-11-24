@@ -241,6 +241,14 @@ function decodeAaveOrERC20(
       // Only allow borrow, repay, and setUserUseReserveAsCollateral to go directly to Aave
       // supply and withdraw should go through fee contract
       if (df.functionName === 'supply' || df.functionName === 'withdraw') {
+        // Check if fee contract is available for this chain
+        if (!feeContractAddress) {
+          return {
+            kind: 'blocked',
+            reason:
+              'Aave not supported on this chain yet, please reach out to Lit Protocol to add support',
+          } as const;
+        }
         return {
           kind: 'blocked',
           reason: `${df.functionName} must go through fee contract, not directly to Aave`,
