@@ -2,21 +2,20 @@
 title: Approve Builder Code
 ---
 
-The `approveBuilderCode` action enables Vincent Apps to explicitly approve the Hyperliquid Ability to collect a `0.05%` fee on perp long/short and spot sell trades executed by the Vincent User's Agent Wallet.
+The `approveBuilderCode` action allows Vincent Apps to pre-authorize the Hyperliquid Ability to collect a `0.05%` builder fee on eligible trades executed by a Vincent User’s Agent Wallet.
 
-Currently, the collected fees are being pooled into the Hyperliquid builder account: `0x132Db5f531Ba38628F1640683354229daE04E8e6` with the intention of being split between the App Manager and the Vincent team at a later date.
+All collected fees currently flow into the Hyperliquid builder account `0x132Db5f531Ba38628F1640683354229daE04E8e6`, which will later be distributed between the App Manager and the Vincent team.
 
 <Note>
-  Builder code approval is **automatically handled** when executing the Ability to perform
-  `spotSell`, `perpLong`, or `perpShort` actions so in most cases, you don't need to manually call
-  this. However, if you'd like to pre-approve the builder code ahead of trading, using this action
-  lets you do so, avoiding an additional approval request when you place the first trade on behalf of
-  the Vincent User's Agent Wallet.
+  You usually **don’t need to call this manually**. When running `spotSell`, `perpLong`, or
+  `perpShort`, the Vincent Ability automatically checks for builder code approval and submits it if
+  missing. Use `approveBuilderCode` only if you want to **pre-approve** ahead of time and avoid an extra
+  approval during your first trade.
 </Note>
 
 ## What is Hyperliquid Builder Code?
 
-Hyperliquid's [builder fee program](https://hyperliquid.gitbook.io/hyperliquid-docs/trading/builder-codes) allows applications to collect fees from trades executed on their behalf. When a Vincent User's Agent Wallet approves the Vincent builder code, the Hyperliquid builder account: `0x132Db5f531Ba38628F1640683354229daE04E8e6` receives a percentage of trading fees (capped at the approved rate which is currently `0.05%`).
+Hyperliquid's [builder fee program](https://hyperliquid.gitbook.io/hyperliquid-docs/trading/builder-codes) lets applications receive a portion of trading fees on transactions they facilitate. By approving the Vincent builder code, a user’s Agent Wallet authorizes up to `0.05%` in fees to be routed to the builder account above.
 
 Hyperliquid Vincent Ability uses this mechanism to collect a **0.05% builder fee** on:
 
@@ -24,7 +23,7 @@ Hyperliquid Vincent Ability uses this mechanism to collect a **0.05% builder fee
 - Perp short positions (`perpShort`)
 - Spot sell orders (`spotSell`)
 
-which will be split between the App Manager and the Vincent team at a later date.
+These fees will later be split between the App Manager and the Vincent team.
 
 ## Prerequisites
 
