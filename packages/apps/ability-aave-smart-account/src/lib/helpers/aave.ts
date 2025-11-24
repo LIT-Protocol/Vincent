@@ -17,39 +17,17 @@ import {
   AaveV3OptimismSepolia,
   AaveV3ScrollSepolia,
 } from '@bgd-labs/aave-address-book';
-import { VINCENT_CONTRACT_ADDRESS_BOOK } from '@lit-protocol/vincent-contracts-sdk';
+import {
+  VINCENT_CONTRACT_ADDRESS_BOOK,
+  FEE_DIAMOND_ABI,
+} from '@lit-protocol/vincent-contracts-sdk';
 import { Abi, Address, getAddress } from 'viem';
 
 /**
  * Fee Contract ABI for Aave operations
  * These functions route through the fee contract instead of directly to Aave
  */
-export const FEE_CONTRACT_ABI: Abi = [
-  // depositToAave - maps to Aave supply
-  {
-    inputs: [
-      { internalType: 'uint40', name: 'appId', type: 'uint40' },
-      { internalType: 'address', name: 'poolAsset', type: 'address' },
-      { internalType: 'uint256', name: 'assetAmount', type: 'uint256' },
-    ],
-    name: 'depositToAave',
-    outputs: [],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  // withdrawFromAave - maps to Aave withdraw
-  {
-    inputs: [
-      { internalType: 'uint40', name: 'appId', type: 'uint40' },
-      { internalType: 'address', name: 'poolAsset', type: 'address' },
-      { internalType: 'uint256', name: 'amount', type: 'uint256' },
-    ],
-    name: 'withdrawFromAave',
-    outputs: [],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-];
+export const FEE_CONTRACT_ABI: Abi = FEE_DIAMOND_ABI as Abi;
 
 /**
  * AAVE v3 Pool Contract ABI
