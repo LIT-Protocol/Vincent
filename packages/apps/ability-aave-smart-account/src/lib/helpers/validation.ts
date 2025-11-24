@@ -1,6 +1,6 @@
 import { Address, createPublicClient, getAddress, http, zeroAddress } from 'viem';
 
-import { getAaveAddresses, getATokens } from './aave';
+import { getAaveAddresses, getATokens, getFeeContractAddress } from './aave';
 import { decodeTransaction, decodeUserOp } from './decoding';
 import { assertValidEntryPointAddress } from './entryPoint';
 import { Transaction } from './transaction';
@@ -117,10 +117,12 @@ export const validateUserOp = async (params: ProccessUserOpParams) => {
 
   const { POOL: aavePoolAddress } = getAaveAddresses(chainId);
   const aaveATokens = getATokens(chainId);
+  const feeContractAddress = getFeeContractAddress(chainId);
 
   // Decode userOp to ensure bundled txs are allowed
   const decodeResult = await decodeUserOp({
     aavePoolAddress,
+    feeContractAddress,
     userOp,
   });
   if (!decodeResult.ok) {
@@ -138,7 +140,9 @@ export const validateUserOp = async (params: ProccessUserOpParams) => {
     aavePoolAddress,
     senderAddress: getAddress(userOp.sender),
     allowedNativeRecipients: [entryPointAddress],
-    additionalAllowedAddresses: [entryPointAddress],
+    additionalAllowedAddresses: feeContractAddress
+      ? [entryPointAddress, feeContractAddress]
+      : [entryPointAddress],
     simulation,
   });
 
@@ -163,6 +167,7 @@ export async function validateTransaction({
 
   const { POOL: aavePoolAddress } = getAaveAddresses(chainId);
   const aaveATokens = getATokens(chainId);
+  const feeContractAddress = getFeeContractAddress(chainId);
 
   if (!transaction.from) {
     throw new Error('Transaction "from" address is required');
@@ -171,6 +176,7 @@ export async function validateTransaction({
 
   const decodeResult = decodeTransaction({
     aavePoolAddress,
+    feeContractAddress,
     transaction,
   });
   if (!decodeResult.ok) {
@@ -189,6 +195,7 @@ export async function validateTransaction({
     aavePoolAddress,
     senderAddress,
     allowedNativeRecipients: [transactionTarget],
+    additionalAllowedAddresses: feeContractAddress ? [feeContractAddress] : [],
     simulation,
   });
 

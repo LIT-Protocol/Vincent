@@ -47,7 +47,11 @@ export { getVincentWrappedKeysAccs } from './internal/wrapped-keys/getVincentWra
 
 export { getPkpTokenId } from './utils/pkpInfo';
 
-export { VINCENT_DIAMOND_CONTRACT_ADDRESS_PROD, COMBINED_ABI } from './constants';
+export {
+  VINCENT_DIAMOND_CONTRACT_ADDRESS_PROD,
+  COMBINED_ABI,
+  VINCENT_CONTRACT_ADDRESS_BOOK,
+} from './constants';
 
 export { signOwnerAttestation, getBaseSepoliaFeeDiamondAddress } from './fees/signOwnerAttestation';
 export type {

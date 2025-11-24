@@ -17,7 +17,39 @@ import {
   AaveV3OptimismSepolia,
   AaveV3ScrollSepolia,
 } from '@bgd-labs/aave-address-book';
-import { Abi, Address } from 'viem';
+import { VINCENT_CONTRACT_ADDRESS_BOOK } from '@lit-protocol/vincent-contracts-sdk';
+import { Abi, Address, getAddress } from 'viem';
+
+/**
+ * Fee Contract ABI for Aave operations
+ * These functions route through the fee contract instead of directly to Aave
+ */
+export const FEE_CONTRACT_ABI: Abi = [
+  // depositToAave - maps to Aave supply
+  {
+    inputs: [
+      { internalType: 'uint40', name: 'appId', type: 'uint40' },
+      { internalType: 'address', name: 'poolAsset', type: 'address' },
+      { internalType: 'uint256', name: 'assetAmount', type: 'uint256' },
+    ],
+    name: 'depositToAave',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  // withdrawFromAave - maps to Aave withdraw
+  {
+    inputs: [
+      { internalType: 'uint40', name: 'appId', type: 'uint40' },
+      { internalType: 'address', name: 'poolAsset', type: 'address' },
+      { internalType: 'uint256', name: 'amount', type: 'uint256' },
+    ],
+    name: 'withdrawFromAave',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+];
 
 /**
  * AAVE v3 Pool Contract ABI
@@ -227,4 +259,37 @@ export function getAvailableMarkets(chainId: number): Record<string, Address> {
       ...Object.keys(CHAIN_TO_AAVE_ADDRESS_BOOK),
     ].join(', ')}`,
   );
+}
+
+/**
+ * Chain ID to fee contract chain name mapping
+ */
+const CHAIN_ID_TO_FEE_CHAIN_NAME: Record<number, keyof typeof VINCENT_CONTRACT_ADDRESS_BOOK.fee> = {
+  1: 'ethereum',
+  137: 'polygon',
+  43114: 'avalanche',
+  42161: 'arbitrum',
+  10: 'optimism',
+  8453: 'base',
+  56: 'bnb',
+  84532: 'baseSepolia',
+} as const;
+
+/**
+ * Get fee contract address for a specific chain
+ * @param chainId The chain ID
+ * @returns The fee contract address, or null if not available for this chain
+ */
+export function getFeeContractAddress(chainId: number): Address | null {
+  const chainName = CHAIN_ID_TO_FEE_CHAIN_NAME[chainId];
+  if (!chainName) {
+    return null;
+  }
+
+  const feeConfig = VINCENT_CONTRACT_ADDRESS_BOOK.fee[chainName];
+  if (!feeConfig) {
+    return null;
+  }
+
+  return getAddress(feeConfig.address);
 }

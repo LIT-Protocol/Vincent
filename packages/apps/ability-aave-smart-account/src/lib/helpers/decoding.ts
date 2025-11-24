@@ -10,7 +10,7 @@ import {
   sliceHex,
 } from 'viem';
 
-import { AAVE_POOL_ABI } from './aave';
+import { AAVE_POOL_ABI, FEE_CONTRACT_ABI } from './aave';
 import { ERC20_ABI } from './erc20';
 import { Transaction } from './transaction';
 import { UserOp } from './userOperation';
@@ -185,9 +185,11 @@ function decodeUserOpCalldataToLowLevelCalls(callData: Hex): LowLevelCall[] {
 }
 
 interface DecodeAaveOrERC20Result {
-  kind: 'aave' | 'erc20_approval';
+  kind: 'aave' | 'erc20_approval' | 'fee_contract';
   fn: string;
   args: readonly unknown[] | undefined;
+  // For fee contract calls, map to the underlying Aave operation
+  mappedAaveOperation?: 'supply' | 'withdraw';
 }
 
 interface DecodeAaveOrERC20Failure {
@@ -195,30 +197,74 @@ interface DecodeAaveOrERC20Failure {
   reason: string;
 }
 
-// --------------- Decode Aave + ERC20 and verify policy -------------------
+// --------------- Decode Aave + ERC20 + Fee Contract and verify policy -------------------
 function decodeAaveOrERC20(
   call: LowLevelCall,
   aavePoolAddress: Address,
+  feeContractAddress: Address | null,
 ): DecodeAaveOrERC20Result | DecodeAaveOrERC20Failure {
-  // Try Aave Pool
+  // Try Fee Contract first (for supply/withdraw operations)
+  if (feeContractAddress && isAddressEqual(call.to, feeContractAddress)) {
+    try {
+      const df = decodeFunctionData({ abi: FEE_CONTRACT_ABI, data: call.data });
+      if (df.functionName === 'depositToAave') {
+        // depositToAave maps to Aave supply operation
+        return {
+          kind: 'fee_contract',
+          fn: df.functionName,
+          args: df.args,
+          mappedAaveOperation: 'supply',
+        } as const;
+      } else if (df.functionName === 'withdrawFromAave') {
+        // withdrawFromAave maps to Aave withdraw operation
+        return {
+          kind: 'fee_contract',
+          fn: df.functionName,
+          args: df.args,
+          mappedAaveOperation: 'withdraw',
+        } as const;
+      } else {
+        return {
+          kind: 'blocked',
+          reason: `Fee contract function not allowed: ${df.functionName}`,
+        } as const;
+      }
+    } catch {
+      return { kind: 'blocked', reason: 'Call to fee contract with unknown function' } as const;
+    }
+  }
+
+  // Try Aave Pool (for borrow/repay/setUserUseReserveAsCollateral operations)
   if (isAddressEqual(call.to, aavePoolAddress)) {
     try {
       const df = decodeFunctionData({ abi: AAVE_POOL_ABI, data: call.data });
+      // Only allow borrow, repay, and setUserUseReserveAsCollateral to go directly to Aave
+      // supply and withdraw should go through fee contract
+      if (df.functionName === 'supply' || df.functionName === 'withdraw') {
+        return {
+          kind: 'blocked',
+          reason: `${df.functionName} must go through fee contract, not directly to Aave`,
+        } as const;
+      }
       return { kind: 'aave', fn: df.functionName, args: df.args } as const;
     } catch {
       return { kind: 'blocked', reason: 'Call to POOL with unknown function' } as const;
     }
   }
 
-  // Try ERC20 approve-ish (spender must equal POOL)
+  // Try ERC20 approve-ish (spender must equal POOL or fee contract)
   try {
     const df = decodeFunctionData({ abi: ERC20_ABI, data: call.data });
     if (df.functionName === 'approve' || df.functionName === 'increaseAllowance') {
       const [spender] = df.args as [Address, bigint];
-      if (!isAddressEqual(spender, aavePoolAddress)) {
+      const allowedSpenders = [aavePoolAddress];
+      if (feeContractAddress) {
+        allowedSpenders.push(feeContractAddress);
+      }
+      if (!allowedSpenders.some((addr) => isAddressEqual(addr, spender))) {
         return {
           kind: 'blocked',
-          reason: `ERC20 approval to non-POOL spender ${spender}`,
+          reason: `ERC20 approval to non-allowed spender ${spender}`,
         } as const;
       }
       return { kind: 'erc20_approval', fn: df.functionName, args: df.args } as const;
@@ -238,6 +284,7 @@ export type ValidationResult = {
 
 interface DecodeUserOpParams {
   aavePoolAddress: Address;
+  feeContractAddress: Address | null;
   userOp: UserOp;
 }
 
@@ -248,31 +295,46 @@ export interface DecodeUserOpResult {
 
 const evaluateCallAgainstPolicy = ({
   aavePoolAddress,
+  feeContractAddress,
   call,
   sender,
 }: {
   aavePoolAddress: Address;
+  feeContractAddress: Address | null;
   call: LowLevelCall;
   sender: Address;
 }) => {
   const reasons: string[] = [];
-  const res = decodeAaveOrERC20(call, aavePoolAddress);
+  const res = decodeAaveOrERC20(call, aavePoolAddress, feeContractAddress);
   if (res.kind === 'blocked') {
     reasons.push(res.reason);
     return reasons;
   }
 
-  if (res.kind === 'aave') {
+  if (res.kind === 'fee_contract') {
+    const fn = res.fn;
+    const mappedOp = res.mappedAaveOperation;
+
+    if (fn === 'depositToAave' && mappedOp === 'supply') {
+      // depositToAave(uint40 appId, address poolAsset, uint256 assetAmount)
+      // The fee contract will handle the supply to the sender, so we just need to verify
+      // that the caller is the sender (which is implicit in msg.sender)
+      // No additional validation needed as the fee contract handles the routing
+    } else if (fn === 'withdrawFromAave' && mappedOp === 'withdraw') {
+      // withdrawFromAave(uint40 appId, address poolAsset, uint256 amount)
+      // The fee contract will handle the withdrawal to the sender, so we just need to verify
+      // that the caller is the sender (which is implicit in msg.sender)
+      // No additional validation needed as the fee contract handles the routing
+    } else {
+      reasons.push(`Fee contract function not properly mapped: ${fn}`);
+    }
+  } else if (res.kind === 'aave') {
     const fn = res.fn;
     const args = res.args as any[];
 
-    if (fn === 'supply') {
-      const onBehalfOf = getAddress(args[2]);
-      if (!isAddressEqual(onBehalfOf, sender)) reasons.push('supply.onBehalfOf != sender');
-    } else if (fn === 'withdraw') {
-      const to = getAddress(args[2]);
-      if (!isAddressEqual(to, sender)) reasons.push('withdraw.to != sender');
-    } else if (fn === 'borrow') {
+    // Only borrow, repay, and setUserUseReserveAsCollateral should reach here
+    // (supply/withdraw are blocked from direct Aave calls)
+    if (fn === 'borrow') {
       const onBehalfOf = getAddress(args[4]);
       if (!isAddressEqual(onBehalfOf, sender)) reasons.push('borrow.onBehalfOf != sender');
     } else if (fn === 'repay') {
@@ -296,6 +358,7 @@ const evaluateCallAgainstPolicy = ({
 
 export const decodeUserOp = async ({
   aavePoolAddress,
+  feeContractAddress,
   userOp,
 }: DecodeUserOpParams): Promise<DecodeUserOpResult> => {
   const reasons: string[] = [];
@@ -314,6 +377,7 @@ export const decodeUserOp = async ({
     reasons.push(
       ...evaluateCallAgainstPolicy({
         aavePoolAddress,
+        feeContractAddress,
         call,
         sender,
       }),
@@ -325,11 +389,13 @@ export const decodeUserOp = async ({
 
 interface DecodeTransactionParams {
   aavePoolAddress: Address;
+  feeContractAddress: Address | null;
   transaction: Transaction;
 }
 
 export const decodeTransaction = ({
   aavePoolAddress,
+  feeContractAddress,
   transaction,
 }: DecodeTransactionParams): DecodeUserOpResult => {
   const sender = getAddress(transaction.from);
@@ -341,6 +407,7 @@ export const decodeTransaction = ({
 
   const reasons = evaluateCallAgainstPolicy({
     aavePoolAddress,
+    feeContractAddress,
     call,
     sender,
   });
