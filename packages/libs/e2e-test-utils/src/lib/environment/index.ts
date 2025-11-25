@@ -1,4 +1,3 @@
-export { publicClient } from './base';
 export {
   kernelVersion,
   entryPoint,

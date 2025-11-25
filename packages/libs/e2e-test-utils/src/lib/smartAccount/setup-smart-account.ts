@@ -60,7 +60,7 @@ export async function setupSmartAccount({
   });
 
   // Permission validator (empty validator for PKP address)
-  const permissionValidator = await getPermissionEmptyValidator(permittedAddress);
+  const permissionValidator = await getPermissionEmptyValidator(publicClient, permittedAddress);
 
   console.log('[setupSmartAccount] Creating Kernel account...');
 
