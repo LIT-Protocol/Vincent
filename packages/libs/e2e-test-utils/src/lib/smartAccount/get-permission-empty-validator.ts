@@ -1,8 +1,9 @@
+import type { Address, PublicClient } from 'viem';
+
 import { toPermissionValidator } from '@zerodev/permissions';
 import { toSudoPolicy } from '@zerodev/permissions/policies';
 import { toECDSASigner } from '@zerodev/permissions/signers';
 import { addressToEmptyAccount } from '@zerodev/sdk';
-import { type Address, type PublicClient } from 'viem';
 
 import { entryPoint, kernelVersion } from '../environment/zerodev';
 

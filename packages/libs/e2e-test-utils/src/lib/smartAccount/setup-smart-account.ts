@@ -1,18 +1,14 @@
+import type { Address, Chain, PrivateKeyAccount } from 'viem';
+
 import { signerToEcdsaValidator } from '@zerodev/ecdsa-validator';
 import { toInitConfig, serializePermissionAccount } from '@zerodev/permissions';
 import { createKernelAccount, createKernelAccountClient } from '@zerodev/sdk';
-import {
-  type Address,
-  type Chain,
-  type PrivateKeyAccount,
-  createPublicClient,
-  http,
-  zeroAddress,
-} from 'viem';
+import { createPublicClient, http, zeroAddress } from 'viem';
+
+import type { SmartAccountInfo } from './types';
 
 import { kernelVersion, entryPoint, createZeroDevPaymaster } from '../environment/zerodev';
 import { getPermissionEmptyValidator } from './get-permission-empty-validator';
-import type { SmartAccountInfo } from './types';
 
 export interface SetupSmartAccountParams {
   ownerAccount: PrivateKeyAccount;

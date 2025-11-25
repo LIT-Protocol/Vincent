@@ -1,6 +1,8 @@
+import type { Chain } from 'viem';
+
 import { createZeroDevPaymasterClient } from '@zerodev/sdk';
 import { KERNEL_V3_3, getEntryPoint } from '@zerodev/sdk/constants';
-import { http, type Chain } from 'viem';
+import { http } from 'viem';
 
 const ZERODEV_RPC_URL = process.env.ZERODEV_RPC_URL as string | undefined;
 if (!ZERODEV_RPC_URL) {

@@ -13,7 +13,6 @@
     "@zerodev/permissions": "^5.6.2",
     "@zerodev/sdk": "^5.5.3",
     "ethers": "^5.7.2",
-    "permissionless": "^0.2.11",
     "tslib": "^2.8.1",
     "viem": "^2.38.3",
     "zod": "^3.25.64"
