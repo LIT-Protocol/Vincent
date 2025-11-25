@@ -596,6 +596,55 @@ importers:
         specifier: ^4.19.4
         version: 4.20.5
 
+  packages/apps/ability-relay-link-smart-account:
+    dependencies:
+      '@lit-protocol/vincent-ability-sdk':
+        specifier: workspace:*
+        version: link:../../libs/ability-sdk
+      '@lit-protocol/vincent-e2e-test-utils':
+        specifier: workspace:*
+        version: link:../../libs/e2e-test-utils
+      '@zerodev/ecdsa-validator':
+        specifier: ^5.4.9
+        version: 5.4.9(@zerodev/sdk@5.5.6(viem@2.38.4(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)))(viem@2.38.4(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64))
+      '@zerodev/permissions':
+        specifier: ^5.6.2
+        version: 5.6.3(@zerodev/sdk@5.5.6(viem@2.38.4(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)))(@zerodev/webauthn-key@5.4.4(viem@2.38.4(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)))(viem@2.38.4(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64))
+      '@zerodev/sdk':
+        specifier: ^5.5.3
+        version: 5.5.6(viem@2.38.4(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64))
+      dotenv:
+        specifier: ^17.2.3
+        version: 17.2.3
+      ethers:
+        specifier: ^6.15.0
+        version: 6.15.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+      permissionless:
+        specifier: ^0.2.11
+        version: 0.2.57(viem@2.38.4(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64))
+      tslib:
+        specifier: 2.8.1
+        version: 2.8.1
+      viem:
+        specifier: ^2.38.3
+        version: 2.38.4(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)
+      zod:
+        specifier: ^3.25.64
+        version: 3.25.64
+    devDependencies:
+      '@lit-protocol/esbuild-plugin-polyfill-node':
+        specifier: ^0.3.0
+        version: 0.3.0(esbuild@0.19.12)
+      '@lit-protocol/vincent-app-sdk':
+        specifier: workspace:^
+        version: link:../../libs/app-sdk
+      esbuild:
+        specifier: ^0.19.12
+        version: 0.19.12
+      ipfs-only-hash:
+        specifier: ^4.0.0
+        version: 4.0.0
+
   packages/apps/ability-sol-transaction-signer:
     dependencies:
       '@lit-protocol/vincent-ability-sdk':
@@ -1407,12 +1456,27 @@ importers:
       '@t3-oss/env-core':
         specifier: ^0.13.8
         version: 0.13.8(arktype@2.1.23)(typescript@5.8.3)(valibot@1.1.0(typescript@5.8.3))(zod@3.25.64)
+      '@zerodev/ecdsa-validator':
+        specifier: ^5.4.9
+        version: 5.4.9(@zerodev/sdk@5.5.6(viem@2.38.4(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)))(viem@2.38.4(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64))
+      '@zerodev/permissions':
+        specifier: ^5.6.2
+        version: 5.6.3(@zerodev/sdk@5.5.6(viem@2.38.4(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)))(@zerodev/webauthn-key@5.4.4(viem@2.38.4(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)))(viem@2.38.4(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64))
+      '@zerodev/sdk':
+        specifier: ^5.5.3
+        version: 5.5.6(viem@2.38.4(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64))
       ethers:
         specifier: ^5.7.2
         version: 5.8.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+      permissionless:
+        specifier: ^0.2.11
+        version: 0.2.57(viem@2.38.4(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64))
       tslib:
         specifier: ^2.8.1
         version: 2.8.1
+      viem:
+        specifier: ^2.38.3
+        version: 2.38.4(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)
       zod:
         specifier: ^3.25.64
         version: 3.25.64
@@ -4876,6 +4940,24 @@ packages:
   '@simplewebauthn/browser@13.1.2':
     resolution: {integrity: sha512-aZnW0KawAM83fSBUgglP5WofbrLbLyr7CoPqYr66Eppm7zO86YX6rrCjRB3hQKPrL7ATvY4FVXlykZ6w6FwYYw==}
 
+  '@simplewebauthn/browser@8.3.7':
+    resolution: {integrity: sha512-ZtRf+pUEgOCvjrYsbMsJfiHOdKcrSZt2zrAnIIpfmA06r0FxBovFYq0rJ171soZbe13KmWzAoLKjSxVW7KxCdQ==}
+
+  '@simplewebauthn/browser@9.0.1':
+    resolution: {integrity: sha512-wD2WpbkaEP4170s13/HUxPcAV5y4ZXaKo1TfNklS5zDefPinIgXOpgz1kpEvobAsaLPa2KeH7AKKX/od1mrBJw==}
+
+  '@simplewebauthn/types@12.0.0':
+    resolution: {integrity: sha512-q6y8MkoV8V8jB4zzp18Uyj2I7oFp2/ONL8c3j8uT06AOWu3cIChc1au71QYHrP2b+xDapkGTiv+9lX7xkTlAsA==}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
+
+  '@simplewebauthn/types@9.0.1':
+    resolution: {integrity: sha512-tGSRP1QvsAvsJmnOlRQyw/mvK9gnPtjEc5fg2+m8n+QUa+D7rvrKkOYyfpy42GTs90X3RDOnqJgfHt+qO67/+w==}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
+
+  '@simplewebauthn/typescript-types@8.3.4':
+    resolution: {integrity: sha512-38xtca0OqfRVNloKBrFB5LEM6PN5vzFbJG6rAutPVrtGHFYxPdiV3btYWq0eAZAZmP+dqFPYJxJWeJrGfmYHng==}
+    deprecated: This package has been renamed to @simplewebauthn/types. Please install @simplewebauthn/types instead to ensure you receive future updates.
+
   '@sinclair/typebox@0.25.24':
     resolution: {integrity: sha512-XJfwUVUKDHF5ugKwIcxEgc9k8b7HbznCp6eUfWgu710hMPNIO4aw4/zB5RogDQz8nd6gyCDpU9O/m6qYEWY6yQ==}
 
@@ -5963,6 +6045,29 @@ packages:
   '@yarnpkg/parsers@3.0.2':
     resolution: {integrity: sha512-/HcYgtUSiJiot/XWGLOlGxPYUG65+/31V8oqk17vZLW1xlCoR4PampyePljOxY2n8/3jz9+tIFzICsyGujJZoA==}
     engines: {node: '>=18.12.0'}
+
+  '@zerodev/ecdsa-validator@5.4.9':
+    resolution: {integrity: sha512-9NVE8/sQIKRo42UOoYKkNdmmHJY8VlT4t+2MHD2ipLg21cpbY9fS17TGZh61+Bl3qlqc8pP23I6f89z9im7kuA==}
+    peerDependencies:
+      '@zerodev/sdk': ^5.4.13
+      viem: ^2.28.0
+
+  '@zerodev/permissions@5.6.3':
+    resolution: {integrity: sha512-MwW3Eo3rB5ViOKdY6NUoyvmQTV/bCbOZbmQMTYQqAT7B8rdI9jo44nNONMOHIhDkfF4VFhQ9+M50cCZLA/6zcg==}
+    peerDependencies:
+      '@zerodev/sdk': ^5.4.0
+      '@zerodev/webauthn-key': ^5.4.0
+      viem: ^2.28.0
+
+  '@zerodev/sdk@5.5.6':
+    resolution: {integrity: sha512-4syvV0qXQORBO0l0RRUwXDvBK8kzXdvHJpH1L6UGagXqPajyMM4D6r/ybZjZMI6hiurEkgblz0S6IfGznBTiWw==}
+    peerDependencies:
+      viem: ^2.28.0
+
+  '@zerodev/webauthn-key@5.4.4':
+    resolution: {integrity: sha512-LgBwViiGdOD5K6mP+ko/mPD82Be3yQBb+fSQwsz6YB7cwbcRXmYPWgL2ozvhHmEuR+fkpHscazPDGoCm1pii4Q==}
+    peerDependencies:
+      viem: ^2.28.0
 
   '@zkochan/js-yaml@0.0.7':
     resolution: {integrity: sha512-nrUSn7hzt7J6JWgWGz78ZYI8wj+gdIJdk0Ynjpp8l+trkn58Uqsf6RYrYkEK+3X18EX+TNdtJI0WxAtc+L84SQ==}
@@ -7464,6 +7569,10 @@ packages:
 
   dotenv@17.2.2:
     resolution: {integrity: sha512-Sf2LSQP+bOlhKWWyhFsn0UsfdK/kCWRv1iuA2gXAwt3dyNabr6QSj00I2V10pidqz69soatm9ZwZvpQMTIOd5Q==}
+    engines: {node: '>=12'}
+
+  dotenv@17.2.3:
+    resolution: {integrity: sha512-JVUnt+DUIzu87TABbhPmNfVdBDt18BLOWjMUFJMSi/Qqg7NTYtabbvSNJGOJ7afbRuv9D/lngizHtP7QyLQ+9w==}
     engines: {node: '>=12'}
 
   dset@3.1.4:
@@ -10898,6 +11007,15 @@ packages:
 
   pend@1.2.0:
     resolution: {integrity: sha512-F3asv42UuXchdzt+xXqfW1OGlVBe+mxa2mqI0pg5yAHZPvFmY3Y6drSf/GQ1A86WgWEN9Kzh/WrgKa6iGcHXLg==}
+
+  permissionless@0.2.57:
+    resolution: {integrity: sha512-QrzAoQGYPV/NJ2x5Sj18h7qed6f+kCyQAojrncN091UPiGqHjFNjgdsgreiv8pxlQgF4UcpuJUvsHLpOEBd6cQ==}
+    peerDependencies:
+      ox: ^0.8.0
+      viem: ^2.28.1
+    peerDependenciesMeta:
+      ox:
+        optional: true
 
   picocolors@1.0.0:
     resolution: {integrity: sha512-1fygroTLlHu66zi26VoTDv8yRgm0Fccecssto+MhsZ0D/DGW2sm8E8AjW7NU5VVTRt5GxbeZ5qBuJr+HyLYkjQ==}
@@ -19605,6 +19723,20 @@ snapshots:
 
   '@simplewebauthn/browser@13.1.2': {}
 
+  '@simplewebauthn/browser@8.3.7':
+    dependencies:
+      '@simplewebauthn/typescript-types': 8.3.4
+
+  '@simplewebauthn/browser@9.0.1':
+    dependencies:
+      '@simplewebauthn/types': 9.0.1
+
+  '@simplewebauthn/types@12.0.0': {}
+
+  '@simplewebauthn/types@9.0.1': {}
+
+  '@simplewebauthn/typescript-types@8.3.4': {}
+
   '@sinclair/typebox@0.25.24': {}
 
   '@sinclair/typebox@0.27.8': {}
@@ -21947,6 +22079,31 @@ snapshots:
       js-yaml: 3.14.1
       tslib: 2.8.1
 
+  '@zerodev/ecdsa-validator@5.4.9(@zerodev/sdk@5.5.6(viem@2.38.4(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)))(viem@2.38.4(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64))':
+    dependencies:
+      '@zerodev/sdk': 5.5.6(viem@2.38.4(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64))
+      viem: 2.38.4(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)
+
+  '@zerodev/permissions@5.6.3(@zerodev/sdk@5.5.6(viem@2.38.4(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)))(@zerodev/webauthn-key@5.4.4(viem@2.38.4(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)))(viem@2.38.4(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64))':
+    dependencies:
+      '@simplewebauthn/browser': 9.0.1
+      '@zerodev/sdk': 5.5.6(viem@2.38.4(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64))
+      '@zerodev/webauthn-key': 5.4.4(viem@2.38.4(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64))
+      merkletreejs: 0.3.11
+      viem: 2.38.4(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)
+
+  '@zerodev/sdk@5.5.6(viem@2.38.4(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64))':
+    dependencies:
+      semver: 7.7.2
+      viem: 2.38.4(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)
+
+  '@zerodev/webauthn-key@5.4.4(viem@2.38.4(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64))':
+    dependencies:
+      '@noble/curves': 1.9.7
+      '@simplewebauthn/browser': 8.3.7
+      '@simplewebauthn/types': 12.0.0
+      viem: 2.38.4(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)
+
   '@zkochan/js-yaml@0.0.7':
     dependencies:
       argparse: 2.0.1
@@ -23556,6 +23713,8 @@ snapshots:
   dotenv@16.6.1: {}
 
   dotenv@17.2.2: {}
+
+  dotenv@17.2.3: {}
 
   dset@3.1.4: {}
 
@@ -28011,6 +28170,10 @@ snapshots:
       through: 2.3.8
 
   pend@1.2.0: {}
+
+  permissionless@0.2.57(viem@2.38.4(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)):
+    dependencies:
+      viem: 2.38.4(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)
 
   picocolors@1.0.0: {}
 

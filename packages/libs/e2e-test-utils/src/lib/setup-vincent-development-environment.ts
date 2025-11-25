@@ -144,10 +144,11 @@ export const setupVincentDevelopmentEnvironment = async ({
     const chainId = parseInt(SMART_ACCOUNT_CHAIN_ID);
 
     // Extract chain from viem's exported chains using chainId
-    // Type assertion needed: extractChain expects literal union type but we have runtime value
+    const chains = Object.values(viemChains);
+    // Type assertion needed: extractChain expects literal union type but we have runtime value from env
     const chain = extractChain({
-      chains: Object.values(viemChains),
-      id: chainId as any,
+      chains,
+      id: chainId as (typeof chains)[number]['id'],
     });
 
     // Convert ethers wallet to viem account
