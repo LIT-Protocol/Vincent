@@ -1,4 +1,13 @@
-import { hashMessage, Hex, serializeSignature, SignableMessage } from 'viem';
+import {
+  hashMessage,
+  hashTypedData,
+  Hex,
+  keccak256,
+  serializeSignature,
+  serializeTransaction,
+  SignableMessage,
+  TransactionSerializable,
+} from 'viem';
 import { toAccount } from 'viem/accounts';
 
 interface LitActionSignature {
@@ -30,12 +39,52 @@ export function toLitActionAccount(pkpPublicKey: Hex) {
       });
     },
 
-    async signTransaction() {
-      throw new Error('Not implemented');
+    async signTransaction(transaction, { serializer } = {}) {
+      const signableTransaction = {
+        ...transaction,
+        chainId: transaction.chainId ? Number(transaction.chainId) : undefined,
+      } as TransactionSerializable;
+      const serializerToUse = serializer || serializeTransaction;
+      const serializedTx = (await serializerToUse(signableTransaction)) as Hex;
+
+      const txHash = keccak256(serializedTx);
+      const toSign = ethers.utils.arrayify(txHash);
+
+      const signature = await Lit.Actions.signAndCombineEcdsa({
+        toSign,
+        publicKey: pkpPublicKeyForLit,
+        sigName: 'signTransaction',
+      });
+      const structuredSignature = JSON.parse(signature) as LitActionSignature;
+
+      return serializerToUse(signableTransaction, {
+        r: `0x${structuredSignature.r.substring(2)}` as Hex,
+        s: `0x${structuredSignature.s}` as Hex,
+        v: BigInt(structuredSignature.v + 27),
+      });
     },
 
-    async signTypedData() {
-      throw new Error('Not implemented');
+    async signTypedData(typedData) {
+      const { domain, types, primaryType, message } = typedData;
+      const hashedTypedData = hashTypedData({
+        domain,
+        types,
+        primaryType,
+        message,
+      } as any);
+
+      const signature = await Lit.Actions.signAndCombineEcdsa({
+        toSign: ethers.utils.arrayify(hashedTypedData),
+        publicKey: pkpPublicKeyForLit,
+        sigName: 'signTypedData',
+      });
+      const structuredSignature = JSON.parse(signature) as LitActionSignature;
+
+      return serializeSignature({
+        r: `0x${structuredSignature.r.substring(2)}` as Hex,
+        s: `0x${structuredSignature.s}` as Hex,
+        yParity: structuredSignature.v,
+      });
     },
   });
 }

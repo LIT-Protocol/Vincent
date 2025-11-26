@@ -6,9 +6,11 @@ export {
   getAvailableMarkets,
   getATokens,
 } from './lib/helpers/aave';
-export { type UserOp, userOpSchema, toVincentUserOp } from './lib/helpers/userOperation';
+export { type AbilityParams, type Eip712Params } from './lib/schemas';
+export { safeEip712Params } from './lib/helpers/smartAccounts/safe';
 export {
   type Transaction,
   transactionSchema,
   toVincentTransaction,
 } from './lib/helpers/transaction';
+export { type UserOp, userOpSchema, toVincentUserOp } from './lib/helpers/userOperation';
