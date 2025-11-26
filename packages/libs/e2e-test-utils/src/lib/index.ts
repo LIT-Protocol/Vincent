@@ -22,3 +22,5 @@ export {
   setupVincentDevelopmentEnvironment,
   type VincentDevEnvironment,
 } from './setup-vincent-development-environment';
+
+export { setupSmartAccount, type SmartAccountInfo } from './smartAccount';
