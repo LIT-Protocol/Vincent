@@ -1,0 +1,36 @@
+{
+  "name": "@lit-protocol/vincent-ability-relay-link-smart-account",
+  "version": "0.0.1",
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@lit-protocol/vincent-ability-sdk": "workspace:*",
+    "@lit-protocol/vincent-e2e-test-utils": "workspace:*",
+    "@zerodev/ecdsa-validator": "^5.4.9",
+    "@zerodev/permissions": "^5.6.2",
+    "@zerodev/sdk": "^5.5.3",
+    "dotenv": "^17.2.3",
+    "ethers": "^6.15.0",
+    "permissionless": "^0.2.11",
+    "tslib": "2.8.1",
+    "viem": "^2.38.3",
+    "zod": "^3.25.64"
+  },
+  "peerDependencies": {
+    "@lit-protocol/vincent-app-sdk": "workspace:^"
+  },
+  "devDependencies": {
+    "@lit-protocol/esbuild-plugin-polyfill-node": "^0.3.0",
+    "@lit-protocol/vincent-app-sdk": "workspace:^",
+    "esbuild": "^0.19.12",
+    "ipfs-only-hash": "^4.0.0"
+  },
+  "main": "./dist/src/index.js",
+  "module": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "files": [
+    "dist/**",
+    "*.md"
+  ]
+}

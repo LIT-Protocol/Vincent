@@ -55,6 +55,9 @@
       "path": "./packages/apps/ability-aave"
     },
     {
+      "path": "./packages/apps/ability-relay-link"
+    },
+    {
       "path": "./packages/apps/ability-debridge"
     },
     {
