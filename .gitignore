@@ -62,3 +62,5 @@ screenshots
 test-output
 
 .github/instructions/nx.instructions.md
+packages/apps/ability-relay-link-smart-account/tsconfig.lib.json
+packages/apps/ability-relay-link-smart-account/tsconfig.spec.json
