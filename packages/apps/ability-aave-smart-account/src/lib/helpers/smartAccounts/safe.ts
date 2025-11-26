@@ -1,15 +1,16 @@
 import {
   type Abi,
+  type Address,
   type Hex,
   decodeFunctionData,
   getAddress,
   hexToBigInt,
-  type Address,
-  slice,
   hexToNumber,
+  slice,
 } from 'viem';
 
-import { DecodedFunctionCall, LowLevelCall } from '../lowLevelCall';
+import { type DecodedFunctionCall, type LowLevelCall } from '../lowLevelCall';
+import { type Eip712Params } from '../../schemas';
 
 interface InternalTransaction {
   operation: number; // uint8 (0 = call, 1 = delegatecall)
@@ -176,3 +177,43 @@ export function tryDecodeSafeCalldataToLowLevelCalls(callData: Hex): LowLevelCal
 
   return null;
 }
+
+export const safeEip712Params: Eip712Params = {
+  domain: {
+    chainId: '$chainId',
+    verifyingContract: '$safe4337ModuleAddress',
+  },
+  types: {
+    SafeOp: [
+      { type: 'address', name: 'safe' },
+      { type: 'uint256', name: 'nonce' },
+      { type: 'bytes', name: 'initCode' },
+      { type: 'bytes', name: 'callData' },
+      { type: 'uint128', name: 'verificationGasLimit' },
+      { type: 'uint128', name: 'callGasLimit' },
+      { type: 'uint256', name: 'preVerificationGas' },
+      { type: 'uint128', name: 'maxPriorityFeePerGas' },
+      { type: 'uint128', name: 'maxFeePerGas' },
+      { type: 'bytes', name: 'paymasterAndData' },
+      { type: 'uint48', name: 'validAfter' },
+      { type: 'uint48', name: 'validUntil' },
+      { type: 'address', name: 'entryPoint' },
+    ],
+  },
+  primaryType: 'SafeOp',
+  message: {
+    safe: '$userOp.sender',
+    nonce: '$userOp.nonce',
+    initCode: '$userOp.initCode',
+    callData: '$userOp.callData',
+    callGasLimit: '$userOp.callGasLimit',
+    verificationGasLimit: '$userOp.verificationGasLimit',
+    preVerificationGas: '$userOp.preVerificationGas',
+    maxFeePerGas: '$userOp.maxFeePerGas',
+    maxPriorityFeePerGas: '$userOp.maxPriorityFeePerGas',
+    paymasterAndData: '$userOp.paymasterAndData',
+    validAfter: '$validAfter',
+    validUntil: '$validUntil',
+    entryPoint: '$entryPointAddress',
+  },
+};
