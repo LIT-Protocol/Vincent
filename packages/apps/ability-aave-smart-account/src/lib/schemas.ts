@@ -64,18 +64,9 @@ export const userOpAbilityParamsSchema = z.object({
       'EntryPoint to use for the simulation. Currently only v0.7 is supported. Defaults to standard v0.7 entryPoint address.',
     ),
   alchemyRpcUrl: alchemyRpcUrlSchema,
-  validAfter: z
-    .number()
-    .optional()
-    .default(0)
-    .describe('Valid after timestamp (for Safe smart accounts)'),
-  validUntil: z
-    .number()
-    .optional()
-    .default(0)
-    .describe('Valid until timestamp (for Safe smart accounts)'),
+  validAfter: z.number().default(0).describe('Valid after timestamp (for Safe smart accounts)'),
+  validUntil: z.number().default(0).describe('Valid until timestamp (for Safe smart accounts)'),
   safe4337ModuleAddress: addressSchema
-    .optional()
     .default('0x75cf11467937ce3F2f357CE24ffc3DBF8fD5c226')
     .describe('Safe 4337 Module address (for Safe smart accounts)'),
   eip712Params: eip712ParamsSchema
