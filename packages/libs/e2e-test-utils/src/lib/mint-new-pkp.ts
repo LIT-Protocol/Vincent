@@ -4,7 +4,11 @@ import type { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
 
 import { getLitContractsClient } from './litContractsClient/get-lit-contract-client';
 
-export type PkpInfo = { ethAddress: string; tokenId: string };
+export type PkpInfo = {
+  ethAddress: string;
+  tokenId: string;
+  publicKey: string;
+};
 
 /**
  * Helper function to mint a new PKP and return its information
@@ -52,6 +56,7 @@ export const mintNewPkp = async ({
 
   const tokenId = ethers.utils.keccak256('0x' + pkpMintedEvent.data.slice(130, 260));
   const ethAddress = await litContractClient.pkpNftContract.read.getEthAddress(tokenId);
+  const publicKey = await litContractClient.pkpNftContract.read.getPubkey(tokenId);
 
   console.log(
     `ℹ️  Minted new PKP owned by ${await wallet.getAddress()} with ethAddress: ${ethAddress}`,
@@ -60,5 +65,6 @@ export const mintNewPkp = async ({
   return {
     tokenId: ethers.BigNumber.from(tokenId).toString(),
     ethAddress,
+    publicKey,
   };
 };

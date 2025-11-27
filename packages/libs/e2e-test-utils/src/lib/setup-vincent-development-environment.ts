@@ -106,6 +106,9 @@ export const setupVincentDevelopmentEnvironment = async ({
   // Get Platform User PKP ethers wallet for signing operations
   const platformUserPkpWallet = await delegator.getPlatformUserPkpWallet(platformUserPkpInfo);
 
+  // Ensure capacity token for the Platform User PKP wallet
+  await ensureUnexpiredCapacityToken(platformUserPkpWallet);
+
   // Get or create the Agent PKP for this app (owned by the Platform User PKP)
   const agentPkpInfo = await delegator.getFundedAgentPkp(appId);
 

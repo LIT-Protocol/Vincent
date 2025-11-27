@@ -1,10 +1,12 @@
 import { ethers } from 'ethers';
+import type { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
 
 import type { CapacityToken } from './types';
-
 import { getLitContractsClient } from './litContractsClient/get-lit-contract-client';
 
-export const ensureUnexpiredCapacityToken = async (targetWallet: ethers.Wallet) => {
+export const ensureUnexpiredCapacityToken = async (
+  targetWallet: ethers.Wallet | PKPEthersWallet,
+) => {
   const litContractClient = await getLitContractsClient({
     wallet: targetWallet,
   });

@@ -52,7 +52,7 @@
     },
     "test-e2e": {
       "executor": "@nx/jest:jest",
-      "dependsOn": ["e2e-test-utils:build", "action:deploy"],
+      "dependsOn": ["app-sdk:build", "wrapped-keys:build", "e2e-test-utils:build", "action:deploy"],
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
       "options": {
         "jestConfig": "packages/apps/ability-sol-transaction-signer/jest.config.js"

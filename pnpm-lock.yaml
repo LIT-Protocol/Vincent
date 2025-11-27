@@ -601,9 +601,6 @@ importers:
       '@lit-protocol/vincent-ability-sdk':
         specifier: workspace:*
         version: link:../../libs/ability-sdk
-      '@lit-protocol/vincent-app-sdk':
-        specifier: workspace:^
-        version: link:../../libs/app-sdk
       '@lit-protocol/vincent-wrapped-keys':
         specifier: workspace:*
         version: link:../../libs/wrapped-keys
@@ -620,15 +617,27 @@ importers:
         specifier: ^3.25.64
         version: 3.25.64
     devDependencies:
+      '@lit-protocol/constants':
+        specifier: ^7.3.1
+        version: 7.3.1(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
       '@lit-protocol/esbuild-plugin-polyfill-node':
         specifier: ^0.3.0
         version: 0.3.0(esbuild@0.19.12)
+      '@lit-protocol/lit-node-client':
+        specifier: ^7.3.1
+        version: 7.3.1(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
+      '@lit-protocol/vincent-app-sdk':
+        specifier: workspace:*
+        version: link:../../libs/app-sdk
       '@lit-protocol/vincent-contracts-sdk':
         specifier: workspace:*
         version: link:../../libs/contracts-sdk
       '@lit-protocol/vincent-e2e-test-utils':
         specifier: workspace:*
         version: link:../../libs/e2e-test-utils
+      bs58:
+        specifier: ^6.0.0
+        version: 6.0.0
       esbuild:
         specifier: ^0.19.12
         version: 0.19.12
@@ -17473,7 +17482,7 @@ snapshots:
     dependencies:
       '@lit-protocol/auth-helpers': 7.3.1(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
       '@lit-protocol/constants': 7.3.1(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
-      '@lit-protocol/lit-node-client': 7.3.0(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
+      '@lit-protocol/lit-node-client': 7.3.1(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
       '@lit-protocol/vincent-ability-sdk': 2.3.1(bufferutil@4.0.9)(debug@4.4.1)(typescript@5.8.3)(utf-8-validate@5.0.10)(viem@2.38.4(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64))
       '@lit-protocol/vincent-contracts-sdk': 2.0.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       '@noble/secp256k1': 2.3.0
@@ -23576,10 +23585,6 @@ snapshots:
     dependencies:
       ms: 2.1.3
 
-  debug@4.4.1:
-    dependencies:
-      ms: 2.1.3
-
   debug@4.4.1(supports-color@8.1.1):
     dependencies:
       ms: 2.1.3
@@ -28491,7 +28496,7 @@ snapshots:
     dependencies:
       '@assemblyscript/loader': 0.9.4
       bl: 5.1.0
-      debug: 4.4.1
+      debug: 4.4.1(supports-color@8.1.1)
       minimist: 1.2.8
       node-fetch: 2.7.0
       readable-stream: 3.6.2

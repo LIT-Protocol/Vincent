@@ -60,9 +60,13 @@ export const ensureAgentPkpExists = async (appId: number): Promise<PkpInfo> => {
           console.log(
             `Found existing Agent PKP for app ${appId} with ethAddress: ${matchingPkp.ethAddress}, tokenId: ${matchingPkp.tokenId}`,
           );
+          const publicKey = await litContractClient.pkpNftContract.read.getPubkey(
+            matchingPkp.tokenId,
+          );
           return {
             tokenId: matchingPkp.tokenId,
             ethAddress: matchingPkp.ethAddress,
+            publicKey,
           };
         }
       }
@@ -81,7 +85,7 @@ export const ensureAgentPkpExists = async (appId: number): Promise<PkpInfo> => {
 
   // Mint a new PKP using the Platform User PKP's wallet
   // This makes the Platform User PKP the owner and controller of the Agent PKP
-  const { tokenId, ethAddress } = await mintNewPkp({
+  const { tokenId, ethAddress, publicKey } = await mintNewPkp({
     wallet: platformUserPkpWallet,
   });
 
@@ -89,7 +93,7 @@ export const ensureAgentPkpExists = async (appId: number): Promise<PkpInfo> => {
     `Minted new Agent PKP ${ethAddress} owned by Platform User PKP ${platformUserPkp.ethAddress}`,
   );
 
-  return { tokenId, ethAddress };
+  return { tokenId, ethAddress, publicKey };
 };
 
 export const ensureFundedAgentPkpExists = async (appId: number): Promise<PkpInfo> => {

@@ -28,7 +28,8 @@ export const ensurePlatformUserPkpExists = async (): Promise<PkpInfo> => {
     );
 
     const { tokenId, ethAddress } = ownedPkps[0];
-    return { tokenId, ethAddress };
+    const publicKey = await litContractClient.pkpNftContract.read.getPubkey(tokenId);
+    return { tokenId, ethAddress, publicKey };
   }
 
   console.log(
@@ -38,9 +39,9 @@ export const ensurePlatformUserPkpExists = async (): Promise<PkpInfo> => {
   // Be sure the platformUserWalletOwner has enough test tokens to mint a new PKP
   await ensureWalletHasTestTokens({ address: await platformUserWalletOwner.getAddress() });
 
-  const { tokenId, ethAddress } = await mintNewPkp({ wallet: platformUserWalletOwner });
+  const { tokenId, ethAddress, publicKey } = await mintNewPkp({ wallet: platformUserWalletOwner });
 
-  return { tokenId, ethAddress };
+  return { tokenId, ethAddress, publicKey };
 };
 
 export const ensureFundedPlatformUserPkpExists = async (): Promise<PkpInfo> => {
