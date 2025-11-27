@@ -10,6 +10,7 @@
     "@lit-protocol/contracts-sdk": "^7.2.3",
     "@lit-protocol/lit-node-client": "^7",
     "@lit-protocol/pkp-ethers": "^7.3.1",
+    "@lit-protocol/types": "^7",
     "@lit-protocol/vincent-contracts-sdk": "workspace:*",
     "@t3-oss/env-core": "^0.13.8",
     "ethers": "^5.7.2",
@@ -29,7 +30,6 @@
     }
   },
   "devDependencies": {
-    "@lit-protocol/types": "^7",
     "@types/semver": "^7.7.0",
     "chokidar-cli": "^3.0.0",
     "ipfs-only-hash": "^4.0.0",

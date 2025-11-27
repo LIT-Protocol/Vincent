@@ -1,15 +1,17 @@
-import { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
 import type { LIT_NETWORKS_KEYS } from '@lit-protocol/types';
-import { LIT_NETWORK, LIT_ABILITY } from '@lit-protocol/constants';
+
 import {
   LitActionResource,
   LitPKPResource,
   createSiweMessageWithRecaps,
   generateAuthSig,
 } from '@lit-protocol/auth-helpers';
+import { LIT_NETWORK, LIT_ABILITY } from '@lit-protocol/constants';
 import { LitNodeClient } from '@lit-protocol/lit-node-client';
+import { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
 
 import type { PkpInfo } from '../mint-new-pkp';
+
 import { getChainHelpers } from '../chain';
 import { getLitContractsClient } from '../litContractsClient/get-lit-contract-client';
 

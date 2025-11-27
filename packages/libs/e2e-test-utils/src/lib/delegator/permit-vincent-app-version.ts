@@ -1,5 +1,5 @@
-import type { PermissionData } from '@lit-protocol/vincent-contracts-sdk';
 import type { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
+import type { PermissionData } from '@lit-protocol/vincent-contracts-sdk';
 
 import { getClient } from '@lit-protocol/vincent-contracts-sdk';
 

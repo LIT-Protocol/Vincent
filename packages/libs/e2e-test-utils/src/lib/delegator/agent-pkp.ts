@@ -1,6 +1,6 @@
-import type { PkpInfo } from '../mint-new-pkp';
-
 import { getClient } from '@lit-protocol/vincent-contracts-sdk';
+
+import type { PkpInfo } from '../mint-new-pkp';
 
 import { getChainHelpers } from '../chain';
 import { ensureWalletHasTestTokens } from '../funder/ensure-wallet-has-test-tokens';

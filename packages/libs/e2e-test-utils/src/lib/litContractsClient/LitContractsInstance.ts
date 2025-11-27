@@ -1,7 +1,8 @@
 import type { ethers } from 'ethers';
 
-import { LitContracts } from '@lit-protocol/contracts-sdk';
 import type { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
+
+import { LitContracts } from '@lit-protocol/contracts-sdk';
 
 export class LitContractsInstance {
   private readonly contractsInstance: LitContracts;

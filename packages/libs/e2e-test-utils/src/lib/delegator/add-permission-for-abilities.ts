@@ -1,6 +1,8 @@
 import type { Wallet } from 'ethers';
-import { AUTH_METHOD_SCOPE } from '@lit-protocol/constants';
+
 import type { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
+
+import { AUTH_METHOD_SCOPE } from '@lit-protocol/constants';
 
 import { getLitContractsClient } from '../litContractsClient/get-lit-contract-client';
 

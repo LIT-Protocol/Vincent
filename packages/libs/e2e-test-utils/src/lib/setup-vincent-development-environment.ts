@@ -1,6 +1,6 @@
 import type { Wallet } from 'ethers';
-import type { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
 
+import type { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
 import type { PermissionData } from '@lit-protocol/vincent-contracts-sdk';
 
 import type { PkpInfo } from './mint-new-pkp';
