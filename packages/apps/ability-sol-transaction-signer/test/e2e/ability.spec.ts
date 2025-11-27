@@ -1,12 +1,10 @@
 import {
-  delegator,
   delegatee,
   funder,
   appManager,
   ensureUnexpiredCapacityToken,
   getChainHelpers,
   getEnv,
-  type PkpInfo,
   setupVincentDevelopmentEnvironment,
   type VincentDevEnvironment,
 } from '@lit-protocol/vincent-e2e-test-utils';
@@ -23,12 +21,13 @@ import {
   StoredKeyData,
   type StoredKeyMetadata,
   api as WrappedKeysApi,
+  constants as WrappedKeysConstants,
 } from '@lit-protocol/vincent-wrapped-keys';
 import { LitNodeClient } from '@lit-protocol/lit-node-client';
 import { LIT_NETWORK } from '@lit-protocol/constants';
+import { Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
 
 import { bundledVincentAbility as solTransactionSignerBundledAbility } from '../../src';
-import { Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
 import {
   createSolanaTransferTransaction,
   createSolanaVersionedTransferTransaction,
@@ -94,7 +93,7 @@ describe('Solana Transaction Signer Ability E2E Tests', () => {
         authentication: {
           type: 'EthWallet',
         },
-        audience: 'https://wrapped.litprotocol.com',
+        audience: WrappedKeysConstants.WRAPPED_KEYS_JWT_AUDIENCE,
         expiresInMinutes: 60,
       });
 
@@ -130,7 +129,7 @@ describe('Solana Transaction Signer Ability E2E Tests', () => {
         authentication: {
           type: 'EthWallet',
         },
-        audience: 'https://wrapped.litprotocol.com',
+        audience: WrappedKeysConstants.WRAPPED_KEYS_JWT_AUDIENCE,
         expiresInMinutes: 60,
       });
 
@@ -171,7 +170,7 @@ describe('Solana Transaction Signer Ability E2E Tests', () => {
       const delegateeJwt = await createDelegateeJWT({
         ethersWallet: VINCENT_DEV_ENVIRONMENT.wallets.appDelegatee,
         subjectAddress: VINCENT_DEV_ENVIRONMENT.agentPkpInfo.ethAddress as `0x${string}`,
-        audience: 'https://wrapped.litprotocol.com',
+        audience: WrappedKeysConstants.WRAPPED_KEYS_JWT_AUDIENCE,
         expiresInMinutes: 60,
       });
 
@@ -233,7 +232,7 @@ describe('Solana Transaction Signer Ability E2E Tests', () => {
         authentication: {
           type: 'EthWallet',
         },
-        audience: 'https://wrapped.litprotocol.com',
+        audience: WrappedKeysConstants.WRAPPED_KEYS_JWT_AUDIENCE,
         expiresInMinutes: 60,
       });
 
