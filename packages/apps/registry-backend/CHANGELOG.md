@@ -1,3 +1,10 @@
+## 2.1.7 (2025-11-23)
+
+### 🧱 Updated Dependencies
+
+- Updated app-sdk to 2.5.0
+- Updated contracts-sdk to 5.0.0
+
 - ## 2.1.4 (2025-11-20)
 -
 - ### 🧱 Updated Dependencies

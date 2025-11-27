@@ -7,6 +7,29 @@
   "tags": [],
   "targets": {
     "clean": {},
+    "action:build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": ["pnpm node ./esbuild.lit-actions.config.js"],
+        "cwd": "{projectRoot}",
+        "parallel": false
+      }
+    },
+    "action:deploy": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["action:build"],
+      "options": {
+        "commands": ["node scripts/deploy-lit-action.js"],
+        "cwd": "{projectRoot}"
+      }
+    },
+    "action:only:deploy": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": ["node scripts/deploy-lit-action.js"],
+        "cwd": "{projectRoot}"
+      }
+    },
     "test-e2e": {
       "executor": "@nx/jest:jest",
       "outputs": ["{workspaceRoot}/test-output/jest/{projectRoot}"],
@@ -14,10 +37,19 @@
         "jestConfig": "{projectRoot}/jest.config.js"
       }
     },
+    "test-e2e:fees": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/test-output/jest/{projectRoot}"],
+      "options": {
+        "jestConfig": "{projectRoot}/jest.config.js",
+        "testMatch": ["<rootDir>/test/fees/**/*.e2e.spec.ts"],
+        "passWithNoTests": false
+      }
+    },
     "build:tsc": {
       "executor": "@nx/js:tsc",
       "outputs": ["{options.outputPath}"],
-      "dependsOn": [],
+      "dependsOn": ["action:build"],
       "options": {
         "outputPath": "{projectRoot}/dist",
         "main": "{projectRoot}/src/index.ts",
@@ -36,6 +68,13 @@
             "command": "echo '🪝 Running post-build script'"
           }
         ]
+      }
+    },
+    "deploy:fee-contracts": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": ["pnpm ts-node scripts/fees/deployFeeContracts.ts"],
+        "cwd": "{projectRoot}"
       }
     }
   }

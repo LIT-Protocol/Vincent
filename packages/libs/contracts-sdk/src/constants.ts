@@ -17,3 +17,57 @@ export const COMBINED_ABI = buildDiamondInterface([
 
 export const GAS_ADJUSTMENT_PERCENT = 120;
 export const DEFAULT_PAGE_SIZE = '50';
+
+export const VINCENT_CONTRACT_ADDRESS_BOOK = {
+  fee: {
+    ethereum: {
+      chainId: 1,
+      address: '0x35705D6ad235DcA39c10B6E0EfBA84b5E90D2aC9',
+      salt: 'DatilCreate2Salt',
+    },
+    polygon: {
+      chainId: 137,
+      address: '0x35705D6ad235DcA39c10B6E0EfBA84b5E90D2aC9',
+      salt: 'DatilCreate2Salt',
+    },
+    avalanche: {
+      chainId: 43114,
+      address: '0x35705D6ad235DcA39c10B6E0EfBA84b5E90D2aC9',
+      salt: 'DatilCreate2Salt',
+    },
+    arbitrum: {
+      chainId: 42161,
+      address: '0x35705D6ad235DcA39c10B6E0EfBA84b5E90D2aC9',
+      salt: 'DatilCreate2Salt',
+    },
+    optimism: {
+      chainId: 10,
+      address: '0x35705D6ad235DcA39c10B6E0EfBA84b5E90D2aC9',
+      salt: 'DatilCreate2Salt',
+    },
+    base: {
+      chainId: 8453,
+      address: '0x35705D6ad235DcA39c10B6E0EfBA84b5E90D2aC9',
+      salt: 'DatilCreate2Salt',
+    },
+    bnb: {
+      chainId: 56,
+      address: '0x35705D6ad235DcA39c10B6E0EfBA84b5E90D2aC9',
+      salt: 'DatilCreate2Salt',
+    },
+    baseSepolia: {
+      chainId: 84532,
+      address: '0x35705D6ad235DcA39c10B6E0EfBA84b5E90D2aC9',
+      salt: 'DatilCreate2Salt',
+    },
+  },
+};
+
+export const VINCENT_LIT_ACTIONS_ADDRESS_BOOK = {
+  signOwnerAttestation: {
+    ipfsCid: 'QmfBfiD5XFQAagwcYgCEncpssvQJYkosbbww53t7EmEKdE',
+    derivedActionPubkey:
+      '0x0457611cae6d4c24e0f6d963181f503e56b308a8df43fc71584f2f586e8322ae3063a78a494e8fa1fdbca34b9dd2e2778b19eba5e7d54987148621e768b25ca9d3',
+    derivedActionAddress: '0x32a2F1243F2402166c95Ef64b2a6ED932B04b7dC',
+  },
+};

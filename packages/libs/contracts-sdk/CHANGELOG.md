@@ -1,3 +1,22 @@
+# 5.0.0 (2025-11-23)
+
+### 🚀 Features
+
+- Deploy fee contracts to more chains ([#419](https://github.com/LIT-Protocol/Vincent/pull/419))
+
+### ⚠️ Breaking Changes
+
+- ### Added `getVincentWrappedKeysAccs()` ([628ba81e](https://github.com/LIT-Protocol/Vincent/commit/628ba81e))
+  - Returns an array of access control conditions that are used to encrypt/decrypt Vincent delegated wrapped keys.
+
+  ### Removed `COMBINED_ABI` and `getPkpTokenId` exports
+  - These were intended to be internal-only details of the vincent-contracts-sdk
+
+### ❤️ Thank You
+
+- Chris Cassano @glitch003
+- Daryl Collins
+
 # 2.0.0 (2025-10-08)
 
 ### ⚠️ Breaking Changes

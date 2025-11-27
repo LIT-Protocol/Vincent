@@ -17,9 +17,9 @@ contract FeeTestCommon is TestCommon {
     using ECDSA for bytes32;
     using MessageHashUtils for bytes32;
 
-    function _deployFeeDiamond() public returns (address) {
+    function _deployFeeDiamond(address vincentDiamondAddress) public returns (address) {
         DeployFeeDiamond deployScript = new DeployFeeDiamond();
-        address diamondAddress = deployScript.deployToNetwork("test", keccak256("testSalt"));
+        address diamondAddress = deployScript.deployToNetwork("test", keccak256("testSalt"), vincentDiamondAddress);
         return diamondAddress;
     }
 
@@ -45,6 +45,24 @@ contract FeeTestCommon is TestCommon {
         return diamondAddress;
     }
 
+    /**
+     * Mock implementation of owner attestation signing for testing.
+     *
+     * In production, this should be replaced by calling the Lit Action via the
+     * signOwnerAttestation function in the contracts-sdk package.
+     *
+     * The Lit Action:
+     * 1. Reads from the Vincent Diamond contract on Chronicle Yellowstone to verify ownership
+     * 2. Creates the OwnerAttestation structure
+     * 3. Signs it using a PKP
+     *
+     * @param oa The owner attestation to sign
+     * @param ownerAttestationSignerPrivateKey Private key for testing (in production, use PKP via Lit Action)
+     * @return signature The signature bytes in r, s, v format
+     *
+     * @dev See packages/libs/contracts-sdk/src/fees/signOwnerAttestation.ts for the real implementation
+     * @dev See packages/libs/contracts-sdk/lit-actions/fees/ for the Lit Action source code
+     */
     function _signOwnerAttestation(FeeUtils.OwnerAttestation memory oa, uint256 ownerAttestationSignerPrivateKey)
         public
         pure
