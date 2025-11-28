@@ -103,11 +103,16 @@ export async function storePrivateKeyBatch(
     requestId,
   });
 
-  const { delegatorAddress, ids } = await makeRequest<StoreEncryptedKeyBatchResult>({
+  const delegatorAddress = storedKeyMetadataBatch[0]?.delegatorAddress;
+  if (!delegatorAddress) {
+    throw new Error('delegatorAddress is required in storedKeyMetadataBatch');
+  }
+
+  const { ids } = await makeRequest<StoreEncryptedKeyBatchResult>({
     url: `${baseUrl}/delegated/encrypted_batch`,
     init: {
       ...initParams,
-      body: JSON.stringify({ keyParamsBatch: storedKeyMetadataBatch }),
+      body: JSON.stringify({ delegatorAddress, keyParamsBatch: storedKeyMetadataBatch }),
     },
     requestId,
   });

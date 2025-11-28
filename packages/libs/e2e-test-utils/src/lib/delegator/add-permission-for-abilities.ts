@@ -1,13 +1,16 @@
 import type { Wallet } from 'ethers';
 
+import type { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
+
 import { AUTH_METHOD_SCOPE } from '@lit-protocol/constants';
 
 import { getLitContractsClient } from '../litContractsClient/get-lit-contract-client';
 
-// The LIT network requires that abilities be permitted for the agent PKP to sign on behalf of the user's agent PKP.
-// This is part of the PKP ecosystem and is managed independently of the Vincent Delegation contract
+// The LIT network requires that abilities be permitted for the Agent PKP to execute Lit Actions.
+// This is part of the PKP ecosystem and is managed independently of the Vincent Delegation contract.
+// The Platform User PKP wallet is used to add these permissions to the Agent PKP.
 export const addPermissionForAbilities = async (
-  wallet: Wallet,
+  wallet: Wallet | PKPEthersWallet,
   pkpTokenId: string,
   abilityIpfsCids: string[],
 ) => {
@@ -15,7 +18,7 @@ export const addPermissionForAbilities = async (
 
   for (const ipfsCid of abilityIpfsCids) {
     console.log(
-      `Permitting ability: ${ipfsCid} with ability to sign on behalf of user's agent PKP ${pkpTokenId}`,
+      `Permitting ability: ${ipfsCid} with ability to sign on behalf of Agent PKP ${pkpTokenId}`,
     );
 
     await litContractClient.addPermittedAction({

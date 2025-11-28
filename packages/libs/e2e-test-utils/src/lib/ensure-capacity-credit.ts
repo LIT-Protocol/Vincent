@@ -1,11 +1,18 @@
 import { ethers } from 'ethers';
 
+import type { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
+
 import type { CapacityToken } from './types';
 
 import { getLitContractsClient } from './litContractsClient/get-lit-contract-client';
 
-export const ensureUnexpiredCapacityToken = async (targetWallet: ethers.Wallet) => {
-  const litContractClient = await getLitContractsClient({ wallet: targetWallet });
+export const ensureUnexpiredCapacityToken = async (
+  targetWallet: ethers.Wallet | PKPEthersWallet,
+) => {
+  const litContractClient = await getLitContractsClient({
+    wallet: targetWallet,
+  });
+  await litContractClient.connect();
 
   const existingTokens: CapacityToken[] =
     await litContractClient.rateLimitNftContractUtils.read.getTokensByOwnerAddress(
@@ -17,7 +24,7 @@ export const ensureUnexpiredCapacityToken = async (targetWallet: ethers.Wallet) 
     console.log('Capacity credit already exists; skipping minting');
   } else {
     console.log(
-      `No unexpired capacity credit found; minting new capacity credit for ${targetWallet.address}`,
+      `No unexpired capacity credit found; minting new capacity credit for ${targetWallet.getAddress()}`,
     );
 
     const daysUntilUTCMidnightExpiration = 3;
@@ -45,7 +52,7 @@ export const ensureUnexpiredCapacityToken = async (targetWallet: ethers.Wallet) 
 
     if (mintCost.gte(balance)) {
       throw new Error(
-        `${targetWallet.address} has insufficient balance to mint capacity credit: ${ethers.utils.formatEther(
+        `${targetWallet.getAddress()} has insufficient balance to mint capacity credit: ${ethers.utils.formatEther(
           balance,
         )} <= ${ethers.utils.formatEther(mintCost)}`,
       );
@@ -74,7 +81,9 @@ export const ensureUnexpiredCapacityToken = async (targetWallet: ethers.Wallet) 
     // Purge any existing but expired tokens for performance reasons
     // Listing a lot of tokens is expensive -- and we just need one, unexpired one!)
     try {
-      await litContractClient.rateLimitNftContractUtils.write.pruneExpired(targetWallet.address);
+      await litContractClient.rateLimitNftContractUtils.write.pruneExpired(
+        await targetWallet.getAddress(),
+      );
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.log('Failed to purge expired tokens:', error?.message || String(error));

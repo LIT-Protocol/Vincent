@@ -34,12 +34,10 @@ interface GeneratePrivateKeyLitActionResult {
 /**
  * Result structure for a single action in batch key generation
  * @property {Network} network - The network for which the key was generated ('solana' for Vincent)
- * @property {{ signature: string }} [signMessage] - Optional message signature if signing was requested
  * @property {GeneratePrivateKeyLitActionResult} generateEncryptedPrivateKey - The generated encrypted key data
  */
 interface BatchGeneratePrivateKeysWithLitActionResult {
   network: Network;
-  signMessage?: { signature: string };
   generateEncryptedPrivateKey: GeneratePrivateKeyLitActionResult;
 }
 

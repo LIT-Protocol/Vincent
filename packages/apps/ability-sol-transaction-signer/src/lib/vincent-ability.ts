@@ -85,7 +85,7 @@ export const vincentAbility = createVincentAbility({
         delegatorAddress: ethAddress,
         ciphertext,
         dataToEncryptHash,
-        evmContractConditions,
+        evmContractConditions: JSON.parse(evmContractConditions),
       });
 
       const transaction = deserializeTransaction(serializedTransaction);
