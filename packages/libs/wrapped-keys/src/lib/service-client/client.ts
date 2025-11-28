@@ -1,5 +1,3 @@
-import * as util from 'node:util';
-
 import type {
   StoredKeyData,
   StoredKeyMetadata,
