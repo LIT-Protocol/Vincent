@@ -4,7 +4,6 @@ import {
   appManager,
   ensureUnexpiredCapacityToken,
   getChainHelpers,
-  getEnv,
   setupVincentDevelopmentEnvironment,
   type VincentDevEnvironment,
 } from '@lit-protocol/vincent-e2e-test-utils';
@@ -14,7 +13,6 @@ import {
   generateVincentAbilitySessionSigs,
 } from '@lit-protocol/vincent-app-sdk/abilityClient';
 import { createPlatformUserJWT } from '@lit-protocol/vincent-app-sdk/jwt';
-import { z } from 'zod';
 import {
   api as WrappedKeysApi,
   constants as WrappedKeysConstants,
@@ -28,10 +26,6 @@ import { bundledVincentAbility as solTransactionSignerBundledAbility } from '../
 jest.setTimeout(240000);
 
 describe('Solana Transaction Signer Ability E2E Tests', () => {
-  const ENV = getEnv({
-    SOLANA_RPC_URL: z.string().optional(),
-    SOLANA_CLUSTER: z.enum(['devnet', 'testnet', 'mainnet-beta']),
-  });
   const EXPECTED_WRAPPED_KEY_MEMO = 'Test Solana key for ability-sol-transaction-signer';
 
   let VINCENT_DEV_ENVIRONMENT: VincentDevEnvironment;

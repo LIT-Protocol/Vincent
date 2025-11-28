@@ -1,5 +1,4 @@
 import { getVincentWrappedKeysAccs } from '@lit-protocol/vincent-contracts-sdk';
-import * as util from 'node:util';
 
 import type {
   BatchGeneratePrivateKeysParams,
@@ -40,11 +39,6 @@ export async function batchGeneratePrivateKeys(
     litActionIpfsCid,
     evmContractConditions: vincentWrappedKeysAccs,
   });
-
-  console.log(
-    'batchGeneratePrivateKeys actionResults',
-    util.inspect(actionResults, false, null, true /* enable colors */),
-  );
 
   const keyParamsBatch = actionResults.map((keyData, index) => {
     const { generateEncryptedPrivateKey } = keyData;
