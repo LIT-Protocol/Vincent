@@ -329,13 +329,20 @@ const evaluateCallAgainstPolicy = ({
       // depositToAave(uint40 appId, address poolAsset, uint256 assetAmount)
       // The fee contract will handle the supply to the sender, so we just need to verify
       // that the caller is the sender (which is implicit in msg.sender)
-      // No additional validation needed as the fee contract handles the routing
+      // Validate appId is reasonable (not zero or excessively large)
+      const appId = res.args?.[0] as bigint;
+      if (typeof appId !== 'bigint' || appId === 0n || appId > (2n ** 40n - 1n)) {
+        reasons.push('depositToAave.appId is invalid');
+      }
     } else if (fn === 'withdrawFromAave' && mappedOp === 'withdraw') {
       // withdrawFromAave(uint40 appId, address poolAsset, uint256 amount)
       // The fee contract will handle the withdrawal to the sender, so we just need to verify
       // that the caller is the sender (which is implicit in msg.sender)
-      // No additional validation needed as the fee contract handles the routing
-    } else {
+      // Validate appId is reasonable (not zero or excessively large)
+      const appId = res.args?.[0] as bigint;
+      if (typeof appId !== 'bigint' || appId === 0n || appId > (2n ** 40n - 1n)) {
+        reasons.push('withdrawFromAave.appId is invalid');
+      }
       reasons.push(`Fee contract function not properly mapped: ${fn}`);
     }
   } else if (res.kind === 'aave') {
