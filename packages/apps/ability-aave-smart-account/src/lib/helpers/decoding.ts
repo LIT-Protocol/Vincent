@@ -188,7 +188,9 @@ interface DecodeAaveOrERC20Result {
   kind: 'aave' | 'erc20_approval' | 'fee_contract';
   fn: string;
   args: readonly unknown[] | undefined;
-  // For fee contract calls, map to the underlying Aave operation
+  // For fee contract calls, track the mapped Aave operation (supply/withdraw) to apply appropriate validation rules,
+  // since fee contract functions route to these underlying Aave operations. This enables the validation flow to
+  // correctly enforce policy checks as if the user had called the Aave operation directly.
   mappedAaveOperation?: 'supply' | 'withdraw';
 }
 
