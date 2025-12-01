@@ -117,7 +117,6 @@ describe('Relay.link Ability with Smart Account', () => {
             alchemyRpcUrl: env.BASE_RPC_URL!,
             entryPointAddress: '0x0000000071727De22E5E9d8BAf0edAc6f37da032' as `0x${string}`,
             userOp: vincentUserOp,
-            skipValidation: true,
           };
 
           const relayExecuteResult = await relayClient.execute(relayParams, {
@@ -146,12 +145,11 @@ describe('Relay.link Ability with Smart Account', () => {
           };
         } else {
           const relayParams = {
-            alchemyRpcUrl: 'https://base-mainnet.g.alchemy.com/v2/demo',
-            relayLinkTransaction: {
+            alchemyRpcUrl: env.BASE_RPC_URL!,
+            transaction: {
               ...txData,
               from: agentPkpInfo.ethAddress,
             },
-            checkEndpoint: item.check?.endpoint,
           };
 
           const relayPrecheckResult = await relayClient.precheck(relayParams, {

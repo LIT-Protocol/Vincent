@@ -23,7 +23,6 @@ export const validateSimulation = ({
   relayLinkExecuteAddresses,
   senderAddress,
   allowedNativeRecipients,
-  additionalAllowedAddresses = [],
   simulation,
 }: ValidateSimulationParams) => {
   if (simulation.error) {
@@ -35,15 +34,20 @@ export const validateSimulation = ({
     throw new Error('validateSimulation requires at least one allowed native recipient');
   }
 
-  const sender = getAddress(senderAddress);
-  const nativeRecipients = new Set(allowedNativeRecipients.map(getAddress));
-  const relayLinkAddresses = new Set(relayLinkExecuteAddresses.map(getAddress));
+  const sender = getAddress(senderAddress).toLowerCase();
+  // Normalize all addresses to lowercase for consistent comparison
+  const nativeRecipients = new Set(
+    allowedNativeRecipients.map((addr) => getAddress(addr).toLowerCase()),
+  );
+  const relayLinkAddresses = new Set(
+    relayLinkExecuteAddresses.map((addr) => getAddress(addr).toLowerCase()),
+  );
 
   simulation.changes.forEach((c, idx) => {
     const assetType = c.assetType;
     const changeType = c.changeType;
-    const from = getAddress(c.from);
-    const to = getAddress(c.to);
+    const from = getAddress(c.from).toLowerCase();
+    const to = getAddress(c.to).toLowerCase();
 
     // Helper for throwing with context
     const fail = (reason: string) => {
@@ -123,16 +127,20 @@ export const validateUserOp = async (params: ProccessUserOpParams) => {
     throw new Error(`User operation calldata decoding failed: Errors: ${decodeResult.reasons}`);
   }
 
+  // Extract target addresses from decoded calls - these are allowed as native transfer recipients
+  const decodedTargets = decodeResult.targets || [];
+
   // Simulate userOp and validate changes
   const simulation = await simulateUserOp({
     publicClient,
     userOp,
     entryPoint: entryPointAddress,
   });
+
   validateSimulation({
     relayLinkExecuteAddresses,
     senderAddress: getAddress(userOp.sender),
-    allowedNativeRecipients: [entryPointAddress, ...relayLinkExecuteAddresses],
+    allowedNativeRecipients: [entryPointAddress, ...relayLinkExecuteAddresses, ...decodedTargets],
     additionalAllowedAddresses: [entryPointAddress],
     simulation,
   });

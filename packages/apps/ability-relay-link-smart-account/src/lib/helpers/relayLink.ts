@@ -1,4 +1,4 @@
-import { Address } from 'viem';
+import { Address, getAddress } from 'viem';
 import { z } from 'zod';
 
 /**
@@ -164,13 +164,12 @@ export async function executeRelayLinkTransaction(
  * Source: Based on Relay documentation and on-chain verification
  * The Relay Receiver contract is deployed at the same address across multiple chains
  */
-const RELAY_RECEIVER_ADDRESS = '0xa5F565650890fBA1824Ee0F21EbBbF660a179934' as Address;
+const RELAY_RECEIVER_ADDRESS = getAddress('0xa5f565650890fba1824ee0f21ebbbf660a179934');
 
 /**
  * Alternative Relay.link execute address seen in quotes (for same-chain swaps)
  */
-const RELAY_EXECUTE_ALT_ADDRESS =
-  '0xF5042e6ffaC5a625D4E7848e0b01373D8eB9e222'.toLowerCase() as Address;
+const RELAY_EXECUTE_ALT_ADDRESS = getAddress('0xf5042e6ffac5a625d4e7848e0b01373d8eb9e222');
 
 export const RELAY_LINK_EXECUTE_ADDRESSES: Record<number, Address[]> = {
   // Mainnets
@@ -181,7 +180,7 @@ export const RELAY_LINK_EXECUTE_ADDRESSES: Record<number, Address[]> = {
   8453: [
     RELAY_RECEIVER_ADDRESS,
     RELAY_EXECUTE_ALT_ADDRESS,
-    '0x4cd00e387622c35bddb9b4c962c136462338bc31' as Address,
+    getAddress('0x4cd00e387622c35bddb9b4c962c136462338bc31'),
   ], // Base (includes V2 depository)
   43114: [RELAY_RECEIVER_ADDRESS, RELAY_EXECUTE_ALT_ADDRESS], // Avalanche
   56: [RELAY_RECEIVER_ADDRESS, RELAY_EXECUTE_ALT_ADDRESS], // BNB Chain

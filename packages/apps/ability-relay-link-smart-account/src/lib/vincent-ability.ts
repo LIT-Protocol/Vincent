@@ -13,21 +13,21 @@ import {
   type AbilityParams,
   type TransactionAbilityParams,
   type UserOpAbilityParams,
-  type RelayLinkTransactionAbilityParams,
 } from './schemas';
-import { Transaction, toVincentTransaction, type GenericTransaction } from './helpers/transaction';
+import {
+  toVincentTransaction,
+  type GenericTransaction,
+  type Transaction,
+} from './helpers/transaction';
 import { signTransaction } from './helpers/signTransaction';
 import { signUserOperation } from './helpers/signUserOperation';
 import { validateTransaction, validateUserOp } from './helpers/validation';
-import { broadcastTransaction, pollCheckEndpoint } from './helpers/broadcastTransaction';
+import { getNonce } from './helpers/getNonce';
 
 const isUserOpAbilityParams = (params: AbilityParams): params is UserOpAbilityParams =>
   'userOp' in params;
 const isTransactionAbilityParams = (params: AbilityParams): params is TransactionAbilityParams =>
   'transaction' in params;
-const isRelayLinkTransactionAbilityParams = (
-  params: AbilityParams,
-): params is RelayLinkTransactionAbilityParams => 'relayLinkTransaction' in params;
 
 function assertTransactionSender({
   transaction,
@@ -67,16 +67,7 @@ export const vincentAbility = createVincentAbility({
       });
 
       if (isUserOpAbilityParams(abilityParams)) {
-        const { alchemyRpcUrl, entryPointAddress, userOp, skipValidation } = abilityParams;
-
-        if (skipValidation) {
-          console.log(
-            '[@lit-protocol/vincent-ability-relay-link-smart-account] skipping validation (skipValidation=true)',
-          );
-          return succeed({
-            simulationChanges: undefined,
-          });
-        }
+        const { alchemyRpcUrl, entryPointAddress, userOp } = abilityParams;
 
         console.log(
           '[@lit-protocol/vincent-ability-relay-link-smart-account] validating user operation:',
@@ -98,35 +89,7 @@ export const vincentAbility = createVincentAbility({
       }
 
       if (isTransactionAbilityParams(abilityParams)) {
-        const { alchemyRpcUrl, transaction } = abilityParams;
-
-        console.log(
-          '[@lit-protocol/vincent-ability-relay-link-smart-account] validating transaction:',
-          transaction,
-        );
-
-        assertTransactionSender({
-          transaction,
-          delegatorAddress: delegatorPkpInfo.ethAddress as Address,
-        });
-
-        const { simulationChanges } = await validateTransaction({
-          alchemyRpcUrl,
-          transaction,
-        });
-
-        console.log(
-          '[@lit-protocol/vincent-ability-relay-link-smart-account] transaction validated:',
-          transaction,
-        );
-
-        return succeed({
-          simulationChanges,
-        });
-      }
-
-      if (isRelayLinkTransactionAbilityParams(abilityParams)) {
-        const { alchemyRpcUrl, relayLinkTransaction, allowedTargets } = abilityParams;
+        const { alchemyRpcUrl, transaction: relayLinkTransaction, allowedTargets } = abilityParams;
 
         console.log(
           '[@lit-protocol/vincent-ability-relay-link-smart-account] processing Relay.link transaction:',
@@ -137,40 +100,44 @@ export const vincentAbility = createVincentAbility({
           allowedTargets,
         );
 
-        // Fetch nonce from blockchain
-        console.log('[@lit-protocol/vincent-ability-relay-link-smart-account] fetching nonce...');
-        const nonceResponse = await fetch(alchemyRpcUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            jsonrpc: '2.0',
-            id: 1,
-            method: 'eth_getTransactionCount',
-            params: [relayLinkTransaction.from, 'latest'],
-          }),
-        });
-        const nonceResult = (await nonceResponse.json()) as { result: string };
-        const nonce = nonceResult.result;
-
-        // Convert Relay.link transaction to standard format
+        // Convert Relay.link transaction to standard format (without nonce for precheck)
         const transaction = toVincentTransaction({
           from: relayLinkTransaction.from as Address,
           to: relayLinkTransaction.to as Address,
           data: relayLinkTransaction.data as Hex,
           value: relayLinkTransaction.value,
           chainId: relayLinkTransaction.chainId,
-          nonce,
           gas: relayLinkTransaction.gas,
           gasPrice: relayLinkTransaction.gasPrice,
           maxFeePerGas: relayLinkTransaction.maxFeePerGas,
           maxPriorityFeePerGas: relayLinkTransaction.maxPriorityFeePerGas,
         } as GenericTransaction);
 
+        // For EOA transactions, verify that the sender matches the delegator PKP
+        // For smart account transactions, the sender will be the smart account address
+        const isEoaTransaction = isAddressEqual(
+          getAddress(transaction.from),
+          getAddress(delegatorPkpInfo.ethAddress),
+        );
+
+        if (isEoaTransaction) {
+          console.log(
+            '[@lit-protocol/vincent-ability-relay-link-smart-account] EOA transaction detected, verifying sender...',
+          );
+          assertTransactionSender({
+            transaction,
+            delegatorAddress: delegatorPkpInfo.ethAddress as Address,
+          });
+        } else {
+          console.log(
+            '[@lit-protocol/vincent-ability-relay-link-smart-account] Smart account transaction detected, sender:',
+            transaction.from,
+          );
+        }
+
         console.log(
           '[@lit-protocol/vincent-ability-relay-link-smart-account] validating transaction...',
         );
-        // Note: We don't check that from matches PKP address for Relay.link transactions
-        // because they can be from smart accounts where the PKP signs on behalf of the account
 
         const { simulationChanges } = await validateTransaction({
           alchemyRpcUrl,
@@ -209,31 +176,21 @@ export const vincentAbility = createVincentAbility({
       });
 
       if (isUserOpAbilityParams(abilityParams)) {
-        const { alchemyRpcUrl, entryPointAddress, userOp, skipValidation } = abilityParams;
+        const { alchemyRpcUrl, entryPointAddress, userOp } = abilityParams;
 
-        let simulationChanges: any[] | undefined;
-
-        if (skipValidation) {
-          console.log(
-            '[@lit-protocol/vincent-ability-relay-link-smart-account] skipping validation (skipValidation=true)',
-          );
-          simulationChanges = undefined;
-        } else {
-          console.log(
-            '[@lit-protocol/vincent-ability-relay-link-smart-account] validating user operation:',
-            userOp,
-          );
-          const validationResult = await validateUserOp({
-            alchemyRpcUrl,
-            entryPointAddress,
-            userOp,
-          });
-          simulationChanges = validationResult.simulationChanges;
-          console.log(
-            '[@lit-protocol/vincent-ability-relay-link-smart-account] user operation validated:',
-            userOp,
-          );
-        }
+        console.log(
+          '[@lit-protocol/vincent-ability-relay-link-smart-account] validating user operation:',
+          userOp,
+        );
+        const { simulationChanges } = await validateUserOp({
+          alchemyRpcUrl,
+          entryPointAddress,
+          userOp,
+        });
+        console.log(
+          '[@lit-protocol/vincent-ability-relay-link-smart-account] user operation validated:',
+          userOp,
+        );
 
         console.log(
           '[@lit-protocol/vincent-ability-relay-link-smart-account] preparing user operation signature...',
@@ -257,41 +214,7 @@ export const vincentAbility = createVincentAbility({
       }
 
       if (isTransactionAbilityParams(abilityParams)) {
-        const { alchemyRpcUrl, transaction } = abilityParams;
-
-        console.log(
-          '[@lit-protocol/vincent-ability-relay-link-smart-account] validating transaction:',
-          transaction,
-        );
-
-        assertTransactionSender({
-          transaction,
-          delegatorAddress: delegatorPkpInfo.ethAddress as Address,
-        });
-
-        const { simulationChanges } = await validateTransaction({
-          alchemyRpcUrl,
-          transaction,
-        });
-
-        console.log(
-          '[@lit-protocol/vincent-ability-relay-link-smart-account] transaction validated:',
-          transaction,
-        );
-
-        const { signature } = await signTransaction({
-          transaction,
-          pkpPublicKey: delegatorPkpInfo.publicKey as Hex,
-        });
-
-        return succeed({
-          signature,
-          simulationChanges,
-        });
-      }
-
-      if (isRelayLinkTransactionAbilityParams(abilityParams)) {
-        const { alchemyRpcUrl, relayLinkTransaction, checkEndpoint } = abilityParams;
+        const { alchemyRpcUrl, transaction: relayLinkTransaction, allowedTargets } = abilityParams;
 
         console.log(
           '[@lit-protocol/vincent-ability-relay-link-smart-account] processing Relay.link transaction:',
@@ -300,18 +223,10 @@ export const vincentAbility = createVincentAbility({
 
         // Fetch nonce from blockchain
         console.log('[@lit-protocol/vincent-ability-relay-link-smart-account] fetching nonce...');
-        const nonceResponse = await fetch(alchemyRpcUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            jsonrpc: '2.0',
-            id: 1,
-            method: 'eth_getTransactionCount',
-            params: [relayLinkTransaction.from, 'latest'],
-          }),
+        const nonce = await getNonce({
+          rpcUrl: alchemyRpcUrl,
+          address: relayLinkTransaction.from as Address,
         });
-        const nonceResult = (await nonceResponse.json()) as { result: string };
-        const nonce = nonceResult.result;
 
         // Convert Relay.link transaction to standard format
         const transaction = toVincentTransaction({
@@ -327,52 +242,51 @@ export const vincentAbility = createVincentAbility({
           maxPriorityFeePerGas: relayLinkTransaction.maxPriorityFeePerGas,
         } as GenericTransaction);
 
+        // For EOA transactions, verify that the sender matches the delegator PKP
+        // For smart account transactions, the sender will be the smart account address
+        const isEoaTransaction = isAddressEqual(
+          getAddress(transaction.from),
+          getAddress(delegatorPkpInfo.ethAddress),
+        );
+
+        if (isEoaTransaction) {
+          console.log(
+            '[@lit-protocol/vincent-ability-relay-link-smart-account] EOA transaction detected, verifying sender...',
+          );
+          assertTransactionSender({
+            transaction,
+            delegatorAddress: delegatorPkpInfo.ethAddress as Address,
+          });
+        } else {
+          console.log(
+            '[@lit-protocol/vincent-ability-relay-link-smart-account] Smart account transaction detected, sender:',
+            transaction.from,
+          );
+        }
+
         console.log(
           '[@lit-protocol/vincent-ability-relay-link-smart-account] validating transaction...',
         );
-        // Note: We don't check that from matches PKP address for Relay.link transactions
-        // because they can be from smart accounts where the PKP signs on behalf of the account
 
         const { simulationChanges } = await validateTransaction({
           alchemyRpcUrl,
           transaction,
+          allowedTargets,
         });
 
         console.log(
           '[@lit-protocol/vincent-ability-relay-link-smart-account] signing transaction...',
         );
-        const { signature, signedTransaction } = await signTransaction({
+        const { signature } = await signTransaction({
           transaction,
           pkpPublicKey: delegatorPkpInfo.publicKey as Hex,
         });
 
-        console.log(
-          '[@lit-protocol/vincent-ability-relay-link-smart-account] broadcasting transaction...',
-        );
-        const { transactionHash } = await broadcastTransaction({
-          rpcUrl: alchemyRpcUrl,
-          signedTransaction,
-        });
-        console.log(
-          '[@lit-protocol/vincent-ability-relay-link-smart-account] transaction hash:',
-          transactionHash,
-        );
-
-        // Poll check endpoint if provided
-        if (checkEndpoint) {
-          console.log(
-            '[@lit-protocol/vincent-ability-relay-link-smart-account] polling check endpoint...',
-          );
-          await pollCheckEndpoint({ checkEndpoint });
-          console.log(
-            '[@lit-protocol/vincent-ability-relay-link-smart-account] transaction confirmed by Relay.link',
-          );
-        }
+        console.log('[@lit-protocol/vincent-ability-relay-link-smart-account] signed transaction');
 
         return succeed({
           signature,
           simulationChanges,
-          transactionHash: transactionHash as Hex,
         });
       }
 

@@ -54,12 +54,6 @@ nx action:deploy ability-relay-link-smart-account
 5. Write comprehensive tests for all functionality
 6. Document the ability's purpose and usage
 
-## Integration with Policies
-
-This ability can be integrated with various Vincent Policies to enforce constraints. When developing or modifying the ability, consider how it will be used with policies such as:
-
-- Vincent Policy Spending Limit
-
 ## Testing
 
 Write unit tests for all functionality:

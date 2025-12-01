@@ -3,7 +3,6 @@ import { z } from 'zod';
 
 import { simulateAssetChangeSchema } from './helpers/simulation';
 import { addressSchema, hexSchema } from './helpers/schemas';
-import { transactionSchema } from './helpers/transaction';
 import { userOpSchema } from './helpers/userOperation';
 
 /**
@@ -43,32 +42,13 @@ export const userOpAbilityParamsSchema = z.object({
     ),
   alchemyRpcUrl: alchemyRpcUrlSchema,
   relayLinkApiKey: z.string().optional().describe('Optional Relay.link API key for validation'),
-  skipValidation: z
-    .boolean()
-    .optional()
-    .default(false)
-    .describe(
-      'Skip validation of the UserOperation callData. Set to true for complex Relay.link transactions that cannot be decoded by standard validation. Validation ensures the transaction is safe, so only skip when the UserOp comes from a trusted source like Relay.link API.',
-    ),
 });
 
 export const transactionAbilityParamsSchema = z.object({
   alchemyRpcUrl: alchemyRpcUrlSchema,
-  transaction: transactionSchema.describe(
-    'EOA transaction to simulate and validate. Only transactions targeting Relay.link execute contracts will be accepted.',
-  ),
-  relayLinkApiKey: z.string().optional().describe('Optional Relay.link API key for validation'),
-});
-
-export const relayLinkTransactionAbilityParamsSchema = z.object({
-  alchemyRpcUrl: alchemyRpcUrlSchema,
-  relayLinkTransaction: relayLinkTransactionSchema.describe(
+  transaction: relayLinkTransactionSchema.describe(
     'Relay.link transaction from their API quote response. Will be automatically converted to standard format.',
   ),
-  checkEndpoint: z
-    .string()
-    .optional()
-    .describe('Optional Relay.link check endpoint path or URL to poll for transaction status'),
   relayLinkApiKey: z.string().optional().describe('Optional Relay.link API key for validation'),
   allowedTargets: z
     .array(z.string())
@@ -81,16 +61,11 @@ export const relayLinkTransactionAbilityParamsSchema = z.object({
 export const abilityParamsSchema = z.union([
   userOpAbilityParamsSchema,
   transactionAbilityParamsSchema,
-  relayLinkTransactionAbilityParamsSchema,
 ]);
 
 export type AbilityParams = z.infer<typeof abilityParamsSchema>;
 export type UserOpAbilityParams = z.infer<typeof userOpAbilityParamsSchema>;
 export type TransactionAbilityParams = z.infer<typeof transactionAbilityParamsSchema>;
-export type RelayLinkTransactionAbilityParams = z.infer<
-  typeof relayLinkTransactionAbilityParamsSchema
->;
-export type RelayLinkTransaction = z.infer<typeof relayLinkTransactionSchema>;
 
 /**
  * Failure result schema
@@ -108,15 +83,8 @@ export const precheckSuccessSchema = z.object({
   simulationChanges: z
     .array(simulateAssetChangeSchema)
     .optional()
-    .describe(
-      'Simulated changes user op will make to the blockchain. Will be undefined if validation was skipped.',
-    ),
+    .describe('Simulated changes user op will make to the blockchain.'),
 });
 export const executeSuccessSchema = precheckSuccessSchema.extend({
   signature: hexSchema.describe('ECDSA signature over the received user operation or transaction.'),
-  transactionHash: hexSchema
-    .optional()
-    .describe(
-      'Transaction hash returned when the transaction was broadcast (for relayLinkTransaction parameter).',
-    ),
 });

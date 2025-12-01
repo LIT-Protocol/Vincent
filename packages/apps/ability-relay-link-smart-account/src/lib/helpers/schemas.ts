@@ -10,9 +10,3 @@ export const addressSchema = z
 export const hexSchema = z.custom<Hex>((v) => typeof v === 'string' && isHex(v, { strict: true }), {
   message: 'Invalid hex (must be 0x-prefixed, even length)',
 });
-
-export const hexOfBytesSchema = (bytes: number) =>
-  z.custom<Hex>(
-    (v) => typeof v === 'string' && isHex(v, { strict: true }) && (v.length - 2) / 2 === bytes,
-    { message: `Invalid hex (must be 0x + ${bytes} bytes)` },
-  );

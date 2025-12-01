@@ -1,6 +1,6 @@
 # Vincent Relay.link Ability for Smart Accounts and EOAs
 
-A Vincent ability for signing secure cross-chain bridge and swap transactions via Relay.link, supporting both smart accounts (EIP-4337) and EOA transactions through the Vincent Scaffold SDK and Lit Actions execution environment.
+A Vincent ability for signing secure cross-chain bridge and swap transactions via Relay.link, supporting both smart accounts (EIP-4337) and EOA transactions through the Lit Actions execution environment.
 
 ## Overview
 
@@ -14,6 +14,8 @@ The Vincent Relay.link Ability enables secure transaction signing for Relay.link
 - Asset change tracking and validation
 - Multi-chain support through Relay.link
 - Integrated with Vincent Ability SDK for secure execution
+
+**Note:** This ability validates and signs transactions but does not broadcast them. Broadcasting is the caller's responsibility, providing you with full control over transaction submission and error handling.
 
 ## Installation
 
@@ -64,24 +66,53 @@ if (precheckRes.success) {
 }
 ```
 
-### EOA Transaction Example
+### Relay.link Transaction Example
 
 ```typescript
-// Example: Sign an EOA transaction
+import { createWalletClient, http } from 'viem';
+import { base } from 'viem/chains';
+
+// Example: Sign a Relay.link transaction
 const transactionParams = {
-  alchemyRpcUrl: 'https://eth-mainnet.g.alchemy.com/v2/YOUR_KEY',
+  alchemyRpcUrl: 'https://base-mainnet.g.alchemy.com/v2/YOUR_KEY',
   transaction: {
-    from: '0x...', // Must match PKP address
+    from: '0x...', // Can be EOA or smart account
     to: '0x...', // Relay.link execute contract
     data: '0x...',
-    value: '0x0',
-    chainId: 1,
+    value: '100000', // Decimal string
+    chainId: 8453,
+    maxFeePerGas: '1000000000',
+    maxPriorityFeePerGas: '1000000000',
   },
 };
 
+// Precheck validates the transaction
+const precheckRes = await relayLinkAbilityClient.precheck(transactionParams, {
+  delegatorPkpEthAddress: pkpAddress,
+});
+
+if (!precheckRes.success) {
+  throw new Error('Precheck failed');
+}
+
+// Execute signs the transaction
 const executeRes = await relayLinkAbilityClient.execute(transactionParams, {
   delegatorPkpEthAddress: pkpAddress,
 });
+
+if (executeRes.success) {
+  // The ability returns the signature - you must broadcast the transaction yourself
+  const signature = executeRes.result.data.signature;
+
+  // Broadcast using your preferred method (viem, ethers, etc.)
+  const walletClient = createWalletClient({
+    chain: base,
+    transport: http(),
+  });
+
+  // Reconstruct and send the signed transaction
+  // (Implementation depends on your transaction format and library)
+}
 ```
 
 ## Parameters
@@ -97,18 +128,21 @@ const executeRes = await relayLinkAbilityClient.execute(transactionParams, {
 
 ### Transaction Parameters
 
-| Parameter         | Type          | Required | Description                                      |
-| ----------------- | ------------- | -------- | ------------------------------------------------ |
-| `transaction`     | `Transaction` | ✅       | EOA transaction to sign (must target Relay.link) |
-| `alchemyRpcUrl`   | `string`      | ✅       | Alchemy RPC URL for transaction simulation       |
-| `relayLinkApiKey` | `string`      | ❌       | Optional Relay.link API key for validation       |
+| Parameter         | Type                   | Required | Description                                          |
+| ----------------- | ---------------------- | -------- | ---------------------------------------------------- |
+| `transaction`     | `RelayLinkTransaction` | ✅       | Relay.link transaction from quote API response       |
+| `alchemyRpcUrl`   | `string`               | ✅       | Alchemy RPC URL for transaction simulation           |
+| `allowedTargets`  | `string[]`             | ❌       | Additional allowed contract addresses for validation |
+| `relayLinkApiKey` | `string`               | ❌       | Optional Relay.link API key for validation           |
+
+**Note:** The ability signs the transaction but does not broadcast it. You are responsible for broadcasting the signed transaction and monitoring its status on-chain.
 
 ## Prerequisites
 
 - Node.js 16+ and npm/yarn
 - Alchemy API key for transaction simulation
 - Properly configured PKP wallet with required permissions
-- For EOA transactions: PKP must match the transaction `from` address
+- For Relay.link transactions: Supports both EOA and smart account transactions
 
 ## Building
 
