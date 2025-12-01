@@ -1,0 +1,271 @@
+---
+title: Creating an App
+---
+
+Set up your Vincent development environment and test your abilities locally by following this guide.
+
+## Step 1: Configure Environment Variables
+
+To start onboarding your application onto Vincent, add the following environment variables to your project's `.env` file:
+
+```bash
+# This wallet is expected to have Lit test tokens, and will be used to:
+# - Fund the App Manager to register the Vincent App
+# - Fund the App Delegatee to be able to execute Vincent Abilities
+# You can fund this wallet with test tokens using the faucet:
+# https://chronicle-yellowstone-faucet.getlit.dev/
+TEST_FUNDER_PRIVATE_KEY='<Funder Private Key Here>'
+
+# This wallet will own the Vincent App and will be in charge of:
+# - Creating new App Versions
+# - Adding Vincent Abilities to App Versions
+# - Adding Delegatees to the App
+TEST_APP_MANAGER_PRIVATE_KEY='<App Manager Private Key Here>'
+
+# This wallet will execute the Vincent Abilities for a specific
+# Vincent App on behalf of the Vincent User
+TEST_APP_DELEGATEE_PRIVATE_KEY='<Delegatee Private Key here>'
+
+# This wallet will own the Vincent Agent Wallet that Vincent Delegatees use to
+# execute Abilities on its behalf. It's responsible for permitting each App Version,
+# granting the App Delegatees to sign with the Agent Wallet within Abilities
+TEST_AGENT_WALLET_PKP_OWNER_PRIVATE_KEY='<Agent Wallet Owner Private Key here>'
+```
+
+<Warning>
+**Security Note:** These are test environment private keys. Never commit your `.env` file to version control. Add it to your `.gitignore` file.
+</Warning>
+
+## Step 2: Fund Your Wallets
+
+Go to the [Lit Protocol Faucet](https://chronicle-yellowstone-faucet.getlit.dev/) and claim some `tstLPX` tokens for the Ethereum wallet address that corresponds to the `TEST_FUNDER_PRIVATE_KEY`.
+
+The funder wallet will automatically fund the App Manager and Delegatee wallets to ensure they have enough tokens to cover the gas fees necessary to interact with the Vincent Contract.
+
+## Step 3: Install Required Packages
+
+Install the necessary Vincent packages for your project.
+
+**Replace `@lit-protocol/vincent-ability-evm-transaction-signer` with your chosen Vincent ability and policy packages:**
+
+<CodeGroup>
+```bash npm
+npm install -D tsx
+npm install @lit-protocol/vincent-ability-evm-transaction-signer @lit-protocol/vincent-app-sdk @lit-protocol/vincent-e2e-test-utils dotenv ethers@5
+```
+
+```bash yarn
+yarn add -D tsx
+yarn add @lit-protocol/vincent-ability-evm-transaction-signer @lit-protocol/vincent-app-sdk @lit-protocol/vincent-e2e-test-utils dotenv ethers@5
+```
+
+```bash pnpm
+pnpm add -D tsx
+pnpm add @lit-protocol/vincent-ability-evm-transaction-signer @lit-protocol/vincent-app-sdk @lit-protocol/vincent-e2e-test-utils dotenv ethers@5
+```
+</CodeGroup>
+
+### Choosing Abilities and Policies
+
+If you're unsure about what Vincent abilities and policies to use for your app, explore these resources:
+
+<CardGroup cols={2}>
+  <Card title="Official Abilities" icon="puzzle-piece" href="/ability/official-abilities">
+    Browse pre-built abilities for common use cases
+  </Card>
+  <Card title="Official Policies" icon="shield-check" href="/ability/policy/official-policies">
+    Browse pre-built policies for common ability restriction requirements
+  </Card>
+</CardGroup>
+
+<CardGroup cols={1}>
+  <Card title="Need to Create a Custom Ability?" icon="wrench" href="/ability/official-abilities">
+    Build your own ability using the Vincent Ability Starter Kit
+  </Card>
+</CardGroup>
+
+## Step 4: Create Your Test Script
+
+Create a file called `test-vincent-app.ts` in your project. This script will set up your Vincent development environment and test ability execution.
+
+<Warning>
+**Important:** The code below uses the EVM Transaction Signer ability as an example. You must replace the following to match your chosen ability and policies:
+
+1. **Ability import** - Replace `@lit-protocol/vincent-ability-evm-transaction-signer` with your ability package
+2. **PERMISSION_DATA object** - Update with your ability's IPFS CID and associated policies
+3. **Ability parameters** - Update the `precheck()` and `execute()` parameters to match your ability's requirements
+
+Look for `TODO` comments in the code to locate these sections.
+</Warning>
+
+```typescript
+import { config } from 'dotenv';
+import * as util from 'util';
+import {
+  setupVincentDevelopmentEnvironment,
+} from '@lit-protocol/vincent-e2e-test-utils';
+import {
+  getVincentAbilityClient,
+  disconnectVincentAbilityClients,
+} from '@lit-protocol/vincent-app-sdk/abilityClient';
+import { ethers } from 'ethers';
+
+// TODO: Import your bundled abilities here
+import {
+  bundledVincentAbility,
+} from '@lit-protocol/vincent-ability-evm-transaction-signer';
+
+// Load environment variables
+config();
+
+// Run setup and execution if this file is executed directly
+if (require.main === module) {
+  (async () => {
+    try {
+      console.log('🚀 Starting ability execution...\n');
+
+      // Setup Vincent development environment (handles funding internally)
+      console.log('🔧 Setting up Vincent development environment...');
+      // TODO: Add your bundled Vincent Abilities, Policies, and Policy values here
+      const PERMISSION_DATA = {
+        [bundledVincentAbility.ipfsCid]: {},
+      };
+
+      const { agentPkpInfo, wallets } = await setupVincentDevelopmentEnvironment({
+        permissionData: PERMISSION_DATA,
+      });
+
+      console.log('✅ Setup complete\n');
+
+      // Create ability client with your bundled ability
+      const abilityClient = getVincentAbilityClient({
+        bundledVincentAbility: bundledVincentAbility,
+        ethersSigner: wallets.appDelegatee,
+        debug: false
+      });
+
+      // Create and serialize a sample transaction (ERC20 transfer of USDC)
+      // Note: This transaction won't be submitted, so we use example values
+      console.log('📝 Creating transaction...');
+
+      const serializedTx = ethers.utils.serializeTransaction({
+        to: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', // USDC on Base
+        value: '0x00',
+        data: new ethers.utils.Interface([
+          'function transfer(address to, uint256 amount) returns (bool)',
+        ]).encodeFunctionData('transfer', [
+          '0x4200000000000000000000000000000000000006', // Recipient (WETH contract as example)
+          '100000', // 0.1 USDC (6 decimals)
+        ]),
+        chainId: 8453, // Base mainnet
+        nonce: 0, // Example nonce
+        gasPrice: '0x3B9ACA00', // Example: 1 gwei
+        gasLimit: '0x186A0', // 100,000 gas
+      });
+
+      // TODO: Run the precheck according to your imported abilities
+      console.log('\n🔍 Running precheck...');
+      const precheckResult = await abilityClient.precheck(
+        {
+          serializedTransaction: serializedTx,
+        },
+        {
+          delegatorPkpEthAddress: agentPkpInfo.ethAddress,
+        },
+      );
+
+      console.log('Precheck result:', util.inspect(precheckResult, { depth: 10 }));
+
+      if (!precheckResult.success) {
+        console.error('❌ Precheck failed:');
+        if (precheckResult.runtimeError) {
+          console.error('  Runtime error:', precheckResult.runtimeError);
+        }
+        if (precheckResult.result) {
+          console.error('  Result:', util.inspect(precheckResult.result, { depth: 10 }));
+        }
+        return;
+      }
+
+      const { deserializedUnsignedTransaction } = precheckResult.result;
+      console.log('✅ Precheck passed - deserialized transaction:', deserializedUnsignedTransaction);
+
+      // TODO: Execute according to your imported abilities
+      console.log('\n⚡ Executing ability (signing transaction)...');
+      const executeResult = await abilityClient.execute(
+        {
+          serializedTransaction: serializedTx,
+        },
+        {
+          delegatorPkpEthAddress: agentPkpInfo.ethAddress,
+        },
+      );
+
+      console.log('Execution result:', util.inspect(executeResult, { depth: 10 }));
+
+      if (!executeResult.success) {
+        console.error('❌ Execution failed:');
+        if (executeResult.runtimeError) {
+          console.error('  Runtime error:', executeResult.runtimeError);
+        }
+        if (executeResult.result) {
+          console.error('  Result:', util.inspect(executeResult.result, { depth: 10 }));
+        }
+        return;
+      }
+
+      const { signedTransaction, deserializedSignedTransaction } = executeResult.result;
+      console.log('\n🎉 All ability executions completed successfully!');
+      console.log('\nSigned transaction:', signedTransaction);
+      console.log('Deserialized signed transaction:', deserializedSignedTransaction);
+    } catch (error) {
+      console.error('❌ Execution failed with error:', error);
+      throw error;
+    } finally {
+      console.log('\n🧹 Cleaning up...');
+      await disconnectVincentAbilityClients();
+    }
+  })();
+}
+```
+
+## Step 5: Run Your Test
+
+Execute your test script using `tsx`:
+
+<CodeGroup>
+```bash npm
+npx tsx test-vincent-app.ts
+```
+
+```bash yarn
+yarn tsx test-vincent-app.ts
+```
+
+```bash pnpm
+pnpm tsx test-vincent-app.ts
+```
+</CodeGroup>
+
+The output will show the setup progress, precheck results, and execution results. A successful run will end with:
+
+```
+🎉 All ability executions completed successfully!
+🧹 Cleaning up...
+```
+
+**Congratulations!** You've successfully set up and tested your Vincent App!
+
+## What's Next?
+
+<Card title="Migrating to Production" icon="rocket" href="/app/migrating-to-production">
+  Deploy your App to production environment
+</Card>
+
+## Want a Full Example Instead?
+
+If you'd prefer to explore a complete working application rather than integrating Vincent into your own project, check out our App Starter Kit:
+
+<Card title="App Starter Kit" icon="github" href="/app/app-starter-kit">
+  Explore a pre-configured template with video tutorial
+</Card>
