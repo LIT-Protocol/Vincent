@@ -39,7 +39,14 @@
           {
             "group": "Introduction",
             "pages": [
-              "app/quickstart",
+              {
+                "group": "Quick Start",
+                "pages": [
+                  "app/creating-an-app",
+                  "app/migrating-to-production",
+                  "app/app-starter-kit"
+                ]
+              },
               "app/explaining-apps",
               "app/publishing-apps",
               "app/updating-apps",
@@ -91,6 +98,7 @@
                       "ability/official-abilities/hyperliquid/transfer-to-perp",
                       "ability/official-abilities/hyperliquid/cancel-order",
                       "ability/official-abilities/hyperliquid/cancel-all-orders-for-symbol",
+                      "ability/official-abilities/hyperliquid/approve-builder-code",
                       {
                         "group": "Spot Trading",
                         "pages": [

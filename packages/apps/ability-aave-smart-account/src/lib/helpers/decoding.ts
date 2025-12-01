@@ -1,187 +1,35 @@
 import {
-  type Abi,
   type Address,
   type Hex,
-  decodeAbiParameters,
   decodeFunctionData,
   getAddress,
   hexToBigInt,
   isAddressEqual,
-  sliceHex,
 } from 'viem';
 
 import { AAVE_POOL_ABI, FEE_CONTRACT_ABI } from './aave';
 import { ERC20_ABI } from './erc20';
+import { type LowLevelCall } from './lowLevelCall';
+import { tryDecodeKernelCalldataToLowLevelCalls } from './smartAccounts/kernel';
+import { tryDecodeSafeCalldataToLowLevelCalls } from './smartAccounts/safe';
 import { Transaction } from './transaction';
 import { UserOp } from './userOperation';
 
-type LowLevelCall = { to: Address; value: bigint; data: Hex };
-
-// A big unified ABI of different smart account implementations
-const smartAccountsAbi: Abi = [
-  // Kernel v3.3/v3.1/v3.0
-  {
-    type: 'function',
-    name: 'execute',
-    inputs: [
-      { name: 'execMode', type: 'bytes32', internalType: 'ExecMode' },
-      { name: 'executionCalldata', type: 'bytes', internalType: 'bytes' },
-    ],
-    outputs: [],
-    stateMutability: 'payable',
-  },
-  {
-    type: 'function',
-    name: 'executeFromExecutor',
-    inputs: [
-      { name: 'execMode', type: 'bytes32', internalType: 'ExecMode' },
-      { name: 'executionCalldata', type: 'bytes', internalType: 'bytes' },
-    ],
-    outputs: [{ name: 'returnData', type: 'bytes[]', internalType: 'bytes[]' }],
-    stateMutability: 'payable',
-  },
-  {
-    type: 'function',
-    name: 'executeUserOp',
-    inputs: [
-      {
-        name: 'userOp',
-        type: 'tuple',
-        internalType: 'struct PackedUserOperation',
-        components: [
-          {
-            name: 'sender',
-            type: 'address',
-            internalType: 'address',
-          },
-          { name: 'nonce', type: 'uint256', internalType: 'uint256' },
-          { name: 'initCode', type: 'bytes', internalType: 'bytes' },
-          { name: 'callData', type: 'bytes', internalType: 'bytes' },
-          {
-            name: 'accountGasLimits',
-            type: 'bytes32',
-            internalType: 'bytes32',
-          },
-          {
-            name: 'preVerificationGas',
-            type: 'uint256',
-            internalType: 'uint256',
-          },
-          {
-            name: 'gasFees',
-            type: 'bytes32',
-            internalType: 'bytes32',
-          },
-          {
-            name: 'paymasterAndData',
-            type: 'bytes',
-            internalType: 'bytes',
-          },
-          { name: 'signature', type: 'bytes', internalType: 'bytes' },
-        ],
-      },
-      { name: 'userOpHash', type: 'bytes32', internalType: 'bytes32' },
-    ],
-    outputs: [],
-    stateMutability: 'payable',
-  },
-];
-
-function isDelegatecallOrUnknown(execMode: Hex): boolean {
-  const lastByte = BigInt(execMode) & 0xffn;
-  return lastByte !== 0n; // 0x00 == CALL; others => block
-}
-
-function tryDecodeExecute(executionCalldata: Hex): LowLevelCall[] | null {
-  // Because Execute with a single call is just a hex concatenation of the calldata,
-  // this function might produce invalid decoding. It MUST be called last, only if
-  // all other, stricter, decodings failed or if we know the calldata is a single call.
-  // Also, the current implementation does not support delegate calls. It will produce
-  // an invalid decoding for them.
-  try {
-    const hex = executionCalldata.slice(2);
-    const MIN = 20 * 2 + 32 * 2; // address + value
-    if (hex.length < MIN) return null;
-
-    const to = getAddress(sliceHex(executionCalldata, 0, 20));
-    const value = hexToBigInt(sliceHex(executionCalldata, 20, 52));
-    const data = sliceHex(executionCalldata, 52);
-
-    return [
-      {
-        data,
-        to,
-        value,
-      },
-    ];
-  } catch (e) {
-    console.error('tryDecodeExecute', e);
-    return null;
-  }
-}
-
-function tryDecodeBatchWithValues(executionCalldata: Hex): LowLevelCall[] | null {
-  try {
-    const [tuples] = decodeAbiParameters(
-      [
-        {
-          name: 'executionBatch',
-          type: 'tuple[]',
-          components: [
-            {
-              name: 'target',
-              type: 'address',
-            },
-            {
-              name: 'value',
-              type: 'uint256',
-            },
-            {
-              name: 'callData',
-              type: 'bytes',
-            },
-          ],
-        },
-      ],
-      executionCalldata,
-    );
-    if (!tuples.length) return null;
-    return tuples.map((t) => ({
-      to: getAddress(t.target),
-      value: t.value,
-      data: t.callData,
-    }));
-  } catch (e) {
-    console.error('tryDecodeBatchWithValues', e);
-    return null;
-  }
-}
-
 function decodeUserOpCalldataToLowLevelCalls(callData: Hex): LowLevelCall[] {
-  const df = decodeFunctionData({ abi: smartAccountsAbi, data: callData });
-  if (df.functionName !== 'execute' && df.functionName !== 'executeFromExecutor') {
-    throw new Error('Not a Kernel v3.3 execute/executor call');
+  const kernelCalls = tryDecodeKernelCalldataToLowLevelCalls(callData);
+  const safeCalls = tryDecodeSafeCalldataToLowLevelCalls(callData);
+
+  const decodedLowLevelCalls = [kernelCalls, safeCalls].filter(
+    Boolean,
+  ) as unknown as LowLevelCall[][];
+  if (decodedLowLevelCalls.length > 1) {
+    throw new Error('Multiple decodings found');
+  } else if (!decodedLowLevelCalls.length) {
+    throw new Error('Unsupported executionCalldata shape');
   }
 
-  const [execMode, executionCalldata] = df.args as [Hex, Hex];
-
-  // BLOCK delegatecall/unknown modes up-front
-  if (isDelegatecallOrUnknown(execMode)) {
-    throw new Error(`Blocked by execMode (non-CALL): ${execMode}`);
-  }
-
-  // Try common inner shapes
-  const shapes: ((ec: Hex) => LowLevelCall[] | null)[] = [
-    tryDecodeBatchWithValues,
-    tryDecodeExecute,
-  ];
-
-  for (const dec of shapes) {
-    const res = dec(executionCalldata);
-    if (res) return res;
-  }
-
-  throw new Error('Unsupported Kernel v3.3 executionCalldata shape');
+  // Length is 1, we are good
+  return decodedLowLevelCalls[0];
 }
 
 interface DecodeAaveOrERC20Result {

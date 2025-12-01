@@ -133,7 +133,15 @@ export const vincentAbility = createVincentAbility({
       });
 
       if (isUserOpAbilityParams(abilityParams)) {
-        const { alchemyRpcUrl, entryPointAddress, userOp } = abilityParams;
+        const {
+          alchemyRpcUrl,
+          entryPointAddress,
+          userOp,
+          validAfter,
+          validUntil,
+          safe4337ModuleAddress,
+          eip712Params,
+        } = abilityParams;
 
         console.log(
           '[@lit-protocol/vincent-ability-aave-smart-account] validating user operation:',
@@ -158,6 +166,10 @@ export const vincentAbility = createVincentAbility({
           entryPointAddress,
           userOp,
           pkpPublicKey: delegatorPkpInfo.publicKey as Hex,
+          validAfter,
+          validUntil,
+          safe4337ModuleAddress,
+          eip712Params,
         });
 
         console.log('[@lit-protocol/vincent-ability-aave-smart-account] signed user operation');
