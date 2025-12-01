@@ -11,7 +11,6 @@ export type KeyType = 'ed25519';
  */
 export type GeneratePrivateKeyAction = ApiParamsSupportedNetworks & {
   generateKeyParams: { memo: string };
-  signMessageParams?: { messageToSign: string | Uint8Array };
 };
 
 /** All API calls for the wrapped keys service require these arguments.
@@ -65,7 +64,6 @@ export type BatchGeneratePrivateKeysParams = BaseApiParams & {
 /** Result structure for individual actions in batch generate operations */
 export interface BatchGeneratePrivateKeysActionResult {
   generateEncryptedPrivateKey: GeneratePrivateKeyResult & { memo: string };
-  signMessage?: { signature: string };
 }
 
 /** Result structure for batch generate operations */

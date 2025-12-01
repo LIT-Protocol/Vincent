@@ -1,15 +1,16 @@
 import type { ethers } from 'ethers';
 
 import type { LitContracts } from '@lit-protocol/contracts-sdk';
+import type { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
 
 import { LitContractsInstance } from './LitContractsInstance';
 
-const instancesByWallet = new WeakMap<ethers.Wallet, LitContractsInstance>();
+const instancesByWallet = new WeakMap<ethers.Wallet | PKPEthersWallet, LitContractsInstance>();
 
 export async function getLitContractsClient({
   wallet,
 }: {
-  wallet: ethers.Wallet;
+  wallet: ethers.Wallet | PKPEthersWallet;
 }): Promise<LitContracts> {
   let instance = instancesByWallet.get(wallet);
   if (instance) {

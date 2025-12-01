@@ -19,9 +19,9 @@ import { getKeyTypeFromNetwork } from './utils';
  * a JWT token (for Vincent service authentication). All keys will be encrypted with
  * access control conditions that validate Vincent delegatee authorization.
  *
- * @param { BatchGeneratePrivateKeysParams } params Parameters to use for generating keys and optionally signing messages
+ * @param { BatchGeneratePrivateKeysParams } params Parameters to use for generating keys
  *
- * @returns { Promise<BatchGeneratePrivateKeysResult> } - The generated keys and, optionally, signed messages
+ * @returns { Promise<BatchGeneratePrivateKeysResult> } - The generated keys
  */
 export async function batchGeneratePrivateKeys(
   params: BatchGeneratePrivateKeysParams,
@@ -46,7 +46,9 @@ export async function batchGeneratePrivateKeys(
       ...generateEncryptedPrivateKey,
       keyType: getKeyTypeFromNetwork('solana'),
       delegatorAddress,
-      evmContractConditions: actionResults[index].generateEncryptedPrivateKey.evmContractConditions,
+      evmContractConditions: JSON.stringify(
+        actionResults[index].generateEncryptedPrivateKey.evmContractConditions,
+      ),
     };
   });
 
@@ -62,10 +64,7 @@ export async function batchGeneratePrivateKeys(
     } = actionResult;
     const id = ids[index]; // Result of writes is returned in the same order as provided
 
-    const signature = actionResult.signMessage?.signature;
-
     return {
-      ...(signature ? { signMessage: { signature } } : {}),
       generateEncryptedPrivateKey: {
         delegatorAddress,
         memo,
