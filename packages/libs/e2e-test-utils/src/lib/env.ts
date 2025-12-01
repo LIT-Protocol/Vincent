@@ -28,6 +28,9 @@ const baseEnvSchema = {
   TEST_AGENT_WALLET_PKP_OWNER_PRIVATE_KEY: z.string(),
   YELLOWSTONE_RPC_URL: z.string().optional().default('https://yellowstone-rpc.litprotocol.com/'),
   BASE_RPC_URL: z.string().optional().default('https://base.llamarpc.com'),
+  // Smart Account (optional - only needed when enableSmartAccount=true)
+  SMART_ACCOUNT_CHAIN_ID: z.string().optional(),
+  ZERODEV_RPC_URL: z.string().optional(),
 };
 
 type InferEnvType<T extends ZodRawShape> = z.infer<z.ZodObject<T>>;
