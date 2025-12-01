@@ -1,6 +1,6 @@
-import type { Address } from 'viem';
+import type { CreateKernelAccountReturnType } from '@zerodev/sdk';
 
 export interface SmartAccountInfo {
-  address: Address;
+  account: CreateKernelAccountReturnType;
   serializedPermissionAccount: string;
 }

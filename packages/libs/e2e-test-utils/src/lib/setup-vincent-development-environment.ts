@@ -162,7 +162,7 @@ export const setupVincentDevelopmentEnvironment = async ({
       zerodevRpcUrl: ZERODEV_RPC_URL,
     });
 
-    console.log(`✅ Smart account created at: ${smartAccount.address}\n`);
+    console.log(`✅ Smart account created at: ${smartAccount.account.address}\n`);
   }
 
   return {

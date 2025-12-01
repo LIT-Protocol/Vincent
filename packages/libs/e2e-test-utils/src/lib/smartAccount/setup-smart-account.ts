@@ -78,10 +78,6 @@ export async function setupSmartAccount({
   });
   const isDeployed = accountCode && accountCode !== '0x';
 
-  if (isDeployed) {
-    console.log('[setupSmartAccount] ✅ Smart account already deployed, skipping deployment...');
-  }
-
   // Create kernel client with paymaster
   const ownerKernelClient = createKernelAccountClient({
     chain,
@@ -95,7 +91,9 @@ export async function setupSmartAccount({
     },
   });
 
-  if (!isDeployed) {
+  if (isDeployed) {
+    console.log('[setupSmartAccount] ✅ Smart account already deployed, skipping deployment...');
+  } else {
     console.log('[setupSmartAccount] Deploying smart account with empty UserOp...');
 
     // Deploy smart account with an empty user operation
@@ -141,7 +139,7 @@ export async function setupSmartAccount({
   console.log('[setupSmartAccount] ✅ Smart account setup complete\n');
 
   return {
-    address: ownerKernelAccount.address,
+    account: ownerKernelAccount,
     serializedPermissionAccount,
   };
 }
