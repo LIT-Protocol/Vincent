@@ -35,7 +35,7 @@ describe('Relay.link Ability with Smart Account', () => {
     });
 
     expect(smartAccount).toBeDefined();
-    expect(smartAccount?.address).toMatch(/^0x[a-fA-F0-9]{40}$/);
+    expect(smartAccount?.account.address).toMatch(/^0x[a-fA-F0-9]{40}$/);
 
     const relayClient = getVincentAbilityClient({
       bundledVincentAbility: relayLinkAbility,
@@ -43,7 +43,7 @@ describe('Relay.link Ability with Smart Account', () => {
       debug: false,
     });
 
-    const userAddress = smartAccount?.address || agentPkpInfo.ethAddress;
+    const userAddress = smartAccount?.account.address || agentPkpInfo.ethAddress;
 
     // Get quote for ETH -> USDC swap on Base
     const ETH_ADDRESS = '0x0000000000000000000000000000000000000000';
@@ -95,7 +95,7 @@ describe('Relay.link Ability with Smart Account', () => {
               data: txData.data as `0x${string}`,
               value: txData.value || '0',
               chainId: txData.chainId,
-              from: smartAccount.address as `0x${string}`,
+              from: smartAccount.account.address as `0x${string}`,
             },
             chain: base,
             rpcUrl: env.BASE_RPC_URL!,
