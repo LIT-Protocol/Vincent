@@ -84,7 +84,8 @@ function decodeAaveOrERC20(
     }
   }
 
-  // Try Aave Pool (for borrow/repay/setUserUseReserveAsCollateral operations)
+  // Try Aave Pool - only borrow, repay, and setUserUseReserveAsCollateral are allowed
+  // (supply/withdraw must use fee contract)
   if (isAddressEqual(call.to, aavePoolAddress)) {
     try {
       const df = decodeFunctionData({ abi: AAVE_POOL_ABI, data: call.data });
