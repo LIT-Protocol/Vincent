@@ -53,7 +53,10 @@ function decodeAaveOrERC20(
   aavePoolAddress: Address,
   feeContractAddress: Address | null,
 ): DecodeAaveOrERC20Result | DecodeAaveOrERC20Failure {
-  // Try Fee Contract first (for supply/withdraw operations)
+  // Try Fee Contract first (handles supply/withdraw operations with fee collection)
+  // Must be checked before Aave Pool to ensure supply/withdraw go through fee contract.
+  // This ordering is intentional: if both contracts could handle the same function names,
+  // we want to prioritize the fee contract for correct fee collection and policy enforcement.
   if (feeContractAddress && isAddressEqual(call.to, feeContractAddress)) {
     try {
       const df = decodeFunctionData({ abi: FEE_CONTRACT_ABI, data: call.data });
