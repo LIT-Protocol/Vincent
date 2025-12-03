@@ -21,7 +21,7 @@ The Vincent Ability Aave is a ability to send deposit, withdraw or redeem Aave t
 Run tests:
 
 ```bash
-nx test ability-aave-smart-account
+pnpx nx test ability-aave-smart-account
 ```
 
 ### Building the Lit Action
@@ -29,7 +29,7 @@ nx test ability-aave-smart-account
 Build the ability:
 
 ```bash
-nx action:build ability-aave-smart-account
+pnpx nx action:build ability-aave-smart-account
 ```
 
 ### Deploying the Lit Action to IPFS
@@ -37,7 +37,7 @@ nx action:build ability-aave-smart-account
 Building will be done automatically. Deploy the ability:
 
 ```bash
-nx action:deploy ability-aave-smart-account
+pnpx nx action:deploy ability-aave-smart-account
 ```
 
 ## Project Structure
