@@ -25,8 +25,8 @@ const LandingPartners: React.FC = () => {
         </p>
 
         {/* Logo Grid - visible only on mobile/tablet (hidden on desktop where globe shows logos) */}
-        <div className="w-full md:hidden">
-          <div className="grid grid-cols-6 gap-2 max-w-sm mx-auto">
+        <div className="w-full md:hidden px-4">
+          <div className="grid grid-cols-6 gap-2 w-full">
             {logos.map((logo, i) => (
               <a
                 key={i}

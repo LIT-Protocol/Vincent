@@ -297,57 +297,151 @@ export default function RootPage() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: '-100px' }}
             transition={{ duration: 0.6 }}
-            className="mb-16 text-center"
+            className="mb-16 p-8 md:p-12 bg-white dark:bg-gray-950 rounded-2xl border border-gray-200 dark:border-white/10 shadow-lg"
           >
-            <h2
-              className="text-4xl md:text-5xl lg:text-6xl font-light text-gray-900 dark:text-white mb-6"
-              style={fonts.heading}
-            >
-              The Future of Intelligent Finance
-            </h2>
-            <p
-              className="text-lg md:text-xl text-gray-600 dark:text-gray-400 max-w-4xl mx-auto mb-8 leading-relaxed"
-              style={fonts.body}
-            >
-              Vincent is an automation and delegation platform that enables secure bridging and
-              transactions across Solana, EVM, and native Bitcoin for your service, application, or
-              AI Agent.
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto text-left">
-              <div className="p-6 bg-white dark:bg-gray-950 rounded-lg border border-gray-200 dark:border-white/10">
-                <h3
-                  className="text-lg font-semibold text-gray-900 dark:text-white mb-2"
-                  style={fonts.heading}
-                >
-                  Decentralized Key Management
-                </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400" style={fonts.body}>
-                  Uses Lit Protocol's Programmable Key Pairs to manage agent identities without
-                  exposing private keys
-                </p>
+            <div className="text-center mb-8">
+              <div
+                className="text-sm text-gray-500 dark:text-gray-400 mb-2 font-medium"
+                style={fonts.heading}
+              >
+                INTRODUCING VINCENT
               </div>
-              <div className="p-6 bg-white dark:bg-gray-950 rounded-lg border border-gray-200 dark:border-white/10">
-                <h3
-                  className="text-lg font-semibold text-gray-900 dark:text-white mb-2"
-                  style={fonts.heading}
+              <h2
+                className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-3"
+                style={fonts.heading}
+              >
+                The Future of Intelligent Finance
+              </h2>
+              <p
+                className="text-sm text-gray-600 dark:text-gray-400 max-w-4xl mx-auto"
+                style={fonts.body}
+              >
+                Vincent is an automation and delegation platform that enables secure bridging and
+                transactions across Solana, EVM, and native Bitcoin for your service, application,
+                or AI Agent.
+              </p>
+            </div>
+            <div className="max-w-4xl mx-auto space-y-6 text-left">
+              <div className="flex gap-4 pb-6 pt-6 border-t border-b border-gray-200 dark:border-white/10">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 32 32"
+                  fill="#FF4205"
+                  stroke="#FF4205"
+                  strokeMiterlimit="10"
+                  className="w-9 h-9 flex-shrink-0 mt-5"
                 >
-                  Fine-Grained Control
-                </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400" style={fonts.body}>
-                  Full authority over policies with verifiable on-chain operations and instant
-                  revocation
-                </p>
+                  <path
+                    strokeWidth=".45"
+                    d="M16.01 8.24c4.3 0 7.8 3.5 7.8 7.8s-3.5 7.8-7.8 7.8-7.8-3.5-7.8-7.8 3.5-7.8 7.8-7.8Zm0-.46c-4.56 0-8.25 3.7-8.25 8.25s3.7 8.25 8.25 8.25 8.25-3.7 8.25-8.25-3.7-8.25-8.25-8.25Z"
+                  ></path>
+                  <rect strokeWidth=".45" x="15.77" y="7.78" width=".49" height="16.51"></rect>
+                  <rect strokeWidth=".45" x="7.76" y="15.79" width="16.51" height=".49"></rect>
+                  <path
+                    strokeWidth=".45"
+                    d="M16.01 8.24c1.99 0 3.67 3.57 3.67 7.8s-1.68 7.8-3.67 7.8-3.67-3.57-3.67-7.8 1.68-7.8 3.67-7.8Zm0-.46c-2.28 0-4.13 3.7-4.13 8.25s1.85 8.25 4.13 8.25 4.13-3.7 4.13-8.25-1.85-8.25-4.13-8.25Z"
+                  ></path>
+                  <path
+                    strokeWidth=".45"
+                    d="M16.01 12.37c4.23 0 7.8 1.68 7.8 3.67s-3.57 3.67-7.8 3.67-7.8-1.68-7.8-3.67 3.57-3.67 7.8-3.67Zm0-.46c-4.56 0-8.25 1.85-8.25 4.13s3.7 4.13 8.25 4.13 8.25-1.85 8.25-4.13-3.7-4.13-8.25-4.13Z"
+                  ></path>
+                  <path
+                    strokeWidth=".5"
+                    d="M28.48 14.32c-.3-2.22-1.18-4.25-2.48-5.94.24-.29.38-.66.38-1.07 0-.93-.76-1.69-1.69-1.69-.41 0-.78.14-1.07.39-1.69-1.29-3.72-2.16-5.93-2.45-.07-.87-.79-1.56-1.68-1.56s-1.62.69-1.68 1.56c-2.21.3-4.23 1.17-5.92 2.45-.29-.25-.67-.4-1.08-.4-.93 0-1.69.76-1.69 1.69 0 .41.15.79.39 1.08-1.29 1.69-2.17 3.72-2.47 5.93-.86.07-1.54.8-1.54 1.68s.67 1.61 1.54 1.68c.29 2.22 1.16 4.26 2.45 5.96-.23.29-.37.65-.37 1.05 0 .93.76 1.69 1.69 1.69.4 0 .76-.13 1.04-.36 1.7 1.31 3.74 2.19 5.97 2.48.09.84.81 1.5 1.68 1.5s1.58-.65 1.68-1.5c2.23-.29 4.28-1.18 5.98-2.48.28.22.64.35 1.03.35.93 0 1.69-.76 1.69-1.69 0-.39-.13-.75-.36-1.04 1.3-1.7 2.17-3.75 2.46-5.97.85-.08 1.52-.8 1.52-1.68s-.67-1.6-1.52-1.68Zm-4.81-7.65c.09-.14.2-.26.34-.35.2-.13.43-.21.69-.21.67 0 1.21.54 1.21 1.21 0 .25-.08.49-.21.68-.09.14-.21.25-.35.34-.19.12-.41.19-.65.19-.67 0-1.21-.54-1.21-1.21 0-.24.07-.46.18-.64ZM14.81 3.51c.08-.58.59-1.02 1.19-1.02s1.1.44 1.19 1.02c.01.06.02.12.02.19 0 .1-.01.2-.04.3-.13.52-.6.91-1.17.91s-1.04-.39-1.17-.91c-.03-.1-.04-.2-.04-.3 0-.06 0-.12.01-.18Zm-7.5 2.59c.26 0 .5.08.7.22.13.09.25.22.33.36.11.18.18.4.18.63 0 .67-.54 1.21-1.21 1.21-.23 0-.45-.07-.63-.18-.14-.09-.26-.2-.35-.34-.14-.2-.22-.43-.22-.69 0-.67.54-1.21 1.21-1.21ZM3.69 17.21c-.07 0-.14 0-.21-.02-.57-.1-1-.59-1-1.19s.43-1.09 1-1.19c.07-.01.14-.02.21-.02.1 0 .19.01.28.03.53.13.93.6.93 1.17s-.4 1.05-.93 1.18c-.09.02-.18.03-.28.03Zm3.62 8.69c-.67 0-1.21-.54-1.21-1.21 0-.24.07-.47.19-.66.09-.14.21-.26.35-.35.19-.13.42-.2.67-.2.67 0 1.21.54 1.21 1.21 0 .25-.07.48-.2.67-.09.14-.21.25-.35.34-.19.12-.41.19-.65.19ZM17.18 28.56c-.11.55-.6.96-1.18.96s-1.07-.41-1.18-.96c-.01-.08-.02-.16-.02-.25 0-.08 0-.16.02-.24.11-.55.6-.97 1.18-.97s1.07.42 1.18.97c.02.08.02.16.02.24 0 .08 0 .17-.02.25ZM24.69 25.9c-.24 0-.46-.07-.64-.19-.14-.09-.26-.2-.35-.34-.13-.2-.21-.43-.21-.68 0-.67.54-1.21 1.21-1.21.25 0 .49.08.68.21.14.1.25.22.34.36.12.19.19.41.19.64 0 .67-.54 1.21-1.21 1.21Zm.98-2.59c-.28-.2-.61-.31-.98-.31-.93 0-1.69.76-1.69 1.69 0 .37.12.7.32.98-1.61 1.23-3.55 2.06-5.65 2.35-.14-.79-.83-1.4-1.66-1.4s-1.53.6-1.66 1.4c-2.1-.29-4.03-1.12-5.65-2.35.2-.28.31-.61.31-.97 0-.93-.76-1.69-1.69-1.69-.36 0-.69.11-.97.3-1.22-1.61-2.04-3.55-2.33-5.65.78-.15 1.36-.84 1.36-1.66s-.58-1.5-1.35-1.66c.29-2.1 1.12-4.02 2.35-5.63.27.18.59.28.93.28.93 0 1.69-.76 1.69-1.69 0-.35-.1-.67-.28-.93 1.61-1.22 3.54-2.04 5.63-2.33.16.76.84 1.33 1.65 1.33s1.49-.57 1.65-1.34c2.1.28 4.02 1.11 5.63 2.33-.18.27-.28.59-.28.94 0 .93.76 1.69 1.69 1.69.35 0 .68-.11.95-.29 1.23 1.61 2.06 3.53 2.36 5.63-.78.15-1.37.83-1.37 1.66s.59 1.52 1.38 1.66c-.28 2.1-1.11 4.04-2.33 5.65Zm2.87-6.42c-.07.01-.15.02-.23.02-.09 0-.17 0-.26-.03-.54-.12-.95-.6-.95-1.18s.41-1.06.95-1.18c.08-.02.17-.03.26-.03.08 0 .15 0 .22.02.56.1.98.6.98 1.19s-.42 1.08-.98 1.19Z"
+                  ></path>
+                </svg>
+                <div className="flex-1">
+                  <div
+                    className="text-xs text-gray-500 dark:text-gray-400 mb-2 font-medium"
+                    style={fonts.heading}
+                  >
+                    SECURITY
+                  </div>
+                  <h3
+                    className="text-lg font-bold text-gray-900 dark:text-white mb-3"
+                    style={fonts.heading}
+                  >
+                    Decentralized Key Management
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400" style={fonts.body}>
+                    Uses Lit Protocol's Programmable Key Pairs to manage agent identities without
+                    exposing private keys
+                  </p>
+                </div>
               </div>
-              <div className="p-6 bg-white dark:bg-gray-950 rounded-lg border border-gray-200 dark:border-white/10">
-                <h3
-                  className="text-lg font-semibold text-gray-900 dark:text-white mb-2"
-                  style={fonts.heading}
+              <div className="flex gap-4 pb-6 border-b border-gray-200 dark:border-white/10">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 32 32"
+                  className="w-9 h-9 flex-shrink-0 mt-5"
+                  fill="#FF4205"
+                  stroke="#FF4205"
+                  strokeWidth="0.3"
                 >
-                  Cross-Platform Automation
-                </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400" style={fonts.body}>
-                  Seamless operation across blockchains and off-chain platforms for DeFi and TradFi
-                </p>
+                  <g id="icon_group">
+                    <path d="M29.46,19.45l-4.46-2.57-.09-.05-.18-.11-.27.16-.09.05-1.76,1.02h-.02s-.47.29-.47.29h0s-.02.01-.02.01l-.49.28-1.61.93-.54.31v6.09l.27.16,1.1.64.52.3,3.11,1.8.27.15.27-.15,4.73-2.73.27-.16v-6.09l-.54-.31ZM24.46,28.12l-2.64-1.53-.5-.29-1.31-.76v-4.84l1.65.95.11.06.36.21.11.06,1.73,1,.47.27.04.02v4.84ZM29.46,25.54l-4.46,2.58v-4.84l1.03-.6,3.43-1.98v4.84ZM25.62,22.29l-.89.51-.1-.06-.47-.27-1.75-1.01-.09-.05-.38-.22-.09-.05-1.85-1.06,2.02-1.16.16-.09h0s.51-.3.51-.3h0s1.83-1.06,1.83-1.06l.21-.12.36.2,4.38,2.53-3.84,2.22Z"></path>
+                    <path d="M2.3,20.02v.54h.18v-.54h-.18Z"></path>
+                    <path d="M2,17.76v10.11h10.68v-10.11H2ZM5.28,18.3h6.92v1.72h-6.92v-1.72ZM12.2,27.33H2.48v-6.77h-.18v-.54h.18v-1.72h2.32v1.72h-2.32v.54h9.72v6.77Z"></path>
+                    <rect x="2.3" y="20.02" width=".18" height=".54"></rect>
+                    <path d="M16.02,3.11l-5.54,3.2v6.4l.16.09,5.38,3.11,5.37-3.1.17-.1v-6.4l-5.54-3.2ZM21.03,12.39l-.11.06-4.9,2.83-4.9-2.83-.1-.06v-5.77l5-2.89,5,2.89v5.77Z"></path>
+                    <path d="M15.96,12.75c-.1,0-.21,0-.31-.01-.92-.08-1.75-.6-2.16-1.37-.1-.19-.17-.39-.21-.58-.08-.31-.08-.65-.01-1,.07-.35.22-.63.38-.91.12-.23.24-.44.3-.68l.11-.43.33.29c.15.13.26.3.34.47l.09-.13c.3-.56.42-1.2.31-1.83l-.07-.45.43.16c.68.25,1.22.77,1.49,1.41,0-.11.01-.24,0-.39l-.02-.64.47.43c.53.49.96,1.15,1.21,1.87.22.64.25,1.28.08,1.85-.05.19-.13.38-.23.56-.49.88-1.42,1.39-2.53,1.39ZM14.27,8.85c-.05.1-.1.19-.15.29-.14.25-.27.49-.32.76-.05.27-.05.53,0,.78.03.15.09.3.16.45.32.6.98,1.02,1.72,1.08,1.03.09,1.9-.33,2.33-1.1.08-.14.14-.29.18-.44h0c.13-.47.11-1-.07-1.53-.15-.43-.37-.83-.64-1.18-.06.43-.19.74-.41.92l-.45.39v-.6c0-.7-.36-1.32-.93-1.69,0,.59-.14,1.17-.43,1.7l-.75,1.13-.15-.6c-.03-.13-.06-.25-.11-.37Z"></path>
+                    <polygon points="19.74 22.39 19.46 22.85 16.01 20.76 12.56 22.85 12.28 22.39 15.75 20.28 15.75 15.28 16.29 15.28 16.29 20.3 19.74 22.39"></polygon>
+                  </g>
+                </svg>
+                <div className="flex-1">
+                  <div
+                    className="text-xs text-gray-500 dark:text-gray-400 mb-2 font-medium"
+                    style={fonts.heading}
+                  >
+                    FLEXIBILITY
+                  </div>
+                  <h3
+                    className="text-lg font-bold text-gray-900 dark:text-white mb-3"
+                    style={fonts.heading}
+                  >
+                    Fine-Grained Control
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400" style={fonts.body}>
+                    Full authority over policies with verifiable on-chain operations and instant
+                    revocation
+                  </p>
+                </div>
+              </div>
+              <div className="flex gap-4">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 32 32"
+                  className="w-9 h-9 flex-shrink-0 mt-5"
+                  fill="#FF4205"
+                  stroke="#FF4205"
+                  strokeWidth="0.3"
+                >
+                  <path d="M18.4,5.4c.29.06.54.24.7.5.16.26.21.59.14.89-.24.94.38,1.68.99,2.04.6.35,1.56.53,2.26-.13.23-.21.53-.33.84-.31.3.01.58.14.78.37,1.04,1.16,1.82,2.55,2.28,4.04.18.59-.15,1.2-.76,1.39-.89.28-1.22,1.17-1.23,1.85s.3,1.57,1.18,1.88c.6.21.92.82.72,1.41-.48,1.45-1.29,2.82-2.35,3.95-.41.44-1.08.47-1.55.08-.57-.48-1.43-.51-2.17-.08-.74.43-1.14,1.17-1.02,1.91.1.6-.26,1.17-.83,1.29-.76.17-1.52.25-2.31.25s-1.55-.08-2.31-.25c-.56-.12-.93-.69-.83-1.29.12-.73-.28-1.48-1.02-1.91-.74-.43-1.6-.39-2.17.08-.48.4-1.14.36-1.55-.08-1.05-1.13-1.87-2.5-2.35-3.95-.19-.58.13-1.2.72-1.41.89-.31,1.19-1.2,1.18-1.88,0-.67-.34-1.56-1.23-1.85-.6-.19-.93-.8-.76-1.39.45-1.49,1.24-2.88,2.28-4.04.2-.22.48-.35.78-.37.3-.01.61.1.84.31.7.66,1.66.48,2.26.13s1.22-1.1.99-2.04c-.08-.3-.03-.63.14-.89.16-.26.41-.43.7-.5.76-.17,1.54-.25,2.33-.25s1.57.08,2.33.25ZM9.25,9.13c-.11-.11-.26-.16-.4-.15-.14,0-.27.07-.36.17-.98,1.09-1.72,2.41-2.15,3.82-.08.27.08.55.37.65.99.31,1.63,1.26,1.65,2.41.01,1.15-.61,2.11-1.58,2.45-.29.1-.44.39-.35.66.45,1.37,1.22,2.66,2.22,3.73.19.2.51.21.73.02.77-.64,1.88-.69,2.85-.14.96.55,1.47,1.54,1.31,2.52-.05.29.11.55.37.61.72.16,1.44.24,2.19.24.75,0,1.46-.08,2.19-.24.25-.06.42-.32.37-.61-.16-.98.35-1.97,1.31-2.52.96-.55,2.08-.5,2.85.14.23.19.54.18.73-.02,1-1.07,1.76-2.36,2.22-3.73.09-.27-.07-.56-.35-.66-.98-.34-1.6-1.3-1.58-2.45.01-1.15.66-2.09,1.65-2.41.29-.09.45-.37.37-.65-.43-1.4-1.17-2.72-2.15-3.82-.09-.1-.22-.16-.36-.17-.15,0-.29.05-.4.15-.78.73-1.94.81-2.97.21-1.03-.6-1.52-1.66-1.26-2.7.04-.15.01-.31-.06-.43-.07-.12-.19-.2-.33-.23-1.44-.32-2.96-.32-4.4,0-.14.03-.25.11-.33.23-.08.13-.1.28-.06.43.26,1.03-.24,2.09-1.26,2.7-.46.27-.94.4-1.41.4-.58,0-1.13-.21-1.56-.61Z"></path>
+                  <path d="M20.69,15.93c0,2.54-2.07,4.61-4.61,4.61s-4.61-2.07-4.61-4.61,2.07-4.61,4.61-4.61,4.61,2.07,4.61,4.61ZM20.09,15.93c0-2.21-1.8-4.02-4.02-4.02s-4.02,1.8-4.02,4.02,1.8,4.02,4.02,4.02,4.02-1.8,4.02-4.02Z"></path>
+                  <path d="M15.5,2.6h.03l.06-.05s-.06.04-.09.05Z"></path>
+                  <path d="M7.1,28.66c-.03-.12-.59-2.29-.59-2.29,0,0-.06-.18-.05-.28.01-.09.07-.17.15-.21.1-.05.3-.03.3-.03s.25.02.38.03c.21.02.41.03.62.05.22.02,1.03.08,1.21.1.07,0,.15.01.22.02.16.01.29.16.27.32,0,.07-.04.14-.08.19-.06.06-.15.09-.23.09l-1.67-.13c5.26,4.23,12.98,3.9,17.87-.98,4.68-4.68,5.18-11.97,1.48-17.21-.09-.13-.07-.31.07-.41.13-.09.32-.07.41.07,3.86,5.46,3.34,13.08-1.54,17.97-5.09,5.09-13.14,5.44-18.63,1.05l.4,1.56c.03.1,0,.21-.08.28-.04.04-.08.06-.14.08-.16.04-.32-.06-.36-.21Z"></path>
+                  <path d="M6.45,26.08Z"></path>
+                  <path d="M24.9,3.34c.03.12.59,2.29.59,2.29,0,0,.06.18.05.28-.01.09-.07.17-.15.21-.1.05-.3.03-.3.03s-.25-.02-.38-.03c-.21-.02-.41-.03-.62-.05-.22-.02-1.03-.08-1.21-.1-.07,0-.15-.01-.22-.02-.16-.01-.29-.16-.27-.32,0-.07.04-.14.08-.19.06-.06.15-.09.23-.09l1.67.13c-5.26-4.23-12.98-3.9-17.87.98-4.68,4.68-5.18,11.97-1.48,17.21.09.13.07.31-.07.41-.13.09-.32.07-.41-.07C.7,18.6,1.21,10.98,6.1,6.1s13.14-5.44,18.63-1.05l-.4-1.56c-.03-.1,0-.21.08-.28.04-.04.08-.06.14-.08.16-.04.32.06.36.21Z"></path>
+                  <path d="M25.55,5.92Z"></path>
+                </svg>
+                <div className="flex-1">
+                  <div
+                    className="text-xs text-gray-500 dark:text-gray-400 mb-2 font-medium"
+                    style={fonts.heading}
+                  >
+                    INTEROPERABILITY
+                  </div>
+                  <h3
+                    className="text-lg font-bold text-gray-900 dark:text-white mb-3"
+                    style={fonts.heading}
+                  >
+                    Cross-Platform Automation
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400" style={fonts.body}>
+                    Seamless operation across blockchains and off-chain platforms for DeFi and
+                    TradFi
+                  </p>
+                </div>
               </div>
             </div>
           </motion.div>
