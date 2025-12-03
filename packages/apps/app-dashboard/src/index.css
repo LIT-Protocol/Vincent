@@ -88,10 +88,6 @@ button {
 button:hover {
     border-color: #FF4205;
 }
-button:focus,
-button:focus-visible {
-    outline: 2px solid #FF4205;
-}
 
 @media (prefers-color-scheme: light) {
     :root {

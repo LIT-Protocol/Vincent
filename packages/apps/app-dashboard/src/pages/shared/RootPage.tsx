@@ -54,6 +54,7 @@ export default function RootPage() {
     setIsTransitioning(true);
     // Wait for fade out to complete before navigating
     setTimeout(() => {
+      window.scrollTo(0, 0);
       navigate('/user/apps', { state: { fromTransition: true } });
     }, 500);
   }, [navigate]);
@@ -62,7 +63,17 @@ export default function RootPage() {
     setIsTransitioning(true);
     // Wait for fade out to complete before navigating
     setTimeout(() => {
+      window.scrollTo(0, 0);
       navigate('/explorer/apps', { state: { fromTransition: true } });
+    }, 500);
+  }, [navigate]);
+
+  const handleBuildClick = useCallback(() => {
+    setIsTransitioning(true);
+    // Wait for fade out to complete before navigating
+    setTimeout(() => {
+      window.scrollTo(0, 0);
+      navigate('/developer/dashboard', { state: { fromTransition: true } });
     }, 500);
   }, [navigate]);
 
@@ -99,12 +110,14 @@ export default function RootPage() {
       </Helmet>
 
       {/* Main container */}
-      <div
+      <motion.div
         className="bg-white dark:bg-gray-950 text-center overflow-x-hidden"
         style={{
           backgroundImage: 'var(--bg-gradient)',
           backgroundSize: '24px 24px',
         }}
+        animate={{ opacity: isTransitioning ? 0 : 1 }}
+        transition={{ duration: 0.5, ease: 'easeInOut' }}
       >
         {/* Landing section with globe - min-h-screen */}
         <div className="relative min-h-screen grid" style={{ gridTemplateRows: '1fr auto' }}>
@@ -524,7 +537,7 @@ export default function RootPage() {
                     Create and publish apps, abilities, and policies on the Vincent platform
                   </div>
                   <button
-                    onClick={() => navigate('/developer/dashboard')}
+                    onClick={handleBuildClick}
                     className="flex items-center gap-2 px-6 py-3 text-sm font-medium text-gray-900 dark:text-white hover:gap-3 hover:text-[#FF4205] transition-all group mx-auto rounded-full border-2 border-gray-900 dark:border-white hover:border-[#FF4205]"
                     style={fonts.heading}
                   >
@@ -586,7 +599,7 @@ export default function RootPage() {
         <div className="z-15 pb-1 sm:pb-3">
           <Footer />
         </div>
-      </div>
+      </motion.div>
     </>
   );
 }
