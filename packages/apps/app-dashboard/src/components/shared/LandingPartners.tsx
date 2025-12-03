@@ -8,7 +8,7 @@ const LandingPartners: React.FC = () => {
     <div className="relative bg-transparent py-2">
       <div className="max-w-lg mx-auto px-3">
         <p
-          className="flex justify-center items-center mb-2 text-gray-900 dark:text-white text-xs tracking-wide font-medium"
+          className="hidden md:flex justify-center items-center mb-2 text-gray-900 dark:text-white text-xs tracking-wide font-medium"
           style={fonts.heading}
         >
           <a
