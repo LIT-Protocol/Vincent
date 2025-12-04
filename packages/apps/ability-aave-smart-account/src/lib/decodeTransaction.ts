@@ -23,6 +23,7 @@ const decodeTransactionKind = (
   try {
     const { abi, kind, transaction } = params;
     const df = decodeFunctionData({ abi, data: transaction.data });
+    console.log(`Decoded ${kind} transaction: ${JSON.stringify(df)}`);
     return {
       args: df.args,
       kind,
@@ -31,7 +32,7 @@ const decodeTransactionKind = (
       value: transaction.value,
     };
   } catch (error) {
-    console.log(`Not a valid Aave transaction: ${JSON.stringify(error)}`);
+    // Could not decode transaction. Likely not the correct ABI. Continue...
     return;
   }
 };
