@@ -66,6 +66,7 @@
       "abilities-e2e",
       "ability-morpho",
       "ability-aave",
+      "ability-aave-smart-account",
       "ability-debridge",
       "policy-send-counter",
       "ability-aerodrome-swap",

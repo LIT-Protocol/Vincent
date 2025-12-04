@@ -1,6 +1,6 @@
 {
   "name": "@lit-protocol/vincent-ability-aave-smart-account",
-  "version": "1.3.0-mma",
+  "version": "1.4.1-mma",
   "publishConfig": {
     "access": "public"
   },
@@ -20,8 +20,9 @@
     "esbuild": "^0.19.12",
     "ipfs-only-hash": "^4.0.0"
   },
-  "main": "./src/index.ts",
-  "module": "./src/index.ts",
+  "main": "./dist/src/index.js",
+  "module": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
   "files": [
     "dist/**",
     "*.md"
