@@ -1,7 +1,9 @@
-import { Address, ByteArray, Hex, isHex, toHex } from 'viem';
+import type { Address, ByteArray, Hex } from 'viem';
+
+import { isHex, toHex } from 'viem';
 import { z } from 'zod';
 
-import { addressSchema, hexSchema } from './schemas';
+import { addressSchema, hexSchema } from './hex';
 
 const userOpBaseSchema = z.object({
   sender: addressSchema.describe('The account making the operation'),
@@ -30,7 +32,7 @@ const userOpBaseSchema = z.object({
     .string()
     .regex(/^0x([1-9a-fA-F]+[0-9a-fA-F]{0,15})|0$/)
     .describe('Max priority fee per gas (EIP-1559)'),
-  signature: hexSchema.optional().describe('Data passed during verification.'),
+  signature: hexSchema.default('0x').describe('Data passed during verification.'),
   eip7702Auth: z
     .object({
       chain_id: z

@@ -1,14 +1,25 @@
+import type { Hex, SignableMessage, TransactionSerializable } from 'viem';
+
 import {
   hashMessage,
   hashTypedData,
-  Hex,
+  hexToBytes,
   keccak256,
   serializeSignature,
   serializeTransaction,
-  SignableMessage,
-  TransactionSerializable,
 } from 'viem';
 import { toAccount } from 'viem/accounts';
+import { publicKeyToAddress } from 'viem/utils';
+
+declare const Lit: {
+  Actions: {
+    signAndCombineEcdsa: (params: {
+      toSign: Uint8Array;
+      publicKey: string;
+      sigName: string;
+    }) => Promise<string>;
+  };
+};
 
 interface LitActionSignature {
   r: string; // 02cb20a7ab19f830de23d24bfbdfe526b4415dac756d1f899087189eacb2b66aaf
@@ -17,7 +28,7 @@ interface LitActionSignature {
 }
 
 export function toLitActionAccount(pkpPublicKey: Hex) {
-  const pkpEthAddress = ethers.utils.computeAddress(pkpPublicKey) as Hex;
+  const pkpEthAddress = publicKeyToAddress(pkpPublicKey);
   const pkpPublicKeyForLit = pkpPublicKey.replace('0x', '');
 
   return toAccount({
@@ -26,7 +37,7 @@ export function toLitActionAccount(pkpPublicKey: Hex) {
     async signMessage({ message }: { message: SignableMessage }) {
       const hashedMessage = hashMessage(message);
       const signature = await Lit.Actions.signAndCombineEcdsa({
-        toSign: ethers.utils.arrayify(hashedMessage),
+        toSign: hexToBytes(hashedMessage),
         publicKey: pkpPublicKeyForLit,
         sigName: 'signMessage',
       });
@@ -48,7 +59,7 @@ export function toLitActionAccount(pkpPublicKey: Hex) {
       const serializedTx = (await serializerToUse(signableTransaction)) as Hex;
 
       const txHash = keccak256(serializedTx);
-      const toSign = ethers.utils.arrayify(txHash);
+      const toSign = hexToBytes(txHash);
 
       const signature = await Lit.Actions.signAndCombineEcdsa({
         toSign,
@@ -74,7 +85,7 @@ export function toLitActionAccount(pkpPublicKey: Hex) {
       } as any);
 
       const signature = await Lit.Actions.signAndCombineEcdsa({
-        toSign: ethers.utils.arrayify(hashedTypedData),
+        toSign: hexToBytes(hashedTypedData),
         publicKey: pkpPublicKeyForLit,
         sigName: 'signTypedData',
       });

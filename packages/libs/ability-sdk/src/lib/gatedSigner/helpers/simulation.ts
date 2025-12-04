@@ -1,9 +1,22 @@
-import { type PublicClient } from 'viem';
+import type { Address, PublicClient } from 'viem';
+
 import { z } from 'zod';
 
-import { hexSchema } from './schemas';
-import { type Transaction } from './transaction';
-import { type UserOp } from './userOperation';
+import type { Transaction } from './transaction';
+import type { UserOp } from './userOperation';
+
+import { hexSchema } from './hex';
+
+/**
+ * Validates valid Alchemy RPC URLs, the simulation provider
+ */
+export const alchemyRpcUrlSchema = z
+  .string()
+  .regex(/^https:\/\/[a-z0-9-]+\.g\.alchemy\.com\/v2\/.+/, { message: 'Invalid Alchemy RPC URL' })
+  .url()
+  .describe(
+    'Alchemy RPC URL for the desired chain. Will be used to simulate the transaction or user op and define the target chain.',
+  );
 
 // Types copied from @account-kit/infra
 // Zod schemas are created for runtime validation; types are derived from them to ensure consistency
@@ -28,22 +41,20 @@ export enum SimulateChangeType {
 }
 export const simulateChangeTypeSchema = z.nativeEnum(SimulateChangeType);
 
-export const simulateAssetChangeSchema = z
-  .object({
-    assetType: simulateAssetTypeSchema,
-    changeType: simulateChangeTypeSchema,
-    from: hexSchema,
-    to: hexSchema,
-    rawAmount: z.string().nullable().optional(),
-    amount: z.string().nullable().optional(),
-    contractAddress: hexSchema.nullable().optional(),
-    tokenId: z.string().nullable().optional(),
-    decimals: z.number(),
-    symbol: z.string(),
-    name: z.string().nullable().optional(),
-    logo: z.string().nullable().optional(),
-  })
-  .strict();
+export const simulateAssetChangeSchema = z.object({
+  assetType: simulateAssetTypeSchema,
+  changeType: simulateChangeTypeSchema,
+  from: hexSchema,
+  to: hexSchema,
+  rawAmount: z.string().nullable().optional(),
+  amount: z.string().nullable().optional(),
+  contractAddress: hexSchema.nullable().optional(),
+  tokenId: z.string().nullable().optional(),
+  decimals: z.number(),
+  symbol: z.string(),
+  name: z.string().nullable().optional(),
+  logo: z.string().nullable().optional(),
+});
 
 export const simulateAssetChangesErrorSchema = z
   .object({
@@ -51,15 +62,11 @@ export const simulateAssetChangesErrorSchema = z
   })
   .catchall(z.unknown());
 
-export const simulateUserOperationAssetChangesResponseSchema = z
-  .object({
-    changes: z.array(simulateAssetChangeSchema),
-    error: simulateAssetChangesErrorSchema.nullable().optional(),
-  })
-  .strict();
-export type SimulateUserOperationAssetChangesResponse = z.infer<
-  typeof simulateUserOperationAssetChangesResponseSchema
->;
+export const simulateAssetChangesResponseSchema = z.object({
+  changes: z.array(simulateAssetChangeSchema),
+  error: simulateAssetChangesErrorSchema.nullable().optional(),
+});
+export type SimulateAssetChangesResponse = z.infer<typeof simulateAssetChangesResponseSchema>;
 
 export const simulateTransaction = async ({
   publicClient,
@@ -88,17 +95,17 @@ export const simulateTransaction = async ({
   return (await publicClient.request({
     // @ts-expect-error viem types do not include this method
     method: 'alchemy_simulateAssetChanges',
-    // @ts-expect-error rpcTransaction format is compatible with Alchemy API
+    // @ts-expect-error viem types do not include this method
     params: [rpcTransaction],
-  })) as SimulateUserOperationAssetChangesResponse;
+  })) as SimulateAssetChangesResponse;
 };
 
 export const simulateUserOp = async ({
-  entryPoint,
+  entryPointAddress,
   publicClient,
   userOp,
 }: {
-  entryPoint: string;
+  entryPointAddress: Address;
   publicClient: PublicClient;
   userOp: UserOp;
 }) => {
@@ -106,6 +113,6 @@ export const simulateUserOp = async ({
     // @ts-expect-error viem types do not include this method
     method: 'alchemy_simulateUserOperationAssetChanges',
     // @ts-expect-error viem types do not include this method
-    params: [userOp, entryPoint],
-  })) as SimulateUserOperationAssetChangesResponse;
+    params: [userOp, entryPointAddress],
+  })) as SimulateAssetChangesResponse;
 };

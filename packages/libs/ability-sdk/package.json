@@ -12,6 +12,7 @@
     "ethers-v6": "npm:ethers@^6",
     "semver": "^7.7.2",
     "tslib": "^2.8.1",
+    "viem": "^2.40.3",
     "zod": "^3.25.64"
   },
   "scripts": {
@@ -32,6 +33,11 @@
     "./internal": {
       "require": "./dist/src/internal.js",
       "import": "./dist/src/internal.js"
+    },
+    "./gatedSigner": {
+      "require": "./dist/src/gatedSigner.js",
+      "import": "./dist/src/gatedSigner.js",
+      "types": "./dist/src/gatedSigner.d.ts"
     }
   },
   "devDependencies": {

@@ -1,9 +1,13 @@
-import { type Address, type Hex, createPublicClient, concat, http, pad, toHex } from 'viem';
-import { type UserOperation, getUserOperationHash } from 'viem/account-abstraction';
+import type { Address, Hex } from 'viem';
+import type { UserOperation } from 'viem/account-abstraction';
+
+import { createPublicClient, concat, http, pad, toHex } from 'viem';
+import { getUserOperationHash } from 'viem/account-abstraction';
+
+import type { Eip712Params } from './eip712';
+import type { UserOp } from './userOperation';
 
 import { toLitActionAccount } from './toLitActionAccount';
-import { type UserOp } from './userOperation';
-import { type Eip712Params } from '../schemas';
 
 export interface SignUserOperationParams {
   alchemyRpcUrl: string;
@@ -42,7 +46,6 @@ export async function signUserOperation({
     paymasterVerificationGasLimit: BigInt(userOp.paymasterVerificationGasLimit),
     preVerificationGas: BigInt(userOp.preVerificationGas),
     verificationGasLimit: BigInt(userOp.verificationGasLimit),
-    signature: userOp.signature || '0x',
   };
 
   if (eip712Params) {

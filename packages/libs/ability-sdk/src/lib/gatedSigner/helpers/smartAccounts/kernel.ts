@@ -1,14 +1,8 @@
-import {
-  type Abi,
-  type Hex,
-  decodeAbiParameters,
-  decodeFunctionData,
-  getAddress,
-  hexToBigInt,
-  sliceHex,
-} from 'viem';
+import type { Abi, Hex } from 'viem';
 
-import { DecodedFunctionCall, LowLevelCall } from '../lowLevelCall';
+import { decodeAbiParameters, decodeFunctionData, getAddress, hexToBigInt, sliceHex } from 'viem';
+
+import type { DecodedFunctionCall, LowLevelCall } from '../lowLevelCall';
 
 type KernelArgs = [Hex, Hex];
 type DecodedKernelFunction = DecodedFunctionCall<KernelArgs>;

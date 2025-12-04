@@ -1,15 +1,18 @@
-import {
-  type Address,
-  type Hex,
-  type TransactionSerializable,
-  hexToBigInt,
-  hexToBytes,
-  keccak256,
-  serializeSignature,
-  serializeTransaction,
-} from 'viem';
+import type { Address, Hex, TransactionSerializable } from 'viem';
 
-import { Transaction } from './transaction';
+import { hexToBigInt, hexToBytes, keccak256, serializeSignature, serializeTransaction } from 'viem';
+
+import type { Transaction } from './transaction';
+
+declare const Lit: {
+  Actions: {
+    signAndCombineEcdsa: (params: {
+      toSign: Uint8Array;
+      publicKey: string;
+      sigName: string;
+    }) => Promise<string>;
+  };
+};
 
 interface LitActionSignature {
   r: string;
@@ -22,15 +25,7 @@ interface SignTransactionParams {
   transaction: Transaction;
 }
 
-export interface SignTransactionResult {
-  signature: Hex;
-  signedTransaction: Hex;
-}
-
-export async function signTransaction({
-  pkpPublicKey,
-  transaction,
-}: SignTransactionParams): Promise<SignTransactionResult> {
+export async function signTransaction({ pkpPublicKey, transaction }: SignTransactionParams) {
   const serializableTx = convertToSerializableTransaction(transaction);
 
   const unsignedSerializedTx = serializeTransaction(serializableTx);
@@ -51,12 +46,8 @@ export async function signTransaction({
   };
 
   const signature = serializeSignature(signatureComponents);
-  const signedTransaction = serializeTransaction(serializableTx, signatureComponents);
 
-  return {
-    signature,
-    signedTransaction,
-  };
+  return signature;
 }
 
 function convertToSerializableTransaction(transaction: Transaction): TransactionSerializable {

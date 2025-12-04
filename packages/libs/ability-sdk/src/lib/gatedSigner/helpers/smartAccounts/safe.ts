@@ -1,16 +1,9 @@
-import {
-  type Abi,
-  type Address,
-  type Hex,
-  decodeFunctionData,
-  getAddress,
-  hexToBigInt,
-  hexToNumber,
-  slice,
-} from 'viem';
+import type { Abi, Address, Hex } from 'viem';
 
-import { type DecodedFunctionCall, type LowLevelCall } from '../lowLevelCall';
-import { type Eip712Params } from '../../schemas';
+import { decodeFunctionData, getAddress, hexToBigInt, hexToNumber, slice } from 'viem';
+
+import type { Eip712Params } from '../eip712';
+import type { DecodedFunctionCall, LowLevelCall } from '../lowLevelCall';
 
 interface InternalTransaction {
   operation: number; // uint8 (0 = call, 1 = delegatecall)

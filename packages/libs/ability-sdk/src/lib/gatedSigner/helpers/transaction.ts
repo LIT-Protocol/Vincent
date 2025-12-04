@@ -1,7 +1,9 @@
-import { Address, AccessList, ByteArray, Hex, isHex, toHex } from 'viem';
+import type { Address, AccessList, ByteArray, Hex } from 'viem';
+
+import { isHex, toHex } from 'viem';
 import { z } from 'zod';
 
-import { addressSchema, hexSchema } from './schemas';
+import { addressSchema, hexSchema } from './hex';
 
 const quantityHexSchema = hexSchema.describe(
   'Hex-encoded quantity (for example 0x5208 for gas or 0xde0b6b3a7640000 for value)',

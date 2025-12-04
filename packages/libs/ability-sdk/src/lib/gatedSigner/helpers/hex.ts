@@ -1,4 +1,6 @@
-import { type Address, type Hex, isAddress, isHex } from 'viem';
+import type { Address, Hex } from 'viem';
+
+import { isAddress, isHex } from 'viem';
 import { z } from 'zod';
 
 export const addressSchema = z
