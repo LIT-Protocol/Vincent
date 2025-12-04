@@ -154,9 +154,10 @@ export function tryDecodeKernelCalldataToLowLevelCalls(callData: Hex): LowLevelC
   try {
     df = decodeFunctionData({ abi: kernelAccountsAbi, data: callData }) as DecodedKernelFunction;
   } catch {
-    console.log('Calldata is not a known kernel calldata. Continuing...');
+    console.log('Calldata is not a known Kernel calldata. Continuing...');
     return null;
   }
+  console.log('Decoded calldata for Kernel smart account.');
 
   if (!['execute', 'executeFromExecutor'].includes(df.functionName)) {
     console.log('Not a known Kernel execute/executor call');

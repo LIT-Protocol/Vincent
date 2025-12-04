@@ -150,9 +150,10 @@ export function tryDecodeSafeCalldataToLowLevelCalls(callData: Hex): LowLevelCal
   try {
     df = decodeFunctionData({ abi: safeAccountsAbi, data: callData }) as DecodedSafeFunction;
   } catch {
-    console.log('Calldata is not a known safe calldata. Continuing...');
+    console.log('Calldata is not a known Safe calldata. Continuing...');
     return null;
   }
+  console.log('Decoded calldata for Safe smart account.');
 
   if (!['executeUserOp', 'executeUserOpWithErrorString'].includes(df.functionName)) {
     console.log('Not a known Safe execute/executor call');
