@@ -19,5 +19,4 @@ module.exports = {
     'node_modules/(?!.pnpm|@noble/secp256k1|cbor2|@cto\\.af/wtf8|@account-kit/[^/]+|@aa-sdk/[^/]+|@lit-protocol/vincent-scaffold-sdk)',
   ],
   detectOpenHandles: true,
-  passWithNoTests: true,
 };

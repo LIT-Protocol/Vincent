@@ -24,6 +24,8 @@ export const validateTransaction = (params: ValidateTransactionParams) => {
       }
 
       if (amount === 2n ** 256n - 1n) throw new Error('Infinite approval not allowed');
+    } else {
+      throw new Error('ERC20 function not allowed');
     }
 
     return;
