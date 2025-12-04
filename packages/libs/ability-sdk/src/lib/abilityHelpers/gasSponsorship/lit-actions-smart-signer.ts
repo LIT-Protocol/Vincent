@@ -1,6 +1,6 @@
 declare const ethers: {
   utils: {
-    hashMessage: (message: string | Uint8Array<ArrayBufferLike>) => string;
+    hashMessage: (message: string | Uint8Array) => string;
     arrayify: (message: string) => Uint8Array;
     computeAddress: (publicKey: string) => string;
     joinSignature: (signature: { r: string; s: string; v: bigint }) => string;
