@@ -1,24 +1,10 @@
 import type { Address, Hex, TransactionSerializable } from 'viem';
 
-import { hexToBigInt, hexToBytes, keccak256, serializeSignature, serializeTransaction } from 'viem';
+import { hexToBigInt } from 'viem';
 
 import type { Transaction } from './transaction';
 
-declare const Lit: {
-  Actions: {
-    signAndCombineEcdsa: (params: {
-      toSign: Uint8Array;
-      publicKey: string;
-      sigName: string;
-    }) => Promise<string>;
-  };
-};
-
-interface LitActionSignature {
-  r: string;
-  s: string;
-  v: 0 | 1;
-}
+import { toLitActionAccount } from './toLitActionAccount';
 
 interface SignTransactionParams {
   pkpPublicKey: Hex;
@@ -28,26 +14,9 @@ interface SignTransactionParams {
 export async function signTransaction({ pkpPublicKey, transaction }: SignTransactionParams) {
   const serializableTx = convertToSerializableTransaction(transaction);
 
-  const unsignedSerializedTx = serializeTransaction(serializableTx);
-  const txHashBytes = hexToBytes(keccak256(unsignedSerializedTx));
+  const account = toLitActionAccount(pkpPublicKey);
 
-  const pkpPublicKeyForLit = pkpPublicKey.replace(/^0x/, '');
-  const signatureResponse = await Lit.Actions.signAndCombineEcdsa({
-    toSign: txHashBytes,
-    publicKey: pkpPublicKeyForLit,
-    sigName: 'signTransaction',
-  });
-  const structuredSignature = JSON.parse(signatureResponse) as LitActionSignature;
-
-  const signatureComponents = {
-    r: `0x${structuredSignature.r.substring(2)}` as Hex,
-    s: `0x${structuredSignature.s}` as Hex,
-    yParity: structuredSignature.v,
-  };
-
-  const signature = serializeSignature(signatureComponents);
-
-  return signature;
+  return await account.signTransaction(serializableTx);
 }
 
 function convertToSerializableTransaction(transaction: Transaction): TransactionSerializable {
