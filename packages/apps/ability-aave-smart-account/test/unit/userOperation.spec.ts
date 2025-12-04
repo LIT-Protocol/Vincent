@@ -1,5 +1,5 @@
 import { describe, it, expect } from '@jest/globals';
-import { getAddress } from 'viem';
+import { getAddress, type Hex } from 'viem';
 import { userOpSchema, toVincentUserOp, type UserOp } from '../../src/lib/helpers/userOperation';
 
 // Use a known valid checksummed address for testing
@@ -76,14 +76,14 @@ describe('userOperation helpers', () => {
   describe('toVincentUserOp', () => {
     it('should convert numeric values to hex', () => {
       const genericUserOp = {
-        callData: '0x',
+        callData: '0x' as Hex,
         callGasLimit: 21000,
         maxFeePerGas: 1000000000,
         maxPriorityFeePerGas: 1000000000,
         nonce: '0x0', // nonce should already be hex
         preVerificationGas: 21000,
         verificationGasLimit: 21000,
-        signature: '0x',
+        signature: '0x' as Hex,
       };
       const result = toVincentUserOp(genericUserOp);
       expect(result.callGasLimit).toBe('0x5208');
@@ -96,14 +96,14 @@ describe('userOperation helpers', () => {
 
     it('should preserve hex values', () => {
       const genericUserOp = {
-        callData: '0x',
+        callData: '0x' as Hex,
         callGasLimit: '0x5208',
         maxFeePerGas: '0x3b9aca00',
         maxPriorityFeePerGas: '0x3b9aca00',
         nonce: '0x0',
         preVerificationGas: '0x5208',
         verificationGasLimit: '0x5208',
-        signature: '0x',
+        signature: '0x' as Hex,
       };
       const result = toVincentUserOp(genericUserOp);
       expect(result.callGasLimit).toBe('0x5208');
@@ -114,16 +114,16 @@ describe('userOperation helpers', () => {
 
     it('should handle optional fields', () => {
       const genericUserOp = {
-        callData: '0x',
+        callData: '0x' as Hex,
         callGasLimit: '0x5208',
         maxFeePerGas: '0x3b9aca00',
         maxPriorityFeePerGas: '0x3b9aca00',
         nonce: '0x0',
         preVerificationGas: '0x5208',
         verificationGasLimit: '0x5208',
-        signature: '0x',
+        signature: '0x' as Hex,
         paymaster: TEST_ADDRESS,
-        paymasterData: '0x',
+        paymasterData: '0x' as Hex,
         paymasterPostOpGasLimit: 10000,
         paymasterVerificationGasLimit: 10000,
       };

@@ -5,6 +5,7 @@ export {
   getAaveAddresses,
   getAvailableMarkets,
   getATokens,
+  getFeeContractAddress,
 } from './lib/helpers/aave';
 export { type AbilityParams, type Eip712Params } from './lib/schemas';
 export { safeEip712Params } from './lib/helpers/smartAccounts/safe';
