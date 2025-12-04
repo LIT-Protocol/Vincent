@@ -17,7 +17,17 @@ import {
   AaveV3OptimismSepolia,
   AaveV3ScrollSepolia,
 } from '@bgd-labs/aave-address-book';
-import { Abi, Address } from 'viem';
+import {
+  VINCENT_CONTRACT_ADDRESS_BOOK,
+  FEE_DIAMOND_ABI,
+} from '@lit-protocol/vincent-contracts-sdk';
+import { Abi, Address, getAddress } from 'viem';
+
+/**
+ * Fee Contract ABI for Aave operations
+ * These functions route through the fee contract instead of directly to Aave
+ */
+export const FEE_CONTRACT_ABI: Abi = FEE_DIAMOND_ABI as Abi;
 
 /**
  * AAVE v3 Pool Contract ABI
@@ -227,4 +237,37 @@ export function getAvailableMarkets(chainId: number): Record<string, Address> {
       ...Object.keys(CHAIN_TO_AAVE_ADDRESS_BOOK),
     ].join(', ')}`,
   );
+}
+
+/**
+ * Chain ID to fee contract chain name mapping
+ */
+const CHAIN_ID_TO_FEE_CHAIN_NAME: Record<number, keyof typeof VINCENT_CONTRACT_ADDRESS_BOOK.fee> = {
+  1: 'ethereum',
+  137: 'polygon',
+  43114: 'avalanche',
+  42161: 'arbitrum',
+  10: 'optimism',
+  8453: 'base',
+  56: 'bnb',
+  84532: 'baseSepolia',
+} as const;
+
+/**
+ * Get fee contract address for a specific chain
+ * @param chainId The chain ID
+ * @returns The fee contract address, or null if not available for this chain
+ */
+export function getFeeContractAddress(chainId: number): Address | null {
+  const chainName = CHAIN_ID_TO_FEE_CHAIN_NAME[chainId];
+  if (!chainName) {
+    return null;
+  }
+
+  const feeConfig = VINCENT_CONTRACT_ADDRESS_BOOK.fee[chainName];
+  if (!feeConfig) {
+    return null;
+  }
+
+  return getAddress(feeConfig.address);
 }

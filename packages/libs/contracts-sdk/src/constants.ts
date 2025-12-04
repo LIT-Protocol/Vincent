@@ -1,3 +1,4 @@
+import feeDiamondAbi from '../abis/FeeDiamond.abi.json';
 import appFacetAbi from '../abis/VincentAppFacet.abi.json';
 import appViewFacetAbi from '../abis/VincentAppViewFacet.abi.json';
 import userFacetAbi from '../abis/VincentUserFacet.abi.json';
@@ -71,3 +72,5 @@ export const VINCENT_LIT_ACTIONS_ADDRESS_BOOK = {
     derivedActionAddress: '0x32a2F1243F2402166c95Ef64b2a6ED932B04b7dC',
   },
 };
+
+export { feeDiamondAbi as FEE_DIAMOND_ABI };
