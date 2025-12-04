@@ -23,7 +23,7 @@ export interface DecodedTransactionSuccess extends Omit<LowLevelCall, 'data'> {
 
 export type DecodedTransaction = DecodedTransactionSuccess | DecodedTransactionError;
 
-interface BaseParams {
+interface ValidationBaseParams {
   chainId: number;
   sender: Address;
 }
@@ -32,11 +32,11 @@ export interface DecodeTransactionParams {
   transaction: LowLevelCall;
 }
 
-export interface ValidateSimulationParams extends BaseParams {
+export interface ValidateSimulationParams extends ValidationBaseParams {
   simulation: SimulateAssetChangesResponse;
 }
 
-export interface ValidateTransactionParams extends BaseParams {
+export interface ValidateTransactionParams extends ValidationBaseParams {
   decodedTransaction: DecodedTransaction;
 }
 
@@ -90,6 +90,39 @@ export function buildLifecycleFunctions<
   PrecheckSuccessSchema,
   PrecheckFailSchema
 > {
+  async function assertIsValidOperation(abilityParams: z.infer<AbilityParamsSchema>) {
+    if (isUserOpAbilityParams(abilityParams)) {
+      const { alchemyRpcUrl, entryPointAddress, userOp } = abilityParams;
+
+      const simulationChanges = await assertIsValidUserOp({
+        alchemyRpcUrl,
+        decodeTransaction,
+        entryPointAddress,
+        userOp,
+        validateSimulation,
+        validateTransaction,
+      });
+
+      return simulationChanges;
+    }
+
+    if (isTransactionAbilityParams(abilityParams)) {
+      const { alchemyRpcUrl, transaction } = abilityParams;
+
+      const simulationChanges = await assertIsValidTransaction({
+        alchemyRpcUrl,
+        decodeTransaction,
+        transaction,
+        validateSimulation,
+        validateTransaction,
+      });
+
+      return simulationChanges;
+    }
+
+    throw new Error('Unsupported ability params payload. Must pass transaction or userOp');
+  }
+
   const precheck: AbilityConfigLifecycleFunction<
     AbilityParamsSchema,
     PrecheckPolicies,
@@ -105,40 +138,9 @@ export function buildLifecycleFunctions<
         delegatorPkpInfo,
       });
 
-      if (isUserOpAbilityParams(abilityParams)) {
-        const { alchemyRpcUrl, entryPointAddress, userOp } = abilityParams;
+      const simulationChanges = await assertIsValidOperation(abilityParams);
 
-        const simulationChanges = await assertIsValidUserOp({
-          alchemyRpcUrl,
-          decodeTransaction,
-          entryPointAddress,
-          userOp,
-          validateSimulation,
-          validateTransaction,
-        });
-
-        return succeed({
-          simulationChanges,
-        });
-      }
-
-      if (isTransactionAbilityParams(abilityParams)) {
-        const { alchemyRpcUrl, transaction } = abilityParams;
-
-        const simulationChanges = await assertIsValidTransaction({
-          alchemyRpcUrl,
-          decodeTransaction,
-          transaction,
-          validateSimulation,
-          validateTransaction,
-        });
-
-        return succeed({
-          simulationChanges,
-        });
-      }
-
-      throw new Error('Unsupported ability params payload. Must pass transaction or userOp');
+      return succeed({ simulationChanges });
     } catch (error) {
       console.error('[@lit-protocol/vincent-gated-signer] Error:', error);
       return fail({
@@ -156,7 +158,7 @@ export function buildLifecycleFunctions<
     ExecuteFailSchema
   > = async ({ abilityParams }, { succeed, fail, delegation: { delegatorPkpInfo } }) => {
     try {
-      const simulationChanges = {}; // TODO get from precheck if possible, or abstract into shared code
+      const simulationChanges = await assertIsValidOperation(abilityParams);
 
       // Sign user operation
       const {
