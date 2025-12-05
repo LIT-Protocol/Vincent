@@ -30,7 +30,7 @@
             "pages": ["concepts/wallet-providers/about"]
           },
           {
-            "group": "Application Developers",
+            "group": "Vincent Developers",
             "pages": ["concepts/apps/about", "concepts/abilities/about", "concepts/policies/about"]
           }
         ]
