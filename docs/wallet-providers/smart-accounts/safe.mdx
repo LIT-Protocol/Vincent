@@ -1,0 +1,103 @@
+---
+title: 'Safe'
+description: 'Key differences for Safe integration'
+---
+
+## Overview
+
+Safe provides industry-standard multi-signature smart accounts (v1.4.1) with extensive ecosystem support.
+
+## Key Unique Features
+
+### EIP-712 Signing
+
+Unlike other providers that sign the UserOperation hash directly, Safe uses **EIP-712 typed data signing**:
+
+```typescript
+import { safeEip712Params } from "@lit-protocol/vincent-ability-aave-smart-account";
+
+const validAfter = 0;
+const validUntil = 0;
+
+const vincentAbilityParams = {
+  validAfter,
+  validUntil,
+  alchemyRpcUrl: process.env.ALCHEMY_RPC_URL!,
+  eip712Params: safeEip712Params,
+  entryPointAddress: entryPoint.address,
+  safe4337ModuleAddress: "0x75cf11467937ce3F2f357CE24ffc3DBF8fD5c226",
+  userOp: toVincentUserOp(aaveUserOp),
+};
+```
+
+### Signature Format
+
+Safe signatures include validity timestamps prepended to the ECDSA signature:
+
+```typescript
+import { concat, toHex } from "viem";
+
+const validAfter = 0; // Set to 0 for unlimited validity
+const validUntil = 0; // Set to 0 for unlimited validity
+
+// Safe signatures have the following shape:
+// [validAfter (6 bytes)][validUntil (6 bytes)][sig (ECDSA)]
+const signedUserOp = {
+  ...userOp,
+  signature: concat([
+    toHex(validAfter, { size: 6 }),
+    toHex(validUntil, { size: 6 }),
+    executeResult.result.signature,
+  ]),
+};
+```
+
+### Safe 4337 Module
+
+Safe requires the Safe 4337 module for ERC-4337 compatibility:
+- Module address: `0x75cf11467937ce3F2f357CE24ffc3DBF8fD5c226`
+- Handles UserOperation validation and execution
+
+## Environment Variables
+
+```bash
+# Pimlico for bundler and paymaster (required)
+PIMLICO_RPC_URL=https://base-sepolia.pimlico.io/v1/your_api_key
+
+# Standard Vincent variables
+ALCHEMY_RPC_URL=your_alchemy_rpc_url
+VINCENT_APP_ID=your_app_id
+DELEGATEE_PRIVATE_KEY=your_private_key
+PKP_ETH_ADDRESS=0x...
+```
+
+## Vincent Integration Parameters
+
+When calling `abilityClient.precheck()` or `abilityClient.execute()`:
+
+```typescript
+const vincentAbilityParams = {
+  validAfter: 0,
+  validUntil: 0,
+  alchemyRpcUrl: process.env.ALCHEMY_RPC_URL!,
+  eip712Params: safeEip712Params,
+  entryPointAddress: entryPoint.address,
+  safe4337ModuleAddress: "0x75cf11467937ce3F2f357CE24ffc3DBF8fD5c226",
+  userOp: toVincentUserOp(aaveUserOp),
+};
+```
+
+## Example Code
+
+See the [complete Safe integration example](https://github.com/LIT-Protocol/vincent-smart-account-signer/blob/main/src/safeSmartAccountIntegration.ts).
+
+## Resources
+
+<Columns cols={2}>
+  <Card title="Safe Docs" icon="shield" href="https://docs.safe.global/" color="#FF4205">
+    Official Safe documentation
+  </Card>
+  <Card title="Integration Overview" icon="book" href="/wallet-providers/smart-account-integration" color="#FF4205">
+    Common integration steps
+  </Card>
+</Columns>

@@ -1,0 +1,297 @@
+---
+title: 'Crossmint Integration'
+---
+
+This guide demonstrates how to integrate Vincent with Crossmint's managed smart wallets using the Aave ability as an example. You'll learn how to set up account delegation, create UserOperations via Crossmint's API, validate and sign them with Vincent abilities, and submit transactions through Crossmint's infrastructure.
+
+<CardGroup cols={2}>
+  <Card title="Source Repository" icon="github" href="https://github.com/LIT-Protocol/vincent-smart-account-signer" color="#FF4205">
+    View the complete example repository
+  </Card>
+  <Card title="crossmintSmartAccountIntegration.ts" icon="code" href="https://github.com/LIT-Protocol/vincent-smart-account-signer/blob/main/src/crossmintSmartAccountIntegration.ts" color="#FF4205">
+    View the complete implementation file
+  </Card>
+</CardGroup>
+
+## Prerequisites
+
+**Vincent Setup**: Follow [Creating an App](/app/creating-an-app) to obtain your Vincent App ID, Delegatee Private Key, and PKP ETH Address.
+
+Set the following environment variables:
+
+- **CROSSMINT_API_KEY**: API key from your [Crossmint](https://www.crossmint.com/) project
+- **ALCHEMY_RPC_URL**: Endpoint for transaction simulation from [Alchemy](https://www.alchemy.com/)
+- **VINCENT_APP_ID**: Your Vincent application identifier
+- **DELEGATEE_PRIVATE_KEY**: Private key for Vincent ability delegation
+- **PKP_ETH_ADDRESS**: Your Programmable Key Pair Ethereum address
+
+## Complete Integration Flow
+
+### Step 1: Setup Account and Delegation
+
+```typescript
+import { setupCrossmintSmartAccountAndDelegation } from './utils/setupCrossmintSmartAccountAndDelegation';
+
+const { crossmintAccount, pkpEthAddress } =
+  await setupCrossmintSmartAccountAndDelegation();
+```
+
+**What this does:**
+1. Sets up Vincent PKP delegation
+2. Creates Crossmint wallet with owner credentials
+3. Adds Vincent PKP as delegated signer
+
+**Returns:**
+- `crossmintAccount`: The Crossmint wallet instance
+- `pkpEthAddress`: Vincent PKP address
+
+<AccordionGroup>
+  <Accordion title="View setupCrossmintSmartAccountAndDelegation.ts">
+    ```typescript
+    export async function setupCrossmintSmartAccountAndDelegation() {
+      // Get pkp to delegate signatures
+      const pkpEthAddress = await setupVincentDelegation({
+        ownerAccount,
+        vincentAppId,
+      });
+
+      // Set up smart account owner/delegator
+      const { crossmintAccount } = await setupCrossmintAccount({
+        ownerAccount,
+        permittedAddress: pkpEthAddress,
+      });
+
+      return {
+        crossmintAccount,
+        pkpEthAddress,
+      };
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="View setupCrossmintAccount.ts">
+    ```typescript
+    export async function setupCrossmintAccount({
+      ownerAccount,
+      permittedAddress,
+    }: SetupCrossmintAccountParams) {
+      const crossmintAccount = await crossmintWalletApiClient.createWallet({
+        chainType: 'evm',
+        type: 'smart',
+        config: {
+          adminSigner: {
+            type: 'external-wallet',
+            address: ownerAccount.address,
+          },
+          delegatedSigners: [
+            {
+              signer: {
+                type: 'external-wallet',
+                address: permittedAddress,
+              },
+            },
+          ],
+        },
+      });
+
+      // Deploy with empty user operation
+      const deployUserOp = await crossmintWalletApiClient.createTransaction(
+        crossmintAccount.address,
+        {
+          params: {
+            calls: [{ data: '0x', to: zeroAddress, value: '0' }],
+            chain: chain.network,
+            signer: ownerAccount.address,
+          },
+        },
+      );
+
+      const deployUserOpSignature = await ownerAccount.signMessage({
+        message: { raw: deployUserOp.onChain.userOperationHash },
+      });
+
+      await crossmintWalletApiClient.approveTransaction(
+        crossmintAccount.address,
+        deployUserOp.id,
+        {
+          approvals: [{
+            signer: `external-wallet:${ownerAccount.address}`,
+            signature: deployUserOpSignature,
+          }],
+        },
+      );
+
+      return { crossmintAccount };
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Step 2: Generate Transactions
+
+```typescript
+import { generateTransactions } from './utils/generateTransactions';
+
+const transactions = await generateTransactions({
+  accountAddress: crossmintAccount.address as Address,
+});
+```
+
+**What this does:**
+Generates Aave transactions (approve, supply, withdraw) based on account state.
+
+### Step 3: Convert to UserOperation
+
+```typescript
+import { transactionsToCrossmintUserOp } from './utils/transactionsToCrossmintUserOp';
+
+const aaveUserOp = await transactionsToCrossmintUserOp({
+  transactions,
+  crossmintAccountAddress: crossmintAccount.address as Address,
+  permittedAddress: pkpEthAddress,
+});
+```
+
+**What this does:**
+Creates UserOperation via Crossmint's API using the Vincent PKP as signer.
+
+<AccordionGroup>
+  <Accordion title="View transactionsToCrossmintUserOp.ts">
+    ```typescript
+    export async function transactionsToCrossmintUserOp({
+      crossmintAccountAddress,
+      permittedAddress,
+      transactions,
+    }: TransactionsToCrossmintUserOpParams) {
+      const crossmintUserOp = await crossmintWalletApiClient.createTransaction(
+        crossmintAccountAddress,
+        {
+          params: {
+            calls: transactions.map((tx) => ({
+              data: tx.data,
+              to: tx.to,
+              value: '0',
+            })),
+            chain: chain.network,
+            signer: permittedAddress,
+          },
+        },
+      );
+
+      return crossmintUserOp;
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Step 4: Validate with Vincent
+
+```typescript
+import { toVincentUserOp } from '@lit-protocol/vincent-ability-aave-smart-account';
+
+const vincentAbilityParams = {
+  alchemyRpcUrl: alchemyRpc,
+  entryPointAddress: entryPoint.address,
+  userOp: toVincentUserOp(aaveUserOp.onChain.userOperation),
+};
+
+const vincentDelegationContext = {
+  delegatorPkpEthAddress: pkpEthAddress,
+};
+
+const precheckResult = await abilityClient.precheck(
+  vincentAbilityParams,
+  vincentDelegationContext
+);
+
+if (!precheckResult.success) {
+  throw new Error(`Precheck failed: ${JSON.stringify(precheckResult)}`);
+}
+```
+
+**What this does:**
+1. Converts Crossmint UserOp to Vincent format
+2. Validates without signing
+3. Checks contract allowlist, simulation, value protection
+
+**Note:** Extract UserOperation from `aaveUserOp.onChain.userOperation`
+
+### Step 5: Execute and Sign
+
+```typescript
+const executeResult = await abilityClient.execute(
+  vincentAbilityParams,
+  vincentDelegationContext
+);
+
+if (!executeResult.success) {
+  throw new Error(`Execute failed: ${JSON.stringify(executeResult)}`);
+}
+```
+
+**What this does:**
+Same validation as precheck, then signs with Vincent PKP.
+
+### Step 6: Submit via Crossmint API
+
+```typescript
+import { sendPermittedCrossmintUserOperation } from './utils/sendPermittedCrossmintUserOperation';
+
+await sendPermittedCrossmintUserOperation({
+  accountAddress: crossmintAccount.address as Address,
+  userOp: aaveUserOp,
+  signature: executeResult.result.signature,
+  signerAddress: pkpEthAddress,
+});
+```
+
+**What this does:**
+Submits signature to Crossmint API which handles bundler submission.
+
+**No signature formatting needed** - Crossmint uses standard signature format.
+
+<AccordionGroup>
+  <Accordion title="View sendPermittedCrossmintUserOperation.ts">
+    ```typescript
+    export async function sendPermittedCrossmintUserOperation({
+      accountAddress,
+      signature,
+      signerAddress,
+      userOp,
+    }: SendPermittedCrossmintUserOperationParams) {
+      const userOpApproval = await crossmintWalletApiClient.approveTransaction(
+        accountAddress,
+        userOp.id,
+        {
+          approvals: [
+            {
+              signer: `external-wallet:${signerAddress}`,
+              signature: signature,
+            },
+          ],
+        },
+      );
+
+      if ('error' in userOpApproval) {
+        throw new Error(`Could not sign crossmint user operation`);
+      }
+
+      console.log('UserOp hash:', userOpApproval.onChain.userOperationHash);
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Step 7: Cleanup
+
+```typescript
+import { disconnectVincentAbilityClients } from '@lit-protocol/vincent-app-sdk/abilityClient';
+
+await disconnectVincentAbilityClients();
+```
+
+## Complete Example
+
+<Card title="crossmintSmartAccountIntegration.ts" icon="github" href="https://github.com/LIT-Protocol/vincent-smart-account-signer/blob/main/src/crossmintSmartAccountIntegration.ts" color="#FF4205">
+  View the complete implementation on GitHub
+</Card>

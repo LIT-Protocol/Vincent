@@ -1,0 +1,80 @@
+---
+title: 'ZeroDev (Kernel)'
+description: 'Key differences for ZeroDev Kernel integration'
+---
+
+## Overview
+
+ZeroDev provides Kernel v3.3-based smart accounts with advanced permission and session key features.
+
+## Key Unique Features
+
+### Permission Account Serialization
+
+ZeroDev allows you to serialize the entire account configuration into a portable string. This enables backend services to reconstruct the account context without needing the owner's private key.
+
+```typescript
+import { serializePermissionAccount } from "@zerodev/permissions";
+
+const serializedPermissionAccount = await serializePermissionAccount(
+  permissionKernelAccount
+);
+```
+
+The serialized account can be sent to your backend, which can then deserialize it to sign UserOperations.
+
+### Signature Format
+
+**Critical:** ZeroDev signatures require a `0xff` prefix:
+
+```typescript
+import { concat } from "viem";
+
+// 0xff is the signer id assigned to the Vincent PKP
+const signedUserOp = {
+  ...userOp,
+  signature: concat(["0xff", executeResult.result.signature]),
+};
+```
+
+## Environment Variables
+
+```bash
+# ZeroDev bundler URL (required)
+ZERODEV_RPC_URL=https://rpc.zerodev.app/api/v2/bundler/your_project_id
+
+# Standard Vincent variables
+ALCHEMY_RPC_URL=your_alchemy_rpc_url
+VINCENT_APP_ID=your_app_id
+DELEGATEE_PRIVATE_KEY=your_private_key
+PKP_ETH_ADDRESS=0x...
+```
+
+## Vincent Integration Parameters
+
+When calling `abilityClient.precheck()` or `abilityClient.execute()`:
+
+```typescript
+const vincentAbilityParams = {
+  alchemyRpcUrl: process.env.ALCHEMY_RPC_URL!,
+  entryPointAddress: entryPoint.address,
+  userOp: toVincentUserOp(aaveUserOp),
+};
+```
+
+No special parameters needed - uses standard UserOperation hash signing.
+
+## Example Code
+
+See the [complete ZeroDev integration example](https://github.com/LIT-Protocol/vincent-smart-account-signer/blob/main/src/kernelSmartAccountIntegration.ts).
+
+## Resources
+
+<Columns cols={2}>
+  <Card title="ZeroDev Docs" icon="cube" href="https://docs.zerodev.app/" color="#FF4205">
+    Official ZeroDev documentation
+  </Card>
+  <Card title="Integration Overview" icon="book" href="/wallet-providers/smart-account-integration" color="#FF4205">
+    Common integration steps
+  </Card>
+</Columns>
