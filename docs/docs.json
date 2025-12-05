@@ -14,21 +14,36 @@
         "tab": "Concepts",
         "groups": [
           {
-            "group": "Overview",
+            "group": "About",
+            "pages": ["concepts/introduction/about", "concepts/introduction/security"]
+          },
+          {
+            "group": "Account Architecture",
             "pages": [
-              "concepts/introduction/about",
-              "concepts/introduction/security",
-              "concepts/apps/about",
-              "concepts/abilities/about",
-              "concepts/policies/about",
-              {
-                "group": "Wallets",
-                "pages": [
-                  "concepts/wallets/about",
-                  "concepts/wallets/user-accounts",
-                  "concepts/wallets/agent-wallets"
-                ]
-              }
+              "concepts/wallets/about",
+              "concepts/wallets/user-accounts",
+              "concepts/wallets/agent-wallets"
+            ]
+          },
+          {
+            "group": "Wallet Providers",
+            "pages": ["concepts/wallet-providers/about"]
+          },
+          {
+            "group": "Application Developers",
+            "pages": ["concepts/apps/about", "concepts/abilities/about", "concepts/policies/about"]
+          }
+        ]
+      },
+      {
+        "tab": "Wallet Providers",
+        "groups": [
+          {
+            "group": "Getting Started",
+            "pages": [
+              "wallet-providers/introduction",
+              "wallet-providers/smart-account-integration",
+              "wallet-providers/eoa-integration"
             ]
           }
         ]
@@ -53,15 +68,9 @@
               "app/deprecating-app-versions",
               "app/authenticating-users"
             ]
-          }
-        ]
-      },
-      {
-        "tab": "Ability Developers",
-        "groups": [
+          },
           {
             "group": "Abilities",
-            "expanded": true,
             "pages": [
               "ability/quickstart",
               "ability/explaining-abilities",
@@ -83,6 +92,7 @@
                 "pages": [
                   "ability/official-abilities/overview",
                   "ability/official-abilities/aave",
+                  "app/smart-accounts/abilities/aave-smart-account",
                   "ability/official-abilities/aerodrome-swap",
                   "ability/official-abilities/debridge",
                   "ability/official-abilities/erc20-approval",
@@ -125,7 +135,6 @@
           },
           {
             "group": "Policies",
-            "expanded": true,
             "pages": [
               "ability/policy/quickstart",
               "ability/policy/explaining-policies",
@@ -155,21 +164,17 @@
         ]
       },
       {
-        "tab": "Smart Account Developers",
-        "groups": [
-          {
-            "group": "Introduction",
-            "pages": ["smart-account/introduction/about"]
-          },
-          {
-            "group": "Abilities",
-            "pages": ["smart-account/abilities/aave-smart-account"]
-          }
-        ]
-      },
-      {
         "tab": "API Reference",
         "groups": [
+          {
+            "group": "Wallet Integration",
+            "pages": [
+              "api-reference/wallet/zerodev",
+              "api-reference/wallet/crossmint",
+              "api-reference/wallet/safe",
+              "api-reference/wallet/eoa"
+            ]
+          },
           {
             "group": "ability-sdk",
             "pages": [
@@ -480,7 +485,7 @@
     "links": [
       {
         "label": "Support",
-        "href": "https://t.me/c/2038294753/1"
+        "href": "https://t.me/+vZWoA5k8jGoxZGEx"
       }
     ],
     "primary": {
@@ -495,7 +500,7 @@
   "footer": {
     "socials": {
       "x": "https://x.com/LitProtocol",
-      "telegram": "https://t.me/c/2038294753/1",
+      "telegram": "https://t.me/+vZWoA5k8jGoxZGEx",
       "github": "https://github.com/LIT-Protocol/Vincent",
       "linkedin": "https://linkedin.com/company/lit-protocol"
     }

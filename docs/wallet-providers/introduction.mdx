@@ -1,0 +1,73 @@
+---
+title: 'Overview'
+---
+
+As a wallet provider, integrating Vincent allows your users to securely authorize applications to perform blockchain operations on their behalf—without giving up custody of their assets.
+
+<Card title="What is Vincent?" icon="book" href="/concepts/introduction/about" color="#FF4205">
+  Learn about Vincent's core concepts and architecture
+</Card>
+
+## The Problem
+
+Users who want to enable automation (trading bots, DeFi agents, scheduled payments) face an impossible choice:
+
+**Give Apps Full Control:**
+- Share private keys with apps to enable automation
+- Apps have unrestricted access to all funds
+- Single point of failure with catastrophic risk
+
+**Manual Approval:**
+- Approve every transaction manually
+- Defeats the purpose of automation
+- Makes sophisticated workflows impractical
+
+## The Vincent Solution
+
+Vincent enables **secure automation** through scoped delegation:
+
+- Users authorize apps to perform specific operations without sharing private keys
+- Apps receive delegated signing authority through Programmable Key Pairs (PKPs)
+- Policies enforce exactly what operations are allowed: which contracts, functions, spending limits
+- Every transaction is validated in Lit Protocol's Trusted Execution Environment
+- Users can revoke access instantly
+
+## Integration Paths
+
+Vincent supports both smart accounts and traditional wallets:
+
+<CardGroup cols={2}>
+  <Card title="Smart Account Integration" icon="microchip" href="/wallet-providers/smart-account-integration" color="#FF4205">
+    Integrate with ZeroDev, Crossmint, or Safe smart accounts using ERC-4337 UserOperations
+  </Card>
+  <Card title="EOA Integration" icon="wallet" href="/wallet-providers/eoa-integration" color="#FF4205">
+    Enable Vincent delegation for traditional externally owned accounts
+  </Card>
+</CardGroup>
+
+## Quick Start
+
+<Steps>
+  <Step title="Choose Your Integration Path">
+    Select [Smart Account](/wallet-providers/smart-account-integration) or [EOA](/wallet-providers/eoa-integration) integration based on your wallet type.
+  </Step>
+
+  <Step title="Review Integration Examples">
+    Check the [API Reference](/api-reference/wallet/zerodev) for complete implementation examples.
+  </Step>
+
+  <Step title="Test the Integration">
+    Use the [example repository](https://github.com/LIT-Protocol/vincent-smart-account-signer) to test your integration.
+  </Step>
+</Steps>
+
+## Resources
+
+<CardGroup cols={2}>
+  <Card title="Integration Examples" icon="code" href="/api-reference/wallet/zerodev" color="#FF4205">
+    Complete integration code examples
+  </Card>
+  <Card title="Source Repository" icon="github" href="https://github.com/LIT-Protocol/vincent-smart-account-signer" color="#FF4205">
+    Reference implementation
+  </Card>
+</CardGroup>

@@ -1,0 +1,38 @@
+---
+title: 'Overview'
+---
+
+Vincent enables wallet providers to integrate app delegation directly into their wallets. Users can authorize Vincent apps to perform blockchain operations on their behalf while wallets maintain full custody and control through policy-governed permissions.
+
+## Key Features
+
+- **No Custody Risk:** Users' keys never leave the wallet—Vincent uses delegated PKP signing
+- **Policy Enforcement:** Wallets help users set spending limits and contract allowlists
+- **Multi-Architecture Support:** Works with both ERC-4337 Smart Accounts and traditional EOAs
+- **Transparent Validation:** All operations validated in Lit's TEE before signing
+- **User Control:** Instant revocation and granular permission management
+
+## Integration Options
+
+<Columns cols={2}>
+  <Card title="Smart Account Integration" icon="cube" href="/wallet-providers/smart-account-integration" color="#FF4205">
+    Integrate with ZeroDev, Safe, or Crossmint smart accounts
+  </Card>
+  <Card title="EOA Integration" icon="wallet" href="/wallet-providers/eoa-integration" color="#FF4205">
+    Integrate with traditional externally owned accounts
+  </Card>
+</Columns>
+
+## Learn More
+
+<Columns cols={3}>
+  <Card title="User Accounts" icon="user" href="/concepts/wallets/user-accounts" color="#FF4205">
+    How user PKPs work with wallets
+  </Card>
+  <Card title="Agent Wallets" icon="robot" href="/concepts/wallets/agent-wallets" color="#FF4205">
+    Agent PKPs for delegated signing
+  </Card>
+  <Card title="Security Model" icon="shield" href="/concepts/introduction/security" color="#FF4205">
+    Vincent's MPC-TSS and TEE architecture
+  </Card>
+</Columns>

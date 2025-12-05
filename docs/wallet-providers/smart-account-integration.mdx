@@ -1,0 +1,94 @@
+---
+title: 'Smart Account Integration'
+---
+
+Vincent integrates with ERC-4337 smart accounts through **ZeroDev (Kernel)**, **Crossmint**, and **Safe**. Each provider has unique signature requirements and setup processes detailed in the provider-specific guides below.
+
+## Understanding Vincent's PKP Architecture
+
+Vincent uses a delegation chain for secure signing:
+
+1. **Owner EOA**: Your user's wallet - controls everything
+2. **User PKP**: Controlled by the Owner EOA - authenticates the user
+3. **Agent PKP**: Controlled by the User PKP - signs transactions through Vincent abilities
+
+The **Agent PKP address** is added as an authorized signer to your smart account. The smart account holds funds and pays for gas through bundlers/paymasters, while the Agent PKP signs UserOperations after Vincent validates them.
+
+## Integration Flow
+
+<Tabs>
+  <Tab title="How It Works">
+    1. **You create a Smart Account** using a provider like [ZeroDev](https://zerodev.app/), [Biconomy](https://biconomy.io/), or [Safe](https://safe.global/), with your EOA wallet as the owner, establishing programmable control over your on-chain assets.
+
+    2. **You grant session key permissions** to your Agent Wallet, allowing it to sign specific types of transactions on behalf of your Smart Account within defined boundaries and time limits.
+
+    3. **Your backend service constructs operations** that your Smart Account should perform, such as DeFi interactions, token swaps, or cross-chain transfers, formatted as [ERC-4337](https://eips.ethereum.org/EIPS/eip-4337) UserOperations.
+
+    4. **Vincent abilities validate operations** by decoding the transactions, simulating them on-chain, and verifying they only interact with authorized contracts and benefit you as the user.
+
+    5. **Agent Wallet signs validated operations** using the session key permission, creating a signed UserOperation that can be broadcast to the network through a bundler.
+
+    6. **The Smart Account executes the operation** on-chain, with all validation logic enforced at both the Vincent ability level and the Smart Account contract level.
+  </Tab>
+  <Tab title="Diagram">
+    ```mermaid
+    %%{init: {"theme":"base","themeVariables":{"primaryColor":"transparent","primaryTextColor":"#FF4205","primaryBorderColor":"#FF4205","lineColor":"#FF4205"}}}%%
+    graph TB
+        A[Smart Account] --> B[Generate UserOp]
+        B --> C[Convert to Vincent Format]
+        C --> D[Ability Precheck]
+        D --> E{Valid?}
+        E -->|Yes| F[Ability Execute and Sign]
+        E -->|No| G[Reject]
+        F --> H[Bundler]
+        H --> I[Blockchain]
+
+        style A fill:transparent,stroke:#FF4205,stroke-width:2px,color:#FF4205
+        style B fill:transparent,stroke:#FF4205,stroke-width:2px,color:#FF4205
+        style C fill:transparent,stroke:#FF4205,stroke-width:2px,color:#FF4205
+        style D fill:transparent,stroke:#FF4205,stroke-width:2px,color:#FF4205
+        style E fill:transparent,stroke:#FF4205,stroke-width:2px,color:#FF4205
+        style F fill:transparent,stroke:#FF4205,stroke-width:2px,color:#FF4205
+        style G fill:transparent,stroke:#FF4205,stroke-width:2px,color:#FF4205
+        style H fill:transparent,stroke:#FF4205,stroke-width:2px,color:#FF4205
+        style I fill:transparent,stroke:#FF4205,stroke-width:2px,color:#FF4205
+
+        linkStyle 0,1,2,3,4,5,6,7 stroke:#FF4205,stroke-width:2px
+    ```
+  </Tab>
+</Tabs>
+
+## Key Differences
+
+| Feature | ZeroDev | Crossmint | Safe |
+|---------|---------|-----------|------|
+| **Setup Complexity** | Medium | Low | Medium |
+| **Session Keys** | Advanced | Standard | Standard |
+| **Signature Format** | `0xff` + sig | Standard | Timestamp + sig |
+| **Bundler** | Custom | Built-in | Pimlico |
+| **Multi-sig** | No | No | Yes |
+| **Signing Method** | UserOp hash | UserOp hash | EIP-712 |
+
+## Need Help?
+
+Integrating Vincent with your smart account infrastructure? Our team is here to support you.
+
+<Card title="Contact Our Team" icon="message" href="https://t.me/+vZWoA5k8jGoxZGEx" color="#FF4205">
+  Join our Telegram community or reach out for integration support
+</Card>
+
+## Next Steps
+
+Choose your smart account provider and follow the specific integration guide:
+
+<Columns cols={3}>
+  <Card title="ZeroDev Integration" icon="cube" href="/wallet-providers/smart-accounts/zerodev" color="#FF4205">
+    Kernel-based smart accounts
+  </Card>
+  <Card title="Crossmint Integration" icon="wallet" href="/wallet-providers/smart-accounts/crossmint" color="#FF4205">
+    Managed smart wallets
+  </Card>
+  <Card title="Safe Integration" icon="shield" href="/wallet-providers/smart-accounts/safe" color="#FF4205">
+    Multi-sig smart accounts
+  </Card>
+</Columns>
