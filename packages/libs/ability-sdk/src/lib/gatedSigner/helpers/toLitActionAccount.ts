@@ -71,7 +71,7 @@ export function toLitActionAccount(pkpPublicKey: Hex) {
       return serializerToUse(signableTransaction, {
         r: `0x${structuredSignature.r.substring(2)}` as Hex,
         s: `0x${structuredSignature.s}` as Hex,
-        v: BigInt(structuredSignature.v + 27),
+        yParity: structuredSignature.v,
       });
     },
 

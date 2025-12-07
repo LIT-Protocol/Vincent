@@ -1,6 +1,6 @@
-import type { Address, Hex, TransactionSerializable } from 'viem';
+import type { Hex } from 'viem';
 
-import { hexToBigInt } from 'viem';
+import { concatHex, hexToBigInt, hexToNumber, parseTransaction } from 'viem';
 
 import type { Transaction } from './transaction';
 
@@ -12,52 +12,31 @@ interface SignTransactionParams {
 }
 
 export async function signTransaction({ pkpPublicKey, transaction }: SignTransactionParams) {
-  const serializableTx = convertToSerializableTransaction(transaction);
-
   const account = toLitActionAccount(pkpPublicKey);
 
-  return await account.signTransaction(serializableTx);
-}
+  const signableTransaction = {
+    ...transaction,
+    accessList: transaction.accessList || [],
+    gas: transaction.gas ? hexToBigInt(transaction.gas) : undefined,
+    gasLimit: transaction.gasLimit ? hexToBigInt(transaction.gasLimit) : undefined,
+    gasPrice: transaction.gasPrice ? hexToBigInt(transaction.gasPrice) : undefined,
+    maxFeePerGas: transaction.maxFeePerGas ? hexToBigInt(transaction.maxFeePerGas) : undefined,
+    maxPriorityFeePerGas: transaction.maxPriorityFeePerGas
+      ? hexToBigInt(transaction.maxPriorityFeePerGas)
+      : undefined,
+    nonce: hexToNumber(transaction.nonce),
+    value: hexToBigInt(transaction.value),
+  };
 
-function convertToSerializableTransaction(transaction: Transaction): TransactionSerializable {
-  const value = hexToBigInt(transaction.value);
-  const gasHex = transaction.gas ?? transaction.gasLimit;
-  const gas = hexToBigInt(gasHex!); // We know it exists due to schema validation
+  // @ts-expect-error viem complains but the tx should be coherent besides generalities
+  const signedTx = await account.signTransaction(signableTransaction);
+  const parsed = parseTransaction(signedTx);
+  if (!parsed.r || !parsed.s || parsed.yParity === undefined)
+    throw new Error('Signed tx missing signature fields');
 
-  const chainId =
-    typeof transaction.chainId === 'number'
-      ? transaction.chainId
-      : Number(hexToBigInt(transaction.chainId));
+  const yParityByte = parsed.yParity === 0 ? '0x00' : '0x01';
 
-  const nonce = Number(hexToBigInt(transaction.nonce));
+  const signature = concatHex([parsed.r, parsed.s, yParityByte]);
 
-  // Determine transaction type and fee values
-  let type: 'legacy' | 'eip1559';
-  let feeValues: { gasPrice?: bigint; maxFeePerGas?: bigint; maxPriorityFeePerGas?: bigint };
-
-  if (transaction.gasPrice) {
-    type = 'legacy';
-    feeValues = {
-      gasPrice: hexToBigInt(transaction.gasPrice),
-    };
-  } else {
-    // We know both exist due to schema validation
-    type = 'eip1559';
-    feeValues = {
-      maxFeePerGas: hexToBigInt(transaction.maxFeePerGas!),
-      maxPriorityFeePerGas: hexToBigInt(transaction.maxPriorityFeePerGas!),
-    };
-  }
-
-  return {
-    chainId,
-    nonce,
-    gas,
-    to: transaction.to as Address,
-    data: transaction.data,
-    value,
-    accessList: transaction.accessList,
-    ...feeValues,
-    type,
-  } as TransactionSerializable;
+  return signature;
 }
