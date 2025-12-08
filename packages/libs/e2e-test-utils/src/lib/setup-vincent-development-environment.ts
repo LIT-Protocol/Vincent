@@ -16,7 +16,7 @@ import * as delegator from './delegator';
 import { ensureUnexpiredCapacityToken } from './ensure-capacity-credit';
 import { getEnv } from './env';
 import * as funder from './funder';
-import { setupSmartAccount } from './smartAccount';
+import { setupZerodevAccount, setupCrossmintAccount } from './smartAccount';
 
 export interface VincentDevEnvironment {
   agentPkpInfo: PkpInfo;
@@ -42,7 +42,7 @@ export interface VincentDevEnvironment {
  * - Optionally creating a smart account owned by agentWalletOwner with the PKP as a permitted signer
  *
  * @param permissionData permission data containing abilities and their policies
- * @param enableSmartAccount whether to create a smart account (requires SMART_ACCOUNT_CHAIN_ID and ZERODEV_RPC_URL env vars)
+ * @param smartAccountType type of smart account to create: 'zerodev', 'crossmint', 'safe', or false to disable
  * @returns the setup result including agent PKP info, wallets, app ID, app version, and optional smart account info
  * @example
  * ```typescript
@@ -64,19 +64,31 @@ export interface VincentDevEnvironment {
  * // EOA mode
  * const result = await setupVincentDevelopmentEnvironment({ permissionData });
  *
- * // Smart account mode (requires SMART_ACCOUNT_CHAIN_ID and ZERODEV_RPC_URL env vars)
+ * // ZeroDev smart account mode (requires SMART_ACCOUNT_CHAIN_ID and ZERODEV_RPC_URL env vars)
  * const result = await setupVincentDevelopmentEnvironment({
  *   permissionData,
- *   enableSmartAccount: true,
+ *   smartAccountType: 'zerodev',
+ * });
+ *
+ * // Crossmint smart account mode (requires SMART_ACCOUNT_CHAIN_ID and CROSSMINT_API_KEY env vars)
+ * const result = await setupVincentDevelopmentEnvironment({
+ *   permissionData,
+ *   smartAccountType: 'crossmint',
+ * });
+ *
+ * // Safe smart account mode (requires SMART_ACCOUNT_CHAIN_ID env vars)
+ * const result = await setupVincentDevelopmentEnvironment({
+ *   permissionData,
+ *   smartAccountType: 'safe',
  * });
  * ```
  */
 export const setupVincentDevelopmentEnvironment = async ({
   permissionData,
-  enableSmartAccount = false,
+  smartAccountType = false,
 }: {
   permissionData: PermissionData;
-  enableSmartAccount?: boolean;
+  smartAccountType?: 'zerodev' | 'crossmint' | 'safe' | false;
 }): Promise<VincentDevEnvironment> => {
   // Check and fund all required accounts
   await funder.checkFunderBalance();
@@ -129,17 +141,14 @@ export const setupVincentDevelopmentEnvironment = async ({
 
   // Optionally set up smart account
   let smartAccount: SmartAccountInfo | undefined;
-  if (enableSmartAccount) {
-    console.log('\n🔧 Setting up smart account...\n');
+  if (smartAccountType) {
+    console.log(`\n🔧 Setting up ${smartAccountType} smart account...\n`);
 
     const env = getEnv();
-    const { SMART_ACCOUNT_CHAIN_ID, ZERODEV_RPC_URL } = env;
+    const { SMART_ACCOUNT_CHAIN_ID } = env;
 
     if (!SMART_ACCOUNT_CHAIN_ID) {
-      throw new Error('SMART_ACCOUNT_CHAIN_ID env var is required when enableSmartAccount=true');
-    }
-    if (!ZERODEV_RPC_URL) {
-      throw new Error('ZERODEV_RPC_URL env var is required when enableSmartAccount=true');
+      throw new Error('SMART_ACCOUNT_CHAIN_ID env var is required when smartAccountType is set');
     }
 
     const chainId = parseInt(SMART_ACCOUNT_CHAIN_ID);
@@ -155,14 +164,25 @@ export const setupVincentDevelopmentEnvironment = async ({
     // Convert ethers wallet to viem account
     const ownerAccount = privateKeyToAccount(wallets.agentWalletOwner.privateKey as `0x${string}`);
 
-    smartAccount = await setupSmartAccount({
-      ownerAccount,
-      permittedAddress: agentPkpInfo.ethAddress as `0x${string}`,
-      chain,
-      zerodevRpcUrl: ZERODEV_RPC_URL,
-    });
+    if (smartAccountType === 'zerodev') {
+      smartAccount = await setupZerodevAccount({
+        ownerAccount,
+        permittedAddress: agentPkpInfo.ethAddress as `0x${string}`,
+        chain,
+      });
+    } else if (smartAccountType === 'crossmint') {
+      smartAccount = await setupCrossmintAccount({
+        ownerAccount,
+        permittedAddress: agentPkpInfo.ethAddress as `0x${string}`,
+        chain: chain as { network: string },
+      });
+    } else if (smartAccountType === 'safe') {
+      throw new Error('Safe smart account setup not yet implemented');
+    }
 
-    console.log(`✅ Smart account created at: ${smartAccount.account.address}\n`);
+    if (smartAccount) {
+      console.log(`✅ Smart account created at: ${smartAccount.account.address}\n`);
+    }
   }
 
   return {

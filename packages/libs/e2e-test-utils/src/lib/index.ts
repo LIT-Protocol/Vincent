@@ -13,7 +13,7 @@ export { chain };
 import * as appManager from './appManager';
 export { appManager };
 
-export { mintNewPkp } from './mint-new-pkp';
+export { mintNewPkp, type PkpInfo } from './mint-new-pkp';
 export { ensureUnexpiredCapacityToken } from './ensure-capacity-credit';
 export { getEnv } from './env';
 export { getChainHelpers } from './chain';
@@ -23,4 +23,4 @@ export {
   type VincentDevEnvironment,
 } from './setup-vincent-development-environment';
 
-export { setupSmartAccount, type SmartAccountInfo } from './smartAccount';
+export { setupZerodevAccount, setupCrossmintAccount, type SmartAccountInfo } from './smartAccount';

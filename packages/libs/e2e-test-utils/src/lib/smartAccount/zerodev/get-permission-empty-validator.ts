@@ -5,7 +5,7 @@ import { toSudoPolicy } from '@zerodev/permissions/policies';
 import { toECDSASigner } from '@zerodev/permissions/signers';
 import { addressToEmptyAccount } from '@zerodev/sdk';
 
-import { entryPoint, kernelVersion } from '../environment/zerodev';
+import { entryPoint, kernelVersion } from '../../environment/zerodev';
 
 export async function getPermissionEmptyValidator(
   publicClient: PublicClient,

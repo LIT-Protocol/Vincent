@@ -4,7 +4,12 @@
   "publishConfig": {
     "access": "public"
   },
+  "scripts": {
+    "test:crossmint": "NODE_OPTIONS=--experimental-vm-modules dotenv -e .env jest test/smartAccount/crossmint.spec.ts",
+    "test:zerodev": "NODE_OPTIONS=--experimental-vm-modules dotenv -e .env jest test/smartAccount/zerodev.spec.ts"
+  },
   "dependencies": {
+    "@crossmint/wallets-sdk": "^0.18.7",
     "@lit-protocol/constants": "^8.0.4",
     "@lit-protocol/contracts-sdk": "^7.2.3",
     "@lit-protocol/vincent-contracts-sdk": "workspace:*",
@@ -32,6 +37,7 @@
   "devDependencies": {
     "@types/semver": "^7.7.0",
     "chokidar-cli": "^3.0.0",
+    "dotenv-cli": "^7.4.2",
     "ipfs-only-hash": "^4.0.0",
     "jsonc-eslint-parser": "^2.4.0",
     "typedoc": "0.27.9",
