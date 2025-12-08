@@ -48,7 +48,10 @@ export async function setupCrossmintAccount({
         },
         delegatedSigners: [
           {
-            signer: `evm-keypair:${permittedAddress}`,
+            signer: {
+              type: 'external-wallet',
+              address: permittedAddress,
+            },
           },
         ],
       },
