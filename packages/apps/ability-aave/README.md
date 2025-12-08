@@ -1,112 +1,77 @@
-# Vincent Aave Ability
+# Vincent Aave Smart Account Ability
 
-A comprehensive DeFi ability for interacting with Aave v3 protocol on Ethereum, built for the Vincent
-Scaffold SDK and Lit Actions execution environment.
+A Vincent Ability that acts as a secure, gated signer for Aave v3 operations. It is designed to work with ERC-4337 Smart Accounts (UserOperations) and EOAs (Transactions).
 
 ## Overview
 
-The Vincent Aave Ability enables secure, decentralized interactions with the Aave v3 lending protocol
-through Lit Actions. It supports all core Aave operations: supplying assets as collateral, borrowing
-against collateral, repaying debt, and withdrawing assets.
+This ability validates transactions or UserOperations destined for the Aave v3 protocol. It ensures that the operations are safe and aligned with the user's intent before signing them with the delegated Vincent PKP.
+
+It uses the `createVincentGatedSignerAbility` from `@lit-protocol/vincent-ability-sdk/gatedSigner` to enforce a strict validation lifecycle:
+
+1.  **Decode**: Decodes the transaction or userOperation calldata.
+2.  **Simulation**: Simulates the transaction/userOperation on-chain.
+3.  **Validation**:
+    - Verifies interaction with authorized Aave contracts.
+    - Checks for value extraction (no unexpected transfers or approvals).
+    - Validates operation types (Approve, Supply, Withdraw, etc.).
+4.  **Signing**: Signs the UserOperation (ECDSA or EIP-712) or Transaction (ECDSA) if all checks pass.
 
 ## Features
 
-- Supply assets as collateral to earn interest
-- Withdraw supplied assets
-- Borrow against collateral with stable or variable rates
-- Repay borrowed assets
-- Multi-chain support (Ethereum, Polygon, Arbitrum, Optimism, Base, and more)
-- Integrated with Vincent Ability SDK for secure execution
-
-## Installation
-
-```bash
-npm install @lit-protocol/vincent-ability-aave
-```
+- **Smart Account Support**: Compatible with Kernel, Crossmint, Safe, and other ERC-4337 accounts.
+- **EOA Support**: Can sign raw transactions for EOAs.
+- **Protocol Safety**: Restricts interactions to the Aave v3 protocol.
+- **Simulation-based Security**: Validates the actual on-chain effects of the transaction.
 
 ## Usage
 
+This ability is typically used within a Vincent App. The backend service prepares an unsigned UserOperation or Transaction and sends it to the ability for validation and signing.
+
+### Parameters
+
+The ability accepts either a `UserOperation` or a `Transaction` object.
+
+#### For UserOperations (Smart Accounts)
+
 ```typescript
-import { getVincentAbilityClient } from '@lit-protocol/vincent-app-sdk';
-import { bundledVincentAbility as aaveAbility } from '@lit-protocol/vincent-ability-aave';
-
-// Initialize the ability client
-const aaveAbilityClient = getVincentAbilityClient({
-  bundledVincentAbility: aaveAbility,
-  ethersSigner: yourSigner, // Your ethers signer
-});
-
-// Example: Supply WETH as collateral
-const supplyParams = {
-  operation: 'supply',
-  asset: '0xC558DBdd856501FCd9aaF1E62eae57A9F0629a3c', // WETH on Sepolia
-  amount: '0.01',
-  chain: 'sepolia',
+const abilityParams = {
+  alchemyRpcUrl: 'https://...', // Required for simulation
+  entryPointAddress: '0x...',
+  userOp: { ... }, // The UserOperation object
+  // Optional parameters for Safe/EIP-712
+  safe4337ModuleAddress: '0x...',
+  eip712Params: { ... },
 };
-
-// First run precheck
-const precheckRes = await aaveAbilityClient.precheck(supplyParams, {
-  delegatorPkpEthAddress: pkpAddress,
-});
-
-if (precheckRes.success) {
-  // Then execute
-  const executeRes = await aaveAbilityClient.execute(supplyParams, {
-    delegatorPkpEthAddress: pkpAddress,
-  });
-
-  if (executeRes.success) {
-    console.log('Transaction hash:', executeRes.result.data.txHash);
-  }
-}
 ```
 
-## Parameters
+#### For Transactions (EOA)
 
-| Parameter          | Type                                            | Required | Description                                      |
-| ------------------ | ----------------------------------------------- | -------- | ------------------------------------------------ |
-| `operation`        | `"supply" \| "withdraw" \| "borrow" \| "repay"` | ✅       | The Aave operation to perform                    |
-| `asset`            | `string`                                        | ✅       | Token contract address (0x format)               |
-| `amount`           | `string`                                        | ✅       | Amount as a string (e.g., "1.5")                 |
-| `chain`            | `string`                                        | ✅       | Chain identifier (e.g., "ethereum", "polygon")   |
-| `interestRateMode` | `1 \| 2`                                        | ❌       | 1=Stable, 2=Variable (required for borrow/repay) |
-| `rpcUrl`           | `string`                                        | ❌       | Custom RPC URL for precheck validation           |
+```typescript
+const abilityParams = {
+  alchemyRpcUrl: 'https://...', // Required for simulation
+  transaction: {
+    to: '0x...',
+    data: '0x...',
+    value: '0x...',
+    // ... other tx fields
+  },
+};
+```
 
-## Prerequisites
+## Integration
 
-- Node.js 16+ and npm/yarn
-- Sufficient token balance for the operation
-- Token approval for supply/repay operations
-- Properly configured PKP wallet with required permissions
+For a full integration example, please refer to the `vincent-smart-account-integration` project, which demonstrates how to use this ability with various smart account providers.
 
-## Building
+## Development
+
+### Building
 
 ```bash
-# Build the ability
-npm run build
-
-# Build all abilitys and policies
-npm run vincent:build
+nx build ability-aave
 ```
 
-## Testing
+### Testing
 
 ```bash
-# Run unit tests
-npm test
-
-# Run E2E tests
-npm run test:e2e
-
-# Reset test state
-npm run test:reset
+nx test ability-aave
 ```
-
-## Contributing
-
-Contributions are welcome! Please see [CONTRIBUTING.md](../../CONTRIBUTING.md) for guidelines on how
-to contribute to this project.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](../../LICENSE) file for details.
