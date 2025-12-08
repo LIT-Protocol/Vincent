@@ -75,12 +75,6 @@ export interface VincentDevEnvironment {
  *   permissionData,
  *   smartAccountType: 'crossmint',
  * });
- *
- * // Safe smart account mode (requires SMART_ACCOUNT_CHAIN_ID env vars)
- * const result = await setupVincentDevelopmentEnvironment({
- *   permissionData,
- *   smartAccountType: 'safe',
- * });
  * ```
  */
 export const setupVincentDevelopmentEnvironment = async ({
@@ -88,7 +82,7 @@ export const setupVincentDevelopmentEnvironment = async ({
   smartAccountType = false,
 }: {
   permissionData: PermissionData;
-  smartAccountType?: 'zerodev' | 'crossmint' | 'safe' | false;
+  smartAccountType?: 'zerodev' | 'crossmint' | false;
 }): Promise<VincentDevEnvironment> => {
   // Check and fund all required accounts
   await funder.checkFunderBalance();
@@ -174,14 +168,8 @@ export const setupVincentDevelopmentEnvironment = async ({
       smartAccount = await setupCrossmintAccount({
         ownerAccount,
         permittedAddress: agentPkpInfo.ethAddress as `0x${string}`,
-        chain: chain as { network: string },
+        chain,
       });
-    } else if (smartAccountType === 'safe') {
-      throw new Error('Safe smart account setup not yet implemented');
-    }
-
-    if (smartAccount) {
-      console.log(`✅ Smart account created at: ${smartAccount.account.address}\n`);
     }
   }
 

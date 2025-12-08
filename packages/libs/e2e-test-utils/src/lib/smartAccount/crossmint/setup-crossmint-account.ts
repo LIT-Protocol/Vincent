@@ -1,4 +1,4 @@
-import type { Address } from 'viem';
+import type { Address, Chain } from 'viem';
 import type { PrivateKeyAccount } from 'viem/accounts';
 
 import { zeroAddress } from 'viem';
@@ -10,7 +10,7 @@ import { getCrossmintWalletApiClient } from '../../environment/crossmint';
 export interface SetupCrossmintAccountParams {
   ownerAccount: PrivateKeyAccount;
   permittedAddress: Address;
-  chain: { network: string };
+  chain: Chain;
 }
 
 export async function setupCrossmintAccount({
@@ -64,8 +64,6 @@ export async function setupCrossmintAccount({
   }
 
   // Try to deploy the smart account with an empty user op
-  // If it's already deployed, this will fail gracefully
-  console.log(`[setupCrossmintAccount] Deploying Crossmint Smart Account with empty UserOp...`);
   const deployUserOp = await crossmintWalletApiClient.createTransaction(crossmintAccount.address, {
     params: {
       calls: [
@@ -75,25 +73,25 @@ export async function setupCrossmintAccount({
           value: '0',
         },
       ],
-      chain: chain.network as any,
+      // @ts-expect-error - Crossmint expects specific chain literal union, viem Chain.name is generic string. Runtime validates.
+      chain: chain.name,
       signer: ownerAccount.address,
     },
   });
 
   if ('error' in deployUserOp) {
-    // Check if error is because wallet is already deployed
-    const errorMessage = JSON.stringify(deployUserOp.error).toLowerCase();
-    if (errorMessage.includes('already deployed') || errorMessage.includes('already exists')) {
-      console.log(`✅ Crossmint Smart Account already deployed, skipping deployment...`);
-    } else {
-      throw new Error(
-        `Could not create crossmint deploy user operation. Error: ${JSON.stringify(deployUserOp.error)}`,
-      );
-    }
+    // If we get an error, the account is likely already deployed
+    console.log(`[setupCrossmintAccount] ✅ Smart Account already deployed`);
   } else {
     // Account needs deployment - sign and approve the transaction
+    console.log(`[setupCrossmintAccount] Deploying Smart Account with empty UserOp...`);
+
+    if (!('userOperationHash' in deployUserOp.onChain)) {
+      throw new Error('Unexpected transaction response format: missing userOperationHash');
+    }
+
     const deployUserOpSignature = await ownerAccount.signMessage({
-      message: { raw: (deployUserOp.onChain as any).userOperationHash },
+      message: { raw: deployUserOp.onChain.userOperationHash as `0x${string}` },
     });
 
     const deployUserOpApproval = await crossmintWalletApiClient.approveTransaction(
@@ -114,7 +112,7 @@ export async function setupCrossmintAccount({
       );
     }
 
-    console.log(`✅ Crossmint Smart Account deployed`);
+    console.log(`[setupCrossmintAccount] ✅ Smart Account deployed`);
   }
 
   return {

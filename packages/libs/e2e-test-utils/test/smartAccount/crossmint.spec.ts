@@ -1,6 +1,6 @@
 import type { PermissionData } from '@lit-protocol/vincent-contracts-sdk';
 
-import { setupVincentDevelopmentEnvironment } from '../../src/lib/setup-vincent-development-environment';
+import { setupVincentDevelopmentEnvironment } from '../../src';
 
 describe('Crossmint Smart Account Setup', () => {
   const CROSSMINT_API_KEY = process.env.CROSSMINT_API_KEY;
@@ -42,7 +42,5 @@ describe('Crossmint Smart Account Setup', () => {
     expect(result.smartAccount!.account).toBeDefined();
     expect(result.smartAccount!.account.address).toBeDefined();
     expect(result.smartAccount!.account.address).toMatch(/^0x[a-fA-F0-9]{40}$/);
-
-    console.log(`✅ Crossmint smart account created at: ${result.smartAccount!.account.address}`);
   }, 300000); // 5 minute timeout for full environment setup
 });
