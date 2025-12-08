@@ -40,9 +40,23 @@ export interface ValidateTransactionParams extends ValidationBaseParams {
   decodedTransaction: DecodedTransaction;
 }
 
+/**
+ * Interface defining the steps required to implement the lifecycle of a Gated Signer Ability.
+ */
 export interface LifecycleFunctionSteps {
+  /**
+   * Decodes the transaction data into a more usable format.
+   */
   decodeTransaction: (params: DecodeTransactionParams) => DecodedTransaction;
+  /**
+   * Validates the result of the simulation.
+   * Should throw an error if the simulation result is invalid.
+   */
   validateSimulation: (params: ValidateSimulationParams) => void;
+  /**
+   * Validates the decoded transaction.
+   * Should throw an error if the transaction is invalid.
+   */
   validateTransaction: (params: ValidateTransactionParams) => void;
 }
 
