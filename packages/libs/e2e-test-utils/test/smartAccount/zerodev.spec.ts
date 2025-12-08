@@ -48,7 +48,5 @@ describe('ZeroDev Smart Account Setup', () => {
       expect(result.smartAccount!.serializedPermissionAccount).toBeDefined();
       expect(typeof result.smartAccount!.serializedPermissionAccount).toBe('string');
     }
-
-    console.log(`✅ ZeroDev smart account created at: ${result.smartAccount!.account.address}`);
   }, 300000); // 5 minute timeout for full environment setup
 });

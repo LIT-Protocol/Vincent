@@ -80,8 +80,8 @@ export async function setupCrossmintAccount({
   });
 
   if ('error' in deployUserOp) {
-    // If we get an error, the account is likely already deployed
-    console.log(`[setupCrossmintAccount] ✅ Smart Account already deployed`);
+    // Error creating deploy transaction - account may already be deployed, skip deployment
+    console.log(`[setupCrossmintAccount] Skipping deployment (error creating transaction)`);
   } else {
     // Account needs deployment - sign and approve the transaction
     console.log(`[setupCrossmintAccount] Deploying Smart Account with empty UserOp...`);
