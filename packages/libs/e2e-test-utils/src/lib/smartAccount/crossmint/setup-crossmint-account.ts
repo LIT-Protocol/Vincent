@@ -27,8 +27,10 @@ export async function setupCrossmintAccount({
 
   // Check if wallet already exists
   let crossmintAccount = await crossmintWalletApiClient.getWallet(walletLocator).catch(() => null);
+  let accountAlreadyExisted = false;
 
   if (crossmintAccount && !('error' in crossmintAccount)) {
+    accountAlreadyExisted = true;
     console.log(
       `[setupCrossmintAccount] ✅ Crossmint Smart Account already exists at: ${crossmintAccount.address}`,
     );
@@ -80,8 +82,12 @@ export async function setupCrossmintAccount({
   });
 
   if ('error' in deployUserOp) {
-    // Error creating deploy transaction - account may already be deployed, skip deployment
-    console.log(`[setupCrossmintAccount] Skipping deployment (error creating transaction)`);
+    // Error creating deploy transaction - account is likely already deployed
+    if (accountAlreadyExisted) {
+      console.log(`[setupCrossmintAccount] ✅ Smart Account already deployed`);
+    } else {
+      console.log(`[setupCrossmintAccount] Skipping deployment (unable to create transaction)`);
+    }
   } else {
     // Account needs deployment - sign and approve the transaction
     console.log(`[setupCrossmintAccount] Deploying Smart Account with empty UserOp...`);

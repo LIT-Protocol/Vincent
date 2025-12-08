@@ -73,7 +73,7 @@ export async function setupZerodevAccount({
     initConfig: await toInitConfig(permissionValidator),
   });
 
-  console.log(`[setupSmartAccount] Smart account address: ${ownerKernelAccount.address}`);
+  console.log(`[setupZerodevAccount] Smart account address: ${ownerKernelAccount.address}`);
 
   // Check if account is already deployed
   const accountCode = await publicClient.getCode({
@@ -95,9 +95,9 @@ export async function setupZerodevAccount({
   });
 
   if (isDeployed) {
-    console.log('[setupZerodevAccount] ✅ Smart account already deployed, skipping deployment...');
+    console.log('[setupZerodevAccount] ✅ Smart account already deployed');
   } else {
-    console.log('[setupZerodevAccount] Deploying smart account with empty UserOp...');
+    console.log('[setupZerodevAccount] Deploying Smart Account with empty UserOp...');
 
     // Deploy smart account with an empty user operation
     const deployUserOpHash = await ownerKernelClient.sendUserOperation({
@@ -110,7 +110,7 @@ export async function setupZerodevAccount({
       ]),
     });
 
-    console.log(`[setupSmartAccount] Deployment UserOp hash: ${deployUserOpHash}`);
+    console.log(`[setupZerodevAccount] Deployment UserOp hash: ${deployUserOpHash}`);
 
     // Wait for deployment
     const deployUserOpReceipt = await ownerKernelClient.waitForUserOperationReceipt({
@@ -118,12 +118,9 @@ export async function setupZerodevAccount({
     });
 
     console.log(
-      `[setupSmartAccount] Deployed at tx: ${deployUserOpReceipt.receipt.transactionHash}`,
+      `[setupZerodevAccount] ✅ Smart Account deployed at tx: ${deployUserOpReceipt.receipt.transactionHash}`,
     );
   }
-
-  // Generate serialized permission account for signing
-  console.log('[setupZerodevAccount] Generating serialized permission account...');
 
   const permissionKernelAccountToSerialize = await createKernelAccount(publicClient, {
     entryPoint,
@@ -139,7 +136,9 @@ export async function setupZerodevAccount({
     permissionKernelAccountToSerialize,
   );
 
-  console.log('[setupZerodevAccount] ✅ Smart account setup complete\n');
+  console.log(
+    `[setupZerodevAccount] ✅ Smart account setup complete: ${ownerKernelAccount.address}\n`,
+  );
 
   return {
     account: ownerKernelAccount,

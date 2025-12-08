@@ -3,18 +3,6 @@ import type { PermissionData } from '@lit-protocol/vincent-contracts-sdk';
 import { setupVincentDevelopmentEnvironment } from '../../src';
 
 describe('Crossmint Smart Account Setup', () => {
-  const CROSSMINT_API_KEY = process.env.CROSSMINT_API_KEY;
-  const SMART_ACCOUNT_CHAIN_ID = process.env.SMART_ACCOUNT_CHAIN_ID;
-
-  beforeAll(() => {
-    if (!CROSSMINT_API_KEY) {
-      throw new Error('CROSSMINT_API_KEY environment variable is required for this test');
-    }
-    if (!SMART_ACCOUNT_CHAIN_ID) {
-      throw new Error('SMART_ACCOUNT_CHAIN_ID environment variable is required for this test');
-    }
-  });
-
   it('should successfully create a Crossmint smart account through setupVincentDevelopmentEnvironment', async () => {
     console.log(`Testing Crossmint smart account setup via setupVincentDevelopmentEnvironment...`);
 

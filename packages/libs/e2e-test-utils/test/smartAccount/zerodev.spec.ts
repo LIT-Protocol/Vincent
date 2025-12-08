@@ -1,20 +1,8 @@
 import type { PermissionData } from '@lit-protocol/vincent-contracts-sdk';
 
-import { setupVincentDevelopmentEnvironment } from '../../src/lib/setup-vincent-development-environment';
+import { setupVincentDevelopmentEnvironment } from '../../src';
 
 describe('ZeroDev Smart Account Setup', () => {
-  const ZERODEV_RPC_URL = process.env.ZERODEV_RPC_URL;
-  const SMART_ACCOUNT_CHAIN_ID = process.env.SMART_ACCOUNT_CHAIN_ID;
-
-  beforeAll(() => {
-    if (!ZERODEV_RPC_URL) {
-      throw new Error('ZERODEV_RPC_URL environment variable is required for this test');
-    }
-    if (!SMART_ACCOUNT_CHAIN_ID) {
-      throw new Error('SMART_ACCOUNT_CHAIN_ID environment variable is required for this test');
-    }
-  });
-
   it('should successfully create a ZeroDev Kernel smart account through setupVincentDevelopmentEnvironment', async () => {
     console.log(`Testing ZeroDev smart account setup via setupVincentDevelopmentEnvironment...`);
 
