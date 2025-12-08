@@ -2,7 +2,11 @@ import type { PermissionData } from '@lit-protocol/vincent-contracts-sdk';
 
 import { setupVincentDevelopmentEnvironment } from '../../src';
 
-describe('ZeroDev Smart Account Setup', () => {
+const ZERODEV_RPC_URL = process.env.ZERODEV_RPC_URL;
+const SMART_ACCOUNT_CHAIN_ID = process.env.SMART_ACCOUNT_CHAIN_ID;
+const hasRequiredEnvVars = ZERODEV_RPC_URL && SMART_ACCOUNT_CHAIN_ID;
+
+(hasRequiredEnvVars ? describe : describe.skip)('ZeroDev Smart Account Setup', () => {
   it('should successfully create a ZeroDev Kernel smart account through setupVincentDevelopmentEnvironment', async () => {
     console.log(`Testing ZeroDev smart account setup via setupVincentDevelopmentEnvironment...`);
 

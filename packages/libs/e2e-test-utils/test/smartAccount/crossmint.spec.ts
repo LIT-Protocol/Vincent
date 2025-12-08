@@ -2,7 +2,11 @@ import type { PermissionData } from '@lit-protocol/vincent-contracts-sdk';
 
 import { setupVincentDevelopmentEnvironment } from '../../src';
 
-describe('Crossmint Smart Account Setup', () => {
+const CROSSMINT_API_KEY = process.env.CROSSMINT_API_KEY;
+const SMART_ACCOUNT_CHAIN_ID = process.env.SMART_ACCOUNT_CHAIN_ID;
+const hasRequiredEnvVars = CROSSMINT_API_KEY && SMART_ACCOUNT_CHAIN_ID;
+
+(hasRequiredEnvVars ? describe : describe.skip)('Crossmint Smart Account Setup', () => {
   it('should successfully create a Crossmint smart account through setupVincentDevelopmentEnvironment', async () => {
     console.log(`Testing Crossmint smart account setup via setupVincentDevelopmentEnvironment...`);
 
