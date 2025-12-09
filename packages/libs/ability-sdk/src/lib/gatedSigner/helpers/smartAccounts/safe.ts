@@ -1,6 +1,14 @@
 import type { Abi, Address, Hex } from 'viem';
 
-import { decodeFunctionData, getAddress, hexToBigInt, hexToNumber, slice } from 'viem';
+import {
+  concat,
+  decodeFunctionData,
+  getAddress,
+  hexToBigInt,
+  hexToNumber,
+  slice,
+  toHex,
+} from 'viem';
 
 import type { Eip712Params } from '../eip712';
 import type { DecodedFunctionCall, LowLevelCall } from '../lowLevelCall';
@@ -211,3 +219,15 @@ export const safeEip712Params: Eip712Params = {
     entryPoint: '$entryPointAddress',
   },
 };
+
+export function formatSafeSignature(params: {
+  validAfter: number;
+  validUntil: number;
+  signature: Hex;
+}): Hex {
+  return concat([
+    toHex(params.validAfter, { size: 6 }),
+    toHex(params.validUntil, { size: 6 }),
+    params.signature,
+  ]);
+}

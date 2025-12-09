@@ -1,6 +1,13 @@
 import type { Abi, Hex } from 'viem';
 
-import { decodeAbiParameters, decodeFunctionData, getAddress, hexToBigInt, sliceHex } from 'viem';
+import {
+  concat,
+  decodeAbiParameters,
+  decodeFunctionData,
+  getAddress,
+  hexToBigInt,
+  sliceHex,
+} from 'viem';
 
 import type { DecodedFunctionCall, LowLevelCall } from '../lowLevelCall';
 
@@ -183,4 +190,11 @@ export function tryDecodeKernelCalldataToLowLevelCalls(callData: Hex): LowLevelC
   }
 
   return null;
+}
+
+export function formatSecondaryValidatorKernelSignature(params: {
+  secondValidatorId: Hex;
+  signature: Hex;
+}) {
+  return concat([params.secondValidatorId, params.signature]);
 }
