@@ -1,23 +1,14 @@
-import type { Address, Chain } from 'viem';
-import type { PrivateKeyAccount } from 'viem/accounts';
-
 import { zeroAddress } from 'viem';
 
-import type { CrossmintSmartAccountInfo } from '../types';
+import type { CrossmintSmartAccountInfo, SetupSmartAccountParams } from '../types';
 
 import { getCrossmintWalletApiClient } from '../../environment/crossmint';
-
-export interface SetupCrossmintAccountParams {
-  ownerAccount: PrivateKeyAccount;
-  permittedAddress: Address;
-  chain: Chain;
-}
 
 export async function setupCrossmintAccount({
   ownerAccount,
   permittedAddress,
   chain,
-}: SetupCrossmintAccountParams): Promise<CrossmintSmartAccountInfo> {
+}: SetupSmartAccountParams): Promise<CrossmintSmartAccountInfo> {
   const crossmintWalletApiClient = getCrossmintWalletApiClient();
 
   // Use email-based owner for idempotency
