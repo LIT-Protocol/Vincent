@@ -16,7 +16,7 @@ import * as delegator from './delegator';
 import { ensureUnexpiredCapacityToken } from './ensure-capacity-credit';
 import { getEnv } from './env';
 import * as funder from './funder';
-import { setupZerodevAccount, setupCrossmintAccount } from './smartAccount';
+import { setupZerodevAccount, setupCrossmintAccount, setupSafeAccount } from './smartAccount';
 
 export interface VincentDevEnvironment {
   agentPkpInfo: PkpInfo;
@@ -75,14 +75,20 @@ export interface VincentDevEnvironment {
  *   permissionData,
  *   smartAccountType: 'crossmint',
  * });
+ *
+ * // Safe smart account mode (requires SMART_ACCOUNT_CHAIN_ID, SAFE_RPC_URL, and PIMLICO_RPC_URL env vars)
+ * const result = await setupVincentDevelopmentEnvironment({
+ *   permissionData,
+ *   smartAccountType: 'safe',
+ * });
  * ```
  */
 export const setupVincentDevelopmentEnvironment = async ({
   permissionData,
-  smartAccountType = false,
+  smartAccountType,
 }: {
   permissionData: PermissionData;
-  smartAccountType?: 'zerodev' | 'crossmint' | false;
+  smartAccountType?: 'zerodev' | 'crossmint' | 'safe';
 }): Promise<VincentDevEnvironment> => {
   // Check and fund all required accounts
   await funder.checkFunderBalance();
@@ -166,6 +172,12 @@ export const setupVincentDevelopmentEnvironment = async ({
       });
     } else if (smartAccountType === 'crossmint') {
       smartAccount = await setupCrossmintAccount({
+        ownerAccount,
+        permittedAddress: agentPkpInfo.ethAddress as `0x${string}`,
+        chain,
+      });
+    } else if (smartAccountType === 'safe') {
+      smartAccount = await setupSafeAccount({
         ownerAccount,
         permittedAddress: agentPkpInfo.ethAddress as `0x${string}`,
         chain,

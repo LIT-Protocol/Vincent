@@ -1,3 +1,10 @@
 export { setupZerodevAccount } from './zerodev/setup-zerodev-account';
 export { setupCrossmintAccount } from './crossmint/setup-crossmint-account';
-export type { SmartAccountInfo, ZerodevSmartAccountInfo, CrossmintSmartAccountInfo } from './types';
+export { setupSafeAccount } from './safe/setup-safe-account';
+export type {
+  SmartAccountInfo,
+  ZerodevSmartAccountInfo,
+  CrossmintSmartAccountInfo,
+  SafeSmartAccountInfo,
+  SetupSmartAccountParams,
+} from './types';

@@ -1,11 +1,9 @@
-import type { Address, Chain, PrivateKeyAccount } from 'viem';
-
 import { signerToEcdsaValidator } from '@zerodev/ecdsa-validator';
 import { toInitConfig, serializePermissionAccount } from '@zerodev/permissions';
 import { createKernelAccount, createKernelAccountClient } from '@zerodev/sdk';
 import { createPublicClient, zeroAddress } from 'viem';
 
-import type { ZerodevSmartAccountInfo } from '../types';
+import type { SetupSmartAccountParams, ZerodevSmartAccountInfo } from '../types';
 
 import {
   kernelVersion,
@@ -14,12 +12,6 @@ import {
   getZerodevTransport,
 } from '../../environment/zerodev';
 import { getPermissionEmptyValidator } from './get-permission-empty-validator';
-
-export interface SetupSmartAccountParams {
-  ownerAccount: PrivateKeyAccount;
-  permittedAddress: Address;
-  chain: Chain;
-}
 
 /**
  * Set up a ZeroDev Kernel smart account for testing with Vincent abilities.
