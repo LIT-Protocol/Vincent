@@ -2,7 +2,7 @@
 
 ### 🩹 Fixes
 
-- Fix published package to include smart account functionality that was missing from the 1.2.0 release build. ([](https://github.com/LIT-Protocol/Vincent/commit/))
+- Fix published package to include smart account functionality that was missing from the 1.2.0 release build. ([f327df67](https://github.com/LIT-Protocol/Vincent/commit/f327df67))
 
 ## 1.2.0 (2025-12-09)
 

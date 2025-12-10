@@ -12,6 +12,7 @@ export {
   setupVincentDevelopmentEnvironment,
   setupZerodevAccount,
   setupCrossmintAccount,
+  setupSafeAccount,
 } from './lib';
 
 export type { PkpInfo, SmartAccountInfo, VincentDevEnvironment } from './lib';
