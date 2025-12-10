@@ -1,3 +1,15 @@
+## 1.2.1 (2025-12-10)
+
+### 🩹 Fixes
+
+- Fix published package to include smart account functionality that was missing from the 1.2.0 release build. ([](https://github.com/LIT-Protocol/Vincent/commit/))
+
+## 1.2.0 (2025-12-09)
+
+### 🚀 Features
+
+- Adds a `smartAccountType` parameter to the `setupVincentDevelopmentEnvironment`. Supports `safe`, `crossmint` and `zerodev` smart accounts. When the parameter is set, the development environment will create a Smart Account owned by the `agentWalletOwner` (currently owns the Agent PKP for development). It will then add the Agent PKP as a signer on the Smart Account. ([fe037134](https://github.com/LIT-Protocol/Vincent/commit/fe037134))
+
 ## 1.1.3 (2025-11-23)
 
 ### 🧱 Updated Dependencies
