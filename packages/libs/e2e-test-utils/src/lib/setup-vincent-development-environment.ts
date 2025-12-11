@@ -1,10 +1,10 @@
 import type { Wallet } from 'ethers';
 
-import type { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
 import { extractChain } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import * as viemChains from 'viem/chains';
 
+import type { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
 import type { PermissionData } from '@lit-protocol/vincent-contracts-sdk';
 
 import type { PkpInfo } from './mint-new-pkp';
