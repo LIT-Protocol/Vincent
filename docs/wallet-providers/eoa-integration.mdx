@@ -9,28 +9,30 @@ Vincent integrates with traditional Externally Owned Accounts (EOAs) for direct 
 Vincent uses a delegation chain for secure signing:
 
 1. **Owner EOA**: Your user's wallet - controls everything
-2. **User PKP**: Controlled by the Owner EOA - authenticates the user
-3. **Agent PKP**: Controlled by the User PKP - acts as the EOA that signs transactions
+2. **User Account (PKP)**: Controlled by the Owner EOA - authenticates the user
+3. **Agent Wallet (PKP)**: Controlled by the User Account - grants signing permissions to authorized app delegatees (Ethereum addresses) that execute abilities on behalf of users
 
-The **Agent PKP address** is what actually signs transactions and needs to be funded with native currency for gas. This delegation chain ensures users maintain control while allowing Vincent to sign transactions securely through abilities.
+The **Agent Wallet address** is what actually signs transactions and needs to be funded with native currency for gas. This delegation chain ensures users maintain control while allowing Vincent to sign transactions securely through abilities.
 
 ## Integration Flow
 
 <Tabs>
   <Tab title="How It Works">
-    1. **Setup the delegation chain** by creating or retrieving the Owner EOA → User PKP → Agent PKP hierarchy, where the Agent PKP will act as the signing EOA.
+    1. **Setup the delegation chain** by creating or retrieving the Owner EOA → User Account → Agent Wallet hierarchy, and authorize your app's backend service as a delegatee (an Ethereum address permitted to execute abilities).
 
-    2. **Fund the Agent PKP address** with native currency for gas fees. Unlike smart accounts, EOAs must pay gas directly, so the Agent PKP needs to hold sufficient native tokens.
+    2. **Fund the Agent Wallet address** with native currency for gas fees. Unlike smart accounts, EOAs must pay gas directly, so the Agent Wallet needs to hold sufficient native tokens.
 
-    3. **Generate transaction requests** for the Agent PKP to execute, such as token transfers, DeFi interactions, or contract calls.
+    3. **Your backend delegatee generates transaction requests** such as token transfers, DeFi interactions, or contract calls that need to be executed on behalf of the user.
 
-    4. **Prepare each transaction** with proper gas estimation and nonce using your RPC provider, creating a complete transaction request ready for validation.
+    4. **Your backend delegatee prepares each transaction** with proper gas estimation and nonce using your RPC provider, creating a complete transaction request ready for validation.
 
-    5. **Vincent abilities validate transactions** by simulating them on-chain and verifying they only interact with authorized contracts and benefit the user, without extracting value.
+    5. **Your backend delegatee calls Vincent abilities** with the prepared transaction, initiating the validation and signing process.
 
-    6. **Agent PKP signs the validated transaction** through Vincent's secure signing process, returning a standard ECDSA signature.
+    6. **Vincent abilities validate transactions** by simulating them on-chain and verifying they only interact with authorized contracts and benefit the user, without extracting value.
 
-    7. **Serialize and broadcast** the signed transaction directly to the network using your RPC provider—no bundler needed for EOAs.
+    7. **Agent Wallet signs the validated transaction** through Vincent's secure signing process, returning a standard ECDSA signature to the delegatee.
+
+    8. **Your backend delegatee serializes and broadcasts** the signed transaction directly to the network using your RPC provider.
   </Tab>
   <Tab title="Diagram">
     ```mermaid
@@ -65,7 +67,6 @@ The **Agent PKP address** is what actually signs transactions and needs to be fu
 | **Transaction Format** | Standard transaction | UserOperation |
 | **Gas Payment** | Direct from account | Bundler/paymaster |
 | **Broadcasting** | Direct to network | Via bundler |
-| **Setup Complexity** | Low | Medium |
 | **Account Abstraction** | No | Yes |
 | **Batching** | No | Yes |
 | **Gas Sponsorship** | No | Yes |

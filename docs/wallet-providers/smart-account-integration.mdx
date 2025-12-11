@@ -9,10 +9,10 @@ Vincent integrates with ERC-4337 smart accounts through **ZeroDev (Kernel)**, **
 Vincent uses a delegation chain for secure signing:
 
 1. **Owner EOA**: Your user's wallet - controls everything
-2. **User PKP**: Controlled by the Owner EOA - authenticates the user
-3. **Agent PKP**: Controlled by the User PKP - signs transactions through Vincent abilities
+2. **User Account (PKP)**: Controlled by the Owner EOA - authenticates the user
+3. **Agent Wallet (PKP)**: Controlled by the User Account - grants signing permissions to authorized app delegatees (Ethereum addresses) that execute abilities on behalf of users
 
-The **Agent PKP address** is added as an authorized signer to your smart account. The smart account holds funds and pays for gas through bundlers/paymasters, while the Agent PKP signs UserOperations after Vincent validates them.
+The **Agent Wallet address** is added as an authorized signer to your smart account. The smart account holds funds and pays for gas through bundlers/paymasters, while the Agent Wallet signs UserOperations after Vincent validates them.
 
 ## Integration Flow
 
@@ -22,13 +22,17 @@ The **Agent PKP address** is added as an authorized signer to your smart account
 
     2. **You grant session key permissions** to your Agent Wallet, allowing it to sign specific types of transactions on behalf of your Smart Account within defined boundaries and time limits.
 
-    3. **Your backend service constructs operations** that your Smart Account should perform, such as DeFi interactions, token swaps, or cross-chain transfers, formatted as [ERC-4337](https://eips.ethereum.org/EIPS/eip-4337) UserOperations.
+    3. **You authorize your app's backend service as a delegatee** (an Ethereum address permitted to execute abilities on behalf of users through the Agent Wallet).
 
-    4. **Vincent abilities validate operations** by decoding the transactions, simulating them on-chain, and verifying they only interact with authorized contracts and benefit you as the user.
+    4. **Your backend delegatee constructs operations** that your Smart Account should perform, such as DeFi interactions, token swaps, or cross-chain transfers, formatted as [ERC-4337](https://eips.ethereum.org/EIPS/eip-4337) UserOperations.
 
-    5. **Agent Wallet signs validated operations** using the session key permission, creating a signed UserOperation that can be broadcast to the network through a bundler.
+    5. **Your backend delegatee calls Vincent abilities** with the prepared UserOperations, initiating the validation and signing process.
 
-    6. **The Smart Account executes the operation** on-chain, with all validation logic enforced at both the Vincent ability level and the Smart Account contract level.
+    6. **Vincent abilities validate operations** by decoding the transactions, simulating them on-chain, and verifying they only interact with authorized contracts and benefit you as the user.
+
+    7. **Agent Wallet signs validated operations** using the session key permission, creating a signed UserOperation that can be broadcast to the network through a bundler.
+
+    8. **The Smart Account executes the operation** on-chain, with all validation logic enforced at both the Vincent ability level and the Smart Account contract level.
   </Tab>
   <Tab title="Diagram">
     ```mermaid
