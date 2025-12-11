@@ -70,7 +70,8 @@
       "policy-send-counter",
       "ability-aerodrome-swap",
       "ability-hyperliquid",
-      "e2e-test-utils"
+      "e2e-test-utils",
+      "policy-sol-contract-whitelist"
     ],
     "projectsRelationship": "independent",
     "releaseTagPattern": "vincent/{projectName}/{version}",
