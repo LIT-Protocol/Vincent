@@ -16,4 +16,5 @@ export {
   getAaveWithdrawTx,
   getAvailableMarkets,
   getATokens,
+  getFeeContractAddress,
 } from './lib/helpers/aave';

@@ -2,7 +2,7 @@ import type { ValidateSimulationParams } from '@lit-protocol/vincent-ability-sdk
 
 import { getAddress, zeroAddress } from 'viem';
 
-import { getAaveAddresses, getATokens } from './helpers/aave';
+import { getAaveAddresses, getATokens, getFeeContractAddress } from './helpers/aave';
 
 export const validateSimulation = (params: ValidateSimulationParams) => {
   const { chainId, sender: _sender, simulation } = params;
@@ -12,13 +12,14 @@ export const validateSimulation = (params: ValidateSimulationParams) => {
     throw new Error(`Simulation failed - Reason: ${revertReason} - Message: ${message}`);
   }
 
+  const feeContract = getFeeContractAddress(chainId);
   const { POOL: aavePoolAddress } = getAaveAddresses(chainId);
   const aaveATokens = getATokens(chainId);
 
   const sender = getAddress(_sender);
   const pool = getAddress(aavePoolAddress);
   const aTokens = Object.values(aaveATokens).map(getAddress);
-  const allowed = new Set([zeroAddress, sender, pool, ...aTokens]);
+  const allowed = new Set([zeroAddress, sender, pool, feeContract, ...aTokens]);
 
   simulation.changes.forEach((c, idx) => {
     const assetType = c.assetType;
@@ -37,20 +38,22 @@ export const validateSimulation = (params: ValidateSimulationParams) => {
       if (changeType !== 'TRANSFER') {
         fail('Only TRANSFER is allowed for NATIVE');
       }
+
+      // TODO no chequeamos el source y destination?
       return;
     }
 
     if (assetType === 'ERC20') {
       if (changeType === 'APPROVE') {
-        if (from !== sender || to !== pool) {
-          fail('ERC20 APPROVE must be from userOp.sender to aavePoolAddress');
+        if (![sender, feeContract].includes(from) || ![pool, feeContract].includes(to)) {
+          fail('ERC20 APPROVE must be from userOp.sender to aave pool or fee contract');
         }
         return;
       }
       if (changeType === 'TRANSFER') {
         if (!allowed.has(from) || !allowed.has(to)) {
           fail(
-            'ERC20 TRANSFER endpoints must be within {zero address, userOp.sender or Aave addresses}',
+            'ERC20 TRANSFER endpoints must be within {zero address, sender, fee contract or Aave addresses}',
           );
         }
         return;

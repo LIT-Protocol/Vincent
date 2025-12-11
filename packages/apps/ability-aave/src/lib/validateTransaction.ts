@@ -7,20 +7,29 @@ import type { Address } from 'viem';
 
 import { getAddress, isAddressEqual } from 'viem';
 
-import { getAaveAddresses } from './helpers/aave';
+import { getFeeContractAddress } from './helpers/aave';
 import { TransactionKind } from './helpers/transactionKind';
 
 export const validateTransaction = (params: ValidateTransactionParams) => {
   const { chainId, decodedTransaction, sender } = params;
 
-  const { POOL: aavePoolAddress } = getAaveAddresses(chainId);
+  if (decodedTransaction.kind === 'error') {
+    const decodedTransactionError = decodedTransaction as DecodedTransactionError;
+    throw new Error(`Transaction failed to decode: ${decodedTransactionError.message}`);
+  }
+
+  const decodedTransactionSuccess = decodedTransaction as DecodedTransactionSuccess;
+
+  const feeContractAddress = getFeeContractAddress(chainId);
+  if (!feeContractAddress) {
+    throw new Error(`Fee contract address not found for chainId ${chainId}`);
+  }
 
   if (decodedTransaction.kind === TransactionKind.ERC20) {
-    const decodedTransactionSuccess = decodedTransaction as DecodedTransactionSuccess;
     if (['approve', 'increaseAllowance'].includes(decodedTransactionSuccess.fn)) {
       const [spender, amount] = decodedTransactionSuccess.args as [Address, bigint];
-      if (!isAddressEqual(spender, aavePoolAddress)) {
-        throw new Error(`ERC20 approval to non-POOL spender ${spender}`);
+      if (!isAddressEqual(spender, feeContractAddress)) {
+        throw new Error(`ERC20 approval to forbidden spender ${spender}`);
       }
 
       if (amount === 2n ** 256n - 1n) throw new Error('Infinite approval not allowed');
@@ -31,8 +40,21 @@ export const validateTransaction = (params: ValidateTransactionParams) => {
     return;
   }
 
+  if (decodedTransaction.kind === TransactionKind.FEE) {
+    if (['depositToAave', 'withdrawFromAave'].includes(decodedTransactionSuccess.fn)) {
+      // const [appId, assetAddress, amount] =
+      //   decodedTransactionSuccess.args as [number, Address, bigint];
+      // There is nothing to block here
+      // A wrong appId and the delegatee will produce an invalid signature
+      // A wrong assetAddress or amount and the deposit/withdrawal will fail
+    } else {
+      throw new Error('Fee function not allowed');
+    }
+
+    return;
+  }
+
   if (decodedTransaction.kind === TransactionKind.AAVE) {
-    const decodedTransactionSuccess = decodedTransaction as DecodedTransactionSuccess;
     const fn = decodedTransactionSuccess.fn;
     const args = decodedTransactionSuccess.args as any[]; // Args depend on the function being called
 
@@ -55,11 +77,6 @@ export const validateTransaction = (params: ValidateTransactionParams) => {
     }
 
     return;
-  }
-
-  if (decodedTransaction.kind === 'error') {
-    const decodedTransactionError = decodedTransaction as DecodedTransactionError;
-    throw new Error(`Transaction failed to decode: ${decodedTransactionError.message}`);
   }
 
   throw new Error('Unknown decoded transaction kind. Could not validate transaction.');

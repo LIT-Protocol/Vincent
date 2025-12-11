@@ -293,6 +293,9 @@ importers:
       '@lit-protocol/vincent-app-sdk':
         specifier: workspace:^
         version: link:../../libs/app-sdk
+      '@lit-protocol/vincent-contracts-sdk':
+        specifier: workspace:*
+        version: link:../../libs/contracts-sdk
       esbuild:
         specifier: ^0.19.12
         version: 0.19.12
