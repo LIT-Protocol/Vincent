@@ -18,5 +18,6 @@ export {
   type UserOpAbilityParams,
   type TransactionAbilityParams,
 } from './helpers/schemas';
+export { type SimulateAssetChangesResponse } from './helpers/simulation';
 export { type Transaction, transactionSchema, toVincentTransaction } from './helpers/transaction';
 export { type UserOp, userOpSchema, toVincentUserOp } from './helpers/userOperation';
