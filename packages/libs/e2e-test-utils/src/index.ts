@@ -10,7 +10,8 @@ export {
   getChainHelpers,
   createRandomVincentWallets,
   setupVincentDevelopmentEnvironment,
+  setupZerodevAccount,
+  setupCrossmintAccount,
 } from './lib';
 
-export type { PkpInfo } from './lib/mint-new-pkp';
-export type { VincentDevEnvironment } from './lib/setup-vincent-development-environment';
+export type { PkpInfo, SmartAccountInfo, VincentDevEnvironment } from './lib';

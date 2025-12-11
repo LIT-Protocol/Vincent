@@ -1,0 +1,38 @@
+import type { PermissionData } from '@lit-protocol/vincent-contracts-sdk';
+
+import { setupVincentDevelopmentEnvironment } from '../../src';
+
+const CROSSMINT_API_KEY = process.env.CROSSMINT_API_KEY;
+const SMART_ACCOUNT_CHAIN_ID = process.env.SMART_ACCOUNT_CHAIN_ID;
+const hasRequiredEnvVars = CROSSMINT_API_KEY && SMART_ACCOUNT_CHAIN_ID;
+
+(hasRequiredEnvVars ? describe : describe.skip)('Crossmint Smart Account Setup', () => {
+  it('should successfully create a Crossmint smart account through setupVincentDevelopmentEnvironment', async () => {
+    console.log(`Testing Crossmint smart account setup via setupVincentDevelopmentEnvironment...`);
+
+    // Minimal permission data for testing - using a valid IPFS CID format
+    // This is a placeholder valid CID, not a real ability
+    const permissionData: PermissionData = {
+      QmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdG: {},
+    };
+
+    // Create Vincent development environment with Crossmint smart account
+    const result = await setupVincentDevelopmentEnvironment({
+      permissionData,
+      smartAccountType: 'crossmint',
+    });
+
+    // Verify environment was created
+    expect(result).toBeDefined();
+    expect(result.agentPkpInfo).toBeDefined();
+    expect(result.wallets).toBeDefined();
+    expect(result.appId).toBeDefined();
+    expect(result.appVersion).toBeDefined();
+
+    // Verify smart account was created
+    expect(result.smartAccount).toBeDefined();
+    expect(result.smartAccount!.account).toBeDefined();
+    expect(result.smartAccount!.account.address).toBeDefined();
+    expect(result.smartAccount!.account.address).toMatch(/^0x[a-fA-F0-9]{40}$/);
+  }, 300000); // 5 minute timeout for full environment setup
+});

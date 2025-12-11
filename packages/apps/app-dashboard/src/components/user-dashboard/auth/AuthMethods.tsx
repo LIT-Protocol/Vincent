@@ -2,7 +2,7 @@ import { Dispatch, SetStateAction, useEffect } from 'react';
 import { theme as themeImport, fonts } from '../connect/ui/theme';
 import { AuthView } from '../connect/Connect';
 import { useFarcaster } from '@/hooks/shared/useFarcaster';
-import Loading from '@/components/shared/ui/Loading';
+import LoadingLock from '@/components/shared/ui/LoadingLock';
 
 interface AuthMethodsProps {
   setView: Dispatch<SetStateAction<AuthView>>;
@@ -25,11 +25,11 @@ const AuthMethods = ({ setView, clearError }: AuthMethodsProps) => {
           Authentication Required
         </h2>
         <p className="text-xs text-gray-600 dark:text-white/60" style={fonts.body}>
-          Please login in or sign up to continue.
+          Please log in or sign up to continue.
         </p>
       </div>
       {isLoading ? (
-        <Loading />
+        <LoadingLock />
       ) : (
         <div className="flex flex-col items-center space-y-3">
           {!isInFarcaster && (
