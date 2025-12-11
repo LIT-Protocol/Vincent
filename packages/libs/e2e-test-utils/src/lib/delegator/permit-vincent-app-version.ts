@@ -1,13 +1,12 @@
+import type { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
 import type { PermissionData } from '@lit-protocol/vincent-contracts-sdk';
 
 import { getClient } from '@lit-protocol/vincent-contracts-sdk';
 
 import type { PkpInfo } from '../mint-new-pkp';
 
-import { getChainHelpers } from '../chain';
-
 /**
- * Adds Vincent delegation permission for a specific app version for the user's Agent Wallet PKP.
+ * Adds Vincent delegation permission for a specific app version for the Agent PKP.
  *
  * This function will check if the requested app version is already permitted. If it is,
  * it will skip the permission step and return early. If a different version is permitted,
@@ -18,18 +17,16 @@ export async function permitAppVersionForAgentWalletPkp({
   appId,
   appVersion,
   agentPkpInfo,
+  platformUserPkpWallet,
 }: {
   permissionData: PermissionData;
   appId: number;
   appVersion: number;
   agentPkpInfo: PkpInfo;
+  platformUserPkpWallet: PKPEthersWallet;
 }): Promise<void> {
-  const {
-    wallets: { agentWalletOwner },
-  } = await getChainHelpers();
-
   const client = getClient({
-    signer: agentWalletOwner,
+    signer: platformUserPkpWallet,
   });
 
   const existingPermittedAppVersion = await client.getPermittedAppVersionForPkp({
@@ -40,7 +37,7 @@ export async function permitAppVersionForAgentWalletPkp({
   // Check if the requested version is already permitted
   if (existingPermittedAppVersion === appVersion) {
     console.log(
-      `App version ${appVersion} is already permitted for Agent Wallet PKP ${agentPkpInfo.ethAddress}. Skipping permission.`,
+      `App version ${appVersion} is already permitted for Agent PKP ${agentPkpInfo.ethAddress}. Skipping permission.`,
     );
     return;
   }
@@ -64,6 +61,6 @@ export async function permitAppVersionForAgentWalletPkp({
   });
 
   console.log(
-    `Permitted App with ID ${appId} and version ${appVersion} for Agent Wallet PKP ${agentPkpInfo.ethAddress}\nTx hash: ${result.txHash}`,
+    `Permitted App with ID ${appId} and version ${appVersion} for Agent PKP ${agentPkpInfo.ethAddress}\nTx hash: ${result.txHash}`,
   );
 }

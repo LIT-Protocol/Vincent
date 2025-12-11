@@ -46,7 +46,7 @@ export async function generatePrivateKey(
       dataToEncryptHash,
       memo,
       delegatorAddress,
-      evmContractConditions,
+      evmContractConditions: JSON.stringify(evmContractConditions),
     },
     litNetwork: litNodeClient.config.litNetwork,
   });

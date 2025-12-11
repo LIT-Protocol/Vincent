@@ -14,6 +14,21 @@
         "parallel": false
       }
     },
+    "action:deploy": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["action:build"],
+      "options": {
+        "commands": ["node scripts/deploy-lit-actions.js"],
+        "cwd": "packages/libs/wrapped-keys"
+      }
+    },
+    "action:only:deploy": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": ["node scripts/deploy-lit-actions.js"],
+        "cwd": "{projectRoot}"
+      }
+    },
     "dev": {
       "executor": "@nx/js:tsc",
       "outputs": ["{options.outputPath}"],
