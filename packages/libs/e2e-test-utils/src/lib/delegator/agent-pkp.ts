@@ -117,6 +117,8 @@ const agentPkpsByAppId: Map<number, PkpInfo> = new Map();
 export const getFundedAgentPkp = async (appId: number): Promise<PkpInfo> => {
   const cached = agentPkpsByAppId.get(appId);
   if (cached) {
+    // Verify that the cached PKP still has sufficient funds
+    await ensureWalletHasTestTokens({ address: cached.ethAddress });
     return cached;
   }
 
