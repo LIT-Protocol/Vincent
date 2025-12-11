@@ -187,7 +187,9 @@ export const setupVincentDevelopmentEnvironment = async ({
     });
 
     // Convert ethers wallet to viem account
-    const ownerAccount = privateKeyToAccount(wallets.agentWalletOwner.privateKey as `0x${string}`);
+    const ownerAccount = privateKeyToAccount(
+      wallets.platformUserWalletOwner.privateKey as `0x${string}`,
+    );
 
     if (smartAccountType === 'zerodev') {
       smartAccount = await setupZerodevAccount({
