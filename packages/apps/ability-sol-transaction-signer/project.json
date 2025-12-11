@@ -7,7 +7,7 @@
     "clean": {},
     "action:build": {
       "executor": "nx:run-commands",
-      "dependsOn": ["ability-sdk:build"],
+      "dependsOn": ["ability-sdk:build", "policy-sol-contract-whitelist:build"],
       "options": {
         "commands": ["pnpm node ./esbuild.config.js"],
         "cwd": "packages/apps/ability-sol-transaction-signer",
@@ -52,7 +52,13 @@
     },
     "test-e2e": {
       "executor": "@nx/jest:jest",
-      "dependsOn": ["app-sdk:build", "wrapped-keys:build", "e2e-test-utils:build", "action:deploy"],
+      "dependsOn": [
+        "app-sdk:build",
+        "wrapped-keys:build",
+        "policy-sol-contract-whitelist:action:deploy",
+        "e2e-test-utils:build",
+        "action:deploy"
+      ],
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
       "options": {
         "jestConfig": "packages/apps/ability-sol-transaction-signer/jest.config.js"

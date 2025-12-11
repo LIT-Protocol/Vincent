@@ -36,3 +36,10 @@ export {
   ERC20_ABI,
   bigIntReplacer,
 } from './lib/abilityHelpers';
+
+import { deserializeTransaction, verifyBlockhashForCluster } from './lib/abilityHelpers/solana';
+
+export const solana = {
+  deserializeTransaction,
+  verifyBlockhashForCluster,
+};
