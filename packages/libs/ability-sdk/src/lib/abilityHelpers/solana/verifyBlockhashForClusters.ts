@@ -1,4 +1,6 @@
-import { Transaction, VersionedTransaction, Connection } from '@solana/web3.js';
+import type { VersionedTransaction } from '@solana/web3.js';
+
+import { Transaction, Connection } from '@solana/web3.js';
 
 export async function verifyBlockhashForCluster({
   rpcUrl,
