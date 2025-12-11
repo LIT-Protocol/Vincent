@@ -1,21 +1,17 @@
-import type { Address, Chain, PrivateKeyAccount } from 'viem';
-
 import { signerToEcdsaValidator } from '@zerodev/ecdsa-validator';
 import { toInitConfig, serializePermissionAccount } from '@zerodev/permissions';
 import { createKernelAccount, createKernelAccountClient } from '@zerodev/sdk';
-import { createPublicClient, http, zeroAddress } from 'viem';
+import { createPublicClient, zeroAddress } from 'viem';
 
-import type { SmartAccountInfo } from './types';
+import type { SetupSmartAccountParams, ZerodevSmartAccountInfo } from '../types';
 
-import { kernelVersion, entryPoint, createZeroDevPaymaster } from '../environment/zerodev';
+import {
+  kernelVersion,
+  entryPoint,
+  createZeroDevPaymaster,
+  getZerodevTransport,
+} from '../../environment/zerodev';
 import { getPermissionEmptyValidator } from './get-permission-empty-validator';
-
-export interface SetupSmartAccountParams {
-  ownerAccount: PrivateKeyAccount;
-  permittedAddress: Address;
-  chain: Chain;
-  zerodevRpcUrl: string;
-}
 
 /**
  * Set up a ZeroDev Kernel smart account for testing with Vincent abilities.
@@ -29,15 +25,14 @@ export interface SetupSmartAccountParams {
  * @param params - Configuration parameters
  * @returns Smart account address and serialized permission account
  */
-export async function setupSmartAccount({
+export async function setupZerodevAccount({
   ownerAccount,
   permittedAddress,
   chain,
-  zerodevRpcUrl,
-}: SetupSmartAccountParams): Promise<SmartAccountInfo> {
+}: SetupSmartAccountParams): Promise<ZerodevSmartAccountInfo> {
   // Create public client for the chain using ZeroDev RPC
   // This ensures validator configuration is consistent with the bundler
-  const zerodevTransport = http(zerodevRpcUrl);
+  const zerodevTransport = getZerodevTransport();
   const publicClient = createPublicClient({
     chain,
     transport: zerodevTransport,
@@ -46,7 +41,7 @@ export async function setupSmartAccount({
   // Create ZeroDev paymaster using centralized factory
   const zerodevPaymaster = createZeroDevPaymaster(chain);
 
-  console.log('[setupSmartAccount] Creating validators...');
+  console.log('[setupZerodevAccount] Creating validators...');
 
   // Owner validator (actual signer)
   const ownerValidator = await signerToEcdsaValidator(publicClient, {
@@ -58,7 +53,7 @@ export async function setupSmartAccount({
   // Permission validator (empty validator for PKP address)
   const permissionValidator = await getPermissionEmptyValidator(publicClient, permittedAddress);
 
-  console.log('[setupSmartAccount] Creating Kernel account...');
+  console.log('[setupZerodevAccount] Creating Kernel account...');
 
   // Create smart account with both validators (matching reference implementation)
   const ownerKernelAccount = await createKernelAccount(publicClient, {
@@ -70,7 +65,7 @@ export async function setupSmartAccount({
     initConfig: await toInitConfig(permissionValidator),
   });
 
-  console.log(`[setupSmartAccount] Smart account address: ${ownerKernelAccount.address}`);
+  console.log(`[setupZerodevAccount] Smart account address: ${ownerKernelAccount.address}`);
 
   // Check if account is already deployed
   const accountCode = await publicClient.getCode({
@@ -92,9 +87,9 @@ export async function setupSmartAccount({
   });
 
   if (isDeployed) {
-    console.log('[setupSmartAccount] ✅ Smart account already deployed, skipping deployment...');
+    console.log('[setupZerodevAccount] ✅ Smart account already deployed');
   } else {
-    console.log('[setupSmartAccount] Deploying smart account with empty UserOp...');
+    console.log('[setupZerodevAccount] Deploying Smart Account with empty UserOp...');
 
     // Deploy smart account with an empty user operation
     const deployUserOpHash = await ownerKernelClient.sendUserOperation({
@@ -107,7 +102,7 @@ export async function setupSmartAccount({
       ]),
     });
 
-    console.log(`[setupSmartAccount] Deployment UserOp hash: ${deployUserOpHash}`);
+    console.log(`[setupZerodevAccount] Deployment UserOp hash: ${deployUserOpHash}`);
 
     // Wait for deployment
     const deployUserOpReceipt = await ownerKernelClient.waitForUserOperationReceipt({
@@ -115,12 +110,9 @@ export async function setupSmartAccount({
     });
 
     console.log(
-      `[setupSmartAccount] Deployed at tx: ${deployUserOpReceipt.receipt.transactionHash}`,
+      `[setupZerodevAccount] ✅ Smart Account deployed at tx: ${deployUserOpReceipt.receipt.transactionHash}`,
     );
   }
-
-  // Generate serialized permission account for signing
-  console.log('[setupSmartAccount] Generating serialized permission account...');
 
   const permissionKernelAccountToSerialize = await createKernelAccount(publicClient, {
     entryPoint,
@@ -136,7 +128,9 @@ export async function setupSmartAccount({
     permissionKernelAccountToSerialize,
   );
 
-  console.log('[setupSmartAccount] ✅ Smart account setup complete\n');
+  console.log(
+    `[setupZerodevAccount] ✅ Smart account setup complete: ${ownerKernelAccount.address}\n`,
+  );
 
   return {
     account: ownerKernelAccount,

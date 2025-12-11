@@ -6,31 +6,34 @@ import {
   Connection,
   clusterApiUrl,
   type Cluster,
+  PublicKey,
 } from '@solana/web3.js';
-
-import { TEST_SOLANA_FUNDER_PRIVATE_KEY } from '../../helpers';
+import bs58 from 'bs58';
 
 export const fundIfNeeded = async ({
   solanaCluster,
-  keypair,
+  publicKey,
   txSendAmount,
   faucetFundAmount,
+  funderPrivateKey,
 }: {
   solanaCluster: Cluster;
-  keypair: Keypair;
+  publicKey: PublicKey;
   txSendAmount: number;
   faucetFundAmount: number;
+  funderPrivateKey: string;
 }) => {
   const connection = new Connection(clusterApiUrl(solanaCluster), 'confirmed');
-  const balance = await connection.getBalance(keypair.publicKey);
-  console.log('[fundIfNeeded] Current keypair balance:', balance / LAMPORTS_PER_SOL, 'SOL');
+  const balance = await connection.getBalance(publicKey);
+  console.log('[fundIfNeeded] Current address balance:', balance / LAMPORTS_PER_SOL, 'SOL');
 
   // Calculate minimum required balance (TX_SEND_AMOUNT + estimated gas fees)
   const ESTIMATED_GAS_FEE = 0.000005 * LAMPORTS_PER_SOL; // ~0.000005 SOL for gas
 
   if (balance < txSendAmount + ESTIMATED_GAS_FEE) {
     console.log('[fundIfNeeded] Balance insufficient, funding from funder account...');
-    const funderKeypair = Keypair.fromSecretKey(Buffer.from(TEST_SOLANA_FUNDER_PRIVATE_KEY, 'hex'));
+    // Decode the base58 private key to bytes
+    const funderKeypair = Keypair.fromSecretKey(bs58.decode(funderPrivateKey));
 
     // Check funder balance
     const funderBalance = await connection.getBalance(funderKeypair.publicKey);
@@ -41,11 +44,11 @@ export const fundIfNeeded = async ({
       );
     }
 
-    // Create transfer transaction from funder to keypair
+    // Create transfer transaction from funder to target public key
     const transferTx = new Transaction().add(
       SystemProgram.transfer({
         fromPubkey: funderKeypair.publicKey,
-        toPubkey: keypair.publicKey,
+        toPubkey: publicKey,
         lamports: faucetFundAmount,
       }),
     );
@@ -70,15 +73,15 @@ export const fundIfNeeded = async ({
       'confirmed',
     );
     console.log(
-      '[fundIfNeeded] Funded keypair with',
+      '[fundIfNeeded] Funded address with',
       faucetFundAmount / LAMPORTS_PER_SOL,
       'SOL. Tx:',
       signature,
     );
 
     // Verify new balance
-    const newBalance = await connection.getBalance(keypair.publicKey);
-    console.log('[fundIfNeeded] New keypair balance:', newBalance / LAMPORTS_PER_SOL, 'SOL');
+    const newBalance = await connection.getBalance(publicKey);
+    console.log('[fundIfNeeded] New address balance:', newBalance / LAMPORTS_PER_SOL, 'SOL');
   } else {
     console.log('[fundIfNeeded] Balance sufficient, no funding needed');
   }

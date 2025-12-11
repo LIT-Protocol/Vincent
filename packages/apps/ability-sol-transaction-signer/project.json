@@ -48,7 +48,11 @@
       }
     },
     "test": {
+      "command": "echo 'Test target disabled for this project - only \"test-e2e\"'"
+    },
+    "test-e2e": {
       "executor": "@nx/jest:jest",
+      "dependsOn": ["app-sdk:build", "wrapped-keys:build", "e2e-test-utils:build", "action:deploy"],
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
       "options": {
         "jestConfig": "packages/apps/ability-sol-transaction-signer/jest.config.js"

@@ -16,7 +16,13 @@
     "@lit-protocol/vincent-app-sdk": "workspace:^"
   },
   "devDependencies": {
+    "@lit-protocol/constants": "^7.3.1",
     "@lit-protocol/esbuild-plugin-polyfill-node": "^0.3.0",
+    "@lit-protocol/lit-node-client": "^7.3.1",
+    "@lit-protocol/vincent-app-sdk": "workspace:*",
+    "@lit-protocol/vincent-contracts-sdk": "workspace:*",
+    "@lit-protocol/vincent-e2e-test-utils": "workspace:*",
+    "bs58": "^6.0.0",
     "esbuild": "^0.19.12",
     "ipfs-only-hash": "^4.0.0"
   },
