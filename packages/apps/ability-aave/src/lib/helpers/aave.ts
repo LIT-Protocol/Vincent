@@ -300,8 +300,6 @@ export function getAaveApprovalTx({
 }: AaveApprovalTxParams) {
   const { POOL } = getAaveAddresses(chainId);
   const feeContractAddress = getFeeContractAddress(chainId);
-  console.log(`======================= Approving POOL: ${POOL}`);
-  console.log(`======================= Fee contract: ${feeContractAddress}`);
 
   const approveData = encodeFunctionData({
     abi: ERC20_ABI,
