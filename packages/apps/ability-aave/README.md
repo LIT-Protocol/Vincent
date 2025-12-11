@@ -1,4 +1,4 @@
-# Vincent Aave Smart Account Ability
+# Vincent Aave Gated Signer Ability
 
 A Vincent Ability that acts as a secure, gated signer for Aave v3 operations. It is designed to work with ERC-4337 Smart Accounts (UserOperations) and EOAs (Transactions).
 
