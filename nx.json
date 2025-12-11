@@ -71,7 +71,8 @@
       "ability-aerodrome-swap",
       "ability-hyperliquid",
       "e2e-test-utils",
-      "policy-sol-contract-whitelist"
+      "policy-sol-contract-whitelist",
+      "ability-sol-transaction-signer"
     ],
     "projectsRelationship": "independent",
     "releaseTagPattern": "vincent/{projectName}/{version}",
