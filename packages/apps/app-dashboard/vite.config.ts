@@ -22,7 +22,6 @@ export default defineConfig({
         rewrite: (path) => path.replace(/^\/api\/yield/, ''),
       },
     },
-    allowedHosts: ['kairosv1.ngrok.dev'],
   },
   define: {
     global: 'globalThis',
