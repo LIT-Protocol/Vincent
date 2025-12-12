@@ -1,0 +1,292 @@
+---
+title: 'ZeroDev (Kernel) Integration'
+---
+
+This guide demonstrates how to integrate Vincent with ZeroDev's Kernel smart accounts using the Aave ability as an example. You'll learn how to set up account delegation, generate UserOperations, validate and sign them with Vincent abilities, and broadcast transactions through ZeroDev's bundler.
+
+<CardGroup cols={2}>
+  <Card title="Source Repository" icon="github" href="https://github.com/LIT-Protocol/vincent-smart-account-signer" color="#FF4205">
+    View the complete example repository
+  </Card>
+  <Card title="kernelSmartAccountIntegration.ts" icon="code" href="https://github.com/LIT-Protocol/vincent-smart-account-signer/blob/main/src/kernelSmartAccountIntegration.ts" color="#FF4205">
+    View the complete implementation file
+  </Card>
+</CardGroup>
+
+## Prerequisites
+
+**Vincent Setup**: Follow [Creating an App](/app/creating-an-app) to obtain your Vincent App ID, Delegatee Private Key, and PKP ETH Address.
+
+Set the following environment variables:
+
+- **ZERODEV_RPC_URL**: Bundler endpoint from your [ZeroDev](https://zerodev.app/) project
+- **ALCHEMY_RPC_URL**: Endpoint for transaction simulation from [Alchemy](https://www.alchemy.com/)
+- **VINCENT_APP_ID**: Your Vincent application identifier
+- **DELEGATEE_PRIVATE_KEY**: Private key for Vincent ability delegation
+- **PKP_ETH_ADDRESS**: Your Programmable Key Pair Ethereum address
+
+## Complete Integration Flow
+
+### Step 1: Setup Account and Delegation
+
+```typescript
+import { setupZeroDevSmartAccountAndDelegation } from './utils/setupZeroDevSmartAccountAndDelegation';
+
+const { ownerKernelAccount, pkpEthAddress, serializedPermissionAccount } =
+  await setupZeroDevSmartAccountAndDelegation();
+```
+
+**What this does:**
+1. Sets up Vincent PKP delegation
+2. Creates Kernel account with owner validator
+3. Creates permission validator for Vincent PKP
+4. **Serializes the permission account** (key ZeroDev feature)
+
+**Returns:**
+- `ownerKernelAccount`: The Kernel smart account
+- `pkpEthAddress`: Vincent PKP address
+- `serializedPermissionAccount`: Portable string containing all permissions
+
+<AccordionGroup>
+  <Accordion title="View setupZeroDevSmartAccountAndDelegation.ts">
+    ```typescript
+    export async function setupZeroDevSmartAccountAndDelegation() {
+      // Get pkp to delegate signatures
+      const pkpEthAddress = await setupVincentDelegation({
+        ownerAccount,
+        vincentAppId,
+      });
+
+      // Set up smart account owner/delegator
+      const { ownerValidator, ownerKernelAccount } = await setupZeroDevAccount({
+        ownerAccount,
+        permittedAddress: pkpEthAddress,
+      });
+
+      // Generate and serialize the session
+      const serializedPermissionAccount = await generateZeroDevPermissionAccount({
+        accountAddress: ownerKernelAccount.address,
+        permittedAddress: pkpEthAddress,
+        ownerValidator,
+      });
+
+      return {
+        ownerKernelAccount,
+        pkpEthAddress,
+        serializedPermissionAccount,
+      };
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Step 2: Generate Transactions
+
+```typescript
+import { generateTransactions } from './utils/generateTransactions';
+
+const transactions = await generateTransactions({
+  accountAddress: ownerKernelAccount.address,
+});
+```
+
+**What this does:**
+Generates Aave transactions (approve, supply, withdraw) based on account state.
+
+### Step 3: Convert to UserOperation
+
+```typescript
+import { transactionsToKernelUserOp } from './utils/transactionsToKernelUserOp';
+
+const aaveUserOp = await transactionsToKernelUserOp({
+  transactions,
+  serializedPermissionAccount,
+  permittedAddress: pkpEthAddress,
+});
+```
+
+**What this does:**
+1. Deserializes the permission account
+2. Creates Kernel client with Vincent empty account signer
+3. Encodes transaction calls
+4. Prepares unsigned UserOperation with paymaster data
+
+<AccordionGroup>
+  <Accordion title="View transactionsToKernelUserOp.ts">
+    ```typescript
+    export async function transactionsToKernelUserOp({
+      permittedAddress,
+      serializedPermissionAccount,
+      transactions,
+    }: TransactionsToKernelUserOpParams) {
+      const vincentEmptyAccount = addressToEmptyAccount(permittedAddress);
+      const vincentAbilitySigner = await toECDSASigner({
+        signer: vincentEmptyAccount,
+      });
+
+      const permissionKernelAccount = await deserializePermissionAccount(
+        publicClient,
+        entryPoint,
+        kernelVersion,
+        serializedPermissionAccount,
+        vincentAbilitySigner
+      );
+
+      const permissionKernelClient = createKernelAccountClient({
+        chain,
+        account: permissionKernelAccount,
+        bundlerTransport: zerodevTransport,
+        client: publicClient,
+        paymaster: {
+          getPaymasterData(userOperation) {
+            return zerodevPaymaster.sponsorUserOperation({ userOperation });
+          },
+        },
+      });
+
+      const callData = await permissionKernelAccount.encodeCalls(
+        transactions.map((tx) => ({ data: tx.data, to: tx.to }))
+      );
+
+      const aaveUserOp = await permissionKernelClient.prepareUserOperation({
+        callData,
+      });
+
+      return aaveUserOp;
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Step 4: Validate with Vincent
+
+```typescript
+import { toVincentUserOp } from '@lit-protocol/vincent-ability-aave-smart-account';
+
+const vincentAbilityParams = {
+  alchemyRpcUrl: alchemyRpc,
+  entryPointAddress: entryPoint.address,
+  userOp: toVincentUserOp(aaveUserOp),
+};
+
+const vincentDelegationContext = {
+  delegatorPkpEthAddress: pkpEthAddress,
+};
+
+const precheckResult = await abilityClient.precheck(
+  vincentAbilityParams,
+  vincentDelegationContext
+);
+
+if (!precheckResult.success) {
+  throw new Error(`Precheck failed: ${JSON.stringify(precheckResult)}`);
+}
+```
+
+**What this does:**
+1. Converts UserOp to Vincent format
+2. Validates without signing
+3. Checks contract allowlist, simulation, value protection
+
+### Step 5: Execute and Sign
+
+```typescript
+const executeResult = await abilityClient.execute(
+  vincentAbilityParams,
+  vincentDelegationContext
+);
+
+if (!executeResult.success) {
+  throw new Error(`Execute failed: ${JSON.stringify(executeResult)}`);
+}
+```
+
+**What this does:**
+Same validation as precheck, then signs with Vincent PKP.
+
+### Step 6: Format Signature
+
+```typescript
+import { concat, Hex } from 'viem';
+
+const signedAaveUserOp = {
+  ...aaveUserOp,
+  // 0xff is the signer id assigned to the Vincent PKP
+  signature: concat(['0xff', executeResult.result.signature as Hex]),
+};
+```
+
+**Critical:** ZeroDev requires `0xff` prefix to identify the Vincent PKP signer.
+
+### Step 7: Broadcast
+
+```typescript
+import { sendPermittedKernelUserOperation } from './utils/sendPermittedKernelUserOperation';
+
+await sendPermittedKernelUserOperation({
+  permittedAddress: pkpEthAddress,
+  serializedPermissionAccount,
+  signedUserOp: signedAaveUserOp,
+});
+```
+
+**What this does:**
+1. Deserializes permission account again
+2. Creates Kernel client
+3. Sends signed UserOperation to ZeroDev bundler
+4. Waits for receipt
+
+<AccordionGroup>
+  <Accordion title="View sendPermittedKernelUserOperation.ts">
+    ```typescript
+    export async function sendPermittedKernelUserOperation({
+      permittedAddress,
+      serializedPermissionAccount,
+      signedUserOp,
+    }: SendPermittedKernelUserOperationParams) {
+      const vincentEmptyAccount = addressToEmptyAccount(permittedAddress);
+      const vincentAbilitySigner = await toECDSASigner({
+        signer: vincentEmptyAccount,
+      });
+
+      const permissionKernelAccount = await deserializePermissionAccount(
+        publicClient,
+        entryPoint,
+        kernelVersion,
+        serializedPermissionAccount,
+        vincentAbilitySigner
+      );
+
+      const permissionKernelClient = createKernelAccountClient({
+        chain,
+        account: permissionKernelAccount,
+        bundlerTransport: zerodevTransport,
+        client: publicClient,
+      });
+
+      const userOpHash = await permissionKernelClient.sendUserOperation(signedUserOp);
+
+      const receipt = await permissionKernelClient.waitForUserOperationReceipt({
+        hash: userOpHash,
+      });
+
+      console.log('UserOp hash:', userOpHash);
+      console.log('Transaction hash:', receipt.receipt.transactionHash);
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Step 8: Cleanup
+
+```typescript
+import { disconnectVincentAbilityClients } from '@lit-protocol/vincent-app-sdk/abilityClient';
+
+await disconnectVincentAbilityClients();
+```
+
+## Complete Example
+
+<Card title="kernelSmartAccountIntegration.ts" icon="github" href="https://github.com/LIT-Protocol/vincent-smart-account-signer/blob/main/src/kernelSmartAccountIntegration.ts" color="#FF4205">
+  View the complete implementation on GitHub
+</Card>
