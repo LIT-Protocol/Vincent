@@ -3,6 +3,7 @@ import type {
   DecodeTransactionParams,
   LowLevelCall,
 } from '@lit-protocol/vincent-ability-sdk/gatedSigner';
+import { FEE_DIAMOND_ABI } from '@lit-protocol/vincent-contracts-sdk';
 import type { Abi } from 'viem';
 
 import { decodeFunctionData } from 'viem';
@@ -50,9 +51,15 @@ export const decodeTransaction = (params: DecodeTransactionParams): DecodedTrans
     abi: ERC20_ABI,
     kind: TransactionKind.ERC20,
   });
+  const feeTransaction = decodeTransactionKind({
+    transaction,
+    abi: FEE_DIAMOND_ABI as Abi,
+    kind: TransactionKind.FEE,
+  });
 
   return (
     aaveTransaction ||
-    erc20Transaction || { kind: 'error', message: 'Unknown transaction type. Could not decode' }
+    erc20Transaction ||
+    feeTransaction || { kind: 'error', message: 'Unknown transaction type. Could not decode' }
   );
 };

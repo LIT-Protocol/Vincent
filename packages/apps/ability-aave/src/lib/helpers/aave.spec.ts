@@ -9,12 +9,14 @@ import {
   getAaveWithdrawTx,
   getAaveBorrowTx,
   getAaveRepayTx,
+  getFeeContractAddress,
   CHAIN_TO_AAVE_ADDRESS_BOOK,
 } from './aave';
 
 const CHAIN_ID = 137; // Polygon
 const TEST_ACCOUNT: Address = '0x1234567890123456789012345678901234567890';
 const TEST_ASSET: Address = '0x0000000000000000000000000000000000000001';
+const feeContractAddress = getFeeContractAddress(CHAIN_ID);
 
 describe('Aave Helpers', () => {
   describe('getAaveAddresses', () => {
@@ -58,7 +60,7 @@ describe('Aave Helpers', () => {
 
   describe('Transaction Generators', () => {
     it('getAaveApprovalTx should generate correct transaction', async () => {
-      const tx = await getAaveApprovalTx({
+      const tx = getAaveApprovalTx({
         accountAddress: TEST_ACCOUNT,
         assetAddress: TEST_ASSET,
         chainId: CHAIN_ID,
@@ -73,43 +75,44 @@ describe('Aave Helpers', () => {
     });
 
     it('getAaveSupplyTx should generate correct transaction', async () => {
-      const tx = await getAaveSupplyTx({
+      const tx = getAaveSupplyTx({
         accountAddress: TEST_ACCOUNT,
+        appId: 123,
         assetAddress: TEST_ASSET,
         chainId: CHAIN_ID,
         amount: '100',
       });
-      const { POOL } = getAaveAddresses(CHAIN_ID);
 
       expect(tx).toBeDefined();
       expect(tx.from).toBe(TEST_ACCOUNT);
-      expect(tx.to).toBe(POOL);
+      expect(tx.to).toBe(feeContractAddress);
       expect(tx.value).toBe('0x0');
       expect(tx.data).toBeDefined();
     });
 
     it('getAaveWithdrawTx should generate correct transaction', async () => {
-      const tx = await getAaveWithdrawTx({
+      const tx = getAaveWithdrawTx({
         accountAddress: TEST_ACCOUNT,
+        appId: 123,
         assetAddress: TEST_ASSET,
         chainId: CHAIN_ID,
         amount: '100',
       });
-      const { POOL } = getAaveAddresses(CHAIN_ID);
 
       expect(tx).toBeDefined();
       expect(tx.from).toBe(TEST_ACCOUNT);
-      expect(tx.to).toBe(POOL);
+      expect(tx.to).toBe(feeContractAddress);
       expect(tx.value).toBe('0x0');
       expect(tx.data).toBeDefined();
     });
 
     it('getAaveBorrowTx should generate correct transaction', async () => {
-      const tx = await getAaveBorrowTx({
+      const tx = getAaveBorrowTx({
         accountAddress: TEST_ACCOUNT,
+        amount: '100',
         assetAddress: TEST_ASSET,
         chainId: CHAIN_ID,
-        amount: '100',
+        interestRateMode: 1,
       });
       const { POOL } = getAaveAddresses(CHAIN_ID);
 
@@ -121,11 +124,12 @@ describe('Aave Helpers', () => {
     });
 
     it('getAaveRepayTx should generate correct transaction', async () => {
-      const tx = await getAaveRepayTx({
+      const tx = getAaveRepayTx({
         accountAddress: TEST_ACCOUNT,
+        amount: '100',
         assetAddress: TEST_ASSET,
         chainId: CHAIN_ID,
-        amount: '100',
+        interestRateMode: 1,
       });
       const { POOL } = getAaveAddresses(CHAIN_ID);
 

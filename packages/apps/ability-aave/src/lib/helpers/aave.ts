@@ -19,17 +19,42 @@ import {
   AaveV3OptimismSepolia,
   AaveV3ScrollSepolia,
 } from '@bgd-labs/aave-address-book';
-import { encodeFunctionData } from 'viem';
+import {
+  VINCENT_CONTRACT_ADDRESS_BOOK,
+  FEE_DIAMOND_ABI,
+} from '@lit-protocol/vincent-contracts-sdk';
+import { encodeFunctionData, getAddress } from 'viem';
 
 import { ERC20_ABI } from './erc20';
 
 const ZERO_VALUE: Hex = '0x0';
+
+/**
+ * Fee Contract ABI for Aave operations
+ * These functions route through the fee contract instead of directly to Aave
+ */
+export const FEE_CONTRACT_ABI: Abi = FEE_DIAMOND_ABI as Abi;
 
 export interface Transaction {
   data: Hex;
   from: Address;
   to: Address;
   value: Hex;
+}
+
+/**
+ * Get fee contract address for a specific chain
+ * @param chainId The chain ID
+ * @returns The fee contract address, or null if not available for this chain
+ */
+export function getFeeContractAddress(chainId: number): Address | null {
+  const feeConfig =
+    VINCENT_CONTRACT_ADDRESS_BOOK.fee[chainId as keyof typeof VINCENT_CONTRACT_ADDRESS_BOOK.fee];
+  if (!feeConfig) {
+    return null;
+  }
+
+  return getAddress(feeConfig.address);
 }
 
 /**
@@ -242,16 +267,25 @@ export function getAvailableMarkets(chainId: number): Record<string, Address> {
   );
 }
 
-async function buildApprovalTx(
-  accountAddress: Address,
-  assetAddress: Address,
-  poolAddress: Address,
-  amount = String(Math.floor(Math.random() * 1000)),
-): Promise<Transaction> {
+export interface AaveApprovalTxParams {
+  accountAddress: Address;
+  amount?: string;
+  assetAddress: Address;
+  chainId: number;
+}
+
+export function getAaveApprovalTx({
+  accountAddress,
+  assetAddress,
+  chainId,
+  amount,
+}: AaveApprovalTxParams) {
+  const feeContractAddress = getFeeContractAddress(chainId);
+
   const approveData = encodeFunctionData({
     abi: ERC20_ABI,
     functionName: 'approve',
-    args: [poolAddress, amount],
+    args: [feeContractAddress, amount],
   });
   const approveTx: Transaction = {
     data: approveData,
@@ -263,70 +297,43 @@ async function buildApprovalTx(
   return approveTx;
 }
 
-export interface AaveApprovalTxParams {
-  accountAddress: Address;
-  amount?: string;
-  assetAddress: Address;
-  chainId: number;
-}
-
-export async function getAaveApprovalTx({
-  accountAddress,
-  assetAddress,
-  chainId,
-  amount,
-}: AaveApprovalTxParams) {
-  const { POOL } = getAaveAddresses(chainId);
-
-  return await buildApprovalTx(accountAddress, assetAddress, POOL, amount);
-}
-
 export interface AaveSupplyTxParams {
+  appId: number;
   accountAddress: Address;
   amount: string;
   assetAddress: Address;
   chainId: number;
-  onBehalfOf?: Address;
-  referralCode?: number;
 }
 
-async function buildSupplyTx(
-  accountAddress: Address,
-  assetAddress: Address,
-  poolAddress: Address,
-  amount: string,
-  onBehalfOf: Address = accountAddress,
-  referralCode = 0,
-): Promise<Transaction> {
+export function getAaveSupplyTx({
+  appId,
+  accountAddress,
+  amount,
+  assetAddress,
+  chainId,
+}: AaveSupplyTxParams) {
+  const feeContractAddress = getFeeContractAddress(chainId);
+  if (!feeContractAddress) {
+    throw new Error(`No fee contract address available for chain ${chainId}`);
+  }
+
   const supplyData = encodeFunctionData({
-    abi: AAVE_POOL_ABI,
-    functionName: 'supply',
-    args: [assetAddress, amount, onBehalfOf, referralCode],
+    abi: FEE_DIAMOND_ABI,
+    functionName: 'depositToAave',
+    args: [appId, assetAddress, amount],
   });
   const supplyTx: Transaction = {
     data: supplyData,
     from: accountAddress,
-    to: poolAddress,
+    to: feeContractAddress,
     value: ZERO_VALUE,
   };
 
   return supplyTx;
 }
 
-export async function getAaveSupplyTx({
-  accountAddress,
-  amount,
-  assetAddress,
-  chainId,
-  onBehalfOf,
-  referralCode,
-}: AaveSupplyTxParams) {
-  const { POOL } = getAaveAddresses(chainId);
-
-  return await buildSupplyTx(accountAddress, assetAddress, POOL, amount, onBehalfOf, referralCode);
-}
-
 export interface AaveWithdrawTxParams {
+  appId: number;
   accountAddress: Address;
   amount: string;
   assetAddress: Address;
@@ -334,38 +341,31 @@ export interface AaveWithdrawTxParams {
   to?: Address;
 }
 
-async function buildWithdrawTx(
-  accountAddress: Address,
-  assetAddress: Address,
-  poolAddress: Address,
-  amount: string,
-  to: Address = accountAddress,
-): Promise<Transaction> {
-  const withdrawData = encodeFunctionData({
-    abi: AAVE_POOL_ABI,
-    functionName: 'withdraw',
-    args: [assetAddress, amount, to],
-  });
-  const withdrawTx: Transaction = {
-    data: withdrawData,
-    from: accountAddress,
-    to: poolAddress,
-    value: ZERO_VALUE,
-  };
-
-  return withdrawTx;
-}
-
-export async function getAaveWithdrawTx({
+export function getAaveWithdrawTx({
+  appId,
   accountAddress,
   amount,
   assetAddress,
   chainId,
-  to,
 }: AaveWithdrawTxParams) {
-  const { POOL } = getAaveAddresses(chainId);
+  const feeContractAddress = getFeeContractAddress(chainId);
+  if (!feeContractAddress) {
+    throw new Error(`No fee contract address available for chain ${chainId}`);
+  }
 
-  return await buildWithdrawTx(accountAddress, assetAddress, POOL, amount, to);
+  const withdrawData = encodeFunctionData({
+    abi: FEE_DIAMOND_ABI,
+    functionName: 'withdrawFromAave',
+    args: [appId, assetAddress, amount],
+  });
+  const withdrawTx: Transaction = {
+    data: withdrawData,
+    from: accountAddress,
+    to: feeContractAddress,
+    value: ZERO_VALUE,
+  };
+
+  return withdrawTx;
 }
 
 export interface AaveBorrowTxParams {
@@ -373,20 +373,22 @@ export interface AaveBorrowTxParams {
   amount: string;
   assetAddress: Address;
   chainId: number;
-  interestRateMode?: number;
+  interestRateMode: number;
   onBehalfOf?: Address;
   referralCode?: number;
 }
 
-async function buildBorrowTx(
-  accountAddress: Address,
-  assetAddress: Address,
-  poolAddress: Address,
-  amount: string,
-  interestRateMode = 2, // 2 for variable rate, 1 for stable
-  onBehalfOf: Address = accountAddress,
+export function getAaveBorrowTx({
+  accountAddress,
+  amount,
+  assetAddress,
+  chainId,
+  interestRateMode,
+  onBehalfOf = accountAddress,
   referralCode = 0,
-): Promise<Transaction> {
+}: AaveBorrowTxParams) {
+  const { POOL } = getAaveAddresses(chainId);
+
   const borrowData = encodeFunctionData({
     abi: AAVE_POOL_ABI,
     functionName: 'borrow',
@@ -395,33 +397,11 @@ async function buildBorrowTx(
   const borrowTx: Transaction = {
     data: borrowData,
     from: accountAddress,
-    to: poolAddress,
+    to: POOL,
     value: ZERO_VALUE,
   };
 
   return borrowTx;
-}
-
-export async function getAaveBorrowTx({
-  accountAddress,
-  amount,
-  assetAddress,
-  chainId,
-  interestRateMode,
-  onBehalfOf,
-  referralCode,
-}: AaveBorrowTxParams) {
-  const { POOL } = getAaveAddresses(chainId);
-
-  return await buildBorrowTx(
-    accountAddress,
-    assetAddress,
-    POOL,
-    amount,
-    interestRateMode,
-    onBehalfOf,
-    referralCode,
-  );
 }
 
 export interface AaveRepayTxParams {
@@ -429,18 +409,20 @@ export interface AaveRepayTxParams {
   amount: string;
   assetAddress: Address;
   chainId: number;
-  interestRateMode?: number;
+  interestRateMode: number;
   onBehalfOf?: Address;
 }
 
-async function buildRepayTx(
-  accountAddress: Address,
-  assetAddress: Address,
-  poolAddress: Address,
-  amount: string,
-  interestRateMode = 2, // 2 for variable rate, 1 for stable
-  onBehalfOf: Address = accountAddress,
-): Promise<Transaction> {
+export function getAaveRepayTx({
+  accountAddress,
+  amount,
+  assetAddress,
+  chainId,
+  interestRateMode,
+  onBehalfOf = accountAddress,
+}: AaveRepayTxParams) {
+  const { POOL } = getAaveAddresses(chainId);
+
   const repayData = encodeFunctionData({
     abi: AAVE_POOL_ABI,
     functionName: 'repay',
@@ -449,29 +431,9 @@ async function buildRepayTx(
   const repayTx: Transaction = {
     data: repayData,
     from: accountAddress,
-    to: poolAddress,
+    to: POOL,
     value: ZERO_VALUE,
   };
 
   return repayTx;
-}
-
-export async function getAaveRepayTx({
-  accountAddress,
-  amount,
-  assetAddress,
-  chainId,
-  interestRateMode,
-  onBehalfOf,
-}: AaveRepayTxParams) {
-  const { POOL } = getAaveAddresses(chainId);
-
-  return await buildRepayTx(
-    accountAddress,
-    assetAddress,
-    POOL,
-    amount,
-    interestRateMode,
-    onBehalfOf,
-  );
 }

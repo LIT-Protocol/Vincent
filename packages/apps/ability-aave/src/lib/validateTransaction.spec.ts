@@ -1,6 +1,6 @@
 import { validateTransaction } from './validateTransaction';
 import { TransactionKind } from './helpers/transactionKind';
-import { getAaveAddresses } from './helpers/aave';
+import { getFeeContractAddress } from './helpers/aave';
 import { Address } from 'viem';
 
 // Mock types since we might not have full access to the sdk types in this test context easily without importing everything
@@ -11,7 +11,7 @@ import { Address } from 'viem';
 const CHAIN_ID = 137; // Polygon
 const SENDER: Address = '0x1234567890123456789012345678901234567890';
 const OTHER_ADDRESS: Address = '0x9999999999999999999999999999999999999999';
-const { POOL } = getAaveAddresses(CHAIN_ID);
+const feeContractAddress = getFeeContractAddress(CHAIN_ID);
 
 describe('validateTransaction', () => {
   // Helper to create basic params
@@ -28,7 +28,7 @@ describe('validateTransaction', () => {
       const decodedTransaction = {
         kind: TransactionKind.ERC20,
         fn: 'approve',
-        args: [POOL, 1000n],
+        args: [feeContractAddress, 1000n],
       };
 
       expect(() => validateTransaction(createParams(decodedTransaction))).not.toThrow();
@@ -38,13 +38,13 @@ describe('validateTransaction', () => {
       const decodedTransaction = {
         kind: TransactionKind.ERC20,
         fn: 'increaseAllowance',
-        args: [POOL, 1000n],
+        args: [feeContractAddress, 1000n],
       };
 
       expect(() => validateTransaction(createParams(decodedTransaction))).not.toThrow();
     });
 
-    it('should throw on approval to non-POOL spender', () => {
+    it('should throw on approval to forbidden spender', () => {
       const decodedTransaction = {
         kind: TransactionKind.ERC20,
         fn: 'approve',
@@ -52,7 +52,7 @@ describe('validateTransaction', () => {
       };
 
       expect(() => validateTransaction(createParams(decodedTransaction))).toThrow(
-        `ERC20 approval to non-POOL spender ${OTHER_ADDRESS}`,
+        `ERC20 approval to forbidden spender ${OTHER_ADDRESS}`,
       );
     });
 
@@ -61,7 +61,7 @@ describe('validateTransaction', () => {
       const decodedTransaction = {
         kind: TransactionKind.ERC20,
         fn: 'approve',
-        args: [POOL, infiniteAmount],
+        args: [feeContractAddress, infiniteAmount],
       };
 
       expect(() => validateTransaction(createParams(decodedTransaction))).toThrow(

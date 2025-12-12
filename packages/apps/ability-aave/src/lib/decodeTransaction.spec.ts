@@ -19,8 +19,9 @@ const TEST_SPENDER: Address = '0x0000000000000000000000000000000000000002';
 
 describe('decodeTransaction', () => {
   it('should decode Aave Supply transaction', async () => {
-    const tx = await getAaveSupplyTx({
+    const tx = getAaveSupplyTx({
       accountAddress: TEST_ACCOUNT,
+      appId: 123,
       assetAddress: TEST_ASSET,
       chainId: CHAIN_ID,
       amount: '100',
@@ -36,17 +37,21 @@ describe('decodeTransaction', () => {
 
     const decoded = decodeTransaction(params);
 
-    expect(decoded.kind).toBe(TransactionKind.AAVE);
-    if (decoded.kind === TransactionKind.AAVE) {
-      expect(decoded.fn).toBe('supply');
+    expect(decoded.kind).toBe(TransactionKind.FEE);
+    if (decoded.kind === TransactionKind.FEE) {
+      expect(decoded.fn).toBe('depositToAave');
       expect(decoded.args).toBeDefined();
-      expect((decoded.args?.[0] as Address).toLowerCase()).toBe(TEST_ASSET.toLowerCase());
+      const [appId, assetAddress, amount] = decoded.args as [number, Address, bigint];
+      expect(appId).toBe(123);
+      expect(assetAddress.toLowerCase()).toBe(TEST_ASSET.toLowerCase());
+      expect(amount).toBe(BigInt(100));
     }
   });
 
   it('should decode Aave Withdraw transaction', async () => {
-    const tx = await getAaveWithdrawTx({
+    const tx = getAaveWithdrawTx({
       accountAddress: TEST_ACCOUNT,
+      appId: 123,
       assetAddress: TEST_ASSET,
       chainId: CHAIN_ID,
       amount: '100',
@@ -62,20 +67,24 @@ describe('decodeTransaction', () => {
 
     const decoded = decodeTransaction(params);
 
-    expect(decoded.kind).toBe(TransactionKind.AAVE);
-    if (decoded.kind === TransactionKind.AAVE) {
-      expect(decoded.fn).toBe('withdraw');
+    expect(decoded.kind).toBe(TransactionKind.FEE);
+    if (decoded.kind === TransactionKind.FEE) {
+      expect(decoded.fn).toBe('withdrawFromAave');
       expect(decoded.args).toBeDefined();
-      expect((decoded.args?.[0] as Address).toLowerCase()).toBe(TEST_ASSET.toLowerCase());
+      const [appId, assetAddress, amount] = decoded.args as [number, Address, bigint];
+      expect(appId).toBe(123);
+      expect(assetAddress.toLowerCase()).toBe(TEST_ASSET.toLowerCase());
+      expect(amount).toBe(BigInt(100));
     }
   });
 
   it('should decode Aave Borrow transaction', async () => {
-    const tx = await getAaveBorrowTx({
+    const tx = getAaveBorrowTx({
       accountAddress: TEST_ACCOUNT,
+      amount: '100',
       assetAddress: TEST_ASSET,
       chainId: CHAIN_ID,
-      amount: '100',
+      interestRateMode: 1,
     });
 
     const params: DecodeTransactionParams = {
@@ -97,11 +106,12 @@ describe('decodeTransaction', () => {
   });
 
   it('should decode Aave Repay transaction', async () => {
-    const tx = await getAaveRepayTx({
+    const tx = getAaveRepayTx({
       accountAddress: TEST_ACCOUNT,
+      amount: '100',
       assetAddress: TEST_ASSET,
       chainId: CHAIN_ID,
-      amount: '100',
+      interestRateMode: 1,
     });
 
     const params: DecodeTransactionParams = {
@@ -123,7 +133,7 @@ describe('decodeTransaction', () => {
   });
 
   it('should decode ERC20 Approve transaction', async () => {
-    const tx = await getAaveApprovalTx({
+    const tx = getAaveApprovalTx({
       accountAddress: TEST_ACCOUNT,
       assetAddress: TEST_ASSET,
       chainId: CHAIN_ID,
