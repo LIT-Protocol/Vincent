@@ -43,31 +43,13 @@ export interface Transaction {
 }
 
 /**
- * Chain ID to fee contract chain name mapping
- */
-const CHAIN_ID_TO_FEE_CHAIN_NAME: Record<number, keyof typeof VINCENT_CONTRACT_ADDRESS_BOOK.fee> = {
-  1: 'ethereum',
-  137: 'polygon',
-  43114: 'avalanche',
-  42161: 'arbitrum',
-  10: 'optimism',
-  8453: 'base',
-  56: 'bnb',
-  84532: 'baseSepolia',
-} as const;
-
-/**
  * Get fee contract address for a specific chain
  * @param chainId The chain ID
  * @returns The fee contract address, or null if not available for this chain
  */
 export function getFeeContractAddress(chainId: number): Address | null {
-  const chainName = CHAIN_ID_TO_FEE_CHAIN_NAME[chainId];
-  if (!chainName) {
-    return null;
-  }
-
-  const feeConfig = VINCENT_CONTRACT_ADDRESS_BOOK.fee[chainName];
+  const feeConfig =
+    VINCENT_CONTRACT_ADDRESS_BOOK.fee[chainId as keyof typeof VINCENT_CONTRACT_ADDRESS_BOOK.fee];
   if (!feeConfig) {
     return null;
   }
