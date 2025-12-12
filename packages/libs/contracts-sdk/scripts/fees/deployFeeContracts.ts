@@ -146,8 +146,8 @@ async function checkBalance(
 /**
  * Check if a chain is already deployed
  */
-function isChainAlreadyDeployed(camelCaseName: string): boolean {
-  return VINCENT_CONTRACT_ADDRESS_BOOK.fee && camelCaseName in VINCENT_CONTRACT_ADDRESS_BOOK.fee;
+function isChainAlreadyDeployed(chainId: number): boolean {
+  return VINCENT_CONTRACT_ADDRESS_BOOK.fee && chainId in VINCENT_CONTRACT_ADDRESS_BOOK.fee;
 }
 
 /**
@@ -373,13 +373,14 @@ async function deployToChain(
   console.log(`${'='.repeat(80)}`);
 
   // Check if already deployed
-  const wasAlreadyDeployed = isChainAlreadyDeployed(camelCaseName);
+  const wasAlreadyDeployed = isChainAlreadyDeployed(chainId);
   let feeDiamondAddress: string;
   if (wasAlreadyDeployed) {
     const existing =
-      VINCENT_CONTRACT_ADDRESS_BOOK.fee[
-        camelCaseName as keyof typeof VINCENT_CONTRACT_ADDRESS_BOOK.fee
-      ];
+      VINCENT_CONTRACT_ADDRESS_BOOK.fee[chainId as keyof typeof VINCENT_CONTRACT_ADDRESS_BOOK.fee];
+    if (!existing) {
+      throw new Error(`Chain ${chainId} marked as deployed but not found in address book`);
+    }
     feeDiamondAddress = existing.address;
     console.log(
       `⏭️  Chain ${networkName} is already deployed at ${feeDiamondAddress}. Skipping deployment...`,
@@ -507,8 +508,8 @@ async function deployToChain(
  * Format deployment result for constants.ts
  */
 function formatForConstants(result: DeploymentResult): string {
-  return `    ${result.camelCaseName}: {
-      chainId: ${result.chainId},
+  return `    ${result.chainId}: {
+      chainName: '${result.camelCaseName}',
       address: '${result.address}',
       salt: '${result.salt}',
     },`;

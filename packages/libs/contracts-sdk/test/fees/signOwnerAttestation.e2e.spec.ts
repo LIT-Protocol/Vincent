@@ -50,7 +50,7 @@ const AAVE_USDC_PRIVATE_KEY = process.env.AAVE_USDC_PRIVATE_KEY;
 const TEST_LIT_FOUNDATION_PRIVATE_KEY = process.env.TEST_LIT_FOUNDATION_PRIVATE_KEY;
 
 // Contract addresses
-const FEE_DIAMOND_ADDRESS = VINCENT_CONTRACT_ADDRESS_BOOK.fee.baseSepolia.address;
+const FEE_DIAMOND_ADDRESS = VINCENT_CONTRACT_ADDRESS_BOOK.fee[84532].address;
 const LIT_ACTION_IPFS_CID = VINCENT_LIT_ACTIONS_ADDRESS_BOOK.signOwnerAttestation.ipfsCid;
 
 // Base Sepolia addresses

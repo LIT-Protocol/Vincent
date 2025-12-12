@@ -465,8 +465,8 @@ After deployment, copy the output from the script into `packages/libs/contracts-
 ```typescript
 export const VINCENT_CONTRACT_ADDRESS_BOOK = {
   fee: {
-    baseSepolia: {
-      chainId: 84532,
+    84532: {
+      chainName: 'baseSepolia',
       address: '0x...',
       salt: 'DatilCreate2Salt',
     },
