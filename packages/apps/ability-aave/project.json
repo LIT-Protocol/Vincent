@@ -49,9 +49,20 @@
     },
     "test": {
       "executor": "@nx/jest:jest",
+      "dependsOn": ["build"],
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
       "options": {
-        "jestConfig": "packages/apps/ability-aave/jest.config.js"
+        "jestConfig": "{projectRoot}/jest.config.js",
+        "testMatch": ["<rootDir>/src/**/*.spec.ts"]
+      }
+    },
+    "test-e2e": {
+      "executor": "@nx/jest:jest",
+      "dependsOn": ["build", "action:deploy"],
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "{projectRoot}/test/jest.config.js",
+        "testMatch": ["<rootDir>/integration/**/*.spec.ts"]
       }
     }
   }

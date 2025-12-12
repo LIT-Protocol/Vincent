@@ -163,7 +163,7 @@
           },
           {
             "group": "Abilities",
-            "pages": ["smart-account/abilities/aave-smart-account"]
+            "pages": ["smart-account/abilities/aave"]
           }
         ]
       },

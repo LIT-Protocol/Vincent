@@ -1,7 +1,6 @@
 /packages/apps/app-dashboard
 /packages/apps/abilities-e2e
 /packages/apps/ability-aave
-/packages/apps/ability-aave-smart-account
 /packages/apps/ability-aerodrome-swap
 /packages/apps/ability-debridge
 /packages/apps/ability-erc20-approval

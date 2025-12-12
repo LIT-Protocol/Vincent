@@ -208,6 +208,54 @@ export const myTokenSwapAbility = createVincentAbility({
 });
 ```
 
+---
+
+### Gated Signer Ability
+
+A **Gated Signer Ability** is a specialized ability designed to validate and sign EOA transactions or AA user operations. It enforces a strict validation lifecycle before using the delegated PKP to sign the request.
+
+#### Lifecycle
+
+1. **Decode**: The ability decodes the transaction data using the provided `decodeTransaction` function.
+2. **Simulation**: The ability simulates the transaction/userOperation on-chain to determine asset changes.
+3. **Validate Simulation**: The `validateSimulation` function checks if the simulation results are acceptable (e.g., no unexpected asset transfers).
+4. **Validate Transaction**: The `validateTransaction` function inspects the decoded transaction to ensure it complies with security policies (e.g., allowed contracts, methods, arguments).
+5. **Sign**: If all validations pass, the ability signs the transaction or userOperation using the PKP.
+
+#### Creating a Gated Signer Ability
+
+You can create a Gated Signer Ability using `createVincentGatedSignerAbility`:
+
+```ts
+import { createVincentGatedSignerAbility } from '@lit-protocol/vincent-ability-sdk/gatedSigner';
+
+import { decodeTransaction } from './decodeTransaction';
+import { validateSimulation } from './validateSimulation';
+import { validateTransaction } from './validateTransaction';
+
+export const myGatedSignerAbility = createVincentGatedSignerAbility({
+  packageName: '@my-org/my-gated-signer',
+  abilityDescription: 'Safely signs transactions for My Protocol',
+
+  // Lifecycle functions
+  decodeTransaction,
+  validateSimulation,
+  validateTransaction,
+});
+```
+
+The lifecycle functions must implement the `LifecycleFunctionSteps` interface:
+
+```ts
+interface LifecycleFunctionSteps {
+  decodeTransaction: (params: DecodeTransactionParams) => DecodedTransaction;
+  validateSimulation: (params: ValidateSimulationParams) => void;
+  validateTransaction: (params: ValidateTransactionParams) => void;
+}
+```
+
+This abstraction simplifies the creation of abilities that act as secure signers, ensuring consistent validation logic across different implementations.
+
 ## Tip
 
-Ability and policy authors should export the result of `createVincentPolicy()` / `createVincentAbility()`
+Ability and policy authors should export the result of `createVincentPolicy()` / `createVincentAbility()` / `createVincentGatedSignerAbility()`
