@@ -38,8 +38,6 @@ export const validateSimulation = (params: ValidateSimulationParams) => {
       if (changeType !== 'TRANSFER') {
         fail('Only TRANSFER is allowed for NATIVE');
       }
-
-      // TODO no chequeamos el source y destination?
       return;
     }
 

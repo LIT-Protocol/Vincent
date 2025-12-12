@@ -280,7 +280,6 @@ export function getAaveApprovalTx({
   chainId,
   amount,
 }: AaveApprovalTxParams) {
-  const { POOL } = getAaveAddresses(chainId);
   const feeContractAddress = getFeeContractAddress(chainId);
 
   const approveData = encodeFunctionData({
@@ -313,7 +312,6 @@ export function getAaveSupplyTx({
   assetAddress,
   chainId,
 }: AaveSupplyTxParams) {
-  // const { POOL } = getAaveAddresses(chainId);
   const feeContractAddress = getFeeContractAddress(chainId);
   if (!feeContractAddress) {
     throw new Error(`No fee contract address available for chain ${chainId}`);
@@ -375,7 +373,7 @@ export interface AaveBorrowTxParams {
   amount: string;
   assetAddress: Address;
   chainId: number;
-  interestRateMode?: number;
+  interestRateMode: number;
   onBehalfOf?: Address;
   referralCode?: number;
 }
@@ -386,8 +384,8 @@ export function getAaveBorrowTx({
   assetAddress,
   chainId,
   interestRateMode,
-  onBehalfOf,
-  referralCode,
+  onBehalfOf = accountAddress,
+  referralCode = 0,
 }: AaveBorrowTxParams) {
   const { POOL } = getAaveAddresses(chainId);
 
@@ -411,7 +409,7 @@ export interface AaveRepayTxParams {
   amount: string;
   assetAddress: Address;
   chainId: number;
-  interestRateMode?: number;
+  interestRateMode: number;
   onBehalfOf?: Address;
 }
 
@@ -421,7 +419,7 @@ export function getAaveRepayTx({
   assetAddress,
   chainId,
   interestRateMode,
-  onBehalfOf,
+  onBehalfOf = accountAddress,
 }: AaveRepayTxParams) {
   const { POOL } = getAaveAddresses(chainId);
 
