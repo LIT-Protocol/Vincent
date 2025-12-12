@@ -20,43 +20,43 @@ export const DEFAULT_PAGE_SIZE = '50';
 
 export const VINCENT_CONTRACT_ADDRESS_BOOK = {
   fee: {
-    ethereum: {
-      chainId: 1,
+    1: {
+      chainName: 'ethereum',
       address: '0x35705D6ad235DcA39c10B6E0EfBA84b5E90D2aC9',
       salt: 'DatilCreate2Salt',
     },
-    polygon: {
-      chainId: 137,
+    137: {
+      chainName: 'polygon',
       address: '0x35705D6ad235DcA39c10B6E0EfBA84b5E90D2aC9',
       salt: 'DatilCreate2Salt',
     },
-    avalanche: {
-      chainId: 43114,
+    43114: {
+      chainName: 'avalanche',
       address: '0x35705D6ad235DcA39c10B6E0EfBA84b5E90D2aC9',
       salt: 'DatilCreate2Salt',
     },
-    arbitrum: {
-      chainId: 42161,
+    42161: {
+      chainName: 'arbitrum',
       address: '0x35705D6ad235DcA39c10B6E0EfBA84b5E90D2aC9',
       salt: 'DatilCreate2Salt',
     },
-    optimism: {
-      chainId: 10,
+    10: {
+      chainName: 'optimism',
       address: '0x35705D6ad235DcA39c10B6E0EfBA84b5E90D2aC9',
       salt: 'DatilCreate2Salt',
     },
-    base: {
-      chainId: 8453,
+    8453: {
+      chainName: 'base',
       address: '0x35705D6ad235DcA39c10B6E0EfBA84b5E90D2aC9',
       salt: 'DatilCreate2Salt',
     },
-    bnb: {
-      chainId: 56,
+    56: {
+      chainName: 'bnb',
       address: '0x35705D6ad235DcA39c10B6E0EfBA84b5E90D2aC9',
       salt: 'DatilCreate2Salt',
     },
-    baseSepolia: {
-      chainId: 84532,
+    84532: {
+      chainName: 'baseSepolia',
       address: '0x35705D6ad235DcA39c10B6E0EfBA84b5E90D2aC9',
       salt: 'DatilCreate2Salt',
     },

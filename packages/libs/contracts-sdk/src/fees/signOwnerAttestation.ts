@@ -139,5 +139,5 @@ export async function signOwnerAttestation({
  * Gets the Base Sepolia Fee Diamond address from the contract address book
  */
 export function getBaseSepoliaFeeDiamondAddress(): string {
-  return VINCENT_CONTRACT_ADDRESS_BOOK.fee.baseSepolia.address;
+  return VINCENT_CONTRACT_ADDRESS_BOOK.fee[84532].address;
 }
