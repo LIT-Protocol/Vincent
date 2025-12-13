@@ -8,7 +8,7 @@ const LandingPartners: React.FC = () => {
     <div className="relative bg-transparent py-2">
       <div className="max-w-lg mx-auto px-3">
         <p
-          className="flex justify-center items-center mb-2 text-gray-900 dark:text-white text-xs tracking-wide font-medium"
+          className="hidden md:flex justify-center items-center mb-2 text-gray-900 dark:text-white text-xs tracking-wide font-medium"
           style={fonts.heading}
         >
           <a
@@ -25,8 +25,8 @@ const LandingPartners: React.FC = () => {
         </p>
 
         {/* Logo Grid - visible only on mobile/tablet (hidden on desktop where globe shows logos) */}
-        <div className="w-full md:hidden">
-          <div className="grid grid-cols-6 gap-2 max-w-sm mx-auto">
+        <div className="w-full md:hidden px-4">
+          <div className="grid grid-cols-6 gap-2 w-full">
             {logos.map((logo, i) => (
               <a
                 key={i}
