@@ -12,20 +12,21 @@ export const validateSimulation = (params: ValidateSimulationParams) => {
     throw new Error(`Simulation failed - Reason: ${revertReason} - Message: ${message}`);
   }
 
-  const feeContract = getFeeContractAddress(chainId);
+  const _feeContract = getFeeContractAddress(chainId) || zeroAddress; // Default to zeroAddress for code simplicity
+  const feeContract = getAddress(_feeContract, chainId);
   const { POOL: aavePoolAddress } = getAaveAddresses(chainId);
   const aaveATokens = getATokens(chainId);
 
-  const sender = getAddress(_sender);
-  const pool = getAddress(aavePoolAddress);
-  const aTokens = Object.values(aaveATokens).map(getAddress);
+  const sender = getAddress(_sender, chainId);
+  const pool = getAddress(aavePoolAddress, chainId);
+  const aTokens = Object.values(aaveATokens).map((a) => getAddress(a, chainId));
   const allowed = new Set([zeroAddress, sender, pool, feeContract, ...aTokens]);
 
   simulation.changes.forEach((c, idx) => {
     const assetType = c.assetType;
     const changeType = c.changeType;
-    const from = getAddress(c.from);
-    const to = getAddress(c.to);
+    const from = getAddress(c.from, chainId);
+    const to = getAddress(c.to, chainId);
 
     // Helper for throwing with context
     const fail = (reason: string) => {
