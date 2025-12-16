@@ -9,7 +9,6 @@ import { ConnectPageHeader } from './ui/ConnectPageHeader';
 import { theme } from './ui/theme';
 import { PolicyFormRef } from './ui/PolicyForm';
 import { ReadAuthInfo } from '@/hooks/user-dashboard/useAuthInfo';
-import { useAddPermittedActions } from '@/hooks/user-dashboard/connect/useAddPermittedActions';
 import { ConnectAppHeader } from './ui/ConnectAppHeader';
 import { AppsInfo } from './ui/AppInfo';
 import { ActionButtons } from './ui/ActionButtons';
@@ -18,7 +17,6 @@ import { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
 import { litNodeClient, mintPKPToExistingPKP } from '@/utils/user-dashboard/lit';
 import { useJwtRedirect } from '@/hooks/user-dashboard/connect/useJwtRedirect';
 import { BigNumber } from 'ethers';
-import { addPayee } from '@/utils/user-dashboard/addPayee';
 import { usePendingAppConnectPkp } from '@/hooks/user-dashboard/connect/usePendingAppConnectPkp';
 import { wait } from '@/lib/utils';
 
@@ -58,12 +56,6 @@ export function ConnectPage({
     error: jwtError,
     redirectUrl,
   } = useJwtRedirect({ readAuthInfo, agentPKP });
-  const {
-    addPermittedActions,
-    isLoading: isActionsLoading,
-    loadingStatus: actionsLoadingStatus,
-    error: actionsError,
-  } = useAddPermittedActions();
 
   // Handle redirect when JWT is ready
   useEffect(() => {
@@ -136,10 +128,13 @@ export function ConnectPage({
         // Step 1: Mint new PKP
         try {
           const tokenIdString = BigNumber.from(readAuthInfo.authInfo.userPKP.tokenId).toHexString();
-          agentPKP = await mintPKPToExistingPKP({
-            ...readAuthInfo.authInfo.userPKP,
-            tokenId: tokenIdString,
-          });
+          agentPKP = await mintPKPToExistingPKP(
+            {
+              ...readAuthInfo.authInfo.userPKP,
+              tokenId: tokenIdString,
+            },
+            Object.keys(selectedFormData), // abilityIpfsCids
+          );
           console.log('Minted new PKP:', agentPKP.ethAddress);
 
           // Save to localStorage in case we fail in subsequent steps
@@ -167,71 +162,7 @@ export function ConnectPage({
 
       const client = getClient({ signer: userPkpWallet });
 
-      // Step 2: Add permitted actions (idempotent - adding them again is safe)
-      try {
-        await addPermittedActions({
-          wallet: userPkpWallet,
-          agentPKPTokenId: agentPKP.tokenId,
-          abilityIpfsCids: Object.keys(selectedFormData),
-        });
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
-
-        // Check if this is a rate limit related error that addPayee might fix
-        const isRateLimitError = errorMessage.toLowerCase().includes('rate limit exceeded');
-        const isInsufficientFunds = errorMessage.toLowerCase().includes('insufficient funds');
-
-        if (isRateLimitError) {
-          console.warn(
-            'addPermittedActions failed with rate limit error, attempting addPayee retry',
-            error,
-          );
-          try {
-            await addPayee(readAuthInfo.authInfo.userPKP.ethAddress);
-            console.log('Successfully added payee, retrying addPermittedActions');
-
-            // Retry addPermittedActions
-            await addPermittedActions({
-              wallet: userPkpWallet,
-              agentPKPTokenId: agentPKP.tokenId,
-              abilityIpfsCids: Object.keys(selectedFormData),
-            });
-          } catch (retryError) {
-            setLocalError(
-              retryError instanceof Error
-                ? `Failed after addPayee attempt: ${retryError.message}`
-                : 'Failed after addPayee attempt',
-            );
-            setIsConnectProcessing(false);
-            Sentry.captureException(retryError, {
-              extra: {
-                context: 'ConnectPage.addPermittedActions.retryAfterAddPayee',
-                agentPKPTokenId: agentPKP.tokenId,
-              },
-            });
-            return;
-          }
-        } else if (isInsufficientFunds) {
-          // Insufficient funds - show helpful message with faucet link (don't log to Sentry - expected)
-          const customMessage = `Insufficient testnet funds. Authentication Address (testnet only): ${readAuthInfo.authInfo.userPKP.ethAddress}. Please fund it with the faucet here:`;
-          setLocalError(customMessage);
-          setIsConnectProcessing(false);
-          return;
-        } else {
-          // Other error - log to Sentry and fail
-          Sentry.captureException(error, {
-            extra: {
-              context: 'ConnectPage.addPermittedActions',
-              agentPKPTokenId: agentPKP.tokenId,
-            },
-          });
-          setLocalError(error instanceof Error ? error.message : 'Failed to add permitted actions');
-          setIsConnectProcessing(false);
-          return;
-        }
-      }
-
-      // Step 3: Permit app
+      // Step 2: Permit app (abilities were already added as auth methods during minting)
       try {
         await client.permitApp({
           pkpEthAddress: agentPKP.ethAddress,
@@ -263,7 +194,7 @@ export function ConnectPage({
       setLocalError('Some of your permissions are not valid. Please check the form and try again.');
       setIsConnectProcessing(false);
     }
-  }, [getSelectedFormData, readAuthInfo, addPermittedActions, generateJWT, connectInfoMap.app]);
+  }, [getSelectedFormData, readAuthInfo, generateJWT, connectInfoMap.app]);
 
   const handleDecline = useCallback(() => {
     navigate(-1);
@@ -273,12 +204,9 @@ export function ConnectPage({
     formRefs.current[policyIpfsCid] = ref;
   }, []);
 
-  const isLoading = isJwtLoading || isActionsLoading || isConnectProcessing || !!localSuccess;
-  const loadingStatus =
-    jwtLoadingStatus ||
-    actionsLoadingStatus ||
-    (isConnectProcessing ? 'Processing connect...' : null);
-  const error = localError || jwtError || actionsError;
+  const isLoading = isJwtLoading || isConnectProcessing || !!localSuccess;
+  const loadingStatus = jwtLoadingStatus || (isConnectProcessing ? 'Processing connect...' : null);
+  const error = localError || jwtError;
 
   return (
     <div
