@@ -27,7 +27,7 @@ export const assertIsValidUserOp = async ({
     transport: http(alchemyRpcUrl),
   });
   const chainId = await publicClient.getChainId();
-  const sender = getAddress(userOp.sender);
+  const sender = getAddress(userOp.sender, chainId);
 
   const userOpTransactions = getUserOpCalls(userOp);
   for (const transaction of userOpTransactions) {

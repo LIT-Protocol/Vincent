@@ -272,6 +272,7 @@ export interface AaveApprovalTxParams {
   amount?: string;
   assetAddress: Address;
   chainId: number;
+  spenderAddress?: Address | null;
 }
 
 export function getAaveApprovalTx({
@@ -279,13 +280,16 @@ export function getAaveApprovalTx({
   assetAddress,
   chainId,
   amount,
+  spenderAddress = getFeeContractAddress(chainId),
 }: AaveApprovalTxParams) {
-  const feeContractAddress = getFeeContractAddress(chainId);
+  if (!spenderAddress) {
+    throw new Error('Pass a spenderAddress or a chain id where Lit Fee contract is deployed');
+  }
 
   const approveData = encodeFunctionData({
     abi: ERC20_ABI,
     functionName: 'approve',
-    args: [feeContractAddress, amount],
+    args: [spenderAddress, amount],
   });
   const approveTx: Transaction = {
     data: approveData,

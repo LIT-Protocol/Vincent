@@ -5,9 +5,9 @@ import type {
 } from '@lit-protocol/vincent-ability-sdk/gatedSigner';
 import type { Address } from 'viem';
 
-import { getAddress, isAddressEqual } from 'viem';
+import { isAddressEqual } from 'viem';
 
-import { getFeeContractAddress } from './helpers/aave';
+import { getAaveAddresses, getFeeContractAddress } from './helpers/aave';
 import { TransactionKind } from './helpers/transactionKind';
 
 export const validateTransaction = (params: ValidateTransactionParams) => {
@@ -20,6 +20,7 @@ export const validateTransaction = (params: ValidateTransactionParams) => {
 
   const decodedTransactionSuccess = decodedTransaction as DecodedTransactionSuccess;
 
+  const { POOL: aavePoolAddress } = getAaveAddresses(chainId);
   const feeContractAddress = getFeeContractAddress(chainId);
   if (!feeContractAddress) {
     throw new Error(`Fee contract address not found for chainId ${chainId}`);
@@ -28,7 +29,10 @@ export const validateTransaction = (params: ValidateTransactionParams) => {
   if (decodedTransaction.kind === TransactionKind.ERC20) {
     if (['approve', 'increaseAllowance'].includes(decodedTransactionSuccess.fn)) {
       const [spender, amount] = decodedTransactionSuccess.args as [Address, bigint];
-      if (!isAddressEqual(spender, feeContractAddress)) {
+      if (
+        !isAddressEqual(spender, feeContractAddress) &&
+        !isAddressEqual(spender, aavePoolAddress)
+      ) {
         throw new Error(`ERC20 approval to forbidden spender ${spender}`);
       }
 
@@ -59,17 +63,13 @@ export const validateTransaction = (params: ValidateTransactionParams) => {
     const args = decodedTransactionSuccess.args as any[]; // Args depend on the function being called
 
     if (fn === 'supply') {
-      const onBehalfOf = getAddress(args[2]);
-      if (!isAddressEqual(onBehalfOf, sender)) throw new Error('supply.onBehalfOf != sender');
+      if (!isAddressEqual(args[2], sender)) throw new Error('supply.onBehalfOf != sender');
     } else if (fn === 'withdraw') {
-      const to = getAddress(args[2]);
-      if (!isAddressEqual(to, sender)) throw new Error('withdraw.to != sender');
+      if (!isAddressEqual(args[2], sender)) throw new Error('withdraw.to != sender');
     } else if (fn === 'borrow') {
-      const onBehalfOf = getAddress(args[4]);
-      if (!isAddressEqual(onBehalfOf, sender)) throw new Error('borrow.onBehalfOf != sender');
+      if (!isAddressEqual(args[4], sender)) throw new Error('borrow.onBehalfOf != sender');
     } else if (fn === 'repay') {
-      const onBehalfOf = getAddress(args[3]);
-      if (!isAddressEqual(onBehalfOf, sender)) throw new Error('repay.onBehalfOf != sender');
+      if (!isAddressEqual(args[3], sender)) throw new Error('repay.onBehalfOf != sender');
     } else if (fn === 'setUserUseReserveAsCollateral') {
       // ok; self-scoped setting
     } else {
