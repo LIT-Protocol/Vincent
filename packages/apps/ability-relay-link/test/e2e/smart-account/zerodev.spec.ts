@@ -19,6 +19,7 @@ import {
   getRelayLinkQuote,
   toVincentUserOp,
   relayTransactionToUserOp,
+  transactionsToZerodevUserOp,
   submitSignedUserOp,
 } from '../../../src';
 
@@ -295,7 +296,13 @@ const hasRequiredEnvVars = ZERODEV_RPC_URL && SMART_ACCOUNT_CHAIN_ID;
         expect(quote.steps).toBeDefined();
         expect(quote.steps.length).toBeGreaterThan(0);
 
-        // Process all transaction steps (may include approval + swap)
+        // Collect all transactions from all steps (approval + swap batched together)
+        const allTransactions: Array<{
+          to: `0x${string}`;
+          data: `0x${string}`;
+          value: string;
+        }> = [];
+
         for (const step of quote.steps) {
           if (step.kind !== 'transaction') continue;
 
@@ -303,105 +310,105 @@ const hasRequiredEnvVars = ZERODEV_RPC_URL && SMART_ACCOUNT_CHAIN_ID;
             if (!txItem?.data) continue;
 
             const txData = txItem.data;
-            console.log('[processing tx step]', {
+            console.log('[collecting tx for batch]', {
               id: step.id,
               action: step.action,
               to: txData.to,
             });
 
-            // Convert the relay transaction to a UserOp using the smart account
-            const userOp = await relayTransactionToUserOp({
-              permittedAddress: agentPkpInfo.ethAddress as `0x${string}`,
-              serializedPermissionAccount: smartAccount.serializedPermissionAccount,
-              transaction: {
-                to: txData.to as `0x${string}`,
-                data: txData.data as `0x${string}`,
-                value: txData.value || '0',
-                chainId: txData.chainId,
-                from: smartAccountAddress,
-              },
-              chain: base,
-              zerodevRpcUrl: ZERODEV_RPC_URL!,
+            allTransactions.push({
+              to: txData.to as `0x${string}`,
+              data: txData.data as `0x${string}`,
+              value: txData.value || '0',
             });
-
-            console.log('[prepared userOp]', util.inspect(userOp, { depth: 10 }));
-
-            // Convert numeric values to hex for the Vincent UserOp format
-            const hexUserOperation = Object.fromEntries(
-              Object.entries(userOp).map(([key, value]) => {
-                if (typeof value === 'number' || typeof value === 'bigint') {
-                  return [key, toHex(value)];
-                }
-                return [key, value];
-              }),
-            );
-
-            // Convert to Vincent UserOp format
-            const vincentUserOp = toVincentUserOp(hexUserOperation as any);
-
-            console.log('[vincent userOp]', util.inspect(vincentUserOp, { depth: 10 }));
-
-            const abilityParams = {
-              alchemyRpcUrl: ENV.BASE_RPC_URL!,
-              userOp: vincentUserOp,
-              entryPointAddress: entryPoint07Address,
-            } as any;
-
-            const delegationContext = {
-              delegatorPkpEthAddress: agentPkpInfo.ethAddress,
-            };
-
-            // Precheck the UserOp (runs simulation)
-            const precheckResult = await relayClient.precheck(abilityParams, delegationContext);
-
-            console.log('[precheck result]', util.inspect(precheckResult, { depth: 10 }));
-
-            expect(precheckResult).toBeDefined();
-            expect(precheckResult.success).toBe(true);
-
-            if (precheckResult.success === false) {
-              throw new Error(precheckResult.runtimeError);
-            }
-
-            // Execute the ability to get the signature
-            const executeResult = await relayClient.execute(abilityParams, delegationContext);
-
-            console.log('[execute result]', util.inspect(executeResult, { depth: 10 }));
-
-            expect(executeResult).toBeDefined();
-            expect(executeResult.success).toBe(true);
-
-            if (executeResult.success === false) {
-              throw new Error(executeResult.runtimeError);
-            }
-
-            // Verify we got a signature back
-            expect(executeResult.result).toBeDefined();
-            expect(executeResult.result.signature).toBeDefined();
-            expect(executeResult.result.signature).toMatch(/^0x[a-fA-F0-9]+$/);
-
-            // Submit the signed UserOp to the bundler
-            const { userOpHash, transactionHash } = await submitSignedUserOp({
-              permittedAddress: agentPkpInfo.ethAddress as `0x${string}`,
-              serializedPermissionAccount: smartAccount.serializedPermissionAccount,
-              userOpSignature: executeResult.result.signature,
-              userOp: hexUserOperation,
-              chain: base,
-              zerodevRpcUrl: ZERODEV_RPC_URL!,
-            });
-
-            console.log('[step completed from smart account]', {
-              userOpHash,
-              transactionHash,
-              txUrl: `https://basescan.org/tx/${transactionHash}`,
-            });
-
-            expect(userOpHash).toMatch(/^0x[a-fA-F0-9]{64}$/);
-            expect(transactionHash).toMatch(/^0x[a-fA-F0-9]{64}$/);
           }
         }
 
-        console.log('[USDC -> ETH swap completed successfully from smart account]');
+        console.log(`[batching ${allTransactions.length} transactions into single UserOp]`);
+
+        // Convert all relay transactions to a single batched UserOp
+        const userOp = await transactionsToZerodevUserOp({
+          permittedAddress: agentPkpInfo.ethAddress as `0x${string}`,
+          serializedPermissionAccount: smartAccount.serializedPermissionAccount,
+          transactions: allTransactions,
+          chain: base,
+          zerodevRpcUrl: ZERODEV_RPC_URL!,
+        });
+
+        console.log('[prepared userOp]', util.inspect(userOp, { depth: 10 }));
+
+        // Convert numeric values to hex for the Vincent UserOp format
+        const hexUserOperation = Object.fromEntries(
+          Object.entries(userOp).map(([key, value]) => {
+            if (typeof value === 'number' || typeof value === 'bigint') {
+              return [key, toHex(value)];
+            }
+            return [key, value];
+          }),
+        );
+
+        // Convert to Vincent UserOp format
+        const vincentUserOp = toVincentUserOp(hexUserOperation as any);
+
+        console.log('[vincent userOp]', util.inspect(vincentUserOp, { depth: 10 }));
+
+        const abilityParams = {
+          alchemyRpcUrl: ENV.BASE_RPC_URL!,
+          userOp: vincentUserOp,
+          entryPointAddress: entryPoint07Address,
+        } as any;
+
+        const delegationContext = {
+          delegatorPkpEthAddress: agentPkpInfo.ethAddress,
+        };
+
+        // Precheck the UserOp (runs simulation)
+        const precheckResult = await relayClient.precheck(abilityParams, delegationContext);
+
+        console.log('[precheck result]', util.inspect(precheckResult, { depth: 10 }));
+
+        expect(precheckResult).toBeDefined();
+        expect(precheckResult.success).toBe(true);
+
+        if (precheckResult.success === false) {
+          throw new Error(precheckResult.runtimeError);
+        }
+
+        // Execute the ability to get the signature
+        const executeResult = await relayClient.execute(abilityParams, delegationContext);
+
+        console.log('[execute result]', util.inspect(executeResult, { depth: 10 }));
+
+        expect(executeResult).toBeDefined();
+        expect(executeResult.success).toBe(true);
+
+        if (executeResult.success === false) {
+          throw new Error(executeResult.runtimeError);
+        }
+
+        // Verify we got a signature back
+        expect(executeResult.result).toBeDefined();
+        expect(executeResult.result.signature).toBeDefined();
+        expect(executeResult.result.signature).toMatch(/^0x[a-fA-F0-9]+$/);
+
+        // Submit the signed UserOp to the bundler
+        const { userOpHash, transactionHash } = await submitSignedUserOp({
+          permittedAddress: agentPkpInfo.ethAddress as `0x${string}`,
+          serializedPermissionAccount: smartAccount.serializedPermissionAccount,
+          userOpSignature: executeResult.result.signature,
+          userOp: hexUserOperation,
+          chain: base,
+          zerodevRpcUrl: ZERODEV_RPC_URL!,
+        });
+
+        console.log('[USDC -> ETH swap completed from smart account]', {
+          userOpHash,
+          transactionHash,
+          txUrl: `https://basescan.org/tx/${transactionHash}`,
+        });
+
+        expect(userOpHash).toMatch(/^0x[a-fA-F0-9]{64}$/);
+        expect(transactionHash).toMatch(/^0x[a-fA-F0-9]{64}$/);
       });
     });
   },

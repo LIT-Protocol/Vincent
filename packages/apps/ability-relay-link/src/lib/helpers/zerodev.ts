@@ -8,6 +8,12 @@ import { KERNEL_V3_3, getEntryPoint } from '@zerodev/sdk/constants';
 const kernelVersion = KERNEL_V3_3;
 const entryPoint = getEntryPoint('0.7');
 
+export interface ZerodevTransaction {
+  to: `0x${string}`;
+  data: `0x${string}`;
+  value: string;
+}
+
 export interface RelayTransactionToUserOpParams {
   permittedAddress: `0x${string}`;
   serializedPermissionAccount: string;
@@ -18,6 +24,14 @@ export interface RelayTransactionToUserOpParams {
     chainId: number;
     from: `0x${string}`;
   };
+  chain: Chain;
+  zerodevRpcUrl: string;
+}
+
+export interface TransactionsToZerodevUserOpParams {
+  permittedAddress: `0x${string}`;
+  serializedPermissionAccount: string;
+  transactions: ZerodevTransaction[];
   chain: Chain;
   zerodevRpcUrl: string;
 }
@@ -43,13 +57,13 @@ async function createPermittedSigner(permittedAddress: `0x${string}`) {
 }
 
 /**
- * Convert a Relay.link transaction to a UserOperation for smart account execution.
- * This handles deserializing the permission account, building the UserOp with proper gas estimates.
+ * Convert multiple transactions to a single batched UserOperation for smart account execution.
+ * This is useful for operations that require multiple steps (e.g., ERC20 approve + swap).
  */
-export async function relayTransactionToUserOp(
-  params: RelayTransactionToUserOpParams,
+export async function transactionsToZerodevUserOp(
+  params: TransactionsToZerodevUserOpParams,
 ): Promise<Record<string, unknown>> {
-  const { permittedAddress, serializedPermissionAccount, transaction, chain, zerodevRpcUrl } =
+  const { permittedAddress, serializedPermissionAccount, transactions, chain, zerodevRpcUrl } =
     params;
 
   // Create ZeroDev transport
@@ -74,7 +88,6 @@ export async function relayTransactionToUserOp(
   );
 
   // Create kernel client with the permission account
-  // No paymaster - smart account will pay for gas using its own balance
   const kernelClient = createKernelAccountClient({
     chain,
     account: permissionAccount,
@@ -82,18 +95,43 @@ export async function relayTransactionToUserOp(
     client: publicClient,
   });
 
-  // Prepare the UserOp
+  // Prepare the UserOp with batched calls
   const userOp = await kernelClient.prepareUserOperation({
-    callData: await permissionAccount.encodeCalls([
-      {
-        to: transaction.to,
-        value: BigInt(transaction.value || '0'),
-        data: transaction.data,
-      },
-    ]),
+    callData: await permissionAccount.encodeCalls(
+      transactions.map((tx) => ({
+        to: tx.to,
+        value: BigInt(tx.value || '0'),
+        data: tx.data,
+      })),
+    ),
   });
 
   return userOp as unknown as Record<string, unknown>;
+}
+
+/**
+ * Convert a Relay.link transaction to a UserOperation for smart account execution.
+ * This is a convenience wrapper around transactionsToZerodevUserOp for single transactions.
+ */
+export async function relayTransactionToUserOp(
+  params: RelayTransactionToUserOpParams,
+): Promise<Record<string, unknown>> {
+  const { permittedAddress, serializedPermissionAccount, transaction, chain, zerodevRpcUrl } =
+    params;
+
+  return transactionsToZerodevUserOp({
+    permittedAddress,
+    serializedPermissionAccount,
+    transactions: [
+      {
+        to: transaction.to,
+        data: transaction.data,
+        value: transaction.value,
+      },
+    ],
+    chain,
+    zerodevRpcUrl,
+  });
 }
 
 /**

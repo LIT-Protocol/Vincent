@@ -19,8 +19,11 @@ export {
 // ZeroDev smart account helpers for preparing and submitting UserOps
 export {
   relayTransactionToUserOp,
+  transactionsToZerodevUserOp,
   submitSignedUserOp,
+  type ZerodevTransaction,
   type RelayTransactionToUserOpParams,
+  type TransactionsToZerodevUserOpParams,
   type SubmitSignedUserOpParams,
 } from './lib/helpers/zerodev';
 
