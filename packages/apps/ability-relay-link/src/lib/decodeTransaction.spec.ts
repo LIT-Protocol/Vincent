@@ -3,13 +3,20 @@ import { Address, encodeFunctionData } from 'viem';
 
 import { decodeTransaction } from './decodeTransaction';
 import { ERC20_ABI } from './helpers/erc20';
-import { getRelayLinkExecuteAddress } from './helpers/relay-link';
+import { fetchRelayLinkAddresses } from './helpers/relay-link';
 import { TransactionKind } from './helpers/transactionKind';
 
 const CHAIN_ID = 8453; // Base
 const TEST_ACCOUNT: Address = '0x1234567890123456789012345678901234567890';
 const TEST_TOKEN: Address = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'; // USDC on Base
-const RELAY_ADDRESS = getRelayLinkExecuteAddress(CHAIN_ID);
+
+// Relay addresses are fetched async, so we need to load them before tests
+let RELAY_ADDRESS: Address;
+
+beforeAll(async () => {
+  const relayAddresses = await fetchRelayLinkAddresses(CHAIN_ID);
+  RELAY_ADDRESS = relayAddresses[0];
+});
 
 describe('decodeTransaction', () => {
   describe('ERC20 transactions', () => {
