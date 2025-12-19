@@ -77,6 +77,17 @@ export function getRelayClient(chainId: number) {
 }
 
 /**
+ * App fee configuration for Relay.link
+ * @see https://docs.relay.link/features/app-fees
+ */
+export interface RelayLinkAppFee {
+  /** Address that will receive the app fee */
+  recipient: string;
+  /** App fee in basis points (e.g., "100" = 1%) */
+  fee: string;
+}
+
+/**
  * Quote request parameters (matching SDK's getQuote parameters)
  */
 export interface RelayLinkQuoteParams {
@@ -91,7 +102,8 @@ export interface RelayLinkQuoteParams {
   slippageTolerance?: number;
   topupGas?: boolean;
   useReceiver?: boolean;
-  appFees?: number;
+  /** App fees to be charged for execution */
+  appFees?: RelayLinkAppFee[];
   subsidizeFees?: boolean;
   protocolVersion?: 'v1' | 'v2' | 'preferV2';
   userOperationGasOverhead?: number;
@@ -133,6 +145,9 @@ export async function getRelayLinkQuote(
     tradeType: params.tradeType || 'EXACT_INPUT',
     recipient: params.recipient || params.user, // Default to user if recipient not specified
     user: params.user,
+    options: {
+      ...(params.appFees && { appFees: params.appFees }),
+    },
   });
 
   return quote;

@@ -10,6 +10,7 @@ export {
   getRelayLinkQuote,
   isRelayLinkAddress,
   isTestnet,
+  type RelayLinkAppFee,
   type RelayLinkQuoteParams,
   type RelayLinkQuoteResponse,
   type RelayLinkTransactionData,

@@ -106,6 +106,7 @@ const hasRequiredEnvVars = SAFE_RPC_URL && PIMLICO_RPC_URL && SMART_ACCOUNT_CHAI
           tradeType: 'EXACT_INPUT',
           useReceiver: true,
           protocolVersion: 'preferV2',
+          appFees: [{ recipient: '0x2998657a1C195B3D9909cB51dB3E57836159732C', fee: '100' }], // TODO: Replace with app owner + Lit Protocol central account
         });
 
         console.log('[should successfully get a quote]', util.inspect(quote, { depth: 10 }));
@@ -140,6 +141,7 @@ const hasRequiredEnvVars = SAFE_RPC_URL && PIMLICO_RPC_URL && SMART_ACCOUNT_CHAI
           tradeType: 'EXACT_INPUT',
           useReceiver: true,
           protocolVersion: 'preferV2',
+          appFees: [{ recipient: '0x2998657a1C195B3D9909cB51dB3E57836159732C', fee: '100' }],
         });
 
         expect(quote.steps).toBeDefined();
@@ -283,6 +285,7 @@ const hasRequiredEnvVars = SAFE_RPC_URL && PIMLICO_RPC_URL && SMART_ACCOUNT_CHAI
           tradeType: 'EXACT_INPUT',
           useReceiver: true,
           protocolVersion: 'preferV2',
+          appFees: [{ recipient: '0x2998657a1C195B3D9909cB51dB3E57836159732C', fee: '100' }],
         });
 
         console.log('[USDC -> ETH quote]', util.inspect(quote, { depth: 10 }));
