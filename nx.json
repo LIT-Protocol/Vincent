@@ -70,6 +70,7 @@
       "policy-send-counter",
       "ability-aerodrome-swap",
       "ability-hyperliquid",
+      "ability-relay-link",
       "e2e-test-utils"
     ],
     "projectsRelationship": "independent",

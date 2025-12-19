@@ -25,7 +25,7 @@ const baseEnvSchema = {
   TEST_FUNDER_PRIVATE_KEY: z.string(),
   TEST_APP_MANAGER_PRIVATE_KEY: z.string(),
   TEST_APP_DELEGATEE_PRIVATE_KEY: z.string(),
-  TEST_PLATFORM_USER_WALLET_OWNER_PRIVATE_KEY: z.string(),
+  TEST_AGENT_WALLET_PKP_OWNER_PRIVATE_KEY: z.string(),
   YELLOWSTONE_RPC_URL: z.string().optional().default('https://yellowstone-rpc.litprotocol.com/'),
   BASE_RPC_URL: z.string().optional().default('https://base.llamarpc.com'),
   // Smart Account (optional - only needed when enableSmartAccount=true)

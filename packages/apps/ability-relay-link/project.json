@@ -1,0 +1,105 @@
+{
+  "name": "ability-relay-link",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "src",
+  "projectType": "library",
+  "targets": {
+    "clean": {},
+    "action:build": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["ability-sdk:build"],
+      "options": {
+        "commands": ["pnpm node ./esbuild.config.js"],
+        "cwd": "packages/apps/ability-relay-link",
+        "parallel": false
+      }
+    },
+    "action:deploy": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["action:build"],
+      "options": {
+        "commands": ["node scripts/deploy-lit-action.js"],
+        "cwd": "packages/apps/ability-relay-link"
+      }
+    },
+    "action:only:deploy": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": ["node scripts/deploy-lit-action.js"],
+        "cwd": "{projectRoot}"
+      }
+    },
+    "build": {
+      "executor": "@nx/js:tsc",
+      "dependsOn": ["action:build"],
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "packages/apps/ability-relay-link/dist",
+        "main": "packages/apps/ability-relay-link/src/index.ts",
+        "tsConfig": "packages/apps/ability-relay-link/tsconfig.lib.json",
+        "assets": [
+          "packages/apps/ability-relay-link/*.md",
+          {
+            "glob": "**/*",
+            "input": "packages/apps/ability-relay-link/src/generated",
+            "output": "src/generated"
+          }
+        ]
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "dependsOn": ["build"],
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "{projectRoot}/jest.config.js",
+        "testMatch": ["<rootDir>/src/**/*.spec.ts"]
+      }
+    },
+    "test-e2e": {
+      "executor": "@nx/jest:jest",
+      "dependsOn": ["e2e-test-utils:build", "action:deploy"],
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "packages/apps/ability-relay-link/test/jest.config.js",
+        "testMatch": ["<rootDir>/e2e/eoa.spec.ts"]
+      }
+    },
+    "test-e2e-smart-account": {
+      "executor": "@nx/jest:jest",
+      "dependsOn": ["e2e-test-utils:build", "action:deploy"],
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "packages/apps/ability-relay-link/test/jest.config.js",
+        "testMatch": ["<rootDir>/e2e/smart-account/**/*.spec.ts"]
+      }
+    },
+    "test-e2e-smart-account:zerodev": {
+      "executor": "@nx/jest:jest",
+      "dependsOn": ["e2e-test-utils:build", "action:deploy"],
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "packages/apps/ability-relay-link/test/jest.config.js",
+        "testMatch": ["<rootDir>/e2e/smart-account/zerodev.spec.ts"]
+      }
+    },
+    "test-e2e-smart-account:crossmint": {
+      "executor": "@nx/jest:jest",
+      "dependsOn": ["e2e-test-utils:build", "action:deploy"],
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "packages/apps/ability-relay-link/test/jest.config.js",
+        "testMatch": ["<rootDir>/e2e/smart-account/crossmint.spec.ts"]
+      }
+    },
+    "test-e2e-smart-account:safe": {
+      "executor": "@nx/jest:jest",
+      "dependsOn": ["e2e-test-utils:build", "action:deploy"],
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "packages/apps/ability-relay-link/test/jest.config.js",
+        "testMatch": ["<rootDir>/e2e/smart-account/safe.spec.ts"]
+      }
+    }
+  }
+}

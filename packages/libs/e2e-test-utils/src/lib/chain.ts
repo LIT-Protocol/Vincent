@@ -29,7 +29,7 @@ export const getChainHelpers = async () => {
     TEST_FUNDER_PRIVATE_KEY,
     TEST_APP_MANAGER_PRIVATE_KEY,
     TEST_APP_DELEGATEE_PRIVATE_KEY,
-    TEST_PLATFORM_USER_WALLET_OWNER_PRIVATE_KEY,
+    TEST_AGENT_WALLET_PKP_OWNER_PRIVATE_KEY,
   } = getEnv();
 
   const yellowstoneProvider = new ethers.providers.JsonRpcProvider(YELLOWSTONE_RPC_URL);
@@ -45,7 +45,7 @@ export const getChainHelpers = async () => {
       funder: new Wallet(TEST_FUNDER_PRIVATE_KEY, yellowstoneProvider),
       appManager: new Wallet(TEST_APP_MANAGER_PRIVATE_KEY, yellowstoneProvider),
       platformUserWalletOwner: new Wallet(
-        TEST_PLATFORM_USER_WALLET_OWNER_PRIVATE_KEY,
+        TEST_AGENT_WALLET_PKP_OWNER_PRIVATE_KEY,
         yellowstoneProvider,
       ),
     },

@@ -23,4 +23,12 @@ export {
   type VincentDevEnvironment,
 } from './setup-vincent-development-environment';
 
-export { setupZerodevAccount, setupCrossmintAccount, type SmartAccountInfo } from './smartAccount';
+export {
+  setupZerodevAccount,
+  setupCrossmintAccount,
+  setupSafeAccount,
+  type SmartAccountInfo,
+  type ZerodevSmartAccountInfo,
+  type CrossmintSmartAccountInfo,
+  type SafeSmartAccountInfo,
+} from './smartAccount';

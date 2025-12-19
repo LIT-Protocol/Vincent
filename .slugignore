@@ -8,6 +8,7 @@
 /packages/apps/ability-evm-transaction-signer
 /packages/apps/ability-hyperliquid
 /packages/apps/ability-morpho
+/packages/apps/relay-link
 /packages/apps/ability-sol-transaction-signer
 /packages/apps/ability-transaction-signer
 /packages/apps/ability-uniswap-swap

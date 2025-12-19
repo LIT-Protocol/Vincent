@@ -117,5 +117,6 @@ export async function setupCrossmintAccount({
 
   return {
     account: crossmintAccount,
+    client: crossmintWalletApiClient,
   };
 }
