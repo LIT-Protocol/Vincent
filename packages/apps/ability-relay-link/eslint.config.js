@@ -19,6 +19,9 @@ module.exports = [
           ignoredDependencies: [
             // It's a peerDependency to ensure people don't try to use the wrong VincentAbilityClient with it -- not directly used.
             '@lit-protocol/vincent-app-sdk',
+            // Used in safe.ts via subpath imports (permissionless/accounts, permissionless/clients/pimlico)
+            // which nx dependency-checks doesn't recognize correctly
+            'permissionless',
           ],
         },
       ],
