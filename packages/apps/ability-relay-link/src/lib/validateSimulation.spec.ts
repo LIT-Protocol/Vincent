@@ -11,6 +11,8 @@ const SENDER = '0xa17a6ef07f775503365ac74922a29f4cef1812ab' as Address;
 const CHAIN_ID = 8453; // Base
 const USDC_ADDRESS = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913' as Address;
 const OTHER_ADDRESS = '0x9999999999999999999999999999999999999999' as Address;
+// Fixed Relay Solver address for EVM chains (from Relay docs)
+const RELAY_SOLVER = '0xf70da97812cb96acdf810712aa562db8dfa3dbef' as Address;
 
 // Relay addresses are fetched async, so we need to load them before tests
 let RELAY_RECEIVER: Address;
@@ -21,6 +23,8 @@ let ethToUsdcSwapSimulation: SimulateAssetChangesResponse;
 let errorSimulation: SimulateAssetChangesResponse;
 let senderApproveToUnauthorizedSimulation: SimulateAssetChangesResponse;
 let senderTransferToUnauthorizedSimulation: SimulateAssetChangesResponse;
+let swapWithValidFeeSimulation: SimulateAssetChangesResponse;
+let swapWithHighFeeSimulation: SimulateAssetChangesResponse;
 
 beforeAll(async () => {
   const relayAddresses = await fetchRelayLinkAddresses(CHAIN_ID);
@@ -154,6 +158,104 @@ beforeAll(async () => {
     ],
     error: null,
   } as SimulateAssetChangesResponse;
+
+  // Swap with valid fee: 50 bps (0.5%) - user sends 1000 USDC, 5 USDC goes to solver
+  swapWithValidFeeSimulation = {
+    changes: [
+      {
+        assetType: 'ERC20',
+        changeType: 'TRANSFER',
+        from: SENDER,
+        to: RELAY_RECEIVER,
+        rawAmount: '1000000000', // 1000 USDC (6 decimals)
+        amount: '1000',
+        contractAddress: USDC_ADDRESS,
+        decimals: 6,
+        symbol: 'USDC',
+        name: 'USD Coin',
+        tokenId: null,
+        logo: null,
+      },
+      {
+        assetType: 'ERC20',
+        changeType: 'TRANSFER',
+        from: RELAY_RECEIVER,
+        to: RELAY_SOLVER,
+        rawAmount: '5000000', // 5 USDC = 50 bps of 1000 USDC
+        amount: '5',
+        contractAddress: USDC_ADDRESS,
+        decimals: 6,
+        symbol: 'USDC',
+        name: 'USD Coin',
+        tokenId: null,
+        logo: null,
+      },
+      {
+        assetType: 'NATIVE',
+        changeType: 'TRANSFER',
+        from: RELAY_RECEIVER,
+        to: SENDER,
+        rawAmount: '500000000000000000',
+        amount: '0.5',
+        decimals: 18,
+        symbol: 'ETH',
+        name: 'Ethereum',
+        tokenId: null,
+        logo: null,
+        contractAddress: null,
+      },
+    ],
+    error: null,
+  } as SimulateAssetChangesResponse;
+
+  // Swap with high fee: 200 bps (2%) - user sends 1000 USDC, 20 USDC goes to solver
+  swapWithHighFeeSimulation = {
+    changes: [
+      {
+        assetType: 'ERC20',
+        changeType: 'TRANSFER',
+        from: SENDER,
+        to: RELAY_RECEIVER,
+        rawAmount: '1000000000', // 1000 USDC (6 decimals)
+        amount: '1000',
+        contractAddress: USDC_ADDRESS,
+        decimals: 6,
+        symbol: 'USDC',
+        name: 'USD Coin',
+        tokenId: null,
+        logo: null,
+      },
+      {
+        assetType: 'ERC20',
+        changeType: 'TRANSFER',
+        from: RELAY_RECEIVER,
+        to: RELAY_SOLVER,
+        rawAmount: '20000000', // 20 USDC = 200 bps of 1000 USDC
+        amount: '20',
+        contractAddress: USDC_ADDRESS,
+        decimals: 6,
+        symbol: 'USDC',
+        name: 'USD Coin',
+        tokenId: null,
+        logo: null,
+      },
+      {
+        assetType: 'NATIVE',
+        changeType: 'TRANSFER',
+        from: RELAY_RECEIVER,
+        to: SENDER,
+        rawAmount: '500000000000000000',
+        amount: '0.5',
+        decimals: 18,
+        symbol: 'ETH',
+        name: 'Ethereum',
+        tokenId: null,
+        logo: null,
+        contractAddress: null,
+      },
+    ],
+    error: null,
+  } as SimulateAssetChangesResponse;
 });
 
 describe('validateSimulation', () => {
@@ -187,5 +289,24 @@ describe('validateSimulation', () => {
     await expect(
       validateSimulation(createParams(senderTransferToUnauthorizedSimulation)),
     ).rejects.toThrow('ERC20 TRANSFER from sender must go to a Relay.link contract');
+  });
+
+  it('should validate swap with valid fee (50 bps) detected from simulation', async () => {
+    // Fee is detected by tracking transfers to the Relay Solver address
+    await expect(
+      validateSimulation(createParams(swapWithValidFeeSimulation)),
+    ).resolves.not.toThrow();
+  });
+
+  it('should throw on swap with fee too high (200 bps) detected from simulation', async () => {
+    // Fee is detected by tracking transfers to the Relay Solver address
+    await expect(validateSimulation(createParams(swapWithHighFeeSimulation))).rejects.toThrow(
+      'Fee too high: 200 bps',
+    );
+  });
+
+  it('should skip fee validation when no fee transfer to solver is detected', async () => {
+    // Basic swap without fee transfer to solver - should pass
+    await expect(validateSimulation(createParams(usdcToEthSwapSimulation))).resolves.not.toThrow();
   });
 });
