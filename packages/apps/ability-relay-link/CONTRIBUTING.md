@@ -4,7 +4,7 @@ This document provides guidelines for contributing to the Vincent Ability relay-
 
 ## Overview
 
-The Vincent Ability relay-link is a ability to send deposit, withdraw or redeem relay-link transactions from a Vincent app on behalf of the delegator. It's part of the Vincent Abilities ecosystem and is built using the Vincent Ability SDK.
+The Vincent Ability relay-link is an ability to perform swap and bridge operations via Relay.link from a Vincent app on behalf of the delegator. It's part of the Vincent Abilities ecosystem and is built using the Vincent Ability SDK.
 
 ## Setup
 
