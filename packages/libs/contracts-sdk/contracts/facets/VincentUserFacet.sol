@@ -93,8 +93,9 @@ contract VincentUserFacet is VincentBase {
         // before continuing with permitting the new app version
         if (agentStorage.permittedAppVersion != 0) {
             // Get currently permitted AppVersion
-            VincentAppStorage.AppVersion storage previousAppVersion = as_.appIdToApp[agentStorage.permittedAppId]
-            .appVersions[getAppVersionIndex(agentStorage.permittedAppVersion)];
+            VincentAppStorage.AppVersion storage previousAppVersion = as_.appIdToApp[agentStorage.permittedAppId].appVersions[
+                getAppVersionIndex(agentStorage.permittedAppVersion)
+            ];
 
             // Remove the agent address from the previous AppVersion's delegated agent addresses
             previousAppVersion.delegatedAgentAddresses.remove(msg.sender);
@@ -146,8 +147,8 @@ contract VincentUserFacet is VincentBase {
 
         // Remove the agent address from the App's Delegated Agent addresses
         // App versions start at 1, but the appVersions array is 0-indexed
-        VincentAppStorage.appStorage().appIdToApp[appId].appVersions[getAppVersionIndex(appVersion)]
-            .delegatedAgentAddresses
+        VincentAppStorage.appStorage()
+            .appIdToApp[appId].appVersions[getAppVersionIndex(appVersion)].delegatedAgentAddresses
             .remove(msg.sender);
 
         // Store the app id, version and pkp signer as last permitted before removing (for potential re-permitting)
@@ -331,8 +332,9 @@ contract VincentUserFacet is VincentBase {
             EnumerableSet.Bytes32Set storage abilityPolicyIpfsCidHashes =
                 versionedApp.abilityIpfsCidHashToAbilityPolicyIpfsCidHashes[hashedAbilityIpfsCid];
 
-            mapping(bytes32 => bytes) storage abilityPolicyParameterValues = us_.agentAddressToAgentStorage[msg.sender]
-            .abilityPolicyParameterValues[appVersion][hashedAbilityIpfsCid];
+            mapping(bytes32 => bytes) storage abilityPolicyParameterValues = us_.agentAddressToAgentStorage[msg.sender].abilityPolicyParameterValues[
+                appVersion
+            ][hashedAbilityIpfsCid];
 
             // Step 4: Iterate through each policy associated with the ability.
             for (uint256 j = 0; j < policyCount; j++) {

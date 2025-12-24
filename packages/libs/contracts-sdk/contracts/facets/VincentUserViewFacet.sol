@@ -300,9 +300,9 @@ contract VincentUserViewFacet is VincentBase {
                     version: agentStorage.permittedAppVersion,
                     pkpSigner: agentStorage.pkpSigner,
                     pkpSignerPubKey: agentStorage.pkpSignerPubKey,
-                    versionEnabled: as_.appIdToApp[appId]
-                    .appVersions[getAppVersionIndex(agentStorage.permittedAppVersion)]
-                    .enabled,
+                    versionEnabled: as_.appIdToApp[appId].appVersions[getAppVersionIndex(
+                            agentStorage.permittedAppVersion
+                        )].enabled,
                     isDeleted: as_.appIdToApp[appId].isDeleted
                 });
             }
@@ -555,9 +555,9 @@ contract VincentUserViewFacet is VincentBase {
                     previousPermittedVersion: agentStorage.lastPermittedAppVersion,
                     pkpSigner: agentStorage.lastPermittedPkpSigner,
                     pkpSignerPubKey: agentStorage.lastPermittedPkpSignerPubKey,
-                    versionEnabled: as_.appIdToApp[agentStorage.lastPermittedAppId]
-                    .appVersions[getAppVersionIndex(agentStorage.lastPermittedAppVersion)]
-                    .enabled,
+                    versionEnabled: as_.appIdToApp[agentStorage.lastPermittedAppId].appVersions[getAppVersionIndex(
+                            agentStorage.lastPermittedAppVersion
+                        )].enabled,
                     isDeleted: as_.appIdToApp[agentStorage.lastPermittedAppId].isDeleted
                 });
             }
