@@ -125,25 +125,24 @@ contract VincentAppViewFacet is VincentBase {
         VincentAppStorage.AppVersion storage versionedApp =
             VincentAppStorage.appStorage().appIdToApp[appId].appVersions[getAppVersionIndex(version)];
 
-        address[] memory allAddresses = versionedApp.delegatedAgentAddresses.values();
+        uint256 length = versionedApp.delegatedAgentAddresses.length();
 
-        if (allAddresses.length == 0) {
+        if (length == 0) {
             revert NoDelegatedAgentsFound(appId, version);
         }
 
-        if (offset >= allAddresses.length) {
-            revert InvalidOffset(offset, allAddresses.length);
+        if (offset >= length) {
+            revert InvalidOffset(offset, length);
         }
 
         uint256 end = offset + APP_PAGE_SIZE;
-        if (end > allAddresses.length) {
-            end = allAddresses.length;
+        if (end > length) {
+            end = length;
         }
 
-        // Slice the array
         delegatedAgentAddresses = new address[](end - offset);
-        for (uint256 i = 0; i < delegatedAgentAddresses.length; i++) {
-            delegatedAgentAddresses[i] = allAddresses[offset + i];
+        for (uint256 i = offset; i < end; i++) {
+            delegatedAgentAddresses[i - offset] = versionedApp.delegatedAgentAddresses.at(i);
         }
     }
 

@@ -719,19 +719,35 @@ contract VincentAppFacetTest is TestCommon {
         policyParameterValues[0][0] = POLICY_PARAMETER_VALUES_1;
         policyParameterValues[1] = new bytes[](0);
 
+        // Permit app for Frank
         vm.startPrank(APP_USER_FRANK);
         vincentUserFacet.permitAppVersion(
             APP_USER_FRANK, FRANK_PKP_SIGNER, 123456789, newAppId, newAppVersion, abilityIpfsCids, policyIpfsCids, policyParameterValues
         );
         vm.stopPrank();
 
+        // Permit app for George
+        vm.startPrank(APP_USER_GEORGE);
+        vincentUserFacet.permitAppVersion(
+            APP_USER_GEORGE, GEORGE_PKP_SIGNER, 987654321, newAppId, newAppVersion, abilityIpfsCids, policyIpfsCids, policyParameterValues
+        );
+        vm.stopPrank();
+
+        // Fetch all delegated agents (offset 0) - should return both agents
         address[] memory delegatedAgentAddresses =
             vincentAppViewFacet.getDelegatedAgentAddresses(newAppId, newAppVersion, 0);
-        assertEq(delegatedAgentAddresses.length, 1);
+        assertEq(delegatedAgentAddresses.length, 2);
         assertEq(delegatedAgentAddresses[0], APP_USER_FRANK);
+        assertEq(delegatedAgentAddresses[1], APP_USER_GEORGE);
 
-        vm.expectRevert(abi.encodeWithSelector(VincentBase.InvalidOffset.selector, 1, 1));
-        vincentAppViewFacet.getDelegatedAgentAddresses(newAppId, newAppVersion, 1);
+        // Fetch with offset 1 - should return only the second agent
+        delegatedAgentAddresses = vincentAppViewFacet.getDelegatedAgentAddresses(newAppId, newAppVersion, 1);
+        assertEq(delegatedAgentAddresses.length, 1);
+        assertEq(delegatedAgentAddresses[0], APP_USER_GEORGE);
+
+        // Verify that offset 2 reverts (exceeds available agents)
+        vm.expectRevert(abi.encodeWithSelector(VincentBase.InvalidOffset.selector, 2, 2));
+        vincentAppViewFacet.getDelegatedAgentAddresses(newAppId, newAppVersion, 2);
     }
 
     function _registerApp(
