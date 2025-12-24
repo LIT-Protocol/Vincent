@@ -148,7 +148,11 @@ contract VincentUserViewFacet is VincentBase {
      * @param offset The offset of the first agent address to retrieve
      * @return An array of agent addresses that are registered as agents
      */
-    function getAllRegisteredAgentAddressesForUser(address userAddress, uint256 offset) external view returns (address[] memory) {
+    function getAllRegisteredAgentAddressesForUser(address userAddress, uint256 offset)
+        external
+        view
+        returns (address[] memory)
+    {
         if (userAddress == address(0)) {
             revert ZeroAddressNotAllowed();
         }
@@ -241,7 +245,11 @@ contract VincentUserViewFacet is VincentBase {
      * @param agentAddress The agent address to query
      * @return pkpSigner The PKP signer address
      */
-    function getAgentPkpSigner(address agentAddress) external view returns (address pkpSigner, uint256 pkpSignerPubKey) {
+    function getAgentPkpSigner(address agentAddress)
+        external
+        view
+        returns (address pkpSigner, uint256 pkpSignerPubKey)
+    {
         // Check for invalid agent address
         if (agentAddress == address(0)) {
             revert ZeroAddressNotAllowed();
@@ -292,7 +300,9 @@ contract VincentUserViewFacet is VincentBase {
                     version: agentStorage.permittedAppVersion,
                     pkpSigner: agentStorage.pkpSigner,
                     pkpSignerPubKey: agentStorage.pkpSignerPubKey,
-                    versionEnabled: as_.appIdToApp[appId].appVersions[getAppVersionIndex(agentStorage.permittedAppVersion)].enabled,
+                    versionEnabled: as_.appIdToApp[appId]
+                    .appVersions[getAppVersionIndex(agentStorage.permittedAppVersion)]
+                    .enabled,
                     isDeleted: as_.appIdToApp[appId].isDeleted
                 });
             }
@@ -496,9 +506,8 @@ contract VincentUserViewFacet is VincentBase {
         validation.policies = new PolicyWithParameters[](policyCount);
 
         // Get the ability policy storage for this agent, app, app version, and ability
-        mapping(bytes32 => bytes) storage abilityPolicyParameterValues = us_.agentAddressToAgentStorage[agentAddress].abilityPolicyParameterValues[
-            appVersion
-        ][hashedAbilityIpfsCid];
+        mapping(bytes32 => bytes) storage abilityPolicyParameterValues =
+            us_.agentAddressToAgentStorage[agentAddress].abilityPolicyParameterValues[appVersion][hashedAbilityIpfsCid];
 
         // For each policy, get all its parameters
         for (uint256 i = 0; i < policyCount; i++) {
@@ -546,7 +555,9 @@ contract VincentUserViewFacet is VincentBase {
                     previousPermittedVersion: agentStorage.lastPermittedAppVersion,
                     pkpSigner: agentStorage.lastPermittedPkpSigner,
                     pkpSignerPubKey: agentStorage.lastPermittedPkpSignerPubKey,
-                    versionEnabled: as_.appIdToApp[agentStorage.lastPermittedAppId].appVersions[getAppVersionIndex(agentStorage.lastPermittedAppVersion)].enabled,
+                    versionEnabled: as_.appIdToApp[agentStorage.lastPermittedAppId]
+                    .appVersions[getAppVersionIndex(agentStorage.lastPermittedAppVersion)]
+                    .enabled,
                     isDeleted: as_.appIdToApp[agentStorage.lastPermittedAppId].isDeleted
                 });
             }

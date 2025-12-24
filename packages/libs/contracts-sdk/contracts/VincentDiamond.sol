@@ -60,11 +60,7 @@ contract VincentDiamond {
      * @param _diamondCutFacet Address of the facet implementing diamond cut functionality
      * @param _facets Struct containing addresses of all other facets
      */
-    constructor(
-        address _contractOwner,
-        address _diamondCutFacet,
-        FacetAddresses memory _facets
-    ) payable {
+    constructor(address _contractOwner, address _diamondCutFacet, FacetAddresses memory _facets) payable {
         // Validate inputs
         if (_diamondCutFacet == address(0)) revert InvalidFacetAddress();
 

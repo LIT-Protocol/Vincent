@@ -355,7 +355,7 @@ contract VincentAppFacet is VincentBase {
 
             // Cache storage pointer for this ability's policies outside the loop
             EnumerableSet.Bytes32Set storage abilityPolicyIpfsCidHashes =
-                    versionedApp.abilityIpfsCidHashToAbilityPolicyIpfsCidHashes[hashedAbilityCid];
+                versionedApp.abilityIpfsCidHashToAbilityPolicyIpfsCidHashes[hashedAbilityCid];
 
             for (uint256 j = 0; j < policyCount; j++) {
                 string memory policyIpfsCid = versionAbilities.abilityPolicies[i][j]; // Cache calldata value

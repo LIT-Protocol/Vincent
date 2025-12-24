@@ -74,8 +74,7 @@ library VincentUserStorage {
         address lastPermittedPkpSigner;
         uint256 lastPermittedPkpSignerPubKey;
         // App version -> Ability IPFS CID hash -> Ability Policy IPFS CID hash -> User's CBOR2 encoded Policy parameter values
-        mapping(uint24 => mapping(bytes32 => mapping(bytes32 => bytes)))
-            abilityPolicyParameterValues;
+        mapping(uint24 => mapping(bytes32 => mapping(bytes32 => bytes))) abilityPolicyParameterValues;
     }
 
     struct UserStorage {

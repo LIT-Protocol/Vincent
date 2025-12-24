@@ -68,11 +68,10 @@ contract DeployVincentDiamond is Script {
      * @param diamond Diamond contract address
      * @param facets Struct containing deployed facet addresses
      */
-    function logDeployment(
-        string memory network,
-        address diamond,
-        VincentDiamond.FacetAddresses memory facets
-    ) internal pure {
+    function logDeployment(string memory network, address diamond, VincentDiamond.FacetAddresses memory facets)
+        internal
+        pure
+    {
         console.log("Vincent Diamond deployed for", network, "to:", address(diamond));
         console.log("DiamondLoupeFacet:", facets.diamondLoupeFacet);
         console.log("OwnershipFacet:", facets.ownershipFacet);
