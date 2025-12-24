@@ -5,7 +5,6 @@ import "forge-std/Test.sol";
 import "forge-std/console.sol";
 
 import {DeployVincentDiamond} from "../../script/DeployVincentDiamond.sol";
-import {MockPKPNftFacet} from "../mocks/MockPKPNftFacet.sol";
 
 import {VincentDiamond} from "../../contracts/VincentDiamond.sol";
 import {VincentAppFacet} from "../../contracts/facets/VincentAppFacet.sol";
@@ -18,9 +17,6 @@ import {LibVincentUserFacet} from "../../contracts/libs/LibVincentUserFacet.sol"
 import {VincentBase} from "../../contracts/VincentBase.sol";
 
 contract VincentUserFacetTest is Test {
-    uint256 constant PKP_TOKEN_ID_1 = 1;
-    uint256 constant PKP_TOKEN_ID_2 = 2;
-
     string constant ABILITY_IPFS_CID_1 = "QmAbility1";
     string constant ABILITY_IPFS_CID_2 = "QmAbility2";
     string constant ABILITY_IPFS_CID_3 = "QmAbility3";
@@ -47,6 +43,13 @@ contract VincentUserFacetTest is Test {
     address APP_USER_FRANK = makeAddr("Frank");
     address APP_USER_GEORGE = makeAddr("George");
 
+    address FRANK_PKP_SIGNER = makeAddr("FrankPkpSigner");
+    address GEORGE_PKP_SIGNER = makeAddr("GeorgePkpSigner");
+
+    address FRANK_AGENT_ADDRESS = makeAddr("FrankAgentAddress");
+    address FRANK_AGENT_ADDRESS_2 = makeAddr("FrankAgentAddress2");
+    address GEORGE_AGENT_ADDRESS = makeAddr("GeorgeAgentAddress");
+
     VincentDiamond public vincentDiamond;
     VincentAppFacet public vincentAppFacet;
     VincentAppViewFacet public vincentAppViewFacet;
@@ -62,13 +65,9 @@ contract VincentUserFacetTest is Test {
         vm.setEnv("VINCENT_DEPLOYER_PRIVATE_KEY", vm.toString(deployerPrivateKey));
 
         DeployVincentDiamond deployScript = new DeployVincentDiamond();
-        MockPKPNftFacet mockPkpNft = new MockPKPNftFacet();
 
-        address diamondAddress = deployScript.deployToNetwork("test", address(mockPkpNft));
+        address diamondAddress = deployScript.deployToNetwork("test");
         vincentDiamond = VincentDiamond(payable(diamondAddress));
-
-        mockPkpNft.setOwner(PKP_TOKEN_ID_1, APP_USER_FRANK);
-        mockPkpNft.setOwner(PKP_TOKEN_ID_2, APP_USER_GEORGE);
 
         vincentAppFacet = VincentAppFacet(diamondAddress);
         vincentAppViewFacet = VincentAppViewFacet(diamondAddress);
@@ -102,15 +101,15 @@ contract VincentUserFacetTest is Test {
         uint40 newAppId_3 = 3;
         uint24 newAppVersion_3 = _registerBasicApp(newAppId_3, delegatees);
 
-        vm.startPrank(APP_USER_FRANK);
+        vm.startPrank(FRANK_AGENT_ADDRESS);
         // Expect events for first permit
         vm.expectEmit(true, true, true, true);
-        emit LibVincentUserFacet.NewUserAgentPkpRegistered(APP_USER_FRANK, PKP_TOKEN_ID_1);
+        emit LibVincentUserFacet.NewAgentRegistered(APP_USER_FRANK, FRANK_AGENT_ADDRESS);
         vm.expectEmit(true, true, true, true);
-        emit LibVincentUserFacet.AppVersionPermitted(PKP_TOKEN_ID_1, newAppId_1, newAppVersion_1);
+        emit LibVincentUserFacet.AppVersionPermitted(FRANK_AGENT_ADDRESS, newAppId_1, newAppVersion_1);
         vm.expectEmit(true, true, true, true);
         emit LibVincentUserFacet.AbilityPolicyParametersSet(
-            PKP_TOKEN_ID_1,
+            FRANK_AGENT_ADDRESS,
             newAppId_1,
             newAppVersion_1,
             keccak256(abi.encodePacked(ABILITY_IPFS_CID_1)),
@@ -118,17 +117,19 @@ contract VincentUserFacetTest is Test {
             POLICY_PARAMETER_VALUES_1
         );
 
-        // Permit App 1 Version 1 for PKP 1 (Frank)
+        // Permit App 1 Version 1 for Frank
         vincentUserFacet.permitAppVersion(
-            PKP_TOKEN_ID_1, newAppId_1, newAppVersion_1, abilityIpfsCids, policyIpfsCids, policyParameterValues
+            APP_USER_FRANK, FRANK_PKP_SIGNER, newAppId_1, newAppVersion_1, abilityIpfsCids, policyIpfsCids, policyParameterValues
         );
+        vm.stopPrank();
 
+        vm.startPrank(FRANK_AGENT_ADDRESS_2);
         // Expect events for second permit
         vm.expectEmit(true, true, true, true);
-        emit LibVincentUserFacet.AppVersionPermitted(PKP_TOKEN_ID_1, newAppId_2, newAppVersion_2);
+        emit LibVincentUserFacet.AppVersionPermitted(FRANK_AGENT_ADDRESS_2, newAppId_2, newAppVersion_2);
         vm.expectEmit(true, true, true, true);
         emit LibVincentUserFacet.AbilityPolicyParametersSet(
-            PKP_TOKEN_ID_1,
+            FRANK_AGENT_ADDRESS_2,
             newAppId_2,
             newAppVersion_2,
             keccak256(abi.encodePacked(ABILITY_IPFS_CID_1)),
@@ -136,21 +137,21 @@ contract VincentUserFacetTest is Test {
             POLICY_PARAMETER_VALUES_1
         );
 
-        // Permit App 2 Version 1 for PKP 1 (Frank)
+        // Permit App 2 Version 1 for Frank
         vincentUserFacet.permitAppVersion(
-            PKP_TOKEN_ID_1, newAppId_2, newAppVersion_2, abilityIpfsCids, policyIpfsCids, policyParameterValues
+            APP_USER_FRANK, FRANK_PKP_SIGNER, newAppId_2, newAppVersion_2, abilityIpfsCids, policyIpfsCids, policyParameterValues
         );
         vm.stopPrank();
 
-        vm.startPrank(APP_USER_GEORGE);
+        vm.startPrank(GEORGE_AGENT_ADDRESS);
         // Expect events for third permit
         vm.expectEmit(true, true, true, true);
-        emit LibVincentUserFacet.NewUserAgentPkpRegistered(APP_USER_GEORGE, PKP_TOKEN_ID_2);
+        emit LibVincentUserFacet.NewAgentRegistered(APP_USER_GEORGE, GEORGE_AGENT_ADDRESS);
         vm.expectEmit(true, true, true, true);
-        emit LibVincentUserFacet.AppVersionPermitted(PKP_TOKEN_ID_2, newAppId_3, newAppVersion_3);
+        emit LibVincentUserFacet.AppVersionPermitted(GEORGE_AGENT_ADDRESS, newAppId_3, newAppVersion_3);
         vm.expectEmit(true, true, true, true);
         emit LibVincentUserFacet.AbilityPolicyParametersSet(
-            PKP_TOKEN_ID_2,
+            GEORGE_AGENT_ADDRESS,
             newAppId_3,
             newAppVersion_3,
             keccak256(abi.encodePacked(ABILITY_IPFS_CID_1)),
@@ -158,94 +159,65 @@ contract VincentUserFacetTest is Test {
             POLICY_PARAMETER_VALUES_1
         );
 
-        // Permit App 3 Version 1 for PKP 2 (George)
+        // Permit App 3 Version 1 for George
         vincentUserFacet.permitAppVersion(
-            PKP_TOKEN_ID_2, newAppId_3, newAppVersion_3, abilityIpfsCids, policyIpfsCids, policyParameterValues
+            APP_USER_GEORGE, GEORGE_PKP_SIGNER, newAppId_3, newAppVersion_3, abilityIpfsCids, policyIpfsCids, policyParameterValues
         );
         vm.stopPrank();
 
-        // Check that Frank has registered PKP 1
-        uint256[] memory registeredAgentPkps = vincentUserViewFacet.getAllRegisteredAgentPkps(APP_USER_FRANK, 0);
-        assertEq(registeredAgentPkps.length, 1);
-        assertEq(registeredAgentPkps[0], PKP_TOKEN_ID_1);
+        // Check that Frank has registered agent addresses
+        address[] memory registeredAgentAddresses = vincentUserViewFacet.getAllRegisteredAgentAddressesForUser(APP_USER_FRANK, 0);
+        assertEq(registeredAgentAddresses.length, 2);
+        assertEq(registeredAgentAddresses[0], FRANK_AGENT_ADDRESS);
+        assertEq(registeredAgentAddresses[1], FRANK_AGENT_ADDRESS_2);
 
-        // Check that George has registered PKP 2
-        registeredAgentPkps = vincentUserViewFacet.getAllRegisteredAgentPkps(APP_USER_GEORGE, 0);
-        assertEq(registeredAgentPkps.length, 1);
-        assertEq(registeredAgentPkps[0], PKP_TOKEN_ID_2);
+        // Check that George has registered agent addresses
+        registeredAgentAddresses = vincentUserViewFacet.getAllRegisteredAgentAddressesForUser(APP_USER_GEORGE, 0);
+        assertEq(registeredAgentAddresses.length, 1);
+        assertEq(registeredAgentAddresses[0], GEORGE_AGENT_ADDRESS);
 
         // Check that Frank has permitted App 1 Version 1
-        uint24 permittedAppVersion = vincentUserViewFacet.getPermittedAppVersionForPkp(PKP_TOKEN_ID_1, newAppId_1);
+        uint24 permittedAppVersion = vincentUserViewFacet.getPermittedAppVersionForAgent(FRANK_AGENT_ADDRESS, newAppId_1);
         assertEq(permittedAppVersion, newAppVersion_1);
 
         // Check that Frank has permitted App 2 Version 1
-        permittedAppVersion = vincentUserViewFacet.getPermittedAppVersionForPkp(PKP_TOKEN_ID_1, newAppId_2);
+        permittedAppVersion = vincentUserViewFacet.getPermittedAppVersionForAgent(FRANK_AGENT_ADDRESS_2, newAppId_2);
         assertEq(permittedAppVersion, newAppVersion_2);
 
         // Check that George has permitted App 3 Version 1
-        permittedAppVersion = vincentUserViewFacet.getPermittedAppVersionForPkp(PKP_TOKEN_ID_2, newAppId_3);
+        permittedAppVersion = vincentUserViewFacet.getPermittedAppVersionForAgent(GEORGE_AGENT_ADDRESS, newAppId_3);
         assertEq(permittedAppVersion, newAppVersion_3);
 
-        // Check that Frank has permitted App IDs
-        uint40[] memory permittedAppIds = vincentUserViewFacet.getAllPermittedAppIdsForPkp(PKP_TOKEN_ID_1, 0);
-        assertEq(permittedAppIds.length, 2);
-        assertEq(permittedAppIds[0], newAppId_1);
-        assertEq(permittedAppIds[1], newAppId_2);
+        // Test getPermittedAppForAgents for both agents
+        address[] memory agentAddresses = new address[](3);
+        agentAddresses[0] = FRANK_AGENT_ADDRESS;
+        agentAddresses[1] = FRANK_AGENT_ADDRESS_2;
+        agentAddresses[2] = GEORGE_AGENT_ADDRESS;
+        VincentUserViewFacet.AgentPermittedApp[] memory permittedAppsResults =
+            vincentUserViewFacet.getPermittedAppForAgents(agentAddresses);
+        assertEq(permittedAppsResults.length, 3);
 
-        // Check that George has permitted App IDs
-        permittedAppIds = vincentUserViewFacet.getAllPermittedAppIdsForPkp(PKP_TOKEN_ID_2, 0);
-        assertEq(permittedAppIds.length, 1);
-        assertEq(permittedAppIds[0], newAppId_3);
+        // Check Frank's apps for Agent 1
+        assertEq(permittedAppsResults[0].agentAddress, FRANK_AGENT_ADDRESS);
+        assertEq(permittedAppsResults[0].permittedApp.appId, newAppId_1);
+        assertEq(permittedAppsResults[0].permittedApp.version, newAppVersion_1);
+        assertTrue(permittedAppsResults[0].permittedApp.versionEnabled);
 
-        // Test getPermittedAppsForPkps for both PKPs
-        uint256[] memory pkpTokenIds = new uint256[](2);
-        pkpTokenIds[0] = PKP_TOKEN_ID_1;
-        pkpTokenIds[1] = PKP_TOKEN_ID_2;
-        VincentUserViewFacet.PkpPermittedApps[] memory permittedAppsResults =
-            vincentUserViewFacet.getPermittedAppsForPkps(pkpTokenIds, 0, 10);
-        assertEq(permittedAppsResults.length, 2);
+        // Check Frank's apps for Agent 2
+        assertEq(permittedAppsResults[1].agentAddress, FRANK_AGENT_ADDRESS_2);
+        assertEq(permittedAppsResults[1].permittedApp.appId, newAppId_2);
+        assertEq(permittedAppsResults[1].permittedApp.version, newAppVersion_2);
+        assertTrue(permittedAppsResults[1].permittedApp.versionEnabled);
 
-        // Check Frank's apps (PKP 1)
-        assertEq(permittedAppsResults[0].pkpTokenId, PKP_TOKEN_ID_1);
-        assertEq(permittedAppsResults[0].permittedApps.length, 2);
-        assertEq(permittedAppsResults[0].permittedApps[0].appId, newAppId_1);
-        assertEq(permittedAppsResults[0].permittedApps[0].version, newAppVersion_1);
-        assertTrue(permittedAppsResults[0].permittedApps[0].versionEnabled);
-        assertEq(permittedAppsResults[0].permittedApps[1].appId, newAppId_2);
-        assertEq(permittedAppsResults[0].permittedApps[1].version, newAppVersion_2);
-        assertTrue(permittedAppsResults[0].permittedApps[1].versionEnabled);
+        // Check George's apps for Agent 1
+        assertEq(permittedAppsResults[2].agentAddress, GEORGE_AGENT_ADDRESS);
+        assertEq(permittedAppsResults[2].permittedApp.appId, newAppId_3);
+        assertEq(permittedAppsResults[2].permittedApp.version, newAppVersion_3);
+        assertTrue(permittedAppsResults[2].permittedApp.versionEnabled);
 
-        // Check George's apps (PKP 2)
-        assertEq(permittedAppsResults[1].pkpTokenId, PKP_TOKEN_ID_2);
-        assertEq(permittedAppsResults[1].permittedApps.length, 1);
-        assertEq(permittedAppsResults[1].permittedApps[0].appId, newAppId_3);
-        assertEq(permittedAppsResults[1].permittedApps[0].version, newAppVersion_3);
-        assertTrue(permittedAppsResults[1].permittedApps[0].versionEnabled);
-
-        // Test pagination - page size 1
-        VincentUserViewFacet.PkpPermittedApps[] memory page1 =
-            vincentUserViewFacet.getPermittedAppsForPkps(pkpTokenIds, 0, 1);
-        assertEq(page1[0].permittedApps.length, 1); // PKP 1 gets first app
-        assertEq(page1[0].permittedApps[0].appId, newAppId_1);
-        assertEq(page1[1].permittedApps.length, 1); // PKP 2 gets first app
-        assertEq(page1[1].permittedApps[0].appId, newAppId_3);
-
-        // Test pagination - offset 1
-        VincentUserViewFacet.PkpPermittedApps[] memory page2 =
-            vincentUserViewFacet.getPermittedAppsForPkps(pkpTokenIds, 1, 1);
-        assertEq(page2[0].permittedApps.length, 1); // PKP 1 gets second app
-        assertEq(page2[0].permittedApps[0].appId, newAppId_2);
-        assertEq(page2[1].permittedApps.length, 0); // PKP 2 has no more apps
-
-        // Test pagination - offset beyond all apps
-        VincentUserViewFacet.PkpPermittedApps[] memory emptyPage =
-            vincentUserViewFacet.getPermittedAppsForPkps(pkpTokenIds, 5, 10);
-        assertEq(emptyPage[0].permittedApps.length, 0); // PKP 1 empty
-        assertEq(emptyPage[1].permittedApps.length, 0); // PKP 2 empty
-
-        // Check the Ability and Policies for App 1 Version 1 for PKP 1 (Frank)
+        // Check the Ability and Policies for App 1 Version 1 for Frank Agent 1
         VincentUserViewFacet.AbilityWithPolicies[] memory abilitiesWithPolicies =
-            vincentUserViewFacet.getAllAbilitiesAndPoliciesForApp(PKP_TOKEN_ID_1, newAppId_1);
+            vincentUserViewFacet.getAllAbilitiesAndPoliciesForApp(FRANK_AGENT_ADDRESS, newAppId_1);
         assertEq(abilitiesWithPolicies.length, 2);
         assertEq(abilitiesWithPolicies[0].abilityIpfsCid, ABILITY_IPFS_CID_1);
         assertEq(abilitiesWithPolicies[0].policies.length, 1);
@@ -255,16 +227,16 @@ contract VincentUserFacetTest is Test {
         assertEq(abilitiesWithPolicies[1].abilityIpfsCid, ABILITY_IPFS_CID_2);
         assertEq(abilitiesWithPolicies[1].policies.length, 0);
 
-        // Check the Ability and Policies for App 2 Version 1 for PKP 1 (Frank)
-        abilitiesWithPolicies = vincentUserViewFacet.getAllAbilitiesAndPoliciesForApp(PKP_TOKEN_ID_1, newAppId_2);
+        // Check the Ability and Policies for App 2 Version 1 for Frank Agent 2
+        abilitiesWithPolicies = vincentUserViewFacet.getAllAbilitiesAndPoliciesForApp(FRANK_AGENT_ADDRESS_2, newAppId_2);
         assertEq(abilitiesWithPolicies.length, 2);
         assertEq(abilitiesWithPolicies[0].abilityIpfsCid, ABILITY_IPFS_CID_1);
         assertEq(abilitiesWithPolicies[0].policies.length, 1);
         assertEq(abilitiesWithPolicies[0].policies[0].policyIpfsCid, POLICY_IPFS_CID_1);
         assertEq(abilitiesWithPolicies[0].policies[0].policyParameterValues, POLICY_PARAMETER_VALUES_1);
 
-        // Check the Ability and Policies for App 3 Version 1 for PKP 2 (George)
-        abilitiesWithPolicies = vincentUserViewFacet.getAllAbilitiesAndPoliciesForApp(PKP_TOKEN_ID_2, newAppId_3);
+        // Check the Ability and Policies for App 3 Version 1 for George Agent 1
+        abilitiesWithPolicies = vincentUserViewFacet.getAllAbilitiesAndPoliciesForApp(GEORGE_AGENT_ADDRESS, newAppId_3);
         assertEq(abilitiesWithPolicies.length, 2);
         assertEq(abilitiesWithPolicies[0].abilityIpfsCid, ABILITY_IPFS_CID_1);
         assertEq(abilitiesWithPolicies[0].policies.length, 1);
@@ -273,7 +245,7 @@ contract VincentUserFacetTest is Test {
 
         VincentUserViewFacet.AbilityExecutionValidation memory abilityExecutionValidation =
             vincentUserViewFacet.validateAbilityExecutionAndGetPolicies(
-                APP_DELEGATEE_CHARLIE, PKP_TOKEN_ID_1, ABILITY_IPFS_CID_1
+                APP_DELEGATEE_CHARLIE, FRANK_AGENT_ADDRESS, ABILITY_IPFS_CID_1
             );
         assertTrue(abilityExecutionValidation.isPermitted);
         assertEq(abilityExecutionValidation.appId, newAppId_1);
@@ -283,11 +255,11 @@ contract VincentUserFacetTest is Test {
         assertEq(abilityExecutionValidation.policies[0].policyParameterValues, POLICY_PARAMETER_VALUES_1);
 
         bool isPermitted =
-            vincentUserViewFacet.isDelegateePermitted(APP_DELEGATEE_CHARLIE, PKP_TOKEN_ID_1, ABILITY_IPFS_CID_1);
+            vincentUserViewFacet.isDelegateePermitted(APP_DELEGATEE_CHARLIE, FRANK_AGENT_ADDRESS, ABILITY_IPFS_CID_1);
         assertTrue(isPermitted);
 
         abilityExecutionValidation = vincentUserViewFacet.validateAbilityExecutionAndGetPolicies(
-            APP_DELEGATEE_CHARLIE, PKP_TOKEN_ID_1, ABILITY_IPFS_CID_2
+            APP_DELEGATEE_CHARLIE, FRANK_AGENT_ADDRESS, ABILITY_IPFS_CID_2
         );
         assertTrue(abilityExecutionValidation.isPermitted);
         assertEq(abilityExecutionValidation.appId, newAppId_1);
@@ -295,11 +267,11 @@ contract VincentUserFacetTest is Test {
         assertEq(abilityExecutionValidation.policies.length, 0);
 
         isPermitted =
-            vincentUserViewFacet.isDelegateePermitted(APP_DELEGATEE_CHARLIE, PKP_TOKEN_ID_1, ABILITY_IPFS_CID_2);
+            vincentUserViewFacet.isDelegateePermitted(APP_DELEGATEE_CHARLIE, FRANK_AGENT_ADDRESS, ABILITY_IPFS_CID_2);
         assertTrue(isPermitted);
 
         abilityExecutionValidation = vincentUserViewFacet.validateAbilityExecutionAndGetPolicies(
-            APP_DELEGATEE_DAVID, PKP_TOKEN_ID_1, ABILITY_IPFS_CID_1
+            APP_DELEGATEE_DAVID, FRANK_AGENT_ADDRESS, ABILITY_IPFS_CID_1
         );
         assertTrue(abilityExecutionValidation.isPermitted);
         assertEq(abilityExecutionValidation.appId, newAppId_2);
@@ -308,11 +280,11 @@ contract VincentUserFacetTest is Test {
         assertEq(abilityExecutionValidation.policies[0].policyIpfsCid, POLICY_IPFS_CID_1);
         assertEq(abilityExecutionValidation.policies[0].policyParameterValues, POLICY_PARAMETER_VALUES_1);
 
-        isPermitted = vincentUserViewFacet.isDelegateePermitted(APP_DELEGATEE_DAVID, PKP_TOKEN_ID_1, ABILITY_IPFS_CID_1);
+        isPermitted = vincentUserViewFacet.isDelegateePermitted(APP_DELEGATEE_DAVID, FRANK_AGENT_ADDRESS, ABILITY_IPFS_CID_1);
         assertTrue(isPermitted);
 
         abilityExecutionValidation = vincentUserViewFacet.validateAbilityExecutionAndGetPolicies(
-            APP_DELEGATEE_EVE, PKP_TOKEN_ID_2, ABILITY_IPFS_CID_1
+            APP_DELEGATEE_EVE, GEORGE_AGENT_ADDRESS, ABILITY_IPFS_CID_1
         );
         assertTrue(abilityExecutionValidation.isPermitted);
         assertEq(abilityExecutionValidation.appId, newAppId_3);
@@ -321,7 +293,7 @@ contract VincentUserFacetTest is Test {
         assertEq(abilityExecutionValidation.policies[0].policyIpfsCid, POLICY_IPFS_CID_1);
         assertEq(abilityExecutionValidation.policies[0].policyParameterValues, POLICY_PARAMETER_VALUES_1);
 
-        isPermitted = vincentUserViewFacet.isDelegateePermitted(APP_DELEGATEE_EVE, PKP_TOKEN_ID_2, ABILITY_IPFS_CID_1);
+        isPermitted = vincentUserViewFacet.isDelegateePermitted(APP_DELEGATEE_EVE, GEORGE_AGENT_ADDRESS, ABILITY_IPFS_CID_1);
         assertTrue(isPermitted);
     }
 
@@ -335,15 +307,15 @@ contract VincentUserFacetTest is Test {
         uint40 newAppId_2 = 2;
         uint24 newAppVersion_2 = _registerBasicApp(newAppId_2, delegatees);
 
-        vm.startPrank(APP_USER_FRANK);
+        vm.startPrank(FRANK_AGENT_ADDRESS);
         // Expect events for first permit
         vm.expectEmit(true, true, true, true);
-        emit LibVincentUserFacet.NewUserAgentPkpRegistered(APP_USER_FRANK, PKP_TOKEN_ID_1);
+        emit LibVincentUserFacet.NewAgentRegistered(APP_USER_FRANK, FRANK_AGENT_ADDRESS);
         vm.expectEmit(true, true, true, true);
-        emit LibVincentUserFacet.AppVersionPermitted(PKP_TOKEN_ID_1, newAppId_1, newAppVersion_1);
+        emit LibVincentUserFacet.AppVersionPermitted(FRANK_AGENT_ADDRESS, newAppId_1, newAppVersion_1);
         vm.expectEmit(true, true, true, true);
         emit LibVincentUserFacet.AbilityPolicyParametersSet(
-            PKP_TOKEN_ID_1,
+            FRANK_AGENT_ADDRESS,
             newAppId_1,
             newAppVersion_1,
             keccak256(abi.encodePacked(ABILITY_IPFS_CID_1)),
@@ -353,15 +325,17 @@ contract VincentUserFacetTest is Test {
 
         // Permit App 1 Version 1 for PKP 1 (Frank)
         vincentUserFacet.permitAppVersion(
-            PKP_TOKEN_ID_1, newAppId_1, newAppVersion_1, abilityIpfsCids, policyIpfsCids, policyParameterValues
+            APP_USER_FRANK, FRANK_PKP_SIGNER, newAppId_1, newAppVersion_1, abilityIpfsCids, policyIpfsCids, policyParameterValues
         );
+        vm.stopPrank();
 
+        vm.startPrank(FRANK_AGENT_ADDRESS_2);
         // Expect events for second permit
         vm.expectEmit(true, true, true, true);
-        emit LibVincentUserFacet.AppVersionPermitted(PKP_TOKEN_ID_1, newAppId_2, newAppVersion_2);
+        emit LibVincentUserFacet.AppVersionPermitted(FRANK_AGENT_ADDRESS_2, newAppId_2, newAppVersion_2);
         vm.expectEmit(true, true, true, true);
         emit LibVincentUserFacet.AbilityPolicyParametersSet(
-            PKP_TOKEN_ID_1,
+            FRANK_AGENT_ADDRESS_2,
             newAppId_2,
             newAppVersion_2,
             keccak256(abi.encodePacked(ABILITY_IPFS_CID_1)),
@@ -371,67 +345,70 @@ contract VincentUserFacetTest is Test {
 
         // Permit App 2 Version 1 for PKP 1 (Frank)
         vincentUserFacet.permitAppVersion(
-            PKP_TOKEN_ID_1, newAppId_2, newAppVersion_2, abilityIpfsCids, policyIpfsCids, policyParameterValues
+            APP_USER_FRANK, FRANK_PKP_SIGNER, newAppId_2, newAppVersion_2, abilityIpfsCids, policyIpfsCids, policyParameterValues
         );
         vm.stopPrank();
 
         // Verify initial state
-        uint40[] memory permittedAppIds = vincentUserViewFacet.getAllPermittedAppIdsForPkp(PKP_TOKEN_ID_1, 0);
-        assertEq(permittedAppIds.length, 2);
+        uint40[] memory permittedAppIds = vincentUserViewFacet.getAllPermittedAppIdsForAgent(FRANK_AGENT_ADDRESS, 0);
+        assertEq(permittedAppIds.length, 1);
         assertEq(permittedAppIds[0], newAppId_1);
-        assertEq(permittedAppIds[1], newAppId_2);
+
+        permittedAppIds = vincentUserViewFacet.getAllPermittedAppIdsForAgent(FRANK_AGENT_ADDRESS_2, 0);
+        assertEq(permittedAppIds.length, 1);
+        assertEq(permittedAppIds[0], newAppId_2);
 
         // Expect event for unpermit App 1
-        vm.startPrank(APP_USER_FRANK);
+        vm.startPrank(FRANK_AGENT_ADDRESS);
         vm.expectEmit(true, true, true, true);
-        emit LibVincentUserFacet.AppVersionUnPermitted(PKP_TOKEN_ID_1, newAppId_1, newAppVersion_1);
+        emit LibVincentUserFacet.AppVersionUnPermitted(FRANK_AGENT_ADDRESS, newAppId_1, newAppVersion_1);
 
         // Unpermit App 1 Version 1 for PKP 1 (Frank)
-        vincentUserFacet.unPermitAppVersion(PKP_TOKEN_ID_1, newAppId_1, newAppVersion_1);
+        vincentUserFacet.unPermitAppVersion(newAppId_1, newAppVersion_1);
         vm.stopPrank();
 
         // Verify App 1 is no longer permitted
-        uint24 permittedAppVersion = vincentUserViewFacet.getPermittedAppVersionForPkp(PKP_TOKEN_ID_1, newAppId_1);
+        uint24 permittedAppVersion = vincentUserViewFacet.getPermittedAppVersionForPkp(FRANK_AGENT_ADDRESS, newAppId_1);
         assertEq(permittedAppVersion, 0);
 
         // Verify App 2 is still permitted
-        permittedAppVersion = vincentUserViewFacet.getPermittedAppVersionForPkp(PKP_TOKEN_ID_1, newAppId_2);
+        permittedAppVersion = vincentUserViewFacet.getPermittedAppVersionForPkp(FRANK_AGENT_ADDRESS, newAppId_2);
         assertEq(permittedAppVersion, newAppVersion_2);
 
         // Verify permitted apps list now contains only App 2
-        permittedAppIds = vincentUserViewFacet.getAllPermittedAppIdsForPkp(PKP_TOKEN_ID_1, 0);
+        permittedAppIds = vincentUserViewFacet.getAllPermittedAppIdsForPkp(FRANK_AGENT_ADDRESS, 0);
         assertEq(permittedAppIds.length, 1);
         assertEq(permittedAppIds[0], newAppId_2);
 
         // Verify ability execution validation for App 1 is no longer permitted
         VincentUserViewFacet.AbilityExecutionValidation memory abilityExecutionValidation =
             vincentUserViewFacet.validateAbilityExecutionAndGetPolicies(
-                APP_DELEGATEE_CHARLIE, PKP_TOKEN_ID_1, ABILITY_IPFS_CID_1
+                APP_DELEGATEE_CHARLIE, FRANK_AGENT_ADDRESS, ABILITY_IPFS_CID_1
             );
         assertFalse(abilityExecutionValidation.isPermitted);
 
         bool isPermitted =
-            vincentUserViewFacet.isDelegateePermitted(APP_DELEGATEE_CHARLIE, PKP_TOKEN_ID_1, ABILITY_IPFS_CID_1);
+            vincentUserViewFacet.isDelegateePermitted(APP_DELEGATEE_CHARLIE, FRANK_AGENT_ADDRESS, ABILITY_IPFS_CID_1);
         assertFalse(isPermitted);
 
         isPermitted =
-            vincentUserViewFacet.isDelegateePermitted(APP_DELEGATEE_CHARLIE, PKP_TOKEN_ID_1, ABILITY_IPFS_CID_2);
+            vincentUserViewFacet.isDelegateePermitted(APP_DELEGATEE_CHARLIE, FRANK_AGENT_ADDRESS, ABILITY_IPFS_CID_2);
         assertFalse(isPermitted);
 
         // Verify ability execution validation for App 2 is still permitted
         abilityExecutionValidation = vincentUserViewFacet.validateAbilityExecutionAndGetPolicies(
-            APP_DELEGATEE_DAVID, PKP_TOKEN_ID_1, ABILITY_IPFS_CID_1
+            APP_DELEGATEE_DAVID, FRANK_AGENT_ADDRESS, ABILITY_IPFS_CID_1
         );
         assertTrue(abilityExecutionValidation.isPermitted);
         assertEq(abilityExecutionValidation.appId, newAppId_2);
         assertEq(abilityExecutionValidation.appVersion, newAppVersion_2);
 
-        isPermitted = vincentUserViewFacet.isDelegateePermitted(APP_DELEGATEE_DAVID, PKP_TOKEN_ID_1, ABILITY_IPFS_CID_1);
+        isPermitted = vincentUserViewFacet.isDelegateePermitted(APP_DELEGATEE_DAVID, FRANK_AGENT_ADDRESS, ABILITY_IPFS_CID_1);
         assertTrue(isPermitted);
 
         // Test getUnpermittedAppsForPkps should show only App 1 as unpermitted
-        uint256[] memory pkpTokenIds = new uint256[](1);
-        pkpTokenIds[0] = PKP_TOKEN_ID_1;
+        address[] memory agentAddresses = new address[](1);
+        agentAddresses[0] = FRANK_AGENT_ADDRESS;
         VincentUserViewFacet.PkpUnpermittedApps[] memory unpermittedAppsResults =
             vincentUserViewFacet.getUnpermittedAppsForPkps(pkpTokenIds, 0);
         assertEq(unpermittedAppsResults.length, 1);
@@ -444,35 +421,35 @@ contract VincentUserFacetTest is Test {
         // Now unpermit App 2 as well
         vm.startPrank(APP_USER_FRANK);
         vm.expectEmit(true, true, true, true);
-        emit LibVincentUserFacet.AppVersionUnPermitted(PKP_TOKEN_ID_1, newAppId_2, newAppVersion_2);
+        emit LibVincentUserFacet.AppVersionUnPermitted(FRANK_AGENT_ADDRESS, newAppId_2, newAppVersion_2);
 
         // Unpermit App 2 Version 1 for PKP 1 (Frank)
-        vincentUserFacet.unPermitAppVersion(PKP_TOKEN_ID_1, newAppId_2, newAppVersion_2);
+        vincentUserFacet.unPermitAppVersion(APP_USER_FRANK, FRANK_PKP_SIGNER, newAppId_2, newAppVersion_2);
         vm.stopPrank();
 
         // Verify App 2 is now also unpermitted
-        permittedAppVersion = vincentUserViewFacet.getPermittedAppVersionForPkp(PKP_TOKEN_ID_1, newAppId_2);
+        permittedAppVersion = vincentUserViewFacet.getPermittedAppVersionForPkp(FRANK_AGENT_ADDRESS, newAppId_2);
         assertEq(permittedAppVersion, 0);
 
         // Verify permitted apps list is now empty
-        permittedAppIds = vincentUserViewFacet.getAllPermittedAppIdsForPkp(PKP_TOKEN_ID_1, 0);
+        permittedAppIds = vincentUserViewFacet.getAllPermittedAppIdsForPkp(FRANK_AGENT_ADDRESS, 0);
         assertEq(permittedAppIds.length, 0);
 
         // Test getPermittedAppsForPkps after unpermitting both apps
         VincentUserViewFacet.PkpPermittedApps[] memory permittedAppsResults =
-            vincentUserViewFacet.getPermittedAppsForPkps(pkpTokenIds, 0, 10);
+            vincentUserViewFacet.getPermittedAppsForPkps(agentAddresses, 0, 10);
         assertEq(permittedAppsResults.length, 1);
-        assertEq(permittedAppsResults[0].pkpTokenId, PKP_TOKEN_ID_1);
+        assertEq(permittedAppsResults[0].agentAddress, FRANK_AGENT_ADDRESS);
         assertEq(permittedAppsResults[0].permittedApps.length, 0); // No apps remain
 
         // Test getLastPermittedAppVersionForPkp for both unpermitted apps
-        uint24 lastPermittedVersion = vincentUserViewFacet.getLastPermittedAppVersionForPkp(PKP_TOKEN_ID_1, newAppId_1);
+        uint24 lastPermittedVersion = vincentUserViewFacet.getLastPermittedAppVersionForPkp(FRANK_AGENT_ADDRESS, newAppId_1);
         assertEq(lastPermittedVersion, newAppVersion_1, "Last permitted version should be stored for App 1");
-        lastPermittedVersion = vincentUserViewFacet.getLastPermittedAppVersionForPkp(PKP_TOKEN_ID_1, newAppId_2);
+        lastPermittedVersion = vincentUserViewFacet.getLastPermittedAppVersionForPkp(FRANK_AGENT_ADDRESS, newAppId_2);
         assertEq(lastPermittedVersion, newAppVersion_2, "Last permitted version should be stored for App 2");
 
         // Test getUnpermittedAppsForPkps should now show both unpermitted apps
-        unpermittedAppsResults = vincentUserViewFacet.getUnpermittedAppsForPkps(pkpTokenIds, 0);
+        unpermittedAppsResults = vincentUserViewFacet.getUnpermittedAppsForPkps(agentAddresses, 0);
         assertEq(unpermittedAppsResults.length, 1);
         assertEq(unpermittedAppsResults[0].pkpTokenId, PKP_TOKEN_ID_1);
         assertEq(unpermittedAppsResults[0].unpermittedApps.length, 2); // Both apps are unpermitted
@@ -487,19 +464,19 @@ contract VincentUserFacetTest is Test {
 
         // Test pagination - offset 1 (should return app 2 on page 2)
         VincentUserViewFacet.PkpUnpermittedApps[] memory unpermittedPage2 =
-            vincentUserViewFacet.getUnpermittedAppsForPkps(pkpTokenIds, 1);
+            vincentUserViewFacet.getUnpermittedAppsForPkps(agentAddresses, 1);
         assertEq(unpermittedPage2[0].unpermittedApps.length, 1); // Second unpermitted app
         assertEq(unpermittedPage2[0].unpermittedApps[0].appId, newAppId_2);
 
         // Test pagination - offset beyond all unpermitted apps
         VincentUserViewFacet.PkpUnpermittedApps[] memory unpermittedEmpty =
-            vincentUserViewFacet.getUnpermittedAppsForPkps(pkpTokenIds, 2);
+            vincentUserViewFacet.getUnpermittedAppsForPkps(agentAddresses, 2);
         assertEq(unpermittedEmpty[0].unpermittedApps.length, 0); // Empty result
 
         // Test rePermitApp to re-permit App 1
         vm.startPrank(APP_USER_FRANK);
         vm.expectEmit(true, true, true, true);
-        emit LibVincentUserFacet.AppVersionRePermitted(PKP_TOKEN_ID_1, newAppId_1, newAppVersion_1);
+        emit LibVincentUserFacet.AppVersionRePermitted(FRANK_AGENT_ADDRESS, newAppId_1, newAppVersion_1);
         vincentUserFacet.rePermitApp(PKP_TOKEN_ID_1, newAppId_1);
         vm.stopPrank();
 
@@ -525,525 +502,525 @@ contract VincentUserFacetTest is Test {
         assertEq(unpermittedAppsResults[0].unpermittedApps[0].appId, newAppId_2, "App 2 should be unpermitted");
     }
 
-    function testSetAbilityPolicyParameters_AbilityPolicyNotRegisteredForAppVersion() public {
-        address[] memory delegatees = new address[](1);
-        delegatees[0] = APP_DELEGATEE_CHARLIE;
-        uint40 newAppId = 1;
-        uint24 newAppVersion = _registerBasicApp(newAppId, delegatees);
-
-        // First permit the app version with valid parameters
-        vm.startPrank(APP_USER_FRANK);
-        vincentUserFacet.permitAppVersion(
-            PKP_TOKEN_ID_1, newAppId, newAppVersion, abilityIpfsCids, policyIpfsCids, policyParameterValues
-        );
-
-        // Create arrays with an unregistered policy (POLICY_IPFS_CID_3)
-        string[][] memory _policyIpfsCids = new string[][](2);
-        _policyIpfsCids[0] = new string[](1);
-        _policyIpfsCids[0][0] = POLICY_IPFS_CID_3; // This policy is not registered for the ability
-        _policyIpfsCids[1] = new string[](0);
-
-        bytes[][] memory _policyParameterValues = new bytes[][](2);
-        _policyParameterValues[0] = new bytes[](1);
-        _policyParameterValues[0][0] = POLICY_PARAMETER_VALUES_1;
-        _policyParameterValues[1] = new bytes[](0);
-
-        vm.expectRevert(
-            abi.encodeWithSelector(
-                LibVincentUserFacet.AbilityPolicyNotRegisteredForAppVersion.selector,
-                newAppId,
-                newAppVersion,
-                ABILITY_IPFS_CID_1,
-                POLICY_IPFS_CID_3
-            )
-        );
-        vincentUserFacet.setAbilityPolicyParameters(
-            PKP_TOKEN_ID_1, newAppId, newAppVersion, abilityIpfsCids, _policyIpfsCids, _policyParameterValues
-        );
-    }
-
-    function testRemoveAbilityPolicyParameters() public {
-        address[] memory delegatees = new address[](1);
-        delegatees[0] = APP_DELEGATEE_CHARLIE;
-        uint40 newAppId = 1;
-        uint24 newAppVersion = _registerBasicApp(newAppId, delegatees);
-
-        // First permit the app version
-        vm.startPrank(APP_USER_FRANK);
-        // Expect events for initial permit
-        vm.expectEmit(true, true, true, true);
-        emit LibVincentUserFacet.NewUserAgentPkpRegistered(APP_USER_FRANK, PKP_TOKEN_ID_1);
-        vm.expectEmit(true, true, true, true);
-        emit LibVincentUserFacet.AppVersionPermitted(PKP_TOKEN_ID_1, newAppId, newAppVersion);
-        vm.expectEmit(true, true, true, true);
-        emit LibVincentUserFacet.AbilityPolicyParametersSet(
-            PKP_TOKEN_ID_1,
-            newAppId,
-            newAppVersion,
-            keccak256(abi.encodePacked(ABILITY_IPFS_CID_1)),
-            keccak256(abi.encodePacked(POLICY_IPFS_CID_1)),
-            POLICY_PARAMETER_VALUES_1
-        );
-
-        vincentUserFacet.permitAppVersion(
-            PKP_TOKEN_ID_1, newAppId, newAppVersion, abilityIpfsCids, policyIpfsCids, policyParameterValues
-        );
-
-        // Verify initial policy parameters
-        VincentUserViewFacet.AbilityWithPolicies[] memory abilitiesWithPolicies =
-            vincentUserViewFacet.getAllAbilitiesAndPoliciesForApp(PKP_TOKEN_ID_1, newAppId);
-        assertEq(abilitiesWithPolicies.length, 2);
-        assertEq(abilitiesWithPolicies[0].policies.length, 1);
-        assertEq(abilitiesWithPolicies[0].policies[0].policyParameterValues, POLICY_PARAMETER_VALUES_1);
-        assertEq(abilitiesWithPolicies[1].policies.length, 0);
-
-        // Create subset arrays containing only the ability and policy we want to zero out
-        string[] memory subsetAbilityIpfsCids = new string[](1);
-        subsetAbilityIpfsCids[0] = ABILITY_IPFS_CID_1;
-
-        string[][] memory subsetPolicyIpfsCids = new string[][](1);
-        subsetPolicyIpfsCids[0] = new string[](1);
-        subsetPolicyIpfsCids[0][0] = POLICY_IPFS_CID_1;
-
-        bytes[][] memory emptyPolicyParameterValues = new bytes[][](1);
-        emptyPolicyParameterValues[0] = new bytes[](1);
-        emptyPolicyParameterValues[0][0] = bytes(""); // Empty bytes to remove parameter
-
-        // Expect event for setting empty policy parameters
-        vm.expectEmit(true, true, true, true);
-        emit LibVincentUserFacet.AbilityPolicyParametersSet(
-            PKP_TOKEN_ID_1,
-            newAppId,
-            newAppVersion,
-            keccak256(abi.encodePacked(ABILITY_IPFS_CID_1)),
-            keccak256(abi.encodePacked(POLICY_IPFS_CID_1)),
-            bytes("")
-        );
-
-        // Set empty policy parameters to effectively remove them
-        vincentUserFacet.setAbilityPolicyParameters(
-            PKP_TOKEN_ID_1,
-            newAppId,
-            newAppVersion,
-            subsetAbilityIpfsCids,
-            subsetPolicyIpfsCids,
-            emptyPolicyParameterValues
-        );
-        vm.stopPrank();
-
-        // Verify policy parameters are removed
-        abilitiesWithPolicies = vincentUserViewFacet.getAllAbilitiesAndPoliciesForApp(PKP_TOKEN_ID_1, newAppId);
-        assertEq(abilitiesWithPolicies.length, 2);
-        assertEq(abilitiesWithPolicies[0].policies.length, 1);
-        assertEq(abilitiesWithPolicies[0].policies[0].policyParameterValues, bytes("")); // Empty bytes after removal
-        assertEq(abilitiesWithPolicies[1].policies.length, 0);
-
-        // Verify ability execution validation returns empty parameters
-        VincentUserViewFacet.AbilityExecutionValidation memory abilityExecutionValidation =
-            vincentUserViewFacet.validateAbilityExecutionAndGetPolicies(
-                APP_DELEGATEE_CHARLIE, PKP_TOKEN_ID_1, ABILITY_IPFS_CID_1
-            );
-        assertTrue(abilityExecutionValidation.isPermitted);
-        assertEq(abilityExecutionValidation.policies.length, 1);
-        assertEq(abilityExecutionValidation.policies[0].policyParameterValues, bytes("")); // Empty bytes after removal
-
-        bool isPermitted =
-            vincentUserViewFacet.isDelegateePermitted(APP_DELEGATEE_CHARLIE, PKP_TOKEN_ID_1, ABILITY_IPFS_CID_1);
-        assertTrue(isPermitted);
-    }
-
-    /**
-     * ######################### permitAppVersion ERROR CASES #########################
-     */
-    function testPermitAppVersion_AppHasBeenDeleted() public {
-        address[] memory delegatees = new address[](1);
-        delegatees[0] = APP_DELEGATEE_CHARLIE;
-        uint40 newAppId = 1;
-        uint24 newAppVersion = _registerBasicApp(newAppId, delegatees);
-
-        vm.startPrank(APP_MANAGER_ALICE);
-        vincentAppFacet.deleteApp(newAppId);
-        vm.stopPrank();
-
-        vm.startPrank(APP_USER_FRANK);
-        vm.expectRevert(abi.encodeWithSelector(VincentBase.AppHasBeenDeleted.selector, newAppId));
-        vincentUserFacet.permitAppVersion(
-            PKP_TOKEN_ID_1, newAppId, newAppVersion, abilityIpfsCids, policyIpfsCids, policyParameterValues
-        );
-    }
-
-    function testPermitAppVersion_NotPkpOwner() public {
-        address[] memory delegatees = new address[](1);
-        delegatees[0] = APP_DELEGATEE_CHARLIE;
-        uint40 newAppId = 1;
-        uint24 newAppVersion = _registerBasicApp(newAppId, delegatees);
-
-        vm.startPrank(APP_USER_GEORGE);
-        vm.expectRevert(
-            abi.encodeWithSelector(LibVincentUserFacet.NotPkpOwner.selector, PKP_TOKEN_ID_1, APP_USER_GEORGE)
-        );
-        vincentUserFacet.permitAppVersion(
-            PKP_TOKEN_ID_1, newAppId, newAppVersion, abilityIpfsCids, policyIpfsCids, policyParameterValues
-        );
-    }
-
-    function testPermitAppVersion_AppNotRegistered() public {
-        vm.startPrank(APP_USER_FRANK);
-        vm.expectRevert(abi.encodeWithSelector(VincentBase.AppNotRegistered.selector, 1));
-        vincentUserFacet.permitAppVersion(PKP_TOKEN_ID_1, 1, 1, abilityIpfsCids, policyIpfsCids, policyParameterValues);
-    }
-
-    function testPermitAppVersion_AppVersionNotRegistered() public {
-        address[] memory delegatees = new address[](1);
-        delegatees[0] = APP_DELEGATEE_CHARLIE;
-        uint40 newAppId = 1;
-        uint24 newAppVersion = _registerBasicApp(newAppId, delegatees);
-
-        vm.startPrank(APP_USER_FRANK);
-        vm.expectRevert(
-            abi.encodeWithSelector(VincentBase.AppVersionNotRegistered.selector, newAppId, newAppVersion + 1)
-        );
-        vincentUserFacet.permitAppVersion(
-            PKP_TOKEN_ID_1,
-            newAppId,
-            newAppVersion + 1, // Try to permit a version that hasn't been registered
-            abilityIpfsCids,
-            policyIpfsCids,
-            policyParameterValues
-        );
-    }
-
-    function testPermitAppVersion_AbilitiesAndPoliciesLengthMismatch() public {
-        address[] memory delegatees = new address[](1);
-        delegatees[0] = APP_DELEGATEE_CHARLIE;
-        uint40 newAppId = 1;
-        uint24 newAppVersion = _registerBasicApp(newAppId, delegatees);
-
-        // Create arrays with mismatched length
-
-        // Create policy arrays with different length than abilities
-        string[][] memory _policyIpfsCids = new string[][](1); // Only 1 policy array for 2 abilities
-        _policyIpfsCids[0] = new string[](1);
-        _policyIpfsCids[0][0] = POLICY_IPFS_CID_1;
-
-        bytes[][] memory _policyParameterValues = new bytes[][](1); // Only 1 parameter array for 2 abilities
-        _policyParameterValues[0] = new bytes[](1);
-        _policyParameterValues[0][0] = POLICY_PARAMETER_VALUES_1;
-
-        vm.startPrank(APP_USER_FRANK);
-        vm.expectRevert(abi.encodeWithSelector(LibVincentUserFacet.AbilitiesAndPoliciesLengthMismatch.selector));
-        vincentUserFacet.permitAppVersion(
-            PKP_TOKEN_ID_1, newAppId, newAppVersion, abilityIpfsCids, _policyIpfsCids, _policyParameterValues
-        );
-    }
-
-    function testPermitAppVersion_AppVersionAlreadyPermitted() public {
-        address[] memory delegatees = new address[](1);
-        delegatees[0] = APP_DELEGATEE_CHARLIE;
-        uint40 newAppId = 1;
-        uint24 newAppVersion = _registerBasicApp(newAppId, delegatees);
-
-        // First permit the app version
-        vm.startPrank(APP_USER_FRANK);
-        vincentUserFacet.permitAppVersion(
-            PKP_TOKEN_ID_1, newAppId, newAppVersion, abilityIpfsCids, policyIpfsCids, policyParameterValues
-        );
-
-        // Try to permit the same version again
-        vm.expectRevert(
-            abi.encodeWithSelector(
-                LibVincentUserFacet.AppVersionAlreadyPermitted.selector, PKP_TOKEN_ID_1, newAppId, newAppVersion
-            )
-        );
-        vincentUserFacet.permitAppVersion(
-            PKP_TOKEN_ID_1, newAppId, newAppVersion, abilityIpfsCids, policyIpfsCids, policyParameterValues
-        );
-    }
-
-    function testPermitAppVersion_AppVersionNotEnabled() public {
-        address[] memory delegatees = new address[](1);
-        delegatees[0] = APP_DELEGATEE_CHARLIE;
-        uint40 newAppId = 1;
-        uint24 newAppVersion = _registerBasicApp(newAppId, delegatees);
-
-        vm.startPrank(APP_MANAGER_ALICE);
-        vincentAppFacet.enableAppVersion(newAppId, newAppVersion, false);
-        vm.stopPrank();
-
-        vm.startPrank(APP_USER_FRANK);
-        vm.expectRevert(
-            abi.encodeWithSelector(LibVincentUserFacet.AppVersionNotEnabled.selector, newAppId, newAppVersion)
-        );
-        vincentUserFacet.permitAppVersion(
-            PKP_TOKEN_ID_1, newAppId, newAppVersion, abilityIpfsCids, policyIpfsCids, policyParameterValues
-        );
-    }
-
-    function testPermitAppVersion_NotAllRegisteredAbilitiesProvided() public {
-        address[] memory delegatees = new address[](1);
-        delegatees[0] = APP_DELEGATEE_CHARLIE;
-        uint40 newAppId = 1;
-        uint24 newAppVersion = _registerBasicApp(newAppId, delegatees);
-
-        // Create arrays with only one ability instead of both registered abilities
-        string[] memory _abilityIpfsCids = new string[](1);
-        _abilityIpfsCids[0] = ABILITY_IPFS_CID_1; // Only providing first ability, missing ABILITY_IPFS_CID_2
-
-        string[][] memory _policyIpfsCids = new string[][](1);
-        _policyIpfsCids[0] = new string[](1);
-        _policyIpfsCids[0][0] = POLICY_IPFS_CID_1;
-
-        bytes[][] memory _policyParameterValues = new bytes[][](1);
-        _policyParameterValues[0] = new bytes[](1);
-        _policyParameterValues[0][0] = POLICY_PARAMETER_VALUES_1;
-
-        vm.startPrank(APP_USER_FRANK);
-        vm.expectRevert(
-            abi.encodeWithSelector(
-                LibVincentUserFacet.NotAllRegisteredAbilitiesProvided.selector, newAppId, newAppVersion
-            )
-        );
-        vincentUserFacet.permitAppVersion(
-            PKP_TOKEN_ID_1, newAppId, newAppVersion, _abilityIpfsCids, _policyIpfsCids, _policyParameterValues
-        );
-    }
-
-    function testPermitAppVersion_AbilityNotRegisteredForAppVersion() public {
-        address[] memory delegatees = new address[](1);
-        delegatees[0] = APP_DELEGATEE_CHARLIE;
-        uint40 newAppId = 1;
-        uint24 newAppVersion = _registerBasicApp(newAppId, delegatees);
-
-        // Create arrays with an unregistered ability (ABILITY_IPFS_CID_3)
-        string[] memory _abilityIpfsCids = new string[](2);
-        _abilityIpfsCids[0] = ABILITY_IPFS_CID_1;
-        _abilityIpfsCids[1] = ABILITY_IPFS_CID_3; // This ability is not registered for the app version
-
-        vm.startPrank(APP_USER_FRANK);
-        vm.expectRevert(
-            abi.encodeWithSelector(
-                LibVincentUserFacet.AbilityNotRegisteredForAppVersion.selector,
-                newAppId,
-                newAppVersion,
-                ABILITY_IPFS_CID_3
-            )
-        );
-        vincentUserFacet.permitAppVersion(
-            PKP_TOKEN_ID_1, newAppId, newAppVersion, _abilityIpfsCids, policyIpfsCids, policyParameterValues
-        );
-    }
-
-    /**
-     * ######################### unPermitAppVersion ERROR CASES #########################
-     */
-    function testUnPermitAppVersion_NotPkpOwner() public {
-        address[] memory delegatees = new address[](1);
-        delegatees[0] = APP_DELEGATEE_CHARLIE;
-        uint40 newAppId = 1;
-        uint24 newAppVersion = _registerBasicApp(newAppId, delegatees);
-
-        vm.startPrank(APP_USER_FRANK);
-        vincentUserFacet.permitAppVersion(
-            PKP_TOKEN_ID_1, newAppId, newAppVersion, abilityIpfsCids, policyIpfsCids, policyParameterValues
-        );
-        vm.stopPrank();
-
-        vm.startPrank(APP_DELEGATEE_CHARLIE);
-        vm.expectRevert(
-            abi.encodeWithSelector(LibVincentUserFacet.NotPkpOwner.selector, PKP_TOKEN_ID_1, APP_DELEGATEE_CHARLIE)
-        );
-        vincentUserFacet.unPermitAppVersion(PKP_TOKEN_ID_1, newAppId, newAppVersion);
-    }
-
-    function testUnPermitAppVersion_AppNotRegistered() public {
-        vm.startPrank(APP_USER_FRANK);
-        vm.expectRevert(abi.encodeWithSelector(VincentBase.AppNotRegistered.selector, 1));
-        vincentUserFacet.unPermitAppVersion(PKP_TOKEN_ID_1, 1, 1);
-    }
-
-    function testUnPermitAppVersion_AppVersionNotRegistered() public {
-        address[] memory delegatees = new address[](1);
-        delegatees[0] = APP_DELEGATEE_CHARLIE;
-        uint40 newAppId = 1;
-        uint24 newAppVersion = _registerBasicApp(newAppId, delegatees);
-
-        vm.startPrank(APP_USER_FRANK);
-        vm.expectRevert(
-            abi.encodeWithSelector(VincentBase.AppVersionNotRegistered.selector, newAppId, newAppVersion + 1)
-        );
-        vincentUserFacet.unPermitAppVersion(PKP_TOKEN_ID_1, newAppId, newAppVersion + 1);
-    }
-
-    function testUnPermitAppVersion_AppVersionNotPermitted() public {
-        address[] memory delegatees = new address[](1);
-        delegatees[0] = APP_DELEGATEE_CHARLIE;
-        uint40 newAppId = 1;
-        uint24 newAppVersion = _registerBasicApp(newAppId, delegatees);
-
-        vm.startPrank(APP_USER_FRANK);
-        vm.expectRevert(
-            abi.encodeWithSelector(
-                LibVincentUserFacet.AppVersionNotPermitted.selector, PKP_TOKEN_ID_1, newAppId, newAppVersion
-            )
-        );
-        vincentUserFacet.unPermitAppVersion(PKP_TOKEN_ID_1, newAppId, newAppVersion);
-    }
-
-    /**
-     * ######################### setAbilityPolicyParameters ERROR CASES #########################
-     */
-    function testSetAbilityPolicyParameters_NotPkpOwner() public {
-        address[] memory delegatees = new address[](1);
-        delegatees[0] = APP_DELEGATEE_CHARLIE;
-        uint40 newAppId = 1;
-        uint24 newAppVersion = _registerBasicApp(newAppId, delegatees);
-
-        vm.startPrank(APP_USER_FRANK);
-        vincentUserFacet.permitAppVersion(
-            PKP_TOKEN_ID_1, newAppId, newAppVersion, abilityIpfsCids, policyIpfsCids, policyParameterValues
-        );
-        vm.stopPrank();
-
-        vm.startPrank(APP_USER_GEORGE);
-        vm.expectRevert(
-            abi.encodeWithSelector(LibVincentUserFacet.NotPkpOwner.selector, PKP_TOKEN_ID_1, APP_USER_GEORGE)
-        );
-        vincentUserFacet.setAbilityPolicyParameters(
-            PKP_TOKEN_ID_1, newAppId, newAppVersion, abilityIpfsCids, policyIpfsCids, policyParameterValues
-        );
-    }
-
-    function testSetAbilityPolicyParameters_AppNotRegistered() public {
-        vm.startPrank(APP_USER_FRANK);
-        vm.expectRevert(abi.encodeWithSelector(VincentBase.AppNotRegistered.selector, 1));
-        vincentUserFacet.setAbilityPolicyParameters(
-            PKP_TOKEN_ID_1, 1, 1, abilityIpfsCids, policyIpfsCids, policyParameterValues
-        );
-    }
-
-    function testSetAbilityPolicyParameters_AppVersionNotRegistered() public {
-        address[] memory delegatees = new address[](1);
-        delegatees[0] = APP_DELEGATEE_CHARLIE;
-        uint40 newAppId = 1;
-        uint24 newAppVersion = _registerBasicApp(newAppId, delegatees);
-
-        vm.startPrank(APP_USER_FRANK);
-        vm.expectRevert(
-            abi.encodeWithSelector(VincentBase.AppVersionNotRegistered.selector, newAppId, newAppVersion + 1)
-        );
-        vincentUserFacet.setAbilityPolicyParameters(
-            PKP_TOKEN_ID_1,
-            newAppId,
-            newAppVersion + 1, // Try to set parameters for a version that hasn't been registered
-            abilityIpfsCids,
-            policyIpfsCids,
-            policyParameterValues
-        );
-    }
-
-    function testSetAbilityPolicyParameters_InvalidInput() public {
-        address[] memory delegatees = new address[](1);
-        delegatees[0] = APP_DELEGATEE_CHARLIE;
-        uint40 newAppId = 1;
-        uint24 newAppVersion = _registerBasicApp(newAppId, delegatees);
-
-        // First permit the app version with valid parameters
-        vm.startPrank(APP_USER_FRANK);
-        vincentUserFacet.permitAppVersion(
-            PKP_TOKEN_ID_1, newAppId, newAppVersion, abilityIpfsCids, policyIpfsCids, policyParameterValues
-        );
-
-        // Now try to set parameters with an empty ability IPFS CIDs array
-        string[] memory emptyAbilityIpfsCids = new string[](0);
-
-        vm.expectRevert(abi.encodeWithSelector(LibVincentUserFacet.InvalidInput.selector));
-        vincentUserFacet.setAbilityPolicyParameters(
-            PKP_TOKEN_ID_1, newAppId, newAppVersion, emptyAbilityIpfsCids, policyIpfsCids, policyParameterValues
-        );
-    }
-
-    function testSetAbilityPolicyParameters_EmptyAbilityIpfsCid() public {
-        address[] memory delegatees = new address[](1);
-        delegatees[0] = APP_DELEGATEE_CHARLIE;
-        uint40 newAppId = 1;
-        uint24 newAppVersion = _registerBasicApp(newAppId, delegatees);
-
-        // First permit the app version with valid parameters
-        vm.startPrank(APP_USER_FRANK);
-        vincentUserFacet.permitAppVersion(
-            PKP_TOKEN_ID_1, newAppId, newAppVersion, abilityIpfsCids, policyIpfsCids, policyParameterValues
-        );
-
-        // Create arrays with an empty ability IPFS CID
-        string[] memory _abilityIpfsCids = new string[](2);
-        _abilityIpfsCids[0] = ""; // Empty string for first ability
-        _abilityIpfsCids[1] = ABILITY_IPFS_CID_2;
-
-        vm.expectRevert(abi.encodeWithSelector(VincentUserViewFacet.EmptyAbilityIpfsCid.selector));
-        vincentUserFacet.setAbilityPolicyParameters(
-            PKP_TOKEN_ID_1, newAppId, newAppVersion, _abilityIpfsCids, policyIpfsCids, policyParameterValues
-        );
-    }
-
-    function testSetAbilityPolicyParameters_NotAllRegisteredAbilitiesProvided() public {
-        address[] memory delegatees = new address[](1);
-        delegatees[0] = APP_DELEGATEE_CHARLIE;
-        uint40 newAppId = 1;
-        uint24 newAppVersion = _registerBasicApp(newAppId, delegatees);
-
-        // First permit the app version with valid parameters
-        vm.startPrank(APP_USER_FRANK);
-        vincentUserFacet.permitAppVersion(
-            PKP_TOKEN_ID_1, newAppId, newAppVersion, abilityIpfsCids, policyIpfsCids, policyParameterValues
-        );
-
-        // Validate the original ability policies and parameters
-        VincentUserViewFacet.AbilityWithPolicies[] memory originalAbilitiesWithPolicies =
-            vincentUserViewFacet.getAllAbilitiesAndPoliciesForApp(PKP_TOKEN_ID_1, newAppId);
-        assertEq(originalAbilitiesWithPolicies.length, 2); // Still has both abilities
-        assertEq(originalAbilitiesWithPolicies[0].policies.length, 1);
-        assertEq(originalAbilitiesWithPolicies[0].policies[0].policyParameterValues, POLICY_PARAMETER_VALUES_1);
-        assertEq(originalAbilitiesWithPolicies[1].policies.length, 0); // Second ability unchanged
-
-        // Create arrays with only one ability instead of both registered abilities
-        string[] memory subsetAbilityIpfsCids = new string[](1);
-        subsetAbilityIpfsCids[0] = ABILITY_IPFS_CID_1; // Only providing first ability, missing ABILITY_IPFS_CID_2
-
-        string[][] memory subsetPolicyIpfsCids = new string[][](1);
-        subsetPolicyIpfsCids[0] = new string[](1);
-        subsetPolicyIpfsCids[0][0] = POLICY_IPFS_CID_1;
-
-        bytes[][] memory subsetPolicyParameterValues = new bytes[][](1);
-        subsetPolicyParameterValues[0] = new bytes[](1);
-        subsetPolicyParameterValues[0][0] = POLICY_PARAMETER_VALUES_2;
-
-        vm.expectEmit(true, true, true, true);
-        emit LibVincentUserFacet.AbilityPolicyParametersSet(
-            PKP_TOKEN_ID_1,
-            newAppId,
-            newAppVersion,
-            keccak256(abi.encodePacked(ABILITY_IPFS_CID_1)),
-            keccak256(abi.encodePacked(POLICY_IPFS_CID_1)),
-            POLICY_PARAMETER_VALUES_2
-        );
-
-        vincentUserFacet.setAbilityPolicyParameters(
-            PKP_TOKEN_ID_1,
-            newAppId,
-            newAppVersion,
-            subsetAbilityIpfsCids,
-            subsetPolicyIpfsCids,
-            subsetPolicyParameterValues
-        );
-
-        // Verify the parameters were updated for the first ability only
-        VincentUserViewFacet.AbilityWithPolicies[] memory updatedAbilitiesWithPolicies =
-            vincentUserViewFacet.getAllAbilitiesAndPoliciesForApp(PKP_TOKEN_ID_1, newAppId);
-        assertEq(updatedAbilitiesWithPolicies.length, 2); // Still has both abilities
-        assertEq(updatedAbilitiesWithPolicies[0].policies.length, 1);
-        assertEq(updatedAbilitiesWithPolicies[0].policies[0].policyParameterValues, POLICY_PARAMETER_VALUES_2);
-        assertEq(updatedAbilitiesWithPolicies[1].policies.length, 0); // Second ability unchanged
-    }
+    // function testSetAbilityPolicyParameters_AbilityPolicyNotRegisteredForAppVersion() public {
+    //     address[] memory delegatees = new address[](1);
+    //     delegatees[0] = APP_DELEGATEE_CHARLIE;
+    //     uint40 newAppId = 1;
+    //     uint24 newAppVersion = _registerBasicApp(newAppId, delegatees);
+
+    //     // First permit the app version with valid parameters
+    //     vm.startPrank(APP_USER_FRANK);
+    //     vincentUserFacet.permitAppVersion(
+    //         PKP_TOKEN_ID_1, newAppId, newAppVersion, abilityIpfsCids, policyIpfsCids, policyParameterValues
+    //     );
+
+    //     // Create arrays with an unregistered policy (POLICY_IPFS_CID_3)
+    //     string[][] memory _policyIpfsCids = new string[][](2);
+    //     _policyIpfsCids[0] = new string[](1);
+    //     _policyIpfsCids[0][0] = POLICY_IPFS_CID_3; // This policy is not registered for the ability
+    //     _policyIpfsCids[1] = new string[](0);
+
+    //     bytes[][] memory _policyParameterValues = new bytes[][](2);
+    //     _policyParameterValues[0] = new bytes[](1);
+    //     _policyParameterValues[0][0] = POLICY_PARAMETER_VALUES_1;
+    //     _policyParameterValues[1] = new bytes[](0);
+
+    //     vm.expectRevert(
+    //         abi.encodeWithSelector(
+    //             LibVincentUserFacet.AbilityPolicyNotRegisteredForAppVersion.selector,
+    //             newAppId,
+    //             newAppVersion,
+    //             ABILITY_IPFS_CID_1,
+    //             POLICY_IPFS_CID_3
+    //         )
+    //     );
+    //     vincentUserFacet.setAbilityPolicyParameters(
+    //         PKP_TOKEN_ID_1, newAppId, newAppVersion, abilityIpfsCids, _policyIpfsCids, _policyParameterValues
+    //     );
+    // }
+
+    // function testRemoveAbilityPolicyParameters() public {
+    //     address[] memory delegatees = new address[](1);
+    //     delegatees[0] = APP_DELEGATEE_CHARLIE;
+    //     uint40 newAppId = 1;
+    //     uint24 newAppVersion = _registerBasicApp(newAppId, delegatees);
+
+    //     // First permit the app version
+    //     vm.startPrank(APP_USER_FRANK);
+    //     // Expect events for initial permit
+    //     vm.expectEmit(true, true, true, true);
+    //     emit LibVincentUserFacet.NewUserAgentPkpRegistered(APP_USER_FRANK, PKP_TOKEN_ID_1);
+    //     vm.expectEmit(true, true, true, true);
+    //     emit LibVincentUserFacet.AppVersionPermitted(PKP_TOKEN_ID_1, newAppId, newAppVersion);
+    //     vm.expectEmit(true, true, true, true);
+    //     emit LibVincentUserFacet.AbilityPolicyParametersSet(
+    //         PKP_TOKEN_ID_1,
+    //         newAppId,
+    //         newAppVersion,
+    //         keccak256(abi.encodePacked(ABILITY_IPFS_CID_1)),
+    //         keccak256(abi.encodePacked(POLICY_IPFS_CID_1)),
+    //         POLICY_PARAMETER_VALUES_1
+    //     );
+
+    //     vincentUserFacet.permitAppVersion(
+    //         PKP_TOKEN_ID_1, newAppId, newAppVersion, abilityIpfsCids, policyIpfsCids, policyParameterValues
+    //     );
+
+    //     // Verify initial policy parameters
+    //     VincentUserViewFacet.AbilityWithPolicies[] memory abilitiesWithPolicies =
+    //         vincentUserViewFacet.getAllAbilitiesAndPoliciesForApp(PKP_TOKEN_ID_1, newAppId);
+    //     assertEq(abilitiesWithPolicies.length, 2);
+    //     assertEq(abilitiesWithPolicies[0].policies.length, 1);
+    //     assertEq(abilitiesWithPolicies[0].policies[0].policyParameterValues, POLICY_PARAMETER_VALUES_1);
+    //     assertEq(abilitiesWithPolicies[1].policies.length, 0);
+
+    //     // Create subset arrays containing only the ability and policy we want to zero out
+    //     string[] memory subsetAbilityIpfsCids = new string[](1);
+    //     subsetAbilityIpfsCids[0] = ABILITY_IPFS_CID_1;
+
+    //     string[][] memory subsetPolicyIpfsCids = new string[][](1);
+    //     subsetPolicyIpfsCids[0] = new string[](1);
+    //     subsetPolicyIpfsCids[0][0] = POLICY_IPFS_CID_1;
+
+    //     bytes[][] memory emptyPolicyParameterValues = new bytes[][](1);
+    //     emptyPolicyParameterValues[0] = new bytes[](1);
+    //     emptyPolicyParameterValues[0][0] = bytes(""); // Empty bytes to remove parameter
+
+    //     // Expect event for setting empty policy parameters
+    //     vm.expectEmit(true, true, true, true);
+    //     emit LibVincentUserFacet.AbilityPolicyParametersSet(
+    //         PKP_TOKEN_ID_1,
+    //         newAppId,
+    //         newAppVersion,
+    //         keccak256(abi.encodePacked(ABILITY_IPFS_CID_1)),
+    //         keccak256(abi.encodePacked(POLICY_IPFS_CID_1)),
+    //         bytes("")
+    //     );
+
+    //     // Set empty policy parameters to effectively remove them
+    //     vincentUserFacet.setAbilityPolicyParameters(
+    //         PKP_TOKEN_ID_1,
+    //         newAppId,
+    //         newAppVersion,
+    //         subsetAbilityIpfsCids,
+    //         subsetPolicyIpfsCids,
+    //         emptyPolicyParameterValues
+    //     );
+    //     vm.stopPrank();
+
+    //     // Verify policy parameters are removed
+    //     abilitiesWithPolicies = vincentUserViewFacet.getAllAbilitiesAndPoliciesForApp(PKP_TOKEN_ID_1, newAppId);
+    //     assertEq(abilitiesWithPolicies.length, 2);
+    //     assertEq(abilitiesWithPolicies[0].policies.length, 1);
+    //     assertEq(abilitiesWithPolicies[0].policies[0].policyParameterValues, bytes("")); // Empty bytes after removal
+    //     assertEq(abilitiesWithPolicies[1].policies.length, 0);
+
+    //     // Verify ability execution validation returns empty parameters
+    //     VincentUserViewFacet.AbilityExecutionValidation memory abilityExecutionValidation =
+    //         vincentUserViewFacet.validateAbilityExecutionAndGetPolicies(
+    //             APP_DELEGATEE_CHARLIE, PKP_TOKEN_ID_1, ABILITY_IPFS_CID_1
+    //         );
+    //     assertTrue(abilityExecutionValidation.isPermitted);
+    //     assertEq(abilityExecutionValidation.policies.length, 1);
+    //     assertEq(abilityExecutionValidation.policies[0].policyParameterValues, bytes("")); // Empty bytes after removal
+
+    //     bool isPermitted =
+    //         vincentUserViewFacet.isDelegateePermitted(APP_DELEGATEE_CHARLIE, PKP_TOKEN_ID_1, ABILITY_IPFS_CID_1);
+    //     assertTrue(isPermitted);
+    // }
+
+    // /**
+    //  * ######################### permitAppVersion ERROR CASES #########################
+    //  */
+    // function testPermitAppVersion_AppHasBeenDeleted() public {
+    //     address[] memory delegatees = new address[](1);
+    //     delegatees[0] = APP_DELEGATEE_CHARLIE;
+    //     uint40 newAppId = 1;
+    //     uint24 newAppVersion = _registerBasicApp(newAppId, delegatees);
+
+    //     vm.startPrank(APP_MANAGER_ALICE);
+    //     vincentAppFacet.deleteApp(newAppId);
+    //     vm.stopPrank();
+
+    //     vm.startPrank(APP_USER_FRANK);
+    //     vm.expectRevert(abi.encodeWithSelector(VincentBase.AppHasBeenDeleted.selector, newAppId));
+    //     vincentUserFacet.permitAppVersion(
+    //         PKP_TOKEN_ID_1, newAppId, newAppVersion, abilityIpfsCids, policyIpfsCids, policyParameterValues
+    //     );
+    // }
+
+    // function testPermitAppVersion_NotPkpOwner() public {
+    //     address[] memory delegatees = new address[](1);
+    //     delegatees[0] = APP_DELEGATEE_CHARLIE;
+    //     uint40 newAppId = 1;
+    //     uint24 newAppVersion = _registerBasicApp(newAppId, delegatees);
+
+    //     vm.startPrank(APP_USER_GEORGE);
+    //     vm.expectRevert(
+    //         abi.encodeWithSelector(LibVincentUserFacet.NotPkpOwner.selector, PKP_TOKEN_ID_1, APP_USER_GEORGE)
+    //     );
+    //     vincentUserFacet.permitAppVersion(
+    //         PKP_TOKEN_ID_1, newAppId, newAppVersion, abilityIpfsCids, policyIpfsCids, policyParameterValues
+    //     );
+    // }
+
+    // function testPermitAppVersion_AppNotRegistered() public {
+    //     vm.startPrank(APP_USER_FRANK);
+    //     vm.expectRevert(abi.encodeWithSelector(VincentBase.AppNotRegistered.selector, 1));
+    //     vincentUserFacet.permitAppVersion(PKP_TOKEN_ID_1, 1, 1, abilityIpfsCids, policyIpfsCids, policyParameterValues);
+    // }
+
+    // function testPermitAppVersion_AppVersionNotRegistered() public {
+    //     address[] memory delegatees = new address[](1);
+    //     delegatees[0] = APP_DELEGATEE_CHARLIE;
+    //     uint40 newAppId = 1;
+    //     uint24 newAppVersion = _registerBasicApp(newAppId, delegatees);
+
+    //     vm.startPrank(APP_USER_FRANK);
+    //     vm.expectRevert(
+    //         abi.encodeWithSelector(VincentBase.AppVersionNotRegistered.selector, newAppId, newAppVersion + 1)
+    //     );
+    //     vincentUserFacet.permitAppVersion(
+    //         PKP_TOKEN_ID_1,
+    //         newAppId,
+    //         newAppVersion + 1, // Try to permit a version that hasn't been registered
+    //         abilityIpfsCids,
+    //         policyIpfsCids,
+    //         policyParameterValues
+    //     );
+    // }
+
+    // function testPermitAppVersion_AbilitiesAndPoliciesLengthMismatch() public {
+    //     address[] memory delegatees = new address[](1);
+    //     delegatees[0] = APP_DELEGATEE_CHARLIE;
+    //     uint40 newAppId = 1;
+    //     uint24 newAppVersion = _registerBasicApp(newAppId, delegatees);
+
+    //     // Create arrays with mismatched length
+
+    //     // Create policy arrays with different length than abilities
+    //     string[][] memory _policyIpfsCids = new string[][](1); // Only 1 policy array for 2 abilities
+    //     _policyIpfsCids[0] = new string[](1);
+    //     _policyIpfsCids[0][0] = POLICY_IPFS_CID_1;
+
+    //     bytes[][] memory _policyParameterValues = new bytes[][](1); // Only 1 parameter array for 2 abilities
+    //     _policyParameterValues[0] = new bytes[](1);
+    //     _policyParameterValues[0][0] = POLICY_PARAMETER_VALUES_1;
+
+    //     vm.startPrank(APP_USER_FRANK);
+    //     vm.expectRevert(abi.encodeWithSelector(LibVincentUserFacet.AbilitiesAndPoliciesLengthMismatch.selector));
+    //     vincentUserFacet.permitAppVersion(
+    //         PKP_TOKEN_ID_1, newAppId, newAppVersion, abilityIpfsCids, _policyIpfsCids, _policyParameterValues
+    //     );
+    // }
+
+    // function testPermitAppVersion_AppVersionAlreadyPermitted() public {
+    //     address[] memory delegatees = new address[](1);
+    //     delegatees[0] = APP_DELEGATEE_CHARLIE;
+    //     uint40 newAppId = 1;
+    //     uint24 newAppVersion = _registerBasicApp(newAppId, delegatees);
+
+    //     // First permit the app version
+    //     vm.startPrank(APP_USER_FRANK);
+    //     vincentUserFacet.permitAppVersion(
+    //         PKP_TOKEN_ID_1, newAppId, newAppVersion, abilityIpfsCids, policyIpfsCids, policyParameterValues
+    //     );
+
+    //     // Try to permit the same version again
+    //     vm.expectRevert(
+    //         abi.encodeWithSelector(
+    //             LibVincentUserFacet.AppVersionAlreadyPermitted.selector, PKP_TOKEN_ID_1, newAppId, newAppVersion
+    //         )
+    //     );
+    //     vincentUserFacet.permitAppVersion(
+    //         PKP_TOKEN_ID_1, newAppId, newAppVersion, abilityIpfsCids, policyIpfsCids, policyParameterValues
+    //     );
+    // }
+
+    // function testPermitAppVersion_AppVersionNotEnabled() public {
+    //     address[] memory delegatees = new address[](1);
+    //     delegatees[0] = APP_DELEGATEE_CHARLIE;
+    //     uint40 newAppId = 1;
+    //     uint24 newAppVersion = _registerBasicApp(newAppId, delegatees);
+
+    //     vm.startPrank(APP_MANAGER_ALICE);
+    //     vincentAppFacet.enableAppVersion(newAppId, newAppVersion, false);
+    //     vm.stopPrank();
+
+    //     vm.startPrank(APP_USER_FRANK);
+    //     vm.expectRevert(
+    //         abi.encodeWithSelector(LibVincentUserFacet.AppVersionNotEnabled.selector, newAppId, newAppVersion)
+    //     );
+    //     vincentUserFacet.permitAppVersion(
+    //         PKP_TOKEN_ID_1, newAppId, newAppVersion, abilityIpfsCids, policyIpfsCids, policyParameterValues
+    //     );
+    // }
+
+    // function testPermitAppVersion_NotAllRegisteredAbilitiesProvided() public {
+    //     address[] memory delegatees = new address[](1);
+    //     delegatees[0] = APP_DELEGATEE_CHARLIE;
+    //     uint40 newAppId = 1;
+    //     uint24 newAppVersion = _registerBasicApp(newAppId, delegatees);
+
+    //     // Create arrays with only one ability instead of both registered abilities
+    //     string[] memory _abilityIpfsCids = new string[](1);
+    //     _abilityIpfsCids[0] = ABILITY_IPFS_CID_1; // Only providing first ability, missing ABILITY_IPFS_CID_2
+
+    //     string[][] memory _policyIpfsCids = new string[][](1);
+    //     _policyIpfsCids[0] = new string[](1);
+    //     _policyIpfsCids[0][0] = POLICY_IPFS_CID_1;
+
+    //     bytes[][] memory _policyParameterValues = new bytes[][](1);
+    //     _policyParameterValues[0] = new bytes[](1);
+    //     _policyParameterValues[0][0] = POLICY_PARAMETER_VALUES_1;
+
+    //     vm.startPrank(APP_USER_FRANK);
+    //     vm.expectRevert(
+    //         abi.encodeWithSelector(
+    //             LibVincentUserFacet.NotAllRegisteredAbilitiesProvided.selector, newAppId, newAppVersion
+    //         )
+    //     );
+    //     vincentUserFacet.permitAppVersion(
+    //         PKP_TOKEN_ID_1, newAppId, newAppVersion, _abilityIpfsCids, _policyIpfsCids, _policyParameterValues
+    //     );
+    // }
+
+    // function testPermitAppVersion_AbilityNotRegisteredForAppVersion() public {
+    //     address[] memory delegatees = new address[](1);
+    //     delegatees[0] = APP_DELEGATEE_CHARLIE;
+    //     uint40 newAppId = 1;
+    //     uint24 newAppVersion = _registerBasicApp(newAppId, delegatees);
+
+    //     // Create arrays with an unregistered ability (ABILITY_IPFS_CID_3)
+    //     string[] memory _abilityIpfsCids = new string[](2);
+    //     _abilityIpfsCids[0] = ABILITY_IPFS_CID_1;
+    //     _abilityIpfsCids[1] = ABILITY_IPFS_CID_3; // This ability is not registered for the app version
+
+    //     vm.startPrank(APP_USER_FRANK);
+    //     vm.expectRevert(
+    //         abi.encodeWithSelector(
+    //             LibVincentUserFacet.AbilityNotRegisteredForAppVersion.selector,
+    //             newAppId,
+    //             newAppVersion,
+    //             ABILITY_IPFS_CID_3
+    //         )
+    //     );
+    //     vincentUserFacet.permitAppVersion(
+    //         PKP_TOKEN_ID_1, newAppId, newAppVersion, _abilityIpfsCids, policyIpfsCids, policyParameterValues
+    //     );
+    // }
+
+    // /**
+    //  * ######################### unPermitAppVersion ERROR CASES #########################
+    //  */
+    // function testUnPermitAppVersion_NotPkpOwner() public {
+    //     address[] memory delegatees = new address[](1);
+    //     delegatees[0] = APP_DELEGATEE_CHARLIE;
+    //     uint40 newAppId = 1;
+    //     uint24 newAppVersion = _registerBasicApp(newAppId, delegatees);
+
+    //     vm.startPrank(APP_USER_FRANK);
+    //     vincentUserFacet.permitAppVersion(
+    //         PKP_TOKEN_ID_1, newAppId, newAppVersion, abilityIpfsCids, policyIpfsCids, policyParameterValues
+    //     );
+    //     vm.stopPrank();
+
+    //     vm.startPrank(APP_DELEGATEE_CHARLIE);
+    //     vm.expectRevert(
+    //         abi.encodeWithSelector(LibVincentUserFacet.NotPkpOwner.selector, PKP_TOKEN_ID_1, APP_DELEGATEE_CHARLIE)
+    //     );
+    //     vincentUserFacet.unPermitAppVersion(PKP_TOKEN_ID_1, newAppId, newAppVersion);
+    // }
+
+    // function testUnPermitAppVersion_AppNotRegistered() public {
+    //     vm.startPrank(APP_USER_FRANK);
+    //     vm.expectRevert(abi.encodeWithSelector(VincentBase.AppNotRegistered.selector, 1));
+    //     vincentUserFacet.unPermitAppVersion(PKP_TOKEN_ID_1, 1, 1);
+    // }
+
+    // function testUnPermitAppVersion_AppVersionNotRegistered() public {
+    //     address[] memory delegatees = new address[](1);
+    //     delegatees[0] = APP_DELEGATEE_CHARLIE;
+    //     uint40 newAppId = 1;
+    //     uint24 newAppVersion = _registerBasicApp(newAppId, delegatees);
+
+    //     vm.startPrank(APP_USER_FRANK);
+    //     vm.expectRevert(
+    //         abi.encodeWithSelector(VincentBase.AppVersionNotRegistered.selector, newAppId, newAppVersion + 1)
+    //     );
+    //     vincentUserFacet.unPermitAppVersion(PKP_TOKEN_ID_1, newAppId, newAppVersion + 1);
+    // }
+
+    // function testUnPermitAppVersion_AppVersionNotPermitted() public {
+    //     address[] memory delegatees = new address[](1);
+    //     delegatees[0] = APP_DELEGATEE_CHARLIE;
+    //     uint40 newAppId = 1;
+    //     uint24 newAppVersion = _registerBasicApp(newAppId, delegatees);
+
+    //     vm.startPrank(APP_USER_FRANK);
+    //     vm.expectRevert(
+    //         abi.encodeWithSelector(
+    //             LibVincentUserFacet.AppVersionNotPermitted.selector, PKP_TOKEN_ID_1, newAppId, newAppVersion
+    //         )
+    //     );
+    //     vincentUserFacet.unPermitAppVersion(PKP_TOKEN_ID_1, newAppId, newAppVersion);
+    // }
+
+    // /**
+    //  * ######################### setAbilityPolicyParameters ERROR CASES #########################
+    //  */
+    // function testSetAbilityPolicyParameters_NotPkpOwner() public {
+    //     address[] memory delegatees = new address[](1);
+    //     delegatees[0] = APP_DELEGATEE_CHARLIE;
+    //     uint40 newAppId = 1;
+    //     uint24 newAppVersion = _registerBasicApp(newAppId, delegatees);
+
+    //     vm.startPrank(APP_USER_FRANK);
+    //     vincentUserFacet.permitAppVersion(
+    //         PKP_TOKEN_ID_1, newAppId, newAppVersion, abilityIpfsCids, policyIpfsCids, policyParameterValues
+    //     );
+    //     vm.stopPrank();
+
+    //     vm.startPrank(APP_USER_GEORGE);
+    //     vm.expectRevert(
+    //         abi.encodeWithSelector(LibVincentUserFacet.NotPkpOwner.selector, PKP_TOKEN_ID_1, APP_USER_GEORGE)
+    //     );
+    //     vincentUserFacet.setAbilityPolicyParameters(
+    //         PKP_TOKEN_ID_1, newAppId, newAppVersion, abilityIpfsCids, policyIpfsCids, policyParameterValues
+    //     );
+    // }
+
+    // function testSetAbilityPolicyParameters_AppNotRegistered() public {
+    //     vm.startPrank(APP_USER_FRANK);
+    //     vm.expectRevert(abi.encodeWithSelector(VincentBase.AppNotRegistered.selector, 1));
+    //     vincentUserFacet.setAbilityPolicyParameters(
+    //         PKP_TOKEN_ID_1, 1, 1, abilityIpfsCids, policyIpfsCids, policyParameterValues
+    //     );
+    // }
+
+    // function testSetAbilityPolicyParameters_AppVersionNotRegistered() public {
+    //     address[] memory delegatees = new address[](1);
+    //     delegatees[0] = APP_DELEGATEE_CHARLIE;
+    //     uint40 newAppId = 1;
+    //     uint24 newAppVersion = _registerBasicApp(newAppId, delegatees);
+
+    //     vm.startPrank(APP_USER_FRANK);
+    //     vm.expectRevert(
+    //         abi.encodeWithSelector(VincentBase.AppVersionNotRegistered.selector, newAppId, newAppVersion + 1)
+    //     );
+    //     vincentUserFacet.setAbilityPolicyParameters(
+    //         PKP_TOKEN_ID_1,
+    //         newAppId,
+    //         newAppVersion + 1, // Try to set parameters for a version that hasn't been registered
+    //         abilityIpfsCids,
+    //         policyIpfsCids,
+    //         policyParameterValues
+    //     );
+    // }
+
+    // function testSetAbilityPolicyParameters_InvalidInput() public {
+    //     address[] memory delegatees = new address[](1);
+    //     delegatees[0] = APP_DELEGATEE_CHARLIE;
+    //     uint40 newAppId = 1;
+    //     uint24 newAppVersion = _registerBasicApp(newAppId, delegatees);
+
+    //     // First permit the app version with valid parameters
+    //     vm.startPrank(APP_USER_FRANK);
+    //     vincentUserFacet.permitAppVersion(
+    //         PKP_TOKEN_ID_1, newAppId, newAppVersion, abilityIpfsCids, policyIpfsCids, policyParameterValues
+    //     );
+
+    //     // Now try to set parameters with an empty ability IPFS CIDs array
+    //     string[] memory emptyAbilityIpfsCids = new string[](0);
+
+    //     vm.expectRevert(abi.encodeWithSelector(LibVincentUserFacet.InvalidInput.selector));
+    //     vincentUserFacet.setAbilityPolicyParameters(
+    //         PKP_TOKEN_ID_1, newAppId, newAppVersion, emptyAbilityIpfsCids, policyIpfsCids, policyParameterValues
+    //     );
+    // }
+
+    // function testSetAbilityPolicyParameters_EmptyAbilityIpfsCid() public {
+    //     address[] memory delegatees = new address[](1);
+    //     delegatees[0] = APP_DELEGATEE_CHARLIE;
+    //     uint40 newAppId = 1;
+    //     uint24 newAppVersion = _registerBasicApp(newAppId, delegatees);
+
+    //     // First permit the app version with valid parameters
+    //     vm.startPrank(APP_USER_FRANK);
+    //     vincentUserFacet.permitAppVersion(
+    //         PKP_TOKEN_ID_1, newAppId, newAppVersion, abilityIpfsCids, policyIpfsCids, policyParameterValues
+    //     );
+
+    //     // Create arrays with an empty ability IPFS CID
+    //     string[] memory _abilityIpfsCids = new string[](2);
+    //     _abilityIpfsCids[0] = ""; // Empty string for first ability
+    //     _abilityIpfsCids[1] = ABILITY_IPFS_CID_2;
+
+    //     vm.expectRevert(abi.encodeWithSelector(VincentUserViewFacet.EmptyAbilityIpfsCid.selector));
+    //     vincentUserFacet.setAbilityPolicyParameters(
+    //         PKP_TOKEN_ID_1, newAppId, newAppVersion, _abilityIpfsCids, policyIpfsCids, policyParameterValues
+    //     );
+    // }
+
+    // function testSetAbilityPolicyParameters_NotAllRegisteredAbilitiesProvided() public {
+    //     address[] memory delegatees = new address[](1);
+    //     delegatees[0] = APP_DELEGATEE_CHARLIE;
+    //     uint40 newAppId = 1;
+    //     uint24 newAppVersion = _registerBasicApp(newAppId, delegatees);
+
+    //     // First permit the app version with valid parameters
+    //     vm.startPrank(APP_USER_FRANK);
+    //     vincentUserFacet.permitAppVersion(
+    //         PKP_TOKEN_ID_1, newAppId, newAppVersion, abilityIpfsCids, policyIpfsCids, policyParameterValues
+    //     );
+
+    //     // Validate the original ability policies and parameters
+    //     VincentUserViewFacet.AbilityWithPolicies[] memory originalAbilitiesWithPolicies =
+    //         vincentUserViewFacet.getAllAbilitiesAndPoliciesForApp(PKP_TOKEN_ID_1, newAppId);
+    //     assertEq(originalAbilitiesWithPolicies.length, 2); // Still has both abilities
+    //     assertEq(originalAbilitiesWithPolicies[0].policies.length, 1);
+    //     assertEq(originalAbilitiesWithPolicies[0].policies[0].policyParameterValues, POLICY_PARAMETER_VALUES_1);
+    //     assertEq(originalAbilitiesWithPolicies[1].policies.length, 0); // Second ability unchanged
+
+    //     // Create arrays with only one ability instead of both registered abilities
+    //     string[] memory subsetAbilityIpfsCids = new string[](1);
+    //     subsetAbilityIpfsCids[0] = ABILITY_IPFS_CID_1; // Only providing first ability, missing ABILITY_IPFS_CID_2
+
+    //     string[][] memory subsetPolicyIpfsCids = new string[][](1);
+    //     subsetPolicyIpfsCids[0] = new string[](1);
+    //     subsetPolicyIpfsCids[0][0] = POLICY_IPFS_CID_1;
+
+    //     bytes[][] memory subsetPolicyParameterValues = new bytes[][](1);
+    //     subsetPolicyParameterValues[0] = new bytes[](1);
+    //     subsetPolicyParameterValues[0][0] = POLICY_PARAMETER_VALUES_2;
+
+    //     vm.expectEmit(true, true, true, true);
+    //     emit LibVincentUserFacet.AbilityPolicyParametersSet(
+    //         PKP_TOKEN_ID_1,
+    //         newAppId,
+    //         newAppVersion,
+    //         keccak256(abi.encodePacked(ABILITY_IPFS_CID_1)),
+    //         keccak256(abi.encodePacked(POLICY_IPFS_CID_1)),
+    //         POLICY_PARAMETER_VALUES_2
+    //     );
+
+    //     vincentUserFacet.setAbilityPolicyParameters(
+    //         PKP_TOKEN_ID_1,
+    //         newAppId,
+    //         newAppVersion,
+    //         subsetAbilityIpfsCids,
+    //         subsetPolicyIpfsCids,
+    //         subsetPolicyParameterValues
+    //     );
+
+    //     // Verify the parameters were updated for the first ability only
+    //     VincentUserViewFacet.AbilityWithPolicies[] memory updatedAbilitiesWithPolicies =
+    //         vincentUserViewFacet.getAllAbilitiesAndPoliciesForApp(PKP_TOKEN_ID_1, newAppId);
+    //     assertEq(updatedAbilitiesWithPolicies.length, 2); // Still has both abilities
+    //     assertEq(updatedAbilitiesWithPolicies[0].policies.length, 1);
+    //     assertEq(updatedAbilitiesWithPolicies[0].policies[0].policyParameterValues, POLICY_PARAMETER_VALUES_2);
+    //     assertEq(updatedAbilitiesWithPolicies[1].policies.length, 0); // Second ability unchanged
+    // }
 
     function _registerApp(
         uint40 appId,

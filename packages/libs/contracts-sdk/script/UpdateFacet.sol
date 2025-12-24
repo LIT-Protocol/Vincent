@@ -223,7 +223,7 @@ contract SmartUpdateFacet is Script {
         } else if (compareStrings(facetName, "VincentUserFacet")) {
             testSelector = VincentUserFacet.permitAppVersion.selector;
         } else if (compareStrings(facetName, "VincentUserViewFacet")) {
-            testSelector = VincentUserViewFacet.getPermittedAppVersionForPkp.selector;
+            testSelector = VincentUserViewFacet.getPermittedAppVersionForAgent.selector;
         } else {
             return false;
         }
@@ -292,7 +292,7 @@ contract SmartUpdateFacet is Script {
         selectors[1] = VincentAppViewFacet.getAppVersion.selector;
         selectors[2] = VincentAppViewFacet.getAppsByManager.selector;
         selectors[3] = VincentAppViewFacet.getAppByDelegatee.selector;
-        selectors[4] = VincentAppViewFacet.getDelegatedAgentPkpTokenIds.selector;
+        selectors[4] = VincentAppViewFacet.getDelegatedAgentAddresses.selector;
         selectors[5] = bytes4(keccak256("APP_PAGE_SIZE()"));
         return selectors;
     }
@@ -308,14 +308,14 @@ contract SmartUpdateFacet is Script {
 
     function getVincentUserViewFacetSelectors() internal pure returns (bytes4[] memory) {
         bytes4[] memory selectors = new bytes4[](10);
-        selectors[0] = VincentUserViewFacet.getAllRegisteredAgentPkps.selector;
-        selectors[1] = VincentUserViewFacet.getPermittedAppVersionForPkp.selector;
-        selectors[2] = VincentUserViewFacet.getAllPermittedAppIdsForPkp.selector;
+        selectors[0] = VincentUserViewFacet.getAllRegisteredAgentAddressesForUser.selector;
+        selectors[1] = VincentUserViewFacet.getPermittedAppVersionForAgent.selector;
+        selectors[2] = VincentUserViewFacet.getPermittedAppForAgents.selector;
         selectors[3] = VincentUserViewFacet.validateAbilityExecutionAndGetPolicies.selector;
         selectors[4] = VincentUserViewFacet.getAllAbilitiesAndPoliciesForApp.selector;
-        selectors[5] = VincentUserViewFacet.getPermittedAppsForPkps.selector;
-        selectors[6] = VincentUserViewFacet.getLastPermittedAppVersionForPkp.selector;
-        selectors[7] = VincentUserViewFacet.getUnpermittedAppsForPkps.selector;
+        selectors[5] = VincentUserViewFacet.getLastPermittedAppVersionForAgent.selector;
+        selectors[6] = VincentUserViewFacet.getAgentPkpSigner.selector;
+        selectors[7] = VincentUserViewFacet.getUnpermittedAppForAgents.selector;
         selectors[8] = bytes4(keccak256("AGENT_PAGE_SIZE()"));
         selectors[9] = VincentUserViewFacet.isDelegateePermitted.selector;
         return selectors;

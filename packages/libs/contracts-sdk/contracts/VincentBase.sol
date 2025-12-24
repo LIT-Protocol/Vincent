@@ -14,6 +14,7 @@ contract VincentBase {
     error AppHasBeenDeleted(uint40 appId);
     error AppVersionNotEnabled(uint40 appId, uint24 appVersion);
     error InvalidOffset(uint256 offset, uint256 totalCount);
+    error ZeroAddressNotAllowed();
 
     /**
      * @notice Validates that an app exists

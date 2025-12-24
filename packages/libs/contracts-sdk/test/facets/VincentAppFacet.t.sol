@@ -5,7 +5,6 @@ import "forge-std/Test.sol";
 import "forge-std/console.sol";
 
 import {DeployVincentDiamond} from "../../script/DeployVincentDiamond.sol";
-import {MockPKPNftFacet} from "../mocks/MockPKPNftFacet.sol";
 
 import {VincentDiamond} from "../../contracts/VincentDiamond.sol";
 import {VincentAppFacet} from "../../contracts/facets/VincentAppFacet.sol";
@@ -18,9 +17,6 @@ import {VincentBase} from "../../contracts/VincentBase.sol";
 import {TestCommon} from "../TestCommon.sol";
 
 contract VincentAppFacetTest is TestCommon {
-    uint256 constant PKP_TOKEN_ID_1 = 1;
-    uint256 constant PKP_TOKEN_ID_2 = 2;
-
     string constant ABILITY_IPFS_CID_1 = "QmAbility1";
     string constant ABILITY_IPFS_CID_2 = "QmAbility2";
     string constant ABILITY_IPFS_CID_3 = "QmAbility3";
@@ -43,6 +39,9 @@ contract VincentAppFacetTest is TestCommon {
     address APP_USER_FRANK = makeAddr("Frank");
     address APP_USER_GEORGE = makeAddr("George");
 
+    address FRANK_PKP_SIGNER = makeAddr("FrankPkpSigner");
+    address GEORGE_PKP_SIGNER = makeAddr("GeorgePkpSigner");
+
     VincentDiamond public vincentDiamond;
     VincentAppFacet public vincentAppFacet;
     VincentAppViewFacet public vincentAppViewFacet;
@@ -54,13 +53,9 @@ contract VincentAppFacetTest is TestCommon {
         vm.setEnv("VINCENT_DEPLOYER_PRIVATE_KEY", vm.toString(deployerPrivateKey));
 
         DeployVincentDiamond deployScript = new DeployVincentDiamond();
-        MockPKPNftFacet mockPkpNft = new MockPKPNftFacet();
 
-        address diamondAddress = deployScript.deployToNetwork("test", address(mockPkpNft));
+        address diamondAddress = deployScript.deployToNetwork("test");
         vincentDiamond = VincentDiamond(payable(diamondAddress));
-
-        mockPkpNft.setOwner(PKP_TOKEN_ID_1, APP_USER_FRANK);
-        mockPkpNft.setOwner(PKP_TOKEN_ID_2, APP_USER_GEORGE);
 
         vincentAppFacet = VincentAppFacet(diamondAddress);
         vincentAppViewFacet = VincentAppViewFacet(diamondAddress);
@@ -100,7 +95,7 @@ contract VincentAppFacetTest is TestCommon {
 
         assertEq(appVersion.version, newAppVersion);
         assertTrue(appVersion.enabled);
-        assertEq(appVersion.delegatedAgentPkpTokenIds.length, 0);
+        assertEq(appVersion.delegatedAgents.length, 0);
         assertEq(appVersion.abilities.length, 2);
 
         assertEq(appVersion.abilities[0].abilityIpfsCid, ABILITY_IPFS_CID_1);
@@ -163,7 +158,7 @@ contract VincentAppFacetTest is TestCommon {
 
         assertEq(appVersion.version, newAppVersion);
         assertTrue(appVersion.enabled);
-        assertEq(appVersion.delegatedAgentPkpTokenIds.length, 0);
+        assertEq(appVersion.delegatedAgents.length, 0);
         assertEq(appVersion.abilities.length, 3);
 
         assertEq(appVersion.abilities[0].abilityIpfsCid, ABILITY_IPFS_CID_1);
@@ -671,21 +666,20 @@ contract VincentAppFacetTest is TestCommon {
 
         vm.startPrank(APP_USER_FRANK);
         vincentUserFacet.permitAppVersion(
-            PKP_TOKEN_ID_1, newAppId, newAppVersion, abilityIpfsCids, policyIpfsCids, policyParameterValues
+            APP_USER_FRANK, FRANK_PKP_SIGNER, newAppId, newAppVersion, abilityIpfsCids, policyIpfsCids, policyParameterValues
         );
         vm.stopPrank();
 
         // Verify app is permitted before deletion
-        uint256[] memory pkpTokenIds = new uint256[](1);
-        pkpTokenIds[0] = PKP_TOKEN_ID_1;
-        VincentUserViewFacet.PkpPermittedApps[] memory permittedAppsResults =
-            vincentUserViewFacet.getPermittedAppsForPkps(pkpTokenIds, 0, 10);
-        assertEq(permittedAppsResults.length, 1);
-        assertEq(permittedAppsResults[0].permittedApps.length, 1);
-        assertEq(permittedAppsResults[0].pkpTokenId, PKP_TOKEN_ID_1);
-        assertEq(permittedAppsResults[0].permittedApps[0].appId, newAppId);
-        assertEq(permittedAppsResults[0].permittedApps[0].version, newAppVersion);
-        assertTrue(permittedAppsResults[0].permittedApps[0].versionEnabled);
+        address[] memory agentAddresses = new address[](1);
+        agentAddresses[0] = APP_USER_FRANK;
+        VincentUserViewFacet.AgentPermittedApp[] memory permittedAppResults =
+            vincentUserViewFacet.getPermittedAppForAgents(agentAddresses);
+        assertEq(permittedAppResults.length, 1);
+        assertEq(permittedAppResults[0].agentAddress, APP_USER_FRANK);
+        assertEq(permittedAppResults[0].permittedApp.appId, newAppId);
+        assertEq(permittedAppResults[0].permittedApp.version, newAppVersion);
+        assertTrue(permittedAppResults[0].permittedApp.versionEnabled);
 
         vm.startPrank(APP_MANAGER_ALICE);
         vm.expectEmit(true, true, true, true);
@@ -695,19 +689,18 @@ contract VincentAppFacetTest is TestCommon {
         assertEq(vincentAppViewFacet.getAppById(newAppId).isDeleted, true);
 
         // Verify deleted app is still returned but with isDeleted flag set to true
-        permittedAppsResults = vincentUserViewFacet.getPermittedAppsForPkps(pkpTokenIds, 0, 10);
-        assertEq(permittedAppsResults.length, 1);
-        assertEq(permittedAppsResults[0].pkpTokenId, PKP_TOKEN_ID_1);
-        assertEq(permittedAppsResults[0].permittedApps.length, 1); // Deleted app should still appear
-        assertEq(permittedAppsResults[0].permittedApps[0].appId, newAppId);
-        assertTrue(permittedAppsResults[0].permittedApps[0].isDeleted); // isDeleted flag should be true
+        permittedAppResults = vincentUserViewFacet.getPermittedAppForAgents(agentAddresses);
+        assertEq(permittedAppResults.length, 1);
+        assertEq(permittedAppResults[0].agentAddress, APP_USER_FRANK);
+        assertEq(permittedAppResults[0].permittedApp.appId, newAppId);
+        assertTrue(permittedAppResults[0].permittedApp.isDeleted); // isDeleted flag should be true
 
         // Verify permitted app version is still returned even if the app has been deleted
-        uint24 permittedAppVersion = vincentUserViewFacet.getPermittedAppVersionForPkp(PKP_TOKEN_ID_1, newAppId);
+        uint24 permittedAppVersion = vincentUserViewFacet.getPermittedAppVersionForAgent(APP_USER_FRANK, newAppId);
         assertEq(permittedAppVersion, newAppVersion);
     }
 
-    function test_fetchDelegatedAgentPkpTokenIds() public {
+    function test_fetchDelegatedAgentAddresses() public {
         uint40 newAppId = 1;
         uint24 newAppVersion = _registerBasicApp(newAppId);
 
@@ -728,17 +721,17 @@ contract VincentAppFacetTest is TestCommon {
 
         vm.startPrank(APP_USER_FRANK);
         vincentUserFacet.permitAppVersion(
-            PKP_TOKEN_ID_1, newAppId, newAppVersion, abilityIpfsCids, policyIpfsCids, policyParameterValues
+            APP_USER_FRANK, FRANK_PKP_SIGNER, newAppId, newAppVersion, abilityIpfsCids, policyIpfsCids, policyParameterValues
         );
         vm.stopPrank();
 
-        uint256[] memory delegatedAgentPkpTokenIds =
-            vincentAppViewFacet.getDelegatedAgentPkpTokenIds(newAppId, newAppVersion, 0);
-        assertEq(delegatedAgentPkpTokenIds.length, 1);
-        assertEq(delegatedAgentPkpTokenIds[0], PKP_TOKEN_ID_1);
+        address[] memory delegatedAgentAddresses =
+            vincentAppViewFacet.getDelegatedAgentAddresses(newAppId, newAppVersion, 0);
+        assertEq(delegatedAgentAddresses.length, 1);
+        assertEq(delegatedAgentAddresses[0], APP_USER_FRANK);
 
         vm.expectRevert(abi.encodeWithSelector(VincentBase.InvalidOffset.selector, 1, 1));
-        vincentAppViewFacet.getDelegatedAgentPkpTokenIds(newAppId, newAppVersion, 1);
+        vincentAppViewFacet.getDelegatedAgentAddresses(newAppId, newAppVersion, 1);
     }
 
     function _registerApp(

@@ -25,11 +25,6 @@ import "./facets/VincentUserViewFacet.sol";
  */
 contract VincentDiamond {
     /**
-     * @notice Thrown when an invalid (zero address) PKP NFT contract is provided
-     */
-    error InvalidPKPNFTContract();
-
-    /**
      * @notice Thrown when any of the facet addresses are invalid (zero address)
      */
     error InvalidFacetAddress();
@@ -64,16 +59,13 @@ contract VincentDiamond {
      * @param _contractOwner Address that will own the diamond contract
      * @param _diamondCutFacet Address of the facet implementing diamond cut functionality
      * @param _facets Struct containing addresses of all other facets
-     * @param _pkpNFTContract Address of the PKP NFT contract used for sourcing PKP ownership
      */
     constructor(
         address _contractOwner,
         address _diamondCutFacet,
-        FacetAddresses memory _facets,
-        address _pkpNFTContract
+        FacetAddresses memory _facets
     ) payable {
         // Validate inputs
-        if (_pkpNFTContract == address(0)) revert InvalidPKPNFTContract();
         if (_diamondCutFacet == address(0)) revert InvalidFacetAddress();
 
         // Validate all facet addresses
@@ -87,10 +79,6 @@ contract VincentDiamond {
 
         // Set the contract owner
         LibDiamond.setContractOwner(_contractOwner);
-
-        // Initialize Vincent storage with PKP NFT contract (inlined)
-        VincentUserStorage.UserStorage storage us = VincentUserStorage.userStorage();
-        us.PKP_NFT_FACET = IPKPNFTFacet(_pkpNFTContract);
 
         // Initialize ERC165 data
         LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
@@ -200,7 +188,7 @@ contract VincentDiamond {
         selectors[1] = VincentAppViewFacet.getAppVersion.selector;
         selectors[2] = VincentAppViewFacet.getAppsByManager.selector;
         selectors[3] = VincentAppViewFacet.getAppByDelegatee.selector;
-        selectors[4] = VincentAppViewFacet.getDelegatedAgentPkpTokenIds.selector;
+        selectors[4] = VincentAppViewFacet.getDelegatedAgentAddresses.selector;
         selectors[5] = bytes4(keccak256("APP_PAGE_SIZE()"));
         return selectors;
     }
@@ -216,14 +204,14 @@ contract VincentDiamond {
 
     function getVincentUserViewFacetSelectors() internal pure returns (bytes4[] memory) {
         bytes4[] memory selectors = new bytes4[](10);
-        selectors[0] = VincentUserViewFacet.getAllRegisteredAgentPkps.selector;
-        selectors[1] = VincentUserViewFacet.getPermittedAppVersionForPkp.selector;
-        selectors[2] = VincentUserViewFacet.getAllPermittedAppIdsForPkp.selector;
+        selectors[0] = VincentUserViewFacet.getAllRegisteredAgentAddressesForUser.selector;
+        selectors[1] = VincentUserViewFacet.getPermittedAppVersionForAgent.selector;
+        selectors[2] = VincentUserViewFacet.getPermittedAppForAgents.selector;
         selectors[3] = VincentUserViewFacet.validateAbilityExecutionAndGetPolicies.selector;
         selectors[4] = VincentUserViewFacet.getAllAbilitiesAndPoliciesForApp.selector;
-        selectors[5] = VincentUserViewFacet.getPermittedAppsForPkps.selector;
-        selectors[6] = VincentUserViewFacet.getLastPermittedAppVersionForPkp.selector;
-        selectors[7] = VincentUserViewFacet.getUnpermittedAppsForPkps.selector;
+        selectors[5] = VincentUserViewFacet.getLastPermittedAppVersionForAgent.selector;
+        selectors[6] = VincentUserViewFacet.getAgentPkpSigner.selector;
+        selectors[7] = VincentUserViewFacet.getUnpermittedAppForAgents.selector;
         selectors[8] = bytes4(keccak256("AGENT_PAGE_SIZE()"));
         selectors[9] = VincentUserViewFacet.isDelegateePermitted.selector;
         return selectors;

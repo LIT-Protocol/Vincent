@@ -66,17 +66,14 @@ contract DeployVincentDiamond is Script {
      * @notice Log deployment details
      * @param network Network name
      * @param diamond Diamond contract address
-     * @param pkpNFTAddress PKP NFT contract address
      * @param facets Struct containing deployed facet addresses
      */
     function logDeployment(
         string memory network,
         address diamond,
-        address pkpNFTAddress,
         VincentDiamond.FacetAddresses memory facets
     ) internal pure {
         console.log("Vincent Diamond deployed for", network, "to:", address(diamond));
-        console.log("Using PKP NFT contract:", pkpNFTAddress);
         console.log("DiamondLoupeFacet:", facets.diamondLoupeFacet);
         console.log("OwnershipFacet:", facets.ownershipFacet);
         console.log("VincentAppFacet:", facets.vincentAppFacet);
@@ -88,15 +85,9 @@ contract DeployVincentDiamond is Script {
     /**
      * @notice Deploy to a specific network
      * @param network Network name for logging
-     * @param pkpNFTAddress PKP NFT contract address
      * @return address The address of the deployed registry
      */
-    function deployToNetwork(string memory network, address pkpNFTAddress) public returns (address) {
-        // Validate PKP NFT address
-        if (pkpNFTAddress == address(0)) {
-            revert MissingEnvironmentVariable(string.concat(network, " PKP NFT contract address"));
-        }
-
+    function deployToNetwork(string memory network) public returns (address) {
         // Get private key from environment variable
         uint256 deployerPrivateKey = vm.envUint("VINCENT_DEPLOYER_PRIVATE_KEY");
         if (deployerPrivateKey == 0) {
@@ -116,15 +107,14 @@ contract DeployVincentDiamond is Script {
         VincentDiamond diamond = new VincentDiamond(
             deployerAddress, // contract owner
             diamondCutFacetAddress, // diamond cut facet
-            facets, // all other facets
-            pkpNFTAddress // PKP NFT contract address - set immutably
+            facets // all other facets
         );
 
         // Stop broadcasting transactions
         vm.stopBroadcast();
 
         // Log deployment details
-        logDeployment(network, address(diamond), pkpNFTAddress, facets);
+        logDeployment(network, address(diamond), facets);
 
         return address(diamond);
     }
@@ -133,8 +123,7 @@ contract DeployVincentDiamond is Script {
      * @notice Deploy to Datil network
      */
     function deployToDatil() public returns (address) {
-        address pkpNFTAddress = vm.envAddress("DATIL_PKP_NFT_CONTRACT_ADDRESS");
-        return deployToNetwork("Datil", pkpNFTAddress);
+        return deployToNetwork("Datil");
     }
 
     /**
