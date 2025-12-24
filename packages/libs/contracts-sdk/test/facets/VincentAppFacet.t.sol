@@ -42,6 +42,9 @@ contract VincentAppFacetTest is TestCommon {
     address FRANK_PKP_SIGNER = makeAddr("FrankPkpSigner");
     address GEORGE_PKP_SIGNER = makeAddr("GeorgePkpSigner");
 
+    uint256 constant FRANK_PKP_SIGNER_PUB_KEY = 123456789;
+    uint256 constant GEORGE_PKP_SIGNER_PUB_KEY = 987654321;
+
     VincentDiamond public vincentDiamond;
     VincentAppFacet public vincentAppFacet;
     VincentAppViewFacet public vincentAppViewFacet;
@@ -666,7 +669,7 @@ contract VincentAppFacetTest is TestCommon {
 
         vm.startPrank(APP_USER_FRANK);
         vincentUserFacet.permitAppVersion(
-            APP_USER_FRANK, FRANK_PKP_SIGNER, 123456789, newAppId, newAppVersion, abilityIpfsCids, policyIpfsCids, policyParameterValues
+            APP_USER_FRANK, FRANK_PKP_SIGNER, FRANK_PKP_SIGNER_PUB_KEY, newAppId, newAppVersion, abilityIpfsCids, policyIpfsCids, policyParameterValues
         );
         vm.stopPrank();
 
@@ -722,14 +725,14 @@ contract VincentAppFacetTest is TestCommon {
         // Permit app for Frank
         vm.startPrank(APP_USER_FRANK);
         vincentUserFacet.permitAppVersion(
-            APP_USER_FRANK, FRANK_PKP_SIGNER, 123456789, newAppId, newAppVersion, abilityIpfsCids, policyIpfsCids, policyParameterValues
+            APP_USER_FRANK, FRANK_PKP_SIGNER, FRANK_PKP_SIGNER_PUB_KEY, newAppId, newAppVersion, abilityIpfsCids, policyIpfsCids, policyParameterValues
         );
         vm.stopPrank();
 
         // Permit app for George
         vm.startPrank(APP_USER_GEORGE);
         vincentUserFacet.permitAppVersion(
-            APP_USER_GEORGE, GEORGE_PKP_SIGNER, 987654321, newAppId, newAppVersion, abilityIpfsCids, policyIpfsCids, policyParameterValues
+            APP_USER_GEORGE, GEORGE_PKP_SIGNER, GEORGE_PKP_SIGNER_PUB_KEY, newAppId, newAppVersion, abilityIpfsCids, policyIpfsCids, policyParameterValues
         );
         vm.stopPrank();
 
