@@ -287,17 +287,13 @@ contract VincentUserViewFacet is VincentBase {
             // If no app is permitted (appId == 0), leave permittedApp at default values
             if (appId != 0) {
                 VincentUserStorage.AgentStorage storage agentStorage = us_.agentAddressToAgentStorage[agentAddress];
-                uint24 version = agentStorage.permittedAppVersion;
-                bool enabled = as_.appIdToApp[appId].appVersions[getAppVersionIndex(version)].enabled;
-                bool isDeleted = as_.appIdToApp[appId].isDeleted;
-
                 results[i].permittedApp = PermittedApp({
                     appId: appId,
-                    version: version,
+                    version: agentStorage.permittedAppVersion,
                     pkpSigner: agentStorage.pkpSigner,
                     pkpSignerPubKey: agentStorage.pkpSignerPubKey,
-                    versionEnabled: enabled,
-                    isDeleted: isDeleted
+                    versionEnabled: as_.appIdToApp[appId].appVersions[getAppVersionIndex(agentStorage.permittedAppVersion)].enabled,
+                    isDeleted: as_.appIdToApp[appId].isDeleted
                 });
             }
         }
