@@ -11,7 +11,7 @@ library LibVincentUserFacet {
      * @param userAddress The address of the user that the agent is acting on behalf of
      * @param agentAddress The address of the agent that was registered
      */
-    event NewAgentRegistered(address indexed userAddress, address indexed agentAddress);
+    event NewAgentRegistered(address indexed userAddress, address indexed agentAddress, address indexed pkpSigner, uint256 pkpSignerPubKey);
 
     /**
      * @notice Emitted when an app version is permitted for an agent
@@ -19,7 +19,7 @@ library LibVincentUserFacet {
      * @param appId The ID of the app being permitted
      * @param appVersion The version number of the app being permitted
      */
-    event AppVersionPermitted(address indexed agentAddress, uint40 indexed appId, uint24 indexed appVersion);
+    event AppVersionPermitted(address indexed agentAddress, uint40 indexed appId, uint24 indexed appVersion, address pkpSigner, uint256 pkpSignerPubKey);
 
     /**
      * @notice Emitted when an app version permission is removed for an agent
@@ -27,7 +27,7 @@ library LibVincentUserFacet {
      * @param appId The ID of the app being unpermitted
      * @param appVersion The version of the app being unpermitted
      */
-    event AppVersionUnPermitted(address indexed agentAddress, uint40 indexed appId, uint24 indexed appVersion);
+    event AppVersionUnPermitted(address indexed agentAddress, uint40 indexed appId, uint24 indexed appVersion, address pkpSigner, uint256 pkpSignerPubKey);
 
     /**
      * @notice Emitted when an app version is re-permitted for an agent
@@ -35,7 +35,7 @@ library LibVincentUserFacet {
      * @param appId The ID of the app being re-permitted
      * @param appVersion The version number of the app being re-permitted
      */
-    event AppVersionRePermitted(address indexed agentAddress, uint40 indexed appId, uint24 indexed appVersion);
+    event AppVersionRePermitted(address indexed agentAddress, uint40 indexed appId, uint24 indexed appVersion, address pkpSigner, uint256 pkpSignerPubKey);
 
     /**
      * @notice Emitted when an ability policy parameters are set
@@ -184,4 +184,9 @@ library LibVincentUserFacet {
      * @param appVersion The version of the app
      */
     error AppNeverPermitted(address agentAddress, uint40 appId, uint24 appVersion);
+
+    /**
+     * @notice Error thrown when a zero PKP signer public key is provided
+     */
+    error ZeroPkpSignerPubKeyNotAllowed();
 }

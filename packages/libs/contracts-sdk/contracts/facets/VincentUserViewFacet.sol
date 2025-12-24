@@ -97,6 +97,8 @@ contract VincentUserViewFacet is VincentBase {
     struct PermittedApp {
         uint40 appId;
         uint24 version;
+        address pkpSigner;
+        uint256 pkpSignerPubKey;
         bool versionEnabled;
         bool isDeleted;
     }
@@ -112,6 +114,8 @@ contract VincentUserViewFacet is VincentBase {
     struct UnpermittedApp {
         uint40 appId;
         uint24 previousPermittedVersion;
+        address pkpSigner;
+        uint256 pkpSignerPubKey;
         bool versionEnabled;
         bool isDeleted;
     }
@@ -237,7 +241,7 @@ contract VincentUserViewFacet is VincentBase {
      * @param agentAddress The agent address to query
      * @return pkpSigner The PKP signer address
      */
-    function getAgentPkpSigner(address agentAddress) external view returns (address pkpSigner) {
+    function getAgentPkpSigner(address agentAddress) external view returns (address pkpSigner, uint256 pkpSignerPubKey) {
         // Check for invalid agent address
         if (agentAddress == address(0)) {
             revert ZeroAddressNotAllowed();
@@ -245,6 +249,7 @@ contract VincentUserViewFacet is VincentBase {
 
         VincentUserStorage.UserStorage storage us_ = VincentUserStorage.userStorage();
         pkpSigner = us_.agentAddressToAgentStorage[agentAddress].pkpSigner;
+        pkpSignerPubKey = us_.agentAddressToAgentStorage[agentAddress].pkpSignerPubKey;
 
         // Revert if agent is not registered (pkpSigner not set)
         if (pkpSigner == address(0)) {
@@ -281,13 +286,16 @@ contract VincentUserViewFacet is VincentBase {
 
             // If no app is permitted (appId == 0), leave permittedApp at default values
             if (appId != 0) {
-                uint24 version = us_.agentAddressToAgentStorage[agentAddress].permittedAppVersion;
+                VincentUserStorage.AgentStorage storage agentStorage = us_.agentAddressToAgentStorage[agentAddress];
+                uint24 version = agentStorage.permittedAppVersion;
                 bool enabled = as_.appIdToApp[appId].appVersions[getAppVersionIndex(version)].enabled;
                 bool isDeleted = as_.appIdToApp[appId].isDeleted;
 
                 results[i].permittedApp = PermittedApp({
                     appId: appId,
                     version: version,
+                    pkpSigner: agentStorage.pkpSigner,
+                    pkpSignerPubKey: agentStorage.pkpSignerPubKey,
                     versionEnabled: enabled,
                     isDeleted: isDeleted
                 });
@@ -545,6 +553,8 @@ contract VincentUserViewFacet is VincentBase {
                 results[i].unpermittedApp = UnpermittedApp({
                     appId: lastAppId,
                     previousPermittedVersion: lastVersion,
+                    pkpSigner: agentStorage.lastPermittedPkpSigner,
+                    pkpSignerPubKey: agentStorage.lastPermittedPkpSignerPubKey,
                     versionEnabled: enabled,
                     isDeleted: isDeleted
                 });

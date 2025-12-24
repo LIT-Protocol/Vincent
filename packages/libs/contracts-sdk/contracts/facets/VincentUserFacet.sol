@@ -37,6 +37,7 @@ contract VincentUserFacet is VincentBase {
     function permitAppVersion(
         address userAddress,
         address pkpSigner,
+        uint256 pkpSignerPubKey,
         uint40 appId,
         uint24 appVersion,
         string[] calldata abilityIpfsCids,
@@ -56,6 +57,10 @@ contract VincentUserFacet is VincentBase {
 
         if (pkpSigner == address(0)) {
             revert ZeroAddressNotAllowed();
+        }
+
+        if (pkpSignerPubKey == 0) {
+            revert LibVincentUserFacet.ZeroPkpSignerPubKeyNotAllowed();
         }
 
         if (abilityCount == 0 || policyIpfsCids.length == 0 || policyParameterValues.length == 0) {
@@ -99,23 +104,24 @@ contract VincentUserFacet is VincentBase {
             // Remove the agent address from the previous AppVersion's delegated agent addresses
             previousAppVersion.delegatedAgentAddresses.remove(msg.sender);
 
-            emit LibVincentUserFacet.AppVersionUnPermitted(msg.sender, agentStorage.permittedAppId, agentStorage.permittedAppVersion);
+            emit LibVincentUserFacet.AppVersionUnPermitted(msg.sender, agentStorage.permittedAppId, agentStorage.permittedAppVersion, agentStorage.pkpSigner, agentStorage.pkpSignerPubKey);
         }
 
         // Add the agent address to the app version's delegated agent addresses
         newAppVersion.delegatedAgentAddresses.add(msg.sender);
-        
+
         agentStorage.pkpSigner = pkpSigner;
+        agentStorage.pkpSignerPubKey = pkpSignerPubKey;
         agentStorage.permittedAppId = appId;
         agentStorage.permittedAppVersion = appVersion;
 
         // Add agent address to the User's registered agent addresses
         // .add will not add the agent address again if it is already registered
         if (us_.userAddressToRegisteredAgentAddresses[userAddress].add(msg.sender)) {
-            emit LibVincentUserFacet.NewAgentRegistered(userAddress, msg.sender);
+            emit LibVincentUserFacet.NewAgentRegistered(userAddress, msg.sender, pkpSigner, pkpSignerPubKey);
         }
 
-        emit LibVincentUserFacet.AppVersionPermitted(msg.sender, appId, appVersion);
+        emit LibVincentUserFacet.AppVersionPermitted(msg.sender, appId, appVersion, pkpSigner, pkpSignerPubKey);
 
         _setAbilityPolicyParameters(
             appId, appVersion, abilityIpfsCids, policyIpfsCids, policyParameterValues
@@ -136,7 +142,9 @@ contract VincentUserFacet is VincentBase {
         onlyRegisteredAppVersion(appId, appVersion)
     {
         VincentUserStorage.UserStorage storage us_ = VincentUserStorage.userStorage();
-        if (us_.agentAddressToAgentStorage[msg.sender].permittedAppVersion != appVersion) {
+        VincentUserStorage.AgentStorage storage agentStorage = us_.agentAddressToAgentStorage[msg.sender];
+
+        if (agentStorage.permittedAppVersion != appVersion) {
             revert LibVincentUserFacet.AppVersionNotPermitted(msg.sender, appId, appVersion);
         }
 
@@ -145,17 +153,19 @@ contract VincentUserFacet is VincentBase {
         VincentAppStorage.appStorage().appIdToApp[appId].appVersions[getAppVersionIndex(appVersion)].delegatedAgentAddresses
             .remove(msg.sender);
 
-        // Store the app id and version as last permitted before removing (for potential re-permitting)
-        us_.agentAddressToAgentStorage[msg.sender].lastPermittedAppId = appId;
-        us_.agentAddressToAgentStorage[msg.sender].lastPermittedAppVersion = appVersion;
+        // Store the app id, version and pkp signer as last permitted before removing (for potential re-permitting)
+        agentStorage.lastPermittedAppId = appId;
+        agentStorage.lastPermittedAppVersion = appVersion;
+        agentStorage.lastPermittedPkpSigner = agentStorage.pkpSigner;
+        agentStorage.lastPermittedPkpSignerPubKey = agentStorage.pkpSignerPubKey;
 
         // Remove the App Version from the User's Permitted App
-        us_.agentAddressToAgentStorage[msg.sender].permittedAppVersion = 0;
-        us_.agentAddressToAgentStorage[msg.sender].permittedAppId = 0;
-        // TODO What happens to the PKP signer when repermitting?
-        us_.agentAddressToAgentStorage[msg.sender].pkpSigner = address(0);
+        agentStorage.permittedAppVersion = 0;
+        agentStorage.permittedAppId = 0;
+        agentStorage.pkpSigner = address(0);
+        agentStorage.pkpSignerPubKey = 0;
 
-        emit LibVincentUserFacet.AppVersionUnPermitted(msg.sender, appId, appVersion);
+        emit LibVincentUserFacet.AppVersionUnPermitted(msg.sender, appId, appVersion, agentStorage.lastPermittedPkpSigner, agentStorage.lastPermittedPkpSignerPubKey);
     }
 
     /**
@@ -206,8 +216,10 @@ contract VincentUserFacet is VincentBase {
         appVersion.delegatedAgentAddresses.add(msg.sender);
         agentStorage.permittedAppId = appId;
         agentStorage.permittedAppVersion = agentStorage.lastPermittedAppVersion;
+        agentStorage.pkpSigner = agentStorage.lastPermittedPkpSigner;
+        agentStorage.pkpSignerPubKey = agentStorage.lastPermittedPkpSignerPubKey;
 
-        emit LibVincentUserFacet.AppVersionRePermitted(msg.sender, appId, agentStorage.lastPermittedAppVersion);
+        emit LibVincentUserFacet.AppVersionRePermitted(msg.sender, appId, agentStorage.lastPermittedAppVersion, agentStorage.pkpSigner, agentStorage.pkpSignerPubKey);
     }
 
     /**

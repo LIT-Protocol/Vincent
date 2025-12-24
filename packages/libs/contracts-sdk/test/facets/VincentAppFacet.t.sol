@@ -666,7 +666,7 @@ contract VincentAppFacetTest is TestCommon {
 
         vm.startPrank(APP_USER_FRANK);
         vincentUserFacet.permitAppVersion(
-            APP_USER_FRANK, FRANK_PKP_SIGNER, newAppId, newAppVersion, abilityIpfsCids, policyIpfsCids, policyParameterValues
+            APP_USER_FRANK, FRANK_PKP_SIGNER, 123456789, newAppId, newAppVersion, abilityIpfsCids, policyIpfsCids, policyParameterValues
         );
         vm.stopPrank();
 
@@ -721,7 +721,7 @@ contract VincentAppFacetTest is TestCommon {
 
         vm.startPrank(APP_USER_FRANK);
         vincentUserFacet.permitAppVersion(
-            APP_USER_FRANK, FRANK_PKP_SIGNER, newAppId, newAppVersion, abilityIpfsCids, policyIpfsCids, policyParameterValues
+            APP_USER_FRANK, FRANK_PKP_SIGNER, 123456789, newAppId, newAppVersion, abilityIpfsCids, policyIpfsCids, policyParameterValues
         );
         vm.stopPrank();
 

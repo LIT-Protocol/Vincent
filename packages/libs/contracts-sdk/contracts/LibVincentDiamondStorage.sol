@@ -66,10 +66,13 @@ library VincentUserStorage {
 
     struct AgentStorage {
         address pkpSigner;
+        uint256 pkpSignerPubKey;
         uint40 permittedAppId;
         uint24 permittedAppVersion;
         uint40 lastPermittedAppId;
         uint24 lastPermittedAppVersion;
+        address lastPermittedPkpSigner;
+        uint256 lastPermittedPkpSignerPubKey;
         // App version -> Ability IPFS CID hash -> Ability Policy IPFS CID hash -> User's CBOR2 encoded Policy parameter values
         mapping(uint24 => mapping(bytes32 => mapping(bytes32 => bytes)))
             abilityPolicyParameterValues;

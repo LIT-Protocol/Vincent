@@ -9,10 +9,10 @@ build: ## Build the contracts
 	forge build
 
 test: ## Run the tests
-	forge test
+	forge test --ffi
 
 test-verbose: ## Run the tests with verbose output
-	forge test -vvv
+	forge test --ffi -vvv
 
 test-match: ## Run tests matching a pattern. Usage: make test-match PATTERN=MyTest
 	@if [ -z "$(PATTERN)" ]; then \
