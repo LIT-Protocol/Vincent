@@ -541,18 +541,13 @@ contract VincentUserViewFacet is VincentBase {
 
             // Check if agent has unpermitted an app (no current app but had a previous one)
             if (agentStorage.permittedAppId == 0 && agentStorage.lastPermittedAppId != 0) {
-                uint40 lastAppId = agentStorage.lastPermittedAppId;
-                uint24 lastVersion = agentStorage.lastPermittedAppVersion;
-                bool enabled = as_.appIdToApp[lastAppId].appVersions[getAppVersionIndex(lastVersion)].enabled;
-                bool isDeleted = as_.appIdToApp[lastAppId].isDeleted;
-
                 results[i].unpermittedApp = UnpermittedApp({
-                    appId: lastAppId,
-                    previousPermittedVersion: lastVersion,
+                    appId: agentStorage.lastPermittedAppId,
+                    previousPermittedVersion: agentStorage.lastPermittedAppVersion,
                     pkpSigner: agentStorage.lastPermittedPkpSigner,
                     pkpSignerPubKey: agentStorage.lastPermittedPkpSignerPubKey,
-                    versionEnabled: enabled,
-                    isDeleted: isDeleted
+                    versionEnabled: as_.appIdToApp[agentStorage.lastPermittedAppId].appVersions[getAppVersionIndex(agentStorage.lastPermittedAppVersion)].enabled,
+                    isDeleted: as_.appIdToApp[agentStorage.lastPermittedAppId].isDeleted
                 });
             }
             // If permittedAppId == 0 and lastPermittedAppId == 0, the agent never had an app - leave unpermittedApp at default values
