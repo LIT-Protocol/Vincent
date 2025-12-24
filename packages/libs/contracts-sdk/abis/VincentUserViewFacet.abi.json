@@ -14,12 +14,36 @@
   },
   {
     "type": "function",
+    "name": "getAgentPkpSigner",
+    "inputs": [
+      {
+        "name": "agentAddress",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "pkpSigner",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "pkpSignerPubKey",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
     "name": "getAllAbilitiesAndPoliciesForApp",
     "inputs": [
       {
-        "name": "pkpTokenId",
-        "type": "uint256",
-        "internalType": "uint256"
+        "name": "agentAddress",
+        "type": "address",
+        "internalType": "address"
       },
       {
         "name": "appId",
@@ -62,31 +86,7 @@
   },
   {
     "type": "function",
-    "name": "getAllPermittedAppIdsForPkp",
-    "inputs": [
-      {
-        "name": "pkpTokenId",
-        "type": "uint256",
-        "internalType": "uint256"
-      },
-      {
-        "name": "offset",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ],
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint40[]",
-        "internalType": "uint40[]"
-      }
-    ],
-    "stateMutability": "view"
-  },
-  {
-    "type": "function",
-    "name": "getAllRegisteredAgentPkps",
+    "name": "getAllRegisteredAgentAddressesForUser",
     "inputs": [
       {
         "name": "userAddress",
@@ -102,20 +102,20 @@
     "outputs": [
       {
         "name": "",
-        "type": "uint256[]",
-        "internalType": "uint256[]"
+        "type": "address[]",
+        "internalType": "address[]"
       }
     ],
     "stateMutability": "view"
   },
   {
     "type": "function",
-    "name": "getLastPermittedAppVersionForPkp",
+    "name": "getLastPermittedAppVersionForAgent",
     "inputs": [
       {
-        "name": "pkpTokenId",
-        "type": "uint256",
-        "internalType": "uint256"
+        "name": "agentAddress",
+        "type": "address",
+        "internalType": "address"
       },
       {
         "name": "appId",
@@ -134,63 +134,29 @@
   },
   {
     "type": "function",
-    "name": "getPermittedAppVersionForPkp",
+    "name": "getPermittedAppForAgents",
     "inputs": [
       {
-        "name": "pkpTokenId",
-        "type": "uint256",
-        "internalType": "uint256"
-      },
-      {
-        "name": "appId",
-        "type": "uint40",
-        "internalType": "uint40"
-      }
-    ],
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint24",
-        "internalType": "uint24"
-      }
-    ],
-    "stateMutability": "view"
-  },
-  {
-    "type": "function",
-    "name": "getPermittedAppsForPkps",
-    "inputs": [
-      {
-        "name": "pkpTokenIds",
-        "type": "uint256[]",
-        "internalType": "uint256[]"
-      },
-      {
-        "name": "offset",
-        "type": "uint256",
-        "internalType": "uint256"
-      },
-      {
-        "name": "pageSize",
-        "type": "uint256",
-        "internalType": "uint256"
+        "name": "agentAddresses",
+        "type": "address[]",
+        "internalType": "address[]"
       }
     ],
     "outputs": [
       {
         "name": "results",
         "type": "tuple[]",
-        "internalType": "struct VincentUserViewFacet.PkpPermittedApps[]",
+        "internalType": "struct VincentUserViewFacet.AgentPermittedApp[]",
         "components": [
           {
-            "name": "pkpTokenId",
-            "type": "uint256",
-            "internalType": "uint256"
+            "name": "agentAddress",
+            "type": "address",
+            "internalType": "address"
           },
           {
-            "name": "permittedApps",
-            "type": "tuple[]",
-            "internalType": "struct VincentUserViewFacet.PermittedApp[]",
+            "name": "permittedApp",
+            "type": "tuple",
+            "internalType": "struct VincentUserViewFacet.PermittedApp",
             "components": [
               {
                 "name": "appId",
@@ -201,6 +167,16 @@
                 "name": "version",
                 "type": "uint24",
                 "internalType": "uint24"
+              },
+              {
+                "name": "pkpSigner",
+                "type": "address",
+                "internalType": "address"
+              },
+              {
+                "name": "pkpSignerPubKey",
+                "type": "uint256",
+                "internalType": "uint256"
               },
               {
                 "name": "versionEnabled",
@@ -221,34 +197,53 @@
   },
   {
     "type": "function",
-    "name": "getUnpermittedAppsForPkps",
+    "name": "getPermittedAppVersionForAgent",
     "inputs": [
       {
-        "name": "pkpTokenIds",
-        "type": "uint256[]",
-        "internalType": "uint256[]"
+        "name": "agentAddress",
+        "type": "address",
+        "internalType": "address"
       },
       {
-        "name": "offset",
-        "type": "uint256",
-        "internalType": "uint256"
+        "name": "appId",
+        "type": "uint40",
+        "internalType": "uint40"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint24",
+        "internalType": "uint24"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getUnpermittedAppForAgents",
+    "inputs": [
+      {
+        "name": "agentAddresses",
+        "type": "address[]",
+        "internalType": "address[]"
       }
     ],
     "outputs": [
       {
         "name": "results",
         "type": "tuple[]",
-        "internalType": "struct VincentUserViewFacet.PkpUnpermittedApps[]",
+        "internalType": "struct VincentUserViewFacet.AgentUnpermittedApp[]",
         "components": [
           {
-            "name": "pkpTokenId",
-            "type": "uint256",
-            "internalType": "uint256"
+            "name": "agentAddress",
+            "type": "address",
+            "internalType": "address"
           },
           {
-            "name": "unpermittedApps",
-            "type": "tuple[]",
-            "internalType": "struct VincentUserViewFacet.UnpermittedApp[]",
+            "name": "unpermittedApp",
+            "type": "tuple",
+            "internalType": "struct VincentUserViewFacet.UnpermittedApp",
             "components": [
               {
                 "name": "appId",
@@ -259,6 +254,16 @@
                 "name": "previousPermittedVersion",
                 "type": "uint24",
                 "internalType": "uint24"
+              },
+              {
+                "name": "pkpSigner",
+                "type": "address",
+                "internalType": "address"
+              },
+              {
+                "name": "pkpSignerPubKey",
+                "type": "uint256",
+                "internalType": "uint256"
               },
               {
                 "name": "versionEnabled",
@@ -287,9 +292,9 @@
         "internalType": "address"
       },
       {
-        "name": "pkpTokenId",
-        "type": "uint256",
-        "internalType": "uint256"
+        "name": "agentAddress",
+        "type": "address",
+        "internalType": "address"
       },
       {
         "name": "abilityIpfsCid",
@@ -316,9 +321,9 @@
         "internalType": "address"
       },
       {
-        "name": "pkpTokenId",
-        "type": "uint256",
-        "internalType": "uint256"
+        "name": "agentAddress",
+        "type": "address",
+        "internalType": "address"
       },
       {
         "name": "abilityIpfsCid",
@@ -368,6 +373,38 @@
       }
     ],
     "stateMutability": "view"
+  },
+  {
+    "type": "error",
+    "name": "AgentNotPermittedForAppVersion",
+    "inputs": [
+      {
+        "name": "agentAddress",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "appId",
+        "type": "uint40",
+        "internalType": "uint40"
+      },
+      {
+        "name": "appVersion",
+        "type": "uint24",
+        "internalType": "uint24"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "AgentNotRegistered",
+    "inputs": [
+      {
+        "name": "agentAddress",
+        "type": "address",
+        "internalType": "address"
+      }
+    ]
   },
   {
     "type": "error",
@@ -462,12 +499,7 @@
   },
   {
     "type": "error",
-    "name": "InvalidPkpTokenId",
-    "inputs": []
-  },
-  {
-    "type": "error",
-    "name": "NoRegisteredPkpsFound",
+    "name": "NoRegisteredAgentsFound",
     "inputs": [
       {
         "name": "userAddress",
@@ -478,33 +510,12 @@
   },
   {
     "type": "error",
-    "name": "PkpNotPermittedForAppVersion",
+    "name": "PolicyParameterNotSetForAgent",
     "inputs": [
       {
-        "name": "pkpTokenId",
-        "type": "uint256",
-        "internalType": "uint256"
-      },
-      {
-        "name": "appId",
-        "type": "uint40",
-        "internalType": "uint40"
-      },
-      {
-        "name": "appVersion",
-        "type": "uint24",
-        "internalType": "uint24"
-      }
-    ]
-  },
-  {
-    "type": "error",
-    "name": "PolicyParameterNotSetForPkp",
-    "inputs": [
-      {
-        "name": "pkpTokenId",
-        "type": "uint256",
-        "internalType": "uint256"
+        "name": "agentAddress",
+        "type": "address",
+        "internalType": "address"
       },
       {
         "name": "appId",

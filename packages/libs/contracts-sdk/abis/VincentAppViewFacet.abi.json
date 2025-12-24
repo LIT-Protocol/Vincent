@@ -136,9 +136,9 @@
             "internalType": "bool"
           },
           {
-            "name": "delegatedAgentPkpTokenIds",
-            "type": "uint256[]",
-            "internalType": "uint256[]"
+            "name": "delegatedAgents",
+            "type": "address[]",
+            "internalType": "address[]"
           },
           {
             "name": "abilities",
@@ -193,7 +193,7 @@
   },
   {
     "type": "function",
-    "name": "getDelegatedAgentPkpTokenIds",
+    "name": "getDelegatedAgentAddresses",
     "inputs": [
       {
         "name": "appId",
@@ -213,9 +213,9 @@
     ],
     "outputs": [
       {
-        "name": "delegatedAgentPkpTokenIds",
-        "type": "uint256[]",
-        "internalType": "uint256[]"
+        "name": "delegatedAgentAddresses",
+        "type": "address[]",
+        "internalType": "address[]"
       }
     ],
     "stateMutability": "view"
@@ -314,7 +314,7 @@
   },
   {
     "type": "error",
-    "name": "NoDelegatedAgentPkpsFound",
+    "name": "NoDelegatedAgentsFound",
     "inputs": [
       {
         "name": "appId",
