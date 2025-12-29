@@ -54,12 +54,6 @@ nx action:deploy ability-relay-link
 5. Write comprehensive tests for all functionality
 6. Document the ability's purpose and usage
 
-## Integration with Policies
-
-This ability can be integrated with various Vincent Policies to enforce constraints. When developing or modifying the ability, consider how it will be used with policies such as:
-
-- Vincent Policy Spending Limit
-
 ## Testing
 
 Write unit tests for all functionality:
@@ -86,5 +80,3 @@ pnpm test
 
 - [Vincent Documentation](https://docs.heyvincent.ai/)
 - [Vincent Ability SDK Documentation](../../libs/ability-sdk/README.md)
-- [ERC20 Standard](https://eips.ethereum.org/EIPS/eip-20)
-- [ERC4626 Standard](https://eips.ethereum.org/EIPS/eip-4626)
