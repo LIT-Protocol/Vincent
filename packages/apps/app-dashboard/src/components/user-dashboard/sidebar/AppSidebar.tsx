@@ -3,7 +3,7 @@ import { useLocation, Link } from 'react-router-dom';
 import { Package, LogOut, HelpCircle } from 'lucide-react';
 import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
 import { useTheme } from '@/hooks/useTheme';
-import { useClearAuthInfo } from '@/hooks/user-dashboard/useAuthInfo';
+import { useWagmiSigner } from '@/hooks/developer-dashboard/useWagmiSigner';
 import { AccountTooltip } from '@/components/shared/AccountTooltip';
 import {
   Sidebar,
@@ -36,15 +36,15 @@ const menuItems: MenuItem[] = [
 
 export function AppSidebar() {
   const location = useLocation();
-  const { clearAuthInfo } = useClearAuthInfo();
+  const { disconnect } = useWagmiSigner();
   const isDark = useTheme();
 
   const isActiveRoute = (route: string) => {
     return location.pathname.startsWith(route);
   };
 
-  const handleSignOut = async () => {
-    await clearAuthInfo();
+  const handleSignOut = () => {
+    disconnect();
   };
 
   return (

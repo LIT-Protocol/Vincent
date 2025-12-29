@@ -4,9 +4,7 @@ import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-
 import { getClient } from '@lit-protocol/vincent-contracts-sdk';
 import * as Sentry from '@sentry/react';
 
-import { initPkpSigner } from '@/utils/developer-dashboard/initPkpSigner';
-import useReadAuthInfo from '@/hooks/user-dashboard/useAuthInfo';
-import { addPayee } from '@/utils/user-dashboard/addPayee';
+import { useWagmiSigner } from '@/hooks/developer-dashboard/useWagmiSigner';
 import { AppDetailsView } from '../views/AppDetailsView';
 import { EditAppForm } from '../forms/EditAppForm';
 import { EditPublishedAppForm } from '../forms/EditPublishedAppForm';
@@ -43,7 +41,7 @@ export function AppOverviewWrapper() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [currentView, setCurrentView] = useState<ViewType>('details');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { authInfo, sessionSigs } = useReadAuthInfo();
+  const { getSigner, address } = useWagmiSigner();
 
   const {
     data: app,
@@ -109,18 +107,6 @@ export function AppOverviewWrapper() {
   const handleEditAppSubmit = async (data: EditAppFormData | EditPublishedAppFormData) => {
     setIsSubmitting(true);
     try {
-      // identify NEW delegatee addresses that weren't in the original app
-      const originalDelegateeAddresses = app?.delegateeAddresses || [];
-      const newDelegateeAddresses = (
-        'delegateeAddresses' in data ? data.delegateeAddresses || [] : []
-      ).filter((address: string) => !originalDelegateeAddresses.includes(address));
-
-      await Promise.all(
-        newDelegateeAddresses.map(async (address: string) => {
-          await addPayee(address);
-        }),
-      );
-
       await editApp({
         appId: Number(appId),
         appEdit: data,
@@ -170,8 +156,8 @@ export function AppOverviewWrapper() {
       // Step 2: If published on-chain, also delete on-chain
       if (isPublished) {
         try {
-          const pkpSigner = await initPkpSigner({ authInfo, sessionSigs });
-          const client = getClient({ signer: pkpSigner });
+          const signer = await getSigner();
+          const client = getClient({ signer });
 
           await client.deleteApp({
             appId: Number(appId),
@@ -186,7 +172,7 @@ export function AppOverviewWrapper() {
               appId: appId,
               registryDeleted: true,
               onChainDeleted: false,
-              userPkp: authInfo?.userPKP?.ethAddress,
+              userAddress: address,
             },
           });
         }

@@ -4,8 +4,7 @@ import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-
 import { getClient } from '@lit-protocol/vincent-contracts-sdk';
 import MutationButtonStates, { SkeletonButton } from '@/components/shared/ui/MutationButtonStates';
 import { StatusMessage } from '@/components/shared/ui/statusMessage';
-import { initPkpSigner } from '@/utils/developer-dashboard/initPkpSigner';
-import useReadAuthInfo from '@/hooks/user-dashboard/useAuthInfo';
+import { useWagmiSigner } from '@/hooks/developer-dashboard/useWagmiSigner';
 
 type AppMismatchResolutionProps = {
   appId: number;
@@ -23,7 +22,7 @@ export function AppMismatchResolution({
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const { authInfo, sessionSigs } = useReadAuthInfo();
+  const { getSigner } = useWagmiSigner();
 
   // Registry mutations
   const [deleteAppInRegistry, { isLoading: isDeletingInRegistry, error: deleteAppError }] =
@@ -37,8 +36,8 @@ export function AppMismatchResolution({
     setIsProcessing(true);
 
     try {
-      const pkpSigner = await initPkpSigner({ authInfo, sessionSigs });
-      const client = getClient({ signer: pkpSigner });
+      const signer = await getSigner();
+      const client = getClient({ signer });
 
       if (registryDeleted) {
         await client.deleteApp({
