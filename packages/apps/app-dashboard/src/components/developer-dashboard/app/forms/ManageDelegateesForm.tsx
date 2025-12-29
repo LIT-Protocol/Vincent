@@ -18,9 +18,7 @@ import { Plus, Trash2, Dices, Check } from 'lucide-react';
 import { TextField } from '../../form-fields';
 import { CopyButton } from '@/components/shared/ui/CopyButton';
 import { getClient } from '@lit-protocol/vincent-contracts-sdk';
-import { initPkpSigner } from '@/utils/developer-dashboard/initPkpSigner';
-import { addPayee } from '@/utils/user-dashboard/addPayee';
-import useReadAuthInfo from '@/hooks/user-dashboard/useAuthInfo';
+import { useWagmiSigner } from '@/hooks/developer-dashboard/useWagmiSigner';
 import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
 
 const AddDelegateeSchema = z.object({
@@ -41,7 +39,7 @@ export function ManageDelegateesForm({
   refetchBlockchainData,
 }: ManageDelegateesFormProps) {
   const { appId } = useParams<{ appId: string }>();
-  const { authInfo, sessionSigs } = useReadAuthInfo();
+  const { getSigner } = useWagmiSigner();
   const [error, setError] = useState<string>('');
   const [removingDelegatee, setRemovingDelegatee] = useState<string | null>(null);
   const [generatedWallet, setGeneratedWallet] = useState<{
@@ -98,8 +96,8 @@ export function ManageDelegateesForm({
     setRemovingDelegatee(addressToRemove);
 
     try {
-      const pkpSigner = await initPkpSigner({ authInfo, sessionSigs });
-      const client = getClient({ signer: pkpSigner });
+      const signer = await getSigner();
+      const client = getClient({ signer });
 
       await client.removeDelegatee({
         appId: Number(appId),
@@ -138,11 +136,10 @@ export function ManageDelegateesForm({
       throw new Error('DelegateeAlreadyRegistered');
     }
 
-    // Add the specific delegatee address as a payee
-    await addPayee(address);
+    // TODO: Add delegatees batch endpoint in the contracts, make sure to addPayees as well
 
-    const pkpSigner = await initPkpSigner({ authInfo, sessionSigs });
-    const client = getClient({ signer: pkpSigner });
+    const signer = await getSigner();
+    const client = getClient({ signer });
 
     await client.addDelegatee({
       appId: Number(appId),

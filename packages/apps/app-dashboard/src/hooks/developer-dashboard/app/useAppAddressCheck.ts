@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router';
-import useReadAuthInfo from '@/hooks/user-dashboard/useAuthInfo';
+import { useAuth } from '@/hooks/developer-dashboard/useAuth';
 import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
 
 interface AddressCheckResult {
@@ -9,14 +9,13 @@ interface AddressCheckResult {
 }
 
 /**
- * Checks if the user's PKP address is the same as the app's manager address.
+ * Checks if the user's authenticated address is the same as the app's manager address.
  * Returns authorization status and handles redirect for unauthorized access.
  * Fetches the app data based on the current route.
  */
 export function useAppAddressCheck(): AddressCheckResult {
   const { appId } = useParams<{ appId: string }>();
-  const { authInfo, isProcessing: authLoading } = useReadAuthInfo();
-  const address = authInfo?.userPKP?.ethAddress;
+  const { authAddress: address, isLoading: authLoading } = useAuth();
 
   // Fetch app data
   const {

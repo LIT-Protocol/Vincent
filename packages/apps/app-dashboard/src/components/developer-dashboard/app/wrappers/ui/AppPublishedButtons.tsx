@@ -7,8 +7,7 @@ import { App } from '@/types/developer-dashboard/appTypes';
 import { App as ContractApp } from '@lit-protocol/vincent-contracts-sdk';
 import MutationButtonStates from '@/components/shared/ui/MutationButtonStates';
 import { AppMismatchResolution } from './AppMismatchResolution';
-import { initPkpSigner } from '@/utils/developer-dashboard/initPkpSigner';
-import useReadAuthInfo from '@/hooks/user-dashboard/useAuthInfo';
+import { useWagmiSigner } from '@/hooks/developer-dashboard/useWagmiSigner';
 import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
 import { ActionButton } from '@/components/developer-dashboard/ui/ActionButton';
 
@@ -28,7 +27,7 @@ export function AppPublishedButtons({
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const { authInfo, sessionSigs } = useReadAuthInfo();
+  const { getSigner, address } = useWagmiSigner();
 
   // Registry mutations
   const [undeleteAppInRegistry, { isLoading: isUndeletingInRegistry, error: undeleteAppError }] =
@@ -47,8 +46,8 @@ export function AppPublishedButtons({
 
     try {
       // Step 1: Update on-chain first (if published)
-      const pkpSigner = await initPkpSigner({ authInfo, sessionSigs });
-      const client = getClient({ signer: pkpSigner });
+      const signer = await getSigner();
+      const client = getClient({ signer });
 
       await client.undeleteApp({
         appId: appData.appId,
@@ -74,7 +73,7 @@ export function AppPublishedButtons({
         Sentry.captureException(error, {
           extra: {
             context: 'AppPublishedButtons.undeleteApp',
-            userPkp: authInfo?.userPKP?.ethAddress,
+            userAddress: address,
           },
         });
       }

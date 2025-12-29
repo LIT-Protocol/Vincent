@@ -5,7 +5,6 @@ import * as Sentry from '@sentry/react';
 import { reactClient } from '@lit-protocol/vincent-registry-sdk';
 import { getCurrentJwtTokenForStore } from '@/hooks/developer-dashboard/useVincentApiWithJWT';
 import { env } from '@/config/env';
-import { agentPkpsApi } from './agentPkpsApi';
 
 const { VITE_ENV } = env;
 
@@ -80,16 +79,11 @@ export const rtkQueryErrorLogger: Middleware = () => (next) => (action) => {
 export const store = configureStore({
   reducer: {
     vincentApi: (vincentApiClientReact as any).reducer,
-    agentPkpsApi: agentPkpsApi.reducer,
   },
   // Adding the api middleware enables caching, invalidation, polling,
   // and other useful features of `rtk-query`.
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(
-      (vincentApiClientReact as any).middleware,
-      agentPkpsApi.middleware,
-      rtkQueryErrorLogger,
-    ),
+    getDefaultMiddleware().concat((vincentApiClientReact as any).middleware, rtkQueryErrorLogger),
 });
 
 export type RootState = ReturnType<typeof store.getState>;

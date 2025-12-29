@@ -4,8 +4,7 @@ import { AppVersion } from '@/types/developer-dashboard/appTypes';
 import { AppVersion as ContractAppVersion, getClient } from '@lit-protocol/vincent-contracts-sdk';
 import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
 import { AppVersionMismatchResolution } from './AppVersionMismatchResolution';
-import { initPkpSigner } from '@/utils/developer-dashboard/initPkpSigner';
-import useReadAuthInfo from '@/hooks/user-dashboard/useAuthInfo';
+import { useWagmiSigner } from '@/hooks/developer-dashboard/useWagmiSigner';
 import { theme } from '@/components/user-dashboard/connect/ui/theme';
 import { ActionButton } from '@/components/developer-dashboard/ui/ActionButton';
 import { StatusMessage } from '@/components/shared/ui/statusMessage';
@@ -32,7 +31,7 @@ export function AppVersionPublishedButtons({
     null,
   );
   const [actionError, setActionError] = useState<string | null>(null);
-  const { authInfo, sessionSigs } = useReadAuthInfo();
+  const { getSigner } = useWagmiSigner();
 
   // Mutations for enable/disable
   const [enableAppVersion, { isLoading: isEnabling }] =
@@ -69,8 +68,8 @@ export function AppVersionPublishedButtons({
       }
 
       // Step 2: Update on-chain
-      const pkpSigner = await initPkpSigner({ authInfo, sessionSigs });
-      const client = getClient({ signer: pkpSigner });
+      const signer = await getSigner();
+      const client = getClient({ signer });
 
       await client.enableAppVersion({
         appId: Number(appId),
