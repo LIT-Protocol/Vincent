@@ -5,7 +5,6 @@ import { getEnv } from './env';
 let ethersHelpers: {
   providers: {
     yellowstone: ethers.providers.JsonRpcProvider;
-    base: ethers.providers.JsonRpcProvider;
   };
   wallets: {
     appDelegatee: Wallet;
@@ -25,7 +24,6 @@ export const getChainHelpers = async () => {
 
   const {
     YELLOWSTONE_RPC_URL,
-    BASE_RPC_URL,
     TEST_FUNDER_PRIVATE_KEY,
     TEST_APP_MANAGER_PRIVATE_KEY,
     TEST_APP_DELEGATEE_PRIVATE_KEY,
@@ -33,12 +31,10 @@ export const getChainHelpers = async () => {
   } = getEnv();
 
   const yellowstoneProvider = new ethers.providers.JsonRpcProvider(YELLOWSTONE_RPC_URL);
-  const baseProvider = new ethers.providers.JsonRpcProvider(BASE_RPC_URL);
 
   ethersHelpers = {
     providers: {
       yellowstone: yellowstoneProvider,
-      base: baseProvider,
     },
     wallets: {
       appDelegatee: new Wallet(TEST_APP_DELEGATEE_PRIVATE_KEY, yellowstoneProvider),

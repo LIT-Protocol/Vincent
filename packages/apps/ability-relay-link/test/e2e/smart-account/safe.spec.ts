@@ -186,7 +186,7 @@ const hasRequiredEnvVars = SAFE_RPC_URL && PIMLICO_RPC_URL && SMART_ACCOUNT_CHAI
         const validUntil = 0;
 
         const abilityParams = {
-          alchemyRpcUrl: ENV.BASE_RPC_URL!,
+          alchemyRpcUrl: ENV.ALCHEMY_RPC_URL!,
           safe4337ModuleAddress: SAFE_4337_MODULE_ADDRESS,
           validAfter,
           validUntil,
@@ -345,7 +345,7 @@ const hasRequiredEnvVars = SAFE_RPC_URL && PIMLICO_RPC_URL && SMART_ACCOUNT_CHAI
         const validUntil = 0;
 
         const abilityParams = {
-          alchemyRpcUrl: ENV.BASE_RPC_URL!,
+          alchemyRpcUrl: ENV.ALCHEMY_RPC_URL!,
           safe4337ModuleAddress: SAFE_4337_MODULE_ADDRESS,
           validAfter,
           validUntil,

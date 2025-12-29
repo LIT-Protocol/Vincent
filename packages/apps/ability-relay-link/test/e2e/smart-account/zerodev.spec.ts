@@ -202,7 +202,7 @@ const hasRequiredEnvVars = ZERODEV_RPC_URL && SMART_ACCOUNT_CHAIN_ID;
         console.log('[vincent userOp]', util.inspect(vincentUserOp, { depth: 10 }));
 
         const abilityParams = {
-          alchemyRpcUrl: ENV.BASE_RPC_URL!,
+          alchemyRpcUrl: ENV.ALCHEMY_RPC_URL!,
           userOp: vincentUserOp,
           entryPointAddress: entryPoint07Address,
         } as any;
@@ -353,7 +353,7 @@ const hasRequiredEnvVars = ZERODEV_RPC_URL && SMART_ACCOUNT_CHAIN_ID;
         console.log('[vincent userOp]', util.inspect(vincentUserOp, { depth: 10 }));
 
         const abilityParams = {
-          alchemyRpcUrl: ENV.BASE_RPC_URL!,
+          alchemyRpcUrl: ENV.ALCHEMY_RPC_URL!,
           userOp: vincentUserOp,
           entryPointAddress: entryPoint07Address,
         } as any;

@@ -100,6 +100,24 @@
         "jestConfig": "packages/apps/ability-relay-link/test/jest.config.js",
         "testMatch": ["<rootDir>/e2e/smart-account/safe.spec.ts"]
       }
+    },
+    "test-e2e-smart-account:zerodev-base-to-arb": {
+      "executor": "@nx/jest:jest",
+      "dependsOn": ["e2e-test-utils:build", "action:deploy"],
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "packages/apps/ability-relay-link/test/jest.config.js",
+        "testMatch": ["<rootDir>/e2e/smart-account/base-to-arb.spec.ts"]
+      }
+    },
+    "test-e2e-smart-account:zerodev-arb-to-base": {
+      "executor": "@nx/jest:jest",
+      "dependsOn": ["e2e-test-utils:build", "action:deploy"],
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "packages/apps/ability-relay-link/test/jest.config.js",
+        "testMatch": ["<rootDir>/e2e/smart-account/arb-to-base.spec.ts"]
+      }
     }
   }
 }
