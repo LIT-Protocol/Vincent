@@ -36,8 +36,11 @@ contract VincentAppFacetTest is TestCommon {
     address APP_DELEGATEE_DAVID = makeAddr("David");
     address APP_DELEGATEE_EVE = makeAddr("Eve");
 
-    address APP_USER_FRANK = makeAddr("Frank");
-    address APP_USER_GEORGE = makeAddr("George");
+    address USER_FRANK = makeAddr("Frank");
+    address USER_GEORGE = makeAddr("George");
+
+    address APP_USER_FRANK = makeAddr("Frank_App_Account");
+    address APP_USER_GEORGE = makeAddr("George_App_Account");
 
     address FRANK_PKP_SIGNER = makeAddr("FrankPkpSigner");
     address GEORGE_PKP_SIGNER = makeAddr("GeorgePkpSigner");
@@ -669,7 +672,7 @@ contract VincentAppFacetTest is TestCommon {
 
         vm.startPrank(APP_USER_FRANK);
         vincentUserFacet.permitAppVersion(
-            APP_USER_FRANK,
+            USER_FRANK,
             FRANK_PKP_SIGNER,
             FRANK_PKP_SIGNER_PUB_KEY,
             newAppId,
@@ -732,7 +735,7 @@ contract VincentAppFacetTest is TestCommon {
         // Permit app for Frank
         vm.startPrank(APP_USER_FRANK);
         vincentUserFacet.permitAppVersion(
-            APP_USER_FRANK,
+            USER_FRANK,
             FRANK_PKP_SIGNER,
             FRANK_PKP_SIGNER_PUB_KEY,
             newAppId,
@@ -746,7 +749,7 @@ contract VincentAppFacetTest is TestCommon {
         // Permit app for George
         vm.startPrank(APP_USER_GEORGE);
         vincentUserFacet.permitAppVersion(
-            APP_USER_GEORGE,
+            USER_GEORGE,
             GEORGE_PKP_SIGNER,
             GEORGE_PKP_SIGNER_PUB_KEY,
             newAppId,
@@ -763,6 +766,13 @@ contract VincentAppFacetTest is TestCommon {
         assertEq(delegatedAgentAddresses.length, 2);
         assertEq(delegatedAgentAddresses[0], APP_USER_FRANK);
         assertEq(delegatedAgentAddresses[1], APP_USER_GEORGE);
+
+        // Verify the reverse mapping: agent address -> user address
+        address userAddressForFrank = vincentUserViewFacet.getUserAddressForAgent(APP_USER_FRANK);
+        assertEq(userAddressForFrank, USER_FRANK, "Frank's agent should map to Frank's user address");
+
+        address userAddressForGeorge = vincentUserViewFacet.getUserAddressForAgent(APP_USER_GEORGE);
+        assertEq(userAddressForGeorge, USER_GEORGE, "George's agent should map to George's user address");
 
         // Fetch with offset 1 - should return only the second agent
         delegatedAgentAddresses = vincentAppViewFacet.getDelegatedAgentAddresses(newAppId, newAppVersion, 1);

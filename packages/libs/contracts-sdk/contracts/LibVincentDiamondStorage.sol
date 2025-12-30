@@ -80,6 +80,8 @@ library VincentUserStorage {
     struct UserStorage {
         // User Address => Registered Agent Addresses
         mapping(address => EnumerableSet.AddressSet) userAddressToRegisteredAgentAddresses;
+        // Registered Agent Addresses => User Address
+        mapping(address => address) registeredAgentAddressToUserAddress;
         // Agent Address -> Agent Storage
         mapping(address => AgentStorage) agentAddressToAgentStorage;
     }

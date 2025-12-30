@@ -240,6 +240,27 @@ contract VincentUserViewFacet is VincentBase {
     }
 
     /**
+     * @notice Gets the user address associated with an agent address
+     * @dev Returns the user address that registered the agent
+     * @param agentAddress The agent address to query
+     * @return userAddress The user address that registered this agent
+     */
+    function getUserAddressForAgent(address agentAddress) external view returns (address userAddress) {
+        // Check for invalid agent address
+        if (agentAddress == address(0)) {
+            revert ZeroAddressNotAllowed();
+        }
+
+        VincentUserStorage.UserStorage storage us_ = VincentUserStorage.userStorage();
+        userAddress = us_.registeredAgentAddressToUserAddress[agentAddress];
+
+        // Revert if agent is not registered
+        if (userAddress == address(0)) {
+            revert AgentNotRegistered(agentAddress);
+        }
+    }
+
+    /**
      * @notice Gets the PKP signer address associated with an agent
      * @dev Returns the PKP signer that was set when the agent permitted an app version
      * @param agentAddress The agent address to query

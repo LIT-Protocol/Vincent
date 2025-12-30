@@ -40,8 +40,11 @@ contract VincentUserFacetTest is Test {
     address APP_DELEGATEE_DAVID = makeAddr("David");
     address APP_DELEGATEE_EVE = makeAddr("Eve");
 
-    address APP_USER_FRANK = makeAddr("Frank");
-    address APP_USER_GEORGE = makeAddr("George");
+    address USER_FRANK = makeAddr("Frank");
+    address USER_GEORGE = makeAddr("George");
+
+    address APP_USER_FRANK = makeAddr("Frank_App_Account");
+    address APP_USER_GEORGE = makeAddr("George_App_Account");
 
     address FRANK_PKP_SIGNER = makeAddr("FrankPkpSigner");
     address GEORGE_PKP_SIGNER = makeAddr("GeorgePkpSigner");
@@ -108,7 +111,7 @@ contract VincentUserFacetTest is Test {
         // Expect events for first permit
         vm.expectEmit(true, true, true, true);
         emit LibVincentUserFacet.NewAgentRegistered(
-            APP_USER_FRANK, FRANK_AGENT_ADDRESS, FRANK_PKP_SIGNER, FRANK_PKP_SIGNER_PUB_KEY
+            USER_FRANK, FRANK_AGENT_ADDRESS, FRANK_PKP_SIGNER, FRANK_PKP_SIGNER_PUB_KEY
         );
         vm.expectEmit(true, true, true, true);
         emit LibVincentUserFacet.AppVersionPermitted(
@@ -126,7 +129,7 @@ contract VincentUserFacetTest is Test {
 
         // Permit App 1 Version 1 for Frank
         vincentUserFacet.permitAppVersion(
-            APP_USER_FRANK,
+            USER_FRANK,
             FRANK_PKP_SIGNER,
             FRANK_PKP_SIGNER_PUB_KEY,
             newAppId_1,
@@ -155,7 +158,7 @@ contract VincentUserFacetTest is Test {
 
         // Permit App 2 Version 1 for Frank
         vincentUserFacet.permitAppVersion(
-            APP_USER_FRANK,
+            USER_FRANK,
             FRANK_PKP_SIGNER,
             FRANK_PKP_SIGNER_PUB_KEY,
             newAppId_2,
@@ -170,7 +173,7 @@ contract VincentUserFacetTest is Test {
         // Expect events for third permit
         vm.expectEmit(true, true, true, true);
         emit LibVincentUserFacet.NewAgentRegistered(
-            APP_USER_GEORGE, GEORGE_AGENT_ADDRESS, GEORGE_PKP_SIGNER, GEORGE_PKP_SIGNER_PUB_KEY
+            USER_GEORGE, GEORGE_AGENT_ADDRESS, GEORGE_PKP_SIGNER, GEORGE_PKP_SIGNER_PUB_KEY
         );
         vm.expectEmit(true, true, true, true);
         emit LibVincentUserFacet.AppVersionPermitted(
@@ -188,7 +191,7 @@ contract VincentUserFacetTest is Test {
 
         // Permit App 3 Version 1 for George
         vincentUserFacet.permitAppVersion(
-            APP_USER_GEORGE,
+            USER_GEORGE,
             GEORGE_PKP_SIGNER,
             GEORGE_PKP_SIGNER_PUB_KEY,
             newAppId_3,
@@ -201,13 +204,13 @@ contract VincentUserFacetTest is Test {
 
         // Check that Frank has registered agent addresses
         address[] memory registeredAgentAddresses =
-            vincentUserViewFacet.getAllRegisteredAgentAddressesForUser(APP_USER_FRANK, 0);
+            vincentUserViewFacet.getAllRegisteredAgentAddressesForUser(USER_FRANK, 0);
         assertEq(registeredAgentAddresses.length, 2);
         assertEq(registeredAgentAddresses[0], FRANK_AGENT_ADDRESS);
         assertEq(registeredAgentAddresses[1], FRANK_AGENT_ADDRESS_2);
 
         // Check that George has registered agent addresses
-        registeredAgentAddresses = vincentUserViewFacet.getAllRegisteredAgentAddressesForUser(APP_USER_GEORGE, 0);
+        registeredAgentAddresses = vincentUserViewFacet.getAllRegisteredAgentAddressesForUser(USER_GEORGE, 0);
         assertEq(registeredAgentAddresses.length, 1);
         assertEq(registeredAgentAddresses[0], GEORGE_AGENT_ADDRESS);
 
@@ -261,6 +264,21 @@ contract VincentUserFacetTest is Test {
         (address pkpSigner, uint256 pkpSignerPubKey) = vincentUserViewFacet.getAgentPkpSigner(FRANK_AGENT_ADDRESS);
         assertEq(pkpSigner, FRANK_PKP_SIGNER);
         assertEq(pkpSignerPubKey, FRANK_PKP_SIGNER_PUB_KEY);
+
+        // Validate getUserAddressForAgent works for registered agents
+        address userAddressForFrankAgent1 = vincentUserViewFacet.getUserAddressForAgent(FRANK_AGENT_ADDRESS);
+        assertEq(userAddressForFrankAgent1, USER_FRANK);
+
+        address userAddressForFrankAgent2 = vincentUserViewFacet.getUserAddressForAgent(FRANK_AGENT_ADDRESS_2);
+        assertEq(userAddressForFrankAgent2, USER_FRANK);
+
+        address userAddressForGeorgeAgent = vincentUserViewFacet.getUserAddressForAgent(GEORGE_AGENT_ADDRESS);
+        assertEq(userAddressForGeorgeAgent, USER_GEORGE);
+
+        // Validate getUserAddressForAgent reverts for unregistered agents
+        address unregisteredAgent = makeAddr("UnregisteredAgent");
+        vm.expectRevert(abi.encodeWithSelector(VincentUserViewFacet.AgentNotRegistered.selector, unregisteredAgent));
+        vincentUserViewFacet.getUserAddressForAgent(unregisteredAgent);
 
         // Check the Ability and Policies for App 1 Version 1 for Frank Agent 1
         VincentUserViewFacet.AbilityWithPolicies[] memory abilitiesWithPolicies =
@@ -360,7 +378,7 @@ contract VincentUserFacetTest is Test {
         // Expect events for first permit
         vm.expectEmit(true, true, true, true);
         emit LibVincentUserFacet.NewAgentRegistered(
-            APP_USER_FRANK, FRANK_AGENT_ADDRESS, FRANK_PKP_SIGNER, FRANK_PKP_SIGNER_PUB_KEY
+            USER_FRANK, FRANK_AGENT_ADDRESS, FRANK_PKP_SIGNER, FRANK_PKP_SIGNER_PUB_KEY
         );
         vm.expectEmit(true, true, true, true);
         emit LibVincentUserFacet.AppVersionPermitted(
@@ -378,7 +396,7 @@ contract VincentUserFacetTest is Test {
 
         // Permit App 1 Version 1 for PKP 1 (Frank)
         vincentUserFacet.permitAppVersion(
-            APP_USER_FRANK,
+            USER_FRANK,
             FRANK_PKP_SIGNER,
             FRANK_PKP_SIGNER_PUB_KEY,
             newAppId_1,
@@ -407,7 +425,7 @@ contract VincentUserFacetTest is Test {
 
         // Permit App 2 Version 1 for PKP 1 (Frank)
         vincentUserFacet.permitAppVersion(
-            APP_USER_FRANK,
+            USER_FRANK,
             FRANK_PKP_SIGNER,
             FRANK_PKP_SIGNER_PUB_KEY,
             newAppId_2,
@@ -645,7 +663,7 @@ contract VincentUserFacetTest is Test {
         // First permit the app version with valid parameters
         vm.startPrank(FRANK_AGENT_ADDRESS);
         vincentUserFacet.permitAppVersion(
-            APP_USER_FRANK,
+            USER_FRANK,
             FRANK_PKP_SIGNER,
             FRANK_PKP_SIGNER_PUB_KEY,
             newAppId,
@@ -691,7 +709,7 @@ contract VincentUserFacetTest is Test {
         // Expect events for initial permit
         vm.expectEmit(true, true, true, true);
         emit LibVincentUserFacet.NewAgentRegistered(
-            APP_USER_FRANK, FRANK_AGENT_ADDRESS, FRANK_PKP_SIGNER, FRANK_PKP_SIGNER_PUB_KEY
+            USER_FRANK, FRANK_AGENT_ADDRESS, FRANK_PKP_SIGNER, FRANK_PKP_SIGNER_PUB_KEY
         );
         vm.expectEmit(true, true, true, true);
         emit LibVincentUserFacet.AppVersionPermitted(
@@ -708,7 +726,7 @@ contract VincentUserFacetTest is Test {
         );
 
         vincentUserFacet.permitAppVersion(
-            APP_USER_FRANK,
+            USER_FRANK,
             FRANK_PKP_SIGNER,
             FRANK_PKP_SIGNER_PUB_KEY,
             newAppId,
@@ -792,7 +810,7 @@ contract VincentUserFacetTest is Test {
         vm.startPrank(FRANK_AGENT_ADDRESS);
         vm.expectRevert(abi.encodeWithSelector(VincentBase.AppHasBeenDeleted.selector, newAppId));
         vincentUserFacet.permitAppVersion(
-            APP_USER_FRANK,
+            USER_FRANK,
             FRANK_PKP_SIGNER,
             FRANK_PKP_SIGNER_PUB_KEY,
             newAppId,
@@ -807,7 +825,7 @@ contract VincentUserFacetTest is Test {
         vm.startPrank(FRANK_AGENT_ADDRESS);
         vm.expectRevert(abi.encodeWithSelector(VincentBase.AppNotRegistered.selector, 1));
         vincentUserFacet.permitAppVersion(
-            APP_USER_FRANK,
+            USER_FRANK,
             FRANK_PKP_SIGNER,
             FRANK_PKP_SIGNER_PUB_KEY,
             1,
@@ -829,7 +847,7 @@ contract VincentUserFacetTest is Test {
             abi.encodeWithSelector(VincentBase.AppVersionNotRegistered.selector, newAppId, newAppVersion + 1)
         );
         vincentUserFacet.permitAppVersion(
-            APP_USER_FRANK,
+            USER_FRANK,
             FRANK_PKP_SIGNER,
             FRANK_PKP_SIGNER_PUB_KEY,
             newAppId,
@@ -860,7 +878,7 @@ contract VincentUserFacetTest is Test {
         vm.startPrank(FRANK_AGENT_ADDRESS);
         vm.expectRevert(abi.encodeWithSelector(LibVincentUserFacet.AbilitiesAndPoliciesLengthMismatch.selector));
         vincentUserFacet.permitAppVersion(
-            APP_USER_FRANK,
+            USER_FRANK,
             FRANK_PKP_SIGNER,
             FRANK_PKP_SIGNER_PUB_KEY,
             newAppId,
@@ -880,7 +898,7 @@ contract VincentUserFacetTest is Test {
         // First permit the app version
         vm.startPrank(FRANK_AGENT_ADDRESS);
         vincentUserFacet.permitAppVersion(
-            APP_USER_FRANK,
+            USER_FRANK,
             FRANK_PKP_SIGNER,
             FRANK_PKP_SIGNER_PUB_KEY,
             newAppId,
@@ -897,7 +915,7 @@ contract VincentUserFacetTest is Test {
             )
         );
         vincentUserFacet.permitAppVersion(
-            APP_USER_FRANK,
+            USER_FRANK,
             FRANK_PKP_SIGNER,
             FRANK_PKP_SIGNER_PUB_KEY,
             newAppId,
@@ -923,7 +941,7 @@ contract VincentUserFacetTest is Test {
             abi.encodeWithSelector(LibVincentUserFacet.AppVersionNotEnabled.selector, newAppId, newAppVersion)
         );
         vincentUserFacet.permitAppVersion(
-            APP_USER_FRANK,
+            USER_FRANK,
             FRANK_PKP_SIGNER,
             FRANK_PKP_SIGNER_PUB_KEY,
             newAppId,
@@ -959,7 +977,7 @@ contract VincentUserFacetTest is Test {
             )
         );
         vincentUserFacet.permitAppVersion(
-            APP_USER_FRANK,
+            USER_FRANK,
             FRANK_PKP_SIGNER,
             FRANK_PKP_SIGNER_PUB_KEY,
             newAppId,
@@ -991,7 +1009,7 @@ contract VincentUserFacetTest is Test {
             )
         );
         vincentUserFacet.permitAppVersion(
-            APP_USER_FRANK,
+            USER_FRANK,
             FRANK_PKP_SIGNER,
             FRANK_PKP_SIGNER_PUB_KEY,
             newAppId,
@@ -1076,7 +1094,7 @@ contract VincentUserFacetTest is Test {
         // First permit the app version with valid parameters
         vm.startPrank(FRANK_AGENT_ADDRESS);
         vincentUserFacet.permitAppVersion(
-            APP_USER_FRANK,
+            USER_FRANK,
             FRANK_PKP_SIGNER,
             FRANK_PKP_SIGNER_PUB_KEY,
             newAppId,
@@ -1104,7 +1122,7 @@ contract VincentUserFacetTest is Test {
         // First permit the app version with valid parameters
         vm.startPrank(FRANK_AGENT_ADDRESS);
         vincentUserFacet.permitAppVersion(
-            APP_USER_FRANK,
+            USER_FRANK,
             FRANK_PKP_SIGNER,
             FRANK_PKP_SIGNER_PUB_KEY,
             newAppId,
@@ -1134,7 +1152,7 @@ contract VincentUserFacetTest is Test {
         // First permit the app version with valid parameters
         vm.startPrank(FRANK_AGENT_ADDRESS);
         vincentUserFacet.permitAppVersion(
-            APP_USER_FRANK,
+            USER_FRANK,
             FRANK_PKP_SIGNER,
             FRANK_PKP_SIGNER_PUB_KEY,
             newAppId,

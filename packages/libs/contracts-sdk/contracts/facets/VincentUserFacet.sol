@@ -120,6 +120,8 @@ contract VincentUserFacet is VincentBase {
         // Add agent address to the User's registered agent addresses
         // .add will not add the agent address again if it is already registered
         if (us_.userAddressToRegisteredAgentAddresses[userAddress].add(msg.sender)) {
+            // Set the reverse mapping from agent address to user address
+            us_.registeredAgentAddressToUserAddress[msg.sender] = userAddress;
             emit LibVincentUserFacet.NewAgentRegistered(userAddress, msg.sender, pkpSigner, pkpSignerPubKey);
         }
 
