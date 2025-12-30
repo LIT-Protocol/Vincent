@@ -126,6 +126,13 @@ contract DeployVincentDiamond is Script {
     }
 
     /**
+     * @notice Deploy to Base Sepolia network
+     */
+    function deployToBaseSepolia() public returns (address) {
+        return deployToNetwork("Base Sepolia");
+    }
+
+    /**
      * @notice Main deployment function
      */
     function run() public {

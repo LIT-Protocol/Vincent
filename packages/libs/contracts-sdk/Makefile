@@ -41,6 +41,21 @@ deploy-vincent-datil: ## Deploy the Vincent Diamond contract to Datil network on
 		--private-key $(VINCENT_DEPLOYER_PRIVATE_KEY) \
 		--rpc-url $(VINCENT_DEPLOYMENT_RPC_URL)
 
+deploy-vincent-base-sepolia: ## Deploy the Vincent Diamond contract to Base Sepolia for testing
+	@if [ -z "$(BASE_SEPOLIA_RPC_URL)" ]; then \
+		echo "Error: BASE_SEPOLIA_RPC_URL is not set in .env"; \
+		exit 1; \
+	fi
+	@if [ -z "$(VINCENT_DEPLOYER_PRIVATE_KEY)" ]; then \
+		echo "Error: VINCENT_DEPLOYER_PRIVATE_KEY is not set in .env"; \
+		exit 1; \
+	fi
+	@echo "Deploying Vincent Diamond to Base Sepolia ($(BASE_SEPOLIA_RPC_URL))..."
+	@forge script script/DeployVincentDiamond.sol:DeployVincentDiamond --sig "deployToBaseSepolia()" -vvv \
+		--broadcast \
+		--private-key $(VINCENT_DEPLOYER_PRIVATE_KEY) \
+		--rpc-url $(BASE_SEPOLIA_RPC_URL)
+
 update-facet: ## Update a specific facet in the Vincent Diamond contract. Usage: make update-facet FACET_NAME=VincentAppViewFacet DEPLOYMENT_TYPE=dev|prod
 	@if [ -z "$(VINCENT_DEPLOYMENT_RPC_URL)" ]; then \
 		echo "Error: VINCENT_DEPLOYMENT_RPC_URL is not set in .env"; \
