@@ -19,6 +19,7 @@ import * as Sentry from '@sentry/react';
 import { getPkpNftContract } from './get-pkp-nft-contract';
 import { addPayee } from './addPayee';
 import { env } from '@/config/env';
+import { base58ToHex } from './base58ToHex';
 
 const { VITE_ENV, VITE_STYTCH_PROJECT_ID, VITE_VINCENT_YELLOWSTONE_RPC } = env;
 
@@ -384,13 +385,30 @@ export async function mintPKP(authMethod: AuthMethod): Promise<IRelayPKP> {
 /**
  * Mint a PKP to be controlled by an existing PKP
  */
-export async function mintPKPToExistingPKP(pkp: IRelayPKP): Promise<IRelayPKP> {
+export async function mintPKPToExistingPKP(
+  pkp: IRelayPKP,
+  abilityIpfsCids: string[],
+): Promise<IRelayPKP> {
+  // Start with the parent PKP as the first auth method
+  const permittedAuthMethodTypes = ['2'];
+  const permittedAuthMethodIds = [pkp.tokenId];
+  const permittedAuthMethodPubkeys = ['0x'];
+  const permittedAuthMethodScopes = [['1']];
+
+  // Add each ability IPFS CID as an auth method
+  for (const ipfsCid of abilityIpfsCids) {
+    permittedAuthMethodTypes.push('2');
+    permittedAuthMethodIds.push(base58ToHex(ipfsCid));
+    permittedAuthMethodPubkeys.push('0x');
+    permittedAuthMethodScopes.push(['1']);
+  }
+
   const requestBody = {
     keyType: '2',
-    permittedAuthMethodTypes: ['2'],
-    permittedAuthMethodIds: [pkp.tokenId],
-    permittedAuthMethodPubkeys: ['0x'],
-    permittedAuthMethodScopes: [['1']],
+    permittedAuthMethodTypes,
+    permittedAuthMethodIds,
+    permittedAuthMethodPubkeys,
+    permittedAuthMethodScopes,
     addPkpEthAddressAsPermittedAddress: true,
     sendPkpToItself: false,
     burnPkp: false,
