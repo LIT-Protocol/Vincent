@@ -75,7 +75,7 @@ contract VincentUserFacet is VincentBase {
         }
 
         if (agentStorage.permittedAppVersion == appVersion) {
-            revert LibVincentUserFacet.AppVersionAlreadyPermitted(msg.sender, appId, agentStorage.permittedAppVersion);
+            revert LibVincentUserFacet.AppVersionAlreadyPermitted(msg.sender, appId, appVersion);
         }
 
         VincentAppStorage.AppStorage storage as_ = VincentAppStorage.appStorage();

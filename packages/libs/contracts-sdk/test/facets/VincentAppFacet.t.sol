@@ -706,11 +706,8 @@ contract VincentAppFacetTest is TestCommon {
         assertEq(permittedAppResults.length, 1);
         assertEq(permittedAppResults[0].agentAddress, APP_USER_FRANK);
         assertEq(permittedAppResults[0].permittedApp.appId, newAppId);
+        assertEq(permittedAppResults[0].permittedApp.version, newAppVersion);
         assertTrue(permittedAppResults[0].permittedApp.isDeleted); // isDeleted flag should be true
-
-        // Verify permitted app version is still returned even if the app has been deleted
-        uint24 permittedAppVersion = vincentUserViewFacet.getPermittedAppVersionForAgent(APP_USER_FRANK, newAppId);
-        assertEq(permittedAppVersion, newAppVersion);
     }
 
     function test_fetchDelegatedAgentAddresses() public {

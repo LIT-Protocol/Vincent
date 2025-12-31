@@ -199,17 +199,16 @@ contract VincentDiamond {
     }
 
     function getVincentUserViewFacetSelectors() internal pure returns (bytes4[] memory) {
-        bytes4[] memory selectors = new bytes4[](10);
+        bytes4[] memory selectors = new bytes4[](9);
         selectors[0] = VincentUserViewFacet.getAllRegisteredAgentAddressesForUser.selector;
-        selectors[1] = VincentUserViewFacet.getPermittedAppVersionForAgent.selector;
-        selectors[2] = VincentUserViewFacet.getPermittedAppForAgents.selector;
-        selectors[3] = VincentUserViewFacet.validateAbilityExecutionAndGetPolicies.selector;
-        selectors[4] = VincentUserViewFacet.getAllAbilitiesAndPoliciesForApp.selector;
-        selectors[5] = VincentUserViewFacet.getLastPermittedAppVersionForAgent.selector;
-        selectors[6] = VincentUserViewFacet.getAgentPkpSigner.selector;
-        selectors[7] = VincentUserViewFacet.getUnpermittedAppForAgents.selector;
-        selectors[8] = bytes4(keccak256("AGENT_PAGE_SIZE()"));
-        selectors[9] = VincentUserViewFacet.getUserAddressForAgent.selector;
+        selectors[1] = VincentUserViewFacet.getPermittedAppForAgents.selector;
+        selectors[2] = VincentUserViewFacet.validateAbilityExecutionAndGetPolicies.selector;
+        selectors[3] = VincentUserViewFacet.getAllAbilitiesAndPoliciesForApp.selector;
+        selectors[4] = VincentUserViewFacet.getLastPermittedAppVersionForAgent.selector;
+        selectors[5] = VincentUserViewFacet.getAgentPkpSigner.selector;
+        selectors[6] = VincentUserViewFacet.getUnpermittedAppForAgents.selector;
+        selectors[7] = bytes4(keccak256("AGENT_PAGE_SIZE()"));
+        selectors[8] = VincentUserViewFacet.getUserAddressForAgent.selector;
         return selectors;
     }
 

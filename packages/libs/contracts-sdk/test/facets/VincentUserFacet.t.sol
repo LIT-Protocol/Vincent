@@ -215,20 +215,27 @@ contract VincentUserFacetTest is Test {
         assertEq(registeredAgentAddresses[0], GEORGE_AGENT_ADDRESS);
 
         // Check that Frank has permitted App 1 Version 1
-        uint24 permittedAppVersion =
-            vincentUserViewFacet.getPermittedAppVersionForAgent(FRANK_AGENT_ADDRESS, newAppId_1);
-        assertEq(permittedAppVersion, newAppVersion_1);
+        address[] memory agentAddresses = new address[](1);
+        agentAddresses[0] = FRANK_AGENT_ADDRESS;
+        VincentUserViewFacet.AgentPermittedApp[] memory permittedApps =
+            vincentUserViewFacet.getPermittedAppForAgents(agentAddresses);
+        assertEq(permittedApps[0].permittedApp.appId, newAppId_1);
+        assertEq(permittedApps[0].permittedApp.version, newAppVersion_1);
 
         // Check that Frank has permitted App 2 Version 1
-        permittedAppVersion = vincentUserViewFacet.getPermittedAppVersionForAgent(FRANK_AGENT_ADDRESS_2, newAppId_2);
-        assertEq(permittedAppVersion, newAppVersion_2);
+        agentAddresses[0] = FRANK_AGENT_ADDRESS_2;
+        permittedApps = vincentUserViewFacet.getPermittedAppForAgents(agentAddresses);
+        assertEq(permittedApps[0].permittedApp.appId, newAppId_2);
+        assertEq(permittedApps[0].permittedApp.version, newAppVersion_2);
 
         // Check that George has permitted App 3 Version 1
-        permittedAppVersion = vincentUserViewFacet.getPermittedAppVersionForAgent(GEORGE_AGENT_ADDRESS, newAppId_3);
-        assertEq(permittedAppVersion, newAppVersion_3);
+        agentAddresses[0] = GEORGE_AGENT_ADDRESS;
+        permittedApps = vincentUserViewFacet.getPermittedAppForAgents(agentAddresses);
+        assertEq(permittedApps[0].permittedApp.appId, newAppId_3);
+        assertEq(permittedApps[0].permittedApp.version, newAppVersion_3);
 
         // Test getPermittedAppForAgents for both agents
-        address[] memory agentAddresses = new address[](3);
+        agentAddresses = new address[](3);
         agentAddresses[0] = FRANK_AGENT_ADDRESS;
         agentAddresses[1] = FRANK_AGENT_ADDRESS_2;
         agentAddresses[2] = GEORGE_AGENT_ADDRESS;
@@ -474,12 +481,15 @@ contract VincentUserFacetTest is Test {
         assertEq(permittedApps[1].permittedApp.pkpSignerPubKey, FRANK_PKP_SIGNER_PUB_KEY);
         assertTrue(permittedApps[1].permittedApp.versionEnabled);
 
-        uint24 permittedAppVersion =
-            vincentUserViewFacet.getPermittedAppVersionForAgent(FRANK_AGENT_ADDRESS, newAppId_1);
-        assertEq(permittedAppVersion, 0);
+        agentAddresses = new address[](1);
+        agentAddresses[0] = FRANK_AGENT_ADDRESS;
+        permittedApps = vincentUserViewFacet.getPermittedAppForAgents(agentAddresses);
+        assertEq(permittedApps[0].permittedApp.appId, 0);
 
-        permittedAppVersion = vincentUserViewFacet.getPermittedAppVersionForAgent(FRANK_AGENT_ADDRESS_2, newAppId_2);
-        assertEq(permittedAppVersion, newAppVersion_2);
+        agentAddresses[0] = FRANK_AGENT_ADDRESS_2;
+        permittedApps = vincentUserViewFacet.getPermittedAppForAgents(agentAddresses);
+        assertEq(permittedApps[0].permittedApp.appId, newAppId_2);
+        assertEq(permittedApps[0].permittedApp.version, newAppVersion_2);
 
         // Verify ability execution validation for App 1 is no longer permitted
         VincentUserViewFacet.AbilityExecutionValidation memory abilityExecutionValidation =
@@ -497,6 +507,9 @@ contract VincentUserFacetTest is Test {
         assertEq(abilityExecutionValidation.appVersion, newAppVersion_2);
 
         // Test getUnpermittedAppsForPkps should show only App 1 as unpermitted
+        agentAddresses = new address[](2);
+        agentAddresses[0] = FRANK_AGENT_ADDRESS;
+        agentAddresses[1] = FRANK_AGENT_ADDRESS_2;
         VincentUserViewFacet.AgentUnpermittedApp[] memory unpermittedAppsResults =
             vincentUserViewFacet.getUnpermittedAppForAgents(agentAddresses);
         assertEq(unpermittedAppsResults.length, 2);
@@ -524,10 +537,6 @@ contract VincentUserFacetTest is Test {
         // Unpermit App 2 Version 1 for PKP 1 (Frank)
         vincentUserFacet.unPermitAppVersion(newAppId_2, newAppVersion_2);
         vm.stopPrank();
-
-        // Verify App 2 is now also unpermitted
-        permittedAppVersion = vincentUserViewFacet.getPermittedAppVersionForAgent(FRANK_AGENT_ADDRESS_2, newAppId_2);
-        assertEq(permittedAppVersion, 0);
 
         // Verify permitted apps list is now empty
         permittedApps = vincentUserViewFacet.getPermittedAppForAgents(agentAddresses);
@@ -580,8 +589,10 @@ contract VincentUserFacetTest is Test {
         vm.stopPrank();
 
         // Verify App 1 is permitted again with the same version
-        permittedAppVersion = vincentUserViewFacet.getPermittedAppVersionForAgent(FRANK_AGENT_ADDRESS, newAppId_1);
-        assertEq(permittedAppVersion, newAppVersion_1, "App should be re-permitted with last version");
+        agentAddresses[0] = FRANK_AGENT_ADDRESS;
+        permittedApps = vincentUserViewFacet.getPermittedAppForAgents(agentAddresses);
+        assertEq(permittedApps[0].permittedApp.appId, newAppId_1, "App should be re-permitted");
+        assertEq(permittedApps[0].permittedApp.version, newAppVersion_1, "App should be re-permitted with last version");
 
         // Verify initial policy parameters
         VincentUserViewFacet.AbilityWithPolicies[] memory abilitiesWithPolicies =
