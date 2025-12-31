@@ -551,13 +551,16 @@ contract VincentUserFacetTest is Test {
         assertEq(permittedApps[1].permittedApp.pkpSignerPubKey, 0);
         assertFalse(permittedApps[1].permittedApp.versionEnabled);
 
-        // Test getLastPermittedAppVersionForAgent for both unpermitted apps
-        uint24 lastPermittedVersion =
-            vincentUserViewFacet.getLastPermittedAppVersionForAgent(FRANK_AGENT_ADDRESS, newAppId_1);
-        assertEq(lastPermittedVersion, newAppVersion_1, "Last permitted version should be stored for App 1");
-        lastPermittedVersion =
-            vincentUserViewFacet.getLastPermittedAppVersionForAgent(FRANK_AGENT_ADDRESS_2, newAppId_2);
-        assertEq(lastPermittedVersion, newAppVersion_2, "Last permitted version should be stored for App 2");
+        // Test getUnpermittedAppForAgents to verify last permitted versions for both unpermitted apps
+        agentAddresses = new address[](2);
+        agentAddresses[0] = FRANK_AGENT_ADDRESS;
+        agentAddresses[1] = FRANK_AGENT_ADDRESS_2;
+        VincentUserViewFacet.AgentUnpermittedApp[] memory unpermittedApps =
+            vincentUserViewFacet.getUnpermittedAppForAgents(agentAddresses);
+        assertEq(unpermittedApps[0].unpermittedApp.appId, newAppId_1);
+        assertEq(unpermittedApps[0].unpermittedApp.previousPermittedVersion, newAppVersion_1, "Last permitted version should be stored for App 1");
+        assertEq(unpermittedApps[1].unpermittedApp.appId, newAppId_2);
+        assertEq(unpermittedApps[1].unpermittedApp.previousPermittedVersion, newAppVersion_2, "Last permitted version should be stored for App 2");
 
         // Test getUnpermittedAppForAgents should show each agent's unpermitted app
         unpermittedAppsResults = vincentUserViewFacet.getUnpermittedAppForAgents(agentAddresses);

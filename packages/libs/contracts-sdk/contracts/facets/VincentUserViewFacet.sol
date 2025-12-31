@@ -185,34 +185,6 @@ contract VincentUserViewFacet is VincentBase {
     }
 
     /**
-     * @notice Gets the last permitted app version for a specific app and agent address
-     * @dev Returns the last version if the agent had permitted the specified app, otherwise returns 0
-     * @param agentAddress The agent address
-     * @param appId The app ID
-     * @return The last permitted app version (0 if never permitted or different app)
-     */
-    function getLastPermittedAppVersionForAgent(address agentAddress, uint40 appId) external view returns (uint24) {
-        // Check for invalid agent address and app ID
-        if (agentAddress == address(0)) {
-            revert ZeroAddressNotAllowed();
-        }
-
-        if (appId == 0) {
-            revert InvalidAppId();
-        }
-
-        VincentUserStorage.UserStorage storage us_ = VincentUserStorage.userStorage();
-        VincentUserStorage.AgentStorage storage agentStorage = us_.agentAddressToAgentStorage[agentAddress];
-
-        // Only return the version if the agent's last permitted app matches
-        if (agentStorage.lastPermittedAppId == appId) {
-            return agentStorage.lastPermittedAppVersion;
-        }
-
-        return 0;
-    }
-
-    /**
      * @notice Gets the user address associated with an agent address
      * @dev Returns the user address that registered the agent
      * @param agentAddress The agent address to query
