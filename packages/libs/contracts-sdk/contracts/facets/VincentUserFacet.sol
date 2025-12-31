@@ -223,10 +223,16 @@ contract VincentUserFacet is VincentBase {
         agentStorage.pkpSigner = agentStorage.lastPermittedPkpSigner;
         agentStorage.pkpSignerPubKey = agentStorage.lastPermittedPkpSignerPubKey;
 
+        // Clear the last permitted values since they're now currently permitted
+        delete agentStorage.lastPermittedAppId;
+        delete agentStorage.lastPermittedAppVersion;
+        delete agentStorage.lastPermittedPkpSigner;
+        delete agentStorage.lastPermittedPkpSignerPubKey;
+
         emit LibVincentUserFacet.AppVersionRePermitted(
             msg.sender,
             appId,
-            agentStorage.lastPermittedAppVersion,
+            agentStorage.permittedAppVersion,
             agentStorage.pkpSigner,
             agentStorage.pkpSignerPubKey
         );
