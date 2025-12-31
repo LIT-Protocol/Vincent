@@ -388,65 +388,6 @@ contract VincentUserViewFacet is VincentBase {
     }
 
     /**
-     * @dev Checks if a delegatee is permitted to execute an ability using an agent
-     * @param delegatee The address of the delegatee
-     * @param agentAddress The agent address the delegatee is acting on behalf of
-     * @param abilityIpfsCid The IPFS CID of the ability
-     * @return isPermitted Whether the delegatee is permitted to execute the ability
-     */
-    function isDelegateePermitted(address delegatee, address agentAddress, string calldata abilityIpfsCid)
-        external
-        view
-        returns (bool isPermitted)
-    {
-        // Check for invalid inputs
-        if (delegatee == address(0)) {
-            revert ZeroAddressNotAllowed();
-        }
-
-        if (agentAddress == address(0)) {
-            revert ZeroAddressNotAllowed();
-        }
-
-        if (bytes(abilityIpfsCid).length == 0) {
-            revert EmptyAbilityIpfsCid();
-        }
-
-        VincentAppStorage.AppStorage storage as_ = VincentAppStorage.appStorage();
-        VincentUserStorage.UserStorage storage us_ = VincentUserStorage.userStorage();
-
-        // Get the app ID that the delegatee belongs to
-        uint40 appId = as_.delegateeAddressToAppId[delegatee];
-
-        // If appId is 0, delegatee is not associated with any app
-        if (appId == 0) {
-            revert DelegateeNotAssociatedWithApp(delegatee);
-        }
-
-        if (as_.appIdToApp[appId].isDeleted) {
-            revert AppHasBeenDeleted(appId);
-        }
-
-        // Hash the ability IPFS CID
-        bytes32 hashedAbilityIpfsCid = keccak256(abi.encodePacked(abilityIpfsCid));
-
-        // Get the permitted app version for this agent and app
-        uint24 appVersion = us_.agentAddressToAgentStorage[agentAddress].permittedAppVersion;
-
-        // If no version is permitted (appVersion == 0), return false
-        if (appVersion == 0) {
-            return false;
-        }
-
-        // Check if the app version is enabled and the ability is registered for this app version
-        VincentAppStorage.AppVersion storage versionedApp =
-            as_.appIdToApp[appId].appVersions[getAppVersionIndex(appVersion)];
-
-        // Return true only if version is enabled AND ability is registered
-        return versionedApp.enabled && versionedApp.abilityIpfsCidHashes.contains(hashedAbilityIpfsCid);
-    }
-
-    /**
      * @dev Validates if a delegatee is permitted to execute an ability using an agent and returns all relevant policies
      * @param delegatee The address of the delegatee
      * @param agentAddress The agent address the delegatee is acting on behalf of
