@@ -234,32 +234,6 @@ contract VincentUserViewFacet is VincentBase {
     }
 
     /**
-     * @notice Gets the PKP signer address associated with an agent
-     * @dev Returns the PKP signer that was set when the agent permitted an app version
-     * @param agentAddress The agent address to query
-     * @return pkpSigner The PKP signer address
-     */
-    function getAgentPkpSigner(address agentAddress)
-        external
-        view
-        returns (address pkpSigner, uint256 pkpSignerPubKey)
-    {
-        // Check for invalid agent address
-        if (agentAddress == address(0)) {
-            revert ZeroAddressNotAllowed();
-        }
-
-        VincentUserStorage.UserStorage storage us_ = VincentUserStorage.userStorage();
-        pkpSigner = us_.agentAddressToAgentStorage[agentAddress].pkpSigner;
-        pkpSignerPubKey = us_.agentAddressToAgentStorage[agentAddress].pkpSignerPubKey;
-
-        // Revert if agent is not registered (pkpSigner not set)
-        if (pkpSigner == address(0)) {
-            revert AgentNotRegistered(agentAddress);
-        }
-    }
-
-    /**
      * @notice Retrieves the permitted app for multiple agents
      * @dev Takes an array of agent addresses and returns the currently permitted app (max 1 per agent)
      * @param agentAddresses Array of agent addresses to query

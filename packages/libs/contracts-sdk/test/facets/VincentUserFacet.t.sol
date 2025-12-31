@@ -267,10 +267,12 @@ contract VincentUserFacetTest is Test {
         assertEq(permittedAppsResults[2].permittedApp.pkpSignerPubKey, GEORGE_PKP_SIGNER_PUB_KEY);
         assertTrue(permittedAppsResults[2].permittedApp.versionEnabled);
 
-        // Validate getAgentPkpSigner works for permitted apps
-        (address pkpSigner, uint256 pkpSignerPubKey) = vincentUserViewFacet.getAgentPkpSigner(FRANK_AGENT_ADDRESS);
-        assertEq(pkpSigner, FRANK_PKP_SIGNER);
-        assertEq(pkpSignerPubKey, FRANK_PKP_SIGNER_PUB_KEY);
+        // Validate getPermittedAppForAgents works for getting PKP signer info
+        agentAddresses = new address[](1);
+        agentAddresses[0] = FRANK_AGENT_ADDRESS;
+        permittedApps = vincentUserViewFacet.getPermittedAppForAgents(agentAddresses);
+        assertEq(permittedApps[0].permittedApp.pkpSigner, FRANK_PKP_SIGNER);
+        assertEq(permittedApps[0].permittedApp.pkpSignerPubKey, FRANK_PKP_SIGNER_PUB_KEY);
 
         // Validate getUserAddressForAgent works for registered agents
         address userAddressForFrankAgent1 = vincentUserViewFacet.getUserAddressForAgent(FRANK_AGENT_ADDRESS);
@@ -468,10 +470,6 @@ contract VincentUserFacetTest is Test {
         assertEq(permittedApps[0].permittedApp.appId, 0);
         assertEq(permittedApps[0].permittedApp.pkpSigner, address(0));
         assertEq(permittedApps[0].permittedApp.pkpSignerPubKey, 0);
-
-        // Validate getAgentPkpSigner reverts for unpermitted agent
-        vm.expectRevert(abi.encodeWithSelector(VincentUserViewFacet.AgentNotRegistered.selector, FRANK_AGENT_ADDRESS));
-        vincentUserViewFacet.getAgentPkpSigner(FRANK_AGENT_ADDRESS);
 
         // Second agent still has App 2 permitted
         assertEq(permittedApps[1].agentAddress, FRANK_AGENT_ADDRESS_2);
