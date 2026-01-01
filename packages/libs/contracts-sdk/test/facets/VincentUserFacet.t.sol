@@ -337,7 +337,7 @@ contract VincentUserFacetTest is Test {
         assertEq(abilityExecutionValidation.policies.length, 0);
 
         abilityExecutionValidation = vincentUserViewFacet.validateAbilityExecutionAndGetPolicies(
-            APP_DELEGATEE_DAVID, FRANK_AGENT_ADDRESS, ABILITY_IPFS_CID_1
+            APP_DELEGATEE_DAVID, FRANK_AGENT_ADDRESS_2, ABILITY_IPFS_CID_1
         );
         assertTrue(abilityExecutionValidation.isPermitted);
         assertEq(abilityExecutionValidation.appId, newAppId_2);

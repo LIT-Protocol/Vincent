@@ -341,8 +341,8 @@ contract VincentUserFacet is VincentBase {
                 versionedApp.abilityIpfsCidHashToAbilityPolicyIpfsCidHashes[hashedAbilityIpfsCid];
 
             mapping(bytes32 => bytes) storage abilityPolicyParameterValues = us_.agentAddressToAgentStorage[msg.sender].abilityPolicyParameterValues[
-                appVersion
-            ][hashedAbilityIpfsCid];
+                appId
+            ][appVersion][hashedAbilityIpfsCid];
 
             // Step 4: Iterate through each policy associated with the ability.
             for (uint256 j = 0; j < policyCount; j++) {

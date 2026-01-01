@@ -300,7 +300,7 @@ contract VincentUserViewFacet is VincentBase {
         // For each ability, get its policies and parameters
         for (uint256 i = 0; i < abilityCount; i++) {
             bytes32 abilityHash = abilityHashes[i];
-            abilities[i] = _getAbilityWithPolicies(abilityHash, agentAddress, appVersion, versionedApp, us_, ls_);
+            abilities[i] = _getAbilityWithPolicies(abilityHash, agentAddress, appId, appVersion, versionedApp, us_, ls_);
         }
 
         return abilities;
@@ -388,7 +388,7 @@ contract VincentUserViewFacet is VincentBase {
 
         // Get the ability policy storage for this agent, app, app version, and ability
         mapping(bytes32 => bytes) storage abilityPolicyParameterValues =
-            us_.agentAddressToAgentStorage[agentAddress].abilityPolicyParameterValues[appVersion][hashedAbilityIpfsCid];
+            us_.agentAddressToAgentStorage[agentAddress].abilityPolicyParameterValues[appId][appVersion][hashedAbilityIpfsCid];
 
         // For each policy, get all its parameters
         for (uint256 i = 0; i < policyCount; i++) {
@@ -459,6 +459,7 @@ contract VincentUserViewFacet is VincentBase {
     function _getAbilityWithPolicies(
         bytes32 abilityHash,
         address agentAddress,
+        uint40 appId,
         uint24 appVersion,
         VincentAppStorage.AppVersion storage versionedApp,
         VincentUserStorage.UserStorage storage us_,
@@ -480,7 +481,7 @@ contract VincentUserViewFacet is VincentBase {
 
         // Get the ability policy storage for this agent, app, and ability
         mapping(bytes32 => bytes) storage abilityPolicyParameterValues =
-            us_.agentAddressToAgentStorage[agentAddress].abilityPolicyParameterValues[appVersion][abilityHash];
+            us_.agentAddressToAgentStorage[agentAddress].abilityPolicyParameterValues[appId][appVersion][abilityHash];
 
         // For each policy, get all its parameters
         for (uint256 i = 0; i < policyCount; i++) {
