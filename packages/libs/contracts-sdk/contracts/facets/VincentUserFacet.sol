@@ -160,10 +160,10 @@ contract VincentUserFacet is VincentBase {
         agentStorage.lastPermittedPkpSignerPubKey = agentStorage.pkpSignerPubKey;
 
         // Remove the App Version from the User's Permitted App
-        agentStorage.permittedAppVersion = 0;
-        agentStorage.permittedAppId = 0;
-        agentStorage.pkpSigner = address(0);
-        agentStorage.pkpSignerPubKey = 0;
+        delete agentStorage.permittedAppVersion;
+        delete agentStorage.permittedAppId;
+        delete agentStorage.pkpSigner;
+        delete agentStorage.pkpSignerPubKey;
 
         emit LibVincentUserFacet.AppVersionUnPermitted(
             msg.sender,
@@ -230,11 +230,7 @@ contract VincentUserFacet is VincentBase {
         delete agentStorage.lastPermittedPkpSignerPubKey;
 
         emit LibVincentUserFacet.AppVersionRePermitted(
-            msg.sender,
-            appId,
-            agentStorage.permittedAppVersion,
-            agentStorage.pkpSigner,
-            agentStorage.pkpSignerPubKey
+            msg.sender, appId, agentStorage.permittedAppVersion, agentStorage.pkpSigner, agentStorage.pkpSignerPubKey
         );
     }
 

@@ -355,7 +355,6 @@ contract VincentUserFacetTest is Test {
         assertEq(abilityExecutionValidation.policies.length, 1);
         assertEq(abilityExecutionValidation.policies[0].policyIpfsCid, POLICY_IPFS_CID_1);
         assertEq(abilityExecutionValidation.policies[0].policyParameterValues, POLICY_PARAMETER_VALUES_1);
-
     }
 
     function testUnPermitAppVersion() public {
@@ -558,9 +557,17 @@ contract VincentUserFacetTest is Test {
         VincentUserViewFacet.AgentUnpermittedApp[] memory unpermittedApps =
             vincentUserViewFacet.getUnpermittedAppForAgents(agentAddresses);
         assertEq(unpermittedApps[0].unpermittedApp.appId, newAppId_1);
-        assertEq(unpermittedApps[0].unpermittedApp.previousPermittedVersion, newAppVersion_1, "Last permitted version should be stored for App 1");
+        assertEq(
+            unpermittedApps[0].unpermittedApp.previousPermittedVersion,
+            newAppVersion_1,
+            "Last permitted version should be stored for App 1"
+        );
         assertEq(unpermittedApps[1].unpermittedApp.appId, newAppId_2);
-        assertEq(unpermittedApps[1].unpermittedApp.previousPermittedVersion, newAppVersion_2, "Last permitted version should be stored for App 2");
+        assertEq(
+            unpermittedApps[1].unpermittedApp.previousPermittedVersion,
+            newAppVersion_2,
+            "Last permitted version should be stored for App 2"
+        );
 
         // Test getUnpermittedAppForAgents should show each agent's unpermitted app
         unpermittedAppsResults = vincentUserViewFacet.getUnpermittedAppForAgents(agentAddresses);
