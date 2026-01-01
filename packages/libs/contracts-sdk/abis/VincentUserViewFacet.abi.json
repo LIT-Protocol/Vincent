@@ -14,30 +14,6 @@
   },
   {
     "type": "function",
-    "name": "getAgentPkpSigner",
-    "inputs": [
-      {
-        "name": "agentAddress",
-        "type": "address",
-        "internalType": "address"
-      }
-    ],
-    "outputs": [
-      {
-        "name": "pkpSigner",
-        "type": "address",
-        "internalType": "address"
-      },
-      {
-        "name": "pkpSignerPubKey",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ],
-    "stateMutability": "view"
-  },
-  {
-    "type": "function",
     "name": "getAllAbilitiesAndPoliciesForApp",
     "inputs": [
       {
@@ -110,30 +86,6 @@
   },
   {
     "type": "function",
-    "name": "getLastPermittedAppVersionForAgent",
-    "inputs": [
-      {
-        "name": "agentAddress",
-        "type": "address",
-        "internalType": "address"
-      },
-      {
-        "name": "appId",
-        "type": "uint40",
-        "internalType": "uint40"
-      }
-    ],
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint24",
-        "internalType": "uint24"
-      }
-    ],
-    "stateMutability": "view"
-  },
-  {
-    "type": "function",
     "name": "getPermittedAppForAgents",
     "inputs": [
       {
@@ -191,30 +143,6 @@
             ]
           }
         ]
-      }
-    ],
-    "stateMutability": "view"
-  },
-  {
-    "type": "function",
-    "name": "getPermittedAppVersionForAgent",
-    "inputs": [
-      {
-        "name": "agentAddress",
-        "type": "address",
-        "internalType": "address"
-      },
-      {
-        "name": "appId",
-        "type": "uint40",
-        "internalType": "uint40"
-      }
-    ],
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint24",
-        "internalType": "uint24"
       }
     ],
     "stateMutability": "view"
@@ -284,29 +212,19 @@
   },
   {
     "type": "function",
-    "name": "isDelegateePermitted",
+    "name": "getUserAddressForAgent",
     "inputs": [
-      {
-        "name": "delegatee",
-        "type": "address",
-        "internalType": "address"
-      },
       {
         "name": "agentAddress",
         "type": "address",
         "internalType": "address"
-      },
-      {
-        "name": "abilityIpfsCid",
-        "type": "string",
-        "internalType": "string"
       }
     ],
     "outputs": [
       {
-        "name": "isPermitted",
-        "type": "bool",
-        "internalType": "bool"
+        "name": "userAddress",
+        "type": "address",
+        "internalType": "address"
       }
     ],
     "stateMutability": "view"
