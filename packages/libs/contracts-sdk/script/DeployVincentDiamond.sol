@@ -133,6 +133,13 @@ contract DeployVincentDiamond is Script {
     }
 
     /**
+     * @notice Deploy to Base Mainnet network
+     */
+    function deployToBaseMainnet() public returns (address) {
+        return deployToNetwork("Base Mainnet");
+    }
+
+    /**
      * @notice Main deployment function
      */
     function run() public {

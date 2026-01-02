@@ -56,6 +56,21 @@ deploy-vincent-base-sepolia: ## Deploy the Vincent Diamond contract to Base Sepo
 		--private-key $(VINCENT_DEPLOYER_PRIVATE_KEY) \
 		--rpc-url $(BASE_SEPOLIA_RPC_URL)
 
+deploy-vincent-base-mainnet: ## Deploy the Vincent Diamond contract to Base Mainnet
+	@if [ -z "$(BASE_MAINNET_RPC_URL)" ]; then \
+		echo "Error: BASE_MAINNET_RPC_URL is not set in .env"; \
+		exit 1; \
+	fi
+	@if [ -z "$(VINCENT_DEPLOYER_PRIVATE_KEY)" ]; then \
+		echo "Error: VINCENT_DEPLOYER_PRIVATE_KEY is not set in .env"; \
+		exit 1; \
+	fi
+	@echo "Deploying Vincent Diamond to Base Mainnet ($(BASE_MAINNET_RPC_URL))..."
+	@forge script script/DeployVincentDiamond.sol:DeployVincentDiamond --sig "deployToBaseMainnet()" -vvv \
+		--broadcast \
+		--private-key $(VINCENT_DEPLOYER_PRIVATE_KEY) \
+		--rpc-url $(BASE_MAINNET_RPC_URL)
+
 update-facet: ## Update a specific facet in the Vincent Diamond contract. Usage: make update-facet FACET_NAME=VincentAppViewFacet DEPLOYMENT_TYPE=dev|prod
 	@if [ -z "$(VINCENT_DEPLOYMENT_RPC_URL)" ]; then \
 		echo "Error: VINCENT_DEPLOYMENT_RPC_URL is not set in .env"; \
