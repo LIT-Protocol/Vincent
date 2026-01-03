@@ -361,27 +361,6 @@
   },
   {
     "type": "error",
-    "name": "AppNeverPermitted",
-    "inputs": [
-      {
-        "name": "agentAddress",
-        "type": "address",
-        "internalType": "address"
-      },
-      {
-        "name": "appId",
-        "type": "uint40",
-        "internalType": "uint40"
-      },
-      {
-        "name": "appVersion",
-        "type": "uint24",
-        "internalType": "uint24"
-      }
-    ]
-  },
-  {
-    "type": "error",
     "name": "AppNotRegistered",
     "inputs": [
       {
@@ -572,6 +551,32 @@
         "name": "totalCount",
         "type": "uint256",
         "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "LastPermittedAppNotTheOneBeingRePermitted",
+    "inputs": [
+      {
+        "name": "agentAddress",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "lastPermittedAppId",
+        "type": "uint40",
+        "internalType": "uint40"
+      },
+      {
+        "name": "lastPermittedAppVersion",
+        "type": "uint24",
+        "internalType": "uint24"
+      },
+      {
+        "name": "rePermitAppId",
+        "type": "uint40",
+        "internalType": "uint40"
       }
     ]
   },

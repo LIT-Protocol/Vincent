@@ -198,12 +198,14 @@ library LibVincentUserFacet {
     error NotAllRegisteredAbilitiesProvided(uint40 appId, uint24 appVersion);
 
     /**
-     * @notice Error thrown when an app has never been permitted for an agent, but the caller is trying to re-permit it
+     * @notice Error thrown when the last permitted app is not the one being re-permitted
      * @param agentAddress The address of the agent
-     * @param appId The ID of the app
-     * @param appVersion The version of the app
+     * @param lastPermittedAppId The ID of the last permitted app
+     * @param lastPermittedAppVersion The version of the last permitted app
      */
-    error AppNeverPermitted(address agentAddress, uint40 appId, uint24 appVersion);
+    error LastPermittedAppNotTheOneBeingRePermitted(
+        address agentAddress, uint40 lastPermittedAppId, uint24 lastPermittedAppVersion, uint40 rePermitAppId
+    );
 
     /**
      * @notice Error thrown when a zero PKP signer public key is provided

@@ -195,11 +195,11 @@ contract VincentUserFacet is VincentBase {
             revert LibVincentUserFacet.DifferentAppAlreadyPermitted(msg.sender, appId);
         }
 
-        // Check if app was ever permitted (exists in allPermittedApps)
+        // Check if the last permitted app is the one being re-permitted
         if (agentStorage.lastPermittedAppId != appId) {
-            // AppNeverPermitted is not technically true if the user permitted app 1, unpermitted,
-            // then permitted app 2, unpermitted, then re-permitted app 1. In this case, the last permitted app is app 2.
-            revert LibVincentUserFacet.AppNeverPermitted(msg.sender, appId, 0);
+            revert LibVincentUserFacet.LastPermittedAppNotTheOneBeingRePermitted(
+                msg.sender, agentStorage.lastPermittedAppId, agentStorage.lastPermittedAppVersion, appId
+            );
         }
 
         // Get the last permitted version
