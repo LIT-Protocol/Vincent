@@ -202,6 +202,7 @@ library LibVincentUserFacet {
      * @param agentAddress The address of the agent
      * @param lastPermittedAppId The ID of the last permitted app
      * @param lastPermittedAppVersion The version of the last permitted app
+     * @param rePermitAppId The ID of the app being re-permitted
      */
     error LastPermittedAppNotTheOneBeingRePermitted(
         address agentAddress, uint40 lastPermittedAppId, uint24 lastPermittedAppVersion, uint40 rePermitAppId
