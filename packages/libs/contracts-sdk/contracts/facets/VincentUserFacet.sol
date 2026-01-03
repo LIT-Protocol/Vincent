@@ -143,7 +143,7 @@ contract VincentUserFacet is VincentBase {
         VincentUserStorage.UserStorage storage us_ = VincentUserStorage.userStorage();
         VincentUserStorage.AgentStorage storage agentStorage = us_.agentAddressToAgentStorage[msg.sender];
 
-        if (agentStorage.permittedAppVersion != appVersion) {
+        if (agentStorage.permittedAppId != appId || agentStorage.permittedAppVersion != appVersion) {
             revert LibVincentUserFacet.AppVersionNotPermitted(msg.sender, appId, appVersion);
         }
 
@@ -160,8 +160,8 @@ contract VincentUserFacet is VincentBase {
         agentStorage.lastPermittedPkpSignerPubKey = agentStorage.pkpSignerPubKey;
 
         // Remove the App Version from the User's Permitted App
-        delete agentStorage.permittedAppVersion;
         delete agentStorage.permittedAppId;
+        delete agentStorage.permittedAppVersion;
         delete agentStorage.pkpSigner;
         delete agentStorage.pkpSignerPubKey;
 
