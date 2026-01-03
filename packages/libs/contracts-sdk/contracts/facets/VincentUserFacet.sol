@@ -267,7 +267,7 @@ contract VincentUserFacet is VincentBase {
         VincentUserStorage.UserStorage storage us_ = VincentUserStorage.userStorage();
         VincentUserStorage.AgentStorage storage agentStorage = us_.agentAddressToAgentStorage[msg.sender];
 
-        if (agentStorage.permittedAppVersion != appVersion) {
+        if (agentStorage.permittedAppId != appId || agentStorage.permittedAppVersion != appVersion) {
             revert LibVincentUserFacet.AppVersionNotPermitted(msg.sender, appId, appVersion);
         }
 
