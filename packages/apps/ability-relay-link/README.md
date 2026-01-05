@@ -208,7 +208,7 @@ For E2E tests, set the following in your `.env` file:
 
 ```bash
 # Required for all tests
-BASE_RPC_URL=https://base-mainnet.g.alchemy.com/v2/...
+ALCHEMY_RPC_URL=https://base-mainnet.g.alchemy.com/v2/...
 
 # ZeroDev
 ZERODEV_RPC_URL=https://rpc.zerodev.app/api/v3/.../chain/8453

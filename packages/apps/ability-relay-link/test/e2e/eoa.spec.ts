@@ -32,7 +32,7 @@ describe('Relay.link Ability E2E Tests', () => {
 
   let agentPkpInfo: PkpInfo;
   let wallets: VincentDevEnvironment['wallets'];
-  let baseRpcProvider: JsonRpcProvider;
+  let rpcProvider: JsonRpcProvider;
 
   beforeAll(async () => {
     const PERMISSION_DATA = {
@@ -47,7 +47,7 @@ describe('Relay.link Ability E2E Tests', () => {
     wallets = setupResult.wallets;
 
     // Use ethers v6 provider for gas estimation
-    baseRpcProvider = new JsonRpcProvider(ENV.BASE_RPC_URL);
+    rpcProvider = new JsonRpcProvider(ENV.ALCHEMY_RPC_URL);
   });
 
   afterAll(async () => {
@@ -66,11 +66,11 @@ describe('Relay.link Ability E2E Tests', () => {
     const userAddress = agentPkpInfo.ethAddress as `0x${string}`;
 
     // Get nonce (ethers v6 returns number)
-    const nonce = await baseRpcProvider.getTransactionCount(userAddress);
+    const nonce = await rpcProvider.getTransactionCount(userAddress);
 
     // Get gas estimates (ethers v6 returns bigint directly)
-    const feeData = await baseRpcProvider.getFeeData();
-    const gasEstimate = await baseRpcProvider.estimateGas({
+    const feeData = await rpcProvider.getFeeData();
+    const gasEstimate = await rpcProvider.estimateGas({
       from: userAddress,
       to: txData.to,
       data: txData.data,
@@ -174,7 +174,7 @@ describe('Relay.link Ability E2E Tests', () => {
       // Precheck the transaction
       const precheckResult = await relayClient.precheck(
         {
-          alchemyRpcUrl: ENV.BASE_RPC_URL!,
+          alchemyRpcUrl: ENV.ALCHEMY_RPC_URL!,
           transaction,
         },
         {
@@ -194,7 +194,7 @@ describe('Relay.link Ability E2E Tests', () => {
       // Execute to get the signature
       const executeResult = await relayClient.execute(
         {
-          alchemyRpcUrl: ENV.BASE_RPC_URL!,
+          alchemyRpcUrl: ENV.ALCHEMY_RPC_URL!,
           transaction,
         },
         {
@@ -248,7 +248,7 @@ describe('Relay.link Ability E2E Tests', () => {
       });
 
       // Broadcast the transaction (ethers v6 uses broadcastTransaction)
-      const txResponse = await baseRpcProvider.broadcastTransaction(serializedTx);
+      const txResponse = await rpcProvider.broadcastTransaction(serializedTx);
       console.log('[transaction hash]', txResponse.hash);
 
       // Wait for transaction to be mined
@@ -321,7 +321,7 @@ describe('Relay.link Ability E2E Tests', () => {
           // Precheck the transaction
           const precheckResult = await relayClient.precheck(
             {
-              alchemyRpcUrl: ENV.BASE_RPC_URL!,
+              alchemyRpcUrl: ENV.ALCHEMY_RPC_URL!,
               transaction,
             },
             {
@@ -341,7 +341,7 @@ describe('Relay.link Ability E2E Tests', () => {
           // Execute to get the signature
           const executeResult = await relayClient.execute(
             {
-              alchemyRpcUrl: ENV.BASE_RPC_URL!,
+              alchemyRpcUrl: ENV.ALCHEMY_RPC_URL!,
               transaction,
             },
             {
@@ -392,7 +392,7 @@ describe('Relay.link Ability E2E Tests', () => {
           );
 
           // Broadcast the transaction
-          const txResponse = await baseRpcProvider.broadcastTransaction(serializedTx);
+          const txResponse = await rpcProvider.broadcastTransaction(serializedTx);
           console.log('[transaction hash]', txResponse.hash);
 
           // Wait for transaction to be mined

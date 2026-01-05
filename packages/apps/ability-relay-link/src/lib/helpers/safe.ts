@@ -44,13 +44,13 @@ function addressToAccount(address: Address) {
   return toAccount({
     address,
     async signMessage() {
-      return ('0x' + '00'.repeat(65)) as Hex;
+      return `0x${'00'.repeat(65)}` as Hex;
     },
     async signTypedData() {
-      return ('0x' + '00'.repeat(65)) as Hex;
+      return `0x${'00'.repeat(65)}` as Hex;
     },
     async signTransaction() {
-      return ('0x' + '00'.repeat(65)) as Hex;
+      return `0x${'00'.repeat(65)}` as Hex;
     },
   });
 }
