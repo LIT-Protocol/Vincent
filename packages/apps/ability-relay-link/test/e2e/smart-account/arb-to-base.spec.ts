@@ -88,7 +88,7 @@ const hasRequiredEnvVars = ZERODEV_RPC_URL && SMART_ACCOUNT_CHAIN_ID;
           tradeType: 'EXACT_INPUT',
           useReceiver: true,
           protocolVersion: 'preferV2',
-          appFees: [{ recipient: '0x2998657a1C195B3D9909cB51dB3E57836159732C', fee: '100' }],
+          // appFees: [{ recipient: '0x2998657a1C195B3D9909cB51dB3E57836159732C', fee: '100' }], // TODO: Replace with app owner + Lit Protocol central account
         });
 
         console.log('[cross-chain USDC quote Arb -> Base]', util.inspect(quote, { depth: 10 }));
