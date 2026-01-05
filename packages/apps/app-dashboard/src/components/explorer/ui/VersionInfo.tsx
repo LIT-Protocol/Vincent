@@ -2,7 +2,7 @@ import { AllAppVersions } from './AllAppVersions';
 import { Tabs, TabsTrigger, TabsList } from '@/components/shared/ui/tabs';
 import { App, AppVersion, AppVersionAbility } from '@/types/developer-dashboard/appTypes';
 import { ActiveAppVersion } from './ActiveAppVersion';
-import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
+import { theme, fonts } from '@/lib/themeClasses';
 
 interface VersionInfoProps {
   app: App;

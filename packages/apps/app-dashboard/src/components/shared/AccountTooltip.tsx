@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { User } from 'lucide-react';
-import { fonts, theme as appTheme } from '@/components/user-dashboard/connect/ui/theme';
+import { fonts, theme as appTheme } from '@/lib/themeClasses';
 import { useAuth } from '@/hooks/developer-dashboard/useAuth';
 import { SidebarMenuButton } from '@/components/shared/ui/sidebar';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/shared/ui/tooltip';

@@ -7,7 +7,7 @@ import { Button } from '@/components/shared/ui/button';
 import { Form } from '@/components/shared/ui/form';
 import { StatusMessage } from '@/components/shared/ui/statusMessage';
 import { TextField } from '../../form-fields';
-import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
+import { theme, fonts } from '@/lib/themeClasses';
 import { extractErrorMessage } from '@/utils/developer-dashboard/app-forms';
 
 //const { abilityOwnerDoc } = docSchemas;

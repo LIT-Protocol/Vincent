@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import { theme } from '@/components/user-dashboard/connect/ui/theme';
+import { theme } from '@/lib/themeClasses';
 
 interface AbilityCardProps {
   onClick?: () => void;

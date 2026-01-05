@@ -6,7 +6,7 @@ import { StatusMessage } from '@/components/shared/ui/statusMessage';
 import { getErrorMessage } from '@/utils/developer-dashboard/app-forms';
 import Loading from '@/components/shared/ui/Loading';
 import { Ability } from '@/types/developer-dashboard/appTypes';
-import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
+import { theme, fonts } from '@/lib/themeClasses';
 
 interface UndeleteAbilityWrapperProps {
   ability: Ability;

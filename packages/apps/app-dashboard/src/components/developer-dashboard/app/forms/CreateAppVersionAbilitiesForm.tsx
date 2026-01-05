@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { Button } from '@/components/shared/ui/button';
 import { Ability } from '@/types/developer-dashboard/appTypes';
-import { AbilitySelectorModal } from '../../AbilitySelectorModal';
+import { AbilitySelectorModal } from '../../ui/AbilitySelectorModal';
 import { Plus } from 'lucide-react';
-import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
+import { theme, fonts } from '@/lib/themeClasses';
 
 interface CreateAppVersionAbilitiesFormProps {
   onAbilityAdd: (ability: Ability) => Promise<void>;

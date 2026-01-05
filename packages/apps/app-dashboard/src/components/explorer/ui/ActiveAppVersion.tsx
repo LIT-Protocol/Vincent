@@ -2,7 +2,7 @@ import { TabsContent } from '@/components/shared/ui/tabs';
 import { Database, Layers } from 'lucide-react';
 import { App, AppVersion, AppVersionAbility } from '@/types/developer-dashboard/appTypes';
 import { AbilityInfoWrapper } from '../wrappers/ui/AbilityInfoWrapper';
-import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
+import { theme, fonts } from '@/lib/themeClasses';
 
 export function ActiveAppVersion({
   versions,

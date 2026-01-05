@@ -10,7 +10,7 @@ import { PublishAppVersionWrapper } from './PublishAppVersionWrapper';
 import Loading from '@/components/shared/ui/Loading';
 import { StatusMessage } from '@/components/shared/ui/statusMessage';
 import { Breadcrumb } from '@/components/shared/ui/Breadcrumb';
-import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
+import { theme, fonts } from '@/lib/themeClasses.ts';
 import { useBlockchainAppData } from '@/hooks/useBlockchainAppData';
 
 export function AppVersionAbilitiesWrapper() {

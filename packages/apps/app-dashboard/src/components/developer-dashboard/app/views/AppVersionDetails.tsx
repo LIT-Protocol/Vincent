@@ -7,7 +7,7 @@ import {
 } from '@/components/shared/ui/card';
 import { AppVersion, AppVersionAbility } from '@/types/developer-dashboard/appTypes';
 import { AppVersionAbilitiesDisplay } from '@/components/developer-dashboard/app/views/AppVersionAbilitiesDisplay.tsx';
-import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
+import { theme, fonts } from '@/lib/themeClasses';
 
 interface VersionDetailsProps {
   version: number;

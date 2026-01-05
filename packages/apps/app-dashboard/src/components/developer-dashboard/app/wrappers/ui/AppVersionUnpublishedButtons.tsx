@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { Edit, Plus, Trash2 } from 'lucide-react';
 import { PublishAppVersionWrapper } from '../PublishAppVersionWrapper';
-import { theme } from '@/components/user-dashboard/connect/ui/theme';
+import { theme } from '@/lib/themeClasses';
 import { ActionButton } from '@/components/developer-dashboard/ui/ActionButton';
 
 interface AppVersionUnpublishedButtonsProps {

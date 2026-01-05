@@ -3,7 +3,7 @@ import { useConnect } from 'wagmi';
 import { Wallet, AlertCircle, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/shared/ui/button';
 import { useAuth } from '@/hooks/developer-dashboard/useAuth';
-import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
+import { theme, fonts } from '@/lib/themeClasses';
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/hooks/useTheme';
 

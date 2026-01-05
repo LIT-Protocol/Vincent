@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 
 import { App } from '@/types/developer-dashboard/appTypes';
 import { AppCard } from '@/components/developer-dashboard/ui/AppCard';
-import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
+import { theme, fonts } from '@/lib/themeClasses';
 
 interface AppsListViewProps {
   apps: App[];

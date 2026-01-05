@@ -2,7 +2,7 @@ import { Policy } from '@/types/developer-dashboard/appTypes';
 import { PolicyWithVersion } from '@/utils/developer-dashboard/sortSupportedPolicies';
 import { Shield } from 'lucide-react';
 import { PolicyVersionInfoView } from './PolicyVersionInfoView';
-import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
+import { theme, fonts } from '@/lib/themeClasses';
 
 interface AbilityVersionPoliciesViewProps {
   supportedPolicies: (Policy | PolicyWithVersion)[];

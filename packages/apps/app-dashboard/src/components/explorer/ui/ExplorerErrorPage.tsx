@@ -1,7 +1,7 @@
 import { AlertTriangle } from 'lucide-react';
 import { ExplorerNav } from './ExplorerNav';
 import { useNavigate } from 'react-router-dom';
-import { fonts } from '@/components/user-dashboard/connect/ui/theme';
+import { fonts } from '@/lib/themeClasses';
 
 interface ExplorerErrorPageProps {
   title: string;

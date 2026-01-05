@@ -16,7 +16,7 @@ import {
   DialogTitle,
 } from '@/components/shared/ui/dialog';
 import { Button } from '@/components/shared/ui/button';
-import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
+import { theme, fonts } from '@/lib/themeClasses';
 import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
 import Loading from '@/components/shared/ui/Loading';
 import { StatusMessage } from '@/components/shared/ui/statusMessage';

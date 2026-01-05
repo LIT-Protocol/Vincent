@@ -3,7 +3,7 @@ import { toggleTheme } from '@/lib/theme';
 import { useCallback, useState } from 'react';
 import { Menu, X } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
-import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
+import { theme, fonts } from '@/lib/themeClasses';
 
 interface ExplorerNavProps {
   onNavigate?: (path: string) => void;

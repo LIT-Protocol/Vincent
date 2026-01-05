@@ -5,7 +5,7 @@ import { AppVersion as ContractAppVersion } from '@lit-protocol/vincent-contract
 
 import { AppVersion } from '@/types/developer-dashboard/appTypes';
 import { UndeleteAppVersionButton } from '../wrappers';
-import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
+import { theme, fonts } from '@/lib/themeClasses';
 import { VersionCard } from '@/components/developer-dashboard/ui/VersionCard';
 
 type SortOption = 'published' | 'enabled';

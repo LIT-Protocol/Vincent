@@ -11,7 +11,7 @@ import { AppVersionPublishedButtons } from '../wrappers/ui/AppVersionPublishedBu
 import { AppVersionUnpublishedButtons } from '../wrappers/ui/AppVersionUnpublishedButtons';
 import { AppVersionDeletedButtons } from '../wrappers/ui/AppVersionDeletedButtons';
 import { App, AppVersion, AppVersionAbility } from '@/types/developer-dashboard/appTypes';
-import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
+import { theme, fonts } from '@/lib/themeClasses';
 interface AppVersionDetailViewProps {
   app: App;
   versionData: AppVersion;
