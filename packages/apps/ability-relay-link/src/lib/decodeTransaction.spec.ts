@@ -1,8 +1,8 @@
 import { DecodeTransactionParams } from '@lit-protocol/vincent-ability-sdk/gatedSigner';
+import { ERC20_ABI } from '@lit-protocol/vincent-ability-sdk';
 import { Address, encodeFunctionData } from 'viem';
 
 import { decodeTransaction } from './decodeTransaction';
-import { ERC20_ABI } from './helpers/erc20';
 import { fetchRelayLinkAddresses } from './helpers/relay-link';
 import { TransactionKind } from './helpers/transactionKind';
 

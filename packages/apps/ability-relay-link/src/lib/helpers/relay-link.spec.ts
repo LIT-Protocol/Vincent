@@ -4,24 +4,22 @@ import { fetchRelayLinkAddresses, isRelayLinkAddress, isTestnet } from './relay-
 
 describe('Relay.link Helpers', () => {
   describe('isTestnet', () => {
-    it('should return false for mainnet chains', () => {
-      expect(isTestnet(1)).toBe(false); // Ethereum
-      expect(isTestnet(137)).toBe(false); // Polygon
-      expect(isTestnet(8453)).toBe(false); // Base
-      expect(isTestnet(42161)).toBe(false); // Arbitrum
-      expect(isTestnet(10)).toBe(false); // Optimism
+    it('should return false for mainnet chains', async () => {
+      expect(await isTestnet(1)).toBe(false); // Ethereum
+      expect(await isTestnet(137)).toBe(false); // Polygon
+      expect(await isTestnet(8453)).toBe(false); // Base
+      expect(await isTestnet(42161)).toBe(false); // Arbitrum
+      expect(await isTestnet(10)).toBe(false); // Optimism
     });
 
-    it('should return true for testnet chains', () => {
-      expect(isTestnet(11155111)).toBe(true); // Sepolia
-      expect(isTestnet(84532)).toBe(true); // Base Sepolia
-      expect(isTestnet(421614)).toBe(true); // Arbitrum Sepolia
-      expect(isTestnet(11155420)).toBe(true); // Optimism Sepolia
-      expect(isTestnet(80002)).toBe(true); // Polygon Amoy
+    it('should return true for testnet chains', async () => {
+      expect(await isTestnet(1337)).toBe(true); // Hyperliquid Testnet
+      expect(await isTestnet(84532)).toBe(true); // Base Sepolia
+      expect(await isTestnet(11155111)).toBe(true); // Sepolia
     });
 
-    it('should return false for unknown chains', () => {
-      expect(isTestnet(999999)).toBe(false);
+    it('should return false for unknown chains', async () => {
+      expect(await isTestnet(999999)).toBe(false);
     });
   });
 

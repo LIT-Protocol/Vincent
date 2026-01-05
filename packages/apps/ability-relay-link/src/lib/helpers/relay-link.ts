@@ -40,40 +40,50 @@ function getTestnetClient() {
 }
 
 /**
- * Known testnet chain IDs supported by Relay
- * Source: https://api.testnets.relay.link/chains
+ * Fallback testnet chain IDs in case the API is unavailable
+ * Source: https://api.testnets.relay.link/chains (as of 2025-01)
  */
-const RELAY_TESTNETS = new Set([
-  919, // Mode Testnet
-  1301, // Unichain Sepolia
+const FALLBACK_TESTNETS = new Set([
   1337, // Hyperliquid Testnet
-  11011, // Shape Sepolia
-  11124, // Abstract Testnet
-  17069, // Garnet (Redstone)
-  80002, // Polygon Amoy
   84532, // Base Sepolia
-  421614, // Arbitrum Sepolia
-  695569, // Pyrope
-  1118190, // Eclipse Testnet
-  9092725, // Bitcoin Testnet4
   11155111, // Sepolia
-  11155420, // Optimism Sepolia
-  845320008, // Lordchain Testnet
-  1936682084, // Solana Devnet
 ]);
+
+/**
+ * Cache for testnet chain IDs (fetched dynamically from Relay API)
+ */
+let testnetChainIds: Set<number> | null = null;
+
+/**
+ * Fetch and cache testnet chain IDs from the Relay API
+ * Falls back to hardcoded list if API request fails
+ */
+async function getTestnetChainIds(): Promise<Set<number>> {
+  if (testnetChainIds === null) {
+    try {
+      const chains = await fetchChainConfigs(TESTNET_RELAY_API);
+      testnetChainIds = new Set(chains.map((c) => c.id));
+    } catch {
+      console.warn('[relay-link] Failed to fetch testnet chains, using fallback list');
+      testnetChainIds = FALLBACK_TESTNETS;
+    }
+  }
+  return testnetChainIds;
+}
 
 /**
  * Check if a chain ID is a testnet
  */
-export function isTestnet(chainId: number): boolean {
-  return RELAY_TESTNETS.has(chainId);
+export async function isTestnet(chainId: number): Promise<boolean> {
+  const testnets = await getTestnetChainIds();
+  return testnets.has(chainId);
 }
 
 /**
  * Get the appropriate Relay SDK client based on chain ID
  */
-export function getRelayClient(chainId: number) {
-  return isTestnet(chainId) ? getTestnetClient() : getMainnetClient();
+export async function getRelayClient(chainId: number) {
+  return (await isTestnet(chainId)) ? getTestnetClient() : getMainnetClient();
 }
 
 /**
@@ -134,7 +144,7 @@ export interface RelayLinkTransactionData {
 export async function getRelayLinkQuote(
   params: RelayLinkQuoteParams,
 ): Promise<RelayLinkQuoteResponse> {
-  const client = getRelayClient(params.originChainId);
+  const client = await getRelayClient(params.originChainId);
 
   const quote = await client.actions.getQuote({
     chainId: params.originChainId,
@@ -188,7 +198,7 @@ interface RelayChainWithContracts {
  * Fetch Relay.link contract addresses for a specific chain using the SDK
  */
 export async function fetchRelayLinkAddresses(chainId: number): Promise<Address[]> {
-  const apiUrl = isTestnet(chainId) ? TESTNET_RELAY_API : MAINNET_RELAY_API;
+  const apiUrl = (await isTestnet(chainId)) ? TESTNET_RELAY_API : MAINNET_RELAY_API;
 
   // fetchChainConfigs returns RelayChain[] but the actual API response includes contracts
   const chains = (await fetchChainConfigs(apiUrl)) as unknown as RelayChainWithContracts[];
