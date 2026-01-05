@@ -1,7 +1,7 @@
 import { Mail, Copy, CheckCircle, ChevronDown, ChevronUp, Hash, Zap, Globe } from 'lucide-react';
 import { useState } from 'react';
 import { App } from '@/types/developer-dashboard/appTypes';
-import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
+import { theme, fonts } from '@/lib/themeClasses';
 
 export function AppInfo({ app }: { app: App }) {
   const [copiedField, setCopiedField] = useState<string | null>(null);

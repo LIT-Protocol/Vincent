@@ -9,7 +9,7 @@ import { Button } from '@/components/shared/ui/button';
 import { StatusMessage } from '@/components/shared/ui/statusMessage';
 import { AppVersion } from '@/types/developer-dashboard/appTypes';
 import { LongTextField } from '@/components/developer-dashboard/form-fields';
-import { theme } from '@/components/user-dashboard/connect/ui/theme';
+import { theme } from '@/lib/themeClasses';
 import { extractErrorMessage } from '@/utils/developer-dashboard/app-forms';
 
 const { appVersionDoc } = docSchemas;

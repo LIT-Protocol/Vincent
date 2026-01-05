@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 
 import { MenuId } from '@/types/developer-dashboard/menuId';
 import { DashboardCard } from '@/components/developer-dashboard/ui/DashboardCard';
-import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
+import { theme, fonts } from '@/lib/themeClasses';
 
 interface DashboardContentProps {
   filteredAppsCount: number;

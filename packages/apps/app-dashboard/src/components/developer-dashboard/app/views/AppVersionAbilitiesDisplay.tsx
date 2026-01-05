@@ -1,7 +1,7 @@
 import { Wrench, Package } from 'lucide-react';
 
 import { AppVersionAbility } from '@/types/developer-dashboard/appTypes';
-import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
+import { theme, fonts } from '@/lib/themeClasses';
 
 interface AppVersionAbilitiesDisplayProps {
   abilities: AppVersionAbility[];

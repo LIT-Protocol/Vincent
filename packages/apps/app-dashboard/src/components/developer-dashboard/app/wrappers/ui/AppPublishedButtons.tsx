@@ -8,7 +8,7 @@ import { App as ContractApp } from '@lit-protocol/vincent-contracts-sdk';
 import MutationButtonStates from '@/components/shared/ui/MutationButtonStates';
 import { AppMismatchResolution } from './AppMismatchResolution';
 import { useWagmiSigner } from '@/hooks/developer-dashboard/useWagmiSigner';
-import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
+import { theme, fonts } from '@/lib/themeClasses';
 import { ActionButton } from '@/components/developer-dashboard/ui/ActionButton';
 
 interface AppPublishedButtonsProps {

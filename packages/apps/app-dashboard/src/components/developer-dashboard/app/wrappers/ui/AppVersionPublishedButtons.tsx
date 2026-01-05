@@ -5,7 +5,7 @@ import { AppVersion as ContractAppVersion, getClient } from '@lit-protocol/vince
 import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
 import { AppVersionMismatchResolution } from './AppVersionMismatchResolution';
 import { useWagmiSigner } from '@/hooks/developer-dashboard/useWagmiSigner';
-import { theme } from '@/components/user-dashboard/connect/ui/theme';
+import { theme } from '@/lib/themeClasses';
 import { ActionButton } from '@/components/developer-dashboard/ui/ActionButton';
 import { StatusMessage } from '@/components/shared/ui/statusMessage';
 

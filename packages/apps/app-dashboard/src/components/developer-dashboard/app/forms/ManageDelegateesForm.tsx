@@ -19,7 +19,7 @@ import { TextField } from '../../form-fields';
 import { CopyButton } from '@/components/shared/ui/CopyButton';
 import { getClient } from '@lit-protocol/vincent-contracts-sdk';
 import { useWagmiSigner } from '@/hooks/developer-dashboard/useWagmiSigner';
-import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
+import { theme, fonts } from '@/lib/themeClasses';
 
 const AddDelegateeSchema = z.object({
   address: z.string().refine((val) => ethers.utils.isAddress(val), {

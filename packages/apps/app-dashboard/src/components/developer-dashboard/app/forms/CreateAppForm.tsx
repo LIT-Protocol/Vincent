@@ -14,7 +14,7 @@ import {
   ImageUploadField,
 } from '@/components/developer-dashboard/form-fields';
 import { DeploymentStatusSelectField } from '@/components/developer-dashboard/form-fields/array/DeploymentStatusSelectField';
-import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
+import { theme, fonts } from '@/lib/themeClasses';
 import { extractErrorMessage } from '@/utils/developer-dashboard/app-forms';
 
 const { appDoc } = docSchemas;

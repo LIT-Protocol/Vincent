@@ -1,7 +1,7 @@
 import React from 'react';
 import { logos } from './ExternalLogos';
 import { env } from '@/config/env';
-import { fonts } from '@/components/user-dashboard/connect/ui/theme';
+import { fonts } from '@/lib/themeClasses';
 
 const LandingPartners: React.FC = () => {
   return (

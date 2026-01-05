@@ -7,7 +7,7 @@ import { Form } from '@/components/shared/ui/form';
 import { Button } from '@/components/shared/ui/button';
 import { TextField } from '../../form-fields';
 import { extractErrorMessage } from '@/utils/developer-dashboard/app-forms';
-import { fonts } from '@/components/user-dashboard/connect/ui/theme';
+import { fonts } from '@/lib/themeClasses';
 
 function buildConfirmationString(policyPackageName: string): string {
   return `I want to delete policy ${policyPackageName}`;

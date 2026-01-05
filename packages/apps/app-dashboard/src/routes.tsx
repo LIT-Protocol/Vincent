@@ -5,7 +5,7 @@ import PublicLayout from '@/layout/shared/PublicLayout';
 import { DashboardProviders, PublicProviders } from './providers';
 import { wrap } from '@/utils/shared/components';
 
-import { Dashboard } from './pages/developer-dashboard';
+import DashboardPage from './pages/developer-dashboard/DashboardRoute';
 import RootPage from './pages/shared/RootPage';
 
 import {
@@ -69,7 +69,7 @@ const routes: RouteObject[] = [
             children: [
               {
                 path: 'dashboard',
-                element: <Dashboard />,
+                element: <DashboardPage />,
               },
               {
                 path: 'apps',

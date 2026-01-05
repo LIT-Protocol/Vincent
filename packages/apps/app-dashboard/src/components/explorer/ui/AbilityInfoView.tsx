@@ -3,7 +3,7 @@ import { AppVersionAbility, Ability } from '@/types/developer-dashboard/appTypes
 import { AbilityVersionPoliciesWrapper } from '../wrappers/ui/AbilityVersionPolicyWrapper';
 import { Logo } from '@/components/shared/ui/Logo';
 import { useState } from 'react';
-import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
+import { theme, fonts } from '@/lib/themeClasses';
 
 interface AbilityInfoViewProps {
   appVersionAbility: AppVersionAbility;

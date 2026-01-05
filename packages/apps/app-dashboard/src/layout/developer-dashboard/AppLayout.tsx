@@ -1,7 +1,7 @@
 import { ComponentProps, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 import { cn } from '@/lib/utils';
-import { DeveloperSidebarWrapper } from '@/components/developer-dashboard/sidebar/DeveloperSidebarWrapper';
+import { Sidebar } from '@/components/developer-dashboard/sidebar/Sidebar';
 import { ResourceNotOwnedError } from '@/components/developer-dashboard/ui/ResourceNotOwnedError';
 import {
   SidebarProvider,
@@ -9,7 +9,7 @@ import {
   SidebarTrigger,
   useSidebar,
 } from '@/components/shared/ui/sidebar';
-import { theme } from '@/components/user-dashboard/connect/ui/theme';
+import { theme } from '@/lib/themeClasses';
 import { useAppAddressCheck } from '@/hooks/developer-dashboard/app/useAppAddressCheck';
 import { useAbilityAddressCheck } from '@/hooks/developer-dashboard/ability/useAbilityAddressCheck';
 import { usePolicyAddressCheck } from '@/hooks/developer-dashboard/policy/usePolicyAddressCheck';
@@ -17,7 +17,7 @@ import Loading from '@/components/shared/ui/Loading';
 import { useAuth } from '@/hooks/developer-dashboard/useAuth';
 import { SignInScreen } from '@/components/developer-dashboard/auth/SignInScreen';
 import { ExplorerNav } from '@/components/explorer/ui/ExplorerNav';
-import { useGlobeOffset } from '@/contexts/GlobeOffsetContext';
+import { useGlobeOffset } from '@/layout/shared/GlobeOffsetContext';
 
 // Component that updates globe offset based on sidebar state
 function SidebarOffsetSync() {
@@ -88,7 +88,7 @@ function AppLayout({ children, className }: ComponentProps<'div'>) {
         <SidebarOffsetSync />
         <ExplorerNav onNavigate={(path) => navigate(path)} sidebarTrigger={<SidebarTrigger />} />
         <div className="flex h-screen w-full relative z-10 pt-[61px]">
-          <DeveloperSidebarWrapper />
+          <Sidebar />
           <SidebarInset className="flex-1 overflow-hidden flex flex-col">
             <main className="flex-1 overflow-auto relative overflow-x-hidden flex flex-col">
               <div className="flex-1 w-full p-2 sm:p-4 md:p-6 pt-6 sm:pt-8 relative">{content}</div>

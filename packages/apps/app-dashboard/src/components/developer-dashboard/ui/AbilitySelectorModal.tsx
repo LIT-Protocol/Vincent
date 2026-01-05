@@ -19,7 +19,7 @@ import {
   DialogTitle,
 } from '@/components/shared/ui/dialog';
 import { Button } from '@/components/shared/ui/button';
-import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
+import { theme, fonts } from '@/lib/themeClasses';
 import { AbilityVersionSelectorModal } from './AbilityVersionSelectorModal';
 
 // Register AG Grid modules

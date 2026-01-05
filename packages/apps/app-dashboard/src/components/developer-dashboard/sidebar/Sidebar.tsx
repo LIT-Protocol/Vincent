@@ -1,7 +1,7 @@
 import React from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import { Home, Package, Wrench, Shield, LogOut, HelpCircle } from 'lucide-react';
-import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
+import { theme, fonts } from '@/lib/themeClasses';
 import { useTheme } from '@/hooks/useTheme';
 import { useAuth } from '@/hooks/developer-dashboard/useAuth';
 import { AccountTooltip } from '@/components/shared/AccountTooltip';

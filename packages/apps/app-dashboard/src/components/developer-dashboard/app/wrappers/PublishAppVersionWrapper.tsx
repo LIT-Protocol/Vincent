@@ -7,7 +7,7 @@ import { StatusMessage } from '@/components/shared/ui/statusMessage';
 import { getClient } from '@lit-protocol/vincent-contracts-sdk';
 import { PublishAppVersionButton } from './ui/PublishAppVersionButton';
 import { useWagmiSigner } from '@/hooks/developer-dashboard/useWagmiSigner';
-import { theme } from '@/components/user-dashboard/connect/ui/theme';
+import { theme } from '@/lib/themeClasses';
 
 export function PublishAppVersionWrapper({ isAppPublished }: { isAppPublished: boolean }) {
   const { appId, versionId } = useParams<{ appId: string; versionId: string }>();

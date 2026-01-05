@@ -8,7 +8,7 @@ import { TextField, LongTextField, ArrayField, ImageUploadField } from '../../fo
 import { docSchemas } from '@lit-protocol/vincent-registry-sdk';
 import { App } from '@/types/developer-dashboard/appTypes';
 import { DeploymentStatusSelectField } from '../../form-fields/array/DeploymentStatusSelectField';
-import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
+import { theme, fonts } from '@/lib/themeClasses';
 import { StatusMessage } from '@/components/shared/ui/statusMessage';
 import { extractErrorMessage } from '@/utils/developer-dashboard/app-forms';
 
