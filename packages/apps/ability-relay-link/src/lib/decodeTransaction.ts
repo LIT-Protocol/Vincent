@@ -3,11 +3,10 @@ import type {
   DecodeTransactionParams,
   LowLevelCall,
 } from '@lit-protocol/vincent-ability-sdk/gatedSigner';
+import { ERC20_ABI } from '@lit-protocol/vincent-ability-sdk';
 import type { Abi } from 'viem';
 
 import { decodeFunctionData } from 'viem';
-
-import { ERC20_ABI } from './helpers/erc20';
 import { TransactionKind } from './helpers/transactionKind';
 
 interface DecodeTransactionKindParams {

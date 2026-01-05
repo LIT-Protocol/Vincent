@@ -10,8 +10,8 @@ import {
   getVincentAbilityClient,
 } from '@lit-protocol/vincent-app-sdk/abilityClient';
 import * as util from 'node:util';
-import { toHex } from 'viem';
-import { base } from 'viem/chains';
+import { toHex, createPublicClient, http, erc20Abi } from 'viem';
+import { base, arbitrum } from 'viem/chains';
 import { entryPoint07Address } from 'viem/account-abstraction';
 
 import {
@@ -27,6 +27,7 @@ jest.setTimeout(300000);
 // Check for required environment variables for smart account testing
 const ZERODEV_RPC_URL = process.env.ZERODEV_RPC_URL;
 const SMART_ACCOUNT_CHAIN_ID = process.env.SMART_ACCOUNT_CHAIN_ID;
+const ARB_RPC_URL = 'https://1rpc.io/arb';
 const hasRequiredEnvVars = ZERODEV_RPC_URL && SMART_ACCOUNT_CHAIN_ID;
 
 (hasRequiredEnvVars ? describe : describe.skip)(
@@ -102,6 +103,22 @@ const hasRequiredEnvVars = ZERODEV_RPC_URL && SMART_ACCOUNT_CHAIN_ID;
         // USDC addresses on different chains
         const BASE_USDC_ADDRESS = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913';
         const ARB_USDC_ADDRESS = '0xaf88d065e77c8cC2239327C5EDb3A432268e5831';
+
+        // Create Arbitrum client to check USDC balance
+        const arbClient = createPublicClient({
+          chain: arbitrum,
+          transport: http(ARB_RPC_URL),
+        });
+
+        // Get initial USDC balance on Arbitrum before the swap
+        const initialArbUsdcBalance = await arbClient.readContract({
+          address: ARB_USDC_ADDRESS,
+          abi: erc20Abi,
+          functionName: 'balanceOf',
+          args: [smartAccountAddress],
+        });
+
+        console.log('[initial Arbitrum USDC balance]', initialArbUsdcBalance.toString());
 
         const quote = await getRelayLinkQuote({
           user: smartAccountAddress,
@@ -236,6 +253,41 @@ const hasRequiredEnvVars = ZERODEV_RPC_URL && SMART_ACCOUNT_CHAIN_ID;
 
         expect(userOpHash).toMatch(/^0x[a-fA-F0-9]{64}$/);
         expect(transactionHash).toMatch(/^0x[a-fA-F0-9]{64}$/);
+
+        // Wait for cross-chain bridging to complete and verify USDC balance increased on Arbitrum
+        console.log('[waiting for cross-chain bridging to complete...]');
+
+        const maxRetries = 3;
+        const retryDelayMs = 5000; // 5 seconds between retries
+        let finalArbUsdcBalance = initialArbUsdcBalance;
+
+        for (let i = 0; i < maxRetries; i++) {
+          await new Promise((resolve) => setTimeout(resolve, retryDelayMs));
+
+          finalArbUsdcBalance = await arbClient.readContract({
+            address: ARB_USDC_ADDRESS,
+            abi: erc20Abi,
+            functionName: 'balanceOf',
+            args: [smartAccountAddress],
+          });
+
+          console.log(
+            `[retry ${i + 1}/${maxRetries}] Arbitrum USDC balance: ${finalArbUsdcBalance.toString()}`,
+          );
+
+          if (finalArbUsdcBalance > initialArbUsdcBalance) {
+            console.log('[cross-chain bridging completed - balance increased]');
+            break;
+          }
+        }
+
+        // Verify the USDC balance on Arbitrum increased
+        expect(finalArbUsdcBalance).toBeGreaterThan(initialArbUsdcBalance);
+        console.log('[Arbitrum USDC balance verification]', {
+          initial: initialArbUsdcBalance.toString(),
+          final: finalArbUsdcBalance.toString(),
+          increase: (finalArbUsdcBalance - initialArbUsdcBalance).toString(),
+        });
 
         console.log('[Cross-chain USDC swap Base -> Arbitrum completed successfully]');
       });

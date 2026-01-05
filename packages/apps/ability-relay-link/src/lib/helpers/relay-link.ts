@@ -41,7 +41,7 @@ function getTestnetClient() {
 
 /**
  * Fallback testnet chain IDs in case the API is unavailable
- * Source: https://api.testnets.relay.link/chains (as of 2025-01)
+ * Source: https://api.testnets.relay.link/chains
  */
 const FALLBACK_TESTNETS = new Set([
   1337, // Hyperliquid Testnet
