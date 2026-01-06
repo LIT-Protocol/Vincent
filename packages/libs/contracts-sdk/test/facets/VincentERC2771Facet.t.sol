@@ -101,7 +101,7 @@ contract VincentERC2771FacetTest is Test {
     // ============ EIP-2771 Integration Tests ============
 
     function testMetaTransactionWithTrustedForwarder() public {
-        // Set up trusted forwarder
+        // Use owner context; trusted forwarder was configured during deployment in setUp()
         vm.prank(owner);
 
         // Register an app first
