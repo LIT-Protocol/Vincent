@@ -38,7 +38,7 @@ export const assertIsValidUserOp = async ({
         value: BigInt(transaction.value),
       },
     });
-    validateTransaction({
+    await validateTransaction({
       chainId,
       decodedTransaction,
       sender,
@@ -56,7 +56,7 @@ export const assertIsValidUserOp = async ({
     throw new Error(`Simulation failed - Reason: ${revertReason} - Message: ${message}`);
   }
 
-  validateSimulation({
+  await validateSimulation({
     chainId,
     sender,
     simulation,
@@ -90,7 +90,7 @@ export async function assertIsValidTransaction({
       value: BigInt(transaction.value),
     },
   });
-  validateTransaction({
+  await validateTransaction({
     chainId,
     decodedTransaction,
     sender,
@@ -106,7 +106,7 @@ export async function assertIsValidTransaction({
     throw new Error(`Simulation failed - Reason: ${revertReason} - Message: ${message}`);
   }
 
-  validateSimulation({
+  await validateSimulation({
     chainId,
     sender,
     simulation,

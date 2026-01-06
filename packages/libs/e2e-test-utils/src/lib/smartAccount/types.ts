@@ -18,6 +18,7 @@ export interface ZerodevSmartAccountInfo {
 
 export interface CrossmintSmartAccountInfo {
   account: Exclude<Awaited<ReturnType<WalletsApiClient['createWallet']>>, { error: unknown }>;
+  client: WalletsApiClient;
 }
 
 export interface SafeSmartAccountInfo {
