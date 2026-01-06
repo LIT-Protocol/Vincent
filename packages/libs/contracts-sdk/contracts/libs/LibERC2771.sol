@@ -11,6 +11,12 @@ import "../LibVincentDiamondStorage.sol";
  */
 library LibERC2771 {
     /**
+     * @notice Emitted when the trusted forwarder is set or updated
+     * @param newTrustedForwarder The address of the new trusted forwarder
+     */
+    event TrustedForwarderSet(address indexed newTrustedForwarder);
+
+    /**
      * @notice Returns the actual sender of the transaction
      * @dev If the transaction comes from the trusted forwarder, extracts the real sender
      *      from the last 20 bytes of calldata. Otherwise returns msg.sender.

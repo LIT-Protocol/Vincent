@@ -107,10 +107,8 @@ contract DeployVincentDiamond is Script {
         (VincentDiamond.FacetAddresses memory facets, address diamondCutFacetAddress) = deployFacets();
 
         // Get the Gelato trusted forwarder from environment variable
+        // Setting to address(0) disables EIP-2771 meta-transaction support
         address gelatoForwarder = vm.envAddress("VINCENT_GELATO_FORWARDER_ADDRESS");
-        if (gelatoForwarder == address(0)) {
-            revert MissingEnvironmentVariable("VINCENT_GELATO_FORWARDER_ADDRESS");
-        }
         console.log("Gelato trusted forwarder for chain", block.chainid, ":", gelatoForwarder);
 
         // Deploy the Diamond with the diamondCut facet and all other facets in one transaction

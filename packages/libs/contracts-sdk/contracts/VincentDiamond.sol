@@ -17,6 +17,7 @@ import "./facets/VincentAppViewFacet.sol";
 import "./facets/VincentUserFacet.sol";
 import "./facets/VincentUserViewFacet.sol";
 import "./facets/VincentERC2771Facet.sol";
+import "./libs/LibERC2771.sol";
 
 /**
  * @title Vincent Diamond
@@ -34,11 +35,6 @@ contract VincentDiamond {
      * @notice Thrown when ETH is sent directly to the contract without a function call
      */
     error DirectETHTransfersNotAllowed();
-
-    /**
-     * @notice Thrown when trusted forwarder address is not provided during deployment
-     */
-    error TrustedForwarderRequired();
 
     /**
      * @dev Struct for facet addresses to avoid stack too deep errors in the constructor
@@ -67,7 +63,7 @@ contract VincentDiamond {
      * @param _contractOwner Address that will own the diamond contract
      * @param _diamondCutFacet Address of the facet implementing diamond cut functionality
      * @param _facets Struct containing addresses of all other facets
-     * @param _trustedForwarder Address of the Gelato trusted forwarder for EIP-2771 gasless transactions (can be address(0))
+     * @param _trustedForwarder Address of the Gelato trusted forwarder for EIP-2771 gasless transactions (address(0) to disable EIP-2771)
      */
     constructor(
         address _contractOwner,
@@ -164,9 +160,9 @@ contract VincentDiamond {
         LibDiamond.diamondCut(cuts, address(0), "");
 
         // Set the trusted forwarder for EIP-2771 meta-transactions
-        // Revert if no forwarder is provided to ensure gasless transactions are properly configured
-        if (_trustedForwarder == address(0)) revert TrustedForwarderRequired();
+        // Setting to address(0) disables EIP-2771 support
         VincentERC2771Storage.erc2771Storage().trustedForwarder = _trustedForwarder;
+        emit LibERC2771.TrustedForwarderSet(_trustedForwarder);
     }
 
     /**

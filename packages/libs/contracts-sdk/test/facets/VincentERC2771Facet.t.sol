@@ -26,8 +26,6 @@ contract VincentERC2771FacetTest is Test {
     address public user = makeAddr("User");
     address public otherForwarder = makeAddr("OtherForwarder");
 
-    event TrustedForwarderSet(address indexed newTrustedForwarder);
-
     function setUp() public {
         uint256 deployerPrivateKey = 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80;
         vm.setEnv("VINCENT_DEPLOYER_PRIVATE_KEY", vm.toString(deployerPrivateKey));
@@ -65,7 +63,7 @@ contract VincentERC2771FacetTest is Test {
     function testSetTrustedForwarder() public {
         vm.prank(owner);
         vm.expectEmit(true, false, false, false);
-        emit TrustedForwarderSet(trustedForwarder);
+        emit LibERC2771.TrustedForwarderSet(trustedForwarder);
         vincentERC2771Facet.setTrustedForwarder(trustedForwarder);
 
         assertEq(vincentERC2771Facet.getTrustedForwarder(), trustedForwarder);
@@ -77,10 +75,13 @@ contract VincentERC2771FacetTest is Test {
         vincentERC2771Facet.setTrustedForwarder(trustedForwarder);
     }
 
-    function testSetTrustedForwarderRevertsIfZeroAddress() public {
+    function testSetTrustedForwarderToZeroAddressDisablesEIP2771() public {
+        // Setting to address(0) should disable EIP-2771
         vm.prank(owner);
-        vm.expectRevert(VincentERC2771Facet.ZeroAddressNotAllowed.selector);
         vincentERC2771Facet.setTrustedForwarder(address(0));
+
+        assertEq(vincentERC2771Facet.getTrustedForwarder(), address(0));
+        assertFalse(vincentERC2771Facet.isTrustedForwarder(trustedForwarder));
     }
 
     function testSetTrustedForwarderCanBeUpdated() public {
@@ -101,9 +102,6 @@ contract VincentERC2771FacetTest is Test {
     // ============ EIP-2771 Integration Tests ============
 
     function testMetaTransactionWithTrustedForwarder() public {
-        // Use owner context; trusted forwarder was configured during deployment in setUp()
-        vm.prank(owner);
-
         // Register an app first
         address delegatee = makeAddr("Delegatee");
         address[] memory delegatees = new address[](1);

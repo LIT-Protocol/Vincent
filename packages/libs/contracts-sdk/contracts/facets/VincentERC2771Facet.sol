@@ -3,6 +3,7 @@ pragma solidity ^0.8.29;
 
 import "../diamond-base/libraries/LibDiamond.sol";
 import "../LibVincentDiamondStorage.sol";
+import "../libs/LibERC2771.sol";
 
 /**
  * @title VincentERC2771Facet
@@ -11,24 +12,17 @@ import "../LibVincentDiamondStorage.sol";
  *      on behalf of users, enabling gasless interactions with Vincent contracts.
  */
 contract VincentERC2771Facet {
-    error ZeroAddressNotAllowed();
-
-    event TrustedForwarderSet(address indexed newTrustedForwarder);
-
     /**
      * @notice Sets the trusted forwarder address for EIP-2771 meta-transactions
-     * @dev Only the contract owner can set the trusted forwarder
-     * @param forwarder Address of the trusted forwarder (e.g., Gelato Relay address)
+     * @dev Only the contract owner can set the trusted forwarder.
+     *      Setting to address(0) disables EIP-2771 support.
+     * @param forwarder Address of the trusted forwarder (e.g., Gelato Relay address), or address(0) to disable
      */
     function setTrustedForwarder(address forwarder) external {
         LibDiamond.enforceIsContractOwner();
 
-        if (forwarder == address(0)) {
-            revert ZeroAddressNotAllowed();
-        }
-
         VincentERC2771Storage.erc2771Storage().trustedForwarder = forwarder;
-        emit TrustedForwarderSet(forwarder);
+        emit LibERC2771.TrustedForwarderSet(forwarder);
     }
 
     /**
