@@ -20,11 +20,16 @@
     "pnpm": "10.7.0"
   },
   "dependencies": {
+    "@lit-protocol/constants": "^9.0.0",
+    "@lit-protocol/contracts": "^0.0.90",
     "@lit-protocol/flags": "^2.1.0",
     "@lit-protocol/vincent-app-sdk": "^2.5.0",
     "@lit-protocol/vincent-contracts-sdk": "^5.0.0",
-    "@lit-protocol/vincent-registry-sdk": "^4.3.0",
+    "@lit-protocol/vincent-registry-sdk": "workspace:*",
     "@t3-oss/env-core": "^0.13.6",
+    "@zerodev/ecdsa-validator": "^5.4.9",
+    "@zerodev/sdk": "^5.5.7",
+    "bs58": "^6.0.0",
     "cors": "^2.8.5",
     "debug": "^4.4.1",
     "ethers": "5.8.0",
@@ -37,9 +42,11 @@
     "semver": "^7.7.2",
     "tar": "^7.4.3",
     "validate-npm-package-name": "^6.0.1",
+    "viem": "2.38.3",
     "zod": "^3.25.42"
   },
   "devDependencies": {
+    "@lit-protocol/contracts-sdk": "^7.2.3",
     "@reduxjs/toolkit": "^2.8.2",
     "@tsconfig/node20": "^20.1.5",
     "@types/cors": "^2.8.17",
@@ -54,7 +61,7 @@
     "ethers": "5.8.0",
     "jest": "^29.5.0",
     "jest-process-manager": "^0.2.9",
-    "mongodb-memory-server": "^10.1.4",
+    "mongodb-memory-server": "^10.4.1",
     "ts-jest": "^29.1.0",
     "unbuild": "^3.5.0"
   }

@@ -7,6 +7,7 @@ export const addTagTypes = [
   'AbilityVersion',
   'Policy',
   'PolicyVersion',
+  'User',
 ] as const;
 const injectedRtkApi = api
   .enhanceEndpoints({
@@ -374,6 +375,14 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['PolicyVersion'],
       }),
+      installApp: build.mutation<InstallAppApiResponse, InstallAppApiArg>({
+        query: (queryArg) => ({
+          url: `/user/${encodeURIComponent(String(queryArg.appId))}/install-app`,
+          method: 'POST',
+          body: queryArg.installAppRequest,
+        }),
+        invalidatesTags: ['User'],
+      }),
     }),
     overrideExisting: false,
   });
@@ -709,6 +718,13 @@ export type UndeletePolicyVersionApiArg = {
   packageName: string;
   /** NPM semver of the target policy version */
   version: string;
+};
+export type InstallAppApiResponse =
+  /** status 200 App installation data returned successfully */ InstallAppResponse;
+export type InstallAppApiArg = {
+  /** ID of the target application */
+  appId: number;
+  installAppRequest: InstallAppRequest;
 };
 export type App = {
   /** Timestamp when this was last modified */
@@ -1261,3 +1277,15 @@ export type PolicyVersionEdit = {
 };
 export type PolicyVersionList = PolicyVersion[];
 export type PolicyVersionListRead = PolicyVersionRead[];
+export type InstallAppResponse = {
+  /** The PKP address that the app will use to sign things */
+  agentSignerAddress: string;
+  /** The smart account address calculated from the PKP address, used on the frontend to verify they get the same smart wallet address */
+  agentSmartAccountAddress: string;
+  /** The EIP2771 TypedData to sign that will install the app into the Vincent contracts */
+  appInstallationDataToSign: {};
+};
+export type InstallAppRequest = {
+  /** EOA address that controls the user smart wallet */
+  userControllerAddress: string;
+};

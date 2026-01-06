@@ -1278,6 +1278,47 @@
         ],
         "additionalProperties": false
       },
+      "InstallAppRequest": {
+        "type": "object",
+        "properties": {
+          "userControllerAddress": {
+            "type": "string",
+            "pattern": "^0x[a-fA-F0-9]{40}$",
+            "description": "EOA address that controls the user smart wallet",
+            "example": "0x123456789012345678901234567890123456abcd"
+          }
+        },
+        "required": [
+          "userControllerAddress"
+        ],
+        "additionalProperties": false
+      },
+      "InstallAppResponse": {
+        "type": "object",
+        "properties": {
+          "agentSignerAddress": {
+            "type": "string",
+            "description": "The PKP address that the app will use to sign things",
+            "example": "0x123456789012345678901234567890123456abcd"
+          },
+          "agentSmartAccountAddress": {
+            "type": "string",
+            "description": "The smart account address calculated from the PKP address, used on the frontend to verify they get the same smart wallet address",
+            "example": "0x123456789012345678901234567890123456abcd"
+          },
+          "appInstallationDataToSign": {
+            "type": "object",
+            "properties": {},
+            "description": "The EIP2771 TypedData to sign that will install the app into the Vincent contracts"
+          }
+        },
+        "required": [
+          "agentSignerAddress",
+          "agentSmartAccountAddress",
+          "appInstallationDataToSign"
+        ],
+        "additionalProperties": false
+      },
       "AppList": {
         "type": "array",
         "items": {
@@ -4133,6 +4174,79 @@
           },
           "default": {
             "description": "Unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/user/{appId}/install-app": {
+      "post": {
+        "tags": [
+          "User"
+        ],
+        "summary": "Install an application for a user",
+        "description": "Mints a PKP with the app abilities as permitted auth methods",
+        "operationId": "installApp",
+        "parameters": [
+          {
+            "schema": {
+              "type": "number"
+            },
+            "required": true,
+            "description": "ID of the target application",
+            "example": 132,
+            "name": "appId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InstallAppRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "App installation data returned successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InstallAppResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "App not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
             "content": {
               "application/json": {
                 "schema": {

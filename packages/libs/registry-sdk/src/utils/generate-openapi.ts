@@ -7,10 +7,12 @@ import { addToRegistry as addAbilityToRegistry } from '../lib/openApi/ability';
 import { addToRegistry as addAppToRegistry } from '../lib/openApi/app';
 import { registry } from '../lib/openApi/baseRegistry';
 import { addToRegistry as addPolicyToRegistry } from '../lib/openApi/policy';
+import { addToRegistry as addUserToRegistry } from '../lib/openApi/user';
 
 addAppToRegistry(registry);
 addAbilityToRegistry(registry);
 addPolicyToRegistry(registry);
+addUserToRegistry(registry);
 
 const generator = new OpenApiGeneratorV3(registry.definitions);
 

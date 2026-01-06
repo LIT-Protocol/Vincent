@@ -12,7 +12,7 @@ import {
 import { z } from '../schemas/openApiZod';
 import { GenericResult, ErrorResponse, jwtAuth } from './baseRegistry';
 
-const appIdParam = z
+export const appIdParam = z
   .number()
   .openapi({ param: { description: 'ID of the target application', example: 132 } });
 
