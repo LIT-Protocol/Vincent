@@ -214,6 +214,7 @@ contract VincentUserFacet is VincentBase {
      *      using the last version that was permitted. The app must have been previously permitted
      *      and the last permitted version must still be enabled.
      *
+     * @param agentAddress The agent address of the caller (msg.sender) to re-permit for the specified app
      * @param appId The ID of the app to re-permit
      */
     function rePermitApp(address agentAddress, uint40 appId) external appNotDeleted(appId) {
