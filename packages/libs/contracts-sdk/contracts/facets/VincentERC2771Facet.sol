@@ -11,7 +11,6 @@ import "../LibVincentDiamondStorage.sol";
  *      on behalf of users, enabling gasless interactions with Vincent contracts.
  */
 contract VincentERC2771Facet {
-    error CallerNotOwner();
     error ZeroAddressNotAllowed();
 
     event TrustedForwarderSet(address indexed newTrustedForwarder);
