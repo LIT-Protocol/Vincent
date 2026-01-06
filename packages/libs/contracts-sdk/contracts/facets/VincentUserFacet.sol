@@ -88,6 +88,9 @@ contract VincentUserFacet is VincentBase {
         if (agentStorage.permittedAppId != 0 && agentStorage.permittedAppId != appId) {
             revert LibVincentUserFacet.DifferentAppAlreadyPermitted(agentAddress, appId);
         }
+        if (agentStorage.lastPermittedAppId != 0 && agentStorage.lastPermittedAppId != appId) {
+            revert LibVincentUserFacet.DifferentAppAlreadyPermitted(agentAddress, appId);
+        }
 
         // Check if the agent is already permitted for the same app version
         if (agentStorage.permittedAppVersion == appVersion) {
@@ -392,8 +395,8 @@ contract VincentUserFacet is VincentBase {
                 versionedApp.abilityIpfsCidHashToAbilityPolicyIpfsCidHashes[hashedAbilityIpfsCid];
 
             mapping(bytes32 => bytes) storage abilityPolicyParameterValues = us_.agentAddressToAgentStorage[agentAddress].abilityPolicyParameterValues[
-                appId
-            ][appVersion][hashedAbilityIpfsCid];
+                appVersion
+            ][hashedAbilityIpfsCid];
 
             // Step 4: Iterate through each policy associated with the ability.
             for (uint256 j = 0; j < policyCount; j++) {

@@ -387,9 +387,8 @@ contract VincentUserViewFacet is VincentBase {
         validation.policies = new PolicyWithParameters[](policyCount);
 
         // Get the ability policy storage for this agent, app, app version, and ability
-        mapping(bytes32 => bytes) storage abilityPolicyParameterValues = us_.agentAddressToAgentStorage[agentAddress].abilityPolicyParameterValues[
-            appId
-        ][appVersion][hashedAbilityIpfsCid];
+        mapping(bytes32 => bytes) storage abilityPolicyParameterValues =
+            us_.agentAddressToAgentStorage[agentAddress].abilityPolicyParameterValues[appVersion][hashedAbilityIpfsCid];
 
         // For each policy, get all its parameters
         for (uint256 i = 0; i < policyCount; i++) {
@@ -482,7 +481,7 @@ contract VincentUserViewFacet is VincentBase {
 
         // Get the ability policy storage for this agent, app, and ability
         mapping(bytes32 => bytes) storage abilityPolicyParameterValues =
-            us_.agentAddressToAgentStorage[agentAddress].abilityPolicyParameterValues[appId][appVersion][abilityHash];
+            us_.agentAddressToAgentStorage[agentAddress].abilityPolicyParameterValues[appVersion][abilityHash];
 
         // For each policy, get all its parameters
         for (uint256 i = 0; i < policyCount; i++) {
