@@ -30,12 +30,12 @@ deploy-vincent-datil: ## Deploy the Vincent Diamond contract to Datil network on
 		echo "Error: VINCENT_DEPLOYER_PRIVATE_KEY is not set in .env"; \
 		exit 1; \
 	fi
-	@if [ -z "$(VINCENT_GELATO_FORWARDER_ADDRESS)" ]; then \
-		echo "Error: VINCENT_GELATO_FORWARDER_ADDRESS is not set in .env"; \
-		exit 1; \
-	fi
 	@echo "Deploying Vincent Diamond to Datil network ($(VINCENT_DEPLOYMENT_RPC_URL))..."
-	@echo "Using Gelato forwarder: $(VINCENT_GELATO_FORWARDER_ADDRESS)"
+	@if [ -n "$(VINCENT_GELATO_FORWARDER_ADDRESS)" ]; then \
+		echo "Using Gelato forwarder: $(VINCENT_GELATO_FORWARDER_ADDRESS)"; \
+	else \
+		echo "Gelato forwarder not set (EIP-2771 disabled)"; \
+	fi
 	@forge script script/DeployVincentDiamond.sol:DeployVincentDiamond --sig "deployToDatil()" -vvv \
 		--broadcast \
 		--private-key $(VINCENT_DEPLOYER_PRIVATE_KEY) \
@@ -50,12 +50,12 @@ deploy-vincent-base-sepolia: ## Deploy the Vincent Diamond contract to Base Sepo
 		echo "Error: VINCENT_DEPLOYER_PRIVATE_KEY is not set in .env"; \
 		exit 1; \
 	fi
-	@if [ -z "$(VINCENT_GELATO_FORWARDER_ADDRESS)" ]; then \
-		echo "Error: VINCENT_GELATO_FORWARDER_ADDRESS is not set in .env"; \
-		exit 1; \
-	fi
 	@echo "Deploying Vincent Diamond to Base Sepolia ($(BASE_SEPOLIA_RPC_URL))..."
-	@echo "Using Gelato forwarder: $(VINCENT_GELATO_FORWARDER_ADDRESS)"
+	@if [ -n "$(VINCENT_GELATO_FORWARDER_ADDRESS)" ]; then \
+		echo "Using Gelato forwarder: $(VINCENT_GELATO_FORWARDER_ADDRESS)"; \
+	else \
+		echo "Gelato forwarder not set (EIP-2771 disabled)"; \
+	fi
 	@forge script script/DeployVincentDiamond.sol:DeployVincentDiamond --sig "deployToBaseSepolia()" -vvv \
 		--broadcast \
 		--private-key $(VINCENT_DEPLOYER_PRIVATE_KEY) \
@@ -70,12 +70,12 @@ deploy-vincent-base-mainnet: ## Deploy the Vincent Diamond contract to Base Main
 		echo "Error: VINCENT_DEPLOYER_PRIVATE_KEY is not set in .env"; \
 		exit 1; \
 	fi
-	@if [ -z "$(VINCENT_GELATO_FORWARDER_ADDRESS)" ]; then \
-		echo "Error: VINCENT_GELATO_FORWARDER_ADDRESS is not set in .env"; \
-		exit 1; \
-	fi
 	@echo "Deploying Vincent Diamond to Base Mainnet ($(BASE_MAINNET_RPC_URL))..."
-	@echo "Using Gelato forwarder: $(VINCENT_GELATO_FORWARDER_ADDRESS)"
+	@if [ -n "$(VINCENT_GELATO_FORWARDER_ADDRESS)" ]; then \
+		echo "Using Gelato forwarder: $(VINCENT_GELATO_FORWARDER_ADDRESS)"; \
+	else \
+		echo "Gelato forwarder not set (EIP-2771 disabled)"; \
+	fi
 	@forge script script/DeployVincentDiamond.sol:DeployVincentDiamond --sig "deployToBaseMainnet()" -vvv \
 		--broadcast \
 		--private-key $(VINCENT_DEPLOYER_PRIVATE_KEY) \
