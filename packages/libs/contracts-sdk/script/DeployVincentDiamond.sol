@@ -10,6 +10,7 @@ import "../contracts/facets/VincentAppFacet.sol";
 import "../contracts/facets/VincentAppViewFacet.sol";
 import "../contracts/facets/VincentUserFacet.sol";
 import "../contracts/facets/VincentUserViewFacet.sol";
+import "../contracts/facets/VincentERC2771Facet.sol";
 import "../contracts/VincentBase.sol";
 import "../contracts/diamond-base/interfaces/IDiamondCut.sol";
 import "../contracts/diamond-base/interfaces/IDiamondLoupe.sol";
@@ -19,9 +20,9 @@ import "../contracts/diamond-base/interfaces/IERC173.sol";
 /**
  * @title Vincent Diamond Deployment Script
  * @notice Foundry script for deploying the Vincent Diamond to multiple networks
- * @dev Uses environment variables for private key and PKP NFT contract addresses
+ * @dev Uses environment variables for deployment configuration
  * @custom:env VINCENT_DEPLOYER_PRIVATE_KEY - Private key of the deployer
- * @custom:env DATIL_PKP_NFT_CONTRACT_ADDRESS - PKP NFT contract address on Datil
+ * @custom:env VINCENT_GELATO_FORWARDER_ADDRESS - Gelato trusted forwarder address for EIP-2771 gasless transactions
  */
 contract DeployVincentDiamond is Script {
     /**
@@ -46,6 +47,7 @@ contract DeployVincentDiamond is Script {
         VincentAppViewFacet appViewFacet = new VincentAppViewFacet();
         VincentUserFacet userFacet = new VincentUserFacet();
         VincentUserViewFacet userViewFacet = new VincentUserViewFacet();
+        VincentERC2771Facet erc2771Facet = new VincentERC2771Facet();
 
         // Create facets struct
         facets = VincentDiamond.FacetAddresses({
@@ -54,7 +56,8 @@ contract DeployVincentDiamond is Script {
             vincentAppFacet: address(appFacet),
             vincentAppViewFacet: address(appViewFacet),
             vincentUserFacet: address(userFacet),
-            vincentUserViewFacet: address(userViewFacet)
+            vincentUserViewFacet: address(userViewFacet),
+            vincentERC2771Facet: address(erc2771Facet)
         });
 
         diamondCutFacetAddress = address(diamondCutFacet);
@@ -79,6 +82,7 @@ contract DeployVincentDiamond is Script {
         console.log("VincentAppViewFacet:", facets.vincentAppViewFacet);
         console.log("VincentUserFacet:", facets.vincentUserFacet);
         console.log("VincentUserViewFacet:", facets.vincentUserViewFacet);
+        console.log("VincentERC2771Facet:", facets.vincentERC2771Facet);
     }
 
     /**
@@ -102,11 +106,19 @@ contract DeployVincentDiamond is Script {
         // Deploy facets and get facet addresses
         (VincentDiamond.FacetAddresses memory facets, address diamondCutFacetAddress) = deployFacets();
 
+        // Get the Gelato trusted forwarder from environment variable
+        address gelatoForwarder = vm.envAddress("VINCENT_GELATO_FORWARDER_ADDRESS");
+        if (gelatoForwarder == address(0)) {
+            revert MissingEnvironmentVariable("VINCENT_GELATO_FORWARDER_ADDRESS");
+        }
+        console.log("Gelato trusted forwarder for chain", block.chainid, ":", gelatoForwarder);
+
         // Deploy the Diamond with the diamondCut facet and all other facets in one transaction
         VincentDiamond diamond = new VincentDiamond(
             deployerAddress, // contract owner
             diamondCutFacetAddress, // diamond cut facet
-            facets // all other facets
+            facets, // all other facets
+            gelatoForwarder // trusted forwarder for EIP-2771
         );
 
         // Stop broadcasting transactions

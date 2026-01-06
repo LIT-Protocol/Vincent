@@ -57,6 +57,21 @@ library VincentLitActionStorage {
     }
 }
 
+library VincentERC2771Storage {
+    bytes32 internal constant ERC2771_STORAGE_SLOT = keccak256("lit.vincent.erc2771.storage");
+
+    struct ERC2771Storage {
+        address trustedForwarder;
+    }
+
+    function erc2771Storage() internal pure returns (ERC2771Storage storage es) {
+        bytes32 slot = ERC2771_STORAGE_SLOT;
+        assembly {
+            es.slot := slot
+        }
+    }
+}
+
 library VincentUserStorage {
     using EnumerableSet for EnumerableSet.UintSet;
     using EnumerableSet for EnumerableSet.Bytes32Set;
