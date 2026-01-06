@@ -76,9 +76,9 @@ contract VincentUserFacet is VincentBase {
             revert LibVincentUserFacet.AgentRegisteredToDifferentUser(registeredUserAddress);
         }
 
-        // Check if the PKP signer is already registered to a different agent
+        // Check if the PKP signer is already registered (PKP signers can only be used once)
         address registeredPkpAgentAddress = us_.pkpSignerAddressToAgentAddress[pkpSigner];
-        if (registeredPkpAgentAddress != address(0) && registeredPkpAgentAddress != agentAddress) {
+        if (registeredPkpAgentAddress != address(0)) {
             revert LibVincentUserFacet.PkpSignerAlreadyRegisteredToAgent(registeredPkpAgentAddress);
         }
 
@@ -115,7 +115,7 @@ contract VincentUserFacet is VincentBase {
             ];
 
             // Remove the agent address from the previous AppVersion's delegated agent addresses
-            previousAppVersion.delegatedAgentAddresses.remove(msg.sender);
+            previousAppVersion.delegatedAgentAddresses.remove(agentAddress);
 
             emit LibVincentUserFacet.AppVersionUnPermitted(
                 agentAddress,
@@ -193,9 +193,6 @@ contract VincentUserFacet is VincentBase {
         agentStorage.lastPermittedPkpSigner = agentStorage.pkpSigner;
         agentStorage.lastPermittedPkpSignerPubKey = agentStorage.pkpSignerPubKey;
 
-        // Remove the PKP signer to agent address mapping
-        delete us_.pkpSignerAddressToAgentAddress[agentStorage.pkpSigner];
-
         // Remove the app metadata from the Agent's currently permitted
         delete agentStorage.permittedAppId;
         delete agentStorage.permittedAppVersion;
@@ -268,9 +265,6 @@ contract VincentUserFacet is VincentBase {
         agentStorage.permittedAppVersion = agentStorage.lastPermittedAppVersion;
         agentStorage.pkpSigner = agentStorage.lastPermittedPkpSigner;
         agentStorage.pkpSignerPubKey = agentStorage.lastPermittedPkpSignerPubKey;
-
-        // Restore the PKP signer to agent address mapping
-        us_.pkpSignerAddressToAgentAddress[agentStorage.lastPermittedPkpSigner] = agentAddress;
 
         // Clear the last permitted values since they're now currently permitted
         delete agentStorage.lastPermittedAppId;

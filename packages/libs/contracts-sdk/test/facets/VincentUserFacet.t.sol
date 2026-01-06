@@ -907,7 +907,7 @@ contract VincentUserFacetTest is Test {
         );
         vincentUserFacet.permitAppVersion(
             FRANK_AGENT_ADDRESS,
-            FRANK_PKP_SIGNER,
+            FRANK_PKP_SIGNER_2,
             FRANK_PKP_SIGNER_PUB_KEY,
             newAppId,
             newAppVersion,
