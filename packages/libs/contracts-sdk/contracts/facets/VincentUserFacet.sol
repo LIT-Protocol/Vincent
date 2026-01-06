@@ -60,14 +60,6 @@ contract VincentUserFacet is VincentBase {
             revert LibVincentUserFacet.ZeroPkpSignerPubKeyNotAllowed();
         }
 
-        if (appId == 0) {
-            revert LibVincentUserFacet.ZeroAppIdNotAllowed();
-        }
-
-        if (appVersion == 0) {
-            revert LibVincentUserFacet.ZeroAppVersionNotAllowed();
-        }
-
         if (abilityCount == 0 || policyIpfsCids.length == 0 || policyParameterValues.length == 0) {
             revert LibVincentUserFacet.InvalidInput();
         }
