@@ -11,6 +11,7 @@ import {VincentAppFacet} from "../contracts/facets/VincentAppFacet.sol";
 import {VincentAppViewFacet} from "../contracts/facets/VincentAppViewFacet.sol";
 import {VincentUserFacet} from "../contracts/facets/VincentUserFacet.sol";
 import {VincentUserViewFacet} from "../contracts/facets/VincentUserViewFacet.sol";
+import {VincentERC2771Facet} from "../contracts/facets/VincentERC2771Facet.sol";
 
 /**
  * @title Smart UpdateFacet with Auto-Detection
@@ -193,6 +194,8 @@ contract SmartUpdateFacet is Script {
             return getVincentUserFacetSelectors();
         } else if (compareStrings(facetName, "VincentUserViewFacet")) {
             return getVincentUserViewFacetSelectors();
+        } else if (compareStrings(facetName, "VincentERC2771Facet")) {
+            return getVincentERC2771FacetSelectors();
         } else {
             revert("Invalid facet name");
         }
@@ -224,6 +227,8 @@ contract SmartUpdateFacet is Script {
             testSelector = VincentUserFacet.permitAppVersion.selector;
         } else if (compareStrings(facetName, "VincentUserViewFacet")) {
             testSelector = VincentUserViewFacet.getPermittedAppForAgents.selector;
+        } else if (compareStrings(facetName, "VincentERC2771Facet")) {
+            testSelector = VincentERC2771Facet.setTrustedForwarder.selector;
         } else {
             return false;
         }
@@ -267,6 +272,8 @@ contract SmartUpdateFacet is Script {
             return address(new VincentUserFacet());
         } else if (compareStrings(facetName, "VincentUserViewFacet")) {
             return address(new VincentUserViewFacet());
+        } else if (compareStrings(facetName, "VincentERC2771Facet")) {
+            return address(new VincentERC2771Facet());
         } else {
             revert("Invalid facet name");
         }
@@ -318,9 +325,18 @@ contract SmartUpdateFacet is Script {
         return selectors;
     }
 
+    function getVincentERC2771FacetSelectors() internal pure returns (bytes4[] memory) {
+        bytes4[] memory selectors = new bytes4[](3);
+        selectors[0] = VincentERC2771Facet.setTrustedForwarder.selector;
+        selectors[1] = VincentERC2771Facet.getTrustedForwarder.selector;
+        selectors[2] = VincentERC2771Facet.isTrustedForwarder.selector;
+        return selectors;
+    }
+
     function isValidFacetName(string memory facetName) internal pure returns (bool) {
         return compareStrings(facetName, "VincentAppFacet") || compareStrings(facetName, "VincentAppViewFacet")
-            || compareStrings(facetName, "VincentUserFacet") || compareStrings(facetName, "VincentUserViewFacet");
+            || compareStrings(facetName, "VincentUserFacet") || compareStrings(facetName, "VincentUserViewFacet")
+            || compareStrings(facetName, "VincentERC2771Facet");
     }
 
     function contains(bytes4[] memory array, bytes4 selector) internal pure returns (bool) {

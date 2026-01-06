@@ -69,10 +69,11 @@ contract VincentUserFacet is VincentBase {
         }
 
         VincentUserStorage.UserStorage storage us_ = VincentUserStorage.userStorage();
+        address sender = _msgSender();
 
         // Check if the agent is already registered to a different user
         address registeredUserAddress = us_.registeredAgentAddressToUserAddress[agentAddress];
-        if (registeredUserAddress != address(0) && registeredUserAddress != msg.sender) {
+        if (registeredUserAddress != address(0) && registeredUserAddress != sender) {
             revert LibVincentUserFacet.AgentRegisteredToDifferentUser(registeredUserAddress);
         }
 
@@ -142,10 +143,10 @@ contract VincentUserFacet is VincentBase {
 
         // Add agent address to the User's registered agent addresses
         // .add will not add the agent address again if it is already registered
-        if (us_.userAddressToRegisteredAgentAddresses[msg.sender].add(agentAddress)) {
+        if (us_.userAddressToRegisteredAgentAddresses[sender].add(agentAddress)) {
             // Set the reverse mapping from agent address to user address
-            us_.registeredAgentAddressToUserAddress[agentAddress] = msg.sender;
-            emit LibVincentUserFacet.NewAgentRegistered(msg.sender, agentAddress, pkpSigner, pkpSignerPubKey);
+            us_.registeredAgentAddressToUserAddress[agentAddress] = sender;
+            emit LibVincentUserFacet.NewAgentRegistered(sender, agentAddress, pkpSigner, pkpSignerPubKey);
         }
 
         emit LibVincentUserFacet.AppVersionPermitted(agentAddress, appId, appVersion, pkpSigner, pkpSignerPubKey);
@@ -172,9 +173,10 @@ contract VincentUserFacet is VincentBase {
         onlyRegisteredAppVersion(appId, appVersion)
     {
         VincentUserStorage.UserStorage storage us_ = VincentUserStorage.userStorage();
+        address sender = _msgSender();
 
-        // Check if the agent is registered to msg.sender
-        if (us_.registeredAgentAddressToUserAddress[agentAddress] != msg.sender) {
+        // Check if the agent is registered to sender
+        if (us_.registeredAgentAddressToUserAddress[agentAddress] != sender) {
             revert LibVincentUserFacet.AgentNotRegisteredToUser();
         }
 
@@ -222,9 +224,10 @@ contract VincentUserFacet is VincentBase {
      */
     function rePermitApp(address agentAddress, uint40 appId) external appNotDeleted(appId) {
         VincentUserStorage.UserStorage storage us_ = VincentUserStorage.userStorage();
+        address sender = _msgSender();
 
-        // Check if the agent is registered to msg.sender
-        if (us_.registeredAgentAddressToUserAddress[agentAddress] != msg.sender) {
+        // Check if the agent is registered to sender
+        if (us_.registeredAgentAddressToUserAddress[agentAddress] != sender) {
             revert LibVincentUserFacet.AgentNotRegisteredToUser();
         }
 
@@ -313,9 +316,10 @@ contract VincentUserFacet is VincentBase {
 
         // Check if the User has permitted the current app version
         VincentUserStorage.UserStorage storage us_ = VincentUserStorage.userStorage();
+        address sender = _msgSender();
 
-        // Check if the agent is registered to msg.sender
-        if (us_.registeredAgentAddressToUserAddress[agentAddress] != msg.sender) {
+        // Check if the agent is registered to sender
+        if (us_.registeredAgentAddressToUserAddress[agentAddress] != sender) {
             revert LibVincentUserFacet.AgentNotRegisteredToUser();
         }
 

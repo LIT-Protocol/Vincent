@@ -4,6 +4,7 @@ pragma solidity ^0.8.29;
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
 import "./LibVincentDiamondStorage.sol";
+import "./libs/LibERC2771.sol";
 
 contract VincentBase {
     using VincentAppStorage for VincentAppStorage.AppStorage;
@@ -15,6 +16,16 @@ contract VincentBase {
     error AppVersionNotEnabled(uint40 appId, uint24 appVersion);
     error InvalidOffset(uint256 offset, uint256 totalCount);
     error ZeroAddressNotAllowed();
+
+    /**
+     * @notice Returns the actual sender of the transaction
+     * @dev Supports EIP-2771 meta-transactions by extracting the sender from calldata
+     *      if the call comes from the trusted forwarder. This enables gasless transactions.
+     * @return sender The actual sender address (either msg.sender or extracted from calldata)
+     */
+    function _msgSender() internal view returns (address sender) {
+        return LibERC2771._msgSender();
+    }
 
     /**
      * @notice Validates that an app exists
