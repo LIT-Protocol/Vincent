@@ -69,9 +69,12 @@ contract VincentDiamond {
      * @param _facets Struct containing addresses of all other facets
      * @param _trustedForwarder Address of the Gelato trusted forwarder for EIP-2771 gasless transactions (can be address(0))
      */
-    constructor(address _contractOwner, address _diamondCutFacet, FacetAddresses memory _facets, address _trustedForwarder)
-        payable
-    {
+    constructor(
+        address _contractOwner,
+        address _diamondCutFacet,
+        FacetAddresses memory _facets,
+        address _trustedForwarder
+    ) payable {
         // Validate inputs
         if (_diamondCutFacet == address(0)) revert InvalidFacetAddress();
 
