@@ -1222,9 +1222,6 @@ contract VincentUserFacetTest is Test {
         assertEq(updatedAbilitiesWithPolicies[1].policies.length, 0); // Second ability unchanged
     }
 
-    /**
-     * ######################### NEW VALIDATION TESTS #########################
-     */
     function testPermitAppVersion_AgentRegisteredToDifferentUser() public {
         address[] memory delegatees = new address[](1);
         delegatees[0] = APP_DELEGATEE_CHARLIE;

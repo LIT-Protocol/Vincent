@@ -142,13 +142,14 @@ contract VincentUserFacet is VincentBase {
         agentStorage.permittedAppId = appId;
         agentStorage.permittedAppVersion = appVersion;
 
+        // Set the PKP signer to agent address mapping
+        us_.pkpSignerAddressToAgentAddress[pkpSigner] = agentAddress;
+
         // Add agent address to the User's registered agent addresses
         // .add will not add the agent address again if it is already registered
         if (us_.userAddressToRegisteredAgentAddresses[msg.sender].add(agentAddress)) {
             // Set the reverse mapping from agent address to user address
             us_.registeredAgentAddressToUserAddress[agentAddress] = msg.sender;
-            // Set the PKP signer to agent address mapping
-            us_.pkpSignerAddressToAgentAddress[pkpSigner] = agentAddress;
             emit LibVincentUserFacet.NewAgentRegistered(msg.sender, agentAddress, pkpSigner, pkpSignerPubKey);
         }
 
@@ -199,6 +200,9 @@ contract VincentUserFacet is VincentBase {
         agentStorage.lastPermittedAppVersion = appVersion;
         agentStorage.lastPermittedPkpSigner = agentStorage.pkpSigner;
         agentStorage.lastPermittedPkpSignerPubKey = agentStorage.pkpSignerPubKey;
+
+        // Remove the PKP signer to agent address mapping
+        delete us_.pkpSignerAddressToAgentAddress[agentStorage.pkpSigner];
 
         // Remove the app metadata from the Agent's currently permitted
         delete agentStorage.permittedAppId;
@@ -272,6 +276,9 @@ contract VincentUserFacet is VincentBase {
         agentStorage.permittedAppVersion = agentStorage.lastPermittedAppVersion;
         agentStorage.pkpSigner = agentStorage.lastPermittedPkpSigner;
         agentStorage.pkpSignerPubKey = agentStorage.lastPermittedPkpSignerPubKey;
+
+        // Restore the PKP signer to agent address mapping
+        us_.pkpSignerAddressToAgentAddress[agentStorage.lastPermittedPkpSigner] = agentAddress;
 
         // Clear the last permitted values since they're now currently permitted
         delete agentStorage.lastPermittedAppId;
