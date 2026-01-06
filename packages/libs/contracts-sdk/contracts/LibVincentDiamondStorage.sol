@@ -83,6 +83,8 @@ library VincentUserStorage {
         mapping(address => EnumerableSet.AddressSet) userAddressToRegisteredAgentAddresses;
         // Registered Agent Addresses => User Address
         mapping(address => address) registeredAgentAddressToUserAddress;
+        // Agent PKP Signer Address -> Agent Address
+        mapping(address => address) pkpSignerAddressToAgentAddress;
         // Agent Address -> Agent Storage
         mapping(address => AgentStorage) agentAddressToAgentStorage;
     }

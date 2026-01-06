@@ -27,7 +27,9 @@ contract VincentUserFacet is VincentBase {
      *      If the agent was previously authorized for a different version of the same app, that
      *      permission is revoked and replaced with the new version. It ensures that all the registered Abilities are provided but Policies can be optional.
      *
-     * @param userAddress The address of the user that the agent is acting on behalf of
+     * @param agentAddress The agent address that the caller (msg.sender) is authorizing
+     * @param pkpSigner The PKP signer address that is authorized to sign on behalf of the agent
+     * @param pkpSignerPubKey The PKP signer public key that is authorized to sign on behalf of the agent
      * @param appId The ID of the app to permit the agent to use
      * @param appVersion The version of the app to permit the agent to use
      * @param abilityIpfsCids Array of IPFS CIDs for abilities to configure
@@ -35,7 +37,7 @@ contract VincentUserFacet is VincentBase {
      * @param policyParameterValues 2D array mapping parameter names to their CBOR2 encoded values for the abilities
      */
     function permitAppVersion(
-        address userAddress,
+        address agentAddress,
         address pkpSigner,
         uint256 pkpSignerPubKey,
         uint40 appId,
@@ -46,7 +48,7 @@ contract VincentUserFacet is VincentBase {
     ) external appNotDeleted(appId) onlyRegisteredAppVersion(appId, appVersion) appEnabled(appId, appVersion) {
         uint256 abilityCount = abilityIpfsCids.length;
 
-        if (userAddress == address(0)) {
+        if (agentAddress == address(0)) {
             revert ZeroAddressNotAllowed();
         }
 
@@ -56,6 +58,14 @@ contract VincentUserFacet is VincentBase {
 
         if (pkpSignerPubKey == 0) {
             revert LibVincentUserFacet.ZeroPkpSignerPubKeyNotAllowed();
+        }
+
+        if (appId == 0) {
+            revert LibVincentUserFacet.ZeroAppIdNotAllowed();
+        }
+
+        if (appVersion == 0) {
+            revert LibVincentUserFacet.ZeroAppVersionNotAllowed();
         }
 
         if (abilityCount == 0 || policyIpfsCids.length == 0 || policyParameterValues.length == 0) {
@@ -68,14 +78,28 @@ contract VincentUserFacet is VincentBase {
 
         VincentUserStorage.UserStorage storage us_ = VincentUserStorage.userStorage();
 
-        VincentUserStorage.AgentStorage storage agentStorage = us_.agentAddressToAgentStorage[msg.sender];
-
-        if (agentStorage.permittedAppId != 0 && agentStorage.permittedAppId != appId) {
-            revert LibVincentUserFacet.DifferentAppAlreadyPermitted(msg.sender, appId);
+        // Check if the agent is already registered to a different user
+        address registeredUserAddress = us_.registeredAgentAddressToUserAddress[agentAddress];
+        if (registeredUserAddress != address(0) && registeredUserAddress != msg.sender) {
+            revert LibVincentUserFacet.AgentRegisteredToDifferentUser(registeredUserAddress);
         }
 
+        // Check if the PKP signer is already registered to a different agent
+        address registeredPkpAgentAddress = us_.pkpSignerAddressToAgentAddress[pkpSigner];
+        if (registeredPkpAgentAddress != address(0) && registeredPkpAgentAddress != agentAddress) {
+            revert LibVincentUserFacet.PkpSignerAlreadyRegisteredToAgent(registeredPkpAgentAddress);
+        }
+
+        VincentUserStorage.AgentStorage storage agentStorage = us_.agentAddressToAgentStorage[agentAddress];
+
+        // Check if the agent is already permitted for a different app
+        if (agentStorage.permittedAppId != 0 && agentStorage.permittedAppId != appId) {
+            revert LibVincentUserFacet.DifferentAppAlreadyPermitted(agentAddress, appId);
+        }
+
+        // Check if the agent is already permitted for the same app version
         if (agentStorage.permittedAppVersion == appVersion) {
-            revert LibVincentUserFacet.AppVersionAlreadyPermitted(msg.sender, appId, appVersion);
+            revert LibVincentUserFacet.AppVersionAlreadyPermitted(agentAddress, appId, appVersion);
         }
 
         VincentAppStorage.AppStorage storage as_ = VincentAppStorage.appStorage();
@@ -84,11 +108,12 @@ contract VincentUserFacet is VincentBase {
         VincentAppStorage.AppVersion storage newAppVersion =
             as_.appIdToApp[appId].appVersions[getAppVersionIndex(appVersion)];
 
+        // Check if the number of registered abilities for the app version matches the number of abilities to be permitted
         if (newAppVersion.abilityIpfsCidHashes.length() != abilityCount) {
             revert LibVincentUserFacet.NotAllRegisteredAbilitiesProvided(appId, appVersion);
         }
 
-        // Check if User has permitted a previous app version,
+        // Check if the agent has permitted a previous app version,
         // if so, remove the agent address from the previous AppVersion's delegated agent addresses
         // before continuing with permitting the new app version
         if (agentStorage.permittedAppVersion != 0) {
@@ -101,7 +126,7 @@ contract VincentUserFacet is VincentBase {
             previousAppVersion.delegatedAgentAddresses.remove(msg.sender);
 
             emit LibVincentUserFacet.AppVersionUnPermitted(
-                msg.sender,
+                agentAddress,
                 agentStorage.permittedAppId,
                 agentStorage.permittedAppVersion,
                 agentStorage.pkpSigner,
@@ -109,8 +134,8 @@ contract VincentUserFacet is VincentBase {
             );
         }
 
-        // Add the agent address to the app version's delegated agent addresses
-        newAppVersion.delegatedAgentAddresses.add(msg.sender);
+        // Add the agent address to the new app version's delegated agent addresses
+        newAppVersion.delegatedAgentAddresses.add(agentAddress);
 
         agentStorage.pkpSigner = pkpSigner;
         agentStorage.pkpSignerPubKey = pkpSignerPubKey;
@@ -119,15 +144,19 @@ contract VincentUserFacet is VincentBase {
 
         // Add agent address to the User's registered agent addresses
         // .add will not add the agent address again if it is already registered
-        if (us_.userAddressToRegisteredAgentAddresses[userAddress].add(msg.sender)) {
+        if (us_.userAddressToRegisteredAgentAddresses[msg.sender].add(agentAddress)) {
             // Set the reverse mapping from agent address to user address
-            us_.registeredAgentAddressToUserAddress[msg.sender] = userAddress;
-            emit LibVincentUserFacet.NewAgentRegistered(userAddress, msg.sender, pkpSigner, pkpSignerPubKey);
+            us_.registeredAgentAddressToUserAddress[agentAddress] = msg.sender;
+            // Set the PKP signer to agent address mapping
+            us_.pkpSignerAddressToAgentAddress[pkpSigner] = agentAddress;
+            emit LibVincentUserFacet.NewAgentRegistered(msg.sender, agentAddress, pkpSigner, pkpSignerPubKey);
         }
 
-        emit LibVincentUserFacet.AppVersionPermitted(msg.sender, appId, appVersion, pkpSigner, pkpSignerPubKey);
+        emit LibVincentUserFacet.AppVersionPermitted(agentAddress, appId, appVersion, pkpSigner, pkpSignerPubKey);
 
-        _setAbilityPolicyParameters(appId, appVersion, abilityIpfsCids, policyIpfsCids, policyParameterValues);
+        _setAbilityPolicyParameters(
+            agentAddress, appId, appVersion, abilityIpfsCids, policyIpfsCids, policyParameterValues
+        );
     }
 
     /**
@@ -135,23 +164,35 @@ contract VincentUserFacet is VincentBase {
      * @dev This function removes authorization for an agent to interact with an app version.
      *      The agent is removed from the app version's delegated agent addresses list and the
      *      app is removed from the agent's permitted app set.
+     *      The agent is not removed from userAddressToRegisteredAgentAddresses,
+     *      registeredAgentAddressToUserAddress, or pkpSignerAddressToAgentAddress.
      *
+     * @param agentAddress The agent address that the caller (msg.sender) is revoking permission for
      * @param appId The ID of the app to unpermit
      * @param appVersion The version of the app to unpermit
      */
-    function unPermitAppVersion(uint40 appId, uint24 appVersion) external onlyRegisteredAppVersion(appId, appVersion) {
+    function unPermitAppVersion(address agentAddress, uint40 appId, uint24 appVersion)
+        external
+        onlyRegisteredAppVersion(appId, appVersion)
+    {
         VincentUserStorage.UserStorage storage us_ = VincentUserStorage.userStorage();
-        VincentUserStorage.AgentStorage storage agentStorage = us_.agentAddressToAgentStorage[msg.sender];
+
+        // Check if the agent is registered to msg.sender
+        if (us_.registeredAgentAddressToUserAddress[agentAddress] != msg.sender) {
+            revert LibVincentUserFacet.AgentNotRegisteredToUser();
+        }
+
+        VincentUserStorage.AgentStorage storage agentStorage = us_.agentAddressToAgentStorage[agentAddress];
 
         if (agentStorage.permittedAppId != appId || agentStorage.permittedAppVersion != appVersion) {
-            revert LibVincentUserFacet.AppVersionNotPermitted(msg.sender, appId, appVersion);
+            revert LibVincentUserFacet.AppVersionNotPermitted(agentAddress, appId, appVersion);
         }
 
         // Remove the agent address from the App's Delegated Agent addresses
         // App versions start at 1, but the appVersions array is 0-indexed
         VincentAppStorage.appStorage()
             .appIdToApp[appId].appVersions[getAppVersionIndex(appVersion)].delegatedAgentAddresses
-            .remove(msg.sender);
+            .remove(agentAddress);
 
         // Store the app id, version and pkp signer as last permitted before removing (for potential re-permitting)
         agentStorage.lastPermittedAppId = appId;
@@ -159,14 +200,14 @@ contract VincentUserFacet is VincentBase {
         agentStorage.lastPermittedPkpSigner = agentStorage.pkpSigner;
         agentStorage.lastPermittedPkpSignerPubKey = agentStorage.pkpSignerPubKey;
 
-        // Remove the App Version from the User's Permitted App
+        // Remove the app metadata from the Agent's currently permitted
         delete agentStorage.permittedAppId;
         delete agentStorage.permittedAppVersion;
         delete agentStorage.pkpSigner;
         delete agentStorage.pkpSignerPubKey;
 
         emit LibVincentUserFacet.AppVersionUnPermitted(
-            msg.sender,
+            agentAddress,
             appId,
             appVersion,
             agentStorage.lastPermittedPkpSigner,
@@ -182,23 +223,30 @@ contract VincentUserFacet is VincentBase {
      *
      * @param appId The ID of the app to re-permit
      */
-    function rePermitApp(uint40 appId) external appNotDeleted(appId) {
+    function rePermitApp(address agentAddress, uint40 appId) external appNotDeleted(appId) {
         VincentUserStorage.UserStorage storage us_ = VincentUserStorage.userStorage();
-        VincentUserStorage.AgentStorage storage agentStorage = us_.agentAddressToAgentStorage[msg.sender];
+
+        // Check if the agent is registered to msg.sender
+        if (us_.registeredAgentAddressToUserAddress[agentAddress] != msg.sender) {
+            revert LibVincentUserFacet.AgentNotRegisteredToUser();
+        }
+
+        VincentUserStorage.AgentStorage storage agentStorage = us_.agentAddressToAgentStorage[agentAddress];
 
         // Check if app is currently permitted
         if (agentStorage.permittedAppId == appId) {
-            revert LibVincentUserFacet.AppVersionAlreadyPermitted(msg.sender, appId, agentStorage.permittedAppVersion);
+            revert LibVincentUserFacet.AppVersionAlreadyPermitted(agentAddress, appId, agentStorage.permittedAppVersion);
         }
 
+        // Check if the agent is already permitted for a different app
         if (agentStorage.permittedAppId != 0) {
-            revert LibVincentUserFacet.DifferentAppAlreadyPermitted(msg.sender, appId);
+            revert LibVincentUserFacet.DifferentAppAlreadyPermitted(agentAddress, appId);
         }
 
         // Check if the last permitted app is the one being re-permitted
         if (agentStorage.lastPermittedAppId != appId) {
             revert LibVincentUserFacet.LastPermittedAppNotTheOneBeingRePermitted(
-                msg.sender, agentStorage.lastPermittedAppId, agentStorage.lastPermittedAppVersion, appId
+                agentAddress, agentStorage.lastPermittedAppId, agentStorage.lastPermittedAppVersion, appId
             );
         }
 
@@ -216,8 +264,10 @@ contract VincentUserFacet is VincentBase {
             revert LibVincentUserFacet.AppVersionNotEnabled(appId, agentStorage.lastPermittedAppVersion);
         }
 
-        // Re-permit the app with the last permitted version
-        appVersion.delegatedAgentAddresses.add(msg.sender);
+        // Add the agent address to the app version's delegated agent addresses
+        appVersion.delegatedAgentAddresses.add(agentAddress);
+
+        // Set the app metadata for the agent to the last permitted app data
         agentStorage.permittedAppId = appId;
         agentStorage.permittedAppVersion = agentStorage.lastPermittedAppVersion;
         agentStorage.pkpSigner = agentStorage.lastPermittedPkpSigner;
@@ -230,7 +280,7 @@ contract VincentUserFacet is VincentBase {
         delete agentStorage.lastPermittedPkpSignerPubKey;
 
         emit LibVincentUserFacet.AppVersionRePermitted(
-            msg.sender, appId, agentStorage.permittedAppVersion, agentStorage.pkpSigner, agentStorage.pkpSignerPubKey
+            agentAddress, appId, agentStorage.permittedAppVersion, agentStorage.pkpSigner, agentStorage.pkpSignerPubKey
         );
     }
 
@@ -248,6 +298,7 @@ contract VincentUserFacet is VincentBase {
      * @param policyParameterValues 2D array mapping parameter names to their values
      */
     function setAbilityPolicyParameters(
+        address agentAddress,
         uint40 appId,
         uint24 appVersion,
         string[] calldata abilityIpfsCids,
@@ -265,13 +316,21 @@ contract VincentUserFacet is VincentBase {
 
         // Check if the User has permitted the current app version
         VincentUserStorage.UserStorage storage us_ = VincentUserStorage.userStorage();
-        VincentUserStorage.AgentStorage storage agentStorage = us_.agentAddressToAgentStorage[msg.sender];
 
-        if (agentStorage.permittedAppId != appId || agentStorage.permittedAppVersion != appVersion) {
-            revert LibVincentUserFacet.AppVersionNotPermitted(msg.sender, appId, appVersion);
+        // Check if the agent is registered to msg.sender
+        if (us_.registeredAgentAddressToUserAddress[agentAddress] != msg.sender) {
+            revert LibVincentUserFacet.AgentNotRegisteredToUser();
         }
 
-        _setAbilityPolicyParameters(appId, appVersion, abilityIpfsCids, policyIpfsCids, policyParameterValues);
+        VincentUserStorage.AgentStorage storage agentStorage = us_.agentAddressToAgentStorage[agentAddress];
+
+        if (agentStorage.permittedAppId != appId || agentStorage.permittedAppVersion != appVersion) {
+            revert LibVincentUserFacet.AppVersionNotPermitted(agentAddress, appId, appVersion);
+        }
+
+        _setAbilityPolicyParameters(
+            agentAddress, appId, appVersion, abilityIpfsCids, policyIpfsCids, policyParameterValues
+        );
     }
 
     /**
@@ -280,6 +339,7 @@ contract VincentUserFacet is VincentBase {
      *      then stores their corresponding values in user storage. It's called by permitAppVersion and
      *      setAbilityPolicyParameters to avoid code duplication.
      *
+     * @param agentAddress The address of the agent that the policy parameters are being set for
      * @param appId The ID of the app for which policies are being set
      * @param appVersion The version of the app where the Abilities and Policies are registered
      * @param abilityIpfsCids Array of IPFS CIDs representing the abilities being configured
@@ -287,6 +347,7 @@ contract VincentUserFacet is VincentBase {
      * @param policyParameterValues 2D array of parameter values matching each parameter name for a policy
      */
     function _setAbilityPolicyParameters(
+        address agentAddress,
         uint40 appId,
         uint24 appVersion,
         string[] calldata abilityIpfsCids,
@@ -336,7 +397,7 @@ contract VincentUserFacet is VincentBase {
             EnumerableSet.Bytes32Set storage abilityPolicyIpfsCidHashes =
                 versionedApp.abilityIpfsCidHashToAbilityPolicyIpfsCidHashes[hashedAbilityIpfsCid];
 
-            mapping(bytes32 => bytes) storage abilityPolicyParameterValues = us_.agentAddressToAgentStorage[msg.sender].abilityPolicyParameterValues[
+            mapping(bytes32 => bytes) storage abilityPolicyParameterValues = us_.agentAddressToAgentStorage[agentAddress].abilityPolicyParameterValues[
                 appId
             ][appVersion][hashedAbilityIpfsCid];
 
@@ -371,7 +432,7 @@ contract VincentUserFacet is VincentBase {
                 abilityPolicyParameterValues[hashedAbilityPolicy] = policyParameterValues[i][j];
 
                 emit LibVincentUserFacet.AbilityPolicyParametersSet(
-                    msg.sender,
+                    agentAddress,
                     appId,
                     appVersion,
                     hashedAbilityIpfsCid,

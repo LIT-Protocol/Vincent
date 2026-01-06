@@ -212,4 +212,31 @@ library LibVincentUserFacet {
      * @notice Error thrown when a zero PKP signer public key is provided
      */
     error ZeroPkpSignerPubKeyNotAllowed();
+
+    /**
+     * @notice Error thrown when a zero app ID is provided
+     */
+    error ZeroAppIdNotAllowed();
+
+    /**
+     * @notice Error thrown when a zero app version is provided
+     */
+    error ZeroAppVersionNotAllowed();
+
+    /**
+     * @notice Error thrown when an agent is already registered
+     * @param registeredUserAddress The address of the user that the agent is registered to
+     */
+    error AgentRegisteredToDifferentUser(address registeredUserAddress);
+
+    /**
+     * @notice Error thrown when a PKP signer is already registered to an agent
+     * @param registeredPkpAgentAddress The address of the agent that the PKP signer is registered to
+     */
+    error PkpSignerAlreadyRegisteredToAgent(address registeredPkpAgentAddress);
+
+    /**
+     * @notice Error thrown when an agent is not registered to the caller
+     */
+    error AgentNotRegisteredToUser();
 }
