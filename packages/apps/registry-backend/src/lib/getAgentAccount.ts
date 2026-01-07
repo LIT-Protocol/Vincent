@@ -2,7 +2,7 @@ import { getKernelAddressFromECDSA } from '@zerodev/ecdsa-validator';
 import { constants } from '@zerodev/sdk';
 import { ethers, providers } from 'ethers';
 import { createPublicClient, http } from 'viem';
-import { baseSepolia } from 'viem/chains';
+import { base } from 'viem/chains';
 
 import {
   COMBINED_ABI,
@@ -28,7 +28,7 @@ export async function getAgentAccount(request: {
   const { appId, userControllerAddress } = request;
 
   const publicClient = createPublicClient({
-    chain: baseSepolia,
+    chain: base,
     transport: http(),
   });
 

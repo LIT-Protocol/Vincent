@@ -5,7 +5,7 @@ import { constants } from '@zerodev/sdk';
 import bs58 from 'bs58';
 import { ethers, providers } from 'ethers';
 import { createPublicClient, http } from 'viem';
-import { baseSepolia } from 'viem/chains';
+import { base } from 'viem/chains';
 
 import { AUTH_METHOD_SCOPE, AUTH_METHOD_TYPE } from '@lit-protocol/constants';
 import { datil as datilContracts } from '@lit-protocol/contracts';
@@ -37,8 +37,8 @@ const PKP_HELPER_V2_ADDRESS = '0x3f24953B66Ed4089c6B25Be8C7a83262d6f6255C';
 const PKP_NFT_ADDRESS = '0x487A9D096BB4B7Ac1520Cb12370e31e677B175EA';
 
 const relaySdk = new GelatoRelay();
-const baseSepoliaPublicClient = createPublicClient({
-  chain: baseSepolia,
+const basePublicClient = createPublicClient({
+  chain: base,
   transport: http(),
 });
 
@@ -391,7 +391,7 @@ export async function installApp(request: { appId: number; userControllerAddress
 
   // 7. Calculate smart account address from PKP address
   const publicClient = createPublicClient({
-    chain: baseSepolia,
+    chain: base,
     transport: http(),
   });
 
@@ -435,14 +435,14 @@ export async function installApp(request: { appId: number; userControllerAddress
   // Types don't match (SDK expects ethers, we pass viem) but works at runtime
   const dataToSign = await relaySdk.getDataToSignERC2771(
     {
-      chainId: baseSepolia.id as unknown as bigint,
+      chainId: base.id as unknown as bigint,
       target: VINCENT_DIAMOND_CONTRACT_ADDRESS_PROD,
       data: txData,
       user: userControllerAddress,
       isConcurrent: true,
     },
     ERC2771Type.ConcurrentSponsoredCall,
-    baseSepoliaPublicClient as unknown as Parameters<typeof relaySdk.getDataToSignERC2771>[2],
+    basePublicClient as unknown as Parameters<typeof relaySdk.getDataToSignERC2771>[2],
   );
 
   console.log('[installApp] Data to sign obtained successfully');
