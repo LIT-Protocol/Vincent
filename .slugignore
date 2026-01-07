@@ -20,4 +20,10 @@
 /packages/apps/tool-erc20-approval
 /packages/apps/toolpolicies-e2e
 /packages/apps/tool-uniswap-swap
+/packages/libs/ability-sdk
+/packages/libs/app-sdk
 /packages/libs/e2e-test-utils
+/packages/libs/mcp-sdk
+/packages/libs/tool-sdk
+/packages/libs/wrapped-keys
+/docs
