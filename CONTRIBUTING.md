@@ -201,7 +201,7 @@ ability-evm-transaction-signer \
 ability-hyperliquid \
 ability-morpho \
 ability-relay-link \
-ability-sol-transaction-signer \
+# ability-sol-transaction-signer \
 ability-uniswap-swap \
 mcp-server \
 policy-contract-whitelist \
@@ -214,7 +214,7 @@ contracts-sdk \
 e2e-test-utils \
 mcp-sdk \
 registry-sdk \
-wrapped-keys \
+# wrapped-keys \
 --otp=YOUR_OTP
 ```
 
