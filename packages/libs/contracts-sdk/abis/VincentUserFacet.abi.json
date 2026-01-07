@@ -4,7 +4,7 @@
     "name": "permitAppVersion",
     "inputs": [
       {
-        "name": "userAddress",
+        "name": "agentAddress",
         "type": "address",
         "internalType": "address"
       },
@@ -52,6 +52,11 @@
     "name": "rePermitApp",
     "inputs": [
       {
+        "name": "agentAddress",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
         "name": "appId",
         "type": "uint40",
         "internalType": "uint40"
@@ -64,6 +69,11 @@
     "type": "function",
     "name": "setAbilityPolicyParameters",
     "inputs": [
+      {
+        "name": "agentAddress",
+        "type": "address",
+        "internalType": "address"
+      },
       {
         "name": "appId",
         "type": "uint40",
@@ -97,6 +107,11 @@
     "type": "function",
     "name": "unPermitAppVersion",
     "inputs": [
+      {
+        "name": "agentAddress",
+        "type": "address",
+        "internalType": "address"
+      },
       {
         "name": "appId",
         "type": "uint40",
@@ -350,6 +365,22 @@
   },
   {
     "type": "error",
+    "name": "AgentNotRegisteredToUser",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "AgentRegisteredToDifferentUser",
+    "inputs": [
+      {
+        "name": "registeredUserAddress",
+        "type": "address",
+        "internalType": "address"
+      }
+    ]
+  },
+  {
+    "type": "error",
     "name": "AppHasBeenDeleted",
     "inputs": [
       {
@@ -593,6 +624,17 @@
         "name": "appVersion",
         "type": "uint24",
         "internalType": "uint24"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "PkpSignerAlreadyRegisteredToAgent",
+    "inputs": [
+      {
+        "name": "registeredPkpAgentAddress",
+        "type": "address",
+        "internalType": "address"
       }
     ]
   },
