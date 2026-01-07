@@ -1,13 +1,10 @@
-import type { BigNumber } from 'ethers';
-
 import type {
-  GetAllPermittedAppIdsForPkpParams,
-  GetAllRegisteredAgentPkpsParams,
+  GetAllRegisteredAgentAddressesParams,
   GetAllAbilitiesAndPoliciesForAppParams,
-  GetLastPermittedAppVersionParams,
-  GetPermittedAppVersionForPkpParams,
-  GetPermittedAppsForPkpsParams,
-  GetUnpermittedAppsForPkpsParams,
+  GetPermittedAppVersionForAgentParams,
+  GetPermittedAppForAgentsParams,
+  GetUnpermittedAppForAgentsParams,
+  GetUserAddressForAgentParams,
   PermitAppParams,
   RePermitAppParams,
   SetAbilityPolicyParametersParams,
@@ -62,8 +59,8 @@ export interface SetAbilityPolicyParametersOptions extends BaseWritableOptions {
  * @inline
  * @expand
  * */
-export interface GetAllRegisteredAgentPkpsOptions extends BaseOptions {
-  args: GetAllRegisteredAgentPkpsParams;
+export interface GetAllRegisteredAgentAddressesOptions extends BaseOptions {
+  args: GetAllRegisteredAgentAddressesParams;
 }
 
 /**
@@ -71,17 +68,8 @@ export interface GetAllRegisteredAgentPkpsOptions extends BaseOptions {
  * @inline
  * @expand
  * */
-export interface GetPermittedAppVersionForPkpOptions extends BaseOptions {
-  args: GetPermittedAppVersionForPkpParams;
-}
-
-/**
- * @category Interfaces
- * @inline
- * @expand
- * */
-export interface GetAllPermittedAppIdsForPkpOptions extends BaseOptions {
-  args: GetAllPermittedAppIdsForPkpParams;
+export interface GetPermittedAppVersionForAgentOptions extends BaseOptions {
+  args: GetPermittedAppVersionForAgentParams;
 }
 
 /**
@@ -98,8 +86,26 @@ export interface GetAllAbilitiesAndPoliciesForAppOptions extends BaseOptions {
  * @inline
  * @expand
  * */
-export interface GetPermittedAppsForPkpsOptions extends BaseOptions {
-  args: GetPermittedAppsForPkpsParams;
+export interface GetPermittedAppForAgentsOptions extends BaseOptions {
+  args: GetPermittedAppForAgentsParams;
+}
+
+/**
+ * @category Interfaces
+ * @inline
+ * @expand
+ * */
+export interface GetUnpermittedAppForAgentsOptions extends BaseOptions {
+  args: GetUnpermittedAppForAgentsParams;
+}
+
+/**
+ * @category Interfaces
+ * @inline
+ * @expand
+ * */
+export interface GetUserAddressForAgentOptions extends BaseOptions {
+  args: GetUserAddressForAgentParams;
 }
 
 /**
@@ -118,52 +124,4 @@ export interface ValidateAbilityExecutionAndGetPoliciesOptions extends BaseOptio
  * */
 export interface IsDelegateePermittedOptions extends BaseOptions {
   args: IsDelegateePermittedParams;
-}
-
-/**
- * @category Interfaces
- * @inline
- * @expand
- * */
-export interface GetLastPermittedAppVersionOptions extends BaseOptions {
-  args: GetLastPermittedAppVersionParams;
-}
-
-/**
- * @category Interfaces
- * @inline
- * @expand
- * */
-export interface GetUnpermittedAppsForPkpsOptions extends BaseOptions {
-  args: GetUnpermittedAppsForPkpsParams;
-}
-
-/**
- * @category Interfaces
- * @inline
- * @expand
- * */
-export interface ContractPkpPermittedApps {
-  pkpTokenId: BigNumber;
-  permittedApps: {
-    appId: number;
-    version: number;
-    versionEnabled: boolean;
-    isDeleted: boolean;
-  }[];
-}
-
-/**
- * @category Interfaces
- * @inline
- * @expand
- * */
-export interface ContractPkpUnpermittedApps {
-  pkpTokenId: BigNumber;
-  unpermittedApps: {
-    appId: number;
-    previousPermittedVersion: number;
-    versionEnabled: boolean;
-    isDeleted: boolean;
-  }[];
 }

@@ -1,140 +1,121 @@
-import type { BigNumber } from 'ethers';
-
-import type {
-  PermissionData,
-  ValidateAbilityExecutionAndGetPoliciesResult,
-  PkpPermittedApps,
-  PkpUnpermittedApps,
-} from '../../types';
+import type { PermissionData, ValidateAbilityExecutionAndGetPoliciesResult } from '../../types';
 import type { AbilityWithPolicies, AbilityExecutionValidation } from '../types/chain';
 import type {
-  GetAllRegisteredAgentPkpsOptions,
-  GetPermittedAppVersionForPkpOptions,
-  GetAllPermittedAppIdsForPkpOptions,
+  GetAllRegisteredAgentAddressesOptions,
+  GetPermittedAppVersionForAgentOptions,
   GetAllAbilitiesAndPoliciesForAppOptions,
-  GetPermittedAppsForPkpsOptions,
+  GetPermittedAppForAgentsOptions,
   ValidateAbilityExecutionAndGetPoliciesOptions,
   IsDelegateePermittedOptions,
-  GetLastPermittedAppVersionOptions,
-  GetUnpermittedAppsForPkpsOptions,
-  ContractPkpPermittedApps,
-  ContractPkpUnpermittedApps,
+  GetUnpermittedAppForAgentsOptions,
+  GetUserAddressForAgentOptions,
 } from './types.ts';
 
-import { DEFAULT_PAGE_SIZE } from '../../constants';
 import { decodeContractError } from '../../utils';
-import { getPkpEthAddress, getPkpTokenId } from '../../utils/pkpInfo';
 import {
   decodePermissionDataFromChain,
   decodePolicyParametersForOneAbility,
 } from '../../utils/policyParams';
 
-export async function getAllRegisteredAgentPkpEthAddresses(
-  params: GetAllRegisteredAgentPkpsOptions,
+export async function getAllRegisteredAgentAddresses(
+  params: GetAllRegisteredAgentAddressesOptions,
 ): Promise<string[]> {
   const {
     contract,
-    args: { userPkpAddress, offset },
+    args: { userAddress, offset },
   } = params;
 
   try {
-    const pkpTokenIds: BigNumber[] = await contract.getAllRegisteredAgentPkps(
-      userPkpAddress,
+    const agentAddresses: string[] = await contract.getAllRegisteredAgentAddressesForUser(
+      userAddress,
       offset,
     );
 
-    const pkpEthAdddresses: string[] = [];
-    for (const tokenId of pkpTokenIds) {
-      const pkpEthAddress = await getPkpEthAddress({ signer: contract.signer, tokenId });
-      pkpEthAdddresses.push(pkpEthAddress);
-    }
-    return pkpEthAdddresses;
+    return agentAddresses;
   } catch (error: unknown) {
     const decodedError = decodeContractError(error, contract);
 
-    if (decodedError.includes('NoRegisteredPkpsFound')) {
+    if (decodedError.includes('NoRegisteredAgentsFound')) {
       return [];
     }
 
-    throw new Error(`Failed to Get All Registered Agent PKPs: ${decodedError}`);
+    throw new Error(`Failed to Get All Registered Agent Addresses: ${decodedError}`);
   }
 }
 
-export async function getPermittedAppVersionForPkp(
-  params: GetPermittedAppVersionForPkpOptions,
+export async function getUserAddressForAgent(
+  params: GetUserAddressForAgentOptions,
+): Promise<string | null> {
+  const {
+    contract,
+    args: { agentAddress },
+  } = params;
+
+  try {
+    const userAddress: string = await contract.getUserAddressForAgent(agentAddress);
+
+    return userAddress;
+  } catch (error: unknown) {
+    const decodedError = decodeContractError(error, contract);
+
+    if (decodedError.includes('AgentNotRegistered')) {
+      return null;
+    }
+
+    throw new Error(`Failed to Get User Address For Agent: ${decodedError}`);
+  }
+}
+
+export async function getPermittedAppVersionForAgent(
+  params: GetPermittedAppVersionForAgentOptions,
 ): Promise<number | null> {
   const {
     contract,
-    args: { pkpEthAddress, appId },
+    args: { agentAddress, appId },
   } = params;
 
   try {
-    const pkpTokenId = await getPkpTokenId({ pkpEthAddress, signer: contract.signer });
+    const result = await contract.getPermittedAppForAgents([agentAddress]);
 
-    const appVersion: number = await contract.getPermittedAppVersionForPkp(pkpTokenId, appId);
-
-    if (!appVersion) return null;
-
-    return appVersion;
-  } catch (error: unknown) {
-    const decodedError = decodeContractError(error, contract);
-    throw new Error(`Failed to Get Permitted App Version For PKP: ${decodedError}`);
-  }
-}
-
-export async function getAllPermittedAppIdsForPkp(
-  params: GetAllPermittedAppIdsForPkpOptions,
-): Promise<number[]> {
-  const {
-    contract,
-    args: { pkpEthAddress, offset },
-  } = params;
-
-  try {
-    const pkpTokenId = await getPkpTokenId({ pkpEthAddress, signer: contract.signer });
-
-    const appIds: number[] = await contract.getAllPermittedAppIdsForPkp(pkpTokenId, offset);
-
-    return appIds.map((id: number) => id);
-  } catch (error: unknown) {
-    const decodedError = decodeContractError(error, contract);
-    throw new Error(`Failed to Get All Permitted App IDs For PKP: ${decodedError}`);
-  }
-}
-
-export async function getPermittedAppsForPkps(
-  params: GetPermittedAppsForPkpsOptions,
-): Promise<PkpPermittedApps[]> {
-  const {
-    contract,
-    args: { pkpEthAddresses, offset, pageSize = DEFAULT_PAGE_SIZE },
-  } = params;
-
-  try {
-    const pkpTokenIds: BigNumber[] = [];
-    for (const pkpEthAddress of pkpEthAddresses) {
-      const pkpTokenId = await getPkpTokenId({ pkpEthAddress, signer: contract.signer });
-      pkpTokenIds.push(pkpTokenId);
+    if (!result || !result.length || result[0].permittedApp.appId === 0) {
+      return null;
     }
 
-    const results: ContractPkpPermittedApps[] = await contract.getPermittedAppsForPkps(
-      pkpTokenIds,
-      offset,
-      pageSize,
-    );
+    // Check if the permitted app matches the requested appId
+    if (result[0].permittedApp.appId !== appId) {
+      return null;
+    }
 
-    return results.map((result: ContractPkpPermittedApps) => ({
-      pkpTokenId: result.pkpTokenId.toString(),
-      permittedApps: result.permittedApps.map((app) => ({
-        appId: app.appId,
-        version: app.version,
-        versionEnabled: app.versionEnabled,
-        isDeleted: app.isDeleted,
-      })),
+    return result[0].permittedApp.version;
+  } catch (error: unknown) {
+    const decodedError = decodeContractError(error, contract);
+    throw new Error(`Failed to Get Permitted App Version For Agent: ${decodedError}`);
+  }
+}
+
+export async function getPermittedAppForAgents(params: GetPermittedAppForAgentsOptions) {
+  const {
+    contract,
+    args: { agentAddresses },
+  } = params;
+
+  try {
+    const results = await contract.getPermittedAppForAgents(agentAddresses);
+
+    return results.map((result: any) => ({
+      agentAddress: result.agentAddress,
+      permittedApp: {
+        appId: result.permittedApp.appId,
+        version: result.permittedApp.version,
+        pkpSigner: result.permittedApp.pkpSigner,
+        pkpSignerPubKey: result.permittedApp.pkpSignerPubKey,
+        versionEnabled: result.permittedApp.versionEnabled,
+        isDeleted: result.permittedApp.isDeleted,
+      },
     }));
   } catch (error: unknown) {
     const decodedError = decodeContractError(error, contract);
-    throw new Error(`Failed to Get Permitted Apps For PKPs: ${decodedError}`);
+    throw new Error(`Failed to Get Permitted App For Agents: ${decodedError}`);
   }
 }
 
@@ -143,14 +124,12 @@ export async function getAllAbilitiesAndPoliciesForApp(
 ): Promise<PermissionData> {
   const {
     contract,
-    args: { pkpEthAddress, appId },
+    args: { agentAddress, appId },
   } = params;
 
   try {
-    const pkpTokenId = await getPkpTokenId({ pkpEthAddress, signer: contract.signer });
-
     const abilities: AbilityWithPolicies[] = await contract.getAllAbilitiesAndPoliciesForApp(
-      pkpTokenId,
+      agentAddress,
       appId,
     );
 
@@ -166,16 +145,14 @@ export async function validateAbilityExecutionAndGetPolicies(
 ): Promise<ValidateAbilityExecutionAndGetPoliciesResult> {
   const {
     contract,
-    args: { delegateeAddress, pkpEthAddress, abilityIpfsCid },
+    args: { delegateeAddress, agentAddress, abilityIpfsCid },
   } = params;
 
   try {
-    const pkpTokenId = await getPkpTokenId({ pkpEthAddress, signer: contract.signer });
-
     const validationResult: AbilityExecutionValidation =
       await contract.validateAbilityExecutionAndGetPolicies(
         delegateeAddress,
-        pkpTokenId,
+        agentAddress,
         abilityIpfsCid,
       );
 
@@ -194,85 +171,47 @@ export async function validateAbilityExecutionAndGetPolicies(
   }
 }
 
-export async function getLastPermittedAppVersionForPkp(
-  params: GetLastPermittedAppVersionOptions,
-): Promise<number | null> {
+export async function getUnpermittedAppForAgents(params: GetUnpermittedAppForAgentsOptions) {
   const {
     contract,
-    args: { pkpEthAddress, appId },
+    args: { agentAddresses },
   } = params;
 
   try {
-    const pkpTokenId = await getPkpTokenId({ pkpEthAddress, signer: contract.signer });
+    const results = await contract.getUnpermittedAppForAgents(agentAddresses);
 
-    const lastPermittedVersion: number = await contract.getLastPermittedAppVersionForPkp(
-      pkpTokenId,
-      appId,
-    );
-
-    if (!lastPermittedVersion) return null;
-
-    return lastPermittedVersion;
-  } catch (error: unknown) {
-    const decodedError = decodeContractError(error, contract);
-    throw new Error(`Failed to Get Last Permitted App Version: ${decodedError}`);
-  }
-}
-
-export async function getUnpermittedAppsForPkps(
-  params: GetUnpermittedAppsForPkpsOptions,
-): Promise<PkpUnpermittedApps[]> {
-  const {
-    contract,
-    args: { pkpEthAddresses, offset },
-  } = params;
-
-  try {
-    // Convert PKP ETH addresses to token IDs
-    const pkpTokenIds: BigNumber[] = [];
-    for (const pkpEthAddress of pkpEthAddresses) {
-      const pkpTokenId = await getPkpTokenId({ pkpEthAddress, signer: contract.signer });
-      pkpTokenIds.push(pkpTokenId);
-    }
-
-    // Call the contract method with token IDs
-    const results: ContractPkpUnpermittedApps[] = await contract.getUnpermittedAppsForPkps(
-      pkpTokenIds,
-      offset,
-    );
-
-    // Convert BigNumber token IDs back to strings for the response
-    return results.map((result: ContractPkpUnpermittedApps) => ({
-      pkpTokenId: result.pkpTokenId.toString(),
-      unpermittedApps: result.unpermittedApps.map((app) => ({
-        appId: app.appId,
-        previousPermittedVersion: app.previousPermittedVersion,
-        versionEnabled: app.versionEnabled,
-        isDeleted: app.isDeleted,
-      })),
+    return results.map((result: any) => ({
+      agentAddress: result.agentAddress,
+      unpermittedApp: {
+        appId: result.unpermittedApp.appId,
+        previousPermittedVersion: result.unpermittedApp.previousPermittedVersion,
+        pkpSigner: result.unpermittedApp.pkpSigner,
+        pkpSignerPubKey: result.unpermittedApp.pkpSignerPubKey,
+        versionEnabled: result.unpermittedApp.versionEnabled,
+        isDeleted: result.unpermittedApp.isDeleted,
+      },
     }));
   } catch (error: unknown) {
     const decodedError = decodeContractError(error, contract);
-    throw new Error(`Failed to Get Unpermitted Apps For PKPs: ${decodedError}`);
+    throw new Error(`Failed to Get Unpermitted Apps For Agents: ${decodedError}`);
   }
 }
 
 export async function isDelegateePermitted(params: IsDelegateePermittedOptions): Promise<boolean> {
   const {
     contract,
-    args: { delegateeAddress, pkpEthAddress, abilityIpfsCid },
+    args: { delegateeAddress, agentAddress, abilityIpfsCid },
   } = params;
 
   try {
-    const pkpTokenId = await getPkpTokenId({ pkpEthAddress, signer: contract.signer });
+    const validationResult: AbilityExecutionValidation =
+      await contract.validateAbilityExecutionAndGetPolicies(
+        delegateeAddress,
+        agentAddress,
+        abilityIpfsCid,
+      );
 
-    const isPermitted: boolean = await contract.isDelegateePermitted(
-      delegateeAddress,
-      pkpTokenId,
-      abilityIpfsCid,
-    );
-
-    return isPermitted;
+    return validationResult.isPermitted;
   } catch (error: unknown) {
     const decodedError = decodeContractError(error, contract);
     throw new Error(`Failed to Check If Delegatee Is Permitted: ${decodedError}`);
