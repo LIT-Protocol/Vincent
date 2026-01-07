@@ -127,8 +127,8 @@
               },
               {
                 "name": "pkpSignerPubKey",
-                "type": "string",
-                "internalType": "string"
+                "type": "bytes",
+                "internalType": "bytes"
               },
               {
                 "name": "versionEnabled",
@@ -190,8 +190,8 @@
               },
               {
                 "name": "pkpSignerPubKey",
-                "type": "string",
-                "internalType": "string"
+                "type": "bytes",
+                "internalType": "bytes"
               },
               {
                 "name": "versionEnabled",

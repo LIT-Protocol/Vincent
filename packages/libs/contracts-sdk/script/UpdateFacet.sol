@@ -264,16 +264,18 @@ contract SmartUpdateFacet is Script {
     }
 
     function deployFacet(string memory facetName) internal returns (address) {
+        bytes32 salt = bytes32(abi.encodePacked("VincentCreate2Salt_2"));
+
         if (compareStrings(facetName, "VincentAppFacet")) {
-            return address(new VincentAppFacet());
+            return address(new VincentAppFacet{salt: salt}());
         } else if (compareStrings(facetName, "VincentAppViewFacet")) {
-            return address(new VincentAppViewFacet());
+            return address(new VincentAppViewFacet{salt: salt}());
         } else if (compareStrings(facetName, "VincentUserFacet")) {
-            return address(new VincentUserFacet());
+            return address(new VincentUserFacet{salt: salt}());
         } else if (compareStrings(facetName, "VincentUserViewFacet")) {
-            return address(new VincentUserViewFacet());
+            return address(new VincentUserViewFacet{salt: salt}());
         } else if (compareStrings(facetName, "VincentERC2771Facet")) {
-            return address(new VincentERC2771Facet());
+            return address(new VincentERC2771Facet{salt: salt}());
         } else {
             revert("Invalid facet name");
         }

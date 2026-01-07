@@ -199,9 +199,9 @@
       },
       {
         "name": "pkpSignerPubKey",
-        "type": "string",
+        "type": "bytes",
         "indexed": false,
-        "internalType": "string"
+        "internalType": "bytes"
       }
     ],
     "anonymous": false
@@ -236,9 +236,9 @@
       },
       {
         "name": "pkpSignerPubKey",
-        "type": "string",
+        "type": "bytes",
         "indexed": false,
-        "internalType": "string"
+        "internalType": "bytes"
       }
     ],
     "anonymous": false
@@ -273,9 +273,9 @@
       },
       {
         "name": "pkpSignerPubKey",
-        "type": "string",
+        "type": "bytes",
         "indexed": false,
-        "internalType": "string"
+        "internalType": "bytes"
       }
     ],
     "anonymous": false
@@ -304,9 +304,9 @@
       },
       {
         "name": "pkpSignerPubKey",
-        "type": "string",
+        "type": "bytes",
         "indexed": false,
-        "internalType": "string"
+        "internalType": "bytes"
       }
     ],
     "anonymous": false

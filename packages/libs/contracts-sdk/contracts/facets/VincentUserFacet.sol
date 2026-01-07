@@ -126,7 +126,7 @@ contract VincentUserFacet is VincentBase {
                 agentStorage.permittedAppId,
                 agentStorage.permittedAppVersion,
                 agentStorage.pkpSigner,
-                string(agentStorage.pkpSignerPubKey)
+                agentStorage.pkpSignerPubKey
             );
         }
 
@@ -146,11 +146,11 @@ contract VincentUserFacet is VincentBase {
         if (us_.userAddressToRegisteredAgentAddresses[sender].add(agentAddress)) {
             // Set the reverse mapping from agent address to user address
             us_.registeredAgentAddressToUserAddress[agentAddress] = sender;
-            emit LibVincentUserFacet.NewAgentRegistered(sender, agentAddress, pkpSigner, string(pkpSignerPubKey));
+            emit LibVincentUserFacet.NewAgentRegistered(sender, agentAddress, pkpSigner, pkpSignerPubKey);
         }
 
         emit LibVincentUserFacet.AppVersionPermitted(
-            agentAddress, appId, appVersion, pkpSigner, string(pkpSignerPubKey)
+            agentAddress, appId, appVersion, pkpSigner, pkpSignerPubKey
         );
 
         _setAbilityPolicyParameters(
@@ -211,7 +211,7 @@ contract VincentUserFacet is VincentBase {
             appId,
             appVersion,
             agentStorage.lastPermittedPkpSigner,
-            string(agentStorage.lastPermittedPkpSignerPubKey)
+            agentStorage.lastPermittedPkpSignerPubKey
         );
     }
 
@@ -286,7 +286,7 @@ contract VincentUserFacet is VincentBase {
             appId,
             agentStorage.permittedAppVersion,
             agentStorage.pkpSigner,
-            string(agentStorage.pkpSignerPubKey)
+            agentStorage.pkpSignerPubKey
         );
     }
 

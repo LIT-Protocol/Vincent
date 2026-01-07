@@ -3,17 +3,18 @@ import appFacetAbi from '../abis/VincentAppFacet.abi.json';
 import appViewFacetAbi from '../abis/VincentAppViewFacet.abi.json';
 import userFacetAbi from '../abis/VincentUserFacet.abi.json';
 import userViewFacetAbi from '../abis/VincentUserViewFacet.abi.json';
+import erc2771FacetAbi from '../abis/VincentERC2771Facet.abi.json';
 import { buildDiamondInterface } from './buildDiamondInterface';
 
 // TODO!: Pull from the ABI after re-publishing
-export const VINCENT_DIAMOND_CONTRACT_ADDRESS_DEV = '0x57f75581e0c9e51594C8080EcC833A3592A50df8';
-export const VINCENT_DIAMOND_CONTRACT_ADDRESS_PROD = '0xa3a602F399E9663279cdF63a290101cB6560A87e';
+export const VINCENT_DIAMOND_CONTRACT_ADDRESS_PROD = '0x1599E2c248C34833A606EB1dFeA86b839170d49f';
 
 export const COMBINED_ABI = buildDiamondInterface([
   appFacetAbi,
   appViewFacetAbi,
   userFacetAbi,
   userViewFacetAbi,
+  erc2771FacetAbi,
 ]);
 
 export const GAS_ADJUSTMENT_PERCENT = 120;
@@ -21,45 +22,20 @@ export const DEFAULT_PAGE_SIZE = '50';
 
 export const VINCENT_CONTRACT_ADDRESS_BOOK = {
   fee: {
-    1: {
-      chainName: 'ethereum',
-      address: '0x35705D6ad235DcA39c10B6E0EfBA84b5E90D2aC9',
-      salt: 'DatilCreate2Salt',
-    },
-    137: {
-      chainName: 'polygon',
-      address: '0x35705D6ad235DcA39c10B6E0EfBA84b5E90D2aC9',
-      salt: 'DatilCreate2Salt',
-    },
-    43114: {
-      chainName: 'avalanche',
-      address: '0x35705D6ad235DcA39c10B6E0EfBA84b5E90D2aC9',
-      salt: 'DatilCreate2Salt',
-    },
-    42161: {
-      chainName: 'arbitrum',
-      address: '0x35705D6ad235DcA39c10B6E0EfBA84b5E90D2aC9',
-      salt: 'DatilCreate2Salt',
-    },
-    10: {
-      chainName: 'optimism',
-      address: '0x35705D6ad235DcA39c10B6E0EfBA84b5E90D2aC9',
-      salt: 'DatilCreate2Salt',
+    175188: {
+      chainName: 'chronicleYellowstone',
+      address: '0x1599E2c248C34833A606EB1dFeA86b839170d49f',
+      salt: 'VincentCreate2Salt_2',
     },
     8453: {
       chainName: 'base',
-      address: '0x35705D6ad235DcA39c10B6E0EfBA84b5E90D2aC9',
-      salt: 'DatilCreate2Salt',
-    },
-    56: {
-      chainName: 'bnb',
-      address: '0x35705D6ad235DcA39c10B6E0EfBA84b5E90D2aC9',
-      salt: 'DatilCreate2Salt',
+      address: '0x1599E2c248C34833A606EB1dFeA86b839170d49f',
+      salt: 'VincentCreate2Salt_2',
     },
     84532: {
       chainName: 'baseSepolia',
-      address: '0x35705D6ad235DcA39c10B6E0EfBA84b5E90D2aC9',
-      salt: 'DatilCreate2Salt',
+      address: '0x1599E2c248C34833A606EB1dFeA86b839170d49f',
+      salt: 'VincentCreate2Salt_2',
     },
   },
 };

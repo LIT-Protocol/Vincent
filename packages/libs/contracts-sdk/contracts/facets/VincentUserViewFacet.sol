@@ -98,7 +98,7 @@ contract VincentUserViewFacet is VincentBase {
         uint40 appId;
         uint24 version;
         address pkpSigner;
-        string pkpSignerPubKey;
+        bytes pkpSignerPubKey;
         bool versionEnabled;
         bool isDeleted;
     }
@@ -115,7 +115,7 @@ contract VincentUserViewFacet is VincentBase {
         uint40 appId;
         uint24 previousPermittedVersion;
         address pkpSigner;
-        string pkpSignerPubKey;
+        bytes pkpSignerPubKey;
         bool versionEnabled;
         bool isDeleted;
     }
@@ -239,7 +239,7 @@ contract VincentUserViewFacet is VincentBase {
                     appId: appId,
                     version: agentStorage.permittedAppVersion,
                     pkpSigner: agentStorage.pkpSigner,
-                    pkpSignerPubKey: string(agentStorage.pkpSignerPubKey),
+                    pkpSignerPubKey: agentStorage.pkpSignerPubKey,
                     versionEnabled: as_.appIdToApp[appId].appVersions[getAppVersionIndex(
                             agentStorage.permittedAppVersion
                         )].enabled,
@@ -300,7 +300,7 @@ contract VincentUserViewFacet is VincentBase {
         // For each ability, get its policies and parameters
         for (uint256 i = 0; i < abilityCount; i++) {
             bytes32 abilityHash = abilityHashes[i];
-            abilities[i] = _getAbilityWithPolicies(abilityHash, agentAddress, appId, appVersion, versionedApp, us_, ls_);
+            abilities[i] = _getAbilityWithPolicies(abilityHash, agentAddress, appVersion, versionedApp, us_, ls_);
         }
 
         return abilities;
@@ -435,7 +435,7 @@ contract VincentUserViewFacet is VincentBase {
                     appId: agentStorage.lastPermittedAppId,
                     previousPermittedVersion: agentStorage.lastPermittedAppVersion,
                     pkpSigner: agentStorage.lastPermittedPkpSigner,
-                    pkpSignerPubKey: string(agentStorage.lastPermittedPkpSignerPubKey),
+                    pkpSignerPubKey: agentStorage.lastPermittedPkpSignerPubKey,
                     versionEnabled: as_.appIdToApp[agentStorage.lastPermittedAppId].appVersions[getAppVersionIndex(
                             agentStorage.lastPermittedAppVersion
                         )].enabled,
@@ -459,7 +459,6 @@ contract VincentUserViewFacet is VincentBase {
     function _getAbilityWithPolicies(
         bytes32 abilityHash,
         address agentAddress,
-        uint40 appId,
         uint24 appVersion,
         VincentAppStorage.AppVersion storage versionedApp,
         VincentUserStorage.UserStorage storage us_,
