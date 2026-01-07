@@ -22,7 +22,7 @@ import {
   getAppVersion as _getAppVersion,
   getAppsByManagerAddress as _getAppsByManagerAddress,
   getAppByDelegateeAddress as _getAppByDelegateeAddress,
-  getDelegatedAgentAddresses as _getDelegatedAgentAddresses,
+  getDelegatedPkpEthAddresses as _getDelegatedPkpEthAddresses,
 } from './internal/app/AppView';
 import {
   permitApp as _permitApp,
@@ -31,13 +31,14 @@ import {
   setAbilityPolicyParameters as _setAbilityPolicyParameters,
 } from './internal/user/User';
 import {
-  getAllRegisteredAgentAddresses as _getAllRegisteredAgentAddresses,
-  getUserAddressForAgent as _getUserAddressForAgent,
-  getPermittedAppVersionForAgent as _getPermittedAppVersionForAgent,
-  getPermittedAppForAgents as _getPermittedAppForAgents,
-  getUnpermittedAppForAgents as _getUnpermittedAppForAgents,
+  getAllRegisteredAgentPkpEthAddresses as _getAllRegisteredAgentPkpEthAddresses,
+  getPermittedAppVersionForPkp as _getPermittedAppVersionForPkp,
+  getAllPermittedAppIdsForPkp as _getAllPermittedAppIdsForPkp,
   getAllAbilitiesAndPoliciesForApp as _getAllAbilitiesAndPoliciesForApp,
   validateAbilityExecutionAndGetPolicies as _validateAbilityExecutionAndGetPolicies,
+  getPermittedAppsForPkps as _getPermittedAppsForPkps,
+  getLastPermittedAppVersionForPkp as _getLastPermittedAppVersionForPkp,
+  getUnpermittedAppsForPkps as _getUnpermittedAppsForPkps,
   isDelegateePermitted as _isDelegateePermitted,
 } from './internal/user/UserView';
 import { createContract } from './utils';
@@ -69,7 +70,8 @@ export function clientFromContract({ contract }: { contract: Contract }): Contra
     getAppVersion: (params) => _getAppVersion({ contract, args: params }),
     getAppsByManagerAddress: (params) => _getAppsByManagerAddress({ contract, args: params }),
     getAppByDelegateeAddress: (params) => _getAppByDelegateeAddress({ contract, args: params }),
-    getDelegatedAgentAddresses: (params) => _getDelegatedAgentAddresses({ contract, args: params }),
+    getDelegatedPkpEthAddresses: (params) =>
+      _getDelegatedPkpEthAddresses({ contract, args: params }),
 
     // User write methods
     permitApp: (params, overrides) => _permitApp({ contract, args: params, overrides }),
@@ -79,18 +81,21 @@ export function clientFromContract({ contract }: { contract: Contract }): Contra
       _setAbilityPolicyParameters({ contract, args: params, overrides }),
 
     // User view methods
-    getAllRegisteredAgentAddresses: (params) =>
-      _getAllRegisteredAgentAddresses({ contract, args: params }),
-    getUserAddressForAgent: (params) => _getUserAddressForAgent({ contract, args: params }),
-    getPermittedAppVersionForAgent: (params) =>
-      _getPermittedAppVersionForAgent({ contract, args: params }),
-    getPermittedAppForAgents: (params) => _getPermittedAppForAgents({ contract, args: params }),
-    getUnpermittedAppForAgents: (params) => _getUnpermittedAppForAgents({ contract, args: params }),
+    getAllRegisteredAgentPkpEthAddresses: (params) =>
+      _getAllRegisteredAgentPkpEthAddresses({ contract, args: params }),
+    getPermittedAppVersionForPkp: (params) =>
+      _getPermittedAppVersionForPkp({ contract, args: params }),
+    getAllPermittedAppIdsForPkp: (params) =>
+      _getAllPermittedAppIdsForPkp({ contract, args: params }),
+    getPermittedAppsForPkps: (params) => _getPermittedAppsForPkps({ contract, args: params }),
     getAllAbilitiesAndPoliciesForApp: (params) =>
       _getAllAbilitiesAndPoliciesForApp({ contract, args: params }),
     validateAbilityExecutionAndGetPolicies: (params) =>
       _validateAbilityExecutionAndGetPolicies({ contract, args: params }),
     isDelegateePermitted: (params) => _isDelegateePermitted({ contract, args: params }),
+    getLastPermittedAppVersionForPkp: (params) =>
+      _getLastPermittedAppVersionForPkp({ contract, args: params }),
+    getUnpermittedAppsForPkps: (params) => _getUnpermittedAppsForPkps({ contract, args: params }),
   };
 }
 

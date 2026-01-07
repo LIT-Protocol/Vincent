@@ -3,7 +3,6 @@ export type {
   GetAppsByManagerParams,
   GetAppVersionParams,
   GetAppByIdParams,
-  GetDelegatedAgentAddressesParams,
   UndeleteAppParams,
   DeleteAppParams,
   RemoveDelegateeParams,
@@ -14,12 +13,14 @@ export type {
   RegisterAppParams,
   ValidateAbilityExecutionAndGetPoliciesParams,
   IsDelegateePermittedParams,
+  GetDelegatedPkpEthAddressesParams,
   GetAllAbilitiesAndPoliciesForAppParams,
-  GetPermittedAppVersionForAgentParams,
-  GetPermittedAppForAgentsParams,
-  GetUnpermittedAppForAgentsParams,
-  GetUserAddressForAgentParams,
-  GetAllRegisteredAgentAddressesParams,
+  GetAllPermittedAppIdsForPkpParams,
+  GetLastPermittedAppVersionParams,
+  GetPermittedAppVersionForPkpParams,
+  GetPermittedAppsForPkpsParams,
+  GetUnpermittedAppsForPkpsParams,
+  GetAllRegisteredAgentPkpsParams,
   SetAbilityPolicyParametersParams,
   UnPermitAppParams,
   PermitAppParams,
@@ -33,7 +34,9 @@ export type {
   PermissionData,
   AppVersion,
   PermittedApp,
+  PkpPermittedApps,
   UnpermittedApp,
+  PkpUnpermittedApps,
 } from './types';
 
 export { getTestClient, clientFromContract, getClient } from './contractClient';
@@ -41,6 +44,8 @@ export { getTestClient, clientFromContract, getClient } from './contractClient';
 export { createContract } from './utils';
 
 export { getVincentWrappedKeysAccs } from './internal/wrapped-keys/getVincentWrappedKeysAccs';
+
+export { getPkpTokenId } from './utils/pkpInfo';
 
 export {
   VINCENT_DIAMOND_CONTRACT_ADDRESS_PROD,

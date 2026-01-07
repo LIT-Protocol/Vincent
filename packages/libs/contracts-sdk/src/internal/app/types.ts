@@ -6,7 +6,7 @@ import type {
   GetAppByIdParams,
   GetAppsByManagerParams,
   GetAppVersionParams,
-  GetDelegatedAgentAddressesParams,
+  GetDelegatedPkpEthAddressesParams,
   RegisterAppParams,
   RegisterNextVersionParams,
   RemoveDelegateeParams,
@@ -128,6 +128,6 @@ export interface GetAppByDelegateeOptions extends BaseOptions {
  * @inline
  * @expand
  * */
-export interface GetDelegatedAgentAddressesOptions extends BaseOptions {
-  args: GetDelegatedAgentAddressesParams;
+export interface GetDelegatedPkpEthAddressesOptions extends BaseOptions {
+  args: GetDelegatedPkpEthAddressesParams;
 }

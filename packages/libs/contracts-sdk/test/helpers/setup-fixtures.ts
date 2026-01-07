@@ -3,11 +3,11 @@ import { privateKeyToAccount } from 'viem/accounts';
 
 import { getTestClient } from '../../src';
 import {
-  BASE_SEPOLIA_RPC_URL,
   DATIL_PUBLIC_CLIENT,
   TEST_APP_DELEGATEE_ACCOUNT,
   TEST_APP_MANAGER_PRIVATE_KEY,
   TEST_APP_MANAGER_VIEM_WALLET_CLIENT,
+  YELLOWSTONE_RPC_URL,
 } from './index';
 
 /**
@@ -22,7 +22,7 @@ export async function removeAppDelegateeIfNeeded(): Promise<void> {
     registeredApp = await getTestClient({
       signer: new ethers.Wallet(
         TEST_APP_MANAGER_PRIVATE_KEY,
-        new ethers.providers.JsonRpcProvider(BASE_SEPOLIA_RPC_URL),
+        new ethers.providers.JsonRpcProvider(YELLOWSTONE_RPC_URL),
       ),
     }).getAppByDelegateeAddress({
       delegateeAddress: TEST_APP_DELEGATEE_ACCOUNT.address,
@@ -46,7 +46,7 @@ export async function removeAppDelegateeIfNeeded(): Promise<void> {
       const result = await getTestClient({
         signer: new ethers.Wallet(
           TEST_APP_MANAGER_PRIVATE_KEY,
-          new ethers.providers.JsonRpcProvider(BASE_SEPOLIA_RPC_URL),
+          new ethers.providers.JsonRpcProvider(YELLOWSTONE_RPC_URL),
         ),
       }).removeDelegatee({
         appId: registeredApp.id,

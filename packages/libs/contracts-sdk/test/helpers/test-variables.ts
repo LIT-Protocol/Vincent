@@ -8,14 +8,11 @@ import { privateKeyToAccount } from 'viem/accounts';
 
 import { getEnv } from './test-config';
 
-// RPC URLs
 export const YELLOWSTONE_RPC_URL = getEnv('YELLOWSTONE_RPC_URL');
-export const BASE_SEPOLIA_RPC_URL = getEnv('BASE_SEPOLIA_RPC_URL');
 export const BASE_RPC_URL = getEnv('BASE_RPC_URL');
 export const ETH_RPC_URL = getEnv('ETH_RPC_URL');
 export const TEST_CONFIG_PATH = path.join(__dirname, '../test-config.json');
 
-// Yellowstone/Datil chain - used for PKP minting
 export const DATIL_CHAIN = {
   id: 175188,
   name: 'Datil Mainnet',
@@ -37,31 +34,6 @@ export const DATIL_CHAIN = {
 export const DATIL_PUBLIC_CLIENT = createPublicClient({
   chain: DATIL_CHAIN,
   transport: http(YELLOWSTONE_RPC_URL),
-});
-
-// Base Sepolia chain - used for Vincent contract interactions
-export const BASE_SEPOLIA_CHAIN = defineChain({
-  id: 84532,
-  name: 'Base Sepolia',
-  network: 'base-sepolia',
-  nativeCurrency: {
-    decimals: 18,
-    name: 'Ether',
-    symbol: 'ETH',
-  },
-  rpcUrls: {
-    default: {
-      http: [BASE_SEPOLIA_RPC_URL],
-    },
-    public: {
-      http: [BASE_SEPOLIA_RPC_URL],
-    },
-  },
-});
-
-export const BASE_SEPOLIA_PUBLIC_CLIENT = createPublicClient({
-  chain: BASE_SEPOLIA_CHAIN,
-  transport: http(BASE_SEPOLIA_RPC_URL),
 });
 
 export const BASE_CHAIN = defineChain({
@@ -111,9 +83,7 @@ export const ETH_PUBLIC_CLIENT = createPublicClient({
 });
 
 type DatilWalletClient = WalletClient<Transport, typeof DATIL_CHAIN, Account>;
-type BaseSepoliaWalletClient = WalletClient<Transport, typeof BASE_SEPOLIA_CHAIN, Account>;
 
-// Wallet clients for Yellowstone/Datil (PKP minting and funding)
 export const TEST_FUNDER_PRIVATE_KEY = getEnv('TEST_FUNDER_PRIVATE_KEY');
 export const TEST_FUNDER_VIEM_WALLET_CLIENT: DatilWalletClient = createWalletClient({
   account: privateKeyToAccount(TEST_FUNDER_PRIVATE_KEY as `0x${string}`),
@@ -132,19 +102,11 @@ export const TEST_AGENT_WALLET_PKP_OWNER_VIEM_WALLET_CLIENT: DatilWalletClient =
   },
 );
 
-// Wallet client for Base Sepolia (Vincent contract interactions)
-// Note: TEST_FUNDER will also be used for Base Sepolia funding
-export const TEST_FUNDER_BASE_SEPOLIA_WALLET_CLIENT: BaseSepoliaWalletClient = createWalletClient({
-  account: privateKeyToAccount(TEST_FUNDER_PRIVATE_KEY as `0x${string}`),
-  chain: BASE_SEPOLIA_CHAIN,
-  transport: http(BASE_SEPOLIA_RPC_URL),
-});
-
 export const TEST_APP_MANAGER_PRIVATE_KEY = getEnv('TEST_APP_MANAGER_PRIVATE_KEY');
-export const TEST_APP_MANAGER_VIEM_WALLET_CLIENT: BaseSepoliaWalletClient = createWalletClient({
+export const TEST_APP_MANAGER_VIEM_WALLET_CLIENT: DatilWalletClient = createWalletClient({
   account: privateKeyToAccount(TEST_APP_MANAGER_PRIVATE_KEY as `0x${string}`),
-  chain: BASE_SEPOLIA_CHAIN,
-  transport: http(BASE_SEPOLIA_RPC_URL),
+  chain: DATIL_CHAIN,
+  transport: http(YELLOWSTONE_RPC_URL),
 });
 
 export const TEST_APP_DELEGATEE_PRIVATE_KEY = getEnv('TEST_APP_DELEGATEE_PRIVATE_KEY');
