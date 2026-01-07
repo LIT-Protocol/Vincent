@@ -758,13 +758,9 @@ export type App = {
   /** Contact email for the application manager */
   contactEmail?: string;
   /** This should be a landing page for the app. */
-  appUserUrl?: string;
+  appUrl?: string;
   /** Base64 encoded logo image */
   logo?: string;
-  /** Redirect URIs users can be sent to after signing up for your application (with their JWT token). */
-  redirectUris?: string[];
-  /** Addresses responsible for executing the app's operations on behalf of Vincent App Users */
-  delegateeAddresses?: string[];
   /** Identifies if an application is in development, test, or production. */
   deploymentStatus?: 'dev' | 'test' | 'prod';
   /** Whether or not this App is deleted */
@@ -788,13 +784,9 @@ export type AppRead = {
   /** Contact email for the application manager */
   contactEmail?: string;
   /** This should be a landing page for the app. */
-  appUserUrl?: string;
+  appUrl?: string;
   /** Base64 encoded logo image */
   logo?: string;
-  /** Redirect URIs users can be sent to after signing up for your application (with their JWT token). */
-  redirectUris?: string[];
-  /** Addresses responsible for executing the app's operations on behalf of Vincent App Users */
-  delegateeAddresses?: string[];
   /** Identifies if an application is in development, test, or production. */
   deploymentStatus?: 'dev' | 'test' | 'prod';
   /** App manager's wallet address. Derived from the authorization signature provided by the creator. */
@@ -816,13 +808,9 @@ export type AppCreate = {
   /** Contact email for the application manager */
   contactEmail?: string;
   /** This should be a landing page for the app. */
-  appUserUrl?: string;
+  appUrl?: string;
   /** Base64 encoded logo image */
   logo?: string;
-  /** Redirect URIs users can be sent to after signing up for your application (with their JWT token). */
-  redirectUris?: string[];
-  /** Addresses responsible for executing the app's operations on behalf of Vincent App Users */
-  delegateeAddresses?: string[];
   /** The name of the application */
   name: string;
   /** Description of the application */
@@ -836,13 +824,9 @@ export type AppEdit = {
   /** Contact email for the application manager */
   contactEmail?: string;
   /** This should be a landing page for the app. */
-  appUserUrl?: string;
+  appUrl?: string;
   /** Base64 encoded logo image */
   logo?: string;
-  /** Redirect URIs users can be sent to after signing up for your application (with their JWT token). */
-  redirectUris?: string[];
-  /** Addresses responsible for executing the app's operations on behalf of Vincent App Users */
-  delegateeAddresses?: string[];
   /** Identifies if an application is in development, test, or production. */
   deploymentStatus?: 'dev' | 'test' | 'prod';
   /** Active version of the application */
@@ -857,8 +841,6 @@ export type AppVersion = {
   updatedAt: string;
   /** Timestamp when this was created */
   createdAt: string;
-  /** Whether this version is enabled or not */
-  enabled: boolean;
   /** Describes what changed between this version and the previous version. */
   changes?: string;
   /** Whether or not this AppVersion is deleted */
@@ -875,8 +857,6 @@ export type AppVersionRead = {
   appId: number;
   /** App Version number */
   version: number;
-  /** Whether this version is enabled or not */
-  enabled: boolean;
   /** Describes what changed between this version and the previous version. */
   changes?: string;
   /** Whether or not this AppVersion is deleted */

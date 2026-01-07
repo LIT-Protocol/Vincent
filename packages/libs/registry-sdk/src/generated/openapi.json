@@ -90,7 +90,7 @@
             "description": "Contact email for the application manager",
             "example": "contact@example.com"
           },
-          "appUserUrl": {
+          "appUrl": {
             "type": "string",
             "format": "uri",
             "description": "This should be a landing page for the app.",
@@ -100,32 +100,6 @@
             "type": "string",
             "description": "Base64 encoded logo image",
             "example": "iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAIAAAACDbGyAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAOvwAADr8BOAVTJAAAAA5JREFUGFdj/M+ACAAAAAD//wE7AnsAAAAAAElFTkSuQmCC"
-          },
-          "redirectUris": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "format": "uri"
-            },
-            "description": "Redirect URIs users can be sent to after signing up for your application (with their JWT token).",
-            "uniqueItems": true,
-            "example": [
-              "https://myapp.example.com",
-              "https://myapp.example.com/subpage"
-            ]
-          },
-          "delegateeAddresses": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "pattern": "^0x[a-fA-F0-9]{40}$"
-            },
-            "description": "Addresses responsible for executing the app's operations on behalf of Vincent App Users",
-            "uniqueItems": true,
-            "example": [
-              "0x123456789012345678901234567890123456abcd",
-              "0x1234567890123456789012345678901234561234"
-            ]
           },
           "name": {
             "type": "string",
@@ -167,7 +141,7 @@
             "description": "Contact email for the application manager",
             "example": "contact@example.com"
           },
-          "appUserUrl": {
+          "appUrl": {
             "type": "string",
             "format": "uri",
             "description": "This should be a landing page for the app.",
@@ -177,32 +151,6 @@
             "type": "string",
             "description": "Base64 encoded logo image",
             "example": "iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAIAAAACDbGyAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAOvwAADr8BOAVTJAAAAA5JREFUGFdj/M+ACAAAAAD//wE7AnsAAAAAAElFTkSuQmCC"
-          },
-          "redirectUris": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "format": "uri"
-            },
-            "description": "Redirect URIs users can be sent to after signing up for your application (with their JWT token).",
-            "uniqueItems": true,
-            "example": [
-              "https://myapp.example.com",
-              "https://myapp.example.com/subpage"
-            ]
-          },
-          "delegateeAddresses": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "pattern": "^0x[a-fA-F0-9]{40}$"
-            },
-            "description": "Addresses responsible for executing the app's operations on behalf of Vincent App Users",
-            "uniqueItems": true,
-            "example": [
-              "0x123456789012345678901234567890123456abcd",
-              "0x1234567890123456789012345678901234561234"
-            ]
           },
           "deploymentStatus": {
             "type": "string",
@@ -269,7 +217,7 @@
             "description": "Contact email for the application manager",
             "example": "contact@example.com"
           },
-          "appUserUrl": {
+          "appUrl": {
             "type": "string",
             "format": "uri",
             "description": "This should be a landing page for the app.",
@@ -279,32 +227,6 @@
             "type": "string",
             "description": "Base64 encoded logo image",
             "example": "iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAIAAAACDbGyAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAOvwAADr8BOAVTJAAAAA5JREFUGFdj/M+ACAAAAAD//wE7AnsAAAAAAElFTkSuQmCC"
-          },
-          "redirectUris": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "format": "uri"
-            },
-            "description": "Redirect URIs users can be sent to after signing up for your application (with their JWT token).",
-            "uniqueItems": true,
-            "example": [
-              "https://myapp.example.com",
-              "https://myapp.example.com/subpage"
-            ]
-          },
-          "delegateeAddresses": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "pattern": "^0x[a-fA-F0-9]{40}$"
-            },
-            "description": "Addresses responsible for executing the app's operations on behalf of Vincent App Users",
-            "uniqueItems": true,
-            "example": [
-              "0x123456789012345678901234567890123456abcd",
-              "0x1234567890123456789012345678901234561234"
-            ]
           },
           "deploymentStatus": {
             "type": "string",
@@ -405,11 +327,6 @@
             "example": 1,
             "readOnly": true
           },
-          "enabled": {
-            "type": "boolean",
-            "description": "Whether this version is enabled or not",
-            "example": true
-          },
           "changes": {
             "type": "string",
             "description": "Describes what changed between this version and the previous version.",
@@ -426,8 +343,7 @@
           "updatedAt",
           "createdAt",
           "appId",
-          "version",
-          "enabled"
+          "version"
         ],
         "additionalProperties": false
       },
