@@ -28,7 +28,8 @@ module.exports = async function globalSetup() {
         LIT_FEATURE_ENV: 'STAGING', // Enable hard deletes
         LIT_TXSENDER_RPC_URL:
           process.env.LIT_TXSENDER_RPC_URL || 'https://yellowstone-rpc.litprotocol.com/',
-        LIT_TXSENDER_PRIVATE_KEY: process.env.LIT_TXSENDER_PRIVATE_KEY || '',
+        LIT_TXSENDER_PRIVATE_KEY: process.env.LIT_TXSENDER_PRIVATE_KEY,
+        GELATO_RELAY_API_KEY: process.env.GELATO_RELAY_API_KEY,
       },
     },
     waitOnScheme: {

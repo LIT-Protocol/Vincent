@@ -1319,6 +1319,40 @@
         ],
         "additionalProperties": false
       },
+      "CompleteInstallationRequest": {
+        "type": "object",
+        "properties": {
+          "typedDataSignature": {
+            "type": "string",
+            "description": "The signature of the typed data from the user wallet",
+            "example": "0x..."
+          },
+          "appInstallationDataToSign": {
+            "type": "object",
+            "properties": {},
+            "description": "The appInstallationDataToSign object returned from install-app"
+          }
+        },
+        "required": [
+          "typedDataSignature",
+          "appInstallationDataToSign"
+        ],
+        "additionalProperties": false
+      },
+      "CompleteInstallationResponse": {
+        "type": "object",
+        "properties": {
+          "transactionHash": {
+            "type": "string",
+            "description": "The transaction hash of the completed installation",
+            "example": "0x9d260d1bbe075be0cda52a3271df062748f3182ede91b3aae5cd115f7b26552b"
+          }
+        },
+        "required": [
+          "transactionHash"
+        ],
+        "additionalProperties": false
+      },
       "AppList": {
         "type": "array",
         "items": {
@@ -4221,6 +4255,79 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/InstallAppResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "App not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/user/{appId}/complete-installation": {
+      "post": {
+        "tags": [
+          "User"
+        ],
+        "summary": "Complete app installation",
+        "description": "Submits the signed EIP2771 data to Gelato relay to complete the installation",
+        "operationId": "completeInstallation",
+        "parameters": [
+          {
+            "schema": {
+              "type": "number"
+            },
+            "required": true,
+            "description": "ID of the target application",
+            "example": 132,
+            "name": "appId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompleteInstallationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Installation completed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompleteInstallationResponse"
                 }
               }
             }

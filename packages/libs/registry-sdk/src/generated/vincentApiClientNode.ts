@@ -383,6 +383,17 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['User'],
       }),
+      completeInstallation: build.mutation<
+        CompleteInstallationApiResponse,
+        CompleteInstallationApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/user/${encodeURIComponent(String(queryArg.appId))}/complete-installation`,
+          method: 'POST',
+          body: queryArg.completeInstallationRequest,
+        }),
+        invalidatesTags: ['User'],
+      }),
     }),
     overrideExisting: false,
   });
@@ -725,6 +736,13 @@ export type InstallAppApiArg = {
   /** ID of the target application */
   appId: number;
   installAppRequest: InstallAppRequest;
+};
+export type CompleteInstallationApiResponse =
+  /** status 200 Installation completed successfully */ CompleteInstallationResponse;
+export type CompleteInstallationApiArg = {
+  /** ID of the target application */
+  appId: number;
+  completeInstallationRequest: CompleteInstallationRequest;
 };
 export type App = {
   /** Timestamp when this was last modified */
@@ -1288,4 +1306,14 @@ export type InstallAppResponse = {
 export type InstallAppRequest = {
   /** EOA address that controls the user smart wallet */
   userControllerAddress: string;
+};
+export type CompleteInstallationResponse = {
+  /** The transaction hash of the completed installation */
+  transactionHash: string;
+};
+export type CompleteInstallationRequest = {
+  /** The signature of the typed data from the user wallet */
+  typedDataSignature: string;
+  /** The appInstallationDataToSign object returned from install-app */
+  appInstallationDataToSign: {};
 };

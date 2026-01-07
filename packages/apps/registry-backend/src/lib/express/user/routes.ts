@@ -1,5 +1,6 @@
 import type { Express } from 'express';
 
+import { completeInstallation } from '../../completeInstallation';
 import { installApp } from '../../installApp';
 import { requireApp, withApp } from '../app/requireApp';
 
@@ -8,11 +9,23 @@ export function registerRoutes(app: Express) {
     '/user/:appId/install-app',
     requireApp(),
     withApp(async (req, res) => {
-      const { userControllerAddress } = req.body;
-
       const result = await installApp({
         appId: req.vincentApp.appId,
-        userControllerAddress,
+        userControllerAddress: req.body.userControllerAddress,
+      });
+
+      res.json(result);
+      return;
+    }),
+  );
+
+  app.post(
+    '/user/:appId/complete-installation',
+    requireApp(),
+    withApp(async (req, res) => {
+      const result = await completeInstallation({
+        typedDataSignature: req.body.typedDataSignature,
+        appInstallationDataToSign: req.body.appInstallationDataToSign,
       });
 
       res.json(result);

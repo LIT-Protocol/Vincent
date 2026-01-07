@@ -20,6 +20,7 @@
     "pnpm": "10.7.0"
   },
   "dependencies": {
+    "@gelatonetwork/relay-sdk": "^5.6.1",
     "@lit-protocol/constants": "^9.0.0",
     "@lit-protocol/contracts": "^0.0.90",
     "@lit-protocol/flags": "^2.1.0",

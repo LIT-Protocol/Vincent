@@ -1,10 +1,12 @@
 import { datil as datilContracts } from '@lit-protocol/contracts';
 import { AUTH_METHOD_TYPE, AUTH_METHOD_SCOPE } from '@lit-protocol/constants';
+import { GelatoRelay } from '@gelatonetwork/relay-sdk';
+import { ERC2771Type } from '@gelatonetwork/relay-sdk/dist/lib/erc2771/types/index.js';
 import { getKernelAddressFromECDSA } from '@zerodev/ecdsa-validator';
 import { constants } from '@zerodev/sdk';
 import bs58 from 'bs58';
 import { ethers, providers } from 'ethers';
-import { createPublicClient, http } from 'viem';
+import { createPublicClient, encodeFunctionData, http } from 'viem';
 import { baseSepolia } from 'viem/chains';
 
 import { env } from '../env';
@@ -27,6 +29,15 @@ function base58ToHex(cid: string): string {
 
 const PKP_HELPER_V2_ADDRESS = '0x3f24953B66Ed4089c6B25Be8C7a83262d6f6255C';
 const PKP_NFT_ADDRESS = '0x487A9D096BB4B7Ac1520Cb12370e31e677B175EA';
+
+// TODO: Replace with actual Vincent contract address
+const VINCENT_CONTRACT_ADDRESS = '0x00172f67db60E5fA346e599cdE675f0ca213b47b';
+
+const relaySdk = new GelatoRelay();
+const baseSepoliaPublicClient = createPublicClient({
+  chain: baseSepolia,
+  transport: http(),
+});
 
 function getConfig() {
   return {
@@ -381,7 +392,6 @@ export async function installApp(request: { appId: number; userControllerAddress
     transport: http(),
   });
 
-   
   const agentSmartAccountAddress = await getKernelAddressFromECDSA({
     publicClient: publicClient as any,
     eoaAddress: pkp.ethAddress as `0x${string}`,
@@ -394,9 +404,37 @@ export async function installApp(request: { appId: number; userControllerAddress
     `[installApp] Complete. App ${appId} v${app.activeVersion}, PKP: ${pkp.ethAddress}, SmartAccount: ${agentSmartAccountAddress}`,
   );
 
+  // 8. Build EIP2771 data for user to sign
+  // TODO: Replace with actual Vincent contract ABI and function
+  const abiItem = {
+    inputs: [],
+    name: 'increment',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  } as const;
+
+  const txData = encodeFunctionData({
+    abi: [abiItem],
+    functionName: 'increment',
+  });
+
+  // Types don't match (SDK expects ethers, we pass viem) but works at runtime
+  const dataToSign = await relaySdk.getDataToSignERC2771(
+    {
+      chainId: baseSepolia.id as unknown as bigint,
+      target: VINCENT_CONTRACT_ADDRESS,
+      data: txData,
+      user: userControllerAddress,
+      isConcurrent: true,
+    },
+    ERC2771Type.ConcurrentSponsoredCall,
+    baseSepoliaPublicClient as unknown as Parameters<typeof relaySdk.getDataToSignERC2771>[2],
+  );
+
   return {
     agentSignerAddress: pkp.ethAddress,
     agentSmartAccountAddress,
-    appInstallationDataToSign: {}, // TODO: Build EIP2771 TypedData for Vincent contract installation
+    appInstallationDataToSign: dataToSign,
   };
 }

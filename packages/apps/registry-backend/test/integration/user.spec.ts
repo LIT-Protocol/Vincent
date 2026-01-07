@@ -1,3 +1,4 @@
+import type { ConcurrentPayloadToSign } from '@gelatonetwork/relay-sdk/dist/lib/erc2771/types';
 import { LitContracts } from '@lit-protocol/contracts-sdk';
 import { getPkpTokenId } from '@lit-protocol/vincent-contracts-sdk';
 import bs58 from 'bs58';
@@ -118,13 +119,18 @@ describe('User API Integration Tests', () => {
   }, 120000);
 
   describe('POST /user/:appId/install-app', () => {
-    it('should return agent addresses and data to sign for app installation', async () => {
-      const userControllerAddress = generateRandomEthAddresses(1)[0];
+    // Shared state for the installation flow tests
+    let installationData: {
+      agentSignerAddress: string;
+      agentSmartAccountAddress: string;
+      appInstallationDataToSign: ConcurrentPayloadToSign;
+    };
 
+    it('should return agent addresses and data to sign for app installation', async () => {
       const result = await store.dispatch(
         api.endpoints.installApp.initiate({
           appId: testAppId,
-          installAppRequest: { userControllerAddress },
+          installAppRequest: { userControllerAddress: defaultWallet.address },
         }),
       );
 
@@ -132,19 +138,24 @@ describe('User API Integration Tests', () => {
         console.error('installApp failed:', result.error);
       }
       expectAssertObject(result.data);
-      const data = result.data;
+      installationData = result.data as typeof installationData;
 
-      expect(data).toHaveProperty('agentSignerAddress');
-      expect(data).toHaveProperty('agentSmartAccountAddress');
-      expect(data).toHaveProperty('appInstallationDataToSign');
+      expect(installationData).toHaveProperty('agentSignerAddress');
+      expect(installationData).toHaveProperty('agentSmartAccountAddress');
+      expect(installationData).toHaveProperty('appInstallationDataToSign');
 
-      expect(data.agentSignerAddress).toMatch(/^0x[a-fA-F0-9]{40}$/);
-      expect(data.agentSmartAccountAddress).toMatch(/^0x[a-fA-F0-9]{40}$/);
-      expect(typeof data.appInstallationDataToSign).toBe('object');
+      expect(installationData.agentSignerAddress).toMatch(/^0x[a-fA-F0-9]{40}$/);
+      expect(installationData.agentSmartAccountAddress).toMatch(/^0x[a-fA-F0-9]{40}$/);
+      expect(typeof installationData.appInstallationDataToSign).toBe('object');
+
+      console.log(
+        'appInstallationDataToSign:',
+        JSON.stringify(installationData.appInstallationDataToSign, null, 2),
+      );
 
       // Verify the ability IPFS CID was added as a permitted action on the PKP
       const pkpTokenId = await getPkpTokenId({
-        pkpEthAddress: data.agentSignerAddress,
+        pkpEthAddress: installationData.agentSignerAddress,
         signer: defaultWallet,
       });
 
@@ -171,12 +182,55 @@ describe('User API Integration Tests', () => {
       expect(isPermitted).toBe(true);
 
       debug({
-        agentSignerAddress: data.agentSignerAddress,
-        agentSmartAccountAddress: data.agentSmartAccountAddress,
+        agentSignerAddress: installationData.agentSignerAddress,
+        agentSmartAccountAddress: installationData.agentSmartAccountAddress,
         pkpTokenId: pkpTokenId.toString(),
         abilityIpfsCidPermitted: isPermitted,
       });
     }, 60000);
+
+    it('should complete installation with signed typed data', async () => {
+      expect(installationData).toBeDefined();
+
+      const { appInstallationDataToSign } = installationData;
+      const { typedData } = appInstallationDataToSign;
+
+      // Sign the typed data with the user's wallet
+      // Remove EIP712Domain from types as ethers adds it automatically
+      const { EIP712Domain: _, ...types } = typedData.types;
+      const typedDataSignature = await defaultWallet._signTypedData(
+        typedData.domain,
+        types,
+        typedData.message,
+      );
+
+      console.log('Typed data signature:', typedDataSignature);
+
+      // Complete the installation
+      const completeResult = await store.dispatch(
+        api.endpoints.completeInstallation.initiate({
+          appId: testAppId,
+          completeInstallationRequest: {
+            typedDataSignature,
+            appInstallationDataToSign,
+          },
+        }),
+      );
+
+      if (hasError(completeResult)) {
+        console.error('completeInstallation failed:', completeResult.error);
+      }
+      expectAssertObject(completeResult.data);
+
+      expect(completeResult.data).toHaveProperty('transactionHash');
+      expect(completeResult.data.transactionHash).toMatch(/^0x[a-fA-F0-9]{64}$/);
+
+      console.log('Installation transaction hash:', completeResult.data.transactionHash);
+
+      debug({
+        transactionHash: completeResult.data.transactionHash,
+      });
+    }, 120000);
 
     it('should return 400 for missing userControllerAddress', async () => {
       const result = await store.dispatch(
@@ -222,6 +276,42 @@ describe('User API Integration Tests', () => {
       if (hasError(result)) {
         // @ts-expect-error accessing error status
         expect([404, 500]).toContain(result.error.status);
+      }
+    });
+
+    it('should return 400 for missing typedDataSignature in complete-installation', async () => {
+      const result = await store.dispatch(
+        api.endpoints.completeInstallation.initiate({
+          appId: testAppId,
+          // @ts-expect-error testing invalid input
+          completeInstallationRequest: {
+            appInstallationDataToSign: {},
+          },
+        }),
+      );
+
+      expect(hasError(result)).toBe(true);
+      if (hasError(result)) {
+        // @ts-expect-error accessing error status
+        expect(result.error.status).toBe(400);
+      }
+    });
+
+    it('should return 400 for missing appInstallationDataToSign in complete-installation', async () => {
+      const result = await store.dispatch(
+        api.endpoints.completeInstallation.initiate({
+          appId: testAppId,
+          // @ts-expect-error testing invalid input
+          completeInstallationRequest: {
+            typedDataSignature: '0x1234',
+          },
+        }),
+      );
+
+      expect(hasError(result)).toBe(true);
+      if (hasError(result)) {
+        // @ts-expect-error accessing error status
+        expect(result.error.status).toBe(400);
       }
     });
   });
