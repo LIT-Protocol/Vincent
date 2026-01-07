@@ -149,9 +149,7 @@ contract VincentUserFacet is VincentBase {
             emit LibVincentUserFacet.NewAgentRegistered(sender, agentAddress, pkpSigner, pkpSignerPubKey);
         }
 
-        emit LibVincentUserFacet.AppVersionPermitted(
-            agentAddress, appId, appVersion, pkpSigner, pkpSignerPubKey
-        );
+        emit LibVincentUserFacet.AppVersionPermitted(agentAddress, appId, appVersion, pkpSigner, pkpSignerPubKey);
 
         _setAbilityPolicyParameters(
             agentAddress, appId, appVersion, abilityIpfsCids, policyIpfsCids, policyParameterValues
@@ -282,11 +280,7 @@ contract VincentUserFacet is VincentBase {
         delete agentStorage.lastPermittedPkpSignerPubKey;
 
         emit LibVincentUserFacet.AppVersionRePermitted(
-            agentAddress,
-            appId,
-            agentStorage.permittedAppVersion,
-            agentStorage.pkpSigner,
-            agentStorage.pkpSignerPubKey
+            agentAddress, appId, agentStorage.permittedAppVersion, agentStorage.pkpSigner, agentStorage.pkpSignerPubKey
         );
     }
 
