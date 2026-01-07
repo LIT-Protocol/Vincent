@@ -28,16 +28,17 @@ contract FeeTestCommon is TestCommon {
     {
         DeployVincentDiamond vincentDeployScript = new DeployVincentDiamond();
 
-        address diamondAddress = vincentDeployScript.deployToNetwork("test");
+        address diamondAddress = vincentDeployScript.deployToNetwork("test", keccak256("VincentCreate2Salt_2"));
         VincentAppFacet vincentAppFacet = VincentAppFacet(diamondAddress);
 
         // register the app
         vm.startPrank(appManager);
         address[] memory delegatees = new address[](1);
         delegatees[0] = appDelegatee;
-        vincentAppFacet.registerApp(
-            appId, delegatees, _createBasicVersionAbilities("QmAbility1", "QmAbility2", "QmPolicy1")
+        (uint40 newAppId,,) = vincentAppFacet.registerApp(
+            delegatees, _createBasicVersionAbilities("QmAbility1", "QmAbility2", "QmPolicy1")
         );
+        appId = newAppId; // Update the appId with the auto-generated one
         vm.stopPrank();
 
         return diamondAddress;

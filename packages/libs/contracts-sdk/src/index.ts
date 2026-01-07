@@ -39,7 +39,7 @@ export type {
   PkpUnpermittedApps,
 } from './types';
 
-export { getTestClient, clientFromContract, getClient } from './contractClient';
+export { clientFromContract, getClient } from './contractClient';
 
 export { createContract } from './utils';
 

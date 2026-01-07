@@ -81,47 +81,40 @@ deploy-vincent-base-mainnet: ## Deploy the Vincent Diamond contract to Base Main
 		--private-key $(VINCENT_DEPLOYER_PRIVATE_KEY) \
 		--rpc-url $(BASE_MAINNET_RPC_URL)
 
-update-facet: ## Update a specific facet in the Vincent Diamond contract. Usage: make update-facet FACET_NAME=VincentAppViewFacet DEPLOYMENT_TYPE=dev|prod
-	@if [ -z "$(VINCENT_DEPLOYMENT_RPC_URL)" ]; then \
-		echo "Error: VINCENT_DEPLOYMENT_RPC_URL is not set in .env"; \
-		exit 1; \
-	fi
+update-facet: ## Update a specific facet in the Vincent Diamond contract. Usage: make update-facet FACET_NAME=VincentAppViewFacet NETWORK=datil|base-sepolia|base-mainnet
 	@if [ -z "$(VINCENT_DEPLOYER_PRIVATE_KEY)" ]; then \
 		echo "Error: VINCENT_DEPLOYER_PRIVATE_KEY is not set in .env"; \
 		exit 1; \
 	fi
 	@if [ -z "$(FACET_NAME)" ]; then \
-		echo "Error: FACET_NAME parameter is required. Usage: make update-facet FACET_NAME=VincentAppViewFacet DEPLOYMENT_TYPE=dev|prod"; \
+		echo "Error: FACET_NAME parameter is required."; \
+		echo "Usage: make update-facet FACET_NAME=VincentAppViewFacet NETWORK=datil|base-sepolia|base-mainnet"; \
 		echo "Available facets: VincentAppFacet, VincentAppViewFacet, VincentUserFacet, VincentUserViewFacet, VincentERC2771Facet"; \
 		exit 1; \
 	fi
-	@if [ -z "$(DEPLOYMENT_TYPE)" ]; then \
-		echo "Error: DEPLOYMENT_TYPE parameter is required. Usage: make update-facet FACET_NAME=VincentAppViewFacet DEPLOYMENT_TYPE=dev|prod"; \
+	@if [ -z "$(NETWORK)" ]; then \
+		echo "Error: NETWORK parameter is required."; \
+		echo "Usage: make update-facet FACET_NAME=VincentAppViewFacet NETWORK=datil|base-sepolia|base-mainnet"; \
 		exit 1; \
 	fi
-	@if [ "$(DEPLOYMENT_TYPE)" != "dev" ] && [ "$(DEPLOYMENT_TYPE)" != "prod" ]; then \
-		echo "Error: DEPLOYMENT_TYPE must be either 'dev' or 'prod'"; \
+	@if [ "$(NETWORK)" != "datil" ] && [ "$(NETWORK)" != "base-sepolia" ] && [ "$(NETWORK)" != "base-mainnet" ]; then \
+		echo "Error: NETWORK must be one of: datil, base-sepolia, base-mainnet"; \
 		exit 1; \
 	fi
-	@if [ "$(DEPLOYMENT_TYPE)" = "dev" ]; then \
-		if [ -z "$(VINCENT_DEV_DIAMOND_ADDRESS)" ]; then \
-			echo "Error: VINCENT_DEV_DIAMOND_ADDRESS is not set in .env for dev deployment"; \
-			exit 1; \
-		fi; \
-	else \
-		if [ -z "$(VINCENT_PROD_DIAMOND_ADDRESS)" ]; then \
-			echo "Error: VINCENT_PROD_DIAMOND_ADDRESS is not set in .env for prod deployment"; \
-			exit 1; \
-		fi; \
+	@if [ -z "$(RPC_URL)" ]; then \
+		echo "Error: RPC_URL is not set in .env"; \
+		exit 1; \
 	fi
-	@echo "Updating facet $(FACET_NAME) in the Vincent Diamond contract on Datil network..."
-	@echo "Deployment type: $(DEPLOYMENT_TYPE)"
-	@VINCENT_DIAMOND_ADDRESS=$$(if [ "$(DEPLOYMENT_TYPE)" = "dev" ]; then echo "$(VINCENT_DEV_DIAMOND_ADDRESS)"; else echo "$(VINCENT_PROD_DIAMOND_ADDRESS)"; fi); \
-		echo "Using diamond address: $$VINCENT_DIAMOND_ADDRESS"; \
-		FACET_TO_UPDATE=$(FACET_NAME) VINCENT_DIAMOND_ADDRESS=$$VINCENT_DIAMOND_ADDRESS forge script script/UpdateFacet.sol:SmartUpdateFacet -vvv \
-			--broadcast \
-			--private-key $(VINCENT_DEPLOYER_PRIVATE_KEY) \
-			--rpc-url $(VINCENT_DEPLOYMENT_RPC_URL)
+	@if [ -z "$(VINCENT_DIAMOND_ADDRESS)" ]; then \
+		echo "Error: VINCENT_DIAMOND_ADDRESS is not set in .env"; \
+		exit 1; \
+	fi
+	@echo "Updating facet $(FACET_NAME) in the Vincent Diamond contract on $(NETWORK)..."
+	@echo "Using diamond address: $(VINCENT_DIAMOND_ADDRESS)"
+	@FACET_TO_UPDATE=$(FACET_NAME) VINCENT_DIAMOND_ADDRESS=$(VINCENT_DIAMOND_ADDRESS) VINCENT_DEPLOYMENT_RPC_URL=$(RPC_URL) forge script script/UpdateFacet.sol:SmartUpdateFacet -vvv \
+		--broadcast \
+		--private-key $(VINCENT_DEPLOYER_PRIVATE_KEY) \
+		--rpc-url $(RPC_URL)
 
 get-abis: ## Get human-readable ABIs for all facets
 	@mkdir -p abis

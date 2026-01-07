@@ -39,7 +39,7 @@ contract VincentUserFacet is VincentBase {
     function permitAppVersion(
         address agentAddress,
         address pkpSigner,
-        uint256 pkpSignerPubKey,
+        bytes calldata pkpSignerPubKey,
         uint40 appId,
         uint24 appVersion,
         string[] calldata abilityIpfsCids,
@@ -56,7 +56,7 @@ contract VincentUserFacet is VincentBase {
             revert ZeroAddressNotAllowed();
         }
 
-        if (pkpSignerPubKey == 0) {
+        if (pkpSignerPubKey.length == 0) {
             revert LibVincentUserFacet.ZeroPkpSignerPubKeyNotAllowed();
         }
 

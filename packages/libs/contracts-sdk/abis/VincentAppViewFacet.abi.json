@@ -52,6 +52,11 @@
             "name": "delegatees",
             "type": "address[]",
             "internalType": "address[]"
+          },
+          {
+            "name": "accountIndexHash",
+            "type": "bytes32",
+            "internalType": "bytes32"
           }
         ]
       }
@@ -98,6 +103,11 @@
             "name": "delegatees",
             "type": "address[]",
             "internalType": "address[]"
+          },
+          {
+            "name": "accountIndexHash",
+            "type": "bytes32",
+            "internalType": "bytes32"
           }
         ]
       }
@@ -129,6 +139,11 @@
             "name": "version",
             "type": "uint24",
             "internalType": "uint24"
+          },
+          {
+            "name": "accountIndexHash",
+            "type": "bytes32",
+            "internalType": "bytes32"
           },
           {
             "name": "enabled",

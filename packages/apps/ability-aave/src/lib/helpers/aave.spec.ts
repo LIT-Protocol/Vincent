@@ -13,7 +13,7 @@ import {
   CHAIN_TO_AAVE_ADDRESS_BOOK,
 } from './aave';
 
-const CHAIN_ID = 137; // Polygon
+const CHAIN_ID = 8453; // Base
 const TEST_ACCOUNT: Address = '0x1234567890123456789012345678901234567890';
 const TEST_ASSET: Address = '0x0000000000000000000000000000000000000001';
 const feeContractAddress = getFeeContractAddress(CHAIN_ID);

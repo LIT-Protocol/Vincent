@@ -45,8 +45,8 @@ contract VincentAppFacetTest is TestCommon {
     address FRANK_PKP_SIGNER = makeAddr("FrankPkpSigner");
     address GEORGE_PKP_SIGNER = makeAddr("GeorgePkpSigner");
 
-    uint256 constant FRANK_PKP_SIGNER_PUB_KEY = 123456789;
-    uint256 constant GEORGE_PKP_SIGNER_PUB_KEY = 987654321;
+    bytes constant FRANK_PKP_SIGNER_PUB_KEY = hex"0255b1d15a6ed11596e193d74788812e751ec8fdc30e02f194d4c86bd30e0e5e7b";
+    bytes constant GEORGE_PKP_SIGNER_PUB_KEY = hex"02ee8087951fe615e7c2510c2533ab3ad013376a684150734ff4359bc22a94df0b";
 
     VincentDiamond public vincentDiamond;
     VincentAppFacet public vincentAppFacet;
@@ -60,7 +60,7 @@ contract VincentAppFacetTest is TestCommon {
 
         DeployVincentDiamond deployScript = new DeployVincentDiamond();
 
-        address diamondAddress = deployScript.deployToNetwork("test");
+        address diamondAddress = deployScript.deployToNetwork("test", keccak256("VincentCreate2Salt_2"));
         vincentDiamond = VincentDiamond(payable(diamondAddress));
 
         vincentAppFacet = VincentAppFacet(diamondAddress);
@@ -70,17 +70,23 @@ contract VincentAppFacetTest is TestCommon {
     }
 
     function testRegisterApp() public {
+        uint40 expectedAppId = 1;
+        bytes32 expectedAccountIndexHash = keccak256(abi.encodePacked("vincent_app_id_", expectedAppId));
+
         vm.expectEmit(true, true, true, true);
-        emit LibVincentAppFacet.NewAppRegistered(1, APP_MANAGER_ALICE);
+        emit LibVincentAppFacet.NewAppRegistered(expectedAppId, expectedAccountIndexHash, APP_MANAGER_ALICE);
         vm.expectEmit(true, true, true, true);
         emit LibVincentAppFacet.NewLitActionRegistered(keccak256(abi.encodePacked(ABILITY_IPFS_CID_1)));
         vm.expectEmit(true, true, true, true);
         emit LibVincentAppFacet.NewLitActionRegistered(keccak256(abi.encodePacked(ABILITY_IPFS_CID_2)));
         vm.expectEmit(true, true, true, true);
-        emit LibVincentAppFacet.NewAppVersionRegistered(1, 1, APP_MANAGER_ALICE);
+        emit LibVincentAppFacet.NewAppVersionRegistered(expectedAppId, 1, APP_MANAGER_ALICE);
 
-        uint40 newAppId = 1;
-        uint24 newAppVersion = _registerBasicApp(newAppId);
+        (uint40 newAppId, uint24 newAppVersion, bytes32 accountIndexHash) = _registerBasicApp();
+
+        assertEq(newAppId, expectedAppId);
+        assertEq(newAppVersion, 1);
+        assertEq(accountIndexHash, expectedAccountIndexHash);
 
         VincentAppViewFacet.App memory app = vincentAppViewFacet.getAppById(newAppId);
         assertEq(app.id, newAppId);
@@ -89,15 +95,10 @@ contract VincentAppFacetTest is TestCommon {
         assertEq(app.latestVersion, newAppVersion);
         assertEq(app.delegatees.length, 1);
         assertEq(app.delegatees[0], APP_DELEGATEE_CHARLIE);
+        assertEq(app.accountIndexHash, accountIndexHash);
 
         VincentAppViewFacet.AppVersion memory appVersion;
         appVersion = vincentAppViewFacet.getAppVersion(newAppId, newAppVersion);
-        assertEq(app.id, newAppId);
-        assertFalse(app.isDeleted);
-        assertEq(app.manager, APP_MANAGER_ALICE);
-        assertEq(app.latestVersion, newAppVersion);
-        assertEq(app.delegatees.length, 1);
-        assertEq(app.delegatees[0], APP_DELEGATEE_CHARLIE);
 
         assertEq(appVersion.version, newAppVersion);
         assertTrue(appVersion.enabled);
@@ -202,8 +203,7 @@ contract VincentAppFacetTest is TestCommon {
     }
 
     function testEnableAppVersion() public {
-        uint40 newAppId = 1;
-        uint24 newAppVersion = _registerBasicApp(newAppId);
+        (uint40 newAppId, uint24 newAppVersion,) = _registerBasicApp();
 
         vm.startPrank(APP_MANAGER_ALICE);
         vm.expectEmit(true, true, true, true);
@@ -258,8 +258,7 @@ contract VincentAppFacetTest is TestCommon {
     }
 
     function testAddAndRemoveDelegatee() public {
-        uint40 newAppId = 1;
-        uint24 newAppVersion = _registerBasicApp(newAppId);
+        (uint40 newAppId, uint24 newAppVersion,) = _registerBasicApp();
 
         vm.startPrank(APP_MANAGER_ALICE);
         vm.expectEmit(true, true, true, true);
@@ -316,8 +315,7 @@ contract VincentAppFacetTest is TestCommon {
     }
 
     function testSetDelegatee() public {
-        uint40 newAppId = 1;
-        _registerBasicApp(newAppId);
+        (uint40 newAppId,,) = _registerBasicApp();
 
         VincentAppViewFacet.App memory app = vincentAppViewFacet.getAppById(newAppId);
         assertEq(app.delegatees.length, 1);
@@ -342,8 +340,7 @@ contract VincentAppFacetTest is TestCommon {
     }
 
     function testSetDelegatee_RemoveAllDelegatees() public {
-        uint40 newAppId = 1;
-        _registerBasicApp(newAppId);
+        (uint40 newAppId,,) = _registerBasicApp();
 
         VincentAppViewFacet.App memory app = vincentAppViewFacet.getAppById(newAppId);
         assertEq(app.delegatees.length, 1);
@@ -364,8 +361,7 @@ contract VincentAppFacetTest is TestCommon {
     }
 
     function testDeleteApp() public {
-        uint40 newAppId = 1;
-        uint24 newAppVersion = _registerBasicApp(newAppId);
+        (uint40 newAppId, uint24 newAppVersion,) = _registerBasicApp();
 
         vm.startPrank(APP_MANAGER_ALICE);
         vm.expectEmit(true, true, true, true);
@@ -398,8 +394,7 @@ contract VincentAppFacetTest is TestCommon {
      * ######################### registerNextAppVersion ERROR CASES #########################
      */
     function testRegisterNextAppVersion_AppHasBeenDeleted() public {
-        uint40 newAppId = 1;
-        _registerBasicApp(newAppId);
+        (uint40 newAppId,,) = _registerBasicApp();
 
         vm.startPrank(APP_MANAGER_ALICE);
         vincentAppFacet.deleteApp(newAppId);
@@ -411,8 +406,7 @@ contract VincentAppFacetTest is TestCommon {
     }
 
     function testRegisterNextAppVersion_NotAppManager() public {
-        uint40 newAppId = 1;
-        _registerBasicApp(newAppId);
+        (uint40 newAppId,,) = _registerBasicApp();
 
         vm.startPrank(APP_DELEGATEE_CHARLIE);
         vm.expectRevert(
@@ -439,8 +433,7 @@ contract VincentAppFacetTest is TestCommon {
      * ######################### enableAppVersion ERROR CASES #########################
      */
     function testEnableAppVersion_AppHasBeenDeleted() public {
-        uint40 newAppId = 1;
-        _registerBasicApp(newAppId);
+        (uint40 newAppId,,) = _registerBasicApp();
 
         vm.startPrank(APP_MANAGER_ALICE);
         vincentAppFacet.deleteApp(newAppId);
@@ -451,8 +444,7 @@ contract VincentAppFacetTest is TestCommon {
     }
 
     function testEnableAppVersion_NotAppManager() public {
-        uint40 newAppId = 1;
-        _registerBasicApp(newAppId);
+        (uint40 newAppId,,) = _registerBasicApp();
 
         vm.startPrank(APP_DELEGATEE_CHARLIE);
         vm.expectRevert(
@@ -473,8 +465,7 @@ contract VincentAppFacetTest is TestCommon {
     }
 
     function testEnableAppVersion_AppVersionAlreadyInRequestedState() public {
-        uint40 newAppId = 1;
-        _registerBasicApp(newAppId);
+        (uint40 newAppId,,) = _registerBasicApp();
 
         vm.startPrank(APP_MANAGER_ALICE);
         vm.expectRevert(
@@ -488,8 +479,7 @@ contract VincentAppFacetTest is TestCommon {
      * ######################### addDelegatee ERROR CASES #########################
      */
     function testAddDelegatee_AppHasBeenDeleted() public {
-        uint40 newAppId = 1;
-        _registerBasicApp(newAppId);
+        (uint40 newAppId,,) = _registerBasicApp();
 
         vm.startPrank(APP_MANAGER_ALICE);
         vincentAppFacet.deleteApp(newAppId);
@@ -499,8 +489,7 @@ contract VincentAppFacetTest is TestCommon {
     }
 
     function testAddDelegatee_NotAppManager() public {
-        uint40 newAppId = 1;
-        _registerBasicApp(newAppId);
+        (uint40 newAppId,,) = _registerBasicApp();
 
         vm.startPrank(APP_DELEGATEE_CHARLIE);
         vm.expectRevert(
@@ -520,8 +509,7 @@ contract VincentAppFacetTest is TestCommon {
     }
 
     function testAddDelegatee_ZeroAddressDelegatee() public {
-        uint40 newAppId = 1;
-        _registerBasicApp(newAppId);
+        (uint40 newAppId,,) = _registerBasicApp();
 
         vm.startPrank(APP_MANAGER_ALICE);
         vm.expectRevert(LibVincentAppFacet.ZeroAddressDelegateeNotAllowed.selector);
@@ -529,8 +517,7 @@ contract VincentAppFacetTest is TestCommon {
     }
 
     function testAddDelegatee_DelegateeAlreadyRegistered() public {
-        uint40 newAppId = 1;
-        _registerBasicApp(newAppId);
+        (uint40 newAppId,,) = _registerBasicApp();
 
         vm.startPrank(APP_MANAGER_ALICE);
         vm.expectRevert(
@@ -543,15 +530,13 @@ contract VincentAppFacetTest is TestCommon {
 
     function testSetDelegatee_DelegateeAlreadyRegistered() public {
         // Create first app with Charlie
-        uint40 appId1 = 1;
-        _registerBasicApp(appId1);
+        (uint40 appId1,,) = _registerBasicApp();
 
         // Create second app with David
-        uint40 appId2 = 2;
         address[] memory delegatees = new address[](1);
         delegatees[0] = APP_DELEGATEE_DAVID;
-        _registerApp(
-            appId2, delegatees, _createBasicVersionAbilities(ABILITY_IPFS_CID_1, ABILITY_IPFS_CID_2, POLICY_IPFS_CID_1)
+        (uint40 appId2,,) = _registerApp(
+            delegatees, _createBasicVersionAbilities(ABILITY_IPFS_CID_1, ABILITY_IPFS_CID_2, POLICY_IPFS_CID_1)
         );
 
         vm.startPrank(APP_MANAGER_ALICE);
@@ -572,8 +557,7 @@ contract VincentAppFacetTest is TestCommon {
      * ######################### removeDelegatee ERROR CASES #########################
      */
     function testRemoveDelegatee_AppHasBeenDeleted() public {
-        uint40 newAppId = 1;
-        _registerBasicApp(newAppId);
+        (uint40 newAppId,,) = _registerBasicApp();
 
         vm.startPrank(APP_MANAGER_ALICE);
         vincentAppFacet.deleteApp(newAppId);
@@ -583,8 +567,7 @@ contract VincentAppFacetTest is TestCommon {
     }
 
     function testRemoveDelegatee_NotAppManager() public {
-        uint40 newAppId = 1;
-        _registerBasicApp(newAppId);
+        (uint40 newAppId,,) = _registerBasicApp();
 
         vm.startPrank(APP_DELEGATEE_CHARLIE);
         vm.expectRevert(
@@ -604,8 +587,7 @@ contract VincentAppFacetTest is TestCommon {
     }
 
     function testRemoveDelegatee_DelegateeNotRegistered() public {
-        uint40 newAppId = 1;
-        _registerBasicApp(newAppId);
+        (uint40 newAppId,,) = _registerBasicApp();
 
         vm.startPrank(APP_MANAGER_ALICE);
         vm.expectRevert(
@@ -620,8 +602,7 @@ contract VincentAppFacetTest is TestCommon {
      * ######################### deleteApp ERROR CASES #########################
      */
     function testDeleteApp_AppHasBeenDeleted() public {
-        uint40 newAppId = 1;
-        _registerBasicApp(newAppId);
+        (uint40 newAppId,,) = _registerBasicApp();
 
         vm.startPrank(APP_MANAGER_ALICE);
         vincentAppFacet.deleteApp(newAppId);
@@ -631,8 +612,7 @@ contract VincentAppFacetTest is TestCommon {
     }
 
     function testDeleteApp_NotAppManager() public {
-        uint40 newAppId = 1;
-        _registerBasicApp(newAppId);
+        (uint40 newAppId,,) = _registerBasicApp();
 
         vm.startPrank(APP_DELEGATEE_CHARLIE);
         vm.expectRevert(
@@ -652,8 +632,7 @@ contract VincentAppFacetTest is TestCommon {
     }
 
     function testDeleteApp_AppVersionHasDelegatedAgents() public {
-        uint40 newAppId = 1;
-        uint24 newAppVersion = _registerBasicApp(newAppId);
+        (uint40 newAppId, uint24 newAppVersion,) = _registerBasicApp();
 
         // Create arrays for all registered abilities
         string[] memory abilityIpfsCids = new string[](2);
@@ -711,8 +690,7 @@ contract VincentAppFacetTest is TestCommon {
     }
 
     function test_fetchDelegatedAgentAddresses() public {
-        uint40 newAppId = 1;
-        uint24 newAppVersion = _registerBasicApp(newAppId);
+        (uint40 newAppId, uint24 newAppVersion,) = _registerBasicApp();
 
         // Create arrays for all registered abilities
         string[] memory abilityIpfsCids = new string[](2);
@@ -781,25 +759,21 @@ contract VincentAppFacetTest is TestCommon {
         vincentAppViewFacet.getDelegatedAgentAddresses(newAppId, newAppVersion, 2);
     }
 
-    function _registerApp(
-        uint40 appId,
-        address[] memory delegatees,
-        VincentAppFacet.AppVersionAbilities memory versionAbilities
-    ) private returns (uint24) {
+    function _registerApp(address[] memory delegatees, VincentAppFacet.AppVersionAbilities memory versionAbilities)
+        private
+        returns (uint40 newAppId, uint24 newAppVersion, bytes32 accountIndexHash)
+    {
         vm.startPrank(APP_MANAGER_ALICE);
-        uint24 newAppVersion = vincentAppFacet.registerApp(appId, delegatees, versionAbilities);
+        (newAppId, newAppVersion, accountIndexHash) = vincentAppFacet.registerApp(delegatees, versionAbilities);
         vm.stopPrank();
-
-        return newAppVersion;
     }
 
-    function _registerBasicApp(uint40 appId) private returns (uint24 newAppVersion) {
+    function _registerBasicApp() private returns (uint40 newAppId, uint24 newAppVersion, bytes32 accountIndexHash) {
         address[] memory delegatees = new address[](1);
         delegatees[0] = APP_DELEGATEE_CHARLIE;
 
-        newAppVersion = _registerApp(
-            appId, delegatees, _createBasicVersionAbilities(ABILITY_IPFS_CID_1, ABILITY_IPFS_CID_2, POLICY_IPFS_CID_1)
+        (newAppId, newAppVersion, accountIndexHash) = _registerApp(
+            delegatees, _createBasicVersionAbilities(ABILITY_IPFS_CID_1, ABILITY_IPFS_CID_2, POLICY_IPFS_CID_1)
         );
-        assertEq(newAppVersion, 1);
     }
 }

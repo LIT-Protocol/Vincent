@@ -2,10 +2,7 @@ import type { Contract, Signer } from 'ethers';
 
 import type { ContractClient } from './types';
 
-import {
-  VINCENT_DIAMOND_CONTRACT_ADDRESS_DEV,
-  VINCENT_DIAMOND_CONTRACT_ADDRESS_PROD,
-} from './constants';
+import { VINCENT_DIAMOND_CONTRACT_ADDRESS_PROD } from './constants';
 import {
   registerApp as _registerApp,
   registerNextVersion as _registerNextVersion,
@@ -97,20 +94,6 @@ export function clientFromContract({ contract }: { contract: Contract }): Contra
       _getLastPermittedAppVersionForPkp({ contract, args: params }),
     getUnpermittedAppsForPkps: (params) => _getUnpermittedAppsForPkps({ contract, args: params }),
   };
-}
-
-/** Get an instance of the contract client that is configured to use a 'development' instance of the contract just for testing purposes
- *
- * State in the development contract should not be considered permanent.  Use {@link getClient} for usage outside of
- * development or CI flows
- *
- * @category API */
-export function getTestClient({ signer }: { signer: Signer }): ContractClient {
-  const contract = createContract({
-    signer,
-    contractAddress: VINCENT_DIAMOND_CONTRACT_ADDRESS_DEV,
-  });
-  return clientFromContract({ contract });
 }
 
 /** Get an instance of the contract client that is configured to use a 'production' instance of the contract
