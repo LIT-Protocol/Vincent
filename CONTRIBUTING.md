@@ -208,7 +208,6 @@ policy-contract-whitelist \
 policy-send-counter \
 policy-spending-limit \
 registry-backend \
-
 ability-sdk \
 app-sdk \
 contracts-sdk \
