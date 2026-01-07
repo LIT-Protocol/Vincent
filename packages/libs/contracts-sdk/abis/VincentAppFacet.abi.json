@@ -58,11 +58,6 @@
     "name": "registerApp",
     "inputs": [
       {
-        "name": "appId",
-        "type": "uint40",
-        "internalType": "uint40"
-      },
-      {
         "name": "delegatees",
         "type": "address[]",
         "internalType": "address[]"
@@ -87,9 +82,19 @@
     ],
     "outputs": [
       {
+        "name": "newAppId",
+        "type": "uint40",
+        "internalType": "uint40"
+      },
+      {
         "name": "newAppVersion",
         "type": "uint24",
         "internalType": "uint24"
+      },
+      {
+        "name": "accountIndexHash",
+        "type": "bytes32",
+        "internalType": "bytes32"
       }
     ],
     "stateMutability": "nonpayable"
@@ -277,6 +282,12 @@
         "type": "uint40",
         "indexed": true,
         "internalType": "uint40"
+      },
+      {
+        "name": "accountIndexHash",
+        "type": "bytes32",
+        "indexed": true,
+        "internalType": "bytes32"
       },
       {
         "name": "manager",
@@ -601,11 +612,6 @@
   {
     "type": "error",
     "name": "ZeroAddressNotAllowed",
-    "inputs": []
-  },
-  {
-    "type": "error",
-    "name": "ZeroAppIdNotAllowed",
     "inputs": []
   }
 ]

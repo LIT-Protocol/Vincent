@@ -98,7 +98,7 @@ contract VincentUserViewFacet is VincentBase {
         uint40 appId;
         uint24 version;
         address pkpSigner;
-        uint256 pkpSignerPubKey;
+        string pkpSignerPubKey;
         bool versionEnabled;
         bool isDeleted;
     }
@@ -115,7 +115,7 @@ contract VincentUserViewFacet is VincentBase {
         uint40 appId;
         uint24 previousPermittedVersion;
         address pkpSigner;
-        uint256 pkpSignerPubKey;
+        string pkpSignerPubKey;
         bool versionEnabled;
         bool isDeleted;
     }
@@ -239,7 +239,7 @@ contract VincentUserViewFacet is VincentBase {
                     appId: appId,
                     version: agentStorage.permittedAppVersion,
                     pkpSigner: agentStorage.pkpSigner,
-                    pkpSignerPubKey: agentStorage.pkpSignerPubKey,
+                    pkpSignerPubKey: string(agentStorage.pkpSignerPubKey),
                     versionEnabled: as_.appIdToApp[appId].appVersions[getAppVersionIndex(
                             agentStorage.permittedAppVersion
                         )].enabled,
@@ -435,7 +435,7 @@ contract VincentUserViewFacet is VincentBase {
                     appId: agentStorage.lastPermittedAppId,
                     previousPermittedVersion: agentStorage.lastPermittedAppVersion,
                     pkpSigner: agentStorage.lastPermittedPkpSigner,
-                    pkpSignerPubKey: agentStorage.lastPermittedPkpSignerPubKey,
+                    pkpSignerPubKey: string(agentStorage.lastPermittedPkpSignerPubKey),
                     versionEnabled: as_.appIdToApp[agentStorage.lastPermittedAppId].appVersions[getAppVersionIndex(
                             agentStorage.lastPermittedAppVersion
                         )].enabled,

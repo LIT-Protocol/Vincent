@@ -12,7 +12,7 @@ library LibVincentUserFacet {
      * @param agentAddress The address of the agent that was registered
      */
     event NewAgentRegistered(
-        address indexed userAddress, address indexed agentAddress, address indexed pkpSigner, uint256 pkpSignerPubKey
+        address indexed userAddress, address indexed agentAddress, address indexed pkpSigner, string pkpSignerPubKey
     );
 
     /**
@@ -26,7 +26,7 @@ library LibVincentUserFacet {
         uint40 indexed appId,
         uint24 indexed appVersion,
         address pkpSigner,
-        uint256 pkpSignerPubKey
+        string pkpSignerPubKey
     );
 
     /**
@@ -40,7 +40,7 @@ library LibVincentUserFacet {
         uint40 indexed appId,
         uint24 indexed appVersion,
         address pkpSigner,
-        uint256 pkpSignerPubKey
+        string pkpSignerPubKey
     );
 
     /**
@@ -54,7 +54,7 @@ library LibVincentUserFacet {
         uint40 indexed appId,
         uint24 indexed appVersion,
         address pkpSigner,
-        uint256 pkpSignerPubKey
+        string pkpSignerPubKey
     );
 
     /**

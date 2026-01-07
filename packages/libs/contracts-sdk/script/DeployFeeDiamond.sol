@@ -140,6 +140,6 @@ contract DeployFeeDiamond is Script {
      * @notice Deploy and set defaults
      */
     function deployAndSetDefaults(address vincentAppDiamondOnYellowstone) public returns (address) {
-        return deployToNetwork("Datil", keccak256("VincentCreate2Salt"), vincentAppDiamondOnYellowstone);
+        return deployToNetwork("Datil", keccak256("VincentCreate2Salt_2"), vincentAppDiamondOnYellowstone);
     }
 }

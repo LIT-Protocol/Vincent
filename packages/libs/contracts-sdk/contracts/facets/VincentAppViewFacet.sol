@@ -51,6 +51,7 @@ contract VincentAppViewFacet is VincentBase {
      * @param manager Address of the account that manages this app
      * @param latestVersion The most recent version number of this app
      * @param delegatees Array of addresses that are delegated to act on behalf of this app
+     * @param accountIndexHash The keccak256 hash intended to be used as the account index for smart account creation
      */
     struct App {
         uint40 id;
@@ -58,18 +59,21 @@ contract VincentAppViewFacet is VincentBase {
         address manager;
         uint24 latestVersion;
         address[] delegatees;
+        bytes32 accountIndexHash;
     }
 
     /**
      * @notice Represents a specific version of an app with all associated data
      * @dev Extends AppView with version-specific information
      * @param version Version number (1-indexed)
+     * @param accountIndexHash The keccak256 hash intended to be used as the account index for smart account creation
      * @param enabled Flag indicating if this version is currently enabled
      * @param delegatedAgents Array of addresses that have permitted this app version to act on their behalf
      * @param abilities Array of abilities with their associated policies for this version
      */
     struct AppVersion {
         uint24 version;
+        bytes32 accountIndexHash;
         bool enabled;
         address[] delegatedAgents;
         Ability[] abilities;
@@ -107,6 +111,7 @@ contract VincentAppViewFacet is VincentBase {
         // App versions are 1-indexed, so the array length corresponds directly to the latest version number
         app.latestVersion = uint24(storedApp.appVersions.length);
         app.delegatees = storedApp.delegatees.values();
+        app.accountIndexHash = storedApp.accountIndexHash;
     }
 
     /**
@@ -168,6 +173,7 @@ contract VincentAppViewFacet is VincentBase {
 
         // Step 3: Set basic version information (excluding delegatedAgentAddresses)
         appVersion.version = version;
+        appVersion.accountIndexHash = storedApp.accountIndexHash;
         appVersion.enabled = storedVersionedApp.enabled;
 
         // Step 4: Prepare to access ability data

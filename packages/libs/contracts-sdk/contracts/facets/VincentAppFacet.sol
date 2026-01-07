@@ -43,23 +43,21 @@ contract VincentAppFacet is VincentBase {
     /**
      * @notice Register a new application with initial version, abilities, and policies
      * @dev This function combines app registration and first version registration in one call
-     * @param appId The ID of the app to register
      * @param delegatees List of addresses authorized to act on behalf of the app
      * @param versionAbilities Abilities and policies for the app version
+     * @return newAppId The ID of the newly registered app
+     * @return newAppVersion The version number of the newly registered app version
+     * @return accountIndexHash The keccak256 hash intended to be used as the account index for smart account creation
      */
-    function registerApp(uint40 appId, address[] calldata delegatees, AppVersionAbilities calldata versionAbilities)
+    function registerApp(address[] calldata delegatees, AppVersionAbilities calldata versionAbilities)
         external
-        returns (uint24 newAppVersion)
+        returns (uint40 newAppId, uint24 newAppVersion, bytes32 accountIndexHash)
     {
-        if (appId == 0) {
-            revert LibVincentAppFacet.ZeroAppIdNotAllowed();
-        }
+        (newAppId, accountIndexHash) = _registerApp(delegatees);
+        emit LibVincentAppFacet.NewAppRegistered(newAppId, accountIndexHash, msg.sender);
 
-        _registerApp(appId, delegatees);
-        emit LibVincentAppFacet.NewAppRegistered(appId, msg.sender);
-
-        newAppVersion = _registerNextAppVersion(appId, versionAbilities);
-        emit LibVincentAppFacet.NewAppVersionRegistered(appId, newAppVersion, msg.sender);
+        newAppVersion = _registerNextAppVersion(newAppId, versionAbilities);
+        emit LibVincentAppFacet.NewAppVersionRegistered(newAppId, newAppVersion, msg.sender);
     }
 
     /**
@@ -248,13 +246,16 @@ contract VincentAppFacet is VincentBase {
     /**
      * @notice Internal function to register a new app
      * @dev Sets up the basic app structure and associates delegatees
-     * @param appId The ID of the app to register
      * @param delegatees List of addresses authorized to act on behalf of the app
      */
-    function _registerApp(uint40 appId, address[] calldata delegatees) internal {
+    function _registerApp(address[] calldata delegatees) internal returns (uint40 appId, bytes32 accountIndexHash) {
         VincentAppStorage.AppStorage storage as_ = VincentAppStorage.appStorage();
 
-        if (as_.appIdToApp[appId].manager != address(0)) {
+        appId = ++as_.lastAppId;
+
+        VincentAppStorage.App storage app = as_.appIdToApp[appId];
+
+        if (app.manager != address(0)) {
             revert LibVincentAppFacet.AppAlreadyRegistered(appId);
         }
 
@@ -262,8 +263,8 @@ contract VincentAppFacet is VincentBase {
         as_.managerAddressToAppIds[msg.sender].add(appId);
 
         // Register the app
-        VincentAppStorage.App storage app = as_.appIdToApp[appId];
         app.manager = msg.sender;
+        app.accountIndexHash = keccak256(abi.encodePacked("vincent_app_id_", appId));
 
         // Add the delegatees to the app
         for (uint256 i = 0; i < delegatees.length; i++) {
@@ -281,6 +282,8 @@ contract VincentAppFacet is VincentBase {
 
             as_.delegateeAddressToAppId[delegatees[i]] = appId;
         }
+
+        return (appId, app.accountIndexHash);
     }
 
     /**

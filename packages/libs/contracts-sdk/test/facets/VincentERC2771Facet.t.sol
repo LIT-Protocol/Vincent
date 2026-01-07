@@ -35,7 +35,7 @@ contract VincentERC2771FacetTest is Test {
 
         DeployVincentDiamond deployScript = new DeployVincentDiamond();
 
-        address diamondAddress = deployScript.deployToNetwork("test");
+        address diamondAddress = deployScript.deployToNetwork("test", keccak256("VincentCreate2Salt_2"));
         vincentDiamond = VincentDiamond(payable(diamondAddress));
 
         vincentERC2771Facet = VincentERC2771Facet(diamondAddress);
@@ -46,7 +46,7 @@ contract VincentERC2771FacetTest is Test {
         owner = vm.addr(deployerPrivateKey);
     }
 
-    function _registerBasicApp(uint40 appId, address[] memory delegatees) private returns (uint24 newAppVersion) {
+    function _registerBasicApp(address[] memory delegatees) private returns (uint24 newAppVersion) {
         VincentAppFacet.AppVersionAbilities memory versionAbilities;
         versionAbilities.abilityIpfsCids = new string[](1);
         versionAbilities.abilityIpfsCids[0] = "QmAbility1";
@@ -55,7 +55,7 @@ contract VincentERC2771FacetTest is Test {
         versionAbilities.abilityPolicies[0] = new string[](0);
 
         vm.prank(user);
-        return vincentAppFacet.registerApp(appId, delegatees, versionAbilities);
+        (,newAppVersion,) = vincentAppFacet.registerApp(delegatees, versionAbilities);
     }
 
     // ============ setTrustedForwarder Tests ============
@@ -106,14 +106,14 @@ contract VincentERC2771FacetTest is Test {
         address delegatee = makeAddr("Delegatee");
         address[] memory delegatees = new address[](1);
         delegatees[0] = delegatee;
-        _registerBasicApp(1, delegatees);
+        _registerBasicApp(delegatees);
 
         // Prepare meta-transaction data
         // In EIP-2771, the real sender is appended to the end of calldata (last 20 bytes)
         address realSender = makeAddr("RealSender");
         address agentAddress = makeAddr("AgentAddress");
         address pkpSigner = makeAddr("PkpSigner");
-        uint256 pkpSignerPubKey = 123456789;
+        bytes memory pkpSignerPubKey = hex"0255b1d15a6ed11596e193d74788812e751ec8fdc30e02f194d4c86bd30e0e5e7b";
 
         string[] memory abilityIpfsCids = new string[](1);
         abilityIpfsCids[0] = "QmAbility1";
@@ -154,12 +154,12 @@ contract VincentERC2771FacetTest is Test {
         address delegatee = makeAddr("Delegatee");
         address[] memory delegatees = new address[](1);
         delegatees[0] = delegatee;
-        _registerBasicApp(1, delegatees);
+        _registerBasicApp(delegatees);
 
         address directUser = makeAddr("DirectUser");
         address agentAddress = makeAddr("AgentAddress");
         address pkpSigner = makeAddr("PkpSigner");
-        uint256 pkpSignerPubKey = 123456789;
+        bytes memory pkpSignerPubKey = hex"0255b1d15a6ed11596e193d74788812e751ec8fdc30e02f194d4c86bd30e0e5e7b";
 
         string[] memory abilityIpfsCids = new string[](1);
         abilityIpfsCids[0] = "QmAbility1";
@@ -196,14 +196,14 @@ contract VincentERC2771FacetTest is Test {
         address delegatee = makeAddr("Delegatee");
         address[] memory delegatees = new address[](1);
         delegatees[0] = delegatee;
-        _registerBasicApp(1, delegatees);
+        _registerBasicApp(delegatees);
 
         // Try to call from a non-trusted forwarder with appended data
         address maliciousForwarder = makeAddr("MaliciousForwarder");
         address fakeSender = makeAddr("FakeSender");
         address agentAddress = makeAddr("AgentAddress");
         address pkpSigner = makeAddr("PkpSigner");
-        uint256 pkpSignerPubKey = 123456789;
+        bytes memory pkpSignerPubKey = hex"0255b1d15a6ed11596e193d74788812e751ec8fdc30e02f194d4c86bd30e0e5e7b";
 
         string[] memory abilityIpfsCids = new string[](1);
         abilityIpfsCids[0] = "QmAbility1";

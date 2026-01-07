@@ -39,7 +39,7 @@ contract VincentUserFacet is VincentBase {
     function permitAppVersion(
         address agentAddress,
         address pkpSigner,
-        uint256 pkpSignerPubKey,
+        bytes calldata pkpSignerPubKey,
         uint40 appId,
         uint24 appVersion,
         string[] calldata abilityIpfsCids,
@@ -56,7 +56,7 @@ contract VincentUserFacet is VincentBase {
             revert ZeroAddressNotAllowed();
         }
 
-        if (pkpSignerPubKey == 0) {
+        if (pkpSignerPubKey.length == 0) {
             revert LibVincentUserFacet.ZeroPkpSignerPubKeyNotAllowed();
         }
 
@@ -126,7 +126,7 @@ contract VincentUserFacet is VincentBase {
                 agentStorage.permittedAppId,
                 agentStorage.permittedAppVersion,
                 agentStorage.pkpSigner,
-                agentStorage.pkpSignerPubKey
+                string(agentStorage.pkpSignerPubKey)
             );
         }
 
@@ -146,10 +146,10 @@ contract VincentUserFacet is VincentBase {
         if (us_.userAddressToRegisteredAgentAddresses[sender].add(agentAddress)) {
             // Set the reverse mapping from agent address to user address
             us_.registeredAgentAddressToUserAddress[agentAddress] = sender;
-            emit LibVincentUserFacet.NewAgentRegistered(sender, agentAddress, pkpSigner, pkpSignerPubKey);
+            emit LibVincentUserFacet.NewAgentRegistered(sender, agentAddress, pkpSigner, string(pkpSignerPubKey));
         }
 
-        emit LibVincentUserFacet.AppVersionPermitted(agentAddress, appId, appVersion, pkpSigner, pkpSignerPubKey);
+        emit LibVincentUserFacet.AppVersionPermitted(agentAddress, appId, appVersion, pkpSigner, string(pkpSignerPubKey));
 
         _setAbilityPolicyParameters(
             agentAddress, appId, appVersion, abilityIpfsCids, policyIpfsCids, policyParameterValues
@@ -209,7 +209,7 @@ contract VincentUserFacet is VincentBase {
             appId,
             appVersion,
             agentStorage.lastPermittedPkpSigner,
-            agentStorage.lastPermittedPkpSignerPubKey
+            string(agentStorage.lastPermittedPkpSignerPubKey)
         );
     }
 
@@ -280,7 +280,7 @@ contract VincentUserFacet is VincentBase {
         delete agentStorage.lastPermittedPkpSignerPubKey;
 
         emit LibVincentUserFacet.AppVersionRePermitted(
-            agentAddress, appId, agentStorage.permittedAppVersion, agentStorage.pkpSigner, agentStorage.pkpSignerPubKey
+            agentAddress, appId, agentStorage.permittedAppVersion, agentStorage.pkpSigner, string(agentStorage.pkpSignerPubKey)
         );
     }
 

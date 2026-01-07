@@ -25,9 +25,11 @@ library VincentAppStorage {
         AppVersion[] appVersions;
         address manager;
         bool isDeleted;
+        bytes32 accountIndexHash;
     }
 
     struct AppStorage {
+        uint40 lastAppId;
         mapping(uint40 => App) appIdToApp; // Since we're using numbers upto 10B on the Registry to create appId without requiring BitInt in JS
         mapping(address => EnumerableSet.UintSet) managerAddressToAppIds;
         mapping(address => uint40) delegateeAddressToAppId;
@@ -81,13 +83,13 @@ library VincentUserStorage {
 
     struct AgentStorage {
         address pkpSigner;
-        uint256 pkpSignerPubKey;
+        bytes pkpSignerPubKey;
         uint40 permittedAppId;
         uint24 permittedAppVersion;
         uint40 lastPermittedAppId;
         uint24 lastPermittedAppVersion;
         address lastPermittedPkpSigner;
-        uint256 lastPermittedPkpSignerPubKey;
+        bytes lastPermittedPkpSignerPubKey;
         // App version -> Ability IPFS CID hash -> Ability Policy IPFS CID hash -> User's CBOR2 encoded Policy parameter values
         mapping(uint24 => mapping(bytes32 => mapping(bytes32 => bytes))) abilityPolicyParameterValues;
     }
