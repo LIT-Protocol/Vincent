@@ -407,8 +407,9 @@ export async function installApp(request: { appId: number; userControllerAddress
   );
 
   // 8. Build EIP2771 data for user to sign (permitAppVersion on Vincent contract)
-  // Convert PKP public key from hex string to BigInt for the contract call
-  const pkpSignerPubKey = BigInt(pkp.publicKey);
+  // TODO: this will be pubkey in bytes
+  // Use tokenId (keccak256 of pubkey) as it fits in uint256; full pubkey is 65 bytes
+  const pkpSignerPubKey = BigInt(pkp.tokenId);
 
   // For installation, users don't set policies - create empty arrays matching ability count
   const policyIpfsCids: string[][] = abilityIpfsCids.map(() => []);

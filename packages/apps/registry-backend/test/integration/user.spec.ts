@@ -1,8 +1,13 @@
 import type { ConcurrentPayloadToSign } from '@gelatonetwork/relay-sdk/dist/lib/erc2771/types';
 import bs58 from 'bs58';
+import { Contract } from 'ethers';
 
 import { LitContracts } from '@lit-protocol/contracts-sdk';
-import { getPkpTokenId } from '@lit-protocol/vincent-contracts-sdk';
+import {
+  getPkpTokenId,
+  COMBINED_ABI,
+  VINCENT_DIAMOND_CONTRACT_ADDRESS_PROD,
+} from '@lit-protocol/vincent-contracts-sdk';
 
 import { expectAssertObject, hasError } from '../assertions';
 import { createTestDebugger } from '../debug';
@@ -230,6 +235,49 @@ describe('User API Integration Tests', () => {
         transactionHash: completeResult.data.transactionHash,
       });
     }, 120000);
+
+    it('should have the app permitted on the Vincent contract after installation', async () => {
+      expect(installationData).toBeDefined();
+
+      // Query the Vincent contract to verify the app was permitted
+      const vincentContract = new Contract(
+        VINCENT_DIAMOND_CONTRACT_ADDRESS_PROD,
+        COMBINED_ABI,
+        defaultWallet.provider,
+      );
+
+      const results = await vincentContract.getPermittedAppForAgents([
+        installationData.agentSmartAccountAddress,
+      ]);
+
+      console.log('getPermittedAppForAgents results:', JSON.stringify(results, null, 2));
+
+      expect(results).toHaveLength(1);
+      const [agentResult] = results;
+
+      // Verify the agent address matches
+      expect(agentResult.agentAddress.toLowerCase()).toBe(
+        installationData.agentSmartAccountAddress.toLowerCase(),
+      );
+
+      // Verify the permitted app details
+      const { permittedApp } = agentResult;
+      expect(Number(permittedApp.appId)).toBe(testAppId);
+      expect(Number(permittedApp.version)).toBe(1);
+      expect(permittedApp.pkpSigner.toLowerCase()).toBe(
+        installationData.agentSignerAddress.toLowerCase(),
+      );
+      expect(permittedApp.versionEnabled).toBe(true);
+      expect(permittedApp.isDeleted).toBe(false);
+
+      debug({
+        agentAddress: agentResult.agentAddress,
+        appId: Number(permittedApp.appId),
+        version: Number(permittedApp.version),
+        pkpSigner: permittedApp.pkpSigner,
+        versionEnabled: permittedApp.versionEnabled,
+      });
+    }, 30000);
 
     it('should return 400 for missing userControllerAddress', async () => {
       const result = await store.dispatch(

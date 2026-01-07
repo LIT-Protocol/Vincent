@@ -6,8 +6,8 @@ import { env } from '../env';
 
 const relaySdk = new GelatoRelay();
 
-const POLL_INTERVAL_MS = 1000;
-const MAX_POLL_ATTEMPTS = 60;
+const POLL_INTERVAL_MS = 3000;
+const MAX_POLL_ATTEMPTS = 20;
 
 export async function completeInstallation(request: {
   typedDataSignature: string;
