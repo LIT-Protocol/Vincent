@@ -759,10 +759,10 @@ contract VincentAppFacetTest is TestCommon {
         vincentAppViewFacet.getDelegatedAgentAddresses(newAppId, newAppVersion, 2);
     }
 
-    function _registerApp(
-        address[] memory delegatees,
-        VincentAppFacet.AppVersionAbilities memory versionAbilities
-    ) private returns (uint40 newAppId, uint24 newAppVersion, bytes32 accountIndexHash) {
+    function _registerApp(address[] memory delegatees, VincentAppFacet.AppVersionAbilities memory versionAbilities)
+        private
+        returns (uint40 newAppId, uint24 newAppVersion, bytes32 accountIndexHash)
+    {
         vm.startPrank(APP_MANAGER_ALICE);
         (newAppId, newAppVersion, accountIndexHash) = vincentAppFacet.registerApp(delegatees, versionAbilities);
         vm.stopPrank();

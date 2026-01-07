@@ -55,7 +55,7 @@ contract VincentERC2771FacetTest is Test {
         versionAbilities.abilityPolicies[0] = new string[](0);
 
         vm.prank(user);
-        (,newAppVersion,) = vincentAppFacet.registerApp(delegatees, versionAbilities);
+        (, newAppVersion,) = vincentAppFacet.registerApp(delegatees, versionAbilities);
     }
 
     // ============ setTrustedForwarder Tests ============

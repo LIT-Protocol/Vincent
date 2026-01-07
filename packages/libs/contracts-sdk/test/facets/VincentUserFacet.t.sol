@@ -1378,12 +1378,12 @@ contract VincentUserFacetTest is Test {
         vm.stopPrank();
     }
 
-    function _registerApp(
-        address[] memory delegatees,
-        VincentAppFacet.AppVersionAbilities memory versionAbilities
-    ) private returns (uint24) {
+    function _registerApp(address[] memory delegatees, VincentAppFacet.AppVersionAbilities memory versionAbilities)
+        private
+        returns (uint24)
+    {
         vm.startPrank(APP_MANAGER_ALICE);
-        (,uint24 newAppVersion,) = vincentAppFacet.registerApp(delegatees, versionAbilities);
+        (, uint24 newAppVersion,) = vincentAppFacet.registerApp(delegatees, versionAbilities);
         vm.stopPrank();
 
         return newAppVersion;

@@ -38,7 +38,7 @@ contract FeeTestCommon is TestCommon {
         (uint40 newAppId,,) = vincentAppFacet.registerApp(
             delegatees, _createBasicVersionAbilities("QmAbility1", "QmAbility2", "QmPolicy1")
         );
-        appId = newAppId;  // Update the appId with the auto-generated one
+        appId = newAppId; // Update the appId with the auto-generated one
         vm.stopPrank();
 
         return diamondAddress;
