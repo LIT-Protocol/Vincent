@@ -27,8 +27,6 @@ export const env = createEnv({
     MONGO_DB_NAME: z.string().optional(),
     PORT: z.coerce.number().default(3000),
     EXPECTED_AUDIENCE: z.string(),
-    LIT_RELAYER_API_KEY: z.string(),
-    LIT_PAYER_SECRET_KEY: z.string(),
     LIT_TXSENDER_RPC_URL: z.string().url(),
     LIT_TXSENDER_PRIVATE_KEY: z.string(),
     GAS_LIMIT_INCREASE_PERCENTAGE: z.coerce.number().default(110),
