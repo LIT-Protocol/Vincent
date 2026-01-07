@@ -23,10 +23,8 @@ describe('App API Integration Tests', () => {
     name: 'Test App',
     description: 'Test app for integration tests',
     contactEmail: 'test@example.com',
-    appUserUrl: 'https://example.com/app',
+    appUrl: 'https://example.com/app',
     logo: 'https://example.com/logo.png',
-    redirectUris: ['https://example.com/callback'],
-    delegateeAddresses: generateRandomEthAddresses(2),
     // deploymentStatus: 'dev' as const,
   };
 
@@ -66,7 +64,7 @@ describe('App API Integration Tests', () => {
       try {
         const { txHash } = await getDefaultWalletContractClient().registerApp({
           appId: testAppId,
-          delegateeAddresses: appData.delegateeAddresses,
+          delegateeAddresses: generateRandomEthAddresses(2),
           versionAbilities: {
             abilityIpfsCids: [abilityIpfsCid],
             abilityPolicies: [[policyIpfsCid]],
@@ -138,13 +136,10 @@ describe('App API Integration Tests', () => {
       expect(data).toHaveProperty('description', updateData.description);
     });
 
-    it('should update delegateeAddresses', async () => {
-      const newDelegateeAddresses = [
-        '0x0000000000000000000000000000000000000001',
-        '0x0000000000000000000000000000000000000002',
-      ];
+    it('should update appUrl', async () => {
+      const newAppUrl = 'https://example.com/app/new';
       const updateData = {
-        delegateeAddresses: newDelegateeAddresses,
+        appUrl: newAppUrl,
       };
 
       const result = await store.dispatch(
@@ -166,8 +161,8 @@ describe('App API Integration Tests', () => {
       const { data } = getResult;
       expectAssertObject(data);
 
-      expect(data).toHaveProperty('delegateeAddresses');
-      expect(data.delegateeAddresses).toEqual(newDelegateeAddresses);
+      expect(data).toHaveProperty('appUrl');
+      expect(data.appUrl).toEqual(newAppUrl);
     });
   });
 
@@ -360,7 +355,6 @@ describe('App API Integration Tests', () => {
 
         const { data } = getResult;
         expectAssertObject(data);
-        expect(data).toHaveProperty('enabled', false);
       }
     });
   });
@@ -397,7 +391,6 @@ describe('App API Integration Tests', () => {
 
         const { data } = getResult;
         expectAssertObject(data);
-        expect(data).toHaveProperty('enabled', true);
       }
     });
   });

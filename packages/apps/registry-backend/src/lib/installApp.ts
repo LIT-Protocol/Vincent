@@ -4,11 +4,15 @@ import { getKernelAddressFromECDSA } from '@zerodev/ecdsa-validator';
 import { constants } from '@zerodev/sdk';
 import bs58 from 'bs58';
 import { ethers, providers } from 'ethers';
-import { createPublicClient, encodeFunctionData, http } from 'viem';
+import { createPublicClient, http } from 'viem';
 import { baseSepolia } from 'viem/chains';
 
 import { AUTH_METHOD_SCOPE, AUTH_METHOD_TYPE } from '@lit-protocol/constants';
 import { datil as datilContracts } from '@lit-protocol/contracts';
+import {
+  COMBINED_ABI,
+  VINCENT_DIAMOND_CONTRACT_ADDRESS_PROD,
+} from '@lit-protocol/vincent-contracts-sdk';
 
 import PKPHelperV2Abi from '../../contracts/datil/PKPHelperV2.json';
 import { env } from '../env';
@@ -30,9 +34,6 @@ function base58ToHex(cid: string): string {
 
 const PKP_HELPER_V2_ADDRESS = '0x3f24953B66Ed4089c6B25Be8C7a83262d6f6255C';
 const PKP_NFT_ADDRESS = '0x487A9D096BB4B7Ac1520Cb12370e31e677B175EA';
-
-// TODO: Replace with actual Vincent contract address
-const VINCENT_CONTRACT_ADDRESS = '0x00172f67db60E5fA346e599cdE675f0ca213b47b';
 
 const relaySdk = new GelatoRelay();
 const baseSepoliaPublicClient = createPublicClient({
@@ -405,26 +406,35 @@ export async function installApp(request: { appId: number; userControllerAddress
     `[installApp] Complete. App ${appId} v${app.activeVersion}, PKP: ${pkp.ethAddress}, SmartAccount: ${agentSmartAccountAddress}`,
   );
 
-  // 8. Build EIP2771 data for user to sign
-  // TODO: Replace with actual Vincent contract ABI and function
-  const abiItem = {
-    inputs: [],
-    name: 'increment',
-    outputs: [],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  } as const;
+  // 8. Build EIP2771 data for user to sign (permitAppVersion on Vincent contract)
+  // Convert PKP public key from hex string to BigInt for the contract call
+  const pkpSignerPubKey = BigInt(pkp.publicKey);
 
-  const txData = encodeFunctionData({
-    abi: [abiItem],
-    functionName: 'increment',
-  });
+  // For installation, users don't set policies - create empty arrays matching ability count
+  const policyIpfsCids: string[][] = abilityIpfsCids.map(() => []);
+  const policyParameterValues: string[][] = abilityIpfsCids.map(() => []);
+
+  console.log('[installApp] Encoding permitAppVersion call...');
+
+  // Use ethers Interface to encode the function call (COMBINED_ABI is an ethers Interface)
+  const txData = COMBINED_ABI.encodeFunctionData('permitAppVersion', [
+    agentSmartAccountAddress, // agentAddress
+    pkp.ethAddress, // pkpSigner
+    pkpSignerPubKey, // pkpSignerPubKey
+    appId, // appId
+    app.activeVersion, // appVersion
+    abilityIpfsCids, // abilityIpfsCids
+    policyIpfsCids, // policyIpfsCids
+    policyParameterValues, // policyParameterValues
+  ]);
+
+  console.log('[installApp] Getting EIP2771 data to sign...');
 
   // Types don't match (SDK expects ethers, we pass viem) but works at runtime
   const dataToSign = await relaySdk.getDataToSignERC2771(
     {
       chainId: baseSepolia.id as unknown as bigint,
-      target: VINCENT_CONTRACT_ADDRESS,
+      target: VINCENT_DIAMOND_CONTRACT_ADDRESS_PROD,
       data: txData,
       user: userControllerAddress,
       isConcurrent: true,
@@ -432,6 +442,8 @@ export async function installApp(request: { appId: number; userControllerAddress
     ERC2771Type.ConcurrentSponsoredCall,
     baseSepoliaPublicClient as unknown as Parameters<typeof relaySdk.getDataToSignERC2771>[2],
   );
+
+  console.log('[installApp] Data to sign obtained successfully');
 
   return {
     agentSignerAddress: pkp.ethAddress,

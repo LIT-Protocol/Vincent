@@ -1,6 +1,5 @@
 import type { Express } from 'express';
 
-import { env } from '../../../env';
 import { Features } from '../../../features';
 import { getContractClient } from '../../contractClient';
 import { App, AppAbility, AppVersion } from '../../mongo/app';
@@ -12,8 +11,6 @@ import { requireAppOnChain, withAppOnChain } from './requireAppOnChain';
 import { requireAppVersion, withAppVersion } from './requireAppVersion';
 import { requireAppVersionNotOnChain } from './requireAppVersionNotOnChain';
 import { requireUserManagesApp } from './requireUserManagesApp';
-
-const { LIT_RELAYER_API_KEY, LIT_PAYER_SECRET_KEY } = env;
 
 const NEW_APP_APPVERSION = 1;
 const MAX_APPID_RETRY_ATTEMPTS = 20;
@@ -48,16 +45,7 @@ export function registerRoutes(app: Express) {
     requireVincentAuth,
     withVincentAuth(async (req, res) => {
       await withSession(async (mongoSession) => {
-        const {
-          name,
-          deploymentStatus,
-          description,
-          contactEmail,
-          appUserUrl,
-          logo,
-          redirectUris,
-          delegateeAddresses,
-        } = req.body;
+        const { name, deploymentStatus, description, contactEmail, appUrl, logo } = req.body;
 
         const triedAppIds = new Set<number>();
         let appId: number;
@@ -87,11 +75,9 @@ export function registerRoutes(app: Express) {
             name,
             description,
             contactEmail,
-            appUserUrl,
+            appUrl,
             logo,
-            redirectUris,
             deploymentStatus,
-            delegateeAddresses,
             managerAddress: getPKPInfo(req.vincentUser.decodedJWT).ethAddress,
           });
 
@@ -129,28 +115,6 @@ export function registerRoutes(app: Express) {
             attempts: MAX_APPID_RETRY_ATTEMPTS,
           });
           return;
-        }
-
-        if (Array.isArray(delegateeAddresses) && delegateeAddresses.length > 0) {
-          // Register delegatee addresses in the payment DB contract via the relayer
-          // so that the app dev doesn't have to think about RLI NFTs
-          const response = await fetch('https://datil-relayer.getlit.dev/add-users', {
-            method: 'POST',
-            headers: {
-              'api-key': LIT_RELAYER_API_KEY,
-              'payer-secret-key': LIT_PAYER_SECRET_KEY,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(delegateeAddresses),
-          });
-
-          if (!response.ok) {
-            const text = await response.text();
-            res.status(500).json({
-              error: `Failed to add delegatees as payees -- status: ${response.status} - ${text}`,
-            });
-            return;
-          }
         }
 
         res.status(201).json(appDef);
@@ -594,10 +558,10 @@ export function registerRoutes(app: Express) {
           return;
         }
 
-        if (vincentAppVersion.isDeleted || !vincentAppVersion.enabled) {
+        if (vincentAppVersion.isDeleted) {
           res.status(400).json({
             message:
-              'Cannot set deleted or disabled app version as active. Make sure the appVersion is not deleted and is enabled, then try again.',
+              'Cannot set deleted app version as active. Make sure the appVersion is not deleted, then try again.',
           });
           return;
         }

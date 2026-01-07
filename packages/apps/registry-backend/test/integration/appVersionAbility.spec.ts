@@ -29,11 +29,9 @@ describe('AppVersionAbility API Integration Tests', () => {
     name: 'Test App for AppVersionAbility',
     description: 'Test app for AppVersionAbility integration tests',
     contactEmail: 'test@example.com',
-    appUserUrl: 'https://example.com/app',
+    appUrl: 'https://example.com/app',
     logo: 'https://example.com/logo.png',
-    redirectUris: ['https://example.com/callback'],
     deploymentStatus: 'dev' as const,
-    delegateeAddresses: generateRandomEthAddresses(2),
   };
 
   // Test data for creating abilities
@@ -137,7 +135,7 @@ describe('AppVersionAbility API Integration Tests', () => {
       try {
         const { txHash } = await getDefaultWalletContractClient().registerApp({
           appId: testAppId,
-          delegateeAddresses: appData.delegateeAddresses,
+          delegateeAddresses: generateRandomEthAddresses(2),
           versionAbilities: {
             abilityIpfsCids: [abilityIpfsCid],
             abilityPolicies: [[policyIpfsCid]],

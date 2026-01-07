@@ -45,10 +45,8 @@ describe('Authorization Integration Tests', () => {
     name: 'Auth Test App',
     description: 'Test app for authorization tests',
     contactEmail: 'auth-test@example.com',
-    appUserUrl: 'https://example.com/auth-app',
+    appUrl: 'https://example.com/auth-app',
     logo: 'https://example.com/auth-logo.png',
-    redirectUris: ['https://example.com/auth-callback'],
-    delegateeAddresses: generateRandomEthAddresses(2),
   };
 
   const abilityData = {
@@ -86,7 +84,7 @@ describe('Authorization Integration Tests', () => {
     try {
       const { txHash } = await getDefaultWalletContractClient().registerApp({
         appId: testAppId,
-        delegateeAddresses: appData.delegateeAddresses,
+        delegateeAddresses: generateRandomEthAddresses(2),
         versionAbilities: {
           abilityIpfsCids: [abilityIpfsCid],
           abilityPolicies: [[policyIpfsCid]],

@@ -29,10 +29,8 @@ describe('User API Integration Tests', () => {
     name: 'User Test App',
     description: 'Test app for user integration tests',
     contactEmail: 'usertest@example.com',
-    appUserUrl: 'https://example.com/userapp',
+    appUrl: 'https://example.com/userapp',
     logo: 'https://example.com/logo.png',
-    redirectUris: ['https://example.com/callback'],
-    delegateeAddresses: generateRandomEthAddresses(2),
   };
 
   beforeAll(async () => {
@@ -97,7 +95,7 @@ describe('User API Integration Tests', () => {
     // 4. Register the app on-chain (required before setting active version)
     const { txHash } = await getDefaultWalletContractClient().registerApp({
       appId: testAppId,
-      delegateeAddresses: appData.delegateeAddresses,
+      delegateeAddresses: generateRandomEthAddresses(2),
       versionAbilities: {
         abilityIpfsCids: [abilityIpfsCid],
         abilityPolicies: [[]],
