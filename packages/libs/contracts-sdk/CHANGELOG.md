@@ -1,3 +1,15 @@
+# 6.0.0 (2026-01-07)
+
+### ⚠️ Breaking Changes
+
+- Changes VINCENT_CONTRACT_ADDRESS_BOOK index to chain id and adds exports for fee contract data ([#434](https://github.com/LIT-Protocol/Vincent/pull/434))
+- Vincent 2.0 refactors to enable EOAs to control Agent smart accounts ([21422d65](https://github.com/LIT-Protocol/Vincent/commit/21422d65))
+
+### ❤️ Thank You
+
+- Federico Amura @FedericoAmura
+- Wyatt Barnes @spacesailor24
+
 # 5.0.0 (2025-11-23)
 
 ### 🚀 Features

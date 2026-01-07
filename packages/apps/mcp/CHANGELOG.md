@@ -1,3 +1,10 @@
+## 1.1.9 (2026-01-07)
+
+### 🧱 Updated Dependencies
+
+- Updated app-sdk to 2.5.1
+- Updated mcp-sdk to 1.1.9
+
 ## 1.1.8 (2025-11-23)
 
 ### 🧱 Updated Dependencies
