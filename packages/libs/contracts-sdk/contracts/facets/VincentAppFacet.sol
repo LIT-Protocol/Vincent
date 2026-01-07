@@ -327,7 +327,7 @@ contract VincentAppFacet is VincentBase {
         // Store this once outside the loop instead of repeatedly accessing it
         EnumerableSet.Bytes32Set storage abilityIpfsCidHashes = versionedApp.abilityIpfsCidHashes;
 
-        // Step 6: Iterate through each ability to register it with the new app version.
+        // Step 4: Iterate through each ability to register it with the new app version.
         for (uint256 i = 0; i < abilityCount; i++) {
             string memory abilityIpfsCid = versionAbilities.abilityIpfsCids[i]; // Cache calldata value
 
@@ -338,7 +338,7 @@ contract VincentAppFacet is VincentBase {
 
             bytes32 hashedAbilityCid = keccak256(abi.encodePacked(abilityIpfsCid));
 
-            // Step 6.1: Register the ability IPFS CID globally if it hasn't been added already.
+            // Step 4.1: Register the ability IPFS CID globally if it hasn't been added already.
             if (!abilityIpfsCidHashes.add(hashedAbilityCid)) {
                 revert LibVincentAppFacet.DuplicateAbilityIpfsCidNotAllowed(appId, i);
             }
@@ -350,8 +350,12 @@ contract VincentAppFacet is VincentBase {
                 emit LibVincentAppFacet.NewLitActionRegistered(hashedAbilityCid);
             }
 
-            // Step 7: Iterate through policies linked to this ability.
+            // Step 5: Iterate through policies linked to this ability.
             uint256 policyCount = versionAbilities.abilityPolicies[i].length;
+
+            // Cache storage pointer for this ability's policies outside the loop
+            EnumerableSet.Bytes32Set storage abilityPolicyIpfsCidHashes =
+                versionedApp.abilityIpfsCidHashToAbilityPolicyIpfsCidHashes[hashedAbilityCid];
 
             for (uint256 j = 0; j < policyCount; j++) {
                 string memory policyIpfsCid = versionAbilities.abilityPolicies[i][j]; // Cache calldata value
@@ -362,15 +366,13 @@ contract VincentAppFacet is VincentBase {
                 }
 
                 bytes32 hashedAbilityPolicy = keccak256(abi.encodePacked(policyIpfsCid));
-                EnumerableSet.Bytes32Set storage abilityPolicyIpfsCidHashes =
-                    versionedApp.abilityIpfsCidHashToAbilityPolicyIpfsCidHashes[hashedAbilityCid];
 
-                // Step 7.1: Add the policy hash to the AbilityPolicies
+                // Step 5.1: Add the policy hash to the AbilityPolicies
                 if (!abilityPolicyIpfsCidHashes.add(hashedAbilityPolicy)) {
                     revert LibVincentAppFacet.DuplicateAbilityPolicyIpfsCidNotAllowed(appId, i, j);
                 }
 
-                // Step 7.3: Store the policy IPFS CID globally if it's not already stored.
+                // Step 5.2: Store the policy IPFS CID globally if it's not already stored.
                 if (bytes(ls.ipfsCidHashToIpfsCid[hashedAbilityPolicy]).length == 0) {
                     ls.ipfsCidHashToIpfsCid[hashedAbilityPolicy] = policyIpfsCid;
                     emit LibVincentAppFacet.NewLitActionRegistered(hashedAbilityPolicy);

@@ -600,6 +600,11 @@
   },
   {
     "type": "error",
+    "name": "ZeroAddressNotAllowed",
+    "inputs": []
+  },
+  {
+    "type": "error",
     "name": "ZeroAppIdNotAllowed",
     "inputs": []
   }

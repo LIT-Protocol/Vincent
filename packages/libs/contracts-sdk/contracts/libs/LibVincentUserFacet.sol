@@ -7,39 +7,59 @@ pragma solidity ^0.8.29;
  */
 library LibVincentUserFacet {
     /**
-     * @notice Emitted when a new user agent PKP is registered
-     * @param userAddress The user's address who registered the PKP
-     * @param pkpTokenId The token ID of the registered PKP
+     * @notice Emitted when a new agent is registered
+     * @param userAddress The address of the user that the agent is acting on behalf of
+     * @param agentAddress The address of the agent that was registered
      */
-    event NewUserAgentPkpRegistered(address indexed userAddress, uint256 indexed pkpTokenId);
+    event NewAgentRegistered(
+        address indexed userAddress, address indexed agentAddress, address indexed pkpSigner, uint256 pkpSignerPubKey
+    );
 
     /**
-     * @notice Emitted when an app version is permitted for a PKP
-     * @param pkpTokenId The token ID of the PKP
+     * @notice Emitted when an app version is permitted for an agent
+     * @param agentAddress The address of the agent that was permitted
      * @param appId The ID of the app being permitted
      * @param appVersion The version number of the app being permitted
      */
-    event AppVersionPermitted(uint256 indexed pkpTokenId, uint40 indexed appId, uint24 indexed appVersion);
+    event AppVersionPermitted(
+        address indexed agentAddress,
+        uint40 indexed appId,
+        uint24 indexed appVersion,
+        address pkpSigner,
+        uint256 pkpSignerPubKey
+    );
 
     /**
-     * @notice Emitted when an app version permission is removed from a PKP
-     * @param pkpTokenId The token ID of the PKP
+     * @notice Emitted when an app version permission is removed for an agent
+     * @param agentAddress The address of the agent that was unpermitted
      * @param appId The ID of the app being unpermitted
      * @param appVersion The version of the app being unpermitted
      */
-    event AppVersionUnPermitted(uint256 indexed pkpTokenId, uint40 indexed appId, uint24 indexed appVersion);
+    event AppVersionUnPermitted(
+        address indexed agentAddress,
+        uint40 indexed appId,
+        uint24 indexed appVersion,
+        address pkpSigner,
+        uint256 pkpSignerPubKey
+    );
 
     /**
-     * @notice Emitted when an app version is re-permitted for a PKP
-     * @param pkpTokenId The token ID of the PKP
+     * @notice Emitted when an app version is re-permitted for an agent
+     * @param agentAddress The address of the agent that was re-permitted
      * @param appId The ID of the app being re-permitted
      * @param appVersion The version number of the app being re-permitted
      */
-    event AppVersionRePermitted(uint256 indexed pkpTokenId, uint40 indexed appId, uint24 indexed appVersion);
+    event AppVersionRePermitted(
+        address indexed agentAddress,
+        uint40 indexed appId,
+        uint24 indexed appVersion,
+        address pkpSigner,
+        uint256 pkpSignerPubKey
+    );
 
     /**
      * @notice Emitted when an ability policy parameters are set
-     * @param pkpTokenId The token ID of the PKP
+     * @param agentAddress The address of the agent that the policy parameters were set for
      * @param appId The ID of the app
      * @param appVersion The version of the app
      * @param hashedAbilityIpfsCid The keccak256 hash of the ability's IPFS CID
@@ -47,7 +67,7 @@ library LibVincentUserFacet {
      * @param policyParameterValues The CBOR2 encoded policy parameter values
      */
     event AbilityPolicyParametersSet(
-        uint256 indexed pkpTokenId,
+        address indexed agentAddress,
         uint40 indexed appId,
         uint24 indexed appVersion,
         bytes32 hashedAbilityIpfsCid,
@@ -57,37 +77,37 @@ library LibVincentUserFacet {
 
     /**
      * @notice Emitted when an ability policy parameters are removed
-     * @param pkpTokenId The token ID of the PKP
+     * @param agentAddress The address of the agent that the policy parameters were removed for
      * @param appId The ID of the app
      * @param appVersion The version of the app
      * @param hashedAbilityIpfsCid The keccak256 hash of the ability's IPFS CID
      */
     event AbilityPolicyParametersRemoved(
-        uint256 indexed pkpTokenId, uint40 indexed appId, uint24 indexed appVersion, bytes32 hashedAbilityIpfsCid
+        address indexed agentAddress, uint40 indexed appId, uint24 indexed appVersion, bytes32 hashedAbilityIpfsCid
     );
 
     /**
-     * @notice Error thrown when caller is not the owner of the specified PKP
-     * @param pkpTokenId The token ID of the PKP
-     * @param msgSender The address of the caller
-     */
-    error NotPkpOwner(uint256 pkpTokenId, address msgSender);
-
-    /**
-     * @notice Error thrown when an app version is already permitted for a PKP
-     * @param pkpTokenId The token ID of the PKP
+     * @notice Error thrown when an app version is already permitted for an agent
+     * @param agentAddress The address of the agent
      * @param appId The ID of the app
      * @param appVersion The version of the app
      */
-    error AppVersionAlreadyPermitted(uint256 pkpTokenId, uint40 appId, uint24 appVersion);
+    error AppVersionAlreadyPermitted(address agentAddress, uint40 appId, uint24 appVersion);
 
     /**
-     * @notice Error thrown when an app version is not permitted for a PKP
-     * @param pkpTokenId The token ID of the PKP
+     * @notice Error thrown when an agent is already permitted for a different app
+     * @param agentAddress The address of the agent that is already permitted for a different app
+     * @param appId The ID of the app that the agent is already permitted for
+     */
+    error DifferentAppAlreadyPermitted(address agentAddress, uint40 appId);
+
+    /**
+     * @notice Error thrown when an app version is not permitted for an agent
+     * @param agentAddress The address of the agent
      * @param appId The ID of the app
      * @param appVersion The version of the app
      */
-    error AppVersionNotPermitted(uint256 pkpTokenId, uint40 appId, uint24 appVersion);
+    error AppVersionNotPermitted(address agentAddress, uint40 appId, uint24 appVersion);
 
     /**
      * @notice Error thrown when an app version is not enabled
@@ -161,17 +181,6 @@ library LibVincentUserFacet {
     error InvalidInput();
 
     /**
-     * @notice Error thrown when a zero PKP token ID is provided
-     */
-    error ZeroPkpTokenId();
-
-    /**
-     * @notice Error thrown when a PKP token ID does not exist
-     * @param pkpTokenId The token ID of the non-existent PKP
-     */
-    error PkpTokenDoesNotExist(uint256 pkpTokenId);
-
-    /**
      * @notice Error thrown when an empty ability IPFS CID is provided
      */
     error EmptyAbilityIpfsCid();
@@ -189,10 +198,45 @@ library LibVincentUserFacet {
     error NotAllRegisteredAbilitiesProvided(uint40 appId, uint24 appVersion);
 
     /**
-     * @notice Error thrown when an app has never been permitted for a PKP, but the user is trying to re-permit it
-     * @param pkpTokenId The token ID of the PKP
-     * @param appId The ID of the app
-     * @param appVersion The version of the app
+     * @notice Error thrown when the last permitted app is not the one being re-permitted
+     * @param agentAddress The address of the agent
+     * @param lastPermittedAppId The ID of the last permitted app
+     * @param lastPermittedAppVersion The version of the last permitted app
+     * @param rePermitAppId The ID of the app being re-permitted
      */
-    error AppNeverPermitted(uint256 pkpTokenId, uint40 appId, uint24 appVersion);
+    error LastPermittedAppNotTheOneBeingRePermitted(
+        address agentAddress, uint40 lastPermittedAppId, uint24 lastPermittedAppVersion, uint40 rePermitAppId
+    );
+
+    /**
+     * @notice Error thrown when a zero PKP signer public key is provided
+     */
+    error ZeroPkpSignerPubKeyNotAllowed();
+
+    /**
+     * @notice Error thrown when a zero app ID is provided
+     */
+    error ZeroAppIdNotAllowed();
+
+    /**
+     * @notice Error thrown when a zero app version is provided
+     */
+    error ZeroAppVersionNotAllowed();
+
+    /**
+     * @notice Error thrown when an agent is already registered
+     * @param registeredUserAddress The address of the user that the agent is registered to
+     */
+    error AgentRegisteredToDifferentUser(address registeredUserAddress);
+
+    /**
+     * @notice Error thrown when a PKP signer is already registered to an agent
+     * @param registeredPkpAgentAddress The address of the agent that the PKP signer is registered to
+     */
+    error PkpSignerAlreadyRegisteredToAgent(address registeredPkpAgentAddress);
+
+    /**
+     * @notice Error thrown when an agent is not registered to the caller
+     */
+    error AgentNotRegisteredToUser();
 }
