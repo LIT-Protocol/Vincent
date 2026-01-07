@@ -1,9 +1,9 @@
 import feeDiamondAbi from '../abis/FeeDiamond.abi.json';
 import appFacetAbi from '../abis/VincentAppFacet.abi.json';
 import appViewFacetAbi from '../abis/VincentAppViewFacet.abi.json';
+import erc2771FacetAbi from '../abis/VincentERC2771Facet.abi.json';
 import userFacetAbi from '../abis/VincentUserFacet.abi.json';
 import userViewFacetAbi from '../abis/VincentUserViewFacet.abi.json';
-import erc2771FacetAbi from '../abis/VincentERC2771Facet.abi.json';
 import { buildDiamondInterface } from './buildDiamondInterface';
 
 // TODO!: Pull from the ABI after re-publishing
