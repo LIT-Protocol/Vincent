@@ -57,6 +57,21 @@ library VincentLitActionStorage {
     }
 }
 
+library VincentERC2771Storage {
+    bytes32 internal constant ERC2771_STORAGE_SLOT = keccak256("lit.vincent.erc2771.storage");
+
+    struct ERC2771Storage {
+        address trustedForwarder;
+    }
+
+    function erc2771Storage() internal pure returns (ERC2771Storage storage es) {
+        bytes32 slot = ERC2771_STORAGE_SLOT;
+        assembly {
+            es.slot := slot
+        }
+    }
+}
+
 library VincentUserStorage {
     using EnumerableSet for EnumerableSet.UintSet;
     using EnumerableSet for EnumerableSet.Bytes32Set;
@@ -73,9 +88,8 @@ library VincentUserStorage {
         uint24 lastPermittedAppVersion;
         address lastPermittedPkpSigner;
         uint256 lastPermittedPkpSignerPubKey;
-        // App ID -> App version -> Ability IPFS CID hash -> Ability Policy IPFS CID hash -> User's CBOR2 encoded Policy parameter values
-        mapping(uint40 => mapping(uint24 => mapping(bytes32 => mapping(bytes32 => bytes))))
-            abilityPolicyParameterValues;
+        // App version -> Ability IPFS CID hash -> Ability Policy IPFS CID hash -> User's CBOR2 encoded Policy parameter values
+        mapping(uint24 => mapping(bytes32 => mapping(bytes32 => bytes))) abilityPolicyParameterValues;
     }
 
     struct UserStorage {
@@ -83,6 +97,8 @@ library VincentUserStorage {
         mapping(address => EnumerableSet.AddressSet) userAddressToRegisteredAgentAddresses;
         // Registered Agent Addresses => User Address
         mapping(address => address) registeredAgentAddressToUserAddress;
+        // Agent PKP Signer Address -> Agent Address
+        mapping(address => address) pkpSignerAddressToAgentAddress;
         // Agent Address -> Agent Storage
         mapping(address => AgentStorage) agentAddressToAgentStorage;
     }

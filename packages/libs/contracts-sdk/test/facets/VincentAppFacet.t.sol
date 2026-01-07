@@ -670,9 +670,9 @@ contract VincentAppFacetTest is TestCommon {
         policyParameterValues[0][0] = POLICY_PARAMETER_VALUES_1;
         policyParameterValues[1] = new bytes[](0);
 
-        vm.startPrank(APP_USER_FRANK);
+        vm.startPrank(USER_FRANK);
         vincentUserFacet.permitAppVersion(
-            USER_FRANK,
+            APP_USER_FRANK,
             FRANK_PKP_SIGNER,
             FRANK_PKP_SIGNER_PUB_KEY,
             newAppId,
@@ -730,9 +730,9 @@ contract VincentAppFacetTest is TestCommon {
         policyParameterValues[1] = new bytes[](0);
 
         // Permit app for Frank
-        vm.startPrank(APP_USER_FRANK);
+        vm.startPrank(USER_FRANK);
         vincentUserFacet.permitAppVersion(
-            USER_FRANK,
+            APP_USER_FRANK,
             FRANK_PKP_SIGNER,
             FRANK_PKP_SIGNER_PUB_KEY,
             newAppId,
@@ -744,9 +744,9 @@ contract VincentAppFacetTest is TestCommon {
         vm.stopPrank();
 
         // Permit app for George
-        vm.startPrank(APP_USER_GEORGE);
+        vm.startPrank(USER_GEORGE);
         vincentUserFacet.permitAppVersion(
-            USER_GEORGE,
+            APP_USER_GEORGE,
             GEORGE_PKP_SIGNER,
             GEORGE_PKP_SIGNER_PUB_KEY,
             newAppId,
