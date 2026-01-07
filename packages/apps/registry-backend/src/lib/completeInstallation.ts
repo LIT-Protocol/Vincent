@@ -1,5 +1,5 @@
-import { GelatoRelay } from '@gelatonetwork/relay-sdk';
 import type { ConcurrentPayloadToSign } from '@gelatonetwork/relay-sdk/dist/lib/erc2771/types';
+import { GelatoRelay } from '@gelatonetwork/relay-sdk';
 
 import { env } from '../env';
 

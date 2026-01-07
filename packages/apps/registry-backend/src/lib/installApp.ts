@@ -1,5 +1,3 @@
-import { datil as datilContracts } from '@lit-protocol/contracts';
-import { AUTH_METHOD_TYPE, AUTH_METHOD_SCOPE } from '@lit-protocol/constants';
 import { GelatoRelay } from '@gelatonetwork/relay-sdk';
 import { ERC2771Type } from '@gelatonetwork/relay-sdk/dist/lib/erc2771/types/index.js';
 import { getKernelAddressFromECDSA } from '@zerodev/ecdsa-validator';
@@ -9,10 +7,13 @@ import { ethers, providers } from 'ethers';
 import { createPublicClient, encodeFunctionData, http } from 'viem';
 import { baseSepolia } from 'viem/chains';
 
+import { AUTH_METHOD_SCOPE, AUTH_METHOD_TYPE } from '@lit-protocol/constants';
+import { datil as datilContracts } from '@lit-protocol/contracts';
+
+import PKPHelperV2Abi from '../../contracts/datil/PKPHelperV2.json';
 import { env } from '../env';
 import { AbilityVersion } from './mongo/ability';
 import { App, AppAbility } from './mongo/app';
-import PKPHelperV2Abi from '../../contracts/datil/PKPHelperV2.json';
 
 // ============================================================================
 // Utilities
@@ -394,7 +395,7 @@ export async function installApp(request: { appId: number; userControllerAddress
 
   const agentSmartAccountAddress = await getKernelAddressFromECDSA({
     publicClient: publicClient as any,
-    eoaAddress: pkp.ethAddress as `0x${string}`,
+    eoaAddress: userControllerAddress as `0x${string}`,
     index: 0n, // this would have to change to yield different accounts
     entryPoint: constants.getEntryPoint('0.7'),
     kernelVersion: constants.KERNEL_V3_1,

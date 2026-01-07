@@ -1,7 +1,8 @@
 import type { ConcurrentPayloadToSign } from '@gelatonetwork/relay-sdk/dist/lib/erc2771/types';
+import bs58 from 'bs58';
+
 import { LitContracts } from '@lit-protocol/contracts-sdk';
 import { getPkpTokenId } from '@lit-protocol/vincent-contracts-sdk';
-import bs58 from 'bs58';
 
 import { expectAssertObject, hasError } from '../assertions';
 import { createTestDebugger } from '../debug';
