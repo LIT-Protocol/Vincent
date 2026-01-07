@@ -394,6 +394,14 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['User'],
       }),
+      getAgentAccount: build.mutation<GetAgentAccountApiResponse, GetAgentAccountApiArg>({
+        query: (queryArg) => ({
+          url: `/user/${encodeURIComponent(String(queryArg.appId))}/agent-account`,
+          method: 'POST',
+          body: queryArg.getAgentAccountRequest,
+        }),
+        invalidatesTags: ['User'],
+      }),
     }),
     overrideExisting: false,
   });
@@ -743,6 +751,13 @@ export type CompleteInstallationApiArg = {
   /** ID of the target application */
   appId: number;
   completeInstallationRequest: CompleteInstallationRequest;
+};
+export type GetAgentAccountApiResponse =
+  /** status 200 Agent account address returned successfully */ GetAgentAccountResponse;
+export type GetAgentAccountApiArg = {
+  /** ID of the target application */
+  appId: number;
+  getAgentAccountRequest: GetAgentAccountRequest;
 };
 export type App = {
   /** Timestamp when this was last modified */
@@ -1297,6 +1312,14 @@ export type CompleteInstallationRequest = {
   /** The appInstallationDataToSign object returned from install-app */
   appInstallationDataToSign: {};
 };
+export type GetAgentAccountResponse = {
+  /** The agent smart account address if registered, or null if the agent does not exist */
+  agentAddress: string | null;
+};
+export type GetAgentAccountRequest = {
+  /** EOA address that controls the user smart wallet */
+  userControllerAddress: string;
+};
 export const {
   useListAppsQuery,
   useLazyListAppsQuery,
@@ -1360,4 +1383,5 @@ export const {
   useUndeletePolicyVersionMutation,
   useInstallAppMutation,
   useCompleteInstallationMutation,
+  useGetAgentAccountMutation,
 } = injectedRtkApi;

@@ -4,7 +4,12 @@ import {
   completeInstallationRequest,
   completeInstallationResponse,
 } from '../schemas/completeInstallation';
-import { installAppRequest, installAppResponse } from '../schemas/installedApp';
+import {
+  getAgentAccountRequest,
+  getAgentAccountResponse,
+  installAppRequest,
+  installAppResponse,
+} from '../schemas/installedApp';
 import { z } from '../schemas/openApiZod';
 import { appIdParam } from './app';
 import { ErrorResponse } from './baseRegistry';
@@ -19,6 +24,14 @@ export function addToRegistry(registry: OpenAPIRegistry) {
   const CompleteInstallationResponse = registry.register(
     'CompleteInstallationResponse',
     completeInstallationResponse,
+  );
+  const GetAgentAccountRequest = registry.register(
+    'GetAgentAccountRequest',
+    getAgentAccountRequest,
+  );
+  const GetAgentAccountResponse = registry.register(
+    'GetAgentAccountResponse',
+    getAgentAccountResponse,
   );
 
   // POST /user/:appId/install-app - Install an app for a user
@@ -101,6 +114,61 @@ export function addToRegistry(registry: OpenAPIRegistry) {
         content: {
           'application/json': {
             schema: CompleteInstallationResponse,
+          },
+        },
+      },
+      400: {
+        description: 'Bad request',
+        content: {
+          'application/json': {
+            schema: ErrorResponse,
+          },
+        },
+      },
+      404: {
+        description: 'App not found',
+        content: {
+          'application/json': {
+            schema: ErrorResponse,
+          },
+        },
+      },
+      default: {
+        description: 'Error',
+        content: {
+          'application/json': {
+            schema: ErrorResponse,
+          },
+        },
+      },
+    },
+  });
+
+  // POST /user/:appId/agent-account - Get agent account for a user and app
+  registry.registerPath({
+    method: 'post',
+    path: '/user/{appId}/agent-account',
+    tags: ['User'],
+    summary: 'Get agent account address',
+    description:
+      'Derives and verifies the agent smart account address for a user and app combination',
+    operationId: 'getAgentAccount',
+    request: {
+      params: z.object({ appId: appIdParam }),
+      body: {
+        content: {
+          'application/json': {
+            schema: GetAgentAccountRequest,
+          },
+        },
+      },
+    },
+    responses: {
+      200: {
+        description: 'Agent account address returned successfully',
+        content: {
+          'application/json': {
+            schema: GetAgentAccountResponse,
           },
         },
       },

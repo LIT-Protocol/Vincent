@@ -11,6 +11,7 @@ import { AUTH_METHOD_SCOPE, AUTH_METHOD_TYPE } from '@lit-protocol/constants';
 import { datil as datilContracts } from '@lit-protocol/contracts';
 import {
   COMBINED_ABI,
+  deriveSmartAccountIndex,
   VINCENT_DIAMOND_CONTRACT_ADDRESS_PROD,
 } from '@lit-protocol/vincent-contracts-sdk';
 
@@ -397,7 +398,7 @@ export async function installApp(request: { appId: number; userControllerAddress
   const agentSmartAccountAddress = await getKernelAddressFromECDSA({
     publicClient: publicClient as any,
     eoaAddress: userControllerAddress as `0x${string}`,
-    index: 0n, // this would have to change to yield different accounts
+    index: deriveSmartAccountIndex(appId),
     entryPoint: constants.getEntryPoint('0.7'),
     kernelVersion: constants.KERNEL_V3_1,
   });

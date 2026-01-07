@@ -362,4 +362,94 @@ describe('User API Integration Tests', () => {
       }
     });
   });
+
+  describe('POST /user/:appId/agent-account', () => {
+    it('should return the agent address for an installed app', async () => {
+      const result = await store.dispatch(
+        api.endpoints.getAgentAccount.initiate({
+          appId: testAppId,
+          getAgentAccountRequest: { userControllerAddress: defaultWallet.address },
+        }),
+      );
+
+      if (hasError(result)) {
+        console.error('getAgentAccount failed:', result.error);
+      }
+      expectAssertObject(result.data);
+
+      expect(result.data).toHaveProperty('agentAddress');
+      expect(result.data.agentAddress).toMatch(/^0x[a-fA-F0-9]{40}$/);
+
+      debug({
+        agentAddress: result.data.agentAddress,
+      });
+    });
+
+    it('should return null for a user that has not installed the app', async () => {
+      const randomAddress = generateRandomEthAddresses(1)[0];
+      const result = await store.dispatch(
+        api.endpoints.getAgentAccount.initiate({
+          appId: testAppId,
+          getAgentAccountRequest: { userControllerAddress: randomAddress },
+        }),
+      );
+
+      if (hasError(result)) {
+        console.error('getAgentAccount failed:', result.error);
+      }
+      expectAssertObject(result.data);
+
+      expect(result.data.agentAddress).toBeNull();
+
+      debug({
+        agentAddress: result.data.agentAddress,
+      });
+    });
+
+    it('should return 400 for missing userControllerAddress', async () => {
+      const result = await store.dispatch(
+        api.endpoints.getAgentAccount.initiate({
+          appId: testAppId,
+          // @ts-expect-error testing invalid input
+          getAgentAccountRequest: {},
+        }),
+      );
+
+      expect(hasError(result)).toBe(true);
+      if (hasError(result)) {
+        // @ts-expect-error accessing error status
+        expect(result.error.status).toBe(400);
+      }
+    });
+
+    it('should return 400 for invalid userControllerAddress format', async () => {
+      const result = await store.dispatch(
+        api.endpoints.getAgentAccount.initiate({
+          appId: testAppId,
+          getAgentAccountRequest: { userControllerAddress: 'not-a-valid-address' },
+        }),
+      );
+
+      expect(hasError(result)).toBe(true);
+      if (hasError(result)) {
+        // @ts-expect-error accessing error status
+        expect(result.error.status).toBe(400);
+      }
+    });
+
+    it('should return 404 for non-existent app', async () => {
+      const result = await store.dispatch(
+        api.endpoints.getAgentAccount.initiate({
+          appId: 999999999,
+          getAgentAccountRequest: { userControllerAddress: defaultWallet.address },
+        }),
+      );
+
+      expect(hasError(result)).toBe(true);
+      if (hasError(result)) {
+        // @ts-expect-error accessing error status
+        expect([404, 500]).toContain(result.error.status);
+      }
+    });
+  });
 });

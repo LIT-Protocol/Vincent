@@ -1269,6 +1269,36 @@
         ],
         "additionalProperties": false
       },
+      "GetAgentAccountRequest": {
+        "type": "object",
+        "properties": {
+          "userControllerAddress": {
+            "type": "string",
+            "pattern": "^0x[a-fA-F0-9]{40}$",
+            "description": "EOA address that controls the user smart wallet",
+            "example": "0x123456789012345678901234567890123456abcd"
+          }
+        },
+        "required": [
+          "userControllerAddress"
+        ],
+        "additionalProperties": false
+      },
+      "GetAgentAccountResponse": {
+        "type": "object",
+        "properties": {
+          "agentAddress": {
+            "type": "string",
+            "nullable": true,
+            "description": "The agent smart account address if registered, or null if the agent does not exist",
+            "example": "0x123456789012345678901234567890123456abcd"
+          }
+        },
+        "required": [
+          "agentAddress"
+        ],
+        "additionalProperties": false
+      },
       "AppList": {
         "type": "array",
         "items": {
@@ -4244,6 +4274,79 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/CompleteInstallationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "App not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/user/{appId}/agent-account": {
+      "post": {
+        "tags": [
+          "User"
+        ],
+        "summary": "Get agent account address",
+        "description": "Derives and verifies the agent smart account address for a user and app combination",
+        "operationId": "getAgentAccount",
+        "parameters": [
+          {
+            "schema": {
+              "type": "number"
+            },
+            "required": true,
+            "description": "ID of the target application",
+            "example": 132,
+            "name": "appId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetAgentAccountRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Agent account address returned successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetAgentAccountResponse"
                 }
               }
             }

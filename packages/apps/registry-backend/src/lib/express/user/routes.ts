@@ -1,6 +1,7 @@
 import type { Express } from 'express';
 
 import { completeInstallation } from '../../completeInstallation';
+import { getAgentAccount } from '../../getAgentAccount';
 import { installApp } from '../../installApp';
 import { requireApp, withApp } from '../app/requireApp';
 
@@ -29,6 +30,20 @@ export function registerRoutes(app: Express) {
       });
 
       res.json(result);
+      return;
+    }),
+  );
+
+  app.post(
+    '/user/:appId/agent-account',
+    requireApp(),
+    withApp(async (req, res) => {
+      const result = await getAgentAccount({
+        appId: req.vincentApp.appId,
+        userControllerAddress: req.body.userControllerAddress,
+      });
+
+      res.json({ agentAddress: result });
       return;
     }),
   );

@@ -30,3 +30,25 @@ export const installAppResponse = z
     }),
   })
   .strict();
+
+export const getAgentAccountRequest = z
+  .object({
+    userControllerAddress: z
+      .string()
+      .regex(/^0x[a-fA-F0-9]{40}$/)
+      .openapi({
+        description: 'EOA address that controls the user smart wallet',
+        example: EXAMPLE_WALLET_ADDRESS,
+      }),
+  })
+  .strict();
+
+export const getAgentAccountResponse = z
+  .object({
+    agentAddress: z.string().nullable().openapi({
+      description:
+        'The agent smart account address if registered, or null if the agent does not exist',
+      example: EXAMPLE_WALLET_ADDRESS,
+    }),
+  })
+  .strict();
