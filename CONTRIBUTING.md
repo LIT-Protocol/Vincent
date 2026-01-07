@@ -191,7 +191,32 @@ Currently, `packages/apps/registry-backend` specifies version numbers for the lo
 Make sure to replace `YOUR_OTP` with your one-time password.
 
 ```bash
-pnpm nx release publish -p ability-sdk app-sdk mcp-sdk contracts-sdk registry-backend policy-spending-limit policy-contract-whitelist ability-erc20-approval ability-erc20-transfer ability-uniswap-swap ability-evm-transaction-signer mcp-server abilities-e2e ability-morpho ability-aave ability-debridge policy-send-counter ability-aerodrome-swap --otp=YOUR_OTP
+pnpm nx release publish -p \
+ability-aave \
+ability-aerodrome-swap \
+ability-debridge \
+ability-erc20-approval \
+ability-erc20-transfer \
+ability-evm-transaction-signer \
+ability-hyperliquid \
+ability-morpho \
+ability-relay-link \
+ability-sol-transaction-signer \
+ability-uniswap-swap \
+mcp-server \
+policy-contract-whitelist \
+policy-send-counter \
+policy-spending-limit \
+registry-backend \
+
+ability-sdk \
+app-sdk \
+contracts-sdk \
+e2e-test-utils \
+mcp-sdk \
+registry-sdk \
+wrapped-keys \
+--otp=YOUR_OTP
 ```
 
 7. Publish the Abilities and Policies to IPFS: `pnpx nx run-many --target=action:only:deploy --all`
