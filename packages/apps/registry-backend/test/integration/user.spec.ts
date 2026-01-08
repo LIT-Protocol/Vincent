@@ -1,6 +1,6 @@
 import type { ConcurrentPayloadToSign } from '@gelatonetwork/relay-sdk/dist/lib/erc2771/types';
 import bs58 from 'bs58';
-import { Contract } from 'ethers';
+import { Contract, providers, Wallet } from 'ethers';
 
 import { LitContracts } from '@lit-protocol/contracts-sdk';
 import {
@@ -24,6 +24,7 @@ const debug = createTestDebugger('user');
 describe('User API Integration Tests', () => {
   let testAppId: number;
   let litContracts: LitContracts;
+  let litSigner: Wallet;
 
   // vincent-demo-ability v0.0.2 has this IPFS CID
   const abilityPackageName = 'vincent-demo-ability';
@@ -41,9 +42,16 @@ describe('User API Integration Tests', () => {
   beforeAll(async () => {
     store.dispatch(api.util.resetApiState());
 
-    // initialize LitContracts for permission verification
+    // Initialize LitContracts for permission verification
+    // Use a signer connected to Chronicle Yellowstone (Lit's network), not Base Sepolia
+    const litProvider = new providers.JsonRpcProvider('https://yellowstone-rpc.litprotocol.com/');
+    litSigner = new Wallet(
+      process.env['TEST_APP_MANAGER_PRIVATE_KEY'] ||
+        '0x0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
+      litProvider,
+    );
     litContracts = new LitContracts({
-      signer: defaultWallet,
+      signer: litSigner,
       network: 'datil',
     });
     await litContracts.connect();
@@ -71,44 +79,57 @@ describe('User API Integration Tests', () => {
       debug({ abilityPackageName: createAbilityResult.data?.packageName });
     }
 
-    // 2. Create the app (also creates version 1)
-    const createResult = await store.dispatch(
-      api.endpoints.createApp.initiate({ appCreate: appData }),
-    );
-    if (hasError(createResult)) {
-      console.error('createApp failed:', createResult.error);
-    }
-    expectAssertObject(createResult.data);
-    testAppId = createResult.data.appId;
-    debug({ testAppId, appName: createResult.data.name });
-
-    // 3. Link the ability to app version 1 BEFORE registering on-chain
-    const createAppVersionAbilityResult = await store.dispatch(
-      api.endpoints.createAppVersionAbility.initiate({
-        appId: testAppId,
-        appVersion: 1,
-        abilityPackageName: abilityPackageName,
-        appVersionAbilityCreate: { abilityVersion },
-      }),
-    );
-    if (hasError(createAppVersionAbilityResult)) {
-      console.error('createAppVersionAbility failed:', createAppVersionAbilityResult.error);
-    }
-    expectAssertObject(createAppVersionAbilityResult.data);
-    debug({ appVersionAbility: createAppVersionAbilityResult.data });
-
-    // 4. Register the app on-chain (required before setting active version)
-    const { txHash } = await getDefaultWalletContractClient().registerApp({
-      appId: testAppId,
+    // 2. Register the app on-chain FIRST to get the contract-generated appId
+    //    Note: This creates version 1 on-chain immediately
+    const { txHash, newAppId } = await getDefaultWalletContractClient().registerApp({
       delegateeAddresses: generateRandomEthAddresses(2),
       versionAbilities: {
         abilityIpfsCids: [abilityIpfsCid],
         abilityPolicies: [[]],
       },
     });
-    debug({ registerAppTxHash: txHash });
+    testAppId = newAppId;
+    console.log('registerApp result:', { txHash, testAppId });
+    debug({ registerAppTxHash: txHash, testAppId });
 
-    // 5. Set the active version (requires on-chain registration first)
+    // Wait a bit for RPC propagation
+    console.log('Waiting 3s for RPC propagation...');
+    await new Promise((r) => setTimeout(r, 3000));
+
+    // 3. Create the app in the backend using the on-chain appId
+    const createResult = await store.dispatch(
+      api.endpoints.createApp.initiate({
+        appCreate: {
+          ...appData,
+          appId: testAppId,
+        },
+      }),
+    );
+    if (hasError(createResult)) {
+      console.error('createApp failed:', createResult.error);
+    }
+    expectAssertObject(createResult.data);
+    debug({ appCreated: testAppId });
+
+    // 4. Link the ability to version 1 in the backend database
+    //    (Abilities are fetched from on-chain, but we still create the link for completeness)
+    const createAbilityLinkResult = await store.dispatch(
+      api.endpoints.createAppVersionAbility.initiate({
+        appId: testAppId,
+        appVersion: 1,
+        abilityPackageName: abilityPackageName,
+        appVersionAbilityCreate: {
+          abilityVersion: abilityVersion,
+        },
+      }),
+    );
+    if (hasError(createAbilityLinkResult)) {
+      console.error('createAppVersionAbility failed:', createAbilityLinkResult.error);
+    }
+    expectAssertObject(createAbilityLinkResult.data);
+    debug({ abilityLinked: abilityPackageName });
+
+    // 5. Set the active version to 1
     const setActiveResult = await store.dispatch(
       api.endpoints.setAppActiveVersion.initiate({
         appId: testAppId,
@@ -120,7 +141,7 @@ describe('User API Integration Tests', () => {
       console.error('setAppActiveVersion failed:', setActiveResult.error);
     }
     expectAssertObject(setActiveResult.data);
-  }, 120000);
+  }, 180000);
 
   describe('POST /user/:appId/install-app', () => {
     // Shared state for the installation flow tests
@@ -158,9 +179,10 @@ describe('User API Integration Tests', () => {
       );
 
       // Verify the ability IPFS CID was added as a permitted action on the PKP
+      // Use litSigner (connected to Chronicle Yellowstone) since PKP contracts are on Lit's network
       const pkpTokenId = await getPkpTokenId({
         pkpEthAddress: installationData.agentSignerAddress,
-        signer: defaultWallet,
+        signer: litSigner,
       });
 
       console.log('PKP Token ID:', pkpTokenId.toString());

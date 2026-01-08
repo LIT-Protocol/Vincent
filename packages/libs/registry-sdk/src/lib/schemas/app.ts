@@ -12,7 +12,6 @@ const app = z
     appId: z.number().openapi({
       description: 'Application ID',
       example: 12345,
-      readOnly: true,
     }),
     // Optional because a new app without any appVersion defined yet will have no activeVersion
     activeVersion: z
@@ -74,7 +73,7 @@ const app = z
 
 // Avoiding using z.omit() or z.pick() due to excessive TS type inference costs
 function buildCreateAppSchema() {
-  const { name, deploymentStatus, description, contactEmail, appUrl, logo } = app.shape;
+  const { appId, name, deploymentStatus, description, contactEmail, appUrl, logo } = app.shape;
 
   return z
     .object({
@@ -89,6 +88,7 @@ function buildCreateAppSchema() {
         .partial()
         .strict().shape,
 
+      appId,
       name,
       description,
     })

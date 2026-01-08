@@ -31,5 +31,6 @@ export const env = createEnv({
     LIT_TXSENDER_PRIVATE_KEY: z.string(),
     GAS_LIMIT_INCREASE_PERCENTAGE: z.coerce.number().default(110),
     GELATO_RELAY_API_KEY: z.string(),
+    BASE_RPC_URL: z.string(),
   },
 });

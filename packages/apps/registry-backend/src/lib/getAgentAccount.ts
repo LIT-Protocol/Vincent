@@ -1,8 +1,6 @@
 import { getKernelAddressFromECDSA } from '@zerodev/ecdsa-validator';
 import { constants } from '@zerodev/sdk';
 import { ethers, providers } from 'ethers';
-import { createPublicClient, http } from 'viem';
-import { base } from 'viem/chains';
 
 import {
   COMBINED_ABI,
@@ -11,9 +9,10 @@ import {
 } from '@lit-protocol/vincent-contracts-sdk';
 
 import { env } from '../env';
+import { getBasePublicClient } from './chainConfig';
 
 function getProvider(): providers.JsonRpcProvider {
-  return new providers.JsonRpcProvider(env.LIT_TXSENDER_RPC_URL);
+  return new providers.JsonRpcProvider(env.BASE_RPC_URL);
 }
 
 function getVincentContract(): ethers.Contract {
@@ -27,13 +26,10 @@ export async function getAgentAccount(request: {
 }): Promise<string | null> {
   const { appId, userControllerAddress } = request;
 
-  const publicClient = createPublicClient({
-    chain: base,
-    transport: http(),
-  });
+  const basePublicClient = getBasePublicClient();
 
   const agentAddress = await getKernelAddressFromECDSA({
-    publicClient: publicClient as any,
+    publicClient: basePublicClient as any,
     eoaAddress: userControllerAddress as `0x${string}`,
     index: deriveSmartAccountIndex(appId),
     entryPoint: constants.getEntryPoint('0.7'),

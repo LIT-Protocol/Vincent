@@ -4,8 +4,6 @@ import { getKernelAddressFromECDSA } from '@zerodev/ecdsa-validator';
 import { constants } from '@zerodev/sdk';
 import bs58 from 'bs58';
 import { ethers, providers } from 'ethers';
-import { createPublicClient, http } from 'viem';
-import { base } from 'viem/chains';
 
 import { AUTH_METHOD_SCOPE, AUTH_METHOD_TYPE } from '@lit-protocol/constants';
 import { datil as datilContracts } from '@lit-protocol/contracts';
@@ -17,8 +15,9 @@ import {
 
 import PKPHelperV2Abi from '../../contracts/datil/PKPHelperV2.json';
 import { env } from '../env';
-import { AbilityVersion } from './mongo/ability';
-import { App, AppAbility } from './mongo/app';
+import { getBaseChainId, getBasePublicClient } from './chainConfig';
+import { getContractClient } from './contractClient';
+import { App } from './mongo/app';
 
 // ============================================================================
 // Utilities
@@ -37,10 +36,6 @@ const PKP_HELPER_V2_ADDRESS = '0x3f24953B66Ed4089c6B25Be8C7a83262d6f6255C';
 const PKP_NFT_ADDRESS = '0x487A9D096BB4B7Ac1520Cb12370e31e677B175EA';
 
 const relaySdk = new GelatoRelay();
-const basePublicClient = createPublicClient({
-  chain: base,
-  transport: http(),
-});
 
 function getConfig() {
   return {
@@ -332,7 +327,7 @@ export async function installApp(request: { appId: number; userControllerAddress
 
   console.log('[installApp] Installing app:', { appId, userControllerAddress });
 
-  // 1. look up the app and its active version
+  // 1. look up the app and its active version from MongoDB
   const app = await App.findOne({ appId, isDeleted: false });
   if (!app) {
     throw new Error(`App with id ${appId} not found`);
@@ -341,25 +336,21 @@ export async function installApp(request: { appId: number; userControllerAddress
     throw new Error(`App ${appId} has no active version`);
   }
 
-  // 2. fetch abilities for this app version
-  const appAbilities = await AppAbility.find({
+  // 2. Fetch abilities for this app version directly from on-chain contract
+  const contractClient = getContractClient();
+  const appVersionResult = await contractClient.getAppVersion({
     appId,
-    appVersion: app.activeVersion,
-    isDeleted: false,
+    version: app.activeVersion,
   });
 
-  // 3. look up IPFS CIDs for each ability
-  const abilityIpfsCids: string[] = [];
-  for (const appAbility of appAbilities) {
-    const abilityVersion = await AbilityVersion.findOne({
-      packageName: appAbility.abilityPackageName,
-      version: appAbility.abilityVersion,
-      isDeleted: false,
-    });
-    if (abilityVersion?.ipfsCid) {
-      abilityIpfsCids.push(abilityVersion.ipfsCid);
-    }
+  if (!appVersionResult) {
+    throw new Error(`App version ${app.activeVersion} not found on-chain for app ${appId}`);
   }
+
+  // 3. Extract IPFS CIDs from on-chain abilities
+  const abilityIpfsCids = appVersionResult.appVersion.abilities.map(
+    (ability) => ability.abilityIpfsCid,
+  );
 
   console.log('[installApp] Found abilities:', { count: abilityIpfsCids.length, abilityIpfsCids });
 
@@ -390,13 +381,10 @@ export async function installApp(request: { appId: number; userControllerAddress
   console.log(`[installApp] PKP minted: ${pkp.ethAddress}`);
 
   // 7. Calculate smart account address from PKP address
-  const publicClient = createPublicClient({
-    chain: base,
-    transport: http(),
-  });
+  const basePublicClient = getBasePublicClient();
 
   const agentSmartAccountAddress = await getKernelAddressFromECDSA({
-    publicClient: publicClient as any,
+    publicClient: basePublicClient as any,
     eoaAddress: userControllerAddress as `0x${string}`,
     index: deriveSmartAccountIndex(appId),
     entryPoint: constants.getEntryPoint('0.7'),
@@ -408,9 +396,8 @@ export async function installApp(request: { appId: number; userControllerAddress
   );
 
   // 8. Build EIP2771 data for user to sign (permitAppVersion on Vincent contract)
-  // TODO: this will be pubkey in bytes
-  // Use tokenId (keccak256 of pubkey) as it fits in uint256; full pubkey is 65 bytes
-  const pkpSignerPubKey = BigInt(pkp.tokenId);
+  // pkpSignerPubKey is the raw public key bytes (contract expects bytes calldata)
+  const pkpSignerPubKey = pkp.publicKey;
 
   // For installation, users don't set policies - create empty arrays matching ability count
   const policyIpfsCids: string[][] = abilityIpfsCids.map(() => []);
@@ -435,7 +422,7 @@ export async function installApp(request: { appId: number; userControllerAddress
   // Types don't match (SDK expects ethers, we pass viem) but works at runtime
   const dataToSign = await relaySdk.getDataToSignERC2771(
     {
-      chainId: base.id as unknown as bigint,
+      chainId: getBaseChainId() as unknown as bigint,
       target: VINCENT_DIAMOND_CONTRACT_ADDRESS_PROD,
       data: txData,
       user: userControllerAddress,

@@ -46,6 +46,10 @@ export async function completeInstallation(request: {
     }
 
     if (status.taskState === 'Cancelled' || status.taskState === 'ExecReverted') {
+      console.error(
+        '[completeInstallation] Task failed - full status:',
+        JSON.stringify(status, null, 2),
+      );
       throw new Error(`Gelato task failed: ${status.taskState} - ${status.lastCheckMessage}`);
     }
 

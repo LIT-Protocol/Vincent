@@ -764,6 +764,8 @@ export type App = {
   updatedAt: string;
   /** Timestamp when this was created */
   createdAt: string;
+  /** Application ID */
+  appId: number;
   /** Active version of the application */
   activeVersion?: number;
   /** The name of the application */
@@ -826,6 +828,8 @@ export type AppCreate = {
   appUrl?: string;
   /** Base64 encoded logo image */
   logo?: string;
+  /** Application ID */
+  appId: number;
   /** The name of the application */
   name: string;
   /** Description of the application */

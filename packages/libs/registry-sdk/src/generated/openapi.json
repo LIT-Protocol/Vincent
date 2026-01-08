@@ -101,6 +101,11 @@
             "description": "Base64 encoded logo image",
             "example": "iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAIAAAACDbGyAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAOvwAADr8BOAVTJAAAAA5JREFUGFdj/M+ACAAAAAD//wE7AnsAAAAAAElFTkSuQmCC"
           },
+          "appId": {
+            "type": "number",
+            "description": "Application ID",
+            "example": 12345
+          },
           "name": {
             "type": "string",
             "minLength": 2,
@@ -115,6 +120,7 @@
           }
         },
         "required": [
+          "appId",
           "name",
           "description"
         ],
@@ -191,8 +197,7 @@
           "appId": {
             "type": "number",
             "description": "Application ID",
-            "example": 12345,
-            "readOnly": true
+            "example": 12345
           },
           "activeVersion": {
             "type": "number",

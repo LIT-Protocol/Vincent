@@ -10,7 +10,12 @@ import { nodeClient } from '@lit-protocol/vincent-registry-sdk';
 
 const { vincentApiClientNode, setBaseQueryFn } = nodeClient;
 
-const provider = new providers.JsonRpcProvider('https://yellowstone-rpc.litprotocol.com');
+// Use BASE_RPC_URL for contract interactions (app registration happens on Base)
+const BASE_RPC_URL = process.env['BASE_RPC_URL'];
+if (!BASE_RPC_URL) {
+  throw new Error('BASE_RPC_URL environment variable is not set');
+}
+const provider = new providers.JsonRpcProvider(BASE_RPC_URL);
 
 // Generate random Ethereum addresses
 export const generateRandomEthAddresses = (count = 2): string[] => {
