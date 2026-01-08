@@ -6,7 +6,7 @@ import { COMBINED_ABI, GAS_ADJUSTMENT_PERCENT } from './constants';
 
 /**
  * Derives a 32-byte index for smart account creation from an appId.
- * Uses keccak256 hash of "vincent_app_id_{appId}" to ensure deterministic, collision-resistant index.
+ * Matches Solidity: keccak256(abi.encodePacked("vincent_app_id_", appId)) where appId is uint40.
  *
  * @param appId - The Vincent app ID
  * @returns A bigint suitable for use as the index parameter in getKernelAddressFromECDSA
@@ -14,8 +14,10 @@ import { COMBINED_ABI, GAS_ADJUSTMENT_PERCENT } from './constants';
  * @category API
  */
 export function deriveSmartAccountIndex(appId: number): bigint {
-  const indexString = `vincent_app_id_${appId}`;
-  const hash = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(indexString));
+  const prefix = ethers.utils.toUtf8Bytes('vincent_app_id_');
+  const appIdBytes = ethers.utils.zeroPad(ethers.utils.hexlify(appId), 5); // uint40 = 5 bytes
+  const packed = ethers.utils.concat([prefix, appIdBytes]);
+  const hash = ethers.utils.keccak256(packed);
   return BigInt(hash);
 }
 
