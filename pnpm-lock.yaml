@@ -1164,8 +1164,8 @@ importers:
         specifier: workspace:*
         version: link:../../libs/contracts-sdk
       '@lit-protocol/vincent-registry-sdk':
-        specifier: 4.4.0-alpha.0
-        version: 4.4.0-alpha.0(react-redux@9.2.0(@types/react@19.2.7)(react@19.2.1)(redux@5.0.1))(react@19.2.1)
+        specifier: 4.4.0-alpha.1
+        version: 4.4.0-alpha.1(react-redux@9.2.0(@types/react@19.2.7)(react@19.2.1)(redux@5.0.1))(react@19.2.1)
       '@t3-oss/env-core':
         specifier: ^0.13.6
         version: 0.13.8(arktype@2.1.28)(typescript@5.8.3)(valibot@1.1.0(typescript@5.8.3))(zod@3.25.64)
@@ -3875,8 +3875,8 @@ packages:
   '@lit-protocol/vincent-registry-sdk@4.3.0':
     resolution: {integrity: sha512-sg/rq5jbSafNtM3cDNvvia/meNpAySmk8CybG/72IOoIaGHV8Kmg3cy6c1kqE0uulQDm8GRu3E1GUevhIrjEew==}
 
-  '@lit-protocol/vincent-registry-sdk@4.4.0-alpha.0':
-    resolution: {integrity: sha512-ZtDVPB/AyGCAQrL6mtHBOevdA93pBLnJE/X0QdqxrgB9VumXzC93tWn/Ggl7iNg4PI8ukXSl/J5YOK3qJ5y42w==}
+  '@lit-protocol/vincent-registry-sdk@4.4.0-alpha.1':
+    resolution: {integrity: sha512-AY+r4WLn/FWELwGVZzIv5F90Gipb5yv1+wXwFevgXUKxFUiIVIXGMye+1bSrbIfC4ZZhF1fvJ/6oIIPbWkS65g==}
 
   '@lit-protocol/vincent-scaffold-sdk@1.1.8':
     resolution: {integrity: sha512-SCLsBEogqvdpT+ug2aBY+QQ0X9T882ZEIManRqUiM60IDtYl0UQtc9rXo+R2dq5UO9aSznPc6wPCvFGGWfxnxw==}
@@ -18528,7 +18528,7 @@ snapshots:
       - react
       - react-redux
 
-  '@lit-protocol/vincent-registry-sdk@4.4.0-alpha.0(react-redux@9.2.0(@types/react@19.2.7)(react@19.2.1)(redux@5.0.1))(react@19.2.1)':
+  '@lit-protocol/vincent-registry-sdk@4.4.0-alpha.1(react-redux@9.2.0(@types/react@19.2.7)(react@19.2.1)(redux@5.0.1))(react@19.2.1)':
     dependencies:
       '@asteasolutions/zod-to-openapi': 7.3.4(zod@3.25.64)
       '@reduxjs/toolkit': 2.11.1(react-redux@9.2.0(@types/react@19.2.7)(react@19.2.1)(redux@5.0.1))(react@19.2.1)

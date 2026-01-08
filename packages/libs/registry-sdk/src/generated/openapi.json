@@ -7,10 +7,7 @@
   },
   "servers": [
     {
-      "url": "https://staging.registry.heyvincent.ai"
-    },
-    {
-      "url": "https://registry.heyvincent.ai"
+      "url": "https://api.heyvincent.ai"
     },
     {
       "url": "http://localhost:3000/"

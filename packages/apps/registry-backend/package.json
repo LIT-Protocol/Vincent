@@ -26,7 +26,7 @@
     "@lit-protocol/flags": "^2.1.0",
     "@lit-protocol/vincent-app-sdk": "^2.5.0",
     "@lit-protocol/vincent-contracts-sdk": "7.0.0",
-    "@lit-protocol/vincent-registry-sdk": "4.4.0-alpha.0",
+    "@lit-protocol/vincent-registry-sdk": "4.4.0-alpha.1",
     "@t3-oss/env-core": "^0.13.6",
     "@zerodev/ecdsa-validator": "^5.4.9",
     "@zerodev/sdk": "^5.5.7",
