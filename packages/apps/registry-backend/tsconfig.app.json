@@ -15,12 +15,6 @@
   "references": [
     {
       "path": "../../libs/registry-sdk/tsconfig.lib.json"
-    },
-    {
-      "path": "../../libs/contracts-sdk/tsconfig.lib.json"
-    },
-    {
-      "path": "../../libs/app-sdk/tsconfig.lib.json"
     }
   ]
 }
