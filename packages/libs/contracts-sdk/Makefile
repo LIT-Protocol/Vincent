@@ -116,6 +116,41 @@ update-facet: ## Update a specific facet in the Vincent Diamond contract. Usage:
 		--private-key $(VINCENT_DEPLOYER_PRIVATE_KEY) \
 		--rpc-url $(RPC_URL)
 
+set-trusted-forwarder: ## Set the trusted forwarder address for EIP-2771 meta-transactions. Usage: make set-trusted-forwarder FORWARDER_ADDRESS=0x... NETWORK=datil|base-sepolia|base-mainnet
+	@if [ -z "$(VINCENT_DEPLOYER_PRIVATE_KEY)" ]; then \
+		echo "Error: VINCENT_DEPLOYER_PRIVATE_KEY is not set in .env"; \
+		exit 1; \
+	fi
+	@if [ -z "$(FORWARDER_ADDRESS)" ]; then \
+		echo "Error: FORWARDER_ADDRESS parameter is required."; \
+		echo "Usage: make set-trusted-forwarder FORWARDER_ADDRESS=0x... NETWORK=datil|base-sepolia|base-mainnet"; \
+		echo "Note: Use FORWARDER_ADDRESS=0x0000000000000000000000000000000000000000 to disable EIP-2771"; \
+		exit 1; \
+	fi
+	@if [ -z "$(NETWORK)" ]; then \
+		echo "Error: NETWORK parameter is required."; \
+		echo "Usage: make set-trusted-forwarder FORWARDER_ADDRESS=0x... NETWORK=datil|base-sepolia|base-mainnet"; \
+		exit 1; \
+	fi
+	@if [ "$(NETWORK)" != "datil" ] && [ "$(NETWORK)" != "base-sepolia" ] && [ "$(NETWORK)" != "base-mainnet" ]; then \
+		echo "Error: NETWORK must be one of: datil, base-sepolia, base-mainnet"; \
+		exit 1; \
+	fi
+	@if [ -z "$(RPC_URL)" ]; then \
+		echo "Error: RPC_URL is not set in .env"; \
+		exit 1; \
+	fi
+	@if [ -z "$(VINCENT_DIAMOND_ADDRESS)" ]; then \
+		echo "Error: VINCENT_DIAMOND_ADDRESS is not set in .env"; \
+		exit 1; \
+	fi
+	@echo "Setting trusted forwarder to $(FORWARDER_ADDRESS) on $(NETWORK)..."
+	@echo "Using diamond address: $(VINCENT_DIAMOND_ADDRESS)"
+	@NEW_FORWARDER_ADDRESS=$(FORWARDER_ADDRESS) VINCENT_DIAMOND_ADDRESS=$(VINCENT_DIAMOND_ADDRESS) forge script script/SetTrustedForwarder.sol:SetTrustedForwarder -vvv \
+		--broadcast \
+		--private-key $(VINCENT_DEPLOYER_PRIVATE_KEY) \
+		--rpc-url $(RPC_URL)
+
 get-abis: ## Get human-readable ABIs for all facets
 	@mkdir -p abis
 	# @echo "Getting ABI for DiamondCutFacet..."
