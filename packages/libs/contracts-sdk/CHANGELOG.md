@@ -1,3 +1,17 @@
+# 7.0.0 (2026-01-08)
+
+### 🚀 Features
+
+- Regenerate Vincent 2.0 contract ABIs ([71e47c9c](https://github.com/LIT-Protocol/Vincent/commit/71e47c9c))
+
+### ⚠️ Breaking Changes
+
+- Removed appId param from registerApp as it now generates the app ID sequentially. Additionally, registerApp returns the accountIndexHash intended to be used for ZeroDev smart account deployments. Lastly, contract deployment scripts have been updated to use create2 ([c1ccdc16](https://github.com/LIT-Protocol/Vincent/commit/c1ccdc16))
+
+### ❤️ Thank You
+
+- Wyatt Barnes @spacesailor24
+
 # 6.0.0 (2026-01-07)
 
 ### ⚠️ Breaking Changes

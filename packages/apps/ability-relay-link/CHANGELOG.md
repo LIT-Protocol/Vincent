@@ -1,3 +1,11 @@
+## 1.0.1 (2026-01-08)
+
+### 🧱 Updated Dependencies
+
+- Updated ability-sdk to 2.4.1
+- Updated app-sdk to 2.5.2
+- Updated e2e-test-utils to 2.0.1
+
 # 1.0.0 (2026-01-07)
 
 ### ⚠️ Breaking Changes
