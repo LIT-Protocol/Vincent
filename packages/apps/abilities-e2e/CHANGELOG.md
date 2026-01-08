@@ -1,3 +1,19 @@
+## 1.1.17 (2026-01-08)
+
+### 🧱 Updated Dependencies
+
+- Updated ability-sdk to 2.4.1
+- Updated app-sdk to 2.5.2
+- Updated contracts-sdk to 7.0.0
+- Updated policy-spending-limit to 2.1.10
+- Updated policy-contract-whitelist to 1.1.10
+- Updated ability-erc20-approval to 3.1.10
+- Updated ability-erc20-transfer to 0.1.11
+- Updated ability-uniswap-swap to 8.0.6
+- Updated ability-evm-transaction-signer to 0.1.10
+- Updated policy-send-counter to 0.2.10
+- Updated ability-aerodrome-swap to 0.4.7
+
 ## 1.1.16 (2026-01-07)
 
 ### 🧱 Updated Dependencies
