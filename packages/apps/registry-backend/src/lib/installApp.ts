@@ -9,9 +9,10 @@ import { AUTH_METHOD_SCOPE, AUTH_METHOD_TYPE } from '@lit-protocol/constants';
 import { datil as datilContracts } from '@lit-protocol/contracts';
 import {
   COMBINED_ABI,
-  deriveSmartAccountIndex,
   VINCENT_DIAMOND_CONTRACT_ADDRESS_PROD,
 } from '@lit-protocol/vincent-contracts-sdk';
+
+import { deriveSmartAccountIndex } from './utils';
 
 import PKPHelperV2Abi from '../../contracts/datil/PKPHelperV2.json';
 import { env } from '../env';

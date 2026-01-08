@@ -4,9 +4,10 @@ import { ethers, providers } from 'ethers';
 
 import {
   COMBINED_ABI,
-  deriveSmartAccountIndex,
   VINCENT_DIAMOND_CONTRACT_ADDRESS_PROD,
 } from '@lit-protocol/vincent-contracts-sdk';
+
+import { deriveSmartAccountIndex } from './utils';
 
 import { env } from '../env';
 import { getBasePublicClient } from './chainConfig';
