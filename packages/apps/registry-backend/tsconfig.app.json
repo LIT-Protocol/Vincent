@@ -12,9 +12,5 @@
     "outDir": "./dist",
     "resolveJsonModule": true
   },
-  "references": [
-    {
-      "path": "../../libs/registry-sdk/tsconfig.lib.json"
-    }
-  ]
+  "references": []
 }
