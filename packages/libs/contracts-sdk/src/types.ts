@@ -77,7 +77,6 @@ export interface AppVersion {
 /** @category Interfaces
  * */
 export interface RegisterAppParams {
-  appId: number;
   delegateeAddresses: string[];
   versionAbilities: AppVersionAbilities;
 }
@@ -382,7 +381,7 @@ export interface GetUnpermittedAppsForPkpsParams {
 export interface ContractClient {
   /** Registers a new app with its initial appVersion (v1)'s permissions
    *
-   * @returns { txHash } - The hash of the transaction that registered the app
+   * @returns { txHash, newAppId } - The hash of the transaction and the new app ID assigned by the contract
    */
   registerApp(params: RegisterAppParams, overrides?: Overrides): ReturnType<typeof _registerApp>;
 

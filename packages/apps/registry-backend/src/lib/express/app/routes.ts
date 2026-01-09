@@ -1,6 +1,5 @@
 import type { Express } from 'express';
 
-import { env } from '../../../env';
 import { Features } from '../../../features';
 import { getContractClient } from '../../contractClient';
 import { App, AppAbility, AppVersion } from '../../mongo/app';
@@ -13,15 +12,7 @@ import { requireAppVersion, withAppVersion } from './requireAppVersion';
 import { requireAppVersionNotOnChain } from './requireAppVersionNotOnChain';
 import { requireUserManagesApp } from './requireUserManagesApp';
 
-const { LIT_RELAYER_API_KEY, LIT_PAYER_SECRET_KEY } = env;
-
 const NEW_APP_APPVERSION = 1;
-const MAX_APPID_RETRY_ATTEMPTS = 20;
-
-// App IDs are randomly selected indexes between 1000 and 10 billion to avoid huge bigNum-sized strings for appId
-function generateRandomAppId(): number {
-  return Math.floor(Math.random() * (10_000_000_000 - 1000)) + 1000;
-}
 
 export function registerRoutes(app: Express) {
   // List all apps
@@ -48,110 +39,59 @@ export function registerRoutes(app: Express) {
     requireVincentAuth,
     withVincentAuth(async (req, res) => {
       await withSession(async (mongoSession) => {
-        const {
-          name,
-          deploymentStatus,
-          description,
-          contactEmail,
-          appUserUrl,
-          logo,
-          redirectUris,
-          delegateeAddresses,
-        } = req.body;
+        const { appId, name, deploymentStatus, description, contactEmail, appUrl, logo } = req.body;
 
-        const triedAppIds = new Set<number>();
-        let appId: number;
-        let appDef;
-        let success = false;
-        let attempts = 0;
-
-        while (!success && attempts < MAX_APPID_RETRY_ATTEMPTS) {
-          attempts++;
-
-          // Generate a new appId that we haven't tried yet
-          do {
-            appId = generateRandomAppId();
-          } while (triedAppIds.has(appId));
-
-          triedAppIds.add(appId);
-
-          const appVersion = new AppVersion({
-            appId,
-            version: NEW_APP_APPVERSION,
-            changes: 'Initial version',
-            enabled: true,
-          });
-
-          const appDoc = new App({
-            appId,
-            name,
-            description,
-            contactEmail,
-            appUserUrl,
-            logo,
-            redirectUris,
-            deploymentStatus,
-            delegateeAddresses,
-            managerAddress: getPKPInfo(req.vincentUser.decodedJWT).ethAddress,
-          });
-
-          // First, check if the appId exists in chain state; someone may have registered it off-registry
-          const appOnChain = await getContractClient().getAppById({
-            appId,
-          });
-
-          if (appOnChain) {
-            continue;
-          }
-
-          try {
-            await mongoSession.withTransaction(async (session) => {
-              await appVersion.save({ session });
-              appDef = await appDoc.save({ session });
-            });
-
-            success = true;
-          } catch (error: any) {
-            // Check if the error is due to duplicate appId
-            if (error.code === 11000 && error.keyPattern && error.keyPattern.appId) {
-              // This is a duplicate key error for appId, try again with a new appId
-              continue;
-            } else {
-              // This is some other error, re-throw it
-              throw error;
-            }
-          }
-        }
-
-        if (!success) {
-          res.status(500).json({
-            error: 'Failed to generate unique appId after maximum attempts',
-            attempts: MAX_APPID_RETRY_ATTEMPTS,
+        // Verify the appId exists on-chain (must be registered there first)
+        console.log('[createApp] Checking appId on-chain:', appId);
+        const appOnChain = await getContractClient().getAppById({ appId });
+        console.log('[createApp] getAppById result:', appOnChain);
+        if (!appOnChain) {
+          res.status(400).json({
+            error: 'Provided appId is not registered on-chain. Register the app on-chain first.',
           });
           return;
         }
 
-        if (Array.isArray(delegateeAddresses) && delegateeAddresses.length > 0) {
-          // Register delegatee addresses in the payment DB contract via the relayer
-          // so that the app dev doesn't have to think about RLI NFTs
-          const response = await fetch('https://datil-relayer.getlit.dev/add-users', {
-            method: 'POST',
-            headers: {
-              'api-key': LIT_RELAYER_API_KEY,
-              'payer-secret-key': LIT_PAYER_SECRET_KEY,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(delegateeAddresses),
+        // Verify the user is the on-chain app manager
+        const userAddress = getPKPInfo(req.vincentUser.decodedJWT).ethAddress;
+        if (appOnChain.manager.toLowerCase() !== userAddress.toLowerCase()) {
+          res.status(403).json({
+            error: 'You are not the manager of this app on-chain',
           });
-
-          if (!response.ok) {
-            const text = await response.text();
-            res.status(500).json({
-              error: `Failed to add delegatees as payees -- status: ${response.status} - ${text}`,
-            });
-            return;
-          }
+          return;
         }
+
+        // Check if appId already exists in database
+        const existingApp = await App.findOne({ appId });
+        if (existingApp) {
+          res.status(409).json({
+            error: 'App with this appId already exists in the registry',
+          });
+          return;
+        }
+
+        const appVersion = new AppVersion({
+          appId,
+          version: NEW_APP_APPVERSION,
+          changes: 'Initial version',
+        });
+
+        const appDoc = new App({
+          appId,
+          name,
+          description,
+          contactEmail,
+          appUrl,
+          logo,
+          deploymentStatus,
+          managerAddress: userAddress,
+        });
+
+        let appDef;
+        await mongoSession.withTransaction(async (session) => {
+          await appVersion.save({ session });
+          appDef = await appDoc.save({ session });
+        });
 
         res.status(201).json(appDef);
         return;
@@ -350,7 +290,6 @@ export function registerRoutes(app: Express) {
     requireApp(),
     requireUserManagesApp(),
     requireAppVersion(),
-    requireAppVersionNotOnChain(),
     withVincentAuth(
       withAppVersion(async (req, res) => {
         const { appId, version, abilityPackageName } = req.params;
@@ -594,10 +533,10 @@ export function registerRoutes(app: Express) {
           return;
         }
 
-        if (vincentAppVersion.isDeleted || !vincentAppVersion.enabled) {
+        if (vincentAppVersion.isDeleted) {
           res.status(400).json({
             message:
-              'Cannot set deleted or disabled app version as active. Make sure the appVersion is not deleted and is enabled, then try again.',
+              'Cannot set deleted app version as active. Make sure the appVersion is not deleted, then try again.',
           });
           return;
         }

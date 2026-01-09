@@ -41,7 +41,7 @@ export type {
 
 export { clientFromContract, getClient } from './contractClient';
 
-export { createContract } from './utils';
+export { createContract, deriveSmartAccountIndex } from './utils';
 
 export { getVincentWrappedKeysAccs } from './internal/wrapped-keys/getVincentWrappedKeysAccs';
 

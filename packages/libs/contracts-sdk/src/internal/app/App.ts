@@ -11,10 +11,12 @@ import type {
 
 import { decodeContractError, findEventByName, gasAdjustedOverrides } from '../../utils';
 
-export async function registerApp(params: RegisterAppOptions): Promise<{ txHash: string }> {
+export async function registerApp(
+  params: RegisterAppOptions,
+): Promise<{ txHash: string; newAppId: number }> {
   const {
     contract,
-    args: { appId, delegateeAddresses, versionAbilities },
+    args: { delegateeAddresses, versionAbilities },
     overrides,
   } = params;
 
@@ -22,18 +24,31 @@ export async function registerApp(params: RegisterAppOptions): Promise<{ txHash:
     const adjustedOverrides = await gasAdjustedOverrides(
       contract,
       'registerApp',
-      [appId, delegateeAddresses, versionAbilities],
+      [delegateeAddresses, versionAbilities],
       overrides,
     );
 
-    const tx = await contract.registerApp(appId, delegateeAddresses, versionAbilities, {
+    const tx = await contract.registerApp(delegateeAddresses, versionAbilities, {
       ...adjustedOverrides,
     });
 
-    await tx.wait();
+    const receipt = await tx.wait();
+
+    const event = findEventByName(contract, receipt.logs, 'NewAppRegistered');
+
+    if (!event) {
+      throw new Error('NewAppRegistered event not found');
+    }
+
+    const newAppId: number | undefined = contract.interface.parseLog(event)?.args?.appId;
+
+    if (newAppId === undefined) {
+      throw new Error('NewAppRegistered event does not contain appId argument');
+    }
 
     return {
       txHash: tx.hash,
+      newAppId: Number(newAppId),
     };
   } catch (error: unknown) {
     const decodedError = decodeContractError(error, contract);
