@@ -62,7 +62,7 @@ Before installing an app, fetch its details to display to the user.
   </Tab>
   <Tab title="Usage">
     ```typescript
-    const response = await fetch(`${VINCENT_API_URL}/app/${appId}`);
+    const response = await fetch(`https://api.heyvincent.ai/app/${appId}`);
     const appInfo = await response.json();
 
     // Display app info to user before installation
@@ -103,7 +103,7 @@ Start the installation process by providing the user's wallet address.
   </Tab>
   <Tab title="Usage">
     ```typescript
-    const response = await fetch(`${VINCENT_API_URL}/user/${appId}/install-app`, {
+    const response = await fetch(`https://api.heyvincent.ai/user/${appId}/install-app`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -151,7 +151,7 @@ Have the user sign the typed data and submit it to complete the installation.
     );
 
     // Complete the installation
-    const response = await fetch(`${VINCENT_API_URL}/user/${appId}/complete-installation`, {
+    const response = await fetch(`https://api.heyvincent.ai/user/${appId}/complete-installation`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -197,7 +197,7 @@ After installation (or on subsequent visits), retrieve the user's agent smart ac
   </Tab>
   <Tab title="Usage">
     ```typescript
-    const response = await fetch(`${VINCENT_API_URL}/user/${appId}/agent-account`, {
+    const response = await fetch(`https://api.heyvincent.ai/user/${appId}/agent-account`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
