@@ -1,4 +1,5 @@
 import type { ConcurrentPayloadToSign } from '@gelatonetwork/relay-sdk/dist/lib/erc2771/types';
+
 import bs58 from 'bs58';
 import { Contract, providers, Wallet } from 'ethers';
 
@@ -223,6 +224,7 @@ describe('User API Integration Tests', () => {
 
       // Sign the typed data with the user's wallet
       // Remove EIP712Domain from types as ethers adds it automatically
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { EIP712Domain: _, ...types } = typedData.types;
       const typedDataSignature = await defaultWallet._signTypedData(
         typedData.domain,
