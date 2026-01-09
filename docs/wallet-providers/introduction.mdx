@@ -6,8 +6,6 @@ This guide explains how wallet providers can integrate with the Vincent API to d
 
 ## Integration Flow Overview
 
-<div align="center">
-
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"transparent","primaryTextColor":"#FF4205","primaryBorderColor":"#FF4205","lineColor":"#FF4205"}}}%%
 sequenceDiagram
@@ -35,8 +33,6 @@ sequenceDiagram
     Wallet->>User: Display installed app with agent address
 ```
 
-</div>
-
 ## API Endpoints
 
 ### 1. Fetch App Information
@@ -62,7 +58,7 @@ Before installing an app, fetch its details to display to the user.
   </Tab>
   <Tab title="Usage">
     ```typescript
-    const response = await fetch(`${VINCENT_API_URL}/app/${appId}`);
+    const response = await fetch(`https://api.heyvincent.ai/app/${appId}`);
     const appInfo = await response.json();
 
     // Display app info to user before installation
@@ -103,7 +99,7 @@ Start the installation process by providing the user's wallet address.
   </Tab>
   <Tab title="Usage">
     ```typescript
-    const response = await fetch(`${VINCENT_API_URL}/user/${appId}/install-app`, {
+    const response = await fetch(`https://api.heyvincent.ai/user/${appId}/install-app`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -151,7 +147,7 @@ Have the user sign the typed data and submit it to complete the installation.
     );
 
     // Complete the installation
-    const response = await fetch(`${VINCENT_API_URL}/user/${appId}/complete-installation`, {
+    const response = await fetch(`https://api.heyvincent.ai/user/${appId}/complete-installation`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -197,7 +193,7 @@ After installation (or on subsequent visits), retrieve the user's agent smart ac
   </Tab>
   <Tab title="Usage">
     ```typescript
-    const response = await fetch(`${VINCENT_API_URL}/user/${appId}/agent-account`, {
+    const response = await fetch(`https://api.heyvincent.ai/user/${appId}/agent-account`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
