@@ -1489,8 +1489,8 @@ importers:
         specifier: ^7
         version: 7.3.1(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       '@lit-protocol/vincent-contracts-sdk':
-        specifier: workspace:*
-        version: link:../contracts-sdk
+        specifier: 7.0.0
+        version: 7.0.0(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
       '@t3-oss/env-core':
         specifier: ^0.13.8
         version: 0.13.8(arktype@2.1.28)(typescript@5.8.3)(valibot@1.1.0(typescript@5.8.3))(zod@3.25.64)
@@ -3871,6 +3871,9 @@ packages:
 
   '@lit-protocol/vincent-contracts-sdk@5.1.0':
     resolution: {integrity: sha512-IjoQGhaQdPj5JqNxlmnBOe0yRZPVPIQhNda7AQO7B/JhPXqErOLy9OaqgpBxU7wQvetDgDuyBfmPPVde7v2sPw==}
+
+  '@lit-protocol/vincent-contracts-sdk@7.0.0':
+    resolution: {integrity: sha512-BXNyI5QBXK+qwvAU4u0tApJLIZxhdxlSjYIX/EjfB2OlZt+J/agg0Fk9r6yYfovDyknFBlqanUjNzBvJcmTT1w==}
 
   '@lit-protocol/vincent-contracts-sdk@7.1.0-alpha.0':
     resolution: {integrity: sha512-mh1pvm+IQ+kAG8X2/yjYzD7bsl4yhheZ9K6ott0g4nEX7lMT9Sdwks7+owgoLWDNb7SxrVMhARQe0y0nP5CYVg==}
@@ -18487,6 +18490,41 @@ snapshots:
       - utf-8-validate
 
   '@lit-protocol/vincent-contracts-sdk@5.1.0(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)':
+    dependencies:
+      '@ethersproject/abi': 5.8.0
+      '@lit-protocol/constants': 7.3.1(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
+      '@lit-protocol/contracts-sdk': 7.3.1(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
+      '@lit-protocol/lit-node-client': 7.3.1(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
+      cbor2: 2.0.1
+      ethers: 5.8.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+    transitivePeerDependencies:
+      - '@azure/app-configuration'
+      - '@azure/cosmos'
+      - '@azure/data-tables'
+      - '@azure/identity'
+      - '@azure/keyvault-secrets'
+      - '@azure/storage-blob'
+      - '@capacitor/preferences'
+      - '@deno/kv'
+      - '@netlify/blobs'
+      - '@planetscale/database'
+      - '@react-native-async-storage/async-storage'
+      - '@upstash/redis'
+      - '@vercel/blob'
+      - '@vercel/functions'
+      - '@vercel/kv'
+      - '@walletconnect/modal'
+      - aws4fetch
+      - bufferutil
+      - db0
+      - encoding
+      - ioredis
+      - supports-color
+      - typescript
+      - uploadthing
+      - utf-8-validate
+
+  '@lit-protocol/vincent-contracts-sdk@7.0.0(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)':
     dependencies:
       '@ethersproject/abi': 5.8.0
       '@lit-protocol/constants': 7.3.1(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
