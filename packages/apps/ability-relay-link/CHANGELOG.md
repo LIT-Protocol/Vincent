@@ -1,3 +1,9 @@
+## 1.0.3 (2026-01-12)
+
+### 🧱 Updated Dependencies
+
+- Updated e2e-test-utils to 2.0.3
+
 ## 1.0.2 (2026-01-10)
 
 ### 🧱 Updated Dependencies
