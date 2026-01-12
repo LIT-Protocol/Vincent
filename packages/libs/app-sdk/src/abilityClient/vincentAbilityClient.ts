@@ -40,6 +40,7 @@ import {
 } from './typeGuards';
 
 const YELLOWSTONE_RPC_URL = 'https://yellowstone-rpc.litprotocol.com/';
+const BASE_RPC_URL = 'https://base.llamarpc.com';
 
 const bigintReplacer = (key: any, value: any) => {
   return typeof value === 'bigint' ? value.toString() : value;
@@ -72,6 +73,7 @@ const bigintReplacer = (key: any, value: any) => {
  *   },
  *   {
  *     delegatorPkpEthAddress: '0x123456789123456789123456789...',
+ *     agentAddress: '0xabc123...',
  *   });
  *
  * const uniswapSwapExecutionResult = await uniswapSwapAbilityClient.execute({
@@ -86,6 +88,7 @@ const bigintReplacer = (key: any, value: any) => {
  * },
  * {
  *   delegatorPkpEthAddress: '0x123456789123456789123456789...',
+ *   agentAddress: '0xabc123...',
  * });
  *
  * if(isAbilityResponseFailure(uniswapSwapExecutionResult)) {
@@ -139,7 +142,9 @@ export function getVincentAbilityClient<
     IpfsCid
   >;
   ethersSigner: ethers.Signer;
-  debug: boolean;
+  debug?: boolean;
+  registryRpcUrl?: string;
+  pkpInfoRpcUrl?: string;
 }): VincentAbilityClient<
   AbilityParamsSchema,
   PoliciesByPackageName,
@@ -148,7 +153,13 @@ export function getVincentAbilityClient<
   PrecheckSuccessSchema,
   PrecheckFailSchema
 > {
-  const { bundledVincentAbility, ethersSigner, debug } = params;
+  const {
+    bundledVincentAbility,
+    ethersSigner,
+    debug = false,
+    registryRpcUrl: defaultRegistryRpcUrl,
+    pkpInfoRpcUrl: defaultPkpInfoRpcUrl,
+  } = params;
   const { ipfsCid, vincentAbility, vincentAbilityApiVersion } = bundledVincentAbility;
 
   assertSupportedAbilityVersion(vincentAbilityApiVersion);
@@ -164,15 +175,29 @@ export function getVincentAbilityClient<
     async precheck(
       rawAbilityParams: z.infer<AbilityParamsSchema>,
       {
-        rpcUrl,
         delegatorPkpEthAddress,
-      }: AbilityClientContext & {
-        rpcUrl?: string;
-      }
+        agentAddress,
+        registryRpcUrl,
+        pkpInfoRpcUrl,
+        rpcUrl,
+      }: AbilityClientContext
     ): Promise<
       AbilityPrecheckResponse<PrecheckSuccessSchema, PrecheckFailSchema, PoliciesByPackageName>
     > {
-      console.log('precheck', { rawAbilityParams, delegatorPkpEthAddress, rpcUrl });
+      if (!agentAddress) {
+        throw new Error('AbilityClientContext.agentAddress is required for Vincent 2.0 flows.');
+      }
+      const resolvedRegistryRpcUrl =
+        registryRpcUrl ?? rpcUrl ?? defaultRegistryRpcUrl ?? BASE_RPC_URL;
+      const resolvedPkpInfoRpcUrl = pkpInfoRpcUrl ?? defaultPkpInfoRpcUrl ?? YELLOWSTONE_RPC_URL;
+
+      console.log('precheck', {
+        rawAbilityParams,
+        delegatorPkpEthAddress,
+        agentAddress,
+        resolvedRegistryRpcUrl,
+        resolvedPkpInfoRpcUrl,
+      });
       const delegateePkpEthAddress = ethers.utils.getAddress(await ethersSigner.getAddress());
 
       // This will be populated further during execution; if an error is encountered, it'll include as much data as we can give the caller.
@@ -182,6 +207,7 @@ export function getVincentAbilityClient<
           // delegatorPkpInfo: null,
         },
         abilityIpfsCid: ipfsCid,
+        agentAddress,
         // appId: undefined,
         // appVersion: undefined,
       } as any;
@@ -206,7 +232,7 @@ export function getVincentAbilityClient<
 
       const userPkpInfo = await getPkpInfo({
         litPubkeyRouterAddress: LIT_DATIL_PUBKEY_ROUTER_ADDRESS,
-        yellowstoneRpcUrl: rpcUrl ?? YELLOWSTONE_RPC_URL,
+        yellowstoneRpcUrl: resolvedPkpInfoRpcUrl,
         pkpEthAddress: delegatorPkpEthAddress,
       });
       baseContext.delegation.delegatorPkpInfo = userPkpInfo;
@@ -214,9 +240,9 @@ export function getVincentAbilityClient<
       console.log('userPkpInfo', userPkpInfo);
 
       const { decodedPolicies, appId, appVersion } = await getPoliciesAndAppVersion({
-        delegationRpcUrl: rpcUrl ?? YELLOWSTONE_RPC_URL,
+        registryRpcUrl: resolvedRegistryRpcUrl,
         appDelegateeAddress: delegateePkpEthAddress,
-        agentWalletPkpEthAddress: delegatorPkpEthAddress,
+        agentAddress,
         abilityIpfsCid: ipfsCid,
       });
       baseContext.appId = appId.toNumber();
@@ -230,7 +256,7 @@ export function getVincentAbilityClient<
         decodedPolicies,
         context: {
           ...baseContext,
-          rpcUrl,
+          registryRpcUrl: resolvedRegistryRpcUrl,
         },
       });
 
@@ -240,7 +266,7 @@ export function getVincentAbilityClient<
           {
             rawAbilityParams,
             delegatorPkpEthAddress,
-            rpcUrl,
+            resolvedRegistryRpcUrl,
           }
         );
         if (!baseAbilityContext.policiesContext.allow) {
@@ -310,17 +336,21 @@ export function getVincentAbilityClient<
     ): Promise<
       AbilityExecuteResponse<ExecuteSuccessSchema, ExecuteFailSchema, PoliciesByPackageName>
     > {
+      if (!context.agentAddress) {
+        throw new Error('AbilityClientContext.agentAddress is required for Vincent 2.0 flows.');
+      }
       const parsedParams = validateOrFail(
         rawAbilityParams,
         vincentAbility.abilityParamsSchema,
         'execute',
         'input'
       );
+      const resolvedContext = context;
 
       if (isAbilityResponseFailure(parsedParams)) {
         return {
           ...parsedParams,
-          context,
+          context: resolvedContext,
         } as AbilityExecuteResponse<ExecuteSuccessSchema, ExecuteFailSchema, PoliciesByPackageName>;
       }
 
@@ -332,7 +362,7 @@ export function getVincentAbilityClient<
         sessionSigs,
         jsParams: {
           abilityParams: parsedParams,
-          context,
+          context: resolvedContext,
           vincentAbilityApiVersion,
         },
       });
