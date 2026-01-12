@@ -1,3 +1,12 @@
+## 0.4.8 (2026-01-10)
+
+### 🧱 Updated Dependencies
+
+- Updated ability-sdk to 2.4.2
+- Updated app-sdk to 2.5.3
+- Updated contracts-sdk to 7.1.0
+- Updated e2e-test-utils to 2.0.2
+
 ## 0.4.7 (2026-01-08)
 
 ### 🧱 Updated Dependencies

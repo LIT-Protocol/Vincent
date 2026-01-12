@@ -1,3 +1,9 @@
+## 2.4.2 (2026-01-10)
+
+### 🧱 Updated Dependencies
+
+- Updated contracts-sdk to 7.1.0
+
 ## 2.4.1 (2026-01-08)
 
 ### 🧱 Updated Dependencies

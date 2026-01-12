@@ -1,6 +1,6 @@
 {
   "name": "@lit-protocol/vincent-e2e-test-utils",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "publishConfig": {
     "access": "public"
   },
@@ -18,7 +18,7 @@
     "@lit-protocol/lit-node-client": "^7",
     "@lit-protocol/pkp-ethers": "^7.3.1",
     "@lit-protocol/types": "^7",
-    "@lit-protocol/vincent-contracts-sdk": "7.0.0",
+    "@lit-protocol/vincent-contracts-sdk": "7.1.0",
     "@t3-oss/env-core": "^0.13.8",
     "@zerodev/ecdsa-validator": "^5.4.9",
     "@zerodev/permissions": "^5.6.2",
