@@ -14,7 +14,7 @@ import {
   getPoliciesAndAppVersion,
 } from '../policyCore/policyParameters/getOnchainPolicyParams';
 import { bigintReplacer } from '../utils';
-import { LIT_DATIL_PUBKEY_ROUTER_ADDRESS } from './constants';
+import { LIT_DATIL_PUBKEY_ROUTER_ADDRESS, VINCENT_REGISTRY_LIT_CHAIN } from './constants';
 
 declare const Lit: {
   Actions: {
@@ -60,29 +60,32 @@ export async function vincentPolicyHandler<
 }) {
   assertSupportedAbilityVersion(vincentAbilityApiVersion);
 
-  const { delegatorPkpEthAddress, abilityIpfsCid } = context; // FIXME: Set from ipfsCidsStack when it's shipped
+  const { delegatorPkpEthAddress, abilityIpfsCid, agentAddress } = context; // FIXME: Set from ipfsCidsStack when it's shipped
 
   console.log('actionIpfsIds:', LitAuth.actionIpfsIds.join(','));
   const policyIpfsCid = LitAuth.actionIpfsIds[0];
 
   console.log('context:', JSON.stringify(context, bigintReplacer));
   try {
-    const delegationRpcUrl = await Lit.Actions.getRpcUrl({
+    const pkpInfoRpcUrl = await Lit.Actions.getRpcUrl({
       chain: 'yellowstone',
+    });
+    const registryRpcUrl = await Lit.Actions.getRpcUrl({
+      chain: VINCENT_REGISTRY_LIT_CHAIN,
     });
 
     const userPkpInfo = await getPkpInfo({
       litPubkeyRouterAddress: LIT_DATIL_PUBKEY_ROUTER_ADDRESS,
-      yellowstoneRpcUrl: delegationRpcUrl,
+      yellowstoneRpcUrl: pkpInfoRpcUrl,
       pkpEthAddress: delegatorPkpEthAddress,
     });
     const appDelegateeAddress = ethers.utils.getAddress(LitAuth.authSigAddress);
     console.log('appDelegateeAddress', appDelegateeAddress);
 
     const { decodedPolicies, appId, appVersion } = await getPoliciesAndAppVersion({
-      delegationRpcUrl,
+      registryRpcUrl,
       appDelegateeAddress,
-      agentWalletPkpEthAddress: delegatorPkpEthAddress,
+      agentAddress,
       abilityIpfsCid,
     });
 
@@ -94,6 +97,7 @@ export async function vincentPolicyHandler<
       abilityIpfsCid: abilityIpfsCid,
       appId: appId.toNumber(),
       appVersion: appVersion.toNumber(),
+      agentAddress,
     };
 
     const onChainPolicyParams = await getDecodedPolicyParams({
