@@ -3,7 +3,7 @@ import { toInitConfig, serializePermissionAccount } from '@zerodev/permissions';
 import { createKernelAccount, createKernelAccountClient } from '@zerodev/sdk';
 import { createPublicClient, zeroAddress } from 'viem';
 
-import type { SetupSmartAccountParams, ZerodevSmartAccountInfo } from '../types';
+import type { SetupZerodevAccountParams, ZerodevSmartAccountInfo } from '../types';
 
 import {
   kernelVersion,
@@ -29,7 +29,8 @@ export async function setupZerodevAccount({
   ownerAccount,
   permittedAddress,
   chain,
-}: SetupSmartAccountParams): Promise<ZerodevSmartAccountInfo> {
+  deploy = true,
+}: SetupZerodevAccountParams): Promise<ZerodevSmartAccountInfo> {
   // Create public client for the chain using ZeroDev RPC
   // This ensures validator configuration is consistent with the bundler
   const zerodevTransport = getZerodevTransport();
@@ -37,9 +38,6 @@ export async function setupZerodevAccount({
     chain,
     transport: zerodevTransport,
   });
-
-  // Create ZeroDev paymaster using centralized factory
-  const zerodevPaymaster = createZeroDevPaymaster(chain);
 
   console.log('[setupZerodevAccount] Creating validators...');
 
@@ -73,23 +71,24 @@ export async function setupZerodevAccount({
   });
   const isDeployed = accountCode && accountCode !== '0x';
 
-  // Create kernel client with paymaster
-  const ownerKernelClient = createKernelAccountClient({
-    chain,
-    account: ownerKernelAccount,
-    bundlerTransport: zerodevTransport,
-    client: publicClient,
-    paymaster: {
-      getPaymasterData(userOperation) {
-        return zerodevPaymaster.sponsorUserOperation({ userOperation });
-      },
-    },
-  });
-
   if (isDeployed) {
     console.log('[setupZerodevAccount] ✅ Smart account already deployed');
-  } else {
+  } else if (deploy) {
     console.log('[setupZerodevAccount] Deploying Smart Account with empty UserOp...');
+
+    // Create ZeroDev paymaster using centralized factory
+    const zerodevPaymaster = createZeroDevPaymaster(chain);
+    const ownerKernelClient = createKernelAccountClient({
+      chain,
+      account: ownerKernelAccount,
+      bundlerTransport: zerodevTransport,
+      client: publicClient,
+      paymaster: {
+        getPaymasterData(userOperation) {
+          return zerodevPaymaster.sponsorUserOperation({ userOperation });
+        },
+      },
+    });
 
     // Deploy smart account with an empty user operation
     const deployUserOpHash = await ownerKernelClient.sendUserOperation({
@@ -112,6 +111,8 @@ export async function setupZerodevAccount({
     console.log(
       `[setupZerodevAccount] ✅ Smart Account deployed at tx: ${deployUserOpReceipt.receipt.transactionHash}`,
     );
+  } else {
+    console.log('[setupZerodevAccount] Skipping deployment (deploy=false)');
   }
 
   const permissionKernelAccountToSerialize = await createKernelAccount(publicClient, {
