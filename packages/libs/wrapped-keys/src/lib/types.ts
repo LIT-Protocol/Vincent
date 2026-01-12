@@ -39,6 +39,7 @@ export type GeneratePrivateKeyParams = BaseApiParams &
   ApiParamsSupportedNetworks & {
     delegatorSessionSigs: SessionSigsMap;
     memo: string;
+    agentAddress: string;
   };
 
 /**
@@ -59,6 +60,7 @@ export interface GeneratePrivateKeyResult {
 export type BatchGeneratePrivateKeysParams = BaseApiParams & {
   delegatorSessionSigs: SessionSigsMap;
   actions: GeneratePrivateKeyAction[];
+  agentAddress: string;
 };
 
 /** Result structure for individual actions in batch generate operations */
