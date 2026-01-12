@@ -10,6 +10,7 @@ import { getEnv } from './test-config';
 
 export const YELLOWSTONE_RPC_URL = getEnv('YELLOWSTONE_RPC_URL');
 export const BASE_RPC_URL = getEnv('BASE_RPC_URL');
+export const BASE_SEPOLIA_RPC_URL = getEnv('BASE_SEPOLIA_RPC_URL');
 export const ETH_RPC_URL = getEnv('ETH_RPC_URL');
 export const TEST_CONFIG_PATH = path.join(__dirname, '../test-config.json');
 
@@ -59,6 +60,29 @@ export const BASE_PUBLIC_CLIENT = createPublicClient({
   transport: http(BASE_RPC_URL),
 });
 
+export const BASE_SEPOLIA_CHAIN = defineChain({
+  id: 84532,
+  name: 'Base Sepolia',
+  network: 'base-sepolia',
+  nativeCurrency: {
+    decimals: 18,
+    name: 'Ether',
+    symbol: 'ETH',
+  },
+  rpcUrls: {
+    default: {
+      http: [BASE_SEPOLIA_RPC_URL],
+    },
+    public: {
+      http: [BASE_SEPOLIA_RPC_URL],
+    },
+  },
+});
+export const BASE_SEPOLIA_PUBLIC_CLIENT = createPublicClient({
+  chain: BASE_SEPOLIA_CHAIN,
+  transport: http(BASE_SEPOLIA_RPC_URL),
+});
+
 export const ETH_CHAIN = defineChain({
   id: 1,
   name: 'Ethereum Mainnet',
@@ -102,7 +126,10 @@ export const TEST_AGENT_WALLET_PKP_OWNER_VIEM_WALLET_CLIENT: DatilWalletClient =
   },
 );
 
-export const TEST_APP_MANAGER_PRIVATE_KEY = getEnv('TEST_APP_MANAGER_PRIVATE_KEY');
+export const TEST_APP_MANAGER_PRIVATE_KEY = getEnv(
+  'TEST_APP_MANAGER_PRIVATE_KEY',
+  TEST_FUNDER_PRIVATE_KEY,
+);
 export const TEST_APP_MANAGER_VIEM_WALLET_CLIENT: DatilWalletClient = createWalletClient({
   account: privateKeyToAccount(TEST_APP_MANAGER_PRIVATE_KEY as `0x${string}`),
   chain: DATIL_CHAIN,

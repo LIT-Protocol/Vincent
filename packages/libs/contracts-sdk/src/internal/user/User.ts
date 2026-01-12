@@ -6,26 +6,25 @@ import type {
 } from './types';
 
 import { decodeContractError, gasAdjustedOverrides } from '../../utils';
-import { getPkpTokenId } from '../../utils/pkpInfo';
 import { encodePermissionDataForChain } from '../../utils/policyParams';
 
 export async function permitApp(params: PermitAppOptions): Promise<{ txHash: string }> {
   const {
     contract,
-    args: { pkpEthAddress, appId, appVersion, permissionData },
+    args: { agentAddress, pkpSigner, pkpSignerPubKey, appId, appVersion, permissionData },
     overrides,
   } = params;
 
   try {
-    const pkpTokenId = await getPkpTokenId({ pkpEthAddress, signer: contract.signer });
-
     const flattenedParams = encodePermissionDataForChain(permissionData);
 
     const adjustedOverrides = await gasAdjustedOverrides(
       contract,
       'permitAppVersion',
       [
-        pkpTokenId,
+        agentAddress,
+        pkpSigner,
+        pkpSignerPubKey,
         appId,
         appVersion,
         flattenedParams.abilityIpfsCids,
@@ -36,7 +35,9 @@ export async function permitApp(params: PermitAppOptions): Promise<{ txHash: str
     );
 
     const tx = await contract.permitAppVersion(
-      pkpTokenId,
+      agentAddress,
+      pkpSigner,
+      pkpSignerPubKey,
       appId,
       appVersion,
       flattenedParams.abilityIpfsCids,
@@ -59,20 +60,18 @@ export async function permitApp(params: PermitAppOptions): Promise<{ txHash: str
 
 export async function unPermitApp({
   contract,
-  args: { pkpEthAddress, appId, appVersion },
+  args: { agentAddress, appId, appVersion },
   overrides,
 }: UnPermitAppOptions): Promise<{ txHash: string }> {
   try {
-    const pkpTokenId = await getPkpTokenId({ pkpEthAddress, signer: contract.signer });
-
     const adjustedOverrides = await gasAdjustedOverrides(
       contract,
       'unPermitAppVersion',
-      [pkpTokenId, appId, appVersion],
+      [agentAddress, appId, appVersion],
       overrides,
     );
 
-    const tx = await contract.unPermitAppVersion(pkpTokenId, appId, appVersion, {
+    const tx = await contract.unPermitAppVersion(agentAddress, appId, appVersion, {
       ...adjustedOverrides,
     });
     await tx.wait();
@@ -89,21 +88,19 @@ export async function unPermitApp({
 export async function rePermitApp(params: RePermitAppOptions): Promise<{ txHash: string }> {
   const {
     contract,
-    args: { pkpEthAddress, appId },
+    args: { agentAddress, appId },
     overrides,
   } = params;
 
   try {
-    const pkpTokenId = await getPkpTokenId({ pkpEthAddress, signer: contract.signer });
-
     const adjustedOverrides = await gasAdjustedOverrides(
       contract,
       'rePermitApp',
-      [pkpTokenId, appId],
+      [agentAddress, appId],
       overrides,
     );
 
-    const tx = await contract.rePermitApp(pkpTokenId, appId, {
+    const tx = await contract.rePermitApp(agentAddress, appId, {
       ...adjustedOverrides,
     });
     await tx.wait();
@@ -122,20 +119,18 @@ export async function setAbilityPolicyParameters(
 ): Promise<{ txHash: string }> {
   const {
     contract,
-    args: { appId, appVersion, pkpEthAddress, policyParams, deletePermissionData },
+    args: { appId, appVersion, agentAddress, policyParams, deletePermissionData },
     overrides,
   } = params;
 
   try {
-    const pkpTokenId = await getPkpTokenId({ pkpEthAddress, signer: contract.signer });
-
     const flattenedParams = encodePermissionDataForChain(policyParams, deletePermissionData);
 
     const adjustedOverrides = await gasAdjustedOverrides(
       contract,
       'setAbilityPolicyParameters',
       [
-        pkpTokenId,
+        agentAddress,
         appId,
         appVersion,
         flattenedParams.abilityIpfsCids,
@@ -146,7 +141,7 @@ export async function setAbilityPolicyParameters(
     );
 
     const tx = await contract.setAbilityPolicyParameters(
-      pkpTokenId,
+      agentAddress,
       appId,
       appVersion,
       flattenedParams.abilityIpfsCids,
