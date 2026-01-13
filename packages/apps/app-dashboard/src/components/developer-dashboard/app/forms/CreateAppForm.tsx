@@ -9,8 +9,8 @@ import { Form } from '@/components/shared/ui/form';
 import { Button } from '@/components/shared/ui/button';
 import {
   TextField,
+  NumberField,
   LongTextField,
-  ArrayField,
   ImageUploadField,
 } from '@/components/developer-dashboard/form-fields';
 import { DeploymentStatusSelectField } from '@/components/developer-dashboard/form-fields/array/DeploymentStatusSelectField';
@@ -19,27 +19,17 @@ import { extractErrorMessage } from '@/utils/developer-dashboard/app-forms';
 
 const { appDoc } = docSchemas;
 
-const {
-  name,
-  description,
-  contactEmail,
-  appUserUrl,
-  logo,
-  redirectUris,
-  deploymentStatus,
-  delegateeAddresses,
-} = appDoc.shape;
+const { appId, name, description, contactEmail, appUrl, logo, deploymentStatus } = appDoc.shape;
 
 export const CreateAppSchema = z
   .object({
+    appId,
     name,
     description,
     contactEmail,
-    appUserUrl,
+    appUrl,
     logo,
-    redirectUris,
     deploymentStatus,
-    delegateeAddresses,
   })
   .strict();
 
@@ -57,8 +47,6 @@ export function CreateAppForm({ onSubmit, isSubmitting = false }: CreateAppFormP
   const form = useForm<CreateAppFormData>({
     resolver: zodResolver(CreateAppSchema),
     defaultValues: {
-      redirectUris: [''],
-      delegateeAddresses: [''],
       deploymentStatus: 'dev',
     },
   });
@@ -100,6 +88,16 @@ export function CreateAppForm({ onSubmit, isSubmitting = false }: CreateAppFormP
                     Basic Information
                   </h3>
                   <div className="space-y-6">
+                    <NumberField
+                      name="appId"
+                      register={register}
+                      error={errors.appId?.message}
+                      label="App ID"
+                      placeholder="Enter on-chain app ID"
+                      required
+                      min={1}
+                    />
+
                     <TextField
                       name="name"
                       register={register}
@@ -129,9 +127,9 @@ export function CreateAppForm({ onSubmit, isSubmitting = false }: CreateAppFormP
                     />
 
                     <TextField
-                      name="appUserUrl"
+                      name="appUrl"
                       register={register}
-                      error={errors.appUserUrl?.message}
+                      error={errors.appUrl?.message}
                       label="App User URL"
                       placeholder="https://yourapp.com"
                       required
@@ -161,31 +159,6 @@ export function CreateAppForm({ onSubmit, isSubmitting = false }: CreateAppFormP
                     />
                   </div>
                 </div>
-              </div>
-
-              {/* Full Width Fields */}
-              <div className="space-y-6">
-                <ArrayField
-                  name="redirectUris"
-                  register={register}
-                  error={errors.redirectUris?.message}
-                  errors={errors}
-                  control={control}
-                  label="Redirect URIs"
-                  placeholder="https://yourapp.com/callback"
-                  required
-                />
-
-                <ArrayField
-                  name="delegateeAddresses"
-                  register={register}
-                  error={errors.delegateeAddresses?.message}
-                  errors={errors}
-                  control={control}
-                  label="Delegatee Addresses"
-                  placeholder="0x1234567890123456789012345678901234567890"
-                  required
-                />
               </div>
 
               {/* Status Messages */}
