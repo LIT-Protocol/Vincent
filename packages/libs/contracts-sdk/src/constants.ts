@@ -9,17 +9,13 @@ import { buildDiamondInterface } from './buildDiamondInterface';
 const DEFAULT_VINCENT_DIAMOND_CONTRACT_ADDRESS_PROD = '0x1599E2c248C34833A606EB1dFeA86b839170d49f';
 
 const resolveVincentDiamondContractAddressProd = () => {
-  const globalProcess =
-    typeof globalThis !== 'undefined' && 'process' in globalThis
-      ? (globalThis as { process?: { env?: Record<string, string | undefined> } }).process
+  const env =
+    typeof process !== 'undefined'
+      ? (process.env as Record<string, string | undefined>)
       : undefined;
-  const env = globalProcess?.env;
-  if (!env) {
-    return DEFAULT_VINCENT_DIAMOND_CONTRACT_ADDRESS_PROD;
-  }
   return (
-    env.VINCENT_DIAMOND_CONTRACT_ADDRESS_PROD ||
-    env.VINCENT_DIAMOND_CONTRACT_ADDRESS ||
+    env?.VINCENT_DIAMOND_CONTRACT_ADDRESS_PROD ||
+    env?.VINCENT_DIAMOND_CONTRACT_ADDRESS ||
     DEFAULT_VINCENT_DIAMOND_CONTRACT_ADDRESS_PROD
   );
 };

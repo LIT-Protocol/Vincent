@@ -1,3 +1,5 @@
+import { ethers } from 'ethers';
+
 import type {
   AgentPermittedApp,
   AgentUnpermittedApp,
@@ -22,6 +24,27 @@ import {
   decodePermissionDataFromChain,
   decodePolicyParametersForOneAbility,
 } from '../../utils/policyParams';
+
+// Matches 0x-prefixed hex strings that are all zeros (e.g., empty bytes32).
+const isZeroHex = (value: string) => /^0x0*$/.test(value);
+
+// Normalizes and checks for the zero address sentinel (0x000...000).
+const isZeroAddress = (value: string) =>
+  value.toLowerCase() === ethers.constants.AddressZero.toLowerCase();
+
+// Treat all-zero structs from the contract as "no permitted app" sentinel.
+const isEmptyPermittedApp = (permittedApp: ContractAgentPermittedApp['permittedApp']) =>
+  permittedApp.appId.isZero() &&
+  permittedApp.version.isZero() &&
+  isZeroAddress(permittedApp.pkpSigner) &&
+  isZeroHex(permittedApp.pkpSignerPubKey);
+
+// Treat all-zero structs from the contract as "no unpermitted app" sentinel.
+const isEmptyUnpermittedApp = (unpermittedApp: ContractAgentUnpermittedApp['unpermittedApp']) =>
+  unpermittedApp.appId.isZero() &&
+  unpermittedApp.previousPermittedVersion.isZero() &&
+  isZeroAddress(unpermittedApp.pkpSigner) &&
+  isZeroHex(unpermittedApp.pkpSignerPubKey);
 
 export async function getAllRegisteredAgentAddressesForUser(
   params: GetAllRegisteredAgentAddressesForUserOptions,
@@ -79,17 +102,17 @@ export async function getPermittedAppForAgents(
 
     return results.map((result) => {
       const appId = Number(result.permittedApp.appId);
-      const permittedApp =
-        appId === 0
-          ? null
-          : {
-              appId,
-              version: Number(result.permittedApp.version),
-              pkpSigner: result.permittedApp.pkpSigner,
-              pkpSignerPubKey: result.permittedApp.pkpSignerPubKey,
-              versionEnabled: result.permittedApp.versionEnabled,
-              isDeleted: result.permittedApp.isDeleted,
-            };
+      const appVersion = Number(result.permittedApp.version);
+      const permittedApp = isEmptyPermittedApp(result.permittedApp)
+        ? null
+        : {
+            appId,
+            version: appVersion,
+            pkpSigner: result.permittedApp.pkpSigner,
+            pkpSignerPubKey: result.permittedApp.pkpSignerPubKey,
+            versionEnabled: result.permittedApp.versionEnabled,
+            isDeleted: result.permittedApp.isDeleted,
+          };
 
       return {
         agentAddress: result.agentAddress,
@@ -116,17 +139,17 @@ export async function getUnpermittedAppForAgents(
 
     return results.map((result) => {
       const appId = Number(result.unpermittedApp.appId);
-      const unpermittedApp =
-        appId === 0
-          ? null
-          : {
-              appId,
-              previousPermittedVersion: Number(result.unpermittedApp.previousPermittedVersion),
-              pkpSigner: result.unpermittedApp.pkpSigner,
-              pkpSignerPubKey: result.unpermittedApp.pkpSignerPubKey,
-              versionEnabled: result.unpermittedApp.versionEnabled,
-              isDeleted: result.unpermittedApp.isDeleted,
-            };
+      const previousPermittedVersion = Number(result.unpermittedApp.previousPermittedVersion);
+      const unpermittedApp = isEmptyUnpermittedApp(result.unpermittedApp)
+        ? null
+        : {
+            appId,
+            previousPermittedVersion,
+            pkpSigner: result.unpermittedApp.pkpSigner,
+            pkpSignerPubKey: result.unpermittedApp.pkpSignerPubKey,
+            versionEnabled: result.unpermittedApp.versionEnabled,
+            isDeleted: result.unpermittedApp.isDeleted,
+          };
 
       return {
         agentAddress: result.agentAddress,
@@ -198,6 +221,8 @@ export async function isDelegateePermitted(params: IsDelegateePermittedOptions):
   } = params;
 
   try {
+    // We reuse validateAbilityExecutionAndGetPolicies because the registry view currently exposes
+    // only this selector for permission checks, so this keeps the read path aligned with on-chain behavior.
     const validationResult: AbilityExecutionValidation =
       await contract.validateAbilityExecutionAndGetPolicies(
         delegateeAddress,

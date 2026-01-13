@@ -19,7 +19,7 @@ const CHAIN_YELLOWSTONE = 'yellowstone' as const;
  * Platform user authorization is validated by validating the owner of the delegator PKP token is the requester by checking
  * the Lit PKP NFT contract's ownerOf method.
  *
- * @param delegatorPkpEthAddress - The PKP address used for ownership checks
+ * @param delegatorPkpEthAddress - The user PKP address used for ownership checks (not the agent address)
  * @param agentAddress - The agent smart account address used for permission checks
  *
  * @returns EvmContractConditions - Access control conditions authorizing a valid delegatee OR a platform user that is the owner of the delegator's PKP token

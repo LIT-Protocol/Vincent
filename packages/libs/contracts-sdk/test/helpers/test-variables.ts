@@ -126,6 +126,7 @@ export const TEST_AGENT_WALLET_PKP_OWNER_VIEM_WALLET_CLIENT: DatilWalletClient =
   },
 );
 
+// Falls back to the funder key so tests can run with a single funded account.
 export const TEST_APP_MANAGER_PRIVATE_KEY = getEnv(
   'TEST_APP_MANAGER_PRIVATE_KEY',
   TEST_FUNDER_PRIVATE_KEY,

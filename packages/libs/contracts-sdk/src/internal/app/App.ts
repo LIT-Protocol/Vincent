@@ -57,11 +57,28 @@ export async function registerApp(
       throw new Error('NewAppVersionRegistered event missing appVersion');
     }
 
+    const appIdNumber = Number(appId);
+    const newAppVersionNumber = Number(newAppVersion);
+    const accountIndexHashValue = accountIndexHash.toString();
+    const isZeroAccountIndexHash = /^0x0{64}$/i.test(accountIndexHashValue);
+
+    if (appIdNumber <= 0) {
+      throw new Error(`Invalid appId parsed from NewAppRegistered: ${appIdNumber}`);
+    }
+    if (newAppVersionNumber <= 0) {
+      throw new Error(
+        `Invalid appVersion parsed from NewAppVersionRegistered: ${newAppVersionNumber}`,
+      );
+    }
+    if (isZeroAccountIndexHash) {
+      throw new Error('Invalid accountIndexHash parsed from NewAppRegistered');
+    }
+
     return {
       txHash: tx.hash,
-      appId: Number(appId),
-      newAppVersion: Number(newAppVersion),
-      accountIndexHash: accountIndexHash.toString(),
+      appId: appIdNumber,
+      newAppVersion: newAppVersionNumber,
+      accountIndexHash: accountIndexHashValue,
     };
   } catch (error: unknown) {
     const decodedError = decodeContractError(error, contract);

@@ -697,7 +697,7 @@ describe('Vincent Contracts SDK E2E', () => {
 
     it('should return false for invalid ability IPFS CID using isDelegateePermitted', async () => {
       await testContext.ensureDelegateeForApp(getAppId());
-      const nonExistentAbility = 'QmInvalidAbilityCid123456789';
+      const nonExistentAbility = generateRandomIpfsCid();
       const isPermitted = await testState.userClient.isDelegateePermitted({
         delegateeAddress: testState.delegateeAddress,
         agentAddress: testState.agentAddress,
