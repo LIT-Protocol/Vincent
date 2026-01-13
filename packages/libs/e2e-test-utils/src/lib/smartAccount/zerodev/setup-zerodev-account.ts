@@ -23,6 +23,9 @@ import { getPermissionEmptyValidator } from './get-permission-empty-validator';
  * 4. Generates a serialized permission account for signing UserOps
  *
  * @param params - Configuration parameters
+ * @param params.deploy - When false, derive the deterministic account address without submitting a UserOp.
+ *   This skips on-chain deployment and lets tests register permissions for the address without paying gas, so that
+ *   we can verify registry flows without requiring a funded smart account.
  * @returns Smart account address and serialized permission account
  */
 export async function setupZerodevAccount({
