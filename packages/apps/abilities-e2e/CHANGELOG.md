@@ -1,3 +1,9 @@
+## 1.1.19 (2026-01-12)
+
+### 🧱 Updated Dependencies
+
+- Updated ability-aerodrome-swap to 0.4.9
+
 ## 1.1.18 (2026-01-10)
 
 ### 🧱 Updated Dependencies
