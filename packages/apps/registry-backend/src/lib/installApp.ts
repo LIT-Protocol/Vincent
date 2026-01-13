@@ -1,7 +1,5 @@
 import { GelatoRelay } from '@gelatonetwork/relay-sdk';
 import { ERC2771Type } from '@gelatonetwork/relay-sdk/dist/lib/erc2771/types/index.js';
-import { getKernelAddressFromECDSA } from '@zerodev/ecdsa-validator';
-import { constants } from '@zerodev/sdk';
 import bs58 from 'bs58';
 import { ethers, providers } from 'ethers';
 
@@ -9,7 +7,7 @@ import { AUTH_METHOD_SCOPE, AUTH_METHOD_TYPE } from '@lit-protocol/constants';
 import { datil as datilContracts } from '@lit-protocol/contracts';
 import {
   COMBINED_ABI,
-  deriveSmartAccountIndex,
+  deriveAgentAddress,
   VINCENT_DIAMOND_CONTRACT_ADDRESS_PROD,
 } from '@lit-protocol/vincent-contracts-sdk';
 
@@ -380,16 +378,14 @@ export async function installApp(request: { appId: number; userControllerAddress
 
   console.log(`[installApp] PKP minted: ${pkp.ethAddress}`);
 
-  // 7. Calculate smart account address from PKP address
+  // 7. Calculate smart account address from user controller and appId
   const basePublicClient = getBasePublicClient();
 
-  const agentSmartAccountAddress = await getKernelAddressFromECDSA({
-    publicClient: basePublicClient as any,
-    eoaAddress: userControllerAddress as `0x${string}`,
-    index: deriveSmartAccountIndex(appId),
-    entryPoint: constants.getEntryPoint('0.7'),
-    kernelVersion: constants.KERNEL_V3_1,
-  });
+  const agentSmartAccountAddress = await deriveAgentAddress(
+    basePublicClient,
+    userControllerAddress,
+    appId,
+  );
 
   console.log(
     `[installApp] Complete. App ${appId} v${app.activeVersion}, PKP: ${pkp.ethAddress}, SmartAccount: ${agentSmartAccountAddress}`,

@@ -44,8 +44,10 @@
     "@ethersproject/abi": "^5.8.0",
     "@lit-protocol/constants": "^7.3.1",
     "@lit-protocol/contracts-sdk": "^7.2.3",
-    "@lit-protocol/lit-node-client": "^7.2.3",
+    "@zerodev/ecdsa-validator": "^5.4.9",
+    "@zerodev/sdk": "^5.5.7",
     "cbor2": "^2.0.1",
-    "ethers": "^5.8.0"
+    "ethers": "^5.8.0",
+    "viem": "^2.34.0"
   }
 }

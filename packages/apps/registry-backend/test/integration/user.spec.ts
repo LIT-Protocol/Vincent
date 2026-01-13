@@ -22,6 +22,9 @@ import {
 
 const debug = createTestDebugger('user');
 
+// Helper to avoid Gelato rate limiting between relay calls
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 describe('User API Integration Tests', () => {
   let testAppId: number;
   let litContracts: LitContracts;
@@ -385,6 +388,243 @@ describe('User API Integration Tests', () => {
         expect(result.error.status).toBe(400);
       }
     });
+  });
+
+  describe('POST /user/:appId/unpermit-app and repermit-app', () => {
+    // Shared state for the unpermit/repermit flow tests
+    let agentSmartAccountAddress: string;
+    let unpermitDataToSign: any;
+
+    beforeAll(async () => {
+      // Get the agent address from a previous installation
+      const agentResult = await store.dispatch(
+        api.endpoints.getAgentAccount.initiate({
+          appId: testAppId,
+          getAgentAccountRequest: { userControllerAddress: defaultWallet.address },
+        }),
+      );
+
+      if (hasError(agentResult)) {
+        throw new Error('Failed to get agent account');
+      }
+      expectAssertObject(agentResult.data);
+      agentSmartAccountAddress = agentResult.data.agentAddress as string;
+      expect(agentSmartAccountAddress).toMatch(/^0x[a-fA-F0-9]{40}$/);
+    });
+
+    it('should return data to sign for unpermitting an app', async () => {
+      const result = await store.dispatch(
+        api.endpoints.unpermitApp.initiate({
+          appId: testAppId,
+          unpermitAppRequest: {
+            appVersion: 1,
+            userControllerAddress: defaultWallet.address,
+          },
+        }),
+      );
+
+      if (hasError(result)) {
+        console.error('unpermitApp failed:', result.error);
+      }
+      expectAssertObject(result.data);
+
+      expect(result.data).toHaveProperty('unpermitDataToSign');
+      expect(typeof result.data.unpermitDataToSign).toBe('object');
+
+      unpermitDataToSign = result.data.unpermitDataToSign;
+
+      debug({
+        unpermitDataToSign: JSON.stringify(unpermitDataToSign, null, 2),
+      });
+    }, 60000);
+
+    it('should complete unpermit with signed typed data', async () => {
+      expect(unpermitDataToSign).toBeDefined();
+
+      const { typedData } = unpermitDataToSign;
+
+      // Sign the typed data with the user's wallet
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { EIP712Domain: _, ...types } = typedData.types;
+      const typedDataSignature = await defaultWallet._signTypedData(
+        typedData.domain,
+        types,
+        typedData.message,
+      );
+
+      console.log('Unpermit typed data signature:', typedDataSignature);
+
+      // Wait to avoid Gelato rate limiting (Gelato has strict per-account limits)
+      console.log('Waiting 60s to avoid Gelato rate limiting...');
+      await delay(60000);
+
+      // Complete the unpermit
+      const completeResult = await store.dispatch(
+        api.endpoints.completeUnpermit.initiate({
+          appId: testAppId,
+          completeUnpermitRequest: {
+            typedDataSignature,
+            unpermitDataToSign,
+          },
+        }),
+      );
+
+      if (hasError(completeResult)) {
+        console.error('completeUnpermit failed:', completeResult.error);
+      }
+      expectAssertObject(completeResult.data);
+
+      expect(completeResult.data).toHaveProperty('transactionHash');
+      expect(completeResult.data.transactionHash).toMatch(/^0x[a-fA-F0-9]{64}$/);
+
+      console.log('Unpermit transaction hash:', completeResult.data.transactionHash);
+
+      debug({
+        transactionHash: completeResult.data.transactionHash,
+      });
+    }, 120000);
+
+    it('should have the app unpermitted on the Vincent contract after unpermit', async () => {
+      // Query the Vincent contract to verify the app was unpermitted
+      const vincentContract = new Contract(
+        VINCENT_DIAMOND_CONTRACT_ADDRESS_PROD,
+        COMBINED_ABI,
+        defaultWallet.provider,
+      );
+
+      const results = await vincentContract.getPermittedAppForAgents([agentSmartAccountAddress]);
+
+      console.log(
+        'getPermittedAppForAgents results after unpermit:',
+        JSON.stringify(results, null, 2),
+      );
+
+      expect(results).toHaveLength(1);
+      const [agentResult] = results;
+
+      // Verify the agent address matches
+      expect(agentResult.agentAddress.toLowerCase()).toBe(agentSmartAccountAddress.toLowerCase());
+
+      // Verify the app is no longer permitted (appId should be 0 or version should be 0)
+      const { permittedApp } = agentResult;
+      expect(Number(permittedApp.appId)).toBe(0);
+      expect(Number(permittedApp.version)).toBe(0);
+
+      debug({
+        agentAddress: agentResult.agentAddress,
+        appId: Number(permittedApp.appId),
+        version: Number(permittedApp.version),
+      });
+    }, 30000);
+
+    it('should return data to sign for repermitting an app', async () => {
+      const result = await store.dispatch(
+        api.endpoints.repermitApp.initiate({
+          appId: testAppId,
+          repermitAppRequest: {
+            userControllerAddress: defaultWallet.address,
+          },
+        }),
+      );
+
+      if (hasError(result)) {
+        console.error('repermitApp failed:', result.error);
+      }
+      expectAssertObject(result.data);
+
+      expect(result.data).toHaveProperty('repermitDataToSign');
+      expect(typeof result.data.repermitDataToSign).toBe('object');
+
+      // Store for the next test
+      (global as any).repermitDataToSign = result.data.repermitDataToSign;
+
+      debug({
+        repermitDataToSign: JSON.stringify(result.data.repermitDataToSign, null, 2),
+      });
+    }, 60000);
+
+    it('should complete repermit with signed typed data', async () => {
+      const repermitDataToSign = (global as any).repermitDataToSign;
+      expect(repermitDataToSign).toBeDefined();
+
+      const { typedData } = repermitDataToSign;
+
+      // Sign the typed data with the user's wallet
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { EIP712Domain: _, ...types } = typedData.types;
+      const typedDataSignature = await defaultWallet._signTypedData(
+        typedData.domain,
+        types,
+        typedData.message,
+      );
+
+      console.log('Repermit typed data signature:', typedDataSignature);
+
+      // Wait to avoid Gelato rate limiting (Gelato has strict per-account limits)
+      console.log('Waiting 60s to avoid Gelato rate limiting...');
+      await delay(60000);
+
+      // Complete the repermit
+      const completeResult = await store.dispatch(
+        api.endpoints.completeRepermit.initiate({
+          appId: testAppId,
+          completeRepermitRequest: {
+            typedDataSignature,
+            repermitDataToSign,
+          },
+        }),
+      );
+
+      if (hasError(completeResult)) {
+        console.error('completeRepermit failed:', completeResult.error);
+      }
+      expectAssertObject(completeResult.data);
+
+      expect(completeResult.data).toHaveProperty('transactionHash');
+      expect(completeResult.data.transactionHash).toMatch(/^0x[a-fA-F0-9]{64}$/);
+
+      console.log('Repermit transaction hash:', completeResult.data.transactionHash);
+
+      debug({
+        transactionHash: completeResult.data.transactionHash,
+      });
+    }, 120000);
+
+    it('should have the app permitted again on the Vincent contract after repermit', async () => {
+      // Query the Vincent contract to verify the app was repermitted
+      const vincentContract = new Contract(
+        VINCENT_DIAMOND_CONTRACT_ADDRESS_PROD,
+        COMBINED_ABI,
+        defaultWallet.provider,
+      );
+
+      const results = await vincentContract.getPermittedAppForAgents([agentSmartAccountAddress]);
+
+      console.log(
+        'getPermittedAppForAgents results after repermit:',
+        JSON.stringify(results, null, 2),
+      );
+
+      expect(results).toHaveLength(1);
+      const [agentResult] = results;
+
+      // Verify the agent address matches
+      expect(agentResult.agentAddress.toLowerCase()).toBe(agentSmartAccountAddress.toLowerCase());
+
+      // Verify the permitted app details are restored
+      const { permittedApp } = agentResult;
+      expect(Number(permittedApp.appId)).toBe(testAppId);
+      expect(Number(permittedApp.version)).toBe(1);
+      expect(permittedApp.versionEnabled).toBe(true);
+      expect(permittedApp.isDeleted).toBe(false);
+
+      debug({
+        agentAddress: agentResult.agentAddress,
+        appId: Number(permittedApp.appId),
+        version: Number(permittedApp.version),
+        versionEnabled: permittedApp.versionEnabled,
+      });
+    }, 30000);
   });
 
   describe('POST /user/:appId/agent-account', () => {
