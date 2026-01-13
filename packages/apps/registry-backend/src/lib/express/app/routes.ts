@@ -12,8 +12,6 @@ import { requireAppVersion, withAppVersion } from './requireAppVersion';
 import { requireAppVersionNotOnChain } from './requireAppVersionNotOnChain';
 import { requireUserManagesApp } from './requireUserManagesApp';
 
-const NEW_APP_APPVERSION = 1;
-
 export function registerRoutes(app: Express) {
   // List all apps
   app.get('/apps', async (req, res) => {
@@ -70,12 +68,6 @@ export function registerRoutes(app: Express) {
           return;
         }
 
-        const appVersion = new AppVersion({
-          appId,
-          version: NEW_APP_APPVERSION,
-          changes: 'Initial version',
-        });
-
         const appDoc = new App({
           appId,
           name,
@@ -87,11 +79,7 @@ export function registerRoutes(app: Express) {
           managerAddress: userAddress,
         });
 
-        let appDef;
-        await mongoSession.withTransaction(async (session) => {
-          await appVersion.save({ session });
-          appDef = await appDoc.save({ session });
-        });
+        const appDef = await appDoc.save();
 
         res.status(201).json(appDef);
         return;
