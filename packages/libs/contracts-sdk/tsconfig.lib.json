@@ -7,7 +7,8 @@
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "esModuleInterop": true,
-    "composite": true
+    "composite": true,
+    "baseUrl": "."
   },
   "include": ["src/**/*", "abis/**/*"],
   "exclude": ["**/*.spec.ts", "**/*.test.ts"],

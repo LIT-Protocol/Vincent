@@ -8,6 +8,7 @@ import { vincentAbility } from 'src/lib/vincent-ability';
 
 declare const abilityParams: AbilityParams;
 declare const context: {
+  agentAddress: string;
   delegatorPkpEthAddress: string;
 };
 
@@ -15,6 +16,7 @@ declare const context: {
   const func = vincentAbilityHandler({
     vincentAbility: vincentAbility,
     context: {
+      agentAddress: context.agentAddress,
       delegatorPkpEthAddress: context.delegatorPkpEthAddress,
     },
     abilityParams,
