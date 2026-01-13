@@ -4,7 +4,7 @@ import { Features } from '../../../features';
 import { getContractClient } from '../../contractClient';
 import { App, AppAbility, AppVersion } from '../../mongo/app';
 import { withSession } from '../../mongo/withSession';
-import { getPKPInfo, requireVincentAuth, withVincentAuth } from '../vincentAuth';
+import { requireVincentAuth, withVincentAuth } from '../vincentAuth';
 import { requireApp, withApp } from './requireApp';
 import { requireAppAbility, withAppAbility } from './requireAppAbility';
 import { requireAppOnChain, withAppOnChain } from './requireAppOnChain';
@@ -53,7 +53,7 @@ export function registerRoutes(app: Express) {
         }
 
         // Verify the user is the on-chain app manager
-        const userAddress = getPKPInfo(req.vincentUser.decodedJWT).ethAddress;
+        const userAddress = req.vincentUser.address;
         if (appOnChain.manager.toLowerCase() !== userAddress.toLowerCase()) {
           res.status(403).json({
             error: 'You are not the manager of this app on-chain',

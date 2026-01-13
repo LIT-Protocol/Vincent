@@ -4,7 +4,6 @@ import type { RequestWithVincentUser } from '../vincentAuth';
 import type { RequestWithApp } from './requireApp';
 
 import { createDebugger } from '../../../../debug';
-import { getPKPInfo } from '../vincentAuth';
 
 // Combined interface for requests with both app and vincent user
 export interface RequestWithAppAndVincentUser extends RequestWithApp, RequestWithVincentUser {}
@@ -40,7 +39,7 @@ export const requireUserManagesApp = () => {
         return;
       }
 
-      const userAddress = getPKPInfo(reqWithAppAndUser.vincentUser.decodedJWT).ethAddress;
+      const userAddress = reqWithAppAndUser.vincentUser.address;
 
       debug('Checking authorization', {
         userAddress,
