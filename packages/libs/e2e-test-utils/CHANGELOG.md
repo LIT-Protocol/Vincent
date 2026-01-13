@@ -1,3 +1,19 @@
+## 2.0.3 (2026-01-12)
+
+### 🩹 Fixes
+
+- Fix registerNewApp to receive an AppId from the contracts client, not generate it internally. ([bd440780](https://github.com/LIT-Protocol/Vincent/commit/bd440780))
+
+### ❤️ Thank You
+
+- awisniew207 @awisniew207
+
+## 2.0.2 (2026-01-10)
+
+### 🧱 Updated Dependencies
+
+- Updated contracts-sdk to 7.1.0
+
 ## 2.0.1 (2026-01-08)
 
 ### 🧱 Updated Dependencies

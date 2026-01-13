@@ -45,10 +45,8 @@ describe('Authorization Integration Tests', () => {
     name: 'Auth Test App',
     description: 'Test app for authorization tests',
     contactEmail: 'auth-test@example.com',
-    appUserUrl: 'https://example.com/auth-app',
+    appUrl: 'https://example.com/auth-app',
     logo: 'https://example.com/auth-logo.png',
-    redirectUris: ['https://example.com/auth-callback'],
-    delegateeAddresses: generateRandomEthAddresses(2),
   };
 
   const abilityData = {
@@ -67,37 +65,35 @@ describe('Authorization Integration Tests', () => {
   beforeAll(async () => {
     verboseLog('Authorization Integration Tests - Setup');
 
-    // Create App
+    // Register the app on-chain FIRST to get the contract-generated appId
+    const abilityIpfsCid = 'QmdZcfgQ9Kz8vNwS5owf6iBm9Co1qMGki244JSFuyPNv1W'; // Demo approval ability
+    const policyIpfsCid = 'QmRm6uoZqhCjCP7TXds7umBvsmR9mjAzhkhTUqbPr9dHJS'; // Demo policy
+
+    const { txHash, newAppId } = await getDefaultWalletContractClient().registerApp({
+      delegateeAddresses: generateRandomEthAddresses(2),
+      versionAbilities: {
+        abilityIpfsCids: [abilityIpfsCid],
+        abilityPolicies: [[policyIpfsCid]],
+      },
+    });
+
+    testAppId = newAppId;
+    testAppVersion = 1; // Initial version
+    verboseLog({ txHash, newAppId });
+
+    // Create App in the backend using the on-chain appId
     const appResult = await store.dispatch(
       api.endpoints.createApp.initiate({
-        appCreate: appData,
+        appCreate: {
+          ...appData,
+          appId: testAppId,
+        },
       }),
     );
     expect(appResult).not.toHaveProperty('error');
     const { data } = appResult;
     expectAssertObject(data);
-    testAppId = data.appId;
-    testAppVersion = 1; // Initial version
-
-    // Register the app on the contracts using contracts-sdk
-    const abilityIpfsCid = 'QmdZcfgQ9Kz8vNwS5owf6iBm9Co1qMGki244JSFuyPNv1W'; // Demo approval ability
-    const policyIpfsCid = 'QmRm6uoZqhCjCP7TXds7umBvsmR9mjAzhkhTUqbPr9dHJS'; // Demo policy
-
-    try {
-      const { txHash } = await getDefaultWalletContractClient().registerApp({
-        appId: testAppId,
-        delegateeAddresses: appData.delegateeAddresses,
-        versionAbilities: {
-          abilityIpfsCids: [abilityIpfsCid],
-          abilityPolicies: [[policyIpfsCid]],
-        },
-      });
-
-      verboseLog({ txHash });
-    } catch (error) {
-      console.error('Failed to register app on contracts:', error);
-      throw error;
-    }
+    expect(data.appId).toBe(testAppId);
 
     // Create Ability
     testAbilityPackageName = `vincent-demo-ability`;

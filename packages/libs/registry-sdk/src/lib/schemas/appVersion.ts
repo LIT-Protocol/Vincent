@@ -13,10 +13,6 @@ const appVersion = z
       example: 1,
       readOnly: true,
     }),
-    enabled: z.boolean().openapi({
-      description: 'Whether this version is enabled or not',
-      example: true,
-    }),
     // Will not be set on appVersion 1; expected on all subsequent appVersions
     changes: z.string().optional().openapi({
       description: 'Describes what changed between this version and the previous version.',

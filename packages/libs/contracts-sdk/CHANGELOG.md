@@ -1,3 +1,26 @@
+## 7.1.0 (2026-01-10)
+
+### 🚀 Features
+
+- Add user app installation flow and agent account lookup ([ae603a1a](https://github.com/LIT-Protocol/Vincent/commit/ae603a1a))
+
+  **registry-sdk:**
+  - Remove `enabled` from AppVersion document (status exists in contracts)
+  - Remove `delegateeAddresses` from App document
+  - Remove `redirectUris` from App document
+  - Rename `appUserUrl` to `appUrl` in App document
+  - Add `POST /user/:appId/install-app` endpoint schema
+  - Add `POST /user/:appId/complete-installation` endpoint schema
+  - Add `POST /user/:appId/agent-account` endpoint schema
+  - Regenerate RTK clients
+    **contracts-sdk:**
+  - Add `deriveSmartAccountIndex(appId)` function using `keccak256("vincent_app_id_{appId}")`
+  - Export function from package index for client-side address derivation
+
+### ❤️ Thank You
+
+- awisniew207 @awisniew207
+
 # 7.0.0 (2026-01-08)
 
 ### 🚀 Features

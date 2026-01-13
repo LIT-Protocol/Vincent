@@ -2,15 +2,6 @@
   "extends": ["../../../tsconfig.base.json"],
   "references": [
     {
-      "path": "../../libs/registry-sdk"
-    },
-    {
-      "path": "../../libs/contracts-sdk"
-    },
-    {
-      "path": "../../libs/app-sdk"
-    },
-    {
       "path": "./tsconfig.spec.json"
     },
     {
