@@ -1435,6 +1435,151 @@
         ],
         "additionalProperties": false
       },
+      "GetAgentFundsRequest": {
+        "type": "object",
+        "properties": {
+          "userControllerAddress": {
+            "type": "string",
+            "pattern": "^0x[a-fA-F0-9]{40}$",
+            "description": "The Ethereum address of the user controller wallet",
+            "example": "0x123456789012345678901234567890123456abcd"
+          },
+          "networks": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Networks to query for token balances",
+            "example": [
+              "base-mainnet",
+              "base-sepolia"
+            ]
+          }
+        },
+        "required": [
+          "userControllerAddress",
+          "networks"
+        ],
+        "additionalProperties": false
+      },
+      "GetAgentFundsResponse": {
+        "type": "object",
+        "properties": {
+          "agentAddress": {
+            "type": "string",
+            "description": "The derived agent smart account address",
+            "example": "0x123456789012345678901234567890123456abcd"
+          },
+          "tokens": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "address": {
+                  "type": "string",
+                  "description": "Wallet address that holds the token"
+                },
+                "network": {
+                  "type": "string",
+                  "description": "Network identifier",
+                  "example": "base-mainnet"
+                },
+                "tokenAddress": {
+                  "type": "string",
+                  "description": "Token contract address"
+                },
+                "tokenBalance": {
+                  "type": "string",
+                  "description": "Token balance in wei/smallest unit"
+                },
+                "tokenMetadata": {
+                  "type": "object",
+                  "properties": {
+                    "decimals": {
+                      "type": "number",
+                      "description": "Token decimals",
+                      "example": 18
+                    },
+                    "logo": {
+                      "type": "string",
+                      "nullable": true,
+                      "description": "Token logo URL"
+                    },
+                    "name": {
+                      "type": "string",
+                      "description": "Token name",
+                      "example": "USD Coin"
+                    },
+                    "symbol": {
+                      "type": "string",
+                      "description": "Token symbol",
+                      "example": "USDC"
+                    }
+                  },
+                  "required": [
+                    "decimals",
+                    "logo",
+                    "name",
+                    "symbol"
+                  ],
+                  "additionalProperties": false
+                },
+                "tokenPrices": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "currency": {
+                        "type": "string",
+                        "description": "Price currency",
+                        "example": "usd"
+                      },
+                      "value": {
+                        "type": "string",
+                        "description": "Price value",
+                        "example": "1.00"
+                      },
+                      "lastUpdatedAt": {
+                        "type": "string",
+                        "description": "Last price update timestamp",
+                        "example": "2024-01-01T00:00:00Z"
+                      }
+                    },
+                    "required": [
+                      "currency",
+                      "value",
+                      "lastUpdatedAt"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "error": {
+                  "type": "string",
+                  "nullable": true,
+                  "description": "Error message if applicable"
+                }
+              },
+              "required": [
+                "address",
+                "network",
+                "tokenAddress",
+                "tokenBalance"
+              ],
+              "additionalProperties": false
+            },
+            "description": "List of tokens held by the agent"
+          },
+          "pageKey": {
+            "type": "string",
+            "description": "Pagination key for fetching more results"
+          }
+        },
+        "required": [
+          "agentAddress",
+          "tokens"
+        ],
+        "additionalProperties": false
+      },
       "AppList": {
         "type": "array",
         "items": {
@@ -4775,6 +4920,79 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/CompleteRepermitResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "App not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/user/{appId}/agent-funds": {
+      "post": {
+        "tags": [
+          "User"
+        ],
+        "summary": "Get agent funds",
+        "description": "Returns the token balances held by the agent smart account for a user and app combination",
+        "operationId": "getAgentFunds",
+        "parameters": [
+          {
+            "schema": {
+              "type": "number"
+            },
+            "required": true,
+            "description": "ID of the target application",
+            "example": 132,
+            "name": "appId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetAgentFundsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Agent funds returned successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetAgentFundsResponse"
                 }
               }
             }

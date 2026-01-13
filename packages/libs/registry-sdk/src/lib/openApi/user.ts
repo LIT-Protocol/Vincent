@@ -22,6 +22,7 @@ import {
   completeUnpermitRequest,
   completeUnpermitResponse,
 } from '../schemas/unpermitApp';
+import { getAgentFundsRequest, getAgentFundsResponse } from '../schemas/agentFunds';
 import { z } from '../schemas/openApiZod';
 import { appIdParam } from './app';
 import { ErrorResponse } from './baseRegistry';
@@ -70,6 +71,10 @@ export function addToRegistry(registry: OpenAPIRegistry) {
     'CompleteRepermitResponse',
     completeRepermitResponse,
   );
+
+  // Agent funds schemas
+  const GetAgentFundsRequest = registry.register('GetAgentFundsRequest', getAgentFundsRequest);
+  const GetAgentFundsResponse = registry.register('GetAgentFundsResponse', getAgentFundsResponse);
 
   // POST /user/:appId/install-app - Install an app for a user
   registry.registerPath({
@@ -424,6 +429,61 @@ export function addToRegistry(registry: OpenAPIRegistry) {
         content: {
           'application/json': {
             schema: CompleteRepermitResponse,
+          },
+        },
+      },
+      400: {
+        description: 'Bad request',
+        content: {
+          'application/json': {
+            schema: ErrorResponse,
+          },
+        },
+      },
+      404: {
+        description: 'App not found',
+        content: {
+          'application/json': {
+            schema: ErrorResponse,
+          },
+        },
+      },
+      default: {
+        description: 'Error',
+        content: {
+          'application/json': {
+            schema: ErrorResponse,
+          },
+        },
+      },
+    },
+  });
+
+  // POST /user/:appId/agent-funds - Get token balances for an agent's smart account
+  registry.registerPath({
+    method: 'post',
+    path: '/user/{appId}/agent-funds',
+    tags: ['User'],
+    summary: 'Get agent funds',
+    description:
+      'Returns the token balances held by the agent smart account for a user and app combination',
+    operationId: 'getAgentFunds',
+    request: {
+      params: z.object({ appId: appIdParam }),
+      body: {
+        content: {
+          'application/json': {
+            schema: GetAgentFundsRequest,
+          },
+        },
+      },
+    },
+    responses: {
+      200: {
+        description: 'Agent funds returned successfully',
+        content: {
+          'application/json': {
+            schema: GetAgentFundsResponse,
           },
         },
       },

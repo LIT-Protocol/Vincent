@@ -3,6 +3,7 @@ import type { Express } from 'express';
 import { completeInstallation } from '../../completeInstallation';
 import { completeRelayTransaction } from '../../completeRelayTransaction';
 import { getAgentAccount } from '../../getAgentAccount';
+import { getAgentFunds } from '../../getAgentFunds';
 import { installApp } from '../../installApp';
 import { repermitApp } from '../../repermitApp';
 import { unpermitApp } from '../../unpermitApp';
@@ -103,6 +104,21 @@ export function registerRoutes(app: Express) {
         typedDataSignature: req.body.typedDataSignature,
         dataToSign: req.body.repermitDataToSign,
         operationName: 'completeRepermit',
+      });
+
+      res.json(result);
+      return;
+    }),
+  );
+
+  app.post(
+    '/user/:appId/agent-funds',
+    requireApp(),
+    withApp(async (req, res) => {
+      const result = await getAgentFunds({
+        appId: req.vincentApp.appId,
+        userControllerAddress: req.body.userControllerAddress,
+        networks: req.body.networks,
       });
 
       res.json(result);
