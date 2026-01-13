@@ -15,11 +15,11 @@
   ],
   "components": {
     "securitySchemes": {
-      "bearerAuth": {
-        "type": "http",
-        "scheme": "bearer",
-        "bearerFormat": "JWT",
-        "description": "Vincent-issued JWTs must be used for these endpoints."
+      "siweAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "Authorization",
+        "description": "Sign In With Ethereum authentication (SIWE). Format is \"SIWE [JSON({ message, signature })]\""
       }
     },
     "schemas": {
@@ -1388,7 +1388,7 @@
         "operationId": "createApp",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "requestBody": {
@@ -1485,7 +1485,7 @@
         "operationId": "editApp",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -1550,7 +1550,7 @@
         "operationId": "deleteApp",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -1606,7 +1606,7 @@
         "operationId": "undeleteApp",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -1706,7 +1706,7 @@
         "operationId": "createAppVersion",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -1825,7 +1825,7 @@
         "operationId": "editAppVersion",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -1898,7 +1898,7 @@
         "operationId": "deleteAppVersion",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -1965,7 +1965,7 @@
         "operationId": "enableAppVersion",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -2029,7 +2029,7 @@
         "operationId": "disableAppVersion",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -2149,7 +2149,7 @@
         "operationId": "createAppVersionAbility",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -2232,7 +2232,7 @@
         "operationId": "editAppVersionAbility",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -2318,7 +2318,7 @@
         "operationId": "deleteAppVersionAbility",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -2395,7 +2395,7 @@
         "operationId": "undeleteAppVersion",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -2462,7 +2462,7 @@
         "operationId": "undeleteAppVersionAbility",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -2539,7 +2539,7 @@
         "operationId": "setAppActiveVersion",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -2639,7 +2639,7 @@
         "operationId": "createAbility",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -2746,7 +2746,7 @@
         "operationId": "editAbility",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -2810,7 +2810,7 @@
         "operationId": "deleteAbility",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -2907,7 +2907,7 @@
         "operationId": "changeAbilityOwner",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -2972,7 +2972,7 @@
         "operationId": "createAbilityVersion",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -3099,7 +3099,7 @@
         "operationId": "editAbilityVersion",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -3172,7 +3172,7 @@
         "operationId": "deleteAbilityVersion",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -3240,7 +3240,7 @@
         "operationId": "undeleteAbility",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -3291,7 +3291,7 @@
         "operationId": "undeleteAbilityVersion",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -3358,7 +3358,7 @@
         "operationId": "refreshAbilityVersionPolicies",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -3457,7 +3457,7 @@
         "operationId": "createPolicy",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -3564,7 +3564,7 @@
         "operationId": "editPolicy",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -3628,7 +3628,7 @@
         "operationId": "deletePolicy",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -3679,7 +3679,7 @@
         "operationId": "createPolicyVersion",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -3806,7 +3806,7 @@
         "operationId": "editPolicyVersion",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -3879,7 +3879,7 @@
         "operationId": "deletePolicyVersion",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -3992,7 +3992,7 @@
         "operationId": "changePolicyOwner",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -4058,7 +4058,7 @@
         "operationId": "undeletePolicy",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -4109,7 +4109,7 @@
         "operationId": "undeletePolicyVersion",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
