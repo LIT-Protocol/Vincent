@@ -1,10 +1,10 @@
 import { ethers } from 'ethers';
 
+import type { getTestClient } from '../src/index';
 import type { PermissionData } from '../src/types';
 import type { TestConfig, TestContextState } from './helpers';
 
 import { VINCENT_DIAMOND_CONTRACT_ADDRESS_PROD } from '../src/constants';
-import { getTestClient } from '../src/index';
 import { expectAssertArray, expectAssertObject } from './assertions';
 import {
   BASE_SEPOLIA_RPC_URL,

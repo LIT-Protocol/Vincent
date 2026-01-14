@@ -32,17 +32,24 @@ const isZeroHex = (value: string) => /^0x0*$/.test(value);
 const isZeroAddress = (value: string) =>
   value.toLowerCase() === ethers.constants.AddressZero.toLowerCase();
 
+// Helper to check if a value is zero (works with both BigNumber and plain number from uint40/uint256)
+const isZeroValue = (value: any): boolean => {
+  if (typeof value === 'number') return value === 0;
+  if (value?.isZero) return value.isZero();
+  return Number(value) === 0;
+};
+
 // Treat all-zero structs from the contract as "no permitted app" sentinel.
 const isEmptyPermittedApp = (permittedApp: ContractAgentPermittedApp['permittedApp']) =>
-  permittedApp.appId.isZero() &&
-  permittedApp.version.isZero() &&
+  isZeroValue(permittedApp.appId) &&
+  isZeroValue(permittedApp.version) &&
   isZeroAddress(permittedApp.pkpSigner) &&
   isZeroHex(permittedApp.pkpSignerPubKey);
 
 // Treat all-zero structs from the contract as "no unpermitted app" sentinel.
 const isEmptyUnpermittedApp = (unpermittedApp: ContractAgentUnpermittedApp['unpermittedApp']) =>
-  unpermittedApp.appId.isZero() &&
-  unpermittedApp.previousPermittedVersion.isZero() &&
+  isZeroValue(unpermittedApp.appId) &&
+  isZeroValue(unpermittedApp.previousPermittedVersion) &&
   isZeroAddress(unpermittedApp.pkpSigner) &&
   isZeroHex(unpermittedApp.pkpSignerPubKey);
 
@@ -101,13 +108,11 @@ export async function getPermittedAppForAgents(
       await contract.getPermittedAppForAgents(agentAddresses);
 
     return results.map((result) => {
-      const appId = Number(result.permittedApp.appId);
-      const appVersion = Number(result.permittedApp.version);
       const permittedApp = isEmptyPermittedApp(result.permittedApp)
         ? null
         : {
-            appId,
-            version: appVersion,
+            appId: Number(result.permittedApp.appId),
+            version: Number(result.permittedApp.version),
             pkpSigner: result.permittedApp.pkpSigner,
             pkpSignerPubKey: result.permittedApp.pkpSignerPubKey,
             versionEnabled: result.permittedApp.versionEnabled,
@@ -138,13 +143,11 @@ export async function getUnpermittedAppForAgents(
       await contract.getUnpermittedAppForAgents(agentAddresses);
 
     return results.map((result) => {
-      const appId = Number(result.unpermittedApp.appId);
-      const previousPermittedVersion = Number(result.unpermittedApp.previousPermittedVersion);
       const unpermittedApp = isEmptyUnpermittedApp(result.unpermittedApp)
         ? null
         : {
-            appId,
-            previousPermittedVersion,
+            appId: Number(result.unpermittedApp.appId),
+            previousPermittedVersion: Number(result.unpermittedApp.previousPermittedVersion),
             pkpSigner: result.unpermittedApp.pkpSigner,
             pkpSignerPubKey: result.unpermittedApp.pkpSignerPubKey,
             versionEnabled: result.unpermittedApp.versionEnabled,

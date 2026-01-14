@@ -1,13 +1,14 @@
-import { ethers } from 'ethers';
 import type { providers } from 'ethers';
 
-import { getTestClient } from '../../src';
+import { ethers } from 'ethers';
+
 import type { PermissionData } from '../../src/types';
 import type { TestConfig } from './test-config';
 
-import { checkShouldMintAndFundPkp } from './check-mint-fund-pkp';
-import { checkShouldMintCapacityCredit } from './check-mint-capcity-credit';
+import { getTestClient } from '../../src';
 import { createAccountManager } from './account-manager';
+import { checkShouldMintCapacityCredit } from './check-mint-capcity-credit';
+import { checkShouldMintAndFundPkp } from './check-mint-fund-pkp';
 import { resolveAgentSmartAccountAddress } from './resolve-agent-smart-account';
 import { getTestConfig, saveTestConfig } from './test-config';
 import { logTxEvents, requireValue, waitForValue } from './test-utils';
