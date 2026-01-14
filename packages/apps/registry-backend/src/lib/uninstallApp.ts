@@ -40,9 +40,9 @@ export async function unpermitApp(request: {
     basePublicClient as unknown as Parameters<typeof relaySdk.getDataToSignERC2771>[2],
   );
 
-  console.log('[unpermitApp] Data to sign obtained successfully');
+  console.log('[uninstallApp] Data to sign obtained successfully');
 
   return {
-    unpermitDataToSign: dataToSign,
+    uninstallDataToSign: dataToSign,
   };
 }

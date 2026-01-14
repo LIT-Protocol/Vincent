@@ -1,12 +1,12 @@
 ---
-title: 'Unpermit App'
-api: 'POST /user/{appId}/unpermit-app'
+title: 'Uninstall App'
+api: 'POST /user/{appId}/uninstall-app'
 ---
 
 Initiate revocation of permissions for a specific app version. This prevents the app from taking actions on behalf of the user.
 
 <Note>
-To re-enable a previously unpermitted app, simply call the [install-app](/wallet-providers/install-app) endpoint again. It will automatically detect the unpermitted state and re-enable the app.
+To re-enable a previously uninstalled app, simply call the [install-app](/wallet-providers/install-app) endpoint again. It will automatically detect the uninstalled state and re-enable the app.
 </Note>
 
 ## Request
@@ -20,13 +20,13 @@ To re-enable a previously unpermitted app, simply call the [install-app](/wallet
 </ParamField>
 
 <ParamField body="appVersion" type="integer" required>
-  The app version to unpermit
+  The app version to uninstall
 </ParamField>
 
 ## Response
 
-<ResponseField name="unpermitDataToSign" type="object">
-  EIP-712 typed data that the user must sign to complete the unpermit. Pass this object to the complete-unpermit endpoint along with the signature.
+<ResponseField name="uninstallDataToSign" type="object">
+  EIP-712 typed data that the user must sign to complete the uninstall. Pass this object to the complete-uninstall endpoint along with the signature.
 
   <Expandable title="properties">
     <ResponseField name="typedData" type="object">
@@ -47,7 +47,7 @@ To re-enable a previously unpermitted app, simply call the [install-app](/wallet
 
 <RequestExample>
 ```bash cURL
-curl -X POST https://api.heyvincent.ai/user/123/unpermit-app \
+curl -X POST https://api.heyvincent.ai/user/123/uninstall-app \
   -H "Content-Type: application/json" \
   -d '{
     "userControllerAddress": "0xUserWalletAddress...",
@@ -56,7 +56,7 @@ curl -X POST https://api.heyvincent.ai/user/123/unpermit-app \
 ```
 
 ```typescript TypeScript
-const response = await fetch(`https://api.heyvincent.ai/user/${appId}/unpermit-app`, {
+const response = await fetch(`https://api.heyvincent.ai/user/${appId}/uninstall-app`, {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
@@ -65,15 +65,15 @@ const response = await fetch(`https://api.heyvincent.ai/user/${appId}/unpermit-a
   })
 });
 
-const unpermitData = await response.json();
-// User must sign the typed data to complete the unpermit
+const uninstallData = await response.json();
+// User must sign the typed data to complete the uninstall
 ```
 </RequestExample>
 
 <ResponseExample>
 ```json Response
 {
-  "unpermitDataToSign": {
+  "uninstallDataToSign": {
     "typedData": {
       "domain": { "...": "..." },
       "types": { "...": "..." },

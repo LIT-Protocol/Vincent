@@ -5,7 +5,7 @@ import { completeRelayTransaction } from '../../completeRelayTransaction';
 import { getAgentAccount } from '../../getAgentAccount';
 import { getAgentFunds } from '../../getAgentFunds';
 import { installApp } from '../../installApp';
-import { unpermitApp } from '../../unpermitApp';
+import { unpermitApp } from '../../uninstallApp';
 import { requireApp, withApp } from '../app/requireApp';
 
 export function registerRoutes(app: Express) {
@@ -52,7 +52,7 @@ export function registerRoutes(app: Express) {
   );
 
   app.post(
-    '/user/:appId/unpermit-app',
+    '/user/:appId/uninstall-app',
     requireApp(),
     withApp(async (req, res) => {
       const result = await unpermitApp({
@@ -67,13 +67,13 @@ export function registerRoutes(app: Express) {
   );
 
   app.post(
-    '/user/:appId/complete-unpermit',
+    '/user/:appId/complete-uninstall',
     requireApp(),
     withApp(async (req, res) => {
       const result = await completeRelayTransaction({
         typedDataSignature: req.body.typedDataSignature,
-        dataToSign: req.body.unpermitDataToSign,
-        operationName: 'completeUnpermit',
+        dataToSign: req.body.uninstallDataToSign,
+        operationName: 'completeUninstall',
       });
 
       res.json(result);

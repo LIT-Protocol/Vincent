@@ -390,10 +390,10 @@ describe('User API Integration Tests', () => {
     });
   });
 
-  describe('POST /user/:appId/unpermit-app and repermit via install-app', () => {
-    // Shared state for the unpermit/repermit flow tests
+  describe('POST /user/:appId/uninstall-app and reinstall via install-app', () => {
+    // Shared state for the uninstall/reinstall flow tests
     let agentSmartAccountAddress: string;
-    let unpermitDataToSign: any;
+    let uninstallDataToSign: any;
 
     beforeAll(async () => {
       // Get the agent address from a previous installation
@@ -412,11 +412,11 @@ describe('User API Integration Tests', () => {
       expect(agentSmartAccountAddress).toMatch(/^0x[a-fA-F0-9]{40}$/);
     });
 
-    it('should return data to sign for unpermitting an app', async () => {
+    it('should return data to sign for uninstalling an app', async () => {
       const result = await store.dispatch(
-        api.endpoints.unpermitApp.initiate({
+        api.endpoints.uninstallApp.initiate({
           appId: testAppId,
-          unpermitAppRequest: {
+          uninstallAppRequest: {
             appVersion: 1,
             userControllerAddress: defaultWallet.address,
           },
@@ -424,24 +424,24 @@ describe('User API Integration Tests', () => {
       );
 
       if (hasError(result)) {
-        console.error('unpermitApp failed:', result.error);
+        console.error('uninstallApp failed:', result.error);
       }
       expectAssertObject(result.data);
 
-      expect(result.data).toHaveProperty('unpermitDataToSign');
-      expect(typeof result.data.unpermitDataToSign).toBe('object');
+      expect(result.data).toHaveProperty('uninstallDataToSign');
+      expect(typeof result.data.uninstallDataToSign).toBe('object');
 
-      unpermitDataToSign = result.data.unpermitDataToSign;
+      uninstallDataToSign = result.data.uninstallDataToSign;
 
       debug({
-        unpermitDataToSign: JSON.stringify(unpermitDataToSign, null, 2),
+        uninstallDataToSign: JSON.stringify(uninstallDataToSign, null, 2),
       });
     }, 60000);
 
-    it('should complete unpermit with signed typed data', async () => {
-      expect(unpermitDataToSign).toBeDefined();
+    it('should complete uninstall with signed typed data', async () => {
+      expect(uninstallDataToSign).toBeDefined();
 
-      const { typedData } = unpermitDataToSign;
+      const { typedData } = uninstallDataToSign;
 
       // Sign the typed data with the user's wallet
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -452,40 +452,40 @@ describe('User API Integration Tests', () => {
         typedData.message,
       );
 
-      console.log('Unpermit typed data signature:', typedDataSignature);
+      console.log('Uninstall typed data signature:', typedDataSignature);
 
       // Wait to avoid Gelato rate limiting (Gelato has strict per-account limits)
       console.log('Waiting 60s to avoid Gelato rate limiting...');
       await delay(60000);
 
-      // Complete the unpermit
+      // Complete the uninstall
       const completeResult = await store.dispatch(
-        api.endpoints.completeUnpermit.initiate({
+        api.endpoints.completeUninstall.initiate({
           appId: testAppId,
-          completeUnpermitRequest: {
+          completeUninstallRequest: {
             typedDataSignature,
-            unpermitDataToSign,
+            uninstallDataToSign,
           },
         }),
       );
 
       if (hasError(completeResult)) {
-        console.error('completeUnpermit failed:', completeResult.error);
+        console.error('completeUninstall failed:', completeResult.error);
       }
       expectAssertObject(completeResult.data);
 
       expect(completeResult.data).toHaveProperty('transactionHash');
       expect(completeResult.data.transactionHash).toMatch(/^0x[a-fA-F0-9]{64}$/);
 
-      console.log('Unpermit transaction hash:', completeResult.data.transactionHash);
+      console.log('Uninstall transaction hash:', completeResult.data.transactionHash);
 
       debug({
         transactionHash: completeResult.data.transactionHash,
       });
     }, 120000);
 
-    it('should have the app unpermitted on the Vincent contract after unpermit', async () => {
-      // Query the Vincent contract to verify the app was unpermitted
+    it('should have the app uninstalled on the Vincent contract after uninstall', async () => {
+      // Query the Vincent contract to verify the app was uninstalled
       const vincentContract = new Contract(
         VINCENT_DIAMOND_CONTRACT_ADDRESS_PROD,
         COMBINED_ABI,
@@ -495,7 +495,7 @@ describe('User API Integration Tests', () => {
       const results = await vincentContract.getPermittedAppForAgents([agentSmartAccountAddress]);
 
       console.log(
-        'getPermittedAppForAgents results after unpermit:',
+        'getPermittedAppForAgents results after uninstall:',
         JSON.stringify(results, null, 2),
       );
 

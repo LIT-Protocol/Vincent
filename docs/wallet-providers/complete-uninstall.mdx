@@ -1,6 +1,6 @@
 ---
-title: 'Complete Unpermit'
-api: 'POST /user/{appId}/complete-unpermit'
+title: 'Complete Uninstall'
+api: 'POST /user/{appId}/complete-uninstall'
 ---
 
 Complete the permission revocation by submitting the user's signature.
@@ -12,32 +12,32 @@ Complete the permission revocation by submitting the user's signature.
 </ParamField>
 
 <ParamField body="typedDataSignature" type="string" required>
-  The user's signature of the typed data from the unpermit-app response
+  The user's signature of the typed data from the uninstall-app response
 </ParamField>
 
-<ParamField body="unpermitDataToSign" type="object" required>
-  The typed data object returned from the unpermit-app endpoint
+<ParamField body="uninstallDataToSign" type="object" required>
+  The typed data object returned from the uninstall-app endpoint
 </ParamField>
 
 ## Response
 
 <ResponseField name="transactionHash" type="string">
-  The transaction hash of the on-chain unpermit
+  The transaction hash of the on-chain uninstall
 </ResponseField>
 
 <RequestExample>
 ```bash cURL
-curl -X POST https://api.heyvincent.ai/user/123/complete-unpermit \
+curl -X POST https://api.heyvincent.ai/user/123/complete-uninstall \
   -H "Content-Type: application/json" \
   -d '{
     "typedDataSignature": "0xSignature...",
-    "unpermitDataToSign": { "...": "..." }
+    "uninstallDataToSign": { "...": "..." }
   }'
 ```
 
 ```typescript TypeScript
-// Step 1: Initiate unpermit
-const unpermitResponse = await fetch(`https://api.heyvincent.ai/user/${appId}/unpermit-app`, {
+// Step 1: Initiate uninstall
+const uninstallResponse = await fetch(`https://api.heyvincent.ai/user/${appId}/uninstall-app`, {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
@@ -45,10 +45,10 @@ const unpermitResponse = await fetch(`https://api.heyvincent.ai/user/${appId}/un
     appVersion: 1
   })
 });
-const unpermitData = await unpermitResponse.json();
+const uninstallData = await uninstallResponse.json();
 
 // Step 2: Sign the typed data with the user's wallet
-const { typedData } = unpermitData.unpermitDataToSign;
+const { typedData } = uninstallData.uninstallDataToSign;
 const { EIP712Domain, ...types } = typedData.types;
 const signature = await userWallet._signTypedData(
   typedData.domain,
@@ -56,18 +56,18 @@ const signature = await userWallet._signTypedData(
   typedData.message
 );
 
-// Step 3: Complete the unpermit
-const response = await fetch(`https://api.heyvincent.ai/user/${appId}/complete-unpermit`, {
+// Step 3: Complete the uninstall
+const response = await fetch(`https://api.heyvincent.ai/user/${appId}/complete-uninstall`, {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
     typedDataSignature: signature,
-    unpermitDataToSign: unpermitData.unpermitDataToSign
+    uninstallDataToSign: uninstallData.uninstallDataToSign
   })
 });
 
 const result = await response.json();
-console.log(`Unpermit tx: ${result.transactionHash}`);
+console.log(`Uninstall tx: ${result.transactionHash}`);
 ```
 </RequestExample>
 

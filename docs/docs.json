@@ -185,8 +185,8 @@
                 "pages": ["wallet-providers/agent-account", "wallet-providers/agent-funds"]
               },
               {
-                "group": "Unpermit App",
-                "pages": ["wallet-providers/unpermit-app", "wallet-providers/complete-unpermit"]
+                "group": "Uninstall App",
+                "pages": ["wallet-providers/uninstall-app", "wallet-providers/complete-uninstall"]
               }
             ]
           }

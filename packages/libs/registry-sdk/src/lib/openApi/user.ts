@@ -13,11 +13,11 @@ import {
 } from '../schemas/installedApp';
 import { z } from '../schemas/openApiZod';
 import {
-  unpermitAppRequest,
-  unpermitAppResponse,
-  completeUnpermitRequest,
-  completeUnpermitResponse,
-} from '../schemas/unpermitApp';
+  uninstallAppRequest,
+  uninstallAppResponse,
+  completeUninstallRequest,
+  completeUninstallResponse,
+} from '../schemas/uninstallApp';
 import { appIdParam } from './app';
 import { ErrorResponse } from './baseRegistry';
 
@@ -42,16 +42,16 @@ export function addToRegistry(registry: OpenAPIRegistry) {
     getAgentAccountResponse,
   );
 
-  // Unpermit schemas
-  const UnpermitAppRequest = registry.register('UnpermitAppRequest', unpermitAppRequest);
-  const UnpermitAppResponse = registry.register('UnpermitAppResponse', unpermitAppResponse);
-  const CompleteUnpermitRequest = registry.register(
-    'CompleteUnpermitRequest',
-    completeUnpermitRequest,
+  // Uninstall schemas
+  const UninstallAppRequest = registry.register('UninstallAppRequest', uninstallAppRequest);
+  const UninstallAppResponse = registry.register('UninstallAppResponse', uninstallAppResponse);
+  const CompleteUninstallRequest = registry.register(
+    'CompleteUninstallRequest',
+    completeUninstallRequest,
   );
-  const CompleteUnpermitResponse = registry.register(
-    'CompleteUnpermitResponse',
-    completeUnpermitResponse,
+  const CompleteUninstallResponse = registry.register(
+    'CompleteUninstallResponse',
+    completeUninstallResponse,
   );
 
   // Agent funds schemas
@@ -65,7 +65,7 @@ export function addToRegistry(registry: OpenAPIRegistry) {
     tags: ['User'],
     summary: 'Install an application for a user',
     description:
-      'Installs an app for a user. If the user has never installed the app, mints a PKP and permits the app. If the user previously unpermitted the app, re-enables it.',
+      'Installs an app for a user. If the user has never installed the app, mints a PKP and permits the app. If the user previously uninstalled the app, re-enables it.',
     operationId: 'installApp',
     // Removed JWT Auth
     request: {
@@ -224,31 +224,31 @@ export function addToRegistry(registry: OpenAPIRegistry) {
     },
   });
 
-  // POST /user/:appId/unpermit-app - Unpermit an app for a user
+  // POST /user/:appId/uninstall-app - Uninstall an app for a user
   registry.registerPath({
     method: 'post',
-    path: '/user/{appId}/unpermit-app',
+    path: '/user/{appId}/uninstall-app',
     tags: ['User'],
-    summary: 'Unpermit an application for a user',
+    summary: 'Uninstall an application for a user',
     description:
       'Generates EIP2771 data to sign for revoking permission for an agent to use a specific app version',
-    operationId: 'unpermitApp',
+    operationId: 'uninstallApp',
     request: {
       params: z.object({ appId: appIdParam }),
       body: {
         content: {
           'application/json': {
-            schema: UnpermitAppRequest,
+            schema: UninstallAppRequest,
           },
         },
       },
     },
     responses: {
       200: {
-        description: 'Unpermit data returned successfully',
+        description: 'Uninstall data returned successfully',
         content: {
           'application/json': {
-            schema: UnpermitAppResponse,
+            schema: UninstallAppResponse,
           },
         },
       },
@@ -279,30 +279,30 @@ export function addToRegistry(registry: OpenAPIRegistry) {
     },
   });
 
-  // POST /user/:appId/complete-unpermit - Complete app unpermit with signed data
+  // POST /user/:appId/complete-uninstall - Complete app uninstall with signed data
   registry.registerPath({
     method: 'post',
-    path: '/user/{appId}/complete-unpermit',
+    path: '/user/{appId}/complete-uninstall',
     tags: ['User'],
-    summary: 'Complete app unpermit',
-    description: 'Submits the signed EIP2771 data to Gelato relay to complete the unpermit',
-    operationId: 'completeUnpermit',
+    summary: 'Complete app uninstall',
+    description: 'Submits the signed EIP2771 data to Gelato relay to complete the uninstall',
+    operationId: 'completeUninstall',
     request: {
       params: z.object({ appId: appIdParam }),
       body: {
         content: {
           'application/json': {
-            schema: CompleteUnpermitRequest,
+            schema: CompleteUninstallRequest,
           },
         },
       },
     },
     responses: {
       200: {
-        description: 'Unpermit completed successfully',
+        description: 'Uninstall completed successfully',
         content: {
           'application/json': {
-            schema: CompleteUnpermitResponse,
+            schema: CompleteUninstallResponse,
           },
         },
       },
