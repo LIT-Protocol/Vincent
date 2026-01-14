@@ -1,3 +1,17 @@
+# 8.0.0 (2026-01-14)
+
+### ⚠️ Breaking Changes
+
+- Upgrade to support Vincent 2.0 architecture ([cf97ffde](https://github.com/LIT-Protocol/Vincent/commit/cf97ffde))
+
+### 🧱 Updated Dependencies
+
+- Updated e2e-test-utils to 3.0.0
+
+### ❤️ Thank You
+
+- Wyatt Barnes @Spacesai1or
+
 ## 7.1.0 (2026-01-10)
 
 ### 🚀 Features
