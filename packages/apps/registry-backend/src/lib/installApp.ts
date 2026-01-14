@@ -334,8 +334,47 @@ export async function installApp(request: { appId: number; userControllerAddress
     throw new Error(`App ${appId} has no active version`);
   }
 
-  // 2. Fetch abilities for this app version directly from on-chain contract
+  // 2. Calculate smart account address from user controller and appId
+  const basePublicClient = getBasePublicClient();
+  const agentSmartAccountAddress = await deriveAgentAddress(
+    basePublicClient,
+    userControllerAddress,
+    appId,
+  );
+
+  // 3. Check if user has a previously unpermitted app (needs repermit instead of fresh install)
   const contractClient = getContractClient();
+  const unpermittedApps = await contractClient.getUnpermittedAppForAgents({
+    agentAddresses: [agentSmartAccountAddress],
+  });
+  const unpermittedApp = unpermittedApps[0]?.unpermittedApp;
+
+  if (unpermittedApp) {
+    const txData = COMBINED_ABI.encodeFunctionData('rePermitApp', [
+      agentSmartAccountAddress,
+      appId,
+    ]);
+
+    const dataToSign = await relaySdk.getDataToSignERC2771(
+      {
+        chainId: getBaseChainId() as unknown as bigint,
+        target: VINCENT_DIAMOND_CONTRACT_ADDRESS_PROD,
+        data: txData,
+        user: userControllerAddress,
+        isConcurrent: true,
+      },
+      ERC2771Type.ConcurrentSponsoredCall,
+      basePublicClient as unknown as Parameters<typeof relaySdk.getDataToSignERC2771>[2],
+    );
+
+    return {
+      agentSignerAddress: unpermittedApp.pkpSigner,
+      agentSmartAccountAddress,
+      appInstallationDataToSign: dataToSign,
+    };
+  }
+
+  // 4. Fresh install flow - Fetch abilities for this app version directly from on-chain contract
   const appVersionResult = await contractClient.getAppVersion({
     appId,
     version: app.activeVersion,
@@ -345,20 +384,20 @@ export async function installApp(request: { appId: number; userControllerAddress
     throw new Error(`App version ${app.activeVersion} not found on-chain for app ${appId}`);
   }
 
-  // 3. Extract IPFS CIDs from on-chain abilities
+  // 5. Extract IPFS CIDs from on-chain abilities
   const abilityIpfsCids = appVersionResult.appVersion.abilities.map(
     (ability) => ability.abilityIpfsCid,
   );
 
   console.log('[installApp] Found abilities:', { count: abilityIpfsCids.length, abilityIpfsCids });
 
-  // 4. Build auth methods from ability IPFS CIDs
+  // 6. Build auth methods from ability IPFS CIDs
   const permittedAuthMethodTypes = abilityIpfsCids.map(() => AUTH_METHOD_TYPE.LitAction);
   const permittedAuthMethodIds = abilityIpfsCids.map((cid) => base58ToHex(cid));
   const permittedAuthMethodPubkeys = abilityIpfsCids.map(() => '0x');
   const permittedAuthMethodScopes = abilityIpfsCids.map(() => [AUTH_METHOD_SCOPE.SignAnything]);
 
-  // 5. Mint the PKP (will be burned)
+  // 7. Mint the PKP (will be burned)
   const mintTx = await mintPkpWithAuthMethods({
     types: permittedAuthMethodTypes,
     ids: permittedAuthMethodIds,
@@ -367,7 +406,7 @@ export async function installApp(request: { appId: number; userControllerAddress
   });
   console.log(`[installApp] Mint tx submitted: ${mintTx.hash}`);
 
-  // 6. Wait for mint confirmation and extract PKP
+  // 8. Wait for mint confirmation and extract PKP
   const signer = getTransactionSigner();
   const provider = signer.provider;
   if (!provider || !mintTx.hash) {
@@ -378,20 +417,11 @@ export async function installApp(request: { appId: number; userControllerAddress
 
   console.log(`[installApp] PKP minted: ${pkp.ethAddress}`);
 
-  // 7. Calculate smart account address from user controller and appId
-  const basePublicClient = getBasePublicClient();
-
-  const agentSmartAccountAddress = await deriveAgentAddress(
-    basePublicClient,
-    userControllerAddress,
-    appId,
-  );
-
   console.log(
     `[installApp] Complete. App ${appId} v${app.activeVersion}, PKP: ${pkp.ethAddress}, SmartAccount: ${agentSmartAccountAddress}`,
   );
 
-  // 8. Build EIP2771 data for user to sign (permitAppVersion on Vincent contract)
+  // 9. Build EIP2771 data for user to sign (permitAppVersion on Vincent contract)
   // pkpSignerPubKey is the raw public key bytes (contract expects bytes calldata)
   const pkpSignerPubKey = pkp.publicKey;
 

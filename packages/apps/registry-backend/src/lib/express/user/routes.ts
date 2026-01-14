@@ -5,7 +5,6 @@ import { completeRelayTransaction } from '../../completeRelayTransaction';
 import { getAgentAccount } from '../../getAgentAccount';
 import { getAgentFunds } from '../../getAgentFunds';
 import { installApp } from '../../installApp';
-import { repermitApp } from '../../repermitApp';
 import { unpermitApp } from '../../unpermitApp';
 import { requireApp, withApp } from '../app/requireApp';
 
@@ -75,35 +74,6 @@ export function registerRoutes(app: Express) {
         typedDataSignature: req.body.typedDataSignature,
         dataToSign: req.body.unpermitDataToSign,
         operationName: 'completeUnpermit',
-      });
-
-      res.json(result);
-      return;
-    }),
-  );
-
-  app.post(
-    '/user/:appId/repermit-app',
-    requireApp(),
-    withApp(async (req, res) => {
-      const result = await repermitApp({
-        appId: req.vincentApp.appId,
-        userControllerAddress: req.body.userControllerAddress,
-      });
-
-      res.json(result);
-      return;
-    }),
-  );
-
-  app.post(
-    '/user/:appId/complete-repermit',
-    requireApp(),
-    withApp(async (req, res) => {
-      const result = await completeRelayTransaction({
-        typedDataSignature: req.body.typedDataSignature,
-        dataToSign: req.body.repermitDataToSign,
-        operationName: 'completeRepermit',
       });
 
       res.json(result);

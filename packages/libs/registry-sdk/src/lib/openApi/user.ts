@@ -13,12 +13,6 @@ import {
 } from '../schemas/installedApp';
 import { z } from '../schemas/openApiZod';
 import {
-  repermitAppRequest,
-  repermitAppResponse,
-  completeRepermitRequest,
-  completeRepermitResponse,
-} from '../schemas/repermitApp';
-import {
   unpermitAppRequest,
   unpermitAppResponse,
   completeUnpermitRequest,
@@ -60,18 +54,6 @@ export function addToRegistry(registry: OpenAPIRegistry) {
     completeUnpermitResponse,
   );
 
-  // Repermit schemas
-  const RepermitAppRequest = registry.register('RepermitAppRequest', repermitAppRequest);
-  const RepermitAppResponse = registry.register('RepermitAppResponse', repermitAppResponse);
-  const CompleteRepermitRequest = registry.register(
-    'CompleteRepermitRequest',
-    completeRepermitRequest,
-  );
-  const CompleteRepermitResponse = registry.register(
-    'CompleteRepermitResponse',
-    completeRepermitResponse,
-  );
-
   // Agent funds schemas
   const GetAgentFundsRequest = registry.register('GetAgentFundsRequest', getAgentFundsRequest);
   const GetAgentFundsResponse = registry.register('GetAgentFundsResponse', getAgentFundsResponse);
@@ -82,7 +64,8 @@ export function addToRegistry(registry: OpenAPIRegistry) {
     path: '/user/{appId}/install-app',
     tags: ['User'],
     summary: 'Install an application for a user',
-    description: 'Mints a PKP with the app abilities as permitted auth methods',
+    description:
+      'Installs an app for a user. If the user has never installed the app, mints a PKP and permits the app. If the user previously unpermitted the app, re-enables it.',
     operationId: 'installApp',
     // Removed JWT Auth
     request: {
@@ -320,115 +303,6 @@ export function addToRegistry(registry: OpenAPIRegistry) {
         content: {
           'application/json': {
             schema: CompleteUnpermitResponse,
-          },
-        },
-      },
-      400: {
-        description: 'Bad request',
-        content: {
-          'application/json': {
-            schema: ErrorResponse,
-          },
-        },
-      },
-      404: {
-        description: 'App not found',
-        content: {
-          'application/json': {
-            schema: ErrorResponse,
-          },
-        },
-      },
-      default: {
-        description: 'Error',
-        content: {
-          'application/json': {
-            schema: ErrorResponse,
-          },
-        },
-      },
-    },
-  });
-
-  // POST /user/:appId/repermit-app - Repermit a previously unpermitted app for a user
-  registry.registerPath({
-    method: 'post',
-    path: '/user/{appId}/repermit-app',
-    tags: ['User'],
-    summary: 'Repermit an application for a user',
-    description:
-      'Generates EIP2771 data to sign for re-authorizing a previously unpermitted app with its last permitted version',
-    operationId: 'repermitApp',
-    request: {
-      params: z.object({ appId: appIdParam }),
-      body: {
-        content: {
-          'application/json': {
-            schema: RepermitAppRequest,
-          },
-        },
-      },
-    },
-    responses: {
-      200: {
-        description: 'Repermit data returned successfully',
-        content: {
-          'application/json': {
-            schema: RepermitAppResponse,
-          },
-        },
-      },
-      400: {
-        description: 'Bad request',
-        content: {
-          'application/json': {
-            schema: ErrorResponse,
-          },
-        },
-      },
-      404: {
-        description: 'App not found',
-        content: {
-          'application/json': {
-            schema: ErrorResponse,
-          },
-        },
-      },
-      default: {
-        description: 'Error',
-        content: {
-          'application/json': {
-            schema: ErrorResponse,
-          },
-        },
-      },
-    },
-  });
-
-  // POST /user/:appId/complete-repermit - Complete app repermit with signed data
-  registry.registerPath({
-    method: 'post',
-    path: '/user/{appId}/complete-repermit',
-    tags: ['User'],
-    summary: 'Complete app repermit',
-    description: 'Submits the signed EIP2771 data to Gelato relay to complete the repermit',
-    operationId: 'completeRepermit',
-    request: {
-      params: z.object({ appId: appIdParam }),
-      body: {
-        content: {
-          'application/json': {
-            schema: CompleteRepermitRequest,
-          },
-        },
-      },
-    },
-    responses: {
-      200: {
-        description: 'Repermit completed successfully',
-        content: {
-          'application/json': {
-            schema: CompleteRepermitResponse,
           },
         },
       },

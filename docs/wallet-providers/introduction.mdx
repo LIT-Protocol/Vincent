@@ -38,14 +38,12 @@ sequenceDiagram
 | Endpoint | Description |
 |----------|-------------|
 | [GET /app/:appId](/wallet-providers/get-app) | Fetch app details before installation |
-| [POST /user/:appId/install-app](/wallet-providers/install-app) | Initiate app installation |
+| [POST /user/:appId/install-app](/wallet-providers/install-app) | Initiate app installation (also handles re-enabling unpermitted apps) |
 | [POST /user/:appId/complete-installation](/wallet-providers/complete-installation) | Complete installation with signature |
 | [POST /user/:appId/agent-account](/wallet-providers/agent-account) | Get user's agent smart account address |
 | [POST /user/:appId/agent-funds](/wallet-providers/agent-funds) | Get token balances for agent account |
 | [POST /user/:appId/unpermit-app](/wallet-providers/unpermit-app) | Initiate permission revocation |
 | [POST /user/:appId/complete-unpermit](/wallet-providers/complete-unpermit) | Complete permission revocation |
-| [POST /user/:appId/repermit-app](/wallet-providers/repermit-app) | Initiate permission re-grant |
-| [POST /user/:appId/complete-repermit](/wallet-providers/complete-repermit) | Complete permission re-grant |
 
 ## Smart Account Index Derivation
 

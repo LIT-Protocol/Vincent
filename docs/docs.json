@@ -187,10 +187,6 @@
               {
                 "group": "Unpermit App",
                 "pages": ["wallet-providers/unpermit-app", "wallet-providers/complete-unpermit"]
-              },
-              {
-                "group": "Repermit App",
-                "pages": ["wallet-providers/repermit-app", "wallet-providers/complete-repermit"]
               }
             ]
           }

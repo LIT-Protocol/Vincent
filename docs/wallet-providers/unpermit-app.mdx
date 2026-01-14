@@ -3,7 +3,11 @@ title: 'Unpermit App'
 api: 'POST /user/{appId}/unpermit-app'
 ---
 
-Initiate revocation of permissions for a specific app version. This prevents the app from taking actions on behalf of the user until repermitted.
+Initiate revocation of permissions for a specific app version. This prevents the app from taking actions on behalf of the user.
+
+<Note>
+To re-enable a previously unpermitted app, simply call the [install-app](/wallet-providers/install-app) endpoint again. It will automatically detect the unpermitted state and re-enable the app.
+</Note>
 
 ## Request
 

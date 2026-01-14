@@ -85,14 +85,14 @@ describe('User API Integration Tests', () => {
 
     // 2. Register the app on-chain FIRST to get the contract-generated appId
     //    Note: This creates version 1 on-chain immediately
-    const { txHash, newAppId } = await getDefaultWalletContractClient().registerApp({
+    const { txHash, appId } = await getDefaultWalletContractClient().registerApp({
       delegateeAddresses: generateRandomEthAddresses(2),
       versionAbilities: {
         abilityIpfsCids: [abilityIpfsCid],
         abilityPolicies: [[]],
       },
     });
-    testAppId = newAppId;
+    testAppId = appId;
     console.log('registerApp result:', { txHash, testAppId });
     debug({ registerAppTxHash: txHash, testAppId });
 
@@ -390,7 +390,7 @@ describe('User API Integration Tests', () => {
     });
   });
 
-  describe('POST /user/:appId/unpermit-app and repermit-app', () => {
+  describe('POST /user/:appId/unpermit-app and repermit via install-app', () => {
     // Shared state for the unpermit/repermit flow tests
     let agentSmartAccountAddress: string;
     let unpermitDataToSign: any;
@@ -517,37 +517,44 @@ describe('User API Integration Tests', () => {
       });
     }, 30000);
 
-    it('should return data to sign for repermitting an app', async () => {
+    it('should return data to sign for repermitting an app via install-app', async () => {
+      // After unpermitting, calling install-app should detect the unpermitted state
+      // and return repermit data instead of minting a new PKP
       const result = await store.dispatch(
-        api.endpoints.repermitApp.initiate({
+        api.endpoints.installApp.initiate({
           appId: testAppId,
-          repermitAppRequest: {
+          installAppRequest: {
             userControllerAddress: defaultWallet.address,
           },
         }),
       );
 
       if (hasError(result)) {
-        console.error('repermitApp failed:', result.error);
+        console.error('installApp (repermit) failed:', result.error);
       }
       expectAssertObject(result.data);
 
-      expect(result.data).toHaveProperty('repermitDataToSign');
-      expect(typeof result.data.repermitDataToSign).toBe('object');
+      expect(result.data).toHaveProperty('agentSignerAddress');
+      expect(result.data).toHaveProperty('agentSmartAccountAddress');
+      expect(result.data).toHaveProperty('appInstallationDataToSign');
+      expect(typeof result.data.appInstallationDataToSign).toBe('object');
 
       // Store for the next test
-      (global as any).repermitDataToSign = result.data.repermitDataToSign;
+      (global as any).repermitInstallationData = result.data;
 
       debug({
-        repermitDataToSign: JSON.stringify(result.data.repermitDataToSign, null, 2),
+        agentSignerAddress: result.data.agentSignerAddress,
+        agentSmartAccountAddress: result.data.agentSmartAccountAddress,
+        appInstallationDataToSign: JSON.stringify(result.data.appInstallationDataToSign, null, 2),
       });
     }, 60000);
 
-    it('should complete repermit with signed typed data', async () => {
-      const repermitDataToSign = (global as any).repermitDataToSign;
-      expect(repermitDataToSign).toBeDefined();
+    it('should complete repermit with signed typed data via complete-installation', async () => {
+      const repermitInstallationData = (global as any).repermitInstallationData;
+      expect(repermitInstallationData).toBeDefined();
 
-      const { typedData } = repermitDataToSign;
+      const { appInstallationDataToSign } = repermitInstallationData;
+      const { typedData } = appInstallationDataToSign;
 
       // Sign the typed data with the user's wallet
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -564,19 +571,19 @@ describe('User API Integration Tests', () => {
       console.log('Waiting 60s to avoid Gelato rate limiting...');
       await delay(60000);
 
-      // Complete the repermit
+      // Complete the repermit using the standard complete-installation endpoint
       const completeResult = await store.dispatch(
-        api.endpoints.completeRepermit.initiate({
+        api.endpoints.completeInstallation.initiate({
           appId: testAppId,
-          completeRepermitRequest: {
+          completeInstallationRequest: {
             typedDataSignature,
-            repermitDataToSign,
+            appInstallationDataToSign,
           },
         }),
       );
 
       if (hasError(completeResult)) {
-        console.error('completeRepermit failed:', completeResult.error);
+        console.error('completeInstallation (repermit) failed:', completeResult.error);
       }
       expectAssertObject(completeResult.data);
 
