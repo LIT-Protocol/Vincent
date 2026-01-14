@@ -1400,9 +1400,6 @@ importers:
       '@lit-protocol/constants':
         specifier: ^7.3.1
         version: 7.3.1(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
-      '@lit-protocol/contracts-sdk':
-        specifier: ^7.2.3
-        version: 7.3.1(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
       '@lit-protocol/lit-node-client':
         specifier: ^7.2.3
         version: 7.3.1(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
@@ -1432,6 +1429,9 @@ importers:
         specifier: ^1.44.2
         version: 1.51.1
       '@lit-protocol/auth-helpers':
+        specifier: ^7.2.3
+        version: 7.3.1(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
+      '@lit-protocol/contracts-sdk':
         specifier: ^7.2.3
         version: 7.3.1(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
       '@lit-protocol/esbuild-plugin-polyfill-node':
