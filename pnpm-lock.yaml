@@ -1403,9 +1403,6 @@ importers:
       '@lit-protocol/contracts-sdk':
         specifier: ^7.2.3
         version: 7.3.1(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
-      '@lit-protocol/lit-node-client':
-        specifier: ^7.2.3
-        version: 7.3.1(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
       '@zerodev/ecdsa-validator':
         specifier: ^5.4.9
         version: 5.4.9(@zerodev/sdk@5.5.7(viem@2.41.2(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)))(viem@2.41.2(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64))
@@ -1455,15 +1452,9 @@ importers:
       '@types/node':
         specifier: ^20.0.0
         version: 20.19.26
-      '@zerodev/ecdsa-validator':
-        specifier: ^5.4.9
-        version: 5.4.9(@zerodev/sdk@5.5.7(viem@2.41.2(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)))(viem@2.41.2(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64))
       '@zerodev/permissions':
         specifier: ^5.6.2
         version: 5.6.3(@zerodev/sdk@5.5.7(viem@2.41.2(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)))(@zerodev/webauthn-key@5.5.0(viem@2.41.2(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)))(viem@2.41.2(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64))
-      '@zerodev/sdk':
-        specifier: ^5.5.7
-        version: 5.5.7(viem@2.41.2(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64))
       dotenv:
         specifier: ^16.0.0
         version: 16.6.1
@@ -3886,9 +3877,6 @@ packages:
 
   '@lit-protocol/vincent-contracts-sdk@5.1.0':
     resolution: {integrity: sha512-IjoQGhaQdPj5JqNxlmnBOe0yRZPVPIQhNda7AQO7B/JhPXqErOLy9OaqgpBxU7wQvetDgDuyBfmPPVde7v2sPw==}
-
-  '@lit-protocol/vincent-contracts-sdk@7.1.0':
-    resolution: {integrity: sha512-AZJ9XOa8ijuG8s9eel/6qS//KLVOAN/YkajFTSNfkqH5dKI5dOH0GnUgDabOq53sa8eNIvpX4NrG+EANNESA2g==}
 
   '@lit-protocol/vincent-contracts-sdk@8.0.0':
     resolution: {integrity: sha512-B0xXFOyWMpXJsdDpTvo9nM4FxbRA8vPzWMk9RG4o3yhUHK8G8yRzvTw+9fOhbzDps8/D1o8D0uoDlgrDgpkzrA==}
@@ -18459,41 +18447,6 @@ snapshots:
       - utf-8-validate
 
   '@lit-protocol/vincent-contracts-sdk@5.1.0(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)':
-    dependencies:
-      '@ethersproject/abi': 5.8.0
-      '@lit-protocol/constants': 7.3.1(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
-      '@lit-protocol/contracts-sdk': 7.3.1(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
-      '@lit-protocol/lit-node-client': 7.3.1(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
-      cbor2: 2.0.1
-      ethers: 5.8.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
-    transitivePeerDependencies:
-      - '@azure/app-configuration'
-      - '@azure/cosmos'
-      - '@azure/data-tables'
-      - '@azure/identity'
-      - '@azure/keyvault-secrets'
-      - '@azure/storage-blob'
-      - '@capacitor/preferences'
-      - '@deno/kv'
-      - '@netlify/blobs'
-      - '@planetscale/database'
-      - '@react-native-async-storage/async-storage'
-      - '@upstash/redis'
-      - '@vercel/blob'
-      - '@vercel/functions'
-      - '@vercel/kv'
-      - '@walletconnect/modal'
-      - aws4fetch
-      - bufferutil
-      - db0
-      - encoding
-      - ioredis
-      - supports-color
-      - typescript
-      - uploadthing
-      - utf-8-validate
-
-  '@lit-protocol/vincent-contracts-sdk@7.1.0(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)':
     dependencies:
       '@ethersproject/abi': 5.8.0
       '@lit-protocol/constants': 7.3.1(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
