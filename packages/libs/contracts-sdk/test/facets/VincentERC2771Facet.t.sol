@@ -5,6 +5,7 @@ import "forge-std/Test.sol";
 import "forge-std/console.sol";
 
 import {DeployVincentDiamond} from "../../script/DeployVincentDiamond.sol";
+import {TestHelpers} from "../TestHelpers.sol";
 
 import {VincentDiamond} from "../../contracts/VincentDiamond.sol";
 import {VincentERC2771Facet} from "../../contracts/facets/VincentERC2771Facet.sol";
@@ -14,7 +15,7 @@ import {VincentAppFacet} from "../../contracts/facets/VincentAppFacet.sol";
 import {LibERC2771} from "../../contracts/libs/LibERC2771.sol";
 import {VincentERC2771Storage} from "../../contracts/LibVincentDiamondStorage.sol";
 
-contract VincentERC2771FacetTest is Test {
+contract VincentERC2771FacetTest is TestHelpers {
     VincentDiamond public vincentDiamond;
     VincentERC2771Facet public vincentERC2771Facet;
     VincentUserFacet public vincentUserFacet;
@@ -27,11 +28,17 @@ contract VincentERC2771FacetTest is Test {
     address public otherForwarder = makeAddr("OtherForwarder");
 
     function setUp() public {
+        // Setup the ECDSA validator at the canonical address
+        setupECDSAValidator();
+
         uint256 deployerPrivateKey = 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80;
         vm.setEnv("VINCENT_DEPLOYER_PRIVATE_KEY", vm.toString(deployerPrivateKey));
 
         // Set a test forwarder address for local testing
         vm.setEnv("VINCENT_GELATO_FORWARDER_ADDRESS", vm.toString(trustedForwarder));
+
+        // Set the ECDSA validator address for testing
+        vm.setEnv("VINCENT_ECDSA_VALIDATOR_ADDRESS", vm.toString(ECDSA_VALIDATOR_ADDRESS));
 
         DeployVincentDiamond deployScript = new DeployVincentDiamond();
 
@@ -115,6 +122,10 @@ contract VincentERC2771FacetTest is Test {
         address pkpSigner = makeAddr("PkpSigner");
         bytes memory pkpSignerPubKey = hex"0255b1d15a6ed11596e193d74788812e751ec8fdc30e02f194d4c86bd30e0e5e7b";
 
+        // Register smart account owners
+        // This simulates the agent being owned by the real sender
+        registerSmartAccountOwner(agentAddress, realSender);
+
         string[] memory abilityIpfsCids = new string[](1);
         abilityIpfsCids[0] = "QmAbility1";
 
@@ -161,6 +172,9 @@ contract VincentERC2771FacetTest is Test {
         address pkpSigner = makeAddr("PkpSigner");
         bytes memory pkpSignerPubKey = hex"0255b1d15a6ed11596e193d74788812e751ec8fdc30e02f194d4c86bd30e0e5e7b";
 
+        // Register the agent with its owner in the ECDSA validator
+        registerSmartAccountOwner(agentAddress, directUser);
+
         string[] memory abilityIpfsCids = new string[](1);
         abilityIpfsCids[0] = "QmAbility1";
 
@@ -204,6 +218,10 @@ contract VincentERC2771FacetTest is Test {
         address agentAddress = makeAddr("AgentAddress");
         address pkpSigner = makeAddr("PkpSigner");
         bytes memory pkpSignerPubKey = hex"0255b1d15a6ed11596e193d74788812e751ec8fdc30e02f194d4c86bd30e0e5e7b";
+
+        // Register the agent with the maliciousForwarder as the owner
+        // (they are the actual caller, not the fakeSender appended to calldata)
+        registerSmartAccountOwner(agentAddress, maliciousForwarder);
 
         string[] memory abilityIpfsCids = new string[](1);
         abilityIpfsCids[0] = "QmAbility1";

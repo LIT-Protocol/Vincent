@@ -5,6 +5,7 @@ import "forge-std/Test.sol";
 import "forge-std/console.sol";
 
 import {DeployVincentDiamond} from "../../script/DeployVincentDiamond.sol";
+import {TestHelpers} from "../TestHelpers.sol";
 
 import {VincentDiamond} from "../../contracts/VincentDiamond.sol";
 import {VincentAppFacet} from "../../contracts/facets/VincentAppFacet.sol";
@@ -16,7 +17,7 @@ import {LibVincentAppFacet} from "../../contracts/libs/LibVincentAppFacet.sol";
 import {VincentBase} from "../../contracts/VincentBase.sol";
 import {TestCommon} from "../TestCommon.sol";
 
-contract VincentAppFacetTest is TestCommon {
+contract VincentAppFacetTest is TestCommon, TestHelpers {
     string constant ABILITY_IPFS_CID_1 = "QmAbility1";
     string constant ABILITY_IPFS_CID_2 = "QmAbility2";
     string constant ABILITY_IPFS_CID_3 = "QmAbility3";
@@ -55,8 +56,17 @@ contract VincentAppFacetTest is TestCommon {
     VincentUserViewFacet public vincentUserViewFacet;
 
     function setUp() public {
+        // Setup the ECDSA validator at the canonical address
+        setupECDSAValidator();
+
         uint256 deployerPrivateKey = 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80;
         vm.setEnv("VINCENT_DEPLOYER_PRIVATE_KEY", vm.toString(deployerPrivateKey));
+
+        // Set a test forwarder address for local testing (required by deployment)
+        vm.setEnv("VINCENT_GELATO_FORWARDER_ADDRESS", vm.toString(makeAddr("TrustedForwarder")));
+
+        // Set the ECDSA validator address for testing
+        vm.setEnv("VINCENT_ECDSA_VALIDATOR_ADDRESS", vm.toString(ECDSA_VALIDATOR_ADDRESS));
 
         DeployVincentDiamond deployScript = new DeployVincentDiamond();
 
@@ -67,6 +77,11 @@ contract VincentAppFacetTest is TestCommon {
         vincentAppViewFacet = VincentAppViewFacet(diamondAddress);
         vincentUserFacet = VincentUserFacet(diamondAddress);
         vincentUserViewFacet = VincentUserViewFacet(diamondAddress);
+
+        // Register smart account owners
+        // This simulates Frank and George owning their agents (smart accounts)
+        registerSmartAccountOwner(APP_USER_FRANK, USER_FRANK);
+        registerSmartAccountOwner(APP_USER_GEORGE, USER_GEORGE);
     }
 
     function testRegisterApp() public {

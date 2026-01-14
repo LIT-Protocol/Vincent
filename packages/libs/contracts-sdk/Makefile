@@ -1,6 +1,6 @@
 -include .env
 
-.PHONY: help build test test-verbose test-match deploy-vincent deploy-vincent-datil get-abis update-facet
+.PHONY: help build test test-verbose test-match deploy-vincent-datil deploy-vincent-base-sepolia deploy-vincent-base-mainnet update-facet set-trusted-forwarder set-ecdsa-validator get-abis
 
 help: ## Display this help screen
 	@grep -h -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
@@ -30,12 +30,18 @@ deploy-vincent-datil: ## Deploy the Vincent Diamond contract to Datil network on
 		echo "Error: VINCENT_DEPLOYER_PRIVATE_KEY is not set in .env"; \
 		exit 1; \
 	fi
+	@if [ -z "$(VINCENT_ECDSA_VALIDATOR_ADDRESS)" ]; then \
+		echo "Error: VINCENT_ECDSA_VALIDATOR_ADDRESS is not set in .env"; \
+		echo "This address is required for smart account owner verification"; \
+		exit 1; \
+	fi
 	@echo "Deploying Vincent Diamond to Datil network ($(VINCENT_DEPLOYMENT_RPC_URL))..."
 	@if [ -n "$(VINCENT_GELATO_FORWARDER_ADDRESS)" ]; then \
 		echo "Using Gelato forwarder: $(VINCENT_GELATO_FORWARDER_ADDRESS)"; \
 	else \
 		echo "Gelato forwarder not set (EIP-2771 disabled)"; \
 	fi
+	@echo "Using ECDSA validator: $(VINCENT_ECDSA_VALIDATOR_ADDRESS)"
 	@forge script script/DeployVincentDiamond.sol:DeployVincentDiamond --sig "deployToDatil()" -vvv \
 		--broadcast \
 		--private-key $(VINCENT_DEPLOYER_PRIVATE_KEY) \
@@ -50,12 +56,18 @@ deploy-vincent-base-sepolia: ## Deploy the Vincent Diamond contract to Base Sepo
 		echo "Error: VINCENT_DEPLOYER_PRIVATE_KEY is not set in .env"; \
 		exit 1; \
 	fi
+	@if [ -z "$(VINCENT_ECDSA_VALIDATOR_ADDRESS)" ]; then \
+		echo "Error: VINCENT_ECDSA_VALIDATOR_ADDRESS is not set in .env"; \
+		echo "This address is required for smart account owner verification"; \
+		exit 1; \
+	fi
 	@echo "Deploying Vincent Diamond to Base Sepolia ($(BASE_SEPOLIA_RPC_URL))..."
 	@if [ -n "$(VINCENT_GELATO_FORWARDER_ADDRESS)" ]; then \
 		echo "Using Gelato forwarder: $(VINCENT_GELATO_FORWARDER_ADDRESS)"; \
 	else \
 		echo "Gelato forwarder not set (EIP-2771 disabled)"; \
 	fi
+	@echo "Using ECDSA validator: $(VINCENT_ECDSA_VALIDATOR_ADDRESS)"
 	@forge script script/DeployVincentDiamond.sol:DeployVincentDiamond --sig "deployToBaseSepolia()" -vvv \
 		--broadcast \
 		--private-key $(VINCENT_DEPLOYER_PRIVATE_KEY) \
@@ -70,12 +82,18 @@ deploy-vincent-base-mainnet: ## Deploy the Vincent Diamond contract to Base Main
 		echo "Error: VINCENT_DEPLOYER_PRIVATE_KEY is not set in .env"; \
 		exit 1; \
 	fi
+	@if [ -z "$(VINCENT_ECDSA_VALIDATOR_ADDRESS)" ]; then \
+		echo "Error: VINCENT_ECDSA_VALIDATOR_ADDRESS is not set in .env"; \
+		echo "This address is required for smart account owner verification"; \
+		exit 1; \
+	fi
 	@echo "Deploying Vincent Diamond to Base Mainnet ($(BASE_MAINNET_RPC_URL))..."
 	@if [ -n "$(VINCENT_GELATO_FORWARDER_ADDRESS)" ]; then \
 		echo "Using Gelato forwarder: $(VINCENT_GELATO_FORWARDER_ADDRESS)"; \
 	else \
 		echo "Gelato forwarder not set (EIP-2771 disabled)"; \
 	fi
+	@echo "Using ECDSA validator: $(VINCENT_ECDSA_VALIDATOR_ADDRESS)"
 	@forge script script/DeployVincentDiamond.sol:DeployVincentDiamond --sig "deployToBaseMainnet()" -vvv \
 		--broadcast \
 		--private-key $(VINCENT_DEPLOYER_PRIVATE_KEY) \
@@ -89,7 +107,7 @@ update-facet: ## Update a specific facet in the Vincent Diamond contract. Usage:
 	@if [ -z "$(FACET_NAME)" ]; then \
 		echo "Error: FACET_NAME parameter is required."; \
 		echo "Usage: make update-facet FACET_NAME=VincentAppViewFacet NETWORK=datil|base-sepolia|base-mainnet"; \
-		echo "Available facets: VincentAppFacet, VincentAppViewFacet, VincentUserFacet, VincentUserViewFacet, VincentERC2771Facet"; \
+		echo "Available facets: VincentAppFacet, VincentAppViewFacet, VincentUserFacet, VincentUserViewFacet, VincentERC2771Facet, VincentZeroDevConfigFacet"; \
 		exit 1; \
 	fi
 	@if [ -z "$(NETWORK)" ]; then \
@@ -151,6 +169,40 @@ set-trusted-forwarder: ## Set the trusted forwarder address for EIP-2771 meta-tr
 		--private-key $(VINCENT_DEPLOYER_PRIVATE_KEY) \
 		--rpc-url $(RPC_URL)
 
+set-ecdsa-validator: ## Set the ECDSA validator address for smart account owner verification. Usage: make set-ecdsa-validator VALIDATOR_ADDRESS=0x... NETWORK=datil|base-sepolia|base-mainnet
+	@if [ -z "$(VINCENT_DEPLOYER_PRIVATE_KEY)" ]; then \
+		echo "Error: VINCENT_DEPLOYER_PRIVATE_KEY is not set in .env"; \
+		exit 1; \
+	fi
+	@if [ -z "$(VALIDATOR_ADDRESS)" ]; then \
+		echo "Error: VALIDATOR_ADDRESS parameter is required."; \
+		echo "Usage: make set-ecdsa-validator VALIDATOR_ADDRESS=0x... NETWORK=datil|base-sepolia|base-mainnet"; \
+		exit 1; \
+	fi
+	@if [ -z "$(NETWORK)" ]; then \
+		echo "Error: NETWORK parameter is required."; \
+		echo "Usage: make set-ecdsa-validator VALIDATOR_ADDRESS=0x... NETWORK=datil|base-sepolia|base-mainnet"; \
+		exit 1; \
+	fi
+	@if [ "$(NETWORK)" != "datil" ] && [ "$(NETWORK)" != "base-sepolia" ] && [ "$(NETWORK)" != "base-mainnet" ]; then \
+		echo "Error: NETWORK must be one of: datil, base-sepolia, base-mainnet"; \
+		exit 1; \
+	fi
+	@if [ -z "$(RPC_URL)" ]; then \
+		echo "Error: RPC_URL is not set in .env"; \
+		exit 1; \
+	fi
+	@if [ -z "$(VINCENT_DIAMOND_ADDRESS)" ]; then \
+		echo "Error: VINCENT_DIAMOND_ADDRESS is not set in .env"; \
+		exit 1; \
+	fi
+	@echo "Setting ECDSA validator to $(VALIDATOR_ADDRESS) on $(NETWORK)..."
+	@echo "Using diamond address: $(VINCENT_DIAMOND_ADDRESS)"
+	@ECDSA_VALIDATOR_ADDRESS=$(VALIDATOR_ADDRESS) VINCENT_DIAMOND_ADDRESS=$(VINCENT_DIAMOND_ADDRESS) forge script script/SetEcdsaValidatorAddress.sol:SetEcdsaValidatorAddress -vvv \
+		--broadcast \
+		--private-key $(VINCENT_DEPLOYER_PRIVATE_KEY) \
+		--rpc-url $(RPC_URL)
+
 get-abis: ## Get human-readable ABIs for all facets
 	@mkdir -p abis
 	# @echo "Getting ABI for DiamondCutFacet..."
@@ -169,6 +221,8 @@ get-abis: ## Get human-readable ABIs for all facets
 	@forge inspect VincentUserViewFacet abi --json > abis/VincentUserViewFacet.abi.json
 	@echo "Getting ABI for VincentERC2771Facet..."
 	@forge inspect VincentERC2771Facet abi --json > abis/VincentERC2771Facet.abi.json
+	@echo "Getting ABI for VincentZeroDevConfigFacet..."
+	@forge inspect VincentZeroDevConfigFacet abi --json > abis/VincentZeroDevConfigFacet.abi.json
 
 	@echo "Merging facet ABIs into abis/FeeDiamond.abi.json..."
 	@jq -s '[.[].abi] | add | unique_by(.type, .name, ((.inputs // []) | map(.type) | join(",")))' \
