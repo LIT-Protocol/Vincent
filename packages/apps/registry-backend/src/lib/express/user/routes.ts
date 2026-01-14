@@ -5,7 +5,7 @@ import { completeRelayTransaction } from '../../completeRelayTransaction';
 import { getAgentAccount } from '../../getAgentAccount';
 import { getAgentFunds } from '../../getAgentFunds';
 import { installApp } from '../../installApp';
-import { unpermitApp } from '../../uninstallApp';
+import { uninstallApp } from '../../uninstallApp';
 import { requireApp, withApp } from '../app/requireApp';
 
 export function registerRoutes(app: Express) {
@@ -55,7 +55,7 @@ export function registerRoutes(app: Express) {
     '/user/:appId/uninstall-app',
     requireApp(),
     withApp(async (req, res) => {
-      const result = await unpermitApp({
+      const result = await uninstallApp({
         appId: req.vincentApp.appId,
         appVersion: req.body.appVersion,
         userControllerAddress: req.body.userControllerAddress,

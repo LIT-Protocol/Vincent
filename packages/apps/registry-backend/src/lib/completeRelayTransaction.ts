@@ -11,7 +11,7 @@ const MAX_POLL_ATTEMPTS = 5;
 
 /**
  * Generic function to complete a relay transaction by submitting signed EIP2771 data to Gelato.
- * Used for install, unpermit, and repermit operations.
+ * Used for install, uninstall, and reinstall operations.
  */
 export async function completeRelayTransaction(request: {
   typedDataSignature: string;

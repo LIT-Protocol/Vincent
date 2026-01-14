@@ -11,7 +11,7 @@ import { getBaseChainId, getBasePublicClient } from './chainConfig';
 
 const relaySdk = new GelatoRelay();
 
-export async function unpermitApp(request: {
+export async function uninstallApp(request: {
   appId: number;
   appVersion: number;
   userControllerAddress: string;

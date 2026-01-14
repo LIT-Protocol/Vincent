@@ -517,9 +517,9 @@ describe('User API Integration Tests', () => {
       });
     }, 30000);
 
-    it('should return data to sign for repermitting an app via install-app', async () => {
-      // After unpermitting, calling install-app should detect the unpermitted state
-      // and return repermit data instead of minting a new PKP
+    it('should return data to sign for reinstalling an app via install-app', async () => {
+      // After uninstalling, calling install-app should detect the uninstalled state
+      // and return reinstall data instead of minting a new PKP
       const result = await store.dispatch(
         api.endpoints.installApp.initiate({
           appId: testAppId,
@@ -530,7 +530,7 @@ describe('User API Integration Tests', () => {
       );
 
       if (hasError(result)) {
-        console.error('installApp (repermit) failed:', result.error);
+        console.error('installApp (reinstall) failed:', result.error);
       }
       expectAssertObject(result.data);
 
@@ -540,7 +540,7 @@ describe('User API Integration Tests', () => {
       expect(typeof result.data.appInstallationDataToSign).toBe('object');
 
       // Store for the next test
-      (global as any).repermitInstallationData = result.data;
+      (global as any).reinstallData = result.data;
 
       debug({
         agentSignerAddress: result.data.agentSignerAddress,
@@ -549,11 +549,11 @@ describe('User API Integration Tests', () => {
       });
     }, 60000);
 
-    it('should complete repermit with signed typed data via complete-installation', async () => {
-      const repermitInstallationData = (global as any).repermitInstallationData;
-      expect(repermitInstallationData).toBeDefined();
+    it('should complete reinstall with signed typed data via complete-installation', async () => {
+      const reinstallData = (global as any).reinstallData;
+      expect(reinstallData).toBeDefined();
 
-      const { appInstallationDataToSign } = repermitInstallationData;
+      const { appInstallationDataToSign } = reinstallData;
       const { typedData } = appInstallationDataToSign;
 
       // Sign the typed data with the user's wallet
@@ -565,13 +565,13 @@ describe('User API Integration Tests', () => {
         typedData.message,
       );
 
-      console.log('Repermit typed data signature:', typedDataSignature);
+      console.log('Reinstall typed data signature:', typedDataSignature);
 
       // Wait to avoid Gelato rate limiting (Gelato has strict per-account limits)
       console.log('Waiting 60s to avoid Gelato rate limiting...');
       await delay(60000);
 
-      // Complete the repermit using the standard complete-installation endpoint
+      // Complete the reinstall using the standard complete-installation endpoint
       const completeResult = await store.dispatch(
         api.endpoints.completeInstallation.initiate({
           appId: testAppId,
@@ -583,22 +583,22 @@ describe('User API Integration Tests', () => {
       );
 
       if (hasError(completeResult)) {
-        console.error('completeInstallation (repermit) failed:', completeResult.error);
+        console.error('completeInstallation (reinstall) failed:', completeResult.error);
       }
       expectAssertObject(completeResult.data);
 
       expect(completeResult.data).toHaveProperty('transactionHash');
       expect(completeResult.data.transactionHash).toMatch(/^0x[a-fA-F0-9]{64}$/);
 
-      console.log('Repermit transaction hash:', completeResult.data.transactionHash);
+      console.log('Reinstall transaction hash:', completeResult.data.transactionHash);
 
       debug({
         transactionHash: completeResult.data.transactionHash,
       });
     }, 120000);
 
-    it('should have the app permitted again on the Vincent contract after repermit', async () => {
-      // Query the Vincent contract to verify the app was repermitted
+    it('should have the app permitted again on the Vincent contract after reinstall', async () => {
+      // Query the Vincent contract to verify the app was reinstalled
       const vincentContract = new Contract(
         VINCENT_DIAMOND_CONTRACT_ADDRESS_PROD,
         COMBINED_ABI,
@@ -608,7 +608,7 @@ describe('User API Integration Tests', () => {
       const results = await vincentContract.getPermittedAppForAgents([agentSmartAccountAddress]);
 
       console.log(
-        'getPermittedAppForAgents results after repermit:',
+        'getPermittedAppForAgents results after reinstall:',
         JSON.stringify(results, null, 2),
       );
 

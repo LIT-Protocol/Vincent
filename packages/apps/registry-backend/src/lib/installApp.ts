@@ -342,7 +342,7 @@ export async function installApp(request: { appId: number; userControllerAddress
     appId,
   );
 
-  // 3. Check if user has a previously unpermitted app (needs repermit instead of fresh install)
+  // 3. Check if user has a previously uninstalled app (needs reinstall instead of fresh install)
   const contractClient = getContractClient();
   const unpermittedApps = await contractClient.getUnpermittedAppForAgents({
     agentAddresses: [agentSmartAccountAddress],
