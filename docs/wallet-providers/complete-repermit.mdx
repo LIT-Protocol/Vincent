@@ -1,0 +1,79 @@
+---
+title: 'Complete Repermit'
+api: 'POST /user/{appId}/complete-repermit'
+---
+
+Complete the permission re-grant by submitting the user's signature.
+
+## Request
+
+<ParamField path="appId" type="integer" required>
+  The unique identifier of the app
+</ParamField>
+
+<ParamField body="typedDataSignature" type="string" required>
+  The user's signature of the typed data from the repermit-app response
+</ParamField>
+
+<ParamField body="repermitDataToSign" type="object" required>
+  The typed data object returned from the repermit-app endpoint
+</ParamField>
+
+## Response
+
+<ResponseField name="transactionHash" type="string">
+  The transaction hash of the on-chain repermit
+</ResponseField>
+
+<RequestExample>
+```bash cURL
+curl -X POST https://api.heyvincent.ai/user/123/complete-repermit \
+  -H "Content-Type: application/json" \
+  -d '{
+    "typedDataSignature": "0xSignature...",
+    "repermitDataToSign": { "...": "..." }
+  }'
+```
+
+```typescript TypeScript
+// Step 1: Initiate repermit
+const repermitResponse = await fetch(`https://api.heyvincent.ai/user/${appId}/repermit-app`, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    userControllerAddress: userWallet.address
+  })
+});
+const repermitData = await repermitResponse.json();
+
+// Step 2: Sign the typed data with the user's wallet
+const { typedData } = repermitData.repermitDataToSign;
+const { EIP712Domain, ...types } = typedData.types;
+const signature = await userWallet._signTypedData(
+  typedData.domain,
+  types,
+  typedData.message
+);
+
+// Step 3: Complete the repermit
+const response = await fetch(`https://api.heyvincent.ai/user/${appId}/complete-repermit`, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    typedDataSignature: signature,
+    repermitDataToSign: repermitData.repermitDataToSign
+  })
+});
+
+const result = await response.json();
+console.log(`Repermit tx: ${result.transactionHash}`);
+```
+</RequestExample>
+
+<ResponseExample>
+```json Response
+{
+  "transactionHash": "0xTransactionHash..."
+}
+```
+</ResponseExample>

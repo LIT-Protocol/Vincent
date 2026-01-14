@@ -1,0 +1,76 @@
+---
+title: 'Get App'
+api: 'GET /app/{appId}'
+---
+
+Fetch metadata about a specific app.
+
+## Request
+
+<ParamField path="appId" type="integer" required>
+  The unique identifier of the app
+</ParamField>
+
+## Response
+
+<ResponseField name="appId" type="integer">
+  The unique identifier of the app
+</ResponseField>
+
+<ResponseField name="name" type="string">
+  The display name of the app
+</ResponseField>
+
+<ResponseField name="description" type="string">
+  A description of what the app does
+</ResponseField>
+
+<ResponseField name="contactEmail" type="string">
+  Contact email for the app developer
+</ResponseField>
+
+<ResponseField name="appUrl" type="string">
+  URL to the app's homepage
+</ResponseField>
+
+<ResponseField name="logo" type="string">
+  Base64 encoded logo image
+</ResponseField>
+
+<ResponseField name="activeVersion" type="integer">
+  The currently active version of the app
+</ResponseField>
+
+<ResponseField name="managerAddress" type="string">
+  Ethereum address of the app manager
+</ResponseField>
+
+<RequestExample>
+```bash cURL
+curl https://api.heyvincent.ai/app/123
+```
+
+```typescript TypeScript
+const response = await fetch(`https://api.heyvincent.ai/app/${appId}`);
+const appInfo = await response.json();
+
+// Display app info to user before installation
+console.log(`App: ${appInfo.name}`);
+console.log(`Description: ${appInfo.description}`);
+```
+</RequestExample>
+
+<ResponseExample>
+```json Response
+{
+  "appId": 123,
+  "name": "DCA Trading Bot",
+  "description": "Automated dollar-cost averaging for your portfolio",
+  "contactEmail": "support@example.com",
+  "appUrl": "https://example.com/app",
+  "logo": "https://example.com/logo.png",
+  "activeVersion": 1,
+  "managerAddress": "0x1234...5678"
+}
+```
+</ResponseExample>

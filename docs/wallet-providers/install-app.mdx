@@ -1,0 +1,82 @@
+---
+title: 'Install App'
+api: 'POST /user/{appId}/install-app'
+---
+
+Start the installation process by providing the user's wallet address. Returns typed data that must be signed by the user.
+
+## Request
+
+<ParamField path="appId" type="integer" required>
+  The unique identifier of the app to install
+</ParamField>
+
+<ParamField body="userControllerAddress" type="string" required>
+  The Ethereum address of the user's wallet
+</ParamField>
+
+## Response
+
+<ResponseField name="agentSignerAddress" type="string">
+  The [Programmable Key Pair (PKP)](https://developer.litprotocol.com/user-wallets/pkps/overview) address that will sign transactions on behalf of the user
+</ResponseField>
+
+<ResponseField name="agentSmartAccountAddress" type="string">
+  The smart account address for the agent
+</ResponseField>
+
+<ResponseField name="appInstallationDataToSign" type="object">
+  EIP-712 typed data that the user must sign to complete installation. Pass this object to the complete-installation endpoint along with the signature.
+
+  <Expandable title="properties">
+    <ResponseField name="typedData" type="object">
+      <Expandable title="properties">
+        <ResponseField name="domain" type="object">
+          EIP-712 domain separator
+        </ResponseField>
+        <ResponseField name="types" type="object">
+          EIP-712 type definitions
+        </ResponseField>
+        <ResponseField name="message" type="object">
+          The message to be signed
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<RequestExample>
+```bash cURL
+curl -X POST https://api.heyvincent.ai/user/123/install-app \
+  -H "Content-Type: application/json" \
+  -d '{"userControllerAddress": "0xUserWalletAddress..."}'
+```
+
+```typescript TypeScript
+const response = await fetch(`https://api.heyvincent.ai/user/${appId}/install-app`, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    userControllerAddress: userWallet.address
+  })
+});
+
+const installData = await response.json();
+```
+</RequestExample>
+
+<ResponseExample>
+```json Response
+{
+  "agentSignerAddress": "0xPKPAddress...",
+  "agentSmartAccountAddress": "0xSmartAccountAddress...",
+  "appInstallationDataToSign": {
+    "typedData": {
+      "domain": { "...": "..." },
+      "types": { "...": "..." },
+      "message": { "...": "..." }
+    }
+  }
+}
+```
+</ResponseExample>

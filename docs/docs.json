@@ -2,6 +2,14 @@
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
   "name": "Vincent Docs",
+  "api": {
+    "mdx": {
+      "server": "https://api.heyvincent.ai"
+    },
+    "playground": {
+      "display": "simple"
+    }
+  },
   "colors": {
     "primary": "#FF4205",
     "light": "#FF6B35",
@@ -158,8 +166,33 @@
         "tab": "Wallet Providers",
         "groups": [
           {
-            "group": "Integration",
+            "group": "Overview",
             "pages": ["wallet-providers/introduction"]
+          },
+          {
+            "group": "API Endpoints",
+            "pages": [
+              {
+                "group": "Get App",
+                "pages": ["wallet-providers/get-app"]
+              },
+              {
+                "group": "Install App",
+                "pages": ["wallet-providers/install-app", "wallet-providers/complete-installation"]
+              },
+              {
+                "group": "Agent Details",
+                "pages": ["wallet-providers/agent-account", "wallet-providers/agent-funds"]
+              },
+              {
+                "group": "Unpermit App",
+                "pages": ["wallet-providers/unpermit-app", "wallet-providers/complete-unpermit"]
+              },
+              {
+                "group": "Repermit App",
+                "pages": ["wallet-providers/repermit-app", "wallet-providers/complete-repermit"]
+              }
+            ]
           }
         ]
       },
