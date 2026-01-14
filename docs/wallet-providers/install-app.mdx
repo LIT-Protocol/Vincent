@@ -5,9 +5,9 @@ api: 'POST /user/{appId}/install-app'
 
 Start the installation process by providing the user's wallet address. Returns typed data that must be signed by the user.
 
-This endpoint handles both new installations and re-enabling previously uninstalled apps:
+This endpoint handles both new installations and reinstalling previously uninstalled apps:
 - **New installation**: Mints a new [PKP](https://developer.litprotocol.com/user-wallets/pkps/overview) and permits the app
-- **Re-enabling**: If the user previously uninstalled the app, automatically detects this and re-enables it with the existing PKP
+- **Reinstall**: If the user previously uninstalled the app, automatically detects this and reinstalls it with the existing PKP
 
 ## Request
 
