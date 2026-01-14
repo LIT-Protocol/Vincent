@@ -1,3 +1,27 @@
+## 1.2.0 (2026-01-14)
+
+### 🚀 Features
+
+- Upgrade to support Vincent 2.0 architecture ([cf97ffde](https://github.com/LIT-Protocol/Vincent/commit/cf97ffde))
+
+### 🧱 Updated Dependencies
+
+- Updated ability-sdk to 3.0.0
+- Updated app-sdk to 2.6.0
+- Updated contracts-sdk to 8.0.0
+- Updated policy-spending-limit to 2.2.0
+- Updated policy-contract-whitelist to 1.2.0
+- Updated ability-erc20-approval to 3.2.0
+- Updated ability-erc20-transfer to 0.2.0
+- Updated ability-uniswap-swap to 8.1.0
+- Updated ability-evm-transaction-signer to 0.2.0
+- Updated policy-send-counter to 0.3.0
+- Updated ability-aerodrome-swap to 0.5.0
+
+### ❤️ Thank You
+
+- Wyatt Barnes @Spacesai1or
+
 ## 1.1.19 (2026-01-12)
 
 ### 🧱 Updated Dependencies

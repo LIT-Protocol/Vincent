@@ -1,3 +1,19 @@
+## 0.2.0 (2026-01-14)
+
+### 🚀 Features
+
+- Upgrade to support Vincent 2.0 architecture ([cf97ffde](https://github.com/LIT-Protocol/Vincent/commit/cf97ffde))
+
+### 🧱 Updated Dependencies
+
+- Updated ability-sdk to 3.0.0
+- Updated app-sdk to 2.6.0
+- Updated policy-contract-whitelist to 1.2.0
+
+### ❤️ Thank You
+
+- Wyatt Barnes @Spacesai1or
+
 ## 0.1.11 (2026-01-10)
 
 ### 🧱 Updated Dependencies
