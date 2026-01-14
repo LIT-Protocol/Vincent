@@ -1,5 +1,6 @@
 import type { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
 
+import { getAgentFundsRequest, getAgentFundsResponse } from '../schemas/agentFunds';
 import {
   completeInstallationRequest,
   completeInstallationResponse,
@@ -10,6 +11,7 @@ import {
   installAppRequest,
   installAppResponse,
 } from '../schemas/installedApp';
+import { z } from '../schemas/openApiZod';
 import {
   repermitAppRequest,
   repermitAppResponse,
@@ -22,8 +24,6 @@ import {
   completeUnpermitRequest,
   completeUnpermitResponse,
 } from '../schemas/unpermitApp';
-import { getAgentFundsRequest, getAgentFundsResponse } from '../schemas/agentFunds';
-import { z } from '../schemas/openApiZod';
 import { appIdParam } from './app';
 import { ErrorResponse } from './baseRegistry';
 
