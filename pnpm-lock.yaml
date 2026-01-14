@@ -1400,6 +1400,9 @@ importers:
       '@lit-protocol/constants':
         specifier: ^7.3.1
         version: 7.3.1(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
+      '@lit-protocol/contracts-sdk':
+        specifier: ^7.2.3
+        version: 7.3.1(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
       '@lit-protocol/lit-node-client':
         specifier: ^7.2.3
         version: 7.3.1(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
@@ -1415,9 +1418,6 @@ importers:
       ethers:
         specifier: ^5.8.0
         version: 5.8.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
-      viem:
-        specifier: ^2.34.0
-        version: 2.41.2(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)
     devDependencies:
       '@aave-dao/aave-v3-origin':
         specifier: ^3.5.0
@@ -1429,9 +1429,6 @@ importers:
         specifier: ^1.44.2
         version: 1.51.1
       '@lit-protocol/auth-helpers':
-        specifier: ^7.2.3
-        version: 7.3.1(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
-      '@lit-protocol/contracts-sdk':
         specifier: ^7.2.3
         version: 7.3.1(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
       '@lit-protocol/esbuild-plugin-polyfill-node':
@@ -1476,6 +1473,9 @@ importers:
       ts-jest:
         specifier: ^29.1.0
         version: 29.4.6(@babel/core@7.28.5)(@jest/transform@29.7.0)(@jest/types@30.2.0)(babel-jest@29.7.0(@babel/core@7.28.5))(esbuild@0.24.2)(jest-util@29.7.0)(jest@29.7.0(@types/node@20.19.26)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.5.29(@swc/helpers@0.5.17))(@types/node@20.19.26)(typescript@5.8.3)))(typescript@5.8.3)
+      viem:
+        specifier: ^2.34.0
+        version: 2.41.2(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)
 
   packages/libs/e2e-test-utils:
     dependencies:
