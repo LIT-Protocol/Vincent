@@ -77,6 +77,7 @@ export async function run() {
 
   const precheckResult = await client.precheck(abilityParams, {
     delegatorPkpEthAddress: '0xabc',
+    agentAddress: '0xagent',
   });
 
   if (precheckResult.success === true) {
@@ -142,6 +143,7 @@ export async function run() {
   // 🧪 Now check execute inference
   const executeResult = await client.execute(abilityParams, {
     delegatorPkpEthAddress: '0x09182301238',
+    agentAddress: '0xagent',
   });
 
   if (executeResult.success === true) {
@@ -222,6 +224,7 @@ const fullParams = { count: 5 };
 export async function gogo() {
   const precheck = await fullClient.precheck(fullParams, {
     delegatorPkpEthAddress: '0x1sfskjdfhf',
+    agentAddress: '0xagent',
   });
 
   if (precheck.success === true) {
@@ -239,6 +242,7 @@ export async function gogo() {
 
   const execute = await fullClient.execute(fullParams, {
     delegatorPkpEthAddress: '0x098479847928734',
+    agentAddress: '0xagent',
   });
 
   if (execute.success === true) {

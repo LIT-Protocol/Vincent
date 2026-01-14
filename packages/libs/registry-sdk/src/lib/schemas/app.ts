@@ -12,7 +12,6 @@ const app = z
     appId: z.number().openapi({
       description: 'Application ID',
       example: 12345,
-      readOnly: true,
     }),
     // Optional because a new app without any appVersion defined yet will have no activeVersion
     activeVersion: z
@@ -39,7 +38,7 @@ const app = z
         example: EXAMPLE_EMAIL_ADDRESS,
       })
       .optional(),
-    appUserUrl: z
+    appUrl: z
       .string()
       .url()
       .openapi({
@@ -54,33 +53,6 @@ const app = z
         description: 'Base64 encoded logo image',
         example:
           'iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAIAAAACDbGyAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAOvwAADr8BOAVTJAAAAA5JREFUGFdj/M+ACAAAAAD//wE7AnsAAAAAAElFTkSuQmCC',
-      })
-      .optional(),
-    redirectUris: z
-      .array(z.string().url())
-      .refine((urls) => new Set(urls).size === urls.length, {
-        message: 'Redirect URIs must be unique',
-      })
-      .openapi({
-        uniqueItems: true,
-        description:
-          'Redirect URIs users can be sent to after signing up for your application (with their JWT token).',
-        example: ['https://myapp.example.com', 'https://myapp.example.com/subpage'],
-      })
-      .optional(),
-    delegateeAddresses: z
-      .array(z.string().regex(/^0x[a-fA-F0-9]{40}$/))
-      .refine((addresses) => new Set(addresses).size === addresses.length, {
-        message: 'Delegatee addresses must be unique',
-      })
-      .openapi({
-        uniqueItems: true,
-        description:
-          "Addresses responsible for executing the app's operations on behalf of Vincent App Users",
-        example: [
-          '0x123456789012345678901234567890123456abcd',
-          '0x1234567890123456789012345678901234561234',
-        ],
       })
       .optional(),
     deploymentStatus: z.enum(['dev', 'test', 'prod']).optional().openapi({
@@ -101,16 +73,7 @@ const app = z
 
 // Avoiding using z.omit() or z.pick() due to excessive TS type inference costs
 function buildCreateAppSchema() {
-  const {
-    name,
-    deploymentStatus,
-    description,
-    contactEmail,
-    appUserUrl,
-    logo,
-    redirectUris,
-    delegateeAddresses,
-  } = app.shape;
+  const { appId, name, deploymentStatus, description, contactEmail, appUrl, logo } = app.shape;
 
   return z
     .object({
@@ -119,14 +82,13 @@ function buildCreateAppSchema() {
         .object({
           deploymentStatus: deploymentStatus.default('dev'),
           contactEmail,
-          appUserUrl,
+          appUrl,
           logo,
-          redirectUris,
-          delegateeAddresses,
         })
         .partial()
         .strict().shape,
 
+      appId,
       name,
       description,
     })
@@ -140,17 +102,8 @@ export const appCreate = buildCreateAppSchema();
 
 function buildEditAppSchema() {
   // Avoiding using z.omit() or z.pick() due to excessive TS type inference costs
-  const {
-    contactEmail,
-    activeVersion,
-    redirectUris,
-    delegateeAddresses,
-    name,
-    description,
-    deploymentStatus,
-    logo,
-    appUserUrl,
-  } = app.shape;
+  const { contactEmail, activeVersion, name, description, deploymentStatus, logo, appUrl } =
+    app.shape;
 
   return z
     .object({
@@ -160,10 +113,8 @@ function buildEditAppSchema() {
           name,
           description,
           contactEmail,
-          appUserUrl,
+          appUrl,
           logo,
-          redirectUris,
-          delegateeAddresses,
           deploymentStatus,
           activeVersion,
         })

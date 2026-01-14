@@ -21,6 +21,7 @@ import { setupZerodevAccount, setupCrossmintAccount, setupSafeAccount } from './
 
 export interface VincentDevEnvironment {
   agentPkpInfo: PkpInfo;
+  agentAddress: string;
   platformUserPkpInfo: PkpInfo;
   wallets: {
     appDelegatee: Wallet;
@@ -92,9 +93,11 @@ export interface VincentDevEnvironment {
 export const setupVincentDevelopmentEnvironment = async ({
   permissionData,
   smartAccountType,
+  agentAddress,
 }: {
   permissionData: PermissionData;
   smartAccountType?: 'zerodev' | 'crossmint' | 'safe';
+  agentAddress?: string;
 }): Promise<VincentDevEnvironment> => {
   // Check and fund all required accounts
   await funder.checkFunderBalance();
@@ -143,29 +146,9 @@ export const setupVincentDevelopmentEnvironment = async ({
   // Get or create the Agent PKP for this app (owned by the Platform User PKP)
   const agentPkpInfo = await delegator.getFundedAgentPkp(appId);
 
-  // Permit the app version for the Agent PKP
-  await delegator.permitAppVersionForAgentWalletPkp({
-    permissionData,
-    appId,
-    appVersion,
-    agentPkpInfo,
-    platformUserPkpWallet,
-  });
-
-  // Add permissions for abilities to the Agent PKP
-  // Note: This uses the Platform User PKP wallet to add permissions
-
-  await delegator.addPermissionForAbilities(
-    platformUserPkpWallet,
-    agentPkpInfo.tokenId,
-    abilityIpfsCids,
-  );
-
-  // Ensure capacity token is valid and unexpired
-  await ensureUnexpiredCapacityToken(wallets.appDelegatee);
-
   // Optionally set up smart account
   let smartAccount: SmartAccountInfo | undefined;
+  let resolvedAgentAddress = agentAddress ?? agentPkpInfo.ethAddress;
   if (smartAccountType) {
     console.log(`\n🔧 Setting up ${smartAccountType} smart account...\n`);
 
@@ -203,17 +186,46 @@ export const setupVincentDevelopmentEnvironment = async ({
         permittedAddress: agentPkpInfo.ethAddress as `0x${string}`,
         chain,
       });
-    } else if (smartAccountType === 'safe') {
+    } else {
       smartAccount = await setupSafeAccount({
         ownerAccount,
         permittedAddress: agentPkpInfo.ethAddress as `0x${string}`,
         chain,
       });
     }
+    resolvedAgentAddress = smartAccount.account.address;
   }
+  if (resolvedAgentAddress === agentPkpInfo.ethAddress) {
+    console.warn(
+      '[setupVincentDevelopmentEnvironment] Using agent PKP address as agentAddress. Set agentAddress or smartAccountType to use a smart account.',
+    );
+  }
+
+  // Permit the app version for the Agent PKP
+  await delegator.permitAppVersionForAgentWalletPkp({
+    permissionData,
+    appId,
+    appVersion,
+    agentPkpInfo,
+    platformUserPkpWallet,
+    agentAddress: resolvedAgentAddress,
+  });
+
+  // Add permissions for abilities to the Agent PKP
+  // Note: This uses the Platform User PKP wallet to add permissions
+
+  await delegator.addPermissionForAbilities(
+    platformUserPkpWallet,
+    agentPkpInfo.tokenId,
+    abilityIpfsCids,
+  );
+
+  // Ensure capacity token is valid and unexpired
+  await ensureUnexpiredCapacityToken(wallets.appDelegatee);
 
   return {
     agentPkpInfo,
+    agentAddress: resolvedAgentAddress,
     platformUserPkpInfo,
     wallets: {
       ...wallets,

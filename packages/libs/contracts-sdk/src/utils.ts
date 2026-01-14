@@ -1,8 +1,25 @@
 import type { Signer, Overrides } from 'ethers';
 
-import { Contract, BigNumber } from 'ethers';
+import { Contract, BigNumber, ethers } from 'ethers';
 
 import { COMBINED_ABI, GAS_ADJUSTMENT_PERCENT } from './constants';
+
+/**
+ * Derives a 32-byte index for smart account creation from an appId.
+ * Matches Solidity: keccak256(abi.encodePacked("vincent_app_id_", appId)) where appId is uint40.
+ *
+ * @param appId - The Vincent app ID
+ * @returns A bigint suitable for use as the index parameter in getKernelAddressFromECDSA
+ *
+ * @category API
+ */
+export function deriveSmartAccountIndex(appId: number): bigint {
+  const prefix = ethers.utils.toUtf8Bytes('vincent_app_id_');
+  const appIdBytes = ethers.utils.zeroPad(ethers.utils.hexlify(appId), 5); // uint40 = 5 bytes
+  const packed = ethers.utils.concat([prefix, appIdBytes]);
+  const hash = ethers.utils.keccak256(packed);
+  return BigInt(hash);
+}
 
 /**
  * Creates an Ethers Contract instance with the provided signer. For internal use / local chain dev only

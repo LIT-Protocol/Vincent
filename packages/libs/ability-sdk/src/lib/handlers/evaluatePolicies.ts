@@ -81,6 +81,7 @@ export async function evaluatePolicies<
           abilityParams: abilityPolicyParams,
           context: {
             abilityIpfsCid: context.abilityIpfsCid,
+            agentAddress: context.agentAddress,
             delegatorPkpEthAddress: context.delegation.delegatorPkpInfo.ethAddress,
           },
           vincentAbilityApiVersion,

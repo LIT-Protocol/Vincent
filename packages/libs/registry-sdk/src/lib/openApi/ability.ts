@@ -9,7 +9,7 @@ import {
   abilityVersionDoc,
 } from '../schemas/ability';
 import { z } from '../schemas/openApiZod';
-import { ErrorResponse, ChangeOwner, GenericResult, jwtAuth } from './baseRegistry';
+import { ErrorResponse, ChangeOwner, GenericResult, siweAuth } from './baseRegistry';
 
 const packageNameParam = z
   .string()
@@ -62,7 +62,7 @@ export function addToRegistry(registry: OpenAPIRegistry) {
     tags: ['Ability', 'AbilityVersion'],
     summary: 'Creates a new ability',
     operationId: 'createAbility',
-    security: [{ [jwtAuth.name]: [] }],
+    security: [{ [siweAuth.name]: [] }],
     request: {
       params: z.object({ packageName: packageNameParam }),
       body: {
@@ -141,7 +141,7 @@ export function addToRegistry(registry: OpenAPIRegistry) {
     tags: ['Ability'],
     summary: 'Edits an ability',
     operationId: 'editAbility',
-    security: [{ [jwtAuth.name]: [] }],
+    security: [{ [siweAuth.name]: [] }],
     request: {
       params: z.object({ packageName: packageNameParam }),
       body: {
@@ -220,7 +220,7 @@ export function addToRegistry(registry: OpenAPIRegistry) {
     tags: ['Ability'],
     summary: "Changes an ability's owner",
     operationId: 'changeAbilityOwner',
-    security: [{ [jwtAuth.name]: [] }],
+    security: [{ [siweAuth.name]: [] }],
     request: {
       params: z.object({ packageName: packageNameParam }),
       body: {
@@ -266,7 +266,7 @@ export function addToRegistry(registry: OpenAPIRegistry) {
     tags: ['AbilityVersion'],
     summary: 'Creates an ability version',
     operationId: 'createAbilityVersion',
-    security: [{ [jwtAuth.name]: [] }],
+    security: [{ [siweAuth.name]: [] }],
     request: {
       params: z.object({ packageName: packageNameParam, version: abilityVersionParam }),
       body: {
@@ -345,7 +345,7 @@ export function addToRegistry(registry: OpenAPIRegistry) {
     tags: ['AbilityVersion'],
     summary: 'Edits an ability version',
     operationId: 'editAbilityVersion',
-    security: [{ [jwtAuth.name]: [] }],
+    security: [{ [siweAuth.name]: [] }],
     request: {
       params: z.object({ packageName: packageNameParam, version: abilityVersionParam }),
       body: {
@@ -391,7 +391,7 @@ export function addToRegistry(registry: OpenAPIRegistry) {
     tags: ['Ability', 'AbilityVersion'],
     summary: 'Deletes an ability and all its versions',
     operationId: 'deleteAbility',
-    security: [{ [jwtAuth.name]: [] }],
+    security: [{ [siweAuth.name]: [] }],
     request: {
       params: z.object({ packageName: packageNameParam }),
     },
@@ -425,7 +425,7 @@ export function addToRegistry(registry: OpenAPIRegistry) {
     tags: ['Ability', 'AbilityVersion'],
     summary: 'Undeletes an ability and all its versions',
     operationId: 'undeleteAbility',
-    security: [{ [jwtAuth.name]: [] }],
+    security: [{ [siweAuth.name]: [] }],
     request: {
       params: z.object({ packageName: packageNameParam }),
     },
@@ -459,7 +459,7 @@ export function addToRegistry(registry: OpenAPIRegistry) {
     tags: ['AbilityVersion'],
     summary: 'Deletes an ability version',
     operationId: 'deleteAbilityVersion',
-    security: [{ [jwtAuth.name]: [] }],
+    security: [{ [siweAuth.name]: [] }],
     request: {
       params: z.object({
         packageName: packageNameParam,
@@ -502,7 +502,7 @@ export function addToRegistry(registry: OpenAPIRegistry) {
     tags: ['AbilityVersion'],
     summary: 'Undeletes an ability version',
     operationId: 'undeleteAbilityVersion',
-    security: [{ [jwtAuth.name]: [] }],
+    security: [{ [siweAuth.name]: [] }],
     request: {
       params: z.object({
         packageName: packageNameParam,
@@ -545,7 +545,7 @@ export function addToRegistry(registry: OpenAPIRegistry) {
     tags: ['AbilityVersion'],
     summary: 'Refreshes supported policies for an ability version',
     operationId: 'refreshAbilityVersionPolicies',
-    security: [{ [jwtAuth.name]: [] }],
+    security: [{ [siweAuth.name]: [] }],
     request: {
       params: z.object({
         packageName: packageNameParam,

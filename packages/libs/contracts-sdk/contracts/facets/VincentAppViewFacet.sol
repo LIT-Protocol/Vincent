@@ -27,22 +27,17 @@ contract VincentAppViewFacet is VincentBase {
     error DelegateeNotRegistered(address delegatee);
 
     /**
-     * @notice Thrown when trying to query by a zero address
-     */
-    error ZeroAddressNotAllowed();
-
-    /**
      * @notice Thrown when no apps are found for the specified manager
      * @param manager The address of the manager with no apps
      */
     error NoAppsFoundForManager(address manager);
 
     /**
-     * @notice Thrown when no delegated agent PKPs are found for the specified app and version
+     * @notice Thrown when no delegated agents are found for the specified app and version
      * @param appId The ID of the app
      * @param version The version number
      */
-    error NoDelegatedAgentPkpsFound(uint40 appId, uint24 version);
+    error NoDelegatedAgentsFound(uint40 appId, uint24 version);
 
     // ==================================================================================
     // Data Structures
@@ -56,6 +51,7 @@ contract VincentAppViewFacet is VincentBase {
      * @param manager Address of the account that manages this app
      * @param latestVersion The most recent version number of this app
      * @param delegatees Array of addresses that are delegated to act on behalf of this app
+     * @param accountIndexHash The keccak256 hash intended to be used as the account index for smart account creation
      */
     struct App {
         uint40 id;
@@ -63,20 +59,23 @@ contract VincentAppViewFacet is VincentBase {
         address manager;
         uint24 latestVersion;
         address[] delegatees;
+        bytes32 accountIndexHash;
     }
 
     /**
      * @notice Represents a specific version of an app with all associated data
      * @dev Extends AppView with version-specific information
      * @param version Version number (1-indexed)
+     * @param accountIndexHash The keccak256 hash intended to be used as the account index for smart account creation
      * @param enabled Flag indicating if this version is currently enabled
-     * @param delegatedAgentPkpTokenIds Array of Agent PKP token IDs that have permitted this version
+     * @param delegatedAgents Array of addresses that have permitted this app version to act on their behalf
      * @param abilities Array of abilities with their associated policies for this version
      */
     struct AppVersion {
         uint24 version;
+        bytes32 accountIndexHash;
         bool enabled;
-        uint256[] delegatedAgentPkpTokenIds;
+        address[] delegatedAgents;
         Ability[] abilities;
     }
 
@@ -112,28 +111,29 @@ contract VincentAppViewFacet is VincentBase {
         // App versions are 1-indexed, so the array length corresponds directly to the latest version number
         app.latestVersion = uint24(storedApp.appVersions.length);
         app.delegatees = storedApp.delegatees.values();
+        app.accountIndexHash = storedApp.accountIndexHash;
     }
 
     /**
-     * @notice Retrieves the delegatedAgentPkpTokenIds with an offset and a max page size of PAGE_SIZE
+     * @notice Retrieves the delegatedAgentAddresses with an offset and a max page size of PAGE_SIZE
      * @param appId ID of the app to retrieve
      * @param version Version number of the app to retrieve (1-indexed)
-     * @param offset The offset of the first token ID to retrieve
-     * @return delegatedAgentPkpTokenIds Array of delegated agent PKP token IDs
+     * @param offset The offset of the first address to retrieve
+     * @return delegatedAgentAddresses Array of delegated agent addresses
      */
-    function getDelegatedAgentPkpTokenIds(uint40 appId, uint24 version, uint256 offset)
+    function getDelegatedAgentAddresses(uint40 appId, uint24 version, uint256 offset)
         external
         view
         onlyRegisteredAppVersion(appId, version)
-        returns (uint256[] memory delegatedAgentPkpTokenIds)
+        returns (address[] memory delegatedAgentAddresses)
     {
         VincentAppStorage.AppVersion storage versionedApp =
             VincentAppStorage.appStorage().appIdToApp[appId].appVersions[getAppVersionIndex(version)];
 
-        uint256 length = versionedApp.delegatedAgentPkps.length();
+        uint256 length = versionedApp.delegatedAgentAddresses.length();
 
         if (length == 0) {
-            revert NoDelegatedAgentPkpsFound(appId, version);
+            revert NoDelegatedAgentsFound(appId, version);
         }
 
         if (offset >= length) {
@@ -145,18 +145,18 @@ contract VincentAppViewFacet is VincentBase {
             end = length;
         }
 
-        delegatedAgentPkpTokenIds = new uint256[](end - offset);
+        delegatedAgentAddresses = new address[](end - offset);
         for (uint256 i = offset; i < end; i++) {
-            delegatedAgentPkpTokenIds[i - offset] = versionedApp.delegatedAgentPkps.at(i);
+            delegatedAgentAddresses[i - offset] = versionedApp.delegatedAgentAddresses.at(i);
         }
     }
 
     /**
      * @notice Retrieves detailed information about a specific version of an app
-     * @dev Fetches version-specific information from storage (excluding delegatedAgentPkpTokenIds)
+     * @dev Fetches version-specific information from storage (excluding delegatedAgentAddresses)
      * @param appId ID of the app to retrieve
      * @param version Version number of the app to retrieve (1-indexed)
-     * @return appVersion Version-specific information including abilities and policies (excluding delegatedAgentPkpTokenIds)
+     * @return appVersion Version-specific information including abilities and policies (excluding delegatedAgentAddresses)
      */
     function getAppVersion(uint40 appId, uint24 version)
         public
@@ -171,10 +171,10 @@ contract VincentAppViewFacet is VincentBase {
         // Step 2: Retrieve the specific version data
         VincentAppStorage.AppVersion storage storedVersionedApp = storedApp.appVersions[getAppVersionIndex(version)];
 
-        // Step 3: Set basic version information (excluding delegatedAgentPkpTokenIds)
+        // Step 3: Set basic version information (excluding delegatedAgentAddresses)
         appVersion.version = version;
+        appVersion.accountIndexHash = storedApp.accountIndexHash;
         appVersion.enabled = storedVersionedApp.enabled;
-        // appVersion.delegatedAgentPkpTokenIds is intentionally omitted
 
         // Step 4: Prepare to access ability data
         VincentLitActionStorage.LitActionStorage storage ls = VincentLitActionStorage.litActionStorage();

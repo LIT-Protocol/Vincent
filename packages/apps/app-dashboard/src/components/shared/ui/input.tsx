@@ -1,7 +1,7 @@
 import * as React from 'react';
 
 import { cn } from '@/lib/utils';
-import { theme } from '@/components/user-dashboard/connect/ui/theme';
+import { theme } from '@/lib/themeClasses';
 
 function Input({ className, type, ...props }: React.ComponentProps<'input'>) {
   return (

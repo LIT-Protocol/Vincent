@@ -4,6 +4,7 @@ import { vincentPolicy } from './vincent-policy';
 import { abilityParamsSchema } from './schemas';
 
 declare const context: {
+  agentAddress: string;
   abilityIpfsCid: string;
   delegatorPkpEthAddress: string;
 };

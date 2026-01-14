@@ -9,7 +9,7 @@ import { StatusMessage } from '@/components/shared/ui/statusMessage';
 import { TextField, LongTextField, SelectField, ImageUploadField } from '../../form-fields';
 import { Ability, AbilityVersion } from '@/types/developer-dashboard/appTypes';
 import { DeploymentStatusSelectField } from '../../form-fields/array/DeploymentStatusSelectField';
-import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
+import { theme, fonts } from '@/lib/themeClasses';
 import { extractErrorMessage } from '@/utils/developer-dashboard/app-forms';
 
 const { abilityDoc } = docSchemas;

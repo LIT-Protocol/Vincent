@@ -2,7 +2,7 @@ import { App } from '@/types/developer-dashboard/appTypes';
 import { ExternalLink, ChevronDown, ChevronUp, Calendar, Clock } from 'lucide-react';
 import { Logo } from '@/components/shared/ui/Logo';
 import { useNavigate } from 'react-router';
-import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
+import { theme, fonts } from '@/lib/themeClasses';
 import { useState } from 'react';
 
 export function AppHeader({ app }: { app: App }) {

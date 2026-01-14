@@ -70,5 +70,18 @@ export interface VincentAbilityClient<
 
 /** @category Interfaces */
 export interface AbilityClientContext {
+  /**
+   * The user's PKP address that owns the Agent smart account.
+   */
   delegatorPkpEthAddress: string;
+  /**
+   * The Agent smart account address that is permitted for the app version.
+   */
+  agentAddress: string;
+  registryRpcUrl?: string;
+  pkpInfoRpcUrl?: string;
+  /**
+   * @deprecated Use registryRpcUrl or pkpInfoRpcUrl.
+   */
+  rpcUrl?: string;
 }

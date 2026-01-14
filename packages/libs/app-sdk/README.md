@@ -113,6 +113,7 @@ const abilityClient = getVincentAbilityClient({
   bundledVincentAbility: erc20BundledAbility,
 });
 const delegatorPkpEthAddress = '0x09182301238';
+const agentAddress = '0xAgentSmartAccount';
 
 const abilityParams = {
   // Fill with the params your ability needs
@@ -121,12 +122,14 @@ const abilityParams = {
 // Run precheck to see if ability should be executed
 const precheckResult = await client.precheck(abilityParams, {
   delegatorPkpEthAddress,
+  agentAddress,
 });
 
 if (precheckResult.success === true) {
   // Execute the Vincent Ability
   const executeResult = await client.execute(abilityParams, {
     delegatorPkpEthAddress,
+    agentAddress,
   });
 
   // ...ability has executed, you can check `executeResult` for details

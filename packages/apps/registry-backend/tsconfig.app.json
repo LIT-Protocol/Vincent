@@ -1,6 +1,6 @@
 {
   "extends": ["@tsconfig/node20/tsconfig.json", "./tsconfig.json"],
-  "include": ["src/**/*.ts", "src/*.ts", "src/**/*.json", "./debug.ts"],
+  "include": ["src/**/*.ts", "src/*.ts", "src/**/*.json", "contracts/**/*.json", "./debug.ts"],
   "strictNullChecks": true,
   "allowJs": true,
   "types": ["jest", "node"],
@@ -12,15 +12,5 @@
     "outDir": "./dist",
     "resolveJsonModule": true
   },
-  "references": [
-    {
-      "path": "../../libs/registry-sdk/tsconfig.lib.json"
-    },
-    {
-      "path": "../../libs/contracts-sdk/tsconfig.lib.json"
-    },
-    {
-      "path": "../../libs/app-sdk/tsconfig.lib.json"
-    }
-  ]
+  "references": []
 }

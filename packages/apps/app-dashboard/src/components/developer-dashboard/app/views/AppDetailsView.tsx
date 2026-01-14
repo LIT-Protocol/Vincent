@@ -9,7 +9,7 @@ import { UndeleteAppButton } from '../wrappers/ui/UndeleteAppButton';
 import { Share, Copy, AlertCircle } from 'lucide-react';
 import { ConnectPageModal } from '../../ui/ConnectPageModal';
 import { Link } from 'react-router-dom';
-import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
+import { theme, fonts } from '@/lib/themeClasses';
 import { motion } from 'framer-motion';
 
 interface AppDetailsViewProps {

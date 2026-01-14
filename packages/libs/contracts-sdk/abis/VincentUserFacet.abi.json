@@ -4,9 +4,19 @@
     "name": "permitAppVersion",
     "inputs": [
       {
-        "name": "pkpTokenId",
-        "type": "uint256",
-        "internalType": "uint256"
+        "name": "agentAddress",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "pkpSigner",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "pkpSignerPubKey",
+        "type": "bytes",
+        "internalType": "bytes"
       },
       {
         "name": "appId",
@@ -42,9 +52,9 @@
     "name": "rePermitApp",
     "inputs": [
       {
-        "name": "pkpTokenId",
-        "type": "uint256",
-        "internalType": "uint256"
+        "name": "agentAddress",
+        "type": "address",
+        "internalType": "address"
       },
       {
         "name": "appId",
@@ -60,9 +70,9 @@
     "name": "setAbilityPolicyParameters",
     "inputs": [
       {
-        "name": "pkpTokenId",
-        "type": "uint256",
-        "internalType": "uint256"
+        "name": "agentAddress",
+        "type": "address",
+        "internalType": "address"
       },
       {
         "name": "appId",
@@ -98,9 +108,9 @@
     "name": "unPermitAppVersion",
     "inputs": [
       {
-        "name": "pkpTokenId",
-        "type": "uint256",
-        "internalType": "uint256"
+        "name": "agentAddress",
+        "type": "address",
+        "internalType": "address"
       },
       {
         "name": "appId",
@@ -121,10 +131,10 @@
     "name": "AbilityPolicyParametersSet",
     "inputs": [
       {
-        "name": "pkpTokenId",
-        "type": "uint256",
+        "name": "agentAddress",
+        "type": "address",
         "indexed": true,
-        "internalType": "uint256"
+        "internalType": "address"
       },
       {
         "name": "appId",
@@ -164,10 +174,10 @@
     "name": "AppVersionPermitted",
     "inputs": [
       {
-        "name": "pkpTokenId",
-        "type": "uint256",
+        "name": "agentAddress",
+        "type": "address",
         "indexed": true,
-        "internalType": "uint256"
+        "internalType": "address"
       },
       {
         "name": "appId",
@@ -180,6 +190,18 @@
         "type": "uint24",
         "indexed": true,
         "internalType": "uint24"
+      },
+      {
+        "name": "pkpSigner",
+        "type": "address",
+        "indexed": false,
+        "internalType": "address"
+      },
+      {
+        "name": "pkpSignerPubKey",
+        "type": "bytes",
+        "indexed": false,
+        "internalType": "bytes"
       }
     ],
     "anonymous": false
@@ -189,10 +211,10 @@
     "name": "AppVersionRePermitted",
     "inputs": [
       {
-        "name": "pkpTokenId",
-        "type": "uint256",
+        "name": "agentAddress",
+        "type": "address",
         "indexed": true,
-        "internalType": "uint256"
+        "internalType": "address"
       },
       {
         "name": "appId",
@@ -205,6 +227,18 @@
         "type": "uint24",
         "indexed": true,
         "internalType": "uint24"
+      },
+      {
+        "name": "pkpSigner",
+        "type": "address",
+        "indexed": false,
+        "internalType": "address"
+      },
+      {
+        "name": "pkpSignerPubKey",
+        "type": "bytes",
+        "indexed": false,
+        "internalType": "bytes"
       }
     ],
     "anonymous": false
@@ -214,10 +248,10 @@
     "name": "AppVersionUnPermitted",
     "inputs": [
       {
-        "name": "pkpTokenId",
-        "type": "uint256",
+        "name": "agentAddress",
+        "type": "address",
         "indexed": true,
-        "internalType": "uint256"
+        "internalType": "address"
       },
       {
         "name": "appId",
@@ -230,13 +264,25 @@
         "type": "uint24",
         "indexed": true,
         "internalType": "uint24"
+      },
+      {
+        "name": "pkpSigner",
+        "type": "address",
+        "indexed": false,
+        "internalType": "address"
+      },
+      {
+        "name": "pkpSignerPubKey",
+        "type": "bytes",
+        "indexed": false,
+        "internalType": "bytes"
       }
     ],
     "anonymous": false
   },
   {
     "type": "event",
-    "name": "NewUserAgentPkpRegistered",
+    "name": "NewAgentRegistered",
     "inputs": [
       {
         "name": "userAddress",
@@ -245,10 +291,22 @@
         "internalType": "address"
       },
       {
-        "name": "pkpTokenId",
-        "type": "uint256",
+        "name": "agentAddress",
+        "type": "address",
         "indexed": true,
-        "internalType": "uint256"
+        "internalType": "address"
+      },
+      {
+        "name": "pkpSigner",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      },
+      {
+        "name": "pkpSignerPubKey",
+        "type": "bytes",
+        "indexed": false,
+        "internalType": "bytes"
       }
     ],
     "anonymous": false
@@ -307,33 +365,28 @@
   },
   {
     "type": "error",
+    "name": "AgentNotRegisteredToUser",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "AgentRegisteredToDifferentUser",
+    "inputs": [
+      {
+        "name": "registeredUserAddress",
+        "type": "address",
+        "internalType": "address"
+      }
+    ]
+  },
+  {
+    "type": "error",
     "name": "AppHasBeenDeleted",
     "inputs": [
       {
         "name": "appId",
         "type": "uint40",
         "internalType": "uint40"
-      }
-    ]
-  },
-  {
-    "type": "error",
-    "name": "AppNeverPermitted",
-    "inputs": [
-      {
-        "name": "pkpTokenId",
-        "type": "uint256",
-        "internalType": "uint256"
-      },
-      {
-        "name": "appId",
-        "type": "uint40",
-        "internalType": "uint40"
-      },
-      {
-        "name": "appVersion",
-        "type": "uint24",
-        "internalType": "uint24"
       }
     ]
   },
@@ -353,9 +406,9 @@
     "name": "AppVersionAlreadyPermitted",
     "inputs": [
       {
-        "name": "pkpTokenId",
-        "type": "uint256",
-        "internalType": "uint256"
+        "name": "agentAddress",
+        "type": "address",
+        "internalType": "address"
       },
       {
         "name": "appId",
@@ -406,9 +459,9 @@
     "name": "AppVersionNotPermitted",
     "inputs": [
       {
-        "name": "pkpTokenId",
-        "type": "uint256",
-        "internalType": "uint256"
+        "name": "agentAddress",
+        "type": "address",
+        "internalType": "address"
       },
       {
         "name": "appId",
@@ -435,6 +488,22 @@
         "name": "appVersion",
         "type": "uint24",
         "internalType": "uint24"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "DifferentAppAlreadyPermitted",
+    "inputs": [
+      {
+        "name": "agentAddress",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "appId",
+        "type": "uint40",
+        "internalType": "uint40"
       }
     ]
   },
@@ -518,6 +587,32 @@
   },
   {
     "type": "error",
+    "name": "LastPermittedAppNotTheOneBeingRePermitted",
+    "inputs": [
+      {
+        "name": "agentAddress",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "lastPermittedAppId",
+        "type": "uint40",
+        "internalType": "uint40"
+      },
+      {
+        "name": "lastPermittedAppVersion",
+        "type": "uint24",
+        "internalType": "uint24"
+      },
+      {
+        "name": "rePermitAppId",
+        "type": "uint40",
+        "internalType": "uint40"
+      }
+    ]
+  },
+  {
+    "type": "error",
     "name": "NotAllRegisteredAbilitiesProvided",
     "inputs": [
       {
@@ -534,28 +629,12 @@
   },
   {
     "type": "error",
-    "name": "NotPkpOwner",
+    "name": "PkpSignerAlreadyRegisteredToAgent",
     "inputs": [
       {
-        "name": "pkpTokenId",
-        "type": "uint256",
-        "internalType": "uint256"
-      },
-      {
-        "name": "msgSender",
+        "name": "registeredPkpAgentAddress",
         "type": "address",
         "internalType": "address"
-      }
-    ]
-  },
-  {
-    "type": "error",
-    "name": "PkpTokenDoesNotExist",
-    "inputs": [
-      {
-        "name": "pkpTokenId",
-        "type": "uint256",
-        "internalType": "uint256"
       }
     ]
   },
@@ -582,7 +661,12 @@
   },
   {
     "type": "error",
-    "name": "ZeroPkpTokenId",
+    "name": "ZeroAddressNotAllowed",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "ZeroPkpSignerPubKeyNotAllowed",
     "inputs": []
   }
 ]

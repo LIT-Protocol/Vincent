@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/shared/ui/select';
-import { theme } from '@/components/user-dashboard/connect/ui/theme';
+import { theme } from '@/lib/themeClasses';
 
 interface ConnectPageModalProps {
   isOpen: boolean;

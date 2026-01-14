@@ -23,10 +23,8 @@ describe('App API Integration Tests', () => {
     name: 'Test App',
     description: 'Test app for integration tests',
     contactEmail: 'test@example.com',
-    appUserUrl: 'https://example.com/app',
+    appUrl: 'https://example.com/app',
     logo: 'https://example.com/logo.png',
-    redirectUris: ['https://example.com/callback'],
-    delegateeAddresses: generateRandomEthAddresses(2),
     // deploymentStatus: 'dev' as const,
   };
 
@@ -43,9 +41,28 @@ describe('App API Integration Tests', () => {
 
   describe('POST /app', () => {
     it('should create a new app', async () => {
+      // Register the app on-chain FIRST to get the contract-generated appId
+      const abilityIpfsCid = 'QmWWBMDT3URSp8sX9mFZjhAoufSk5kia7bpp84yxq9WHFd'; // ERC20 approval ability
+      const policyIpfsCid = 'QmSK8JoXxh7sR6MP7L6YJiUnzpevbNjjtde3PeP8FfLzV3'; // Spending limit policy
+
+      const { txHash, newAppId } = await getDefaultWalletContractClient().registerApp({
+        delegateeAddresses: generateRandomEthAddresses(2),
+        versionAbilities: {
+          abilityIpfsCids: [abilityIpfsCid],
+          abilityPolicies: [[policyIpfsCid]],
+        },
+      });
+
+      testAppId = newAppId;
+      verboseLog({ txHash, newAppId });
+
+      // Now create the app in the backend using the on-chain appId
       const result = await store.dispatch(
         api.endpoints.createApp.initiate({
-          appCreate: appData,
+          appCreate: {
+            ...appData,
+            appId: testAppId,
+          },
         }),
       );
 
@@ -55,29 +72,8 @@ describe('App API Integration Tests', () => {
       const { data } = result;
       expectAssertObject(data);
 
-      testAppId = data.appId;
-
+      expect(data.appId).toBe(testAppId);
       expect(data).toMatchObject(appData);
-
-      // Register the app on the contracts using contracts-sdk
-      const abilityIpfsCid = 'QmWWBMDT3URSp8sX9mFZjhAoufSk5kia7bpp84yxq9WHFd'; // ERC20 approval ability
-      const policyIpfsCid = 'QmSK8JoXxh7sR6MP7L6YJiUnzpevbNjjtde3PeP8FfLzV3'; // Spending limit policy
-
-      try {
-        const { txHash } = await getDefaultWalletContractClient().registerApp({
-          appId: testAppId,
-          delegateeAddresses: appData.delegateeAddresses,
-          versionAbilities: {
-            abilityIpfsCids: [abilityIpfsCid],
-            abilityPolicies: [[policyIpfsCid]],
-          },
-        });
-
-        verboseLog({ txHash });
-      } catch (error) {
-        console.error('Failed to register app on contracts:', error);
-        throw error;
-      }
     });
   });
 
@@ -138,13 +134,10 @@ describe('App API Integration Tests', () => {
       expect(data).toHaveProperty('description', updateData.description);
     });
 
-    it('should update delegateeAddresses', async () => {
-      const newDelegateeAddresses = [
-        '0x0000000000000000000000000000000000000001',
-        '0x0000000000000000000000000000000000000002',
-      ];
+    it('should update appUrl', async () => {
+      const newAppUrl = 'https://example.com/app/new';
       const updateData = {
-        delegateeAddresses: newDelegateeAddresses,
+        appUrl: newAppUrl,
       };
 
       const result = await store.dispatch(
@@ -166,8 +159,8 @@ describe('App API Integration Tests', () => {
       const { data } = getResult;
       expectAssertObject(data);
 
-      expect(data).toHaveProperty('delegateeAddresses');
-      expect(data.delegateeAddresses).toEqual(newDelegateeAddresses);
+      expect(data).toHaveProperty('appUrl');
+      expect(data.appUrl).toEqual(newAppUrl);
     });
   });
 
@@ -360,7 +353,6 @@ describe('App API Integration Tests', () => {
 
         const { data } = getResult;
         expectAssertObject(data);
-        expect(data).toHaveProperty('enabled', false);
       }
     });
   });
@@ -397,7 +389,6 @@ describe('App API Integration Tests', () => {
 
         const { data } = getResult;
         expectAssertObject(data);
-        expect(data).toHaveProperty('enabled', true);
       }
     });
   });

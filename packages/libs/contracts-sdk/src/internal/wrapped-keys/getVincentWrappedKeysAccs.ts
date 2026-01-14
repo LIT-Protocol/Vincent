@@ -19,22 +19,30 @@ const CHAIN_YELLOWSTONE = 'yellowstone' as const;
  * Platform user authorization is validated by validating the owner of the delegator PKP token is the requester by checking
  * the Lit PKP NFT contract's ownerOf method.
  *
- * @param delegatorAddress - The address of the delegator
+ * @param delegatorPkpEthAddress - The user PKP address used for ownership checks (not the agent address)
+ * @param agentAddress - The agent smart account address used for permission checks
  *
  * @returns EvmContractConditions - Access control conditions authorizing a valid delegatee OR a platform user that is the owner of the delegator's PKP token
  */
 export async function getVincentWrappedKeysAccs({
-  delegatorAddress,
+  delegatorPkpEthAddress,
+  agentAddress,
 }: {
-  delegatorAddress: string;
+  delegatorPkpEthAddress: string;
+  agentAddress: string;
 }): Promise<EvmContractConditions> {
-  if (!ethers.utils.isAddress(delegatorAddress)) {
-    throw new Error(`delegatorAddress is not a valid Ethereum Address: ${delegatorAddress}`);
+  if (!ethers.utils.isAddress(delegatorPkpEthAddress)) {
+    throw new Error(
+      `delegatorPkpEthAddress is not a valid Ethereum Address: ${delegatorPkpEthAddress}`,
+    );
+  }
+  if (!ethers.utils.isAddress(agentAddress)) {
+    throw new Error(`agentAddress is not a valid Ethereum Address: ${agentAddress}`);
   }
 
   const delegatorPkpTokenId = (
     await getPkpTokenId({
-      pkpEthAddress: delegatorAddress,
+      pkpEthAddress: delegatorPkpEthAddress,
       signer: ethers.Wallet.createRandom().connect(
         new ethers.providers.StaticJsonRpcProvider(LIT_RPC.CHRONICLE_YELLOWSTONE),
       ), // Read only; signer identity is irrelevant in this code path :)
@@ -43,7 +51,7 @@ export async function getVincentWrappedKeysAccs({
 
   return Promise.all([
     getDelegateeAccessControlConditions({
-      delegatorPkpTokenId,
+      agentAddress,
     }),
     Promise.resolve({ operator: 'or' }),
     getPlatformUserAccessControlConditions({
@@ -53,12 +61,12 @@ export async function getVincentWrappedKeysAccs({
 }
 
 async function getDelegateeAccessControlConditions({
-  delegatorPkpTokenId,
+  agentAddress,
 }: {
-  delegatorPkpTokenId: string;
+  agentAddress: string;
 }): Promise<AccsEVMParams> {
   const contractInterface = new ethers.utils.Interface(COMBINED_ABI.fragments);
-  const fragment = contractInterface.getFunction('isDelegateePermitted');
+  const fragment = contractInterface.getFunction('validateAbilityExecutionAndGetPolicies');
 
   const functionAbi = {
     type: 'function',
@@ -78,8 +86,8 @@ async function getDelegateeAccessControlConditions({
     contractAddress: VINCENT_DIAMOND_CONTRACT_ADDRESS_PROD,
     chain: CHAIN_YELLOWSTONE,
     functionAbi,
-    functionName: 'isDelegateePermitted',
-    functionParams: [':userAddress', delegatorPkpTokenId, ':currentActionIpfsId'],
+    functionName: 'validateAbilityExecutionAndGetPolicies',
+    functionParams: [':userAddress', agentAddress, ':currentActionIpfsId'],
     returnValueTest: {
       key: 'isPermitted',
       comparator: '=',
@@ -106,8 +114,8 @@ async function getPlatformUserAccessControlConditions({
     new ethers.providers.StaticJsonRpcProvider(LIT_RPC.CHRONICLE_YELLOWSTONE),
   );
 
-  const pkpNftContractInfo: { address: string; abi: any[] } = contractAddresses.PKPNFT;
-  if (!pkpNftContractInfo) {
+  const pkpNftContractInfo = contractAddresses.PKPNFT as { address?: string };
+  if (!pkpNftContractInfo?.address) {
     throw new Error('PKP NFT contract address not found for Datil network');
   }
 

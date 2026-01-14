@@ -2,7 +2,7 @@ import { Search } from 'lucide-react';
 import { App } from '@/types/developer-dashboard/appTypes';
 import { useNavigate } from 'react-router-dom';
 import { Logo } from '@/components/shared/ui/Logo';
-import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
+import { theme, fonts } from '@/lib/themeClasses';
 import { useCallback } from 'react';
 
 interface AppsDisplayProps {

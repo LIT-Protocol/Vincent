@@ -3,7 +3,7 @@ import { PolicyVersion, Policy } from '@/types/developer-dashboard/appTypes';
 import { Package, Plus } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { UndeletePolicyVersionButton } from '../../policy/wrappers';
-import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
+import { theme, fonts } from '@/lib/themeClasses';
 import { VersionCard } from '@/components/developer-dashboard/ui/VersionCard';
 
 interface PolicyVersionsListViewProps {

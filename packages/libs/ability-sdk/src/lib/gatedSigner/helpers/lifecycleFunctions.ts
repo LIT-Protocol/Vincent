@@ -51,13 +51,15 @@ export interface LifecycleFunctionSteps {
   /**
    * Validates the result of the simulation.
    * Should throw an error if the simulation result is invalid.
+   * Can be async to support dynamic address fetching.
    */
-  validateSimulation: (params: ValidateSimulationParams) => void;
+  validateSimulation: (params: ValidateSimulationParams) => void | Promise<void>;
   /**
    * Validates the decoded transaction.
    * Should throw an error if the transaction is invalid.
+   * Can be async to support dynamic address fetching.
    */
-  validateTransaction: (params: ValidateTransactionParams) => void;
+  validateTransaction: (params: ValidateTransactionParams) => void | Promise<void>;
 }
 
 interface LifecycleFunctions<

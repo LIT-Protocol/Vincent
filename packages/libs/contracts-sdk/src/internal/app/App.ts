@@ -11,10 +11,12 @@ import type {
 
 import { decodeContractError, findEventByName, gasAdjustedOverrides } from '../../utils';
 
-export async function registerApp(params: RegisterAppOptions): Promise<{ txHash: string }> {
+export async function registerApp(
+  params: RegisterAppOptions,
+): Promise<{ txHash: string; appId: number; newAppVersion: number; accountIndexHash: string }> {
   const {
     contract,
-    args: { appId, delegateeAddresses, versionAbilities },
+    args: { delegateeAddresses, versionAbilities },
     overrides,
   } = params;
 
@@ -22,18 +24,61 @@ export async function registerApp(params: RegisterAppOptions): Promise<{ txHash:
     const adjustedOverrides = await gasAdjustedOverrides(
       contract,
       'registerApp',
-      [appId, delegateeAddresses, versionAbilities],
+      [delegateeAddresses, versionAbilities],
       overrides,
     );
 
-    const tx = await contract.registerApp(appId, delegateeAddresses, versionAbilities, {
+    const tx = await contract.registerApp(delegateeAddresses, versionAbilities, {
       ...adjustedOverrides,
     });
 
-    await tx.wait();
+    const receipt = await tx.wait();
+
+    const appEvent = findEventByName(contract, receipt.logs, 'NewAppRegistered');
+    if (!appEvent) {
+      throw new Error('NewAppRegistered event not found');
+    }
+    const parsedAppEvent = contract.interface.parseLog(appEvent);
+    const appId = parsedAppEvent?.args?.appId;
+    const accountIndexHash = parsedAppEvent?.args?.accountIndexHash;
+
+    if (appId === undefined || accountIndexHash === undefined) {
+      throw new Error('NewAppRegistered event missing appId or accountIndexHash');
+    }
+
+    const versionEvent = findEventByName(contract, receipt.logs, 'NewAppVersionRegistered');
+    if (!versionEvent) {
+      throw new Error('NewAppVersionRegistered event not found');
+    }
+    const parsedVersionEvent = contract.interface.parseLog(versionEvent);
+    const newAppVersion = parsedVersionEvent?.args?.appVersion;
+
+    if (newAppVersion === undefined) {
+      throw new Error('NewAppVersionRegistered event missing appVersion');
+    }
+
+    const appIdNumber = Number(appId);
+    const newAppVersionNumber = Number(newAppVersion);
+    const accountIndexHashValue = accountIndexHash.toString();
+    const isZeroAccountIndexHash = /^0x0{64}$/i.test(accountIndexHashValue);
+
+    if (appIdNumber <= 0) {
+      throw new Error(`Invalid appId parsed from NewAppRegistered: ${appIdNumber}`);
+    }
+    if (newAppVersionNumber <= 0) {
+      throw new Error(
+        `Invalid appVersion parsed from NewAppVersionRegistered: ${newAppVersionNumber}`,
+      );
+    }
+    if (isZeroAccountIndexHash) {
+      throw new Error('Invalid accountIndexHash parsed from NewAppRegistered');
+    }
 
     return {
       txHash: tx.hash,
+      appId: appIdNumber,
+      newAppVersion: newAppVersionNumber,
+      accountIndexHash: accountIndexHashValue,
     };
   } catch (error: unknown) {
     const decodedError = decodeContractError(error, contract);

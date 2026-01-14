@@ -7,10 +7,7 @@
   },
   "servers": [
     {
-      "url": "https://staging.registry.heyvincent.ai"
-    },
-    {
-      "url": "https://registry.heyvincent.ai"
+      "url": "https://api.heyvincent.ai"
     },
     {
       "url": "http://localhost:3000/"
@@ -18,11 +15,11 @@
   ],
   "components": {
     "securitySchemes": {
-      "bearerAuth": {
-        "type": "http",
-        "scheme": "bearer",
-        "bearerFormat": "JWT",
-        "description": "Vincent-issued JWTs must be used for these endpoints."
+      "siweAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "Authorization",
+        "description": "Sign In With Ethereum authentication (SIWE). Format is \"SIWE [JSON({ message, signature })]\""
       }
     },
     "schemas": {
@@ -90,7 +87,7 @@
             "description": "Contact email for the application manager",
             "example": "contact@example.com"
           },
-          "appUserUrl": {
+          "appUrl": {
             "type": "string",
             "format": "uri",
             "description": "This should be a landing page for the app.",
@@ -101,31 +98,10 @@
             "description": "Base64 encoded logo image",
             "example": "iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAIAAAACDbGyAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAOvwAADr8BOAVTJAAAAA5JREFUGFdj/M+ACAAAAAD//wE7AnsAAAAAAElFTkSuQmCC"
           },
-          "redirectUris": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "format": "uri"
-            },
-            "description": "Redirect URIs users can be sent to after signing up for your application (with their JWT token).",
-            "uniqueItems": true,
-            "example": [
-              "https://myapp.example.com",
-              "https://myapp.example.com/subpage"
-            ]
-          },
-          "delegateeAddresses": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "pattern": "^0x[a-fA-F0-9]{40}$"
-            },
-            "description": "Addresses responsible for executing the app's operations on behalf of Vincent App Users",
-            "uniqueItems": true,
-            "example": [
-              "0x123456789012345678901234567890123456abcd",
-              "0x1234567890123456789012345678901234561234"
-            ]
+          "appId": {
+            "type": "number",
+            "description": "Application ID",
+            "example": 12345
           },
           "name": {
             "type": "string",
@@ -141,6 +117,7 @@
           }
         },
         "required": [
+          "appId",
           "name",
           "description"
         ],
@@ -167,7 +144,7 @@
             "description": "Contact email for the application manager",
             "example": "contact@example.com"
           },
-          "appUserUrl": {
+          "appUrl": {
             "type": "string",
             "format": "uri",
             "description": "This should be a landing page for the app.",
@@ -177,32 +154,6 @@
             "type": "string",
             "description": "Base64 encoded logo image",
             "example": "iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAIAAAACDbGyAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAOvwAADr8BOAVTJAAAAA5JREFUGFdj/M+ACAAAAAD//wE7AnsAAAAAAElFTkSuQmCC"
-          },
-          "redirectUris": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "format": "uri"
-            },
-            "description": "Redirect URIs users can be sent to after signing up for your application (with their JWT token).",
-            "uniqueItems": true,
-            "example": [
-              "https://myapp.example.com",
-              "https://myapp.example.com/subpage"
-            ]
-          },
-          "delegateeAddresses": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "pattern": "^0x[a-fA-F0-9]{40}$"
-            },
-            "description": "Addresses responsible for executing the app's operations on behalf of Vincent App Users",
-            "uniqueItems": true,
-            "example": [
-              "0x123456789012345678901234567890123456abcd",
-              "0x1234567890123456789012345678901234561234"
-            ]
           },
           "deploymentStatus": {
             "type": "string",
@@ -243,8 +194,7 @@
           "appId": {
             "type": "number",
             "description": "Application ID",
-            "example": 12345,
-            "readOnly": true
+            "example": 12345
           },
           "activeVersion": {
             "type": "number",
@@ -269,7 +219,7 @@
             "description": "Contact email for the application manager",
             "example": "contact@example.com"
           },
-          "appUserUrl": {
+          "appUrl": {
             "type": "string",
             "format": "uri",
             "description": "This should be a landing page for the app.",
@@ -279,32 +229,6 @@
             "type": "string",
             "description": "Base64 encoded logo image",
             "example": "iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAIAAAACDbGyAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAOvwAADr8BOAVTJAAAAA5JREFUGFdj/M+ACAAAAAD//wE7AnsAAAAAAElFTkSuQmCC"
-          },
-          "redirectUris": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "format": "uri"
-            },
-            "description": "Redirect URIs users can be sent to after signing up for your application (with their JWT token).",
-            "uniqueItems": true,
-            "example": [
-              "https://myapp.example.com",
-              "https://myapp.example.com/subpage"
-            ]
-          },
-          "delegateeAddresses": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "pattern": "^0x[a-fA-F0-9]{40}$"
-            },
-            "description": "Addresses responsible for executing the app's operations on behalf of Vincent App Users",
-            "uniqueItems": true,
-            "example": [
-              "0x123456789012345678901234567890123456abcd",
-              "0x1234567890123456789012345678901234561234"
-            ]
           },
           "deploymentStatus": {
             "type": "string",
@@ -405,11 +329,6 @@
             "example": 1,
             "readOnly": true
           },
-          "enabled": {
-            "type": "boolean",
-            "description": "Whether this version is enabled or not",
-            "example": true
-          },
           "changes": {
             "type": "string",
             "description": "Describes what changed between this version and the previous version.",
@@ -426,8 +345,7 @@
           "updatedAt",
           "createdAt",
           "appId",
-          "version",
-          "enabled"
+          "version"
         ],
         "additionalProperties": false
       },
@@ -1278,6 +1196,111 @@
         ],
         "additionalProperties": false
       },
+      "InstallAppRequest": {
+        "type": "object",
+        "properties": {
+          "userControllerAddress": {
+            "type": "string",
+            "pattern": "^0x[a-fA-F0-9]{40}$",
+            "description": "EOA address that controls the user smart wallet",
+            "example": "0x123456789012345678901234567890123456abcd"
+          }
+        },
+        "required": [
+          "userControllerAddress"
+        ],
+        "additionalProperties": false
+      },
+      "InstallAppResponse": {
+        "type": "object",
+        "properties": {
+          "agentSignerAddress": {
+            "type": "string",
+            "description": "The PKP address that the app will use to sign things",
+            "example": "0x123456789012345678901234567890123456abcd"
+          },
+          "agentSmartAccountAddress": {
+            "type": "string",
+            "description": "The smart account address calculated from the PKP address, used on the frontend to verify they get the same smart wallet address",
+            "example": "0x123456789012345678901234567890123456abcd"
+          },
+          "appInstallationDataToSign": {
+            "type": "object",
+            "properties": {},
+            "description": "The EIP2771 TypedData to sign that will install the app into the Vincent contracts"
+          }
+        },
+        "required": [
+          "agentSignerAddress",
+          "agentSmartAccountAddress",
+          "appInstallationDataToSign"
+        ],
+        "additionalProperties": false
+      },
+      "CompleteInstallationRequest": {
+        "type": "object",
+        "properties": {
+          "typedDataSignature": {
+            "type": "string",
+            "description": "The signature of the typed data from the user wallet",
+            "example": "0x..."
+          },
+          "appInstallationDataToSign": {
+            "type": "object",
+            "properties": {},
+            "description": "The appInstallationDataToSign object returned from install-app. Generated by the Gelato SDK."
+          }
+        },
+        "required": [
+          "typedDataSignature",
+          "appInstallationDataToSign"
+        ],
+        "additionalProperties": false
+      },
+      "CompleteInstallationResponse": {
+        "type": "object",
+        "properties": {
+          "transactionHash": {
+            "type": "string",
+            "description": "The transaction hash of the completed installation",
+            "example": "0x9d260d1bbe075be0cda52a3271df062748f3182ede91b3aae5cd115f7b26552b"
+          }
+        },
+        "required": [
+          "transactionHash"
+        ],
+        "additionalProperties": false
+      },
+      "GetAgentAccountRequest": {
+        "type": "object",
+        "properties": {
+          "userControllerAddress": {
+            "type": "string",
+            "pattern": "^0x[a-fA-F0-9]{40}$",
+            "description": "EOA address that controls the user smart wallet",
+            "example": "0x123456789012345678901234567890123456abcd"
+          }
+        },
+        "required": [
+          "userControllerAddress"
+        ],
+        "additionalProperties": false
+      },
+      "GetAgentAccountResponse": {
+        "type": "object",
+        "properties": {
+          "agentAddress": {
+            "type": "string",
+            "nullable": true,
+            "description": "The agent smart account address if registered, or null if the agent does not exist",
+            "example": "0x123456789012345678901234567890123456abcd"
+          }
+        },
+        "required": [
+          "agentAddress"
+        ],
+        "additionalProperties": false
+      },
       "AppList": {
         "type": "array",
         "items": {
@@ -1365,7 +1388,7 @@
         "operationId": "createApp",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "requestBody": {
@@ -1462,7 +1485,7 @@
         "operationId": "editApp",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -1527,7 +1550,7 @@
         "operationId": "deleteApp",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -1583,7 +1606,7 @@
         "operationId": "undeleteApp",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -1683,7 +1706,7 @@
         "operationId": "createAppVersion",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -1802,7 +1825,7 @@
         "operationId": "editAppVersion",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -1875,7 +1898,7 @@
         "operationId": "deleteAppVersion",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -1942,7 +1965,7 @@
         "operationId": "enableAppVersion",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -2006,7 +2029,7 @@
         "operationId": "disableAppVersion",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -2126,7 +2149,7 @@
         "operationId": "createAppVersionAbility",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -2209,7 +2232,7 @@
         "operationId": "editAppVersionAbility",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -2295,7 +2318,7 @@
         "operationId": "deleteAppVersionAbility",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -2372,7 +2395,7 @@
         "operationId": "undeleteAppVersion",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -2439,7 +2462,7 @@
         "operationId": "undeleteAppVersionAbility",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -2516,7 +2539,7 @@
         "operationId": "setAppActiveVersion",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -2616,7 +2639,7 @@
         "operationId": "createAbility",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -2723,7 +2746,7 @@
         "operationId": "editAbility",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -2787,7 +2810,7 @@
         "operationId": "deleteAbility",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -2884,7 +2907,7 @@
         "operationId": "changeAbilityOwner",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -2949,7 +2972,7 @@
         "operationId": "createAbilityVersion",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -3076,7 +3099,7 @@
         "operationId": "editAbilityVersion",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -3149,7 +3172,7 @@
         "operationId": "deleteAbilityVersion",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -3217,7 +3240,7 @@
         "operationId": "undeleteAbility",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -3268,7 +3291,7 @@
         "operationId": "undeleteAbilityVersion",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -3335,7 +3358,7 @@
         "operationId": "refreshAbilityVersionPolicies",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -3434,7 +3457,7 @@
         "operationId": "createPolicy",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -3541,7 +3564,7 @@
         "operationId": "editPolicy",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -3605,7 +3628,7 @@
         "operationId": "deletePolicy",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -3656,7 +3679,7 @@
         "operationId": "createPolicyVersion",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -3783,7 +3806,7 @@
         "operationId": "editPolicyVersion",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -3856,7 +3879,7 @@
         "operationId": "deletePolicyVersion",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -3969,7 +3992,7 @@
         "operationId": "changePolicyOwner",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -4035,7 +4058,7 @@
         "operationId": "undeletePolicy",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -4086,7 +4109,7 @@
         "operationId": "undeletePolicyVersion",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -4133,6 +4156,225 @@
           },
           "default": {
             "description": "Unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/user/{appId}/install-app": {
+      "post": {
+        "tags": [
+          "User"
+        ],
+        "summary": "Install an application for a user",
+        "description": "Mints a PKP with the app abilities as permitted auth methods",
+        "operationId": "installApp",
+        "parameters": [
+          {
+            "schema": {
+              "type": "number"
+            },
+            "required": true,
+            "description": "ID of the target application",
+            "example": 132,
+            "name": "appId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InstallAppRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "App installation data returned successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InstallAppResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "App not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/user/{appId}/complete-installation": {
+      "post": {
+        "tags": [
+          "User"
+        ],
+        "summary": "Complete app installation",
+        "description": "Submits the signed EIP2771 data to Gelato relay to complete the installation",
+        "operationId": "completeInstallation",
+        "parameters": [
+          {
+            "schema": {
+              "type": "number"
+            },
+            "required": true,
+            "description": "ID of the target application",
+            "example": 132,
+            "name": "appId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompleteInstallationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Installation completed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompleteInstallationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "App not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/user/{appId}/agent-account": {
+      "post": {
+        "tags": [
+          "User"
+        ],
+        "summary": "Get agent account address",
+        "description": "Derives and verifies the agent smart account address for a user and app combination",
+        "operationId": "getAgentAccount",
+        "parameters": [
+          {
+            "schema": {
+              "type": "number"
+            },
+            "required": true,
+            "description": "ID of the target application",
+            "example": 132,
+            "name": "appId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetAgentAccountRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Agent account address returned successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetAgentAccountResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "App not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
             "content": {
               "application/json": {
                 "schema": {

@@ -19,7 +19,7 @@ import { validateOrFail } from '../abilityCore/helpers/zod';
 import { assertSupportedAbilityVersion } from '../assertSupportedAbilityVersion';
 import { getPoliciesAndAppVersion } from '../policyCore/policyParameters/getOnchainPolicyParams';
 import { bigintReplacer } from '../utils';
-import { LIT_DATIL_PUBKEY_ROUTER_ADDRESS } from './constants';
+import { LIT_DATIL_PUBKEY_ROUTER_ADDRESS, VINCENT_REGISTRY_LIT_CHAIN } from './constants';
 import { evaluatePolicies } from './evaluatePolicies';
 
 declare const LitAuth: {
@@ -147,12 +147,14 @@ export const vincentAbilityHandler = <
         // delegatorPkpInfo: null,
       },
       abilityIpfsCid,
+      agentAddress: context.agentAddress,
       // appId: undefined,
       // appVersion: undefined,
     } as any;
 
     try {
-      const delegationRpcUrl = await Lit.Actions.getRpcUrl({ chain: 'yellowstone' });
+      const pkpInfoRpcUrl = await Lit.Actions.getRpcUrl({ chain: 'yellowstone' });
+      const registryRpcUrl = await Lit.Actions.getRpcUrl({ chain: VINCENT_REGISTRY_LIT_CHAIN });
 
       const parsedOrFail = validateOrFail(
         abilityParams,
@@ -172,15 +174,15 @@ export const vincentAbilityHandler = <
 
       const userPkpInfo = await getPkpInfo({
         litPubkeyRouterAddress: LIT_DATIL_PUBKEY_ROUTER_ADDRESS,
-        yellowstoneRpcUrl: delegationRpcUrl,
+        yellowstoneRpcUrl: pkpInfoRpcUrl,
         pkpEthAddress: context.delegatorPkpEthAddress,
       });
       baseContext.delegation.delegatorPkpInfo = userPkpInfo;
 
       const { decodedPolicies, appId, appVersion } = await getPoliciesAndAppVersion({
-        delegationRpcUrl,
+        registryRpcUrl,
         appDelegateeAddress,
-        agentWalletPkpEthAddress: context.delegatorPkpEthAddress,
+        agentAddress: context.agentAddress,
         abilityIpfsCid,
       });
       baseContext.appId = appId.toNumber();

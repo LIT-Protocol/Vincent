@@ -8,7 +8,7 @@ import { Address } from 'viem';
 // Based on file content provided in history, they are imported from @lit-protocol/vincent-ability-sdk/gatedSigner
 // We will try to rely on the structure expected by the function.
 
-const CHAIN_ID = 137; // Polygon
+const CHAIN_ID = 8453; // Base
 const SENDER: Address = '0x1234567890123456789012345678901234567890';
 const OTHER_ADDRESS: Address = '0x9999999999999999999999999999999999999999';
 const feeContractAddress = getFeeContractAddress(CHAIN_ID);

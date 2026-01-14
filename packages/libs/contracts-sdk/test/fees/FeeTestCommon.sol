@@ -8,7 +8,6 @@ import {VincentAppFacet} from "../../contracts/facets/VincentAppFacet.sol";
 import {TestCommon} from "../TestCommon.sol";
 import {DeployVincentDiamond} from "../../script/DeployVincentDiamond.sol";
 import {DeployFeeDiamond} from "../../script/DeployFeeDiamond.sol";
-import {MockPKPNftFacet} from "../mocks/MockPKPNftFacet.sol";
 import {FeeUtils} from "../../contracts/fees/FeeUtils.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
@@ -28,18 +27,18 @@ contract FeeTestCommon is TestCommon {
         returns (address)
     {
         DeployVincentDiamond vincentDeployScript = new DeployVincentDiamond();
-        MockPKPNftFacet mockPkpNft = new MockPKPNftFacet();
 
-        address diamondAddress = vincentDeployScript.deployToNetwork("test", address(mockPkpNft));
+        address diamondAddress = vincentDeployScript.deployToNetwork("test", keccak256("VincentCreate2Salt_2"));
         VincentAppFacet vincentAppFacet = VincentAppFacet(diamondAddress);
 
         // register the app
         vm.startPrank(appManager);
         address[] memory delegatees = new address[](1);
         delegatees[0] = appDelegatee;
-        vincentAppFacet.registerApp(
-            appId, delegatees, _createBasicVersionAbilities("QmAbility1", "QmAbility2", "QmPolicy1")
+        (uint40 newAppId,,) = vincentAppFacet.registerApp(
+            delegatees, _createBasicVersionAbilities("QmAbility1", "QmAbility2", "QmPolicy1")
         );
+        appId = newAppId; // Update the appId with the auto-generated one
         vm.stopPrank();
 
         return diamondAddress;

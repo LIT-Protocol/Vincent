@@ -8,7 +8,7 @@ import { Button } from '@/components/shared/ui/button';
 import { TextField, LongTextField, ImageUploadField } from '../../form-fields';
 import { DeploymentStatusSelectField } from '../../form-fields/array/DeploymentStatusSelectField';
 import { docSchemas } from '@lit-protocol/vincent-registry-sdk';
-import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
+import { theme, fonts } from '@/lib/themeClasses';
 import { extractErrorMessage } from '@/utils/developer-dashboard/app-forms';
 
 const { policyDoc } = docSchemas;

@@ -8,7 +8,7 @@ import { StatusMessage } from '@/components/shared/ui/statusMessage';
 import { TextField, LongTextField } from '../../form-fields';
 import { docSchemas } from '@lit-protocol/vincent-registry-sdk';
 import { Policy } from '@/types/developer-dashboard/appTypes';
-import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
+import { theme, fonts } from '@/lib/themeClasses';
 import { extractErrorMessage } from '@/utils/developer-dashboard/app-forms';
 
 const { policyVersionDoc } = docSchemas;

@@ -10,6 +10,7 @@ export interface TestConfig {
         pkpPubkey: string | null;
       }
     | undefined;
+  agentSmartAccountAddress: string | null;
   capacityCreditInfo:
     | {
         capacityTokenIdStr: string | null;
@@ -21,10 +22,13 @@ export interface TestConfig {
     | undefined;
 }
 
-export const getEnv = (key: string) => {
-  const value = process.env[key];
+export const getEnv = (key: string, fallback?: string) => {
+  const value = process.env[key] ?? fallback;
   if (!value) {
     throw new Error(`Environment variable ${key} is not set`);
+  }
+  if (!process.env[key] && fallback) {
+    console.warn(`ℹ️  ${key} not set; using fallback value.`);
   }
   return value;
 };
@@ -33,7 +37,7 @@ export const getTestConfig = (filePath: string) => {
   if (fs.existsSync(filePath)) {
     const config = JSON.parse(fs.readFileSync(filePath, 'utf8'));
     console.log(
-      `ℹ️  Loaded existing App ID: ${config.appId}, App Version: ${config.appVersion}, User PKP: ${JSON.stringify(config.userPkp, null, 2)}, Capacity Credit Info: ${JSON.stringify(config.capacityCreditInfo, null, 2)}`,
+      `ℹ️  Loaded existing App ID: ${config.appId}, App Version: ${config.appVersion}, User PKP: ${JSON.stringify(config.userPkp, null, 2)}, Agent Smart Account: ${config.agentSmartAccountAddress ?? 'null'}, Capacity Credit Info: ${JSON.stringify(config.capacityCreditInfo, null, 2)}`,
     );
     return config;
   } else {
@@ -46,6 +50,7 @@ export const getTestConfig = (filePath: string) => {
         ethAddress: null,
         pkpPubkey: null,
       },
+      agentSmartAccountAddress: null,
       capacityCreditInfo: {
         capacityTokenIdStr: null,
         capacityTokenId: null,
@@ -73,6 +78,6 @@ export const saveTestConfig = (filePath: string, config: TestConfig) => {
 
   fs.writeFileSync(filePath, JSON.stringify(serializableConfig, null, 2));
   console.log(
-    `ℹ️  Saved test config: App ID: ${config.appId}, App Version: ${config.appVersion}, User PKP: ${JSON.stringify(config.userPkp, null, 2)}, Capacity Credit Info: ${JSON.stringify(config.capacityCreditInfo, null, 2)}`,
+    `ℹ️  Saved test config: App ID: ${config.appId}, App Version: ${config.appVersion}, User PKP: ${JSON.stringify(config.userPkp, null, 2)}, Agent Smart Account: ${config.agentSmartAccountAddress ?? 'null'}, Capacity Credit Info: ${JSON.stringify(config.capacityCreditInfo, null, 2)}`,
   );
 };

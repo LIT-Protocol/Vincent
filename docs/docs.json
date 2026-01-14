@@ -155,6 +155,15 @@
         ]
       },
       {
+        "tab": "Wallet Providers",
+        "groups": [
+          {
+            "group": "Integration",
+            "pages": ["wallet-providers/introduction"]
+          }
+        ]
+      },
+      {
         "tab": "Smart Account Developers",
         "groups": [
           {

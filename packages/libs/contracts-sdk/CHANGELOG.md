@@ -1,3 +1,66 @@
+# 8.0.0 (2026-01-14)
+
+### ⚠️ Breaking Changes
+
+- Upgrade to support Vincent 2.0 architecture ([cf97ffde](https://github.com/LIT-Protocol/Vincent/commit/cf97ffde))
+
+### 🧱 Updated Dependencies
+
+- Updated e2e-test-utils to 3.0.0
+
+### ❤️ Thank You
+
+- Wyatt Barnes @Spacesai1or
+
+## 7.1.0 (2026-01-10)
+
+### 🚀 Features
+
+- Add user app installation flow and agent account lookup ([ae603a1a](https://github.com/LIT-Protocol/Vincent/commit/ae603a1a))
+
+  **registry-sdk:**
+  - Remove `enabled` from AppVersion document (status exists in contracts)
+  - Remove `delegateeAddresses` from App document
+  - Remove `redirectUris` from App document
+  - Rename `appUserUrl` to `appUrl` in App document
+  - Add `POST /user/:appId/install-app` endpoint schema
+  - Add `POST /user/:appId/complete-installation` endpoint schema
+  - Add `POST /user/:appId/agent-account` endpoint schema
+  - Regenerate RTK clients
+    **contracts-sdk:**
+  - Add `deriveSmartAccountIndex(appId)` function using `keccak256("vincent_app_id_{appId}")`
+  - Export function from package index for client-side address derivation
+
+### ❤️ Thank You
+
+- awisniew207 @awisniew207
+
+# 7.0.0 (2026-01-08)
+
+### 🚀 Features
+
+- Regenerate Vincent 2.0 contract ABIs ([71e47c9c](https://github.com/LIT-Protocol/Vincent/commit/71e47c9c))
+
+### ⚠️ Breaking Changes
+
+- Removed appId param from registerApp as it now generates the app ID sequentially. Additionally, registerApp returns the accountIndexHash intended to be used for ZeroDev smart account deployments. Lastly, contract deployment scripts have been updated to use create2 ([c1ccdc16](https://github.com/LIT-Protocol/Vincent/commit/c1ccdc16))
+
+### ❤️ Thank You
+
+- Wyatt Barnes @spacesailor24
+
+# 6.0.0 (2026-01-07)
+
+### ⚠️ Breaking Changes
+
+- Changes VINCENT_CONTRACT_ADDRESS_BOOK index to chain id and adds exports for fee contract data ([#434](https://github.com/LIT-Protocol/Vincent/pull/434))
+- Vincent 2.0 refactors to enable EOAs to control Agent smart accounts ([21422d65](https://github.com/LIT-Protocol/Vincent/commit/21422d65))
+
+### ❤️ Thank You
+
+- Federico Amura @FedericoAmura
+- Wyatt Barnes @spacesailor24
+
 # 5.0.0 (2025-11-23)
 
 ### 🚀 Features

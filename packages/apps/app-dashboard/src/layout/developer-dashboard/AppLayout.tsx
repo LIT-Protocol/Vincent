@@ -1,8 +1,7 @@
 import { ComponentProps, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 import { cn } from '@/lib/utils';
-import { DeveloperSidebarWrapper } from '@/components/developer-dashboard/sidebar/DeveloperSidebarWrapper';
-import { AuthenticationErrorScreen } from '@/components/user-dashboard/connect/AuthenticationErrorScreen';
+import { Sidebar } from '@/components/developer-dashboard/sidebar/Sidebar';
 import { ResourceNotOwnedError } from '@/components/developer-dashboard/ui/ResourceNotOwnedError';
 import {
   SidebarProvider,
@@ -10,15 +9,15 @@ import {
   SidebarTrigger,
   useSidebar,
 } from '@/components/shared/ui/sidebar';
-import { theme } from '@/components/user-dashboard/connect/ui/theme';
+import { theme } from '@/lib/themeClasses';
 import { useAppAddressCheck } from '@/hooks/developer-dashboard/app/useAppAddressCheck';
 import { useAbilityAddressCheck } from '@/hooks/developer-dashboard/ability/useAbilityAddressCheck';
 import { usePolicyAddressCheck } from '@/hooks/developer-dashboard/policy/usePolicyAddressCheck';
-import { getCurrentJwt } from '@/hooks/developer-dashboard/useVincentApiWithJWT';
 import Loading from '@/components/shared/ui/Loading';
-import useReadAuthInfo from '@/hooks/user-dashboard/useAuthInfo';
+import { useAuth } from '@/hooks/developer-dashboard/useAuth';
+import { SignInScreen } from '@/components/developer-dashboard/auth/SignInScreen';
 import { ExplorerNav } from '@/components/explorer/ui/ExplorerNav';
-import { useGlobeOffset } from '@/contexts/GlobeOffsetContext';
+import { useGlobeOffset } from '@/layout/shared/GlobeOffsetContext';
 
 // Component that updates globe offset based on sidebar state
 function SidebarOffsetSync() {
@@ -42,18 +41,8 @@ function AppLayout({ children, className }: ComponentProps<'div'>) {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // FIRST: Check basic authentication
-  const { authInfo, sessionSigs, isProcessing: authLoading, error } = useReadAuthInfo();
-  const isAuthenticated = authInfo?.userPKP && sessionSigs;
-
-  // Generate JWT token when authenticated (for store mutations)
-  useEffect(() => {
-    if (isAuthenticated && authInfo && sessionSigs) {
-      getCurrentJwt(authInfo, sessionSigs).catch((error) =>
-        console.error('AppLayout: Error creating JWT:', error),
-      );
-    }
-  }, [isAuthenticated, authInfo, sessionSigs]);
+  // Check JWT-based authentication
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
 
   // Always call address check hooks (React hooks rule)
   const appAddressCheck = useAppAddressCheck();
@@ -99,7 +88,7 @@ function AppLayout({ children, className }: ComponentProps<'div'>) {
         <SidebarOffsetSync />
         <ExplorerNav onNavigate={(path) => navigate(path)} sidebarTrigger={<SidebarTrigger />} />
         <div className="flex h-screen w-full relative z-10 pt-[61px]">
-          <DeveloperSidebarWrapper />
+          <Sidebar />
           <SidebarInset className="flex-1 overflow-hidden flex flex-col">
             <main className="flex-1 overflow-auto relative overflow-x-hidden flex flex-col">
               <div className="flex-1 w-full p-2 sm:p-4 md:p-6 pt-6 sm:pt-8 relative">{content}</div>
@@ -110,17 +99,14 @@ function AppLayout({ children, className }: ComponentProps<'div'>) {
     </div>
   );
 
-  // Early returns for error and loading states
-  if (isDeveloperRoute && !authLoading && !isAuthenticated) {
-    return (
-      <AuthenticationErrorScreen
-        readAuthInfo={{ authInfo, sessionSigs, isProcessing: authLoading, error }}
-      />
-    );
-  }
-
+  // Show loading while checking auth
   if (isDeveloperRoute && authLoading) {
     return layoutWrapper(<Loading />);
+  }
+
+  // Show sign-in screen if not authenticated on developer routes
+  if (isDeveloperRoute && !isAuthenticated) {
+    return <SignInScreen />;
   }
 
   if (

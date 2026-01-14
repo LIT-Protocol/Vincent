@@ -1,3 +1,17 @@
+## 2.1.6 (2026-01-14)
+
+### 🧱 Updated Dependencies
+
+- Updated app-sdk to 2.6.0
+- Updated contracts-sdk to 8.0.0
+
+## 2.1.5 (2026-01-07)
+
+### 🧱 Updated Dependencies
+
+- Updated app-sdk to 2.5.1
+- Updated contracts-sdk to 6.0.0
+
 ## 2.1.7 (2025-11-23)
 
 ### 🧱 Updated Dependencies

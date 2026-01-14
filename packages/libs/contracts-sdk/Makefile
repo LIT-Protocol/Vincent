@@ -9,10 +9,10 @@ build: ## Build the contracts
 	forge build
 
 test: ## Run the tests
-	forge test
+	forge test --ffi
 
 test-verbose: ## Run the tests with verbose output
-	forge test -vvv
+	forge test --ffi -vvv
 
 test-match: ## Run tests matching a pattern. Usage: make test-match PATTERN=MyTest
 	@if [ -z "$(PATTERN)" ]; then \
@@ -30,58 +30,126 @@ deploy-vincent-datil: ## Deploy the Vincent Diamond contract to Datil network on
 		echo "Error: VINCENT_DEPLOYER_PRIVATE_KEY is not set in .env"; \
 		exit 1; \
 	fi
-	@if [ -z "$(DATIL_PKP_NFT_CONTRACT_ADDRESS)" ]; then \
-		echo "Error: DATIL_PKP_NFT_CONTRACT_ADDRESS is not set in .env"; \
-		exit 1; \
-	fi
 	@echo "Deploying Vincent Diamond to Datil network ($(VINCENT_DEPLOYMENT_RPC_URL))..."
-	@echo "Using PKP NFT contract: $(DATIL_PKP_NFT_CONTRACT_ADDRESS)"
+	@if [ -n "$(VINCENT_GELATO_FORWARDER_ADDRESS)" ]; then \
+		echo "Using Gelato forwarder: $(VINCENT_GELATO_FORWARDER_ADDRESS)"; \
+	else \
+		echo "Gelato forwarder not set (EIP-2771 disabled)"; \
+	fi
 	@forge script script/DeployVincentDiamond.sol:DeployVincentDiamond --sig "deployToDatil()" -vvv \
 		--broadcast \
 		--private-key $(VINCENT_DEPLOYER_PRIVATE_KEY) \
 		--rpc-url $(VINCENT_DEPLOYMENT_RPC_URL)
 
-update-facet: ## Update a specific facet in the Vincent Diamond contract. Usage: make update-facet FACET_NAME=VincentAppViewFacet DEPLOYMENT_TYPE=dev|prod
-	@if [ -z "$(VINCENT_DEPLOYMENT_RPC_URL)" ]; then \
-		echo "Error: VINCENT_DEPLOYMENT_RPC_URL is not set in .env"; \
+deploy-vincent-base-sepolia: ## Deploy the Vincent Diamond contract to Base Sepolia for testing
+	@if [ -z "$(BASE_SEPOLIA_RPC_URL)" ]; then \
+		echo "Error: BASE_SEPOLIA_RPC_URL is not set in .env"; \
 		exit 1; \
 	fi
 	@if [ -z "$(VINCENT_DEPLOYER_PRIVATE_KEY)" ]; then \
 		echo "Error: VINCENT_DEPLOYER_PRIVATE_KEY is not set in .env"; \
 		exit 1; \
 	fi
-	@if [ -z "$(FACET_NAME)" ]; then \
-		echo "Error: FACET_NAME parameter is required. Usage: make update-facet FACET_NAME=VincentAppViewFacet DEPLOYMENT_TYPE=dev|prod"; \
-		echo "Available facets: VincentAppFacet, VincentAppViewFacet, VincentUserFacet, VincentUserViewFacet"; \
-		exit 1; \
-	fi
-	@if [ -z "$(DEPLOYMENT_TYPE)" ]; then \
-		echo "Error: DEPLOYMENT_TYPE parameter is required. Usage: make update-facet FACET_NAME=VincentAppViewFacet DEPLOYMENT_TYPE=dev|prod"; \
-		exit 1; \
-	fi
-	@if [ "$(DEPLOYMENT_TYPE)" != "dev" ] && [ "$(DEPLOYMENT_TYPE)" != "prod" ]; then \
-		echo "Error: DEPLOYMENT_TYPE must be either 'dev' or 'prod'"; \
-		exit 1; \
-	fi
-	@if [ "$(DEPLOYMENT_TYPE)" = "dev" ]; then \
-		if [ -z "$(VINCENT_DEV_DIAMOND_ADDRESS)" ]; then \
-			echo "Error: VINCENT_DEV_DIAMOND_ADDRESS is not set in .env for dev deployment"; \
-			exit 1; \
-		fi; \
+	@echo "Deploying Vincent Diamond to Base Sepolia ($(BASE_SEPOLIA_RPC_URL))..."
+	@if [ -n "$(VINCENT_GELATO_FORWARDER_ADDRESS)" ]; then \
+		echo "Using Gelato forwarder: $(VINCENT_GELATO_FORWARDER_ADDRESS)"; \
 	else \
-		if [ -z "$(VINCENT_PROD_DIAMOND_ADDRESS)" ]; then \
-			echo "Error: VINCENT_PROD_DIAMOND_ADDRESS is not set in .env for prod deployment"; \
-			exit 1; \
-		fi; \
+		echo "Gelato forwarder not set (EIP-2771 disabled)"; \
 	fi
-	@echo "Updating facet $(FACET_NAME) in the Vincent Diamond contract on Datil network..."
-	@echo "Deployment type: $(DEPLOYMENT_TYPE)"
-	@VINCENT_DIAMOND_ADDRESS=$$(if [ "$(DEPLOYMENT_TYPE)" = "dev" ]; then echo "$(VINCENT_DEV_DIAMOND_ADDRESS)"; else echo "$(VINCENT_PROD_DIAMOND_ADDRESS)"; fi); \
-		echo "Using diamond address: $$VINCENT_DIAMOND_ADDRESS"; \
-		FACET_TO_UPDATE=$(FACET_NAME) VINCENT_DIAMOND_ADDRESS=$$VINCENT_DIAMOND_ADDRESS forge script script/UpdateFacet.sol:SmartUpdateFacet -vvv \
-			--broadcast \
-			--private-key $(VINCENT_DEPLOYER_PRIVATE_KEY) \
-			--rpc-url $(VINCENT_DEPLOYMENT_RPC_URL)
+	@forge script script/DeployVincentDiamond.sol:DeployVincentDiamond --sig "deployToBaseSepolia()" -vvv \
+		--broadcast \
+		--private-key $(VINCENT_DEPLOYER_PRIVATE_KEY) \
+		--rpc-url $(BASE_SEPOLIA_RPC_URL)
+
+deploy-vincent-base-mainnet: ## Deploy the Vincent Diamond contract to Base Mainnet
+	@if [ -z "$(BASE_MAINNET_RPC_URL)" ]; then \
+		echo "Error: BASE_MAINNET_RPC_URL is not set in .env"; \
+		exit 1; \
+	fi
+	@if [ -z "$(VINCENT_DEPLOYER_PRIVATE_KEY)" ]; then \
+		echo "Error: VINCENT_DEPLOYER_PRIVATE_KEY is not set in .env"; \
+		exit 1; \
+	fi
+	@echo "Deploying Vincent Diamond to Base Mainnet ($(BASE_MAINNET_RPC_URL))..."
+	@if [ -n "$(VINCENT_GELATO_FORWARDER_ADDRESS)" ]; then \
+		echo "Using Gelato forwarder: $(VINCENT_GELATO_FORWARDER_ADDRESS)"; \
+	else \
+		echo "Gelato forwarder not set (EIP-2771 disabled)"; \
+	fi
+	@forge script script/DeployVincentDiamond.sol:DeployVincentDiamond --sig "deployToBaseMainnet()" -vvv \
+		--broadcast \
+		--private-key $(VINCENT_DEPLOYER_PRIVATE_KEY) \
+		--rpc-url $(BASE_MAINNET_RPC_URL)
+
+update-facet: ## Update a specific facet in the Vincent Diamond contract. Usage: make update-facet FACET_NAME=VincentAppViewFacet NETWORK=datil|base-sepolia|base-mainnet
+	@if [ -z "$(VINCENT_DEPLOYER_PRIVATE_KEY)" ]; then \
+		echo "Error: VINCENT_DEPLOYER_PRIVATE_KEY is not set in .env"; \
+		exit 1; \
+	fi
+	@if [ -z "$(FACET_NAME)" ]; then \
+		echo "Error: FACET_NAME parameter is required."; \
+		echo "Usage: make update-facet FACET_NAME=VincentAppViewFacet NETWORK=datil|base-sepolia|base-mainnet"; \
+		echo "Available facets: VincentAppFacet, VincentAppViewFacet, VincentUserFacet, VincentUserViewFacet, VincentERC2771Facet"; \
+		exit 1; \
+	fi
+	@if [ -z "$(NETWORK)" ]; then \
+		echo "Error: NETWORK parameter is required."; \
+		echo "Usage: make update-facet FACET_NAME=VincentAppViewFacet NETWORK=datil|base-sepolia|base-mainnet"; \
+		exit 1; \
+	fi
+	@if [ "$(NETWORK)" != "datil" ] && [ "$(NETWORK)" != "base-sepolia" ] && [ "$(NETWORK)" != "base-mainnet" ]; then \
+		echo "Error: NETWORK must be one of: datil, base-sepolia, base-mainnet"; \
+		exit 1; \
+	fi
+	@if [ -z "$(RPC_URL)" ]; then \
+		echo "Error: RPC_URL is not set in .env"; \
+		exit 1; \
+	fi
+	@if [ -z "$(VINCENT_DIAMOND_ADDRESS)" ]; then \
+		echo "Error: VINCENT_DIAMOND_ADDRESS is not set in .env"; \
+		exit 1; \
+	fi
+	@echo "Updating facet $(FACET_NAME) in the Vincent Diamond contract on $(NETWORK)..."
+	@echo "Using diamond address: $(VINCENT_DIAMOND_ADDRESS)"
+	@FACET_TO_UPDATE=$(FACET_NAME) VINCENT_DIAMOND_ADDRESS=$(VINCENT_DIAMOND_ADDRESS) VINCENT_DEPLOYMENT_RPC_URL=$(RPC_URL) forge script script/UpdateFacet.sol:SmartUpdateFacet -vvv \
+		--broadcast \
+		--private-key $(VINCENT_DEPLOYER_PRIVATE_KEY) \
+		--rpc-url $(RPC_URL)
+
+set-trusted-forwarder: ## Set the trusted forwarder address for EIP-2771 meta-transactions. Usage: make set-trusted-forwarder FORWARDER_ADDRESS=0x... NETWORK=datil|base-sepolia|base-mainnet
+	@if [ -z "$(VINCENT_DEPLOYER_PRIVATE_KEY)" ]; then \
+		echo "Error: VINCENT_DEPLOYER_PRIVATE_KEY is not set in .env"; \
+		exit 1; \
+	fi
+	@if [ -z "$(FORWARDER_ADDRESS)" ]; then \
+		echo "Error: FORWARDER_ADDRESS parameter is required."; \
+		echo "Usage: make set-trusted-forwarder FORWARDER_ADDRESS=0x... NETWORK=datil|base-sepolia|base-mainnet"; \
+		echo "Note: Use FORWARDER_ADDRESS=0x0000000000000000000000000000000000000000 to disable EIP-2771"; \
+		exit 1; \
+	fi
+	@if [ -z "$(NETWORK)" ]; then \
+		echo "Error: NETWORK parameter is required."; \
+		echo "Usage: make set-trusted-forwarder FORWARDER_ADDRESS=0x... NETWORK=datil|base-sepolia|base-mainnet"; \
+		exit 1; \
+	fi
+	@if [ "$(NETWORK)" != "datil" ] && [ "$(NETWORK)" != "base-sepolia" ] && [ "$(NETWORK)" != "base-mainnet" ]; then \
+		echo "Error: NETWORK must be one of: datil, base-sepolia, base-mainnet"; \
+		exit 1; \
+	fi
+	@if [ -z "$(RPC_URL)" ]; then \
+		echo "Error: RPC_URL is not set in .env"; \
+		exit 1; \
+	fi
+	@if [ -z "$(VINCENT_DIAMOND_ADDRESS)" ]; then \
+		echo "Error: VINCENT_DIAMOND_ADDRESS is not set in .env"; \
+		exit 1; \
+	fi
+	@echo "Setting trusted forwarder to $(FORWARDER_ADDRESS) on $(NETWORK)..."
+	@echo "Using diamond address: $(VINCENT_DIAMOND_ADDRESS)"
+	@NEW_FORWARDER_ADDRESS=$(FORWARDER_ADDRESS) VINCENT_DIAMOND_ADDRESS=$(VINCENT_DIAMOND_ADDRESS) forge script script/SetTrustedForwarder.sol:SetTrustedForwarder -vvv \
+		--broadcast \
+		--private-key $(VINCENT_DEPLOYER_PRIVATE_KEY) \
+		--rpc-url $(RPC_URL)
 
 get-abis: ## Get human-readable ABIs for all facets
 	@mkdir -p abis
@@ -99,6 +167,8 @@ get-abis: ## Get human-readable ABIs for all facets
 	@forge inspect VincentUserFacet abi --json > abis/VincentUserFacet.abi.json
 	@echo "Getting ABI for VincentUserViewFacet..."
 	@forge inspect VincentUserViewFacet abi --json > abis/VincentUserViewFacet.abi.json
+	@echo "Getting ABI for VincentERC2771Facet..."
+	@forge inspect VincentERC2771Facet abi --json > abis/VincentERC2771Facet.abi.json
 
 	@echo "Merging facet ABIs into abis/FeeDiamond.abi.json..."
 	@jq -s '[.[].abi] | add | unique_by(.type, .name, ((.inputs // []) | map(.type) | join(",")))' \

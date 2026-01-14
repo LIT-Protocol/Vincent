@@ -13,14 +13,12 @@ export type {
   RegisterAppParams,
   ValidateAbilityExecutionAndGetPoliciesParams,
   IsDelegateePermittedParams,
-  GetDelegatedPkpEthAddressesParams,
+  GetDelegatedAgentAddressesParams,
   GetAllAbilitiesAndPoliciesForAppParams,
-  GetAllPermittedAppIdsForPkpParams,
-  GetLastPermittedAppVersionParams,
-  GetPermittedAppVersionForPkpParams,
-  GetPermittedAppsForPkpsParams,
-  GetUnpermittedAppsForPkpsParams,
-  GetAllRegisteredAgentPkpsParams,
+  GetAllRegisteredAgentAddressesForUserParams,
+  GetUserAddressForAgentParams,
+  GetPermittedAppForAgentsParams,
+  GetUnpermittedAppForAgentsParams,
   SetAbilityPolicyParametersParams,
   UnPermitAppParams,
   PermitAppParams,
@@ -34,14 +32,14 @@ export type {
   PermissionData,
   AppVersion,
   PermittedApp,
-  PkpPermittedApps,
   UnpermittedApp,
-  PkpUnpermittedApps,
+  AgentPermittedApp,
+  AgentUnpermittedApp,
 } from './types';
 
-export { getTestClient, clientFromContract, getClient } from './contractClient';
+export { clientFromContract, getClient, getTestClient } from './contractClient';
 
-export { createContract } from './utils';
+export { createContract, deriveSmartAccountIndex } from './utils';
 
 export { getVincentWrappedKeysAccs } from './internal/wrapped-keys/getVincentWrappedKeysAccs';
 

@@ -9,9 +9,10 @@ library LibVincentAppFacet {
     /**
      * @notice Emitted when a new app is registered
      * @param appId Unique identifier for the newly registered app
+     * @param accountIndexHash The keccak256 hash of the app ID
      * @param manager Address of the app manager
      */
-    event NewAppRegistered(uint40 indexed appId, address indexed manager);
+    event NewAppRegistered(uint40 indexed appId, bytes32 indexed accountIndexHash, address indexed manager);
 
     /**
      * @notice Emitted when a new app version is registered
@@ -185,11 +186,6 @@ library LibVincentAppFacet {
      * @param appVersion Version number of the app
      */
     error AppVersionHasDelegatedAgents(uint40 appId, uint24 appVersion);
-
-    /**
-     * @notice Error thrown when the app ID is zero
-     */
-    error ZeroAppIdNotAllowed();
 
     /**
      * @notice Error thrown when the app is already registered

@@ -1,3 +1,81 @@
+## 1.2.0 (2026-01-14)
+
+### 🚀 Features
+
+- Upgrade to support Vincent 2.0 architecture ([cf97ffde](https://github.com/LIT-Protocol/Vincent/commit/cf97ffde))
+
+### 🧱 Updated Dependencies
+
+- Updated ability-sdk to 3.0.0
+- Updated app-sdk to 2.6.0
+- Updated contracts-sdk to 8.0.0
+- Updated policy-spending-limit to 2.2.0
+- Updated policy-contract-whitelist to 1.2.0
+- Updated ability-erc20-approval to 3.2.0
+- Updated ability-erc20-transfer to 0.2.0
+- Updated ability-uniswap-swap to 8.1.0
+- Updated ability-evm-transaction-signer to 0.2.0
+- Updated policy-send-counter to 0.3.0
+- Updated ability-aerodrome-swap to 0.5.0
+
+### ❤️ Thank You
+
+- Wyatt Barnes @Spacesai1or
+
+## 1.1.19 (2026-01-12)
+
+### 🧱 Updated Dependencies
+
+- Updated ability-aerodrome-swap to 0.4.9
+
+## 1.1.18 (2026-01-10)
+
+### 🧱 Updated Dependencies
+
+- Updated ability-sdk to 2.4.2
+- Updated app-sdk to 2.5.3
+- Updated contracts-sdk to 7.1.0
+- Updated policy-spending-limit to 2.1.11
+- Updated policy-contract-whitelist to 1.1.11
+- Updated ability-erc20-approval to 3.1.11
+- Updated ability-erc20-transfer to 0.1.12
+- Updated ability-uniswap-swap to 8.0.7
+- Updated ability-evm-transaction-signer to 0.1.11
+- Updated policy-send-counter to 0.2.11
+- Updated ability-aerodrome-swap to 0.4.8
+
+## 1.1.17 (2026-01-08)
+
+### 🧱 Updated Dependencies
+
+- Updated ability-sdk to 2.4.1
+- Updated app-sdk to 2.5.2
+- Updated contracts-sdk to 7.0.0
+- Updated policy-spending-limit to 2.1.10
+- Updated policy-contract-whitelist to 1.1.10
+- Updated ability-erc20-approval to 3.1.10
+- Updated ability-erc20-transfer to 0.1.11
+- Updated ability-uniswap-swap to 8.0.6
+- Updated ability-evm-transaction-signer to 0.1.10
+- Updated policy-send-counter to 0.2.10
+- Updated ability-aerodrome-swap to 0.4.7
+
+## 1.1.16 (2026-01-07)
+
+### 🧱 Updated Dependencies
+
+- Updated ability-sdk to 2.4.0
+- Updated app-sdk to 2.5.1
+- Updated contracts-sdk to 6.0.0
+- Updated policy-spending-limit to 2.1.9
+- Updated policy-contract-whitelist to 1.1.9
+- Updated ability-erc20-approval to 3.1.9
+- Updated ability-erc20-transfer to 0.1.10
+- Updated ability-uniswap-swap to 8.0.5
+- Updated ability-evm-transaction-signer to 0.1.9
+- Updated policy-send-counter to 0.2.9
+- Updated ability-aerodrome-swap to 0.4.6
+
 ## 1.1.15 (2025-11-23)
 
 ### 🧱 Updated Dependencies

@@ -8,6 +8,7 @@ import { abilityParamsSchema } from './schemas';
 
 declare const abilityParams: z.infer<typeof abilityParamsSchema>;
 declare const context: {
+  agentAddress: string;
   delegatorPkpEthAddress: string;
 };
 
@@ -15,6 +16,7 @@ declare const context: {
   const func = vincentAbilityHandler({
     vincentAbility: vincentAbility,
     context: {
+      agentAddress: context.agentAddress,
       delegatorPkpEthAddress: context.delegatorPkpEthAddress,
     },
     abilityParams,

@@ -19,3 +19,5 @@ dist/
 
 # Generated Lit Actions
 lit-actions/generated/
+
+test/test-config.json

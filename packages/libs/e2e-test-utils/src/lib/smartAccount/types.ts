@@ -11,6 +11,10 @@ export interface SetupSmartAccountParams {
   chain: Chain;
 }
 
+export interface SetupZerodevAccountParams extends SetupSmartAccountParams {
+  deploy?: boolean;
+}
+
 export interface ZerodevSmartAccountInfo {
   account: CreateKernelAccountReturnType;
   serializedPermissionAccount: string;
@@ -18,6 +22,7 @@ export interface ZerodevSmartAccountInfo {
 
 export interface CrossmintSmartAccountInfo {
   account: Exclude<Awaited<ReturnType<WalletsApiClient['createWallet']>>, { error: unknown }>;
+  client: WalletsApiClient;
 }
 
 export interface SafeSmartAccountInfo {

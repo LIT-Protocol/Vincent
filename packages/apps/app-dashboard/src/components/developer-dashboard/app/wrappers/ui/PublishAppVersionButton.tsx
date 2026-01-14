@@ -1,7 +1,7 @@
 import { Upload, CheckCircle, XCircle } from 'lucide-react';
 import { ActionButton } from '@/components/developer-dashboard/ui/ActionButton';
 import { PackageInstallCommand } from './PackageInstallCommand';
-import { theme } from '@/components/user-dashboard/connect/ui/theme';
+import { theme } from '@/lib/themeClasses';
 
 interface AbilityInfo {
   abilityPackageName: string;

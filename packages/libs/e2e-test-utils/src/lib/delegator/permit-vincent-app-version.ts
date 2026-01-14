@@ -18,49 +18,55 @@ export async function permitAppVersionForAgentWalletPkp({
   appVersion,
   agentPkpInfo,
   platformUserPkpWallet,
+  agentAddress,
 }: {
   permissionData: PermissionData;
   appId: number;
   appVersion: number;
   agentPkpInfo: PkpInfo;
   platformUserPkpWallet: PKPEthersWallet;
+  agentAddress: string;
 }): Promise<void> {
   const client = getClient({
     signer: platformUserPkpWallet,
   });
 
-  const existingPermittedAppVersion = await client.getPermittedAppVersionForPkp({
-    pkpEthAddress: agentPkpInfo.ethAddress,
-    appId,
+  const [permittedAppResult] = await client.getPermittedAppForAgents({
+    agentAddresses: [agentAddress],
   });
+  const existingPermittedApp = permittedAppResult?.permittedApp ?? null;
 
   // Check if the requested version is already permitted
-  if (existingPermittedAppVersion === appVersion) {
+  if (existingPermittedApp?.appId === appId && existingPermittedApp.version === appVersion) {
     console.log(
-      `App version ${appVersion} is already permitted for Agent PKP ${agentPkpInfo.ethAddress}. Skipping permission.`,
+      `App version ${appVersion} is already permitted for Agent ${agentAddress}. Skipping permission.`,
     );
     return;
   }
 
-  // If a different version is permitted, remove it first
-  if (existingPermittedAppVersion) {
-    console.log(`Removing existing permission for app version ${existingPermittedAppVersion}`);
+  // If a different version (or app) is permitted, remove it first
+  if (existingPermittedApp) {
+    console.log(
+      `Removing existing permission for app ${existingPermittedApp.appId} version ${existingPermittedApp.version}`,
+    );
     await client.unPermitApp({
-      pkpEthAddress: agentPkpInfo.ethAddress,
-      appId,
-      appVersion: existingPermittedAppVersion,
+      agentAddress,
+      appId: existingPermittedApp.appId,
+      appVersion: existingPermittedApp.version,
     });
   }
 
   // Permit the new version
   const result = await client.permitApp({
-    pkpEthAddress: agentPkpInfo.ethAddress,
+    agentAddress,
+    pkpSigner: agentPkpInfo.ethAddress,
+    pkpSignerPubKey: agentPkpInfo.publicKey,
     appId,
     appVersion,
     permissionData: permissionData,
   });
 
   console.log(
-    `Permitted App with ID ${appId} and version ${appVersion} for Agent PKP ${agentPkpInfo.ethAddress}\nTx hash: ${result.txHash}`,
+    `Permitted App with ID ${appId} and version ${appVersion} for Agent ${agentAddress}\nTx hash: ${result.txHash}`,
   );
 }

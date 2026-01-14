@@ -43,23 +43,21 @@ contract VincentAppFacet is VincentBase {
     /**
      * @notice Register a new application with initial version, abilities, and policies
      * @dev This function combines app registration and first version registration in one call
-     * @param appId The ID of the app to register
      * @param delegatees List of addresses authorized to act on behalf of the app
      * @param versionAbilities Abilities and policies for the app version
+     * @return newAppId The ID of the newly registered app
+     * @return newAppVersion The version number of the newly registered app version
+     * @return accountIndexHash The keccak256 hash intended to be used as the account index for smart account creation
      */
-    function registerApp(uint40 appId, address[] calldata delegatees, AppVersionAbilities calldata versionAbilities)
+    function registerApp(address[] calldata delegatees, AppVersionAbilities calldata versionAbilities)
         external
-        returns (uint24 newAppVersion)
+        returns (uint40 newAppId, uint24 newAppVersion, bytes32 accountIndexHash)
     {
-        if (appId == 0) {
-            revert LibVincentAppFacet.ZeroAppIdNotAllowed();
-        }
+        (newAppId, accountIndexHash) = _registerApp(delegatees);
+        emit LibVincentAppFacet.NewAppRegistered(newAppId, accountIndexHash, msg.sender);
 
-        _registerApp(appId, delegatees);
-        emit LibVincentAppFacet.NewAppRegistered(appId, msg.sender);
-
-        newAppVersion = _registerNextAppVersion(appId, versionAbilities);
-        emit LibVincentAppFacet.NewAppVersionRegistered(appId, newAppVersion, msg.sender);
+        newAppVersion = _registerNextAppVersion(newAppId, versionAbilities);
+        emit LibVincentAppFacet.NewAppVersionRegistered(newAppId, newAppVersion, msg.sender);
     }
 
     /**
@@ -248,13 +246,16 @@ contract VincentAppFacet is VincentBase {
     /**
      * @notice Internal function to register a new app
      * @dev Sets up the basic app structure and associates delegatees
-     * @param appId The ID of the app to register
      * @param delegatees List of addresses authorized to act on behalf of the app
      */
-    function _registerApp(uint40 appId, address[] calldata delegatees) internal {
+    function _registerApp(address[] calldata delegatees) internal returns (uint40 appId, bytes32 accountIndexHash) {
         VincentAppStorage.AppStorage storage as_ = VincentAppStorage.appStorage();
 
-        if (as_.appIdToApp[appId].manager != address(0)) {
+        appId = ++as_.lastAppId;
+
+        VincentAppStorage.App storage app = as_.appIdToApp[appId];
+
+        if (app.manager != address(0)) {
             revert LibVincentAppFacet.AppAlreadyRegistered(appId);
         }
 
@@ -262,8 +263,8 @@ contract VincentAppFacet is VincentBase {
         as_.managerAddressToAppIds[msg.sender].add(appId);
 
         // Register the app
-        VincentAppStorage.App storage app = as_.appIdToApp[appId];
         app.manager = msg.sender;
+        app.accountIndexHash = keccak256(abi.encodePacked("vincent_app_id_", appId));
 
         // Add the delegatees to the app
         for (uint256 i = 0; i < delegatees.length; i++) {
@@ -281,6 +282,8 @@ contract VincentAppFacet is VincentBase {
 
             as_.delegateeAddressToAppId[delegatees[i]] = appId;
         }
+
+        return (appId, app.accountIndexHash);
     }
 
     /**
@@ -327,7 +330,7 @@ contract VincentAppFacet is VincentBase {
         // Store this once outside the loop instead of repeatedly accessing it
         EnumerableSet.Bytes32Set storage abilityIpfsCidHashes = versionedApp.abilityIpfsCidHashes;
 
-        // Step 6: Iterate through each ability to register it with the new app version.
+        // Step 4: Iterate through each ability to register it with the new app version.
         for (uint256 i = 0; i < abilityCount; i++) {
             string memory abilityIpfsCid = versionAbilities.abilityIpfsCids[i]; // Cache calldata value
 
@@ -338,7 +341,7 @@ contract VincentAppFacet is VincentBase {
 
             bytes32 hashedAbilityCid = keccak256(abi.encodePacked(abilityIpfsCid));
 
-            // Step 6.1: Register the ability IPFS CID globally if it hasn't been added already.
+            // Step 4.1: Register the ability IPFS CID globally if it hasn't been added already.
             if (!abilityIpfsCidHashes.add(hashedAbilityCid)) {
                 revert LibVincentAppFacet.DuplicateAbilityIpfsCidNotAllowed(appId, i);
             }
@@ -350,8 +353,12 @@ contract VincentAppFacet is VincentBase {
                 emit LibVincentAppFacet.NewLitActionRegistered(hashedAbilityCid);
             }
 
-            // Step 7: Iterate through policies linked to this ability.
+            // Step 5: Iterate through policies linked to this ability.
             uint256 policyCount = versionAbilities.abilityPolicies[i].length;
+
+            // Cache storage pointer for this ability's policies outside the loop
+            EnumerableSet.Bytes32Set storage abilityPolicyIpfsCidHashes =
+                versionedApp.abilityIpfsCidHashToAbilityPolicyIpfsCidHashes[hashedAbilityCid];
 
             for (uint256 j = 0; j < policyCount; j++) {
                 string memory policyIpfsCid = versionAbilities.abilityPolicies[i][j]; // Cache calldata value
@@ -362,15 +369,13 @@ contract VincentAppFacet is VincentBase {
                 }
 
                 bytes32 hashedAbilityPolicy = keccak256(abi.encodePacked(policyIpfsCid));
-                EnumerableSet.Bytes32Set storage abilityPolicyIpfsCidHashes =
-                    versionedApp.abilityIpfsCidHashToAbilityPolicyIpfsCidHashes[hashedAbilityCid];
 
-                // Step 7.1: Add the policy hash to the AbilityPolicies
+                // Step 5.1: Add the policy hash to the AbilityPolicies
                 if (!abilityPolicyIpfsCidHashes.add(hashedAbilityPolicy)) {
                     revert LibVincentAppFacet.DuplicateAbilityPolicyIpfsCidNotAllowed(appId, i, j);
                 }
 
-                // Step 7.3: Store the policy IPFS CID globally if it's not already stored.
+                // Step 5.2: Store the policy IPFS CID globally if it's not already stored.
                 if (bytes(ls.ipfsCidHashToIpfsCid[hashedAbilityPolicy]).length == 0) {
                     ls.ipfsCidHashToIpfsCid[hashedAbilityPolicy] = policyIpfsCid;
                     emit LibVincentAppFacet.NewLitActionRegistered(hashedAbilityPolicy);

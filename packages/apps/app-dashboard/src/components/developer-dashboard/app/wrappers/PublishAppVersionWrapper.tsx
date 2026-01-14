@@ -6,13 +6,12 @@ import { AbilityVersion, PolicyVersion } from '@/types/developer-dashboard/appTy
 import { StatusMessage } from '@/components/shared/ui/statusMessage';
 import { getClient } from '@lit-protocol/vincent-contracts-sdk';
 import { PublishAppVersionButton } from './ui/PublishAppVersionButton';
-import { initPkpSigner } from '@/utils/developer-dashboard/initPkpSigner';
-import useReadAuthInfo from '@/hooks/user-dashboard/useAuthInfo';
-import { theme } from '@/components/user-dashboard/connect/ui/theme';
+import { useWagmiSigner } from '@/hooks/developer-dashboard/useWagmiSigner';
+import { theme } from '@/lib/themeClasses';
 
 export function PublishAppVersionWrapper({ isAppPublished }: { isAppPublished: boolean }) {
   const { appId, versionId } = useParams<{ appId: string; versionId: string }>();
-  const { authInfo, sessionSigs } = useReadAuthInfo();
+  const { getSigner } = useWagmiSigner();
   const navigate = useNavigate();
 
   // Fetching
@@ -244,8 +243,8 @@ export function PublishAppVersionWrapper({ isAppPublished }: { isAppPublished: b
         return;
       }
 
-      const pkpSigner = await initPkpSigner({ authInfo, sessionSigs });
-      const client = getClient({ signer: pkpSigner });
+      const signer = await getSigner();
+      const client = getClient({ signer });
 
       for (const delegatee of delegatees) {
         // Validate that delegatee is a proper Ethereum address

@@ -16,6 +16,8 @@ import "./facets/VincentAppFacet.sol";
 import "./facets/VincentAppViewFacet.sol";
 import "./facets/VincentUserFacet.sol";
 import "./facets/VincentUserViewFacet.sol";
+import "./facets/VincentERC2771Facet.sol";
+import "./libs/LibERC2771.sol";
 
 /**
  * @title Vincent Diamond
@@ -24,11 +26,6 @@ import "./facets/VincentUserViewFacet.sol";
  *      based on function selectors, enabling modular functionality and upgradability
  */
 contract VincentDiamond {
-    /**
-     * @notice Thrown when an invalid (zero address) PKP NFT contract is provided
-     */
-    error InvalidPKPNFTContract();
-
     /**
      * @notice Thrown when any of the facet addresses are invalid (zero address)
      */
@@ -56,6 +53,8 @@ contract VincentDiamond {
         address vincentUserFacet;
         // The facet implementing user data viewing functions
         address vincentUserViewFacet;
+        // The facet implementing EIP-2771 meta-transaction support
+        address vincentERC2771Facet;
     }
 
     /**
@@ -64,16 +63,15 @@ contract VincentDiamond {
      * @param _contractOwner Address that will own the diamond contract
      * @param _diamondCutFacet Address of the facet implementing diamond cut functionality
      * @param _facets Struct containing addresses of all other facets
-     * @param _pkpNFTContract Address of the PKP NFT contract used for sourcing PKP ownership
+     * @param _trustedForwarder Address of the Gelato trusted forwarder for EIP-2771 gasless transactions (address(0) to disable EIP-2771)
      */
     constructor(
         address _contractOwner,
         address _diamondCutFacet,
         FacetAddresses memory _facets,
-        address _pkpNFTContract
+        address _trustedForwarder
     ) payable {
         // Validate inputs
-        if (_pkpNFTContract == address(0)) revert InvalidPKPNFTContract();
         if (_diamondCutFacet == address(0)) revert InvalidFacetAddress();
 
         // Validate all facet addresses
@@ -81,16 +79,13 @@ contract VincentDiamond {
             _facets.diamondLoupeFacet == address(0) || _facets.ownershipFacet == address(0)
                 || _facets.vincentAppFacet == address(0) || _facets.vincentAppViewFacet == address(0)
                 || _facets.vincentUserFacet == address(0) || _facets.vincentUserViewFacet == address(0)
+                || _facets.vincentERC2771Facet == address(0)
         ) {
             revert InvalidFacetAddress();
         }
 
         // Set the contract owner
         LibDiamond.setContractOwner(_contractOwner);
-
-        // Initialize Vincent storage with PKP NFT contract (inlined)
-        VincentUserStorage.UserStorage storage us = VincentUserStorage.userStorage();
-        us.PKP_NFT_FACET = IPKPNFTFacet(_pkpNFTContract);
 
         // Initialize ERC165 data
         LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
@@ -111,7 +106,7 @@ contract VincentDiamond {
         LibDiamond.diamondCut(diamondCut, address(0), "");
 
         // Now add all other facets
-        IDiamondCut.FacetCut[] memory cuts = new IDiamondCut.FacetCut[](6);
+        IDiamondCut.FacetCut[] memory cuts = new IDiamondCut.FacetCut[](7);
 
         // Add DiamondLoupeFacet
         cuts[0] = IDiamondCut.FacetCut({
@@ -155,7 +150,19 @@ contract VincentDiamond {
             functionSelectors: getVincentUserViewFacetSelectors()
         });
 
+        // Add VincentERC2771Facet
+        cuts[6] = IDiamondCut.FacetCut({
+            facetAddress: _facets.vincentERC2771Facet,
+            action: IDiamondCut.FacetCutAction.Add,
+            functionSelectors: getVincentERC2771FacetSelectors()
+        });
+
         LibDiamond.diamondCut(cuts, address(0), "");
+
+        // Set the trusted forwarder for EIP-2771 meta-transactions
+        // Setting to address(0) disables EIP-2771 support
+        VincentERC2771Storage.erc2771Storage().trustedForwarder = _trustedForwarder;
+        emit LibERC2771.TrustedForwarderSet(_trustedForwarder);
     }
 
     /**
@@ -200,7 +207,7 @@ contract VincentDiamond {
         selectors[1] = VincentAppViewFacet.getAppVersion.selector;
         selectors[2] = VincentAppViewFacet.getAppsByManager.selector;
         selectors[3] = VincentAppViewFacet.getAppByDelegatee.selector;
-        selectors[4] = VincentAppViewFacet.getDelegatedAgentPkpTokenIds.selector;
+        selectors[4] = VincentAppViewFacet.getDelegatedAgentAddresses.selector;
         selectors[5] = bytes4(keccak256("APP_PAGE_SIZE()"));
         return selectors;
     }
@@ -215,17 +222,22 @@ contract VincentDiamond {
     }
 
     function getVincentUserViewFacetSelectors() internal pure returns (bytes4[] memory) {
-        bytes4[] memory selectors = new bytes4[](10);
-        selectors[0] = VincentUserViewFacet.getAllRegisteredAgentPkps.selector;
-        selectors[1] = VincentUserViewFacet.getPermittedAppVersionForPkp.selector;
-        selectors[2] = VincentUserViewFacet.getAllPermittedAppIdsForPkp.selector;
-        selectors[3] = VincentUserViewFacet.validateAbilityExecutionAndGetPolicies.selector;
-        selectors[4] = VincentUserViewFacet.getAllAbilitiesAndPoliciesForApp.selector;
-        selectors[5] = VincentUserViewFacet.getPermittedAppsForPkps.selector;
-        selectors[6] = VincentUserViewFacet.getLastPermittedAppVersionForPkp.selector;
-        selectors[7] = VincentUserViewFacet.getUnpermittedAppsForPkps.selector;
-        selectors[8] = bytes4(keccak256("AGENT_PAGE_SIZE()"));
-        selectors[9] = VincentUserViewFacet.isDelegateePermitted.selector;
+        bytes4[] memory selectors = new bytes4[](7);
+        selectors[0] = VincentUserViewFacet.getAllRegisteredAgentAddressesForUser.selector;
+        selectors[1] = VincentUserViewFacet.getPermittedAppForAgents.selector;
+        selectors[2] = VincentUserViewFacet.validateAbilityExecutionAndGetPolicies.selector;
+        selectors[3] = VincentUserViewFacet.getAllAbilitiesAndPoliciesForApp.selector;
+        selectors[4] = VincentUserViewFacet.getUnpermittedAppForAgents.selector;
+        selectors[5] = bytes4(keccak256("AGENT_PAGE_SIZE()"));
+        selectors[6] = VincentUserViewFacet.getUserAddressForAgent.selector;
+        return selectors;
+    }
+
+    function getVincentERC2771FacetSelectors() internal pure returns (bytes4[] memory) {
+        bytes4[] memory selectors = new bytes4[](3);
+        selectors[0] = VincentERC2771Facet.setTrustedForwarder.selector;
+        selectors[1] = VincentERC2771Facet.getTrustedForwarder.selector;
+        selectors[2] = VincentERC2771Facet.isTrustedForwarder.selector;
         return selectors;
     }
 

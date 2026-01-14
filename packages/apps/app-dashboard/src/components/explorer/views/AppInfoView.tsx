@@ -5,7 +5,7 @@ import { ExplorerNav } from '../ui/ExplorerNav';
 import { VersionInfo } from '../ui/VersionInfo';
 import { useState, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
+import { theme, fonts } from '@/lib/themeClasses';
 import { ArrowLeft } from 'lucide-react';
 
 interface AppInfoViewProps {

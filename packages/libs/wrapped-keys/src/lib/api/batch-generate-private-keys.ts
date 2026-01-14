@@ -26,10 +26,11 @@ import { getKeyTypeFromNetwork } from './utils';
 export async function batchGeneratePrivateKeys(
   params: BatchGeneratePrivateKeysParams,
 ): Promise<BatchGeneratePrivateKeysResult> {
-  const { jwtToken, delegatorAddress, litNodeClient } = params;
+  const { jwtToken, delegatorAddress, agentAddress, litNodeClient } = params;
 
   const vincentWrappedKeysAccs = await getVincentWrappedKeysAccs({
-    delegatorAddress,
+    delegatorPkpEthAddress: delegatorAddress,
+    agentAddress,
   });
 
   const litActionIpfsCid = getLitActionCommonCid('batchGenerateEncryptedKeys');

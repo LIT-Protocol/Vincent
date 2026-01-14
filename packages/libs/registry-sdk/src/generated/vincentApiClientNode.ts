@@ -7,6 +7,7 @@ export const addTagTypes = [
   'AbilityVersion',
   'Policy',
   'PolicyVersion',
+  'User',
 ] as const;
 const injectedRtkApi = api
   .enhanceEndpoints({
@@ -374,6 +375,33 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['PolicyVersion'],
       }),
+      installApp: build.mutation<InstallAppApiResponse, InstallAppApiArg>({
+        query: (queryArg) => ({
+          url: `/user/${encodeURIComponent(String(queryArg.appId))}/install-app`,
+          method: 'POST',
+          body: queryArg.installAppRequest,
+        }),
+        invalidatesTags: ['User'],
+      }),
+      completeInstallation: build.mutation<
+        CompleteInstallationApiResponse,
+        CompleteInstallationApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/user/${encodeURIComponent(String(queryArg.appId))}/complete-installation`,
+          method: 'POST',
+          body: queryArg.completeInstallationRequest,
+        }),
+        invalidatesTags: ['User'],
+      }),
+      getAgentAccount: build.mutation<GetAgentAccountApiResponse, GetAgentAccountApiArg>({
+        query: (queryArg) => ({
+          url: `/user/${encodeURIComponent(String(queryArg.appId))}/agent-account`,
+          method: 'POST',
+          body: queryArg.getAgentAccountRequest,
+        }),
+        invalidatesTags: ['User'],
+      }),
     }),
     overrideExisting: false,
   });
@@ -710,11 +738,34 @@ export type UndeletePolicyVersionApiArg = {
   /** NPM semver of the target policy version */
   version: string;
 };
+export type InstallAppApiResponse =
+  /** status 200 App installation data returned successfully */ InstallAppResponse;
+export type InstallAppApiArg = {
+  /** ID of the target application */
+  appId: number;
+  installAppRequest: InstallAppRequest;
+};
+export type CompleteInstallationApiResponse =
+  /** status 200 Installation completed successfully */ CompleteInstallationResponse;
+export type CompleteInstallationApiArg = {
+  /** ID of the target application */
+  appId: number;
+  completeInstallationRequest: CompleteInstallationRequest;
+};
+export type GetAgentAccountApiResponse =
+  /** status 200 Agent account address returned successfully */ GetAgentAccountResponse;
+export type GetAgentAccountApiArg = {
+  /** ID of the target application */
+  appId: number;
+  getAgentAccountRequest: GetAgentAccountRequest;
+};
 export type App = {
   /** Timestamp when this was last modified */
   updatedAt: string;
   /** Timestamp when this was created */
   createdAt: string;
+  /** Application ID */
+  appId: number;
   /** Active version of the application */
   activeVersion?: number;
   /** The name of the application */
@@ -724,13 +775,9 @@ export type App = {
   /** Contact email for the application manager */
   contactEmail?: string;
   /** This should be a landing page for the app. */
-  appUserUrl?: string;
+  appUrl?: string;
   /** Base64 encoded logo image */
   logo?: string;
-  /** Redirect URIs users can be sent to after signing up for your application (with their JWT token). */
-  redirectUris?: string[];
-  /** Addresses responsible for executing the app's operations on behalf of Vincent App Users */
-  delegateeAddresses?: string[];
   /** Identifies if an application is in development, test, or production. */
   deploymentStatus?: 'dev' | 'test' | 'prod';
   /** Whether or not this App is deleted */
@@ -754,13 +801,9 @@ export type AppRead = {
   /** Contact email for the application manager */
   contactEmail?: string;
   /** This should be a landing page for the app. */
-  appUserUrl?: string;
+  appUrl?: string;
   /** Base64 encoded logo image */
   logo?: string;
-  /** Redirect URIs users can be sent to after signing up for your application (with their JWT token). */
-  redirectUris?: string[];
-  /** Addresses responsible for executing the app's operations on behalf of Vincent App Users */
-  delegateeAddresses?: string[];
   /** Identifies if an application is in development, test, or production. */
   deploymentStatus?: 'dev' | 'test' | 'prod';
   /** App manager's wallet address. Derived from the authorization signature provided by the creator. */
@@ -782,13 +825,11 @@ export type AppCreate = {
   /** Contact email for the application manager */
   contactEmail?: string;
   /** This should be a landing page for the app. */
-  appUserUrl?: string;
+  appUrl?: string;
   /** Base64 encoded logo image */
   logo?: string;
-  /** Redirect URIs users can be sent to after signing up for your application (with their JWT token). */
-  redirectUris?: string[];
-  /** Addresses responsible for executing the app's operations on behalf of Vincent App Users */
-  delegateeAddresses?: string[];
+  /** Application ID */
+  appId: number;
   /** The name of the application */
   name: string;
   /** Description of the application */
@@ -802,13 +843,9 @@ export type AppEdit = {
   /** Contact email for the application manager */
   contactEmail?: string;
   /** This should be a landing page for the app. */
-  appUserUrl?: string;
+  appUrl?: string;
   /** Base64 encoded logo image */
   logo?: string;
-  /** Redirect URIs users can be sent to after signing up for your application (with their JWT token). */
-  redirectUris?: string[];
-  /** Addresses responsible for executing the app's operations on behalf of Vincent App Users */
-  delegateeAddresses?: string[];
   /** Identifies if an application is in development, test, or production. */
   deploymentStatus?: 'dev' | 'test' | 'prod';
   /** Active version of the application */
@@ -823,8 +860,6 @@ export type AppVersion = {
   updatedAt: string;
   /** Timestamp when this was created */
   createdAt: string;
-  /** Whether this version is enabled or not */
-  enabled: boolean;
   /** Describes what changed between this version and the previous version. */
   changes?: string;
   /** Whether or not this AppVersion is deleted */
@@ -841,8 +876,6 @@ export type AppVersionRead = {
   appId: number;
   /** App Version number */
   version: number;
-  /** Whether this version is enabled or not */
-  enabled: boolean;
   /** Describes what changed between this version and the previous version. */
   changes?: string;
   /** Whether or not this AppVersion is deleted */
@@ -1261,3 +1294,33 @@ export type PolicyVersionEdit = {
 };
 export type PolicyVersionList = PolicyVersion[];
 export type PolicyVersionListRead = PolicyVersionRead[];
+export type InstallAppResponse = {
+  /** The PKP address that the app will use to sign things */
+  agentSignerAddress: string;
+  /** The smart account address calculated from the PKP address, used on the frontend to verify they get the same smart wallet address */
+  agentSmartAccountAddress: string;
+  /** The EIP2771 TypedData to sign that will install the app into the Vincent contracts */
+  appInstallationDataToSign: {};
+};
+export type InstallAppRequest = {
+  /** EOA address that controls the user smart wallet */
+  userControllerAddress: string;
+};
+export type CompleteInstallationResponse = {
+  /** The transaction hash of the completed installation */
+  transactionHash: string;
+};
+export type CompleteInstallationRequest = {
+  /** The signature of the typed data from the user wallet */
+  typedDataSignature: string;
+  /** The appInstallationDataToSign object returned from install-app. Generated by the Gelato SDK. */
+  appInstallationDataToSign: {};
+};
+export type GetAgentAccountResponse = {
+  /** The agent smart account address if registered, or null if the agent does not exist */
+  agentAddress: string | null;
+};
+export type GetAgentAccountRequest = {
+  /** EOA address that controls the user smart wallet */
+  userControllerAddress: string;
+};

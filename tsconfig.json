@@ -71,6 +71,9 @@
     },
     {
       "path": "./packages/apps/ability-hyperliquid"
+    },
+    {
+      "path": "./packages/apps/ability-relay-link"
     }
   ]
 }

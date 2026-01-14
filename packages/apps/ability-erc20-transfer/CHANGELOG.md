@@ -1,3 +1,43 @@
+## 0.2.0 (2026-01-14)
+
+### 🚀 Features
+
+- Upgrade to support Vincent 2.0 architecture ([cf97ffde](https://github.com/LIT-Protocol/Vincent/commit/cf97ffde))
+
+### 🧱 Updated Dependencies
+
+- Updated ability-sdk to 3.0.0
+- Updated app-sdk to 2.6.0
+- Updated policy-send-counter to 0.3.0
+
+### ❤️ Thank You
+
+- Wyatt Barnes @Spacesai1or
+
+## 0.1.12 (2026-01-10)
+
+### 🧱 Updated Dependencies
+
+- Updated ability-sdk to 2.4.2
+- Updated app-sdk to 2.5.3
+- Updated policy-send-counter to 0.2.11
+
+## 0.1.11 (2026-01-08)
+
+### 🧱 Updated Dependencies
+
+- Updated ability-sdk to 2.4.1
+- Updated app-sdk to 2.5.2
+- Updated policy-send-counter to 0.2.10
+
+## 0.1.10 (2026-01-07)
+
+### 🧱 Updated Dependencies
+
+- Updated ability-sdk to 2.4.0
+- Updated app-sdk to 2.5.1
+- Updated policy-send-counter to 0.2.9
+
 ## 0.1.9 (2025-11-23)
 
 ### 🧱 Updated Dependencies

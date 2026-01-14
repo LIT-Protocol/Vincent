@@ -2,7 +2,7 @@ import { TabsContent } from '@/components/shared/ui/tabs';
 import { App, AppVersion } from '@/types/developer-dashboard/appTypes';
 import { FileText } from 'lucide-react';
 import { Tag } from 'lucide-react';
-import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
+import { theme, fonts } from '@/lib/themeClasses';
 
 interface AllAppVersionsProps {
   versions: AppVersion[];

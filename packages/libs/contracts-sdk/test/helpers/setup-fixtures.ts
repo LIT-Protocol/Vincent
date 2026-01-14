@@ -7,55 +7,107 @@ import {
   TEST_APP_DELEGATEE_ACCOUNT,
   TEST_APP_MANAGER_PRIVATE_KEY,
   TEST_APP_MANAGER_VIEM_WALLET_CLIENT,
-  YELLOWSTONE_RPC_URL,
+  BASE_SEPOLIA_RPC_URL,
 } from './index';
 
 /**
- * Removes TEST_APP_DELEGATEE_ACCOUNT from an existing App if needed
+ * Removes TEST_APP_DELEGATEE_ACCOUNT from an existing App if needed.
  */
-export async function removeAppDelegateeIfNeeded(): Promise<void> {
+export async function removeAppDelegateeIfNeeded(
+  delegateeAddress = TEST_APP_DELEGATEE_ACCOUNT.address,
+): Promise<void> {
   console.log('🔄 Checking if Delegatee is registered to an App...');
 
   let registeredApp = null;
+  const expectedManager = privateKeyToAccount(
+    TEST_APP_MANAGER_PRIVATE_KEY as `0x${string}`,
+  ).address;
+  const client = getTestClient({
+    signer: new ethers.Wallet(
+      TEST_APP_MANAGER_PRIVATE_KEY,
+      new ethers.providers.JsonRpcProvider(BASE_SEPOLIA_RPC_URL),
+    ),
+  });
+  const resolveDelegateeApp = async () => {
+    try {
+      return await client.getAppByDelegateeAddress({
+        delegateeAddress,
+      });
+    } catch (error: unknown) {
+      if (
+        error instanceof Error &&
+        (error.message.includes('DelegateeNotRegistered') ||
+          error.message.includes('Failed to Get App By Delegatee'))
+      ) {
+        return null;
+      }
+      throw error;
+    }
+  };
   try {
     // Use the contracts-sdk method to get the app by delegatee
-    registeredApp = await getTestClient({
-      signer: new ethers.Wallet(
-        TEST_APP_MANAGER_PRIVATE_KEY,
-        new ethers.providers.JsonRpcProvider(YELLOWSTONE_RPC_URL),
-      ),
-    }).getAppByDelegateeAddress({
-      delegateeAddress: TEST_APP_DELEGATEE_ACCOUNT.address,
-    });
+    registeredApp = await resolveDelegateeApp();
 
-    if (
-      registeredApp &&
-      registeredApp.manager !==
-        privateKeyToAccount(TEST_APP_MANAGER_PRIVATE_KEY as `0x${string}`).address
-    ) {
+    if (registeredApp && registeredApp.manager !== expectedManager) {
       throw new Error(
-        `❌ App Delegatee: ${TEST_APP_DELEGATEE_ACCOUNT.address} is already registered to App ID: ${registeredApp.id}, and TEST_APP_MANAGER_PRIVATE_KEY is not the owner of the App`,
+        `❌ App Delegatee: ${delegateeAddress} is already registered to App ID: ${registeredApp.id}, and TEST_APP_MANAGER_PRIVATE_KEY (${expectedManager}) is not the owner (${registeredApp.manager}).`,
       );
     }
 
     if (registeredApp) {
       console.log(
-        `ℹ️  App Delegatee: ${TEST_APP_DELEGATEE_ACCOUNT.address} is already registered to App ID: ${registeredApp.id}. Removing Delegatee...`,
+        `ℹ️  App Delegatee: ${delegateeAddress} is already registered to App ID: ${registeredApp.id}. Removing Delegatee...`,
+      );
+      console.log(
+        `ℹ️  App ID ${registeredApp.id} manager: ${registeredApp.manager}, deleted: ${registeredApp.isDeleted}`,
       );
 
-      const result = await getTestClient({
-        signer: new ethers.Wallet(
-          TEST_APP_MANAGER_PRIVATE_KEY,
-          new ethers.providers.JsonRpcProvider(YELLOWSTONE_RPC_URL),
-        ),
-      }).removeDelegatee({
-        appId: registeredApp.id,
-        delegateeAddress: TEST_APP_DELEGATEE_ACCOUNT.address,
-      });
+      if (registeredApp.isDeleted) {
+        console.log(
+          `ℹ️  App ID: ${registeredApp.id} is deleted. Undeleting to remove delegatee...`,
+        );
+        try {
+          await client.undeleteApp({ appId: registeredApp.id });
+        } catch (error: unknown) {
+          const message = error instanceof Error ? error.message : String(error);
+          throw new Error(
+            `❌ Failed to undelete App ID ${registeredApp.id} (manager ${registeredApp.manager}, expected ${expectedManager}). ${message}`,
+          );
+        }
+      }
+
+      let result;
+      try {
+        result = await client.removeDelegatee({
+          appId: registeredApp.id,
+          delegateeAddress,
+        });
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : String(error);
+        throw new Error(`❌ Failed to remove delegatee for App ID ${registeredApp.id}: ${message}`);
+      }
 
       console.log(
         `ℹ️  Removed Delegatee from App ID: ${registeredApp.id}\nTx hash: ${result.txHash}`,
       );
+
+      const remainingApp = await resolveDelegateeApp();
+      if (remainingApp) {
+        console.log(
+          `ℹ️  Delegatee is still registered to App ID: ${remainingApp.id}. Clearing all delegatees...`,
+        );
+        await client.setDelegatee({
+          appId: remainingApp.id,
+          delegateeAddresses: [],
+        });
+      }
+
+      const finalApp = await resolveDelegateeApp();
+      if (finalApp) {
+        throw new Error(
+          `❌ Delegatee ${delegateeAddress} is still registered to App ID: ${finalApp.id} after removal.`,
+        );
+      }
     }
   } catch (error: unknown) {
     // Check if the error is a DelegateeNotRegistered revert
@@ -64,11 +116,10 @@ export async function removeAppDelegateeIfNeeded(): Promise<void> {
       (error.message.includes('DelegateeNotRegistered') ||
         error.message.includes('Failed to Get App By Delegatee'))
     ) {
-      console.log(
-        `ℹ️  App Delegatee: ${TEST_APP_DELEGATEE_ACCOUNT.address} is not registered to any App.`,
-      );
+      console.log(`ℹ️  App Delegatee: ${delegateeAddress} is not registered to any App.`);
     } else {
-      throw new Error(`❌ Error checking if delegatee is registered: ${(error as Error).message}`);
+      const message = error instanceof Error ? error.message : String(error);
+      throw new Error(`❌ Error checking if delegatee is registered: ${message}`);
     }
   }
 }

@@ -4,6 +4,7 @@ module.exports = {
   preset: '../../../jest.preset.js',
   testEnvironment: 'node',
   testMatch: ['**/*.spec.ts'],
+  testPathIgnorePatterns: ['\\.bak\\.ts$'],
   transformIgnorePatterns: [
     // PNPM style: scoped packages with `.` become `+`, and non-scoped stay the same
     '<rootDir>/node_modules/.pnpm/(?!(@noble\\+secp256k1|cbor2|@cto\\.af\\+wtf8)@)',

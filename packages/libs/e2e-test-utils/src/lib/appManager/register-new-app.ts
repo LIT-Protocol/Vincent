@@ -2,10 +2,6 @@ import { getClient } from '@lit-protocol/vincent-contracts-sdk';
 
 import { getChainHelpers } from '../chain';
 
-function generateRandomAppId(): number {
-  return Math.floor(Math.random() * (100_000_000_000 - 10_000_000_000)) + 10_000_000_000;
-}
-
 /**
  * Registers a new app
  * @param abilityIpfsCids - Array of ability IPFS CIDs to register
@@ -22,12 +18,9 @@ export async function registerNewApp({
     wallets: { appManager, appDelegatee },
   } = await getChainHelpers();
 
-  const appId = generateRandomAppId();
-
-  const { txHash } = await getClient({
+  const { txHash, appId } = await getClient({
     signer: appManager,
   }).registerApp({
-    appId,
     delegateeAddresses: [await appDelegatee.getAddress()],
     versionAbilities: {
       abilityIpfsCids: abilityIpfsCids,
@@ -37,5 +30,5 @@ export async function registerNewApp({
 
   console.log(`Registered new App with ID: ${appId}\nTx hash: ${txHash}`);
 
-  return { appId, appVersion: 1 };
+  return { appId: appId, appVersion: 1 };
 }

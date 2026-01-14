@@ -31,14 +31,14 @@ export const getDecodedPolicyParams = async ({
 };
 
 export const getPoliciesAndAppVersion = async ({
-  delegationRpcUrl,
+  registryRpcUrl,
   appDelegateeAddress,
-  agentWalletPkpEthAddress,
+  agentAddress,
   abilityIpfsCid,
 }: {
-  delegationRpcUrl: string;
+  registryRpcUrl: string;
   appDelegateeAddress: string;
-  agentWalletPkpEthAddress: string;
+  agentAddress: string;
   abilityIpfsCid: string;
 }): Promise<{
   appId: ethers.BigNumber;
@@ -46,16 +46,16 @@ export const getPoliciesAndAppVersion = async ({
   decodedPolicies: AbilityPolicyParameterData;
 }> => {
   console.log('getPoliciesAndAppVersion', {
-    delegationRpcUrl,
+    registryRpcUrl,
     appDelegateeAddress,
-    agentWalletPkpEthAddress,
+    agentAddress,
     abilityIpfsCid,
   });
 
   try {
-    // Create a signer using the delegationRpcUrl
+    // Create a signer using the registryRpcUrl
     const signer = ethers.Wallet.createRandom().connect(
-      new ethers.providers.StaticJsonRpcProvider(delegationRpcUrl),
+      new ethers.providers.StaticJsonRpcProvider(registryRpcUrl),
     );
 
     const contractClient = getClient({
@@ -66,7 +66,7 @@ export const getPoliciesAndAppVersion = async ({
     const validationResult: ValidateAbilityExecutionAndGetPoliciesResult =
       await contractClient.validateAbilityExecutionAndGetPolicies({
         delegateeAddress: appDelegateeAddress,
-        pkpEthAddress: agentWalletPkpEthAddress,
+        agentAddress,
         abilityIpfsCid: abilityIpfsCid,
       });
 
@@ -75,7 +75,7 @@ export const getPoliciesAndAppVersion = async ({
     // and no further processing is needed
     if (!validationResult.isPermitted) {
       throw new Error(
-        `App Delegatee: ${appDelegateeAddress} is not permitted to execute Vincent Ability: ${abilityIpfsCid} for App ID: ${validationResult.appId} App Version: ${validationResult.appVersion} using Agent Wallet PKP Address: ${agentWalletPkpEthAddress}`,
+        `App Delegatee: ${appDelegateeAddress} is not permitted to execute Vincent Ability: ${abilityIpfsCid} for App ID: ${validationResult.appId} App Version: ${validationResult.appVersion} using Agent Address: ${agentAddress}`,
       );
     }
 
@@ -86,7 +86,7 @@ export const getPoliciesAndAppVersion = async ({
     };
   } catch (error) {
     throw new Error(
-      `Error getting on-chain policy parameters from Vincent contract using App Delegatee: ${appDelegateeAddress} and Agent Wallet PKP Address: ${agentWalletPkpEthAddress} and Vincent Ability: ${abilityIpfsCid}: ${error instanceof Error ? error.message : String(error)}`,
+      `Error getting on-chain policy parameters from Vincent contract using App Delegatee: ${appDelegateeAddress} and Agent Address: ${agentAddress} and Vincent Ability: ${abilityIpfsCid}: ${error instanceof Error ? error.message : String(error)}`,
     );
   }
 };

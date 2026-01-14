@@ -7,4 +7,5 @@ export type {
   CrossmintSmartAccountInfo,
   SafeSmartAccountInfo,
   SetupSmartAccountParams,
+  SetupZerodevAccountParams,
 } from './types';
