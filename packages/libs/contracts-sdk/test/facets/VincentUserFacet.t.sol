@@ -1264,9 +1264,9 @@ contract VincentUserFacetTest is TestHelpers {
         vm.expectRevert(
             abi.encodeWithSelector(
                 LibVincentUserFacet.NotAgentOwner.selector,
-                USER_GEORGE,  // caller
-                FRANK_AGENT_ADDRESS,  // agent
-                USER_FRANK  // actual owner
+                USER_GEORGE, // caller
+                FRANK_AGENT_ADDRESS, // agent
+                USER_FRANK // actual owner
             )
         );
         vincentUserFacet.permitAppVersion(
@@ -1344,9 +1344,9 @@ contract VincentUserFacetTest is TestHelpers {
         vm.expectRevert(
             abi.encodeWithSelector(
                 LibVincentUserFacet.NotAgentOwner.selector,
-                USER_GEORGE,  // caller
-                FRANK_AGENT_ADDRESS,  // agent
-                USER_FRANK  // registered owner
+                USER_GEORGE, // caller
+                FRANK_AGENT_ADDRESS, // agent
+                USER_FRANK // registered owner
             )
         );
         vincentUserFacet.unPermitAppVersion(FRANK_AGENT_ADDRESS, newAppId, newAppVersion);
@@ -1380,9 +1380,9 @@ contract VincentUserFacetTest is TestHelpers {
         vm.expectRevert(
             abi.encodeWithSelector(
                 LibVincentUserFacet.NotAgentOwner.selector,
-                USER_GEORGE,  // caller
-                FRANK_AGENT_ADDRESS,  // agent
-                USER_FRANK  // registered owner
+                USER_GEORGE, // caller
+                FRANK_AGENT_ADDRESS, // agent
+                USER_FRANK // registered owner
             )
         );
         vincentUserFacet.rePermitApp(FRANK_AGENT_ADDRESS, newAppId);
@@ -1415,9 +1415,9 @@ contract VincentUserFacetTest is TestHelpers {
         vm.expectRevert(
             abi.encodeWithSelector(
                 LibVincentUserFacet.NotAgentOwner.selector,
-                USER_GEORGE,  // caller
-                FRANK_AGENT_ADDRESS,  // agent
-                USER_FRANK  // registered owner
+                USER_GEORGE, // caller
+                FRANK_AGENT_ADDRESS, // agent
+                USER_FRANK // registered owner
             )
         );
         vincentUserFacet.setAbilityPolicyParameters(

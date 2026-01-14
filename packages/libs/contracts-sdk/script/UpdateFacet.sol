@@ -352,7 +352,8 @@ contract SmartUpdateFacet is Script {
     function isValidFacetName(string memory facetName) internal pure returns (bool) {
         return compareStrings(facetName, "VincentAppFacet") || compareStrings(facetName, "VincentAppViewFacet")
             || compareStrings(facetName, "VincentUserFacet") || compareStrings(facetName, "VincentUserViewFacet")
-            || compareStrings(facetName, "VincentERC2771Facet") || compareStrings(facetName, "VincentZeroDevConfigFacet");
+            || compareStrings(facetName, "VincentERC2771Facet")
+            || compareStrings(facetName, "VincentZeroDevConfigFacet");
     }
 
     function contains(bytes4[] memory array, bytes4 selector) internal pure returns (bool) {
