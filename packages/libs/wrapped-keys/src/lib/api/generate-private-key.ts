@@ -22,10 +22,11 @@ import { getKeyTypeFromNetwork } from './utils';
 export async function generatePrivateKey(
   params: GeneratePrivateKeyParams,
 ): Promise<GeneratePrivateKeyResult> {
-  const { delegatorAddress, jwtToken, network, litNodeClient, memo } = params;
+  const { delegatorAddress, agentAddress, jwtToken, network, litNodeClient, memo } = params;
 
   const vincentWrappedKeysAccs = await getVincentWrappedKeysAccs({
-    delegatorAddress,
+    delegatorPkpEthAddress: delegatorAddress,
+    agentAddress,
   });
 
   const litActionIpfsCid = getLitActionCid(network, 'generateEncryptedKey');

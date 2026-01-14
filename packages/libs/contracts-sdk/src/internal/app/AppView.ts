@@ -1,5 +1,3 @@
-import type { BigNumber } from 'ethers';
-
 import type { App, AppVersion } from '../../types';
 import type { AppChain, AppVersionChain } from '../types/chain';
 import type {
@@ -7,11 +5,10 @@ import type {
   GetAppByIdOptions,
   GetAppsByManagerOptions,
   GetAppVersionOptions,
-  GetDelegatedPkpEthAddressesOptions,
+  GetDelegatedAgentAddressesOptions,
 } from './types.ts';
 
 import { decodeContractError } from '../../utils';
-import { getPkpEthAddress } from '../../utils/pkpInfo';
 
 export async function getAppById(params: GetAppByIdOptions): Promise<App | null> {
   const {
@@ -28,6 +25,7 @@ export async function getAppById(params: GetAppByIdOptions): Promise<App | null>
       id: app.id,
       latestVersion: app.latestVersion,
       delegateeAddresses: delegatees,
+      accountIndexHash: app.accountIndexHash,
     };
   } catch (error: unknown) {
     const decodedError = decodeContractError(error, contract);
@@ -76,7 +74,9 @@ export async function getAppVersion(
 
     const convertedAppVersion: AppVersion = {
       version: appVersion.version,
+      accountIndexHash: appVersion.accountIndexHash,
       enabled: appVersion.enabled,
+      delegatedAgentAddresses: appVersion.delegatedAgents,
       abilities: appVersion.abilities.map((ability) => ({
         abilityIpfsCid: ability.abilityIpfsCid,
         policyIpfsCids: ability.policyIpfsCids,
@@ -145,6 +145,7 @@ export async function getAppByDelegateeAddress(
       delegateeAddresses: delegatees,
       id: app.id,
       latestVersion: app.latestVersion,
+      accountIndexHash: app.accountIndexHash,
     };
   } catch (error: unknown) {
     const decodedError = decodeContractError(error, contract);
@@ -158,8 +159,8 @@ export async function getAppByDelegateeAddress(
   }
 }
 
-export async function getDelegatedPkpEthAddresses(
-  params: GetDelegatedPkpEthAddressesOptions,
+export async function getDelegatedAgentAddresses(
+  params: GetDelegatedAgentAddressesOptions,
 ): Promise<string[]> {
   const {
     args: { appId, offset, version },
@@ -167,22 +168,15 @@ export async function getDelegatedPkpEthAddresses(
   } = params;
 
   try {
-    const delegatedAgentPkpTokenIds: BigNumber[] = await contract.getDelegatedAgentPkpTokenIds(
+    const delegatedAgentAddresses: string[] = await contract.getDelegatedAgentAddresses(
       appId,
       version,
       offset,
     );
 
-    const delegatedAgentPkpEthAddresses: string[] = [];
-    for (const tokenId of delegatedAgentPkpTokenIds) {
-      // TODO: add paginated fetching to the pkp router contract (or try some concurrency here)
-      const ethAddress = await getPkpEthAddress({ tokenId, signer: contract.signer });
-      delegatedAgentPkpEthAddresses.push(ethAddress);
-    }
-
-    return delegatedAgentPkpEthAddresses;
+    return delegatedAgentAddresses;
   } catch (error: unknown) {
     const decodedError = decodeContractError(error, contract);
-    throw new Error(`Failed to Get Delegated Agent PKP Token IDs: ${decodedError}`);
+    throw new Error(`Failed to Get Delegated Agent Addresses: ${decodedError}`);
   }
 }

@@ -418,6 +418,7 @@ export const gogoPolicy = async function () {
       abilityIpfsCid: 'oijskljfdj',
       appId: 123123,
       appVersion: 123,
+      agentAddress: '0x102398103981032',
     },
   );
 
@@ -430,6 +431,7 @@ export const gogoPolicy = async function () {
         abilityIpfsCid: 'oijskljfdj',
         appId: 123123,
         appVersion: 123,
+        agentAddress: '0x102398103981032',
         delegation: {
           delegateeAddress: 'meow',
           delegatorPkpInfo: {
@@ -451,6 +453,7 @@ export const gogo = async function () {
       abilityIpfsCid: 'oijskljfdj',
       appId: 123123,
       appVersion: 123,
+      agentAddress: '0x102398103981032',
       delegation: {
         delegateeAddress: 'meow',
         delegatorPkpInfo: {
@@ -502,6 +505,7 @@ export const gogo = async function () {
         abilityIpfsCid: 'oijskljfdj',
         appId: 123123,
         appVersion: 123,
+        agentAddress: '0x102398103981032',
         delegation: {
           delegateeAddress: 'meow',
           delegatorPkpInfo: {

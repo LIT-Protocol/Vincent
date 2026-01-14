@@ -45,17 +45,19 @@ export const ensureAgentPkpExists = async (appId: number): Promise<PkpInfo> => {
     const pkpAddresses = ownedPkps.map((pkp) => pkp.ethAddress);
 
     // Get permitted apps for all owned PKPs
-    const permittedAppsData = await client.getPermittedAppsForPkps({
-      pkpEthAddresses: pkpAddresses,
-      offset: '0',
+    const permittedAppsData = await client.getPermittedAppForAgents({
+      agentAddresses: pkpAddresses,
     });
 
     // Find the PKP that has permission for the specified app ID
-    for (const pkpData of permittedAppsData) {
-      const hasAppPermission = pkpData.permittedApps.some((app) => app.appId === appId);
+    for (const permittedAppResult of permittedAppsData) {
+      const permittedApp = permittedAppResult.permittedApp;
+      const hasAppPermission = permittedApp?.appId === appId;
 
       if (hasAppPermission) {
-        const matchingPkp = ownedPkps.find((pkp) => pkp.tokenId === pkpData.pkpTokenId);
+        const matchingPkp = ownedPkps.find(
+          (pkp) => pkp.ethAddress.toLowerCase() === permittedAppResult.agentAddress.toLowerCase(),
+        );
         if (matchingPkp) {
           console.log(
             `Found existing Agent PKP for app ${appId} with ethAddress: ${matchingPkp.ethAddress}, tokenId: ${matchingPkp.tokenId}`,

@@ -425,11 +425,13 @@ export type VincentAbility<
 
 /** @hidden */
 export interface AbilityConsumerContext {
+  agentAddress: string;
   delegatorPkpEthAddress: string;
 }
 
 /** @hidden */
 export interface PolicyConsumerContext {
+  agentAddress: string;
   delegatorPkpEthAddress: string;
   abilityIpfsCid: string; // FIXME: This will be removed when we have shipped lit action ipfs cids stack
 }
@@ -439,6 +441,7 @@ export interface BaseContext {
   abilityIpfsCid: string;
   appId: number;
   appVersion: number;
+  agentAddress: string;
   delegation: {
     delegateeAddress: string;
     delegatorPkpInfo: {

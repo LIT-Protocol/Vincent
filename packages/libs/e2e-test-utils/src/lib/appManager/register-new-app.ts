@@ -18,7 +18,7 @@ export async function registerNewApp({
     wallets: { appManager, appDelegatee },
   } = await getChainHelpers();
 
-  const { txHash, newAppId } = await getClient({
+  const { txHash, appId } = await getClient({
     signer: appManager,
   }).registerApp({
     delegateeAddresses: [await appDelegatee.getAddress()],
@@ -28,7 +28,7 @@ export async function registerNewApp({
     },
   });
 
-  console.log(`Registered new App with ID: ${newAppId}\nTx hash: ${txHash}`);
+  console.log(`Registered new App with ID: ${appId}\nTx hash: ${txHash}`);
 
-  return { appId: newAppId, appVersion: 1 };
+  return { appId: appId, appVersion: 1 };
 }

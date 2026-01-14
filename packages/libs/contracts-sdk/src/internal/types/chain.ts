@@ -23,7 +23,9 @@ export interface AbilityExecutionValidation {
 
 export interface AppVersionChain {
   version: number;
+  accountIndexHash: string;
   enabled: boolean;
+  delegatedAgents: string[];
   abilities: {
     abilityIpfsCid: string;
     policyIpfsCids: string[];
@@ -36,4 +38,5 @@ export interface AppChain {
   manager: string;
   latestVersion: number;
   delegatees: string[];
+  accountIndexHash: string;
 }

@@ -6,8 +6,22 @@ import userFacetAbi from '../abis/VincentUserFacet.abi.json';
 import userViewFacetAbi from '../abis/VincentUserViewFacet.abi.json';
 import { buildDiamondInterface } from './buildDiamondInterface';
 
+const DEFAULT_VINCENT_DIAMOND_CONTRACT_ADDRESS_PROD = '0x1599E2c248C34833A606EB1dFeA86b839170d49f';
+
+const resolveVincentDiamondContractAddressProd = () => {
+  const env =
+    typeof process !== 'undefined'
+      ? (process.env as Record<string, string | undefined>)
+      : undefined;
+  return (
+    env?.VINCENT_DIAMOND_CONTRACT_ADDRESS_PROD ||
+    env?.VINCENT_DIAMOND_CONTRACT_ADDRESS ||
+    DEFAULT_VINCENT_DIAMOND_CONTRACT_ADDRESS_PROD
+  );
+};
+
 // TODO!: Pull from the ABI after re-publishing
-export const VINCENT_DIAMOND_CONTRACT_ADDRESS_PROD = '0x1599E2c248C34833A606EB1dFeA86b839170d49f';
+export const VINCENT_DIAMOND_CONTRACT_ADDRESS_PROD = resolveVincentDiamondContractAddressProd();
 
 export const COMBINED_ABI = buildDiamondInterface([
   appFacetAbi,

@@ -11,6 +11,10 @@ export interface SetupSmartAccountParams {
   chain: Chain;
 }
 
+export interface SetupZerodevAccountParams extends SetupSmartAccountParams {
+  deploy?: boolean;
+}
+
 export interface ZerodevSmartAccountInfo {
   account: CreateKernelAccountReturnType;
   serializedPermissionAccount: string;

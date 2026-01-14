@@ -19,7 +19,7 @@ import {
   getAppVersion as _getAppVersion,
   getAppsByManagerAddress as _getAppsByManagerAddress,
   getAppByDelegateeAddress as _getAppByDelegateeAddress,
-  getDelegatedPkpEthAddresses as _getDelegatedPkpEthAddresses,
+  getDelegatedAgentAddresses as _getDelegatedAgentAddresses,
 } from './internal/app/AppView';
 import {
   permitApp as _permitApp,
@@ -28,14 +28,12 @@ import {
   setAbilityPolicyParameters as _setAbilityPolicyParameters,
 } from './internal/user/User';
 import {
-  getAllRegisteredAgentPkpEthAddresses as _getAllRegisteredAgentPkpEthAddresses,
-  getPermittedAppVersionForPkp as _getPermittedAppVersionForPkp,
-  getAllPermittedAppIdsForPkp as _getAllPermittedAppIdsForPkp,
+  getAllRegisteredAgentAddressesForUser as _getAllRegisteredAgentAddressesForUser,
+  getPermittedAppForAgents as _getPermittedAppForAgents,
+  getUnpermittedAppForAgents as _getUnpermittedAppForAgents,
+  getUserAddressForAgent as _getUserAddressForAgent,
   getAllAbilitiesAndPoliciesForApp as _getAllAbilitiesAndPoliciesForApp,
   validateAbilityExecutionAndGetPolicies as _validateAbilityExecutionAndGetPolicies,
-  getPermittedAppsForPkps as _getPermittedAppsForPkps,
-  getLastPermittedAppVersionForPkp as _getLastPermittedAppVersionForPkp,
-  getUnpermittedAppsForPkps as _getUnpermittedAppsForPkps,
   isDelegateePermitted as _isDelegateePermitted,
 } from './internal/user/UserView';
 import { createContract } from './utils';
@@ -67,8 +65,7 @@ export function clientFromContract({ contract }: { contract: Contract }): Contra
     getAppVersion: (params) => _getAppVersion({ contract, args: params }),
     getAppsByManagerAddress: (params) => _getAppsByManagerAddress({ contract, args: params }),
     getAppByDelegateeAddress: (params) => _getAppByDelegateeAddress({ contract, args: params }),
-    getDelegatedPkpEthAddresses: (params) =>
-      _getDelegatedPkpEthAddresses({ contract, args: params }),
+    getDelegatedAgentAddresses: (params) => _getDelegatedAgentAddresses({ contract, args: params }),
 
     // User write methods
     permitApp: (params, overrides) => _permitApp({ contract, args: params, overrides }),
@@ -78,21 +75,16 @@ export function clientFromContract({ contract }: { contract: Contract }): Contra
       _setAbilityPolicyParameters({ contract, args: params, overrides }),
 
     // User view methods
-    getAllRegisteredAgentPkpEthAddresses: (params) =>
-      _getAllRegisteredAgentPkpEthAddresses({ contract, args: params }),
-    getPermittedAppVersionForPkp: (params) =>
-      _getPermittedAppVersionForPkp({ contract, args: params }),
-    getAllPermittedAppIdsForPkp: (params) =>
-      _getAllPermittedAppIdsForPkp({ contract, args: params }),
-    getPermittedAppsForPkps: (params) => _getPermittedAppsForPkps({ contract, args: params }),
+    getAllRegisteredAgentAddressesForUser: (params) =>
+      _getAllRegisteredAgentAddressesForUser({ contract, args: params }),
+    getUserAddressForAgent: (params) => _getUserAddressForAgent({ contract, args: params }),
+    getPermittedAppForAgents: (params) => _getPermittedAppForAgents({ contract, args: params }),
+    getUnpermittedAppForAgents: (params) => _getUnpermittedAppForAgents({ contract, args: params }),
     getAllAbilitiesAndPoliciesForApp: (params) =>
       _getAllAbilitiesAndPoliciesForApp({ contract, args: params }),
     validateAbilityExecutionAndGetPolicies: (params) =>
       _validateAbilityExecutionAndGetPolicies({ contract, args: params }),
     isDelegateePermitted: (params) => _isDelegateePermitted({ contract, args: params }),
-    getLastPermittedAppVersionForPkp: (params) =>
-      _getLastPermittedAppVersionForPkp({ contract, args: params }),
-    getUnpermittedAppsForPkps: (params) => _getUnpermittedAppsForPkps({ contract, args: params }),
   };
 }
 
@@ -101,10 +93,33 @@ export function clientFromContract({ contract }: { contract: Contract }): Contra
  * Please use {@link getTestClient} for temporary / development, or for CI / integration test usage
  *
  * @category API */
-export function getClient({ signer }: { signer: Signer }): ContractClient {
+export function getClient({
+  signer,
+  contractAddress,
+}: {
+  signer: Signer;
+  contractAddress?: string;
+}): ContractClient {
   const contract = createContract({
     signer,
-    contractAddress: VINCENT_DIAMOND_CONTRACT_ADDRESS_PROD,
+    contractAddress: contractAddress ?? VINCENT_DIAMOND_CONTRACT_ADDRESS_PROD,
+  });
+  return clientFromContract({ contract });
+}
+
+/** Get an instance of the contract client that is configured to use a test/dev instance of the contract
+ *
+ * @category API */
+export function getTestClient({
+  signer,
+  contractAddress,
+}: {
+  signer: Signer;
+  contractAddress?: string;
+}): ContractClient {
+  const contract = createContract({
+    signer,
+    contractAddress: contractAddress ?? VINCENT_DIAMOND_CONTRACT_ADDRESS_PROD,
   });
   return clientFromContract({ contract });
 }

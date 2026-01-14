@@ -16,7 +16,7 @@ import type {
   getAppIdByDelegatee as _getAppIdByDelegatee,
   getAppsByManagerAddress as _getAppsByManagerAddress,
   getAppVersion as _getAppVersion,
-  getDelegatedPkpEthAddresses as _getDelegatedPkpEthAddresses,
+  getDelegatedAgentAddresses as _getDelegatedAgentAddresses,
 } from './internal/app/AppView';
 import type {
   permitApp as _permitApp,
@@ -25,13 +25,11 @@ import type {
   unPermitApp as _unPermitApp,
 } from './internal/user/User';
 import type {
-  getAllPermittedAppIdsForPkp as _getAllPermittedAppIdsForPkp,
-  getAllRegisteredAgentPkpEthAddresses as _getAllRegisteredAgentPkpEthAddresses,
+  getAllRegisteredAgentAddressesForUser as _getAllRegisteredAgentAddressesForUser,
+  getPermittedAppForAgents as _getPermittedAppForAgents,
+  getUnpermittedAppForAgents as _getUnpermittedAppForAgents,
+  getUserAddressForAgent as _getUserAddressForAgent,
   getAllAbilitiesAndPoliciesForApp as _getAllAbilitiesAndPoliciesForApp,
-  getLastPermittedAppVersionForPkp as _getLastPermittedAppVersionForPkp,
-  getPermittedAppVersionForPkp as _getPermittedAppVersionForPkp,
-  getPermittedAppsForPkps as _getPermittedAppsForPkps,
-  getUnpermittedAppsForPkps as _getUnpermittedAppsForPkps,
   validateAbilityExecutionAndGetPolicies as _validateAbilityExecutionAndGetPolicies,
   isDelegateePermitted as _isDelegateePermitted,
 } from './internal/user/UserView';
@@ -53,6 +51,7 @@ export interface App {
   manager: string;
   latestVersion: number;
   delegateeAddresses: string[];
+  accountIndexHash: string;
 }
 
 /**
@@ -70,7 +69,9 @@ export interface Ability {
  * */
 export interface AppVersion {
   version: number;
+  accountIndexHash: string;
   enabled: boolean;
+  delegatedAgentAddresses: string[];
   abilities: Ability[];
 }
 
@@ -173,7 +174,7 @@ export interface GetAppByDelegateeParams {
 /**
  * @category Interfaces
  * */
-export interface GetDelegatedPkpEthAddressesParams {
+export interface GetDelegatedAgentAddressesParams {
   appId: number;
   version: number;
   offset: number;
@@ -218,7 +219,9 @@ export interface ValidateAbilityExecutionAndGetPoliciesResult {
  * @category Interfaces
  * */
 export interface PermitAppParams {
-  pkpEthAddress: string;
+  agentAddress: string;
+  pkpSigner: string;
+  pkpSignerPubKey: string;
   appId: number;
   appVersion: number;
   permissionData: PermissionData;
@@ -228,7 +231,7 @@ export interface PermitAppParams {
  * @category Interfaces
  * */
 export interface UnPermitAppParams {
-  pkpEthAddress: string;
+  agentAddress: string;
   appId: number;
   appVersion: number;
 }
@@ -237,7 +240,7 @@ export interface UnPermitAppParams {
  * @category Interfaces
  * */
 export interface RePermitAppParams {
-  pkpEthAddress: string;
+  agentAddress: string;
   appId: number;
 }
 
@@ -260,7 +263,7 @@ export interface DeletePermissionData {
 }
 
 export interface SetAbilityPolicyParametersParams {
-  pkpEthAddress: string;
+  agentAddress: string;
   appId: number;
   appVersion: number;
   policyParams?: PermissionData;
@@ -270,25 +273,16 @@ export interface SetAbilityPolicyParametersParams {
 /**
  * @category Interfaces
  * */
-export interface GetAllRegisteredAgentPkpsParams {
-  userPkpAddress: string;
+export interface GetAllRegisteredAgentAddressesForUserParams {
+  userAddress: string;
   offset: string;
 }
 
 /**
  * @category Interfaces
  * */
-export interface GetPermittedAppVersionForPkpParams {
-  pkpEthAddress: string;
-  appId: number;
-}
-
-/**
- * @category Interfaces
- * */
-export interface GetAllPermittedAppIdsForPkpParams {
-  pkpEthAddress: string;
-  offset: string;
+export interface GetUserAddressForAgentParams {
+  agentAddress: string;
 }
 
 /**
@@ -297,6 +291,8 @@ export interface GetAllPermittedAppIdsForPkpParams {
 export interface PermittedApp {
   appId: number;
   version: number;
+  pkpSigner: string;
+  pkpSignerPubKey: string;
   versionEnabled: boolean;
   isDeleted: boolean;
 }
@@ -304,25 +300,23 @@ export interface PermittedApp {
 /**
  * @category Interfaces
  * */
-export interface PkpPermittedApps {
-  pkpTokenId: string;
-  permittedApps: PermittedApp[];
+export interface AgentPermittedApp {
+  agentAddress: string;
+  permittedApp: PermittedApp | null;
 }
 
 /**
  * @category Interfaces
  * */
-export interface GetPermittedAppsForPkpsParams {
-  pkpEthAddresses: string[];
-  offset: string;
-  pageSize?: string;
+export interface GetPermittedAppForAgentsParams {
+  agentAddresses: string[];
 }
 
 /**
  * @category Interfaces
  * */
 export interface GetAllAbilitiesAndPoliciesForAppParams {
-  pkpEthAddress: string;
+  agentAddress: string;
   appId: number;
 }
 
@@ -331,7 +325,7 @@ export interface GetAllAbilitiesAndPoliciesForAppParams {
  * */
 export interface ValidateAbilityExecutionAndGetPoliciesParams {
   delegateeAddress: string;
-  pkpEthAddress: string;
+  agentAddress: string;
   abilityIpfsCid: string;
 }
 
@@ -340,16 +334,8 @@ export interface ValidateAbilityExecutionAndGetPoliciesParams {
  * */
 export interface IsDelegateePermittedParams {
   delegateeAddress: string;
-  pkpEthAddress: string;
+  agentAddress: string;
   abilityIpfsCid: string;
-}
-
-/**
- * @category Interfaces
- * */
-export interface GetLastPermittedAppVersionParams {
-  pkpEthAddress: string;
-  appId: number;
 }
 
 /**
@@ -358,6 +344,8 @@ export interface GetLastPermittedAppVersionParams {
 export interface UnpermittedApp {
   appId: number;
   previousPermittedVersion: number;
+  pkpSigner: string;
+  pkpSignerPubKey: string;
   versionEnabled: boolean;
   isDeleted: boolean;
 }
@@ -365,23 +353,22 @@ export interface UnpermittedApp {
 /**
  * @category Interfaces
  * */
-export interface PkpUnpermittedApps {
-  pkpTokenId: string;
-  unpermittedApps: UnpermittedApp[];
+export interface AgentUnpermittedApp {
+  agentAddress: string;
+  unpermittedApp: UnpermittedApp | null;
 }
 
 /**
  * @category Interfaces
  * */
-export interface GetUnpermittedAppsForPkpsParams {
-  pkpEthAddresses: string[];
-  offset: string;
+export interface GetUnpermittedAppForAgentsParams {
+  agentAddresses: string[];
 }
 /** @category API */
 export interface ContractClient {
   /** Registers a new app with its initial appVersion (v1)'s permissions
    *
-   * @returns { txHash, newAppId } - The hash of the transaction and the new app ID assigned by the contract
+   * @returns { txHash, appId, newAppVersion, accountIndexHash } - The hash of the transaction and registry identifiers
    */
   registerApp(params: RegisterAppParams, overrides?: Overrides): ReturnType<typeof _registerApp>;
 
@@ -472,25 +459,21 @@ export interface ContractClient {
     params: GetAppByDelegateeParams,
   ): ReturnType<typeof _getAppByDelegateeAddress>;
 
-  /** Get delegated agent PKP token IDs for a specific app version with pagination
+  /** Get delegated agent addresses for a specific app version with pagination
    *
-   * Returns the first 100 PKP eth addresses.
-   *
-   * Provide `offset` to fetch paginated results.
-   *
-   * @returns Array of delegated agent PKP token IDs
+   * @returns Array of delegated agent addresses
    */
-  getDelegatedPkpEthAddresses(
-    params: GetDelegatedPkpEthAddressesParams,
-  ): ReturnType<typeof _getDelegatedPkpEthAddresses>;
+  getDelegatedAgentAddresses(
+    params: GetDelegatedAgentAddressesParams,
+  ): ReturnType<typeof _getDelegatedAgentAddresses>;
 
-  /** Permits an app version for an Agent Wallet PKP token and optionally sets ability policy parameters
+  /** Permits an app version for an agent and optionally sets ability policy parameters
    *
    * @returns { txHash } The transaction hash that permitted the app
    */
   permitApp(params: PermitAppParams, overrides?: Overrides): ReturnType<typeof _permitApp>;
 
-  /** Revokes permission for a PKP to use a specific app version
+  /** Revokes permission for an agent to use a specific app version
    *
    * @returns { txHash } The transaction hash that remoked permission for the app
    */
@@ -507,36 +490,21 @@ export interface ContractClient {
     overrides?: Overrides,
   ): ReturnType<typeof _setAbilityPolicyParameters>;
 
-  /** Get all PKP tokens that are registered as agents for a specific user address
+  /** Get all agent addresses that are registered for a specific user address
    *
-   * @returns Array of PKP eth addresses that are registered as agents for the user. Empty array if none found.
+   * @returns Array of agent addresses that are registered for the user. Empty array if none found.
    */
-  getAllRegisteredAgentPkpEthAddresses(
-    params: GetAllRegisteredAgentPkpsParams,
-  ): ReturnType<typeof _getAllRegisteredAgentPkpEthAddresses>;
+  getAllRegisteredAgentAddressesForUser(
+    params: GetAllRegisteredAgentAddressesForUserParams,
+  ): ReturnType<typeof _getAllRegisteredAgentAddressesForUser>;
 
-  /** Get the permitted app version for a specific PKP token and app, even if the app has been deleted
+  /** Get the currently permitted app (if any) for a set of agent addresses
    *
-   * @returns The permitted app version for the PKP token and app
+   * @returns Array of AgentPermittedApp containing permitted app details for each agent
    */
-  getPermittedAppVersionForPkp(
-    params: GetPermittedAppVersionForPkpParams,
-  ): ReturnType<typeof _getPermittedAppVersionForPkp>;
-
-  /** Get all app IDs that have permissions for a specific PKP token, including deleted apps
-   *
-   * @deprecated Use getPermittedAppsForPkps instead
-   * @returns Array of app IDs that have permissions for the PKP token (including deleted apps)
-   */
-  getAllPermittedAppIdsForPkp(
-    params: GetAllPermittedAppIdsForPkpParams,
-  ): ReturnType<typeof _getAllPermittedAppIdsForPkp>;
-
-  /** Get permitted apps for multiple PKPs with detailed information including versions and enabled status
-   *
-   * @returns Array of PkpPermittedApps containing permitted app details for each PKP
-   */
-  getPermittedAppsForPkps(params: GetPermittedAppsForPkpsParams): Promise<PkpPermittedApps[]>;
+  getPermittedAppForAgents(
+    params: GetPermittedAppForAgentsParams,
+  ): ReturnType<typeof _getPermittedAppForAgents>;
 
   /** Get all permitted abilities, policies, and policy parameters for a specific app and PKP in a nested object structure
    *
@@ -554,7 +522,7 @@ export interface ContractClient {
     params: ValidateAbilityExecutionAndGetPoliciesParams,
   ): ReturnType<typeof _validateAbilityExecutionAndGetPolicies>;
 
-  /** Check if a delegatee is permitted to execute an ability with a PKP
+  /** Check if a delegatee is permitted to execute an ability for an agent
    *
    * @returns Boolean indicating whether the delegatee has permission
    */
@@ -562,23 +530,25 @@ export interface ContractClient {
     params: IsDelegateePermittedParams,
   ): ReturnType<typeof _isDelegateePermitted>;
 
-  /** Re-permits an app using the last permitted version for a PKP
+  /** Re-permits an app using the last permitted version for an agent
    *
    * @returns { txHash } The transaction hash that re-permitted the app
    */
   rePermitApp(params: RePermitAppParams, overrides?: Overrides): ReturnType<typeof _rePermitApp>;
 
-  /** Get the last permitted version for a specific app and PKP
+  /** Get the last unpermitted app for agents
    *
-   * @returns The last permitted app version, or null if never permitted
+   * @returns Array of AgentUnpermittedApp containing unpermitted app details for each agent
    */
-  getLastPermittedAppVersionForPkp(
-    params: GetLastPermittedAppVersionParams,
-  ): ReturnType<typeof _getLastPermittedAppVersionForPkp>;
+  getUnpermittedAppForAgents(
+    params: GetUnpermittedAppForAgentsParams,
+  ): ReturnType<typeof _getUnpermittedAppForAgents>;
 
-  /** Get unpermitted apps for multiple PKPs with their last permitted versions
+  /** Get the user address that registered a specific agent address
    *
-   * @returns Array of PkpUnpermittedApps containing unpermitted app details for each PKP
+   * @returns User address for the agent
    */
-  getUnpermittedAppsForPkps(params: GetUnpermittedAppsForPkpsParams): Promise<PkpUnpermittedApps[]>;
+  getUserAddressForAgent(
+    params: GetUserAddressForAgentParams,
+  ): ReturnType<typeof _getUserAddressForAgent>;
 }
