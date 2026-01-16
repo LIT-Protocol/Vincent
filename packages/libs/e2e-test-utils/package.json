@@ -4,12 +4,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "scripts": {
-    "test:smartAccount": "NODE_OPTIONS=--experimental-vm-modules dotenv -e .env jest test/smartAccount/all.spec.ts",
-    "test:crossmint": "NODE_OPTIONS=--experimental-vm-modules dotenv -e .env jest test/smartAccount/crossmint.spec.ts",
-    "test:zerodev": "NODE_OPTIONS=--experimental-vm-modules dotenv -e .env jest test/smartAccount/zerodev.spec.ts",
-    "test:safe": "NODE_OPTIONS=--experimental-vm-modules dotenv -e .env jest test/smartAccount/safe.spec.ts"
-  },
+  "scripts": {},
   "dependencies": {
     "@lit-protocol/auth-helpers": "^7",
     "@lit-protocol/constants": "^7",
@@ -18,6 +13,7 @@
     "@lit-protocol/lit-node-client": "^7",
     "@lit-protocol/pkp-ethers": "^7.3.1",
     "@lit-protocol/types": "^7",
+    "@lit-protocol/vincent-app-sdk": "workspace:*",
     "@lit-protocol/vincent-contracts-sdk": "workspace:*",
     "@t3-oss/env-core": "^0.13.8",
     "@zerodev/ecdsa-validator": "^5.4.9",

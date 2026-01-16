@@ -1,238 +1,351 @@
-import type { Wallet } from 'ethers';
+import { Wallet, providers } from 'ethers';
+import type { Address } from 'viem';
+import { getClient } from '@lit-protocol/vincent-contracts-sdk';
 
-import { extractChain } from 'viem';
-import { privateKeyToAccount } from 'viem/accounts';
-import * as viemChains from 'viem/chains';
-
-import type { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
-import type { PermissionData } from '@lit-protocol/vincent-contracts-sdk';
-
-import type { PkpInfo } from './mint-new-pkp';
-import type { SmartAccountInfo } from './smartAccount';
-
-import * as appManager from './appManager';
-import { getChainHelpers } from './chain';
-import * as delegatee from './delegatee';
-import * as delegator from './delegator';
-import { ensureUnexpiredCapacityToken } from './ensure-capacity-credit';
-import { getEnv } from './env';
-import * as funder from './funder';
-import { setupZerodevAccount, setupCrossmintAccount, setupSafeAccount } from './smartAccount';
-
-export interface VincentDevEnvironment {
-  agentPkpInfo: PkpInfo;
-  agentAddress: string;
-  platformUserPkpInfo: PkpInfo;
-  wallets: {
-    appDelegatee: Wallet;
-    funder: Wallet;
-    appManager: Wallet;
-    platformUserWalletOwner: Wallet;
-    platformUserPkpWallet: PKPEthersWallet;
-  };
-  appId: number;
-  appVersion: number;
-  smartAccount?: SmartAccountInfo;
-}
+import type { SetupConfig, VincentDevEnvironment } from './setup/types';
+import { registerAppOnChain, getAppByDelegatee, registerNewAppVersion } from './setup/blockchain';
+import {
+  registerAppWithAPI,
+  registerAppVersion,
+  setActiveVersion,
+  installAppViaAPI,
+} from './setup/api';
+import {
+  checkFunderBalance,
+  ensureAppManagerFunded,
+  ensureWalletHasTestTokens,
+} from './setup/funding';
+import { createKernelSmartAccount } from './setup/smart-account';
+import { ensureUnexpiredCapacityToken } from './setup/capacity-credit';
 
 /**
- * Helper function to set up a Vincent development environment with the new PKP hierarchy.
- * This function handles all the necessary setup steps including:
- * - Checking and funding all required accounts (funder, app delegatee, app manager)
- * - Registering or updating your app with abilities and policies
- * - Creating or using an existing Platform User PKP (owned by EOA)
- * - Creating or using an existing Agent PKP for the app (owned by Platform User PKP)
- * - Setting up permissions for the Agent PKP
- * - Ensuring a valid capacity token exists
- * - Optionally creating a smart account owned by agentWalletOwner with the PKP as a permitted signer
+ * Setup a Vincent development environment using PKP-based architecture with smart accounts.
  *
- * PKP Hierarchy: EOA → Platform User PKP → Agent PKP (per app)
+ * This uses a hybrid approach with 4 EOA wallets + 1 PKP:
+ * 1. Funder EOA - funds other wallets with test tokens
+ * 2. App Manager EOA - owns and registers the app on-chain
+ * 3. App Delegatee EOA - executes transactions on behalf of users (via Lit Actions)
+ * 4. User EOA - owns their smart account
+ * 5. Agent Signer PKP - session key created by registry API (NOT an EOA)
  *
- * @param permissionData permission data containing abilities and their policies
- * @param smartAccountType type of smart account to create: 'zerodev', 'crossmint', 'safe', or false to disable
- * @returns the setup result including agent PKP info, wallets, app ID, app version, and optional smart account info
+ * The flow:
+ * 1. Check funder balance and fund app manager and delegatee
+ * 2. Ensure app delegatee has a valid capacity credit (required for Lit Actions)
+ * 3. Check if delegatee already belongs to an app (a delegatee can only belong to one app)
+ *    - If yes: register a new app version
+ *    - If no: register a new app on-chain
+ * 4. Register app with Vincent API backend
+ * 5. Set active version in API
+ * 6. Install app via registry API to create PKP (agentSignerAddress) and deploy smart account
+ * 7. Create a local smart account client to interact with the deployed smart account
+ *
+ * @param config Configuration for the development environment setup
+ * @returns Environment with app ID, addresses, wallets, and smart account client
+ *
  * @example
  * ```typescript
- * // Example with no policies
- * const permissionData = {
- *   [bundledVincentAbility.ipfsCid]: {},
- * };
+ * import { setupVincentDevelopmentEnvironment } from '@lit-protocol/vincent-e2e-test-utils';
+ * import { baseSepolia } from 'viem/chains';
  *
- * // Example with policies
- * const permissionDataWithPolicies = {
- *   [bundledVincentAbility.ipfsCid]: {
- *     [spendingLimitPolicy.ipfsCid]: {
- *       limit: '1000000',
- *       period: '86400',
- *     },
+ * const env = await setupVincentDevelopmentEnvironment({
+ *   abilityIpfsCids: ['QmRkPbEyFSzdknk6fBQYnKRHKfSs2AYpgcjZVQ699BMnLz'],
+ *   abilityPolicies: [[]],
+ *   rpcUrl: 'https://base-sepolia.g.alchemy.com/v2/YOUR_KEY',
+ *   chain: baseSepolia,
+ *   vincentApiUrl: 'https://api.heyvincent.ai',
+ *   appMetadata: {
+ *     name: 'Test App',
+ *     description: 'Test app for development',
+ *     contactEmail: 'test@example.com',
+ *     appUrl: 'https://example.com',
  *   },
- * };
- *
- * // EOA mode
- * const result = await setupVincentDevelopmentEnvironment({ permissionData });
- *
- * // ZeroDev smart account mode (requires SMART_ACCOUNT_CHAIN_ID and ZERODEV_RPC_URL env vars)
- * const result = await setupVincentDevelopmentEnvironment({
- *   permissionData,
- *   smartAccountType: 'zerodev',
- * });
- *
- * // Crossmint smart account mode (requires SMART_ACCOUNT_CHAIN_ID and CROSSMINT_API_KEY env vars)
- * const result = await setupVincentDevelopmentEnvironment({
- *   permissionData,
- *   smartAccountType: 'crossmint',
- * });
- *
- * // Safe smart account mode (requires SMART_ACCOUNT_CHAIN_ID, SAFE_RPC_URL, and PIMLICO_RPC_URL env vars)
- * const result = await setupVincentDevelopmentEnvironment({
- *   permissionData,
- *   smartAccountType: 'safe',
+ *   privateKeys: {
+ *     funder: '0x...',
+ *     appManager: '0x...',
+ *     appDelegatee: '0x...',
+ *     userEoa: '0x...',
+ *   },
  * });
  * ```
  */
-export const setupVincentDevelopmentEnvironment = async ({
-  permissionData,
-  smartAccountType,
-  agentAddress,
-}: {
-  permissionData: PermissionData;
-  smartAccountType?: 'zerodev' | 'crossmint' | 'safe';
-  agentAddress?: string;
-}): Promise<VincentDevEnvironment> => {
-  // Check and fund all required accounts
-  await funder.checkFunderBalance();
-  await delegatee.ensureAppDelegateeFunded();
-  await appManager.ensureAppManagerFunded();
+export async function setupVincentDevelopmentEnvironment(
+  config: SetupConfig,
+): Promise<VincentDevEnvironment> {
+  console.log('\n Setting up Vincent Development Environment');
+  console.log(`Network: ${config.chain.name} (Chain ID: ${config.chain.id})`);
+  console.log(`RPC URL: ${config.rpcUrl}`);
 
-  const chainHelpers = await getChainHelpers();
-  const wallets = chainHelpers.wallets;
+  // Create wallets from private keys
+  const funderWallet = new Wallet(config.privateKeys.funder);
+  const appManagerWallet = new Wallet(config.privateKeys.appManager);
+  const appDelegateeWallet = new Wallet(config.privateKeys.appDelegatee);
+  const userEoaWallet = new Wallet(config.privateKeys.userEoa);
 
-  const abilityIpfsCids: string[] = Object.keys(permissionData);
-  const abilityPolicies: string[][] = abilityIpfsCids.map((abilityIpfsCid) => {
-    return Object.keys(permissionData[abilityIpfsCid]);
+  console.log(`\nFunder: ${funderWallet.address}`);
+  console.log(`App Manager: ${appManagerWallet.address}`);
+  console.log(`App Delegatee: ${appDelegateeWallet.address}`);
+  console.log(`User EOA: ${userEoaWallet.address}`);
+
+  // Create ethers provider for wallet operations on target chain (Base Sepolia)
+  const ethersProvider = new providers.JsonRpcProvider(config.rpcUrl);
+
+  // Connect wallets to provider for ethers operations
+  const funderWithProvider = funderWallet.connect(ethersProvider);
+  const appManagerWithProvider = appManagerWallet.connect(ethersProvider);
+  const appDelegateeWithProvider = appDelegateeWallet.connect(ethersProvider);
+
+  // Check funder balance and fund required accounts on Base Sepolia
+  console.log('\n=== Checking Balances and Funding (Base Sepolia) ===');
+  await checkFunderBalance(funderWithProvider);
+  await ensureAppManagerFunded(appManagerWallet.address, funderWithProvider);
+
+  // Fund app delegatee (needs gas to execute transactions on behalf of users)
+  await ensureWalletHasTestTokens({
+    address: appDelegateeWallet.address,
+    funderWallet: funderWithProvider,
   });
 
-  // If an app exists for the delegatee, we will create a new app version with the new ipfs cids
-  // Otherwise, we will create an app w/ version 1 appVersion with the new ipfs cids
-  const existingApp = await delegatee.getAppInfo();
+  // Fund app delegatee on Datil chain for capacity credit minting
+  console.log('\n=== Funding on Datil Chain (for Capacity Credits) ===');
+  const datilProvider = new providers.JsonRpcProvider('https://yellowstone-rpc.litprotocol.com/');
+  const funderOnDatil = funderWallet.connect(datilProvider);
+
+  await ensureWalletHasTestTokens({
+    address: appDelegateeWallet.address,
+    funderWallet: funderOnDatil,
+    minAmountEther: '0.02', // Minimum amount for capacity credit minting
+  });
+
+  // Ensure app delegatee has a valid capacity credit (required for executing Lit Actions)
+  await ensureUnexpiredCapacityToken(appDelegateeWithProvider);
+
+  // Check if delegatee already belongs to an app
+  const existingApp = await getAppByDelegatee(appDelegateeWithProvider);
+
   let appId: number;
   let appVersion: number;
-  if (!existingApp) {
-    const newApp = await appManager.registerNewApp({ abilityIpfsCids, abilityPolicies });
-    appId = newApp.appId;
-    appVersion = newApp.appVersion;
-  } else {
-    const newAppVersion = await appManager.registerNewAppVersion({
-      abilityIpfsCids,
-      abilityPolicies,
-    });
+  let hash: string;
+  let accountIndexHash: string;
+  let needsNewVersion = false; // Track if we need to create a new version for existing apps
+
+  if (existingApp) {
+    // Validate that the app is managed by the app manager
+    if (existingApp.managerAddress.toLowerCase() !== appManagerWallet.address.toLowerCase()) {
+      const errorMessage = `❌ Delegatee ${appDelegateeWallet.address} already belongs to app ${existingApp.appId} managed by ${existingApp.managerAddress}, but you are trying to register with app manager ${appManagerWallet.address}. A delegatee can only belong to one app. Please use a different delegatee address or use the correct app manager.`;
+      console.error(`\\n${errorMessage}`);
+      throw new Error(errorMessage);
+    }
+
+    // Delegatee already belongs to an app managed by this app manager
+    console.log('\n⚠️  Delegatee already belongs to an existing app managed by this app manager.');
+    console.log('Checking if abilities/policies have changed...');
     appId = existingApp.appId;
-    appVersion = newAppVersion.appVersion;
-  }
 
-  // Ensure capacity token for the EOA wallet that owns the Platform User PKP
-  await ensureUnexpiredCapacityToken(wallets.platformUserWalletOwner);
-
-  // Get or create the Platform User PKP (owned by the EOA)
-  // This also ensures the PKP has ETH for gas
-  const platformUserPkpInfo = await delegator.getFundedPlatformUserPkp();
-
-  // Get Platform User PKP ethers wallet for signing operations
-  const platformUserPkpWallet = await delegator.getPlatformUserPkpWallet(platformUserPkpInfo);
-
-  // Ensure capacity token for the Platform User PKP wallet
-  await ensureUnexpiredCapacityToken(platformUserPkpWallet);
-
-  // Get or create the Agent PKP for this app (owned by the Platform User PKP)
-  const agentPkpInfo = await delegator.getFundedAgentPkp(appId);
-
-  // Optionally set up smart account
-  let smartAccount: SmartAccountInfo | undefined;
-  let resolvedAgentAddress = agentAddress ?? agentPkpInfo.ethAddress;
-  if (smartAccountType) {
-    console.log(`\n🔧 Setting up ${smartAccountType} smart account...\n`);
-
-    const env = getEnv();
-    const { SMART_ACCOUNT_CHAIN_ID } = env;
-
-    if (!SMART_ACCOUNT_CHAIN_ID) {
-      throw new Error('SMART_ACCOUNT_CHAIN_ID env var is required when smartAccountType is set');
+    // Fetch the accountIndexHash from on-chain app data
+    const client = getClient({ signer: appManagerWithProvider });
+    const appData = await client.getAppById({ appId: existingApp.appId });
+    if (!appData) {
+      throw new Error(`Failed to fetch app data for app ID ${existingApp.appId}`);
     }
+    accountIndexHash = appData.accountIndexHash;
 
-    const chainId = parseInt(SMART_ACCOUNT_CHAIN_ID);
-
-    // Extract chain from viem's exported chains using chainId
-    const chains = Object.values(viemChains);
-    // Type assertion needed: extractChain expects literal union type but we have runtime value from env
-    const chain = extractChain({
-      chains,
-      id: chainId as (typeof chains)[number]['id'],
+    // Check if the latest version already has the same abilities and policies
+    const latestVersion = existingApp.appVersion;
+    const existingAppVersion = await client.getAppVersion({
+      appId: existingApp.appId,
+      version: latestVersion,
     });
 
-    // Convert ethers wallet to viem account
-    const ownerAccount = privateKeyToAccount(
-      wallets.platformUserWalletOwner.privateKey as `0x${string}`,
-    );
+    // Default: assume we need a new version
+    needsNewVersion = true;
+    appVersion = latestVersion; // Start with latest version, will update if creating new one
+    hash = ''; // Default to empty hash
 
-    if (smartAccountType === 'zerodev') {
-      smartAccount = await setupZerodevAccount({
-        ownerAccount,
-        permittedAddress: agentPkpInfo.ethAddress as `0x${string}`,
-        chain,
+    if (existingAppVersion) {
+      // Create a map from ability CID to its policies for easy lookup
+      const existingAbilityMap = new Map<string, string[]>();
+      existingAppVersion.appVersion.abilities.forEach((ability) => {
+        existingAbilityMap.set(ability.abilityIpfsCid, ability.policyIpfsCids);
       });
-    } else if (smartAccountType === 'crossmint') {
-      smartAccount = await setupCrossmintAccount({
-        ownerAccount,
-        permittedAddress: agentPkpInfo.ethAddress as `0x${string}`,
-        chain,
-      });
-    } else {
-      smartAccount = await setupSafeAccount({
-        ownerAccount,
-        permittedAddress: agentPkpInfo.ethAddress as `0x${string}`,
-        chain,
-      });
+
+      // Check if we have the same number of abilities and compare them
+      if (existingAbilityMap.size === config.abilityIpfsCids.length) {
+        // For each ability in the new version, check if it exists with the same policies
+        const allMatch = config.abilityIpfsCids.every((abilityId, index) => {
+          const existingPolicies = existingAbilityMap.get(abilityId);
+          if (existingPolicies === undefined) return false; // Ability doesn't exist in current version
+
+          const newPolicies = config.abilityPolicies[index];
+          if (newPolicies === undefined) {
+            throw new Error(
+              `Parallel arrays are not in sync: abilityPolicies[${index}] is undefined for ability '${abilityId}'.`,
+            );
+          }
+
+          // Compare policy arrays (order-independent)
+          if (existingPolicies.length !== newPolicies.length) return false;
+
+          const sortedExisting = [...existingPolicies].sort();
+          const sortedNew = [...newPolicies].sort();
+
+          return sortedExisting.every((policy, i) => policy === sortedNew[i]);
+        });
+
+        if (allMatch) {
+          console.log(
+            `✅ App version ${latestVersion} already has the same abilities and policies.`,
+          );
+          console.log('Skipping version registration - reusing existing version.');
+          needsNewVersion = false;
+          // appVersion and hash already set to correct values above
+        }
+      }
     }
-    resolvedAgentAddress = smartAccount.account.address;
-  }
-  if (resolvedAgentAddress === agentPkpInfo.ethAddress) {
-    console.warn(
-      '[setupVincentDevelopmentEnvironment] Using agent PKP address as agentAddress. Set agentAddress or smartAccountType to use a smart account.',
+
+    if (needsNewVersion) {
+      console.log('Abilities or policies have changed - creating new version.');
+
+      // Step 1: Create pending version in registry API
+      // This must be done BEFORE registering on-chain to follow the intended workflow
+      console.log('Creating pending version in registry...');
+      const apiVersion = await registerAppVersion(
+        config.vincentApiUrl,
+        config.privateKeys.appManager,
+        Number(appId),
+        'New version with updated abilities',
+      );
+      console.log(`Pending version ${apiVersion} created in registry`);
+
+      // Step 2: Register the new version on-chain
+      const result = await registerNewAppVersion({
+        appManagerWallet: appManagerWithProvider,
+        appId: existingApp.appId,
+        abilityIpfsCids: config.abilityIpfsCids,
+        abilityPolicies: config.abilityPolicies,
+      });
+      appVersion = result.appVersion;
+      hash = result.txHash;
+
+      // Wait for 2 block confirmations before proceeding (if there was a new transaction)
+      if (hash) {
+        console.log('⏳ Waiting for 2 block confirmations...');
+        await ethersProvider.waitForTransaction(hash, 2);
+        console.log('✅ Transaction confirmed');
+      }
+
+      // Verify that on-chain version matches API version
+      if (apiVersion !== appVersion) {
+        console.warn(
+          `⚠️  Version mismatch: API created v${apiVersion} but on-chain is v${appVersion}`,
+        );
+      }
+    }
+  } else {
+    // No existing app, register a new one
+    const result = await registerAppOnChain(
+      appManagerWithProvider,
+      [appDelegateeWallet.address],
+      config.abilityIpfsCids,
+      config.abilityPolicies,
+      config.chain,
     );
+    hash = result.hash;
+    appId = Number(result.appId);
+    accountIndexHash = result.accountIndexHash;
+    appVersion = Number(result.appVersion);
+
+    // Wait for 2 block confirmations before proceeding
+    console.log('⏳ Waiting for 2 block confirmations...');
+    await ethersProvider.waitForTransaction(hash, 2);
+    console.log('✅ Transaction confirmed');
   }
 
-  // Permit the app version for the Agent PKP
-  await delegator.permitAppVersionForAgentWalletPkp({
-    permissionData,
-    appId,
-    appVersion,
-    agentPkpInfo,
-    platformUserPkpWallet,
-    agentAddress: resolvedAgentAddress,
-  });
+  // Step 3: Register with Vincent API (for new apps only)
+  if (!existingApp) {
+    // New app: register it with the API (this creates version 1 in the database)
+    await registerAppWithAPI(
+      config.vincentApiUrl,
+      config.privateKeys.appManager,
+      Number(appId),
+      config.appMetadata,
+    );
 
-  // Add permissions for abilities to the Agent PKP
-  // Note: This uses the Platform User PKP wallet to add permissions
+    // Step 4: Set active version (requires version to exist in database)
+    await setActiveVersion(
+      config.vincentApiUrl,
+      config.privateKeys.appManager,
+      Number(appId),
+      Number(appVersion),
+    );
+  } else if (needsNewVersion) {
+    // Existing app with new version: version was already created in registry in step 1
+    console.log('\n⚠️  App already exists in registry - new version was created');
 
-  await delegator.addPermissionForAbilities(
-    platformUserPkpWallet,
-    agentPkpInfo.tokenId,
-    abilityIpfsCids,
+    // Step 4: Set active version to the newly created version
+    await setActiveVersion(
+      config.vincentApiUrl,
+      config.privateKeys.appManager,
+      Number(appId),
+      Number(appVersion),
+    );
+  } else {
+    // Existing app with same version: skip API registration and setActiveVersion
+    console.log('\n⚠️  App and version already exist in registry - skipping API updates');
+  }
+
+  // Step 5: Install app via registry API to create PKP
+  const installData = await installAppViaAPI(
+    config.vincentApiUrl,
+    Number(appId),
+    userEoaWallet.address,
   );
 
-  // Ensure capacity token is valid and unexpired
-  await ensureUnexpiredCapacityToken(wallets.appDelegatee);
+  const pkpSignerAddress = installData.agentSignerAddress;
+  const agentSmartAccountAddress = installData.agentSmartAccountAddress;
+
+  console.log(`\nPKP Signer Address (from API): ${pkpSignerAddress}`);
+  console.log(`Agent Smart Account Address (from API): ${agentSmartAccountAddress}`);
+
+  // Step 6: Create local smart account client
+  // Note: The smart account is already deployed by the registry API.
+  // This step creates a local client instance to interact with it.
+  const smartAccount = await createKernelSmartAccount(
+    config.privateKeys.userEoa,
+    pkpSignerAddress as Address,
+    accountIndexHash,
+    config.chain,
+    config.rpcUrl,
+  );
+
+  // Verify the local client's address matches what the API returned
+  if (smartAccount.account.address.toLowerCase() !== agentSmartAccountAddress.toLowerCase()) {
+    console.error(
+      `\n❌ Address mismatch! Local client address ${smartAccount.account.address} doesn't match API's ${agentSmartAccountAddress}`,
+    );
+    throw new Error('Smart account address mismatch');
+  }
+
+  console.log('\n✅ Local smart account client address matches API response!');
+
+  console.log('\n✅ Vincent Development Environment Setup Complete!');
 
   return {
-    agentPkpInfo,
-    agentAddress: resolvedAgentAddress,
-    platformUserPkpInfo,
+    appId: Number(appId),
+    appVersion: Number(appVersion),
+    agentSignerAddress: pkpSignerAddress,
+    agentSmartAccountAddress,
+    userEoaAddress: userEoaWallet.address,
+    accountIndexHash,
+    registrationTxHash: hash,
     wallets: {
-      ...wallets,
-      platformUserPkpWallet,
+      appManager: appManagerWallet,
+      appDelegatee: appDelegateeWallet,
+      userEoa: userEoaWallet,
+      funder: funderWallet,
     },
-    appId,
-    appVersion,
     smartAccount,
   };
-};
+}
+
+// Re-export types for convenience
+export type { SetupConfig, VincentDevEnvironment, SmartAccountInfo } from './setup/types';
