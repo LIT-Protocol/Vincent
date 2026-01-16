@@ -22,11 +22,11 @@ This endpoint handles both new installations and reinstalling previously uninsta
 ## Response
 
 <ResponseField name="agentSignerAddress" type="string">
-  The [Programmable Key Pair (PKP)](https://developer.litprotocol.com/user-wallets/pkps/overview) address that will sign transactions on behalf of the user
+  The signer address for the agent smart account. Only the delegated app can use this signer to execute transactions.
 </ResponseField>
 
 <ResponseField name="agentSmartAccountAddress" type="string">
-  The smart account address for the agent
+  The smart account address for the agent. Each app has its own agent wallet, owned by the user's EOA.
 </ResponseField>
 
 <ResponseField name="appInstallationDataToSign" type="object">
