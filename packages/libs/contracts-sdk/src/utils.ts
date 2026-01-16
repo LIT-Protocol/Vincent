@@ -34,7 +34,7 @@ export function deriveSmartAccountIndex(appId: number): bigint {
  *
  * @category API
  */
- 
+
 export async function deriveAgentAddress(
   publicClient: any,
   userControllerAddress: string,
@@ -45,7 +45,7 @@ export async function deriveAgentAddress(
     eoaAddress: userControllerAddress as `0x${string}`,
     index: deriveSmartAccountIndex(appId),
     entryPoint: constants.getEntryPoint('0.7'),
-    kernelVersion: constants.KERNEL_V3_1,
+    kernelVersion: constants.KERNEL_V3_3,
   });
 }
 
