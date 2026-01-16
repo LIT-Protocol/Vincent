@@ -7,6 +7,7 @@ module.exports = {
     '**/packageImporter.spec.ts',
     '**/user.spec.ts',
     '**/agentFunds.spec.ts',
+    '**/withdraw.spec.ts',
   ],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
   globalSetup: './test/integration/global-setup.ts',

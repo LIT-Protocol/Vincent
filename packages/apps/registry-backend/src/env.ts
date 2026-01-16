@@ -33,5 +33,6 @@ export const env = createEnv({
     GELATO_RELAY_API_KEY: z.string(),
     BASE_RPC_URL: z.string(),
     ALCHEMY_API_KEY: z.string(),
+    ZERODEV_RPC_URL: z.string(),
   },
 });
