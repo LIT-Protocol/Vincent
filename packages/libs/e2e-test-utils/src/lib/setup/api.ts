@@ -72,7 +72,7 @@ export async function registerAppWithAPI(
   }
 
   const data = await response.json();
-  console.log('✅ App successfully registered with Vincent API');
+  console.log('App successfully registered with Vincent API');
   console.log('API Response:', JSON.stringify(data, null, 2));
 }
 
@@ -111,7 +111,7 @@ export async function setActiveVersion(
   }
 
   const data = await response.json();
-  console.log(`✅ Active version set to ${activeVersion}`);
+  console.log(`Active version set to ${activeVersion}`);
   console.log('API Response:', JSON.stringify(data, null, 2));
 }
 
@@ -152,7 +152,7 @@ export async function registerAppVersion(
   }
 
   const data = (await response.json()) as { version: number };
-  console.log('✅ App version registered successfully');
+  console.log('App version registered successfully');
   console.log('API Response:', JSON.stringify(data, null, 2));
 
   return data.version;
@@ -204,7 +204,7 @@ export async function installAppViaAPI(
 
   const data = (await response.json()) as InstallAppResponse;
 
-  console.log('✅ App installation initiated successfully');
+  console.log('App installation initiated successfully');
   console.log(`Agent Signer Address (PKP): ${data.agentSignerAddress}`);
   console.log(`Agent Smart Account Address: ${data.agentSmartAccountAddress}`);
 

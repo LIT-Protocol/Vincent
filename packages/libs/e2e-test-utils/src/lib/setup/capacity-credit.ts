@@ -45,7 +45,7 @@ export async function ensureUnexpiredCapacityToken(targetWallet: Wallet): Promis
   console.log(`Found ${existingTokens.length} capacity tokens`);
 
   if (existingTokens.length > 0 && existingTokens.some((token) => !token.isExpired)) {
-    console.log('✅ Valid capacity credit already exists; skipping minting');
+    console.log('Valid capacity credit already exists; skipping minting');
     return;
   }
 
@@ -93,7 +93,7 @@ export async function ensureUnexpiredCapacityToken(targetWallet: Wallet): Promis
     daysUntilUTCMidnightExpiration,
   });
 
-  console.log('✅ Capacity credit minted successfully:');
+  console.log('Capacity credit minted successfully:');
   console.log(`  Token ID: ${capacityCreditInfo.capacityTokenIdStr}`);
   console.log(`  Requests per kilosecond: ${requestsPerKilosecond}`);
   console.log(`  Expires: ${expirationDate.toISOString()}`);
@@ -103,7 +103,7 @@ export async function ensureUnexpiredCapacityToken(targetWallet: Wallet): Promis
     console.log('Pruning expired capacity credit tokens...');
     try {
       await litContractClient.rateLimitNftContractUtils.write.pruneExpired(walletOnDatil.address);
-      console.log('✅ Expired tokens pruned');
+      console.log('Expired tokens pruned');
     } catch (error: any) {
       console.log('⚠️  Failed to purge expired tokens:', error?.message || String(error));
     }

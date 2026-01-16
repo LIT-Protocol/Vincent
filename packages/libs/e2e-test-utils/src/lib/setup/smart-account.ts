@@ -1,6 +1,10 @@
 import { createPublicClient, createWalletClient, http, type Address, type Chain } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
-import { createKernelAccount, addressToEmptyAccount } from '@zerodev/sdk';
+import {
+  createKernelAccount,
+  createKernelAccountClient,
+  addressToEmptyAccount,
+} from '@zerodev/sdk';
 import { signerToEcdsaValidator, getKernelAddressFromECDSA } from '@zerodev/ecdsa-validator';
 import { toECDSASigner } from '@zerodev/permissions/signers';
 import { toSudoPolicy } from '@zerodev/permissions/policies';
@@ -37,6 +41,7 @@ export async function createKernelSmartAccount(
   accountIndexHash: string,
   chain: Chain,
   rpcUrl: string,
+  zerodevProjectId: string,
 ): Promise<SmartAccountInfo> {
   console.log('=== Creating Kernel Smart Account ===');
 
@@ -86,12 +91,27 @@ export async function createKernelSmartAccount(
   const accountAddress = kernelAccount.address;
   const approval = await serializePermissionAccount(kernelAccount);
 
+  // Create ZeroDev bundler URL
+  const bundlerUrl = `https://rpc.zerodev.app/api/v2/bundler/${zerodevProjectId}`;
+
+  // Create kernel account client with bundler
+  const kernelClient = createKernelAccountClient({
+    account: kernelAccount,
+    chain,
+    bundlerTransport: http(bundlerUrl),
+    client: publicClient,
+  });
+
   console.log('Smart Account Address:', accountAddress);
   console.log('Session Key Approval Created');
   console.log('Agent Signer Address:', agentSignerAddress);
+  console.log('Bundler URL:', bundlerUrl);
 
   return {
     account: kernelAccount,
+    client: kernelClient,
+    publicClient,
+    walletClient,
     approval,
   };
 }

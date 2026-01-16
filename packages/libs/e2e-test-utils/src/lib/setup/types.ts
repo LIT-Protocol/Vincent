@@ -7,6 +7,12 @@ import type { Chain } from 'viem';
 export interface SmartAccountInfo {
   /** The kernel account instance */
   account: any; // KernelSmartAccount type from @zerodev/sdk
+  /** The kernel account client for sending UserOperations via bundler */
+  client: any; // KernelAccountClient type from @zerodev/sdk
+  /** Public client for reading blockchain state */
+  publicClient: any; // PublicClient from viem
+  /** Wallet client for the user's EOA (can be used to deploy the smart account) */
+  walletClient: any; // WalletClient from viem
   /** Serialized permission approval for the session key */
   approval: string;
 }
@@ -25,6 +31,8 @@ export interface SetupConfig {
   chain: Chain;
   /** Vincent API URL for registration */
   vincentApiUrl: string;
+  /** ZeroDev project ID for bundler operations (required for smart account deployment) */
+  zerodevProjectId: string;
   /** App metadata */
   appMetadata: {
     name: string;
@@ -65,6 +73,10 @@ export interface VincentDevEnvironment {
   accountIndexHash: string;
   /** Transaction hash of the app registration */
   registrationTxHash: string;
+  /** RPC URL for the chain */
+  rpcUrl: string;
+  /** Chain configuration */
+  chain: Chain;
   /** Wallets used in the setup */
   wallets: {
     appManager: Wallet;

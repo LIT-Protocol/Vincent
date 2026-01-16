@@ -5,3 +5,5 @@ export {
   type VincentDevEnvironment,
   type SmartAccountInfo,
 } from './lib/setup-vincent-development-environment';
+
+export { getEnv } from './lib/setup';
