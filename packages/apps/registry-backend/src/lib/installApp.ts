@@ -320,8 +320,12 @@ async function mintPkpWithAuthMethods(authMethods: {
   });
 }
 
-export async function installApp(request: { appId: number; userControllerAddress: string }) {
-  const { appId, userControllerAddress } = request;
+export async function installApp(request: {
+  appId: number;
+  userControllerAddress: string;
+  sponsorGas?: boolean;
+}) {
+  const { appId, userControllerAddress, sponsorGas = true } = request;
 
   console.log('[installApp] Installing app:', { appId, userControllerAddress });
 
@@ -354,6 +358,18 @@ export async function installApp(request: { appId: number; userControllerAddress
       agentSmartAccountAddress,
       appId,
     ]);
+
+    // 3.5 If sponsorGas is false, return raw transaction for direct EOA submission
+    if (!sponsorGas) {
+      return {
+        agentSignerAddress: unpermittedApp.pkpSigner,
+        agentSmartAccountAddress,
+        rawTransaction: {
+          to: VINCENT_DIAMOND_CONTRACT_ADDRESS_PROD,
+          data: txData,
+        },
+      };
+    }
 
     const dataToSign = await relaySdk.getDataToSignERC2771(
       {
@@ -442,6 +458,19 @@ export async function installApp(request: { appId: number; userControllerAddress
     policyIpfsCids, // policyIpfsCids
     policyParameterValues, // policyParameterValues
   ]);
+
+  // If sponsorGas is false, return raw transaction for direct EOA submission
+  if (!sponsorGas) {
+    console.log('[installApp] Returning raw transaction for direct submission');
+    return {
+      agentSignerAddress: pkp.ethAddress,
+      agentSmartAccountAddress,
+      rawTransaction: {
+        to: VINCENT_DIAMOND_CONTRACT_ADDRESS_PROD,
+        data: txData,
+      },
+    };
+  }
 
   console.log('[installApp] Getting EIP2771 data to sign...');
 

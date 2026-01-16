@@ -6,6 +6,7 @@ module.exports = {
     '**/index.spec.ts',
     '**/packageImporter.spec.ts',
     '**/user.spec.ts',
+    '**/user-direct-submission.spec.ts',
     '**/agentFunds.spec.ts',
   ],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],

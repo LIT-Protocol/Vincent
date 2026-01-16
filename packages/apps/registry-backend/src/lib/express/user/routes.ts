@@ -16,6 +16,7 @@ export function registerRoutes(app: Express) {
       const result = await installApp({
         appId: req.vincentApp.appId,
         userControllerAddress: req.body.userControllerAddress,
+        sponsorGas: req.body.sponsorGas,
       });
 
       res.json(result);
@@ -59,6 +60,7 @@ export function registerRoutes(app: Express) {
         appId: req.vincentApp.appId,
         appVersion: req.body.appVersion,
         userControllerAddress: req.body.userControllerAddress,
+        sponsorGas: req.body.sponsorGas,
       });
 
       res.json(result);

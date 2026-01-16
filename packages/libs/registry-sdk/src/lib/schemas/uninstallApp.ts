@@ -1,4 +1,5 @@
 import { EXAMPLE_WALLET_ADDRESS } from '../constants';
+import { rawTransactionSchema } from './installedApp';
 import { z } from './openApiZod';
 
 export const uninstallAppRequest = z
@@ -14,14 +15,22 @@ export const uninstallAppRequest = z
         description: 'EOA address that controls the user smart wallet',
         example: EXAMPLE_WALLET_ADDRESS,
       }),
+    sponsorGas: z.boolean().optional().openapi({
+      description:
+        'If true (default), returns EIP2771 typed data for sponsored gas relay. If false, returns raw transaction data for direct EOA submission (user pays gas).',
+      example: true,
+    }),
   })
   .strict();
 
 export const uninstallAppResponse = z
   .object({
-    uninstallDataToSign: z.object({}).passthrough().openapi({
+    rawTransaction: rawTransactionSchema.optional().openapi({
+      description: 'Raw transaction data for direct EOA submission. Present when sponsorGas=false.',
+    }),
+    uninstallDataToSign: z.object({}).passthrough().optional().openapi({
       description:
-        'The EIP2771 TypedData to sign that will uninstall the app from the Vincent contracts',
+        'The EIP2771 TypedData to sign for sponsored gas relay. Present when sponsorGas=true (default).',
     }),
   })
   .strict();

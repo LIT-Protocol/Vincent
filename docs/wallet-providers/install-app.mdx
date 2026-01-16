@@ -6,8 +6,8 @@ api: 'POST /user/{appId}/install-app'
 Start the installation process by providing the user's wallet address. Returns typed data that must be signed by the user.
 
 This endpoint handles both new installations and reinstalling previously uninstalled apps:
-- **New installation**: Mints a new [PKP](https://developer.litprotocol.com/user-wallets/pkps/overview) and permits the app
-- **Reinstall**: If the user previously uninstalled the app, automatically detects this and reinstalls it with the existing PKP
+- **New installation**: Mints a new agent signer and permits the app
+- **Reinstall**: If the user previously uninstalled the app, automatically detects this and reinstalls it with the existing agent signer
 
 ## Request
 
@@ -17,6 +17,12 @@ This endpoint handles both new installations and reinstalling previously uninsta
 
 <ParamField body="userControllerAddress" type="string" required>
   The Ethereum address of the user's wallet
+</ParamField>
+
+<ParamField body="sponsorGas" type="boolean" default="true">
+  Controls the transaction submission method:
+  - `true` (default): Returns EIP-712 typed data for gas-sponsored relay via Gelato. The user signs the typed data and submits it to the complete-installation endpoint.
+  - `false`: Returns raw transaction data (`to` and `data` fields) that the user can submit directly from their EOA, paying gas themselves. Useful for development or when gas sponsorship is not desired.
 </ParamField>
 
 ## Response
@@ -29,8 +35,21 @@ This endpoint handles both new installations and reinstalling previously uninsta
   The smart account address for the agent. Each app has its own agent wallet, owned by the user's EOA.
 </ResponseField>
 
+<ResponseField name="rawTransaction" type="object">
+  Raw transaction data for direct EOA submission. Only returned when `sponsorGas: false`. The user submits this transaction directly from their wallet, paying gas themselves.
+
+  <Expandable title="properties">
+    <ResponseField name="to" type="string">
+      The target contract address
+    </ResponseField>
+    <ResponseField name="data" type="string">
+      The encoded transaction data (calldata)
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
 <ResponseField name="appInstallationDataToSign" type="object">
-  EIP-712 typed data that the user must sign to complete installation. Pass this object to the complete-installation endpoint along with the signature.
+  EIP-712 typed data that the user must sign to complete installation. Only returned when `sponsorGas: true` (default). Pass this object to the complete-installation endpoint along with the signature.
 
   <Expandable title="properties">
     <ResponseField name="typedData" type="object">
@@ -50,13 +69,19 @@ This endpoint handles both new installations and reinstalling previously uninsta
 </ResponseField>
 
 <RequestExample>
-```bash cURL
+```bash cURL (Gas Sponsored - Default)
 curl -X POST https://api.heyvincent.ai/user/123/install-app \
   -H "Content-Type: application/json" \
   -d '{"userControllerAddress": "0xUserWalletAddress..."}'
 ```
 
-```typescript TypeScript
+```bash cURL (Direct EOA Submission)
+curl -X POST https://api.heyvincent.ai/user/123/install-app \
+  -H "Content-Type: application/json" \
+  -d '{"userControllerAddress": "0xUserWalletAddress...", "sponsorGas": false}'
+```
+
+```typescript TypeScript (Gas Sponsored)
 const response = await fetch(`https://api.heyvincent.ai/user/${appId}/install-app`, {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
@@ -66,11 +91,30 @@ const response = await fetch(`https://api.heyvincent.ai/user/${appId}/install-ap
 });
 
 const installData = await response.json();
+// User signs the typed data, then submit to complete-installation endpoint
+```
+
+```typescript TypeScript (Direct EOA)
+const response = await fetch(`https://api.heyvincent.ai/user/${appId}/install-app`, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    userControllerAddress: userWallet.address,
+    sponsorGas: false
+  })
+});
+
+const { rawTransaction } = await response.json();
+// Submit transaction directly from user's wallet
+await userWallet.sendTransaction({
+  to: rawTransaction.to,
+  data: rawTransaction.data
+});
 ```
 </RequestExample>
 
 <ResponseExample>
-```json Response
+```json Response (Gas Sponsored - Default)
 {
   "agentSignerAddress": "0xPKPAddress...",
   "agentSmartAccountAddress": "0xSmartAccountAddress...",
@@ -80,6 +124,17 @@ const installData = await response.json();
       "types": { "...": "..." },
       "message": { "...": "..." }
     }
+  }
+}
+```
+
+```json Response (Direct EOA)
+{
+  "agentSignerAddress": "0xPKPAddress...",
+  "agentSmartAccountAddress": "0xSmartAccountAddress...",
+  "rawTransaction": {
+    "to": "0xVincentContractAddress...",
+    "data": "0x..."
   }
 }
 ```

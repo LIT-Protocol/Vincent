@@ -1204,6 +1204,11 @@
             "pattern": "^0x[a-fA-F0-9]{40}$",
             "description": "EOA address that controls the user smart wallet",
             "example": "0x123456789012345678901234567890123456abcd"
+          },
+          "sponsorGas": {
+            "type": "boolean",
+            "description": "If true (default), returns EIP2771 typed data for sponsored gas relay. If false, returns raw transaction data for direct EOA submission (user pays gas).",
+            "example": true
           }
         },
         "required": [
@@ -1224,16 +1229,36 @@
             "description": "The smart account address calculated from the PKP address, used on the frontend to verify they get the same smart wallet address",
             "example": "0x123456789012345678901234567890123456abcd"
           },
+          "rawTransaction": {
+            "type": "object",
+            "properties": {
+              "to": {
+                "type": "string",
+                "description": "The target contract address",
+                "example": "0x1234567890123456789012345678901234567890"
+              },
+              "data": {
+                "type": "string",
+                "description": "The encoded transaction data",
+                "example": "0x..."
+              }
+            },
+            "required": [
+              "to",
+              "data"
+            ],
+            "additionalProperties": false,
+            "description": "Raw transaction data for direct EOA submission. Present when sponsorGas=false."
+          },
           "appInstallationDataToSign": {
             "type": "object",
             "properties": {},
-            "description": "The EIP2771 TypedData to sign that will install the app into the Vincent contracts"
+            "description": "The EIP2771 TypedData to sign for sponsored gas relay. Present when sponsorGas=true (default)."
           }
         },
         "required": [
           "agentSignerAddress",
-          "agentSmartAccountAddress",
-          "appInstallationDataToSign"
+          "agentSmartAccountAddress"
         ],
         "additionalProperties": false
       },
@@ -1316,6 +1341,11 @@
             "pattern": "^0x[a-fA-F0-9]{40}$",
             "description": "EOA address that controls the user smart wallet",
             "example": "0x123456789012345678901234567890123456abcd"
+          },
+          "sponsorGas": {
+            "type": "boolean",
+            "description": "If true (default), returns EIP2771 typed data for sponsored gas relay. If false, returns raw transaction data for direct EOA submission (user pays gas).",
+            "example": true
           }
         },
         "required": [
@@ -1327,15 +1357,33 @@
       "UninstallAppResponse": {
         "type": "object",
         "properties": {
+          "rawTransaction": {
+            "type": "object",
+            "properties": {
+              "to": {
+                "type": "string",
+                "description": "The target contract address",
+                "example": "0x1234567890123456789012345678901234567890"
+              },
+              "data": {
+                "type": "string",
+                "description": "The encoded transaction data",
+                "example": "0x..."
+              }
+            },
+            "required": [
+              "to",
+              "data"
+            ],
+            "additionalProperties": false,
+            "description": "Raw transaction data for direct EOA submission. Present when sponsorGas=false."
+          },
           "uninstallDataToSign": {
             "type": "object",
             "properties": {},
-            "description": "The EIP2771 TypedData to sign that will uninstall the app from the Vincent contracts"
+            "description": "The EIP2771 TypedData to sign for sponsored gas relay. Present when sponsorGas=true (default)."
           }
         },
-        "required": [
-          "uninstallDataToSign"
-        ],
         "additionalProperties": false
       },
       "CompleteUninstallRequest": {

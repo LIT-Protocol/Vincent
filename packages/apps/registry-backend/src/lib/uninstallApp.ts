@@ -15,8 +15,9 @@ export async function uninstallApp(request: {
   appId: number;
   appVersion: number;
   userControllerAddress: string;
+  sponsorGas?: boolean;
 }) {
-  const { appId, appVersion, userControllerAddress } = request;
+  const { appId, appVersion, userControllerAddress, sponsorGas = true } = request;
 
   const basePublicClient = getBasePublicClient();
 
@@ -27,6 +28,17 @@ export async function uninstallApp(request: {
     appId,
     appVersion,
   ]);
+
+  // If sponsorGas is false, return raw transaction for direct EOA submission
+  if (!sponsorGas) {
+    console.log('[uninstallApp] Returning raw transaction for direct submission');
+    return {
+      rawTransaction: {
+        to: VINCENT_DIAMOND_CONTRACT_ADDRESS_PROD,
+        data: txData,
+      },
+    };
+  }
 
   const dataToSign = await relaySdk.getDataToSignERC2771(
     {

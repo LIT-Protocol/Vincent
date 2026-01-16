@@ -23,10 +23,29 @@ To re-enable a previously uninstalled app, simply call the [install-app](/wallet
   The app version to uninstall
 </ParamField>
 
+<ParamField body="sponsorGas" type="boolean" default="true">
+  Controls the transaction submission method:
+  - `true` (default): Returns EIP-712 typed data for gas-sponsored relay via Gelato. The user signs the typed data and submits it to the complete-uninstall endpoint.
+  - `false`: Returns raw transaction data (`to` and `data` fields) that the user can submit directly from their EOA, paying gas themselves. Useful for development or when gas sponsorship is not desired.
+</ParamField>
+
 ## Response
 
+<ResponseField name="rawTransaction" type="object">
+  Raw transaction data for direct EOA submission. Only returned when `sponsorGas: false`. The user submits this transaction directly from their wallet, paying gas themselves.
+
+  <Expandable title="properties">
+    <ResponseField name="to" type="string">
+      The target contract address
+    </ResponseField>
+    <ResponseField name="data" type="string">
+      The encoded transaction data (calldata)
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
 <ResponseField name="uninstallDataToSign" type="object">
-  EIP-712 typed data that the user must sign to complete the uninstall. Pass this object to the complete-uninstall endpoint along with the signature.
+  EIP-712 typed data that the user must sign to complete the uninstall. Only returned when `sponsorGas: true` (default). Pass this object to the complete-uninstall endpoint along with the signature.
 
   <Expandable title="properties">
     <ResponseField name="typedData" type="object">
@@ -46,7 +65,7 @@ To re-enable a previously uninstalled app, simply call the [install-app](/wallet
 </ResponseField>
 
 <RequestExample>
-```bash cURL
+```bash cURL (Gas Sponsored - Default)
 curl -X POST https://api.heyvincent.ai/user/123/uninstall-app \
   -H "Content-Type: application/json" \
   -d '{
@@ -55,7 +74,17 @@ curl -X POST https://api.heyvincent.ai/user/123/uninstall-app \
   }'
 ```
 
-```typescript TypeScript
+```bash cURL (Direct EOA Submission)
+curl -X POST https://api.heyvincent.ai/user/123/uninstall-app \
+  -H "Content-Type: application/json" \
+  -d '{
+    "userControllerAddress": "0xUserWalletAddress...",
+    "appVersion": 1,
+    "sponsorGas": false
+  }'
+```
+
+```typescript TypeScript (Gas Sponsored)
 const response = await fetch(`https://api.heyvincent.ai/user/${appId}/uninstall-app`, {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
@@ -66,12 +95,31 @@ const response = await fetch(`https://api.heyvincent.ai/user/${appId}/uninstall-
 });
 
 const uninstallData = await response.json();
-// User must sign the typed data to complete the uninstall
+// User signs the typed data, then submit to complete-uninstall endpoint
+```
+
+```typescript TypeScript (Direct EOA)
+const response = await fetch(`https://api.heyvincent.ai/user/${appId}/uninstall-app`, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    userControllerAddress: userWallet.address,
+    appVersion: 1,
+    sponsorGas: false
+  })
+});
+
+const { rawTransaction } = await response.json();
+// Submit transaction directly from user's wallet
+await userWallet.sendTransaction({
+  to: rawTransaction.to,
+  data: rawTransaction.data
+});
 ```
 </RequestExample>
 
 <ResponseExample>
-```json Response
+```json Response (Gas Sponsored - Default)
 {
   "uninstallDataToSign": {
     "typedData": {
@@ -79,6 +127,15 @@ const uninstallData = await response.json();
       "types": { "...": "..." },
       "message": { "...": "..." }
     }
+  }
+}
+```
+
+```json Response (Direct EOA)
+{
+  "rawTransaction": {
+    "to": "0xVincentContractAddress...",
+    "data": "0x..."
   }
 }
 ```

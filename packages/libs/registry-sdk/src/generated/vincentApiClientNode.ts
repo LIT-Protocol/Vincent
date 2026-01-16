@@ -1344,12 +1344,21 @@ export type InstallAppResponse = {
   agentSignerAddress: string;
   /** The smart account address calculated from the PKP address, used on the frontend to verify they get the same smart wallet address */
   agentSmartAccountAddress: string;
-  /** The EIP2771 TypedData to sign that will install the app into the Vincent contracts */
-  appInstallationDataToSign: {};
+  /** Raw transaction data for direct EOA submission. Present when sponsorGas=false. */
+  rawTransaction?: {
+    /** The target contract address */
+    to: string;
+    /** The encoded transaction data */
+    data: string;
+  };
+  /** The EIP2771 TypedData to sign for sponsored gas relay. Present when sponsorGas=true (default). */
+  appInstallationDataToSign?: {};
 };
 export type InstallAppRequest = {
   /** EOA address that controls the user smart wallet */
   userControllerAddress: string;
+  /** If true (default), returns EIP2771 typed data for sponsored gas relay. If false, returns raw transaction data for direct EOA submission (user pays gas). */
+  sponsorGas?: boolean;
 };
 export type CompleteInstallationResponse = {
   /** The transaction hash of the completed installation */
@@ -1370,14 +1379,23 @@ export type GetAgentAccountRequest = {
   userControllerAddress: string;
 };
 export type UninstallAppResponse = {
-  /** The EIP2771 TypedData to sign that will uninstall the app from the Vincent contracts */
-  uninstallDataToSign: {};
+  /** Raw transaction data for direct EOA submission. Present when sponsorGas=false. */
+  rawTransaction?: {
+    /** The target contract address */
+    to: string;
+    /** The encoded transaction data */
+    data: string;
+  };
+  /** The EIP2771 TypedData to sign for sponsored gas relay. Present when sponsorGas=true (default). */
+  uninstallDataToSign?: {};
 };
 export type UninstallAppRequest = {
   /** The version of the app to uninstall */
   appVersion: number;
   /** EOA address that controls the user smart wallet */
   userControllerAddress: string;
+  /** If true (default), returns EIP2771 typed data for sponsored gas relay. If false, returns raw transaction data for direct EOA submission (user pays gas). */
+  sponsorGas?: boolean;
 };
 export type CompleteUninstallResponse = {
   /** The transaction hash of the completed uninstall transaction */
