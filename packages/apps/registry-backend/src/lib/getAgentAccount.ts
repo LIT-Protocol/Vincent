@@ -33,7 +33,7 @@ export async function getAgentAccount(request: {
     eoaAddress: userControllerAddress as `0x${string}`,
     index: deriveSmartAccountIndex(appId),
     entryPoint: constants.getEntryPoint('0.7'),
-    kernelVersion: constants.KERNEL_V3_1,
+    kernelVersion: constants.KERNEL_V3_3,
   });
 
   // Verify the agent exists in Vincent contracts

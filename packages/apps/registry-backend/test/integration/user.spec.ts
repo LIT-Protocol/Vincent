@@ -22,6 +22,9 @@ import {
 
 const debug = createTestDebugger('user');
 
+// Helper to avoid Gelato rate limiting between relay calls
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 describe('User API Integration Tests', () => {
   let testAppId: number;
   let litContracts: LitContracts;
@@ -82,14 +85,14 @@ describe('User API Integration Tests', () => {
 
     // 2. Register the app on-chain FIRST to get the contract-generated appId
     //    Note: This creates version 1 on-chain immediately
-    const { txHash, newAppId } = await getDefaultWalletContractClient().registerApp({
+    const { txHash, appId } = await getDefaultWalletContractClient().registerApp({
       delegateeAddresses: generateRandomEthAddresses(2),
       versionAbilities: {
         abilityIpfsCids: [abilityIpfsCid],
         abilityPolicies: [[]],
       },
     });
-    testAppId = newAppId;
+    testAppId = appId;
     console.log('registerApp result:', { txHash, testAppId });
     debug({ registerAppTxHash: txHash, testAppId });
 
@@ -385,6 +388,250 @@ describe('User API Integration Tests', () => {
         expect(result.error.status).toBe(400);
       }
     });
+  });
+
+  describe('POST /user/:appId/uninstall-app and reinstall via install-app', () => {
+    // Shared state for the uninstall/reinstall flow tests
+    let agentSmartAccountAddress: string;
+    let uninstallDataToSign: any;
+
+    beforeAll(async () => {
+      // Get the agent address from a previous installation
+      const agentResult = await store.dispatch(
+        api.endpoints.getAgentAccount.initiate({
+          appId: testAppId,
+          getAgentAccountRequest: { userControllerAddress: defaultWallet.address },
+        }),
+      );
+
+      if (hasError(agentResult)) {
+        throw new Error('Failed to get agent account');
+      }
+      expectAssertObject(agentResult.data);
+      agentSmartAccountAddress = agentResult.data.agentAddress as string;
+      expect(agentSmartAccountAddress).toMatch(/^0x[a-fA-F0-9]{40}$/);
+    });
+
+    it('should return data to sign for uninstalling an app', async () => {
+      const result = await store.dispatch(
+        api.endpoints.uninstallApp.initiate({
+          appId: testAppId,
+          uninstallAppRequest: {
+            appVersion: 1,
+            userControllerAddress: defaultWallet.address,
+          },
+        }),
+      );
+
+      if (hasError(result)) {
+        console.error('uninstallApp failed:', result.error);
+      }
+      expectAssertObject(result.data);
+
+      expect(result.data).toHaveProperty('uninstallDataToSign');
+      expect(typeof result.data.uninstallDataToSign).toBe('object');
+
+      uninstallDataToSign = result.data.uninstallDataToSign;
+
+      debug({
+        uninstallDataToSign: JSON.stringify(uninstallDataToSign, null, 2),
+      });
+    }, 60000);
+
+    it('should complete uninstall with signed typed data', async () => {
+      expect(uninstallDataToSign).toBeDefined();
+
+      const { typedData } = uninstallDataToSign;
+
+      // Sign the typed data with the user's wallet
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { EIP712Domain: _, ...types } = typedData.types;
+      const typedDataSignature = await defaultWallet._signTypedData(
+        typedData.domain,
+        types,
+        typedData.message,
+      );
+
+      console.log('Uninstall typed data signature:', typedDataSignature);
+
+      // Wait to avoid Gelato rate limiting (Gelato has strict per-account limits)
+      console.log('Waiting 60s to avoid Gelato rate limiting...');
+      await delay(60000);
+
+      // Complete the uninstall
+      const completeResult = await store.dispatch(
+        api.endpoints.completeUninstall.initiate({
+          appId: testAppId,
+          completeUninstallRequest: {
+            typedDataSignature,
+            uninstallDataToSign,
+          },
+        }),
+      );
+
+      if (hasError(completeResult)) {
+        console.error('completeUninstall failed:', completeResult.error);
+      }
+      expectAssertObject(completeResult.data);
+
+      expect(completeResult.data).toHaveProperty('transactionHash');
+      expect(completeResult.data.transactionHash).toMatch(/^0x[a-fA-F0-9]{64}$/);
+
+      console.log('Uninstall transaction hash:', completeResult.data.transactionHash);
+
+      debug({
+        transactionHash: completeResult.data.transactionHash,
+      });
+    }, 120000);
+
+    it('should have the app uninstalled on the Vincent contract after uninstall', async () => {
+      // Query the Vincent contract to verify the app was uninstalled
+      const vincentContract = new Contract(
+        VINCENT_DIAMOND_CONTRACT_ADDRESS_PROD,
+        COMBINED_ABI,
+        defaultWallet.provider,
+      );
+
+      const results = await vincentContract.getPermittedAppForAgents([agentSmartAccountAddress]);
+
+      console.log(
+        'getPermittedAppForAgents results after uninstall:',
+        JSON.stringify(results, null, 2),
+      );
+
+      expect(results).toHaveLength(1);
+      const [agentResult] = results;
+
+      // Verify the agent address matches
+      expect(agentResult.agentAddress.toLowerCase()).toBe(agentSmartAccountAddress.toLowerCase());
+
+      // Verify the app is no longer permitted (appId should be 0 or version should be 0)
+      const { permittedApp } = agentResult;
+      expect(Number(permittedApp.appId)).toBe(0);
+      expect(Number(permittedApp.version)).toBe(0);
+
+      debug({
+        agentAddress: agentResult.agentAddress,
+        appId: Number(permittedApp.appId),
+        version: Number(permittedApp.version),
+      });
+    }, 30000);
+
+    it('should return data to sign for reinstalling an app via install-app', async () => {
+      // After uninstalling, calling install-app should detect the uninstalled state
+      // and return reinstall data instead of minting a new PKP
+      const result = await store.dispatch(
+        api.endpoints.installApp.initiate({
+          appId: testAppId,
+          installAppRequest: {
+            userControllerAddress: defaultWallet.address,
+          },
+        }),
+      );
+
+      if (hasError(result)) {
+        console.error('installApp (reinstall) failed:', result.error);
+      }
+      expectAssertObject(result.data);
+
+      expect(result.data).toHaveProperty('agentSignerAddress');
+      expect(result.data).toHaveProperty('agentSmartAccountAddress');
+      expect(result.data).toHaveProperty('appInstallationDataToSign');
+      expect(typeof result.data.appInstallationDataToSign).toBe('object');
+
+      // Store for the next test
+      (global as any).reinstallData = result.data;
+
+      debug({
+        agentSignerAddress: result.data.agentSignerAddress,
+        agentSmartAccountAddress: result.data.agentSmartAccountAddress,
+        appInstallationDataToSign: JSON.stringify(result.data.appInstallationDataToSign, null, 2),
+      });
+    }, 60000);
+
+    it('should complete reinstall with signed typed data via complete-installation', async () => {
+      const reinstallData = (global as any).reinstallData;
+      expect(reinstallData).toBeDefined();
+
+      const { appInstallationDataToSign } = reinstallData;
+      const { typedData } = appInstallationDataToSign;
+
+      // Sign the typed data with the user's wallet
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { EIP712Domain: _, ...types } = typedData.types;
+      const typedDataSignature = await defaultWallet._signTypedData(
+        typedData.domain,
+        types,
+        typedData.message,
+      );
+
+      console.log('Reinstall typed data signature:', typedDataSignature);
+
+      // Wait to avoid Gelato rate limiting (Gelato has strict per-account limits)
+      console.log('Waiting 60s to avoid Gelato rate limiting...');
+      await delay(60000);
+
+      // Complete the reinstall using the standard complete-installation endpoint
+      const completeResult = await store.dispatch(
+        api.endpoints.completeInstallation.initiate({
+          appId: testAppId,
+          completeInstallationRequest: {
+            typedDataSignature,
+            appInstallationDataToSign,
+          },
+        }),
+      );
+
+      if (hasError(completeResult)) {
+        console.error('completeInstallation (reinstall) failed:', completeResult.error);
+      }
+      expectAssertObject(completeResult.data);
+
+      expect(completeResult.data).toHaveProperty('transactionHash');
+      expect(completeResult.data.transactionHash).toMatch(/^0x[a-fA-F0-9]{64}$/);
+
+      console.log('Reinstall transaction hash:', completeResult.data.transactionHash);
+
+      debug({
+        transactionHash: completeResult.data.transactionHash,
+      });
+    }, 120000);
+
+    it('should have the app permitted again on the Vincent contract after reinstall', async () => {
+      // Query the Vincent contract to verify the app was reinstalled
+      const vincentContract = new Contract(
+        VINCENT_DIAMOND_CONTRACT_ADDRESS_PROD,
+        COMBINED_ABI,
+        defaultWallet.provider,
+      );
+
+      const results = await vincentContract.getPermittedAppForAgents([agentSmartAccountAddress]);
+
+      console.log(
+        'getPermittedAppForAgents results after reinstall:',
+        JSON.stringify(results, null, 2),
+      );
+
+      expect(results).toHaveLength(1);
+      const [agentResult] = results;
+
+      // Verify the agent address matches
+      expect(agentResult.agentAddress.toLowerCase()).toBe(agentSmartAccountAddress.toLowerCase());
+
+      // Verify the permitted app details are restored
+      const { permittedApp } = agentResult;
+      expect(Number(permittedApp.appId)).toBe(testAppId);
+      expect(Number(permittedApp.version)).toBe(1);
+      expect(permittedApp.versionEnabled).toBe(true);
+      expect(permittedApp.isDeleted).toBe(false);
+
+      debug({
+        agentAddress: agentResult.agentAddress,
+        appId: Number(permittedApp.appId),
+        version: Number(permittedApp.version),
+        versionEnabled: permittedApp.versionEnabled,
+      });
+    }, 30000);
   });
 
   describe('POST /user/:appId/agent-account', () => {

@@ -1,3 +1,10 @@
+## 2.6.1 (2026-01-17)
+
+### 🧱 Updated Dependencies
+
+- Updated ability-sdk to 3.0.1
+- Updated contracts-sdk to 8.1.0
+
 ## 2.6.0 (2026-01-14)
 
 ### 🚀 Features
