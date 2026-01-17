@@ -33,6 +33,8 @@ export async function installAppUsingUserEoa({
     data: `0x${string}`;
   };
 }): Promise<`0x${string}`> {
+  console.log('=== Installing app using user EOA (direct submission from user EOA) ===');
+
   // Submit the transaction from the user's EOA
   const txHash = await userEoaWalletClient.sendTransaction({
     to: transactionData.to,

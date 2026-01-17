@@ -1,5 +1,6 @@
-import { getClient, type App } from '@lit-protocol/vincent-contracts-sdk';
+import { getClient, type App, deriveSmartAccountIndex } from '@lit-protocol/vincent-contracts-sdk';
 import { providers, Wallet } from 'ethers';
+import { toHex } from 'viem';
 
 import { areAbilitiesAndPoliciesEqual } from './areAbilitiesAndPoliciesEqual';
 import { registerAppVersionWithVincentApi } from '../vincent-api/registerAppVersionWithVincentApi';
@@ -8,6 +9,7 @@ import { registerNewAppVersionOnChain } from '../blockchain/registerNewAppVersio
 export interface NewAppVersionRegistration {
   appId: number;
   appVersion: number;
+  accountIndexHash: string;
   txHash?: string;
 }
 
@@ -26,6 +28,8 @@ export async function registerNewAppVersion({
   newAbilityIpfsCids: string[];
   newAbilityPolicies: string[][];
 }): Promise<NewAppVersionRegistration> {
+  console.log('=== Registering new app version ===');
+
   const vincentRegistryEthersProvider = new providers.JsonRpcProvider(vincentRegistryRpcUrl);
   const appManagerEthersWallet = new Wallet(appManagerPrivateKey, vincentRegistryEthersProvider);
   const client = getClient({ signer: appManagerEthersWallet });
@@ -79,22 +83,31 @@ export async function registerNewAppVersion({
       );
     }
 
+    const accountIndexHash = toHex(deriveSmartAccountIndex(appId), { size: 32 });
+
     console.log('New app version registered');
-    console.table([
-      { Name: 'App ID', appId },
-      { Name: 'New App Version', newAppVersionFromChain },
-      { Name: 'Version Registration Transaction Hash', txHash },
-    ]);
+    console.table({
+      'App ID': appId,
+      'New App Version': newAppVersionFromChain,
+      'Account Index Hash': accountIndexHash,
+      'Version Registration Transaction Hash': txHash,
+    });
 
     return {
       appId,
       appVersion: newAppVersionFromChain,
+      accountIndexHash,
       txHash,
     };
+  } else {
+    console.log('Abilities and Policies match, no new app version needed');
   }
+
+  const accountIndexHash = toHex(deriveSmartAccountIndex(existingApp.id), { size: 32 });
 
   return {
     appId: existingApp.id,
     appVersion: existingApp.latestVersion,
+    accountIndexHash,
   };
 }

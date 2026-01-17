@@ -1,6 +1,11 @@
 import type { Address, Chain } from 'viem';
-import { createPublicClient, createWalletClient, http } from 'viem';
+import { createPublicClient, createWalletClient, formatEther, http, parseEther } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
+import { ethers } from 'ethers';
+import { deriveSmartAccountIndex, getClient } from '@lit-protocol/vincent-contracts-sdk';
+import { signerToEcdsaValidator } from '@zerodev/ecdsa-validator';
+import { getEntryPoint, KERNEL_V3_3 } from '@zerodev/sdk/constants';
+import { createKernelAccount, createKernelAccountClient } from '@zerodev/sdk';
 
 import {
   installAppViaVincentApi,
@@ -9,13 +14,14 @@ import {
 import { completeAppInstallationViaVincentApi } from './vincent-api/completeAppInstallationViaVincentApi';
 import { installAppUsingUserEoa } from './blockchain/installAppUsingUserEoa';
 import { createKernelSmartAccount } from './smart-account/createKernelSmartAccount';
+import { ensureWalletHasTokens } from './wallets/ensureWalletHasTokens';
 import type { SmartAccountInfo } from './types';
 
 export interface UserSmartAccountInfo {
   pkpSignerAddress: Address;
   agentSmartAccountAddress: Address;
   smartAccount: SmartAccountInfo;
-  permitTxHash: string;
+  permitTxHash?: string;
   deploymentTxHash?: string;
 }
 
@@ -41,7 +47,7 @@ export async function setupUserSmartAccount({
   zerodevProjectId,
   userEoaPrivateKey,
   vincentAppId,
-  vincentAppAccountIndexHash,
+  funderPrivateKey,
 }: {
   vincentRegistryRpcUrl: string;
   vincentApiUrl: string;
@@ -49,9 +55,10 @@ export async function setupUserSmartAccount({
   zerodevProjectId: string;
   userEoaPrivateKey: `0x${string}`;
   vincentAppId: number;
-  vincentAppAccountIndexHash: string;
+  funderPrivateKey: `0x${string}`;
 }): Promise<UserSmartAccountInfo> {
-  // Create viem clients
+  console.log('=== Setting up user smart account ===');
+
   const vincentRegistryPublicClient = createPublicClient({
     chain: vincentRegistryChain,
     transport: http(vincentRegistryRpcUrl),
@@ -79,40 +86,60 @@ export async function setupUserSmartAccount({
   const pkpSignerAddress = installData.agentSignerAddress;
   const agentSmartAccountAddress = installData.agentSmartAccountAddress;
 
-  // Step 2: Complete app installation by submitting the permitAppVersion transaction
-  let permitTxHash: string;
+  // Step 2: Check if app is already installed (permitted) on-chain
+  const provider = new ethers.providers.JsonRpcProvider(vincentRegistryRpcUrl);
+  const wallet = new ethers.Wallet(userEoaPrivateKey, provider);
+  const contractClient = getClient({ signer: wallet });
 
-  if (isInstallAppResponseSponsored(installData)) {
-    // Gas-sponsored mode: Sign EIP-712 typed data and submit via Gelato relay
-    permitTxHash = await completeAppInstallationViaVincentApi({
-      vincentApiUrl,
-      userEoaPrivateKey,
-      appId: vincentAppId,
-      appInstallationDataToSign: installData.appInstallationDataToSign,
+  let isAlreadyPermitted = false;
+  try {
+    const userAddress = await contractClient.getUserAddressForAgent({
+      agentAddress: agentSmartAccountAddress as `0x${string}`,
     });
+    isAlreadyPermitted = userAddress.toLowerCase() === userEoaAddress.toLowerCase();
+  } catch (error) {
+    // If call reverts with AgentNotRegistered, app is not permitted
+    isAlreadyPermitted = false;
+  }
+
+  // Step 3: Complete app installation by submitting the permitAppVersion transaction (if not already permitted)
+  let permitTxHash: string | undefined;
+
+  if (isAlreadyPermitted) {
+    console.log('=== App already permitted, skipping installation transaction ===');
   } else {
-    // Direct mode: Submit transaction from user's EOA (user pays gas)
-    permitTxHash = await installAppUsingUserEoa({
-      userEoaWalletClient,
-      vincentRegistryPublicClient,
-      transactionData: {
-        to: installData.transaction.to as `0x${string}`,
-        data: installData.transaction.data as `0x${string}`,
-      },
+    if (isInstallAppResponseSponsored(installData)) {
+      // Gas-sponsored mode: Sign EIP-712 typed data and submit via Gelato relay
+      permitTxHash = await completeAppInstallationViaVincentApi({
+        vincentApiUrl,
+        userEoaPrivateKey,
+        appId: vincentAppId,
+        appInstallationDataToSign: installData.appInstallationDataToSign,
+      });
+    } else {
+      // Direct mode: Submit transaction from user's EOA (user pays gas)
+      permitTxHash = await installAppUsingUserEoa({
+        userEoaWalletClient,
+        vincentRegistryPublicClient,
+        transactionData: {
+          to: installData.rawTransaction.to as `0x${string}`,
+          data: installData.rawTransaction.data as `0x${string}`,
+        },
+      });
+    }
+
+    // Wait for the permit transaction to be confirmed
+    await vincentRegistryPublicClient.waitForTransactionReceipt({
+      hash: permitTxHash as `0x${string}`,
+      confirmations: 2,
     });
   }
 
-  // Wait for the permit transaction to be confirmed
-  await vincentRegistryPublicClient.waitForTransactionReceipt({
-    hash: permitTxHash as `0x${string}`,
-    confirmations: 2,
-  });
-
-  // Step 3: Create local smart account client
+  // Step 4: Create local smart account client
   const smartAccount = await createKernelSmartAccount(
     userEoaPrivateKey,
     pkpSignerAddress as Address,
-    vincentAppAccountIndexHash,
+    deriveSmartAccountIndex(vincentAppId).toString(),
     vincentRegistryChain,
     vincentRegistryRpcUrl,
     zerodevProjectId,
@@ -125,7 +152,29 @@ export async function setupUserSmartAccount({
     );
   }
 
-  // Step 4: Deploy the smart account if not already deployed
+  // Step 5: Fund the smart account before deployment
+  const funderAccount = privateKeyToAccount(funderPrivateKey);
+  const funderWalletClient = createWalletClient({
+    account: funderAccount,
+    chain: vincentRegistryChain,
+    transport: http(vincentRegistryRpcUrl),
+  });
+
+  console.log('=== Funding smart account for deployment ===');
+  const { currentBalance, fundingTxHash } = await ensureWalletHasTokens({
+    address: agentSmartAccountAddress as Address,
+    funderWalletClient,
+    publicClient: vincentRegistryPublicClient,
+    minAmount: parseEther('0.002'),
+  });
+
+  console.table({
+    'Smart Account Address': agentSmartAccountAddress,
+    'Current Balance': formatEther(currentBalance),
+    'Funding Transaction Hash': fundingTxHash,
+  });
+
+  // Step 6: Deploy the smart account if not already deployed
   const code = await vincentRegistryPublicClient.getCode({
     address: agentSmartAccountAddress as Address,
   });
@@ -135,9 +184,36 @@ export async function setupUserSmartAccount({
 
   if (!isDeployed) {
     try {
-      // Send a UserOperation with a simple call to trigger deployment
-      const userOpHash = await smartAccount.client.sendUserOperation({
-        callData: await smartAccount.account.encodeCalls([
+      console.log('=== Deploying smart account ===');
+
+      // For deployment, we need to use the sudo mode (user's EOA), not the session key
+      // The session key (PKP) cannot sign because it's on Chronicle Yellowstone
+      // Create a sudo-mode kernel account client using the user's EOA
+      const sudoValidator = await signerToEcdsaValidator(vincentRegistryPublicClient as any, {
+        signer: userEoaWalletClient as any,
+        entryPoint: getEntryPoint('0.7'),
+        kernelVersion: KERNEL_V3_3,
+      });
+      const sudoKernelAccount = await createKernelAccount(vincentRegistryPublicClient as any, {
+        entryPoint: getEntryPoint('0.7'),
+        plugins: {
+          sudo: sudoValidator,
+        },
+        kernelVersion: KERNEL_V3_3,
+        index: BigInt(deriveSmartAccountIndex(vincentAppId).toString()),
+      });
+
+      const bundlerUrl = `https://rpc.zerodev.app/api/v3/${zerodevProjectId}/chain/${vincentRegistryChain.id}`;
+      const sudoKernelClient = createKernelAccountClient({
+        account: sudoKernelAccount,
+        chain: vincentRegistryChain,
+        bundlerTransport: http(bundlerUrl),
+        client: vincentRegistryPublicClient,
+      });
+
+      // Send a UserOperation with a simple call to trigger deployment using sudo mode
+      const userOpHash = await sudoKernelClient.sendUserOperation({
+        callData: await sudoKernelAccount.encodeCalls([
           {
             to: '0x0000000000000000000000000000000000000000' as Address,
             value: 0n,
@@ -147,11 +223,17 @@ export async function setupUserSmartAccount({
       });
 
       // Wait for the UserOperation to be included in a block
-      const receipt = await smartAccount.client.waitForUserOperationReceipt({
+      const receipt = await sudoKernelClient.waitForUserOperationReceipt({
         hash: userOpHash,
       });
 
       deploymentTxHash = receipt.receipt.transactionHash;
+
+      // Wait for 2 block confirmations before verifying deployment
+      await vincentRegistryPublicClient.waitForTransactionReceipt({
+        hash: deploymentTxHash as `0x${string}`,
+        confirmations: 2,
+      });
 
       // Verify deployment
       const deployedCode = await vincentRegistryPublicClient.getCode({
@@ -167,18 +249,15 @@ export async function setupUserSmartAccount({
   }
 
   // Summary
-  console.table([
-    { Name: 'PKP Signer Address', Value: pkpSignerAddress },
-    { Name: 'Smart Account Address', Value: agentSmartAccountAddress },
-    { Name: 'Permit Transaction Hash', Value: permitTxHash },
-    {
-      Name: 'Smart Account Deployment Status',
-      Value: isDeployed ? 'Already Deployed' : 'Newly Deployed',
-    },
-    ...(deploymentTxHash
-      ? [{ Name: 'Smart Account Deployment Transaction Hash', Value: deploymentTxHash }]
-      : []),
-  ]);
+  console.table({
+    'PKP Signer Address': pkpSignerAddress,
+    'Smart Account Address': agentSmartAccountAddress,
+    ...(permitTxHash
+      ? { 'Permit Transaction Hash': permitTxHash }
+      : { 'Permit Status': 'Already permitted, skipped' }),
+    'Smart Account Deployment Status': isDeployed ? 'Already Deployed' : 'Newly Deployed',
+    ...(deploymentTxHash ? { 'Smart Account Deployment Transaction Hash': deploymentTxHash } : {}),
+  });
 
   return {
     pkpSignerAddress: pkpSignerAddress as `0x${string}`,

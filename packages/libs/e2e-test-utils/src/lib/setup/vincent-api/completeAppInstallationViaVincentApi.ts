@@ -36,6 +36,8 @@ export async function completeAppInstallationViaVincentApi({
   appId: number;
   appInstallationDataToSign: any;
 }): Promise<string> {
+  console.log('=== Completing app installation via Vincent API (gas-sponsored) ===');
+
   // Sign the EIP-712 typed data
   const wallet = new Wallet(userEoaPrivateKey);
   const typedData = appInstallationDataToSign.typedData;

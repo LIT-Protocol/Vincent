@@ -6,15 +6,17 @@ export async function ensureWalletHasTokens({
   funderWalletClient,
   publicClient,
   minAmount,
+  dontFund = false,
 }: {
   address: Address;
   funderWalletClient: WalletClient<any, any, Account>;
   publicClient: PublicClient;
   minAmount: bigint;
+  dontFund?: boolean;
 }): Promise<{ currentBalance: bigint; fundingTxHash?: `0x${string}` }> {
   const walletBalance = await publicClient.getBalance({ address });
 
-  if (walletBalance >= minAmount) return { currentBalance: walletBalance };
+  if (walletBalance >= minAmount || dontFund) return { currentBalance: walletBalance };
 
   const fundAmount = minAmount - walletBalance;
   const txHash = await funderWalletClient.sendTransaction({

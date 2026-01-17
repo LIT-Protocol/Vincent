@@ -28,6 +28,8 @@ export async function registerNewApp({
   abilityIpfsCids: string[];
   abilityPolicies: string[][];
 }): Promise<NewAppRegistration> {
+  console.log('=== Registering new app ===');
+
   const vincentRegistryEthersProvider = new providers.JsonRpcProvider(vincentRegistryRpcUrl);
   const appManagerEthersWallet = new Wallet(appManagerPrivateKey, vincentRegistryEthersProvider);
   const client = getClient({ signer: appManagerEthersWallet });
@@ -51,14 +53,14 @@ export async function registerNewApp({
     appMetadata,
   });
 
-  console.table([
-    { Name: 'App ID', Value: appId },
-    { Name: 'App Version', Value: newAppVersion },
-    { Name: 'Account Index Hash', Value: accountIndexHash },
-    { Name: 'App Registration Transaction Hash', Value: txHash },
-  ]);
+  console.table({
+    'App ID': appId,
+    'App Version': newAppVersion,
+    'Account Index Hash': accountIndexHash,
+    'App Registration Transaction Hash': txHash,
+  });
 
-  console.log('\nAbilities and Policies:');
+  console.log('Abilities and Policies:');
   console.table(
     abilityIpfsCids.map((cid: string, index: number) => ({
       'Ability IPFS CID': cid,

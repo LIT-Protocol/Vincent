@@ -38,10 +38,10 @@ export async function setupVincentDevelopmentEnvironment(
     zerodevProjectId: config.zerodevProjectId,
     userEoaPrivateKey: config.privateKeys.userEoa,
     vincentAppId: appInfo.appId,
-    vincentAppAccountIndexHash: appInfo.accountIndexHash!,
+    funderPrivateKey: config.privateKeys.funder,
   });
 
-  console.log('Vincent Development Environment Setup Complete');
+  console.log('=== Vincent Development Environment Setup Complete ===');
 
   return {
     vincentRegistryRpcUrl: config.vincentRegistryRpcUrl,

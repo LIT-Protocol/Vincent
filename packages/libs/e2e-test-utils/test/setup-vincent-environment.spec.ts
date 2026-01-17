@@ -39,11 +39,6 @@ describe('Vincent Development Environment Setup', () => {
   let env: VincentDevEnvironment;
 
   beforeAll(async () => {
-    console.log('\nRunning Vincent Development Environment E2E Test');
-    console.log(`RPC URL: ${BASE_SEPOLIA_RPC_URL}`);
-    console.log(`Vincent API: ${VINCENT_API_URL}`);
-
-    // Run the setup
     env = await setupVincentDevelopmentEnvironment({
       vincentRegistryRpcUrl: BASE_SEPOLIA_RPC_URL,
       vincentRegistryChain: baseSepolia,
@@ -220,22 +215,20 @@ describe('Vincent Development Environment Setup', () => {
   describe('Summary', () => {
     it('should print complete environment summary', () => {
       console.log('Vincent Development Environment Summary:');
-      console.table([
-        { Key: 'App ID', Value: env.appId },
-        { Key: 'App Version', Value: env.appVersion },
-        { Key: 'Account Index Hash', Value: env.accountIndexHash || 'N/A' },
-        { Key: 'Funder', Value: env.accounts.funder.address },
-        { Key: 'App Manager', Value: env.accounts.appManager.address },
-        { Key: 'App Delegatee', Value: env.accounts.appDelegatee.address },
-        { Key: 'User EOA', Value: env.accounts.userEoa.address },
-        { Key: 'PKP Signer', Value: env.agentSignerAddress },
-        { Key: 'Smart Account', Value: env.agentSmartAccountAddress },
-        {
-          Key: 'Smart Account Deployment Tx',
-          Value: env.smartAccountRegistrationTxHash || 'N/A (already deployed)',
-        },
-        { Key: 'Chain', Value: `${baseSepolia.name} (${baseSepolia.id})` },
-      ]);
+      console.table({
+        'App ID': env.appId,
+        'App Version': env.appVersion,
+        'Account Index Hash': env.accountIndexHash || 'N/A',
+        Funder: env.accounts.funder.address,
+        'App Manager': env.accounts.appManager.address,
+        'App Delegatee': env.accounts.appDelegatee.address,
+        'User EOA': env.accounts.userEoa.address,
+        'PKP Signer': env.agentSignerAddress,
+        'Smart Account': env.agentSmartAccountAddress,
+        'Smart Account Deployment Tx':
+          env.smartAccountRegistrationTxHash || 'N/A (already deployed)',
+        Chain: `${baseSepolia.name} (${baseSepolia.id})`,
+      });
 
       expect(true).toBe(true); // Always pass to show summary
     });

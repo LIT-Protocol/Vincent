@@ -15,7 +15,7 @@ export interface InstallAppResponseSponsored {
 export interface InstallAppResponseDirect {
   agentSignerAddress: string;
   agentSmartAccountAddress: string;
-  transaction: {
+  rawTransaction: {
     to: string;
     data: string;
   };
@@ -77,6 +77,8 @@ export async function installAppViaVincentApi({
   userEoaAddress: string;
   sponsorGas?: boolean;
 }): Promise<InstallAppResponse> {
+  console.log('=== Installing app via Vincent API ===');
+
   const response = await fetch(`${vincentApiUrl}/user/${appId}/install-app`, {
     method: 'POST',
     headers: {
@@ -97,11 +99,10 @@ export async function installAppViaVincentApi({
 
   const data = (await response.json()) as InstallAppResponse;
 
-  console.log('App installation successful');
-  console.table([
-    { 'Agent Signer Address': data.agentSignerAddress },
-    { 'Agent Smart Account Address': data.agentSmartAccountAddress },
-  ]);
+  console.table({
+    'Agent Signer Address': data.agentSignerAddress,
+    'Agent Smart Account Address': data.agentSmartAccountAddress,
+  });
 
   return data;
 }

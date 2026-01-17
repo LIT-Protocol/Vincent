@@ -24,6 +24,8 @@ export async function handleAppRegistration({
   abilityIpfsCids: string[];
   abilityPolicies: string[][];
 }): Promise<NewAppRegistration | NewAppVersionRegistration> {
+  console.log('=== Handling app registration ===');
+
   const delegateeEthersWallet = new Wallet(
     appDelegateePrivateKey,
     new providers.JsonRpcProvider(vincentRegistryRpcUrl),
@@ -36,13 +38,11 @@ export async function handleAppRegistration({
 
   if (delegateeExistingApp) {
     console.log(`Found existing app for delegatee ${delegateeEthersWallet.address}:`);
-    console.table([
-      {
-        'App ID': delegateeExistingApp.id,
-        'Latest Version': delegateeExistingApp.latestVersion,
-        'Manager Address': delegateeExistingApp.manager,
-      },
-    ]);
+    console.table({
+      'App ID': delegateeExistingApp.id,
+      'Latest Version': delegateeExistingApp.latestVersion,
+      'Manager Address': delegateeExistingApp.manager,
+    });
 
     return await registerNewAppVersion({
       vincentRegistryRpcUrl,

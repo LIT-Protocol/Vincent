@@ -9,7 +9,7 @@ import { signerToEcdsaValidator } from '@zerodev/ecdsa-validator';
 import { toECDSASigner } from '@zerodev/permissions/signers';
 import { toSudoPolicy } from '@zerodev/permissions/policies';
 import { toPermissionValidator, serializePermissionAccount } from '@zerodev/permissions';
-import { KERNEL_V3_1, getEntryPoint } from '@zerodev/sdk/constants';
+import { KERNEL_V3_3, getEntryPoint } from '@zerodev/sdk/constants';
 
 import type { SmartAccountInfo } from '../types';
 
@@ -68,7 +68,7 @@ export async function createKernelSmartAccount(
   const ecdsaValidator = await signerToEcdsaValidator(publicClient as any, {
     signer: walletClient as any,
     entryPoint: getEntryPoint('0.7'),
-    kernelVersion: KERNEL_V3_1,
+    kernelVersion: KERNEL_V3_3,
   });
 
   // Create agent signer (session key)
@@ -80,7 +80,7 @@ export async function createKernelSmartAccount(
     entryPoint: getEntryPoint('0.7'),
     signer: agentSignerECDSA,
     policies: [toSudoPolicy({})],
-    kernelVersion: KERNEL_V3_1,
+    kernelVersion: KERNEL_V3_3,
   });
 
   // Create kernel account
@@ -90,7 +90,7 @@ export async function createKernelSmartAccount(
       sudo: ecdsaValidator,
       regular: permissionPlugin,
     },
-    kernelVersion: KERNEL_V3_1,
+    kernelVersion: KERNEL_V3_3,
     index: BigInt(accountIndexHash),
   });
 

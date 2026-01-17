@@ -61,6 +61,8 @@ export async function setupWallets({
   vincentRegistryChain: Chain;
   vincentRegistryRpcUrl: string;
 }): Promise<SetupWallets> {
+  console.log('=== Setting up wallets ===');
+
   const funderAccount = privateKeyToAccount(funder);
   const appManagerAccount = privateKeyToAccount(appManager);
   const appDelegateeAccount = privateKeyToAccount(appDelegatee);
@@ -70,6 +72,23 @@ export async function setupWallets({
     transport: http(vincentRegistryRpcUrl),
   });
 
+  const chronicleYellowstonePublicClient = createPublicClient({
+    chain: chronicleYellowstone,
+    transport: http('https://yellowstone-rpc.litprotocol.com/'),
+  });
+  const chronicleYellowstoneFunderWalletClient = createWalletClient({
+    account: funderAccount,
+    chain: chronicleYellowstone,
+    transport: http('https://yellowstone-rpc.litprotocol.com/'),
+  });
+
+  console.table({
+    Funder: funderAccount.address,
+    'App Manager': appManagerAccount.address,
+    'App Delegatee': appDelegateeAccount.address,
+    'User EOA': userEoaAccount.address,
+  });
+
   // Create funder wallet client with account attached for sending transactions
   const funderWalletClient = createWalletClient({
     account: funderAccount,
@@ -77,19 +96,21 @@ export async function setupWallets({
     transport: http(vincentRegistryRpcUrl),
   });
 
-  console.table([
-    { Name: 'Funder', Address: funderAccount.address },
-    { Name: 'App Manager', Address: appManagerAccount.address },
-    { Name: 'App Delegatee', Address: appDelegateeAccount.address },
-    { Name: 'User EOA', Address: userEoaAccount.address },
-  ]);
-
   // Ensure funder has sufficient balance to fund other wallets
-  const funderBalance = await ensureWalletHasTokens({
+  const funderBalanceOnVincentRegistryChain = await ensureWalletHasTokens({
     address: funderAccount.address,
     funderWalletClient,
     publicClient: vincentRegistryPublicClient,
-    minAmount: parseEther('0.15'),
+    minAmount: parseEther('0.006'),
+    dontFund: true,
+  });
+
+  const funderBalanceOnChronicleYellowstone = await ensureWalletHasTokens({
+    address: funderAccount.address,
+    funderWalletClient,
+    publicClient: chronicleYellowstonePublicClient,
+    minAmount: parseEther('0.06'),
+    dontFund: true,
   });
 
   // Ensure app manager has sufficient balance to register app and app versions
@@ -97,7 +118,7 @@ export async function setupWallets({
     address: appManagerAccount.address,
     funderWalletClient,
     publicClient: vincentRegistryPublicClient,
-    minAmount: parseEther('0.05'),
+    minAmount: parseEther('0.002'),
   });
 
   // Ensure user EOA has sufficient balance to deploy smart account
@@ -105,20 +126,7 @@ export async function setupWallets({
     address: userEoaAccount.address,
     funderWalletClient,
     publicClient: vincentRegistryPublicClient,
-    minAmount: parseEther('0.05'),
-  });
-
-  // Fund app delegatee on Chronicle Yellowstone for capacity credit minting
-  const chronicleYellowstonePublicClient = createPublicClient({
-    chain: chronicleYellowstone,
-    transport: http('https://yellowstone-rpc.litprotocol.com/'),
-  });
-
-  // Create funder wallet client for Chronicle Yellowstone with account attached
-  const chronicleYellowstoneFunderWalletClient = createWalletClient({
-    account: funderAccount,
-    chain: chronicleYellowstone,
-    transport: http('https://yellowstone-rpc.litprotocol.com/'),
+    minAmount: parseEther('0.002'),
   });
 
   // Ensure app delegatee has sufficient balance to mint capacity credits
@@ -131,42 +139,30 @@ export async function setupWallets({
   });
 
   // Ensure app delegatee has a valid capacity credit (required for executing Lit Actions)
-  const capacityCreditInfo = await ensureWalletHasUnexpiredCapacityCredit({
-    privateKey: appDelegatee,
-  });
+  await ensureWalletHasUnexpiredCapacityCredit({ privateKey: appDelegatee });
 
-  console.table([
-    {
-      Name: 'Funder',
-      Address: funderAccount.address,
-      Balance: formatEther(funderBalance.currentBalance),
-      FundingTxHash: funderBalance.fundingTxHash,
+  console.table({
+    'Funder on Vincent Registry Chain': {
+      Balance: formatEther(funderBalanceOnVincentRegistryChain.currentBalance),
+      FundingTxHash: funderBalanceOnVincentRegistryChain.fundingTxHash,
     },
-    {
-      Name: 'App Manager',
-      Address: appManagerAccount.address,
+    'Funder on Chronicle Yellowstone': {
+      Balance: formatEther(funderBalanceOnChronicleYellowstone.currentBalance),
+      FundingTxHash: funderBalanceOnChronicleYellowstone.fundingTxHash,
+    },
+    'App Manager': {
       Balance: formatEther(appManagerBalance.currentBalance),
       FundingTxHash: appManagerBalance.fundingTxHash,
     },
-    {
-      Name: 'User EOA',
-      Address: userEoaAccount.address,
+    'User EOA': {
       Balance: formatEther(userEoaBalance.currentBalance),
       FundingTxHash: userEoaBalance.fundingTxHash,
     },
-    {
-      Name: 'App Delegatee',
-      Address: appDelegateeAccount.address,
+    'App Delegatee': {
       Balance: formatEther(appDelegateeBalance.currentBalance),
       FundingTxHash: appDelegateeBalance.fundingTxHash,
     },
-    capacityCreditInfo.mintedNewCapacityCredit
-      ? {
-          Name: 'Minted New Capacity Credit',
-          CapacityTokenId: capacityCreditInfo.newCapacityCreditInfo!.capacityTokenId,
-        }
-      : { Name: 'Used Existing Capacity Credit' },
-  ]);
+  });
 
   return {
     accounts: {

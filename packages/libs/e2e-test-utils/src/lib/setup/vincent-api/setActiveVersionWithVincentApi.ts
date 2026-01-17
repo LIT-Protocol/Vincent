@@ -11,6 +11,8 @@ export async function setActiveVersionWithVincentApi({
   appId: number;
   activeVersion: number;
 }): Promise<void> {
+  console.log('=== Setting active version with Vincent API ===');
+
   const jwtToken = await generateAppManagerJwt({
     appManagerPrivateKey,
   });

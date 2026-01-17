@@ -41,7 +41,7 @@ export async function setupVincentApp({
   abilityIpfsCids,
   abilityPolicies,
 }: SetupVincentAppParams): Promise<VincentAppInfo> {
-  console.log('\n=== Setting up Vincent App ===');
+  console.log('=== Setting up Vincent App ===');
 
   // Step 1: Handle app registration (new app or new version)
   // This registers on-chain and with the API
