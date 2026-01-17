@@ -17,6 +17,7 @@ import "./facets/VincentAppViewFacet.sol";
 import "./facets/VincentUserFacet.sol";
 import "./facets/VincentUserViewFacet.sol";
 import "./facets/VincentERC2771Facet.sol";
+import "./facets/VincentZeroDevConfigFacet.sol";
 import "./libs/LibERC2771.sol";
 
 /**
@@ -55,6 +56,8 @@ contract VincentDiamond {
         address vincentUserViewFacet;
         // The facet implementing EIP-2771 meta-transaction support
         address vincentERC2771Facet;
+        // The facet implementing ZeroDev configuration
+        address vincentZeroDevConfigFacet;
     }
 
     /**
@@ -64,12 +67,14 @@ contract VincentDiamond {
      * @param _diamondCutFacet Address of the facet implementing diamond cut functionality
      * @param _facets Struct containing addresses of all other facets
      * @param _trustedForwarder Address of the Gelato trusted forwarder for EIP-2771 gasless transactions (address(0) to disable EIP-2771)
+     * @param _ecdsaValidatorAddress Address of the ZeroDev ECDSA validator contract for smart account owner verification
      */
     constructor(
         address _contractOwner,
         address _diamondCutFacet,
         FacetAddresses memory _facets,
-        address _trustedForwarder
+        address _trustedForwarder,
+        address _ecdsaValidatorAddress
     ) payable {
         // Validate inputs
         if (_diamondCutFacet == address(0)) revert InvalidFacetAddress();
@@ -79,10 +84,13 @@ contract VincentDiamond {
             _facets.diamondLoupeFacet == address(0) || _facets.ownershipFacet == address(0)
                 || _facets.vincentAppFacet == address(0) || _facets.vincentAppViewFacet == address(0)
                 || _facets.vincentUserFacet == address(0) || _facets.vincentUserViewFacet == address(0)
-                || _facets.vincentERC2771Facet == address(0)
+                || _facets.vincentERC2771Facet == address(0) || _facets.vincentZeroDevConfigFacet == address(0)
         ) {
             revert InvalidFacetAddress();
         }
+
+        // Validate ECDSA validator address
+        if (_ecdsaValidatorAddress == address(0)) revert InvalidFacetAddress();
 
         // Set the contract owner
         LibDiamond.setContractOwner(_contractOwner);
@@ -106,7 +114,7 @@ contract VincentDiamond {
         LibDiamond.diamondCut(diamondCut, address(0), "");
 
         // Now add all other facets
-        IDiamondCut.FacetCut[] memory cuts = new IDiamondCut.FacetCut[](7);
+        IDiamondCut.FacetCut[] memory cuts = new IDiamondCut.FacetCut[](8);
 
         // Add DiamondLoupeFacet
         cuts[0] = IDiamondCut.FacetCut({
@@ -157,12 +165,22 @@ contract VincentDiamond {
             functionSelectors: getVincentERC2771FacetSelectors()
         });
 
+        // Add VincentZeroDevConfigFacet
+        cuts[7] = IDiamondCut.FacetCut({
+            facetAddress: _facets.vincentZeroDevConfigFacet,
+            action: IDiamondCut.FacetCutAction.Add,
+            functionSelectors: getVincentZeroDevConfigFacetSelectors()
+        });
+
         LibDiamond.diamondCut(cuts, address(0), "");
 
         // Set the trusted forwarder for EIP-2771 meta-transactions
         // Setting to address(0) disables EIP-2771 support
         VincentERC2771Storage.erc2771Storage().trustedForwarder = _trustedForwarder;
         emit LibERC2771.TrustedForwarderSet(_trustedForwarder);
+
+        // Set the ECDSA validator address for smart account owner verification
+        VincentZeroDevStorage.zeroDevStorage().ecdsaValidatorAddress = _ecdsaValidatorAddress;
     }
 
     /**
@@ -238,6 +256,13 @@ contract VincentDiamond {
         selectors[0] = VincentERC2771Facet.setTrustedForwarder.selector;
         selectors[1] = VincentERC2771Facet.getTrustedForwarder.selector;
         selectors[2] = VincentERC2771Facet.isTrustedForwarder.selector;
+        return selectors;
+    }
+
+    function getVincentZeroDevConfigFacetSelectors() internal pure returns (bytes4[] memory) {
+        bytes4[] memory selectors = new bytes4[](2);
+        selectors[0] = VincentZeroDevConfigFacet.setEcdsaValidatorAddress.selector;
+        selectors[1] = VincentZeroDevConfigFacet.getEcdsaValidatorAddress.selector;
         return selectors;
     }
 

@@ -236,7 +236,12 @@ library LibVincentUserFacet {
     error PkpSignerAlreadyRegisteredToAgent(address registeredPkpAgentAddress);
 
     /**
-     * @notice Error thrown when an agent is not registered to the caller
+     * @notice Error thrown when the caller is not the owner of the agent
+     * @dev Used by both onlySmartAccountOwner (validates via ECDSA validator) and
+     *      onlyAgentOwner (validates via internal state) modifiers
+     * @param caller The address that attempted the operation
+     * @param agent The agent address
+     * @param owner The actual/registered owner of the agent
      */
-    error AgentNotRegisteredToUser();
+    error NotAgentOwner(address caller, address agent, address owner);
 }

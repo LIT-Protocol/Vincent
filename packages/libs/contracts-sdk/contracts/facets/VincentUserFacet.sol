@@ -8,6 +8,14 @@ import "../VincentBase.sol";
 import "../libs/LibVincentUserFacet.sol";
 
 /**
+ * @notice Interface for ZeroDev ECDSA Validator contract
+ * @dev Used to verify the owner of a smart account by querying the validator
+ */
+interface IECDSAValidator {
+    function ecdsaValidatorStorage(address smartAccount) external view returns (address owner);
+}
+
+/**
  * @title VincentUserFacet
  * @notice Handles user management for Vincent, allowing users to register agent addresses and manage app permissions
  * @dev Part of Vincent Diamond contract, providing user-facing functionality for permitting app versions
@@ -20,6 +28,41 @@ contract VincentUserFacet is VincentBase {
     using EnumerableSet for EnumerableSet.UintSet;
     using EnumerableSet for EnumerableSet.Bytes32Set;
     using EnumerableSet for EnumerableSet.AddressSet;
+
+    /**
+     * @notice Validates that the caller is the ecdsa signer of the Zerodev smart account (agent)
+     * @dev Queries the ZeroDev ECDSA validator to verify the smart account's EOA owner
+     *      This modifier is used on permitAppVersion to establish initial ownership
+     * @param agentAddress The smart account address to validate ownership for
+     */
+    modifier onlySmartAccountOwner(address agentAddress) {
+        VincentZeroDevStorage.ZeroDevStorage storage zs = VincentZeroDevStorage.zeroDevStorage();
+        address caller = _msgSender();
+
+        // Query the ECDSA validator to get the smart account's owner
+        address owner = IECDSAValidator(zs.ecdsaValidatorAddress).ecdsaValidatorStorage(agentAddress);
+
+        if (caller != owner) {
+            revert LibVincentUserFacet.NotAgentOwner(caller, agentAddress, owner);
+        }
+        _;
+    }
+
+    /**
+     * @notice Validates that the caller is the registered owner of the agent in Vincent's internal state
+     * @dev Checks the cached owner from Vincent's storage, avoiding external calls to the validator
+     * @param agentAddress The agent address to validate ownership for
+     */
+    modifier onlyAgentOwner(address agentAddress) {
+        VincentUserStorage.UserStorage storage us_ = VincentUserStorage.userStorage();
+        address caller = _msgSender();
+        address registeredOwner = us_.registeredAgentAddressToUserAddress[agentAddress];
+
+        if (caller != registeredOwner) {
+            revert LibVincentUserFacet.NotAgentOwner(caller, agentAddress, registeredOwner);
+        }
+        _;
+    }
 
     /**
      * @notice Permits an app version for an agent and optionally sets ability policy parameters
@@ -45,7 +88,13 @@ contract VincentUserFacet is VincentBase {
         string[] calldata abilityIpfsCids,
         string[][] calldata policyIpfsCids,
         bytes[][] calldata policyParameterValues
-    ) external appNotDeleted(appId) onlyRegisteredAppVersion(appId, appVersion) appEnabled(appId, appVersion) {
+    )
+        external
+        appNotDeleted(appId)
+        onlyRegisteredAppVersion(appId, appVersion)
+        appEnabled(appId, appVersion)
+        onlySmartAccountOwner(agentAddress)
+    {
         uint256 abilityCount = abilityIpfsCids.length;
 
         if (agentAddress == address(0)) {
@@ -171,15 +220,9 @@ contract VincentUserFacet is VincentBase {
     function unPermitAppVersion(address agentAddress, uint40 appId, uint24 appVersion)
         external
         onlyRegisteredAppVersion(appId, appVersion)
+        onlyAgentOwner(agentAddress)
     {
         VincentUserStorage.UserStorage storage us_ = VincentUserStorage.userStorage();
-        address sender = _msgSender();
-
-        // Check if the agent is registered to sender
-        if (us_.registeredAgentAddressToUserAddress[agentAddress] != sender) {
-            revert LibVincentUserFacet.AgentNotRegisteredToUser();
-        }
-
         VincentUserStorage.AgentStorage storage agentStorage = us_.agentAddressToAgentStorage[agentAddress];
 
         if (agentStorage.permittedAppId != appId || agentStorage.permittedAppVersion != appVersion) {
@@ -222,15 +265,12 @@ contract VincentUserFacet is VincentBase {
      * @param agentAddress The agent address of the caller (msg.sender) to re-permit for the specified app
      * @param appId The ID of the app to re-permit
      */
-    function rePermitApp(address agentAddress, uint40 appId) external appNotDeleted(appId) {
+    function rePermitApp(address agentAddress, uint40 appId)
+        external
+        appNotDeleted(appId)
+        onlyAgentOwner(agentAddress)
+    {
         VincentUserStorage.UserStorage storage us_ = VincentUserStorage.userStorage();
-        address sender = _msgSender();
-
-        // Check if the agent is registered to sender
-        if (us_.registeredAgentAddressToUserAddress[agentAddress] != sender) {
-            revert LibVincentUserFacet.AgentNotRegisteredToUser();
-        }
-
         VincentUserStorage.AgentStorage storage agentStorage = us_.agentAddressToAgentStorage[agentAddress];
 
         // Check if app is currently permitted
@@ -304,7 +344,7 @@ contract VincentUserFacet is VincentBase {
         string[] calldata abilityIpfsCids,
         string[][] calldata policyIpfsCids,
         bytes[][] calldata policyParameterValues
-    ) external onlyRegisteredAppVersion(appId, appVersion) {
+    ) external onlyRegisteredAppVersion(appId, appVersion) onlyAgentOwner(agentAddress) {
         // Allowing the User to update the Policies for Apps even if they're deleted or disabled since these flags can be toggled anytime by the App Manager so we don't want to block the User from updating the Policies.
         if (abilityIpfsCids.length == 0 || policyIpfsCids.length == 0 || policyParameterValues.length == 0) {
             revert LibVincentUserFacet.InvalidInput();
@@ -316,13 +356,6 @@ contract VincentUserFacet is VincentBase {
 
         // Check if the User has permitted the current app version
         VincentUserStorage.UserStorage storage us_ = VincentUserStorage.userStorage();
-        address sender = _msgSender();
-
-        // Check if the agent is registered to sender
-        if (us_.registeredAgentAddressToUserAddress[agentAddress] != sender) {
-            revert LibVincentUserFacet.AgentNotRegisteredToUser();
-        }
-
         VincentUserStorage.AgentStorage storage agentStorage = us_.agentAddressToAgentStorage[agentAddress];
 
         if (agentStorage.permittedAppId != appId || agentStorage.permittedAppVersion != appVersion) {
