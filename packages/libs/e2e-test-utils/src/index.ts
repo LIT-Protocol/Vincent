@@ -1,9 +1,4 @@
-// Main setup function and types
-export {
-  setupVincentDevelopmentEnvironment,
-  type SetupConfig,
-  type VincentDevEnvironment,
-  type SmartAccountInfo,
-} from './lib/setup-vincent-development-environment';
-
+export { setupVincentDevelopmentEnvironment } from './lib/setupVincentDevelopmentEnv';
 export { getEnv } from './lib/setup';
+
+export type { SetupConfig, VincentDevEnvironment, SmartAccountInfo } from './lib/setup';

@@ -5,35 +5,43 @@ import {
   createKernelAccountClient,
   addressToEmptyAccount,
 } from '@zerodev/sdk';
-import { signerToEcdsaValidator, getKernelAddressFromECDSA } from '@zerodev/ecdsa-validator';
+import { signerToEcdsaValidator } from '@zerodev/ecdsa-validator';
 import { toECDSASigner } from '@zerodev/permissions/signers';
 import { toSudoPolicy } from '@zerodev/permissions/policies';
 import { toPermissionValidator, serializePermissionAccount } from '@zerodev/permissions';
 import { KERNEL_V3_1, getEntryPoint } from '@zerodev/sdk/constants';
 
-import type { SmartAccountInfo } from './types';
+import type { SmartAccountInfo } from '../types';
 
 /**
- * Derive the agent smart account address for a given EOA address
- */
-export async function deriveAgentAddress(
-  eoaAddress: Address,
-  accountIndexHash: string,
-  publicClient: any,
-): Promise<Address> {
-  const agentAddress = await getKernelAddressFromECDSA({
-    entryPoint: getEntryPoint('0.7'),
-    kernelVersion: KERNEL_V3_1,
-    eoaAddress,
-    index: BigInt(accountIndexHash),
-    publicClient: publicClient as any,
-  });
-
-  return agentAddress as Address;
-}
-
-/**
- * Create a kernel smart account with session key permissions
+ * Create a kernel smart account with session key permissions.
+ *
+ * This function:
+ * 1. Creates ECDSA validator for the user (owner)
+ * 2. Creates agent signer (session key) as an empty account
+ * 3. Creates permission plugin with sudo policy for the agent
+ * 4. Creates kernel account with both sudo and regular validators
+ * 5. Creates kernel account client with bundler
+ *
+ * @param userPrivateKey - User's EOA private key
+ * @param agentSignerAddress - PKP address to use as session key
+ * @param accountIndexHash - Account index hash from app registration
+ * @param chain - Chain configuration
+ * @param rpcUrl - RPC URL for the chain
+ * @param zerodevProjectId - ZeroDev project ID
+ * @returns Smart account information including account, client, and approval
+ *
+ * @example
+ * ```typescript
+ * const smartAccount = await createKernelSmartAccount(
+ *   '0x...',
+ *   '0x...' as Address,
+ *   'accountIndexHash',
+ *   baseMainnet,
+ *   'https://rpc.base.org',
+ *   'zerodev-project-id',
+ * );
+ * ```
  */
 export async function createKernelSmartAccount(
   userPrivateKey: string,
@@ -43,14 +51,12 @@ export async function createKernelSmartAccount(
   rpcUrl: string,
   zerodevProjectId: string,
 ): Promise<SmartAccountInfo> {
-  console.log('=== Creating Kernel Smart Account ===');
-
   const publicClient = createPublicClient({
     chain,
     transport: http(rpcUrl),
   });
 
-  const userAccount = privateKeyToAccount(userPrivateKey as `0x\${string}`);
+  const userAccount = privateKeyToAccount(userPrivateKey as `0x${string}`);
 
   const walletClient = createWalletClient({
     account: userAccount,
@@ -92,7 +98,8 @@ export async function createKernelSmartAccount(
   const approval = await serializePermissionAccount(kernelAccount);
 
   // Create ZeroDev bundler URL
-  const bundlerUrl = `https://rpc.zerodev.app/api/v2/bundler/${zerodevProjectId}`;
+  // Using v3 API for Kernel v3.1 (requires chain ID in path)
+  const bundlerUrl = `https://rpc.zerodev.app/api/v3/${zerodevProjectId}/chain/${chain.id}`;
 
   // Create kernel account client with bundler
   const kernelClient = createKernelAccountClient({
@@ -102,10 +109,11 @@ export async function createKernelSmartAccount(
     client: publicClient,
   });
 
-  console.log('Smart Account Address:', accountAddress);
-  console.log('Session Key Approval Created');
-  console.log('Agent Signer Address:', agentSignerAddress);
-  console.log('Bundler URL:', bundlerUrl);
+  console.table([
+    { Name: 'Smart Account Address', Value: accountAddress },
+    { Name: 'Agent Signer Address', Value: agentSignerAddress },
+    { Name: 'Bundler URL', Value: bundlerUrl },
+  ]);
 
   return {
     account: kernelAccount,

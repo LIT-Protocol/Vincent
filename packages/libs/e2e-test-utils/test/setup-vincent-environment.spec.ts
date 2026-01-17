@@ -1,7 +1,7 @@
 import { ethers } from 'ethers';
 import { baseSepolia } from 'viem/chains';
 import { getClient } from '@lit-protocol/vincent-contracts-sdk';
-import { setupVincentDevelopmentEnvironment } from '../src/lib/setup-vincent-development-environment';
+import { setupVincentDevelopmentEnvironment } from '../src/lib/setupVincentDevelopmentEnv';
 import type { VincentDevEnvironment } from '../src/lib/setup/types';
 import { getEnv } from '../src/lib/setup';
 
@@ -45,15 +45,15 @@ describe('Vincent Development Environment Setup', () => {
 
     // Run the setup
     env = await setupVincentDevelopmentEnvironment({
-      rpcUrl: BASE_SEPOLIA_RPC_URL,
-      chain: baseSepolia,
+      vincentRegistryRpcUrl: BASE_SEPOLIA_RPC_URL,
+      vincentRegistryChain: baseSepolia,
       vincentApiUrl: VINCENT_API_URL,
       zerodevProjectId: ZERODEV_PROJECT_ID,
       privateKeys: {
-        funder: TEST_FUNDER_PRIVATE_KEY,
-        appManager: TEST_APP_MANAGER_PRIVATE_KEY,
-        appDelegatee: TEST_APP_DELEGATEE_PRIVATE_KEY,
-        userEoa: TEST_USER_EOA_PRIVATE_KEY,
+        funder: TEST_FUNDER_PRIVATE_KEY as `0x${string}`,
+        appManager: TEST_APP_MANAGER_PRIVATE_KEY as `0x${string}`,
+        appDelegatee: TEST_APP_DELEGATEE_PRIVATE_KEY as `0x${string}`,
+        userEoa: TEST_USER_EOA_PRIVATE_KEY as `0x${string}`,
       },
       abilityIpfsCids: [TEST_ABILITY_IPFS_CID],
       abilityPolicies: [[TEST_POLICY_IPFS_CID]],
@@ -78,33 +78,33 @@ describe('Vincent Development Environment Setup', () => {
       expect(env.appVersion).toBeGreaterThan(0);
     });
 
-    it('should have registration transaction hash or be reusing existing app', () => {
-      expect(env.registrationTxHash).toBeDefined();
-      if (env.registrationTxHash) {
-        expect(env.registrationTxHash).toMatch(/^0x[a-fA-F0-9]{64}$/);
+    it('should have account index hash', () => {
+      expect(env.accountIndexHash).toBeDefined();
+      if (env.accountIndexHash) {
+        expect(env.accountIndexHash).toMatch(/^0x[a-fA-F0-9]{64}$/);
       }
     });
 
     it('should have app managed by correct app manager', async () => {
-      // Connect wallet to provider for contract calls
-      const provider = new ethers.providers.JsonRpcProvider(env.rpcUrl);
-      const appManagerWithProvider = env.wallets.appManager.connect(provider);
+      // Create ethers wallet from private key for contract calls
+      const provider = new ethers.providers.JsonRpcProvider(env.vincentRegistryRpcUrl);
+      const appManagerWallet = new ethers.Wallet(TEST_APP_MANAGER_PRIVATE_KEY, provider);
 
-      const client = getClient({ signer: appManagerWithProvider });
+      const client = getClient({ signer: appManagerWallet });
       const app = await client.getAppById({ appId: env.appId });
 
       expect(app).toBeDefined();
-      expect(app!.manager.toLowerCase()).toBe(env.wallets.appManager.address.toLowerCase());
+      expect(app!.manager.toLowerCase()).toBe(env.accounts.appManager.address.toLowerCase());
     });
 
     it('should have delegatee registered for the app', async () => {
-      // Connect wallet to provider for contract calls
-      const provider = new ethers.providers.JsonRpcProvider(env.rpcUrl);
-      const appDelegateeWithProvider = env.wallets.appDelegatee.connect(provider);
+      // Create ethers wallet from private key for contract calls
+      const provider = new ethers.providers.JsonRpcProvider(env.vincentRegistryRpcUrl);
+      const appDelegateeWallet = new ethers.Wallet(TEST_APP_DELEGATEE_PRIVATE_KEY, provider);
 
-      const client = getClient({ signer: appDelegateeWithProvider });
+      const client = getClient({ signer: appDelegateeWallet });
       const app = await client.getAppByDelegateeAddress({
-        delegateeAddress: env.wallets.appDelegatee.address,
+        delegateeAddress: env.accounts.appDelegatee.address,
       });
 
       expect(app).toBeDefined();
@@ -114,11 +114,11 @@ describe('Vincent Development Environment Setup', () => {
 
   describe('App Version Configuration', () => {
     it('should have correct abilities configured', async () => {
-      // Connect wallet to provider for contract calls
-      const provider = new ethers.providers.JsonRpcProvider(env.rpcUrl);
-      const appManagerWithProvider = env.wallets.appManager.connect(provider);
+      // Create ethers wallet from private key for contract calls
+      const provider = new ethers.providers.JsonRpcProvider(env.vincentRegistryRpcUrl);
+      const appManagerWallet = new ethers.Wallet(TEST_APP_MANAGER_PRIVATE_KEY, provider);
 
-      const client = getClient({ signer: appManagerWithProvider });
+      const client = getClient({ signer: appManagerWallet });
       const result = await client.getAppVersion({
         appId: env.appId,
         version: env.appVersion,
@@ -139,11 +139,11 @@ describe('Vincent Development Environment Setup', () => {
     });
 
     it('should have correct policies configured', async () => {
-      // Connect wallet to provider for contract calls
-      const provider = new ethers.providers.JsonRpcProvider(env.rpcUrl);
-      const appManagerWithProvider = env.wallets.appManager.connect(provider);
+      // Create ethers wallet from private key for contract calls
+      const provider = new ethers.providers.JsonRpcProvider(env.vincentRegistryRpcUrl);
+      const appManagerWallet = new ethers.Wallet(TEST_APP_MANAGER_PRIVATE_KEY, provider);
 
-      const client = getClient({ signer: appManagerWithProvider });
+      const client = getClient({ signer: appManagerWallet });
       const result = await client.getAppVersion({
         appId: env.appId,
         version: env.appVersion,
@@ -183,7 +183,7 @@ describe('Vincent Development Environment Setup', () => {
     });
 
     it('should have smart account deployed on-chain', async () => {
-      const provider = new ethers.providers.JsonRpcProvider(env.rpcUrl);
+      const provider = new ethers.providers.JsonRpcProvider(env.vincentRegistryRpcUrl);
       const code = await provider.getCode(env.agentSmartAccountAddress);
 
       expect(code).toBeDefined();
@@ -192,22 +192,21 @@ describe('Vincent Development Environment Setup', () => {
     });
   });
 
-  describe('Wallet Addresses', () => {
-    it('should have valid funder wallet address', () => {
-      expect(env.wallets.funder.address).toMatch(/^0x[a-fA-F0-9]{40}$/);
+  describe('Account Addresses', () => {
+    it('should have valid funder account address', () => {
+      expect(env.accounts.funder.address).toMatch(/^0x[a-fA-F0-9]{40}$/);
     });
 
-    it('should have valid app manager wallet address', () => {
-      expect(env.wallets.appManager.address).toMatch(/^0x[a-fA-F0-9]{40}$/);
+    it('should have valid app manager account address', () => {
+      expect(env.accounts.appManager.address).toMatch(/^0x[a-fA-F0-9]{40}$/);
     });
 
-    it('should have valid app delegatee wallet address', () => {
-      expect(env.wallets.appDelegatee.address).toMatch(/^0x[a-fA-F0-9]{40}$/);
+    it('should have valid app delegatee account address', () => {
+      expect(env.accounts.appDelegatee.address).toMatch(/^0x[a-fA-F0-9]{40}$/);
     });
 
-    it('should have valid user EOA wallet address', () => {
-      expect(env.wallets.userEoa.address).toMatch(/^0x[a-fA-F0-9]{40}$/);
-      expect(env.userEoaAddress).toBe(env.wallets.userEoa.address);
+    it('should have valid user EOA account address', () => {
+      expect(env.accounts.userEoa.address).toMatch(/^0x[a-fA-F0-9]{40}$/);
     });
   });
 
@@ -224,21 +223,18 @@ describe('Vincent Development Environment Setup', () => {
       console.table([
         { Key: 'App ID', Value: env.appId },
         { Key: 'App Version', Value: env.appVersion },
-        { Key: 'Registration Tx', Value: env.registrationTxHash || 'N/A (existing app)' },
-        { Key: 'Funder', Value: env.wallets.funder.address },
-        { Key: 'App Manager', Value: env.wallets.appManager.address },
-        { Key: 'App Delegatee', Value: env.wallets.appDelegatee.address },
-        { Key: 'User EOA', Value: env.userEoaAddress },
+        { Key: 'Account Index Hash', Value: env.accountIndexHash || 'N/A' },
+        { Key: 'Funder', Value: env.accounts.funder.address },
+        { Key: 'App Manager', Value: env.accounts.appManager.address },
+        { Key: 'App Delegatee', Value: env.accounts.appDelegatee.address },
+        { Key: 'User EOA', Value: env.accounts.userEoa.address },
         { Key: 'PKP Signer', Value: env.agentSignerAddress },
         { Key: 'Smart Account', Value: env.agentSmartAccountAddress },
-        { Key: 'Account Index Hash', Value: env.accountIndexHash },
-        { Key: 'Chain', Value: `${baseSepolia.name} (${baseSepolia.id})` },
         {
-          Key: 'Abilities',
-          Value: env.smartAccount.account.abilities
-            ? env.smartAccount.account.abilities.length
-            : 'N/A',
+          Key: 'Smart Account Deployment Tx',
+          Value: env.smartAccountRegistrationTxHash || 'N/A (already deployed)',
         },
+        { Key: 'Chain', Value: `${baseSepolia.name} (${baseSepolia.id})` },
       ]);
 
       expect(true).toBe(true); // Always pass to show summary

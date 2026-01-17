@@ -1,5 +1,16 @@
-import type { Wallet } from 'ethers';
-import type { Chain } from 'viem';
+import type { Chain, PrivateKeyAccount, PublicClient } from 'viem';
+
+/**
+ * App metadata for Vincent registry
+ */
+export interface AppMetadata {
+  name: string;
+  description: string;
+  contactEmail: string;
+  appUrl: string;
+  logo?: string;
+  deploymentStatus?: 'dev' | 'test' | 'prod';
+}
 
 /**
  * Smart account information with kernel account and approval signature
@@ -21,70 +32,43 @@ export interface SmartAccountInfo {
  * Configuration for the development environment setup
  */
 export interface SetupConfig {
-  /** Ability IPFS CIDs to register (e.g., relay.link ability) */
-  abilityIpfsCids: string[];
-  /** Policies for each ability (empty array for no policies) */
-  abilityPolicies: string[][];
-  /** RPC URL for the chain */
-  rpcUrl: string;
-  /** Chain to deploy on */
-  chain: Chain;
-  /** Vincent API URL for registration */
+  vincentRegistryRpcUrl: string;
+  vincentRegistryChain: Chain;
   vincentApiUrl: string;
-  /** ZeroDev project ID for bundler operations (required for smart account deployment) */
-  zerodevProjectId: string;
-  /** App metadata */
-  appMetadata: {
-    name: string;
-    description: string;
-    contactEmail: string;
-    appUrl: string;
-    logo?: string;
-    deploymentStatus?: 'dev' | 'test' | 'prod';
-  };
-  /** Private keys */
   privateKeys: {
-    /** App manager private key (owns the app on-chain) */
-    appManager: string;
-    /** App delegatee private key (can execute on behalf of users) */
-    appDelegatee: string;
-    /** User EOA private key (owns the smart account) */
-    userEoa: string;
-    /** Funder private key (funds other wallets with test tokens) */
-    funder: string;
+    appManager: `0x${string}`;
+    appDelegatee: `0x${string}`;
+    userEoa: `0x${string}`;
+    funder: `0x${string}`;
   };
+  appMetadata: AppMetadata;
+  abilityIpfsCids: string[];
+  abilityPolicies: string[][];
+  zerodevProjectId: string;
 }
 
 /**
  * Result type for the development environment setup
  */
 export interface VincentDevEnvironment {
-  /** The on-chain app ID */
+  vincentRegistryRpcUrl: string;
+  vincentRegistryChain: Chain;
   appId: number;
-  /** The app version number */
   appVersion: number;
-  /** Agent signer address (PKP address created by registry API, NOT an EOA) */
+  accountIndexHash?: string;
   agentSignerAddress: string;
-  /** Agent smart account address (derived from user EOA) */
   agentSmartAccountAddress: string;
-  /** User's EOA address (from private key) */
-  userEoaAddress: string;
-  /** Account index hash for deterministic address derivation */
-  accountIndexHash: string;
-  /** Transaction hash of the app registration */
-  registrationTxHash: string;
-  /** RPC URL for the chain */
-  rpcUrl: string;
-  /** Chain configuration */
-  chain: Chain;
-  /** Wallets used in the setup */
-  wallets: {
-    appManager: Wallet;
-    appDelegatee: Wallet;
-    userEoa: Wallet;
-    funder: Wallet;
+  smartAccountRegistrationTxHash?: string;
+  accounts: {
+    funder: PrivateKeyAccount;
+    appManager: PrivateKeyAccount;
+    appDelegatee: PrivateKeyAccount;
+    userEoa: PrivateKeyAccount;
   };
-  /** Local smart account client for interacting with the deployed smart account */
+  clients: {
+    vincentRegistryPublicClient: PublicClient;
+    chronicleYellowstonePublicClient: PublicClient;
+  };
   smartAccount: SmartAccountInfo;
 }
 

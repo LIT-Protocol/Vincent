@@ -5,7 +5,7 @@ export const getEnv = (key: string, fallback?: string): string => {
     throw new Error(`Environment variable ${key} is not set`);
   }
   if (!process.env[key] && fallback) {
-    console.warn(`ℹ️  ${key} not set; using fallback value.`);
+    console.warn(`${key} not set; using fallback value.`);
   }
   return value;
 };

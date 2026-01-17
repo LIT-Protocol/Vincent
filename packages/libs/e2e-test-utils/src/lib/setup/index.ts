@@ -1,7 +1,7 @@
-export * from './types';
-export * from './blockchain';
-export * from './api';
-export * from './smart-account';
-export * from './funding';
-export * from './capacity-credit';
-export * from './get-env';
+export { setupWallets } from './wallets/setupWallets';
+export { setupVincentApp } from './app-setup';
+export { setupUserSmartAccount } from './setupUserSmartAccount';
+
+export { getEnv } from './getEnv';
+
+export type { SetupConfig, VincentDevEnvironment, SmartAccountInfo } from './types';
