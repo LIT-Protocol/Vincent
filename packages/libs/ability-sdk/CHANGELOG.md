@@ -1,3 +1,9 @@
+## 3.0.1 (2026-01-17)
+
+### 🧱 Updated Dependencies
+
+- Updated contracts-sdk to 8.1.0
+
 # 3.0.0 (2026-01-14)
 
 ### ⚠️ Breaking Changes

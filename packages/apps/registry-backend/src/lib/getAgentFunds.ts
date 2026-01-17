@@ -1,7 +1,7 @@
 import type {
   GetAgentFundsRequest,
   GetAgentFundsResponse,
-} from '@lit-protocol/vincent-registry-sdk/src/lib/schemas/agentFunds';
+} from '@lit-protocol/vincent-registry-sdk/dist/src/lib/schemas/agentFunds';
 
 import { deriveAgentAddress } from '@lit-protocol/vincent-contracts-sdk';
 
