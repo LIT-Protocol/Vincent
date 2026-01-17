@@ -1,3 +1,29 @@
+## 5.1.0 (2026-01-17)
+
+### 🚀 Features
+
+- Add uninstall endpoints, merge repermit into install-app, and add agent funds endpoint ([e952544b](https://github.com/LIT-Protocol/Vincent/commit/e952544b))
+
+  **registry-backend:**
+  - Add `POST /user/:appId/uninstall-app` endpoint to initiate app uninstallation
+  - Add `POST /user/:appId/complete-uninstall` endpoint to complete uninstall with signed data
+  - Merge repermit logic into `POST /user/:appId/install-app` - automatically detects if user needs fresh install or re-enable
+  - Add `POST /user/:appId/agent-funds` endpoint to fetch agent token balances via Alchemy Portfolio API
+  - Add integration tests for uninstall and reinstall flow
+    **registry-sdk:**
+  - Add `POST /user/:appId/uninstall-app` endpoint schema
+  - Add `POST /user/:appId/complete-uninstall` endpoint schema
+  - Add `POST /user/:appId/agent-funds` endpoint schema
+  - Update install-app endpoint to handle both fresh install and re-enabling previously uninstalled apps
+  - Regenerate RTK clients
+    **contracts-sdk:**
+  - Add `deriveAgentAddress(publicClient, userControllerAddress, appId)` function for deriving agent smart account addresses
+  - Export function from package index
+
+### ❤️ Thank You
+
+- awisniew207 @awisniew207
+
 # 5.0.0 (2026-01-10)
 
 ### ⚠️ Breaking Changes
