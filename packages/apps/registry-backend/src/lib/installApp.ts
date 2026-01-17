@@ -1,7 +1,5 @@
 import { GelatoRelay } from '@gelatonetwork/relay-sdk';
 import { ERC2771Type } from '@gelatonetwork/relay-sdk/dist/lib/erc2771/types/index.js';
-import { getKernelAddressFromECDSA } from '@zerodev/ecdsa-validator';
-import { constants } from '@zerodev/sdk';
 import bs58 from 'bs58';
 import { ethers, providers } from 'ethers';
 
@@ -9,7 +7,7 @@ import { AUTH_METHOD_SCOPE, AUTH_METHOD_TYPE } from '@lit-protocol/constants';
 import { datil as datilContracts } from '@lit-protocol/contracts';
 import {
   COMBINED_ABI,
-  deriveSmartAccountIndex,
+  deriveAgentAddress,
   VINCENT_DIAMOND_CONTRACT_ADDRESS_PROD,
 } from '@lit-protocol/vincent-contracts-sdk';
 
@@ -322,8 +320,12 @@ async function mintPkpWithAuthMethods(authMethods: {
   });
 }
 
-export async function installApp(request: { appId: number; userControllerAddress: string }) {
-  const { appId, userControllerAddress } = request;
+export async function installApp(request: {
+  appId: number;
+  userControllerAddress: string;
+  sponsorGas?: boolean;
+}) {
+  const { appId, userControllerAddress, sponsorGas = true } = request;
 
   console.log('[installApp] Installing app:', { appId, userControllerAddress });
 
@@ -336,8 +338,59 @@ export async function installApp(request: { appId: number; userControllerAddress
     throw new Error(`App ${appId} has no active version`);
   }
 
-  // 2. Fetch abilities for this app version directly from on-chain contract
+  // 2. Calculate smart account address from user controller and appId
+  const basePublicClient = getBasePublicClient();
+  const agentSmartAccountAddress = await deriveAgentAddress(
+    basePublicClient,
+    userControllerAddress,
+    appId,
+  );
+
+  // 3. Check if user has a previously uninstalled app (needs reinstall instead of fresh install)
   const contractClient = getContractClient();
+  const unpermittedApps = await contractClient.getUnpermittedAppForAgents({
+    agentAddresses: [agentSmartAccountAddress],
+  });
+  const unpermittedApp = unpermittedApps[0]?.unpermittedApp;
+
+  if (unpermittedApp) {
+    const txData = COMBINED_ABI.encodeFunctionData('rePermitApp', [
+      agentSmartAccountAddress,
+      appId,
+    ]);
+
+    // 3.5 If sponsorGas is false, return raw transaction for direct EOA submission
+    if (!sponsorGas) {
+      return {
+        agentSignerAddress: unpermittedApp.pkpSigner,
+        agentSmartAccountAddress,
+        rawTransaction: {
+          to: VINCENT_DIAMOND_CONTRACT_ADDRESS_PROD,
+          data: txData,
+        },
+      };
+    }
+
+    const dataToSign = await relaySdk.getDataToSignERC2771(
+      {
+        chainId: getBaseChainId() as unknown as bigint,
+        target: VINCENT_DIAMOND_CONTRACT_ADDRESS_PROD,
+        data: txData,
+        user: userControllerAddress,
+        isConcurrent: true,
+      },
+      ERC2771Type.ConcurrentSponsoredCall,
+      basePublicClient as unknown as Parameters<typeof relaySdk.getDataToSignERC2771>[2],
+    );
+
+    return {
+      agentSignerAddress: unpermittedApp.pkpSigner,
+      agentSmartAccountAddress,
+      appInstallationDataToSign: dataToSign,
+    };
+  }
+
+  // 4. Fresh install flow - Fetch abilities for this app version directly from on-chain contract
   const appVersionResult = await contractClient.getAppVersion({
     appId,
     version: app.activeVersion,
@@ -347,20 +400,20 @@ export async function installApp(request: { appId: number; userControllerAddress
     throw new Error(`App version ${app.activeVersion} not found on-chain for app ${appId}`);
   }
 
-  // 3. Extract IPFS CIDs from on-chain abilities
+  // 5. Extract IPFS CIDs from on-chain abilities
   const abilityIpfsCids = appVersionResult.appVersion.abilities.map(
     (ability) => ability.abilityIpfsCid,
   );
 
   console.log('[installApp] Found abilities:', { count: abilityIpfsCids.length, abilityIpfsCids });
 
-  // 4. Build auth methods from ability IPFS CIDs
+  // 6. Build auth methods from ability IPFS CIDs
   const permittedAuthMethodTypes = abilityIpfsCids.map(() => AUTH_METHOD_TYPE.LitAction);
   const permittedAuthMethodIds = abilityIpfsCids.map((cid) => base58ToHex(cid));
   const permittedAuthMethodPubkeys = abilityIpfsCids.map(() => '0x');
   const permittedAuthMethodScopes = abilityIpfsCids.map(() => [AUTH_METHOD_SCOPE.SignAnything]);
 
-  // 5. Mint the PKP (will be burned)
+  // 7. Mint the PKP (will be burned)
   const mintTx = await mintPkpWithAuthMethods({
     types: permittedAuthMethodTypes,
     ids: permittedAuthMethodIds,
@@ -369,7 +422,7 @@ export async function installApp(request: { appId: number; userControllerAddress
   });
   console.log(`[installApp] Mint tx submitted: ${mintTx.hash}`);
 
-  // 6. Wait for mint confirmation and extract PKP
+  // 8. Wait for mint confirmation and extract PKP
   const signer = getTransactionSigner();
   const provider = signer.provider;
   if (!provider || !mintTx.hash) {
@@ -380,22 +433,11 @@ export async function installApp(request: { appId: number; userControllerAddress
 
   console.log(`[installApp] PKP minted: ${pkp.ethAddress}`);
 
-  // 7. Calculate smart account address from PKP address
-  const basePublicClient = getBasePublicClient();
-
-  const agentSmartAccountAddress = await getKernelAddressFromECDSA({
-    publicClient: basePublicClient as any,
-    eoaAddress: userControllerAddress as `0x${string}`,
-    index: deriveSmartAccountIndex(appId),
-    entryPoint: constants.getEntryPoint('0.7'),
-    kernelVersion: constants.KERNEL_V3_1,
-  });
-
   console.log(
     `[installApp] Complete. App ${appId} v${app.activeVersion}, PKP: ${pkp.ethAddress}, SmartAccount: ${agentSmartAccountAddress}`,
   );
 
-  // 8. Build EIP2771 data for user to sign (permitAppVersion on Vincent contract)
+  // 9. Build EIP2771 data for user to sign (permitAppVersion on Vincent contract)
   // pkpSignerPubKey is the raw public key bytes (contract expects bytes calldata)
   const pkpSignerPubKey = pkp.publicKey;
 
@@ -416,6 +458,19 @@ export async function installApp(request: { appId: number; userControllerAddress
     policyIpfsCids, // policyIpfsCids
     policyParameterValues, // policyParameterValues
   ]);
+
+  // If sponsorGas is false, return raw transaction for direct EOA submission
+  if (!sponsorGas) {
+    console.log('[installApp] Returning raw transaction for direct submission');
+    return {
+      agentSignerAddress: pkp.ethAddress,
+      agentSmartAccountAddress,
+      rawTransaction: {
+        to: VINCENT_DIAMOND_CONTRACT_ADDRESS_PROD,
+        data: txData,
+      },
+    };
+  }
 
   console.log('[installApp] Getting EIP2771 data to sign...');
 

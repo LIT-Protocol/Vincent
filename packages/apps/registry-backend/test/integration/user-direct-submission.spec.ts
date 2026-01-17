@@ -1,5 +1,3 @@
-import type { ConcurrentPayloadToSign } from '@gelatonetwork/relay-sdk/dist/lib/erc2771/types';
-
 import bs58 from 'bs58';
 import { Contract, providers, Wallet } from 'ethers';
 
@@ -20,12 +18,16 @@ import {
   defaultWallet,
 } from './setup';
 
-const debug = createTestDebugger('user');
+const debug = createTestDebugger('user-direct-submission');
 
-// Helper to avoid Gelato rate limiting between relay calls
-const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
-describe('User API Integration Tests', () => {
+/**
+ * These tests verify the direct EOA submission flow (sponsorGas: false).
+ * Instead of using Gelato relay for gas sponsorship, the user submits
+ * transactions directly and pays their own gas.
+ *
+ * This is useful for development/testing to avoid Gelato rate limits.
+ */
+describe('User API Integration Tests (Direct EOA Submission)', () => {
   let testAppId: number;
   let litContracts: LitContracts;
   let litSigner: Wallet;
@@ -36,10 +38,10 @@ describe('User API Integration Tests', () => {
   const abilityIpfsCid = 'QmdZcfgQ9Kz8vNwS5owf6iBm9Co1qMGki244JSFuyPNv1W';
 
   const appData = {
-    name: 'User Test App',
-    description: 'Test app for user integration tests',
-    contactEmail: 'usertest@example.com',
-    appUrl: 'https://example.com/userapp',
+    name: 'User Direct Submission Test App',
+    description: 'Test app for user integration tests with direct EOA submission',
+    contactEmail: 'usertest-direct@example.com',
+    appUrl: 'https://example.com/userapp-direct',
     logo: 'https://example.com/logo.png',
   };
 
@@ -66,8 +68,8 @@ describe('User API Integration Tests', () => {
       api.endpoints.createAbility.initiate({
         packageName: abilityPackageName,
         abilityCreate: {
-          title: 'Test Ability for User Tests',
-          description: 'Ability used for user integration tests',
+          title: 'Test Ability for Direct Submission Tests',
+          description: 'Ability used for user integration tests with direct EOA submission',
           activeVersion: abilityVersion,
         },
       }),
@@ -147,19 +149,22 @@ describe('User API Integration Tests', () => {
     expectAssertObject(setActiveResult.data);
   }, 180000);
 
-  describe('POST /user/:appId/install-app', () => {
+  describe('POST /user/:appId/install-app (sponsorGas: false)', () => {
     // Shared state for the installation flow tests
     let installationData: {
       agentSignerAddress: string;
       agentSmartAccountAddress: string;
-      appInstallationDataToSign: ConcurrentPayloadToSign;
+      rawTransaction: { to: string; data: string };
     };
 
-    it('should return agent addresses and data to sign for app installation', async () => {
+    it('should return agent addresses and raw transaction for app installation', async () => {
       const result = await store.dispatch(
         api.endpoints.installApp.initiate({
           appId: testAppId,
-          installAppRequest: { userControllerAddress: defaultWallet.address },
+          installAppRequest: {
+            userControllerAddress: defaultWallet.address,
+            sponsorGas: false, // Use direct EOA submission instead of Gelato relay
+          },
         }),
       );
 
@@ -171,16 +176,15 @@ describe('User API Integration Tests', () => {
 
       expect(installationData).toHaveProperty('agentSignerAddress');
       expect(installationData).toHaveProperty('agentSmartAccountAddress');
-      expect(installationData).toHaveProperty('appInstallationDataToSign');
+      expect(installationData).toHaveProperty('rawTransaction');
 
       expect(installationData.agentSignerAddress).toMatch(/^0x[a-fA-F0-9]{40}$/);
       expect(installationData.agentSmartAccountAddress).toMatch(/^0x[a-fA-F0-9]{40}$/);
-      expect(typeof installationData.appInstallationDataToSign).toBe('object');
+      expect(typeof installationData.rawTransaction).toBe('object');
+      expect(installationData.rawTransaction).toHaveProperty('to');
+      expect(installationData.rawTransaction).toHaveProperty('data');
 
-      console.log(
-        'appInstallationDataToSign:',
-        JSON.stringify(installationData.appInstallationDataToSign, null, 2),
-      );
+      console.log('rawTransaction:', JSON.stringify(installationData.rawTransaction, null, 2));
 
       // Verify the ability IPFS CID was added as a permitted action on the PKP
       // Use litSigner (connected to Chronicle Yellowstone) since PKP contracts are on Lit's network
@@ -219,47 +223,35 @@ describe('User API Integration Tests', () => {
       });
     }, 60000);
 
-    it('should complete installation with signed typed data', async () => {
+    it('should complete installation by submitting raw transaction directly', async () => {
       expect(installationData).toBeDefined();
 
-      const { appInstallationDataToSign } = installationData;
-      const { typedData } = appInstallationDataToSign;
+      const { rawTransaction } = installationData;
 
-      // Sign the typed data with the user's wallet
-      // Remove EIP712Domain from types as ethers adds it automatically
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { EIP712Domain: _, ...types } = typedData.types;
-      const typedDataSignature = await defaultWallet._signTypedData(
-        typedData.domain,
-        types,
-        typedData.message,
-      );
+      // Submit the raw transaction directly using the user's wallet (no Gelato relay)
+      console.log('Submitting raw transaction to:', rawTransaction.to);
 
-      console.log('Typed data signature:', typedDataSignature);
+      const tx = await defaultWallet.sendTransaction({
+        to: rawTransaction.to,
+        data: rawTransaction.data,
+      });
 
-      // Complete the installation
-      const completeResult = await store.dispatch(
-        api.endpoints.completeInstallation.initiate({
-          appId: testAppId,
-          completeInstallationRequest: {
-            typedDataSignature,
-            appInstallationDataToSign,
-          },
-        }),
-      );
+      console.log('Installation transaction hash:', tx.hash);
 
-      if (hasError(completeResult)) {
-        console.error('completeInstallation failed:', completeResult.error);
-      }
-      expectAssertObject(completeResult.data);
+      // Wait for the transaction to be mined
+      const receipt = await tx.wait();
+      console.log('Installation transaction confirmed in block:', receipt.blockNumber);
 
-      expect(completeResult.data).toHaveProperty('transactionHash');
-      expect(completeResult.data.transactionHash).toMatch(/^0x[a-fA-F0-9]{64}$/);
+      expect(tx.hash).toMatch(/^0x[a-fA-F0-9]{64}$/);
+      expect(receipt.status).toBe(1);
 
-      console.log('Installation transaction hash:', completeResult.data.transactionHash);
+      // Wait for RPC state propagation
+      console.log('Waiting 5s for RPC state propagation...');
+      await new Promise((r) => setTimeout(r, 5000));
 
       debug({
-        transactionHash: completeResult.data.transactionHash,
+        transactionHash: tx.hash,
+        blockNumber: receipt.blockNumber,
       });
     }, 120000);
 
@@ -305,95 +297,12 @@ describe('User API Integration Tests', () => {
         versionEnabled: permittedApp.versionEnabled,
       });
     }, 30000);
-
-    it('should return 400 for missing userControllerAddress', async () => {
-      const result = await store.dispatch(
-        api.endpoints.installApp.initiate({
-          appId: testAppId,
-          // @ts-expect-error testing invalid input
-          installAppRequest: {},
-        }),
-      );
-
-      expect(hasError(result)).toBe(true);
-      if (hasError(result)) {
-        // @ts-expect-error accessing error status
-        expect(result.error.status).toBe(400);
-      }
-    });
-
-    it('should return 400 for invalid userControllerAddress format', async () => {
-      const result = await store.dispatch(
-        api.endpoints.installApp.initiate({
-          appId: testAppId,
-          installAppRequest: { userControllerAddress: 'not-a-valid-address' },
-        }),
-      );
-
-      expect(hasError(result)).toBe(true);
-      if (hasError(result)) {
-        // @ts-expect-error accessing error status
-        expect(result.error.status).toBe(400);
-      }
-    });
-
-    it('should return 404 for non-existent app', async () => {
-      const userControllerAddress = generateRandomEthAddresses(1)[0];
-      const result = await store.dispatch(
-        api.endpoints.installApp.initiate({
-          appId: 999999999,
-          installAppRequest: { userControllerAddress },
-        }),
-      );
-
-      expect(hasError(result)).toBe(true);
-      if (hasError(result)) {
-        // @ts-expect-error accessing error status
-        expect([404, 500]).toContain(result.error.status);
-      }
-    });
-
-    it('should return 400 for missing typedDataSignature in complete-installation', async () => {
-      const result = await store.dispatch(
-        api.endpoints.completeInstallation.initiate({
-          appId: testAppId,
-          // @ts-expect-error testing invalid input
-          completeInstallationRequest: {
-            appInstallationDataToSign: {},
-          },
-        }),
-      );
-
-      expect(hasError(result)).toBe(true);
-      if (hasError(result)) {
-        // @ts-expect-error accessing error status
-        expect(result.error.status).toBe(400);
-      }
-    });
-
-    it('should return 400 for missing appInstallationDataToSign in complete-installation', async () => {
-      const result = await store.dispatch(
-        api.endpoints.completeInstallation.initiate({
-          appId: testAppId,
-          // @ts-expect-error testing invalid input
-          completeInstallationRequest: {
-            typedDataSignature: '0x1234',
-          },
-        }),
-      );
-
-      expect(hasError(result)).toBe(true);
-      if (hasError(result)) {
-        // @ts-expect-error accessing error status
-        expect(result.error.status).toBe(400);
-      }
-    });
   });
 
-  describe('POST /user/:appId/uninstall-app and reinstall via install-app', () => {
+  describe('POST /user/:appId/uninstall-app and reinstall (sponsorGas: false)', () => {
     // Shared state for the uninstall/reinstall flow tests
     let agentSmartAccountAddress: string;
-    let uninstallDataToSign: any;
+    let uninstallRawTransaction: { to: string; data: string };
 
     beforeAll(async () => {
       // Get the agent address from a previous installation
@@ -412,13 +321,14 @@ describe('User API Integration Tests', () => {
       expect(agentSmartAccountAddress).toMatch(/^0x[a-fA-F0-9]{40}$/);
     });
 
-    it('should return data to sign for uninstalling an app', async () => {
+    it('should return raw transaction for uninstalling an app', async () => {
       const result = await store.dispatch(
         api.endpoints.uninstallApp.initiate({
           appId: testAppId,
           uninstallAppRequest: {
             appVersion: 1,
             userControllerAddress: defaultWallet.address,
+            sponsorGas: false, // Use direct EOA submission instead of Gelato relay
           },
         }),
       );
@@ -428,59 +338,45 @@ describe('User API Integration Tests', () => {
       }
       expectAssertObject(result.data);
 
-      expect(result.data).toHaveProperty('uninstallDataToSign');
-      expect(typeof result.data.uninstallDataToSign).toBe('object');
+      expect(result.data).toHaveProperty('rawTransaction');
+      expect(typeof result.data.rawTransaction).toBe('object');
+      expect(result.data.rawTransaction).toHaveProperty('to');
+      expect(result.data.rawTransaction).toHaveProperty('data');
 
-      uninstallDataToSign = result.data.uninstallDataToSign;
+      uninstallRawTransaction = result.data.rawTransaction as typeof uninstallRawTransaction;
 
       debug({
-        uninstallDataToSign: JSON.stringify(uninstallDataToSign, null, 2),
+        rawTransaction: JSON.stringify(uninstallRawTransaction, null, 2),
       });
     }, 60000);
 
-    it('should complete uninstall with signed typed data', async () => {
-      expect(uninstallDataToSign).toBeDefined();
+    it('should complete uninstall by submitting raw transaction directly', async () => {
+      expect(uninstallRawTransaction).toBeDefined();
 
-      const { typedData } = uninstallDataToSign;
+      // Submit the raw transaction directly using the user's wallet (no Gelato relay)
+      console.log('Submitting uninstall raw transaction to:', uninstallRawTransaction.to);
 
-      // Sign the typed data with the user's wallet
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { EIP712Domain: _, ...types } = typedData.types;
-      const typedDataSignature = await defaultWallet._signTypedData(
-        typedData.domain,
-        types,
-        typedData.message,
-      );
+      const tx = await defaultWallet.sendTransaction({
+        to: uninstallRawTransaction.to,
+        data: uninstallRawTransaction.data,
+      });
 
-      console.log('Uninstall typed data signature:', typedDataSignature);
+      console.log('Uninstall transaction hash:', tx.hash);
 
-      // Wait to avoid Gelato rate limiting (Gelato has strict per-account limits)
-      console.log('Waiting 60s to avoid Gelato rate limiting...');
-      await delay(60000);
+      // Wait for the transaction to be mined
+      const receipt = await tx.wait();
+      console.log('Uninstall transaction confirmed in block:', receipt.blockNumber);
 
-      // Complete the uninstall
-      const completeResult = await store.dispatch(
-        api.endpoints.completeUninstall.initiate({
-          appId: testAppId,
-          completeUninstallRequest: {
-            typedDataSignature,
-            uninstallDataToSign,
-          },
-        }),
-      );
+      expect(tx.hash).toMatch(/^0x[a-fA-F0-9]{64}$/);
+      expect(receipt.status).toBe(1);
 
-      if (hasError(completeResult)) {
-        console.error('completeUninstall failed:', completeResult.error);
-      }
-      expectAssertObject(completeResult.data);
-
-      expect(completeResult.data).toHaveProperty('transactionHash');
-      expect(completeResult.data.transactionHash).toMatch(/^0x[a-fA-F0-9]{64}$/);
-
-      console.log('Uninstall transaction hash:', completeResult.data.transactionHash);
+      // Wait for RPC state propagation
+      console.log('Waiting 5s for RPC state propagation...');
+      await new Promise((r) => setTimeout(r, 5000));
 
       debug({
-        transactionHash: completeResult.data.transactionHash,
+        transactionHash: tx.hash,
+        blockNumber: receipt.blockNumber,
       });
     }, 120000);
 
@@ -517,7 +413,7 @@ describe('User API Integration Tests', () => {
       });
     }, 30000);
 
-    it('should return data to sign for reinstalling an app via install-app', async () => {
+    it('should return raw transaction for reinstalling an app via install-app', async () => {
       // After uninstalling, calling install-app should detect the uninstalled state
       // and return reinstall data instead of minting a new PKP
       const result = await store.dispatch(
@@ -525,6 +421,7 @@ describe('User API Integration Tests', () => {
           appId: testAppId,
           installAppRequest: {
             userControllerAddress: defaultWallet.address,
+            sponsorGas: false, // Use direct EOA submission instead of Gelato relay
           },
         }),
       );
@@ -536,8 +433,8 @@ describe('User API Integration Tests', () => {
 
       expect(result.data).toHaveProperty('agentSignerAddress');
       expect(result.data).toHaveProperty('agentSmartAccountAddress');
-      expect(result.data).toHaveProperty('appInstallationDataToSign');
-      expect(typeof result.data.appInstallationDataToSign).toBe('object');
+      expect(result.data).toHaveProperty('rawTransaction');
+      expect(typeof result.data.rawTransaction).toBe('object');
 
       // Store for the next test
       (global as any).reinstallData = result.data;
@@ -545,55 +442,42 @@ describe('User API Integration Tests', () => {
       debug({
         agentSignerAddress: result.data.agentSignerAddress,
         agentSmartAccountAddress: result.data.agentSmartAccountAddress,
-        appInstallationDataToSign: JSON.stringify(result.data.appInstallationDataToSign, null, 2),
+        rawTransaction: JSON.stringify(result.data.rawTransaction, null, 2),
       });
     }, 60000);
 
-    it('should complete reinstall with signed typed data via complete-installation', async () => {
-      const reinstallData = (global as any).reinstallData;
+    it('should complete reinstall by submitting raw transaction directly', async () => {
+      const reinstallData = (global as any).reinstallData as {
+        rawTransaction: { to: string; data: string };
+      };
       expect(reinstallData).toBeDefined();
 
-      const { appInstallationDataToSign } = reinstallData;
-      const { typedData } = appInstallationDataToSign;
+      const { rawTransaction } = reinstallData;
 
-      // Sign the typed data with the user's wallet
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { EIP712Domain: _, ...types } = typedData.types;
-      const typedDataSignature = await defaultWallet._signTypedData(
-        typedData.domain,
-        types,
-        typedData.message,
-      );
+      // Submit the raw transaction directly using the user's wallet (no Gelato relay)
+      console.log('Submitting reinstall raw transaction to:', rawTransaction.to);
 
-      console.log('Reinstall typed data signature:', typedDataSignature);
+      const tx = await defaultWallet.sendTransaction({
+        to: rawTransaction.to,
+        data: rawTransaction.data,
+      });
 
-      // Wait to avoid Gelato rate limiting (Gelato has strict per-account limits)
-      console.log('Waiting 60s to avoid Gelato rate limiting...');
-      await delay(60000);
+      console.log('Reinstall transaction hash:', tx.hash);
 
-      // Complete the reinstall using the standard complete-installation endpoint
-      const completeResult = await store.dispatch(
-        api.endpoints.completeInstallation.initiate({
-          appId: testAppId,
-          completeInstallationRequest: {
-            typedDataSignature,
-            appInstallationDataToSign,
-          },
-        }),
-      );
+      // Wait for the transaction to be mined
+      const receipt = await tx.wait();
+      console.log('Reinstall transaction confirmed in block:', receipt.blockNumber);
 
-      if (hasError(completeResult)) {
-        console.error('completeInstallation (reinstall) failed:', completeResult.error);
-      }
-      expectAssertObject(completeResult.data);
+      expect(tx.hash).toMatch(/^0x[a-fA-F0-9]{64}$/);
+      expect(receipt.status).toBe(1);
 
-      expect(completeResult.data).toHaveProperty('transactionHash');
-      expect(completeResult.data.transactionHash).toMatch(/^0x[a-fA-F0-9]{64}$/);
-
-      console.log('Reinstall transaction hash:', completeResult.data.transactionHash);
+      // Wait for RPC state propagation
+      console.log('Waiting 5s for RPC state propagation...');
+      await new Promise((r) => setTimeout(r, 5000));
 
       debug({
-        transactionHash: completeResult.data.transactionHash,
+        transactionHash: tx.hash,
+        blockNumber: receipt.blockNumber,
       });
     }, 120000);
 
@@ -632,95 +516,5 @@ describe('User API Integration Tests', () => {
         versionEnabled: permittedApp.versionEnabled,
       });
     }, 30000);
-  });
-
-  describe('POST /user/:appId/agent-account', () => {
-    it('should return the agent address for an installed app', async () => {
-      const result = await store.dispatch(
-        api.endpoints.getAgentAccount.initiate({
-          appId: testAppId,
-          getAgentAccountRequest: { userControllerAddress: defaultWallet.address },
-        }),
-      );
-
-      if (hasError(result)) {
-        console.error('getAgentAccount failed:', result.error);
-      }
-      expectAssertObject(result.data);
-
-      expect(result.data).toHaveProperty('agentAddress');
-      expect(result.data.agentAddress).toMatch(/^0x[a-fA-F0-9]{40}$/);
-
-      debug({
-        agentAddress: result.data.agentAddress,
-      });
-    });
-
-    it('should return null for a user that has not installed the app', async () => {
-      const randomAddress = generateRandomEthAddresses(1)[0];
-      const result = await store.dispatch(
-        api.endpoints.getAgentAccount.initiate({
-          appId: testAppId,
-          getAgentAccountRequest: { userControllerAddress: randomAddress },
-        }),
-      );
-
-      if (hasError(result)) {
-        console.error('getAgentAccount failed:', result.error);
-      }
-      expectAssertObject(result.data);
-
-      expect(result.data.agentAddress).toBeNull();
-
-      debug({
-        agentAddress: result.data.agentAddress,
-      });
-    });
-
-    it('should return 400 for missing userControllerAddress', async () => {
-      const result = await store.dispatch(
-        api.endpoints.getAgentAccount.initiate({
-          appId: testAppId,
-          // @ts-expect-error testing invalid input
-          getAgentAccountRequest: {},
-        }),
-      );
-
-      expect(hasError(result)).toBe(true);
-      if (hasError(result)) {
-        // @ts-expect-error accessing error status
-        expect(result.error.status).toBe(400);
-      }
-    });
-
-    it('should return 400 for invalid userControllerAddress format', async () => {
-      const result = await store.dispatch(
-        api.endpoints.getAgentAccount.initiate({
-          appId: testAppId,
-          getAgentAccountRequest: { userControllerAddress: 'not-a-valid-address' },
-        }),
-      );
-
-      expect(hasError(result)).toBe(true);
-      if (hasError(result)) {
-        // @ts-expect-error accessing error status
-        expect(result.error.status).toBe(400);
-      }
-    });
-
-    it('should return 404 for non-existent app', async () => {
-      const result = await store.dispatch(
-        api.endpoints.getAgentAccount.initiate({
-          appId: 999999999,
-          getAgentAccountRequest: { userControllerAddress: defaultWallet.address },
-        }),
-      );
-
-      expect(hasError(result)).toBe(true);
-      if (hasError(result)) {
-        // @ts-expect-error accessing error status
-        expect([404, 500]).toContain(result.error.status);
-      }
-    });
   });
 });

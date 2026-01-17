@@ -1,0 +1,140 @@
+---
+title: 'Get Agent Funds'
+api: 'POST /user/{appId}/agent-funds'
+---
+
+Retrieve the token balances held by the user's agent smart account. This endpoint wraps the [Alchemy Portfolio API](https://www.alchemy.com/docs/data/portfolio-apis/portfolio-api-endpoints/portfolio-api-endpoints/get-tokens-by-address) to fetch token data across multiple networks.
+
+## Request
+
+<ParamField path="appId" type="integer" required>
+  The unique identifier of the app
+</ParamField>
+
+<ParamField body="userControllerAddress" type="string" required>
+  The Ethereum address of the user's wallet
+</ParamField>
+
+<ParamField body="networks" type="string[]" required>
+  Networks to query for token balances (e.g., `["base-mainnet", "base-sepolia"]`)
+</ParamField>
+
+## Response
+
+<ResponseField name="agentAddress" type="string">
+  The derived agent smart account address
+</ResponseField>
+
+<ResponseField name="tokens" type="array">
+  List of tokens held by the agent
+
+  <Expandable title="Token object properties">
+    <ResponseField name="address" type="string">
+      Wallet address that holds the token
+    </ResponseField>
+    <ResponseField name="network" type="string">
+      Network identifier (e.g., `base-mainnet`)
+    </ResponseField>
+    <ResponseField name="tokenAddress" type="string">
+      Token contract address
+    </ResponseField>
+    <ResponseField name="tokenBalance" type="string">
+      Token balance in wei/smallest unit
+    </ResponseField>
+    <ResponseField name="tokenMetadata" type="object">
+      <Expandable title="properties">
+        <ResponseField name="decimals" type="number">
+          Token decimals
+        </ResponseField>
+        <ResponseField name="logo" type="string | null">
+          Token logo URL
+        </ResponseField>
+        <ResponseField name="name" type="string">
+          Token name
+        </ResponseField>
+        <ResponseField name="symbol" type="string">
+          Token symbol
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+    <ResponseField name="tokenPrices" type="array">
+      <Expandable title="Price object properties">
+        <ResponseField name="currency" type="string">
+          Price currency (e.g., `usd`)
+        </ResponseField>
+        <ResponseField name="value" type="string">
+          Price value
+        </ResponseField>
+        <ResponseField name="lastUpdatedAt" type="string">
+          ISO timestamp of last price update
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+    <ResponseField name="error" type="string | null">
+      Error message if applicable
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="pageKey" type="string">
+  Pagination key for fetching more results
+</ResponseField>
+
+<RequestExample>
+```bash cURL
+curl -X POST https://api.heyvincent.ai/user/123/agent-funds \
+  -H "Content-Type: application/json" \
+  -d '{
+    "userControllerAddress": "0xUserWalletAddress...",
+    "networks": ["base-mainnet", "base-sepolia"]
+  }'
+```
+
+```typescript TypeScript
+const response = await fetch(`https://api.heyvincent.ai/user/${appId}/agent-funds`, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    userControllerAddress: userWallet.address,
+    networks: ['base-mainnet', 'base-sepolia']
+  })
+});
+
+const { agentAddress, tokens } = await response.json();
+
+console.log(`Agent address: ${agentAddress}`);
+tokens.forEach(token => {
+  console.log(`${token.tokenMetadata?.symbol}: ${token.tokenBalance}`);
+});
+```
+</RequestExample>
+
+<ResponseExample>
+```json Response
+{
+  "agentAddress": "0xAgentSmartAccountAddress...",
+  "tokens": [
+    {
+      "address": "0xAgentSmartAccountAddress...",
+      "network": "base-mainnet",
+      "tokenAddress": "0xTokenContractAddress...",
+      "tokenBalance": "1000000000000000000",
+      "tokenMetadata": {
+        "decimals": 18,
+        "logo": "https://example.com/token-logo.png",
+        "name": "USD Coin",
+        "symbol": "USDC"
+      },
+      "tokenPrices": [
+        {
+          "currency": "usd",
+          "value": "1.00",
+          "lastUpdatedAt": "2024-01-01T00:00:00Z"
+        }
+      ]
+    }
+  ],
+  "pageKey": "optional-pagination-key"
+}
+```
+</ResponseExample>

@@ -1,5 +1,7 @@
 import type { Signer, Overrides } from 'ethers';
 
+import { getKernelAddressFromECDSA } from '@zerodev/ecdsa-validator';
+import { constants } from '@zerodev/sdk';
 import { Contract, BigNumber, ethers } from 'ethers';
 
 import { COMBINED_ABI, GAS_ADJUSTMENT_PERCENT } from './constants';
@@ -19,6 +21,32 @@ export function deriveSmartAccountIndex(appId: number): bigint {
   const packed = ethers.utils.concat([prefix, appIdBytes]);
   const hash = ethers.utils.keccak256(packed);
   return BigInt(hash);
+}
+
+/**
+ * Derives the agent smart account address for a user and app combination.
+ * Each user has one deterministic agent address per app.
+ *
+ * @param publicClient - A viem PublicClient instance (any version)
+ * @param userControllerAddress - The EOA address that controls the user's smart wallet
+ * @param appId - The Vincent app ID
+ * @returns The derived agent smart account address
+ *
+ * @category API
+ */
+
+export async function deriveAgentAddress(
+  publicClient: any,
+  userControllerAddress: string,
+  appId: number,
+): Promise<string> {
+  return getKernelAddressFromECDSA({
+    publicClient,
+    eoaAddress: userControllerAddress as `0x${string}`,
+    index: deriveSmartAccountIndex(appId),
+    entryPoint: constants.getEntryPoint('0.7'),
+    kernelVersion: constants.KERNEL_V3_3,
+  });
 }
 
 /**
