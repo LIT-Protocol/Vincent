@@ -297,7 +297,7 @@ async function mintPkpWithAuthMethods(authMethods: {
     addPkpEthAddressAsPermittedAddress: true,
     pkpEthAddressScopes: [],
     sendPkpToItself: false,
-    burnPkp: true,
+    burnPkp: false,
     sendToAddressAfterMinting: '0x0000000000000000000000000000000000000001',
   };
 
