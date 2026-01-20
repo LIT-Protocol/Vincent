@@ -28,8 +28,7 @@ jest.setTimeout(300000); // 5 minutes
 // Test configuration from environment variables (required)
 const BASE_SEPOLIA_RPC_URL = getEnv('BASE_SEPOLIA_RPC_URL', 'https://sepolia.base.org');
 const BASE_MAINNET_RPC_URL = getEnv('BASE_MAINNET_RPC_URL', 'https://mainnet.base.org');
-// const VINCENT_API_URL = getEnv('VINCENT_API_URL', 'https://api.heyvincent.ai');
-const VINCENT_API_URL = 'http://localhost:3000';
+const VINCENT_API_URL = getEnv('VINCENT_API_URL', 'https://api.heyvincent.ai');
 const ZERODEV_PROJECT_ID = getEnv('ZERODEV_PROJECT_ID');
 const TEST_FUNDER_PRIVATE_KEY = getEnv('TEST_FUNDER_PRIVATE_KEY');
 const TEST_APP_MANAGER_PRIVATE_KEY = getEnv('TEST_APP_MANAGER_PRIVATE_KEY');
