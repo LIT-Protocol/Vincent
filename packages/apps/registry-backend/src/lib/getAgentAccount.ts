@@ -9,7 +9,7 @@ import {
 } from '@lit-protocol/vincent-contracts-sdk';
 
 import { env } from '../env';
-import { getBasePublicClient } from './chainConfig';
+import { getBasePublicClient } from './utils/chainConfig';
 
 function getProvider(): providers.JsonRpcProvider {
   return new providers.JsonRpcProvider(env.BASE_RPC_URL);

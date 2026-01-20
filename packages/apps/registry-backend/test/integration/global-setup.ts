@@ -32,6 +32,8 @@ module.exports = async function globalSetup() {
         GELATO_RELAY_API_KEY: process.env.GELATO_RELAY_API_KEY,
         ALCHEMY_API_KEY: process.env.ALCHEMY_API_KEY,
         BASE_RPC_URL: process.env.BASE_RPC_URL,
+        ZERODEV_BUNDLER_URL: process.env.ZERODEV_BUNDLER_URL,
+        SPONSOR_WITHDRAW_GAS: process.env.SPONSOR_WITHDRAW_GAS,
       },
     },
     waitOnScheme: {

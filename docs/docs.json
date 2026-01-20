@@ -187,6 +187,10 @@
               {
                 "group": "Uninstall App",
                 "pages": ["wallet-providers/uninstall-app", "wallet-providers/complete-uninstall"]
+              },
+              {
+                "group": "Withdraw Funds",
+                "pages": ["wallet-providers/request-withdraw", "wallet-providers/complete-withdraw"]
               }
             ]
           }
