@@ -13,9 +13,9 @@ import {
 
 import PKPHelperV2Abi from '../../contracts/datil/PKPHelperV2.json';
 import { env } from '../env';
-import { getBaseChainId, getBasePublicClient } from './chainConfig';
 import { getContractClient } from './contractClient';
 import { App } from './mongo/app';
+import { getBaseChainId, getBasePublicClient } from './utils/chainConfig';
 
 // ============================================================================
 // Utilities

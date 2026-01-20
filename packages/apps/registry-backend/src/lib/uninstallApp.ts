@@ -7,7 +7,7 @@ import {
   VINCENT_DIAMOND_CONTRACT_ADDRESS_PROD,
 } from '@lit-protocol/vincent-contracts-sdk';
 
-import { getBaseChainId, getBasePublicClient } from './chainConfig';
+import { getBaseChainId, getBasePublicClient } from './utils/chainConfig';
 
 const relaySdk = new GelatoRelay();
 
