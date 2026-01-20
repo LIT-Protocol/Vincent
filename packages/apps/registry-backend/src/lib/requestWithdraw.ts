@@ -1,3 +1,11 @@
+import { signerToEcdsaValidator } from '@zerodev/ecdsa-validator';
+import {
+  createKernelAccount,
+  createKernelAccountClient,
+  addressToEmptyAccount,
+  createZeroDevPaymasterClient,
+} from '@zerodev/sdk';
+import { KERNEL_V3_3, getEntryPoint } from '@zerodev/sdk/constants';
 import {
   createPublicClient,
   http,
@@ -8,24 +16,19 @@ import {
   erc20Abi,
 } from 'viem';
 import { getUserOperationHash, entryPoint07Address } from 'viem/account-abstraction';
-import { signerToEcdsaValidator } from '@zerodev/ecdsa-validator';
-import {
-  createKernelAccount,
-  createKernelAccountClient,
-  addressToEmptyAccount,
-} from '@zerodev/sdk';
-import { KERNEL_V3_3, getEntryPoint } from '@zerodev/sdk/constants';
-import { createZeroDevPaymasterClient } from '@zerodev/sdk';
 
-import { deriveAgentAddress, deriveSmartAccountIndex } from '@lit-protocol/vincent-contracts-sdk';
 import type {
   Asset,
   RequestWithdrawRequest,
   RequestWithdrawResponse,
 } from '@lit-protocol/vincent-registry-sdk';
 
+import { deriveAgentAddress, deriveSmartAccountIndex } from '@lit-protocol/vincent-contracts-sdk';
+
+import type { AlchemyTokenInfo } from './utils/alchemy';
+
 import { env } from '../env';
-import { fetchTokenBalances, type AlchemyTokenInfo } from './utils/alchemy';
+import { fetchTokenBalances } from './utils/alchemy';
 import {
   SUPPORTED_NETWORKS,
   getChainForNetwork,
