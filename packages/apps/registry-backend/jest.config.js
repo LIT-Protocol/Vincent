@@ -8,6 +8,7 @@ module.exports = {
     '**/user.spec.ts',
     '**/user-direct-submission.spec.ts',
     '**/agentFunds.spec.ts',
+    '**/withdraw.spec.ts',
   ],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
   globalSetup: './test/integration/global-setup.ts',

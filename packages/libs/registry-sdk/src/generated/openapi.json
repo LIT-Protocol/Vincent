@@ -2058,6 +2058,221 @@
         ],
         "additionalProperties": false
       },
+      "RequestWithdrawRequest": {
+        "type": "object",
+        "properties": {
+          "userControllerAddress": {
+            "type": "string",
+            "pattern": "^0x[a-fA-F0-9]{40}$",
+            "description": "EOA address that controls the user smart wallet, used to derive the agent smart account",
+            "example": "0x123456789012345678901234567890123456abcd"
+          },
+          "assets": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "network": {
+                  "type": "string",
+                  "description": "Network identifier (e.g., \"ethereum\", \"base-mainnet\")",
+                  "example": "base-mainnet"
+                },
+                "tokenAddress": {
+                  "type": "string",
+                  "pattern": "^0x[a-fA-F0-9]{40}$",
+                  "description": "ERC-20 contract address. Use zero address (0x0000000000000000000000000000000000000000) for native tokens",
+                  "example": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
+                },
+                "amount": {
+                  "type": "number",
+                  "minimum": 0,
+                  "exclusiveMinimum": true,
+                  "description": "Amount to withdraw, naturalized by the token decimal value",
+                  "example": 100
+                }
+              },
+              "required": [
+                "network",
+                "tokenAddress",
+                "amount"
+              ],
+              "additionalProperties": false
+            },
+            "minItems": 1,
+            "description": "Array of assets to withdraw. Assets on the same network will be batched into a single UserOperation"
+          }
+        },
+        "required": [
+          "userControllerAddress",
+          "assets"
+        ],
+        "additionalProperties": false
+      },
+      "RequestWithdrawResponse": {
+        "type": "object",
+        "properties": {
+          "withdrawals": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "network": {
+                  "type": "string",
+                  "description": "Network identifier for this withdrawal",
+                  "example": "base-mainnet"
+                },
+                "userOp": {
+                  "type": "object",
+                  "properties": {},
+                  "description": "The ERC-4337 UserOperation. Pass this back to complete-withdraw along with the signature."
+                },
+                "userOpHash": {
+                  "type": "string",
+                  "description": "The hash to sign. Sign this with your EOA wallet using personal_sign or signMessage.",
+                  "example": "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+                }
+              },
+              "required": [
+                "network",
+                "userOp",
+                "userOpHash"
+              ],
+              "additionalProperties": false
+            },
+            "description": "Array of UserOperations, one per unique network. Sign each to authorize withdrawals on that network"
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "network": {
+                  "type": "string",
+                  "description": "Network identifier where the error occurred",
+                  "example": "base-mainnet"
+                },
+                "error": {
+                  "type": "string",
+                  "description": "Error message describing what went wrong",
+                  "example": "Insufficient balance for USDC: requested 100, available 50"
+                }
+              },
+              "required": [
+                "network",
+                "error"
+              ],
+              "additionalProperties": false
+            },
+            "description": "Array of errors for networks that failed to prepare"
+          }
+        },
+        "required": [
+          "withdrawals"
+        ],
+        "additionalProperties": false
+      },
+      "CompleteWithdrawRequest": {
+        "type": "object",
+        "properties": {
+          "withdrawals": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "network": {
+                  "type": "string",
+                  "description": "Network identifier for this signed withdrawal",
+                  "example": "base-mainnet"
+                },
+                "userOp": {
+                  "type": "object",
+                  "properties": {},
+                  "description": "The userOp object returned from request-withdraw"
+                },
+                "signature": {
+                  "type": "string",
+                  "description": "The signature of the UserOperation hash from the user EOA wallet",
+                  "example": "0x1234567890abcdef..."
+                }
+              },
+              "required": [
+                "network",
+                "userOp",
+                "signature"
+              ],
+              "additionalProperties": false
+            },
+            "minItems": 1,
+            "description": "Array of signed UserOperations to submit to the ZeroDev bundler"
+          }
+        },
+        "required": [
+          "withdrawals"
+        ],
+        "additionalProperties": false
+      },
+      "CompleteWithdrawResponse": {
+        "type": "object",
+        "properties": {
+          "transactions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "network": {
+                  "type": "string",
+                  "description": "Network identifier for this transaction",
+                  "example": "base-mainnet"
+                },
+                "transactionHash": {
+                  "type": "string",
+                  "description": "The transaction hash of the completed withdrawal",
+                  "example": "0x9d260d1bbe075be0cda52a3271df062748f3182ede91b3aae5cd115f7b26552b"
+                },
+                "userOpHash": {
+                  "type": "string",
+                  "description": "The UserOperation hash",
+                  "example": "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+                }
+              },
+              "required": [
+                "network",
+                "transactionHash"
+              ],
+              "additionalProperties": false
+            },
+            "description": "Array of completed transactions, one per network"
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "network": {
+                  "type": "string",
+                  "description": "Network identifier where the error occurred",
+                  "example": "base-mainnet"
+                },
+                "error": {
+                  "type": "string",
+                  "description": "Error message describing what went wrong",
+                  "example": "Insufficient balance for USDC: requested 100, available 50"
+                }
+              },
+              "required": [
+                "network",
+                "error"
+              ],
+              "additionalProperties": false
+            },
+            "description": "Array of errors for networks that failed to complete"
+          }
+        },
+        "required": [
+          "transactions"
+        ],
+        "additionalProperties": false
+      },
       "AppList": {
         "type": "array",
         "items": {
@@ -5050,6 +5265,152 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/GetAgentFundsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "App not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/user/{appId}/request-withdraw": {
+      "post": {
+        "tags": [
+          "User"
+        ],
+        "summary": "Request withdrawal",
+        "description": "Generates an ERC-4337 UserOperation for withdrawing tokens from the agent smart account back to the user. The user must sign the UserOperation to authorize the withdrawal.",
+        "operationId": "requestWithdraw",
+        "parameters": [
+          {
+            "schema": {
+              "type": "number"
+            },
+            "required": true,
+            "description": "ID of the target application",
+            "example": 132,
+            "name": "appId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestWithdrawRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Withdrawal UserOperation returned successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestWithdrawResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "App not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/user/{appId}/complete-withdraw": {
+      "post": {
+        "tags": [
+          "User"
+        ],
+        "summary": "Complete withdrawal",
+        "description": "Submits the signed UserOperation to the ZeroDev bundler to complete the withdrawal. The paymaster sponsors the gas.",
+        "operationId": "completeWithdraw",
+        "parameters": [
+          {
+            "schema": {
+              "type": "number"
+            },
+            "required": true,
+            "description": "ID of the target application",
+            "example": 132,
+            "name": "appId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompleteWithdrawRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Withdrawal completed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompleteWithdrawResponse"
                 }
               }
             }

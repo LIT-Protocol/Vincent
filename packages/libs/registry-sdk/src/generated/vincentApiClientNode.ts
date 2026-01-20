@@ -400,6 +400,22 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['User'],
       }),
+      requestWithdraw: build.mutation<RequestWithdrawApiResponse, RequestWithdrawApiArg>({
+        query: (queryArg) => ({
+          url: `/user/${encodeURIComponent(String(queryArg.appId))}/request-withdraw`,
+          method: 'POST',
+          body: queryArg.requestWithdrawRequest,
+        }),
+        invalidatesTags: ['User'],
+      }),
+      completeWithdraw: build.mutation<CompleteWithdrawApiResponse, CompleteWithdrawApiArg>({
+        query: (queryArg) => ({
+          url: `/user/${encodeURIComponent(String(queryArg.appId))}/complete-withdraw`,
+          method: 'POST',
+          body: queryArg.completeWithdrawRequest,
+        }),
+        invalidatesTags: ['User'],
+      }),
     }),
     overrideExisting: false,
   });
@@ -744,6 +760,20 @@ export type GetAgentFundsApiArg = {
   /** ID of the target application */
   appId: number;
   getAgentFundsRequest: GetAgentFundsRequest;
+};
+export type RequestWithdrawApiResponse =
+  /** status 200 Withdrawal UserOperation returned successfully */ RequestWithdrawResponse;
+export type RequestWithdrawApiArg = {
+  /** ID of the target application */
+  appId: number;
+  requestWithdrawRequest: RequestWithdrawRequest;
+};
+export type CompleteWithdrawApiResponse =
+  /** status 200 Withdrawal completed successfully */ CompleteWithdrawResponse;
+export type CompleteWithdrawApiArg = {
+  /** ID of the target application */
+  appId: number;
+  completeWithdrawRequest: CompleteWithdrawRequest;
 };
 export type App = {
   /** Timestamp when this was last modified */
@@ -1516,4 +1546,64 @@ export type GetAgentFundsRequest = {
   userControllerAddress: string;
   /** Networks to query for token balances */
   networks: string[];
+};
+export type RequestWithdrawResponse = {
+  /** Array of UserOperations, one per unique network. Sign each to authorize withdrawals on that network */
+  withdrawals: {
+    /** Network identifier for this withdrawal */
+    network: string;
+    /** The ERC-4337 UserOperation. Pass this back to complete-withdraw along with the signature. */
+    userOp: {};
+    /** The hash to sign. Sign this with your EOA wallet using personal_sign or signMessage. */
+    userOpHash: string;
+  }[];
+  /** Array of errors for networks that failed to prepare */
+  errors?: {
+    /** Network identifier where the error occurred */
+    network: string;
+    /** Error message describing what went wrong */
+    error: string;
+  }[];
+};
+export type RequestWithdrawRequest = {
+  /** EOA address that controls the user smart wallet, used to derive the agent smart account */
+  userControllerAddress: string;
+  /** Array of assets to withdraw. Assets on the same network will be batched into a single UserOperation */
+  assets: {
+    /** Network identifier (e.g., "ethereum", "base-mainnet") */
+    network: string;
+    /** ERC-20 contract address. Use zero address (0x0000000000000000000000000000000000000000) for native tokens */
+    tokenAddress: string;
+    /** Amount to withdraw, naturalized by the token decimal value */
+    amount: number;
+  }[];
+};
+export type CompleteWithdrawResponse = {
+  /** Array of completed transactions, one per network */
+  transactions: {
+    /** Network identifier for this transaction */
+    network: string;
+    /** The transaction hash of the completed withdrawal */
+    transactionHash: string;
+    /** The UserOperation hash */
+    userOpHash?: string;
+  }[];
+  /** Array of errors for networks that failed to complete */
+  errors?: {
+    /** Network identifier where the error occurred */
+    network: string;
+    /** Error message describing what went wrong */
+    error: string;
+  }[];
+};
+export type CompleteWithdrawRequest = {
+  /** Array of signed UserOperations to submit to the ZeroDev bundler */
+  withdrawals: {
+    /** Network identifier for this signed withdrawal */
+    network: string;
+    /** The userOp object returned from request-withdraw */
+    userOp: {};
+    /** The signature of the UserOperation hash from the user EOA wallet */
+    signature: string;
+  }[];
 };

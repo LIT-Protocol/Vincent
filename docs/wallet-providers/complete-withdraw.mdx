@@ -1,0 +1,226 @@
+---
+title: 'Complete Withdraw'
+api: 'POST /user/{appId}/complete-withdraw'
+---
+
+Complete the withdrawal by submitting signed UserOperations to the blockchain. This endpoint broadcasts the signed transactions to the ZeroDev bundler and waits for confirmation.
+
+<Note>
+The transaction will be rejected if the Agent account does not have enough native tokens to pay for gas fees.
+</Note>
+
+## Request
+
+<ParamField path="appId" type="integer" required>
+  The unique identifier of the app
+</ParamField>
+
+<ParamField body="withdrawals" type="array" required>
+  List of signed withdrawals to execute
+
+  <Expandable title="Signed withdrawal object properties">
+    <ParamField body="network" type="string" required>
+      Network identifier (must match the network from request-withdraw response)
+    </ParamField>
+    <ParamField body="userOp" type="object" required>
+      The UserOperation object returned from request-withdraw (unchanged)
+    </ParamField>
+    <ParamField body="signature" type="string" required>
+      The user's signature over the UserOperation hash
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+## Response
+
+<ResponseField name="transactions" type="array">
+  List of completed transactions
+
+  <Expandable title="Transaction object properties">
+    <ResponseField name="network" type="string">
+      Network where the transaction was executed
+    </ResponseField>
+    <ResponseField name="transactionHash" type="string">
+      The on-chain transaction hash
+    </ResponseField>
+    <ResponseField name="userOpHash" type="string">
+      The ERC-4337 UserOperation hash
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="errors" type="array">
+  List of errors for networks that failed to complete (only present if some networks failed)
+
+  <Expandable title="Error object properties">
+    <ResponseField name="network" type="string">
+      Network identifier where the error occurred
+    </ResponseField>
+    <ResponseField name="error" type="string">
+      Error message describing what went wrong
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<RequestExample>
+```bash cURL
+curl -X POST https://api.heyvincent.ai/user/123/complete-withdraw \
+  -H "Content-Type: application/json" \
+  -d '{
+    "withdrawals": [
+      {
+        "network": "base-mainnet",
+        "userOp": {
+          "sender": "0xAgentSmartAccountAddress...",
+          "nonce": "0x1",
+          "callData": "0xa9059cbb...",
+          "callGasLimit": "0x5208",
+          "verificationGasLimit": "0x10000",
+          "preVerificationGas": "0x5208",
+          "maxFeePerGas": "0x3b9aca00",
+          "maxPriorityFeePerGas": "0x3b9aca00",
+          "paymaster": "0xPaymasterAddress...",
+          "paymasterData": "0x..."
+        },
+        "signature": "0xUserSignature..."
+      }
+    ]
+  }'
+```
+
+```typescript viem
+import { createWalletClient, custom } from 'viem';
+
+// Step 1: Request withdrawal (from request-withdraw endpoint)
+const requestResponse = await fetch(`https://api.heyvincent.ai/user/${appId}/request-withdraw`, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    userControllerAddress: walletClient.account.address,
+    assets: [
+      {
+        network: 'base-mainnet',
+        tokenAddress: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', // USDC on Base
+        amount: 100
+      }
+    ]
+  })
+});
+
+const { withdrawals } = await requestResponse.json();
+
+// Step 2: Sign each UserOperation
+const signedWithdrawals = await Promise.all(
+  withdrawals.map(async (withdrawal) => {
+    const signature = await walletClient.signMessage({
+      message: { raw: withdrawal.userOpHash as `0x${string}` }
+    });
+    return {
+      network: withdrawal.network,
+      userOp: withdrawal.userOp,
+      signature
+    };
+  })
+);
+
+// Step 3: Complete withdrawal
+const completeResponse = await fetch(`https://api.heyvincent.ai/user/${appId}/complete-withdraw`, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ withdrawals: signedWithdrawals })
+});
+
+const { transactions } = await completeResponse.json();
+
+transactions.forEach(tx => {
+  console.log(`Withdrawal on ${tx.network}: ${tx.transactionHash}`);
+});
+```
+
+```typescript ethers.js (v6)
+import { getBytes } from 'ethers';
+
+// Step 1: Request withdrawal (from request-withdraw endpoint)
+const requestResponse = await fetch(`https://api.heyvincent.ai/user/${appId}/request-withdraw`, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    userControllerAddress: await signer.getAddress(),
+    assets: [
+      {
+        network: 'base-mainnet',
+        tokenAddress: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', // USDC on Base
+        amount: 100
+      }
+    ]
+  })
+});
+
+const { withdrawals } = await requestResponse.json();
+
+// Step 2: Sign each UserOperation
+const signedWithdrawals = await Promise.all(
+  withdrawals.map(async (withdrawal) => {
+    const signature = await signer.signMessage(
+      getBytes(withdrawal.userOpHash)
+    );
+    return {
+      network: withdrawal.network,
+      userOp: withdrawal.userOp,
+      signature
+    };
+  })
+);
+
+// Step 3: Complete withdrawal
+const completeResponse = await fetch(`https://api.heyvincent.ai/user/${appId}/complete-withdraw`, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ withdrawals: signedWithdrawals })
+});
+
+const { transactions } = await completeResponse.json();
+
+transactions.forEach(tx => {
+  console.log(`Withdrawal on ${tx.network}: ${tx.transactionHash}`);
+});
+```
+</RequestExample>
+
+<ResponseExample>
+```json Response
+{
+  "transactions": [
+    {
+      "network": "base-mainnet",
+      "transactionHash": "0xabc123...",
+      "userOpHash": "0xdef456..."
+    }
+  ]
+}
+```
+
+```json Partial Failure
+{
+  "transactions": [
+    {
+      "network": "base-mainnet",
+      "transactionHash": "0xabc123...",
+      "userOpHash": "0xdef456..."
+    }
+  ],
+  "errors": [
+    {
+      "network": "ethereum",
+      "error": "UserOp 0x123... not confirmed after 15 seconds"
+    }
+  ]
+}
+```
+
+```json All Failed
+{
+  "error": "All withdrawals failed: base-mainnet: UserOp not confirmed after 15 seconds"
+}
+```
+</ResponseExample>
