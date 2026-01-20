@@ -141,71 +141,79 @@ export async function relayTransactionToUserOp(
  * - The signature is prefixed with 0xff to indicate "raw signature mode"
  * - This tells the Kernel account to use the signature as-is without additional processing
  *
+ * IMPORTANT: This function submits an already-signed UserOp directly to the bundler
+ * via eth_sendUserOperation RPC call. We do NOT need to deserialize the permission
+ * account because the UserOp is already fully signed by the PKP.
+ *
  * Returns both the UserOp hash and the transaction hash once mined.
  */
 export async function submitSignedUserOp(
   params: SubmitSignedUserOpParams,
 ): Promise<{ userOpHash: Hex; transactionHash: Hex }> {
-  const {
-    permittedAddress,
-    serializedPermissionAccount,
-    userOpSignature,
-    userOp,
-    chain,
-    zerodevRpcUrl,
-  } = params;
+  const { userOpSignature, userOp, chain, zerodevRpcUrl } = params;
 
   // Create ZeroDev transport for bundler
   const zerodevTransport = http(zerodevRpcUrl);
 
-  // Create public client
+  // Create public client for the bundler RPC
   const publicClient = createPublicClient({
     chain,
     transport: zerodevTransport,
   });
 
-  // Create the signer that matches how the permission account was serialized
-  const permittedSigner = await createPermittedSigner(permittedAddress);
-
-  // Deserialize the permission account with the signer
-  const permissionAccount = await deserializePermissionAccount(
-    publicClient,
-    entryPoint,
-    kernelVersion,
-    serializedPermissionAccount,
-    permittedSigner,
-  );
-
-  // Create kernel client with ZeroDev bundler
-  // No paymaster - smart account will pay for gas using its own balance
-  const kernelClient = createKernelAccountClient({
-    chain,
-    account: permissionAccount,
-    bundlerTransport: zerodevTransport,
-    client: publicClient,
-  });
-
-  // Add signature to UserOp with 0xff prefix per Kernel v3 validation
-  // The 0xff prefix indicates "raw signature mode" - use signature as-is
+  // Add signature to UserOp with 0xff prefix for permission validator
+  // Permission validators require the 0xff prefix to identify the signature type
+  // See: @zerodev/permissions/toPermissionValidator.ts signUserOperation method
   const signedUserOp = {
     ...userOp,
     signature: concat(['0xff', userOpSignature]),
   };
 
   console.log('[submitSignedUserOp] Broadcasting UserOp to ZeroDev bundler...');
-  const userOpHash = await kernelClient.sendUserOperation(signedUserOp as any);
+
+  // Submit UserOp directly via eth_sendUserOperation RPC
+  // Format: eth_sendUserOperation(userOp, entryPoint address)
+  const userOpHash = await publicClient.request({
+    method: 'eth_sendUserOperation',
+    params: [signedUserOp, entryPoint.address],
+  } as any);
+
   console.log(`[submitSignedUserOp] UserOp hash: ${userOpHash}`);
 
   console.log('[submitSignedUserOp] Waiting for UserOp to be included in a block...');
-  const receipt = await kernelClient.waitForUserOperationReceipt({
-    hash: userOpHash,
-  });
+
+  // Poll for UserOp receipt
+  let receipt: any;
+  let attempts = 0;
+  const maxAttempts = 60; // 60 attempts * 2s = 2 minutes max wait
+
+  while (!receipt && attempts < maxAttempts) {
+    try {
+      receipt = await publicClient.request({
+        method: 'eth_getUserOperationReceipt',
+        params: [userOpHash],
+      } as any);
+
+      if (!receipt) {
+        await new Promise((resolve) => setTimeout(resolve, 2000)); // Wait 2s between polls
+        attempts++;
+      }
+    } catch (error) {
+      // Receipt not found yet, continue polling
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      attempts++;
+    }
+  }
+
+  if (!receipt) {
+    throw new Error(`UserOp receipt not found after ${maxAttempts} attempts`);
+  }
 
   console.log('[submitSignedUserOp] ✅ UserOp executed successfully!');
   console.log(`[submitSignedUserOp] Transaction hash: ${receipt.receipt.transactionHash}`);
 
   return {
-    userOpHash,
+    userOpHash: userOpHash as Hex,
     transactionHash: receipt.receipt.transactionHash,
   };
 }

@@ -1,45 +1,45 @@
 import type { Chain } from 'viem';
 import { createPublicClient, createWalletClient, formatEther, http } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
-import {
-  createKernelAccount,
-  // createKernelAccountClient,
-} from '@zerodev/sdk';
+import { createKernelAccount, createKernelAccountClient } from '@zerodev/sdk';
 import { signerToEcdsaValidator } from '@zerodev/ecdsa-validator';
 import { getEntryPoint, KERNEL_V3_3 } from '@zerodev/sdk/constants';
 import { toECDSASigner } from '@zerodev/permissions/signers';
 import { toSudoPolicy } from '@zerodev/permissions/policies';
-import { toPermissionValidator, serializePermissionAccount } from '@zerodev/permissions';
+import {
+  toPermissionValidator,
+  serializePermissionAccount,
+  toInitConfig,
+} from '@zerodev/permissions';
 import { addressToEmptyAccount } from '@zerodev/sdk';
 
 import { ensureWalletHasTokens } from '../wallets/ensureWalletHasTokens';
+import type { SmartAccountInfo } from '../types';
 
 export interface DeploySmartAccountResult {
   smartAccountAddress: `0x${string}`;
   deploymentTxHash?: string;
   serializedPermissionAccount: string;
+  smartAccount: SmartAccountInfo;
 }
 
 /**
- * Deploy a smart account to any chain with permission validator configured.
+ * Deploy a smart account to any chain with permission validator configured using initConfig.
  *
- * Implementation strategy (Kernel v3 permission validator pattern):
- * 1. Creates a sudo-only kernel account (EOA validator) for deployment
- * 2. Creates a dual-validator account (EOA sudo + PKP regular) for serialization
- * 3. Verifies addresses match (permission validator shouldn't affect counterfactual address)
- * 4. Checks if the smart account is already deployed at the counterfactual address
- * 5. Funds the smart account if needed
- * 6. Deploys the smart account (using sudo validator for signing)
- * 7. Serializes the dual-validator permission account for runtime UserOp signing
+ * Implementation strategy (Kernel v3 initConfig session key pattern):
+ * 1. Creates a kernel account with EOA as sudo validator
+ * 2. Installs the PKP signer as a session key using initConfig (not as a regular validator)
+ * 3. The initConfig pattern enables the session key during account deployment
+ * 4. Funds the smart account if needed
+ * 5. Serializes the permission account for runtime UserOp signing
  *
- * In Kernel v3, permission validators work through signature encoding embedded in the
- * serialized account data. They do NOT require on-chain module installation or explicit
- * enablement transactions. The permission validator becomes active when the PKP signs
- * UserOps using the serialized permission account - the signature format tells the
- * Kernel account to use the permission validator for validation.
+ * The initConfig approach (from zerodev-examples/session-keys/install-permissions-with-init-config.ts)
+ * allows installing the PKP session key at deployment time. This creates a smart account where:
+ * - The EOA is the sudo (owner) signer
+ * - The PKP is a permitted session signer with sudo policy
  *
- * The on-chain smart account has only the sudo (EOA) validator installed. The permission
- * validator is activated through signature encoding, not on-chain state.
+ * IMPORTANT: This function's logic MUST match deriveAgentAccountAddress in registry-backend
+ * to ensure the calculated counterfactual address matches the deployed smart account address.
  *
  * @param userEoaPrivateKey - Private key of the user's EOA (sudo validator)
  * @param agentSignerAddress - Address of the PKP (session key/permission validator)
@@ -90,54 +90,55 @@ export async function deploySmartAccountToChain({
     transport: http(targetChainRpcUrl),
   });
 
-  // Create ECDSA validator for the user (owner/sudo)
-  const ecdsaValidator = await signerToEcdsaValidator(publicClient, {
+  const userEoaEcdsaValidator = await signerToEcdsaValidator(publicClient, {
     entryPoint: getEntryPoint('0.7'),
     signer: userEoaWalletClient,
     kernelVersion: KERNEL_V3_3,
   });
 
-  const agentSignerECDSA = await toECDSASigner({
+  const agentECDSASigner = await toECDSASigner({
     signer: addressToEmptyAccount(agentSignerAddress),
   });
 
   const agentSignerPermissionPlugin = await toPermissionValidator(publicClient, {
     entryPoint: getEntryPoint('0.7'),
-    signer: agentSignerECDSA,
+    signer: agentECDSASigner,
     policies: [toSudoPolicy({})],
     kernelVersion: KERNEL_V3_3,
   });
 
-  const dualValidatorKernelAccount = await createKernelAccount(publicClient, {
+  // Use initConfig to install the permission validator as a session key
+  // This matches the pattern in zerodev-examples/session-keys/install-permissions-with-init-config.ts
+  const userEoaKernelAccount = await createKernelAccount(publicClient, {
     entryPoint: getEntryPoint('0.7'),
     plugins: {
-      sudo: ecdsaValidator,
-      regular: agentSignerPermissionPlugin,
+      sudo: userEoaEcdsaValidator,
     },
     kernelVersion: KERNEL_V3_3,
     index: BigInt(accountIndexHash),
+    initConfig: await toInitConfig(agentSignerPermissionPlugin),
   });
 
-  // const zerodevRpcUrl = `https://rpc.zerodev.app/api/v3/${zerodevProjectId}/chain/${targetChain.id}`;
-  // const kernelClient = createKernelAccountClient({
-  //   account: dualValidatorKernelAccount,
-  //   chain: targetChain,
-  //   bundlerTransport: http(zerodevRpcUrl),
-  //   client: publicClient,
-  // });
+  const zerodevRpcUrl = `https://rpc.zerodev.app/api/v3/${zerodevProjectId}/chain/${targetChain.id}`;
+  const kernelClient = createKernelAccountClient({
+    account: userEoaKernelAccount,
+    chain: targetChain,
+    bundlerTransport: http(zerodevRpcUrl),
+    client: publicClient,
+  });
 
   // Step 2: Fund the smart account (if fundAmountBeforeDeployment is provided)
   if (fundAmountBeforeDeployment !== undefined) {
     console.log('Funding smart account...');
     const { currentBalance, fundingTxHash } = await ensureWalletHasTokens({
-      address: dualValidatorKernelAccount.address,
+      address: userEoaKernelAccount.address,
       funderWalletClient,
       publicClient,
       minAmount: fundAmountBeforeDeployment,
     });
 
     console.table({
-      'Smart Account Address': dualValidatorKernelAccount.address,
+      'Smart Account Address': userEoaKernelAccount.address,
       Balance: formatEther(currentBalance),
       'Funding Tx Hash': fundingTxHash,
     });
@@ -155,72 +156,78 @@ export async function deploySmartAccountToChain({
   }
 
   // Step 3: Deploy the smart account
-  // console.log('Deploying smart account...');
+  // The initConfig will automatically install the session key during deployment
+  console.log('Deploying smart account...');
 
-  // const sudoOnlyKernelAccount = await createKernelAccount(publicClient, {
-  //   entryPoint: getEntryPoint('0.7'),
-  //   plugins: {
-  //     sudo: ecdsaValidator,
-  //   },
-  //   kernelVersion: KERNEL_V3_3,
-  //   index: BigInt(accountIndexHash),
-  // });
+  // Deploy with a no-op call to avoid potential fallback/receive reverts
+  const userOpHash = await kernelClient.sendUserOperation({
+    callData: await userEoaKernelAccount.encodeCalls([
+      {
+        to: '0x0000000000000000000000000000000000000000',
+        value: 0n,
+        data: '0x',
+      },
+    ]),
+  });
+  console.log(`Deployment UserOp Hash: ${userOpHash}`);
 
-  // // Create sudo-only client for deployment
-  // const sudoOnlyKernelClient = createKernelAccountClient({
-  //   account: sudoOnlyKernelAccount,
-  //   chain: targetChain,
-  //   bundlerTransport: http(zerodevRpcUrl),
-  //   client: publicClient,
-  // });
+  // Wait for the UserOperation to be included in a block
+  const receipt = await kernelClient.waitForUserOperationReceipt({
+    hash: userOpHash,
+  });
+  const deploymentTxHash = receipt.receipt.transactionHash;
+  console.log(`Deployment Tx Hash: ${deploymentTxHash}`);
 
-  // // Deploy with a no-op call to avoid potential fallback/receive reverts
-  // const userOpHash = await sudoOnlyKernelClient.sendUserOperation({
-  //   callData: await sudoOnlyKernelAccount.encodeCalls([
-  //     {
-  //       to: '0x0000000000000000000000000000000000000000',
-  //       value: 0n,
-  //       data: '0x',
-  //     },
-  //   ]),
-  // });
-  // console.log(`Deployment UserOp Hash: ${userOpHash}`);
+  // Wait for 2 block confirmations
+  await publicClient.waitForTransactionReceipt({
+    hash: deploymentTxHash as `0x${string}`,
+    confirmations: 2,
+  });
 
-  // // Wait for the UserOperation to be included in a block
-  // const receipt = await kernelClient.waitForUserOperationReceipt({
-  //   hash: userOpHash,
-  // });
-  // const deploymentTxHash = receipt.receipt.transactionHash;
-  // console.log(`Deployment Tx Hash: ${deploymentTxHash}`);
+  // Verify deployment
+  const deployedCode = await publicClient.getCode({
+    address: userEoaKernelAccount.address,
+  });
 
-  // // Wait for 2 block confirmations
-  // await publicClient.waitForTransactionReceipt({
-  //   hash: deploymentTxHash as `0x${string}`,
-  //   confirmations: 2,
-  // });
-
-  // // Verify deployment
-  // const deployedCode = await publicClient.getCode({
-  //   address: dualValidatorKernelAccount.address,
-  // });
-
-  // if (!deployedCode || deployedCode === '0x') {
-  //   throw new Error(
-  //     `Smart account deployment failed on ${targetChain.name}, code is still empty (0x)`,
-  //   );
-  // }
+  if (!deployedCode || deployedCode === '0x') {
+    throw new Error(
+      `Smart account deployment failed on ${targetChain.name}, code is still empty (0x)`,
+    );
+  }
 
   console.log(`Smart account deployed successfully`);
   console.table({
     Chain: `${targetChain.name} (${targetChain.id})`,
-    'Smart Account Address': dualValidatorKernelAccount.address,
-    // 'Deployment Tx Hash': deploymentTxHash,
-    // 'Code Length': deployedCode.length,
+    'Smart Account Address': userEoaKernelAccount.address,
+    'Deployment Tx Hash': deploymentTxHash,
+  });
+
+  // Serialize the permission account, passing the permission validator as the 5th parameter
+  // This is required when using initConfig pattern (see zerodev-examples/session-keys/install-permissions-with-init-config.ts:65)
+  const serializedPermissionAccount = await serializePermissionAccount(
+    userEoaKernelAccount,
+    undefined,
+    undefined,
+    undefined,
+    agentSignerPermissionPlugin,
+  );
+
+  // Create public client for the smart account
+  const smartAccountPublicClient = createPublicClient({
+    chain: targetChain,
+    transport: http(targetChainRpcUrl),
   });
 
   return {
-    smartAccountAddress: dualValidatorKernelAccount.address,
-    // deploymentTxHash,
-    serializedPermissionAccount: await serializePermissionAccount(dualValidatorKernelAccount),
+    smartAccountAddress: userEoaKernelAccount.address,
+    deploymentTxHash,
+    serializedPermissionAccount,
+    smartAccount: {
+      account: userEoaKernelAccount,
+      client: kernelClient,
+      publicClient: smartAccountPublicClient,
+      walletClient: userEoaWalletClient,
+      approval: serializedPermissionAccount,
+    },
   };
 }

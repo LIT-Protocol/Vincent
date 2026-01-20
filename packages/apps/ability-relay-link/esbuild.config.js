@@ -128,6 +128,14 @@ const wrapIIFEInStringPlugin = {
         treeShaking: true,
         metafile: true,
         outdir: './src/generated/',
+        define: {
+          // Configure the Vincent registry chain via VINCENT_REGISTRY_LIT_CHAIN env variable
+          // Defaults to 'base' (Base Mainnet) for production
+          // Set to 'baseSepolia' for development/testing
+          __VINCENT_REGISTRY_LIT_CHAIN__: JSON.stringify(
+            process.env.VINCENT_REGISTRY_LIT_CHAIN || 'base',
+          ),
+        },
         plugins: [
           aliasFetch(),
           polyfillNode({

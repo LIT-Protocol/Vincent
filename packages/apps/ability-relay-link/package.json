@@ -8,6 +8,7 @@
     "@crossmint/wallets-sdk": "^0.18.1",
     "@lit-protocol/vincent-ability-sdk": "workspace:*",
     "@relayprotocol/relay-sdk": "^4.0.0",
+    "@zerodev/ecdsa-validator": "^5.4.9",
     "@zerodev/permissions": "^5.6.2",
     "@zerodev/sdk": "^5.5.3",
     "permissionless": "^0.3.2",

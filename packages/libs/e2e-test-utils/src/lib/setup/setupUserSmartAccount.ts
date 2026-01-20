@@ -10,7 +10,6 @@ import {
 } from './vincent-api/installAppViaVincentApi';
 import { completeAppInstallationViaVincentApi } from './vincent-api/completeAppInstallationViaVincentApi';
 import { installAppUsingUserEoa } from './blockchain/installAppUsingUserEoa';
-import { createKernelSmartAccount } from './smart-account/createKernelSmartAccount';
 import { deploySmartAccountToChain } from './smart-account/deploySmartAccountToChain';
 import type { SmartAccountInfo } from './types';
 
@@ -102,6 +101,29 @@ export async function setupUserSmartAccount({
     isAlreadyPermitted = false;
   }
 
+  // Step 4: Deploy the smart account with permission plugin enabled
+  const {
+    smartAccountAddress: deployedAddress,
+    deploymentTxHash,
+    smartAccount,
+  } = await deploySmartAccountToChain({
+    userEoaPrivateKey,
+    agentSignerAddress: pkpSignerAddress as Address,
+    accountIndexHash: deriveSmartAccountIndex(vincentAppId).toString(),
+    targetChain: vincentRegistryChain,
+    targetChainRpcUrl: vincentRegistryRpcUrl,
+    zerodevProjectId,
+    funderPrivateKey,
+    fundAmountBeforeDeployment,
+  });
+
+  // Verify the deployed address matches what the API returned
+  if (deployedAddress.toLowerCase() !== agentSmartAccountAddress.toLowerCase()) {
+    throw new Error(
+      `Smart account address mismatch! Deployed: ${deployedAddress}, API: ${agentSmartAccountAddress}`,
+    );
+  }
+
   // Step 3: Complete app installation by submitting the permitAppVersion transaction (if not already permitted)
   let permitTxHash: string | undefined;
 
@@ -134,36 +156,6 @@ export async function setupUserSmartAccount({
       confirmations: 2,
     });
   }
-
-  // Step 4: Deploy the smart account with permission plugin enabled
-  const { smartAccountAddress: deployedAddress, deploymentTxHash } =
-    await deploySmartAccountToChain({
-      userEoaPrivateKey,
-      agentSignerAddress: pkpSignerAddress as Address,
-      accountIndexHash: deriveSmartAccountIndex(vincentAppId).toString(),
-      targetChain: vincentRegistryChain,
-      targetChainRpcUrl: vincentRegistryRpcUrl,
-      zerodevProjectId,
-      funderPrivateKey,
-      fundAmountBeforeDeployment,
-    });
-
-  // Verify the deployed address matches what the API returned
-  if (deployedAddress.toLowerCase() !== agentSmartAccountAddress.toLowerCase()) {
-    throw new Error(
-      `Smart account address mismatch! Deployed: ${deployedAddress}, API: ${agentSmartAccountAddress}`,
-    );
-  }
-
-  // Step 5: Create local smart account client using the serialized permission account
-  const smartAccount = await createKernelSmartAccount(
-    userEoaPrivateKey,
-    pkpSignerAddress as Address,
-    deriveSmartAccountIndex(vincentAppId).toString(),
-    vincentRegistryChain,
-    vincentRegistryRpcUrl,
-    zerodevProjectId,
-  );
 
   // Summary
   console.table({
