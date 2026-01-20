@@ -1,5 +1,6 @@
 import type { SetupConfig, VincentDevEnvironment } from './setup/types';
 import { setupWallets, setupVincentApp, setupUserSmartAccount } from './setup';
+import { parseEther } from 'viem';
 
 export async function setupVincentDevelopmentEnvironment(
   config: SetupConfig,
@@ -12,7 +13,7 @@ export async function setupVincentDevelopmentEnvironment(
   });
 
   // Phase 1: Setup wallets and fund them
-  const { accounts, clients } = await setupWallets({
+  const { accounts, ethersWallets, clients } = await setupWallets({
     privateKeys: config.privateKeys,
     vincentRegistryChain: config.vincentRegistryChain,
     vincentRegistryRpcUrl: config.vincentRegistryRpcUrl,
@@ -39,6 +40,9 @@ export async function setupVincentDevelopmentEnvironment(
     userEoaPrivateKey: config.privateKeys.userEoa,
     vincentAppId: appInfo.appId,
     funderPrivateKey: config.privateKeys.funder,
+    // Assume the user is deploying to Base Sepolia, and 0.005 ETH is enough for smart account deployment
+    fundAmountBeforeDeployment:
+      config.smartAccountFundAmountBeforeDeployment ?? parseEther('0.005'),
   });
 
   console.log('=== Vincent Development Environment Setup Complete ===');
@@ -53,6 +57,7 @@ export async function setupVincentDevelopmentEnvironment(
     agentSmartAccountAddress: userAccountInfo.agentSmartAccountAddress,
     smartAccountRegistrationTxHash: userAccountInfo.deploymentTxHash,
     accounts,
+    ethersWallets,
     clients,
     smartAccount: userAccountInfo.smartAccount,
   };

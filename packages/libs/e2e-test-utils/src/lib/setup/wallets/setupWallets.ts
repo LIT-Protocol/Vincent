@@ -10,6 +10,7 @@ import {
 } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { defineChain } from 'viem';
+import { Wallet, providers } from 'ethers';
 
 import { ensureWalletHasUnexpiredCapacityCredit } from './ensureWalletHasUnexpiredCapacityCredit';
 import { ensureWalletHasTokens } from './ensureWalletHasTokens';
@@ -40,6 +41,12 @@ export interface SetupWallets {
     appManager: PrivateKeyAccount;
     appDelegatee: PrivateKeyAccount;
     userEoa: PrivateKeyAccount;
+  };
+  ethersWallets: {
+    funder: Wallet;
+    appManager: Wallet;
+    appDelegatee: Wallet;
+    userEoa: Wallet;
   };
   clients: {
     vincentRegistryPublicClient: PublicClient;
@@ -164,12 +171,25 @@ export async function setupWallets({
     },
   });
 
+  // Create ethers wallets for compatibility with Vincent ability client
+  const ethersProvider = new providers.JsonRpcProvider(vincentRegistryRpcUrl);
+  const funderEthersWallet = new Wallet(funder, ethersProvider);
+  const appManagerEthersWallet = new Wallet(appManager, ethersProvider);
+  const appDelegateeEthersWallet = new Wallet(appDelegatee, ethersProvider);
+  const userEoaEthersWallet = new Wallet(userEoa, ethersProvider);
+
   return {
     accounts: {
       funder: funderAccount,
       appManager: appManagerAccount,
       appDelegatee: appDelegateeAccount,
       userEoa: userEoaAccount,
+    },
+    ethersWallets: {
+      funder: funderEthersWallet,
+      appManager: appManagerEthersWallet,
+      appDelegatee: appDelegateeEthersWallet,
+      userEoa: userEoaEthersWallet,
     },
     clients: {
       vincentRegistryPublicClient,

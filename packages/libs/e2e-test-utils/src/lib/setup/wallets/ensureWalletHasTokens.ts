@@ -7,12 +7,14 @@ export async function ensureWalletHasTokens({
   publicClient,
   minAmount,
   dontFund = false,
+  numberOfConfirmations = 2,
 }: {
   address: Address;
   funderWalletClient: WalletClient<any, any, Account>;
   publicClient: PublicClient;
   minAmount: bigint;
   dontFund?: boolean;
+  numberOfConfirmations?: number;
 }): Promise<{ currentBalance: bigint; fundingTxHash?: `0x${string}` }> {
   const walletBalance = await publicClient.getBalance({ address });
 
@@ -28,6 +30,14 @@ export async function ensureWalletHasTokens({
   const txReceipt = await publicClient.waitForTransactionReceipt({ hash: txHash });
   if (txReceipt.status !== 'success') {
     throw new Error(`Transaction failed. Tx hash: ${txHash}`);
+  }
+
+  if (numberOfConfirmations > 0) {
+    console.log('Waiting for funding transaction confirmations...');
+    await publicClient.waitForTransactionReceipt({
+      hash: txHash,
+      confirmations: numberOfConfirmations,
+    });
   }
 
   return { currentBalance: walletBalance + fundAmount, fundingTxHash: txHash };

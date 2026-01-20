@@ -1,4 +1,5 @@
 import type { Chain, PrivateKeyAccount, PublicClient } from 'viem';
+import type { Wallet } from 'ethers';
 
 /**
  * App metadata for Vincent registry
@@ -45,6 +46,7 @@ export interface SetupConfig {
   abilityIpfsCids: string[];
   abilityPolicies: string[][];
   zerodevProjectId: string;
+  smartAccountFundAmountBeforeDeployment?: bigint;
 }
 
 /**
@@ -64,6 +66,12 @@ export interface VincentDevEnvironment {
     appManager: PrivateKeyAccount;
     appDelegatee: PrivateKeyAccount;
     userEoa: PrivateKeyAccount;
+  };
+  ethersWallets: {
+    funder: Wallet;
+    appManager: Wallet;
+    appDelegatee: Wallet;
+    userEoa: Wallet;
   };
   clients: {
     vincentRegistryPublicClient: PublicClient;
