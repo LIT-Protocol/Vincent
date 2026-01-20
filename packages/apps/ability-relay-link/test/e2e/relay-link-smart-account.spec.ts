@@ -46,6 +46,8 @@ const ZERODEV_RPC_URL = `https://rpc.zerodev.app/api/v3/${ZERODEV_PROJECT_ID}/ch
 
 const BASE_MAINNET_SMART_ACCOUNT_FUND_AMOUNT_BEFORE_DEPLOYMENT = parseEther('0.0001');
 const BASE_MAINNET_SMART_ACCOUNT_MIN_BALANCE = parseEther('0.00005');
+const ETH_ADDRESS = '0x0000000000000000000000000000000000000000';
+const USDC_ADDRESS = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'; // Base Mainnet USDC
 
 describe('Relay.link Ability E2E Tests (Smart Account Architecture)', () => {
   let env: VincentDevEnvironment;
@@ -100,7 +102,7 @@ describe('Relay.link Ability E2E Tests (Smart Account Architecture)', () => {
       publicClient: createPublicClient({
         chain: RELAY_CHAIN as any,
         transport: http(BASE_MAINNET_RPC_URL),
-      }),
+      }) as any,
       minAmount: BASE_MAINNET_SMART_ACCOUNT_MIN_BALANCE,
     });
   });
@@ -172,21 +174,13 @@ describe('Relay.link Ability E2E Tests (Smart Account Architecture)', () => {
         debug: false,
       });
 
-      const smartAccountAddress = env.smartAccount.account.address;
-
-      // Get quote for ETH -> USDC swap on Base Mainnet
-      // Set recipient to funder so USDC goes directly to funder (no refund needed)
-      const ETH_ADDRESS = '0x0000000000000000000000000000000000000000';
-      const USDC_ADDRESS = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'; // Base Mainnet USDC
-
       const quote = await getRelayLinkQuote({
-        user: smartAccountAddress,
-        recipient: env.accounts.funder.address,
+        user: env.smartAccount.account.address,
         originChainId: RELAY_CHAIN_ID,
         destinationChainId: RELAY_CHAIN_ID,
         originCurrency: ETH_ADDRESS,
         destinationCurrency: USDC_ADDRESS,
-        amount: '10000000000000', // 0.00001 ETH
+        amount: parseEther('0.00001').toString(),
         tradeType: 'EXACT_INPUT',
         useReceiver: true,
         protocolVersion: 'preferV2',
@@ -216,7 +210,7 @@ describe('Relay.link Ability E2E Tests (Smart Account Architecture)', () => {
           data: txData.data as `0x${string}`,
           value: txData.value || '0',
           chainId: txData.chainId,
-          from: smartAccountAddress,
+          from: env.smartAccount.account.address,
         },
         chain: RELAY_CHAIN,
         zerodevRpcUrl: ZERODEV_RPC_URL,
@@ -304,7 +298,7 @@ describe('Relay.link Ability E2E Tests (Smart Account Architecture)', () => {
     });
   });
 
-  describe.skip('Execute USDC -> ETH Transaction (ERC20 approval flow)', () => {
+  describe('Execute USDC -> ETH Transaction (ERC20 approval flow)', () => {
     it('should build, sign, and execute a USDC -> ETH UserOp with ERC20 approval', async () => {
       // Create ability client with Base Sepolia registry RPC URL
       // The Vincent registry is deployed on Base Sepolia, even though the swap executes on Base Mainnet
@@ -315,21 +309,13 @@ describe('Relay.link Ability E2E Tests (Smart Account Architecture)', () => {
         debug: false,
       });
 
-      const smartAccountAddress = env.smartAccount.account.address;
-
-      // Get quote for USDC -> ETH swap
-      // Set recipient to funder so ETH goes directly to funder (no refund needed)
-      const ETH_ADDRESS = '0x0000000000000000000000000000000000000000';
-      const USDC_ADDRESS = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'; // Base Mainnet USDC
-
       const quote = await getRelayLinkQuote({
-        user: smartAccountAddress,
-        recipient: env.accounts.funder.address, // Send ETH to funder
+        user: env.smartAccount.account.address,
         originChainId: RELAY_CHAIN_ID,
         destinationChainId: RELAY_CHAIN_ID,
         originCurrency: USDC_ADDRESS, // Swapping FROM USDC
         destinationCurrency: ETH_ADDRESS, // TO ETH
-        amount: '50000', // 0.05 USDC (6 decimals)
+        amount: '10000', // 0.01 USDC (6 decimals)
         tradeType: 'EXACT_INPUT',
         useReceiver: true,
         protocolVersion: 'preferV2',
