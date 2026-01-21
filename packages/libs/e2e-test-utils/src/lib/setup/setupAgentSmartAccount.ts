@@ -1,8 +1,7 @@
 import type { Address, Chain } from 'viem';
 import { createPublicClient, createWalletClient, http } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
-import { ethers } from 'ethers';
-import { deriveSmartAccountIndex, getClient } from '@lit-protocol/vincent-contracts-sdk';
+import { deriveSmartAccountIndex } from '@lit-protocol/vincent-contracts-sdk';
 
 import {
   installAppViaVincentApi,

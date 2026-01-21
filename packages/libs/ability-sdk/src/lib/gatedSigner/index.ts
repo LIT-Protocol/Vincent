@@ -11,7 +11,10 @@ export {
   type ValidateTransactionParams,
 } from './helpers/lifecycleFunctions';
 export { type LowLevelCall } from './helpers/lowLevelCall';
-export { formatSecondaryValidatorKernelSignature } from './helpers/smartAccounts/kernel';
+export {
+  formatSecondaryValidatorKernelSignature,
+  tryDecodeKernelCalldataToLowLevelCalls,
+} from './helpers/smartAccounts/kernel';
 export { formatSafeSignature, safeEip712Params } from './helpers/smartAccounts/safe';
 export {
   type AbilityParams,

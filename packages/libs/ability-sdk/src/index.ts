@@ -36,3 +36,5 @@ export {
   ERC20_ABI,
   bigIntReplacer,
 } from './lib/abilityHelpers';
+
+export { tryDecodeKernelCalldataToLowLevelCalls } from './lib/gatedSigner';

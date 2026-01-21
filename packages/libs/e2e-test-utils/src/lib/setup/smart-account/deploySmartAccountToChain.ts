@@ -157,7 +157,7 @@ export async function deploySmartAccountToChain({
   }
 
   // Step 3: Deploy the smart account (only if not already deployed)
-  let deploymentTxHash: string | undefined;
+  let deploymentTxHash: `0x${string}` | undefined;
 
   if (!isAlreadyDeployed) {
     // The initConfig will automatically install the session key during deployment

@@ -1,8 +1,6 @@
 import type { Address, Chain, PrivateKeyAccount, PublicClient } from 'viem';
 import type { Wallet } from 'ethers';
 
-import type { AgentSmartAccountInfo } from './setupAgentSmartAccount';
-
 /**
  * App metadata for Vincent registry
  */
