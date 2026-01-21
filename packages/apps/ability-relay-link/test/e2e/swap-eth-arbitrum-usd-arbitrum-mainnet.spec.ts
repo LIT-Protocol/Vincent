@@ -140,7 +140,7 @@ describe('Swap ETH to USDC and back on Arbitrum Mainnet', () => {
     });
   });
 
-  describe.skip('Get Quote from Relay.link', () => {
+  describe('Get Quote from Relay.link', () => {
     it('should successfully get a quote for the smart account address', async () => {
       const smartAccountAddress = env.agentSmartAccount.address;
 
@@ -167,7 +167,7 @@ describe('Swap ETH to USDC and back on Arbitrum Mainnet', () => {
     });
   });
 
-  describe.skip('Execute Relay.link Transaction from Smart Account', () => {
+  describe('Execute Relay.link Transaction from Smart Account', () => {
     it('should build, sign, and execute a UserOp for ETH -> USDC swap', async () => {
       // Create ability client with Base Sepolia registry RPC URL
       // The Vincent registry is deployed on Base Sepolia, even though the swap executes on Arbitrum Mainnet
@@ -329,7 +329,7 @@ describe('Swap ETH to USDC and back on Arbitrum Mainnet', () => {
     });
   });
 
-  describe.skip('Execute USDC -> ETH Transaction (ERC20 approval flow)', () => {
+  describe('Execute USDC -> ETH Transaction (ERC20 approval flow)', () => {
     it('should build, sign, and execute a USDC -> ETH UserOp with ERC20 approval', async () => {
       // Create ability client with Base Sepolia registry RPC URL
       // The Vincent registry is deployed on Base Sepolia, even though the swap executes on Arbitrum Mainnet

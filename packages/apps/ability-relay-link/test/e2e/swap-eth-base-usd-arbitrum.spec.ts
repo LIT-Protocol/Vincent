@@ -192,7 +192,7 @@ describe('Bridge ETH from Base to USDC on Arbitrum and back', () => {
     });
   });
 
-  describe.skip('Cross-Chain Bridge: Base ETH -> Arbitrum USDC', () => {
+  describe('Cross-Chain Bridge: Base ETH -> Arbitrum USDC', () => {
     it('should bridge ETH from Base to USDC on Arbitrum', async () => {
       const relayClient = getVincentAbilityClient({
         bundledVincentAbility: relayLinkAbility,
@@ -437,7 +437,7 @@ describe('Bridge ETH from Base to USDC on Arbitrum and back', () => {
     });
   });
 
-  describe.skip('Cross-Chain Bridge: Arbitrum USDC -> Base ETH', () => {
+  describe('Cross-Chain Bridge: Arbitrum USDC -> Base ETH', () => {
     it('should bridge USDC from Arbitrum back to ETH on Base', async () => {
       const relayClient = getVincentAbilityClient({
         bundledVincentAbility: relayLinkAbility,
@@ -468,7 +468,7 @@ describe('Bridge ETH from Base to USDC on Arbitrum and back', () => {
         destinationChainId: BASE_CHAIN.id,
         originCurrency: ARB_USDC_ADDRESS,
         destinationCurrency: ETH_ADDRESS,
-        amount: '10000', // 0.01 USDC (6 decimals)
+        amount: '50000', // 0.00005 USDC (6 decimals)
         tradeType: 'EXACT_INPUT',
         useReceiver: true,
         protocolVersion: 'preferV2',
