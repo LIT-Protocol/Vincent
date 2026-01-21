@@ -3,7 +3,7 @@ import { env } from './env';
 const { VITE_ENV } = env;
 
 const REGISTRY_CONFIG = {
-  development: { url: 'http://localhost:3000', domain: 'localhost:5173' },
+  development: { url: 'http://localhost:3000', domain: 'localhost:3000' },
   staging: {
     url: 'https://staging.registry.heyvincent.ai',
     domain: 'staging.registry.heyvincent.ai',

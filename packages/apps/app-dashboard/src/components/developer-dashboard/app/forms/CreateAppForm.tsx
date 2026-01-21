@@ -9,7 +9,6 @@ import { Form } from '@/components/shared/ui/form';
 import { Button } from '@/components/shared/ui/button';
 import {
   TextField,
-  NumberField,
   LongTextField,
   ImageUploadField,
 } from '@/components/developer-dashboard/form-fields';
@@ -21,7 +20,20 @@ const { appDoc } = docSchemas;
 
 const { appId, name, description, contactEmail, appUrl, logo, deploymentStatus } = appDoc.shape;
 
+// Schema for creating a new app (appId will be generated on-chain)
 export const CreateAppSchema = z
+  .object({
+    name,
+    description,
+    contactEmail,
+    appUrl,
+    logo,
+    deploymentStatus,
+  })
+  .strict();
+
+// Schema for adding existing on-chain app to registry
+export const CreateAppWithIdSchema = z
   .object({
     appId,
     name,
@@ -34,19 +46,31 @@ export const CreateAppSchema = z
   .strict();
 
 export type CreateAppFormData = z.infer<typeof CreateAppSchema>;
+export type CreateAppWithIdFormData = z.infer<typeof CreateAppWithIdSchema>;
 
 interface CreateAppFormProps {
-  onSubmit: (data: CreateAppFormData) => Promise<void>;
+  onSubmit: (data: CreateAppFormData | CreateAppWithIdFormData) => Promise<void>;
   isSubmitting?: boolean;
+  existingAppId?: number;
+  onSuccess?: () => void;
 }
 
-export function CreateAppForm({ onSubmit, isSubmitting = false }: CreateAppFormProps) {
+export function CreateAppForm({
+  onSubmit,
+  isSubmitting = false,
+  existingAppId,
+  onSuccess,
+}: CreateAppFormProps) {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitSuccess, setSubmitSuccess] = useState(false);
 
-  const form = useForm<CreateAppFormData>({
-    resolver: zodResolver(CreateAppSchema),
+  // Use different schema based on whether we have an existing app ID
+  const schema = existingAppId ? CreateAppWithIdSchema : CreateAppSchema;
+
+  const form = useForm<CreateAppFormData | CreateAppWithIdFormData>({
+    resolver: zodResolver(schema),
     defaultValues: {
+      ...(existingAppId && { appId: existingAppId }),
       deploymentStatus: 'dev',
     },
   });
@@ -62,12 +86,15 @@ export function CreateAppForm({ onSubmit, isSubmitting = false }: CreateAppFormP
     formState: { errors },
   } = form;
 
-  const handleFormSubmit = async (data: CreateAppFormData) => {
+  const handleFormSubmit = async (data: CreateAppFormData | CreateAppWithIdFormData) => {
     setSubmitError(null);
     setSubmitSuccess(false);
     try {
       await onSubmit(data);
       setSubmitSuccess(true);
+      if (onSuccess) {
+        onSuccess();
+      }
     } catch (error) {
       console.error('Failed to create app:', error);
       setSubmitError(extractErrorMessage(error, 'Failed to create app'));
@@ -88,16 +115,6 @@ export function CreateAppForm({ onSubmit, isSubmitting = false }: CreateAppFormP
                     Basic Information
                   </h3>
                   <div className="space-y-6">
-                    <NumberField
-                      name="appId"
-                      register={register}
-                      error={errors.appId?.message}
-                      label="App ID"
-                      placeholder="Enter on-chain app ID"
-                      required
-                      min={1}
-                    />
-
                     <TextField
                       name="name"
                       register={register}
@@ -130,7 +147,7 @@ export function CreateAppForm({ onSubmit, isSubmitting = false }: CreateAppFormP
                       name="appUrl"
                       register={register}
                       error={errors.appUrl?.message}
-                      label="App User URL"
+                      label="App URL"
                       placeholder="https://yourapp.com"
                       required
                     />

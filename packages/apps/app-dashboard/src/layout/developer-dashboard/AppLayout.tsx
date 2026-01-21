@@ -10,7 +10,6 @@ import {
   useSidebar,
 } from '@/components/shared/ui/sidebar';
 import { theme } from '@/lib/themeClasses';
-import { useAppAddressCheck } from '@/hooks/developer-dashboard/app/useAppAddressCheck';
 import { useAbilityAddressCheck } from '@/hooks/developer-dashboard/ability/useAbilityAddressCheck';
 import { usePolicyAddressCheck } from '@/hooks/developer-dashboard/policy/usePolicyAddressCheck';
 import Loading from '@/components/shared/ui/Loading';
@@ -44,33 +43,30 @@ function AppLayout({ children, className }: ComponentProps<'div'>) {
   // Check JWT-based authentication
   const { isAuthenticated, isLoading: authLoading } = useAuth();
 
-  // Always call address check hooks (React hooks rule)
-  const appAddressCheck = useAppAddressCheck();
-  const abilityAddressCheck = useAbilityAddressCheck();
-  const policyAddressCheck = usePolicyAddressCheck();
-
   // Check if we're on any developer route
   const isDeveloperRoute = location.pathname.startsWith('/developer');
 
   // Determine which specific authorization check is needed based on route
-  const needsAppAuthorization = location.pathname.includes('/developer/apps/appId/');
   const needsAbilityAuthorization = location.pathname.includes('/developer/abilities/ability/');
   const needsPolicyAuthorization = location.pathname.includes('/developer/policies/policy/');
 
+  // Only call hooks when needed (React hooks rule - always call, but conditionally use)
+  const abilityAddressCheck = useAbilityAddressCheck();
+  const policyAddressCheck = usePolicyAddressCheck();
+
   // Select the appropriate authorization result based on the current route
+  // NOTE: App authorization is now handled in AppOverviewWrapper to avoid duplicate on-chain calls
   let isResourceAuthorized: boolean | null = true;
   let isResourceChecking = false;
 
-  if (needsAppAuthorization) {
-    isResourceAuthorized = appAddressCheck.isAuthorized;
-    isResourceChecking = appAddressCheck.isChecking;
-  } else if (needsAbilityAuthorization) {
+  if (needsAbilityAuthorization) {
     isResourceAuthorized = abilityAddressCheck.isAuthorized;
     isResourceChecking = abilityAddressCheck.isChecking;
   } else if (needsPolicyAuthorization) {
     isResourceAuthorized = policyAddressCheck.isAuthorized;
     isResourceChecking = policyAddressCheck.isChecking;
   }
+  // NOTE: Removed needsAppAuthorization check here - handled in AppOverviewWrapper
 
   // Common layout wrapper function
   const layoutWrapper = (content: React.ReactNode) => (
@@ -109,22 +105,12 @@ function AppLayout({ children, className }: ComponentProps<'div'>) {
     return <SignInScreen />;
   }
 
-  if (
-    (needsAppAuthorization || needsAbilityAuthorization || needsPolicyAuthorization) &&
-    isResourceChecking
-  ) {
+  if ((needsAbilityAuthorization || needsPolicyAuthorization) && isResourceChecking) {
     return layoutWrapper(<Loading />);
   }
 
-  if (
-    (needsAppAuthorization || needsAbilityAuthorization || needsPolicyAuthorization) &&
-    isResourceAuthorized === false
-  ) {
-    const resourceType = needsAppAuthorization
-      ? 'app'
-      : needsAbilityAuthorization
-        ? 'ability'
-        : 'policy';
+  if ((needsAbilityAuthorization || needsPolicyAuthorization) && isResourceAuthorized === false) {
+    const resourceType = needsAbilityAuthorization ? 'ability' : 'policy';
 
     return layoutWrapper(
       <ResourceNotOwnedError

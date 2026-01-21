@@ -7,9 +7,14 @@ import { App } from '@/types/developer-dashboard/appTypes';
 import { AppCard } from '@/components/developer-dashboard/ui/AppCard';
 import { theme, fonts } from '@/lib/themeClasses';
 
+interface AppWithOwnership extends App {
+  isOwnedOnChain?: boolean;
+  onChainOwner?: string;
+}
+
 interface AppsListViewProps {
-  apps: App[];
-  deletedApps: App[];
+  apps: AppWithOwnership[];
+  deletedApps: AppWithOwnership[];
 }
 
 export function AppsListView({ apps, deletedApps }: AppsListViewProps) {

@@ -184,7 +184,7 @@ export function AppPublishedButtons({
               <ActionButton
                 icon={Plus}
                 title="New Version"
-                description="Only one unpublished version allowed at a time"
+                description="Create a new version with abilities"
                 onClick={() => onOpenMutation('create-app-version')}
                 variant="orange"
                 iconBg={`${theme.brandOrange}1A`}

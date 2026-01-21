@@ -11,9 +11,6 @@ import RootPage from './pages/shared/RootPage';
 import {
   AppsWrapper,
   AppOverviewWrapper,
-  AppVersionDetailWrapper,
-  AppVersionsWrapper,
-  AppVersionAbilitiesWrapper,
   CreateAppWrapper,
 } from './components/developer-dashboard/app/wrappers';
 
@@ -86,18 +83,6 @@ const routes: RouteObject[] = [
                   {
                     path: 'appId/:appId',
                     element: <AppOverviewWrapper />,
-                  },
-                  {
-                    path: 'appId/:appId/versions',
-                    element: <AppVersionsWrapper />,
-                  },
-                  {
-                    path: 'appId/:appId/version/:versionId',
-                    element: <AppVersionDetailWrapper />,
-                  },
-                  {
-                    path: 'appId/:appId/version/:versionId/abilities',
-                    element: <AppVersionAbilitiesWrapper />,
                   },
                 ],
               },

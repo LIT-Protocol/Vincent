@@ -2,9 +2,6 @@ import type { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
 
 import { appDoc, appCreate, appEdit, appSetActiveVersion } from '../schemas/app';
 import {
-  appVersionDoc,
-  appVersionCreate,
-  appVersionEdit,
   appVersionAbilityCreate,
   appVersionAbilityEdit,
   appVersionAbilityDoc,
@@ -29,10 +26,6 @@ export function addToRegistry(registry: OpenAPIRegistry) {
   const AppEdit = registry.register('AppEdit', appEdit);
   const AppRead = registry.register('App', appDoc);
   const AppSetActiveVersion = registry.register('AppSetActiveVersion', appSetActiveVersion);
-
-  const AppVersionCreate = registry.register('AppVersionCreate', appVersionCreate);
-  const AppVersionEdit = registry.register('AppVersionEdit', appVersionEdit);
-  const AppVersionRead = registry.register('AppVersion', appVersionDoc);
 
   const AppVersionAbilityCreate = registry.register(
     'AppVersionAbilityCreate',
@@ -72,7 +65,7 @@ export function addToRegistry(registry: OpenAPIRegistry) {
   registry.registerPath({
     method: 'post',
     path: '/app',
-    tags: ['App', 'AppVersion'],
+    tags: ['App'],
     summary: 'Creates a new application',
     operationId: 'createApp',
     security: [{ [siweAuth.name]: [] }],
@@ -198,7 +191,7 @@ export function addToRegistry(registry: OpenAPIRegistry) {
   registry.registerPath({
     method: 'delete',
     path: '/app/{appId}',
-    tags: ['App', 'AppVersion', 'AppVersionAbility'],
+    tags: ['App', 'AppVersionAbility'],
     summary: 'Deletes an application',
     operationId: 'deleteApp',
     security: [{ [siweAuth.name]: [] }],
@@ -237,7 +230,7 @@ export function addToRegistry(registry: OpenAPIRegistry) {
   registry.registerPath({
     method: 'post',
     path: '/app/{appId}/undelete',
-    tags: ['App', 'AppVersion', 'AppVersionAbility'],
+    tags: ['App', 'AppVersionAbility'],
     summary: 'Undeletes an application',
     operationId: 'undeleteApp',
     security: [{ [siweAuth.name]: [] }],
@@ -252,254 +245,6 @@ export function addToRegistry(registry: OpenAPIRegistry) {
         content: {
           'application/json': {
             schema: GenericResult,
-          },
-        },
-      },
-      400: {
-        description: 'Invalid input',
-      },
-      422: {
-        description: 'Validation exception',
-      },
-      default: {
-        description: 'Unexpected error',
-        content: {
-          'application/json': {
-            schema: ErrorResponse,
-          },
-        },
-      },
-    },
-  });
-
-  // GET /app/{appId}/versions - Fetch all versions of an application
-  registry.registerPath({
-    method: 'get',
-    path: '/app/{appId}/versions',
-    tags: ['AppVersion'],
-    summary: 'Fetches all versions of an application',
-    operationId: 'getAppVersions',
-    request: {
-      params: z.object({
-        appId: appIdParam,
-      }),
-    },
-    responses: {
-      200: {
-        description: 'Successful operation',
-        content: {
-          'application/json': {
-            schema: z.array(AppVersionRead).openapi('AppVersionList'),
-          },
-        },
-      },
-      404: {
-        description: 'Application not found',
-      },
-      default: {
-        description: 'Unexpected error',
-        content: {
-          'application/json': {
-            schema: ErrorResponse,
-          },
-        },
-      },
-    },
-  });
-
-  // POST /app/{appId}/version/{version} - Create an application version
-  registry.registerPath({
-    method: 'post',
-    path: '/app/{appId}/version',
-    tags: ['AppVersion'],
-    summary: 'Creates an application version',
-    operationId: 'createAppVersion',
-    security: [{ [siweAuth.name]: [] }],
-    request: {
-      params: z.object({
-        appId: appIdParam,
-      }),
-      body: {
-        content: {
-          'application/json': {
-            schema: AppVersionCreate,
-          },
-        },
-        description: 'Developer-defined version details',
-        required: true,
-      },
-    },
-    responses: {
-      200: {
-        description: 'Successful operation',
-        content: {
-          'application/json': {
-            schema: AppVersionRead,
-          },
-        },
-      },
-      400: {
-        description: 'Invalid input',
-      },
-      422: {
-        description: 'Validation exception',
-      },
-      default: {
-        description: 'Unexpected error',
-        content: {
-          'application/json': {
-            schema: ErrorResponse,
-          },
-        },
-      },
-    },
-  });
-
-  // GET /app/{appId}/version/{version} - Fetch an application version
-  registry.registerPath({
-    method: 'get',
-    path: '/app/{appId}/version/{version}',
-    tags: ['AppVersion'],
-    summary: 'Fetches an application version',
-    operationId: 'getAppVersion',
-    request: {
-      params: z.object({
-        appId: appIdParam,
-        version: appVersionParam,
-      }),
-    },
-    responses: {
-      200: {
-        description: 'Successful operation',
-        content: {
-          'application/json': {
-            schema: AppVersionRead,
-          },
-        },
-      },
-      404: {
-        description: 'Application not found',
-      },
-      default: {
-        description: 'Unexpected error',
-        content: {
-          'application/json': {
-            schema: ErrorResponse,
-          },
-        },
-      },
-    },
-  });
-
-  // PUT /app/{appId}/version/{version} - Edit an application version
-  registry.registerPath({
-    method: 'put',
-    path: '/app/{appId}/version/{version}',
-    tags: ['AppVersion'],
-    summary: 'Edits an application version',
-    operationId: 'editAppVersion',
-    security: [{ [siweAuth.name]: [] }],
-    request: {
-      params: z.object({
-        appId: appIdParam,
-        version: appVersionParam,
-      }),
-      body: {
-        content: {
-          'application/json': {
-            schema: AppVersionEdit,
-          },
-        },
-        description: 'Update version changes field',
-        required: true,
-      },
-    },
-    responses: {
-      200: {
-        description: 'Successful operation',
-        content: {
-          'application/json': {
-            schema: AppVersionRead,
-          },
-        },
-      },
-      400: {
-        description: 'Invalid input',
-      },
-      422: {
-        description: 'Validation exception',
-      },
-      default: {
-        description: 'Unexpected error',
-        content: {
-          'application/json': {
-            schema: ErrorResponse,
-          },
-        },
-      },
-    },
-  });
-
-  // POST /app/{appId}/version/{version}/enable - Enable an application version
-  registry.registerPath({
-    method: 'post',
-    path: '/app/{appId}/version/{version}/enable',
-    tags: ['AppVersion'],
-    summary: 'Enables an application version',
-    operationId: 'enableAppVersion',
-    security: [{ [siweAuth.name]: [] }],
-    request: {
-      params: z.object({
-        appId: appIdParam,
-        version: appVersionParam,
-      }),
-    },
-    responses: {
-      200: {
-        description: 'Successful operation',
-        content: {
-          'application/json': {
-            schema: AppVersionRead,
-          },
-        },
-      },
-      400: {
-        description: 'Invalid input',
-      },
-      422: {
-        description: 'Validation exception',
-      },
-      default: {
-        description: 'Unexpected error',
-        content: {
-          'application/json': {
-            schema: ErrorResponse,
-          },
-        },
-      },
-    },
-  });
-
-  // POST /app/{appId}/version/{version}/disable - Disable an application version
-  registry.registerPath({
-    method: 'post',
-    path: '/app/{appId}/version/{version}/disable',
-    tags: ['AppVersion'],
-    summary: 'Disables an application version',
-    operationId: 'disableAppVersion',
-    security: [{ [siweAuth.name]: [] }],
-    request: {
-      params: z.object({
-        appId: appIdParam,
-        version: appVersionParam,
-      }),
-    },
-    responses: {
-      200: {
-        description: 'Successful operation',
-        content: {
-          'application/json': {
-            schema: AppVersionRead,
           },
         },
       },
@@ -644,92 +389,6 @@ export function addToRegistry(registry: OpenAPIRegistry) {
       },
       404: {
         description: 'Application, version, or ability not found',
-      },
-      422: {
-        description: 'Validation exception',
-      },
-      default: {
-        description: 'Unexpected error',
-        content: {
-          'application/json': {
-            schema: ErrorResponse,
-          },
-        },
-      },
-    },
-  });
-
-  // DELETE /app/{appId}/version/{version} - Delete an application version and its AppVersionAbilities
-  registry.registerPath({
-    method: 'delete',
-    path: '/app/{appId}/version/{version}',
-    tags: ['AppVersion'],
-    summary: 'Deletes an application version',
-    operationId: 'deleteAppVersion',
-    security: [{ [siweAuth.name]: [] }],
-    request: {
-      params: z.object({
-        appId: appIdParam,
-        version: appVersionParam,
-      }),
-    },
-    responses: {
-      200: {
-        description: 'OK - Resource successfully deleted',
-        content: {
-          'application/json': {
-            schema: GenericResult,
-          },
-        },
-      },
-      400: {
-        description: 'Invalid input',
-      },
-      404: {
-        description: 'Application or version not found',
-      },
-      422: {
-        description: 'Validation exception',
-      },
-      default: {
-        description: 'Unexpected error',
-        content: {
-          'application/json': {
-            schema: ErrorResponse,
-          },
-        },
-      },
-    },
-  });
-
-  // POST /app/{appId}/version/{version}/undelete - Undelete an application version and its AppVersionAbilities
-  registry.registerPath({
-    method: 'post',
-    path: '/app/{appId}/version/{version}/undelete',
-    tags: ['AppVersion'],
-    summary: 'Undeletes an application version',
-    operationId: 'undeleteAppVersion',
-    security: [{ [siweAuth.name]: [] }],
-    request: {
-      params: z.object({
-        appId: appIdParam,
-        version: appVersionParam,
-      }),
-    },
-    responses: {
-      200: {
-        description: 'OK - Resource successfully undeleted',
-        content: {
-          'application/json': {
-            schema: GenericResult,
-          },
-        },
-      },
-      400: {
-        description: 'Invalid input',
-      },
-      404: {
-        description: 'Application or version not found',
       },
       422: {
         description: 'Validation exception',

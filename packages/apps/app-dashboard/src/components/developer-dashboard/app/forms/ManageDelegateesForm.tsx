@@ -99,10 +99,15 @@ export function ManageDelegateesForm({
       const signer = await getSigner();
       const client = getClient({ signer });
 
-      await client.removeDelegatee({
+      const result = await client.removeDelegatee({
         appId: Number(appId),
         delegateeAddress: addressToRemove,
       });
+
+      // Wait for transaction to be confirmed on-chain
+      if (result.txHash && signer.provider) {
+        await signer.provider.waitForTransaction(result.txHash);
+      }
 
       refetchBlockchainData();
     } catch (error) {
@@ -141,10 +146,15 @@ export function ManageDelegateesForm({
     const signer = await getSigner();
     const client = getClient({ signer });
 
-    await client.addDelegatee({
+    const result = await client.addDelegatee({
       appId: Number(appId),
       delegateeAddress: address,
     });
+
+    // Wait for transaction to be confirmed on-chain
+    if (result.txHash && signer.provider) {
+      await signer.provider.waitForTransaction(result.txHash);
+    }
 
     refetchBlockchainData();
   };

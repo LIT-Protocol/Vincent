@@ -116,7 +116,7 @@ export function EditAppForm({ appData, onSubmit, isSubmitting = false }: EditApp
           name="appUrl"
           register={register}
           error={errors.appUrl?.message}
-          label="App User URL"
+          label="App URL"
           placeholder="https://yourapp.com"
         />
 

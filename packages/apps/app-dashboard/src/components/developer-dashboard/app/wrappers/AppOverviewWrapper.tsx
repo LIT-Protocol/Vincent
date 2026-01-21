@@ -5,19 +5,17 @@ import { getClient } from '@lit-protocol/vincent-contracts-sdk';
 import * as Sentry from '@sentry/react';
 
 import { useWagmiSigner } from '@/hooks/developer-dashboard/useWagmiSigner';
+import { useOnChainAppOwnership } from '@/hooks/developer-dashboard/app/useOnChainAppOwnership';
 import { AppDetailsView } from '../views/AppDetailsView';
 import { EditAppForm } from '../forms/EditAppForm';
-import { EditPublishedAppForm } from '../forms/EditPublishedAppForm';
-import { CreateAppVersionForm } from '../forms/CreateAppVersionForm';
 import { DeleteAppForm } from '../forms/DeleteAppForm';
 import { ManageDelegateesForm } from '../forms/ManageDelegateesForm';
+import { CreateAppForm } from '../forms/CreateAppForm';
 import Loading from '@/components/shared/ui/Loading';
 import { StatusMessage } from '@/components/shared/ui/statusMessage';
 import { useBlockchainAppData } from '@/hooks/useBlockchainAppData';
 import { Breadcrumb } from '@/components/shared/ui/Breadcrumb';
 import { EditAppFormData } from '../forms/EditAppForm';
-import { EditPublishedAppFormData } from '../forms/EditPublishedAppForm';
-import { CreateAppVersionFormData } from '../forms/CreateAppVersionForm';
 import {
   Dialog,
   DialogContent,
@@ -25,15 +23,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/shared/ui/dialog';
-import { fonts } from '@/lib/themeClasses';
+import { theme, fonts } from '@/lib/themeClasses';
 
 type ViewType =
   | 'details'
   | 'edit-app'
   | 'edit-published-app'
-  | 'create-app-version'
   | 'delete-app'
-  | 'manage-delegatees';
+  | 'manage-delegatees'
+  | 'create-in-registry';
 
 export function AppOverviewWrapper() {
   const { appId } = useParams<{ appId: string }>();
@@ -43,17 +41,24 @@ export function AppOverviewWrapper() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { getSigner, address } = useWagmiSigner();
 
-  const {
-    data: app,
-    isLoading: appLoading,
-    isError: appError,
-  } = vincentApiClient.useGetAppQuery({ appId: Number(appId) });
+  // Define handlers early so they're available in early returns
+  const handleCloseModal = () => {
+    setCurrentView('details');
+  };
 
+  // Check on-chain ownership first (source of truth)
   const {
-    data: appVersions,
-    isLoading: appVersionsLoading,
-    isError: appVersionsError,
-  } = vincentApiClient.useGetAppVersionsQuery({ appId: Number(appId) });
+    isOwner,
+    existsOnChain,
+    onChainApp,
+    isChecking: ownershipChecking,
+    error: ownershipError,
+  } = useOnChainAppOwnership(Number(appId));
+
+  const { data: app, isLoading: appLoading } = vincentApiClient.useGetAppQuery(
+    { appId: Number(appId) },
+    { skip: !existsOnChain },
+  );
 
   // Fetching on-chain data
   const {
@@ -65,12 +70,12 @@ export function AppOverviewWrapper() {
 
   // Mutations
   const [editApp] = vincentApiClient.useEditAppMutation();
-  const [createAppVersion] = vincentApiClient.useCreateAppVersionMutation();
   const [deleteApp] = vincentApiClient.useDeleteAppMutation();
+  const [createApp] = vincentApiClient.useCreateAppMutation();
 
   // Check for action query param when data is ready
   useEffect(() => {
-    if (!app || appLoading || appVersionsLoading || blockchainAppLoading) {
+    if (!app || appLoading || blockchainAppLoading) {
       return;
     }
 
@@ -84,27 +89,165 @@ export function AppOverviewWrapper() {
       newParams.delete('action');
       setSearchParams(newParams, { replace: true });
     }
-  }, [searchParams, setSearchParams, app, appLoading, appVersionsLoading, blockchainAppLoading]);
+  }, [searchParams, setSearchParams, app, appLoading, blockchainAppLoading]);
 
-  const isLoadingEssentialData =
-    appLoading || appVersionsLoading || blockchainAppLoading || !app || !appVersions;
+  // Check on-chain ownership first
+  if (ownershipChecking) return <Loading />;
 
-  if (isLoadingEssentialData) return <Loading />;
+  if (ownershipError) {
+    return <StatusMessage message="Failed to check app ownership on-chain" type="error" />;
+  }
 
-  // Combined error states
-  if (appError || blockchainAppError)
-    return <StatusMessage message="Failed to load app" type="error" />;
-  if (appVersionsError) return <StatusMessage message="Failed to load app versions" type="error" />;
+  // App doesn't exist on-chain
+  if (existsOnChain === false) {
+    return (
+      <>
+        <Breadcrumb items={[{ label: 'Apps', onClick: () => navigate('/developer/apps') }]} />
+        <StatusMessage message="This app does not exist on the blockchain" type="error" />
+      </>
+    );
+  }
+
+  // User doesn't own the app on-chain
+  if (isOwner === false) {
+    return (
+      <>
+        <Breadcrumb items={[{ label: 'Apps', onClick: () => navigate('/developer/apps') }]} />
+        <StatusMessage message="You do not have permission to manage this app" type="error" />
+      </>
+    );
+  }
+
+  // App exists on-chain and user owns it, but not in registry yet
+  // Handle both: no app data (!app) OR 404 error (appError)
+  if (existsOnChain && isOwner && !app && !appLoading) {
+    return (
+      <>
+        <Breadcrumb
+          items={[
+            { label: 'Apps', onClick: () => navigate('/developer/apps') },
+            { label: `App ${appId}` },
+          ]}
+        />
+        <div className={`${theme.mainCard} border ${theme.mainCardBorder} rounded-xl p-6 sm:p-8`}>
+          <div className="max-w-2xl mx-auto text-center">
+            {/* Success Icon */}
+            <div className="mb-4 flex justify-center">
+              <div
+                className="w-12 h-12 rounded-full flex items-center justify-center"
+                style={{ backgroundColor: `${theme.brandOrange}20` }}
+              >
+                <svg
+                  className="w-6 h-6"
+                  style={{ color: theme.brandOrange }}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+            </div>
+
+            {/* Title */}
+            <h2 className={`text-lg font-semibold mb-3 ${theme.text}`} style={fonts.heading}>
+              Add Your App to the Registry
+            </h2>
+
+            {/* Description */}
+            <p className={`${theme.textMuted} text-sm mb-6 leading-relaxed`} style={fonts.body}>
+              Your app is successfully registered on-chain! The next step is to add it to the
+              Vincent Registry, which makes your app discoverable by users. The registry stores
+              metadata like your app's name, description, logo, and contact information, making it
+              easy for users to find and connect with your app.
+            </p>
+
+            {/* CTA Button */}
+            <button
+              onClick={() => setCurrentView('create-in-registry')}
+              className="px-6 py-2.5 text-white rounded-lg font-semibold transition-all hover:scale-105"
+              style={{ backgroundColor: theme.brandOrange, ...fonts.heading }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = theme.brandOrangeDarker;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = theme.brandOrange;
+              }}
+            >
+              Add App to Registry
+            </button>
+          </div>
+        </div>
+
+        {/* Create in Registry Modal - must be included here since we return early */}
+        <Dialog open={currentView === 'create-in-registry'} onOpenChange={handleCloseModal}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-white dark:bg-gray-950">
+            <DialogHeader>
+              <DialogTitle className="text-lg font-semibold" style={fonts.heading}>
+                Add App to Registry
+              </DialogTitle>
+              <DialogDescription>
+                This app exists on-chain (ID: {appId}) but hasn't been added to the registry yet.
+                Fill in the details below to make it visible in the registry.
+              </DialogDescription>
+            </DialogHeader>
+            {onChainApp && (
+              <CreateAppForm
+                existingAppId={Number(appId)}
+                isSubmitting={isSubmitting}
+                onSubmit={async (data) => {
+                  setIsSubmitting(true);
+                  try {
+                    await createApp({
+                      appCreate: { ...data, appId: Number(appId) },
+                    }).unwrap();
+
+                    // Success - wait a moment to show success message, then reload
+                    setTimeout(() => {
+                      window.location.reload(); // Reload to fetch the new registry data
+                    }, 1500);
+                  } catch (error) {
+                    console.error('Failed to create app in registry:', error);
+                    setIsSubmitting(false);
+                    throw error; // Re-throw to let the form handle it
+                  }
+                }}
+              />
+            )}
+          </DialogContent>
+        </Dialog>
+      </>
+    );
+  }
+
+  // If app data is still loading, show loading
+  if (appLoading || blockchainAppLoading) {
+    return <Loading />;
+  }
+
+  // Handle errors only if app should exist but failed to load (not 404)
+  // 404 is handled above in the "create-in-registry" flow
+  if (app && blockchainAppError) {
+    return <StatusMessage message="Failed to load on-chain app data" type="error" />;
+  }
+
+  // If we reach here without app data, something unexpected happened
+  if (!app) {
+    return <Loading />;
+  }
 
   const handleOpenMutation = (mutationType: string) => {
     if (mutationType === 'versions') {
       navigate(`/developer/apps/appId/${appId}/versions`);
+    } else if (mutationType === 'create-app-version') {
+      navigate(`/developer/apps/appId/${appId}/new-version`);
     } else {
       setCurrentView(mutationType as ViewType);
     }
   };
 
-  const handleEditAppSubmit = async (data: EditAppFormData | EditPublishedAppFormData) => {
+  const handleEditAppSubmit = async (data: EditAppFormData) => {
     setIsSubmitting(true);
     try {
       await editApp({
@@ -122,26 +265,6 @@ export function AppOverviewWrapper() {
       console.error('Failed to update app:', error);
       setIsSubmitting(false);
       throw error; // Re-throw to let the form handle it
-    }
-  };
-
-  const handleCreateAppVersionSubmit = async (data: CreateAppVersionFormData) => {
-    setIsSubmitting(true);
-    try {
-      const result = await createAppVersion({
-        appId: Number(appId),
-        appVersionCreate: data,
-      }).unwrap();
-
-      // Success - wait a moment to show success message, then navigate to abilities page
-      setTimeout(() => {
-        navigate(`/developer/apps/appId/${appId}/version/${result.version}/abilities`);
-        setIsSubmitting(false);
-      }, 1500);
-    } catch (error) {
-      console.error('Failed to create app version:', error);
-      setIsSubmitting(false);
-      throw error;
     }
   };
 
@@ -187,10 +310,6 @@ export function AppOverviewWrapper() {
     }
   };
 
-  const handleCloseModal = () => {
-    setCurrentView('details');
-  };
-
   return (
     <>
       <Breadcrumb
@@ -218,36 +337,7 @@ export function AppOverviewWrapper() {
               Edit App
             </DialogTitle>
           </DialogHeader>
-          {blockchainAppData !== null ? (
-            <EditPublishedAppForm
-              appData={app}
-              onSubmit={handleEditAppSubmit}
-              isSubmitting={isSubmitting}
-            />
-          ) : (
-            <EditAppForm
-              appData={app}
-              appVersions={appVersions}
-              onSubmit={handleEditAppSubmit}
-              isSubmitting={isSubmitting}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
-
-      {/* Create App Version Modal */}
-      <Dialog open={currentView === 'create-app-version'} onOpenChange={handleCloseModal}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-white dark:bg-gray-950">
-          <DialogHeader>
-            <DialogTitle className="text-lg font-semibold" style={fonts.heading}>
-              New Version
-            </DialogTitle>
-            <DialogDescription>Create a new version of your app</DialogDescription>
-          </DialogHeader>
-          <CreateAppVersionForm
-            onSubmit={handleCreateAppVersionSubmit}
-            isSubmitting={isSubmitting}
-          />
+          <EditAppForm appData={app} onSubmit={handleEditAppSubmit} isSubmitting={isSubmitting} />
         </DialogContent>
       </Dialog>
 

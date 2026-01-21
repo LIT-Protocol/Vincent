@@ -22,18 +22,6 @@ const AppSchema = new Schema(
 
 export const App = model('App', AppSchema);
 
-export const AppVersionSchema = new Schema(
-  {
-    appId: { type: Number, required: true },
-    version: { type: Number, required: true, index: true },
-    changes: { type: String, required: true },
-    isDeleted: { type: Boolean, default: false },
-  } as const,
-  { timestamps: true },
-).index({ appId: 1, version: 1 }, { unique: true }); // Only 1 doc per appId + version!
-
-export const AppVersion = model('AppVersion', AppVersionSchema);
-
 export const AppAbilitySchema = new Schema(
   {
     appId: { type: Number, required: true },

@@ -47,9 +47,7 @@ export function AppDetailsView({
     }
   };
 
-  const delegateeAddresses = isPublished
-    ? blockchainAppData.delegateeAddresses
-    : selectedApp.delegateeAddresses;
+  const delegateeAddresses = blockchainAppData?.delegateeAddresses || [];
 
   return (
     <>
@@ -229,34 +227,17 @@ export function AppDetailsView({
                 </AppDetail>
               )}
 
-              {selectedApp.appUserUrl && (
-                <AppDetail label="App User URL">
+              {selectedApp.appUrl && (
+                <AppDetail label="App URL">
                   <a
-                    href={selectedApp.appUserUrl}
+                    href={selectedApp.appUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-sm hover:underline"
                     style={{ color: theme.brandOrange, ...fonts.body }}
                   >
-                    {selectedApp.appUserUrl}
+                    {selectedApp.appUrl}
                   </a>
-                </AppDetail>
-              )}
-
-              {selectedApp.redirectUris && selectedApp.redirectUris.length > 0 && (
-                <AppDetail label="Redirect URIs">
-                  <div className="space-y-1">
-                    {selectedApp.redirectUris.map((uri) => (
-                      <div key={uri}>
-                        <span
-                          className={`inline-block ${theme.itemBg} px-2 py-1 rounded text-sm ${theme.textMuted}`}
-                          style={fonts.body}
-                        >
-                          {uri}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
                 </AppDetail>
               )}
 
@@ -314,7 +295,7 @@ export function AppDetailsView({
         isOpen={isConnectModalOpen}
         onClose={() => setIsConnectModalOpen(false)}
         appId={selectedApp.appId}
-        redirectUris={selectedApp.redirectUris || []}
+        redirectUris={[]}
       />
     </>
   );

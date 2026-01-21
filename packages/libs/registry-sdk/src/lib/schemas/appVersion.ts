@@ -1,59 +1,6 @@
 import { baseDocAttributes } from './base';
 import { z } from './openApiZod';
 
-const appVersion = z
-  .object({
-    appId: z.number().openapi({
-      description: 'Application ID',
-      example: 12312345,
-      readOnly: true,
-    }),
-    version: z.number().openapi({
-      description: 'App Version number',
-      example: 1,
-      readOnly: true,
-    }),
-    // Will not be set on appVersion 1; expected on all subsequent appVersions
-    changes: z.string().optional().openapi({
-      description: 'Describes what changed between this version and the previous version.',
-      example: 'I am a changelog trapped in a computer!',
-    }),
-    isDeleted: z.boolean().optional().openapi({
-      description: 'Whether or not this AppVersion is deleted',
-      example: false,
-    }),
-  })
-  .strict();
-
-// Avoiding using z.omit() or z.pick() due to excessive TS type inference costs
-function buildCreateAppVersionSchema() {
-  // New app versions are always enabled === false; the property cannot be set by creator
-  const { changes } = appVersion.shape;
-
-  return z
-    .object({
-      // Optional
-      ...z.object({ changes }).partial().strict().shape,
-    })
-    .strict();
-}
-
-export const appVersionCreate = buildCreateAppVersionSchema();
-
-// Avoiding using z.omit() or z.pick() due to excessive TS type inference costs
-function buildEditAppVersionSchema() {
-  const { changes } = appVersion.shape;
-
-  return z
-    .object({
-      // Optional
-      ...z.object({ changes }).partial().strict().shape,
-    })
-    .strict();
-}
-
-export const appVersionEdit = buildEditAppVersionSchema();
-
 const appVersionAbility = z
   .object({
     appId: z.number().openapi({
@@ -130,18 +77,5 @@ export const appVersionAbilityDoc = z
   .object({
     ...baseDocAttributes.shape,
     ...appVersionAbility.shape,
-  })
-  .strict();
-
-/** appVersionDoc describes a complete application version document, with all properties including those that are database-backend
- * specific like _id and updated/created at timestamps.
- *
- * All schemas that need to be composed as subsets of this schema
- * should be derived from `appVersion` instead
- */
-export const appVersionDoc = z
-  .object({
-    ...baseDocAttributes.shape,
-    ...appVersion.shape,
   })
   .strict();

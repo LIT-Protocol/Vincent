@@ -309,6 +309,8 @@ export function AbilitySelectorModal({
                 '--ag-header-foreground-color': theme.text,
                 '--ag-foreground-color': theme.text,
                 '--ag-data-color': theme.text,
+                '--ag-font-family': fonts.body.fontFamily,
+                '--ag-font-size': '14px',
               } as React.CSSProperties
             }
           >
@@ -394,7 +396,7 @@ export function AbilitySelectorModal({
             <Button
               onClick={handleAddAbilities}
               disabled={selectedAbilities.size === 0 || isSubmitting}
-              style={{ backgroundColor: theme.brandOrange, ...fonts.body }}
+              style={{ backgroundColor: theme.brandOrange, ...fonts.heading }}
             >
               {isSubmitting
                 ? 'Adding Abilities...'
