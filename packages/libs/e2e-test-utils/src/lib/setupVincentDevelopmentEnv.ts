@@ -1,5 +1,5 @@
 import type { SetupConfig, VincentDevEnvironment } from './setup/types';
-import { setupWallets, setupVincentApp, setupUserSmartAccount } from './setup';
+import { setupWallets, setupVincentApp, setupAgentSmartAccount } from './setup';
 import { parseEther } from 'viem';
 
 export async function setupVincentDevelopmentEnvironment(
@@ -17,6 +17,7 @@ export async function setupVincentDevelopmentEnvironment(
     privateKeys: config.privateKeys,
     vincentRegistryChain: config.vincentRegistryChain,
     vincentRegistryRpcUrl: config.vincentRegistryRpcUrl,
+    funding: config.funding,
   });
 
   // Phase 2: Setup Vincent app (registration and API configuration)
@@ -31,8 +32,8 @@ export async function setupVincentDevelopmentEnvironment(
     abilityPolicies: config.abilityPolicies,
   });
 
-  // Phase 3: Setup user smart account (PKP minting, installation, deployment)
-  const userAccountInfo = await setupUserSmartAccount({
+  // Phase 3: Setup user's agent smart account (Permission creation and deployment)
+  const agentSmartAccountInfo = await setupAgentSmartAccount({
     vincentRegistryRpcUrl: config.vincentRegistryRpcUrl,
     vincentApiUrl: config.vincentApiUrl,
     vincentRegistryChain: config.vincentRegistryChain,
@@ -43,6 +44,7 @@ export async function setupVincentDevelopmentEnvironment(
     // Assume the user is deploying to Base Sepolia, and 0.005 ETH is enough for smart account deployment
     fundAmountBeforeDeployment:
       config.smartAccountFundAmountBeforeDeployment ?? parseEther('0.005'),
+    sponsorGasForAppInstallation: config.sponsorGasForAppInstallation,
   });
 
   console.log('=== Vincent Development Environment Setup Complete ===');
@@ -53,12 +55,14 @@ export async function setupVincentDevelopmentEnvironment(
     appId: appInfo.appId,
     appVersion: appInfo.appVersion,
     accountIndexHash: appInfo.accountIndexHash,
-    agentSignerAddress: userAccountInfo.pkpSignerAddress,
-    agentSmartAccountAddress: userAccountInfo.agentSmartAccountAddress,
-    smartAccountRegistrationTxHash: userAccountInfo.deploymentTxHash,
     accounts,
     ethersWallets,
     clients,
-    smartAccount: userAccountInfo.smartAccount,
+    agentSmartAccount: {
+      address: agentSmartAccountInfo.agentSmartAccountAddress,
+      agentSignerAddress: agentSmartAccountInfo.agentSignerAddress,
+      deploymentTxHash: agentSmartAccountInfo.deploymentTxHash as `0x${string}`,
+      serializedPermissionAccount: agentSmartAccountInfo.serializedPermissionAccount,
+    },
   };
 }

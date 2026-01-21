@@ -20,17 +20,6 @@ export interface VincentAppInfo {
   txHash?: string;
 }
 
-/**
- * Setup Vincent app registration and API configuration.
- *
- * This handles:
- * - App registration on-chain (new app or new version)
- * - Registering app with Vincent API backend (new apps only)
- * - Setting active version in API
- *
- * @param params App setup parameters
- * @returns App information including ID, version, and registration details
- */
 export async function setupVincentApp({
   vincentApiUrl,
   vincentRegistryRpcUrl,
@@ -57,8 +46,8 @@ export async function setupVincentApp({
   });
 
   // Step 2: Set active version
-  // For new apps: registerNewApp already called registerAppWithVincentApi
-  // For new versions: registerNewAppVersion already called registerAppVersionWithVincentApi
+  // For new apps: handleAppRegistration already called registerAppWithVincentApi
+  // For new versions: handleAppRegistration already called registerAppVersionWithVincentApi
   // Now we just need to set the active version
   await setActiveVersionWithVincentApi({
     vincentApiUrl,

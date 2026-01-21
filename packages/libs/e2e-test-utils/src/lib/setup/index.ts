@@ -1,6 +1,6 @@
 export { setupWallets } from './wallets/setupWallets';
 export { setupVincentApp } from './app-setup';
-export { setupUserSmartAccount } from './setupUserSmartAccount';
+export { setupAgentSmartAccount } from './setupAgentSmartAccount';
 export { deploySmartAccountToChain } from './smart-account/deploySmartAccountToChain';
 export { ensureWalletHasTokens } from './wallets/ensureWalletHasTokens';
 

@@ -1,5 +1,7 @@
-import type { Chain, PrivateKeyAccount, PublicClient } from 'viem';
+import type { Address, Chain, PrivateKeyAccount, PublicClient } from 'viem';
 import type { Wallet } from 'ethers';
+
+import type { AgentSmartAccountInfo } from './setupAgentSmartAccount';
 
 /**
  * App metadata for Vincent registry
@@ -17,16 +19,25 @@ export interface AppMetadata {
  * Smart account information with kernel account and approval signature
  */
 export interface SmartAccountInfo {
-  /** The kernel account instance */
-  account: any; // KernelSmartAccount type from @zerodev/sdk
-  /** The kernel account client for sending UserOperations via bundler */
-  client: any; // KernelAccountClient type from @zerodev/sdk
-  /** Public client for reading blockchain state */
-  publicClient: any; // PublicClient from viem
-  /** Wallet client for the user's EOA (can be used to deploy the smart account) */
-  walletClient: any; // WalletClient from viem
-  /** Serialized permission approval for the session key */
-  approval: string;
+  smartAccountAddress: Address;
+  deploymentTxHash?: `0x${string}`;
+  serializedPermissionAccount: string;
+}
+
+interface FundingConfig {
+  funder?: {
+    minAmountVincentRegistryChain?: bigint;
+    minAmountChronicleYellowstone?: bigint;
+  };
+  appManagerMinAmount?: {
+    minAmountVincentRegistryChain?: bigint;
+  };
+  userEoaMinAmount?: {
+    minAmountVincentRegistryChain?: bigint;
+  };
+  appDelegateeMinAmount?: {
+    minAmountChronicleYellowstone?: bigint;
+  };
 }
 
 /**
@@ -47,6 +58,8 @@ export interface SetupConfig {
   abilityPolicies: string[][];
   zerodevProjectId: string;
   smartAccountFundAmountBeforeDeployment?: bigint;
+  sponsorGasForAppInstallation?: boolean;
+  funding?: FundingConfig;
 }
 
 /**
@@ -58,9 +71,6 @@ export interface VincentDevEnvironment {
   appId: number;
   appVersion: number;
   accountIndexHash?: string;
-  agentSignerAddress: string;
-  agentSmartAccountAddress: string;
-  smartAccountRegistrationTxHash?: string;
   accounts: {
     funder: PrivateKeyAccount;
     appManager: PrivateKeyAccount;
@@ -77,7 +87,12 @@ export interface VincentDevEnvironment {
     vincentRegistryPublicClient: PublicClient;
     chronicleYellowstonePublicClient: PublicClient;
   };
-  smartAccount: SmartAccountInfo;
+  agentSmartAccount: {
+    address: Address;
+    agentSignerAddress: Address;
+    deploymentTxHash?: `0x${string}`;
+    serializedPermissionAccount: string;
+  };
 }
 
 /**

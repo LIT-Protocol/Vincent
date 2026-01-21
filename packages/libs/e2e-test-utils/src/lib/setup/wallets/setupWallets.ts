@@ -15,7 +15,6 @@ import { Wallet, providers } from 'ethers';
 import { ensureWalletHasUnexpiredCapacityCredit } from './ensureWalletHasUnexpiredCapacityCredit';
 import { ensureWalletHasTokens } from './ensureWalletHasTokens';
 
-// Define Chronicle Yellowstone chain (Lit Protocol's testnet)
 const chronicleYellowstone = defineChain({
   id: 175188,
   name: 'Chronicle Yellowstone',
@@ -54,10 +53,27 @@ export interface SetupWallets {
   };
 }
 
+interface FundingConfig {
+  funder?: {
+    minAmountVincentRegistryChain?: bigint;
+    minAmountChronicleYellowstone?: bigint;
+  };
+  appManagerMinAmount?: {
+    minAmountVincentRegistryChain?: bigint;
+  };
+  userEoaMinAmount?: {
+    minAmountVincentRegistryChain?: bigint;
+  };
+  appDelegateeMinAmount?: {
+    minAmountChronicleYellowstone?: bigint;
+  };
+}
+
 export async function setupWallets({
   privateKeys: { funder, appManager, appDelegatee, userEoa },
   vincentRegistryChain,
   vincentRegistryRpcUrl,
+  funding: userFunding,
 }: {
   privateKeys: {
     funder: `0x${string}`;
@@ -67,8 +83,30 @@ export async function setupWallets({
   };
   vincentRegistryChain: Chain;
   vincentRegistryRpcUrl: string;
+  funding?: FundingConfig;
 }): Promise<SetupWallets> {
-  console.log('=== Setting up wallets ===');
+  console.log('=== Setting up wallets and funding them ===');
+
+  const funding = {
+    funder: {
+      minAmountVincentRegistryChain:
+        userFunding?.funder?.minAmountVincentRegistryChain ?? parseEther('0.006'),
+      minAmountChronicleYellowstone:
+        userFunding?.funder?.minAmountChronicleYellowstone ?? parseEther('0.06'),
+    },
+    appManagerMinAmount: {
+      minAmountVincentRegistryChain:
+        userFunding?.appManagerMinAmount?.minAmountVincentRegistryChain ?? parseEther('0.002'),
+    },
+    userEoaMinAmount: {
+      minAmountVincentRegistryChain:
+        userFunding?.userEoaMinAmount?.minAmountVincentRegistryChain ?? parseEther('0.002'),
+    },
+    appDelegateeMinAmount: {
+      minAmountChronicleYellowstone:
+        userFunding?.appDelegateeMinAmount?.minAmountChronicleYellowstone ?? parseEther('0.05'),
+    },
+  };
 
   const funderAccount = privateKeyToAccount(funder);
   const appManagerAccount = privateKeyToAccount(appManager);
@@ -96,7 +134,6 @@ export async function setupWallets({
     'User EOA': userEoaAccount.address,
   });
 
-  // Create funder wallet client with account attached for sending transactions
   const funderWalletClient = createWalletClient({
     account: funderAccount,
     chain: vincentRegistryChain,
@@ -108,7 +145,7 @@ export async function setupWallets({
     address: funderAccount.address,
     funderWalletClient,
     publicClient: vincentRegistryPublicClient,
-    minAmount: parseEther('0.006'),
+    minAmount: funding.funder.minAmountVincentRegistryChain,
     dontFund: true,
   });
 
@@ -116,7 +153,7 @@ export async function setupWallets({
     address: funderAccount.address,
     funderWalletClient,
     publicClient: chronicleYellowstonePublicClient,
-    minAmount: parseEther('0.06'),
+    minAmount: funding.funder.minAmountChronicleYellowstone,
     dontFund: true,
   });
 
@@ -125,7 +162,7 @@ export async function setupWallets({
     address: appManagerAccount.address,
     funderWalletClient,
     publicClient: vincentRegistryPublicClient,
-    minAmount: parseEther('0.002'),
+    minAmount: funding.appManagerMinAmount.minAmountVincentRegistryChain,
   });
 
   // Ensure user EOA has sufficient balance to deploy smart account
@@ -133,7 +170,7 @@ export async function setupWallets({
     address: userEoaAccount.address,
     funderWalletClient,
     publicClient: vincentRegistryPublicClient,
-    minAmount: parseEther('0.002'),
+    minAmount: funding.userEoaMinAmount.minAmountVincentRegistryChain,
   });
 
   // Ensure app delegatee has sufficient balance to mint capacity credits
@@ -142,7 +179,7 @@ export async function setupWallets({
     address: appDelegateeAccount.address,
     funderWalletClient: chronicleYellowstoneFunderWalletClient,
     publicClient: chronicleYellowstonePublicClient,
-    minAmount: parseEther('0.05'),
+    minAmount: funding.appDelegateeMinAmount.minAmountChronicleYellowstone,
   });
 
   // Ensure app delegatee has a valid capacity credit (required for executing Lit Actions)

@@ -7,6 +7,7 @@ export interface InstallAppResponseSponsored {
   appInstallationDataToSign: {
     typedData: any;
   };
+  alreadyInstalled?: boolean;
 }
 
 /**
@@ -19,9 +20,22 @@ export interface InstallAppResponseDirect {
     to: string;
     data: string;
   };
+  alreadyInstalled?: boolean;
 }
 
-export type InstallAppResponse = InstallAppResponseSponsored | InstallAppResponseDirect;
+/**
+ * Install app response when app is already installed
+ */
+export interface InstallAppResponseAlreadyInstalled {
+  agentSignerAddress: string;
+  agentSmartAccountAddress: string;
+  alreadyInstalled: true;
+}
+
+export type InstallAppResponse =
+  | InstallAppResponseSponsored
+  | InstallAppResponseDirect
+  | InstallAppResponseAlreadyInstalled;
 
 /**
  * Type guard to check if response is sponsored mode

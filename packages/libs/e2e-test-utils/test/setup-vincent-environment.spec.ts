@@ -10,8 +10,7 @@ jest.setTimeout(300000);
 
 // Test configuration from environment variables (required)
 const BASE_SEPOLIA_RPC_URL = getEnv('BASE_SEPOLIA_RPC_URL', 'https://sepolia.base.org');
-// const VINCENT_API_URL = getEnv('VINCENT_API_URL', 'https://api.heyvincent.ai');
-const VINCENT_API_URL = 'http://localhost:3000';
+const VINCENT_API_URL = getEnv('VINCENT_API_URL', 'https://api.heyvincent.ai');
 const ZERODEV_PROJECT_ID = getEnv('ZERODEV_PROJECT_ID');
 const TEST_FUNDER_PRIVATE_KEY = getEnv('TEST_FUNDER_PRIVATE_KEY');
 const TEST_APP_MANAGER_PRIVATE_KEY = getEnv('TEST_APP_MANAGER_PRIVATE_KEY');
@@ -161,30 +160,58 @@ describe('Vincent Development Environment Setup', () => {
 
   describe('PKP and Smart Account', () => {
     it('should have PKP signer address from registry API', () => {
-      expect(env.agentSignerAddress).toBeDefined();
-      expect(env.agentSignerAddress).toMatch(/^0x[a-fA-F0-9]{40}$/);
+      expect(env.agentSmartAccount.agentSignerAddress).toBeDefined();
+      expect(env.agentSmartAccount.agentSignerAddress).toMatch(/^0x[a-fA-F0-9]{40}$/);
     });
 
-    it('should have smart account address from registry API', () => {
-      expect(env.agentSmartAccountAddress).toBeDefined();
-      expect(env.agentSmartAccountAddress).toMatch(/^0x[a-fA-F0-9]{40}$/);
-    });
-
-    it('should have local smart account client with matching address', () => {
-      expect(env.smartAccount).toBeDefined();
-      expect(env.smartAccount.account).toBeDefined();
-      expect(env.smartAccount.account.address.toLowerCase()).toBe(
-        env.agentSmartAccountAddress.toLowerCase(),
-      );
+    it('should have smart account address', () => {
+      expect(env.agentSmartAccount.address).toBeDefined();
+      expect(env.agentSmartAccount.address).toMatch(/^0x[a-fA-F0-9]{40}$/);
     });
 
     it('should have smart account deployed on-chain', async () => {
       const provider = new ethers.providers.JsonRpcProvider(env.vincentRegistryRpcUrl);
-      const code = await provider.getCode(env.agentSmartAccountAddress);
+      const code = await provider.getCode(env.agentSmartAccount.address);
 
       expect(code).toBeDefined();
       expect(code).not.toBe('0x');
       expect(code.length).toBeGreaterThan(2);
+    });
+
+    it('should have serialized permission account for session key', () => {
+      expect(env.agentSmartAccount.serializedPermissionAccount).toBeDefined();
+      // The serialized permission account is a base64-encoded JSON string, not a hex string
+      expect(typeof env.agentSmartAccount.serializedPermissionAccount).toBe('string');
+      expect(env.agentSmartAccount.serializedPermissionAccount.length).toBeGreaterThan(100);
+
+      // Verify it can be decoded and contains expected structure
+      const decoded = JSON.parse(
+        Buffer.from(env.agentSmartAccount.serializedPermissionAccount, 'base64').toString('utf-8'),
+      );
+      expect(decoded).toHaveProperty('permissionParams');
+      expect(decoded).toHaveProperty('accountParams');
+      expect(decoded.accountParams).toHaveProperty('accountAddress');
+      expect(decoded.isPreInstalled).toBe(true);
+    });
+
+    it('should have deployment transaction hash (or be already deployed)', () => {
+      // deploymentTxHash might be undefined if already deployed
+      if (env.agentSmartAccount.deploymentTxHash) {
+        expect(env.agentSmartAccount.deploymentTxHash).toMatch(/^0x[a-fA-F0-9]{64}$/);
+      }
+    });
+
+    it('should have app registered for the smart account on-chain', async () => {
+      const provider = new ethers.providers.JsonRpcProvider(env.vincentRegistryRpcUrl);
+      const wallet = new ethers.Wallet(TEST_APP_MANAGER_PRIVATE_KEY, provider);
+      const contractClient = getClient({ signer: wallet });
+
+      const userAddress = await contractClient.getUserAddressForAgent({
+        agentAddress: env.agentSmartAccount.address as `0x${string}`,
+      });
+
+      expect(userAddress).toBeDefined();
+      expect(userAddress?.toLowerCase()).toBe(env.accounts.userEoa.address.toLowerCase());
     });
   });
 
@@ -213,6 +240,132 @@ describe('Vincent Development Environment Setup', () => {
     });
   });
 
+  describe('Wallet Funding and Balances', () => {
+    it('should have funded funder wallet on Vincent Registry chain', async () => {
+      const balance = await env.clients.vincentRegistryPublicClient.getBalance({
+        address: env.accounts.funder.address,
+      });
+
+      expect(balance).toBeGreaterThan(0n);
+      console.log('[Funder Balance on Registry Chain]', balance.toString());
+    });
+
+    it('should have funded app manager wallet', async () => {
+      const balance = await env.clients.vincentRegistryPublicClient.getBalance({
+        address: env.accounts.appManager.address,
+      });
+
+      expect(balance).toBeGreaterThan(0n);
+      console.log('[App Manager Balance]', balance.toString());
+    });
+
+    it('should have funded user EOA wallet', async () => {
+      const balance = await env.clients.vincentRegistryPublicClient.getBalance({
+        address: env.accounts.userEoa.address,
+      });
+
+      expect(balance).toBeGreaterThan(0n);
+      console.log('[User EOA Balance]', balance.toString());
+    });
+
+    it('should have funded app delegatee wallet on Chronicle Yellowstone', async () => {
+      const balance = await env.clients.chronicleYellowstonePublicClient.getBalance({
+        address: env.accounts.appDelegatee.address,
+      });
+
+      expect(balance).toBeGreaterThan(0n);
+      console.log('[App Delegatee Balance on Chronicle]', balance.toString());
+    });
+
+    it('should have funded smart account', async () => {
+      const balance = await env.clients.vincentRegistryPublicClient.getBalance({
+        address: env.agentSmartAccount.address,
+      });
+
+      expect(balance).toBeGreaterThan(0n);
+      console.log('[Smart Account Balance]', balance.toString());
+    });
+  });
+
+  describe('Ethers Wallets Integration', () => {
+    it('should have ethers wallet for funder', () => {
+      expect(env.ethersWallets.funder).toBeDefined();
+      expect(env.ethersWallets.funder.address).toBe(env.accounts.funder.address);
+    });
+
+    it('should have ethers wallet for app manager', () => {
+      expect(env.ethersWallets.appManager).toBeDefined();
+      expect(env.ethersWallets.appManager.address).toBe(env.accounts.appManager.address);
+    });
+
+    it('should have ethers wallet for app delegatee', () => {
+      expect(env.ethersWallets.appDelegatee).toBeDefined();
+      expect(env.ethersWallets.appDelegatee.address).toBe(env.accounts.appDelegatee.address);
+    });
+
+    it('should have ethers wallet for user EOA', () => {
+      expect(env.ethersWallets.userEoa).toBeDefined();
+      expect(env.ethersWallets.userEoa.address).toBe(env.accounts.userEoa.address);
+    });
+
+    it('should have working ethers provider connection', async () => {
+      const blockNumber = await env.ethersWallets.funder.provider?.getBlockNumber();
+      expect(blockNumber).toBeGreaterThan(0);
+    });
+  });
+
+  describe('Public Clients', () => {
+    it('should have Vincent Registry public client', () => {
+      expect(env.clients.vincentRegistryPublicClient).toBeDefined();
+    });
+
+    it('should have Chronicle Yellowstone public client', () => {
+      expect(env.clients.chronicleYellowstonePublicClient).toBeDefined();
+    });
+
+    it('should have working Vincent Registry RPC connection', async () => {
+      const blockNumber = await env.clients.vincentRegistryPublicClient.getBlockNumber();
+      expect(blockNumber).toBeGreaterThan(0n);
+      console.log('[Vincent Registry Block Number]', blockNumber.toString());
+    });
+
+    it('should have working Chronicle Yellowstone RPC connection', async () => {
+      const blockNumber = await env.clients.chronicleYellowstonePublicClient.getBlockNumber();
+      expect(blockNumber).toBeGreaterThan(0n);
+      console.log('[Chronicle Yellowstone Block Number]', blockNumber.toString());
+    });
+  });
+
+  describe('Integration Checks', () => {
+    it('should have PKP and smart account addresses that are different', () => {
+      expect(env.agentSmartAccount.agentSignerAddress).not.toBe(env.agentSmartAccount.address);
+      expect(env.agentSmartAccount.agentSignerAddress).not.toBe(env.accounts.userEoa.address);
+    });
+
+    it('should have smart account different from user EOA', () => {
+      expect(env.agentSmartAccount.address.toLowerCase()).not.toBe(
+        env.accounts.userEoa.address.toLowerCase(),
+      );
+    });
+
+    it('should have all required environment properties defined', () => {
+      expect(env.vincentRegistryRpcUrl).toBeDefined();
+      expect(env.vincentRegistryChain).toBeDefined();
+      expect(env.appId).toBeDefined();
+      expect(env.appVersion).toBeDefined();
+      expect(env.accountIndexHash).toBeDefined();
+      expect(env.accounts).toBeDefined();
+      expect(env.ethersWallets).toBeDefined();
+      expect(env.clients).toBeDefined();
+      expect(env.agentSmartAccount).toBeDefined();
+    });
+
+    it('should have correct chain ID for Vincent Registry', () => {
+      expect(env.vincentRegistryChain.id).toBe(baseSepolia.id);
+      expect(env.vincentRegistryChain.name).toBe(baseSepolia.name);
+    });
+  });
+
   describe('Summary', () => {
     it('should print complete environment summary', () => {
       console.log('Vincent Development Environment Summary:');
@@ -224,10 +377,10 @@ describe('Vincent Development Environment Setup', () => {
         'App Manager': env.accounts.appManager.address,
         'App Delegatee': env.accounts.appDelegatee.address,
         'User EOA': env.accounts.userEoa.address,
-        'PKP Signer': env.agentSignerAddress,
-        'Smart Account': env.agentSmartAccountAddress,
+        'Agent Signer Address': env.agentSmartAccount.agentSignerAddress,
+        'Agent Smart Account Address': env.agentSmartAccount.address,
         'Smart Account Deployment Tx':
-          env.smartAccountRegistrationTxHash || 'N/A (already deployed)',
+          env.agentSmartAccount.deploymentTxHash || 'N/A (already deployed)',
         Chain: `${baseSepolia.name} (${baseSepolia.id})`,
       });
 

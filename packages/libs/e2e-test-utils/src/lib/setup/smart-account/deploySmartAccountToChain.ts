@@ -1,4 +1,4 @@
-import type { Chain } from 'viem';
+import type { Address, Chain } from 'viem';
 import { createPublicClient, createWalletClient, formatEther, http } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { createKernelAccount, createKernelAccountClient } from '@zerodev/sdk';
@@ -16,22 +16,20 @@ import { addressToEmptyAccount } from '@zerodev/sdk';
 import { ensureWalletHasTokens } from '../wallets/ensureWalletHasTokens';
 import type { SmartAccountInfo } from '../types';
 
-export interface DeploySmartAccountResult {
-  smartAccountAddress: `0x${string}`;
-  deploymentTxHash?: string;
-  serializedPermissionAccount: string;
-  smartAccount: SmartAccountInfo;
-}
-
 /**
  * Deploy a smart account to any chain with permission validator configured using initConfig.
  *
  * Implementation strategy (Kernel v3 initConfig session key pattern):
- * 1. Creates a kernel account with EOA as sudo validator
- * 2. Installs the PKP signer as a session key using initConfig (not as a regular validator)
- * 3. The initConfig pattern enables the session key during account deployment
- * 4. Funds the smart account if needed
- * 5. Serializes the permission account for runtime UserOp signing
+ * 1. Creates ECDSA validator for user EOA (sudo signer)
+ * 2. Creates permission validator for PKP signer with sudo policy
+ * 3. Creates kernel account with:
+ *    - EOA as sudo validator
+ *    - PKP signer installed as session key via initConfig (not as regular validator)
+ * 4. Funds the smart account if needed (optional)
+ * 5. Checks if smart account is already deployed on-chain
+ * 6. If not deployed, creates kernel account client and deploys via a dummy transaction
+ * 7. Serializes the permission account for runtime UserOp signing
+ * 8. Returns deployment info including smart account address, deployment tx hash, and SmartAccountInfo
  *
  * The initConfig approach (from zerodev-examples/session-keys/install-permissions-with-init-config.ts)
  * allows installing the PKP session key at deployment time. This creates a smart account where:
@@ -40,16 +38,6 @@ export interface DeploySmartAccountResult {
  *
  * IMPORTANT: This function's logic MUST match deriveAgentAccountAddress in registry-backend
  * to ensure the calculated counterfactual address matches the deployed smart account address.
- *
- * @param userEoaPrivateKey - Private key of the user's EOA (sudo validator)
- * @param agentSignerAddress - Address of the PKP (session key/permission validator)
- * @param accountIndexHash - Deterministic index for the smart account address
- * @param targetChain - The chain to deploy to
- * @param targetChainRpcUrl - RPC URL for the target chain
- * @param zerodevProjectId - ZeroDev project ID for bundler access
- * @param funderPrivateKey - Private key of the funder wallet
- * @param fundAmountBeforeDeployment - Optional minimum amount to fund the smart account before deployment (in wei). If not provided, funding step is skipped.
- * @returns Deployment result with smart account address and serialized permission account
  */
 export async function deploySmartAccountToChain({
   userEoaPrivateKey,
@@ -62,17 +50,16 @@ export async function deploySmartAccountToChain({
   fundAmountBeforeDeployment,
 }: {
   userEoaPrivateKey: `0x${string}`;
-  agentSignerAddress: `0x${string}`;
+  agentSignerAddress: Address;
   accountIndexHash: string;
   targetChain: Chain;
   targetChainRpcUrl: string;
   zerodevProjectId: string;
   funderPrivateKey: `0x${string}`;
   fundAmountBeforeDeployment?: bigint;
-}): Promise<DeploySmartAccountResult> {
+}): Promise<SmartAccountInfo> {
   console.log(`=== Deploying Smart Account to ${targetChain.name} ===`);
 
-  // Create clients
   const publicClient = createPublicClient({
     chain: targetChain,
     transport: http(targetChainRpcUrl),
@@ -127,6 +114,21 @@ export async function deploySmartAccountToChain({
     client: publicClient,
   });
 
+  // Check if smart account is already deployed on the target chain
+  const existingCode = await publicClient.getCode({
+    address: userEoaKernelAccount.address,
+  });
+  const isAlreadyDeployed = existingCode && existingCode !== '0x';
+
+  if (isAlreadyDeployed) {
+    console.log(`Smart account already deployed on ${targetChain.name}`);
+    console.table({
+      Chain: `${targetChain.name} (${targetChain.id})`,
+      'Smart Account Address': userEoaKernelAccount.address,
+      Status: 'Already Deployed',
+    });
+  }
+
   // Step 2: Fund the smart account (if fundAmountBeforeDeployment is provided)
   if (fundAmountBeforeDeployment !== undefined) {
     console.log('Funding smart account...');
@@ -143,7 +145,6 @@ export async function deploySmartAccountToChain({
       'Funding Tx Hash': fundingTxHash,
     });
 
-    // Wait for funding confirmation if we just funded
     if (fundingTxHash) {
       console.log('Waiting for funding confirmation...');
       await publicClient.waitForTransactionReceipt({
@@ -155,79 +156,67 @@ export async function deploySmartAccountToChain({
     console.log('Skipping funding step (fundAmountBeforeDeployment not provided)');
   }
 
-  // Step 3: Deploy the smart account
-  // The initConfig will automatically install the session key during deployment
-  console.log('Deploying smart account...');
+  // Step 3: Deploy the smart account (only if not already deployed)
+  let deploymentTxHash: string | undefined;
 
-  // Deploy with a no-op call to avoid potential fallback/receive reverts
-  const userOpHash = await kernelClient.sendUserOperation({
-    callData: await userEoaKernelAccount.encodeCalls([
-      {
-        to: '0x0000000000000000000000000000000000000000',
-        value: 0n,
-        data: '0x',
-      },
-    ]),
-  });
-  console.log(`Deployment UserOp Hash: ${userOpHash}`);
+  if (!isAlreadyDeployed) {
+    // The initConfig will automatically install the session key during deployment
+    console.log('Deploying smart account...');
 
-  // Wait for the UserOperation to be included in a block
-  const receipt = await kernelClient.waitForUserOperationReceipt({
-    hash: userOpHash,
-  });
-  const deploymentTxHash = receipt.receipt.transactionHash;
-  console.log(`Deployment Tx Hash: ${deploymentTxHash}`);
+    // Deploy with a no-op call to avoid potential fallback/receive reverts
+    const userOpHash = await kernelClient.sendUserOperation({
+      callData: await userEoaKernelAccount.encodeCalls([
+        {
+          to: '0x0000000000000000000000000000000000000000',
+          value: 0n,
+          data: '0x',
+        },
+      ]),
+    });
+    console.log(`Deployment UserOp Hash: ${userOpHash}`);
 
-  // Wait for 2 block confirmations
-  await publicClient.waitForTransactionReceipt({
-    hash: deploymentTxHash as `0x${string}`,
-    confirmations: 2,
-  });
+    // Wait for the UserOperation to be included in a block
+    const receipt = await kernelClient.waitForUserOperationReceipt({
+      hash: userOpHash,
+    });
+    deploymentTxHash = receipt.receipt.transactionHash;
+    console.log(`Deployment Tx Hash: ${deploymentTxHash}`);
 
-  // Verify deployment
-  const deployedCode = await publicClient.getCode({
-    address: userEoaKernelAccount.address,
-  });
+    await publicClient.waitForTransactionReceipt({
+      hash: deploymentTxHash as `0x${string}`,
+      confirmations: 2,
+    });
 
-  if (!deployedCode || deployedCode === '0x') {
-    throw new Error(
-      `Smart account deployment failed on ${targetChain.name}, code is still empty (0x)`,
-    );
+    // Verify deployment
+    const deployedCode = await publicClient.getCode({
+      address: userEoaKernelAccount.address,
+    });
+
+    if (!deployedCode || deployedCode === '0x') {
+      throw new Error(
+        `Smart account deployment failed on ${targetChain.name}, code is still empty (0x)`,
+      );
+    }
+
+    console.log(`Smart account deployed successfully`);
+    console.table({
+      Chain: `${targetChain.name} (${targetChain.id})`,
+      'Smart Account Address': userEoaKernelAccount.address,
+      'Deployment Tx Hash': deploymentTxHash,
+    });
   }
-
-  console.log(`Smart account deployed successfully`);
-  console.table({
-    Chain: `${targetChain.name} (${targetChain.id})`,
-    'Smart Account Address': userEoaKernelAccount.address,
-    'Deployment Tx Hash': deploymentTxHash,
-  });
 
   // Serialize the permission account, passing the permission validator as the 5th parameter
   // This is required when using initConfig pattern (see zerodev-examples/session-keys/install-permissions-with-init-config.ts:65)
-  const serializedPermissionAccount = await serializePermissionAccount(
-    userEoaKernelAccount,
-    undefined,
-    undefined,
-    undefined,
-    agentSignerPermissionPlugin,
-  );
-
-  // Create public client for the smart account
-  const smartAccountPublicClient = createPublicClient({
-    chain: targetChain,
-    transport: http(targetChainRpcUrl),
-  });
-
   return {
     smartAccountAddress: userEoaKernelAccount.address,
     deploymentTxHash,
-    serializedPermissionAccount,
-    smartAccount: {
-      account: userEoaKernelAccount,
-      client: kernelClient,
-      publicClient: smartAccountPublicClient,
-      walletClient: userEoaWalletClient,
-      approval: serializedPermissionAccount,
-    },
+    serializedPermissionAccount: await serializePermissionAccount(
+      userEoaKernelAccount,
+      undefined,
+      undefined,
+      undefined,
+      agentSignerPermissionPlugin,
+    ),
   };
 }

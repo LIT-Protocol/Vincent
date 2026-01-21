@@ -341,6 +341,48 @@ export async function installApp(request: {
   const basePublicClient = getBasePublicClient();
   const contractClient = getContractClient();
 
+  // 1.5. Check if user already has a permitted app for this appId
+  // If so, return existing PKP and smart account instead of minting a new PKP
+  try {
+    const agentAddresses = await contractClient.getAllRegisteredAgentAddressesForUser({
+      userAddress: userControllerAddress,
+      offset: '0',
+    });
+
+    if (agentAddresses.length > 0) {
+      const permittedApps = await contractClient.getPermittedAppForAgents({
+        agentAddresses,
+      });
+
+      const existingAgent = permittedApps.find(
+        (agent) => agent.permittedApp && agent.permittedApp.appId === appId,
+      );
+
+      if (existingAgent && existingAgent.permittedApp) {
+        console.log('[installApp] User already has this app permitted, returning existing data');
+        console.log({
+          agentAddress: existingAgent.agentAddress,
+          pkpSigner: existingAgent.permittedApp.pkpSigner,
+        });
+
+        // Return existing installation data in the same format
+        // Note: We cannot generate new transaction data because the PKP already exists
+        // and the app is already permitted on-chain
+        return {
+          agentSignerAddress: existingAgent.permittedApp.pkpSigner,
+          agentSmartAccountAddress: existingAgent.agentAddress,
+          alreadyInstalled: true,
+        };
+      }
+    }
+  } catch (error: unknown) {
+    console.log(
+      '[installApp] Error checking for existing installation, proceeding with new PKP:',
+      error,
+    );
+    // Continue with new PKP minting if check fails
+  }
+
   // 2. Fetch abilities for this app version directly from on-chain contract
   const appVersionResult = await contractClient.getAppVersion({
     appId,
