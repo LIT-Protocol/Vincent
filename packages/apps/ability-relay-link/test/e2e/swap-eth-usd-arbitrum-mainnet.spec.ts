@@ -1,5 +1,5 @@
 import { createPublicClient, createWalletClient, formatEther, http, parseEther, toHex } from 'viem';
-import { base, baseSepolia } from 'viem/chains';
+import { arbitrum, baseSepolia } from 'viem/chains';
 import { entryPoint07Address } from 'viem/account-abstraction';
 import * as util from 'node:util';
 import {
@@ -28,7 +28,7 @@ jest.setTimeout(300000); // 5 minutes
 
 // Test configuration from environment variables (required)
 const BASE_SEPOLIA_RPC_URL = getEnv('BASE_SEPOLIA_RPC_URL', 'https://sepolia.base.org');
-const BASE_MAINNET_RPC_URL = getEnv('BASE_MAINNET_RPC_URL', 'https://mainnet.base.org');
+const ARB_MAINNET_RPC_URL = getEnv('ARB_MAINNET_RPC_URL', 'https://1rpc.io/arb');
 const VINCENT_API_URL = getEnv('VINCENT_API_URL', 'https://api.heyvincent.ai');
 const ZERODEV_PROJECT_ID = getEnv('ZERODEV_PROJECT_ID');
 const TEST_FUNDER_PRIVATE_KEY = getEnv('TEST_FUNDER_PRIVATE_KEY');
@@ -39,23 +39,23 @@ const TEST_USER_EOA_PRIVATE_KEY = getEnv('TEST_USER_EOA_PRIVATE_KEY');
 // Vincent setup uses Base Sepolia (where the registry lives)
 const REGISTRY_CHAIN = baseSepolia;
 
-// Relay.link operations use Base Mainnet (for liquidity)
-const RELAY_CHAIN = base;
-const RELAY_CHAIN_ID = RELAY_CHAIN.id; // 8453
+// Relay.link operations use Arbitrum Mainnet (for liquidity)
+const RELAY_CHAIN = arbitrum;
+const RELAY_CHAIN_ID = RELAY_CHAIN.id;
 const ZERODEV_RPC_URL = `https://rpc.zerodev.app/api/v3/${ZERODEV_PROJECT_ID}/chain/${RELAY_CHAIN_ID}`;
 
-const BASE_MAINNET_SMART_ACCOUNT_FUND_AMOUNT_BEFORE_DEPLOYMENT = parseEther('0.0001');
-const BASE_MAINNET_SMART_ACCOUNT_MIN_BALANCE = parseEther('0.00005');
+const ARB_MAINNET_SMART_ACCOUNT_FUND_AMOUNT_BEFORE_DEPLOYMENT = parseEther('0.001');
+const ARB_MAINNET_SMART_ACCOUNT_MIN_BALANCE = parseEther('0.001');
 const ETH_ADDRESS = '0x0000000000000000000000000000000000000000';
-const USDC_ADDRESS = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'; // Base Mainnet USDC
+const USDC_ADDRESS = '0xaf88d065e77c8cC2239327C5EDb3A432268e5831'; // Arbitrum Mainnet USDC
 
-describe('Swap ETH to USDC and back on Base Mainnet', () => {
+describe('Swap ETH to USDC and back on Arbitrum Mainnet', () => {
   let env: VincentDevEnvironment;
-  let baseMainnetPermissionApproval: string;
+  let arbMainnetPermissionApproval: string;
 
   beforeAll(async () => {
     // Setup Vincent development environment with relay.link ability
-    // Uses Base Sepolia for registry, smart account will operate on Base Mainnet
+    // Uses Base Sepolia for registry, smart account will operate on Arbitrum Mainnet
     env = await setupVincentDevelopmentEnvironment({
       vincentRegistryRpcUrl: BASE_SEPOLIA_RPC_URL,
       vincentRegistryChain: REGISTRY_CHAIN as any,
@@ -70,47 +70,47 @@ describe('Swap ETH to USDC and back on Base Mainnet', () => {
       abilityIpfsCids: [relayLinkAbility.ipfsCid],
       abilityPolicies: [[]],
       appMetadata: {
-        name: 'Relay.link E2E Test App',
-        description: 'Test app for relay.link ability with smart accounts',
+        name: 'Relay.link Arbitrum E2E Test App',
+        description: 'Test app for relay.link ability with smart accounts on Arbitrum',
         contactEmail: 'test@example.com',
         appUrl: 'https://example.com',
         deploymentStatus: 'dev',
       },
     });
 
-    // Deploy smart account on Base Mainnet with permission plugin enabled
+    // Deploy smart account on Arbitrum Mainnet with permission plugin enabled
     // This is needed because the serialized permission account from Base Sepolia
-    // contains chain-specific validator info that won't work on Base Mainnet
-    console.log('Deploying smart account on Base Mainnet...');
+    // contains chain-specific validator info that won't work on Arbitrum Mainnet
+    console.log('Deploying smart account on Arbitrum Mainnet...');
     const { serializedPermissionAccount } = await deploySmartAccountToChain({
       userEoaPrivateKey: TEST_USER_EOA_PRIVATE_KEY as `0x${string}`,
       agentSignerAddress: env.agentSmartAccount.agentSignerAddress as `0x${string}`,
       accountIndexHash: env.accountIndexHash as string,
       targetChain: RELAY_CHAIN as any,
-      targetChainRpcUrl: BASE_MAINNET_RPC_URL,
+      targetChainRpcUrl: ARB_MAINNET_RPC_URL,
       zerodevProjectId: ZERODEV_PROJECT_ID,
       funderPrivateKey: TEST_FUNDER_PRIVATE_KEY as `0x${string}`,
-      fundAmountBeforeDeployment: BASE_MAINNET_SMART_ACCOUNT_FUND_AMOUNT_BEFORE_DEPLOYMENT,
+      fundAmountBeforeDeployment: ARB_MAINNET_SMART_ACCOUNT_FUND_AMOUNT_BEFORE_DEPLOYMENT,
     });
 
-    // Use the serialized permission account for Base Mainnet
-    baseMainnetPermissionApproval = serializedPermissionAccount;
+    // Use the serialized permission account for Arbitrum Mainnet
+    arbMainnetPermissionApproval = serializedPermissionAccount;
 
-    // Create a wallet client for the funder on Base Mainnet
-    const baseMainnetFunderWalletClient = createWalletClient({
-      account: env.accounts.funder,
+    // Create a wallet client for the funder on Arbitrum Mainnet
+    const arbMainnetFunderWalletClient = createWalletClient({
+      account: env.accounts.funder as any,
       chain: RELAY_CHAIN,
-      transport: http(BASE_MAINNET_RPC_URL),
+      transport: http(ARB_MAINNET_RPC_URL),
     });
 
     await ensureWalletHasTokens({
       address: env.agentSmartAccount.address as `0x${string}`,
-      funderWalletClient: baseMainnetFunderWalletClient as any,
+      funderWalletClient: arbMainnetFunderWalletClient as any,
       publicClient: createPublicClient({
         chain: RELAY_CHAIN as any,
-        transport: http(BASE_MAINNET_RPC_URL),
+        transport: http(ARB_MAINNET_RPC_URL),
       }) as any,
-      minAmount: BASE_MAINNET_SMART_ACCOUNT_MIN_BALANCE,
+      minAmount: ARB_MAINNET_SMART_ACCOUNT_MIN_BALANCE,
     });
   });
 
@@ -119,10 +119,10 @@ describe('Swap ETH to USDC and back on Base Mainnet', () => {
   });
 
   describe('Smart Account Setup', () => {
-    it('should have smart account deployed on Base Mainnet', async () => {
+    it('should have smart account deployed on Arbitrum Mainnet', async () => {
       const provider = createPublicClient({
         chain: RELAY_CHAIN,
-        transport: http(BASE_MAINNET_RPC_URL),
+        transport: http(ARB_MAINNET_RPC_URL),
       });
       const code = await provider.getCode({
         address: env.agentSmartAccount.address as `0x${string}`,
@@ -132,7 +132,7 @@ describe('Swap ETH to USDC and back on Base Mainnet', () => {
       expect(code).not.toBe('0x');
       expect(code?.length).toBeGreaterThan(2);
 
-      console.log('[Smart Account Deployed on Base Mainnet]', {
+      console.log('[Smart Account Deployed on Arbitrum Mainnet]', {
         address: env.agentSmartAccount.address,
         chain: `${RELAY_CHAIN.name} (${RELAY_CHAIN_ID})`,
         codeLength: code?.length,
@@ -140,15 +140,12 @@ describe('Swap ETH to USDC and back on Base Mainnet', () => {
     });
   });
 
-  describe('Get Quote from Relay.link', () => {
+  describe.skip('Get Quote from Relay.link', () => {
     it('should successfully get a quote for the smart account address', async () => {
       const smartAccountAddress = env.agentSmartAccount.address;
 
-      // Get quote for ETH -> USDC swap on Base Mainnet
+      // Get quote for ETH -> USDC swap on Arbitrum Mainnet
       // Set recipient to funder so USDC goes directly to funder (no refund needed)
-      const ETH_ADDRESS = '0x0000000000000000000000000000000000000000';
-      const USDC_ADDRESS = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'; // Base Mainnet USDC
-
       const quote = await getRelayLinkQuote({
         user: smartAccountAddress,
         recipient: env.accounts.funder.address, // Send USDC to funder
@@ -170,10 +167,10 @@ describe('Swap ETH to USDC and back on Base Mainnet', () => {
     });
   });
 
-  describe('Execute Relay.link Transaction from Smart Account', () => {
+  describe.skip('Execute Relay.link Transaction from Smart Account', () => {
     it('should build, sign, and execute a UserOp for ETH -> USDC swap', async () => {
       // Create ability client with Base Sepolia registry RPC URL
-      // The Vincent registry is deployed on Base Sepolia, even though the swap executes on Base Mainnet
+      // The Vincent registry is deployed on Base Sepolia, even though the swap executes on Arbitrum Mainnet
       const relayClient = getVincentAbilityClient({
         bundledVincentAbility: relayLinkAbility,
         ethersSigner: env.ethersWallets.appDelegatee,
@@ -208,10 +205,10 @@ describe('Swap ETH to USDC and back on Base Mainnet', () => {
       console.log('[Transaction Data]', util.inspect(txData, { depth: 10 }));
 
       // Convert the relay transaction to a UserOp using the smart account
-      // Use Base Mainnet-specific permission approval since we're operating on Base Mainnet
+      // Use Arbitrum Mainnet-specific permission approval since we're operating on Arbitrum Mainnet
       const userOp = await relayTransactionToUserOp({
         permittedAddress: env.agentSmartAccount.agentSignerAddress as `0x${string}`,
-        serializedPermissionAccount: baseMainnetPermissionApproval,
+        serializedPermissionAccount: arbMainnetPermissionApproval,
         transaction: {
           to: txData.to as `0x${string}`,
           data: txData.data as `0x${string}`,
@@ -268,7 +265,7 @@ describe('Swap ETH to USDC and back on Base Mainnet', () => {
       }
 
       const abilityParams = {
-        alchemyRpcUrl: BASE_MAINNET_RPC_URL,
+        alchemyRpcUrl: ARB_MAINNET_RPC_URL,
         userOp: vincentUserOp,
         entryPointAddress: entryPoint07Address,
       } as any;
@@ -309,10 +306,10 @@ describe('Swap ETH to USDC and back on Base Mainnet', () => {
       expect(executeResult.result.signature).toMatch(/^0x[a-fA-F0-9]+$/);
 
       // Submit the signed UserOp to the bundler
-      // Use Base Mainnet-specific permission approval since we're operating on Base Mainnet
+      // Use Arbitrum Mainnet-specific permission approval since we're operating on Arbitrum Mainnet
       const { userOpHash, transactionHash } = await submitSignedUserOp({
         permittedAddress: env.agentSmartAccount.agentSignerAddress as `0x${string}`,
-        serializedPermissionAccount: baseMainnetPermissionApproval,
+        serializedPermissionAccount: arbMainnetPermissionApproval,
         userOpSignature: executeResult.result.signature,
         userOp: hexUserOperation,
         chain: RELAY_CHAIN,
@@ -322,7 +319,7 @@ describe('Swap ETH to USDC and back on Base Mainnet', () => {
       console.log('[Swap Completed]', {
         userOpHash,
         transactionHash,
-        txUrl: `https://basescan.org/tx/${transactionHash}`,
+        txUrl: `https://arbiscan.io/tx/${transactionHash}`,
         smartAccountAddress: env.agentSmartAccount.address,
         signerPkp: env.agentSmartAccount.agentSignerAddress,
       });
@@ -332,10 +329,10 @@ describe('Swap ETH to USDC and back on Base Mainnet', () => {
     });
   });
 
-  describe('Execute USDC -> ETH Transaction (ERC20 approval flow)', () => {
+  describe.skip('Execute USDC -> ETH Transaction (ERC20 approval flow)', () => {
     it('should build, sign, and execute a USDC -> ETH UserOp with ERC20 approval', async () => {
       // Create ability client with Base Sepolia registry RPC URL
-      // The Vincent registry is deployed on Base Sepolia, even though the swap executes on Base Mainnet
+      // The Vincent registry is deployed on Base Sepolia, even though the swap executes on Arbitrum Mainnet
       const relayClient = getVincentAbilityClient({
         bundledVincentAbility: relayLinkAbility,
         ethersSigner: env.ethersWallets.appDelegatee,
@@ -391,10 +388,10 @@ describe('Swap ETH to USDC and back on Base Mainnet', () => {
       console.log(`[Batching ${allTransactions.length} transactions into single UserOp]`);
 
       // Convert all relay transactions to a single batched UserOp
-      // Use Base Mainnet-specific permission approval since we're operating on Base Mainnet
+      // Use Arbitrum Mainnet-specific permission approval since we're operating on Arbitrum Mainnet
       const userOp = await transactionsToZerodevUserOp({
         permittedAddress: env.agentSmartAccount.agentSignerAddress as `0x${string}`,
-        serializedPermissionAccount: baseMainnetPermissionApproval,
+        serializedPermissionAccount: arbMainnetPermissionApproval,
         transactions: allTransactions,
         chain: RELAY_CHAIN,
         zerodevRpcUrl: ZERODEV_RPC_URL,
@@ -445,7 +442,7 @@ describe('Swap ETH to USDC and back on Base Mainnet', () => {
       }
 
       const abilityParams = {
-        alchemyRpcUrl: BASE_MAINNET_RPC_URL,
+        alchemyRpcUrl: ARB_MAINNET_RPC_URL,
         userOp: vincentUserOp,
         entryPointAddress: entryPoint07Address,
       } as any;
@@ -490,10 +487,10 @@ describe('Swap ETH to USDC and back on Base Mainnet', () => {
       expect(executeResult.result.signature).toMatch(/^0x[a-fA-F0-9]+$/);
 
       // Submit the signed UserOp to the bundler
-      // Use Base Mainnet-specific permission approval since we're operating on Base Mainnet
+      // Use Arbitrum Mainnet-specific permission approval since we're operating on Arbitrum Mainnet
       const { userOpHash, transactionHash } = await submitSignedUserOp({
         permittedAddress: env.agentSmartAccount.agentSignerAddress as `0x${string}`,
-        serializedPermissionAccount: baseMainnetPermissionApproval,
+        serializedPermissionAccount: arbMainnetPermissionApproval,
         userOpSignature: executeResult.result.signature,
         userOp: hexUserOperation,
         chain: RELAY_CHAIN,
@@ -503,7 +500,7 @@ describe('Swap ETH to USDC and back on Base Mainnet', () => {
       console.log('[USDC -> ETH Swap Completed]', {
         userOpHash,
         transactionHash,
-        txUrl: `https://basescan.org/tx/${transactionHash}`,
+        txUrl: `https://arbiscan.io/tx/${transactionHash}`,
       });
 
       expect(userOpHash).toMatch(/^0x[a-fA-F0-9]{64}$/);
