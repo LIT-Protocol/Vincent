@@ -7,4 +7,3 @@ module.exports = {
   "code": code,
   "ipfsCid": "QmZhf4m9vv2N1qSkVj5cJPSdm67uN6yEGoxxJkkFh3stvr",
 };
-
