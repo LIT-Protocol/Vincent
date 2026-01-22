@@ -68,7 +68,7 @@ export function addToRegistry(registry: OpenAPIRegistry) {
   registry.registerPath({
     method: 'post',
     path: '/app',
-    tags: ['App'],
+    tags: ['App', 'AppVersion'],
     summary: 'Creates a new application',
     operationId: 'createApp',
     security: [{ [siweAuth.name]: [] }],
@@ -194,7 +194,7 @@ export function addToRegistry(registry: OpenAPIRegistry) {
   registry.registerPath({
     method: 'delete',
     path: '/app/{appId}',
-    tags: ['App', 'AppVersionAbility'],
+    tags: ['App', 'AppVersion', 'AppVersionAbility'],
     summary: 'Deletes an application',
     operationId: 'deleteApp',
     security: [{ [siweAuth.name]: [] }],
@@ -233,7 +233,7 @@ export function addToRegistry(registry: OpenAPIRegistry) {
   registry.registerPath({
     method: 'post',
     path: '/app/{appId}/undelete',
-    tags: ['App', 'AppVersionAbility'],
+    tags: ['App', 'AppVersion', 'AppVersionAbility'],
     summary: 'Undeletes an application',
     operationId: 'undeleteApp',
     security: [{ [siweAuth.name]: [] }],
@@ -502,6 +502,92 @@ export function addToRegistry(registry: OpenAPIRegistry) {
       },
       404: {
         description: 'Application, version, or ability not found',
+      },
+      422: {
+        description: 'Validation exception',
+      },
+      default: {
+        description: 'Unexpected error',
+        content: {
+          'application/json': {
+            schema: ErrorResponse,
+          },
+        },
+      },
+    },
+  });
+
+  // DELETE /app/{appId}/version/{version} - Delete an application version and its AppVersionAbilities
+  registry.registerPath({
+    method: 'delete',
+    path: '/app/{appId}/version/{version}',
+    tags: ['AppVersion', 'AppVersionAbility'],
+    summary: 'Deletes an application version',
+    operationId: 'deleteAppVersion',
+    security: [{ [siweAuth.name]: [] }],
+    request: {
+      params: z.object({
+        appId: appIdParam,
+        version: appVersionParam,
+      }),
+    },
+    responses: {
+      200: {
+        description: 'OK - Resource successfully deleted',
+        content: {
+          'application/json': {
+            schema: GenericResult,
+          },
+        },
+      },
+      400: {
+        description: 'Invalid input',
+      },
+      404: {
+        description: 'Application or version not found',
+      },
+      422: {
+        description: 'Validation exception',
+      },
+      default: {
+        description: 'Unexpected error',
+        content: {
+          'application/json': {
+            schema: ErrorResponse,
+          },
+        },
+      },
+    },
+  });
+
+  // POST /app/{appId}/version/{version}/undelete - Undelete an application version and its AppVersionAbilities
+  registry.registerPath({
+    method: 'post',
+    path: '/app/{appId}/version/{version}/undelete',
+    tags: ['AppVersion', 'AppVersionAbility'],
+    summary: 'Undeletes an application version',
+    operationId: 'undeleteAppVersion',
+    security: [{ [siweAuth.name]: [] }],
+    request: {
+      params: z.object({
+        appId: appIdParam,
+        version: appVersionParam,
+      }),
+    },
+    responses: {
+      200: {
+        description: 'OK - Resource successfully undeleted',
+        content: {
+          'application/json': {
+            schema: GenericResult,
+          },
+        },
+      },
+      400: {
+        description: 'Invalid input',
+      },
+      404: {
+        description: 'Application or version not found',
       },
       422: {
         description: 'Validation exception',
