@@ -4,6 +4,7 @@ import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-
 import { getClient, AppVersion } from '@lit-protocol/vincent-contracts-sdk';
 import { readOnlySigner } from '@/utils/developer-dashboard/readOnlySigner';
 import { useWagmiSigner } from '@/hooks/developer-dashboard/useWagmiSigner';
+import { useEnsureChain } from '@/hooks/developer-dashboard/useEnsureChain';
 import { registryUrl } from '@/config/registry';
 import { Breadcrumb } from '@/components/shared/ui/Breadcrumb';
 import { Button } from '@/components/shared/ui/button';
@@ -24,6 +25,7 @@ export function AppVersionDetailsWrapper() {
   const { appId, version } = useParams<{ appId: string; version: string }>();
   const navigate = useNavigate();
   const { getSigner } = useWagmiSigner();
+  const { ensureChain, infoMessage } = useEnsureChain();
 
   const [versionData, setVersionData] = useState<AppVersion | null>(null);
   const [abilityInfoMap, setAbilityInfoMap] = useState<Map<string, AbilityInfo>>(new Map());
@@ -128,6 +130,16 @@ export function AppVersionDetailsWrapper() {
 
   const handleToggleEnabled = async () => {
     if (!versionData || !appId || !version) return;
+
+    // Ensure user is on Base Sepolia before starting
+    const action = versionData.enabled ? 'Disable Version' : 'Enable Version';
+    try {
+      const canProceed = await ensureChain(action);
+      if (!canProceed) return; // Chain was switched, user needs to click again
+    } catch (error) {
+      setToggleError(error instanceof Error ? error.message : 'Failed to switch network');
+      return;
+    }
 
     setIsToggling(true);
     setToggleError(null);
@@ -264,6 +276,11 @@ export function AppVersionDetailsWrapper() {
             )}
           </Button>
         </div>
+        {infoMessage && (
+          <div className="mt-4">
+            <StatusMessage message={infoMessage} type="info" />
+          </div>
+        )}
         {toggleError && (
           <div className="mt-4">
             <StatusMessage message={toggleError} type="error" />

@@ -1,7 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useSwitchChain, useChainId } from 'wagmi';
-import { baseSepolia } from 'wagmi/chains';
 import { ethers } from 'ethers';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
@@ -10,6 +8,7 @@ import { reactClient as vincentApiClient, docSchemas } from '@lit-protocol/vince
 import { getClient } from '@lit-protocol/vincent-contracts-sdk';
 import { Breadcrumb } from '@/components/shared/ui/Breadcrumb';
 import { useWagmiSigner } from '@/hooks/developer-dashboard/useWagmiSigner';
+import { useEnsureChain } from '@/hooks/developer-dashboard/useEnsureChain';
 import { Ability } from '@/types/developer-dashboard/appTypes';
 import { StatusMessage } from '@/components/shared/ui/statusMessage';
 import Loading from '@/components/shared/ui/Loading';
@@ -52,11 +51,20 @@ const AppMetadataSchema = z
 
 type AppMetadataFormData = z.infer<typeof AppMetadataSchema>;
 
+const CREATE_APP_STORAGE_KEY = 'vincentCreateAppDraft';
+
+interface SavedFormState {
+  currentStep: CreateAppStep;
+  selectedAbilities: Array<[string, SelectedAbility]>;
+  delegateeAddresses: string[];
+  metadataFormValues: Partial<AppMetadataFormData>;
+  savedAt: number;
+}
+
 export function CreateAppWrapper() {
   const navigate = useNavigate();
   const { getSigner } = useWagmiSigner();
-  const chainId = useChainId();
-  const { switchChain } = useSwitchChain();
+  const { ensureChain, infoMessage } = useEnsureChain();
   const [currentStep, setCurrentStep] = useState<CreateAppStep>('abilities');
   const [selectedAbilities, setSelectedAbilities] = useState<Map<string, SelectedAbility>>(
     new Map(),
@@ -69,6 +77,7 @@ export function CreateAppWrapper() {
     'signing' | 'confirming' | 'creating-registry' | null
   >(null);
   const [isAbilitySelectorOpen, setIsAbilitySelectorOpen] = useState(false);
+  const [isRestoringState, setIsRestoringState] = useState(true);
 
   // Registry metadata form
   const [metadataFormData, setMetadataFormData] = useState<AppMetadataFormData | null>(null);
@@ -79,6 +88,70 @@ export function CreateAppWrapper() {
       deploymentStatus: 'dev',
     },
   });
+
+  // Clear saved form state (call on successful submission)
+  const clearSavedFormState = () => {
+    localStorage.removeItem(CREATE_APP_STORAGE_KEY);
+  };
+
+  // Load saved state on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(CREATE_APP_STORAGE_KEY);
+      if (saved) {
+        const state: SavedFormState = JSON.parse(saved);
+        // Only restore if saved within last 24 hours
+        if (Date.now() - state.savedAt < 24 * 60 * 60 * 1000) {
+          // Don't restore if we were in the middle of submitting
+          if (state.currentStep !== 'submitting') {
+            setCurrentStep(state.currentStep);
+          }
+          setSelectedAbilities(new Map(state.selectedAbilities));
+          setDelegateeAddresses(state.delegateeAddresses);
+          // Restore form values
+          if (state.metadataFormValues) {
+            Object.entries(state.metadataFormValues).forEach(([key, value]) => {
+              if (value !== undefined) {
+                metadataForm.setValue(key as keyof AppMetadataFormData, value as any);
+              }
+            });
+            // If we're past the metadata step, also set metadataFormData
+            if (state.currentStep === 'review' || state.currentStep === 'submitting') {
+              setMetadataFormData(state.metadataFormValues as AppMetadataFormData);
+            }
+          }
+        } else {
+          // Clear expired saved state
+          localStorage.removeItem(CREATE_APP_STORAGE_KEY);
+        }
+      }
+    } catch (e) {
+      // Invalid saved state, clear it
+      localStorage.removeItem(CREATE_APP_STORAGE_KEY);
+    }
+    setIsRestoringState(false);
+  }, []);
+
+  // Watch form values for persistence
+  const watchedFormValues = metadataForm.watch();
+
+  // Save state on changes (debounced)
+  useEffect(() => {
+    if (isRestoringState) return;
+
+    const timeoutId = setTimeout(() => {
+      const state: SavedFormState = {
+        currentStep,
+        selectedAbilities: Array.from(selectedAbilities.entries()),
+        delegateeAddresses,
+        metadataFormValues: watchedFormValues,
+        savedAt: Date.now(),
+      };
+      localStorage.setItem(CREATE_APP_STORAGE_KEY, JSON.stringify(state));
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  }, [currentStep, selectedAbilities, delegateeAddresses, watchedFormValues, isRestoringState]);
 
   const {
     register: metadataRegister,
@@ -216,34 +289,26 @@ export function CreateAppWrapper() {
       return;
     }
 
+    // Step 1: Ensure user is on Base Sepolia (before starting submission)
+    try {
+      const canProceed = await ensureChain('Register App On-Chain');
+      if (!canProceed) return; // Chain was switched, user needs to click again
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Failed to switch network');
+      return;
+    }
+
     setCurrentStep('submitting');
     setSubmissionStatus('signing');
     setError(null);
 
     try {
-      // Step 1: Ensure user is on Base Sepolia
-      if (chainId !== baseSepolia.id) {
-        try {
-          await switchChain({ chainId: baseSepolia.id });
-        } catch (switchError: any) {
-          throw new Error('Please switch to Base Sepolia network to create an app');
-        }
-      }
-
       // Step 2: Register app on-chain with abilities
-      console.log('[CreateApp] Getting signer...');
       const signer = await getSigner();
-      const signerAddress = await signer.getAddress();
-      const network = await signer.provider?.getNetwork();
-      console.log('[CreateApp] Signer address:', signerAddress);
-      console.log('[CreateApp] Network:', network?.name, 'Chain ID:', network?.chainId);
-
       const client = getClient({ signer });
 
       const abilityIpfsCids = Array.from(selectedAbilities.values()).map((sa) => sa.ipfsCid);
       const abilityPolicies = Array.from(selectedAbilities.values()).map((sa) => sa.policies);
-
-      console.log('[CreateApp] Registering app with abilities:', abilityIpfsCids);
 
       const result = await client.registerApp({
         delegateeAddresses,
@@ -254,17 +319,13 @@ export function CreateAppWrapper() {
       });
 
       const appId = result.appId;
-      console.log('[CreateApp] App registered with ID:', appId);
-      console.log('[CreateApp] Transaction hash:', result.txHash);
 
       // Step 3: Wait a bit for indexing
-      // Give the RPC indexer a moment to catch up
-      console.log('[CreateApp] Waiting 5 seconds for indexing...');
       await new Promise((resolve) => setTimeout(resolve, 5000));
 
       // Step 5: Create app in registry
       setSubmissionStatus('creating-registry');
-      console.log('[CreateApp] Creating app in registry...');
+      // console.log('[CreateApp] Creating app in registry...');
       try {
         await createApp({
           appCreate: {
@@ -277,18 +338,18 @@ export function CreateAppWrapper() {
             deploymentStatus: metadataFormData.deploymentStatus,
           },
         }).unwrap();
-        console.log('[CreateApp] App created in registry');
+        // console.log('[CreateApp] App created in registry');
       } catch (registryError: any) {
-        console.error('[CreateApp] Failed to create app in registry:', registryError);
+        // console.error('[CreateApp] Failed to create app in registry:', registryError);
         // App exists on-chain, so we can still navigate to it
         // The user can add metadata later
-        console.log('[CreateApp] Navigating to app anyway (metadata can be added later)');
+        clearSavedFormState();
         navigate(`/developer/apps/appId/${appId}?action=create-in-registry`);
         return;
       }
 
       // Step 6: Create all AppVersionAbility records in registry
-      console.log('[CreateApp] Creating AppVersionAbility records...');
+      // console.log('[CreateApp] Creating AppVersionAbility records...');
       try {
         const abilityCreationPromises = Array.from(selectedAbilities.values()).map(
           ({ ability }) => {
@@ -311,16 +372,16 @@ export function CreateAppWrapper() {
         );
 
         await Promise.all(abilityCreationPromises);
-        console.log('[CreateApp] All AppVersionAbility records created');
+        // console.log('[CreateApp] All AppVersionAbility records created');
       } catch (abilityError: any) {
-        console.error('[CreateApp] Failed to create abilities in registry:', abilityError);
         // Navigate to version abilities page where user can add them manually
+        clearSavedFormState();
         navigate(`/developer/apps/appId/${appId}/version/1/abilities`);
         return;
       }
 
       // Step 7: Navigate to the app detail page
-      console.log('[CreateApp] Navigating to app detail page:', appId);
+      clearSavedFormState();
       navigate(`/developer/apps/appId/${appId}`);
     } catch (err: any) {
       console.error('Failed to create app on-chain:', err);
@@ -485,6 +546,12 @@ export function CreateAppWrapper() {
           ))}
         </div>
       </div>
+
+      {infoMessage && (
+        <div className="mb-4">
+          <StatusMessage message={infoMessage} type="info" />
+        </div>
+      )}
 
       {error && (
         <div className="mb-4">

@@ -7,6 +7,7 @@ import { readOnlySigner } from '@/utils/developer-dashboard/readOnlySigner';
 
 interface AppWithRegistryData extends App {
   isOwnedOnChain: boolean;
+  isInRegistry: boolean;
 }
 
 export function useUserApps() {
@@ -69,10 +70,11 @@ export function useUserApps() {
           const registryApp = allRegistryApps?.find((app: App) => app.appId === id);
 
           if (registryApp) {
-            // Use registry data (already filtered by our address earlier)
+            // Use registry data - app is on-chain AND in registry
             return {
               ...registryApp,
               isOwnedOnChain: true,
+              isInRegistry: true,
             } as AppWithRegistryData;
           } else {
             // On-chain app without registry metadata - create minimal structure
@@ -91,6 +93,7 @@ export function useUserApps() {
               createdAt: new Date().toISOString(),
               updatedAt: new Date().toISOString(),
               isOwnedOnChain: true,
+              isInRegistry: false,
             } as AppWithRegistryData;
           }
         });

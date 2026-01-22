@@ -1,7 +1,5 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useSwitchChain, useChainId } from 'wagmi';
-import { baseSepolia } from 'wagmi/chains';
 import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
 import { getClient } from '@lit-protocol/vincent-contracts-sdk';
 import { Breadcrumb } from '@/components/shared/ui/Breadcrumb';
@@ -13,6 +11,7 @@ import { theme, fonts } from '@/lib/themeClasses';
 import { registryUrl } from '@/config/registry';
 import { getSiweAuthToken } from '@/hooks/developer-dashboard/useAuth';
 import { useWagmiSigner } from '@/hooks/developer-dashboard/useWagmiSigner';
+import { useEnsureChain } from '@/hooks/developer-dashboard/useEnsureChain';
 import { AbilitySelectorModal } from '@/components/developer-dashboard/ui/AbilitySelectorModal';
 import { Ability } from '@/types/developer-dashboard/appTypes';
 
@@ -28,8 +27,7 @@ export function CreateAppVersionWrapper() {
   const { appId } = useParams<{ appId: string }>();
   const navigate = useNavigate();
   const { getSigner } = useWagmiSigner();
-  const chainId = useChainId();
-  const { switchChain } = useSwitchChain();
+  const { ensureChain, infoMessage } = useEnsureChain();
 
   const [currentStep, setCurrentStep] = useState<CreateVersionStep>('abilities');
   const [selectedAbilities, setSelectedAbilities] = useState<Map<string, SelectedAbility>>(
@@ -143,20 +141,20 @@ export function CreateAppVersionWrapper() {
   };
 
   const handleFinalSubmit = async () => {
+    // Step 1: Ensure user is on Base Sepolia (before starting submission)
+    try {
+      const canProceed = await ensureChain('Register Version On-Chain');
+      if (!canProceed) return; // Chain was switched, user needs to click again
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Failed to switch network');
+      return;
+    }
+
     setCurrentStep('submitting');
     setSubmissionStatus('signing');
     setError(null);
 
     try {
-      // Step 1: Ensure user is on Base Sepolia
-      if (chainId !== baseSepolia.id) {
-        try {
-          await switchChain({ chainId: baseSepolia.id });
-        } catch (switchError: any) {
-          throw new Error('Please switch to Base Sepolia network to create a version');
-        }
-      }
-
       // Step 2: Register version on-chain
       console.log('[CreateVersion] Getting signer...');
       const signer = await getSigner();
@@ -396,6 +394,12 @@ export function CreateAppVersionWrapper() {
           ))}
         </div>
       </div>
+
+      {infoMessage && (
+        <div className="mb-4">
+          <StatusMessage message={infoMessage} type="info" />
+        </div>
+      )}
 
       {error && (
         <div className="mb-4">

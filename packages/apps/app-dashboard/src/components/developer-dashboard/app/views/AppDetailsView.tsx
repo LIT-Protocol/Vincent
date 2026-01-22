@@ -4,7 +4,6 @@ import { App as ContractApp } from '@lit-protocol/vincent-contracts-sdk';
 import { AppDetail } from '@/components/developer-dashboard/ui/AppDetail';
 import { Logo } from '@/components/shared/ui/Logo';
 import { AppPublishedButtons } from '../wrappers/ui/AppPublishedButtons';
-import { AppUnpublishedButtons } from '../wrappers/ui/AppUnpublishedButtons';
 import { UndeleteAppButton } from '../wrappers/ui/UndeleteAppButton';
 import { Share, Copy, AlertCircle } from 'lucide-react';
 import { ConnectPageModal } from '../../ui/ConnectPageModal';
@@ -178,18 +177,16 @@ export function AppDetailsView({
             </p>
           </div>
           <div className="p-6">
-            {isPublished ? (
+            {isAppDeletedRegistry ? (
+              <UndeleteAppButton app={selectedApp} />
+            ) : blockchainAppData ? (
               <AppPublishedButtons
                 appData={selectedApp}
                 appBlockchainData={blockchainAppData}
                 onOpenMutation={onOpenMutation}
                 refetchBlockchainData={refetchBlockchainData}
               />
-            ) : isAppDeletedRegistry ? (
-              <UndeleteAppButton app={selectedApp} />
-            ) : (
-              <AppUnpublishedButtons onOpenMutation={onOpenMutation} />
-            )}
+            ) : null}
           </div>
         </div>
 
@@ -215,7 +212,7 @@ export function AppDetailsView({
 
               <AppDetail label="Active Version">
                 <span className={`${theme.text} text-sm`} style={fonts.body}>
-                  {selectedApp.activeVersion || 'Unpublished'}
+                  {selectedApp.activeVersion || 'Unregistered'}
                 </span>
               </AppDetail>
 

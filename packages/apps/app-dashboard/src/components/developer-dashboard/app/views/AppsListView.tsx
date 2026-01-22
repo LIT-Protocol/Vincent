@@ -9,6 +9,7 @@ import { theme, fonts } from '@/lib/themeClasses';
 
 interface AppWithOwnership extends App {
   isOwnedOnChain?: boolean;
+  isInRegistry?: boolean;
   onChainOwner?: string;
 }
 
@@ -25,9 +26,9 @@ export function AppsListView({ apps, deletedApps }: AppsListViewProps) {
     setShowContent(true);
   }, []);
 
-  // Separate apps into published and unpublished
-  const publishedApps = apps.filter((app) => app.activeVersion);
-  const unpublishedApps = apps.filter((app) => !app.activeVersion);
+  // Separate apps into registered (on-chain + in registry) and unregistered (on-chain only)
+  const registeredApps = apps.filter((app) => app.isInRegistry);
+  const unregisteredApps = apps.filter((app) => !app.isInRegistry);
 
   const renderAppCard = (app: App) => (
     <AppCard
@@ -76,26 +77,26 @@ export function AppsListView({ apps, deletedApps }: AppsListViewProps) {
         </div>
       ) : (
         <>
-          {/* Published Apps Section */}
-          {publishedApps.length > 0 && (
+          {/* Registered Apps Section */}
+          {registeredApps.length > 0 && (
             <div>
               <h3 className={`text-lg font-semibold ${theme.text} mb-4`} style={fonts.heading}>
-                Published Apps
+                Registered Apps
               </h3>
               <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
-                {publishedApps.map(renderAppCard)}
+                {registeredApps.map(renderAppCard)}
               </div>
             </div>
           )}
 
-          {/* Unpublished Apps Section */}
-          {unpublishedApps.length > 0 && (
+          {/* Unregistered Apps Section */}
+          {unregisteredApps.length > 0 && (
             <div>
               <h3 className={`text-lg font-semibold ${theme.text} mb-4`} style={fonts.heading}>
-                Unpublished Apps
+                Unregistered Apps
               </h3>
               <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
-                {unpublishedApps.map(renderAppCard)}
+                {unregisteredApps.map(renderAppCard)}
               </div>
             </div>
           )}

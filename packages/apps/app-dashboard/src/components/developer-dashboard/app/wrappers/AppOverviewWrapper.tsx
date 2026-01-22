@@ -4,33 +4,21 @@ import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-
 import { getClient } from '@lit-protocol/vincent-contracts-sdk';
 
 import { useWagmiSigner } from '@/hooks/developer-dashboard/useWagmiSigner';
+import { useEnsureChain } from '@/hooks/developer-dashboard/useEnsureChain';
 import { useOnChainAppOwnership } from '@/hooks/developer-dashboard/app/useOnChainAppOwnership';
 import { AppDetailsView } from '../views/AppDetailsView';
 import { EditAppForm } from '../forms/EditAppForm';
 import { DeleteAppForm } from '../forms/DeleteAppForm';
 import { ManageDelegateesForm } from '../forms/ManageDelegateesForm';
-import { CreateAppForm } from '../forms/CreateAppForm';
 import Loading from '@/components/shared/ui/Loading';
 import { StatusMessage } from '@/components/shared/ui/statusMessage';
 import { useBlockchainAppData } from '@/hooks/useBlockchainAppData';
 import { Breadcrumb } from '@/components/shared/ui/Breadcrumb';
 import { EditAppFormData } from '../forms/EditAppForm';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/shared/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/shared/ui/dialog';
 import { theme, fonts } from '@/lib/themeClasses';
 
-type ViewType =
-  | 'details'
-  | 'edit-app'
-  | 'edit-published-app'
-  | 'delete-app'
-  | 'manage-delegatees'
-  | 'create-in-registry';
+type ViewType = 'details' | 'edit-app' | 'edit-published-app' | 'delete-app' | 'manage-delegatees';
 
 export function AppOverviewWrapper() {
   const { appId } = useParams<{ appId: string }>();
@@ -39,6 +27,7 @@ export function AppOverviewWrapper() {
   const [currentView, setCurrentView] = useState<ViewType>('details');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { getSigner } = useWagmiSigner();
+  const { ensureChain, infoMessage } = useEnsureChain();
 
   // Define handlers early so they're available in early returns
   const handleCloseModal = () => {
@@ -49,7 +38,6 @@ export function AppOverviewWrapper() {
   const {
     isOwner,
     existsOnChain,
-    onChainApp,
     isChecking: ownershipChecking,
     error: ownershipError,
   } = useOnChainAppOwnership(Number(appId));
@@ -69,7 +57,6 @@ export function AppOverviewWrapper() {
 
   // Mutations
   const [editApp] = vincentApiClient.useEditAppMutation();
-  const [createApp] = vincentApiClient.useCreateAppMutation();
 
   // Check for action query param when data is ready
   useEffect(() => {
@@ -117,7 +104,7 @@ export function AppOverviewWrapper() {
   }
 
   // App exists on-chain and user owns it, but not in registry yet
-  // Handle both: no app data (!app) OR 404 error (appError)
+  // This indicates an error occurred during the registration process
   if (existsOnChain && isOwner && !app && !appLoading) {
     return (
       <>
@@ -129,42 +116,43 @@ export function AppOverviewWrapper() {
         />
         <div className={`${theme.mainCard} border ${theme.mainCardBorder} rounded-xl p-6 sm:p-8`}>
           <div className="max-w-2xl mx-auto text-center">
-            {/* Success Icon */}
+            {/* Error Icon */}
             <div className="mb-4 flex justify-center">
-              <div
-                className="w-12 h-12 rounded-full flex items-center justify-center"
-                style={{ backgroundColor: `${theme.brandOrange}20` }}
-              >
+              <div className="w-12 h-12 rounded-full flex items-center justify-center bg-red-500/20">
                 <svg
-                  className="w-6 h-6"
-                  style={{ color: theme.brandOrange }}
+                  className="w-6 h-6 text-red-500"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
                   strokeWidth={2}
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                  />
                 </svg>
               </div>
             </div>
 
             {/* Title */}
             <h2 className={`text-lg font-semibold mb-3 ${theme.text}`} style={fonts.heading}>
-              Add Your App to the Registry
+              App Registration Error
             </h2>
 
             {/* Description */}
             <p className={`${theme.textMuted} text-sm mb-6 leading-relaxed`} style={fonts.body}>
-              Your app is successfully registered on-chain! The next step is to add it to the
-              Vincent Registry, which makes your app discoverable by users. The registry stores
-              metadata like your app's name, description, logo, and contact information, making it
-              easy for users to find and connect with your app.
+              An error occurred during the app registration process for App ID {appId}. Your app
+              exists on-chain but was not properly synced to the Vincent Registry. Please contact
+              our team for assistance in resolving this issue.
             </p>
 
-            {/* CTA Button */}
-            <button
-              onClick={() => setCurrentView('create-in-registry')}
-              className="px-6 py-2.5 text-white rounded-lg font-semibold transition-all hover:scale-105"
+            {/* Contact Button */}
+            <a
+              href="https://discord.gg/lit-protocol"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block px-6 py-2.5 text-white rounded-lg font-semibold transition-all hover:scale-105"
               style={{ backgroundColor: theme.brandOrange, ...fonts.heading }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.backgroundColor = theme.brandOrangeDarker;
@@ -173,48 +161,10 @@ export function AppOverviewWrapper() {
                 e.currentTarget.style.backgroundColor = theme.brandOrange;
               }}
             >
-              Add App to Registry
-            </button>
+              Contact Support
+            </a>
           </div>
         </div>
-
-        {/* Create in Registry Modal - must be included here since we return early */}
-        <Dialog open={currentView === 'create-in-registry'} onOpenChange={handleCloseModal}>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-white dark:bg-gray-950">
-            <DialogHeader>
-              <DialogTitle className="text-lg font-semibold" style={fonts.heading}>
-                Add App to Registry
-              </DialogTitle>
-              <DialogDescription>
-                This app exists on-chain (ID: {appId}) but hasn't been added to the registry yet.
-                Fill in the details below to make it visible in the registry.
-              </DialogDescription>
-            </DialogHeader>
-            {onChainApp && (
-              <CreateAppForm
-                existingAppId={Number(appId)}
-                isSubmitting={isSubmitting}
-                onSubmit={async (data) => {
-                  setIsSubmitting(true);
-                  try {
-                    await createApp({
-                      appCreate: { ...data, appId: Number(appId) },
-                    }).unwrap();
-
-                    // Success - wait a moment to show success message, then reload
-                    setTimeout(() => {
-                      window.location.reload(); // Reload to fetch the new registry data
-                    }, 1500);
-                  } catch (error) {
-                    console.error('Failed to create app in registry:', error);
-                    setIsSubmitting(false);
-                    throw error; // Re-throw to let the form handle it
-                  }
-                }}
-              />
-            )}
-          </DialogContent>
-        </Dialog>
       </>
     );
   }
@@ -267,6 +217,10 @@ export function AppOverviewWrapper() {
   };
 
   const handleDeleteAppSubmit = async () => {
+    // Ensure user is on Base Sepolia before starting
+    const canProceed = await ensureChain('Delete App');
+    if (!canProceed) return; // Chain was switched, user needs to click again
+
     setIsSubmitting(true);
     try {
       // Delete on-chain only - on-chain is the source of truth
@@ -325,6 +279,11 @@ export function AppOverviewWrapper() {
               Delete App
             </DialogTitle>
           </DialogHeader>
+          {infoMessage && (
+            <div className="mb-4">
+              <StatusMessage message={infoMessage} type="info" />
+            </div>
+          )}
           <DeleteAppForm
             appName={app.name}
             onSubmit={handleDeleteAppSubmit}
@@ -341,10 +300,7 @@ export function AppOverviewWrapper() {
               Manage Delegatees
             </DialogTitle>
           </DialogHeader>
-          <ManageDelegateesForm
-            existingDelegatees={blockchainAppData?.delegateeAddresses || []}
-            refetchBlockchainData={refetchBlockchainData}
-          />
+          <ManageDelegateesForm existingDelegatees={blockchainAppData?.delegateeAddresses || []} />
         </DialogContent>
       </Dialog>
     </>
