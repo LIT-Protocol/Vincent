@@ -10,6 +10,7 @@ import { AppDetailsView } from '../views/AppDetailsView';
 import { EditAppForm } from '../forms/EditAppForm';
 import { DeleteAppForm } from '../forms/DeleteAppForm';
 import { ManageDelegateesForm } from '../forms/ManageDelegateesForm';
+import { SetActiveVersionForm } from '../forms/SetActiveVersionForm';
 import Loading from '@/components/shared/ui/Loading';
 import { StatusMessage } from '@/components/shared/ui/statusMessage';
 import { useBlockchainAppData } from '@/hooks/useBlockchainAppData';
@@ -18,7 +19,13 @@ import { EditAppFormData } from '../forms/EditAppForm';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/shared/ui/dialog';
 import { theme, fonts } from '@/lib/themeClasses';
 
-type ViewType = 'details' | 'edit-app' | 'edit-published-app' | 'delete-app' | 'manage-delegatees';
+type ViewType =
+  | 'details'
+  | 'edit-app'
+  | 'edit-published-app'
+  | 'delete-app'
+  | 'manage-delegatees'
+  | 'set-active-version';
 
 export function AppOverviewWrapper() {
   const { appId } = useParams<{ appId: string }>();
@@ -301,6 +308,21 @@ export function AppOverviewWrapper() {
             </DialogTitle>
           </DialogHeader>
           <ManageDelegateesForm existingDelegatees={blockchainAppData?.delegateeAddresses || []} />
+        </DialogContent>
+      </Dialog>
+
+      {/* Set Active Version Modal */}
+      <Dialog open={currentView === 'set-active-version'} onOpenChange={handleCloseModal}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white dark:bg-gray-950">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-semibold" style={fonts.heading}>
+              Set Active Version
+            </DialogTitle>
+          </DialogHeader>
+          <SetActiveVersionForm
+            currentActiveVersion={app.activeVersion}
+            onSuccess={handleCloseModal}
+          />
         </DialogContent>
       </Dialog>
     </>

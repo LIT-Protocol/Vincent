@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Users, Trash2, Edit, RotateCcw, List } from 'lucide-react';
+import { Plus, Users, Trash2, Edit, RotateCcw, List, CheckCircle } from 'lucide-react';
 import { getClient } from '@lit-protocol/vincent-contracts-sdk';
 import { App } from '@/types/developer-dashboard/appTypes';
 import { App as ContractApp } from '@lit-protocol/vincent-contracts-sdk';
@@ -126,7 +126,7 @@ export function AppPublishedButtons({
           <h4 className={`text-sm font-semibold ${theme.text} mb-3`} style={fonts.heading}>
             Version Management
           </h4>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <ActionButton
               icon={List}
               title="View Versions"
@@ -143,6 +143,17 @@ export function AppPublishedButtons({
               title="New Version"
               description="Create a new version with abilities"
               onClick={() => onOpenMutation('create-app-version')}
+              variant="orange"
+              iconBg={`${theme.brandOrange}1A`}
+              iconColor={theme.brandOrange}
+              hoverBorderColor={theme.brandOrange}
+            />
+
+            <ActionButton
+              icon={CheckCircle}
+              title="Set Active Version"
+              description="Choose which version users see"
+              onClick={() => onOpenMutation('set-active-version')}
               variant="orange"
               iconBg={`${theme.brandOrange}1A`}
               iconColor={theme.brandOrange}
