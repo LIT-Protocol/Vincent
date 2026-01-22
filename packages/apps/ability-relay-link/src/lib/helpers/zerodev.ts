@@ -1,11 +1,7 @@
 import type { Chain, Hex } from 'viem';
-import { createPublicClient, http, concat } from 'viem';
-import { deserializePermissionAccount } from '@zerodev/permissions';
-import { toECDSASigner } from '@zerodev/permissions/signers';
-import { createKernelAccountClient, addressToEmptyAccount } from '@zerodev/sdk';
-import { KERNEL_V3_3, getEntryPoint } from '@zerodev/sdk/constants';
+import { createPublicClient, http, concat, encodeFunctionData } from 'viem';
+import { getEntryPoint } from '@zerodev/sdk/constants';
 
-const kernelVersion = KERNEL_V3_3;
 const entryPoint = getEntryPoint('0.7');
 
 export interface ZerodevTransaction {
@@ -15,8 +11,6 @@ export interface ZerodevTransaction {
 }
 
 export interface RelayTransactionToUserOpParams {
-  permittedAddress: `0x${string}`;
-  serializedPermissionAccount: string;
   transaction: {
     to: `0x${string}`;
     data: `0x${string}`;
@@ -29,16 +23,13 @@ export interface RelayTransactionToUserOpParams {
 }
 
 export interface TransactionsToZerodevUserOpParams {
-  permittedAddress: `0x${string}`;
-  serializedPermissionAccount: string;
   transactions: ZerodevTransaction[];
   chain: Chain;
   zerodevRpcUrl: string;
+  sender: `0x${string}`;
 }
 
 export interface SubmitSignedUserOpParams {
-  permittedAddress: `0x${string}`;
-  serializedPermissionAccount: string;
   userOpSignature: Hex;
   userOp: Record<string, unknown>;
   chain: Chain;
@@ -46,67 +37,82 @@ export interface SubmitSignedUserOpParams {
 }
 
 /**
- * Creates the modular signer for deserializing permission accounts.
- * This matches how the permission account was created during setup.
- */
-async function createPermittedSigner(permittedAddress: `0x${string}`) {
-  const permittedEmptyAccount = addressToEmptyAccount(permittedAddress);
-  return await toECDSASigner({
-    signer: permittedEmptyAccount,
-  });
-}
-
-/**
- * Convert multiple transactions to a single batched UserOperation for smart account execution.
- * This is useful for operations that require multiple steps (e.g., ERC20 approve + swap).
+ * Convert multiple transactions to a basic UserOperation structure.
+ * This creates a minimal UserOp that will be combined with permission account data
+ * inside the Lit Action before signing.
+ *
+ * NOTE: This does NOT include the permission account deserialization - that happens
+ * inside the Lit Action to reduce payload size.
  */
 export async function transactionsToZerodevUserOp(
   params: TransactionsToZerodevUserOpParams,
 ): Promise<Record<string, unknown>> {
-  const { permittedAddress, serializedPermissionAccount, transactions, chain, zerodevRpcUrl } =
-    params;
+  const { transactions, chain, zerodevRpcUrl, sender } = params;
 
-  // Create ZeroDev transport
-  const zerodevTransport = http(zerodevRpcUrl);
-
-  // Create public client
   const publicClient = createPublicClient({
     chain,
-    transport: zerodevTransport,
+    transport: http(zerodevRpcUrl),
   });
 
-  // Create the signer that matches how the permission account was serialized
-  const permittedSigner = await createPermittedSigner(permittedAddress);
+  // Encode the call data for the transactions
+  // For single transaction, it's just the call data
+  // For multiple transactions, we need to batch them
+  let callData: Hex;
+  if (transactions.length === 1) {
+    callData = transactions[0].data;
+  } else {
+    // For batch calls, encode as executeBatch
+    const executeBatchAbi = [
+      {
+        name: 'executeBatch',
+        type: 'function',
+        inputs: [
+          {
+            name: 'calls',
+            type: 'tuple[]',
+            components: [
+              { name: 'to', type: 'address' },
+              { name: 'value', type: 'uint256' },
+              { name: 'data', type: 'bytes' },
+            ],
+          },
+        ],
+        outputs: [],
+      },
+    ] as const;
 
-  // Deserialize the permission account with the signer
-  const permissionAccount = await deserializePermissionAccount(
-    publicClient,
-    entryPoint,
-    kernelVersion,
-    serializedPermissionAccount,
-    permittedSigner,
-  );
+    callData = encodeFunctionData({
+      abi: executeBatchAbi,
+      functionName: 'executeBatch',
+      args: [
+        transactions.map((tx) => ({
+          to: tx.to,
+          value: BigInt(tx.value || '0'),
+          data: tx.data,
+        })),
+      ],
+    });
+  }
 
-  // Create kernel client with the permission account
-  const kernelClient = createKernelAccountClient({
-    chain,
-    account: permissionAccount,
-    bundlerTransport: zerodevTransport,
-    client: publicClient,
-  });
+  // Estimate gas for the UserOp via bundler
+  const gasEstimates = await publicClient.request({
+    method: 'eth_estimateUserOperationGas',
+    params: [
+      {
+        sender,
+        callData,
+        signature: '0x' as Hex, // Dummy signature for gas estimation
+      },
+      entryPoint.address,
+    ],
+  } as any);
 
-  // Prepare the UserOp with batched calls
-  const userOp = await kernelClient.prepareUserOperation({
-    callData: await permissionAccount.encodeCalls(
-      transactions.map((tx) => ({
-        to: tx.to,
-        value: BigInt(tx.value || '0'),
-        data: tx.data,
-      })),
-    ),
-  });
-
-  return userOp as unknown as Record<string, unknown>;
+  return {
+    sender,
+    nonce: '0x0', // Will be filled by bundler
+    callData,
+    ...(gasEstimates as object),
+  } as Record<string, unknown>;
 }
 
 /**
@@ -116,12 +122,9 @@ export async function transactionsToZerodevUserOp(
 export async function relayTransactionToUserOp(
   params: RelayTransactionToUserOpParams,
 ): Promise<Record<string, unknown>> {
-  const { permittedAddress, serializedPermissionAccount, transaction, chain, zerodevRpcUrl } =
-    params;
+  const { transaction, chain, zerodevRpcUrl } = params;
 
   return transactionsToZerodevUserOp({
-    permittedAddress,
-    serializedPermissionAccount,
     transactions: [
       {
         to: transaction.to,
@@ -131,6 +134,7 @@ export async function relayTransactionToUserOp(
     ],
     chain,
     zerodevRpcUrl,
+    sender: transaction.from,
   });
 }
 
@@ -141,71 +145,79 @@ export async function relayTransactionToUserOp(
  * - The signature is prefixed with 0xff to indicate "raw signature mode"
  * - This tells the Kernel account to use the signature as-is without additional processing
  *
+ * IMPORTANT: This function submits an already-signed UserOp directly to the bundler
+ * via eth_sendUserOperation RPC call. We do NOT need to deserialize the permission
+ * account because the UserOp is already fully signed by the PKP.
+ *
  * Returns both the UserOp hash and the transaction hash once mined.
  */
 export async function submitSignedUserOp(
   params: SubmitSignedUserOpParams,
 ): Promise<{ userOpHash: Hex; transactionHash: Hex }> {
-  const {
-    permittedAddress,
-    serializedPermissionAccount,
-    userOpSignature,
-    userOp,
-    chain,
-    zerodevRpcUrl,
-  } = params;
+  const { userOpSignature, userOp, chain, zerodevRpcUrl } = params;
 
   // Create ZeroDev transport for bundler
   const zerodevTransport = http(zerodevRpcUrl);
 
-  // Create public client
+  // Create public client for the bundler RPC
   const publicClient = createPublicClient({
     chain,
     transport: zerodevTransport,
   });
 
-  // Create the signer that matches how the permission account was serialized
-  const permittedSigner = await createPermittedSigner(permittedAddress);
-
-  // Deserialize the permission account with the signer
-  const permissionAccount = await deserializePermissionAccount(
-    publicClient,
-    entryPoint,
-    kernelVersion,
-    serializedPermissionAccount,
-    permittedSigner,
-  );
-
-  // Create kernel client with ZeroDev bundler
-  // No paymaster - smart account will pay for gas using its own balance
-  const kernelClient = createKernelAccountClient({
-    chain,
-    account: permissionAccount,
-    bundlerTransport: zerodevTransport,
-    client: publicClient,
-  });
-
-  // Add signature to UserOp with 0xff prefix per Kernel v3 validation
-  // The 0xff prefix indicates "raw signature mode" - use signature as-is
+  // Add signature to UserOp with 0xff prefix for permission validator
+  // Permission validators require the 0xff prefix to identify the signature type
+  // See: @zerodev/permissions/toPermissionValidator.ts signUserOperation method
   const signedUserOp = {
     ...userOp,
     signature: concat(['0xff', userOpSignature]),
   };
 
   console.log('[submitSignedUserOp] Broadcasting UserOp to ZeroDev bundler...');
-  const userOpHash = await kernelClient.sendUserOperation(signedUserOp as any);
+
+  // Submit UserOp directly via eth_sendUserOperation RPC
+  // Format: eth_sendUserOperation(userOp, entryPoint address)
+  const userOpHash = await publicClient.request({
+    method: 'eth_sendUserOperation',
+    params: [signedUserOp, entryPoint.address],
+  } as any);
+
   console.log(`[submitSignedUserOp] UserOp hash: ${userOpHash}`);
 
   console.log('[submitSignedUserOp] Waiting for UserOp to be included in a block...');
-  const receipt = await kernelClient.waitForUserOperationReceipt({
-    hash: userOpHash,
-  });
+
+  // Poll for UserOp receipt
+  let receipt: any;
+  let attempts = 0;
+  const maxAttempts = 60; // 60 attempts * 2s = 2 minutes max wait
+
+  while (!receipt && attempts < maxAttempts) {
+    try {
+      receipt = await publicClient.request({
+        method: 'eth_getUserOperationReceipt',
+        params: [userOpHash],
+      } as any);
+
+      if (!receipt) {
+        await new Promise((resolve) => setTimeout(resolve, 2000)); // Wait 2s between polls
+        attempts++;
+      }
+    } catch (error) {
+      // Receipt not found yet, continue polling
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      attempts++;
+    }
+  }
+
+  if (!receipt) {
+    throw new Error(`UserOp receipt not found after ${maxAttempts} attempts`);
+  }
 
   console.log('[submitSignedUserOp] ✅ UserOp executed successfully!');
   console.log(`[submitSignedUserOp] Transaction hash: ${receipt.receipt.transactionHash}`);
 
   return {
-    userOpHash,
+    userOpHash: userOpHash as Hex,
     transactionHash: receipt.receipt.transactionHash,
   };
 }

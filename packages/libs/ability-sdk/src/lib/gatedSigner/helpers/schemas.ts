@@ -25,6 +25,11 @@ const userOpAbilityParamsSchema = baseAbilityParamsSchema.extend({
       'EntryPoint to use for the simulation. Currently only v0.7 is supported. Defaults to standard v0.7 entryPoint address.',
     ),
   alchemyRpcUrl: alchemyRpcUrlSchema,
+  serializedPermissionAccount: z
+    .string()
+    .describe(
+      'Serialized permission account containing both EOA and PKP validator configuration. This was created and signed by the EOA outside the Lit Action.',
+    ),
   validAfter: z.number().default(0).describe('Valid after timestamp (for Safe smart accounts)'),
   validUntil: z.number().default(0).describe('Valid until timestamp (for Safe smart accounts)'),
   safe4337ModuleAddress: addressSchema
@@ -76,4 +81,9 @@ export const precheckSuccessSchema = z.object({
 });
 export const executeSuccessSchema = precheckSuccessSchema.extend({
   signature: hexSchema.describe('ECDSA signature over the received user operation or transaction.'),
+  modifiedUserOp: userOpSchema
+    .optional()
+    .describe(
+      'Modified user operation with validator installation bundled (if PKP validator was not yet enabled)',
+    ),
 });

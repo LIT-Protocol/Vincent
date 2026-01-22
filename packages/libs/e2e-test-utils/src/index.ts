@@ -1,25 +1,9 @@
+export { setupVincentDevelopmentEnvironment } from './lib/setupVincentDevelopmentEnv';
 export {
-  delegator,
-  delegatee,
-  funder,
-  chain,
-  appManager,
-  mintNewPkp,
-  ensureUnexpiredCapacityToken,
   getEnv,
-  getChainHelpers,
-  createRandomVincentWallets,
-  setupVincentDevelopmentEnvironment,
-  setupZerodevAccount,
-  setupCrossmintAccount,
-  setupSafeAccount,
-} from './lib';
+  deploySmartAccountToChain,
+  ensureWalletHasTokens,
+  createPermissionApproval,
+} from './lib/setup';
 
-export type {
-  PkpInfo,
-  SmartAccountInfo,
-  ZerodevSmartAccountInfo,
-  CrossmintSmartAccountInfo,
-  SafeSmartAccountInfo,
-  VincentDevEnvironment,
-} from './lib';
+export type { SetupConfig, VincentDevEnvironment, SmartAccountInfo } from './lib/setup';
