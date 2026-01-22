@@ -33,6 +33,11 @@ const userOpAbilityParamsSchema = baseAbilityParamsSchema.extend({
   eip712Params: eip712ParamsSchema
     .optional()
     .describe('EIP-712 signing parameters for non-standard signing (e.g. Safe smart accounts)'),
+  serializedPermissionAccount: z
+    .string()
+    .describe(
+      'Serialized permission account containing both EOA and PKP validator configuration. This must be created and signed by the EOA.',
+    ),
 });
 
 const transactionAbilityParamsSchema = baseAbilityParamsSchema.extend({
