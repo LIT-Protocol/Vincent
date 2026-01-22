@@ -1,9 +1,23 @@
 import type { Chain, Hex } from 'viem';
-import { createPublicClient, http, concat } from 'viem';
-import { deserializePermissionAccount } from '@zerodev/permissions';
+import {
+  createPublicClient,
+  http,
+  concat,
+  encodeFunctionData,
+  getAbiItem,
+  pad,
+  toFunctionSelector,
+  zeroAddress,
+} from 'viem';
+import { deserializePermissionAccount, toPermissionValidator } from '@zerodev/permissions';
 import { toECDSASigner } from '@zerodev/permissions/signers';
-import { createKernelAccountClient, addressToEmptyAccount } from '@zerodev/sdk';
-import { KERNEL_V3_3, getEntryPoint } from '@zerodev/sdk/constants';
+import {
+  createKernelAccountClient,
+  addressToEmptyAccount,
+  KernelV3_3AccountAbi,
+} from '@zerodev/sdk';
+import { KERNEL_V3_3, getEntryPoint, VALIDATOR_TYPE } from '@zerodev/sdk/constants';
+import { toSudoPolicy } from '@zerodev/permissions/policies';
 
 const kernelVersion = KERNEL_V3_3;
 const entryPoint = getEntryPoint('0.7');
@@ -59,6 +73,14 @@ async function createPermittedSigner(permittedAddress: `0x${string}`) {
 /**
  * Convert multiple transactions to a single batched UserOperation for smart account execution.
  * This is useful for operations that require multiple steps (e.g., ERC20 approve + swap).
+ *
+ * ARCHITECTURE:
+ * 1. Account deployed with only EOA (sudo) validator via deploySmartAccountToChain
+ * 2. createPermissionApproval creates account with same config (EOA only) for matching address
+ * 3. PKP permission plugin is added via serializePermissionAccount's 5th parameter
+ * 4. When deserialized, account has PKP validator info but it's not enabled on-chain yet
+ * 5. ZeroDev SDK automatically includes enable calls in UserOp when validator isn't installed
+ * 6. First UserOp on any chain will enable the PKP validator and execute the transaction
  */
 export async function transactionsToZerodevUserOp(
   params: TransactionsToZerodevUserOpParams,
@@ -95,7 +117,8 @@ export async function transactionsToZerodevUserOp(
     client: publicClient,
   });
 
-  // Prepare the UserOp with batched calls
+  // Prepare the UserOp with the user transactions
+  // If the account isn't deployed, initCode will handle deployment + validator setup
   const userOp = await kernelClient.prepareUserOperation({
     callData: await permissionAccount.encodeCalls(
       transactions.map((tx) => ({
