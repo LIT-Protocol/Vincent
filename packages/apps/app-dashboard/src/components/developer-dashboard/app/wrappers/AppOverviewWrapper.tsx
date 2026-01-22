@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
 import { getClient } from '@lit-protocol/vincent-contracts-sdk';
-import * as Sentry from '@sentry/react';
 
 import { useWagmiSigner } from '@/hooks/developer-dashboard/useWagmiSigner';
 import { useOnChainAppOwnership } from '@/hooks/developer-dashboard/app/useOnChainAppOwnership';
@@ -39,7 +38,7 @@ export function AppOverviewWrapper() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [currentView, setCurrentView] = useState<ViewType>('details');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { getSigner, address } = useWagmiSigner();
+  const { getSigner } = useWagmiSigner();
 
   // Define handlers early so they're available in early returns
   const handleCloseModal = () => {
@@ -70,7 +69,6 @@ export function AppOverviewWrapper() {
 
   // Mutations
   const [editApp] = vincentApiClient.useEditAppMutation();
-  const [deleteApp] = vincentApiClient.useDeleteAppMutation();
   const [createApp] = vincentApiClient.useCreateAppMutation();
 
   // Check for action query param when data is ready
@@ -271,39 +269,17 @@ export function AppOverviewWrapper() {
   const handleDeleteAppSubmit = async () => {
     setIsSubmitting(true);
     try {
-      const isPublished = blockchainAppData !== null;
+      // Delete on-chain only - on-chain is the source of truth
+      const signer = await getSigner();
+      const client = getClient({ signer });
 
-      // Step 1: Delete in registry (always do this)
-      await deleteApp({ appId: Number(appId) }).unwrap();
-
-      // Step 2: If published on-chain, also delete on-chain
-      if (isPublished) {
-        try {
-          const signer = await getSigner();
-          const client = getClient({ signer });
-
-          await client.deleteApp({
-            appId: Number(appId),
-          });
-        } catch (onChainError) {
-          console.error('Failed to delete app on-chain:', onChainError);
-          // If on-chain deletion fails, log to Sentry but still navigate away
-          // The mismatch resolution UI will handle fixing the inconsistent state
-          Sentry.captureException(onChainError, {
-            extra: {
-              context: 'AppOverviewWrapper.handleDeleteAppSubmit',
-              appId: appId,
-              registryDeleted: true,
-              onChainDeleted: false,
-              userAddress: address,
-            },
-          });
-        }
-      }
+      await client.deleteApp({
+        appId: Number(appId),
+      });
 
       // Success - navigate back to apps list
       navigate('/developer/apps');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to delete app:', error);
       setIsSubmitting(false);
       throw error;

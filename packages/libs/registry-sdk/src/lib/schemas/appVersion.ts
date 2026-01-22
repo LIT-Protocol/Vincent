@@ -1,6 +1,25 @@
 import { baseDocAttributes } from './base';
 import { z } from './openApiZod';
 
+const appVersion = z
+  .object({
+    appId: z.number().openapi({
+      description: 'Application ID',
+      example: 12312345,
+      readOnly: true,
+    }),
+    version: z.number().openapi({
+      description: 'App Version number',
+      example: 1,
+      readOnly: true,
+    }),
+    isDeleted: z.boolean().optional().openapi({
+      description: 'Whether or not this AppVersion is deleted',
+      example: false,
+    }),
+  })
+  .strict();
+
 const appVersionAbility = z
   .object({
     appId: z.number().openapi({
@@ -77,5 +96,18 @@ export const appVersionAbilityDoc = z
   .object({
     ...baseDocAttributes.shape,
     ...appVersionAbility.shape,
+  })
+  .strict();
+
+/** appVersionDoc describes a complete application version document, with all properties including those that are database-backend
+ * specific like _id and updated/created at timestamps.
+ *
+ * All schemas that need to be composed as subsets of this schema
+ * should be derived from `appVersion` instead
+ */
+export const appVersionDoc = z
+  .object({
+    ...baseDocAttributes.shape,
+    ...appVersion.shape,
   })
   .strict();

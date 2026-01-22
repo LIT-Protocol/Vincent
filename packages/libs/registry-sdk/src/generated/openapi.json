@@ -277,6 +277,51 @@
         ],
         "additionalProperties": false
       },
+      "AppVersion": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string",
+            "description": "Document ID",
+            "readOnly": true
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp when this was last modified"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp when this was created"
+          },
+          "appId": {
+            "type": "number",
+            "description": "Application ID",
+            "example": 12312345,
+            "readOnly": true
+          },
+          "version": {
+            "type": "number",
+            "description": "App Version number",
+            "example": 1,
+            "readOnly": true
+          },
+          "isDeleted": {
+            "type": "boolean",
+            "description": "Whether or not this AppVersion is deleted",
+            "example": false
+          }
+        },
+        "required": [
+          "_id",
+          "updatedAt",
+          "createdAt",
+          "appId",
+          "version"
+        ],
+        "additionalProperties": false
+      },
       "AppVersionAbilityCreate": {
         "type": "object",
         "properties": {
@@ -1499,6 +1544,12 @@
           "$ref": "#/components/schemas/App"
         }
       },
+      "AppVersionList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/AppVersion"
+        }
+      },
       "AppVersionAbilityList": {
         "type": "array",
         "items": {
@@ -1811,6 +1862,162 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/GenericResultMessage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "422": {
+            "description": "Validation exception"
+          },
+          "default": {
+            "description": "Unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/app/{appId}/versions": {
+      "get": {
+        "tags": [
+          "AppVersion"
+        ],
+        "summary": "Fetches all versions of an application",
+        "operationId": "getAppVersions",
+        "parameters": [
+          {
+            "schema": {
+              "type": "number"
+            },
+            "required": true,
+            "description": "ID of the target application",
+            "example": 132,
+            "name": "appId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AppVersionList"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Application not found"
+          },
+          "default": {
+            "description": "Unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/app/{appId}/version/{version}": {
+      "get": {
+        "tags": [
+          "AppVersion"
+        ],
+        "summary": "Fetches an application version",
+        "operationId": "getAppVersion",
+        "parameters": [
+          {
+            "schema": {
+              "type": "number"
+            },
+            "required": true,
+            "description": "ID of the target application",
+            "example": 132,
+            "name": "appId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "number"
+            },
+            "required": true,
+            "description": "Version # of the target application version",
+            "example": 3,
+            "name": "version",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AppVersion"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Application not found"
+          },
+          "default": {
+            "description": "Unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/app/{appId}/version": {
+      "post": {
+        "tags": [
+          "AppVersion"
+        ],
+        "summary": "Creates an application version",
+        "operationId": "createAppVersion",
+        "security": [
+          {
+            "siweAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "number"
+            },
+            "required": true,
+            "description": "ID of the target application",
+            "example": 132,
+            "name": "appId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AppVersion"
                 }
               }
             }

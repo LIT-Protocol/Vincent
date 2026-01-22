@@ -2,6 +2,7 @@ import type { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
 
 import { appDoc, appCreate, appEdit, appSetActiveVersion } from '../schemas/app';
 import {
+  appVersionDoc,
   appVersionAbilityCreate,
   appVersionAbilityEdit,
   appVersionAbilityDoc,
@@ -26,6 +27,8 @@ export function addToRegistry(registry: OpenAPIRegistry) {
   const AppEdit = registry.register('AppEdit', appEdit);
   const AppRead = registry.register('App', appDoc);
   const AppSetActiveVersion = registry.register('AppSetActiveVersion', appSetActiveVersion);
+
+  const AppVersionRead = registry.register('AppVersion', appVersionDoc);
 
   const AppVersionAbilityCreate = registry.register(
     'AppVersionAbilityCreate',
@@ -245,6 +248,116 @@ export function addToRegistry(registry: OpenAPIRegistry) {
         content: {
           'application/json': {
             schema: GenericResult,
+          },
+        },
+      },
+      400: {
+        description: 'Invalid input',
+      },
+      422: {
+        description: 'Validation exception',
+      },
+      default: {
+        description: 'Unexpected error',
+        content: {
+          'application/json': {
+            schema: ErrorResponse,
+          },
+        },
+      },
+    },
+  });
+
+  // GET /app/{appId}/versions - Fetch all versions of an application
+  registry.registerPath({
+    method: 'get',
+    path: '/app/{appId}/versions',
+    tags: ['AppVersion'],
+    summary: 'Fetches all versions of an application',
+    operationId: 'getAppVersions',
+    request: {
+      params: z.object({
+        appId: appIdParam,
+      }),
+    },
+    responses: {
+      200: {
+        description: 'Successful operation',
+        content: {
+          'application/json': {
+            schema: z.array(AppVersionRead).openapi('AppVersionList'),
+          },
+        },
+      },
+      404: {
+        description: 'Application not found',
+      },
+      default: {
+        description: 'Unexpected error',
+        content: {
+          'application/json': {
+            schema: ErrorResponse,
+          },
+        },
+      },
+    },
+  });
+
+  // GET /app/{appId}/version/{version} - Fetch an application version
+  registry.registerPath({
+    method: 'get',
+    path: '/app/{appId}/version/{version}',
+    tags: ['AppVersion'],
+    summary: 'Fetches an application version',
+    operationId: 'getAppVersion',
+    request: {
+      params: z.object({
+        appId: appIdParam,
+        version: appVersionParam,
+      }),
+    },
+    responses: {
+      200: {
+        description: 'Successful operation',
+        content: {
+          'application/json': {
+            schema: AppVersionRead,
+          },
+        },
+      },
+      404: {
+        description: 'Application not found',
+      },
+      default: {
+        description: 'Unexpected error',
+        content: {
+          'application/json': {
+            schema: ErrorResponse,
+          },
+        },
+      },
+    },
+  });
+
+  // POST /app/{appId}/version - Create an application version
+  registry.registerPath({
+    method: 'post',
+    path: '/app/{appId}/version',
+    tags: ['AppVersion'],
+    summary: 'Creates an application version',
+    operationId: 'createAppVersion',
+    security: [{ [siweAuth.name]: [] }],
+    request: {
+      params: z.object({
+        appId: appIdParam,
+      }),
+    },
+    responses: {
+      201: {
+        description: 'Successful operation',
+        content: {
+          'application/json': {
+            schema: AppVersionRead,
           },
         },
       },

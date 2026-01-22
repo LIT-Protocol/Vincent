@@ -504,7 +504,8 @@ export function CreateAppWrapper() {
               <Button
                 type="button"
                 onClick={() => setIsAbilitySelectorOpen(true)}
-                className={`mb-4 bg-${theme.brandOrange}`}
+                className="mb-4"
+                style={{ backgroundColor: theme.brandOrange }}
               >
                 Add Ability
               </Button>

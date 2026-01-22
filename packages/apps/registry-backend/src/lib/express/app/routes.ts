@@ -2,12 +2,13 @@ import type { Express } from 'express';
 
 import { Features } from '../../../features';
 import { getContractClient } from '../../contractClient';
-import { App, AppAbility } from '../../mongo/app';
+import { App, AppAbility, AppVersion } from '../../mongo/app';
 import { withSession } from '../../mongo/withSession';
 import { requireVincentAuth, withVincentAuth } from '../vincentAuth';
 import { requireApp, withApp } from './requireApp';
 import { requireAppAbility, withAppAbility } from './requireAppAbility';
-import { requireAppOnChain } from './requireAppOnChain';
+import { requireAppOnChain, withAppOnChain } from './requireAppOnChain';
+import { requireAppVersion, withAppVersion } from './requireAppVersion';
 import { requireUserManagesApp } from './requireUserManagesApp';
 
 export function registerRoutes(app: Express) {
@@ -79,9 +80,18 @@ export function registerRoutes(app: Express) {
           activeVersion: 1,
         });
 
-        const appDef = await appDoc.save();
+        const appVersionDoc = new AppVersion({
+          appId,
+          version: 1,
+        });
 
-        res.status(201).json(appDef);
+        let savedApp;
+        await mongoSession.withTransaction(async (session) => {
+          savedApp = await appDoc.save({ session });
+          await appVersionDoc.save({ session });
+        });
+
+        res.status(201).json(savedApp);
         return;
       });
     }),
@@ -104,11 +114,99 @@ export function registerRoutes(app: Express) {
     ),
   );
 
+  // List App Versions
+  app.get(
+    '/app/:appId/versions',
+    requireApp(),
+    withApp(async (req, res) => {
+      const { appId } = req.params;
+
+      const versions = await AppVersion.find({ appId: appId }).sort({ version: 1 }).lean();
+      res.json(versions);
+      return;
+    }),
+  );
+
+  // Get App Version
+  app.get(
+    '/app/:appId/version/:version',
+    requireApp(),
+    requireAppVersion(),
+    withAppVersion(async (req, res) => {
+      const { vincentAppVersion } = req;
+
+      res.json(vincentAppVersion);
+      return;
+    }),
+  );
+
+  // Create new App Version
+  app.post(
+    '/app/:appId/version',
+    requireVincentAuth,
+    requireApp(),
+    requireUserManagesApp(),
+    requireAppOnChain(),
+    withVincentAuth(
+      withApp(
+        withAppOnChain(async (req, res) => {
+          const { appId } = req.params;
+          const { latestVersion: onChainHighestVersion } = req.vincentAppOnChain;
+          const newVersion = Number(onChainHighestVersion) + 1;
+
+          try {
+            await withSession(async (mongoSession) => {
+              let savedAppVersion;
+
+              await mongoSession.withTransaction(async (session) => {
+                const [latestOnRegistry] = await AppVersion.find({ appId })
+                  .session(session)
+                  .sort({ version: -1 })
+                  .limit(1)
+                  .lean()
+                  .orFail(); // If no appVersions exist in registry something is very wrong, as the app must exist to get here
+
+                const { version: onRegistryHighestVersion } = latestOnRegistry;
+
+                if (!(onRegistryHighestVersion <= Number(onChainHighestVersion))) {
+                  // There can only be 1 'pending' app version for an app on the registry.
+                  // This <= check will keep us from getting way ahead in case RPC is massively delayed
+                  throw new Error(
+                    `There can only be 1 pending app version for an app on the registry.`,
+                  );
+                }
+
+                const appVersion = new AppVersion({
+                  appId,
+                  version: newVersion,
+                });
+
+                // If by some chance there is a race (chain state is way out-of-date), this call will fail due to unique constraints
+                savedAppVersion = await appVersion.save({ session });
+              });
+
+              res.status(201).json(savedAppVersion);
+              return;
+            });
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          } catch (err: any) {
+            if (err.code === 11000) {
+              // Duplicate appId+version — someone else beat us to it
+              throw new Error(`App version ${newVersion} already exists in the registry.`);
+            }
+            throw err;
+          }
+        }),
+      ),
+    ),
+  );
+
   // List App Version Abilities
   app.get(
     '/app/:appId/version/:version/abilities',
     requireApp(),
-    withApp(async (req, res) => {
+    requireAppVersion(),
+    withAppVersion(async (req, res) => {
       const { appId, version } = req.params;
 
       const abilities = await AppAbility.find({
@@ -161,6 +259,7 @@ export function registerRoutes(app: Express) {
   app.get(
     '/app/:appId/version/:version/ability/:abilityPackageName',
     requireApp(),
+    requireAppVersion(),
     requireAppAbility(),
     withAppAbility(async (req, res) => {
       const { vincentAppAbility } = req;
@@ -175,6 +274,7 @@ export function registerRoutes(app: Express) {
     requireVincentAuth,
     requireApp(),
     requireUserManagesApp(),
+    requireAppVersion(),
     requireAppAbility(),
     withVincentAuth(
       withAppAbility(async (req, res) => {
@@ -196,6 +296,7 @@ export function registerRoutes(app: Express) {
     requireVincentAuth,
     requireApp(),
     requireUserManagesApp(),
+    requireAppVersion(),
     requireAppAbility(),
     withVincentAuth(
       withAppAbility(async (req, res) => {
@@ -220,6 +321,7 @@ export function registerRoutes(app: Express) {
     requireVincentAuth,
     requireApp(),
     requireUserManagesApp(),
+    requireAppVersion(),
     requireAppAbility(),
     withVincentAuth(
       withAppAbility(async (req, res) => {

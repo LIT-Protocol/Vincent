@@ -391,7 +391,7 @@ export function AbilitySelectorModal({
           </div>
           <div className="flex gap-2">
             <Button variant="outline" onClick={onClose} disabled={isSubmitting}>
-              Cancel
+              Close
             </Button>
             <Button
               onClick={handleAddAbilities}

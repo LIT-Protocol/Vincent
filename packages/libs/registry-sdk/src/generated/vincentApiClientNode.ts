@@ -2,6 +2,7 @@ import { baseVincentRtkApiNode as api } from '../lib/internal/baseVincentRtkApiN
 export const addTagTypes = [
   'App',
   'AppVersionAbility',
+  'AppVersion',
   'Ability',
   'AbilityVersion',
   'Policy',
@@ -47,6 +48,25 @@ const injectedRtkApi = api
           method: 'POST',
         }),
         invalidatesTags: ['App', 'AppVersionAbility'],
+      }),
+      getAppVersions: build.query<GetAppVersionsApiResponse, GetAppVersionsApiArg>({
+        query: (queryArg) => ({
+          url: `/app/${encodeURIComponent(String(queryArg.appId))}/versions`,
+        }),
+        providesTags: ['AppVersion'],
+      }),
+      getAppVersion: build.query<GetAppVersionApiResponse, GetAppVersionApiArg>({
+        query: (queryArg) => ({
+          url: `/app/${encodeURIComponent(String(queryArg.appId))}/version/${encodeURIComponent(String(queryArg.version))}`,
+        }),
+        providesTags: ['AppVersion'],
+      }),
+      createAppVersion: build.mutation<CreateAppVersionApiResponse, CreateAppVersionApiArg>({
+        query: (queryArg) => ({
+          url: `/app/${encodeURIComponent(String(queryArg.appId))}/version`,
+          method: 'POST',
+        }),
+        invalidatesTags: ['AppVersion'],
       }),
       listAppVersionAbilities: build.query<
         ListAppVersionAbilitiesApiResponse,
@@ -401,6 +421,23 @@ export type DeleteAppApiArg = {
 export type UndeleteAppApiResponse =
   /** status 200 OK - Resource successfully undeleted */ GenericResultMessage;
 export type UndeleteAppApiArg = {
+  /** ID of the target application */
+  appId: number;
+};
+export type GetAppVersionsApiResponse = /** status 200 Successful operation */ AppVersionListRead;
+export type GetAppVersionsApiArg = {
+  /** ID of the target application */
+  appId: number;
+};
+export type GetAppVersionApiResponse = /** status 200 Successful operation */ AppVersionRead;
+export type GetAppVersionApiArg = {
+  /** ID of the target application */
+  appId: number;
+  /** Version # of the target application version */
+  version: number;
+};
+export type CreateAppVersionApiResponse = /** status 201 Successful operation */ AppVersionRead;
+export type CreateAppVersionApiArg = {
   /** ID of the target application */
   appId: number;
 };
@@ -785,6 +822,30 @@ export type GenericResultMessage = {
   /** Success message */
   message: string;
 };
+export type AppVersion = {
+  /** Timestamp when this was last modified */
+  updatedAt: string;
+  /** Timestamp when this was created */
+  createdAt: string;
+  /** Whether or not this AppVersion is deleted */
+  isDeleted?: boolean;
+};
+export type AppVersionRead = {
+  /** Document ID */
+  _id: string;
+  /** Timestamp when this was last modified */
+  updatedAt: string;
+  /** Timestamp when this was created */
+  createdAt: string;
+  /** Application ID */
+  appId: number;
+  /** App Version number */
+  version: number;
+  /** Whether or not this AppVersion is deleted */
+  isDeleted?: boolean;
+};
+export type AppVersionList = AppVersion[];
+export type AppVersionListRead = AppVersionRead[];
 export type AppVersionAbility = {
   /** Timestamp when this was last modified */
   updatedAt: string;
