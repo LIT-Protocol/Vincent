@@ -62,22 +62,25 @@ export async function setupAgentSmartAccount({
     userEoaAddress: userEoaAccount.address,
     sponsorGas: sponsorGasForAppInstallation,
   });
+  const installDataTable: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(installData)) installDataTable[key] = value;
+  console.table(installDataTable);
 
-  // Step 2: Determine if app is already permitted (either from API flag or by checking on-chain)
-  // If alreadyInstalled is true, the API already confirmed the app is permitted on-chain
-  const isAlreadyPermitted = installData.alreadyInstalled === true;
-
-  // Step 4: Deploy the smart account with permission plugin enabled
-  const { smartAccountAddress: deployedAddress, deploymentTxHash } =
-    await deploySmartAccountToChain({
-      userEoaPrivateKey,
-      accountIndexHash: deriveSmartAccountIndex(vincentAppId).toString(),
-      targetChain: vincentRegistryChain,
-      targetChainRpcUrl: vincentRegistryRpcUrl,
-      zerodevProjectId,
-      funderPrivateKey,
-      fundAmountBeforeDeployment,
-    });
+  // Step 2: Deploy the smart account and install permission validator (PKP)
+  const {
+    smartAccountAddress: deployedAddress,
+    deploymentTxHash,
+    validatorInstallTxHash,
+  } = await deploySmartAccountToChain({
+    userEoaPrivateKey,
+    agentSignerAddress: installData.agentSignerAddress as Address,
+    accountIndexHash: deriveSmartAccountIndex(vincentAppId).toString(),
+    targetChain: vincentRegistryChain,
+    targetChainRpcUrl: vincentRegistryRpcUrl,
+    zerodevProjectId,
+    funderPrivateKey,
+    fundAmountBeforeDeployment,
+  });
 
   // Verify the deployed address matches what the API returned
   if (deployedAddress.toLowerCase() !== installData.agentSmartAccountAddress.toLowerCase()) {
@@ -89,7 +92,7 @@ export async function setupAgentSmartAccount({
   // Step 3: Complete app installation by submitting the permitAppVersion transaction (if not already permitted)
   let permitTxHash: string | undefined;
 
-  if (isAlreadyPermitted) {
+  if (installData.alreadyInstalled) {
     console.log('=== App already permitted, skipping installation transaction ===');
   } else {
     // App is not yet permitted on-chain, submit the permit transaction
@@ -131,6 +134,7 @@ export async function setupAgentSmartAccount({
       : { 'Permit Status': 'Already permitted, skipped' }),
     'Smart Account Deployment Status': deploymentTxHash ? 'Newly Deployed' : 'Already Deployed',
     ...(deploymentTxHash ? { 'Smart Account Deployment Transaction Hash': deploymentTxHash } : {}),
+    ...(validatorInstallTxHash ? { 'Validator Installation Tx Hash': validatorInstallTxHash } : {}),
   });
 
   return {

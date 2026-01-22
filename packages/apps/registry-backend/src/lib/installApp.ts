@@ -346,8 +346,36 @@ export async function installApp(request: {
     appId,
   );
 
-  // 3. Check if user has a previously uninstalled app (needs reinstall instead of fresh install)
+  // 3. Check if user has already permitted this app
   const contractClient = getContractClient();
+  const permittedApps = await contractClient.getPermittedAppForAgents({
+    agentAddresses: [agentSmartAccountAddress],
+  });
+  const permittedApp = permittedApps[0]?.permittedApp;
+
+  if (permittedApp) {
+    // App is permitted, but check if the version matches the active version
+    if (permittedApp.version === app.activeVersion) {
+      console.log(
+        `[installApp] App ${appId} v${app.activeVersion} already permitted for agent ${agentSmartAccountAddress}`,
+      );
+      console.log('[installApp] Returning existing delegation info');
+
+      return {
+        agentSignerAddress: permittedApp.pkpSigner,
+        agentSmartAccountAddress,
+        alreadyInstalled: true,
+      };
+    } else {
+      console.log(
+        `[installApp] App ${appId} version update needed: v${permittedApp.version} -> v${app.activeVersion}`,
+      );
+      console.log('[installApp] Will mint new PKP for new version and permit new version');
+      // Fall through to fresh install flow below which will mint a new PKP
+    }
+  }
+
+  // 4. Check if user has a previously uninstalled app (needs reinstall instead of fresh install)
   const unpermittedApps = await contractClient.getUnpermittedAppForAgents({
     agentAddresses: [agentSmartAccountAddress],
   });

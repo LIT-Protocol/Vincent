@@ -46,25 +46,15 @@ export async function createPermissionApproval({
     kernelVersion: KERNEL_V3_3,
   });
 
-  // Create account with ONLY EOA validator (matching deploySmartAccountToChain)
-  // This ensures the account address matches the deployed account
   const sessionKeyAccount = await createKernelAccount(publicClient, {
     entryPoint: getEntryPoint('0.7'),
     plugins: {
       sudo: ecdsaValidator,
+      regular: permissionPlugin,
     },
     kernelVersion: KERNEL_V3_3,
     index: BigInt(accountIndexHash),
   });
 
-  // Serialize with the permission plugin as the 5th parameter
-  // This includes the PKP validator info in the serialization for signing,
-  // without affecting the account address
-  return await serializePermissionAccount(
-    sessionKeyAccount,
-    undefined, // privateKey
-    undefined, // enableSignature
-    undefined, // eip7702Auth
-    permissionPlugin, // PKP permission plugin for signing
-  );
+  return await serializePermissionAccount(sessionKeyAccount);
 }

@@ -27,7 +27,7 @@ import { tryDecodeKernelCalldataToLowLevelCalls } from '@lit-protocol/vincent-ab
 jest.setTimeout(300000); // 5 minutes
 
 // Test configuration from environment variables (required)
-const BASE_SEPOLIA_RPC_URL = getEnv('BASE_SEPOLIA_RPC_URL', 'https://sepolia.base.org');
+// const BASE_SEPOLIA_RPC_URL = getEnv('BASE_SEPOLIA_RPC_URL', 'https://sepolia.base.org');
 const BASE_MAINNET_RPC_URL = getEnv('BASE_MAINNET_RPC_URL', 'https://mainnet.base.org');
 const VINCENT_API_URL = getEnv('VINCENT_API_URL', 'https://api.heyvincent.ai');
 const ZERODEV_PROJECT_ID = getEnv('ZERODEV_PROJECT_ID');
@@ -37,7 +37,8 @@ const TEST_APP_DELEGATEE_PRIVATE_KEY = getEnv('TEST_APP_DELEGATEE_PRIVATE_KEY');
 const TEST_USER_EOA_PRIVATE_KEY = getEnv('TEST_USER_EOA_PRIVATE_KEY');
 
 // Vincent setup uses Base Sepolia (where the registry lives)
-const REGISTRY_CHAIN = baseSepolia;
+// const REGISTRY_CHAIN = baseSepolia;
+const REGISTRY_CHAIN = base;
 
 // Relay.link operations use Base Mainnet (for liquidity)
 const RELAY_CHAIN = base;
@@ -56,7 +57,7 @@ describe('Swap ETH to USDC and back on Base Mainnet', () => {
     // Setup Vincent development environment with relay.link ability
     // Uses Base Sepolia for registry, smart account will operate on Base Mainnet
     env = await setupVincentDevelopmentEnvironment({
-      vincentRegistryRpcUrl: BASE_SEPOLIA_RPC_URL,
+      vincentRegistryRpcUrl: BASE_MAINNET_RPC_URL,
       vincentRegistryChain: REGISTRY_CHAIN as any,
       vincentApiUrl: VINCENT_API_URL,
       zerodevProjectId: ZERODEV_PROJECT_ID,
@@ -75,6 +76,18 @@ describe('Swap ETH to USDC and back on Base Mainnet', () => {
         appUrl: 'https://example.com',
         deploymentStatus: 'dev',
       },
+      funding: {
+        funder: {
+          minAmountVincentRegistryChain: parseEther('0.0001'),
+        },
+        appManagerMinAmount: {
+          minAmountVincentRegistryChain: parseEther('0.00071'),
+        },
+        userEoaMinAmount: {
+          minAmountVincentRegistryChain: parseEther('0.0003'),
+        },
+      },
+      smartAccountFundAmountBeforeDeployment: parseEther('0.00005'),
     });
 
     // Create a wallet client for the funder on Base Mainnet

@@ -6,14 +6,17 @@ import { signerToEcdsaValidator } from '@zerodev/ecdsa-validator';
 import { getEntryPoint, KERNEL_V3_3 } from '@zerodev/sdk/constants';
 
 import { ensureWalletHasTokens } from '../wallets/ensureWalletHasTokens';
+import { installPermissionValidator } from './installPermissionValidator';
 
 export interface SmartAccountInfo {
   smartAccountAddress: Address;
   deploymentTxHash?: `0x${string}`;
+  validatorInstallTxHash?: `0x${string}`;
 }
 
 export interface deploySmartAccountToChainParams {
   userEoaPrivateKey: `0x${string}`;
+  agentSignerAddress?: Address;
   accountIndexHash: string;
   targetChain: Chain;
   targetChainRpcUrl: string;
@@ -24,6 +27,7 @@ export interface deploySmartAccountToChainParams {
 
 export async function deploySmartAccountToChain({
   userEoaPrivateKey,
+  agentSignerAddress,
   accountIndexHash,
   targetChain,
   targetChainRpcUrl,
@@ -163,8 +167,30 @@ export async function deploySmartAccountToChain({
     });
   }
 
+  // Step 4: Install permission validator (PKP) if agentSignerAddress is provided
+  let validatorInstallTxHash: `0x${string}` | undefined;
+  if (agentSignerAddress) {
+    const result = await installPermissionValidator({
+      userEoaPrivateKey,
+      agentSignerAddress,
+      accountIndexHash,
+      targetChain,
+      targetChainRpcUrl,
+      zerodevProjectId,
+    });
+    validatorInstallTxHash = result.txHash;
+    console.log(`Permission validator installed successfully`);
+    console.table({
+      'PKP Signer Address': agentSignerAddress,
+      'Validator Installation Tx Hash': validatorInstallTxHash,
+    });
+  } else {
+    console.log('Skipping permission validator installation (agentSignerAddress not provided)');
+  }
+
   return {
     smartAccountAddress: userEoaKernelAccount.address,
     deploymentTxHash,
+    validatorInstallTxHash,
   };
 }

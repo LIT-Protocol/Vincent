@@ -1,6 +1,3 @@
-/**
- * Install app response from Vincent API (gas-sponsored mode via Gelato)
- */
 export interface InstallAppResponseSponsored {
   agentSignerAddress: string;
   agentSmartAccountAddress: string;
@@ -10,9 +7,6 @@ export interface InstallAppResponseSponsored {
   alreadyInstalled?: boolean;
 }
 
-/**
- * Install app response from Vincent API (user-paid direct submission mode)
- */
 export interface InstallAppResponseDirect {
   agentSignerAddress: string;
   agentSmartAccountAddress: string;
@@ -23,9 +17,6 @@ export interface InstallAppResponseDirect {
   alreadyInstalled?: boolean;
 }
 
-/**
- * Install app response when app is already installed
- */
 export interface InstallAppResponseAlreadyInstalled {
   agentSignerAddress: string;
   agentSmartAccountAddress: string;
@@ -37,49 +28,12 @@ export type InstallAppResponse =
   | InstallAppResponseDirect
   | InstallAppResponseAlreadyInstalled;
 
-/**
- * Type guard to check if response is sponsored mode
- */
 export function isInstallAppResponseSponsored(
   response: InstallAppResponse,
 ): response is InstallAppResponseSponsored {
   return 'appInstallationDataToSign' in response;
 }
 
-/**
- * Install app via Vincent API to create a PKP for the user.
- *
- * This mints a new PKP (Programmable Key Pair) on Chronicle Yellowstone that will act as
- * a session key for the user's smart account. The PKP is burned (non-transferable) and bound
- * to the specific app version.
- *
- * The sponsorGas parameter controls the transaction submission method:
- * - false (default): Returns raw transaction data for direct submission from user EOA (user pays gas)
- * - true: Returns EIP-712 typed data for gas-sponsored relay via Gelato
- *
- * @param params - Installation parameters
- * @param params.sponsorGas - If false, returns raw transaction data for direct submission. If true, returns EIP-712 typed data for Gelato relay (default: false)
- * @returns Installation response with PKP signer address and smart account address
- *
- * @example
- * ```typescript
- * // Direct submission (user pays gas) - recommended for development
- * const installData = await installAppViaVincentApi({
- *   vincentApiUrl: 'https://api.heyvincent.ai',
- *   appId: 1,
- *   userEoaAddress: '0x...',
- *   sponsorGas: false,
- * });
- *
- * // Gas-sponsored via Gelato - for production
- * const installData = await installAppViaVincentApi({
- *   vincentApiUrl: 'https://api.heyvincent.ai',
- *   appId: 1,
- *   userEoaAddress: '0x...',
- *   sponsorGas: true,
- * });
- * ```
- */
 export async function installAppViaVincentApi({
   vincentApiUrl,
   appId,
