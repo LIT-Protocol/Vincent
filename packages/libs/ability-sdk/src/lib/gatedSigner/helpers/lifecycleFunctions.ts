@@ -1,10 +1,18 @@
 import type { Address, Hex } from 'viem';
 import type { z } from 'zod';
 
+import { createPublicClient, http } from 'viem';
+
 import type { AbilityConfigLifecycleFunction } from '../../abilityCore/abilityConfig/types';
 import type { LowLevelCall } from './lowLevelCall';
 import type { SimulateAssetChangesResponse } from './simulation';
 
+import {
+  createKernelAccountWithValidators,
+  bundleValidatorInstallationWithTransaction,
+  isValidatorEnabled,
+} from '../../abilityHelpers/kernelAccountUtils';
+import { getUserOpCalls } from './lowLevelCall';
 import { isTransactionAbilityParams, isUserOpAbilityParams } from './schemas';
 import { signTransaction } from './signTransaction';
 import { signUserOperation } from './signUserOperation';
@@ -176,40 +184,109 @@ export function buildLifecycleFunctions<
     try {
       const simulationChanges = await assertIsValidOperation(abilityParams);
 
-      // Sign user operation
-      const {
-        alchemyRpcUrl,
-        eip712Params,
-        entryPointAddress,
-        safe4337ModuleAddress,
-        transaction,
-        userOp,
-        validAfter,
-        validUntil,
-      } = abilityParams;
+      if (isTransactionAbilityParams(abilityParams)) {
+        const { transaction } = abilityParams;
+        const signature = await signTransaction({
+          transaction,
+          pkpPublicKey: delegatorPkpInfo.publicKey as Hex,
+        });
 
-      const signature = isTransactionAbilityParams(abilityParams)
-        ? await signTransaction({
-            transaction,
-            pkpPublicKey: delegatorPkpInfo.publicKey as Hex,
-          })
-        : await signUserOperation({
-            alchemyRpcUrl,
-            entryPointAddress,
-            userOp,
-            pkpPublicKey: delegatorPkpInfo.publicKey as Hex,
-            validAfter,
-            validUntil,
-            safe4337ModuleAddress,
-            eip712Params,
+        return succeed({
+          signature,
+          simulationChanges,
+        });
+      }
+
+      if (isUserOpAbilityParams(abilityParams)) {
+        const {
+          alchemyRpcUrl,
+          eip712Params,
+          entryPointAddress,
+          safe4337ModuleAddress,
+          userOp,
+          validAfter,
+          validUntil,
+          serializedPermissionAccount,
+        } = abilityParams;
+
+        const publicClient = createPublicClient({
+          transport: http(alchemyRpcUrl),
+        });
+
+        if (!serializedPermissionAccount) {
+          throw new Error('serializedPermissionAccount is required');
+        }
+
+        const { kernelAccount, permissionValidator } = await createKernelAccountWithValidators({
+          publicClient,
+          agentSignerAddress: delegatorPkpInfo.ethAddress as Address,
+          serializedPermissionAccount,
+        });
+
+        const validatorAlreadyEnabled = await isValidatorEnabled({
+          publicClient,
+          smartAccountAddress: kernelAccount.address,
+          permissionValidator,
+        });
+
+        let finalUserOp = userOp;
+        let modifiedUserOp: typeof userOp | undefined = undefined;
+
+        if (!validatorAlreadyEnabled) {
+          console.log(
+            '[@lit-protocol/vincent-gated-signer] PKP validator not enabled, bundling installation with transaction',
+          );
+
+          const userOpCalls = getUserOpCalls(userOp);
+          if (userOpCalls.length === 0) {
+            throw new Error('UserOp must contain at least one call');
+          }
+
+          const batchedCallData = await bundleValidatorInstallationWithTransaction({
+            kernelAccount,
+            permissionValidator,
+            abilityTransaction: {
+              to: userOpCalls[0].to,
+              data: userOpCalls[0].data,
+              value: userOpCalls[0].value,
+            },
           });
 
-      return succeed({
-        signature,
-        simulationChanges,
-      });
+          finalUserOp = {
+            ...userOp,
+            callData: batchedCallData,
+          };
+          modifiedUserOp = finalUserOp;
+        }
+
+        const signature = await signUserOperation({
+          alchemyRpcUrl,
+          entryPointAddress,
+          userOp: finalUserOp,
+          pkpPublicKey: delegatorPkpInfo.publicKey as Hex,
+          validAfter,
+          validUntil,
+          safe4337ModuleAddress,
+          eip712Params,
+        });
+
+        return succeed({
+          signature,
+          simulationChanges,
+          modifiedUserOp,
+        });
+      }
+
+      throw new Error('Unsupported ability params payload');
     } catch (error) {
-      console.error('[@lit-protocol/vincent-gated-signer] Error:', error);
+      console.error(
+        '[@lit-protocol/vincent-gated-signer] Error:',
+        error instanceof Error ? error.message : String(error),
+      );
+      console.error(
+        '[@lit-protocol/vincent-gated-signer] Stack:',
+        error instanceof Error ? error.stack : 'No stack trace',
+      );
       return fail({
         error: `[@lit-protocol/vincent-gated-signer] Execute failed: ${
           error instanceof Error ? error.message : 'Unknown error'

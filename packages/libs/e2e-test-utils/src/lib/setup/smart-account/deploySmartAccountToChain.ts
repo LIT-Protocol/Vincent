@@ -1,47 +1,37 @@
-import type { Address, Chain } from 'viem';
+import type { Chain } from 'viem';
 import { createPublicClient, createWalletClient, formatEther, http } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { createKernelAccount, createKernelAccountClient } from '@zerodev/sdk';
 import { signerToEcdsaValidator } from '@zerodev/ecdsa-validator';
 import { getEntryPoint, KERNEL_V3_3 } from '@zerodev/sdk/constants';
-import { toECDSASigner } from '@zerodev/permissions/signers';
-import { toSudoPolicy } from '@zerodev/permissions/policies';
-import {
-  toPermissionValidator,
-  serializePermissionAccount,
-  toInitConfig,
-} from '@zerodev/permissions';
-import { addressToEmptyAccount } from '@zerodev/sdk';
 
 import { ensureWalletHasTokens } from '../wallets/ensureWalletHasTokens';
 import type { SmartAccountInfo } from '../types';
 
 /**
- * Deploy a smart account to any chain with permission validator configured using initConfig.
+ * Deploy a smart account to any chain with ONLY the EOA validator.
  *
- * Implementation strategy (Kernel v3 initConfig session key pattern):
+ * Implementation strategy (Simplified deployment - works on ANY ERC-4337 chain):
  * 1. Creates ECDSA validator for user EOA (sudo signer)
- * 2. Creates permission validator for PKP signer with sudo policy
- * 3. Creates kernel account with:
- *    - EOA as sudo validator
- *    - PKP signer installed as session key via initConfig (not as regular validator)
- * 4. Funds the smart account if needed (optional)
- * 5. Checks if smart account is already deployed on-chain
- * 6. If not deployed, creates kernel account client and deploys via a dummy transaction
- * 7. Serializes the permission account for runtime UserOp signing
- * 8. Returns deployment info including smart account address, deployment tx hash, and SmartAccountInfo
+ * 2. Creates kernel account with ONLY the EOA as sudo validator
+ * 3. Funds the smart account if needed (optional)
+ * 4. Checks if smart account is already deployed on-chain
+ * 5. If not deployed, creates kernel account client and deploys via a dummy transaction
+ * 6. Returns deployment info including smart account address and deployment tx hash
  *
- * The initConfig approach (from zerodev-examples/session-keys/install-permissions-with-init-config.ts)
- * allows installing the PKP session key at deployment time. This creates a smart account where:
- * - The EOA is the sudo (owner) signer
- * - The PKP is a permitted session signer with sudo policy
+ * This simplified approach does NOT install the PKP permission validator at deployment time.
+ * Instead, the PKP validator will be installed dynamically by abilities during first execution.
+ *
+ * Benefits:
+ * - Works on ANY chain that supports ERC-4337 (no ZeroDev contract requirements)
+ * - Lower deployment gas costs
+ * - More portable and flexible
  *
  * IMPORTANT: This function's logic MUST match deriveAgentAccountAddress in registry-backend
  * to ensure the calculated counterfactual address matches the deployed smart account address.
  */
 export async function deploySmartAccountToChain({
   userEoaPrivateKey,
-  agentSignerAddress,
   accountIndexHash,
   targetChain,
   targetChainRpcUrl,
@@ -50,7 +40,6 @@ export async function deploySmartAccountToChain({
   fundAmountBeforeDeployment,
 }: {
   userEoaPrivateKey: `0x${string}`;
-  agentSignerAddress: Address;
   accountIndexHash: string;
   targetChain: Chain;
   targetChainRpcUrl: string;
@@ -83,19 +72,6 @@ export async function deploySmartAccountToChain({
     kernelVersion: KERNEL_V3_3,
   });
 
-  const agentECDSASigner = await toECDSASigner({
-    signer: addressToEmptyAccount(agentSignerAddress),
-  });
-
-  const agentSignerPermissionPlugin = await toPermissionValidator(publicClient, {
-    entryPoint: getEntryPoint('0.7'),
-    signer: agentECDSASigner,
-    policies: [toSudoPolicy({})],
-    kernelVersion: KERNEL_V3_3,
-  });
-
-  // Use initConfig to install the permission validator as a session key
-  // This matches the pattern in zerodev-examples/session-keys/install-permissions-with-init-config.ts
   const userEoaKernelAccount = await createKernelAccount(publicClient, {
     entryPoint: getEntryPoint('0.7'),
     plugins: {
@@ -103,7 +79,6 @@ export async function deploySmartAccountToChain({
     },
     kernelVersion: KERNEL_V3_3,
     index: BigInt(accountIndexHash),
-    initConfig: await toInitConfig(agentSignerPermissionPlugin),
   });
 
   const zerodevRpcUrl = `https://rpc.zerodev.app/api/v3/${zerodevProjectId}/chain/${targetChain.id}`;
@@ -160,10 +135,8 @@ export async function deploySmartAccountToChain({
   let deploymentTxHash: `0x${string}` | undefined;
 
   if (!isAlreadyDeployed) {
-    // The initConfig will automatically install the session key during deployment
     console.log('Deploying smart account...');
 
-    // Deploy with a no-op call to avoid potential fallback/receive reverts
     const userOpHash = await kernelClient.sendUserOperation({
       callData: await userEoaKernelAccount.encodeCalls([
         {
@@ -206,17 +179,8 @@ export async function deploySmartAccountToChain({
     });
   }
 
-  // Serialize the permission account, passing the permission validator as the 5th parameter
-  // This is required when using initConfig pattern (see zerodev-examples/session-keys/install-permissions-with-init-config.ts:65)
   return {
     smartAccountAddress: userEoaKernelAccount.address,
     deploymentTxHash,
-    serializedPermissionAccount: await serializePermissionAccount(
-      userEoaKernelAccount,
-      undefined,
-      undefined,
-      undefined,
-      agentSignerPermissionPlugin,
-    ),
   };
 }

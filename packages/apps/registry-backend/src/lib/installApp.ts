@@ -426,13 +426,12 @@ export async function installApp(request: {
 
   console.log(`[installApp] PKP minted: ${pkp.ethAddress}`);
 
-  // 7. Derive smart account address using PKP address
-  // This MUST happen after PKP minting because the smart account address derivation
-  // now includes the PKP address as part of the initConfig pattern
+  // 7. Derive smart account address
+  // The smart account address is derived from ONLY the user EOA and appId
+  // The PKP is NOT included in the derivation (it gets added via permission approval later)
   const agentSmartAccountAddress = await deriveAgentAccountAddress({
     publicClient: basePublicClient as any,
     userControllerAddress: userControllerAddress as `0x${string}`,
-    agentSignerAddress: pkp.ethAddress as `0x${string}`,
     appId,
   });
 

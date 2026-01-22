@@ -14,12 +14,11 @@ export interface AppMetadata {
 }
 
 /**
- * Smart account information with kernel account and approval signature
+ * Smart account information with kernel account
  */
 export interface SmartAccountInfo {
   smartAccountAddress: Address;
   deploymentTxHash?: `0x${string}`;
-  serializedPermissionAccount: string;
 }
 
 interface FundingConfig {

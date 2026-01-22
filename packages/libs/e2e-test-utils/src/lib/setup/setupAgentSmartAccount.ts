@@ -10,6 +10,7 @@ import {
 import { completeAppInstallationViaVincentApi } from './vincent-api/completeAppInstallationViaVincentApi';
 import { installAppUsingUserEoa } from './blockchain/installAppUsingUserEoa';
 import { deploySmartAccountToChain } from './smart-account/deploySmartAccountToChain';
+import { createPermissionApproval } from './smart-account/createPermissionApproval';
 
 export interface AgentSmartAccountInfo {
   agentSignerAddress: Address;
@@ -66,20 +67,25 @@ export async function setupAgentSmartAccount({
   // If alreadyInstalled is true, the API already confirmed the app is permitted on-chain
   const isAlreadyPermitted = installData.alreadyInstalled === true;
 
-  // Step 4: Deploy the smart account with permission plugin enabled
-  const {
-    smartAccountAddress: deployedAddress,
-    deploymentTxHash,
-    serializedPermissionAccount,
-  } = await deploySmartAccountToChain({
+  // Step 4: Deploy the smart account (with only EOA validator)
+  const { smartAccountAddress: deployedAddress, deploymentTxHash } =
+    await deploySmartAccountToChain({
+      userEoaPrivateKey,
+      accountIndexHash: deriveSmartAccountIndex(vincentAppId).toString(),
+      targetChain: vincentRegistryChain,
+      targetChainRpcUrl: vincentRegistryRpcUrl,
+      zerodevProjectId,
+      funderPrivateKey,
+      fundAmountBeforeDeployment,
+    });
+
+  // Step 5: Create permission approval for the PKP session key
+  const serializedPermissionAccount = await createPermissionApproval({
     userEoaPrivateKey,
-    agentSignerAddress: installData.agentSignerAddress as Address,
+    sessionKeyAddress: installData.agentSignerAddress as Address,
     accountIndexHash: deriveSmartAccountIndex(vincentAppId).toString(),
     targetChain: vincentRegistryChain,
     targetChainRpcUrl: vincentRegistryRpcUrl,
-    zerodevProjectId,
-    funderPrivateKey,
-    fundAmountBeforeDeployment,
   });
 
   // Verify the deployed address matches what the API returned
