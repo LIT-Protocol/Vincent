@@ -19,6 +19,10 @@ module.exports = [
           ignoredDependencies: [
             // debug is only directly referenced in the root of the repo, which confuses NX because it's technically not part of the build target.
             'debug',
+            // Used in packageImporter.ts and getAgentAccount.ts - nx doesn't trace these imports properly
+            '@zerodev/sdk',
+            'fs-extra',
+            'tar',
           ],
         },
       ],

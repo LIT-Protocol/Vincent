@@ -1,7 +1,9 @@
-import { Request, Response, NextFunction } from 'express';
+import type { NextFunction, Request, Response } from 'express';
+
 import { SiweMessage } from 'siwe';
-import { env } from '../../env';
+
 import { createDebugger } from '../../../debug';
+import { env } from '../../env';
 
 export const VINCENT_USER_KEY = 'vincentUser' as const;
 export type VincentUserKey = typeof VINCENT_USER_KEY;
