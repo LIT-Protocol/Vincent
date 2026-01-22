@@ -13,15 +13,6 @@ export interface AppMetadata {
   deploymentStatus?: 'dev' | 'test' | 'prod';
 }
 
-/**
- * Smart account information with kernel account and approval signature
- */
-export interface SmartAccountInfo {
-  smartAccountAddress: Address;
-  deploymentTxHash?: `0x${string}`;
-  serializedPermissionAccount: string;
-}
-
 interface FundingConfig {
   funder?: {
     minAmountVincentRegistryChain?: bigint;
@@ -89,7 +80,6 @@ export interface VincentDevEnvironment {
     address: Address;
     agentSignerAddress: Address;
     deploymentTxHash?: `0x${string}`;
-    serializedPermissionAccount: string;
   };
 }
 

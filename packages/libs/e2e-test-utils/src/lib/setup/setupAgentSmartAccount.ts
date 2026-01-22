@@ -15,7 +15,18 @@ export interface AgentSmartAccountInfo {
   agentSignerAddress: Address;
   agentSmartAccountAddress: Address;
   deploymentTxHash?: string;
-  serializedPermissionAccount: string;
+}
+
+export interface setupAgentSmartAccountParams {
+  vincentRegistryRpcUrl: string;
+  vincentApiUrl: string;
+  vincentRegistryChain: Chain;
+  zerodevProjectId: string;
+  userEoaPrivateKey: `0x${string}`;
+  vincentAppId: number;
+  funderPrivateKey: `0x${string}`;
+  fundAmountBeforeDeployment?: bigint;
+  sponsorGasForAppInstallation?: boolean;
 }
 
 export async function setupAgentSmartAccount({
@@ -28,17 +39,7 @@ export async function setupAgentSmartAccount({
   funderPrivateKey,
   fundAmountBeforeDeployment,
   sponsorGasForAppInstallation = false,
-}: {
-  vincentRegistryRpcUrl: string;
-  vincentApiUrl: string;
-  vincentRegistryChain: Chain;
-  zerodevProjectId: string;
-  userEoaPrivateKey: `0x${string}`;
-  vincentAppId: number;
-  funderPrivateKey: `0x${string}`;
-  fundAmountBeforeDeployment?: bigint;
-  sponsorGasForAppInstallation?: boolean;
-}): Promise<AgentSmartAccountInfo> {
+}: setupAgentSmartAccountParams): Promise<AgentSmartAccountInfo> {
   console.log('=== Setting up agent smart account ===');
 
   const vincentRegistryPublicClient = createPublicClient({
@@ -67,20 +68,16 @@ export async function setupAgentSmartAccount({
   const isAlreadyPermitted = installData.alreadyInstalled === true;
 
   // Step 4: Deploy the smart account with permission plugin enabled
-  const {
-    smartAccountAddress: deployedAddress,
-    deploymentTxHash,
-    serializedPermissionAccount,
-  } = await deploySmartAccountToChain({
-    userEoaPrivateKey,
-    agentSignerAddress: installData.agentSignerAddress as Address,
-    accountIndexHash: deriveSmartAccountIndex(vincentAppId).toString(),
-    targetChain: vincentRegistryChain,
-    targetChainRpcUrl: vincentRegistryRpcUrl,
-    zerodevProjectId,
-    funderPrivateKey,
-    fundAmountBeforeDeployment,
-  });
+  const { smartAccountAddress: deployedAddress, deploymentTxHash } =
+    await deploySmartAccountToChain({
+      userEoaPrivateKey,
+      accountIndexHash: deriveSmartAccountIndex(vincentAppId).toString(),
+      targetChain: vincentRegistryChain,
+      targetChainRpcUrl: vincentRegistryRpcUrl,
+      zerodevProjectId,
+      funderPrivateKey,
+      fundAmountBeforeDeployment,
+    });
 
   // Verify the deployed address matches what the API returned
   if (deployedAddress.toLowerCase() !== installData.agentSmartAccountAddress.toLowerCase()) {
@@ -140,6 +137,5 @@ export async function setupAgentSmartAccount({
     agentSmartAccountAddress: installData.agentSmartAccountAddress as Address,
     agentSignerAddress: installData.agentSignerAddress as Address,
     deploymentTxHash,
-    serializedPermissionAccount,
   };
 }

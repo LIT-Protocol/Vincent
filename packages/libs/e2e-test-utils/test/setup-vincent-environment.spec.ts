@@ -178,22 +178,6 @@ describe('Vincent Development Environment Setup', () => {
       expect(code.length).toBeGreaterThan(2);
     });
 
-    it('should have serialized permission account for session key', () => {
-      expect(env.agentSmartAccount.serializedPermissionAccount).toBeDefined();
-      // The serialized permission account is a base64-encoded JSON string, not a hex string
-      expect(typeof env.agentSmartAccount.serializedPermissionAccount).toBe('string');
-      expect(env.agentSmartAccount.serializedPermissionAccount.length).toBeGreaterThan(100);
-
-      // Verify it can be decoded and contains expected structure
-      const decoded = JSON.parse(
-        Buffer.from(env.agentSmartAccount.serializedPermissionAccount, 'base64').toString('utf-8'),
-      );
-      expect(decoded).toHaveProperty('permissionParams');
-      expect(decoded).toHaveProperty('accountParams');
-      expect(decoded.accountParams).toHaveProperty('accountAddress');
-      expect(decoded.isPreInstalled).toBe(true);
-    });
-
     it('should have deployment transaction hash (or be already deployed)', () => {
       // deploymentTxHash might be undefined if already deployed
       if (env.agentSmartAccount.deploymentTxHash) {

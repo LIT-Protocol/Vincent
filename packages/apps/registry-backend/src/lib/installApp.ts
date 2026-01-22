@@ -7,11 +7,11 @@ import { AUTH_METHOD_SCOPE, AUTH_METHOD_TYPE } from '@lit-protocol/constants';
 import { datil as datilContracts } from '@lit-protocol/contracts';
 import {
   COMBINED_ABI,
+  deriveAgentAddress,
   VINCENT_DIAMOND_CONTRACT_ADDRESS_PROD,
 } from '@lit-protocol/vincent-contracts-sdk';
 
 import PKPHelperV2Abi from '../../contracts/datil/PKPHelperV2.json';
-import { deriveAgentAccountAddress } from './deriveAgentAccountAddress';
 import { env } from '../env';
 import { getBaseChainId, getBasePublicClient } from './chainConfig';
 import { getContractClient } from './contractClient';
@@ -338,52 +338,59 @@ export async function installApp(request: {
     throw new Error(`App ${appId} has no active version`);
   }
 
+  // 2. Calculate smart account address from user controller and appId
   const basePublicClient = getBasePublicClient();
+  const agentSmartAccountAddress = await deriveAgentAddress(
+    basePublicClient,
+    userControllerAddress,
+    appId,
+  );
+
+  // 3. Check if user has a previously uninstalled app (needs reinstall instead of fresh install)
   const contractClient = getContractClient();
+  const unpermittedApps = await contractClient.getUnpermittedAppForAgents({
+    agentAddresses: [agentSmartAccountAddress],
+  });
+  const unpermittedApp = unpermittedApps[0]?.unpermittedApp;
 
-  // 1.5. Check if user already has a permitted app for this appId
-  // If so, return existing PKP and smart account instead of minting a new PKP
-  try {
-    const agentAddresses = await contractClient.getAllRegisteredAgentAddressesForUser({
-      userAddress: userControllerAddress,
-      offset: '0',
-    });
+  if (unpermittedApp) {
+    const txData = COMBINED_ABI.encodeFunctionData('rePermitApp', [
+      agentSmartAccountAddress,
+      appId,
+    ]);
 
-    if (agentAddresses.length > 0) {
-      const permittedApps = await contractClient.getPermittedAppForAgents({
-        agentAddresses,
-      });
-
-      const existingAgent = permittedApps.find(
-        (agent) => agent.permittedApp && agent.permittedApp.appId === appId,
-      );
-
-      if (existingAgent && existingAgent.permittedApp) {
-        console.log('[installApp] User already has this app permitted, returning existing data');
-        console.log({
-          agentAddress: existingAgent.agentAddress,
-          pkpSigner: existingAgent.permittedApp.pkpSigner,
-        });
-
-        // Return existing installation data in the same format
-        // Note: We cannot generate new transaction data because the PKP already exists
-        // and the app is already permitted on-chain
-        return {
-          agentSignerAddress: existingAgent.permittedApp.pkpSigner,
-          agentSmartAccountAddress: existingAgent.agentAddress,
-          alreadyInstalled: true,
-        };
-      }
+    // 3.5 If sponsorGas is false, return raw transaction for direct EOA submission
+    if (!sponsorGas) {
+      return {
+        agentSignerAddress: unpermittedApp.pkpSigner,
+        agentSmartAccountAddress,
+        rawTransaction: {
+          to: VINCENT_DIAMOND_CONTRACT_ADDRESS_PROD,
+          data: txData,
+        },
+      };
     }
-  } catch (error: unknown) {
-    console.log(
-      '[installApp] Error checking for existing installation, proceeding with new PKP:',
-      error,
+
+    const dataToSign = await relaySdk.getDataToSignERC2771(
+      {
+        chainId: getBaseChainId() as unknown as bigint,
+        target: VINCENT_DIAMOND_CONTRACT_ADDRESS_PROD,
+        data: txData,
+        user: userControllerAddress,
+        isConcurrent: true,
+      },
+      ERC2771Type.ConcurrentSponsoredCall,
+      basePublicClient as unknown as Parameters<typeof relaySdk.getDataToSignERC2771>[2],
     );
-    // Continue with new PKP minting if check fails
+
+    return {
+      agentSignerAddress: unpermittedApp.pkpSigner,
+      agentSmartAccountAddress,
+      appInstallationDataToSign: dataToSign,
+    };
   }
 
-  // 2. Fetch abilities for this app version directly from on-chain contract
+  // 4. Fresh install flow - Fetch abilities for this app version directly from on-chain contract
   const appVersionResult = await contractClient.getAppVersion({
     appId,
     version: app.activeVersion,
@@ -393,20 +400,20 @@ export async function installApp(request: {
     throw new Error(`App version ${app.activeVersion} not found on-chain for app ${appId}`);
   }
 
-  // 3. Extract IPFS CIDs from on-chain abilities
+  // 5. Extract IPFS CIDs from on-chain abilities
   const abilityIpfsCids = appVersionResult.appVersion.abilities.map(
     (ability) => ability.abilityIpfsCid,
   );
 
   console.log('[installApp] Found abilities:', { count: abilityIpfsCids.length, abilityIpfsCids });
 
-  // 4. Build auth methods from ability IPFS CIDs
+  // 6. Build auth methods from ability IPFS CIDs
   const permittedAuthMethodTypes = abilityIpfsCids.map(() => AUTH_METHOD_TYPE.LitAction);
   const permittedAuthMethodIds = abilityIpfsCids.map((cid) => base58ToHex(cid));
   const permittedAuthMethodPubkeys = abilityIpfsCids.map(() => '0x');
   const permittedAuthMethodScopes = abilityIpfsCids.map(() => [AUTH_METHOD_SCOPE.SignAnything]);
 
-  // 5. Mint the PKP (will be burned) - MUST happen before deriving smart account address
+  // 7. Mint the PKP (will be burned)
   const mintTx = await mintPkpWithAuthMethods({
     types: permittedAuthMethodTypes,
     ids: permittedAuthMethodIds,
@@ -415,7 +422,7 @@ export async function installApp(request: {
   });
   console.log(`[installApp] Mint tx submitted: ${mintTx.hash}`);
 
-  // 6. Wait for mint confirmation and extract PKP
+  // 8. Wait for mint confirmation and extract PKP
   const signer = getTransactionSigner();
   const provider = signer.provider;
   if (!provider || !mintTx.hash) {
@@ -425,16 +432,6 @@ export async function installApp(request: {
   const pkp = extractPkpFromMintReceipt(mintReceipt, signer);
 
   console.log(`[installApp] PKP minted: ${pkp.ethAddress}`);
-
-  // 7. Derive smart account address using PKP address
-  // This MUST happen after PKP minting because the smart account address derivation
-  // now includes the PKP address as part of the initConfig pattern
-  const agentSmartAccountAddress = await deriveAgentAccountAddress({
-    publicClient: basePublicClient as any,
-    userControllerAddress: userControllerAddress as `0x${string}`,
-    agentSignerAddress: pkp.ethAddress as `0x${string}`,
-    appId,
-  });
 
   console.log(
     `[installApp] Complete. App ${appId} v${app.activeVersion}, PKP: ${pkp.ethAddress}, SmartAccount: ${agentSmartAccountAddress}`,

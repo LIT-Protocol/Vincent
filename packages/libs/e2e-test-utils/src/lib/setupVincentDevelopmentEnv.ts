@@ -62,7 +62,6 @@ export async function setupVincentDevelopmentEnvironment(
       address: agentSmartAccountInfo.agentSmartAccountAddress,
       agentSignerAddress: agentSmartAccountInfo.agentSignerAddress,
       deploymentTxHash: agentSmartAccountInfo.deploymentTxHash as `0x${string}`,
-      serializedPermissionAccount: agentSmartAccountInfo.serializedPermissionAccount,
     },
   };
 }
