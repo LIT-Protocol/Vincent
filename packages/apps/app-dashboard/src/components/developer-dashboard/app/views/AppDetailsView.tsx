@@ -5,8 +5,7 @@ import { AppDetail } from '@/components/developer-dashboard/ui/AppDetail';
 import { Logo } from '@/components/shared/ui/Logo';
 import { AppPublishedButtons } from '../wrappers/ui/AppPublishedButtons';
 import { UndeleteAppButton } from '../wrappers/ui/UndeleteAppButton';
-import { Share, Copy, AlertCircle } from 'lucide-react';
-import { ConnectPageModal } from '../../ui/ConnectPageModal';
+import { Copy, AlertCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { theme, fonts } from '@/lib/themeClasses';
 import { motion } from 'framer-motion';
@@ -26,7 +25,6 @@ export function AppDetailsView({
   blockchainAppLoading,
   refetchBlockchainData,
 }: AppDetailsViewProps) {
-  const [isConnectModalOpen, setIsConnectModalOpen] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
   const [showContent, setShowContent] = useState(false);
   const isPublished = blockchainAppData !== null;
@@ -100,14 +98,6 @@ export function AppDetailsView({
                   <h1 className={`text-3xl font-bold ${theme.text}`} style={fonts.heading}>
                     {selectedApp.name}
                   </h1>
-                  <button
-                    onClick={() => setIsConnectModalOpen(true)}
-                    className={`p-2 rounded-lg transition-colors ${theme.itemHoverBg}`}
-                    style={{ color: theme.brandOrange }}
-                    title="Share connect page"
-                  >
-                    <Share className="h-5 w-5" />
-                  </button>
                 </div>
 
                 {/* App ID with Copy Button */}
@@ -287,13 +277,6 @@ export function AppDetailsView({
           </div>
         </div>
       </motion.div>
-
-      <ConnectPageModal
-        isOpen={isConnectModalOpen}
-        onClose={() => setIsConnectModalOpen(false)}
-        appId={selectedApp.appId}
-        redirectUris={[]}
-      />
     </>
   );
 }
