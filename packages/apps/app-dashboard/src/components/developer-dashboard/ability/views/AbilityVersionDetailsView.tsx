@@ -3,7 +3,7 @@ import { ExternalLink } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Ability, AbilityVersion } from '@/types/developer-dashboard/appTypes';
 import { Badge } from '@/components/shared/ui/badge';
-import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
+import { theme, fonts } from '@/lib/themeClasses';
 import { AbilityVersionActionButtons } from '../wrappers/ui/AbilityVersionActionButtons';
 import { AppDetail } from '@/components/developer-dashboard/ui/AppDetail';
 

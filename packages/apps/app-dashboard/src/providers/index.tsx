@@ -1,20 +1,13 @@
 import QueryClientProviderWrapper from '@/providers/QueryClientProviderWrapper';
-import StytchProviderWrapper from '@/providers/StytchProviderWrapper';
 import WagmiProviderWrapper from '@/providers/WagmiProviderWrapper';
+import AuthProviderWrapper from '@/providers/AuthProviderWrapper';
 import ReduxProvider from '@/providers/ReduxProvider';
 
-export const AppProviders = [
+export const DashboardProviders = [
   ReduxProvider,
-  StytchProviderWrapper,
-  WagmiProviderWrapper,
   QueryClientProviderWrapper,
-];
-
-export const UserProviders = [
-  ReduxProvider,
-  StytchProviderWrapper,
   WagmiProviderWrapper,
-  QueryClientProviderWrapper,
+  AuthProviderWrapper,
 ];
 
 export const PublicProviders = [ReduxProvider, QueryClientProviderWrapper];

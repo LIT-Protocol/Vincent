@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router';
-import { DashboardContent } from '@/components/developer-dashboard/DashboardContent';
+import { DashboardContent } from '@/components/developer-dashboard/ui/DashboardContent';
 import { MenuId } from '@/types/developer-dashboard/menuId';
 import { App, Policy, Ability } from '@/types/developer-dashboard/appTypes';
 

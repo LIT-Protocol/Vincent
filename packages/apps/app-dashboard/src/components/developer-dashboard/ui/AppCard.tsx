@@ -1,6 +1,6 @@
 import { Logo } from '@/components/shared/ui/Logo';
 import { App } from '@/types/developer-dashboard/appTypes';
-import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
+import { theme, fonts } from '@/lib/themeClasses';
 
 interface AppCardProps {
   app: App;

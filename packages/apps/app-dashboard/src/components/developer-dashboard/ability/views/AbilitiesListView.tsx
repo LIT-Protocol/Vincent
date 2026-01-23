@@ -7,7 +7,7 @@ import { formatDate } from '@/utils/developer-dashboard/formatDateAndTime';
 import { UndeleteAbilityButton } from '@/components/developer-dashboard/ability/wrappers';
 import { Ability } from '@/types/developer-dashboard/appTypes';
 import { AbilityCard } from '@/components/developer-dashboard/ui/AbilityCard';
-import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
+import { theme, fonts } from '@/lib/themeClasses';
 import { Logo } from '@/components/shared/ui/Logo';
 
 interface AbilitiesListViewProps {

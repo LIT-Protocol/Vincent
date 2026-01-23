@@ -1,94 +1,106 @@
-import { App, AppVersion, AppVersionAbility } from '@/types/developer-dashboard/appTypes';
-import { AppInfo } from '../ui/AppInfo';
+import { Helmet } from 'react-helmet-async';
+import { App, AppVersionAbility } from '@/types/developer-dashboard/appTypes';
+import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
 import { AppHeader } from '../ui/AppHeader';
+import { AppInfo } from '../ui/AppInfo';
+import { AbilityInfoView } from '../ui/AbilityInfoView';
+import { theme, fonts } from '@/lib/themeClasses';
 import { ExplorerNav } from '../ui/ExplorerNav';
-import { VersionInfo } from '../ui/VersionInfo';
-import { useState, useEffect, useCallback } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
-import { ArrowLeft } from 'lucide-react';
 
 interface AppInfoViewProps {
   app: App;
-  versions: AppVersion[];
   versionAbilities: AppVersionAbility[];
 }
 
-export function AppInfoView({ app, versions, versionAbilities }: AppInfoViewProps) {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const [showContent, setShowContent] = useState(false);
-  const [isTransitioning, setIsTransitioning] = useState(false);
+export function AppInfoView({ app, versionAbilities }: AppInfoViewProps) {
+  // Fetch full ability details for each app version ability
+  const abilityPackageNames = versionAbilities.map((ava) => ava.abilityPackageName);
+  const { data: abilities = [] } = vincentApiClient.useListAllAbilitiesQuery();
 
-  // Filter out deleted AppVersionAbilities
-  const activeVersionAbilities = versionAbilities.filter((ability) => !ability.isDeleted);
-
-  // Fade in effect when component mounts
-  useEffect(() => {
-    const fromTransition = location.state?.fromTransition;
-    if (fromTransition) {
-      setTimeout(() => setShowContent(true), 100);
-    } else {
-      setShowContent(true);
-    }
-  }, [location.state]);
-
-  // Transition helper for navigation
-  const handleNavigateWithTransition = useCallback(
-    (path: string) => {
-      setIsTransitioning(true);
-      setTimeout(() => {
-        navigate(path, { state: { fromTransition: true } });
-      }, 500);
-    },
-    [navigate],
+  // Filter abilities to only those in the app version
+  const appAbilities = abilities.filter((ability) =>
+    abilityPackageNames.includes(ability.packageName),
   );
 
   return (
-    <div className="w-full relative z-10">
-      {/* Navigation */}
-      <ExplorerNav onNavigate={handleNavigateWithTransition} />
+    <>
+      <Helmet>
+        <title>{app.name} | Vincent Explorer</title>
+        <meta name="description" content={app.description} />
+      </Helmet>
 
-      {/* Content with fade transition */}
-      <div
-        className={`transition-opacity duration-500 ${showContent && !isTransitioning ? 'opacity-100' : 'opacity-0'}`}
-      >
-        {/* Back Button and Hero Section */}
-        <div className="pt-20 sm:pt-24 pb-4 sm:pb-6">
-          {/* Back Button */}
-          <button
-            onClick={() => handleNavigateWithTransition('/explorer/apps')}
-            className={`inline-flex items-center gap-2 mb-4 sm:mb-6 px-3 py-2 rounded-lg ${theme.textMuted} hover:${theme.text} ${theme.itemBg} ${theme.itemHoverBg} transition-all duration-300`}
-            style={fonts.heading}
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span className="text-sm">Back to Apps</span>
-          </button>
+      <div className="w-full relative">
+        <ExplorerNav />
 
-          <AppHeader app={app} />
-        </div>
+        {/* Content wrapper with top padding for fixed navbar */}
+        <div className="pt-20 px-4 max-w-7xl mx-auto">
+          {/* App Header */}
+          <div className="mb-6">
+            <AppHeader app={app} />
+          </div>
 
-        {/* Main Content - Two Column Layout */}
-        <div className="pb-8 sm:pb-12">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
-            {/* Left Sidebar - App Info */}
-            <div className="lg:col-span-1">
-              <div className="lg:sticky lg:top-24">
-                <AppInfo app={app} />
+          {/* Two Column Layout */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Left Column - Abilities */}
+            <div className="lg:col-span-2">
+              <div className="group relative">
+                <div
+                  className={`relative bg-white dark:bg-gray-950 border ${theme.cardBorder} rounded-xl md:rounded-2xl p-4 sm:p-6 ${theme.cardHoverBorder} transition-all duration-500`}
+                >
+                  <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
+                    <h2
+                      className={`text-base sm:text-lg font-semibold ${theme.text}`}
+                      style={fonts.heading}
+                    >
+                      Capabilities
+                    </h2>
+                    <span
+                      className="text-xs px-2 py-1 rounded-full"
+                      style={{
+                        backgroundColor: `${theme.brandOrange}20`,
+                        color: theme.brandOrange,
+                      }}
+                    >
+                      {versionAbilities.length}
+                    </span>
+                  </div>
+
+                  {versionAbilities.length > 0 ? (
+                    <div className="space-y-3">
+                      {versionAbilities.map((appVersionAbility) => {
+                        const ability = appAbilities.find(
+                          (a) => a.packageName === appVersionAbility.abilityPackageName,
+                        );
+                        if (!ability) return null;
+                        return (
+                          <AbilityInfoView
+                            key={appVersionAbility.abilityPackageName}
+                            appVersionAbility={appVersionAbility}
+                            ability={ability}
+                          />
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div
+                      className={`p-8 rounded-xl ${theme.itemBg} border ${theme.cardBorder} text-center`}
+                    >
+                      <p className={`${theme.textMuted} text-sm`} style={fonts.body}>
+                        No capabilities available for this app
+                      </p>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
-            {/* Main Content - Version Information */}
-            <div className="lg:col-span-2">
-              <VersionInfo
-                versions={versions}
-                versionAbilities={activeVersionAbilities}
-                app={app}
-              />
+            {/* Right Column - App Info */}
+            <div className="lg:col-span-1">
+              <AppInfo app={app} />
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }

@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router';
-import useReadAuthInfo from '@/hooks/user-dashboard/useAuthInfo';
-import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
+import { useAuth } from '@/hooks/developer-dashboard/useAuth';
+import { getClient } from '@lit-protocol/vincent-contracts-sdk';
+import { readOnlySigner } from '@/utils/developer-dashboard/readOnlySigner';
 
 interface AddressCheckResult {
   isAuthorized: boolean | null; // null = still checking, false = unauthorized, true = authorized
@@ -9,21 +10,12 @@ interface AddressCheckResult {
 }
 
 /**
- * Checks if the user's PKP address is the same as the app's manager address.
- * Returns authorization status and handles redirect for unauthorized access.
- * Fetches the app data based on the current route.
+ * Checks if the user owns the app on-chain (source of truth).
+ * Returns authorization status based on blockchain ownership.
  */
 export function useAppAddressCheck(): AddressCheckResult {
   const { appId } = useParams<{ appId: string }>();
-  const { authInfo, isProcessing: authLoading } = useReadAuthInfo();
-  const address = authInfo?.userPKP?.ethAddress;
-
-  // Fetch app data
-  const {
-    data: app,
-    isLoading: appLoading,
-    isError: appError,
-  } = vincentApiClient.useGetAppQuery({ appId: Number(appId) }, { skip: !appId });
+  const { authAddress: address, isLoading: authLoading } = useAuth();
 
   const [result, setResult] = useState<AddressCheckResult>({
     isAuthorized: null,
@@ -40,15 +32,9 @@ export function useAppAddressCheck(): AddressCheckResult {
       return;
     }
 
-    // Wait for both auth info and app data to load
-    if (authLoading || appLoading) {
+    // Wait for auth to load
+    if (authLoading) {
       setResult({ isAuthorized: null, isChecking: true });
-      return;
-    }
-
-    // Check for errors or missing data
-    if (appError || !app) {
-      setResult({ isAuthorized: false, isChecking: false });
       return;
     }
 
@@ -58,18 +44,31 @@ export function useAppAddressCheck(): AddressCheckResult {
       return;
     }
 
-    // IMPORTANT: Ensure we're checking the right app
-    // If the app data doesn't match the current route ID, wait for correct data
-    if (app?.appId?.toString() !== appId) {
+    // Check on-chain ownership
+    const checkOnChainOwnership = async () => {
       setResult({ isAuthorized: null, isChecking: true });
-      return;
-    }
 
-    // Authorization check - both address and app data are available
-    const isAuthorized = app.managerAddress.toLowerCase() === address.toLowerCase();
+      try {
+        const client = getClient({ signer: readOnlySigner });
+        const onChainApp = await client.getAppById({ appId: Number(appId) });
 
-    setResult({ isAuthorized, isChecking: false });
-  }, [app, appLoading, appError, address, appId, authLoading]);
+        if (!onChainApp) {
+          // App doesn't exist on-chain
+          setResult({ isAuthorized: false, isChecking: false });
+          return;
+        }
+
+        // Check if user owns it on-chain
+        const isAuthorized = onChainApp.manager.toLowerCase() === address.toLowerCase();
+        setResult({ isAuthorized, isChecking: false });
+      } catch (error) {
+        console.error('Error checking on-chain app ownership:', error);
+        setResult({ isAuthorized: false, isChecking: false });
+      }
+    };
+
+    checkOnChainOwnership();
+  }, [appId, address, authLoading]);
 
   return result;
 }

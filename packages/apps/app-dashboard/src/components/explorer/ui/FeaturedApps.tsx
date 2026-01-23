@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { App } from '@/types/developer-dashboard/appTypes';
 import { Logo } from '@/components/shared/ui/Logo';
-import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
+import { theme, fonts } from '@/lib/themeClasses';
 import { env } from '@/config/env';
 
 const { VITE_FEATURED_APP_IDS } = env;

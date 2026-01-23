@@ -26,7 +26,6 @@ export const AppVersionSchema = new Schema(
   {
     appId: { type: Number, required: true },
     version: { type: Number, required: true, index: true },
-    changes: { type: String, required: true },
     isDeleted: { type: Boolean, default: false },
   } as const,
   { timestamps: true },

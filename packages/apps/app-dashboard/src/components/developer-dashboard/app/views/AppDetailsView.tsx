@@ -4,12 +4,9 @@ import { App as ContractApp } from '@lit-protocol/vincent-contracts-sdk';
 import { AppDetail } from '@/components/developer-dashboard/ui/AppDetail';
 import { Logo } from '@/components/shared/ui/Logo';
 import { AppPublishedButtons } from '../wrappers/ui/AppPublishedButtons';
-import { AppUnpublishedButtons } from '../wrappers/ui/AppUnpublishedButtons';
-import { UndeleteAppButton } from '../wrappers/ui/UndeleteAppButton';
-import { Share, Copy, AlertCircle } from 'lucide-react';
-import { ConnectPageModal } from '../../ui/ConnectPageModal';
+import { Copy, AlertCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
+import { theme, fonts } from '@/lib/themeClasses';
 import { motion } from 'framer-motion';
 
 interface AppDetailsViewProps {
@@ -27,11 +24,9 @@ export function AppDetailsView({
   blockchainAppLoading,
   refetchBlockchainData,
 }: AppDetailsViewProps) {
-  const [isConnectModalOpen, setIsConnectModalOpen] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
   const [showContent, setShowContent] = useState(false);
   const isPublished = blockchainAppData !== null;
-  const isAppDeletedRegistry = selectedApp.isDeleted;
 
   useEffect(() => {
     setShowContent(true);
@@ -47,9 +42,7 @@ export function AppDetailsView({
     }
   };
 
-  const delegateeAddresses = isPublished
-    ? blockchainAppData.delegateeAddresses
-    : selectedApp.delegateeAddresses;
+  const delegateeAddresses = blockchainAppData?.delegateeAddresses || [];
 
   return (
     <>
@@ -103,14 +96,6 @@ export function AppDetailsView({
                   <h1 className={`text-3xl font-bold ${theme.text}`} style={fonts.heading}>
                     {selectedApp.name}
                   </h1>
-                  <button
-                    onClick={() => setIsConnectModalOpen(true)}
-                    className={`p-2 rounded-lg transition-colors ${theme.itemHoverBg}`}
-                    style={{ color: theme.brandOrange }}
-                    title="Share connect page"
-                  >
-                    <Share className="h-5 w-5" />
-                  </button>
                 </div>
 
                 {/* App ID with Copy Button */}
@@ -180,17 +165,13 @@ export function AppDetailsView({
             </p>
           </div>
           <div className="p-6">
-            {isPublished ? (
+            {blockchainAppData && (
               <AppPublishedButtons
                 appData={selectedApp}
                 appBlockchainData={blockchainAppData}
                 onOpenMutation={onOpenMutation}
                 refetchBlockchainData={refetchBlockchainData}
               />
-            ) : isAppDeletedRegistry ? (
-              <UndeleteAppButton app={selectedApp} />
-            ) : (
-              <AppUnpublishedButtons onOpenMutation={onOpenMutation} />
             )}
           </div>
         </div>
@@ -217,7 +198,7 @@ export function AppDetailsView({
 
               <AppDetail label="Active Version">
                 <span className={`${theme.text} text-sm`} style={fonts.body}>
-                  {selectedApp.activeVersion || 'Unpublished'}
+                  {selectedApp.activeVersion || 'Unregistered'}
                 </span>
               </AppDetail>
 
@@ -229,34 +210,17 @@ export function AppDetailsView({
                 </AppDetail>
               )}
 
-              {selectedApp.appUserUrl && (
-                <AppDetail label="App User URL">
+              {selectedApp.appUrl && (
+                <AppDetail label="App URL">
                   <a
-                    href={selectedApp.appUserUrl}
+                    href={selectedApp.appUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-sm hover:underline"
                     style={{ color: theme.brandOrange, ...fonts.body }}
                   >
-                    {selectedApp.appUserUrl}
+                    {selectedApp.appUrl}
                   </a>
-                </AppDetail>
-              )}
-
-              {selectedApp.redirectUris && selectedApp.redirectUris.length > 0 && (
-                <AppDetail label="Redirect URIs">
-                  <div className="space-y-1">
-                    {selectedApp.redirectUris.map((uri) => (
-                      <div key={uri}>
-                        <span
-                          className={`inline-block ${theme.itemBg} px-2 py-1 rounded text-sm ${theme.textMuted}`}
-                          style={fonts.body}
-                        >
-                          {uri}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
                 </AppDetail>
               )}
 
@@ -309,13 +273,6 @@ export function AppDetailsView({
           </div>
         </div>
       </motion.div>
-
-      <ConnectPageModal
-        isOpen={isConnectModalOpen}
-        onClose={() => setIsConnectModalOpen(false)}
-        appId={selectedApp.appId}
-        redirectUris={selectedApp.redirectUris || []}
-      />
     </>
   );
 }

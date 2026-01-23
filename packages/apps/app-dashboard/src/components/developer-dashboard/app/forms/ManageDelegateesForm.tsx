@@ -18,10 +18,9 @@ import { Plus, Trash2, Dices, Check } from 'lucide-react';
 import { TextField } from '../../form-fields';
 import { CopyButton } from '@/components/shared/ui/CopyButton';
 import { getClient } from '@lit-protocol/vincent-contracts-sdk';
-import { initPkpSigner } from '@/utils/developer-dashboard/initPkpSigner';
-import { addPayee } from '@/utils/user-dashboard/addPayee';
-import useReadAuthInfo from '@/hooks/user-dashboard/useAuthInfo';
-import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
+import { useWagmiSigner } from '@/hooks/developer-dashboard/useWagmiSigner';
+import { useEnsureChain } from '@/hooks/developer-dashboard/useEnsureChain';
+import { theme, fonts } from '@/lib/themeClasses';
 
 const AddDelegateeSchema = z.object({
   address: z.string().refine((val) => ethers.utils.isAddress(val), {
@@ -33,15 +32,18 @@ type AddDelegateeFormData = z.infer<typeof AddDelegateeSchema>;
 
 interface ManageDelegateesFormProps {
   existingDelegatees: string[];
-  refetchBlockchainData: () => void;
+  onDelegateeAdded?: (address: string) => void;
+  onDelegateeRemoved?: (address: string) => void;
 }
 
 export function ManageDelegateesForm({
   existingDelegatees,
-  refetchBlockchainData,
+  onDelegateeAdded,
+  onDelegateeRemoved,
 }: ManageDelegateesFormProps) {
   const { appId } = useParams<{ appId: string }>();
-  const { authInfo, sessionSigs } = useReadAuthInfo();
+  const { getSigner } = useWagmiSigner();
+  const { ensureChain, infoMessage } = useEnsureChain();
   const [error, setError] = useState<string>('');
   const [removingDelegatee, setRemovingDelegatee] = useState<string | null>(null);
   const [generatedWallet, setGeneratedWallet] = useState<{
@@ -50,6 +52,14 @@ export function ManageDelegateesForm({
   } | null>(null);
   const [addingGeneratedWallet, setAddingGeneratedWallet] = useState(false);
   const [isGenerateDialogOpen, setIsGenerateDialogOpen] = useState(false);
+
+  // Local state for optimistic updates (RPC caching can cause stale data)
+  const [localDelegatees, setLocalDelegatees] = useState<string[]>(existingDelegatees);
+
+  // Sync local state when prop changes (e.g., after page refresh)
+  useEffect(() => {
+    setLocalDelegatees(existingDelegatees);
+  }, [existingDelegatees]);
 
   const form = useForm<AddDelegateeFormData>({
     resolver: zodResolver(AddDelegateeSchema),
@@ -76,37 +86,43 @@ export function ManageDelegateesForm({
   }, [error]);
 
   const handleAddDelegatee = async (data: AddDelegateeFormData) => {
-    try {
-      await addDelegateeAddress(data.address);
-      // Success - form will remain for adding more delegatees
-    } catch (error) {
-      console.error('Failed to add delegatee:', error);
-      const message = error instanceof Error ? error.message : String(error);
-      if (message.includes('user rejected')) {
-        setError('Transaction rejected.');
-      } else if (message.includes('DelegateeAlreadyRegistered')) {
-        // Error already set in addDelegateeAddress
-      } else {
-        setError(`Failed to add delegatee: ${message}`);
-      }
+    const success = await addDelegateeAddress(data.address);
+    if (success) {
+      form.reset(); // Clear the form on success
     }
   };
 
   const handleRemoveDelegatee = async (addressToRemove: string) => {
     if (!appId) return;
 
+    // Ensure user is on Base Sepolia
+    try {
+      const canProceed = await ensureChain('Remove Delegatee');
+      if (!canProceed) return; // Chain was switched, user needs to click again
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Failed to switch network');
+      return;
+    }
+
     setRemovingDelegatee(addressToRemove);
 
     try {
-      const pkpSigner = await initPkpSigner({ authInfo, sessionSigs });
-      const client = getClient({ signer: pkpSigner });
+      const signer = await getSigner();
+      const client = getClient({ signer });
 
-      await client.removeDelegatee({
+      const result = await client.removeDelegatee({
         appId: Number(appId),
         delegateeAddress: addressToRemove,
       });
 
-      refetchBlockchainData();
+      // Wait for transaction to be confirmed on-chain
+      if (result.txHash && signer.provider) {
+        await signer.provider.waitForTransaction(result.txHash);
+      }
+
+      // Update local state immediately (RPC caching makes refetch unreliable)
+      setLocalDelegatees((prev) => prev.filter((addr) => addr !== addressToRemove));
+      onDelegateeRemoved?.(addressToRemove);
     } catch (error) {
       console.error('Failed to remove delegatee:', error);
       const message = error instanceof Error ? error.message : String(error);
@@ -115,9 +131,9 @@ export function ManageDelegateesForm({
       } else {
         setError(`Failed to remove delegatee: ${message}`);
       }
-    } finally {
-      setRemovingDelegatee(null);
     }
+
+    setRemovingDelegatee(null);
   };
 
   const handleOpenGenerateDialog = () => {
@@ -129,27 +145,54 @@ export function ManageDelegateesForm({
     setIsGenerateDialogOpen(true);
   };
 
-  const addDelegateeAddress = async (address: string) => {
-    if (!appId) return;
+  const addDelegateeAddress = async (address: string): Promise<boolean> => {
+    if (!appId) return false;
 
     // Check if delegatee is already in the current app's delegatee list
-    if (existingDelegatees.includes(address)) {
+    if (localDelegatees.includes(address)) {
       setError(`Delegatee ${address} is already registered to app ${appId}`);
-      throw new Error('DelegateeAlreadyRegistered');
+      return false;
     }
 
-    // Add the specific delegatee address as a payee
-    await addPayee(address);
+    // Ensure user is on Base Sepolia
+    try {
+      const canProceed = await ensureChain('Add Delegatee');
+      if (!canProceed) return false; // Chain was switched, user needs to click again
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Failed to switch network');
+      return false;
+    }
 
-    const pkpSigner = await initPkpSigner({ authInfo, sessionSigs });
-    const client = getClient({ signer: pkpSigner });
+    // TODO: Add delegatees batch endpoint in the contracts, make sure to addPayees as well
 
-    await client.addDelegatee({
-      appId: Number(appId),
-      delegateeAddress: address,
-    });
+    try {
+      const signer = await getSigner();
+      const client = getClient({ signer });
 
-    refetchBlockchainData();
+      const result = await client.addDelegatee({
+        appId: Number(appId),
+        delegateeAddress: address,
+      });
+
+      // Wait for transaction to be confirmed on-chain
+      if (result.txHash && signer.provider) {
+        await signer.provider.waitForTransaction(result.txHash);
+      }
+
+      // Update local state immediately (RPC caching makes refetch unreliable)
+      setLocalDelegatees((prev) => [...prev, address]);
+      onDelegateeAdded?.(address);
+      return true;
+    } catch (error) {
+      console.error('Failed to add delegatee:', error);
+      const message = error instanceof Error ? error.message : String(error);
+      if (message.includes('user rejected')) {
+        setError('Transaction rejected.');
+      } else {
+        setError(`Failed to add delegatee: ${message}`);
+      }
+      return false;
+    }
   };
 
   const handleConfirmAndAddWallet = async () => {
@@ -157,25 +200,16 @@ export function ManageDelegateesForm({
 
     setAddingGeneratedWallet(true);
 
-    try {
-      await addDelegateeAddress(generatedWallet.address);
+    const success = await addDelegateeAddress(generatedWallet.address);
 
+    setAddingGeneratedWallet(false);
+
+    if (success) {
       // Success - close dialog and clear wallet
       setGeneratedWallet(null);
       setIsGenerateDialogOpen(false);
-    } catch (error) {
-      console.error('Failed to add generated delegatee:', error);
-      const message = error instanceof Error ? error.message : String(error);
-      if (message.includes('user rejected')) {
-        setError('Transaction rejected.');
-      } else if (message.includes('DelegateeAlreadyRegistered')) {
-        // Error already set in addDelegateeAddress
-      } else {
-        setError(`Failed to add delegatee: ${message}`);
-      }
-    } finally {
-      setAddingGeneratedWallet(false);
     }
+    // If !success, error is already set by addDelegateeAddress, dialog stays open
   };
 
   const handleCancelGeneration = () => {
@@ -185,6 +219,9 @@ export function ManageDelegateesForm({
 
   return (
     <div className="space-y-6">
+      {/* Info Message */}
+      {infoMessage && <StatusMessage message={infoMessage} type="info" />}
+
       {/* Error Message */}
       {error && <StatusMessage message={error} type="error" />}
 
@@ -267,14 +304,14 @@ export function ManageDelegateesForm({
             Current Delegatees
           </h3>
           <p className={`text-sm ${theme.textMuted}`} style={fonts.body}>
-            {existingDelegatees.length === 0
+            {localDelegatees.length === 0
               ? 'No delegatees configured yet.'
-              : `${existingDelegatees.length} delegatee${existingDelegatees.length === 1 ? '' : 's'} configured`}
+              : `${localDelegatees.length} delegatee${localDelegatees.length === 1 ? '' : 's'} configured`}
           </p>
         </div>
         <div className="p-6">
           <div className="space-y-3">
-            {existingDelegatees.map((delegatee, index) => (
+            {localDelegatees.map((delegatee, index) => (
               <div
                 key={delegatee}
                 className={`flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 ${theme.itemBg} border ${theme.mainCardBorder} rounded-lg`}
@@ -316,7 +353,7 @@ export function ManageDelegateesForm({
                 </Button>
               </div>
             ))}
-            {existingDelegatees.length === 0 && (
+            {localDelegatees.length === 0 && (
               <div className={`text-center py-8 ${theme.textMuted}`}>
                 <p style={fonts.body}>No delegatees configured yet.</p>
                 <p className={`text-sm mt-2`} style={fonts.body}>

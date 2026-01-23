@@ -1,12 +1,10 @@
 import { App } from '@/types/developer-dashboard/appTypes';
-import { ExternalLink, ChevronDown, ChevronUp, Calendar, Clock } from 'lucide-react';
+import { ChevronDown, ChevronUp, Calendar, Clock } from 'lucide-react';
 import { Logo } from '@/components/shared/ui/Logo';
-import { useNavigate } from 'react-router';
-import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
+import { theme, fonts } from '@/lib/themeClasses';
 import { useState } from 'react';
 
 export function AppHeader({ app }: { app: App }) {
-  const navigate = useNavigate();
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
 
   const getDisplayStatus = (status: string | undefined): string => {
@@ -95,29 +93,6 @@ export function AppHeader({ app }: { app: App }) {
               </div>
             </div>
           </div>
-
-          {/* Action Button */}
-          {app.redirectUris && app.redirectUris.length > 0 && (
-            <button
-              onClick={() => {
-                const firstRedirectUri = app.redirectUris?.[0];
-                if (firstRedirectUri) {
-                  navigate(
-                    `/user/appId/${app.appId}/connect?redirectUri=${encodeURIComponent(firstRedirectUri)}`,
-                  );
-                }
-              }}
-              className="group px-5 py-2.5 sm:px-6 sm:py-3 rounded-full text-white text-sm sm:text-base font-medium flex items-center justify-center gap-2 hover:scale-105 transition-all duration-300 flex-shrink-0 self-start w-full sm:w-auto"
-              style={{ ...fonts.heading, backgroundColor: theme.brandOrange }}
-              onMouseEnter={(e) =>
-                (e.currentTarget.style.backgroundColor = theme.brandOrangeDarker)
-              }
-              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = theme.brandOrange)}
-            >
-              Permit App
-              <ExternalLink className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1" />
-            </button>
-          )}
         </div>
       </div>
     </div>

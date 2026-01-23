@@ -1,9 +1,9 @@
 import React from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import { Home, Package, Wrench, Shield, LogOut, HelpCircle } from 'lucide-react';
-import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
+import { theme, fonts } from '@/lib/themeClasses';
 import { useTheme } from '@/hooks/useTheme';
-import { useClearAuthInfo } from '@/hooks/user-dashboard/useAuthInfo';
+import { useAuth } from '@/hooks/developer-dashboard/useAuth';
 import { AccountTooltip } from '@/components/shared/AccountTooltip';
 import {
   Sidebar as SidebarComponent,
@@ -27,15 +27,15 @@ interface MenuItem {
 
 export function Sidebar() {
   const location = useLocation();
-  const { clearAuthInfo } = useClearAuthInfo();
+  const { signOut } = useAuth();
   const isDark = useTheme();
 
   const isActiveRoute = (route: string) => {
     return location.pathname.startsWith(route);
   };
 
-  const handleSignOut = async () => {
-    await clearAuthInfo();
+  const handleSignOut = () => {
+    signOut();
   };
 
   const menuItems: MenuItem[] = [

@@ -1,16 +1,13 @@
 import { ReactNode } from 'react';
 import { WagmiProvider } from 'wagmi';
 import { WagmiAdapter } from '@reown/appkit-adapter-wagmi';
-import { mainnet, polygon, arbitrum, optimism, base, AppKitNetwork } from '@reown/appkit/networks';
+import { base, baseSepolia, AppKitNetwork } from '@reown/appkit/networks';
 import { env } from '@/config/env';
 
 const { VITE_WALLETCONNECT_PROJECT_ID } = env;
 
 // All networks including Chronicle Yellowstone
-const allNetworks = [mainnet, polygon, arbitrum, optimism, base] as [
-  AppKitNetwork,
-  ...AppKitNetwork[],
-];
+const allNetworks = [base, baseSepolia] as [AppKitNetwork, ...AppKitNetwork[]];
 
 // Single unified wagmi configuration - no global AppKit instance
 const wagmiAdapter = new WagmiAdapter({
