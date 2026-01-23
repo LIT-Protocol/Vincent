@@ -9,6 +9,7 @@ const REGISTRY_CONFIG = {
     domain: 'staging.registry.heyvincent.ai',
   },
   production: { url: 'https://registry.heyvincent.ai', domain: 'registry.heyvincent.ai' },
+  alpha: { url: 'https://api.heyvincent.ai', domain: 'api.heyvincent.ai' },
 } as const;
 
 const config = REGISTRY_CONFIG[VITE_ENV as keyof typeof REGISTRY_CONFIG] || REGISTRY_CONFIG.staging;
