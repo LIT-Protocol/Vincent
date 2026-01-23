@@ -133,35 +133,50 @@ export async function relayTransactionToUserOp(
 }
 
 /**
- * Submit a signed UserOperation to the ZeroDev bundler.
+ * Submit a signed UserOperation using the deserialized permission account.
  *
- * This follows the Kernel v3 signature format:
- * - The signature is prefixed with 0xff to indicate "raw signature mode"
- * - This tells the Kernel account to use the signature as-is without additional processing
- *
- * IMPORTANT: This function submits an already-signed UserOp directly to the bundler
- * via eth_sendUserOperation RPC call. We do NOT need to deserialize the permission
- * account because the UserOp is already fully signed by the PKP.
+ * The serialized permission account contains the EOA's signature approving the PKP validator.
+ * When we deserialize it and send the first UserOp, ZeroDev will automatically enable
+ * the PKP validator on-chain using the EOA's approval signature.
  *
  * Returns both the UserOp hash and the transaction hash once mined.
  */
 export async function submitSignedUserOp(
   params: SubmitSignedUserOpParams,
 ): Promise<{ userOpHash: Hex; transactionHash: Hex }> {
-  const { userOpSignature, userOp, chain, zerodevRpcUrl } = params;
+  const {
+    permittedAddress,
+    serializedPermissionAccount,
+    userOpSignature,
+    userOp,
+    chain,
+    zerodevRpcUrl,
+  } = params;
 
-  // Create ZeroDev transport for bundler
   const zerodevTransport = http(zerodevRpcUrl);
 
-  // Create public client for the bundler RPC
   const publicClient = createPublicClient({
     chain,
     transport: zerodevTransport,
   });
 
-  // Add signature to UserOp with 0xff prefix for permission validator
-  // Permission validators require the 0xff prefix to identify the signature type
-  // See: @zerodev/permissions/toPermissionValidator.ts signUserOperation method
+  const permittedSigner = await createPermittedSigner(permittedAddress);
+
+  const permissionAccount = await deserializePermissionAccount(
+    publicClient,
+    entryPoint,
+    kernelVersion,
+    serializedPermissionAccount,
+    permittedSigner,
+  );
+
+  const kernelClient = createKernelAccountClient({
+    chain,
+    account: permissionAccount,
+    bundlerTransport: zerodevTransport,
+    client: publicClient,
+  });
+
   const signedUserOp = {
     ...userOp,
     signature: concat(['0xff', userOpSignature]),
@@ -169,49 +184,23 @@ export async function submitSignedUserOp(
 
   console.log('[submitSignedUserOp] Broadcasting UserOp to ZeroDev bundler...');
 
-  // Submit UserOp directly via eth_sendUserOperation RPC
-  // Format: eth_sendUserOperation(userOp, entryPoint address)
-  const userOpHash = await publicClient.request({
+  const userOpHash = (await publicClient.request({
     method: 'eth_sendUserOperation',
     params: [signedUserOp, entryPoint.address],
-  } as any);
+  } as any)) as Hex;
 
   console.log(`[submitSignedUserOp] UserOp hash: ${userOpHash}`);
-
   console.log('[submitSignedUserOp] Waiting for UserOp to be included in a block...');
 
-  // Poll for UserOp receipt
-  let receipt: any;
-  let attempts = 0;
-  const maxAttempts = 60; // 60 attempts * 2s = 2 minutes max wait
-
-  while (!receipt && attempts < maxAttempts) {
-    try {
-      receipt = await publicClient.request({
-        method: 'eth_getUserOperationReceipt',
-        params: [userOpHash],
-      } as any);
-
-      if (!receipt) {
-        await new Promise((resolve) => setTimeout(resolve, 2000)); // Wait 2s between polls
-        attempts++;
-      }
-    } catch (error) {
-      // Receipt not found yet, continue polling
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      attempts++;
-    }
-  }
-
-  if (!receipt) {
-    throw new Error(`UserOp receipt not found after ${maxAttempts} attempts`);
-  }
+  const receipt = await kernelClient.waitForUserOperationReceipt({
+    hash: userOpHash,
+  });
 
   console.log('[submitSignedUserOp] ✅ UserOp executed successfully!');
   console.log(`[submitSignedUserOp] Transaction hash: ${receipt.receipt.transactionHash}`);
 
   return {
-    userOpHash: userOpHash as Hex,
+    userOpHash,
     transactionHash: receipt.receipt.transactionHash,
   };
 }

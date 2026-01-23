@@ -8,19 +8,23 @@ import { toECDSASigner } from '@zerodev/permissions/signers';
 import { toSudoPolicy } from '@zerodev/permissions/policies';
 import { getEntryPoint, KERNEL_V3_3 } from '@zerodev/sdk/constants';
 
+export type CreatePermissionApprovalParams = {
+  userEoaPrivateKey: `0x${string}`;
+  sessionKeyAddress: Address;
+  accountIndexHash: string;
+  targetChain: Chain;
+  targetChainRpcUrl: string;
+  smartAccountAddress: Address;
+};
+
 export async function createPermissionApproval({
   userEoaPrivateKey,
   sessionKeyAddress,
   accountIndexHash,
   targetChain,
   targetChainRpcUrl,
-}: {
-  userEoaPrivateKey: `0x${string}`;
-  sessionKeyAddress: Address;
-  accountIndexHash: string;
-  targetChain: Chain;
-  targetChainRpcUrl: string;
-}): Promise<string> {
+  smartAccountAddress,
+}: CreatePermissionApprovalParams): Promise<string> {
   const publicClient = createPublicClient({
     chain: targetChain,
     transport: http(targetChainRpcUrl),
@@ -54,6 +58,7 @@ export async function createPermissionApproval({
     },
     kernelVersion: KERNEL_V3_3,
     index: BigInt(accountIndexHash),
+    address: smartAccountAddress,
   });
 
   return await serializePermissionAccount(sessionKeyAccount);

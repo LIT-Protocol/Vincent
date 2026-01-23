@@ -186,23 +186,23 @@ export async function setupWallets({
   await ensureWalletHasUnexpiredCapacityCredit({ privateKey: appDelegatee });
 
   console.table({
-    'Funder on Vincent Registry Chain': {
+    [`Funder on ${vincentRegistryChain.name} (${vincentRegistryChain.id})`]: {
       Balance: formatEther(funderBalanceOnVincentRegistryChain.currentBalance),
       FundingTxHash: funderBalanceOnVincentRegistryChain.fundingTxHash,
     },
-    'Funder on Chronicle Yellowstone': {
+    [`Funder on ${chronicleYellowstone.name} (${chronicleYellowstone.id})`]: {
       Balance: formatEther(funderBalanceOnChronicleYellowstone.currentBalance),
       FundingTxHash: funderBalanceOnChronicleYellowstone.fundingTxHash,
     },
-    'App Manager': {
+    [`App Manager on ${vincentRegistryChain.name} (${vincentRegistryChain.id})`]: {
       Balance: formatEther(appManagerBalance.currentBalance),
       FundingTxHash: appManagerBalance.fundingTxHash,
     },
-    'User EOA': {
+    [`User EOA on ${vincentRegistryChain.name} (${vincentRegistryChain.id})`]: {
       Balance: formatEther(userEoaBalance.currentBalance),
       FundingTxHash: userEoaBalance.fundingTxHash,
     },
-    'App Delegatee': {
+    [`App Delegatee on ${chronicleYellowstone.name} (${chronicleYellowstone.id})`]: {
       Balance: formatEther(appDelegateeBalance.currentBalance),
       FundingTxHash: appDelegateeBalance.fundingTxHash,
     },
