@@ -45,13 +45,13 @@ export const requireAppVersion = (versionParam = 'version') => {
     try {
       const appVersion = await AppVersion.findOne({
         appId: reqWithApp.vincentApp.appId,
-        version,
+        version: parseAppVersion,
       });
 
       if (!appVersion) {
         debug('App version not found', {
           appId: reqWithApp.vincentApp.appId,
-          appVersion: version,
+          appVersion: parseAppVersion,
         });
         res.status(404).end();
         return;

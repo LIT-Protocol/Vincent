@@ -5,19 +5,16 @@ import type { RequestWithPolicy } from '../policy/requirePolicy';
 import type { RequestWithVincentUser } from '../vincentAuth';
 
 import { createDebugger } from '../../../../debug';
-import { getPKPInfo } from '../vincentAuth';
 
 // Create a debug instance for this middleware
 const debug = createDebugger('requireUserIsAuthor');
 
 // Combined interfaces for requests with both entity and vincent user
 export interface RequestWithAbilityAndVincentUser
-  extends RequestWithAbility,
-    RequestWithVincentUser {}
+  extends RequestWithAbility, RequestWithVincentUser {}
 
 export interface RequestWithPolicyAndVincentUser
-  extends RequestWithPolicy,
-    RequestWithVincentUser {}
+  extends RequestWithPolicy, RequestWithVincentUser {}
 
 type EntityType = 'ability' | 'policy';
 
@@ -43,7 +40,7 @@ export const requireUserIsAuthor = (entityType: EntityType) => {
         return;
       }
 
-      const userAddress = getPKPInfo(reqWithAbilityAndUser.vincentUser.decodedJWT).ethAddress;
+      const userAddress = reqWithAbilityAndUser.vincentUser.address;
       debug('Found authenticated user', { userAddress });
 
       if (entityType === 'ability') {
