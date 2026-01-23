@@ -1,8 +1,8 @@
 import { baseVincentRtkApiNode as api } from '../lib/internal/baseVincentRtkApiNode';
 export const addTagTypes = [
   'App',
-  'AppVersionAbility',
   'AppVersion',
+  'AppVersionAbility',
   'Ability',
   'AbilityVersion',
   'Policy',
@@ -21,7 +21,7 @@ const injectedRtkApi = api
       }),
       createApp: build.mutation<CreateAppApiResponse, CreateAppApiArg>({
         query: (queryArg) => ({ url: `/app`, method: 'POST', body: queryArg.appCreate }),
-        invalidatesTags: ['App'],
+        invalidatesTags: ['App', 'AppVersion'],
       }),
       getApp: build.query<GetAppApiResponse, GetAppApiArg>({
         query: (queryArg) => ({ url: `/app/${encodeURIComponent(String(queryArg.appId))}` }),
@@ -40,14 +40,14 @@ const injectedRtkApi = api
           url: `/app/${encodeURIComponent(String(queryArg.appId))}`,
           method: 'DELETE',
         }),
-        invalidatesTags: ['App', 'AppVersionAbility'],
+        invalidatesTags: ['App', 'AppVersion', 'AppVersionAbility'],
       }),
       undeleteApp: build.mutation<UndeleteAppApiResponse, UndeleteAppApiArg>({
         query: (queryArg) => ({
           url: `/app/${encodeURIComponent(String(queryArg.appId))}/undelete`,
           method: 'POST',
         }),
-        invalidatesTags: ['App', 'AppVersionAbility'],
+        invalidatesTags: ['App', 'AppVersion', 'AppVersionAbility'],
       }),
       getAppVersions: build.query<GetAppVersionsApiResponse, GetAppVersionsApiArg>({
         query: (queryArg) => ({
