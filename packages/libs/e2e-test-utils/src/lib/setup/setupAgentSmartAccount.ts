@@ -66,21 +66,17 @@ export async function setupAgentSmartAccount({
   for (const [key, value] of Object.entries(installData)) installDataTable[key] = value;
   console.table(installDataTable);
 
-  // Step 2: Deploy the smart account and install permission validator (PKP)
-  const {
-    smartAccountAddress: deployedAddress,
-    deploymentTxHash,
-    validatorInstallTxHash,
-  } = await deploySmartAccountToChain({
-    userEoaPrivateKey,
-    agentSignerAddress: installData.agentSignerAddress as Address,
-    accountIndexHash: deriveSmartAccountIndex(vincentAppId).toString(),
-    targetChain: vincentRegistryChain,
-    targetChainRpcUrl: vincentRegistryRpcUrl,
-    zerodevProjectId,
-    funderPrivateKey,
-    fundAmountBeforeDeployment,
-  });
+  // Step 2: Deploy the smart account with EOA validator only
+  const { smartAccountAddress: deployedAddress, deploymentTxHash } =
+    await deploySmartAccountToChain({
+      userEoaPrivateKey,
+      accountIndexHash: deriveSmartAccountIndex(vincentAppId).toString(),
+      targetChain: vincentRegistryChain,
+      targetChainRpcUrl: vincentRegistryRpcUrl,
+      zerodevProjectId,
+      funderPrivateKey,
+      fundAmountBeforeDeployment,
+    });
 
   // Verify the deployed address matches what the API returned
   if (deployedAddress.toLowerCase() !== installData.agentSmartAccountAddress.toLowerCase()) {
@@ -134,7 +130,6 @@ export async function setupAgentSmartAccount({
       : { 'Permit Status': 'Already permitted, skipped' }),
     'Smart Account Deployment Status': deploymentTxHash ? 'Newly Deployed' : 'Already Deployed',
     ...(deploymentTxHash ? { 'Smart Account Deployment Transaction Hash': deploymentTxHash } : {}),
-    ...(validatorInstallTxHash ? { 'Validator Installation Tx Hash': validatorInstallTxHash } : {}),
   });
 
   return {
