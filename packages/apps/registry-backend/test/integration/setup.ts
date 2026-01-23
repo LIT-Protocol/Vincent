@@ -3,8 +3,8 @@ import type { BaseQueryFn } from '@reduxjs/toolkit/query';
 import { configureStore } from '@reduxjs/toolkit';
 import { fetchBaseQuery, setupListeners } from '@reduxjs/toolkit/query';
 import { providers, Wallet } from 'ethers';
+import { SiweMessage } from 'siwe';
 
-import { createPlatformUserJWT } from '@lit-protocol/vincent-app-sdk/jwt';
 import { getClient } from '@lit-protocol/vincent-contracts-sdk';
 import { nodeClient } from '@lit-protocol/vincent-registry-sdk';
 
@@ -44,31 +44,41 @@ export const defaultWallet = new Wallet(
 
 export const getDefaultWalletContractClient = () => getClient({ signer: defaultWallet });
 
-export type GenerateJWTFn = (wallet: Wallet) => Promise<string>;
+export type GenerateSIWEAuthFn = (wallet: Wallet) => Promise<string>;
 
-export const generateJWT: GenerateJWTFn = async (wallet: Wallet) => {
-  return await createPlatformUserJWT({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    pkpWallet: wallet as any,
-    pkpInfo: {
-      publicKey: wallet.publicKey, // Use the actual public key from the wallet
-      ethAddress: wallet.address,
-      tokenId: '1',
-    },
-    expiresInMinutes: 10,
-    audience: 'localhost',
-    authentication: {
-      type: 'email',
-      value: 'test@example.com',
-    },
-    payload: { customClaim: 'test-value' },
+/**
+ * Generate a SIWE authentication header value for a wallet
+ * Returns a base64-encoded JSON string containing the SIWE message and signature
+ */
+export const generateSIWEAuth: GenerateSIWEAuthFn = async (wallet: Wallet) => {
+  const domain = 'localhost';
+  const uri = `http://${domain}`;
+  const now = new Date();
+  const expirationTime = new Date(now.getTime() + 10 * 60 * 1000); // 10 minutes from now
+
+  const siweMessage = new SiweMessage({
+    domain,
+    address: wallet.address,
+    statement: 'Sign in to Vincent Registry',
+    uri,
+    version: '1',
+    chainId: 1,
+    nonce: Math.random().toString(36).substring(2, 15),
+    issuedAt: now.toISOString(),
+    expirationTime: expirationTime.toISOString(),
   });
+
+  const message = siweMessage.prepareMessage();
+  const signature = await wallet.signMessage(message);
+
+  const payload = JSON.stringify({ message, signature });
+  return Buffer.from(payload).toString('base64');
 };
 
 // Create a wrapper function factory that adds authentication headers to mutation requests
 export const createWithAuth = (
   wallet: Wallet = defaultWallet,
-  generateJWTFn: GenerateJWTFn = generateJWT,
+  generateAuthFn: GenerateSIWEAuthFn = generateSIWEAuth,
 ) => {
   return (baseQuery: BaseQueryFn): BaseQueryFn => {
     return async (args, api, extraOptions) => {
@@ -85,9 +95,9 @@ export const createWithAuth = (
         return baseQuery(args, api, extraOptions);
       }
 
-      // If it's a mutation, add auth
-      const jwtStr = await generateJWTFn(wallet);
-      const authHeader = `Bearer ${jwtStr}`;
+      // If it's a mutation, add SIWE auth
+      const siweAuth = await generateAuthFn(wallet);
+      const authHeader = `SIWE ${siweAuth}`;
 
       // Pass the request to the original fetchBaseQuery function but with authorization headers added :tada:
       return baseQuery(

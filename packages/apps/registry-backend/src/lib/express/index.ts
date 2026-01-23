@@ -41,6 +41,18 @@ export function registerRoutes(app: Express) {
       apiSpec: openApiJson,
       validateRequests: true, // (default)
       // validateResponses: true, // false by default
+      validateSecurity: {
+        handlers: {
+          // Basic format check - full SIWE verification done by requireVincentAuth middleware
+          siweAuth: async (req) => {
+            const authHeader = req.headers.authorization;
+            if (!authHeader?.startsWith('SIWE ')) {
+              throw { status: 401, message: 'SIWE authorization required' };
+            }
+            return true;
+          },
+        },
+      },
     }),
   );
 

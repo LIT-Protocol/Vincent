@@ -13,46 +13,12 @@ const appVersion = z
       example: 1,
       readOnly: true,
     }),
-    // Will not be set on appVersion 1; expected on all subsequent appVersions
-    changes: z.string().optional().openapi({
-      description: 'Describes what changed between this version and the previous version.',
-      example: 'I am a changelog trapped in a computer!',
-    }),
     isDeleted: z.boolean().optional().openapi({
       description: 'Whether or not this AppVersion is deleted',
       example: false,
     }),
   })
   .strict();
-
-// Avoiding using z.omit() or z.pick() due to excessive TS type inference costs
-function buildCreateAppVersionSchema() {
-  // New app versions are always enabled === false; the property cannot be set by creator
-  const { changes } = appVersion.shape;
-
-  return z
-    .object({
-      // Optional
-      ...z.object({ changes }).partial().strict().shape,
-    })
-    .strict();
-}
-
-export const appVersionCreate = buildCreateAppVersionSchema();
-
-// Avoiding using z.omit() or z.pick() due to excessive TS type inference costs
-function buildEditAppVersionSchema() {
-  const { changes } = appVersion.shape;
-
-  return z
-    .object({
-      // Optional
-      ...z.object({ changes }).partial().strict().shape,
-    })
-    .strict();
-}
-
-export const appVersionEdit = buildEditAppVersionSchema();
 
 const appVersionAbility = z
   .object({

@@ -1214,6 +1214,9 @@ importers:
       semver:
         specifier: ^7.7.2
         version: 7.7.3
+      siwe:
+        specifier: ^3.0.0
+        version: 3.0.0(ethers@5.8.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))
       tar:
         specifier: ^7.4.3
         version: 7.5.2

@@ -43,6 +43,7 @@
     "normalize-package-data": "^7.0.0",
     "query-registry": "4.1.0",
     "semver": "^7.7.2",
+    "siwe": "^3.0.0",
     "tar": "^7.4.3",
     "validate-npm-package-name": "^6.0.1",
     "viem": "2.38.3",

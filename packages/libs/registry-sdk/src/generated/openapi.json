@@ -15,11 +15,11 @@
   ],
   "components": {
     "securitySchemes": {
-      "bearerAuth": {
-        "type": "http",
-        "scheme": "bearer",
-        "bearerFormat": "JWT",
-        "description": "Vincent-issued JWTs must be used for these endpoints."
+      "siweAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "Authorization",
+        "description": "Sign In With Ethereum authentication (SIWE). Format is \"SIWE [JSON({ message, signature })]\""
       }
     },
     "schemas": {
@@ -277,28 +277,6 @@
         ],
         "additionalProperties": false
       },
-      "AppVersionCreate": {
-        "type": "object",
-        "properties": {
-          "changes": {
-            "type": "string",
-            "description": "Describes what changed between this version and the previous version.",
-            "example": "I am a changelog trapped in a computer!"
-          }
-        },
-        "additionalProperties": false
-      },
-      "AppVersionEdit": {
-        "type": "object",
-        "properties": {
-          "changes": {
-            "type": "string",
-            "description": "Describes what changed between this version and the previous version.",
-            "example": "I am a changelog trapped in a computer!"
-          }
-        },
-        "additionalProperties": false
-      },
       "AppVersion": {
         "type": "object",
         "properties": {
@@ -328,11 +306,6 @@
             "description": "App Version number",
             "example": 1,
             "readOnly": true
-          },
-          "changes": {
-            "type": "string",
-            "description": "Describes what changed between this version and the previous version.",
-            "example": "I am a changelog trapped in a computer!"
           },
           "isDeleted": {
             "type": "boolean",
@@ -2169,7 +2142,7 @@
         "operationId": "createApp",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "requestBody": {
@@ -2266,7 +2239,7 @@
         "operationId": "editApp",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -2331,7 +2304,7 @@
         "operationId": "deleteApp",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -2387,7 +2360,7 @@
         "operationId": "undeleteApp",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -2478,71 +2451,6 @@
         }
       }
     },
-    "/app/{appId}/version": {
-      "post": {
-        "tags": [
-          "AppVersion"
-        ],
-        "summary": "Creates an application version",
-        "operationId": "createAppVersion",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "schema": {
-              "type": "number"
-            },
-            "required": true,
-            "description": "ID of the target application",
-            "example": 132,
-            "name": "appId",
-            "in": "path"
-          }
-        ],
-        "requestBody": {
-          "description": "Developer-defined version details",
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AppVersionCreate"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Successful operation",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AppVersion"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Invalid input"
-          },
-          "422": {
-            "description": "Validation exception"
-          },
-          "default": {
-            "description": "Unexpected error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/app/{appId}/version/{version}": {
       "get": {
         "tags": [
@@ -2597,156 +2505,18 @@
             }
           }
         }
-      },
-      "put": {
-        "tags": [
-          "AppVersion"
-        ],
-        "summary": "Edits an application version",
-        "operationId": "editAppVersion",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "schema": {
-              "type": "number"
-            },
-            "required": true,
-            "description": "ID of the target application",
-            "example": 132,
-            "name": "appId",
-            "in": "path"
-          },
-          {
-            "schema": {
-              "type": "number"
-            },
-            "required": true,
-            "description": "Version # of the target application version",
-            "example": 3,
-            "name": "version",
-            "in": "path"
-          }
-        ],
-        "requestBody": {
-          "description": "Update version changes field",
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AppVersionEdit"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Successful operation",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AppVersion"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Invalid input"
-          },
-          "422": {
-            "description": "Validation exception"
-          },
-          "default": {
-            "description": "Unexpected error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      },
-      "delete": {
-        "tags": [
-          "AppVersion"
-        ],
-        "summary": "Deletes an application version",
-        "operationId": "deleteAppVersion",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "schema": {
-              "type": "number"
-            },
-            "required": true,
-            "description": "ID of the target application",
-            "example": 132,
-            "name": "appId",
-            "in": "path"
-          },
-          {
-            "schema": {
-              "type": "number"
-            },
-            "required": true,
-            "description": "Version # of the target application version",
-            "example": 3,
-            "name": "version",
-            "in": "path"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK - Resource successfully deleted",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/GenericResultMessage"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Invalid input"
-          },
-          "404": {
-            "description": "Application or version not found"
-          },
-          "422": {
-            "description": "Validation exception"
-          },
-          "default": {
-            "description": "Unexpected error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
       }
     },
-    "/app/{appId}/version/{version}/enable": {
+    "/app/{appId}/version": {
       "post": {
         "tags": [
           "AppVersion"
         ],
-        "summary": "Enables an application version",
-        "operationId": "enableAppVersion",
+        "summary": "Creates an application version",
+        "operationId": "createAppVersion",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -2759,84 +2529,10 @@
             "example": 132,
             "name": "appId",
             "in": "path"
-          },
-          {
-            "schema": {
-              "type": "number"
-            },
-            "required": true,
-            "description": "Version # of the target application version",
-            "example": 3,
-            "name": "version",
-            "in": "path"
           }
         ],
         "responses": {
-          "200": {
-            "description": "Successful operation",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AppVersion"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Invalid input"
-          },
-          "422": {
-            "description": "Validation exception"
-          },
-          "default": {
-            "description": "Unexpected error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/app/{appId}/version/{version}/disable": {
-      "post": {
-        "tags": [
-          "AppVersion"
-        ],
-        "summary": "Disables an application version",
-        "operationId": "disableAppVersion",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "schema": {
-              "type": "number"
-            },
-            "required": true,
-            "description": "ID of the target application",
-            "example": 132,
-            "name": "appId",
-            "in": "path"
-          },
-          {
-            "schema": {
-              "type": "number"
-            },
-            "required": true,
-            "description": "Version # of the target application version",
-            "example": 3,
-            "name": "version",
-            "in": "path"
-          }
-        ],
-        "responses": {
-          "200": {
+          "201": {
             "description": "Successful operation",
             "content": {
               "application/json": {
@@ -2930,7 +2626,7 @@
         "operationId": "createAppVersionAbility",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -3013,7 +2709,7 @@
         "operationId": "editAppVersionAbility",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -3099,7 +2795,7 @@
         "operationId": "deleteAppVersionAbility",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -3167,73 +2863,6 @@
         }
       }
     },
-    "/app/{appId}/version/{version}/undelete": {
-      "post": {
-        "tags": [
-          "AppVersion"
-        ],
-        "summary": "Undeletes an application version",
-        "operationId": "undeleteAppVersion",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "schema": {
-              "type": "number"
-            },
-            "required": true,
-            "description": "ID of the target application",
-            "example": 132,
-            "name": "appId",
-            "in": "path"
-          },
-          {
-            "schema": {
-              "type": "number"
-            },
-            "required": true,
-            "description": "Version # of the target application version",
-            "example": 3,
-            "name": "version",
-            "in": "path"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK - Resource successfully undeleted",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/GenericResultMessage"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Invalid input"
-          },
-          "404": {
-            "description": "Application or version not found"
-          },
-          "422": {
-            "description": "Validation exception"
-          },
-          "default": {
-            "description": "Unexpected error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/app/{appId}/version/{appVersion}/ability/{abilityPackageName}/undelete": {
       "post": {
         "tags": [
@@ -3243,7 +2872,7 @@
         "operationId": "undeleteAppVersionAbility",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -3320,7 +2949,7 @@
         "operationId": "setAppActiveVersion",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -3489,7 +3118,7 @@
         "operationId": "createAbility",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -3596,7 +3225,7 @@
         "operationId": "editAbility",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -3660,7 +3289,7 @@
         "operationId": "deleteAbility",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -3757,7 +3386,7 @@
         "operationId": "changeAbilityOwner",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -3822,7 +3451,7 @@
         "operationId": "createAbilityVersion",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -3949,7 +3578,7 @@
         "operationId": "editAbilityVersion",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -4022,7 +3651,7 @@
         "operationId": "deleteAbilityVersion",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -4090,7 +3719,7 @@
         "operationId": "undeleteAbility",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -4141,7 +3770,7 @@
         "operationId": "undeleteAbilityVersion",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -4208,7 +3837,7 @@
         "operationId": "refreshAbilityVersionPolicies",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -4307,7 +3936,7 @@
         "operationId": "createPolicy",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -4414,7 +4043,7 @@
         "operationId": "editPolicy",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -4478,7 +4107,7 @@
         "operationId": "deletePolicy",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -4529,7 +4158,7 @@
         "operationId": "createPolicyVersion",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -4656,7 +4285,7 @@
         "operationId": "editPolicyVersion",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -4729,7 +4358,7 @@
         "operationId": "deletePolicyVersion",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -4842,7 +4471,7 @@
         "operationId": "changePolicyOwner",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -4908,7 +4537,7 @@
         "operationId": "undeletePolicy",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [
@@ -4959,7 +4588,7 @@
         "operationId": "undeletePolicyVersion",
         "security": [
           {
-            "bearerAuth": []
+            "siweAuth": []
           }
         ],
         "parameters": [

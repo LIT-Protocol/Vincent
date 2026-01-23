@@ -303,8 +303,8 @@ async function mintPkpWithAuthMethods(authMethods: {
     addPkpEthAddressAsPermittedAddress: true,
     pkpEthAddressScopes: [],
     sendPkpToItself: false,
-    burnPkp: false,
-    sendToAddressAfterMinting: '0x0000000000000000000000000000000000000001',
+    burnPkp: true,
+    sendToAddressAfterMinting: ethers.constants.AddressZero,
   };
 
   // Estimate gas with buffer
