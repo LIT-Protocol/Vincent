@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
@@ -62,11 +62,7 @@ function VersionCard({ version, onClick }: VersionCardProps) {
 export function AppVersionsWrapper() {
   const { appId } = useParams<{ appId: string }>();
   const navigate = useNavigate();
-  const [showContent, setShowContent] = useState(false);
-
-  useEffect(() => {
-    setShowContent(true);
-  }, []);
+  const [showContent] = useState(true);
 
   // Fetch app from registry for name/metadata
   const { data: app, isLoading: appLoading } = vincentApiClient.useGetAppQuery(

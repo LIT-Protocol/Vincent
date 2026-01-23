@@ -4,7 +4,13 @@ import { ethers } from 'ethers';
 import type { WalletClient } from 'viem';
 
 /**
- * Converts a viem WalletClient to an ethers v5 Signer
+ * Converts a viem WalletClient to an ethers v5 Signer.
+ *
+ * This conversion is necessary because:
+ * - wagmi v2 uses viem for wallet interactions (returns WalletClient)
+ * - @lit-protocol/vincent-contracts-sdk uses ethers v5 (expects ethers.Signer)
+ *
+ * If vincent-contracts-sdk is updated to use viem or ethers v6, this can be removed.
  */
 export async function walletClientToSigner(walletClient: WalletClient): Promise<ethers.Signer> {
   const { account, chain, transport } = walletClient;

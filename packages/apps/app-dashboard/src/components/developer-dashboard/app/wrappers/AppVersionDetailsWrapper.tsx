@@ -14,11 +14,12 @@ import { theme, fonts } from '@/lib/themeClasses';
 import { CheckCircle, XCircle, ExternalLink, Loader2 } from 'lucide-react';
 import { PackageInstallCommand } from './ui/PackageInstallCommand';
 
-interface AbilityInfo {
+interface AbilityDisplayData {
   title: string;
   packageName: string;
   version: string;
   ipfsCid: string;
+  policyIpfsCids: string[];
 }
 
 export function AppVersionDetailsWrapper() {
@@ -27,30 +28,43 @@ export function AppVersionDetailsWrapper() {
   const { getSigner } = useWagmiSigner();
   const { ensureChain, infoMessage } = useEnsureChain();
 
-  const [versionData, setVersionData] = useState<AppVersion | null>(null);
-  const [abilityInfoMap, setAbilityInfoMap] = useState<Map<string, AbilityInfo>>(new Map());
-  const [isLoading, setIsLoading] = useState(true);
+  // On-chain state (for enabled status)
+  const [onChainVersion, setOnChainVersion] = useState<AppVersion | null>(null);
+  const [onChainLoading, setOnChainLoading] = useState(true);
+  const [onChainError, setOnChainError] = useState<string | null>(null);
+
+  // Combined ability data
+  const [abilities, setAbilities] = useState<AbilityDisplayData[]>([]);
+  const [abilitiesLoading, setAbilitiesLoading] = useState(true);
+
+  // Toggle state
   const [isToggling, setIsToggling] = useState(false);
-  const [fetchError, setFetchError] = useState<string | null>(null);
   const [toggleError, setToggleError] = useState<string | null>(null);
 
   // Fetch app from registry for name/metadata
   const { data: app } = vincentApiClient.useGetAppQuery({ appId: Number(appId) }, { skip: !appId });
 
-  // Fetch all abilities from registry to build lookup map
-  const { data: allAbilities } = vincentApiClient.useListAllAbilitiesQuery();
+  // Fetch AppVersionAbilities from registry (has packageName, version directly)
+  const {
+    data: versionAbilities,
+    isLoading: versionAbilitiesLoading,
+    error: versionAbilitiesError,
+  } = vincentApiClient.useListAppVersionAbilitiesQuery(
+    { appId: Number(appId), version: Number(version) },
+    { skip: !appId || !version },
+  );
 
-  // Fetch version from on-chain and resolve ability info
+  // Fetch on-chain version for enabled status and policy CIDs
   useEffect(() => {
-    async function fetchVersion() {
+    async function fetchOnChainVersion() {
       if (!appId || !version) {
-        setFetchError('App ID and version are required');
-        setIsLoading(false);
+        setOnChainError('App ID and version are required');
+        setOnChainLoading(false);
         return;
       }
 
-      setIsLoading(true);
-      setFetchError(null);
+      setOnChainLoading(true);
+      setOnChainError(null);
 
       try {
         const client = getClient({ signer: readOnlySigner });
@@ -60,82 +74,96 @@ export function AppVersionDetailsWrapper() {
         });
 
         if (result === null) {
-          setFetchError('Version not found on-chain');
-          setVersionData(null);
-          setIsLoading(false);
-          return;
+          setOnChainError('Version not found on-chain');
+          setOnChainVersion(null);
+        } else {
+          setOnChainVersion(result.appVersion);
         }
-
-        setVersionData(result.appVersion);
-
-        // Now look up ability info for each IPFS CID
-        const infoMap = new Map<string, AbilityInfo>();
-
-        for (const ability of result.appVersion.abilities) {
-          const ipfsCid = ability.abilityIpfsCid;
-
-          // Try to find the ability in the registry by checking versions
-          if (allAbilities) {
-            for (const registryAbility of allAbilities) {
-              try {
-                // Fetch all versions for this ability
-                const versionsResponse = await fetch(
-                  `${registryUrl}/ability/${encodeURIComponent(registryAbility.packageName)}/versions`,
-                );
-
-                if (versionsResponse.ok) {
-                  const versions = await versionsResponse.json();
-                  const matchingVersion = versions.find((v: any) => v.ipfsCid === ipfsCid);
-
-                  if (matchingVersion) {
-                    infoMap.set(ipfsCid, {
-                      title: registryAbility.title,
-                      packageName: registryAbility.packageName,
-                      version: matchingVersion.version,
-                      ipfsCid,
-                    });
-                    break;
-                  }
-                }
-              } catch (err) {
-                // Continue to next ability
-              }
-            }
-          }
-
-          // If not found, use placeholder
-          if (!infoMap.has(ipfsCid)) {
-            infoMap.set(ipfsCid, {
-              title: 'Unknown Ability',
-              packageName: 'Unknown',
-              version: 'Unknown',
-              ipfsCid,
-            });
-          }
-        }
-
-        setAbilityInfoMap(infoMap);
       } catch (err: any) {
-        setFetchError(`Failed to fetch version: ${err.message}`);
-        setVersionData(null);
+        setOnChainError(`Failed to fetch version: ${err.message}`);
+        setOnChainVersion(null);
       } finally {
-        setIsLoading(false);
+        setOnChainLoading(false);
       }
     }
 
-    if (allAbilities !== undefined) {
-      fetchVersion();
+    fetchOnChainVersion();
+  }, [appId, version]);
+
+  // Build ability display data by combining registry and on-chain data
+  useEffect(() => {
+    async function buildAbilityData() {
+      if (!versionAbilities || !onChainVersion) {
+        setAbilitiesLoading(false);
+        return;
+      }
+
+      setAbilitiesLoading(true);
+
+      try {
+        // Build a map of ipfsCid -> policyIpfsCids from on-chain data
+        const policyMap = new Map<string, string[]>();
+        for (const onChainAbility of onChainVersion.abilities) {
+          policyMap.set(onChainAbility.abilityIpfsCid, onChainAbility.policyIpfsCids);
+        }
+
+        // For each registry ability, fetch additional metadata
+        const abilityDataPromises = versionAbilities.map(async (va) => {
+          try {
+            // Fetch Ability for title
+            const abilityResponse = await fetch(
+              `${registryUrl}/ability/${encodeURIComponent(va.abilityPackageName)}`,
+            );
+            const ability = abilityResponse.ok ? await abilityResponse.json() : null;
+
+            // Fetch AbilityVersion for ipfsCid
+            const versionResponse = await fetch(
+              `${registryUrl}/ability/${encodeURIComponent(va.abilityPackageName)}/version/${encodeURIComponent(va.abilityVersion)}`,
+            );
+            const abilityVersion = versionResponse.ok ? await versionResponse.json() : null;
+
+            const ipfsCid = abilityVersion?.ipfsCid || '';
+
+            return {
+              title: ability?.title || va.abilityPackageName,
+              packageName: va.abilityPackageName,
+              version: va.abilityVersion,
+              ipfsCid,
+              policyIpfsCids: policyMap.get(ipfsCid) || [],
+            };
+          } catch {
+            return {
+              title: va.abilityPackageName,
+              packageName: va.abilityPackageName,
+              version: va.abilityVersion,
+              ipfsCid: '',
+              policyIpfsCids: [],
+            };
+          }
+        });
+
+        const abilityData = await Promise.all(abilityDataPromises);
+        setAbilities(abilityData);
+      } catch (err) {
+        console.error('Failed to build ability data:', err);
+      } finally {
+        setAbilitiesLoading(false);
+      }
     }
-  }, [appId, version, allAbilities]);
+
+    if (!versionAbilitiesLoading && !onChainLoading) {
+      buildAbilityData();
+    }
+  }, [versionAbilities, onChainVersion, versionAbilitiesLoading, onChainLoading]);
 
   const handleToggleEnabled = async () => {
-    if (!versionData || !appId || !version) return;
+    if (!onChainVersion || !appId || !version) return;
 
     // Ensure user is on Base Sepolia before starting
-    const action = versionData.enabled ? 'Disable Version' : 'Enable Version';
+    const action = onChainVersion.enabled ? 'Disable Version' : 'Enable Version';
     try {
       const canProceed = await ensureChain(action);
-      if (!canProceed) return; // Chain was switched, user needs to click again
+      if (!canProceed) return;
     } catch (error) {
       setToggleError(error instanceof Error ? error.message : 'Failed to switch network');
       return;
@@ -151,13 +179,13 @@ export function AppVersionDetailsWrapper() {
       await client.enableAppVersion({
         appId: Number(appId),
         appVersion: Number(version),
-        enabled: !versionData.enabled,
+        enabled: !onChainVersion.enabled,
       });
 
       // Update local state
-      setVersionData({
-        ...versionData,
-        enabled: !versionData.enabled,
+      setOnChainVersion({
+        ...onChainVersion,
+        enabled: !onChainVersion.enabled,
       });
     } catch (err: any) {
       console.error('Failed to toggle version enabled state:', err);
@@ -174,11 +202,14 @@ export function AppVersionDetailsWrapper() {
     }
   };
 
+  const isLoading = onChainLoading || versionAbilitiesLoading || abilitiesLoading;
+
   if (isLoading) {
     return <Loading />;
   }
 
-  if (fetchError) {
+  if (onChainError || versionAbilitiesError) {
+    const errorMessage = onChainError || 'Failed to load version abilities';
     return (
       <>
         <Breadcrumb
@@ -191,12 +222,12 @@ export function AppVersionDetailsWrapper() {
             },
           ]}
         />
-        <StatusMessage message={fetchError} type="error" />
+        <StatusMessage message={errorMessage} type="error" />
       </>
     );
   }
 
-  if (!versionData) {
+  if (!onChainVersion) {
     return (
       <>
         <Breadcrumb
@@ -239,12 +270,12 @@ export function AppVersionDetailsWrapper() {
             </h1>
             <div
               className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${
-                versionData.enabled
+                onChainVersion.enabled
                   ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
                   : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
               }`}
             >
-              {versionData.enabled ? (
+              {onChainVersion.enabled ? (
                 <>
                   <CheckCircle className="w-3.5 h-3.5" />
                   Enabled
@@ -260,16 +291,16 @@ export function AppVersionDetailsWrapper() {
           <Button
             onClick={handleToggleEnabled}
             disabled={isToggling}
-            variant={versionData.enabled ? 'outline' : 'default'}
-            className={versionData.enabled ? '' : 'text-white'}
-            style={versionData.enabled ? {} : { backgroundColor: theme.brandOrange }}
+            variant={onChainVersion.enabled ? 'outline' : 'default'}
+            className={onChainVersion.enabled ? '' : 'text-white'}
+            style={onChainVersion.enabled ? {} : { backgroundColor: theme.brandOrange }}
           >
             {isToggling ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                {versionData.enabled ? 'Disabling...' : 'Enabling...'}
+                {onChainVersion.enabled ? 'Disabling...' : 'Enabling...'}
               </>
-            ) : versionData.enabled ? (
+            ) : onChainVersion.enabled ? (
               'Disable Version'
             ) : (
               'Enable Version'
@@ -291,54 +322,47 @@ export function AppVersionDetailsWrapper() {
       {/* Abilities Section */}
       <div className={`${theme.mainCard} border ${theme.mainCardBorder} rounded-xl p-6`}>
         <h2 className={`text-lg font-semibold mb-4 ${theme.text}`} style={fonts.heading}>
-          Abilities ({versionData.abilities.length})
+          Abilities ({abilities.length})
         </h2>
 
-        {versionData.abilities.length === 0 ? (
+        {abilities.length === 0 ? (
           <p className={`${theme.textMuted}`} style={fonts.body}>
             No abilities configured for this version.
           </p>
         ) : (
           <div className="space-y-3">
-            {versionData.abilities.map((ability) => {
-              const info = abilityInfoMap.get(ability.abilityIpfsCid);
+            {abilities.map((ability) => (
+              <div
+                key={ability.packageName}
+                className={`p-4 rounded-lg ${theme.itemBg} border ${theme.cardBorder}`}
+              >
+                <div className="space-y-2">
+                  {/* Title */}
+                  <div className={`font-semibold ${theme.text}`} style={fonts.heading}>
+                    {ability.title}
+                  </div>
 
-              return (
-                <div
-                  key={ability.abilityIpfsCid}
-                  className={`p-4 rounded-lg ${theme.itemBg} border ${theme.cardBorder}`}
-                >
-                  <div className="space-y-2">
-                    {/* Title */}
-                    <div className={`font-semibold ${theme.text}`} style={fonts.heading}>
-                      {info?.title || 'Unknown Ability'}
-                    </div>
+                  {/* Package Name */}
+                  <div className={`text-sm`} style={fonts.body}>
+                    <a
+                      href={`https://www.npmjs.com/package/${ability.packageName}/v/${ability.version}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:underline"
+                      style={{ color: theme.brandOrange }}
+                    >
+                      {ability.packageName} v{ability.version}
+                    </a>
+                  </div>
 
-                    {/* Package Name */}
-                    <div className={`text-sm`} style={fonts.body}>
-                      {info?.packageName && info.packageName !== 'Unknown' ? (
-                        <a
-                          href={`https://www.npmjs.com/package/${info.packageName}${info.version && info.version !== 'Unknown' ? `/v/${info.version}` : ''}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="hover:underline"
-                          style={{ color: theme.brandOrange }}
-                        >
-                          {info.packageName}
-                          {info.version && info.version !== 'Unknown' && ` v${info.version}`}
-                        </a>
-                      ) : (
-                        <span className={theme.textMuted}>Unknown</span>
-                      )}
-                    </div>
-
-                    {/* IPFS CID */}
+                  {/* IPFS CID */}
+                  {ability.ipfsCid && (
                     <div className="flex items-center gap-2">
                       <code className={`text-xs ${theme.textMuted} font-mono`}>
-                        {ability.abilityIpfsCid}
+                        {ability.ipfsCid}
                       </code>
                       <a
-                        href={`https://ipfs.io/ipfs/${ability.abilityIpfsCid}`}
+                        href={`https://ipfs.io/ipfs/${ability.ipfsCid}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex-shrink-0"
@@ -347,57 +371,52 @@ export function AppVersionDetailsWrapper() {
                         <ExternalLink className="w-4 h-4" style={{ color: theme.brandOrange }} />
                       </a>
                     </div>
+                  )}
 
-                    {/* Policies */}
-                    {ability.policyIpfsCids.length > 0 && (
-                      <div className="mt-3 pt-3 border-t border-gray-200 dark:border-white/10">
-                        <div className={`text-xs font-medium ${theme.textMuted} mb-2`}>
-                          Policies ({ability.policyIpfsCids.length})
-                        </div>
-                        <div className="space-y-1">
-                          {ability.policyIpfsCids.map((policyCid) => (
-                            <div key={policyCid} className="flex items-center gap-2">
-                              <code className={`text-xs ${theme.textMuted} font-mono`}>
-                                {policyCid}
-                              </code>
-                              <a
-                                href={`https://ipfs.io/ipfs/${policyCid}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex-shrink-0"
-                                title="View on IPFS"
-                              >
-                                <ExternalLink
-                                  className="w-3.5 h-3.5"
-                                  style={{ color: theme.brandOrange }}
-                                />
-                              </a>
-                            </div>
-                          ))}
-                        </div>
+                  {/* Policies */}
+                  {ability.policyIpfsCids.length > 0 && (
+                    <div className="mt-3 pt-3 border-t border-gray-200 dark:border-white/10">
+                      <div className={`text-xs font-medium ${theme.textMuted} mb-2`}>
+                        Policies ({ability.policyIpfsCids.length})
                       </div>
-                    )}
-                  </div>
+                      <div className="space-y-1">
+                        {ability.policyIpfsCids.map((policyCid) => (
+                          <div key={policyCid} className="flex items-center gap-2">
+                            <code className={`text-xs ${theme.textMuted} font-mono`}>
+                              {policyCid}
+                            </code>
+                            <a
+                              href={`https://ipfs.io/ipfs/${policyCid}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex-shrink-0"
+                              title="View on IPFS"
+                            >
+                              <ExternalLink
+                                className="w-3.5 h-3.5"
+                                style={{ color: theme.brandOrange }}
+                              />
+                            </a>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
-              );
-            })}
+              </div>
+            ))}
           </div>
         )}
 
         {/* Package Install Command */}
-        {versionData.abilities.length > 0 && (
+        {abilities.length > 0 && (
           <div className="mt-6">
             <PackageInstallCommand
-              versionAbilities={versionData.abilities
-                .map((ability) => {
-                  const info = abilityInfoMap.get(ability.abilityIpfsCid);
-                  return {
-                    abilityPackageName: info?.packageName || '',
-                    abilityVersion: info?.version || '',
-                    isDeleted: false,
-                  };
-                })
-                .filter((a) => a.abilityPackageName && a.abilityVersion)}
+              versionAbilities={abilities.map((ability) => ({
+                abilityPackageName: ability.packageName,
+                abilityVersion: ability.version,
+                isDeleted: false,
+              }))}
               abilityVersionsData={{}}
             />
           </div>

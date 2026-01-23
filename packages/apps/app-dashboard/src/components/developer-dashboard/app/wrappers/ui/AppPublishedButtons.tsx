@@ -5,6 +5,7 @@ import { App } from '@/types/developer-dashboard/appTypes';
 import { App as ContractApp } from '@lit-protocol/vincent-contracts-sdk';
 import MutationButtonStates from '@/components/shared/ui/MutationButtonStates';
 import { useWagmiSigner } from '@/hooks/developer-dashboard/useWagmiSigner';
+import { useEnsureChain } from '@/hooks/developer-dashboard/useEnsureChain';
 import { theme, fonts } from '@/lib/themeClasses';
 import { ActionButton } from '@/components/developer-dashboard/ui/ActionButton';
 
@@ -25,12 +26,22 @@ export function AppPublishedButtons({
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const { getSigner } = useWagmiSigner();
+  const { ensureChain } = useEnsureChain();
 
   // On-chain is the source of truth for deleted state
   const isDeleted = appBlockchainData.isDeleted;
 
   // Handler for app undelete (on-chain only)
   const handleUndelete = async () => {
+    // Ensure user is on Base Sepolia before starting
+    try {
+      const canProceed = await ensureChain('Undelete App');
+      if (!canProceed) return; // Chain was switched, user needs to click again
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to switch network');
+      return;
+    }
+
     setError(null);
     setIsProcessing(true);
 

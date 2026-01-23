@@ -1,5 +1,4 @@
 export { TextField } from './TextField';
-export { NumberField } from './NumberField';
 export { LongTextField } from './LongTextField';
 export { ArrayField } from './array/ArrayField';
 export { DeploymentStatusSelectField } from './array/DeploymentStatusSelectField';

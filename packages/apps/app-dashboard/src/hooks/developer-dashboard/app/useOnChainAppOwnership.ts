@@ -57,25 +57,11 @@ export function useOnChainAppOwnership(appId: number | undefined): OnChainOwners
       setResult((prev) => ({ ...prev, isChecking: true, error: null }));
 
       try {
-        console.log('[useOnChainAppOwnership] Checking ownership for app ID:', appId);
-        console.log('[useOnChainAppOwnership] User address:', address);
-
         const client = getClient({ signer: readOnlySigner });
-        const provider = readOnlySigner.provider;
-        const network = await provider.getNetwork();
-        console.log(
-          '[useOnChainAppOwnership] Reading from network:',
-          network.name,
-          'Chain ID:',
-          network.chainId,
-        );
 
         const onChainApp = await client.getAppById({ appId });
-        console.log('[useOnChainAppOwnership] On-chain app result:', onChainApp);
-
         if (!onChainApp) {
           // App doesn't exist on-chain
-          console.log('[useOnChainAppOwnership] App does not exist on-chain');
           setResult({
             isOwner: false,
             existsOnChain: false,
@@ -88,8 +74,6 @@ export function useOnChainAppOwnership(appId: number | undefined): OnChainOwners
 
         // App exists on-chain, check if user owns it
         const isOwner = onChainApp.manager.toLowerCase() === address.toLowerCase();
-        console.log('[useOnChainAppOwnership] App manager:', onChainApp.manager);
-        console.log('[useOnChainAppOwnership] Is owner:', isOwner);
 
         setResult({
           isOwner,

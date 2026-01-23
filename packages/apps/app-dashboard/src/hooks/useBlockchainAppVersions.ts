@@ -15,6 +15,7 @@ export function useBlockchainAppVersions(appId: number | undefined) {
   const fetchVersions = useCallback(async () => {
     if (!appId) {
       setError('App ID is required');
+      setData(null);
       setIsLoading(false);
       return;
     }
@@ -63,16 +64,12 @@ export function useBlockchainAppVersions(appId: number | undefined) {
 
   useEffect(() => {
     fetchVersions();
-  }, [appId, fetchVersions]);
-
-  const refetch = useCallback(() => {
-    fetchVersions();
   }, [fetchVersions]);
 
   return {
     data,
     error,
     isLoading,
-    refetch,
+    refetch: fetchVersions,
   };
 }

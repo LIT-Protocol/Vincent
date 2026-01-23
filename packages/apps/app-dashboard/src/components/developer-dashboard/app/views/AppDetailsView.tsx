@@ -4,7 +4,6 @@ import { App as ContractApp } from '@lit-protocol/vincent-contracts-sdk';
 import { AppDetail } from '@/components/developer-dashboard/ui/AppDetail';
 import { Logo } from '@/components/shared/ui/Logo';
 import { AppPublishedButtons } from '../wrappers/ui/AppPublishedButtons';
-import { UndeleteAppButton } from '../wrappers/ui/UndeleteAppButton';
 import { Copy, AlertCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { theme, fonts } from '@/lib/themeClasses';
@@ -28,7 +27,6 @@ export function AppDetailsView({
   const [copySuccess, setCopySuccess] = useState(false);
   const [showContent, setShowContent] = useState(false);
   const isPublished = blockchainAppData !== null;
-  const isAppDeletedRegistry = selectedApp.isDeleted;
 
   useEffect(() => {
     setShowContent(true);
@@ -167,16 +165,14 @@ export function AppDetailsView({
             </p>
           </div>
           <div className="p-6">
-            {isAppDeletedRegistry ? (
-              <UndeleteAppButton app={selectedApp} />
-            ) : blockchainAppData ? (
+            {blockchainAppData && (
               <AppPublishedButtons
                 appData={selectedApp}
                 appBlockchainData={blockchainAppData}
                 onOpenMutation={onOpenMutation}
                 refetchBlockchainData={refetchBlockchainData}
               />
-            ) : null}
+            )}
           </div>
         </div>
 

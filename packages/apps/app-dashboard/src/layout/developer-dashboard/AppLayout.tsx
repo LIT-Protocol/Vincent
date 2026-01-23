@@ -40,7 +40,7 @@ function AppLayout({ children, className }: ComponentProps<'div'>) {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Check JWT-based authentication
+  // Check SIWE-based authentication
   const { isAuthenticated, isLoading: authLoading } = useAuth();
 
   // Check if we're on any developer route
