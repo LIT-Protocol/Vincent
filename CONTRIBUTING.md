@@ -171,6 +171,34 @@ Types include:
 
 ### Release Process
 
+#### Prerelease (Alpha) for a Specific Package
+
+To release a prerelease version of a specific package for testing:
+
+1. Version the package with a prerelease identifier:
+
+```bash
+# For an alpha release
+pnpm nx release version --projects=<package-name> --specifier=prerelease --preid=alpha
+
+# Example: Release e2e-test-utils as alpha
+pnpm nx release version --projects=e2e-test-utils --specifier=prerelease --preid=alpha
+```
+
+**Note:** Nx will automatically bump patch versions of dependent packages when you version a package. This is expected behavior. If you don't want to publish those dependent packages, simply revert the unwanted version changes after the command completes (e.g., `git checkout -- packages/apps/*/package.json`), keeping only your target package's version change.
+
+2. Publish the prerelease version with a dist-tag:
+
+```bash
+# Publish with alpha tag (users must explicitly install @alpha)
+pnpm nx release publish --projects=<package-name> --tag=alpha --otp=YOUR_OTP
+
+# Example: Publish e2e-test-utils alpha
+pnpm nx release publish --projects=e2e-test-utils --tag=alpha --otp=YOUR_OTP
+```
+
+#### Full Release Process
+
 Currently, `packages/apps/registry-backend` specifies version numbers for the local Vincent packages it depends on, this was a temporary fix to allow for deployment. However, it disrupts the release process so the specified versions need to be converted to `workspace:*` references.
 
 1. Checkout a new branch called `release/YYYY-MM-DD`
