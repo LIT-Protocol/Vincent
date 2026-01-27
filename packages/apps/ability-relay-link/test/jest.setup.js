@@ -3,5 +3,6 @@ import path from 'path';
 
 // This is a shim for running jest tests w/ env injection, directly from VSCode or Webstorm
 if (!process.env['NX_LOAD_DOT_ENV_FILES']) {
+  // Load .env.test for test environment variables
   config({ path: path.join(__dirname, '../.env') });
 }

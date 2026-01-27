@@ -56,10 +56,6 @@ async function createPermittedSigner(permittedAddress: `0x${string}`) {
   });
 }
 
-/**
- * Convert multiple transactions to a single batched UserOperation for smart account execution.
- * This is useful for operations that require multiple steps (e.g., ERC20 approve + swap).
- */
 export async function transactionsToZerodevUserOp(
   params: TransactionsToZerodevUserOpParams,
 ): Promise<Record<string, unknown>> {
@@ -87,6 +83,15 @@ export async function transactionsToZerodevUserOp(
     permittedSigner,
   );
 
+  // Encode the user transactions
+  const callData = await permissionAccount.encodeCalls(
+    transactions.map((tx) => ({
+      to: tx.to,
+      value: BigInt(tx.value || '0'),
+      data: tx.data,
+    })),
+  );
+
   // Create kernel client with the permission account
   const kernelClient = createKernelAccountClient({
     chain,
@@ -95,15 +100,8 @@ export async function transactionsToZerodevUserOp(
     client: publicClient,
   });
 
-  // Prepare the UserOp with batched calls
   const userOp = await kernelClient.prepareUserOperation({
-    callData: await permissionAccount.encodeCalls(
-      transactions.map((tx) => ({
-        to: tx.to,
-        value: BigInt(tx.value || '0'),
-        data: tx.data,
-      })),
-    ),
+    callData,
   });
 
   return userOp as unknown as Record<string, unknown>;
@@ -135,11 +133,11 @@ export async function relayTransactionToUserOp(
 }
 
 /**
- * Submit a signed UserOperation to the ZeroDev bundler.
+ * Submit a signed UserOperation using the deserialized permission account.
  *
- * This follows the Kernel v3 signature format:
- * - The signature is prefixed with 0xff to indicate "raw signature mode"
- * - This tells the Kernel account to use the signature as-is without additional processing
+ * The serialized permission account contains the EOA's signature approving the PKP validator.
+ * When we deserialize it and send the first UserOp, ZeroDev will automatically enable
+ * the PKP validator on-chain using the EOA's approval signature.
  *
  * Returns both the UserOp hash and the transaction hash once mined.
  */
@@ -155,19 +153,15 @@ export async function submitSignedUserOp(
     zerodevRpcUrl,
   } = params;
 
-  // Create ZeroDev transport for bundler
   const zerodevTransport = http(zerodevRpcUrl);
 
-  // Create public client
   const publicClient = createPublicClient({
     chain,
     transport: zerodevTransport,
   });
 
-  // Create the signer that matches how the permission account was serialized
   const permittedSigner = await createPermittedSigner(permittedAddress);
 
-  // Deserialize the permission account with the signer
   const permissionAccount = await deserializePermissionAccount(
     publicClient,
     entryPoint,
@@ -176,8 +170,6 @@ export async function submitSignedUserOp(
     permittedSigner,
   );
 
-  // Create kernel client with ZeroDev bundler
-  // No paymaster - smart account will pay for gas using its own balance
   const kernelClient = createKernelAccountClient({
     chain,
     account: permissionAccount,
@@ -185,18 +177,21 @@ export async function submitSignedUserOp(
     client: publicClient,
   });
 
-  // Add signature to UserOp with 0xff prefix per Kernel v3 validation
-  // The 0xff prefix indicates "raw signature mode" - use signature as-is
   const signedUserOp = {
     ...userOp,
     signature: concat(['0xff', userOpSignature]),
   };
 
   console.log('[submitSignedUserOp] Broadcasting UserOp to ZeroDev bundler...');
-  const userOpHash = await kernelClient.sendUserOperation(signedUserOp as any);
-  console.log(`[submitSignedUserOp] UserOp hash: ${userOpHash}`);
 
+  const userOpHash = (await publicClient.request({
+    method: 'eth_sendUserOperation',
+    params: [signedUserOp, entryPoint.address],
+  } as any)) as Hex;
+
+  console.log(`[submitSignedUserOp] UserOp hash: ${userOpHash}`);
   console.log('[submitSignedUserOp] Waiting for UserOp to be included in a block...');
+
   const receipt = await kernelClient.waitForUserOperationReceipt({
     hash: userOpHash,
   });

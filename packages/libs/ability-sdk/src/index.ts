@@ -36,3 +36,8 @@ export {
   ERC20_ABI,
   bigIntReplacer,
 } from './lib/abilityHelpers';
+
+export { tryDecodeKernelCalldataToLowLevelCalls } from './lib/gatedSigner';
+
+export { createVincentViemPkpSigner } from './lib/vincentViemPkpSigner';
+export { wrapKernelAccountWithUserOpCapture } from './lib/wrapKernelAccountWithUserOpCapture';

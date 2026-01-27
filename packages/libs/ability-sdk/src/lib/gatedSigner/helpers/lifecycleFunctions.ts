@@ -1,8 +1,8 @@
-import type { Address, Hex } from 'viem';
+import type { Hex } from 'viem';
 import type { z } from 'zod';
 
 import type { AbilityConfigLifecycleFunction } from '../../abilityCore/abilityConfig/types';
-import type { LowLevelCall } from './lowLevelCall';
+import { type LowLevelCall } from './lowLevelCall';
 import type { SimulateAssetChangesResponse } from './simulation';
 
 import { isTransactionAbilityParams, isUserOpAbilityParams } from './schemas';
@@ -25,7 +25,7 @@ export type DecodedTransaction = DecodedTransactionSuccess | DecodedTransactionE
 
 interface ValidationBaseParams {
   chainId: number;
-  sender: Address;
+  sender: `0x${string}`;
 }
 
 export interface DecodeTransactionParams {
@@ -188,21 +188,27 @@ export function buildLifecycleFunctions<
         validUntil,
       } = abilityParams;
 
-      const signature = isTransactionAbilityParams(abilityParams)
-        ? await signTransaction({
-            transaction,
-            pkpPublicKey: delegatorPkpInfo.publicKey as Hex,
-          })
-        : await signUserOperation({
-            alchemyRpcUrl,
-            entryPointAddress,
-            userOp,
-            pkpPublicKey: delegatorPkpInfo.publicKey as Hex,
-            validAfter,
-            validUntil,
-            safe4337ModuleAddress,
-            eip712Params,
-          });
+      let signature: Hex;
+      if (isTransactionAbilityParams(abilityParams)) {
+        signature = await signTransaction({
+          transaction,
+          pkpPublicKey: delegatorPkpInfo.publicKey as Hex,
+        });
+      } else {
+        // Sign the UserOp with PKP
+        // Note: Validator installation is handled by relayTransactionToUserOp,
+        // so the UserOp already includes installation calls if needed
+        signature = await signUserOperation({
+          alchemyRpcUrl,
+          entryPointAddress,
+          userOp,
+          pkpPublicKey: delegatorPkpInfo.publicKey as Hex,
+          validAfter,
+          validUntil,
+          safe4337ModuleAddress,
+          eip712Params,
+        });
+      }
 
       return succeed({
         signature,
