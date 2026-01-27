@@ -1,11 +1,11 @@
-import type {
+import {
   Chain,
   createPublicClient,
   createWalletClient,
   http,
   parseEther,
-  type PublicClient,
-  type PrivateKeyAccount,
+  PublicClient,
+  PrivateKeyAccount,
   formatEther,
 } from 'viem';
 
