@@ -1,5 +1,5 @@
 import { ethers } from 'ethers';
-import { baseSepolia } from 'viem/chains';
+import { base, baseSepolia } from 'viem/chains';
 import { getClient } from '@lit-protocol/vincent-contracts-sdk';
 
 import { getEnv, setupVincentDevelopmentEnvironment } from '../src';
@@ -9,13 +9,19 @@ import type { VincentDevEnvironment } from '../src';
 jest.setTimeout(300000);
 
 // Test configuration from environment variables (required)
-const BASE_SEPOLIA_RPC_URL = getEnv('BASE_SEPOLIA_RPC_URL', 'https://sepolia.base.org');
+const VINCENT_REGISTRY_RPC_URL = getEnv('VINCENT_REGISTRY_RPC_URL');
+const VINCENT_REGISTRY_CHAIN_ID = parseInt(getEnv('VINCENT_REGISTRY_CHAIN_ID'), 10);
+
+const SMART_ACCOUNT_CHAIN_RPC_URL = getEnv('SMART_ACCOUNT_CHAIN_RPC_URL');
+const SMART_ACCOUNT_CHAIN_ID = parseInt(getEnv('SMART_ACCOUNT_CHAIN_ID'), 10);
+
 const VINCENT_API_URL = getEnv('VINCENT_API_URL', 'https://api.heyvincent.ai');
-const ZERODEV_PROJECT_ID = getEnv('ZERODEV_PROJECT_ID');
+
 const TEST_FUNDER_PRIVATE_KEY = getEnv('TEST_FUNDER_PRIVATE_KEY');
 const TEST_APP_MANAGER_PRIVATE_KEY = getEnv('TEST_APP_MANAGER_PRIVATE_KEY');
 const TEST_APP_DELEGATEE_PRIVATE_KEY = getEnv('TEST_APP_DELEGATEE_PRIVATE_KEY');
 const TEST_USER_EOA_PRIVATE_KEY = getEnv('TEST_USER_EOA_PRIVATE_KEY');
+
 const TEST_ABILITY_IPFS_CID = getEnv(
   'TEST_ABILITY_IPFS_CID',
   'QmRkPbEyFSzdknk6fBQYnKRHKfSs2AYpgcjZVQ699BMnLz',
@@ -25,25 +31,29 @@ const TEST_POLICY_IPFS_CID = getEnv(
   'QmZFznizKKYWoYTq6Na8G7uUm3QN3gX54qu52EKe6nfRo4',
 );
 
-/**
- * E2E test for Vincent development environment setup
- *
- * This test validates:
- * 1. App is registered on-chain with correct manager and delegatee
- * 2. App version has expected abilities and policies
- * 3. PKP is created by registry API
- * 4. Smart account is deployed with User EOA and PKP as signers
- * 5. App is registered with Vincent API
- */
+// Helper function to get chain configuration by ID
+function getChainById(chainId: number) {
+  if (chainId === base.id) {
+    return base;
+  } else if (chainId === baseSepolia.id) {
+    return baseSepolia;
+  }
+  throw new Error(`Unsupported chain ID: ${chainId}`);
+}
+
+const vincentRegistryChain = getChainById(VINCENT_REGISTRY_CHAIN_ID);
+const smartAccountChain = getChainById(SMART_ACCOUNT_CHAIN_ID);
+
 describe('Vincent Development Environment Setup', () => {
   let env: VincentDevEnvironment;
 
   beforeAll(async () => {
     env = await setupVincentDevelopmentEnvironment({
-      vincentRegistryRpcUrl: BASE_SEPOLIA_RPC_URL,
-      vincentRegistryChain: baseSepolia,
+      vincentRegistryRpcUrl: VINCENT_REGISTRY_RPC_URL,
+      vincentRegistryChain,
+      smartAccountChainRpcUrl: SMART_ACCOUNT_CHAIN_RPC_URL,
+      smartAccountChain,
       vincentApiUrl: VINCENT_API_URL,
-      zerodevProjectId: ZERODEV_PROJECT_ID,
       privateKeys: {
         funder: TEST_FUNDER_PRIVATE_KEY as `0x${string}`,
         appManager: TEST_APP_MANAGER_PRIVATE_KEY as `0x${string}`,
@@ -170,7 +180,8 @@ describe('Vincent Development Environment Setup', () => {
     });
 
     it('should have smart account deployed on-chain', async () => {
-      const provider = new ethers.providers.JsonRpcProvider(env.vincentRegistryRpcUrl);
+      // Smart account is deployed on the smart account chain, not the Vincent Registry chain
+      const provider = new ethers.providers.JsonRpcProvider(env.smartAccountChainRpcUrl);
       const code = await provider.getCode(env.agentSmartAccount.address);
 
       expect(code).toBeDefined();
@@ -179,9 +190,25 @@ describe('Vincent Development Environment Setup', () => {
     });
 
     it('should have deployment transaction hash (or be already deployed)', () => {
-      // deploymentTxHash might be undefined if already deployed
+      // deploymentTxHash might be undefined if already installed
       if (env.agentSmartAccount.deploymentTxHash) {
         expect(env.agentSmartAccount.deploymentTxHash).toMatch(/^0x[a-fA-F0-9]{64}$/);
+      }
+    });
+
+    it('should have serialized permission account (or be already installed)', () => {
+      // serializedPermissionAccount might be undefined if already installed
+      if (env.agentSmartAccount.serializedPermissionAccount) {
+        expect(env.agentSmartAccount.serializedPermissionAccount).toBeTruthy();
+        expect(env.agentSmartAccount.serializedPermissionAccount.length).toBeGreaterThan(0);
+        expect(() => JSON.parse(env.agentSmartAccount.serializedPermissionAccount!)).not.toThrow();
+      }
+    });
+
+    it('should have permit app version transaction hash (or be already installed)', () => {
+      // permitAppVersionTxHash might be undefined if already installed
+      if (env.agentSmartAccount.permitAppVersionTxHash) {
+        expect(env.agentSmartAccount.permitAppVersionTxHash).toMatch(/^0x[a-fA-F0-9]{64}$/);
       }
     });
 
@@ -252,14 +279,6 @@ describe('Vincent Development Environment Setup', () => {
     it('should have funded app delegatee wallet on Chronicle Yellowstone', async () => {
       const balance = await env.clients.chronicleYellowstonePublicClient.getBalance({
         address: env.accounts.appDelegatee.address,
-      });
-
-      expect(balance).toBeGreaterThan(0n);
-    });
-
-    it('should have funded smart account', async () => {
-      const balance = await env.clients.vincentRegistryPublicClient.getBalance({
-        address: env.agentSmartAccount.address,
       });
 
       expect(balance).toBeGreaterThan(0n);
@@ -338,8 +357,8 @@ describe('Vincent Development Environment Setup', () => {
     });
 
     it('should have correct chain ID for Vincent Registry', () => {
-      expect(env.vincentRegistryChain.id).toBe(baseSepolia.id);
-      expect(env.vincentRegistryChain.name).toBe(baseSepolia.name);
+      expect(env.vincentRegistryChain.id).toBe(VINCENT_REGISTRY_CHAIN_ID);
+      expect(env.vincentRegistryChain.name).toBe(vincentRegistryChain.name);
     });
   });
 
@@ -357,8 +376,14 @@ describe('Vincent Development Environment Setup', () => {
         'Agent Signer Address': env.agentSmartAccount.agentSignerAddress,
         'Agent Smart Account Address': env.agentSmartAccount.address,
         'Smart Account Deployment Tx':
-          env.agentSmartAccount.deploymentTxHash || 'N/A (already deployed)',
-        Chain: `${baseSepolia.name} (${baseSepolia.id})`,
+          env.agentSmartAccount.deploymentTxHash || 'N/A (already installed)',
+        'Serialized Permission Account': env.agentSmartAccount.serializedPermissionAccount
+          ? env.agentSmartAccount.serializedPermissionAccount.substring(0, 50) + '...'
+          : 'N/A (already installed)',
+        'Permit App Version Tx':
+          env.agentSmartAccount.permitAppVersionTxHash || 'N/A (already installed)',
+        'Vincent Registry Chain': `${vincentRegistryChain.name} (${vincentRegistryChain.id})`,
+        'Smart Account Chain': `${smartAccountChain.name} (${smartAccountChain.id})`,
       });
 
       expect(true).toBe(true); // Always pass to show summary

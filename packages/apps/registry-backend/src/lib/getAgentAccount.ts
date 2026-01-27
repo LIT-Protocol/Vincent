@@ -9,10 +9,10 @@ import {
 } from '@lit-protocol/vincent-contracts-sdk';
 
 import { env } from '../env';
-import { getBasePublicClient } from './chainConfig';
+import { getSmartAccountPublicClient } from './chainConfig';
 
 function getProvider(): providers.JsonRpcProvider {
-  return new providers.JsonRpcProvider(env.BASE_RPC_URL);
+  return new providers.JsonRpcProvider(env.VINCENT_REGISTRY_RPC_URL);
 }
 
 function getVincentContract(): ethers.Contract {
@@ -26,10 +26,11 @@ export async function getAgentAccount(request: {
 }): Promise<string | null> {
   const { appId, userControllerAddress } = request;
 
-  const basePublicClient = getBasePublicClient();
+  // Use smart account chain to derive the agent address since that's where it's deployed
+  const smartAccountPublicClient = getSmartAccountPublicClient();
 
   const agentAddress = await getKernelAddressFromECDSA({
-    publicClient: basePublicClient as any,
+    publicClient: smartAccountPublicClient as any,
     eoaAddress: userControllerAddress as `0x${string}`,
     index: deriveSmartAccountIndex(appId),
     entryPoint: constants.getEntryPoint('0.7'),

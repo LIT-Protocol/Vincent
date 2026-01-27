@@ -1,51 +1,28 @@
-export interface InstallAppResponseSponsored {
+import { privateKeyToAccount } from 'viem/accounts';
+
+export interface InstallAppResponse {
   agentSignerAddress: string;
   agentSmartAccountAddress: string;
   appInstallationDataToSign: {
     typedData: any;
   };
+  agentSmartAccountDeploymentDataToSign: any; // Raw message to sign (from getAppInstallTypedData)
+  sessionKeyApprovalDataToSign: any; // Serialized permission account (from getSessionKeyApprovalTypedData)
   alreadyInstalled?: boolean;
-}
-
-export interface InstallAppResponseDirect {
-  agentSignerAddress: string;
-  agentSmartAccountAddress: string;
-  rawTransaction: {
-    to: string;
-    data: string;
-  };
-  alreadyInstalled?: boolean;
-}
-
-export interface InstallAppResponseAlreadyInstalled {
-  agentSignerAddress: string;
-  agentSmartAccountAddress: string;
-  alreadyInstalled: true;
-}
-
-export type InstallAppResponse =
-  | InstallAppResponseSponsored
-  | InstallAppResponseDirect
-  | InstallAppResponseAlreadyInstalled;
-
-export function isInstallAppResponseSponsored(
-  response: InstallAppResponse,
-): response is InstallAppResponseSponsored {
-  return 'appInstallationDataToSign' in response;
 }
 
 export async function installApp({
   vincentApiUrl,
   appId,
-  userEoaAddress,
-  sponsorGas = false,
+  userEoaPrivateKey,
 }: {
   vincentApiUrl: string;
   appId: number;
-  userEoaAddress: string;
-  sponsorGas?: boolean;
+  userEoaPrivateKey: string;
 }): Promise<InstallAppResponse> {
-  console.log('=== Installing app via Vincent API ===');
+  console.log('=== Installing app via Vincent API (gas-sponsored) ===');
+
+  const userEoaAccount = privateKeyToAccount(userEoaPrivateKey as `0x${string}`);
 
   const response = await fetch(`${vincentApiUrl}/user/${appId}/install-app`, {
     method: 'POST',
@@ -53,8 +30,8 @@ export async function installApp({
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      userControllerAddress: userEoaAddress,
-      sponsorGas,
+      userControllerAddress: userEoaAccount.address,
+      sponsorGas: true, // Always sponsor gas
     }),
   });
 
