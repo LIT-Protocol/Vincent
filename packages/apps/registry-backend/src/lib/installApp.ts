@@ -364,17 +364,31 @@ export async function installApp(request: {
     );
 
     if (existingAgent && existingAgent.permittedApp) {
-      console.log('[installApp] User already has this app permitted, returning existing data');
-      console.log({
-        agentAddress: existingAgent.agentAddress,
-        pkpSigner: existingAgent.permittedApp.pkpSigner,
-      });
+      // 3.1 Check if the permitted version is the same as the active version
+      if (existingAgent.permittedApp.version === app.activeVersion) {
+        console.log('[installApp] Agent already has this app permitted, returning existing data');
+        console.table({
+          'Agent Address': existingAgent.agentAddress,
+          'PKP Signer Address': existingAgent.permittedApp.pkpSigner,
+          'Permitted Version': existingAgent.permittedApp.version,
+          'Active Version': app.activeVersion,
+        });
+        return {
+          agentSignerAddress: existingAgent.permittedApp.pkpSigner,
+          agentSmartAccountAddress: existingAgent.agentAddress,
+          alreadyInstalled: true,
+        };
+      }
 
-      return {
-        agentSignerAddress: existingAgent.permittedApp.pkpSigner,
-        agentSmartAccountAddress: existingAgent.agentAddress,
-        alreadyInstalled: true,
-      };
+      console.log(
+        `[installApp] Agent has already permitted this app, but the permitted version is different from the active version. Minting new PKP and permitting new version`,
+      );
+      console.table({
+        'Agent Address': existingAgent.agentAddress,
+        'Permitted Version': existingAgent.permittedApp.version,
+        'Active Version': app.activeVersion,
+      });
+      // Fall through to fresh install flow below which will mint a new PKP
     }
   }
 
@@ -385,6 +399,15 @@ export async function installApp(request: {
   const unpermittedApp = unpermittedApps[0]?.unpermittedApp;
 
   if (unpermittedApp) {
+    console.log(
+      '[installApp] Agent has an unpermitted this app, repermitting it with existing PKP',
+    );
+    console.table({
+      'Agent Address': agentSmartAccountAddress,
+      'Unpermitted App': unpermittedApp.appId,
+      'Previous Permitted Version': unpermittedApp.previousPermittedVersion,
+      'Active Version': app.activeVersion,
+    });
     const txData = COMBINED_ABI.encodeFunctionData('rePermitApp', [
       agentSmartAccountAddress,
       appId,
