@@ -1,7 +1,7 @@
 import type { PublicClient } from 'viem';
 
-import { createKernelAccount, addressToEmptyAccount } from '@zerodev/sdk';
 import { signerToEcdsaValidator } from '@zerodev/ecdsa-validator';
+import { createKernelAccount, addressToEmptyAccount } from '@zerodev/sdk';
 import { getEntryPoint, KERNEL_V3_3 } from '@zerodev/sdk/constants';
 
 import { deriveSmartAccountIndex } from '@lit-protocol/vincent-contracts-sdk';
