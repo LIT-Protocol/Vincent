@@ -1482,18 +1482,35 @@
       "CompleteInstallationRequest": {
         "type": "object",
         "properties": {
+          "userControllerAddress": {
+            "type": "string",
+            "pattern": "^0x[a-fA-F0-9]{40}$",
+            "description": "EOA address that controls the user smart wallet",
+            "example": "0x123456789012345678901234567890123456abcd"
+          },
+          "appId": {
+            "type": "number",
+            "description": "The Vincent app ID",
+            "example": 1
+          },
+          "agentSignerAddress": {
+            "type": "string",
+            "pattern": "^0x[a-fA-F0-9]{40}$",
+            "description": "The PKP address that will be used as the agent signer",
+            "example": "0x123456789012345678901234567890123456abcd"
+          },
           "appInstallation": {
             "type": "object",
             "properties": {
               "typedDataSignature": {
                 "type": "string",
-                "description": "The signature of the typed data",
+                "description": "The signature of the EIP2771 typed data",
                 "example": "0x..."
               },
               "dataToSign": {
                 "type": "object",
                 "properties": {},
-                "description": "The original data that was signed"
+                "description": "The original EIP2771 typed data that was signed"
               }
             },
             "required": [
@@ -1508,45 +1525,42 @@
             "properties": {
               "typedDataSignature": {
                 "type": "string",
-                "description": "The signature of the typed data",
+                "description": "The signature of the UserOperation message hash",
                 "example": "0x..."
               },
-              "dataToSign": {
+              "userOperation": {
                 "type": "object",
                 "properties": {},
-                "description": "The original data that was signed"
+                "description": "The UserOperation that was signed for smart account deployment"
               }
             },
             "required": [
               "typedDataSignature",
-              "dataToSign"
+              "userOperation"
             ],
             "additionalProperties": false,
-            "description": "Signed UserOperation message for smart account deployment"
+            "description": "Signed UserOperation for smart account deployment"
           },
           "sessionKeyApproval": {
             "type": "object",
             "properties": {
               "typedDataSignature": {
                 "type": "string",
-                "description": "The signature of the typed data",
+                "description": "The signature of the session key approval EIP-712 typed data",
                 "example": "0x..."
-              },
-              "dataToSign": {
-                "type": "object",
-                "properties": {},
-                "description": "The original data that was signed"
               }
             },
             "required": [
-              "typedDataSignature",
-              "dataToSign"
+              "typedDataSignature"
             ],
             "additionalProperties": false,
             "description": "Signed permission account data for session key approval"
           }
         },
         "required": [
+          "userControllerAddress",
+          "appId",
+          "agentSignerAddress",
           "appInstallation",
           "agentSmartAccountDeployment",
           "sessionKeyApproval"
