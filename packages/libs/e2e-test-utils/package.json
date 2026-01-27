@@ -4,13 +4,8 @@
   "publishConfig": {
     "access": "public"
   },
-  "scripts": {
-    "test:smartAccount": "NODE_OPTIONS=--experimental-vm-modules dotenv -e .env jest test/smartAccount/all.spec.ts",
-    "test:crossmint": "NODE_OPTIONS=--experimental-vm-modules dotenv -e .env jest test/smartAccount/crossmint.spec.ts",
-    "test:zerodev": "NODE_OPTIONS=--experimental-vm-modules dotenv -e .env jest test/smartAccount/zerodev.spec.ts",
-    "test:safe": "NODE_OPTIONS=--experimental-vm-modules dotenv -e .env jest test/smartAccount/safe.spec.ts"
-  },
   "dependencies": {
+    "@lit-protocol/vincent-app-sdk": "workspace:*",
     "@lit-protocol/auth-helpers": "^7",
     "@lit-protocol/constants": "^7",
     "@crossmint/wallets-sdk": "^0.18.7",
@@ -42,6 +37,7 @@
     }
   },
   "devDependencies": {
+    "@lit-protocol/vincent-contracts-sdk": "workspace:*",
     "@types/semver": "^7.7.0",
     "chokidar-cli": "^3.0.0",
     "dotenv-cli": "^7.4.2",

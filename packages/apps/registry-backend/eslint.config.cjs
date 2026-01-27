@@ -19,6 +19,8 @@ module.exports = [
           ignoredDependencies: [
             // debug is only directly referenced in the root of the repo, which confuses NX because it's technically not part of the build target.
             'debug',
+            // cors is used in src/lib/express/index.ts but NX doesn't detect it in the build target
+            'cors',
           ],
         },
       ],
