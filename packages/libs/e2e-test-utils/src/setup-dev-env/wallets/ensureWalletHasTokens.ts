@@ -1,4 +1,4 @@
-import { type PublicClient, type WalletClient, type Account } from 'viem';
+import { type PublicClient, type WalletClient, type Account, formatEther } from 'viem';
 import { type Address } from 'viem/accounts';
 
 export async function ensureWalletHasTokens({
@@ -33,7 +33,9 @@ export async function ensureWalletHasTokens({
   }
 
   if (numberOfConfirmations > 0) {
-    console.log('Waiting for funding transaction confirmations...');
+    console.log(
+      `Funded ${address} with ${formatEther(fundAmount)} tokens. Waiting for transaction confirmations...`,
+    );
     await publicClient.waitForTransactionReceipt({
       hash: txHash,
       confirmations: numberOfConfirmations,

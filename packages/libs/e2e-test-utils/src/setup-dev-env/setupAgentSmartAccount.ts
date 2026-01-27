@@ -3,13 +3,10 @@ import { createPublicClient, createWalletClient, http } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { deriveSmartAccountIndex } from '@lit-protocol/vincent-contracts-sdk';
 
-import {
-  installAppViaVincentApi,
-  isInstallAppResponseSponsored,
-} from './vincent-api/installAppViaVincentApi';
-import { completeAppInstallationViaVincentApi } from './vincent-api/completeAppInstallationViaVincentApi';
+import { installApp, isInstallAppResponseSponsored } from './vincent-registry-api/installApp';
+import { completeAppInstallation } from './vincent-registry-api/completeAppInstallation';
 import { installAppUsingUserEoa } from './blockchain/installAppUsingUserEoa';
-import { deploySmartAccountToChain } from './smart-account/deploySmartAccountToChain';
+import { deploySmartAccount } from './smart-account/deploySmartAccount';
 import { createPermissionApproval } from './smart-account/createPermissionApproval';
 
 export interface AgentSmartAccountInfo {
@@ -56,7 +53,7 @@ export async function setupAgentSmartAccount({
   });
 
   // Step 1: Install app via registry API to create PKP (or retrieve existing PKP if already installed)
-  const installData = await installAppViaVincentApi({
+  const installData = await installApp({
     vincentApiUrl,
     appId: vincentAppId,
     userEoaAddress: userEoaAccount.address,
@@ -68,16 +65,15 @@ export async function setupAgentSmartAccount({
   const isAlreadyPermitted = installData.alreadyInstalled === true;
 
   // Step 4: Deploy the smart account (with only EOA validator)
-  const { smartAccountAddress: deployedAddress, deploymentTxHash } =
-    await deploySmartAccountToChain({
-      userEoaPrivateKey,
-      accountIndexHash: deriveSmartAccountIndex(vincentAppId).toString(),
-      targetChain: vincentRegistryChain,
-      targetChainRpcUrl: vincentRegistryRpcUrl,
-      zerodevProjectId,
-      funderPrivateKey,
-      fundAmountBeforeDeployment,
-    });
+  const { smartAccountAddress: deployedAddress, deploymentTxHash } = await deploySmartAccount({
+    userEoaPrivateKey,
+    accountIndexHash: deriveSmartAccountIndex(vincentAppId).toString(),
+    targetChain: vincentRegistryChain,
+    targetChainRpcUrl: vincentRegistryRpcUrl,
+    zerodevProjectId,
+    funderPrivateKey,
+    fundAmountBeforeDeployment,
+  });
 
   // Step 5: Create permission approval for the PKP session key
   const serializedPermissionAccount = await createPermissionApproval({
@@ -104,7 +100,7 @@ export async function setupAgentSmartAccount({
     // App is not yet permitted on-chain, submit the permit transaction
     if (isInstallAppResponseSponsored(installData)) {
       // Gas-sponsored mode: Sign EIP-712 typed data and submit via Gelato relay
-      permitTxHash = await completeAppInstallationViaVincentApi({
+      permitTxHash = await completeAppInstallation({
         vincentApiUrl,
         userEoaPrivateKey,
         appId: vincentAppId,

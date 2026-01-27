@@ -3,7 +3,7 @@ import { getClient } from '@lit-protocol/vincent-contracts-sdk';
 
 import { type NewAppRegistration, registerNewApp } from './registerNewApp';
 import { type NewAppVersionRegistration, registerNewAppVersion } from './registerNewAppVersion';
-import type { AppMetadata } from '../types';
+import type { AppMetadata } from '../setupVincentDevEnv';
 
 export async function handleAppRegistration({
   vincentApiUrl,

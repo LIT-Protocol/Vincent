@@ -1172,6 +1172,9 @@ importers:
       '@zerodev/ecdsa-validator':
         specifier: ^5.4.9
         version: 5.4.9(@zerodev/sdk@5.5.7(viem@2.38.3(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)))(viem@2.38.3(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64))
+      '@zerodev/permissions':
+        specifier: ^5.6.3
+        version: 5.6.3(@zerodev/sdk@5.5.7(viem@2.38.3(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)))(@zerodev/webauthn-key@5.5.0(viem@2.38.3(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)))(viem@2.38.3(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64))
       '@zerodev/sdk':
         specifier: ^5.5.7
         version: 5.5.7(viem@2.38.3(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64))
@@ -1497,6 +1500,9 @@ importers:
       '@lit-protocol/types':
         specifier: ^7
         version: 7.3.1(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+      '@lit-protocol/vincent-app-sdk':
+        specifier: workspace:*
+        version: link:../app-sdk
       '@lit-protocol/vincent-contracts-sdk':
         specifier: workspace:*
         version: link:../contracts-sdk
@@ -7918,6 +7924,10 @@ packages:
 
   cors@2.8.5:
     resolution: {integrity: sha512-KIHbLJqu73RGr/hnbrO9uBeixNGuvSQjul/jdFvS/KFSIH1hWVd1ng7zOHx+YrEfInLG7q4n6GHQ9cDtxv/P6g==}
+    engines: {node: '>= 0.10'}
+
+  cors@2.8.6:
+    resolution: {integrity: sha512-tJtZBBHA6vjIAaF6EnIaq6laBBP9aq/Y3ouVJjEfoHbRBcHBAHYcMh/w8LDrk2PvIMMq8gmopa5D4V8RmbrxGw==}
     engines: {node: '>= 0.10'}
 
   cosmiconfig@7.1.0:
@@ -23740,6 +23750,14 @@ snapshots:
       '@zerodev/sdk': 5.5.7(viem@2.41.2(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64))
       viem: 2.41.2(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)
 
+  '@zerodev/permissions@5.6.3(@zerodev/sdk@5.5.7(viem@2.38.3(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)))(@zerodev/webauthn-key@5.5.0(viem@2.38.3(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)))(viem@2.38.3(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64))':
+    dependencies:
+      '@simplewebauthn/browser': 9.0.1
+      '@zerodev/sdk': 5.5.7(viem@2.38.3(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64))
+      '@zerodev/webauthn-key': 5.5.0(viem@2.38.3(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64))
+      merkletreejs: 0.3.11
+      viem: 2.38.3(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)
+
   '@zerodev/permissions@5.6.3(@zerodev/sdk@5.5.7(viem@2.41.2(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)))(@zerodev/webauthn-key@5.5.0(viem@2.41.2(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)))(viem@2.41.2(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64))':
     dependencies:
       '@simplewebauthn/browser': 9.0.1
@@ -23770,6 +23788,13 @@ snapshots:
     dependencies:
       semver: 7.7.3
       viem: 2.43.5(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)
+
+  '@zerodev/webauthn-key@5.5.0(viem@2.38.3(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64))':
+    dependencies:
+      '@noble/curves': 1.9.7
+      '@simplewebauthn/browser': 8.3.7
+      '@simplewebauthn/types': 12.0.0
+      viem: 2.38.3(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)
 
   '@zerodev/webauthn-key@5.5.0(viem@2.41.2(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64))':
     dependencies:
@@ -24963,6 +24988,11 @@ snapshots:
   core-util-is@1.0.3: {}
 
   cors@2.8.5:
+    dependencies:
+      object-assign: 4.1.1
+      vary: 1.1.2
+
+  cors@2.8.6:
     dependencies:
       object-assign: 4.1.1
       vary: 1.1.2
@@ -28654,7 +28684,7 @@ snapshots:
       chokidar: 2.1.8
       colors: 1.4.0
       connect: 3.7.0
-      cors: 2.8.5
+      cors: 2.8.6
       event-stream: 3.3.4
       faye-websocket: 0.11.4
       http-auth: 3.1.3

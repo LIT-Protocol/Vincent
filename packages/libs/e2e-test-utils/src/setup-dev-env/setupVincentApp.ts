@@ -1,6 +1,6 @@
-import { handleAppRegistration } from './app-registration/handleAppRegistration';
-import { setActiveVersionWithVincentApi } from './vincent-api/setActiveVersionWithVincentApi';
-import type { AppMetadata } from './types';
+import { handleAppRegistration } from './app-registration/handeAppRegistration';
+import { setActiveVersion } from './vincent-registry-api/setActiveAppVersion';
+import type { AppMetadata } from './setupVincentDevEnv';
 
 export interface SetupVincentAppParams {
   vincentApiUrl: string;
@@ -49,7 +49,7 @@ export async function setupVincentApp({
   // For new apps: handleAppRegistration already called registerAppWithVincentApi
   // For new versions: handleAppRegistration already called registerAppVersionWithVincentApi
   // Now we just need to set the active version
-  await setActiveVersionWithVincentApi({
+  await setActiveVersion({
     vincentApiUrl,
     appManagerPrivateKey,
     appId: registration.appId,

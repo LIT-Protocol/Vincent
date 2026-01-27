@@ -3,7 +3,7 @@ import { providers, Wallet } from 'ethers';
 import { toHex } from 'viem';
 
 import { areAbilitiesAndPoliciesEqual } from './areAbilitiesAndPoliciesEqual';
-import { registerAppVersionWithVincentApi } from '../vincent-api/registerAppVersionWithVincentApi';
+import { registerAppVersion } from '../vincent-registry-api/registerAppVersion';
 import { registerNewAppVersionOnChain } from '../blockchain/registerNewAppVersionOnChain';
 
 export interface NewAppVersionRegistration {
@@ -58,7 +58,7 @@ export async function registerNewAppVersion({
   );
 
   if (!abilitiesMatch) {
-    const { newAppVersion: newAppVersionFromVincentApi } = await registerAppVersionWithVincentApi({
+    const { newAppVersion: newAppVersionFromVincentApi } = await registerAppVersion({
       vincentApiUrl,
       appManagerPrivateKey,
       appId: existingApp.id,

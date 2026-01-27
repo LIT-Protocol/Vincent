@@ -1,8 +1,8 @@
 import { getClient } from '@lit-protocol/vincent-contracts-sdk';
 import { providers, Wallet } from 'ethers';
 
-import { registerAppWithVincentApi } from '../vincent-api/registerAppWithVincentApi';
-import type { AppMetadata } from '../types';
+import { registerApp } from '../vincent-registry-api/registerApp';
+import type { AppMetadata } from '../setupVincentDevEnv';
 
 export interface NewAppRegistration {
   appId: number;
@@ -46,7 +46,7 @@ export async function registerNewApp({
   await vincentRegistryEthersProvider.waitForTransaction(txHash, 2);
   console.log('App registration transaction confirmed');
 
-  await registerAppWithVincentApi({
+  await registerApp({
     vincentApiUrl,
     appManagerPrivateKey,
     appId,

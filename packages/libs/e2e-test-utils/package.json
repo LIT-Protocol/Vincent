@@ -5,6 +5,7 @@
     "access": "public"
   },
   "dependencies": {
+    "@lit-protocol/vincent-app-sdk": "workspace:*",
     "@lit-protocol/auth-helpers": "^7",
     "@lit-protocol/constants": "^7",
     "@crossmint/wallets-sdk": "^0.18.7",
@@ -36,6 +37,7 @@
     }
   },
   "devDependencies": {
+    "@lit-protocol/vincent-contracts-sdk": "workspace:*",
     "@types/semver": "^7.7.0",
     "chokidar-cli": "^3.0.0",
     "dotenv-cli": "^7.4.2",

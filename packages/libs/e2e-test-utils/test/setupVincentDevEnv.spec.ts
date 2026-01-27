@@ -1,9 +1,9 @@
 import { ethers } from 'ethers';
 import { baseSepolia } from 'viem/chains';
 import { getClient } from '@lit-protocol/vincent-contracts-sdk';
-import { setupVincentDevelopmentEnvironment } from '../src/lib/setupVincentDevelopmentEnv';
-import type { VincentDevEnvironment } from '../src/lib/setup/types';
-import { getEnv } from '../src/lib/setup';
+
+import { getEnv, setupVincentDevelopmentEnvironment } from '../src';
+import type { VincentDevEnvironment } from '../src';
 
 // Extend Jest timeout to 5 minutes for setup
 jest.setTimeout(300000);
@@ -178,22 +178,6 @@ describe('Vincent Development Environment Setup', () => {
       expect(code.length).toBeGreaterThan(2);
     });
 
-    it('should have serialized permission account for session key', () => {
-      expect(env.agentSmartAccount.serializedPermissionAccount).toBeDefined();
-      // The serialized permission account is a base64-encoded JSON string, not a hex string
-      expect(typeof env.agentSmartAccount.serializedPermissionAccount).toBe('string');
-      expect(env.agentSmartAccount.serializedPermissionAccount.length).toBeGreaterThan(100);
-
-      // Verify it can be decoded and contains expected structure
-      const decoded = JSON.parse(
-        Buffer.from(env.agentSmartAccount.serializedPermissionAccount, 'base64').toString('utf-8'),
-      );
-      expect(decoded).toHaveProperty('permissionParams');
-      expect(decoded).toHaveProperty('accountParams');
-      expect(decoded.accountParams).toHaveProperty('accountAddress');
-      expect(decoded.isPreInstalled).toBe(true);
-    });
-
     it('should have deployment transaction hash (or be already deployed)', () => {
       // deploymentTxHash might be undefined if already deployed
       if (env.agentSmartAccount.deploymentTxHash) {
@@ -247,7 +231,6 @@ describe('Vincent Development Environment Setup', () => {
       });
 
       expect(balance).toBeGreaterThan(0n);
-      console.log('[Funder Balance on Registry Chain]', balance.toString());
     });
 
     it('should have funded app manager wallet', async () => {
@@ -256,7 +239,6 @@ describe('Vincent Development Environment Setup', () => {
       });
 
       expect(balance).toBeGreaterThan(0n);
-      console.log('[App Manager Balance]', balance.toString());
     });
 
     it('should have funded user EOA wallet', async () => {
@@ -265,7 +247,6 @@ describe('Vincent Development Environment Setup', () => {
       });
 
       expect(balance).toBeGreaterThan(0n);
-      console.log('[User EOA Balance]', balance.toString());
     });
 
     it('should have funded app delegatee wallet on Chronicle Yellowstone', async () => {
@@ -274,7 +255,6 @@ describe('Vincent Development Environment Setup', () => {
       });
 
       expect(balance).toBeGreaterThan(0n);
-      console.log('[App Delegatee Balance on Chronicle]', balance.toString());
     });
 
     it('should have funded smart account', async () => {
@@ -283,7 +263,6 @@ describe('Vincent Development Environment Setup', () => {
       });
 
       expect(balance).toBeGreaterThan(0n);
-      console.log('[Smart Account Balance]', balance.toString());
     });
   });
 
@@ -326,13 +305,11 @@ describe('Vincent Development Environment Setup', () => {
     it('should have working Vincent Registry RPC connection', async () => {
       const blockNumber = await env.clients.vincentRegistryPublicClient.getBlockNumber();
       expect(blockNumber).toBeGreaterThan(0n);
-      console.log('[Vincent Registry Block Number]', blockNumber.toString());
     });
 
     it('should have working Chronicle Yellowstone RPC connection', async () => {
       const blockNumber = await env.clients.chronicleYellowstonePublicClient.getBlockNumber();
       expect(blockNumber).toBeGreaterThan(0n);
-      console.log('[Chronicle Yellowstone Block Number]', blockNumber.toString());
     });
   });
 

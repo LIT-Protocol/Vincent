@@ -1,4 +1,4 @@
-import { type PublicClient, type WalletClient, type Account } from 'viem';
+import type { PublicClient, WalletClient, Account } from 'viem';
 
 /**
  * Submit app installation transaction directly from user EOA (user pays gas).

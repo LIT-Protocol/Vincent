@@ -346,8 +346,39 @@ export async function installApp(request: {
     appId,
   );
 
-  // 3. Check if user has a previously uninstalled app (needs reinstall instead of fresh install)
+  // 3. Check if user already has a permitted app for this appId
+  // If so, return existing PKP and smart account instead of minting a new PKP
   const contractClient = getContractClient();
+  const agentAddresses = await contractClient.getAllRegisteredAgentAddressesForUser({
+    userAddress: userControllerAddress,
+    offset: '0',
+  });
+
+  if (agentAddresses.length > 0) {
+    const permittedApps = await contractClient.getPermittedAppForAgents({
+      agentAddresses,
+    });
+
+    const existingAgent = permittedApps.find(
+      (agent) => agent.permittedApp && agent.permittedApp.appId === appId,
+    );
+
+    if (existingAgent && existingAgent.permittedApp) {
+      console.log('[installApp] User already has this app permitted, returning existing data');
+      console.log({
+        agentAddress: existingAgent.agentAddress,
+        pkpSigner: existingAgent.permittedApp.pkpSigner,
+      });
+
+      return {
+        agentSignerAddress: existingAgent.permittedApp.pkpSigner,
+        agentSmartAccountAddress: existingAgent.agentAddress,
+        alreadyInstalled: true,
+      };
+    }
+  }
+
+  // 4. Check if user has a previously uninstalled app (needs reinstall instead of fresh install)
   const unpermittedApps = await contractClient.getUnpermittedAppForAgents({
     agentAddresses: [agentSmartAccountAddress],
   });
@@ -359,7 +390,7 @@ export async function installApp(request: {
       appId,
     ]);
 
-    // 3.5 If sponsorGas is false, return raw transaction for direct EOA submission
+    // 4.5 If sponsorGas is false, return raw transaction for direct EOA submission
     if (!sponsorGas) {
       return {
         agentSignerAddress: unpermittedApp.pkpSigner,
@@ -390,7 +421,7 @@ export async function installApp(request: {
     };
   }
 
-  // 4. Fresh install flow - Fetch abilities for this app version directly from on-chain contract
+  // 5. Fresh install flow - Fetch abilities for this app version directly from on-chain contract
   const appVersionResult = await contractClient.getAppVersion({
     appId,
     version: app.activeVersion,

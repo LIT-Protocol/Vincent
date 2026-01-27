@@ -1,4 +1,4 @@
-import type { Chain } from 'viem';
+import type { Address, Chain, Hex } from 'viem';
 import { createPublicClient, createWalletClient, formatEther, http } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { createKernelAccount, createKernelAccountClient } from '@zerodev/sdk';
@@ -6,7 +6,11 @@ import { signerToEcdsaValidator } from '@zerodev/ecdsa-validator';
 import { getEntryPoint, KERNEL_V3_3 } from '@zerodev/sdk/constants';
 
 import { ensureWalletHasTokens } from '../wallets/ensureWalletHasTokens';
-import type { SmartAccountInfo } from '../types';
+
+export interface SmartAccountInfo {
+  smartAccountAddress: Address;
+  deploymentTxHash?: Hex;
+}
 
 export async function deploySmartAccount({
   userEoaPrivateKey,
