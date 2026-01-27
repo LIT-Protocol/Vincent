@@ -1,41 +1,33 @@
 import type { Address, Chain } from 'viem';
-import { createPublicClient, createWalletClient, http } from 'viem';
-import { privateKeyToAccount } from 'viem/accounts';
-import { deriveSmartAccountIndex } from '@lit-protocol/vincent-contracts-sdk';
+import { createPublicClient, http } from 'viem';
 
-import { installApp, isInstallAppResponseSponsored } from './vincent-registry-api/installApp';
+import { installApp } from './vincent-registry-api/installApp';
 import { completeAppInstallation } from './vincent-registry-api/completeAppInstallation';
-import { installAppUsingUserEoa } from './blockchain/installAppUsingUserEoa';
-import { deploySmartAccount } from './smart-account/deploySmartAccount';
-import { createPermissionApproval } from './smart-account/createPermissionApproval';
 
 export interface AgentSmartAccountInfo {
   agentSignerAddress: Address;
   agentSmartAccountAddress: Address;
   deploymentTxHash?: string;
-  serializedPermissionAccount: string;
+  serializedPermissionAccount?: string;
+  permitAppVersionTxHash?: string;
 }
 
 export async function setupAgentSmartAccount({
   vincentRegistryRpcUrl,
   vincentApiUrl,
   vincentRegistryChain,
-  zerodevProjectId,
+  smartAccountChainRpcUrl,
+  smartAccountChain,
   userEoaPrivateKey,
   vincentAppId,
-  funderPrivateKey,
-  fundAmountBeforeDeployment,
-  sponsorGasForAppInstallation = false,
 }: {
   vincentRegistryRpcUrl: string;
   vincentApiUrl: string;
   vincentRegistryChain: Chain;
-  zerodevProjectId: string;
+  smartAccountChainRpcUrl: string;
+  smartAccountChain: Chain;
   userEoaPrivateKey: `0x${string}`;
   vincentAppId: number;
-  funderPrivateKey: `0x${string}`;
-  fundAmountBeforeDeployment?: bigint;
-  sponsorGasForAppInstallation?: boolean;
 }): Promise<AgentSmartAccountInfo> {
   console.log('=== Setting up agent smart account ===');
 
@@ -44,98 +36,71 @@ export async function setupAgentSmartAccount({
     transport: http(vincentRegistryRpcUrl),
   });
 
-  const userEoaAccount = privateKeyToAccount(userEoaPrivateKey);
-
-  const userEoaWalletClient = createWalletClient({
-    account: userEoaAccount,
-    chain: vincentRegistryChain,
-    transport: http(vincentRegistryRpcUrl),
+  const smartAccountPublicClient = createPublicClient({
+    chain: smartAccountChain,
+    transport: http(smartAccountChainRpcUrl),
   });
 
-  // Step 1: Install app via registry API to create PKP (or retrieve existing PKP if already installed)
+  // Step 1: Install app via registry API to create PKP and get typed data to sign
   const installData = await installApp({
     vincentApiUrl,
     appId: vincentAppId,
-    userEoaAddress: userEoaAccount.address,
-    sponsorGas: sponsorGasForAppInstallation,
-  });
-
-  // Step 2: Determine if app is already permitted (either from API flag or by checking on-chain)
-  // If alreadyInstalled is true, the API already confirmed the app is permitted on-chain
-  const isAlreadyPermitted = installData.alreadyInstalled === true;
-
-  // Step 4: Deploy the smart account (with only EOA validator)
-  const { smartAccountAddress: deployedAddress, deploymentTxHash } = await deploySmartAccount({
     userEoaPrivateKey,
-    accountIndexHash: deriveSmartAccountIndex(vincentAppId).toString(),
-    targetChain: vincentRegistryChain,
-    targetChainRpcUrl: vincentRegistryRpcUrl,
-    zerodevProjectId,
-    funderPrivateKey,
-    fundAmountBeforeDeployment,
   });
 
-  // Step 5: Create permission approval for the PKP session key
-  const serializedPermissionAccount = await createPermissionApproval({
-    userEoaPrivateKey,
-    sessionKeyAddress: installData.agentSignerAddress as Address,
-    accountIndexHash: deriveSmartAccountIndex(vincentAppId).toString(),
-    targetChain: vincentRegistryChain,
-    targetChainRpcUrl: vincentRegistryRpcUrl,
-  });
-
-  // Verify the deployed address matches what the API returned
-  if (deployedAddress.toLowerCase() !== installData.agentSmartAccountAddress.toLowerCase()) {
-    throw new Error(
-      `Smart account address mismatch! Deployed: ${deployedAddress}, API: ${installData.agentSmartAccountAddress}`,
-    );
-  }
-
-  // Step 3: Complete app installation by submitting the permitAppVersion transaction (if not already permitted)
-  let permitTxHash: string | undefined;
-
-  if (isAlreadyPermitted) {
-    console.log('=== App already permitted, skipping installation transaction ===');
-  } else {
-    // App is not yet permitted on-chain, submit the permit transaction
-    if (isInstallAppResponseSponsored(installData)) {
-      // Gas-sponsored mode: Sign EIP-712 typed data and submit via Gelato relay
-      permitTxHash = await completeAppInstallation({
-        vincentApiUrl,
-        userEoaPrivateKey,
-        appId: vincentAppId,
-        appInstallationDataToSign: installData.appInstallationDataToSign,
-      });
-    } else if ('rawTransaction' in installData) {
-      // Direct mode: Submit transaction from user's EOA (user pays gas)
-      permitTxHash = await installAppUsingUserEoa({
-        userEoaWalletClient,
-        vincentRegistryPublicClient,
-        transactionData: {
-          to: installData.rawTransaction.to as Address,
-          data: installData.rawTransaction.data as `0x${string}`,
-        },
-      });
-    } else {
-      throw new Error('Invalid install response: missing transaction data');
-    }
-
-    // Wait for the permit transaction to be confirmed
-    await vincentRegistryPublicClient.waitForTransactionReceipt({
-      hash: permitTxHash as `0x${string}`,
-      confirmations: 2,
+  // Step 2: Check if app is already installed
+  if (installData.alreadyInstalled === true) {
+    console.log('=== App already installed, skipping installation ===');
+    console.table({
+      'PKP Signer Address': installData.agentSignerAddress,
+      'Smart Account Address': installData.agentSmartAccountAddress,
+      Status: 'Already installed',
     });
+
+    return {
+      agentSmartAccountAddress: installData.agentSmartAccountAddress as Address,
+      agentSignerAddress: installData.agentSignerAddress as Address,
+    };
   }
 
-  // Summary
+  // Step 3: Sign typed data and complete installation via API (gas-sponsored)
+  const result = await completeAppInstallation({
+    vincentApiUrl,
+    userEoaPrivateKey,
+    appId: vincentAppId,
+    appInstallationDataToSign: installData.appInstallationDataToSign,
+    agentSmartAccountDeploymentDataToSign: installData.agentSmartAccountDeploymentDataToSign,
+    sessionKeyApprovalDataToSign: installData.sessionKeyApprovalDataToSign,
+    agentSignerAddress: installData.agentSignerAddress,
+  });
+
+  const deploymentTxHash = result.deployAgentSmartAccountTransactionHash;
+  const serializedPermissionAccount = result.serializedPermissionAccount;
+  const permitAppVersionTxHash = result.completeAppInstallationTransactionHash;
+
+  // Wait for all transactions to be confirmed
+  // Note: Session key approval is NOT a transaction - it's just serialization
+  // The permission plugin will be enabled when the PKP makes its first transaction
+  console.log('[setupAgentSmartAccount] Waiting for transaction confirmations');
+  await Promise.all([
+    // Smart account deployment happens on smart account chain
+    smartAccountPublicClient.waitForTransactionReceipt({
+      hash: deploymentTxHash as `0x${string}`,
+      confirmations: 2,
+    }),
+    // Permit app version happens on Vincent Registry chain
+    vincentRegistryPublicClient.waitForTransactionReceipt({
+      hash: permitAppVersionTxHash as `0x${string}`,
+      confirmations: 2,
+    }),
+  ]);
+
   console.table({
     'PKP Signer Address': installData.agentSignerAddress,
     'Smart Account Address': installData.agentSmartAccountAddress,
-    ...(permitTxHash
-      ? { 'Permit Transaction Hash': permitTxHash }
-      : { 'Permit Status': 'Already permitted, skipped' }),
-    'Smart Account Deployment Status': deploymentTxHash ? 'Newly Deployed' : 'Already Deployed',
-    ...(deploymentTxHash ? { 'Smart Account Deployment Transaction Hash': deploymentTxHash } : {}),
+    'Smart Account Deployment Tx': deploymentTxHash,
+    'Serialized Permission Account': serializedPermissionAccount.substring(0, 50) + '...',
+    'Permit App Version Tx': permitAppVersionTxHash,
   });
 
   return {
@@ -143,5 +108,6 @@ export async function setupAgentSmartAccount({
     agentSignerAddress: installData.agentSignerAddress as Address,
     deploymentTxHash,
     serializedPermissionAccount,
+    permitAppVersionTxHash,
   };
 }

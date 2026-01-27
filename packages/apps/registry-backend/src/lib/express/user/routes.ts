@@ -29,8 +29,12 @@ export function registerRoutes(app: Express) {
     requireApp(),
     withApp(async (req, res) => {
       const result = await completeInstallation({
-        typedDataSignature: req.body.typedDataSignature,
-        appInstallationDataToSign: req.body.appInstallationDataToSign,
+        userControllerAddress: req.body.userControllerAddress,
+        appId: req.vincentApp.appId,
+        agentSignerAddress: req.body.agentSignerAddress,
+        appInstallation: req.body.appInstallation,
+        agentSmartAccountDeployment: req.body.agentSmartAccountDeployment,
+        sessionKeyApproval: req.body.sessionKeyApproval,
       });
 
       res.json(result);
