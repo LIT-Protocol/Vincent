@@ -1,22 +1,24 @@
-import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts';
-import { createPublicClient, http, parseEther, zeroAddress, type Hex } from 'viem';
-import { baseSepolia } from 'viem/chains';
-import {
-  createKernelAccount,
-  createKernelAccountClient,
-  createZeroDevPaymasterClient,
-} from '@zerodev/sdk';
+import type { Hex } from 'viem';
+
 import { signerToEcdsaValidator } from '@zerodev/ecdsa-validator';
 import {
   toPermissionValidator,
   deserializePermissionAccount,
   serializePermissionAccount,
 } from '@zerodev/permissions';
-import { toECDSASigner } from '@zerodev/permissions/signers';
 import { toSudoPolicy } from '@zerodev/permissions/policies';
+import { toECDSASigner } from '@zerodev/permissions/signers';
+import {
+  createKernelAccount,
+  createKernelAccountClient,
+  createZeroDevPaymasterClient,
+} from '@zerodev/sdk';
 import { getEntryPoint, KERNEL_V3_3 } from '@zerodev/sdk/constants';
-import { createWalletClient } from 'viem';
+import { createPublicClient, http, parseEther, zeroAddress, createWalletClient } from 'viem';
+import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts';
 import { getCode } from 'viem/actions';
+import { baseSepolia } from 'viem/chains';
+
 import {
   createVincentViemPkpSigner,
   wrapKernelAccountWithUserOpCapture,

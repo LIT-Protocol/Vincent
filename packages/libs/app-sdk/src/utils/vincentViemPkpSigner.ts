@@ -1,6 +1,12 @@
 import type { Hex, LocalAccount, SignableMessage } from 'viem';
-import { toAccount, privateKeyToAddress } from 'viem/accounts';
-import { signMessage, signTransaction, signTypedData } from 'viem/accounts';
+
+import {
+  toAccount,
+  privateKeyToAddress,
+  signMessage,
+  signTransaction,
+  signTypedData,
+} from 'viem/accounts';
 
 export interface VincentViemPkpSignerParams {
   privateKey: Hex;
